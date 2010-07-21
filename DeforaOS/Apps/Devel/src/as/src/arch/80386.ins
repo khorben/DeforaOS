@@ -4,6 +4,10 @@
 # define AO_BX__ AO_ebx__
 # define AO_CX__ AO_ecx__
 # define AO_DX__ AO_edx__
+# define AO_SP__ AO_esp__
+# define AO_BP__ AO_ebp__
+# define AO_SI__ AO_esi__
+# define AO_DI__ AO_edi__
 # define AO_AX_ AO_eax_
 # define AO_BX_ AO_ebx_
 # define AO_CX_ AO_ecx_
@@ -34,6 +38,10 @@
 # define AO_BX__ AO_bx__
 # define AO_CX__ AO_cx__
 # define AO_DX__ AO_dx__
+# define AO_SP__ AO_sp__
+# define AO_BP__ AO_bp__
+# define AO_SI__ AO_si__
+# define AO_DI__ AO_di__
 # define AO_AX_ AO_ax_
 # define AO_BX_ AO_bx_
 # define AO_CX_ AO_cx_
@@ -1147,6 +1155,10 @@
 	{ "mov",	0xbe,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0xbf,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
+#if 1
+	{ "mov",	0xc70424,AO_IMM|AO_IMM_|AO_SP__,3, 0, 4, 0 },
+	{ "mov",	0xc74424,AO_IMM|AO_IMM_|AO_SP__,3, 1, 4, 0 },
+#endif
 	{ "mwait",	0x0f01c9,AO_NONE,		3, 0, 0, 0 },
 	{ "nop",	0x90,	AO_NONE,		1, 0, 0, 0 },
 	{ "or",		0x0c,	AO_IMM|AO_al_,		1, 1, 0, 0 },
@@ -1280,6 +1292,9 @@
 #if 0
 	{ "sub",	0x2a,	AO_REG|AO_REG_,		1, 0, 0, 0 },
 	{ "sub",	0x2b,	AO_REG|AO_REG_,		1, 0, 0, 0 },
+#endif
+#if 1
+	{ "sub",	0x83ec,	AO_IMM|AO_SP_,		2, 1, 0, 0 },
 #endif
 #if 0
 	{ "swapgs",	0x0f01,	AO_NONE,		2, 0, 0, 0 },

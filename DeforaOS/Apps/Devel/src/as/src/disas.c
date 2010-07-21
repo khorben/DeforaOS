@@ -288,6 +288,8 @@ static int _do_flat(Disas * disas, size_t offset, size_t size)
 {
 	int ret = 0;
 	size_t i;
+	unsigned int opcode;
+	size_t j;
 	int c;
 	ArchInstruction * ai;
 
@@ -302,18 +304,26 @@ static int _do_flat(Disas * disas, size_t offset, size_t size)
 	printf("\n%08zx:\n", offset);
 	for(i = 0; i < size; i++)
 	{
-		if((c = fgetc(disas->fp)) == EOF)
-			break;
-		printf("%5zx:  ", i);
-		if((ai = arch_instruction_get_by_opcode(disas->arch, 1, c))
-				!= NULL)
+		printf("%5zx: ", i);
+		opcode = 0;
+		ret = 0;
+		for(j = 0; j < 4; j++)
 		{
-			if((ret = _do_flat_print(disas, ai)) < 0)
+			if((c = fgetc(disas->fp)) == EOF)
 				break;
-			i += ret;
+			printf(" %02x", c);
+			opcode = (opcode << 8) | c;
+			if((ai = arch_instruction_get_by_opcode(disas->arch,
+							j + 1, opcode)) == NULL)
+				continue;
+			if((ret = _do_flat_print(disas, ai)) >= 0)
+				ret++;
+			break;
 		}
-		else
-			printf("%02x\n", c);
+		fputc('\n', stdout);
+		if(ret < 0)
+			break;
+		i += ret + j - 1;
 	}
 	arch_delete(disas->arch);
 	return -ret;
@@ -332,7 +342,7 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 	unsigned long u;
 	int c;
 
-	printf("%02lx\t%s", ai->opcode, ai->name);
+	printf("\t\t%s", ai->name);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
 		if((operands & _AO_OP) == _AO_REG)
 		{
@@ -363,7 +373,6 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 			sep = ", ";
 			ret += size;
 		}
-	fputc('\n', stdout);
 	return ret;
 }
 

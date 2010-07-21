@@ -96,6 +96,10 @@ ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 {
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %u, 0x%lx)\n", __func__, arch, size,
+			opcode);
+#endif
 	for(i = 0; i < arch->instructions_cnt; i++)
 		if(arch->instructions[i].size == size
 				&& arch->instructions[i].opcode == opcode)
