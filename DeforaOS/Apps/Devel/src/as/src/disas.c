@@ -316,8 +316,8 @@ static int _do_flat(Disas * disas, size_t offset, size_t size)
 			if((ai = arch_instruction_get_by_opcode(disas->arch,
 							j + 1, opcode)) == NULL)
 				continue;
-			if((ret = _do_flat_print(disas, ai)) >= 0)
-				ret++;
+			ret = _do_flat_print(disas, ai);
+			j++;
 			break;
 		}
 		fputc('\n', stdout);
