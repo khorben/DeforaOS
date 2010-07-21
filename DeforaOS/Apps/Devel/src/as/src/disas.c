@@ -344,8 +344,8 @@ static int _do_flat_print(Arch * arch, ArchInstruction * ai,
 		}
 		else if((operands & _AO_OP) == _AO_IMM)
 		{
-			size = (i == 0) ? ai->op1size : (i == 1) ? ai->op2size
-				: ai->op3size;
+			size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
+					: ai->op3size);
 			if(size == 0)
 				continue; /* XXX this should never happen */
 			/* XXX this is wrong */

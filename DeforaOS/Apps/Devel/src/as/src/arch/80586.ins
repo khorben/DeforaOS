@@ -1,4 +1,4 @@
 #include "80486.ins"
 #if 0 /* FIXME referencing memory locations is not supported yet */
-	{ "cmpxchg8b",	0x0fc708,AO_eax_|AO_ecx,	3, 0, 0, 0 },
+	{ "cmpxchg8b",	0x0fc708,AO_eax|AO_ecx_,	3, 0, 0, 0 },
 #endif

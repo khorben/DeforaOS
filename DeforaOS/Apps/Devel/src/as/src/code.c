@@ -151,7 +151,7 @@ int code_instruction(Code * code, char const * instruction,
 				: ai->op3size);
 		if(size == 0)
 			continue;
-		u32 = strtol(operands[i]->value + 1, NULL, 0);
+		u32 = strtoul(operands[i]->value + 1, NULL, 0);
 		switch(operands[i]->type)
 		{
 			case AS_CODE_IMMEDIATE:
@@ -213,19 +213,19 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 		AsOperand * operands[], size_t operands_cnt)
 {
 	unsigned long op = 0;
+	unsigned long o;
 	char const * reg;
 	size_t i;
 	ArchRegister * ar;
 
 	for(i = 0; i < operands_cnt; i++)
 	{
-		op = op << 8;
 		switch(operands[i]->type)
 		{
 			case AS_CODE_IMMEDIATE:
 			case AS_CODE_NUMBER:
 				/* FIXME also check the operand size */
-				op |= _AO_IMM;
+				o = _AO_IMM;
 #ifdef DEBUG
 				fprintf(stderr, "DEBUG: op %zu: imm; ", i);
 #endif
@@ -240,17 +240,19 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 						== NULL)
 					return 1;
 				if(operands[i]->dereference)
-					op |= (_AO_DREG | (ar->id << 2));
+					o = (_AO_DREG | (ar->id << 2));
 				else
-					op |= (_AO_REG | (ar->id << 2));
+					o = (_AO_REG | (ar->id << 2));
 #ifdef DEBUG
 				fprintf(stderr, "DEBUG: op %zu: reg %s; ", i,
 						reg);
 #endif
 				break;
 			default:
+				o = 0;
 				break;
 		}
+		op |= o << (i * 8);
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: 0x%lx & 0x%x => 0x%lx\n", op, ai->operands,
