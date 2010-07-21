@@ -305,7 +305,7 @@ static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 		if((c = fgetc(fp)) == EOF)
 			break;
 		printf("%5zx:  ", i);
-		if((ai = arch_instruction_get_by_opcode(arch, c)) != NULL)
+		if((ai = arch_instruction_get_by_opcode(arch, 1, c)) != NULL)
 		{
 			if((ret = _do_flat_print(arch, ai, filename, fp)) < 0)
 				break;
@@ -328,8 +328,9 @@ static int _do_flat_print(Arch * arch, ArchInstruction * ai,
 	ArchRegister * ar;
 	char const * sep = " ";
 	uint8_t size;
-	char buf[256];
-	unsigned long * u = (unsigned long *)buf;
+	int j;
+	unsigned long u;
+	int c;
 
 	printf("%02lx\t%s", ai->opcode, ai->name);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
@@ -346,15 +347,18 @@ static int _do_flat_print(Arch * arch, ArchInstruction * ai,
 		{
 			size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
 					: ai->op3size);
-			if(size == 0)
-				continue; /* XXX this should never happen */
-			/* XXX this is wrong */
-			if(fread(buf, sizeof(*buf), size, fp) != size)
+			for(j = 0, u = 0; j < size; j++)
 			{
-				ret = _disas_error(filename, -1);
-				break;
+				if((c = fgetc(fp)) == EOF)
+				{
+					ret = _disas_error(filename, -1);
+					break;
+				}
+				u = (u << 8) | c; /* XXX endian */
 			}
-			printf("%s$0x%lx", sep, *u);
+			if(j != size)
+				break;
+			printf("%s$0x%lx", sep, u);
 			sep = ", ";
 			ret += size;
 		}

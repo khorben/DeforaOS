@@ -91,13 +91,14 @@ ArchInstruction * arch_instruction_get(Arch * arch, size_t index)
 
 
 /* arch_instruction_get_by_opcode */
-ArchInstruction * arch_instruction_get_by_opcode(Arch * arch,
+ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 		unsigned long opcode)
 {
 	size_t i;
 
 	for(i = 0; i < arch->instructions_cnt; i++)
-		if(arch->instructions[i].opcode == opcode)
+		if(arch->instructions[i].size == size
+				&& arch->instructions[i].opcode == opcode)
 			return &arch->instructions[i];
 	return NULL;
 }
