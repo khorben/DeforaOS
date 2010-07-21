@@ -24,71 +24,67 @@ _lang($text);
 		<p>
 Infrastructure communiquante, sécurisée et indépendante du noyau (kernel) utilisé.
 		</p>
-		<table cellpadding="4px">
-		<tr><th>1. Base innovante</th><th>2. Structure portable</th><th>3. Environnement de bureau</th></tr>
-		<tr>
-		<td>
+		<div style="float: left; padding: 0.4em; max-width: 18em">
+		<p><strong>1. Base innovante</strong></p>
 <p>Le but principal est de permettre un accès <b>ubiquitaire</b>, <b>sécurisé</b>
 et <b>transparent</b> à ses ressources. Elles ne sont pas limitées aux données
 dans ce contexte, avec la possibilité d'échanger des applications fonctionnant à
 distance.</p>
-		</td>
-		<td>
+		</div>
+		<div style="float: left; padding: 0.4em; max-width: 18em">
+		<p><strong>2. Structure portable</strong></p>
 <p>Le projet contient un environnement compatible POSIX, tout en étant capable de
 fonctionner sur une base de système Linux, *BSD ou Solaris. Développé en pensant
 d'abord à sa <b>simplicité</b> et son <b>efficacité</b>, il peut également
 répondre aux contraintes des plate-formes <b>embarquées</b>.</p>
-		</td>
-		<td>
+		</div>
+		<div style="float: left; padding: 0.4em; max-width: 18em">
+		<p><strong>3. Environnement de bureau</strong></p>
 <p>Beaucoup d'importance est également accordée à l'<b>ergonomie</b>, la
 <b>cohérence</b> et l'<b>intégration</b>. En conséquence, le projet propose un
 certain nombre d'applications graphiques. Bien que déjà utiles sur les systèmes
 actuels, elles vont directement exploiter les spécificités de DeforaOS.</p>
-		</td>
-		</tr>
-		<tr><th colspan="3">4. Plate-forme de pointe pour les besoins actuels</th></tr>
-		<tr><td colspan="3">
+		</div>
+		<div style="clear: left; padding: 0.4em; max-width: 54em">
+		<p><strong>4. Plate-forme de pointe pour les besoins actuels</strong></p>
 <p>Ce projet <b>expérimental</b> a pour <b>ambition</b> de résoudre autant de
 problèmes récurrents des systèmes d'exploitation actuels que possible, par une
 <b>révision de la conception</b> de la plupart de leurs composants.<br/>
 Notamment, bien que le système actuel soit indépendant du noyau utilisé, le
 développement d'un micro-noyau dédié pourrait avoir du sens à terme.</p>
-		</td></tr>
-		</table>
+		</div>
 <?php break; case 'en': default: ?>
 		<p>
 Kernel-independent, networked and secure infrastructure:
 		</p>
-		<table cellpadding="4px">
-		<tr><th>1. Innovative foundation</th><th>2. Cross-platform framework</th><th>3. Desktop environment</th></tr>
-		<tr>
-		<td>
+		<div style="float: left; padding: 0.4em; max-width: 18em">
+		<p><strong>1. Innovative foundation</strong></p>
 <p>The main goal is to provide <b>ubiquitous</b>, <b>secure</b> and
 <b>transparent</b> access to one's resources. This is not limited to data, with
 the possibility to resume applications running remotely.</p>
-		</td>
-		<td>
+		</div>
+		<div style="float: left; padding: 0.4em; max-width: 18em">
+		<p><strong>2. Cross-platform framework</strong></p>
 <p>The system features a POSIX-compliant environment, and is already able to
 function on top of most Linux, *BSD or Solaris-based systems. Developed with
 <b>simplicity</b> and <b>efficiency</b> in mind, it is believed to suit modern
 <b>embedded</b> platforms as well.</p>
-		</td>
-		<td>
+		</div>
+		<div style="float: left; padding: 0.4em; max-width: 18em">
+		<p><strong>3. Desktop environment</strong></p>
 <p>The project is also focused on <b>usability</b>, <b>coherence</b> and
 <b>integration</b>, and therefore featuring a number of desktop applications.
 Although already intended to be useful on current systems, they eventually
 benefit from DeforaOS' own set of features.</p>
-		</td>
-		</tr>
-		<tr><th colspan="3">4. Cutting-edge platform for today's needs</th></tr>
-		<tr><td colspan="3">
+		</div>
+		<div style="clear: left; padding: 0.4em; max-width: 54em">
+		<p><strong>4. Cutting-edge platform for today's needs</strong></p>
 <p>This <b>experimental</b> project has the <b>ambition</b> to address a number of
 recurring issues with contemporary Operating Systems, with the <b>re-design</b>
 of most of their components.<br/>
 Additionally, even though the system is kernel-agnostic at the moment, a
 dedicated micro-kernel may also be useful at some later stage.</p>
-		</td></tr>
-		</table>
+		</div>
 <?php } ?>
 
 		<table>
