@@ -315,7 +315,7 @@ static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 			printf("%02x\n", c);
 	}
 	arch_delete(arch);
-	return ret;
+	return -ret;
 }
 
 static int _do_flat_print(Arch * arch, ArchInstruction * ai,
@@ -359,7 +359,7 @@ static int _do_flat_print(Arch * arch, ArchInstruction * ai,
 			ret += size;
 		}
 	fputc('\n', stdout);
-	return -ret;
+	return ret;
 }
 
 
