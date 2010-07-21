@@ -59,7 +59,8 @@ static int _do_elf64_strtab(char const * filename, FILE * fp, Elf64_Shdr * shdr,
 /* Flat */
 static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 		size_t size);
-static int _do_flat_print(Arch * arch, ArchInstruction * ai);
+static int _do_flat_print(Arch * arch, ArchInstruction * ai,
+		char const * filename, FILE * fp);
 
 static int _disas(char const * arch, char const * filename)
 {
@@ -284,6 +285,7 @@ static int _do_elf64_strtab(char const * filename, FILE * fp, Elf64_Shdr * shdr,
 static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 		size_t size)
 {
+	int ret = 0;
 	Arch * arch;
 	size_t i;
 	int c;
@@ -304,29 +306,35 @@ static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 			break;
 		printf("%5zx:  ", i);
 		if((ai = arch_instruction_get_by_opcode(arch, c)) != NULL)
-			i += _do_flat_print(arch, ai);
+		{
+			if((ret = _do_flat_print(arch, ai, filename, fp)) < 0)
+				break;
+			i += ret;
+		}
 		else
 			printf("%02x", c);
 		fputc('\n', stdout);
 	}
 	arch_delete(arch);
-	return 0;
+	return ret;
 }
 
-static int _do_flat_print(Arch * arch, ArchInstruction * ai)
+static int _do_flat_print(Arch * arch, ArchInstruction * ai,
+		char const * filename, FILE * fp)
 {
 	int ret = 0;
+	int i;
 	ArchOperands operands;
 	unsigned int reg;
 	ArchRegister * ar;
 	char const * sep = " ";
+	uint8_t size;
+	char buf[256];
+	unsigned long * u = (unsigned long *)buf;
 
 	printf("%02lx\t%s", ai->opcode, ai->name);
-	for(operands = ai->operands; operands > 0; operands >>= 8)
-	{
-		if(!(operands & _AO_OP))
-			continue;
-		if(operands & _AO_REG)
+	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
+		if((operands & _AO_OP) == _AO_REG)
 		{
 			reg = (operands & 0xff) >> 2;
 			if((ar = arch_register_get_by_id(arch, reg)) != NULL)
@@ -335,8 +343,19 @@ static int _do_flat_print(Arch * arch, ArchInstruction * ai)
 				printf("%s%d", sep, reg);
 			sep = ", ";
 		}
-	}
-	return ret;
+		else if((operands & _AO_OP) == _AO_IMM)
+		{
+			size = (i == 0) ? ai->op1size : (i == 1) ? ai->op2size
+				: ai->op3size;
+			if(size == 0)
+				continue; /* XXX this should never happen */
+			if(fread(buf, sizeof(*buf), size, fp) != size)
+				return _disas_error(filename, -1);
+			printf("%s$0x%lx", sep, *u);
+			sep = ", ";
+			ret += size;
+		}
+	return -ret;
 }
 
 
