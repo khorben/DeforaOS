@@ -312,8 +312,7 @@ static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 			i += ret;
 		}
 		else
-			printf("%02x", c);
-		fputc('\n', stdout);
+			printf("%02x\n", c);
 	}
 	arch_delete(arch);
 	return ret;
@@ -349,12 +348,17 @@ static int _do_flat_print(Arch * arch, ArchInstruction * ai,
 				: ai->op3size;
 			if(size == 0)
 				continue; /* XXX this should never happen */
+			/* XXX this is wrong */
 			if(fread(buf, sizeof(*buf), size, fp) != size)
-				return _disas_error(filename, -1);
+			{
+				ret = _disas_error(filename, -1);
+				break;
+			}
 			printf("%s$0x%lx", sep, *u);
 			sep = ", ";
 			ret += size;
 		}
+	fputc('\n', stdout);
 	return -ret;
 }
 
