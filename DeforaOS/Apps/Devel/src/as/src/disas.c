@@ -61,26 +61,50 @@ static DisasSignature _disas_signatures[] =
 
 
 /* prototypes */
+static int _disas(char const * arch, char const * format,
+		char const * filename);
+
 static int _disas_error(char const * message, int ret);
 
 
 /* functions */
 /* disas */
+static int _disas_do_format(Disas * disas, char const * format);
 static int _disas_do(Disas * disas);
+static int _do_callback(Disas * disas, size_t i);
 static int _do_flat(Disas * disas, off_t offset, size_t size);
 static int _do_flat_print(Disas * disas, ArchInstruction * ai);
 
-static int _disas(char const * arch, char const * filename)
+static int _disas(char const * arch, char const * format, char const * filename)
 {
-	int ret;
+	int ret = 1;
 	Disas disas;
 
 	if((disas.as = as_new(arch, NULL)) == NULL)
 		return error_print("disas");
-	disas.filename = filename;
-	ret = _disas_do(&disas);
+	if((disas.fp = fopen(filename, "r")) == NULL)
+		ret = _disas_error(filename, 1);
+	else
+	{
+		disas.filename = filename;
+		ret = _disas_do_format(&disas, format);
+		fclose(disas.fp);
+	}
 	as_delete(disas.as);
 	return ret;
+}
+
+static int _disas_do_format(Disas * disas, char const * format)
+{
+	size_t i;
+
+	if(format == NULL)
+		return _disas_do(disas);
+	for(i = 0; i < _disas_signatures_cnt; i++)
+		if(strcmp(_disas_signatures[i].name, format) == 0)
+			return _do_callback(disas, i);
+	fprintf(stderr, "disas: %s: %s\n", format, "Unknown format");
+	return 1;
 }
 
 static int _disas_do(Disas * disas)
@@ -90,8 +114,6 @@ static int _disas_do(Disas * disas)
 	size_t s = 0;
 	char * buf;
 
-	if((disas->fp = fopen(disas->filename, "r")) == NULL)
-		return _disas_error(disas->filename, 1);
 	for(i = 0; i < _disas_signatures_cnt; i++)
 		if(_disas_signatures[i].size > s)
 			s = _disas_signatures[i].size;
@@ -99,19 +121,24 @@ static int _disas_do(Disas * disas)
 			|| fread(buf, sizeof(*buf), s, disas->fp) != s)
 	{
 		free(buf);
-		fclose(disas->fp);
 		return _disas_error(disas->filename, 1);
 	}
 	for(i = 0; i < _disas_signatures_cnt; i++)
 		if(memcmp(_disas_signatures[i].signature, buf,
 					_disas_signatures[i].size) == 0)
 		{
-			ret = _disas_signatures[i].callback(disas);
+			ret = _do_callback(disas, i);
 			break;
 		}
 	free(buf);
-	fclose(disas->fp);
 	return ret;
+}
+
+static int _do_callback(Disas * disas, size_t i)
+{
+	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].name,
+			as_get_arch(disas->as));
+	return _disas_signatures[i].callback(disas);
 }
 
 static int _do_flat(Disas * disas, off_t offset, size_t size)
@@ -268,7 +295,6 @@ static int _do_elf32(Disas * disas, Elf32_Ehdr * ehdr)
 		free(shdr);
 		return 1;
 	}
-	printf("\n%s: elf-%s\n", disas->filename, as_get_arch(disas->as));
 	for(i = 0; i < ehdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_name >= shstrtab_cnt)
@@ -430,7 +456,7 @@ static int _disas_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: disas [-a arch] filename\n", stderr);
+	fputs("Usage: disas [-a arch][-f format] filename\n", stderr);
 	return 1;
 }
 
@@ -440,17 +466,21 @@ int main(int argc, char * argv[])
 {
 	int o;
 	char const * arch = NULL;
+	char const * format = NULL;
 
-	while((o = getopt(argc, argv, "a:")) != -1)
+	while((o = getopt(argc, argv, "a:f:")) != -1)
 		switch(o)
 		{
 			case 'a':
 				arch = optarg;
+				break;
+			case 'f':
+				format = optarg;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind + 1 != argc)
 		return _usage();
-	return (_disas(arch, argv[optind])) == 0 ? 0 : 2;
+	return (_disas(arch, format, argv[optind])) == 0 ? 0 : 2;
 }
