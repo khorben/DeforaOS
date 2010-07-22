@@ -63,6 +63,7 @@ static DisasSignature _disas_signatures[] =
 /* prototypes */
 static int _disas(char const * arch, char const * format,
 		char const * filename);
+static int _disas_list(void);
 
 static int _disas_error(char const * message, int ret);
 
@@ -444,6 +445,20 @@ static int _disas_flat(Disas * disas)
 }
 
 
+/* disas_list */
+static int _disas_list(void)
+{
+	size_t i;
+
+	as_plugin_list(ASPT_ARCH);
+	fprintf(stderr, "%s", "Available format plug-ins:");
+	for(i = 0; i < _disas_signatures_cnt; i++)
+		fprintf(stderr, " %s", _disas_signatures[i].name);
+	fputc('\n', stderr);
+	return 0;
+}
+
+
 /* disas_error */
 static int _disas_error(char const * message, int ret)
 {
@@ -456,7 +471,8 @@ static int _disas_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: disas [-a arch][-f format] filename\n", stderr);
+	fputs("Usage: disas [-a arch][-f format] filename\n"
+"       disas -l\n", stderr);
 	return 1;
 }
 
@@ -468,7 +484,7 @@ int main(int argc, char * argv[])
 	char const * arch = NULL;
 	char const * format = NULL;
 
-	while((o = getopt(argc, argv, "a:f:")) != -1)
+	while((o = getopt(argc, argv, "a:f:l")) != -1)
 		switch(o)
 		{
 			case 'a':
@@ -477,6 +493,8 @@ int main(int argc, char * argv[])
 			case 'f':
 				format = optarg;
 				break;
+			case 'l':
+				return _disas_list();
 			default:
 				return _usage();
 		}
