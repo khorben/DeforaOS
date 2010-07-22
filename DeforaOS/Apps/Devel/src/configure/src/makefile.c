@@ -577,6 +577,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/", libdir);
 	if(!done[TT_BINARY])
 	{
+		_targets_asflags(configure, fp);
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
 		_targets_ldflags(configure, fp);
