@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -127,30 +127,6 @@ FormatPlugin format_plugin =
 
 
 /* private */
-/* helpers */
-#if BYTE_ORDER == BIG_ENDIAN 
-# define _htob16(a) (a) 
-# define _htol16(a) ((a) << 8 | (a) >> 8)
-# define _htob32(a) (a) 
-# define _htol32(a) ((a) << 24 | (((a) >> 8) << 24) | (((a) << 8) >> 24) \
-		| (a) >> 24)
-# define _htob64(a) (a)
-# define _htol64(a) ((a) << 56 | (((a) >> 8) << 48) | (((a) >> 16) << 40) \
-		| (((a) >> 24) << 32) | (((a) >> 32) << 24) \
-		| (((a) >> 40) << 16) | (((a) >> 48) << 8) | (a) >> 56)
-#else
-# define _htob16(a) ((a) << 8 | (a) >> 8)
-# define _htol16(a) (a)
-# define _htob32(a) ((a) << 24 | (((a) >> 8) << 24) | (((a) << 8) >> 24) \
-	| (a) >> 24)
-# define _htol32(a) (a) 
-# define _htob64(a) ((a) << 56 | (((a) >> 8) << 48) | (((a) >> 16) << 40) \
-		| (((a) >> 24) << 32) | (((a) >> 32) << 24) \
-		| (((a) >> 40) << 16) | (((a) >> 48) << 8) | (a) >> 56)
-# define _htol64(a) (a)
-#endif
-
-
 /* functions */
 /* elf_error */
 static int _elf_error(char const * message, int ret)
