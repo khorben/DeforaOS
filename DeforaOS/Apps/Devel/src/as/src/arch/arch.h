@@ -19,9 +19,12 @@
 #ifndef AS_ARCH_ARCH_H
 # define AS_ARCH_ARCH_H
 
+# include <sys/types.h>
 # include <stdint.h>
 
 
+/* Arch */
+/* public */
 /* types */
 typedef struct _ArchRegister
 {
@@ -62,10 +65,8 @@ typedef struct _ArchPlugin
 	ArchInstruction * instructions;
 } ArchPlugin;
 
-
-/* Arch */
-/* types */
 typedef struct _Arch Arch;
+
 
 /* functions */
 Arch * arch_new(char const * arch);
