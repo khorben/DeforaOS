@@ -41,6 +41,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/i486.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i586.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i686.c \
+		$(PACKAGE)-$(VERSION)/src/arch/java.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.c \
 		$(PACKAGE)-$(VERSION)/src/arch/Makefile \
@@ -64,6 +65,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
+		$(PACKAGE)-$(VERSION)/src/format/java.c \
 		$(PACKAGE)-$(VERSION)/src/format/Makefile \
 		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
