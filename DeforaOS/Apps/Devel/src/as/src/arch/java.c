@@ -56,7 +56,7 @@ static ArchInstruction _java_set[] =
 	{ "bipush",	0x10,	AO_IMM,		1, 4, 0, 0 },
 	{ "caload",	0x34,	AO_NONE,	1, 0, 0, 0 },
 	{ "castore",	0x55,	AO_NONE,	1, 0, 0, 0 },
-	{ "checkcast",	0xc0,	AO_IMM|AO_IMM_,	1, 1, 1, 0 },
+	{ "checkcast",	0xc0,	AO_IMM,		1, 2, 0, 0 },
 	{ "d2f",	0x90,	AO_NONE,	1, 0, 0, 0 },
 	{ "d2i",	0x8e,	AO_NONE,	1, 0, 0, 0 },
 	{ "d2l",	0x8f,	AO_NONE,	1, 0, 0, 0 },
