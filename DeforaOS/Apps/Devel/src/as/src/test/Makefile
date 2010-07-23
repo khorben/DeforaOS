@@ -28,13 +28,13 @@ i386.o: i386.S ../as
 	$(AS) $(i386.o_ASFLAGS) -o i386.o i386.S
 
 i386_real.o: i386_real.S ../as
-	$(AS) $(i386_real.o_ASFLAGS) -a i386_real -f flat -o i386_real.o i386_real.S
+	$(AS) $(i386_real.o_ASFLAGS) -o i386_real.o i386_real.S
 
 i486.o: i486.S ../as
 	$(AS) $(i486.o_ASFLAGS) -o i486.o i486.S
 
 java.o: java.S ../as
-	$(AS) $(java.o_ASFLAGS) -a java -f java -o java.o java.S
+	$(AS) $(java.o_ASFLAGS) -o java.o java.S
 
 clean:
 	$(RM) -- $(i386.o_OBJS) $(i386_real.o_OBJS) $(i486.o_OBJS) $(java.o_OBJS)
