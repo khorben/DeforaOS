@@ -159,6 +159,8 @@ static ArchInstruction _java_set[] =
 	{ "iload_1",	0x1b,	AO_NONE,	1, 0, 0, 0 },
 	{ "iload_2",	0x1c,	AO_NONE,	1, 0, 0, 0 },
 	{ "iload_3",	0x1d,	AO_NONE,	1, 0, 0, 0 },
+	{ "impdep1",	0xfe,	AO_NONE,	1, 0, 0, 0 },
+	{ "impdep2",	0xff,	AO_NONE,	1, 0, 0, 0 },
 	{ "imul",	0x68,	AO_NONE,	1, 0, 0, 0 },
 	{ "ineg",	0x74,	AO_NONE,	1, 0, 0, 0 },
 	{ "instanceof",	0xc1,	AO_IMM,		1, 2, 0, 0 },
@@ -207,6 +209,10 @@ static ArchInstruction _java_set[] =
 	{ "putstatic",	0xb3,	AO_IMM,		1, 2, 0, 0 },
 	{ "ret",	0xa9,	AO_IMM,		1, 1, 0, 0 },
 	{ "return",	0xb1,	AO_NONE,	1, 0, 0, 0 },
+	{ "saload",	0x35,	AO_NONE,	1, 0, 0, 0 },
+	{ "sastore",	0x56,	AO_NONE,	1, 0, 0, 0 },
+	{ "sipush",	0x11,	AO_IMM,		1, 2, 0, 0 },
+	{ "swap",	0x5f,	AO_NONE,	1, 0, 0, 0 },
 	{ "xxxunusedxxx",0xba,	AO_NONE,	1, 0, 0, 0 },
 #include "null.ins"
 };
