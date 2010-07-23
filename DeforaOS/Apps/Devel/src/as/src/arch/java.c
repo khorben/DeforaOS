@@ -207,6 +207,7 @@ static ArchInstruction _java_set[] =
 	{ "lor",	0x81,	AO_NONE,	1, 0, 0, 0 },
 	{ "lrem",	0x71,	AO_NONE,	1, 0, 0, 0 },
 	{ "lreturn",	0xad,	AO_NONE,	1, 0, 0, 0 },
+	{ "lookupswitch",0xab,	AO_NONE,	1, 0, 0, 0 },
 	{ "lshl",	0x79,	AO_NONE,	1, 0, 0, 0 },
 	{ "lshr",	0x7b,	AO_NONE,	1, 0, 0, 0 },
 	{ "lstore",	0x37,	AO_IMM,		1, 1, 0, 0 },
@@ -219,6 +220,7 @@ static ArchInstruction _java_set[] =
 	{ "lxor",	0x83,	AO_NONE,	1, 0, 0, 0 },
 	{ "monitorenter",0xc2,	AO_NONE,	1, 0, 0, 0 },
 	{ "monitorexit",0xc3,	AO_NONE,	1, 0, 0, 0 },
+	{ "multianewarray",0xc5,AO_IMM|AO_IMM_,	1, 2, 1, 0 },
 	{ "new",	0xbb,	AO_IMM,		1, 2, 0, 0 },
 	{ "newarray",	0xbb,	AO_IMM,		1, 1, 0, 0 },
 	{ "nop",	0x00,	AO_NONE,	1, 0, 0, 0 },
@@ -232,6 +234,9 @@ static ArchInstruction _java_set[] =
 	{ "sastore",	0x56,	AO_NONE,	1, 0, 0, 0 },
 	{ "sipush",	0x11,	AO_IMM,		1, 2, 0, 0 },
 	{ "swap",	0x5f,	AO_NONE,	1, 0, 0, 0 },
+	{ "tableswitch",0xaa,	AO_NONE,	1, 0, 0, 0 },
+	{ "wide",	0xc4,	AO_IMM|AO_IMM_,	1, 1, 2, 0 },
+	{ "wide",	0xc4,	AO_IMM|AO_IMM_|AO_IMM__,1, 1, 2, 2 },
 	{ "xxxunusedxxx",0xba,	AO_NONE,	1, 0, 0, 0 },
 #include "null.ins"
 };
