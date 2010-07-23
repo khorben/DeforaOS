@@ -1257,14 +1257,11 @@ static int _target_source(Configure * configure, FILE * fp,
 			fprintf(fp, ": %s.%s", source, sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
-			p = config_get(configure->config, source, "asflags");
 			source[len] = '\0';
 			fputs("\n\t", fp);
 			if(tt == TT_LIBTOOL)
 				fputs("$(LIBTOOL) --mode=compile ", fp);
 			fprintf(fp, "%s%s%s", "$(AS) $(", target, "_ASFLAGS)");
-			if(p != NULL)
-				fprintf(fp, " %s", p);
 			fprintf(fp, "%s%s%s%s%s%s", " -o ", source, ".o ",
 					source, ".", sObjectType[ot]);
 			fputc('\n', fp);
