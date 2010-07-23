@@ -153,7 +153,7 @@ static ArchInstruction _java_set[] =
 	{ "ifle",	0x9e,	AO_IMM,		1, 2, 0, 0 },
 	{ "ifnonnull",	0xc7,	AO_IMM,		1, 2, 0, 0 },
 	{ "ifnull",	0xc6,	AO_IMM,		1, 2, 0, 0 },
-	{ "iinc",	0x84,	AO_NONE,	1, 0, 0, 0 },
+	{ "iinc",	0x84,	AO_IMM|AO_IMM_,	1, 1, 1, 0 },
 	{ "iload",	0x15,	AO_IMM,		1, 1, 0, 0 },
 	{ "iload_0",	0x1a,	AO_NONE,	1, 0, 0, 0 },
 	{ "iload_1",	0x1b,	AO_NONE,	1, 0, 0, 0 },
