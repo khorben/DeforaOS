@@ -49,9 +49,10 @@ static int _format_exit(Format * format);
 /* format_init */
 static int _format_init(Format * format)
 {
+	format->plugin->fp = format->fp;
 	if(format->plugin->init == NULL)
 		return 0;
-	return format->plugin->init(format->fp, format->arch);
+	return format->plugin->init(format->plugin, format->arch);
 }
 
 
@@ -60,7 +61,7 @@ static int _format_exit(Format * format)
 {
 	if(format->plugin->exit == NULL)
 		return 0;
-	return format->plugin->exit(format->fp);
+	return format->plugin->exit(format->plugin);
 }
 
 
@@ -119,7 +120,7 @@ int format_function(Format * format, char const * function)
 {
 	if(format->plugin->function == NULL)
 		return 0;
-	return format->plugin->function(format->fp, function);
+	return format->plugin->function(format->plugin, function);
 }
 
 
@@ -128,5 +129,5 @@ int format_section(Format * format, char const * section)
 {
 	if(format->plugin->section == NULL)
 		return 0;
-	return format->plugin->section(format->fp, section);
+	return format->plugin->section(format->plugin, section);
 }

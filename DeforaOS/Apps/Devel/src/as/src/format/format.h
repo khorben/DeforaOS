@@ -25,15 +25,20 @@
 /* Format */
 /* public */
 /* types */
-typedef struct _FormatPlugin
+typedef struct _FormatPlugin FormatPlugin;
+
+struct _FormatPlugin
 {
 	char const * filename;
+	FILE * fp;
 
-	int (*init)(FILE * fp, char const * arch);
-	int (*exit)(FILE * fp);
-	int (*function)(FILE * fp, char const * function);
-	int (*section)(FILE * fp, char const * section);
-} FormatPlugin;
+	int (*init)(FormatPlugin * format, char const * arch);
+	int (*exit)(FormatPlugin * format);
+	int (*function)(FormatPlugin * format, char const * function);
+	int (*section)(FormatPlugin * format, char const * section);
+
+	void * priv;
+};
 
 typedef struct _Format Format;
 
