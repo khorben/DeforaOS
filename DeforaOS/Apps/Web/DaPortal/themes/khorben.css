@@ -18,6 +18,10 @@ a {
 	color:				#662244;
 }
 
+button, input[type="button"], input[type="submit"], input[type="text"] {
+	border-width:			1px;
+}
+
 blockquote {
 	font-style:			oblique;
 }
@@ -27,7 +31,7 @@ h1 {
 	text-align:			left;
 }
 
-h1 img {
+h1.title:before {
 	float:				right;
 }
 
@@ -65,11 +69,6 @@ table th a {
 
 .title a {
 	text-decoration:		none;
-}
-
-h1.title {
-	background-position:		top right;
-	padding-left:			0;
 }
 
 
