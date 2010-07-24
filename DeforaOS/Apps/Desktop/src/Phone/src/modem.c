@@ -205,7 +205,7 @@ int gsm_modem_contact_edit(GSMModem * gsmm, unsigned int index,
 {
 	int ret;
 	char const cmd[] = "AT+CPBW=";
-	unsigned int type = 129;
+	unsigned int type = 129; /* FIXME may be wrong */
 	size_t len;
 	char * buf;
 
@@ -231,7 +231,7 @@ int gsm_modem_contact_new(GSMModem * gsmm, char const * name,
 {
 	int ret;
 	char const cmd[] = "AT+CPBW=";
-	unsigned int type = 129;
+	unsigned int type = 129; /* FIXME may be wrong */
 	size_t len;
 	char * buf;
 
