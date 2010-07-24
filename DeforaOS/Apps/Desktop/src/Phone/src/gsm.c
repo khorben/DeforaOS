@@ -193,6 +193,18 @@ static struct
 	{ 0,	NULL						}
 };
 
+/* EXT ERROR */
+static struct
+{
+	int code;
+	char const * error;
+} _gsm_ext_errors[] =
+{
+	{ 0,	N_("Invalid index"),				},
+	{ 0,	NULL						}
+};
+
+
 /* models */
 static struct
 {
@@ -258,6 +270,8 @@ static int _gsm_trigger_cring(GSM * gsm, char const * result);
 static int _gsm_trigger_cssi(GSM * gsm, char const * result);
 static int _gsm_trigger_cssu(GSM * gsm, char const * result);
 static int _gsm_trigger_csq(GSM * gsm, char const * result);
+static int _gsm_trigger_ext_error(GSM * gsm, char const * result,
+		gboolean * answered);
 static int _gsm_trigger_no_answer(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_no_carrier(GSM * gsm, char const * result,
@@ -294,6 +308,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CSQ: ",		csq),
 	GSM_TRIGGER("+CSSI: ",		cssi),
 	GSM_TRIGGER("+CSSU: ",		cssu),
+	GSM_TRIGGER("+EXT ERROR: ",	ext_error),
 	GSM_TRIGGER("NO ANSWER",	no_answer),
 	GSM_TRIGGER("NO CARRIER",	no_carrier),
 	GSM_TRIGGER("NO DIALTONE",	no_dialtone),
@@ -1999,6 +2014,37 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 	else
 		gsm->event.signal_level.level /= 32;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL);
+}
+
+
+/* gsm_trigger_ext */
+static int _gsm_trigger_ext_error(GSM * gsm, char const * result,
+		gboolean * answered)
+{
+	int code;
+	char * p;
+	size_t i;
+	GSMError type = GSM_ERROR_UNKNOWN;
+	char const * error;
+	GSMCommand * gsmc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	error = _("Unknown error");
+	if(answered != NULL)
+		*answered = TRUE;
+	code = strtol(result, &p, 10);
+	if(result[0] == '\0' || *p != '\0')
+		return 1;
+	for(i = 0; _gsm_ext_errors[i].error != NULL; i++)
+		if(_gsm_ext_errors[i].code == code)
+			break;
+	if(_gsm_ext_errors[i].error != NULL)
+		error = _(_gsm_ext_errors[i].error);
+	if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
+		type = gsm_command_get_error(gsmc);
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, type, error);
 }
 
 
