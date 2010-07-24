@@ -193,7 +193,7 @@ void on_phone_contacts_delete(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_contacts_delete_selected(phone);
 }
 
 
@@ -202,7 +202,16 @@ void on_phone_contacts_edit(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_contacts_edit_selected(phone);
+}
+
+
+/* on_phone_contacts_new */
+void on_phone_contacts_new(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_contacts_new(phone);
 }
 
 

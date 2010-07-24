@@ -144,6 +144,11 @@ struct _Phone
 	GtkWidget * co_window;
 	GtkListStore * co_store;
 	GtkWidget * co_view;
+	/* dialog */
+	int co_index;
+	GtkWidget * co_dialog;
+	GtkWidget * co_name;
+	GtkWidget * co_number;
 
 #ifdef DEBUG
 	/* debugging */
@@ -226,6 +231,9 @@ static int _phone_register_trigger(Phone * phone, PhonePlugin * plugin,
 static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
 
+static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
+		int index, char const * name, char const * number);
+
 static void _phone_track(Phone * phone, PhoneTrack what, gboolean track);
 
 /* callbacks */
@@ -299,6 +307,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->co_window = NULL;
 	phone->co_store = gtk_list_store_new(PHONE_CONTACT_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	phone->co_dialog = NULL;
 #ifdef DEBUG
 	phone->de_window = NULL;
 #endif
@@ -535,6 +544,55 @@ void phone_contacts_call_selected(Phone * phone)
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
 			PHONE_CONTACT_COLUMN_ID, &index, -1);
 	gsm_call_contact(phone->gsm, GSM_CALL_TYPE_VOICE, index);
+}
+
+
+/* phone_contacts_delete_selected */
+void phone_contacts_delete_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	int index;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->co_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
+			PHONE_CONTACT_COLUMN_ID, &index, -1);
+	/* FIXME ask for confirmation and implement */
+}
+
+
+/* phone_contacts_edit_selected */
+void phone_contacts_edit_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	int index;
+	gchar * name;
+	gchar * number;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->co_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
+			PHONE_CONTACT_COLUMN_ID, &index,
+			PHONE_CONTACT_COLUMN_NAME, &name,
+			PHONE_CONTACT_COLUMN_NUMBER, &number, -1);
+	_phone_show_contacts_dialog(phone, TRUE, index, name, number);
+	g_free(name);
+	g_free(number);
+}
+
+
+/* phone_contacts_new */
+void phone_contacts_new(Phone * phone)
+{
+	_phone_show_contacts_dialog(phone, TRUE, -1, NULL, NULL);
 }
 
 
@@ -1195,15 +1253,21 @@ void phone_show_contacts(Phone * phone, gboolean show)
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_contacts_call), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_EDIT);
-		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
-				G_CALLBACK(on_phone_contacts_edit), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		toolitem = gtk_tool_button_new(NULL, _("Write"));
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
 				"mail-reply-sender");
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_contacts_write), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_separator_tool_item_new();
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_contacts_new), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_EDIT);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_contacts_edit), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
@@ -2303,6 +2367,83 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 	if(operator != NULL)
 		_phone_set_operator(phone, operator);
 	_phone_set_signal_level(phone, 0.0 / 0.0);
+}
+
+
+/* phone_show_contacts_dialog */
+static void _on_contacts_dialog_response(GtkWidget * widget, gint response,
+		gpointer data);
+
+static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
+		int index, char const * name, char const * number)
+{
+	char buf[256];
+	GtkDialogFlags f = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	if(phone->co_dialog == NULL)
+	{
+		phone->co_dialog = gtk_dialog_new_with_buttons(_("New contact"),
+				GTK_WINDOW(phone->co_window), f,
+				GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+				GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+		g_signal_connect(G_OBJECT(phone->co_dialog), "response",
+				G_CALLBACK(_on_contacts_dialog_response),
+				phone);
+		vbox = GTK_DIALOG(phone->co_dialog)->vbox;
+		hbox = gtk_hbox_new(FALSE, 4);
+		widget = gtk_label_new(_("Name: "));
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		phone->co_name = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(hbox), phone->co_name, TRUE, TRUE,
+				0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+		hbox = gtk_hbox_new(FALSE, 4);
+		widget = gtk_label_new(_("Number: "));
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		phone->co_number = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(hbox), phone->co_number, TRUE, TRUE,
+				0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+		gtk_widget_show_all(vbox);
+	}
+	if(show == FALSE)
+	{
+		gtk_widget_hide(phone->co_dialog);
+		return;
+	}
+	if((phone->co_index = index) >= 0)
+	{
+		snprintf(buf, sizeof(buf), "%s%s", _("Edit contact: "),
+				(name != NULL) ? name : "");
+		gtk_window_set_title(GTK_WINDOW(phone->co_dialog), buf);
+	}
+	if(name != NULL)
+		gtk_entry_set_text(GTK_ENTRY(phone->co_name), name);
+	if(number != NULL)
+		gtk_entry_set_text(GTK_ENTRY(phone->co_number), number);
+	gtk_widget_show(phone->co_dialog);
+}
+
+static void _on_contacts_dialog_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	Phone * phone = data;
+	char const * name;
+	char const * number;
+
+	gtk_widget_hide(widget);
+	if(response != GTK_RESPONSE_ACCEPT)
+		return;
+	name = gtk_entry_get_text(GTK_ENTRY(phone->co_name));
+	number = gtk_entry_get_text(GTK_ENTRY(phone->co_number));
+	/* FIXME also update the GtkListStore */
+	if(phone->co_index < 0)
+		gsm_contact_new(phone->gsm, name, number);
+	else
+		gsm_contact_edit(phone->gsm, phone->co_index, name, number);
 }
 
 

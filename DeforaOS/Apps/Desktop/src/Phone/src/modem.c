@@ -199,6 +199,52 @@ static void _modem_call_reject_callback(GSM * gsm)
 }
 
 
+/* gsm_modem_contact_edit */
+int gsm_modem_contact_edit(GSMModem * gsmm, unsigned int index,
+		char const * name, char const * number)
+{
+	int ret;
+	char const cmd[] = "AT+CPBW=";
+	size_t len;
+	char * buf;
+
+	if(name == NULL || number == NULL)
+		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_CONTACT_EDIT_FAILED, NULL);
+	len = sizeof(cmd) + 11 + 1 + strlen(name) + 1 + strlen(number);
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s%u,%s,%s", cmd, index, name, number);
+	ret = gsm_queue_with_error(gsmm->gsm, buf,
+			GSM_ERROR_CONTACT_EDIT_FAILED);
+	free(buf);
+	return ret;
+}
+
+
+/* gsm_modem_contact_new */
+int gsm_modem_contact_new(GSMModem * gsmm, char const * name,
+		char const * number)
+{
+	int ret;
+	char const cmd[] = "AT+CPBW=";
+	size_t len;
+	char * buf;
+
+	if(name == NULL || number == NULL)
+		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_CONTACT_NEW_FAILED, NULL);
+	len = sizeof(cmd) + 1 + strlen(name) + 1 + strlen(number);
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s,%s,%s", cmd, name, number);
+	ret = gsm_queue_with_error(gsmm->gsm, buf,
+			GSM_ERROR_CONTACT_NEW_FAILED);
+	free(buf);
+	return ret;
+}
+
+
 /* gsm_modem_enter_sim_pin */
 static void _modem_enter_sim_pin_callback(GSM * gsm);
 

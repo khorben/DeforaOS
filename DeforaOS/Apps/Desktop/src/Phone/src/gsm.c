@@ -600,6 +600,29 @@ void gsm_callback_on_message_deleted(GSM * gsm)
 }
 
 
+/* gsm_contact_delete */
+int gsm_contact_delete(GSM * gsm, unsigned int index)
+{
+	/* FIXME implement */
+	return 1;
+}
+
+
+/* gsm_contact_edit */
+int gsm_contact_edit(GSM * gsm, unsigned int index, char const * name,
+		char const * number)
+{
+	return gsm_modem_contact_edit(gsm->modem, index, name, number);
+}
+
+
+/* gsm_contact_new */
+int gsm_contact_new(GSM * gsm, char const * name, char const * number)
+{
+	return gsm_modem_contact_new(gsm->modem, name, number);
+}
+
+
 /* gsm_enter_sim_pin */
 int gsm_enter_sim_pin(GSM * gsm, char const * code)
 {

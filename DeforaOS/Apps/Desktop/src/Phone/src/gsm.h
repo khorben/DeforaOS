@@ -57,8 +57,10 @@ typedef enum _GSMError
 	GSM_ERROR_BUSY,
 	GSM_ERROR_CALL_FAILED,
 	GSM_ERROR_CALL_WAITING_FAILED,
+	GSM_ERROR_CONTACT_EDIT_FAILED,
 	GSM_ERROR_CONTACT_FETCH_FAILED,
 	GSM_ERROR_CONTACT_LIST_FAILED,
+	GSM_ERROR_CONTACT_NEW_FAILED,
 	GSM_ERROR_FUNCTIONAL_FAILED,
 	GSM_ERROR_HANGUP_FAILED,
 	GSM_ERROR_MESSAGE_DELETE_FAILED,
@@ -383,6 +385,12 @@ int gsm_call_reject(GSM * gsm);
 
 /* callbacks */
 void gsm_callback_on_message_deleted(GSM * gsm);
+
+/* contacts */
+int gsm_contact_delete(GSM * gsm, unsigned int index);
+int gsm_contact_edit(GSM * gsm, unsigned int index, char const * name,
+		char const * number);
+int gsm_contact_new(GSM * gsm, char const * name, char const * number);
 
 int gsm_enter_sim_pin(GSM * gsm, char const * code);
 

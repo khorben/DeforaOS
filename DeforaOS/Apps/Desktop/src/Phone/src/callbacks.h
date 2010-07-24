@@ -44,6 +44,7 @@ void on_phone_code_leave(gpointer data);
 void on_phone_contacts_call(gpointer data);
 void on_phone_contacts_delete(gpointer data);
 void on_phone_contacts_edit(gpointer data);
+void on_phone_contacts_new(gpointer data);
 void on_phone_contacts_show(gpointer data);
 void on_phone_contacts_write(gpointer data);
 
