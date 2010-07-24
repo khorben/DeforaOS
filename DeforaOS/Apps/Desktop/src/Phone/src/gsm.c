@@ -201,6 +201,20 @@ static struct
 } _gsm_ext_errors[] =
 {
 	{ 0,	N_("Invalid index"),				},
+	{ 1,	N_("Parameter not allowed"),			},
+	{ 2,	N_("Data corrupted"),				},
+	{ 3,	N_("Internal error"),				},
+	{ 4,	N_("Call table full"),				},
+	{ 5,	N_("Service table full"),			},
+	{ 6,	N_("Call not found"),				},
+	{ 7,	N_("No data-call supported"),			},
+	{ 8,	N_("One call on hold"),				},
+	{ 9,	N_("Hold call not supported for this type"),	},
+	{ 10,	N_("Number not allowed by FDN"),		},
+	{ 11,	N_("Number not allowed by BDN"),		},
+	{ 12,	N_("Parallel USSD not supported"),		},
+	{ 13,	N_("Fax minimum speed condition"),		},
+	{ 14,	N_("Conflict with command details"),		},
 	{ 0,	NULL						}
 };
 
