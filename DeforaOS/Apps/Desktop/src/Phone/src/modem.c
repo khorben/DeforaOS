@@ -200,6 +200,8 @@ static void _modem_call_reject_callback(GSM * gsm)
 
 
 /* gsm_modem_contact_edit */
+static void _modem_contact_edit_callback(GSM * gsm);
+
 int gsm_modem_contact_edit(GSMModem * gsmm, unsigned int index,
 		char const * name, char const * number)
 {
@@ -218,14 +220,23 @@ int gsm_modem_contact_edit(GSMModem * gsmm, unsigned int index,
 		return 1;
 	snprintf(buf, len, "%s%u,\"%s\",%u,\"%s\"", cmd, index, number, type,
 			name);
-	ret = gsm_queue_with_error(gsmm->gsm, buf,
-			GSM_ERROR_CONTACT_EDIT_FAILED);
+	ret = gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, buf,
+			GSM_ERROR_CONTACT_EDIT_FAILED,
+			_modem_contact_edit_callback);
 	free(buf);
 	return ret;
 }
 
+static void _modem_contact_edit_callback(GSM * gsm)
+{
+	/* FIXME very inefficient */
+	gsm_fetch_contact_list(gsm);
+}
+
 
 /* gsm_modem_contact_new */
+static void _modem_contact_new_callback(GSM * gsm);
+
 int gsm_modem_contact_new(GSMModem * gsmm, char const * name,
 		char const * number)
 {
@@ -242,10 +253,17 @@ int gsm_modem_contact_new(GSMModem * gsmm, char const * name,
 	if((buf = malloc(len)) == NULL)
 		return 1;
 	snprintf(buf, len, "%s,\"%s\",%u,\"%s\"", cmd, number, type, name);
-	ret = gsm_queue_with_error(gsmm->gsm, buf,
-			GSM_ERROR_CONTACT_NEW_FAILED);
+	ret = gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, buf,
+			GSM_ERROR_CONTACT_NEW_FAILED,
+			_modem_contact_new_callback);
 	free(buf);
 	return ret;
+}
+
+static void _modem_contact_new_callback(GSM * gsm)
+{
+	/* FIXME very inefficient */
+	gsm_fetch_contact_list(gsm);
 }
 
 
