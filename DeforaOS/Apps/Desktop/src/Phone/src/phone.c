@@ -2414,12 +2414,13 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		gtk_widget_hide(phone->co_dialog);
 		return;
 	}
-	if(phone->co_index < 0)
+	if(index < 0)
 		snprintf(buf, sizeof(buf), "%s", _("New contact"));
 	else
 		snprintf(buf, sizeof(buf), "%s%s", _("Edit contact: "),
 				(name != NULL) ? name : "");
 	gtk_window_set_title(GTK_WINDOW(phone->co_dialog), buf);
+	phone->co_index = index;
 	if(name != NULL)
 		gtk_entry_set_text(GTK_ENTRY(phone->co_name), name);
 	if(number != NULL)
