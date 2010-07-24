@@ -592,7 +592,7 @@ void phone_contacts_edit_selected(Phone * phone)
 /* phone_contacts_new */
 void phone_contacts_new(Phone * phone)
 {
-	_phone_show_contacts_dialog(phone, TRUE, -1, NULL, NULL);
+	_phone_show_contacts_dialog(phone, TRUE, -1, "", "");
 }
 
 
@@ -2385,7 +2385,7 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 
 	if(phone->co_dialog == NULL)
 	{
-		phone->co_dialog = gtk_dialog_new_with_buttons(_("New contact"),
+		phone->co_dialog = gtk_dialog_new_with_buttons("",
 				GTK_WINDOW(phone->co_window), f,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 				GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
@@ -2414,12 +2414,12 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		gtk_widget_hide(phone->co_dialog);
 		return;
 	}
-	if((phone->co_index = index) >= 0)
-	{
+	if(phone->co_index < 0)
+		snprintf(buf, sizeof(buf), "%s", _("New contact"));
+	else
 		snprintf(buf, sizeof(buf), "%s%s", _("Edit contact: "),
 				(name != NULL) ? name : "");
-		gtk_window_set_title(GTK_WINDOW(phone->co_dialog), buf);
-	}
+	gtk_window_set_title(GTK_WINDOW(phone->co_dialog), buf);
 	if(name != NULL)
 		gtk_entry_set_text(GTK_ENTRY(phone->co_name), name);
 	if(number != NULL)
