@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-13 17:44+0200\n"
+"POT-Creation-Date: 2010-07-24 03:39+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -149,225 +149,225 @@ msgid ""
 "  -F\tEnable hardware flow control (RTS/CTS)\n"
 msgstr ""
 
-#: ../src/phone.c:376
+#: ../src/phone.c:325
 msgid "Initializing..."
 msgstr "Initialisation..."
 
-#: ../src/phone.c:565
+#: ../src/phone.c:503
 msgid "Checking SIM PIN code..."
 msgstr "Vérification du code SIM PIN..."
 
-#: ../src/phone.c:889 ../src/phone.c:961
+#: ../src/phone.c:837 ../src/phone.c:909
 msgid "Delete this message?"
 msgstr "Supprimer ce message?"
 
-#: ../src/phone.c:895 ../src/phone.c:966
+#: ../src/phone.c:843 ../src/phone.c:914
 msgid "Deleting message..."
 msgstr "Suppression du message..."
 
-#: ../src/phone.c:1040
+#: ../src/phone.c:988
 msgid "Answer"
 msgstr "Répondre"
 
-#: ../src/phone.c:1047
+#: ../src/phone.c:995
 msgid "Hangup"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:1054
+#: ../src/phone.c:1002
 msgid "Reject"
 msgstr "Rejeter"
 
-#: ../src/phone.c:1077
+#: ../src/phone.c:1025
 msgid "Loudspeaker"
 msgstr "Haut-parleur"
 
-#: ../src/phone.c:1087
+#: ../src/phone.c:1035
 msgid "Mute microphone"
 msgstr "Couper le microphone"
 
-#: ../src/phone.c:1103
+#: ../src/phone.c:1051
 msgid "Unknown contact"
 msgstr "Contact inconnu"
 
-#: ../src/phone.c:1110
+#: ../src/phone.c:1058
 msgid "Unknown number"
 msgstr "Numéro inconnu"
 
-#: ../src/phone.c:1118
+#: ../src/phone.c:1066
 msgid "In conversation"
 msgstr "En conversation"
 
-#: ../src/phone.c:1126
+#: ../src/phone.c:1074
 msgid "Incoming call"
 msgstr "Appel entrant"
 
-#: ../src/phone.c:1133
+#: ../src/phone.c:1081
 msgid "Outgoing call"
 msgstr "Appel sortant"
 
-#: ../src/phone.c:1141
+#: ../src/phone.c:1089
 msgid "Call finished"
 msgstr "Appel terminé"
 
-#: ../src/phone.c:1195
+#: ../src/phone.c:1143
 msgid "Enter"
 msgstr "Entrer"
 
-#: ../src/phone.c:1197
+#: ../src/phone.c:1145
 msgid "Skip"
 msgstr "Ignorer"
 
-#: ../src/phone.c:1208
+#: ../src/phone.c:1156
 msgid "Enter SIM PIN code"
 msgstr "Entrer le code SIM PIN"
 
-#: ../src/phone.c:1237
+#: ../src/phone.c:1185
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:1244 ../src/phone.c:1553 ../src/phone.c:1596
-#: ../src/phone.c:1720
+#: ../src/phone.c:1192 ../src/phone.c:1501 ../src/phone.c:1544
+#: ../src/phone.c:1668
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:1254
+#: ../src/phone.c:1202
 msgid "Write"
 msgstr "Écrire"
 
-#: ../src/phone.c:1276 ../src/phone.c:1824
+#: ../src/phone.c:1224 ../src/phone.c:1772
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/phone.c:1525
+#: ../src/phone.c:1473
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:1555
+#: ../src/phone.c:1503
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:1589
+#: ../src/phone.c:1537
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:1602
+#: ../src/phone.c:1550
 msgid "New message"
 msgstr "Nouveau message"
 
-#: ../src/phone.c:1608 ../src/phone.c:1726
+#: ../src/phone.c:1556 ../src/phone.c:1674
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/phone.c:1626
+#: ../src/phone.c:1574
 msgid "Inbox"
 msgstr "Reçus"
 
-#: ../src/phone.c:1630
+#: ../src/phone.c:1578
 msgid "Sent"
 msgstr "Envoyés"
 
-#: ../src/phone.c:1649
+#: ../src/phone.c:1597
 msgid "From"
 msgstr "De"
 
-#: ../src/phone.c:1655
+#: ../src/phone.c:1603
 msgid "Date"
 msgstr "Date"
 
-#: ../src/phone.c:1714
+#: ../src/phone.c:1662
 msgid "Read message"
 msgstr "Lire le message"
 
-#: ../src/phone.c:1801
+#: ../src/phone.c:1749
 msgid "Phone settings"
 msgstr "Paramètres du téléphone"
 
-#: ../src/phone.c:1864
+#: ../src/phone.c:1812
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:1870
+#: ../src/phone.c:1818
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/phone.c:1876
+#: ../src/phone.c:1824
 msgid "Attach"
 msgstr "Attacher"
 
-#: ../src/phone.c:1990
+#: ../src/phone.c:1938
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:1991
+#: ../src/phone.c:1939
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:2017
+#: ../src/phone.c:1965
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:2133
+#: ../src/phone.c:2081
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:2161 ../src/phone.c:2166
+#: ../src/phone.c:2109 ../src/phone.c:2114
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:2186 ../src/phone.c:2191
+#: ../src/phone.c:2134 ../src/phone.c:2139
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:2238 ../src/phone.c:2243
+#: ../src/phone.c:2186 ../src/phone.c:2191
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:2355
+#: ../src/phone.c:2270
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/phone.c:2358
+#: ../src/phone.c:2273
 msgid "Registering..."
 msgstr "Enregistrement..."
 
-#: ../src/phone.c:2361
+#: ../src/phone.c:2276
 msgid "Denied"
 msgstr "Refusé"
 
-#: ../src/phone.c:2366
+#: ../src/phone.c:2281
 msgid "SIM check..."
 msgstr "Vérification SIM..."
 
-#: ../src/phone.c:2372
+#: ../src/phone.c:2287
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:2491
+#: ../src/phone.c:2406
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:2507
+#: ../src/phone.c:2422
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:2531
+#: ../src/phone.c:2446
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:2567
+#: ../src/phone.c:2482
 msgid "Could not request new message indications"
-msgstr ""
+msgstr "Impossible d'obtenir des notifications de nouveaux messages"
 
-#: ../src/phone.c:2578
+#: ../src/phone.c:2493
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:2586
+#: ../src/phone.c:2501
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/phone.c:2636
+#: ../src/phone.c:2551
 msgid "Message deleted"
 msgstr "Message supprimé"
 

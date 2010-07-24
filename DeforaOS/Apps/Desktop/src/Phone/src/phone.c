@@ -78,18 +78,6 @@ typedef enum _PhoneSettingsColumn
 # define PHONE_SETTINGS_COLUMN_LAST	PHONE_SETTINGS_COLUMN_NAME
 # define PHONE_SETTINGS_COLUMN_COUNT	(PHONE_SETTINGS_COLUMN_LAST + 1)
 
-typedef enum _PhoneSignal
-{
-	PHONE_SIGNAL_UNKNOWN,
-	PHONE_SIGNAL_00,
-	PHONE_SIGNAL_25,
-	PHONE_SIGNAL_50,
-	PHONE_SIGNAL_75,
-	PHONE_SIGNAL_100
-} PhoneSignal;
-#define PHONE_SIGNAL_LAST	PHONE_SIGNAL_100
-#define PHONE_SIGNAL_COUNT	(PHONE_SIGNAL_LAST + 1)
-
 typedef enum _PhoneTrack
 {
 	PHONE_TRACK_CODE_ENTERED = 0,
@@ -116,9 +104,6 @@ struct _Phone
 	GSM * gsm;
 	guint source;
 	Config * config;
-
-	/* status */
-	PhoneSignal signal;
 
 	/* tracking */
 	guint tr_source;
@@ -197,11 +182,6 @@ struct _Phone
 	GtkWidget * wr_count;
 	GtkWidget * wr_view;
 	GtkWidget * wr_progress;
-
-	/* systray */
-	GtkWidget * sy_icon;		/* XXX really is a GtkPlug */
-	GtkWidget * sy_image;
-	GtkWidget * sy_operator;
 };
 
 
@@ -245,7 +225,6 @@ static int _phone_register_trigger(Phone * phone, PhonePlugin * plugin,
 
 static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
-static void _phone_set_status(Phone * phone, GSMStatus status);
 
 static void _phone_track(Phone * phone, PhoneTrack what, gboolean track);
 
@@ -266,16 +245,11 @@ void phone_show_debug(Phone * phone, gboolean show);
 static void _new_config(Phone * phone);
 static gboolean _new_idle(gpointer data);
 static void _idle_load_plugins(Phone * phone, char const * plugins);
-static gboolean _on_plug_delete_event(gpointer data);
-static void _on_plug_embedded(gpointer data);
 
 Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 		int hwflow)
 {
 	Phone * phone;
-	GtkWidget * hbox;
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
 	char const * p;
 
 #ifdef DEBUG
@@ -303,7 +277,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	if(retry >= 0)
 		gsm_set_retry(phone->gsm, retry);
 	phone->source = 0;
-	phone->signal = -1;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
 	phone->helper.config_get = _phone_config_get;
@@ -341,30 +314,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 			G_TYPE_POINTER, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	phone->wr_window = NULL;
 	phone->wr_progress = NULL;
-	/* signal level */
-	phone->sy_icon = gtk_plug_new(0);
-	g_signal_connect_swapped(G_OBJECT(phone->sy_icon), "delete-event",
-			G_CALLBACK(_on_plug_delete_event), phone);
-	g_signal_connect_swapped(G_OBJECT(phone->sy_icon), "embedded",
-			G_CALLBACK(_on_plug_embedded), phone);
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PHONE_EMBED_MESSAGE, FALSE);
-	client->data_format = 32;
-	client->data.l[0] = gtk_plug_get_id(GTK_PLUG(phone->sy_icon));
-	gdk_event_send_clientmessage_toall(&event);
-	hbox = gtk_hbox_new(FALSE, 2);
-	phone->sy_image = gtk_image_new();
-	gtk_box_pack_start(GTK_BOX(hbox), phone->sy_image, FALSE, TRUE, 0);
-	phone->sy_operator = gtk_label_new(NULL);
-	gtk_widget_modify_font(phone->sy_operator, phone->bold);
-	gtk_box_pack_start(GTK_BOX(hbox), phone->sy_operator, TRUE, TRUE, 0);
-	_phone_set_signal_level(phone, 0.0 / 0.0);
-	gtk_container_add(GTK_CONTAINER(phone->sy_icon), hbox);
-	gtk_widget_show_all(phone->sy_icon);
-	gtk_widget_map(phone->sy_icon);
 	/* check errors */
 	if(phone->gsm == NULL)
 	{
@@ -438,17 +387,6 @@ static void _idle_load_plugins(Phone * phone, char const * plugins)
 		i = 0;
 	}
 	free(p);
-}
-
-static gboolean _on_plug_delete_event(gpointer data)
-{
-	/* FIXME start sending messages around */
-	return TRUE;
-}
-
-static void _on_plug_embedded(gpointer data)
-{
-	/* FIXME stop sending messages around */
 }
 
 
@@ -705,6 +643,8 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 	size_t i;
 	PhonePlugin * plugin;
 	va_list ap;
+	char const * operator;
+	gdouble level;
 	GSMEncoding * encoding;
 	char ** buf;
 	size_t * len;
@@ -717,17 +657,24 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 		plugin = phone->plugins[i].pp;
 		if(plugin->event == NULL)
 			continue;
+		va_start(ap, event);
 		switch(event)
 		{
+			case PHONE_EVENT_SET_OPERATOR:
+				operator = va_arg(ap, char const *);
+				plugin->event(plugin, event, operator);
+				break;
+			case PHONE_EVENT_SET_SIGNAL_LEVEL:
+				level = va_arg(ap, gdouble);
+				plugin->event(plugin, event, level);
+				break;
 			case PHONE_EVENT_SMS_RECEIVING:
 			case PHONE_EVENT_SMS_SENDING:
-				va_start(ap, event);
 				encoding = va_arg(ap, GSMEncoding *);
 				buf = va_arg(ap, char **);
 				len = va_arg(ap, size_t *);
 				plugin->event(plugin, event, encoding, buf,
 						len);
-				va_end(ap);
 				break;
 			/* no arguments */
 			case PHONE_EVENT_CALL_ESTABLISHED:
@@ -746,6 +693,7 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 				plugin->event(plugin, event);
 				break;
 		}
+		va_end(ap);
 	}
 }
 
@@ -2299,47 +2247,14 @@ static int _phone_register_trigger(Phone * phone, PhonePlugin * plugin,
 /* phone_set_operator */
 static void _phone_set_operator(Phone * phone, char const * operator)
 {
-	gtk_label_set(GTK_LABEL(phone->sy_operator), operator);
+	phone_event(phone, PHONE_EVENT_SET_OPERATOR, operator);
 }
 
 
 /* phone_set_signal_level */
-static void _signal_level_set_image(Phone * phone, PhoneSignal signal);
-
 static void _phone_set_signal_level(Phone * phone, gdouble level)
 {
-	if(level < 0.0)
-		_signal_level_set_image(phone, PHONE_SIGNAL_00);
-	else if(level < 0.25)
-		_signal_level_set_image(phone, PHONE_SIGNAL_25);
-	else if(level < 0.50)
-		_signal_level_set_image(phone, PHONE_SIGNAL_50);
-	else if(level < 0.75)
-		_signal_level_set_image(phone, PHONE_SIGNAL_75);
-	else if(level <= 1.0)
-		_signal_level_set_image(phone, PHONE_SIGNAL_100);
-	else
-		_signal_level_set_image(phone, PHONE_SIGNAL_UNKNOWN);
-}
-
-static void _signal_level_set_image(Phone * phone, PhoneSignal signal)
-{
-	char const * icons[PHONE_SIGNAL_COUNT] =
-	{
-		"stock_cell-phone",
-		"phone-signal-00",
-		"phone-signal-25",
-		"phone-signal-50",
-		"phone-signal-75",
-		"phone-signal-100"
-	};
-
-	if(phone->signal == signal)
-		return;
-	phone->signal = signal;
-	/* XXX may not be the correct size */
-	gtk_image_set_from_icon_name(GTK_IMAGE(phone->sy_image), icons[signal],
-			GTK_ICON_SIZE_SMALL_TOOLBAR);
+	phone_event(phone, PHONE_EVENT_SET_SIGNAL_LEVEL, level);
 }
 
 

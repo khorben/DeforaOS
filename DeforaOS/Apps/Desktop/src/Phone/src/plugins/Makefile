@@ -1,4 +1,4 @@
-TARGETS	= engineering.so openmoko.so profiles.so smscrypt.so
+TARGETS	= engineering.so openmoko.so panel.so profiles.so smscrypt.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -32,6 +32,13 @@ openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 openmoko.so: $(openmoko_OBJS)
 	$(LD) -o openmoko.so $(openmoko_OBJS)
 
+panel_OBJS = panel.o
+panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+panel.so: $(panel_OBJS)
+	$(LD) -o panel.so $(panel_OBJS)
+
 profiles_OBJS = profiles.o
 profiles_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libpulse`
 profiles_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libpulse`
@@ -52,6 +59,9 @@ engineering.o: engineering.c ../../include/Phone.h
 openmoko.o: openmoko.c ../../include/Phone.h
 	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
+panel.o: panel.c ../../include/Phone.h
+	$(CC) $(panel_CFLAGS) -c panel.c
+
 profiles.o: profiles.c ../../include/Phone.h
 	$(CC) $(profiles_CFLAGS) -c profiles.c
 
@@ -59,7 +69,7 @@ smscrypt.o: smscrypt.c ../../include/Phone.h
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
-	$(RM) -- $(engineering_OBJS) $(openmoko_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(engineering_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -70,6 +80,8 @@ install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
@@ -77,6 +89,7 @@ install: all
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 
