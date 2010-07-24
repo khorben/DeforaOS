@@ -199,6 +199,25 @@ static void _modem_call_reject_callback(GSM * gsm)
 }
 
 
+/* gsm_modem_contact_delete */
+int gsm_modem_contact_delete(GSMModem * gsmm, unsigned int index)
+{
+	int ret;
+	char const cmd[] = "AT+CPBW=";
+	size_t len;
+	char * buf;
+
+	len = sizeof(cmd) + 11 + 1;
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s%u,", cmd, index);
+	ret = gsm_queue_with_error(gsmm->gsm, buf,
+			GSM_ERROR_CONTACT_DELETE_FAILED);
+	free(buf);
+	return ret;
+}
+
+
 /* gsm_modem_contact_edit */
 static void _modem_contact_edit_callback(GSM * gsm);
 

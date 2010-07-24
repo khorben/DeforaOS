@@ -561,7 +561,11 @@ void phone_contacts_delete_selected(Phone * phone)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
 			PHONE_CONTACT_COLUMN_ID, &index, -1);
-	/* FIXME ask for confirmation and implement */
+	if(_phone_confirm(phone, phone->co_window, _("Delete this contact?"))
+			!= 0)
+		return;
+	gtk_list_store_remove(phone->co_store, &iter); /* XXX it may fail */
+	gsm_contact_delete(phone->gsm, index);
 }
 
 
@@ -2440,7 +2444,6 @@ static void _on_contacts_dialog_response(GtkWidget * widget, gint response,
 		return;
 	name = gtk_entry_get_text(GTK_ENTRY(phone->co_name));
 	number = gtk_entry_get_text(GTK_ENTRY(phone->co_number));
-	/* FIXME also update the GtkListStore */
 	if(phone->co_index < 0)
 		gsm_contact_new(phone->gsm, name, number);
 	else

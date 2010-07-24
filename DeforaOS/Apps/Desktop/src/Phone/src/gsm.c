@@ -632,8 +632,7 @@ void gsm_callback_on_message_deleted(GSM * gsm)
 /* gsm_contact_delete */
 int gsm_contact_delete(GSM * gsm, unsigned int index)
 {
-	/* FIXME implement */
-	return 1;
+	return gsm_modem_contact_delete(gsm->modem, index);
 }
 
 

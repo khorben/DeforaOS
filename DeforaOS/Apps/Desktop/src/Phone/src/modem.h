@@ -56,6 +56,7 @@ int gsm_modem_call_hangup(GSMModem * gsmm);
 int gsm_modem_call_last(GSMModem * gsmm, GSMCallType calltype);
 int gsm_modem_call_reject(GSMModem * gsmm);
 
+int gsm_modem_contact_delete(GSMModem * gsmm, unsigned int index);
 int gsm_modem_contact_edit(GSMModem * gsmm, unsigned int index,
 		char const * name, char const * number);
 int gsm_modem_contact_new(GSMModem * gsmm, char const * name,
