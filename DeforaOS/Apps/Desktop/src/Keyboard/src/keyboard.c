@@ -101,7 +101,6 @@ Keyboard * keyboard_new(void)
 	GtkWidget * widget;
 	size_t i;
 	size_t j;
-	GtkSizeGroup * group;
 
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
@@ -114,7 +113,6 @@ Keyboard * keyboard_new(void)
 	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
 			G_CALLBACK(on_keyboard_delete_event), keyboard);
 	vbox = gtk_vbox_new(TRUE, 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	for(i = 0; i < 3; i++)
 	{
 		hbox = gtk_hbox_new(TRUE, 4);
@@ -124,7 +122,6 @@ Keyboard * keyboard_new(void)
 					keyboard->layout[i][j].label);
 			g_object_set_data(G_OBJECT(widget), "keysym",
 					&keyboard->layout[i][j].keysym);
-			gtk_size_group_add_widget(group, widget);
 			g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 					G_CALLBACK(on_keyboard_key_clicked),
 					keyboard);
