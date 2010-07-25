@@ -16,7 +16,9 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include "keyboard.h"
 
@@ -26,7 +28,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: keyboard\n", stderr);
+	fputs("Usage: keyboard [-m monitor]\n", stderr);
 	return 1;
 }
 
@@ -38,17 +40,25 @@ int main(int argc, char * argv[])
 {
 	int o;
 	Keyboard * keyboard;
+	KeyboardPrefs prefs;
+	char * p;
 
+	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "m:")) != -1)
 		switch(o)
 		{
+			case 'm':
+				prefs.monitor = strtol(optarg, &p, 10);
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	keyboard = keyboard_new();
+	keyboard = keyboard_new(&prefs);
 	gtk_main();
 	keyboard_delete(keyboard);
 	return 0;

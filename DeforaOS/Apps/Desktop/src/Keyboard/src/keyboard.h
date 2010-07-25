@@ -25,9 +25,14 @@
 /* types */
 typedef struct _Keyboard Keyboard;
 
+typedef struct _KeyboardPrefs
+{
+	int monitor;
+} KeyboardPrefs;
+
 
 /* functions */
-Keyboard * keyboard_new(void);
+Keyboard * keyboard_new(KeyboardPrefs * prefs);
 void keyboard_delete(Keyboard * keyboard);
 
 

@@ -93,7 +93,7 @@ static KeyboardKey _zxcvbnm[] =
 /* public */
 /* functions */
 /* keyboard_new */
-Keyboard * keyboard_new(void)
+Keyboard * keyboard_new(KeyboardPrefs * prefs)
 {
 	Keyboard * keyboard;
 	GdkScreen * screen;
@@ -115,7 +115,11 @@ Keyboard * keyboard_new(void)
 	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
 	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
 	screen = gdk_screen_get_default();
-	gdk_screen_get_monitor_geometry(screen, 0, &rect);
+	if(prefs != NULL && prefs->monitor > 0
+			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
+		gdk_screen_get_monitor_geometry(screen, prefs->monitor, &rect);
+	else
+		gdk_screen_get_monitor_geometry(screen, 0, &rect);
 	height = rect.width / 8;
 	gtk_widget_set_size_request(keyboard->window, rect.width, height);
 	gtk_window_move(GTK_WINDOW(keyboard->window), rect.x,
