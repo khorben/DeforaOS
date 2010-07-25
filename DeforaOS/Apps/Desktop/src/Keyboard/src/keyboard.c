@@ -45,7 +45,7 @@ struct _Keyboard
 /* variables */
 static KeyboardKey _qwertyuiop[] =
 {
-	{ XK_Tab, "|<-\n->|" },
+	{ XK_Tab, "Tab" },
 	{ XK_Q, "Q" },
 	{ XK_W, "W" },
 	{ XK_E, "E" },
@@ -56,12 +56,12 @@ static KeyboardKey _qwertyuiop[] =
 	{ XK_I, "I" },
 	{ XK_O, "O" },
 	{ XK_P, "P" },
-	{ XK_BackSpace, "<-" },
+	{ XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, NULL }
 };
 static KeyboardKey _asdfghjkl[] =
 {
-	{ XK_Caps_Lock, "cD" },
+	{ XK_Caps_Lock, "Caps" },
 	{ XK_A, "A" },
 	{ XK_S, "S" },
 	{ XK_D, "D" },
@@ -71,12 +71,12 @@ static KeyboardKey _asdfghjkl[] =
 	{ XK_J, "J" },
 	{ XK_K, "K" },
 	{ XK_L, "L" },
-	{ XK_Return, "<|" },
+	{ XK_Return, "Ret" },
 	{ 0, NULL }
 };
 static KeyboardKey _zxcvbnm[] =
 {
-	{ XK_Shift_L, "î" },
+	{ XK_Shift_L, "\xe2\x87\xa7" },
 	{ XK_Z, "Z" },
 	{ XK_X, "X" },
 	{ XK_C, "C" },
@@ -85,7 +85,7 @@ static KeyboardKey _zxcvbnm[] =
 	{ XK_N, "N" },
 	{ XK_M, "M" },
 	{ XK_space, " " },
-	{ XK_Shift_R, "î" },
+	{ XK_Shift_R, "\xe2\x87\xa7" },
 	{ 0, NULL }
 };
 
