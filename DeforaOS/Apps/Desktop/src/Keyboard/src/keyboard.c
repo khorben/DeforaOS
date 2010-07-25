@@ -96,6 +96,9 @@ static KeyboardKey _zxcvbnm[] =
 Keyboard * keyboard_new(void)
 {
 	Keyboard * keyboard;
+	GdkScreen * screen;
+	GdkRectangle rect;
+	gint height;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -107,11 +110,19 @@ Keyboard * keyboard_new(void)
 	keyboard->layout[0] = _qwertyuiop;
 	keyboard->layout[1] = _asdfghjkl;
 	keyboard->layout[2] = _zxcvbnm;
+	/* window */
 	keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
 	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
 	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
+	screen = gdk_screen_get_default();
+	gdk_screen_get_monitor_geometry(screen, 0, &rect);
+	height = rect.width / 8;
+	gtk_widget_set_size_request(keyboard->window, rect.width, height);
+	gtk_window_move(GTK_WINDOW(keyboard->window), rect.x,
+			rect.y + rect.height - height);
 	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
 			G_CALLBACK(on_keyboard_delete_event), keyboard);
+	/* layouts */
 	vbox = gtk_vbox_new(TRUE, 4);
 	for(i = 0; i < 3; i++)
 	{
