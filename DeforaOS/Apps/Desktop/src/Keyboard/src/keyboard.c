@@ -36,13 +36,30 @@ typedef struct _KeyboardKey
 
 struct _Keyboard
 {
-	KeyboardKey * layout[3];
+	KeyboardKey * layout[4];
 
 	GtkWidget * window;
 };
 
 
 /* variables */
+static KeyboardKey _1234567890[] =
+{
+	{ XK_Escape, "Esc" },
+	{ XK_1, "1" },
+	{ XK_2, "2" },
+	{ XK_3, "3" },
+	{ XK_4, "4" },
+	{ XK_5, "5" },
+	{ XK_6, "6" },
+	{ XK_7, "7" },
+	{ XK_8, "8" },
+	{ XK_9, "9" },
+	{ XK_0, "0" },
+	{ XK_BackSpace, "\xe2\x8c\xab" },
+	{ 0, NULL }
+};
+
 static KeyboardKey _qwertyuiop[] =
 {
 	{ XK_Tab, "Tab" },
@@ -56,7 +73,7 @@ static KeyboardKey _qwertyuiop[] =
 	{ XK_I, "I" },
 	{ XK_O, "O" },
 	{ XK_P, "P" },
-	{ XK_BackSpace, "\xe2\x8c\xab" },
+	{ XK_Return, "Ret" },
 	{ 0, NULL }
 };
 static KeyboardKey _asdfghjkl[] =
@@ -71,7 +88,8 @@ static KeyboardKey _asdfghjkl[] =
 	{ XK_J, "J" },
 	{ XK_K, "K" },
 	{ XK_L, "L" },
-	{ XK_Return, "Ret" },
+	{ XK_colon, ":" },
+	{ XK_at, "@" },
 	{ 0, NULL }
 };
 static KeyboardKey _zxcvbnm[] =
@@ -85,7 +103,9 @@ static KeyboardKey _zxcvbnm[] =
 	{ XK_N, "N" },
 	{ XK_M, "M" },
 	{ XK_space, " " },
-	{ XK_Shift_R, "\xe2\x87\xa7" },
+	{ XK_period, "." },
+	{ XK_minus, "-" },
+	{ XK_slash, "/" },
 	{ 0, NULL }
 };
 
@@ -99,17 +119,20 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	GdkScreen * screen;
 	GdkRectangle rect;
 	gint height;
+	PangoFontDescription * bold;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkWidget * label;
 	size_t i;
 	size_t j;
 
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
-	keyboard->layout[0] = _qwertyuiop;
-	keyboard->layout[1] = _asdfghjkl;
-	keyboard->layout[2] = _zxcvbnm;
+	keyboard->layout[0] = _1234567890;
+	keyboard->layout[1] = _qwertyuiop;
+	keyboard->layout[2] = _asdfghjkl;
+	keyboard->layout[3] = _zxcvbnm;
 	/* window */
 	keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
 	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
@@ -127,14 +150,18 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
 			G_CALLBACK(on_keyboard_delete_event), keyboard);
 	/* layouts */
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	vbox = gtk_vbox_new(TRUE, 4);
-	for(i = 0; i < 3; i++)
+	for(i = 0; i < 4; i++)
 	{
 		hbox = gtk_hbox_new(TRUE, 4);
 		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
 		{
-			widget = gtk_button_new_with_label(
-					keyboard->layout[i][j].label);
+			widget = gtk_button_new();
+			label = gtk_label_new(keyboard->layout[i][j].label);
+			gtk_widget_modify_font(label, bold);
+			gtk_container_add(GTK_CONTAINER(widget), label);
 			g_object_set_data(G_OBJECT(widget), "keysym",
 					&keyboard->layout[i][j].keysym);
 			g_signal_connect_swapped(G_OBJECT(widget), "clicked",
@@ -147,6 +174,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	}
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	gtk_widget_show_all(keyboard->window);
+	pango_font_description_free(bold);
 	return keyboard;
 }
 
