@@ -30,11 +30,15 @@ typedef struct _KeyboardPrefs
 	int monitor;
 } KeyboardPrefs;
 
+typedef enum _KeyboardCase { KC_LOWER, KC_UPPER } KeyboardCase;
+
 
 /* functions */
 Keyboard * keyboard_new(KeyboardPrefs * prefs);
 void keyboard_delete(Keyboard * keyboard);
 
+/* accessors */
+void keyboard_set_case(Keyboard * keyboard, KeyboardCase kcase);
 
 /* useful */
 void keyboard_show(Keyboard * keyboard, gboolean show);

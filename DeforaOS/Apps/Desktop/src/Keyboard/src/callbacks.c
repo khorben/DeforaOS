@@ -45,6 +45,7 @@ void on_keyboard_key_clicked(gpointer data, GtkWidget * key)
 	unsigned int * keysym;
 	unsigned int keycode;
 	Display * display;
+	gboolean upper;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, keyboard,
@@ -55,7 +56,16 @@ void on_keyboard_key_clicked(gpointer data, GtkWidget * key)
 	display = gdk_x11_get_default_xdisplay();
 	keycode = XKeysymToKeycode(display, *keysym);
 	XTestGrabControl(display, True);
-	XTestFakeKeyEvent(display, keycode, True, 0);
-	XTestFakeKeyEvent(display, keycode, False, 0);
+	if(*keysym == XK_Shift_L || *keysym == XK_Shift_R)
+	{
+		upper = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(key));
+		XTestFakeKeyEvent(display, keycode, upper ? True : False, 0);
+		keyboard_set_case(keyboard, upper ? KC_UPPER : KC_LOWER);
+	}
+	else
+	{
+		XTestFakeKeyEvent(display, keycode, True, 0);
+		XTestFakeKeyEvent(display, keycode, False, 0);
+	}
 	XTestGrabControl(display, False);
 }

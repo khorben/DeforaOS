@@ -30,8 +30,10 @@
 /* types */
 typedef struct _KeyboardKey
 {
+	GtkWidget * widget;
 	unsigned int keysym;
 	char const * label;
+	char const * upper_label;
 } KeyboardKey;
 
 struct _Keyboard
@@ -45,68 +47,68 @@ struct _Keyboard
 /* variables */
 static KeyboardKey _1234567890[] =
 {
-	{ XK_Escape, "Esc" },
-	{ XK_1, "1" },
-	{ XK_2, "2" },
-	{ XK_3, "3" },
-	{ XK_4, "4" },
-	{ XK_5, "5" },
-	{ XK_6, "6" },
-	{ XK_7, "7" },
-	{ XK_8, "8" },
-	{ XK_9, "9" },
-	{ XK_0, "0" },
-	{ XK_BackSpace, "\xe2\x8c\xab" },
-	{ 0, NULL }
+	{ NULL, XK_Escape, "Esc", NULL },
+	{ NULL, XK_1, "1", NULL },
+	{ NULL, XK_2, "2", NULL },
+	{ NULL, XK_3, "3", NULL },
+	{ NULL, XK_4, "4", NULL },
+	{ NULL, XK_5, "5", NULL },
+	{ NULL, XK_6, "6", NULL },
+	{ NULL, XK_7, "7", NULL },
+	{ NULL, XK_8, "8", NULL },
+	{ NULL, XK_9, "9", NULL },
+	{ NULL, XK_0, "0", NULL },
+	{ NULL, XK_BackSpace, "\xe2\x8c\xab", NULL },
+	{ NULL, 0, NULL, NULL }
 };
 
 static KeyboardKey _qwertyuiop[] =
 {
-	{ XK_Tab, "Tab" },
-	{ XK_Q, "Q" },
-	{ XK_W, "W" },
-	{ XK_E, "E" },
-	{ XK_R, "R" },
-	{ XK_T, "T" },
-	{ XK_Y, "Y" },
-	{ XK_U, "U" },
-	{ XK_I, "I" },
-	{ XK_O, "O" },
-	{ XK_P, "P" },
-	{ XK_Return, "Ret" },
-	{ 0, NULL }
+	{ NULL, XK_Tab, "Tab", NULL },
+	{ NULL, XK_Q, "q", "Q" },
+	{ NULL, XK_W, "w", "W" },
+	{ NULL, XK_E, "e", "E" },
+	{ NULL, XK_R, "r", "R" },
+	{ NULL, XK_T, "t", "T" },
+	{ NULL, XK_Y, "y", "Y" },
+	{ NULL, XK_U, "u", "U" },
+	{ NULL, XK_I, "i", "I" },
+	{ NULL, XK_O, "o", "O" },
+	{ NULL, XK_P, "p", "P" },
+	{ NULL, XK_Return, "Ret", NULL },
+	{ NULL, 0, NULL, NULL }
 };
 static KeyboardKey _asdfghjkl[] =
 {
-	{ XK_Caps_Lock, "Caps" },
-	{ XK_A, "A" },
-	{ XK_S, "S" },
-	{ XK_D, "D" },
-	{ XK_F, "F" },
-	{ XK_G, "G" },
-	{ XK_H, "H" },
-	{ XK_J, "J" },
-	{ XK_K, "K" },
-	{ XK_L, "L" },
-	{ XK_colon, ":" },
-	{ XK_at, "@" },
-	{ 0, NULL }
+	{ NULL, XK_Caps_Lock, "Caps", NULL },
+	{ NULL, XK_A, "a", "A" },
+	{ NULL, XK_S, "s", "S" },
+	{ NULL, XK_D, "d", "D" },
+	{ NULL, XK_F, "f", "F" },
+	{ NULL, XK_G, "g", "G" },
+	{ NULL, XK_H, "h", "H" },
+	{ NULL, XK_J, "j", "J" },
+	{ NULL, XK_K, "k", "K" },
+	{ NULL, XK_L, "l", "L" },
+	{ NULL, XK_colon, ":", NULL },
+	{ NULL, XK_at, "@", NULL },
+	{ NULL, 0, NULL, NULL }
 };
 static KeyboardKey _zxcvbnm[] =
 {
-	{ XK_Shift_L, "\xe2\x87\xa7" },
-	{ XK_Z, "Z" },
-	{ XK_X, "X" },
-	{ XK_C, "C" },
-	{ XK_V, "V" },
-	{ XK_B, "B" },
-	{ XK_N, "N" },
-	{ XK_M, "M" },
-	{ XK_space, " " },
-	{ XK_period, "." },
-	{ XK_minus, "-" },
-	{ XK_slash, "/" },
-	{ 0, NULL }
+	{ NULL, XK_Shift_L, "\xe2\x87\xa7", NULL },
+	{ NULL, XK_Z, "z", "Z" },
+	{ NULL, XK_X, "x", "X" },
+	{ NULL, XK_C, "c", "C" },
+	{ NULL, XK_V, "v", "V" },
+	{ NULL, XK_B, "b", "B" },
+	{ NULL, XK_N, "n", "N" },
+	{ NULL, XK_M, "m", "M" },
+	{ NULL, XK_space, " ", NULL },
+	{ NULL, XK_period, ".", NULL },
+	{ NULL, XK_minus, "-", NULL },
+	{ NULL, XK_slash, "/", NULL },
+	{ NULL, 0, NULL, NULL }
 };
 
 
@@ -158,8 +160,12 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		hbox = gtk_hbox_new(TRUE, 4);
 		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
 		{
-			widget = gtk_button_new();
+			if(keyboard->layout[i][j].keysym == XK_Shift_L)
+				widget = gtk_toggle_button_new();
+			else
+				widget = gtk_button_new();
 			label = gtk_label_new(keyboard->layout[i][j].label);
+			keyboard->layout[i][j].widget = label;
 			gtk_widget_modify_font(label, bold);
 			gtk_container_add(GTK_CONTAINER(widget), label);
 			g_object_set_data(G_OBJECT(widget), "keysym",
@@ -184,6 +190,27 @@ void keyboard_delete(Keyboard * keyboard)
 {
 	gtk_widget_destroy(keyboard->window);
 	free(keyboard);
+}
+
+
+/* accessors */
+/* keyboard_set_case */
+void keyboard_set_case(Keyboard * keyboard, KeyboardCase kcase)
+{
+	size_t i;
+	size_t j;
+	GtkWidget * label;
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
+		{
+			if(keyboard->layout[i][j].upper_label == NULL)
+				continue;
+			label = keyboard->layout[i][j].widget;
+			gtk_label_set_text(GTK_LABEL(label), (kcase == KC_LOWER)
+					? keyboard->layout[i][j].label
+					: keyboard->layout[i][j].upper_label);
+		}
 }
 
 
