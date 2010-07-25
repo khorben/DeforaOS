@@ -26,10 +26,10 @@ keyboard: $(keyboard_OBJS)
 callbacks.o: callbacks.c
 	$(CC) $(keyboard_CFLAGS) -c callbacks.c
 
-keyboard.o: keyboard.c
+keyboard.o: keyboard.c callbacks.h keyboard.h
 	$(CC) $(keyboard_CFLAGS) -c keyboard.c
 
-main.o: main.c
+main.o: main.c keyboard.h
 	$(CC) $(keyboard_CFLAGS) -c main.c
 
 clean:
