@@ -88,7 +88,6 @@ Panel * panel_new(PanelPrefs * prefs)
 {
 	Panel * panel;
 	GdkScreen * screen;
-	int monitor;
 	GdkRectangle rect;
 
 	if((panel = malloc(sizeof(*panel))) == NULL)
@@ -127,10 +126,9 @@ Panel * panel_new(PanelPrefs * prefs)
 	panel->root = gdk_screen_get_root_window(screen);
 	if(prefs != NULL && prefs->monitor > 0
 			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
-		monitor = prefs->monitor;
+		gdk_screen_get_monitor_geometry(screen, prefs->monitor, &rect);
 	else
-		monitor = 0;
-	gdk_screen_get_monitor_geometry(screen, monitor, &rect);
+		gdk_screen_get_monitor_geometry(screen, 0, &rect);
 	panel->root_width = rect.width;
 	panel->root_height = rect.height;
 #ifdef DEBUG
