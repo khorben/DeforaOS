@@ -28,7 +28,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: keyboard [-m monitor]\n", stderr);
+	fputs("Usage: keyboard [-f font][-m monitor]\n", stderr);
 	return 1;
 }
 
@@ -45,9 +45,12 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "m:")) != -1)
+	while((o = getopt(argc, argv, "f:m:")) != -1)
 		switch(o)
 		{
+			case 'f':
+				prefs.font = optarg;
+				break;
 			case 'm':
 				prefs.monitor = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')

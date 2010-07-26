@@ -42,21 +42,21 @@ gboolean on_keyboard_delete_event(gpointer data)
 void on_keyboard_key_clicked(gpointer data, GtkWidget * key)
 {
 	Keyboard * keyboard = data;
-	unsigned int * keysym;
+	KeyboardKey * kk;
 	unsigned int keycode;
 	Display * display;
 	gboolean upper;
 
+	if((kk = g_object_get_data(G_OBJECT(key), "key")) == NULL)
+		return;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, keyboard,
-			gtk_button_get_label(GTK_BUTTON(key)));
+			kk->label);
 #endif
-	if((keysym = g_object_get_data(G_OBJECT(key), "keysym")) == NULL)
-		return;
 	display = gdk_x11_get_default_xdisplay();
-	keycode = XKeysymToKeycode(display, *keysym);
+	keycode = XKeysymToKeycode(display, kk->keysym);
 	XTestGrabControl(display, True);
-	if(*keysym == XK_Shift_L || *keysym == XK_Shift_R)
+	if(kk->keysym == XK_Shift_L || kk->keysym == XK_Shift_R)
 	{
 		upper = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(key));
 		XTestFakeKeyEvent(display, keycode, upper ? True : False, 0);
@@ -68,4 +68,30 @@ void on_keyboard_key_clicked(gpointer data, GtkWidget * key)
 		XTestFakeKeyEvent(display, keycode, False, 0);
 	}
 	XTestGrabControl(display, False);
+}
+
+
+/* on_keyboard_key_pressed */
+gboolean on_keyboard_key_pressed(GtkWidget * key, GdkEventButton * event,
+		gpointer data)
+{
+	Keyboard * keyboard = data;
+	KeyboardKey * kk;
+
+	if((kk = g_object_get_data(G_OBJECT(key), "key")) != NULL)
+		keyboard_key_show(keyboard, kk, TRUE);
+	return FALSE;
+}
+
+
+/* on_keyboard_key_released */
+gboolean on_keyboard_key_released(GtkWidget * key, GdkEventButton * event,
+		gpointer data)
+{
+	Keyboard * keyboard = data;
+	KeyboardKey * kk;
+
+	if((kk = g_object_get_data(G_OBJECT(key), "key")) != NULL)
+		keyboard_key_show(keyboard, kk, FALSE);
+	return FALSE;
 }

@@ -25,9 +25,19 @@
 /* types */
 typedef struct _Keyboard Keyboard;
 
+typedef struct _KeyboardKey
+{
+	GtkWidget * widget;
+	GtkWidget * popup;
+	unsigned int keysym;
+	char const * label;
+	char const * upper_label;
+} KeyboardKey;
+
 typedef struct _KeyboardPrefs
 {
 	int monitor;
+	char const * font;
 } KeyboardPrefs;
 
 typedef enum _KeyboardCase { KC_LOWER, KC_UPPER } KeyboardCase;
@@ -42,5 +52,7 @@ void keyboard_set_case(Keyboard * keyboard, KeyboardCase kcase);
 
 /* useful */
 void keyboard_show(Keyboard * keyboard, gboolean show);
+
+void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show);
 
 #endif /* !KEYBOARD_KEYBOARD_H */

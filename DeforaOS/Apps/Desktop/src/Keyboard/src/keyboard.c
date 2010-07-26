@@ -28,87 +28,81 @@
 /* Keyboard */
 /* private */
 /* types */
-typedef struct _KeyboardKey
-{
-	GtkWidget * widget;
-	unsigned int keysym;
-	char const * label;
-	char const * upper_label;
-} KeyboardKey;
-
 struct _Keyboard
 {
 	KeyboardKey * layout[4];
 
+	PangoFontDescription * bold;
 	GtkWidget * window;
+	GdkRectangle geometry;
 };
 
 
 /* variables */
 static KeyboardKey _1234567890[] =
 {
-	{ NULL, XK_Escape, "Esc", NULL },
-	{ NULL, XK_1, "1", NULL },
-	{ NULL, XK_2, "2", NULL },
-	{ NULL, XK_3, "3", NULL },
-	{ NULL, XK_4, "4", NULL },
-	{ NULL, XK_5, "5", NULL },
-	{ NULL, XK_6, "6", NULL },
-	{ NULL, XK_7, "7", NULL },
-	{ NULL, XK_8, "8", NULL },
-	{ NULL, XK_9, "9", NULL },
-	{ NULL, XK_0, "0", NULL },
-	{ NULL, XK_BackSpace, "\xe2\x8c\xab", NULL },
-	{ NULL, 0, NULL, NULL }
+	{ NULL, NULL, XK_Escape, "Esc", NULL },
+	{ NULL, NULL, XK_1, "1", NULL },
+	{ NULL, NULL, XK_2, "2", NULL },
+	{ NULL, NULL, XK_3, "3", NULL },
+	{ NULL, NULL, XK_4, "4", NULL },
+	{ NULL, NULL, XK_5, "5", NULL },
+	{ NULL, NULL, XK_6, "6", NULL },
+	{ NULL, NULL, XK_7, "7", NULL },
+	{ NULL, NULL, XK_8, "8", NULL },
+	{ NULL, NULL, XK_9, "9", NULL },
+	{ NULL, NULL, XK_0, "0", NULL },
+	{ NULL, NULL, XK_BackSpace, "\xe2\x8c\xab", NULL },
+	{ NULL, NULL, 0, NULL, NULL }
 };
 
 static KeyboardKey _qwertyuiop[] =
 {
-	{ NULL, XK_Tab, "Tab", NULL },
-	{ NULL, XK_Q, "q", "Q" },
-	{ NULL, XK_W, "w", "W" },
-	{ NULL, XK_E, "e", "E" },
-	{ NULL, XK_R, "r", "R" },
-	{ NULL, XK_T, "t", "T" },
-	{ NULL, XK_Y, "y", "Y" },
-	{ NULL, XK_U, "u", "U" },
-	{ NULL, XK_I, "i", "I" },
-	{ NULL, XK_O, "o", "O" },
-	{ NULL, XK_P, "p", "P" },
-	{ NULL, XK_Return, "Ret", NULL },
-	{ NULL, 0, NULL, NULL }
+	{ NULL, NULL, XK_Tab, "\xe2\x86\x92|", NULL },
+	{ NULL, NULL, XK_Q, "q", "Q" },
+	{ NULL, NULL, XK_W, "w", "W" },
+	{ NULL, NULL, XK_E, "e", "E" },
+	{ NULL, NULL, XK_R, "r", "R" },
+	{ NULL, NULL, XK_T, "t", "T" },
+	{ NULL, NULL, XK_Y, "y", "Y" },
+	{ NULL, NULL, XK_U, "u", "U" },
+	{ NULL, NULL, XK_I, "i", "I" },
+	{ NULL, NULL, XK_O, "o", "O" },
+	{ NULL, NULL, XK_P, "p", "P" },
+	{ NULL, NULL, XK_Return, "Ret", NULL },
+	{ NULL, NULL, 0, NULL, NULL }
 };
 static KeyboardKey _asdfghjkl[] =
 {
-	{ NULL, XK_Caps_Lock, "Caps", NULL },
-	{ NULL, XK_A, "a", "A" },
-	{ NULL, XK_S, "s", "S" },
-	{ NULL, XK_D, "d", "D" },
-	{ NULL, XK_F, "f", "F" },
-	{ NULL, XK_G, "g", "G" },
-	{ NULL, XK_H, "h", "H" },
-	{ NULL, XK_J, "j", "J" },
-	{ NULL, XK_K, "k", "K" },
-	{ NULL, XK_L, "l", "L" },
-	{ NULL, XK_colon, ":", NULL },
-	{ NULL, XK_at, "@", NULL },
-	{ NULL, 0, NULL, NULL }
+	{ NULL, NULL, XK_Caps_Lock, "Caps", NULL },
+	{ NULL, NULL, XK_A, "a", "A" },
+	{ NULL, NULL, XK_S, "s", "S" },
+	{ NULL, NULL, XK_D, "d", "D" },
+	{ NULL, NULL, XK_F, "f", "F" },
+	{ NULL, NULL, XK_G, "g", "G" },
+	{ NULL, NULL, XK_H, "h", "H" },
+	{ NULL, NULL, XK_J, "j", "J" },
+	{ NULL, NULL, XK_K, "k", "K" },
+	{ NULL, NULL, XK_L, "l", "L" },
+	{ NULL, NULL, XK_colon, ":", NULL },
+	{ NULL, NULL, XK_at, "@", NULL },
+	{ NULL, NULL, 0, NULL, NULL }
 };
 static KeyboardKey _zxcvbnm[] =
 {
-	{ NULL, XK_Shift_L, "\xe2\x87\xa7", NULL },
-	{ NULL, XK_Z, "z", "Z" },
-	{ NULL, XK_X, "x", "X" },
-	{ NULL, XK_C, "c", "C" },
-	{ NULL, XK_V, "v", "V" },
-	{ NULL, XK_B, "b", "B" },
-	{ NULL, XK_N, "n", "N" },
-	{ NULL, XK_M, "m", "M" },
-	{ NULL, XK_space, " ", NULL },
-	{ NULL, XK_period, ".", NULL },
-	{ NULL, XK_minus, "-", NULL },
-	{ NULL, XK_slash, "/", NULL },
-	{ NULL, 0, NULL, NULL }
+	{ NULL, NULL, XK_Shift_L, "\xe2\x87\xa7", NULL },
+	{ NULL, NULL, XK_Z, "z", "Z" },
+	{ NULL, NULL, XK_X, "x", "X" },
+	{ NULL, NULL, XK_C, "c", "C" },
+	{ NULL, NULL, XK_V, "v", "V" },
+	{ NULL, NULL, XK_B, "b", "B" },
+	{ NULL, NULL, XK_N, "n", "N" },
+	{ NULL, NULL, XK_M, "m", "M" },
+	{ NULL, NULL, XK_space, " ", NULL },
+	{ NULL, NULL, XK_period, ".", NULL },
+	{ NULL, NULL, XK_minus, "-", NULL },
+	{ NULL, NULL, XK_slash, "/", NULL },
+	{ NULL, NULL, 0, NULL, NULL }
 };
 
 
@@ -118,10 +112,9 @@ static KeyboardKey _zxcvbnm[] =
 Keyboard * keyboard_new(KeyboardPrefs * prefs)
 {
 	Keyboard * keyboard;
+	KeyboardKey * kk;
 	GdkScreen * screen;
-	GdkRectangle rect;
 	gint height;
-	PangoFontDescription * bold;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -142,34 +135,48 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	screen = gdk_screen_get_default();
 	if(prefs != NULL && prefs->monitor > 0
 			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
-		gdk_screen_get_monitor_geometry(screen, prefs->monitor, &rect);
+		gdk_screen_get_monitor_geometry(screen, prefs->monitor,
+				&keyboard->geometry);
 	else
-		gdk_screen_get_monitor_geometry(screen, 0, &rect);
-	height = rect.width / 8;
-	gtk_widget_set_size_request(keyboard->window, rect.width, height);
-	gtk_window_move(GTK_WINDOW(keyboard->window), rect.x,
-			rect.y + rect.height - height);
+		gdk_screen_get_monitor_geometry(screen, 0, &keyboard->geometry);
+	height = (keyboard->geometry.width / 12) * 3;
+	gtk_widget_set_size_request(keyboard->window, keyboard->geometry.width,
+			height);
+	gtk_window_move(GTK_WINDOW(keyboard->window), keyboard->geometry.x,
+			keyboard->geometry.y + keyboard->geometry.height
+			- height);
 	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
 			G_CALLBACK(on_keyboard_delete_event), keyboard);
 	/* layouts */
-	bold = pango_font_description_new();
-	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	if(prefs->font != NULL)
+		keyboard->bold = pango_font_description_from_string(
+				prefs->font);
+	else
+		keyboard->bold = pango_font_description_new();
+	pango_font_description_set_weight(keyboard->bold, PANGO_WEIGHT_BOLD);
 	vbox = gtk_vbox_new(TRUE, 4);
 	for(i = 0; i < 4; i++)
 	{
 		hbox = gtk_hbox_new(TRUE, 4);
 		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
 		{
-			if(keyboard->layout[i][j].keysym == XK_Shift_L)
+			kk = &keyboard->layout[i][j];
+			if(kk->keysym == XK_Shift_L || kk->keysym == XK_Shift_R)
 				widget = gtk_toggle_button_new();
 			else
 				widget = gtk_button_new();
-			label = gtk_label_new(keyboard->layout[i][j].label);
-			keyboard->layout[i][j].widget = label;
-			gtk_widget_modify_font(label, bold);
+			label = gtk_label_new(kk->label);
+			kk->widget = label;
+			gtk_widget_modify_font(label, keyboard->bold);
 			gtk_container_add(GTK_CONTAINER(widget), label);
-			g_object_set_data(G_OBJECT(widget), "keysym",
-					&keyboard->layout[i][j].keysym);
+			g_object_set_data(G_OBJECT(widget), "key", kk);
+			g_signal_connect(G_OBJECT(widget), "button-press-event",
+					G_CALLBACK(on_keyboard_key_pressed),
+					keyboard);
+			g_signal_connect(G_OBJECT(widget),
+					"button-release-event", G_CALLBACK(
+						on_keyboard_key_released),
+					keyboard);
 			g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 					G_CALLBACK(on_keyboard_key_clicked),
 					keyboard);
@@ -180,7 +187,6 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	}
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	gtk_widget_show_all(keyboard->window);
-	pango_font_description_free(bold);
 	return keyboard;
 }
 
@@ -189,6 +195,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 void keyboard_delete(Keyboard * keyboard)
 {
 	gtk_widget_destroy(keyboard->window);
+	pango_font_description_free(keyboard->bold);
 	free(keyboard);
 }
 
@@ -222,4 +229,52 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 		gtk_widget_show(keyboard->window);
 	else
 		gtk_widget_hide(keyboard->window);
+}
+
+
+/* keyboard_key_show */
+void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
+{
+	GtkWidget * widget;
+	unsigned int bwidth;
+	unsigned int bheight;
+	size_t i;
+	size_t j;
+
+	if(show == FALSE)
+	{
+		if(key->popup != NULL)
+			gtk_widget_destroy(key->popup);
+		key->popup = NULL;
+		return;
+	}
+	if(key->popup == NULL)
+	{
+		key->popup = gtk_window_new(GTK_WINDOW_POPUP);
+		widget = gtk_button_new_with_label(key->upper_label != NULL?
+				key->upper_label : key->label);
+		gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
+				keyboard->bold);
+		bwidth = keyboard->geometry.width / 12;
+		bheight = (bwidth / 4) * 3;
+		gtk_widget_set_size_request(key->popup, bwidth, bheight * 2);
+		gtk_container_add(GTK_CONTAINER(key->popup), widget);
+	}
+	for(i = 0; i < 4; i++)
+	{
+		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
+			if(&keyboard->layout[i][j] == key)
+				break;
+		if(keyboard->layout[i][j].label != NULL)
+			break;
+	}
+	if(i == 4 && j == 12) /* XXX hard-coded */
+	{
+		i = 0;
+		j = 5;
+	}
+	gtk_window_move(GTK_WINDOW(key->popup), bwidth * j,
+			keyboard->geometry.height - (bheight * 6)
+			+ (bheight * i));
+	gtk_widget_show_all(key->popup);
 }
