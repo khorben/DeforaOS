@@ -236,8 +236,8 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 {
 	GtkWidget * widget;
-	unsigned int bwidth;
-	unsigned int bheight;
+	unsigned int bwidth = keyboard->geometry.width / 12;
+	unsigned int bheight = (bwidth / 4) * 3;
 	size_t i;
 	size_t j;
 
@@ -255,8 +255,6 @@ void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 				key->upper_label : key->label);
 		gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
 				keyboard->bold);
-		bwidth = keyboard->geometry.width / 12;
-		bheight = (bwidth / 4) * 3;
 		gtk_widget_set_size_request(key->popup, bwidth, bheight * 2);
 		gtk_container_add(GTK_CONTAINER(key->popup), widget);
 	}
