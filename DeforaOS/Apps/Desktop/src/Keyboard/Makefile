@@ -1,5 +1,5 @@
 PACKAGE	= Keyboard
-VERSION	= 0.0.0
+VERSION	= 0.0.1
 SUBDIRS	= src
 RM	= rm -f
 LN	= ln -f
