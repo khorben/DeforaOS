@@ -85,7 +85,7 @@ static KeyboardKey _asdfghjkl[] =
 	{ NULL, NULL, XK_K, "k", "K" },
 	{ NULL, NULL, XK_L, "l", "L" },
 	{ NULL, NULL, XK_semicolon, ";", ":" },
-	{ NULL, NULL, XK_apostrophe, "'", "'" },
+	{ NULL, NULL, XK_apostrophe, "'", "\"" },
 	{ NULL, NULL, 0, NULL, NULL }
 };
 static KeyboardKey _zxcvbnm[] =
