@@ -15,7 +15,7 @@
 /* TODO:
  * - choose a correct size for the window
  * - track if xkbd's process ever dies
- * - write own keyboard implementation */
+ * - write own keyboard implementation (dlopen keyboard's binary) */
 
 
 
@@ -93,7 +93,8 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 static gboolean _init_idle(gpointer data)
 {
 	Keyboard * keyboard = data;
-	char * argv[] = { "xkbd", "-xid", NULL };
+	char * argv[] = { "sh", "-c", "xkbd -xid", NULL };
+	char const * p;
 	gint out = -1;
 	GError * error = NULL;
 	char buf[32];
@@ -103,6 +104,9 @@ static gboolean _init_idle(gpointer data)
 
 	if(keyboard->window != NULL)
 		return FALSE;
+	if((p = keyboard->helper->config_get(keyboard->helper->priv, "keyboard",
+					"command")) != NULL)
+		argv[2] = p;
 	if(g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL,
 				NULL, &keyboard->pid, NULL, &out, NULL, &error)
 			!= TRUE)
