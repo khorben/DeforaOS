@@ -42,16 +42,16 @@ struct _Keyboard
 static KeyboardKey _1234567890[] =
 {
 	{ NULL, NULL, XK_Escape, "Esc", NULL },
-	{ NULL, NULL, XK_1, "1", NULL },
-	{ NULL, NULL, XK_2, "2", NULL },
-	{ NULL, NULL, XK_3, "3", NULL },
-	{ NULL, NULL, XK_4, "4", NULL },
-	{ NULL, NULL, XK_5, "5", NULL },
-	{ NULL, NULL, XK_6, "6", NULL },
-	{ NULL, NULL, XK_7, "7", NULL },
-	{ NULL, NULL, XK_8, "8", NULL },
-	{ NULL, NULL, XK_9, "9", NULL },
-	{ NULL, NULL, XK_0, "0", NULL },
+	{ NULL, NULL, XK_1, "1", "!" },
+	{ NULL, NULL, XK_2, "2", "@" },
+	{ NULL, NULL, XK_3, "3", "#" },
+	{ NULL, NULL, XK_4, "4", "$" },
+	{ NULL, NULL, XK_5, "5", "%" },
+	{ NULL, NULL, XK_6, "6", "^" },
+	{ NULL, NULL, XK_7, "7", "&" },
+	{ NULL, NULL, XK_8, "8", "*" },
+	{ NULL, NULL, XK_9, "9", "(" },
+	{ NULL, NULL, XK_0, "0", ")" },
 	{ NULL, NULL, XK_BackSpace, "\xe2\x8c\xab", NULL },
 	{ NULL, NULL, 0, NULL, NULL }
 };
@@ -84,8 +84,8 @@ static KeyboardKey _asdfghjkl[] =
 	{ NULL, NULL, XK_J, "j", "J" },
 	{ NULL, NULL, XK_K, "k", "K" },
 	{ NULL, NULL, XK_L, "l", "L" },
-	{ NULL, NULL, XK_colon, ":", NULL },
-	{ NULL, NULL, XK_at, "@", NULL },
+	{ NULL, NULL, XK_semicolon, ";", ":" },
+	{ NULL, NULL, XK_apostrophe, "'", "'" },
 	{ NULL, NULL, 0, NULL, NULL }
 };
 static KeyboardKey _zxcvbnm[] =
@@ -99,9 +99,9 @@ static KeyboardKey _zxcvbnm[] =
 	{ NULL, NULL, XK_N, "n", "N" },
 	{ NULL, NULL, XK_M, "m", "M" },
 	{ NULL, NULL, XK_space, " ", NULL },
-	{ NULL, NULL, XK_period, ".", NULL },
-	{ NULL, NULL, XK_minus, "-", NULL },
-	{ NULL, NULL, XK_slash, "/", NULL },
+	{ NULL, NULL, XK_comma, ",", "<" },
+	{ NULL, NULL, XK_period, ".", ">" },
+	{ NULL, NULL, XK_slash, "/", "?" },
 	{ NULL, NULL, 0, NULL, NULL }
 };
 
