@@ -253,6 +253,7 @@ void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 		key->popup = gtk_window_new(GTK_WINDOW_POPUP);
 		widget = gtk_button_new_with_label(key->upper_label != NULL?
 				key->upper_label : key->label);
+		gtk_button_set_alignment(GTK_BUTTON(widget), 0.5, 0.1);
 		gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
 				keyboard->bold);
 		gtk_widget_set_size_request(key->popup, bwidth, bheight * 2);
