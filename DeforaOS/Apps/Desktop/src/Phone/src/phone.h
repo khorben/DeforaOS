@@ -78,7 +78,7 @@ void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
 /* events */
-void phone_event(Phone * phone, PhoneEvent event, ...);
+int phone_event(Phone * phone, PhoneEvent event, ...);
 
 /* interface */
 void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */

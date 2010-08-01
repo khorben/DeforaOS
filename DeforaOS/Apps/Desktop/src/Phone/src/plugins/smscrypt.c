@@ -103,15 +103,16 @@ static int _smscrypt_destroy(PhonePlugin * plugin)
 
 
 /* smscrypt_event */
-static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
+static int _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char ** buf,
 		size_t * len);
-static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
+static int _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char ** buf,
 		size_t * len);
 
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
+	int ret = 0;
 	SMSCrypt * smscrypt = plugin->priv;
 	va_list ap;
 	char const * number;
@@ -128,7 +129,7 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
-			_smscrypt_event_sms_receiving(smscrypt, number,
+			ret = _smscrypt_event_sms_receiving(smscrypt, number,
 					encoding, buf, len);
 			break;
 		case PHONE_EVENT_SMS_SENDING:
@@ -136,18 +137,18 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
-			_smscrypt_event_sms_sending(smscrypt, number, encoding,
-					buf, len);
+			ret = _smscrypt_event_sms_sending(smscrypt, number,
+					encoding, buf, len);
 			break;
 		/* ignore the rest */
 		default:
 			break;
 	}
 	va_end(ap);
-	return 0;
+	return ret;
 }
 
-static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
+static int _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char ** buf,
 		size_t * len)
 {
@@ -159,16 +160,17 @@ static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
 			*len);
 #endif
 	if(*encoding != PHONE_ENCODING_DATA)
-		return; /* not for us */
+		return 0; /* not for us */
 	for(i = 0; i < *len; i++)
 	{
 		(*buf)[i] ^= smscrypt->secret[j++];
 		j %= smscrypt->secret_len;
 	}
 	*encoding = PHONE_ENCODING_UTF8;
+	return 0;
 }
 
-static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
+static int _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char ** buf,
 		size_t * len)
 {
@@ -179,13 +181,14 @@ static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
 	fprintf(stderr, "DEBUG: %s(%u, buf, %lu)\n", __func__, *encoding, *len);
 #endif
 	if(*encoding != PHONE_ENCODING_UTF8)
-		return; /* not for us */
+		return 0; /* not for us */
 	for(i = 0; i < *len; i++)
 	{
 		(*buf)[i] ^= smscrypt->secret[j++];
 		j %= smscrypt->secret_len;
 	}
 	*encoding = PHONE_ENCODING_DATA;
+	return 0;
 }
 
 

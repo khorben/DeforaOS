@@ -700,8 +700,9 @@ void phone_dialer_hangup(Phone * phone)
 
 /* events */
 /* phone_event */
-void phone_event(Phone * phone, PhoneEvent event, ...)
+int phone_event(Phone * phone, PhoneEvent event, ...)
 {
+	int ret = 0;
 	size_t i;
 	PhonePlugin * plugin;
 	va_list ap;
@@ -725,11 +726,11 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 		{
 			case PHONE_EVENT_SET_OPERATOR:
 				operator = va_arg(ap, char const *);
-				plugin->event(plugin, event, operator);
+				ret |= plugin->event(plugin, event, operator);
 				break;
 			case PHONE_EVENT_SET_SIGNAL_LEVEL:
 				level = va_arg(ap, gdouble);
-				plugin->event(plugin, event, level);
+				ret |= plugin->event(plugin, event, level);
 				break;
 			case PHONE_EVENT_SMS_RECEIVING:
 			case PHONE_EVENT_SMS_SENDING:
@@ -737,8 +738,8 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 				encoding = va_arg(ap, GSMEncoding *);
 				buf = va_arg(ap, char **);
 				len = va_arg(ap, size_t *);
-				plugin->event(plugin, event, number, encoding,
-						buf, len);
+				ret |= plugin->event(plugin, event, number,
+						encoding, buf, len);
 				break;
 			/* no arguments */
 			case PHONE_EVENT_CALL_ESTABLISHED:
@@ -754,11 +755,12 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_SPEAKER_ON:
 			case PHONE_EVENT_VIBRATOR_OFF:
 			case PHONE_EVENT_VIBRATOR_ON:
-				plugin->event(plugin, event);
+				ret |= plugin->event(plugin, event);
 				break;
 		}
 		va_end(ap);
 	}
+	return ret;
 }
 
 
@@ -2031,12 +2033,13 @@ void phone_write_send(Phone * phone)
 			FALSE);
 	if(number == NULL || number[0] == '\0' || text == NULL)
 		return;
+	if(phone_event(phone, PHONE_EVENT_SMS_SENDING, number, &encoding, &text,
+			&length) != 0)
+		return;
 	phone->wr_progress = _phone_create_progress(phone->wr_window,
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 	length = strlen(text);
-	phone_event(phone, PHONE_EVENT_SMS_SENDING, number, &encoding, &text,
-			&length);
 	gsm_message_send(phone->gsm, number, encoding, text, length);
 	g_free(text);
 }
