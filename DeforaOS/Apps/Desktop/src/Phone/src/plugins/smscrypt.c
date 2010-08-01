@@ -41,6 +41,7 @@ typedef struct _SMSCrypt
 
 
 /* prototypes */
+static void _smscrypt_clear(PhonePlugin * plugin);
 static int _smscrypt_init(PhonePlugin * plugin);
 static int _smscrypt_destroy(PhonePlugin * plugin);
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...);
@@ -65,6 +66,15 @@ PhonePlugin plugin =
 
 /* private */
 /* functions */
+/* smscrypt_clear */
+static void _smscrypt_clear(PhonePlugin * plugin)
+{
+	SMSCrypt * smscrypt = plugin->priv;
+
+	memset(smscrypt->buf, 0, smscrypt->len);
+}
+
+
 /* smscrypt_init */
 static int _smscrypt_init(PhonePlugin * plugin)
 {
@@ -154,10 +164,12 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 		return 0; /* XXX warn */
 	for(i = 0; i < *len; i++)
 	{
-		(*buf)[i] ^= smscrypt->buf[j++];
+		(*buf)[i] ^= smscrypt->buf[j];
+		smscrypt->buf[j++] ^= (*buf)[i];
 		j %= smscrypt->len;
 	}
 	*encoding = PHONE_ENCODING_UTF8;
+	_smscrypt_clear(plugin);
 	return 0;
 }
 
@@ -176,14 +188,16 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 	if(*encoding != PHONE_ENCODING_UTF8)
 		return 0; /* not for us */
 	if(_smscrypt_secret(plugin, number) != 0)
-		return 0; /* XXX warn */
+		return 0; /* XXX warn and cancel if relevant */
 	*encoding = PHONE_ENCODING_DATA;
 	for(i = 0; i < *len; i++)
 	{
-		(*buf)[i] ^= smscrypt->buf[j++];
+		(*buf)[i] ^= smscrypt->buf[j];
+		smscrypt->buf[j++] = (*buf)[i];
 		j %= smscrypt->len;
 	}
 	*encoding = PHONE_ENCODING_DATA;
+	_smscrypt_clear(plugin);
 	return 0;
 }
 
