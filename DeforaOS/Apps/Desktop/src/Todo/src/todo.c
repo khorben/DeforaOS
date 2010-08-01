@@ -107,9 +107,6 @@ static DesktopMenu _file_menu[] =
 	{ N_("_Edit"), G_CALLBACK(on_file_edit), GTK_STOCK_EDIT,
 		GDK_CONTROL_MASK, GDK_E },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE,
-		GDK_CONTROL_MASK, GDK_S },
-	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_W },
 	{ NULL, NULL, NULL, 0, 0 }
@@ -599,6 +596,7 @@ void todo_task_set_priority(Todo * todo, GtkTreePath * path,
 		}
 	gtk_list_store_set(todo->store, &iter, TD_COL_PRIORITY, tp,
 			TD_COL_DISPLAY_PRIORITY, priority, -1);
+	task_save(task);
 }
 
 
@@ -613,6 +611,7 @@ void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title)
 	gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
 	task_set_title(task, title);
 	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, title, -1);
+	task_save(task);
 }
 
 
@@ -638,6 +637,7 @@ void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
 	}
 	gtk_list_store_set(todo->store, &iter, TD_COL_DONE, done,
 			TD_COL_END, end, TD_COL_DISPLAY_END, completion, -1);
+	task_save(task);
 }
 
 

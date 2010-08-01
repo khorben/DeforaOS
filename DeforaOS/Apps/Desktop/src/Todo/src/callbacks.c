@@ -58,15 +58,6 @@ void on_file_new(gpointer data)
 }
 
 
-/* on_file_save */
-void on_file_save(gpointer data)
-{
-	Todo * todo = data;
-
-	todo_task_save_all(todo);
-}
-
-
 /* edit menu */
 /* on_edit_delete */
 void on_edit_delete(gpointer data)
