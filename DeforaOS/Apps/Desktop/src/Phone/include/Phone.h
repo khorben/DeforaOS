@@ -76,7 +76,7 @@ typedef struct _PhonePluginHelper
 	char const * (*config_get)(Phone * phone, char const * section,
 			char const * variable);
 	int (*error)(Phone * phone, char const * message, int ret);
-	void (*event)(Phone * phone, PhoneEvent event, ...);
+	int (*event)(Phone * phone, PhoneEvent event, ...);
 	int (*queue)(Phone * phone, char const * command);
 	int (*register_trigger)(Phone * phone, PhonePlugin * plugin,
 			char const * trigger, PhoneTriggerCallback callback);
