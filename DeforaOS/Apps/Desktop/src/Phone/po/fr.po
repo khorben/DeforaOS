@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-24 03:39+0200\n"
+"POT-Creation-Date: 2010-08-01 15:14+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -72,7 +72,7 @@ msgstr "Code SIM PUK2 requis"
 msgid "Memory full"
 msgstr "Mémoire pleine"
 
-#: ../src/gsm.c:162
+#: ../src/gsm.c:162 ../src/gsm.c:203
 msgid "Invalid index"
 msgstr "Index invalide"
 
@@ -112,7 +112,8 @@ msgstr "Délai d'attente du réseau dépassé"
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:172 ../src/gsm.c:1184 ../src/gsm.c:1394 ../src/gsm.c:1454
+#: ../src/gsm.c:172 ../src/gsm.c:1235 ../src/gsm.c:1445 ../src/gsm.c:1505
+#: ../src/gsm.c:2047
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -132,11 +133,67 @@ msgstr "Paramètre de mode PDU invalide"
 msgid "Invalid memory index"
 msgstr "Index mémoire invalide"
 
-#: ../src/gsm.c:362
+#: ../src/gsm.c:204
+msgid "Parameter not allowed"
+msgstr "Paramètre non autorisé"
+
+#: ../src/gsm.c:205
+msgid "Data corrupted"
+msgstr "Données corrompues"
+
+#: ../src/gsm.c:206
+msgid "Internal error"
+msgstr "Erreur interne"
+
+#: ../src/gsm.c:207
+msgid "Call table full"
+msgstr "Table d'appel pleine"
+
+#: ../src/gsm.c:208
+msgid "Service table full"
+msgstr "Table de service pleine"
+
+#: ../src/gsm.c:209
+msgid "Call not found"
+msgstr "Appel non trouvé"
+
+#: ../src/gsm.c:210
+msgid "No data-call supported"
+msgstr ""
+
+#: ../src/gsm.c:211
+msgid "One call on hold"
+msgstr ""
+
+#: ../src/gsm.c:212
+msgid "Hold call not supported for this type"
+msgstr ""
+
+#: ../src/gsm.c:213
+msgid "Number not allowed by FDN"
+msgstr "Numéro non autorisé par FDN"
+
+#: ../src/gsm.c:214
+msgid "Number not allowed by BDN"
+msgstr "Numéro non autorisé par BDN"
+
+#: ../src/gsm.c:215
+msgid "Parallel USSD not supported"
+msgstr "USSD parallèle non supporté"
+
+#: ../src/gsm.c:216
+msgid "Fax minimum speed condition"
+msgstr ""
+
+#: ../src/gsm.c:217
+msgid "Conflict with command details"
+msgstr ""
+
+#: ../src/gsm.c:391
 msgid ": Unknown baudrate, assuming 115200"
 msgstr ": Débit inconnu, tente 115200"
 
-#: ../src/gsm.c:1024
+#: ../src/gsm.c:1075
 msgid "Event not handled"
 msgstr "Événement non géré"
 
@@ -149,225 +206,245 @@ msgid ""
 "  -F\tEnable hardware flow control (RTS/CTS)\n"
 msgstr ""
 
-#: ../src/phone.c:325
+#: ../src/phone.c:334
 msgid "Initializing..."
 msgstr "Initialisation..."
 
-#: ../src/phone.c:503
+#: ../src/phone.c:512
 msgid "Checking SIM PIN code..."
 msgstr "Vérification du code SIM PIN..."
 
-#: ../src/phone.c:837 ../src/phone.c:909
+#: ../src/phone.c:564
+msgid "Delete this contact?"
+msgstr "Supprimer ce contact?"
+
+#: ../src/phone.c:901 ../src/phone.c:973
 msgid "Delete this message?"
 msgstr "Supprimer ce message?"
 
-#: ../src/phone.c:843 ../src/phone.c:914
+#: ../src/phone.c:907 ../src/phone.c:978
 msgid "Deleting message..."
 msgstr "Suppression du message..."
 
-#: ../src/phone.c:988
+#: ../src/phone.c:1052
 msgid "Answer"
 msgstr "Répondre"
 
-#: ../src/phone.c:995
+#: ../src/phone.c:1059
 msgid "Hangup"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:1002
+#: ../src/phone.c:1066
 msgid "Reject"
 msgstr "Rejeter"
 
-#: ../src/phone.c:1025
+#: ../src/phone.c:1089
 msgid "Loudspeaker"
 msgstr "Haut-parleur"
 
-#: ../src/phone.c:1035
+#: ../src/phone.c:1099
 msgid "Mute microphone"
 msgstr "Couper le microphone"
 
-#: ../src/phone.c:1051
+#: ../src/phone.c:1115
 msgid "Unknown contact"
 msgstr "Contact inconnu"
 
-#: ../src/phone.c:1058
+#: ../src/phone.c:1122
 msgid "Unknown number"
 msgstr "Numéro inconnu"
 
-#: ../src/phone.c:1066
+#: ../src/phone.c:1130
 msgid "In conversation"
 msgstr "En conversation"
 
-#: ../src/phone.c:1074
+#: ../src/phone.c:1138
 msgid "Incoming call"
 msgstr "Appel entrant"
 
-#: ../src/phone.c:1081
+#: ../src/phone.c:1145
 msgid "Outgoing call"
 msgstr "Appel sortant"
 
-#: ../src/phone.c:1089
+#: ../src/phone.c:1153
 msgid "Call finished"
 msgstr "Appel terminé"
 
-#: ../src/phone.c:1143
+#: ../src/phone.c:1207
 msgid "Enter"
 msgstr "Entrer"
 
-#: ../src/phone.c:1145
+#: ../src/phone.c:1209
 msgid "Skip"
 msgstr "Ignorer"
 
-#: ../src/phone.c:1156
+#: ../src/phone.c:1220
 msgid "Enter SIM PIN code"
 msgstr "Entrer le code SIM PIN"
 
-#: ../src/phone.c:1185
+#: ../src/phone.c:1249
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:1192 ../src/phone.c:1501 ../src/phone.c:1544
-#: ../src/phone.c:1668
+#: ../src/phone.c:1256 ../src/phone.c:1571 ../src/phone.c:1614
+#: ../src/phone.c:1738
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:1202
+#: ../src/phone.c:1262
 msgid "Write"
 msgstr "Écrire"
 
-#: ../src/phone.c:1224 ../src/phone.c:1772
+#: ../src/phone.c:1294 ../src/phone.c:1842
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/phone.c:1473
+#: ../src/phone.c:1543
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:1503
+#: ../src/phone.c:1573
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:1537
+#: ../src/phone.c:1607
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:1550
+#: ../src/phone.c:1620
 msgid "New message"
 msgstr "Nouveau message"
 
-#: ../src/phone.c:1556 ../src/phone.c:1674
+#: ../src/phone.c:1626 ../src/phone.c:1744
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/phone.c:1574
+#: ../src/phone.c:1644
 msgid "Inbox"
 msgstr "Reçus"
 
-#: ../src/phone.c:1578
+#: ../src/phone.c:1648
 msgid "Sent"
 msgstr "Envoyés"
 
-#: ../src/phone.c:1597
+#: ../src/phone.c:1667
 msgid "From"
 msgstr "De"
 
-#: ../src/phone.c:1603
+#: ../src/phone.c:1673
 msgid "Date"
 msgstr "Date"
 
-#: ../src/phone.c:1662
+#: ../src/phone.c:1732
 msgid "Read message"
 msgstr "Lire le message"
 
-#: ../src/phone.c:1749
+#: ../src/phone.c:1819
 msgid "Phone settings"
 msgstr "Paramètres du téléphone"
 
-#: ../src/phone.c:1812
+#: ../src/phone.c:1882
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:1818
+#: ../src/phone.c:1888
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/phone.c:1824
+#: ../src/phone.c:1894
 msgid "Attach"
 msgstr "Attacher"
 
-#: ../src/phone.c:1938
+#: ../src/phone.c:2008
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:1939
+#: ../src/phone.c:2009
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:1965
+#: ../src/phone.c:2035
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:2081
+#: ../src/phone.c:2152
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:2109 ../src/phone.c:2114
+#: ../src/phone.c:2180 ../src/phone.c:2185
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:2134 ../src/phone.c:2139
+#: ../src/phone.c:2205 ../src/phone.c:2210
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:2186 ../src/phone.c:2191
+#: ../src/phone.c:2257 ../src/phone.c:2262
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:2270
+#: ../src/phone.c:2341
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/phone.c:2273
+#: ../src/phone.c:2344
 msgid "Registering..."
 msgstr "Enregistrement..."
 
-#: ../src/phone.c:2276
+#: ../src/phone.c:2347
 msgid "Denied"
 msgstr "Refusé"
 
-#: ../src/phone.c:2281
+#: ../src/phone.c:2352
 msgid "SIM check..."
 msgstr "Vérification SIM..."
 
-#: ../src/phone.c:2287
+#: ../src/phone.c:2358
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:2406
+#: ../src/phone.c:2404
+msgid "Name: "
+msgstr "Nom: "
+
+#: ../src/phone.c:2411
+msgid "Number: "
+msgstr "Numéro: "
+
+#: ../src/phone.c:2425
+msgid "New contact"
+msgstr "Nouveau contact"
+
+#: ../src/phone.c:2427
+msgid "Edit contact: "
+msgstr "Modifier contact: "
+
+#: ../src/phone.c:2554
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:2422
+#: ../src/phone.c:2570
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:2446
+#: ../src/phone.c:2594
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:2482
+#: ../src/phone.c:2630
 msgid "Could not request new message indications"
 msgstr "Impossible d'obtenir des notifications de nouveaux messages"
 
-#: ../src/phone.c:2493
+#: ../src/phone.c:2641
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:2501
+#: ../src/phone.c:2649
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/phone.c:2551
+#: ../src/phone.c:2699
 msgid "Message deleted"
 msgstr "Message supprimé"
 
