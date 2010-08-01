@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -170,7 +170,7 @@ int hash_set(Hash * hash, void const * key, void * value)
 		if(hash->compare(p->key, key) != 0)
 			continue;
 		if(value == NULL)
-			return (array_remove_pos(hash->entries, i) == 0)
+			return (array_remove_pos(hash->entries, i - 1) == 0)
 				? 0 : 1;
 		return _hashentry_set_value(p, value);
 	}
