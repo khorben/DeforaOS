@@ -1,74 +1,71 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
-/* This file is part of DeforaOS GServer */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Graphics GServer */
 
 
 
 #include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
-#include <System.h>
 #include "video/video.h"
+#include "gserver.h"
 
 
 /* GServer */
+/* private */
 /* types */
-typedef struct _GServer
+struct _GServer
 {
 	Event * event;
+	int event_own;
 	AppServer * appserver;
 	int loop;
-} GServer;
+};
 
 
+/* public */
 /* functions */
-static int _gserver_init(GServer * gserver);
-static void _gserver_destroy(GServer * gserver);
+/* gserver_new */
+static int _new_init(GServer * gserver, Event * event);
+static int _init_video(GServer * gserver);
 
-static int _gserver(void)
+GServer * gserver_new(Event * event)
 {
-	GServer gserver;
+	GServer * gserver;
 
-	if(_gserver_init(&gserver) != 0)
-		return 2;
-	while(gserver.loop)
+	if((gserver = object_new(sizeof(*gserver))) == NULL)
+		return NULL;
+	if(_new_init(gserver, event) != 0)
 	{
-		/* FIXME */
-		gserver.loop = 0;
+		object_delete(gserver);
+		return NULL;
 	}
-	_gserver_destroy(&gserver);
-	return 2;
+	return gserver;
 }
 
-static int _init_video(GServer * gs);
-static int _gserver_init(GServer * gs)
+static int _new_init(GServer * gserver, Event * event)
 {
-	memset(gs, 0, sizeof(GServer));
-	if((gs->event = event_new()) != NULL
-			&& (gs->appserver = appserver_new_event("GServer",
-					ASO_LOCAL, gs->event)) != NULL
-			&& _init_video(gs) == 0)
+	if((gserver->event = event) != NULL)
+		gserver->event_own = 0;
+	else if((gserver->event = event_new()) == NULL)
+		return -1;
+	else
+		gserver->event_own = 1;
+	if((gserver->appserver = appserver_new_event("GServer",
+					ASO_LOCAL, gserver->event)) != NULL
+			&& _init_video(gserver) == 0)
 	{
-		gs->loop = 1;
+		gserver->loop = 1;
 		return 0;
 	}
-	event_delete(gs->event);
-	if(gs->appserver)
-		appserver_delete(gs->appserver);
-	return 1;
+	if(gserver->appserver != NULL)
+		appserver_delete(gserver->appserver);
+	if(gserver->event_own != 0)
+		event_delete(gserver->event);
+	return -1;
 }
 
-static void _gserver_destroy(GServer * gs)
-{
-	if(gs->appserver)
-		appserver_delete(gs->appserver);
-	if(gs->event)
-		event_delete(gs->event);
-}
-
-
-/* video */
-static int _init_video(GServer * gs)
+static int _init_video(GServer * gserver)
 	/* FIXME ask Hardware what to load instead of hard-coding vesa */
 {
 	void * handle;
@@ -90,8 +87,23 @@ static int _init_video(GServer * gs)
 }
 
 
-/* main */
-int main(int argc, char * argv[])
+/* gserver_delete */
+void gserver_delete(GServer * gserver)
 {
-	return _gserver();
+	if(gserver->appserver != NULL)
+		appserver_delete(gserver->appserver);
+	if(gserver->event != NULL)
+		event_delete(gserver->event);
+	object_delete(gserver);
+}
+
+
+/* useful */
+int gserver_loop(GServer * gserver)
+{
+	int ret = 0;
+
+	while(gserver->loop == 1)
+		ret |= event_loop(gserver->event);
+	return ret;
 }

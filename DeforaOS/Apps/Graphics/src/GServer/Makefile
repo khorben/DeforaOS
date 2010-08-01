@@ -18,19 +18,25 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) -s . $(PACKAGE)-$(VERSION)
-	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+	$(RM) -r -- $(PACKAGE)-$(VERSION)
+	$(LN) -s -- . $(PACKAGE)-$(VERSION)
+	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/gserver.c \
+		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/gserver.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/video/vbe.c \
 		$(PACKAGE)-$(VERSION)/src/video/vesa.c \
+		$(PACKAGE)-$(VERSION)/src/video/Makefile \
 		$(PACKAGE)-$(VERSION)/src/video/vbe.h \
 		$(PACKAGE)-$(VERSION)/src/video/video.h \
 		$(PACKAGE)-$(VERSION)/src/video/project.conf \
+		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/TODO \
 		$(PACKAGE)-$(VERSION)/project.conf
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -- $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

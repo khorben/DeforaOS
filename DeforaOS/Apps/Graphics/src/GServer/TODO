@@ -1,0 +1,11 @@
+- license headers
+- implement the GL primitives in the video plug-in?
+  * load the plug-in before appserver_new()
+  * dlsym(NULL) works?
+- write a plug-in for framebuffers (eg TinyGL?)
+- define GServer's interface (basic OpenGL primitives)
+- test and commit float and double support in libSystem (teacup...)
+- window management (draw each client to its own window)
+- window manager behavior as a plug-in
+- determine if acceleration is likely (MesaGL...)
+- write/adapt a Gtk+ backend (cairo/glitz...), beware of glib's own loop

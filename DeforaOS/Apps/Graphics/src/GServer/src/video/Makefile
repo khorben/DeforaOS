@@ -36,10 +36,10 @@ vesa.o: vesa.c
 	$(CC) $(vesa_CFLAGS) -c vesa.c
 
 clean:
-	$(RM) $(vesa_OBJS)
+	$(RM) -- $(vesa_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 
