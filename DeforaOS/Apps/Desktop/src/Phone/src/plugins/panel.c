@@ -39,6 +39,7 @@ typedef enum _PanelSignal
 
 typedef struct _Panel
 {
+	guint source;
 	PanelSignal signal;
 	GtkWidget * hbox;
 	GtkWidget * icon;
@@ -80,8 +81,6 @@ static int _panel_init(PhonePlugin * plugin)
 {
 	Panel * panel;
 	PangoFontDescription * bold;
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -89,6 +88,7 @@ static int _panel_init(PhonePlugin * plugin)
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return 1;
 	plugin->priv = panel;
+	panel->source = 0;
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	panel->signal = -1;
@@ -97,14 +97,6 @@ static int _panel_init(PhonePlugin * plugin)
 			G_CALLBACK(_on_plug_delete_event), panel);
 	g_signal_connect_swapped(G_OBJECT(panel->icon), "embedded", G_CALLBACK(
 				_on_plug_embedded), panel);
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PHONE_EMBED_MESSAGE, FALSE);
-	client->data_format = 32;
-	client->data.l[0] = gtk_plug_get_id(GTK_PLUG(panel->icon));
-	gdk_event_send_clientmessage_toall(&event);
 	panel->hbox = gtk_hbox_new(FALSE, 2);
 	panel->image = gtk_image_new();
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->image, FALSE, TRUE, 0);
@@ -117,18 +109,43 @@ static int _panel_init(PhonePlugin * plugin)
 	gtk_widget_show_all(panel->icon);
 	gtk_widget_map(panel->icon);
 	pango_font_description_free(bold);
+	_on_plug_delete_event(panel);
 	return 0;
 }
 
 static gboolean _on_plug_delete_event(gpointer data)
 {
-	/* FIXME start sending messages around */
+	Panel * panel = data;
+	GdkEvent event;
+	GdkEventClient * client = &event.client;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(panel->source == 0)
+		panel->source = g_timeout_add(5000, _on_plug_delete_event,
+				panel);
+	memset(&event, 0, sizeof(event));
+	client->type = GDK_CLIENT_EVENT;
+	client->window = NULL;
+	client->send_event = TRUE;
+	client->message_type = gdk_atom_intern(PHONE_EMBED_MESSAGE, FALSE);
+	client->data_format = 32;
+	client->data.l[0] = gtk_plug_get_id(GTK_PLUG(panel->icon));
+	gdk_event_send_clientmessage_toall(&event);
 	return TRUE;
 }
 
 static void _on_plug_embedded(gpointer data)
 {
-	/* FIXME stop sending messages around */
+	Panel * panel = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(panel->source != 0)
+		g_source_remove(panel->source);
+	panel->source = 0;
 }
 
 
