@@ -394,6 +394,7 @@ Task * todo_task_add(Todo * todo, Task * task)
 		task_set_filename(task, filename);
 		free(filename);
 		task_set_title(task, _("New task"));
+		task_save(task);
 	}
 	gtk_list_store_insert(todo->store, &iter, 0);
 	if((start = task_get_start(task)) != 0)
