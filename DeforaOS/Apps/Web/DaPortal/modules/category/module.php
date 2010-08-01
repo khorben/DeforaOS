@@ -233,8 +233,10 @@ function category_get($args)
 			.'=daportal_module.module_id'
 			." AND daportal_content.enabled='1'"
 			." AND content_id='".$args['id']."'");
+	require_once('./system/user.php');
 	if($user_id != 0 && _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."'") == $user_id)
+			." WHERE content_id='".$args['id']."'") == $user_id
+			|| _user_admin($user_id))
 	{
 		$toolbar = array();
 		$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'add',
@@ -305,9 +307,12 @@ function category_link_insert($args)
 				." WHERE content_id='".$args['content_id']."'")
 			== $module)
 		return _error(INVALID_ARGUMENT);
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	require_once('./system/user.php');
 	if(_sql_single('SELECT user_id FROM daportal_content'
 			." WHERE content_id='".$args['content_id']."'")
-			!= $user_id || $_SERVER['REQUEST_METHOD'] != 'POST')
+			!= $user_id && !_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(_sql_single('SELECT content_id FROM daportal_category_content'
 			." WHERE category_id='".$args['id']."'"
@@ -329,6 +334,11 @@ function category_link_insert_new($args)
 	if($args['title'] == '')
 		return _error(INVALID_ARGUMENT);
 	$module = _module_id('category');
+	require_once('./system/user.php');
+	if(_sql_single('SELECT user_id FROM daportal_content'
+			." WHERE content_id='".$args['content_id']."'")
+			!= $user_id && !_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
 			." WHERE module_id='$module'"
 			." AND title='".$args['title']."'")) != FALSE)
@@ -336,10 +346,6 @@ function category_link_insert_new($args)
 				'content_id' => $args['content_id']));
 	else
 	{
-		if(_sql_single('SELECT user_id FROM daportal_content'
-				." WHERE content_id='".$args['content_id']."'")
-			!= $user_id)
-			return _error(PERMISSION_DENIED);
 		require_once('./system/content.php');
 		if(($id = _content_insert($args['title'], '', 1)) == FALSE)
 			return _error('Unable to insert category');
@@ -396,7 +402,7 @@ function category_modify($args)
 	if(!is_array($category) || count($category) != 1)
 		return _error('Unable to modify category');
 	$category = $category[0];
-	$title = MODIFICATION_OF_CATEGORY.' '.$category['title'];
+	$title = MODIFICATION_OF_CATEGORY.' '.$category['name'];
 	include('./modules/category/update.tpl');
 }
 
@@ -458,8 +464,10 @@ function category_set($args)
 	if(!isset($args['id']) || !is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT);
 	$id = $args['id'];
-	if($user_id == 0 || _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='$id'") != $user_id)
+	require_once('./system/user.php');
+	if($user_id == 0 || (_sql_single('SELECT user_id FROM daportal_content'
+					." WHERE content_id='$id'") != $user_id
+				&& !_user_admin($user_id)))
 		return _error(PERMISSION_DENIED);
 	$module = _module_id('category');
 	if(_sql_single('SELECT module_id FROM daportal_content'
