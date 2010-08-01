@@ -12,6 +12,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - set the secret global or per-number
+ * - apply XOR on the result of the previous buffer
+ * - XOR against a hash of the secret
+ * - settings window */
 
 
 
@@ -99,14 +104,17 @@ static int _smscrypt_destroy(PhonePlugin * plugin)
 
 /* smscrypt_event */
 static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
-		PhoneEncoding * encoding, char ** buf, size_t * len);
+		char const * number, PhoneEncoding * encoding, char ** buf,
+		size_t * len);
 static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
-		PhoneEncoding * encoding, char ** buf, size_t * len);
+		char const * number, PhoneEncoding * encoding, char ** buf,
+		size_t * len);
 
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
 	SMSCrypt * smscrypt = plugin->priv;
 	va_list ap;
+	char const * number;
 	PhoneEncoding * encoding;
 	char ** buf;
 	size_t * len;
@@ -116,18 +124,20 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	{
 		/* our deal */
 		case PHONE_EVENT_SMS_RECEIVING:
+			number = va_arg(ap, char const *);
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
-			_smscrypt_event_sms_receiving(smscrypt, encoding, buf,
-					len);
+			_smscrypt_event_sms_receiving(smscrypt, number,
+					encoding, buf, len);
 			break;
 		case PHONE_EVENT_SMS_SENDING:
+			number = va_arg(ap, char const *);
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
-			_smscrypt_event_sms_sending(smscrypt, encoding, buf,
-					len);
+			_smscrypt_event_sms_sending(smscrypt, number, encoding,
+					buf, len);
 			break;
 		/* ignore the rest */
 		default:
@@ -138,7 +148,8 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 }
 
 static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
-		PhoneEncoding * encoding, char ** buf, size_t * len)
+		char const * number, PhoneEncoding * encoding, char ** buf,
+		size_t * len)
 {
 	size_t i;
 	size_t j = 0;
@@ -158,7 +169,8 @@ static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
 }
 
 static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
-		PhoneEncoding * encoding, char ** buf, size_t * len)
+		char const * number, PhoneEncoding * encoding, char ** buf,
+		size_t * len)
 {
 	size_t i;
 	size_t j = 0;

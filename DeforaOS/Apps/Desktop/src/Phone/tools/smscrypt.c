@@ -75,11 +75,12 @@ int main(int argc, char * argv[])
 	if((p = strdup(argv[1])) == NULL)
 		return 2;
 	len = strlen(p);
-	_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, &encoding, &p, &len);
+	_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, NULL, &encoding, &p,
+			&len);
 	printf("Encrypted:\n");
 	_hexdump(p, len);
-	_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING, &encoding, &p,
-			&len);
+	_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING, NULL,
+			&encoding, &p, &len);
 	printf("Message: \"%s\"\n", p);
 	free(p);
 	_smscrypt_destroy(&plugin);

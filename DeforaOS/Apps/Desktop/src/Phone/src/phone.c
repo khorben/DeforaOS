@@ -707,6 +707,7 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 	va_list ap;
 	char const * operator;
 	gdouble level;
+	char const * number;
 	GSMEncoding * encoding;
 	char ** buf;
 	size_t * len;
@@ -732,11 +733,12 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 				break;
 			case PHONE_EVENT_SMS_RECEIVING:
 			case PHONE_EVENT_SMS_SENDING:
+				number = va_arg(ap, char const *);
 				encoding = va_arg(ap, GSMEncoding *);
 				buf = va_arg(ap, char **);
 				len = va_arg(ap, size_t *);
-				plugin->event(plugin, event, encoding, buf,
-						len);
+				plugin->event(plugin, event, number, encoding,
+						buf, len);
 				break;
 			/* no arguments */
 			case PHONE_EVENT_CALL_ESTABLISHED:
@@ -2033,7 +2035,8 @@ void phone_write_send(Phone * phone)
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 	length = strlen(text);
-	phone_event(phone, PHONE_EVENT_SMS_SENDING, &encoding, &text, &length);
+	phone_event(phone, PHONE_EVENT_SMS_SENDING, number, &encoding, &text,
+			&length);
 	gsm_message_send(phone->gsm, number, encoding, text, length);
 	g_free(text);
 }
@@ -2664,8 +2667,8 @@ static int _gsm_event_message(Phone * phone, GSMEvent * event)
 		return 1; /* XXX report error */
 	memcpy(content, event->message.content, length);
 	content[length] = '\0'; /* just in case */
-	phone_event(phone, PHONE_EVENT_SMS_RECEIVING, &encoding, &content,
-			&length);
+	phone_event(phone, PHONE_EVENT_SMS_RECEIVING, event->message.number,
+			&encoding, &content, &length);
 	phone_event(phone, PHONE_EVENT_SMS_RECEIVED);
 	switch(encoding)
 	{
