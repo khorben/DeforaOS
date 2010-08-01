@@ -2684,7 +2684,7 @@ static int _gsm_event_message(Phone * phone, GSMEvent * event)
 			phone_messages_set(phone, event->message.index,
 					event->message.number,
 					event->message.date,
-					"Raw data (not shown)");
+					_("Raw data (not shown)"));
 			break;
 	}
 	free(content);
