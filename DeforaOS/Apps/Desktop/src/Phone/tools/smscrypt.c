@@ -15,6 +15,7 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -50,17 +51,36 @@ static void _hexdump(char const * buf, size_t len)
 }
 
 
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: smscrypt [-p number] message\n", stderr);
+	return 1;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
+	char const * number = NULL;
 	PhonePluginHelper helper;
 	Config * config;
 	PhoneEncoding encoding = PHONE_ENCODING_UTF8;
 	char * p;
 	size_t len;
 
-	if(argc != 2)
-		return 1;
+	while((o = getopt(argc, argv, "p:")) != -1)
+		switch(o)
+		{
+			case 'p':
+				number = optarg;
+				break;
+			default:
+				return _usage();
+		}
+	if(optind + 1 != argc)
+		return _usage();
 	config = config_new();
 	config_load(config, "/home/khorben/.phone"); /* FIXME hardcoded */
 	helper.phone = (Phone *)config;
@@ -71,17 +91,23 @@ int main(int argc, char * argv[])
 		error_print("smscrypt");
 		return 2;
 	}
-	printf("Message: \"%s\"\n", argv[1]);
-	if((p = strdup(argv[1])) == NULL)
+	if((p = strdup(argv[optind])) == NULL)
 		return 2;
-	len = strlen(p);
-	_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, NULL, &encoding, &p,
-			&len);
-	printf("Encrypted:\n");
-	_hexdump(p, len);
-	_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING, NULL,
-			&encoding, &p, &len);
 	printf("Message: \"%s\"\n", p);
+	len = strlen(p);
+	if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, number, &encoding,
+				&p, &len) != 0)
+		puts("Could not encrypt");
+	else
+	{
+		printf("Encrypted:\n");
+		_hexdump(p, len);
+		if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING, number,
+					&encoding, &p, &len) != 0)
+			puts("Could not decrypt");
+		else
+			printf("Decrypted: \"%s\"\n", p);
+	}
 	free(p);
 	_smscrypt_destroy(&plugin);
 	config_delete(config);
