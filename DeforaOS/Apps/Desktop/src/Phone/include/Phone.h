@@ -57,8 +57,10 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_SET_SIGNAL_LEVEL,	/* gdouble level */
 	PHONE_EVENT_SIM_VALID,
 	PHONE_EVENT_SMS_RECEIVED,
-	PHONE_EVENT_SMS_RECEIVING,	/* GSMEncoding *, char **, size_t * */
-	PHONE_EVENT_SMS_SENDING,	/* GSMEncoding *, char **, size_t * */
+	PHONE_EVENT_SMS_RECEIVING,	/* char const *, GSMEncoding *, char **,
+					   size_t * */
+	PHONE_EVENT_SMS_SENDING,	/* char const *, GSMEncoding *, char **,
+					   size_t * */
 	PHONE_EVENT_SMS_SENT,
 	PHONE_EVENT_SPEAKER_ON,
 	PHONE_EVENT_SPEAKER_OFF,
