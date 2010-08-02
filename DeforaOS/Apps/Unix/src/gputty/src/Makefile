@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall `pkg-config --cflags gtk+-2.0`
-CFLAGS	= -g
+CFLAGS	= -g -O2
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -lSystem
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
@@ -28,16 +28,16 @@ gputty.o: gputty.c gputty.h ../config.h
 	$(CC) $(gputty_CFLAGS) -c gputty.c
 
 clean:
-	$(RM) $(gputty_OBJS)
+	$(RM) -- $(gputty_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 gputty $(DESTDIR)$(BINDIR)/gputty
+	$(INSTALL) -m 0755 -- gputty $(DESTDIR)$(BINDIR)/gputty
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/gputty
+	$(RM) -- $(DESTDIR)$(BINDIR)/gputty
 
 .PHONY: all clean distclean install uninstall

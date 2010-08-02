@@ -18,9 +18,9 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) -s . $(PACKAGE)-$(VERSION)
-	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+	$(RM) -r -- $(PACKAGE)-$(VERSION)
+	$(LN) -s -- . $(PACKAGE)-$(VERSION)
+	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/gputty.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/gputty.h \
@@ -31,7 +31,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/INSTALL \
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/project.conf
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -- $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
