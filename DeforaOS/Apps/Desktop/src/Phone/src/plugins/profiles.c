@@ -173,6 +173,7 @@ static int _profiles_destroy(PhonePlugin * plugin)
 
 
 /* profiles_event */
+static void _event_key_tone(PhonePlugin * plugin);
 static void _event_call_incoming_do(PhonePlugin * plugin);
 static gboolean _event_call_incoming_timeout(gpointer data);
 
@@ -185,6 +186,9 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	{
 		case PHONE_EVENT_CALL_INCOMING:
 			_event_call_incoming_do(plugin);
+			break;
+		case PHONE_EVENT_KEY_TONE:
+			_event_key_tone(plugin);
 			break;
 		case PHONE_EVENT_SMS_RECEIVED:
 			if(profiles->pao == NULL)
@@ -214,6 +218,19 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 	}
 	return 0;
+}
+
+static void _event_key_tone(PhonePlugin * plugin)
+{
+	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = plugin->helper;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(profiles->pao == NULL)
+		profiles->pao = pa_context_play_sample(profiles->pac,
+				"keytone", NULL, PA_VOLUME_NORM, NULL, NULL);
 }
 
 static void _event_call_incoming_do(PhonePlugin * plugin)

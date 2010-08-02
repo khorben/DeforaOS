@@ -239,6 +239,7 @@ void on_phone_dialer_call(gpointer data)
 {
 	Phone * phone = data;
 
+	phone_event(phone, PHONE_EVENT_KEY_TONE);
 	phone_dialer_call(phone, NULL);
 }
 
@@ -250,6 +251,7 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data)
 	char const * character;
 
 	character = g_object_get_data(G_OBJECT(widget), "character");
+	phone_event(phone, PHONE_EVENT_KEY_TONE);
 	phone_dialer_append(phone, *character);
 }
 
@@ -259,6 +261,7 @@ void on_phone_dialer_hangup(gpointer data)
 {
 	Phone * phone = data;
 
+	phone_event(phone, PHONE_EVENT_KEY_TONE);
 	phone_dialer_hangup(phone);
 }
 
