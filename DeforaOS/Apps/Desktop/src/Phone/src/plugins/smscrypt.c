@@ -153,6 +153,7 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 	SMSCrypt * smscrypt = plugin->priv;
 	size_t i;
 	size_t j = 0;
+	SHA_CTX sha1;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, buf, %lu)\n", __func__, *encoding,
@@ -166,7 +167,12 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 	{
 		(*buf)[i] ^= smscrypt->buf[j];
 		smscrypt->buf[j++] ^= (*buf)[i];
-		j %= smscrypt->len;
+		if(j != smscrypt->len)
+			continue;
+		SHA1_Init(&sha1);
+		SHA1_Update(&sha1, smscrypt->buf, smscrypt->len);
+		SHA1_Final(smscrypt->buf, &sha1);
+		j = 0;
 	}
 	*encoding = PHONE_ENCODING_UTF8;
 	_smscrypt_clear(plugin);
@@ -180,6 +186,7 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 	SMSCrypt * smscrypt = plugin->priv;
 	size_t i;
 	size_t j = 0;
+	SHA_CTX sha1;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %u, buf, %lu)\n", __func__, number,
@@ -194,7 +201,12 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 	{
 		(*buf)[i] ^= smscrypt->buf[j];
 		smscrypt->buf[j++] = (*buf)[i];
-		j %= smscrypt->len;
+		if(j != smscrypt->len)
+			continue;
+		SHA1_Init(&sha1);
+		SHA1_Update(&sha1, smscrypt->buf, smscrypt->len);
+		SHA1_Final(smscrypt->buf, &sha1);
+		j = 0;
 	}
 	*encoding = PHONE_ENCODING_DATA;
 	_smscrypt_clear(plugin);
