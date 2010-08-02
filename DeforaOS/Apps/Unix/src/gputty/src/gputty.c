@@ -1,21 +1,21 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2004-2007 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2004-2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of GPuTTY */
 static char const _license[] =
 "GPuTTY is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
+"the Free Software Foundation; either version 3 of the License, or\n"
 "(at your option) any later version.\n"
 "\n"
- "GPuTTY is distributed in the hope that it will be useful,\n"
- "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
- "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
- "GNU General Public License for more details.\n"
- "\n"
- "You should have received a copy of the GNU General Public License\n"
- "along with GPuTTY; if not, write to the Free Software\n"
- "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n";
+"GPuTTY is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with GPuTTY; if not, write to the Free Software\n"
+"Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n";
 
 
 
@@ -115,7 +115,7 @@ static void _on_about(GtkWidget * widget, gpointer data)
 "- Glib\n"
 "- Gtk+\n"
 "Credits go to all Free Software contributors.";
-	char const website[] = "http://people.defora.org/~khorben/projects/gputty/";
+	char const website[] = "http://gputty.sourceforge.net/";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
@@ -143,7 +143,7 @@ static void _on_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(window), comment);
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(window), website);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
-	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
+	if(g_file_get_contents("/usr/share/common-licenses/GPL-3", &buf, &cnt,
 				NULL) == TRUE)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
 	else

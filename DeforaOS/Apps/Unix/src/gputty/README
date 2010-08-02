@@ -1,18 +1,14 @@
-GPuTTY 0.9.9 release notes
---------------------------
-
+GPuTTY 0.9.10 release notes
+---------------------------
 
 GPuTTY remembers and launches SSH sessions, using existing ssh and terminal emulator programs.
 
-
-GPuTTY is Copyright (c) 2004-2007 Pierre Pronchery and the DeforaOS Project.
-It is shipped under the terms of the GPL license, which you may read in the
-COPYING file also contained in this archive.
-
+GPuTTY is Copyright (c) 2004-2010 Pierre Pronchery.
+It is shipped under the terms of the GPL license version 3, which you may read
+in the COPYING file also contained in this archive.
 
 Please read the INSTALL file for instructions about how to compile and install
 GPuTTY.
-
 
 By default GPuTTY uses "ssh" as its ssh program, and "xterm" as its terminal
 emulator. You may change this system-wide in a /etc/gputty file:
@@ -23,6 +19,5 @@ or in your ~/.gputty file, the same way.
 
 Please read the BUGS file for information about known problems, and planned
 feature upgrades.
-
 
 Thanks for using this small program. I hope it will be useful.
