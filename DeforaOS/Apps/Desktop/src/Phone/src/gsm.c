@@ -380,7 +380,6 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 		gsm_delete(gsm);
 		return NULL;
 	}
-	gsm_reset(gsm, 0);
 	return gsm;
 }
 
