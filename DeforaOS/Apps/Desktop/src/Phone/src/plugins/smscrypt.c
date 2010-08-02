@@ -81,7 +81,7 @@ static int _smscrypt_init(PhonePlugin * plugin)
 	SMSCrypt * smscrypt;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() secret=\"%s\"\n", __func__, secret);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((smscrypt = malloc(sizeof(*smscrypt))) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
