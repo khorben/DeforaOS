@@ -13,9 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - set the secret global or per-number
- * - apply XOR on the result of the previous buffer
- * - XOR against a hash of the secret
  * - settings window */
 
 
