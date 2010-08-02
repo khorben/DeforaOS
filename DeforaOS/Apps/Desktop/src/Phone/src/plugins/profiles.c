@@ -146,6 +146,8 @@ static int _profiles_init(PhonePlugin * plugin)
 	}
 	pa_context_connect(profiles->pac, NULL, 0, NULL);
 	pa_threaded_mainloop_start(profiles->pam);
+	/* XXX may already be online, may not be desired */
+	plugin->helper->event(plugin->helper->phone, PHONE_EVENT_ONLINE);
 	return 0;
 }
 

@@ -64,6 +64,7 @@ PhonePlugin plugin =
 /* functions */
 /* openmoko_event */
 static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
+static int _event_power_on(PhonePlugin * plugin, gboolean power);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
@@ -94,6 +95,12 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 		case PHONE_EVENT_NOTIFICATION_ON:
 			/* FIXME implement */
+			break;
+		case PHONE_EVENT_OFFLINE:
+			_event_power_on(plugin, FALSE);
+			break;
+		case PHONE_EVENT_ONLINE:
+			_event_power_on(plugin, TRUE);
 			break;
 		case PHONE_EVENT_SPEAKER_ON:
 			/* XXX assumes there's an ongoing call */
@@ -142,6 +149,28 @@ static int _event_mixer_set(PhonePlugin * plugin, char const * filename)
 				NULL, NULL, NULL, &error) == FALSE)
 		ret = plugin->helper->error(NULL, error->message, 1);
 	free(pathname);
+	return ret;
+}
+
+static int _event_power_on(PhonePlugin * plugin, gboolean power)
+{
+	int ret = 0;
+	char const path[] = "/sys/bus/platform/drivers/neo1973-pm-gsm"
+		"/neo1973-pm-gsm.0/power_on";
+	int fd;
+	char buf[256];
+
+	if((fd = open(path, O_WRONLY)) < 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		return plugin->helper->error(NULL, buf, 1);
+	}
+	if(write(fd, power ? "1\n" : "0\n", 2) != 2)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		ret = plugin->helper->error(NULL, buf, 1);
+	}
+	close(fd);
 	return ret;
 }
 

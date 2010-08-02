@@ -748,6 +748,8 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_CALL_TERMINATED:
 			case PHONE_EVENT_NOTIFICATION_OFF:
 			case PHONE_EVENT_NOTIFICATION_ON:
+			case PHONE_EVENT_OFFLINE:
+			case PHONE_EVENT_ONLINE:
 			case PHONE_EVENT_SIM_VALID:
 			case PHONE_EVENT_SMS_RECEIVED:
 			case PHONE_EVENT_SMS_SENT:
