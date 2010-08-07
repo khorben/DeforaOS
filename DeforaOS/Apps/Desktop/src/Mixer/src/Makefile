@@ -34,16 +34,16 @@ main.o: main.c mixer.h ../config.h
 	$(CC) $(mixer_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(mixer_OBJS)
+	$(RM) -- $(mixer_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 mixer $(DESTDIR)$(BINDIR)/mixer
+	$(INSTALL) -m 0755 -- mixer $(DESTDIR)$(BINDIR)/mixer
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/mixer
+	$(RM) -- $(DESTDIR)$(BINDIR)/mixer
 
 .PHONY: all clean distclean install uninstall

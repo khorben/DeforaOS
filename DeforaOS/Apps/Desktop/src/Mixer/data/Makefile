@@ -13,9 +13,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 mixer.desktop $(DESTDIR)$(PREFIX)/share/applications/mixer.desktop
+	$(INSTALL) -m 0644 -- mixer.desktop $(DESTDIR)$(PREFIX)/share/applications/mixer.desktop
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/share/applications/mixer.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/mixer.desktop
 
 .PHONY: all clean distclean install uninstall
