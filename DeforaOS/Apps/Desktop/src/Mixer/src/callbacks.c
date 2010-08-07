@@ -159,13 +159,15 @@ void on_set_toggled(GtkWidget * widget, gpointer data)
 
 
 /* on_value_changed */
-void on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
+void on_value_changed(GtkWidget * widget, gpointer data)
 {
 	Mixer * mixer = data;
+	gdouble value;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %lf, %p)\n", __func__, (void*)widget,
 			value, (void*)data);
 #endif
+	value = gtk_range_get_value(GTK_RANGE(widget));
 	mixer_set_value(mixer, widget, value);
 }

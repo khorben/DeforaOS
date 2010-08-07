@@ -40,6 +40,6 @@ void on_help_about(gpointer data);
 /* controls */
 void on_enum_toggled(GtkWidget * widget, gpointer data);
 void on_set_toggled(GtkWidget * widget, gpointer data);
-void on_value_changed(GtkWidget * widget, gdouble value, gpointer data);
+void on_value_changed(GtkWidget * widget, gpointer data);
 
 #endif /* !MIXER_CALLBACKS_H */
