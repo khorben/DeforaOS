@@ -80,7 +80,7 @@ static int _volume_match(Volume * volume, mixer_devinfo_t * md);
 #endif
 
 /* callbacks */
-static void _on_value_changed(GtkWidget * widget, gpointer data);
+static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data);
 
 
 /* functions */
@@ -303,11 +303,9 @@ static int _volume_match(Volume * volume, mixer_devinfo_t * md)
 
 /* callbacks */
 /* on_value_changed */
-static void _on_value_changed(GtkWidget * widget, gpointer data)
+static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
 {
 	Volume * volume = data;
-	gdouble value;
 
-	value = gtk_range_get_value(GTK_RANGE(widget));
 	_volume_set(volume, value);
 }
