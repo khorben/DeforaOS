@@ -42,6 +42,13 @@
 /* Phone */
 /* private */
 /* types */
+typedef enum _PhoneCallType
+{
+	PHONE_CALL_TYPE_OUTGOING = 0,
+	PHONE_CALL_TYPE_INCOMING,
+	PHONE_CALL_TYPE_MISSED
+} PhoneCallType;
+
 typedef enum _PhoneContactColumn
 {
 	PHONE_CONTACT_COLUMN_ID = 0,
@@ -53,7 +60,8 @@ typedef enum _PhoneContactColumn
 
 typedef enum _PhoneLogsColumn
 {
-	PHONE_LOGS_COLUMN_TYPE = 0,
+	PHONE_LOGS_COLUMN_CALL_TYPE = 0,
+	PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY,
 	PHONE_LOGS_COLUMN_NUMBER_DISPLAY,
 	PHONE_LOGS_COLUMN_DATE,
 	PHONE_LOGS_COLUMN_DATE_DISPLAY
@@ -331,7 +339,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->di_window = NULL;
 	phone->lo_window = NULL;
 	phone->lo_store = gtk_list_store_new(PHONE_LOGS_COLUMN_COUNT,
-			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+			G_TYPE_STRING);
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
@@ -1667,7 +1676,13 @@ void phone_show_logs(Phone * phone, gboolean show)
 				"row-activated", G_CALLBACK(
 					on_phone_logs_activated), phone);
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->lo_view),
-				FALSE); /* XXX consider reverting this */
+				TRUE);
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(
+				_("Direction"), renderer, "text",
+				PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
+				column);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("To/From"),
 				renderer, "text",
@@ -2155,11 +2170,25 @@ void phone_write_send(Phone * phone)
 /* phone_call_number */
 static int _phone_call_number(Phone * phone, char const * number)
 {
+	GtkTreeIter iter;
+	time_t date;
+	struct tm t;
+	char dd[32];
+
 	if(number != NULL && phone_event(phone, PHONE_EVENT_CALLING, number)
 			!= 0)
 		return -1;
 	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
 	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, "", number);
+	gtk_list_store_append(phone->lo_store, &iter);
+	date = time(NULL);
+	gmtime_r(&date, &t);
+	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
+	gtk_list_store_set(phone->lo_store, &iter,
+			PHONE_LOGS_COLUMN_CALL_TYPE, PHONE_CALL_TYPE_OUTGOING,
+			PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, _("Outgoing"),
+			PHONE_LOGS_COLUMN_NUMBER_DISPLAY, number,
+			PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
 	return 0;
 }
 
