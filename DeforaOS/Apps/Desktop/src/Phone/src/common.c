@@ -25,7 +25,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PROGNAME "\n", stderr);
+	fputs("Usage: phone-" PROGNAME "\n", stderr);
 	return 1;
 }
 
