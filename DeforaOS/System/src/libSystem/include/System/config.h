@@ -25,6 +25,9 @@
 /* types */
 typedef Hash Config;
 
+typedef void (*ConfigForeachSectionCallback)(char const * variable,
+		char const * value, void * priv);
+
 
 /* functions */
 Config * config_new(void);
@@ -37,6 +40,9 @@ int config_set(Config * config, char const * section, char const * variable,
 		char const * value);
 
 /* useful */
+void config_foreach_section(Config * config, char const * section,
+		ConfigForeachSectionCallback callback, void * priv);
+
 int config_load(Config * config, char const * filename);
 int config_reset(Config * config);
 int config_save(Config * config, char const * filename);

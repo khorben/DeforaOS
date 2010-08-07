@@ -24,6 +24,15 @@
 
 
 /* Config */
+/* private */
+/* types */
+typedef struct _ConfigForeachSectionData
+{
+	ConfigForeachSectionCallback callback;
+	void * priv;
+} ConfigForeachSectionData;
+
+
 /* public */
 /* functions */
 /* config_new */
@@ -128,6 +137,32 @@ int config_set(Config * config, char const * section, char const * variable,
 
 
 /* useful */
+/* config_foreach_section */
+static void _foreach_section_callback(void const * key, void * value,
+		void * data);
+
+void config_foreach_section(Config * config, char const * section,
+		ConfigForeachSectionCallback callback, void * priv)
+{
+	Hash * h;
+	ConfigForeachSectionData data;
+
+	if((h = hash_get(config, section)) == NULL)
+		return; /* could not find section */
+	data.callback = callback;
+	data.priv = priv;
+	hash_foreach(h, _foreach_section_callback, &data);
+}
+
+static void _foreach_section_callback(void const * key, void * value,
+		void * data)
+{
+	ConfigForeachSectionData * priv = data;
+
+	priv->callback(key, value, priv->priv);
+}
+
+
 /* config_load */
 static int _load_isprint(int c);
 static String * _load_section(FILE * fp);
