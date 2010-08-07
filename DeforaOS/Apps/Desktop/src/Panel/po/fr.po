@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-07 02:53+0200\n"
+"POT-Creation-Date: 2010-08-08 00:11+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -53,7 +53,7 @@ msgstr "Fréquence :"
 msgid "Show desktop"
 msgstr "Afficher le bureau"
 
-#: ../src/applets/lock.c:60 ../src/applets/main.c:300
+#: ../src/applets/lock.c:60 ../src/applets/main.c:301
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
@@ -61,8 +61,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:67 ../src/panel.c:360 ../src/panel.c:365
-#: ../src/panel.c:373
+#: ../src/applets/logout.c:67 ../src/panel.c:396 ../src/panel.c:401
+#: ../src/panel.c:409
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -70,19 +70,19 @@ msgstr "Déconnexion"
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:283
+#: ../src/applets/main.c:284
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:289
+#: ../src/applets/main.c:290
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:306
+#: ../src/applets/main.c:307
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:311
+#: ../src/applets/main.c:312
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
@@ -98,61 +98,61 @@ msgstr "Échange :"
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/applets/tasks.c:728
+#: ../src/applets/tasks.c:729
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../src/applets/tasks.c:730
+#: ../src/applets/tasks.c:731
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: ../src/applets/tasks.c:732
+#: ../src/applets/tasks.c:733
 msgid "Minimize"
 msgstr "Réduire"
 
-#: ../src/applets/tasks.c:734
+#: ../src/applets/tasks.c:735
 msgid "Shade"
 msgstr "Masquer"
 
-#: ../src/applets/tasks.c:736
+#: ../src/applets/tasks.c:737
 msgid "Stick"
 msgstr "Attacher"
 
-#: ../src/applets/tasks.c:738
+#: ../src/applets/tasks.c:739
 msgid "Maximize horizontally"
 msgstr "Maximiser horizontalement"
 
-#: ../src/applets/tasks.c:740
+#: ../src/applets/tasks.c:741
 msgid "Maximize vertically"
 msgstr "Maximiser verticalement"
 
-#: ../src/applets/tasks.c:744
+#: ../src/applets/tasks.c:745
 msgid "Change desktop"
 msgstr "Déplacer vers le bureau"
 
-#: ../src/applets/tasks.c:781
+#: ../src/applets/tasks.c:782
 msgid "Maximize"
 msgstr "Maximiser"
 
-#: ../src/panel.c:352
+#: ../src/panel.c:388
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:413
+#: ../src/panel.c:449
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:429 ../src/panel.c:434 ../src/panel.c:441
+#: ../src/panel.c:465 ../src/panel.c:470 ../src/panel.c:477
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:433
+#: ../src/panel.c:469
 msgid "Restart"
 msgstr "Redémarrer"
 
