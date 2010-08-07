@@ -62,7 +62,7 @@ typedef enum _PhoneLogsColumn
 {
 	PHONE_LOGS_COLUMN_CALL_TYPE = 0,
 	PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY,
-	PHONE_LOGS_COLUMN_NUMBER_DISPLAY,
+	PHONE_LOGS_COLUMN_NUMBER,
 	PHONE_LOGS_COLUMN_DATE,
 	PHONE_LOGS_COLUMN_DATE_DISPLAY
 } PhoneLogsColumn;
@@ -859,52 +859,58 @@ int phone_load(Phone * phone, char const * plugin)
 }
 
 
-/* messages */
-/* phone_messages_set */
-void phone_messages_set(Phone * phone, unsigned int index, char const * number,
-		time_t date, char const * content)
+/* logs */
+/* phone_logs_call_selected */
+void phone_logs_call_selected(Phone * phone)
+	/* XXX code duplication */
 {
-	GtkTreeModel * model = GTK_TREE_MODEL(phone->me_store);
+	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
-	gboolean valid;
-	unsigned int id;
-	char nd[32];
-	char dd[32];
-	struct tm t;
+	gchar * number = NULL;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
-			number, content);
-#endif
-	valid = gtk_tree_model_get_iter_first(model, &iter);
-	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
-	{
-		gtk_tree_model_get(model, &iter, PHONE_MESSAGE_COLUMN_ID, &id,
-				-1);
-		if(id == index)
-			break;
-	}
-	if(valid != TRUE)
-		gtk_list_store_append(phone->me_store, &iter);
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->lo_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
+			PHONE_LOGS_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
-		number = "";
-	if(content == NULL)
-		content = "";
-	/* FIXME this may cut in the middle of a UTF-8 character */
-	snprintf(nd, sizeof(nd), "%s\n%.12s%s", number, content,
-			(strlen(content) > 12) ? "..." : "");
-	gmtime_r(&date, &t);
-	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
-	gtk_list_store_set(phone->me_store, &iter,
-			PHONE_MESSAGE_COLUMN_ID, index,
-			PHONE_MESSAGE_COLUMN_NUMBER, number,
-			PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, nd,
-			PHONE_MESSAGE_COLUMN_DATE, date,
-			PHONE_MESSAGE_COLUMN_DATE_DISPLAY, dd,
-			PHONE_MESSAGE_COLUMN_CONTENT, content, -1);
+		return;
+	_phone_call_number(phone, number);
+	g_free(number);
 }
 
 
+/* phone_logs_clear */
+void phone_logs_clear(Phone * phone)
+{
+	gtk_list_store_clear(phone->lo_store);
+}
+
+
+/* phone_logs_write_selected */
+void phone_logs_write_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	gchar * number = NULL;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->lo_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
+			PHONE_LOGS_COLUMN_NUMBER, &number, -1);
+	if(number == NULL)
+		return;
+	phone_show_write(phone, TRUE, number, "");
+	g_free(number);
+}
+
+
+/* messages */
 /* phone_messages_call_selected */
 void phone_messages_call_selected(Phone * phone)
 {
@@ -978,12 +984,57 @@ void phone_messages_read_selected(Phone * phone)
 }
 
 
+/* phone_messages_set */
+void phone_messages_set(Phone * phone, unsigned int index, char const * number,
+		time_t date, char const * content)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->me_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	unsigned int id;
+	char nd[32];
+	char dd[32];
+	struct tm t;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
+			number, content);
+#endif
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PHONE_MESSAGE_COLUMN_ID, &id,
+				-1);
+		if(id == index)
+			break;
+	}
+	if(valid != TRUE)
+		gtk_list_store_append(phone->me_store, &iter);
+	if(number == NULL)
+		number = "";
+	if(content == NULL)
+		content = "";
+	/* FIXME this may cut in the middle of a UTF-8 character */
+	snprintf(nd, sizeof(nd), "%s\n%.12s%s", number, content,
+			(strlen(content) > 12) ? "..." : "");
+	gmtime_r(&date, &t);
+	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
+	gtk_list_store_set(phone->me_store, &iter,
+			PHONE_MESSAGE_COLUMN_ID, index,
+			PHONE_MESSAGE_COLUMN_NUMBER, number,
+			PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, nd,
+			PHONE_MESSAGE_COLUMN_DATE, date,
+			PHONE_MESSAGE_COLUMN_DATE_DISPLAY, dd,
+			PHONE_MESSAGE_COLUMN_CONTENT, content, -1);
+}
+
+
 /* phone_messages_write */
 void phone_messages_write(Phone * phone, char const * number, char const * text)
 {
 	GtkTextBuffer * tbuf;
 
-	phone_show_write(phone, TRUE);
+	phone_show_write(phone, TRUE, "", "");
 	if(number != NULL)
 		gtk_entry_set_text(GTK_ENTRY(phone->wr_entry), number);
 	if(text != NULL)
@@ -1644,7 +1695,7 @@ void phone_show_logs(Phone * phone, gboolean show)
 				"phone-logs"); /* FIXME find sth appropriate */
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->lo_window),
-				_("Phone log"));
+				_("Phone logs"));
 		g_signal_connect_swapped(G_OBJECT(phone->lo_window),
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->lo_window);
@@ -1662,6 +1713,12 @@ void phone_show_logs(Phone * phone, gboolean show)
 				"stock_mail-compose");
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_logs_write), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_separator_tool_item_new();
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_logs_clear), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		/* view */
@@ -1686,7 +1743,7 @@ void phone_show_logs(Phone * phone, gboolean show)
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("To/From"),
 				renderer, "text",
-				PHONE_LOGS_COLUMN_NUMBER_DISPLAY, NULL);
+				PHONE_LOGS_COLUMN_NUMBER, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
 				column);
 		renderer = gtk_cell_renderer_text_new();
@@ -1984,14 +2041,27 @@ void phone_show_settings(Phone * phone, gboolean show)
 
 
 /* phone_show_write */
-void phone_show_write(Phone * phone, gboolean show)
+void phone_show_write(Phone * phone, gboolean show, ...)
 {
+	va_list ap;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
 	GtkTextBuffer * tbuf;
+	char const * number;
+	char const * content;
 
+	if(show == FALSE)
+	{
+		if(phone->lo_window != NULL)
+			gtk_widget_hide(phone->lo_window);
+		return;
+	}
+	va_start(ap, show);
+	number = va_arg(ap, char const *);
+	content = va_arg(ap, char const *);
+	va_end(ap);
 	if(phone->wr_window == NULL)
 	{
 		phone->wr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -2072,10 +2142,14 @@ void phone_show_write(Phone * phone, gboolean show)
 		gtk_widget_show_all(vbox);
 		phone_write_count_buffer(phone);
 	}
-	if(show)
-		gtk_window_present(GTK_WINDOW(phone->wr_window));
-	else
-		gtk_widget_hide(phone->wr_window);
+	if(number != NULL)
+		gtk_label_set_text(GTK_LABEL(phone->wr_entry), number);
+	if(content != NULL)
+	{
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+		gtk_text_buffer_set_text(tbuf, content, -1);
+	}
+	gtk_window_present(GTK_WINDOW(phone->wr_window));
 }
 
 
@@ -2145,7 +2219,7 @@ void phone_write_send(Phone * phone)
 	size_t length;
 	GSMEncoding encoding = GSM_ENCODING_UTF8;
 
-	phone_show_write(phone, TRUE);
+	phone_show_write(phone, TRUE, "", "");
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
@@ -2187,7 +2261,7 @@ static int _phone_call_number(Phone * phone, char const * number)
 	gtk_list_store_set(phone->lo_store, &iter,
 			PHONE_LOGS_COLUMN_CALL_TYPE, PHONE_CALL_TYPE_OUTGOING,
 			PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, _("Outgoing"),
-			PHONE_LOGS_COLUMN_NUMBER_DISPLAY, number,
+			PHONE_LOGS_COLUMN_NUMBER, number,
 			PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
 	return 0;
 }

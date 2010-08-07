@@ -90,7 +90,12 @@ void phone_show_logs(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
 void phone_show_read(Phone * phone, gboolean show, ...);
 void phone_show_settings(Phone * phone, gboolean show);
-void phone_show_write(Phone * phone, gboolean show);
+void phone_show_write(Phone * phone, gboolean show, ...);
+
+/* logs */
+void phone_logs_call_selected(Phone * phone);
+void phone_logs_clear(Phone * phone);
+void phone_logs_write_selected(Phone * phone);
 
 /* messages */
 void phone_messages_call_selected(Phone * phone);

@@ -275,7 +275,8 @@ void on_phone_logs_activated(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	/* XXX may not be the most appropriate action to take */
+	phone_logs_call_selected(phone);
 }
 
 
@@ -284,7 +285,16 @@ void on_phone_logs_call(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_logs_call_selected(phone);
+}
+
+
+/* on_phone_logs_clear */
+void on_phone_logs_clear(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_logs_clear(phone);
 }
 
 
@@ -293,7 +303,7 @@ void on_phone_logs_write(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_logs_write_selected(phone);
 }
 
 

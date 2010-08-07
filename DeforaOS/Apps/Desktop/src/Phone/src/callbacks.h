@@ -56,6 +56,7 @@ void on_phone_dialer_hangup(gpointer data);
 /* logs */
 void on_phone_logs_activated(gpointer data);
 void on_phone_logs_call(gpointer data);
+void on_phone_logs_clear(gpointer data);
 void on_phone_logs_write(gpointer data);
 
 /* messages */
