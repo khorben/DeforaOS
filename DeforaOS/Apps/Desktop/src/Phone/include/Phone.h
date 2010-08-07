@@ -77,10 +77,14 @@ typedef enum _PhoneEvent
 typedef struct _PhonePlugin PhonePlugin;
 
 typedef int (PhoneTriggerCallback)(PhonePlugin * plugin, char const * result);
+typedef void (PhoneConfigForeachCallback)(char const * variable,
+		char const * value, void * priv);
 
 typedef struct _PhonePluginHelper
 {
 	Phone * phone;
+	void (*config_foreach)(Phone * phone, char const * section,
+			PhoneConfigForeachCallback callback, void * priv);
 	char const * (*config_get)(Phone * phone, char const * section,
 			char const * variable);
 	int (*error)(Phone * phone, char const * message, int ret);

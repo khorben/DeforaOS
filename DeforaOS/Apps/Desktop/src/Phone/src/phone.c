@@ -220,6 +220,8 @@ struct _Phone
 /* prototypes */
 static int _phone_call_number(Phone * phone, char const * number);
 
+static void _phone_config_foreach(Phone * phone, char const * section,
+		PhoneConfigForeachCallback callback, void * priv);
 static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable);
 
@@ -312,6 +314,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->source = 0;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
+	phone->helper.config_foreach = _phone_config_foreach;
 	phone->helper.config_get = _phone_config_get;
 	phone->helper.error = phone_error;
 	phone->helper.event = phone_event;
@@ -1692,7 +1695,7 @@ void phone_show_logs(Phone * phone, gboolean show)
 				300);
 #if GTK_CHECK_VERSION(2, 6, 0)
 		gtk_window_set_icon_name(GTK_WINDOW(phone->me_window),
-				"phone-logs"); /* FIXME find sth appropriate */
+				"logviewer");
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->lo_window),
 				_("Phone logs"));
@@ -2264,6 +2267,14 @@ static int _phone_call_number(Phone * phone, char const * number)
 			PHONE_LOGS_COLUMN_NUMBER, number,
 			PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
 	return 0;
+}
+
+
+/* phone_config_foreach */
+static void _phone_config_foreach(Phone * phone, char const * section,
+		PhoneConfigForeachCallback callback, void * priv)
+{
+	config_foreach_section(phone->config, section, callback, priv);
 }
 
 
