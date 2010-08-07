@@ -30,8 +30,8 @@ pdu: $(pdu_OBJS)
 	$(CC) -o pdu $(pdu_OBJS) $(pdu_LDFLAGS)
 
 smscrypt_OBJS = smscrypt.o
-smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0`
-smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lSystem -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
+smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0` -lSystem -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 
 smscrypt: $(smscrypt_OBJS)
 	$(CC) -o smscrypt $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
