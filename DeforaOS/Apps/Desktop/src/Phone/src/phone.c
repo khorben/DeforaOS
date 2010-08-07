@@ -51,6 +51,16 @@ typedef enum _PhoneContactColumn
 #define PHONE_CONTACT_COLUMN_LAST	PHONE_CONTACT_COLUMN_NUMBER
 #define PHONE_CONTACT_COLUMN_COUNT	(PHONE_CONTACT_COLUMN_LAST + 1)
 
+typedef enum _PhoneLogsColumn
+{
+	PHONE_LOGS_COLUMN_TYPE = 0,
+	PHONE_LOGS_COLUMN_NUMBER_DISPLAY,
+	PHONE_LOGS_COLUMN_DATE,
+	PHONE_LOGS_COLUMN_DATE_DISPLAY
+} PhoneLogsColumn;
+#define PHONE_LOGS_COLUMN_LAST		PHONE_LOGS_COLUMN_DATE_DISPLAY
+#define PHONE_LOGS_COLUMN_COUNT		(PHONE_LOGS_COLUMN_LAST + 1)
+
 typedef enum _PhoneMessageColumn
 {
 	PHONE_MESSAGE_COLUMN_ID = 0,
@@ -162,6 +172,11 @@ struct _Phone
 	GtkWidget * di_window;
 	GtkWidget * di_entry;
 
+	/* logs */
+	GtkWidget * lo_window;
+	GtkListStore * lo_store;
+	GtkWidget * lo_view;
+
 	/* messages */
 	GtkWidget * me_window;
 	GtkListStore * me_store;
@@ -195,6 +210,8 @@ struct _Phone
 
 
 /* prototypes */
+static int _phone_call_number(Phone * phone, char const * number);
+
 static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable);
 
@@ -312,6 +329,9 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->de_window = NULL;
 #endif
 	phone->di_window = NULL;
+	phone->lo_window = NULL;
+	phone->lo_store = gtk_list_store_new(PHONE_LOGS_COLUMN_COUNT,
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
@@ -685,8 +705,7 @@ void phone_dialer_call(Phone * phone, char const * number)
 		number = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	if(number[0] == '\0')
 		number = NULL; /* call the last number dialled */
-	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
-	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
+	_phone_call_number(phone, number);
 }
 
 
@@ -725,6 +744,14 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 		va_start(ap, event);
 		switch(event)
 		{
+			case PHONE_EVENT_BATTERY_LEVEL:
+				level = va_arg(ap, gdouble);
+				ret |= plugin->event(plugin, event, level);
+				break;
+			case PHONE_EVENT_CALLING:
+				number = va_arg(ap, char const *);
+				ret |= plugin->event(plugin, event, number);
+				break;
 			case PHONE_EVENT_SET_OPERATOR:
 				operator = va_arg(ap, char const *);
 				ret |= plugin->event(plugin, event, operator);
@@ -747,6 +774,7 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_CALL_INCOMING:
 			case PHONE_EVENT_CALL_OUTGOING:
 			case PHONE_EVENT_CALL_TERMINATED:
+			case PHONE_EVENT_FUNCTIONAL:
 			case PHONE_EVENT_KEY_TONE:
 			case PHONE_EVENT_NOTIFICATION_OFF:
 			case PHONE_EVENT_NOTIFICATION_ON:
@@ -884,8 +912,7 @@ void phone_messages_call_selected(Phone * phone)
 			PHONE_MESSAGE_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
-	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
-	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
+	_phone_call_number(phone, number);
 	g_free(number);
 }
 
@@ -968,8 +995,7 @@ void phone_read_call(Phone * phone)
 		return;
 	if((number = gtk_label_get_text(GTK_LABEL(phone->re_number))) == NULL)
 		return;
-	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
-	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
+	_phone_call_number(phone, number);
 }
 
 
@@ -1590,6 +1616,82 @@ void phone_show_dialer(Phone * phone, gboolean show)
 }
 
 
+/* phone_show_logs */
+void phone_show_logs(Phone * phone, gboolean show)
+{
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkToolItem * toolitem;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	if(phone->lo_window == NULL)
+	{
+		phone->lo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(phone->lo_window), 200,
+				300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->me_window),
+				"phone-logs"); /* FIXME find sth appropriate */
+#endif
+		gtk_window_set_title(GTK_WINDOW(phone->lo_window),
+				_("Phone log"));
+		g_signal_connect_swapped(G_OBJECT(phone->lo_window),
+				"delete-event", G_CALLBACK(on_phone_closex),
+				phone->lo_window);
+		vbox = gtk_vbox_new(FALSE, 0);
+		/* toolbar */
+		widget = gtk_toolbar_new();
+		toolitem = gtk_tool_button_new(NULL, _("Call"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"call-start");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_logs_call), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("Message"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"stock_mail-compose");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_logs_write), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		/* view */
+		widget = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
+		phone->lo_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+					phone->lo_store));
+		g_signal_connect_swapped(G_OBJECT(phone->lo_view),
+				"row-activated", G_CALLBACK(
+					on_phone_logs_activated), phone);
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->lo_view),
+				FALSE); /* XXX consider reverting this */
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("To/From"),
+				renderer, "text",
+				PHONE_LOGS_COLUMN_NUMBER_DISPLAY, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
+				column);
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("Date"),
+				renderer, "text",
+				PHONE_LOGS_COLUMN_DATE_DISPLAY, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
+				column);
+		gtk_container_add(GTK_CONTAINER(widget), phone->lo_view);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(phone->lo_window), vbox);
+		gtk_widget_show_all(vbox);
+	}
+	if(show)
+		gtk_window_present(GTK_WINDOW(phone->lo_window));
+	else
+		gtk_widget_hide(phone->lo_window);
+}
+
+
 /* phone_show_messages */
 void phone_show_messages(Phone * phone, gboolean show)
 {
@@ -1670,7 +1772,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
 				FALSE); /* XXX consider reverting this */
 		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("From"),
+		column = gtk_tree_view_column_new_with_attributes(_("To/From"),
 				renderer, "text",
 				PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->me_view),
@@ -2050,6 +2152,18 @@ void phone_write_send(Phone * phone)
 
 
 /* private */
+/* phone_call_number */
+static int _phone_call_number(Phone * phone, char const * number)
+{
+	if(number != NULL && phone_event(phone, PHONE_EVENT_CALLING, number)
+			!= 0)
+		return -1;
+	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, "", number);
+	return 0;
+}
+
+
 /* phone_config_get */
 static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable)
@@ -2509,7 +2623,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_ERROR:
 			return _gsm_event_error(phone, event);
 		case GSM_EVENT_TYPE_BATTERY_CHARGE:
-			/* FIXME implement */
+			phone_event(phone, PHONE_EVENT_BATTERY_LEVEL,
+					event->battery_charge.level + 0.0);
 			return 0;
 		case GSM_EVENT_TYPE_CALL_PRESENTATION:
 			/* FIXME convert number, contact will be automatic */
@@ -2550,6 +2665,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 #endif
+			phone_event(phone, PHONE_EVENT_FUNCTIONAL);
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
@@ -2731,7 +2847,8 @@ static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity)
 		case GSM_PHONE_ACTIVITY_UNKNOWN:
 			break; /* what should we do? */
 		case GSM_PHONE_ACTIVITY_RINGING:
-			phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, NULL,
+			/* FIXME is this really incoming? */
+			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, NULL,
 					NULL);
 			break;
 	}

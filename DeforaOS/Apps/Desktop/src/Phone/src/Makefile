@@ -1,13 +1,13 @@
 SUBDIRS	= plugins
-TARGETS	= phone phone-contacts phone-dialer phone-messages phone-settings
+TARGETS	= phone phone-contacts phone-dialer phone-logs phone-messages phone-settings
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS= -I $(PREFIX)/include
-CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2 -pedantic `pkg-config --cflags gtk+-2.0`
+CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
+CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -lSystem
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
@@ -41,6 +41,13 @@ phone-dialer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 phone-dialer: $(phone-dialer_OBJS)
 	$(CC) -o phone-dialer $(phone-dialer_OBJS) $(phone-dialer_LDFLAGS)
+
+phone-logs_OBJS = logs.o
+phone-logs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-logs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+phone-logs: $(phone-logs_OBJS)
+	$(CC) -o phone-logs $(phone-logs_OBJS) $(phone-logs_LDFLAGS)
 
 phone-messages_OBJS = messages.o
 phone-messages_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -80,6 +87,9 @@ contacts.o: contacts.c common.c
 dialer.o: dialer.c common.c
 	$(CC) $(phone-dialer_CFLAGS) -c dialer.c
 
+logs.o: logs.c common.c
+	$(CC) $(phone-logs_CFLAGS) -c logs.c
+
 messages.o: messages.c common.c
 	$(CC) $(phone-messages_CFLAGS) -c messages.c
 
@@ -88,11 +98,11 @@ settings.o: settings.c common.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
+	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
+	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: all
@@ -104,6 +114,8 @@ install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- phone-dialer $(DESTDIR)$(BINDIR)/phone-dialer
 	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- phone-logs $(DESTDIR)$(BINDIR)/phone-logs
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- phone-messages $(DESTDIR)$(BINDIR)/phone-messages
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- phone-settings $(DESTDIR)$(BINDIR)/phone-settings
@@ -113,6 +125,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-contacts
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-dialer
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-logs
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-messages
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-settings
 

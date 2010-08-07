@@ -69,6 +69,9 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 		case PHONE_MESSAGE_SHOW_DIALER:
 			phone_show_dialer(phone, show);
 			break;
+		case PHONE_MESSAGE_SHOW_LOGS:
+			phone_show_logs(phone, show);
+			break;
 		case PHONE_MESSAGE_SHOW_MESSAGES:
 			phone_show_messages(phone, show);
 			break;
@@ -263,6 +266,34 @@ void on_phone_dialer_hangup(gpointer data)
 
 	phone_event(phone, PHONE_EVENT_KEY_TONE);
 	phone_dialer_hangup(phone);
+}
+
+
+/* logs */
+/* on_phone_logs_activated */
+void on_phone_logs_activated(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_logs_call */
+void on_phone_logs_call(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_logs_write */
+void on_phone_logs_write(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
 }
 
 

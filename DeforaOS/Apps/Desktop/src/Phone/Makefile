@@ -48,6 +48,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/phone.c \
 		$(PACKAGE)-$(VERSION)/src/contacts.c \
 		$(PACKAGE)-$(VERSION)/src/dialer.c \
+		$(PACKAGE)-$(VERSION)/src/logs.c \
 		$(PACKAGE)-$(VERSION)/src/messages.c \
 		$(PACKAGE)-$(VERSION)/src/settings.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
@@ -58,6 +59,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/phone.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/plugins/blacklist.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/engineering.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \

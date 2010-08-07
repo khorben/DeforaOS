@@ -32,6 +32,7 @@ typedef enum _PhoneMessageShow
 {
 	PHONE_MESSAGE_SHOW_CONTACTS = 0,
 	PHONE_MESSAGE_SHOW_DIALER,
+	PHONE_MESSAGE_SHOW_LOGS,
 	PHONE_MESSAGE_SHOW_MESSAGES,
 	PHONE_MESSAGE_SHOW_SETTINGS
 } PhoneMessageShow;
@@ -85,6 +86,7 @@ void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
 void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
+void phone_show_logs(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
 void phone_show_read(Phone * phone, gboolean show, ...);
 void phone_show_settings(Phone * phone, gboolean show);
