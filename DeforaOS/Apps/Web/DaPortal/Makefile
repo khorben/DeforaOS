@@ -339,12 +339,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/project/bug_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/project/download.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/index.php \
 		$(PACKAGE)-$(VERSION)/modules/project/lang.de.php \
 		$(PACKAGE)-$(VERSION)/modules/project/lang.fr.php \
 		$(PACKAGE)-$(VERSION)/modules/project/module.php \
-		$(PACKAGE)-$(VERSION)/modules/project/package.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/project_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/project_submitted.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/project_update.tpl \
