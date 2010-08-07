@@ -15,7 +15,6 @@
 
 
 
-#define DEBUG
 #include <System.h>
 #ifdef DEBUG
 # include <stdio.h>
