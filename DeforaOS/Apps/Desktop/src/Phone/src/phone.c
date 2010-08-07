@@ -224,6 +224,8 @@ static void _phone_config_foreach(Phone * phone, char const * section,
 		PhoneConfigForeachCallback callback, void * priv);
 static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable);
+static int _phone_config_set(Phone * phone, char const * section,
+		char const * variable, char const * value);
 
 static GtkWidget * _phone_create_button(char const * icon, char const * label);
 static GtkWidget * _phone_create_dialpad(Phone * phone,
@@ -316,6 +318,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
 	phone->helper.config_foreach = _phone_config_foreach;
 	phone->helper.config_get = _phone_config_get;
+	phone->helper.config_set = _phone_config_set;
 	phone->helper.error = phone_error;
 	phone->helper.event = phone_event;
 	phone->helper.queue = _phone_queue;
@@ -2283,6 +2286,14 @@ static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable)
 {
 	return config_get(phone->config, section, variable);
+}
+
+
+/* phone_config_set */
+static int _phone_config_set(Phone * phone, char const * section,
+		char const * variable, char const * value)
+{
+	return config_set(phone->config, section, variable, value);
 }
 
 

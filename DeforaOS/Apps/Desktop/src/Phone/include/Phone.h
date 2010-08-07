@@ -87,6 +87,8 @@ typedef struct _PhonePluginHelper
 			PhoneConfigForeachCallback callback, void * priv);
 	char const * (*config_get)(Phone * phone, char const * section,
 			char const * variable);
+	int (*config_set)(Phone * phone, char const * section,
+			char const * variable, char const * value);
 	int (*error)(Phone * phone, char const * message, int ret);
 	int (*event)(Phone * phone, PhoneEvent event, ...);
 	int (*queue)(Phone * phone, char const * command);
