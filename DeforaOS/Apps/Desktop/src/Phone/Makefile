@@ -24,6 +24,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/phone-contacts.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-dialer.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-log.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-messages.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-00.png \

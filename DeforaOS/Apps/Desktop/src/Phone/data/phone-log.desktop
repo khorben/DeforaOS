@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Phone log
+Exec=phone-log
+Icon=phone-log
+Type=Application
+Categories=Network;Telephony;GTK;
+StartupNotify=true
