@@ -56,7 +56,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"SMS encryption",
-	NULL,
+	"application-certificate",
 	_smscrypt_init,
 	_smscrypt_destroy,
 	_smscrypt_event,

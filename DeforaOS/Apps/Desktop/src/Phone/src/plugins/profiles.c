@@ -98,7 +98,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"Profiles",
-	"gnome-settings",
+	"system-config-users",
 	_profiles_init,
 	_profiles_destroy,
 	_profiles_event,

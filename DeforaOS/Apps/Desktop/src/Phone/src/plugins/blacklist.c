@@ -49,7 +49,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"Blacklist",
-	NULL,
+	"network-error",
 	_blacklist_init,
 	_blacklist_destroy,
 	_blacklist_event,
