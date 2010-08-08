@@ -152,14 +152,15 @@ static int _do_flat(Disas * disas, off_t offset, size_t size)
 	ArchInstruction * ai;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, 0x%zx, 0x%zx) arch=\"%s\"\n", __func__,
-			disas, offset, size, as_get_arch(disas->as));
+	fprintf(stderr, "DEBUG: %s(%p, 0x%lx, 0x%lx) arch=\"%s\"\n", __func__,
+			disas, (unsigned long)offset, (unsigned long)size,
+			as_get_arch(disas->as));
 #endif
 	if(fseek(disas->fp, offset, SEEK_SET) != 0)
 		return _disas_error(disas->filename, 1);
 	if((disas->arch = arch_new(as_get_arch(disas->as))) == NULL)
 		return error_print("disas");
-	printf("\n%08zx:\n", offset);
+	printf("\n%08lx:\n", (unsigned long)offset);
 	for(i = 0; i < size; i++)
 	{
 		printf("%5zx: ", i);
@@ -288,6 +289,9 @@ static int _do_elf32(Disas * disas, Elf32_Ehdr * ehdr)
 	size_t shstrtab_cnt = 0;
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() e_shnum=%u\n", __func__, ehdr->e_shnum);
+#endif
 	if((shdr = _do_elf32_shdr(disas->filename, disas->fp, ehdr)) == NULL)
 		return 1;
 	if(_do_elf32_strtab(disas, shdr, ehdr->e_shnum, ehdr->e_shstrndx,
