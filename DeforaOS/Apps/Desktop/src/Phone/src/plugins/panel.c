@@ -200,7 +200,10 @@ static int _panel_destroy(PhonePlugin * plugin)
 {
 	Panel * panel = plugin->priv;
 
-	_on_plug_embedded(panel);
+	if(panel->battery_timeout != 0)
+		g_source_remove(panel->battery_timeout);
+	if(panel->timeout != 0)
+		g_source_remove(panel->timeout);
 	gtk_widget_destroy(panel->hbox);
 	return 0;
 }
