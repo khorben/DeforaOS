@@ -2157,11 +2157,24 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 /* phone_unload_all */
 void phone_unload_all(Phone * phone)
 {
+	gboolean valid;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
 	size_t i;
 	PhonePlugin * plugin;
 
 	/* view */
-	gtk_list_store_clear(phone->se_store);
+	model = GTK_TREE_MODEL(phone->se_store);
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;)
+	{
+		plugin = NULL;
+		gtk_tree_model_get(model, &iter, PHONE_SETTINGS_COLUMN_PLUGIN,
+				&plugin, -1);
+		if(plugin == NULL)
+			valid = gtk_tree_model_iter_next(model, &iter);
+		else
+			valid = gtk_list_store_remove(phone->se_store, &iter);
+	}
 	/* triggers */
 	for(i = 0; i < phone->triggers_cnt; i++)
 		free(phone->triggers[i].trigger);
