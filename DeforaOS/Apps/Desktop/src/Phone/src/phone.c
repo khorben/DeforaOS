@@ -2072,11 +2072,12 @@ void phone_show_settings(Phone * phone, gboolean show)
 
 
 /* phone_show_system */
+static void _on_system_cancel(gpointer data);
+
 void phone_show_system(Phone * phone, gboolean show)
 {
 	GtkWidget * vbox;
 	GtkWidget * widget;
-	char const * device;
 	GtkWidget * bbox;
 
 	/* XXX creation of this window is not cached for performance reasons */
@@ -2109,12 +2110,6 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_file_chooser_button_new(_("Set the phone device"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
-	if((device = config_get(phone->config, NULL, "device")) == NULL)
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(
-					widget), "/dev");
-	else
-		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget),
-				device);
 	phone->sy_device = widget;
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
 	phone->sy_flow = gtk_check_button_new_with_label(
@@ -2124,13 +2119,37 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_system_cancel), phone);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(phone->sy_window), vbox);
 	gtk_widget_show_all(vbox);
+	_on_system_cancel(phone);
 	gtk_window_present(GTK_WINDOW(phone->sy_window));
+}
+
+static void _on_system_cancel(gpointer data)
+{
+	Phone * phone = data;
+	char const * p;
+
+	if((p = config_get(phone->config, NULL, "device")) == NULL)
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(
+					phone->sy_device), "/dev");
+	else
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
+					phone->sy_device), p);
+	if((p = config_get(phone->config, NULL, "hwflow")) != NULL
+			&& strtoul(p, NULL, 10) != 0)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(phone->sy_flow),
+				TRUE);
+	else
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(phone->sy_flow),
+				FALSE);
+	gtk_widget_hide(phone->sy_window);
 }
 
 
@@ -2947,7 +2966,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			return 0;
 		case GSM_EVENT_TYPE_MUTE:
 			if(phone->ca_window != NULL)
-				gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 							phone->ca_mute),
 						event->mute.mute);
 			return 0;
