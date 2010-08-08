@@ -222,6 +222,7 @@ static int _phone_call_number(Phone * phone, char const * number);
 
 static void _phone_config_foreach(Phone * phone, char const * section,
 		PhoneConfigForeachCallback callback, void * priv);
+static char * _phone_config_filename(void);
 static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable);
 static int _phone_config_set(Phone * phone, char const * section,
@@ -372,18 +373,12 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 
 static void _new_config(Phone * phone)
 {
-	char const * homedir;
-	size_t len;
 	char * filename;
 
 	if((phone->config = config_new()) == NULL)
 		return;
-	if((homedir = getenv("HOME")) == NULL)
-		homedir = g_get_home_dir();
-	len = strlen(homedir) + 1 + sizeof(PHONE_CONFIG_FILE);
-	if((filename = malloc(len)) == NULL)
+	if((filename = _phone_config_filename()) == NULL)
 		return;
-	snprintf(filename, len, "%s/%s", homedir, PHONE_CONFIG_FILE);
 	config_load(phone->config, filename); /* we can ignore errors */
 	free(filename);
 }
@@ -2273,6 +2268,23 @@ static int _phone_call_number(Phone * phone, char const * number)
 }
 
 
+/* phone_config_filename */
+static char * _phone_config_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(PHONE_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, PHONE_CONFIG_FILE);
+	return filename;
+}
+
+
 /* phone_config_foreach */
 static void _phone_config_foreach(Phone * phone, char const * section,
 		PhoneConfigForeachCallback callback, void * priv)
@@ -2293,7 +2305,16 @@ static char const * _phone_config_get(Phone * phone, char const * section,
 static int _phone_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value)
 {
-	return config_set(phone->config, section, variable, value);
+	int ret;
+	char * filename;
+
+	if(config_set(phone->config, section, variable, value) != 0)
+		return -1;
+	if((filename = _phone_config_filename()) == NULL)
+		return -1;
+	ret = config_save(phone->config, filename);
+	free(filename);
+	return ret;
 }
 
 
