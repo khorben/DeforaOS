@@ -290,6 +290,7 @@ static int _section(State * state)
 {
 	int ret;
 	char const * string;
+	size_t len;
 	char * section = NULL;
 
 #ifdef DEBUG
@@ -299,8 +300,10 @@ static int _section(State * state)
 	string = (state->token != NULL) ? token_get_string(state->token) : NULL;
 	if(string != NULL && _parser_is_code(state, AS_CODE_WORD))
 	{
-		if((section = strdup(token_get_string(state->token))) == NULL)
+		len = strlen(token_get_string(state->token)) + 2;
+		if((section = malloc(len)) == NULL)
 			return ret | error_set_code(1, "%s", strerror(errno));
+		snprintf(section, len, ".%s", token_get_string(state->token));
 		ret |= _parser_scan(state);
 	}
 	else
