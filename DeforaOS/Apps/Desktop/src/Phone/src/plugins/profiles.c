@@ -162,6 +162,8 @@ static int _profiles_destroy(PhonePlugin * plugin)
 #endif
 	if(profiles->source != 0)
 		g_source_remove(profiles->source);
+	if(profiles->window != NULL)
+		gtk_widget_destroy(profiles->window);
 	if(profiles->pao != NULL)
 		pa_operation_cancel(profiles->pao);
 	if(profiles->pac != NULL)

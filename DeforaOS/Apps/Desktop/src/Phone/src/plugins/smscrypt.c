@@ -114,6 +114,8 @@ static int _smscrypt_destroy(PhonePlugin * plugin)
 {
 	SMSCrypt * smscrypt = plugin->priv;
 
+	if(smscrypt->window != NULL)
+		gtk_widget_destroy(smscrypt->window);
 	free(smscrypt);
 	return 0;
 }
