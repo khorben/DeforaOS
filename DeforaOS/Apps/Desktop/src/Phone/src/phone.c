@@ -210,7 +210,7 @@ struct _Phone
 	/* system preferences */
 	GtkWidget * sy_window;
 	GtkWidget * sy_device;
-	GtkWidget * sy_flow;
+	GtkWidget * sy_hwflow;
 
 	/* write */
 	GtkWidget * wr_window;
@@ -2073,6 +2073,7 @@ void phone_show_settings(Phone * phone, gboolean show)
 
 /* phone_show_system */
 static void _on_system_cancel(gpointer data);
+static void _on_system_ok(gpointer data);
 
 void phone_show_system(Phone * phone, gboolean show)
 {
@@ -2112,9 +2113,9 @@ void phone_show_system(Phone * phone, gboolean show)
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	phone->sy_device = widget;
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
-	phone->sy_flow = gtk_check_button_new_with_label(
+	phone->sy_hwflow = gtk_check_button_new_with_label(
 			_("Enable flow control"));
-	gtk_box_pack_start(GTK_BOX(vbox), phone->sy_flow, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->sy_hwflow, FALSE, TRUE, 4);
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
@@ -2123,6 +2124,8 @@ void phone_show_system(Phone * phone, gboolean show)
 				_on_system_cancel), phone);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_system_ok), phone);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(phone->sy_window), vbox);
@@ -2144,11 +2147,32 @@ static void _on_system_cancel(gpointer data)
 					phone->sy_device), p);
 	if((p = config_get(phone->config, NULL, "hwflow")) != NULL
 			&& strtoul(p, NULL, 10) != 0)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(phone->sy_flow),
-				TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					phone->sy_hwflow), TRUE);
 	else
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(phone->sy_flow),
-				FALSE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					phone->sy_hwflow), FALSE);
+	gtk_widget_hide(phone->sy_window);
+}
+
+static void _on_system_ok(gpointer data)
+{
+	Phone * phone = data;
+	char const * p;
+	char * filename;
+
+	/* FIXME requires a restart to be applied at the moment */
+	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+						phone->sy_device))) != NULL)
+		config_set(phone->config, NULL, "device", p);
+	config_set(phone->config, NULL, "hwflow", gtk_toggle_button_get_active(
+				GTK_TOGGLE_BUTTON(phone->sy_hwflow))
+			? "1" : "0");
+	if((filename = _phone_config_filename()) != NULL)
+	{
+		config_save(phone->config, filename);
+		free(filename);
+	}
 	gtk_widget_hide(phone->sy_window);
 }
 
