@@ -154,7 +154,7 @@ int task_set_end(Task * task, time_t end)
 
 	if(end == 0)
 		return config_set(task->config, NULL, "end", NULL);
-	snprintf(buf, sizeof(buf), "%u", end);
+	snprintf(buf, sizeof(buf), "%lu", (unsigned long)end);
 	return config_set(task->config, NULL, "end", buf);
 }
 
@@ -184,7 +184,7 @@ int task_set_start(Task * task, time_t start)
 {
 	char buf[16];
 
-	snprintf(buf, sizeof(buf), "%u", start);
+	snprintf(buf, sizeof(buf), "%lu", (unsigned long)start);
 	return config_set(task->config, NULL, "start", buf);
 }
 
