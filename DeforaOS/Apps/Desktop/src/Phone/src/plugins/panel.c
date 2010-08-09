@@ -16,6 +16,7 @@
 
 
 #include <System.h>
+#include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
@@ -66,6 +67,9 @@ typedef struct _Panel
 	GtkWidget * signal_image;
 	/* operator */
 	GtkWidget * operator;
+	/* preferences */
+	GtkWidget * window;
+	GtkWidget * battery;
 } Panel;
 
 
@@ -73,6 +77,7 @@ typedef struct _Panel
 static int _panel_init(PhonePlugin * plugin);
 static int _panel_destroy(PhonePlugin * plugin);
 static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static void _panel_settings(PhonePlugin * plugin);
 
 static void _panel_set_signal_level(Panel * panel, gdouble level);
 
@@ -83,11 +88,11 @@ PhonePlugin plugin =
 {
 	NULL,
 	"Panel",
-	NULL,
+	"gnome-monitor",
 	_panel_init,
 	_panel_destroy,
 	_panel_event,
-	NULL,
+	_panel_settings,
 	NULL
 };
 
@@ -143,6 +148,8 @@ static int _panel_init(PhonePlugin * plugin)
 	_panel_set_signal_level(panel, 0.0 / 0.0);
 	gtk_container_add(GTK_CONTAINER(panel->plug), panel->hbox);
 	gtk_widget_show_all(panel->hbox);
+	/* preferences */
+	panel->window = NULL;
 	pango_font_description_free(bold);
 	_on_plug_delete_event(plugin);
 	return 0;
@@ -338,4 +345,92 @@ static void _signal_level_set_image(Panel * panel, PanelSignal signal)
 	/* XXX may not be the correct size */
 	gtk_image_set_from_icon_name(GTK_IMAGE(panel->signal_image),
 			icons[signal], GTK_ICON_SIZE_SMALL_TOOLBAR);
+}
+
+
+/* panel_settings */
+static void _on_settings_cancel(gpointer data);
+static gboolean _on_settings_closex(gpointer data);
+static void _on_settings_ok(gpointer data);
+
+static void _panel_settings(PhonePlugin * plugin)
+{
+	Panel * panel = plugin->priv;
+	GtkWidget * vbox;
+	GtkWidget * bbox;
+	GtkWidget * widget;
+
+	if(panel->window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(panel->window));
+		return;
+	}
+	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
+	gtk_window_set_default_size(GTK_WINDOW(panel->window), 200, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(panel->window), "gnome-settings");
+#endif
+	gtk_window_set_title(GTK_WINDOW(panel->window), "Panel preferences");
+	g_signal_connect_swapped(G_OBJECT(panel->window), "delete-event",
+			G_CALLBACK(_on_settings_closex), plugin);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* check button */
+	panel->battery = gtk_check_button_new_with_label(
+			"Monitor battery activity");
+	gtk_box_pack_start(GTK_BOX(vbox), panel->battery, FALSE, TRUE, 0);
+	/* button box */
+	bbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_cancel), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_ok), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(panel->window), vbox);
+	_on_settings_cancel(plugin);
+	gtk_widget_show_all(panel->window);
+}
+
+static void _on_settings_cancel(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Panel * panel = plugin->priv;
+	char const * p;
+
+	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
+					"battery")) == NULL
+			|| strtoul(p, NULL, 10) == 0)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->battery),
+				FALSE);
+	else
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->battery),
+				TRUE);
+	gtk_widget_hide(panel->window);
+}
+
+static gboolean _on_settings_closex(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Panel * panel = plugin->priv;
+
+	gtk_widget_hide(panel->window);
+	return TRUE;
+}
+
+static void _on_settings_ok(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Panel * panel = plugin->priv;
+
+	plugin->helper->config_set(plugin->helper->phone, "panel", "battery",
+			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+					panel->battery)) ? "1" : "0");
+	/* FIXME actually apply the settings */
+	gtk_widget_hide(panel->window);
 }
