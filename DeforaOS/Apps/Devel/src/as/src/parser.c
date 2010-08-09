@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -99,17 +99,18 @@ static int _parser_scan(State * state)
 
 static int _scan_skip_meta(State * state)
 {
+	int ret = 0;
 	TokenCode code;
 
 	while(cpp_scan(state->cpp, &state->token) == 0)
 	{
 		if(state->token == NULL)
-			return 0;
+			return ret;
 		if((code = token_get_code(state->token)) < AS_CODE_META_FIRST
 				|| code > AS_CODE_META_LAST)
-			return 0;
+			return ret;
 		if(code == AS_CODE_META_ERROR)
-			_parser_error(state, "%s", token_get_string(
+			ret |= _parser_error(state, "%s", token_get_string(
 						state->token));
 		else if(code == AS_CODE_META_WARNING)
 			_parser_warning(state, "%s", token_get_string(
