@@ -13,8 +13,3 @@
   * could ship different ones according to architecture (eg k7 => i686 if not implemented)
 - IA32 opcodes may have a prefix, R/M, SIB
 - output is not byte-swapped if necessary
-- bug:
-        in      %0xab, %al
-        in      %0xcd, %ax
-        in      %0xad, %eax
-=> as: token.c:68: token_delete: Assertion `t != ((void *)0)' failed.
