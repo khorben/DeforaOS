@@ -233,6 +233,7 @@ static void _phone_config_foreach(Phone * phone, char const * section,
 static char * _phone_config_filename(void);
 static char const * _phone_config_get(Phone * phone, char const * section,
 		char const * variable);
+static int _phone_config_save(Phone * phone);
 static int _phone_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value);
 
@@ -2159,7 +2160,6 @@ static void _on_system_ok(gpointer data)
 {
 	Phone * phone = data;
 	char const * p;
-	char * filename;
 
 	/* FIXME requires a restart to be applied at the moment */
 	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
@@ -2168,11 +2168,7 @@ static void _on_system_ok(gpointer data)
 	config_set(phone->config, NULL, "hwflow", gtk_toggle_button_get_active(
 				GTK_TOGGLE_BUTTON(phone->sy_hwflow))
 			? "1" : "0");
-	if((filename = _phone_config_filename()) != NULL)
-	{
-		config_save(phone->config, filename);
-		free(filename);
-	}
+	_phone_config_save(phone);
 	gtk_widget_hide(phone->sy_window);
 }
 
@@ -2450,20 +2446,26 @@ static char const * _phone_config_get(Phone * phone, char const * section,
 }
 
 
+/* phone_config_save */
+static int _phone_config_save(Phone * phone)
+{
+	char * filename;
+
+	if((filename = _phone_config_filename()) == NULL)
+		return -1; /* XXX warn the user */
+	config_save(phone->config, filename);
+	free(filename);
+	return 0;
+}
+
+
 /* phone_config_set */
 static int _phone_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value)
 {
-	int ret;
-	char * filename;
-
 	if(config_set(phone->config, section, variable, value) != 0)
 		return -1;
-	if((filename = _phone_config_filename()) == NULL)
-		return -1;
-	ret = config_save(phone->config, filename);
-	free(filename);
-	return ret;
+	return _phone_config_save(phone);
 }
 
 
