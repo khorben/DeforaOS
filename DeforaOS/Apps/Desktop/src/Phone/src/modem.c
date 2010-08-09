@@ -592,8 +592,8 @@ int gsm_modem_message_send(GSMModem * gsmm, char const * number,
 		number++;
 	snprintf(buf2, len2, "%s%s%02lX%s%s%s%s%02lX%s\x1a", gsmm->quirks
 			& GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU ? "00" : "",
-			cmd2, strlen(number),
-			addr, pid, dcs, vp, length, data);
+			cmd2, (unsigned long)strlen(number),
+			addr, pid, dcs, vp, (unsigned long)length, data);
 	len2 = strlen(buf2); /* XXX obtain it from snprintf() */
 	if(gsmm->quirks & GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU)
 		len2 -= 2;
