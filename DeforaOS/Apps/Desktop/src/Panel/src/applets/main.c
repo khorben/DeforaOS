@@ -87,6 +87,7 @@ static gboolean _on_idle(gpointer data);
 static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
 static void _on_run(void);
+static void _on_preferences(gpointer data);
 static void _on_shutdown(gpointer data);
 static gboolean _on_timeout(gpointer data);
 
@@ -288,13 +289,15 @@ static void _on_clicked(gpointer data)
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = _main_menuitem(_("Run..."), GTK_STOCK_EXECUTE);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_run),
-			NULL);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_run), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
 			NULL);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_preferences), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -435,6 +438,15 @@ static void _on_logout(gpointer data)
 	Main * main = data;
 
 	main->helper->logout_dialog();
+}
+
+
+/* on_preferences */
+static void _on_preferences(gpointer data)
+{
+	Main * main = data;
+
+	main->helper->preferences_dialog(main->helper->panel);
 }
 
 

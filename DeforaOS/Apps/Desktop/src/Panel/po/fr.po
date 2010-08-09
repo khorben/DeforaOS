@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-10 00:58+0200\n"
+"POT-Creation-Date: 2010-08-10 01:25+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:182 ../src/panel.c:297 ../src/run.c:196
+#: ../src/applets/battery.c:182 ../src/panel.c:303 ../src/run.c:196
 #: ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
@@ -54,7 +54,7 @@ msgstr "Fréquence :"
 msgid "Show desktop"
 msgstr "Afficher le bureau"
 
-#: ../src/applets/lock.c:60 ../src/applets/main.c:301
+#: ../src/applets/lock.c:60 ../src/applets/main.c:304
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
@@ -62,28 +62,28 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:67 ../src/panel.c:391 ../src/panel.c:396
-#: ../src/panel.c:404
+#: ../src/applets/logout.c:67 ../src/panel.c:448 ../src/panel.c:453
+#: ../src/panel.c:461
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:130
+#: ../src/applets/main.c:131
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:284
+#: ../src/applets/main.c:285
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:290
+#: ../src/applets/main.c:291
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:307
+#: ../src/applets/main.c:310
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:312
+#: ../src/applets/main.c:315
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
@@ -135,25 +135,33 @@ msgstr "Déplacer vers le bureau"
 msgid "Maximize"
 msgstr "Maximiser"
 
-#: ../src/panel.c:383
+#: ../src/panel.c:115
+msgid "Invalid panel size"
+msgstr "Taille invalide pour le panel"
+
+#: ../src/panel.c:378
+msgid "Panel preferences"
+msgstr ""
+
+#: ../src/panel.c:440
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:444
+#: ../src/panel.c:508
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:460 ../src/panel.c:465 ../src/panel.c:472
+#: ../src/panel.c:524 ../src/panel.c:529 ../src/panel.c:536
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:464
+#: ../src/panel.c:528
 msgid "Restart"
 msgstr "Redémarrer"
 

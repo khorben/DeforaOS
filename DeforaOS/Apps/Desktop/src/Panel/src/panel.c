@@ -49,6 +49,9 @@ struct _Panel
 	GdkWindow * root;
 	gint root_width;		/* width of the root window	*/
 	gint root_height;		/* height of the root window	*/
+
+	/* preferences */
+	GtkWidget * pr_window;
 };
 
 
@@ -72,6 +75,7 @@ static int _panel_helper_logout_dialog(void);
 #endif
 static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
+static void _panel_helper_preferences_dialog(Panel * panel);
 static int _panel_helper_shutdown_dialog(void);
 
 
@@ -108,7 +112,7 @@ Panel * panel_new(PanelPrefs * prefs)
 		prefs->iconsize = PANEL_ICON_SIZE_LARGE;
 	if(gtk_icon_size_lookup(prefs->iconsize, &panel->icon_width,
 			&panel->icon_height) != TRUE)
-		error_set_print(PACKAGE, 0, "Invalid panel size");
+		error_set_print(PACKAGE, 0, _("Invalid panel size"));
 	panel->helper.panel = panel;
 	panel->helper.config_get = _panel_helper_config_get;
 	panel->helper.error = _panel_helper_error;
@@ -119,6 +123,7 @@ Panel * panel_new(PanelPrefs * prefs)
 	panel->helper.logout_dialog = NULL;
 #endif
 	panel->helper.position_menu = _panel_helper_position_menu;
+	panel->helper.preferences_dialog = _panel_helper_preferences_dialog;
 	panel->helper.shutdown_dialog = _panel_helper_shutdown_dialog;
 	/* root window */
 	screen = gdk_screen_get_default();
@@ -136,6 +141,7 @@ Panel * panel_new(PanelPrefs * prefs)
 #endif
 	/* panel */
 	g_idle_add(_on_idle, panel);
+	panel->pr_window = NULL;
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 4);
 #ifdef DEBUG
@@ -346,6 +352,57 @@ int panel_load(Panel * panel, char const * applet)
 }
 
 
+/* panel_show_preferences */
+static gboolean _on_preferences_delete_event(gpointer data);
+
+void panel_show_preferences(Panel * panel, gboolean show)
+{
+	GtkWidget * vbox;
+	GtkWidget * bbox;
+	GtkWidget * widget;
+
+	if(show == FALSE)
+	{
+		if(panel->pr_window != NULL)
+			gtk_widget_hide(panel->pr_window);
+		return;
+	}
+	if(panel->pr_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(panel->pr_window));
+		return;
+	}
+	panel->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(panel->pr_window), 4);
+	gtk_window_set_title(GTK_WINDOW(panel->pr_window),
+			_("Panel preferences"));
+	g_signal_connect_swapped(G_OBJECT(panel->pr_window), "delete-event",
+			G_CALLBACK(_on_preferences_delete_event), panel);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* FIXME implement */
+	bbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	/* FIXME connect callback */
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	/* FIXME connect callback */
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(panel->pr_window), vbox);
+	gtk_widget_show_all(panel->pr_window);
+}
+
+static gboolean _on_preferences_delete_event(gpointer data)
+{
+	Panel * panel = data;
+
+	gtk_widget_hide(panel->pr_window);
+	return TRUE;
+}
+
+
 /* private */
 /* functions */
 /* helpers */
@@ -433,6 +490,13 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 	else
 		*y = panel->root_height - panel->height - req.height;
 	*push_in = TRUE;
+}
+
+
+/* panel_helper_preferences_dialog */
+static void _panel_helper_preferences_dialog(Panel * panel)
+{
+	panel_show_preferences(panel, TRUE);
 }
 
 

@@ -54,4 +54,6 @@ void panel_delete(Panel * panel);
 int panel_error(Panel * panel, char const * message, int ret);
 int panel_load(Panel * panel, char const * applet);
 
+void panel_show_preferences(Panel * panel, gboolean show);
+
 # endif /* !PANEL_COMMON_H */
