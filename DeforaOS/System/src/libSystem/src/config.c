@@ -26,6 +26,12 @@
 /* Config */
 /* private */
 /* types */
+typedef struct _ConfigForeachData
+{
+	ConfigForeachCallback callback;
+	void * priv;
+} ConfigForeachData;
+
 typedef struct _ConfigForeachSectionData
 {
 	ConfigForeachSectionCallback callback;
@@ -137,6 +143,27 @@ int config_set(Config * config, char const * section, char const * variable,
 
 
 /* useful */
+/* config_foreach */
+static void _foreach_callback(void const * key, void * value, void * data);
+
+void config_foreach(Config * config, ConfigForeachCallback callback,
+		void * priv)
+{
+	ConfigForeachData data;
+
+	data.callback = callback;
+	data.priv = priv;
+	hash_foreach(config, _foreach_callback, &data);
+}
+
+static void _foreach_callback(void const * key, void * value, void * data)
+{
+	ConfigForeachData * priv = data;
+
+	priv->callback(key, priv->priv);
+}
+
+
 /* config_foreach_section */
 static void _foreach_section_callback(void const * key, void * value,
 		void * data);

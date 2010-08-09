@@ -25,6 +25,7 @@
 /* types */
 typedef Hash Config;
 
+typedef void (*ConfigForeachCallback)(char const * section, void * priv);
 typedef void (*ConfigForeachSectionCallback)(char const * variable,
 		char const * value, void * priv);
 
@@ -40,6 +41,8 @@ int config_set(Config * config, char const * section, char const * variable,
 		char const * value);
 
 /* useful */
+void config_foreach(Config * config, ConfigForeachCallback callback,
+		void * priv);
 void config_foreach_section(Config * config, char const * section,
 		ConfigForeachSectionCallback callback, void * priv);
 
