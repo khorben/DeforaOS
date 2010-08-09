@@ -16,6 +16,7 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
 #define XK_LATIN1
@@ -122,16 +123,15 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	size_t i;
 	size_t j;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
 	keyboard->layout[0] = _1234567890;
 	keyboard->layout[1] = _qwertyuiop;
 	keyboard->layout[2] = _asdfghjkl;
 	keyboard->layout[3] = _zxcvbnm;
-	/* window */
-	keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
-	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
-	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
 	screen = gdk_screen_get_default();
 	if(prefs != NULL && prefs->monitor > 0
 			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
@@ -140,13 +140,30 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	else
 		gdk_screen_get_monitor_geometry(screen, 0, &keyboard->geometry);
 	height = (keyboard->geometry.width / 12) * 3;
+	/* window */
+	if(prefs->embedded != 0)
+	{
+		keyboard->window = gtk_plug_new(0);
+		g_signal_connect_swapped(G_OBJECT(keyboard->window), "embedded",
+				G_CALLBACK(on_keyboard_embedded), keyboard);
+	}
+	else
+	{
+		keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
+		gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window),
+				FALSE);
+		gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window),
+				FALSE);
+		gtk_window_move(GTK_WINDOW(keyboard->window),
+				keyboard->geometry.x,
+				keyboard->geometry.y + keyboard->geometry.height
+				- height);
+		g_signal_connect_swapped(G_OBJECT(keyboard->window),
+				"delete-event",
+				G_CALLBACK(on_keyboard_delete_event), keyboard);
+	}
 	gtk_widget_set_size_request(keyboard->window, keyboard->geometry.width,
 			height);
-	gtk_window_move(GTK_WINDOW(keyboard->window), keyboard->geometry.x,
-			keyboard->geometry.y + keyboard->geometry.height
-			- height);
-	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
-			G_CALLBACK(on_keyboard_delete_event), keyboard);
 	/* layouts */
 	if(prefs->font != NULL)
 		keyboard->bold = pango_font_description_from_string(
@@ -186,7 +203,17 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	}
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
-	gtk_widget_show_all(keyboard->window);
+	gtk_widget_show_all(vbox);
+	if(prefs->embedded == 0)
+		gtk_widget_show(keyboard->window);
+	else
+	{
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() id=%u\n", __func__,
+				gtk_plug_get_id(GTK_PLUG(keyboard->window)));
+#endif
+		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
+	}
 	return keyboard;
 }
 
@@ -194,6 +221,9 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 /* keyboard_delete */
 void keyboard_delete(Keyboard * keyboard)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	gtk_widget_destroy(keyboard->window);
 	pango_font_description_free(keyboard->bold);
 	free(keyboard);
@@ -225,6 +255,9 @@ void keyboard_set_case(Keyboard * keyboard, KeyboardCase kcase)
 /* keyboard_show */
 void keyboard_show(Keyboard * keyboard, gboolean show)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, show ? "TRUE" : "FALSE");
+#endif
 	if(show == TRUE)
 		gtk_widget_show(keyboard->window);
 	else

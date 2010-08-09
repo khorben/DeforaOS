@@ -24,6 +24,7 @@
 /* public */
 /* functions */
 gboolean on_keyboard_delete_event(gpointer data);
+void on_keyboard_embedded(gpointer data);
 void on_keyboard_key_clicked(gpointer data, GtkWidget * key);
 gboolean on_keyboard_key_pressed(GtkWidget * key, GdkEventButton * event,
 		gpointer data);

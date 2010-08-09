@@ -38,6 +38,7 @@ typedef struct _KeyboardPrefs
 {
 	int monitor;
 	char const * font;
+	int embedded;
 } KeyboardPrefs;
 
 typedef enum _KeyboardCase { KC_LOWER, KC_UPPER } KeyboardCase;

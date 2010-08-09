@@ -38,6 +38,18 @@ gboolean on_keyboard_delete_event(gpointer data)
 }
 
 
+/* on_keyboard_embedded */
+void on_keyboard_embedded(gpointer data)
+{
+	Keyboard * keyboard = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	keyboard_show(keyboard, TRUE);
+}
+
+
 /* on_keyboard_key_clicked */
 void on_keyboard_key_clicked(gpointer data, GtkWidget * key)
 {
