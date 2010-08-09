@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -96,5 +96,5 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind != 1)
 		return _usage();
-	return _as(arch, format, argv[optind], outfile) ? 2 : 0;
+	return (_as(arch, format, argv[optind], outfile) == 0) ? 0 : 2;
 }
