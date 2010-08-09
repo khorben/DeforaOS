@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -46,6 +46,7 @@ static ArchRegister _i386_regs[] =
 static ArchInstruction _i386_set[] =
 {
 #include "80386.ins"
+#include "common.ins"
 #include "null.ins"
 };
 
