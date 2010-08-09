@@ -45,6 +45,7 @@ static ArchRegister _i586_regs[] =
 static ArchInstruction _i586_set[] =
 {
 #include "80586.ins"
+#include "common.ins"
 #include "null.ins"
 };
 

@@ -45,6 +45,7 @@ static ArchRegister _i686_regs[] =
 static ArchInstruction _i686_set[] =
 {
 #include "80686.ins"
+#include "common.ins"
 #include "null.ins"
 };
 

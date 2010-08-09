@@ -45,6 +45,7 @@ static ArchRegister _i486_regs[] =
 static ArchInstruction _i486_set[] =
 {
 #include "80486.ins"
+#include "common.ins"
 #include "null.ins"
 };
 
