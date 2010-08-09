@@ -1,6 +1,6 @@
 PACKAGE	= Keyboard
 VERSION	= 0.0.1
-SUBDIRS	= src
+SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -28,6 +28,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/keyboard.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/plug.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
