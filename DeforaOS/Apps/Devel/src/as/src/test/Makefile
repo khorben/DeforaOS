@@ -1,4 +1,4 @@
-TARGETS	= i386.o i386_real.o i486.o java.o
+TARGETS	= data.o i386.o i386_real.o i486.o java.o
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -12,6 +12,9 @@ INSTALL	= install
 
 all: $(TARGETS)
 
+data.o_OBJS = data.o
+data.o_ASFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(ASFLAGS)
+
 i386.o_OBJS = i386.o
 i386.o_ASFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(ASFLAGS)
 
@@ -23,6 +26,9 @@ i486.o_ASFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(ASFLAGS)
 
 java.o_OBJS = java.o
 java.o_ASFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(ASFLAGS) -a java -f java
+
+data.o: data.S ../as
+	$(AS) $(data.o_ASFLAGS) -o data.o data.S
 
 i386.o: i386.S ../as
 	$(AS) $(i386.o_ASFLAGS) -o i386.o i386.S
@@ -37,7 +43,7 @@ java.o: java.S ../as
 	$(AS) $(java.o_ASFLAGS) -o java.o java.S
 
 clean:
-	$(RM) -- $(i386.o_OBJS) $(i386_real.o_OBJS) $(i486.o_OBJS) $(java.o_OBJS)
+	$(RM) -- $(data.o_OBJS) $(i386.o_OBJS) $(i386_real.o_OBJS) $(i486.o_OBJS) $(java.o_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
