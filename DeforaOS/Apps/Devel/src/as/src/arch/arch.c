@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -103,6 +103,11 @@ ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 	for(i = 0; i < arch->instructions_cnt; i++)
 		if(arch->instructions[i].size == size
 				&& arch->instructions[i].opcode == opcode)
+			return &arch->instructions[i];
+	/* XXX this is experimental and may not be adequate */
+	for(i = 0; i < arch->instructions_cnt; i++)
+		if(arch->instructions[i].size == 0
+				&& arch->instructions[i].op1size == size)
 			return &arch->instructions[i];
 	return NULL;
 }
