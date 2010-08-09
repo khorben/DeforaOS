@@ -24,7 +24,6 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
-#include "Panel.h"
 #include "common.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -65,9 +64,9 @@ struct _Panel
 
 /* prototypes */
 /* helpers */
-static char const * _panel_helper_config_get(void * priv, char const * section,
-		char const * variable);
-static int _panel_helper_error(void * priv, char const * message, int ret);
+static char const * _panel_helper_config_get(Panel * panel,
+		char const * section, char const * variable);
+static int _panel_helper_error(Panel * panel, char const * message, int ret);
 #ifndef EMBEDDED
 static int _panel_helper_logout_dialog(void);
 #endif
@@ -110,7 +109,7 @@ Panel * panel_new(PanelPrefs * prefs)
 	if(gtk_icon_size_lookup(prefs->iconsize, &panel->icon_width,
 			&panel->icon_height) != TRUE)
 		error_set_print(PACKAGE, 0, "Invalid panel size");
-	panel->helper.priv = panel;
+	panel->helper.panel = panel;
 	panel->helper.config_get = _panel_helper_config_get;
 	panel->helper.error = _panel_helper_error;
 	panel->helper.icon_size = prefs->iconsize;
@@ -295,7 +294,7 @@ int panel_error(Panel * panel, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -351,11 +350,9 @@ int panel_load(Panel * panel, char const * applet)
 /* functions */
 /* helpers */
 /* panel_helper_config_get */
-static char const * _panel_helper_config_get(void * priv, char const * section,
-		char const * variable)
+static char const * _panel_helper_config_get(Panel * panel,
+		char const * section, char const * variable)
 {
-	Panel * panel = priv;
-
 	return config_get(panel->config, section, variable);
 }
 
@@ -363,11 +360,9 @@ static char const * _panel_helper_config_get(void * priv, char const * section,
 /* panel_helper_error */
 static int _error_text(char const * message, int ret);
 
-static int _panel_helper_error(void * priv, char const * message, int ret)
+static int _panel_helper_error(Panel * panel, char const * message, int ret)
 {
-	Panel * panel = priv;
-
-	if(priv == NULL)
+	if(panel == NULL)
 		return _error_text(message, ret);
 	return panel_error(panel, message, ret);
 }

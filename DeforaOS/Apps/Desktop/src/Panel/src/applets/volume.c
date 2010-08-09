@@ -129,11 +129,11 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 
 	if((volume = malloc(sizeof(*volume))) == NULL)
 	{
-		helper->error(helper->priv, "malloc", 0);
+		helper->error(helper->panel, "malloc", 0);
 		return NULL;
 	}
 	volume->helper = helper;
-	if((volume->device = helper->config_get(helper->priv, "volume",
+	if((volume->device = helper->config_get(helper->panel, "volume",
 					"device")) == NULL)
 		volume->device = "/dev/mixer";
 #ifdef AUDIO_MIXER_DEVINFO
@@ -141,7 +141,7 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 	volume->outputs = -1;
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
 	{
-		helper->error(helper->priv, volume->device, 0);
+		helper->error(helper->panel, volume->device, 0);
 		return volume;
 	}
 	for(i = 0; volume->outputs == -1 || volume->mix == -1; i++)
@@ -158,7 +158,7 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 	}
 #else
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
-		helper->error(helper->priv, volume->device, 0);
+		helper->error(helper->panel, volume->device, 0);
 #endif
 	return volume;
 }
@@ -169,10 +169,10 @@ static void _volume_delete(Volume * volume)
 {
 #ifdef AUDIO_MIXER_DEVINFO
 	if(volume->fd >= 0 && close(volume->fd) != 0)
-		volume->helper->error(volume->helper->priv, volume->device, 0);
+		volume->helper->error(volume->helper->panel, volume->device, 0);
 #else /* XXX equivalent for now */
 	if(volume->fd >= 0 && close(volume->fd) != 0)
-		volume->helper->error(volume->helper->priv, volume->device, 0);
+		volume->helper->error(volume->helper->panel, volume->device, 0);
 #endif
 	free(volume);
 }
@@ -206,7 +206,7 @@ static gdouble _volume_get(Volume * volume)
 		mc.type = AUDIO_MIXER_VALUE;
 		mc.un.value.num_channels = md.un.v.num_channels;
 		if(ioctl(volume->fd, AUDIO_MIXER_READ, &mc) < 0)
-			volume->helper->error(volume->helper->priv,
+			volume->helper->error(volume->helper->panel,
 					"AUDIO_MIXER_READ", 0);
 		else
 			ret = mc.un.value.level[0] / 255.0;
@@ -218,7 +218,7 @@ static gdouble _volume_get(Volume * volume)
 	if(volume->fd < 0)
 		return ret;
 	if(ioctl(volume->fd, MIXER_READ(SOUND_MIXER_VOLUME), &value) < 0)
-		volume->helper->error(volume->helper->priv, "MIXER_READ", 0);
+		volume->helper->error(volume->helper->panel, "MIXER_READ", 0);
 	else
 		ret = ((value & 0xff) + ((value & 0xff00) >> 8)) / 200.0;
 #endif
@@ -260,7 +260,7 @@ int _volume_set(Volume * volume, gdouble value)
 		for(j = 1; j < mc.un.value.num_channels; j++) /* XXX overflow */
 			mc.un.value.level[j] = mc.un.value.level[0];
 		if(ioctl(volume->fd, AUDIO_MIXER_WRITE, &mc) < 0)
-			ret |= volume->helper->error(volume->helper->priv,
+			ret |= volume->helper->error(volume->helper->panel,
 					"AUDIO_MIXER_WRITE", 0);
 		break;
 	}
@@ -274,7 +274,7 @@ int _volume_set(Volume * volume, gdouble value)
 	fprintf(stderr, "DEBUG: %s(%lf) 0x%04x\n", __func__, value, v);
 # endif
 	if(ioctl(volume->fd, MIXER_WRITE(SOUND_MIXER_VOLUME), &v) < 0)
-		ret |= volume->helper->error(volume->helper->priv,
+		ret |= volume->helper->error(volume->helper->panel,
 				"MIXER_WRITE", 0);
 #endif
 	return ret;

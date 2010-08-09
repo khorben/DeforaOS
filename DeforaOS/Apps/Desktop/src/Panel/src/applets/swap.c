@@ -77,7 +77,7 @@ static GtkWidget * _swap_init(PanelApplet * applet)
 
 	if((swap = malloc(sizeof(*swap))) == NULL)
 	{
-		applet->helper->error(applet->helper->priv, "malloc", 0);
+		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = swap;
@@ -125,7 +125,8 @@ static gboolean _on_timeout(gpointer data)
 	gdouble value;
 
 	if(sysinfo(&sy) != 0)
-		return swap->helper->error(swap->helper->priv, "sysinfo", TRUE);
+		return swap->helper->error(swap->helper->panel, "sysinfo",
+				TRUE);
 	if((value = sy.totalswap - sy.freeswap) != 0.0 && sy.totalswap != 0)
 		value /= sy.totalswap;
 	gtk_range_set_value(GTK_RANGE(swap->scale), value);

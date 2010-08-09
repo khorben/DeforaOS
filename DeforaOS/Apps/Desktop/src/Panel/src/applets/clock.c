@@ -77,7 +77,7 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	applet->priv = clock;
 	clock->helper = applet->helper;
 	clock->label = gtk_label_new(" \n ");
-	if((clock->format = applet->helper->config_get(applet->helper->priv,
+	if((clock->format = applet->helper->config_get(applet->helper->panel,
 					"clock", "format")) == NULL)
 #ifdef EMBEDDED
 		clock->format = _("%H:%M");
@@ -126,8 +126,8 @@ static gboolean _on_timeout(gpointer data)
 	char buf[32];
 
 	if(gettimeofday(&tv, NULL) != 0)
-		return clock->helper->error(clock->helper->priv, "gettimeofday",
-				TRUE);
+		return clock->helper->error(clock->helper->panel,
+				"gettimeofday", TRUE);
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
 	strftime(buf, sizeof(buf), clock->format, &tm);

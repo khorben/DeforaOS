@@ -75,7 +75,7 @@ static void _on_clicked(gpointer data)
 	char const * p;
 	GError * error = NULL;
 
-	if((p = helper->config_get(helper->priv, "lock", "command")) != NULL)
+	if((p = helper->config_get(helper->panel, "lock", "command")) != NULL)
 		command = p;
 	if(g_spawn_command_line_async(command, &error) != TRUE)
 		helper->error(NULL, error->message, 0);

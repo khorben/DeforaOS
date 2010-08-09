@@ -23,19 +23,21 @@
 
 /* PanelApplet */
 /* types */
+typedef struct _Panel Panel;
+
 typedef struct _PanelApplet PanelApplet;
 
 typedef struct _PanelAppletHelper
 {
+	Panel * panel;
 	GtkIconSize icon_size;
-	char const * (*config_get)(void * priv, char const * section,
+	char const * (*config_get)(Panel * panel, char const * section,
 			char const * variable);
-	int (*error)(void * priv, char const * message, int ret);
+	int (*error)(Panel * panel, char const * message, int ret);
 	int (*logout_dialog)(void);
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
 			gboolean * push_in, gpointer data);
 	int (*shutdown_dialog)(void);
-	void * priv;
 } PanelAppletHelper;
 
 typedef GtkWidget * (*PanelAppletInitFunc)(PanelApplet * applet);

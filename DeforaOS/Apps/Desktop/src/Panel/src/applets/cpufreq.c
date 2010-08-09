@@ -93,7 +93,7 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	}
 	if((cpufreq = malloc(sizeof(*cpufreq))) == NULL)
 	{
-		applet->helper->error(applet->helper->priv, "malloc", 0);
+		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = cpufreq;
@@ -116,7 +116,7 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	gtk_range_set_inverted(GTK_RANGE(cpufreq->scale), TRUE);
 	gtk_scale_set_value_pos(GTK_SCALE(cpufreq->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(ret), cpufreq->scale, FALSE, FALSE, 0);
-	cpufreq->timeout = g_timeout_add(500, _on_timeout, cpufreq);
+	cpufreq->timeout = g_timeout_add(1000, _on_timeout, cpufreq);
 	_on_timeout(cpufreq);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(ret);

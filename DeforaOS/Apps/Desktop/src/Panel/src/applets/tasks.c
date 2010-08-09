@@ -161,7 +161,7 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 
 	if((task = malloc(sizeof(*task))) == NULL)
 	{
-		tasks->helper->error(tasks->helper->priv, "malloc", 0);
+		tasks->helper->error(tasks->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	task->tasks = tasks;

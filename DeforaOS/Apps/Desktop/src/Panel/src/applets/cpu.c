@@ -81,7 +81,7 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 
 	if((cpu = malloc(sizeof(*cpu))) == NULL)
 	{
-		applet->helper->error(applet->helper->priv, "malloc", 0);
+		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = cpu;
@@ -135,7 +135,7 @@ static gboolean _on_timeout(gpointer data)
 	gdouble value;
 
 	if(sysctl(mib, 2, &cpu_time, &size, NULL, 0) < 0)
-		return cpu->helper->error(cpu->helper->priv, "sysctl", TRUE);
+		return cpu->helper->error(cpu->helper->panel, "sysctl", TRUE);
 	used = cpu_time[CP_USER] + cpu_time[CP_SYS] + cpu_time[CP_NICE]
 		+ cpu_time[CP_INTR];
 	total = used + cpu_time[CP_IDLE];

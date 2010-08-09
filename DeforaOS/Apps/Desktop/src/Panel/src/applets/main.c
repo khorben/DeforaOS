@@ -315,7 +315,7 @@ static void _on_clicked(gpointer data)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, main->helper->position_menu,
-			main->helper->priv, 0, gtk_get_current_event_time());
+			main->helper->panel, 0, gtk_get_current_event_time());
 }
 
 
@@ -422,7 +422,7 @@ static void _on_lock(gpointer data)
 	char const * p;
 	GError * error = NULL;
 
-	if((p = helper->config_get(helper->priv, "lock", "command")) != NULL)
+	if((p = helper->config_get(helper->panel, "lock", "command")) != NULL)
 		command = p;
 	if(g_spawn_command_line_async(command, &error) != TRUE)
 		helper->error(NULL, error->message, 0);

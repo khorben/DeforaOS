@@ -19,12 +19,11 @@
 # define PANEL_COMMON_H
 
 # include <gtk/gtk.h>
+# include "Panel.h"
 
 
 /* Panel */
 /* types */
-typedef struct _Panel Panel;
-
 typedef enum _PanelPosition
 {
 	PANEL_POSITION_BOTH,

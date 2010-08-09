@@ -79,7 +79,7 @@ static GtkWidget * _systray_init(PanelApplet * applet)
 
 	if((systray = malloc(sizeof(*systray))) == NULL)
 	{
-		applet->helper->error(applet->helper->priv, "malloc", 0);
+		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = systray;

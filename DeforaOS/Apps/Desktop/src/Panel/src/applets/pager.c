@@ -104,7 +104,7 @@ static GtkWidget * _pager_init(PanelApplet * applet)
 
 	if((pager = malloc(sizeof(*pager))) == NULL)
 	{
-		applet->helper->error(applet->helper->priv, "malloc", 0);
+		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = pager;
@@ -258,7 +258,7 @@ static void _pager_do(Pager * pager)
 			g_free(names[i]);
 		}
 		else
-			snprintf(buf, sizeof(buf), "Desk %ld\n", i + 1);
+			snprintf(buf, sizeof(buf), "Desk %lu\n", i + 1);
 		pager->widgets[i] = gtk_button_new_with_label(buf);
 		if(i == cur)
 			gtk_widget_set_sensitive(pager->widgets[i], FALSE);

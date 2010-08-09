@@ -77,7 +77,7 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 
 	if((memory = malloc(sizeof(*memory))) == NULL)
 	{
-		applet->helper->error(applet->helper->priv, "malloc", 0);
+		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = memory;
@@ -125,7 +125,8 @@ static gboolean _on_timeout(gpointer data)
 	gdouble value;
 
 	if(sysinfo(&sy) != 0)
-		return memory->helper->error(memory->helper->priv, "sysinfo", TRUE);
+		return memory->helper->error(memory->helper->panel, "sysinfo",
+				TRUE);
 	value = sy.sharedram;
 	value /= sy.totalram;
 	gtk_range_set_value(GTK_RANGE(memory->scale), value);

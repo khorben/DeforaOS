@@ -104,16 +104,16 @@ static gboolean _init_idle(gpointer data)
 
 	if(keyboard->window != NULL)
 		return FALSE;
-	if((p = keyboard->helper->config_get(keyboard->helper->priv, "keyboard",
-					"command")) != NULL)
+	if((p = keyboard->helper->config_get(keyboard->helper->panel,
+					"keyboard", "command")) != NULL)
 		argv[2] = p;
 	if(g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL,
 				NULL, &keyboard->pid, NULL, &out, NULL, &error)
 			!= TRUE)
-		return keyboard->helper->error(keyboard->helper->priv,
+		return keyboard->helper->error(keyboard->helper->panel,
 				argv[0], FALSE);
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
-		return keyboard->helper->error(keyboard->helper->priv,
+		return keyboard->helper->error(keyboard->helper->panel,
 				"read", FALSE); /* XXX not very explicit... */
 	buf[size] = '\0';
 	if(sscanf(buf, "%lu", &xid) != 1)
@@ -153,7 +153,7 @@ static void _on_keyboard_toggled(GtkWidget * widget, gpointer data)
 	if(keyboard->window == NULL)
 		return;
 	keyboard->helper->position_menu((GtkMenu*)keyboard->window, &x, &y,
-			&push_in, keyboard->helper->priv);
+			&push_in, keyboard->helper->panel);
 	gtk_window_move(GTK_WINDOW(keyboard->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 		gtk_widget_show(keyboard->window);
