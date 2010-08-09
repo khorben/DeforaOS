@@ -225,7 +225,6 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 static void _event_key_tone(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
-	PhonePluginHelper * helper = plugin->helper;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
