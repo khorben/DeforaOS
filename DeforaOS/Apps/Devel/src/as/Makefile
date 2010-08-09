@@ -56,6 +56,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/80686.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/amd64.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/amd64.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/common.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.ins \
