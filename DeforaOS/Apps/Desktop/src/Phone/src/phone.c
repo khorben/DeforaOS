@@ -2449,13 +2449,15 @@ static char const * _phone_config_get(Phone * phone, char const * section,
 /* phone_config_save */
 static int _phone_config_save(Phone * phone)
 {
+	int ret = 0;
 	char * filename;
 
 	if((filename = _phone_config_filename()) == NULL)
 		return -1; /* XXX warn the user */
-	config_save(phone->config, filename);
+	if(config_save(phone->config, filename) != 0)
+		ret = -phone_error(phone, error_get(), 1);
 	free(filename);
-	return 0;
+	return ret;
 }
 
 
