@@ -213,6 +213,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				gtk_plug_get_id(GTK_PLUG(keyboard->window)));
 #endif
 		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
+		fclose(stdout);
 	}
 	return keyboard;
 }
