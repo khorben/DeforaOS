@@ -2140,6 +2140,7 @@ static void _on_system_cancel(gpointer data)
 	Phone * phone = data;
 	char const * p;
 
+	gtk_widget_hide(phone->sy_window);
 	if((p = config_get(phone->config, NULL, "device")) == NULL)
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(
 					phone->sy_device), "/dev");
@@ -2153,7 +2154,6 @@ static void _on_system_cancel(gpointer data)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					phone->sy_hwflow), FALSE);
-	gtk_widget_hide(phone->sy_window);
 }
 
 static void _on_system_ok(gpointer data)
@@ -2161,6 +2161,7 @@ static void _on_system_ok(gpointer data)
 	Phone * phone = data;
 	char const * p;
 
+	gtk_widget_hide(phone->sy_window);
 	/* FIXME requires a restart to be applied at the moment */
 	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 						phone->sy_device))) != NULL)
@@ -2169,7 +2170,6 @@ static void _on_system_ok(gpointer data)
 				GTK_TOGGLE_BUTTON(phone->sy_hwflow))
 			? "1" : "0");
 	_phone_config_save(phone);
-	gtk_widget_hide(phone->sy_window);
 }
 
 
