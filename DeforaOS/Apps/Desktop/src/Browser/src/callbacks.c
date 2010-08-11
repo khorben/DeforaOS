@@ -261,7 +261,7 @@ void on_edit_preferences(gpointer data)
 			_("File browser preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(browser->pr_window), GTK_WINDOW(
 				browser->window));
-	g_signal_connect(G_OBJECT(browser->pr_window), "delete-event",
+	g_signal_connect_swapped(G_OBJECT(browser->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 #if GTK_CHECK_VERSION(2, 6, 0)
