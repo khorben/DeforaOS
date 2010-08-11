@@ -186,25 +186,27 @@ static int _idle_do(Delete * delete, char const * filename)
 
 static int _idle_ask_recursive(Delete * delete, char const * filename)
 {
-	int ret;
 	GtkWidget * dialog;
+	int res;
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
-			_("Question"));
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
 			_("%s is a directory.\nRecursively delete?"), filename);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 	gtk_dialog_add_button(GTK_DIALOG(dialog), _("Yes to all"), 1);
-	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(ret == 1)
+	if(res == 1)
 	{
 		*(delete->prefs) = (*(delete->prefs) & ~PREFS_i) | PREFS_f;
 		return 0;
 	}
-	return ret == GTK_RESPONSE_YES ? 0 : 1;
+	return (res == GTK_RESPONSE_YES) ? 0 : 1;
 }
 
 static int _idle_ask(Delete * delete, char const * filename)

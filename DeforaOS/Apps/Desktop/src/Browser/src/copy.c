@@ -220,17 +220,21 @@ static void _copy_info(Copy * copy, char const * message, char const * info)
 
 static int _copy_confirm(Copy * copy, char const * dst)
 {
-	int ret;
 	GtkWidget * dialog;
+	int res;
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO, _("%s will be overwritten\n"
-				"Proceed?"), dst);
+			GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			_("%s will be overwritten\nProceed?"), dst);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
-	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	return ret == GTK_RESPONSE_YES ? 1 : 0;
+	return (res == GTK_RESPONSE_YES) ? 1 : 0;
 }
 
 static void _copy_on_closex(void)
