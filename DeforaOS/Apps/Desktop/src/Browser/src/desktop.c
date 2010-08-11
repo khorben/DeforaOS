@@ -1400,7 +1400,7 @@ static Config * _desktop_get_config(Desktop * desktop)
 			config_delete(config);
 		if(pathname != NULL)
 			object_delete(pathname);
-		_desktop_serror(desktop, "Could not load preferences", FALSE);
+		_desktop_serror(NULL, "Could not load preferences", FALSE);
 		return NULL;
 	}
 	return config;
