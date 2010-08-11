@@ -21,6 +21,9 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <libintl.h>
@@ -37,12 +40,17 @@ typedef struct _Keyboard
 	PanelAppletHelper * helper;
 	GPid pid;
 	GtkWidget * window;
+	/* preferences */
+	GtkWidget * pr_box;
+	GtkWidget * pr_command;
 } Keyboard;
 
 
 /* prototypes */
 static GtkWidget * _keyboard_init(PanelApplet * applet);
 static void _keyboard_destroy(PanelApplet * applet);
+static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
+		gboolean reset);
 
 /* callbacks */
 static void _on_keyboard_toggled(GtkWidget * widget, gpointer data);
@@ -53,8 +61,11 @@ static void _on_keyboard_toggled(GtkWidget * widget, gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"Keyboard",
+	NULL,
 	_keyboard_init,
 	_keyboard_destroy,
+	_keyboard_settings,
 	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
@@ -75,9 +86,11 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
+	applet->priv = keyboard;
 	keyboard->helper = applet->helper;
 	keyboard->pid = -1;
 	keyboard->window = NULL;
+	keyboard->pr_box = NULL;
 	ret = gtk_toggle_button_new();
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
@@ -136,6 +149,43 @@ static void _keyboard_destroy(PanelApplet * applet)
 	if(keyboard->pid > 0)
 		g_spawn_close_pid(keyboard->pid); /* XXX may be dead already */
 	free(keyboard);
+}
+
+
+/* keyboard_settings */
+static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
+		gboolean reset)
+{
+	Keyboard * keyboard = applet->priv;
+	char const * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void*)applet,
+			apply ? "TRUE" : "FALSE", reset ? "TRUE" : "FALSE");
+#endif
+	if(keyboard->pr_box == NULL)
+	{
+		keyboard->pr_box = gtk_vbox_new(FALSE, 0);
+		keyboard->pr_command = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(keyboard->pr_box),
+				keyboard->pr_command, FALSE, TRUE, 4);
+		gtk_widget_show_all(keyboard->pr_box);
+		reset = TRUE;
+	}
+	if(reset == TRUE)
+	{
+		p = applet->helper->config_get(applet->helper->panel,
+				"keyboard", "command");
+		if(p != NULL)
+			gtk_entry_set_text(GTK_ENTRY(keyboard->pr_command), p);
+	}
+	if(apply == TRUE)
+	{
+		p = gtk_entry_get_text(GTK_ENTRY(keyboard->pr_command));
+		applet->helper->config_set(applet->helper->panel, "keyboard",
+				"command", p);
+	}
+	return keyboard->pr_box;
 }
 
 

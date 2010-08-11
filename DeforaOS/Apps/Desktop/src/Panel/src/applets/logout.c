@@ -35,7 +35,10 @@ static void _on_clicked(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"Logout",
+	NULL,
 	_logout_init,
+	NULL,
 	NULL,
 	PANEL_APPLET_POSITION_START,
 	FALSE,

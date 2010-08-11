@@ -44,8 +44,11 @@ static void _volume_destroy(PanelApplet * applet);
 PanelApplet applet =
 {
 	NULL,
+	"Volume",
+	NULL,
 	_volume_init,
 	_volume_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,

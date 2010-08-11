@@ -136,8 +136,11 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 PanelApplet applet =
 {
 	NULL,
+	"Tasks",
+	NULL,
 	_tasks_init,
 	_tasks_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_START,
 #ifndef EMBEDDED
 	TRUE,

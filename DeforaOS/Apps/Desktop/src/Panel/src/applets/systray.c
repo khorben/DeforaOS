@@ -60,8 +60,11 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 PanelApplet applet =
 {
 	NULL,
+	"System tray",
+	NULL,
 	_systray_init,
 	_systray_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_LAST,
 	FALSE,
 	TRUE,

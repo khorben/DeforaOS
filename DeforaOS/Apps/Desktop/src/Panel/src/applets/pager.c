@@ -86,8 +86,11 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 PanelApplet applet =
 {
 	NULL,
+	"Pager",
+	NULL,
 	_pager_init,
 	_pager_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,

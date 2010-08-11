@@ -55,8 +55,11 @@ static gboolean _on_timeout(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"Swap",
+	NULL,
 	_swap_init,
 	_swap_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,

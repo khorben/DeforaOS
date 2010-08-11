@@ -52,6 +52,7 @@ struct _Panel
 
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_notebook;
 };
 
 
@@ -69,6 +70,8 @@ struct _Panel
 /* helpers */
 static char const * _panel_helper_config_get(Panel * panel,
 		char const * section, char const * variable);
+static int _panel_helper_config_set(Panel * panel, char const * section,
+		char const * variable, char const * value);
 static int _panel_helper_error(Panel * panel, char const * message, int ret);
 #ifndef EMBEDDED
 static int _panel_helper_logout_dialog(void);
@@ -115,6 +118,7 @@ Panel * panel_new(PanelPrefs * prefs)
 		error_set_print(PACKAGE, 0, _("Invalid panel size"));
 	panel->helper.panel = panel;
 	panel->helper.config_get = _panel_helper_config_get;
+	panel->helper.config_set = _panel_helper_config_set;
 	panel->helper.error = _panel_helper_error;
 	panel->helper.icon_size = prefs->iconsize;
 #ifndef EMBEDDED
@@ -140,8 +144,9 @@ Panel * panel_new(PanelPrefs * prefs)
 			panel->root_width, panel->root_height);
 #endif
 	/* panel */
-	g_idle_add(_on_idle, panel);
 	panel->pr_window = NULL;
+	panel->pr_notebook = gtk_notebook_new();
+	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 4);
 #ifdef DEBUG
@@ -348,12 +353,19 @@ int panel_load(Panel * panel, char const * applet)
 					fill, 0);
 			break;
 	}
+	if(pa->settings != NULL
+			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
+		/* FIXME doesn't seem to work (needs a container first?) */
+		gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook),
+				widget, gtk_label_new(pa->name));
 	return 0;
 }
 
 
 /* panel_show_preferences */
+static void _on_preferences_cancel(gpointer data);
 static gboolean _on_preferences_delete_event(gpointer data);
+static void _on_preferences_ok(gpointer data);
 
 void panel_show_preferences(Panel * panel, gboolean show)
 {
@@ -379,27 +391,47 @@ void panel_show_preferences(Panel * panel, gboolean show)
 	g_signal_connect_swapped(G_OBJECT(panel->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_delete_event), panel);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* FIXME implement */
+	gtk_box_pack_start(GTK_BOX(vbox), panel->pr_notebook, TRUE, TRUE, 0);
+	/* FIXME implement a way to enable plug-ins per panel (and in order) */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	/* FIXME connect callback */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_cancel), panel);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	/* FIXME connect callback */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_ok), panel);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(panel->pr_window), vbox);
+	_on_preferences_cancel(panel);
 	gtk_widget_show_all(panel->pr_window);
+}
+
+static void _on_preferences_cancel(gpointer data)
+{
+	Panel * panel = data;
+
+	gtk_widget_hide(panel->pr_window);
+	/* FIXME reset configuration */
 }
 
 static gboolean _on_preferences_delete_event(gpointer data)
 {
 	Panel * panel = data;
 
-	gtk_widget_hide(panel->pr_window);
+	_on_preferences_cancel(panel);
 	return TRUE;
+}
+
+static void _on_preferences_ok(gpointer data)
+{
+	Panel * panel = data;
+
+	gtk_widget_hide(panel->pr_window);
+	/* FIXME apply configuration */
 }
 
 
@@ -411,6 +443,15 @@ static char const * _panel_helper_config_get(Panel * panel,
 		char const * section, char const * variable)
 {
 	return config_get(panel->config, section, variable);
+}
+
+
+/* panel_helper_config_set */
+static int _panel_helper_config_set(Panel * panel, char const * section,
+		char const * variable, char const * value)
+{
+	/* FIXME also save the configuration */
+	return config_set(panel->config, section, variable, value);
 }
 
 
@@ -445,9 +486,13 @@ static int _panel_helper_logout_dialog(void)
 	int res;
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_NONE, "%s", _("Logout"));
+			GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Logout"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s",
+#endif
+			message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, NULL);
 	widget = gtk_button_new_with_label(_("Logout"));

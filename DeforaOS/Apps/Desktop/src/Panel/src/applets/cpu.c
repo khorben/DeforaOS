@@ -59,8 +59,11 @@ static gboolean _on_timeout(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"CPU",
+	NULL,
 	_cpu_init,
 	_cpu_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,

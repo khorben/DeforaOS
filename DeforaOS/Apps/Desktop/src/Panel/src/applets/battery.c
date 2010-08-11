@@ -89,8 +89,11 @@ static gboolean _on_timeout(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"Battery",
+	NULL,
 	_battery_init,
 	_battery_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,

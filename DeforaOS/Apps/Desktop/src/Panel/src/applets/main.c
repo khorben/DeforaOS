@@ -97,8 +97,11 @@ static gboolean _on_timeout(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"Main menu",
+	NULL,
 	_main_init,
 	_main_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_FIRST,
 	FALSE,
 	TRUE,

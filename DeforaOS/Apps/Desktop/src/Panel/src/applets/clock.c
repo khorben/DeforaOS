@@ -52,8 +52,11 @@ static gboolean _on_timeout(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"Clock",
+	NULL,
 	_clock_init,
 	_clock_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_LAST,
 	FALSE,
 	TRUE,

@@ -60,8 +60,11 @@ static gboolean _on_timeout(gpointer data);
 PanelApplet applet =
 {
 	NULL,
+	"CPU frequency",
+	NULL,
 	_cpufreq_init,
 	_cpufreq_destroy,
+	NULL,
 	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,

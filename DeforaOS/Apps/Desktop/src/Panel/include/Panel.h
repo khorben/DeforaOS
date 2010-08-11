@@ -33,6 +33,8 @@ typedef struct _PanelAppletHelper
 	GtkIconSize icon_size;
 	char const * (*config_get)(Panel * panel, char const * section,
 			char const * variable);
+	int (*config_set)(Panel * panel, char const * section,
+			char const * variable, char const * value);
 	int (*error)(Panel * panel, char const * message, int ret);
 	int (*logout_dialog)(void);
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
@@ -40,9 +42,6 @@ typedef struct _PanelAppletHelper
 	void (*preferences_dialog)(Panel * panel);
 	int (*shutdown_dialog)(void);
 } PanelAppletHelper;
-
-typedef GtkWidget * (*PanelAppletInitFunc)(PanelApplet * applet);
-typedef void (*PanelAppletDestroyFunc)(PanelApplet * applet);
 
 typedef enum _PanelAppletPosition
 {
@@ -55,8 +54,12 @@ typedef enum _PanelAppletPosition
 struct _PanelApplet
 {
 	PanelAppletHelper * helper;
-	PanelAppletInitFunc init;
-	PanelAppletDestroyFunc destroy;
+	char const * name;
+	char const * icon;
+	GtkWidget * (*init)(PanelApplet * applet);
+	void (*destroy)(PanelApplet * applet);
+	GtkWidget * (*settings)(PanelApplet * applet, gboolean apply,
+			gboolean reset);
 	PanelAppletPosition position;
 	gboolean expand;
 	gboolean fill;

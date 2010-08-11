@@ -45,7 +45,10 @@ static void _on_screen_changed(GtkWidget * widget);
 PanelApplet applet =
 {
 	NULL,
+	"Phone",
+	NULL,
 	_phone_init,
+	NULL,
 	NULL,
 	PANEL_APPLET_POSITION_START,
 	FALSE,

@@ -37,7 +37,10 @@ static void _on_clicked(GtkWidget * widget);
 PanelApplet applet =
 {
 	NULL,
+	"Desktop switch",
+	NULL,
 	_desktop_init,
+	NULL,
 	NULL,
 	PANEL_APPLET_POSITION_FIRST,
 	FALSE,
