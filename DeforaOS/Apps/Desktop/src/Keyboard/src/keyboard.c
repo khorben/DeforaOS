@@ -36,6 +36,10 @@ struct _Keyboard
 	PangoFontDescription * bold;
 	GtkWidget * window;
 	GdkRectangle geometry;
+	int width;
+	int height;
+	int x;
+	int y;
 };
 
 
@@ -115,7 +119,6 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	Keyboard * keyboard;
 	KeyboardKey * kk;
 	GdkScreen * screen;
-	gint height;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -139,11 +142,14 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				&keyboard->geometry);
 	else
 		gdk_screen_get_monitor_geometry(screen, 0, &keyboard->geometry);
-	height = (keyboard->geometry.width / 12) * 3;
 	/* window */
 	if(prefs->embedded != 0)
 	{
 		keyboard->window = gtk_plug_new(0);
+		keyboard->width = 0;
+		keyboard->height = 0;
+		keyboard->x = 0;
+		keyboard->y = 0;
 		g_signal_connect_swapped(G_OBJECT(keyboard->window), "embedded",
 				G_CALLBACK(on_keyboard_embedded), keyboard);
 	}
@@ -154,16 +160,19 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				FALSE);
 		gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window),
 				FALSE);
-		gtk_window_move(GTK_WINDOW(keyboard->window),
-				keyboard->geometry.x,
-				keyboard->geometry.y + keyboard->geometry.height
-				- height);
+		keyboard->width = keyboard->geometry.width;
+		keyboard->height = (keyboard->geometry.width / 12) * 3;
+		keyboard->x = keyboard->geometry.x;
+		keyboard->y = keyboard->geometry.y + keyboard->geometry.height
+			- keyboard->height;
+		gtk_window_move(GTK_WINDOW(keyboard->window), keyboard->x,
+				keyboard->y);
+		gtk_widget_set_size_request(keyboard->window, keyboard->width,
+				keyboard->height);
 		g_signal_connect_swapped(G_OBJECT(keyboard->window),
 				"delete-event",
 				G_CALLBACK(on_keyboard_delete_event), keyboard);
 	}
-	gtk_widget_set_size_request(keyboard->window, keyboard->geometry.width,
-			height);
 	/* layouts */
 	if(prefs->font != NULL)
 		keyboard->bold = pango_font_description_from_string(
@@ -208,10 +217,6 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		gtk_widget_show(keyboard->window);
 	else
 	{
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() id=%u\n", __func__,
-				gtk_plug_get_id(GTK_PLUG(keyboard->window)));
-#endif
 		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
 		fclose(stdout);
 	}
@@ -260,7 +265,19 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, show ? "TRUE" : "FALSE");
 #endif
 	if(show == TRUE)
+	{
+		gtk_window_get_size(GTK_WINDOW(keyboard->window),
+				&keyboard->width, &keyboard->height);
 		gtk_widget_show(keyboard->window);
+		gtk_window_get_position(GTK_WINDOW(keyboard->window),
+				&keyboard->x, &keyboard->y);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() width=%d, height=%d\n", __func__,
+				keyboard->width, keyboard->height);
+		fprintf(stderr, "DEBUG: %s() x=%d, y=%d\n", __func__,
+				keyboard->x, keyboard->y);
+#endif
+	}
 	else
 		gtk_widget_hide(keyboard->window);
 }
@@ -270,7 +287,7 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 {
 	GtkWidget * widget;
-	unsigned int bwidth = keyboard->geometry.width / 12;
+	unsigned int bwidth = keyboard->width / 12;
 	unsigned int bheight = (bwidth / 4) * 3;
 	size_t i;
 	size_t j;
@@ -306,8 +323,15 @@ void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 		i = 0;
 		j = 5;
 	}
-	gtk_window_move(GTK_WINDOW(key->popup), bwidth * j,
-			keyboard->geometry.height - (bheight * 6)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() move(%d, %d)\n", __func__,
+			(bwidth * j) + keyboard->x,
+			keyboard->height - (bheight * 6)
+			+ (bheight * i) + keyboard->y);
+#endif
+	gtk_window_move(GTK_WINDOW(key->popup),
+			keyboard->x + (bwidth * j),
+			keyboard->y + keyboard->height - (bheight * 6)
 			+ (bheight * i));
 	gtk_widget_show_all(key->popup);
 }
