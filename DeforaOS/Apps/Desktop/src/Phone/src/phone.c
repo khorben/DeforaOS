@@ -2365,7 +2365,7 @@ void phone_write_send(Phone * phone)
 	size_t length;
 	GSMEncoding encoding = GSM_ENCODING_UTF8;
 
-	phone_show_write(phone, TRUE, "", "");
+	phone_show_write(phone, TRUE, NULL, NULL);
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
