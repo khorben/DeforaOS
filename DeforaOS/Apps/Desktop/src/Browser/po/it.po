@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-26 13:50+0200\n"
+"POT-Creation-Date: 2010-08-12 00:41+0200\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -28,7 +28,7 @@ msgstr ""
 msgid "New _symbolic link..."
 msgstr ""
 
-#: ../src/browser.c:70 ../src/browser.c:672
+#: ../src/browser.c:70 ../src/browser.c:676
 msgid "Open file..."
 msgstr ""
 
@@ -49,7 +49,7 @@ msgstr ""
 msgid "_File"
 msgstr ""
 
-#: ../src/browser.c:135 ../src/desktopicon.c:671
+#: ../src/browser.c:135 ../src/desktopicon.c:678
 msgid "_Edit"
 msgstr ""
 
@@ -89,62 +89,62 @@ msgstr ""
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:539 ../src/browser.c:542 ../src/copy.c:203
-#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1353
-#: ../src/desktop.c:1358 ../src/move.c:130 ../src/properties.c:110
+#: ../src/browser.c:541 ../src/browser.c:546 ../src/copy.c:203
+#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1361
+#: ../src/desktop.c:1366 ../src/move.c:130 ../src/properties.c:110
 #: ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:694 ../src/desktopicon.c:805 ../src/view.c:144
+#: ../src/browser.c:698 ../src/desktopicon.c:812 ../src/view.c:144
 #: ../src/view.c:415
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:806
+#: ../src/browser.c:810
 #, c-format
 msgid "%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1419
+#: ../src/browser.c:1423
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1421
+#: ../src/browser.c:1425
 msgid "Size"
 msgstr ""
 
-#: ../src/browser.c:1423
+#: ../src/browser.c:1427
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1425
+#: ../src/browser.c:1429
 msgid "Group"
 msgstr ""
 
-#: ../src/browser.c:1427
+#: ../src/browser.c:1431
 msgid "Date"
 msgstr ""
 
-#: ../src/browser.c:1429
+#: ../src/browser.c:1433
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1704
+#: ../src/browser.c:1708
 msgid "Refreshing folder..."
 msgstr ""
 
 #: ../src/callbacks.c:197 ../src/callbacks.c:202 ../src/callbacks.c:1327
-#: ../src/callbacks.c:1330 ../src/desktopicon.c:787 ../src/desktopicon.c:792
-#: ../src/desktopicon.c:839 ../src/desktopicon.c:844
+#: ../src/callbacks.c:1330 ../src/desktopicon.c:794 ../src/desktopicon.c:799
+#: ../src/desktopicon.c:846 ../src/desktopicon.c:851
 msgid "Warning"
 msgstr ""
 
-#: ../src/callbacks.c:200 ../src/desktopicon.c:842
+#: ../src/callbacks.c:200 ../src/desktopicon.c:849
 msgid "Are you sure you want to delete "
 msgstr ""
 
-#: ../src/callbacks.c:201 ../src/desktopicon.c:843
+#: ../src/callbacks.c:201 ../src/desktopicon.c:850
 msgid " file(s)?"
 msgstr ""
 
@@ -216,7 +216,7 @@ msgstr ""
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1225 ../src/desktopicon.c:684
+#: ../src/callbacks.c:1225 ../src/desktopicon.c:691
 msgid "Open _with..."
 msgstr ""
 
@@ -265,26 +265,31 @@ msgstr ""
 msgid "Information"
 msgstr ""
 
-#: ../src/copy.c:228 ../src/move.c:143
+#: ../src/copy.c:230 ../src/delete.c:196 ../src/delete.c:200
+#: ../src/delete.c:220 ../src/delete.c:224 ../src/move.c:145 ../src/move.c:149
+msgid "Question"
+msgstr ""
+
+#: ../src/copy.c:233 ../src/move.c:148
 #, c-format
 msgid ""
 "%s will be overwritten\n"
 "Proceed?"
 msgstr ""
 
-#: ../src/copy.c:337
+#: ../src/copy.c:341
 msgid "Omitting directory"
 msgstr ""
 
-#: ../src/copy.c:593
+#: ../src/copy.c:597
 msgid "kB"
 msgstr ""
 
-#: ../src/copy.c:602
+#: ../src/copy.c:606
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/copy.c:671
+#: ../src/copy.c:675
 msgid ""
 "Usage: copy [-fip] source_file target_file\n"
 "       copy [-fip] source_file ... target\n"
@@ -306,29 +311,24 @@ msgstr ""
 msgid "Deleting file: %s"
 msgstr ""
 
-#: ../src/delete.c:195 ../src/delete.c:198 ../src/delete.c:218
-#: ../src/delete.c:222 ../src/move.c:145
-msgid "Question"
-msgstr ""
-
-#: ../src/delete.c:197
+#: ../src/delete.c:199
 #, c-format
 msgid ""
 "%s is a directory.\n"
 "Recursively delete?"
 msgstr ""
 
-#: ../src/delete.c:199 ../src/delete.c:223
+#: ../src/delete.c:201 ../src/delete.c:225
 msgid "Yes to all"
 msgstr ""
 
-#: ../src/delete.c:220
+#: ../src/delete.c:222
 msgid ""
 " will be permanently deleted.\n"
 "Continue?"
 msgstr ""
 
-#: ../src/delete.c:277
+#: ../src/delete.c:279
 msgid ""
 "Usage: delete [-fiRr] file...\n"
 "  -f\tDo not prompt for confirmation or output error messages\n"
@@ -373,7 +373,7 @@ msgstr ""
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1440
+#: ../src/desktop.c:1448
 msgid ""
 "Usage: desktop [-H | -V][-a | -c | -f | -h]\n"
 "  -H\tPlace icons horizontally\n"
@@ -384,7 +384,7 @@ msgid ""
 "  -h\tDisplay the homescreen\n"
 msgstr ""
 
-#: ../src/desktopicon.c:791
+#: ../src/desktopicon.c:798
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
@@ -405,7 +405,7 @@ msgstr ""
 msgid "Moving file: %s"
 msgstr ""
 
-#: ../src/move.c:430
+#: ../src/move.c:434
 msgid ""
 "Usage: move [-fi] file...\n"
 "  -f\tDo not prompt for confirmation if the destination path exists\n"
