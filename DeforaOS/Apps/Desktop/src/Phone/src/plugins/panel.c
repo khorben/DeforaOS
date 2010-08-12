@@ -128,6 +128,7 @@ static int _panel_init(PhonePlugin * plugin)
 	/* battery */
 	panel->battery_timeout = 0;
 	panel->battery_level = -1;
+	panel->battery_image = NULL;
 	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
 					"battery")) != NULL
 			&& strcmp(p, "1") == 0)
@@ -239,6 +240,8 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			_event_set_battery_level(panel, level);
 			break;
 		case PHONE_EVENT_FUNCTIONAL:
+			if(panel->battery_image == NULL)
+				break;
 			/* FIXME should be disabled upon errors fetching CBC */
 			if(panel->battery_timeout != 0)
 				break;
@@ -272,6 +275,8 @@ static int _event_set_battery_level(Panel * panel, gdouble level)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(plugin, %lf)\n", __func__, level);
 #endif
+	if(panel->battery_image == NULL)
+		return 0;
 	if(level >= 0.0 && level <= 100.0)
 		gtk_widget_show(panel->battery_image);
 	if(level < 0.0)
