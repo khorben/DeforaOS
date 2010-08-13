@@ -171,14 +171,6 @@ struct _Phone
 	GtkWidget * co_name;
 	GtkWidget * co_number;
 
-#ifdef DEBUG
-	/* debugging */
-	GtkWidget * de_window;
-	GtkWidget * de_gsm;
-	GtkWidget * de_queue;
-	GtkWidget * de_plugin;
-#endif
-
 	/* dialer */
 	GtkWidget * di_window;
 	GtkWidget * di_entry;
@@ -281,12 +273,6 @@ static gboolean _phone_timeout_track(gpointer data);
 
 
 /* public */
-#ifdef DEBUG
-/* prototypes */
-void phone_show_debug(Phone * phone, gboolean show);
-
-
-#endif
 /* functions */
 /* phone_new */
 static void _new_config(Phone * phone);
@@ -349,9 +335,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->co_store = gtk_list_store_new(PHONE_CONTACT_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	phone->co_dialog = NULL;
-#ifdef DEBUG
-	phone->de_window = NULL;
-#endif
 	phone->di_window = NULL;
 	phone->lo_window = NULL;
 	phone->lo_store = gtk_list_store_new(PHONE_LOGS_COLUMN_COUNT,
@@ -404,9 +387,6 @@ static gboolean _new_idle(gpointer data)
 
 	phone_show_call(phone, FALSE);
 	phone_show_contacts(phone, FALSE);
-#ifdef DEBUG
-	phone_show_debug(phone, TRUE);
-#endif
 	phone_show_dialer(phone, FALSE);
 	phone_show_messages(phone, FALSE);
 	phone_show_read(phone, FALSE);
@@ -1435,219 +1415,6 @@ void phone_show_contacts(Phone * phone, gboolean show)
 	else
 		gtk_widget_hide(phone->co_window);
 }
-
-
-#ifdef DEBUG
-/* phone_show_debug */
-static int _gsm_fetch_message_list_all(GSM * gsm);
-static int _gsm_fetch_message_list_read(GSM * gsm);
-static int _gsm_fetch_message_list_sent(GSM * gsm);
-static int _gsm_fetch_message_list_unread(GSM * gsm);
-static int _gsm_fetch_message_list_unsent(GSM * gsm);
-static int _gsm_reset(GSM * gsm);
-static int _gsm_set_functional_disable(GSM * gsm);
-static int _gsm_set_functional_enable(GSM * gsm);
-
-static struct
-{
-	char const * name;
-	int (*callback)(GSM * gsm);
-} _debug_gsm_commands[] =
-{
-	{ "Alive",			gsm_is_alive			},
-	{ "Answer call",		gsm_call_answer			},
-	{ "Battery charge",		gsm_fetch_battery_charge	},
-	{ "Call waiting control",	gsm_is_call_waiting_control	},
-	{ "Contact list",		gsm_fetch_contact_list		},
-	{ "Disable phone",		_gsm_set_functional_disable	},
-	{ "Enable phone",		_gsm_set_functional_enable	},
-	{ "Hangup call",		gsm_call_hangup			},
-	{ "Messages",			_gsm_fetch_message_list_all	},
-	{ "Messages read",		_gsm_fetch_message_list_read	},
-	{ "Messages sent",		_gsm_fetch_message_list_sent	},
-	{ "Messages unread",		_gsm_fetch_message_list_unread	},
-	{ "Messages unsent",		_gsm_fetch_message_list_unsent	},
-	{ "Mute",			gsm_is_mute			},
-	{ "Operator",			gsm_fetch_operator		},
-	{ "Phone active",		gsm_is_phone_active		},
-	{ "Phone functional",		gsm_is_functional		},
-	{ "Registered",			gsm_is_registered		},
-	{ "Registration",		gsm_fetch_registration		},
-	{ "Reject call",		gsm_call_reject			},
-	{ "Reset",			_gsm_reset			},
-	{ "Signal level",		gsm_fetch_signal_level		},
-	{ "SIM PIN status",		gsm_is_pin_needed		},
-	{ "SIM PIN valid",		gsm_is_pin_valid		},
-	{ NULL,				NULL				}
-};
-
-static void _on_debug_gsm_execute(gpointer data);
-static void _on_debug_queue_execute(gpointer data);
-static void _on_debug_plugin_load(gpointer data);
-
-void phone_show_debug(Phone * phone, gboolean show)
-{
-	GtkWidget * vbox;
-	GtkWidget * hbox;
-	GtkWidget * widget;
-	size_t i;
-
-	if(phone->de_window == NULL)
-	{
-		phone->de_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_container_set_border_width(GTK_CONTAINER(phone->de_window),
-				4);
-		gtk_window_set_default_size(GTK_WINDOW(phone->de_window), 200,
-				300);
-#if GTK_CHECK_VERSION(2, 6, 0)
-		gtk_window_set_icon_name(GTK_WINDOW(phone->de_window),
-				"stock_compile");
-#endif
-		gtk_window_set_title(GTK_WINDOW(phone->de_window), "Debugging");
-		vbox = gtk_vbox_new(FALSE, 4);
-		/* gsm commands */
-		widget = gtk_label_new("GSM commands");
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
-		gtk_widget_modify_font(widget, phone->bold);
-		hbox = gtk_hbox_new(FALSE, 4);
-		phone->de_gsm = gtk_combo_box_new_text();
-		for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
-			gtk_combo_box_append_text(GTK_COMBO_BOX(phone->de_gsm),
-					_debug_gsm_commands[i].name);
-		gtk_combo_box_set_active(GTK_COMBO_BOX(phone->de_gsm), 0);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->de_gsm, TRUE, TRUE, 0);
-		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(_on_debug_gsm_execute), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		/* gsm queue */
-		widget = gtk_label_new("GSM queue");
-		gtk_widget_modify_font(widget, phone->bold);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-		hbox = gtk_hbox_new(FALSE, 4);
-		phone->de_queue = gtk_entry_new();
-		g_signal_connect_swapped(G_OBJECT(phone->de_queue), "activate",
-				G_CALLBACK(_on_debug_queue_execute), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->de_queue, TRUE, TRUE,
-				0);
-		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(_on_debug_queue_execute), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		/* plugin management */
-		widget = gtk_label_new("Load plug-ins");
-		gtk_widget_modify_font(widget, phone->bold);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
-		hbox = gtk_hbox_new(FALSE, 4);
-		phone->de_plugin = gtk_entry_new();
-		g_signal_connect_swapped(G_OBJECT(phone->de_plugin), "activate",
-				G_CALLBACK(_on_debug_plugin_load), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->de_plugin, TRUE, TRUE,
-				0);
-		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(_on_debug_plugin_load), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		widget = gtk_button_new_with_label("Unload all");
-		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(phone_unload_all), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		/* quit */
-		hbox = gtk_hbox_new(FALSE, 4);
-		widget = gtk_button_new_from_stock(GTK_STOCK_QUIT);
-		g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-					gtk_main_quit), NULL);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-		gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(phone->de_window), vbox);
-		gtk_widget_show_all(vbox);
-	}
-	if(show)
-		gtk_window_present(GTK_WINDOW(phone->de_window));
-	else
-		gtk_widget_hide(phone->de_window);
-}
-
-static void _on_debug_gsm_execute(gpointer data)
-{
-	Phone * phone = data;
-	gchar * text;
-	size_t i;
-
-	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(phone->de_gsm)))
-			== NULL)
-		return;
-	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
-		if(strcmp(_debug_gsm_commands[i].name, text) == 0)
-			break;
-	g_free(text);
-	if(_debug_gsm_commands[i].callback != NULL)
-		_debug_gsm_commands[i].callback(phone->gsm);
-}
-
-static void _on_debug_queue_execute(gpointer data)
-{
-	Phone * phone = data;
-	char const * text;
-
-	if((text = gtk_entry_get_text(GTK_ENTRY(phone->de_queue))) == NULL)
-		return;
-	gsm_queue(phone->gsm, text);
-}
-
-static void _on_debug_plugin_load(gpointer data)
-{
-	Phone * phone = data;
-	char const * text;
-
-	if((text = gtk_entry_get_text(GTK_ENTRY(phone->de_plugin))) == NULL)
-		return;
-	phone_load(phone, text); /* we can ignore errors */
-}
-
-static int _gsm_fetch_message_list_all(GSM * gsm)
-{
-	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_ALL);
-}
-
-static int _gsm_fetch_message_list_read(GSM * gsm)
-{
-	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_READ);
-}
-
-static int _gsm_fetch_message_list_sent(GSM * gsm)
-{
-	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_SENT);
-}
-
-static int _gsm_fetch_message_list_unread(GSM * gsm)
-{
-	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_UNREAD);
-}
-
-static int _gsm_fetch_message_list_unsent(GSM * gsm)
-{
-	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_UNSENT);
-}
-
-static int _gsm_reset(GSM * gsm)
-{
-	return gsm_reset(gsm, 0);
-}
-
-static int _gsm_set_functional_disable(GSM * gsm)
-{
-	return gsm_set_functional(gsm, FALSE);
-}
-
-static int _gsm_set_functional_enable(GSM * gsm)
-{
-	return gsm_set_functional(gsm, TRUE);
-}
-#endif
 
 
 /* phone_show_dialer */
