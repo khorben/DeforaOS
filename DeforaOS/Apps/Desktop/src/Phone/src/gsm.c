@@ -1096,7 +1096,8 @@ static int _gsm_parse(GSM * gsm)
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, gsm->rd_buf_cnt);
+	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__,
+			(unsigned long)gsm->rd_buf_cnt);
 #endif
 	while(i < gsm->rd_buf_cnt)
 	{
@@ -1757,7 +1758,7 @@ static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
 	b[i] = '\0';
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %lu) => \"%s\"\n", __func__, number,
-			length, b);
+			(unsigned long)length, b);
 #endif
 }
 
@@ -2328,7 +2329,8 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	unsigned int timeout = 2000;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, gsm->wr_buf_cnt);
+	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__,
+			(unsigned long)gsm->wr_buf_cnt);
 #endif
 	if(condition != G_IO_OUT || source != gsm->channel)
 		return FALSE; /* should not happen */

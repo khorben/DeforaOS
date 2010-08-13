@@ -199,7 +199,7 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, buf, %lu)\n", __func__, *encoding,
-			*len);
+			(unsigned long)*len);
 #endif
 	if(*encoding != PHONE_ENCODING_DATA)
 		return 0; /* not for us */
@@ -232,7 +232,7 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %u, buf, %lu)\n", __func__, number,
-			*encoding, *len);
+			(unsigned)*encoding, (unsigned long)*len);
 #endif
 	if(*encoding != PHONE_ENCODING_UTF8)
 		return 0; /* not for us */
