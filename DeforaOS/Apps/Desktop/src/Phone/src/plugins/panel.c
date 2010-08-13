@@ -128,15 +128,13 @@ static int _panel_init(PhonePlugin * plugin)
 	/* battery */
 	panel->battery_timeout = 0;
 	panel->battery_level = -1;
-	panel->battery_image = NULL;
+	panel->battery_image = gtk_image_new();
+	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->battery_image, FALSE,
+			TRUE, 0);
 	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
-					"battery")) != NULL
-			&& strcmp(p, "1") == 0)
-	{
-		panel->battery_image = gtk_image_new();
-		gtk_box_pack_start(GTK_BOX(panel->hbox), panel->battery_image,
-				FALSE, TRUE, 0);
-	}
+					"battery")) == NULL
+			|| strcmp(p, "1") != 0)
+		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
 	/* signal */
 	panel->signal_level = -1;
 	panel->signal_image = gtk_image_new();
@@ -240,10 +238,9 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			_event_set_battery_level(panel, level);
 			break;
 		case PHONE_EVENT_FUNCTIONAL:
-			if(panel->battery_image == NULL)
-				break;
 			/* FIXME should be disabled upon errors fetching CBC */
-			if(panel->battery_timeout != 0)
+			if(gtk_widget_get_no_show_all(panel->battery_image)
+					== TRUE || panel->battery_timeout != 0)
 				break;
 			panel->battery_timeout = g_timeout_add(5000,
 					_on_battery_timeout, plugin);
@@ -275,10 +272,6 @@ static int _event_set_battery_level(Panel * panel, gdouble level)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(plugin, %lf)\n", __func__, level);
 #endif
-	if(panel->battery_image == NULL)
-		return 0;
-	if(level >= 0.0 && level <= 100.0)
-		gtk_widget_show(panel->battery_image);
 	if(level < 0.0)
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN);
 	else if(level <= 10.0)
@@ -432,10 +425,26 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Panel * panel = plugin->priv;
+	gboolean value;
 
+	if((value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+						panel->battery))) == TRUE)
+	{
+		if(panel->battery_timeout == 0)
+			panel->battery_timeout = g_timeout_add(5000,
+					_on_battery_timeout, plugin);
+		_on_battery_timeout(plugin);
+		gtk_widget_show(panel->battery_image);
+	}
+	else
+	{
+		gtk_widget_hide(panel->battery_image);
+		if(panel->battery_timeout != 0)
+			g_source_remove(panel->battery_timeout);
+		panel->battery_timeout = 0;
+	}
+	gtk_widget_set_no_show_all(panel->battery_image, !value);
 	plugin->helper->config_set(plugin->helper->phone, "panel", "battery",
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-					panel->battery)) ? "1" : "0");
-	/* FIXME actually apply the settings */
+			value ? "1" : "0");
 	gtk_widget_hide(panel->window);
 }
