@@ -1,4 +1,4 @@
-TARGETS	= blacklist.so engineering.so openmoko.so panel.so profiles.so smscrypt.so
+TARGETS	= blacklist.so debug.so engineering.so openmoko.so panel.so profiles.so smscrypt.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -24,6 +24,13 @@ blacklist_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 blacklist.so: $(blacklist_OBJS)
 	$(LD) -o blacklist.so $(blacklist_OBJS)
+
+debug_OBJS = debug.o
+debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+debug.so: $(debug_OBJS)
+	$(LD) -o debug.so $(debug_OBJS)
 
 engineering_OBJS = engineering.o
 engineering_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -63,6 +70,9 @@ smscrypt.so: $(smscrypt_OBJS)
 blacklist.o: blacklist.c ../../include/Phone.h
 	$(CC) $(blacklist_CFLAGS) -c blacklist.c
 
+debug.o: debug.c ../../include/Phone.h
+	$(CC) $(debug_CFLAGS) -c debug.c
+
 engineering.o: engineering.c ../../include/Phone.h
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
@@ -79,7 +89,7 @@ smscrypt.o: smscrypt.c ../../include/Phone.h
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
-	$(RM) -- $(blacklist_OBJS) $(engineering_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -87,6 +97,8 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -100,6 +112,7 @@ install: all
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
