@@ -29,6 +29,8 @@ typedef struct _Debug
 	GtkWidget * window;
 	GtkWidget * gsm;
 	GtkWidget * queue;
+	GtkListStore * events;
+	GtkWidget * view;
 } Debug;
 
 
@@ -64,6 +66,36 @@ static struct
 	{ NULL,				NULL				}
 };
 
+static struct
+{
+	PhoneEvent event;
+	char const * string;
+} _debug_phone_events[] =
+{
+	{ PHONE_EVENT_BATTERY_LEVEL,	"PHONE_EVENT_BATTERY_LEVEL"	},
+	{ PHONE_EVENT_CALL_ESTABLISHED,	"PHONE_EVENT_CALL_ESTABLISHED"	},
+	{ PHONE_EVENT_CALL_INCOMING,	"PHONE_EVENT_CALL_INCOMING"	},
+	{ PHONE_EVENT_CALL_OUTGOING,	"PHONE_EVENT_CALL_OUTGOING"	},
+	{ PHONE_EVENT_CALL_TERMINATED,	"PHONE_EVENT_CALL_TERMINATED"	},
+	{ PHONE_EVENT_CALLING,		"PHONE_EVENT_CALLING"		},
+	{ PHONE_EVENT_FUNCTIONAL,	"PHONE_EVENT_FUNCTIONAL"	},
+	{ PHONE_EVENT_KEY_TONE,		"PHONE_EVENT_KEY_TONE"		},
+	{ PHONE_EVENT_OFFLINE,		"PHONE_EVENT_OFFLINE"		},
+	{ PHONE_EVENT_ONLINE,		"PHONE_EVENT_ONLINE"		},
+	{ PHONE_EVENT_SET_OPERATOR,	"PHONE_EVENT_SET_OPERATOR"	},
+	{ PHONE_EVENT_SET_SIGNAL_LEVEL,	"PHONE_EVENT_SET_SIGNAL_LEVEL"	},
+	{ PHONE_EVENT_SIM_VALID,	"PHONE_EVENT_SIM_VALID"		},
+	{ PHONE_EVENT_SMS_RECEIVED,	"PHONE_EVENT_SMS_RECEIVED"	},
+	{ PHONE_EVENT_SMS_RECEIVING,	"PHONE_EVENT_SMS_RECEIVING"	},
+	{ PHONE_EVENT_SMS_SENDING,	"PHONE_EVENT_SMS_SENDING"	},
+	{ PHONE_EVENT_SMS_SENT,		"PHONE_EVENT_SMS_SENT"		},
+	{ PHONE_EVENT_SPEAKER_OFF,	"PHONE_EVENT_SPEAKER_OFF"	},
+	{ PHONE_EVENT_SPEAKER_ON,	"PHONE_EVENT_SPEAKER_ON"	},
+	{ PHONE_EVENT_VIBRATOR_OFF,	"PHONE_EVENT_VIBRATOR_OFF"	},
+	{ PHONE_EVENT_VIBRATOR_ON,	"PHONE_EVENT_VIBRATOR_ON"	},
+	{ 0,				NULL				},
+};
+
 
 /* prototypes */
 static int _debug_init(PhonePlugin * plugin);
@@ -97,6 +129,8 @@ static int _debug_init(PhonePlugin * plugin)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
 	size_t i;
 
 	if((debug = object_new(sizeof(*debug))) == NULL)
@@ -139,8 +173,29 @@ static int _debug_init(PhonePlugin * plugin)
 			G_CALLBACK(_on_debug_queue_execute), plugin);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* events */
+	widget = gtk_label_new("Events");
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	debug->events = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
+			G_TYPE_STRING);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	debug->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				debug->events));
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Time", renderer,
+			"text", 1, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, 0);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(debug->view), column);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Event", renderer,
+			"text", 2, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(debug->view), column);
+	gtk_container_add(GTK_CONTAINER(widget), debug->view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* quit */
-	hbox = gtk_hbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_QUIT);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				gtk_main_quit), NULL);
@@ -196,6 +251,26 @@ static int _debug_destroy(PhonePlugin * plugin)
 /* debug_event */
 static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
-	/* FIXME implement an event console */
+	Debug * debug = plugin->priv;
+	time_t date;
+	struct tm t;
+	char tbuf[32];
+	size_t i;
+	char ebuf[32];
+	GtkTreeIter iter;
+
+	date = time(NULL);
+	gmtime_r(&date, &t);
+	strftime(tbuf, sizeof(tbuf), "%d/%m/%Y %H:%M:%S", &t);
+	snprintf(ebuf, sizeof(ebuf), "Unknown (%u)", event);
+	for(i = 0; _debug_phone_events[i].string != NULL; i++)
+		if(_debug_phone_events[i].event == event)
+		{
+			snprintf(ebuf, sizeof(ebuf), "%s",
+					_debug_phone_events[i].string);
+			break;
+		}
+	gtk_list_store_append(debug->events, &iter);
+	gtk_list_store_set(debug->events, &iter, 0, date, 1, tbuf, 2, ebuf, -1);
 	return 0;
 }
