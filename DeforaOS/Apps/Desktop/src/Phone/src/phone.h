@@ -88,6 +88,7 @@ void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_logs(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
+void phone_show_plugins(Phone * phone, gboolean show);
 void phone_show_read(Phone * phone, gboolean show, ...);
 void phone_show_settings(Phone * phone, gboolean show);
 void phone_show_system(Phone * phone, gboolean show);

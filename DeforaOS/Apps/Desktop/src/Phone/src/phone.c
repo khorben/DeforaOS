@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
 #include <string.h>
 #include <time.h>
 #include <errno.h>
@@ -86,6 +87,17 @@ typedef struct _PhonePluginEntry
 	Plugin * p;
 	PhonePlugin * pp;
 } PhonePluginEntry;
+
+typedef enum _PhonePluginsColumn
+{
+	PHONE_PLUGINS_COLUMN_PLUGIN,
+	PHONE_PLUGINS_COLUMN_ENABLED,
+	PHONE_PLUGINS_COLUMN_FILENAME,
+	PHONE_PLUGINS_COLUMN_ICON,
+	PHONE_PLUGINS_COLUMN_NAME
+} PhonePluginsColumn;
+# define PHONE_PLUGINS_COLUMN_LAST	PHONE_PLUGINS_COLUMN_NAME
+# define PHONE_PLUGINS_COLUMN_COUNT	(PHONE_PLUGINS_COLUMN_LAST + 1)
 
 typedef void (*PhoneSettingsCallback)(Phone * phone, gboolean show, ...);
 
@@ -186,6 +198,11 @@ struct _Phone
 	GtkWidget * me_view;
 	GtkWidget * me_progress;
 
+	/* plugins */
+	GtkWidget * pl_window;
+	GtkListStore * pl_store;
+	GtkWidget * pl_view;
+
 	/* read */
 	unsigned int re_index;
 	GtkWidget * re_window;
@@ -277,6 +294,7 @@ static gboolean _phone_timeout_track(gpointer data);
 /* phone_new */
 static void _new_config(Phone * phone);
 static gboolean _new_idle(gpointer data);
+static void _idle_settings(Phone * phone);
 static void _idle_load_plugins(Phone * phone, char const * plugins);
 
 Phone * phone_new(char const * device, unsigned int baudrate, int retry,
@@ -344,6 +362,10 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING, G_TYPE_STRING);
+	phone->pl_window = NULL;
+	phone->pl_store = gtk_list_store_new(PHONE_PLUGINS_COLUMN_COUNT,
+			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	phone->re_index = 0;
 	phone->re_window = NULL;
 	phone->se_window = NULL;
@@ -381,17 +403,30 @@ static gboolean _new_idle(gpointer data)
 {
 	Phone * phone = data;
 	char const * plugins;
-	GtkTreeIter iter;
-	GtkIconTheme * theme;
-	GdkPixbuf * pixbuf;
 
 	phone_show_call(phone, FALSE);
 	phone_show_contacts(phone, FALSE);
 	phone_show_dialer(phone, FALSE);
 	phone_show_messages(phone, FALSE);
+	phone_show_plugins(phone, FALSE);
 	phone_show_read(phone, FALSE);
+	phone_show_settings(phone, FALSE);
 	phone_show_system(phone, FALSE);
 	phone_show_write(phone, FALSE);
+	_idle_settings(phone);
+	if((plugins = config_get(phone->config, NULL, "plugins")) != NULL)
+		_idle_load_plugins(phone, plugins);
+	phone->source = 0;
+	gsm_reset(phone->gsm, 0);
+	return FALSE;
+}
+
+static void _idle_settings(Phone * phone)
+{
+	GtkTreeIter iter;
+	GtkIconTheme * theme;
+	GdkPixbuf * pixbuf;
+
 	gtk_list_store_append(phone->se_store, &iter);
 	gtk_list_store_set(phone->se_store, &iter,
 			PHONE_SETTINGS_COLUMN_CALLBACK, phone_show_system,
@@ -403,11 +438,17 @@ static gboolean _new_idle(gpointer data)
 					NULL)) != NULL)
 		gtk_list_store_set(phone->se_store, &iter,
 				PHONE_SETTINGS_COLUMN_ICON, pixbuf, -1);
-	if((plugins = config_get(phone->config, NULL, "plugins")) != NULL)
-		_idle_load_plugins(phone, plugins);
-	phone->source = 0;
-	gsm_reset(phone->gsm, 0);
-	return FALSE;
+	gtk_list_store_append(phone->se_store, &iter);
+	gtk_list_store_set(phone->se_store, &iter,
+			PHONE_SETTINGS_COLUMN_CALLBACK, phone_show_plugins,
+			PHONE_SETTINGS_COLUMN_PLUGIN, NULL,
+			PHONE_SETTINGS_COLUMN_NAME, _("Plug-ins"),
+			-1);
+	theme = gtk_icon_theme_get_default();
+	if((pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 48, 0,
+					NULL)) != NULL)
+		gtk_list_store_set(phone->se_store, &iter,
+				PHONE_SETTINGS_COLUMN_ICON, pixbuf, -1);
 }
 
 static void _idle_load_plugins(Phone * phone, char const * plugins)
@@ -1666,6 +1707,170 @@ void phone_show_messages(Phone * phone, gboolean show)
 }
 
 
+/* phone_show_plugins */
+static void _on_plugins_cancel(gpointer data);
+static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
+		char * path, gpointer data);
+static void _on_plugins_ok(gpointer data);
+
+void phone_show_plugins(Phone * phone, gboolean show)
+{
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+	GtkWidget * bbox;
+
+	if(phone->pl_window == NULL)
+	{
+		phone->pl_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		widget = phone->pl_window;
+		gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
+		gtk_window_set_default_size(GTK_WINDOW(widget), 200, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(widget), "gnome-settings");
+#endif
+		gtk_window_set_title(GTK_WINDOW(widget), _("Plug-ins"));
+		/* FIXME this callback should cancel settings too */
+		g_signal_connect(G_OBJECT(widget), "delete-event", G_CALLBACK(
+					on_phone_closex), widget);
+		vbox = gtk_vbox_new(FALSE, 4);
+		/* view */
+		widget = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
+		phone->pl_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+					phone->pl_store));
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->pl_view),
+				FALSE);
+		renderer = gtk_cell_renderer_toggle_new();
+		g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
+					_on_plugins_enabled_toggle), phone);
+		column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
+				renderer, "active",
+				PHONE_PLUGINS_COLUMN_ENABLED, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->pl_view),
+				column);
+		renderer = gtk_cell_renderer_pixbuf_new();
+		column = gtk_tree_view_column_new_with_attributes(NULL,
+				renderer, "pixbuf", PHONE_PLUGINS_COLUMN_ICON,
+				NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->pl_view),
+				column);
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("Name"),
+				renderer, "text", PHONE_PLUGINS_COLUMN_NAME,
+				NULL);
+		gtk_tree_view_column_set_sort_column_id(column,
+				PHONE_PLUGINS_COLUMN_NAME);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->pl_view),
+				column);
+		gtk_container_add(GTK_CONTAINER(widget), phone->pl_view);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		/* dialog */
+		bbox = gtk_hbutton_box_new();
+		gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox),
+				GTK_BUTTONBOX_END);
+		gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+		widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(_on_plugins_cancel), phone);
+		gtk_container_add(GTK_CONTAINER(bbox), widget);
+		widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(_on_plugins_ok), phone);
+		gtk_container_add(GTK_CONTAINER(bbox), widget);
+		gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(phone->pl_window), vbox);
+		_on_plugins_cancel(phone);
+		gtk_widget_show_all(vbox);
+	}
+	if(show)
+		gtk_window_present(GTK_WINDOW(phone->pl_window));
+	else
+		gtk_widget_hide(phone->pl_window);
+}
+
+static void _on_plugins_cancel(gpointer data)
+{
+	Phone * phone = data;
+	DIR * dir;
+	struct dirent * de;
+	GtkIconTheme * theme;
+	char const ext[] = ".so";
+	size_t len;
+	GtkTreeIter iter;
+	Plugin * p;
+	PhonePlugin * pp;
+	GdkPixbuf * pixbuf;
+
+	gtk_widget_hide(phone->pl_window);
+	gtk_list_store_clear(phone->pl_store);
+	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
+		return;
+	theme = gtk_icon_theme_get_default();
+	while((de = readdir(dir)) != NULL)
+	{
+		if((len = strlen(de->d_name)) < sizeof(ext))
+			continue;
+		if(strcmp(&de->d_name[len - sizeof(ext) + 1], ext) != 0)
+			continue;
+		de->d_name[len - sizeof(ext) + 1] = '\0';
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
+#endif
+		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
+				== NULL)
+			continue;
+		if((pp = plugin_lookup(p, "plugin")) == NULL)
+		{
+			plugin_delete(p);
+			continue;
+		}
+		gtk_list_store_append(phone->pl_store, &iter);
+		gtk_list_store_set(phone->pl_store, &iter,
+				PHONE_PLUGINS_COLUMN_FILENAME, de->d_name,
+				PHONE_PLUGINS_COLUMN_NAME, pp->name, -1);
+		if(pp->icon == NULL)
+			pixbuf = gtk_icon_theme_load_icon(theme,
+					"gnome-settings", 48, 0, NULL);
+		else
+			pixbuf = gtk_icon_theme_load_icon(theme, pp->icon, 48,
+					0, NULL);
+		gtk_list_store_set(phone->pl_store, &iter,
+				PHONE_PLUGINS_COLUMN_ICON, pixbuf, -1);
+		plugin_delete(p);
+	}
+	closedir(dir);
+}
+
+static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
+		char * path, gpointer data)
+{
+	Phone * phone = data;
+	GtkTreeIter iter;
+
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(phone->pl_store),
+			&iter, path);
+	gtk_list_store_set(phone->pl_store, &iter, PHONE_PLUGINS_COLUMN_ENABLED,
+			!gtk_cell_renderer_toggle_get_active(renderer), -1);
+}
+
+static void _on_plugins_ok(gpointer data)
+{
+	Phone * phone = data;
+
+	gtk_widget_hide(phone->pl_window);
+	/* FIXME implement:
+	 * - browse through the store
+	 * - if enabled && plugin == NULL => load
+	 * - if disabled && plugin != NULL => unload
+	 * - else peace, my friend */
+}
+
+
 /* phone_show_read */
 void phone_show_read(Phone * phone, gboolean show, ...)
 {
@@ -1784,7 +1989,6 @@ void phone_show_settings(Phone * phone, gboolean show)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
-	/* FIXME really implement */
 	if(phone->se_window == NULL)
 	{
 		phone->se_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -1802,6 +2006,8 @@ void phone_show_settings(Phone * phone, gboolean show)
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
 		phone->se_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->se_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->se_view),
@@ -1862,18 +2068,16 @@ void phone_show_system(Phone * phone, gboolean show)
 		return;
 	}
 	phone->sy_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(phone->sy_window),
-			4);
-	gtk_window_set_default_size(GTK_WINDOW(phone->sy_window), 200,
-			300);
+	gtk_container_set_border_width(GTK_CONTAINER(phone->sy_window), 4);
+	gtk_window_set_default_size(GTK_WINDOW(phone->sy_window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(phone->sy_window),
 			"gnome-settings");
 #endif
 	gtk_window_set_title(GTK_WINDOW(phone->sy_window),
 			_("System preferences"));
-	g_signal_connect(G_OBJECT(phone->sy_window), "delete-event",
-			G_CALLBACK(on_phone_closex), phone->sy_window);
+	g_signal_connect(G_OBJECT(phone->sy_window), "delete-event", G_CALLBACK(
+				on_phone_closex), phone->sy_window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Phone device:"));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
