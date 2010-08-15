@@ -408,7 +408,6 @@ static gboolean _new_idle(gpointer data)
 	phone_show_contacts(phone, FALSE);
 	phone_show_dialer(phone, FALSE);
 	phone_show_messages(phone, FALSE);
-	phone_show_plugins(phone, FALSE);
 	phone_show_read(phone, FALSE);
 	phone_show_settings(phone, FALSE);
 	phone_show_system(phone, FALSE);
@@ -1804,6 +1803,7 @@ static void _on_plugins_cancel(gpointer data)
 	GtkTreeIter iter;
 	Plugin * p;
 	PhonePlugin * pp;
+	size_t i;
 	GdkPixbuf * pixbuf;
 
 	gtk_widget_hide(phone->pl_window);
@@ -1833,6 +1833,16 @@ static void _on_plugins_cancel(gpointer data)
 		gtk_list_store_set(phone->pl_store, &iter,
 				PHONE_PLUGINS_COLUMN_FILENAME, de->d_name,
 				PHONE_PLUGINS_COLUMN_NAME, pp->name, -1);
+		for(i = 0; i < phone->plugins_cnt; i++)
+		{
+			if(strcmp(phone->plugins[i].pp->name, pp->name) != 0)
+				continue;
+			gtk_list_store_set(phone->pl_store, &iter,
+					PHONE_PLUGINS_COLUMN_ENABLED, TRUE,
+					PHONE_PLUGINS_COLUMN_PLUGIN,
+					phone->plugins[i].pp, -1);
+			break;
+		}
 		if(pp->icon == NULL)
 			pixbuf = gtk_icon_theme_load_icon(theme,
 					"gnome-settings", 48, 0, NULL);
