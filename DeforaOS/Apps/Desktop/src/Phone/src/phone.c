@@ -1708,6 +1708,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 
 /* phone_show_plugins */
 static void _on_plugins_cancel(gpointer data);
+static gboolean _on_plugins_closex(gpointer data);
 static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
 		char * path, gpointer data);
 static void _on_plugins_ok(gpointer data);
@@ -1730,9 +1731,8 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		gtk_window_set_icon_name(GTK_WINDOW(widget), "gnome-settings");
 #endif
 		gtk_window_set_title(GTK_WINDOW(widget), _("Plug-ins"));
-		/* FIXME this callback should cancel settings too */
 		g_signal_connect(G_OBJECT(widget), "delete-event", G_CALLBACK(
-					on_phone_closex), widget);
+					_on_plugins_closex), widget);
 		vbox = gtk_vbox_new(FALSE, 4);
 		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
@@ -1856,6 +1856,14 @@ static void _on_plugins_cancel(gpointer data)
 	closedir(dir);
 }
 
+static gboolean _on_plugins_closex(gpointer data)
+{
+	Phone * phone = data;
+
+	_on_plugins_cancel(phone);
+	return TRUE;
+}
+
 static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
 		char * path, gpointer data)
 {
@@ -1871,13 +1879,41 @@ static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
 static void _on_plugins_ok(gpointer data)
 {
 	Phone * phone = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gboolean enabled;
+	PhonePlugin * plugin;
+	gchar * name;
+	int res = 0;
+	String * value = string_new("");
+	String * sep = "";
 
 	gtk_widget_hide(phone->pl_window);
-	/* FIXME implement:
-	 * - browse through the store
-	 * - if enabled && plugin == NULL => load
-	 * - if disabled && plugin != NULL => unload
-	 * - else peace, my friend */
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PHONE_PLUGINS_COLUMN_ENABLED,
+				&enabled, PHONE_PLUGINS_COLUMN_PLUGIN, &plugin,
+				PHONE_PLUGINS_COLUMN_FILENAME, &name, -1);
+		if(enabled)
+		{
+			if(plugin == NULL)
+				phone_load(phone, name);
+			res |= string_append(&value, sep);
+			res |= string_append(&value, name);
+			sep = ",";
+		}
+		else if(plugin != NULL)
+			phone_unload(phone, plugin);
+		g_free(name);
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() value=\"%s\"\n", __func__, value);
+#endif
+	_phone_config_set(phone, NULL, "plugins", value);
+	string_delete(value);
+	_on_plugins_cancel(phone);
 }
 
 
@@ -2057,6 +2093,7 @@ void phone_show_settings(Phone * phone, gboolean show)
 
 /* phone_show_system */
 static void _on_system_cancel(gpointer data);
+static gboolean _on_system_closex(gpointer data);
 static void _on_system_ok(gpointer data);
 
 void phone_show_system(Phone * phone, gboolean show)
@@ -2087,7 +2124,7 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_window_set_title(GTK_WINDOW(phone->sy_window),
 			_("System preferences"));
 	g_signal_connect(G_OBJECT(phone->sy_window), "delete-event", G_CALLBACK(
-				on_phone_closex), phone->sy_window);
+				_on_system_closex), phone->sy_window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Phone device:"));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -2135,6 +2172,14 @@ static void _on_system_cancel(gpointer data)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					phone->sy_hwflow), FALSE);
+}
+
+static gboolean _on_system_closex(gpointer data)
+{
+	Phone * phone = data;
+
+	_on_system_cancel(phone);
+	return TRUE;
 }
 
 static void _on_system_ok(gpointer data)
@@ -2267,44 +2312,78 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 }
 
 
-/* phone_unload_all */
-void phone_unload_all(Phone * phone)
+/* phone_unload */
+int phone_unload(Phone * phone, PhonePlugin * plugin)
 {
 	gboolean valid;
-	GtkTreeModel * model;
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->se_store);
 	GtkTreeIter iter;
 	size_t i;
-	PhonePlugin * plugin;
+	PhonePlugin * pp;
 
+	if(plugin == NULL)
+		return phone_error(NULL, strerror(EINVAL), -1);
 	/* view */
-	model = GTK_TREE_MODEL(phone->se_store);
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;)
 	{
-		plugin = NULL;
 		gtk_tree_model_get(model, &iter, PHONE_SETTINGS_COLUMN_PLUGIN,
-				&plugin, -1);
-		if(plugin == NULL)
-			valid = gtk_tree_model_iter_next(model, &iter);
+				&pp, -1);
+		if(pp == plugin)
+		{
+			gtk_list_store_remove(phone->se_store, &iter);
+			break;
+		}
 		else
-			valid = gtk_list_store_remove(phone->se_store, &iter);
+			valid = gtk_tree_model_iter_next(model, &iter);
 	}
 	/* triggers */
-	for(i = 0; i < phone->triggers_cnt; i++)
+	for(i = 0; i < phone->triggers_cnt;)
+	{
+		if(phone->triggers[i].plugin != plugin)
+		{
+			i++;
+			continue;
+		}
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() trigger %lu\n", __func__,
+				(unsigned long)i);
+#endif
 		free(phone->triggers[i].trigger);
-	phone->triggers_cnt = 0;
-	free(phone->triggers);
-	phone->triggers = NULL;
+		memmove(&phone->triggers[i], &phone->triggers[i + 1],
+				sizeof(*phone->triggers)
+				* (--phone->triggers_cnt - i));
+		/* FIXME could call realloc() to gain some memory */
+	}
 	/* plugins */
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
-		plugin = phone->plugins[i].pp;
+		if(phone->plugins[i].pp != plugin)
+			continue;
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() plugin %lu\n", __func__,
+				(unsigned long)i);
+#endif
 		if(plugin->destroy != NULL && plugin->destroy(plugin) != 0)
-			phone_error(NULL, error_get(), 0);
+			phone_error(phone, error_get(), 0);
 		plugin_delete(phone->plugins[i].p);
+		memmove(&phone->plugins[i], &phone->plugins[i + 1],
+				sizeof(*phone->plugins)
+				* (--phone->plugins_cnt - i));
+		/* FIXME could call realloc() to gain some memory */
+		return 0;
 	}
-	phone->plugins_cnt = 0;
-	free(phone->plugins);
-	phone->plugins = NULL;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() no such plugin\n", __func__);
+#endif
+	return phone_error(NULL, strerror(ENOENT), -1); /* XXX not explicit */
+}
+
+
+/* phone_unload_all */
+void phone_unload_all(Phone * phone)
+{
+	while(phone->plugins_cnt >= 1)
+		phone_unload(phone, phone->plugins[0].pp);
 }
 
 
@@ -2545,7 +2624,7 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
-	/* FIXME add a cancel button? */
+	/* FIXME add a cancel button? callback needed for delete-event then */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
