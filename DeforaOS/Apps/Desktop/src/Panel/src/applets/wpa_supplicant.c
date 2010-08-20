@@ -199,7 +199,13 @@ static void _wpa_destroy(PanelApplet * applet)
 	Wpa * wpa = applet->priv;
 	size_t i;
 
-	/* FIXME remove timeouts and sources */
+	/* FIXME test this code, disable the channel and close the socket */
+	if(wpa->source != 0)
+		g_source_remove(wpa->source);
+	if(wpa->rd_source != 0)
+		g_source_remove(wpa->rd_source);
+	if(wpa->wr_source != 0)
+		g_source_remove(wpa->wr_source);
 	for(i = 0; i < wpa->queue_cnt; i++)
 		free(wpa->queue[i].buf);
 	free(wpa->queue);
