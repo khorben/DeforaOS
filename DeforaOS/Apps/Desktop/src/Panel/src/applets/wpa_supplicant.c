@@ -150,8 +150,10 @@ static gboolean _init_timeout(gpointer data)
 		return applet->helper->error(applet->helper->panel, "socket",
 				TRUE);
 	snprintf(lu.sun_path, sizeof(lu.sun_path), "%s", local);
-	lu.sun_len = SUN_LEN(&lu);
 	lu.sun_family = AF_UNIX;
+#ifdef SUN_LEN
+	lu.sun_len = SUN_LEN(&lu);
+#endif
 	if(bind(wpa->fd, (struct sockaddr *)&lu, sizeof(lu)) != 0)
 	{
 		close(wpa->fd);
