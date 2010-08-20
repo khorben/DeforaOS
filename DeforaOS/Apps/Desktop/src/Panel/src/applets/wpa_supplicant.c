@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
+ * - configuration value for the interface to track
  * - more error checking
  * - determine if there is an asynchronous mode */
 
@@ -176,6 +177,7 @@ static gboolean _init_timeout(gpointer data)
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() connected\n", __func__);
 #endif
+		gtk_label_set_text(GTK_LABEL(wpa->label), de->d_name);
 		wpa->channel = g_io_channel_unix_new(wpa->fd);
 		g_io_channel_set_encoding(wpa->channel, NULL, NULL);
 		g_io_channel_set_buffered(wpa->channel, FALSE);
