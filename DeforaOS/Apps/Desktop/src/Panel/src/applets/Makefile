@@ -1,4 +1,4 @@
-TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so pager.so phone.so swap.so systray.so tasks.so volume.so
+TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so pager.so phone.so swap.so systray.so tasks.so volume.so wpa_supplicant.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -151,6 +151,13 @@ volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 volume.so: $(volume_OBJS)
 	$(LD) -o volume.so $(volume_OBJS)
 
+wpa_supplicant_OBJS = wpa_supplicant.o
+wpa_supplicant_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+wpa_supplicant_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+wpa_supplicant.so: $(wpa_supplicant_OBJS)
+	$(LD) -o wpa_supplicant.so $(wpa_supplicant_OBJS)
+
 battery.o: battery.c ../../include/Panel.h
 	$(CC) $(battery_CFLAGS) -c battery.c
 
@@ -208,8 +215,11 @@ tasks.o: tasks.c ../../include/Panel.h tasks.atoms
 volume.o: volume.c ../../include/Panel.h
 	$(CC) $(volume_CFLAGS) -c volume.c
 
+wpa_supplicant.o: wpa_supplicant.c ../../include/Panel.h
+	$(CC) $(wpa_supplicant_CFLAGS) -c wpa_supplicant.c
+
 clean:
-	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
+	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -253,6 +263,8 @@ install: all
 	$(INSTALL) -m 0644 -- tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- volume.so $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 -- wpa_supplicant.so $(DESTDIR)$(LIBDIR)/Panel/applets/wpa_supplicant.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
@@ -274,5 +286,6 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/wpa_supplicant.so
 
 .PHONY: all clean distclean install uninstall
