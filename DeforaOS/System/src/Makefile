@@ -1,4 +1,4 @@
-SUBDIRS	= libSystem libc Init VFS
+SUBDIRS	= libSystem libParser libc Init VFS
 
 
 all: subdirs
