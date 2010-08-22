@@ -1,4 +1,18 @@
 /* $Id$ */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS System libParser */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 
 
 #ifndef PARSER_XML_H
@@ -18,27 +32,29 @@ typedef struct _XMLAttribute
 
 typedef union _XMLNode XMLNode;
 
+typedef struct _XMLNodeTag XMLNodeTag;
+
 typedef enum _XMLNodeType
 {
 	XML_NODE_TYPE_TAG,
 	XML_NODE_TYPE_DATA
 } XMLNodeType;
 
-typedef struct _XMLNodeTag
+struct _XMLNodeTag
 {
 	XMLNodeType type;
-	XMLNode * parent;
+	XMLNodeTag * parent;
 	char * name;
-	XMLAttribute * attributes;
+	XMLAttribute ** attributes;
 	size_t attributes_cnt;
-	XMLNode * nodes;
-	size_t nodes_cnt;
-} XMLNodeTag;
+	XMLNode ** childs;
+	size_t childs_cnt;
+};
 
 typedef struct _XMLNodeData
 {
 	XMLNodeType type;
-	XMLNode * parent;
+	XMLNodeTag * parent;
 	char * data;
 } XMLNodeData;
 
