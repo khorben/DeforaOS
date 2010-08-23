@@ -95,6 +95,7 @@ static XMLDocument * _xml_document_new(XMLNode * node);
 static void _xml_document_delete(XMLDocument * document);
 
 /* node */
+static XMLNode * _xml_node_new(XMLNodeType type, XMLNodeTag * parent);
 static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * data);
 static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name);
 static void _xml_node_delete(XMLNode * node);
@@ -551,15 +552,26 @@ static void _xml_document_delete(XMLDocument * document)
 
 
 /* node */
-/* xml_node_new_data */
-static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * data)
+/* xml_node_new */
+static XMLNode * _xml_node_new(XMLNodeType type, XMLNodeTag * parent)
 {
 	XMLNode * node;
 
 	if((node = object_new(sizeof(*node))) == NULL)
 		return NULL;
-	node->data.type = XML_NODE_TYPE_DATA;
-	node->data.parent = parent;
+	node->type = type;
+	node->parent.parent = parent;
+	return node;
+}
+
+
+/* xml_node_new_data */
+static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * data)
+{
+	XMLNode * node;
+
+	if((node = _xml_node_new(XML_NODE_TYPE_DATA, parent)) == NULL)
+		return NULL;
 	node->data.data = string_new(data);
 	if(node->data.data == NULL)
 	{
@@ -575,10 +587,8 @@ static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name)
 {
 	XMLNode * node;
 
-	if((node = object_new(sizeof(*node))) == NULL)
+	if((node = _xml_node_new(XML_NODE_TYPE_TAG, parent)) == NULL)
 		return NULL;
-	node->tag.type = XML_NODE_TYPE_TAG;
-	node->tag.parent = parent;
 	node->tag.name = string_new(name);
 	node->tag.attributes = NULL;
 	node->tag.attributes_cnt = 0;

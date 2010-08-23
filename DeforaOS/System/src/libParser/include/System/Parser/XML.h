@@ -64,7 +64,7 @@ union _XMLNode
 	struct
 	{
 		XMLNodeType type;
-		XMLNode * parent;
+		XMLNodeTag * parent;
 	} parent;
 	XMLNodeTag tag;
 	XMLNodeData data;
