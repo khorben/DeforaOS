@@ -82,5 +82,6 @@ void xml_delete(XML * xml);
 
 /* accessors */
 XMLDocument * xml_get_document(XML * xml);
+char const * xml_get_filename(XML * xml);
 
 #endif /* !PARSER_XML_H */

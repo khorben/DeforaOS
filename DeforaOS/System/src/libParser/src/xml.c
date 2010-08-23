@@ -256,6 +256,13 @@ static void _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
 }
 
 
+/* xml_get_filename */
+char const * xml_get_filename(XML * xml)
+{
+	return parser_get_filename(xml->parser);
+}
+
+
 /* private */
 /* functions */
 /* attribute */
@@ -573,6 +580,10 @@ static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name)
 	node->tag.type = XML_NODE_TYPE_TAG;
 	node->tag.parent = parent;
 	node->tag.name = string_new(name);
+	node->tag.attributes = NULL;
+	node->tag.attributes_cnt = 0;
+	node->tag.childs = NULL;
+	node->tag.childs_cnt = 0;
 	if(node->tag.name == NULL)
 	{
 		_xml_node_delete(node);
