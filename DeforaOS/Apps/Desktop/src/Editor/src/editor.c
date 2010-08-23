@@ -29,7 +29,9 @@
 #define N_(string) (string)
 
 
-/* constants */
+/* Editor */
+/* private */
+/* variables */
 #ifdef EMBEDDED
 static DesktopAccel _editor_accel[] =
 {
@@ -42,7 +44,6 @@ static DesktopAccel _editor_accel[] =
 	{ NULL, 0, 0 }
 };
 #endif
-
 
 #ifndef EMBEDDED
 static DesktopMenu _editor_menu_file[] =
@@ -116,8 +117,6 @@ static DesktopToolbar _editor_toolbar[] =
 };
 
 
-/* Editor */
-/* private */
 /* prototypes */
 static gboolean _editor_find(Editor * editor, char const * text,
 		gboolean sensitive, gboolean wrap);
