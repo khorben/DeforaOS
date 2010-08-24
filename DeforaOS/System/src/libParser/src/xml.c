@@ -60,7 +60,8 @@ typedef enum _XMLCode
 	XML_CODE_TAG_CLOSE,
 	XML_CODE_TAG_ENTER,
 	XML_CODE_TAG_LEAVE,
-	XML_CODE_TAG_NAME
+	XML_CODE_TAG_NAME,
+	XML_CODE_TAG_SPECIAL
 } XMLCode;
 
 
@@ -87,6 +88,8 @@ static int _xml_callback_tag_leave(Parser * parser, Token * token, int c,
 		void * data);
 static int _xml_callback_tag_name(Parser * parser, Token * token, int c,
 		void * data);
+static int _xml_callback_tag_special(Parser * parser, Token * token, int c,
+		void * data);
 static int _xml_callback_tag_whitespace(Parser * parser, Token * token, int c,
 		void * data);
 
@@ -96,7 +99,8 @@ static void _xml_document_delete(XMLDocument * document);
 
 /* node */
 static XMLNode * _xml_node_new(XMLNodeType type, XMLNodeTag * parent);
-static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * data);
+static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * buffer,
+		size_t size);
 static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name);
 static void _xml_node_delete(XMLNode * node);
 
@@ -109,14 +113,24 @@ static int _xml_node_tag_add_child(XMLNodeTag * node, XMLNode * child);
 /* public */
 /* functions */
 /* xml_new */
+static XML * _new_do(char const * pathname, char const * string, size_t length);
+
 XML * xml_new(char const * pathname)
+{
+	return _new_do(pathname, NULL, 0);
+}
+
+static XML * _new_do(char const * pathname, char const * string, size_t length)
 {
 	XML * xml;
 
 	if((xml = object_new(sizeof(*xml))) == NULL)
 		return NULL;
 	xml->document = NULL;
-	xml->parser = parser_new(pathname);
+	if(pathname != NULL)
+		xml->parser = parser_new(pathname);
+	else
+		xml->parser = parser_new_string(string, length);
 	xml->context = XML_CONTEXT_DATA;
 	if(xml->parser == NULL)
 	{
@@ -125,6 +139,7 @@ XML * xml_new(char const * pathname)
 	}
 	/* FIXME optionally filter out whitespaces (and comments?) */
 	parser_add_callback(xml->parser, _xml_callback_tag_whitespace, xml);
+	parser_add_callback(xml->parser, _xml_callback_tag_special, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_name, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_attribute, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_attribute_value,
@@ -134,6 +149,13 @@ XML * xml_new(char const * pathname)
 	parser_add_callback(xml->parser, _xml_callback_tag_leave, xml);
 	parser_add_callback(xml->parser, _xml_callback_data, xml);
 	return xml;
+}
+
+
+/* xml_new_string */
+XML * xml_new_string(char const * string, size_t length)
+{
+	return _new_do(NULL, string, length);
 }
 
 
@@ -193,11 +215,13 @@ XMLDocument * xml_get_document(XML * xml)
 				break;
 			case XML_CODE_TAG_ENTER:
 				break;
+			case XML_CODE_TAG_LEAVE:
+				close = 0;
+				break;
 			case XML_CODE_TAG_NAME:
 				_document_tag_name(xml, token, &current, close);
 				break;
-			case XML_CODE_TAG_LEAVE:
-				close = 0;
+			case XML_CODE_TAG_SPECIAL:
 				break;
 		}
 	}
@@ -207,10 +231,14 @@ XMLDocument * xml_get_document(XML * xml)
 static void _document_data(Token * token, XMLNodeTag * current)
 {
 	XMLNode * node;
+	String const * string;
+	size_t size = 0;
 
 	if(current == NULL)
 		return; /* XXX warn */
-	node = _xml_node_new_data(current, token_get_string(token));
+	if((string = token_get_string(token)) != NULL)
+		size = string_length(string);
+	node = _xml_node_new_data(current, string, size);
 	_xml_node_tag_add_child(current, node);
 }
 
@@ -504,6 +532,25 @@ static int _xml_callback_tag_name(Parser * parser, Token * token, int c,
 }
 
 
+/* xml_callback_tag_special */
+/* FIXME decompose this function in at least two different ones */
+static int _xml_callback_tag_special(Parser * parser, Token * token, int c,
+		void * data)
+{
+	XML * xml = data;
+	char buf[2] = { '\0', '\0' };
+
+	if(xml->context != XML_CONTEXT_TAG || (c != '?' && c != '!'))
+		return 1;
+	DEBUG_CALLBACK();
+	buf[0] = c;
+	parser_scan_filter(parser);
+	token_set_code(token, XML_CODE_TAG_SPECIAL);
+	token_set_string(token, buf);
+	return 0;
+}
+
+
 /* xml_callback_tag_whitespace */
 static int _xml_callback_tag_whitespace(Parser * parser, Token * token, int c,
 		void * data)
@@ -566,18 +613,22 @@ static XMLNode * _xml_node_new(XMLNodeType type, XMLNodeTag * parent)
 
 
 /* xml_node_new_data */
-static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * data)
+static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * buffer,
+		size_t size)
 {
 	XMLNode * node;
 
 	if((node = _xml_node_new(XML_NODE_TYPE_DATA, parent)) == NULL)
 		return NULL;
-	node->data.data = string_new(data);
-	if(node->data.data == NULL)
+	/* XXX use buffer_new() */
+	node->data.buffer = object_new(size);
+	if(node->data.buffer == NULL)
 	{
 		_xml_node_delete(node);
 		return NULL;
 	}
+	memcpy(node->data.buffer, buffer, size);
+	node->data.size = size;
 	return node;
 }
 
@@ -609,7 +660,7 @@ static void _xml_node_delete(XMLNode * node)
 	switch(node->type)
 	{
 		case XML_NODE_TYPE_DATA:
-			free(node->data.data);
+			object_delete(node->data.buffer);
 			break;
 		case XML_NODE_TYPE_TAG:
 			free(node->tag.name);
