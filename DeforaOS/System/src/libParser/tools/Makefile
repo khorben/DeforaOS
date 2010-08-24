@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGSF= -I ../include -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2
+CFLAGS	= -Wall -g -O2 -pedantic
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -17,7 +17,7 @@ all: $(TARGETS)
 
 xml_OBJS = xml.o
 xml_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-xml_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L ../src -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lParser
+xml_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L../src -L$(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lParser
 
 xml: $(xml_OBJS)
 	$(CC) -o xml $(xml_OBJS) $(xml_LDFLAGS)
