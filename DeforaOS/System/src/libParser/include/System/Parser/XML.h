@@ -55,7 +55,8 @@ typedef struct _XMLNodeData
 {
 	XMLNodeType type;
 	XMLNodeTag * parent;
-	char * data;
+	char * buffer;
+	size_t size;
 } XMLNodeData;
 
 union _XMLNode
@@ -78,6 +79,7 @@ typedef struct _XMLDocument
 
 /* functions */
 XML * xml_new(char const * pathname);
+XML * xml_new_string(char const * string, size_t length);
 void xml_delete(XML * xml);
 
 /* accessors */
