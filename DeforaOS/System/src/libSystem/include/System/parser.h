@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ typedef int (*ParserCallback)(Parser * parser, Token * token, int c,
 
 /* functions */
 Parser * parser_new(char const * pathname);
+Parser * parser_new_string(char const * string, size_t length);
 int parser_delete(Parser * parser);
 
 /* accessors */

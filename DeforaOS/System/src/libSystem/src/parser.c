@@ -37,6 +37,9 @@ struct _Parser
 	/* parsing sources */
 	char * filename;
 	FILE * fp;
+	char * string;
+	size_t string_cnt;
+	size_t string_pos;
 
 	/* tracking the position */
 	unsigned int line;
@@ -67,6 +70,7 @@ struct _ParserCallbackData
 
 /* prototypes */
 static int _parser_scanner_file(int * c, void * data);
+static int _parser_scanner_string(int * c, void * data);
 
 
 /* functions */
@@ -120,10 +124,55 @@ static int _parser_scanner_file(int * c, void * data)
 }
 
 
+/* parser_scanner_string */
+static int _parser_scanner_string(int * c, void * data)
+{
+	Parser * parser = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(parser->last == '\n')
+	{
+		parser->line++;
+		parser->col = 1;
+	}
+	else if(parser->last != EOF)
+		parser->col++;
+	if(parser->string_pos == parser->string_cnt)
+		*c = EOF;
+	else
+		*c = parser->string[parser->string_pos];
+	parser->string_pos++;
+	parser->last = *c;
+	return 0;
+}
+
+
 /* public */
 /* functions */
 /* parser_new */
+static Parser * _new_do(ParserFilter scanner);
+
 Parser * parser_new(char const * pathname)
+{
+	Parser * parser;
+
+	if((parser = _new_do(_parser_scanner_file)) == NULL)
+		return NULL;
+	if((parser->filename = strdup(pathname)) == NULL)
+		error_set_code(1, "%s", strerror(errno));
+	if((parser->fp = fopen(pathname, "r")) == NULL)
+		error_set_code(1, "%s: %s", pathname, strerror(errno));
+	if(parser->filename == NULL || parser->fp == NULL)
+	{
+		parser_delete(parser);
+		return NULL;
+	}
+	return parser;
+}
+
+static Parser * _new_do(ParserFilter scanner)
 {
 	Parser * parser;
 
@@ -132,24 +181,40 @@ Parser * parser_new(char const * pathname)
 #endif
 	if((parser = object_new(sizeof(*parser))) == NULL)
 		return NULL;
-	parser->filename = strdup(pathname);
-	if((parser->fp = fopen(pathname, "r")) == NULL)
-		error_set_code(1, "%s: %s", pathname, strerror(errno));
+	parser->filename = NULL;
+	parser->fp = NULL;
+	parser->string = NULL;
+	parser->string_cnt = 0;
+	parser->string_pos = 0;
 	parser->line = 1;
 	parser->col = 1;
 	parser->last = EOF;
 	parser->lookahead = 0;
-	parser->scanner = _parser_scanner_file;
+	parser->scanner = scanner;
 	parser->filters = NULL;
 	parser->filters_cnt = 0;
 	parser->callbacks = NULL;
 	parser->callbacks_cnt = 0;
-	if(parser->filename == NULL
-			|| parser->fp == NULL)
+	return parser;
+}
+
+
+/* parser_new_string */
+Parser * parser_new_string(char const * string, size_t length)
+{
+	Parser * parser;
+
+	if((parser = _new_do(_parser_scanner_string)) == NULL)
+		return NULL;
+	parser->string = malloc(length);
+	parser->string_cnt = length;
+	if(parser->string == NULL && length != 0)
 	{
+		error_set_code(1, "%s", strerror(errno));
 		parser_delete(parser);
 		return NULL;
 	}
+	memcpy(parser->string, string, length);
 	return parser;
 }
 
@@ -168,6 +233,7 @@ int parser_delete(Parser * parser)
 		ret = error_set_code(1, "%s: %s", parser->filename,
 				strerror(errno));
 	free(parser->filename);
+	free(parser->string);
 	free(parser->filters);
 	free(parser->callbacks);
 	object_delete(parser);
