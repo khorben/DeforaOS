@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,8 +41,7 @@ struct _Token
 
 /* protected */
 /* functions */
-/* token_new
- * PRE	filename must be non-NULL */
+/* token_new */
 Token * token_new(String const * filename, unsigned int line, unsigned int col)
 {
 	Token * token;
@@ -54,11 +53,11 @@ Token * token_new(String const * filename, unsigned int line, unsigned int col)
 		return NULL;
 	token->code = 0;
 	token->string = NULL;
-	token->filename = string_new(filename);
+	token->filename = (filename != NULL) ? string_new(filename) : NULL;
 	token->line = line;
 	token->col = col;
 	token->data = NULL;
-	if(token->filename == NULL)
+	if(filename != NULL && token->filename == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
 		object_delete(token);
