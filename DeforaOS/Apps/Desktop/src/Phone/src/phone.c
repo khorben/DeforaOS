@@ -1766,6 +1766,9 @@ void phone_show_plugins(Phone * phone, gboolean show)
 				PHONE_PLUGINS_COLUMN_NAME);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->pl_view),
 				column);
+		gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
+					phone->pl_store),
+				PHONE_PLUGINS_COLUMN_NAME, GTK_SORT_ASCENDING);
 		gtk_container_add(GTK_CONTAINER(widget), phone->pl_view);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 		/* dialog */
