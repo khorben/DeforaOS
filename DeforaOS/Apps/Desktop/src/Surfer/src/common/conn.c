@@ -44,7 +44,7 @@ struct _Conn
 	int image;
 
 	/* callback */
-	ssize_t (*callback_write)(Conn *, char const *, ssize_t, gpointer);
+	ssize_t (*callback_write)(Conn *, char const *, size_t, gpointer);
 	gpointer callback_write_data;
 
 	/* http */
@@ -66,7 +66,7 @@ static void _conn_set_progress(Conn * conn, gdouble progress);
 static void _conn_set_status(Conn * conn, char const * status);
 
 static void _conn_set_callback_write(Conn * conn,
-		ssize_t (*callback)(Conn *, char const *, ssize_t, gpointer),
+		ssize_t (*callback)(Conn *, char const *, size_t, gpointer),
 		gpointer data);
 
 /* useful */
@@ -76,7 +76,7 @@ static int _conn_load(Conn * conn);
 
 /* functions */
 /* conn_new */
-static ssize_t _new_callback_write(Conn * conn, char const * buf, ssize_t size,
+static ssize_t _new_callback_write(Conn * conn, char const * buf, size_t size,
 		gpointer data);
 
 static Conn * _conn_new(Surfer * surfer, char const * url, char const * post)
@@ -113,13 +113,11 @@ static Conn * _conn_new(Surfer * surfer, char const * url, char const * post)
 	return conn;
 }
 
-static ssize_t _new_callback_write(Conn * conn, char const * buf, ssize_t size,
+static ssize_t _new_callback_write(Conn * conn, char const * buf, size_t size,
 		gpointer data)
 {
 	ssize_t ret;
 
-	if(size < 0)
-		return -1;
 	if((ret = fwrite(buf, sizeof(*buf), size, data)) != size)
 		return -1;
 	return ret;
@@ -171,7 +169,7 @@ static void _conn_set_status(Conn * conn, char const * status)
 
 /* conn_set_callback_write */
 static void _conn_set_callback_write(Conn * conn,
-		ssize_t (*callback)(Conn *, char const *, ssize_t, gpointer),
+		ssize_t (*callback)(Conn *, char const *, size_t, gpointer),
 		gpointer data)
 {
 	conn->callback_write = callback;
@@ -268,6 +266,8 @@ static void _http_data_complete(GConnHttpEventData * event, Conn * conn)
 		return;
 	}
 	conn->callback_write(conn, buf, size, conn->callback_write_data);
+	/* FIXME find a more elegant way? */
+	conn->callback_write(conn, NULL, 0, conn->callback_write_data);
 	_http_data_progress(event, conn);
 	_conn_set_status(conn, NULL);
 }

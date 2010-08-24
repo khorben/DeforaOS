@@ -16,7 +16,9 @@
 
 
 #include <stdlib.h>
+#include <errno.h>
 #include <libintl.h>
+#include <System/Parser/XML.h>
 #include "ghtml.h"
 #include "../config.h"
 #include "common/conn.c"
@@ -41,10 +43,12 @@ typedef struct _GHtml
 
 	/* connection */
 	Conn * conn;
+	char * buffer;
+	size_t buffer_cnt;
 
 	/* html widget */
 	GtkWidget * view;
-	GtkTextBuffer * buffer;
+	GtkTextBuffer * tbuffer;
 } GHtml;
 
 
@@ -69,12 +73,14 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	ghtml->history = NULL;
 	ghtml->current = NULL;
 	ghtml->conn = NULL;
+	ghtml->buffer = NULL;
+	ghtml->buffer_cnt = 0;
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	g_object_set_data(G_OBJECT(widget), "ghtml", ghtml);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	ghtml->view = gtk_text_view_new();
-	ghtml->buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
+	ghtml->tbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
 	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(ghtml->view),
 			FALSE);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(ghtml->view), FALSE);
@@ -91,6 +97,7 @@ void ghtml_delete(GtkWidget * widget)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	free(ghtml->buffer);
 	if(ghtml->conn != NULL)
 		_conn_delete(ghtml->conn);
 	free(ghtml);
@@ -152,14 +159,9 @@ gdouble ghtml_get_progress(GtkWidget * widget)
 char const * ghtml_get_source(GtkWidget * widget)
 {
 	GHtml * ghtml;
-	GtkTextIter start;
-	GtkTextIter end;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	/* FIXME leaks memory and will not always correspond to the source */
-	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
-	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
-	return gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
+	return ghtml->buffer;
 }
 
 
@@ -215,9 +217,9 @@ gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive,
 		return ret;
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	/* XXX highly inefficient */
-	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
-	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
-	buf = gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
+	gtk_text_buffer_get_start_iter(ghtml->tbuffer, &start);
+	gtk_text_buffer_get_end_iter(ghtml->tbuffer, &end);
+	buf = gtk_text_buffer_get_text(ghtml->tbuffer, &start, &end, FALSE);
 	if(buf == NULL || (blen = strlen(buf)) == 0)
 		return ret;
 	if(ghtml->search >= blen)
@@ -249,9 +251,9 @@ static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 
 	offset = str - buf;
 	ghtml->search = offset + 1;
-	gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &start, offset);
-	gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &end, offset + tlen);
-	gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
+	gtk_text_buffer_get_iter_at_offset(ghtml->tbuffer, &start, offset);
+	gtk_text_buffer_get_iter_at_offset(ghtml->tbuffer, &end, offset + tlen);
+	gtk_text_buffer_select_range(ghtml->tbuffer, &start, &end);
 	gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(ghtml->view), &start, 0.0,
 			FALSE, 0.0, 0.0);
 	return TRUE;
@@ -332,9 +334,9 @@ void ghtml_select_all(GtkWidget * widget)
 	GtkTextIter end;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
-	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
-	gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
+	gtk_text_buffer_get_start_iter(ghtml->tbuffer, &start);
+	gtk_text_buffer_get_end_iter(ghtml->tbuffer, &end);
+	gtk_text_buffer_select_range(ghtml->tbuffer, &start, &end);
 }
 
 
@@ -345,8 +347,8 @@ void ghtml_unselect_all(GtkWidget * widget)
 	GtkTextIter start;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
-	gtk_text_buffer_select_range(ghtml->buffer, &start, &start);
+	gtk_text_buffer_get_start_iter(ghtml->tbuffer, &start);
+	gtk_text_buffer_select_range(ghtml->tbuffer, &start, &start);
 }
 
 
@@ -372,9 +374,10 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 
 /* functions */
-static ssize_t _document_load_write(Conn * conn, char const * buf, ssize_t size,
+static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 		gpointer data);
 static gboolean _document_load_idle(gpointer data);
+static void _document_load_write_node(GHtml * ghtml, XMLNode * node);
 
 static int _ghtml_document_load(GHtml * ghtml, char const * url,
 		char const * post)
@@ -386,7 +389,10 @@ static int _ghtml_document_load(GHtml * ghtml, char const * url,
 		return 1;
 	ghtml->history = g_list_append(ghtml->history, h);
 	ghtml->current = g_list_last(ghtml->history);
-	gtk_text_buffer_set_text(ghtml->buffer, "", 0);
+	gtk_text_buffer_set_text(ghtml->tbuffer, "", 0);
+	free(ghtml->buffer);
+	ghtml->buffer = NULL;
+	ghtml->buffer_cnt = 0;
 	ghtml->search = 0;
 	surfer_set_location(ghtml->surfer, url);
 	surfer_set_title(ghtml->surfer, NULL);
@@ -397,15 +403,52 @@ static int _ghtml_document_load(GHtml * ghtml, char const * url,
 	return 0;
 }
 
-static ssize_t _document_load_write(Conn * conn, char const * buf, ssize_t size,
+static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 		gpointer data)
 {
 	GHtml * ghtml = data;
+	XML * xml;
+	XMLDocument * doc;
+	char * p;
+
+	if(size == 0)
+	{
+		if((xml = xml_new_string(ghtml->buffer, ghtml->buffer_cnt))
+				== NULL)
+			return 0;
+		if((doc = xml_get_document(xml)) != NULL)
+			_document_load_write_node(ghtml, doc->root);
+		xml_delete(xml);
+	}
+	if((p = realloc(ghtml->buffer, ghtml->buffer_cnt + size)) == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	ghtml->buffer = p;
+	memcpy(&ghtml->buffer[ghtml->buffer_cnt], buf, size);
+	ghtml->buffer_cnt += size;
+	return size;
+}
+
+static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
+{
+	size_t i;
 	GtkTextIter iter;
 
-	gtk_text_buffer_get_end_iter(ghtml->buffer, &iter);
-	gtk_text_buffer_insert(ghtml->buffer, &iter, buf, size);
-	return size;
+	if(node == NULL)
+		return;
+	switch(node->type)
+	{
+		case XML_NODE_TYPE_DATA:
+			/* FIXME looks like memory corruption at some point */
+			gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
+			gtk_text_buffer_insert(ghtml->tbuffer, &iter,
+					node->data.buffer, node->data.size);
+			break;
+		case XML_NODE_TYPE_TAG:
+			for(i = 0; i < node->tag.childs_cnt; i++)
+				_document_load_write_node(ghtml,
+						node->tag.childs[i]);
+			break;
+	}
 }
 
 static gboolean _document_load_idle(gpointer data)
