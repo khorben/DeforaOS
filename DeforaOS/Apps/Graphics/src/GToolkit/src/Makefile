@@ -39,10 +39,10 @@ gtoolkit.o: gtoolkit.c
 	$(CC) $(libGToolkit_CFLAGS) -c gtoolkit.c
 
 clean:
-	$(RM) $(libGToolkit_OBJS)
+	$(RM) -- $(libGToolkit_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 
