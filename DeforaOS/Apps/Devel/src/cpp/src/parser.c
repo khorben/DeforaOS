@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel cpp */
 /* cpp is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -435,7 +435,6 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 static int _cpp_callback_newline(Parser * parser, Token * token, int c,
 		void * data)
 {
-	int ret = 0;
 	CppParser * cpp = data;
 
 	if(c != '\n')
@@ -446,7 +445,7 @@ static int _cpp_callback_newline(Parser * parser, Token * token, int c,
 	parser_scan_filter(parser);
 	token_set_code(token, CPP_CODE_NEWLINE);
 	token_set_string(token, "\n");
-	return ret;
+	return 0;
 }
 
 
