@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include "System/Parser.h"
 
 
@@ -27,7 +28,8 @@
 /* private */
 static int _usage(void)
 {
-	fputs("Usage: xml filename\n", stderr);
+	fputs("Usage: xml filename\n"
+"       xml -s string\n", stderr);
 	return 1;
 }
 
@@ -41,16 +43,28 @@ int main(int argc, char * argv[])
 	int o;
 	XML * xml;
 	XMLDocument * doc;
+	char const * string = NULL;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "s:")) != -1)
 		switch(o)
 		{
+			case 's':
+				string = optarg;
+				break;
 			default:
 				return _usage();
 		}
-	if(optind + 1 != argc)
+	if(string == NULL)
+	{
+		if(optind + 1 != argc)
+			return _usage();
+		xml = xml_new(argv[optind]);
+	}
+	else if(optind != argc)
 		return _usage();
-	if((xml = xml_new(argv[optind])) == NULL)
+	else
+		xml = xml_new_string(string, strlen(string));
+	if(xml == NULL)
 		return error_print("xml");
 	if((doc = xml_get_document(xml)) == NULL)
 		error_print("xml");
@@ -69,7 +83,7 @@ static void _main_node(XMLNode * node)
 	switch(node->type)
 	{
 		case XML_NODE_TYPE_DATA:
-			printf("%s", node->data.data);
+			fwrite(node->data.buffer, 1, node->data.size, stdout);
 			break;
 		case XML_NODE_TYPE_TAG:
 			printf("<%s", node->tag.name);
