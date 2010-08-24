@@ -110,6 +110,7 @@ void phone_messages_write(Phone * phone, char const * number,
 
 /* plugins */
 int phone_load(Phone * phone, char const * plugin);
+int phone_unload(Phone * phone, PhonePlugin * plugin);
 void phone_unload_all(Phone * phone);
 
 /* read */
