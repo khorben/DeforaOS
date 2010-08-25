@@ -1,4 +1,4 @@
-/* common.c */
+/* $Id$ */
 
 
 
@@ -29,6 +29,7 @@ void * g_alloc(size_t size)
 }
 
 
+/* g_alloced */
 void * g_alloced(void * ptr)
 {
 	size_t i;
@@ -40,6 +41,7 @@ void * g_alloced(void * ptr)
 }
 
 
+/* g_free */
 void g_free(void * ptr)
 {
 	size_t i;

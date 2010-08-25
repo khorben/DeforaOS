@@ -1,6 +1,6 @@
 PACKAGE	= GToolkit
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -24,7 +24,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/gwindow.c \
 		$(PACKAGE)-$(VERSION)/src/gtoolkit.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/test.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)

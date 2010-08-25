@@ -3,9 +3,9 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF=
+CPPFLAGSF= -I ../include
 CPPFLAGS=
-CFLAGSF	= -W -I ../include
+CFLAGSF	= -W `pkg-config --cflags gl`
 CFLAGS	= -Wall -fPIC -g -O2 -pedantic
 AR	= ar -rc
 RANLIB	= ranlib
@@ -20,14 +20,14 @@ all: $(TARGETS)
 
 libGToolkit_OBJS = common.o gwindow.o gtoolkit.o
 libGToolkit_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libGToolkit_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+libGToolkit_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gl`
 
 libGToolkit.a: $(libGToolkit_OBJS)
 	$(AR) libGToolkit.a $(libGToolkit_OBJS)
 	$(RANLIB) libGToolkit.a
 
 libGToolkit.so: $(libGToolkit_OBJS)
-	$(LD) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS)
+	$(LD) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) `pkg-config --libs gl`
 
 common.o: common.c
 	$(CC) $(libGToolkit_CFLAGS) -c common.c
