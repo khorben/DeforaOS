@@ -379,13 +379,21 @@ static int _xml_callback_tag_attribute(Parser * parser, Token * token, int c,
 		void * data)
 {
 	XML * xml = data;
+	int q = '\0';
 	char * string = NULL;
 	size_t len = 0;
 	char * p;
 
-	if(xml->context != XML_CONTEXT_TAG_ATTRIBUTES || !isalnum(c))
+	if(xml->context != XML_CONTEXT_TAG_ATTRIBUTES || (!isalnum(c)
+				&& c != '"'))
 		return 1;
-	while(c != EOF && isalnum(c))
+	if(c == '"')
+	{
+		q = c;
+		c = parser_scan_filter(parser);
+	}
+	while(c != EOF && (isalnum(c) || c == ':' || c == '-'
+				|| (q != '\0' && c != q)))
 	{
 		if((p = realloc(string, len + 2)) == NULL)
 			return 1; /* XXX report error */
@@ -395,6 +403,8 @@ static int _xml_callback_tag_attribute(Parser * parser, Token * token, int c,
 	}
 	if(len == 0)
 		return 1;
+	if(q != '\0')
+		parser_scan_filter(parser);
 	DEBUG_CALLBACK();
 	token_set_code(token, XML_CODE_TAG_ATTRIBUTE);
 	string[len] = '\0';
@@ -437,9 +447,14 @@ static int _xml_callback_tag_attribute_value(Parser * parser, Token * token,
 	if(q != '\0')
 		parser_scan_filter(parser);
 	token_set_code(token, XML_CODE_TAG_ATTRIBUTE_VALUE);
-	string[len] = '\0';
-	token_set_string(token, string);
-	free(string);
+	if(len == 0)
+		token_set_string(token, "");
+	else
+	{
+		string[len] = '\0';
+		token_set_string(token, string);
+		free(string);
+	}
 	xml->context = XML_CONTEXT_TAG_ATTRIBUTES;
 	return 0;
 }
@@ -540,7 +555,9 @@ static int _xml_callback_tag_special(Parser * parser, Token * token, int c,
 	XML * xml = data;
 	char buf[2] = { '\0', '\0' };
 
-	if(xml->context != XML_CONTEXT_TAG || (c != '?' && c != '!'))
+	if((xml->context != XML_CONTEXT_TAG && xml->context
+				!= XML_CONTEXT_TAG_ATTRIBUTES)
+			|| (c != '?' && c != '!'))
 		return 1;
 	DEBUG_CALLBACK();
 	buf[0] = c;
