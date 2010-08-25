@@ -7,7 +7,7 @@ CC	= cc
 CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS= -I ../include
 CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2
+CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= 
 AR	= ar -rc
 RANLIB	= ranlib
@@ -26,25 +26,25 @@ subdirs:
 
 libas_OBJS = as.o code.o parser.o token.o arch/arch.o format/format.o
 libas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
-libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
+libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
 
 libas.a: $(libas_OBJS)
 	$(AR) libas.a $(libas_OBJS)
 	$(RANLIB) libas.a
 
 libas.so: $(libas_OBJS)
-	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
+	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
 
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -las
+as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L. -Wl,-rpath,$(LIBDIR) -las
 
 as: $(as_OBJS) libas.so
 	$(CC) -o as $(as_OBJS) $(as_LDFLAGS)
 
 disas_OBJS = disas.o
 disas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-disas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -las
+disas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L. -Wl,-rpath,$(LIBDIR) -las
 
 disas: $(disas_OBJS) libas.so
 	$(CC) -o disas $(disas_OBJS) $(disas_LDFLAGS)

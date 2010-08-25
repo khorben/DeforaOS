@@ -21,18 +21,18 @@ all: $(TARGETS)
 
 libcpp_OBJS = cpp.o parser.o scanner.o
 libcpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
-libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
+libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lSystem
 
 libcpp.a: $(libcpp_OBJS)
 	$(AR) libcpp.a $(libcpp_OBJS)
 	$(RANLIB) libcpp.a
 
 libcpp.so: $(libcpp_OBJS)
-	$(LD) -o libcpp.so -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
+	$(LD) -o libcpp.so -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lSystem
 
 cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-cpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp -l System
+cpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L. -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
 
 cpp: $(cpp_OBJS) libcpp.so
 	$(CC) -o cpp $(cpp_OBJS) $(cpp_LDFLAGS)
@@ -46,7 +46,7 @@ parser.o: parser.c parser.h ../include/cpp.h
 scanner.o: scanner.c common.h ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c scanner.c
 
-main.o: main.c ../include/cpp.h
+main.o: main.c ../include/cpp.h ../config.h
 	$(CC) $(cpp_CFLAGS) -c main.c
 
 clean:
