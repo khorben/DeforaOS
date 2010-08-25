@@ -744,14 +744,18 @@ static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name)
 /* xml_node_delete */
 static void _xml_node_delete(XMLNode * node)
 {
+	size_t i;
+
 	switch(node->type)
 	{
 		case XML_NODE_TYPE_DATA:
 			object_delete(node->data.buffer);
 			break;
 		case XML_NODE_TYPE_TAG:
+			/* FIXME delete the attributes */
+			for(i = 0; i < node->tag.childs_cnt; i++)
+				_xml_node_delete(node->tag.childs[i]);
 			free(node->tag.name);
-			/* FIXME delete the rest */
 			break;
 	}
 	object_delete(node);
