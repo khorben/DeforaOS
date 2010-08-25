@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -283,9 +283,10 @@ int parser_get_token(Parser * parser, Token ** token)
 /* parser_add_callback */
 int parser_add_callback(Parser * parser, ParserCallback callback, void * data)
 {
-	ParserCallbackData * p = parser->callbacks;
+	ParserCallbackData * p;
 
-	if((p = realloc(p, sizeof(*p) * (parser->callbacks_cnt + 1))) == NULL)
+	if((p = realloc(parser->callbacks, sizeof(*p) * (parser->callbacks_cnt
+						+ 1))) == NULL)
 		return 1;
 	parser->callbacks = p;
 	p = &parser->callbacks[parser->callbacks_cnt++];
