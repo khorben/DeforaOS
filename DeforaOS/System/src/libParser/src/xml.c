@@ -754,8 +754,10 @@ static void _xml_node_delete(XMLNode * node)
 		case XML_NODE_TYPE_TAG:
 			for(i = 0; i < node->tag.attributes_cnt; i++)
 				_xml_attribute_delete(node->tag.attributes[i]);
+			free(node->tag.attributes);
 			for(i = 0; i < node->tag.childs_cnt; i++)
 				_xml_node_delete(node->tag.childs[i]);
+			free(node->tag.childs);
 			free(node->tag.name);
 			break;
 	}
