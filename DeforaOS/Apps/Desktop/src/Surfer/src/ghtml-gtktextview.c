@@ -49,6 +49,7 @@ typedef struct _GHtml
 	/* html widget */
 	GtkWidget * view;
 	GtkTextBuffer * tbuffer;
+	GtkTextTag * tag;
 } GHtml;
 
 
@@ -81,6 +82,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	ghtml->view = gtk_text_view_new();
 	ghtml->tbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
+	ghtml->tag = NULL;
 	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(ghtml->view),
 			FALSE);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(ghtml->view), FALSE);
@@ -378,6 +380,7 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 		gpointer data);
 static gboolean _document_load_idle(gpointer data);
 static void _document_load_write_node(GHtml * ghtml, XMLNode * node);
+static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node);
 
 static int _ghtml_document_load(GHtml * ghtml, char const * url,
 		char const * post)
@@ -407,13 +410,16 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 		gpointer data)
 {
 	GHtml * ghtml = data;
+	XMLPrefs prefs;
 	XML * xml;
 	XMLDocument * doc;
 	char * p;
 
+	memset(&prefs, 0, sizeof(prefs));
+	prefs.filters |= XML_FILTER_WHITESPACE;
 	if(size == 0)
 	{
-		if((xml = xml_new_string(NULL, ghtml->buffer,
+		if((xml = xml_new_string(&prefs, ghtml->buffer,
 						ghtml->buffer_cnt)) == NULL)
 			return 0;
 		if((doc = xml_get_document(xml)) != NULL)
@@ -430,7 +436,6 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 
 static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
 {
-	size_t i;
 	GtkTextIter iter;
 
 	if(node == NULL)
@@ -440,15 +445,53 @@ static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
 		case XML_NODE_TYPE_DATA:
 			/* FIXME looks like memory corruption at some point */
 			gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
-			gtk_text_buffer_insert(ghtml->tbuffer, &iter,
-					node->data.buffer, node->data.size);
+			gtk_text_buffer_insert_with_tags(ghtml->tbuffer, &iter,
+					node->data.buffer, node->data.size,
+					ghtml->tag, NULL);
 			break;
 		case XML_NODE_TYPE_TAG:
-			for(i = 0; i < node->tag.childs_cnt; i++)
-				_document_load_write_node(ghtml,
-						node->tag.childs[i]);
+			_document_load_write_node_tag(ghtml, &node->tag);
 			break;
 	}
+}
+
+static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
+{
+	GtkTextIter iter;
+	int block = 0;
+	size_t i;
+
+	ghtml->tag = gtk_text_buffer_create_tag(ghtml->tbuffer, NULL, NULL);
+	if(strcmp(node->name, "b") == 0
+			|| strcmp(node->name, "em") == 0
+			|| strcmp(node->name, "h1") == 0
+			|| strcmp(node->name, "h2") == 0
+			|| strcmp(node->name, "h3") == 0
+			|| strcmp(node->name, "h4") == 0
+			|| strcmp(node->name, "h5") == 0
+			|| strcmp(node->name, "h6") == 0
+			|| strcmp(node->name, "strong") == 0)
+		g_object_set(G_OBJECT(ghtml->tag), "weight", PANGO_WEIGHT_BOLD,
+				"weight-set", 1, NULL);
+	if(strcmp(node->name, "br") == 0
+			|| strcmp(node->name, "div") == 0
+			|| strcmp(node->name, "form") == 0
+			|| strcmp(node->name, "h1") == 0
+			|| strcmp(node->name, "h2") == 0
+			|| strcmp(node->name, "h3") == 0
+			|| strcmp(node->name, "h4") == 0
+			|| strcmp(node->name, "h5") == 0
+			|| strcmp(node->name, "h6") == 0
+			|| strcmp(node->name, "hr") == 0
+			|| strcmp(node->name, "p") == 0)
+		block = 1;
+	if(block != 0)
+	{
+		gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
+		gtk_text_buffer_insert(ghtml->tbuffer, &iter, "\n", 1);
+	}
+	for(i = 0; i < node->childs_cnt; i++)
+		_document_load_write_node(ghtml, node->childs[i]);
 }
 
 static gboolean _document_load_idle(gpointer data)
