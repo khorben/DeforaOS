@@ -752,7 +752,8 @@ static void _xml_node_delete(XMLNode * node)
 			object_delete(node->data.buffer);
 			break;
 		case XML_NODE_TYPE_TAG:
-			/* FIXME delete the attributes */
+			for(i = 0; i < node->tag.attributes_cnt; i++)
+				_xml_attribute_delete(node->tag.attributes[i]);
 			for(i = 0; i < node->tag.childs_cnt; i++)
 				_xml_node_delete(node->tag.childs[i]);
 			free(node->tag.name);
