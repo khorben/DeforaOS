@@ -152,6 +152,7 @@ target_bootstrap()
 	_bootstrap_network			|| FAILED="$FAILED Network"
 	_bootstrap_posix			|| FAILED="$FAILED POSIX"
 	_bootstrap_devel			|| FAILED="$FAILED Devel"
+	_bootstrap_graphics			|| FAILED="$FAILED Graphics"
 	_bootstrap_desktop			|| FAILED="$FAILED Desktop"
 	[ -z "$FAILED" ]					&& return 0
 	echo "Failed to build:$FAILED" 1>&2
@@ -203,6 +204,13 @@ _bootstrap_devel()
 		target "clean all"				|| RET=$?
 	done
 	return $RET
+}
+
+_bootstrap_graphics()
+{
+	SUBDIRS="Apps/Graphics/src"
+
+	target "clean all"
 }
 
 _bootstrap_libsystem()
