@@ -45,11 +45,14 @@ typedef enum _XMLContext
 
 struct _XML
 {
+	XMLPrefs prefs;
 	XMLDocument * document;
 
 	/* parsing */
 	Parser * parser;
 	XMLContext context;
+	char * inject;
+	int inject_first;
 };
 
 typedef enum _XMLCode
@@ -97,6 +100,10 @@ static int _xml_callback_tag_whitespace(Parser * parser, Token * token, int c,
 static XMLDocument * _xml_document_new(XMLNode * node);
 static void _xml_document_delete(XMLDocument * document);
 
+/* filters */
+static int _xml_filter_inject(int * c, void * data);
+static int _xml_filter_whitespace(int * c, void * data);
+
 /* node */
 static XMLNode * _xml_node_new(XMLNodeType type, XMLNodeTag * parent);
 static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * buffer,
@@ -113,31 +120,45 @@ static int _xml_node_tag_add_child(XMLNodeTag * node, XMLNode * child);
 /* public */
 /* functions */
 /* xml_new */
-static XML * _new_do(char const * pathname, char const * string, size_t length);
+static XML * _new_do(XMLPrefs * prefs, char const * pathname,
+		char const * string, size_t length);
 
-XML * xml_new(char const * pathname)
+XML * xml_new(XMLPrefs * prefs, char const * pathname)
 {
-	return _new_do(pathname, NULL, 0);
+	return _new_do(prefs, pathname, NULL, 0);
 }
 
-static XML * _new_do(char const * pathname, char const * string, size_t length)
+static XML * _new_do(XMLPrefs * prefs, char const * pathname,
+		char const * string, size_t length)
 {
 	XML * xml;
 
 	if((xml = object_new(sizeof(*xml))) == NULL)
 		return NULL;
+	if(prefs != NULL)
+		memcpy(&xml->prefs, prefs, sizeof(xml->prefs));
+	else
+		memset(&xml->prefs, 0, sizeof(xml->prefs));
 	xml->document = NULL;
 	if(pathname != NULL)
 		xml->parser = parser_new(pathname);
 	else
 		xml->parser = parser_new_string(string, length);
 	xml->context = XML_CONTEXT_DATA;
+	xml->inject = NULL;
+	xml->inject_first = 0;
 	if(xml->parser == NULL)
 	{
 		xml_delete(xml);
 		return NULL;
 	}
-	/* FIXME optionally filter out whitespaces (and comments?) */
+	/* FIXME optionally filter out comments */
+	if((xml->prefs.filters & XML_FILTER_WHITESPACE)
+			== XML_FILTER_WHITESPACE)
+	{
+		parser_add_filter(xml->parser, _xml_filter_inject, xml);
+		parser_add_filter(xml->parser, _xml_filter_whitespace, xml);
+	}
 	parser_add_callback(xml->parser, _xml_callback_tag_whitespace, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_special, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_name, xml);
@@ -153,9 +174,9 @@ static XML * _new_do(char const * pathname, char const * string, size_t length)
 
 
 /* xml_new_string */
-XML * xml_new_string(char const * string, size_t length)
+XML * xml_new_string(XMLPrefs * prefs, char const * string, size_t length)
 {
-	return _new_do(NULL, string, length);
+	return _new_do(prefs, NULL, string, length);
 }
 
 
@@ -612,6 +633,55 @@ static void _xml_document_delete(XMLDocument * document)
 	if(document->root != NULL)
 		_xml_node_delete(document->root);
 	object_delete(document);
+}
+
+
+/* filters */
+/* xml_filter_inject */
+static int _xml_filter_inject(int * c, void * data)
+{
+	XML * xml = data;
+	size_t len;
+	int d;
+
+	if(xml->inject == NULL)
+		return 0;
+	if((len = strlen(xml->inject)) > 0)
+	{
+		d = *c;
+		*c = xml->inject[0];
+		memmove(xml->inject, &xml->inject[1], len--);
+		if(xml->inject_first && d != EOF)
+		{
+			xml->inject[len++] = d;
+			xml->inject[len] = '\0';
+			xml->inject_first = 0;
+		}
+	}
+	if(len > 0)
+		return 1;
+	free(xml->inject);
+	xml->inject = NULL;
+	return 0;
+}
+
+
+/* xml_filter_whitespace */
+static int _xml_filter_whitespace(int * c, void * data)
+{
+	XML * xml = data;
+	char buf[2] = { '\0', '\0' };
+
+	if(!isspace(*c))
+		return 0;
+	do
+		*c = parser_scan(xml->parser);
+	while(isspace(*c));
+	buf[0] = *c;
+	string_append(&xml->inject, buf);
+	xml->inject_first = 1;
+	*c = ' ';
+	return 0;
 }
 
 

@@ -24,6 +24,17 @@
 /* types */
 typedef struct _XML XML;
 
+typedef enum _XMLFilter
+{
+	XML_FILTER_NONE		= 0,
+	XML_FILTER_WHITESPACE	= 1
+} XMLFilter;
+
+typedef struct _XMLPrefs
+{
+	int filters;
+} XMLPrefs;
+
 typedef struct _XMLAttribute
 {
 	char * name;
@@ -78,8 +89,8 @@ typedef struct _XMLDocument
 
 
 /* functions */
-XML * xml_new(char const * pathname);
-XML * xml_new_string(char const * string, size_t length);
+XML * xml_new(XMLPrefs * prefs, char const * pathname);
+XML * xml_new_string(XMLPrefs * prefs, char const * string, size_t length);
 void xml_delete(XML * xml);
 
 /* accessors */

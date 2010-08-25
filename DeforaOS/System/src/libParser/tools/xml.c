@@ -28,8 +28,8 @@
 /* private */
 static int _usage(void)
 {
-	fputs("Usage: xml filename\n"
-"       xml -s string\n", stderr);
+	fputs("Usage: xml [-w] filename\n"
+"       xml -s [-w] string\n", stderr);
 	return 1;
 }
 
@@ -41,15 +41,20 @@ static void _main_node(XMLNode * node);
 int main(int argc, char * argv[])
 {
 	int o;
+	XMLPrefs prefs;
 	XML * xml;
 	XMLDocument * doc;
 	char const * string = NULL;
 
-	while((o = getopt(argc, argv, "s:")) != -1)
+	memset(&prefs, 0, sizeof(prefs));
+	while((o = getopt(argc, argv, "s:w")) != -1)
 		switch(o)
 		{
 			case 's':
 				string = optarg;
+				break;
+			case 'w':
+				prefs.filters |= XML_FILTER_WHITESPACE;
 				break;
 			default:
 				return _usage();
@@ -58,12 +63,12 @@ int main(int argc, char * argv[])
 	{
 		if(optind + 1 != argc)
 			return _usage();
-		xml = xml_new(argv[optind]);
+		xml = xml_new(&prefs, argv[optind]);
 	}
 	else if(optind != argc)
 		return _usage();
 	else
-		xml = xml_new_string(string, strlen(string));
+		xml = xml_new_string(&prefs, string, strlen(string));
 	if(xml == NULL)
 		return error_print("xml");
 	if((doc = xml_get_document(xml)) == NULL)
