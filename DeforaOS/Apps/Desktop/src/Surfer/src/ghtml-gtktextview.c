@@ -413,8 +413,8 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 
 	if(size == 0)
 	{
-		if((xml = xml_new_string(ghtml->buffer, ghtml->buffer_cnt))
-				== NULL)
+		if((xml = xml_new_string(NULL, ghtml->buffer,
+						ghtml->buffer_cnt)) == NULL)
 			return 0;
 		if((doc = xml_get_document(xml)) != NULL)
 			_document_load_write_node(ghtml, doc->root);
