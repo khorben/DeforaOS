@@ -1,6 +1,6 @@
 #!/bin/sh
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS Unix utils
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -14,6 +14,10 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+
+#variables
+YEAR=`date '+%Y'`
 
 
 #functions
@@ -45,7 +49,7 @@ EOF
 #main
 cat > "utils.c" << EOF
 /* \$Id\$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
