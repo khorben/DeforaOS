@@ -212,11 +212,11 @@ msgstr "Initialisation..."
 
 #: ../src/phone.c:433 ../src/phone.c:2128
 msgid "System preferences"
-msgstr ""
+msgstr "Préférences système"
 
 #: ../src/phone.c:444 ../src/phone.c:1733
 msgid "Plug-ins"
-msgstr ""
+msgstr "Greffons"
 
 #: ../src/phone.c:589
 msgid "Checking SIM PIN code..."
@@ -357,7 +357,7 @@ msgstr "Envoyés"
 
 #: ../src/phone.c:1750
 msgid "Enabled"
-msgstr ""
+msgstr "Activé"
 
 #: ../src/phone.c:1965
 msgid "Read message"
