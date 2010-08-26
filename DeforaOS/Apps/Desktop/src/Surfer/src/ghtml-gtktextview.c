@@ -29,6 +29,27 @@
 
 /* private */
 /* types */
+typedef enum _GHtmlDisplay
+{
+	GHTML_DISPLAY_BLOCK,
+	GHTML_DISPLAY_INLINE
+} GHtmlDisplay;
+
+typedef struct _GHtmlProperty
+{
+	char const * name;
+	void * value;
+} GHtmlProperty;
+
+typedef struct _GHtmlTag
+{
+	char const * name;
+	GHtmlDisplay display;
+	GHtmlProperty const * properties;
+	GtkTextTag const * tag;
+} GHtmlTag;
+
+#define GHTML_TAGS_COUNT 20
 typedef struct _GHtml
 {
 	Surfer * surfer;
@@ -49,8 +70,110 @@ typedef struct _GHtml
 	/* html widget */
 	GtkWidget * view;
 	GtkTextBuffer * tbuffer;
+	GHtmlTag tags[GHTML_TAGS_COUNT];
 	GtkTextTag * tag;
 } GHtml;
+
+
+/* constants */
+/* properties */
+static const GHtmlProperty _ghtml_properties_a[] = {
+	{ "underline", PANGO_UNDERLINE_SINGLE },
+	{ "underline-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_b[] = {
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+/* XXX should use "scale" but gdouble values are not accepted this way */
+static const GHtmlProperty _ghtml_properties_h1[] = {
+	{ "font", "Sans 16" },
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_h2[] = {
+	{ "font", "Sans 14" },
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_h3[] = {
+	{ "font", "Sans 13" },
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_h4[] = {
+	{ "font", "Sans 12" },
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_h5[] = {
+	{ "font", "Sans 11" },
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_h6[] = {
+	{ "font", "Sans 10" },
+	{ "weight", PANGO_WEIGHT_BOLD },
+	{ "weight-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_pre[] = {
+	{ "family", "Monospace" },
+	{ "wrap-mode", GTK_WRAP_NONE },
+	{ "wrap-mode-set", TRUE },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_tt[] = {
+	{ "family", "Monospace" },
+	{ NULL, 0 }
+};
+
+static const GHtmlProperty _ghtml_properties_u[] = {
+	{ "underline", PANGO_UNDERLINE_SINGLE },
+	{ "underline-set", TRUE },
+	{ NULL, 0 }
+};
+
+/* tags */
+static const GHtmlTag _ghtml_tags[GHTML_TAGS_COUNT] =
+{
+	{ "a", GHTML_DISPLAY_INLINE,	_ghtml_properties_a,	NULL	},
+	{ "b", GHTML_DISPLAY_INLINE,	_ghtml_properties_b,	NULL	},
+	{ "div", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "em", GHTML_DISPLAY_INLINE,	_ghtml_properties_b,	NULL	},
+	{ "form", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "h1", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h1,	NULL	},
+	{ "h2", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h2,	NULL	},
+	{ "h3", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h3,	NULL	},
+	{ "h4", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h4,	NULL	},
+	{ "h5", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h5,	NULL	},
+	{ "h6", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h6,	NULL	},
+	{ "hr", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "li", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "ol", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "p", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "pre", GHTML_DISPLAY_BLOCK,_ghtml_properties_pre,	NULL	},
+	{ "strong", GHTML_DISPLAY_INLINE,_ghtml_properties_b,	NULL	},
+	{ "tt", GHTML_DISPLAY_INLINE,	_ghtml_properties_tt,	NULL	},
+	{ "u", GHTML_DISPLAY_INLINE,	_ghtml_properties_u,	NULL	},
+	{ "ul", GHTML_DISPLAY_BLOCK,	NULL,			NULL	}
+};
 
 
 /* prototypes */
@@ -82,6 +205,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	ghtml->view = gtk_text_view_new();
 	ghtml->tbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
+	memcpy(ghtml->tags, _ghtml_tags, sizeof(_ghtml_tags));
 	ghtml->tag = NULL;
 	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(ghtml->view),
 			FALSE);
@@ -457,41 +581,43 @@ static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
 
 static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 {
-	GtkTextIter iter;
-	int block = 0;
 	size_t i;
+	GHtmlDisplay display = GHTML_DISPLAY_INLINE;
+	GtkTextIter iter;
+	GHtmlProperty * p;
 
-	ghtml->tag = gtk_text_buffer_create_tag(ghtml->tbuffer, NULL, NULL);
-	if(strcmp(node->name, "b") == 0
-			|| strcmp(node->name, "em") == 0
-			|| strcmp(node->name, "h1") == 0
-			|| strcmp(node->name, "h2") == 0
-			|| strcmp(node->name, "h3") == 0
-			|| strcmp(node->name, "h4") == 0
-			|| strcmp(node->name, "h5") == 0
-			|| strcmp(node->name, "h6") == 0
-			|| strcmp(node->name, "strong") == 0)
-		g_object_set(G_OBJECT(ghtml->tag), "weight", PANGO_WEIGHT_BOLD,
-				"weight-set", 1, NULL);
-	if(strcmp(node->name, "br") == 0
-			|| strcmp(node->name, "div") == 0
-			|| strcmp(node->name, "form") == 0
-			|| strcmp(node->name, "h1") == 0
-			|| strcmp(node->name, "h2") == 0
-			|| strcmp(node->name, "h3") == 0
-			|| strcmp(node->name, "h4") == 0
-			|| strcmp(node->name, "h5") == 0
-			|| strcmp(node->name, "h6") == 0
-			|| strcmp(node->name, "hr") == 0
-			|| strcmp(node->name, "p") == 0)
-		block = 1;
-	if(block != 0)
+	ghtml->tag = NULL;
+	for(i = 0; i < GHTML_TAGS_COUNT; i++)
+		if(strcmp(ghtml->tags[i].name, node->name) == 0)
+			break;
+	if(i < GHTML_TAGS_COUNT)
+	{
+		display = ghtml->tags[i].display;
+		ghtml->tag = ghtml->tags[i].tag;
+		if(ghtml->tags[i].tag == NULL
+				&& ghtml->tags[i].properties != NULL)
+		{
+			ghtml->tags[i].tag = gtk_text_buffer_create_tag(
+					ghtml->tbuffer, node->name, NULL);
+			ghtml->tag = ghtml->tags[i].tag;
+			p = ghtml->tags[i].properties;
+			for(i = 0; p[i].name != NULL; i++)
+				g_object_set(G_OBJECT(ghtml->tag), p[i].name,
+						p[i].value, NULL);
+		}
+	}
+	if(display == GHTML_DISPLAY_BLOCK)
 	{
 		gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
 		gtk_text_buffer_insert(ghtml->tbuffer, &iter, "\n", 1);
+		for(i = 0; i < node->childs_cnt; i++)
+			_document_load_write_node(ghtml, node->childs[i]);
+		gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
+		gtk_text_buffer_insert(ghtml->tbuffer, &iter, "\n", 1);
 	}
-	for(i = 0; i < node->childs_cnt; i++)
-		_document_load_write_node(ghtml, node->childs[i]);
+	else
+		for(i = 0; i < node->childs_cnt; i++)
+			_document_load_write_node(ghtml, node->childs[i]);
 }
 
 static gboolean _document_load_idle(gpointer data)
