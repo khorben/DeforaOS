@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-10 01:25+0200\n"
+"POT-Creation-Date: 2010-08-24 19:15+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,20 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:170
+#: ../src/applets/battery.c:173
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:182 ../src/panel.c:303 ../src/run.c:196
+#: ../src/applets/battery.c:185 ../src/panel.c:308 ../src/run.c:196
 #: ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/applets/clock.c:83 ../src/applets/clock.c:94
+#: ../src/applets/clock.c:86 ../src/applets/clock.c:97
 msgid "%H:%M"
 msgstr "%H:%M"
 
-#: ../src/applets/clock.c:92
+#: ../src/applets/clock.c:95
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
@@ -37,131 +37,131 @@ msgstr ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
 
-#: ../src/applets/cpu.c:92
+#: ../src/applets/cpu.c:95
 msgid "CPU:"
 msgstr ""
 
-#: ../src/applets/cpu.c:108 ../src/applets/cpufreq.c:125
-#: ../src/applets/memory.c:102 ../src/applets/swap.c:102
+#: ../src/applets/cpu.c:111 ../src/applets/cpufreq.c:128
+#: ../src/applets/memory.c:105 ../src/applets/swap.c:105
 msgid "Unsupported platform"
 msgstr "Plate-forme non supportée"
 
-#: ../src/applets/cpufreq.c:104
+#: ../src/applets/cpufreq.c:107
 msgid "Frequency:"
 msgstr "Fréquence :"
 
-#: ../src/applets/desktop.c:63
+#: ../src/applets/desktop.c:66
 msgid "Show desktop"
 msgstr "Afficher le bureau"
 
-#: ../src/applets/lock.c:60 ../src/applets/main.c:304
+#: ../src/applets/lock.c:63 ../src/applets/main.c:307
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
-#: ../src/applets/logout.c:58
+#: ../src/applets/logout.c:61
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:67 ../src/panel.c:448 ../src/panel.c:453
-#: ../src/panel.c:461
+#: ../src/applets/logout.c:70 ../src/panel.c:491 ../src/panel.c:498
+#: ../src/panel.c:506
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:131
+#: ../src/applets/main.c:134
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:285
+#: ../src/applets/main.c:288
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:291
+#: ../src/applets/main.c:294
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:310
+#: ../src/applets/main.c:313
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:315
+#: ../src/applets/main.c:318
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
-#: ../src/applets/memory.c:88
+#: ../src/applets/memory.c:91
 msgid "RAM:"
 msgstr "Mémoire :"
 
-#: ../src/applets/swap.c:88
+#: ../src/applets/swap.c:91
 msgid "Swap:"
 msgstr "Échange :"
 
-#: ../src/applets/tasks.c:456
+#: ../src/applets/tasks.c:459
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/applets/tasks.c:729
+#: ../src/applets/tasks.c:732
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../src/applets/tasks.c:731
+#: ../src/applets/tasks.c:734
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: ../src/applets/tasks.c:733
+#: ../src/applets/tasks.c:736
 msgid "Minimize"
 msgstr "Réduire"
 
-#: ../src/applets/tasks.c:735
+#: ../src/applets/tasks.c:738
 msgid "Shade"
 msgstr "Masquer"
 
-#: ../src/applets/tasks.c:737
+#: ../src/applets/tasks.c:740
 msgid "Stick"
 msgstr "Attacher"
 
-#: ../src/applets/tasks.c:739
+#: ../src/applets/tasks.c:742
 msgid "Maximize horizontally"
 msgstr "Maximiser horizontalement"
 
-#: ../src/applets/tasks.c:741
+#: ../src/applets/tasks.c:744
 msgid "Maximize vertically"
 msgstr "Maximiser verticalement"
 
-#: ../src/applets/tasks.c:745
+#: ../src/applets/tasks.c:748
 msgid "Change desktop"
 msgstr "Déplacer vers le bureau"
 
-#: ../src/applets/tasks.c:782
+#: ../src/applets/tasks.c:785
 msgid "Maximize"
 msgstr "Maximiser"
 
-#: ../src/panel.c:115
+#: ../src/panel.c:118
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
 
-#: ../src/panel.c:378
+#: ../src/panel.c:390
 msgid "Panel preferences"
-msgstr ""
+msgstr "Préférences du Panel"
 
-#: ../src/panel.c:440
+#: ../src/panel.c:481
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:508
+#: ../src/panel.c:553
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:524 ../src/panel.c:529 ../src/panel.c:536
+#: ../src/panel.c:569 ../src/panel.c:574 ../src/panel.c:581
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:528
+#: ../src/panel.c:573
 msgid "Restart"
 msgstr "Redémarrer"
 
