@@ -73,6 +73,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/tools/utilbox.c \
 		$(PACKAGE)-$(VERSION)/tools/utils.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/graph.sh \
 		$(PACKAGE)-$(VERSION)/tools/utils.sh \
 		$(PACKAGE)-$(VERSION)/tools/utilbox.h \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
