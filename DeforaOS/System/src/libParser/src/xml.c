@@ -213,7 +213,8 @@ XMLDocument * xml_get_document(XML * xml)
 		return xml->document;
 	if((xml->document = _xml_document_new(NULL)) == NULL)
 		return NULL;
-	while(parser_get_token(xml->parser, &token) == 0 && token != NULL)
+	for(; parser_get_token(xml->parser, &token) == 0 && token != NULL;
+			token_delete(token))
 	{
 #ifdef DEBUG
 		printf("code: %u, string: \"%s\", close=%d\n", token_get_code(
