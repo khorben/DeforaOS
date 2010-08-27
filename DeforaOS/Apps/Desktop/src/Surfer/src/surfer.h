@@ -86,7 +86,7 @@ void surfer_save(Surfer * surfer, char const * filename);
 void surfer_find(Surfer * surfer, char const * text);
 
 /* download */
-void surfer_download(Surfer * surfer, char const * url, char const * suggested);
+int surfer_download(Surfer * surfer, char const * url, char const * suggested);
 
 /* interface */
 void surfer_about(Surfer * surfer);

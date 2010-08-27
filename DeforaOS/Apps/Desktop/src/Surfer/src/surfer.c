@@ -681,13 +681,16 @@ void surfer_console_message(Surfer * surfer, char const * message,
 
 
 /* surfer_download */
-void surfer_download(Surfer * surfer, char const * url, char const * suggested)
+int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 {
+	int ret = 0;
 	GtkWidget * dialog;
 	char * filename = NULL;
 	char * argv[] = { "download", "-O", NULL, NULL, NULL };
 	GError * error = NULL;
 
+	if(url == NULL)
+		return -surfer_error(surfer, strerror(EINVAL), 1);
 	dialog = gtk_file_chooser_dialog_new(_("Save file as..."),
 			GTK_WINDOW(surfer->window),
 			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
@@ -701,13 +704,18 @@ void surfer_download(Surfer * surfer, char const * url, char const * suggested)
 					dialog));
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
-		return;
+		return 0;
 	argv[2] = filename;
-	argv[3] = strdup(url); /* XXX may fail */
-	g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL,
-			&error);
-	free(argv[3]);
+	if((argv[3] = strdup(url)) == NULL)
+		ret = -surfer_error(surfer, strerror(errno), 1);
+	else
+	{
+		g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+				NULL, &error);
+		free(argv[3]);
+	}
 	g_free(filename);
+	return ret;
 }
 
 
@@ -845,7 +853,7 @@ void surfer_go_home(Surfer * surfer)
 {
 	char const * homepage;
 
-	if((homepage = config_get(surfer->config, "", "homepage")) == NULL)
+	if((homepage = config_get(surfer->config, NULL, "homepage")) == NULL)
 		homepage = SURFER_DEFAULT_HOME;
 	surfer_open(surfer, homepage);
 }
