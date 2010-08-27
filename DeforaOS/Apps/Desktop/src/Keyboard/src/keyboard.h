@@ -54,6 +54,7 @@ void keyboard_set_case(Keyboard * keyboard, KeyboardCase kcase);
 /* useful */
 void keyboard_show(Keyboard * keyboard, gboolean show);
 
-void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show);
+void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
+		GdkEventButton * event);
 
 #endif /* !KEYBOARD_KEYBOARD_H */

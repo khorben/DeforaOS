@@ -91,7 +91,7 @@ gboolean on_keyboard_key_pressed(GtkWidget * key, GdkEventButton * event,
 	KeyboardKey * kk;
 
 	if((kk = g_object_get_data(G_OBJECT(key), "key")) != NULL)
-		keyboard_key_show(keyboard, kk, TRUE);
+		keyboard_key_show(keyboard, kk, TRUE, event);
 	return FALSE;
 }
 
@@ -104,6 +104,6 @@ gboolean on_keyboard_key_released(GtkWidget * key, GdkEventButton * event,
 	KeyboardKey * kk;
 
 	if((kk = g_object_get_data(G_OBJECT(key), "key")) != NULL)
-		keyboard_key_show(keyboard, kk, FALSE);
+		keyboard_key_show(keyboard, kk, FALSE, NULL);
 	return FALSE;
 }

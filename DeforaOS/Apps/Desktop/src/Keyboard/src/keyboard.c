@@ -284,7 +284,8 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 
 
 /* keyboard_key_show */
-void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
+void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
+		GdkEventButton * event)
 {
 	GtkWidget * widget;
 	unsigned int bwidth = keyboard->width / 12;
@@ -292,6 +293,9 @@ void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 	size_t i;
 	size_t j;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, show ? "TRUE" : "FALSE");
+#endif
 	if(show == FALSE)
 	{
 		if(key->popup != NULL)
@@ -299,6 +303,11 @@ void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 		key->popup = NULL;
 		return;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() button=%u (%lf,%lf) screen (%lf,%lf)\n",
+			__func__, event->button, event->x, event->y,
+			event->x_root, event->y_root);
+#endif
 	if(key->popup == NULL)
 	{
 		key->popup = gtk_window_new(GTK_WINDOW_POPUP);
@@ -325,13 +334,11 @@ void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show)
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() move(%d, %d)\n", __func__,
-			(bwidth * j) + keyboard->x,
-			keyboard->height - (bheight * 6)
-			+ (bheight * i) + keyboard->y);
+			(int)(event->x_root - event->x - 4),
+			(int)(event->y_root - event->y - (bheight * 2)));
 #endif
 	gtk_window_move(GTK_WINDOW(key->popup),
-			keyboard->x + (bwidth * j),
-			keyboard->y + keyboard->height - (bheight * 6)
-			+ (bheight * i));
+			event->x_root - event->x - 4,
+			event->y_root - event->y - (bheight * 2));
 	gtk_widget_show_all(key->popup);
 }
