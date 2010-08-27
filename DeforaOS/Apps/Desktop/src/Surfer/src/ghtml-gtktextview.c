@@ -46,7 +46,7 @@ typedef struct _GHtmlTag
 	char const * name;
 	GHtmlDisplay display;
 	GHtmlProperty const * properties;
-	GtkTextTag const * tag;
+	GtkTextTag * tag;
 } GHtmlTag;
 
 #define GHTML_TAGS_COUNT 20
@@ -77,74 +77,86 @@ typedef struct _GHtml
 
 /* constants */
 /* properties */
-static const GHtmlProperty _ghtml_properties_a[] = {
+static const GHtmlProperty _ghtml_properties_a[] =
+{
+	{ "foreground", "blue" },
 	{ "underline", PANGO_UNDERLINE_SINGLE },
 	{ "underline-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_b[] = {
+static const GHtmlProperty _ghtml_properties_b[] =
+{
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
 /* XXX should use "scale" but gdouble values are not accepted this way */
-static const GHtmlProperty _ghtml_properties_h1[] = {
+static const GHtmlProperty _ghtml_properties_h1[] =
+{
 	{ "font", "Sans 16" },
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_h2[] = {
+static const GHtmlProperty _ghtml_properties_h2[] =
+{
 	{ "font", "Sans 14" },
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_h3[] = {
+static const GHtmlProperty _ghtml_properties_h3[] =
+{
 	{ "font", "Sans 13" },
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_h4[] = {
+static const GHtmlProperty _ghtml_properties_h4[] =
+{
 	{ "font", "Sans 12" },
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_h5[] = {
+static const GHtmlProperty _ghtml_properties_h5[] =
+{
 	{ "font", "Sans 11" },
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_h6[] = {
+static const GHtmlProperty _ghtml_properties_h6[] =
+{
 	{ "font", "Sans 10" },
 	{ "weight", PANGO_WEIGHT_BOLD },
 	{ "weight-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_pre[] = {
+static const GHtmlProperty _ghtml_properties_pre[] =
+{
 	{ "family", "Monospace" },
 	{ "wrap-mode", GTK_WRAP_NONE },
 	{ "wrap-mode-set", TRUE },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_tt[] = {
+static const GHtmlProperty _ghtml_properties_tt[] =
+{
 	{ "family", "Monospace" },
 	{ NULL, 0 }
 };
 
-static const GHtmlProperty _ghtml_properties_u[] = {
+static const GHtmlProperty _ghtml_properties_u[] =
+{
 	{ "underline", PANGO_UNDERLINE_SINGLE },
 	{ "underline-set", TRUE },
 	{ NULL, 0 }
@@ -181,6 +193,10 @@ static int _ghtml_document_load(GHtml * ghtml, char const * url,
 		char const * post);
 static int _ghtml_stop(GHtml * ghtml);
 
+/* callbacks */
+static gboolean _on_view_event_after(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+
 
 /* public */
 /* functions */
@@ -204,6 +220,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	ghtml->view = gtk_text_view_new();
+	g_signal_connect(G_OBJECT(ghtml->view), "event-after", G_CALLBACK(
+				_on_view_event_after), ghtml);
 	ghtml->tbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
 	memcpy(ghtml->tags, _ghtml_tags, sizeof(_ghtml_tags));
 	ghtml->tag = NULL;
@@ -505,6 +523,8 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 static gboolean _document_load_idle(gpointer data);
 static void _document_load_write_node(GHtml * ghtml, XMLNode * node);
 static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node);
+static void _document_load_write_node_tag_link(GHtml * ghtml,
+		XMLNodeTag * node);
 
 static int _ghtml_document_load(GHtml * ghtml, char const * url,
 		char const * post)
@@ -584,7 +604,7 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 	size_t i;
 	GHtmlDisplay display = GHTML_DISPLAY_INLINE;
 	GtkTextIter iter;
-	GHtmlProperty * p;
+	GHtmlProperty const * p;
 
 	ghtml->tag = NULL;
 	for(i = 0; i < GHTML_TAGS_COUNT; i++)
@@ -594,13 +614,15 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 	{
 		display = ghtml->tags[i].display;
 		ghtml->tag = ghtml->tags[i].tag;
-		if(ghtml->tags[i].tag == NULL
-				&& ghtml->tags[i].properties != NULL)
+		if(ghtml->tag == NULL && ghtml->tags[i].properties != NULL)
 		{
-			ghtml->tags[i].tag = gtk_text_buffer_create_tag(
-					ghtml->tbuffer, node->name, NULL);
-			ghtml->tag = ghtml->tags[i].tag;
+			ghtml->tag = gtk_text_buffer_create_tag(
+					ghtml->tbuffer, NULL, NULL);
 			p = ghtml->tags[i].properties;
+			if(strcmp(node->name, "a") != 0)
+				ghtml->tags[i].tag = ghtml->tag;
+			else
+				_document_load_write_node_tag_link(ghtml, node);
 			for(i = 0; p[i].name != NULL; i++)
 				g_object_set(G_OBJECT(ghtml->tag), p[i].name,
 						p[i].value, NULL);
@@ -618,6 +640,18 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 	else
 		for(i = 0; i < node->childs_cnt; i++)
 			_document_load_write_node(ghtml, node->childs[i]);
+}
+
+static void _document_load_write_node_tag_link(GHtml * ghtml, XMLNodeTag * node)
+{
+	size_t i;
+
+	for(i = 0; i < node->attributes_cnt; i++)
+		if(strcmp(node->attributes[i]->name, "href") == 0)
+			break;
+	if(i < node->attributes_cnt)
+		g_object_set_data(G_OBJECT(ghtml->tag), "link", strdup(
+					node->attributes[i]->value));
 }
 
 static gboolean _document_load_idle(gpointer data)
@@ -638,4 +672,42 @@ static int _ghtml_stop(GHtml * ghtml)
 	_conn_delete(ghtml->conn);
 	ghtml->conn = NULL;
 	return 0;
+}
+
+
+/* callbacks */
+/* on_view_event_after */
+static gboolean _on_view_event_after(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	GHtml * ghtml = data;
+	GdkEventButton * eb;
+	GtkTextIter start;
+	GtkTextIter end;
+	gint x;
+	gint y;
+	GtkTextIter iter;
+	GSList * tags;
+	GSList * p;
+	char * link = NULL;
+
+	if(event->type != GDK_BUTTON_RELEASE || event->button.button != 1)
+		return FALSE;
+	eb = &event->button;
+	gtk_text_buffer_get_selection_bounds(ghtml->tbuffer, &start, &end);
+	if(gtk_text_iter_get_offset(&start) != gtk_text_iter_get_offset(&end))
+		return FALSE;
+	gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(widget),
+			GTK_TEXT_WINDOW_WIDGET, eb->x, eb->y, &x, &y);
+	gtk_text_view_get_iter_at_location(GTK_TEXT_VIEW(widget), &iter, x, y);
+	tags = gtk_text_iter_get_tags(&iter);
+	for(p = tags; p != NULL; p = p->next)
+		if((link = g_object_get_data(G_OBJECT(p->data), "link"))
+				!= NULL)
+			break;
+	if(tags != NULL)
+		g_slist_free(tags);
+	if(link != NULL)
+		surfer_open(ghtml->surfer, link); /* XXX support relative */
+	return FALSE;
 }
