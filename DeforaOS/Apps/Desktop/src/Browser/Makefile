@@ -1,5 +1,5 @@
 PACKAGE	= Browser
-VERSION	= 0.2.0
+VERSION	= 0.3.0
 SUBDIRS	= data po src tools
 RM	= rm -f
 LN	= ln -f
