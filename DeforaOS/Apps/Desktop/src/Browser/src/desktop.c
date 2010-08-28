@@ -95,7 +95,6 @@ struct _Desktop
 	/* internal */
 	GdkDisplay * display;
 	GdkWindow * root;
-	GdkPixbuf * background;
 	GtkIconTheme * theme;
 	GtkWidget * menu;
 };
@@ -189,7 +188,9 @@ static gboolean _new_idle(gpointer data)
 	Desktop * desktop = data;
 	Config * config;
 	char const * p;
+	GdkPixbuf * background;
 	GError * error = NULL;
+	GdkPixmap * pixmap = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -204,27 +205,27 @@ static gboolean _new_idle(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
 #endif
-	g_free(desktop->background);
-	desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
+	background = gdk_pixbuf_new_from_file_at_scale(p,
 			desktop->window.width, desktop->window.height, FALSE,
 			&error);
 	config_delete(config);
-	if(desktop->background == NULL)
+	if(background == NULL)
 	{
 		desktop_error(desktop, error->message, 0);
 		return FALSE;
 	}
-	gdk_draw_pixbuf(desktop->root, NULL, desktop->background, 0, 0, 0, 0,
-			-1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
-	gdk_window_set_events(desktop->root, gdk_window_get_events(
-				desktop->root) | GDK_BUTTON_PRESS_MASK
-			| GDK_EXPOSURE_MASK);
+	pixmap = gdk_pixmap_new(desktop->root, desktop->window.width,
+			desktop->window.height, -1);
+	gdk_pixbuf_render_pixmap_and_mask(background, &pixmap, NULL, 0);
+	gdk_window_set_back_pixmap(desktop->root, pixmap, FALSE);
+	gdk_window_clear(desktop->root);
+	gdk_pixmap_unref(pixmap);
+	g_object_unref(background);
 	return FALSE;
 }
 
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		Desktop * desktop);
-static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop);
 static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
 		Desktop * desktop);
 static GdkFilterReturn _event_property(XPropertyEvent * xevent,
@@ -243,8 +244,6 @@ static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type == ButtonPress)
 		return _event_button_press(xevent, desktop);
-	else if(xev->type == Expose)
-		return _event_expose(xevent, desktop);
 	else if(xev->type == ConfigureNotify)
 		return _event_configure(xevent, desktop);
 	else if(xev->type == PropertyNotify)
@@ -314,19 +313,6 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_widget_show_all(desktop->menu);
 	gtk_menu_popup(GTK_MENU(desktop->menu), NULL, NULL, NULL, NULL, 3,
 			xbev->time);
-	return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %d %d, %d %d\n", __func__,
-			xevent->x, xevent->y, xevent->width, xevent->height);
-#endif
-	gdk_draw_pixbuf(desktop->root, NULL,
-			desktop->background, xevent->x, xevent->y,
-			xevent->x, xevent->y, xevent->width, xevent->height,
-			GDK_RGB_DITHER_NORMAL, 0, 0);
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -511,21 +497,21 @@ static void _on_preferences_apply(gpointer data)
 	Config * config;
 	char * p;
 
+	/* XXX not very efficient */
+	g_idle_add(_new_idle, desktop);
 	if((config = _desktop_get_config(desktop)) == NULL)
 		return;
 	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background));
-	config_set(config, "", "background", p);
+	config_set(config, NULL, "background", p);
 	g_free(p);
 	/* XXX code duplication */
 	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
 	{
 		config_save(config, p);
-		object_delete(p);
+		string_delete(p);
 	}
 	config_delete(config);
-	/* XXX not very efficient */
-	g_idle_add(_new_idle, desktop);
 }
 
 static void _on_preferences_cancel(gpointer data)
