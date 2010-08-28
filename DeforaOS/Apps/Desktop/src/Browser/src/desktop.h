@@ -39,11 +39,25 @@ typedef enum _DesktopLayout
 	DESKTOP_LAYOUT_FILES, DESKTOP_LAYOUT_HOMESCREEN
 } DesktopLayout;
 
+typedef enum _DesktopMessage
+{
+	DESKTOP_MESSAGE_SHOW = 0
+} DesktopMessage;
+
+typedef enum _DesktopMessageShow
+{
+	DESKTOP_MESSAGE_SHOW_SETTINGS = 0
+} DesktopMessageShow;
+
 typedef struct _DesktopPrefs
 {
 	DesktopLayout layout;
 	int monitor;
 } DesktopPrefs;
+
+
+/* constants */
+# define DESKTOP_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_DESKTOP_CLIENT"
 
 
 /* functions */

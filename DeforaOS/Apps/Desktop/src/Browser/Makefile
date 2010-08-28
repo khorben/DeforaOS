@@ -23,6 +23,7 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/browser.desktop \
+		$(PACKAGE)-$(VERSION)/data/desktop-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
@@ -40,6 +41,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/delete.c \
 		$(PACKAGE)-$(VERSION)/src/desktop.c \
 		$(PACKAGE)-$(VERSION)/src/desktopicon.c \
+		$(PACKAGE)-$(VERSION)/src/settings.c \
 		$(PACKAGE)-$(VERSION)/src/move.c \
 		$(PACKAGE)-$(VERSION)/src/open.c \
 		$(PACKAGE)-$(VERSION)/src/properties.c \

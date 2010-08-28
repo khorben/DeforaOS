@@ -165,13 +165,16 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	desktop->display = gdk_screen_get_display(screen);
 	desktop->root = gdk_screen_get_root_window(screen);
 	_desktop_get_workarea(desktop);
-	/* layout */
 	desktop->theme = gtk_icon_theme_get_default();
+	desktop->menu = NULL;
 	if((desktop->home = getenv("HOME")) == NULL
 			&& (desktop->home = g_get_home_dir()) == NULL)
 		desktop->home = "/";
 	desktop_set_layout(desktop, desktop->prefs.layout);
 	/* manage root window events */
+	gdk_add_client_message_filter(gdk_atom_intern(
+				DESKTOP_CLIENT_MESSAGE, FALSE),
+			_new_on_root_event, desktop);
 	gdk_window_get_geometry(desktop->root, &desktop->window.x,
 			&desktop->window.y, &desktop->window.width,
 			&desktop->window.height, &depth);
@@ -196,7 +199,7 @@ static gboolean _new_idle(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((config = _desktop_get_config(desktop)) == NULL
-			|| (p = config_get(config, "", "background")) == NULL)
+			|| (p = config_get(config, NULL, "background")) == NULL)
 	{
 		if(config != NULL)
 			config_delete(config);
@@ -226,6 +229,8 @@ static gboolean _new_idle(gpointer data)
 
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		Desktop * desktop);
+static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
+		Desktop * desktop);
 static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
 		Desktop * desktop);
 static GdkFilterReturn _event_property(XPropertyEvent * xevent,
@@ -244,6 +249,8 @@ static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type == ButtonPress)
 		return _event_button_press(xevent, desktop);
+	else if(xev->type == ClientMessage)
+		return _event_client_message(xevent, desktop);
 	else if(xev->type == ConfigureNotify)
 		return _event_configure(xevent, desktop);
 	else if(xev->type == PropertyNotify)
@@ -313,6 +320,25 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_widget_show_all(desktop->menu);
 	gtk_menu_popup(GTK_MENU(desktop->menu), NULL, NULL, NULL, NULL, 3,
 			xbev->time);
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
+		Desktop * desktop)
+{
+	DesktopMessage message;
+
+	if(xevent->message_type != gdk_x11_get_xatom_by_name(
+				DESKTOP_CLIENT_MESSAGE))
+		return GDK_FILTER_CONTINUE;
+	message = xevent->data.b[0];
+	switch(message)
+	{
+		case DESKTOP_MESSAGE_SHOW:
+			if(xevent->data.b[1] == DESKTOP_MESSAGE_SHOW_SETTINGS)
+				_on_popup_preferences(desktop); /* XXX */
+			break;
+	}
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -414,7 +440,8 @@ static void _on_popup_preferences(gpointer data)
 	GtkWidget * label;
 	GtkSizeGroup * group;
 
-	gtk_widget_destroy(desktop->menu);
+	if(desktop->menu != NULL)
+		gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
 	if(desktop->pr_window != NULL)
 	{
@@ -529,7 +556,7 @@ static void _preferences_set(Desktop * desktop)
 					desktop->pr_background), NULL);
 		return;
 	}
-	p = config_get(config, "", "background");
+	p = config_get(config, NULL, "background");
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background), p);
 	config_delete(config);
@@ -1011,7 +1038,7 @@ static int _current_loop_categories(Desktop * desktop)
 		r = config_get(config, section, "Exec");
 		if(q == NULL || r == NULL)
 			continue;
-		config_set(config, "", "path", path);
+		config_set(config, NULL, "path", path);
 		desktop->apps = g_slist_insert_sorted(desktop->apps, config,
 				_categories_apps_compare);
 		free(path);
