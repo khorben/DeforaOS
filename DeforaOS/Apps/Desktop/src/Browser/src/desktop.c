@@ -432,10 +432,9 @@ static void _on_preferences_cancel(gpointer data);
 static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
-	GtkWidget * hbox;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
-	GtkWidget * hbox2;
+	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkWidget * label;
 	GtkSizeGroup * group;
@@ -450,50 +449,49 @@ static void _on_popup_preferences(gpointer data)
 	}
 	/* window */
 	desktop->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(desktop->pr_window), 4);
 	gtk_window_set_title(GTK_WINDOW(desktop->pr_window),
 			_("Desktop preferences"));
 	g_signal_connect(G_OBJECT(desktop->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), desktop);
-	hbox = gtk_hbox_new(FALSE, 0);
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 4);
 	/* notebook */
 	widget = gtk_notebook_new();
-	vbox2 = gtk_vbox_new(FALSE, 0);
+	vbox2 = gtk_vbox_new(FALSE, 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	hbox2 = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background: "));
 	gtk_size_group_add_widget(group, label);
-	gtk_box_pack_start(GTK_BOX(hbox2), label, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_box_pack_start(GTK_BOX(hbox2), desktop->pr_background, TRUE, TRUE,
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background, TRUE, TRUE,
 			0);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox2, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
 				_("Appearance")));
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* dialog */
-	hbox2 = gtk_hbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(FALSE, 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_ok), desktop);
-	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_apply), desktop);
-	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_cancel), desktop);
-	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* container */
-	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 4);
-	gtk_container_add(GTK_CONTAINER(desktop->pr_window), hbox);
+	gtk_container_add(GTK_CONTAINER(desktop->pr_window), vbox);
 	_preferences_set(desktop);
 	gtk_widget_show_all(desktop->pr_window);
 }
