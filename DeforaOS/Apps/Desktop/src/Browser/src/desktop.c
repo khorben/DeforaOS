@@ -675,6 +675,9 @@ void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 		case DESKTOP_LAYOUT_HOMESCREEN:
 			_layout_homescreen(desktop);
 			break;
+		case DESKTOP_LAYOUT_NULL:
+			/* nothing to do */
+			break;
 	}
 	desktop_refresh(desktop);
 }
@@ -927,6 +930,7 @@ static int _current_loop(Desktop * desktop)
 		case DESKTOP_LAYOUT_FILES:
 			return _current_loop_files(desktop);
 		case DESKTOP_LAYOUT_HOMESCREEN:
+		case DESKTOP_LAYOUT_NULL:
 			break; /* nothing to do */
 	}
 	return 1;
@@ -1469,7 +1473,7 @@ static int _desktop_get_workarea(Desktop * desktop)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: desktop [-H|-V][-a|-c|-f|-h][-m monitor]\n"
+	fputs(_("Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H	Place icons horizontally\n"
 "  -V	Place icons vertically\n"
 "  -a	Display the applications registered\n"
@@ -1498,7 +1502,7 @@ int main(int argc, char * argv[])
 	prefs.layout = DESKTOP_LAYOUT_FILES;
 	prefs.monitor = -1;
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "HVacfhm:")) != -1)
+	while((o = getopt(argc, argv, "HVacfhm:n")) != -1)
 		switch(o)
 		{
 			case 'H':
@@ -1519,6 +1523,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'm':
 				prefs.monitor = strtol(optarg, NULL, 0);
+				break;
+			case 'n':
+				prefs.layout = DESKTOP_LAYOUT_NULL;
 				break;
 			default:
 				return _usage();
