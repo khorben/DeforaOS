@@ -113,6 +113,9 @@ struct _DesktopCategory
 #define DESKTOP ".desktop"
 #define DESKTOPRC ".desktoprc"
 
+static const char * _desktop_hows[] = { "scaled", "scaled_ratio", "tiled",
+	NULL };
+
 static DesktopCategory _desktop_categories[] =
 {
 	{ FALSE, "Audio;",	"Audio",	"gnome-mime-audio",	},
@@ -194,7 +197,6 @@ static gboolean _new_idle(gpointer data)
 	char const * filename;
 	char const * p;
 	int how = 0;
-	char const * hows[] = { "scaled", "tiled", NULL };
 	size_t i;
 	GdkPixbuf * background = NULL;
 	GError * error = NULL;
@@ -214,12 +216,19 @@ static gboolean _new_idle(gpointer data)
 	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
 #endif
 	if((p = config_get(config, NULL, "background_how")) != NULL)
-		for(i = 0; hows[i] != NULL; i++)
-			if(strcmp(hows[i], p) == 0)
+		for(i = 0; _desktop_hows[i] != NULL; i++)
+			if(strcmp(_desktop_hows[i], p) == 0)
 				how = i;
 	switch(how)
 	{
 		case 1:
+#if GTK_CHECK_VERSION(2, 4, 0)
+			background = gdk_pixbuf_new_from_file_at_size(filename,
+					desktop->window.width,
+					desktop->window.height, &error);
+			break;
+#endif
+		case 2:
 			background = gdk_pixbuf_new_from_file(filename, &error);
 			break;
 		default:
@@ -499,6 +508,8 @@ static void _on_popup_preferences(gpointer data)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Scaled"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Scaled (keep ratio)"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Tiled"));
 	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_background_how, TRUE,
 			TRUE, 0);
@@ -553,7 +564,6 @@ static void _on_preferences_apply(gpointer data)
 	Desktop * desktop = data;
 	Config * config;
 	char * p;
-	char const * hows[] = { "scaled", "tiled", NULL };
 	int i;
 
 	/* XXX not very efficient */
@@ -565,8 +575,9 @@ static void _on_preferences_apply(gpointer data)
 	config_set(config, NULL, "background", p);
 	g_free(p);
 	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
-	if(i >= 0 && (unsigned)i < (sizeof(hows) / sizeof(*hows)) - 1)
-		config_set(config, NULL, "background_how", hows[i]);
+	if(i >= 0 && (unsigned)i < (sizeof(_desktop_hows)
+				/ sizeof(*_desktop_hows)) - 1)
+		config_set(config, NULL, "background_how", _desktop_hows[i]);
 	/* XXX code duplication */
 	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
 	{
@@ -590,15 +601,14 @@ static void _preferences_set(Desktop * desktop)
 	String const * p;
 	String const * filename = NULL;
 	int how = 0;
-	char const * hows[] = { "scaled", "tiled", NULL };
 	size_t i;
 
 	if((config = _desktop_get_config(desktop)) != NULL)
 	{
 		filename = config_get(config, NULL, "background");
 		if((p = config_get(config, NULL, "background_how")) != NULL)
-			for(i = 0; hows[i] != NULL; i++)
-				if(strcmp(hows[i], p) == 0)
+			for(i = 0; _desktop_hows[i] != NULL; i++)
+				if(strcmp(_desktop_hows[i], p) == 0)
 					how = i;
 		config_delete(config);
 	}
