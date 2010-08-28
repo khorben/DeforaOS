@@ -631,7 +631,7 @@ int browser_config_save(Browser * browser)
 	/* XXX deserves a rework (enum) */
 	if(browser->prefs.default_view >= BV_FIRST
 			&& browser->prefs.default_view <= BV_LAST)
-		ret |= config_set(browser->config, "", "default_view",
+		ret |= config_set(browser->config, NULL, "default_view",
 				str[browser->prefs.default_view]);
 #endif
 	ret |= _config_save_boolean(browser->config, "confirm_before_delete",

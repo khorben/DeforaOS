@@ -91,6 +91,7 @@ struct _Desktop
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_background;
+	GtkWidget * pr_background_how;
 
 	/* internal */
 	GdkDisplay * display;
@@ -190,27 +191,51 @@ static gboolean _new_idle(gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
+	char const * filename;
 	char const * p;
-	GdkPixbuf * background;
+	int how = 0;
+	char const * hows[] = { "scaled", "tiled", NULL };
+	size_t i;
+	GdkPixbuf * background = NULL;
 	GError * error = NULL;
 	GdkPixmap * pixmap = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((config = _desktop_get_config(desktop)) == NULL
-			|| (p = config_get(config, NULL, "background")) == NULL)
+	if((config = _desktop_get_config(desktop)) == NULL)
+		return FALSE;
+	if((filename = config_get(config, NULL, "background")) == NULL)
 	{
-		if(config != NULL)
-			config_delete(config);
+		config_delete(config);
 		return FALSE;
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
 #endif
-	background = gdk_pixbuf_new_from_file_at_scale(p,
-			desktop->window.width, desktop->window.height, FALSE,
-			&error);
+	if((p = config_get(config, NULL, "background_how")) != NULL)
+		for(i = 0; hows[i] != NULL; i++)
+			if(strcmp(hows[i], p) == 0)
+				how = i;
+	switch(how)
+	{
+		case 1:
+			background = gdk_pixbuf_new_from_file(filename, &error);
+			break;
+		default:
+#if GTK_CHECK_VERSION(2, 6, 0)
+			background = gdk_pixbuf_new_from_file_at_scale(filename,
+					desktop->window.width,
+					desktop->window.height, FALSE, &error);
+#elif GTK_CHECK_VERSION(2, 4, 0)
+			background = gdk_pixbuf_new_from_file_at_size(filename,
+					desktop->window.width,
+					desktop->window.height, &error);
+#else
+			background = gdk_pixbuf_new_from_file(filename, &error);
+#endif
+			break;
+	}
 	config_delete(config);
 	if(background == NULL)
 	{
@@ -434,6 +459,7 @@ static void _on_popup_preferences(gpointer data)
 	Desktop * desktop = data;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
+	GtkWidget * vbox3;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkWidget * label;
@@ -461,12 +487,22 @@ static void _on_popup_preferences(gpointer data)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.5, 0.25);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	vbox3 = gtk_vbox_new(FALSE, 4);
 	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background, TRUE, TRUE,
+	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_background, TRUE, TRUE,
 			0);
+	desktop->pr_background_how = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Scaled"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Tiled"));
+	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_background_how, TRUE,
+			TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox3, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
 				_("Appearance")));
@@ -517,6 +553,8 @@ static void _on_preferences_apply(gpointer data)
 	Desktop * desktop = data;
 	Config * config;
 	char * p;
+	char const * hows[] = { "scaled", "tiled", NULL };
+	int i;
 
 	/* XXX not very efficient */
 	g_idle_add(_new_idle, desktop);
@@ -526,6 +564,9 @@ static void _on_preferences_apply(gpointer data)
 				desktop->pr_background));
 	config_set(config, NULL, "background", p);
 	g_free(p);
+	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
+	if(i >= 0 && (unsigned)i < (sizeof(hows) / sizeof(*hows)) - 1)
+		config_set(config, NULL, "background_how", hows[i]);
 	/* XXX code duplication */
 	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
 	{
@@ -547,17 +588,24 @@ static void _preferences_set(Desktop * desktop)
 {
 	Config * config;
 	String const * p;
+	String const * filename = NULL;
+	int how = 0;
+	char const * hows[] = { "scaled", "tiled", NULL };
+	size_t i;
 
-	if((config = _desktop_get_config(desktop)) == NULL)
+	if((config = _desktop_get_config(desktop)) != NULL)
 	{
-		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
-					desktop->pr_background), NULL);
-		return;
+		filename = config_get(config, NULL, "background");
+		if((p = config_get(config, NULL, "background_how")) != NULL)
+			for(i = 0; hows[i] != NULL; i++)
+				if(strcmp(hows[i], p) == 0)
+					how = i;
+		config_delete(config);
 	}
-	p = config_get(config, NULL, "background");
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
-				desktop->pr_background), p);
-	config_delete(config);
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(desktop->pr_background),
+			filename);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_background_how),
+			how);
 }
 
 static void _on_popup_symlink(gpointer data)
