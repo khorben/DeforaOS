@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-12 00:41+0200\n"
+"POT-Creation-Date: 2010-08-28 17:33+0200\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -90,8 +90,8 @@ msgid " Location: "
 msgstr ""
 
 #: ../src/browser.c:541 ../src/browser.c:546 ../src/copy.c:203
-#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1361
-#: ../src/desktop.c:1366 ../src/move.c:130 ../src/properties.c:110
+#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1359
+#: ../src/desktop.c:1364 ../src/move.c:130 ../src/properties.c:110
 #: ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr ""
@@ -196,15 +196,15 @@ msgstr ""
 msgid "New"
 msgstr ""
 
-#: ../src/callbacks.c:1067 ../src/callbacks.c:1071 ../src/desktop.c:278
+#: ../src/callbacks.c:1067 ../src/callbacks.c:1071 ../src/desktop.c:280
 msgid "Folder"
 msgstr ""
 
-#: ../src/callbacks.c:1078 ../src/desktop.c:286
+#: ../src/callbacks.c:1078 ../src/desktop.c:288
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:1082 ../src/desktop.c:290
+#: ../src/callbacks.c:1082 ../src/desktop.c:292
 msgid "Text file"
 msgstr ""
 
@@ -337,51 +337,56 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:361
+#: ../src/desktop.c:366
 msgid "New folder"
 msgstr ""
 
-#: ../src/desktop.c:380
+#: ../src/desktop.c:385
 msgid "New text file.txt"
 msgstr ""
 
-#: ../src/desktop.c:437
+#: ../src/desktop.c:442
 msgid "Desktop preferences"
 msgstr ""
 
-#: ../src/desktop.c:449
+#: ../src/desktop.c:454
 msgid "Background: "
 msgstr ""
 
-#: ../src/desktop.c:453
+#: ../src/desktop.c:458
 msgid "Background"
 msgstr ""
 
-#: ../src/desktop.c:459
+#: ../src/desktop.c:464
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:700 ../src/desktop.c:719
+#: ../src/desktop.c:705 ../src/desktop.c:724
 msgid "Back"
 msgstr ""
 
-#: ../src/desktop.c:779
+#: ../src/desktop.c:784
 msgid "Home"
 msgstr ""
 
-#: ../src/desktop.c:799
+#: ../src/desktop.c:804
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1448
+#: ../src/desktop.c:1408
+msgid "Could not load preferences"
+msgstr ""
+
+#: ../src/desktop.c:1463
 msgid ""
-"Usage: desktop [-H | -V][-a | -c | -f | -h]\n"
+"Usage: desktop [-H|-V][-a|-c|-f|-h][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
 "  -V\tPlace icons vertically\n"
 "  -a\tDisplay the applications registered\n"
 "  -c\tSort the applications registered by category\n"
 "  -f\tDisplay contents of the desktop folder (default)\n"
 "  -h\tDisplay the homescreen\n"
+"  -m\tMonitor where to display the desktop\n"
 msgstr ""
 
 #: ../src/desktopicon.c:798
