@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Desktop settings
+Exec=desktop-settings
+Icon=user-desktop
+Type=Application
+Categories=Settings;GTK;
