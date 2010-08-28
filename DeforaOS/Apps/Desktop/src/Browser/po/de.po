@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-28 18:14+0200\n"
+"POT-Creation-Date: 2010-08-28 18:17+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -90,8 +90,8 @@ msgid " Location: "
 msgstr ""
 
 #: ../src/browser.c:541 ../src/browser.c:546 ../src/copy.c:203
-#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1345
-#: ../src/desktop.c:1350 ../src/move.c:130 ../src/properties.c:110
+#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1341
+#: ../src/desktop.c:1346 ../src/move.c:130 ../src/properties.c:110
 #: ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr "Fehler"
@@ -345,39 +345,39 @@ msgstr "Neu Ordner"
 msgid "New text file.txt"
 msgstr ""
 
-#: ../src/desktop.c:428
+#: ../src/desktop.c:427
 msgid "Desktop preferences"
 msgstr "Desktop Einstellungen"
 
-#: ../src/desktop.c:440
+#: ../src/desktop.c:437
 msgid "Background: "
 msgstr "Hintergrund: "
 
-#: ../src/desktop.c:444
+#: ../src/desktop.c:440
 msgid "Background"
 msgstr "Hintergrund"
 
-#: ../src/desktop.c:450
+#: ../src/desktop.c:446
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:691 ../src/desktop.c:710
+#: ../src/desktop.c:687 ../src/desktop.c:706
 msgid "Back"
 msgstr ""
 
-#: ../src/desktop.c:770
+#: ../src/desktop.c:766
 msgid "Home"
 msgstr "Persönlicher Ordner"
 
-#: ../src/desktop.c:790
+#: ../src/desktop.c:786
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1394
+#: ../src/desktop.c:1390
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1449
+#: ../src/desktop.c:1445
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"

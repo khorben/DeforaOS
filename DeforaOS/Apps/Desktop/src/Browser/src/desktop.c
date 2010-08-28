@@ -413,7 +413,6 @@ static void _on_popup_preferences(gpointer data)
 	GtkWidget * widget;
 	GtkWidget * label;
 	GtkSizeGroup * group;
-	PangoFontDescription * desc;
 
 	gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
@@ -431,14 +430,11 @@ static void _on_popup_preferences(gpointer data)
 	hbox = gtk_hbox_new(FALSE, 0);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* notebook */
-	desc = pango_font_description_new();
-	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	widget = gtk_notebook_new();
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox2 = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background: "));
-	gtk_widget_modify_font(label, desc);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox2), label, FALSE, TRUE, 0);
 	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
