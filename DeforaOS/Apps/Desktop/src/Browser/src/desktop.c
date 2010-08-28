@@ -150,7 +150,7 @@ static gboolean _new_idle(gpointer data);
 static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
-Desktop * desktop_new(DesktopLayout layout)
+Desktop * desktop_new(DesktopPrefs * prefs)
 {
 	Desktop * desktop;
 	GdkScreen * screen;
@@ -171,7 +171,7 @@ Desktop * desktop_new(DesktopLayout layout)
 	if((desktop->home = getenv("HOME")) == NULL
 			&& (desktop->home = g_get_home_dir()) == NULL)
 		desktop->home = "/";
-	desktop_set_layout(desktop, layout);
+	desktop_set_layout(desktop, (prefs != NULL) ? prefs->layout : DL_FILES);
 	/* manage root window events */
 	gdk_window_get_geometry(desktop->root, &x, &y, &desktop->width,
 			&desktop->height, &depth);
@@ -1463,12 +1463,14 @@ int main(int argc, char * argv[])
 {
 	int o;
 	Desktop * desktop;
-	DesktopLayout layout = DL_FILES;
+	DesktopPrefs prefs;
 	struct sigaction sa;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
+	memset(&prefs, 0, sizeof(prefs));
+	prefs.layout = DL_FILES;
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "HVacfh")) != -1)
 		switch(o)
@@ -1478,23 +1480,23 @@ int main(int argc, char * argv[])
 				/* FIXME implement */
 				break;
 			case 'a':
-				layout = DL_APPLICATIONS;
+				prefs.layout = DL_APPLICATIONS;
 				break;
 			case 'c':
-				layout = DL_CATEGORIES;
+				prefs.layout = DL_CATEGORIES;
 				break;
 			case 'f':
-				layout = DL_FILES;
+				prefs.layout = DL_FILES;
 				break;
 			case 'h':
-				layout = DL_HOMESCREEN;
+				prefs.layout = DL_HOMESCREEN;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind < argc)
 		return _usage();
-	if((desktop = desktop_new(layout)) == NULL)
+	if((desktop = desktop_new(&prefs)) == NULL)
 	{
 		gtk_main();
 		return 2;

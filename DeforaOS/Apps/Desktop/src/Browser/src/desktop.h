@@ -38,9 +38,15 @@ typedef enum _DesktopLayout
 	DL_APPLICATIONS, DL_CATEGORIES, DL_FILES, DL_HOMESCREEN
 } DesktopLayout;
 
+typedef struct _DesktopPrefs
+{
+	DesktopLayout layout;
+	int monitor;
+} DesktopPrefs;
+
 
 /* functions */
-Desktop * desktop_new(DesktopLayout layout);
+Desktop * desktop_new(DesktopPrefs * prefs);
 void desktop_delete(Desktop * desktop);
 
 /* accessors */
