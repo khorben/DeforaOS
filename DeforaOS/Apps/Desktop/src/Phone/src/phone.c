@@ -720,7 +720,7 @@ void phone_contacts_write_selected(Phone * phone)
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) == TRUE)
 		gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
 				PHONE_CONTACT_COLUMN_NUMBER, &number, -1);
-	phone_messages_write(phone, number, "");
+	phone_messages_write(phone, number, NULL);
 	g_free(number);
 }
 
