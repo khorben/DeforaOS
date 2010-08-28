@@ -63,18 +63,16 @@ typedef struct _DesktopCategory DesktopCategory;
 
 struct _Desktop
 {
+	DesktopPrefs prefs;
+
 	/* workarea */
-	gint x;
-	gint y;
-	gint width;
-	gint height;
+	GdkRectangle window;
+	GdkRectangle workarea;
 
 	/* icons */
 	DesktopIcon ** icon;
 	size_t icon_cnt;
 
-	/* layout */
-	DesktopLayout layout;
 	/* common */
 	char * path;
 	size_t path_cnt;
@@ -154,13 +152,15 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 {
 	Desktop * desktop;
 	GdkScreen * screen;
-	gint x;
-	gint y;
 	gint depth;
 
-	if((desktop = malloc(sizeof(*desktop))) == NULL)
+	if((desktop = object_new(sizeof(*desktop))) == NULL)
 		return NULL;
 	memset(desktop, 0, sizeof(*desktop));
+	desktop->prefs.layout = DESKTOP_LAYOUT_FILES;
+	desktop->prefs.monitor = -1;
+	if(prefs != NULL)
+		memcpy(&desktop->prefs, prefs, sizeof(*prefs));
 	/* workarea */
 	screen = gdk_screen_get_default();
 	desktop->display = gdk_screen_get_display(screen);
@@ -171,10 +171,11 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	if((desktop->home = getenv("HOME")) == NULL
 			&& (desktop->home = g_get_home_dir()) == NULL)
 		desktop->home = "/";
-	desktop_set_layout(desktop, (prefs != NULL) ? prefs->layout : DL_FILES);
+	desktop_set_layout(desktop, desktop->prefs.layout);
 	/* manage root window events */
-	gdk_window_get_geometry(desktop->root, &x, &y, &desktop->width,
-			&desktop->height, &depth);
+	gdk_window_get_geometry(desktop->root, &desktop->window.x,
+			&desktop->window.y, &desktop->window.width,
+			&desktop->window.height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
 				desktop->root) | GDK_BUTTON_PRESS_MASK);
 	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
@@ -205,7 +206,8 @@ static gboolean _new_idle(gpointer data)
 #endif
 	g_free(desktop->background);
 	desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
-			desktop->width, desktop->height, FALSE, &error);
+			desktop->window.width, desktop->window.height, FALSE,
+			&error);
 	config_delete(config);
 	if(desktop->background == NULL)
 	{
@@ -331,11 +333,14 @@ static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop)
 static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
 		Desktop * desktop)
 {
-	desktop->width = xevent->width;
-	desktop->height = xevent->height;
+	desktop->window.x = xevent->x;
+	desktop->window.y = xevent->y;
+	desktop->window.width = xevent->width;
+	desktop->window.height = xevent->height;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %dx%d\n", __func__, desktop->width,
-			desktop->height);
+	fprintf(stderr, "DEBUG: %s() (%dx%d) @ (%d,%d))\n", __func__,
+			desktop->window.width, desktop->window.height,
+			desktop->window.x, desktop->window.y);
 #endif
 	g_idle_add(_new_idle, desktop); /* FIXME run it directly? */
 	return GDK_FILTER_CONTINUE;
@@ -568,7 +573,7 @@ void desktop_delete(Desktop * desktop)
 	if(desktop->mime != NULL)
 		mime_delete(desktop->mime);
 	free(desktop->path);
-	free(desktop);
+	object_delete(desktop);
 }
 
 
@@ -646,19 +651,19 @@ static void _layout_set_homescreen(Desktop * desktop, gpointer data);
 void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 {
 	_layout_delete(desktop);
-	desktop->layout = layout;
-	switch(desktop->layout)
+	desktop->prefs.layout = layout;
+	switch(layout)
 	{
-		case DL_APPLICATIONS:
+		case DESKTOP_LAYOUT_APPLICATIONS:
 			_layout_applications(desktop);
 			break;
-		case DL_CATEGORIES:
+		case DESKTOP_LAYOUT_CATEGORIES:
 			_layout_categories(desktop);
 			break;
-		case DL_FILES:
+		case DESKTOP_LAYOUT_FILES:
 			_layout_files(desktop);
 			break;
-		case DL_HOMESCREEN:
+		case DESKTOP_LAYOUT_HOMESCREEN:
 			_layout_homescreen(desktop);
 			break;
 	}
@@ -814,7 +819,7 @@ static void _layout_set_categories(Desktop * desktop, gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	desktop_set_layout(desktop, DL_CATEGORIES);
+	desktop_set_layout(desktop, DESKTOP_LAYOUT_CATEGORIES);
 }
 
 static void _layout_set_homescreen(Desktop * desktop, gpointer data)
@@ -822,7 +827,7 @@ static void _layout_set_homescreen(Desktop * desktop, gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	desktop_set_layout(desktop, DL_HOMESCREEN);
+	desktop_set_layout(desktop, DESKTOP_LAYOUT_HOMESCREEN);
 }
 
 
@@ -831,13 +836,6 @@ static void _layout_set_homescreen(Desktop * desktop, gpointer data)
 int desktop_error(Desktop * desktop, char const * message, int ret)
 {
 	return _desktop_error(desktop, message, strerror(errno), ret);
-}
-
-static int _error_text(char const * message, int ret)
-{
-	fputs("desktop: ", stderr);
-	perror(message);
-	return ret;
 }
 
 
@@ -911,15 +909,15 @@ static void _refresh_current(Desktop * desktop)
 
 static int _current_loop(Desktop * desktop)
 {
-	switch(desktop->layout)
+	switch(desktop->prefs.layout)
 	{
-		case DL_APPLICATIONS:
+		case DESKTOP_LAYOUT_APPLICATIONS:
 			return _current_loop_applications(desktop);
-		case DL_CATEGORIES:
+		case DESKTOP_LAYOUT_CATEGORIES:
 			return _current_loop_categories(desktop);
-		case DL_FILES:
+		case DESKTOP_LAYOUT_FILES:
 			return _current_loop_files(desktop);
-		case DL_HOMESCREEN:
+		case DESKTOP_LAYOUT_HOMESCREEN:
 			break; /* nothing to do */
 	}
 	return 1;
@@ -1119,9 +1117,9 @@ static gboolean _current_done(Desktop * desktop)
 {
 	size_t i = 0;
 
-	switch(desktop->layout)
+	switch(desktop->prefs.layout)
 	{
-		case DL_CATEGORIES:
+		case DESKTOP_LAYOUT_CATEGORIES:
 			_done_categories(desktop);
 			break;
 		default:
@@ -1188,7 +1186,7 @@ static void _done_categories_open(Desktop * desktop, gpointer data)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, dc->name);
 #endif
 	desktop->category = dc;
-	desktop_set_layout(desktop, DL_APPLICATIONS);
+	desktop_set_layout(desktop, DESKTOP_LAYOUT_APPLICATIONS);
 }
 
 static gboolean _done_timeout(gpointer data)
@@ -1254,16 +1252,16 @@ static int _align_compare(const void * a, const void * b);
 void desktop_icons_align(Desktop * desktop)
 {
 	size_t i;
-	int x = desktop->x;
-	int y = desktop->y;
+	int x = desktop->workarea.x;
+	int y = desktop->workarea.y;
 
 	qsort(desktop->icon, desktop->icon_cnt, sizeof(void*), _align_compare);
 	for(i = 0; i < desktop->icon_cnt; i++)
 	{
-		if(y + DESKTOPICON_MAX_HEIGHT > desktop->height)
+		if(y + DESKTOPICON_MAX_HEIGHT > desktop->workarea.height)
 		{
 			x += DESKTOPICON_MAX_WIDTH;
-			y = desktop->y;
+			y = desktop->window.y;
 		}
 		desktopicon_move(desktop->icon[i], x, y);
 		y += DESKTOPICON_MAX_HEIGHT;
@@ -1377,6 +1375,13 @@ static int _desktop_error(Desktop * desktop, char const * message,
 	return ret;
 }
 
+static int _error_text(char const * message, int ret)
+{
+	fputs("desktop: ", stderr);
+	perror(message);
+	return ret;
+}
+
 
 /* desktop_serror */
 static int _desktop_serror(Desktop * desktop, char const * message, int ret)
@@ -1400,7 +1405,7 @@ static Config * _desktop_get_config(Desktop * desktop)
 			config_delete(config);
 		if(pathname != NULL)
 			object_delete(pathname);
-		_desktop_serror(NULL, "Could not load preferences", FALSE);
+		_desktop_serror(NULL, _("Could not load preferences"), FALSE);
 		return NULL;
 	}
 	return config;
@@ -1410,6 +1415,7 @@ static Config * _desktop_get_config(Desktop * desktop)
 /* desktop_get_workarea */
 static int _desktop_get_workarea(Desktop * desktop)
 {
+	GdkScreen * screen;
 	Atom atom;
 	Atom type;
 	int format;
@@ -1418,6 +1424,14 @@ static int _desktop_get_workarea(Desktop * desktop)
 	unsigned char * p;
 	unsigned long * u;
 
+	screen = gdk_screen_get_default();
+	if(desktop->prefs.monitor >= 0 && desktop->prefs.monitor
+			< gdk_screen_get_n_monitors(screen))
+	{
+		gdk_screen_get_monitor_geometry(screen, desktop->prefs.monitor,
+				&desktop->workarea);
+		return 0;
+	}
 	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
 	if(XGetWindowProperty(GDK_DISPLAY_XDISPLAY(desktop->display),
 				GDK_WINDOW_XWINDOW(desktop->root), atom, 0,
@@ -1427,14 +1441,15 @@ static int _desktop_get_workarea(Desktop * desktop)
 	if(cnt >= 4)
 	{
 		u = (unsigned long *)p;
-		desktop->x = u[0];
-		desktop->y = u[1];
-		desktop->width = u[2];
-		desktop->height = u[3];
+		desktop->workarea.x = u[0];
+		desktop->workarea.y = u[1];
+		desktop->workarea.width = u[2];
+		desktop->workarea.height = u[3];
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() (%d, %d) %dx%d\n", __func__,
-				desktop->x, desktop->y, desktop->width,
-				desktop->height);
+				desktop->workarea.x, desktop->workarea.y,
+				desktop->workarea.width,
+				desktop->workarea.height);
 #endif
 	}
 	XFree(p);
@@ -1445,13 +1460,14 @@ static int _desktop_get_workarea(Desktop * desktop)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: desktop [-H | -V][-a | -c | -f | -h]\n"
+	fputs(_("Usage: desktop [-H|-V][-a|-c|-f|-h][-m monitor]\n"
 "  -H	Place icons horizontally\n"
 "  -V	Place icons vertically\n"
 "  -a	Display the applications registered\n"
 "  -c	Sort the applications registered by category\n"
 "  -f	Display contents of the desktop folder (default)\n"
-"  -h	Display the homescreen\n"), stderr);
+"  -h	Display the homescreen\n"
+"  -m	Monitor where to display the desktop\n"), stderr);
 	return 1;
 }
 
@@ -1470,9 +1486,10 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
-	prefs.layout = DL_FILES;
+	prefs.layout = DESKTOP_LAYOUT_FILES;
+	prefs.monitor = -1;
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "HVacfh")) != -1)
+	while((o = getopt(argc, argv, "HVacfhm:")) != -1)
 		switch(o)
 		{
 			case 'H':
@@ -1480,16 +1497,19 @@ int main(int argc, char * argv[])
 				/* FIXME implement */
 				break;
 			case 'a':
-				prefs.layout = DL_APPLICATIONS;
+				prefs.layout = DESKTOP_LAYOUT_APPLICATIONS;
 				break;
 			case 'c':
-				prefs.layout = DL_CATEGORIES;
+				prefs.layout = DESKTOP_LAYOUT_CATEGORIES;
 				break;
 			case 'f':
-				prefs.layout = DL_FILES;
+				prefs.layout = DESKTOP_LAYOUT_FILES;
 				break;
 			case 'h':
-				prefs.layout = DL_HOMESCREEN;
+				prefs.layout = DESKTOP_LAYOUT_HOMESCREEN;
+				break;
+			case 'm':
+				prefs.monitor = strtol(optarg, NULL, 0);
 				break;
 			default:
 				return _usage();

@@ -35,7 +35,8 @@ typedef struct _Desktop Desktop;
 # endif
 typedef enum _DesktopLayout
 {
-	DL_APPLICATIONS, DL_CATEGORIES, DL_FILES, DL_HOMESCREEN
+	DESKTOP_LAYOUT_APPLICATIONS, DESKTOP_LAYOUT_CATEGORIES,
+	DESKTOP_LAYOUT_FILES, DESKTOP_LAYOUT_HOMESCREEN
 } DesktopLayout;
 
 typedef struct _DesktopPrefs
