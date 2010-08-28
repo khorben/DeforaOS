@@ -108,13 +108,26 @@ struct _DesktopCategory
 	char const * icon;
 };
 
+typedef enum _DesktopHows
+{
+	DESKTOP_HOW_SCALED = 0,
+	DESKTOP_HOW_SCALED_RATIO,
+	DESKTOP_HOW_TILED
+} DesktopHows;
+#define DESKTOP_HOW_LAST	DESKTOP_HOW_TILED
+#define DESKTOP_HOW_COUNT	(DESKTOP_HOW_LAST + 1)
+
 
 /* constants */
 #define DESKTOP ".desktop"
 #define DESKTOPRC ".desktoprc"
 
-static const char * _desktop_hows[] = { "scaled", "scaled_ratio", "tiled",
-	NULL };
+static const char * _desktop_hows[DESKTOP_HOW_COUNT] =
+{
+	"scaled",
+	"scaled_ratio",
+	"tiled"
+};
 
 static DesktopCategory _desktop_categories[] =
 {
@@ -196,7 +209,7 @@ static gboolean _new_idle(gpointer data)
 	Config * config;
 	char const * filename;
 	char const * p;
-	int how = 0;
+	DesktopHows how = DESKTOP_HOW_SCALED;
 	size_t i;
 	GdkPixbuf * background = NULL;
 	GError * error = NULL;
@@ -221,17 +234,17 @@ static gboolean _new_idle(gpointer data)
 				how = i;
 	switch(how)
 	{
-		case 1:
+		case DESKTOP_HOW_SCALED_RATIO:
 #if GTK_CHECK_VERSION(2, 4, 0)
 			background = gdk_pixbuf_new_from_file_at_size(filename,
 					desktop->window.width,
 					desktop->window.height, &error);
 			break;
 #endif
-		case 2:
+		case DESKTOP_HOW_TILED:
 			background = gdk_pixbuf_new_from_file(filename, &error);
 			break;
-		default:
+		case DESKTOP_HOW_SCALED:
 #if GTK_CHECK_VERSION(2, 6, 0)
 			background = gdk_pixbuf_new_from_file_at_scale(filename,
 					desktop->window.width,
@@ -575,8 +588,7 @@ static void _on_preferences_apply(gpointer data)
 	config_set(config, NULL, "background", p);
 	g_free(p);
 	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
-	if(i >= 0 && (unsigned)i < (sizeof(_desktop_hows)
-				/ sizeof(*_desktop_hows)) - 1)
+	if(i >= 0 && i < DESKTOP_HOW_COUNT)
 		config_set(config, NULL, "background_how", _desktop_hows[i]);
 	/* XXX code duplication */
 	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
@@ -607,7 +619,7 @@ static void _preferences_set(Desktop * desktop)
 	{
 		filename = config_get(config, NULL, "background");
 		if((p = config_get(config, NULL, "background_how")) != NULL)
-			for(i = 0; _desktop_hows[i] != NULL; i++)
+			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
 				if(strcmp(_desktop_hows[i], p) == 0)
 					how = i;
 		config_delete(config);
