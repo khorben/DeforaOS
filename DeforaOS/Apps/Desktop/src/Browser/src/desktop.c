@@ -506,6 +506,7 @@ static void _on_popup_preferences(gpointer data)
 	/* notebook */
 	widget = gtk_notebook_new();
 	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background: "));
