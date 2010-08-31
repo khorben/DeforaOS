@@ -37,7 +37,7 @@
 typedef struct _Cpufreq
 {
 	PanelAppletHelper * helper;
-	GtkWidget * scale;
+	GtkWidget * label;
 	guint timeout;
 	int min;
 	int max;
@@ -101,24 +101,23 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	}
 	applet->priv = cpufreq;
 	cpufreq->helper = applet->helper;
-	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	widget = gtk_label_new(_("Frequency:"));
-	gtk_widget_modify_font(widget, desc);
-	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, FALSE, 0);
+	ret = gtk_hbox_new(FALSE, 4);
+	widget = gtk_image_new_from_icon_name("gnome-monitor",
+			applet->helper->icon_size);
+	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE, 0);
 	cpufreq->min = 0;
 	cpufreq->max = 0;
 	cpufreq->step = 1;
 	cpufreq->max = atoi(freq);
 	cpufreq->min = (p = strrchr(freq, ' ')) != NULL ? atoi(p)
 		: cpufreq->max;
-	cpufreq->scale = gtk_vscale_new_with_range(cpufreq->min, cpufreq->max,
-			cpufreq->step);
-	gtk_widget_set_sensitive(cpufreq->scale, FALSE);
-	gtk_range_set_inverted(GTK_RANGE(cpufreq->scale), TRUE);
-	gtk_scale_set_value_pos(GTK_SCALE(cpufreq->scale), GTK_POS_RIGHT);
-	gtk_box_pack_start(GTK_BOX(ret), cpufreq->scale, FALSE, FALSE, 0);
+	cpufreq->label = gtk_label_new(" ");
+	gtk_widget_modify_font(cpufreq->label, desc);
+	gtk_box_pack_start(GTK_BOX(ret), cpufreq->label, FALSE, TRUE, 0);
+	widget = gtk_label_new(_("MHz"));
+	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE, 0);
 	cpufreq->timeout = g_timeout_add(1000, _on_timeout, cpufreq);
 	_on_timeout(cpufreq);
 	pango_font_description_free(desc);
@@ -150,15 +149,13 @@ static gboolean _on_timeout(gpointer data)
 	const char name[] = "machdep.est.frequency.current";
 	uint64_t freq;
 	size_t freqsize = sizeof(freq);
-	unsigned int f;
+	char buf[16];
 
-	if(sysctlbyname(name, &freq, &freqsize, NULL, 0) >= 0)
-		f = freq;
-	if(sysctlbyname(name, &freq, &freqsize, NULL, 0) >= 0)
-		f = freq;
-	else
+	if(sysctlbyname(name, &freq, &freqsize, NULL, 0) < 0
+			|| sysctlbyname(name, &freq, &freqsize, NULL, 0) < 0)
 		return cpufreq->helper->error(NULL, name, TRUE);
-	gtk_range_set_value(GTK_RANGE(cpufreq->scale), (double)f);
+	snprintf(buf, sizeof(buf), "%u", (unsigned int)freq);
+	gtk_label_set_text(GTK_LABEL(cpufreq->label), buf);
 	return TRUE;
 }
 #endif
