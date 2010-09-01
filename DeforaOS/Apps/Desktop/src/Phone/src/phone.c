@@ -1120,6 +1120,26 @@ void phone_read_delete(Phone * phone)
 }
 
 
+/* phone_read_forward */
+void phone_read_forward(Phone * phone)
+{
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+	gchar * text;
+
+	if(phone->re_window == NULL)
+		return;
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
+	gtk_text_buffer_get_start_iter(tbuf, &start);
+	gtk_text_buffer_get_end_iter(tbuf, &end);
+	if((text = gtk_text_buffer_get_text(tbuf, &start, &end, FALSE)) == NULL)
+		return;
+	phone_show_write(phone, TRUE, "", text);
+	g_free(text);
+}
+
+
 /* phone_read_reply */
 void phone_read_reply(Phone * phone)
 {
@@ -1992,6 +2012,12 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 				"mail-reply-sender");
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_read_reply), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("Forward"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"mail-forward");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_read_forward), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",

@@ -116,6 +116,7 @@ void phone_unload_all(Phone * phone);
 /* read */
 void phone_read_call(Phone * phone);
 void phone_read_delete(Phone * phone);
+void phone_read_forward(Phone * phone);
 void phone_read_reply(Phone * phone);
 
 /* settings */

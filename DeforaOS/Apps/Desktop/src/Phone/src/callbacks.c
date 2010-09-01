@@ -390,6 +390,15 @@ void on_phone_read_delete(gpointer data)
 }
 
 
+/* on_phone_read_forward */
+void on_phone_read_forward(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_read_forward(phone);
+}
+
+
 /* on_phone_read_reply */
 void on_phone_read_reply(gpointer data)
 {
