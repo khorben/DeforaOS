@@ -2470,10 +2470,9 @@ void phone_write_send(Phone * phone)
 	phone_show_write(phone, TRUE, NULL, NULL);
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
-	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
-	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
-	text = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
-			FALSE);
+	gtk_text_buffer_get_start_iter(tbuf, &start);
+	gtk_text_buffer_get_end_iter(tbuf, &end);
+	text = gtk_text_buffer_get_text(tbuf, &start, &end, FALSE);
 	if(number == NULL || number[0] == '\0' || text == NULL)
 		return;
 	if(phone_event(phone, PHONE_EVENT_SMS_SENDING, number, &encoding, &text,
