@@ -1120,6 +1120,19 @@ void phone_read_delete(Phone * phone)
 }
 
 
+/* phone_read_reply */
+void phone_read_reply(Phone * phone)
+{
+	char const * number;
+
+	if(phone->re_window == NULL)
+		return;
+	if((number = gtk_label_get_text(GTK_LABEL(phone->re_number))) == NULL)
+		return;
+	phone_show_write(phone, TRUE, number, "");
+}
+
+
 /* settings */
 /* phone_settings_open_selected */
 void phone_settings_open_selected(Phone * phone)
