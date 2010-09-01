@@ -98,3 +98,18 @@ static gchar const * _history_get_location(GList * history)
 		return NULL;
 	return ghh->url;
 }
+
+
+/* useful */
+static GList * _history_append(History * history, GList * list)
+{
+	GList * l;
+
+	if(list == NULL)
+		return g_list_append(list, history);
+	for(l = list->next; l != NULL; l = g_list_delete_link(l, l))
+		_history_delete(l->data);
+	list->next = NULL;
+	l = g_list_append(list, history);
+	return l->next;
+}
