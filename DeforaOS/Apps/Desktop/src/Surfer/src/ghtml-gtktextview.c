@@ -80,86 +80,86 @@ typedef struct _GHtml
 static const GHtmlProperty _ghtml_properties_a[] =
 {
 	{ "foreground", "blue" },
-	{ "underline", PANGO_UNDERLINE_SINGLE },
-	{ "underline-set", TRUE },
-	{ NULL, 0 }
+	{ "underline", (void*)PANGO_UNDERLINE_SINGLE },
+	{ "underline-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_b[] =
 {
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 /* XXX should use "scale" but gdouble values are not accepted this way */
 static const GHtmlProperty _ghtml_properties_h1[] =
 {
 	{ "font", "Sans 16" },
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_h2[] =
 {
 	{ "font", "Sans 14" },
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_h3[] =
 {
 	{ "font", "Sans 13" },
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_h4[] =
 {
 	{ "font", "Sans 12" },
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_h5[] =
 {
 	{ "font", "Sans 11" },
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_h6[] =
 {
 	{ "font", "Sans 10" },
-	{ "weight", PANGO_WEIGHT_BOLD },
-	{ "weight-set", TRUE },
-	{ NULL, 0 }
+	{ "weight", (void*)PANGO_WEIGHT_BOLD },
+	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_pre[] =
 {
 	{ "family", "Monospace" },
-	{ "wrap-mode", GTK_WRAP_NONE },
-	{ "wrap-mode-set", TRUE },
-	{ NULL, 0 }
+	{ "wrap-mode", (void*)GTK_WRAP_NONE },
+	{ "wrap-mode-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_tt[] =
 {
 	{ "family", "Monospace" },
-	{ NULL, 0 }
+	{ NULL, NULL }
 };
 
 static const GHtmlProperty _ghtml_properties_u[] =
 {
-	{ "underline", PANGO_UNDERLINE_SINGLE },
-	{ "underline-set", TRUE },
-	{ NULL, 0 }
+	{ "underline", (void*)PANGO_UNDERLINE_SINGLE },
+	{ "underline-set", (void*)TRUE },
+	{ NULL, NULL }
 };
 
 /* tags */
@@ -405,18 +405,30 @@ static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 
 
 /* ghtml_go_back */
-gboolean ghtml_go_back(GtkWidget * ghtml)
+gboolean ghtml_go_back(GtkWidget * widget)
 {
-	/* FIXME implement */
-	return FALSE;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if(ghtml->current == NULL || ghtml->current->prev == NULL)
+		return FALSE;
+	ghtml->current = ghtml->current->prev;
+	ghtml_load_url(widget, _history_get_location(ghtml->current));
+	return TRUE;
 }
 
 
 /* ghtml_go_forward */
-gboolean ghtml_go_forward(GtkWidget * ghtml)
+gboolean ghtml_go_forward(GtkWidget * widget)
 {
-	/* FIXME implement */
-	return FALSE;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if(ghtml->current == NULL || ghtml->current->next == NULL)
+		return FALSE;
+	ghtml->current = ghtml->current->next;
+	ghtml_load_url(widget, _history_get_location(ghtml->current));
+	return TRUE;
 }
 
 
@@ -529,13 +541,18 @@ static void _document_load_write_node_tag_link(GHtml * ghtml,
 static int _ghtml_document_load(GHtml * ghtml, char const * url,
 		char const * post)
 {
+	char const * q;
 	History * h;
 
 	_ghtml_stop(ghtml);
-	if((h = _history_new(url, post)) == NULL)
-		return 1;
-	ghtml->history = g_list_append(ghtml->history, h);
-	ghtml->current = g_list_last(ghtml->history);
+	if((q = _history_get_location(ghtml->current)) == NULL
+			|| strcmp(q, url) != 0)
+	{
+		if((h = _history_new(url, post)) == NULL)
+			return 1;
+		ghtml->current = _history_append(h, ghtml->current);
+		ghtml->history = g_list_first(ghtml->current);
+	}
 	gtk_text_buffer_set_text(ghtml->tbuffer, "", 0);
 	free(ghtml->buffer);
 	ghtml->buffer = NULL;
