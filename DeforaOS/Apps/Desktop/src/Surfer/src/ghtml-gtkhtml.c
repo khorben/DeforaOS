@@ -583,14 +583,19 @@ static void _ghtml_set_status(GHtml * ghtml, char const * status)
 static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post)
 {
+	char const * q;
 	GHtmlConn * gc;
 	History * h;
 
 	_ghtml_stop(ghtml);
-	if((h = _history_new(url, post)) == NULL)
-		return 1;
-	ghtml->history = g_list_append(ghtml->history, h);
-	ghtml->current = g_list_last(ghtml->history);
+	if((q = _history_get_location(ghtml->current)) == NULL
+			|| strcmp(q, url) != 0)
+	{
+		if((h = _history_new(url, post)) == NULL)
+			return 1;
+		ghtml->current = _history_append(h, ghtml->current);
+		ghtml->history = g_list_first(ghtml->current);
+	}
 	surfer_set_location(ghtml->surfer, url);
 	surfer_set_title(ghtml->surfer, NULL);
 	html_document_open_stream(ghtml->html_document, "text/html");
