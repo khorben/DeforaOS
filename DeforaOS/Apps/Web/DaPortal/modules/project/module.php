@@ -1277,6 +1277,7 @@ function project_download($args)
 	require_once('./system/mime.php');
 	/* FIXME factorize code */
 	$sql = 'SELECT daportal_content.content_id AS id, mode'
+		.', daportal_content.timestamp AS date'
 		.', daportal_content.title AS name'
 		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_download, daportal_content, daportal_user'
