@@ -168,7 +168,7 @@ void on_view_as(gpointer data)
 	TodoView view;
 
 	view = todo_get_view(todo);
-	view = ++view % TODO_VIEW_COUNT;
+	view = (view + 1) % TODO_VIEW_COUNT;
 	todo_set_view(todo, view);
 }
 
