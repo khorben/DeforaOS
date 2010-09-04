@@ -35,6 +35,11 @@ void on_edit_select_all(gpointer data);
 void on_edit_delete(gpointer data);
 void on_edit_preferences(gpointer data);
 
+/* view menu */
+void on_view_all_tasks(gpointer data);
+void on_view_completed_tasks(gpointer data);
+void on_view_remaining_tasks(gpointer data);
+
 /* help menu */
 void on_help_about(gpointer data);
 

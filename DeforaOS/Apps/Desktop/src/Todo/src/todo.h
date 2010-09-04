@@ -35,10 +35,20 @@ typedef enum _TodoPriority
 	TODO_PRIORITY_URGENT
 } TodoPriority;
 
+typedef enum _TodoView
+{
+	TODO_VIEW_ALL_TASKS,
+	TODO_VIEW_COMPLETED_TASKS,
+	TODO_VIEW_REMAINING_TASKS
+} TodoView;
+
 
 /* functions */
 Todo * todo_new(void);
 void todo_delete(Todo * todo);
+
+/* accessors */
+void todo_set_view(Todo * todo, TodoView view);
 
 /* useful */
 void todo_about(Todo * todo);

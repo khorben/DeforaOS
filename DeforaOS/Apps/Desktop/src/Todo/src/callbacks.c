@@ -86,6 +86,34 @@ void on_edit_select_all(gpointer data)
 }
 
 
+/* view menu */
+/* on_view_all_tasks */
+void on_view_all_tasks(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_set_view(todo, TODO_VIEW_ALL_TASKS);
+}
+
+
+/* on_view_completed_tasks */
+void on_view_completed_tasks(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_set_view(todo, TODO_VIEW_COMPLETED_TASKS);
+}
+
+
+/* on_view_remaining_tasks */
+void on_view_remaining_tasks(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_set_view(todo, TODO_VIEW_REMAINING_TASKS);
+}
+
+
 /* help menu */
 /* on_help_about */
 void on_help_about(gpointer data)

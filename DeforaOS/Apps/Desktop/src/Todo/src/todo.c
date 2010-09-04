@@ -46,6 +46,9 @@ struct _Todo
 	GtkWidget * scrolled;
 	GtkListStore * store;
 	GtkListStore * priorities;
+	GtkTreeModel * filter;
+	GtkTreeModel * filter_sort;
+	TodoView filter_view;
 	GtkWidget * view;
 	GtkWidget * statusbar;
 	GtkWidget * about;
@@ -127,6 +130,15 @@ static DesktopMenu _edit_menu[] =
 		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
+static DesktopMenu _view_menu[] =
+{
+	{ N_("_All tasks"), G_CALLBACK(on_view_all_tasks), NULL, 0, 0 },
+	{ N_("_Completed tasks"), G_CALLBACK(on_view_completed_tasks), NULL, 0,
+		0 },
+	{ N_("_Remaining tasks"), G_CALLBACK(on_view_remaining_tasks), NULL, 0,
+		0 },
+	{ NULL, NULL, NULL, 0, 0 }
+};
 static DesktopMenu _help_menu[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -140,6 +152,7 @@ static DesktopMenubar _menubar[] =
 {
 	{ N_("_File"), _file_menu },
 	{ N_("_Edit"), _edit_menu },
+	{ N_("_View"), _view_menu },
 	{ N_("_Help"), _help_menu },
 	{ NULL, NULL },
 };
@@ -171,10 +184,16 @@ static DesktopToolbar _toolbar[] =
 
 /* prototypes */
 static int _todo_confirm(GtkWidget * window, char const * message);
+static gboolean _todo_get_iter(Todo * todo, GtkTreeIter * iter,
+		GtkTreePath * path);
 static char * _todo_task_get_directory(void);
 static char * _todo_task_get_filename(char const * filename);
 static char * _todo_task_get_new_filename(void);
 static void _todo_task_save(Todo * todo, GtkTreeIter * iter);
+
+/* callbacks */
+static gboolean _on_todo_filter_view(GtkTreeModel * model, GtkTreeIter * iter,
+		gpointer data);
 
 
 /* public */
@@ -256,7 +275,15 @@ static void _new_view(Todo * todo)
 				0, _todo_priorities[i].priority,
 				1, _todo_priorities[i].title, -1);
 	}
-	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(todo->store));
+	todo->filter = gtk_tree_model_filter_new(GTK_TREE_MODEL(todo->store),
+			NULL);
+	todo->filter_view = TODO_VIEW_ALL_TASKS;
+	gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(
+				todo->filter), _on_todo_filter_view, todo,
+			NULL);
+	todo->filter_sort = gtk_tree_model_sort_new_with_model(todo->filter);
+	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				todo->filter_sort));
 	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
 			!= NULL)
 		gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
@@ -320,6 +347,15 @@ void todo_delete(Todo * todo)
 	todo_task_save_all(todo);
 	todo_task_remove_all(todo);
 	free(todo);
+}
+
+
+/* accessors */
+/* todo_set_view */
+void todo_set_view(Todo * todo, TodoView view)
+{
+	todo->filter_view = view;
+	gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(todo->filter));
 }
 
 
@@ -473,7 +509,7 @@ static void _task_delete_selected_foreach(GtkTreeRowReference * reference,
 		return;
 	if((path = gtk_tree_row_reference_get_path(reference)) == NULL)
 		return;
-	if(gtk_tree_model_get_iter(model, &iter, path) == TRUE)
+	if(_todo_get_iter(todo, &iter, path) == TRUE)
 	{
 		gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
 		task_unlink(task);
@@ -586,7 +622,7 @@ void todo_task_set_priority(Todo * todo, GtkTreePath * path,
 	size_t i;
 	TodoPriority tp = TODO_PRIORITY_UNKNOWN;
 
-	gtk_tree_model_get_iter(model, &iter, path);
+	_todo_get_iter(todo, &iter, path);
 	gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
 	task_set_priority(task, priority);
 	for(i = 0; _todo_priorities[i].title != NULL; i++)
@@ -608,7 +644,7 @@ void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title)
 	GtkTreeIter iter;
 	Task * task;
 
-	gtk_tree_model_get_iter(model, &iter, path);
+	_todo_get_iter(todo, &iter, path);
 	gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
 	task_set_title(task, title);
 	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, title, -1);
@@ -626,7 +662,7 @@ void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
 	struct tm t;
 	char completion[32] = "";
 
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->store), &iter, path);
+	_todo_get_iter(todo, &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(todo->store), &iter,
 			TD_COL_TASK, &task, TD_COL_DONE, &done, -1);
 	done = !done;
@@ -665,6 +701,23 @@ static int _todo_confirm(GtkWidget * window, char const * message)
 	if(res == GTK_RESPONSE_YES)
 		return 0;
 	return 1;
+}
+
+
+/* todo_get_iter */
+static gboolean _todo_get_iter(Todo * todo, GtkTreeIter * iter,
+		GtkTreePath * path)
+{
+	GtkTreeIter p;
+
+	if(gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->filter_sort), iter,
+				path) == FALSE)
+		return FALSE;
+	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
+				todo->filter_sort), &p, iter);
+	gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(
+				todo->filter), iter, &p);
+	return TRUE;
 }
 
 
@@ -742,4 +795,27 @@ static void _todo_task_save(Todo * todo, GtkTreeIter * iter)
 
 	gtk_tree_model_get(model, iter, TD_COL_TASK, &task, -1);
 	task_save(task);
+}
+
+
+/* callbacks */
+/* on_todo_filter_view */
+static gboolean _on_todo_filter_view(GtkTreeModel * model, GtkTreeIter * iter,
+		gpointer data)
+{
+	Todo * todo = data;
+	gboolean done = FALSE;
+
+	switch(todo->filter_view)
+	{
+		case TODO_VIEW_COMPLETED_TASKS:
+			gtk_tree_model_get(model, iter, TD_COL_DONE, &done, -1);
+			return done ? TRUE : FALSE;
+		case TODO_VIEW_REMAINING_TASKS:
+			gtk_tree_model_get(model, iter, TD_COL_DONE, &done, -1);
+			return done ? FALSE : TRUE;
+		default:
+		case TODO_VIEW_ALL_TASKS:
+			return TRUE;
+	}
 }
