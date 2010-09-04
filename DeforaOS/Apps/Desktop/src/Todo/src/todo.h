@@ -37,10 +37,12 @@ typedef enum _TodoPriority
 
 typedef enum _TodoView
 {
-	TODO_VIEW_ALL_TASKS,
+	TODO_VIEW_ALL_TASKS = 0,
 	TODO_VIEW_COMPLETED_TASKS,
 	TODO_VIEW_REMAINING_TASKS
 } TodoView;
+# define TODO_VIEW_LAST TODO_VIEW_REMAINING_TASKS
+# define TODO_VIEW_COUNT (TODO_VIEW_LAST + 1)
 
 
 /* functions */
@@ -48,6 +50,7 @@ Todo * todo_new(void);
 void todo_delete(Todo * todo);
 
 /* accessors */
+TodoView todo_get_view(Todo * todo);
 void todo_set_view(Todo * todo, TodoView view);
 
 /* useful */

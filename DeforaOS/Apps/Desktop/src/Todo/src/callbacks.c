@@ -161,6 +161,18 @@ void on_preferences(gpointer data)
 }
 
 
+/* on_view_as */
+void on_view_as(gpointer data)
+{
+	Todo * todo = data;
+	TodoView view;
+
+	view = todo_get_view(todo);
+	view = ++view % TODO_VIEW_COUNT;
+	todo_set_view(todo, view);
+}
+
+
 /* on_select_all */
 void on_select_all(gpointer data)
 {

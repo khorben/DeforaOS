@@ -49,6 +49,7 @@ void on_edit(gpointer data);
 void on_select_all(gpointer data);
 void on_delete(gpointer data);
 void on_preferences(gpointer data);
+void on_view_as(gpointer data);
 
 /* view */
 void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,

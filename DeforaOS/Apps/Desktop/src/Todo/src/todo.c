@@ -178,6 +178,7 @@ static DesktopToolbar _toolbar[] =
 	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
 		0, 0, NULL },
 #endif
+	{ "", NULL, NULL, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -208,6 +209,9 @@ Todo * todo_new(void)
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
 
 	if((todo = malloc(sizeof(*todo))) == NULL)
 	{
@@ -231,6 +235,25 @@ Todo * todo_new(void)
 #endif
 	/* toolbar */
 	widget = desktop_toolbar_create(_toolbar, todo, group);
+	toolitem = gtk_menu_tool_button_new(NULL, _("View as..."));
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				on_view_as), todo);
+	menu = gtk_menu_new();
+	menuitem = gtk_menu_item_new_with_label(_("All tasks"));
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_view_all_tasks), todo);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_label(_("Completed tasks"));
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_view_completed_tasks), todo);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_label(_("Remaining tasks"));
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_view_remaining_tasks), todo);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolitem), menu);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	todo->scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -351,6 +374,13 @@ void todo_delete(Todo * todo)
 
 
 /* accessors */
+/* todo_get_view */
+TodoView todo_get_view(Todo * todo)
+{
+	return todo->filter_view;
+}
+
+
 /* todo_set_view */
 void todo_set_view(Todo * todo, TodoView view)
 {
