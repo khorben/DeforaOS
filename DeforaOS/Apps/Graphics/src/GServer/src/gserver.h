@@ -17,7 +17,7 @@ typedef struct _GServer GServer;
 
 
 /* functions */
-GServer * gserver_new(Event * event);
+GServer * gserver_new(AppServerOptions options, Event * event);
 void gserver_delete(GServer * gserver);
 
 

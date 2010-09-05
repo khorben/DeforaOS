@@ -14,7 +14,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: GServer\n", stderr);
+	fputs("Usage: GServer [-L|-R]\n", stderr);
 	return 1;
 }
 
@@ -23,17 +23,24 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	AppServerOptions options = ASO_LOCAL;
 	GServer * gserver;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "LR")) != -1)
 		switch(o)
 		{
+			case 'L':
+				options = ASO_LOCAL;
+				break;
+			case 'R':
+				options = ASO_REMOTE;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	if((gserver = gserver_new(NULL)) == NULL)
+	if((gserver = gserver_new(options, NULL)) == NULL)
 		return error_print("GServer");
 	while(gserver_loop(gserver) == 0);
 	gserver_delete(gserver);

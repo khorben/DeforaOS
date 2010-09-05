@@ -26,16 +26,17 @@ struct _GServer
 /* public */
 /* functions */
 /* gserver_new */
-static int _new_init(GServer * gserver, Event * event);
+static int _new_init(AppServerOptions options, GServer * gserver,
+		Event * event);
 static int _init_video(GServer * gserver);
 
-GServer * gserver_new(Event * event)
+GServer * gserver_new(AppServerOptions options, Event * event)
 {
 	GServer * gserver;
 
 	if((gserver = object_new(sizeof(*gserver))) == NULL)
 		return NULL;
-	if(_new_init(gserver, event) != 0)
+	if(_new_init(options, gserver, event) != 0)
 	{
 		object_delete(gserver);
 		return NULL;
@@ -43,7 +44,7 @@ GServer * gserver_new(Event * event)
 	return gserver;
 }
 
-static int _new_init(GServer * gserver, Event * event)
+static int _new_init(AppServerOptions options, GServer * gserver, Event * event)
 {
 	if((gserver->event = event) != NULL)
 		gserver->event_own = 0;
@@ -51,8 +52,8 @@ static int _new_init(GServer * gserver, Event * event)
 		return -1;
 	else
 		gserver->event_own = 1;
-	if((gserver->appserver = appserver_new_event("GServer",
-					ASO_LOCAL, gserver->event)) != NULL
+	if((gserver->appserver = appserver_new_event("GServer", options,
+					gserver->event)) != NULL
 			&& _init_video(gserver) == 0)
 	{
 		gserver->loop = 1;
