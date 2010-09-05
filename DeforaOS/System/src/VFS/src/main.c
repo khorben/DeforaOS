@@ -27,7 +27,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-L|-R][-r root]\n", stderr);
+	fputs("Usage: " PACKAGE " [-L|-R][-r root][-u umask]\n", stderr);
 	return 1;
 }
 
