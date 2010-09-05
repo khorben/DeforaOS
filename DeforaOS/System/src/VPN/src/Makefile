@@ -1,0 +1,49 @@
+TARGETS	= ../data/VPN.h VPN
+PREFIX	= /usr/local
+DESTDIR	= 
+BINDIR	= $(PREFIX)/bin
+CC	= cc
+CPPFLAGSF=
+CPPFLAGS= -I $(PREFIX)/include
+CFLAGSF	= -W
+CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= -lSystem -Wl,--export-dynamic
+LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
+RM	= rm -f
+LN	= ln -f
+MKDIR	= mkdir -p
+INSTALL	= install
+
+
+all: $(TARGETS)
+
+../data/VPN.h: ../data/VPN.interface
+	./appbroker.sh "../data/VPN.h"
+
+VPN_OBJS = vpn.o main.o
+VPN_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+VPN_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+VPN: $(VPN_OBJS)
+	$(CC) -o VPN $(VPN_OBJS) $(VPN_LDFLAGS)
+
+vpn.o: vpn.c ../data/VPN.h
+	$(CC) $(VPN_CFLAGS) -c vpn.c
+
+main.o: main.c
+	$(CC) $(VPN_CFLAGS) -c main.c
+
+clean:
+	$(RM) -- $(../data/VPN.h_OBJS) $(VPN_OBJS)
+
+distclean: clean
+	$(RM) -- $(TARGETS)
+
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- VPN $(DESTDIR)$(BINDIR)/VPN
+
+uninstall:
+	$(RM) -- $(DESTDIR)$(BINDIR)/VPN
+
+.PHONY: all clean distclean install uninstall
