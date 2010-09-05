@@ -3,10 +3,10 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF= -I ../include -I $(PREFIX)/include
-CPPFLAGS=
-CFLAGSF	= -W -Wall -pedantic
-CFLAGS	= -g
+CPPFLAGSF= -I ../include
+CPPFLAGS= -I $(PREFIX)/include
+CFLAGSF	= -W
+CFLAGS	=  -Wall -g -O2 -pedantic
 LDFLAGSF= -lSystem -Wl,--export-dynamic
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
@@ -27,7 +27,7 @@ VFS_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 VFS: $(VFS_OBJS)
 	$(CC) -o VFS $(VFS_OBJS) $(VFS_LDFLAGS)
 
-vfs.o: vfs.c common.c ../data/VFS.h ../include/VFS.h
+vfs.o: vfs.c common.c ../data/VFS.h ../include/VFS.h ../config.h
 	$(CC) $(VFS_CFLAGS) -c vfs.c
 
 main.o: main.c

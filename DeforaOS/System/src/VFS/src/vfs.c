@@ -559,7 +559,7 @@ static int _client_remove_file(int32_t fd)
 	p = &client->files[i];
 	memmove(p, p + 1, (--client->files_cnt - i) * sizeof(*p));
 	if((p = realloc(client->files, sizeof(*p) * client->files_cnt))
-			!= NULL) /* we can ignore errors */
-		client->files = p;
+			!= NULL || client->files_cnt == 0)
+		client->files = p; /* we can ignore errors */
 	return 0;
 }
