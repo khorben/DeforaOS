@@ -124,6 +124,33 @@ int32_t VPN_connect(uint32_t protocol, String const * uri)
 }
 
 
+/* VPN_recv */
+int32_t VPN_recv(int32_t fd, Buffer * buffer, uint32_t size, uint32_t flags)
+{
+	int32_t ret;
+
+	if(_client_check(NULL, fd) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u)\n", __func__, fd, flags);
+#endif
+	if(buffer_set_size(buffer, size) != 0)
+		return -1;
+	/* FIXME implement flags */
+	ret = recv(fd, buffer_get_data(buffer), size, 0);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u) => %d\n", __func__, fd, flags,
+			ret);
+#endif
+	if(buffer_set_size(buffer, (ret < 0) ? 0 : ret) != 0)
+	{
+		memset(buffer_get_data(buffer), 0, size);
+		return -1;
+	}
+	return ret;
+}
+
+
 /* private */
 /* functions */
 /* accessors */
