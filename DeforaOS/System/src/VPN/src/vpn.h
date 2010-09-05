@@ -22,6 +22,6 @@
 
 
 /* VPN */
-int vfs(AppServerOptions options);
+int vpn(AppServerOptions options);
 
 #endif /* !VPN_VPN_H */
