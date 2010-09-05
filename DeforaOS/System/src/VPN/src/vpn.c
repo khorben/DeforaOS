@@ -132,15 +132,16 @@ int32_t VPN_recv(int32_t fd, Buffer * buffer, uint32_t size, uint32_t flags)
 	if(_client_check(NULL, fd) == NULL)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, buf, %u)\n", __func__, fd, flags);
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u, %u)\n", __func__, fd, size,
+			flags);
 #endif
 	if(buffer_set_size(buffer, size) != 0)
 		return -1;
 	/* FIXME implement flags */
 	ret = recv(fd, buffer_get_data(buffer), size, 0);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, buf, %u) => %d\n", __func__, fd, flags,
-			ret);
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u, %u) => %d\n", __func__, fd,
+			size, flags, ret);
 #endif
 	if(buffer_set_size(buffer, (ret < 0) ? 0 : ret) != 0)
 	{
@@ -148,6 +149,22 @@ int32_t VPN_recv(int32_t fd, Buffer * buffer, uint32_t size, uint32_t flags)
 		return -1;
 	}
 	return ret;
+}
+
+
+/* VPN_send */
+int32_t VPN_send(int32_t fd, Buffer * buffer, uint32_t size, uint32_t flags)
+{
+	if(_client_check(NULL, fd) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u, %u)\n", __func__, fd, size,
+			flags);
+#endif
+	if(buffer_get_size(buffer) < size)
+		return -error_set_code(1, "%s", strerror(EINVAL));
+	/* FIXME implement flags */
+	return send(fd, buffer_get_data(buffer), size, 0);
 }
 
 

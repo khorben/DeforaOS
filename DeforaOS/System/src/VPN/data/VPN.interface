@@ -22,4 +22,5 @@ arg4=UINT32,flags
 ret=INT32
 arg1=INT32,fd
 arg2=BUFFER_OUT,buf
-arg3=UINT32,flags
+arg3=UINT32,size
+arg4=UINT32,flags
