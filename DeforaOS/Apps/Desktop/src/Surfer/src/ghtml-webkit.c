@@ -36,8 +36,10 @@ static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
 		guint line, const gchar * source, gpointer data);
 static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data);
+#ifdef WEBKIT_TYPE_DOWNLOAD
 static gboolean _on_download_requested(WebKitWebView * view,
 		WebKitDownload * download, gpointer data);
+#endif
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data);
 static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
@@ -82,8 +84,10 @@ GtkWidget * ghtml_new(Surfer * surfer)
 				_on_console_message), widget);
 	g_signal_connect(G_OBJECT(view), "create-web-view", G_CALLBACK(
 				_on_create_web_view), widget);
+#ifdef WEBKIT_TYPE_DOWNLOAD
 	g_signal_connect(G_OBJECT(view), "download-requested", G_CALLBACK(
 				_on_download_requested), widget);
+#endif
 	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
 				_on_hovering_over_link), widget);
 	g_signal_connect(G_OBJECT(view), "load-committed", G_CALLBACK(
@@ -163,6 +167,7 @@ char const * ghtml_get_location(GtkWidget * ghtml)
 /* ghtml_get_progress */
 gdouble ghtml_get_progress(GtkWidget * ghtml)
 {
+#if WEBKIT_CHECK_VERSION(1, 1, 0) /* XXX may not be accurate */
 	gdouble ret;
 	GtkWidget * view;
 
@@ -171,12 +176,16 @@ gdouble ghtml_get_progress(GtkWidget * ghtml)
 	if(ret == 0.0)
 		ret = -1.0;
 	return ret;
+#else
+	return -1.0;
+#endif
 }
 
 
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * ghtml)
 {
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
 	GtkWidget * view;
 	WebKitWebFrame * frame;
 	WebKitWebDataSource * source;
@@ -188,6 +197,9 @@ char const * ghtml_get_source(GtkWidget * ghtml)
 	if((str = webkit_web_data_source_get_data(source)) == NULL)
 		return NULL;
 	return str->str;
+#else
+	return NULL;
+#endif
 }
 
 
@@ -283,12 +295,14 @@ void ghtml_load_url(GtkWidget * ghtml, char const * url)
 /* ghtml_print */
 void ghtml_print(GtkWidget * ghtml)
 {
+#if WEBKIT_CHECK_VERSION(1, 1, 0) /* XXX may not be accurate */
 	GtkWidget * view;
 	WebKitWebFrame * frame;
 
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
 	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
 	webkit_web_frame_print(frame);
+#endif
 }
 
 
@@ -419,6 +433,7 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 }
 
 
+#ifdef WEBKIT_TYPE_DOWNLOAD
 /* on_download_requested */
 static gboolean _on_download_requested(WebKitWebView * view,
 		WebKitDownload * download, gpointer data)
@@ -434,6 +449,7 @@ static gboolean _on_download_requested(WebKitWebView * view,
 	webkit_download_cancel(download);
 	return FALSE;
 }
+#endif
 
 
 /* on_hovering_over_link */
@@ -470,9 +486,12 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if(error == NULL)
 		return surfer_error(surfer, _("Unknown error"), TRUE);
+#ifdef WEBKIT_NETWORK_ERROR
 	if(error->domain == WEBKIT_NETWORK_ERROR
 			&& error->code == WEBKIT_NETWORK_ERROR_CANCELLED)
 		return TRUE; /* ignored if the user cancelled it */
+#endif
+#ifdef WEBKIT_POLICY_ERROR
 	if(error->domain == WEBKIT_POLICY_ERROR
 			&& error->code == WEBKIT_POLICY_ERROR_FRAME_LOAD_INTERRUPTED_BY_POLICY_CHANGE)
 	{
@@ -482,6 +501,7 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 		surfer_download(surfer, uri, suggested);
 		return TRUE;
 	}
+#endif
 	return surfer_error(surfer, error->message, TRUE);
 }
 
