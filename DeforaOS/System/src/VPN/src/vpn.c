@@ -20,6 +20,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include "VPN.h"
 #include "../data/VPN.h"
 #include "../config.h"
 
@@ -45,7 +48,11 @@ static size_t _clients_cnt;
 /* accessors */
 static VPNClient * _client_get(void);
 static VPNClient * _client_check(VPNClient * client, int32_t fd);
-static int _client_remove_socket(VPNClient * client, int32_t fd);
+
+/* useful */
+static VPNClient * _client_add(VPNClient * client);
+static VPNClient * _client_add_socket(VPNClient * client, int32_t fd);
+static VPNClient * _client_remove_socket(VPNClient * client, int32_t fd);
 
 
 /* public */
@@ -77,6 +84,42 @@ int32_t VPN_close(int32_t fd)
 #endif
 	if((ret = close(fd)) == 0)
 		_client_remove_socket(client, fd);
+	return ret;
+}
+
+
+/* VPN_connect */
+int32_t VPN_connect(uint32_t protocol, String const * uri)
+{
+	int32_t ret;
+	VPNProtocol vprotocol = protocol;
+	int sdomain;
+	int stype;
+	int sprotocol = 0;
+	struct sockaddr * sockaddr;
+	socklen_t ssize;
+	struct sockaddr_in sa_in;
+
+	switch(vprotocol)
+	{
+		case VPN_PROTOCOL_IP_TCP:
+			sdomain = PF_INET;
+			stype = SOCK_STREAM;
+			/* FIXME initialize sa_in */
+			sockaddr = (struct sockaddr*)&sa_in;
+			ssize = sizeof(sa_in);
+			break;
+		default:
+			return -1;
+	}
+	if((ret = socket(sdomain, stype, sprotocol)) == -1)
+		return -1;
+	if(connect(ret, sockaddr, ssize) != 0
+			|| _client_add_socket(NULL, ret) == NULL)
+	{
+		close(ret); /* XXX necessary when connect() failed? */
+		return -1;
+	}
 	return ret;
 }
 
@@ -119,25 +162,75 @@ static VPNClient * _client_check(VPNClient * client, int32_t fd)
 }
 
 
+/* useful */
+/* client_add */
+static VPNClient * _client_add(VPNClient * client)
+{
+	void * id;
+	VPNClient * p;
+
+	if(client == NULL && (client = _client_get()) != NULL)
+		return client;
+	if((id = appserver_get_client_id(_appserver)) == NULL)
+	{
+		error_print(PACKAGE);
+		return NULL;
+	}
+	if((p = realloc(_clients, sizeof(*p) * (_clients_cnt + 1))) == NULL)
+	{
+		error_set_print(PACKAGE, 1, "%s", strerror(errno));
+		return NULL;
+	}
+	_clients = p;
+	p = &_clients[_clients_cnt++];
+	p->id = id;
+	p->sockets = NULL;
+	p->sockets_cnt = 0;
+	return p;
+}
+
+
+/* client_add_socket */
+static VPNClient * _client_add_socket(VPNClient * client, int32_t fd)
+{
+	int32_t * p;
+
+	if((client = _client_add(client)) == NULL)
+		return NULL;
+	if((p = realloc(client->sockets, sizeof(*p)
+					* (client->sockets_cnt + 1))) == NULL)
+	{
+		error_set_print(PACKAGE, 1, "%s", strerror(errno));
+		return NULL;
+	}
+	client->sockets = p;
+	client->sockets[client->sockets_cnt++] = fd;
+	return client;
+}
+
+
 /* client_remove_socket */
-static int _client_remove_socket(VPNClient * client, int32_t fd)
+static VPNClient * _client_remove_socket(VPNClient * client, int32_t fd)
 {
 	size_t i;
 	int32_t * p;
 
 	if(fd < 0) /* XXX should never happen */
-		return error_set_print(PACKAGE, 1, "%s", strerror(EINVAL));
+	{
+		error_set_print(PACKAGE, 1, "%s", strerror(EINVAL));
+		return NULL;
+	}
 	if(client == NULL && (client = _client_get()) == NULL)
-		return 1;
+		return NULL;
 	for(i = 0; i < client->sockets_cnt; i++)
 		if(client->sockets[i] == fd)
 			break;
 	if(i == client->sockets_cnt)
-		return 0;
+		return client;
 	p = &client->sockets[i];
 	memmove(p, p + 1, (--client->sockets_cnt - i) * sizeof(*p));
 	if((p = realloc(client->sockets, sizeof(*p) * client->sockets_cnt))
 			!= NULL || client->sockets_cnt == 0)
 		client->sockets = p; /* we can ignore errors */
-	return 0;
+	return client;
 }
