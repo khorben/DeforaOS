@@ -45,6 +45,10 @@ static size_t _clients_cnt;
 
 
 /* prototypes */
+/* client management */
+static void _client_init(void);
+static void _client_destroy(void);
+
 /* accessors */
 static VPNClient * _client_get(void);
 static VPNClient * _client_check(VPNClient * client, int32_t fd);
@@ -65,6 +69,9 @@ int vpn(AppServerOptions options)
 		error_print(PACKAGE);
 		return 1;
 	}
+	_client_init();
+	appserver_loop(_appserver);
+	_client_destroy();
 	appserver_delete(_appserver);
 	return 0;
 }
@@ -105,7 +112,10 @@ int32_t VPN_connect(uint32_t protocol, String const * uri)
 		case VPN_PROTOCOL_IP_TCP:
 			sdomain = PF_INET;
 			stype = SOCK_STREAM;
-			/* FIXME initialize sa_in */
+			sa_in.sin_family = AF_INET;
+			/* FIXME parse uri to initialize sa_in */
+			sa_in.sin_addr.s_addr = htonl(0x7f000001);
+			sa_in.sin_port = htons(80);
 			sockaddr = (struct sockaddr*)&sa_in;
 			ssize = sizeof(sa_in);
 			break;
@@ -170,6 +180,24 @@ int32_t VPN_send(int32_t fd, Buffer * buffer, uint32_t size, uint32_t flags)
 
 /* private */
 /* functions */
+/* client management */
+/* clients_init */
+static void _client_init(void)
+{
+	_clients = NULL;
+	_clients_cnt = 0;
+}
+
+
+/* clients_destroy */
+static void _client_destroy(void)
+{
+	free(_clients);
+	_clients = NULL;
+	_clients_cnt = 0;
+}
+
+
 /* accessors */
 /* client_get */
 static VPNClient * _client_get(void)
