@@ -20,10 +20,10 @@ all: $(TARGETS)
 
 glx_OBJS = glx.o
 glx_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-glx_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+glx_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glu`
 
 glx.so: $(glx_OBJS)
-	$(LD) -o glx.so $(glx_OBJS)
+	$(LD) -o glx.so $(glx_OBJS) `pkg-config --libs glu`
 
 vesa_OBJS = vbe.o vesa.o
 vesa_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -33,7 +33,7 @@ vesa.so: $(vesa_OBJS)
 	$(LD) -o vesa.so $(vesa_OBJS)
 
 glx.o: glx.c video.h
-	$(CC) $(glx_CFLAGS) `pkg-config --cflags gl` -c glx.c
+	$(CC) $(glx_CFLAGS) `pkg-config --cflags glu` -c glx.c
 
 vbe.o: vbe.c
 	$(CC) $(vesa_CFLAGS) -c vbe.c

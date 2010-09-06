@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
-#include <GL/glx.h>
 #include "video/video.h"
 #include "../data/GServer.h"
 #include "gserver.h"
@@ -152,107 +151,64 @@ int gserver_loop(GServer * gserver)
 
 
 /* interface */
-/* GServer_glBegin */
-void GServer_glBegin(uint32_t mode)
-{
-	DEBUG_INTERFACE();
-	glBegin(mode);
+#define GSERVER_PROTO0(func) \
+	void GServer_ ## func (void) \
+{ \
+	DEBUG_INTERFACE(); \
+	_gserver->video_plugin->proto0(VIDEO_PROTO0_ ## func); \
+}
+#define GSERVER_PROTO1d(func) \
+	void GServer_ ## func(double x) \
+{ \
+	DEBUG_INTERFACE(); \
+	_gserver->video_plugin->proto1d(VIDEO_PROTO1d_ ## func, x); \
+}
+#define GSERVER_PROTO1i(func, type1) \
+	void GServer_ ## func (type1 x) \
+{ \
+	DEBUG_INTERFACE(); \
+	_gserver->video_plugin->proto1i(VIDEO_PROTO1i_ ## func, x); \
+}
+#define GSERVER_PROTO3f(func) \
+	void GServer_ ## func (float x, float y, float z) \
+{ \
+	DEBUG_INTERFACE(); \
+	_gserver->video_plugin->proto3f(VIDEO_PROTO3f_ ## func, x, y, z); \
+}
+#define GSERVER_PROTO3i(func, type1, type2, type3) \
+	void GServer_ ## func (int32_t x, int32_t y, int32_t z) \
+{ \
+	DEBUG_INTERFACE(); \
+	_gserver->video_plugin->proto3i(VIDEO_PROTO3i_ ## func, x, y, z); \
+}
+#define GSERVER_PROTO4f(func) \
+	void GServer_ ## func (float x, float y, float z, float t) \
+{ \
+	DEBUG_INTERFACE(); \
+	_gserver->video_plugin->proto4f(VIDEO_PROTO4f_ ## func, x, y, z, t); \
 }
 
+/* Proto0 */
+GSERVER_PROTO0(glEnd)
+GSERVER_PROTO0(glLoadIdentity)
+GSERVER_PROTO0(glFlush)
+GSERVER_PROTO0(SwapBuffers)
 
-/* GServer_glClear */
-void GServer_glClear(uint32_t mask)
-{
-	DEBUG_INTERFACE();
-	glClear(mask);
-}
+/* Proto1d */
+GSERVER_PROTO1d(glClearDepth)
 
+/* Proto1i */
+GSERVER_PROTO1i(glBegin, uint32_t)
+GSERVER_PROTO1i(glClear, uint32_t)
 
-/* GServer_glClearColor */
-void GServer_glClearColor(float red, float green, float blue, float alpha)
-{
-	DEBUG_INTERFACE();
-	glClearColor(red, green, blue, alpha);
-}
+/* Proto3f */
+GSERVER_PROTO3f(glColor3f)
+GSERVER_PROTO3f(glTranslatef)
+GSERVER_PROTO3f(glVertex3f)
 
+/* Proto3i */
+GSERVER_PROTO3i(glColor3i, int32_t, int32_t, int32_t)
+GSERVER_PROTO3i(glVertex3i, int32_t, int32_t, int32_t)
 
-/* GServer_glClearDepth */
-void GServer_glClearDepth(double depth)
-{
-	DEBUG_INTERFACE();
-	glClearDepth(depth);
-}
-
-
-/* GServer_glColor3f */
-void GServer_glColor3f(float red, float green, float blue)
-{
-	DEBUG_INTERFACE();
-	glColor3f(red, green, blue);
-}
-
-
-/* GServer_glColor3i */
-void GServer_glColor3i(int32_t red, int32_t green, int32_t blue)
-{
-	DEBUG_INTERFACE();
-	glColor3i(red, green, blue);
-}
-
-
-/* GServer_glEnd */
-void GServer_glEnd(void)
-{
-	DEBUG_INTERFACE();
-	glEnd();
-}
-
-
-/* GServer_glFlush */
-void GServer_glFlush(void)
-{
-	DEBUG_INTERFACE();
-	glFlush();
-}
-
-
-/* GServer_glLoadIdentity */
-void GServer_glLoadIdentity(void)
-{
-	DEBUG_INTERFACE();
-	glLoadIdentity();
-}
-
-
-/* GServer_glTranslatef */
-void GServer_glTranslatef(float x, float y, float z)
-{
-	DEBUG_INTERFACE();
-	glTranslatef(x, y, z);
-}
-
-
-/* GServer_glVertex3i */
-void GServer_glVertex3i(int32_t x, int32_t y, int32_t z)
-{
-	DEBUG_INTERFACE();
-	glVertex3i(x, y, z);
-}
-
-
-/* GServer_glVertex3f */
-void GServer_glVertex3f(float x, float y, float z)
-{
-	DEBUG_INTERFACE();
-	glVertex3f(x, y, z);
-}
-
-
-/* GServer_SwapBuffers */
-void GServer_SwapBuffers(void)
-{
-	DEBUG_INTERFACE();
-	if(_gserver != NULL && _gserver->video_plugin != NULL
-			&& _gserver->video_plugin->swap_buffers != NULL)
-		_gserver->video_plugin->swap_buffers();
-}
+/* Proto4f */
+GSERVER_PROTO4f(glClearColor)

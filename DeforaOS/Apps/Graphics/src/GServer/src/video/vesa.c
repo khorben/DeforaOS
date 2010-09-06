@@ -41,5 +41,10 @@ VideoPlugin video_plugin =
 {
 	_vesa_init,
 	_vesa_destroy,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	NULL
 };
