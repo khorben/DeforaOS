@@ -110,7 +110,7 @@ size_t string_length(String const * string)
 /* string_append */
 int string_append(String ** string, String const * append)
 {
-	size_t slength = string_length(*string);
+	size_t slength = (*string != NULL) ? string_length(*string) : 0;
 	size_t alength;
 
 	if(append == NULL)
