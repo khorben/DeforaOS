@@ -138,25 +138,5 @@ static void _glx_destroy(void)
 /* glx_swap_buffers */
 static void _glx_swap_buffers(void)
 {
-#if 0
-	XEvent event;
-
-	while(XPending(_display) > 0)
-	{
-		XNextEvent(_display, &event);
-	}
-#endif
-	glViewport(0, 0, 640, 480);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f, (GLfloat)640 / (GLfloat)480, 0.1f, 100.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glTranslatef(3.0f, 0.0f, 0.0f);
-	glBegin(GL_QUADS);
-	glVertex3f(-1.0f, 1.0f, 0.0f);
-	glVertex3f(1.0f, 1.0f, 0.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
-	glEnd();
 	glXSwapBuffers(_display, _window);
 }
