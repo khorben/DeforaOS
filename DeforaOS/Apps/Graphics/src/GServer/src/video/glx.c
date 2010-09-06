@@ -187,8 +187,6 @@ static void _glx_destroy(void)
 /* glx_proto0 */
 static void _glx_proto0(VideoProto0 func)
 {
-	if(func > VIDEO_PROTO0_LAST)
-		return;
 	_glx_func0[func]();
 }
 
@@ -196,8 +194,6 @@ static void _glx_proto0(VideoProto0 func)
 /* glx_proto1d */
 static void _glx_proto1d(VideoProto1d func, double x)
 {
-	if(func > VIDEO_PROTO1d_LAST)
-		return;
 	_glx_func1d[func](x);
 }
 
@@ -205,8 +201,6 @@ static void _glx_proto1d(VideoProto1d func, double x)
 /* glx_proto1i */
 static void _glx_proto1i(VideoProto1i func, int32_t x)
 {
-	if(func > VIDEO_PROTO1i_LAST)
-		return;
 	_glx_func1i[func](x);
 }
 
@@ -214,8 +208,6 @@ static void _glx_proto1i(VideoProto1i func, int32_t x)
 /* glx_proto3f */
 static void _glx_proto3f(VideoProto3f func, float x, float y, float z)
 {
-	if(func > VIDEO_PROTO3f_LAST)
-		return;
 	_glx_func3f[func](x, y, z);
 }
 
@@ -223,8 +215,6 @@ static void _glx_proto3f(VideoProto3f func, float x, float y, float z)
 /* glx_proto3i */
 static void _glx_proto3i(VideoProto3i func, int32_t x, int32_t y, int32_t z)
 {
-	if(func > VIDEO_PROTO3i_LAST)
-		return;
 	_glx_func3i[func](x, y, z);
 }
 
@@ -232,8 +222,6 @@ static void _glx_proto3i(VideoProto3i func, int32_t x, int32_t y, int32_t z)
 /* glx_proto4f */
 static void _glx_proto4f(VideoProto4f func, float x, float y, float z, float t)
 {
-	if(func > VIDEO_PROTO4f_LAST)
-		return;
 	_glx_func4f[func](x, y, z, t);
 }
 
