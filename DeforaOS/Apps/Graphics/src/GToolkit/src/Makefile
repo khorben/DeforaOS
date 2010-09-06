@@ -45,7 +45,16 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
+	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
+	$(INSTALL) -m 0644 -- libGToolkit.a $(DESTDIR)$(PREFIX)/lib/libGToolkit.a
+	$(INSTALL) -m 0755 -- libGToolkit.so $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0.0
+	$(LN) -s -- libGToolkit.so.0.0 $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0
+	$(LN) -s -- libGToolkit.so.0.0 $(DESTDIR)$(PREFIX)/lib/libGToolkit.so
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libGToolkit.a
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0.0
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libGToolkit.so
 
 .PHONY: all clean distclean install uninstall

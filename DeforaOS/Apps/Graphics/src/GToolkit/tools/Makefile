@@ -17,7 +17,7 @@ all: $(TARGETS)
 
 test_OBJS = test.o
 test_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-test_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L../src -lGToolkit
+test_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L../src -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lGToolkit
 
 test: $(test_OBJS)
 	$(CC) -o test $(test_OBJS) $(test_LDFLAGS)
