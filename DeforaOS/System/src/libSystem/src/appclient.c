@@ -102,6 +102,9 @@ static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len = sizeof(ac->buf_read) - ac->buf_read_cnt;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void*)ac);
+#endif
 	assert(len >= 0);
 	if((len = READ(fd, ac, len)) <= 0)
 		return _read_error(ac);
@@ -130,11 +133,17 @@ static int _appclient_read(int fd, AppClient * ac)
 
 static int _read_error(AppClient * ac)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)ac);
+#endif
 #ifdef WITH_SSL
 	error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_shutdown(ac->ssl);
 #else
 	error_set_code(1, "%s", strerror(errno));
+#endif
+#ifdef DEBUG
+	error_print("DEBUG");
 #endif
 	close(ac->fd);
 	ac->fd = -1;
@@ -156,6 +165,9 @@ static int _appclient_write(int fd, AppClient * ac)
 {
 	ssize_t len;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void*)ac);
+#endif
 	/* FIXME is EOF an error? */
 	if((len = WRITE(fd, ac, ac->buf_write_cnt)) <= 0)
 		return _write_error(ac);
@@ -175,11 +187,17 @@ static int _appclient_write(int fd, AppClient * ac)
 
 static int _write_error(AppClient * ac)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)ac);
+#endif
 #ifdef WITH_SSL
 	error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_shutdown(ac->ssl);
 #else
 	error_set_code(1, "%s", strerror(errno));
+#endif
+#ifdef DEBUG
+	error_print("DEBUG");
 #endif
 	close(ac->fd);
 	ac->fd = -1;
@@ -226,6 +244,9 @@ AppClient * appclient_new_event(char const * app, Event * event)
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s%s", __func__, "(\"", app, "\")\n");
 #endif
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, app, (void*)event);
+#endif
 	if((appclient = object_new(sizeof(AppClient))) == NULL)
 		return NULL;
 	if((appclient->interface = appinterface_new("Init")) == NULL)
@@ -247,8 +268,12 @@ AppClient * appclient_new_event(char const * app, Event * event)
 #endif
 	{
 		appclient_delete(appclient);
-		return NULL;
+		appclient = NULL;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p) => %p\n", __func__, app,
+			(void*)event, (void*)appclient);
+#endif
 	return appclient;
 }
 
@@ -257,6 +282,10 @@ static int _new_connect(AppClient * appclient, char const * app)
 	struct sockaddr_in sa;
 	int32_t port = -1;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void*)appclient,
+			app);
+#endif
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_family = AF_INET;
@@ -367,6 +396,10 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	size_t cnt;
 	ssize_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %p, \"%s\", ...)\n", __func__, (void*)ac,
+			ret, function);
+#endif
 	if(appinterface_get_args_count(ac->interface, &cnt, function) != 0)
 		return 1;
 	if((args = calloc(sizeof(*args), cnt)) == NULL)

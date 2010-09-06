@@ -50,16 +50,17 @@ typedef enum _AppInterfaceCallType
 	AICT_INT16	= 004, 	AICT_UINT16	= 005,
 	AICT_INT32	= 006, 	AICT_UINT32	= 007,
 	AICT_INT64	= 010, 	AICT_UINT64	= 011,
-	AICT_STRING	= 012, 	AICT_BUFFER	= 013
+	AICT_STRING	= 012, 	AICT_BUFFER	= 013,
+	AICT_FLOAT	= 014,	AICT_DOUBLE	= 015
 } AppInterfaceCallType;
-#define AICT_LAST AICT_BUFFER
+#define AICT_LAST AICT_DOUBLE
 #define AICT_MASK 077
 
 #ifdef DEBUG
 static const String * AICTString[AICT_LAST + 1] =
 {
 	"void", "bool", "int8", "uint8", "int16", "uint16", "int32", "uint32",
-	"int64", "uint64", "String", "Buffer"
+	"int64", "uint64", "String", "Buffer", "float", "double"
 };
 #endif
 
@@ -70,7 +71,8 @@ static int _aict_size[AICT_LAST + 1] =
 	sizeof(int16_t),	sizeof(uint16_t),
 	sizeof(int32_t),	sizeof(uint32_t),
 	sizeof(int64_t),	sizeof(uint64_t),
-	0,			0
+	0,			0,
+	4,			8
 };
 
 typedef enum _AppInterfaceCallDirection
@@ -129,6 +131,8 @@ StringEnum _string_type[] =
 	{ "STRING_OUT",	AICT_STRING | AICD_OUT	},
 	{ "BUFFER",	AICT_BUFFER		},
 	{ "BUFFER_OUT",	AICT_BUFFER | AICD_OUT	},
+	{ "FLOAT",	AICT_FLOAT		},
+	{ "DOUBLE",	AICT_DOUBLE		},
 	{ NULL,		0			}
 };
 
@@ -435,11 +439,13 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					break;
 				case AICT_INT32:
 				case AICT_UINT32:
+				case AICT_FLOAT:
 					i32 = htonl(va_arg(arg, int32_t));
 					p = &i32;
 					break;
 				case AICT_INT64: /* FIXME wrong endian */
 				case AICT_UINT64:
+				case AICT_DOUBLE:
 					i64 = va_arg(arg, int64_t);
 					p = &i64;
 					break;
@@ -482,12 +488,14 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					break;
 				case AICT_INT32:
 				case AICT_UINT32:
+				case AICT_FLOAT:
 					args[i] = va_arg(arg, int32_t *);
 					i32 = htonl(*(int32_t *)args[i]);
 					p = &i32;
 					break;
 				case AICT_INT64: /* FIXME wrong endian */
 				case AICT_UINT64:
+				case AICT_DOUBLE:
 					args[i] = va_arg(arg, int64_t *);
 					i64 = *(int64_t *)args[i];
 					p = &i64;
@@ -529,11 +537,13 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					break;
 				case AICT_INT32:
 				case AICT_UINT32:
+				case AICT_FLOAT:
 					p = va_arg(arg, int32_t *);
 					args[i] = p;
 					break;
 				case AICT_INT64:
 				case AICT_UINT64:
+				case AICT_DOUBLE:
 					p = va_arg(arg, int64_t *);
 					args[i] = p;
 					break;
@@ -637,8 +647,10 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 			case AICT_UINT16:
 			case AICT_INT32:
 			case AICT_UINT32:
+			case AICT_FLOAT:
 			case AICT_INT64:
 			case AICT_UINT64:
+			case AICT_DOUBLE:
 				break; /* nothing more to do */
 			case AICT_STRING:
 				if((v = _read_string(buf, buflen, &pos))
@@ -691,10 +703,23 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 						*i32, "\n");
 #endif
 				break;
+			case AICT_FLOAT:
+				i32 = v;
+				*i32 = ntohl(*i32);
+#ifdef DEBUG
+				fprintf(stderr, "%s%f%s", "DEBUG: <= float",
+						(float)*i32, "\n");
+#endif
+				break;
 			case AICT_INT64:
 			case AICT_UINT64:
 #ifdef DEBUG
 				fprintf(stderr, "%s", "DEBUG: <= int64\n");
+#endif
+				break; /* FIXME wrong endian */
+			case AICT_DOUBLE:
+#ifdef DEBUG
+				fprintf(stderr, "%s", "DEBUG: <= double\n");
 #endif
 				break; /* FIXME wrong endian */
 			case AICT_STRING: /* already done and never reached */
@@ -906,6 +931,7 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT32:
 		case AICT_UINT32:
+		case AICT_FLOAT:
 			if(_read_bytes(&i32, sizeof(i32), buf, buflen, pos)
 					!= 0)
 				return -1;
@@ -916,6 +942,7 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
+		case AICT_DOUBLE:
 			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
@@ -966,6 +993,14 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 				return -1;
 #ifdef DEBUG
 			fputs(" integer", stderr);
+#endif
+			break;
+		case AICT_FLOAT:	case AICT_DOUBLE:
+			p = arg;
+			if((*p = malloc(aica->size)) == NULL)
+				return -1;
+#ifdef DEBUG
+			fputs(" float", stderr);
 #endif
 			break;
 		case AICT_BUFFER:
@@ -1132,6 +1167,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT32:
 		case AICT_UINT32:
+		case AICT_FLOAT:
 			i32 = arg;
 			*i32 = htonl(*i32);
 			if(_send_bytes(arg, aica->size, buf, buflen, pos) != 0)
@@ -1139,6 +1175,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
+		case AICT_DOUBLE:
 			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
@@ -1171,8 +1208,10 @@ static int _post_exec_free_in(AppInterfaceCallArg * aica, void * arg)
 		case AICT_INT8:		case AICT_UINT8:
 		case AICT_INT16:	case AICT_UINT16:
 		case AICT_INT32:	case AICT_UINT32:
+		case AICT_FLOAT:
 			break;
 		case AICT_INT64:	case AICT_UINT64:
+		case AICT_DOUBLE:
 			/* FIXME not supported */
 			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
@@ -1200,6 +1239,7 @@ static int _post_exec_free_out(AppInterfaceCallArg * aica, void * arg)
 		case AICT_INT16:	case AICT_UINT16:
 		case AICT_INT32:	case AICT_UINT32:
 		case AICT_INT64:	case AICT_UINT64:
+		case AICT_FLOAT:	case AICT_DOUBLE:
 			free(arg);
 			break;
 		case AICT_BUFFER:

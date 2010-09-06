@@ -30,12 +30,14 @@
 /* types */
 typedef enum _AppClientCallArgType
 {
-	ACCAT_INTEGER = 0, ACCAT_STRING
+	ACCAT_DOUBLE = 0, ACCAT_FLOAT, ACCAT_INTEGER, ACCAT_STRING
 } AppClientCallArgType;
 
 typedef struct _AppClientCallArg
 {
 	AppClientCallArgType type;
+	double doble;
+	float flot;
 	int integer;
 	char const * string;
 } AppClientCallArg;
@@ -75,7 +77,7 @@ static int _appclient(int verbose, char const * hostname, char const * service,
 		if(_appclient_call(verbose, ac, &calls[i]) != 0)
 			ret |= _error(APPCLIENT_PROGNAME, 1);
 	if(verbose != 0)
-		printf("%s", "Disconnecting\n");
+		puts("Disconnecting");
 	appclient_delete(ac);
 	return ret;
 }
@@ -122,6 +124,7 @@ static int _appclient_hostname(int verbose, char const * hostname,
 
 static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 {
+	int ret = 1;
 	int res = 0;
 
 #ifdef DEBUG
@@ -135,26 +138,59 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 			fprintf(stderr, "DEBUG: %s() %s()\n", __func__,
 					call->name);
 #endif
-			if(appclient_call(ac, &res, call->name, NULL) != 0)
-				return 1;
+			ret = appclient_call(ac, &res, call->name, NULL);
 			break;
 		case 1:
 #ifdef DEBUG
-			fprintf(stderr, "DEBUG: %s() %s(\"%s\")\n", __func__,
-					call->name, call->args[0].string);
+			fprintf(stderr, "DEBUG: %s() %s(%d)\n", __func__,
+					call->name, call->args[0].integer);
 #endif
+			if(call->args[0].type == ACCAT_DOUBLE)
+				ret = appclient_call(ac, &res, call->name,
+						call->args[0].doble);
+			else if(call->args[0].type == ACCAT_INTEGER)
+				ret = appclient_call(ac, &res, call->name,
+						call->args[0].integer);
+			else if(call->args[0].type == ACCAT_STRING)
+				ret = appclient_call(ac, &res, call->name,
+						call->args[0].string);
+			else
+				ret = error_set_code(1, "%s",
+						"Unsupported types");
+			break;
+		case 2:
 			/* FIXME arguments may be of different types */
-			if(appclient_call(ac, &res, call->name,
-						call->args[0].string) != 0)
-				return 1;
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() %s(%d, %d)\n", __func__,
+					call->name,
+					call->args[0].integer,
+					call->args[1].integer);
+#endif
+			ret = appclient_call(ac, &res, call->name,
+					call->args[0].integer,
+					call->args[1].integer);
+			break;
+		case 3:
+			/* FIXME arguments may be of different types */
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() %s(%d, %d, %d)\n",
+					__func__, call->name,
+					call->args[0].integer,
+					call->args[1].integer,
+					call->args[2].integer);
+#endif
+			ret = appclient_call(ac, &res, call->name,
+					call->args[0].integer,
+					call->args[1].integer,
+					call->args[2].integer);
 			break;
 		default:
 			return error_set_code(1, "%s",
 					"Unsupported number of arguments");
 	}
-	if(verbose)
+	if(ret == 0 && verbose)
 		printf("\"%s\"%s%d\n", call->name, " returned ", res);
-	return 0;
+	return ret;
 }
 
 
@@ -170,13 +206,15 @@ static int _error(char const * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: " APPCLIENT_PROGNAME " [-v][-H hostname] -S service"
-" [-C call [-s string|-i integer]...]...\n"
+" [-C call [-d double|-f float|-i integer|-s string]...]...\n"
 "  -v	Be more verbose\n"
 "  -H	Hostname to connect to\n"
 "  -S	Service to connect to\n"
 "  -C	Enqueue a given call\n"
-"  -s	Add a string as an argument to the current call\n"
-"  -i	Add an integer as an argument to the current call\n", stderr);
+"  -d	Add a double as an argument to the current call\n"
+"  -f	Add a float as an argument to the current call\n"
+"  -i	Add an integer as an argument to the current call\n"
+"  -s	Add a string as an argument to the current call\n", stderr);
 	return 1;
 }
 
@@ -184,19 +222,22 @@ static int _usage(void)
 /* main */
 static int _main_call(AppClientCall ** calls, size_t * calls_cnt,
 		char const * name);
-static int _main_call_arg_string(AppClientCall * calls, size_t calls_cnt,
-		char const * string);
+static int _main_call_arg(AppClientCall * calls, size_t calls_cnt,
+		AppClientCallArgType type, char const * string);
 
 int main(int argc, char * argv[])
 {
 	int o;
+	int res;
 	int verbose = 0;
 	char const * hostname = NULL;
 	char const * service = NULL;
 	AppClientCall * calls = NULL;
 	size_t calls_cnt = 0;
 
-	while((o = getopt(argc, argv, "vH:S:C:s:")) != -1)
+	while((o = getopt(argc, argv, "vH:S:C:d:f:i:s:")) != -1)
+	{
+		res = 0;
 		switch(o)
 		{
 			case 'v':
@@ -209,18 +250,30 @@ int main(int argc, char * argv[])
 				service = optarg;
 				break;
 			case 'C':
-				if(_main_call(&calls, &calls_cnt, optarg) != 0)
-					return _error(APPCLIENT_PROGNAME, 2);
+				res = _main_call(&calls, &calls_cnt, optarg);
+				break;
+			case 'd':
+				res = _main_call_arg(calls, calls_cnt,
+						ACCAT_DOUBLE, optarg);
+				break;
+			case 'f':
+				res = _main_call_arg(calls, calls_cnt,
+						ACCAT_FLOAT, optarg);
+				break;
+			case 'i':
+				res = _main_call_arg(calls, calls_cnt,
+						ACCAT_INTEGER, optarg);
 				break;
 			case 's':
-				if(_main_call_arg_string(calls, calls_cnt,
-							optarg) != 0)
-					return _error(APPCLIENT_PROGNAME, 2);
+				res = _main_call_arg(calls, calls_cnt,
+						ACCAT_STRING, optarg);
 				break;
-				/* FIXME implement case 'i' */
 			default:
 				return _usage();
 		}
+		if(res != 0)
+			return _error(APPCLIENT_PROGNAME, 2);
+	}
 	if(service == NULL)
 		return _usage();
 	return (_appclient(verbose, hostname, service, calls, calls_cnt) == 0)
@@ -243,8 +296,8 @@ static int _main_call(AppClientCall ** calls, size_t * calls_cnt,
 	return 0;
 }
 
-static int _main_call_arg_string(AppClientCall * calls, size_t calls_cnt,
-		char const * string)
+static int _main_call_arg(AppClientCall * calls, size_t calls_cnt,
+		AppClientCallArgType type, char const * string)
 {
 	AppClientCall * p;
 	AppClientCallArg * q;
@@ -257,7 +310,21 @@ static int _main_call_arg_string(AppClientCall * calls, size_t calls_cnt,
 	p->args = q;
 	q = &q[p->args_cnt++];
 	memset(q, 0, sizeof(*q));
-	q->type = ACCAT_STRING;
-	q->string = string;
+	q->type = type;
+	switch(type)
+	{
+		case ACCAT_DOUBLE:
+			q->doble = strtold(string, NULL); /* XXX check */
+			break;
+		case ACCAT_FLOAT:
+			q->flot = strtof(string, NULL); /* XXX check */
+			break;
+		case ACCAT_INTEGER:
+			q->integer = strtol(string, NULL, 0); /* XXX check */
+			break;
+		case ACCAT_STRING:
+			q->string = string;
+			break;
+	}
 	return 0;
 }

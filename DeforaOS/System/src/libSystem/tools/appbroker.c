@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,6 +84,8 @@ static void _appbroker_head(AppBrokerData * data)
 	fputs("# include <System.h>\n\n", data->fp);
 	fputs("\n/* types */\n", data->fp);
 	fputs("typedef Buffer * BUFFER;\n", data->fp);
+	fputs("typedef double DOUBLE;\n", data->fp);
+	fputs("typedef float FLOAT;\n", data->fp);
 	fputs("typedef int16_t INT16;\n", data->fp);
 	fputs("typedef int32_t INT32;\n", data->fp);
 	fputs("typedef uint16_t UINT16;\n", data->fp);

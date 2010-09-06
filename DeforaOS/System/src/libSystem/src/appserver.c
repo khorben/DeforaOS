@@ -147,6 +147,10 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	SSL_set_accept_state(asc->ssl);
 #endif
 	asc->fd = fd;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %x, %u) => %p\n", __func__, fd, addr,
+			port, asc);
+#endif
 	return asc;
 }
 
@@ -189,6 +193,9 @@ static int _appserver_client_remove(AppServer * appserver,
 	AppServerClient * p;
 	unsigned int i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, appserver, asc);
+#endif
 	for(i = 0; i < array_count(appserver->clients); i++)
 	{
 		if(array_get_copy(appserver->clients, i, &p) != 0)
@@ -276,11 +283,17 @@ static int _appserver_read(int fd, AppServer * appserver)
 
 static int _read_error(AppServer * appserver, AppServerClient * asc)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, appserver, asc);
+#endif
 #ifdef WITH_SSL
 	error_set_code(1, "%s", _appserver_error_ssl());
 	SSL_shutdown(asc->ssl);
 #else
 	error_set_code(1, "%s", strerror(errno));
+#endif
+#ifdef DEBUG
+	error_print("DEBUG");
 #endif
 	_appserver_client_remove(appserver, asc);
 	return 1;
@@ -288,6 +301,9 @@ static int _read_error(AppServer * appserver, AppServerClient * asc)
 
 static int _read_eof(AppServer * appserver, AppServerClient * asc)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, appserver, asc);
+#endif
 	_appserver_client_remove(appserver, asc);
 	return 1;
 }
