@@ -624,8 +624,8 @@ function blog_rss($args)
 			$res[$i]['date'] = date('D, j M Y H:i:s O', strtotime(
 						substr($res[$i]['date'], 0,
 						19)));
-			$res[$i]['link'] = _html_link_full('post', FALSE,
-					$res[$i]['id']);
+			$res[$i]['link'] = _html_link_full('blog', FALSE,
+					$res[$i]['id'], $res[$i]['title']);
 			$res[$i]['content'] = _html_pre($res[$i]['content']);
 		}
 	require_once('./system/rss.php');
