@@ -62,7 +62,7 @@ _lang($text);
 function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 		$module = FALSE, $advanced = FALSE)
 {
-	$query = stripslashes($q);
+	$query = html_entity_decode(stripslashes($q), ENT_QUOTES);
 	$q = explode(' ', $query);
 	if(_config_get('search', 'highlight') == TRUE)
 	{
@@ -77,8 +77,8 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 		}
 	}
 	//escape SQL wildcards
-	$q = str_replace(array('%', '_', '['), array('\\\%', '\\\_', '\\\['),
-			$query);
+	$q = str_replace(array("'", '%', '_', '['), array("''", '\\\%', '\\\_',
+				'\\\['), $query);
 	$q = explode(' ', $q);
 	$sql = ' FROM daportal_content, daportal_module, daportal_user'
 		.' WHERE daportal_content.module_id=daportal_module.module_id'
@@ -97,7 +97,8 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 		$sql .= " OR (content LIKE '%".implode("%' AND content LIKE '%",
 					$q)."%')";
 	$sql .= ')';
-	$count = _sql_single('SELECT COUNT(*)'.$sql);
+	if(($count = _sql_single('SELECT COUNT(*)'.$sql)) === FALSE)
+		return _error('Unable to search');
 	include('./modules/search/search_top.tpl');
 	$pages = ceil($count / $spp);
 	$page = min($page, $pages);
