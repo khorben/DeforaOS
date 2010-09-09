@@ -554,7 +554,7 @@ function _confirm_manual($key, $user)
 	}
 	$subject = 'User registration: '.$user['username'];
 	$content = "A new user is awaiting moderation at:\n"
-		.'https://'.$_SERVER['HTTP_HOST']
+		.'https://'.$_SERVER['SERVER_NAME']
 		._module_link('user', 'admin', $user['user_id'])."\n";
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, $subject, $content);
