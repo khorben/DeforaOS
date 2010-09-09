@@ -25,6 +25,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['ADDRESS'] = 'Address';
+$text['CREATE'] = 'Create';
 $text['NEW_LINK'] = 'New link';
 _lang($text);
 
