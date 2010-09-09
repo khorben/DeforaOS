@@ -132,11 +132,13 @@ function _module_link($module = FALSE, $action = FALSE, $id = FALSE,
 	global $friendlylinks, $friendlykicker;
 
 	$link = $_SERVER['SCRIPT_NAME'];
-	if(isset($friendlykicker) && isset($_SERVER['DOCUMENT_ROOT'])
-			&& is_readable($_SERVER['DOCUMENT_ROOT']
-				.dirname($_SERVER['SCRIPT_NAME'])
+	if(!isset($friendlykicker))
+		$friendlylinks = 0;
+	else if(isset($_SERVER['DOCUMENT_ROOT'])
+			&& is_readable(dirname($_SERVER['SCRIPT_FILENAME'])
 				."/$friendlykicker.php"))
-		$link = '/'.$friendlykicker;
+		$link = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/').'/'
+			.$friendlykicker;
 	if(is_array($params))
 	{
 		$keys = array_keys($params);
@@ -151,33 +153,35 @@ function _module_link($module = FALSE, $action = FALSE, $id = FALSE,
 			$and = '&';
 		}
 	}
-	if($friendlylinks == 1 && $module == FALSE)
-		$link .= '/';
-	else if($friendlylinks == 1)
+	if($friendlylinks == 1)
 	{
+		if($module === FALSE)
+			return $link;
 		$link .= '/'.$module;
-		if($action != FALSE && $action != '' && $action != 'default')
+		if($action !== FALSE && $action != '' && $action != 'default')
 			$link .= '/'.$action;
 		if($id !== FALSE && is_numeric($id))
-			$link .= '/'.$id;
-		if($tag != FALSE && $tag != '')
 		{
-			$tag = str_replace(array(' ', '/', '?', '&', '%', '#',
-						'<', '>', "'", '"', ","),
-					'-', $tag);
-			$link .= '/'.$tag;
+			$link .= '/'.$id;
+			if($tag !== FALSE && $tag != '')
+			{
+				$a = array(' ', '/', '?', '&', '%', '#', '<',
+						'>', "'", '"', ',', ':');
+				$tag = str_replace($a, '-', $tag);
+				$link .= '/'.$tag;
+			}
 		}
-		if($params != FALSE && $params != '')
+		if($params !== FALSE && $params != '')
 			$link .= '?'.$params;
 	}
-	else if($module != FALSE)
+	else if($module !== FALSE)
 	{
 		$link .= '?module='.$module;
-		if($action != FALSE && $action != '' && $action != 'default')
+		if($action !== FALSE && $action != '' && $action != 'default')
 			$link .= '&action='.$action;
-		if($id != FALSE && is_numeric($id))
+		if($id !== FALSE && is_numeric($id))
 			$link .= '&id='.$id;
-		if($params != FALSE && $params != '')
+		if($params !== FALSE && $params != '')
 			$link .= '&'.$params;
 	}
 	return $link;
