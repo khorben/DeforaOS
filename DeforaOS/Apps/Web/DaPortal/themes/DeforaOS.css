@@ -57,6 +57,9 @@ form {
 
 h1 {
 	background-color:		#800000;
+	background-image:		url("DeforaOS-gradient3.png");
+	background-position:		top left;
+	background-repeat:		repeat-x;
 	font-size:			2em;
 	margin-left:			-0.5em;
 	margin-right:			-0.5em;
