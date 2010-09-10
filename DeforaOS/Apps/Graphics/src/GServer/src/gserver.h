@@ -25,11 +25,16 @@
 /* public */
 /* types */
 typedef struct _GServer GServer;
+typedef struct _GServerClient GServerClient;
 
 
 /* functions */
 GServer * gserver_new(AppServerOptions options, Event * event);
 void gserver_delete(GServer * gserver);
+
+
+/* accessors */
+Event * gserver_get_event(GServer * gserver);
 
 
 /* useful */

@@ -23,14 +23,14 @@
 /* private */
 /* functions */
 /* vesa_init */
-static int _vesa_init(void)
+static int _vesa_init(VideoPlugin * plugin)
 {
 	return 0;
 }
 
 
 /* vesa_destroy */
-static void _vesa_destroy(void)
+static void _vesa_destroy(VideoPlugin * plugin)
 {
 }
 
@@ -39,8 +39,11 @@ static void _vesa_destroy(void)
 /* variables */
 VideoPlugin video_plugin =
 {
+	NULL,
+	"VESA",
 	_vesa_init,
 	_vesa_destroy,
+	NULL,
 	NULL,
 	NULL,
 	NULL,

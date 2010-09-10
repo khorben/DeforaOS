@@ -25,8 +25,19 @@
 
 #ifdef DEBUG
 # define DEBUG_INTERFACE() fprintf(stderr, "DEBUG: %s()\n", __func__)
+# define DEBUG_INTERFACE1i(x) fprintf(stderr, "DEBUG: %s(0x%x)\n", __func__, x)
+# define DEBUG_INTERFACE3f(x, y, z) fprintf(stderr, \
+		"DEBUG: %s(%.1f, %.1f, %.1f)\n", __func__, x, y, z)
+# define DEBUG_INTERFACE3i(x, y, z) fprintf(stderr, \
+		"DEBUG: %s(%d, %d, %d)\n", __func__, x, y, z)
+# define DEBUG_INTERFACE4f(x, y, z, t) fprintf(stderr, \
+		"DEBUG: %s(%.1f, %.1f, %.1f, %.1f)\n", __func__, x, y, z, t)
 #else
 # define DEBUG_INTERFACE()
+# define DEBUG_INTERFACE1i(x)
+# define DEBUG_INTERFACE3f(x, y, z)
+# define DEBUG_INTERFACE3i(x, y, z)
+# define DEBUG_INTERFACE4f(x, y, z, t)
 #endif
 
 
@@ -40,7 +51,9 @@ struct _GServer
 	AppServer * appserver;
 	int loop;
 
+	/* plugins */
 	/* video */
+	VideoPluginHelper video_helper;
 	void * video_handle;
 	VideoPlugin * video_plugin;
 };
@@ -82,6 +95,8 @@ static int _new_init(AppServerOptions options, GServer * gserver, Event * event)
 		return -1;
 	else
 		gserver->event_own = 1;
+	gserver->video_helper.gserver = gserver;
+	gserver->video_helper.get_event = gserver_get_event;
 	if((gserver->appserver = appserver_new_event("GServer", options,
 					gserver->event)) != NULL
 			&& _init_video(gserver) == 0)
@@ -110,7 +125,8 @@ static int _init_video(GServer * gserver)
 		dlclose(gserver->video_handle);
 		return 1;
 	}
-	gserver->video_plugin->init();
+	gserver->video_plugin->helper = &gserver->video_helper;
+	gserver->video_plugin->init(gserver->video_plugin);
 	return 0;
 }
 
@@ -133,9 +149,16 @@ void gserver_delete(GServer * gserver)
 static void _destroy_video(GServer * gserver)
 {
 	if(gserver->video_plugin != NULL)
-		gserver->video_plugin->destroy();
+		gserver->video_plugin->destroy(gserver->video_plugin);
 	if(gserver->video_handle != NULL)
 		dlclose(gserver->video_handle);
+}
+
+
+/* accessors */
+Event * gserver_get_event(GServer * gserver)
+{
+	return gserver->event;
 }
 
 
@@ -155,60 +178,66 @@ int gserver_loop(GServer * gserver)
 	void GServer_ ## func (void) \
 { \
 	DEBUG_INTERFACE(); \
-	_gserver->video_plugin->proto0(VIDEO_PROTO0_ ## func); \
+	_gserver->video_plugin->proto0(_gserver->video_plugin, NULL, \
+			VIDEO_PROTO0_ ## func); \
 }
 #define GSERVER_PROTO1d(func) \
 	void GServer_ ## func(double x) \
 { \
 	DEBUG_INTERFACE(); \
-	_gserver->video_plugin->proto1d(VIDEO_PROTO1d_ ## func, x); \
+	_gserver->video_plugin->proto1d(_gserver->video_plugin, NULL, \
+			VIDEO_PROTO1d_ ## func, x); \
 }
 #define GSERVER_PROTO1i(func, type1) \
 	void GServer_ ## func (type1 x) \
 { \
-	DEBUG_INTERFACE(); \
-	_gserver->video_plugin->proto1i(VIDEO_PROTO1i_ ## func, x); \
+	DEBUG_INTERFACE1i(x); \
+	_gserver->video_plugin->proto1i(_gserver->video_plugin, NULL, \
+			VIDEO_PROTO1i_ ## func, x); \
 }
 #define GSERVER_PROTO3f(func) \
 	void GServer_ ## func (float x, float y, float z) \
 { \
-	DEBUG_INTERFACE(); \
-	_gserver->video_plugin->proto3f(VIDEO_PROTO3f_ ## func, x, y, z); \
+	DEBUG_INTERFACE3f(x, y, z); \
+	_gserver->video_plugin->proto3f(_gserver->video_plugin, NULL, \
+			VIDEO_PROTO3f_ ## func, x, y, z); \
 }
 #define GSERVER_PROTO3i(func, type1, type2, type3) \
 	void GServer_ ## func (int32_t x, int32_t y, int32_t z) \
 { \
-	DEBUG_INTERFACE(); \
-	_gserver->video_plugin->proto3i(VIDEO_PROTO3i_ ## func, x, y, z); \
+	DEBUG_INTERFACE3i(x, y, z); \
+	_gserver->video_plugin->proto3i(_gserver->video_plugin, NULL, \
+			VIDEO_PROTO3i_ ## func, x, y, z); \
 }
 #define GSERVER_PROTO4f(func) \
 	void GServer_ ## func (float x, float y, float z, float t) \
 { \
-	DEBUG_INTERFACE(); \
-	_gserver->video_plugin->proto4f(VIDEO_PROTO4f_ ## func, x, y, z, t); \
+	DEBUG_INTERFACE4f(x, y, z, t); \
+	_gserver->video_plugin->proto4f(_gserver->video_plugin, NULL, \
+			VIDEO_PROTO4f_ ## func, x, y, z, t); \
 }
 
-/* Proto0 */
+/* proto0 */
 GSERVER_PROTO0(glEnd)
 GSERVER_PROTO0(glLoadIdentity)
 GSERVER_PROTO0(glFlush)
 GSERVER_PROTO0(SwapBuffers)
 
-/* Proto1d */
+/* proto1d */
 GSERVER_PROTO1d(glClearDepth)
 
-/* Proto1i */
+/* proto1i */
 GSERVER_PROTO1i(glBegin, uint32_t)
 GSERVER_PROTO1i(glClear, uint32_t)
 
-/* Proto3f */
+/* proto3f */
 GSERVER_PROTO3f(glColor3f)
 GSERVER_PROTO3f(glTranslatef)
 GSERVER_PROTO3f(glVertex3f)
 
-/* Proto3i */
+/* proto3i */
 GSERVER_PROTO3i(glColor3i, int32_t, int32_t, int32_t)
 GSERVER_PROTO3i(glVertex3i, int32_t, int32_t, int32_t)
 
-/* Proto4f */
+/* proto4f */
 GSERVER_PROTO4f(glClearColor)

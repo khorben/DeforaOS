@@ -19,10 +19,22 @@
 # define GSERVER_VIDEO_VIDEO_H
 
 # include <stdint.h>
+# include <System.h>
+# include "../gserver.h"
 
 
 /* Video */
 /* types */
+typedef enum _VideoProto
+{
+	VIDEO_PROTO_0 = 0,
+	VIDEO_PROTO_1d,
+	VIDEO_PROTO_1i,
+	VIDEO_PROTO_3f,
+	VIDEO_PROTO_3i,
+	VIDEO_PROTO_4f
+} VideoProto;
+
 typedef enum _VideoProto0
 {
 	VIDEO_PROTO0_glEnd = 0,
@@ -72,16 +84,36 @@ typedef enum _VideoProto4f
 # define VIDEO_PROTO4f_LAST VIDEO_PROTO4f_glClearColor
 # define VIDEO_PROTO4f_COUNT (VIDEO_PROTO4f_LAST + 1)
 
-typedef struct _VideoPlugin
+/* VideoPlugin */
+typedef struct _VideoPlugin VideoPlugin;
+
+typedef struct _VideoPluginHelper
 {
-	int (*init)(void);
-	void (*destroy)(void);
-	void (*proto0)(VideoProto0 func);
-	void (*proto1d)(VideoProto1d func, double x);
-	void (*proto1i)(VideoProto1i func, int32_t x);
-	void (*proto3f)(VideoProto3f func, float x, float y, float z);
-	void (*proto3i)(VideoProto3i func, int32_t x, int32_t y, int32_t z);
-	void (*proto4f)(VideoProto4f func, float x, float y, float z, float t);
-} VideoPlugin;
+	GServer * gserver;
+	Event * (*get_event)(GServer * gserver);
+	char const * (*config_get)(GServer * gserver, char const * section,
+			char const * variable);
+} VideoPluginHelper;
+
+struct _VideoPlugin
+{
+	VideoPluginHelper * helper;
+	char const * name;
+	int (*init)(VideoPlugin * plugin);
+	void (*destroy)(VideoPlugin * plugin);
+	void (*proto0)(VideoPlugin * plugin, GServerClient * client,
+			VideoProto0 func);
+	void (*proto1d)(VideoPlugin * plugin, GServerClient * client,
+			VideoProto1d func, double x);
+	void (*proto1i)(VideoPlugin * plugin, GServerClient * client,
+			VideoProto1i func, int32_t x);
+	void (*proto3f)(VideoPlugin * plugin, GServerClient * client,
+			VideoProto3f func, float x, float y, float z);
+	void (*proto3i)(VideoPlugin * plugin, GServerClient * client,
+			VideoProto3i func, int32_t x, int32_t y, int32_t z);
+	void (*proto4f)(VideoPlugin * plugin, GServerClient * client,
+			VideoProto4f func, float x, float y, float z, float t);
+	void * priv;
+};
 
 #endif /* !GSERVER_VIDEO_VIDEO_H */
