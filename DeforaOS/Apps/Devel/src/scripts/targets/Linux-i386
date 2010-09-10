@@ -117,7 +117,7 @@ _image_ramdisk()
 
 	echo
 	echo -n "Creating ramdisk:"
-	$GENEXT2FS -r 0 -b "$IMAGE_SIZE" -d "$DESTDIR" "$IMAGE_FILE"
+	$GENEXT2FS -b "$IMAGE_SIZE" -d "$DESTDIR" "$IMAGE_FILE"
 	echo
 	$DU "$IMAGE_FILE"
 
