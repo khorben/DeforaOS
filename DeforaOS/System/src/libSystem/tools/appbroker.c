@@ -91,6 +91,7 @@ static void _appbroker_head(AppBrokerData * data)
 	fputs("typedef uint16_t UINT16;\n", data->fp);
 	fputs("typedef uint32_t UINT32;\n", data->fp);
 	fputs("typedef String const * STRING;\n", data->fp);
+	fputs("typedef void VOID;\n", data->fp);
 	fputs("\ntypedef BUFFER BUFFER_IN;\n", data->fp);
 	fputs("typedef INT32 INT32_IN;\n", data->fp);
 	fputs("typedef UINT32 UINT32_IN;\n", data->fp);
