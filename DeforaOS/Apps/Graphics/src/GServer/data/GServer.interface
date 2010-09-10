@@ -27,13 +27,13 @@ arg2=INT32
 arg3=INT32
 
 [glEnd]
-ret=void
+ret=VOID
 
 [glFlush]
-ret=void
+ret=VOID
 
 [glLoadIdentity]
-ret=void
+ret=VOID
 
 [glTranslatef]
 arg1=FLOAT
@@ -51,4 +51,4 @@ arg2=INT32
 arg3=INT32
 
 [SwapBuffers]
-ret=void
+ret=VOID
