@@ -54,17 +54,18 @@ typedef enum _AppInterfaceCallType
 	AICT_FLOAT	= 014,	AICT_DOUBLE	= 015
 } AppInterfaceCallType;
 #define AICT_LAST AICT_DOUBLE
+#define AICT_COUNT (AICT_LAST + 1)
 #define AICT_MASK 077
 
 #ifdef DEBUG
-static const String * AICTString[AICT_LAST + 1] =
+static const String * AICTString[AICT_COUNT] =
 {
 	"void", "bool", "int8", "uint8", "int16", "uint16", "int32", "uint32",
 	"int64", "uint64", "String", "Buffer", "float", "double"
 };
 #endif
 
-static int _aict_size[AICT_LAST + 1] =
+static int _aict_size[AICT_COUNT] =
 {
 	0,			sizeof(char),
 	sizeof(int8_t),		sizeof(uint8_t),
@@ -72,7 +73,7 @@ static int _aict_size[AICT_LAST + 1] =
 	sizeof(int32_t),	sizeof(uint32_t),
 	sizeof(int64_t),	sizeof(uint64_t),
 	0,			0,
-	4,			8
+	sizeof(float),		sizeof(double)
 };
 
 typedef enum _AppInterfaceCallDirection
