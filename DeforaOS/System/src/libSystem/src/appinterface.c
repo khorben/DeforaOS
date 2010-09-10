@@ -304,8 +304,9 @@ static int _new_append_arg(AppInterface * ai, char const * arg)
 	r->direction = type & AICD_MASK;
 	r->size = _aict_size[r->type];
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %zu\n",
-			AICTString[r->type], r->direction, r->size);
+	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %lu\n",
+			AICTString[r->type], r->direction,
+			(unsigned long)r->size);
 #endif
 	return 0;
 }
@@ -416,7 +417,8 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 	for(i = 0; i < aic->args_cnt; i++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%zu%s", "DEBUG: argument ", i, "\n");
+		fprintf(stderr, "%s%lu%s", "DEBUG: argument ",
+				(unsigned long)i, "\n");
 #endif
 		size = 0;
 		if(aic->args[i].direction == AICD_IN)
@@ -559,7 +561,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 		if(size == 0)
 			continue;
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: => size %zu\n", size);
+		fprintf(stderr, "DEBUG: => size %lu\n", (unsigned long)size);
 #endif
 		if(_send_bytes(p, size, buf, buflen, &pos) != 0)
 			return -1;
@@ -631,7 +633,8 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 	for(i = 0; i < aic->args_cnt; i++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%zu%s", "DEBUG: argument ", i + 1, "\n");
+		fprintf(stderr, "%s%lu%s", "DEBUG: argument ",
+				(unsigned long)i + 1, "\n");
 #endif
 		if(aic->args[i].direction == AICD_IN)
 			continue;
@@ -670,7 +673,8 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 		if(pos + size > buflen)
 			return 0;
 #ifdef DEBUG
-		fprintf(stderr, "%s%zu%s", "DEBUG: <= size ", size, "\n");
+		fprintf(stderr, "%s%lu%s", "DEBUG: <= size ",
+				(unsigned long)size, "\n");
 #endif
 		memcpy(v, &buf[pos], size);
 		pos += size;
@@ -731,8 +735,9 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 				size = bsize;
 				v = buffer_get_data(b);
 #ifdef DEBUG
-				fprintf(stderr, "%s%zu%s", "DEBUG: <= Buffer"
-						" size ", size, "\n");
+				fprintf(stderr, "%s%lu%s", "DEBUG: <= Buffer"
+						" size ", (unsigned long)size,
+						"\n");
 #endif
 				break;
 		}
@@ -1068,8 +1073,9 @@ static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
 			*ret = func4(args[0], args[1], args[2], args[3]);
 			break;
 		default:
-			return error_set_code(1, "%s%zu%s", "AppInterface: "
-					"functions with ", call->args_cnt,
+			return error_set_code(1, "%s%lu%s", "AppInterface: "
+					"functions with ",
+					(unsigned long)call->args_cnt,
 					"arguments are not supported");
 	}
 	if(call->type.type == AICT_VOID) /* avoid information leak */
