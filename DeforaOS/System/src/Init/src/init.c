@@ -22,6 +22,11 @@
 #include "session.h"
 #include "../data/Init.h"
 #include "init.h"
+#include "../config.h"
+
+#ifndef PREFIX
+# define PREFIX "/usr/local"
+#endif
 
 
 /* Init */
@@ -89,21 +94,35 @@ int Init_get_profile(String ** profile)
 
 
 /* init_get_session */
-uint16_t Init_get_session(String const * session)
+int Init_get_session(String const * session)
 {
+	int ret = -1;
+	String * filename;
+	Config * config;
+	String const * p;
+	String * q;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, session);
 #endif
-	/* FIXME really implement */
 	if(string_compare(session, "Init") == 0)
 		return 0;
-	if(string_compare(session, "Probe") == 0)
-		return 4243;
-	if(string_compare(session, "VFS") == 0)
-		return 4245;
-	if(string_compare(session, "Directory") == 0)
-		return 4247;
-	return -1;
+	/* FIXME look in registered sessions instead */
+	if((filename = string_new_append(PREFIX "/etc/AppInterface/", session,
+					".interface", NULL)) == NULL)
+		return -1;
+	if((config = config_new()) != NULL
+			&& config_load(config, filename) == 0
+			&& (p = config_get(config, NULL, "port")) != NULL)
+	{
+		ret = strtol(p, &q, 0);
+		if(p[0] == '\0' || *q != '\0' || ret <= 0 || ret > 65535)
+			ret = -1;
+	}
+	if(config != NULL)
+		config_delete(config);
+	string_delete(filename);
+	return ret;
 }
 
 

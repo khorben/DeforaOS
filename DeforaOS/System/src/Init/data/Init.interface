@@ -15,7 +15,7 @@ arg1=STRING
 arg2=UINT16
 
 [get_session]
-ret=UINT16
+ret=INT32
 arg1=STRING
 
 [get_profile]
