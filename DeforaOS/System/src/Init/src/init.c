@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Init */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ void init_delete(Init * init)
 int Init_get_profile(String ** profile)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, profile);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)profile);
 #endif
 	/* FIXME implement */
 	return -1;
@@ -92,7 +92,7 @@ int Init_get_profile(String ** profile)
 uint16_t Init_get_session(String const * session)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, session);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, session);
 #endif
 	/* FIXME really implement */
 	if(string_compare(session, "Init") == 0)
