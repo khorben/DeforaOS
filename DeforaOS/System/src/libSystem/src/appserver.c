@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -375,7 +375,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 #endif
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
-	return (asc->buf_write_cnt) == 0 ? 1 : 0;
+	return (asc->buf_write_cnt == 0) ? 1 : 0;
 }
 
 static int _write_error(AppServerClient * asc)

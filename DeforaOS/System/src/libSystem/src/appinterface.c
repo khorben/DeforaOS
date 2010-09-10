@@ -105,6 +105,7 @@ struct _AppInterface
 	AppInterfaceCall * calls;
 	size_t calls_cnt;
 	uint16_t port;
+	int error;
 };
 
 typedef struct _StringEnum
@@ -150,10 +151,13 @@ static int _string_enum(String const * string, StringEnum * se)
 {
 	size_t i;
 
+	if(string == NULL)
+		return -error_set_code(1, "%s", strerror(EINVAL));
 	for(i = 0; se[i].string != NULL; i++)
 		if(string_compare(string, se[i].string) == 0)
 			return se[i].value;
-	return -1;
+	return -error_set_code(1, "%s\"%s\"", "Unknown enumerated value for ",
+			string);
 }
 
 
@@ -211,6 +215,7 @@ AppInterface * appinterface_new(char const * app)
 	appinterface->calls = NULL;
 	appinterface->calls_cnt = 0;
 	appinterface->port = 0;
+	appinterface->error = 0;
 	if(appinterface->name == NULL
 			|| (pathname = string_new_append(
 					ETCDIR "/AppInterface/", app,
@@ -226,7 +231,13 @@ AppInterface * appinterface_new(char const * app)
 	}
 	if((p = config_get(config, NULL, "port")) != NULL)
 		appinterface->port = atoi(p);
+	appinterface->error = 0;
 	hash_foreach(config, (HashForeach)_new_foreach, appinterface);
+	if(appinterface->error != 0)
+	{
+		appinterface_delete(appinterface);
+		return NULL;
+	}
 	config_delete(config);
 	return appinterface;
 }
@@ -236,22 +247,33 @@ static int _new_foreach(char const * key, Hash * value,
 {
 	int i;
 	char buf[8];
-	AppInterfaceCallType type = AICT_VOID;
+	int type = AICT_VOID;
 	char const * p;
 
 	if(key == NULL || key[0] == '\0')
 		return 0;
-	if((p = hash_get(value, "ret")) != NULL)
-		type = _string_enum(p, _string_type);
+	if((p = hash_get(value, "ret")) != NULL
+			&& (type = _string_enum(p, _string_type)) < 0)
+	{
+		appinterface->error = error_set_code(1, "%s",
+				"Invalid return type");
+		return -appinterface->error;
+	}
 	if(_new_append(appinterface, type, key) != 0)
-		return 1; /* FIXME track errors */
+	{
+		appinterface->error = 1;
+		return -appinterface->error;
+	}
 	for(i = 0; i < APPSERVER_MAX_ARGUMENTS; i++)
 	{
 		snprintf(buf, sizeof(buf), "arg%d", i + 1);
 		if((p = hash_get(value, buf)) == NULL)
 			break;
 		if(_new_append_arg(appinterface, p) != 0)
-			return 1; /* FIXME track errors */
+		{
+			appinterface->error = 1;
+			return -1;
+		}
 	}
 	return 0;
 }
@@ -262,14 +284,14 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 	AppInterfaceCall * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\") %d\n", __func__, function, type);
+	fprintf(stderr, "DEBUG: %s(%d, \"%s\")\n", __func__, type, function);
 #endif
 	if((p = realloc(ai->calls, sizeof(*p) * (ai->calls_cnt + 1))) == NULL)
-		return 1;
+		return -1;
 	ai->calls = p;
 	p = &ai->calls[ai->calls_cnt];
 	if((p->name = string_new(function)) == NULL)
-		return 1;
+		return -1;
 	p->type.type = type & AICT_MASK;
 	p->type.direction = type & AICD_MASK;
 	p->type.size = _aict_size[p->type.type];
@@ -294,10 +316,10 @@ static int _new_append_arg(AppInterface * ai, char const * arg)
 	if((p = strchr(buf, ',')) != NULL)
 		*p = '\0';
 	if((type = _string_enum(buf, _string_type)) < 0)
-		return 1;
+		return -1;
 	q = &ai->calls[ai->calls_cnt - 1];
 	if((r = realloc(q->args, sizeof(*r) * (q->args_cnt + 1))) == NULL)
-		return 1;
+		return -error_set_code(1, "%s", strerror(errno));
 	q->args = r;
 	r = &q->args[q->args_cnt++];
 	r->type = type & AICT_MASK;
