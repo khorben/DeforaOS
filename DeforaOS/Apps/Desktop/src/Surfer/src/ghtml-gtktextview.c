@@ -62,7 +62,7 @@ typedef struct _GHtmlTag
 typedef struct _GHtml
 {
 	Surfer * surfer;
-	char const * title;
+	char * title;
 
 	/* history */
 	GList * history;
