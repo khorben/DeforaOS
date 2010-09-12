@@ -109,6 +109,8 @@ static void _glx_proto4f(VideoPlugin * plugin, GServerClient * client,
 static void _glx_swap_buffers(void);
 static int _glx_timeout(void * data);
 
+static GLXClient * _glx_get_client(GLXPlugin * glx, GServerClient * client);
+
 static GLXCall *_glx_queue(GLXPlugin * glx, GServerClient * client,
 		VideoProto type, unsigned int func);
 
@@ -150,7 +152,8 @@ static void (*_glx_func3i[VIDEO_PROTO3i_COUNT])(int32_t, int32_t, int32_t) =
 
 static void (*_glx_func4f[VIDEO_PROTO4f_COUNT])(float, float, float, float) =
 {
-	glClearColor
+	glClearColor,
+	glRotatef
 };
 
 
@@ -265,8 +268,13 @@ static int _glx_init(VideoPlugin * plugin)
 	glFlush();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glXSwapBuffers(glx->display, glx->window);
+#ifdef DEBUG
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+#else
 	tv.tv_sec = 0;
 	tv.tv_usec = 1000000 / 25;
+#endif
 	if(_glx_timeout(plugin) == 0)
 		event_register_timeout(event, &tv, _glx_timeout, plugin);
 	return 0;
@@ -432,36 +440,40 @@ static int _glx_timeout(void * data)
 }
 
 
+/* glx_get_client */
+static GLXClient * _glx_get_client(GLXPlugin * glx, GServerClient * client)
+{
+	GLXClient * ret;
+	size_t i;
+
+	for(i = 0; i < glx->clients_cnt; i++)
+		if(glx->clients[i].client == client)
+			return &glx->clients[i];
+	if((ret = realloc(glx->clients, sizeof(*ret) * (glx->clients_cnt + 1)))
+			== NULL)
+		return NULL;
+	glx->clients = ret;
+	ret = &glx->clients[glx->clients_cnt++];
+	ret->client = client;
+	ret->calls = NULL;
+	ret->calls_cnt = 0;
+	return ret;
+}
+
+
 /* glx_queue */
 static GLXCall *_glx_queue(GLXPlugin * glx, GServerClient * client,
 		VideoProto type, unsigned int func)
 {
 	GLXCall * ret = NULL;
-	GLXClient * gc = NULL;
-	size_t i;
+	GLXClient * gc;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %p, %u, %u)\n", __func__, (void*)glx,
 			(void*)client, type, func);
 #endif
-	for(i = 0; i < glx->clients_cnt; i++)
-		if(glx->clients[i].client == client)
-		{
-			gc = &glx->clients[i];
-			break;
-		}
-	if(gc == NULL)
-	{
-		if((gc = realloc(glx->clients, sizeof(*gc)
-						* (glx->clients_cnt + 1)))
-				== NULL)
-			return NULL;
-		glx->clients = gc;
-		gc = &glx->clients[glx->clients_cnt++];
-		gc->client = client;
-		gc->calls = NULL;
-		gc->calls_cnt = 0;
-	}
+	if((gc = _glx_get_client(glx, client)) == NULL)
+		return NULL;
 	if((ret = realloc(gc->calls, sizeof(*ret) * (gc->calls_cnt + 1)))
 			== NULL)
 		return NULL;

@@ -35,6 +35,12 @@ ret=VOID
 [glLoadIdentity]
 ret=VOID
 
+[glRotatef]
+arg1=FLOAT
+arg2=FLOAT
+arg3=FLOAT
+arg4=FLOAT
+
 [glTranslatef]
 arg1=FLOAT
 arg2=FLOAT

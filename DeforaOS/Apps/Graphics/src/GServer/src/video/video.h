@@ -79,9 +79,10 @@ typedef enum _VideoProto3i
 
 typedef enum _VideoProto4f
 {
-	VIDEO_PROTO4f_glClearColor = 0
+	VIDEO_PROTO4f_glClearColor = 0,
+	VIDEO_PROTO4f_glRotatef
 } VideoProto4f;
-# define VIDEO_PROTO4f_LAST VIDEO_PROTO4f_glClearColor
+# define VIDEO_PROTO4f_LAST VIDEO_PROTO4f_glRotatef
 # define VIDEO_PROTO4f_COUNT (VIDEO_PROTO4f_LAST + 1)
 
 /* VideoPlugin */

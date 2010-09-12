@@ -27,11 +27,11 @@
 # define DEBUG_INTERFACE() fprintf(stderr, "DEBUG: %s()\n", __func__)
 # define DEBUG_INTERFACE1i(x) fprintf(stderr, "DEBUG: %s(0x%x)\n", __func__, x)
 # define DEBUG_INTERFACE3f(x, y, z) fprintf(stderr, \
-		"DEBUG: %s(%.1f, %.1f, %.1f)\n", __func__, x, y, z)
+		"DEBUG: %s(%.1f, %.1f, %.1f)\n", __func__, *x, *y, *z)
 # define DEBUG_INTERFACE3i(x, y, z) fprintf(stderr, \
 		"DEBUG: %s(%d, %d, %d)\n", __func__, x, y, z)
 # define DEBUG_INTERFACE4f(x, y, z, t) fprintf(stderr, \
-		"DEBUG: %s(%.1f, %.1f, %.1f, %.1f)\n", __func__, x, y, z, t)
+		"DEBUG: %s(%.1f, %.1f, %.1f, %.1f)\n", __func__, *x, *y, *z, *t)
 #else
 # define DEBUG_INTERFACE()
 # define DEBUG_INTERFACE1i(x)
@@ -156,6 +156,7 @@ static void _destroy_video(GServer * gserver)
 
 
 /* accessors */
+/* gserver_get_event */
 Event * gserver_get_event(GServer * gserver)
 {
 	return gserver->event;
@@ -163,6 +164,7 @@ Event * gserver_get_event(GServer * gserver)
 
 
 /* useful */
+/* gserver_loop */
 int gserver_loop(GServer * gserver)
 {
 	int ret = 0;
@@ -182,11 +184,11 @@ int gserver_loop(GServer * gserver)
 			VIDEO_PROTO0_ ## func); \
 }
 #define GSERVER_PROTO1d(func) \
-	void GServer_ ## func(double x) \
+	void GServer_ ## func(double * x) \
 { \
 	DEBUG_INTERFACE(); \
 	_gserver->video_plugin->proto1d(_gserver->video_plugin, NULL, \
-			VIDEO_PROTO1d_ ## func, x); \
+			VIDEO_PROTO1d_ ## func, *x); \
 }
 #define GSERVER_PROTO1i(func, type1) \
 	void GServer_ ## func (type1 x) \
@@ -196,11 +198,11 @@ int gserver_loop(GServer * gserver)
 			VIDEO_PROTO1i_ ## func, x); \
 }
 #define GSERVER_PROTO3f(func) \
-	void GServer_ ## func (float x, float y, float z) \
+	void GServer_ ## func (float * x, float * y, float * z) \
 { \
 	DEBUG_INTERFACE3f(x, y, z); \
 	_gserver->video_plugin->proto3f(_gserver->video_plugin, NULL, \
-			VIDEO_PROTO3f_ ## func, x, y, z); \
+			VIDEO_PROTO3f_ ## func, *x, *y, *z); \
 }
 #define GSERVER_PROTO3i(func, type1, type2, type3) \
 	void GServer_ ## func (int32_t x, int32_t y, int32_t z) \
@@ -210,11 +212,11 @@ int gserver_loop(GServer * gserver)
 			VIDEO_PROTO3i_ ## func, x, y, z); \
 }
 #define GSERVER_PROTO4f(func) \
-	void GServer_ ## func (float x, float y, float z, float t) \
+	void GServer_ ## func (float * x, float * y, float * z, float * t) \
 { \
 	DEBUG_INTERFACE4f(x, y, z, t); \
 	_gserver->video_plugin->proto4f(_gserver->video_plugin, NULL, \
-			VIDEO_PROTO4f_ ## func, x, y, z, t); \
+			VIDEO_PROTO4f_ ## func, *x, *y, *z, *t); \
 }
 
 /* proto0 */
@@ -241,3 +243,4 @@ GSERVER_PROTO3i(glVertex3i, int32_t, int32_t, int32_t)
 
 /* proto4f */
 GSERVER_PROTO4f(glClearColor)
+GSERVER_PROTO4f(glRotatef)
