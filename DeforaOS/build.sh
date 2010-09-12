@@ -75,7 +75,7 @@ check()
 	[ -z "$EMPTY" ] && return
 	USAGE=`echo -e "$USAGE\n\nError:$EMPTY need to be set"`
 	usage "$USAGE"
-	exit 2
+	exit $?
 }
 
 
@@ -300,20 +300,20 @@ target_uninstall()
 #usage
 usage()
 {
-	echo "Usage: build.sh [option=value...] target..."
-	echo "Targets:"
-	echo "  all		Build and install in a staging directory"
-	echo "  bootstrap	Bootstrap the system"
-	echo "  clean		Remove object files"
-	echo "  distclean	Remove all compiled files"
-	echo "  install	Build and install in the system"
-	echo "  image		Create a specific image"
-	echo "  uninstall	Uninstall everything"
+	echo "Usage: build.sh [option=value...] target..." 1>&2
+	echo "Targets:" 1>&2
+	echo "  all		Build and install in a staging directory" 1>&2
+	echo "  bootstrap	Bootstrap the system" 1>&2
+	echo "  clean		Remove object files" 1>&2
+	echo "  distclean	Remove all compiled files" 1>&2
+	echo "  image		Create a specific image" 1>&2
+	echo "  install	Build and install in the system" 1>&2
+	echo "  uninstall	Uninstall everything" 1>&2
 	if [ ! -z "$1" ]; then
-		echo
-		echo "$1"
+		echo 1>&2
+		echo "$1" 1>&2
 	fi
-	exit 1
+	return 1
 }
 
 
