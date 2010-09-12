@@ -84,8 +84,8 @@ static void _appbroker_head(AppBrokerData * data)
 	fputs("# include <System.h>\n\n", data->fp);
 	fputs("\n/* types */\n", data->fp);
 	fputs("typedef Buffer * BUFFER;\n", data->fp);
-	fputs("typedef double DOUBLE;\n", data->fp);
-	fputs("typedef float FLOAT;\n", data->fp);
+	fputs("typedef double * DOUBLE;\n", data->fp);
+	fputs("typedef float * FLOAT;\n", data->fp);
 	fputs("typedef int16_t INT16;\n", data->fp);
 	fputs("typedef int32_t INT32;\n", data->fp);
 	fputs("typedef uint16_t UINT16;\n", data->fp);
@@ -93,6 +93,8 @@ static void _appbroker_head(AppBrokerData * data)
 	fputs("typedef String const * STRING;\n", data->fp);
 	fputs("typedef void VOID;\n", data->fp);
 	fputs("\ntypedef BUFFER BUFFER_IN;\n", data->fp);
+	fputs("\ntypedef DOUBLE DOUBLE_IN;\n", data->fp);
+	fputs("\ntypedef FLOAT FLOAT_IN;\n", data->fp);
 	fputs("typedef INT32 INT32_IN;\n", data->fp);
 	fputs("typedef UINT32 UINT32_IN;\n", data->fp);
 	fputs("typedef STRING STRING_IN;\n", data->fp);
