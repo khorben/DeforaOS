@@ -35,6 +35,15 @@ typedef enum _GHtmlDisplay
 	GHTML_DISPLAY_INLINE
 } GHtmlDisplay;
 
+typedef enum _GHtmlPosition
+{
+	GHTML_POSITION_BEFORE = 0,
+	GHTML_POSITION_HEAD,
+	GHTML_POSITION_HEAD_TITLE,
+	GHTML_POSITION_BODY,
+	GHTML_POSITION_AFTER
+} GHtmlPosition;
+
 typedef struct _GHtmlProperty
 {
 	char const * name;
@@ -72,6 +81,9 @@ typedef struct _GHtml
 	GtkTextBuffer * tbuffer;
 	GHtmlTag tags[GHTML_TAGS_COUNT];
 	GtkTextTag * tag;
+
+	/* parsing */
+	GHtmlPosition position;
 } GHtml;
 
 
@@ -241,9 +253,10 @@ void ghtml_delete(GtkWidget * widget)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	free(ghtml->buffer);
 	if(ghtml->conn != NULL)
 		_conn_delete(ghtml->conn);
+	free(ghtml->title);
+	free(ghtml->buffer);
 	free(ghtml);
 }
 
@@ -559,6 +572,8 @@ static int _ghtml_document_load(GHtml * ghtml, char const * url,
 	ghtml->buffer_cnt = 0;
 	ghtml->search = 0;
 	surfer_set_location(ghtml->surfer, url);
+	free(ghtml->title);
+	ghtml->title = NULL;
 	surfer_set_title(ghtml->surfer, NULL);
 	if((ghtml->conn = _conn_new(ghtml->surfer, url, post)) == NULL)
 		return 1;
@@ -583,6 +598,7 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 		if((xml = xml_new_string(&prefs, ghtml->buffer,
 						ghtml->buffer_cnt)) == NULL)
 			return 0;
+		ghtml->position = GHTML_POSITION_BEFORE;
 		if((doc = xml_get_document(xml)) != NULL)
 			_document_load_write_node(ghtml, doc->root);
 		xml_delete(xml);
@@ -604,6 +620,15 @@ static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
 	switch(node->type)
 	{
 		case XML_NODE_TYPE_DATA:
+			if(ghtml->position == GHTML_POSITION_HEAD_TITLE)
+			{
+				free(ghtml->title);
+				ghtml->title = strdup(node->data.buffer);
+				surfer_set_title(ghtml->surfer, ghtml->title);
+				break;
+			}
+			else if(ghtml->position != GHTML_POSITION_BODY)
+				break;
 			/* FIXME looks like memory corruption at some point */
 			gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
 			gtk_text_buffer_insert_with_tags(ghtml->tbuffer, &iter,
@@ -645,6 +670,15 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 						p[i].value, NULL);
 		}
 	}
+	if(strcmp(node->name, "head") == 0)
+		ghtml->position = GHTML_POSITION_HEAD;
+	else if(strcmp(node->name, "body") == 0)
+		ghtml->position = GHTML_POSITION_BODY;
+	else if(strcmp(node->name, "title") == 0)
+	{
+		if(ghtml->position == GHTML_POSITION_HEAD)
+			ghtml->position = GHTML_POSITION_HEAD_TITLE;
+	}
 	if(display == GHTML_DISPLAY_BLOCK)
 	{
 		gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
@@ -657,6 +691,15 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 	else
 		for(i = 0; i < node->childs_cnt; i++)
 			_document_load_write_node(ghtml, node->childs[i]);
+	if(strcmp(node->name, "head") == 0)
+		ghtml->position = GHTML_POSITION_BEFORE;
+	else if(strcmp(node->name, "body") == 0)
+		ghtml->position = GHTML_POSITION_AFTER;
+	else if(strcmp(node->name, "title") == 0)
+	{
+		if(ghtml->position == GHTML_POSITION_HEAD_TITLE)
+			ghtml->position = GHTML_POSITION_HEAD;
+	}
 }
 
 static void _document_load_write_node_tag_link(GHtml * ghtml, XMLNodeTag * node)
