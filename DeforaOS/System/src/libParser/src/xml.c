@@ -52,7 +52,6 @@ struct _XML
 	Parser * parser;
 	XMLContext context;
 	char * inject;
-	int inject_first;
 };
 
 typedef enum _XMLCode
@@ -69,12 +68,13 @@ typedef enum _XMLCode
 
 
 /* prototypes */
+static int _xml_inject(XML * xml, char const * string);
+
 /* attribute */
 static XMLAttribute * _xml_attribute_new(char const * name, char const * value);
 static void _xml_attribute_delete(XMLAttribute * attribute);
 static int _xml_attribute_set_value(XMLAttribute * attribute,
 		char const * value);
-
 
 /* callbacks */
 static int _xml_callback_data(Parser * parser, Token * token, int c,
@@ -101,6 +101,7 @@ static XMLDocument * _xml_document_new(XMLNode * node);
 static void _xml_document_delete(XMLDocument * document);
 
 /* filters */
+static int _xml_filter_comment(int * c, void * data);
 static int _xml_filter_inject(int * c, void * data);
 static int _xml_filter_whitespace(int * c, void * data);
 
@@ -146,19 +147,17 @@ static XML * _new_do(XMLPrefs * prefs, char const * pathname,
 		xml->parser = parser_new_string(string, length);
 	xml->context = XML_CONTEXT_DATA;
 	xml->inject = NULL;
-	xml->inject_first = 0;
 	if(xml->parser == NULL)
 	{
 		xml_delete(xml);
 		return NULL;
 	}
-	/* FIXME optionally filter out comments */
+	parser_add_filter(xml->parser, _xml_filter_inject, xml);
 	if((xml->prefs.filters & XML_FILTER_WHITESPACE)
 			== XML_FILTER_WHITESPACE)
-	{
-		parser_add_filter(xml->parser, _xml_filter_inject, xml);
 		parser_add_filter(xml->parser, _xml_filter_whitespace, xml);
-	}
+	/* FIXME filter out comments only optionally */
+	parser_add_filter(xml->parser, _xml_filter_comment, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_whitespace, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_special, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_name, xml);
@@ -217,8 +216,9 @@ XMLDocument * xml_get_document(XML * xml)
 			token_delete(token))
 	{
 #ifdef DEBUG
-		printf("code: %u, string: \"%s\", close=%d\n", token_get_code(
-					token), token_get_string(token), close);
+		fprintf(stderr, "DEBUG: %s() code=%u string: \"%s\" close=%d\n",
+				__func__, token_get_code(token),
+				token_get_string(token), close);
 #endif
 		switch((code = token_get_code(token)))
 		{
@@ -316,6 +316,26 @@ char const * xml_get_filename(XML * xml)
 
 /* private */
 /* functions */
+/* xml_inject */
+static int _xml_inject(XML * xml, char const * string)
+{
+	if(string == NULL || string[0] == '\0')
+		return 0; /* don't bother */
+	if(xml->inject == NULL)
+	{
+		if((xml->inject = string_new(string)) == NULL)
+			return -1;
+	}
+	else if(string_append(&xml->inject, string) != 0)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\") => \"%s\"\n", __func__,
+			(void*)xml, string, xml->inject);
+#endif
+	return 0;
+}
+
+
 /* attribute */
 /* xml_attribute_new */
 static XMLAttribute * _xml_attribute_new(char const * name, char const * value)
@@ -638,6 +658,39 @@ static void _xml_document_delete(XMLDocument * document)
 
 
 /* filters */
+/* xml_filter_comment */
+static int _xml_filter_comment(int * c, void * data)
+{
+	XML * xml = data;
+	char start[5] = "<!--";
+	size_t i;
+
+	if(*c != '<')
+		return 0;
+	for(i = 1; i < sizeof(start) - 1; i++)
+	{
+		if((*c = parser_scan(xml->parser)) == start[i])
+			continue;
+		start[i] = *c;
+		start[i + 1] = '\0';
+		if(_xml_inject(xml, &start[1]) != 0)
+			return -1;
+		*c = '<';
+		return 1;
+	}
+	for(*c = parser_scan(xml->parser), i = 0; *c != EOF;
+			*c = parser_scan(xml->parser))
+		if(*c == '-')
+			i++;
+		else if(i >= 2 && *c == '>')
+			break;
+		else
+			i = 0;
+	*c = parser_scan(xml->parser);
+	return 0;
+}
+
+
 /* xml_filter_inject */
 static int _xml_filter_inject(int * c, void * data)
 {
@@ -652,12 +705,6 @@ static int _xml_filter_inject(int * c, void * data)
 		d = *c;
 		*c = xml->inject[0];
 		memmove(xml->inject, &xml->inject[1], len--);
-		if(xml->inject_first && d != EOF)
-		{
-			xml->inject[len++] = d;
-			xml->inject[len] = '\0';
-			xml->inject_first = 0;
-		}
 	}
 	if(len > 0)
 		return 1;
@@ -675,14 +722,15 @@ static int _xml_filter_whitespace(int * c, void * data)
 
 	if(!isspace(*c))
 		return 0;
-	do
-		*c = parser_scan(xml->parser);
-	while(isspace(*c));
+	for(*c = parser_scan(xml->parser); isspace(*c);
+			*c = parser_scan(xml->parser));
+	if(*c == EOF)
+		return 0;
 	buf[0] = *c;
-	string_append(&xml->inject, buf);
-	xml->inject_first = 1;
+	if(_xml_inject(xml, buf) != 0)
+		return -1;
 	*c = ' ';
-	return 0;
+	return 1;
 }
 
 
