@@ -424,19 +424,17 @@ static int _glx_timeout(void * data)
 			case Expose:
 				if(event.xexpose.count != 0)
 					break;
-				_glx_func1i[VIDEO_PROTO1i_glClear](
-						GL_COLOR_BUFFER_BIT
+				glClear(GL_COLOR_BUFFER_BIT
 						| GL_DEPTH_BUFFER_BIT);
-				_glx_func0[VIDEO_PROTO0_glLoadIdentity]();
+				glLoadIdentity();
 				for(i = 0; i < glx->clients_cnt; i++)
 					_glx_client_calls(&glx->clients[i]);
 				glXSwapBuffers(glx->display, glx->window);
 				break;
 		}
 	}
-	_glx_func1i[VIDEO_PROTO1i_glClear](GL_COLOR_BUFFER_BIT
-			| GL_DEPTH_BUFFER_BIT);
-	_glx_func0[VIDEO_PROTO0_glLoadIdentity]();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
 	for(i = 0; i < glx->clients_cnt; i++)
 		_glx_client_calls(&glx->clients[i]);
 	glXSwapBuffers(glx->display, glx->window);
