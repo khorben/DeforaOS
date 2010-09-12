@@ -757,13 +757,13 @@ static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * buffer,
 	if((node = _xml_node_new(XML_NODE_TYPE_DATA, parent)) == NULL)
 		return NULL;
 	/* XXX use buffer_new() */
-	node->data.buffer = object_new(size);
-	if(node->data.buffer == NULL)
+	if((node->data.buffer = object_new(size + 1)) == NULL)
 	{
 		_xml_node_delete(node);
 		return NULL;
 	}
 	memcpy(node->data.buffer, buffer, size);
+	node->data.buffer[size] = '\0'; /* terminating NULL character */
 	node->data.size = size;
 	return node;
 }
