@@ -59,7 +59,7 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 			return g_strdup_printf("%s%s", base, url);
 		}
 		/* construct from basename */
-		if((b = strdup(base)) == NULL)
+		if((b = g_strdup(base)) == NULL)
 			return NULL;
 		p = b;
 		/* FIXME implement other protocols */
