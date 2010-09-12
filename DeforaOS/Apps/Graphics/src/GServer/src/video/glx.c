@@ -303,8 +303,6 @@ static void _glx_proto0(VideoPlugin * plugin, GServerClient * client,
 {
 	GLXPlugin * glx = plugin->priv;
 
-	if(func == VIDEO_PROTO0_SwapBuffers)
-		return;
 	/* XXX we can ignore errors */
 	_glx_queue(glx, client, VIDEO_PROTO_0, func);
 }
@@ -436,6 +434,12 @@ static int _glx_timeout(void * data)
 				break;
 		}
 	}
+	_glx_func1i[VIDEO_PROTO1i_glClear](GL_COLOR_BUFFER_BIT
+			| GL_DEPTH_BUFFER_BIT);
+	_glx_func0[VIDEO_PROTO0_glLoadIdentity]();
+	for(i = 0; i < glx->clients_cnt; i++)
+		_glx_client_calls(&glx->clients[i]);
+	glXSwapBuffers(glx->display, glx->window);
 	return 0;
 }
 
