@@ -35,6 +35,12 @@ typedef enum _GHtmlDisplay
 	GHTML_DISPLAY_INLINE
 } GHtmlDisplay;
 
+typedef struct _GHtmlEntity
+{
+	char const * name;
+	char const * string;
+} GHtmlEntity;
+
 typedef enum _GHtmlPosition
 {
 	GHTML_POSITION_BEFORE = 0,
@@ -88,6 +94,46 @@ typedef struct _GHtml
 
 
 /* constants */
+/* entities */
+static const GHtmlEntity _ghtml_entities[] =
+{
+	{ "Aacute", "Á" },
+	{ "Agrave", "À" },
+	{ "aacute", "á" },
+	{ "acute", "Ž" },
+	{ "agrave", "à" },
+	{ "amp", "&" },
+	{ "brvbar", "|" },
+	{ "Ccedil", "Ç" },
+	{ "ccedil", "ç" },
+	{ "cent", "¢" },
+	{ "copy", "©" },
+	{ "deg", "°" },
+	{ "Eacute", "É" },
+	{ "Egrave", "È" },
+	{ "eacute", "é" },
+	{ "egrave", "è" },
+	{ "gt", ">" },
+	{ "iexcl", "¡" },
+	{ "lt", "<" },
+	{ "macr", "¯" },
+	{ "micro", "µ" },
+	{ "middot", "·" },
+	{ "nbsp", " " },
+	{ "para", "¶" },
+	{ "plusmn", "±" },
+	{ "pound", "£" },
+	{ "quot", "\"" },
+	{ "reg", "®" },
+	{ "sect", "§" },
+	{ "sup2", "²" },
+	{ "sup3", "³" },
+	{ "uml", "š" },
+	{ "yen", "¥" }
+};
+#define GHTML_ENTITIES_COUNT (sizeof(_ghtml_entities) \
+		/ sizeof(*_ghtml_entities))
+
 /* properties */
 static const GHtmlProperty _ghtml_properties_a[] =
 {
@@ -565,6 +611,8 @@ static ssize_t _document_load_write(Conn * conn, char const * buf, size_t size,
 		gpointer data);
 static gboolean _document_load_idle(gpointer data);
 static void _document_load_write_node(GHtml * ghtml, XMLNode * node);
+static void _document_load_write_node_entity(GHtml * ghtml,
+		XMLNodeEntity * node);
 static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node);
 static void _document_load_write_node_tag_link(GHtml * ghtml,
 		XMLNodeTag * node);
@@ -653,12 +701,35 @@ static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
 					node->data.buffer, node->data.size,
 					ghtml->tag, NULL);
 			break;
-		case XML_NODE_TYPE_ENTITY: /* XXX ignore for now */
+		case XML_NODE_TYPE_ENTITY:
+			_document_load_write_node_entity(ghtml, &node->entity);
 			break;
 		case XML_NODE_TYPE_TAG:
 			_document_load_write_node_tag(ghtml, &node->tag);
 			break;
 	}
+}
+
+static void _document_load_write_node_entity(GHtml * ghtml,
+		XMLNodeEntity * node)
+{
+	size_t i;
+	char const * string = NULL;
+	GtkTextIter iter;
+
+	if(ghtml->position != GHTML_POSITION_BODY)
+		return;
+	for(i = 0; i < GHTML_ENTITIES_COUNT; i++)
+		if(strcmp(_ghtml_entities[i].name, node->name) == 0)
+		{
+			string = _ghtml_entities[i].string;
+			break;
+		}
+	if(string == NULL)
+		return;
+	gtk_text_buffer_get_end_iter(ghtml->tbuffer, &iter);
+	gtk_text_buffer_insert_with_tags(ghtml->tbuffer, &iter, string,
+			strlen(string), ghtml->tag, NULL);
 }
 
 static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
