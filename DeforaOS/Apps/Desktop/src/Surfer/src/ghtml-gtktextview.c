@@ -58,7 +58,7 @@ typedef struct _GHtmlTag
 	GtkTextTag * tag;
 } GHtmlTag;
 
-#define GHTML_TAGS_COUNT 21
+#define GHTML_TAGS_COUNT 24
 typedef struct _GHtml
 {
 	Surfer * surfer;
@@ -101,6 +101,13 @@ static const GHtmlProperty _ghtml_properties_b[] =
 {
 	{ "weight", (void*)PANGO_WEIGHT_BOLD },
 	{ "weight-set", (void*)TRUE },
+	{ NULL, NULL }
+};
+
+static const GHtmlProperty _ghtml_properties_del[] =
+{
+	{ "strikethrough", (void*)TRUE },
+	{ "strikethrough-set", (void*)TRUE },
 	{ NULL, NULL }
 };
 
@@ -186,6 +193,7 @@ static const GHtmlTag _ghtml_tags[GHTML_TAGS_COUNT] =
 {
 	{ "a", GHTML_DISPLAY_INLINE,	_ghtml_properties_a,	NULL	},
 	{ "b", GHTML_DISPLAY_INLINE,	_ghtml_properties_b,	NULL	},
+	{ "del", GHTML_DISPLAY_INLINE,	_ghtml_properties_del,	NULL	},
 	{ "div", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
 	{ "em", GHTML_DISPLAY_INLINE,	_ghtml_properties_b,	NULL	},
 	{ "form", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
@@ -201,6 +209,8 @@ static const GHtmlTag _ghtml_tags[GHTML_TAGS_COUNT] =
 	{ "ol", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
 	{ "p", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
 	{ "pre", GHTML_DISPLAY_BLOCK,_ghtml_properties_pre,	NULL	},
+	{ "s", GHTML_DISPLAY_INLINE,	_ghtml_properties_del,	NULL	},
+	{ "strike", GHTML_DISPLAY_INLINE,_ghtml_properties_del,	NULL	},
 	{ "strong", GHTML_DISPLAY_INLINE,_ghtml_properties_b,	NULL	},
 	{ "tt", GHTML_DISPLAY_INLINE,	_ghtml_properties_tt,	NULL	},
 	{ "u", GHTML_DISPLAY_INLINE,	_ghtml_properties_u,	NULL	},
