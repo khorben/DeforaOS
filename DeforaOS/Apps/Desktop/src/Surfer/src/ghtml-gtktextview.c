@@ -635,6 +635,8 @@ static void _document_load_write_node(GHtml * ghtml, XMLNode * node)
 					node->data.buffer, node->data.size,
 					ghtml->tag, NULL);
 			break;
+		case XML_NODE_TYPE_ENTITY: /* XXX ignore for now */
+			break;
 		case XML_NODE_TYPE_TAG:
 			_document_load_write_node_tag(ghtml, &node->tag);
 			break;
