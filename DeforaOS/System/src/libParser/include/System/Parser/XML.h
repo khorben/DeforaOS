@@ -48,7 +48,8 @@ typedef struct _XMLNodeTag XMLNodeTag;
 typedef enum _XMLNodeType
 {
 	XML_NODE_TYPE_TAG,
-	XML_NODE_TYPE_DATA
+	XML_NODE_TYPE_DATA,
+	XML_NODE_TYPE_ENTITY
 } XMLNodeType;
 
 struct _XMLNodeTag
@@ -70,6 +71,13 @@ typedef struct _XMLNodeData
 	size_t size;
 } XMLNodeData;
 
+typedef struct _XMLNodeEntity
+{
+	XMLNodeType type;
+	XMLNodeTag * parent;
+	char * name;
+} XMLNodeEntity;
+
 union _XMLNode
 {
 	XMLNodeType type;
@@ -80,6 +88,7 @@ union _XMLNode
 	} parent;
 	XMLNodeTag tag;
 	XMLNodeData data;
+	XMLNodeEntity entity;
 };
 
 typedef struct _XMLDocument

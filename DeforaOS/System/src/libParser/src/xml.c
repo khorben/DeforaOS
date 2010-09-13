@@ -57,6 +57,7 @@ struct _XML
 typedef enum _XMLCode
 {
 	XML_CODE_DATA,
+	XML_CODE_ENTITY,
 	XML_CODE_TAG_ATTRIBUTE,
 	XML_CODE_TAG_ATTRIBUTE_VALUE,
 	XML_CODE_TAG_CLOSE,
@@ -78,6 +79,8 @@ static int _xml_attribute_set_value(XMLAttribute * attribute,
 
 /* callbacks */
 static int _xml_callback_data(Parser * parser, Token * token, int c,
+		void * data);
+static int _xml_callback_entity(Parser * parser, Token * token, int c,
 		void * data);
 static int _xml_callback_tag_attribute(Parser * parser, Token * token, int c,
 		void * data);
@@ -109,6 +112,7 @@ static int _xml_filter_whitespace(int * c, void * data);
 static XMLNode * _xml_node_new(XMLNodeType type, XMLNodeTag * parent);
 static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * buffer,
 		size_t size);
+static XMLNode * _xml_node_new_entity(XMLNodeTag * parent, char const * name);
 static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name);
 static void _xml_node_delete(XMLNode * node);
 
@@ -167,6 +171,7 @@ static XML * _new_do(XMLPrefs * prefs, char const * pathname,
 	parser_add_callback(xml->parser, _xml_callback_tag_close, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_enter, xml);
 	parser_add_callback(xml->parser, _xml_callback_tag_leave, xml);
+	parser_add_callback(xml->parser, _xml_callback_entity, xml);
 	parser_add_callback(xml->parser, _xml_callback_data, xml);
 	return xml;
 }
@@ -193,6 +198,7 @@ void xml_delete(XML * xml)
 /* accessors */
 /* xml_get_document */
 static void _document_data(Token * token, XMLNodeTag * current);
+static void _document_entity(Token * token, XMLNodeTag * current);
 static void _document_tag_attribute(Token * token, XMLNodeTag * node,
 		XMLAttribute ** attribute);
 static void _document_tag_attribute_value(Token * token,
@@ -224,6 +230,9 @@ XMLDocument * xml_get_document(XML * xml)
 		{
 			case XML_CODE_DATA:
 				_document_data(token, current);
+				break;
+			case XML_CODE_ENTITY:
+				_document_entity(token, current);
 				break;
 			case XML_CODE_TAG_ATTRIBUTE:
 				_document_tag_attribute(token, current,
@@ -261,6 +270,19 @@ static void _document_data(Token * token, XMLNodeTag * current)
 	if((string = token_get_string(token)) != NULL)
 		size = string_length(string);
 	node = _xml_node_new_data(current, string, size);
+	_xml_node_tag_add_child(current, node);
+}
+
+static void _document_entity(Token * token, XMLNodeTag * current)
+{
+	XMLNode * node;
+	String const * string;
+
+	if(current == NULL)
+		return; /* XXX warn */
+	if((string = token_get_string(token)) == NULL)
+		return; /* XXX warn */
+	node = _xml_node_new_entity(current, string);
 	_xml_node_tag_add_child(current, node);
 }
 
@@ -404,11 +426,45 @@ static int _xml_callback_data(Parser * parser, Token * token, int c,
 		string = p;
 		string[len++] = c;
 		c = parser_scan_filter(parser);
+		if(c == '&')
+			break;
 	}
 	if(len == 0)
 		return 1;
 	DEBUG_CALLBACK();
 	token_set_code(token, XML_CODE_DATA);
+	string[len] = '\0';
+	token_set_string(token, string);
+	free(string);
+	return 0;
+}
+
+
+/* xml_callback_entity */
+static int _xml_callback_entity(Parser * parser, Token * token, int c,
+		void * data)
+{
+	XML * xml = data;
+	char * string = NULL;
+	size_t len = 0;
+	char * p;
+
+	if(xml->context != XML_CONTEXT_DATA || c != '&')
+		return 1;
+	while(c != EOF && c != '<')
+	{
+		if((p = realloc(string, len + 2)) == NULL)
+			return 1; /* XXX report error */
+		string = p;
+		string[len] = c;
+		c = parser_scan_filter(parser);
+		if(string[len++] == ';')
+			break;
+	}
+	if(len == 0)
+		return 1;
+	DEBUG_CALLBACK();
+	token_set_code(token, XML_CODE_ENTITY);
 	string[len] = '\0';
 	token_set_string(token, string);
 	free(string);
@@ -769,6 +825,22 @@ static XMLNode * _xml_node_new_data(XMLNodeTag * parent, char const * buffer,
 }
 
 
+/* xml_node_new_entity */
+static XMLNode * _xml_node_new_entity(XMLNodeTag * parent, char const * name)
+{
+	XMLNode * node;
+
+	if((node = _xml_node_new(XML_NODE_TYPE_ENTITY, parent)) == NULL)
+		return NULL;
+	if((node->entity.name = string_new(name)) == NULL)
+	{
+		_xml_node_delete(node);
+		return NULL;
+	}
+	return node;
+}
+
+
 /* xml_node_new_tag */
 static XMLNode * _xml_node_new_tag(XMLNodeTag * parent, char const * name)
 {
@@ -808,6 +880,9 @@ static void _xml_node_delete(XMLNode * node)
 				_xml_node_delete(node->tag.childs[i]);
 			free(node->tag.childs);
 			free(node->tag.name);
+			break;
+		case XML_NODE_TYPE_ENTITY:
+			string_delete(node->entity.name);
 			break;
 	}
 	object_delete(node);
