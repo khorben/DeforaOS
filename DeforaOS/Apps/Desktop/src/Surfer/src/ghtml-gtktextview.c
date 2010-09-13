@@ -58,7 +58,7 @@ typedef struct _GHtmlTag
 	GtkTextTag * tag;
 } GHtmlTag;
 
-#define GHTML_TAGS_COUNT 20
+#define GHTML_TAGS_COUNT 21
 typedef struct _GHtml
 {
 	Surfer * surfer;
@@ -153,6 +153,13 @@ static const GHtmlProperty _ghtml_properties_h6[] =
 	{ NULL, NULL }
 };
 
+static const GHtmlProperty _ghtml_properties_i[] =
+{
+	{ "style", (void*)PANGO_STYLE_ITALIC },
+	{ "style-set", (void*)TRUE },
+	{ NULL, NULL }
+};
+
 static const GHtmlProperty _ghtml_properties_pre[] =
 {
 	{ "family", "Monospace" },
@@ -189,6 +196,7 @@ static const GHtmlTag _ghtml_tags[GHTML_TAGS_COUNT] =
 	{ "h5", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h5,	NULL	},
 	{ "h6", GHTML_DISPLAY_BLOCK,	_ghtml_properties_h6,	NULL	},
 	{ "hr", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
+	{ "i", GHTML_DISPLAY_INLINE,	_ghtml_properties_i,	NULL	},
 	{ "li", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
 	{ "ol", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
 	{ "p", GHTML_DISPLAY_BLOCK,	NULL,			NULL	},
