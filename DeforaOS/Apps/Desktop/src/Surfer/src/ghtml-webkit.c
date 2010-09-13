@@ -385,7 +385,6 @@ static void _ghtml_set_status(GtkWidget * ghtml, char const * status)
 {
 	Surfer * surfer;
 	gdouble progress;
-	char * p;
 
 	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
 	free(g_object_get_data(G_OBJECT(ghtml), "status"));
