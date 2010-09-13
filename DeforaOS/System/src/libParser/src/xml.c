@@ -451,14 +451,14 @@ static int _xml_callback_entity(Parser * parser, Token * token, int c,
 
 	if(xml->context != XML_CONTEXT_DATA || c != '&')
 		return 1;
-	while(c != EOF && c != '<')
+	for(c = parser_scan_filter(parser); c != EOF && c != '<'; len++)
 	{
 		if((p = realloc(string, len + 2)) == NULL)
 			return 1; /* XXX report error */
 		string = p;
 		string[len] = c;
 		c = parser_scan_filter(parser);
-		if(string[len++] == ';')
+		if(string[len] == ';')
 			break;
 	}
 	if(len == 0)

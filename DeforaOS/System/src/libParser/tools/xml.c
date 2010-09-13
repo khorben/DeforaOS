@@ -90,6 +90,9 @@ static void _main_node(XMLNode * node)
 		case XML_NODE_TYPE_DATA:
 			fwrite(node->data.buffer, 1, node->data.size, stdout);
 			break;
+		case XML_NODE_TYPE_ENTITY:
+			printf("&%s;", node->entity.name);
+			break;
 		case XML_NODE_TYPE_TAG:
 			printf("<%s", node->tag.name);
 			for(i = 0; i < node->tag.attributes_cnt; i++)
