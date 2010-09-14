@@ -91,9 +91,10 @@ typedef struct _VideoPlugin VideoPlugin;
 typedef struct _VideoPluginHelper
 {
 	GServer * gserver;
-	Event * (*get_event)(GServer * gserver);
 	char const * (*config_get)(GServer * gserver, char const * section,
 			char const * variable);
+	Event * (*get_event)(GServer * gserver);
+	void (*refresh)(GServer * gserver);
 } VideoPluginHelper;
 
 struct _VideoPlugin
@@ -102,18 +103,15 @@ struct _VideoPlugin
 	char const * name;
 	int (*init)(VideoPlugin * plugin);
 	void (*destroy)(VideoPlugin * plugin);
-	void (*proto0)(VideoPlugin * plugin, GServerClient * client,
-			VideoProto0 func);
-	void (*proto1d)(VideoPlugin * plugin, GServerClient * client,
-			VideoProto1d func, double x);
-	void (*proto1i)(VideoPlugin * plugin, GServerClient * client,
-			VideoProto1i func, int32_t x);
-	void (*proto3f)(VideoPlugin * plugin, GServerClient * client,
-			VideoProto3f func, float x, float y, float z);
-	void (*proto3i)(VideoPlugin * plugin, GServerClient * client,
-			VideoProto3i func, int32_t x, int32_t y, int32_t z);
-	void (*proto4f)(VideoPlugin * plugin, GServerClient * client,
-			VideoProto4f func, float x, float y, float z, float t);
+	void (*proto0)(VideoPlugin * plugin, VideoProto0 func);
+	void (*proto1d)(VideoPlugin * plugin, VideoProto1d func, double x);
+	void (*proto1i)(VideoPlugin * plugin, VideoProto1i func, int32_t x);
+	void (*proto3f)(VideoPlugin * plugin, VideoProto3f func, float x,
+			float y, float z);
+	void (*proto3i)(VideoPlugin * plugin, VideoProto3i func, int32_t x,
+			int32_t y, int32_t z);
+	void (*proto4f)(VideoPlugin * plugin, VideoProto4f func, float x,
+			float y, float z, float t);
 	void * priv;
 };
 

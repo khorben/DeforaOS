@@ -25,7 +25,6 @@
 /* public */
 /* types */
 typedef struct _GServer GServer;
-typedef struct _GServerClient GServerClient;
 
 
 /* functions */
@@ -39,5 +38,6 @@ Event * gserver_get_event(GServer * gserver);
 
 /* useful */
 int gserver_loop(GServer * gserver);
+void gserver_refresh(GServer * gserver);
 
 #endif /* !GSERVER_GSERVER_H */

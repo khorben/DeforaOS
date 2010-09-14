@@ -25,7 +25,7 @@ subdirs:
 	./appbroker.sh "../data/GServer.h"
 
 GServer_OBJS = gserver.o main.o
-GServer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+GServer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gl`
 GServer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 GServer: $(GServer_OBJS)

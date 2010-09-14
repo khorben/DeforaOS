@@ -15,7 +15,6 @@
 
 
 
-#include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
@@ -28,93 +27,34 @@
 /* GLX */
 /* private */
 /* types */
-typedef struct _GLXCall GLXCall;
-typedef struct _GLXClient GLXClient;
-typedef struct _GLXPlugin GLXPlugin;
-
-struct _GLXCall
-{
-	VideoProto type;
-	unsigned int func;
-	union
-	{
-		struct
-		{
-			double x;
-		} _1d;
-		struct
-		{
-			int32_t x;
-		} _1i;
-		struct
-		{
-			float x;
-			float y;
-			float z;
-		} _3f;
-		struct
-		{
-			int32_t x;
-			int32_t y;
-			int32_t z;
-		} _3i;
-		struct
-		{
-			float x;
-			float y;
-			float z;
-			float t;
-		} _4f;
-	} args;
-};
-
-struct _GLXClient
-{
-	GServerClient * client;
-	GLXCall * calls;
-	size_t calls_cnt;
-};
-
-struct _GLXPlugin
+typedef struct _GLXPlugin
 {
 	Display * display;
 	int screen;
 	Window window;
+	int double_buffered;
 	GLXContext context;
 	unsigned int width;
 	unsigned int height;
-
-	GLXClient * clients;
-	size_t clients_cnt;
-};
+} GLXPlugin;
 
 
 /* prototypes */
 static int _glx_init(VideoPlugin * plugin);
 static void _glx_destroy(VideoPlugin * plugin);
 
-static void _glx_proto0(VideoPlugin * plugin, GServerClient * client,
-		VideoProto0 func);
-static void _glx_proto1d(VideoPlugin * plugin, GServerClient * client,
-		VideoProto1d func, double x);
-static void _glx_proto1i(VideoPlugin * plugin, GServerClient * client,
-		VideoProto1i func, int32_t x);
-static void _glx_proto3f(VideoPlugin * plugin, GServerClient * client,
-		VideoProto3f func, float x, float y, float z);
-static void _glx_proto3i(VideoPlugin * plugin, GServerClient * client,
-		VideoProto3i func, int32_t x, int32_t y, int32_t z);
-static void _glx_proto4f(VideoPlugin * plugin, GServerClient * client,
-		VideoProto4f func, float x, float y, float z, float t);
+static void _glx_proto0(VideoPlugin * plugin, VideoProto0 func);
+static void _glx_proto1d(VideoPlugin * plugin, VideoProto1d func, double x);
+static void _glx_proto1i(VideoPlugin * plugin, VideoProto1i func, int32_t x);
+static void _glx_proto3f(VideoPlugin * plugin, VideoProto3f func, float x,
+		float y, float z);
+static void _glx_proto3i(VideoPlugin * plugin, VideoProto3i func, int32_t x,
+		int32_t y, int32_t z);
+static void _glx_proto4f(VideoPlugin * plugin, VideoProto4f func, float x,
+		float y, float z, float t);
 
 static void _glx_swap_buffers(void);
 static int _glx_timeout(void * data);
-
-static GLXClient * _glx_get_client(GLXPlugin * glx, GServerClient * client);
-
-static GLXCall *_glx_queue(GLXPlugin * glx, GServerClient * client,
-		VideoProto type, unsigned int func);
-
-static void _glx_client_calls(GLXClient * client);
 
 
 /* variables */
@@ -204,25 +144,18 @@ static int _glx_init(VideoPlugin * plugin)
 	event = plugin->helper->get_event(plugin->helper->gserver);
 	glx->display = XOpenDisplay(NULL);
 	glx->screen = DefaultScreen(glx->display);
+	glx->double_buffered = 1;
 	if((vi = glXChooseVisual(glx->display, glx->screen, attributes))
 			== NULL)
 	{
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: Single buffered visual\n");
-#endif
+		glx->double_buffered = 0;
 		attributes[(sizeof(attributes) / sizeof(*attributes)) - 2]
 			= None;
 		vi = glXChooseVisual(glx->display, glx->screen, attributes);
 	}
-#ifdef DEBUG
-	else
-		fprintf(stderr, "DEBUG: Double buffered visual\n");
-#endif
 	glx->context = glXCreateContext(glx->display, vi, 0, GL_TRUE);
 	glx->width = 640;
 	glx->height = 480;
-	glx->clients = NULL;
-	glx->clients_cnt = 0;
 	memset(&attr, 0, sizeof(attr));
 	root = RootWindow(glx->display, vi->screen);
 	attr.colormap = XCreateColormap(glx->display, root, vi->visual,
@@ -298,92 +231,62 @@ static void _glx_destroy(VideoPlugin * plugin)
 
 /* functions */
 /* glx_proto0 */
-static void _glx_proto0(VideoPlugin * plugin, GServerClient * client,
-		VideoProto0 func)
+static void _glx_proto0(VideoPlugin * plugin, VideoProto0 func)
 {
 	GLXPlugin * glx = plugin->priv;
 
-	/* XXX we can ignore errors */
-	_glx_queue(glx, client, VIDEO_PROTO_0, func);
+	if(func == VIDEO_PROTO0_SwapBuffers)
+	{
+		if(glx->double_buffered != 0)
+			glXSwapBuffers(glx->display, glx->window);
+		return;
+	}
+	_glx_func0[func]();
 }
 
 
 /* glx_proto1d */
-static void _glx_proto1d(VideoPlugin * plugin, GServerClient * client,
-		VideoProto1d func, double x)
+static void _glx_proto1d(VideoPlugin * plugin, VideoProto1d func, double x)
 {
-	GLXPlugin * glx = plugin->priv;
-	GLXCall * call;
-
-	if((call = _glx_queue(glx, client, VIDEO_PROTO_1d, func)) == NULL)
-		return;
-	call->args._1d.x = x;
+	_glx_func1d[func](x);
 }
 
 
 /* glx_proto1i */
-static void _glx_proto1i(VideoPlugin * plugin, GServerClient * client,
-		VideoProto1i func, int32_t x)
+static void _glx_proto1i(VideoPlugin * plugin, VideoProto1i func, int32_t x)
 {
-	GLXPlugin * glx = plugin->priv;
-	GLXCall * call;
-
-	if((call = _glx_queue(glx, client, VIDEO_PROTO_1i, func)) == NULL)
-		return;
-	call->args._1i.x = x;
+	_glx_func1i[func](x);
 }
 
 
 /* glx_proto3f */
-static void _glx_proto3f(VideoPlugin * plugin, GServerClient * client,
-		VideoProto3f func, float x, float y, float z)
+static void _glx_proto3f(VideoPlugin * plugin, VideoProto3f func, float x,
+		float y, float z)
 {
-	GLXPlugin * glx = plugin->priv;
-	GLXCall * call;
-
-	if((call = _glx_queue(glx, client, VIDEO_PROTO_3f, func)) == NULL)
-		return;
-	call->args._3f.x = x;
-	call->args._3f.y = y;
-	call->args._3f.z = z;
+	_glx_func3f[func](x, y, z);
 }
 
 
 /* glx_proto3i */
-static void _glx_proto3i(VideoPlugin * plugin, GServerClient * client,
-		VideoProto3i func, int32_t x, int32_t y, int32_t z)
+static void _glx_proto3i(VideoPlugin * plugin, VideoProto3i func, int32_t x,
+		int32_t y, int32_t z)
 {
-	GLXPlugin * glx = plugin->priv;
-	GLXCall * call;
-
-	if((call = _glx_queue(glx, client, VIDEO_PROTO_3i, func)) == NULL)
-		return;
-	call->args._3i.x = x;
-	call->args._3i.y = y;
-	call->args._3i.z = z;
+	_glx_func3i[func](x, y, z);
 }
 
 
 /* glx_proto4f */
-static void _glx_proto4f(VideoPlugin * plugin, GServerClient * client,
-		VideoProto4f func, float x, float y, float z, float t)
+static void _glx_proto4f(VideoPlugin * plugin, VideoProto4f func, float x,
+		float y, float z, float t)
 {
-	GLXPlugin * glx = plugin->priv;
-	GLXCall * call;
-
-	if((call = _glx_queue(glx, client, VIDEO_PROTO_4f, func)) == NULL)
-		return;
-	call->args._4f.x = x;
-	call->args._4f.y = y;
-	call->args._4f.z = z;
-	call->args._4f.t = t;
+	_glx_func4f[func](x, y, z, t);
 }
 
 
 /* glx_swap_buffers */
 static void _glx_swap_buffers(void)
 {
-	/* FIXME force a refresh for this client */
+	/* no need to do anything */
 }
 
 
@@ -393,7 +296,8 @@ static int _glx_timeout(void * data)
 	VideoPlugin * plugin = data;
 	GLXPlugin * glx = plugin->priv;
 	XEvent event;
-	size_t i;
+	unsigned int w;
+	unsigned int h;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -407,158 +311,21 @@ static int _glx_timeout(void * data)
 				if(event.xconfigure.width < 0
 						|| event.xconfigure.height < 0)
 					break;
-				if(event.xconfigure.width == glx->width
-						&& event.xconfigure.height
-						== glx->height)
+				w = event.xconfigure.width;
+				h = event.xconfigure.height;
+				if(w == glx->width && h == glx->height)
 					break;
-				glx->width = event.xconfigure.width;
-				glx->height = event.xconfigure.height;
-				glViewport(0, 0, glx->width, glx->height);
+				glx->width = w;
+				glx->height = h;
+				glViewport(0, 0, w, h);
 				glMatrixMode(GL_PROJECTION);
 				glLoadIdentity();
-				gluPerspective(45.0, (GLfloat)glx->width
-						/ (GLfloat)glx->height, 0.1,
-						100.0);
+				gluPerspective(45.0, (GLfloat)w / (GLfloat)h,
+						0.1, 100.0);
 				glMatrixMode(GL_MODELVIEW);
 				break;
-			case Expose:
-				if(event.xexpose.count != 0)
-					break;
-				glClear(GL_COLOR_BUFFER_BIT
-						| GL_DEPTH_BUFFER_BIT);
-				glLoadIdentity();
-				for(i = 0; i < glx->clients_cnt; i++)
-					_glx_client_calls(&glx->clients[i]);
-				glXSwapBuffers(glx->display, glx->window);
-				break;
 		}
 	}
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
-	for(i = 0; i < glx->clients_cnt; i++)
-		_glx_client_calls(&glx->clients[i]);
-	glXSwapBuffers(glx->display, glx->window);
+	plugin->helper->refresh(plugin->helper->gserver);
 	return 0;
-}
-
-
-/* glx_get_client */
-static GLXClient * _glx_get_client(GLXPlugin * glx, GServerClient * client)
-{
-	GLXClient * ret;
-	size_t i;
-
-	for(i = 0; i < glx->clients_cnt; i++)
-		if(glx->clients[i].client == client)
-			return &glx->clients[i];
-	if((ret = realloc(glx->clients, sizeof(*ret) * (glx->clients_cnt + 1)))
-			== NULL)
-		return NULL;
-	glx->clients = ret;
-	ret = &glx->clients[glx->clients_cnt++];
-	ret->client = client;
-	ret->calls = NULL;
-	ret->calls_cnt = 0;
-	return ret;
-}
-
-
-/* glx_queue */
-static GLXCall *_glx_queue(GLXPlugin * glx, GServerClient * client,
-		VideoProto type, unsigned int func)
-{
-	GLXCall * ret = NULL;
-	GLXClient * gc;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p, %u, %u)\n", __func__, (void*)glx,
-			(void*)client, type, func);
-#endif
-	if((gc = _glx_get_client(glx, client)) == NULL)
-		return NULL;
-	if((ret = realloc(gc->calls, sizeof(*ret) * (gc->calls_cnt + 1)))
-			== NULL)
-		return NULL;
-	gc->calls = ret;
-	ret = &gc->calls[gc->calls_cnt++];
-	ret->type = type;
-	ret->func = func;
-	return ret;
-}
-
-
-/* GLXClient */
-/* glx_client_calls */
-static void _glx_client_calls(GLXClient * client)
-{
-	size_t i;
-	GLXCall * call;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)client);
-#endif
-	for(i = 0; i < client->calls_cnt; i++)
-	{
-		call = &client->calls[i];
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() %u::%u(", __func__, call->type,
-				call->func);
-#endif
-		switch(client->calls[i].type)
-		{
-			case VIDEO_PROTO_0:
-				_glx_func0[call->func]();
-				break;
-			case VIDEO_PROTO_1d:
-#ifdef DEBUG
-				fprintf(stderr, "%.1lf", call->args._1d.x);
-#endif
-				_glx_func1d[call->func](call->args._1d.x);
-				break;
-			case VIDEO_PROTO_1i:
-#ifdef DEBUG
-				fprintf(stderr, "%d", call->args._1i.x);
-#endif
-				_glx_func1i[call->func](call->args._1i.x);
-				break;
-			case VIDEO_PROTO_3f:
-#ifdef DEBUG
-				fprintf(stderr, "%.1lf, %.1lf, %.1lf",
-						call->args._3f.x,
-						call->args._3f.y,
-						call->args._3f.z);
-#endif
-				_glx_func3f[call->func](call->args._3f.x,
-						call->args._3f.y,
-						call->args._3f.z);
-				break;
-			case VIDEO_PROTO_3i:
-#ifdef DEBUG
-				fprintf(stderr, "%d, %d, %d",
-						call->args._3i.x,
-						call->args._3i.y,
-						call->args._3i.z);
-#endif
-				_glx_func3i[call->func](call->args._3i.x,
-						call->args._3i.y,
-						call->args._3i.z);
-				break;
-			case VIDEO_PROTO_4f:
-#ifdef DEBUG
-				fprintf(stderr, "%.1lf, %.1lf, %.1lf, %.1lf",
-						call->args._4f.x,
-						call->args._4f.y,
-						call->args._4f.z,
-						call->args._4f.t);
-#endif
-				_glx_func4f[call->func](call->args._4f.x,
-						call->args._4f.y,
-						call->args._4f.z,
-						call->args._4f.t);
-				break;
-		}
-#ifdef DEBUG
-		fprintf(stderr, ")\n");
-#endif
-	}
 }
