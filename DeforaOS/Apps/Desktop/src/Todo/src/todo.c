@@ -31,6 +31,7 @@ static char const _license[] =
 #include <System.h>
 #include <Desktop.h>
 #include "callbacks.h"
+#include "taskedit.h"
 #include "todo.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -310,6 +311,8 @@ static void _new_view(Todo * todo)
 	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
 			!= NULL)
 		gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
+	g_signal_connect_swapped(G_OBJECT(todo->view), "row-activated",
+			G_CALLBACK(on_task_activated), todo);
 	/* done column */
 	renderer = gtk_cell_renderer_toggle_new();
 	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
@@ -412,10 +415,14 @@ void todo_about(Todo * todo)
 
 
 /* todo_error */
+static int _error_text(char const * message, int ret);
+
 int todo_error(Todo * todo, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
+	if(todo == NULL)
+		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(todo->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
@@ -428,6 +435,14 @@ int todo_error(Todo * todo, char const * message, int ret)
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs(PACKAGE ": ", stderr);
+	fputs(message, stderr);
+	fputc('\n', stderr);
 	return ret;
 }
 
@@ -553,7 +568,31 @@ static void _task_delete_selected_foreach(GtkTreeRowReference * reference,
 /* todo_task_edit */
 void todo_task_edit(Todo * todo)
 {
-	/* FIXME implement */
+	GtkTreeSelection * treesel;
+	GList * selected;
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	GList * s;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	Task * task;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
+			== NULL)
+		return;
+	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
+			== NULL)
+		return;
+	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
+	{
+		if((path = s->data) == NULL)
+			continue;
+		if(_todo_get_iter(todo, &iter, path) != TRUE)
+			continue;
+		gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
+		if(task != NULL)
+			taskedit_new(todo, task);
+	}
+	g_list_free(selected);
 }
 
 
@@ -588,7 +627,10 @@ int todo_task_reload_all(Todo * todo)
 					== NULL)
 				continue; /* XXX report error */
 			if((task = task_new_from_file(filename)) == NULL)
-				continue; /* XXX report error */
+			{
+				todo_error(NULL, error_get(), 1);
+				continue;
+			}
 			if(todo_task_add(todo, task) == NULL)
 			{
 				task_delete(task);

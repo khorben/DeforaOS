@@ -33,6 +33,7 @@ void task_delete(Task * task);
 
 
 /* accessors */
+char const * task_get_description(Task * task);
 int task_get_done(Task * task);
 time_t task_get_end(Task * task);
 char const * task_get_filename(Task * task);
@@ -40,6 +41,7 @@ char const * task_get_priority(Task * task);
 time_t task_get_start(Task * task);
 char const * task_get_title(Task * task);
 
+int task_set_description(Task * task, char const * description);
 int task_set_done(Task * task, int done);
 int task_set_end(Task * task, time_t end);
 int task_set_filename(Task * task, char const * filename);

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ void on_preferences(gpointer data);
 void on_view_as(gpointer data);
 
 /* view */
+void on_task_activated(gpointer data);
 void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
 		gpointer data);
 void on_task_priority_edited(GtkCellRendererText * renderer, gchar * path,

@@ -183,6 +183,15 @@ void on_select_all(gpointer data)
 
 
 /* view */
+/* on_task_activated */
+void on_task_activated(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_edit(todo);
+}
+
+
 /* on_task_done_toggled */
 void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
 		gpointer data)

@@ -89,6 +89,13 @@ void task_delete(Task * task)
 
 
 /* accessors */
+/* task_get_description */
+char const * task_get_description(Task * task)
+{
+	return config_get(task->config, NULL, "description");
+}
+
+
 /* task_get_done */
 int task_get_done(Task * task)
 {
@@ -139,6 +146,13 @@ char const * task_get_title(Task * task)
 }
 
 
+/* task_set_description */
+int task_set_description(Task * task, char const * description)
+{
+	return config_set(task->config, NULL, "description", description);
+}
+
+
 /* task_set_done */
 int task_set_done(Task * task, int done)
 {
@@ -147,7 +161,7 @@ int task_set_done(Task * task, int done)
 }
 
 
-/* task_set_emd */
+/* task_set_end */
 int task_set_end(Task * task, time_t end)
 {
 	char buf[16];
