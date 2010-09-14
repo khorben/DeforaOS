@@ -60,10 +60,9 @@ typedef struct _Battery
 
 	/* widgets */
 	GtkWidget * hbox;
+	GtkWidget * charging;
 	GtkWidget * image;
-#ifndef EMBEDDED
-	GtkWidget * scale;
-#endif
+	GtkWidget * label;
 	guint timeout;
 
 	/* platform-specific */
@@ -77,8 +76,8 @@ typedef struct _Battery
 static GtkWidget * _battery_init(PanelApplet * applet);
 static void _battery_destroy(PanelApplet * applet);
 
-static gdouble _battery_get(Battery * battery);
-static void _battery_set(Battery * battery, gdouble value);
+static gdouble _battery_get(Battery * battery, gboolean * charging);
+static void _battery_set(Battery * battery, gdouble value, gboolean charging);
 
 /* callbacks */
 static gboolean _on_timeout(gpointer data);
@@ -118,24 +117,22 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 #if defined(__NetBSD__) || defined(__linux__)
 	battery->fd = -1;
 #endif
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	battery->hbox = hbox;
+	battery->charging = gtk_image_new_from_icon_name("stock_connect",
+			GTK_ICON_SIZE_MENU);
+	gtk_box_pack_start(GTK_BOX(hbox), battery->charging, FALSE, TRUE, 0);
 	battery->image = gtk_image_new_from_icon_name("battery",
 			applet->helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->image, FALSE, TRUE, 0);
 #ifndef EMBEDDED
-	battery->scale = gtk_vscale_new_with_range(0, 100, 1);
-	gtk_widget_set_sensitive(battery->scale, FALSE);
-	gtk_range_set_inverted(GTK_RANGE(battery->scale), TRUE);
-	gtk_scale_set_value_pos(GTK_SCALE(battery->scale), GTK_POS_RIGHT);
-	gtk_box_pack_start(GTK_BOX(hbox), battery->scale, FALSE, TRUE, 0);
+	battery->label = gtk_label_new(" ");
+	gtk_box_pack_start(GTK_BOX(hbox), battery->label, FALSE, TRUE, 0);
+	gtk_widget_show(battery->label);
 #endif
 	battery->timeout = g_timeout_add(5000, _on_timeout, battery);
 	_on_timeout(battery);
 	gtk_widget_show(battery->image);
-#ifndef EMBEDDED
-	gtk_widget_show(battery->scale);
-#endif
 	return hbox;
 }
 
@@ -158,11 +155,11 @@ static void _battery_destroy(PanelApplet * applet)
 /* battery_set */
 static void _set_image(Battery * battery, BatteryLevel level);
 
-static void _battery_set(Battery * battery, gdouble value)
+static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 {
 	char buf[16];
 
-	snprintf(buf, sizeof(buf), "%.1lf%%", value);
+	snprintf(buf, sizeof(buf), "%.0lf%% ", value);
 	/* XXX only show when necessary? */
 	if(value >= 0.0 && value <= 100.0)
 		gtk_widget_show(battery->hbox);
@@ -185,12 +182,12 @@ static void _battery_set(Battery * battery, gdouble value)
 		snprintf(buf, sizeof(buf), "%s", _("Error"));
 	}
 #ifndef EMBEDDED
-	gtk_range_set_value(GTK_RANGE(battery->scale), value);
+	gtk_label_set_text(GTK_LABEL(battery->label), buf);
 #endif
-#if GTK_CHECK_VERSION(2, 12, 0)
-	/* FIXME use the tooltip to display the exact level */
-	gtk_widget_set_tooltip_text(battery->image, buf);
-#endif
+	if(charging)
+		gtk_widget_show(battery->charging);
+	else
+		gtk_widget_hide(battery->charging);
 }
 
 static void _set_image(Battery * battery, BatteryLevel level)
@@ -218,7 +215,7 @@ static void _set_image(Battery * battery, BatteryLevel level)
 #if defined(__NetBSD__)
 static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre);
 
-static gdouble _battery_get(Battery * battery)
+static gdouble _battery_get(Battery * battery, gboolean * charging)
 {
 	int i;
 	envsys_basic_info_t info;
@@ -227,6 +224,7 @@ static gdouble _battery_get(Battery * battery)
 	unsigned int charge = 0;
 	unsigned int maxcharge = 0;
 
+	*charging = FALSE;
 	if(battery->fd == -1
 			&& (battery->fd = open(_PATH_SYSMON, O_RDONLY) < 0))
 	{
@@ -276,8 +274,10 @@ static gdouble _battery_get(Battery * battery)
 				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID
 				&& tre.cur.data_us > 0)
-			/* FIXME implement */
+		{
+			*charging = TRUE;
 			continue;
+		}
 		else if(strcmp("discharge rate", &info.desc[9]) == 0
 				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID)
@@ -295,7 +295,7 @@ static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre)
 	return !(tre->validflags & ENVSYS_FVALID);
 }
 #elif defined(__linux__)
-static gdouble _battery_get(Battery * battery)
+static gdouble _battery_get(Battery * battery, gboolean * charging)
 {
 	const char apm[] = "/proc/apm";
 	char buf[80];
@@ -305,6 +305,7 @@ static gdouble _battery_get(Battery * battery)
 	int i;
 	int b;
 
+	*charging = FALSE;
 	if(battery->fd == -1 && (battery->fd = open(apm, O_RDONLY)) == -1)
 	{
 		error_set("%s: %s", apm, strerror(errno));
@@ -332,8 +333,9 @@ static gdouble _battery_get(Battery * battery)
 	return d;
 }
 #else
-static gdouble _battery_get(Battery * battery)
+static gdouble _battery_get(Battery * battery, gboolean * charging)
 {
+	*charging = FALSE;
 	/* FIXME not supported */
 	error_set("%s", strerror(ENOSYS));
 	return 0.0 / 0.0;
@@ -346,7 +348,10 @@ static gdouble _battery_get(Battery * battery)
 static gboolean _on_timeout(gpointer data)
 {
 	Battery * battery = data;
+	gboolean charging;
+	gdouble value;
 
-	_battery_set(battery, _battery_get(battery));
+	value = _battery_get(battery, &charging);
+	_battery_set(battery, value, charging);
 	return TRUE;
 }
