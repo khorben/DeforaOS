@@ -36,6 +36,7 @@ void event_delete(Event * event);
 
 /* useful */
 int event_loop(Event * event);
+void event_loop_quit(Event * event);
 int event_register_io_read(Event * event, int fd, EventIOFunc func,
 		void * userdata);
 int event_register_io_write(Event * event, int fd, EventIOFunc func,

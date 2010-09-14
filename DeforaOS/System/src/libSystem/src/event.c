@@ -53,6 +53,7 @@ ARRAY(EventIO *, eventio)
 
 struct _Event
 {
+	unsigned int loop;
 	int fdmax;
 	fd_set rfds;
 	fd_set wfds;
@@ -73,6 +74,7 @@ Event * event_new(void)
 	if((event = object_new(sizeof(*event))) == NULL)
 		return NULL;
 	event->timeouts = eventtimeoutarray_new();
+	event->loop = 0;
 	event->fdmax = -1;
 	FD_ZERO(&event->rfds);
 	FD_ZERO(&event->wfds);
@@ -132,7 +134,8 @@ int event_loop(Event * event)
 	fd_set rfds = event->rfds;
 	fd_set wfds = event->wfds;
 
-	while(timeout != NULL || event->fdmax != -1)
+	event->loop++;
+	while(event->loop && (timeout != NULL || event->fdmax != -1))
 	{
 		if(select(event->fdmax + 1, &rfds, &wfds, NULL, timeout) < 0)
 			return error_set_code(1, "%s", strerror(errno));
@@ -245,6 +248,14 @@ static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)
 		else
 			i++;
 	}
+}
+
+
+/* event_loop_quit */
+void event_loop_quit(Event * event)
+{
+	if(event->loop > 0)
+		event->loop--;
 }
 
 
