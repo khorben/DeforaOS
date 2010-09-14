@@ -29,6 +29,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/gserver.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/video/glut.c \
 		$(PACKAGE)-$(VERSION)/src/video/glx.c \
 		$(PACKAGE)-$(VERSION)/src/video/vbe.c \
 		$(PACKAGE)-$(VERSION)/src/video/vesa.c \
