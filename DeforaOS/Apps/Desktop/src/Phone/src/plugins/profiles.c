@@ -110,6 +110,8 @@ PhonePlugin plugin =
 /* private */
 /* functions */
 /* profiles_init */
+static gboolean _init_idle(gpointer data);
+
 static int _profiles_init(PhonePlugin * plugin)
 {
 	Profiles * profiles;
@@ -146,9 +148,19 @@ static int _profiles_init(PhonePlugin * plugin)
 	}
 	pa_context_connect(profiles->pac, NULL, 0, NULL);
 	pa_threaded_mainloop_start(profiles->pam);
-	/* XXX may already be online, may not be desired */
-	plugin->helper->event(plugin->helper->phone, PHONE_EVENT_ONLINE);
+	profiles->source = g_idle_add(_init_idle, plugin);
 	return 0;
+}
+
+static gboolean _init_idle(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Profiles * profiles = plugin->priv;
+
+	/* FIXME may already be online, may not be desired */
+	plugin->helper->event(plugin->helper->phone, PHONE_EVENT_ONLINE);
+	profiles->source = 0;
+	return FALSE;
 }
 
 
