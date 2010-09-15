@@ -2872,16 +2872,17 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 		case GSM_STATUS_INITIALIZED:
 			operator = _("SIM check...");
 			track_registration = FALSE;
-			gsm_is_pin_needed(phone->gsm);
+			gsm_is_functional(phone->gsm);
 			break;
 		case GSM_STATUS_READY:
 			track_registration = FALSE;
 			operator = _("SIM ready...");
-			gsm_is_functional(phone->gsm);
 			break;
 		case GSM_STATUS_REGISTERED_HOME:
 		case GSM_STATUS_REGISTERED_ROAMING:
 			_phone_track(phone, PHONE_TRACK_REGISTRATION, FALSE);
+			gsm_set_message_indications(phone->gsm,
+					GSM_MESSAGE_MODE_BUFFER_FLUSH, TRUE);
 			gsm_set_operator_format(phone->gsm,
 					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
@@ -3050,22 +3051,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 				gsm_set_functional(phone->gsm, TRUE);
 				return 0;
 			}
-			gsm_set_call_presentation(phone->gsm, TRUE);
-			gsm_set_extended_ring_reports(phone->gsm, TRUE);
-			gsm_set_message_indications(phone->gsm,
-					GSM_MESSAGE_MODE_BUFFER_FLUSH, TRUE);
-			gsm_set_operator_mode(phone->gsm,
-					GSM_OPERATOR_MODE_AUTOMATIC);
-			gsm_set_registration_report(phone->gsm, report);
-			gsm_set_supplementary_service_notifications(phone->gsm,
-					TRUE, TRUE);
-			gsm_is_call_waiting_control(phone->gsm);
-			gsm_is_phone_active(phone->gsm);
-#ifndef DEBUG
-			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
-			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
-#endif
 			phone_event(phone, PHONE_EVENT_FUNCTIONAL);
+			gsm_is_pin_needed(phone->gsm);
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
@@ -3117,6 +3104,19 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					_("SIM PIN is valid"),
 					G_CALLBACK(_on_sim_pin_valid_response));
 			phone_event(phone, PHONE_EVENT_SIM_VALID);
+			gsm_set_call_presentation(phone->gsm, TRUE);
+			gsm_set_extended_ring_reports(phone->gsm, TRUE);
+			gsm_set_operator_mode(phone->gsm,
+					GSM_OPERATOR_MODE_AUTOMATIC);
+			gsm_set_registration_report(phone->gsm, report);
+			gsm_set_supplementary_service_notifications(phone->gsm,
+					TRUE, TRUE);
+			gsm_is_call_waiting_control(phone->gsm);
+			gsm_is_phone_active(phone->gsm);
+#ifndef DEBUG
+			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
+			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
+#endif
 			return 0;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
