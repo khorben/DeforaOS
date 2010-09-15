@@ -90,6 +90,11 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			/* restore regular audio */
 			_event_mixer_set(plugin, "stereoout.state");
 			break;
+		case PHONE_EVENT_FUNCTIONAL:
+			/* FIXME prevent deep sleep only optionally */
+			plugin->helper->queue(plugin->helper->phone,
+					"AT%SLEEP=2");
+			break;
 		case PHONE_EVENT_NOTIFICATION_OFF:
 			/* FIXME implement */
 			break;
@@ -115,11 +120,6 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 		case PHONE_EVENT_VIBRATOR_ON:
 			_event_vibrator(plugin, TRUE);
-			break;
-		case PHONE_EVENT_SIM_VALID:
-			/* prevent deep sleep */
-			plugin->helper->queue(plugin->helper->phone,
-					"AT%SLEEP=2");
 			break;
 		default: /* not relevant */
 			break;
@@ -170,7 +170,11 @@ static int _event_power_on(PhonePlugin * plugin, gboolean power)
 		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
 		ret = plugin->helper->error(NULL, buf, 1);
 	}
-	close(fd);
+	if(close(fd) != 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		ret = plugin->helper->error(NULL, buf, 1);
+	}
 	return ret;
 }
 
