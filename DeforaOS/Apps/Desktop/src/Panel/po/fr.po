@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-24 19:15+0200\n"
+"POT-Creation-Date: 2010-09-15 03:58+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -41,14 +41,14 @@ msgstr ""
 msgid "CPU:"
 msgstr ""
 
-#: ../src/applets/cpu.c:111 ../src/applets/cpufreq.c:128
+#: ../src/applets/cpu.c:111 ../src/applets/cpufreq.c:127
 #: ../src/applets/memory.c:105 ../src/applets/swap.c:105
 msgid "Unsupported platform"
 msgstr "Plate-forme non supportée"
 
-#: ../src/applets/cpufreq.c:107
-msgid "Frequency:"
-msgstr "Fréquence :"
+#: ../src/applets/cpufreq.c:119
+msgid "MHz"
+msgstr "MHz"
 
 #: ../src/applets/desktop.c:66
 msgid "Show desktop"
@@ -150,18 +150,25 @@ msgid ""
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:553
+#: ../src/panel.c:554
+msgid ""
+"This will shutdown your device, therefore closing any application currently "
+"opened and losing any unsaved data.\n"
+"Do you really want to proceed?"
+msgstr ""
+
+#: ../src/panel.c:559
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:569 ../src/panel.c:574 ../src/panel.c:581
+#: ../src/panel.c:576 ../src/panel.c:581 ../src/panel.c:588
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:573
+#: ../src/panel.c:580
 msgid "Restart"
 msgstr "Redémarrer"
 

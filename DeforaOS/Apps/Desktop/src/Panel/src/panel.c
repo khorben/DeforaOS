@@ -550,10 +550,17 @@ static int _panel_helper_shutdown_dialog(void)
 {
 	GtkWidget * dialog;
 	GtkWidget * widget;
+#ifdef EMBEDDED
+	const char * message = _("This will shutdown your device,"
+			" therefore closing any application currently opened"
+			" and losing any unsaved data.\n"
+			"Do you really want to proceed?");
+#else
 	const char * message = _("This will shutdown your computer,"
 			" therefore closing any application currently opened"
 			" and losing any unsaved data.\n"
 			"Do you really want to proceed?");
+#endif
 	enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
 	int res;
 	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
