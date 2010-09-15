@@ -190,7 +190,9 @@ static void _on_plug_embedded(gpointer data)
 		g_source_remove(panel->timeout);
 	panel->timeout = 0;
 	gtk_widget_show(panel->plug);
+#if 0 /* XXX disabled for now because of a race condition */
 	plugin->helper->queue(plugin->helper->phone, "AT+COPS?");
+#endif
 }
 
 static gboolean _on_battery_timeout(gpointer data)
