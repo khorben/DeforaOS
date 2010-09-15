@@ -2344,12 +2344,14 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 		phone_write_count_buffer(phone);
 	}
 	if(number != NULL)
-		gtk_label_set_text(GTK_LABEL(phone->wr_entry), number);
+		gtk_entry_set_text(GTK_ENTRY(phone->wr_entry), number);
 	if(content != NULL)
 	{
 		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 		gtk_text_buffer_set_text(tbuf, content, -1);
 	}
+	gtk_widget_grab_focus((number == NULL || number[0] == '\0')
+			? phone->wr_entry : phone->wr_view);
 	gtk_window_present(GTK_WINDOW(phone->wr_window));
 }
 
