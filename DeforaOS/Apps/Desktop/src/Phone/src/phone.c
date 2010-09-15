@@ -1982,7 +1982,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	content = va_arg(ap, char const *);
 	va_end(ap);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %lu, %s\n", __func__,
+	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %u, %s\n", __func__,
 			phone->re_index, name, number, date, content);
 #endif
 	if(phone->re_window == NULL)
@@ -2875,7 +2875,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			gsm_is_functional(phone->gsm);
 			break;
 		case GSM_STATUS_READY:
-			track_registration = FALSE;
+			track_registration = TRUE;
 			operator = _("SIM ready...");
 			break;
 		case GSM_STATUS_REGISTERED_HOME:
