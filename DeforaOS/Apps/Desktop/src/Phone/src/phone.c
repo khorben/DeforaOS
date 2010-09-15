@@ -836,7 +836,7 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_NOTIFICATION_ON:
 			case PHONE_EVENT_OFFLINE:
 			case PHONE_EVENT_ONLINE:
-			case PHONE_EVENT_SIM_VALID:
+			case PHONE_EVENT_SIM_PIN_VALID:
 			case PHONE_EVENT_SMS_RECEIVED:
 			case PHONE_EVENT_SMS_SENT:
 			case PHONE_EVENT_SPEAKER_OFF:
@@ -3103,7 +3103,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_info(phone, phone->en_window,
 					_("SIM PIN is valid"),
 					G_CALLBACK(_on_sim_pin_valid_response));
-			phone_event(phone, PHONE_EVENT_SIM_VALID);
+			phone_event(phone, PHONE_EVENT_SIM_PIN_VALID);
 			gsm_set_call_presentation(phone->gsm, TRUE);
 			gsm_set_extended_ring_reports(phone->gsm, TRUE);
 			gsm_set_operator_mode(phone->gsm,

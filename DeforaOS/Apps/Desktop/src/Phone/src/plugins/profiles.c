@@ -211,7 +211,7 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 						profiles->pac, "message", NULL,
 						PA_VOLUME_NORM, NULL, NULL);
 			break;
-		case PHONE_EVENT_SIM_VALID:
+		case PHONE_EVENT_SIM_PIN_VALID:
 		case PHONE_EVENT_SMS_SENT:
 			/* FIXME beep in general profile? */
 			break;
