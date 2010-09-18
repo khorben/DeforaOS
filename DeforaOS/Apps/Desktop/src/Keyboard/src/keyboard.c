@@ -263,12 +263,14 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	else
 	{
 		keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
+		gtk_container_set_border_width(GTK_CONTAINER(keyboard->window),
+				4);
 		gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window),
 				FALSE);
 		gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window),
 				FALSE);
 		keyboard->width = keyboard->geometry.width;
-		keyboard->height = (keyboard->geometry.width / 12) * 3;
+		keyboard->height = (keyboard->geometry.width / 11) * 3;
 		keyboard->x = keyboard->geometry.x;
 		keyboard->y = keyboard->geometry.y + keyboard->geometry.height
 			- keyboard->height;
