@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
-CFLAGS	= -Wall -g -O2 -pedantic
+CFLAGS	= -Wall -g -pedantic
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -lXtst
 RM	= rm -f
 LN	= ln -f
@@ -16,7 +16,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-keyboard_OBJS = callbacks.o keyboard.o main.o
+keyboard_OBJS = callbacks.o common.o key.o keyboard.o layout.o main.o
 keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -26,8 +26,17 @@ keyboard: $(keyboard_OBJS)
 callbacks.o: callbacks.c
 	$(CC) $(keyboard_CFLAGS) -c callbacks.c
 
+common.o: common.c
+	$(CC) $(keyboard_CFLAGS) -c common.c
+
+key.o: key.c key.h
+	$(CC) $(keyboard_CFLAGS) -c key.c
+
 keyboard.o: keyboard.c callbacks.h keyboard.h
 	$(CC) $(keyboard_CFLAGS) -c keyboard.c
+
+layout.o: layout.c layout.h
+	$(CC) $(keyboard_CFLAGS) -c layout.c
 
 main.o: main.c keyboard.h
 	$(CC) $(keyboard_CFLAGS) -c main.c

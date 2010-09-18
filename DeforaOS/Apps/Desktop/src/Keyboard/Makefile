@@ -22,11 +22,17 @@ dist:
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
+		$(PACKAGE)-$(VERSION)/src/common.c \
+		$(PACKAGE)-$(VERSION)/src/key.c \
 		$(PACKAGE)-$(VERSION)/src/keyboard.c \
+		$(PACKAGE)-$(VERSION)/src/layout.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
+		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/key.h \
 		$(PACKAGE)-$(VERSION)/src/keyboard.h \
+		$(PACKAGE)-$(VERSION)/src/layout.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/plug.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \

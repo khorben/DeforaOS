@@ -15,37 +15,22 @@
 
 
 
-#ifndef KEYBOARD_KEYBOARD_H
-# define KEYBOARD_KEYBOARD_H
-
-# include <gtk/gtk.h>
-# include "key.h"
+#include <gdk/gdkx.h>
+#include "common.h"
 
 
-/* Keyboard */
-/* types */
-typedef struct _Keyboard Keyboard;
-
-typedef struct _KeyboardPrefs
-{
-	int monitor;
-	char const * font;
-	int embedded;
-} KeyboardPrefs;
-
-
+/* public */
 /* functions */
-Keyboard * keyboard_new(KeyboardPrefs * prefs);
-void keyboard_delete(Keyboard * keyboard);
-
-/* accessors */
-/* XXX be more explicit */
-void keyboard_set_layout(Keyboard * keyboard, unsigned int which);
-
-/* useful */
-void keyboard_show(Keyboard * keyboard, gboolean show);
-
-void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
-		GdkEventButton * event);
-
-#endif /* !KEYBOARD_KEYBOARD_H */
+/* keysym_is_modifier */
+int keysym_is_modifier(unsigned int keysym)
+{
+	if(keysym == XK_Alt_L || keysym == XK_Alt_R)
+		return 1;
+	if(keysym == XK_Control_L || keysym == XK_Control_R)
+		return 1;
+	if(keysym == XK_Num_Lock)
+		return 1;
+	if(keysym == XK_Shift_L || keysym == XK_Shift_R)
+		return 1;
+	return 0;
+}

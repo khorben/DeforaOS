@@ -15,37 +15,12 @@
 
 
 
-#ifndef KEYBOARD_KEYBOARD_H
-# define KEYBOARD_KEYBOARD_H
-
-# include <gtk/gtk.h>
-# include "key.h"
+#ifndef KEYBOARD_COMMON_H
+# define KEYBOARD_COMMON_H
 
 
-/* Keyboard */
-/* types */
-typedef struct _Keyboard Keyboard;
-
-typedef struct _KeyboardPrefs
-{
-	int monitor;
-	char const * font;
-	int embedded;
-} KeyboardPrefs;
-
-
+/* public */
 /* functions */
-Keyboard * keyboard_new(KeyboardPrefs * prefs);
-void keyboard_delete(Keyboard * keyboard);
+int keysym_is_modifier(unsigned int keysym);
 
-/* accessors */
-/* XXX be more explicit */
-void keyboard_set_layout(Keyboard * keyboard, unsigned int which);
-
-/* useful */
-void keyboard_show(Keyboard * keyboard, gboolean show);
-
-void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
-		GdkEventButton * event);
-
-#endif /* !KEYBOARD_KEYBOARD_H */
+#endif /* !KEYBOARD_COMMON_H */

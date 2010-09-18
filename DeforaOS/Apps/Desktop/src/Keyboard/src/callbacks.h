@@ -25,10 +25,9 @@
 /* functions */
 gboolean on_keyboard_delete_event(gpointer data);
 void on_keyboard_embedded(gpointer data);
-void on_keyboard_key_clicked(gpointer data, GtkWidget * key);
-gboolean on_keyboard_key_pressed(GtkWidget * key, GdkEventButton * event,
-		gpointer data);
-gboolean on_keyboard_key_released(GtkWidget * key, GdkEventButton * event,
-		gpointer data);
+
+void on_keyboard_set_layout_keypad(gpointer data);
+void on_keyboard_set_layout_letters(gpointer data);
+void on_keyboard_set_layout_special(gpointer data);
 
 #endif /* !KEYBOARD_CALLBACKS_H */

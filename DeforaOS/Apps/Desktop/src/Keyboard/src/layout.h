@@ -15,8 +15,8 @@
 
 
 
-#ifndef KEYBOARD_KEYBOARD_H
-# define KEYBOARD_KEYBOARD_H
+#ifndef KEYBOARD_LAYOUT_H
+# define KEYBOARD_LAYOUT_H
 
 # include <gtk/gtk.h>
 # include "key.h"
@@ -24,28 +24,20 @@
 
 /* Keyboard */
 /* types */
-typedef struct _Keyboard Keyboard;
-
-typedef struct _KeyboardPrefs
-{
-	int monitor;
-	char const * font;
-	int embedded;
-} KeyboardPrefs;
+typedef struct _KeyboardLayout KeyboardLayout;
 
 
 /* functions */
-Keyboard * keyboard_new(KeyboardPrefs * prefs);
-void keyboard_delete(Keyboard * keyboard);
+KeyboardLayout * keyboard_layout_new(void);
+void keyboard_layout_delete(KeyboardLayout * layout);
 
 /* accessors */
-/* XXX be more explicit */
-void keyboard_set_layout(Keyboard * keyboard, unsigned int which);
+GtkWidget * keyboard_layout_get_widget(KeyboardLayout * layout);
 
 /* useful */
-void keyboard_show(Keyboard * keyboard, gboolean show);
+KeyboardKey * keyboard_layout_add(KeyboardLayout * layout, unsigned int row,
+		unsigned int width, unsigned int keysym, char const * label);
+void keyboard_layout_apply_modifier(KeyboardLayout * layout,
+		unsigned int modifier);
 
-void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
-		GdkEventButton * event);
-
-#endif /* !KEYBOARD_KEYBOARD_H */
+#endif /* !KEYBOARD_LAYOUT_H */

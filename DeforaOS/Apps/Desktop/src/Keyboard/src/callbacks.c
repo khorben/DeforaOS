@@ -15,12 +15,7 @@
 
 
 
-#ifdef DEBUG
-# include <stdio.h>
-#endif
 #include <string.h>
-#include <X11/extensions/XTest.h>
-#include <gdk/gdkx.h>
 #include "keyboard.h"
 #include "callbacks.h"
 
@@ -43,67 +38,32 @@ void on_keyboard_embedded(gpointer data)
 {
 	Keyboard * keyboard = data;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
 	keyboard_show(keyboard, TRUE);
 }
 
 
-/* on_keyboard_key_clicked */
-void on_keyboard_key_clicked(gpointer data, GtkWidget * key)
+/* on_keyboard_set_layout_keypad */
+void on_keyboard_set_layout_keypad(gpointer data)
 {
 	Keyboard * keyboard = data;
-	KeyboardKey * kk;
-	unsigned int keycode;
-	Display * display;
-	gboolean upper;
 
-	if((kk = g_object_get_data(G_OBJECT(key), "key")) == NULL)
-		return;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, keyboard,
-			kk->label);
-#endif
-	display = gdk_x11_get_default_xdisplay();
-	keycode = XKeysymToKeycode(display, kk->keysym);
-	XTestGrabControl(display, True);
-	if(kk->keysym == XK_Shift_L || kk->keysym == XK_Shift_R)
-	{
-		upper = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(key));
-		XTestFakeKeyEvent(display, keycode, upper ? True : False, 0);
-		keyboard_set_case(keyboard, upper ? KC_UPPER : KC_LOWER);
-	}
-	else
-	{
-		XTestFakeKeyEvent(display, keycode, True, 0);
-		XTestFakeKeyEvent(display, keycode, False, 0);
-	}
-	XTestGrabControl(display, False);
+	keyboard_set_layout(keyboard, 1); /* XXX hard-coded */
 }
 
 
-/* on_keyboard_key_pressed */
-gboolean on_keyboard_key_pressed(GtkWidget * key, GdkEventButton * event,
-		gpointer data)
+/* on_keyboard_set_layout_letters */
+void on_keyboard_set_layout_letters(gpointer data)
 {
 	Keyboard * keyboard = data;
-	KeyboardKey * kk;
 
-	if((kk = g_object_get_data(G_OBJECT(key), "key")) != NULL)
-		keyboard_key_show(keyboard, kk, TRUE, event);
-	return FALSE;
+	keyboard_set_layout(keyboard, 0); /* XXX hard-coded */
 }
 
 
-/* on_keyboard_key_released */
-gboolean on_keyboard_key_released(GtkWidget * key, GdkEventButton * event,
-		gpointer data)
+/* on_keyboard_set_layout_special */
+void on_keyboard_set_layout_special(gpointer data)
 {
 	Keyboard * keyboard = data;
-	KeyboardKey * kk;
 
-	if((kk = g_object_get_data(G_OBJECT(key), "key")) != NULL)
-		keyboard_key_show(keyboard, kk, FALSE, NULL);
-	return FALSE;
+	keyboard_set_layout(keyboard, 2); /* XXX hard-coded */
 }

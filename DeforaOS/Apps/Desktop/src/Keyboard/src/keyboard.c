@@ -21,8 +21,10 @@
 #include <gtk/gtk.h>
 #define XK_LATIN1
 #define XK_MISCELLANY
+#include <X11/Xlib.h>
 #include <X11/keysymdef.h>
 #include "callbacks.h"
+#include "layout.h"
 #include "keyboard.h"
 
 
@@ -31,9 +33,10 @@
 /* types */
 struct _Keyboard
 {
-	KeyboardKey * layout[4];
+	KeyboardLayout ** layouts;
+	size_t layouts_cnt;
 
-	PangoFontDescription * bold;
+	PangoFontDescription * font;
 	GtkWidget * window;
 	GdkRectangle geometry;
 	int width;
@@ -42,73 +45,182 @@ struct _Keyboard
 	int y;
 };
 
+typedef struct _KeyboardKeys
+{
+	unsigned int row;
+	unsigned int width;
+	unsigned int modifier;
+	unsigned int keysym;
+	char const * label;
+} KeyboardKeys;
+
 
 /* variables */
-static KeyboardKey _1234567890[] =
+static const KeyboardKeys _layout_letters[] =
 {
-	{ NULL, NULL, XK_Escape, "Esc", NULL },
-	{ NULL, NULL, XK_1, "1", "!" },
-	{ NULL, NULL, XK_2, "2", "@" },
-	{ NULL, NULL, XK_3, "3", "#" },
-	{ NULL, NULL, XK_4, "4", "$" },
-	{ NULL, NULL, XK_5, "5", "%" },
-	{ NULL, NULL, XK_6, "6", "^" },
-	{ NULL, NULL, XK_7, "7", "&" },
-	{ NULL, NULL, XK_8, "8", "*" },
-	{ NULL, NULL, XK_9, "9", "(" },
-	{ NULL, NULL, XK_0, "0", ")" },
-	{ NULL, NULL, XK_BackSpace, "\xe2\x8c\xab", NULL },
-	{ NULL, NULL, 0, NULL, NULL }
+	{ 0, 2, 0, XK_q, "q" },
+	{ 0, 0, XK_Shift_L, XK_Q, "Q" },
+	{ 0, 2, 0, XK_w, "w" },
+	{ 0, 0, XK_Shift_L, XK_W, "W" },
+	{ 0, 2, 0, XK_e, "e" },
+	{ 0, 0, XK_Shift_L, XK_E, "E" },
+	{ 0, 2, 0, XK_r, "r" },
+	{ 0, 0, XK_Shift_L, XK_R, "R" },
+	{ 0, 2, 0, XK_t, "t" },
+	{ 0, 0, XK_Shift_L, XK_T, "T" },
+	{ 0, 2, 0, XK_y, "y" },
+	{ 0, 0, XK_Shift_L, XK_Y, "Y" },
+	{ 0, 2, 0, XK_u, "u" },
+	{ 0, 0, XK_Shift_L, XK_U, "U" },
+	{ 0, 2, 0, XK_i, "i" },
+	{ 0, 0, XK_Shift_L, XK_I, "I" },
+	{ 0, 2, 0, XK_o, "o" },
+	{ 0, 0, XK_Shift_L, XK_O, "O" },
+	{ 0, 2, 0, XK_p, "p" },
+	{ 0, 0, XK_Shift_L, XK_P, "P" },
+	{ 1, 1, 0, 0, NULL },
+	{ 1, 2, 0, XK_a, "a" },
+	{ 1, 0, XK_Shift_L, XK_A, "A" },
+	{ 1, 2, 0, XK_s, "s" },
+	{ 1, 0, XK_Shift_L, XK_S, "S" },
+	{ 1, 2, 0, XK_d, "d" },
+	{ 1, 0, XK_Shift_L, XK_D, "D" },
+	{ 1, 2, 0, XK_f, "f" },
+	{ 1, 0, XK_Shift_L, XK_F, "F" },
+	{ 1, 2, 0, XK_g, "g" },
+	{ 1, 0, XK_Shift_L, XK_G, "G" },
+	{ 1, 2, 0, XK_h, "h" },
+	{ 1, 0, XK_Shift_L, XK_H, "H" },
+	{ 1, 2, 0, XK_j, "j" },
+	{ 1, 0, XK_Shift_L, XK_J, "J" },
+	{ 1, 2, 0, XK_k, "k" },
+	{ 1, 0, XK_Shift_L, XK_K, "K" },
+	{ 1, 2, 0, XK_l, "l" },
+	{ 1, 0, XK_Shift_L, XK_L, "L" },
+	{ 2, 2, 0, XK_Shift_L, "\xe2\x87\xa7" },
+	{ 2, 2, 0, XK_z, "z" },
+	{ 2, 0, XK_Shift_L, XK_Z, "Z" },
+	{ 2, 2, 0, XK_x, "x" },
+	{ 2, 0, XK_Shift_L, XK_X, "X" },
+	{ 2, 2, 0, XK_c, "c" },
+	{ 2, 0, XK_Shift_L, XK_C, "C" },
+	{ 2, 2, 0, XK_v, "v" },
+	{ 2, 0, XK_Shift_L, XK_V, "V" },
+	{ 2, 2, 0, XK_b, "b" },
+	{ 2, 0, XK_Shift_L, XK_B, "B" },
+	{ 2, 2, 0, XK_n, "n" },
+	{ 2, 0, XK_Shift_L, XK_N, "N" },
+	{ 2, 2, 0, XK_m, "m" },
+	{ 2, 0, XK_Shift_L, XK_M, "M" },
+	{ 2, 2, 0, XK_comma, "," },
+	{ 2, 0, XK_Shift_L, XK_comma, "<" },
+	{ 2, 2, 0, XK_period, "." },
+	{ 2, 0, XK_Shift_L, XK_period, ">" },
+	{ 3, 3, 0, XK_Control_L, "Ctrl" },
+	{ 3, 2, 0, XK_Alt_L, "Alt" },
+	{ 3, 9, 0, XK_space, " " },
+	{ 3, 3, 0, XK_Return, "\xe2\x86\xb2" },
+	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
+	{ 0, 0, 0, 0, NULL }
+}, _layout_keypad[] =
+{
+	{ 0, 2, 0, XK_Num_Lock, "Num" },
+	{ 0, 2, 0, XK_KP_Divide, "/" },
+	{ 0, 2, 0, XK_KP_Multiply, "*" },
+	{ 0, 2, 0, XK_KP_Subtract, "-" },
+	{ 1, 2, 0, XK_KP_Home, "\xe2\x86\x96" },
+	{ 1, 0, XK_Num_Lock, XK_7, "7" },
+	{ 1, 2, 0, XK_KP_Up, "\xe2\x86\x91" },
+	{ 1, 0, XK_Num_Lock, XK_8, "8" },
+	{ 1, 2, 0, XK_KP_Page_Up, "\xe2\x87\x9e" },
+	{ 1, 0, XK_Num_Lock, XK_9, "9" },
+	{ 1, 2, 0, XK_KP_Add, "+" },
+	{ 2, 2, 0, XK_KP_Left, "\xe2\x86\x90" },
+	{ 2, 0, XK_Num_Lock, XK_4, "4" },
+	{ 2, 2, 0, XK_5, "5" },
+	{ 2, 2, 0, XK_KP_Right, "\xe2\x86\x92" },
+	{ 2, 0, XK_Num_Lock, XK_6, "6" },
+	{ 2, 2, 0, XK_KP_Add, "+" },
+	{ 3, 2, 0, XK_KP_End, "\xe2\x86\x99" },
+	{ 3, 0, XK_Num_Lock, XK_1, "1" },
+	{ 3, 2, 0, XK_KP_Down, "\xe2\x86\x93" },
+	{ 3, 0, XK_Num_Lock, XK_2, "2" },
+	{ 3, 2, 0, XK_KP_Page_Down, "\xe2\x87\x9f" },
+	{ 3, 0, XK_Num_Lock, XK_3, "3" },
+	{ 3, 2, 0, XK_KP_Enter, "\xe2\x86\xb2" },
+	{ 4, 4, 0, XK_KP_Insert, "Ins" },
+	{ 4, 0, XK_Num_Lock, XK_0, "0" },
+	{ 4, 2, 0, XK_KP_Delete, "Del" },
+	{ 4, 0, XK_Num_Lock, XK_KP_Decimal, "." },
+	{ 4, 2, 0, XK_BackSpace, "\xe2\x8c\xab" },
+	{ 0, 0, 0, 0, NULL }
+}, _layout_special[] =
+{
+	{ 0, 2, 0, XK_Escape, "Esc" },
+	{ 0, 1, 0, 0, NULL },
+	{ 0, 2, 0, XK_F1, "F1" },
+	{ 0, 2, 0, XK_F2, "F2" },
+	{ 0, 2, 0, XK_F3, "F3" },
+	{ 0, 2, 0, XK_F4, "F4" },
+	{ 0, 1, 0, 0, NULL },
+	{ 0, 2, 0, XK_F5, "F5" },
+	{ 0, 2, 0, XK_F6, "F6" },
+	{ 0, 2, 0, XK_F7, "F7" },
+	{ 0, 2, 0, XK_F8, "F8" },
+	{ 1, 2, 0, XK_1, "1" },
+	{ 1, 0, XK_Shift_L, XK_1, "!" },
+	{ 1, 2, 0, XK_2, "2" },
+	{ 1, 0, XK_Shift_L, XK_2, "@" },
+	{ 1, 2, 0, XK_3, "3" },
+	{ 1, 0, XK_Shift_L, XK_3, "#" },
+	{ 1, 2, 0, XK_4, "4" },
+	{ 1, 0, XK_Shift_L, XK_4, "$" },
+	{ 1, 2, 0, XK_5, "5" },
+	{ 1, 0, XK_Shift_L, XK_5, "%" },
+	{ 1, 2, 0, XK_6, "6" },
+	{ 1, 0, XK_Shift_L, XK_6, "^" },
+	{ 1, 2, 0, XK_7, "7" },
+	{ 1, 0, XK_Shift_L, XK_7, "&" },
+	{ 1, 2, 0, XK_8, "8" },
+	{ 1, 0, XK_Shift_L, XK_8, "*" },
+	{ 1, 2, 0, XK_9, "9" },
+	{ 1, 0, XK_Shift_L, XK_9, "(" },
+	{ 1, 2, 0, XK_0, "0" },
+	{ 1, 0, XK_Shift_L, XK_0, ")" },
+	{ 2, 3, 0, XK_Tab, "\xe2\x86\xb9" },
+	{ 2, 2, 0, XK_grave, "`" },
+	{ 2, 0, XK_Shift_L, XK_grave, "~" },
+	{ 2, 2, 0, XK_minus, "-" },
+	{ 2, 0, XK_Shift_L, XK_minus, "_" },
+	{ 2, 2, 0, XK_equal, "=" },
+	{ 2, 0, XK_Shift_L, XK_equal, "+" },
+	{ 2, 2, 0, XK_backslash, "\\" },
+	{ 2, 0, XK_Shift_L, XK_backslash, "|" },
+	{ 2, 2, 0, XK_bracketleft, "[" },
+	{ 2, 0, XK_Shift_L, XK_bracketleft, "{" },
+	{ 2, 2, 0, XK_bracketright, "]" },
+	{ 2, 0, XK_Shift_L, XK_bracketright, "}" },
+	{ 2, 2, 0, XK_semicolon, ";" },
+	{ 2, 0, XK_Shift_L, XK_semicolon, ":" },
+	{ 2, 2, 0, XK_apostrophe, "'" },
+	{ 2, 0, XK_Shift_L, XK_apostrophe, "\"" },
+	{ 3, 2, 0, XK_Shift_L, "\xe2\x87\xa7" },
+	{ 3, 6, 0, XK_space, " " },
+	{ 3, 2, 0, XK_comma, "," },
+	{ 3, 0, XK_Shift_L, XK_comma, "<" },
+	{ 3, 2, 0, XK_period, "." },
+	{ 2, 0, XK_Shift_L, XK_period, ">" },
+	{ 3, 2, 0, XK_slash, "/" },
+	{ 3, 0, XK_Shift_L, XK_slash, "?" },
+	{ 3, 3, 0, XK_Return, "\xe2\x86\xb2" },
+	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
+	{ 0, 0, 0, 0, NULL }
 };
 
-static KeyboardKey _qwertyuiop[] =
-{
-	{ NULL, NULL, XK_Tab, "\xe2\x86\x92|", NULL },
-	{ NULL, NULL, XK_Q, "q", "Q" },
-	{ NULL, NULL, XK_W, "w", "W" },
-	{ NULL, NULL, XK_E, "e", "E" },
-	{ NULL, NULL, XK_R, "r", "R" },
-	{ NULL, NULL, XK_T, "t", "T" },
-	{ NULL, NULL, XK_Y, "y", "Y" },
-	{ NULL, NULL, XK_U, "u", "U" },
-	{ NULL, NULL, XK_I, "i", "I" },
-	{ NULL, NULL, XK_O, "o", "O" },
-	{ NULL, NULL, XK_P, "p", "P" },
-	{ NULL, NULL, XK_Return, "Ret", NULL },
-	{ NULL, NULL, 0, NULL, NULL }
-};
-static KeyboardKey _asdfghjkl[] =
-{
-	{ NULL, NULL, XK_Caps_Lock, "Caps", NULL },
-	{ NULL, NULL, XK_A, "a", "A" },
-	{ NULL, NULL, XK_S, "s", "S" },
-	{ NULL, NULL, XK_D, "d", "D" },
-	{ NULL, NULL, XK_F, "f", "F" },
-	{ NULL, NULL, XK_G, "g", "G" },
-	{ NULL, NULL, XK_H, "h", "H" },
-	{ NULL, NULL, XK_J, "j", "J" },
-	{ NULL, NULL, XK_K, "k", "K" },
-	{ NULL, NULL, XK_L, "l", "L" },
-	{ NULL, NULL, XK_semicolon, ";", ":" },
-	{ NULL, NULL, XK_apostrophe, "'", "\"" },
-	{ NULL, NULL, 0, NULL, NULL }
-};
-static KeyboardKey _zxcvbnm[] =
-{
-	{ NULL, NULL, XK_Shift_L, "\xe2\x87\xa7", NULL },
-	{ NULL, NULL, XK_Z, "z", "Z" },
-	{ NULL, NULL, XK_X, "x", "X" },
-	{ NULL, NULL, XK_C, "c", "C" },
-	{ NULL, NULL, XK_V, "v", "V" },
-	{ NULL, NULL, XK_B, "b", "B" },
-	{ NULL, NULL, XK_N, "n", "N" },
-	{ NULL, NULL, XK_M, "m", "M" },
-	{ NULL, NULL, XK_space, " ", NULL },
-	{ NULL, NULL, XK_comma, ",", "<" },
-	{ NULL, NULL, XK_period, ".", ">" },
-	{ NULL, NULL, XK_slash, "/", "?" },
-	{ NULL, NULL, 0, NULL, NULL }
-};
+
+/* prototypes */
+static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
+		KeyboardKeys const * keys);
 
 
 /* public */
@@ -117,24 +229,19 @@ static KeyboardKey _zxcvbnm[] =
 Keyboard * keyboard_new(KeyboardPrefs * prefs)
 {
 	Keyboard * keyboard;
-	KeyboardKey * kk;
 	GdkScreen * screen;
-	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkWidget * vbox;
 	GtkWidget * widget;
-	GtkWidget * label;
-	size_t i;
-	size_t j;
+	PangoFontDescription * bold;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
-	keyboard->layout[0] = _1234567890;
-	keyboard->layout[1] = _qwertyuiop;
-	keyboard->layout[2] = _asdfghjkl;
-	keyboard->layout[3] = _zxcvbnm;
+	keyboard->layouts = NULL;
+	keyboard->layouts_cnt = 0;
 	screen = gdk_screen_get_default();
 	if(prefs != NULL && prefs->monitor > 0
 			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
@@ -173,46 +280,46 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				"delete-event",
 				G_CALLBACK(on_keyboard_delete_event), keyboard);
 	}
-	/* layouts */
+	/* fonts */
 	if(prefs->font != NULL)
-		keyboard->bold = pango_font_description_from_string(
+		keyboard->font = pango_font_description_from_string(
 				prefs->font);
 	else
-		keyboard->bold = pango_font_description_new();
-	pango_font_description_set_weight(keyboard->bold, PANGO_WEIGHT_BOLD);
+		keyboard->font = pango_font_description_new();
+	pango_font_description_set_weight(keyboard->font, PANGO_WEIGHT_BOLD);
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	/* chooser */
+	hbox = gtk_hbox_new(FALSE, 4);
 	vbox = gtk_vbox_new(TRUE, 4);
-	for(i = 0; i < 4; i++)
-	{
-		hbox = gtk_hbox_new(TRUE, 4);
-		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
-		{
-			kk = &keyboard->layout[i][j];
-			if(kk->keysym == XK_Shift_L || kk->keysym == XK_Shift_R)
-				widget = gtk_toggle_button_new();
-			else
-				widget = gtk_button_new();
-			label = gtk_label_new(kk->label);
-			kk->widget = label;
-			gtk_widget_modify_font(label, keyboard->bold);
-			gtk_container_add(GTK_CONTAINER(widget), label);
-			g_object_set_data(G_OBJECT(widget), "key", kk);
-			g_signal_connect(G_OBJECT(widget), "button-press-event",
-					G_CALLBACK(on_keyboard_key_pressed),
-					keyboard);
-			g_signal_connect(G_OBJECT(widget),
-					"button-release-event", G_CALLBACK(
-						on_keyboard_key_released),
-					keyboard);
-			g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-					G_CALLBACK(on_keyboard_key_clicked),
-					keyboard);
-			gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE,
-					0);
-		}
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-	}
-	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
-	gtk_widget_show_all(vbox);
+	widget = gtk_button_new_with_label("Abc");
+	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)), bold);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_keyboard_set_layout_letters), keyboard);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	widget = gtk_button_new_with_label("123");
+	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)), bold);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_keyboard_set_layout_keypad), keyboard);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	widget = gtk_button_new_with_label(",./");
+	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)), bold);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_keyboard_set_layout_special), keyboard);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(hbox);
+	/* layouts */
+	vbox = gtk_vbox_new(TRUE, 4);
+	gtk_widget_show(vbox);
+	if((widget = _keyboard_add_layout(keyboard, _layout_letters)) != NULL)
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	if((widget = _keyboard_add_layout(keyboard, _layout_keypad)) != NULL)
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	if((widget = _keyboard_add_layout(keyboard, _layout_special)) != NULL)
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(keyboard->window), hbox);
 	if(prefs->embedded == 0)
 		gtk_widget_show(keyboard->window);
 	else
@@ -220,6 +327,8 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
 		fclose(stdout);
 	}
+	keyboard_set_layout(keyboard, 0);
+	pango_font_description_free(bold);
 	return keyboard;
 }
 
@@ -231,29 +340,36 @@ void keyboard_delete(Keyboard * keyboard)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	gtk_widget_destroy(keyboard->window);
-	pango_font_description_free(keyboard->bold);
+	pango_font_description_free(keyboard->font);
 	free(keyboard);
 }
 
 
 /* accessors */
-/* keyboard_set_case */
-void keyboard_set_case(Keyboard * keyboard, KeyboardCase kcase)
+/* keyboard_set_modifier */
+void keyboard_set_modifier(Keyboard * keyboard, unsigned int modifier)
 {
 	size_t i;
-	size_t j;
-	GtkWidget * label;
 
-	for(i = 0; i < 4; i++)
-		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
-		{
-			if(keyboard->layout[i][j].upper_label == NULL)
-				continue;
-			label = keyboard->layout[i][j].widget;
-			gtk_label_set_text(GTK_LABEL(label), (kcase == KC_LOWER)
-					? keyboard->layout[i][j].label
-					: keyboard->layout[i][j].upper_label);
-		}
+	for(i = 0; i < keyboard->layouts_cnt; i++)
+		keyboard_layout_apply_modifier(keyboard->layouts[i], modifier);
+}
+
+
+/* keyboard_set_layout */
+void keyboard_set_layout(Keyboard * keyboard, unsigned int which)
+{
+	size_t i;
+	GtkWidget * widget;
+
+	for(i = 0; i < keyboard->layouts_cnt; i++)
+		if((widget = keyboard_layout_get_widget(keyboard->layouts[i]))
+				== NULL)
+			continue;
+		else if(i == which)
+			gtk_widget_show_all(widget);
+		else
+			gtk_widget_hide(widget);
 }
 
 
@@ -283,62 +399,35 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 }
 
 
-/* keyboard_key_show */
-void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
-		GdkEventButton * event)
+/* private */
+/* keyboard_add_layout */
+static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
+		KeyboardKeys const * keys)
 {
-	GtkWidget * widget;
-	unsigned int bwidth = keyboard->width / 12;
-	unsigned int bheight = (bwidth / 4) * 3;
+	KeyboardLayout ** p;
+	KeyboardLayout * layout;
 	size_t i;
-	size_t j;
+	KeyboardKey * key;
+	GtkWidget * widget;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, show ? "TRUE" : "FALSE");
-#endif
-	if(show == FALSE)
+	if((p = realloc(keyboard->layouts, sizeof(*p) * (keyboard->layouts_cnt
+						+ 1))) == NULL)
+		return NULL;
+	keyboard->layouts = p;
+	if((layout = keyboard_layout_new()) == NULL)
+		return NULL;
+	keyboard->layouts[keyboard->layouts_cnt++] = layout;
+	for(i = 0; keys[i].width != 0; i++)
 	{
-		if(key->popup != NULL)
-			gtk_widget_destroy(key->popup);
-		key->popup = NULL;
-		return;
+		key = keyboard_layout_add(layout, keys[i].row, keys[i].width,
+				keys[i].keysym, keys[i].label);
+		if(key == NULL)
+			continue;
+		widget = keyboard_key_get_label_widget(key);
+		gtk_widget_modify_font(widget, keyboard->font);
+		for(; keys[i + 1].width == 0 && keys[i + 1].modifier != 0; i++)
+			keyboard_key_set_modifier(key, keys[i + 1].modifier,
+					keys[i + 1].keysym, keys[i + 1].label);
 	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() button=%u (%lf,%lf) screen (%lf,%lf)\n",
-			__func__, event->button, event->x, event->y,
-			event->x_root, event->y_root);
-#endif
-	if(key->popup == NULL)
-	{
-		key->popup = gtk_window_new(GTK_WINDOW_POPUP);
-		widget = gtk_button_new_with_label(key->upper_label != NULL?
-				key->upper_label : key->label);
-		gtk_button_set_alignment(GTK_BUTTON(widget), 0.5, 0.1);
-		gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
-				keyboard->bold);
-		gtk_widget_set_size_request(key->popup, bwidth, bheight * 2);
-		gtk_container_add(GTK_CONTAINER(key->popup), widget);
-	}
-	for(i = 0; i < 4; i++)
-	{
-		for(j = 0; keyboard->layout[i][j].label != NULL; j++)
-			if(&keyboard->layout[i][j] == key)
-				break;
-		if(keyboard->layout[i][j].label != NULL)
-			break;
-	}
-	if(i == 4 && j == 12) /* XXX hard-coded */
-	{
-		i = 0;
-		j = 5;
-	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() move(%d, %d)\n", __func__,
-			(int)(event->x_root - event->x - 4),
-			(int)(event->y_root - event->y - (bheight * 2)));
-#endif
-	gtk_window_move(GTK_WINDOW(key->popup),
-			event->x_root - event->x - 4,
-			event->y_root - event->y - (bheight * 2));
-	gtk_widget_show_all(key->popup);
+	return keyboard_layout_get_widget(layout);
 }
