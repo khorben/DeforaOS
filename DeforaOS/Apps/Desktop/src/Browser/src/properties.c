@@ -103,7 +103,13 @@ static int _properties_error(GtkWidget * window, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(window != NULL ? GTK_WINDOW(window)
 			: NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-			"%s: %s", message, strerror(errno));
+			"%s: %s", message,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s: %s", message,
+#endif
+			strerror(errno));
 	if(window != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 					window));

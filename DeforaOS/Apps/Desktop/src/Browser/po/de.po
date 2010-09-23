@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-29 01:52+0200\n"
+"POT-Creation-Date: 2010-09-23 15:36+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -90,9 +90,9 @@ msgid " Location: "
 msgstr ""
 
 #: ../src/browser.c:541 ../src/browser.c:546 ../src/copy.c:203
-#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1440
-#: ../src/desktop.c:1445 ../src/move.c:130 ../src/properties.c:110
-#: ../src/view.c:364 ../src/view.c:367
+#: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1441
+#: ../src/desktop.c:1446 ../src/move.c:130 ../src/properties.c:108
+#: ../src/properties.c:116 ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr "Fehler"
 
@@ -349,47 +349,47 @@ msgstr ""
 msgid "Desktop preferences"
 msgstr "Desktop Einstellungen"
 
-#: ../src/desktop.c:511
+#: ../src/desktop.c:512
 msgid "Background: "
 msgstr "Hintergrund: "
 
-#: ../src/desktop.c:516
+#: ../src/desktop.c:517
 msgid "Background"
 msgstr "Hintergrund"
 
-#: ../src/desktop.c:522
+#: ../src/desktop.c:523
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:524
+#: ../src/desktop.c:525
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:526
+#: ../src/desktop.c:527
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:532
+#: ../src/desktop.c:533
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:785 ../src/desktop.c:804
+#: ../src/desktop.c:786 ../src/desktop.c:805
 msgid "Back"
 msgstr ""
 
-#: ../src/desktop.c:864
+#: ../src/desktop.c:865
 msgid "Home"
 msgstr "Persönlicher Ordner"
 
-#: ../src/desktop.c:884
+#: ../src/desktop.c:885
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1489
+#: ../src/desktop.c:1490
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1544
+#: ../src/desktop.c:1545
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -440,75 +440,75 @@ msgid ""
 "  -a\taction to call (default: \"open\")\n"
 msgstr ""
 
-#: ../src/properties.c:224
+#: ../src/properties.c:230
 msgid "Properties of "
 msgstr "Eigenschaften von "
 
-#: ../src/properties.c:242
+#: ../src/properties.c:248
 msgid "Size:"
 msgstr "Größe:"
 
-#: ../src/properties.c:248 ../src/properties.c:279
+#: ../src/properties.c:254 ../src/properties.c:285
 msgid "Owner:"
 msgstr ""
 
-#: ../src/properties.c:253 ../src/properties.c:285
+#: ../src/properties.c:259 ../src/properties.c:291
 msgid "Group:"
 msgstr "Gruppe:"
 
-#: ../src/properties.c:261
+#: ../src/properties.c:267
 msgid "Accessed:"
 msgstr ""
 
-#: ../src/properties.c:266
+#: ../src/properties.c:272
 msgid "Modified:"
 msgstr ""
 
-#: ../src/properties.c:271
+#: ../src/properties.c:277
 msgid "Changed:"
 msgstr ""
 
-#: ../src/properties.c:276
+#: ../src/properties.c:282
 msgid "Permissions:"
 msgstr ""
 
-#: ../src/properties.c:291
+#: ../src/properties.c:297
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:330
+#: ../src/properties.c:336
 msgid " bytes"
 msgstr ""
 
-#: ../src/properties.c:334
+#: ../src/properties.c:340
 msgid "KB"
 msgstr ""
 
-#: ../src/properties.c:336
+#: ../src/properties.c:342
 msgid "MB"
 msgstr ""
 
-#: ../src/properties.c:338
+#: ../src/properties.c:344
 msgid "GB"
 msgstr ""
 
-#: ../src/properties.c:342
+#: ../src/properties.c:348
 msgid "TB"
 msgstr ""
 
-#: ../src/properties.c:434
+#: ../src/properties.c:440
 msgid "read"
 msgstr ""
 
-#: ../src/properties.c:439
+#: ../src/properties.c:445
 msgid "write"
 msgstr ""
 
-#: ../src/properties.c:444
+#: ../src/properties.c:450
 msgid "execute"
 msgstr ""
 
-#: ../src/properties.c:495
+#: ../src/properties.c:501
 msgid "Usage: properties file...\n"
 msgstr ""
 
