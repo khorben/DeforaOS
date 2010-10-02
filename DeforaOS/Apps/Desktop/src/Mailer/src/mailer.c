@@ -249,6 +249,8 @@ Mailer * mailer_new(void)
 	vbox2 = _new_headers(mailer);
 	mailer->view_buffer = gtk_text_buffer_new(NULL);
 	mailer->view_body = gtk_text_view_new_with_buffer(mailer->view_buffer);
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(mailer->view_body),
+			FALSE);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(mailer->view_body), FALSE);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
