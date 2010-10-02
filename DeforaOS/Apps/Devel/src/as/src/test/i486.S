@@ -18,3 +18,5 @@
 	bswap	%ebp
 	bswap	%esi
 	bswap	%edi
+	/* db */
+	db	$0x01

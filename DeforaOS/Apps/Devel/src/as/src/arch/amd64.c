@@ -45,6 +45,7 @@ static ArchRegister _amd64_regs[] =
 static ArchInstruction _amd64_set[] =
 {
 #include "amd64.ins"
+#include "common.ins"
 #include "null.ins"
 };
 

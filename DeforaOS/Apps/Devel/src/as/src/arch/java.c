@@ -237,6 +237,7 @@ static ArchInstruction _java_set[] =
 	{ "wide",	0xc4,	AO_IMM|AO_IMM_,	1, 1, 2, 0 },
 	{ "wide",	0xc4,	AO_IMM|AO_IMM_|AO_IMM__,1, 1, 2, 2 },
 	{ "xxxunusedxxx",0xba,	AO_NONE,	1, 0, 0, 0 },
+#include "common.ins"
 #include "null.ins"
 };
 

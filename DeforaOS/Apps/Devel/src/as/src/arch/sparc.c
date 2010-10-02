@@ -42,6 +42,7 @@ static ArchRegister _sparc_regs[] =
 static ArchInstruction _sparc_set[] =
 {
 #include "sparc.ins"
+#include "common.ins"
 #include "null.ins"
 };
 

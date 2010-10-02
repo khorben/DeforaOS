@@ -1037,3 +1037,5 @@
 	jmp	%ebp
 	jmp	%esi
 	jmp	%edi
+	/* db */
+	db	$0x01

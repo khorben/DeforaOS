@@ -687,3 +687,5 @@
 	sti
 	cld
 	std
+	/* db */
+	db	$0x01
