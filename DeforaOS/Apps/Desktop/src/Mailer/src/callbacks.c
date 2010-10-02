@@ -51,24 +51,6 @@ void on_file_new_mail(gpointer data)
 }
 
 
-void on_file_send_receive(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_file_print(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_file_print_preview(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
 void on_file_quit(gpointer data)
 {
 	/* FIXME may be composing */
@@ -92,12 +74,6 @@ void on_message_reply_to_all(gpointer data)
 void on_message_forward(gpointer data)
 {
 	on_forward(data);
-}
-
-
-void on_message_delete(gpointer data)
-{
-	on_delete(data);
 }
 
 
@@ -134,12 +110,6 @@ void on_new_mail(gpointer data)
 }
 
 
-void on_stop(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
 void on_reply(gpointer data)
 {
 	Mailer * mailer = data;
@@ -164,18 +134,6 @@ void on_forward(gpointer data)
 
 	/* FIXME implement only if selection */
 	compose_new(mailer);
-}
-
-
-void on_delete(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_print(gpointer data)
-{
-	/* FIXME implement */
 }
 
 
@@ -209,12 +167,6 @@ void on_compose_send(gpointer data)
 }
 
 
-void on_compose_attach(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
 /* compose file menu */
 void on_compose_file_new(gpointer data)
 {
@@ -234,54 +186,11 @@ void on_compose_file_send(gpointer data)
 }
 
 
-void on_compose_file_save(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_compose_file_save_as(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
 void on_compose_file_close(gpointer data)
 {
 	Compose * compose = data;
 
 	on_compose_closex(compose);
-}
-
-
-/* compose_edit_menu */
-void on_compose_edit_undo(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_compose_edit_redo(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_compose_edit_cut(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_compose_edit_copy(gpointer data)
-{
-	/* FIXME implement */
-}
-
-
-void on_compose_edit_paste(gpointer data)
-{
-	/* FIXME implement */
 }
 
 

@@ -70,10 +70,8 @@ static DesktopMenu _menu_file[] =
 	{ "_New message", G_CALLBACK(on_compose_file_new), "stock_mail-compose",
 		GDK_CONTROL_MASK, GDK_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Save", G_CALLBACK(on_compose_file_save), GTK_STOCK_SAVE,
-		GDK_CONTROL_MASK, GDK_S },
-	{ "Save _as...", G_CALLBACK(on_compose_file_save_as), GTK_STOCK_SAVE_AS,
-		0, 0 },
+	{ "_Save", NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_S },
+	{ "Save _as...", NULL, GTK_STOCK_SAVE_AS, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send",
 		GDK_CONTROL_MASK, GDK_Return },
@@ -85,17 +83,12 @@ static DesktopMenu _menu_file[] =
 
 static DesktopMenu _menu_edit[] =
 {
-	{ "_Undo", G_CALLBACK(on_compose_edit_undo), GTK_STOCK_UNDO,
-		GDK_CONTROL_MASK, GDK_Z },
-	{ "_Redo", G_CALLBACK(on_compose_edit_redo), GTK_STOCK_REDO,
-		GDK_CONTROL_MASK, GDK_Y },
+	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_Z },
+	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_Y },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Cut", G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT,
-		GDK_CONTROL_MASK, GDK_X },
-	{ "_Copy", G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY,
-		GDK_CONTROL_MASK, GDK_C },
-	{ "_Paste", G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE,
-		GDK_CONTROL_MASK, GDK_P },
+	{ "_Cut", NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
+	{ "_Copy", NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
+	{ "_Paste", NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -131,7 +124,7 @@ static DesktopToolbar _compose_toolbar[] =
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ "Save", G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Attach", G_CALLBACK(on_compose_attach), "stock_attach", 0, 0, NULL },
+	{ "Attach", NULL, "stock_attach", 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
