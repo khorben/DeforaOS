@@ -56,7 +56,7 @@ typedef struct _MboxFolder
 	int source;
 
 	/* parsing */
-	off_t offset;
+	size_t offset;
 	ParserContext context;
 	Message * message;
 	size_t pos; /* context-dependant */
@@ -165,10 +165,12 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 /* types */
 struct _Message
 {
-	off_t offset;
+	size_t offset;
 	GtkTreeIter iter;
 	char ** headers;
 	size_t headers_cnt;
+	size_t body_offset;
+	size_t body_length;
 };
 
 
@@ -176,6 +178,7 @@ struct _Message
 static Message * _message_new(off_t offset, GtkListStore * store);
 static void _message_delete(Message * message);
 
+static int _message_set_body(Message * message, off_t offset, size_t length);
 static int _message_set_header(Message * message, char const * header,
 		GtkListStore * store);
 
@@ -250,20 +253,30 @@ static int _mbox_select(AccountFolder * folder, AccountMessage * message)
 {
 	MboxFolder * mf = folder->data;
 	Message * m = (Message*)message;
+	char const * filename = mf->config->value;
 	GtkTextIter iter;
-	size_t i;
+	FILE * fp;
+	char * buf;
+	size_t size;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", \"%p\")\n", __func__, folder->name,
-			message);
+			(void*)message);
 #endif
 	gtk_text_buffer_set_text(mf->buffer, "", 0);
 	gtk_text_buffer_get_end_iter(mf->buffer, &iter);
-	for(i = 0; i < m->headers_cnt; i++)
+	/* XXX we may still be reading the file... */
+	if((fp = fopen(filename, "r")) == NULL)
+		return -1;
+	if(m->body_offset != 0 && m->body_length > 0
+			&& fseek(fp, m->body_offset, SEEK_SET) == 0
+			&& (buf = malloc(m->body_length)) != NULL)
 	{
-		gtk_text_buffer_insert(mf->buffer, &iter, m->headers[i], -1);
-		gtk_text_buffer_insert(mf->buffer, &iter, "\n", 1);
+		if((size = fread(buf, 1, m->body_length, fp)) > 0)
+			gtk_text_buffer_insert(mf->buffer, &iter, buf, size);
+		free(buf);
 	}
+	fclose(fp);
 	return 0;
 }
 
@@ -285,6 +298,8 @@ static Message * _message_new(off_t offset, GtkListStore * store)
 	gtk_list_store_set(store, &message->iter, MH_COL_MESSAGE, message, -1);
 	message->headers = NULL;
 	message->headers_cnt = 0;
+	message->body_offset = 0;
+	message->body_length = 0;
 	return message;
 }
 
@@ -301,6 +316,20 @@ static void _message_delete(Message * message)
 }
 
 
+/* message_set_body */
+static int _message_set_body(Message * message, off_t offset, size_t length)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %lu, %lu)\n", __func__, (void*)message,
+			offset, length);
+#endif
+	message->body_offset = offset;
+	message->body_length = length;
+	return 0;
+}
+
+
+/* message_set_header */
 /* FIXME factorize code? */
 static int _message_set_header(Message * message, char const * header,
 		GtkListStore * store)
@@ -318,14 +347,14 @@ static int _message_set_header(Message * message, char const * header,
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\", store)\n", __func__, message,
-			header);
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", store)\n", __func__,
+			(void*)message, header);
 #endif
 	if((p = realloc(message->headers, sizeof(*p)
 					* (message->headers_cnt + 1))) == NULL)
 	{
 		/* FIXME catch error */
-		return 1;
+		return -1;
 	}
 	message->headers = p;
 	for(i = 0; abc[i].col != -1; i++)
@@ -333,7 +362,7 @@ static int _message_set_header(Message * message, char const * header,
 			gtk_list_store_set(store, &message->iter, abc[i].col,
 					&header[strlen(abc[i].name)], -1);
 	if((message->headers[message->headers_cnt] = strdup(header)) == NULL)
-		return 1;
+		return -1;
 	message->headers_cnt++;
 	return 0;
 }
@@ -346,7 +375,7 @@ Message * _folder_message_add(AccountFolder * folder, off_t offset)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %ld)\n", __func__,
-			mbox->config->value, offset);
+			(char const *)mbox->config->value, offset);
 #endif
 	if((p = realloc(mbox->messages, sizeof(*p)
 					* (mbox->messages_cnt + 1))) == NULL)
@@ -425,7 +454,8 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, mbox->config->value);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			(char const *)mbox->config->value);
 #endif
 	if(condition != G_IO_IN)
 		return FALSE; /* FIXME implement message deletion */
@@ -447,6 +477,12 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 	_watch_parse(folder, buf, read);
 	if(status == G_IO_STATUS_EOF)
 	{
+		/* XXX should not be necessary here */
+		if(mbox->message != NULL)
+			_message_set_body(mbox->message,
+					mbox->message->body_offset,
+					mbox->offset
+					- mbox->message->body_offset);
 		g_io_channel_close(source);
 		mbox->channel = NULL;
 		mbox->source = g_timeout_add(1000, _folder_idle, folder);
@@ -485,7 +521,7 @@ static int _parse_append(AccountFolder * folder, char const buf[], size_t len)
 	char * p;
 
 	if((p = realloc(mbox->str, mbox->pos + len + 1)) == NULL)
-		return 1; /* FIXME track error */
+		return -1; /* FIXME track error */
 	mbox->str = p;
 	memcpy(&mbox->str[mbox->pos], buf, len);
 	mbox->pos += len;
@@ -506,8 +542,7 @@ static void _parse_context(AccountFolder * folder, ParserContext context)
 static void _parse_from(AccountFolder * folder, char const buf[], size_t read,
 		size_t * i)
 {
-	static char const from[] = "From: ";
-	static char const from2[] = "From ";
+	static char const from[] = "From ";
 	MboxFolder * mbox = folder->data;
 	size_t m;
 
@@ -518,12 +553,12 @@ static void _parse_from(AccountFolder * folder, char const buf[], size_t read,
 	if(*i == read) /* not enough data read */
 		return;
 	if(mbox->pos < sizeof(from) - 1 /* early newline */
-			|| (strncmp(mbox->str, from, sizeof(from) - 1) != 0
-				&& strncmp(mbox->str, from2, sizeof(from2) - 1)
-				!= 0))
+			|| strncmp(mbox->str, from, sizeof(from) - 1) != 0)
 	{
-		mbox->context = mbox->message != NULL
-			? PC_BODY : PC_GARBAGE;
+		if(mbox->message != NULL)
+			mbox->context = PC_BODY;
+		else
+			mbox->context = PC_GARBAGE;
 		return; /* switch context immediately */
 	}
 	for(m = 0; *i + m < read && buf[*i + m] != '\n'; m++);
@@ -531,6 +566,11 @@ static void _parse_from(AccountFolder * folder, char const buf[], size_t read,
 	*i += m;
 	if(*i == read)
 		return; /* grab more data XXX is gonna force a check again */
+	if(mbox->message != NULL)
+		_message_set_body(mbox->message,
+				mbox->message->body_offset,
+				mbox->offset + *i - mbox->pos
+				- mbox->message->body_offset);
 	mbox->message = _folder_message_add(folder, mbox->offset + *i
 			- mbox->pos);
 	_message_set_header(mbox->message, mbox->str, folder->store);
@@ -567,17 +607,20 @@ static void _parse_header(AccountFolder * folder, char const buf[], size_t read,
 static void _parse_body(AccountFolder * folder, char const buf[], size_t read,
 		size_t * i)
 {
+	MboxFolder * mbox = folder->data;
 	size_t j;
 
 	for(j = *i; j < read && buf[j] != '\n'; j++);
+	if(mbox->message->body_offset == 0)
+		_message_set_body(mbox->message, mbox->offset + *i - mbox->pos,
+				0);
+	_parse_append(folder, &buf[*i], j - *i);
 	if(j == read)
 	{
 		/* TODO skip data instead of storing it */
-		_parse_append(folder, &buf[*i], j - *i);
 		*i = j;
 		return;
 	}
-	_parse_append(folder, &buf[*i], j - *i);
 	_parse_context(folder, PC_FROM);
 	*i = (j + 1);
 }
