@@ -77,13 +77,14 @@ static char const _mbox_name[] = "Local folders";
 
 static char const * _error = NULL;
 
-static AccountConfig _mbox_config[_FOLDER_CNT] =
+static AccountConfig _mbox_config[_FOLDER_CNT + 1] =
 {
 	{ "mbox",	"Inbox file",		ACT_FILE,	NULL },
 	{ "spool",	"Spool file",		ACT_FILE,	NULL },
 	{ "draft",	"Draft mails file",	ACT_FILE,	NULL },
 	{ "sent",	"Sent mails file",	ACT_FILE,	NULL },
 	{ "trash",	"Deleted mails file",	ACT_FILE,	NULL },
+	{ NULL,		NULL,			0,		NULL }
 };
 
 static MboxFolder _mbox_inbox =
