@@ -77,20 +77,8 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
 	$(INSTALL) -m 0644 -- mbox.so $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
-	$(INSTALL) -m 0644 -- pop3.so $(DESTDIR)$(LIBDIR)/Mailer/account/pop3.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
-	$(INSTALL) -m 0644 -- imap4.so $(DESTDIR)$(LIBDIR)/Mailer/account/imap4.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
-	$(INSTALL) -m 0644 -- nntp.so $(DESTDIR)$(LIBDIR)/Mailer/account/nntp.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
-	$(INSTALL) -m 0644 -- rss.so $(DESTDIR)$(LIBDIR)/Mailer/account/rss.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/pop3.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/imap4.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/nntp.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/rss.so
 
 .PHONY: all clean distclean install uninstall
