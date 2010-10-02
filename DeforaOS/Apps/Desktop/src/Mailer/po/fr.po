@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-03 00:03+0200\n"
+"POT-Creation-Date: 2010-10-03 00:31+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -119,6 +119,122 @@ msgstr "Supprimer"
 #: ../src/mailer.c:158
 msgid "Print"
 msgstr "Imprimer"
+
+#: ../src/mailer.c:444
+msgid "Subject"
+msgstr "Sujet"
+
+#: ../src/mailer.c:445
+msgid "From"
+msgstr "De"
+
+#: ../src/mailer.c:446
+msgid "Date"
+msgstr "Date"
+
+#: ../src/mailer.c:515
+msgid " Subject: "
+msgstr " Sujet: "
+
+#: ../src/mailer.c:516
+msgid " From: "
+msgstr " De: "
+
+#: ../src/mailer.c:517
+msgid " To: "
+msgstr " À: "
+
+#: ../src/mailer.c:518
+msgid " Date: "
+msgstr " Date: "
+
+#: ../src/mailer.c:636 ../src/mailer.c:641
+msgid "Error"
+msgstr "Erreur"
+
+#: ../src/mailer.c:825
+msgid "Mailer preferences"
+msgstr "Préférences de Mailer"
+
+#: ../src/mailer.c:859
+msgid "Enabled"
+msgstr "Actif"
+
+#: ../src/mailer.c:863
+msgid "Name"
+msgstr "Nom"
+
+#: ../src/mailer.c:867
+msgid "Type"
+msgstr "Type"
+
+#: ../src/mailer.c:891
+msgid "Accounts"
+msgstr "Comptes"
+
+#: ../src/mailer.c:898
+msgid "Messages font:"
+msgstr "Police des messages:"
+
+#: ../src/mailer.c:908
+msgid "Display"
+msgstr "Affichage"
+
+#: ../src/mailer.c:990
+msgid "No account plug-in available"
+msgstr ""
+
+#: ../src/mailer.c:1105
+msgid "Could not load plug-in"
+msgstr ""
+
+#: ../src/mailer.c:1146 ../src/mailer.c:1423
+msgid "Account name"
+msgstr "Nom du compte"
+
+#: ../src/mailer.c:1153
+msgid "Your name"
+msgstr "Votre nom"
+
+#: ../src/mailer.c:1160
+msgid "e-mail address"
+msgstr "Adresse e-mail"
+
+#: ../src/mailer.c:1167
+msgid "Type of account"
+msgstr "Type de compte"
+
+#: ../src/mailer.c:1316
+msgid "Choose file"
+msgstr "Choisir un fichier"
+
+#: ../src/mailer.c:1492
+msgid "hidden"
+msgstr "masqué"
+
+#: ../src/mailer.c:1526
+msgid "Yes"
+msgstr "Oui"
+
+#: ../src/mailer.c:1526
+msgid "No"
+msgstr "Non"
+
+#: ../src/mailer.c:1554
+msgid "Account type "
+msgstr "Type de compte "
+
+#: ../src/mailer.c:1555
+msgid " active\n"
+msgstr " actif\n"
+
+#: ../src/mailer.c:1599
+msgid "Edit account: "
+msgstr "Modification du compte: "
+
+#: ../src/mailer.c:1665
+msgid "An error occured while saving preferences"
+msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
 #: ../src/main.c:44
 msgid "Usage: mailer\n"

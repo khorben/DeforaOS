@@ -174,7 +174,7 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 	char const * type;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: mailer_config_load_account(\"%s\")\n", name);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
 #endif
 	if((type = config_get(mailer->config, name, "type")) == NULL)
 		return 1;
@@ -441,9 +441,9 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
-	_headers_view_column_text(treeview, "Subject", MH_COL_SUBJECT);
-	_headers_view_column_text(treeview, "From", MH_COL_FROM);
-	_headers_view_column_text(treeview, "Date", MH_COL_DATE);
+	_headers_view_column_text(treeview, _("Subject"), MH_COL_SUBJECT);
+	_headers_view_column_text(treeview, _("From"), MH_COL_FROM);
+	_headers_view_column_text(treeview, _("Date"), MH_COL_DATE);
 	treesel = gtk_tree_view_get_selection(treeview);
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
 	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
@@ -512,10 +512,10 @@ static GtkWidget * _new_headers(Mailer * mailer)
 		GtkWidget ** widget;
 	} widgets[] =
 	{
-		{ " Subject: ",	NULL	},
-		{ " From: ",	NULL	},
-		{ " To: ",	NULL	},
-		{ " Date: ",	NULL	},
+		{ N_(" Subject: "),	NULL	},
+		{ N_(" From: "),	NULL	},
+		{ N_(" To: "),		NULL	},
+		{ N_(" Date: "),	NULL	},
 		{ NULL,		NULL	}
 	};
 	int i;
@@ -537,7 +537,7 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	for(i = 0; widgets[i].hdr != NULL; i++)
 	{
 		hbox = gtk_hbox_new(FALSE, 0);
-		widget = gtk_label_new(widgets[i].hdr);
+		widget = gtk_label_new(_(widgets[i].hdr));
 		gtk_widget_modify_font(widget, bold);
 		gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.0);
 		gtk_size_group_add_widget(GTK_SIZE_GROUP(group), widget);
@@ -631,8 +631,14 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 		return error_set_print(PACKAGE, ret, "%s", message);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
@@ -651,7 +657,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	GdkPixbuf * pixbuf;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: mailer_account_add(%p)\n", account);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, account);
 #endif
 	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt
 						+ 1))) == NULL)
@@ -816,7 +822,7 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_window_set_default_size(GTK_WINDOW(mailer->pr_window), 300, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(mailer->pr_window), 4);
 	gtk_window_set_title(GTK_WINDOW(mailer->pr_window),
-			"Mailer preferences");
+			_("Mailer preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(mailer->pr_window), GTK_WINDOW(
 				mailer->window));
 	g_signal_connect_swapped(G_OBJECT(mailer->pr_window), "delete-event",
@@ -850,15 +856,15 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
 				_on_preferences_account_toggle), store);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
-			gtk_tree_view_column_new_with_attributes("Enabled",
+			gtk_tree_view_column_new_with_attributes(_("Enabled"),
 				renderer, "active", AC_ENABLED, NULL));
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
-			gtk_tree_view_column_new_with_attributes("Name",
+			gtk_tree_view_column_new_with_attributes(_("Name"),
 				renderer, "text", AC_TITLE, NULL));
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
-			gtk_tree_view_column_new_with_attributes("Type",
+			gtk_tree_view_column_new_with_attributes(_("Type"),
 				renderer, "text", AC_TYPE, NULL));
 	gtk_container_add(GTK_CONTAINER(widget), mailer->pr_accounts);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -882,14 +888,14 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_box_pack_start(GTK_BOX(hbox), vbox3, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
-				"Accounts"));
+				_("Accounts")));
 	/* display */
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* default font */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Messages font:");
+	widget = gtk_label_new(_("Messages font:"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	mailer->pr_messages_font = gtk_font_button_new();
@@ -899,7 +905,7 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, FALSE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
-				"Display"));
+				_("Display")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -981,7 +987,7 @@ static void _on_preferences_account_new(gpointer data)
 
 	if(mailer->available_cnt == 0)
 	{
-		mailer_error(mailer, "No account plug-in available", 0);
+		mailer_error(mailer, _("No account plug-in available"), 0);
 		return;
 	}
 	if((ad = malloc(sizeof(*ad))) == NULL)
@@ -1060,12 +1066,10 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 			ad->account->title, ", AC_TYPE ",
 			ad->account->plugin->type);
 #endif
-#if 0 /* FIXME move to mailer.c */
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 			AC_DATA, ad->account, AC_ACTIVE, FALSE,
 			AC_ENABLED, TRUE, AC_TITLE, ad->account->title,
 			AC_TYPE, ad->account->plugin->type, -1);
-#endif
 	ad->account = NULL;
 	/* _on_assistant_close is then automatically called */
 }
@@ -1096,7 +1100,8 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		}
 		if(ad->account == NULL)
 		{
-			mailer_error(ad->mailer, "Could not load plug-in", 0);
+			mailer_error(ad->mailer, _("Could not load plug-in"),
+					0);
 			gtk_assistant_set_current_page(GTK_ASSISTANT(widget),
 					0);
 			ad->settings = _assistant_account_select(ad);
@@ -1136,28 +1141,28 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	hbox = gtk_hbox_new(FALSE, 4);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	_account_add_label(hbox, desc, group, "Account name");
+	_account_add_label(hbox, desc, group, _("Account name"));
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_account_name_changed), ad);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, desc, group, "Your name");
+	_account_add_label(hbox, desc, group, _("Your name"));
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.from));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, desc, group, "e-mail address");
+	_account_add_label(hbox, desc, group, _("e-mail address"));
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.email));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, desc, group, "Type of account");
+	_account_add_label(hbox, desc, group, _("Type of account"));
 	widget = gtk_combo_box_new_text();
 	/* XXX this works because there is no plug-in list reload
 	 *     would it be implemented this will need validation later */
@@ -1306,7 +1311,7 @@ static GtkWidget * _update_file(AccountConfig * config,
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	_account_add_label(hbox, desc, group, config->title);
-	widget = gtk_file_chooser_button_new("Choose file",
+	widget = gtk_file_chooser_button_new(_("Choose file"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	if(config->value != NULL)
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget),
@@ -1413,7 +1418,7 @@ static GtkWidget * _account_display(Account * account)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	p.name = NULL;
-	p.title = "Account name";
+	p.title = _("Account name");
 	p.value = account->title;
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
@@ -1482,7 +1487,7 @@ static GtkWidget * _display_password(AccountConfig * config,
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	_account_add_label(hbox, desc, group, config->title);
-	widget = gtk_label_new("hidden");
+	widget = gtk_label_new(_("hidden"));
 	desc = pango_font_description_new();
 	pango_font_description_set_style(desc, PANGO_STYLE_ITALIC);
 	gtk_widget_modify_font(widget, desc);
@@ -1516,7 +1521,7 @@ static GtkWidget * _display_boolean(AccountConfig * config,
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	_account_add_label(hbox, desc, group, config->title);
-	widget = gtk_label_new(config->value != 0 ? "Yes" : "No");
+	widget = gtk_label_new(config->value != 0 ? _("Yes") : _("No"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	return hbox;
@@ -1544,7 +1549,8 @@ static void _on_account_type_changed(GtkWidget * widget, gpointer data)
 
 	ad->available = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 #ifdef DEBUG
-	fprintf(stderr, "%s%u%s", "Account type ", ad->available, " active\n");
+	fprintf(stderr, "%s%u%s", _("Account type "), ad->available,
+			_(" active\n"));
 #endif
 }
 
@@ -1588,8 +1594,8 @@ static void _account_edit(Mailer * mailer, Account * account)
 	GtkSizeGroup * group;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s%s", "Edit account: ", account_get_title(
-				account));
+	snprintf(buf, sizeof(buf), "%s%s", _("Edit account: "),
+			account_get_title(account));
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				mailer->window));
@@ -1654,8 +1660,8 @@ static void _on_preferences_ok(gpointer data)
 	if(_preferences_ok_accounts(mailer) != 0
 			|| _preferences_ok_display(mailer) != 0
 			|| _preferences_ok_save(mailer) != 0)
-		mailer_error(mailer, "An error occured while saving"
-				" preferences", 0);
+		mailer_error(mailer, _("An error occured while saving"
+					" preferences"), 0);
 }
 
 static int _preferences_ok_accounts(Mailer * mailer)
