@@ -1,0 +1,33 @@
+# $Id$
+# Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Mailer package.
+# Pierre Pronchery <khorben@defora.org>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Mailer 0.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-10-02 23:34+0200\n"
+"PO-Revision-Date: 2010-10-02 23:25+0200\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/mailer.c:82
+msgid "New account"
+msgstr "Nouveau compte"
+
+#: ../src/mailer.c:82
+msgid "Account settings"
+msgstr "Paramètres du compte"
+
+#: ../src/mailer.c:82
+msgid "Account confirmation"
+msgstr "Confirmation du compte"
+
+#: ../src/main.c:44
+msgid "Usage: mailer\n"
+msgstr "Usage: mailer\n"

@@ -23,10 +23,13 @@ static char const _license[] =
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "mailer.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Mailer */
@@ -76,7 +79,7 @@ static char const * _authors[] =
 
 static const char * _title[3] =
 {
-	"New account", "Account settings", "Account confirmation"
+	N_("New account"), N_("Account settings"), N_("Account confirmation")
 };
 
 static DesktopMenu _menu_file[] =
@@ -1003,7 +1006,7 @@ static void _on_preferences_account_new(gpointer data)
 	/* plug-in selection */
 	page = _assistant_account_select(ad);
 	gtk_assistant_append_page(assistant, page);
-	gtk_assistant_set_page_title(assistant, page, _title[0]);
+	gtk_assistant_set_page_title(assistant, page, _(_title[0]));
 	gtk_assistant_set_page_type(assistant, page, GTK_ASSISTANT_PAGE_INTRO);
 	gtk_assistant_set_page_complete(assistant, page, FALSE);
 	/* plug-in preferences */
@@ -1011,7 +1014,7 @@ static void _on_preferences_account_new(gpointer data)
 	ad->settings = page;
 	gtk_widget_show(page);
 	gtk_assistant_append_page(assistant, page);
-	gtk_assistant_set_page_title(assistant, page, _title[1]);
+	gtk_assistant_set_page_title(assistant, page, _(_title[1]));
 	gtk_assistant_set_page_type(assistant, page,
 			GTK_ASSISTANT_PAGE_CONTENT);
 	gtk_assistant_set_page_complete(assistant, page, TRUE);
@@ -1020,7 +1023,7 @@ static void _on_preferences_account_new(gpointer data)
 	ad->confirm = page;
 	gtk_widget_show(page);
 	gtk_assistant_append_page(assistant, page);
-	gtk_assistant_set_page_title(assistant, page, _title[2]);
+	gtk_assistant_set_page_title(assistant, page, _(_title[2]));
 	gtk_assistant_set_page_type(assistant, page,
 			GTK_ASSISTANT_PAGE_CONFIRM);
 	gtk_assistant_set_page_complete(assistant, page, TRUE);
@@ -1078,7 +1081,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 	Account * ac;
 
 	i = gtk_assistant_get_current_page(GTK_ASSISTANT(widget));
-	gtk_window_set_title(GTK_WINDOW(widget), _title[i]);
+	gtk_window_set_title(GTK_WINDOW(widget), _(_title[i]));
 	if(i == 1)
 	{
 		/* XXX something is wrong with gtk_container_remove */

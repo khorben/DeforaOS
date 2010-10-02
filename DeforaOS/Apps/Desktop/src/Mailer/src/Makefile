@@ -39,7 +39,7 @@ compose.o: compose.c callbacks.h mailer.h compose.h ../config.h
 mailer.o: mailer.c account/account.h callbacks.h compose.h mailer.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c mailer.c
 
-main.o: main.c mailer.h
+main.o: main.c mailer.h ../config.h
 	$(CC) $(mailer_CFLAGS) -c main.c
 
 clean:
