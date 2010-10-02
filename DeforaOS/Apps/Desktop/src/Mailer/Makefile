@@ -26,13 +26,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/account.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
-		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/compose.c \
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
-		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/compose.h \
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
 		$(PACKAGE)-$(VERSION)/src/gtkassistant.c \

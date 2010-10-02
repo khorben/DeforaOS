@@ -20,9 +20,9 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-mailer_OBJS = account.o callbacks.o common.o compose.o mailer.o main.o
+mailer_OBJS = account.o callbacks.o compose.o mailer.o main.o
 mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
+mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop
 
 mailer: $(mailer_OBJS)
 	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
@@ -33,10 +33,7 @@ account.o: account.c mailer.h account/account.h ../config.h
 callbacks.o: callbacks.c account/account.h callbacks.h compose.h mailer.h gtkassistant.c
 	$(CC) $(mailer_CFLAGS) -c callbacks.c
 
-common.o: common.c
-	$(CC) $(mailer_CFLAGS) -c common.c
-
-compose.o: compose.c callbacks.h mailer.h compose.h
+compose.o: compose.c callbacks.h mailer.h compose.h ../config.h
 	$(CC) $(mailer_CFLAGS) -c compose.c
 
 mailer.o: mailer.c account/account.h callbacks.h compose.h mailer.h ../config.h

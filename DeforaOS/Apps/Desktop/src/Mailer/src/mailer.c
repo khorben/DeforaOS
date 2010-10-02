@@ -24,8 +24,8 @@ static char const _license[] =
 #include <assert.h>
 #include <errno.h>
 #include <gdk/gdkkeysyms.h>
+#include <Desktop.h>
 #include "callbacks.h"
-#include "common.h"
 #include "mailer.h"
 
 
@@ -79,53 +79,58 @@ static const char * _title[3] =
 	"New account", "Account settings", "Account confirmation"
 };
 
-static struct _menu _menu_file[] =
+static DesktopMenu _menu_file[] =
 {
 	{ "_New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose",
-		GDK_N },
-	{ "", NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_N },
+	{ "", NULL, NULL, 0, 0 },
 	{ "Send / Receive", G_CALLBACK(on_file_send_receive),
-		"stock_mail-send-receive", GDK_R },
-	{ "", NULL, NULL, 0 },
-	{ "_Print", G_CALLBACK(on_file_print), GTK_STOCK_PRINT, GDK_P },
+		"stock_mail-send-receive", GDK_CONTROL_MASK, GDK_R },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Print", G_CALLBACK(on_file_print), GTK_STOCK_PRINT,
+		GDK_CONTROL_MASK, GDK_P },
 	{ "Print pre_view", G_CALLBACK(on_file_print_preview),
-		GTK_STOCK_PRINT_PREVIEW, 0 },
-	{ "", NULL, NULL, 0 },
-	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT, GDK_Q },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK, 0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT, GDK_CONTROL_MASK,
+		GDK_Q },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_edit[] =
+static DesktopMenu _menu_edit[] =
 {
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, 0 },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, 0, 0 },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_message[] =
+static DesktopMenu _menu_message[] =
 {
-	{ "_Reply", G_CALLBACK(on_message_reply), "stock_mail-reply", 0 },
+	{ "_Reply", G_CALLBACK(on_message_reply), "stock_mail-reply", 0, 0 },
 	{ "Reply to _all", G_CALLBACK(on_message_reply_to_all),
-		"stock_mail-reply-to-all", 0 },
-	{ "_Forward", G_CALLBACK(on_message_forward), "stock_mail-forward", 0 },
-	{ "", NULL, NULL, 0 },
-	{ "_Delete", G_CALLBACK(on_message_delete), GTK_STOCK_DELETE, 0 },
-	{ "", NULL, NULL, 0 },
-	{ "_View source", G_CALLBACK(on_message_view_source), NULL, 0 },
-	{ NULL, NULL, NULL, 0 }
+		"stock_mail-reply-to-all", 0, 0 },
+	{ "_Forward", G_CALLBACK(on_message_forward), "stock_mail-forward", 0,
+		0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Delete", G_CALLBACK(on_message_delete), GTK_STOCK_DELETE, 0,
+		GDK_Delete },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_View source", G_CALLBACK(on_message_view_source), NULL,
+		GDK_CONTROL_MASK, GDK_U },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_help[] =
+static DesktopMenu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
+	{ "_About", G_CALLBACK(on_help_about), NULL, 0, 0 },
 #endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menubar _mailer_menubar[] =
+static DesktopMenubar _mailer_menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Edit", _menu_edit },
@@ -134,21 +139,23 @@ static struct _menubar _mailer_menubar[] =
 	{ NULL, NULL }
 };
 
-static struct _toolbar _mailer_toolbar[] =
+static DesktopToolbar _mailer_toolbar[] =
 {
-	{ "New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose" },
-	{ "", NULL, NULL },
+	{ "New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose", 0,
+		0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
 	{ "Send / Receive", G_CALLBACK(on_file_send_receive),
-		"stock_mail-send-receive" },
-	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP },
-	{ "", NULL, NULL },
-	{ "Reply", G_CALLBACK(on_reply), "stock_mail-reply" },
+		"stock_mail-send-receive", 0, 0, NULL },
+	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, GDK_Escape, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Reply", G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
 	{ "Reply to all", G_CALLBACK(on_reply_to_all),
-		"stock_mail-reply-to-all" },
-	{ "Forward", G_CALLBACK(on_forward), "stock_mail-forward" },
-	{ "Delete", G_CALLBACK(on_delete), GTK_STOCK_DELETE },
-	{ "Print", G_CALLBACK(on_print), GTK_STOCK_PRINT },
-	{ NULL, NULL, NULL }
+		"stock_mail-reply-to-all", 0, 0, NULL },
+	{ "Forward", G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
+		NULL},
+	{ "Delete", G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, 0, NULL },
+	{ "Print", G_CALLBACK(on_print), GTK_STOCK_PRINT, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 
@@ -194,6 +201,7 @@ static void _new_config_load(Mailer * mailer);
 Mailer * mailer_new(void)
 {
 	Mailer * mailer;
+	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
 	GtkWidget * hpaned;
@@ -211,7 +219,9 @@ Mailer * mailer_new(void)
 	mailer->account_cur = NULL;
 	mailer->folder_cur = NULL;
 	/* widgets */
+	group = gtk_accel_group_new();
 	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(mailer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 800, 600);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(mailer->window), "stock_mail");
@@ -221,11 +231,10 @@ Mailer * mailer_new(void)
 			G_CALLBACK(on_closex), mailer);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-	widget = common_new_menubar(GTK_WINDOW(mailer->window), _mailer_menubar,
-			mailer);
+	widget = desktop_menubar_create(_mailer_menubar, mailer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* toolbar */
-	widget = common_new_toolbar(_mailer_toolbar, mailer);
+	widget = desktop_toolbar_create(_mailer_toolbar, mailer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	hpaned = gtk_hpaned_new();
 	gtk_paned_set_position(GTK_PANED(hpaned), 160);

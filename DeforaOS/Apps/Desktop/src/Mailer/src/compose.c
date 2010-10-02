@@ -23,9 +23,10 @@
 #include <string.h>
 #include <errno.h>
 #include <gdk/gdkkeysyms.h>
+#include <Desktop.h>
 #include "callbacks.h"
-#include "common.h"
 #include "compose.h"
+#include "../config.h"
 
 
 /* Compose */
@@ -64,51 +65,58 @@ struct _Compose
 /* constants */
 #define SENDMAIL "/usr/sbin/sendmail"
 
-static struct _menu _menu_file[] =
+static DesktopMenu _menu_file[] =
 {
 	{ "_New message", G_CALLBACK(on_compose_file_new), "stock_mail-compose",
-		GDK_N },
-	{ "", NULL, NULL, 0 },
-	{ "_Save", G_CALLBACK(on_compose_file_save), GTK_STOCK_SAVE, GDK_S },
+		GDK_CONTROL_MASK, GDK_N },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Save", G_CALLBACK(on_compose_file_save), GTK_STOCK_SAVE,
+		GDK_CONTROL_MASK, GDK_S },
 	{ "Save _as...", G_CALLBACK(on_compose_file_save_as), GTK_STOCK_SAVE_AS,
-		0 },
-	{ "", NULL, NULL, 0 },
-	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send", 0 },
-	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+		0, 0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send",
+		GDK_CONTROL_MASK, GDK_Return },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_edit[] =
+static DesktopMenu _menu_edit[] =
 {
-	{ "_Undo", G_CALLBACK(on_compose_edit_undo), GTK_STOCK_UNDO, GDK_Z },
-	{ "_Redo", G_CALLBACK(on_compose_edit_redo), GTK_STOCK_REDO, GDK_Y },
-	{ "", NULL, NULL, 0 },
-	{ "_Cut", G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT, GDK_X },
-	{ "_Copy", G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY, GDK_C },
-	{ "_Paste", G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE, GDK_P },
-	{ NULL, NULL, NULL, 0 }
+	{ "_Undo", G_CALLBACK(on_compose_edit_undo), GTK_STOCK_UNDO,
+		GDK_CONTROL_MASK, GDK_Z },
+	{ "_Redo", G_CALLBACK(on_compose_edit_redo), GTK_STOCK_REDO,
+		GDK_CONTROL_MASK, GDK_Y },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Cut", G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT,
+		GDK_CONTROL_MASK, GDK_X },
+	{ "_Copy", G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY,
+		GDK_CONTROL_MASK, GDK_C },
+	{ "_Paste", G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE,
+		GDK_CONTROL_MASK, GDK_P },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_view[] =
+static DesktopMenu _menu_view[] =
 {
-	/* FIXME CC and BCC should be toggle menu entries */
-	{ "_CC field", G_CALLBACK(on_compose_view_cc), NULL, 0 },
-	{ "_BCC field", G_CALLBACK(on_compose_view_bcc), NULL, 0 },
-	{ NULL, NULL, NULL, 0 }
+	{ "_CC field", G_CALLBACK(on_compose_view_cc), NULL, 0, 0 },
+	{ "_BCC field", G_CALLBACK(on_compose_view_bcc), NULL, 0, 0 },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_help[] =
+static DesktopMenu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT, 0 },
+	{ "_About", G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ "_About", G_CALLBACK(on_compose_help_about), NULL, 0 },
+	{ "_About", G_CALLBACK(on_compose_help_about), NULL, 0, 0 },
 #endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menubar _compose_menubar[] =
+static DesktopMenubar _compose_menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Edit", _menu_edit },
@@ -117,14 +125,14 @@ static struct _menubar _compose_menubar[] =
 	{ NULL, NULL }
 };
 
-static struct _toolbar _compose_toolbar[] =
+static DesktopToolbar _compose_toolbar[] =
 {
-	{ "Send", G_CALLBACK(on_compose_send), "stock_mail-send" },
-	{ "", NULL, NULL },
-	{ "Save", G_CALLBACK(on_compose_save), GTK_STOCK_SAVE },
-	{ "", NULL, NULL },
-	{ "Attach", G_CALLBACK(on_compose_attach), "stock_attach" },
-	{ NULL, NULL, NULL }
+	{ "Send", G_CALLBACK(on_compose_send), "stock_mail-send", 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Save", G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Attach", G_CALLBACK(on_compose_attach), "stock_attach", 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 
@@ -135,10 +143,11 @@ static GtkWidget * _new_text_view(Mailer * mailer);
 Compose * compose_new(Mailer * mailer)
 {
 	Compose * compose;
+	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
-	GtkSizeGroup * group;
+	GtkSizeGroup * sizegroup;
 	GtkWidget * widget;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
@@ -147,24 +156,25 @@ Compose * compose_new(Mailer * mailer)
 		return NULL;
 	}
 	compose->mailer = mailer;
+	group = gtk_accel_group_new();
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(compose->window), "Mailer - Compose");
+	gtk_window_add_accel_group(GTK_WINDOW(compose->window), group);
+	gtk_window_set_title(GTK_WINDOW(compose->window), PACKAGE " - Compose");
 	gtk_window_set_default_size(GTK_WINDOW(compose->window), 512, 384);
 	g_signal_connect_swapped(G_OBJECT(compose->window), "delete-event",
 			G_CALLBACK(on_compose_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-	widget = common_new_menubar(GTK_WINDOW(compose->window),
-			_compose_menubar, compose);
+	widget = desktop_menubar_create(_compose_menubar, compose, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* toolbar */
-	toolbar = common_new_toolbar(_compose_toolbar, compose);
+	toolbar = desktop_toolbar_create(_compose_toolbar, compose, group);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* from */
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	sizegroup = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	toolbar = gtk_toolbar_new();
 	widget = gtk_label_new(" From: ");
-	gtk_size_group_add_widget(group, widget);
+	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
@@ -177,7 +187,7 @@ Compose * compose_new(Mailer * mailer)
 	/* to */
 	toolbar = gtk_toolbar_new();
 	widget = gtk_label_new(" To: ");
-	gtk_size_group_add_widget(group, widget);
+	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
@@ -190,7 +200,7 @@ Compose * compose_new(Mailer * mailer)
 	/* cc */
 	compose->tb_cc = gtk_toolbar_new();
 	widget = gtk_label_new(" CC: ");
-	gtk_size_group_add_widget(group, widget);
+	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(compose->tb_cc), toolitem, -1);
@@ -203,7 +213,7 @@ Compose * compose_new(Mailer * mailer)
 	/* bcc */
 	compose->tb_bcc = gtk_toolbar_new();
 	widget = gtk_label_new(" BCC: ");
-	gtk_size_group_add_widget(group, widget);
+	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(compose->tb_bcc), toolitem, -1);
@@ -216,7 +226,7 @@ Compose * compose_new(Mailer * mailer)
 	/* subject */
 	toolbar = gtk_toolbar_new();
 	widget = gtk_label_new(" Subject: ");
-	gtk_size_group_add_widget(group, widget);
+	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
