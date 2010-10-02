@@ -84,39 +84,40 @@ static const char * _title[3] =
 
 static DesktopMenu _menu_file[] =
 {
-	{ "_New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose",
+	{ N_("_New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose",
 		GDK_CONTROL_MASK, GDK_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ "Send / Receive", NULL, "stock_mail-send-receive", GDK_CONTROL_MASK,
-		GDK_R },
+	{ N_("Send / Receive"), NULL, "stock_mail-send-receive",
+		GDK_CONTROL_MASK, GDK_R },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Print", NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_P },
-	{ "Print pre_view", NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
+	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_P },
+	{ N_("Print pre_view"), NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
 		0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT, GDK_CONTROL_MASK,
-		GDK_Q },
+	{ N_("_Quit"), G_CALLBACK(on_file_quit), GTK_STOCK_QUIT,
+		GDK_CONTROL_MASK, GDK_Q },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_edit[] =
 {
-	{ "_Preferences", G_CALLBACK(on_edit_preferences),
+	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_message[] =
 {
-	{ "_Reply", G_CALLBACK(on_message_reply), "stock_mail-reply", 0, 0 },
-	{ "Reply to _all", G_CALLBACK(on_message_reply_to_all),
-		"stock_mail-reply-to-all", 0, 0 },
-	{ "_Forward", G_CALLBACK(on_message_forward), "stock_mail-forward", 0,
+	{ N_("_Reply"), G_CALLBACK(on_message_reply), "stock_mail-reply", 0,
 		0 },
+	{ N_("Reply to _all"), G_CALLBACK(on_message_reply_to_all),
+		"stock_mail-reply-to-all", 0, 0 },
+	{ N_("_Forward"), G_CALLBACK(on_message_forward), "stock_mail-forward",
+		0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Delete", NULL, GTK_STOCK_DELETE, 0, GDK_Delete },
+	{ N_("_Delete"), NULL, GTK_STOCK_DELETE, 0, GDK_Delete },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_View source", G_CALLBACK(on_message_view_source), NULL,
+	{ N_("_View source"), G_CALLBACK(on_message_view_source), NULL,
 		GDK_CONTROL_MASK, GDK_U },
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -124,37 +125,37 @@ static DesktopMenu _menu_message[] =
 static DesktopMenu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _mailer_menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_Edit", _menu_edit },
-	{ "_Message", _menu_message },
-	{ "_Help", _menu_help },
+	{ N_("_File"), _menu_file },
+	{ N_("_Edit"), _menu_edit },
+	{ N_("_Message"), _menu_message },
+	{ N_("_Help"), _menu_help },
 	{ NULL, NULL }
 };
 
 static DesktopToolbar _mailer_toolbar[] =
 {
-	{ "New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose", 0,
+	{ N_("New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose", 0,
 		0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Send / Receive", NULL, "stock_mail-send-receive", 0, 0, NULL },
-	{ "Stop", NULL, GTK_STOCK_STOP, 0, GDK_Escape, NULL },
+	{ N_("Send / Receive"), NULL, "stock_mail-send-receive", 0, 0, NULL },
+	{ N_("Stop"), NULL, GTK_STOCK_STOP, 0, GDK_Escape, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Reply", G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
-	{ "Reply to all", G_CALLBACK(on_reply_to_all),
+	{ N_("Reply"), G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
+	{ N_("Reply to all"), G_CALLBACK(on_reply_to_all),
 		"stock_mail-reply-to-all", 0, 0, NULL },
-	{ "Forward", G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
+	{ N_("Forward"), G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
 		NULL},
-	{ "Delete", NULL, GTK_STOCK_DELETE, 0, 0, NULL },
-	{ "Print", NULL, GTK_STOCK_PRINT, 0, 0, NULL },
+	{ N_("Delete"), NULL, GTK_STOCK_DELETE, 0, 0, NULL },
+	{ N_("Print"), NULL, GTK_STOCK_PRINT, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 

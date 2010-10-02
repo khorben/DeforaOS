@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-02 23:34+0200\n"
+"POT-Creation-Date: 2010-10-03 00:03+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -27,6 +27,98 @@ msgstr "Paramètres du compte"
 #: ../src/mailer.c:82
 msgid "Account confirmation"
 msgstr "Confirmation du compte"
+
+#: ../src/mailer.c:87
+msgid "_New mail"
+msgstr "_Nouveau message"
+
+#: ../src/mailer.c:90 ../src/mailer.c:149
+msgid "Send / Receive"
+msgstr "Envoyer / Recevoir"
+
+#: ../src/mailer.c:93
+msgid "_Print"
+msgstr "_Imprimer"
+
+#: ../src/mailer.c:94
+msgid "Print pre_view"
+msgstr "_Aperçu avant impression"
+
+#: ../src/mailer.c:97
+msgid "_Quit"
+msgstr "_Quitter"
+
+#: ../src/mailer.c:104
+msgid "_Preferences"
+msgstr "_Préférences"
+
+#: ../src/mailer.c:111
+msgid "_Reply"
+msgstr "_Répondre"
+
+#: ../src/mailer.c:113
+msgid "Reply to _all"
+msgstr "Répondre à _tous"
+
+#: ../src/mailer.c:115
+msgid "_Forward"
+msgstr "_Transmettre"
+
+#: ../src/mailer.c:118
+msgid "_Delete"
+msgstr "_Supprimer"
+
+#: ../src/mailer.c:120
+msgid "_View source"
+msgstr "Afficher la _source"
+
+#: ../src/mailer.c:128 ../src/mailer.c:130
+msgid "_About"
+msgstr "_A propos"
+
+#: ../src/mailer.c:137
+msgid "_File"
+msgstr "_Fichier"
+
+#: ../src/mailer.c:138
+msgid "_Edit"
+msgstr "_Edition"
+
+#: ../src/mailer.c:139
+msgid "_Message"
+msgstr "_Message"
+
+#: ../src/mailer.c:140
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/mailer.c:146
+msgid "New mail"
+msgstr "Nouveau message"
+
+#: ../src/mailer.c:150
+msgid "Stop"
+msgstr "Stop"
+
+#: ../src/mailer.c:152
+msgid "Reply"
+msgstr "Répondre"
+
+#: ../src/mailer.c:153
+msgid "Reply to all"
+msgstr "Répondre à tous"
+
+#: ../src/mailer.c:155
+msgid "Forward"
+msgstr "Transmettre"
+
+#: ../src/mailer.c:157
+msgid "Delete"
+msgstr "Supprimer"
+
+#: ../src/mailer.c:158
+msgid "Print"
+msgstr "Imprimer"
 
 #: ../src/main.c:44
 msgid "Usage: mailer\n"
