@@ -28,7 +28,39 @@
 #include "compose.h"
 
 
+/* Compose */
 /* private */
+/* types */
+struct _Compose
+{
+	Mailer * mailer;
+
+	/* sending mail */
+	pid_t pid;
+	int fd;
+	char * buf;
+	size_t buf_len;
+	size_t buf_pos;
+	GIOChannel * channel;
+	GtkWidget * snd_window;
+	GtkWidget * snd_progress;
+
+	/* widgets */
+	GtkWidget * window;
+	GtkWidget * from;
+	GtkWidget * to;
+	GtkWidget * tb_cc;
+	GtkWidget * cc;
+	GtkWidget * tb_bcc;
+	GtkWidget * bcc;
+	GtkWidget * subject;
+	GtkWidget * view;
+	GtkWidget * statusbar;
+	gint statusbar_id;
+	GtkWidget * ab_window;
+};
+
+
 /* constants */
 #define SENDMAIL "/usr/sbin/sendmail"
 
@@ -118,8 +150,8 @@ Compose * compose_new(Mailer * mailer)
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(compose->window), "Mailer - Compose");
 	gtk_window_set_default_size(GTK_WINDOW(compose->window), 512, 384);
-	g_signal_connect(G_OBJECT(compose->window), "delete_event", G_CALLBACK(
-				on_compose_closex), compose);
+	g_signal_connect_swapped(G_OBJECT(compose->window), "delete-event",
+			G_CALLBACK(on_compose_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	widget = common_new_menubar(GTK_WINDOW(compose->window),
@@ -207,6 +239,7 @@ Compose * compose_new(Mailer * mailer)
 	compose->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), compose->statusbar, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(compose->window), vbox);
+	compose->ab_window = NULL;
 	gtk_widget_show_all(vbox);
 	gtk_widget_hide(compose->tb_cc);
 	gtk_widget_hide(compose->tb_bcc);
@@ -271,9 +304,10 @@ Mailer * compose_get_mailer(Compose * compose)
 
 /* useful */
 /* compose_save */
-void compose_save(Compose * compose)
+int compose_save(Compose * compose)
 {
 	/* FIXME implement */
+	return -1;
 }
 
 
@@ -282,6 +316,8 @@ static char * _send_headers(Compose * compose);
 static char * _send_body(GtkWidget * view);
 static int _send_mail(Compose * compose, char * msg, size_t msg_len);
 static int _mail_child(int fd[2]);
+static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
+		gpointer data);
 
 void compose_send(Compose * compose)
 {
@@ -330,7 +366,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	gtk_window_set_resizable(GTK_WINDOW(compose->snd_window), FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(compose->snd_window),
 			GTK_WINDOW(compose->window));
-	g_signal_connect(G_OBJECT(compose->snd_window), "delete_event",
+	g_signal_connect_swapped(G_OBJECT(compose->snd_window), "delete-event",
 			G_CALLBACK(on_send_closex), compose);
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Progression: "),
@@ -340,7 +376,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 			0.0);
 	gtk_box_pack_start(GTK_BOX(hbox), compose->snd_progress, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				on_send_cancel), compose);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(compose->snd_window), 4);
@@ -351,7 +387,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	compose->buf_len = msg_len;
 	compose->buf_pos = 0;
 	compose->channel = g_io_channel_unix_new(fd[1]);
-	g_io_add_watch(compose->channel, G_IO_OUT, on_send_write, compose);
+	g_io_add_watch(compose->channel, G_IO_OUT, _on_send_write, compose);
 	return 0;
 }
 
@@ -438,4 +474,74 @@ static char * _send_body(GtkWidget * view)
 	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
 	return gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
 			FALSE);
+}
+
+static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Compose * c = data;
+	gsize i;
+
+	if(condition != G_IO_OUT)
+		return FALSE;
+	if((i = (c->buf_len - c->buf_pos) % 512) == 0)
+		i = 512;
+	if(g_io_channel_write_chars(source, &c->buf[c->buf_pos], i, &i, NULL)
+			!= G_IO_STATUS_NORMAL)
+	{
+		mailer_error(c->mailer, strerror(errno), FALSE);
+		on_send_cancel(c);
+		return FALSE;
+	}
+	c->buf_pos+=i;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(c->snd_progress),
+			c->buf_pos / c->buf_len);
+	if(c->buf_pos >= c->buf_len)
+	{
+		on_send_cancel(c);
+		compose_delete(c);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+/* compose_send_cancel */
+void compose_send_cancel(Compose * compose)
+{
+	/* FIXME verify that a send operation is in progress */
+	g_io_channel_shutdown(compose->channel, TRUE, NULL);
+	gtk_widget_destroy(compose->snd_window);
+	free(compose->buf);
+}
+
+
+/* compose_show_about */
+void compose_show_about(Compose * compose, gboolean show)
+{
+	if(compose->ab_window != NULL)
+	{
+		if(show)
+			gtk_widget_show(compose->ab_window);
+		else
+			gtk_widget_hide(compose->ab_window);
+		return;
+	}
+	/* FIXME implement */
+}
+
+
+/* compose_toggle_show_bcc */
+void compose_toggle_show_bcc(Compose * compose)
+{
+	/* FIXME implement correctly */
+	gtk_widget_show(compose->tb_bcc);
+}
+
+
+/* compose_toggle_show_cc */
+void compose_toggle_show_cc(Compose * compose)
+{
+	/* FIXME implement correctly */
+	gtk_widget_show(compose->tb_cc);
 }

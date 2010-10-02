@@ -52,37 +52,7 @@ enum
 # define MH_COL_LAST MH_COL_DATE
 # define MH_COL_COUNT (MH_COL_LAST + 1)
 
-typedef struct _Mailer
-{
-	Account * available; /* XXX consider using another data type */
-	unsigned int available_cnt;
-
-	Account ** account;
-	unsigned int account_cnt;
-	Account * account_cur;
-	AccountFolder * folder_cur;
-
-	/* configuration */
-	Config * config;
-
-	/* widgets */
-	GtkWidget * window;
-	GtkWidget * view_folders;
-	GtkWidget * view_headers;
-	GtkWidget * hdr_vbox;
-	GtkWidget * hdr_subject;
-	GtkWidget * hdr_from;
-	GtkWidget * hdr_to;
-	GtkWidget * hdr_date;
-	GtkTextBuffer * view_buffer;
-	GtkWidget * view_body;
-	GtkWidget * statusbar;
-	gint statusbar_id;
-	/* preferences */
-	GtkWidget * pr_window;
-	GtkWidget * pr_accounts;
-	GtkWidget * pr_messages_font;
-} Mailer;
+typedef struct _Mailer Mailer;
 
 
 /* functions */
@@ -91,7 +61,6 @@ void mailer_delete(Mailer * mailer);
 
 /* accessors */
 char const * mailer_get_config(Mailer * mailer, char const * variable);
-char * mailer_get_config_filename(Mailer * mailer);
 
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);
@@ -104,4 +73,7 @@ int mailer_account_enable(Mailer * mailer, Account * account);
 /* FIXME implement
 int mailer_account_remove(Mailer * mailer, Account * account); */
 
-#endif
+void mailer_show_about(Mailer * mailer, gboolean show);
+void mailer_show_preferences(Mailer * mailer, gboolean show);
+
+#endif /* !MAILER_MAILER_H */

@@ -22,36 +22,36 @@
 
 
 /* mailer window */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+gboolean on_closex(gpointer data);
 
 /* file menu */
-void on_file_new_mail(GtkWidget * widget, gpointer data);
-void on_file_send_receive(GtkWidget * widget, gpointer data);
-void on_file_print(GtkWidget * widget, gpointer data);
-void on_file_print_preview(GtkWidget * widget, gpointer data);
-void on_file_quit(GtkWidget * widget, gpointer data);
+void on_file_new_mail(gpointer data);
+void on_file_send_receive(gpointer data);
+void on_file_print(gpointer data);
+void on_file_print_preview(gpointer data);
+void on_file_quit(gpointer data);
 
 /* edit menu */
-void on_edit_preferences(GtkWidget * widget, gpointer data);
+void on_edit_preferences(gpointer data);
 
 /* message menu */
-void on_message_reply(GtkWidget * widget, gpointer data);
-void on_message_reply_to_all(GtkWidget * widget, gpointer data);
-void on_message_forward(GtkWidget * widget, gpointer data);
-void on_message_delete(GtkWidget * widget, gpointer data);
-void on_message_view_source(GtkWidget * widget, gpointer data);
+void on_message_reply(gpointer data);
+void on_message_reply_to_all(gpointer data);
+void on_message_forward(gpointer data);
+void on_message_delete(gpointer data);
+void on_message_view_source(gpointer data);
 
 /* help menu */
-void on_help_about(GtkWidget * widget, gpointer data);
+void on_help_about(gpointer data);
 
 /* toolbar */
-void on_new_mail(GtkWidget * widget, gpointer data);
-void on_stop(GtkWidget * widget, gpointer data);
-void on_reply(GtkWidget * widget, gpointer data);
-void on_reply_to_all(GtkWidget * widget, gpointer data);
-void on_forward(GtkWidget * widget, gpointer data);
-void on_delete(GtkWidget * widget, gpointer data);
-void on_print(GtkWidget * widget, gpointer data);
+void on_new_mail(gpointer data);
+void on_stop(gpointer data);
+void on_reply(gpointer data);
+void on_reply_to_all(gpointer data);
+void on_forward(gpointer data);
+void on_delete(gpointer data);
+void on_print(gpointer data);
 
 /* folder view */
 void on_folder_change(GtkTreeSelection * selection, gpointer data);
@@ -59,47 +59,37 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data);
 /* header view */
 void on_header_change(GtkTreeSelection * selection, gpointer data);
 
-/* preferences window */
-void on_preferences_ok(GtkWidget * widget, gpointer data);
-void on_preferences_cancel(GtkWidget * widget, gpointer data);
-
-
-/* accounts */
-void on_account_new(GtkWidget * widget, gpointer data);
-void on_account_edit(GtkWidget * widget, gpointer data);
-void on_account_delete(GtkWidget * widget, gpointer data);
-
 
 /* compose window */
-gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
-void on_compose_save(GtkWidget * widget, gpointer data);
-void on_compose_send(GtkWidget * widget, gpointer data);
-void on_compose_attach(GtkWidget * widget, gpointer data);
+gboolean on_compose_closex(gpointer data);
+void on_compose_save(gpointer data);
+void on_compose_send(gpointer data);
+void on_compose_attach(gpointer data);
 
 /* file menu */
-void on_compose_file_new(GtkWidget * widget, gpointer data);
-void on_compose_file_save(GtkWidget * widget, gpointer data);
-void on_compose_file_save_as(GtkWidget * widget, gpointer data);
-void on_compose_file_send(GtkWidget * widget, gpointer data);
-void on_compose_file_close(GtkWidget * widget, gpointer data);
+void on_compose_file_new(gpointer data);
+void on_compose_file_save(gpointer data);
+void on_compose_file_save_as(gpointer data);
+void on_compose_file_send(gpointer data);
+void on_compose_file_close(gpointer data);
 
 /* edit menu */
-void on_compose_edit_undo(GtkWidget * widget, gpointer data);
-void on_compose_edit_redo(GtkWidget * widget, gpointer data);
-void on_compose_edit_cut(GtkWidget * widget, gpointer data);
-void on_compose_edit_copy(GtkWidget * widget, gpointer data);
-void on_compose_edit_paste(GtkWidget * widget, gpointer data);
+void on_compose_edit_undo(gpointer data);
+void on_compose_edit_redo(gpointer data);
+void on_compose_edit_cut(gpointer data);
+void on_compose_edit_copy(gpointer data);
+void on_compose_edit_paste(gpointer data);
 
 /* view menu */
-void on_compose_view_cc(GtkWidget * widget, gpointer data);
-void on_compose_view_bcc(GtkWidget * widget, gpointer data);
+void on_compose_view_cc(gpointer data);
+void on_compose_view_bcc(gpointer data);
 
 /* help menu */
-void on_compose_help_about(GtkWidget * widget, gpointer data);
+void on_compose_help_about(gpointer data);
 
 /* send mail */
-gboolean on_send_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
-void on_send_cancel(GtkWidget * widget, gpointer data);
+gboolean on_send_closex(gpointer data);
+void on_send_cancel(gpointer data);
 gboolean on_send_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 

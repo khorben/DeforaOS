@@ -62,8 +62,9 @@ GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
 						image);
 			}
 			if(p->callback != NULL)
-				g_signal_connect(G_OBJECT(menuitem), "activate",
-						G_CALLBACK(p->callback), data);
+				g_signal_connect_swapped(G_OBJECT(menuitem),
+						"activate", G_CALLBACK(
+							p->callback), data);
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
 			if(p->accel != 0)
@@ -101,7 +102,8 @@ GtkWidget * common_new_toolbar(struct _toolbar * tb, gpointer data)
 		widget = gtk_image_new_from_icon_name(tb[i].stock,
 				GTK_ICON_SIZE_LARGE_TOOLBAR);
 		toolitem = gtk_tool_button_new(widget, tb[i].name);
-		g_signal_connect(toolitem, "clicked", tb[i].callback, data);
+		g_signal_connect_swapped(toolitem, "clicked", tb[i].callback,
+				data);
 		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	}
 	return toolbar;
