@@ -284,7 +284,6 @@ target_distclean()
 #target_install
 target_install()
 {
-	DESTDIR=
 	target "install"
 }
 
