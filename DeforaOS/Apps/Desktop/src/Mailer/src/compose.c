@@ -22,11 +22,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "compose.h"
 #include "../config.h"
+#include "common.c"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Compose */
@@ -65,66 +69,83 @@ struct _Compose
 /* constants */
 #define SENDMAIL "/usr/sbin/sendmail"
 
+#ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
 {
-	{ "_New message", G_CALLBACK(on_compose_file_new), "stock_mail-compose",
-		GDK_CONTROL_MASK, GDK_N },
+	{ N_("_New message"), G_CALLBACK(on_compose_file_new),
+		"stock_mail-compose", GDK_CONTROL_MASK, GDK_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Save", NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_S },
-	{ "Save _as...", NULL, GTK_STOCK_SAVE_AS, 0, 0 },
+	{ N_("_Save"), NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_S },
+	{ N_("Save _as..."), NULL, GTK_STOCK_SAVE_AS, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send",
+	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_P },
+	{ N_("Print pre_view"), NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
+		0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("S_end"), G_CALLBACK(on_compose_file_send), "stock_mail-send",
 		GDK_CONTROL_MASK, GDK_Return },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_edit[] =
 {
-	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_Z },
-	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_Y },
+	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_Z },
+	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_Y },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Cut", NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
-	{ "_Copy", NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
-	{ "_Paste", NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_P },
+	{ N_("_Select all"), NULL,
+#if GTK_CHECK_VERSION(2, 10, 0)
+		GTK_STOCK_SELECT_ALL,
+#else
+		"edit-select-all",
+#endif
+		GDK_CONTROL_MASK, GDK_A },
+	{ N_("_Unselect all"), NULL, NULL, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Cut"), NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
+	{ N_("_Copy"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_view[] =
 {
-	{ "_CC field", G_CALLBACK(on_compose_view_cc), NULL, 0, 0 },
-	{ "_BCC field", G_CALLBACK(on_compose_view_bcc), NULL, 0, 0 },
+	{ N_("_CC field"), G_CALLBACK(on_compose_view_cc), NULL, 0, 0 },
+	{ N_("_BCC field"), G_CALLBACK(on_compose_view_bcc), NULL, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT, 0,
+		0 },
 #else
-	{ "_About", G_CALLBACK(on_compose_help_about), NULL, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_compose_help_about), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _compose_menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_Edit", _menu_edit },
-	{ "_View", _menu_view },
-	{ "_Help", _menu_help },
+	{ N_("_File"), _menu_file },
+	{ N_("_Edit"), _menu_edit },
+	{ N_("_View"), _menu_view },
+	{ N_("_Help"), _menu_help },
 	{ NULL, NULL }
 };
+#endif
 
 static DesktopToolbar _compose_toolbar[] =
 {
-	{ "Send", G_CALLBACK(on_compose_send), "stock_mail-send", 0, 0, NULL },
+	{ N_("Send"), G_CALLBACK(on_compose_send), "stock_mail-send", 0, 0,
+		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Save", G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
+	{ N_("Save"), G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Attach", NULL, "stock_attach", 0, 0, NULL },
+	{ N_("Attach"), NULL, "stock_attach", 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -152,21 +173,24 @@ Compose * compose_new(Mailer * mailer)
 	group = gtk_accel_group_new();
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(compose->window), group);
-	gtk_window_set_title(GTK_WINDOW(compose->window), PACKAGE " - Compose");
+	gtk_window_set_title(GTK_WINDOW(compose->window),
+			_(PACKAGE " - Compose"));
 	gtk_window_set_default_size(GTK_WINDOW(compose->window), 512, 384);
 	g_signal_connect_swapped(G_OBJECT(compose->window), "delete-event",
 			G_CALLBACK(on_compose_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
+#ifndef EMBEDDED
 	widget = desktop_menubar_create(_compose_menubar, compose, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+#endif
 	/* toolbar */
 	toolbar = desktop_toolbar_create(_compose_toolbar, compose, group);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* from */
 	sizegroup = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	toolbar = gtk_toolbar_new();
-	widget = gtk_label_new(" From: ");
+	widget = gtk_label_new(_(" From: "));
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -179,7 +203,7 @@ Compose * compose_new(Mailer * mailer)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* to */
 	toolbar = gtk_toolbar_new();
-	widget = gtk_label_new(" To: ");
+	widget = gtk_label_new(_(" To: "));
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -192,7 +216,7 @@ Compose * compose_new(Mailer * mailer)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* cc */
 	compose->tb_cc = gtk_toolbar_new();
-	widget = gtk_label_new(" CC: ");
+	widget = gtk_label_new(_(" CC: "));
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -205,7 +229,7 @@ Compose * compose_new(Mailer * mailer)
 	gtk_box_pack_start(GTK_BOX(vbox), compose->tb_cc, FALSE, FALSE, 0);
 	/* bcc */
 	compose->tb_bcc = gtk_toolbar_new();
-	widget = gtk_label_new(" BCC: ");
+	widget = gtk_label_new(_(" BCC: "));
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -218,7 +242,7 @@ Compose * compose_new(Mailer * mailer)
 	gtk_box_pack_start(GTK_BOX(vbox), compose->tb_bcc, FALSE, FALSE, 0);
 	/* subject */
 	toolbar = gtk_toolbar_new();
-	widget = gtk_label_new(" Subject: ");
+	widget = gtk_label_new(_(" Subject: "));
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -310,7 +334,7 @@ Mailer * compose_get_mailer(Compose * compose)
 int compose_save(Compose * compose)
 {
 	/* FIXME implement */
-	return -1;
+	return 0;
 }
 
 
@@ -365,14 +389,14 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 		mailer_error(compose->mailer, strerror(errno), 0);
 	compose->snd_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(compose->snd_window),
-			"Sending mail...");
+			_("Sending mail..."));
 	gtk_window_set_resizable(GTK_WINDOW(compose->snd_window), FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(compose->snd_window),
 			GTK_WINDOW(compose->window));
 	g_signal_connect_swapped(G_OBJECT(compose->snd_window), "delete-event",
 			G_CALLBACK(on_send_closex), compose);
 	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Progression: "),
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("Progression: ")),
 			FALSE, FALSE, 0);
 	compose->snd_progress = gtk_progress_bar_new();
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(compose->snd_progress),
@@ -522,6 +546,8 @@ void compose_send_cancel(Compose * compose)
 /* compose_show_about */
 void compose_show_about(Compose * compose, gboolean show)
 {
+	GtkWidget * dialog;
+
 	if(compose->ab_window != NULL)
 	{
 		if(show)
@@ -530,7 +556,17 @@ void compose_show_about(Compose * compose, gboolean show)
 			gtk_widget_hide(compose->ab_window);
 		return;
 	}
-	/* FIXME implement */
+	dialog = desktop_about_dialog_new();
+	compose->ab_window = dialog;
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
+				compose->window));
+	desktop_about_dialog_set_name(dialog, PACKAGE);
+	desktop_about_dialog_set_version(dialog, VERSION);
+	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_copyright(dialog, _copyright);
+	desktop_about_dialog_set_logo_icon_name(dialog, "stock_mail");
+	desktop_about_dialog_set_license(dialog, _license);
+	gtk_widget_show(dialog);
 }
 
 

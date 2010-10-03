@@ -45,6 +45,7 @@ void on_new_mail(gpointer data);
 void on_reply(gpointer data);
 void on_reply_to_all(gpointer data);
 void on_forward(gpointer data);
+void on_preferences(gpointer data);
 
 /* folder view */
 void on_folder_change(GtkTreeSelection * selection, gpointer data);

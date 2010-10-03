@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <dlfcn.h>
 #include "mailer.h"
 #include "account/account.h"
@@ -49,6 +50,7 @@ Account * account_new(char const * type, char const * title)
 			|| (filename = malloc(strlen(PLUGINDIR ACCOUNT)
 					+ strlen(title) + 6)) == NULL)
 	{
+		error_set_code(1, "%s", strerror(errno));
 		account_delete(account);
 		return NULL;
 	}
@@ -57,7 +59,7 @@ Account * account_new(char const * type, char const * title)
 			|| (account->plugin = dlsym(account->handle,
 					"account_plugin")) == NULL)
 	{
-		fprintf(stderr, "%s%s: %s\n", "Mailer: ", filename, dlerror());
+		error_set_code(1, "%s: %s", filename, dlerror());
 		free(filename);
 		account_delete(account);
 		return NULL;

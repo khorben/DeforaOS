@@ -1,2 +1,3 @@
+../src/compose.c
 ../src/mailer.c
 ../src/main.c

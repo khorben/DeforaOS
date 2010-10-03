@@ -222,7 +222,7 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 		_config_folder[i].store = gtk_list_store_new(MH_COL_COUNT,
 				G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
 				G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				G_TYPE_STRING);
+				G_TYPE_UINT, G_TYPE_STRING);
 		mbox->source = g_idle_add(_folder_idle, &_config_folder[i]);
 	}
 	return ret;
@@ -337,15 +337,18 @@ static int _message_set_header(Message * message, char const * header,
 {
 	/* FIXME check if the header is already set */
 	char ** p;
-	struct { int col; char * name; } abc[] = {
+	struct { int col; char const * name; } abc[] = {
 		{ MH_COL_SUBJECT,	"Subject: "	},
 		{ MH_COL_FROM,		"From: "	},
 		{ MH_COL_FROM,		"From "		},
 		{ MH_COL_TO,		"To: "		},
-		{ MH_COL_DATE,		"Date: "	},
+		{ MH_COL_DATE_DISPLAY,	"Date: "	},
 		{ -1,			NULL		}
 	};
 	size_t i;
+	struct tm t;
+	time_t oneday;
+	char buf[20];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", store)\n", __func__,
@@ -358,13 +361,33 @@ static int _message_set_header(Message * message, char const * header,
 		return -1;
 	}
 	message->headers = p;
-	for(i = 0; abc[i].col != -1; i++)
-		if(strncmp(header, abc[i].name, strlen(abc[i].name)) == 0)
-			gtk_list_store_set(store, &message->iter, abc[i].col,
-					&header[strlen(abc[i].name)], -1);
 	if((message->headers[message->headers_cnt] = strdup(header)) == NULL)
 		return -1;
 	message->headers_cnt++;
+	for(i = 0; abc[i].col != -1; i++)
+		if(strncmp(header, abc[i].name, strlen(abc[i].name)) == 0)
+			break;
+	if(abc[i].col == MH_COL_DATE_DISPLAY)
+	{
+		oneday = time(NULL) - 86400;
+		memset(&t, 0, sizeof(t));
+		if(strptime(&header[6], "%a, %d %b %Y %H:%M:%S", &t) != NULL)
+			strftime(buf, sizeof(buf), mktime(&t) > oneday
+					? "Today %X" : "%x %X", &t);
+		else
+		{
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() \"%s\" failed\n",
+					__func__, &header[6]);
+#endif
+			snprintf(buf, sizeof(buf), "%s", &header[6]);
+		}
+		gtk_list_store_set(store, &message->iter, MH_COL_DATE,
+				mktime(&t), MH_COL_DATE_DISPLAY, buf, -1);
+	}
+	else if(abc[i].col != -1)
+		gtk_list_store_set(store, &message->iter, abc[i].col,
+				&header[strlen(abc[i].name)], -1);
 	return 0;
 }
 
@@ -601,7 +624,7 @@ static void _parse_header(AccountFolder * folder, char const buf[], size_t read,
 	if(j == read)
 		return;
 	_message_set_header(mbox->message, mbox->str, folder->store);
-	_parse_context(folder, mbox->pos == 0 ? PC_FROM : PC_HEADER);
+	_parse_context(folder, (mbox->pos == 0) ? PC_FROM : PC_HEADER);
 	*i = ++j;
 }
 

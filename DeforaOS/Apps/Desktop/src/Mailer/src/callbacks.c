@@ -137,6 +137,14 @@ void on_forward(gpointer data)
 }
 
 
+void on_preferences(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_show_preferences(mailer, TRUE);
+}
+
+
 /* compose window */
 gboolean on_compose_closex(gpointer data)
 {
