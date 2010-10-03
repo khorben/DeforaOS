@@ -1725,11 +1725,17 @@ static int _preferences_ok_accounts(Mailer * mailer)
 
 static int _preferences_ok_display(Mailer * mailer)
 {
+	PangoFontDescription * font = NULL;
 	char const * p;
 
 	p = gtk_font_button_get_font_name(GTK_FONT_BUTTON(
 				mailer->pr_messages_font));
 	config_set(mailer->config, "", "messages_font", p);
+	if(p != NULL)
+		font = pango_font_description_from_string(p);
+	gtk_widget_modify_font(mailer->view_body, font);
+	if(font != NULL)
+		pango_font_description_free(font);
 	return 0;
 }
 
