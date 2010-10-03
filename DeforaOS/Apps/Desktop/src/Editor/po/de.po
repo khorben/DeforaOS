@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-19 01:26+0200\n"
+"POT-Creation-Date: 2010-10-03 23:25+0200\n"
 "PO-Revision-Date: 2010-04-07 22:05+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -48,160 +48,168 @@ msgstr ""
 msgid "License"
 msgstr ""
 
-#: ../src/editor.c:50
+#: ../src/editor.c:51
 msgid "_New"
 msgstr ""
 
-#: ../src/editor.c:51
+#: ../src/editor.c:53
 msgid "_Open"
 msgstr ""
 
-#: ../src/editor.c:53
+#: ../src/editor.c:56
 msgid "_Save"
 msgstr ""
 
-#: ../src/editor.c:54
+#: ../src/editor.c:58
 msgid "_Save as..."
 msgstr ""
 
-#: ../src/editor.c:57
+#: ../src/editor.c:61
 msgid "_Close"
 msgstr ""
 
-#: ../src/editor.c:63
+#: ../src/editor.c:68
 msgid "_Undo"
 msgstr ""
 
-#: ../src/editor.c:64
+#: ../src/editor.c:70
 msgid "_Redo"
 msgstr ""
 
-#: ../src/editor.c:66
+#: ../src/editor.c:72
 msgid "_Cut"
 msgstr ""
 
-#: ../src/editor.c:67
+#: ../src/editor.c:73
 msgid "_Copy"
 msgstr ""
 
-#: ../src/editor.c:68
+#: ../src/editor.c:74
 msgid "_Paste"
 msgstr ""
 
-#: ../src/editor.c:70
+#: ../src/editor.c:76
+msgid "_Select all"
+msgstr ""
+
+#: ../src/editor.c:83
+msgid "_Unselect all"
+msgstr ""
+
+#: ../src/editor.c:85
 msgid "_Find"
 msgstr ""
 
-#: ../src/editor.c:72
+#: ../src/editor.c:88
 msgid "_Preferences"
 msgstr ""
 
-#: ../src/editor.c:80 ../src/editor.c:82
+#: ../src/editor.c:96 ../src/editor.c:98
 msgid "_About"
 msgstr ""
 
-#: ../src/editor.c:89
+#: ../src/editor.c:105
 msgid "_File"
 msgstr ""
 
-#: ../src/editor.c:90
+#: ../src/editor.c:106
 msgid "_Edit"
 msgstr ""
 
-#: ../src/editor.c:91
+#: ../src/editor.c:107
 msgid "_Help"
 msgstr ""
 
-#: ../src/editor.c:98
+#: ../src/editor.c:114
 msgid "New"
 msgstr ""
 
-#: ../src/editor.c:99
+#: ../src/editor.c:115
 msgid "Open"
 msgstr ""
 
-#: ../src/editor.c:101
+#: ../src/editor.c:117
 msgid "Save"
 msgstr ""
 
-#: ../src/editor.c:102
+#: ../src/editor.c:118
 msgid "Save as"
 msgstr ""
 
-#: ../src/editor.c:105
+#: ../src/editor.c:122
 msgid "Preferences"
 msgstr ""
 
-#: ../src/editor.c:195
+#: ../src/editor.c:210
 msgid "Text editor - "
 msgstr ""
 
-#: ../src/editor.c:196
+#: ../src/editor.c:211
 msgid "(Untitled)"
 msgstr ""
 
-#: ../src/editor.c:233 ../src/editor.c:238
+#: ../src/editor.c:248 ../src/editor.c:253
 msgid "Error"
 msgstr ""
 
-#: ../src/editor.c:265 ../src/editor.c:274 ../src/editor.c:384
-#: ../src/editor.c:398 ../src/editor.c:528 ../src/editor.c:533
+#: ../src/editor.c:280 ../src/editor.c:289 ../src/editor.c:399
+#: ../src/editor.c:413 ../src/editor.c:543 ../src/editor.c:548
 msgid "Warning"
 msgstr ""
 
-#: ../src/editor.c:269
+#: ../src/editor.c:284
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
 msgstr ""
 
-#: ../src/editor.c:304
+#: ../src/editor.c:319
 msgid "Find text"
 msgstr ""
 
-#: ../src/editor.c:311
+#: ../src/editor.c:326
 msgid "Text:"
 msgstr ""
 
-#: ../src/editor.c:318
+#: ../src/editor.c:333
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/editor.c:320
+#: ../src/editor.c:335
 msgid "Wrap"
 msgstr ""
 
-#: ../src/editor.c:343
+#: ../src/editor.c:358
 msgid "Text not found"
 msgstr ""
 
-#: ../src/editor.c:388
+#: ../src/editor.c:403
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to discard them?"
 msgstr ""
 
-#: ../src/editor.c:395
+#: ../src/editor.c:410
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:454
+#: ../src/editor.c:469
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:504
+#: ../src/editor.c:519
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:532
+#: ../src/editor.c:547
 msgid "File exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:541
+#: ../src/editor.c:556
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:556
+#: ../src/editor.c:571
 msgid "Save as..."
 msgstr ""
 

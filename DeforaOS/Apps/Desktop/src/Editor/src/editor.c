@@ -73,6 +73,15 @@ static DesktopMenu _editor_menu_edit[] =
 	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0, 0 }, /* FIXME implement */
 	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, 0, 0 }, /* FIXME implement */
 	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Select all"), NULL, /* FIXME implement */
+#if GTK_CHECK_VERSION(2, 10, 0)
+		GTK_STOCK_SELECT_ALL,
+#else
+		"edit-select-all",
+#endif
+		GDK_CONTROL_MASK, GDK_A },
+	{ N_("_Unselect all"), NULL, NULL, 0, 0 }, /* FIXME implement */
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Find"), G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
 		GDK_CONTROL_MASK, GDK_F },
 	{ "", NULL, NULL, 0, 0 },
