@@ -380,9 +380,9 @@ static char * _do_time(char * buf, size_t buf_cnt, time_t date)
 		sixmonths = time(NULL) - 15552000;
 	localtime_r(&date, &tm);
 	if(date < sixmonths)
-		strftime(buf, buf_cnt, "%b %e  %Y", &tm);
+		strftime(buf, buf_cnt, "%b %d %Y", &tm);
 	else
-		strftime(buf, buf_cnt, "%b %e %H:%M", &tm);
+		strftime(buf, buf_cnt, "%b %d %H:%M", &tm);
 	return buf;
 }
 

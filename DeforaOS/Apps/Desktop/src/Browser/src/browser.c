@@ -974,9 +974,9 @@ static char const * _insert_date(time_t date)
 	sixmonths = time(NULL) - 15552000;
 	localtime_r(&date, &tm);
 	if(date < sixmonths)
-		len = strftime(buf, sizeof(buf), "%b %e  %Y", &tm);
+		len = strftime(buf, sizeof(buf), "%b %d %Y", &tm);
 	else
-		len = strftime(buf, sizeof(buf), "%b %e %H:%M", &tm);
+		len = strftime(buf, sizeof(buf), "%b %d %H:%M", &tm);
 	buf[len] = '\0';
 	return buf;
 }
