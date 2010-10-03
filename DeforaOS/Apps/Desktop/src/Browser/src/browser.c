@@ -80,24 +80,25 @@ static DesktopMenu _browser_menu_file[] =
 
 static DesktopMenu _browser_menu_edit[] =
 {
-	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
+	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
 		GDK_X },
-	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY, GDK_CONTROL_MASK,
-		GDK_C },
-	{ "_Paste", G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
+	{ N_("Cop_y"), G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
+		GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
 		GDK_CONTROL_MASK, GDK_V },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
+	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
-	{ "_Select all", G_CALLBACK(on_edit_select_all), GTK_STOCK_SELECT_ALL,
+		GTK_STOCK_SELECT_ALL,
 #else
-	{ "_Select all", G_CALLBACK(on_edit_select_all), "edit-select-all",
+		"edit-select-all",
 #endif
 		GDK_CONTROL_MASK, GDK_A },
-	{ "_Unselect all", G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
+	{ N_("_Unselect all"), G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Preferences", G_CALLBACK(on_edit_preferences),
+	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -966,12 +967,11 @@ static char const * _insert_size(off_t size)
 static char const * _insert_date(time_t date)
 {
 	static char buf[16];
-	static time_t sixmonths = -1;
+	time_t sixmonths; /* XXX set it per refresh */
 	struct tm tm;
 	size_t len;
 
-	if(sixmonths == -1)
-		sixmonths = time(NULL) - 15552000;
+	sixmonths = time(NULL) - 15552000;
 	localtime_r(&date, &tm);
 	if(date < sixmonths)
 		len = strftime(buf, sizeof(buf), "%b %e  %Y", &tm);
@@ -1341,6 +1341,8 @@ static int _location_directory(Browser * browser, char const * path, DIR * dir,
 
 /* browser_set_view */
 static void _view_details(Browser * browser);
+static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
+		char const * title, int id, int sort);
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _view_icons(Browser * browser);
 static void _view_list(Browser * browser);
@@ -1370,9 +1372,6 @@ void browser_set_view(Browser * browser, BrowserView view)
 	_view_details(browser);
 #endif
 }
-
-static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
-		char const * title, int id, int sort);
 
 static void _view_details(Browser * browser)
 {
@@ -1417,7 +1416,8 @@ static void _view_details(Browser * browser)
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
 				BR_COL_PIXBUF_24, NULL));
 	renderer = gtk_cell_renderer_text_new();
-	g_object_set(renderer, "editable", TRUE, NULL);
+	g_object_set(renderer, "editable", TRUE, "ellipsize",
+			PANGO_ELLIPSIZE_END, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
 	_details_column_text(view, renderer, _("Filename"), BR_COL_DISPLAY_NAME,
@@ -1451,6 +1451,10 @@ static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
 		renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes(title, renderer,
 			"text", id, NULL);
+#if GTK_CHECK_VERSION(2, 4, 0)
+	gtk_tree_view_column_set_expand(column, TRUE);
+#endif
+	gtk_tree_view_column_set_resizable(column, TRUE);
 	gtk_tree_view_column_set_sort_column_id(column, sort);
 	gtk_tree_view_append_column(view, column);
 }
