@@ -20,12 +20,12 @@ static char const _license[] =
 #include <sys/param.h>
 #ifndef __hurd__ /* XXX hurd portability */
 # include <sys/mount.h>
+# ifdef __linux__ /* XXX linux portability */
+#  define unmount(a, b) umount(a)
+# endif
 # ifndef unmount
 #  define unmount unmount
 # endif
-#endif
-#ifdef __linux__ /* XXX linux portability */
-# define unmount(a, b) umount(a)
 #endif
 #include <sys/stat.h>
 #include <fcntl.h>
