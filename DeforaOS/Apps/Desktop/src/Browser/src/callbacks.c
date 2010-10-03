@@ -18,7 +18,12 @@ static char const _license[] =
 
 
 #include <sys/param.h>
-#include <sys/mount.h>
+#ifndef __hurd__ /* XXX hurd portability */
+# include <sys/mount.h>
+# ifndef unmount
+#  define unmount unmount
+# endif
+#endif
 #ifdef __linux__ /* XXX linux portability */
 # define unmount(a, b) umount(a)
 #endif
@@ -1363,7 +1368,11 @@ static void _on_icon_unmount(gpointer data)
 {
 	IconCallback * cb = data;
 
+#ifndef unmount
+	errno = ENOSYS;
+#else
 	if(unmount(cb->path, 0) != 0)
+#endif
 		browser_error(cb->browser, cb->path, 0);
 }
 
