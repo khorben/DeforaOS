@@ -16,14 +16,14 @@
 
 
 #include <stdlib.h>
-#include "account.h"
+#include "Mailer.h"
 
 
 /* variables */
-char const pop3_type[] = "POP3";
-char const pop3_name[] = "POP3 server";
+static char const _pop3_type[] = "POP3";
+static char const _pop3_name[] = "POP3 server";
 
-AccountConfig pop3_config[] =
+static AccountConfig _pop3_config[] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL },
 	{ "password",	"Password",		ACT_PASSWORD,	NULL },
@@ -42,9 +42,9 @@ AccountConfig pop3_config[] =
 AccountPlugin account_plugin =
 {
 	NULL,
-	pop3_type,
-	pop3_name,
-	pop3_config,
+	_pop3_type,
+	_pop3_name,
+	_pop3_config,
 	NULL,
 	NULL,
 	NULL,

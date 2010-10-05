@@ -20,10 +20,10 @@
 
 
 /* variables */
-char const nntp_type[] = "NNTP";
-char const nntp_name[] = "Newsgroups";
+static char const _nntp_type[] = "NNTP";
+static char const _nntp_name[] = "Newsgroups";
 
-AccountConfig nntp_config[] =
+static AccountConfig _nntp_config[] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
@@ -40,9 +40,9 @@ AccountConfig nntp_config[] =
 AccountPlugin account_plugin =
 {
 	NULL,
-	nntp_type,
-	nntp_name,
-	nntp_config,
+	_nntp_type,
+	_nntp_name,
+	_nntp_config,
 	NULL,
 	NULL,
 	NULL,

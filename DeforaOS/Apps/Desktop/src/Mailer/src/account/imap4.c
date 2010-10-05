@@ -20,10 +20,10 @@
 
 
 /* variables */
-char const imap4_type[] = "IMAP4";
-char const imap4_name[] = "IMAP4 server";
+static char const _imap4_type[] = "IMAP4";
+static char const _imap4_name[] = "IMAP4 server";
 
-AccountConfig imap4_config[] =
+AccountConfig _imap4_config[] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
@@ -42,9 +42,9 @@ AccountConfig imap4_config[] =
 AccountPlugin account_plugin =
 {
 	NULL,
-	imap4_type,
-	imap4_name,
-	imap4_config,
+	_imap4_type,
+	_imap4_name,
+	_imap4_config,
 	NULL,
 	NULL,
 	NULL,

@@ -20,10 +20,10 @@
 
 
 /* variables */
-char const rss_type[] = "RSS";
-char const rss_name[] = "RSS reader";
+static char const _rss_type[] = "RSS";
+static char const _rss_name[] = "RSS reader";
 
-AccountConfig rss_config[] =
+static AccountConfig _rss_config[] =
 {
 	{ "uri",	"Address",		ACT_STRING,	NULL },
 	{ NULL,		NULL,			ACT_NONE,	NULL }
@@ -36,9 +36,9 @@ AccountConfig rss_config[] =
 AccountPlugin account_plugin =
 {
 	NULL,
-	rss_type,
-	rss_name,
-	rss_config,
+	_rss_type,
+	_rss_name,
+	_rss_config,
 	NULL,
 	NULL,
 	NULL,
