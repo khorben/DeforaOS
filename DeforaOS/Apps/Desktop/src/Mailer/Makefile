@@ -38,6 +38,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/account.h \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/compose.h \
@@ -50,7 +51,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account/nntp.c \
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \
-		$(PACKAGE)-$(VERSION)/src/account/account.h \
 		$(PACKAGE)-$(VERSION)/src/account/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \

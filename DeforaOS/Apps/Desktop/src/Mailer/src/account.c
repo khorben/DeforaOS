@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <dlfcn.h>
 #include "mailer.h"
-#include "account/account.h"
+#include "account.h"
 
 
 /* constants */

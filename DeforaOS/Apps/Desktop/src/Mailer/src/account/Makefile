@@ -53,19 +53,19 @@ rss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 rss.so: $(rss_OBJS)
 	$(LD) -o rss.so $(rss_OBJS)
 
-imap4.o: imap4.c account.h
+imap4.o: imap4.c ../../include/Mailer.h
 	$(CC) $(imap4_CFLAGS) -c imap4.c
 
-mbox.o: mbox.c account.h
+mbox.o: mbox.c ../../include/Mailer.h
 	$(CC) $(mbox_CFLAGS) -c mbox.c
 
-pop3.o: pop3.c account.h
+pop3.o: pop3.c ../../include/Mailer.h
 	$(CC) $(pop3_CFLAGS) -c pop3.c
 
-nntp.o: nntp.c account.h
+nntp.o: nntp.c ../../include/Mailer.h
 	$(CC) $(nntp_CFLAGS) -c nntp.c
 
-rss.o: rss.c account.h
+rss.o: rss.c ../../include/Mailer.h
 	$(CC) $(rss_CFLAGS) -c rss.c
 
 clean:

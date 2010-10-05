@@ -21,7 +21,7 @@
 # include <System.h>
 # include <gtk/gtk.h>
 # include "Mailer.h"
-# include "account/account.h"
+# include "account.h"
 # include "../config.h"
 
 
