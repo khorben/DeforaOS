@@ -30,31 +30,48 @@
 
 
 /* Account */
+/* private */
+struct _Account
+{
+	char * type;
+	char * title;
+	int enabled;
+	AccountIdentity * identity;
+	void * handle;
+	AccountPlugin * plugin;
+	GtkTextBuffer * buffer;
+};
+
+
 /* public */
 /* functions */
 /* account_new */
-Account * account_new(char const * type, char const * title)
+Account * account_new(char const * type, char const * title,
+		AccountPluginHelper * helper)
 {
 	Account * account;
+	char const path[] = PLUGINDIR "/" ACCOUNT;
 	char * filename;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: account_new(\"%s\", \"%s\")\n", type, title);
 #endif
-	if(type == NULL || title == NULL || strlen(title) == 0)
+	if(type == NULL)
 		return NULL;
 	if((account = calloc(1, sizeof(*account))) == NULL)
 		return NULL;
-	if((account->name = strdup(type)) == NULL
-			|| (account->title = strdup(title)) == NULL
-			|| (filename = malloc(strlen(PLUGINDIR ACCOUNT)
-					+ strlen(title) + 6)) == NULL)
+	account->type = strdup(type);
+	if(title != NULL)
+		account->title = strdup(title);
+	if(account->type == NULL || (filename = malloc(sizeof(path)
+					+ strlen(type) + 4)) == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
 		account_delete(account);
 		return NULL;
 	}
-	sprintf(filename, "%s/%s/%s.so", PLUGINDIR, ACCOUNT, type);
+	snprintf(filename, sizeof(path) + strlen(type) + 4, "%s/%s.so", path,
+			type);
 	if((account->handle = dlopen(filename, RTLD_LAZY)) == NULL
 			|| (account->plugin = dlsym(account->handle,
 					"account_plugin")) == NULL)
@@ -65,6 +82,7 @@ Account * account_new(char const * type, char const * title)
 		return NULL;
 	}
 	free(filename);
+	account->plugin->helper = helper;
 	account->enabled = 1;
 	account->identity = NULL;
 	account->buffer = gtk_text_buffer_new(NULL);
@@ -94,8 +112,8 @@ void account_delete(Account * account)
 						break;
 				}
 	}
-	free(account->name);
 	free(account->title);
+	free(account->type);
 	if(account->handle != NULL)
 		dlclose(account->handle);
 	g_object_unref(G_OBJECT(account->buffer));
@@ -104,6 +122,13 @@ void account_delete(Account * account)
 
 
 /* accessors */
+/* account_get_config */
+AccountConfig * account_get_config(Account * account)
+{
+	return account->plugin->config;
+}
+
+
 /* account_get_enabled */
 int account_get_enabled(Account * account)
 {
@@ -111,10 +136,10 @@ int account_get_enabled(Account * account)
 }
 
 
-/* account_set_disabled */
-void account_set_enabled(Account * account, int enabled)
+/* account_get_name */
+char const * account_get_name(Account * account)
 {
-	account->enabled = enabled ? 1 : 0;
+	return account->plugin->name;
 }
 
 
@@ -132,6 +157,20 @@ GtkListStore * account_get_store(Account * account, AccountFolder * folder)
 char const * account_get_title(Account * account)
 {
 	return account->title;
+}
+
+
+/* account_get_type */
+char const * account_get_type(Account * account)
+{
+	return account->type;
+}
+
+
+/* account_set_enabled */
+void account_set_enabled(Account * account, int enabled)
+{
+	account->enabled = enabled ? 1 : 0;
 }
 
 
@@ -156,7 +195,7 @@ int account_config_load(Account * account, Config * config)
 	long l;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: account_config_load(%p)\n", config);
+	fprintf(stderr, "DEBUG: account_config_load(%p)\n", (void*)config);
 #endif
 	if(p == NULL)
 		return 0;
@@ -195,9 +234,9 @@ int account_config_save(Account * account, Config * config)
 	char buf[6];
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: account_config_save(%p)\n", config);
+	fprintf(stderr, "DEBUG: account_config_save(%p)\n", (void*)config);
 #endif
-	if(config_set(config, account->title, "type", account->name) != 0)
+	if(config_set(config, account->title, "type", account->type) != 0)
 		return 1;
 	if(p == NULL)
 		return 0;
@@ -232,7 +271,8 @@ int account_config_save(Account * account, Config * config)
 int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, store, parent);
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void*)store,
+			(void*)parent);
 #endif
 	if(account->plugin->init == NULL)
 		return 0;
@@ -241,14 +281,14 @@ int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 
 
 /* account_select */
-int account_select(Account * account, AccountFolder * folder,
+GtkTextBuffer * account_select(Account * account, AccountFolder * folder,
 		AccountMessage * message)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, folder->name,
-			message);
+			(void*)message);
 #endif
 	if(account->plugin->select == NULL)
-		return 0;
+		return NULL;
 	return account->plugin->select(folder, message);
 }

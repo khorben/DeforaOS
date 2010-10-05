@@ -36,7 +36,7 @@
 /* types */
 struct _Mailer
 {
-	Account * available; /* XXX consider using another data type */
+	Account ** available; /* XXX consider using another data type */
 	unsigned int available_cnt;
 
 	AccountPluginHelper helper;
@@ -196,7 +196,7 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 #endif
 	if((type = config_get(mailer->config, name, "type")) == NULL)
 		return -1;
-	if((account = account_new(type, name)) == NULL)
+	if((account = account_new(type, name, &mailer->helper)) == NULL)
 		return -mailer_error(mailer, error_get(), 1);
 	account_config_load(account, mailer->config);
 	mailer_account_add(mailer, account);
@@ -315,10 +315,7 @@ static int _new_plugins(Mailer * mailer)
 	DIR * dir;
 	struct dirent * de;
 	size_t len;
-	char * filename;
-	Plugin * handle;
-	AccountPlugin * plugin;
-	Account * p;
+	Account ** p;
 
 	mailer->available = NULL;
 	mailer->available_cnt = 0;
@@ -343,54 +340,22 @@ static int _new_plugins(Mailer * mailer)
 		if((len = strlen(de->d_name)) < 4
 				|| strcmp(".so", &de->d_name[len - 3]) != 0)
 			continue;
-		if((filename = malloc(len - 2)) == NULL)
-		{
-			error_set_print("mailer", 1, "%s", strerror(errno));
-			continue;
-		}
-		snprintf(filename, len - 2, "%s", de->d_name);
-		if((handle = plugin_new(LIBDIR, PACKAGE, "account", filename))
-				== NULL
-				|| (plugin = plugin_lookup(handle,
-						"account_plugin")) == NULL)
-		{
-			error_print("mailer");
-			if(handle != NULL)
-				plugin_delete(handle);
-			free(filename);
-			continue;
-		}
-		free(filename);
+		de->d_name[len - 3] = '\0';
 		if((p = realloc(mailer->available, sizeof(*p)
 						* (mailer->available_cnt + 1)))
 				== NULL)
 		{
 			error_set_print("mailer", 1, "%s", strerror(errno));
-			plugin_delete(handle);
 			continue;
 		}
 		mailer->available = p;
-		p = &p[mailer->available_cnt];
-		p->name = strdup(de->d_name);
-		p->title = strdup(plugin->name);
-		if(p->name == NULL || p->title == NULL)
+		if((p[mailer->available_cnt] = account_new(de->d_name, NULL,
+						&mailer->helper)) == NULL)
 		{
-			error_set_print("mailer", 1, "%s", strerror(errno));
-			free(p->name);
-			free(p->title);
+			error_print("mailer");
+			continue;
 		}
-		else
-		{
-			p->name[len - 3] = '\0';
-			p->handle = NULL;
-			p->plugin = NULL;
-			mailer->available_cnt++;
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: loaded %s: %s (%s)\n", filename,
-					plugin->name, plugin->type);
-#endif
-		}
-		plugin_delete(handle);
+		mailer->available_cnt++;
 	}
 	if(closedir(dir) != 0)
 		ret = error_set_print("mailer", 1, "%s: %s", dirname, strerror(
@@ -504,6 +469,7 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	GtkTreeIter iter;
 	char * p;
 	AccountMessage * message;
+	GtkTextBuffer * tbuf;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -528,10 +494,11 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 		gtk_tree_model_get(model, &iter, MH_COL_DATE_DISPLAY, &p, -1);
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
 		gtk_widget_show(mailer->hdr_vbox);
-		account_select(mailer->account_cur, mailer->folder_cur,
-				message);
-		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
-				mailer->account_cur->buffer);
+		if((tbuf = account_select(mailer->account_cur,
+						mailer->folder_cur, message))
+				!= NULL)
+			gtk_text_view_set_buffer(GTK_TEXT_VIEW(
+						mailer->view_body), tbuf);
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
@@ -673,10 +640,7 @@ void mailer_delete(Mailer * mailer)
 	if(mailer->source != 0)
 		g_source_remove(mailer->source);
 	for(i = 0; i < mailer->available_cnt; i++)
-	{
-		free(mailer->available[i].name);
-		free(mailer->available[i].title);
-	}
+		account_delete(mailer->available[i]);
 	free(mailer->available);
 	for(i = 0; i < mailer->account_cnt; i++)
 		account_delete(mailer->account[i]);
@@ -731,7 +695,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	GdkPixbuf * pixbuf;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, account);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)account);
 #endif
 	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt
 						+ 1))) == NULL)
@@ -746,8 +710,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, MF_COL_ACCOUNT,
 			account, MF_COL_ENABLED, account_get_enabled(account),
 			MF_COL_DELETE, FALSE, MF_COL_FOLDER, NULL, MF_COL_ICON,
-			pixbuf, MF_COL_NAME, account->title, -1);
-	account->plugin->helper = &mailer->helper;
+			pixbuf, MF_COL_NAME, account_get_title(account), -1);
 	account_init(account, GTK_TREE_STORE(model), &iter);
 	mailer->account_cnt++;
 	return FALSE;
@@ -887,8 +850,9 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 		ac = mailer->account[i];
 		gtk_list_store_insert_with_values(store, &iter, -1,
 				AC_DATA, ac, AC_ACTIVE, TRUE,
-				AC_ENABLED, ac->enabled, AC_TITLE, ac->title,
-				AC_TYPE, ac->plugin->type, -1);
+				AC_ENABLED, account_get_enabled(ac),
+				AC_TITLE, account_get_title(ac),
+				AC_TYPE, account_get_type(ac), -1);
 	}
 	mailer->pr_accounts = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				store));
@@ -996,7 +960,7 @@ static gboolean _on_preferences_closex(gpointer data)
 typedef struct _AccountData
 {
 	Mailer * mailer;
-	char * title;
+	char * type;
 	AccountIdentity identity;
 	unsigned int available;
 	Account * account;
@@ -1038,7 +1002,7 @@ static void _on_preferences_account_new(gpointer data)
 		return;
 	}
 	ad->mailer = mailer;
-	ad->title = strdup("");
+	ad->type = strdup("");
 	memset(&(ad->identity), 0, sizeof(ad->identity));
 	ad->available = 0;
 	ad->account = NULL;
@@ -1103,15 +1067,16 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(ad->mailer->pr_accounts));
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter);
 #ifdef DEBUG
-	fprintf(stderr, "%s%p%s%s%s%s\n", "AC_DATA ", ad->account,
+	fprintf(stderr, "%s%p%s%s%s%s\n", "AC_DATA ", (void*)ad->account,
 			", AC_ACTIVE FALSE, AC_ENABLED TRUE, AC_TITLE ",
-			ad->account->title, ", AC_TYPE ",
-			ad->account->plugin->type);
+			account_get_title(ad->account), ", AC_TYPE ",
+			account_get_type(ad->account));
 #endif
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 			AC_DATA, ad->account, AC_ACTIVE, FALSE,
-			AC_ENABLED, TRUE, AC_TITLE, ad->account->title,
-			AC_TYPE, ad->account->plugin->type, -1);
+			AC_ENABLED, TRUE,
+			AC_TITLE, account_get_title(ad->account),
+			AC_TYPE, account_get_type(ad->account), -1);
 	ad->account = NULL;
 	/* _on_assistant_close is then automatically called */
 }
@@ -1137,8 +1102,9 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		{
 			if(ad->account != NULL)
 				account_delete(ad->account);
-			ac = &(ad->mailer->available[ad->available]);
-			ad->account = account_new(ac->name, ad->title);
+			ac = ad->mailer->available[ad->available];
+			ad->account = account_new(account_get_type(ac),
+					ad->type, &ad->mailer->helper);
 		}
 		if(ad->account == NULL)
 		{
@@ -1149,7 +1115,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		}
 		else
 			ad->settings = _assistant_account_config(
-					ad->account->plugin->config);
+					account_get_config(ad->account));
 		gtk_container_add(GTK_CONTAINER(page), ad->settings);
 		gtk_widget_show_all(ad->settings);
 	}
@@ -1209,7 +1175,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	 *     would it be implemented this will need validation later */
 	for(i = 0; i < ad->mailer->available_cnt; i++)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(widget),
-				ad->mailer->available[i].title);
+				account_get_name(ad->mailer->available[i]));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_account_type_changed), ad);
@@ -1226,12 +1192,12 @@ static void _on_account_name_changed(GtkWidget * widget, gpointer data)
 	int current;
 	GtkWidget * page;
 
-	_on_entry_changed(widget, &ad->title);
+	_on_entry_changed(widget, &ad->type);
 	current = gtk_assistant_get_current_page(GTK_ASSISTANT(ad->assistant));
 	page = gtk_assistant_get_nth_page(GTK_ASSISTANT(ad->assistant),
 			current);
 	gtk_assistant_set_page_complete(GTK_ASSISTANT(ad->assistant), page,
-			strlen(ad->title) ? TRUE : FALSE);
+			strlen(ad->type) ? TRUE : FALSE);
 }
 
 static void _account_add_label(GtkWidget * box, PangoFontDescription * desc,
@@ -1447,7 +1413,7 @@ static GtkWidget * _display_boolean(AccountConfig * config,
 		PangoFontDescription * desc, GtkSizeGroup * group);
 static GtkWidget * _account_display(Account * account)
 {
-	AccountConfig * config = account->plugin->config;
+	AccountConfig * config;
 	AccountConfig p;
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
@@ -1455,12 +1421,13 @@ static GtkWidget * _account_display(Account * account)
 	GtkWidget * widget;
 	unsigned int i;
 
+	config = account_get_config(account);
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	p.name = NULL;
 	p.title = _("Account name");
-	p.value = account->title;
+	p.value = account_get_title(account);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	widget = _display_string(&p, desc, group);
@@ -1642,7 +1609,7 @@ static void _account_edit(Mailer * mailer, Account * account)
 				mailer->window));
 	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 	/* FIXME this affects the account directly (eg cancel does not) */
-	widget = _assistant_account_config(account->plugin->config);
+	widget = _assistant_account_config(account_get_config(account));
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);

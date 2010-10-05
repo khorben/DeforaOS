@@ -187,6 +187,7 @@ Compose * compose_new(Mailer * mailer)
 	/* toolbar */
 	toolbar = desktop_toolbar_create(_compose_toolbar, compose, group);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+	/* FIXME make these fields a GtkTreeView */
 	/* from */
 	sizegroup = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	toolbar = gtk_toolbar_new();

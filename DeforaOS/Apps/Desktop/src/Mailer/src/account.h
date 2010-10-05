@@ -24,20 +24,12 @@
 
 /* Account */
 /* types */
-typedef struct _Account
-{
-	char * name;
-	char * title;
-	int enabled;
-	AccountIdentity * identity;
-	void * handle;
-	AccountPlugin * plugin;
-	GtkTextBuffer * buffer;
-} Account;
+typedef struct _Account Account;
 
 
 /* functions */
-Account * account_new(char const * type, char const * name);
+Account * account_new(char const * type, char const * name,
+		AccountPluginHelper * helper);
 void account_delete(Account * account);
 
 /* accessors */
@@ -46,7 +38,10 @@ void account_set_enabled(Account * account, int enabled);
 
 GtkListStore * account_get_store(Account * account, AccountFolder * folder);
 
+AccountConfig * account_get_config(Account * account);
+char const * account_get_name(Account * account);
 char const * account_get_title(Account * account);
+char const * account_get_type(Account * account);
 int account_set_title(Account * account, char const * title);
 
 /* useful */
@@ -55,7 +50,7 @@ int account_config_save(Account * account, Config * config);
 int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent);
 int account_quit(Account * account);
 
-int account_select(Account * account, AccountFolder * folder,
+GtkTextBuffer * account_select(Account * account, AccountFolder * folder,
 		AccountMessage * message);
 
 #endif /* !MAILER_ACCOUNT_H */

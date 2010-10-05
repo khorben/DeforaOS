@@ -97,7 +97,8 @@ typedef struct _AccountPlugin
 	int (*init)(GtkTreeStore * store, GtkTreeIter * parent,
 			GtkTextBuffer * buffer);
 	int (*quit)(void);
-	int (*select)(AccountFolder * folder, AccountMessage * message);
+	GtkTextBuffer * (*select)(AccountFolder * folder,
+			AccountMessage * message);
 	void * priv;
 } AccountPlugin;
 

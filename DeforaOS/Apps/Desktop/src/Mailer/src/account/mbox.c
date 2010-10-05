@@ -139,7 +139,8 @@ static AccountFolder _config_folder[_FOLDER_CNT] =
 static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 		GtkTextBuffer * buffer);
 static int _mbox_quit(void);
-static int _mbox_select(AccountFolder * folder, AccountMessage * message);
+static GtkTextBuffer * _mbox_select(AccountFolder * folder,
+		AccountMessage * message);
 
 AccountPlugin account_plugin =
 {
@@ -251,7 +252,8 @@ static int _mbox_quit(void)
 
 
 /* mbox_select */
-static int _mbox_select(AccountFolder * folder, AccountMessage * message)
+static GtkTextBuffer * _mbox_select(AccountFolder * folder,
+		AccountMessage * message)
 {
 	MboxFolder * mf = folder->data;
 	Message * m = (Message*)message;
@@ -269,7 +271,7 @@ static int _mbox_select(AccountFolder * folder, AccountMessage * message)
 	gtk_text_buffer_get_end_iter(mf->buffer, &iter);
 	/* XXX we may still be reading the file... */
 	if((fp = fopen(filename, "r")) == NULL)
-		return -1;
+		return NULL;
 	if(m->body_offset != 0 && m->body_length > 0
 			&& fseek(fp, m->body_offset, SEEK_SET) == 0
 			&& (buf = malloc(m->body_length)) != NULL)
@@ -279,7 +281,7 @@ static int _mbox_select(AccountFolder * folder, AccountMessage * message)
 		free(buf);
 	}
 	fclose(fp);
-	return 0;
+	return mf->buffer;
 }
 
 
