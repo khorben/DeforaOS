@@ -145,12 +145,14 @@ static int _mbox_select(AccountFolder * folder, AccountMessage * message);
 
 AccountPlugin account_plugin =
 {
+	NULL,
 	_mbox_type,
 	_mbox_name,
 	_mbox_config,
 	_mbox_init,
 	_mbox_quit,
-	_mbox_select
+	_mbox_select,
+	NULL
 };
 
 
@@ -193,7 +195,6 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 	int ret = 0;
 	size_t i;
 	char * filename;
-	GtkIconTheme * theme;
 	AccountFolder * af;
 	MboxFolder * mbox;
 	GdkPixbuf * pixbuf;
@@ -202,7 +203,6 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	theme = gtk_icon_theme_get_default();
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
 		af = &_config_folder[i];
@@ -211,8 +211,10 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 		filename = mbox->config->value;
 		if(filename == NULL)
 			continue;
-		pixbuf = gtk_icon_theme_load_icon(theme, mbox->pixbuf != NULL
-				? mbox->pixbuf : "stock_folder", 16, 0, NULL);
+		pixbuf = gtk_icon_theme_load_icon(account_plugin.helper->theme,
+				(mbox->pixbuf != NULL)
+				? mbox->pixbuf : "stock_folder", 16,
+				0, NULL);
 		gtk_tree_store_append(store, &iter, parent);
 		gtk_tree_store_set(store, &iter, MF_COL_ACCOUNT, NULL,
 				MF_COL_FOLDER, af, MF_COL_ICON, pixbuf,
@@ -221,8 +223,9 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 		/* XXX should not be done here? */
 		_config_folder[i].store = gtk_list_store_new(MH_COL_COUNT,
 				G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
-				G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				G_TYPE_UINT, G_TYPE_STRING);
+				GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING,
+				G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+				G_TYPE_BOOLEAN);
 		mbox->source = g_idle_add(_folder_idle, &_config_folder[i]);
 	}
 	return ret;
@@ -343,6 +346,7 @@ static int _message_set_header(Message * message, char const * header,
 		{ MH_COL_FROM,		"From "		},
 		{ MH_COL_TO,		"To: "		},
 		{ MH_COL_DATE_DISPLAY,	"Date: "	},
+		{ MH_COL_READ,		"Status: "	},
 		{ -1,			NULL		}
 	};
 	size_t i;
@@ -384,6 +388,17 @@ static int _message_set_header(Message * message, char const * header,
 		}
 		gtk_list_store_set(store, &message->iter, MH_COL_DATE,
 				mktime(&t), MH_COL_DATE_DISPLAY, buf, -1);
+	}
+	else if(abc[i].col == MH_COL_READ)
+	{
+		gtk_list_store_set(store, &message->iter, MH_COL_READ,
+				(index(&header[8], 'R') != NULL) ? TRUE : FALSE,
+				-1);
+		gtk_list_store_set(store, &message->iter, MH_COL_PIXBUF,
+					(index(&header[8], 'R') != NULL)
+					? account_plugin.helper->mail_read
+					: account_plugin.helper->mail_unread,
+					-1);
 	}
 	else if(abc[i].col != -1)
 		gtk_list_store_set(store, &message->iter, abc[i].col,

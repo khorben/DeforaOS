@@ -15,11 +15,12 @@
 
 
 
-#ifndef MAILER_MAILER_H
-# define MAILER_MAILER_H
+#ifndef MAILER_SRC_MAILER_H
+# define MAILER_SRC_MAILER_H
 
 # include <System.h>
 # include <gtk/gtk.h>
+# include "Mailer.h"
 # include "account/account.h"
 # include "../config.h"
 
@@ -46,13 +47,12 @@ enum
 
 enum
 {
-	MH_COL_ACCOUNT = 0, MH_COL_FOLDER, MH_COL_MESSAGE, MH_COL_SUBJECT,
-	MH_COL_FROM, MH_COL_TO, MH_COL_DATE, MH_COL_DATE_DISPLAY
+	MH_COL_ACCOUNT = 0, MH_COL_FOLDER, MH_COL_MESSAGE, MH_COL_PIXBUF,
+	MH_COL_SUBJECT, MH_COL_FROM, MH_COL_TO, MH_COL_DATE,
+	MH_COL_DATE_DISPLAY, MH_COL_READ
 };
-# define MH_COL_LAST MH_COL_DATE_DISPLAY
+# define MH_COL_LAST MH_COL_READ
 # define MH_COL_COUNT (MH_COL_LAST + 1)
-
-typedef struct _Mailer Mailer;
 
 
 /* functions */
@@ -76,4 +76,4 @@ int mailer_account_remove(Mailer * mailer, Account * account); */
 void mailer_show_about(Mailer * mailer, gboolean show);
 void mailer_show_preferences(Mailer * mailer, gboolean show);
 
-#endif /* !MAILER_MAILER_H */
+#endif /* !MAILER_SRC_MAILER_H */

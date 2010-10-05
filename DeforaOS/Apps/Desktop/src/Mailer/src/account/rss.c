@@ -35,9 +35,11 @@ AccountConfig rss_config[] =
 
 AccountPlugin account_plugin =
 {
+	NULL,
 	rss_type,
 	rss_name,
 	rss_config,
+	NULL,
 	NULL,
 	NULL,
 	NULL

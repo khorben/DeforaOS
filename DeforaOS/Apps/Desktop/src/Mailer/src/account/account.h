@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -18,74 +18,8 @@
 #ifndef MAILER_ACCOUNT_H
 # define MAILER_ACCOUNT_H
 
-# include <gtk/gtk.h>
 # include <System.h>
-
-
-/* AccountIdentity */
-typedef struct _AccountIdentity
-{
-	char * from;
-	char * email;
-} AccountIdentity;
-
-
-/* AccountConfig */
-typedef enum _AccountConfigType
-{
-	ACT_NONE = 0,
-	ACT_STRING,
-	ACT_PASSWORD,
-	ACT_FILE,
-	ACT_UINT16,
-	ACT_BOOLEAN
-} AccountConfigType;
-
-typedef struct _AccountConfig
-{
-	char * name;
-	char * title;
-	AccountConfigType type;
-	void * value;
-} AccountConfig;
-
-
-/* AccountMessage */
-typedef struct _AccountMessage AccountMessage;
-
-
-/* AccountFolderType */
-typedef enum _AccountFolderType
-{
-	AFT_INBOX = 0,
-	AFT_DRAFTS,
-	AFT_SENT,
-	AFT_TRASH,
-	AFT_FOLDER
-} AccountFolderType;
-# define AFT_LAST AFT_FOLDER
-# define AFT_COUNT (AFT_LAST + 1)
-
-typedef struct _AccountFolder
-{
-	AccountFolderType type;
-	char * name;
-	GtkListStore * store;
-	void * data;
-} AccountFolder;
-
-
-/* AccountPlugin */
-typedef struct _AccountPlugin
-{
-	char const * type;
-	char const * name;
-	AccountConfig * config;
-	int (*init)(GtkTreeStore * store, GtkTreeIter * parent,
-			GtkTextBuffer * buffer);
-	int (*quit)(void);
-	int (*select)(AccountFolder * folder, AccountMessage * message);
-} AccountPlugin;
+# include "Mailer.h"
 
 
 /* Account */

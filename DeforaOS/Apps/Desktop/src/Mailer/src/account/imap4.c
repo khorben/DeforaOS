@@ -41,9 +41,11 @@ AccountConfig imap4_config[] =
 
 AccountPlugin account_plugin =
 {
+	NULL,
 	imap4_type,
 	imap4_name,
 	imap4_config,
+	NULL,
 	NULL,
 	NULL,
 	NULL

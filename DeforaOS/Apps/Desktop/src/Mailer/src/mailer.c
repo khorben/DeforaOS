@@ -39,6 +39,7 @@ struct _Mailer
 	Account * available; /* XXX consider using another data type */
 	unsigned int available_cnt;
 
+	AccountPluginHelper helper;
 	Account ** account;
 	unsigned int account_cnt;
 	Account * account_cur;
@@ -211,6 +212,8 @@ static GtkWidget * _new_folders_view(Mailer * mailer);
 static void _on_folders_changed(GtkTreeSelection * selection, gpointer data);
 static GtkWidget * _new_headers_view(Mailer * mailer);
 static GtkWidget * _new_headers(Mailer * mailer);
+static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
+		char const * title, int id, int sortid);
 static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
 		char const * title, int id, int sortid);
 static void _on_headers_changed(GtkTreeSelection * selection, gpointer data);
@@ -319,6 +322,12 @@ static int _new_plugins(Mailer * mailer)
 
 	mailer->available = NULL;
 	mailer->available_cnt = 0;
+	mailer->helper.mailer = mailer;
+	mailer->helper.theme = gtk_icon_theme_get_default();
+	mailer->helper.mail_read = gtk_icon_theme_load_icon(
+			mailer->helper.theme, "mail-read", 16, 0, NULL);
+	mailer->helper.mail_unread = gtk_icon_theme_load_icon(
+			mailer->helper.theme, "mail-unread", 16, 0, NULL);
 	if((dirname = malloc(sizeof(PLUGINDIR) + strlen("/account")))
 			== NULL)
 		return error_set_print("mailer", 1, "%s", strerror(errno));
@@ -471,6 +480,7 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
+	_headers_view_column_pixbuf(treeview, "", MH_COL_PIXBUF, MH_COL_READ);
 	_headers_view_column_text(treeview, _("Subject"), MH_COL_SUBJECT,
 			MH_COL_SUBJECT);
 	mailer->view_from = _headers_view_column_text(treeview, _("From"),
@@ -525,6 +535,20 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
+}
+
+static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
+		char const * title, int id, int sortid)
+{
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	renderer = gtk_cell_renderer_pixbuf_new();
+	column = gtk_tree_view_column_new_with_attributes(title, renderer,
+			"pixbuf", id, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, sortid);
+	gtk_tree_view_append_column(view, column);
+	return column;
 }
 
 static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
@@ -723,6 +747,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 			account, MF_COL_ENABLED, account_get_enabled(account),
 			MF_COL_DELETE, FALSE, MF_COL_FOLDER, NULL, MF_COL_ICON,
 			pixbuf, MF_COL_NAME, account->title, -1);
+	account->plugin->helper = &mailer->helper;
 	account_init(account, GTK_TREE_STORE(model), &iter);
 	mailer->account_cnt++;
 	return FALSE;

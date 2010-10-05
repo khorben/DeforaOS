@@ -41,9 +41,11 @@ AccountConfig pop3_config[] =
 
 AccountPlugin account_plugin =
 {
+	NULL,
 	pop3_type,
 	pop3_name,
 	pop3_config,
+	NULL,
 	NULL,
 	NULL,
 	NULL

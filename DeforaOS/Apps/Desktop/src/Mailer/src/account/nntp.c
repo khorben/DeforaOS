@@ -39,9 +39,11 @@ AccountConfig nntp_config[] =
 
 AccountPlugin account_plugin =
 {
+	NULL,
 	nntp_type,
 	nntp_name,
 	nntp_config,
+	NULL,
 	NULL,
 	NULL,
 	NULL
