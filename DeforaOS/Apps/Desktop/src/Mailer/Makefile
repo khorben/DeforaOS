@@ -44,9 +44,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
 		$(PACKAGE)-$(VERSION)/src/gtkassistant.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/account/imap4.c \
 		$(PACKAGE)-$(VERSION)/src/account/mbox.c \
 		$(PACKAGE)-$(VERSION)/src/account/pop3.c \
-		$(PACKAGE)-$(VERSION)/src/account/imap4.c \
 		$(PACKAGE)-$(VERSION)/src/account/nntp.c \
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \

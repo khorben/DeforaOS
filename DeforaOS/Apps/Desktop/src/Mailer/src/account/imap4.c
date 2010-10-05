@@ -16,7 +16,7 @@
 
 
 #include <stdlib.h>
-#include "account.h"
+#include "Mailer.h"
 
 
 /* variables */

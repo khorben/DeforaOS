@@ -23,9 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "account.h"
-/* FIXME remove this */
-#include "../mailer.h"
+#include "Mailer.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 

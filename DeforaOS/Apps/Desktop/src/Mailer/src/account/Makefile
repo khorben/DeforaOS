@@ -1,4 +1,4 @@
-TARGETS	= mbox.so pop3.so imap4.so nntp.so rss.so
+TARGETS	= imap4.so mbox.so pop3.so nntp.so rss.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -18,6 +18,13 @@ INSTALL	= install
 
 all: $(TARGETS)
 
+imap4_OBJS = imap4.o
+imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+imap4.so: $(imap4_OBJS)
+	$(LD) -o imap4.so $(imap4_OBJS)
+
 mbox_OBJS = mbox.o
 mbox_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 mbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -31,13 +38,6 @@ pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pop3.so: $(pop3_OBJS)
 	$(LD) -o pop3.so $(pop3_OBJS)
-
-imap4_OBJS = imap4.o
-imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-imap4.so: $(imap4_OBJS)
-	$(LD) -o imap4.so $(imap4_OBJS)
 
 nntp_OBJS = nntp.o
 nntp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -53,14 +53,14 @@ rss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 rss.so: $(rss_OBJS)
 	$(LD) -o rss.so $(rss_OBJS)
 
+imap4.o: imap4.c account.h
+	$(CC) $(imap4_CFLAGS) -c imap4.c
+
 mbox.o: mbox.c account.h
 	$(CC) $(mbox_CFLAGS) -c mbox.c
 
 pop3.o: pop3.c account.h
 	$(CC) $(pop3_CFLAGS) -c pop3.c
-
-imap4.o: imap4.c account.h
-	$(CC) $(imap4_CFLAGS) -c imap4.c
 
 nntp.o: nntp.c account.h
 	$(CC) $(nntp_CFLAGS) -c nntp.c
@@ -69,7 +69,7 @@ rss.o: rss.c account.h
 	$(CC) $(rss_CFLAGS) -c rss.c
 
 clean:
-	$(RM) -- $(mbox_OBJS) $(pop3_OBJS) $(imap4_OBJS) $(nntp_OBJS) $(rss_OBJS)
+	$(RM) -- $(imap4_OBJS) $(mbox_OBJS) $(pop3_OBJS) $(nntp_OBJS) $(rss_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

@@ -26,7 +26,7 @@
 
 
 /* Mailer */
-/* defaults */
+/* constants */
 # ifndef PLUGINDIR
 #  define PLUGINDIR		LIBDIR "/Mailer"
 # endif
@@ -34,25 +34,6 @@
 # define MAILER_CONFIG_FILE	".mailer"
 
 # define MAILER_MESSAGES_FONT	"Monospace 8"
-
-
-/* types */
-enum
-{
-	MF_COL_ACCOUNT = 0, MF_COL_ENABLED, MF_COL_DELETE, MF_COL_FOLDER,
-	MF_COL_ICON, MF_COL_NAME
-};
-# define MF_COL_LAST MF_COL_NAME
-# define MF_COL_COUNT (MF_COL_LAST + 1)
-
-enum
-{
-	MH_COL_ACCOUNT = 0, MH_COL_FOLDER, MH_COL_MESSAGE, MH_COL_PIXBUF,
-	MH_COL_SUBJECT, MH_COL_FROM, MH_COL_TO, MH_COL_DATE,
-	MH_COL_DATE_DISPLAY, MH_COL_READ
-};
-# define MH_COL_LAST MH_COL_READ
-# define MH_COL_COUNT (MH_COL_LAST + 1)
 
 
 /* functions */
