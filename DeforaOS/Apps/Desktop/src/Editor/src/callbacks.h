@@ -25,6 +25,8 @@
 gboolean on_closex(gpointer data);
 void on_edit_find(gpointer data);
 void on_edit_preferences(gpointer data);
+void on_edit_select_all(gpointer data);
+void on_edit_unselect_all(gpointer data);
 void on_file_close(gpointer data);
 void on_file_new(gpointer data);
 void on_file_open(gpointer data);

@@ -104,14 +104,14 @@ static DesktopMenu _menu_edit[] =
 	{ N_("Cop_y"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
 	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_V },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Select all"), NULL,
+	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else
 		"edit-select-all",
 #endif
 		GDK_CONTROL_MASK, GDK_A },
-	{ N_("_Unselect all"), NULL, NULL, 0, 0 },
+	{ N_("_Unselect all"), G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, 0, 0 },
@@ -747,6 +747,34 @@ int mailer_account_enable(Mailer * mailer, Account * account)
 	return 0;
 }
 #endif
+
+
+/* mailer_select_all */
+void mailer_select_all(Mailer * mailer)
+{
+	GtkTreeSelection * treesel;
+#if GTK_CHECK_VERSION(2, 4, 0)
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+#endif
+
+#if GTK_CHECK_VERSION(2, 4, 0)
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
+			== mailer->view_body)
+	{
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+					mailer->view_body));
+		gtk_text_buffer_get_start_iter(tbuf, &start);
+		gtk_text_buffer_get_end_iter(tbuf, &end);
+		gtk_text_buffer_select_range(tbuf, &start, &end);
+		return;
+	}
+#endif
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				mailer->view_headers));
+	gtk_tree_selection_select_all(treesel);
+}
 
 
 /* mailer_show_about */
@@ -1608,9 +1636,10 @@ static void _account_edit(Mailer * mailer, Account * account)
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				mailer->window));
 	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
+	vbox = gtk_vbox_new(FALSE, 4);
+	/* FIXME also allow to modify the identity, plug-in values... */
 	/* FIXME this affects the account directly (eg cancel does not) */
 	widget = _assistant_account_config(account_get_config(account));
-	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_hseparator_new();
@@ -1723,6 +1752,8 @@ static int _preferences_ok_accounts(Mailer * mailer)
 			gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 					AC_ACTIVE, TRUE, -1);
 	}
+	/* FIXME delete accounts that need to be */
+	/* FIXME force a refresh of the ones remaining and not just added */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: saved accounts \"%s\"\n", accounts);
 #endif
@@ -1757,6 +1788,34 @@ static int _preferences_ok_save(Mailer * mailer)
 	ret = config_save(mailer->config, p);
 	free(p);
 	return ret;
+}
+
+
+/* mailer_unselect_all */
+void mailer_unselect_all(Mailer * mailer)
+{
+	GtkTreeSelection * treesel;
+#if GTK_CHECK_VERSION(2, 4, 0)
+	GtkTextBuffer * tbuf;
+	GtkTextMark * mark;
+	GtkTextIter iter;
+#endif
+
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
+			== mailer->view_body)
+	{
+#if GTK_CHECK_VERSION(2, 4, 0)
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+					mailer->view_body));
+		mark = gtk_text_buffer_get_mark(tbuf, "insert");
+		gtk_text_buffer_get_iter_at_mark(tbuf, &iter, mark);
+		gtk_text_buffer_select_range(tbuf, &iter, &iter);
+#endif
+		return;
+	}
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				mailer->view_headers));
+	gtk_tree_selection_unselect_all(treesel);
 }
 
 

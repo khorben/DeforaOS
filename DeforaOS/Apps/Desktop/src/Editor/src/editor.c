@@ -73,14 +73,14 @@ static DesktopMenu _editor_menu_edit[] =
 	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0, 0 }, /* FIXME implement */
 	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, 0, 0 }, /* FIXME implement */
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Select all"), NULL, /* FIXME implement */
+	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else
 		"edit-select-all",
 #endif
 		GDK_CONTROL_MASK, GDK_A },
-	{ N_("_Unselect all"), NULL, NULL, 0, 0 }, /* FIXME implement */
+	{ N_("_Unselect all"), G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Find"), G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
 		GDK_CONTROL_MASK, GDK_F },
@@ -582,6 +582,38 @@ gboolean editor_save_as_dialog(Editor * editor)
 	ret = editor_save_as(editor, filename);
 	g_free(filename);
 	return ret;
+}
+
+
+/* editor_select_all */
+void editor_select_all(Editor * editor)
+{
+#if GTK_CHECK_VERSION(2, 4, 0)
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	gtk_text_buffer_get_start_iter(tbuf, &start);
+	gtk_text_buffer_get_end_iter(tbuf, &end);
+	gtk_text_buffer_select_range(tbuf, &start, &end);
+#endif
+}
+
+
+/* editor_unselect_all */
+void editor_unselect_all(Editor * editor)
+{
+#if GTK_CHECK_VERSION(2, 4, 0)
+	GtkTextBuffer * tbuf;
+	GtkTextMark * mark;
+	GtkTextIter iter;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	mark = gtk_text_buffer_get_mark(tbuf, "insert");
+	gtk_text_buffer_get_iter_at_mark(tbuf, &iter, mark);
+	gtk_text_buffer_select_range(tbuf, &iter, &iter);
+#endif
 }
 
 

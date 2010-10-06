@@ -66,6 +66,9 @@ gboolean editor_save(Editor * editor);
 gboolean editor_save_as(Editor * editor, char const * filename);
 gboolean editor_save_as_dialog(Editor * editor);
 
+void editor_select_all(Editor * editor);
+void editor_unselect_all(Editor * editor);
+
 void editor_find(Editor * editor, char const * text);
 
 #endif /* !EDITOR_EDITOR_H */

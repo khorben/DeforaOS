@@ -152,6 +152,24 @@ static void _preferences_on_ok(gpointer data)
 }
 
 
+/* on_edit_select_all */
+void on_edit_select_all(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_select_all(editor);
+}
+
+
+/* on_edit_unselect_all */
+void on_edit_unselect_all(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_unselect_all(editor);
+}
+
+
 /* on_file_close */
 void on_file_close(gpointer data)
 {

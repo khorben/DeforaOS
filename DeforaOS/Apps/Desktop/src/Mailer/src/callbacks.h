@@ -30,6 +30,8 @@ void on_file_quit(gpointer data);
 
 /* edit menu */
 void on_edit_preferences(gpointer data);
+void on_edit_select_all(gpointer data);
+void on_edit_unselect_all(gpointer data);
 
 /* message menu */
 void on_message_reply(gpointer data);

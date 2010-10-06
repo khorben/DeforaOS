@@ -92,6 +92,22 @@ void on_edit_preferences(gpointer data)
 }
 
 
+void on_edit_select_all(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_select_all(mailer);
+}
+
+
+void on_edit_unselect_all(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_unselect_all(mailer);
+}
+
+
 /* help menu */
 void on_help_about(gpointer data)
 {
