@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - add an icon
- * - implement a configuration menu for deep sleep
  * - register a handler for deep sleep (just to avoid unknown errors)
  * - implement notification lights */
 
@@ -26,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <glib.h>
+#include <gtk/gtk.h>
 #include <System.h>
 #include "Phone.h"
 #include "../../config.h"
@@ -44,8 +43,20 @@
 
 /* Openmoko */
 /* private */
+/* types */
+typedef struct _Openmoko
+{
+	GtkWidget * window;
+	GtkWidget * deepsleep;
+} Openmoko;
+
+
 /* prototypes */
+static int _openmoko_init(PhonePlugin * plugin);
+static int _openmoko_destroy(PhonePlugin * plugin);
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static void _openmoko_deepsleep(PhonePlugin * plugin);
+static void _openmoko_settings(PhonePlugin * plugin);
 
 
 /* public */
@@ -55,16 +66,41 @@ PhonePlugin plugin =
 	NULL,
 	"Openmoko",
 	NULL,
-	NULL,
-	NULL,
+	_openmoko_init,
+	_openmoko_destroy,
 	_openmoko_event,
-	NULL,
+	_openmoko_settings,
 	NULL
 };
 
 
 /* private */
 /* functions */
+/* openmoko_init */
+static int _openmoko_init(PhonePlugin * plugin)
+{
+	Openmoko * openmoko;
+
+	if((openmoko = object_new(sizeof(*openmoko))) == NULL)
+		return 1;
+	plugin->priv = openmoko;
+	openmoko->window = NULL;
+	return 0;
+}
+
+
+/* openmoko_destroy */
+static int _openmoko_destroy(PhonePlugin * plugin)
+{
+	Openmoko * openmoko = plugin->priv;
+
+	if(openmoko->window != NULL)
+		gtk_widget_destroy(openmoko->window);
+	free(openmoko);
+	return 0;
+}
+
+
 /* openmoko_event */
 static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
 static int _event_power_on(PhonePlugin * plugin, gboolean power);
@@ -94,9 +130,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			_event_mixer_set(plugin, "stereoout.state");
 			break;
 		case PHONE_EVENT_FUNCTIONAL:
-			/* FIXME prevent deep sleep only optionally */
-			plugin->helper->queue(plugin->helper->phone,
-					"AT%SLEEP=2");
+			_openmoko_deepsleep(plugin);
 			break;
 		case PHONE_EVENT_NOTIFICATION_OFF:
 			/* FIXME implement */
@@ -202,4 +236,112 @@ static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
 	}
 	close(fd);
 	return ret;
+}
+
+
+/* openmoko_deepsleep */
+static void _openmoko_deepsleep(PhonePlugin * plugin)
+{
+	char const * cmd = "AT%SLEEP=4"; /* allow deep sleep */
+	char const * p;
+
+	if((p = plugin->helper->config_get(plugin->helper->phone, "openmoko",
+					"deepsleep")) != NULL
+			&& strtoul(p, NULL, 10) != 0)
+		cmd = "AT%SLEEP=2"; /* prevent deep sleep */
+	/* XXX may reset the hardware modem */
+	plugin->helper->queue(plugin->helper->phone, cmd);
+	plugin->helper->queue(plugin->helper->phone, "AT+CPIN?");
+}
+
+
+/* openmoko_settings */
+static void _on_settings_cancel(gpointer data);
+static gboolean _on_settings_closex(gpointer data);
+static void _on_settings_ok(gpointer data);
+
+static void _openmoko_settings(PhonePlugin * plugin)
+{
+	Openmoko * openmoko = plugin->priv;
+	GtkWidget * vbox;
+	GtkWidget * bbox;
+	GtkWidget * widget;
+
+	if(openmoko->window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(openmoko->window));
+		return;
+	}
+	openmoko->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(openmoko->window), 4);
+	gtk_window_set_default_size(GTK_WINDOW(openmoko->window), 200, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(openmoko->window),
+			"gnome-settings");
+#endif
+	gtk_window_set_title(GTK_WINDOW(openmoko->window),
+			"Openmoko preferences");
+	g_signal_connect_swapped(G_OBJECT(openmoko->window), "delete-event",
+			G_CALLBACK(_on_settings_closex), plugin);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* check button */
+	openmoko->deepsleep = gtk_check_button_new_with_label(
+			"Prevent deep sleep");
+	gtk_box_pack_start(GTK_BOX(vbox), openmoko->deepsleep, FALSE, TRUE, 0);
+	/* button box */
+	bbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_cancel), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_ok), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(openmoko->window), vbox);
+	_on_settings_cancel(plugin);
+	gtk_widget_show_all(openmoko->window);
+}
+
+static void _on_settings_cancel(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Openmoko * openmoko = plugin->priv;
+	char const * p;
+
+	if((p = plugin->helper->config_get(plugin->helper->phone, "openmoko",
+					"deepsleep")) == NULL
+			|| strtoul(p, NULL, 10) == 0)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					openmoko->deepsleep), FALSE);
+	else
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					openmoko->deepsleep), TRUE);
+	gtk_widget_hide(openmoko->window);
+}
+
+static gboolean _on_settings_closex(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Openmoko * openmoko = plugin->priv;
+
+	gtk_widget_hide(openmoko->window);
+	return TRUE;
+}
+
+static void _on_settings_ok(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Openmoko * openmoko = plugin->priv;
+	gboolean value;
+
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				openmoko->deepsleep));
+	plugin->helper->config_set(plugin->helper->phone, "openmoko",
+			"deepsleep", value ? "1" : "0");
+	_openmoko_deepsleep(plugin);
+	gtk_widget_hide(openmoko->window);
 }
