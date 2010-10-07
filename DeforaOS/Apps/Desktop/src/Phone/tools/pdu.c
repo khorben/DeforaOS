@@ -53,7 +53,7 @@ int main(int argc, char * argv[])
 			!= NULL)
 	{
 		printf("Number: %s\n", number);
-		gmtime_r(&timestamp, &t);
+		localtime_r(&timestamp, &t);
 		strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 		printf("Timestamp: %s\n", buf);
 		printf("Encoding: %u\n", encoding);

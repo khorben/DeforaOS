@@ -183,6 +183,7 @@ static int _debug_init(PhonePlugin * plugin)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	debug->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				debug->events));
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(debug->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("Time", renderer,
 			"text", 1, NULL);
@@ -260,7 +261,7 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	GtkTreeIter iter;
 
 	date = time(NULL);
-	gmtime_r(&date, &t);
+	localtime_r(&date, &t);
 	strftime(tbuf, sizeof(tbuf), "%d/%m/%Y %H:%M:%S", &t);
 	snprintf(ebuf, sizeof(ebuf), "Unknown (%u)", event);
 	for(i = 0; _debug_phone_events[i].string != NULL; i++)

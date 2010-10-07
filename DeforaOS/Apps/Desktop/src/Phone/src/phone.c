@@ -1065,7 +1065,7 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 	/* FIXME this may cut in the middle of a UTF-8 character */
 	snprintf(nd, sizeof(nd), "%s\n%.12s%s", number, content,
 			(strlen(content) > 12) ? "..." : "");
-	gmtime_r(&date, &t);
+	localtime_r(&date, &t); /* XXX gmtime_r() or localtime_r() ? */
 	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_list_store_set(phone->me_store, &iter,
 			PHONE_MESSAGE_COLUMN_ID, index,
@@ -1467,6 +1467,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 					phone->co_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->co_view),
 				FALSE);
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(phone->co_view),
+				TRUE);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("Name"),
 				renderer, "text", PHONE_CONTACT_COLUMN_NAME,
@@ -1601,6 +1603,8 @@ void phone_show_logs(Phone * phone, gboolean show)
 				GTK_SHADOW_ETCHED_IN);
 		phone->lo_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->lo_store));
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(phone->lo_view),
+				TRUE);
 		g_signal_connect_swapped(G_OBJECT(phone->lo_view),
 				"row-activated", G_CALLBACK(
 					on_phone_logs_activated), phone);
@@ -1710,11 +1714,13 @@ void phone_show_messages(Phone * phone, gboolean show)
 				GTK_SHADOW_ETCHED_IN);
 		phone->me_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->me_store));
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
+				FALSE); /* XXX consider reverting this */
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(phone->me_view),
+				TRUE);
 		g_signal_connect_swapped(G_OBJECT(phone->me_view),
 				"row-activated", G_CALLBACK(
 					on_phone_messages_activated), phone);
-		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
-				FALSE); /* XXX consider reverting this */
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("To/From"),
 				renderer, "text",
@@ -2060,7 +2066,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 		gtk_label_set_text(GTK_LABEL(phone->re_name), name);
 	if(number != NULL)
 		gtk_label_set_text(GTK_LABEL(phone->re_number), number);
-	gmtime_r(&date, &t);
+	localtime_r(&date, &t); /* XXX gmtime_r() or localtime_r() ? */
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_label_set_text(GTK_LABEL(phone->re_date), buf);
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
@@ -2165,8 +2171,8 @@ void phone_show_system(Phone * phone, gboolean show)
 #endif
 	gtk_window_set_title(GTK_WINDOW(phone->sy_window),
 			_("System preferences"));
-	g_signal_connect(G_OBJECT(phone->sy_window), "delete-event", G_CALLBACK(
-				_on_system_closex), phone->sy_window);
+	g_signal_connect_swapped(G_OBJECT(phone->sy_window), "delete-event",
+			G_CALLBACK(_on_system_closex), phone);
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Phone device:"));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -2505,7 +2511,7 @@ static int _phone_call_number(Phone * phone, char const * number)
 	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, "", number);
 	gtk_list_store_append(phone->lo_store, &iter);
 	date = time(NULL);
-	gmtime_r(&date, &t);
+	localtime_r(&date, &t);
 	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_list_store_set(phone->lo_store, &iter,
 			PHONE_LOGS_COLUMN_CALL_TYPE, PHONE_CALL_TYPE_OUTGOING,
@@ -2972,6 +2978,7 @@ static void _on_contacts_dialog_response(GtkWidget * widget, gint response,
 	name = gtk_entry_get_text(GTK_ENTRY(phone->co_name));
 	number = gtk_entry_get_text(GTK_ENTRY(phone->co_number));
 	if(phone->co_index < 0)
+		/* FIXME check if name/number is empty */
 		gsm_contact_new(phone->gsm, name, number);
 	else
 		gsm_contact_edit(phone->gsm, phone->co_index, name, number);

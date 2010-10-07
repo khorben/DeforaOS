@@ -330,6 +330,7 @@ static void _smscrypt_settings(PhonePlugin * plugin)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	smscrypt->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				smscrypt->store));
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(smscrypt->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(

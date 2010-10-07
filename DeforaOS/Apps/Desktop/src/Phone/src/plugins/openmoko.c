@@ -13,6 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
+ * - add an icon
+ * - implement a configuration menu for deep sleep
+ * - register a handler for deep sleep (just to avoid unknown errors)
  * - implement notification lights */
 
 
