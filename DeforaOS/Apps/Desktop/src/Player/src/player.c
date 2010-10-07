@@ -615,8 +615,13 @@ static void _new_column_text(GtkWidget * view, char const * title, int id)
 	GtkCellRenderer * renderer;
 
 	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
 	column = gtk_tree_view_column_new_with_attributes(title, renderer,
 			"text", id, NULL);
+#if GTK_CHECK_VERSION(2, 4, 0)
+	gtk_tree_view_column_set_expand(column, TRUE);
+#endif
+	gtk_tree_view_column_set_resizable(column, TRUE);
 	gtk_tree_view_column_set_sort_column_id(column, id);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 }
