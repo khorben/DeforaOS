@@ -36,7 +36,8 @@ struct _Panel
 {
 	Config * config;
 
-	PanelPosition position;
+	PanelPrefs prefs;
+
 	gint height;
 
 	gint icon_width;
@@ -85,14 +86,16 @@ static int _panel_helper_shutdown_dialog(void);
 /* public */
 /* panel_new */
 static int _new_config(Panel * panel);
+static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user);
 static void _new_strut(Panel * panel, GdkRectangle * rect);
 static gboolean _on_idle(gpointer data);
 static gboolean _idle_load(Panel * panel, char const * plugins);
 static gboolean _on_closex(void);
 
-Panel * panel_new(PanelPrefs * prefs)
+Panel * panel_new(PanelPrefs const * prefs)
 {
 	Panel * panel;
+	char const * p = NULL;
 	GdkScreen * screen;
 	GdkRectangle rect;
 
@@ -107,12 +110,32 @@ Panel * panel_new(PanelPrefs * prefs)
 		panel_delete(panel);
 		return NULL;
 	}
-	panel->position = prefs->position;
+	_new_prefs(&panel->prefs, prefs);
+	prefs = &panel->prefs;
 	panel->icon_width = 48;
 	panel->icon_height = 48;
-	if(prefs->iconsize != PANEL_ICON_SIZE_SMALL
-			&& prefs->iconsize != PANEL_ICON_SIZE_SMALLER)
-		prefs->iconsize = PANEL_ICON_SIZE_LARGE;
+	switch(prefs->iconsize)
+	{
+		case PANEL_ICON_SIZE_LARGE:
+		case PANEL_ICON_SIZE_SMALL:
+		case PANEL_ICON_SIZE_SMALLER:
+			break;
+		case PANEL_ICON_SIZE_UNSET:
+		default:
+			if(prefs->position == PANEL_POSITION_TOP)
+				p = "top_size";
+			else if(prefs->position == PANEL_POSITION_BOTTOM)
+				p = "bottom_size";
+			if(p == NULL || (p = config_get(panel->config, NULL, p))
+					== NULL)
+				p = config_get(panel->config, NULL, "size");
+			if(p != NULL)
+				panel->prefs.iconsize = gtk_icon_size_from_name(
+						p);
+			if(prefs->iconsize == GTK_ICON_SIZE_INVALID)
+				panel->prefs.iconsize = PANEL_ICON_SIZE_DEFAULT;
+			break;
+	}
 	if(gtk_icon_size_lookup(prefs->iconsize, &panel->icon_width,
 			&panel->icon_height) != TRUE)
 		error_set_print(PACKAGE, 0, _("Invalid panel size"));
@@ -132,8 +155,8 @@ Panel * panel_new(PanelPrefs * prefs)
 	/* root window */
 	screen = gdk_screen_get_default();
 	panel->root = gdk_screen_get_root_window(screen);
-	if(prefs != NULL && prefs->monitor > 0
-			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
+	if(prefs->monitor > 0 && prefs->monitor < gdk_screen_get_n_monitors(
+				screen))
 		gdk_screen_get_monitor_geometry(screen, prefs->monitor, &rect);
 	else
 		gdk_screen_get_monitor_geometry(screen, 0, &rect);
@@ -192,6 +215,36 @@ static int _new_config(Panel * panel)
 	return 0;
 }
 
+static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
+{
+	struct
+	{
+		char const * alias;
+		GtkIconSize iconsize;
+	} aliases[] =
+	{
+		{ "large",	PANEL_ICON_SIZE_LARGE },
+		{ "small",	PANEL_ICON_SIZE_SMALL },
+		{ "smaller",	PANEL_ICON_SIZE_SMALLER },
+		{ NULL,		PANEL_ICON_SIZE_UNSET }
+	};
+	size_t i;
+
+	for(i = 0; aliases[i].alias != NULL; i++)
+		if(gtk_icon_size_from_name(aliases[i].alias)
+				== GTK_ICON_SIZE_INVALID)
+			gtk_icon_size_register_alias(aliases[i].alias,
+					aliases[i].iconsize);
+	if(user != NULL)
+	{
+		memcpy(prefs, user, sizeof(*prefs));
+		return;
+	}
+	prefs->iconsize = PANEL_ICON_SIZE_DEFAULT;
+	prefs->monitor = -1;
+	prefs->position = PANEL_POSITION_DEFAULT;
+}
+
 static void _new_strut(Panel * panel, GdkRectangle * rect)
 {
 	GdkWindow * window;
@@ -206,7 +259,7 @@ static void _new_strut(Panel * panel, GdkRectangle * rect)
 #endif
 	cardinal = gdk_atom_intern("CARDINAL", FALSE);
 	memset(strut, 0, sizeof(strut));
-	if(panel->position == PANEL_POSITION_TOP)
+	if(panel->prefs.position == PANEL_POSITION_TOP)
 	{
 		strut[2] = panel->height;
 		strut[8] = rect->x;
@@ -241,7 +294,7 @@ static gboolean _on_idle(gpointer data)
 	char const * p;
 	size_t i;
 
-	p = config_get(panel->config, NULL, (panel->position
+	p = config_get(panel->config, NULL, (panel->prefs.position
 				== PANEL_POSITION_TOP) ? "top" : "bottom");
 	if(p != NULL || (p = config_get(panel->config, NULL, "plugins"))
 			!= NULL)
@@ -530,7 +583,7 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		return;
 	*x = (req.width < panel->root_width - PANEL_BORDER_WIDTH)
 		? PANEL_BORDER_WIDTH : 0;
-	if(panel->position == PANEL_POSITION_TOP)
+	if(panel->prefs.position == PANEL_POSITION_TOP)
 		*y = panel->height;
 	else
 		*y = panel->root_height - panel->height - req.height;

@@ -30,6 +30,7 @@ typedef enum _PanelPosition
 	PANEL_POSITION_BOTTOM,
 	PANEL_POSITION_TOP
 } PanelPosition;
+# define PANEL_POSITION_DEFAULT PANEL_POSITION_BOTTOM
 
 typedef struct _PanelPrefs
 {
@@ -41,13 +42,15 @@ typedef struct _PanelPrefs
 
 /* constants */
 #define PANEL_BORDER_WIDTH	4
+#define PANEL_ICON_SIZE_DEFAULT	GTK_ICON_SIZE_LARGE_TOOLBAR
+#define PANEL_ICON_SIZE_UNSET	GTK_ICON_SIZE_INVALID
 #define PANEL_ICON_SIZE_SMALL	GTK_ICON_SIZE_SMALL_TOOLBAR
 #define PANEL_ICON_SIZE_SMALLER	GTK_ICON_SIZE_MENU
 #define PANEL_ICON_SIZE_LARGE	GTK_ICON_SIZE_LARGE_TOOLBAR
 
 
 /* functions */
-Panel * panel_new(PanelPrefs * prefs);
+Panel * panel_new(PanelPrefs const * prefs);
 void panel_delete(Panel * panel);
 
 /* useful */

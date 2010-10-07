@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	memset(&prefs, 0, sizeof(prefs));
-	prefs.iconsize = PANEL_ICON_SIZE_LARGE;
+	prefs.iconsize = PANEL_ICON_SIZE_UNSET;
 	prefs.position = PANEL_POSITION_BOTH;
 	while((o = getopt(argc, argv, "bBm:sStx")) != -1)
 		switch(o)
