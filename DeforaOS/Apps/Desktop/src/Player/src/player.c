@@ -486,6 +486,7 @@ Player * player_new(void)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	player->pl_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				player->pl_store));
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(player->pl_view), TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(player->pl_view),
 			gtk_tree_view_column_new_with_attributes("",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
