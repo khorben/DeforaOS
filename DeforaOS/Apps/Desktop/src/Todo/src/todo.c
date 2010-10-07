@@ -308,6 +308,7 @@ static void _new_view(Todo * todo)
 	todo->filter_sort = gtk_tree_model_sort_new_with_model(todo->filter);
 	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				todo->filter_sort));
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(todo->view), TRUE);
 	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
 			!= NULL)
 		gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
@@ -332,7 +333,7 @@ static void _new_view(Todo * todo)
 		if(_todo_columns[i].callback != NULL)
 		{
 			g_object_set(G_OBJECT(renderer), "editable", TRUE,
-					NULL);
+					"ellipsize", PANGO_ELLIPSIZE_END, NULL);
 			g_signal_connect(G_OBJECT(renderer), "edited",
 					G_CALLBACK(_todo_columns[i].callback),
 					todo);
@@ -340,19 +341,27 @@ static void _new_view(Todo * todo)
 		column = gtk_tree_view_column_new_with_attributes(
 				_(_todo_columns[i].title), renderer, "text",
 				_todo_columns[i].col, NULL);
+#if GTK_CHECK_VERSION(2, 4, 0)
+		gtk_tree_view_column_set_expand(column, TRUE);
+#endif
+		gtk_tree_view_column_set_resizable(column, TRUE);
 		gtk_tree_view_column_set_sort_column_id(column,
 				_todo_columns[i].sort);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(todo->view), column);
 	}
 	/* priority column */
 	renderer = gtk_cell_renderer_combo_new();
-	g_object_set(renderer, "model", todo->priorities,
-			"text-column", 1,
+	g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_END,
+			"model", todo->priorities, "text-column", 1,
 			"editable", TRUE, NULL);
 	g_signal_connect(renderer, "edited", G_CALLBACK(
 				on_task_priority_edited), todo);
 	column = gtk_tree_view_column_new_with_attributes(_("Priority"),
 			renderer, "text", TD_COL_DISPLAY_PRIORITY, NULL);
+#if GTK_CHECK_VERSION(2, 4, 0)
+	gtk_tree_view_column_set_expand(column, TRUE);
+#endif
+	gtk_tree_view_column_set_resizable(column, TRUE);
 	gtk_tree_view_column_set_sort_column_id(column, TD_COL_PRIORITY);
 	gtk_container_add(GTK_CONTAINER(todo->scrolled), todo->view);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(todo->view), column);
