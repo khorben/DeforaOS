@@ -445,6 +445,7 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
+	gtk_tree_view_set_rules_hint(treeview, TRUE);
 	_headers_view_column_pixbuf(treeview, "", MH_COL_PIXBUF, MH_COL_READ);
 	_headers_view_column_text(treeview, _("Subject"), MH_COL_SUBJECT,
 			MH_COL_SUBJECT);
@@ -886,6 +887,7 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 				store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_accounts),
 			TRUE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(mailer->pr_accounts), TRUE);
 	renderer = gtk_cell_renderer_toggle_new();
 	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
 				_on_preferences_account_toggle), store);
