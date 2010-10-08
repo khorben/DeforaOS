@@ -318,11 +318,6 @@ void on_edit_preferences(gpointer data)
 				_preferences_on_cancel), browser);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-	/* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
 	_preferences_set(browser);
 	gtk_widget_show_all(browser->pr_window);
