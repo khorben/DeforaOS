@@ -122,12 +122,12 @@ void on_file_new_window(gpointer data)
 
 void on_file_new_folder(gpointer data)
 {
-	static char const newfolder[] = "New folder";
+	char const * newfolder = _("New folder");
 	Browser * browser = data;
 	char const * cur = browser->current->data;
 	char * path;
 
-	if((path = malloc(strlen(cur) + sizeof(newfolder) + 1)) == NULL)
+	if((path = malloc(strlen(cur) + strlen(newfolder) + 2)) == NULL)
 	{
 		browser_error(browser, "malloc", 0);
 		return;

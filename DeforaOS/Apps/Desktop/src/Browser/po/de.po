@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-23 15:36+0200\n"
+"POT-Creation-Date: 2010-10-08 13:08+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -28,7 +28,7 @@ msgstr "Neu _Ordner"
 msgid "New _symbolic link..."
 msgstr ""
 
-#: ../src/browser.c:70 ../src/browser.c:676
+#: ../src/browser.c:70 ../src/browser.c:682
 msgid "Open file..."
 msgstr "Offnen..."
 
@@ -40,183 +40,223 @@ msgstr "_Eigenschaften"
 msgid "_Close"
 msgstr "_Schliessen"
 
-#: ../src/browser.c:125 ../src/browser.c:127 ../src/view.c:121
+#: ../src/browser.c:83
+msgid "_Cut"
+msgstr ""
+
+#: ../src/browser.c:85
+msgid "Cop_y"
+msgstr ""
+
+#: ../src/browser.c:87
+msgid "_Paste"
+msgstr ""
+
+#: ../src/browser.c:90
+msgid "_Delete"
+msgstr ""
+
+#: ../src/browser.c:92
+msgid "_Select all"
+msgstr ""
+
+#: ../src/browser.c:99
+msgid "_Unselect all"
+msgstr ""
+
+#: ../src/browser.c:101
+msgid "_Preferences"
+msgstr "_Einstellungen"
+
+#: ../src/browser.c:126 ../src/browser.c:128 ../src/view.c:121
 #: ../src/view.c:123
 msgid "_About"
 msgstr "_Info"
 
-#: ../src/browser.c:134 ../src/view.c:130 ../src/view.c:137
+#: ../src/browser.c:135 ../src/view.c:130 ../src/view.c:137
 msgid "_File"
 msgstr "_Datei"
 
-#: ../src/browser.c:135 ../src/desktopicon.c:678
+#: ../src/browser.c:136 ../src/desktopicon.c:678
 msgid "_Edit"
 msgstr ""
 
-#: ../src/browser.c:136
+#: ../src/browser.c:137
 msgid "_View"
 msgstr ""
 
-#: ../src/browser.c:137 ../src/view.c:131 ../src/view.c:138
+#: ../src/browser.c:138 ../src/view.c:131 ../src/view.c:138
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:255
+#: ../src/browser.c:257
 msgid "File browser"
 msgstr ""
 
-#: ../src/browser.c:274
+#: ../src/browser.c:276
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:278 ../src/callbacks.c:273
+#: ../src/browser.c:280 ../src/callbacks.c:282
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:285 ../src/callbacks.c:274
+#: ../src/browser.c:287 ../src/callbacks.c:283
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:289 ../src/callbacks.c:275
+#: ../src/browser.c:291 ../src/callbacks.c:284
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:293 ../src/callbacks.c:276
+#: ../src/browser.c:295 ../src/callbacks.c:285
 msgid "Thumbnails"
 msgstr ""
 
-#: ../src/browser.c:314
+#: ../src/browser.c:316
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:541 ../src/browser.c:546 ../src/copy.c:203
+#: ../src/browser.c:543 ../src/browser.c:548 ../src/copy.c:203
 #: ../src/delete.c:126 ../src/delete.c:129 ../src/desktop.c:1441
 #: ../src/desktop.c:1446 ../src/move.c:130 ../src/properties.c:108
 #: ../src/properties.c:116 ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/browser.c:698 ../src/desktopicon.c:812 ../src/view.c:144
+#: ../src/browser.c:704 ../src/desktopicon.c:812 ../src/view.c:144
 #: ../src/view.c:415
 msgid "Open with..."
 msgstr "Offnen mit..."
 
-#: ../src/browser.c:810
+#: ../src/browser.c:816
 #, c-format
 msgid "%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1423
+#: ../src/browser.c:1429
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1425
+#: ../src/browser.c:1431
 msgid "Size"
 msgstr "Größe"
 
-#: ../src/browser.c:1427
+#: ../src/browser.c:1433
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1429
+#: ../src/browser.c:1435
 msgid "Group"
 msgstr "Gruppe"
 
-#: ../src/browser.c:1431
+#: ../src/browser.c:1437
 msgid "Date"
 msgstr "Datum"
 
-#: ../src/browser.c:1433
+#: ../src/browser.c:1439
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1708
+#: ../src/browser.c:1718
 msgid "Refreshing folder..."
 msgstr "Aktualisierung..."
 
-#: ../src/callbacks.c:197 ../src/callbacks.c:202 ../src/callbacks.c:1327
-#: ../src/callbacks.c:1330 ../src/desktopicon.c:794 ../src/desktopicon.c:799
+#: ../src/callbacks.c:125 ../src/desktop.c:425
+msgid "New folder"
+msgstr "Neu Ordner"
+
+#: ../src/callbacks.c:202 ../src/callbacks.c:207 ../src/callbacks.c:1350
+#: ../src/callbacks.c:1353 ../src/desktopicon.c:794 ../src/desktopicon.c:799
 #: ../src/desktopicon.c:846 ../src/desktopicon.c:851
 msgid "Warning"
 msgstr "Achtung"
 
-#: ../src/callbacks.c:200 ../src/desktopicon.c:849
+#: ../src/callbacks.c:205 ../src/desktopicon.c:849
 msgid "Are you sure you want to delete "
 msgstr ""
 
-#: ../src/callbacks.c:201 ../src/desktopicon.c:850
+#: ../src/callbacks.c:206 ../src/desktopicon.c:850
 msgid " file(s)?"
 msgstr ""
 
-#: ../src/callbacks.c:261
+#: ../src/callbacks.c:268
 msgid "File browser preferences"
 msgstr "File browser Einstellungen"
 
-#: ../src/callbacks.c:269
+#: ../src/callbacks.c:278
 msgid "Default view:"
 msgstr ""
 
-#: ../src/callbacks.c:282
+#: ../src/callbacks.c:291
+msgid "_Alternate rows in detailed view"
+msgstr ""
+
+#: ../src/callbacks.c:295
 msgid "_Confirm before deletion"
 msgstr "_Bestätigen vor löschung"
 
-#: ../src/callbacks.c:285
+#: ../src/callbacks.c:298
 msgid "Sort _folders first"
 msgstr "List _Ordner zuerst"
 
-#: ../src/callbacks.c:288
+#: ../src/callbacks.c:301
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/callbacks.c:460 ../src/view.c:502
+#: ../src/callbacks.c:304
+msgid "_Appearance"
+msgstr ""
+
+#: ../src/callbacks.c:483 ../src/view.c:502
 msgid "About Browser"
 msgstr "Info zu Browser"
 
-#: ../src/callbacks.c:471 ../src/view.c:513
+#: ../src/callbacks.c:494 ../src/view.c:513
 msgid "C_redits"
 msgstr "_Mitwirkende"
 
-#: ../src/callbacks.c:475 ../src/view.c:517
+#: ../src/callbacks.c:498 ../src/view.c:517
 msgid "_License"
 msgstr "_Lizenz"
 
-#: ../src/callbacks.c:524 ../src/view.c:567
+#: ../src/callbacks.c:547 ../src/view.c:567
 msgid "Credits"
 msgstr "Mitwirkende"
 
-#: ../src/callbacks.c:547 ../src/view.c:590
+#: ../src/callbacks.c:570 ../src/view.c:590
 msgid "Written by"
 msgstr "Programm von"
 
-#: ../src/callbacks.c:576 ../src/view.c:619
+#: ../src/callbacks.c:599 ../src/view.c:619
 msgid "License"
 msgstr "Lizenz"
 
-#: ../src/callbacks.c:1062
+#: ../src/callbacks.c:1085
 msgid "New"
 msgstr "Neu"
 
-#: ../src/callbacks.c:1067 ../src/callbacks.c:1071 ../src/desktop.c:333
+#: ../src/callbacks.c:1090 ../src/callbacks.c:1094 ../src/desktop.c:333
 msgid "Folder"
 msgstr "Ordner"
 
-#: ../src/callbacks.c:1078 ../src/desktop.c:341
+#: ../src/callbacks.c:1101 ../src/desktop.c:341
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:1082 ../src/desktop.c:345
+#: ../src/callbacks.c:1105 ../src/desktop.c:345
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:1162
+#: ../src/callbacks.c:1185
 msgid "Open in new _window"
 msgstr "Offnen in neue Fenster"
 
-#: ../src/callbacks.c:1190
+#: ../src/callbacks.c:1213
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1225 ../src/desktopicon.c:691
+#: ../src/callbacks.c:1248 ../src/desktopicon.c:691
 msgid "Open _with..."
 msgstr "Offnen _mit..."
 
@@ -336,10 +376,6 @@ msgid ""
 "  -R\tRemove file hierarchies\n"
 "  -r\tEquivalent to -R\n"
 msgstr ""
-
-#: ../src/desktop.c:425
-msgid "New folder"
-msgstr "Neu Ordner"
 
 #: ../src/desktop.c:444
 msgid "New text file.txt"
