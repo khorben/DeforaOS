@@ -222,6 +222,7 @@ Browser * browser_new(char const * directory)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->prefs.default_view = BV_ICONS;
 #endif
+	browser->prefs.alternate_rows = TRUE;
 	browser->prefs.confirm_before_delete = TRUE;
 	browser->prefs.sort_folders_first = TRUE;
 	browser->prefs.show_hidden_files = FALSE;
@@ -605,6 +606,8 @@ int browser_config_load(Browser * browser)
 		free(p);
 	}
 #endif
+	_config_load_boolean(browser->config, "alternate_rows",
+			&browser->prefs.alternate_rows);
 	_config_load_boolean(browser->config, "confirm_before_delete",
 			&browser->prefs.confirm_before_delete);
 	_config_load_boolean(browser->config, "sort_folders_first",
@@ -635,6 +638,8 @@ int browser_config_save(Browser * browser)
 		ret |= config_set(browser->config, NULL, "default_view",
 				str[browser->prefs.default_view]);
 #endif
+	ret |= _config_save_boolean(browser->config, "alternate_rows",
+			browser->prefs.alternate_rows);
 	ret |= _config_save_boolean(browser->config, "confirm_before_delete",
 			browser->prefs.confirm_before_delete);
 	ret |= _config_save_boolean(browser->config, "sort_folders_first",
@@ -1397,6 +1402,7 @@ static void _view_details(Browser * browser)
 	browser->detailview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
 	view = GTK_TREE_VIEW(browser->detailview);
+	gtk_tree_view_set_rules_hint(view, browser->prefs.alternate_rows);
 	if((treesel = gtk_tree_view_get_selection(view)) != NULL)
 	{
 		gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);

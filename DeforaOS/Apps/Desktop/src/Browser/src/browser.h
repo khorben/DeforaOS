@@ -79,6 +79,7 @@ typedef struct _BrowserPrefs
 # if GTK_CHECK_VERSION(2, 6, 0)
 	int default_view;
 # endif
+	gboolean alternate_rows;
 	gboolean confirm_before_delete;
 	gboolean sort_folders_first;
 	gboolean show_hidden_files;
@@ -139,6 +140,7 @@ typedef struct _Browser
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GtkWidget * pr_view;
 #endif
+	GtkWidget * pr_alternate;
 	GtkWidget * pr_confirm;
 	GtkWidget * pr_sort;
 	GtkWidget * pr_hidden;

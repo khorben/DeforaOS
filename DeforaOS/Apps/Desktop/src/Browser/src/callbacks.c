@@ -252,6 +252,7 @@ void on_edit_preferences(gpointer data)
 	Browser * browser = data;
 	GtkWidget * widget;
 	GtkWidget * vbox;
+	GtkWidget * notebook;
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
 
@@ -261,6 +262,7 @@ void on_edit_preferences(gpointer data)
 		return;
 	}
 	browser->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(browser->pr_window), 4);
 	gtk_window_set_resizable(GTK_WINDOW(browser->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(browser->pr_window),
 			_("File browser preferences"));
@@ -268,11 +270,13 @@ void on_edit_preferences(gpointer data)
 				browser->window));
 	g_signal_connect_swapped(G_OBJECT(browser->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
-	vbox = gtk_vbox_new(FALSE, 0);
+	notebook = gtk_notebook_new();
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Default view:"));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_combo_box_new_text();
 	browser->pr_view = widget;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Details"));
@@ -280,37 +284,45 @@ void on_edit_preferences(gpointer data)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("List"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Thumbnails"));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 1);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 #endif
+	browser->pr_alternate = gtk_check_button_new_with_mnemonic(
+			_("_Alternate rows in detailed view"));
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_alternate, FALSE, FALSE,
+			0);
 	browser->pr_confirm = gtk_check_button_new_with_mnemonic(
 			_("_Confirm before deletion"));
-	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_confirm, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_confirm, FALSE, FALSE, 0);
 	browser->pr_sort = gtk_check_button_new_with_mnemonic(
 			_("Sort _folders first"));
-	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_sort, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_sort, FALSE, FALSE, 0);
 	browser->pr_hidden = gtk_check_button_new_with_mnemonic(
 			_("Show _hidden files"));
-	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
+			gtk_label_new_with_mnemonic(_("_Appearance")));
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	/* dialog */
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_ok), browser);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), browser);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	/* separator */
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
 	_preferences_set(browser);
 	gtk_widget_show_all(browser->pr_window);
@@ -322,6 +334,8 @@ static void _preferences_set(Browser * browser)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(browser->pr_view),
 			browser->prefs.default_view);
 #endif
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_alternate),
+			browser->prefs.alternate_rows);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_confirm),
 			browser->prefs.confirm_before_delete);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_sort),
@@ -355,6 +369,10 @@ static void _preferences_on_ok(gpointer data)
 	browser->prefs.default_view = gtk_combo_box_get_active(GTK_COMBO_BOX(
 				browser->pr_view));
 #endif
+	browser->prefs.alternate_rows = gtk_toggle_button_get_active(
+			GTK_TOGGLE_BUTTON(browser->pr_alternate));
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(browser->detailview),
+			browser->prefs.alternate_rows);
 	browser->prefs.confirm_before_delete = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_confirm));
 	browser->prefs.sort_folders_first = gtk_toggle_button_get_active(
