@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-08 13:08+0200\n"
+"POT-Creation-Date: 2010-10-09 05:36+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -166,8 +166,8 @@ msgstr "Aktualisierung..."
 msgid "New folder"
 msgstr "Neu Ordner"
 
-#: ../src/callbacks.c:202 ../src/callbacks.c:207 ../src/callbacks.c:1350
-#: ../src/callbacks.c:1353 ../src/desktopicon.c:794 ../src/desktopicon.c:799
+#: ../src/callbacks.c:202 ../src/callbacks.c:207 ../src/callbacks.c:1345
+#: ../src/callbacks.c:1348 ../src/desktopicon.c:794 ../src/desktopicon.c:799
 #: ../src/desktopicon.c:846 ../src/desktopicon.c:851
 msgid "Warning"
 msgstr "Achtung"
@@ -208,55 +208,55 @@ msgstr ""
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/callbacks.c:483 ../src/view.c:502
+#: ../src/callbacks.c:478 ../src/view.c:502
 msgid "About Browser"
 msgstr "Info zu Browser"
 
-#: ../src/callbacks.c:494 ../src/view.c:513
+#: ../src/callbacks.c:489 ../src/view.c:513
 msgid "C_redits"
 msgstr "_Mitwirkende"
 
-#: ../src/callbacks.c:498 ../src/view.c:517
+#: ../src/callbacks.c:493 ../src/view.c:517
 msgid "_License"
 msgstr "_Lizenz"
 
-#: ../src/callbacks.c:547 ../src/view.c:567
+#: ../src/callbacks.c:542 ../src/view.c:567
 msgid "Credits"
 msgstr "Mitwirkende"
 
-#: ../src/callbacks.c:570 ../src/view.c:590
+#: ../src/callbacks.c:565 ../src/view.c:590
 msgid "Written by"
 msgstr "Programm von"
 
-#: ../src/callbacks.c:599 ../src/view.c:619
+#: ../src/callbacks.c:594 ../src/view.c:619
 msgid "License"
 msgstr "Lizenz"
 
-#: ../src/callbacks.c:1085
+#: ../src/callbacks.c:1080
 msgid "New"
 msgstr "Neu"
 
-#: ../src/callbacks.c:1090 ../src/callbacks.c:1094 ../src/desktop.c:333
+#: ../src/callbacks.c:1085 ../src/callbacks.c:1089 ../src/desktop.c:333
 msgid "Folder"
 msgstr "Ordner"
 
-#: ../src/callbacks.c:1101 ../src/desktop.c:341
+#: ../src/callbacks.c:1096 ../src/desktop.c:341
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:1105 ../src/desktop.c:345
+#: ../src/callbacks.c:1100 ../src/desktop.c:345
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:1185
+#: ../src/callbacks.c:1180
 msgid "Open in new _window"
 msgstr "Offnen in neue Fenster"
 
-#: ../src/callbacks.c:1213
+#: ../src/callbacks.c:1208
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1248 ../src/desktopicon.c:691
+#: ../src/callbacks.c:1243 ../src/desktopicon.c:691
 msgid "Open _with..."
 msgstr "Offnen _mit..."
 

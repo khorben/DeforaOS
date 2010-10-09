@@ -1,5 +1,5 @@
 PACKAGE="Browser"
-VERSION="0.3.1"
+VERSION="0.3.2"
 
 PREFIX="/usr/local"
 LIBDIR="${PREFIX}/lib"

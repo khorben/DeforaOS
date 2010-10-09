@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-08 13:08+0200\n"
+"POT-Creation-Date: 2010-10-09 05:36+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -166,8 +166,8 @@ msgstr "Actualisation du dossier..."
 msgid "New folder"
 msgstr "Nouveau dossier"
 
-#: ../src/callbacks.c:202 ../src/callbacks.c:207 ../src/callbacks.c:1350
-#: ../src/callbacks.c:1353 ../src/desktopicon.c:794 ../src/desktopicon.c:799
+#: ../src/callbacks.c:202 ../src/callbacks.c:207 ../src/callbacks.c:1345
+#: ../src/callbacks.c:1348 ../src/desktopicon.c:794 ../src/desktopicon.c:799
 #: ../src/desktopicon.c:846 ../src/desktopicon.c:851
 msgid "Warning"
 msgstr "Avertissement"
@@ -190,7 +190,7 @@ msgstr "Vue par défaut:"
 
 #: ../src/callbacks.c:291
 msgid "_Alternate rows in detailed view"
-msgstr ""
+msgstr "_Alterner les couleurs dans la vue détaillée"
 
 #: ../src/callbacks.c:295
 msgid "_Confirm before deletion"
@@ -208,55 +208,55 @@ msgstr "Afficher les fichiers cac_hés"
 msgid "_Appearance"
 msgstr "_Apparence"
 
-#: ../src/callbacks.c:483 ../src/view.c:502
+#: ../src/callbacks.c:478 ../src/view.c:502
 msgid "About Browser"
 msgstr "À propos de Browser"
 
-#: ../src/callbacks.c:494 ../src/view.c:513
+#: ../src/callbacks.c:489 ../src/view.c:513
 msgid "C_redits"
 msgstr "C_rédits"
 
-#: ../src/callbacks.c:498 ../src/view.c:517
+#: ../src/callbacks.c:493 ../src/view.c:517
 msgid "_License"
 msgstr "_Licence"
 
-#: ../src/callbacks.c:547 ../src/view.c:567
+#: ../src/callbacks.c:542 ../src/view.c:567
 msgid "Credits"
 msgstr "Crédits"
 
-#: ../src/callbacks.c:570 ../src/view.c:590
+#: ../src/callbacks.c:565 ../src/view.c:590
 msgid "Written by"
 msgstr "Écrit par"
 
-#: ../src/callbacks.c:599 ../src/view.c:619
+#: ../src/callbacks.c:594 ../src/view.c:619
 msgid "License"
 msgstr "Licence"
 
-#: ../src/callbacks.c:1085
+#: ../src/callbacks.c:1080
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/callbacks.c:1090 ../src/callbacks.c:1094 ../src/desktop.c:333
+#: ../src/callbacks.c:1085 ../src/callbacks.c:1089 ../src/desktop.c:333
 msgid "Folder"
 msgstr "Dossier"
 
-#: ../src/callbacks.c:1101 ../src/desktop.c:341
+#: ../src/callbacks.c:1096 ../src/desktop.c:341
 msgid "Symbolic link..."
 msgstr "Lien symbolique..."
 
-#: ../src/callbacks.c:1105 ../src/desktop.c:345
+#: ../src/callbacks.c:1100 ../src/desktop.c:345
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:1185
+#: ../src/callbacks.c:1180
 msgid "Open in new _window"
 msgstr "Ouvrir dans une _nouvelle fenêtre"
 
-#: ../src/callbacks.c:1213
+#: ../src/callbacks.c:1208
 msgid "_Unmount"
 msgstr "Démonter"
 
-#: ../src/callbacks.c:1248 ../src/desktopicon.c:691
+#: ../src/callbacks.c:1243 ../src/desktopicon.c:691
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
 
@@ -415,15 +415,15 @@ msgstr "Arrière-plan"
 
 #: ../src/desktop.c:523
 msgid "Scaled"
-msgstr ""
+msgstr "Étiré"
 
 #: ../src/desktop.c:525
 msgid "Scaled (keep ratio)"
-msgstr ""
+msgstr "Étiré (sans déformer)"
 
 #: ../src/desktop.c:527
 msgid "Tiled"
-msgstr ""
+msgstr "Mosaïque"
 
 #: ../src/desktop.c:533
 msgid "Appearance"
