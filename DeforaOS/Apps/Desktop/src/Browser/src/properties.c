@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - use a GtkDialog instead (automatic separator)
  * - ellipsize text
  * - add a file count and disk usage tab for directories */
 
@@ -157,7 +156,6 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	struct stat dirst;
 	GdkPixbuf * pixbuf = NULL;
 	GtkWidget * image = NULL;
-	GtkWidget * window;
 	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -236,18 +234,20 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 					GTK_STOCK_MISSING_IMAGE,
 					GTK_ICON_SIZE_DIALOG);
 	}
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	if(properties != NULL)
-		properties->window = window;
+	properties->window = gtk_dialog_new();
 	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
 				gfilename));
-	gtk_window_set_title(GTK_WINDOW(window), buf);
-	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_properties_on_closex), NULL);
-	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_window_set_title(GTK_WINDOW(properties->window), buf);
+	gtk_window_set_resizable(GTK_WINDOW(properties->window), FALSE);
+	g_signal_connect(G_OBJECT(properties->window), "delete-event",
+			G_CALLBACK(_properties_on_closex), NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(properties->window));
+#else
+	vbox = GTK_DIALOG(properties->window)->vbox;
+#endif
 	table = gtk_table_new(12, 2, FALSE);
+	gtk_container_set_border_width(GTK_CONTAINER(table), 4);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
 	gtk_table_attach_defaults(GTK_TABLE(table), image, 0, 1, 0, 2);
@@ -325,13 +325,12 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
 	gtk_box_pack_start(GTK_BOX(vbox), table, TRUE, TRUE, 0);
-	/* separator */
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* button box */
-	bbox = gtk_hbutton_box_new();
-	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	bbox = gtk_dialog_get_action_area(GTK_DIALOG(properties->window));
+#else
+	bbox = GTK_DIALOG(properties->window)->action_area;
+#endif
 	if(properties != NULL)
 	{
 		widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
@@ -347,8 +346,6 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_properties_on_close), NULL);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
-	gtk_box_pack_start(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(window), vbox);
 	pango_font_description_free(bold);
 	free(gfilename);
 	if(_properties_refresh(properties) != 0)
@@ -358,7 +355,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		free(properties);
 		return 1;
 	}
-	gtk_widget_show_all(window);
+	gtk_widget_show_all(properties->window);
 	return 0;
 }
 
