@@ -5,6 +5,7 @@
 
 #variables
 [ -z "$LD"	] && LD="$CC -shared -nostdlib"
+[ -z "$LN"	] && LN="ln -f"
 [ -z "$MKFS"	] && MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
 
 
@@ -30,10 +31,15 @@ _image_ramdisk()
 
 	echo
 	echo -n "Fixing installation paths:"
-	for i in /lib/libc.so /bin/sh; do
-		echo -n " $i"
-		$MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"		|| exit 2
-	done
+	echo -n " /lib/libc.so"
+	$MV "$DESTDIR$PREFIX/lib/libc.so.0.0" "$DESTDIR/lib/libc.so.0.0" \
+								|| exit 2
+	$LN -s "libc.so.0.0" "$DESTDIR/lib/libc.so"		|| exit 2
+	$LN -s "libc.so.0.0" "$DESTDIR/lib/libc.so.0"		|| exit 2
+	$LN -s "/lib/libc.so.0.0" "$DESTDIR$PREFIX/lib/libc.so.0.0" \
+								|| exit 2
+	echo -n " /bin/sh"
+	$MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"		|| exit 2
 	echo
 
 	if [ ! -x "$DESTDIR/sbin/init" ]; then
