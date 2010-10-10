@@ -12,6 +12,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - use a GtkDialog instead (automatic separator)
+ * - ellipsize text
+ * - add a file count and disk usage tab for directories */
 
 
 
@@ -49,14 +53,19 @@
 /* types */
 typedef struct _Properties
 {
-	char const * filename;
+	char * filename;
 	uid_t uid;
 	gid_t gid;
 
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * combo;
-	GtkWidget * check[9];
+	GtkWidget * owner;
+	GtkWidget * size;
+	GtkWidget * atime;
+	GtkWidget * mtime;
+	GtkWidget * ctime;
+	GtkWidget * mode[9];
 } Properties;
 
 
@@ -67,11 +76,13 @@ static unsigned int _properties_cnt = 0; /* XXX set as static in _properties */
 static int _properties_error(GtkWidget * window, char const * message, int ret);
 static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		char const * filename);
+static int _properties_refresh(Properties * properties);
 
 /* callbacks */
-static gboolean _properties_on_closex(GtkWidget * widget);
-static void _properties_on_close(GtkWidget * widget);
 static void _properties_on_apply(GtkWidget * widget, gpointer data);
+static void _properties_on_close(GtkWidget * widget);
+static gboolean _properties_on_closex(GtkWidget * widget);
+static void _properties_on_refresh(gpointer data);
 
 static int _properties(int filec, char * const filev[])
 {
@@ -95,7 +106,7 @@ static int _properties(int filec, char * const filev[])
 
 
 /* _properties_error */
-static void _error_response(GtkDialog * dialog, gint arg, gpointer data);
+static void _error_response(GtkWidget * widget, gint arg, gpointer data);
 
 static int _properties_error(GtkWidget * window, char const * message, int ret)
 {
@@ -103,49 +114,45 @@ static int _properties_error(GtkWidget * window, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(window != NULL ? GTK_WINDOW(window)
 			: NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-			"%s: %s", message,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			_("Error"));
+			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s: %s", message,
 #endif
-			strerror(errno));
+			"%s: %s", message, strerror(errno));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(window != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 					window));
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				_error_response), &_properties_cnt);
+				_error_response), (ret != 0)
+			? &_properties_cnt : NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }
 
-static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
+static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 {
 	unsigned int * cnt = data;
 
-	(*cnt)--;
-	if(*cnt == 0)
+	if(cnt == NULL)
+		gtk_widget_destroy(widget);
+	else if(--(*cnt) == 0)
 		gtk_main_quit();
 	else
-		gtk_widget_destroy(GTK_WIDGET(dialog));
+		gtk_widget_destroy(widget);
 }
 
+
 /* _properties_do */
-static char * _do_size(char * buf, size_t buf_cnt, size_t size);
-static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
-static char * _do_time(char * buf, size_t buf_cnt, time_t date);
 static GtkWidget * _do_groups(Properties * properties);
-static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode);
 
 static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		char const * filename)
 {
+	Properties * properties;
 	struct stat st;
-	Properties * properties = NULL;
-	char const * gfilename;
-	char * p;
+	char * gfilename;
 	char const * type = NULL;
 	struct stat dirst;
 	GdkPixbuf * pixbuf = NULL;
@@ -154,24 +161,29 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	size_t i;
+	GtkWidget * bbox;
 	GtkWidget * table;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
 
 	if(lstat(filename, &st) != 0)
-		return _properties_error(NULL, filename, 1);
-	if(access(filename, W_OK) == 0
-			&& (properties = malloc(sizeof(*properties))) != NULL)
+		return -_properties_error(NULL, filename, 1);
+	if((properties = malloc(sizeof(*properties))) == NULL)
+		return -_properties_error(NULL, "malloc", 1);
+	properties->filename = strdup(filename);
+	properties->uid = st.st_uid;
+	properties->gid = st.st_gid;
+	properties->combo = NULL;
+	if(properties->filename == NULL)
 	{
-		properties->filename = filename; /* no need to duplicate yet */
-		properties->uid = st.st_uid;
-		properties->gid = st.st_gid;
-		properties->combo = NULL;
+		/* XXX warn the user */
+		free(properties);
+		return -1;
 	}
 	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
 			== NULL)
-		gfilename = filename;
-	p = strdup(gfilename);
+		gfilename = strdup(filename); /* XXX may fail */
 	if(S_ISDIR(st.st_mode))
 	{
 		if(theme != NULL && (pixbuf = gtk_icon_theme_load_icon(theme,
@@ -182,7 +194,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 			image = gtk_image_new_from_stock(GTK_STOCK_DIRECTORY,
 					GTK_ICON_SIZE_DIALOG);
 		type = "inode/directory";
-		if(p != NULL && lstat(dirname(p), &dirst) == 0
+		if(gfilename != NULL && lstat(dirname(gfilename), &dirst) == 0
 				&& st.st_dev != dirst.st_dev)
 			type = "inode/mountpoint";
 	}
@@ -225,15 +237,16 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 					GTK_ICON_SIZE_DIALOG);
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	if(properties != NULL)
 		properties->window = window;
-	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(p));
+	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
+				gfilename));
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_properties_on_closex), NULL);
-	vbox = gtk_vbox_new(FALSE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 4);
 	table = gtk_table_new(12, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
@@ -249,13 +262,15 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_widget_modify_font(widget, bold);
 	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
-	widget = gtk_label_new(_do_size(buf, sizeof(buf), st.st_size));
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 2, 3);
+	properties->size = gtk_label_new("");
+	gtk_table_attach_defaults(GTK_TABLE(table), properties->size, 1, 2, 2,
+			3);
 	widget = gtk_label_new(_("Owner:")); /* owner name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
-	widget = gtk_label_new(_do_owner(buf, sizeof(buf), st.st_uid));
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 3, 4);
+	properties->owner = gtk_label_new("");
+	gtk_table_attach_defaults(GTK_TABLE(table), properties->owner, 1, 2, 3,
+			4);
 	widget = gtk_label_new(_("Group:")); /* group name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 4, 5);
@@ -267,98 +282,84 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	widget = gtk_label_new(_("Accessed:")); /* last access */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 5, 6);
-	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 5, 6);
+	properties->atime = gtk_label_new("");
+	gtk_table_attach_defaults(GTK_TABLE(table), properties->atime, 1, 2, 5,
+			6);
 	widget = gtk_label_new(_("Modified:")); /* last modification */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 6, 7);
-	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 6, 7);
+	properties->mtime = gtk_label_new("");
+	gtk_table_attach_defaults(GTK_TABLE(table), properties->mtime, 1, 2, 6,
+			7);
 	widget = gtk_label_new(_("Changed:")); /* last change */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 7, 8);
-	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 7, 8);
+	properties->ctime = gtk_label_new("");
+	gtk_table_attach_defaults(GTK_TABLE(table), properties->ctime, 1, 2, 7,
+			8);
 	widget = gtk_label_new(_("Permissions:")); /* permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 8, 9);
-	widget = gtk_label_new(_("Owner:")); /* owner permissions */
+	hbox = gtk_hbox_new(TRUE, 4);
+	for(i = 0; i < sizeof(properties->mode) / sizeof(*properties->mode);
+			i++)
+	{
+		if(hbox == NULL)
+			hbox = gtk_hbox_new(TRUE, 4);
+		properties->mode[i] = gtk_check_button_new_with_label("");
+		gtk_box_pack_end(GTK_BOX(hbox), properties->mode[i], TRUE,
+				TRUE, 0);
+		if((i % 3) != 2)
+			continue;
+		gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2,
+				11 - (i / 3), 12 - (i / 3));
+		hbox = NULL;
+	}
+	widget = gtk_label_new(_("Owner:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
-	widget = _do_mode(properties ? &properties->check[6] : NULL,
-			(st.st_mode & 0700) >> 6);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 9, 10);
-	widget = gtk_label_new(_("Group:")); /* group permissions */
+	widget = gtk_label_new(_("Group:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
-	widget = _do_mode(properties ? &properties->check[3] : NULL,
-			(st.st_mode & 0070) >> 3);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 10, 11);
-	widget = gtk_label_new(_("Others:")); /* others permissions */
+	widget = gtk_label_new(_("Others:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
-	widget = _do_mode(properties ? &properties->check[0] : NULL,
-			st.st_mode & 0007);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 11, 12);
-	gtk_box_pack_start(GTK_BOX(hbox), table, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = gtk_hbox_new(FALSE, 4); /* separator */
+	gtk_box_pack_start(GTK_BOX(vbox), table, TRUE, TRUE, 0);
+	/* separator */
 	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0); /* close button */
-	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_properties_on_close), NULL);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* button box */
+	bbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	if(properties != NULL)
 	{
+		widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(_properties_on_refresh), properties);
+		gtk_container_add(GTK_CONTAINER(bbox), widget);
 		widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
 		g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 					_properties_on_apply), properties);
-		gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(bbox), widget);
 	}
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_properties_on_close), NULL);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_box_pack_start(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
-	gtk_widget_show_all(window);
 	pango_font_description_free(bold);
-	free(p);
+	free(gfilename);
+	if(_properties_refresh(properties) != 0)
+	{
+		gtk_widget_destroy(properties->window);
+		free(properties->filename);
+		free(properties);
+		return 1;
+	}
+	gtk_widget_show_all(window);
 	return 0;
-}
-
-static char * _do_size(char * buf, size_t buf_cnt, size_t size)
-{
-	double sz = size;
-	char * unit;
-
-	if(sz < 1024)
-	{
-		snprintf(buf, buf_cnt, "%.0f%s", sz, _(" bytes"));
-		return buf;
-	}
-	else if((sz /= 1024) < 1024)
-		unit = _("KB");
-	else if((sz /= 1024) < 1024)
-		unit = _("MB");
-	else if((sz /= 1024) < 1024)
-		unit = _("GB");
-	else
-	{
-		sz /= 1024;
-		unit = _("TB");
-	}
-	snprintf(buf, buf_cnt, "%.1f %s", sz, unit);
-	return buf;
-}
-
-static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid)
-{
-	struct passwd * pw;
-
-	if((pw = getpwuid(uid)) != NULL)
-		return pw->pw_name;
-	snprintf(buf, buf_cnt, "%lu", (unsigned long)uid);
-	return buf;
 }
 
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid)
@@ -368,21 +369,6 @@ static char * _do_group(char * buf, size_t buf_cnt, gid_t gid)
 	if((gr = getgrgid(gid)) != NULL)
 		return gr->gr_name;
 	snprintf(buf, buf_cnt, "%lu", (unsigned long)gid);
-	return buf;
-}
-
-static char * _do_time(char * buf, size_t buf_cnt, time_t date)
-{
-	static time_t sixmonths = -1;
-	struct tm tm;
-
-	if(sixmonths == -1)
-		sixmonths = time(NULL) - 15552000;
-	localtime_r(&date, &tm);
-	if(date < sixmonths)
-		strftime(buf, buf_cnt, "%b %d %Y", &tm);
-	else
-		strftime(buf, buf_cnt, "%b %d %H:%M", &tm);
 	return buf;
 }
 
@@ -426,51 +412,105 @@ static GtkWidget * _do_groups(Properties * properties)
 	return box;
 }
 
-static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode)
-{
-	GtkWidget * hbox;
-	GtkWidget * w[3];
-	gboolean sensitive = FALSE;
 
-	if(widget == NULL)
-		widget = w;
-	else
-		sensitive = TRUE;
-	hbox = gtk_hbox_new(TRUE, 0);
-	widget[2] = gtk_check_button_new_with_label(_("read")); /* read */
+/* properties_refresh */
+static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive);
+static void _refresh_owner(Properties * properties, uid_t uid);
+static void _refresh_size(Properties * properties, size_t size);
+static void _refresh_time(GtkWidget * widget, time_t time);
+
+static int _properties_refresh(Properties * properties)
+{
+	struct stat st;
+	gboolean writable;
+
+	if(lstat(properties->filename, &st) != 0)
+		return _properties_error(NULL, properties->filename, 0) + 1;
+	properties->uid = st.st_uid;
+	properties->gid = st.st_gid;
+	writable = (access(properties->filename, W_OK) == 0) ? TRUE : FALSE;
+	_refresh_mode(&properties->mode[6], (st.st_mode & 0700) >> 6, writable);
+	_refresh_mode(&properties->mode[3], (st.st_mode & 0070) >> 3, writable);
+	_refresh_mode(&properties->mode[0], st.st_mode & 0007, writable);
+	_refresh_owner(properties, st.st_uid);
+	/* FIXME also refresh the group */
+	_refresh_size(properties, st.st_size);
+	_refresh_time(properties->atime, st.st_atime);
+	_refresh_time(properties->mtime, st.st_mtime);
+	_refresh_time(properties->ctime, st.st_ctime);
+	return 0;
+}
+
+static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive)
+{
+	gtk_button_set_label(GTK_BUTTON(widget[2]), _("read")); /* read */
 	gtk_widget_set_sensitive(widget[2], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
 			mode & S_IROTH);
-	gtk_box_pack_start(GTK_BOX(hbox), widget[2], TRUE, TRUE, 4);
-	widget[1] = gtk_check_button_new_with_label(_("write")); /* write */
+	gtk_button_set_label(GTK_BUTTON(widget[1]), _("write")); /* write */
 	gtk_widget_set_sensitive(widget[1], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[1]),
 			mode & S_IWOTH);
-	gtk_box_pack_start(GTK_BOX(hbox), widget[1], TRUE, TRUE, 4);
-	widget[0] = gtk_check_button_new_with_label(_("execute")); /* execute */
+	gtk_button_set_label(GTK_BUTTON(widget[0]), _("execute")); /* execute */
 	gtk_widget_set_sensitive(widget[0], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[0]),
 			mode & S_IXOTH);
-	gtk_box_pack_start(GTK_BOX(hbox), widget[0], TRUE, TRUE, 4);
-	return hbox;
+}
+
+static void _refresh_owner(Properties * properties, uid_t uid)
+{
+	char buf[256];
+	char const * p = buf;
+	struct passwd * pw;
+
+	if((pw = getpwuid(uid)) != NULL)
+		p = pw->pw_name;
+	else
+		snprintf(buf, sizeof(buf), "%lu", (unsigned long)uid);
+	gtk_label_set_text(GTK_LABEL(properties->owner), p);
+}
+
+static void _refresh_size(Properties * properties, size_t size)
+{
+	char buf[256];
+	double sz = size;
+	char * unit = _("bytes");
+	char const * format = "%.1f %s";
+
+	if(sz < 1024)
+		format = "%.0f %s";
+	else if((sz /= 1024) < 1024)
+		unit = _("kB");
+	else if((sz /= 1024) < 1024)
+		unit = _("MB");
+	else if((sz /= 1024) < 1024)
+		unit = _("GB");
+	else
+	{
+		sz /= 1024;
+		unit = _("TB");
+	}
+	snprintf(buf, sizeof(buf), format, sz, unit);
+	gtk_label_set_text(GTK_LABEL(properties->size), buf);
+}
+
+static void _refresh_time(GtkWidget * widget, time_t t)
+{
+	char buf[256];
+	time_t sixmonths;
+	struct tm tm;
+
+	sixmonths = time(NULL) - 15552000;
+	localtime_r(&t, &tm);
+	if(t < sixmonths)
+		strftime(buf, sizeof(buf), "%b %d %Y", &tm);
+	else
+		strftime(buf, sizeof(buf), "%b %d %H:%M", &tm);
+	gtk_label_set_text(GTK_LABEL(widget), buf);
 }
 
 
 /* callbacks */
-static gboolean _properties_on_closex(GtkWidget * widget)
-{
-	_properties_on_close(widget);
-	return FALSE;
-}
-
-static void _properties_on_close(GtkWidget * widget)
-{
-	if(--_properties_cnt == 0)
-		gtk_main_quit();
-	else
-		gtk_widget_destroy(gtk_widget_get_toplevel(widget));
-}
-
 static void _properties_on_apply(GtkWidget * widget, gpointer data)
 {
 	Properties * properties = data;
@@ -487,11 +527,32 @@ static void _properties_on_apply(GtkWidget * widget, gpointer data)
 		gid = gr->gr_gid;
 	for(i = 0; i < 9; i++)
 		mode |= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-					properties->check[i])) << i;
+					properties->mode[i])) << i;
 	if(chown(properties->filename, properties->uid, gid) != 0
 			|| chmod(properties->filename, mode) != 0)
 		_properties_error(gtk_widget_get_toplevel(widget),
 				properties->filename, 0);
+}
+
+static void _properties_on_close(GtkWidget * widget)
+{
+	if(--_properties_cnt == 0)
+		gtk_main_quit();
+	else
+		gtk_widget_destroy(gtk_widget_get_toplevel(widget));
+}
+
+static gboolean _properties_on_closex(GtkWidget * widget)
+{
+	_properties_on_close(widget);
+	return FALSE;
+}
+
+static void _properties_on_refresh(gpointer data)
+{
+	Properties * properties = data;
+
+	_properties_refresh(properties);
 }
 
 
