@@ -26,7 +26,29 @@ _image_ramdisk()
 
 	target "install"					|| exit 2
 
-	_create_directories "dev" "proc" "mnt/cdrom" "sbin"
+	_create_directories "bin" "dev" "lib" "proc" "mnt/root"
+
+	echo
+	echo -n "Fixing installation paths:"
+	for i in /lib/libc.so /bin/sh; do
+		echo -n " $i"
+		$MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"		|| exit 2
+	done
+	echo
+
+	if [ ! -x "$DESTDIR/sbin/init" ]; then
+		echo
+		echo -n "Installing linuxrc:"
+		cat > "$DESTDIR/linuxrc" << EOF
+#!/bin/sh
+
+echo "init called with arguments: \$@"
+echo "Falling back to interactive mode:"
+/bin/sh
+EOF
+		chmod 755 "$DESTDIR/linuxrc"
+		echo
+	fi
 
 	echo
 	echo -n "Building ramdisk image:"
