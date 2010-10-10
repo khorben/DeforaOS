@@ -291,7 +291,6 @@ target_install()
 #target_uninstall
 target_uninstall()
 {
-	DESTDIR=
 	target "uninstall"
 }
 
@@ -336,6 +335,7 @@ done
 [ -z "$MACHINE" ] && MACHINE=`uname -m`
 [ -z "$SYSTEM" ] && SYSTEM=`uname -s`
 [ -z "$TARGET" ] && TARGET="$SYSTEM-$MACHINE"
+[ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
 if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 	case "$MACHINE" in
 		arm*b|arm*l)
@@ -364,7 +364,6 @@ fi
 [ -z "$CONFIGURE" ] && CONFIGURE="configure -O DeforaOS"
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
-[ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CC" ] && CC="cc"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"

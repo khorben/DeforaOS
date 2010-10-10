@@ -4,7 +4,7 @@
 
 
 #variables
-[ -z "$LD"	] && LD="cc -shared -nostdlib"
+[ -z "$LD"	] && LD="$CC -shared -nostdlib"
 [ -z "$MKFS"	] && MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
 
 
@@ -46,6 +46,7 @@ _image_ramdisk()
 #image_rootfs
 _image_rootfs()
 {
+	#FIXME make IMAGE_SIZE optional and use ext2 then
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
   IMAGE_MODULES	Path to a tar.gz archive of kernel modules (optional)\n\
