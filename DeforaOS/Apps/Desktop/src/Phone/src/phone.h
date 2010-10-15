@@ -18,31 +18,11 @@
 #ifndef PHONE_SRC_PHONE_H
 # define PHONE_SRC_PHONE_H
 
+# include <gtk/gtk.h>
 # include <Phone.h>
 
 
 /* Phone */
-/* types */
-typedef enum _PhoneMessage
-{
-	PHONE_MESSAGE_SHOW = 0
-} PhoneMessage;
-
-typedef enum _PhoneMessageShow
-{
-	PHONE_MESSAGE_SHOW_CONTACTS = 0,
-	PHONE_MESSAGE_SHOW_DIALER,
-	PHONE_MESSAGE_SHOW_LOGS,
-	PHONE_MESSAGE_SHOW_MESSAGES,
-	PHONE_MESSAGE_SHOW_SETTINGS
-} PhoneMessageShow;
-
-
-/* constants */
-# define PHONE_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_PHONE_CLIENT"
-# define PHONE_EMBED_MESSAGE	"DEFORAOS_DESKTOP_PHONE_EMBED"
-
-
 /* functions */
 Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 		int hwflow);

@@ -74,6 +74,20 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_VIBRATOR_ON
 } PhoneEvent;
 
+typedef enum _PhoneMessage
+{
+	PHONE_MESSAGE_SHOW = 0
+} PhoneMessage;
+
+typedef enum _PhoneMessageShow
+{
+	PHONE_MESSAGE_SHOW_CONTACTS = 0,
+	PHONE_MESSAGE_SHOW_DIALER,
+	PHONE_MESSAGE_SHOW_LOGS,
+	PHONE_MESSAGE_SHOW_MESSAGES,
+	PHONE_MESSAGE_SHOW_SETTINGS
+} PhoneMessageShow;
+
 typedef struct _PhonePlugin PhonePlugin;
 
 typedef int (PhoneTriggerCallback)(PhonePlugin * plugin, char const * result);
@@ -107,5 +121,10 @@ struct _PhonePlugin
 	void (*settings)(PhonePlugin * plugin);
 	void * priv;
 };
+
+
+/* constants */
+# define PHONE_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_PHONE_CLIENT"
+# define PHONE_EMBED_MESSAGE	"DEFORAOS_DESKTOP_PHONE_EMBED"
 
 #endif /* !PHONE_PHONE_H */

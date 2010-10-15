@@ -41,29 +41,29 @@ static struct
 	char const * command;
 } _debug_gsm_commands[] =
 {
-	{ "Alive",			"AT"				},
-	{ "Answer call",		"ATA"				},
-	{ "Battery charge",		"AT+CBC"			},
-	{ "Call waiting control",	"AT+CCWA?"			},
-	{ "Contact list",		"AT+CPBR=?"			},
-	{ "Disable phone",		"AT+CFUN=0"			},
-	{ "Enable phone",		"AT+CFUN=1"			},
-	{ "Hangup call",		"ATH"				},
-	{ "Messages",			"AT+CMGL=4"			},
-	{ "Messages read",		"AT+CMGL=1"			},
-	{ "Messages sent",		"AT+CMGL=3"			},
-	{ "Messages unread",		"AT+CMGL=0"			},
-	{ "Messages unsent",		"AT+CMGL=2"			},
-	{ "Mute",			"AT+CMUT?"			},
-	{ "Operator",			"AT+COPS?"			},
-	{ "Phone active",		"AT+CPAS"			},
-	{ "Phone functional",		"AT+CFUN?"			},
-	{ "Registered",			"AT+CREG?"			},
-	{ "Reject call",		"AT+CHUP"			},
-	{ "Reset",			"ATZ"				},
-	{ "Signal level",		"AT+CSQ"			},
-	{ "SIM PIN status",		"AT+CPIN?"			},
-	{ NULL,				NULL				}
+	{ "Alive",			"AT"		},
+	{ "Answer call",		"ATA"		},
+	{ "Battery charge",		"AT+CBC"	},
+	{ "Call waiting control",	"AT+CCWA?"	},
+	{ "Contact list",		"AT+CPBR=?"	},
+	{ "Disable phone",		"AT+CFUN=0"	},
+	{ "Enable phone",		"AT+CFUN=1"	},
+	{ "Hangup call",		"ATH"		},
+	{ "Messages",			"AT+CMGL=4"	},
+	{ "Messages read",		"AT+CMGL=1"	},
+	{ "Messages sent",		"AT+CMGL=3"	},
+	{ "Messages unread",		"AT+CMGL=0"	},
+	{ "Messages unsent",		"AT+CMGL=2"	},
+	{ "Mute",			"AT+CMUT?"	},
+	{ "Operator",			"AT+COPS?"	},
+	{ "Phone active",		"AT+CPAS"	},
+	{ "Phone functional",		"AT+CFUN?"	},
+	{ "Registered",			"AT+CREG?"	},
+	{ "Reject call",		"AT+CHUP"	},
+	{ "Reset",			"ATZ"		},
+	{ "Signal level",		"AT+CSQ"	},
+	{ "SIM PIN status",		"AT+CPIN?"	},
+	{ NULL,				NULL		}
 };
 
 static struct
@@ -101,6 +101,7 @@ static struct
 static int _debug_init(PhonePlugin * plugin);
 static int _debug_destroy(PhonePlugin * plugin);
 static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show);
 
 
 /* public */
@@ -120,15 +121,21 @@ PhonePlugin plugin =
 
 /* private */
 /* functions */
-static void _on_debug_gsm_execute(gpointer data);
+static void _on_debug_contacts(gpointer data);
+static void _on_debug_dialer(gpointer data);
+static void _on_debug_logs(gpointer data);
+static void _on_debug_messages(gpointer data);
+static void _on_debug_queue_changed(gpointer data);
 static void _on_debug_queue_execute(gpointer data);
+static void _on_debug_settings(gpointer data);
 
 static int _debug_init(PhonePlugin * plugin)
 {
 	Debug * debug;
 	GtkWidget * vbox;
-	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
+	GtkWidget * hbox;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	size_t i;
@@ -137,45 +144,71 @@ static int _debug_init(PhonePlugin * plugin)
 		return 1;
 	plugin->priv = debug;
 	debug->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(debug->window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(debug->window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(debug->window), plugin->icon);
 #endif
 	gtk_window_set_title(GTK_WINDOW(debug->window), plugin->name);
 	vbox = gtk_vbox_new(FALSE, 4);
-	/* gsm commands */
-	widget = gtk_label_new("GSM commands");
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
-	hbox = gtk_hbox_new(FALSE, 4);
+	/* toolbar */
+	widget = gtk_toolbar_new();
+	toolitem = gtk_tool_button_new(NULL, "Contacts");
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+			"stock_addressbook");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_on_debug_contacts), plugin);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new(NULL, "Dialer");
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+			"stock_landline-phone");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_on_debug_dialer), plugin);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new(NULL, "Logs");
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem), "logviewer");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_on_debug_logs), plugin);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new(NULL, "Messages");
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+			"stock_mail-compose");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_on_debug_messages), plugin);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new(NULL, "Settings");
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+			"gnome-settings");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_on_debug_settings), plugin);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* vbox */
+	widget = gtk_vbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
+	vbox = widget;
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+	/* gsm queue */
+	debug->queue = NULL;
 	debug->gsm = gtk_combo_box_new_text();
 	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(debug->gsm),
 				_debug_gsm_commands[i].name);
+	g_signal_connect_swapped(G_OBJECT(debug->gsm), "changed", G_CALLBACK(
+				_on_debug_queue_changed), plugin);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->gsm), 0);
-	gtk_box_pack_start(GTK_BOX(hbox), debug->gsm, TRUE, TRUE, 0);
-	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-			G_CALLBACK(_on_debug_gsm_execute), plugin);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	/* gsm queue */
-	widget = gtk_label_new("GSM queue");
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), debug->gsm, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	debug->queue = gtk_entry_new();
 	g_signal_connect_swapped(G_OBJECT(debug->queue), "activate",
 			G_CALLBACK(_on_debug_queue_execute), plugin);
-	gtk_box_pack_start(GTK_BOX(hbox), debug->queue, TRUE, TRUE,
-			0);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->queue, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 			G_CALLBACK(_on_debug_queue_execute), plugin);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* events */
-	widget = gtk_label_new("Events");
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	debug->events = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
 			G_TYPE_STRING);
 	widget = gtk_scrolled_window_new(NULL, NULL);
@@ -202,18 +235,47 @@ static int _debug_init(PhonePlugin * plugin)
 				gtk_main_quit), NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
 	gtk_widget_show_all(debug->window);
 	return 0;
 }
 
-static void _on_debug_gsm_execute(gpointer data)
+static void _on_debug_contacts(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_CONTACTS);
+}
+
+static void _on_debug_dialer(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_DIALER);
+}
+
+static void _on_debug_logs(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_LOGS);
+}
+
+static void _on_debug_messages(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_MESSAGES);
+}
+
+static void _on_debug_queue_changed(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Debug * debug = plugin->priv;
 	gchar * text;
 	size_t i;
 
+	if(debug->queue == NULL)
+		return;
 	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(debug->gsm)))
 			== NULL)
 		return;
@@ -222,7 +284,7 @@ static void _on_debug_gsm_execute(gpointer data)
 			break;
 	g_free(text);
 	if(_debug_gsm_commands[i].command != NULL)
-		plugin->helper->queue(plugin->helper->phone,
+		gtk_entry_set_text(GTK_ENTRY(debug->queue),
 				_debug_gsm_commands[i].command);
 }
 
@@ -235,6 +297,13 @@ static void _on_debug_queue_execute(gpointer data)
 	if((text = gtk_entry_get_text(GTK_ENTRY(debug->queue))) == NULL)
 		return;
 	plugin->helper->queue(plugin->helper->phone, text);
+}
+
+static void _on_debug_settings(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_SETTINGS);
 }
 
 
@@ -274,4 +343,23 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	gtk_list_store_append(debug->events, &iter);
 	gtk_list_store_set(debug->events, &iter, 0, date, 1, tbuf, 2, ebuf, -1);
 	return 0;
+}
+
+
+/* debug_send_message */
+static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show)
+{
+	GdkEvent event;
+	GdkEventClient * client = &event.client;
+
+	memset(&event, 0, sizeof(event));
+	client->type = GDK_CLIENT_EVENT;
+	client->window = NULL;
+	client->send_event = TRUE;
+	client->message_type = gdk_atom_intern(PHONE_CLIENT_MESSAGE, FALSE);
+	client->data_format = 8;
+	client->data.b[0] = PHONE_MESSAGE_SHOW;
+	client->data.b[1] = show;
+	client->data.b[2] = TRUE;
+	gdk_event_send_clientmessage_toall(&event);
 }

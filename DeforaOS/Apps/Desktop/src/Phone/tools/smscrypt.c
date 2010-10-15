@@ -23,12 +23,29 @@
 #include "../src/plugins/smscrypt.c"
 
 
+/* helper_config_foreach */
+static void _helper_config_foreach(Phone * phone, char const * section,
+		PhoneConfigForeachCallback callback, void * priv)
+{
+	Config * config = (Config*)phone;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", %p, %p)\n", __func__,
+			(void*)phone, section, (void*)callback, priv);
+#endif
+	config_foreach_section(config, section, callback, priv);
+}
+
+
 /* helper_config_get */
 static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable)
 {
-	Config * config = (Config *)phone;
+	Config * config = (Config*)phone;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
+			(void*)phone, section, variable);
+#endif
 	return config_get(config, section, variable);
 }
 
@@ -70,6 +87,7 @@ int main(int argc, char * argv[])
 	char * p;
 	size_t len;
 
+	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "p:")) != -1)
 		switch(o)
 		{
@@ -84,6 +102,7 @@ int main(int argc, char * argv[])
 	config = config_new();
 	config_load(config, "/home/khorben/.phone"); /* FIXME hardcoded */
 	helper.phone = (Phone *)config;
+	helper.config_foreach = _helper_config_foreach;
 	helper.config_get = _helper_config_get;
 	plugin.helper = &helper;
 	if(_smscrypt_init(&plugin) != 0)

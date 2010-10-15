@@ -258,7 +258,7 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent,
 
 static int _phone_confirm(Phone * phone, GtkWidget * window,
 		char const * message);
-static void _phone_error(GtkWidget * window, char const * message);
+static int _phone_error(GtkWidget * window, char const * message, int ret);
 
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
@@ -501,8 +501,7 @@ int phone_error(Phone * phone, char const * message, int ret)
 {
 	if(phone == NULL)
 		return _error_text(message, ret);
-	_phone_error(NULL, message);
-	return ret;
+	return _phone_error(NULL, message, ret);
 }
 
 static int _error_text(char const * message, int ret)
@@ -737,16 +736,16 @@ int phone_dialer_append(Phone * phone, char character)
 	fprintf(stderr, "DEBUG: %s(%c)\n", __func__, character);
 #endif
 	if(phone->di_window == NULL)
-		return 1;
+		return -1;
 	if((character < '0' || character > '9') && character != '*'
 			&& character != '+' && character != '#')
-		return 1; /* ignore the error */
+		return -1; /* ignore the error */
 	/* FIXME if in a call send DTMF instead */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
-	len = strlen(text);
-	if((p = malloc(len + 2)) == NULL)
-		return phone_error(phone, strerror(errno), 1);
-	snprintf(p, len + 2, "%s%c", text, character);
+	len = strlen(text) + 2;
+	if((p = malloc(len)) == NULL)
+		return -phone_error(phone, strerror(errno), 1);
+	snprintf(p, len, "%s%c", text, character);
 	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), p);
 	free(p);
 	return 0;
@@ -1339,15 +1338,16 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 
 
 /* phone_show_code */
+static void _show_code_window(Phone * phone);
+
 void phone_show_code(Phone * phone, gboolean show, ...)
 {
 	va_list ap;
 	PhoneCode code;
-	GtkWidget * vbox;
-	GtkWidget * hbox; /* XXX create in phone_create_dialpad? */
-	GtkWidget * widget;
 
-	if(show == FALSE) /* FIXME pre-build the window anyway */
+	if(phone->en_window == NULL)
+		_show_code_window(phone);
+	if(show == FALSE)
 	{
 		if(phone->en_window != NULL)
 			gtk_widget_hide(phone->en_window);
@@ -1356,40 +1356,6 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 	va_start(ap, show);
 	code = va_arg(ap, PhoneCode);
 	va_end(ap);
-	if(phone->en_window == NULL)
-	{
-		phone->en_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-#if GTK_CHECK_VERSION(2, 6, 0)
-		gtk_window_set_icon_name(GTK_WINDOW(phone->en_window),
-				"stock_lock");
-#endif
-		vbox = gtk_vbox_new(FALSE, 0);
-		hbox = gtk_hbox_new(FALSE, 0);
-		phone->en_entry = gtk_entry_new();
-		gtk_entry_set_visibility(GTK_ENTRY(phone->en_entry), FALSE);
-		gtk_widget_modify_font(phone->en_entry, phone->bold);
-		g_signal_connect_swapped(G_OBJECT(phone->en_entry), "activate",
-				G_CALLBACK(on_phone_code_enter), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE,
-				2);
-		widget = gtk_button_new();
-		gtk_button_set_image(GTK_BUTTON(widget),
-				gtk_image_new_from_icon_name("edit-undo",
-					GTK_ICON_SIZE_BUTTON));
-		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
-		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(on_phone_code_clear), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
-		widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),
-				G_CALLBACK(on_phone_code_enter),
-				GTK_STOCK_CANCEL, _("Skip"),
-				G_CALLBACK(on_phone_code_leave),
-				G_CALLBACK(on_phone_code_clicked));
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(phone->en_window), vbox);
-		gtk_widget_show_all(vbox);
-	}
 	switch(code)
 	{
 		case PHONE_CODE_SIM_PIN:
@@ -1401,6 +1367,44 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 		phone_code_clear(phone);
 	phone->en_code = code;
 	gtk_window_present(GTK_WINDOW(phone->en_window));
+}
+
+static void _show_code_window(Phone * phone)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox; /* XXX create in phone_create_dialpad? */
+	GtkWidget * widget;
+
+	phone->en_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(phone->en_window),
+			"stock_lock");
+#endif
+	gtk_container_set_border_width(GTK_CONTAINER(phone->en_window), 4);
+	vbox = gtk_vbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	phone->en_entry = gtk_entry_new();
+	gtk_entry_set_visibility(GTK_ENTRY(phone->en_entry), FALSE);
+	gtk_widget_modify_font(phone->en_entry, phone->bold);
+	g_signal_connect_swapped(G_OBJECT(phone->en_entry), "activate",
+			G_CALLBACK(on_phone_code_enter), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"edit-undo", GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+			G_CALLBACK(on_phone_code_clear), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),
+			G_CALLBACK(on_phone_code_enter),
+			GTK_STOCK_CANCEL, _("Skip"),
+			G_CALLBACK(on_phone_code_leave),
+			G_CALLBACK(on_phone_code_clicked));
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(phone->en_window), vbox);
+	gtk_widget_show_all(vbox);
 }
 
 
@@ -1424,9 +1428,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				300);
 		gtk_window_set_title(GTK_WINDOW(phone->co_window),
 				_("Contacts"));
-		g_signal_connect_swapped(G_OBJECT(phone->co_window),
-				"delete-event", G_CALLBACK(on_phone_closex),
-				phone->co_window);
+		g_signal_connect(G_OBJECT(phone->co_window), "delete-event",
+				G_CALLBACK(on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -1493,60 +1496,60 @@ void phone_show_contacts(Phone * phone, gboolean show)
 
 
 /* phone_show_dialer */
+static void _show_dialer_window(Phone * phone);
+
 void phone_show_dialer(Phone * phone, gboolean show)
+{
+	if(phone->di_window == NULL)
+		_show_dialer_window(phone);
+	if(show)
+		gtk_window_present(GTK_WINDOW(phone->di_window));
+	else
+		gtk_widget_hide(phone->di_window);
+}
+
+static void _show_dialer_window(Phone * phone)
 {
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
-	if(phone->di_window == NULL)
-	{
-		phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if GTK_CHECK_VERSION(2, 6, 0)
-		gtk_window_set_icon_name(GTK_WINDOW(phone->di_window),
-				"stock_landline-phone");
+	gtk_window_set_icon_name(GTK_WINDOW(phone->di_window),
+			"stock_landline-phone");
 #endif
-		gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
-		g_signal_connect_swapped(G_OBJECT(phone->di_window),
-				"delete-event", G_CALLBACK(on_phone_closex),
-				phone->di_window);
-		gdk_add_client_message_filter(gdk_atom_intern(
-					PHONE_CLIENT_MESSAGE, FALSE),
-				on_phone_filter, phone);
-		vbox = gtk_vbox_new(FALSE, 0);
-		/* entry */
-		hbox = gtk_hbox_new(FALSE, 0);
-		phone->di_entry = gtk_entry_new();
-		gtk_widget_modify_font(phone->di_entry, phone->bold);
-		g_signal_connect_swapped(G_OBJECT(phone->di_entry), "activate",
-				G_CALLBACK(on_phone_dialer_call), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE,
-				2);
-		widget = gtk_button_new();
-		gtk_button_set_image(GTK_BUTTON(widget),
-				gtk_image_new_from_icon_name(
-					"stock_addressbook",
-					GTK_ICON_SIZE_BUTTON));
-		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
-		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(on_phone_contacts_show), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE,
-				2);
-		/* dialpad */
-		widget = _phone_create_dialpad(phone, "call-start", _("Call"),
-				G_CALLBACK(on_phone_dialer_call),
-				"call-stop", _("Hang up"),
-				G_CALLBACK(on_phone_dialer_hangup),
-				G_CALLBACK(on_phone_dialer_clicked));
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(phone->di_window), vbox);
-		gtk_widget_show_all(vbox);
-	}
-	if(show)
-		gtk_window_present(GTK_WINDOW(phone->di_window));
-	else
-		gtk_widget_hide(phone->di_window);
+	gtk_container_set_border_width(GTK_CONTAINER(phone->di_window), 4);
+	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
+	g_signal_connect(G_OBJECT(phone->di_window), "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
+	gdk_add_client_message_filter(gdk_atom_intern(PHONE_CLIENT_MESSAGE,
+				FALSE), on_phone_filter, phone);
+	vbox = gtk_vbox_new(FALSE, 4);
+	/* entry */
+	hbox = gtk_hbox_new(FALSE, 4);
+	phone->di_entry = gtk_entry_new();
+	gtk_widget_modify_font(phone->di_entry, phone->bold);
+	g_signal_connect_swapped(G_OBJECT(phone->di_entry), "activate",
+			G_CALLBACK(on_phone_dialer_call), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"stock_addressbook", GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_phone_contacts_show), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* dialpad */
+	widget = _phone_create_dialpad(phone, "call-start", _("Call"),
+			G_CALLBACK(on_phone_dialer_call),
+			"call-stop", _("Hang up"),
+			G_CALLBACK(on_phone_dialer_hangup),
+			G_CALLBACK(on_phone_dialer_clicked));
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(phone->di_window), vbox);
+	gtk_widget_show_all(vbox);
 }
 
 
@@ -1570,9 +1573,8 @@ void phone_show_logs(Phone * phone, gboolean show)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->lo_window),
 				_("Phone logs"));
-		g_signal_connect_swapped(G_OBJECT(phone->lo_window),
-				"delete-event", G_CALLBACK(on_phone_closex),
-				phone->lo_window);
+		g_signal_connect(G_OBJECT(phone->lo_window), "delete-event",
+				G_CALLBACK(on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -1661,9 +1663,8 @@ void phone_show_messages(Phone * phone, gboolean show)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->me_window),
 				_("Messages"));
-		g_signal_connect_swapped(G_OBJECT(phone->me_window),
-				"delete-event", G_CALLBACK(on_phone_closex),
-				phone->me_window);
+		g_signal_connect(G_OBJECT(phone->me_window), "delete-event",
+				G_CALLBACK(on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -2721,7 +2722,7 @@ static int _phone_confirm(Phone * phone, GtkWidget * window,
 
 
 /* phone_error */
-static void _phone_error(GtkWidget * window, char const * message)
+static int _phone_error(GtkWidget * window, char const * message, int ret)
 {
 	GtkWidget * dialog;
 	GtkWindow * w = (window != NULL) ? GTK_WINDOW(window) : NULL;
@@ -2740,6 +2741,7 @@ static void _phone_error(GtkWidget * window, char const * message)
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
+	return ret;
 }
 
 
@@ -2916,29 +2918,41 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 {
 	char buf[256];
 	GtkDialogFlags f = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	if(phone->co_dialog == NULL)
 	{
+		group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 		phone->co_dialog = gtk_dialog_new_with_buttons("",
 				GTK_WINDOW(phone->co_window), f,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 				GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+		g_signal_connect(G_OBJECT(phone->co_dialog), "delete-event",
+				G_CALLBACK(on_phone_closex), NULL);
 		g_signal_connect(G_OBJECT(phone->co_dialog), "response",
 				G_CALLBACK(_on_contacts_dialog_response),
 				phone);
+#if GTK_CHECK_VERSION(2, 14, 0)
+		vbox = gtk_dialog_get_content_area(GTK_DIALOG(
+					phone->co_dialog));
+#else
 		vbox = GTK_DIALOG(phone->co_dialog)->vbox;
+#endif
+		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 		hbox = gtk_hbox_new(FALSE, 4);
 		widget = gtk_label_new(_("Name: "));
+		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		phone->co_name = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), phone->co_name, TRUE, TRUE,
 				0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 		hbox = gtk_hbox_new(FALSE, 4);
 		widget = gtk_label_new(_("Number: "));
+		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		phone->co_number = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), phone->co_number, TRUE, TRUE,
@@ -2972,13 +2986,25 @@ static void _on_contacts_dialog_response(GtkWidget * widget, gint response,
 	char const * name;
 	char const * number;
 
-	gtk_widget_hide(widget);
 	if(response != GTK_RESPONSE_ACCEPT)
+	{
+		gtk_widget_hide(widget);
 		return;
+	}
 	name = gtk_entry_get_text(GTK_ENTRY(phone->co_name));
 	number = gtk_entry_get_text(GTK_ENTRY(phone->co_number));
+	if(strlen(name) == 0)
+	{
+		_phone_error(widget, _("The name cannot be empty"), 0);
+		return;
+	}
+	else if(strlen(number) == 0)
+	{
+		_phone_error(widget, _("The number cannot be empty"), 0);
+		return;
+	}
+	gtk_widget_hide(widget);
 	if(phone->co_index < 0)
-		/* FIXME check if name/number is empty */
 		gsm_contact_new(phone->gsm, name, number);
 	else
 		gsm_contact_edit(phone->gsm, phone->co_index, name, number);
@@ -3144,7 +3170,7 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 		case GSM_ERROR_BUSY:
 		case GSM_ERROR_NO_ANSWER:
 		case GSM_ERROR_NO_DIALTONE:
-			_phone_error(phone->ca_window, event->error.message);
+			_phone_error(phone->ca_window, event->error.message, 0);
 			break;
 		case GSM_ERROR_NO_CARRIER:
 			phone_show_call(phone, TRUE, PHONE_CALL_TERMINATED);
@@ -3170,7 +3196,7 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			phone->wr_progress = _phone_progress_delete(
 					phone->wr_progress);
 			_phone_error(phone->wr_window,
-					_("Could not send message"));
+					_("Could not send message"), 0);
 			break;
 		case GSM_ERROR_SIM_PIN_REQUIRED:
 			phone_code_clear(phone);
@@ -3178,7 +3204,8 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			break;
 		case GSM_ERROR_SIM_PIN_WRONG:
 			phone_code_clear(phone);
-			_phone_error(phone->en_window, _("Wrong SIM PIN code"));
+			_phone_error(phone->en_window, _("Wrong SIM PIN code"),
+					0);
 			break;
 		default:
 			phone_error(phone, event->error.message, 0);

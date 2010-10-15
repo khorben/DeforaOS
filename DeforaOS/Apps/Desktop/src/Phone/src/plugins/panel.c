@@ -332,7 +332,7 @@ static void _signal_level_set_image(Panel * panel, PanelSignal signal)
 {
 	char const * icons[PANEL_SIGNAL_COUNT] =
 	{
-		"stock_cell-phone",
+		"network-wireless",
 		"phone-signal-00",
 		"phone-signal-25",
 		"phone-signal-50",
