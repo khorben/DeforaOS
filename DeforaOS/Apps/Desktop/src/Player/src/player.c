@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
+#include <Desktop.h>
 #include "callbacks.h"
 #include "../config.h"
 #include "player.h"
@@ -32,80 +33,81 @@
 #define N_(string) (string)
 
 
-/* types */
-#ifndef EMBEDDED
-struct _menu
-{
-	char * name;
-	GtkSignalFunc callback;
-	char * stock;
-	unsigned int accel;
-};
-
-struct _menubar
-{
-	char * name;
-	struct _menu * menu;
-};
-#endif
-
-
+/* Player */
+/* private */
 /* constants */
 #ifndef EMBEDDED
-struct _menu _menu_file[] =
+static DesktopMenu _player_menu_file[] =
 {
-	{ N_("_Open..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
-	{ "", NULL, NULL, 0 },
+	{ N_("_Open..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_O },
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
-		GTK_STOCK_PROPERTIES, 0 },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_Return },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-struct _menu _menu_edit[] =
+static DesktopMenu _player_menu_edit[] =
 {
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-struct _menu _menu_view[] =
+static DesktopMenu _player_menu_view[] =
 {
-	{ N_("_Playlist"), G_CALLBACK(on_view_playlist), NULL, GDK_L },
+	{ N_("_Playlist"), G_CALLBACK(on_view_playlist), NULL, GDK_CONTROL_MASK,
+		GDK_L },
 # if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen),
 		GTK_STOCK_FULLSCREEN,
 # else
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen), NULL,
 # endif
-		GDK_F },
-	{ NULL, NULL, NULL, 0 }
+		GDK_CONTROL_MASK, GDK_F },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static struct _menu _menu_help[] =
+static DesktopMenu _player_menu_help[] =
 {
 # if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 # else
-	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
 # endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0 ,0 }
 };
 
-static struct _menubar _menubar[] =
+static DesktopMenubar _player_menubar[] =
 {
-	{ N_("_File"), _menu_file },
-	{ N_("_Edit"), _menu_edit },
-	{ N_("_View"), _menu_view },
-	{ N_("_Help"), _menu_help },
+	{ N_("_File"), _player_menu_file },
+	{ N_("_Edit"), _player_menu_edit },
+	{ N_("_View"), _player_menu_view },
+	{ N_("_Help"), _player_menu_help },
 	{ NULL, NULL }
 };
 #endif
 
+static DesktopToolbar _player_toolbar[] =
+{
+	{ N_("Previous"), G_CALLBACK(on_previous), GTK_STOCK_MEDIA_PREVIOUS, 0,
+		0, NULL },
+	{ N_("Rewind"), G_CALLBACK(on_rewind), GTK_STOCK_MEDIA_REWIND, 0, 0,
+		NULL },
+	{ N_("Play"), G_CALLBACK(on_play), GTK_STOCK_MEDIA_PLAY, 0, 0, NULL },
+	{ N_("Pause"), G_CALLBACK(on_pause), GTK_STOCK_MEDIA_PAUSE, 0, 0,
+		NULL },
+	{ N_("Stop"), G_CALLBACK(on_stop), GTK_STOCK_MEDIA_STOP, 0, 0, NULL },
+	{ N_("Forward"), G_CALLBACK(on_forward), GTK_STOCK_MEDIA_FORWARD, 0, 0,
+		NULL },
+	{ N_("Next"), G_CALLBACK(on_next), GTK_STOCK_MEDIA_NEXT, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
+};
 
-/* Player */
-/* private */
+
 /* prototypes */
 /* accessors */
 static void _player_set_progress(Player * player, unsigned int progress);
@@ -339,23 +341,19 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 /* public */
 /* player_new */
 static int _player_error(char const * message, int ret);
-#ifndef EMBEDDED
-static GtkWidget * _new_menubar(Player * player);
-#endif
 static void _new_mplayer(Player * player);
 static void _new_column_text(GtkWidget * view, char const * title, int id);
-#if !GTK_CHECK_VERSION(2, 12, 0)
-static void gtk_widget_set_tooltip_text(GtkWidget * widget, const char * text);
-#endif
 
 Player * player_new(void)
 {
 	Player * player;
+	GtkAccelGroup * group;
 	GtkWidget * widget;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
+	GdkColor black = { 0, 0, 0, 0 };
 
 	if((player = malloc(sizeof(*player))) == NULL)
 		return NULL;
@@ -380,23 +378,29 @@ Player * player_new(void)
 	player->read_id = 0;
 	player->timeout_id = 0;
 	/* widgets */
+	group = gtk_accel_group_new();
 	player->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(player->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(player->window), 512, 384);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(player->window), "multimedia");
 #endif
 	gtk_window_set_title(GTK_WINDOW(player->window), _("Player"));
 	gtk_widget_realize(player->window);
-	g_signal_connect(G_OBJECT(player->window), "delete-event", G_CALLBACK(
-				on_player_closex), player);
+	g_signal_connect_swapped(G_OBJECT(player->window), "delete-event",
+			G_CALLBACK(on_player_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(player->window), vbox);
 #ifndef EMBEDDED
-	player->menubar = _new_menubar(player);
+	player->menubar = desktop_menubar_create(_player_menubar, player,
+			group);
 	gtk_box_pack_start(GTK_BOX(vbox), player->menubar, FALSE, FALSE, 0);
 #endif
 	/* view */
 	player->view_window = gtk_socket_new();
+	gtk_widget_modify_bg(player->view_window, GTK_STATE_NORMAL, &black);
+	g_signal_connect_swapped(G_OBJECT(player->view_window), "plug-removed",
+			G_CALLBACK(on_player_removed), player);
 	gtk_box_pack_start(GTK_BOX(vbox), player->view_window, TRUE, TRUE, 0);
 #ifndef EMBEDDED
 	/* statusbar */
@@ -405,50 +409,8 @@ Player * player_new(void)
 	gtk_box_pack_end(GTK_BOX(vbox), player->statusbar, FALSE, FALSE, 0);
 #endif
 	/* toolbar */
-	toolbar = gtk_toolbar_new();
+	toolbar = desktop_toolbar_create(_player_toolbar, player, group);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
-	player->tb_previous = gtk_tool_button_new_from_stock(
-			GTK_STOCK_MEDIA_PREVIOUS);
-	g_signal_connect(player->tb_previous, "clicked", G_CALLBACK(
-				on_previous), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_previous),
-			_("Previous"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_previous, -1);
-	player->tb_rewind = gtk_tool_button_new_from_stock(
-			GTK_STOCK_MEDIA_REWIND);
-	g_signal_connect(player->tb_rewind, "clicked", G_CALLBACK(
-				on_rewind), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_rewind),
-			_("Rewind"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_rewind, -1);
-	player->tb_play = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PLAY);
-	g_signal_connect(player->tb_play, "clicked", G_CALLBACK(on_play),
-			player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_play), _("Play"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_play, -1);
-	player->tb_pause = gtk_tool_button_new_from_stock(
-			GTK_STOCK_MEDIA_PAUSE);
-	g_signal_connect(player->tb_pause, "clicked", G_CALLBACK(on_pause),
-			player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_pause), _("Pause"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_pause, -1);
-	player->tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
-	g_signal_connect(player->tb_stop, "clicked", G_CALLBACK(on_stop),
-			player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_stop), _("Stop"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_stop, -1);
-	player->tb_forward = gtk_tool_button_new_from_stock(
-			GTK_STOCK_MEDIA_FORWARD);
-	g_signal_connect(player->tb_forward, "clicked", G_CALLBACK(
-				on_forward), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_forward),
-			_("Forward"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_forward, -1);
-	player->tb_next = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_NEXT);
-	g_signal_connect(player->tb_next, "clicked", G_CALLBACK(
-				on_next), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_next), _("Next"));
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_next, -1);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	player->progress = gtk_progress_bar_new();
@@ -458,10 +420,8 @@ Player * player_new(void)
 	widget = gtk_image_new_from_icon_name("stock_fullscreen",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	player->tb_fullscreen = gtk_tool_button_new(widget, _("Fullscreen"));
-	g_signal_connect(player->tb_fullscreen, "clicked", G_CALLBACK(
+	g_signal_connect_swapped(player->tb_fullscreen, "clicked", G_CALLBACK(
 				on_fullscreen), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_fullscreen),
-			_("Fullscreen"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_fullscreen, -1);
 	gtk_box_pack_end(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	gtk_widget_show_all(player->window);
@@ -469,7 +429,7 @@ Player * player_new(void)
 	/* FIXME make it dockable */
 	player->pl_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(player->pl_window), _("Playlist"));
-	g_signal_connect(G_OBJECT(player->pl_window), "delete-event",
+	g_signal_connect_swapped(G_OBJECT(player->pl_window), "delete-event",
 			G_CALLBACK(on_playlist_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* view */
@@ -498,16 +458,20 @@ Player * player_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OPEN);
-	/* FIXME implement signal */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_playlist_load), player);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_SAVE);
-	/* FIXME implement signal */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_playlist_save), player);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_ADD);
-	/* FIXME implement signal */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_playlist_add), player);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
-	/* FIXME implement signal */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_playlist_remove), player);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(player->pl_window), vbox);
@@ -520,56 +484,6 @@ Player * player_new(void)
 	_new_mplayer(player);
 	return player;
 }
-
-#ifndef EMBEDDED
-static GtkWidget * _new_menubar(Player * player)
-{
-	GtkWidget * tb_menubar;
-	GtkAccelGroup * group;
-	GtkWidget * menu;
-	GtkWidget * menubar;
-	GtkWidget * menuitem;
-	unsigned int i;
-	unsigned int j;
-	struct _menu * p;
-
-	tb_menubar = gtk_menu_bar_new();
-	group = gtk_accel_group_new();
-	for(i = 0; _menubar[i].name != NULL; i++)
-	{
-		menubar = gtk_menu_item_new_with_mnemonic(_(_menubar[i].name));
-		menu = gtk_menu_new();
-		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
-		{
-			p = &_menubar[i].menu[j];
-			if(p->name[0] == '\0')
-				menuitem = gtk_separator_menu_item_new();
-			else if(p->stock == NULL)
-				menuitem = gtk_menu_item_new_with_mnemonic(
-						_(p->name));
-			else
-				menuitem = gtk_image_menu_item_new_from_stock(
-						p->stock, NULL);
-			if(p->callback != NULL)
-				g_signal_connect(G_OBJECT(menuitem), "activate",
-						G_CALLBACK(p->callback),
-						player);
-			else
-				gtk_widget_set_sensitive(menuitem, FALSE);
-			if(p->accel != 0)
-				gtk_widget_add_accelerator(menuitem, "activate",
-						group, p->accel,
-						GDK_CONTROL_MASK,
-						GTK_ACCEL_VISIBLE);
-			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		}
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
-		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
-	}
-	gtk_window_add_accel_group(GTK_WINDOW(player->window), group);
-	return tb_menubar;
-}
-#endif
 
 static void _new_mplayer(Player * player)
 {
@@ -625,20 +539,6 @@ static void _new_column_text(GtkWidget * view, char const * title, int id)
 	gtk_tree_view_column_set_sort_column_id(column, id);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 }
-
-#if !GTK_CHECK_VERSION(2, 12, 0)
-static void gtk_widget_set_tooltip_text(GtkWidget * widget, const char * text)
-{
-	static GtkTooltips * tooltips = NULL;
-
-	if(tooltips == NULL)
-	{
-		tooltips = gtk_tooltips_new();
-		gtk_tooltips_enable(tooltips);
-	}
-	gtk_tooltips_set_tip(tooltips, widget, text, NULL);
-}
-#endif
 
 
 /* player_delete */

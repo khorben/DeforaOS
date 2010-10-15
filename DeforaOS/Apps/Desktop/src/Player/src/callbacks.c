@@ -19,6 +19,10 @@ static char const _license[] =
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <libgen.h>
+#include <errno.h>
 #include <libintl.h>
 #include "player.h"
 #include "callbacks.h"
@@ -39,16 +43,24 @@ static char const * _authors[] =
 
 
 /* callbacks */
-/* window */
-gboolean on_player_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+/* player */
+/* on_player_closex */
+gboolean on_player_closex(gpointer data)
 {
-	on_file_close(widget, data);
+	on_file_close(data);
 	return TRUE;
 }
 
 
+/* on_player_removed */
+void on_player_removed(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
 /* file menu */
-void on_file_open(GtkWidget * widget, gpointer data)
+void on_file_open(gpointer data)
 {
 	Player * player = data;
 
@@ -56,26 +68,32 @@ void on_file_open(GtkWidget * widget, gpointer data)
 }
 
 
-void on_file_properties(GtkWidget * widget, gpointer data)
+void on_file_properties(gpointer data)
 {
 	Player * player = data;
 	GtkWidget * window;
+	char * p;
 	char buf[256];
 
 	if(player->filename == NULL)
 		return;
+	if((p = strdup(player->filename)) == NULL)
+	{
+		player_error(player, strerror(errno), 0);
+		return;
+	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				gtk_widget_destroy), NULL);
-	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "),
-			player->filename);
+	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(p));
+	free(p);
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	/* FIXME implement */
 	gtk_widget_show_all(window);
 }
 
 
-void on_file_close(GtkWidget * widget, gpointer data)
+void on_file_close(gpointer data)
 {
 	Player * player = data;
 
@@ -85,7 +103,7 @@ void on_file_close(GtkWidget * widget, gpointer data)
 
 
 /* edit menu */
-void on_edit_preferences(GtkWidget * widget, gpointer data)
+void on_edit_preferences(gpointer data)
 {
 	Player * player = data;
 	static GtkWidget * window = NULL;
@@ -109,7 +127,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 /* view menu */
 /* on_view_fullscreen */
-void on_view_fullscreen(GtkWidget * widget, gpointer data)
+void on_view_fullscreen(gpointer data)
 {
 	Player * player = data;
 
@@ -118,7 +136,7 @@ void on_view_fullscreen(GtkWidget * widget, gpointer data)
 
 
 /* on_view_playlist */
-void on_view_playlist(GtkWidget * widget, gpointer data)
+void on_view_playlist(gpointer data)
 {
 	Player * player = data;
 
@@ -127,7 +145,9 @@ void on_view_playlist(GtkWidget * widget, gpointer data)
 
 
 /* help menu */
-void on_help_about(GtkWidget * widget, gpointer data)
+static gboolean _on_about_closex(gpointer data);
+
+void on_help_about(gpointer data)
 {
 	Player * player = data;
 	static GtkWidget * window = NULL;
@@ -148,6 +168,8 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				player->window));
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_on_about_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
 				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
@@ -170,9 +192,17 @@ void on_help_about(GtkWidget * widget, gpointer data)
 }
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
+static gboolean _on_about_closex(gpointer data)
+{
+	GtkWidget * window = data;
+
+	gtk_widget_hide(window);
+	return TRUE;
+}
+
 
 /* toolbar */
-void on_previous(GtkWidget * widget, gpointer data)
+void on_previous(gpointer data)
 {
 	Player * player = data;
 
@@ -180,7 +210,7 @@ void on_previous(GtkWidget * widget, gpointer data)
 }
 
 
-void on_rewind(GtkWidget * widget, gpointer data)
+void on_rewind(gpointer data)
 {
 	Player * player = data;
 
@@ -188,7 +218,7 @@ void on_rewind(GtkWidget * widget, gpointer data)
 }
 
 
-void on_play(GtkWidget * widget, gpointer data)
+void on_play(gpointer data)
 {
 	Player * player = data;
 
@@ -196,7 +226,7 @@ void on_play(GtkWidget * widget, gpointer data)
 }
 
 
-void on_pause(GtkWidget * widget, gpointer data)
+void on_pause(gpointer data)
 {
 	Player * player = data;
 
@@ -204,7 +234,7 @@ void on_pause(GtkWidget * widget, gpointer data)
 }
 
 
-void on_stop(GtkWidget * widget, gpointer data)
+void on_stop(gpointer data)
 {
 	Player * player = data;
 
@@ -212,7 +242,7 @@ void on_stop(GtkWidget * widget, gpointer data)
 }
 
 
-void on_forward(GtkWidget * widget, gpointer data)
+void on_forward(gpointer data)
 {
 	Player * player = data;
 
@@ -220,7 +250,7 @@ void on_forward(GtkWidget * widget, gpointer data)
 }
 
 
-void on_next(GtkWidget * widget, gpointer data)
+void on_next(gpointer data)
 {
 	Player * player = data;
 
@@ -228,7 +258,7 @@ void on_next(GtkWidget * widget, gpointer data)
 }
 
 
-void on_fullscreen(GtkWidget * widget, gpointer data)
+void on_fullscreen(gpointer data)
 {
 	Player * player = data;
 
@@ -238,10 +268,39 @@ void on_fullscreen(GtkWidget * widget, gpointer data)
 
 /* view */
 /* playlist */
-gboolean on_playlist_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+/* on_playlist_add */
+void on_playlist_add(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_playlist_closex */
+gboolean on_playlist_closex(gpointer data)
 {
 	Player * player = data;
 
 	gtk_widget_hide(player->pl_window);
 	return TRUE;
+}
+
+
+/* on_playlist_load */
+void on_playlist_load(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_playlist_remove */
+void on_playlist_remove(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_playlist_save */
+void on_playlist_save(gpointer data)
+{
+	/* FIXME implement */
 }

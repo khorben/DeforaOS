@@ -21,37 +21,41 @@
 # include <gtk/gtk.h>
 
 
-/* window */
-gboolean on_player_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+/* player */
+gboolean on_player_closex(gpointer data);
+void on_player_removed(gpointer data);
 
 /* file menu */
-void on_file_open(GtkWidget * widget, gpointer data);
-void on_file_properties(GtkWidget * widget, gpointer data);
-void on_file_close(GtkWidget * widget, gpointer data);
+void on_file_open(gpointer data);
+void on_file_properties(gpointer data);
+void on_file_close(gpointer data);
 
 /* edit menu */
-void on_edit_preferences(GtkWidget * widget, gpointer data);
+void on_edit_preferences(gpointer data);
 
 /* view menu */
-void on_view_fullscreen(GtkWidget * widget, gpointer data);
-void on_view_playlist(GtkWidget * widget, gpointer data);
+void on_view_fullscreen(gpointer data);
+void on_view_playlist(gpointer data);
 
 /* help menu */
-void on_help_about(GtkWidget * widget, gpointer data);
+void on_help_about(gpointer data);
 
 /* toolbar */
-void on_previous(GtkWidget * widget, gpointer data);
-void on_rewind(GtkWidget * widget, gpointer data);
-void on_play(GtkWidget * widget, gpointer data);
-void on_pause(GtkWidget * widget, gpointer data);
-void on_stop(GtkWidget * widget, gpointer data);
-void on_forward(GtkWidget * widget, gpointer data);
-void on_next(GtkWidget * widget, gpointer data);
-void on_fullscreen(GtkWidget * widget, gpointer data);
+void on_previous(gpointer data);
+void on_rewind(gpointer data);
+void on_play(gpointer data);
+void on_pause(gpointer data);
+void on_stop(gpointer data);
+void on_forward(gpointer data);
+void on_next(gpointer data);
+void on_fullscreen(gpointer data);
 
 /* view */
 /* playlist */
-gboolean on_playlist_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+void on_playlist_add(gpointer data);
+gboolean on_playlist_closex(gpointer data);
+void on_playlist_load(gpointer data);
+void on_playlist_remove(gpointer data);
+void on_playlist_save(gpointer data);
 
 #endif /* !PLAYER_CALLBACKS_H */
