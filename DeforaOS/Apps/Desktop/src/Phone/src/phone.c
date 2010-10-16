@@ -2484,6 +2484,7 @@ void phone_write_send(Phone * phone)
 	text = gtk_text_buffer_get_text(tbuf, &start, &end, FALSE);
 	if(number == NULL || number[0] == '\0' || text == NULL)
 		return;
+	length = strlen(text);
 	if(phone_event(phone, PHONE_EVENT_SMS_SENDING, number, &encoding, &text,
 			&length) != 0)
 		return;
