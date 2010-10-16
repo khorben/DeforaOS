@@ -33,27 +33,41 @@ typedef struct _Disas
 {
 	char const * filename;
 	FILE * fp;
-	As * as;
+	char * archname;
 	Arch * arch;
+
+	/* ELF */
+	union
+	{
+		unsigned char e_ident[EI_NIDENT];
+		Elf32_Ehdr ehdr32;
+		Elf64_Ehdr ehdr64;
+	} elf;
 } Disas;
 
 typedef struct _DisasSignature
 {
-	char const * name;
+	char const * format;
 	char const * signature;
 	size_t size;
-	int (*callback)(Disas * disas);
+	int (*detect)(Disas * disas);
+	int (*disas)(Disas * disas);
 } DisasSignature;
 
 
 /* variables */
-static int _disas_elf(Disas * disas);
-static int _disas_flat(Disas * disas);
+static int _elf_detect(Disas * disas);
+static int _elf_disas32(Disas * disas);
+static int _elf_disas64(Disas * disas);
+static int _flat_disas(Disas * disas);
+static int _java_detect(Disas * disas);
+static int _java_disas(Disas * disas);
 
 static DisasSignature _disas_signatures[] =
 {
-	{ "elf",	ELFMAG, SELFMAG,	_disas_elf	},
-	{ "flat",	NULL, 0,		_disas_flat	}
+	{ "elf",	ELFMAG, SELFMAG,	_elf_detect, NULL },
+	{ "java",	"\xca\xfe\xba\xbe", 4,	_java_detect, _java_disas },
+	{ "flat",	NULL, 0,		NULL, _flat_disas }
 };
 #define _disas_signatures_cnt (sizeof(_disas_signatures) \
 		/ sizeof(*_disas_signatures))
@@ -80,17 +94,20 @@ static int _disas(char const * arch, char const * format, char const * filename)
 	int ret = 1;
 	Disas disas;
 
-	if((disas.as = as_new(arch, NULL)) == NULL)
-		return error_print("disas");
+	if(arch == NULL)
+		disas.archname = NULL;
+	else if((disas.archname = strdup(arch)) == NULL)
+		return -_disas_error(filename, 1);
 	if((disas.fp = fopen(filename, "r")) == NULL)
-		ret = _disas_error(filename, 1);
-	else
 	{
-		disas.filename = filename;
-		ret = _disas_do_format(&disas, format);
-		fclose(disas.fp);
+		free(disas.archname);
+		return -_disas_error(filename, 1);
 	}
-	as_delete(disas.as);
+	disas.filename = filename;
+	disas.arch = NULL;
+	ret = _disas_do_format(&disas, format);
+	free(disas.archname);
+	fclose(disas.fp);
 	return ret;
 }
 
@@ -101,7 +118,7 @@ static int _disas_do_format(Disas * disas, char const * format)
 	if(format == NULL)
 		return _disas_do(disas);
 	for(i = 0; i < _disas_signatures_cnt; i++)
-		if(strcmp(_disas_signatures[i].name, format) == 0)
+		if(strcmp(_disas_signatures[i].format, format) == 0)
 			return _do_callback(disas, i);
 	fprintf(stderr, "disas: %s: %s\n", format, "Unknown format");
 	return 1;
@@ -136,9 +153,24 @@ static int _disas_do(Disas * disas)
 
 static int _do_callback(Disas * disas, size_t i)
 {
-	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].name,
-			as_get_arch(disas->as));
-	return _disas_signatures[i].callback(disas);
+	int ret;
+	As * as;
+
+	if(_disas_signatures[i].detect != NULL
+			&& _disas_signatures[i].detect(disas) != 0)
+		return -1;
+	if((as = as_new(disas->archname, _disas_signatures[i].format)) == NULL)
+		return -1;
+	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].format,
+			as_get_arch(as));
+	if(disas->arch != NULL)
+		arch_delete(disas->arch);
+	disas->arch = arch_new(as_get_arch(as));
+	as_delete(as);
+	if(disas->arch == NULL)
+		return -1;
+	ret = _disas_signatures[i].disas(disas);
+	return ret;
 }
 
 static int _do_flat(Disas * disas, off_t offset, size_t size)
@@ -157,8 +189,6 @@ static int _do_flat(Disas * disas, off_t offset, size_t size)
 #endif
 	if(fseek(disas->fp, offset, SEEK_SET) != 0)
 		return _disas_error(disas->filename, 1);
-	if((disas->arch = arch_new(as_get_arch(disas->as))) == NULL)
-		return error_print("disas");
 	printf("\n%08lx:\n", (unsigned long)offset);
 	for(i = 0; i < size; i++)
 	{
@@ -183,7 +213,6 @@ static int _do_flat(Disas * disas, off_t offset, size_t size)
 			break;
 		i += ret + j - 1;
 	}
-	arch_delete(disas->arch);
 	return -ret;
 }
 
@@ -235,31 +264,18 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 }
 
 
-/* disas_elf */
-/* ELF32 */
-static int _do_elf32(Disas * disas, Elf32_Ehdr * ehdr);
-static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
-		Elf32_Ehdr * ehdr);
-static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
-		uint16_t ndx, char ** strtab, size_t * strtab_cnt);
-/* ELF64 */
-static int _do_elf64(Disas * disas, Elf64_Ehdr * ehdr);
-static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
-		Elf64_Ehdr * ehdr);
-static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
-		uint16_t ndx, char ** strtab, size_t * strtab_cnt);
+/* elf_detect */
+static char const * _elf_detect32(Disas * disas);
+static char const * _elf_detect64(Disas * disas);
 
-static int _disas_elf(Disas * disas)
+static int _elf_detect(Disas * disas)
 {
-	union {
-		unsigned char e_ident[EI_NIDENT];
-		Elf32_Ehdr ehdr32;
-		Elf64_Ehdr ehdr64;
-	} u;
+	char const * archname;
+	char * p;
 
 	if(fseek(disas->fp, 0, SEEK_SET) != 0)
 		return _disas_error(disas->filename, 1);
-	if(fread(&u, sizeof(u), 1, disas->fp) != 1)
+	if(fread(&disas->elf, sizeof(disas->elf), 1, disas->fp) != 1)
 	{
 		fprintf(stderr, "disas: %s: %s\n", disas->filename,
 				"Could not determine ELF class");
@@ -267,22 +283,81 @@ static int _disas_elf(Disas * disas)
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() endian: 0x%x\n", __func__,
-			u.e_ident[EI_DATA]);
+			disas->elf.e_ident[EI_DATA]);
 #endif
-	switch(u.e_ident[EI_CLASS])
+	switch(disas->elf.e_ident[EI_CLASS])
 	{
 		case ELFCLASS32:
-			return _do_elf32(disas, &u.ehdr32);
+			archname = _elf_detect32(disas);
+			break;
 		case ELFCLASS64:
-			return _do_elf64(disas, &u.ehdr64);
+			archname = _elf_detect64(disas);
+			break;
+		default:
+			fprintf(stderr, "disas: %s: %s 0x%x\n", disas->filename,
+					"Unsupported ELF class",
+					disas->elf.e_ident[EI_CLASS]);
+			return -1;
 	}
-	fprintf(stderr, "disas: %s: %s 0x%x\n", disas->filename,
-			"Unsupported ELF class ", u.e_ident[EI_CLASS]);
-	return 1;
+	if(archname == NULL)
+		return -1;
+	if((p = strdup(archname)) == NULL)
+		return -1;
+	free(disas->archname);
+	disas->archname = p;
+	return 0;
 }
 
-static int _do_elf32(Disas * disas, Elf32_Ehdr * ehdr)
+static char const * _elf_detect32(Disas * disas)
 {
+	_disas_signatures[0].disas = _elf_disas32; /* XXX hard-coded */
+	switch(disas->elf.ehdr32.e_machine)
+	{
+		case EM_SPARC:
+			return "sparc";
+		case EM_386:
+		case EM_486:
+			return "i686"; /* XXX i386? i486? */
+		case EM_MIPS:
+			return "mips";
+		case EM_ARM:
+			return "arm";
+		case EM_ALPHA:
+			return "alpha";
+	}
+	fprintf(stderr, "disas: %s: %s 0x%x\n", disas->filename,
+			"Unsupported ELF architecture",
+			disas->elf.ehdr32.e_machine);
+	return NULL;
+}
+
+static char const * _elf_detect64(Disas * disas)
+{
+	_disas_signatures[0].disas = _elf_disas64; /* XXX hard-coded */
+	switch(disas->elf.ehdr64.e_machine)
+	{
+		case EM_SPARC:
+		case EM_SPARCV9:
+			return "sparc64";
+		case EM_X86_64:
+			return "amd64";
+	}
+	fprintf(stderr, "disas: %s: %s 0x%x\n", disas->filename,
+			"Unsupported ELF architecture",
+			disas->elf.ehdr64.e_machine);
+	return NULL;
+}
+
+
+/* elf_disas32 */
+static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
+		Elf32_Ehdr * ehdr);
+static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
+		uint16_t ndx, char ** strtab, size_t * strtab_cnt);
+
+static int _elf_disas32(Disas * disas)
+{
+	Elf32_Ehdr * ehdr = &disas->elf.ehdr32;
 	Elf32_Shdr * shdr;
 	char * shstrtab = NULL;
 	size_t shstrtab_cnt = 0;
@@ -303,7 +378,9 @@ static int _do_elf32(Disas * disas, Elf32_Ehdr * ehdr)
 	{
 		if(shdr[i].sh_name >= shstrtab_cnt)
 			continue;
-		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0)
+		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0
+				|| strcmp(".init", &shstrtab[shdr[i].sh_name])
+				== 0)
 		{
 			printf("\nDisassembly of section %s:\n",
 					&shstrtab[shdr[i].sh_name]);
@@ -362,8 +439,16 @@ static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
 	return 0;
 }
 
-static int _do_elf64(Disas * disas, Elf64_Ehdr * ehdr)
+
+/* elf_disas64 */
+static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
+		Elf64_Ehdr * ehdr);
+static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
+		uint16_t ndx, char ** strtab, size_t * strtab_cnt);
+
+static int _elf_disas64(Disas * disas)
 {
+	Elf64_Ehdr * ehdr = &disas->elf.ehdr64;
 	Elf64_Shdr * shdr;
 	char * shstrtab = NULL;
 	size_t shstrtab_cnt = 0;
@@ -381,8 +466,14 @@ static int _do_elf64(Disas * disas, Elf64_Ehdr * ehdr)
 	{
 		if(shdr[i].sh_name >= shstrtab_cnt)
 			continue;
-		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0)
+		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0
+				|| strcmp(".init", &shstrtab[shdr[i].sh_name])
+				== 0)
+		{
+			printf("\nDisassembly of section %s:\n",
+					&shstrtab[shdr[i].sh_name]);
 			_do_flat(disas, shdr[i].sh_offset, shdr[i].sh_size);
+		}
 	}
 	free(shstrtab);
 	free(shdr);
@@ -437,14 +528,38 @@ static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
 }
 
 
-/* disas_flat */
-static int _disas_flat(Disas * disas)
+/* flat_disas */
+static int _flat_disas(Disas * disas)
 {
 	struct stat st;
 
 	if(fstat(fileno(disas->fp), &st) != 0)
 		return _disas_error(disas->filename, 1);
 	return _do_flat(disas, 0, st.st_size);
+}
+
+
+/* java_detect */
+static int _java_detect(Disas * disas)
+{
+	char * p;
+
+	if((p = strdup("java")) == NULL)
+		return -1;
+	free(disas->archname);
+	disas->archname = p;
+	return 0;
+}
+
+
+/* java_disas */
+static int _java_disas(Disas * disas)
+{
+	struct stat st;
+
+	if(fstat(fileno(disas->fp), &st) != 0)
+		return _disas_error(disas->filename, 1);
+	return _do_flat(disas, 8, st.st_size - 8);
 }
 
 
@@ -456,7 +571,7 @@ static int _disas_list(void)
 	as_plugin_list(ASPT_ARCH);
 	fprintf(stderr, "%s", "Available format plug-ins:");
 	for(i = 0; i < _disas_signatures_cnt; i++)
-		fprintf(stderr, " %s", _disas_signatures[i].name);
+		fprintf(stderr, " %s", _disas_signatures[i].format);
 	fputc('\n', stderr);
 	return 0;
 }
