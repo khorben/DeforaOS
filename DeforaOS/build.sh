@@ -137,9 +137,9 @@ target_bootstrap()
 	echo
 	echo '================================================================='
 	echo 'The source tree is now configured for your environment. Essential'
-	echo 'libraries and tools will now be installed onto your system unless'
+	echo 'libraries and tools will be installed onto your system, unless'
 	echo 'you exit this script now with the CTRL+C key combination.'
-	echo 'Otherwise, press ENTER to proceed.'
+	echo 'Press ENTER to proceed with the installation.'
 	echo '================================================================='
 	echo
 	read IGNORE						|| return 0
