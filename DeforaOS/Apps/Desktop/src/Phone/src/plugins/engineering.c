@@ -195,6 +195,7 @@ static int _engineering_init(PhonePlugin * plugin)
 	Engineering * engineering;
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
+	GtkWidget * paned;
 	GtkWidget * frame;
 	GtkWidget * scrolled;
 	size_t i;
@@ -238,6 +239,7 @@ static int _engineering_init(PhonePlugin * plugin)
 			-1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* serving cell view */
+	paned = gtk_vpaned_new();
 	frame = gtk_frame_new("Serving cell");
 	engineering->sc_store = gtk_list_store_new(SC_COL_COUNT,
 			G_TYPE_STRING,		/* SC_COL_FREQUENCY */
@@ -272,7 +274,7 @@ static int _engineering_init(PhonePlugin * plugin)
 	gtk_container_add(GTK_CONTAINER(scrolled), engineering->sc_view);
 	gtk_container_add(GTK_CONTAINER(frame), scrolled);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
-	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
+	gtk_paned_add1(GTK_PANED(paned), frame);
 	/* neighbor cells view */
 	frame = gtk_frame_new("Neighbor cells");
 	engineering->nc_store = gtk_list_store_new(NC_COL_COUNT,
@@ -311,7 +313,8 @@ static int _engineering_init(PhonePlugin * plugin)
 	gtk_container_add(GTK_CONTAINER(frame), scrolled);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
 	gtk_container_add(GTK_CONTAINER(engineering->window), vbox);
-	gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 0);
+	gtk_paned_add2(GTK_PANED(paned), frame);
+	gtk_box_pack_start(GTK_BOX(vbox), paned, TRUE, TRUE, 0);
 	gtk_widget_show_all(engineering->window);
 	/* trigger */
 	plugin->helper->register_trigger(plugin->helper->phone, plugin, "%EM",
