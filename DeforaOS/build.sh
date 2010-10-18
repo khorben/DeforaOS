@@ -258,8 +258,8 @@ _bootstrap_system()
 		System/src/Init \
 		System/src/VFS"
 
-	#bootstrap libSystem
-	SUBDIRS="System/src/libSystem"
+	#bootstrap libSystem and libParser
+	SUBDIRS="System/src/libSystem System/src/libParser"
 	target "clean" "install"				|| return 2
 	for i in $S; do
 		SUBDIRS="$i"
