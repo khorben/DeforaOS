@@ -131,8 +131,7 @@ static int _configure(Prefs * prefs, char const * directory)
 		return error_print(PACKAGE);
 	cfgr.prefs = prefs;
 	_configure_detect(&cfgr);
-	ret = _configure_load(prefs, directory, ca);
-	if(ret == 0)
+	if((ret = _configure_load(prefs, directory, ca)) == 0)
 	{
 		if(prefs->flags & PREFS_n)
 			ret = _configure_do(&cfgr, ca);
@@ -323,16 +322,16 @@ static int _usage(void)
 
 	_prefs_init(&prefs);
 	fprintf(stderr, "%s%s%s%s%s%s%s%s%s",
-"Usage: configure [-nv][options...][directory]\n\
-  -n	Do not actually write Makefiles\n\
-  -v	Verbose mode\n\
-  -b	Binary files directory (default: \"", prefs.bindir, "\")\n\
-  -d	Destination prefix (default: \"\")\n\
-  -i	Include files directory (default: \"", prefs.includedir, "\")\n\
-  -l	Library files directory (default: \"", prefs.libdir, "\")\n\
-  -O	Force Operating System (default: auto-detected)\n\
-  -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n\
-  -S	Warn about security risks\n");
+"Usage: configure [-nv][options...][directory...]\n"
+"  -n	Do not actually write Makefiles\n"
+"  -v	Verbose mode\n"
+"  -b	Binary files directory (default: \"", prefs.bindir, "\")\n"
+"  -d	Destination prefix (default: \"\")\n"
+"  -i	Include files directory (default: \"", prefs.includedir, "\")\n"
+"  -l	Library files directory (default: \"", prefs.libdir, "\")\n"
+"  -O	Force Operating System (default: auto-detected)\n"
+"  -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n"
+"  -S	Warn about security risks\n");
 	return 1;
 }
 
@@ -340,6 +339,7 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	int ret = 0;
 	Prefs prefs;
 	int o;
 
@@ -377,9 +377,11 @@ int main(int argc, char * argv[])
 			case '?':
 				return _usage();
 		}
-	if(argc - optind > 1)
-		return _usage();
-	return _configure(&prefs, argc - optind == 1 ? argv[argc - 1] : ".");
+	if(optind == argc)
+		return _configure(&prefs, ".");
+	for(; optind < argc; optind++)
+		ret |= _configure(&prefs, argv[optind]);
+	return (ret == 0) ? 0 : 2;
 }
 
 static void _prefs_init(Prefs * prefs)
