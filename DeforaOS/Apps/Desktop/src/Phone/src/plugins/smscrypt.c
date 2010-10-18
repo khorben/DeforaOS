@@ -145,10 +145,10 @@ static int _smscrypt_destroy(PhonePlugin * plugin)
 
 /* smscrypt_event */
 static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
-		char const * number, PhoneEncoding * encoding, char ** buf,
+		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len);
 static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
-		char const * number, PhoneEncoding * encoding, char ** buf,
+		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len);
 
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
@@ -170,7 +170,7 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
 			ret = _smscrypt_event_sms_receiving(plugin, number,
-					encoding, buf, len);
+					encoding, *buf, len);
 			break;
 		case PHONE_EVENT_SMS_SENDING:
 			number = va_arg(ap, char const *);
@@ -178,7 +178,7 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
 			ret = _smscrypt_event_sms_sending(plugin, number,
-					encoding, buf, len);
+					encoding, *buf, len);
 			break;
 		/* ignore the rest */
 		default:
@@ -189,7 +189,7 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 }
 
 static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
-		char const * number, PhoneEncoding * encoding, char ** buf,
+		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len)
 {
 	SMSCrypt * smscrypt = plugin->priv;
@@ -207,8 +207,8 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 		return 0; /* XXX warn */
 	for(i = 0; i < *len; i++)
 	{
-		(*buf)[i] ^= smscrypt->buf[j];
-		smscrypt->buf[j++] ^= (*buf)[i];
+		buf[i] ^= smscrypt->buf[j];
+		smscrypt->buf[j++] ^= buf[i];
 		if(j != smscrypt->len)
 			continue;
 		SHA1_Init(&sha1);
@@ -222,7 +222,7 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 }
 
 static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
-		char const * number, PhoneEncoding * encoding, char ** buf,
+		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len)
 {
 	SMSCrypt * smscrypt = plugin->priv;
@@ -241,8 +241,8 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 	*encoding = PHONE_ENCODING_DATA;
 	for(i = 0; i < *len; i++)
 	{
-		(*buf)[i] ^= smscrypt->buf[j];
-		smscrypt->buf[j++] = (*buf)[i];
+		buf[i] ^= smscrypt->buf[j];
+		smscrypt->buf[j++] = buf[i];
 		if(j != smscrypt->len)
 			continue;
 		SHA1_Init(&sha1);
