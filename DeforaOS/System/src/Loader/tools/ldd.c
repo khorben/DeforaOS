@@ -91,13 +91,12 @@ static int _ldd(char const * filename)
 			ret = -_error(filename, "Could not determine ELF class",
 					1);
 	}
+	else if(ferror(fp) != 0)
+		ret = -_error(filename, strerror(errno), 1);
 	else
-	{
-		if(ferror(fp) != 0)
-			return -_error(filename, strerror(errno), 1);
 		ret = -_error(filename, "Not an ELF file", 1);
-	}
-	fclose(fp);
+	if(fclose(fp) != 0)
+		ret = -_error(filename, strerror(errno), 1);
 	return ret;
 }
 
