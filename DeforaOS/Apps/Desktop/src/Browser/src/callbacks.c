@@ -232,14 +232,6 @@ void on_edit_select_all(gpointer data)
 }
 
 
-void on_edit_unselect_all(gpointer data)
-{
-	Browser * browser = data;
-
-	browser_unselect_all(browser);
-}
-
-
 /* on_edit_preferences */
 static void _preferences_set(Browser * browser);
 /* callbacks */
@@ -376,6 +368,15 @@ static void _preferences_on_ok(gpointer data)
 			GTK_TOGGLE_BUTTON(browser->pr_hidden));
 	browser_config_save(browser);
 	browser_refresh(browser);
+}
+
+
+/* on_edit_unselect_all */
+void on_edit_unselect_all(gpointer data)
+{
+	Browser * browser = data;
+
+	browser_unselect_all(browser);
 }
 
 
