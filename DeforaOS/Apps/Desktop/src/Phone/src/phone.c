@@ -1381,6 +1381,8 @@ static void _show_code_window(Phone * phone)
 			"stock_lock");
 #endif
 	gtk_container_set_border_width(GTK_CONTAINER(phone->en_window), 4);
+	g_signal_connect(G_OBJECT(phone->en_window), "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	phone->en_entry = gtk_entry_new();
@@ -1748,6 +1750,8 @@ void phone_show_messages(Phone * phone, gboolean show)
 
 /* phone_show_plugins */
 static void _on_plugins_cancel(gpointer data);
+static void _on_plugins_activated(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 static gboolean _on_plugins_closex(gpointer data);
 static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
 		char * path, gpointer data);
@@ -1784,6 +1788,8 @@ void phone_show_plugins(Phone * phone, gboolean show)
 					phone->pl_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->pl_view),
 				FALSE);
+		g_signal_connect(G_OBJECT(phone->pl_view), "row-activated",
+				G_CALLBACK(_on_plugins_activated), phone);
 		renderer = gtk_cell_renderer_toggle_new();
 		g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
 					_on_plugins_enabled_toggle), phone);
@@ -1897,6 +1903,20 @@ static void _on_plugins_cancel(gpointer data)
 		plugin_delete(p);
 	}
 	closedir(dir);
+}
+
+static void _on_plugins_activated(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
+{
+	Phone * phone = data;
+	GtkTreeIter iter;
+	gboolean active;
+
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(phone->pl_store), &iter, path);
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->pl_store), &iter,
+			PHONE_PLUGINS_COLUMN_ENABLED, &active, -1);
+	gtk_list_store_set(phone->pl_store, &iter, PHONE_PLUGINS_COLUMN_ENABLED,
+			!active, -1);
 }
 
 static gboolean _on_plugins_closex(gpointer data)
@@ -2491,7 +2511,6 @@ void phone_write_send(Phone * phone)
 	phone->wr_progress = _phone_create_progress(phone->wr_window,
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
-	length = strlen(text);
 	gsm_message_send(phone->gsm, number, encoding, text, length);
 	g_free(text);
 }
