@@ -1,4 +1,4 @@
-SUBDIRS	= libSystem libParser libc Init VFS VPN
+SUBDIRS	= libSystem libParser libc Loader Init VFS VPN
 
 
 all: subdirs
