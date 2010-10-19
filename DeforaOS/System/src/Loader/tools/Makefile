@@ -22,7 +22,7 @@ ldd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 ldd: $(ldd_OBJS)
 	$(CC) -o ldd $(ldd_OBJS) $(ldd_LDFLAGS)
 
-ldd.o: ldd.c
+ldd.o: ldd.c elf.c
 	$(CC) $(ldd_CFLAGS) -c ldd.c
 
 clean:
