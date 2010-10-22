@@ -31,6 +31,8 @@ void compose_delete(Compose * compose);
 
 /* accessors */
 Mailer * compose_get_mailer(Compose * compose);
+void compose_set_subject(Compose * compose, char const * subject);
+void compose_set_to(Compose * compose, char const * to);
 
 /* useful */
 int compose_save(Compose * compose);

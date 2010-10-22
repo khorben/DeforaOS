@@ -24,6 +24,7 @@
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
+#include "compose.h"
 #include "callbacks.h"
 #include "mailer.h"
 #include "common.c"
@@ -767,6 +768,68 @@ int mailer_account_enable(Mailer * mailer, Account * account)
 	return 0;
 }
 #endif
+
+
+/* mailer_reply_selected */
+void mailer_reply_selected(Mailer * mailer)
+{
+	GtkTreeModel * model;
+	GtkTreeSelection * treesel;
+	GList * selected;
+	GList * s;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	AccountMessage * message;
+	char * from;
+	char * subject;
+	Compose * compose;
+	char * p;
+	char const * q;
+
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
+			== NULL)
+		return;
+	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
+	{
+		if((path = s->data) == NULL)
+			continue;
+		gtk_tree_model_get_iter(model, &iter, path);
+		gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, MH_COL_MESSAGE,
+				&message, MH_COL_FROM, &from, MH_COL_SUBJECT,
+				&subject, -1);
+		if((compose = compose_new(mailer)) == NULL)
+			continue; /* XXX error message? */
+		compose_set_to(compose, from);
+		q = N_("Re: ");
+		if(strncasecmp(subject, q, strlen(q)) != 0
+				&& strncasecmp(subject, _(q), strlen(_(q))) != 0
+				&& (p = malloc(strlen(q) + strlen(subject) + 1))
+				!= NULL)
+		{
+			sprintf(p, "%s%s", q, subject);
+			free(subject);
+			subject = p;
+		}
+		compose_set_subject(compose, subject);
+		g_free(subject);
+		g_free(from);
+	}
+	g_list_free(selected);
+}
+
+
+/* mailer_reply_selected_to_all */
+void mailer_reply_selected_to_all(Mailer * mailer)
+{
+	/* FIXME really implement */
+	mailer_reply_selected(mailer);
+}
 
 
 /* mailer_select_all */

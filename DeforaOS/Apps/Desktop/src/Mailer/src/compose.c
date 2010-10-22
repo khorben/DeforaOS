@@ -324,9 +324,24 @@ void compose_delete(Compose * compose)
 
 
 /* accessors */
+/* compose_get_mailer */
 Mailer * compose_get_mailer(Compose * compose)
 {
 	return compose->mailer;
+}
+
+
+/* compose_set_subject */
+void compose_set_subject(Compose * compose, char const * subject)
+{
+	gtk_entry_set_text(GTK_ENTRY(compose->subject), subject);
+}
+
+
+/* compose_set_to */
+void compose_set_to(Compose * compose, char const * to)
+{
+	gtk_entry_set_text(GTK_ENTRY(compose->to), to);
 }
 
 

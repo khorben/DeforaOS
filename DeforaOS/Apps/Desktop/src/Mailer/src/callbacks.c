@@ -130,8 +130,7 @@ void on_reply(gpointer data)
 {
 	Mailer * mailer = data;
 
-	/* FIXME implement only if selection */
-	compose_new(mailer);
+	mailer_reply_selected(mailer);
 }
 
 
@@ -139,8 +138,7 @@ void on_reply_to_all(gpointer data)
 {
 	Mailer * mailer = data;
 
-	/* FIXME implement only if selection */
-	compose_new(mailer);
+	mailer_reply_selected_to_all(mailer);
 }
 
 
