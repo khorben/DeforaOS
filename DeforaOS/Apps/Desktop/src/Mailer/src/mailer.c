@@ -501,6 +501,10 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_to), p);
 		gtk_tree_model_get(model, &iter, MH_COL_DATE_DISPLAY, &p, -1);
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
+		/* FIXME really set as read and simplify code */
+		gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+				MH_COL_READ, TRUE,
+				MH_COL_WEIGHT, PANGO_WEIGHT_NORMAL, -1);
 		gtk_widget_show(mailer->hdr_vbox);
 		if((tbuf = account_select(mailer->account_cur,
 						mailer->folder_cur, message))
