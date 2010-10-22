@@ -31,8 +31,6 @@
 /* Mbox */
 /* private */
 /* types */
-typedef struct _Message Message;
-
 typedef enum _ParserContext
 {
 	PC_FROM,	/* while pos < 6 not sure => fallback body or garbage */
@@ -44,7 +42,7 @@ typedef enum _ParserContext
 typedef struct _MboxFolder
 {
 	AccountConfig * config;
-	Message ** messages;
+	AccountMessage ** messages;
 	size_t messages_cnt;
 	GtkTextBuffer * buffer;
 
@@ -56,7 +54,7 @@ typedef struct _MboxFolder
 	/* parsing */
 	size_t offset;
 	ParserContext context;
-	Message * message;
+	AccountMessage * message;
 	size_t pos; /* context-dependant */
 	char * str;
 
@@ -141,6 +139,8 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 static int _mbox_quit(void);
 static GtkTextBuffer * _mbox_select(AccountFolder * folder,
 		AccountMessage * message);
+static GtkTextBuffer * _mbox_select_source(AccountFolder * folder,
+		AccountMessage * message);
 
 AccountPlugin account_plugin =
 {
@@ -151,6 +151,7 @@ AccountPlugin account_plugin =
 	_mbox_init,
 	_mbox_quit,
 	_mbox_select,
+	_mbox_select_source,
 	NULL
 };
 
@@ -162,10 +163,10 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 
 
-/* Message */
+/* AccountMessage */
 /* private */
 /* types */
-struct _Message
+struct _AccountMessage
 {
 	size_t offset;
 	GtkTreeIter iter;
@@ -177,11 +178,12 @@ struct _Message
 
 
 /* prototypes */
-static Message * _message_new(off_t offset, GtkListStore * store);
-static void _message_delete(Message * message);
+static AccountMessage * _message_new(off_t offset, GtkListStore * store);
+static void _message_delete(AccountMessage * message);
 
-static int _message_set_body(Message * message, off_t offset, size_t length);
-static int _message_set_header(Message * message, char const * header,
+static int _message_set_body(AccountMessage * message, off_t offset,
+		size_t length);
+static int _message_set_header(AccountMessage * message, char const * header,
 		GtkListStore * store);
 
 
@@ -256,7 +258,6 @@ static GtkTextBuffer * _mbox_select(AccountFolder * folder,
 		AccountMessage * message)
 {
 	MboxFolder * mf = folder->data;
-	Message * m = (Message*)message;
 	char const * filename = mf->config->value;
 	GtkTextIter iter;
 	FILE * fp;
@@ -272,11 +273,11 @@ static GtkTextBuffer * _mbox_select(AccountFolder * folder,
 	/* XXX we may still be reading the file... */
 	if((fp = fopen(filename, "r")) == NULL)
 		return NULL;
-	if(m->body_offset != 0 && m->body_length > 0
-			&& fseek(fp, m->body_offset, SEEK_SET) == 0
-			&& (buf = malloc(m->body_length)) != NULL)
+	if(message->body_offset != 0 && message->body_length > 0
+			&& fseek(fp, message->body_offset, SEEK_SET) == 0
+			&& (buf = malloc(message->body_length)) != NULL)
 	{
-		if((size = fread(buf, 1, m->body_length, fp)) > 0)
+		if((size = fread(buf, 1, message->body_length, fp)) > 0)
 			gtk_text_buffer_insert(mf->buffer, &iter, buf, size);
 		free(buf);
 	}
@@ -285,12 +286,47 @@ static GtkTextBuffer * _mbox_select(AccountFolder * folder,
 }
 
 
-/* Message */
+/* mbox_select_source */
+static GtkTextBuffer * _mbox_select_source(AccountFolder * folder,
+		AccountMessage * message)
+{
+	/* FIXME code duplication with _mbox_select */
+	GtkTextBuffer * ret;
+	MboxFolder * mf = folder->data;
+	char const * filename = mf->config->value;
+	GtkTextIter iter;
+	FILE * fp;
+	char * buf;
+	size_t size;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%p\")\n", __func__, folder->name,
+			(void*)message);
+#endif
+	ret = gtk_text_buffer_new(NULL);
+	gtk_text_buffer_get_end_iter(ret, &iter);
+	/* XXX we may still be reading the file... */
+	if((fp = fopen(filename, "r")) == NULL)
+		return NULL;
+	size = message->body_offset - message->offset + message->body_length;
+	if(fseek(fp, message->offset, SEEK_SET) == 0
+			&& (buf = malloc(size)) != NULL)
+	{
+		if((size = fread(buf, 1, size, fp)) > 0)
+			gtk_text_buffer_insert(ret, &iter, buf, size);
+		free(buf);
+	}
+	fclose(fp);
+	return ret;
+}
+
+
+/* AccountMessage */
 /* functions */
 /* message_new */
-static Message * _message_new(off_t offset, GtkListStore * store)
+static AccountMessage * _message_new(off_t offset, GtkListStore * store)
 {
-	Message * message;
+	AccountMessage * message;
 
 	if((message = malloc(sizeof(*message))) == NULL)
 	{
@@ -310,7 +346,7 @@ static Message * _message_new(off_t offset, GtkListStore * store)
 
 
 /* message_delete */
-static void _message_delete(Message * message)
+static void _message_delete(AccountMessage * message)
 {
 	size_t i;
 
@@ -322,7 +358,8 @@ static void _message_delete(Message * message)
 
 
 /* message_set_body */
-static int _message_set_body(Message * message, off_t offset, size_t length)
+static int _message_set_body(AccountMessage * message, off_t offset,
+		size_t length)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %lu, %lu)\n", __func__, (void*)message,
@@ -336,7 +373,7 @@ static int _message_set_body(Message * message, off_t offset, size_t length)
 
 /* message_set_header */
 /* FIXME factorize code? */
-static int _message_set_header(Message * message, char const * header,
+static int _message_set_header(AccountMessage * message, char const * header,
 		GtkListStore * store)
 {
 	/* FIXME check if the header is already set */
@@ -406,11 +443,11 @@ static int _message_set_header(Message * message, char const * header,
 	return 0;
 }
 
-Message * _folder_message_add(AccountFolder * folder, off_t offset)
+AccountMessage * _folder_message_add(AccountFolder * folder, off_t offset)
 {
 	MboxFolder * mbox = folder->data;
-	Message ** p;
-	Message * message;
+	AccountMessage ** p;
+	AccountMessage * message;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %ld)\n", __func__,

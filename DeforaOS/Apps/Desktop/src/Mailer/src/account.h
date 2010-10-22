@@ -52,5 +52,7 @@ int account_quit(Account * account);
 
 GtkTextBuffer * account_select(Account * account, AccountFolder * folder,
 		AccountMessage * message);
+GtkTextBuffer * account_select_source(Account * account, AccountFolder * folder,
+		AccountMessage * message);
 
 #endif /* !MAILER_ACCOUNT_H */

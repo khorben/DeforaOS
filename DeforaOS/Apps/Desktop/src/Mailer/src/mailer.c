@@ -74,6 +74,10 @@ struct _Mailer
 	GtkWidget * pr_messages_font;
 };
 
+/* FIXME use a more elegant model with an AccountMessage directly */
+typedef void (*MailerForeachMessageCallback)(Mailer * mailer,
+		GtkTreeModel * model, GtkTreeIter * iter);
+
 
 /* constants */
 static const char * _title[3] =
@@ -185,6 +189,8 @@ static DesktopToolbar _mailer_toolbar[] =
 /* prototypes */
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 static gboolean _mailer_confirm(Mailer * mailer, char const * message);
+static void _mailer_foreach_message_selected(Mailer * mailer,
+		MailerForeachMessageCallback callback);
 static char * _mailer_get_config_filename(void);
 static void _mailer_update_status(Mailer * mailer);
 
@@ -843,65 +849,109 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 }
 
 
+/* mailer_open_selected_source */
+static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
+		GtkTreeIter * iter);
+
+void mailer_open_selected_source(Mailer * mailer)
+{
+	_mailer_foreach_message_selected(mailer, _open_selected_source);
+}
+
+static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
+		GtkTreeIter * iter)
+{
+	AccountMessage * message;
+	GtkWidget * window;
+	GtkWidget * scrolled;
+	PangoFontDescription * font;
+	char const * p;
+	GtkWidget * widget;
+	GtkTextBuffer * tbuf;
+
+	gtk_tree_model_get(model, iter, MH_COL_MESSAGE, &message, -1);
+	if(message == NULL)
+		return;
+	if((tbuf = account_select_source(mailer->account_cur,
+					mailer->folder_cur, message)) == NULL)
+		return;
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
+	/* XXX choose a better title */
+	gtk_window_set_title(GTK_WINDOW(window), _("Mailer - View source"));
+	scrolled = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	widget = gtk_text_view_new_with_buffer(tbuf);
+	if((p = config_get(mailer->config, "", "messages_font")) != NULL)
+	{
+		font = pango_font_description_from_string(p);
+		gtk_widget_modify_font(widget, font);
+		pango_font_description_free(font);
+	}
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(widget), FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
+	gtk_container_add(GTK_CONTAINER(scrolled), widget);
+	gtk_container_add(GTK_CONTAINER(window), scrolled);
+	gtk_widget_show_all(window);
+	/* FIXME count the window */
+}
+
+
 /* mailer_reply_selected */
+static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
+		GtkTreeIter * iter);
+
 void mailer_reply_selected(Mailer * mailer)
 {
-	GtkTreeModel * model;
-	GtkTreeSelection * treesel;
-	GList * selected;
-	GList * s;
-	GtkTreePath * path;
-	GtkTreeIter iter;
-	AccountMessage * message;
+	_mailer_foreach_message_selected(mailer, _reply_selected);
+}
+
+static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
+		GtkTreeIter * iter)
+{
+	Compose * compose;
 	char * from;
 	char * subject;
-	Compose * compose;
 	char * p;
 	char const * q;
 
-	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
-		return;
-	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
-		return;
-	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
-			== NULL)
-		return;
-	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
-	{
-		if((path = s->data) == NULL)
-			continue;
-		gtk_tree_model_get_iter(model, &iter, path);
-		gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, MH_COL_MESSAGE,
-				&message, MH_COL_FROM, &from, MH_COL_SUBJECT,
-				&subject, -1);
-		if((compose = compose_new(mailer)) == NULL)
-			continue; /* XXX error message? */
+	if((compose = compose_new(mailer)) == NULL)
+		return; /* XXX error message? */
+	gtk_tree_model_get(model, iter, MH_COL_FROM, &from, MH_COL_SUBJECT,
+			&subject, -1);
+	if(from != NULL)
 		compose_set_to(compose, from);
-		q = N_("Re: ");
-		if(strncasecmp(subject, q, strlen(q)) != 0
-				&& strncasecmp(subject, _(q), strlen(_(q))) != 0
-				&& (p = malloc(strlen(q) + strlen(subject) + 1))
-				!= NULL)
-		{
-			sprintf(p, "%s%s", q, subject);
-			free(subject);
-			subject = p;
-		}
-		compose_set_subject(compose, subject);
-		g_free(subject);
-		g_free(from);
+	q = N_("Re: ");
+	if(subject != NULL
+			&& strncasecmp(subject, q, strlen(q)) != 0
+			&& strncasecmp(subject, _(q), strlen(_(q))) != 0
+			&& (p = malloc(strlen(q) + strlen(subject) + 1))
+			!= NULL)
+	{
+		sprintf(p, "%s%s", q, subject);
+		free(subject);
+		subject = p;
 	}
-	g_list_free(selected);
+	compose_set_subject(compose, subject);
+	free(subject);
+	free(from);
 }
 
 
 /* mailer_reply_selected_to_all */
+static void _reply_selected_to_all(Mailer * mailer, GtkTreeModel * model,
+		GtkTreeIter * iter);
 void mailer_reply_selected_to_all(Mailer * mailer)
 {
+	_mailer_foreach_message_selected(mailer, _reply_selected_to_all);
+}
+
+static void _reply_selected_to_all(Mailer * mailer, GtkTreeModel * model,
+		GtkTreeIter * iter)
+{
 	/* FIXME really implement */
-	mailer_reply_selected(mailer);
+	_reply_selected(mailer, model, iter);
 }
 
 
@@ -1999,6 +2049,37 @@ static gboolean _mailer_confirm(Mailer * mailer, char const * message)
 	if(res == GTK_RESPONSE_YES)
 		return TRUE;
 	return FALSE;
+}
+
+
+/* mailer_foreach_message_selected */
+static void _mailer_foreach_message_selected(Mailer * mailer,
+		MailerForeachMessageCallback callback)
+{
+	GtkTreeModel * model;
+	GtkTreeSelection * treesel;
+	GList * selected;
+	GList * s;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
+			== NULL)
+		return;
+	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
+	{
+		if((path = s->data) == NULL)
+			continue;
+		gtk_tree_model_get_iter(model, &iter, path);
+		callback(mailer, model, &iter);
+	}
+	g_list_free(selected);
 }
 
 

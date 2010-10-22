@@ -292,3 +292,17 @@ GtkTextBuffer * account_select(Account * account, AccountFolder * folder,
 		return NULL;
 	return account->plugin->select(folder, message);
 }
+
+
+/* account_select_source */
+GtkTextBuffer * account_select_source(Account * account, AccountFolder * folder,
+		AccountMessage * message)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, folder->name,
+			(void*)message);
+#endif
+	if(account->plugin->select_source == NULL)
+		return NULL;
+	return account->plugin->select_source(folder, message);
+}

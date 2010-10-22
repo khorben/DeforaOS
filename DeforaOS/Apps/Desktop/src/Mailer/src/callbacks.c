@@ -34,7 +34,7 @@
 /* window */
 gboolean on_closex(gpointer data)
 {
-	Mailer * mailer;
+	Mailer * mailer = data;
 
 	/* FIXME may be composing or viewing messages */
 	gtk_main_quit();
@@ -53,8 +53,7 @@ void on_file_new_mail(gpointer data)
 
 void on_file_quit(gpointer data)
 {
-	/* FIXME may be composing */
-	gtk_main_quit();
+	on_closex(data);
 }
 
 
@@ -91,7 +90,9 @@ void on_message_forward(gpointer data)
 
 void on_message_view_source(gpointer data)
 {
-	/* FIXME implement */
+	Mailer * mailer = data;
+
+	mailer_open_selected_source(mailer);
 }
 
 

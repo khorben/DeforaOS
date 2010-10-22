@@ -99,6 +99,8 @@ typedef struct _AccountPlugin
 	int (*quit)(void);
 	GtkTextBuffer * (*select)(AccountFolder * folder,
 			AccountMessage * message);
+	GtkTextBuffer * (*select_source)(AccountFolder * folder,
+			AccountMessage * message);
 	void * priv;
 } AccountPlugin;
 
