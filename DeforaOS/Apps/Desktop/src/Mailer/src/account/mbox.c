@@ -224,7 +224,7 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 				G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
 				GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING,
 				G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-				G_TYPE_BOOLEAN);
+				G_TYPE_BOOLEAN, G_TYPE_INT);
 		mbox->source = g_idle_add(_folder_idle, &_config_folder[i]);
 	}
 	return ret;
@@ -299,7 +299,8 @@ static Message * _message_new(off_t offset, GtkListStore * store)
 	}
 	message->offset = offset;
 	gtk_list_store_append(store, &message->iter);
-	gtk_list_store_set(store, &message->iter, MH_COL_MESSAGE, message, -1);
+	gtk_list_store_set(store, &message->iter, MH_COL_MESSAGE, message,
+			MH_COL_PIXBUF, account_plugin.helper->mail_read, -1);
 	message->headers = NULL;
 	message->headers_cnt = 0;
 	message->body_offset = 0;
@@ -353,6 +354,7 @@ static int _message_set_header(Message * message, char const * header,
 	struct tm t;
 	time_t oneday;
 	char buf[20];
+	gboolean read;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", store)\n", __func__,
@@ -391,14 +393,12 @@ static int _message_set_header(Message * message, char const * header,
 	}
 	else if(abc[i].col == MH_COL_READ)
 	{
-		gtk_list_store_set(store, &message->iter, MH_COL_READ,
-				(index(&header[8], 'R') != NULL) ? TRUE : FALSE,
-				-1);
-		gtk_list_store_set(store, &message->iter, MH_COL_PIXBUF,
-					(index(&header[8], 'R') != NULL)
-					? account_plugin.helper->mail_read
-					: account_plugin.helper->mail_unread,
-					-1);
+		read = (index(&header[8], 'R') != NULL) ? TRUE : FALSE;
+		gtk_list_store_set(store, &message->iter, MH_COL_READ, read,
+				MH_COL_WEIGHT, PANGO_WEIGHT_BOLD, -1);
+		gtk_list_store_set(store, &message->iter, MH_COL_PIXBUF, read
+				? account_plugin.helper->mail_read
+				: account_plugin.helper->mail_unread, -1);
 	}
 	else if(abc[i].col != -1)
 		gtk_list_store_set(store, &message->iter, abc[i].col,

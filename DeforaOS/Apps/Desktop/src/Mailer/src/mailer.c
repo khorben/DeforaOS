@@ -215,7 +215,7 @@ static GtkWidget * _new_headers(Mailer * mailer);
 static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
 		char const * title, int id, int sortid);
 static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
-		char const * title, int id, int sortid);
+		char const * title, int id, int sortid, int boldid);
 static void _on_headers_changed(GtkTreeSelection * selection, gpointer data);
 static gboolean _new_config_load(gpointer data);
 
@@ -448,13 +448,13 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 	gtk_tree_view_set_rules_hint(treeview, TRUE);
 	_headers_view_column_pixbuf(treeview, "", MH_COL_PIXBUF, MH_COL_READ);
 	_headers_view_column_text(treeview, _("Subject"), MH_COL_SUBJECT,
-			MH_COL_SUBJECT);
+			MH_COL_SUBJECT, MH_COL_WEIGHT);
 	mailer->view_from = _headers_view_column_text(treeview, _("From"),
-			MH_COL_FROM, MH_COL_FROM);
+			MH_COL_FROM, MH_COL_FROM, MH_COL_WEIGHT);
 	mailer->view_to = _headers_view_column_text(treeview, _("To"),
-			MH_COL_TO, MH_COL_TO);
+			MH_COL_TO, MH_COL_TO, MH_COL_WEIGHT);
 	_headers_view_column_text(treeview, _("Date"), MH_COL_DATE_DISPLAY,
-			MH_COL_DATE);
+			MH_COL_DATE, MH_COL_WEIGHT);
 	treesel = gtk_tree_view_get_selection(treeview);
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
 	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
@@ -520,7 +520,7 @@ static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
 }
 
 static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
-		char const * title, int id, int sortid)
+		char const * title, int id, int sortid, int weightid)
 {
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
@@ -529,7 +529,8 @@ static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
 	g_object_set(G_OBJECT(renderer), "ellipsize", PANGO_ELLIPSIZE_END,
 			NULL);
 	column = gtk_tree_view_column_new_with_attributes(title, renderer,
-			"text", id, NULL);
+			"text", id, (weightid >= 0) ? "weight" : NULL, weightid,
+			NULL);
 #if GTK_CHECK_VERSION(2, 4, 0)
 	gtk_tree_view_column_set_expand(column, TRUE);
 #endif
