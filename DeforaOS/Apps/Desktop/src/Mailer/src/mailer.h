@@ -42,6 +42,7 @@ void mailer_delete(Mailer * mailer);
 
 /* accessors */
 char const * mailer_get_config(Mailer * mailer, char const * variable);
+void mailer_set_status(Mailer * mailer, char const * status);
 
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);

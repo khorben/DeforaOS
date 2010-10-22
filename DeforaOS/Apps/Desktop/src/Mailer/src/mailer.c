@@ -395,6 +395,8 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	GtkTreeIter iter;
 	GtkListStore * store;
 	GtkTreePath * path;
+	int cnt;
+	char buf[256] = "";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -405,6 +407,7 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 		mailer->folder_cur = NULL;
 		gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
 				NULL);
+		mailer_set_status(mailer, "");
 		return;
 	}
 	/* get current folder */
@@ -435,6 +438,16 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	store = account_get_store(mailer->account_cur, mailer->folder_cur);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
 			GTK_TREE_MODEL(store));
+	if(store != NULL)
+	{
+		cnt = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),
+				NULL);
+		snprintf(buf, sizeof(buf), _("%s/%s: %d %s"),
+				account_get_name(mailer->account_cur),
+				mailer->folder_cur->name, cnt,
+				(cnt > 1) ? _("messages") : _("message"));
+	}
+	mailer_set_status(mailer, buf);
 }
 
 static GtkWidget * _new_headers_view(Mailer * mailer)
@@ -656,6 +669,20 @@ void mailer_delete(Mailer * mailer)
 char const * mailer_get_config(Mailer * mailer, char const * variable)
 {
 	return config_get(mailer->config, "", variable);
+}
+
+
+/* mailer_set_status */
+void mailer_set_status(Mailer * mailer, char const * status)
+{
+	GtkStatusbar * sb;
+
+	sb = GTK_STATUSBAR(mailer->statusbar);
+	if(mailer->statusbar_id != 0)
+		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
+				mailer->statusbar_id);
+	mailer->statusbar_id = gtk_statusbar_push(sb,
+			gtk_statusbar_get_context_id(sb, ""), status);
 }
 
 
