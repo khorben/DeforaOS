@@ -55,6 +55,8 @@ int mailer_account_enable(Mailer * mailer, Account * account);
 /* FIXME implement
 int mailer_account_remove(Mailer * mailer, Account * account); */
 
+void mailer_delete_selected(Mailer * mailer);
+
 void mailer_reply_selected(Mailer * mailer);
 void mailer_reply_selected_to_all(Mailer * mailer);
 

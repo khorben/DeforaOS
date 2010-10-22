@@ -59,15 +59,27 @@ void on_file_quit(gpointer data)
 
 
 /* message menu */
+void on_message_delete(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_delete_selected(mailer);
+}
+
+
 void on_message_reply(gpointer data)
 {
-	on_reply(data);
+	Mailer * mailer = data;
+
+	mailer_reply_selected(mailer);
 }
 
 
 void on_message_reply_to_all(gpointer data)
 {
-	on_reply_to_all(data);
+	Mailer * mailer = data;
+
+	mailer_reply_selected_to_all(mailer);
 }
 
 
@@ -118,11 +130,36 @@ void on_help_about(gpointer data)
 
 
 /* toolbar */
+void on_delete(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_delete_selected(mailer);
+}
+
+
+void on_forward(gpointer data)
+{
+	Mailer * mailer = data;
+
+	/* FIXME implement only if selection */
+	compose_new(mailer);
+}
+
+
 void on_new_mail(gpointer data)
 {
 	Mailer * mailer = data;
 
 	compose_new(mailer);
+}
+
+
+void on_preferences(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_show_preferences(mailer, TRUE);
 }
 
 
@@ -139,23 +176,6 @@ void on_reply_to_all(gpointer data)
 	Mailer * mailer = data;
 
 	mailer_reply_selected_to_all(mailer);
-}
-
-
-void on_forward(gpointer data)
-{
-	Mailer * mailer = data;
-
-	/* FIXME implement only if selection */
-	compose_new(mailer);
-}
-
-
-void on_preferences(gpointer data)
-{
-	Mailer * mailer = data;
-
-	mailer_show_preferences(mailer, TRUE);
 }
 
 

@@ -34,9 +34,10 @@ void on_edit_select_all(gpointer data);
 void on_edit_unselect_all(gpointer data);
 
 /* message menu */
+void on_message_delete(gpointer data);
+void on_message_forward(gpointer data);
 void on_message_reply(gpointer data);
 void on_message_reply_to_all(gpointer data);
-void on_message_forward(gpointer data);
 void on_message_view_source(gpointer data);
 
 /* help menu */
@@ -47,6 +48,7 @@ void on_new_mail(gpointer data);
 void on_reply(gpointer data);
 void on_reply_to_all(gpointer data);
 void on_forward(gpointer data);
+void on_delete(gpointer data);
 void on_preferences(gpointer data);
 
 /* folder view */

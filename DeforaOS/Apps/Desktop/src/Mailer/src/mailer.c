@@ -128,7 +128,8 @@ static DesktopMenu _menu_message[] =
 	{ N_("_Forward"), G_CALLBACK(on_message_forward), "stock_mail-forward",
 		0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Delete"), NULL, GTK_STOCK_DELETE, 0, GDK_Delete },
+	{ N_("_Delete"), G_CALLBACK(on_message_delete), GTK_STOCK_DELETE, 0,
+		GDK_Delete },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_View source"), G_CALLBACK(on_message_view_source), NULL,
 		GDK_CONTROL_MASK, GDK_U },
@@ -168,7 +169,7 @@ static DesktopToolbar _mailer_toolbar[] =
 		"stock_mail-reply-to-all", 0, 0, NULL },
 	{ N_("Forward"), G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
 		NULL},
-	{ N_("Delete"), NULL, GTK_STOCK_DELETE, 0, 0, NULL },
+	{ N_("Delete"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, 0, NULL },
 	{ N_("Print"), NULL, GTK_STOCK_PRINT, 0, 0, NULL },
 #ifdef EMBEDDED
 	{ "", NULL, NULL, 0, 0, NULL },
@@ -183,6 +184,7 @@ static DesktopToolbar _mailer_toolbar[] =
 /* private */
 /* prototypes */
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
+static gboolean _mailer_confirm(Mailer * mailer, char const * message);
 static char * _mailer_get_config_filename(void);
 static void _mailer_update_status(Mailer * mailer);
 
@@ -768,6 +770,72 @@ int mailer_account_enable(Mailer * mailer, Account * account)
 	return 0;
 }
 #endif
+
+
+/* mailer_delete_selected */
+static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
+		Mailer * mailer);
+
+void mailer_delete_selected(Mailer * mailer)
+{
+	GtkTreeModel * model;
+	GtkTreeSelection * treesel;
+	GList * selected;
+	GList * s;
+	GtkTreePath * path;
+	GtkTreeRowReference * reference;
+
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
+			== NULL)
+		return;
+	/* FIXME move messages to trash first */
+	if(_mailer_confirm(mailer, _("The messages selected will be deleted.\n"
+					"Continue?")) != TRUE)
+	{
+		g_list_free(selected);
+		return;
+	}
+	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
+	{
+		if((path = s->data) == NULL)
+			continue;
+		reference = gtk_tree_row_reference_new(model, path);
+		s->data = reference;
+		gtk_tree_path_free(path);
+	}
+	g_list_foreach(selected, (GFunc)_mailer_delete_selected_foreach,
+			mailer);
+	g_list_free(selected);
+}
+
+static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
+		Mailer * mailer)
+{
+	GtkTreeModel * model;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	AccountMessage * message;
+
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
+						mailer->view_headers))) == NULL)
+		return;
+	if(reference == NULL)
+		return;
+	if((path = gtk_tree_row_reference_get_path(reference)) == NULL)
+		return;
+	if(gtk_tree_model_get_iter(model, &iter, path) == TRUE)
+	{
+		gtk_tree_model_get(model, &iter, MH_COL_MESSAGE, &message, -1);
+	}
+	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+	gtk_tree_path_free(path);
+}
 
 
 /* mailer_reply_selected */
@@ -1905,6 +1973,30 @@ void mailer_unselect_all(Mailer * mailer)
 
 /* private */
 /* functions */
+/* mailer_confirm */
+static gboolean _mailer_confirm(Mailer * mailer, char const * message)
+{
+	GtkWidget * dialog;
+	int res;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res == GTK_RESPONSE_YES)
+		return TRUE;
+	return FALSE;
+}
+
+
 /* mailer_get_config_filename */
 static char * _mailer_get_config_filename(void)
 	/* FIXME consider replacing with mailer_save_config() */
