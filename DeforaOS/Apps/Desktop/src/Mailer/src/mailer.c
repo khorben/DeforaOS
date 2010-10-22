@@ -183,6 +183,7 @@ static DesktopToolbar _mailer_toolbar[] =
 /* prototypes */
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 static char * _mailer_get_config_filename(void);
+static void _mailer_update_status(Mailer * mailer);
 
 
 /* functions */
@@ -294,6 +295,7 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
 	mailer->statusbar = gtk_statusbar_new();
 	mailer->statusbar_id = 0;
+	_mailer_update_status(mailer);
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->window), vbox);
 	/* widgets */
@@ -395,8 +397,6 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	GtkTreeIter iter;
 	GtkListStore * store;
 	GtkTreePath * path;
-	int cnt;
-	char buf[256] = "";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -407,7 +407,7 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 		mailer->folder_cur = NULL;
 		gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
 				NULL);
-		mailer_set_status(mailer, "");
+		_mailer_update_status(mailer);
 		return;
 	}
 	/* get current folder */
@@ -438,16 +438,7 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	store = account_get_store(mailer->account_cur, mailer->folder_cur);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
 			GTK_TREE_MODEL(store));
-	if(store != NULL)
-	{
-		cnt = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),
-				NULL);
-		snprintf(buf, sizeof(buf), _("%s/%s: %d %s"),
-				account_get_name(mailer->account_cur),
-				mailer->folder_cur->name, cnt,
-				(cnt > 1) ? _("messages") : _("message"));
-	}
-	mailer_set_status(mailer, buf);
+	_mailer_update_status(mailer);
 }
 
 static GtkWidget * _new_headers_view(Mailer * mailer)
@@ -1865,4 +1856,27 @@ static char * _mailer_get_config_filename(void)
 		return NULL;
 	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
 	return filename;
+}
+
+
+/* mailer_update_status */
+static void _mailer_update_status(Mailer * mailer)
+{
+	GtkTreeModel * store;
+	int cnt;
+	char buf[256];
+
+	if((store = gtk_tree_view_get_model(GTK_TREE_VIEW(
+						mailer->view_headers))) != NULL)
+	{
+		cnt = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),
+				NULL);
+		snprintf(buf, sizeof(buf), _("%s/%s: %d %s"),
+				account_get_name(mailer->account_cur),
+				mailer->folder_cur->name, cnt,
+				(cnt > 1) ? _("messages") : _("message"));
+	}
+	else
+		snprintf(buf, sizeof(buf), "%s", _("Ready"));
+	mailer_set_status(mailer, buf);
 }
