@@ -394,6 +394,8 @@ void on_path_activate(gpointer data)
 static void _preferences_set(Surfer * surfer);
 /* callbacks */
 static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
 static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
@@ -405,26 +407,28 @@ void on_preferences(gpointer data)
 	GtkWidget * notebook;
 	GtkWidget * page;
 	GtkWidget * hbox;
-	GtkSizeGroup * group;
 
 	if(surfer->pr_window != NULL)
 	{
 		gtk_widget_show(surfer->pr_window);
 		return;
 	}
-	/* FIXME consider using gtk_dialog_new() */
-	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
-	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
-			_("Web surfer preferences"));
-	gtk_window_set_transient_for(GTK_WINDOW(surfer->pr_window), GTK_WINDOW(
-				surfer->window));
+	surfer->pr_window = gtk_dialog_new_with_buttons(
+			_("Web surfer preferences"), GTK_WINDOW(surfer->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CANCEL, 1,
+			GTK_STOCK_OK, 0, NULL);
 	g_signal_connect_swapped(G_OBJECT(surfer->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), surfer);
-	vbox = gtk_vbox_new(FALSE, 0);
+	g_signal_connect(G_OBJECT(surfer->pr_window), "response",
+			G_CALLBACK(_preferences_on_response), surfer);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(surfer->pr_window));
+#else
+	vbox = GTK_DIALOG(surfer->pr_window)->vbox;
+#endif
 	/* notebook */
 	notebook = gtk_notebook_new();
-	/* general */
+	/* general tab */
 	page = gtk_vbox_new(FALSE, 0);
 	/* homepage */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -433,7 +437,7 @@ void on_preferences(gpointer data)
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
-	/* focus tabs */
+	/* focus new tabs */
 	hbox = gtk_hbox_new(FALSE, 4);
 	surfer->pr_focus_tabs = gtk_check_button_new_with_label(
 			_("Focus new tabs"));
@@ -442,27 +446,7 @@ void on_preferences(gpointer data)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("General")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	/* dialog */
-	hbox = gtk_hbox_new(FALSE, 0);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_ok), surfer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_cancel), surfer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
-	/* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	_preferences_set(surfer);
-	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
 	gtk_widget_show_all(surfer->pr_window);
 }
 
@@ -487,6 +471,16 @@ static gboolean _preferences_on_closex(gpointer data)
 
 	_preferences_on_cancel(surfer);
 	return TRUE;
+}
+
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == 0)
+		_preferences_on_ok(data);
+	else if(response == 1)
+		_preferences_on_cancel(data);
 }
 
 static void _preferences_on_cancel(gpointer data)
