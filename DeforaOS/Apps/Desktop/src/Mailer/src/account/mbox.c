@@ -88,7 +88,7 @@ static MboxFolder _mbox_inbox =
 	&_mbox_config[0], NULL, 0, NULL,
 	0, NULL, -1,
 	0, PC_FROM, NULL, 0, NULL,
-	"stock_inbox"
+	"mailer-inbox"
 };
 
 static MboxFolder _mbox_spool =
@@ -96,7 +96,7 @@ static MboxFolder _mbox_spool =
 	&_mbox_config[1], NULL, 0, NULL,
 	0, NULL, -1,
 	0, PC_FROM, NULL, 0, NULL,
-	"stock_inbox"
+	"mailer-inbox"
 };
 
 static MboxFolder _mbox_drafts =
@@ -112,7 +112,7 @@ static MboxFolder _mbox_sent =
 	&_mbox_config[3], NULL, 0, NULL,
 	0, NULL, -1,
 	0, PC_FROM, NULL, 0, NULL,
-	"stock_sent-mail"
+	"mailer-sent"
 };
 
 static MboxFolder _mbox_trash =

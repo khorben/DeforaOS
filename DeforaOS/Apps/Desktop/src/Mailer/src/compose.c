@@ -53,11 +53,9 @@ struct _Compose
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * from;
-	GtkWidget * to;
-	GtkWidget * tb_cc;
-	GtkWidget * cc;
-	GtkWidget * tb_bcc;
-	GtkWidget * bcc;
+	GtkListStore * h_store;
+	GtkListStore * h_headers;
+	GtkWidget * h_view;
 	GtkWidget * subject;
 	GtkWidget * view;
 	GtkWidget * statusbar;
@@ -112,8 +110,7 @@ static DesktopMenu _menu_edit[] =
 
 static DesktopMenu _menu_view[] =
 {
-	{ N_("_CC field"), G_CALLBACK(on_compose_view_cc), NULL, 0, 0 },
-	{ N_("_BCC field"), G_CALLBACK(on_compose_view_bcc), NULL, 0, 0 },
+	{ N_("Add field"), G_CALLBACK(on_compose_view_add_field), NULL, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -145,6 +142,10 @@ static DesktopToolbar _compose_toolbar[] =
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Save"), G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Cut"), NULL, GTK_STOCK_CUT, 0, 0, NULL },
+	{ N_("Copy"), NULL, GTK_STOCK_COPY, 0, 0, NULL },
+	{ N_("Paste"), NULL, GTK_STOCK_PASTE, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Attach"), NULL, "stock_attach", 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
@@ -153,6 +154,10 @@ static DesktopToolbar _compose_toolbar[] =
 /* public */
 /* compose_new */
 static GtkWidget * _new_text_view(Mailer * mailer);
+static void _on_header_field_edited(GtkCellRendererText * renderer,
+		gchar * path, gchar * text, gpointer data);
+static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * text, gpointer data);
 
 Compose * compose_new(Mailer * mailer)
 {
@@ -163,6 +168,9 @@ Compose * compose_new(Mailer * mailer)
 	GtkToolItem * toolitem;
 	GtkSizeGroup * sizegroup;
 	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+	GtkTreeIter iter;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
@@ -187,11 +195,12 @@ Compose * compose_new(Mailer * mailer)
 	/* toolbar */
 	toolbar = desktop_toolbar_create(_compose_toolbar, compose, group);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
-	/* FIXME make these fields a GtkTreeView */
 	/* from */
 	sizegroup = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	toolbar = gtk_toolbar_new();
-	widget = gtk_label_new(_(" From: "));
+	widget = gtk_label_new(_("From: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.1, 0.5);
+	gtk_widget_set_size_request(widget, 80, -1);
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -202,48 +211,63 @@ Compose * compose_new(Mailer * mailer)
 	gtk_container_add(GTK_CONTAINER(toolitem), compose->from);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
-	/* to */
-	toolbar = gtk_toolbar_new();
-	widget = gtk_label_new(_(" To: "));
-	gtk_size_group_add_widget(sizegroup, widget);
-	toolitem = gtk_tool_item_new();
-	gtk_container_add(GTK_CONTAINER(toolitem), widget);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	compose->to = gtk_entry_new();
-	toolitem = gtk_tool_item_new();
-	gtk_tool_item_set_expand(toolitem, TRUE);
-	gtk_container_add(GTK_CONTAINER(toolitem), compose->to);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
-	/* cc */
-	compose->tb_cc = gtk_toolbar_new();
-	widget = gtk_label_new(_(" CC: "));
-	gtk_size_group_add_widget(sizegroup, widget);
-	toolitem = gtk_tool_item_new();
-	gtk_container_add(GTK_CONTAINER(toolitem), widget);
-	gtk_toolbar_insert(GTK_TOOLBAR(compose->tb_cc), toolitem, -1);
-	compose->cc = gtk_entry_new();
-	toolitem = gtk_tool_item_new();
-	gtk_tool_item_set_expand(toolitem, TRUE);
-	gtk_container_add(GTK_CONTAINER(toolitem), compose->cc);
-	gtk_toolbar_insert(GTK_TOOLBAR(compose->tb_cc), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), compose->tb_cc, FALSE, FALSE, 0);
-	/* bcc */
-	compose->tb_bcc = gtk_toolbar_new();
-	widget = gtk_label_new(_(" BCC: "));
-	gtk_size_group_add_widget(sizegroup, widget);
-	toolitem = gtk_tool_item_new();
-	gtk_container_add(GTK_CONTAINER(toolitem), widget);
-	gtk_toolbar_insert(GTK_TOOLBAR(compose->tb_bcc), toolitem, -1);
-	compose->bcc = gtk_entry_new();
-	toolitem = gtk_tool_item_new();
-	gtk_tool_item_set_expand(toolitem, TRUE);
-	gtk_container_add(GTK_CONTAINER(toolitem), compose->bcc);
-	gtk_toolbar_insert(GTK_TOOLBAR(compose->tb_bcc), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), compose->tb_bcc, FALSE, FALSE, 0);
+	/* headers */
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	compose->h_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	compose->h_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				compose->h_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(compose->h_view),
+			FALSE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(compose->h_view), TRUE);
+	compose->h_headers = gtk_list_store_new(2, G_TYPE_STRING,
+			G_TYPE_STRING);
+	gtk_list_store_append(compose->h_headers, &iter);
+	gtk_list_store_set(compose->h_headers, &iter, 0, "To:", 1, _("To:"),
+			-1);
+	gtk_list_store_append(compose->h_headers, &iter);
+	gtk_list_store_set(compose->h_headers, &iter, 0, "Cc:", 1, _("Cc:"),
+			-1);
+	gtk_list_store_append(compose->h_headers, &iter);
+	gtk_list_store_set(compose->h_headers, &iter, 0, "Bcc:", 1, _("Bcc:"),
+			-1);
+	gtk_list_store_append(compose->h_headers, &iter);
+	gtk_list_store_set(compose->h_headers, &iter, 0, "Reply-To:", 1,
+			_("Reply-To:"), -1);
+	gtk_list_store_append(compose->h_headers, &iter);
+	gtk_list_store_set(compose->h_headers, &iter, 0, "Newsgroup:", 1,
+			_("Newsgroup:"), -1);
+	gtk_list_store_append(compose->h_headers, &iter);
+	gtk_list_store_set(compose->h_headers, &iter, 0, "Followup-To:", 1,
+			_("Followup-To:"), -1);
+	renderer = gtk_cell_renderer_combo_new();
+	g_object_set(renderer, "editable", TRUE, "model", compose->h_headers,
+			"text-column", 1, NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				_on_header_field_edited), compose);
+	column = gtk_tree_view_column_new_with_attributes("", renderer, "text",
+			0, NULL);
+	gtk_tree_view_column_set_min_width(column, 80);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(compose->h_view), column);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				_on_header_edited), compose);
+	column = gtk_tree_view_column_new_with_attributes("", renderer, "text",
+			1, NULL);
+#if GTK_CHECK_VERSION(2, 4, 0)
+	gtk_tree_view_column_set_expand(column, TRUE);
+#endif
+	gtk_tree_view_append_column(GTK_TREE_VIEW(compose->h_view), column);
+	gtk_list_store_append(compose->h_store, &iter);
+	gtk_list_store_set(compose->h_store, &iter, 0, "To:", -1);
+	gtk_container_add(GTK_CONTAINER(widget), compose->h_view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* subject */
 	toolbar = gtk_toolbar_new();
-	widget = gtk_label_new(_(" Subject: "));
+	widget = gtk_label_new(_("Subject: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.1, 0.5);
 	gtk_size_group_add_widget(sizegroup, widget);
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -269,8 +293,6 @@ Compose * compose_new(Mailer * mailer)
 	gtk_container_add(GTK_CONTAINER(compose->window), vbox);
 	compose->ab_window = NULL;
 	gtk_widget_show_all(vbox);
-	gtk_widget_hide(compose->tb_cc);
-	gtk_widget_hide(compose->tb_bcc);
 	gtk_widget_show(compose->window);
 	return compose;
 }
@@ -314,6 +336,30 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	return textview;
 }
 
+static void _on_header_field_edited(GtkCellRendererText * renderer,
+		gchar * path, gchar * text, gpointer data)
+{
+	Compose * compose = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
+	GtkTreeIter iter;
+
+	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
+		return;
+	gtk_list_store_set(compose->h_store, &iter, 0, text, -1);
+}
+
+static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * text, gpointer data)
+{
+	Compose * compose = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
+	GtkTreeIter iter;
+
+	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
+		return;
+	gtk_list_store_set(compose->h_store, &iter, 1, text, -1);
+}
+
 
 /* compose_delete */
 void compose_delete(Compose * compose)
@@ -338,14 +384,21 @@ void compose_set_subject(Compose * compose, char const * subject)
 }
 
 
-/* compose_set_to */
-void compose_set_to(Compose * compose, char const * to)
+/* useful */
+/* compose_add_field */
+void compose_add_field(Compose * compose, char const * field,
+		char const * value)
 {
-	gtk_entry_set_text(GTK_ENTRY(compose->to), to);
+	GtkTreeIter iter;
+
+	gtk_list_store_append(compose->h_store, &iter);
+	if(field != NULL)
+		gtk_list_store_set(compose->h_store, &iter, 0, field, -1);
+	if(value != NULL)
+		gtk_list_store_set(compose->h_store, &iter, 1, value, -1);
 }
 
 
-/* useful */
 /* compose_save */
 int compose_save(Compose * compose)
 {
@@ -364,6 +417,7 @@ static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 
 void compose_send(Compose * compose)
 {
+	/* FIXME rewrite more efficiently (and tracking process) */
 	char * msg;
 	size_t msg_len;
 	char * body;
@@ -449,55 +503,63 @@ static int _mail_child(int fd[2])
 
 static char * _send_headers(Compose * compose)
 {
-	struct {
-		char * hdr;
-		GtkWidget * wgt;
-	} widgets[] =
-	{
-		{ "To: ", NULL },
-		{ "Cc: ", NULL },
-		{ "Bcc: ", NULL },
-		{ "Subject: ", NULL },
-		{ NULL, NULL }
-	};
-	int i;
+	/* FIXME rewrite this function */
 	char * msg = NULL;
 	size_t msg_len = 0;
-	char const * p;
-	size_t len;
-	size_t hdr_len;
-	char * q;
+	char * p;
+	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	char * field;
+	size_t field_len;
+	char * value;
+	char const * q;
 
-	widgets[0].wgt = compose->to;
-	widgets[1].wgt = compose->cc;
-	widgets[2].wgt = compose->bcc;
-	widgets[3].wgt = compose->subject;
-	q = gtk_combo_box_get_active_text(GTK_COMBO_BOX(compose->from));
-	if(*q != '\0')
+	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(compose->from));
+	if(*p != '\0')
 	{
-		msg_len = strlen(q) + 8;
+		msg_len = strlen(p) + 8;
 		if((msg = malloc(msg_len + 1)) == NULL)
 			return NULL;
-		snprintf(msg, msg_len + 1, "%s%s\r\n", "From: ", q);
+		snprintf(msg, msg_len + 1, "%s%s\r\n", "From: ", p);
 	}
-	g_free(q);
-	for(i = 0; widgets[i].hdr != NULL; i++)
+	g_free(p);
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
 	{
-		p = gtk_entry_get_text(GTK_ENTRY(widgets[i].wgt));
-		if((len = strlen(p)) == 0)
-			continue;
-		hdr_len = strlen(widgets[i].hdr);
-		if((q = realloc(msg, msg_len + hdr_len + len + 3)) == NULL)
+		gtk_tree_model_get(model, &iter, 0, &field, 1, &value, -1);
+		if((field_len = strlen(field)) == 0
+				|| field[field_len - 1] != ':'
+				|| index(field, ':') != field + field_len - 1)
 		{
-			free(msg);
-			mailer_error(compose->mailer, strerror(errno), 0);
-			return NULL;
+			g_free(field);
+			g_free(value);
+			continue; /* XXX report error */
 		}
-		msg = q;
-		snprintf(&msg[msg_len], hdr_len + len + 3, "%s%s\r\n",
-				widgets[i].hdr, p);
-		msg_len += hdr_len + len + 2;
+		if((p = realloc(msg, msg_len + strlen(field) + strlen(value)
+						+ 4)) == NULL)
+		{
+			g_free(field);
+			g_free(value);
+			continue; /* XXX report error */
+		}
+		msg = p;
+		strcat(msg, field);
+		strcat(msg, " ");
+		strcat(msg, value);
+		strcat(msg, "\r\n");
+		msg_len = strlen(msg); /* XXX ugly */
+		g_free(field);
+		g_free(value);
 	}
+	q = gtk_entry_get_text(GTK_ENTRY(compose->subject));
+	msg_len += strlen(q) + 11;
+	if((p = realloc(msg, msg_len + 1)) == NULL)
+		return NULL;
+	msg = p;
+	strcat(msg, "Subject: ");
+	strcat(msg, q);
+	strcat(msg, "\r\n");
 	if(msg != NULL)
 		return msg;
 	if((msg = strdup("")) == NULL)
@@ -580,23 +642,7 @@ void compose_show_about(Compose * compose, gboolean show)
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_authors(dialog, _authors);
 	desktop_about_dialog_set_copyright(dialog, _copyright);
-	desktop_about_dialog_set_logo_icon_name(dialog, "stock_mail");
+	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
 	desktop_about_dialog_set_license(dialog, _license);
 	gtk_widget_show(dialog);
-}
-
-
-/* compose_toggle_show_bcc */
-void compose_toggle_show_bcc(Compose * compose)
-{
-	/* FIXME implement correctly */
-	gtk_widget_show(compose->tb_bcc);
-}
-
-
-/* compose_toggle_show_cc */
-void compose_toggle_show_cc(Compose * compose)
-{
-	/* FIXME implement correctly */
-	gtk_widget_show(compose->tb_cc);
 }

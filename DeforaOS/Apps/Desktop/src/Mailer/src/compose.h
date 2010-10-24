@@ -32,16 +32,15 @@ void compose_delete(Compose * compose);
 /* accessors */
 Mailer * compose_get_mailer(Compose * compose);
 void compose_set_subject(Compose * compose, char const * subject);
-void compose_set_to(Compose * compose, char const * to);
 
 /* useful */
+void compose_add_field(Compose * compose, char const * field,
+		char const * value);
+
 int compose_save(Compose * compose);
 void compose_send(Compose * compose);
 void compose_send_cancel(Compose * compose);
 
 void compose_show_about(Compose * compose, gboolean show);
-
-void compose_toggle_show_bcc(Compose * compose);
-void compose_toggle_show_cc(Compose * compose);
 
 #endif /* !MAILER_COMPOSE_H */

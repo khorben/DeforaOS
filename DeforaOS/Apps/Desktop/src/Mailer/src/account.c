@@ -23,9 +23,20 @@
 #include <dlfcn.h>
 #include "mailer.h"
 #include "account.h"
+#include "../config.h"
 
 
 /* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
+#ifndef PLUGINDIR
+# define PLUGINDIR	LIBDIR "/Mailer"
+#endif
+
 #define ACCOUNT "account"
 
 

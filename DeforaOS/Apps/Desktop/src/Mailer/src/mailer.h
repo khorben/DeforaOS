@@ -22,15 +22,10 @@
 # include <gtk/gtk.h>
 # include "Mailer.h"
 # include "account.h"
-# include "../config.h"
 
 
 /* Mailer */
 /* constants */
-# ifndef PLUGINDIR
-#  define PLUGINDIR		LIBDIR "/Mailer"
-# endif
-
 # define MAILER_CONFIG_FILE	".mailer"
 
 # define MAILER_MESSAGES_FONT	"Monospace 8"

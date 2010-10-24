@@ -40,7 +40,7 @@ mailer.o: mailer.c account.h callbacks.h compose.h mailer.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c mailer.c
 
 main.o: main.c mailer.h ../config.h
-	$(CC) $(mailer_CFLAGS) -c main.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c main.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done

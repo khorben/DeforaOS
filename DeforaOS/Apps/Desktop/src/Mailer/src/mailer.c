@@ -27,9 +27,22 @@
 #include "compose.h"
 #include "callbacks.h"
 #include "mailer.h"
+#include "../config.h"
 #include "common.c"
 #define _(string) gettext(string)
 #define N_(string) (string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
+#ifndef PLUGINDIR
+# define PLUGINDIR	LIBDIR "/Mailer"
+#endif
 
 
 /* Mailer */
@@ -255,7 +268,7 @@ Mailer * mailer_new(void)
 	gtk_window_add_accel_group(GTK_WINDOW(mailer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 800, 600);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(mailer->window), "stock_mail");
+	gtk_window_set_icon_name(GTK_WINDOW(mailer->window), "mailer");
 #endif
 	gtk_window_set_title(GTK_WINDOW(mailer->window), _("Mailer"));
 	g_signal_connect_swapped(G_OBJECT(mailer->window), "delete-event",
@@ -739,7 +752,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->view_folders));
 	gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
 	theme = gtk_icon_theme_get_default();
-	pixbuf = gtk_icon_theme_load_icon(theme, "stock_mail-accounts", 16, 0,
+	pixbuf = gtk_icon_theme_load_icon(theme, "mailer-accounts", 16, 0,
 			NULL);
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, MF_COL_ACCOUNT,
 			account, MF_COL_ENABLED, account_get_enabled(account),
@@ -789,6 +802,7 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 
 void mailer_delete_selected(Mailer * mailer)
 {
+	/* FIXME figure which area is focused first (deleting folders) */
 	GtkTreeModel * model;
 	GtkTreeSelection * treesel;
 	GList * selected;
@@ -920,8 +934,10 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 		return; /* XXX error message? */
 	gtk_tree_model_get(model, iter, MH_COL_FROM, &from, MH_COL_SUBJECT,
 			&subject, -1);
+#if 0 /* FIXME adapt */
 	if(from != NULL)
 		compose_set_to(compose, from);
+#endif
 	q = N_("Re: ");
 	if(subject != NULL
 			&& strncasecmp(subject, q, strlen(q)) != 0
@@ -1004,7 +1020,7 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_authors(dialog, _authors);
 	desktop_about_dialog_set_copyright(dialog, _copyright);
-	desktop_about_dialog_set_logo_icon_name(dialog, "stock_mail");
+	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
 	desktop_about_dialog_set_license(dialog, _license);
 	gtk_widget_show(dialog);
 }

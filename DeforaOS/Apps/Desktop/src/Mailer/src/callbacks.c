@@ -238,21 +238,12 @@ void on_compose_file_close(gpointer data)
 
 
 /* compose view menu */
-/* on_compose_view_cc */
-void on_compose_view_cc(gpointer data)
+/* on_compose_view_add_field */
+void on_compose_view_add_field(gpointer data)
 {
 	Compose * compose = data;
 
-	compose_toggle_show_cc(compose);
-}
-
-
-/* on_compose_view_bcc */
-void on_compose_view_bcc(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_toggle_show_bcc(compose);
+	compose_add_field(compose, NULL, NULL);
 }
 
 

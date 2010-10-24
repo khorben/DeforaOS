@@ -79,8 +79,7 @@ void on_compose_edit_copy(gpointer data);
 void on_compose_edit_paste(gpointer data);
 
 /* view menu */
-void on_compose_view_cc(gpointer data);
-void on_compose_view_bcc(gpointer data);
+void on_compose_view_add_field(gpointer data);
 
 /* help menu */
 void on_compose_help_about(gpointer data);
