@@ -2,7 +2,7 @@
 Name=Mail client
 Comment=Read and send e-mails and more
 Exec=mailer
-Icon=stock_mail
+Icon=mailer
 Type=Application
 Categories=Office;Network;Email;GTK;
 StartupNotify=true
