@@ -29,6 +29,8 @@
 #include "desktopicon.h"
 #include "../config.h"
 #define _(string) gettext(string)
+
+#define PROGNAME "desktop"
 #define COMMON_DND
 #define COMMON_EXEC
 #include "common.c"

@@ -1,17 +1,21 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+ "This program is distributed in the hope that it will be useful,\n"
+ "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+ "GNU General Public License for more details.\n"
+ "\n"
+ "You should have received a copy of the GNU General Public License\n"
+ "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* TODO:
+ * - mention the number of files while refreshing */
 
 
 
@@ -30,6 +34,7 @@
 #include <Desktop.h>
 #include "callbacks.h"
 #include "browser.h"
+#include "../config.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
 
@@ -42,6 +47,12 @@
 /* Browser */
 /* private */
 /* constants */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
 static DesktopAccel _browser_accel[] =
 {
 	{ G_CALLBACK(on_location), GDK_CONTROL_MASK, GDK_L },
@@ -165,6 +176,7 @@ static DesktopToolbar _browser_toolbar[] =
 /* prototypes */
 static DIR * _browser_opendir(char const * pathname, struct stat * st);
 static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st);
+static void _browser_set_status(Browser * browser, char const * status);
 
 static char * _config_get_filename(void);
 static void _config_load_boolean(Config * config, char const * variable,
@@ -504,21 +516,41 @@ void browser_delete(Browser * browser)
 }
 
 
-/* private */
-static void _browser_set_status(Browser * browser, char const * status)
-{
-	GtkStatusbar * sb;
+/* useful */
+/* browser_about */
+static gboolean _about_on_closex(gpointer data);
 
-	sb = GTK_STATUSBAR(browser->statusbar);
-	if(browser->statusbar_id != 0)
-		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
-				browser->statusbar_id);
-	browser->statusbar_id = gtk_statusbar_push(sb,
-			gtk_statusbar_get_context_id(sb, ""), status);
+void browser_about(Browser * browser)
+{
+	if(browser->ab_window != NULL)
+	{
+		gtk_widget_show(browser->ab_window);
+		return;
+	}
+	browser->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(browser->ab_window), GTK_WINDOW(
+				browser->window));
+	desktop_about_dialog_set_authors(browser->ab_window, _authors);
+	desktop_about_dialog_set_copyright(browser->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(browser->ab_window,
+			"system-file-manager");
+	desktop_about_dialog_set_license(browser->ab_window, _license);
+	desktop_about_dialog_set_name(browser->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(browser->ab_window, VERSION);
+	g_signal_connect_swapped(G_OBJECT(browser->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), browser);
+	gtk_widget_show(browser->ab_window);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Browser * browser = data;
+
+	gtk_widget_hide(browser->ab_window);
+	return TRUE;
 }
 
 
-/* useful */
 /* browser_error */
 static int _browser_error(char const * message, int ret);
 /* callbacks */
@@ -1661,6 +1693,7 @@ void browser_unselect_all(Browser * browser)
 
 /* private */
 /* functions */
+/* browser_opendir */
 static DIR * _browser_opendir(char const * pathname, struct stat * st)
 {
 	DIR * dir;
@@ -1772,6 +1805,21 @@ static void _refresh_path(Browser * browser)
 }
 
 
+/* browser_set_status */
+static void _browser_set_status(Browser * browser, char const * status)
+{
+	GtkStatusbar * sb;
+
+	sb = GTK_STATUSBAR(browser->statusbar);
+	if(browser->statusbar_id != 0)
+		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
+				browser->statusbar_id);
+	browser->statusbar_id = gtk_statusbar_push(sb,
+			gtk_statusbar_get_context_id(sb, ""), status);
+}
+
+
+/* config_get_filename */
 static char * _config_get_filename(void)
 {
 	char const * homedir;
@@ -1788,6 +1836,7 @@ static char * _config_get_filename(void)
 }
 
 
+/* config_load_boolean */
 static void _config_load_boolean(Config * config, char const * variable,
 		gboolean * value)
 {
@@ -1802,6 +1851,7 @@ static void _config_load_boolean(Config * config, char const * variable,
 }
 
 
+/* config_load_string */
 static int _config_load_string(Config * config, char const * variable,
 		char ** value)
 {
@@ -1818,6 +1868,7 @@ static int _config_load_string(Config * config, char const * variable,
 }
 
 
+/* config_save_boolean */
 static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value)
 {

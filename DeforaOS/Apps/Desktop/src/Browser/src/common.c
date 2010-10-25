@@ -97,7 +97,7 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 			continue;
 		if((p = realloc(argv, sizeof(*argv) * (i + 2))) == NULL)
 		{
-			fprintf(stderr, "%s%s%s%s%s", PACKAGE ": ", program,
+			fprintf(stderr, "%s%s%s%s%s", PROGNAME ": ", program,
 					": ", strerror(errno), "\n");
 			exit(2);
 		}
@@ -117,7 +117,7 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 		argv[i++] = flags;
 	argv[i] = "--";
 	execvp(argv[0], argv);
-	fprintf(stderr, "%s%s%s%s\n", PACKAGE ": ", argv[0], ": ", strerror(
+	fprintf(stderr, "%s%s%s%s\n", PROGNAME ": ", argv[0], ": ", strerror(
 				errno));
 	exit(2);
 }

@@ -162,6 +162,8 @@ void browser_set_location(Browser * browser, char const * path);
 void browser_set_view(Browser * browser, BrowserView view);
 
 /* useful */
+void browser_about(Browser * browser);
+
 int browser_error(Browser * browser, char const * message, int ret);
 
 int browser_config_load(Browser * browser);

@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - let the dialog be redrawn in recursive mode */
 
 
 
@@ -233,7 +235,6 @@ static int _idle_ask(Delete * delete, char const * filename)
 	return ret == GTK_RESPONSE_YES ? 0 : 1;
 }
 
-/* FIXME does not update or redraw the dialog */
 static int _idle_do_recursive(Delete * delete, char const * filename)
 {
 	int ret = 0;
@@ -250,7 +251,7 @@ static int _idle_do_recursive(Delete * delete, char const * filename)
 		closedir(dir);
 		return _delete_error(delete, filename, 1);
 	}
-	sprintf(path, "%s/", filename);
+	snprintf(path, len, "%s/", filename);
 	while((de = readdir(dir)) != NULL)
 	{
 		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
