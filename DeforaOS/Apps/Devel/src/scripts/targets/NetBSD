@@ -65,10 +65,18 @@ _image_image()
 	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
 			"$DESTDIR/sbin/init"			&&
 	$SUDO $INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"	&&
-	$SUDO sh -c "echo 'menu=Boot DeforaOS:vesa 640x480;boot netbsd' \
-			> $DESTDIR/boot.cfg"			&&
+	$SUDO sh -c "cat > $DESTDIR/boot.cfg" << EOF
+banner=Welcome to DeforaOS
+banner====================
+banner=
+banner=Please choose an option from the following menu:
+menu=Boot DeforaOS:vesa 640x480x8;boot netbsd
+menu=Drop to boot prompt:prompt
+default=1
+timeout=10
+EOF
 	$SUDO $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
-	$SUDO $INSTALLBOOT -m "$MACHINE" -o "console=pc" "/dev/r${VND}e" \
+	$SUDO $INSTALLBOOT -m "$MACHINE" -o "timeout=10" "/dev/r${VND}e" \
 			"/usr/mdec/bootxx_ffsv1"
 	RET=$?
 	$SUDO $UMOUNT "$DESTDIR"
