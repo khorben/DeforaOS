@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
-/* Editor is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License version 3 as published by the Free
- * Software Foundation.
- *
- * Editor is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Editor; if not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
@@ -32,6 +34,12 @@
 /* Editor */
 /* private */
 /* variables */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
 #ifdef EMBEDDED
 static DesktopAccel _editor_accel[] =
 {
@@ -197,6 +205,8 @@ Editor * editor_new(void)
 	editor->pr_window = NULL;
 	/* find */
 	editor->fi_dialog = NULL;
+	/* about */
+	editor->ab_window = NULL;
 	gtk_container_add(GTK_CONTAINER(editor->window), vbox);
 	gtk_window_set_focus(GTK_WINDOW(editor->window), editor->view);
 	gtk_widget_show_all(editor->window);
@@ -236,6 +246,40 @@ void editor_set_font(Editor * editor, char const * font)
 
 
 /* useful */
+/* editor_about */
+static gboolean _about_on_closex(gpointer data);
+
+void editor_about(Editor * editor)
+{
+	if(editor->ab_window != NULL)
+	{
+		gtk_widget_show(editor->ab_window);
+		return;
+	}
+	editor->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(editor->ab_window),
+			GTK_WINDOW(editor->window));
+	desktop_about_dialog_set_authors(editor->ab_window, _authors);
+	desktop_about_dialog_set_copyright(editor->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(editor->ab_window,
+			"text-editor");
+	desktop_about_dialog_set_license(editor->ab_window, _license);
+	desktop_about_dialog_set_name(editor->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(editor->ab_window, VERSION);
+	g_signal_connect_swapped(G_OBJECT(editor->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), editor);
+	gtk_widget_show(editor->ab_window);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Editor * editor = data;
+
+	gtk_widget_hide(editor->ab_window);
+	return TRUE;
+}
+
+
 /* editor_error */
 int editor_error(Editor * editor, char const * message, int ret)
 {

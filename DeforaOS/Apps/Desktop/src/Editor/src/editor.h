@@ -41,6 +41,8 @@ typedef struct _Editor
 	GtkWidget * fi_text;
 	GtkWidget * fi_case;
 	GtkWidget * fi_wrap;
+	/* about */
+	GtkWidget * ab_window;
 } Editor;
 
 
@@ -56,6 +58,8 @@ void editor_delete(Editor * editor);
 void editor_set_font(Editor * editor, char const * font);
 
 /* useful */
+void editor_about(Editor * editor);
+
 int editor_error(Editor * editor, char const * message, int ret);
 
 gboolean editor_close(Editor * editor);
