@@ -403,6 +403,8 @@ void todo_set_view(Todo * todo, TodoView view)
 
 /* useful */
 /* todo_about */
+static gboolean _about_on_closex(gpointer data);
+
 void todo_about(Todo * todo)
 {
 	if(todo->about != NULL)
@@ -419,7 +421,17 @@ void todo_about(Todo * todo)
 	desktop_about_dialog_set_license(todo->about, _license);
 	desktop_about_dialog_set_name(todo->about, PACKAGE);
 	desktop_about_dialog_set_version(todo->about, VERSION);
+	g_signal_connect_swapped(G_OBJECT(todo->about), "delete-event",
+			G_CALLBACK(_about_on_closex), todo);
 	gtk_widget_show(todo->about);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Todo * todo = data;
+
+	gtk_widget_hide(todo->about);
+	return TRUE;
 }
 
 
