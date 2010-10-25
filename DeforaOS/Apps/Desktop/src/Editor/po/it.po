@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-03 23:25+0200\n"
+"POT-Creation-Date: 2010-10-26 01:10+0200\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -21,31 +21,31 @@ msgstr ""
 msgid "Text editor preferences"
 msgstr ""
 
-#: ../src/callbacks.c:90
+#: ../src/callbacks.c:98
 msgid "Font:"
 msgstr ""
 
-#: ../src/callbacks.c:260
+#: ../src/callbacks.c:276
 msgid "About Editor"
 msgstr ""
 
-#: ../src/callbacks.c:271
+#: ../src/callbacks.c:287
 msgid "C_redits"
 msgstr ""
 
-#: ../src/callbacks.c:275
+#: ../src/callbacks.c:291
 msgid "_License"
 msgstr ""
 
-#: ../src/callbacks.c:325
+#: ../src/callbacks.c:341
 msgid "Credits"
 msgstr ""
 
-#: ../src/callbacks.c:348
+#: ../src/callbacks.c:364
 msgid "Written by"
 msgstr ""
 
-#: ../src/callbacks.c:377
+#: ../src/callbacks.c:393
 msgid "License"
 msgstr ""
 

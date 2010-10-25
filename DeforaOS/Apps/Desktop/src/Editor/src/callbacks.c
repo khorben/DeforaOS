@@ -55,8 +55,10 @@ void on_edit_find(gpointer data)
 
 /* on_edit_preferences */
 static void _preferences_set(Editor * editor);
-static void _preferences_on_cancel(gpointer data);
 static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
+static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
 void on_edit_preferences(gpointer data)
@@ -75,15 +77,21 @@ void on_edit_preferences(gpointer data)
 	}
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	editor->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_resizable(GTK_WINDOW(editor->pr_window), FALSE);
-	gtk_window_set_title(GTK_WINDOW(editor->pr_window),
-			_("Text editor preferences"));
-	gtk_window_set_transient_for(GTK_WINDOW(editor->pr_window), GTK_WINDOW(
-				editor->window));
+	editor->pr_window = gtk_dialog_new_with_buttons(
+			_("Text editor preferences"),
+			GTK_WINDOW(editor->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	g_signal_connect_swapped(G_OBJECT(editor->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), editor);
-	vbox = gtk_vbox_new(FALSE, 0);
+	g_signal_connect(G_OBJECT(editor->pr_window), "response",
+			G_CALLBACK(_preferences_on_response), editor);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(editor->pr_window));
+#else
+	vbox = GTK_DIALOG(editor->pr_window)->vbox;
+#endif
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* font */
@@ -95,26 +103,6 @@ void on_edit_preferences(gpointer data)
 	gtk_size_group_add_widget(group, editor->pr_font);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
-	/* dialog */
-	hbox = gtk_hbox_new(FALSE, 0);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_ok), editor);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_cancel), editor);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
-	/* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
-	gtk_container_add(GTK_CONTAINER(editor->pr_window), vbox);
 	_preferences_set(editor);
 	gtk_widget_show_all(editor->pr_window);
 }
@@ -125,20 +113,30 @@ static void _preferences_set(Editor * editor)
 			editor->font);
 }
 
-static void _preferences_on_cancel(gpointer data)
-{
-	Editor * editor = data;
-
-	gtk_widget_hide(editor->pr_window);
-	_preferences_set(editor);
-}
-
 static gboolean _preferences_on_closex(gpointer data)
 {
 	Editor * editor = data;
 
 	_preferences_on_cancel(editor);
 	return TRUE;
+}
+
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_preferences_on_cancel(data);
+}
+
+static void _preferences_on_cancel(gpointer data)
+{
+	Editor * editor = data;
+
+	gtk_widget_hide(editor->pr_window);
+	_preferences_set(editor);
 }
 
 static void _preferences_on_ok(gpointer data)
