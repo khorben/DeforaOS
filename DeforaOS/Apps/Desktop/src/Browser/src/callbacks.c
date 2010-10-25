@@ -236,6 +236,8 @@ void on_edit_select_all(gpointer data)
 static void _preferences_set(Browser * browser);
 /* callbacks */
 static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
 static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
@@ -246,23 +248,25 @@ void on_edit_preferences(gpointer data)
 	GtkWidget * vbox;
 	GtkWidget * notebook;
 	GtkWidget * hbox;
-	GtkSizeGroup * group;
 
 	if(browser->pr_window != NULL)
 	{
 		gtk_window_present(GTK_WINDOW(browser->pr_window));
 		return;
 	}
-	browser->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(browser->pr_window), 4);
-	gtk_window_set_resizable(GTK_WINDOW(browser->pr_window), FALSE);
-	gtk_window_set_title(GTK_WINDOW(browser->pr_window),
-			_("File browser preferences"));
-	gtk_window_set_transient_for(GTK_WINDOW(browser->pr_window), GTK_WINDOW(
-				browser->window));
+	browser->pr_window = gtk_dialog_new_with_buttons(
+			_("File browser preferences"),
+			GTK_WINDOW(browser->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	g_signal_connect_swapped(G_OBJECT(browser->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
+	g_signal_connect(G_OBJECT(browser->pr_window), "response",
+			G_CALLBACK(_preferences_on_response), browser);
+	/* notebook */
 	notebook = gtk_notebook_new();
+	/* appearance tab */
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -294,23 +298,12 @@ void on_edit_preferences(gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
 			gtk_label_new_with_mnemonic(_("_Appearance")));
-	vbox = gtk_vbox_new(FALSE, 4);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(browser->pr_window));
+#else
+	vbox = GTK_DIALOG(browser->pr_window)->vbox;
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	/* dialog */
-	hbox = gtk_hbox_new(FALSE, 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_ok), browser);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_cancel), browser);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
 	_preferences_set(browser);
 	gtk_widget_show_all(browser->pr_window);
 }
@@ -339,6 +332,16 @@ static gboolean _preferences_on_closex(gpointer data)
 	return TRUE;
 }
 
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_preferences_on_cancel(data);
+}
+
 static void _preferences_on_cancel(gpointer data)
 {
 	Browser * browser = data;
@@ -358,8 +361,9 @@ static void _preferences_on_ok(gpointer data)
 #endif
 	browser->prefs.alternate_rows = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_alternate));
-	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(browser->detailview),
-			browser->prefs.alternate_rows);
+	if(browser->detailview != NULL)
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(browser->detailview),
+				browser->prefs.alternate_rows);
 	browser->prefs.confirm_before_delete = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_confirm));
 	browser->prefs.sort_folders_first = gtk_toggle_button_get_active(
