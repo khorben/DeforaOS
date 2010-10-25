@@ -415,8 +415,9 @@ void on_preferences(gpointer data)
 	}
 	surfer->pr_window = gtk_dialog_new_with_buttons(
 			_("Web surfer preferences"), GTK_WINDOW(surfer->window),
-			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CANCEL, 1,
-			GTK_STOCK_OK, 0, NULL);
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	g_signal_connect_swapped(G_OBJECT(surfer->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), surfer);
 	g_signal_connect(G_OBJECT(surfer->pr_window), "response",
@@ -477,9 +478,9 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
-	if(response == 0)
+	if(response == GTK_RESPONSE_OK)
 		_preferences_on_ok(data);
-	else if(response == 1)
+	else if(response == GTK_RESPONSE_CANCEL)
 		_preferences_on_cancel(data);
 }
 
