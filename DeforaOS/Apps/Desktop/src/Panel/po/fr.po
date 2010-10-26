@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-09 05:16+0200\n"
+"POT-Creation-Date: 2010-10-26 02:38+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:170
+#: ../src/applets/battery.c:173
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:182 ../src/panel.c:361 ../src/run.c:196
+#: ../src/applets/battery.c:185 ../src/panel.c:361 ../src/run.c:196
 #: ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
@@ -62,8 +62,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:70 ../src/panel.c:544 ../src/panel.c:551
-#: ../src/panel.c:559
+#: ../src/applets/logout.c:70 ../src/panel.c:547 ../src/panel.c:554
+#: ../src/panel.c:562
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -139,36 +139,36 @@ msgstr "Maximiser"
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
 
-#: ../src/panel.c:443
+#: ../src/panel.c:440
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:534
+#: ../src/panel.c:537
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:607
+#: ../src/panel.c:610
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:612
+#: ../src/panel.c:615
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:629 ../src/panel.c:634 ../src/panel.c:641
+#: ../src/panel.c:632 ../src/panel.c:637 ../src/panel.c:644
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:633
+#: ../src/panel.c:636
 msgid "Restart"
 msgstr "Redémarrer"
 

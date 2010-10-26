@@ -416,15 +416,15 @@ int panel_load(Panel * panel, char const * applet)
 
 
 /* panel_show_preferences */
-static void _on_preferences_cancel(gpointer data);
-static gboolean _on_preferences_delete_event(gpointer data);
-static void _on_preferences_ok(gpointer data);
+static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
+static void _preferences_on_cancel(gpointer data);
+static void _preferences_on_ok(gpointer data);
 
 void panel_show_preferences(Panel * panel, gboolean show)
 {
 	GtkWidget * vbox;
-	GtkWidget * bbox;
-	GtkWidget * widget;
 
 	if(show == FALSE)
 	{
@@ -437,33 +437,44 @@ void panel_show_preferences(Panel * panel, gboolean show)
 		gtk_window_present(GTK_WINDOW(panel->pr_window));
 		return;
 	}
-	panel->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(panel->pr_window), 4);
-	gtk_window_set_title(GTK_WINDOW(panel->pr_window),
-			_("Panel preferences"));
+	panel->pr_window = gtk_dialog_new_with_buttons(_("Panel preferences"),
+			NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	g_signal_connect_swapped(G_OBJECT(panel->pr_window), "delete-event",
-			G_CALLBACK(_on_preferences_delete_event), panel);
-	vbox = gtk_vbox_new(FALSE, 0);
+			G_CALLBACK(_preferences_on_closex), panel);
+	g_signal_connect(G_OBJECT(panel->pr_window), "response",
+			G_CALLBACK(_preferences_on_response), panel);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(panel->pr_window));
+#else
+	vbox = GTK_DIALOG(panel->pr_window)->vbox;
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), panel->pr_notebook, TRUE, TRUE, 0);
 	/* FIXME implement a way to enable plug-ins per panel (and in order) */
-	bbox = gtk_hbutton_box_new();
-	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_preferences_cancel), panel);
-	gtk_container_add(GTK_CONTAINER(bbox), widget);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_preferences_ok), panel);
-	gtk_container_add(GTK_CONTAINER(bbox), widget);
-	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(panel->pr_window), vbox);
-	_on_preferences_cancel(panel);
+	_preferences_on_cancel(panel);
 	gtk_widget_show_all(panel->pr_window);
 }
 
-static void _on_preferences_cancel(gpointer data)
+static gboolean _preferences_on_closex(gpointer data)
+{
+	Panel * panel = data;
+
+	_preferences_on_cancel(panel);
+	return TRUE;
+}
+
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_preferences_on_cancel(data);
+}
+
+static void _preferences_on_cancel(gpointer data)
 {
 	Panel * panel = data;
 
@@ -471,15 +482,7 @@ static void _on_preferences_cancel(gpointer data)
 	/* FIXME reset configuration */
 }
 
-static gboolean _on_preferences_delete_event(gpointer data)
-{
-	Panel * panel = data;
-
-	_on_preferences_cancel(panel);
-	return TRUE;
-}
-
-static void _on_preferences_ok(gpointer data)
+static void _preferences_on_ok(gpointer data)
 {
 	Panel * panel = data;
 
