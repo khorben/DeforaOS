@@ -490,6 +490,9 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 
 
 /* useful */
+/* mixer_about */
+static gboolean _about_on_closex(GtkWidget * widget);
+
 void mixer_about(Mixer * mixer)
 {
 
@@ -501,6 +504,8 @@ void mixer_about(Mixer * mixer)
 	mixer->about = desktop_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(mixer->about), GTK_WINDOW(
 				mixer->window));
+	g_signal_connect(G_OBJECT(mixer->about), "delete-event", G_CALLBACK(
+				_about_on_closex), NULL);
 	desktop_about_dialog_set_authors(mixer->about, _authors);
 	desktop_about_dialog_set_copyright(mixer->about, _copyright);
 	desktop_about_dialog_set_license(mixer->about, _license);
@@ -508,6 +513,12 @@ void mixer_about(Mixer * mixer)
 	desktop_about_dialog_set_name(mixer->about, PACKAGE);
 	desktop_about_dialog_set_version(mixer->about, VERSION);
 	gtk_widget_show(mixer->about);
+}
+
+static gboolean _about_on_closex(GtkWidget * widget)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
