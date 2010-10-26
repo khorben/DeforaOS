@@ -512,6 +512,8 @@ void mixer_about(Mixer * mixer)
 
 
 /* mixer_properties */
+static gboolean _properties_on_closex(GtkWidget * widget);
+
 void mixer_properties(Mixer * mixer)
 {
 #ifdef AUDIO_MIXER_DEVINFO
@@ -538,6 +540,10 @@ void mixer_properties(Mixer * mixer)
 			GTK_WINDOW(mixer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_ACCEPT, NULL);
+	g_signal_connect(mixer->properties, "delete-event", G_CALLBACK(
+				_properties_on_closex), NULL);
+	g_signal_connect(mixer->properties, "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(mixer->properties));
 #else
@@ -576,10 +582,14 @@ void mixer_properties(Mixer * mixer)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 	gtk_widget_show_all(vbox);
-	g_signal_connect(mixer->properties, "response", G_CALLBACK(
-				gtk_widget_hide), NULL);
 	gtk_widget_show(mixer->properties);
 #endif
+}
+
+static gboolean _properties_on_closex(GtkWidget * widget)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
