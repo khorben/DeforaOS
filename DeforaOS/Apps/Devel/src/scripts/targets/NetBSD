@@ -71,6 +71,7 @@ banner====================
 banner=
 banner=Please choose an option from the following menu:
 menu=Boot DeforaOS:vesa 640x480x8;boot netbsd
+menu=Boot DeforaOS (text mode):boot netbsd
 menu=Drop to boot prompt:prompt
 default=1
 timeout=10
