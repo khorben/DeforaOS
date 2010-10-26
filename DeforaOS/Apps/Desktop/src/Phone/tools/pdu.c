@@ -36,6 +36,14 @@ static void _hexdump(char const * buf, size_t len)
 }
 
 
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: pdu string\n", stderr);
+	return 1;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
@@ -48,7 +56,7 @@ int main(int argc, char * argv[])
 	size_t len;
 
 	if(argc != 2)
-		return 1;
+		return _usage();
 	if((p = _cmgr_pdu_parse(argv[1], &timestamp, number, &encoding, &len))
 			!= NULL)
 	{
