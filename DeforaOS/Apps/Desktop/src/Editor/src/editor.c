@@ -33,6 +33,11 @@ static char const _license[] =
 
 /* Editor */
 /* private */
+/* constants */
+#define EDITOR_CONFIG_FILE	".editor"
+#define EDITOR_DEFAULT_FONT	"Monospace 9"
+
+
 /* variables */
 static char const * _authors[] =
 {
@@ -136,6 +141,7 @@ static DesktopToolbar _editor_toolbar[] =
 
 
 /* prototypes */
+static char * _editor_config_filename(void);
 static gboolean _editor_find(Editor * editor, char const * text,
 		gboolean sensitive, gboolean wrap);
 
@@ -149,20 +155,21 @@ Editor * editor_new(void)
 {
 	Editor * editor;
 	GtkAccelGroup * group;
-	GtkSettings * settings;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	PangoFontDescription * desc;
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
-	editor->font = NULL;
-	settings = gtk_settings_get_default();
-	g_object_get(G_OBJECT(settings), "gtk-font-name", &editor->font, NULL);
-	if(editor->font == NULL)
-		editor->font = EDITOR_DEFAULT_FONT;
+	editor->config = config_new();
+	if(editor->config == NULL)
+	{
+		editor_delete(editor);
+		return NULL;
+	}
 	editor->filename = NULL;
 	editor->search = 0;
+	editor_config_load(editor);
 	/* widgets */
 	group = gtk_accel_group_new();
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -193,8 +200,7 @@ Editor * editor_new(void)
 	/* FIXME make it an option */
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor->view),
 			GTK_WRAP_WORD_CHAR);
-	desc = pango_font_description_from_string(editor->font);
-	pango_font_description_set_family(desc, "monospace");
+	desc = pango_font_description_from_string(editor_get_font(editor));
 	editor_set_font(editor, pango_font_description_to_string(desc));
 	pango_font_description_free(desc);
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
@@ -230,19 +236,50 @@ void editor_delete(Editor * editor)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(editor->config != NULL)
+		config_delete(editor->config);
 	free(editor);
 }
 
 
 /* accessors */
+/* editor_get_font */
+char const * editor_get_font(Editor * editor)
+{
+	char const * p;
+	char * q;
+	GtkSettings * settings;
+	PangoFontDescription * desc;
+
+	if((p = config_get(editor->config, NULL, "font")) != NULL)
+		return p;
+	settings = gtk_settings_get_default();
+	g_object_get(G_OBJECT(settings), "gtk-font-name", &q, NULL);
+	if(q != NULL)
+	{
+		desc = pango_font_description_from_string(q);
+		g_free(q);
+		pango_font_description_set_family(desc, "monospace");
+		q = pango_font_description_to_string(desc);
+		config_set(editor->config, NULL, "font", q);
+		g_free(q);
+		pango_font_description_free(desc);
+		if((p = config_get(editor->config, NULL, "font")) != NULL)
+			return p;
+	}
+	return EDITOR_DEFAULT_FONT;
+}
+
+
+/* editor_set_font */
 void editor_set_font(Editor * editor, char const * font)
 {
 	PangoFontDescription * desc;
 
-	editor->font = font;
 	desc = pango_font_description_from_string(font);
 	gtk_widget_modify_font(editor->view, desc);
 	pango_font_description_free(desc);
+	config_set(editor->config, NULL, "font", font);
 }
 
 
@@ -278,6 +315,31 @@ static gboolean _about_on_closex(gpointer data)
 
 	gtk_widget_hide(editor->ab_window);
 	return TRUE;
+}
+
+
+/* editor_config_load */
+void editor_config_load(Editor * editor)
+{
+	char * filename;
+
+	if((filename = _editor_config_filename()) == NULL)
+		return;
+	config_load(editor->config, filename); /* we can ignore errors */
+	free(filename);
+}
+
+
+/* editor_config_save */
+void editor_config_save(Editor * editor)
+{
+	char * filename;
+
+	if((filename = _editor_config_filename()) == NULL)
+		return;
+	if(config_save(editor->config, filename) != 0)
+		editor_error(editor, _("Could not save configuration"), 0);
+	free(filename);
 }
 
 
@@ -664,6 +726,23 @@ void editor_unselect_all(Editor * editor)
 
 /* private */
 /* functions */
+/* editor_config_filename */
+static char * _editor_config_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(EDITOR_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, EDITOR_CONFIG_FILE);
+	return filename;
+}
+
+
 /* editor_find */
 static char const * _find_string(char const * big, char const * little,
 		gboolean sensitive);

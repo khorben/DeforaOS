@@ -53,7 +53,6 @@ static void _preferences_on_ok(gpointer data);
 void on_edit_preferences(gpointer data)
 {
 	Editor * editor = data;
-	PangoFontDescription * desc;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -64,8 +63,6 @@ void on_edit_preferences(gpointer data)
 		gtk_widget_show(editor->pr_window);
 		return;
 	}
-	desc = pango_font_description_new();
-	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	editor->pr_window = gtk_dialog_new_with_buttons(
 			_("Text editor preferences"),
 			GTK_WINDOW(editor->window),
@@ -85,7 +82,6 @@ void on_edit_preferences(gpointer data)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* font */
 	widget = gtk_label_new(_("Font:"));
-	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	editor->pr_font = gtk_font_button_new();
 	gtk_font_button_set_use_font(GTK_FONT_BUTTON(editor->pr_font), TRUE);
@@ -99,7 +95,7 @@ void on_edit_preferences(gpointer data)
 static void _preferences_set(Editor * editor)
 {
 	gtk_font_button_set_font_name(GTK_FONT_BUTTON(editor->pr_font),
-			editor->font);
+			editor_get_font(editor));
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -136,6 +132,7 @@ static void _preferences_on_ok(gpointer data)
 	gtk_widget_hide(editor->pr_window);
 	font = gtk_font_button_get_font_name(GTK_FONT_BUTTON(editor->pr_font));
 	editor_set_font(editor, font);
+	editor_config_save(editor);
 }
 
 

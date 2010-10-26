@@ -18,6 +18,7 @@
 #ifndef EDITOR_EDITOR_H
 # define EDITOR_EDITOR_H
 
+# include <System.h>
 # include <gtk/gtk.h>
 
 
@@ -25,9 +26,10 @@
 /* types */
 typedef struct _Editor
 {
-	char const * font;
 	char * filename;
 	size_t search;
+
+	Config * config;
 
 	/* widgets */
 	GtkWidget * window;
@@ -46,19 +48,19 @@ typedef struct _Editor
 } Editor;
 
 
-/* constants */
-# define EDITOR_DEFAULT_FONT "monospace"
-
-
 /* functions */
 Editor * editor_new(void);
 void editor_delete(Editor * editor);
 
 /* accessors */
+char const * editor_get_font(Editor * editor);
 void editor_set_font(Editor * editor, char const * font);
 
 /* useful */
 void editor_about(Editor * editor);
+
+void editor_config_load(Editor * editor);
+void editor_config_save(Editor * editor);
 
 int editor_error(Editor * editor, char const * message, int ret);
 

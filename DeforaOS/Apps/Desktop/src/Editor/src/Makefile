@@ -7,7 +7,7 @@ CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs gtk+-2.0` -lDesktop
+LDFLAGSF= `pkg-config --libs gtk+-2.0` -lSystem -lDesktop
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 LN	= ln -f
@@ -24,7 +24,7 @@ editor_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 editor: $(editor_OBJS)
 	$(CC) -o editor $(editor_OBJS) $(editor_LDFLAGS)
 
-callbacks.o: callbacks.c callbacks.h
+callbacks.o: callbacks.c editor.h callbacks.h
 	$(CC) $(editor_CFLAGS) -c callbacks.c
 
 editor.o: editor.c callbacks.h editor.h ../config.h
