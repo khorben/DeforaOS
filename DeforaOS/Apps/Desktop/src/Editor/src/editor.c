@@ -100,10 +100,11 @@ static DesktopMenu _editor_menu_edit[] =
 
 static DesktopMenu _editor_menu_help[] =
 {
+	{ N_("_About"), G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+		GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
+		NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
