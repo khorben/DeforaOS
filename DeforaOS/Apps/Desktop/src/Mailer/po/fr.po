@@ -54,11 +54,11 @@ msgstr "_Refaire"
 
 #: ../src/compose.c:96 ../src/mailer.c:125
 msgid "_Select all"
-msgstr "Sélectionner tout"
+msgstr "Sélectionner _tout"
 
 #: ../src/compose.c:103 ../src/mailer.c:132
 msgid "_Unselect all"
-msgstr "Tout désélectionner"
+msgstr "Tout _désélectionner"
 
 #: ../src/compose.c:105 ../src/mailer.c:121
 msgid "_Cut"

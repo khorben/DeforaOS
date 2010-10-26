@@ -108,7 +108,7 @@ static DesktopMenu _menu_edit[] =
 		NULL,
 #endif
 		GDK_CONTROL_MASK, GDK_A },
-	{ N_("Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
+	{ N_("_Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Find"),		G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
 		GDK_CONTROL_MASK, GDK_F },

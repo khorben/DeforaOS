@@ -122,7 +122,7 @@ static DesktopMenu _menu_edit[] =
 	{ N_("Cop_y"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
 	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_V },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
+	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else

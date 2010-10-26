@@ -7,13 +7,13 @@ static char const _license[] =
 "it under the terms of the GNU General Public License as published by\n"
 "the Free Software Foundation, version 3 of the License.\n"
 "\n"
- "This program is distributed in the hope that it will be useful,\n"
- "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
- "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
- "GNU General Public License for more details.\n"
- "\n"
- "You should have received a copy of the GNU General Public License\n"
- "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
  * - mention the number of files while refreshing */
 
@@ -100,7 +100,7 @@ static DesktopMenu _browser_menu_edit[] =
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
+	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else

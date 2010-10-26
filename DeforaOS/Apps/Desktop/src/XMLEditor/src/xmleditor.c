@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop XMLEditor */
-/* This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software; you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by the\n"
+"Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program. If not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
@@ -39,10 +41,18 @@ struct _XMLEditor
 	GtkTreeStore * store;
 	GtkWidget * view;
 	GtkWidget * statusbar;
+	/* about */
+	GtkWidget * ab_window;
 };
 
 
 /* variables */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
 #ifdef EMBEDDED
 static DesktopAccel _xmleditor_accel[] =
 {
@@ -82,10 +92,11 @@ static DesktopMenu _xmleditor_menu_edit[] =
 
 static DesktopMenu _xmleditor_menu_help[] =
 {
+	{ "_About", G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+		GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0, 0 },
+		NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -176,6 +187,8 @@ XMLEditor * xmleditor_new(void)
 	xmleditor->statusbar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), xmleditor->statusbar, FALSE, FALSE,
 			0);
+	/* about */
+	xmleditor->ab_window = NULL;
 	gtk_container_add(GTK_CONTAINER(xmleditor->window), vbox);
 	gtk_window_set_focus(GTK_WINDOW(xmleditor->window), xmleditor->view);
 	gtk_widget_show_all(xmleditor->window);
@@ -206,6 +219,38 @@ void xmleditor_delete(XMLEditor * xmleditor)
 
 
 /* useful */
+/* xmleditor_about */
+static gboolean _about_on_closex(GtkWidget * widget);
+
+void xmleditor_about(XMLEditor * xmleditor)
+{
+	if(xmleditor->ab_window != NULL)
+	{
+		gtk_widget_show(xmleditor->ab_window);
+		return;
+	}
+	xmleditor->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(xmleditor->ab_window),
+			GTK_WINDOW(xmleditor->window));
+	g_signal_connect(G_OBJECT(xmleditor->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), NULL);
+	desktop_about_dialog_set_authors(xmleditor->ab_window, _authors);
+	desktop_about_dialog_set_copyright(xmleditor->ab_window, _copyright);
+	desktop_about_dialog_set_license(xmleditor->ab_window, _license);
+	desktop_about_dialog_set_logo_icon_name(xmleditor->ab_window,
+			"text-editor");
+	desktop_about_dialog_set_name(xmleditor->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(xmleditor->ab_window, VERSION);
+	gtk_widget_show(xmleditor->ab_window);
+}
+
+static gboolean _about_on_closex(GtkWidget * widget)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
+}
+
+
 /* xmleditor_error */
 int xmleditor_error(XMLEditor * xmleditor, char const * message, int ret)
 {

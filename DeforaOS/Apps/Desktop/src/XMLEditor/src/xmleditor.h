@@ -31,6 +31,8 @@ XMLEditor * xmleditor_new(void);
 void xmleditor_delete(XMLEditor * xmleditor);
 
 /* useful */
+void xmleditor_about(XMLEditor * xmleditor);
+
 int xmleditor_error(XMLEditor * xmleditor, char const * message, int ret);
 
 gboolean xmleditor_close(XMLEditor * xmleditor);

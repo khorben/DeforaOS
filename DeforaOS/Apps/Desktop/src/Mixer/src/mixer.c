@@ -495,7 +495,6 @@ static gboolean _about_on_closex(GtkWidget * widget);
 
 void mixer_about(Mixer * mixer)
 {
-
 	if(mixer->about != NULL)
 	{
 		gtk_widget_show(mixer->about);
