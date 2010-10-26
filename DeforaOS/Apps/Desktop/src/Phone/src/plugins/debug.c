@@ -160,7 +160,7 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	toolitem = gtk_tool_button_new(NULL, "Dialer");
 	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-			"stock_landline-phone");
+			"phone-dialer");
 	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				_on_debug_dialer), plugin);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
