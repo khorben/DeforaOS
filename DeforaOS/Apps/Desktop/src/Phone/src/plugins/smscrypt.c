@@ -83,6 +83,7 @@ static gboolean _smscrypt_confirm(PhonePlugin * plugin, char const * message)
 	GtkWidget * dialog;
 	int res;
 
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -226,6 +227,8 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 		size_t * len)
 {
 	SMSCrypt * smscrypt = plugin->priv;
+	char const * confirm = "There is no secret defined for this number."
+		" The message will be sent unencrypted.\nContinue?";
 	size_t i;
 	size_t j = 0;
 	SHA_CTX sha1;
@@ -237,7 +240,7 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 	if(*encoding != PHONE_ENCODING_UTF8)
 		return 0; /* not for us */
 	if(_smscrypt_secret(plugin, number) != 0)
-		return 0; /* XXX warn and cancel if relevant */
+		return (_smscrypt_confirm(plugin, confirm) == TRUE) ? 0 : 1;
 	*encoding = PHONE_ENCODING_DATA;
 	for(i = 0; i < *len; i++)
 	{
@@ -261,8 +264,6 @@ static int _smscrypt_secret(PhonePlugin * plugin, char const * number)
 {
 	SMSCrypt * smscrypt = plugin->priv;
 	char const * secret = NULL;
-	char const * confirm = "There is no secret defined for this number."
-		" The message will be sent unencrypted.\nContinue?";
 	SHA_CTX sha1;
 
 	if(number != NULL)
@@ -272,7 +273,7 @@ static int _smscrypt_secret(PhonePlugin * plugin, char const * number)
 		secret = plugin->helper->config_get(plugin->helper->phone,
 				"smscrypt", "secret");
 	if(secret == NULL)
-		return (_smscrypt_confirm(plugin, confirm) == TRUE) ? 0 : 1;
+		return 1;
 	SHA1_Init(&sha1);
 	SHA1_Update(&sha1, (unsigned char const *)secret, strlen(secret));
 	SHA1_Final(smscrypt->buf, &sha1);

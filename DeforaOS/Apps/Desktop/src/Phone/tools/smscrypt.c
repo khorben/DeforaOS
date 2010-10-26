@@ -15,6 +15,7 @@
 
 
 
+#define DEBUG
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,12 +42,17 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable)
 {
 	Config * config = (Config*)phone;
-
 #ifdef DEBUG
+	char const * ret;
+
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
 			(void*)phone, section, variable);
-#endif
+	ret = config_get(config, section, variable);
+	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, ret);
+	return ret;
+#else
 	return config_get(config, section, variable);
+#endif
 }
 
 
@@ -77,28 +83,41 @@ static int _usage(void)
 
 
 /* main */
+static gboolean _main_idle(gpointer data);
+
 int main(int argc, char * argv[])
 {
 	int o;
-	char const * number = NULL;
-	PhonePluginHelper helper;
-	Config * config;
-	PhoneEncoding encoding = PHONE_ENCODING_UTF8;
-	char * p;
-	size_t len;
-
+	struct { char const * message; char const * number; } mn;
+	
+	mn.number = NULL;
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "p:")) != -1)
 		switch(o)
 		{
 			case 'p':
-				number = optarg;
+				mn.number = optarg;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind + 1 != argc)
 		return _usage();
+	mn.message = argv[optind];
+	g_idle_add(_main_idle, &mn);
+	gtk_main();
+	return 0;
+}
+
+static gboolean _main_idle(gpointer data)
+{
+	struct { char const * message; char const * number; } * mn = data;
+	PhonePluginHelper helper;
+	Config * config;
+	PhoneEncoding encoding = PHONE_ENCODING_UTF8;
+	char * p;
+	size_t len;
+
 	config = config_new();
 	config_load(config, "/home/khorben/.phone"); /* FIXME hardcoded */
 	helper.phone = (Phone *)config;
@@ -108,21 +127,21 @@ int main(int argc, char * argv[])
 	if(_smscrypt_init(&plugin) != 0)
 	{
 		error_print("smscrypt");
-		return 2;
+		return FALSE;
 	}
-	if((p = strdup(argv[optind])) == NULL)
-		return 2;
+	if((p = strdup(mn->message)) == NULL)
+		return FALSE;
 	printf("Message: \"%s\"\n", p);
 	len = strlen(p);
-	if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, number, &encoding,
-				&p, &len) != 0)
+	if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, mn->number,
+				&encoding, &p, &len) != 0)
 		puts("Could not encrypt");
 	else
 	{
 		printf("Encrypted:\n");
 		_hexdump(p, len);
-		if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING, number,
-					&encoding, &p, &len) != 0)
+		if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING,
+					mn->number, &encoding, &p, &len) != 0)
 			puts("Could not decrypt");
 		else
 			printf("Decrypted: \"%s\"\n", p);
@@ -130,5 +149,6 @@ int main(int argc, char * argv[])
 	free(p);
 	_smscrypt_destroy(&plugin);
 	config_delete(config);
-	return 0;
+	gtk_main_quit();
+	return FALSE;
 }
