@@ -33,6 +33,21 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/phone-signal-75.png \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-100.png \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
+		$(PACKAGE)-$(VERSION)/data/16x16/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/data/22x22/Makefile \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/project.conf \
+		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
+		$(PACKAGE)-$(VERSION)/data/24x24/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
+		$(PACKAGE)-$(VERSION)/data/32x32/Makefile \
+		$(PACKAGE)-$(VERSION)/data/32x32/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/32x32/project.conf \
+		$(PACKAGE)-$(VERSION)/data/48x48/Makefile \
+		$(PACKAGE)-$(VERSION)/data/48x48/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Phone.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \

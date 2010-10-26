@@ -1,3 +1,4 @@
+SUBDIRS	= 16x16 22x22 24x24 32x32 48x48
 PREFIX	= /usr/local
 DESTDIR	= 
 MKDIR	= mkdir -p
@@ -5,13 +6,19 @@ INSTALL	= install
 RM	= rm -f
 
 
-all:
+all: subdirs
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 -- phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
@@ -34,6 +41,7 @@ install: all
 	$(INSTALL) -m 0644 -- phone-signal-100.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-100.png
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
@@ -45,4 +53,4 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-75.png
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-100.png
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

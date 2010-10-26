@@ -2,7 +2,7 @@
 Name=Dialer
 Comment=Phone dialer
 Exec=phone-dialer
-Icon=stock_landline-phone
+Icon=phone-dialer
 Type=Application
 Categories=Network;Telephony;GTK;
 StartupNotify=true
