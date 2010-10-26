@@ -1178,14 +1178,14 @@ void phone_settings_open_selected(Phone * phone)
 
 /* show */
 /* phone_show_call */
+static void _show_call_window(Phone * phone);
+
 void phone_show_call(Phone * phone, gboolean show, ...)
 {
 	va_list ap;
 	PhoneCall call;
 	char const * name = NULL;
 	char const * number = NULL;
-	GtkWidget * vbox;
-	GtkWidget * hbox;
 
 	if(show == FALSE)
 	{
@@ -1204,85 +1204,7 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	}
 	va_end(ap);
 	if(phone->ca_window == NULL)
-	{
-		phone->ca_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_window_set_default_size(GTK_WINDOW(phone->ca_window), 200,
-				300);
-#if GTK_CHECK_VERSION(2, 6, 0)
-		gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),
-				"call-start");
-#endif
-		vbox = gtk_vbox_new(FALSE, 4);
-		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
-		/* party */
-		phone->ca_name = gtk_label_new(NULL);
-		gtk_widget_modify_font(phone->ca_name, phone->bold);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_name, FALSE, TRUE,
-				0);
-		phone->ca_number = gtk_label_new(NULL);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_number, FALSE, TRUE,
-				0);
-		/* buttons */
-		/* answer */
-		phone->ca_answer = _phone_create_button("call-start",
-				_("Answer"));
-		g_signal_connect_swapped(G_OBJECT(phone->ca_answer), "clicked",
-				G_CALLBACK(on_phone_call_answer), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_answer, FALSE, TRUE,
-				0);
-		/* hangup */
-		phone->ca_hangup = _phone_create_button("call-stop",
-				_("Hangup"));
-		g_signal_connect_swapped(G_OBJECT(phone->ca_hangup), "clicked",
-				G_CALLBACK(on_phone_call_hangup), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_hangup, FALSE, TRUE,
-				0);
-		/* reject */
-		phone->ca_reject = _phone_create_button("call-stop",
-				_("Reject"));
-		g_signal_connect_swapped(G_OBJECT(phone->ca_reject), "clicked",
-				G_CALLBACK(on_phone_call_reject), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_reject, FALSE, TRUE,
-				0);
-		/* close */
-		phone->ca_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-		g_signal_connect_swapped(G_OBJECT(phone->ca_close), "clicked",
-				G_CALLBACK(on_phone_call_close), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_close, FALSE, TRUE,
-				0);
-		hbox = gtk_hbox_new(FALSE, 0);
-		/* volume bar */
-		phone->ca_image = gtk_image_new_from_icon_name(
-				"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE,
-				4);
-		phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE,
-				0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		/* speaker mode */
-		phone->ca_speaker = gtk_toggle_button_new_with_label(
-				_("Loudspeaker"));
-		gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
-				gtk_image_new_from_icon_name("stock_volume-max",
-					GTK_ICON_SIZE_BUTTON));
-		g_signal_connect(G_OBJECT(phone->ca_speaker), "toggled",
-				G_CALLBACK(on_phone_call_speaker), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_speaker, FALSE,
-				TRUE, 0);
-		/* mute microphone */
-		phone->ca_mute = gtk_toggle_button_new_with_label(
-				_("Mute microphone"));
-		gtk_button_set_image(GTK_BUTTON(phone->ca_mute),
-				gtk_image_new_from_icon_name(
-					"audio-input-microphone",
-					GTK_ICON_SIZE_BUTTON));
-		g_signal_connect(G_OBJECT(phone->ca_mute), "toggled",
-				G_CALLBACK(on_phone_call_mute), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_mute, FALSE,
-				TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(phone->ca_window), vbox);
-	}
+		_show_call_window(phone);
 	phone_show_dialer(phone, FALSE);
 	if(name != NULL)
 	{
@@ -1334,6 +1256,72 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			break;
 	}
 	gtk_window_present(GTK_WINDOW(phone->ca_window));
+}
+
+static void _show_call_window(Phone * phone)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+
+	phone->ca_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(phone->ca_window), 200, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window), "call-start");
+#endif
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+	/* party */
+	phone->ca_name = gtk_label_new(NULL);
+	gtk_widget_modify_font(phone->ca_name, phone->bold);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_name, FALSE, TRUE, 0);
+	phone->ca_number = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_number, FALSE, TRUE, 0);
+	/* buttons */
+	/* answer */
+	phone->ca_answer = _phone_create_button("call-start", _("Answer"));
+	g_signal_connect_swapped(G_OBJECT(phone->ca_answer), "clicked",
+			G_CALLBACK(on_phone_call_answer), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_answer, FALSE, TRUE, 0);
+	/* hangup */
+	phone->ca_hangup = _phone_create_button("call-stop", _("Hangup"));
+	g_signal_connect_swapped(G_OBJECT(phone->ca_hangup), "clicked",
+			G_CALLBACK(on_phone_call_hangup), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_hangup, TRUE, TRUE, 0);
+	/* reject */
+	phone->ca_reject = _phone_create_button("call-stop", _("Reject"));
+	g_signal_connect_swapped(G_OBJECT(phone->ca_reject), "clicked",
+			G_CALLBACK(on_phone_call_reject), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_reject, TRUE, TRUE, 0);
+	/* close */
+	phone->ca_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect_swapped(G_OBJECT(phone->ca_close), "clicked",
+			G_CALLBACK(on_phone_call_close), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_close, TRUE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	/* volume bar */
+	phone->ca_image = gtk_image_new_from_icon_name(
+			"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 4);
+	phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* speaker mode */
+	phone->ca_speaker = gtk_toggle_button_new_with_label(_("Loudspeaker"));
+	gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
+			gtk_image_new_from_icon_name("stock_volume-max",
+				GTK_ICON_SIZE_BUTTON));
+	g_signal_connect(G_OBJECT(phone->ca_speaker), "toggled", G_CALLBACK(
+				on_phone_call_speaker), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_speaker, TRUE, TRUE, 0);
+	/* mute microphone */
+	phone->ca_mute = gtk_toggle_button_new_with_label(_("Mute microphone"));
+	gtk_button_set_image(GTK_BUTTON(phone->ca_mute),
+			gtk_image_new_from_icon_name("audio-input-microphone",
+				GTK_ICON_SIZE_BUTTON));
+	g_signal_connect(G_OBJECT(phone->ca_mute), "toggled", G_CALLBACK(
+				on_phone_call_mute), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_mute, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(phone->ca_window), vbox);
 }
 
 
