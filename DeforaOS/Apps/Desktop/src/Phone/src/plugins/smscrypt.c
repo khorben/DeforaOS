@@ -194,6 +194,8 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 		size_t * len)
 {
 	SMSCrypt * smscrypt = plugin->priv;
+	char const * error = "There is no known secret for this number."
+		" The message could not be decrypted.";
 	size_t i;
 	size_t j = 0;
 	SHA_CTX sha1;
@@ -205,7 +207,7 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 	if(*encoding != PHONE_ENCODING_DATA)
 		return 0; /* not for us */
 	if(_smscrypt_secret(plugin, number) != 0)
-		return 0; /* XXX warn */
+		return plugin->helper->error(plugin->helper->phone, error, 1);
 	for(i = 0; i < *len; i++)
 	{
 		buf[i] ^= smscrypt->buf[j];
