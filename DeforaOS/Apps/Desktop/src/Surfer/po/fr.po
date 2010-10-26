@@ -231,11 +231,11 @@ msgstr "C_oller"
 
 #: ../src/surfer.c:104
 msgid "Select _all"
-msgstr "_Tout sélectionner"
+msgstr "_Sélectionner tout"
 
 #: ../src/surfer.c:111
 msgid "Unselect all"
-msgstr "Tout désélectionner"
+msgstr "Tout _désélectionner"
 
 #: ../src/surfer.c:113
 msgid "_Find"

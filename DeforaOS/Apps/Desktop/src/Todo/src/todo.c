@@ -117,11 +117,11 @@ static DesktopMenu _file_menu[] =
 };
 static DesktopMenu _edit_menu[] =
 {
+	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
-	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
 		GTK_STOCK_SELECT_ALL,
 #else
-	{ N_("_Select all"), G_CALLBACK(on_edit_select_all), "edit-select-all",
+		"edit-select-all",
 #endif
 		GDK_CONTROL_MASK, GDK_A },
 	{ "", NULL, NULL, 0, 0 },
@@ -142,10 +142,11 @@ static DesktopMenu _view_menu[] =
 };
 static DesktopMenu _help_menu[] =
 {
+	{ N_("_About"), G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+		GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
+		NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
