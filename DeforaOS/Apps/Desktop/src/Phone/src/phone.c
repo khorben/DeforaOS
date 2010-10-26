@@ -1518,8 +1518,7 @@ static void _show_dialer_window(Phone * phone)
 
 	phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(phone->di_window),
-			"stock_landline-phone");
+	gtk_window_set_icon_name(GTK_WINDOW(phone->di_window), "phone-dialer");
 #endif
 	gtk_container_set_border_width(GTK_CONTAINER(phone->di_window), 4);
 	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
