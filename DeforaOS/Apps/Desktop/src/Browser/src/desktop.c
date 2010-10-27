@@ -226,7 +226,7 @@ static gboolean _new_idle(gpointer data)
 		return FALSE;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
+	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, filename);
 #endif
 	if((p = config_get(config, NULL, "background_how")) != NULL)
 		for(i = 0; i < DESKTOP_HOW_COUNT; i++)
