@@ -164,6 +164,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	GtkWidget * table;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
+	char * p;
 
 	if(lstat(filename, &st) != 0)
 		return -_properties_error(NULL, filename, 1);
@@ -179,9 +180,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		free(properties);
 		return -1;
 	}
-	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
-			== NULL)
-		gfilename = strdup(filename); /* XXX may fail */
+	gfilename = g_filename_display_name(filename);
 	if(S_ISDIR(st.st_mode))
 	{
 		if(theme != NULL && (pixbuf = gtk_icon_theme_load_icon(theme,
@@ -192,9 +191,11 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 			image = gtk_image_new_from_stock(GTK_STOCK_DIRECTORY,
 					GTK_ICON_SIZE_DIALOG);
 		type = "inode/directory";
-		if(gfilename != NULL && lstat(dirname(gfilename), &dirst) == 0
+		if((p = strdup(filename)) != NULL
+				&& lstat(dirname(p), &dirst) == 0
 				&& st.st_dev != dirst.st_dev)
 			type = "inode/mountpoint";
+		free(p);
 	}
 	else if(S_ISBLK(st.st_mode))
 		type = "inode/blockdevice";
@@ -235,8 +236,9 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 					GTK_ICON_SIZE_DIALOG);
 	}
 	properties->window = gtk_dialog_new();
-	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
-				gfilename));
+	p = g_filename_display_basename(filename);
+	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), p);
+	g_free(p);
 	gtk_window_set_title(GTK_WINDOW(properties->window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(properties->window), FALSE);
 	g_signal_connect(G_OBJECT(properties->window), "delete-event",
@@ -251,7 +253,9 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
 	gtk_table_attach_defaults(GTK_TABLE(table), image, 0, 1, 0, 2);
-	widget = gtk_label_new(gfilename);
+	widget = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(widget), gfilename);
+	gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(widget, bold);
@@ -347,7 +351,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 				_properties_on_close), NULL);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	pango_font_description_free(bold);
-	free(gfilename);
+	g_free(gfilename);
 	if(_properties_refresh(properties) != 0)
 	{
 		gtk_widget_destroy(properties->window);
