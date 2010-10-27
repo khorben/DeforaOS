@@ -45,14 +45,6 @@
 
 
 /* private */
-/* constants */
-static char const * _authors[] =
-{
-	"Pierre Pronchery <khorben@defora.org>",
-	NULL
-};
-
-
 /* prototypes */
 static GList * _copy_selection(Browser * browser);
 
