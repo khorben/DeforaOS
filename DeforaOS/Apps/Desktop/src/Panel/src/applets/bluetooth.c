@@ -91,8 +91,8 @@ static GtkWidget * _bluetooth_init(PanelApplet * applet)
 #if defined(__NetBSD__) || defined(__linux__)
 	bluetooth->fd = -1;
 #endif
-	bluetooth->image = gtk_image_new_from_icon_name("network-wireless",
-			applet->helper->icon_size);
+	bluetooth->image = gtk_image_new_from_icon_name(
+			"panel-applet-bluetooth", applet->helper->icon_size);
 	bluetooth->timeout = g_timeout_add(1000, _on_timeout, bluetooth);
 	_on_timeout(bluetooth);
 	return bluetooth->image;
