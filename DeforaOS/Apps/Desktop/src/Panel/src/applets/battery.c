@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - charging mode on Linux (apm) */
 
 
 
@@ -45,12 +47,13 @@ typedef enum _BatteryLevel
 {
 	BATTERY_LEVEL_UNKNOWN = 0,
 	BATTERY_LEVEL_ERROR,
+	BATTERY_LEVEL_EMPTY,
 	BATTERY_LEVEL_CAUTION,
 	BATTERY_LEVEL_LOW,
-	BATTERY_LEVEL_NORMAL,
-	BATTERY_LEVEL_CHARGING
+	BATTERY_LEVEL_GOOD,
+	BATTERY_LEVEL_FULL
 } BatteryLevel;
-#define BATTERY_LEVEL_LAST	BATTERY_LEVEL_CHARGING
+#define BATTERY_LEVEL_LAST	BATTERY_LEVEL_FULL
 #define BATTERY_LEVEL_COUNT	(BATTERY_LEVEL_LAST + 1)
 
 typedef struct _Battery
@@ -60,7 +63,6 @@ typedef struct _Battery
 
 	/* widgets */
 	GtkWidget * hbox;
-	GtkWidget * charging;
 	GtkWidget * image;
 	GtkWidget * label;
 	guint timeout;
@@ -119,9 +121,6 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 #endif
 	hbox = gtk_hbox_new(FALSE, 4);
 	battery->hbox = hbox;
-	battery->charging = gtk_image_new_from_icon_name("stock_connect",
-			GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start(GTK_BOX(hbox), battery->charging, FALSE, TRUE, 0);
 	battery->image = gtk_image_new_from_icon_name("battery",
 			applet->helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->image, FALSE, TRUE, 0);
@@ -153,7 +152,8 @@ static void _battery_destroy(PanelApplet * applet)
 
 
 /* battery_set */
-static void _set_image(Battery * battery, BatteryLevel level);
+static void _set_image(Battery * battery, BatteryLevel level,
+		gboolean charging);
 
 static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 {
@@ -165,47 +165,49 @@ static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 		gtk_widget_show(battery->hbox);
 	if(value < 0.0)
 	{
-		_set_image(battery, BATTERY_LEVEL_UNKNOWN);
+		_set_image(battery, BATTERY_LEVEL_UNKNOWN, FALSE);
 		value = 0.0;
 		snprintf(buf, sizeof(buf), "%s", _("Unknown"));
 	}
+	else if(value <= 1.0)
+		_set_image(battery, BATTERY_LEVEL_EMPTY, charging);
 	else if(value <= 10.0)
-		_set_image(battery, BATTERY_LEVEL_CAUTION);
+		_set_image(battery, BATTERY_LEVEL_CAUTION, charging);
 	else if(value <= 20.0)
-		_set_image(battery, BATTERY_LEVEL_LOW);
+		_set_image(battery, BATTERY_LEVEL_LOW, charging);
+	else if(value <= 75.0)
+		_set_image(battery, BATTERY_LEVEL_GOOD, charging);
 	else if(value <= 100.0)
-		_set_image(battery, BATTERY_LEVEL_NORMAL);
+		_set_image(battery, BATTERY_LEVEL_FULL, charging);
 	else
 	{
-		_set_image(battery, BATTERY_LEVEL_ERROR);
+		_set_image(battery, BATTERY_LEVEL_ERROR, FALSE);
 		value = 0.0;
 		snprintf(buf, sizeof(buf), "%s", _("Error"));
 	}
 #ifndef EMBEDDED
 	gtk_label_set_text(GTK_LABEL(battery->label), buf);
 #endif
-	if(charging)
-		gtk_widget_show(battery->charging);
-	else
-		gtk_widget_hide(battery->charging);
 }
 
-static void _set_image(Battery * battery, BatteryLevel level)
+static void _set_image(Battery * battery, BatteryLevel level, gboolean charging)
 {
-	char const * icons[BATTERY_LEVEL_COUNT] =
+	char const * icons[BATTERY_LEVEL_COUNT][2] =
 	{
-		"stock_dialog-question",
-		"stock_dialog-error",
-		"battery-caution",
-		"battery-low",
-		"battery",
-		"battery" /* XXX find a better icon */
+		{ "stock_dialog-question", "stock_dialog-question"	},
+		{ "battery-missing", "battery-missing"			},
+		{ "battery-empty", "battery-caution-charging"		},
+		{ "battery-caution", "battery-caution-charging"		},
+		{ "battery-low", "battery-low-charging"			},
+		{ "battery-good", "battery-good-charging"		},
+		{ "battery-full", "battery-full-charging"		}
 	};
 
 	if(battery->level == level)
 		return;
 	battery->level = level;
-	gtk_image_set_from_icon_name(GTK_IMAGE(battery->image), icons[level],
+	gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+			icons[level][charging ? 1 : 0],
 			battery->helper->icon_size);
 }
 
