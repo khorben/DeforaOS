@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - charging mode on Linux (apm) */
 
 
 
@@ -322,8 +320,8 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 		return 0.0 / 0.0;
 	}
 	buf[--buf_cnt] = '\0';
-	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, &u, &u, &u,
-				&u, &b, &i) != 8)
+	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, charging, &u,
+				&u, &u, &b, &i) != 8)
 	{
 		error_set("%s: %s", apm, strerror(errno));
 		d = 0.0 / 0.0;
@@ -350,7 +348,7 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 static gboolean _on_timeout(gpointer data)
 {
 	Battery * battery = data;
-	gboolean charging;
+	gboolean charging = FALSE;
 	gdouble value;
 
 	value = _battery_get(battery, &charging);
