@@ -22,6 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <elf.h>
+#ifndef EM_486
+# define EM_486 6
+#endif
 #include "as.h"
 #include "arch/arch.h"
 
