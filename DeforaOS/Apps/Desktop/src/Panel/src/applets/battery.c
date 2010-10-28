@@ -58,6 +58,7 @@ typedef struct _Battery
 {
 	PanelAppletHelper * helper;
 	BatteryLevel level;
+	int charging;
 
 	/* widgets */
 	GtkWidget * hbox;
@@ -113,6 +114,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	applet->priv = battery;
 	battery->helper = applet->helper;
 	battery->level = -1;
+	battery->charging = -1;
 	battery->timeout = 0;
 #if defined(__NetBSD__) || defined(__linux__)
 	battery->fd = -1;
@@ -201,9 +203,10 @@ static void _set_image(Battery * battery, BatteryLevel level, gboolean charging)
 		{ "battery-full", "battery-full-charging"		}
 	};
 
-	if(battery->level == level)
+	if(battery->level == level && battery->charging == charging)
 		return;
 	battery->level = level;
+	battery->charging = charging;
 	gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
 			icons[level][charging ? 1 : 0],
 			battery->helper->icon_size);
@@ -320,7 +323,7 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 		return 0.0 / 0.0;
 	}
 	buf[--buf_cnt] = '\0';
-	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, charging, &u,
+	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, &u, charging,
 				&u, &u, &b, &i) != 8)
 	{
 		error_set("%s: %s", apm, strerror(errno));
