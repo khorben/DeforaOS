@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-26 02:38+0200\n"
+"POT-Creation-Date: 2010-10-28 15:39+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:173
+#: ../src/applets/battery.c:168
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:185 ../src/panel.c:361 ../src/run.c:196
+#: ../src/applets/battery.c:184 ../src/panel.c:361 ../src/run.c:196
 #: ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
@@ -149,6 +149,10 @@ msgid ""
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
+"La session en cours va être terminée, fermant toute application actuellement "
+"en cours d'exécution, avec la perte potentielle des données non encore "
+"sauvegardées.\n"
+"Voulez-vous continuer?"
 
 #: ../src/panel.c:610
 msgid ""
@@ -156,6 +160,10 @@ msgid ""
 "opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
+"Votre appareil va être éteint, fermant toute application actuellement "
+"en cours d'exécution, avec la perte potentielle des données non encore "
+"sauvegardées.\n"
+"Voulez-vous continuer?"
 
 #: ../src/panel.c:615
 msgid ""
@@ -163,6 +171,10 @@ msgid ""
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
+"Votre ordinateur va être éteint, fermant toute application actuellement "
+"en cours d'exécution, avec la perte potentielle des données non encore "
+"sauvegardées.\n"
+"Voulez-vous continuer?"
 
 #: ../src/panel.c:632 ../src/panel.c:637 ../src/panel.c:644
 msgid "Shutdown"
