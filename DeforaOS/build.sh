@@ -54,6 +54,8 @@ DEVNULL="/dev/null"
 DEVZERO="/dev/zero"
 SUBDIRS="System/src/libc \
 	System/src/libSystem \
+	System/src/Init \
+	System/src/Splasher \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils \
 	Apps/Unix/src/devel \
@@ -319,6 +321,7 @@ usage()
 
 
 #main
+umask 022
 #parse options
 while [ $# -gt 0 ]; do
 	case "$1" in
