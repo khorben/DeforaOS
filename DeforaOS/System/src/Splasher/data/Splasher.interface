@@ -1,0 +1,12 @@
+#$Id$
+service=Splasher
+port=4249
+
+[enable]
+ret=INT32
+arg1=UINT32,enabled
+
+[progress]
+ret=INT32
+arg1=UINT32,progress
+arg2=STRING,text
