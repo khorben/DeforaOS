@@ -363,7 +363,7 @@ static int _connect_addr(String const * service, uint32_t * addr)
 	}
 	if((he = gethostbyname(server)) == NULL)
 		return error_set_code(1, "%s", hstrerror(h_errno));
-	*addr = *((uint32_t*)he->h_addr);
+	*addr = *((uint32_t*)he->h_addr_list[0]);
 	return 0;
 }
 
