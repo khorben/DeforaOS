@@ -20,14 +20,14 @@ all: $(TARGETS)
 
 libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o error.o event.o hash.o object.o parser.o plugin.o string.o token.o
 libSystem_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  -lssl
+libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) $(LDFLAGSF) $(LDFLAGS)   -lssl
 
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
 
 libSystem.so: $(libSystem_OBJS)
-	$(LD) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS)  -lssl
+	$(LD) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(LDFLAGSF) $(LDFLAGS)   -lssl
 
 appclient.o: appclient.c appinterface.h
 	$(CC) $(libSystem_CFLAGS) -c appclient.c
