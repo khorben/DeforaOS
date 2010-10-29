@@ -53,6 +53,7 @@ RMDIR="rmdir -p"
 DEVNULL="/dev/null"
 DEVZERO="/dev/zero"
 SUBDIRS="System/src/libc \
+	System/src/libSystem \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils \
 	Apps/Unix/src/devel \
@@ -370,7 +371,7 @@ fi
 [ -z "$CC" ] && CC="cc"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath-link,$PREFIX/lib -Wl,-rpath,$PREFIX/lib -l c `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
