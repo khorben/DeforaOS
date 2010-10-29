@@ -334,6 +334,15 @@ void on_home(gpointer data)
 }
 
 
+/* on_normal_size */
+void on_normal_size(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_zoom_reset(surfer);
+}
+
+
 /* on_notebook_close_tab */
 void on_notebook_close_tab(GtkWidget * widget, gpointer data)
 {
@@ -518,4 +527,22 @@ void on_stop(gpointer data)
 	Surfer * surfer = data;
 
 	surfer_stop(surfer);
+}
+
+
+/* on_zoom_in */
+void on_zoom_in(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_zoom_in(surfer);
+}
+
+
+/* on_zoom_out */
+void on_zoom_out(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_zoom_out(surfer);
 }

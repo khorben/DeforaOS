@@ -164,14 +164,22 @@ static DesktopMenubar _surfer_menubar[] =
 
 static DesktopToolbar _surfer_toolbar[] =
 {
-	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
+	{ N_("Back"), G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
 		GDK_Left, NULL },
-	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
+	{ N_("Forward"), G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
 		GDK_MOD1_MASK, GDK_Right, NULL },
-	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, 0, NULL },
-	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0, NULL },
+	{ N_("Stop"), G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, 0, NULL },
+	{ N_("Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0,
+		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
+	{ N_("Home"), G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
+#ifdef EMBEDDED
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Zoom in"), G_CALLBACK(on_zoom_in), "zoom-in", 0, 0, NULL },
+	{ N_("Zoom out"), G_CALLBACK(on_zoom_out), "zoom-out", 0, 0, NULL },
+	{ N_("Normal size"), G_CALLBACK(on_normal_size), "zoom-original", 0, 0,
+		NULL },
+#endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
