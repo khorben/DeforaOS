@@ -15,12 +15,12 @@
 
 
 
+# include <string.h>
+# include <errno.h>
 #ifdef __NetBSD__
 # include <sys/ioctl.h>
 # include <fcntl.h>
 # include <unistd.h>
-# include <string.h>
-# include <errno.h>
 #endif
 #include "splasher.h"
 #include "../config.h"
