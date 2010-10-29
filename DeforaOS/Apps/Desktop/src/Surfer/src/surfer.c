@@ -64,6 +64,9 @@ static DesktopAccel _surfer_accel[] =
 	/* FIXME implement the missing accelerators in embedded mode */
 	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
 	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
+	{ G_CALLBACK(on_normal_size), GDK_CONTROL_MASK, GDK_0 },
+	{ G_CALLBACK(on_zoom_in), GDK_CONTROL_MASK, GDK_plus },
+	{ G_CALLBACK(on_zoom_out), GDK_CONTROL_MASK, GDK_minus },
 #endif
 	{ G_CALLBACK(on_fullscreen), 0, GDK_F11 },
 	{ NULL, 0, 0 }
