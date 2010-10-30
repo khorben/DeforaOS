@@ -237,6 +237,16 @@ void on_compose_file_close(gpointer data)
 }
 
 
+/* compose edit menu */
+/* on_compose_edit_select_all */
+void on_compose_edit_select_all(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_select_all(compose);
+}
+
+
 /* compose view menu */
 /* on_compose_view_add_field */
 void on_compose_view_add_field(gpointer data)

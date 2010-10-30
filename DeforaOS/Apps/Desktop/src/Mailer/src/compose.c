@@ -93,7 +93,11 @@ static DesktopMenu _menu_edit[] =
 	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_Z },
 	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_Y },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Select all"), NULL,
+	{ N_("_Cut"), NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
+	{ N_("_Copy"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_P },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Select all"), G_CALLBACK(on_compose_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else
@@ -101,10 +105,6 @@ static DesktopMenu _menu_edit[] =
 #endif
 		GDK_CONTROL_MASK, GDK_A },
 	{ N_("_Unselect all"), NULL, NULL, 0, 0 },
-	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Cut"), NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
-	{ N_("_Copy"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
-	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -436,6 +436,20 @@ int compose_save(Compose * compose)
 {
 	/* FIXME implement */
 	return 0;
+}
+
+
+/* compose_select_all */
+void compose_select_all(Compose * compose)
+{
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	gtk_text_buffer_get_start_iter(tbuf, &start);
+	gtk_text_buffer_get_end_iter(tbuf, &end);
+	gtk_text_buffer_select_range(tbuf, &start, &end);
 }
 
 

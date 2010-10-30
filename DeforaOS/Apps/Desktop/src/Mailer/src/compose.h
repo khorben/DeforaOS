@@ -37,7 +37,12 @@ void compose_set_subject(Compose * compose, char const * subject);
 void compose_add_field(Compose * compose, char const * field,
 		char const * value);
 
+int compose_error(Compose * compose, char const * message, int ret);
+
 int compose_save(Compose * compose);
+
+void compose_select_all(Compose * compose);
+
 void compose_send(Compose * compose);
 void compose_send_cancel(Compose * compose);
 
