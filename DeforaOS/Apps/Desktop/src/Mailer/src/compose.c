@@ -345,7 +345,10 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
 		return;
-	gtk_list_store_set(compose->h_store, &iter, 0, text, -1);
+	if(text == NULL || strlen(text) == 0)
+		gtk_list_store_remove(compose->h_store, &iter);
+	else
+		gtk_list_store_set(compose->h_store, &iter, 0, text, -1);
 }
 
 static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
@@ -357,7 +360,10 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
 		return;
-	gtk_list_store_set(compose->h_store, &iter, 1, text, -1);
+	if(text == NULL || strlen(text) == 0)
+		gtk_list_store_remove(compose->h_store, &iter);
+	else
+		gtk_list_store_set(compose->h_store, &iter, 1, text, -1);
 }
 
 
@@ -528,7 +534,8 @@ static char * _send_headers(Compose * compose)
 	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, 0, &field, 1, &value, -1);
-		if((field_len = strlen(field)) == 0
+		if(field == NULL || value == NULL
+				|| (field_len = strlen(field)) == 0
 				|| field[field_len - 1] != ':'
 				|| index(field, ':') != field + field_len - 1)
 		{
