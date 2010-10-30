@@ -174,7 +174,7 @@ Compose * compose_new(Mailer * mailer)
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
-		mailer_error(mailer, strerror(errno), 0);
+		compose_error(NULL, strerror(errno), 0);
 		return NULL;
 	}
 	compose->mailer = mailer;
@@ -405,6 +405,32 @@ void compose_add_field(Compose * compose, char const * field,
 }
 
 
+/* compose_error */
+int compose_error(Compose * compose, char const * message, int ret)
+{
+	GtkWidget * dialog;
+
+	if(compose == NULL)
+		return error_set_print("mailer", ret, "%s", message);
+	dialog = gtk_message_dialog_new(GTK_WINDOW(compose->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
+				compose->window));
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+	return ret;
+}
+
+
 /* compose_save */
 int compose_save(Compose * compose)
 {
@@ -440,7 +466,7 @@ void compose_send(Compose * compose)
 	msg_len = strlen(msg);
 	body_len = strlen(body);
 	if((p = realloc(msg, msg_len + body_len + 8)) == NULL)
-		mailer_error(compose->mailer, strerror(errno), 0);
+		compose_error(compose, strerror(errno), 0);
 	else
 	{
 		msg = p;
@@ -458,11 +484,11 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	GtkWidget * widget;
 
 	if(pipe(fd) != 0 || (compose->pid = fork()) == -1)
-		return mailer_error(compose->mailer, strerror(errno), 1);
+		return compose_error(compose, strerror(errno), 1);
 	if(compose->pid == 0)
 		return _mail_child(fd);
 	if(close(fd[0]) != 0 || fcntl(fd[1], F_SETFL, O_NONBLOCK) == -1)
-		mailer_error(compose->mailer, strerror(errno), 0);
+		compose_error(compose, strerror(errno), 0);
 	compose->snd_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(compose->snd_window),
 			_("Sending mail..."));
@@ -570,7 +596,7 @@ static char * _send_headers(Compose * compose)
 	if(msg != NULL)
 		return msg;
 	if((msg = strdup("")) == NULL)
-		mailer_error(compose->mailer, strerror(errno), 0);
+		compose_error(compose, strerror(errno), 0);
 	return msg;
 }
 
@@ -591,27 +617,27 @@ static char * _send_body(GtkWidget * view)
 static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
-	Compose * c = data;
+	Compose * compose = data;
 	gsize i;
 
 	if(condition != G_IO_OUT)
 		return FALSE;
-	if((i = (c->buf_len - c->buf_pos) % 512) == 0)
+	if((i = (compose->buf_len - compose->buf_pos) % 512) == 0)
 		i = 512;
-	if(g_io_channel_write_chars(source, &c->buf[c->buf_pos], i, &i, NULL)
-			!= G_IO_STATUS_NORMAL)
+	if(g_io_channel_write_chars(source, &compose->buf[compose->buf_pos], i,
+				&i, NULL) != G_IO_STATUS_NORMAL)
 	{
-		mailer_error(c->mailer, strerror(errno), FALSE);
-		on_send_cancel(c);
+		compose_error(compose, strerror(errno), FALSE);
+		on_send_cancel(compose);
 		return FALSE;
 	}
-	c->buf_pos+=i;
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(c->snd_progress),
-			c->buf_pos / c->buf_len);
-	if(c->buf_pos >= c->buf_len)
+	compose->buf_pos+=i;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(compose->snd_progress),
+			compose->buf_pos / compose->buf_len);
+	if(compose->buf_pos >= compose->buf_len)
 	{
-		on_send_cancel(c);
-		compose_delete(c);
+		on_send_cancel(compose);
+		compose_delete(compose);
 		return FALSE;
 	}
 	return TRUE;
