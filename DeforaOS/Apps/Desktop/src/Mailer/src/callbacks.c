@@ -185,12 +185,7 @@ gboolean on_compose_closex(gpointer data)
 {
 	Compose * compose = data;
 
-#if 0 /* XXX disabled for now */
-	if(compose_save(compose) != 0)
-		return TRUE;
-#endif
-	compose_delete(compose);
-	return TRUE;
+	return compose_close(compose);
 }
 
 

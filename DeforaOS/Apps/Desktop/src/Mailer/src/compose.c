@@ -333,6 +333,7 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
 	gtk_text_buffer_set_text(buffer, prefix, sizeof(prefix) - 1);
 	gtk_text_buffer_insert_at_cursor(buffer, buf, cnt);
+	gtk_text_buffer_set_modified(buffer, FALSE);
 	return textview;
 }
 
@@ -370,7 +371,7 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 /* compose_delete */
 void compose_delete(Compose * compose)
 {
-	gtk_widget_hide(compose->window);
+	gtk_widget_destroy(compose->window);
 	free(compose);
 }
 
@@ -402,6 +403,41 @@ void compose_add_field(Compose * compose, char const * field,
 		gtk_list_store_set(compose->h_store, &iter, 0, field, -1);
 	if(value != NULL)
 		gtk_list_store_set(compose->h_store, &iter, 1, value, -1);
+}
+
+
+/* compose_close */
+gboolean compose_close(Compose * compose)
+{
+	GtkWidget * dialog;
+	int res;
+
+	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+						compose->view))) == FALSE)
+	{
+		compose_delete(compose);
+		return FALSE;
+	}
+	dialog = gtk_message_dialog_new(GTK_WINDOW(compose->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Warning"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			_("There are unsaved changes.\n"
+				"Are you sure you want to close?"));
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
+			GTK_RESPONSE_CLOSE, NULL);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_CLOSE)
+		return TRUE;
+	compose_delete(compose);
+	return FALSE;
 }
 
 
