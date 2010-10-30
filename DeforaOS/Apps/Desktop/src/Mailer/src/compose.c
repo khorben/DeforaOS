@@ -110,7 +110,7 @@ static DesktopMenu _menu_edit[] =
 
 static DesktopMenu _menu_view[] =
 {
-	{ N_("Add field"), G_CALLBACK(on_compose_view_add_field), NULL, 0, 0 },
+	{ N_("Add field"), G_CALLBACK(on_compose_view_add_field), "add", 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
