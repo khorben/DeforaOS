@@ -940,7 +940,10 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 		gtk_notebook_set_show_tabs(notebook, TRUE);
 		if((p = config_get(surfer->config, "", "focus_new_tabs"))
 				!= NULL && strcmp(p, "1") == 0)
+		{
 			gtk_notebook_set_current_page(notebook, i);
+			gtk_widget_grab_focus(surfer->lb_path);
+		}
 	}
 	else
 		gtk_notebook_set_show_tabs(notebook, FALSE);
