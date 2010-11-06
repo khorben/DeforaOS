@@ -141,6 +141,11 @@ static int _panel_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->signal_image, FALSE,
 			TRUE, 0);
 	panel->operator = gtk_label_new(NULL);
+	gtk_label_set_ellipsize(GTK_LABEL(panel->operator),
+			PANGO_ELLIPSIZE_END);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_label_set_max_width_chars(GTK_LABEL(panel->operator), 12);
+#endif
 	gtk_widget_modify_font(panel->operator, bold);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->operator, TRUE, TRUE,
 			0);
