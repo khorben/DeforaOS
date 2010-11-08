@@ -113,6 +113,11 @@ static int _delete(Prefs * prefs, unsigned int filec, char * filev[])
 	pango_font_description_free(bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	delete.label = gtk_label_new("");
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_label_set_ellipsize(GTK_LABEL(delete.label), PANGO_ELLIPSIZE_END);
+	gtk_label_set_width_chars(GTK_LABEL(delete.label), 25);
+#endif
+	gtk_misc_set_alignment(GTK_MISC(delete.label), 0, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), delete.label, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	delete.progress = gtk_progress_bar_new();
