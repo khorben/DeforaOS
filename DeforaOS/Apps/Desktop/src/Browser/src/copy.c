@@ -174,6 +174,7 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	g_idle_add(_copy_idle_first, &copy);
 	_copy_refresh(&copy);
 	gtk_widget_show_all(copy.window);
+	pango_font_description_free(bold);
 	return 0;
 }
 
