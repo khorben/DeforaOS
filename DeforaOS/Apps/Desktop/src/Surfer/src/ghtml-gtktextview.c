@@ -531,7 +531,7 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	gchar * link;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	if((link = _ghtml_make_url(ghtml->base, url)) != NULL)
+	if((link = _ghtml_make_url(NULL, url)) != NULL)
 		url = link;
 	_ghtml_document_load(ghtml, url, NULL);
 	g_free(link);
@@ -871,6 +871,7 @@ static gboolean _on_view_event_after(GtkWidget * widget, GdkEvent * event,
 	GSList * tags;
 	GSList * p;
 	char * link = NULL;
+	gchar * url;
 
 	if(event->type != GDK_BUTTON_RELEASE || event->button.button != 1)
 		return FALSE;
@@ -888,7 +889,12 @@ static gboolean _on_view_event_after(GtkWidget * widget, GdkEvent * event,
 			break;
 	if(tags != NULL)
 		g_slist_free(tags);
-	if(link != NULL)
-		surfer_open(ghtml->surfer, link); /* XXX support relative */
+	if(link == NULL)
+		return FALSE;
+	if((url = _ghtml_make_url(ghtml->base, link)) != NULL)
+		surfer_open(ghtml->surfer, url);
+	else
+		surfer_open(ghtml->surfer, link);
+	g_free(url);
 	return FALSE;
 }
