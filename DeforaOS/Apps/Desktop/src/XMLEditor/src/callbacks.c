@@ -94,6 +94,24 @@ void on_help_about(gpointer data)
 }
 
 
+/* on_view_collapse_all */
+void on_view_collapse_all(gpointer data)
+{
+	XMLEditor * xmleditor = data;
+
+	xmleditor_collapse_all(xmleditor);
+}
+
+
+/* on_view_expand_all */
+void on_view_expand_all(gpointer data)
+{
+	XMLEditor * xmleditor = data;
+
+	xmleditor_expand_all(xmleditor);
+}
+
+
 /* toolbar */
 /* on_close */
 void on_close(gpointer data)

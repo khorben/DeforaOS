@@ -30,6 +30,8 @@ void on_file_open(gpointer data);
 void on_file_save(gpointer data);
 void on_file_save_as(gpointer data);
 void on_help_about(gpointer data);
+void on_view_collapse_all(gpointer data);
+void on_view_expand_all(gpointer data);
 
 /* toolbar */
 void on_close(gpointer data);

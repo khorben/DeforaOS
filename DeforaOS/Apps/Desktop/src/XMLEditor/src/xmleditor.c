@@ -91,6 +91,15 @@ static DesktopMenu _xmleditor_menu_edit[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
+static DesktopMenu _xmleditor_menu_view[] =
+{
+	{ "_Expand all", G_CALLBACK(on_view_expand_all), NULL, 0,
+		GDK_asterisk },
+	{ "_Collapse all", G_CALLBACK(on_view_collapse_all), NULL, 0,
+		GDK_slash },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
 static DesktopMenu _xmleditor_menu_help[] =
 {
 	{ "_About", G_CALLBACK(on_help_about),
@@ -106,6 +115,7 @@ static DesktopMenubar _xmleditor_menubar[] =
 {
 	{ "_File", _xmleditor_menu_file },
 	{ "_Edit", _xmleditor_menu_edit },
+	{ "_View", _xmleditor_menu_view },
 	{ "_Help", _xmleditor_menu_help },
 	{ NULL, NULL }
 };
@@ -283,6 +293,20 @@ gboolean xmleditor_close(XMLEditor * xmleditor)
 	/* FIXME implement */
 	gtk_main_quit();
 	return FALSE;
+}
+
+
+/* xmleditor_collapse_all */
+void xmleditor_collapse_all(XMLEditor * xmleditor)
+{
+	gtk_tree_view_collapse_all(GTK_TREE_VIEW(xmleditor->view));
+}
+
+
+/* xmleditor_expand_all */
+void xmleditor_expand_all(XMLEditor * xmleditor)
+{
+	gtk_tree_view_expand_all(GTK_TREE_VIEW(xmleditor->view));
 }
 
 
