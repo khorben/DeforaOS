@@ -197,13 +197,13 @@ void xml_delete(XML * xml)
 
 /* accessors */
 /* xml_get_document */
-static void _document_data(Token * token, XMLNodeTag * current);
-static void _document_entity(Token * token, XMLNodeTag * current);
-static void _document_tag_attribute(Token * token, XMLNodeTag * node,
+static int _document_data(Token * token, XMLNodeTag * current);
+static int _document_entity(Token * token, XMLNodeTag * current);
+static int _document_tag_attribute(Token * token, XMLNodeTag * node,
 		XMLAttribute ** attribute);
-static void _document_tag_attribute_value(Token * token,
+static int _document_tag_attribute_value(Token * token,
 		XMLAttribute * attribute);
-static void _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
+static int _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
 		int close);
 
 XMLDocument * xml_get_document(XML * xml)
@@ -259,49 +259,50 @@ XMLDocument * xml_get_document(XML * xml)
 	return xml->document;
 }
 
-static void _document_data(Token * token, XMLNodeTag * current)
+static int _document_data(Token * token, XMLNodeTag * current)
 {
 	XMLNode * node;
 	String const * string;
 	size_t size = 0;
 
 	if(current == NULL)
-		return; /* XXX warn */
+		return -1;
 	if((string = token_get_string(token)) != NULL)
 		size = string_length(string);
 	node = _xml_node_new_data(current, string, size);
-	_xml_node_tag_add_child(current, node);
+	return _xml_node_tag_add_child(current, node);
 }
 
-static void _document_entity(Token * token, XMLNodeTag * current)
+static int _document_entity(Token * token, XMLNodeTag * current)
 {
 	XMLNode * node;
 	String const * string;
 
 	if(current == NULL)
-		return; /* XXX warn */
+		return -1;
 	if((string = token_get_string(token)) == NULL)
-		return; /* XXX warn */
-	node = _xml_node_new_entity(current, string);
-	_xml_node_tag_add_child(current, node);
+		return -1;
+	if((node = _xml_node_new_entity(current, string)) == NULL)
+		return -1;
+	return _xml_node_tag_add_child(current, node);
 }
 
-static void _document_tag_attribute(Token * token, XMLNodeTag * current,
+static int _document_tag_attribute(Token * token, XMLNodeTag * current,
 		XMLAttribute ** attribute)
 {
 	if((*attribute = _xml_attribute_new(token_get_string(token), NULL))
 			== NULL)
-		return; /* XXX warn */
-	_xml_node_tag_add_attribute(current, *attribute);
+		return -1;
+	return _xml_node_tag_add_attribute(current, *attribute);
 }
 
-static void _document_tag_attribute_value(Token * token,
+static int _document_tag_attribute_value(Token * token,
 		XMLAttribute * attribute)
 {
-	_xml_attribute_set_value(attribute, token_get_string(token));
+	return _xml_attribute_set_value(attribute, token_get_string(token));
 }
 
-static void _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
+static int _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
 		int close)
 {
 	XMLNode * node;
@@ -311,7 +312,7 @@ static void _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
 	{
 		if((node = _xml_node_new_tag(*current, token_get_string(token)))
 				== NULL)
-			return; /* XXX warn */
+			return -1;
 		if(*current == NULL)
 			xml->document->root = node;
 		else
@@ -325,7 +326,8 @@ static void _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
 			*current = (*current)->parent;
 	}
 	else
-		; /* XXX the document is malformed */
+		return -1; /* XXX the document is malformed */
+	return 0;
 }
 
 
