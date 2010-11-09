@@ -79,7 +79,8 @@ static DesktopMenu _xmleditor_menu_file[] =
 	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
 		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_S },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0, 0 },
+	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_w },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -293,6 +294,7 @@ void xmleditor_open(XMLEditor * xmleditor, char const * filename)
 {
 	XMLDocument * doc;
 
+	/* FIXME handle errors */
 	gtk_tree_store_clear(xmleditor->store);
 	if(filename == NULL)
 		return;
