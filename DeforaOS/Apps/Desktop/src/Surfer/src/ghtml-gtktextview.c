@@ -69,6 +69,7 @@ typedef struct _GHtml
 {
 	Surfer * surfer;
 	char * title;
+	char * base;
 
 	/* history */
 	GList * history;
@@ -298,6 +299,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 		return NULL;
 	ghtml->surfer = surfer;
 	ghtml->title = NULL;
+	ghtml->base = NULL;
 	ghtml->history = NULL;
 	ghtml->current = NULL;
 	ghtml->conn = NULL;
@@ -332,6 +334,7 @@ void ghtml_delete(GtkWidget * widget)
 	if(ghtml->conn != NULL)
 		_conn_delete(ghtml->conn);
 	free(ghtml->title);
+	free(ghtml->base);
 	free(ghtml->buffer);
 	free(ghtml);
 }
@@ -528,7 +531,7 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	gchar * link;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	if((link = _ghtml_make_url(NULL, url)) != NULL)
+	if((link = _ghtml_make_url(ghtml->base, url)) != NULL)
 		url = link;
 	_ghtml_document_load(ghtml, url, NULL);
 	g_free(link);
@@ -652,6 +655,8 @@ static int _ghtml_document_load(GHtml * ghtml, char const * url,
 	surfer_set_location(ghtml->surfer, url);
 	free(ghtml->title);
 	ghtml->title = NULL;
+	free(ghtml->base);
+	ghtml->base = NULL;
 	surfer_set_title(ghtml->surfer, NULL);
 	if((ghtml->conn = _conn_new(ghtml->surfer, url, post)) == NULL)
 		return 1;
@@ -750,6 +755,8 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 	GHtmlDisplay display = GHTML_DISPLAY_INLINE;
 	GtkTextIter iter;
 	GHtmlProperty const * p;
+	char const * q;
+	char * r;
 
 	ghtml->tag = NULL;
 	for(i = 0; i < GHTML_TAGS_COUNT; i++)
@@ -775,6 +782,17 @@ static void _document_load_write_node_tag(GHtml * ghtml, XMLNodeTag * node)
 	}
 	if(strcmp(node->name, "head") == 0)
 		ghtml->position = GHTML_POSITION_HEAD;
+	else if(strcmp(node->name, "base") == 0)
+	{
+		if(ghtml->position == GHTML_POSITION_HEAD
+				&& (q = xml_node_get_attribute_value_by_name(
+						(XMLNode*)node, "href")) != NULL
+				&& (r = strdup(q)) != NULL)
+		{
+			free(ghtml->base);
+			ghtml->base = r;
+		}
+	}
 	else if(strcmp(node->name, "body") == 0)
 		ghtml->position = GHTML_POSITION_BODY;
 	else if(strcmp(node->name, "title") == 0)
