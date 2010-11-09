@@ -203,8 +203,8 @@ static int _document_tag_attribute(Token * token, XMLNodeTag * node,
 		XMLAttribute ** attribute);
 static int _document_tag_attribute_value(Token * token,
 		XMLAttribute * attribute);
-static int _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
-		int close);
+static int _document_tag_close(Token * token, XMLNodeTag ** current);
+static int _document_tag_open(XML * xml, Token * token, XMLNodeTag ** current);
 
 XMLDocument * xml_get_document(XML * xml)
 {
@@ -212,7 +212,8 @@ XMLDocument * xml_get_document(XML * xml)
 	XMLCode code;
 	XMLNodeTag * current = NULL;
 	XMLAttribute * attribute = NULL;
-	int close = 0;
+	enum TagState { TS_UNKNOWN = 0, TS_OPEN, TS_CLOSE, TS_SHORT }
+	closed = TS_UNKNOWN;
 
 	if(xml->document != NULL)
 		return xml->document;
@@ -222,9 +223,9 @@ XMLDocument * xml_get_document(XML * xml)
 			token_delete(token))
 	{
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() code=%u string: \"%s\" close=%d\n",
+		fprintf(stderr, "DEBUG: %s() code=%u string \"%s\" closed=%d\n",
 				__func__, token_get_code(token),
-				token_get_string(token), close);
+				token_get_string(token), closed);
 #endif
 		switch((code = token_get_code(token)))
 		{
@@ -242,15 +243,24 @@ XMLDocument * xml_get_document(XML * xml)
 				_document_tag_attribute_value(token, attribute);
 				break;
 			case XML_CODE_TAG_CLOSE:
-				close = 1;
+				closed = (closed == TS_OPEN) ? TS_SHORT
+					: TS_CLOSE;
 				break;
 			case XML_CODE_TAG_ENTER:
 				break;
 			case XML_CODE_TAG_LEAVE:
-				close = 0;
+				if(closed == TS_SHORT)
+					current = current->parent;
+				closed = TS_UNKNOWN;
 				break;
 			case XML_CODE_TAG_NAME:
-				_document_tag_name(xml, token, &current, close);
+				if(closed == TS_CLOSE)
+				{
+					_document_tag_close(token, &current);
+					break;
+				}
+				closed = TS_OPEN;
+				_document_tag_open(xml, token, &current);
 				break;
 			case XML_CODE_TAG_SPECIAL:
 				break;
@@ -302,31 +312,35 @@ static int _document_tag_attribute_value(Token * token,
 	return _xml_attribute_set_value(attribute, token_get_string(token));
 }
 
-static int _document_tag_name(XML * xml, Token * token, XMLNodeTag ** current,
-		int close)
+static int _document_tag_close(Token * token, XMLNodeTag ** current)
 {
-	XMLNode * node;
 	char const * parent;
 
-	if(close == 0)
-	{
-		if((node = _xml_node_new_tag(*current, token_get_string(token)))
-				== NULL)
-			return -1;
-		if(*current == NULL)
-			xml->document->root = node;
-		else
-			_xml_node_tag_add_child(*current, node);
-		*current = &node->tag;
-	}
-	else if(*current != NULL)
-	{
-		parent = _xml_node_tag_get_name(*current);
-		if(strcmp(parent, token_get_string(token)) == 0)
-			*current = (*current)->parent;
-	}
-	else
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__,
+			token_get_string(token));
+#endif
+	if(*current == NULL)
 		return -1; /* XXX the document is malformed */
+	parent = _xml_node_tag_get_name(*current);
+	if(strcmp(parent, token_get_string(token)) != 0)
+		return -1; /* XXX the document is malformed */
+	*current = (*current)->parent;
+	return 0;
+}
+
+static int _document_tag_open(XML * xml, Token * token, XMLNodeTag ** current)
+{
+	XMLNode * node;
+
+	if((node = _xml_node_new_tag(*current, token_get_string(token)))
+			== NULL)
+		return -1;
+	if(*current == NULL)
+		xml->document->root = node;
+	else
+		_xml_node_tag_add_child(*current, node);
+	*current = &node->tag;
 	return 0;
 }
 
