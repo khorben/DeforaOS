@@ -2,7 +2,7 @@
 Name=Web surfer
 Comment=Navigator to surf web pages
 Exec=surfer
-Icon=stock_internet
+Icon=web-browser
 Type=Application
 Categories=Network;WebBrowser;GTK;
 StartupNotify=true

@@ -253,7 +253,7 @@ Surfer * _new_do(char const * url)
 	gtk_window_add_accel_group(GTK_WINDOW(surfer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 800, 600);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
+	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "web-browser");
 #endif
 	gtk_window_set_title(GTK_WINDOW(surfer->window), _("Web surfer"));
 	g_signal_connect_swapped(G_OBJECT(surfer->window), "delete-event",
