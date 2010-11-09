@@ -106,4 +106,8 @@ void xml_delete(XML * xml);
 XMLDocument * xml_get_document(XML * xml);
 char const * xml_get_filename(XML * xml);
 
+/* node */
+char const * xml_node_get_attribute_value_by_name(XMLNode * node,
+		char const * name);
+
 #endif /* !PARSER_XML_H */

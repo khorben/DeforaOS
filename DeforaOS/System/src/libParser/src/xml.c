@@ -352,6 +352,22 @@ char const * xml_get_filename(XML * xml)
 }
 
 
+/* node */
+/* xml_node_get_attribute_value_by_name */
+char const * xml_node_get_attribute_value_by_name(XMLNode * node,
+		char const * name)
+{
+	size_t i;
+
+	if(node->type != XML_NODE_TYPE_TAG)
+		return NULL;
+	for(i = 0; i < node->tag.attributes_cnt; i++)
+		if(strcmp(node->tag.attributes[i]->name, name) == 0)
+			return node->tag.attributes[i]->value;
+	return NULL;
+}
+
+
 /* private */
 /* functions */
 /* xml_inject */
