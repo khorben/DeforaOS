@@ -891,7 +891,9 @@ static gboolean _on_view_event_after(GtkWidget * widget, GdkEvent * event,
 		g_slist_free(tags);
 	if(link == NULL)
 		return FALSE;
-	if((url = _ghtml_make_url(ghtml->base, link)) != NULL)
+	url = (ghtml->base != NULL) ? ghtml->base : _history_get_location(
+			ghtml->current);
+	if((url = _ghtml_make_url(url, link)) != NULL)
 		surfer_open(ghtml->surfer, url);
 	else
 		surfer_open(ghtml->surfer, link);
