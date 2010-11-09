@@ -68,6 +68,8 @@ static DesktopAccel _surfer_accel[] =
 	{ G_CALLBACK(on_zoom_in), GDK_CONTROL_MASK, GDK_plus },
 	{ G_CALLBACK(on_zoom_out), GDK_CONTROL_MASK, GDK_minus },
 #endif
+	{ G_CALLBACK(on_back), 0, GDK_Back },
+	{ G_CALLBACK(on_forward), 0, GDK_Forward },
 	{ G_CALLBACK(on_fullscreen), 0, GDK_F11 },
 	{ NULL, 0, 0 }
 };
