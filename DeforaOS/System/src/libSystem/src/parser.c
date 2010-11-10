@@ -158,6 +158,9 @@ Parser * parser_new(char const * pathname)
 {
 	Parser * parser;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pathname);
+#endif
 	if((parser = _new_do(_parser_scanner_file)) == NULL)
 		return NULL;
 	if((parser->filename = strdup(pathname)) == NULL)
@@ -176,9 +179,6 @@ static Parser * _new_do(ParserFilter scanner)
 {
 	Parser * parser;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pathname);
-#endif
 	if((parser = object_new(sizeof(*parser))) == NULL)
 		return NULL;
 	parser->filename = NULL;
@@ -204,6 +204,9 @@ Parser * parser_new_string(char const * string, size_t length)
 {
 	Parser * parser;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, string);
+#endif
 	if((parser = _new_do(_parser_scanner_string)) == NULL)
 		return NULL;
 	parser->string = malloc(length);
