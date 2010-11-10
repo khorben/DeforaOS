@@ -183,17 +183,12 @@ int32_t VFS_closedir(int32_t dir)
 /* VFS_dirfd */
 int32_t VFS_dirfd(int32_t dir)
 {
-	int32_t ret;
-	DIR * d;
-
-	if((d = _client_check_dir(dir)) == NULL)
+	if(_client_check_dir(dir) == NULL)
 		return -1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, dir);
 #endif
-	if((ret = dirfd(d)) < 0)
-		return -1;
-	return ret;
+	return dir;
 }
 
 
