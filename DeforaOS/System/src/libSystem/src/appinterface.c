@@ -30,6 +30,7 @@
 #include <errno.h>
 #include "System.h"
 #include "appinterface.h"
+#include "../config.h"
 
 #ifndef PREFIX
 # define PREFIX	"/usr/local"
