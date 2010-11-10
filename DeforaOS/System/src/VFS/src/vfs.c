@@ -284,14 +284,25 @@ int32_t VFS_opendir(String const * filename)
 	DIR * dir;
 	int fd;
 
-	dir = opendir(filename);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\") => %p\n", __func__, filename,
-			(void*)dir);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, filename);
 #endif
-	if(dir == NULL)
+#if defined(__sun__)
+	if((fd = open(filename, O_RDONLY)) < 0 || (dir = fdopendir(fd)) == NULL)
+	{
+		if(fd >= 0)
+			close(fd);
 		return -1;
-	if((fd = dirfd(dir)) < 0 || _client_add_file(fd, dir) != 0)
+	}
+#else
+	if((dir = opendir(filename)) == NULL || (fd = dirfd(dir)) < 0)
+	{
+		if(dir != NULL)
+			closedir(dir);
+		return -1;
+	}
+#endif
+	if(_client_add_file(fd, dir) != 0)
 	{
 		closedir(dir);
 		return -1;
