@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix devel */
 /* devel is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -544,12 +544,12 @@ static int _usage(void)
        ar -r[-cuv] archive file...\n\
        ar -t[-v] archive [file...]\n\
        ar -x[-v] archive [file...]\n\
-  -d	delete one or more files from the archive\n\
-  -r	replace or add files to archive\n\
-  -t	write a table of contents of archive\n\
-  -u	update older files in the archive\n\
-  -v	give verbose output\n\
-  -x	extract all or given files from the archive\n", stderr);
+  -d	Delete one or more files from the archive\n\
+  -r	Replace or add files to archive\n\
+  -t	Write a table of contents of archive\n\
+  -u	Update older files in the archive\n\
+  -v	Give verbose output\n\
+  -x	Extract all or given files from the archive\n", stderr);
 	return 1;
 }
 
@@ -596,6 +596,6 @@ int main(int argc, char * argv[])
 			|| optind == argc
 			|| (optind+1 >= argc && !(p & (PREFS_t | PREFS_x))))
 		return _usage();
-	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1]) == 0
-		? 0 : 2;
+	return (_ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1])
+			== 0) ? 0 : 2;
 }
