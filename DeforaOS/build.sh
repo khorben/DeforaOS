@@ -56,6 +56,7 @@ SUBDIRS="System/src/libc \
 	System/src/libSystem \
 	System/src/Init \
 	System/src/Splasher \
+	System/src/VFS \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils \
 	Apps/Unix/src/devel \
