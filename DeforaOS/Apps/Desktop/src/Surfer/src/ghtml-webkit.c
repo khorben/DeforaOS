@@ -480,7 +480,9 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * uri, GError * error, gpointer data)
 {
 	Surfer * surfer;
+#ifdef WEBKIT_POLICY_ERROR
 	char const * suggested;
+#endif
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if(error == NULL)
