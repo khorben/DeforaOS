@@ -28,7 +28,7 @@ Init: $(Init_OBJS)
 	$(CC) -o Init $(Init_OBJS) $(Init_LDFLAGS)
 
 init.o: init.c session.h init.h ../data/Init.h ../config.h
-	$(CC) $(Init_CFLAGS) -c init.c
+	$(CC) -DPREFIX=\"$(PREFIX)\" $(Init_CFLAGS) -c init.c
 
 main.o: main.c init.h session.h ../config.h
 	$(CC) $(Init_CFLAGS) -c main.c
