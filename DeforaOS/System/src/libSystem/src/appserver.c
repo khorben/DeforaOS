@@ -58,21 +58,19 @@ typedef struct _AppServerClient
 	size_t buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	size_t buf_write_cnt;
+
+	/* callbacks */
+	ssize_t (*read)(struct _AppServerClient * asc, char * buffer,
+			size_t count);
+	ssize_t (*write)(struct _AppServerClient * asc, char const * buffer,
+			size_t count);
+
 #ifdef WITH_SSL
+
+	/* ssl-specific */
 	SSL * ssl;
 #endif
 } AppServerClient;
-
-
-/* macros */
-#ifdef WITH_SSL
-# define READ(fd, asc, len) SSL_read(asc->ssl, \
-		&asc->buf_read[asc->buf_read_cnt], len)
-# define WRITE(fd, asc) SSL_write(asc->ssl, asc->buf_write, asc->buf_write_cnt)
-#else
-# define READ(fd, asc, len) read(fd, &asc->buf_read[asc->buf_read_cnt], len)
-# define WRITE(fd, asc) write(fd, asc->buf_write, asc->buf_write_cnt)
-#endif
 
 
 /* prototypes */
@@ -110,9 +108,20 @@ static int _appserver_client_remove(AppServer * appserver,
 static int _appserver_accept(int fd, AppServer * appserver);
 static int _appserver_read(int fd, AppServer * appserver);
 static int _appserver_write(int fd, AppServer * appserver);
-
 #ifdef WITH_SSL
 static char const * _appserver_error_ssl(void);
+#endif
+
+/* callbacks */
+static ssize_t _callback_read(AppServerClient * asc, char * buffer,
+		size_t count);
+static ssize_t _callback_write(AppServerClient * asc, char const * buffer,
+		size_t count);
+#ifdef WITH_SSL
+static ssize_t _callback_read_ssl(AppServerClient * asc, char * buffer,
+		size_t count);
+static ssize_t _callback_write_ssl(AppServerClient * asc, char const * buffer,
+		size_t count);
 #endif
 
 
@@ -136,15 +145,22 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	asc->port = port;
 	asc->buf_read_cnt = 0;
 	asc->buf_write_cnt = 0;
+	asc->read = _callback_read;
+	asc->write = _callback_write;
 #ifdef WITH_SSL
-	if((asc->ssl = SSL_new(ssl_ctx)) == NULL
-			|| SSL_set_fd(asc->ssl, fd) != 1)
+	if(addr != INADDR_LOOPBACK)
 	{
-		error_set_code(1, "%s", _appserver_error_ssl());
-		_appserverclient_delete(asc);
-		return NULL;
+		if((asc->ssl = SSL_new(ssl_ctx)) == NULL
+				|| SSL_set_fd(asc->ssl, fd) != 1)
+		{
+			error_set_code(1, "%s", _appserver_error_ssl());
+			_appserverclient_delete(asc);
+			return NULL;
+		}
+		asc->read = _callback_read_ssl;
+		asc->write = _callback_write_ssl;
+		SSL_set_accept_state(asc->ssl);
 	}
-	SSL_set_accept_state(asc->ssl);
 #endif
 	asc->fd = fd;
 #ifdef DEBUG
@@ -264,14 +280,15 @@ static int _appserver_read(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
-	assert((len = sizeof(asc->buf_read) - asc->buf_read_cnt) > 0);
-	if((len = READ(fd, asc, len)) < 0)
+	len = sizeof(asc->buf_read) - asc->buf_read_cnt;
+	assert(len > 0 && asc->fd == fd);
+	if((len = asc->read(asc, &asc->buf_read[asc->buf_read_cnt], len)) < 0)
 		return _read_error(appserver, asc);
 	else if(len == 0)
 		return _read_eof(appserver, asc);
 	asc->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") => ", len, "\n");
+	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: read(", fd, ") => ", len, "\n");
 #endif
 	if(_read_process(appserver, asc) != 0)
 	{
@@ -367,10 +384,10 @@ static int _appserver_write(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
-	if((len = WRITE(fd, asc)) <= 0)
+	if((len = asc->write(asc, asc->buf_write, asc->buf_write_cnt)) <= 0)
 		return _write_error(asc);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: WRITE(%d, %zu) => %zd\n", fd,
+	fprintf(stderr, "DEBUG: write(%d, %zu) => %zd\n", fd,
 			asc->buf_write_cnt, len);
 #endif
 	memmove(asc->buf_write, &asc->buf_write[len], len);
@@ -396,6 +413,41 @@ static int _write_error(AppServerClient * asc)
 static char const * _appserver_error_ssl(void)
 {
 	return ERR_error_string(ERR_get_error(), NULL);
+}
+#endif
+
+
+/* callbacks */
+/* callback_read */
+static ssize_t _callback_read(AppServerClient * asc, char * buffer,
+		size_t count)
+{
+	return read(asc->fd, buffer, count);
+}
+
+
+/* callback_write */
+static ssize_t _callback_write(AppServerClient * asc, char const * buffer,
+		size_t count)
+{
+	return write(asc->fd, buffer, count);
+}
+
+
+#ifdef WITH_SSL
+/* callback_read_ssl */
+static ssize_t _callback_read_ssl(AppServerClient * asc, char * buffer,
+		size_t count)
+{
+	return SSL_read(asc->ssl, buffer, count);
+}
+
+
+/* callback_write_ssl */
+static ssize_t _callback_write_ssl(AppServerClient * asc, char const * buffer,
+		size_t count)
+{
+	return SSL_write(asc->ssl, buffer, count);
 }
 #endif
 

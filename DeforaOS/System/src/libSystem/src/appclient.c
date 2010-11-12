@@ -48,10 +48,20 @@ struct _AppClient
 	size_t buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	size_t buf_write_cnt;
+
+	/* current call */
 	char const * lastfunc;
 	void ** lastargs;
 	int32_t * lastret;
+
+	/* callbacks */
+	ssize_t (*read)(struct _AppClient * appclient, char * buffer,
+			size_t count);
+	ssize_t (*write)(struct _AppClient * appclient, char const * buffer,
+			size_t count);
 #ifdef WITH_SSL
+
+	/* ssl-specific */
 	SSL_CTX * ssl_ctx;
 	SSL * ssl;
 #endif
@@ -59,24 +69,24 @@ struct _AppClient
 
 
 /* private */
-/* macros */
-#ifdef WITH_SSL
-# define READ(fd, ac, len) SSL_read(ac->ssl, &ac->buf_read[ac->buf_read_cnt], \
-		len)
-# define WRITE(fd, ac, len) SSL_write(ac->ssl, ac->buf_write, len)
-#else
-# define READ(fd, ac, len) read(fd, &ac->buf_read[ac->buf_read_cnt], len)
-# define WRITE(fd, ac, len) write(fd, ac->buf_write, len)
-#endif
-
-
 /* prototypes */
 static int _appclient_timeout(AppClient * appclient);
 static int _appclient_read(int fd, AppClient * ac);
 static int _appclient_write(int fd, AppClient * ac);
-
 #ifdef WITH_SSL
 static char * _appclient_error_ssl(void);
+#endif
+
+/* callbacks */
+static ssize_t _callback_read(AppClient * appclient, char * buffer,
+		size_t count);
+static ssize_t _callback_write(AppClient * appclient, char const * buffer,
+		size_t count);
+#ifdef WITH_SSL
+static ssize_t _callback_read_ssl(AppClient * appclient, char * buffer,
+		size_t count);
+static ssize_t _callback_write_ssl(AppClient * appclient, char const * buffer,
+		size_t count);
 #endif
 
 
@@ -105,11 +115,11 @@ static int _appclient_read(int fd, AppClient * ac)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void*)ac);
 #endif
-	assert(len >= 0);
-	if((len = READ(fd, ac, len)) <= 0)
+	assert(len >= 0 && ac->fd == fd);
+	if((len = ac->read(ac, &ac->buf_read[ac->buf_read_cnt], len)) <= 0)
 		return _read_error(ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") => ", len, "\n");
+	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: read(", fd, ") => ", len, "\n");
 #endif
 	ac->buf_read_cnt += len;
 	len = appinterface_call_receive(ac->interface, ac->lastret,
@@ -169,10 +179,10 @@ static int _appclient_write(int fd, AppClient * ac)
 	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void*)ac);
 #endif
 	/* FIXME is EOF an error? */
-	if((len = WRITE(fd, ac, ac->buf_write_cnt)) <= 0)
+	if((len = ac->write(ac, ac->buf_write, ac->buf_write_cnt)) <= 0)
 		return _write_error(ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zu%s%zd%s", "DEBUG: WRITE(", fd, ", ",
+	fprintf(stderr, "%s%d%s%zu%s%zd%s", "DEBUG: write(", fd, ", ",
 			ac->buf_write_cnt, ") ", len, "\n");
 #endif
 	memmove(ac->buf_write, &ac->buf_write[len], len);
@@ -210,6 +220,41 @@ static int _write_error(AppClient * ac)
 static char * _appclient_error_ssl(void)
 {
 	return ERR_error_string(ERR_get_error(), NULL);
+}
+#endif
+
+
+/* callbacks */
+/* callback_read */
+static ssize_t _callback_read(AppClient * appclient, char * buffer,
+		size_t count)
+{
+	return read(appclient->fd, buffer, count);
+}
+
+
+/* callback_write */
+static ssize_t _callback_write(AppClient * appclient, char const * buffer,
+		size_t count)
+{
+	return write(appclient->fd, buffer, count);
+}
+
+
+#ifdef WITH_SSL
+/* callback_read_ssl */
+static ssize_t _callback_read_ssl(AppClient * appclient, char * buffer,
+		size_t count)
+{
+	return SSL_read(appclient->ssl, buffer, count);
+}
+
+
+/* callback_write_ssl */
+static ssize_t _callback_write_ssl(AppClient * appclient, char const * buffer,
+		size_t count)
+{
+	return SSL_write(appclient->ssl, buffer, count);
 }
 #endif
 
@@ -257,6 +302,8 @@ AppClient * appclient_new_event(char const * app, Event * event)
 	appclient->event = event;
 	appclient->buf_read_cnt = 0;
 	appclient->buf_write_cnt = 0;
+	appclient->read = _callback_read;
+	appclient->write = _callback_write;
 #ifdef WITH_SSL
 	appclient->ssl = NULL;
 	if((appclient->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
@@ -299,10 +346,16 @@ static int _new_connect(AppClient * appclient, char const * app)
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 #endif
 #ifdef WITH_SSL
-	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
-			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
-		return error_set_code(1, "%s", _appclient_error_ssl());
-	SSL_set_connect_state(appclient->ssl);
+	if(sa.sin_addr.s_addr != INADDR_LOOPBACK)
+	{
+		if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
+				|| SSL_set_fd(appclient->ssl, appclient->fd)
+				!= 1)
+			return error_set_code(1, "%s", _appclient_error_ssl());
+		appclient->read = _callback_read_ssl;
+		appclient->write = _callback_write_ssl;
+		SSL_set_connect_state(appclient->ssl);
+	}
 #endif
 	if(appclient_call(appclient, &port, "get_session", app) != 0)
 		return 1;
@@ -311,9 +364,12 @@ static int _new_connect(AppClient * appclient, char const * app)
 	if(port == 0) /* the connection is good already or being forwarded */
 		return 0;
 #ifdef WITH_SSL
-	SSL_shutdown(appclient->ssl);
-	SSL_free(appclient->ssl);
-	appclient->ssl = NULL;
+	if(appclient->ssl != NULL)
+	{
+		SSL_shutdown(appclient->ssl);
+		SSL_free(appclient->ssl);
+		appclient->ssl = NULL;
+	}
 #endif
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "DEBUG: Bouncing to port ", port, "\n");
@@ -334,10 +390,18 @@ static int _new_connect(AppClient * appclient, char const * app)
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 #endif
 #ifdef WITH_SSL
-	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
-			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
-		return error_set_code(1, "%s", _appclient_error_ssl());
-	SSL_set_connect_state(appclient->ssl);
+	appclient->read = _callback_read;
+	appclient->write = _callback_write;
+	if(sa.sin_addr.s_addr != INADDR_LOOPBACK)
+	{
+		if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
+				|| SSL_set_fd(appclient->ssl, appclient->fd)
+				!= 1)
+			return error_set_code(1, "%s", _appclient_error_ssl());
+		appclient->read = _callback_read_ssl;
+		appclient->write = _callback_write_ssl;
+		SSL_set_connect_state(appclient->ssl);
+	}
 #endif
 	return 0;
 }
