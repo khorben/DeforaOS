@@ -404,7 +404,7 @@ static GtkWidget * _new_value(Mixer * mixer, int dev, int value)
 #ifdef AUDIO_MIXER_DEVINFO
 		v = (p->un.value.level[i] / 255.0) * 100.0;
 #else
-		v = (((value >> (i * 8)) & 0xff) / 127.0) * 100.0;
+		v = ((value >> (i * 8)) & 0xff) + 0.0;
 #endif
 		gtk_range_set_value(GTK_RANGE(widget), v);
 		g_object_set_data(G_OBJECT(widget), "bind", bind);
