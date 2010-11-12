@@ -540,6 +540,13 @@ void phone_call_reject(Phone * phone)
 }
 
 
+/* phone_call_set_volume */
+void phone_call_set_volume(Phone * phone, gdouble volume)
+{
+	phone_event(phone, PHONE_EVENT_SET_VOLUME, volume);
+}
+
+
 /* phone_call_speaker */
 void phone_call_speaker(Phone * phone, gboolean speaker)
 {
@@ -812,6 +819,10 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 				ret |= plugin->event(plugin, event, operator);
 				break;
 			case PHONE_EVENT_SET_SIGNAL_LEVEL:
+				level = va_arg(ap, gdouble);
+				ret |= plugin->event(plugin, event, level);
+				break;
+			case PHONE_EVENT_SET_VOLUME:
 				level = va_arg(ap, gdouble);
 				ret |= plugin->event(plugin, event, level);
 				break;
@@ -1224,6 +1235,10 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	switch(call)
 	{
 		case PHONE_CALL_ESTABLISHED:
+#if GTK_CHECK_VERSION(2, 6, 0)
+			gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),
+					"call-start"); /* XXX better icon */
+#endif
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("In conversation"));
 			gtk_widget_hide(phone->ca_answer);
@@ -1232,6 +1247,10 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			phone_event(phone, PHONE_EVENT_CALL_ESTABLISHED);
 			break;
 		case PHONE_CALL_INCOMING:
+#if GTK_CHECK_VERSION(2, 6, 0)
+			gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),
+					"call-start"); /* XXX better icon */
+#endif
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Incoming call"));
 			gtk_widget_hide(phone->ca_hangup);
@@ -1239,6 +1258,10 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			phone_event(phone, PHONE_EVENT_CALL_INCOMING);
 			break;
 		case PHONE_CALL_OUTGOING:
+#if GTK_CHECK_VERSION(2, 6, 0)
+			gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),
+					"call-start"); /* XXX better icon */
+#endif
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Outgoing call"));
 			gtk_widget_hide(phone->ca_answer);
@@ -1247,6 +1270,10 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			phone_event(phone, PHONE_EVENT_CALL_OUTGOING);
 			break;
 		case PHONE_CALL_TERMINATED:
+#if GTK_CHECK_VERSION(2, 6, 0)
+			gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),
+					"call-stop");
+#endif
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Call finished"));
 			gtk_widget_hide(phone->ca_answer);
@@ -1303,6 +1330,8 @@ static void _show_call_window(Phone * phone)
 			"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 4);
 	phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
+	g_signal_connect(G_OBJECT(phone->ca_volume), "value-changed",
+			G_CALLBACK(on_phone_call_volume), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* speaker mode */
@@ -2187,7 +2216,7 @@ void phone_show_system(Phone * phone, gboolean show)
 	widget = gtk_file_chooser_button_new(_("Set the phone device"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	phone->sy_device = widget;
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	phone->sy_hwflow = gtk_check_button_new_with_label(
 			_("Enable flow control"));
 	gtk_box_pack_start(GTK_BOX(vbox), phone->sy_hwflow, FALSE, TRUE, 4);

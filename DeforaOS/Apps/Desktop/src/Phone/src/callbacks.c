@@ -142,6 +142,17 @@ void on_phone_call_speaker(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_phone_call_volume */
+void on_phone_call_volume(GtkWidget * widget, gpointer data)
+{
+	Phone * phone = data;
+	gdouble volume;
+
+	volume = gtk_range_get_value(GTK_RANGE(widget));
+	phone_call_set_volume(phone, volume);
+}
+
+
 /* code */
 /* on_phone_code_clear */
 void on_phone_code_clear(gpointer data)

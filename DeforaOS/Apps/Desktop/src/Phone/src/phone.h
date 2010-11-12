@@ -37,6 +37,7 @@ void phone_call_answer(Phone * phone);
 void phone_call_hangup(Phone * phone);
 void phone_call_mute(Phone * phone, gboolean mute);
 void phone_call_reject(Phone * phone);
+void phone_call_set_volume(Phone * phone, gdouble volume);
 void phone_call_speaker(Phone * phone, gboolean speaker);
 
 /* code */

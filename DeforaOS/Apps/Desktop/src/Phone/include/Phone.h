@@ -61,6 +61,7 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_ONLINE,
 	PHONE_EVENT_SET_OPERATOR,	/* char const * operator */
 	PHONE_EVENT_SET_SIGNAL_LEVEL,	/* gdouble level */
+	PHONE_EVENT_SET_VOLUME,		/* gdouble volume */
 	PHONE_EVENT_SIM_PIN_VALID,
 	PHONE_EVENT_SMS_RECEIVED,
 	PHONE_EVENT_SMS_RECEIVING,	/* char const *, GSMEncoding *, char **,
