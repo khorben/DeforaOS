@@ -508,10 +508,12 @@ static void _targets_ldflags(Configure * configure, FILE * fp)
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
-	char const * libs_bsd[] = { "dl", "resolv", "socket", NULL };
-	char const * libs_deforaos[] = { "resolv", "ssl", NULL };
-	char const * libs_gnu[] = { "resolv", "socket", NULL };
-	char const * libs_sunos[] = { "dl", NULL };
+	char const * libs_bsd[] = { "dl", "resolv", "ossaudio", "socket",
+		NULL };
+	char const * libs_deforaos[] = { "ossaudio", "resolv", "ssl", NULL };
+	char const * libs_gnu[] = { "ossaudio", "resolv", "socket", NULL };
+	char const * libs_netbsd[] = { "dl", "resolv", "socket", NULL };
+	char const * libs_sunos[] = { "dl", "ossaudio", NULL };
 	char buf[10];
 	char const ** libs;
 	String * p;
@@ -529,9 +531,11 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 			libs = libs_gnu;
 			break;
 		case HO_FREEBSD:
-		case HO_NETBSD:
 		case HO_OPENBSD:
 			libs = libs_bsd;
+			break;
+		case HO_NETBSD:
+			libs = libs_netbsd;
 			break;
 		case HO_SUNOS:
 			libs = libs_sunos;
