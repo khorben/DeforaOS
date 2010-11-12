@@ -64,7 +64,7 @@ static void _oss_settings(PhonePlugin * plugin);
 PhonePlugin plugin =
 {
 	NULL,
-	"OSS",
+	"Audio settings",
 	"audio-x-generic",
 	_oss_init,
 	_oss_destroy,
