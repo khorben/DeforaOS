@@ -73,6 +73,8 @@ static int _appclient(int verbose, char const * hostname, char const * service,
 	if(_appclient_hostname(verbose, hostname, service) != 0
 			|| (ac = appclient_new(service)) == NULL)
 		return _error(APPCLIENT_PROGNAME, 1);
+	if(verbose != 0)
+		puts("Connected.");
 	for(i = 0; i < calls_cnt; i++)
 		if(_appclient_call(verbose, ac, &calls[i]) != 0)
 			ret |= _error(APPCLIENT_PROGNAME, 1);
@@ -106,9 +108,9 @@ static int _appclient_hostname(int verbose, char const * hostname,
 	if(hostname == NULL)
 	{
 		if(verbose != 0)
-			printf("%s%s%s%s\n", "Connecting to service ", service,
-					" on ", (env != NULL) ? env
-					: "localhost");
+			printf("%s%s%s%s%s\n", "Connecting to service ",
+					service, " on ", (env != NULL) ? env
+					: "localhost", "...");
 		free(buf);
 		return 0;
 	}
@@ -130,13 +132,16 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(verbose != 0)
+		printf("Calling %s() with %lu arguments\n", call->name,
+				(unsigned long)call->args_cnt);
 	/* FIXME may segfault (check interface), use appclient_callv? */
 	switch(call->args_cnt)
 	{
 		case 0:
 #ifdef DEBUG
-			fprintf(stderr, "DEBUG: %s() %s()\n", __func__,
-					call->name);
+			fprintf(stderr, "DEBUG: %s() %s() res=%d\n", __func__,
+					call->name, res);
 #endif
 			ret = appclient_call(ac, &res, call->name, NULL);
 			break;
@@ -148,6 +153,9 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 			if(call->args[0].type == ACCAT_DOUBLE)
 				ret = appclient_call(ac, &res, call->name,
 						call->args[0].doble);
+			else if(call->args[0].type == ACCAT_FLOAT)
+				ret = appclient_call(ac, &res, call->name,
+						call->args[0].flot);
 			else if(call->args[0].type == ACCAT_INTEGER)
 				ret = appclient_call(ac, &res, call->name,
 						call->args[0].integer);
@@ -171,6 +179,22 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 					call->args[1].integer);
 			break;
 		case 3:
+			if(strcmp(call->name, "glTranslatef") == 0)
+			{
+#ifdef DEBUG
+				fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f"
+						", %.1f)\n", __func__,
+						call->name,
+						call->args[0].flot,
+						call->args[1].flot,
+						call->args[2].flot);
+#endif
+				ret = appclient_call(ac, &res, call->name,
+						call->args[0].flot,
+						call->args[1].flot,
+						call->args[2].flot);
+				break;
+			}
 			/* FIXME arguments may be of different types */
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() %s(%d, %d, %d)\n",
@@ -183,6 +207,21 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 					call->args[0].integer,
 					call->args[1].integer,
 					call->args[2].integer);
+			break;
+		case 4:
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f, %.1f"
+					", %.1f)\n", __func__, call->name,
+					call->args[0].flot,
+					call->args[1].flot,
+					call->args[2].flot,
+					call->args[3].flot);
+#endif
+			ret = appclient_call(ac, &res, call->name,
+					call->args[0].flot,
+					call->args[1].flot,
+					call->args[2].flot,
+					call->args[3].flot);
 			break;
 		default:
 			return error_set_code(1, "%s",
