@@ -33,12 +33,13 @@ typedef enum _PanelBattery
 {
 	PANEL_BATTERY_UNKNOWN = 0,
 	PANEL_BATTERY_ERROR,
+	PANEL_BATTERY_EMPTY,
 	PANEL_BATTERY_CAUTION,
 	PANEL_BATTERY_LOW,
-	PANEL_BATTERY_NORMAL,
-	PANEL_BATTERY_CHARGING
+	PANEL_BATTERY_GOOD,
+	PANEL_BATTERY_FULL
 } PanelBattery;
-#define PANEL_BATTERY_LAST	PANEL_BATTERY_CHARGING
+#define PANEL_BATTERY_LAST	PANEL_BATTERY_FULL
 #define PANEL_BATTERY_COUNT	(PANEL_BATTERY_LAST + 1)
 
 typedef enum _PanelSignal
@@ -79,6 +80,7 @@ static int _panel_destroy(PhonePlugin * plugin);
 static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...);
 static void _panel_settings(PhonePlugin * plugin);
 
+static void _panel_set_operator(Panel * panel, char const * operator);
 static void _panel_set_signal_level(Panel * panel, gdouble level);
 
 
@@ -226,7 +228,6 @@ static int _panel_destroy(PhonePlugin * plugin)
 /* panel_event */
 static int _event_set_battery_level(Panel * panel, gdouble level);
 static void _set_battery_image(Panel * panel, PanelBattery battery);
-static int _event_set_operator(Panel * panel, char const * operator);
 
 static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
@@ -256,7 +257,7 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 		case PHONE_EVENT_SET_OPERATOR:
 			operator = va_arg(ap, char const *);
-			_event_set_operator(panel, operator);
+			_panel_set_operator(panel, operator);
 			break;
 		case PHONE_EVENT_SET_SIGNAL_LEVEL:
 			level = va_arg(ap, gdouble);
@@ -269,12 +270,6 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	return 0;
 }
 
-static int _event_set_operator(Panel * panel, char const * operator)
-{
-	gtk_label_set_text(GTK_LABEL(panel->operator), operator);
-	return 0;
-}
-
 static int _event_set_battery_level(Panel * panel, gdouble level)
 {
 #ifdef DEBUG
@@ -282,12 +277,16 @@ static int _event_set_battery_level(Panel * panel, gdouble level)
 #endif
 	if(level < 0.0)
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN);
+	else if(level <= 1.0)
+		_set_battery_image(panel, PANEL_BATTERY_EMPTY);
 	else if(level <= 10.0)
 		_set_battery_image(panel, PANEL_BATTERY_CAUTION);
 	else if(level <= 20.0)
 		_set_battery_image(panel, PANEL_BATTERY_LOW);
+	else if(level <= 75.0)
+		_set_battery_image(panel, PANEL_BATTERY_GOOD);
 	else if(level <= 100.0)
-		_set_battery_image(panel, PANEL_BATTERY_NORMAL);
+		_set_battery_image(panel, PANEL_BATTERY_FULL);
 	else
 		_set_battery_image(panel, PANEL_BATTERY_ERROR);
 	return 0;
@@ -298,11 +297,12 @@ static void _set_battery_image(Panel * panel, PanelBattery battery)
 	char const * icons[PANEL_BATTERY_COUNT] =
 	{
 		"stock_dialog-question",
-		"stock_dialog-error",
+		"battery-missing",
+		"battery-empty",
 		"battery-caution",
 		"battery-low",
-		"battery",
-		"battery" /* XXX find a better icon */
+		"battery-good",
+		"battery-full"
 	};
 
 	if(panel->battery_level == battery)
@@ -314,13 +314,24 @@ static void _set_battery_image(Panel * panel, PanelBattery battery)
 }
 
 
+/* panel_set_operator */
+static void _panel_set_operator(Panel * panel, char const * operator)
+{
+	gtk_label_set_text(GTK_LABEL(panel->operator), operator);
+}
+
+
 /* panel_set_signal_level */
 static void _signal_level_set_image(Panel * panel, PanelSignal signal);
 
 static void _panel_set_signal_level(Panel * panel, gdouble level)
 {
 	if(level < 0.0)
+	{
+		if(panel->signal_level != PANEL_SIGNAL_00)
+			_panel_set_operator(panel, "");
 		_signal_level_set_image(panel, PANEL_SIGNAL_00);
+	}
 	else if(level < 0.25)
 		_signal_level_set_image(panel, PANEL_SIGNAL_25);
 	else if(level < 0.50)
