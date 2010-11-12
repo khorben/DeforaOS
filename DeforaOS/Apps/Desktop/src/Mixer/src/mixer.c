@@ -21,6 +21,7 @@ static char _license[] =
 # include <sys/ioctl.h>
 # include <sys/audioio.h>
 #else
+# include <sys/ioctl.h>
 # include <sys/soundcard.h>
 #endif
 #include <fcntl.h>
