@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=XML editor
+Comment=An XML editor
+Exec=xmleditor
+Icon=text-editor
+Type=Application
+Categories=Utility;TextEditor;GTK;
+StartupNotify=true

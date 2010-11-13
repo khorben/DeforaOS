@@ -21,12 +21,15 @@ static char const _license[] =
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <System/Parser.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "xmleditor.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* XMLEditor */
@@ -69,40 +72,40 @@ static DesktopAccel _xmleditor_accel[] =
 #ifndef EMBEDDED
 static DesktopMenu _xmleditor_menu_file[] =
 {
-	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
+	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
 		GDK_n },
-	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
-		GDK_o },
+	{ N_("_Open"), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_o },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Save", G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_CONTROL_MASK,
-		GDK_s },
-	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
+	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE,
+		GDK_CONTROL_MASK, GDK_s },
+	{ N_("_Save as..."), G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
 		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_S },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_w },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _xmleditor_menu_edit[] =
 {
-	{ "_Preferences", G_CALLBACK(on_edit_preferences),
+	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_p },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _xmleditor_menu_view[] =
 {
-	{ "_Expand all", G_CALLBACK(on_view_expand_all), NULL, 0,
+	{ N_("_Expand all"), G_CALLBACK(on_view_expand_all), NULL, 0,
 		GDK_asterisk },
-	{ "_Collapse all", G_CALLBACK(on_view_collapse_all), NULL, 0,
+	{ N_("_Collapse all"), G_CALLBACK(on_view_collapse_all), NULL, 0,
 		GDK_slash },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _xmleditor_menu_help[] =
 {
-	{ "_About", G_CALLBACK(on_help_about),
+	{ N_("_About"), G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
 #else
@@ -113,25 +116,25 @@ static DesktopMenu _xmleditor_menu_help[] =
 
 static DesktopMenubar _xmleditor_menubar[] =
 {
-	{ "_File", _xmleditor_menu_file },
-	{ "_Edit", _xmleditor_menu_edit },
-	{ "_View", _xmleditor_menu_view },
-	{ "_Help", _xmleditor_menu_help },
+	{ N_("_File"), _xmleditor_menu_file },
+	{ N_("_Edit"), _xmleditor_menu_edit },
+	{ N_("_View"), _xmleditor_menu_view },
+	{ N_("_Help"), _xmleditor_menu_help },
 	{ NULL, NULL }
 };
 #endif
 
 static DesktopToolbar _xmleditor_toolbar[] =
 {
-	{ "New", G_CALLBACK(on_new), GTK_STOCK_NEW, 0, 0, NULL },
-	{ "Open", G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, 0, NULL },
+	{ N_("New"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, 0, NULL },
+	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Save", G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, 0, NULL },
-	{ "Save as", G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, 0,
+	{ N_("Save"), G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, 0, NULL },
+	{ N_("Save as"), G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, 0,
 		NULL },
 #ifdef EMBEDDED
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Preferences", G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
+	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
 		0, 0, NULL },
 #endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
@@ -189,7 +192,7 @@ XMLEditor * xmleditor_new(void)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(xmleditor->view),
 			FALSE);
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Name", renderer,
+	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
 			"text", 0, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), xmleditor->view);
@@ -210,8 +213,8 @@ static void _new_set_title(XMLEditor * xmleditor)
 {
 	char buf[256];
 
-	snprintf(buf, sizeof(buf), "%s%s", "XML editor - ",
-			(xmleditor->xml == NULL) ? "(Untitled)"
+	snprintf(buf, sizeof(buf), "%s%s", _("XML editor - "),
+			(xmleditor->xml == NULL) ? _("(Untitled)")
 			: xml_get_filename(xmleditor->xml));
 	gtk_window_set_title(GTK_WINDOW(xmleditor->window), buf);
 }
@@ -271,12 +274,12 @@ int xmleditor_error(XMLEditor * xmleditor, char const * message, int ret)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"Error");
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s",
 #endif
 			message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
@@ -364,7 +367,7 @@ void xmleditor_open_dialog(XMLEditor * xmleditor)
 	GtkWidget * dialog;
 	char * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Open file...",
+	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
 			GTK_WINDOW(xmleditor->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -420,12 +423,12 @@ gboolean xmleditor_save_as(XMLEditor * xmleditor, char const * filename)
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-				"Warning");
+				_("Warning"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s",
 #endif
-				"File exists. Overwrite?");
-		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+				_("This file already exists. Overwrite?"));
+		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 		if(ret == GTK_RESPONSE_NO)
@@ -443,7 +446,7 @@ gboolean xmleditor_save_as_dialog(XMLEditor * xmleditor)
 	char * filename = NULL;
 	gboolean ret;
 
-	dialog = gtk_file_chooser_dialog_new("Save as...",
+	dialog = gtk_file_chooser_dialog_new(_("Save as..."),
 			GTK_WINDOW(xmleditor->window),
 			GTK_FILE_CHOOSER_ACTION_SAVE,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
