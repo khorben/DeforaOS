@@ -339,14 +339,15 @@ static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 
 	if(node == NULL)
 		return;
-	gtk_tree_store_append(xmleditor->store, &iter, parent);
 	switch(node->type)
 	{
 		case XML_NODE_TYPE_DATA:
+			gtk_tree_store_append(xmleditor->store, &iter, parent);
 			gtk_tree_store_set(xmleditor->store, &iter, 0,
 					node->data.buffer, -1);
 			break;
 		case XML_NODE_TYPE_TAG:
+			gtk_tree_store_append(xmleditor->store, &iter, parent);
 			gtk_tree_store_set(xmleditor->store, &iter, 0,
 					node->tag.name, -1);
 			for(i = 0; i < node->tag.childs_cnt; i++)
