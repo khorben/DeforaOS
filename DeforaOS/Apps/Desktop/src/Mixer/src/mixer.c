@@ -53,6 +53,13 @@ typedef struct _MixerClass
 } MixerClass;
 #endif
 
+typedef struct _MixerProperties
+{
+	char name[32];
+	char version[16];
+	char device[16];
+} MixerProperties;
+
 struct _Mixer
 {
 	/* widgets */
@@ -61,6 +68,7 @@ struct _Mixer
 	GtkWidget * about;
 
 	/* internals */
+	char * device;
 #ifdef AUDIO_MIXER_DEVINFO
 	int fd;
 
@@ -129,6 +137,7 @@ static int _mixer_error(Mixer * mixer, char const * message, int ret);
 #ifdef AUDIO_MIXER_DEVINFO
 static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev);
 #endif
+static int _mixer_get_properties(Mixer * mixer, MixerProperties * properties);
 
 
 /* public */
@@ -167,6 +176,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		return NULL;
 	if(device == NULL)
 		device = "/dev/mixer";
+	mixer->device = strdup(device);
 	mixer->fd = open(device, O_RDWR);
 	mixer->window = NULL;
 	mixer->properties = NULL;
@@ -175,7 +185,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	mixer->mc = NULL;
 	mixer->mc_cnt = 0;
 #endif
-	if(mixer->fd < 0)
+	if(mixer->device == NULL || mixer->fd < 0)
 	{
 		_mixer_error(NULL, device, 0);
 		mixer_delete(mixer);
@@ -439,6 +449,8 @@ void mixer_delete(Mixer * mixer)
 {
 	if(mixer->fd >= 0)
 		close(mixer->fd);
+	if(mixer->device != NULL)
+		free(mixer->device);
 	if(mixer->window != NULL)
 		gtk_widget_destroy(mixer->window);
 	free(mixer);
@@ -578,22 +590,19 @@ static gboolean _properties_on_closex(GtkWidget * widget);
 
 void mixer_properties(Mixer * mixer)
 {
-#ifdef AUDIO_MIXER_DEVINFO
-	audio_device_t ad;
 	GtkSizeGroup * left;
 	GtkSizeGroup * right;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
-#endif
+	MixerProperties mp;
 
 	if(mixer->properties != NULL)
 	{
 		gtk_widget_show(mixer->properties);
 		return;
 	}
-#ifdef AUDIO_MIXER_DEVINFO
-	if(ioctl(mixer->fd, AUDIO_GETDEV, &ad) != 0)
+	if(_mixer_get_properties(mixer, &mp) != 0)
 	{
 		_mixer_error(mixer, "AUDIO_GETDEV", 1);
 		return;
@@ -618,7 +627,7 @@ void mixer_properties(Mixer * mixer)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_label_new(ad.name);
+	widget = gtk_label_new(mp.name);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -628,24 +637,23 @@ void mixer_properties(Mixer * mixer)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_label_new(ad.version);
+	widget = gtk_label_new(mp.version);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(_("Config: "));
+	widget = gtk_label_new(_("Device: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_label_new(ad.config);
+	widget = gtk_label_new(mp.device);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 	gtk_widget_show_all(vbox);
 	gtk_widget_show(mixer->properties);
-#endif
 }
 
 static gboolean _properties_on_closex(GtkWidget * widget)
@@ -795,3 +803,33 @@ static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
 	return p;
 }
 #endif
+
+
+/* mixer_get_properties */
+static int _mixer_get_properties(Mixer * mixer, MixerProperties * properties)
+{
+#ifdef AUDIO_MIXER_DEVINFO
+	audio_device_t ad;
+
+	if(ioctl(mixer->fd, AUDIO_GETDEV, &ad) != 0)
+		return -1;
+	snprintf(properties->name, sizeof(properties->name), "%s", ad.name);
+	snprintf(properties->version, sizeof(properties->version), "%s",
+			ad.version);
+	snprintf(properties->device, sizeof(properties->device), "%s",
+			ad.config);
+#else
+	struct mixer_info mi;
+	int version;
+
+	if(ioctl(mixer->fd, SOUND_MIXER_INFO, &mi) != 0
+			|| ioctl(mixer->fd, OSS_GETVERSION, &version) != 0)
+		return -1;
+	snprintf(properties->name, sizeof(properties->name), "%s", mi.name);
+	snprintf(properties->version, sizeof(properties->version), "%u.%u",
+			(version >> 16) & 0xffff, version & 0xffff);
+	snprintf(properties->device, sizeof(properties->device), "%s",
+			mixer->device);
+#endif
+	return 0;
+}
