@@ -97,6 +97,10 @@ struct _Mixer
 };
 
 
+/* constants */
+#define MIXER_DEFAULT_DEVICE "/dev/mixer"
+
+
 /* variables */
 static char const * _authors[] =
 {
@@ -190,7 +194,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	if((mixer = malloc(sizeof(*mixer))) == NULL)
 		return NULL;
 	if(device == NULL)
-		device = "/dev/mixer";
+		device = MIXER_DEFAULT_DEVICE;
 	mixer->device = strdup(device);
 	mixer->fd = open(device, O_RDWR);
 	mixer->window = NULL;
@@ -231,9 +235,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 #endif
 	/* classes */
 	if(orientation == MO_VERTICAL)
-		hvbox = gtk_vbox_new(TRUE, 0);
+		hvbox = gtk_vbox_new(TRUE, 4);
 	else
-		hvbox = gtk_hbox_new(FALSE, 0);
+		hvbox = gtk_hbox_new(FALSE, 4);
 	for(i = 0;; i++)
 	{
 #ifdef AUDIO_MIXER_DEVINFO
@@ -292,25 +296,27 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		}
 		if(control == NULL)
 			continue;
+		gtk_container_set_border_width(GTK_CONTAINER(control), 4);
 		widget = gtk_frame_new(md.label.name);
 		gtk_container_add(GTK_CONTAINER(widget), control);
 		if(hbox == NULL)
 		{
-			mixer->mc[u].hbox = gtk_hbox_new(FALSE, 0);
+			mixer->mc[u].hbox = gtk_hbox_new(FALSE, 4);
 			hbox = mixer->mc[u].hbox;
 			gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE, TRUE,
 					0);
 		}
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #else
 		if(i == SOUND_MIXER_NONE)
 			break;
 		if(ioctl(mixer->fd, MIXER_READ(i), &value) != 0)
 			continue;
 		control = _new_value(mixer, i);
+		gtk_container_set_border_width(GTK_CONTAINER(control), 4);
 		widget = gtk_frame_new(names[i]);
 		gtk_container_add(GTK_CONTAINER(widget), control);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
@@ -358,7 +364,7 @@ static GtkWidget * _new_enum(Mixer * mixer, int dev,
 		}
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_enum_toggled), mixer);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
 	return vbox;
 }
@@ -388,7 +394,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 		g_object_set_data(G_OBJECT(widget), "ctrl", mc);
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_set_toggled), mixer);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
 	return vbox;
 }
@@ -396,6 +402,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 
 static GtkWidget * _new_value(Mixer * mixer, int index)
 {
+	GtkWidget * align;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -413,7 +420,7 @@ static GtkWidget * _new_value(Mixer * mixer, int index)
 		free(mc);
 		return NULL;
 	}
-	hbox = gtk_hbox_new(TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
 	bind = gtk_toggle_button_new_with_label(_("Bind"));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bind), TRUE);
 	for(i = 0; i < mc->un.level.channels_cnt; i++)
@@ -428,17 +435,19 @@ static GtkWidget * _new_value(Mixer * mixer, int index)
 				&mc->un.level.channels[i]);
 		g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(
 					on_value_changed), mixer);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		list = g_slist_append(list, widget);
 	}
 	g_object_set_data(G_OBJECT(bind), "list", list);
 	if(mc->un.level.channels_cnt < 2)
 		return hbox;
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), bind, FALSE, TRUE, 0);
-	return vbox;
+	align = gtk_alignment_new(0.5, 0.5, 0.0, 1.0);
+	gtk_container_add(GTK_CONTAINER(align), vbox);
+	return align;
 }
 
 
@@ -582,7 +591,7 @@ void mixer_properties(Mixer * mixer)
 #endif
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Name: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
@@ -592,7 +601,7 @@ void mixer_properties(Mixer * mixer)
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Version: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
@@ -602,7 +611,7 @@ void mixer_properties(Mixer * mixer)
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Device: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);

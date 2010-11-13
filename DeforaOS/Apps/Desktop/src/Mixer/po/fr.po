@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mixer 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-13 02:02+0100\n"
+"POT-Creation-Date: 2010-11-13 02:41+0100\n"
 "PO-Revision-Date: 2010-04-23 04:08+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -28,82 +28,82 @@ msgstr ""
 "  -V\tAffichage vertical des catégories\n"
 "  -d\tChoix du périphérique sonore\n"
 
-#: ../src/mixer.c:109
+#: ../src/mixer.c:114
 msgid "_Properties"
 msgstr "_Propriétés"
 
-#: ../src/mixer.c:111
+#: ../src/mixer.c:116
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/mixer.c:118
+#: ../src/mixer.c:123
 msgid "_All"
 msgstr "_Tous"
 
-#: ../src/mixer.c:120
+#: ../src/mixer.c:125
 msgid "_Outputs"
 msgstr "_Sorties"
 
-#: ../src/mixer.c:122
+#: ../src/mixer.c:127
 msgid "_Inputs"
 msgstr "_Entrées"
 
-#: ../src/mixer.c:124
+#: ../src/mixer.c:129
 msgid "_Record"
 msgstr "En_registrement"
 
-#: ../src/mixer.c:126
+#: ../src/mixer.c:131
 msgid "Mo_nitor"
 msgstr "Sui_vi"
 
-#: ../src/mixer.c:128
+#: ../src/mixer.c:133
 msgid "_Equalization"
 msgstr "É_galisation"
 
-#: ../src/mixer.c:130
+#: ../src/mixer.c:135
 msgid "Mi_x"
 msgstr "Mi_x"
 
-#: ../src/mixer.c:131
+#: ../src/mixer.c:136
 msgid "_Modem"
 msgstr "_Modem"
 
-#: ../src/mixer.c:139
+#: ../src/mixer.c:144
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/mixer.c:145
+#: ../src/mixer.c:150
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/mixer.c:146
+#: ../src/mixer.c:151
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/mixer.c:147
+#: ../src/mixer.c:152
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/mixer.c:413
+#: ../src/mixer.c:424
 msgid "Bind"
 msgstr "Lier"
 
-#: ../src/mixer.c:566
+#: ../src/mixer.c:579
 msgid "Mixer properties"
 msgstr "Propriétés du mixer"
 
-#: ../src/mixer.c:582
+#: ../src/mixer.c:595
 msgid "Name: "
 msgstr "Nom : "
 
-#: ../src/mixer.c:592
+#: ../src/mixer.c:605
 msgid "Version: "
 msgstr "Version : "
 
-#: ../src/mixer.c:602
+#: ../src/mixer.c:615
 msgid "Device: "
 msgstr "Carte : "
 
-#: ../src/mixer.c:691 ../src/mixer.c:696
+#: ../src/mixer.c:704 ../src/mixer.c:709
 msgid "Error"
 msgstr "Erreur"
