@@ -170,6 +170,7 @@ struct _Phone
 	/* code */
 	PhoneCode en_code;
 	GtkWidget * en_window;
+	GtkWidget * en_title;
 	GtkWidget * en_entry;
 	GtkWidget * en_progress;
 
@@ -1378,6 +1379,8 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 		case PHONE_CODE_SIM_PIN:
 			gtk_window_set_title(GTK_WINDOW(phone->en_window),
 					_("Enter SIM PIN code"));
+			gtk_label_set_text(GTK_LABEL(phone->en_title),
+					_("Enter SIM PIN code"));
 			break;
 	}
 	if(phone->en_code != code)
@@ -1401,6 +1404,9 @@ static void _show_code_window(Phone * phone)
 	g_signal_connect(G_OBJECT(phone->en_window), "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
+	phone->en_title = gtk_label_new("");
+	gtk_widget_modify_font(phone->en_title, phone->bold);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->en_title, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	phone->en_entry = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(phone->en_entry), FALSE);
