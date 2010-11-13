@@ -104,6 +104,7 @@ static char const * _authors[] =
 	NULL
 };
 
+#ifndef EMBEDDED
 static DesktopMenu _mixer_menu_file[] =
 {
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
@@ -147,6 +148,7 @@ static DesktopMenubar _mixer_menubar[] =
 	{ N_("_Help"), _mixer_menu_help },
 	{ NULL, NULL },
 };
+#endif
 
 
 /* prototypes */
@@ -222,9 +224,11 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 0);
+#ifndef EMBEDDED
 	/* menubar */
 	widget = desktop_menubar_create(_mixer_menubar, mixer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#endif
 	/* classes */
 	if(orientation == MO_VERTICAL)
 		hvbox = gtk_vbox_new(TRUE, 0);
