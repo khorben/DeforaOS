@@ -22,27 +22,27 @@ msgstr "Usage: xmleditor [fichier]\n"
 
 #: ../src/xmleditor.c:75
 msgid "_New"
-msgstr ""
+msgstr "_Nouveau"
 
 #: ../src/xmleditor.c:77
 msgid "_Open"
-msgstr ""
+msgstr "_Ouvrir"
 
 #: ../src/xmleditor.c:80
 msgid "_Save"
-msgstr ""
+msgstr "_Enregistrer"
 
 #: ../src/xmleditor.c:82
 msgid "_Save as..."
-msgstr ""
+msgstr "Enregistrer _sous..."
 
 #: ../src/xmleditor.c:85
 msgid "_Close"
-msgstr ""
+msgstr "_Fermer"
 
 #: ../src/xmleditor.c:92
 msgid "_Preferences"
-msgstr ""
+msgstr "_Préférences"
 
 #: ../src/xmleditor.c:99
 msgid "_Expand all"
@@ -54,72 +54,72 @@ msgstr ""
 
 #: ../src/xmleditor.c:108
 msgid "_About"
-msgstr ""
+msgstr "À _propos"
 
 #: ../src/xmleditor.c:119
 msgid "_File"
-msgstr ""
+msgstr "_Fichier"
 
 #: ../src/xmleditor.c:120
 msgid "_Edit"
-msgstr ""
+msgstr "_Édition"
 
 #: ../src/xmleditor.c:121
 msgid "_View"
-msgstr ""
+msgstr "_Vue"
 
 #: ../src/xmleditor.c:122
 msgid "_Help"
-msgstr ""
+msgstr "_Aide"
 
 #: ../src/xmleditor.c:129
 msgid "New"
-msgstr ""
+msgstr "Nouveau"
 
 #: ../src/xmleditor.c:130
 msgid "Open"
-msgstr ""
+msgstr "Ouvrir"
 
 #: ../src/xmleditor.c:132
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
 #: ../src/xmleditor.c:133
 msgid "Save as"
-msgstr ""
+msgstr "Enregistrer sous"
 
 #: ../src/xmleditor.c:137
 msgid "Preferences"
-msgstr ""
+msgstr "Préférences"
 
 #: ../src/xmleditor.c:195
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: ../src/xmleditor.c:216
 msgid "XML editor - "
-msgstr ""
+msgstr "Éditeur XML - "
 
 #: ../src/xmleditor.c:217
 msgid "(Untitled)"
-msgstr ""
+msgstr "(Sans titre)"
 
 #: ../src/xmleditor.c:277 ../src/xmleditor.c:282
 msgid "Error"
-msgstr ""
+msgstr "Erreur"
 
 #: ../src/xmleditor.c:370
 msgid "Open file..."
-msgstr ""
+msgstr "Ouvrir un fichier..."
 
 #: ../src/xmleditor.c:426 ../src/xmleditor.c:431
 msgid "Warning"
-msgstr ""
+msgstr "Avertissement"
 
 #: ../src/xmleditor.c:430
 msgid "This file already exists. Overwrite?"
-msgstr ""
+msgstr "Ce fichier existe déjà. Écraser?"
 
 #: ../src/xmleditor.c:449
 msgid "Save as..."
-msgstr ""
+msgstr "Enregistrer sous..."
