@@ -26,6 +26,7 @@ static char _license[] =
 #endif
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
