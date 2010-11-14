@@ -399,8 +399,8 @@ gboolean editor_close(Editor * editor)
 	gtk_widget_destroy(dialog);
 	if(res == GTK_RESPONSE_CANCEL)
 		return TRUE;
-	else if(res == GTK_RESPONSE_ACCEPT)
-		editor_save(editor);
+	else if(res == GTK_RESPONSE_ACCEPT && editor_save(editor) != TRUE)
+		return TRUE;
 	gtk_main_quit();
 	return FALSE;
 }
@@ -603,10 +603,7 @@ gboolean editor_save(Editor * editor)
 	size_t len;
 
 	if(editor->filename == NULL)
-	{
-		editor_save_as_dialog(editor);
-		return FALSE;
-	}
+		return editor_save_as_dialog(editor);
 	if((fp = fopen(editor->filename, "w")) == NULL)
 	{
 		buf = g_strdup_printf("%s: %s", editor->filename, strerror(
