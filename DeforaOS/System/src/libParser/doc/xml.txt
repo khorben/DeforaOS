@@ -1,0 +1,41 @@
+digraph G {
+	XMLNode -> type;
+	XMLNode -> parent;
+	XMLNode -> XMLNodeData;
+	XMLNode -> XMLNodeEntity;
+	XMLNode -> XMLNodeTag;
+
+	XMLNodeData -> type;
+	XMLNodeData -> parent;
+	XMLNodeData -> buffer;
+	XMLNodeData -> size;
+
+	XMLNodeEntity -> type;
+	XMLNodeEntity -> parent;
+	XMLNodeEntity -> "XMLNodeEntity::name";
+
+	XMLNodeTag -> type;
+	XMLNodeTag -> parent;
+	XMLNodeTag -> "XMLNodeTag::name";
+	XMLNodeTag -> attributes;
+	XMLNodeTag -> attributes_cnt;
+	XMLNodeTag -> childs;
+	XMLNodeTag -> childs_cnt;
+	parent -> XMLNode;
+	attributes -> name;
+	attributes -> value;
+	childs -> XMLNode;
+
+	attributes [shape=box];
+	attributes_cnt [shape=box];
+	buffer [shape=box];
+	childs [shape=box];
+	childs_cnt [shape=box];
+	name [shape=box];
+	parent [shape=box];
+	size [shape=box];
+	type [shape=box];
+	value [shape=box];
+	"XMLNodeEntity::name" [shape=box];
+	"XMLNodeTag::name" [shape=box];
+}
