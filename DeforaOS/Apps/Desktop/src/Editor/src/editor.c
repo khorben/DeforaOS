@@ -389,15 +389,18 @@ gboolean editor_close(Editor * editor)
 			"%s",
 #endif
 			_("There are unsaved changes.\n"
-				"Are you sure you want to close?"));
+				"Discard or save them?"));
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
-			GTK_RESPONSE_CLOSE, NULL);
+			GTK_RESPONSE_CANCEL, GTK_STOCK_DISCARD,
+			GTK_RESPONSE_REJECT, GTK_STOCK_SAVE,
+			GTK_RESPONSE_ACCEPT, NULL);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_CLOSE)
+	if(res == GTK_RESPONSE_CANCEL)
 		return TRUE;
+	else if(res == GTK_RESPONSE_ACCEPT)
+		editor_save(editor);
 	gtk_main_quit();
 	return FALSE;
 }
