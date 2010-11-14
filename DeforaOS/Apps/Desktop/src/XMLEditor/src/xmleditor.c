@@ -317,12 +317,15 @@ gboolean xmleditor_close(XMLEditor * xmleditor)
 			_("There are unsaved changes.\n"
 				"Are you sure you want to close?"));
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
-			GTK_RESPONSE_CLOSE, NULL);
+			GTK_RESPONSE_CANCEL, GTK_STOCK_DISCARD,
+			GTK_RESPONSE_REJECT, GTK_STOCK_SAVE,
+			GTK_RESPONSE_ACCEPT, NULL);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_CLOSE)
+	if(res == GTK_RESPONSE_CANCEL)
+		return TRUE;
+	else if(res == GTK_RESPONSE_ACCEPT && xmleditor_save(xmleditor) != TRUE)
 		return TRUE;
 	gtk_main_quit();
 	return FALSE;
@@ -424,10 +427,7 @@ gboolean xmleditor_save(XMLEditor * xmleditor)
 	FILE * fp;
 
 	if(xmleditor->xml == NULL)
-	{
-		xmleditor_save_as_dialog(xmleditor);
-		return FALSE;
-	}
+		return xmleditor_save_as_dialog(xmleditor);
 	filename = xml_get_filename(xmleditor->xml);
 	if((fp = fopen(filename, "w")) == NULL)
 	{
@@ -438,6 +438,7 @@ gboolean xmleditor_save(XMLEditor * xmleditor)
 	}
 	/* FIXME implement */
 	fclose(fp);
+	return FALSE;
 	return TRUE;
 }
 
