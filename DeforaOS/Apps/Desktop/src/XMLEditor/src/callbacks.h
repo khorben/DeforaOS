@@ -41,4 +41,8 @@ void on_save(gpointer data);
 void on_save_as(gpointer data);
 void on_preferences(gpointer data);
 
+/* view */
+void on_tag_name_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * name, gpointer data);
+
 #endif /* !XMLEDITOR_CALLBACKS_H */

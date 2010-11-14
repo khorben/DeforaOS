@@ -165,3 +165,16 @@ void on_preferences(gpointer data)
 
 	on_edit_preferences(xmleditor);
 }
+
+
+/* on_tag_name_edited */
+void on_tag_name_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * name, gpointer data)
+{
+	XMLEditor * xmleditor = data;
+	GtkTreePath * treepath;
+
+	treepath = gtk_tree_path_new_from_string(path);
+	xmleditor_tag_set_name(xmleditor, treepath, name);
+	gtk_tree_path_free(treepath);
+}

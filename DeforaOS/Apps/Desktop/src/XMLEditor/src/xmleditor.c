@@ -38,6 +38,7 @@ static char const _license[] =
 struct _XMLEditor
 {
 	XML * xml;
+	gboolean modified;
 
 	/* widgets */
 	GtkWidget * window;
@@ -160,6 +161,7 @@ XMLEditor * xmleditor_new(void)
 		return NULL;
 	settings = gtk_settings_get_default();
 	xmleditor->xml = NULL;
+	xmleditor->modified = FALSE;
 	/* widgets */
 	group = gtk_accel_group_new();
 	xmleditor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -192,6 +194,9 @@ XMLEditor * xmleditor_new(void)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(xmleditor->view),
 			FALSE);
 	renderer = gtk_cell_renderer_text_new();
+	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				on_tag_name_edited), xmleditor);
 	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
 			"text", 0, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
@@ -271,7 +276,7 @@ int xmleditor_error(XMLEditor * xmleditor, char const * message, int ret)
 	GtkWidget * dialog;
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(xmleditor->window),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
 			_("Error"));
@@ -290,10 +295,35 @@ int xmleditor_error(XMLEditor * xmleditor, char const * message, int ret)
 /* xmleditor_close */
 gboolean xmleditor_close(XMLEditor * xmleditor)
 {
+	GtkWidget * dialog;
+	int res;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME implement */
+	if(xmleditor->modified == FALSE)
+	{
+		gtk_main_quit();
+		return FALSE;
+	}
+	dialog = gtk_message_dialog_new(GTK_WINDOW(xmleditor->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Warning"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			_("There are unsaved changes.\n"
+				"Are you sure you want to close?"));
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
+			GTK_RESPONSE_CLOSE, NULL);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_CLOSE)
+		return TRUE;
 	gtk_main_quit();
 	return FALSE;
 }
@@ -328,7 +358,10 @@ void xmleditor_open(XMLEditor * xmleditor, char const * filename)
 	if(xmleditor->xml != NULL)
 		xml_delete(xmleditor->xml);
 	if((xmleditor->xml = xml_new(NULL, filename)) == NULL)
+	{
+		xmleditor_error(xmleditor, error_get(), 0);
 		return;
+	}
 	if((doc = xml_get_document(xmleditor->xml)) != NULL)
 		_open_document_node(xmleditor, doc->root, NULL);
 	_new_set_title(xmleditor); /* XXX make it a generic private function */
@@ -460,4 +493,17 @@ gboolean xmleditor_save_as_dialog(XMLEditor * xmleditor)
 	ret = xmleditor_save_as(xmleditor, filename);
 	g_free(filename);
 	return ret;
+}
+
+
+/* xmleditor_tag_set_name */
+void xmleditor_tag_set_name(XMLEditor * xmleditor, GtkTreePath * treepath,
+		char const * name)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(xmleditor->store);
+	GtkTreeIter iter;
+
+	xmleditor->modified = TRUE;
+	gtk_tree_model_get_iter(model, &iter, treepath);
+	gtk_tree_store_set(xmleditor->store, &iter, 0, name, -1);
 }

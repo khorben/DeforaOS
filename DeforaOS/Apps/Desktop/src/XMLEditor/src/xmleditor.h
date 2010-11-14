@@ -48,4 +48,7 @@ gboolean xmleditor_save_as_dialog(XMLEditor * xmleditor);
 
 void xmleditor_find(XMLEditor * xmleditor, char const * text);
 
+void xmleditor_tag_set_name(XMLEditor * xmleditor, GtkTreePath * treepath,
+		char const * name);
+
 #endif /* !XMLEDITOR_XMLEDITOR_H */
