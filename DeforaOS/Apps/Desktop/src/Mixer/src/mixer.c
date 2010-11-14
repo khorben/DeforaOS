@@ -56,8 +56,8 @@ typedef struct _MixerClass
 
 typedef struct _MixerLevel
 {
-	size_t channels_cnt;
 	uint8_t channels[8];
+	size_t channels_cnt;
 } MixerLevel;
 
 typedef struct _MixerControl
