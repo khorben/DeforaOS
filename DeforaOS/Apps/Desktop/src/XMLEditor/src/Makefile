@@ -24,7 +24,7 @@ xmleditor_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 xmleditor: $(xmleditor_OBJS)
 	$(CC) -o xmleditor $(xmleditor_OBJS) $(xmleditor_LDFLAGS)
 
-callbacks.o: callbacks.c callbacks.h
+callbacks.o: callbacks.c callbacks.h xmleditor.h
 	$(CC) $(xmleditor_CFLAGS) -c callbacks.c
 
 xmleditor.o: xmleditor.c callbacks.h xmleditor.h ../config.h
