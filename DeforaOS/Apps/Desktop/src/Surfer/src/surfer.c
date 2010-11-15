@@ -31,6 +31,11 @@ static char const _license[] =
 #define _(string) gettext(string)
 #define N_(string) (string)
 
+#define PROGNAME "surfer"
+static unsigned int _surfer_cnt = 0;
+#define _download_cnt _surfer_cnt
+#include "download.c"
+
 
 /* Surfer */
 /* private */
@@ -193,8 +198,6 @@ static DesktopToolbar _surfer_toolbar[] =
 #endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
-
-unsigned int surfer_cnt = 0;
 
 
 /* prototypes */
@@ -363,7 +366,7 @@ Surfer * _new_do(char const * url)
 	/* hack to display the statusbar only if necessary */
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
-	surfer_cnt++;
+	_surfer_cnt++;
 	return surfer;
 }
 
@@ -401,7 +404,7 @@ void surfer_delete(Surfer * surfer)
 	config_delete(surfer->config);
 	free(surfer->homepage);
 	free(surfer);
-	if(--surfer_cnt == 0)
+	if(--_surfer_cnt == 0)
 		gtk_main_quit();
 }
 
@@ -717,8 +720,12 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	int ret = 0;
 	GtkWidget * dialog;
 	char * filename = NULL;
+#ifdef WITH_WEBKIT
+	DownloadPrefs prefs;
+#else
 	char * argv[] = { "download", "-O", NULL, NULL, NULL };
 	GError * error = NULL;
+#endif
 
 	if(url == NULL)
 		return -surfer_error(surfer, strerror(EINVAL), 1);
@@ -736,6 +743,11 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return 0;
+#ifdef WITH_WEBKIT
+	prefs.output = filename;
+	prefs.user_agent = NULL;
+	download_new(&prefs, url);
+#else
 	argv[2] = filename;
 	if((argv[3] = strdup(url)) == NULL)
 		ret = -surfer_error(surfer, strerror(errno), 1);
@@ -745,6 +757,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 				NULL, &error);
 		free(argv[3]);
 	}
+#endif
 	g_free(filename);
 	return ret;
 }

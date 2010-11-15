@@ -53,7 +53,7 @@
 /* types */
 struct _Download
 {
-	DownloadPrefs * prefs;
+	DownloadPrefs prefs;
 	char * url;
 
 	struct timeval tv;
@@ -82,11 +82,15 @@ struct _Download
 
 
 /* constants */
-#define PROGNAME	"download"
+#ifdef WITH_MAIN
+# define PROGNAME	"download"
+#endif
 
 
 /* variables */
+#ifdef WITH_MAIN
 static unsigned int _download_cnt = 0;
+#endif
 
 
 /* prototypes */
@@ -98,8 +102,8 @@ static int _download_write(Download * download);
 
 /* callbacks */
 static void _download_on_cancel(gpointer data);
-static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _download_on_closex(gpointer data);
+
 #ifndef WITH_WEBKIT
 static void _download_on_http(GConnHttp * conn, GConnHttpEvent * event,
 		gpointer data);
@@ -125,30 +129,48 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	GtkSizeGroup * right;
 	PangoFontDescription * bold;
 
+	/* verify arguments */
+	if(prefs == NULL || url == NULL)
+	{
+		errno = EINVAL;
+		_download_error(NULL, NULL, 1);
+		return NULL;
+	}
 	if((download = malloc(sizeof(*download))) == NULL)
 	{
-		_download_error(NULL, "malloc", -1);
+		_download_error(NULL, "malloc", 1);
 		return NULL;
 	}
-	download->prefs = prefs; /* XXX copy the preferences instead */
-	if(gettimeofday(&download->tv, NULL) != 0)
-	{
-		_download_error(NULL, "gettimeofday", 1);
-		return NULL;
-	}
+	/* initialize structure */
+	download->prefs.output = (prefs->output != NULL) ? strdup(prefs->output)
+		: NULL;
+	download->prefs.user_agent = (prefs->user_agent != NULL)
+		? strdup(prefs->user_agent) : NULL;
 	download->url = strdup(url);
-	if(prefs->output == NULL)
-		prefs->output = basename(download->url);
+	if(download->url != NULL && prefs->output == NULL)
+		download->prefs.output = basename(download->url);
 	download->conn = NULL;
 	download->data_received = 0;
 	download->content_length = 0;
+	download->timeout = 0;
 	download->pulse = 0;
+	/* verify initialization */
+	if((prefs->output != NULL && download->prefs.output == NULL)
+			|| (prefs->user_agent != NULL
+				&& download->prefs.user_agent == NULL)
+			|| download->url == NULL
+			|| gettimeofday(&download->tv, NULL) != 0)
+	{
+		_download_error(NULL, "gettimeofday", 1);
+		download_delete(download);
+		return NULL;
+	}
 	/* window */
 	download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	snprintf(buf, sizeof(buf), "%s %s", _("Download"), url);
 	gtk_window_set_title(GTK_WINDOW(download->window), buf);
-	g_signal_connect(G_OBJECT(download->window), "delete-event", G_CALLBACK(
-				_download_on_closex), download);
+	g_signal_connect_swapped(G_OBJECT(download->window), "delete-event",
+			G_CALLBACK(_download_on_closex), download);
 	vbox = gtk_vbox_new(FALSE, 0);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
@@ -179,7 +201,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(download->window), 4);
 	gtk_container_add(GTK_CONTAINER(download->window), vbox);
-	g_idle_add(_download_on_idle, download);
+	download->timeout = g_idle_add(_download_on_idle, download);
 	_download_refresh(download);
 	gtk_widget_show_all(download->window);
 	_download_cnt++;
@@ -209,6 +231,8 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 /* download_delete */
 void download_delete(Download * download)
 {
+	if(download->timeout != 0)
+		g_source_remove(download->timeout);
 #ifdef WITH_WEBKIT
 	if(download->conn != NULL)
 		webkit_download_cancel(download->conn);
@@ -219,12 +243,14 @@ void download_delete(Download * download)
 	if(download->fp != NULL)
 	{
 		if(fclose(download->fp) != 0)
-			_download_error(download, download->prefs->output, 1);
-		if(unlink(download->prefs->output) != 0)
-			_download_error(download, download->prefs->output, 1);
+			_download_error(download, download->prefs.output, 1);
+		if(unlink(download->prefs.output) != 0)
+			_download_error(download, download->prefs.output, 1);
 	}
 #endif
 	free(download->url);
+	free(download->prefs.user_agent);
+	free(download->prefs.output);
 	gtk_widget_destroy(download->window);
 	free(download);
 	if(--_download_cnt == 0)
@@ -340,7 +366,7 @@ static int _download_write(Download * download)
 		download->pulse = 1;
 		return 0;
 	}
-	_download_error(download, download->prefs->output, 0);
+	_download_error(download, download->prefs.output, 0);
 	download_cancel(download);
 	return 1;
 }
@@ -359,12 +385,11 @@ static void _download_on_cancel(gpointer data)
 
 
 /* download_on_closex */
-static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _download_on_closex(gpointer data)
 {
 	Download * download = data;
 
-	gtk_widget_hide(widget);
+	gtk_widget_hide(download->window);
 	download_cancel(download);
 	return FALSE;
 }
@@ -450,12 +475,12 @@ static void _http_data_complete(GConnHttpEventData * event,
 	download->content_length = (event->content_length != 0)
 		? event->content_length : event->data_received;
 	if(fclose(download->fp) != 0)
-		_download_error(download, download->prefs->output, 0);
+		_download_error(download, download->prefs.output, 0);
 	download->fp = NULL;
 	_download_refresh(download);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(download->check)))
 	{
-		download_cancel(download);
+		g_idle_add(_download_on_closex, download);
 		return;
 	}
 	gtk_label_set_text(GTK_LABEL(download->status), _("Complete"));
@@ -512,25 +537,29 @@ static void _http_timeout(Download * download)
 static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
-	DownloadPrefs * prefs = download->prefs;
+	DownloadPrefs * prefs = &download->prefs;
 	char * p = NULL;
 #ifdef WITH_WEBKIT
+	size_t len;
 	WebKitNetworkRequest * request;
 
-	if((p = malloc(strlen(prefs->output) + 6)) == NULL)
+	download->timeout = 0;
+	len = strlen(prefs->output) + 6;
+	if((p = malloc(len)) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
 		download_cancel(download);
 		return FALSE;
 	}
 	/* FIXME needs to be an absolute path */
-	sprintf(p, "%s%s", "file:", prefs->output);
+	snprintf(p, len, "%s%s", "file:", prefs->output);
 	request = webkit_network_request_new(download->url);
 	download->conn = webkit_download_new(request);
 	webkit_download_set_destination_uri(download->conn, p);
 	free(p);
 	webkit_download_start(download->conn);
 #else
+	download->timeout = 0;
 	if((download->fp = fopen(prefs->output, "w")) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
@@ -575,7 +604,7 @@ static gboolean _download_on_timeout(gpointer data)
 			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 							d->check)))
 			{
-				download_cancel(d);
+				g_idle_add(_download_on_closex, d);
 				break;
 			}
 			gtk_label_set_text(GTK_LABEL(d->status), _("Complete"));
@@ -605,6 +634,7 @@ static gboolean _download_on_timeout(gpointer data)
 }
 
 
+#ifdef WITH_MAIN
 /* usage */
 static int _usage(void)
 {
@@ -651,3 +681,4 @@ int main(int argc, char * argv[])
 	gtk_main();
 	return 0;
 }
+#endif /* WITH_MAIN */
