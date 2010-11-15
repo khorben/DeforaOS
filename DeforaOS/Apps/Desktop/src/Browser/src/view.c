@@ -97,20 +97,20 @@ static void _on_open_with(gpointer data);
 #ifndef EMBEDDED
 static DesktopMenu _view_menu_file[] =
 {
-	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
+	{ N_("Open _with..."), G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _view_menu_file_edit[] =
 {
-	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, GDK_CONTROL_MASK,
-		GDK_E },
-	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
+	{ N_("_Edit"), G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT,
+		GDK_CONTROL_MASK, GDK_E },
+	{ N_("Open _with..."), G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
