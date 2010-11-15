@@ -201,12 +201,17 @@ XMLEditor * xmleditor_new(void)
 				xmleditor->store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(xmleditor->view),
 			FALSE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(xmleditor->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_tag_name_edited), xmleditor);
 	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
 			"text", XEC_TAGNAME, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("Data"), renderer,
+			"text", XEC_DATA, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), xmleditor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
