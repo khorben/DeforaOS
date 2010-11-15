@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-26 04:16+0200\n"
+"POT-Creation-Date: 2010-11-15 01:45+0100\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -133,48 +133,48 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: ../src/editor.c:387 ../src/editor.c:396 ../src/editor.c:506
-#: ../src/editor.c:520 ../src/editor.c:650 ../src/editor.c:655
+#: ../src/editor.c:387 ../src/editor.c:397 ../src/editor.c:509
+#: ../src/editor.c:523 ../src/editor.c:650 ../src/editor.c:655
 msgid "Warning"
 msgstr ""
 
 #: ../src/editor.c:391
 msgid ""
 "There are unsaved changes.\n"
-"Are you sure you want to close?"
+"Discard or save them?"
 msgstr ""
 
-#: ../src/editor.c:426
+#: ../src/editor.c:429
 msgid "Find text"
 msgstr ""
 
-#: ../src/editor.c:433
+#: ../src/editor.c:436
 msgid "Text:"
 msgstr ""
 
-#: ../src/editor.c:440
+#: ../src/editor.c:443
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/editor.c:442
+#: ../src/editor.c:445
 msgid "Wrap"
 msgstr ""
 
-#: ../src/editor.c:465
+#: ../src/editor.c:468
 msgid "Text not found"
 msgstr ""
 
-#: ../src/editor.c:510
+#: ../src/editor.c:513
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to discard them?"
 msgstr ""
 
-#: ../src/editor.c:517
+#: ../src/editor.c:520
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:576
+#: ../src/editor.c:579
 msgid "Open file..."
 msgstr ""
 
