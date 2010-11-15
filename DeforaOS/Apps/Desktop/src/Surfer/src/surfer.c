@@ -547,6 +547,8 @@ void surfer_set_title(Surfer * surfer, char const * title)
 
 /* useful */
 /* surfer_about */
+static gboolean _about_on_closex(gpointer data);
+
 void surfer_about(Surfer * surfer)
 {
 	if(surfer->ab_dialog != NULL)
@@ -564,7 +566,17 @@ void surfer_about(Surfer * surfer)
 	desktop_about_dialog_set_license(surfer->ab_dialog, _license);
 	desktop_about_dialog_set_name(surfer->ab_dialog, PACKAGE);
 	desktop_about_dialog_set_version(surfer->ab_dialog, VERSION);
+	g_signal_connect_swapped(G_OBJECT(surfer->ab_dialog), "delete-event",
+			G_CALLBACK(_about_on_closex), surfer);
 	gtk_widget_show(surfer->ab_dialog);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_hide(surfer->ab_dialog);
+	return TRUE;
 }
 
 
