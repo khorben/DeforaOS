@@ -720,7 +720,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	int ret = 0;
 	GtkWidget * dialog;
 	char * filename = NULL;
-#ifdef WITH_WEBKIT
+#if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) || defined(WITH_WEBKIT)
 	DownloadPrefs prefs;
 #else
 	char * argv[] = { "download", "-O", NULL, NULL, NULL };
@@ -743,7 +743,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return 0;
-#ifdef WITH_WEBKIT
+#if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) || defined(WITH_WEBKIT)
 	prefs.output = filename;
 	prefs.user_agent = NULL;
 	download_new(&prefs, url);
