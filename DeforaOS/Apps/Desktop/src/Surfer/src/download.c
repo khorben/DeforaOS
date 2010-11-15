@@ -49,15 +49,15 @@
 
 /* Download */
 /* types */
-typedef struct _Prefs
+typedef struct _DownloadPrefs
 {
 	char const * output;
 	char const * user_agent;
-} Prefs;
+} DownloadPrefs;
 
 typedef struct _Download
 {
-	Prefs * prefs;
+	DownloadPrefs * prefs;
 	char * url;
 
 	struct timeval tv;
@@ -94,7 +94,7 @@ static unsigned int _download_cnt = 0;
 
 
 /* prototypes */
-static Download * _download_new(Prefs * prefs, char const * url);
+static Download * _download_new(DownloadPrefs * prefs, char const * url);
 static void _download_delete(Download * download);
 static int _download_cancel(Download * download);
 static int _download_error(Download * download, char const * message, int ret);
@@ -120,7 +120,7 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 		GtkSizeGroup * left, GtkSizeGroup * right, char const * label,
 		GtkWidget ** widget, char const * text);
 
-static Download * _download_new(Prefs * prefs, char const * url)
+static Download * _download_new(DownloadPrefs * prefs, char const * url)
 {
 	Download * download;
 	char buf[256];
@@ -514,7 +514,7 @@ static void _http_timeout(Download * download)
 static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
-	Prefs * prefs = download->prefs;
+	DownloadPrefs * prefs = download->prefs;
 	char * p = NULL;
 #ifdef WITH_WEBKIT
 	WebKitNetworkRequest * request;
@@ -620,7 +620,7 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs prefs;
+	DownloadPrefs prefs;
 	int o;
 	Download ** download;
 	int cnt;
