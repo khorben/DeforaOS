@@ -17,6 +17,7 @@ static char const _license[] =
 
 
 
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -201,6 +202,9 @@ static DesktopToolbar _surfer_toolbar[] =
 
 
 /* prototypes */
+static gboolean _surfer_filename_confirm(Surfer * surfer,
+		char const * filename);
+
 static char * _config_get_filename(void);
 static int _config_load_string(Config * config, char const * variable,
 		char ** value);
@@ -743,6 +747,11 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return 0;
+	if(_surfer_filename_confirm(surfer, filename) != TRUE)
+	{
+		g_free(filename);
+		return 0;
+	}
 #if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) || defined(WITH_WEBKIT)
 	prefs.output = filename;
 	prefs.user_agent = NULL;
@@ -1111,6 +1120,8 @@ void surfer_save(Surfer * surfer, char const * filename)
 		if(filename == NULL)
 			return;
 	}
+	if(_surfer_filename_confirm(surfer, filename) != TRUE)
+		return;
 	if((fp = fopen(filename, "w")) == NULL) /* XXX use GIOChannel instead */
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", filename, strerror(errno));
@@ -1402,6 +1413,35 @@ void surfer_zoom_reset(Surfer * surfer)
 
 /* private */
 /* functions */
+/* surfer_filename_confirm */
+static gboolean _surfer_filename_confirm(Surfer * surfer,
+		char const * filename)
+{
+	struct stat st;
+	GtkWidget * dialog;
+	int res;
+
+	if(stat(filename, &st) != 0)
+		return TRUE;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Warning"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+				dialog), "%s",
+#endif
+			_("This file already exists. Overwrite?"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res == GTK_RESPONSE_NO)
+		return FALSE;
+	return TRUE;
+}
+
+
+/* config_get_filename */
 static char * _config_get_filename(void)
 {
 	char const * homedir;
@@ -1418,6 +1458,7 @@ static char * _config_get_filename(void)
 }
 
 
+/* config_load_string */
 static int _config_load_string(Config * config, char const * variable,
 		char ** value)
 {
@@ -1434,6 +1475,7 @@ static int _config_load_string(Config * config, char const * variable,
 }
 
 
+/* config_save_boolean */
 static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value)
 {
@@ -1441,6 +1483,7 @@ static int _config_save_boolean(Config * config, char const * variable,
 }
 
 
+/* config_save_string */
 static int _config_save_string(Config * config, char const * variable,
 		char const * value)
 {
