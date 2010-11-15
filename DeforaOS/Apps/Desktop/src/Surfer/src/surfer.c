@@ -32,10 +32,22 @@ static char const _license[] =
 #define _(string) gettext(string)
 #define N_(string) (string)
 
-#define PROGNAME "surfer"
+/* embed the Download class */
+#if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) /* uses GNet */
+# define WITH_DOWNLOAD
+#endif
+#if defined(WITH_WEBKIT) /* WebKit 1.1.0 and above */
+# include <webkit/webkit.h>
+# if WEBKIT_CHECK_VERSION(1, 1, 0)
+#  define WITH_DOWNLOAD
+# endif
+#endif
+#ifdef WITH_DOWNLOAD
+# define PROGNAME "surfer"
 static unsigned int _surfer_cnt = 0;
-#define _download_cnt _surfer_cnt
-#include "download.c"
+# define _download_cnt _surfer_cnt
+# include "download.c"
+#endif
 
 
 /* Surfer */
@@ -724,7 +736,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	int ret = 0;
 	GtkWidget * dialog;
 	char * filename = NULL;
-#if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) || defined(WITH_WEBKIT)
+#ifdef WITH_DOWNLOAD
 	DownloadPrefs prefs;
 #else
 	char * argv[] = { "download", "-O", NULL, NULL, NULL };
@@ -752,7 +764,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 		g_free(filename);
 		return 0;
 	}
-#if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) || defined(WITH_WEBKIT)
+#ifdef WITH_DOWNLOAD
 	prefs.output = filename;
 	prefs.user_agent = NULL;
 	download_new(&prefs, url);
