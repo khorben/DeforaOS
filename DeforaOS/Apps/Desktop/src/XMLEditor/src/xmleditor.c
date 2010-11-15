@@ -35,6 +35,12 @@ static char const _license[] =
 /* XMLEditor */
 /* private */
 /* types */
+typedef enum _XMLEditorColumn {
+	XEC_TAGNAME = 0, XEC_DATA
+} XMLEditorColumn;
+#define XEC_LAST	XEC_DATA
+#define XEC_COUNT	(XEC_LAST + 1)
+
 struct _XMLEditor
 {
 	XML * xml;
@@ -188,7 +194,9 @@ XMLEditor * xmleditor_new(void)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	xmleditor->store = gtk_tree_store_new(1, G_TYPE_STRING);
+	xmleditor->store = gtk_tree_store_new(XEC_COUNT,
+			G_TYPE_STRING,	/* XEC_TAGNAME	*/
+			G_TYPE_STRING); /* XEC_DATA	*/
 	xmleditor->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				xmleditor->store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(xmleditor->view),
@@ -198,7 +206,7 @@ XMLEditor * xmleditor_new(void)
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_tag_name_edited), xmleditor);
 	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
-			"text", 0, NULL);
+			"text", XEC_TAGNAME, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), xmleditor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -382,12 +390,12 @@ static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 	{
 		case XML_NODE_TYPE_DATA:
 			gtk_tree_store_append(xmleditor->store, &iter, parent);
-			gtk_tree_store_set(xmleditor->store, &iter, 0,
+			gtk_tree_store_set(xmleditor->store, &iter, XEC_DATA,
 					node->data.buffer, -1);
 			break;
 		case XML_NODE_TYPE_TAG:
 			gtk_tree_store_append(xmleditor->store, &iter, parent);
-			gtk_tree_store_set(xmleditor->store, &iter, 0,
+			gtk_tree_store_set(xmleditor->store, &iter, XEC_TAGNAME,
 					node->tag.name, -1);
 			for(i = 0; i < node->tag.childs_cnt; i++)
 				_open_document_node(xmleditor,
@@ -506,5 +514,5 @@ void xmleditor_tag_set_name(XMLEditor * xmleditor, GtkTreePath * treepath,
 
 	xmleditor->modified = TRUE;
 	gtk_tree_model_get_iter(model, &iter, treepath);
-	gtk_tree_store_set(xmleditor->store, &iter, 0, name, -1);
+	gtk_tree_store_set(xmleditor->store, &iter, XEC_TAGNAME, name, -1);
 }
