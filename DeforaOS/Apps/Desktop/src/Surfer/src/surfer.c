@@ -33,6 +33,7 @@ static char const _license[] =
 #define N_(string) (string)
 
 /* embed the Download class */
+static unsigned int _surfer_cnt = 0;
 #if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) /* uses GNet */
 # define WITH_DOWNLOAD
 #endif
@@ -44,7 +45,6 @@ static char const _license[] =
 #endif
 #ifdef WITH_DOWNLOAD
 # define PROGNAME "surfer"
-static unsigned int _surfer_cnt = 0;
 # define _download_cnt _surfer_cnt
 # include "download.c"
 #endif
