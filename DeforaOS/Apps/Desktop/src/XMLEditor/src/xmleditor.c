@@ -456,7 +456,7 @@ gboolean xmleditor_save_as(XMLEditor * xmleditor, char const * filename)
 {
 	struct stat st;
 	GtkWidget * dialog;
-	int ret;
+	int res;
 
 	if(stat(filename, &st) == 0)
 	{
@@ -471,9 +471,9 @@ gboolean xmleditor_save_as(XMLEditor * xmleditor, char const * filename)
 #endif
 				_("This file already exists. Overwrite?"));
 		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
-		ret = gtk_dialog_run(GTK_DIALOG(dialog));
+		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
-		if(ret == GTK_RESPONSE_NO)
+		if(res == GTK_RESPONSE_NO)
 			return FALSE;
 	}
 	/* FIXME implement */
