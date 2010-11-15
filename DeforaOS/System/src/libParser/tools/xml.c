@@ -36,7 +36,7 @@ static int _usage(void)
 
 /* public */
 /* main */
-static void _main_node(XMLNode * node);
+static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level);
 
 int main(int argc, char * argv[])
 {
@@ -74,12 +74,12 @@ int main(int argc, char * argv[])
 	if((doc = xml_get_document(xml)) == NULL)
 		error_print("xml");
 	else
-		_main_node(doc->root);
+		_main_node(&prefs, doc->root, 0);
 	xml_delete(xml);
 	return 0;
 }
 
-static void _main_node(XMLNode * node)
+static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level)
 {
 	size_t i;
 
@@ -94,15 +94,28 @@ static void _main_node(XMLNode * node)
 			printf("&%s;", node->entity.name);
 			break;
 		case XML_NODE_TYPE_TAG:
+			if(prefs->filters & XML_FILTER_WHITESPACE)
+				for(i = 0; i < level; i++)
+					fputs("  ", stdout);
 			printf("<%s", node->tag.name);
 			for(i = 0; i < node->tag.attributes_cnt; i++)
 				printf(" %s=\"%s\"",
 						node->tag.attributes[i]->name,
 						node->tag.attributes[i]->value);
-			printf(">");
+			if(node->tag.childs_cnt == 0)
+			{
+				fputs("/>", stdout);
+				if(prefs->filters & XML_FILTER_WHITESPACE)
+					fputc('\n', stdout);
+				break;
+			}
+			fputs(">", stdout);
 			for(i = 0; i < node->tag.childs_cnt; i++)
-				_main_node(node->tag.childs[i]);
+				_main_node(prefs, node->tag.childs[i],
+						level + 1);
 			printf("</%s>", node->tag.name);
+			if(prefs->filters & XML_FILTER_WHITESPACE)
+				fputc('\n', stdout);
 			break;
 	}
 }
