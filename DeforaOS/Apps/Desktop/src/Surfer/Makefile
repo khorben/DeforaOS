@@ -40,6 +40,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/download.h \
 		$(PACKAGE)-$(VERSION)/src/ghtml.h \
 		$(PACKAGE)-$(VERSION)/src/surfer.h \
 		$(PACKAGE)-$(VERSION)/src/ghtml-gtkhtml.c \

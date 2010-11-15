@@ -31,6 +31,7 @@
 # define GNET_EXPERIMENTAL
 # include <gnet.h>
 #endif
+#include "download.h"
 #include "../config.h"
 #define _(string) gettext(string)
 
@@ -48,14 +49,9 @@
 
 
 /* Download */
+/* private */
 /* types */
-typedef struct _DownloadPrefs
-{
-	char const * output;
-	char const * user_agent;
-} DownloadPrefs;
-
-typedef struct _Download
+struct _Download
 {
 	DownloadPrefs * prefs;
 	char * url;
@@ -82,7 +78,7 @@ typedef struct _Download
 
 	guint timeout;
 	int pulse;
-} Download;
+};
 
 
 /* constants */
@@ -94,9 +90,6 @@ static unsigned int _download_cnt = 0;
 
 
 /* prototypes */
-static Download * _download_new(DownloadPrefs * prefs, char const * url);
-static void _download_delete(Download * download);
-static int _download_cancel(Download * download);
 static int _download_error(Download * download, char const * message, int ret);
 static void _download_refresh(Download * download);
 #ifndef WITH_WEBKIT
@@ -115,12 +108,14 @@ static gboolean _download_on_idle(gpointer data);
 static gboolean _download_on_timeout(gpointer data);
 
 
+/* public */
 /* functions */
+/* download_new */
 static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 		GtkSizeGroup * left, GtkSizeGroup * right, char const * label,
 		GtkWidget ** widget, char const * text);
 
-static Download * _download_new(DownloadPrefs * prefs, char const * url)
+Download * download_new(DownloadPrefs * prefs, char const * url)
 {
 	Download * download;
 	char buf[256];
@@ -212,7 +207,7 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 
 
 /* download_delete */
-static void _download_delete(Download * download)
+void download_delete(Download * download)
 {
 #ifdef WITH_WEBKIT
 	if(download->conn != NULL)
@@ -237,14 +232,17 @@ static void _download_delete(Download * download)
 }
 
 
+/* useful */
 /* download_cancel */
-static int _download_cancel(Download * download)
+int download_cancel(Download * download)
 {
-	_download_delete(download);
+	download_delete(download);
 	return 0;
 }
 
 
+/* private */
+/* functions */
 /* download_error */
 static int _download_error(Download * download, char const * message, int ret)
 {
@@ -343,7 +341,7 @@ static int _download_write(Download * download)
 		return 0;
 	}
 	_download_error(download, download->prefs->output, 0);
-	_download_cancel(download);
+	download_cancel(download);
 	return 1;
 }
 #endif
@@ -356,7 +354,7 @@ static void _download_on_cancel(gpointer data)
 	Download * download = data;
 
 	gtk_widget_hide(download->window);
-	_download_cancel(download);
+	download_cancel(download);
 }
 
 
@@ -367,7 +365,7 @@ static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
 	Download * download = data;
 
 	gtk_widget_hide(widget);
-	_download_cancel(download);
+	download_cancel(download);
 	return FALSE;
 }
 
@@ -457,7 +455,7 @@ static void _http_data_complete(GConnHttpEventData * event,
 	_download_refresh(download);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(download->check)))
 	{
-		_download_cancel(download);
+		download_cancel(download);
 		return;
 	}
 	gtk_label_set_text(GTK_LABEL(download->status), _("Complete"));
@@ -522,7 +520,7 @@ static gboolean _download_on_idle(gpointer data)
 	if((p = malloc(strlen(prefs->output) + 6)) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
-		_download_cancel(download);
+		download_cancel(download);
 		return FALSE;
 	}
 	/* FIXME needs to be an absolute path */
@@ -537,7 +535,7 @@ static gboolean _download_on_idle(gpointer data)
 	{
 		_download_error(download, prefs->output, 0);
 		free(p);
-		_download_cancel(download);
+		download_cancel(download);
 		return FALSE;
 	}
 	download->conn = gnet_conn_http_new();
@@ -577,7 +575,7 @@ static gboolean _download_on_timeout(gpointer data)
 			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 							d->check)))
 			{
-				_download_cancel(d);
+				download_cancel(d);
 				break;
 			}
 			gtk_label_set_text(GTK_LABEL(d->status), _("Complete"));
@@ -649,7 +647,7 @@ int main(int argc, char * argv[])
 	if((download = malloc(sizeof(*download) * cnt)) == NULL)
 		return _download_error(NULL, "malloc", -2);
 	for(o = 0; o < cnt; o++)
-		download[o] = _download_new(&prefs, argv[optind + o]);
+		download[o] = download_new(&prefs, argv[optind + o]);
 	gtk_main();
 	return 0;
 }
