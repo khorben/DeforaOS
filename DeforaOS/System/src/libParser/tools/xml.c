@@ -26,17 +26,28 @@
 
 /* functions */
 /* private */
+/* error */
+static int _error(char const * message, int ret)
+{
+	fputs("xml: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
+/* usage */
 static int _usage(void)
 {
-	fputs("Usage: xml [-w] filename\n"
-"       xml -s [-w] string\n", stderr);
+	fputs("Usage: xml [-w][-o output] filename\n"
+"       xml -s [-w][-o output] string\n", stderr);
 	return 1;
 }
 
 
 /* public */
 /* main */
-static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level);
+static void _main_node(XMLPrefs * prefs, FILE * fp, XMLNode * node,
+		unsigned int level);
 
 int main(int argc, char * argv[])
 {
@@ -44,12 +55,17 @@ int main(int argc, char * argv[])
 	XMLPrefs prefs;
 	XML * xml;
 	XMLDocument * doc;
+	char const * output = NULL;
+	FILE * fp = stdout;
 	char const * string = NULL;
 
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "s:w")) != -1)
+	while((o = getopt(argc, argv, "o:s:w")) != -1)
 		switch(o)
 		{
+			case 'o':
+				output = optarg;
+				break;
 			case 's':
 				string = optarg;
 				break;
@@ -59,6 +75,8 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
+	if(output != NULL && (fp = fopen(output, "w")) == NULL)
+		return _error(output, 2);
 	if(string == NULL)
 	{
 		if(optind + 1 != argc)
@@ -74,12 +92,15 @@ int main(int argc, char * argv[])
 	if((doc = xml_get_document(xml)) == NULL)
 		error_print("xml");
 	else
-		_main_node(&prefs, doc->root, 0);
+		_main_node(&prefs, fp, doc->root, 0);
+	if(output != NULL)
+		fclose(fp);
 	xml_delete(xml);
 	return 0;
 }
 
-static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level)
+static void _main_node(XMLPrefs * prefs, FILE * fp, XMLNode * node,
+		unsigned int level)
 {
 	size_t i;
 
@@ -88,37 +109,37 @@ static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level)
 	switch(node->type)
 	{
 		case XML_NODE_TYPE_DATA:
-			fwrite(node->data.buffer, 1, node->data.size, stdout);
+			fwrite(node->data.buffer, 1, node->data.size, fp);
 			break;
 		case XML_NODE_TYPE_ENTITY:
-			printf("&%s;", node->entity.name);
+			fprintf(fp, "&%s;", node->entity.name);
 			break;
 		case XML_NODE_TYPE_TAG:
 			if(prefs->filters & XML_FILTER_WHITESPACE && level > 0)
 			{
-				fputc('\n', stdout);
+				fputc('\n', fp);
 				for(i = 0; i < level; i++)
-					fputs("  ", stdout);
+					fputs("  ", fp);
 			}
-			printf("<%s", node->tag.name);
+			fprintf(fp, "<%s", node->tag.name);
 			for(i = 0; i < node->tag.attributes_cnt; i++)
-				printf(" %s=\"%s\"",
+				fprintf(fp, " %s=\"%s\"",
 						node->tag.attributes[i]->name,
 						node->tag.attributes[i]->value);
 			if(node->tag.childs_cnt == 0)
 			{
-				fputs("/>", stdout);
+				fputs("/>", fp);
 				break;
 			}
-			fputs(">", stdout);
+			fputs(">", fp);
 			for(i = 0; i < node->tag.childs_cnt; i++)
-				_main_node(prefs, node->tag.childs[i],
+				_main_node(prefs, fp, node->tag.childs[i],
 						level + 1);
 			if(prefs->filters & XML_FILTER_WHITESPACE && level == 0)
-				fputc('\n', stdout);
-			printf("</%s>", node->tag.name);
+				fputc('\n', fp);
+			fprintf(fp, "</%s>", node->tag.name);
 			if(prefs->filters & XML_FILTER_WHITESPACE && level == 0)
-				fputc('\n', stdout);
+				fputc('\n', fp);
 			break;
 	}
 }
