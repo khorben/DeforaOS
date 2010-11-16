@@ -299,49 +299,81 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 
 
 /* profiles_settings */
-static gboolean _on_profiles_closex(gpointer data);
+static gboolean _on_settings_closex(gpointer data);
+static void _on_settings_cancel(gpointer data);
+static void _on_settings_ok(gpointer data);
 
 static void _profiles_settings(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
 	GtkWidget * vbox;
+	GtkWidget * bbox;
+	GtkWidget * widget;
 	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin->name);
 #endif
-	if(profiles->window == NULL)
+	if(profiles->window != NULL)
 	{
-		profiles->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_container_set_border_width(GTK_CONTAINER(profiles->window),
-				4);
-		gtk_window_set_default_size(GTK_WINDOW(profiles->window), 200,
-				300);
-		gtk_window_set_title(GTK_WINDOW(profiles->window), "Profiles");
-		g_signal_connect_swapped(G_OBJECT(profiles->window),
-				"delete-event", G_CALLBACK(_on_profiles_closex),
-				profiles);
-		vbox = gtk_vbox_new(FALSE, 0);
-		/* entry */
-		profiles->combo = gtk_combo_box_new_text();
-		for(i = 0; i < profiles->profiles_cnt; i++)
-			gtk_combo_box_append_text(GTK_COMBO_BOX(
-						profiles->combo),
-					profiles->profiles[i].name);
-		gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->combo),
-				profiles->profiles_cur);
-		gtk_box_pack_start(GTK_BOX(vbox), profiles->combo, FALSE, TRUE,
-				0);
-		gtk_container_add(GTK_CONTAINER(profiles->window), vbox);
-		gtk_widget_show_all(vbox);
+		gtk_window_present(GTK_WINDOW(profiles->window));
+		return;
 	}
+	profiles->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(profiles->window), 4);
+	gtk_window_set_default_size(GTK_WINDOW(profiles->window), 200, 300);
+	gtk_window_set_title(GTK_WINDOW(profiles->window), "Profiles");
+	g_signal_connect_swapped(G_OBJECT(profiles->window), "delete-event",
+			G_CALLBACK(_on_settings_closex), profiles);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* entry */
+	profiles->combo = gtk_combo_box_new_text();
+	for(i = 0; i < profiles->profiles_cnt; i++)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(profiles->combo),
+				profiles->profiles[i].name);
+	gtk_box_pack_start(GTK_BOX(vbox), profiles->combo, FALSE, TRUE, 0);
+	bbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_cancel), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_ok), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(profiles->window), vbox);
+	gtk_widget_show_all(vbox);
+	_on_settings_cancel(plugin);
 	gtk_window_present(GTK_WINDOW(profiles->window));
 }
 
-static gboolean _on_profiles_closex(gpointer data)
+static gboolean _on_settings_closex(gpointer data)
 {
 	Profiles * profiles = data;
 
-	gtk_widget_hide(profiles->window);
+	_on_settings_cancel(profiles);
 	return TRUE;
+}
+
+static void _on_settings_cancel(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Profiles * profiles = plugin->priv;
+
+	gtk_widget_hide(profiles->window);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->combo),
+			profiles->profiles_cur);
+}
+
+static void _on_settings_ok(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Profiles * profiles = plugin->priv;
+
+	gtk_widget_hide(profiles->window);
+	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
+				profiles->combo));
 }
