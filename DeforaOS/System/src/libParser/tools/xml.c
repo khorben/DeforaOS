@@ -94,9 +94,12 @@ static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level)
 			printf("&%s;", node->entity.name);
 			break;
 		case XML_NODE_TYPE_TAG:
-			if(prefs->filters & XML_FILTER_WHITESPACE)
+			if(prefs->filters & XML_FILTER_WHITESPACE && level > 0)
+			{
+				fputc('\n', stdout);
 				for(i = 0; i < level; i++)
 					fputs("  ", stdout);
+			}
 			printf("<%s", node->tag.name);
 			for(i = 0; i < node->tag.attributes_cnt; i++)
 				printf(" %s=\"%s\"",
@@ -105,16 +108,16 @@ static void _main_node(XMLPrefs * prefs, XMLNode * node, unsigned int level)
 			if(node->tag.childs_cnt == 0)
 			{
 				fputs("/>", stdout);
-				if(prefs->filters & XML_FILTER_WHITESPACE)
-					fputc('\n', stdout);
 				break;
 			}
 			fputs(">", stdout);
 			for(i = 0; i < node->tag.childs_cnt; i++)
 				_main_node(prefs, node->tag.childs[i],
 						level + 1);
+			if(prefs->filters & XML_FILTER_WHITESPACE && level == 0)
+				fputc('\n', stdout);
 			printf("</%s>", node->tag.name);
-			if(prefs->filters & XML_FILTER_WHITESPACE)
+			if(prefs->filters & XML_FILTER_WHITESPACE && level == 0)
 				fputc('\n', stdout);
 			break;
 	}
