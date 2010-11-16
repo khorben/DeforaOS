@@ -36,9 +36,9 @@ static char const _license[] =
 /* private */
 /* types */
 typedef enum _XMLEditorColumn {
-	XEC_TAGNAME = 0, XEC_DATA
+	XEC_TAGNAME = 0, XEC_DATA, XEC_ENTITY
 } XMLEditorColumn;
-#define XEC_LAST	XEC_DATA
+#define XEC_LAST	XEC_ENTITY
 #define XEC_COUNT	(XEC_LAST + 1)
 
 struct _XMLEditor
@@ -196,11 +196,14 @@ XMLEditor * xmleditor_new(void)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	xmleditor->store = gtk_tree_store_new(XEC_COUNT,
 			G_TYPE_STRING,	/* XEC_TAGNAME	*/
-			G_TYPE_STRING); /* XEC_DATA	*/
+			G_TYPE_STRING,	/* XEC_DATA	*/
+			G_TYPE_STRING);	/* XEC_ENTITY	*/
 	xmleditor->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				xmleditor->store));
+#if 0
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(xmleditor->view),
 			FALSE);
+#endif
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(xmleditor->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
@@ -208,6 +211,10 @@ XMLEditor * xmleditor_new(void)
 				on_tag_name_edited), xmleditor);
 	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
 			"text", XEC_TAGNAME, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("Entity"), renderer,
+			"text", XEC_ENTITY, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(xmleditor->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes(_("Data"), renderer,
@@ -397,6 +404,11 @@ static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 			gtk_tree_store_append(xmleditor->store, &iter, parent);
 			gtk_tree_store_set(xmleditor->store, &iter, XEC_DATA,
 					node->data.buffer, -1);
+			break;
+		case XML_NODE_TYPE_ENTITY:
+			gtk_tree_store_append(xmleditor->store, &iter, parent);
+			gtk_tree_store_set(xmleditor->store, &iter, XEC_ENTITY,
+					node->entity.name, -1);
 			break;
 		case XML_NODE_TYPE_TAG:
 			gtk_tree_store_append(xmleditor->store, &iter, parent);
