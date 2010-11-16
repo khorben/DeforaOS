@@ -2,7 +2,7 @@
 <node3>some data</node3>
 <node4 attr4></node4>
 <node5/>
-<node6 attr6="attr6" attr7="attr7">more data</node6>
+<node6 attr6="attr6" attr7="attr7">more data and an &entity; (yup)</node6>
 <node7><node8/></node7>
 <node9></node9>
 </root>
