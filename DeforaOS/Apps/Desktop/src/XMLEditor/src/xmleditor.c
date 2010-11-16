@@ -445,11 +445,14 @@ void xmleditor_open_dialog(XMLEditor * xmleditor)
 
 
 /* xmleditor_save */
+static void _save_do(XMLEditor * xmleditor, FILE * fp, GtkTreeIter * parent);
+
 gboolean xmleditor_save(XMLEditor * xmleditor)
 {
 	char const * filename;
-	char * buf;
 	FILE * fp;
+	char * buf;
+	GtkTreeIter iter;
 
 	if(xmleditor->xml == NULL)
 		return xmleditor_save_as_dialog(xmleditor);
@@ -461,10 +464,49 @@ gboolean xmleditor_save(XMLEditor * xmleditor)
 		g_free(buf);
 		return FALSE;
 	}
-	/* FIXME implement */
+	if(gtk_tree_model_iter_children(GTK_TREE_MODEL(xmleditor->store), &iter,
+				NULL) == TRUE)
+		_save_do(xmleditor, fp, &iter);
 	fclose(fp);
-	return FALSE;
 	return TRUE;
+}
+
+static void _save_do(XMLEditor * xmleditor, FILE * fp, GtkTreeIter * parent)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(xmleditor->store);
+	GtkTreeIter child;
+	gchar * name;
+	gboolean valid;
+	gchar * tag;
+	gchar * data;
+	gchar * entity;
+
+	gtk_tree_model_get(model, parent, XEC_TAGNAME, &name, -1);
+	fprintf(fp, "<%s", name);
+	/* attributes */
+	gtk_tree_model_iter_children(model, &child, parent);
+	/* FIXME implement */
+	fprintf(fp, ">");
+	/* content */
+	gtk_tree_model_iter_children(model, &child, parent);
+	for(valid = gtk_tree_model_iter_children(model, &child, parent);
+			valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &child))
+	{
+		gtk_tree_model_get(model, &child, XEC_TAGNAME, &tag,
+				XEC_DATA, &data, XEC_ENTITY, &entity, -1);
+		if(tag != NULL)
+			_save_do(xmleditor, fp, &child);
+		else if(data != NULL)
+			fprintf(fp, "%s", data);
+		else if(entity != NULL)
+			fprintf(fp, "&%s;", entity);
+		g_free(tag);
+		g_free(data);
+		g_free(entity);
+	}
+	fprintf(fp, "</%s>", name);
+	g_free(name);
 }
 
 
