@@ -377,8 +377,6 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
-	ProfileDefinition * definition = &profiles->profiles[
-		profiles->profiles_cur];
 
 	gtk_widget_hide(profiles->window);
 	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
