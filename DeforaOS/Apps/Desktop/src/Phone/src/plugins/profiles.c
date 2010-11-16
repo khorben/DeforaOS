@@ -313,6 +313,8 @@ static void _profiles_settings(PhonePlugin * plugin)
 	if(profiles->window == NULL)
 	{
 		profiles->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_container_set_border_width(GTK_CONTAINER(profiles->window),
+				4);
 		gtk_window_set_default_size(GTK_WINDOW(profiles->window), 200,
 				300);
 		gtk_window_set_title(GTK_WINDOW(profiles->window), "Profiles");
