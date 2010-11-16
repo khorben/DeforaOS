@@ -484,10 +484,16 @@ static gboolean _folder_idle(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() stat(\"%s\")\n", __func__, filename);
 #endif
-	if(filename[0] == '\0' || stat(filename, &st) != 0
-			|| st.st_mtime == mbox->mtime)
+	if(filename == NULL || filename[0] == '\0')
+		return FALSE;
+	if(stat(filename, &st) != 0)
 	{
 		_error = strerror(errno);
+		mbox->source = g_timeout_add(1000, _folder_idle, folder);
+		return FALSE;
+	}
+	if(st.st_mtime == mbox->mtime)
+	{
 		mbox->source = g_timeout_add(1000, _folder_idle, folder);
 		return FALSE;
 	}

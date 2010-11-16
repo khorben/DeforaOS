@@ -1586,19 +1586,22 @@ static void _on_file_activated(GtkWidget * widget, gpointer data)
 {
 	char * filename;
 	char ** value = data;
-	char * p;
+	char * p = NULL;
 
 	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, filename);
 #endif
-	if((p = realloc(*value, strlen(filename) + 1)) == NULL)
+	if(filename == NULL)
+		free(*value);
+	else if((p = realloc(*value, strlen(filename) + 1)) == NULL)
 	{
 		mailer_error(NULL, strerror(errno), 0);
 		return;
 	}
 	*value = p;
-	strcpy(p, filename);
+	if(filename != NULL)
+		strcpy(p, filename);
 }
 
 static void _on_uint16_changed(GtkWidget * widget, gpointer data);
