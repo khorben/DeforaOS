@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: XMLEditor 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-16 17:11+0100\n"
+"POT-Creation-Date: 2010-11-16 17:36+0100\n"
 "PO-Revision-Date: 2010-11-14 00:20+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,121 +20,121 @@ msgstr ""
 msgid "Usage: xmleditor [file]\n"
 msgstr "Usage: xmleditor [fichier]\n"
 
-#: ../src/xmleditor.c:82
+#: ../src/xmleditor.c:83
 msgid "_New"
 msgstr "_Nouveau"
 
-#: ../src/xmleditor.c:84
+#: ../src/xmleditor.c:85
 msgid "_Open"
 msgstr "_Ouvrir"
 
-#: ../src/xmleditor.c:87
+#: ../src/xmleditor.c:88
 msgid "_Save"
 msgstr "_Enregistrer"
 
-#: ../src/xmleditor.c:89
+#: ../src/xmleditor.c:90
 msgid "_Save as..."
 msgstr "Enregistrer _sous..."
 
-#: ../src/xmleditor.c:92
+#: ../src/xmleditor.c:93
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/xmleditor.c:99
+#: ../src/xmleditor.c:100
 msgid "_Preferences"
 msgstr "_Préférences"
 
-#: ../src/xmleditor.c:106
+#: ../src/xmleditor.c:107
 msgid "_Expand all"
 msgstr "Tout _montrer"
 
-#: ../src/xmleditor.c:108
+#: ../src/xmleditor.c:109
 msgid "_Collapse all"
 msgstr "Tout _fermer"
 
-#: ../src/xmleditor.c:115
+#: ../src/xmleditor.c:116
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/xmleditor.c:126
+#: ../src/xmleditor.c:127
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/xmleditor.c:127
+#: ../src/xmleditor.c:128
 msgid "_Edit"
 msgstr "_Édition"
 
-#: ../src/xmleditor.c:128
+#: ../src/xmleditor.c:129
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/xmleditor.c:129
+#: ../src/xmleditor.c:130
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/xmleditor.c:136
+#: ../src/xmleditor.c:137
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/xmleditor.c:137
+#: ../src/xmleditor.c:138
 msgid "Open"
 msgstr "Ouvrir"
 
-#: ../src/xmleditor.c:139
+#: ../src/xmleditor.c:140
 msgid "Save"
 msgstr "Enregistrer"
 
-#: ../src/xmleditor.c:140
+#: ../src/xmleditor.c:141
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: ../src/xmleditor.c:144
+#: ../src/xmleditor.c:145
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/xmleditor.c:212
+#: ../src/xmleditor.c:215
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/xmleditor.c:216
+#: ../src/xmleditor.c:219
 msgid "Entity"
 msgstr "Entité"
 
-#: ../src/xmleditor.c:220
+#: ../src/xmleditor.c:223
 msgid "Data"
 msgstr "Données"
 
-#: ../src/xmleditor.c:241
+#: ../src/xmleditor.c:244
 msgid "XML editor - "
 msgstr "Éditeur XML - "
 
-#: ../src/xmleditor.c:242
+#: ../src/xmleditor.c:245
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/xmleditor.c:302 ../src/xmleditor.c:307
+#: ../src/xmleditor.c:305 ../src/xmleditor.c:310
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/xmleditor.c:333 ../src/xmleditor.c:343 ../src/xmleditor.c:527
-#: ../src/xmleditor.c:532
+#: ../src/xmleditor.c:336 ../src/xmleditor.c:346 ../src/xmleditor.c:555
+#: ../src/xmleditor.c:560
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/xmleditor.c:337
+#: ../src/xmleditor.c:340
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
 msgstr ""
 
-#: ../src/xmleditor.c:431
+#: ../src/xmleditor.c:446
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/xmleditor.c:531
+#: ../src/xmleditor.c:559
 msgid "This file already exists. Overwrite?"
 msgstr "Ce fichier existe déjà. Écraser?"
 
-#: ../src/xmleditor.c:550
+#: ../src/xmleditor.c:578
 msgid "Save as..."
 msgstr "Enregistrer sous..."

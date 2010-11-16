@@ -36,7 +36,8 @@ static char const _license[] =
 /* private */
 /* types */
 typedef enum _XMLEditorColumn {
-	XEC_TAGNAME = 0, XEC_DATA, XEC_ENTITY
+	XEC_TAGNAME = 0, XEC_ATTRIBUTE_NAME, XEC_ATTRIBUTE_VALUE, XEC_DATA,
+	XEC_ENTITY
 } XMLEditorColumn;
 #define XEC_LAST	XEC_ENTITY
 #define XEC_COUNT	(XEC_LAST + 1)
@@ -195,9 +196,11 @@ XMLEditor * xmleditor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	xmleditor->store = gtk_tree_store_new(XEC_COUNT,
-			G_TYPE_STRING,	/* XEC_TAGNAME	*/
-			G_TYPE_STRING,	/* XEC_DATA	*/
-			G_TYPE_STRING);	/* XEC_ENTITY	*/
+			G_TYPE_STRING,	/* XEC_TAGNAME		*/
+			G_TYPE_STRING,	/* XEC_ATTRIBUTE_NAME	*/
+			G_TYPE_STRING,	/* XEC_ATTRIBUTE_VALUE	*/
+			G_TYPE_STRING,	/* XEC_DATA		*/
+			G_TYPE_STRING);	/* XEC_ENTITY		*/
 	xmleditor->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				xmleditor->store));
 #if 0
@@ -395,6 +398,7 @@ static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 {
 	size_t i;
 	GtkTreeIter iter;
+	GtkTreeIter child;
 
 	if(node == NULL)
 		return;
@@ -414,6 +418,17 @@ static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 			gtk_tree_store_append(xmleditor->store, &iter, parent);
 			gtk_tree_store_set(xmleditor->store, &iter, XEC_TAGNAME,
 					node->tag.name, -1);
+			for(i = 0; i < node->tag.attributes_cnt; i++)
+			{
+				gtk_tree_store_append(xmleditor->store, &child,
+						&iter);
+				gtk_tree_store_set(xmleditor->store, &child,
+						XEC_ATTRIBUTE_NAME,
+						node->tag.attributes[i]->name,
+						XEC_ATTRIBUTE_VALUE,
+						node->tag.attributes[i]->value,
+						-1);
+			}
 			for(i = 0; i < node->tag.childs_cnt; i++)
 				_open_document_node(xmleditor,
 						node->tag.childs[i], &iter);
@@ -477,6 +492,8 @@ static void _save_do(XMLEditor * xmleditor, FILE * fp, GtkTreeIter * parent)
 	GtkTreeIter child;
 	gchar * name;
 	gboolean valid;
+	gchar * aname;
+	gchar * avalue;
 	gchar * tag;
 	gchar * data;
 	gchar * entity;
@@ -485,7 +502,18 @@ static void _save_do(XMLEditor * xmleditor, FILE * fp, GtkTreeIter * parent)
 	fprintf(fp, "<%s", name);
 	/* attributes */
 	gtk_tree_model_iter_children(model, &child, parent);
-	/* FIXME implement */
+	for(valid = gtk_tree_model_iter_children(model, &child, parent);
+			valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &child))
+	{
+		gtk_tree_model_get(model, &child, XEC_ATTRIBUTE_NAME, &aname,
+				XEC_ATTRIBUTE_VALUE, &avalue, -1);
+		if(aname != NULL)
+			fprintf(fp, " %s=\"%s\"", aname, (avalue != NULL)
+					? avalue : aname);
+		g_free(aname);
+		g_free(avalue);
+	}
 	fprintf(fp, ">");
 	/* content */
 	gtk_tree_model_iter_children(model, &child, parent);
