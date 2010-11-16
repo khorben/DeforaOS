@@ -125,7 +125,8 @@ static int _profiles_init(PhonePlugin * plugin)
 	plugin->priv = profiles;
 	profiles->source = 0;
 	profiles->profiles = _profiles_definitions;
-	profiles->profiles_cnt = 3;
+	profiles->profiles_cnt = sizeof(_profiles_definitions)
+		/ sizeof(*_profiles_definitions);
 	profiles->profiles_cur = 0;
 	profiles->vibrator = 0;
 	profiles->window = NULL;
@@ -237,11 +238,13 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 static void _event_key_tone(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(profiles->pao == NULL)
+	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
 		profiles->pao = pa_context_play_sample(profiles->pac,
 				"keytone", NULL, PA_VOLUME_NORM, NULL, NULL);
 }
@@ -250,14 +253,16 @@ static void _event_call_incoming_do(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
 	PhonePluginHelper * helper = plugin->helper;
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(profiles->pao == NULL)
+	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
 		profiles->pao = pa_context_play_sample(profiles->pac,
 				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
-	if(profiles->vibrator == 0)
+	if(definition->vibrate && profiles->vibrator == 0)
 	{
 		helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
 		profiles->vibrator = 1;
@@ -372,6 +377,8 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
 
 	gtk_widget_hide(profiles->window);
 	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
