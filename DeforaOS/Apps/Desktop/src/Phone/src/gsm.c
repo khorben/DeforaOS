@@ -2263,6 +2263,7 @@ static gboolean _reset_settle(gpointer data)
 	GSM * gsm = data;
 
 	gsm_modem_reset(gsm->modem);
+	/* XXX may be send multiple times until it really is online */
 	_gsm_event_send(gsm, GSM_EVENT_TYPE_ONLINE);
 	return TRUE;
 }

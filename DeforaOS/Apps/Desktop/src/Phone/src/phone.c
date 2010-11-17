@@ -417,7 +417,7 @@ static gboolean _new_idle(gpointer data)
 	if((plugins = config_get(phone->config, NULL, "plugins")) != NULL)
 		_idle_load_plugins(phone, plugins);
 	phone->source = 0;
-	gsm_reset(phone->gsm, 0);
+	gsm_start(phone->gsm, 0);
 	return FALSE;
 }
 
