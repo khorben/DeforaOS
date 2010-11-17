@@ -752,14 +752,18 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			event->signal_level.level = va_arg(ap, gdouble);
 			break;
-		case GSM_EVENT_TYPE_SIM_PIN_VALID:
-			break;
 		case GSM_EVENT_TYPE_STATUS:
 			event->status.status = va_arg(ap, GSMStatus);
 			break;
 		case GSM_EVENT_TYPE_UNKNOWN:
 			event->unknown.command = va_arg(ap, char const *);
 			event->unknown.result = va_arg(ap, char const *);
+			break;
+		case GSM_EVENT_TYPE_OFFLINE:
+		case GSM_EVENT_TYPE_ONLINE:
+		case GSM_EVENT_TYPE_SIM_PIN_VALID:
+		case GSM_EVENT_TYPE_RESUME:
+		case GSM_EVENT_TYPE_SUSPEND:
 			break;
 	}
 	va_end(ap);
@@ -1023,13 +1027,38 @@ int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error)
 /* gsm_reset */
 int gsm_reset(GSM * gsm, unsigned int delay)
 {
-	_gsm_queue_flush(gsm);
-	if(gsm->source != 0)
-		g_source_remove(gsm->source);
+	int ret;
+
+	if((ret = gsm_stop(gsm)) != 0)
+		return ret;
+	return gsm_start(gsm, delay);
+}
+
+
+/* gsm_start */
+int gsm_start(GSM * gsm, unsigned int delay)
+{
+	if(gsm->source != 0) /* XXX really already started? */
+		return 0;
+	_gsm_event_send(gsm, GSM_EVENT_TYPE_RESUME);
 	if(delay > 0)
 		gsm->source = g_timeout_add(delay, _on_reset, gsm);
 	else
 		gsm->source = g_idle_add(_on_reset, gsm);
+	return 0;
+}
+
+
+/* gsm_stop */
+int gsm_stop(GSM * gsm)
+{
+	_gsm_event_send(gsm, GSM_EVENT_TYPE_OFFLINE);
+	/* XXX let remaining commands be executed first? */
+	_gsm_queue_flush(gsm);
+	if(gsm->source != 0)
+		g_source_remove(gsm->source);
+	gsm->source = 0;
+	_gsm_event_send(gsm, GSM_EVENT_TYPE_SUSPEND);
 	return 0;
 }
 
@@ -2234,6 +2263,7 @@ static gboolean _reset_settle(gpointer data)
 	GSM * gsm = data;
 
 	gsm_modem_reset(gsm->modem);
+	_gsm_event_send(gsm, GSM_EVENT_TYPE_ONLINE);
 	return TRUE;
 }
 

@@ -847,11 +847,13 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_NOTIFICATION_ON:
 			case PHONE_EVENT_OFFLINE:
 			case PHONE_EVENT_ONLINE:
+			case PHONE_EVENT_RESUME:
 			case PHONE_EVENT_SIM_PIN_VALID:
 			case PHONE_EVENT_SMS_RECEIVED:
 			case PHONE_EVENT_SMS_SENT:
 			case PHONE_EVENT_SPEAKER_OFF:
 			case PHONE_EVENT_SPEAKER_ON:
+			case PHONE_EVENT_SUSPEND:
 			case PHONE_EVENT_VIBRATOR_OFF:
 			case PHONE_EVENT_VIBRATOR_ON:
 				ret |= plugin->event(plugin, event);
@@ -3163,6 +3165,12 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 							phone->ca_mute),
 						event->mute.mute);
 			return 0;
+		case GSM_EVENT_TYPE_OFFLINE:
+			phone_event(phone, PHONE_EVENT_OFFLINE);
+			break;
+		case GSM_EVENT_TYPE_ONLINE:
+			phone_event(phone, PHONE_EVENT_ONLINE);
+			break;
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);
 			return 0;
@@ -3171,6 +3179,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->phone_activity.activity);
 		case GSM_EVENT_TYPE_REGISTRATION:
 			return 0; /* we also get a status update about it */
+		case GSM_EVENT_TYPE_RESUME:
+			phone_event(phone, PHONE_EVENT_RESUME);
+			break;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			_phone_set_signal_level(phone,
 					event->signal_level.level);
@@ -3198,6 +3209,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
 			return 0;
+		case GSM_EVENT_TYPE_SUSPEND:
+			phone_event(phone, PHONE_EVENT_SUSPEND);
+			break;
 		case GSM_EVENT_TYPE_UNKNOWN:
 			return _gsm_event_unknown(phone, event->unknown.command,
 					event->unknown.result);

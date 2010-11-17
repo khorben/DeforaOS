@@ -97,12 +97,16 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_MESSAGE_LIST,
 	GSM_EVENT_TYPE_MESSAGE_SENT,
 	GSM_EVENT_TYPE_MUTE,
+	GSM_EVENT_TYPE_OFFLINE,
+	GSM_EVENT_TYPE_ONLINE,
 	GSM_EVENT_TYPE_OPERATOR,
 	GSM_EVENT_TYPE_PHONE_ACTIVITY,
 	GSM_EVENT_TYPE_REGISTRATION,
+	GSM_EVENT_TYPE_RESUME,
 	GSM_EVENT_TYPE_SIGNAL_LEVEL,
 	GSM_EVENT_TYPE_SIM_PIN_VALID,
 	GSM_EVENT_TYPE_STATUS,
+	GSM_EVENT_TYPE_SUSPEND,
 	GSM_EVENT_TYPE_UNKNOWN
 } GSMEventType;
 
@@ -434,5 +438,7 @@ int gsm_queue_full_mode(GSM * gsm, GSMPriority priority, char const * command,
 int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error);
 
 int gsm_reset(GSM * gsm, unsigned int delay);
+int gsm_start(GSM * gsm, unsigned int delay);
+int gsm_stop(GSM * gsm);
 
 #endif /* !PHONE_GSM_H */
