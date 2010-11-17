@@ -6,7 +6,7 @@
 #variables
 #XXX insert i386-specific variables here (grub...)
 [ -z "$GENEXT2FS"	] && GENEXT2FS="genext2fs"
-[ -z "$LDSO"		] && LDSO="$DESTDIR/$PREFIX/libexec/loader.so"
+[ -z "$LDSO"		] && LDSO="/lib/ld-linux.so.2"
 
 
 #includes
