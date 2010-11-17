@@ -21,12 +21,16 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#ifdef __linux__
+# include <alsa/asoundlib.h>
+#endif
 #include "Phone.h"
 #include "../../config.h"
 
@@ -48,15 +52,25 @@ typedef struct _Openmoko
 {
 	GtkWidget * window;
 	GtkWidget * deepsleep;
+#ifdef __linux__
+
+	/* alsa support */
+	snd_mixer_t * mixer;
+	snd_mixer_elem_t * mixer_elem;
+#endif
 } Openmoko;
 
 
 /* prototypes */
+/* plugins */
 static int _openmoko_init(PhonePlugin * plugin);
 static int _openmoko_destroy(PhonePlugin * plugin);
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
 static void _openmoko_deepsleep(PhonePlugin * plugin);
 static void _openmoko_settings(PhonePlugin * plugin);
+
+static int _openmoko_mixer_open(PhonePlugin * plugin);
+static int _openmoko_mixer_close(PhonePlugin * plugin);
 
 
 /* public */
@@ -85,6 +99,7 @@ static int _openmoko_init(PhonePlugin * plugin)
 		return 1;
 	plugin->priv = openmoko;
 	openmoko->window = NULL;
+	_openmoko_mixer_open(plugin);
 	return 0;
 }
 
@@ -94,6 +109,7 @@ static int _openmoko_destroy(PhonePlugin * plugin)
 {
 	Openmoko * openmoko = plugin->priv;
 
+	_openmoko_mixer_close(plugin);
 	if(openmoko->window != NULL)
 		gtk_widget_destroy(openmoko->window);
 	free(openmoko);
@@ -105,9 +121,13 @@ static int _openmoko_destroy(PhonePlugin * plugin)
 static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
 static int _event_power_on(PhonePlugin * plugin, gboolean power);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
+static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
+	va_list ap;
+	gdouble level;
+
 	switch(event)
 	{
 		case PHONE_EVENT_CALL_ESTABLISHED:
@@ -143,6 +163,12 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 		case PHONE_EVENT_ONLINE:
 			_event_power_on(plugin, TRUE);
+			break;
+		case PHONE_EVENT_SET_VOLUME:
+			va_start(ap, event);
+			level = va_arg(ap, gdouble);
+			va_end(ap);
+			_event_volume_set(plugin, level);
 			break;
 		case PHONE_EVENT_SPEAKER_ON:
 			/* XXX assumes there's an ongoing call */
@@ -238,6 +264,18 @@ static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
 	return ret;
 }
 
+static int _event_volume_set(PhonePlugin * plugin, gdouble level)
+{
+#ifdef __linux__
+	Openmoko * openmoko = plugin->priv;
+
+	if(openmoko->mixer_elem == NULL)
+		return 0;
+	snd_mixer_selem_set_playback_volume_all(openmoko->mixer_elem, level);
+#endif
+	return 0;
+}
+
 
 /* openmoko_deepsleep */
 static void _openmoko_deepsleep(PhonePlugin * plugin)
@@ -252,6 +290,64 @@ static void _openmoko_deepsleep(PhonePlugin * plugin)
 	/* XXX may reset the hardware modem */
 	plugin->helper->queue(plugin->helper->phone, cmd);
 	plugin->helper->queue(plugin->helper->phone, "AT+CPIN?");
+}
+
+
+/* openmoko_mixer_close */
+static int _openmoko_mixer_close(PhonePlugin * plugin)
+{
+#ifdef __linux__
+	Openmoko * openmoko = plugin->priv;
+
+	openmoko->mixer_elem = NULL;
+	if(openmoko->mixer != NULL)
+		snd_mixer_close(openmoko->mixer);
+	openmoko->mixer = NULL;
+#endif /* __linux__ */
+	return 0;
+}
+
+
+/* openmoko_mixer_open */
+static int _openmoko_mixer_open(PhonePlugin * plugin)
+{
+#ifdef __linux__
+	Openmoko * openmoko = plugin->priv;
+	char const * audio_device;
+	char const * audio_control;
+	snd_mixer_elem_t * elem;
+
+	openmoko->mixer_elem = NULL;
+	if((audio_device = plugin->helper->config_get(plugin->helper->phone,
+					"openmoko", "audio_device")) == NULL)
+		audio_device = "neo1973-gta02";
+	if((audio_control = plugin->helper->config_get(plugin->helper->phone,
+					"openmoko", "audio_control")) == NULL)
+		audio_control = "Speaker";
+	if(snd_mixer_open(&openmoko->mixer, 0) != 0)
+	{
+		openmoko->mixer = NULL;
+		return -1;
+	}
+	if(snd_mixer_attach(openmoko->mixer, audio_device) != 0
+			|| snd_mixer_selem_register(openmoko->mixer, NULL, NULL)
+			|| snd_mixer_load(openmoko->mixer) != 0)
+	{
+		_openmoko_mixer_close(plugin);
+		return -1;
+	}
+	for(elem = snd_mixer_first_elem(openmoko->mixer); elem != NULL;
+			elem = snd_mixer_elem_next(elem))
+		if(strcmp(snd_mixer_selem_get_name(elem), audio_control) == 0)
+			break;
+	if(elem == NULL)
+	{
+		_openmoko_mixer_close(plugin);
+		return -1;
+	}
+	openmoko->mixer_elem = elem;
+#endif /* __linux__ */
+	return 0;
 }
 
 
@@ -326,9 +422,8 @@ static void _on_settings_cancel(gpointer data)
 static gboolean _on_settings_closex(gpointer data)
 {
 	PhonePlugin * plugin = data;
-	Openmoko * openmoko = plugin->priv;
 
-	gtk_widget_hide(openmoko->window);
+	_on_settings_cancel(plugin);
 	return TRUE;
 }
 
