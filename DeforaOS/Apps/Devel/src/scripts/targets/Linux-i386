@@ -1,11 +1,12 @@
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 
 
 
 #variables
 #XXX insert i386-specific variables here (grub...)
 [ -z "$GENEXT2FS"	] && GENEXT2FS="genext2fs"
+[ -z "$LDSO"		] && LDSO="$DESTDIR/$PREFIX/libexec/loader.so"
 
 
 #includes
@@ -89,6 +90,7 @@ _image_ramdisk()
   IMAGE_FILE	Where to write the filesystem image\n\
   IMAGE_MODULES	Path to a tar.gz archive of kernel modules (optional)\n\
   IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
+  LDSO		Path to the dynamic loader
   GENEXT2FS	Command used to generate the ramdisk image"
 
 	#sanity check
@@ -113,7 +115,7 @@ _image_ramdisk()
 	$LN -s "../mnt/cdrom/usr/bin/sh" "$DESTDIR/sbin/init"	|| exit 2
 
 	#install loader
-	$INSTALL -m 755 "/lib/ld-linux.so.2" "$DESTDIR/lib"	|| exit 2
+	$INSTALL -m 755 "$LDSO" "$DESTDIR/lib"			|| exit 2
 
 	echo
 	echo -n "Creating ramdisk:"
