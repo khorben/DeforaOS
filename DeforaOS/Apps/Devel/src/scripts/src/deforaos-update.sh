@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
+#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 
 
 

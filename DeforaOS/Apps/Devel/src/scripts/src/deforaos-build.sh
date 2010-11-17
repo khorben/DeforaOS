@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
+#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -81,7 +82,8 @@ deforaos_build()
 	echo ""
 	echo "Building CVS module $MODULE:"
 	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
-			DESTDIR="$DST" PREFIX="$PREFIX" all	|| error
+			DESTDIR="$DST" PREFIX="$PREFIX" \
+			clean all				|| error
 
 	#create CD-ROM image
 	echo ""
