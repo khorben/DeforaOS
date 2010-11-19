@@ -116,6 +116,8 @@ static int _profiles_init(PhonePlugin * plugin)
 {
 	Profiles * profiles;
 	pa_mainloop_api * mapi = NULL;
+	char const * p;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -128,6 +130,14 @@ static int _profiles_init(PhonePlugin * plugin)
 	profiles->profiles_cnt = sizeof(_profiles_definitions)
 		/ sizeof(*_profiles_definitions);
 	profiles->profiles_cur = 0;
+	if((p = plugin->helper->config_get(plugin->helper->phone, "profiles",
+					"default")) != NULL)
+		for(i = 0; i < profiles->profiles_cnt; i++)
+			if(strcmp(profiles->profiles[i].name, p) == 0)
+			{
+				profiles->profiles_cur = i;
+				break;
+			}
 	profiles->vibrator = 0;
 	profiles->window = NULL;
 	profiles->pam = pa_threaded_mainloop_new();
@@ -381,4 +391,6 @@ static void _on_settings_ok(gpointer data)
 	gtk_widget_hide(profiles->window);
 	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
 				profiles->combo));
+	plugin->helper->config_set(plugin->helper->phone, "profiles", "default",
+			profiles->profiles[profiles->profiles_cur].name);
 }
