@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Init */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -279,6 +279,7 @@ static int _start_exec(Service * service)
 	execve(argv[0], argv, NULL);
 	error_set_print(PACKAGE, 1, "%s: %s", argv[0], strerror(errno));
 	exit(127);
+	return -1;
 }
 
 
