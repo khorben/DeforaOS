@@ -510,9 +510,9 @@ struct dirent * readdir(DIR * dir)
 	}
 	memset(&de, 0, sizeof(de)); /* XXX set the other fields if possible */
 	snprintf(de.d_name, sizeof(de.d_name), "%s", filename);
-#ifdef _DIRENT_HAVE_D_RECLEN
+#if defined(_DIRENT_HAVE_D_RECLEN)
 	de.d_reclen = strlen(de.d_name);
-#else
+#elif defined(_DIRENT_HAVE_D_NAMLEN) || defined(MAXNAMLEN)
 	de.d_namlen = strlen(de.d_name);
 #endif
 #ifdef DEBUG
