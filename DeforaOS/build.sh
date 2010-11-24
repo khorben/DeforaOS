@@ -56,7 +56,7 @@ SUBDIRS="System/src/libc \
 	System/src/libSystem \
 	System/src/Init \
 	System/src/Splasher \
-	System/src/VFS \
+	System/src/VFS/src \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils \
 	Apps/Unix/src/devel \
@@ -149,8 +149,7 @@ target_bootstrap()
 	read IGNORE						|| return 0
 	_bootstrap_configure install				|| return 2
 	#configure, build and install essential libraries and tools
-	PATH="$PREFIX/bin:$PATH"
-	CONFIGURE="configure -v"
+	CONFIGURE="$PREFIX/bin/configure -v"
 	FAILED=
 	_bootstrap_system			|| FAILED="$FAILED System"
 	_bootstrap_network			|| FAILED="$FAILED Network"
