@@ -286,7 +286,13 @@ static int _download_error(Download * download, char const * message, int ret)
 	dialog = gtk_message_dialog_new(download != NULL
 			? GTK_WINDOW(download->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
+			GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s: %s",
+			message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
