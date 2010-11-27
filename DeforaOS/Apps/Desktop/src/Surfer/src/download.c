@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - let the checkbox to close window be a global option */
 
 
 
@@ -34,6 +36,7 @@
 #include "download.h"
 #include "../config.h"
 #define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* constants */
@@ -297,6 +300,7 @@ static void _download_refresh(Download * download)
 	char buf[256]; /* FIXME convert to UTF-8 */
 	struct timeval tv;
 	double rate;
+	char const * unit = N_("kB");
 	double fraction;
 
 #ifdef DEBUG
@@ -314,14 +318,23 @@ static void _download_refresh(Download * download)
 			tv.tv_usec += 1000000;
 		}
 		rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-		rate = download->data_received / rate;
-		snprintf(buf, sizeof(buf), _("%.1f kB/s"), rate);
+		if((rate = download->data_received / rate) > 1024)
+		{
+			rate /= 1024;
+			unit = N_("MB");
+		}
+		snprintf(buf, sizeof(buf), _("%.1f %s/s"), rate, _(unit));
 		gtk_label_set_text(GTK_LABEL(download->speed), buf);
 	}
+	unit = N_("kB");
 	if(download->content_length == 0)
 	{
-		rate = download->data_received / 1024;
-		snprintf(buf, sizeof(buf), _("%.1f kB"), rate);
+		if((rate = download->data_received / 1024) > 1024)
+		{
+			rate /= 1024;
+			unit = N_("MB");
+		}
+		snprintf(buf, sizeof(buf), _("%.1f %s"), rate, _(unit));
 		gtk_label_set_text(GTK_LABEL(download->done), buf);
 		buf[0] = '\0';
 		if(download->pulse != 0)
@@ -334,9 +347,14 @@ static void _download_refresh(Download * download)
 	else
 	{
 		rate = download->data_received / 1024;
-		fraction = download->content_length / 1024;
-		snprintf(buf, sizeof(buf), _("%.1f of %.1f kB"), rate,
-				fraction);
+		if((fraction = download->content_length / 1024) > 1024)
+		{
+			rate /= 1024;
+			fraction /= 1024;
+			unit = N_("MB");
+		}
+		snprintf(buf, sizeof(buf), _("%.1f of %.1f %s"), rate,
+				fraction, _(unit));
 		gtk_label_set_text(GTK_LABEL(download->done), buf);
 		fraction = (double)download->data_received
 			/ (double)download->content_length;
