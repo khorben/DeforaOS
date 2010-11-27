@@ -620,7 +620,7 @@ static gboolean _single_timeout(gpointer data)
 	if((rate = copy->cnt / rate) > 1024)
 	{
 		rate /= 1024;
-		unit = "MB";
+		unit = _("MB");
 	}
 	snprintf(buf, sizeof(buf), "%.1f %s/s", rate, unit);
 	gtk_label_set_text(GTK_LABEL(copy->fspeed), buf);
