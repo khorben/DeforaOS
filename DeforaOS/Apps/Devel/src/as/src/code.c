@@ -33,7 +33,7 @@ struct _Code
 {
 	Arch * arch;
 	Format * format;
-	char const * filename;
+	char * filename;
 	FILE * fp;
 };
 
@@ -46,7 +46,8 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
 	memset(code, 0, sizeof(*code));
-	if((code->fp = fopen(filename, "w+")) == NULL
+	if((code->filename = strdup(filename)) == NULL
+			|| (code->fp = fopen(filename, "w+")) == NULL
 			|| (code->arch = arch_new(arch)) == NULL
 			|| (code->format = format_new(format, arch, filename,
 					code->fp)) == NULL)
@@ -58,7 +59,6 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 		code_delete(code);
 		return NULL;
 	}
-	code->filename = filename;
 	return code;
 }
 
@@ -75,6 +75,7 @@ int code_delete(Code * code)
 	if(code->fp != NULL && fclose(code->fp) != 0)
 		ret |= error_set_code(2, "%s: %s", code->filename, strerror(
 					errno));
+	free(code->filename);
 	object_delete(code);
 	return ret;
 }
