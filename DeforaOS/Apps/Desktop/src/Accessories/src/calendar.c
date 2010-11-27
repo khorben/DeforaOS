@@ -15,12 +15,14 @@
 
 
 
+#include <unistd.h>
+#include <stdio.h>
 #include <gtk/gtk.h>
 
 
 /* Calendar */
-static void _calendar_on_exitx(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _calendar_on_closex(gpointer data);
+
 static int _calendar(void)
 {
 	GtkWidget * window;
@@ -28,8 +30,8 @@ static int _calendar(void)
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Calendar");
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_calendar_on_exitx), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_calendar_on_closex), window);
 	calendar = gtk_calendar_new();
 	gtk_container_add(GTK_CONTAINER(window), calendar);
 	gtk_widget_show_all(window);
@@ -37,17 +39,35 @@ static int _calendar(void)
 	return 0;
 }
 
-static void _calendar_on_exitx(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _calendar_on_closex(gpointer data)
 {
+	GtkWidget * widget = data;
+
 	gtk_widget_hide(widget);
 	gtk_main_quit();
+	return FALSE;
+}
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: calendar\n", stderr);
+	return 1;
 }
 
 
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
+
 	gtk_init(&argc, &argv);
-	return _calendar() == 0 ? 0 : 2;
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	return (_calendar() == 0) ? 0 : 2;
 }
