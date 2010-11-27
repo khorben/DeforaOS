@@ -196,7 +196,8 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 			&desktop->window.y, &desktop->window.width,
 			&desktop->window.height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
-				desktop->root) | GDK_BUTTON_PRESS_MASK);
+				desktop->root) | GDK_BUTTON_PRESS_MASK
+			| GDK_PROPERTY_CHANGE_MASK);
 	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
 	/* draw background when idle */
 	g_idle_add(_new_idle, desktop);
@@ -1533,6 +1534,7 @@ static int _desktop_get_workarea(Desktop * desktop)
 #endif
 	}
 	XFree(p);
+	desktop_icons_align(desktop);
 	return 0;
 }
 
