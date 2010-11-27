@@ -338,7 +338,7 @@ gboolean xmleditor_close(XMLEditor * xmleditor)
 			"%s",
 #endif
 			_("There are unsaved changes.\n"
-				"Are you sure you want to close?"));
+				"Discard or save them?"));
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_DISCARD,
 			GTK_RESPONSE_REJECT, GTK_STOCK_SAVE,

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: XMLEditor 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-16 17:36+0100\n"
+"POT-Creation-Date: 2010-11-27 16:23+0100\n"
 "PO-Revision-Date: 2010-11-14 00:20+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -124,8 +124,10 @@ msgstr "Avertissement"
 #: ../src/xmleditor.c:340
 msgid ""
 "There are unsaved changes.\n"
-"Are you sure you want to close?"
+"Discard or save them?"
 msgstr ""
+"Certains changements n'ont pas été enregistrés.\n"
+"Ignorer ou sauvegarder ?"
 
 #: ../src/xmleditor.c:446
 msgid "Open file..."
@@ -133,7 +135,7 @@ msgstr "Ouvrir un fichier..."
 
 #: ../src/xmleditor.c:559
 msgid "This file already exists. Overwrite?"
-msgstr "Ce fichier existe déjà. Écraser?"
+msgstr "Le fichier existe déjà. L'écraser?"
 
 #: ../src/xmleditor.c:578
 msgid "Save as..."

@@ -651,7 +651,7 @@ gboolean editor_save_as(Editor * editor, char const * filename)
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s",
 #endif
-				_("File exists. Overwrite?"));
+				_("This file already exists. Overwrite?"));
 		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-15 01:45+0100\n"
+"POT-Creation-Date: 2010-11-27 16:20+0100\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -183,7 +183,7 @@ msgid "Partial write"
 msgstr ""
 
 #: ../src/editor.c:654
-msgid "File exists. Overwrite?"
+msgid "This file already exists. Overwrite?"
 msgstr ""
 
 #: ../src/editor.c:663
