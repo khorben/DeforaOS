@@ -48,6 +48,7 @@ static ArchInstruction _sparc64_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"elf",
 	_sparc64_regs,
 	_sparc64_set
 };

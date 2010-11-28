@@ -73,11 +73,16 @@ typedef struct _Format Format;
 
 
 /* functions */
-Format * format_new(char const * format, char const * arch,
-		char const * filename, FILE * fp);
-int format_delete(Format * format);
+Format * format_new(char const * format, char const * arch);
+void format_delete(Format * format);
+
+/* accessors */
+char const * format_get_name(Format * format);
 
 /* useful */
+int format_init(Format * format, char const * filename, FILE * fp);
+int format_exit(Format * format);
+
 int format_function(Format * format, char const * function);
 int format_section(Format * format, char const * section);
 

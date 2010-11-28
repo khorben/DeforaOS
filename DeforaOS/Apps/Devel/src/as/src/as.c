@@ -34,8 +34,6 @@
 /* types */
 struct _As
 {
-	char const * arch;
-	char const * format;
 	Code * code;
 };
 
@@ -61,7 +59,6 @@ static const AsPluginDescription _as_plugin_description[ASPT_COUNT] =
 
 /* prototypes */
 static char const * _as_guess_arch(void);
-static char const * _as_guess_format(void);
 
 
 /* functions */
@@ -84,14 +81,6 @@ static char const * _as_guess_arch(void)
 }
 
 
-/* as_guess_format */
-static char const * _as_guess_format(void)
-{
-	/* XXX may be dependent from the architecture used */
-	return "elf";
-}
-
-
 /* public */
 /* functions */
 /* as_new */
@@ -101,14 +90,11 @@ As * as_new(char const * arch, char const * format)
 
 	if((as = object_new(sizeof(*as))) == NULL)
 		return NULL;
-	if((as->arch = arch) == NULL)
-		as->arch = _as_guess_arch();
-	if((as->format = format) == NULL)
-		as->format = _as_guess_format();
-	as->code = NULL;
-	if(as->arch == NULL || as->format == NULL)
+	if(arch == NULL)
+		arch = _as_guess_arch();
+	if((as->code = code_new(arch, format)) == NULL)
 	{
-		as_delete(as);
+		object_delete(as);
 		return NULL;
 	}
 	return as;
@@ -118,7 +104,7 @@ As * as_new(char const * arch, char const * format)
 /* as_delete */
 void as_delete(As * as)
 {
-	as_close(as);
+	code_delete(as->code);
 	object_delete(as);
 }
 
@@ -127,25 +113,32 @@ void as_delete(As * as)
 /* as_get_arch */
 char const * as_get_arch(As * as)
 {
-	return as->arch;
+	return code_get_arch(as->code);
 }
 
 
 /* as_get_format */
 char const * as_get_format(As * as)
 {
-	return as->format;
+	return code_get_format(as->code);
 }
 
 
 /* useful */
+/* as_close */
+int as_close(As * as)
+{
+	return code_close(as->code);
+}
+
+
 /* as_parse */
 int as_parse(As * as, char const * infile, char const * outfile)
 {
 	int ret;
 
 	if(as_open(as, outfile) != 0)
-		return 1;
+		return -1;
 	ret = parser(as->code, infile);
 	if(ret != 0 && unlink(outfile) != 0)
 		ret |= error_set_code(3, "%s: %s", outfile, strerror(errno));
@@ -157,25 +150,7 @@ int as_parse(As * as, char const * infile, char const * outfile)
 /* as_open */
 int as_open(As * as, char const * outfile)
 {
-	if(as_close(as) != 0)
-		return 1;
-	if((as->code = code_new(as->arch, as->format, outfile)) == NULL)
-		return 1;
-	return 0;
-}
-
-
-/* as_close */
-int as_close(As * as)
-{
-	int ret = 0;
-
-	if(as->code != NULL)
-	{
-		ret = code_delete(as->code);
-		as->code = NULL;
-	}
-	return ret;
+	return code_open(as->code, outfile);
 }
 
 

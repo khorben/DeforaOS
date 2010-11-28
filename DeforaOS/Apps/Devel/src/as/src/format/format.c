@@ -30,52 +30,27 @@
 /* types */
 struct _Format
 {
+	char * name;
 	char * arch;
-	char * filename;
-	FILE * fp;
 	FormatPlugin * plugin;
 	Plugin * handle;
 };
 
 
-/* private */
-/* prototypes */
-static int _format_init(Format * format);
-static int _format_exit(Format * format);
-
-
-/* functions */
-/* format_init */
-static int _format_init(Format * format)
-{
-	format->plugin->fp = format->fp;
-	if(format->plugin->init == NULL)
-		return 0;
-	return format->plugin->init(format->plugin, format->arch);
-}
-
-
-/* format_exit */
-static int _format_exit(Format * format)
-{
-	if(format->plugin->exit == NULL)
-		return 0;
-	return format->plugin->exit(format->plugin);
-}
-
-
 /* public */
 /* functions */
 /* format_new */
-Format * format_new(char const * format, char const * arch,
-		char const * filename, FILE * fp)
+Format * format_new(char const * format, char const * arch)
 {
 	Format * f;
 	Plugin * handle;
 	FormatPlugin * plugin;
 
 	if(format == NULL)
-		format = "elf"; /* XXX ask the arch plugin? */
+	{
+		error_set_code(1, "%s", strerror(EINVAL));
+		return NULL;
+	}
 	if((handle = plugin_new(LIBDIR, PACKAGE, "format", format)) == NULL)
 		return NULL;
 	if((plugin = plugin_lookup(handle, "format_plugin")) == NULL
@@ -84,13 +59,11 @@ Format * format_new(char const * format, char const * arch,
 		plugin_delete(handle);
 		return NULL;
 	}
+	f->name = string_new(format);
 	f->arch = string_new(arch);
-	f->fp = fp;
 	f->plugin = plugin;
-	f->filename = string_new(filename);
-	plugin->filename = f->filename;
 	f->handle = handle;
-	if(f->arch == NULL || f->filename == NULL || _format_init(f) != 0)
+	if(f->arch == NULL)
 	{
 		format_delete(f);
 		return NULL;
@@ -100,26 +73,60 @@ Format * format_new(char const * format, char const * arch,
 
 
 /* format_delete */
-int format_delete(Format * format)
+void format_delete(Format * format)
 {
-	int ret;
-
-	ret = _format_exit(format);
 	plugin_delete(format->handle);
-	free(format->filename);
-	free(format->arch);
+	string_delete(format->arch);
+	string_delete(format->name);
 	object_delete(format);
-	return ret;
+}
+
+
+/* accessors */
+/* format_get_name */
+char const * format_get_name(Format * format)
+{
+	return format->name;
 }
 
 
 /* useful */
+/* format_exit */
+int format_exit(Format * format)
+{
+	int ret = 0;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(format->plugin->exit != NULL)
+		ret = format->plugin->exit(format->plugin);
+	format->plugin->fp = NULL;
+	format->plugin->filename = NULL;
+	return ret;
+}
+
+
 /* format_function */
 int format_function(Format * format, char const * function)
 {
 	if(format->plugin->function == NULL)
 		return 0;
 	return format->plugin->function(format->plugin, function);
+}
+
+
+/* format_init */
+int format_init(Format * format, char const * filename, FILE * fp)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, filename, fp);
+#endif
+	format->plugin->filename = filename;
+	format->plugin->fp = fp;
+	if(format->plugin->init != NULL)
+		return format->plugin->init(format->plugin, format->arch);
+	return 0;
 }
 
 

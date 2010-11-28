@@ -29,10 +29,12 @@
 /* types */
 struct _Arch
 {
+	char * name;
 	ArchRegister * registers;
 	size_t registers_cnt;
 	ArchInstruction * instructions;
 	size_t instructions_cnt;
+	char const * format;
 	Plugin * handle;
 };
 
@@ -53,8 +55,10 @@ Arch * arch_new(char const * arch)
 		plugin_delete(handle);
 		return NULL;
 	}
-	if((a = object_new(sizeof(*a))) == NULL)
+	if((a = object_new(sizeof(*a))) == NULL
+			|| (a->name = string_new(arch)) == NULL)
 	{
+		object_delete(a);
 		plugin_delete(handle);
 		return NULL;
 	}
@@ -66,6 +70,7 @@ Arch * arch_new(char const * arch)
 	if((a->registers = plugin->registers) != NULL)
 		for(; a->registers[a->registers_cnt].name != NULL;
 				a->registers_cnt++);
+	a->format = plugin->format;
 	a->handle = handle;
 	return a;
 }
@@ -75,11 +80,28 @@ Arch * arch_new(char const * arch)
 void arch_delete(Arch * arch)
 {
 	plugin_delete(arch->handle);
+	string_delete(arch->name);
 	object_delete(arch);
 }
 
 
 /* accessors */
+/* arch_get_format */
+char const * arch_get_format(Arch * arch)
+{
+	if(arch->format != NULL)
+		return arch->format;
+	return "elf";
+}
+
+
+/* arch_get_name */
+char const * arch_get_name(Arch * arch)
+{
+	return arch->name;
+}
+
+
 /* arch_instruction_get */
 ArchInstruction * arch_instruction_get(Arch * arch, size_t index)
 {

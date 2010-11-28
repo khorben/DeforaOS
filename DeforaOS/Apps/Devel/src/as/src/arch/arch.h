@@ -60,6 +60,7 @@ typedef struct _ArchInstruction
 
 typedef struct _ArchPlugin
 {
+	char const * format;
 	ArchRegister * registers;
 	ArchInstruction * instructions;
 } ArchPlugin;
@@ -73,6 +74,9 @@ void arch_delete(Arch * arch);
 
 
 /* accessors */
+char const * arch_get_format(Arch * arch);
+char const * arch_get_name(Arch * arch);
+
 ArchInstruction * arch_instruction_get(Arch * arch, size_t index);
 ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 		unsigned long opcode);

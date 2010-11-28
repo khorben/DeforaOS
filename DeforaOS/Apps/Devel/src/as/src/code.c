@@ -39,23 +39,19 @@ struct _Code
 
 
 /* functions */
-Code * code_new(char const * arch, char const * format, char const * filename)
+Code * code_new(char const * arch, char const * format)
 {
 	Code * code;
 
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
 	memset(code, 0, sizeof(*code));
-	if((code->filename = strdup(filename)) == NULL
-			|| (code->fp = fopen(filename, "w+")) == NULL
-			|| (code->arch = arch_new(arch)) == NULL
-			|| (code->format = format_new(format, arch, filename,
-					code->fp)) == NULL)
+	if((code->arch = arch_new(arch)) != NULL && format == NULL)
+		format = arch_get_format(code->arch);
+	if(format != NULL)
+		code->format = format_new(format, arch);
+	if(code->arch == NULL || code->format == NULL)
 	{
-		if(code->fp == NULL)
-			error_set_code(1, "%s: %s", filename, strerror(errno));
-		else if(unlink(filename) != 0)
-			perror(filename);
 		code_delete(code);
 		return NULL;
 	}
@@ -69,19 +65,47 @@ int code_delete(Code * code)
 	int ret = 0;
 
 	if(code->format != NULL)
-		ret = format_delete(code->format);
+		format_delete(code->format);
 	if(code->arch != NULL)
 		arch_delete(code->arch);
 	if(code->fp != NULL && fclose(code->fp) != 0)
 		ret |= error_set_code(2, "%s: %s", code->filename, strerror(
 					errno));
-	free(code->filename);
+	string_delete(code->filename);
 	object_delete(code);
 	return ret;
 }
 
 
+/* accessors */
+/* code_get_arch */
+char const * code_get_arch(Code * code)
+{
+	return arch_get_name(code->arch);
+}
+
+
+/* code_get_format */
+char const * code_get_format(Code * code)
+{
+	return format_get_name(code->format);
+}
+
+
 /* useful */
+/* code_close */
+int code_close(Code * code)
+{
+	int ret;
+
+	ret = format_exit(code->format);
+	if(fclose(code->fp) != 0)
+		ret |= -error_set_code(1, "%s: %s", code->filename,
+				strerror(errno));
+	return ret;
+}
+
+
 /* code_function */
 int code_function(Code * code, char const * function)
 {
@@ -137,7 +161,7 @@ int code_instruction(Code * code, char const * instruction,
 			break;
 	}
 	if(ai->size != 0 && fwrite(buf, ai->size, 1, code->fp) != 1)
-		return error_set_code(1, "%s: %s", code->filename, strerror(
+		return -error_set_code(1, "%s: %s", code->filename, strerror(
 					errno));
 	for(i = 0; i < operands_cnt; i++)
 	{
@@ -169,13 +193,13 @@ int code_instruction(Code * code, char const * instruction,
 				}
 				break;
 			case AS_CODE_REGISTER:
-				continue;
 			default:
-				/* FIXME */
-				continue;
+				/* FIXME really implement */
+				buf = NULL;
+				break;
 		}
-		if(fwrite(buf, size, 1, code->fp) != 1)
-			return error_set_code(1, "%s: %s", code->filename,
+		if(buf != NULL && fwrite(buf, size, 1, code->fp) != 1)
+			return -error_set_code(1, "%s: %s", code->filename,
 					strerror(errno));
 	}
 	return 0;
@@ -266,6 +290,27 @@ static ArchRegister * _operands_register(Arch * arch, char const * name)
 		if(strcmp(ret->name, name) == 0)
 			break;
 	return ret;
+}
+
+
+/* code_open */
+int code_open(Code * code, char const * filename)
+{
+	if(code->filename != NULL || code->fp != NULL)
+		return -error_set_code(1, "A file is already opened");
+	if((code->filename = string_new(filename)) == NULL)
+		return -1;
+	if((code->fp = fopen(filename, "w+")) == NULL)
+		return -error_set_code(1, "%s: %s", filename, strerror(errno));
+	if(format_init(code->format, code->filename, code->fp) != 0)
+	{
+		fclose(code->fp);
+		code->fp = NULL;
+		string_delete(code->filename);
+		code->filename = NULL;
+		return -1;
+	}
+	return 0;
 }
 
 

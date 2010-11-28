@@ -52,6 +52,7 @@ static ArchInstruction _i386_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"elf",
 	_i386_regs,
 	_i386_set
 };

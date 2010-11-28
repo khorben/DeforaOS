@@ -51,6 +51,7 @@ static ArchInstruction _i586_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"elf",
 	_i586_regs,
 	_i586_set
 };

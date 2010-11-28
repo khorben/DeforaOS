@@ -51,6 +51,7 @@ static ArchInstruction _amd64_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"elf",
 	_amd64_regs,
 	_amd64_set
 };

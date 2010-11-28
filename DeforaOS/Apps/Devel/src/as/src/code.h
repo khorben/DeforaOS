@@ -30,10 +30,17 @@ typedef struct _Code Code;
 
 
 /* functions */
-Code * code_new(char const * arch, char const * format, char const * filename);
+Code * code_new(char const * arch, char const * format);
 int code_delete(Code * code);
 
+/* accessors */
+char const * code_get_arch(Code * code);
+char const * code_get_format(Code * code);
+
 /* useful */
+int code_open(Code * code, char const * filename);
+int code_close(Code * code);
+
 int code_function(Code * code, char const * function);
 int code_instruction(Code * code, char const * instruction,
 		AsOperand * operands[], size_t operands_cnt);

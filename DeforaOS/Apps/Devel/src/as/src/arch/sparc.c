@@ -48,6 +48,7 @@ static ArchInstruction _sparc_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"elf",
 	_sparc_regs,
 	_sparc_set
 };
