@@ -15,12 +15,14 @@
 
 
 
+#include <unistd.h>
+#include <stdio.h>
 #include <gtk/gtk.h>
 
 
-/* Font */
-static void _fontsel_on_exitx(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+/* Fontsel */
+static gboolean _fontsel_on_closex(gpointer data);
+
 static int _fontsel(void)
 {
 	GtkWidget * window;
@@ -29,8 +31,8 @@ static int _fontsel(void)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "Font browser");
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_fontsel_on_exitx), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_fontsel_on_closex), window);
 	fontsel = gtk_font_selection_new();
 	gtk_container_add(GTK_CONTAINER(window), fontsel);
 	gtk_widget_show_all(window);
@@ -38,17 +40,35 @@ static int _fontsel(void)
 	return 0;
 }
 
-static void _fontsel_on_exitx(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _fontsel_on_closex(gpointer data)
 {
+	GtkWidget * widget = data;
+
 	gtk_widget_hide(widget);
 	gtk_main_quit();
+	return FALSE;
+}
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: fontsel\n", stderr);
+	return 1;
 }
 
 
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
+
 	gtk_init(&argc, &argv);
-	return _fontsel() == 0 ? 0 : 2;
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	return (_fontsel() == 0) ? 0 : 2;
 }
