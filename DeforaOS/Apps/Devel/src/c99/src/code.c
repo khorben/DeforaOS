@@ -248,8 +248,13 @@ Code * code_new(C99Prefs const * prefs, C99Helper * helper,
 	memset(code, 0, sizeof(*code));
 	code->helper = helper;
 	if(_new_target(code, p->target, p->options, p->options_cnt) != 0
-			|| _code_target_init(code, outfile, p->optlevel) != 0
-			|| code_scope_push(code) != 0)
+			|| _code_target_init(code, outfile, p->optlevel) != 0)
+	{
+		code->target = NULL;
+		code_delete(code);
+		return NULL;
+	}
+	if(code_scope_push(code) != 0)
 	{
 		code_delete(code);
 		return NULL;
@@ -274,14 +279,10 @@ static int _new_target(Code * code, char const * target,
 			== NULL
 			|| (code->target = plugin_lookup(code->plugin,
 					"target_plugin")) == NULL)
-		return 1;
+		return -1;
 	code->target->helper = code->helper;
-	if(code->target->options == NULL)
-	{
-		if(options_cnt == 0)
-			return 0;
-		return error_set_code(1, "%s", "Target supports no options");
-	}
+	if(code->target->options == NULL && options_cnt != 0)
+		return -error_set_code(1, "%s", "Target supports no options");
 	for(i = 0; i < options_cnt; i++)
 	{
 		p = &options[i];
@@ -296,11 +297,13 @@ static int _new_target(Code * code, char const * target,
 			break;
 		code->target->options[j].value = p->value;
 	}
-	if(i == options_cnt)
-		return 0;
-	code->target = NULL;
-	return error_set_code(1, "%s: %s%s%s", target, "Unknown option \"",
-			p->name, "\" for target");
+	if(i != options_cnt)
+	{
+		code->target = NULL;
+		return error_set_code(1, "%s: %s%s%s", target,
+				"Unknown option \"", p->name, "\" for target");
+	}
+	return 0;
 }
 
 
