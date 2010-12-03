@@ -529,7 +529,7 @@ static void _http_redirect(GConnHttpEventRedirect * event, Download * download)
 		snprintf(buf, sizeof(buf), "%s %s", _("Redirected to"),
 				event->new_location);
 	else
-		strcpy(buf, "Redirected");
+		strcpy(buf, _("Redirected"));
 	gtk_label_set_text(GTK_LABEL(download->status), buf);
 	/* FIXME implement */
 }
@@ -635,8 +635,6 @@ static gboolean _download_on_timeout(gpointer data)
 			gtk_button_set_label(GTK_BUTTON(d->cancel),
 					GTK_STOCK_CLOSE);
 			d->data_received = webkit_download_get_current_size(
-					d->conn);
-			d->content_length = webkit_download_get_total_size(
 					d->conn);
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_STARTED:

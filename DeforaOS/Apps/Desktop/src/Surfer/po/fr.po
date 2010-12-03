@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-27 16:30+0100\n"
+"POT-Creation-Date: 2010-12-03 23:37+0100\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -130,13 +130,17 @@ msgstr "Erreur "
 msgid "Complete"
 msgstr "Terminé"
 
-#: ../src/download.c:518 ../src/download.c:644
+#: ../src/download.c:518 ../src/download.c:642
 msgid "Downloading"
 msgstr "Téléchargement"
 
 #: ../src/download.c:529
 msgid "Redirected to"
 msgstr "Redirigé vers"
+
+#: ../src/download.c:532
+msgid "Redirected"
+msgstr "Redirigé"
 
 #: ../src/download.c:539
 msgid "Resolved"
@@ -150,7 +154,7 @@ msgstr "Code "
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
-#: ../src/download.c:665
+#: ../src/download.c:663
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tfile to write document to\n"
