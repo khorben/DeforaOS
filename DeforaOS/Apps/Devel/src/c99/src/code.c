@@ -241,7 +241,8 @@ Code * code_new(C99Prefs const * prefs, C99Helper * helper,
 	C99Prefs const * p = prefs;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, prefs, outfile);
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void*)prefs,
+			outfile);
 #endif
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
