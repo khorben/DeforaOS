@@ -3,5 +3,5 @@ Name=Calendar
 Exec=calendar
 Icon=stock_calendar
 Type=Application
-Categories=Office;GTK;
+Categories=Office;Calendar;GTK;
 StartupNotify=true
