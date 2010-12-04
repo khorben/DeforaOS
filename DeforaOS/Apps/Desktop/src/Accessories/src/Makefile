@@ -17,8 +17,8 @@ INSTALL	= install
 all: $(TARGETS)
 
 calendar_OBJS = calendar.o
-calendar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-calendar_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+calendar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -I $(PREFIX)/include $(CFLAGSF) $(CFLAGS)
+calendar_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem
 
 calendar: $(calendar_OBJS)
 	$(CC) -o calendar $(calendar_OBJS) $(calendar_LDFLAGS)
