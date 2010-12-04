@@ -225,6 +225,7 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 /* ghtml_set_proxy */
 int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
 {
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
 	SoupSession * session;
 	SoupURI * uri;
 
@@ -232,6 +233,10 @@ int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
 	uri = soup_uri_new(http);
 	g_object_set(session, "proxy-uri", uri, NULL);
 	return 0;
+#else
+	/* FIXME really implement */
+	return -1;
+#endif
 }
 
 
