@@ -477,6 +477,7 @@ static int _operand(State * state)
 	TokenCode code;
 	char const * string;
 	AsOperand ** p;
+	unsigned long * u;
 
 	if(state->token == NULL)
 		return 1;
@@ -504,10 +505,27 @@ static int _operand(State * state)
 		{
 			state->operands = p;
 			p = &state->operands[state->operands_cnt];
-			(*p)->type = token_get_code(state->token);
+			switch(token_get_code(state->token))
+			{
+				case AS_CODE_IMMEDIATE:
+				case AS_CODE_NUMBER:
+					(*p)->type = AOT_IMMEDIATE;
+					/* FIXME check errors */
+					u = malloc(sizeof(*u));
+					*u = strtoul(string + 1, NULL, 0);
+					(*p)->value = u;
+					break;
+				case AS_CODE_REGISTER:
+					(*p)->type = AOT_REGISTER;
+					/* FIXME check errors */
+					(*p)->value = strdup(string);
+					break;
+				default:
+					(*p)->type = -1;
+					(*p)->value = NULL;
+					break;
+			}
 			(*p)->dereference = (code == AS_CODE_OPERATOR_LBRACKET);
-			/* FIXME necessary already here? */
-			(*p)->value = strdup(string);
 			state->operands_cnt++;
 		}
 	}

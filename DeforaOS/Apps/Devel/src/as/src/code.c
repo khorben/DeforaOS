@@ -130,6 +130,7 @@ int code_instruction(Code * code, char const * instruction,
 	size_t i;
 	void * buf;
 	size_t size;
+	unsigned long u;
 	uint8_t u8;
 	uint16_t u16;
 	uint32_t u32;
@@ -171,28 +172,28 @@ int code_instruction(Code * code, char const * instruction,
 				: ai->op3size);
 		if(size == 0)
 			continue;
-		u32 = strtoul(operands[i]->value + 1, NULL, 0);
+		u = *(unsigned long*)operands[i]->value;
 		switch(operands[i]->type)
 		{
-			case AS_CODE_IMMEDIATE:
+			case AOT_IMMEDIATE:
 				/* FIXME there still is an endian problem */
 				switch(size)
 				{
 					case 1:
-						u8 = u32;
+						u8 = u;
 						buf = &u8;
 						break;
 					case 2:
-						u16 = u32;
+						u16 = u;
 						buf = &u16;
 						break;
 					default: /* FIXME not always so */
 					case 4:
-						buf = &u32;
+						buf = &u;
 						break;
 				}
 				break;
-			case AS_CODE_REGISTER:
+			case AOT_REGISTER:
 			default:
 				/* FIXME really implement */
 				buf = NULL;
@@ -242,15 +243,14 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 	{
 		switch(operands[i]->type)
 		{
-			case AS_CODE_IMMEDIATE:
-			case AS_CODE_NUMBER:
+			case AOT_IMMEDIATE:
 				/* FIXME also check the operand size */
 				o = _AO_IMM;
 #ifdef DEBUG
 				fprintf(stderr, "DEBUG: op %zu: imm; ", i);
 #endif
 				break;
-			case AS_CODE_REGISTER:
+			case AOT_REGISTER:
 #if 0 /* XXX this looked maybe better */
 				reg = operands[i].value + 1; /* "%rg" => "rg" */
 #else

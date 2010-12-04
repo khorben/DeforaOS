@@ -24,9 +24,11 @@
 /* types */
 typedef struct _As As;
 
+typedef enum _AsOperandType { AOT_IMMEDIATE = 0, AOT_REGISTER } AsOperandType;
+
 typedef struct _AsOperand
 {
-	int type;
+	AsOperandType type;
 	int dereference;
 	void * value;
 } AsOperand;
