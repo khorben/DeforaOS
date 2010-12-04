@@ -117,7 +117,7 @@ static Calendar * _calendar_new(void)
 			| GTK_CALENDAR_SHOW_DAY_NAMES
 			| GTK_CALENDAR_SHOW_WEEK_NUMBERS);
 #if GTK_CHECK_VERSION(2, 14, 0)
-	gtk_calendar_set_detail_height_rows(GTK_CALENDAR(calendar->widget), 4);
+	gtk_calendar_set_detail_height_rows(GTK_CALENDAR(calendar->widget), 1);
 	gtk_calendar_set_detail_func(GTK_CALENDAR(calendar->widget),
 			(GtkCalendarDetailFunc)_calendar_on_detail, calendar,
 			NULL);
