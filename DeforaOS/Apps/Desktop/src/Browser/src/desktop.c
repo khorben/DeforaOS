@@ -1342,7 +1342,7 @@ void desktop_icons_align(Desktop * desktop)
 		if(y + DESKTOPICON_MAX_HEIGHT > desktop->workarea.height)
 		{
 			x += DESKTOPICON_MAX_WIDTH;
-			y = desktop->window.y;
+			y = desktop->workarea.y;
 		}
 		desktopicon_move(desktop->icon[i], x, y);
 		y += DESKTOPICON_MAX_HEIGHT;
