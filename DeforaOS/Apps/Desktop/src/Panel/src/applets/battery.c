@@ -228,8 +228,7 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 	unsigned int maxcharge = 0;
 
 	*charging = FALSE;
-	if(battery->fd == -1
-			&& (battery->fd = open(_PATH_SYSMON, O_RDONLY) < 0))
+	if(battery->fd < 0 && (battery->fd = open(_PATH_SYSMON, O_RDONLY)) < 0)
 	{
 		error_set("%s: %s", _PATH_SYSMON, strerror(errno));
 		return -1.0;
@@ -242,7 +241,6 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 		{
 			close(battery->fd);
 			battery->fd = -1;
-			/* FIXME why does it always break once? */
 			error_set("%s: %s", "ENVSYS_GTREINFO", strerror(errno));
 			return -1.0;
 		}
@@ -309,7 +307,7 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 	int b;
 
 	*charging = FALSE;
-	if(battery->fd == -1 && (battery->fd = open(apm, O_RDONLY)) == -1)
+	if(battery->fd < 0 && (battery->fd = open(apm, O_RDONLY)) < 0)
 	{
 		error_set("%s: %s", apm, strerror(errno));
 		return 0.0 / 0.0;
