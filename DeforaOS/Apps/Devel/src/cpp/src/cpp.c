@@ -193,10 +193,10 @@ int cpp_path_add(Cpp * cpp, char const * path)
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\")\n", __func__, path);
 #endif
 	if((p = realloc(cpp->paths, sizeof(*p) * (cpp->paths_cnt + 1))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+		return -error_set_code(1, "%s", strerror(errno));
 	cpp->paths = p;
 	if((p[cpp->paths_cnt] = strdup(path)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+		return -error_set_code(1, "%s", strerror(errno));
 	cpp->paths_cnt++;
 	return 0;
 }
