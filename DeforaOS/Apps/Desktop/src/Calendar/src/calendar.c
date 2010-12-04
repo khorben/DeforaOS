@@ -224,6 +224,7 @@ static void _calendar_on_edit(gpointer data)
 	guint year;
 	guint month;
 	guint day;
+	char buf[32];
 	char const * p;
 	GtkWidget * dialog;
 	GtkWidget * vbox;
@@ -240,10 +241,13 @@ static void _calendar_on_edit(gpointer data)
 #else
 	vbox = GTK_DIALOG(dialog)->vbox;
 #endif
-	entry = gtk_entry_new();
 	gtk_calendar_get_date(GTK_CALENDAR(calendar->widget), &year, &month,
 			&day);
-	if((p = _calendar_get_detail(calendar, year, ++month, day)) != NULL)
+	snprintf(buf, sizeof(buf), "%s%02u/%02u/%u:", "Edit detail for ", day,
+			++month, year);
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(buf), FALSE, TRUE, 0);
+	entry = gtk_entry_new();
+	if((p = _calendar_get_detail(calendar, year, month, day)) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(entry), p);
 	gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
