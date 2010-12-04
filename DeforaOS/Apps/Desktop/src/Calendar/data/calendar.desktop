@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Calendar
+Exec=calendar
+Icon=stock_calendar
+Type=Application
+Categories=Office;GTK;
+StartupNotify=true
