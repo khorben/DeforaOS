@@ -23,21 +23,21 @@ as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
 
 as.so: $(as_OBJS)
-	$(LD) -o as.so $(as_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
+	$(LD) -o as.so $(as_OBJS) $(as_LDFLAGS)
 
 graph_OBJS = graph.o
 graph_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 graph_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 graph.so: $(graph_OBJS)
-	$(LD) -o graph.so $(graph_OBJS)
+	$(LD) -o graph.so $(graph_OBJS) $(graph_LDFLAGS)
 
 indent_OBJS = indent.o
 indent_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 indent_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 indent.so: $(indent_OBJS)
-	$(LD) -o indent.so $(indent_OBJS)
+	$(LD) -o indent.so $(indent_OBJS) $(indent_LDFLAGS)
 
 as.o: as.c ../../include/c99/target.h ../../config.h
 	$(CC) $(as_CFLAGS) -c as.c

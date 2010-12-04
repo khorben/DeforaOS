@@ -33,7 +33,7 @@ libas.a: $(libas_OBJS)
 	$(RANLIB) libas.a
 
 libas.so: $(libas_OBJS)
-	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
+	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) $(libas_LDFLAGS)
 
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)

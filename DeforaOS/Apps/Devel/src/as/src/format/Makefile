@@ -23,21 +23,21 @@ elf_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 elf_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 elf.so: $(elf_OBJS)
-	$(LD) -o elf.so $(elf_OBJS)
+	$(LD) -o elf.so $(elf_OBJS) $(elf_LDFLAGS)
 
 flat_OBJS = flat.o
 flat_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 flat_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 flat.so: $(flat_OBJS)
-	$(LD) -o flat.so $(flat_OBJS)
+	$(LD) -o flat.so $(flat_OBJS) $(flat_LDFLAGS)
 
 java_OBJS = java.o
 java_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 java_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 java.so: $(java_OBJS)
-	$(LD) -o java.so $(java_OBJS)
+	$(LD) -o java.so $(java_OBJS) $(java_LDFLAGS)
 
 elf.o: elf.c format.h
 	$(CC) $(elf_CFLAGS) -c elf.c
