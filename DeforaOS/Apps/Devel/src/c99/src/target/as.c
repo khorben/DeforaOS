@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel c99 */
 /* c99 is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -205,13 +205,17 @@ static int _as_arch_amd64_function_begin(char const * name)
 	/* FIXME give real arguments */
 	AsOperand ao[2] =
 	{
-		{ 0, 0, NULL },
-		{ 0, 0, NULL }
+		{ AOT_IMMEDIATE, 0, NULL },
+		{ AOT_IMMEDIATE, 0, NULL }
 	};
+	unsigned long a0 = 0;
+	unsigned long a1 = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	ao[0].value = &a0;
+	ao[1].value = &a1;
 	return as_instruction(_as_as, "enter", 2, &ao[0], &ao[1]);
 }
 
@@ -219,11 +223,13 @@ static int _as_arch_amd64_function_begin(char const * name)
 static int _as_arch_amd64_function_call(char const * name)
 {
 	/* FIXME give a real argument */
-	AsOperand ao = { 0, 0, (void*)-1 };
+	AsOperand ao = { AOT_IMMEDIATE, 0, NULL };
+	unsigned long a0 = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	ao.value = &a0;
 	return as_instruction(_as_as, "call", 1, &ao);
 }
 
