@@ -987,9 +987,8 @@ static int _target_library(Configure * configure, FILE * fp,
 		fprintf(fp, "%s%s%s", " -Wl,-soname,", target, ".so.0");
 	else
 		fprintf(fp, "%s%s", " -Wl,-soname,", p);
-	fprintf(fp, "%s%s%s", " $(", target, "_OBJS)");
-	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		_binary_ldflags(configure, fp, p);
+	fprintf(fp, "%s%s%s%s%s", " $(", target, "_OBJS) $(", target,
+			"_LDFLAGS)");
 	if(q != NULL)
 	{
 		sprintf(q, "%s.so", target);
@@ -1097,10 +1096,8 @@ static int _target_plugin(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
-			"_OBJS)");
-	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		_binary_ldflags(configure, fp, p);
+	fprintf(fp, "%s%s%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
+			"_OBJS) $(", target, "_LDFLAGS)");
 	if((q = malloc(strlen(target) + 4)) != NULL)
 	{
 		sprintf(q, "%s.so", target);
