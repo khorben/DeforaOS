@@ -392,6 +392,14 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 }
 
 
+/* ghtml_set_proxy */
+int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
+{
+	/* FIXME really implement */
+	return -1;
+}
+
+
 /* useful */
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * ghtml, char const * code)

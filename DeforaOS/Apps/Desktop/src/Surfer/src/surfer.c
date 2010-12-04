@@ -218,12 +218,12 @@ static gboolean _surfer_filename_confirm(Surfer * surfer,
 		char const * filename);
 
 static char * _config_get_filename(void);
-static int _config_load_string(Config * config, char const * variable,
-		char ** value);
-static int _config_save_boolean(Config * config, char const * variable,
-		gboolean value);
-static int _config_save_string(Config * config, char const * variable,
-		char const * value);
+static int _config_load_string(Config * config, char const * section,
+		char const * variable, char ** value);
+static int _config_save_boolean(Config * config, char const * section,
+		char const * variable, gboolean value);
+static int _config_save_string(Config * config, char const * section,
+		char const * variable, char const * value);
 
 
 /* public */
@@ -267,6 +267,7 @@ Surfer * _new_do(char const * url)
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
 	surfer->homepage = NULL;
+	surfer->proxy_http = NULL;
 	if((surfer->config = config_new()) == NULL
 			|| surfer_config_load(surfer) != 0)
 	{
@@ -418,6 +419,7 @@ void surfer_delete(Surfer * surfer)
 {
 	gtk_widget_destroy(surfer->window);
 	config_delete(surfer->config);
+	free(surfer->proxy_http);
 	free(surfer->homepage);
 	free(surfer);
 	if(--_surfer_cnt == 0)
@@ -498,6 +500,26 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(surfer->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(surfer->progress),
 			fraction);
+}
+
+
+/* surfer_set_proxy */
+void surfer_set_proxy(Surfer * surfer, char const * http)
+{
+	GtkWidget * view;
+	gint n;
+	gint i;
+
+	free(surfer->proxy_http);
+	if((surfer->proxy_http = strdup(http)) == NULL)
+		return; /* XXX report error */
+	n = gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook));
+	for(i = 0; i < n; i++)
+	{
+		view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook),
+				i);
+		ghtml_set_proxy(view, http);
+	}
 }
 
 
@@ -636,7 +658,10 @@ int surfer_config_load(Surfer * surfer)
 		return 1;
 	config_load(surfer->config, filename); /* XXX ignore errors */
 	free(filename);
-	_config_load_string(surfer->config, "homepage", &surfer->homepage);
+	_config_load_string(surfer->config, NULL, "homepage",
+			&surfer->homepage);
+	_config_load_string(surfer->config, "proxy", "http",
+			&surfer->proxy_http);
 	return 0;
 }
 
@@ -649,11 +674,13 @@ int surfer_config_save(Surfer * surfer)
 
 	if((filename = _config_get_filename()) == NULL)
 		return 1;
-	ret |= _config_save_string(surfer->config, "homepage",
+	ret |= _config_save_string(surfer->config, NULL, "homepage",
 			surfer->homepage);
-	ret |= _config_save_boolean(surfer->config, "focus_new_tabs",
+	ret |= _config_save_boolean(surfer->config, NULL, "focus_new_tabs",
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs)));
+	ret |= _config_save_string(surfer->config, "proxy", "http",
+			surfer->proxy_http);
 	if(ret == 0)
 		ret |= config_save(surfer->config, filename);
 	free(filename);
@@ -985,6 +1012,8 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 		surfer_error(NULL, _("Could not initialize HTML renderer"), 0);
 		return;
 	}
+	if(surfer->proxy_http != NULL)
+		ghtml_set_proxy(widget, surfer->proxy_http);
 	gtk_widget_show_all(widget); /* must be before set_current_page() */
 	if(url != NULL)
 		ghtml_load_url(widget, url);
@@ -1471,13 +1500,13 @@ static char * _config_get_filename(void)
 
 
 /* config_load_string */
-static int _config_load_string(Config * config, char const * variable,
-		char ** value)
+static int _config_load_string(Config * config, char const * section,
+		char const * variable, char ** value)
 {
 	char const * str;
 	char * p;
 
-	if((str = config_get(config, "", variable)) == NULL)
+	if((str = config_get(config, section, variable)) == NULL)
 		return 0;
 	if((p = strdup(str)) == NULL)
 		return 1;
@@ -1488,16 +1517,16 @@ static int _config_load_string(Config * config, char const * variable,
 
 
 /* config_save_boolean */
-static int _config_save_boolean(Config * config, char const * variable,
-		gboolean value)
+static int _config_save_boolean(Config * config, char const * section,
+		char const * variable, gboolean value)
 {
-	return config_set(config, "", variable, value ? "1" : "0");
+	return config_set(config, section, variable, value ? "1" : "0");
 }
 
 
 /* config_save_string */
-static int _config_save_string(Config * config, char const * variable,
-		char const * value)
+static int _config_save_string(Config * config, char const * section,
+		char const * variable, char const * value)
 {
-	return config_set(config, "", variable, value);
+	return config_set(config, section, variable, value);
 }

@@ -439,11 +439,12 @@ void on_preferences(gpointer data)
 	/* notebook */
 	notebook = gtk_notebook_new();
 	/* general tab */
-	page = gtk_vbox_new(FALSE, 0);
+	page = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
 	/* homepage */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Homepage:"));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
@@ -455,6 +456,18 @@ void on_preferences(gpointer data)
 	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("General")));
+	/* network tab */
+	page = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
+	/* http proxy */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("HTTP proxy:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	surfer->pr_proxy_http = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_proxy_http, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new(_("Network")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	_preferences_set(surfer);
 	gtk_widget_show_all(surfer->pr_window);
@@ -473,6 +486,8 @@ static void _preferences_set(Surfer * surfer)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs), FALSE);
+	if((p = config_get(surfer->config, "proxy", "http")) != NULL)
+		gtk_entry_set_text(GTK_ENTRY(surfer->pr_proxy_http), p);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -508,6 +523,8 @@ static void _preferences_on_ok(gpointer data)
 	gtk_widget_hide(surfer->pr_window);
 	surfer_set_homepage(surfer, gtk_entry_get_text(GTK_ENTRY(
 					surfer->pr_homepage)));
+	surfer_set_proxy(surfer, gtk_entry_get_text(GTK_ENTRY(
+					surfer->pr_proxy_http)));
 	surfer_config_save(surfer);
 }
 

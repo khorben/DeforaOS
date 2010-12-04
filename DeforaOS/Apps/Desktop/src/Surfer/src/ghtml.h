@@ -38,7 +38,7 @@ char const * ghtml_get_source(GtkWidget * ghtml);
 char const * ghtml_get_status(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
 
-int ghtml_set_base(GtkWidget * ghtml, char const * url);
+int ghtml_set_proxy(GtkWidget * ghtml, char const * http);
 
 /* useful */
 gboolean ghtml_go_back(GtkWidget * ghtml);

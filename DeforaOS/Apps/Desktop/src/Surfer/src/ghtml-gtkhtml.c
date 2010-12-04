@@ -271,13 +271,11 @@ char const * ghtml_get_title(GtkWidget * widget)
 }
 
 
-/* ghtml_set_base */
-int ghtml_set_base(GtkWidget * widget, char const * url)
+/* ghtml_set_proxy */
+int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
 {
-	GHtml * ghtml;
-
-	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	return _ghtml_set_base(ghtml, url);
+	/* FIXME really implement */
+	return -1;
 }
 
 

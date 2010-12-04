@@ -30,6 +30,7 @@ struct _Surfer
 
 	/* preferences */
 	char * homepage;
+	char * proxy_http;
 
 	/* widgets */
 	/* main window */
@@ -55,6 +56,7 @@ struct _Surfer
 	GtkWidget * pr_window;
 	GtkWidget * pr_homepage;
 	GtkWidget * pr_focus_tabs;
+	GtkWidget * pr_proxy_http;
 
 	/* find */
 	GtkWidget * fi_dialog;

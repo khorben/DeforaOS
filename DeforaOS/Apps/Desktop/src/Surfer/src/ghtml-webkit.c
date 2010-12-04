@@ -210,6 +210,7 @@ char const * ghtml_get_status(GtkWidget * widget)
 }
 
 
+/* ghtml_get_title */
 char const * ghtml_get_title(GtkWidget * ghtml)
 {
 	GtkWidget * view;
@@ -221,10 +222,16 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 }
 
 
-int ghtml_set_base(GtkWidget * ghtml, char const * url)
+/* ghtml_set_proxy */
+int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
 {
-	/* FIXME implement */
-	return 1;
+	SoupSession * session;
+	SoupURI * uri;
+
+	session = webkit_get_default_session();
+	uri = soup_uri_new(http);
+	g_object_set(session, "proxy-uri", uri, NULL);
+	return 0;
 }
 
 
