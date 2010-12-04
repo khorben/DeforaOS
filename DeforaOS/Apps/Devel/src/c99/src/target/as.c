@@ -38,6 +38,14 @@ typedef enum _AsOption
 #define ASO_LAST	ASO_FORMAT
 #define ASO_COUNT	(ASO_LAST + 1)
 
+typedef struct _AsArch
+{
+	char const * name;
+	int (*function_begin)(char const * name);
+	int (*function_call)(char const * name);
+	int (*function_end)(void);
+} AsArch;
+
 
 /* variables */
 static As * _as_as;
@@ -50,15 +58,30 @@ static C99Option _as_options[ASO_COUNT + 1] =
 	{ NULL,		NULL	}
 };
 
+/* platforms */
+/* amd64 */
+static int _as_arch_amd64_function_begin(char const * name);
+static int _as_arch_amd64_function_call(char const * name);
+static int _as_arch_amd64_function_end(void);
+static AsArch _as_arch_amd64 =
+{
+	"amd64",
+	_as_arch_amd64_function_begin,
+	_as_arch_amd64_function_call,
+	_as_arch_amd64_function_end
+};
+
+static AsArch * _as_arch[] =
+{
+	&_as_arch_amd64
+};
+
 
 /* protected */
 /* prototypes */
 static int _as_init(char const * outfile, int optlevel);
 static int _as_exit(void);
 static int _as_section(char const * name);
-static int _as_function_begin(char const * name);
-static int _as_function_call(char const * name);
-static int _as_function_end(void);
 
 
 /* public */
@@ -71,9 +94,9 @@ TargetPlugin target_plugin =
 	_as_exit,
 	NULL,
 	_as_section,
-	_as_function_begin,
-	_as_function_call,
-	_as_function_end,
+	NULL,
+	NULL,
+	NULL,
 	NULL				/* FIXME implement label_set */
 };
 
@@ -81,6 +104,7 @@ TargetPlugin target_plugin =
 /* protected */
 /* functions */
 /* as_init */
+static int _init_arch(char const * arch);
 static int _init_defines(char const * format);
 
 static int _as_init(char const * outfile, int optlevel)
@@ -88,24 +112,47 @@ static int _as_init(char const * outfile, int optlevel)
 	char const * arch = _as_options[ASO_ARCH].value;
 	char const * format = _as_options[ASO_FORMAT].value;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
 	_as_optlevel = optlevel;
-	/* FIXME verify if we know how to handle to architecture */
 	if((_as_as = as_new(arch, format)) == NULL)
 		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s: architecture \"%s\", format \"%s\"\n",
 			PACKAGE, as_get_arch(_as_as), as_get_format(_as_as));
 #endif
-	if(_init_defines(as_get_format(_as_as)) != 0
+	if(_init_arch(as_get_arch(_as_as)) != 0
+			|| _init_defines(as_get_format(_as_as)) != 0
 			|| as_open(_as_as, outfile) != 0
 			|| _as_section(".text") != 0)
 	{
 		as_delete(_as_as);
 		return 1;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() => 0\n", __func__);
+#endif
+	return 0;
+}
+
+static int _init_arch(char const * arch)
+{
+	AsArch * aarch = NULL;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, arch);
+#endif
+	for(i = 0; i < sizeof(_as_arch) / sizeof(*_as_arch); i++)
+		if(strcmp(_as_arch[i]->name, arch) == 0)
+		{
+			aarch = _as_arch[i];
+			break;
+		}
+	if(aarch == NULL)
+		return -error_set_code(1, "%s%s", "Unsupported architecture ",
+				arch);
+	target_plugin.function_begin = aarch->function_begin;
+	target_plugin.function_call = aarch->function_call;
+	target_plugin.function_end = aarch->function_end;
 	return 0;
 }
 
@@ -151,24 +198,40 @@ static int _as_section(char const * name)
 }
 
 
-/* as_function */
-static int _as_function_begin(char const * name)
+/* platforms */
+/* amd64 */
+static int _as_arch_amd64_function_begin(char const * name)
 {
-	return as_function(_as_as, name);
+	/* FIXME give real arguments */
+	AsOperand ao[2] =
+	{
+		{ 0, 0, NULL },
+		{ 0, 0, NULL }
+	};
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return as_instruction(_as_as, "enter", 2, &ao[0], &ao[1]);
 }
 
 
-/* as_function_call */
-static int _as_function_call(char const * name)
+static int _as_arch_amd64_function_call(char const * name)
 {
-	/* FIXME implement */
-	return 0;
+	/* FIXME give a real argument */
+	AsOperand ao = { 0, 0, (void*)-1 };
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return as_instruction(_as_as, "call", 1, &ao);
 }
 
 
-/* as_function_end */
-static int _as_function_end(void)
+static int _as_arch_amd64_function_end(void)
 {
-	/* FIXME implement */
-	return 0;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return as_instruction(_as_as, "leave", 0);
 }
