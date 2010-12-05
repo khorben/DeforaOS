@@ -27,6 +27,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/gserver.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/appbroker.sh \
 		$(PACKAGE)-$(VERSION)/src/gserver.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/video/glut.c \
