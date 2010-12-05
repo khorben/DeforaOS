@@ -23,35 +23,35 @@ imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 imap4.so: $(imap4_OBJS)
-	$(LD) -o imap4.so $(imap4_OBJS)
+	$(LD) -o imap4.so $(imap4_OBJS) $(imap4_LDFLAGS)
 
 mbox_OBJS = mbox.o
 mbox_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 mbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mbox.so: $(mbox_OBJS)
-	$(LD) -o mbox.so $(mbox_OBJS)
+	$(LD) -o mbox.so $(mbox_OBJS) $(mbox_LDFLAGS)
 
 pop3_OBJS = pop3.o
 pop3_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pop3.so: $(pop3_OBJS)
-	$(LD) -o pop3.so $(pop3_OBJS)
+	$(LD) -o pop3.so $(pop3_OBJS) $(pop3_LDFLAGS)
 
 nntp_OBJS = nntp.o
 nntp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 nntp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 nntp.so: $(nntp_OBJS)
-	$(LD) -o nntp.so $(nntp_OBJS)
+	$(LD) -o nntp.so $(nntp_OBJS) $(nntp_LDFLAGS)
 
 rss_OBJS = rss.o
 rss_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 rss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 rss.so: $(rss_OBJS)
-	$(LD) -o rss.so $(rss_OBJS)
+	$(LD) -o rss.so $(rss_OBJS) $(rss_LDFLAGS)
 
 imap4.o: imap4.c ../../include/Mailer.h
 	$(CC) $(imap4_CFLAGS) -c imap4.c

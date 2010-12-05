@@ -27,7 +27,7 @@ libSystem.a: $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
 
 libSystem.so: $(libSystem_OBJS)
-	$(LD) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(LDFLAGSF) $(LDFLAGS)   -lssl
+	$(LD) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(libSystem_LDFLAGS)
 
 appclient.o: appclient.c appinterface.h
 	$(CC) $(libSystem_CFLAGS) -c appclient.c

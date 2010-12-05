@@ -23,140 +23,140 @@ battery_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 battery_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 battery.so: $(battery_OBJS)
-	$(LD) -o battery.so $(battery_OBJS)
+	$(LD) -o battery.so $(battery_OBJS) $(battery_LDFLAGS)
 
 bluetooth_OBJS = bluetooth.o
 bluetooth_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 bluetooth_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 bluetooth.so: $(bluetooth_OBJS)
-	$(LD) -o bluetooth.so $(bluetooth_OBJS)
+	$(LD) -o bluetooth.so $(bluetooth_OBJS) $(bluetooth_LDFLAGS)
 
 clock_OBJS = clock.o
 clock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 clock_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 clock.so: $(clock_OBJS)
-	$(LD) -o clock.so $(clock_OBJS)
+	$(LD) -o clock.so $(clock_OBJS) $(clock_LDFLAGS)
 
 cpu_OBJS = cpu.o
 cpu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 cpu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cpu.so: $(cpu_OBJS)
-	$(LD) -o cpu.so $(cpu_OBJS)
+	$(LD) -o cpu.so $(cpu_OBJS) $(cpu_LDFLAGS)
 
 cpufreq_OBJS = cpufreq.o
 cpufreq_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 cpufreq_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cpufreq.so: $(cpufreq_OBJS)
-	$(LD) -o cpufreq.so $(cpufreq_OBJS)
+	$(LD) -o cpufreq.so $(cpufreq_OBJS) $(cpufreq_LDFLAGS)
 
 desktop_OBJS = desktop.o
 desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 desktop.so: $(desktop_OBJS)
-	$(LD) -o desktop.so $(desktop_OBJS)
+	$(LD) -o desktop.so $(desktop_OBJS) $(desktop_LDFLAGS)
 
 gps_OBJS = gps.o
 gps_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gps_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 gps.so: $(gps_OBJS)
-	$(LD) -o gps.so $(gps_OBJS)
+	$(LD) -o gps.so $(gps_OBJS) $(gps_LDFLAGS)
 
 gsm_OBJS = gsm.o
 gsm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gsm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 gsm.so: $(gsm_OBJS)
-	$(LD) -o gsm.so $(gsm_OBJS)
+	$(LD) -o gsm.so $(gsm_OBJS) $(gsm_LDFLAGS)
 
 keyboard_OBJS = keyboard.o
 keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 keyboard.so: $(keyboard_OBJS)
-	$(LD) -o keyboard.so $(keyboard_OBJS)
+	$(LD) -o keyboard.so $(keyboard_OBJS) $(keyboard_LDFLAGS)
 
 lock_OBJS = lock.o
 lock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 lock_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 lock.so: $(lock_OBJS)
-	$(LD) -o lock.so $(lock_OBJS)
+	$(LD) -o lock.so $(lock_OBJS) $(lock_LDFLAGS)
 
 logout_OBJS = logout.o
 logout_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 logout_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 logout.so: $(logout_OBJS)
-	$(LD) -o logout.so $(logout_OBJS)
+	$(LD) -o logout.so $(logout_OBJS) $(logout_LDFLAGS)
 
 main_OBJS = main.o
 main_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 main_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 main.so: $(main_OBJS)
-	$(LD) -o main.so $(main_OBJS)
+	$(LD) -o main.so $(main_OBJS) $(main_LDFLAGS)
 
 memory_OBJS = memory.o
 memory_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 memory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 memory.so: $(memory_OBJS)
-	$(LD) -o memory.so $(memory_OBJS)
+	$(LD) -o memory.so $(memory_OBJS) $(memory_LDFLAGS)
 
 pager_OBJS = pager.o
 pager_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 pager_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pager.so: $(pager_OBJS)
-	$(LD) -o pager.so $(pager_OBJS)
+	$(LD) -o pager.so $(pager_OBJS) $(pager_LDFLAGS)
 
 phone_OBJS = phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 phone.so: $(phone_OBJS)
-	$(LD) -o phone.so $(phone_OBJS)
+	$(LD) -o phone.so $(phone_OBJS) $(phone_LDFLAGS)
 
 swap_OBJS = swap.o
 swap_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 swap_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 swap.so: $(swap_OBJS)
-	$(LD) -o swap.so $(swap_OBJS)
+	$(LD) -o swap.so $(swap_OBJS) $(swap_LDFLAGS)
 
 systray_OBJS = systray.o
 systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 systray.so: $(systray_OBJS)
-	$(LD) -o systray.so $(systray_OBJS)
+	$(LD) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
 
 tasks_OBJS = tasks.o
 tasks_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 tasks.so: $(tasks_OBJS)
-	$(LD) -o tasks.so $(tasks_OBJS)
+	$(LD) -o tasks.so $(tasks_OBJS) $(tasks_LDFLAGS)
 
 volume_OBJS = volume.o
 volume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 volume.so: $(volume_OBJS)
-	$(LD) -o volume.so $(volume_OBJS)
+	$(LD) -o volume.so $(volume_OBJS) $(volume_LDFLAGS)
 
 wpa_supplicant_OBJS = wpa_supplicant.o
 wpa_supplicant_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 wpa_supplicant_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 wpa_supplicant.so: $(wpa_supplicant_OBJS)
-	$(LD) -o wpa_supplicant.so $(wpa_supplicant_OBJS)
+	$(LD) -o wpa_supplicant.so $(wpa_supplicant_OBJS) $(wpa_supplicant_LDFLAGS)
 
 battery.o: battery.c ../../include/Panel.h
 	$(CC) $(battery_CFLAGS) -c battery.c

@@ -23,21 +23,21 @@ glut_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 glut_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glut`
 
 glut.so: $(glut_OBJS)
-	$(LD) -o glut.so $(glut_OBJS) `pkg-config --libs glut`
+	$(LD) -o glut.so $(glut_OBJS) $(glut_LDFLAGS)
 
 glx_OBJS = glx.o
 glx_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 glx_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glu`
 
 glx.so: $(glx_OBJS)
-	$(LD) -o glx.so $(glx_OBJS) `pkg-config --libs glu`
+	$(LD) -o glx.so $(glx_OBJS) $(glx_LDFLAGS)
 
 vesa_OBJS = vbe.o vesa.o
 vesa_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 vesa_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 vesa.so: $(vesa_OBJS)
-	$(LD) -o vesa.so $(vesa_OBJS)
+	$(LD) -o vesa.so $(vesa_OBJS) $(vesa_LDFLAGS)
 
 glut.o: glut.c video.h
 	$(CC) $(glut_CFLAGS) `pkg-config --cflags glut` -c glut.c

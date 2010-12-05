@@ -23,56 +23,56 @@ blacklist_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 blacklist_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 blacklist.so: $(blacklist_OBJS)
-	$(LD) -o blacklist.so $(blacklist_OBJS)
+	$(LD) -o blacklist.so $(blacklist_OBJS) $(blacklist_LDFLAGS)
 
 debug_OBJS = debug.o
 debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 debug.so: $(debug_OBJS)
-	$(LD) -o debug.so $(debug_OBJS)
+	$(LD) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
 
 engineering_OBJS = engineering.o
 engineering_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 engineering_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 engineering.so: $(engineering_OBJS)
-	$(LD) -o engineering.so $(engineering_OBJS)
+	$(LD) -o engineering.so $(engineering_OBJS) $(engineering_LDFLAGS)
 
 openmoko_OBJS = openmoko.o
 openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
 openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs alsa`
 
 openmoko.so: $(openmoko_OBJS)
-	$(LD) -o openmoko.so $(openmoko_OBJS) `pkg-config --libs alsa`
+	$(LD) -o openmoko.so $(openmoko_OBJS) $(openmoko_LDFLAGS)
 
 oss_OBJS = oss.o
 oss_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 oss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 oss.so: $(oss_OBJS)
-	$(LD) -o oss.so $(oss_OBJS)
+	$(LD) -o oss.so $(oss_OBJS) $(oss_LDFLAGS)
 
 panel_OBJS = panel.o
 panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 panel.so: $(panel_OBJS)
-	$(LD) -o panel.so $(panel_OBJS)
+	$(LD) -o panel.so $(panel_OBJS) $(panel_LDFLAGS)
 
 profiles_OBJS = profiles.o
 profiles_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libpulse`
 profiles_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libpulse`
 
 profiles.so: $(profiles_OBJS)
-	$(LD) -o profiles.so $(profiles_OBJS) `pkg-config --libs libpulse`
+	$(LD) -o profiles.so $(profiles_OBJS) $(profiles_LDFLAGS)
 
 smscrypt_OBJS = smscrypt.o
 smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 smscrypt.so: $(smscrypt_OBJS)
-	$(LD) -o smscrypt.so $(smscrypt_OBJS)
+	$(LD) -o smscrypt.so $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
 
 blacklist.o: blacklist.c ../../include/Phone.h
 	$(CC) $(blacklist_CFLAGS) -c blacklist.c

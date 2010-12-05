@@ -27,7 +27,7 @@ libDesktop.a: $(libDesktop_OBJS)
 	$(RANLIB) libDesktop.a
 
 libDesktop.so: $(libDesktop_OBJS)
-	$(LD) -o libDesktop.so -Wl,-soname,libDesktop.so.0 $(libDesktop_OBJS)
+	$(LD) -o libDesktop.so -Wl,-soname,libDesktop.so.0 $(libDesktop_OBJS) $(libDesktop_LDFLAGS)
 
 about.o: about.c
 	$(CC) $(libDesktop_CFLAGS) -c about.c

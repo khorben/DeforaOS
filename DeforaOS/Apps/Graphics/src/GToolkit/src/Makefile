@@ -27,7 +27,7 @@ libGToolkit.a: $(libGToolkit_OBJS)
 	$(RANLIB) libGToolkit.a
 
 libGToolkit.so: $(libGToolkit_OBJS)
-	$(LD) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) `pkg-config --libs gl`
+	$(LD) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) $(libGToolkit_LDFLAGS)
 
 common.o: common.c
 	$(CC) $(libGToolkit_CFLAGS) -c common.c
