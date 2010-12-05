@@ -514,8 +514,8 @@ static void _http_data_complete(GConnHttpEventData * event,
 static void _http_data_partial(GConnHttpEventData * event, Download * download)
 {
 	if(download->content_length == 0 && download->data_received == 0)
-		gtk_label_set_text(GTK_LABEL(download->status), _(
-					"Downloading"));
+		gtk_label_set_text(GTK_LABEL(download->status),
+				_("Downloading"));
 	download->data_received = event->data_received;
 	download->content_length = event->content_length;
 	_download_write(download);
