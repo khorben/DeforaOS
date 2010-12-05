@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-04 02:13+0100\n"
+"POT-Creation-Date: 2010-12-05 02:15+0100\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -49,8 +49,8 @@ msgid "Connected"
 msgstr ""
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:914
-#: ../src/ghtml-webkit.c:403 ../src/ghtml-webkit.c:540
-#: ../src/ghtml-webkit.c:553
+#: ../src/ghtml-webkit.c:408 ../src/ghtml-webkit.c:545
+#: ../src/ghtml-webkit.c:558
 msgid "Downloading..."
 msgstr ""
 
@@ -102,7 +102,7 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:291 ../src/download.c:296 ../src/download.c:623
+#: ../src/download.c:291 ../src/download.c:296 ../src/download.c:631
 #: ../src/surfer.c:822 ../src/surfer.c:825
 msgid "Error"
 msgstr ""
@@ -134,11 +134,11 @@ msgstr ""
 msgid "Error "
 msgstr ""
 
-#: ../src/download.c:510 ../src/download.c:634
+#: ../src/download.c:510 ../src/download.c:642
 msgid "Complete"
 msgstr ""
 
-#: ../src/download.c:518 ../src/download.c:642
+#: ../src/download.c:518 ../src/download.c:650
 msgid "Downloading"
 msgstr ""
 
@@ -158,11 +158,11 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:597 ../src/ghtml-webkit.c:496 ../src/surfer.c:824
+#: ../src/download.c:605 ../src/ghtml-webkit.c:501 ../src/surfer.c:824
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/download.c:663
+#: ../src/download.c:671
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tfile to write document to\n"
@@ -185,8 +185,8 @@ msgstr ""
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1026 ../src/ghtml-webkit.c:298
-#: ../src/ghtml-webkit.c:401
+#: ../src/ghtml-gtkhtml.c:1026 ../src/ghtml-webkit.c:303
+#: ../src/ghtml-webkit.c:406
 msgid "Connecting..."
 msgstr ""
 
