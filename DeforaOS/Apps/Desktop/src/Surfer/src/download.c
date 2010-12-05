@@ -564,23 +564,32 @@ static gboolean _download_on_idle(gpointer data)
 	DownloadPrefs * prefs = &download->prefs;
 	char * p = NULL;
 #ifdef WITH_WEBKIT
+	char * cwd = NULL;
 	size_t len;
 	WebKitNetworkRequest * request;
 
 	download->timeout = 0;
-	len = strlen(prefs->output) + 6;
-	if((p = malloc(len)) == NULL)
+	if(prefs->output[0] != '/' && (cwd = getcwd(NULL, 0)) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
 		download_cancel(download);
 		return FALSE;
 	}
-	/* FIXME needs to be an absolute path */
-	snprintf(p, len, "%s%s", "file:", prefs->output);
+	len = ((cwd != NULL) ? strlen(cwd) : 0) + strlen(prefs->output) + 7;
+	if((p = malloc(len)) == NULL)
+	{
+		_download_error(download, prefs->output, 0);
+		download_cancel(download);
+		free(cwd);
+		return FALSE;
+	}
+	snprintf(p, len, "%s%s%s%s", "file:", (cwd != NULL) ? cwd : "",
+			(cwd != NULL) ? "/" : "", prefs->output);
 	request = webkit_network_request_new(download->url);
 	download->conn = webkit_download_new(request);
 	webkit_download_set_destination_uri(download->conn, p);
 	free(p);
+	free(cwd);
 	webkit_download_start(download->conn);
 #else
 	download->timeout = 0;
@@ -637,8 +646,8 @@ static gboolean _download_on_timeout(gpointer data)
 					d->conn);
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_STARTED:
-			gtk_label_set_text(GTK_LABEL(d->status), _(
-						"Downloading"));
+			gtk_label_set_text(GTK_LABEL(d->status),
+					_("Downloading"));
 			d->data_received = webkit_download_get_current_size(
 					d->conn);
 			d->content_length = webkit_download_get_total_size(
