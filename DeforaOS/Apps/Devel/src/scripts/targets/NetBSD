@@ -48,10 +48,10 @@ _image_image()
 	$SUDO $MBRLABEL -frw "$VND"				&&
 	$SUDO $MKFS "${VND}e"					&&
 	$SUDO $MOUNT "/dev/${VND}e" "$DESTDIR"			&&
-	$SUDO $MKDIR "$DESTDIR$PREFIX"				&&
-	$SUDO $CHOWN "$UID:$GID" "$DESTDIR$PREFIX"		&&
-	target "install"					&&
-	$SUDO $CHOWN -R "0:0" "$DESTDIR$PREFIX"			&&
+	$SUDO $CHOWN "$UID:$GID" "$DESTDIR"			&&
+	$MKDIR "$DESTDIR$PREFIX"				&&
+	_image_targets						&&
+	$SUDO $CHOWN -R "0:0" "$DESTDIR"			&&
 	$SUDO $MKDIR "$DESTDIR/bin"				&&
 	$SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
 	$SUDO $MKDIR "$DESTDIR/dev"				&&
@@ -115,4 +115,40 @@ _image_iso()
 	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
 	$INSTALLBOOT -m "$MACHINE" -o "console=pc" -e bootxx	|| exit 2
 	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
+}
+
+
+#image_targets
+_image_targets()
+{
+	#global settings
+	CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
+	CFLAGS="-Wall -ffreestanding -g"
+
+	#libc
+	LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
+	SUBDIRS="System/src/libc"
+	target install						|| return 2
+
+	#libSystem
+	LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib -lc"
+	SUBDIRS="System/src/libSystem/src System/src/libSystem/include"
+	target install						|| return 2
+	LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
+	SUBDIRS="System/src/libSystem/tools"
+	target install						|| return 2
+
+	#POSIX environment
+	SUBDIRS="Apps/Unix/src/sh
+	Apps/Unix/src/utils
+	Apps/Unix/src/devel
+	Apps/Unix/src/others
+	Apps/Servers/src/inetd"
+	target install						|| return 2
+
+	#DeforaOS environment
+	SUBDIRS="System/src/Init
+	System/src/Splasher
+	System/src/VFS/src"
+	target install						|| return 2
 }
