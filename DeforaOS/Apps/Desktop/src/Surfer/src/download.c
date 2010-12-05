@@ -151,7 +151,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 		? strdup(prefs->user_agent) : NULL;
 	download->url = strdup(url);
 	if(download->url != NULL && prefs->output == NULL)
-		download->prefs.output = basename(download->url);
+		download->prefs.output = strdup(basename(download->url));
 	download->conn = NULL;
 	download->data_received = 0;
 	download->content_length = 0;
@@ -587,7 +587,6 @@ static gboolean _download_on_idle(gpointer data)
 	if((download->fp = fopen(prefs->output, "w")) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
-		free(p);
 		download_cancel(download);
 		return FALSE;
 	}
