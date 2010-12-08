@@ -939,7 +939,7 @@ int cppparser_include(CppParser * cp, char const * include)
 static char * _include_path(CppParser * cpp, char const * str)
 {
 	int d;
-	size_t len;
+	size_t i;
 	char * path = NULL;
 	char * p;
 
@@ -955,8 +955,9 @@ static char * _include_path(CppParser * cpp, char const * str)
 		error_set("%s", "Invalid include directive");
 		return NULL;
 	}
-	len = strlen(str);
-	if(len < 3 || str[len - 1] != d)
+	for(i = 1; str[i] != '\0' && str[i] != d; i++);
+	/* FIXME also check what's behind the directive */
+	if(i == 1 || str[i] != d)
 	{
 		error_set("%s", "Invalid include directive");
 		return NULL;
@@ -966,7 +967,7 @@ static char * _include_path(CppParser * cpp, char const * str)
 		error_set("%s", strerror(errno));
 		return NULL;
 	}
-	path[len - 2] = '\0';
+	path[i - 1] = '\0';
 	p = _path_lookup(cpp, path, d == '>');
 	free(path);
 	return p;
