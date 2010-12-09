@@ -424,10 +424,13 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 
 /* ghtml_set_proxy */
-int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
+int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
+		unsigned int http_port)
 {
+	if(type == SPT_NONE)
+		return 0;
 	/* FIXME really implement */
-	return -1;
+	return -error_set_code(1, "%s", strerror(ENOSYS));;
 }
 
 

@@ -30,7 +30,9 @@ struct _Surfer
 
 	/* preferences */
 	char * homepage;
+	SurferProxyType proxy_type;
 	char * proxy_http;
+	unsigned int proxy_http_port;
 
 	/* widgets */
 	/* main window */
@@ -56,7 +58,10 @@ struct _Surfer
 	GtkWidget * pr_window;
 	GtkWidget * pr_homepage;
 	GtkWidget * pr_focus_tabs;
+	GtkWidget * pr_proxy_radio_direct;
+	GtkWidget * pr_proxy_radio_http;
 	GtkWidget * pr_proxy_http;
+	GtkWidget * pr_proxy_http_port;
 
 	/* find */
 	GtkWidget * fi_dialog;

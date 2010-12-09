@@ -218,10 +218,14 @@ static gboolean _surfer_filename_confirm(Surfer * surfer,
 		char const * filename);
 
 static char * _config_get_filename(void);
+static int _config_load_integer(Config * config, char const * section,
+		char const * variable, unsigned int * value);
 static int _config_load_string(Config * config, char const * section,
 		char const * variable, char ** value);
 static int _config_save_boolean(Config * config, char const * section,
 		char const * variable, gboolean value);
+static int _config_save_integer(Config * config, char const * section,
+		char const * variable, unsigned int value);
 static int _config_save_string(Config * config, char const * section,
 		char const * variable, char const * value);
 
@@ -267,7 +271,9 @@ Surfer * _new_do(char const * url)
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
 	surfer->homepage = NULL;
+	surfer->proxy_type = SPT_NONE;
 	surfer->proxy_http = NULL;
+	surfer->proxy_http_port = 0;
 	if((surfer->config = config_new()) == NULL
 			|| surfer_config_load(surfer) != 0)
 	{
@@ -504,21 +510,38 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 
 
 /* surfer_set_proxy */
-void surfer_set_proxy(Surfer * surfer, char const * http)
+void surfer_set_proxy(Surfer * surfer, SurferProxyType type, char const * http,
+		unsigned int http_port)
 {
 	GtkWidget * view;
 	gint n;
 	gint i;
 
+	surfer->proxy_type = type;
 	free(surfer->proxy_http);
-	if((surfer->proxy_http = strdup(http)) == NULL)
+	if(http == NULL)
+		surfer->proxy_http = NULL;
+	else if((surfer->proxy_http = strdup(http)) == NULL)
 		return; /* XXX report error */
+	surfer->proxy_http_port = http_port;
 	n = gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook));
 	for(i = 0; i < n; i++)
 	{
 		view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook),
 				i);
-		ghtml_set_proxy(view, http);
+		ghtml_set_proxy(view, type, http, http_port);
+	}
+}
+
+
+/* surfer_set_security */
+void surfer_set_security(Surfer * surfer, SurferSecurity security)
+{
+	/* FIXME would need a context per tab to work... */
+	switch(security)
+	{
+		default:
+			break;
 	}
 }
 
@@ -660,8 +683,12 @@ int surfer_config_load(Surfer * surfer)
 	free(filename);
 	_config_load_string(surfer->config, NULL, "homepage",
 			&surfer->homepage);
+	_config_load_integer(surfer->config, "proxy", "type",
+			&surfer->proxy_type);
 	_config_load_string(surfer->config, "proxy", "http",
 			&surfer->proxy_http);
+	_config_load_integer(surfer->config, "proxy", "http_port",
+			&surfer->proxy_http_port);
 	return 0;
 }
 
@@ -679,8 +706,12 @@ int surfer_config_save(Surfer * surfer)
 	ret |= _config_save_boolean(surfer->config, NULL, "focus_new_tabs",
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs)));
+	ret |= _config_save_integer(surfer->config, "proxy", "type",
+			surfer->proxy_type);
 	ret |= _config_save_string(surfer->config, "proxy", "http",
 			surfer->proxy_http);
+	ret |= _config_save_integer(surfer->config, "proxy", "http_port",
+			surfer->proxy_http_port);
 	if(ret == 0)
 		ret |= config_save(surfer->config, filename);
 	free(filename);
@@ -1013,7 +1044,8 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 		return;
 	}
 	if(surfer->proxy_http != NULL)
-		ghtml_set_proxy(widget, surfer->proxy_http);
+		ghtml_set_proxy(widget, surfer->proxy_type, surfer->proxy_http,
+				surfer->proxy_http_port);
 	gtk_widget_show_all(widget); /* must be before set_current_page() */
 	if(url != NULL)
 		ghtml_load_url(widget, url);
@@ -1499,6 +1531,24 @@ static char * _config_get_filename(void)
 }
 
 
+/* config_load_integer */
+static int _config_load_integer(Config * config, char const * section,
+		char const * variable, unsigned int * value)
+{
+	unsigned int u;
+	char const * p;
+	char * q;
+
+	if((p = config_get(config, section, variable)) == NULL || p[0] == '\0')
+		return -1;
+	u = strtoul(p, &q, 10);
+	if(*q != '\0')
+		return -1;
+	*value = u;
+	return 0;
+}
+
+
 /* config_load_string */
 static int _config_load_string(Config * config, char const * section,
 		char const * variable, char ** value)
@@ -1507,9 +1557,9 @@ static int _config_load_string(Config * config, char const * section,
 	char * p;
 
 	if((str = config_get(config, section, variable)) == NULL)
-		return 0;
+		return -1;
 	if((p = strdup(str)) == NULL)
-		return 1;
+		return -1;
 	free(*value);
 	*value = p;
 	return 0;
@@ -1521,6 +1571,17 @@ static int _config_save_boolean(Config * config, char const * section,
 		char const * variable, gboolean value)
 {
 	return config_set(config, section, variable, value ? "1" : "0");
+}
+
+
+/* config_save_integer */
+static int _config_save_integer(Config * config, char const * section,
+		char const * variable, unsigned int value)
+{
+	char buf[32];
+
+	snprintf(buf, sizeof(buf), "%u", value);
+	return config_set(config, section, variable, buf);
 }
 
 

@@ -19,6 +19,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <libintl.h>
 #include <webkit/webkit.h>
 #include "ghtml.h"
@@ -223,19 +225,31 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 
 
 /* ghtml_set_proxy */
-int ghtml_set_proxy(GtkWidget * ghtml, char const * http)
+int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
+		unsigned int http_port)
 {
 #if WEBKIT_CHECK_VERSION(1, 1, 0)
 	SoupSession * session;
-	SoupURI * uri;
+	char buf[32];
+	struct hostent * he;
+	struct in_addr addr;
+	SoupURI * uri = NULL;
 
 	session = webkit_get_default_session();
-	uri = soup_uri_new(http);
+	if(type == SPT_HTTP && http != NULL && strlen(http) > 0)
+	{
+		if((he = gethostbyname(http)) == NULL)
+			return -error_set_code(1, "%s", hstrerror(h_errno));
+		memcpy(&addr.s_addr, he->h_addr, sizeof(addr.s_addr));
+		snprintf(buf, sizeof(buf), "http://%s:%u/", inet_ntoa(addr),
+				http_port);
+		uri = soup_uri_new(buf);
+	}
 	g_object_set(session, "proxy-uri", uri, NULL);
 	return 0;
 #else
 	/* FIXME really implement */
-	return -1;
+	return -error_set_code(1, "%s", strerror(ENOSYS));
 #endif
 }
 
@@ -479,11 +493,33 @@ static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 {
 	Surfer * surfer;
 	char const * location;
+	SurferSecurity security = SS_NONE;
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
+	WebKitWebDataSource *source;
+	WebKitNetworkRequest *request;
+	SoupMessage *message;
+#endif
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if(frame == webkit_web_view_get_main_frame(view)
 			&& (location = webkit_web_frame_get_uri(frame)) != NULL)
+	{
 		surfer_set_location(surfer, location);
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
+		if(strncmp(location, "https://", 8) == 0)
+		{
+			security = SS_UNTRUSTED;
+			source = webkit_web_frame_get_data_source(frame);
+			request = webkit_web_data_source_get_request(source);
+			message = webkit_network_request_get_message(request);
+			/* FIXME trusts even if hostname does not match?!? */
+			if(message != NULL && soup_message_get_flags(message)
+					& SOUP_MESSAGE_CERTIFICATE_TRUSTED)
+				security = SS_TRUSTED;
+		}
+#endif
+	}
+	surfer_set_security(surfer, security);
 }
 
 

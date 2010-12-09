@@ -42,6 +42,20 @@
 /* types */
 typedef struct _Surfer Surfer;
 
+typedef enum _SurferSecurity
+{
+	SS_NONE = 0,
+	SS_TRUSTED,
+	SS_UNTRUSTED
+}
+SurferSecurity;
+
+typedef enum _SurferProxyType
+{
+	SPT_NONE = 0,
+	SPT_HTTP
+} SurferProxyType;
+
 
 /* functions */
 Surfer * surfer_new(char const * url);
@@ -56,7 +70,9 @@ void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen);
 void surfer_set_homepage(Surfer * surfer, char const * homepage);
 void surfer_set_location(Surfer * surfer, char const * url);
 void surfer_set_progress(Surfer * surfer, gdouble fraction);
-void surfer_set_proxy(Surfer * surfer, char const * http);
+void surfer_set_proxy(Surfer * surfer, SurferProxyType type, char const * http,
+		unsigned int http_port);
+void surfer_set_security(Surfer * surfer, SurferSecurity security);
 void surfer_set_status(Surfer * surfer, char const * status);
 void surfer_set_title(Surfer * surfer, char const * title);
 

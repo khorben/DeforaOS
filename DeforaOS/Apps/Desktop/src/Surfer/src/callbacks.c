@@ -407,6 +407,7 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
 static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
+static void _preferences_on_proxy_http_toggled(gpointer data);
 
 void on_preferences(gpointer data)
 {
@@ -447,25 +448,40 @@ void on_preferences(gpointer data)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
 	/* focus new tabs */
 	hbox = gtk_hbox_new(FALSE, 4);
 	surfer->pr_focus_tabs = gtk_check_button_new_with_label(
 			_("Focus new tabs"));
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_focus_tabs, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("General")));
 	/* network tab */
 	page = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
+	widget = gtk_radio_button_new_with_label(NULL, _("Direct connection"));
+	surfer->pr_proxy_radio_direct = widget;
+	gtk_box_pack_start(GTK_BOX(page), widget, FALSE, TRUE, 0);
+	widget = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(
+				widget), _("HTTP proxy:"));
+	surfer->pr_proxy_radio_http = widget;
+	g_signal_connect_swapped(G_OBJECT(widget), "toggled", G_CALLBACK(
+				_preferences_on_proxy_http_toggled), surfer);
+	gtk_box_pack_start(GTK_BOX(page), widget, FALSE, TRUE, 0);
 	/* http proxy */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new(_("HTTP proxy:"));
+	widget = gtk_label_new(_("Hostname:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	surfer->pr_proxy_http = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_proxy_http, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	widget = gtk_label_new(_("Port:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	surfer->pr_proxy_http_port = gtk_spin_button_new_with_range(0, 65535,
+			1.0);
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_proxy_http_port, FALSE,
+			TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("Network")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
@@ -476,6 +492,8 @@ void on_preferences(gpointer data)
 static void _preferences_set(Surfer * surfer)
 {
 	char const * p;
+	unsigned long port;
+	char * q = NULL;
 
 	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
 			!= NULL ? surfer->homepage : "");
@@ -486,8 +504,21 @@ static void _preferences_set(Surfer * surfer)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs), FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					surfer->pr_proxy_radio_http),
+			surfer->proxy_type == SPT_HTTP);
+	_preferences_on_proxy_http_toggled(surfer);
 	if((p = config_get(surfer->config, "proxy", "http")) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(surfer->pr_proxy_http), p);
+	if((p = config_get(surfer->config, "proxy", "http_port")) != NULL
+			&& p[0] != '\0')
+	{
+		port = strtoul(p, &q, 10);
+		if(q != NULL && *q == '\0')
+			gtk_spin_button_set_value(GTK_SPIN_BUTTON(
+						surfer->pr_proxy_http_port),
+					port);
+	}
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -519,13 +550,30 @@ static void _preferences_on_cancel(gpointer data)
 static void _preferences_on_ok(gpointer data)
 {
 	Surfer * surfer = data;
+	SurferProxyType type = SPT_NONE;
 
 	gtk_widget_hide(surfer->pr_window);
 	surfer_set_homepage(surfer, gtk_entry_get_text(GTK_ENTRY(
 					surfer->pr_homepage)));
-	surfer_set_proxy(surfer, gtk_entry_get_text(GTK_ENTRY(
-					surfer->pr_proxy_http)));
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+					surfer->pr_proxy_radio_http)))
+		type = SPT_HTTP;
+	surfer_set_proxy(surfer, type, gtk_entry_get_text(GTK_ENTRY(
+					surfer->pr_proxy_http)),
+			gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(
+					surfer->pr_proxy_http_port)));
 	surfer_config_save(surfer);
+}
+
+static void _preferences_on_proxy_http_toggled(gpointer data)
+{
+	Surfer * surfer = data;
+	gboolean active;
+
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				surfer->pr_proxy_radio_http));
+	gtk_widget_set_sensitive(surfer->pr_proxy_http, active);
+	gtk_widget_set_sensitive(surfer->pr_proxy_http_port, active);
 }
 
 
