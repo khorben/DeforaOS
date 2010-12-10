@@ -36,7 +36,10 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- locker $(DESTDIR)$(BINDIR)/locker
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(BINDIR)/locker
 
 .PHONY: all clean distclean install uninstall
