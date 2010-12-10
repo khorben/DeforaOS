@@ -676,6 +676,9 @@ void surfer_close_tab(Surfer * surfer, GtkWidget * view)
 int surfer_config_load(Surfer * surfer)
 {
 	char * filename;
+	char const * p;
+	char buf[256];
+	unsigned int port;
 
 	if((filename = _config_get_filename()) == NULL)
 		return 1;
@@ -683,12 +686,23 @@ int surfer_config_load(Surfer * surfer)
 	free(filename);
 	_config_load_string(surfer->config, NULL, "homepage",
 			&surfer->homepage);
-	_config_load_integer(surfer->config, "proxy", "type",
-			&surfer->proxy_type);
-	_config_load_string(surfer->config, "proxy", "http",
-			&surfer->proxy_http);
-	_config_load_integer(surfer->config, "proxy", "http_port",
-			&surfer->proxy_http_port);
+	if((p = getenv("http_proxy")) != NULL && sscanf(p,
+				"http://%255[^:]:%u", buf, &port) == 2)
+	{
+		surfer->proxy_type = SPT_HTTP;
+		buf[sizeof(buf) - 1] = '\0';
+		surfer->proxy_http = strdup(buf);
+		surfer->proxy_http_port = port;
+	}
+	else
+	{
+		_config_load_integer(surfer->config, "proxy", "type",
+				&surfer->proxy_type);
+		_config_load_string(surfer->config, "proxy", "http",
+				&surfer->proxy_http);
+		_config_load_integer(surfer->config, "proxy", "http_port",
+				&surfer->proxy_http_port);
+	}
 	return 0;
 }
 

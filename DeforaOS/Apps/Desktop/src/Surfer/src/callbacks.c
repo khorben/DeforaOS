@@ -31,7 +31,31 @@
 gboolean on_closex(gpointer data)
 {
 	Surfer * surfer = data;
+	GtkWidget * dialog;
+	GtkDialogFlags f = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	int res;
 
+	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) > 1)
+	{
+		dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window), f,
+				GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+				_("Question"));
+		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+					dialog), "%s",
+#endif
+				_("There are multiple tabs opened.\n"
+					"Do you really want to close every tab"
+					" opened in this window?"));
+		gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+		gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+		res = gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+		if(res != GTK_RESPONSE_CLOSE)
+			return TRUE;
+	}
 	surfer_delete(surfer);
 	return FALSE;
 }
@@ -492,8 +516,6 @@ void on_preferences(gpointer data)
 static void _preferences_set(Surfer * surfer)
 {
 	char const * p;
-	unsigned long port;
-	char * q = NULL;
 
 	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
 			!= NULL ? surfer->homepage : "");
@@ -508,17 +530,11 @@ static void _preferences_set(Surfer * surfer)
 					surfer->pr_proxy_radio_http),
 			surfer->proxy_type == SPT_HTTP);
 	_preferences_on_proxy_http_toggled(surfer);
-	if((p = config_get(surfer->config, "proxy", "http")) != NULL)
-		gtk_entry_set_text(GTK_ENTRY(surfer->pr_proxy_http), p);
-	if((p = config_get(surfer->config, "proxy", "http_port")) != NULL
-			&& p[0] != '\0')
-	{
-		port = strtoul(p, &q, 10);
-		if(q != NULL && *q == '\0')
-			gtk_spin_button_set_value(GTK_SPIN_BUTTON(
-						surfer->pr_proxy_http_port),
-					port);
-	}
+	if(surfer->proxy_http != NULL)
+		gtk_entry_set_text(GTK_ENTRY(surfer->pr_proxy_http),
+				surfer->proxy_http);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(surfer->pr_proxy_http_port),
+			surfer->proxy_http_port);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
