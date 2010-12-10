@@ -294,6 +294,8 @@ static int _calendar_set_detail(Calendar * calendar, unsigned int year,
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, detail);
 #endif
 	snprintf(buf, sizeof(buf), "%u%02u%02u", year, month, day);
+	if(detail != NULL && detail[0] == '\0')
+		detail = NULL; /* unset if empty */
 	ret = config_set(calendar->config, NULL, buf, detail);
 	if((filename = _config_get_filename()) != NULL)
 		ret |= config_save(calendar->config, filename);
