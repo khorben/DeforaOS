@@ -1,6 +1,6 @@
 PACKAGE	= libSystem
 VERSION	= 0.1.4
-SUBDIRS	= include src tools
+SUBDIRS	= data include src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,10 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/libSystem.pc.in \
+		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
@@ -66,6 +70,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
