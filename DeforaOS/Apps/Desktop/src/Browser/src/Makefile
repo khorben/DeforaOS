@@ -4,10 +4,9 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=
-CPPFLAGS= -I $(PREFIX)/include
-CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
+CPPFLAGS=
+CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -17,64 +16,64 @@ INSTALL	= install
 all: $(TARGETS)
 
 browser_OBJS = browser.o callbacks.o mime.o main.o
-browser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-browser_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop
+browser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem libDesktop`
+browser_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop`
 
 browser: $(browser_OBJS)
 	$(CC) -o browser $(browser_OBJS) $(browser_LDFLAGS)
 
 copy_OBJS = copy.o
-copy_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-copy_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+copy_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+copy_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 copy: $(copy_OBJS)
 	$(CC) -o copy $(copy_OBJS) $(copy_LDFLAGS)
 
 delete_OBJS = delete.o
-delete_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-delete_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+delete_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+delete_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 delete: $(delete_OBJS)
 	$(CC) -o delete $(delete_OBJS) $(delete_LDFLAGS)
 
 desktop_OBJS = desktop.o desktopicon.o
-desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem mime.o
+desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
+desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0` mime.o
 
 desktop: $(desktop_OBJS)
 	$(CC) -o desktop $(desktop_OBJS) $(desktop_LDFLAGS)
 
 desktop-settings_OBJS = settings.o
-desktop-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-desktop-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+desktop-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+desktop-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 desktop-settings: $(desktop-settings_OBJS)
 	$(CC) -o desktop-settings $(desktop-settings_OBJS) $(desktop-settings_LDFLAGS)
 
 move_OBJS = move.o
-move_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-move_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+move_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+move_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 move: $(move_OBJS)
 	$(CC) -o move $(move_OBJS) $(move_LDFLAGS)
 
 open_OBJS = open.o
-open_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-open_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem mime.o
+open_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
+open_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0` mime.o
 
 open: $(open_OBJS)
 	$(CC) -o open $(open_OBJS) $(open_LDFLAGS)
 
 properties_OBJS = properties.o
-properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem mime.o
+properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
+properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0` mime.o
 
 properties: $(properties_OBJS)
 	$(CC) -o properties $(properties_OBJS) $(properties_LDFLAGS)
 
 view_OBJS = view.o
-view_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop mime.o
+view_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem libDesktop`
+view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop` mime.o
 
 view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(view_LDFLAGS)
