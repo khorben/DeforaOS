@@ -324,7 +324,7 @@ int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
 	fprintf(stderr, "DEBUG: %s(%d, buf, %u) => %d\n", __func__, fd, size,
 			ret);
 #endif
-	if(buffer_set_size(b, ret < 0 ? 0 : ret) != 0)
+	if(buffer_set_size(b, (ret < 0) ? 0 : ret) != 0)
 	{
 		memset(buffer_get_data(b), 0, size);
 		return -1;
