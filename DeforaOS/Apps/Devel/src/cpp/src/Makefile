@@ -3,10 +3,12 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF= -I $(PREFIX)/include -I ../include
-CPPFLAGS=
+CPPFLAGSF= -I ../include
+CPPFLAGS= `pkg-config --cflags libSystem`
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= `pkg-config --libs libSystem`
+LDFLAGS	= 
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
@@ -21,7 +23,7 @@ all: $(TARGETS)
 
 libcpp_OBJS = cpp.o parser.o scanner.o
 libcpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
-libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lSystem
+libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 libcpp.a: $(libcpp_OBJS)
 	$(AR) libcpp.a $(libcpp_OBJS)
