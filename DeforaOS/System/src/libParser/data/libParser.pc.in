@@ -1,0 +1,11 @@
+prefix=PREFIX
+includedir=${prefix}/include
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+
+Name: libParser
+Description: DeforaOS System parsing library
+Version: VERSION
+Requires: libSystem
+Cflags: -I${includedir}
+Libs: -Wl,-R${libdir} -L${libdir} -lParser

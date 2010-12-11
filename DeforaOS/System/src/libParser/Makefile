@@ -1,6 +1,6 @@
 PACKAGE	= libParser
 VERSION	= 0.0.0
-SUBDIRS	= include/System src tools
+SUBDIRS	= data include/System src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,10 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/libParser.pc.in \
+		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System/Parser.h \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
@@ -35,6 +39,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
