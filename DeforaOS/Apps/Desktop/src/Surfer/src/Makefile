@@ -5,7 +5,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=
-CPPFLAGS= -I $(PREFIX)/include
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGS	= 
@@ -21,15 +21,15 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 download_OBJS = download.o
-download_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D WITH_WEBKIT $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 webkit-1.0`
-download_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem `pkg-config --libs gtk+-2.0 webkit-1.0`
+download_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D WITH_WEBKIT $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0 webkit-1.0`
+download_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0 webkit-1.0`
 
 download: $(download_OBJS)
 	$(CC) -o download $(download_OBJS) $(download_LDFLAGS)
 
 surfer_OBJS = surfer.o ghtml.o callbacks.o main.o
-surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D WITH_WEBKIT $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 webkit-1.0`
-surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop `pkg-config --libs gtk+-2.0 webkit-1.0`
+surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D WITH_WEBKIT $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem libDesktop webkit-1.0`
+surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop webkit-1.0`
 
 surfer: $(surfer_OBJS)
 	$(CC) -o surfer $(surfer_OBJS) $(surfer_LDFLAGS)
