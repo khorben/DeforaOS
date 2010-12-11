@@ -9,7 +9,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libDesktop.pc: ../config.sh
+libDesktop.pc: libDesktop.pc.in ../config.sh
 	./pkgconfig.sh "libDesktop.pc"
 
 clean:

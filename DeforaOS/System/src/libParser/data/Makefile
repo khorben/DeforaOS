@@ -9,7 +9,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libParser.pc: ../config.sh
+libParser.pc: libParser.pc.in ../config.sh
 	./pkgconfig.sh "libParser.pc"
 
 clean:

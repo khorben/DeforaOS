@@ -9,7 +9,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libSystem.pc: ../config.sh
+libSystem.pc: libSystem.pc.in ../config.sh
 	./pkgconfig.sh "libSystem.pc"
 
 clean:
