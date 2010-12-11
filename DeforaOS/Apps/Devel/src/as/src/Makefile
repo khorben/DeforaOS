@@ -5,8 +5,8 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= -I $(PREFIX)/include
-CFLAGSF	= -W
+CPPFLAGS= 
+CFLAGSF	= -W `pkg-config --cflags cpp`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= 
 AR	= ar -rc
@@ -26,7 +26,7 @@ subdirs:
 
 libas_OBJS = as.o code.o parser.o token.o arch/arch.o format/format.o
 libas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
-libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -lcpp
+libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs cpp`
 
 libas.a: $(libas_OBJS)
 	$(AR) libas.a $(libas_OBJS)
