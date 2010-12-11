@@ -4,11 +4,12 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF= -I ../include -I $(PREFIX)/include
+CPPFLAGSF= -I ../include
 CPPFLAGS=
-CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
+CFLAGSF	= -W `pkg-config --cflags libSystem libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config gtk+-2.0 --libs`
+LDFLAGSF= `pkg-config --libs libSystem libDesktop`
+LDFLAGS	= 
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -22,7 +23,7 @@ subdirs:
 
 mailer_OBJS = account.o callbacks.o compose.o mailer.o main.o
 mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop
+mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mailer: $(mailer_OBJS)
 	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
