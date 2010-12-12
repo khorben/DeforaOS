@@ -1,6 +1,6 @@
 PACKAGE	= as
 VERSION	= 0.1.1
-SUBDIRS	= src include
+SUBDIRS	= data src include
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,10 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/as.pc.in \
+		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/as.c \
 		$(PACKAGE)-$(VERSION)/src/code.c \
 		$(PACKAGE)-$(VERSION)/src/parser.c \
@@ -76,6 +80,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
