@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF= -I ../../include -I $(PREFIX)/include
+CPPFLAGSF= -I ../../include
 CPPFLAGS= 
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -fPIC -pedantic
@@ -20,7 +20,7 @@ all: $(TARGETS)
 
 as_OBJS = as.o
 as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
+as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs as`
 
 as.so: $(as_OBJS)
 	$(LD) -o as.so $(as_OBJS) $(as_LDFLAGS)
