@@ -358,6 +358,7 @@ Surfer * _new_do(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* notebook */
 	surfer->notebook = gtk_notebook_new();
+	gtk_notebook_set_scrollable(GTK_NOTEBOOK(surfer->notebook), TRUE);
 	gtk_notebook_set_show_border(GTK_NOTEBOOK(surfer->notebook), FALSE);
 	surfer_open_tab(surfer, NULL);
 	g_signal_connect_swapped(G_OBJECT(surfer->notebook), "switch-page",
@@ -1067,6 +1068,10 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 						widget, _("Untitled")))) > 0)
 	{
 		gtk_notebook_set_show_tabs(notebook, TRUE);
+#if GTK_CHECK_VERSION(2, 10, 0)
+		gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(surfer->notebook),
+				widget, TRUE);
+#endif
 		if((p = config_get(surfer->config, "", "focus_new_tabs"))
 				!= NULL && strcmp(p, "1") == 0)
 		{
