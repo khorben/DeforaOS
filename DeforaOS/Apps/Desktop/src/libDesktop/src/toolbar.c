@@ -55,7 +55,7 @@ GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
 			g_signal_connect_swapped(G_OBJECT(p->widget), "clicked",
 					G_CALLBACK(p->callback), data);
 		else
-			gtk_widget_set_sensitive(p->widget, FALSE);
+			gtk_widget_set_sensitive(GTK_WIDGET(p->widget), FALSE);
 		if(accel != NULL && p->accel != 0)
 			gtk_widget_add_accelerator(GTK_WIDGET(p->widget),
 					"clicked", accel, p->accel, p->modifier,
