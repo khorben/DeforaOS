@@ -661,8 +661,7 @@ int code_type_add(Code * code, char const * name)
 		p = &code->types[i];
 		if(strcmp(p->name, name) != 0)
 			continue;
-		return -error_set_code(1, "%s%s%s:%u", name,
-				" is already defined");
+		return -error_set_code(1, "%s%s", name, " is already defined");
 	}
 	if((p = realloc(code->types, sizeof(*p) * (i + 1))) == NULL)
 		return -error_set_code(1, "%s", strerror(errno));
