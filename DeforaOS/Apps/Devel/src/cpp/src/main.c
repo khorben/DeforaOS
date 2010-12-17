@@ -41,6 +41,7 @@ typedef struct _Prefs
 	size_t undefines_cnt;
 } Prefs;
 #define PREFS_t		0x1
+#define PREFS_w		0x2
 
 
 /* prototypes */
@@ -84,9 +85,11 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 
 	memset(&cppprefs, 0, sizeof(cppprefs));
 	cppprefs.filename = filename;
-	cppprefs.filters = CPP_FILTER_WHITESPACE | CPP_FILTER_COMMENT;
+	cppprefs.filters = CPP_FILTER_COMMENT;
 	if(prefs->flags & PREFS_t)
 		cppprefs.filters |= CPP_FILTER_TRIGRAPH;
+	if(prefs->flags & PREFS_w)
+		cppprefs.filters |= CPP_FILTER_WHITESPACE;
 	if((cpp = cpp_new(&cppprefs)) == NULL)
 		return _cpp_error();
 	for(i = 0; i < prefs->paths_cnt; i++)
@@ -154,7 +157,8 @@ static int _usage(void)
 "  -I	Add a directory to the search path\n"
 "  -o	Write output to a file\n"
 "  -t	Convert trigraphs\n"
-"  -U	Remove a substitution\n", stderr);
+"  -U	Remove a substitution\n"
+"  -w	Filter whitespaces\n", stderr);
 	return 1;
 }
 
@@ -171,7 +175,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "D:I:o:tU:")) != -1)
+	while((o = getopt(argc, argv, "D:I:o:tU:w")) != -1)
 		switch(o)
 		{
 			case 'D':
@@ -191,6 +195,9 @@ int main(int argc, char * argv[])
 			case 'U':
 				if(_main_add_undefine(&prefs, optarg) != 0)
 					return 2;
+				break;
+			case 'w':
+				prefs.flags |= PREFS_w;
 				break;
 			default:
 				return _usage();
