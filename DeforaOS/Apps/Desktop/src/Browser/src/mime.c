@@ -16,12 +16,12 @@
 
 
 #include <sys/types.h>
-#include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
+#include <errno.h>
 #include <libintl.h>
 #include "mime.h"
 #include "../config.h"
@@ -91,10 +91,12 @@ Mime * mime_new(void)
 		p->icon_48 = NULL;
 		p->icon_96 = NULL;
 #endif
-/*		p->open = mime->config != NULL
+#if 0
+		p->open = mime->config != NULL
 			? config_get(mime->config, buf, "open") : NULL;
 		p->edit = mime->config != NULL
-			? config_get(mime->config, buf, "edit") : NULL; */
+			? config_get(mime->config, buf, "edit") : NULL;
+#endif
 		mime->types_cnt++;
 	}
 	if(!feof(fp))
@@ -109,6 +111,7 @@ Mime * mime_new(void)
 
 static void _new_config(Mime * mime)
 {
+	size_t len;
 	char * homedir;
 	char * filename;
 
@@ -116,10 +119,10 @@ static void _new_config(Mime * mime)
 		return;
 	if((mime->config = config_new()) == NULL)
 		return;
-	if((filename = malloc(strlen(homedir) + 1 + strlen(MIME_CONFIG_FILE)
-					+ 1)) == NULL)
+	len = strlen(homedir) + 1 + strlen(MIME_CONFIG_FILE) + 1;
+	if((filename = malloc(len)) == NULL)
 		return;
-	sprintf(filename, "%s/%s", homedir, MIME_CONFIG_FILE);
+	snprintf(filename, len, "%s/%s", homedir, MIME_CONFIG_FILE);
 	config_load(mime->config, filename);
 	free(filename);
 }
@@ -157,12 +160,18 @@ char const * mime_get_handler(Mime * mime, char const * type,
 	char * q;
 
 	if(type == NULL || action == NULL)
+	{
+		error_set_code(1, "%s", strerror(EINVAL));
 		return NULL;
+	}
 	if((program = config_get(mime->config, type, action)) != NULL)
 		return program;
 	if((p = strchr(type, '/')) == NULL || *(++p) == '\0'
 			|| (p = strdup(type)) == NULL)
+	{
+		error_set_code(1, "%s", strerror(errno)); /* XXX may be wrong */
 		return NULL;
+	}
 	q = strchr(p, '/');
 	q[1] = '*';
 	q[2] = '\0';
@@ -210,23 +219,25 @@ int mime_action(Mime * mime, char const * action, char const * path)
 /* mime_action_type */
 int mime_action_type(Mime * mime, char const * action, char const * path,
 		char const * type)
-	/* FIXME report errors */
 {
+	int ret = 0;
 	char const * program;
-	pid_t pid;
+	char * argv[3];
+	GError * error = NULL;
 
 	if((program = mime_get_handler(mime, type, action)) == NULL)
-		return 2;
-	if((pid = fork()) == -1)
-	{
-		perror("fork");
-		return 3;
-	}
-	if(pid != 0)
-		return 0;
-	execlp(program, program, path, NULL);
-	perror(program);
-	exit(2);
+		return -1;
+	argv[0] = strdup(program);
+	argv[1] = strdup(path);
+	argv[2] = NULL;
+	if(argv[0] == NULL || argv[1] == NULL)
+		ret = -error_set_code(2, "%s", strerror(errno));
+	else if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+				NULL, &error) == FALSE)
+		ret = -error_set_code(2, "%s: %s", argv[0], error->message);
+	free(argv[0]);
+	free(argv[1]);
+	return ret;
 }
 
 
@@ -256,27 +267,25 @@ void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 				mime->types[i].icon_24 = _icons_size(theme,
 						type, 24);
 			*icon = mime->types[i].icon_24;
-			continue;
 		}
 #if GTK_CHECK_VERSION(2, 6, 0)
-		if(size == 48)
+		else if(size == 48)
 		{
 			if(mime->types[i].icon_48 == NULL)
 				mime->types[i].icon_48 = _icons_size(theme,
 						type, 48);
 			*icon = mime->types[i].icon_48;
-			continue;
 		}
-		if(size == 96)
+		else if(size == 96)
 		{
 			if(mime->types[i].icon_96 == NULL)
 				mime->types[i].icon_96 = _icons_size(theme,
 						type, 96);
 			*icon = mime->types[i].icon_96;
-			continue;
 		}
 #endif
-		*icon = _icons_size(theme, type, size);
+		else
+			*icon = _icons_size(theme, type, size);
 	}
 	va_end(arg);
 }
@@ -288,8 +297,8 @@ static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 	char * p;
 	GdkPixbuf * icon;
 
-	strncpy(&buf[11], type, sizeof(buf)-11);
-	for(buf[sizeof(buf)-1] = '\0'; (p = strchr(&buf[11], '/')) != NULL;
+	strncpy(&buf[11], type, sizeof(buf) - 11);
+	for(buf[sizeof(buf) - 1] = '\0'; (p = strchr(&buf[11], '/')) != NULL;
 			*p = '-');
 	if((icon = gtk_icon_theme_load_icon(theme, buf, size, 0, NULL)) != NULL)
 		return icon;
