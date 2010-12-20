@@ -366,6 +366,13 @@ Surfer * _new_do(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->notebook, TRUE, TRUE, 0);
 	/* statusbar */
 	surfer->statusbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	surfer->security = gtk_image_new();
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_security), surfer);
+	gtk_container_add(GTK_CONTAINER(widget), surfer->security);
+	gtk_box_pack_start(GTK_BOX(surfer->statusbox), widget, FALSE, TRUE, 0);
 	surfer->progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(surfer->statusbox), surfer->progress, FALSE,
 			FALSE, 0);
@@ -389,6 +396,8 @@ Surfer * _new_do(char const * url)
 	surfer->ab_dialog = NULL;
 	/* hack to display the statusbar only if necessary */
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
+	/* FIXME should be automatic and per tab */
+	surfer_set_security(surfer, SS_NONE);
 	surfer_set_status(surfer, NULL);
 	_surfer_cnt++;
 	return surfer;
@@ -538,12 +547,27 @@ void surfer_set_proxy(Surfer * surfer, SurferProxyType type, char const * http,
 /* surfer_set_security */
 void surfer_set_security(Surfer * surfer, SurferSecurity security)
 {
-	/* FIXME would need a context per tab to work... */
+	GtkWidget * view;
+	char const * level;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	security = ghtml_get_security(view);
 	switch(security)
 	{
+		case SS_TRUSTED:
+			level = "security-high";
+			break;
+		case SS_UNTRUSTED:
+			level = "security-medium";
+			break;
+		case SS_NONE:
 		default:
+			level = "security-low";
 			break;
 	}
+	gtk_image_set_from_icon_name(GTK_IMAGE(surfer->security), level,
+			GTK_ICON_SIZE_MENU);
 }
 
 
@@ -1387,6 +1411,13 @@ void surfer_unselect_all(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_unselect_all(view);
+}
+
+
+/* surfer_view_security */
+void surfer_view_security(Surfer * surfer)
+{
+	/* FIXME implement */
 }
 
 

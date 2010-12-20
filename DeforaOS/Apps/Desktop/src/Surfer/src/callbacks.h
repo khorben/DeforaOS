@@ -65,6 +65,7 @@ void on_normal_size(gpointer data);
 void on_path_activate(gpointer data);
 void on_preferences(gpointer data);
 void on_refresh(gpointer data);
+void on_security(gpointer data);
 void on_stop(gpointer data);
 void on_zoom_in(gpointer data);
 void on_zoom_out(gpointer data);

@@ -243,6 +243,14 @@ gdouble ghtml_get_progress(GtkWidget * widget)
 }
 
 
+/* ghtml_get_security */
+SurferSecurity ghtml_get_security(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+	return SS_NONE;
+}
+
+
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * widget)
 {
@@ -598,6 +606,7 @@ static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		ghtml->history = g_list_first(ghtml->current);
 	}
 	surfer_set_location(ghtml->surfer, url);
+	surfer_set_security(ghtml->surfer, SS_NONE);
 	surfer_set_title(ghtml->surfer, NULL);
 	html_document_open_stream(ghtml->html_document, "text/html");
 	if((gc = _ghtml_stream_load(ghtml, ghtml->html_document->current_stream,

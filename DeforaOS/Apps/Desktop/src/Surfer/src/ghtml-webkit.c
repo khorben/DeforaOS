@@ -17,6 +17,7 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
@@ -29,9 +30,19 @@
 
 
 /* private */
+/* types */
+typedef struct _GHtml
+{
+	Surfer * surfer;
+	GtkWidget * widget;
+	GtkWidget * view;
+	char * status;
+} GHtml;
+
+
 /* prototypes */
 /* functions */
-static void _ghtml_set_status(GtkWidget * ghtml, char const * status);
+static void _ghtml_set_status(GtkWidget * widget, char const * status);
 
 /* callbacks */
 static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
@@ -71,83 +82,120 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data);
 /* public */
 /* functions */
 /* ghtml_new */
+static void _new_init(GHtml * ghtml);
+
 GtkWidget * ghtml_new(Surfer * surfer)
 {
-	GtkWidget * view;
+	static int initialized = 0;
+	GHtml * ghtml;
 	GtkWidget * widget;
 
+	if((ghtml = object_new(sizeof(*ghtml))) == NULL)
+		return NULL;
+	ghtml->surfer = surfer;
+	ghtml->status = NULL;
 	/* widgets */
-	view = webkit_web_view_new();
 	widget = gtk_scrolled_window_new(NULL, NULL);
-	g_object_set_data(G_OBJECT(widget), "surfer", surfer);
-	g_object_set_data(G_OBJECT(widget), "view", view);
+	ghtml->widget = widget;
+	ghtml->view = webkit_web_view_new();
+	g_object_set_data(G_OBJECT(widget), "ghtml", ghtml);
 	/* view */
-	g_signal_connect(G_OBJECT(view), "console-message", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "console-message", G_CALLBACK(
 				_on_console_message), widget);
-	g_signal_connect(G_OBJECT(view), "create-web-view", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "create-web-view", G_CALLBACK(
 				_on_create_web_view), widget);
 #ifdef WEBKIT_TYPE_DOWNLOAD
-	g_signal_connect(G_OBJECT(view), "download-requested", G_CALLBACK(
-				_on_download_requested), widget);
+	g_signal_connect(G_OBJECT(ghtml->view), "download-requested",
+			G_CALLBACK(_on_download_requested), widget);
 #endif
-	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
-				_on_hovering_over_link), widget);
-	g_signal_connect(G_OBJECT(view), "load-committed", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "hovering-over-link",
+			G_CALLBACK(_on_hovering_over_link), widget);
+	g_signal_connect(G_OBJECT(ghtml->view), "load-committed", G_CALLBACK(
 				_on_load_committed), widget);
-	g_signal_connect(G_OBJECT(view), "load-error", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "load-error", G_CALLBACK(
 				_on_load_error), widget);
-	g_signal_connect(G_OBJECT(view), "load-finished", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "load-finished", G_CALLBACK(
 				_on_load_finished), widget);
-	g_signal_connect(G_OBJECT(view), "load-progress-changed", G_CALLBACK(
-				_on_load_progress_changed), widget);
-	g_signal_connect(G_OBJECT(view), "load-started", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "load-progress-changed",
+			G_CALLBACK(_on_load_progress_changed), widget);
+	g_signal_connect(G_OBJECT(ghtml->view), "load-started", G_CALLBACK(
 				_on_load_started), widget);
-	g_signal_connect(G_OBJECT(view), "script-alert", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "script-alert", G_CALLBACK(
 				_on_script_alert), widget);
-	g_signal_connect(G_OBJECT(view), "script-confirm", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "script-confirm", G_CALLBACK(
 				_on_script_confirm), widget);
-	g_signal_connect(G_OBJECT(view), "script-prompt", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "script-prompt", G_CALLBACK(
 				_on_script_prompt), widget);
-	g_signal_connect(G_OBJECT(view), "status-bar-text-changed", G_CALLBACK(
-				_on_status_bar_text_changed), widget);
-	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ghtml->view), "status-bar-text-changed",
+			G_CALLBACK(_on_status_bar_text_changed), widget);
+	g_signal_connect(G_OBJECT(ghtml->view), "title-changed", G_CALLBACK(
 				_on_title_changed), widget);
 	/* scrolled window */
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add(GTK_CONTAINER(widget), view);
+	gtk_container_add(GTK_CONTAINER(widget), ghtml->view);
+	if(initialized++ == 0)
+		_new_init(ghtml);
+	initialized = 1;
 	return widget;
+}
+
+static void _new_init(GHtml * ghtml)
+{
+	SoupSession * session;
+	char const * cacerts[] =
+	{
+		"/etc/pki/tls/certs/ca-bundle.crt",
+		"/etc/ssl/certs/ca-certificates.crt",
+		"/etc/openssl/certs/ca-certificates.crt"
+	};
+	size_t i;
+
+	session = webkit_get_default_session();
+	for(i = 0; i < sizeof(cacerts) / sizeof(*cacerts); i++)
+		if(access(cacerts[i], R_OK) == 0)
+		{
+			g_object_set(session, "ssl-ca-file", cacerts[i],
+					"ssl-strict", FALSE, NULL);
+			return;
+		}
+	surfer_warning(ghtml->surfer, "Could not load certificate bundle:\n"
+			"SSL certificates will not be verified.");
 }
 
 
 /* ghtml_delete */
-void ghtml_delete(GtkWidget * ghtml)
+void ghtml_delete(GtkWidget * widget)
 {
-	free(g_object_get_data(G_OBJECT(ghtml), "status"));
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	free(ghtml->status);
+	object_delete(ghtml);
 }
 
 
 /* accessors */
 /* ghtml_can_go_back */
-gboolean ghtml_can_go_back(GtkWidget * ghtml)
+gboolean ghtml_can_go_back(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	return webkit_web_view_can_go_back(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return webkit_web_view_can_go_back(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
-gboolean ghtml_can_go_forward(GtkWidget * ghtml)
+gboolean ghtml_can_go_forward(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	return webkit_web_view_can_go_forward(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return webkit_web_view_can_go_forward(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
-char const * ghtml_get_link_message(GtkWidget * ghtml)
+char const * ghtml_get_link_message(GtkWidget * widget)
 {
 	/* FIXME implement */
 	return NULL;
@@ -155,46 +203,76 @@ char const * ghtml_get_link_message(GtkWidget * ghtml)
 
 
 /* ghtml_get_location */
-char const * ghtml_get_location(GtkWidget * ghtml)
+char const * ghtml_get_location(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 	WebKitWebFrame * frame;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(ghtml->view));
 	return webkit_web_frame_get_uri(frame);
 }
 
 
 /* ghtml_get_progress */
-gdouble ghtml_get_progress(GtkWidget * ghtml)
+gdouble ghtml_get_progress(GtkWidget * widget)
 {
+	gdouble ret = -1.0;
 #if WEBKIT_CHECK_VERSION(1, 1, 0) /* XXX may not be accurate */
-	gdouble ret;
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	ret = webkit_web_view_get_progress(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	ret = webkit_web_view_get_progress(WEBKIT_WEB_VIEW(ghtml->view));
 	if(ret == 0.0)
 		ret = -1.0;
-	return ret;
-#else
-	return -1.0;
 #endif
+	return ret;
+}
+
+
+/* ghtml_get_security */
+SurferSecurity ghtml_get_security(GtkWidget * widget)
+{
+	SurferSecurity security = SS_NONE;
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
+	GHtml * ghtml;
+	WebKitWebFrame * frame;
+	char const * location;
+	WebKitWebDataSource *source;
+	WebKitNetworkRequest *request;
+	SoupMessage * message;
+#endif
+
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(ghtml->view));
+	if((location = webkit_web_frame_get_uri(frame)) != NULL
+			&& strncmp(location, "https://", 8) == 0)
+	{
+		security = SS_UNTRUSTED;
+		source = webkit_web_frame_get_data_source(frame);
+		request = webkit_web_data_source_get_request(source);
+		message = webkit_network_request_get_message(request);
+		if(message != NULL && soup_message_get_flags(message)
+				& SOUP_MESSAGE_CERTIFICATE_TRUSTED)
+			security = SS_TRUSTED;
+	}
+#endif
+	return security;
 }
 
 
 /* ghtml_get_source */
-char const * ghtml_get_source(GtkWidget * ghtml)
+char const * ghtml_get_source(GtkWidget * widget)
 {
 #if WEBKIT_CHECK_VERSION(1, 1, 0)
-	GtkWidget * view;
+	GHtml * ghtml;
 	WebKitWebFrame * frame;
 	WebKitWebDataSource * source;
 	GString * str;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(ghtml->view));
 	source = webkit_web_frame_get_data_source(frame);
 	if((str = webkit_web_data_source_get_data(source)) == NULL)
 		return NULL;
@@ -208,24 +286,27 @@ char const * ghtml_get_source(GtkWidget * ghtml)
 /* ghtml_get_status */
 char const * ghtml_get_status(GtkWidget * widget)
 {
-	return g_object_get_data(G_OBJECT(widget), "status");
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return ghtml->status;
 }
 
 
 /* ghtml_get_title */
-char const * ghtml_get_title(GtkWidget * ghtml)
+char const * ghtml_get_title(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 	WebKitWebFrame * frame;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(ghtml->view));
 	return webkit_web_frame_get_title(frame);
 }
 
 
 /* ghtml_set_proxy */
-int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
+int ghtml_set_proxy(GtkWidget * widget, SurferProxyType type, char const * http,
 		unsigned int http_port)
 {
 #if WEBKIT_CHECK_VERSION(1, 1, 0)
@@ -256,119 +337,118 @@ int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
 
 /* useful */
 /* ghtml_execute */
-void ghtml_execute(GtkWidget * ghtml, char const * code)
+void ghtml_execute(GtkWidget * widget, char const * code)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_execute_script(WEBKIT_WEB_VIEW(view), code);
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_execute_script(WEBKIT_WEB_VIEW(ghtml->view), code);
 }
 
 
 /* ghtml_find */
-gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive,
+gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive,
 		gboolean wrap)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	return webkit_web_view_search_text(WEBKIT_WEB_VIEW(view), text,
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return webkit_web_view_search_text(WEBKIT_WEB_VIEW(ghtml->view), text,
 			sensitive, TRUE, wrap);
 }
 
 
-gboolean ghtml_go_back(GtkWidget * ghtml)
+gboolean ghtml_go_back(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	if(ghtml_can_go_back(ghtml) == FALSE)
+	if(ghtml_can_go_back(widget) == FALSE)
 		return FALSE;
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_go_back(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_go_back(WEBKIT_WEB_VIEW(ghtml->view));
 	return TRUE;
 }
 
 
-gboolean ghtml_go_forward(GtkWidget * ghtml)
+gboolean ghtml_go_forward(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	if(ghtml_can_go_forward(ghtml) == FALSE)
+	if(ghtml_can_go_forward(widget) == FALSE)
 		return FALSE;
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_go_forward(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_go_forward(WEBKIT_WEB_VIEW(ghtml->view));
 	return TRUE;
 }
 
 
-void ghtml_load_url(GtkWidget * ghtml, char const * url)
+void ghtml_load_url(GtkWidget * widget, char const * url)
 {
-	GtkWidget * view;
-	Surfer * surfer;
+	GHtml * ghtml;
 	gchar * p;
 
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
 		url = p;
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_open(WEBKIT_WEB_VIEW(view), url);
+	webkit_web_view_open(WEBKIT_WEB_VIEW(ghtml->view), url);
 	g_free(p);
-	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
-	surfer_set_progress(surfer, 0.0);
-	_ghtml_set_status(ghtml, _("Connecting..."));
+	surfer_set_progress(ghtml->surfer, 0.0);
+	surfer_set_security(ghtml->surfer, SS_NONE);
+	_ghtml_set_status(widget, _("Connecting..."));
 }
 
 
 /* ghtml_print */
-void ghtml_print(GtkWidget * ghtml)
+void ghtml_print(GtkWidget * widget)
 {
 #if WEBKIT_CHECK_VERSION(1, 1, 0) /* XXX may not be accurate */
-	GtkWidget * view;
+	GHtml * ghtml;
 	WebKitWebFrame * frame;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(ghtml->view));
 	webkit_web_frame_print(frame);
 #endif
 }
 
 
-void ghtml_refresh(GtkWidget * ghtml)
+void ghtml_refresh(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_reload(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_reload(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
-void ghtml_reload(GtkWidget * ghtml)
+void ghtml_reload(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 #if WEBKIT_CHECK_VERSION(1, 0, 3)
-	webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(view));
+	webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(ghtml->view));
 #else
-	webkit_web_view_reload(WEBKIT_WEB_VIEW(view));
+	webkit_web_view_reload(WEBKIT_WEB_VIEW(ghtml->view));
 #endif
 }
 
 
-void ghtml_stop(GtkWidget * ghtml)
+void ghtml_stop(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
-void ghtml_select_all(GtkWidget * ghtml)
+void ghtml_select_all(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_select_all(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_select_all(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
@@ -378,52 +458,52 @@ void ghtml_unselect_all(GtkWidget * ghtml)
 }
 
 
-void ghtml_zoom_in(GtkWidget * ghtml)
+void ghtml_zoom_in(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_zoom_in(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_zoom_in(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
-void ghtml_zoom_out(GtkWidget * ghtml)
+void ghtml_zoom_out(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_zoom_out(WEBKIT_WEB_VIEW(view));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_zoom_out(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
-void ghtml_zoom_reset(GtkWidget * ghtml)
+void ghtml_zoom_reset(GtkWidget * widget)
 {
-	GtkWidget * view;
+	GHtml * ghtml;
 
-	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(view), 1.0);
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(ghtml->view), 1.0);
 }
 
 
 /* private */
 /* functions */
-static void _ghtml_set_status(GtkWidget * ghtml, char const * status)
+static void _ghtml_set_status(GtkWidget * widget, char const * status)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 	gdouble progress;
 
-	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
-	free(g_object_get_data(G_OBJECT(ghtml), "status"));
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	free(ghtml->status);
 	if(status == NULL)
 	{
-		if((progress = ghtml_get_progress(ghtml)) == 0.0)
+		if((progress = ghtml_get_progress(widget)) == 0.0)
 			status = _("Connecting...");
 		else if(progress > 0.0)
 			status = _("Downloading...");
 	}
-	g_object_set_data(G_OBJECT(ghtml), "status", (status != NULL)
-			? strdup(status) : NULL); /* XXX may fail */
-	surfer_set_status(surfer, status);
+	/* XXX may fail */
+	ghtml->status = (status != NULL) ? strdup(status) : NULL;
+	surfer_set_status(ghtml->surfer, status);
 }
 
 
@@ -432,10 +512,10 @@ static void _ghtml_set_status(GtkWidget * ghtml, char const * status)
 static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
 		guint line, const gchar * source, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_console_message(surfer, message, source, line);
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_console_message(ghtml->surfer, message, source, line);
 	return TRUE;
 }
 
@@ -444,17 +524,16 @@ static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
 static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data)
 {
-	WebKitWebView * ret;
+	GHtml * ghtml;
 	Surfer * surfer;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if((surfer = surfer_new(NULL)) == NULL)
 		return NULL;
 	/* FIXME we may want the history to be copied (and then more) */
-	ret = g_object_get_data(G_OBJECT(surfer_get_view(surfer)), "view");
-	g_signal_connect(G_OBJECT(ret), "web-view-ready", G_CALLBACK(
+	ghtml = g_object_get_data(G_OBJECT(surfer_get_view(surfer)), "ghtml");
+	g_signal_connect(G_OBJECT(ghtml->view), "web-view-ready", G_CALLBACK(
 				_on_web_view_ready), surfer_get_view(surfer));
-	return ret;
+	return WEBKIT_WEB_VIEW(ghtml->view);
 }
 
 
@@ -463,14 +542,14 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 static gboolean _on_download_requested(WebKitWebView * view,
 		WebKitDownload * download, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 	char const * url;
 	char const * suggested;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
 	url = webkit_download_get_uri(download);
 	suggested = webkit_download_get_suggested_filename(download);
-	surfer_download(surfer, url, suggested);
+	surfer_download(ghtml->surfer, url, suggested);
 	webkit_download_cancel(download);
 	return FALSE;
 }
@@ -481,9 +560,9 @@ static gboolean _on_download_requested(WebKitWebView * view,
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data)
 {
-	GtkWidget * ghtml = data;
+	GtkWidget * widget = data;
 
-	_ghtml_set_status(ghtml, url);
+	_ghtml_set_status(widget, url);
 }
 
 
@@ -491,35 +570,15 @@ static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data)
 {
+	GHtml * ghtml;
 	Surfer * surfer;
 	char const * location;
-	SurferSecurity security = SS_NONE;
-#if WEBKIT_CHECK_VERSION(1, 1, 0)
-	WebKitWebDataSource *source;
-	WebKitNetworkRequest *request;
-	SoupMessage *message;
-#endif
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
 	if(frame == webkit_web_view_get_main_frame(view)
 			&& (location = webkit_web_frame_get_uri(frame)) != NULL)
-	{
-		surfer_set_location(surfer, location);
-#if WEBKIT_CHECK_VERSION(1, 1, 0)
-		if(strncmp(location, "https://", 8) == 0)
-		{
-			security = SS_UNTRUSTED;
-			source = webkit_web_frame_get_data_source(frame);
-			request = webkit_web_data_source_get_request(source);
-			message = webkit_network_request_get_message(request);
-			/* FIXME trusts even if hostname does not match?!? */
-			if(message != NULL && soup_message_get_flags(message)
-					& SOUP_MESSAGE_CERTIFICATE_TRUSTED)
-				security = SS_TRUSTED;
-		}
-#endif
-	}
-	surfer_set_security(surfer, security);
+		surfer_set_location(ghtml->surfer, location);
+	surfer_set_security(ghtml->surfer, ghtml_get_security(ghtml->widget));
 }
 
 
@@ -527,14 +586,14 @@ static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * uri, GError * error, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 #ifdef WEBKIT_POLICY_ERROR
 	char const * suggested;
 #endif
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
 	if(error == NULL)
-		return surfer_error(surfer, _("Unknown error"), TRUE);
+		return surfer_error(ghtml->surfer, _("Unknown error"), TRUE);
 #ifdef WEBKIT_NETWORK_ERROR
 	if(error->domain == WEBKIT_NETWORK_ERROR
 			&& error->code == WEBKIT_NETWORK_ERROR_CANCELLED)
@@ -547,11 +606,11 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 		/* FIXME propose to download or cancel instead */
 		if((suggested = strrchr(uri, '/')) != NULL)
 			suggested++;
-		surfer_download(surfer, uri, suggested);
+		surfer_download(ghtml->surfer, uri, suggested);
 		return TRUE;
 	}
 #endif
-	return surfer_error(surfer, error->message, TRUE);
+	return surfer_error(ghtml->surfer, error->message, TRUE);
 }
 
 
@@ -559,12 +618,12 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 			gpointer data)
 {
-	GtkWidget * ghtml = data;
+	GHtml * ghtml;
 	Surfer * surfer;
 
-	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
-	surfer_set_progress(surfer, -1.0);
-	_ghtml_set_status(ghtml, NULL);
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_set_progress(ghtml->surfer, -1.0);
+	_ghtml_set_status(ghtml->widget, NULL);
 }
 
 
@@ -572,13 +631,12 @@ static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data)
 {
-	GtkWidget * ghtml = data;
-	Surfer * surfer;
+	GHtml * ghtml;
 	gdouble fraction = progress;
 
-	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
-	surfer_set_progress(surfer, fraction / 100);
-	_ghtml_set_status(ghtml, _("Downloading..."));
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_set_progress(ghtml->surfer, fraction / 100);
+	_ghtml_set_status(ghtml->widget, _("Downloading..."));
 }
 
 
@@ -586,12 +644,11 @@ static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data)
 {
-	GtkWidget * ghtml = data;
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
-	surfer_set_progress(surfer, 0.00);
-	_ghtml_set_status(ghtml, _("Downloading..."));
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_set_progress(ghtml->surfer, 0.00);
+	_ghtml_set_status(ghtml->widget, _("Downloading..."));
 }
 
 
@@ -599,10 +656,10 @@ static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 static gboolean _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * message, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_warning(surfer, message);
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_warning(ghtml->surfer, message);
 	return TRUE;
 }
 
@@ -610,10 +667,10 @@ static gboolean _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
 static gboolean _on_script_confirm(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * message, gboolean * confirmed, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	if(surfer_confirm(surfer, message, confirmed) != 0)
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	if(surfer_confirm(ghtml->surfer, message, confirmed) != 0)
 		*confirmed = FALSE;
 	return TRUE;
 }
@@ -622,10 +679,10 @@ static gboolean _on_script_prompt(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * message, const gchar * default_value,
 		gchar ** value, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	if(surfer_prompt(surfer, message, default_value, value) == 0)
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	if(surfer_prompt(ghtml->surfer, message, default_value, value) == 0)
 		return TRUE;
 	*value = NULL;
 	return TRUE;
@@ -635,60 +692,60 @@ static gboolean _on_script_prompt(WebKitWebView * view, WebKitWebFrame * frame,
 static void _on_status_bar_text_changed(WebKitWebView * view, gchar * arg1,
 		gpointer data)
 {
-	GtkWidget * ghtml = data;
+	GtkWidget * widget = data;
 
 	if(strlen(arg1) == 0)
 		return;
-	_ghtml_set_status(ghtml, arg1);
+	_ghtml_set_status(widget, arg1);
 }
 
 
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_set_title(surfer, title);
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_set_title(ghtml->surfer, title);
 }
 
 
 #if WEBKIT_CHECK_VERSION(1, 0, 3)
 static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 	WebKitWebWindowFeatures * features;
 	gboolean b;
 	gint w;
 	gint h;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
 	features = webkit_web_view_get_window_features(WEBKIT_WEB_VIEW(view));
 	/* FIXME track properties with notify:: instead */
 	g_object_get(G_OBJECT(features), "width", &w, "height", &h, NULL);
 	if(w > 0 && h > 0)
-		surfer_resize(surfer, w, h);
+		surfer_resize(ghtml->surfer, w, h);
 	g_object_get(G_OBJECT(features), "fullscreen", &b, NULL);
 	if(b == TRUE)
-		surfer_set_fullscreen(surfer, TRUE);
+		surfer_set_fullscreen(ghtml->surfer, TRUE);
 # ifndef EMBEDDED
 	g_object_get(G_OBJECT(features), "menubar-visible", &b, NULL);
-	surfer_show_menubar(surfer, b);
+	surfer_show_menubar(ghtml->surfer, b);
 # endif
 	g_object_get(G_OBJECT(features), "toolbar-visible", &b, NULL);
-	surfer_show_toolbar(surfer, b);
+	surfer_show_toolbar(ghtml->surfer, b);
 	g_object_get(G_OBJECT(features), "statusbar-visible", &b, NULL);
-	surfer_show_statusbar(surfer, b);
-	surfer_show_window(surfer, TRUE);
+	surfer_show_statusbar(ghtml->surfer, b);
+	surfer_show_window(ghtml->surfer, TRUE);
 	return FALSE;
 }
 #else /* WebKitWebWindowFeatures is not available */
 static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 {
-	Surfer * surfer;
+	GHtml * ghtml;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_show_window(surfer, TRUE);
+	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
+	surfer_show_window(ghtml->surfer, TRUE);
 	return FALSE;
 }
 #endif

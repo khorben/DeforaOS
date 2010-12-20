@@ -49,8 +49,9 @@ struct _Surfer
 	GtkWidget * locationbar;
 	GtkWidget * lb_path;
 	GtkWidget * notebook;
-	GtkWidget * progress;
 	GtkWidget * statusbox;
+	GtkWidget * security;
+	GtkWidget * progress;
 	GtkWidget * statusbar;
 	guint statusbar_id;
 

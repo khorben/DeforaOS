@@ -123,6 +123,8 @@ void surfer_go_home(Surfer * surfer);
 void surfer_refresh(Surfer * surfer);
 void surfer_reload(Surfer * surfer);
 void surfer_stop(Surfer * surfer);
+
+void surfer_view_security(Surfer * surfer);
 void surfer_view_source(Surfer * surfer);
 
 /* selection */

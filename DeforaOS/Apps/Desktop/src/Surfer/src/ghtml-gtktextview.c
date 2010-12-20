@@ -391,6 +391,14 @@ gdouble ghtml_get_progress(GtkWidget * widget)
 }
 
 
+/* ghtml_get_security */
+SurferSecurity ghtml_get_security(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+	return SS_NONE;
+}
+
+
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * widget)
 {

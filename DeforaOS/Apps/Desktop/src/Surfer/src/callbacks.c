@@ -404,6 +404,7 @@ static gboolean _switch_page_idle(gpointer data)
 	/* XXX the Surfer fetches the right values by himself => API change? */
 	surfer_set_location(surfer, NULL);
 	surfer_set_progress(surfer, 0.0);
+	surfer_set_security(surfer, SS_NONE);
 	surfer_set_status(surfer, NULL);
 	surfer_set_title(surfer, NULL);
 	return FALSE;
@@ -599,6 +600,15 @@ void on_refresh(gpointer data)
 	Surfer * surfer = data;
 
 	surfer_refresh(surfer);
+}
+
+
+/* on_security */
+void on_security(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_view_security(surfer);
 }
 
 

@@ -34,6 +34,7 @@ gboolean ghtml_can_go_forward(GtkWidget * ghtml);
 char const * ghtml_get_link_message(GtkWidget * ghtml);
 char const * ghtml_get_location(GtkWidget * ghtml);
 gdouble ghtml_get_progress(GtkWidget * ghtml);
+SurferSecurity ghtml_get_security(GtkWidget * ghtml);
 char const * ghtml_get_source(GtkWidget * ghtml);
 char const * ghtml_get_status(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
