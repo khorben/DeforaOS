@@ -1165,11 +1165,18 @@ int surfer_prompt(Surfer * surfer, char const * message,
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
 			_("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s",
+#endif
+			message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
 	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
 	entry = gtk_entry_new();
 	if(default_value != NULL)
 		gtk_entry_set_text(GTK_ENTRY(entry), default_value);
@@ -1424,7 +1431,39 @@ void surfer_unselect_all(Surfer * surfer)
 /* surfer_view_security */
 void surfer_view_security(Surfer * surfer)
 {
-	/* FIXME implement */
+	GtkWidget * view;
+	SurferSecurity security;
+	char const * text;
+	GtkWidget * dialog;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	security = ghtml_get_security(view);
+	switch(security)
+	{
+		case SS_TRUSTED:
+			text = _("This connection is encrypted and trusted.");
+			break;
+		case SS_UNTRUSTED:
+			text = _("This connection is encrypted but not trusted.");
+			break;
+		case SS_NONE:
+		default:
+			text = _("This connection is not encrypted.");
+			break;
+	}
+	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Security"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			text);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Security"));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
 
