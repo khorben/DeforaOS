@@ -462,6 +462,13 @@ void ghtml_print(GtkWidget * ghtml)
 }
 
 
+/* ghtml_redo */
+void ghtml_redo(GtkWidget * widget)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_refresh */
 void ghtml_refresh(GtkWidget * ghtml)
 {
@@ -489,6 +496,13 @@ void ghtml_select_all(GtkWidget * ghtml)
 void ghtml_stop(GtkWidget * ghtml)
 {
 	gtk_moz_embed_stop_load(GTK_MOZ_EMBED(ghtml));
+}
+
+
+/* ghtml_undo */
+void ghtml_undo(GtkWidget * widget)
+{
+	/* FIXME implement */
 }
 
 

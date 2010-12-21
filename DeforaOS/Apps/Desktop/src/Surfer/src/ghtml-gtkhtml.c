@@ -359,6 +359,13 @@ void ghtml_print(GtkWidget * ghtml)
 }
 
 
+/* ghtml_redo */
+void ghtml_redo(GtkWidget * widget)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_refresh */
 void ghtml_refresh(GtkWidget * widget)
 {
@@ -397,6 +404,13 @@ void ghtml_stop(GtkWidget * widget)
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	_ghtml_stop(ghtml);
+}
+
+
+/* ghtml_undo */
+void ghtml_undo(GtkWidget * widget)
+{
+	/* FIXME implement */
 }
 
 

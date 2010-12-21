@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME
- * - implement undo/redo */
+ * - implement copy/cut/paste */
 
 
 
@@ -423,6 +423,16 @@ void ghtml_print(GtkWidget * widget)
 }
 
 
+/* ghtml_redo */
+void ghtml_redo(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_redo(WEBKIT_WEB_VIEW(ghtml->view));
+}
+
+
 void ghtml_refresh(GtkWidget * widget)
 {
 	GHtml * ghtml;
@@ -463,12 +473,24 @@ void ghtml_select_all(GtkWidget * widget)
 }
 
 
+/* ghtml_undo */
+void ghtml_undo(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_undo(WEBKIT_WEB_VIEW(ghtml->view));
+}
+
+
+/* ghtml_unselect_all */
 void ghtml_unselect_all(GtkWidget * widget)
 {
 	/* FIXME implement */
 }
 
 
+/* ghtml_zoom_in */
 void ghtml_zoom_in(GtkWidget * widget)
 {
 	GHtml * ghtml;
@@ -478,6 +500,7 @@ void ghtml_zoom_in(GtkWidget * widget)
 }
 
 
+/* ghtml_zoom_out */
 void ghtml_zoom_out(GtkWidget * widget)
 {
 	GHtml * ghtml;
@@ -487,6 +510,7 @@ void ghtml_zoom_out(GtkWidget * widget)
 }
 
 
+/* ghtml_zoom_reset */
 void ghtml_zoom_reset(GtkWidget * widget)
 {
 	GHtml * ghtml;

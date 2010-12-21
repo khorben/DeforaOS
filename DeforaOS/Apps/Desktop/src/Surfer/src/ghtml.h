@@ -60,6 +60,9 @@ void ghtml_unselect_all(GtkWidget * ghtml);
 gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive,
 		gboolean wrap);
 
+void ghtml_redo(GtkWidget * ghtml);
+void ghtml_undo(GtkWidget * ghtml);
+
 void ghtml_zoom_in(GtkWidget * ghtml);
 void ghtml_zoom_out(GtkWidget * ghtml);
 void ghtml_zoom_reset(GtkWidget * ghtml);

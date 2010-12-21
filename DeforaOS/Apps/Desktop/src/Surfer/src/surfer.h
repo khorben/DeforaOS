@@ -105,6 +105,10 @@ void surfer_find(Surfer * surfer, char const * text);
 /* download */
 int surfer_download(Surfer * surfer, char const * url, char const * suggested);
 
+/* edition */
+void surfer_redo(Surfer * surfer);
+void surfer_undo(Surfer * surfer);
+
 /* interface */
 void surfer_about(Surfer * surfer);
 void surfer_resize(Surfer * surfer, gint width, gint height);

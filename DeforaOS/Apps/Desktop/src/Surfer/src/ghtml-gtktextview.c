@@ -564,6 +564,13 @@ void ghtml_print(GtkWidget * ghtml)
 }
 
 
+/* ghtml_redo */
+void ghtml_redo(GtkWidget * widget)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_refresh */
 void ghtml_refresh(GtkWidget * widget)
 {
@@ -604,6 +611,13 @@ void ghtml_select_all(GtkWidget * widget)
 	gtk_text_buffer_get_start_iter(ghtml->tbuffer, &start);
 	gtk_text_buffer_get_end_iter(ghtml->tbuffer, &end);
 	gtk_text_buffer_select_range(ghtml->tbuffer, &start, &end);
+}
+
+
+/* ghtml_undo */
+void ghtml_undo(GtkWidget * widget)
+{
+	/* FIXME implement */
 }
 
 

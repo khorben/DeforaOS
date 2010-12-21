@@ -125,6 +125,11 @@ static DesktopMenu _menu_file[] =
 
 static DesktopMenu _menu_edit[] =
 {
+	{ N_("_Undo"),		G_CALLBACK(on_edit_undo), GTK_STOCK_UNDO,
+		GDK_CONTROL_MASK, GDK_Z },
+	{ N_("_Redo"),		G_CALLBACK(on_edit_redo), GTK_STOCK_REDO,
+		GDK_CONTROL_MASK, GDK_Y },
+	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Cut"),		NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
 	{ N_("Cop_y"),		NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
 	{ N_("_Paste"),		NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK,
@@ -1215,6 +1220,17 @@ void surfer_reload(Surfer * surfer)
 }
 
 
+/* surfer_redo */
+void surfer_redo(Surfer * surfer)
+{
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_redo(view);
+}
+
+
 /* surfer_resize */
 void surfer_resize(Surfer * surfer, gint width, gint height)
 {
@@ -1414,6 +1430,17 @@ void surfer_stop(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_stop(view);
+}
+
+
+/* surfer_undo */
+void surfer_undo(Surfer * surfer)
+{
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_undo(view);
 }
 
 

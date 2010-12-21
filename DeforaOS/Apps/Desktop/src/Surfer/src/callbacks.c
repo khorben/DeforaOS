@@ -133,6 +133,24 @@ void on_file_save_as(gpointer data)
 
 
 /* edit menu */
+/* on_edit_undo */
+void on_edit_undo(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_undo(surfer);
+}
+
+
+/* on_edit_redo */
+void on_edit_redo(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_redo(surfer);
+}
+
+
 /* on_edit_find */
 void on_edit_find(gpointer data)
 {

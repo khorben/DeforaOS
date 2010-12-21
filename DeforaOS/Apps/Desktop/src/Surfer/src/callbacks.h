@@ -36,6 +36,8 @@ void on_file_print(gpointer data);
 void on_file_save_as(gpointer data);
 
 /* edit menu */
+void on_edit_undo(gpointer data);
+void on_edit_redo(gpointer data);
 void on_edit_find(gpointer data);
 void on_edit_preferences(gpointer data);
 void on_edit_select_all(gpointer data);
