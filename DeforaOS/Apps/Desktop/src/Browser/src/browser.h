@@ -155,6 +155,7 @@ extern unsigned int browser_cnt;
 
 /* functions */
 Browser * browser_new(char const * directory);
+Browser * browser_new_copy(Browser * browser);
 void browser_delete(Browser * browser);
 
 /* accessors */

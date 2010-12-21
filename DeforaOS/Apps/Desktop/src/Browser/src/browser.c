@@ -499,6 +499,15 @@ static GtkListStore * _create_store(Browser * browser)
 }
 
 
+/* browser_new_copy */
+Browser * browser_new_copy(Browser * browser)
+{
+	if(browser == NULL || browser->current == NULL)
+		return browser_new(NULL);
+	return browser_new(browser->current->data);
+}
+
+
 /* browser_delete */
 void browser_delete(Browser * browser)
 {

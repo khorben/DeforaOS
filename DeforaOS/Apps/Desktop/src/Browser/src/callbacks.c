@@ -88,7 +88,7 @@ gboolean on_new_window(gpointer data)
 {
 	Browser * browser = data;
 
-	browser_new(browser->current->data);
+	browser_new_copy(browser);
 	return FALSE;
 }
 

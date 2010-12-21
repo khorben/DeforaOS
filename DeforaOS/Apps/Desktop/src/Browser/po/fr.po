@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 13:40+0100\n"
+"POT-Creation-Date: 2010-12-21 14:16+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -28,7 +28,7 @@ msgstr "Nouveau _dossier"
 msgid "New _symbolic link..."
 msgstr "Nouveau _lien symbolique..."
 
-#: ../src/browser.c:79 ../src/browser.c:716
+#: ../src/browser.c:79 ../src/browser.c:725
 msgid "Open file..."
 msgstr "Ouvrir..."
 
@@ -185,52 +185,52 @@ msgstr "Vignettes"
 msgid " Location: "
 msgstr " Chemin: "
 
-#: ../src/browser.c:577 ../src/browser.c:582 ../src/copy.c:204
+#: ../src/browser.c:586 ../src/browser.c:591 ../src/copy.c:204
 #: ../src/delete.c:163 ../src/delete.c:168 ../src/desktop.c:1440
 #: ../src/desktop.c:1445 ../src/move.c:130 ../src/properties.c:117
 #: ../src/properties.c:121 ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/browser.c:738 ../src/desktopicon.c:814 ../src/view.c:144
+#: ../src/browser.c:747 ../src/desktopicon.c:814 ../src/view.c:144
 #: ../src/view.c:415
 msgid "Open with..."
 msgstr "Ouvrir avec..."
 
-#: ../src/browser.c:830 ../src/browser.c:1164
+#: ../src/browser.c:839 ../src/browser.c:1173
 msgid "Refreshing folder: "
 msgstr "Actualisation du dossier : "
 
-#: ../src/browser.c:851
+#: ../src/browser.c:860
 #, c-format
 msgid "%s%u file%c (%u hidden)"
 msgstr "%s%u fichier%c (%u cachés)"
 
-#: ../src/browser.c:1466
+#: ../src/browser.c:1475
 msgid "Filename"
 msgstr "Nom de fichier"
 
-#: ../src/browser.c:1468
+#: ../src/browser.c:1477
 msgid "Size"
 msgstr "Taille"
 
-#: ../src/browser.c:1470
+#: ../src/browser.c:1479
 msgid "Owner"
 msgstr "Propriétaire"
 
-#: ../src/browser.c:1472
+#: ../src/browser.c:1481
 msgid "Group"
 msgstr "Groupe"
 
-#: ../src/browser.c:1474
+#: ../src/browser.c:1483
 msgid "Date"
 msgstr "Date"
 
-#: ../src/browser.c:1476
+#: ../src/browser.c:1485
 msgid "MIME type"
 msgstr "Type MIME"
 
-#: ../src/browser.c:1756
+#: ../src/browser.c:1765
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
