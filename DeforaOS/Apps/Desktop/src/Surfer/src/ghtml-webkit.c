@@ -87,7 +87,6 @@ static void _new_init(GHtml * ghtml);
 
 GtkWidget * ghtml_new(Surfer * surfer)
 {
-	static int initialized = 0;
 	GHtml * ghtml;
 	GtkWidget * widget;
 
@@ -136,14 +135,13 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), ghtml->view);
-	if(initialized++ == 0)
-		_new_init(ghtml);
-	initialized = 1;
+	_new_init(ghtml);
 	return widget;
 }
 
 static void _new_init(GHtml * ghtml)
 {
+	static int initialized = 0;
 	SoupSession * session;
 	char const * cacerts[] =
 	{
@@ -153,6 +151,14 @@ static void _new_init(GHtml * ghtml)
 	};
 	size_t i;
 
+	if(initialized++ == 1)
+	{
+		ghtml->ssl = TRUE;
+		initialized = 1;
+		return;
+	}
+	else if(initialized != 1)
+		return;
 	session = webkit_get_default_session();
 	for(i = 0; i < sizeof(cacerts) / sizeof(*cacerts); i++)
 		if(access(cacerts[i], R_OK) == 0)
@@ -164,6 +170,7 @@ static void _new_init(GHtml * ghtml)
 		}
 	surfer_warning(ghtml->surfer, "Could not load certificate bundle:\n"
 			"SSL certificates will not be verified.");
+	initialized++;
 }
 
 
