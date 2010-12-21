@@ -114,17 +114,18 @@ static DesktopMenu _browser_menu_edit[] =
 
 static DesktopMenu _browser_menu_view[] =
 {
-	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH,
+	{ N_("_Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_R },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME, GDK_MOD1_MASK,
+	{ N_("_Home"), G_CALLBACK(on_view_home), GTK_STOCK_HOME, GDK_MOD1_MASK,
 		GDK_Home },
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Details", G_CALLBACK(on_view_details), "stock_view-details", 0, 0 },
-	{ "_Icons", G_CALLBACK(on_view_icons), NULL, 0, 0 },
-	{ "_List", G_CALLBACK(on_view_list), NULL, 0, 0 },
-	{ "_Thumbnails", G_CALLBACK(on_view_thumbnails), NULL, 0, 0 },
+	{ N_("_Details"), G_CALLBACK(on_view_details), "stock_view-details", 0,
+		0 },
+	{ N_("_Icons"), G_CALLBACK(on_view_icons), NULL, 0, 0 },
+	{ N_("_List"), G_CALLBACK(on_view_list), NULL, 0, 0 },
+	{ N_("_Thumbnails"), G_CALLBACK(on_view_thumbnails), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -152,21 +153,22 @@ static DesktopMenubar _browser_menubar[] =
 /* toolbar */
 static DesktopToolbar _browser_toolbar[] =
 {
-	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
+	{ N_("Back"), G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
 		GDK_Left, NULL },
-	{ "Up", G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, 0, NULL },
-	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
+	{ N_("Up"), G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, 0, NULL },
+	{ N_("Forward"), G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
 		GDK_MOD1_MASK, GDK_Right, NULL },
-	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0, NULL },
-	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
-	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Cut", G_CALLBACK(on_cut), GTK_STOCK_CUT, 0, 0, NULL },
-	{ "Copy", G_CALLBACK(on_copy), GTK_STOCK_COPY, 0, 0, NULL },
-	{ "Paste", G_CALLBACK(on_paste), GTK_STOCK_PASTE, 0, 0, NULL },
-	{ "", NULL, NULL, 0, 0, NULL },
-	{ "Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0, 0,
+	{ N_("Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0,
 		NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Home"), G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Cut"), G_CALLBACK(on_cut), GTK_STOCK_CUT, 0, 0, NULL },
+	{ N_("Copy"), G_CALLBACK(on_copy), GTK_STOCK_COPY, 0, 0, NULL },
+	{ N_("Paste"), G_CALLBACK(on_paste), GTK_STOCK_PASTE, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0,
+		0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -222,7 +224,8 @@ Browser * browser_new(char const * directory)
 	browser->window = NULL;
 	if(_new_pixbufs(browser) != 0)
 	{
-		browser_error(browser, "Error while loading default icons", -1);
+		browser_error(browser, _("Error while loading default icons"),
+				-1);
 		free(browser);
 		return NULL;
 	}
@@ -238,7 +241,8 @@ Browser * browser_new(char const * directory)
 	browser->prefs.show_hidden_files = FALSE;
 	if((browser->config = config_new()) == NULL
 			|| browser_config_load(browser) != 0)
-		browser_error(browser, "Error while loading configuration", 0);
+		browser_error(browser, _("Error while loading configuration"),
+				0);
 
 	/* mime */
 	browser->mime = mime_new(); /* FIXME share MIME instances */
