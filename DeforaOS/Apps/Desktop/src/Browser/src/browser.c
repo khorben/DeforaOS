@@ -14,8 +14,6 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
-/* TODO:
- * - mention the number of files while refreshing */
 
 
 
@@ -797,7 +795,7 @@ static void _refresh_new(Browser * browser)
 
 
 /* _refresh_new_loop */
-static int _loop_status(Browser * browser);
+static int _loop_status(Browser * browser, char const * prefix);
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * lst,
 		struct stat * st, gboolean updated);
@@ -824,7 +822,8 @@ static int _refresh_new_loop(Browser * browser)
 			break;
 	}
 	if(de == NULL)
-		return _loop_status(browser);
+		return _loop_status(browser, NULL);
+	_loop_status(browser, _("Refreshing folder: "));
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			== NULL || lstat(path, &lst) != 0)
 	{
@@ -841,11 +840,12 @@ static int _refresh_new_loop(Browser * browser)
 	return 0;
 }
 
-static int _loop_status(Browser * browser)
+static int _loop_status(Browser * browser, char const * prefix)
 {
-	char status[36];
+	char status[64];
 
-	snprintf(status, sizeof(status), _("%u file%c (%u hidden)"),
+	snprintf(status, sizeof(status), _("%s%u file%c (%u hidden)"),
+			(prefix != NULL) ? prefix : "",
 			browser->refresh_cnt, browser->refresh_cnt <= 1
 			? '\0' : 's', browser->refresh_hid); /* XXX translate */
 	_browser_set_status(browser, status);
@@ -1156,7 +1156,8 @@ static int _current_loop(Browser * browser)
 			break;
 	}
 	if(de == NULL)
-		return _loop_status(browser);
+		return _loop_status(browser, NULL);
+	_loop_status(browser, _("Refreshing folder: "));
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			== NULL || lstat(path, &lst) != 0)
 	{
