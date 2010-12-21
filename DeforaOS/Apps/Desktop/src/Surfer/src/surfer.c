@@ -549,6 +549,9 @@ void surfer_set_security(Surfer * surfer, SurferSecurity security)
 {
 	GtkWidget * view;
 	char const * level;
+	GdkColor yellow = { 0, 65535, 65535, 16383 };
+	GdkColor red = { 0, 65535, 16383, 16383 };
+	GdkColor * color = NULL;
 
 	if((view = surfer_get_view(surfer)) == NULL)
 		return; /* consider the current tab only */
@@ -556,9 +559,11 @@ void surfer_set_security(Surfer * surfer, SurferSecurity security)
 	switch(security)
 	{
 		case SS_TRUSTED:
+			color = &yellow;
 			level = "security-high";
 			break;
 		case SS_UNTRUSTED:
+			color = &red;
 			level = "security-medium";
 			break;
 		case SS_NONE:
@@ -566,6 +571,8 @@ void surfer_set_security(Surfer * surfer, SurferSecurity security)
 			level = "security-low";
 			break;
 	}
+	gtk_widget_modify_base(gtk_bin_get_child(GTK_BIN(surfer->lb_path)),
+			GTK_STATE_NORMAL, color);
 	gtk_image_set_from_icon_name(GTK_IMAGE(surfer->security), level,
 			GTK_ICON_SIZE_MENU);
 }
