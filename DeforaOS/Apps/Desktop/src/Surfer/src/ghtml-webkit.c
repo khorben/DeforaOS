@@ -452,7 +452,7 @@ void ghtml_select_all(GtkWidget * widget)
 }
 
 
-void ghtml_unselect_all(GtkWidget * ghtml)
+void ghtml_unselect_all(GtkWidget * widget)
 {
 	/* FIXME implement */
 }
@@ -526,13 +526,19 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 {
 	GHtml * ghtml;
 	Surfer * surfer;
+	GtkWidget * widget;
 
 	if((surfer = surfer_new(NULL)) == NULL)
 		return NULL;
 	/* FIXME we may want the history to be copied (and then more) */
-	ghtml = g_object_get_data(G_OBJECT(surfer_get_view(surfer)), "ghtml");
+	if((widget = surfer_get_view(surfer)) == NULL)
+	{
+		surfer_delete(surfer);
+		return NULL;
+	}
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	g_signal_connect(G_OBJECT(ghtml->view), "web-view-ready", G_CALLBACK(
-				_on_web_view_ready), surfer_get_view(surfer));
+				_on_web_view_ready), widget);
 	return WEBKIT_WEB_VIEW(ghtml->view);
 }
 
@@ -571,7 +577,6 @@ static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data)
 {
 	GHtml * ghtml;
-	Surfer * surfer;
 	char const * location;
 
 	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
@@ -619,7 +624,6 @@ static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 			gpointer data)
 {
 	GHtml * ghtml;
-	Surfer * surfer;
 
 	ghtml = g_object_get_data(G_OBJECT(data), "ghtml");
 	surfer_set_progress(ghtml->surfer, -1.0);
