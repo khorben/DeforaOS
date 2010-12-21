@@ -172,7 +172,7 @@ static DesktopMenu _menu_view[] =
 
 static DesktopMenu _menu_help[] =
 {
-	{ "_About",		G_CALLBACK(on_help_about),
+	{ N_("_About"),		G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
 #else
