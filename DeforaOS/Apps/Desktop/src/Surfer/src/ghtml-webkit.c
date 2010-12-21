@@ -37,6 +37,7 @@ typedef struct _GHtml
 	GtkWidget * widget;
 	GtkWidget * view;
 	char * status;
+	gboolean ssl;
 } GHtml;
 
 
@@ -94,6 +95,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 		return NULL;
 	ghtml->surfer = surfer;
 	ghtml->status = NULL;
+	ghtml->ssl = FALSE;
 	/* widgets */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	ghtml->widget = widget;
@@ -157,6 +159,7 @@ static void _new_init(GHtml * ghtml)
 		{
 			g_object_set(session, "ssl-ca-file", cacerts[i],
 					"ssl-strict", FALSE, NULL);
+			ghtml->ssl = TRUE;
 			return;
 		}
 	surfer_warning(ghtml->surfer, "Could not load certificate bundle:\n"
@@ -253,7 +256,8 @@ SurferSecurity ghtml_get_security(GtkWidget * widget)
 		source = webkit_web_frame_get_data_source(frame);
 		request = webkit_web_data_source_get_request(source);
 		message = webkit_network_request_get_message(request);
-		if(message != NULL && soup_message_get_flags(message)
+		if(ghtml->ssl == TRUE && message != NULL
+				&& soup_message_get_flags(message)
 				& SOUP_MESSAGE_CERTIFICATE_TRUSTED)
 			security = SS_TRUSTED;
 	}
