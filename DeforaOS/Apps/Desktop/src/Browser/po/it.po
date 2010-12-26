@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-26 11:41+0100\n"
+"POT-Creation-Date: 2010-12-26 14:04+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -101,7 +101,7 @@ msgstr ""
 msgid "_File"
 msgstr ""
 
-#: ../src/browser.c:146 ../src/desktopicon.c:727 ../src/view.c:109
+#: ../src/browser.c:146 ../src/desktopicon.c:680 ../src/view.c:109
 msgid "_Edit"
 msgstr ""
 
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:156 ../src/desktop.c:793 ../src/desktop.c:812
+#: ../src/browser.c:156 ../src/desktop.c:785 ../src/desktop.c:804
 msgid "Back"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:164 ../src/desktop.c:872
+#: ../src/browser.c:164 ../src/desktop.c:864
 msgid "Home"
 msgstr ""
 
@@ -165,19 +165,19 @@ msgstr ""
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:294 ../src/callbacks.c:268
+#: ../src/browser.c:294 ../src/browser.c:1750
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:301 ../src/callbacks.c:269
+#: ../src/browser.c:301 ../src/browser.c:1751
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:305 ../src/callbacks.c:270
+#: ../src/browser.c:305 ../src/browser.c:1752
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:309 ../src/callbacks.c:271
+#: ../src/browser.c:309 ../src/browser.c:1753
 msgid "Thumbnails"
 msgstr ""
 
@@ -187,13 +187,13 @@ msgstr ""
 
 #: ../src/browser.c:586 ../src/browser.c:591 ../src/copy.c:660
 #: ../src/copy.c:664 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1448 ../src/desktop.c:1453 ../src/move.c:444
+#: ../src/desktop.c:1440 ../src/desktop.c:1445 ../src/move.c:444
 #: ../src/move.c:448 ../src/properties.c:117 ../src/properties.c:121
 #: ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:747 ../src/desktopicon.c:873 ../src/view.c:144
+#: ../src/browser.c:747 ../src/desktopicon.c:814 ../src/view.c:144
 #: ../src/view.c:415
 msgid "Open with..."
 msgstr ""
@@ -231,81 +231,81 @@ msgstr ""
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1765
-msgid "Refreshing folder..."
-msgstr ""
-
-#: ../src/callbacks.c:115 ../src/desktop.c:427
-msgid "New folder"
-msgstr ""
-
-#: ../src/callbacks.c:192 ../src/callbacks.c:197 ../src/callbacks.c:1156
-#: ../src/callbacks.c:1159 ../src/desktopicon.c:855 ../src/desktopicon.c:860
-#: ../src/desktopicon.c:936 ../src/desktopicon.c:941
-msgid "Warning"
-msgstr ""
-
-#: ../src/callbacks.c:195 ../src/desktopicon.c:939
-msgid "Are you sure you want to delete "
-msgstr ""
-
-#: ../src/callbacks.c:196 ../src/desktopicon.c:940
-msgid " file(s)?"
-msgstr ""
-
-#: ../src/callbacks.c:248
+#: ../src/browser.c:1730
 msgid "File browser preferences"
 msgstr ""
 
-#: ../src/callbacks.c:264
+#: ../src/browser.c:1746
 msgid "Default view:"
 msgstr ""
 
-#: ../src/callbacks.c:277
+#: ../src/browser.c:1759
 msgid "_Alternate rows in detailed view"
 msgstr ""
 
-#: ../src/callbacks.c:281
+#: ../src/browser.c:1763
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/callbacks.c:284
+#: ../src/browser.c:1766
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/callbacks.c:287
+#: ../src/browser.c:1769
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/callbacks.c:290
+#: ../src/browser.c:1772
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/callbacks.c:891
+#: ../src/browser.c:1907
+msgid "Refreshing folder..."
+msgstr ""
+
+#: ../src/callbacks.c:115 ../src/desktop.c:426
+msgid "New folder"
+msgstr ""
+
+#: ../src/callbacks.c:192 ../src/callbacks.c:197 ../src/callbacks.c:1021
+#: ../src/callbacks.c:1024 ../src/desktopicon.c:796 ../src/desktopicon.c:801
+#: ../src/desktopicon.c:848 ../src/desktopicon.c:853
+msgid "Warning"
+msgstr ""
+
+#: ../src/callbacks.c:195 ../src/desktopicon.c:851
+msgid "Are you sure you want to delete "
+msgstr ""
+
+#: ../src/callbacks.c:196 ../src/desktopicon.c:852
+msgid " file(s)?"
+msgstr ""
+
+#: ../src/callbacks.c:756
 msgid "New"
 msgstr ""
 
-#: ../src/callbacks.c:896 ../src/callbacks.c:900 ../src/desktop.c:338
+#: ../src/callbacks.c:761 ../src/callbacks.c:765 ../src/desktop.c:334
 msgid "Folder"
 msgstr ""
 
-#: ../src/callbacks.c:907 ../src/desktop.c:346
+#: ../src/callbacks.c:772 ../src/desktop.c:342
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:911 ../src/desktop.c:350
+#: ../src/callbacks.c:776 ../src/desktop.c:346
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:991
+#: ../src/callbacks.c:856
 msgid "Open in new _window"
 msgstr ""
 
-#: ../src/callbacks.c:1019
+#: ../src/callbacks.c:884
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1054 ../src/desktopicon.c:740 ../src/view.c:100
+#: ../src/callbacks.c:919 ../src/desktopicon.c:693 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr ""
@@ -431,47 +431,47 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:446
+#: ../src/desktop.c:445
 msgid "New text file.txt"
 msgstr ""
 
-#: ../src/desktop.c:503
+#: ../src/desktop.c:502
 msgid "Desktop preferences"
 msgstr ""
 
-#: ../src/desktop.c:523
+#: ../src/desktop.c:522
 msgid "Background: "
 msgstr ""
 
-#: ../src/desktop.c:528
+#: ../src/desktop.c:527
 msgid "Background"
 msgstr ""
 
-#: ../src/desktop.c:534
+#: ../src/desktop.c:533
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:536
+#: ../src/desktop.c:535
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:538
+#: ../src/desktop.c:537
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:544
+#: ../src/desktop.c:543
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:892
+#: ../src/desktop.c:884
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1497
+#: ../src/desktop.c:1489
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1553
+#: ../src/desktop.c:1545
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -483,7 +483,7 @@ msgid ""
 "  -m\tMonitor where to display the desktop\n"
 msgstr ""
 
-#: ../src/desktopicon.c:859
+#: ../src/desktopicon.c:800
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
