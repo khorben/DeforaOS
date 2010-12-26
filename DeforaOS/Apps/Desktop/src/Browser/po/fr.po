@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 14:16+0100\n"
+"POT-Creation-Date: 2010-12-26 11:41+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -58,11 +58,11 @@ msgstr "_Supprimer"
 
 #: ../src/browser.c:101
 msgid "Select _all"
-msgstr ""
+msgstr "Sélectionner _tout"
 
 #: ../src/browser.c:108
 msgid "_Unselect all"
-msgstr ""
+msgstr "Tout _désélectionner"
 
 #: ../src/browser.c:110
 msgid "_Preferences"
@@ -101,7 +101,7 @@ msgstr "À _propos"
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/browser.c:146 ../src/desktopicon.c:680 ../src/view.c:109
+#: ../src/browser.c:146 ../src/desktopicon.c:727 ../src/view.c:109
 msgid "_Edit"
 msgstr "É_dition"
 
@@ -113,9 +113,9 @@ msgstr "_Vue"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/browser.c:156 ../src/desktop.c:785 ../src/desktop.c:804
+#: ../src/browser.c:156 ../src/desktop.c:793 ../src/desktop.c:812
 msgid "Back"
-msgstr "Précédent"
+msgstr "Retour"
 
 #: ../src/browser.c:158
 msgid "Up"
@@ -129,7 +129,7 @@ msgstr "Suivant"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/browser.c:164 ../src/desktop.c:864
+#: ../src/browser.c:164 ../src/desktop.c:872
 msgid "Home"
 msgstr "Dossier personnel"
 
@@ -185,14 +185,15 @@ msgstr "Vignettes"
 msgid " Location: "
 msgstr " Chemin: "
 
-#: ../src/browser.c:586 ../src/browser.c:591 ../src/copy.c:204
-#: ../src/delete.c:163 ../src/delete.c:168 ../src/desktop.c:1440
-#: ../src/desktop.c:1445 ../src/move.c:130 ../src/properties.c:117
-#: ../src/properties.c:121 ../src/view.c:364 ../src/view.c:367
+#: ../src/browser.c:586 ../src/browser.c:591 ../src/copy.c:660
+#: ../src/copy.c:664 ../src/delete.c:421 ../src/delete.c:426
+#: ../src/desktop.c:1448 ../src/desktop.c:1453 ../src/move.c:444
+#: ../src/move.c:448 ../src/properties.c:117 ../src/properties.c:121
+#: ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/browser.c:747 ../src/desktopicon.c:814 ../src/view.c:144
+#: ../src/browser.c:747 ../src/desktopicon.c:873 ../src/view.c:144
 #: ../src/view.c:415
 msgid "Open with..."
 msgstr "Ouvrir avec..."
@@ -234,21 +235,21 @@ msgstr "Type MIME"
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
-#: ../src/callbacks.c:115 ../src/desktop.c:426
+#: ../src/callbacks.c:115 ../src/desktop.c:427
 msgid "New folder"
 msgstr "Nouveau dossier"
 
-#: ../src/callbacks.c:192 ../src/callbacks.c:197 ../src/callbacks.c:1155
-#: ../src/callbacks.c:1158 ../src/desktopicon.c:796 ../src/desktopicon.c:801
-#: ../src/desktopicon.c:848 ../src/desktopicon.c:853
+#: ../src/callbacks.c:192 ../src/callbacks.c:197 ../src/callbacks.c:1156
+#: ../src/callbacks.c:1159 ../src/desktopicon.c:855 ../src/desktopicon.c:860
+#: ../src/desktopicon.c:936 ../src/desktopicon.c:941
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/callbacks.c:195 ../src/desktopicon.c:851
+#: ../src/callbacks.c:195 ../src/desktopicon.c:939
 msgid "Are you sure you want to delete "
 msgstr "Voulez-vous vraiment effacer "
 
-#: ../src/callbacks.c:196 ../src/desktopicon.c:852
+#: ../src/callbacks.c:196 ../src/desktopicon.c:940
 msgid " file(s)?"
 msgstr " fichier(s) ?"
 
@@ -280,31 +281,31 @@ msgstr "Afficher les fichiers cac_hés"
 msgid "_Appearance"
 msgstr "_Apparence"
 
-#: ../src/callbacks.c:890
+#: ../src/callbacks.c:891
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/callbacks.c:895 ../src/callbacks.c:899 ../src/desktop.c:334
+#: ../src/callbacks.c:896 ../src/callbacks.c:900 ../src/desktop.c:338
 msgid "Folder"
 msgstr "Dossier"
 
-#: ../src/callbacks.c:906 ../src/desktop.c:342
+#: ../src/callbacks.c:907 ../src/desktop.c:346
 msgid "Symbolic link..."
 msgstr "Lien symbolique..."
 
-#: ../src/callbacks.c:910 ../src/desktop.c:346
+#: ../src/callbacks.c:911 ../src/desktop.c:350
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:990
+#: ../src/callbacks.c:991
 msgid "Open in new _window"
 msgstr "Ouvrir dans une _nouvelle fenêtre"
 
-#: ../src/callbacks.c:1018
+#: ../src/callbacks.c:1019
 msgid "_Unmount"
 msgstr "Démonter"
 
-#: ../src/callbacks.c:1053 ../src/desktopicon.c:693 ../src/view.c:100
+#: ../src/callbacks.c:1054 ../src/desktopicon.c:740 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
@@ -329,37 +330,49 @@ msgstr "Nouveau lien symbolique"
 msgid "Destination: "
 msgstr "Destination: "
 
-#: ../src/copy.c:113
+#: ../src/copy.c:125
 msgid "Copy file(s)"
 msgstr "Copie de fichier(s)"
 
-#: ../src/copy.c:122
+#: ../src/copy.c:133
 msgid "Copying: "
-msgstr "Copie de "
+msgstr "Copie de : "
 
-#: ../src/copy.c:140
+#: ../src/copy.c:151
 msgid "Filename: "
 msgstr "Nom de fichier: "
 
-#: ../src/copy.c:154
+#: ../src/copy.c:165
 msgid "Speed: "
 msgstr "Débit: "
 
-#: ../src/copy.c:188 ../src/delete.c:145 ../src/move.c:114
+#: ../src/copy.c:203 ../src/delete.c:159 ../src/move.c:151
 #, c-format
 msgid "File %u of %u"
 msgstr "Fichier %u sur %u"
 
-#: ../src/copy.c:217
-msgid "Information"
-msgstr "Information"
+#: ../src/copy.c:320
+msgid "Omitting directory"
+msgstr "Omission du dossier"
 
-#: ../src/copy.c:231 ../src/delete.c:330 ../src/delete.c:334
-#: ../src/delete.c:354 ../src/delete.c:358 ../src/move.c:145 ../src/move.c:149
+#: ../src/copy.c:576 ../src/properties.c:484
+msgid "kB"
+msgstr "Kio"
+
+#: ../src/copy.c:585
+msgid "0.0 kB/s"
+msgstr "0.0 Kio/s"
+
+#: ../src/copy.c:601 ../src/properties.c:486
+msgid "MB"
+msgstr "Mio"
+
+#: ../src/copy.c:684 ../src/copy.c:688 ../src/delete.c:327 ../src/delete.c:331
+#: ../src/delete.c:359 ../src/delete.c:364 ../src/move.c:468 ../src/move.c:472
 msgid "Question"
 msgstr "Question"
 
-#: ../src/copy.c:234 ../src/move.c:148
+#: ../src/copy.c:687 ../src/move.c:471
 #, c-format
 msgid ""
 "%s will be overwritten\n"
@@ -368,23 +381,11 @@ msgstr ""
 "%s va être écrasé\n"
 "Continuer ?"
 
-#: ../src/copy.c:342
-msgid "Omitting directory"
-msgstr "Omission du dossier"
+#: ../src/copy.c:719 ../src/copy.c:723
+msgid "Information"
+msgstr "Information"
 
-#: ../src/copy.c:598 ../src/properties.c:484
-msgid "kB"
-msgstr "Kio"
-
-#: ../src/copy.c:607
-msgid "0.0 kB/s"
-msgstr "0.0 Kio/s"
-
-#: ../src/copy.c:623 ../src/properties.c:486
-msgid "MB"
-msgstr "Mio"
-
-#: ../src/copy.c:676
+#: ../src/copy.c:745
 msgid ""
 "Usage: copy [-fip] source_file target_file\n"
 "       copy [-fip] source_file ... target\n"
@@ -406,15 +407,15 @@ msgstr ""
 "  -R\tCopier récursivement les dossiers\n"
 "  -r\tCopier récursivement les dossiers\n"
 
-#: ../src/delete.c:103
+#: ../src/delete.c:111
 msgid "Delete file(s)"
 msgstr "Effacement du/des fichier(s)"
 
-#: ../src/delete.c:109
+#: ../src/delete.c:117
 msgid "Deleting: "
-msgstr "Effacement: "
+msgstr "Effacement de : "
 
-#: ../src/delete.c:333
+#: ../src/delete.c:330
 #, c-format
 msgid ""
 "%s is a directory.\n"
@@ -423,19 +424,20 @@ msgstr ""
 "%s est un dossier.\n"
 "Effacer récursivement ?"
 
-#: ../src/delete.c:335 ../src/delete.c:359
+#: ../src/delete.c:332 ../src/delete.c:365
 msgid "Yes to all"
 msgstr "Oui pour tous"
 
-#: ../src/delete.c:356
+#: ../src/delete.c:362
+#, c-format
 msgid ""
-" will be permanently deleted.\n"
+"%s will be permanently deleted.\n"
 "Continue?"
 msgstr ""
-" sera supprimé définitivement.\n"
+"%s sera définitivement effacé.\n"
 "Continuer ?"
 
-#: ../src/delete.c:407
+#: ../src/delete.c:452
 msgid ""
 "Usage: delete [-fiRr] file...\n"
 "  -f\tDo not prompt for confirmation or output error messages\n"
@@ -449,47 +451,47 @@ msgstr ""
 "  -R\tSupprimer récursivement\n"
 "  -r\tÉquivalent à -R\n"
 
-#: ../src/desktop.c:445
+#: ../src/desktop.c:446
 msgid "New text file.txt"
 msgstr "Nouveau fichier texte.txt"
 
-#: ../src/desktop.c:502
+#: ../src/desktop.c:503
 msgid "Desktop preferences"
 msgstr "Préférences du bureau"
 
-#: ../src/desktop.c:522
+#: ../src/desktop.c:523
 msgid "Background: "
 msgstr "Arrière-plan: "
 
-#: ../src/desktop.c:527
+#: ../src/desktop.c:528
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: ../src/desktop.c:533
+#: ../src/desktop.c:534
 msgid "Scaled"
 msgstr "Étiré"
 
-#: ../src/desktop.c:535
+#: ../src/desktop.c:536
 msgid "Scaled (keep ratio)"
 msgstr "Étiré (sans déformer)"
 
-#: ../src/desktop.c:537
+#: ../src/desktop.c:538
 msgid "Tiled"
 msgstr "Mosaïque"
 
-#: ../src/desktop.c:543
+#: ../src/desktop.c:544
 msgid "Appearance"
 msgstr "Apparence"
 
-#: ../src/desktop.c:884
+#: ../src/desktop.c:892
 msgid "Applications"
 msgstr "Applications"
 
-#: ../src/desktop.c:1489
+#: ../src/desktop.c:1497
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1545
+#: ../src/desktop.c:1553
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -500,8 +502,16 @@ msgid ""
 "  -h\tDisplay the homescreen\n"
 "  -m\tMonitor where to display the desktop\n"
 msgstr ""
+"Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m moniteur]\n"
+"  -H\tPlacer les icônes horizontalement\n"
+"  -V\tPlacer les icônes verticalement\n"
+"  -a\tAfficher les applications connues\n"
+"  -c\tTrier les applications connues par catégorie\n"
+"  -f\tAfficher le contenu du répertoire bureau (par défaut)\n"
+"  -h\tAfficher l'écran d'accueil\n"
+"  -m\tMoniteur où afficher le bureau\n"
 
-#: ../src/desktopicon.c:800
+#: ../src/desktopicon.c:859
 msgid "Are you sure you want to execute this file?"
 msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 
@@ -513,16 +523,15 @@ msgstr "Usage: browser [dossier...]\n"
 msgid "Could not load MIME globs"
 msgstr "Impossible de charger les infos MIME"
 
-#: ../src/move.c:86
+#: ../src/move.c:99
 msgid "Move file(s)"
 msgstr "Déplacer des fichier(s)"
 
-#: ../src/move.c:111
-#, c-format
-msgid "Moving file: %s"
-msgstr "Déplacement du fichier: %s"
+#: ../src/move.c:107
+msgid "Moving: "
+msgstr "Déplacement de : "
 
-#: ../src/move.c:434
+#: ../src/move.c:498
 msgid ""
 "Usage: move [-fi] file...\n"
 "  -f\tDo not prompt for confirmation if the destination path exists\n"
