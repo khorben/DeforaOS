@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-26 14:04+0100\n"
+"POT-Creation-Date: 2010-12-26 14:10+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -267,48 +267,49 @@ msgstr "Actualisation du dossier..."
 msgid "New folder"
 msgstr "Nouveau dossier"
 
-#: ../src/callbacks.c:192 ../src/callbacks.c:197 ../src/callbacks.c:1021
-#: ../src/callbacks.c:1024 ../src/desktopicon.c:796 ../src/desktopicon.c:801
+#: ../src/callbacks.c:193 ../src/callbacks.c:199 ../src/callbacks.c:1025
+#: ../src/callbacks.c:1030 ../src/desktopicon.c:796 ../src/desktopicon.c:801
 #: ../src/desktopicon.c:848 ../src/desktopicon.c:853
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/callbacks.c:195 ../src/desktopicon.c:851
-msgid "Are you sure you want to delete "
-msgstr "Voulez-vous vraiment effacer "
+#: ../src/callbacks.c:197
+#, c-format
+msgid "Are you sure you want to delete %lu file(s)?"
+msgstr "Voulez-vous vraiment effacer %lu fichier(s)?"
 
-#: ../src/callbacks.c:196 ../src/desktopicon.c:852
-msgid " file(s)?"
-msgstr " fichier(s) ?"
-
-#: ../src/callbacks.c:756
+#: ../src/callbacks.c:758
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/callbacks.c:761 ../src/callbacks.c:765 ../src/desktop.c:334
+#: ../src/callbacks.c:763 ../src/callbacks.c:767 ../src/desktop.c:334
 msgid "Folder"
 msgstr "Dossier"
 
-#: ../src/callbacks.c:772 ../src/desktop.c:342
+#: ../src/callbacks.c:774 ../src/desktop.c:342
 msgid "Symbolic link..."
 msgstr "Lien symbolique..."
 
-#: ../src/callbacks.c:776 ../src/desktop.c:346
+#: ../src/callbacks.c:778 ../src/desktop.c:346
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:856
+#: ../src/callbacks.c:858
 msgid "Open in new _window"
 msgstr "Ouvrir dans une _nouvelle fenêtre"
 
-#: ../src/callbacks.c:884
+#: ../src/callbacks.c:886
 msgid "_Unmount"
 msgstr "Démonter"
 
-#: ../src/callbacks.c:919 ../src/desktopicon.c:693 ../src/view.c:100
+#: ../src/callbacks.c:921 ../src/desktopicon.c:693 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
+
+#: ../src/callbacks.c:1029 ../src/desktopicon.c:800
+msgid "Are you sure you want to execute this file?"
+msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 
 #: ../src/common.c:61
 msgid "copying"
@@ -511,9 +512,13 @@ msgstr ""
 "  -h\tAfficher l'écran d'accueil\n"
 "  -m\tMoniteur où afficher le bureau\n"
 
-#: ../src/desktopicon.c:800
-msgid "Are you sure you want to execute this file?"
-msgstr "Voulez-vous vraiment exécuter ce fichier ?"
+#: ../src/desktopicon.c:851
+msgid "Are you sure you want to delete "
+msgstr "Voulez-vous vraiment effacer "
+
+#: ../src/desktopicon.c:852
+msgid " file(s)?"
+msgstr " fichier(s) ?"
 
 #: ../src/main.c:44
 msgid "Usage: browser [directory...]\n"
