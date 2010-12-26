@@ -47,6 +47,7 @@
 
 
 /* Copy */
+/* private */
 /* types */
 typedef int Prefs;
 #define PREFS_f 0x01
@@ -85,9 +86,19 @@ typedef struct _Copy
 	int fpulse;			/* tells when to pulse */
 } Copy;
 
-/* functions */
-static void _copy_refresh(Copy * copy);
 
+/* prototypes */
+static int _copy_error(Copy * copy, char const * message, int ret);
+static void _copy_info(Copy * copy, char const * message, char const * info);
+static int _copy_filename_confirm(Copy * copy, char const * filename);
+static int _copy_filename_error(Copy * copy, char const * filename, int ret);
+static void _copy_filename_info(Copy * copy, char const * filename,
+		char const * info);
+
+
+/* functions */
+/* copy */
+static void _copy_refresh(Copy * copy);
 /* callbacks */
 static void _copy_on_closex(void);
 static gboolean _copy_idle_first(gpointer data);
@@ -110,15 +121,15 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	copy.cur = 0;
 	/* graphical interface */
 	copy.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(copy.window), _("Copy file(s)"));
 	gtk_window_set_resizable(GTK_WINDOW(copy.window), FALSE);
+	gtk_window_set_title(GTK_WINDOW(copy.window), _("Copy file(s)"));
 	g_signal_connect(G_OBJECT(copy.window), "delete-event", G_CALLBACK(
 			_copy_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* current argument */
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Copying: "));
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
@@ -129,14 +140,14 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	copy.label = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(copy.label), 0, 0);
 	gtk_size_group_add_widget(right, copy.label);
-	gtk_box_pack_start(GTK_BOX(hbox), copy.label, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.label, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* progress bar */
 	copy.progress = gtk_progress_bar_new();
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.progress), " ");
-	gtk_box_pack_start(GTK_BOX(vbox), copy.progress, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), copy.progress, TRUE, TRUE, 0);
 	/* file copy */
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Filename: "));
 	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
@@ -147,10 +158,10 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_label_set_width_chars(GTK_LABEL(copy.flabel), 25);
 	gtk_misc_set_alignment(GTK_MISC(copy.flabel), 0, 0);
 	gtk_size_group_add_widget(right, copy.flabel);
-	gtk_box_pack_start(GTK_BOX(hbox), copy.flabel, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.flabel, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* file copy speed */
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Speed: "));
 	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
@@ -159,8 +170,8 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	copy.fspeed = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(copy.fspeed), 0, 0);
 	gtk_size_group_add_widget(right, copy.fspeed);
-	gtk_box_pack_start(GTK_BOX(hbox), copy.fspeed, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.fspeed, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* file progress bar */
 	copy.fprogress = gtk_progress_bar_new();
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.fprogress), " ");
@@ -180,11 +191,15 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 
 static void _copy_refresh(Copy * copy)
 {
-	char buf[32];
+	char const * filename = copy->filev[copy->cur];
+	char * p;
+	char buf[64];
 	double fraction;
 
-	/* FIXME convert to UTF-8 */
-	gtk_label_set_text(GTK_LABEL(copy->label), copy->filev[copy->cur]);
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	gtk_label_set_text(GTK_LABEL(copy->label), filename);
+	free(p);
 	snprintf(buf, sizeof(buf), _("File %u of %u"), copy->cur + 1,
 			copy->filec - 1);
 	fraction = copy->cur;
@@ -192,50 +207,6 @@ static void _copy_refresh(Copy * copy)
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->progress),
 			fraction);
-}
-
-static int _copy_error(Copy * copy, char const * message, int ret)
-{
-	GtkWidget * dialog;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_OK, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	return ret;
-}
-
-static void _copy_info(Copy * copy, char const * message, char const * info)
-{
-	GtkWidget * dialog;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_OK, "%s: %s", message, info);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Information"));
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-}
-
-static int _copy_confirm(Copy * copy, char const * dst)
-{
-	GtkWidget * dialog;
-	int res;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO,
-#if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", _("Question"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-#endif
-			_("%s will be overwritten\nProceed?"), dst);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	return (res == GTK_RESPONSE_YES) ? 1 : 0;
 }
 
 static void _copy_on_closex(void)
@@ -249,16 +220,17 @@ static gboolean _copy_idle_multiple(gpointer data);
 static gboolean _copy_idle_first(gpointer data)
 {
 	Copy * copy = data;
+	char const * filename = copy->filev[copy->filec - 1];
 	struct stat st;
 
-	if(stat(copy->filev[copy->filec - 1], &st) != 0)
+	if(stat(filename, &st) != 0)
 	{
 		if(errno != ENOENT)
-			_copy_error(copy, copy->filev[copy->filec - 1], 0);
+			_copy_filename_error(copy, filename, 0);
 		else if(copy->filec > 2)
 		{
 			errno = ENOTDIR;
-			_copy_error(copy, copy->filev[copy->filec - 1], 0);
+			_copy_filename_error(copy, filename, 0);
 		}
 		else
 			_copy_single(copy, copy->filev[0], copy->filev[1]);
@@ -271,7 +243,7 @@ static gboolean _copy_idle_first(gpointer data)
 	else if(copy->filec > 2)
 	{
 		errno = ENOTDIR;
-		_copy_error(copy, copy->filev[copy->filec - 1], 0);
+		_copy_filename_error(copy, filename, 0);
 	}
 	else
 		_copy_single(copy, copy->filev[0], copy->filev[1]);
@@ -291,26 +263,32 @@ static gboolean _single_timeout(gpointer data);
 static int _copy_single(Copy * copy, char const * src, char const * dst)
 {
 	int ret;
+	char * p;
 	struct stat st;
 	struct stat st2;
 	guint timeout;
 
-	gtk_label_set_text(GTK_LABEL(copy->flabel), src);
+	if((p = g_filename_to_utf8(src, -1, NULL, NULL, NULL)) != NULL)
+		gtk_label_set_text(GTK_LABEL(copy->flabel), p);
+	else
+		gtk_label_set_text(GTK_LABEL(copy->flabel), src);
+	free(p);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->fprogress), 0.0);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->fprogress), " ");
 	if(*(copy->prefs) & PREFS_P) /* don't follow symlinks */
 	{
 		if(lstat(src, &st) != 0 && errno == ENOENT)
-			return _copy_error(copy, src, 1);
+			return _copy_filename_error(copy, src, 1);
 	}
 	else if(stat(src, &st) != 0 && errno == ENOENT) /* follow symlinks */
-		return _copy_error(copy, src, 1);
+		return _copy_filename_error(copy, src, 1);
 	if(lstat(dst, &st2) == 0)
 	{
-		if(*(copy->prefs) & PREFS_i && _copy_confirm(copy, dst) != 1)
+		if(*(copy->prefs) & PREFS_i
+				&& _copy_filename_confirm(copy, dst) != 1)
 			return 0;
 		if(unlink(dst) != 0)
-			return _copy_error(copy, dst, 1);
+			return _copy_filename_error(copy, dst, 1);
 	}
 	if(S_ISDIR(st.st_mode))
 		ret = _single_dir(copy, src, dst);
@@ -339,7 +317,7 @@ static int _single_dir(Copy * copy, char const * src, char const * dst)
 {
 	if(*(copy->prefs) & PREFS_R)
 		return _single_recurse(copy, src, dst);
-	_copy_info(copy, src, _("Omitting directory"));
+	_copy_filename_info(copy, src, _("Omitting directory"));
 	return 0;
 }
 
@@ -359,11 +337,11 @@ static int _single_recurse(Copy * copy, char const * src, char const * dst)
 	memcpy(&copy2, copy, sizeof(copy2));
 	copy2.prefs = &prefs2;
 	if(mkdir(dst, 0777) != 0 && errno != EEXIST)
-		return _copy_error(copy, dst, 1);
+		return _copy_filename_error(copy, dst, 1);
 	srclen = strlen(src);
 	dstlen = strlen(dst);
 	if((dir = opendir(src)) == NULL)
-		return _copy_error(copy, src, 1);
+		return _copy_filename_error(copy, src, 1);
 	prefs2 |= (prefs2 & PREFS_H) ? PREFS_P : 0;
 	while((de = readdir(dir)) != NULL)
 	{
@@ -373,13 +351,13 @@ static int _single_recurse(Copy * copy, char const * src, char const * dst)
 			continue;
 		if((p = realloc(ssrc, srclen + strlen(de->d_name) + 2)) == NULL)
 		{
-			ret |= _copy_error(copy, src, 1);
+			ret |= _copy_filename_error(copy, src, 1);
 			continue;
 		}
 		ssrc = p;
 		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
 		{
-			ret |= _copy_error(copy, src, 1);
+			ret |= _copy_filename_error(copy, src, 1);
 			continue;
 		}
 		sdst = p;
@@ -395,8 +373,8 @@ static int _single_recurse(Copy * copy, char const * src, char const * dst)
 
 static int _single_fifo(Copy * copy, char const * dst)
 {
-	if(mkfifo(dst, 0666) != 0)
-		return _copy_error(copy, dst, 1);
+	if(mkfifo(dst, 0666) != 0) /* XXX use mode from source? */
+		return _copy_filename_error(copy, dst, 1);
 	return 0;
 }
 
@@ -406,10 +384,10 @@ static int _single_symlink(Copy * copy, char const * src, char const * dst)
 	ssize_t len;
 
 	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
-		return _copy_error(copy, src, 1);
+		return _copy_filename_error(copy, src, 1);
 	buf[len] = '\0';
 	if(symlink(buf, dst) != 0)
-		return _copy_error(copy, dst, 1);
+		return _copy_filename_error(copy, dst, 1);
 	return 0;
 }
 
@@ -426,10 +404,10 @@ static int _single_regular(Copy * copy, char const * src, char const * dst)
 	if(gettimeofday(&copy->tv, NULL) != 0)
 		return _copy_error(copy, "gettimeofday", 1);
 	if((in_fd = open(src, O_RDONLY)) < 0)
-		return _copy_error(copy, src, 1);
+		return _copy_filename_error(copy, src, 1);
 	if((out_fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0)
 	{
-		ret = _copy_error(copy, src, 1);
+		ret = _copy_filename_error(copy, src, 1);
 		close(in_fd);
 		return ret;
 	}
@@ -474,7 +452,7 @@ static gboolean _regular_channel(GIOChannel * source, GIOCondition condition,
 		return _channel_in(copy, source);
 	else if(condition == G_IO_OUT)
 		return _channel_out(copy, source);
-	_copy_error(copy, copy->filev[copy->cur], 0);
+	_copy_filename_error(copy, copy->filev[copy->cur], 0);
 	gtk_main_quit();
 	return FALSE;
 }
@@ -490,7 +468,7 @@ static gboolean _channel_in(Copy * copy, GIOChannel * source)
 			sizeof(copy->buf) - copy->buf_cnt, &read, &error);
 	if(status == G_IO_STATUS_ERROR)
 	{
-		_copy_error(copy, copy->filev[copy->cur], 0);
+		_copy_filename_error(copy, copy->filev[copy->cur], 0);
 		g_io_channel_unref(source);
 		gtk_main_quit(); /* XXX ugly */
 		return FALSE;
@@ -518,7 +496,7 @@ static gboolean _channel_out(Copy * copy, GIOChannel * source)
 	if(g_io_channel_write_chars(source, copy->buf, copy->buf_cnt, &written,
 				&error) == G_IO_STATUS_ERROR)
 	{
-		_copy_error(copy, copy->filev[copy->cur], 0);
+		_copy_filename_error(copy, copy->filev[copy->cur], 0);
 		gtk_main_quit(); /* XXX ugly */
 		return FALSE;
 	}
@@ -574,18 +552,18 @@ static int _single_p(Copy * copy, char const * dst, struct stat const * st)
 
 	if(chown(dst, st->st_uid, st->st_gid) != 0)
 	{
-		_copy_error(copy, dst, 0);
+		_copy_filename_error(copy, dst, 0);
 		if(chmod(dst, st->st_mode & ~(S_ISUID | S_ISGID)) != 0)
-			_copy_error(copy, dst, 0);
+			_copy_filename_error(copy, dst, 0);
 	}
 	else if(chmod(dst, st->st_mode) != 0)
-		_copy_error(copy, dst, 0);
+		_copy_filename_error(copy, dst, 0);
 	tv[0].tv_sec = st->st_atime;
 	tv[0].tv_usec = 0;
 	tv[1].tv_sec = st->st_mtime;
 	tv[1].tv_usec = 0;
 	if(utimes(dst, tv) != 0)
-		_copy_error(copy, dst, 0);
+		_copy_filename_error(copy, dst, 0);
 	return 0;
 }
 
@@ -594,7 +572,7 @@ static gboolean _single_timeout(gpointer data)
 	Copy * copy = data;
 	struct timeval tv;
 	double rate;
-	char buf[16];
+	char buf[32];
 	char const * unit = _("kB");
 
 	if(copy->fpulse == 1)
@@ -654,19 +632,110 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 	char * q;
 
 	if((p = strdup(src)) == NULL)
-		return _copy_error(copy, src, 1);
+		return _copy_filename_error(copy, src, 1);
 	to = basename(p);
 	len = strlen(dst) + strlen(to) + 2;
 	if((q = malloc(len * sizeof(char))) == NULL)
 	{
 		free(p);
-		return _copy_error(copy, src, 1);
+		return _copy_filename_error(copy, src, 1);
 	}
-	sprintf(q, "%s/%s", dst, to);
+	snprintf(q, len, "%s/%s", dst, to);
 	ret = _copy_single(copy, src, q);
 	free(p);
 	free(q);
 	return ret;
+}
+
+
+/* copy_error */
+static int _copy_error(Copy * copy, char const * message, int ret)
+{
+	GtkWidget * dialog;
+	int error = errno;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s: %s", message, strerror(error));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
+/* copy_filename_confirm */
+static int _copy_filename_confirm(Copy * copy, char const * filename)
+{
+	char * p;
+	GtkWidget * dialog;
+	int res;
+
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			_("%s will be overwritten\nProceed?"), filename);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	free(p);
+	return (res == GTK_RESPONSE_YES) ? 1 : 0;
+}
+
+
+/* copy_filename_error */
+static int _copy_filename_error(Copy * copy, char const * filename, int ret)
+{
+	char * p;
+	int error = errno;
+
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	errno = error;
+	ret = _copy_error(copy, filename, ret);
+	free(p);
+	return ret;
+}
+
+
+/* copy_info */
+static void _copy_info(Copy * copy, char const * message, char const * info)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Information"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s: %s", message, info);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Information"));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+}
+
+
+/* copy_filename_info */
+static void _copy_filename_info(Copy * copy, char const * filename,
+		char const * info)
+{
+	char * p;
+
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	_copy_info(copy, filename, info);
+	free(p);
 }
 
 
@@ -686,6 +755,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {

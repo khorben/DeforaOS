@@ -46,6 +46,7 @@
 
 
 /* Move */
+/* private */
 /* types */
 typedef int Prefs;
 #define PREFS_f 0x1
@@ -62,9 +63,16 @@ typedef struct _Move
 	GtkWidget * progress;
 } Move;
 
-/* functions */
-static void _move_refresh(Move * move);
 
+/* prototypes */
+static int _move_error(Move * move, char const * message, int ret);
+static int _move_filename_confirm(Move * move, char const * filename);
+static int _move_filename_error(Move * move, char const * filename, int ret);
+
+
+/* functions */
+/* move */
+static void _move_refresh(Move * move);
 /* callbacks */
 static void _move_on_closex(void);
 static gboolean _move_idle_first(gpointer data);
@@ -74,7 +82,10 @@ static int _move(Prefs * prefs, unsigned int filec, char * filev[])
 	static Move move;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkSizeGroup * left;
+	GtkSizeGroup * right;
 	GtkWidget * widget;
+	PangoFontDescription * bold;
 
 	if(filec < 2 || filev == NULL)
 		return 1; /* FIXME report error */
@@ -82,35 +93,61 @@ static int _move(Prefs * prefs, unsigned int filec, char * filev[])
 	move.filec = filec;
 	move.filev = filev;
 	move.cur = 0;
+	/* graphical interface */
 	move.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(move.window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(move.window), _("Move file(s)"));
 	g_signal_connect(G_OBJECT(move.window), "delete-event", G_CALLBACK(
 			_move_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
+	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* current argument */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Moving: "));
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	move.label = gtk_label_new("");
-	gtk_box_pack_start(GTK_BOX(vbox), move.label, TRUE, TRUE, 4);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_label_set_ellipsize(GTK_LABEL(move.label), PANGO_ELLIPSIZE_END);
+	gtk_label_set_width_chars(GTK_LABEL(move.label), 25);
+#endif
+	gtk_misc_set_alignment(GTK_MISC(move.label), 0, 0);
+	gtk_size_group_add_widget(right, move.label);
+	gtk_box_pack_start(GTK_BOX(hbox), move.label, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* progress bar */
 	move.progress = gtk_progress_bar_new();
-	gtk_box_pack_start(GTK_BOX(vbox), move.progress, TRUE, TRUE, 4);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(move.progress), " ");
+	gtk_box_pack_start(GTK_BOX(vbox), move.progress, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(move.window), 4);
 	gtk_container_add(GTK_CONTAINER(move.window), vbox);
 	g_idle_add(_move_idle_first, &move);
 	_move_refresh(&move);
 	gtk_widget_show_all(move.window);
+	pango_font_description_free(bold);
 	return 0;
 }
 
 static void _move_refresh(Move * move)
 {
-	char buf[256]; /* FIXME convert to UTF-8 */
+	char const * filename = move->filev[move->cur];
+	char * p;
+	char buf[64];
 	double fraction;
 
-	snprintf(buf, sizeof(buf), _("Moving file: %s"),
-			move->filev[move->cur]);
-	gtk_label_set_text(GTK_LABEL(move->label), buf);
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	gtk_label_set_text(GTK_LABEL(move->label), filename);
+	free(p);
 	snprintf(buf, sizeof(buf), _("File %u of %u"), move->cur,
 			move->filec - 1);
 	fraction = move->cur;
@@ -118,38 +155,6 @@ static void _move_refresh(Move * move)
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(move->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(move->progress),
 			fraction);
-}
-
-static int _move_error(Move * move, char const * message, int ret)
-{
-	GtkWidget * dialog;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(move->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_OK, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	return ret;
-}
-
-static int _move_confirm(Move * move, char const * dst)
-{
-	GtkWidget * dialog;
-	int res;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(move->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO,
-#if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", _("Question"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-#endif
-			_("%s will be overwritten\nProceed?"), dst);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	return (res == GTK_RESPONSE_YES) ? 1 : 0;
 }
 
 static void _move_on_closex(void)
@@ -162,16 +167,17 @@ static gboolean _move_idle_multiple(gpointer data);
 static gboolean _move_idle_first(gpointer data)
 {
 	Move * move = data;
+	char const * filename = move->filev[move->filec - 1];
 	struct stat st;
 
 	if(stat(move->filev[move->filec - 1], &st) != 0)
 	{
 		if(errno != ENOENT)
-			_move_error(move, move->filev[move->filec - 1], 0);
+			_move_filename_error(move, filename, 0);
 		else if(move->filec > 2)
 		{
 			errno = ENOTDIR;
-			_move_error(move, move->filev[move->filec - 1], 0);
+			_move_filename_error(move, filename, 0);
 		}
 		else
 			_move_single(move, move->filev[0], move->filev[1]);
@@ -184,7 +190,7 @@ static gboolean _move_idle_first(gpointer data)
 	else if(move->filec > 2)
 	{
 		errno = ENOTDIR;
-		_move_error(move, move->filev[move->filec - 1], 0);
+		_move_filename_error(move, filename, 0);
 	}
 	else
 		_move_single(move, move->filev[0], move->filev[1]);
@@ -207,20 +213,18 @@ static int _move_single(Move * move, char const * src, char const * dst)
 	struct stat st;
 
 	if(lstat(src, &st) != 0 && errno == ENOENT) /* XXX TOCTOU */
-		return _move_error(move, src, 1);
-	if(*(move->prefs) & PREFS_i
-			&& (lstat(dst, &st) == 0 || errno != ENOENT)
-			&& _move_confirm(move, dst) != 1)
+		return _move_filename_error(move, src, 1);
+	if(*(move->prefs) & PREFS_i && (lstat(dst, &st) == 0 || errno != ENOENT)
+			&& _move_filename_confirm(move, dst) != 1)
 		return 0;
 	if(rename(src, dst) == 0)
 		return 0;
 	if(errno != EXDEV)
-		return _move_error(move, src, 1);
-	if(unlink(dst) != 0
-			&& errno != ENOENT)
-		return _move_error(move, dst, 1);
+		return _move_filename_error(move, src, 1);
+	if(unlink(dst) != 0 && errno != ENOENT)
+		return _move_filename_error(move, dst, 1);
 	if(lstat(src, &st) != 0)
-		return _move_error(move, dst, 1);
+		return _move_filename_error(move, dst, 1);
 	if(S_ISDIR(st.st_mode))
 		ret = _single_dir(move, src, dst);
 	else if(S_ISFIFO(st.st_mode))
@@ -232,7 +236,7 @@ static int _move_single(Move * move, char const * src, char const * dst)
 	else if(!S_ISREG(st.st_mode)) /* FIXME not implemented */
 	{
 		errno = ENOSYS;
-		return _move_error(move, src, 1);
+		return _move_filename_error(move, src, 1);
 	}
 	else
 		ret = _single_regular(move, src, dst);
@@ -250,7 +254,7 @@ static int _single_dir(Move * move, char const * src, char const * dst)
 	if(_single_recurse(move, src, dst) != 0)
 		return 1;
 	if(rmdir(src) != 0) /* FIXME probably gonna fail, recurse before */
-		_move_error(move, src, 0);
+		_move_filename_error(move, src, 0);
 	return 0;
 }
 
@@ -265,12 +269,12 @@ static int _single_recurse(Move * move, char const * src, char const * dst)
 	char * sdst = NULL;
 	char * p;
 
-	if(mkdir(dst, 0777) != 0)
-		return _move_error(move, dst, 1);
+	if(mkdir(dst, 0777) != 0) /* XXX use mode from source? */
+		return _move_filename_error(move, dst, 1);
 	srclen = strlen(src);
 	dstlen = strlen(dst);
 	if((dir = opendir(src)) == NULL)
-		return _move_error(move, src, 1);
+		return _move_filename_error(move, src, 1);
 	while((de = readdir(dir)) != NULL)
 	{
 		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
@@ -279,13 +283,13 @@ static int _single_recurse(Move * move, char const * src, char const * dst)
 			continue;
 		if((p = realloc(ssrc, srclen + strlen(de->d_name) + 2)) == NULL)
 		{
-			ret |= _move_error(move, src, 1);
+			ret |= _move_filename_error(move, src, 1);
 			continue;
 		}
 		ssrc = p;
 		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
 		{
-			ret |= _move_error(move, src, 1);
+			ret |= _move_filename_error(move, src, 1);
 			continue;
 		}
 		sdst = p;
@@ -301,10 +305,10 @@ static int _single_recurse(Move * move, char const * src, char const * dst)
 
 static int _single_fifo(Move * move, char const * src, char const * dst)
 {
-	if(mkfifo(dst, 0666) != 0)
-		return _move_error(move, dst, 1);
+	if(mkfifo(dst, 0666) != 0) /* XXX use mode from source? */
+		return _move_filename_error(move, dst, 1);
 	if(unlink(src) != 0)
-		_move_error(move, src, 0);
+		_move_filename_error(move, src, 0);
 	return 0;
 }
 
@@ -312,9 +316,9 @@ static int _single_nod(Move * move, char const * src, char const * dst,
 		mode_t mode, dev_t rdev)
 {
 	if(mknod(dst, mode, rdev) != 0)
-		return _move_error(move, dst, 1);
+		return _move_filename_error(move, dst, 1);
 	if(unlink(src) != 0)
-		_move_error(move, src, 0);
+		_move_filename_error(move, src, 0);
 	return 0;
 }
 
@@ -324,12 +328,12 @@ static int _single_symlink(Move * move, char const * src, char const * dst)
 	ssize_t i;
 
 	if((i = readlink(src, buf, sizeof(buf) - 1)) == -1)
-		return _move_error(move, src, 1);
+		return _move_filename_error(move, src, 1);
 	buf[i] = '\0';
 	if(symlink(buf, dst) != 0)
-		return _move_error(move, dst, 1);
+		return _move_filename_error(move, dst, 1);
 	if(unlink(src) != 0)
-		_move_error(move, src, 0);
+		_move_filename_error(move, src, 0);
 	return 0;
 }
 
@@ -342,10 +346,10 @@ static int _single_regular(Move * move, char const * src, char const * dst)
 	size_t size;
 
 	if((fsrc = fopen(src, "r")) == NULL)
-		return _move_error(move, dst, 1);
+		return _move_filename_error(move, dst, 1);
 	if((fdst = fopen(dst, "w")) == NULL)
 	{
-		ret |= _move_error(move, dst, 1);
+		ret |= _move_filename_error(move, dst, 1);
 		fclose(fsrc);
 		return ret;
 	}
@@ -353,13 +357,13 @@ static int _single_regular(Move * move, char const * src, char const * dst)
 		if(fwrite(buf, sizeof(char), size, fdst) != size)
 			break;
 	if(!feof(fsrc))
-		ret |= _move_error(move, size == 0 ? src : dst, 1);
+		ret |= _move_filename_error(move, (size == 0) ? src : dst, 1);
 	if(fclose(fsrc) != 0)
-		ret |= _move_error(move, src, 1);
+		ret |= _move_filename_error(move, src, 1);
 	if(fclose(fdst) != 0)
-		ret |= _move_error(move, dst, 1);
+		ret |= _move_filename_error(move, dst, 1);
 	if(unlink(src) != 0)
-		_move_error(move, src, 0);
+		_move_filename_error(move, src, 0);
 	return ret;
 }
 
@@ -369,18 +373,18 @@ static int _single_p(Move * move, char const * dst, struct stat const * st)
 
 	if(lchown(dst, st->st_uid, st->st_gid) != 0) /* XXX TOCTOU */
 	{
-		_move_error(move, dst, 0);
+		_move_filename_error(move, dst, 0);
 		if(chmod(dst, st->st_mode & ~(S_ISUID | S_ISGID)) != 0)
-			_move_error(move, dst, 0);
+			_move_filename_error(move, dst, 0);
 	}
 	else if(chmod(dst, st->st_mode) != 0)
-		_move_error(move, dst, 0);
+		_move_filename_error(move, dst, 0);
 	tv[0].tv_sec = st->st_atime;
 	tv[0].tv_usec = 0;
 	tv[1].tv_sec = st->st_mtime;
 	tv[1].tv_usec = 0;
 	if(utimes(dst, tv) != 0)
-		_move_error(move, dst, 0);
+		_move_filename_error(move, dst, 0);
 	return 0;
 }
 
@@ -412,18 +416,78 @@ static int _move_multiple(Move * move, char const * src, char const * dst)
 	char * q;
 
 	if((p = strdup(src)) == NULL)
-		return _move_error(move, src, 1);
+		return _move_filename_error(move, src, 1);
 	to = basename(p);
-	len = strlen(src) + strlen(to) + 2;
+	len = strlen(dst) + strlen(to) + 2;
 	if((q = malloc(len * sizeof(char))) == NULL)
 	{
 		free(p);
-		return _move_error(move, src, 1);
+		return _move_filename_error(move, src, 1);
 	}
-	sprintf(q, "%s/%s", dst, to);
+	snprintf(q, len, "%s/%s", dst, to);
 	ret = _move_single(move, src, q);
 	free(p);
 	free(q);
+	return ret;
+}
+
+
+/* move_error */
+static int _move_error(Move * move, char const * message, int ret)
+{
+	GtkWidget * dialog;
+	int error = errno;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(move->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s: %s", message, strerror(error));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
+/* move_filename_confirm */
+static int _move_filename_confirm(Move * move, char const * filename)
+{
+	char * p;
+	GtkWidget * dialog;
+	int res;
+
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(move->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			_("%s will be overwritten\nProceed?"), filename);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	free(p);
+	return (res == GTK_RESPONSE_YES) ? 1 : 0;
+}
+
+
+/* move_filename_error */
+static int _move_filename_error(Move * move, char const * filename, int ret)
+{
+	char * p;
+	int error = errno;
+
+	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
+		filename = p;
+	errno = error;
+	ret = _move_error(move, filename, ret);
+	free(p);
 	return ret;
 }
 
