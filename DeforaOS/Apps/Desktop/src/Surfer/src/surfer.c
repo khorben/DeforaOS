@@ -1043,7 +1043,7 @@ void surfer_open(Surfer * surfer, char const * url)
 		surfer_open_tab(surfer, url);
 		return;
 	}
-	if(url != NULL)
+	if(url != NULL && url[0] != '\0')
 	{
 		view = surfer_get_view(surfer);
 		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), TRUE);
@@ -1098,7 +1098,7 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 		ghtml_set_proxy(widget, surfer->proxy_type, surfer->proxy_http,
 				surfer->proxy_http_port);
 	gtk_widget_show_all(widget); /* must be before set_current_page() */
-	if(url != NULL)
+	if(url != NULL && url[0] != '\0')
 		ghtml_load_url(widget, url);
 	if((i = gtk_notebook_append_page(notebook, widget, _tab_button(surfer,
 						widget, _("Untitled")))) > 0)
