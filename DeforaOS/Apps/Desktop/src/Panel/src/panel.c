@@ -214,8 +214,6 @@ Panel * panel_new(PanelPrefs const * prefs)
 
 static int _new_config(Panel * panel)
 {
-	char const * homedir;
-	size_t len;
 	char * filename;
 
 	if((panel->config = config_new()) == NULL)
