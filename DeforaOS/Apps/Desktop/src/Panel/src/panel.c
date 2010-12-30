@@ -27,6 +27,7 @@
 #include "common.h"
 #include "../config.h"
 #define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Panel */
@@ -54,6 +55,8 @@ struct _Panel
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_notebook;
+	GtkWidget * pr_bottom_size;
+	GtkWidget * pr_top_size;
 };
 
 
@@ -65,6 +68,17 @@ struct _Panel
 # define LIBDIR		PREFIX "/lib"
 #endif
 #define PANEL_CONFIG_FILE ".panel"
+
+static struct
+{
+	char const * alias;
+	GtkIconSize iconsize;
+} _panel_sizes[] =
+{
+	{ N_("large"),		PANEL_ICON_SIZE_LARGE },
+	{ N_("small"),		PANEL_ICON_SIZE_SMALL },
+	{ N_("smaller"),	PANEL_ICON_SIZE_SMALLER },
+};
 
 
 /* prototypes */
@@ -81,6 +95,8 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 static void _panel_helper_preferences_dialog(Panel * panel);
 static int _panel_helper_shutdown_dialog(void);
+
+static char * _config_get_filename(void);
 
 
 /* public */
@@ -203,13 +219,9 @@ static int _new_config(Panel * panel)
 	char * filename;
 
 	if((panel->config = config_new()) == NULL)
-		return 1;
-	if((homedir = getenv("HOME")) == NULL)
-		homedir = g_get_home_dir();
-	len = strlen(homedir) + 1 + sizeof(PANEL_CONFIG_FILE);
-	if((filename = malloc(len)) == NULL)
-		return 1;
-	snprintf(filename, len, "%s/%s", homedir, PANEL_CONFIG_FILE);
+		return -1;
+	if((filename = _config_get_filename()) == NULL)
+		return -1;
 	config_load(panel->config, filename); /* we can ignore errors */
 	free(filename);
 	return 0;
@@ -217,24 +229,13 @@ static int _new_config(Panel * panel)
 
 static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
 {
-	struct
-	{
-		char const * alias;
-		GtkIconSize iconsize;
-	} aliases[] =
-	{
-		{ "large",	PANEL_ICON_SIZE_LARGE },
-		{ "small",	PANEL_ICON_SIZE_SMALL },
-		{ "smaller",	PANEL_ICON_SIZE_SMALLER },
-		{ NULL,		PANEL_ICON_SIZE_UNSET }
-	};
 	size_t i;
 
-	for(i = 0; aliases[i].alias != NULL; i++)
-		if(gtk_icon_size_from_name(aliases[i].alias)
+	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
+		if(gtk_icon_size_from_name(_panel_sizes[i].alias)
 				== GTK_ICON_SIZE_INVALID)
-			gtk_icon_size_register_alias(aliases[i].alias,
-					aliases[i].iconsize);
+			gtk_icon_size_register_alias(_panel_sizes[i].alias,
+					_panel_sizes[i].iconsize);
 	if(user != NULL)
 	{
 		memcpy(prefs, user, sizeof(*prefs));
@@ -425,6 +426,10 @@ static void _preferences_on_ok(gpointer data);
 void panel_show_preferences(Panel * panel, gboolean show)
 {
 	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkSizeGroup * group;
+	size_t i;
 
 	if(show == FALSE)
 	{
@@ -445,6 +450,34 @@ void panel_show_preferences(Panel * panel, gboolean show)
 			G_CALLBACK(_preferences_on_closex), panel);
 	g_signal_connect(G_OBJECT(panel->pr_window), "response",
 			G_CALLBACK(_preferences_on_response), panel);
+	/* general */
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Top size:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	panel->pr_top_size = gtk_combo_box_new_text();
+	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_top_size),
+				_(_panel_sizes[i].alias));
+	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_top_size, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Bottom size:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	panel->pr_bottom_size = gtk_combo_box_new_text();
+	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_bottom_size),
+				_(_panel_sizes[i].alias));
+	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_bottom_size, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook), vbox,
+			gtk_label_new(_("General")));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(panel->pr_window));
 #else
@@ -477,22 +510,71 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 static void _preferences_on_cancel(gpointer data)
 {
 	Panel * panel = data;
+	char const * p;
+	size_t i;
+	const size_t cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
 
 	gtk_widget_hide(panel->pr_window);
-	/* FIXME reset configuration */
+	if((p = config_get(panel->config, NULL, "bottom_size")) != NULL)
+		for(i = 0; i < cnt; i++)
+		{
+			if(strcmp(p, _panel_sizes[i].alias) != 0)
+				continue;
+			gtk_combo_box_set_active(GTK_COMBO_BOX(
+						panel->pr_bottom_size), i);
+			break;
+		}
+	if((p = config_get(panel->config, NULL, "top_size")) != NULL)
+		for(i = 0; i < cnt; i++)
+		{
+			if(strcmp(p, _panel_sizes[i].alias) != 0)
+				continue;
+			gtk_combo_box_set_active(GTK_COMBO_BOX(
+						panel->pr_top_size), i);
+			break;
+		}
 }
 
 static void _preferences_on_ok(gpointer data)
 {
 	Panel * panel = data;
+	gint i;
+	const gint cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
+	char * filename;
 
 	gtk_widget_hide(panel->pr_window);
-	/* FIXME apply configuration */
+	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_bottom_size)))
+			>= 0 && i < cnt)
+		config_set(panel->config, NULL, "bottom_size",
+				_panel_sizes[i].alias);
+	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_top_size)))
+			>= 0 && i < cnt)
+		config_set(panel->config, NULL, "top_size",
+				_panel_sizes[i].alias);
+	if((filename = _config_get_filename()) != NULL)
+		config_save(panel->config, filename);
+	free(filename);
 }
 
 
 /* private */
 /* functions */
+static char * _config_get_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(PANEL_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, PANEL_CONFIG_FILE);
+	return filename;
+}
+
+
 /* helpers */
 /* panel_helper_config_get */
 static char const * _panel_helper_config_get(Panel * panel,
