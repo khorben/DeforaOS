@@ -157,7 +157,7 @@ static void _set_image(Battery * battery, BatteryLevel level,
 
 static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 {
-	char buf[16];
+	char buf[256];
 
 	snprintf(buf, sizeof(buf), "%.0lf%% ", value);
 	/* XXX only show when necessary? */
@@ -187,6 +187,11 @@ static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 	}
 #ifndef EMBEDDED
 	gtk_label_set_text(GTK_LABEL(battery->label), buf);
+#endif
+#if GTK_CHECK_VERSION(2, 12, 0)
+	snprintf(buf, sizeof(buf), "%s%.0lf%%%s", "Battery level: ", value,
+			charging ? " (charging)" : "");
+	gtk_widget_set_tooltip_text(battery->hbox, buf);
 #endif
 }
 
