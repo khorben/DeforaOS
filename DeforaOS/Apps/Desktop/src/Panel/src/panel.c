@@ -184,7 +184,6 @@ Panel * panel_new(PanelPrefs const * prefs)
 #endif
 	/* panel */
 	panel->pr_window = NULL;
-	panel->pr_notebook = gtk_notebook_new();
 	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 4);
@@ -293,6 +292,7 @@ static gboolean _on_idle(gpointer data)
 	char const * p;
 	size_t i;
 
+	panel_show_preferences(panel, FALSE);
 	p = config_get(panel->config, NULL, (panel->prefs.position
 				== PANEL_POSITION_TOP) ? "top" : "bottom");
 	if(p != NULL || (p = config_get(panel->config, NULL, "plugins"))
@@ -412,7 +412,7 @@ int panel_load(Panel * panel, char const * applet)
 	}
 	if(pa->settings != NULL
 			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
-		/* FIXME doesn't seem to work (needs a container first?) */
+		/* FIXME only affects the current panel's preferences */
 		gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook),
 				widget, gtk_label_new(pa->name));
 	return 0;
@@ -420,6 +420,7 @@ int panel_load(Panel * panel, char const * applet)
 
 
 /* panel_show_preferences */
+static void _show_preferences_window(Panel * panel);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -428,23 +429,22 @@ static void _preferences_on_ok(gpointer data);
 
 void panel_show_preferences(Panel * panel, gboolean show)
 {
+	if(panel->pr_window == NULL)
+		_show_preferences_window(panel);
+	if(show == FALSE)
+		gtk_widget_hide(panel->pr_window);
+	else
+		gtk_window_present(GTK_WINDOW(panel->pr_window));
+}
+
+static void _show_preferences_window(Panel * panel)
+{
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkSizeGroup * group;
 	size_t i;
 
-	if(show == FALSE)
-	{
-		if(panel->pr_window != NULL)
-			gtk_widget_hide(panel->pr_window);
-		return;
-	}
-	if(panel->pr_window != NULL)
-	{
-		gtk_window_present(GTK_WINDOW(panel->pr_window));
-		return;
-	}
 	panel->pr_window = gtk_dialog_new_with_buttons(_("Panel preferences"),
 			NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -453,6 +453,8 @@ void panel_show_preferences(Panel * panel, gboolean show)
 			G_CALLBACK(_preferences_on_closex), panel);
 	g_signal_connect(G_OBJECT(panel->pr_window), "response",
 			G_CALLBACK(_preferences_on_response), panel);
+	panel->pr_notebook = gtk_notebook_new();
+	gtk_notebook_set_scrollable(GTK_NOTEBOOK(panel->pr_notebook), TRUE);
 	/* general */
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox = gtk_vbox_new(FALSE, 4);
