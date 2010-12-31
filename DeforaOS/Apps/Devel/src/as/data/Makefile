@@ -10,7 +10,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 as.pc: as.pc.in ../config.sh
-	./pkgconfig.sh "as.pc"
+	./pkgconfig.sh -P "$(PREFIX)" -- "as.pc"
 
 clean:
 	$(RM) -- $(as.pc_OBJS)
@@ -19,9 +19,9 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
-	./pkgconfig.sh -p "$(DESTDIR)$(PREFIX)" install "as.pc"
+	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -i -- "as.pc"
 
 uninstall:
-	./pkgconfig.sh -p "$(DESTDIR)$(PREFIX)" uninstall "as.pc"
+	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -u -- "as.pc"
 
 .PHONY: all clean distclean install uninstall

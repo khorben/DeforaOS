@@ -10,7 +10,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 cpp.pc: cpp.pc.in ../config.sh
-	./pkgconfig.sh "cpp.pc"
+	./pkgconfig.sh -P "$(PREFIX)" -- "cpp.pc"
 
 clean:
 	$(RM) -- $(cpp.pc_OBJS)
@@ -19,9 +19,9 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
-	./pkgconfig.sh -p "$(DESTDIR)$(PREFIX)" install "cpp.pc"
+	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -i -- "cpp.pc"
 
 uninstall:
-	./pkgconfig.sh -p "$(DESTDIR)$(PREFIX)" uninstall "cpp.pc"
+	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -u -- "cpp.pc"
 
 .PHONY: all clean distclean install uninstall

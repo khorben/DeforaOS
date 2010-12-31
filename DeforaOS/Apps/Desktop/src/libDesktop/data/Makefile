@@ -10,7 +10,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 libDesktop.pc: libDesktop.pc.in ../config.sh
-	./pkgconfig.sh "libDesktop.pc"
+	./pkgconfig.sh -P "$(PREFIX)" -- "libDesktop.pc"
 
 clean:
 	$(RM) -- $(libDesktop.pc_OBJS)
@@ -19,9 +19,9 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
-	./pkgconfig.sh -p "$(DESTDIR)$(PREFIX)" install "libDesktop.pc"
+	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -i -- "libDesktop.pc"
 
 uninstall:
-	./pkgconfig.sh -p "$(DESTDIR)$(PREFIX)" uninstall "libDesktop.pc"
+	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -u -- "libDesktop.pc"
 
 .PHONY: all clean distclean install uninstall
