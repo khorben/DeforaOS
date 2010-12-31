@@ -18,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 ../data/Init.h: ../data/Init.interface
-	./appbroker.sh "../data/Init.h"
+	./appbroker.sh -P "$(PREFIX)" -- "../data/Init.h"
 
 Init_OBJS = init.o main.o service.o session.o
 Init_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
