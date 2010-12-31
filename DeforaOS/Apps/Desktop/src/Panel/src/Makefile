@@ -29,7 +29,7 @@ panel: $(panel_OBJS)
 	$(CC) -o panel $(panel_OBJS) $(panel_LDFLAGS)
 
 run_OBJS = run.o
-run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 run: $(run_OBJS)
