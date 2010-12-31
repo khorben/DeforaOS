@@ -1366,7 +1366,7 @@ static int _align_compare(const void * a, const void * b)
 	dirb = desktopicon_get_isdir(iconb);
 	if(dira && !dirb)
 		return -1;
-	else if(dirb)
+	else if(!dira && dirb)
 		return 1;
 	return strcmp(desktopicon_get_name(icona), desktopicon_get_name(iconb));
 }
