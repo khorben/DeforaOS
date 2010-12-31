@@ -2020,7 +2020,7 @@ static int _config_load_string(Config * config, char const * variable,
 	if((str = config_get(config, "", variable)) == NULL)
 		return 0;
 	if((p = strdup(str)) == NULL)
-		return 1;
+		return -1;
 	free(*value);
 	*value = p;
 	return 0;
