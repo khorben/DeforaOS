@@ -1360,7 +1360,7 @@ static int _align_compare(const void * a, const void * b)
 
 	if(firsta && !firstb)
 		return -1;
-	else if(firstb)
+	else if(!firsta && firstb)
 		return 1;
 	dira = desktopicon_get_isdir(icona);
 	dirb = desktopicon_get_isdir(iconb);
