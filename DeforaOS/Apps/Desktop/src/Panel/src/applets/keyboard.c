@@ -108,6 +108,8 @@ static gboolean _init_idle(gpointer data)
 	Keyboard * keyboard = data;
 	char * argv[] = { "sh", "-c", "xkbd -xid", NULL };
 	char const * p;
+	char * q = NULL;
+	gboolean res;
 	gint out = -1;
 	GError * error = NULL;
 	char buf[32];
@@ -118,11 +120,13 @@ static gboolean _init_idle(gpointer data)
 	if(keyboard->window != NULL)
 		return FALSE;
 	if((p = keyboard->helper->config_get(keyboard->helper->panel,
-					"keyboard", "command")) != NULL)
-		argv[2] = p;
-	if(g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL,
-				NULL, &keyboard->pid, NULL, &out, NULL, &error)
-			!= TRUE)
+					"keyboard", "command")) != NULL
+			&& (q = strdup(p)) != NULL)
+		argv[2] = q;
+	res = g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH,
+			NULL, NULL, &keyboard->pid, NULL, &out, NULL, &error);
+	free(q);
+	if(res != TRUE)
 		return keyboard->helper->error(keyboard->helper->panel,
 				argv[0], FALSE);
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
