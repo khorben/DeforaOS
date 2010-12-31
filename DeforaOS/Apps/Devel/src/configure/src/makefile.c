@@ -1162,7 +1162,7 @@ static int _target_script(Configure * configure, FILE * fp,
 	fprintf(fp, "\n%s:", target);
 	_script_depends(configure->config, fp, target);
 	fputc('\n', fp);
-	fprintf(fp, "\t%s \"%s\"\n", script, target);
+	fprintf(fp, "\t%s -P \"$(PREFIX)\" -- \"%s\"\n", script, target);
 	return 0;
 }
 
@@ -1720,8 +1720,8 @@ static void _install_target_script(Config * config, FILE * fp,
 		return;
 	if((script = config_get(config, target, "script")) == NULL)
 		return;
-	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(DESTDIR)$(PREFIX)",
-			*path ? "/" : "", *path ? path : "", "\" install \"",
+	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -P \"$(DESTDIR)$(PREFIX)",
+			*path ? "/" : "", *path ? path : "", "\" -i -- \"",
 			target, "\"\n");
 }
 
@@ -1994,8 +1994,8 @@ static void _uninstall_target_script(Config * config, FILE * fp,
 
 	if((script = config_get(config, target, "script")) == NULL)
 		return;
-	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(DESTDIR)$(PREFIX)",
-			*path ? "/" : "", *path ? path : "", "\" uninstall \"",
+	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -P \"$(DESTDIR)$(PREFIX)",
+			*path ? "/" : "", *path ? path : "", "\" -u -- \"",
 			target, "\"\n");
 }
 
