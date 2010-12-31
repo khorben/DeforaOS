@@ -157,6 +157,8 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 		gboolean reset)
 {
 	Keyboard * keyboard = applet->priv;
+	GtkWidget * hbox;
+	GtkWidget * widget;
 	char const * p;
 
 #ifdef DEBUG
@@ -165,10 +167,15 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 #endif
 	if(keyboard->pr_box == NULL)
 	{
-		keyboard->pr_box = gtk_vbox_new(FALSE, 0);
+		keyboard->pr_box = gtk_vbox_new(FALSE, 4);
+		hbox = gtk_hbox_new(FALSE, 4);
+		widget = gtk_label_new("Command:");
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		keyboard->pr_command = gtk_entry_new();
-		gtk_box_pack_start(GTK_BOX(keyboard->pr_box),
-				keyboard->pr_command, FALSE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_command, TRUE,
+				TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(keyboard->pr_box), hbox, FALSE, TRUE,
+				0);
 		gtk_widget_show_all(keyboard->pr_box);
 		reset = TRUE;
 	}
