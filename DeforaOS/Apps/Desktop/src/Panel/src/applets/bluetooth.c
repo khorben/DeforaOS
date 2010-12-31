@@ -30,8 +30,10 @@
 # include <errno.h>
 #endif
 #include <stdlib.h>
+#include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Bluetooth */
@@ -93,6 +95,10 @@ static GtkWidget * _bluetooth_init(PanelApplet * applet)
 #endif
 	bluetooth->image = gtk_image_new_from_icon_name(
 			"panel-applet-bluetooth", applet->helper->icon_size);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(bluetooth->image,
+			_("Bluetooth is enabled"));
+#endif
 	bluetooth->timeout = g_timeout_add(1000, _on_timeout, bluetooth);
 	_on_timeout(bluetooth);
 	return bluetooth->image;

@@ -22,8 +22,10 @@
 # include <errno.h>
 #endif
 #include <stdlib.h>
+#include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* GSM */
@@ -93,6 +95,9 @@ static GtkWidget * _gsm_init(PanelApplet * applet)
 	/* XXX find a better image */
 	gsm->image = gtk_image_new_from_icon_name("phone",
 			applet->helper->icon_size);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(gsm->image, _("GSM is enabled"));
+#endif
 	gtk_widget_show(gsm->image);
 	gtk_box_pack_start(GTK_BOX(gsm->hbox), gsm->image, FALSE, TRUE, 0);
 	desc = pango_font_description_new();

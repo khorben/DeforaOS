@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-31 00:19+0100\n"
+"POT-Creation-Date: 2010-12-31 22:07+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -25,6 +25,19 @@ msgstr "Inconnu"
 msgid "Error"
 msgstr "Erreur"
 
+#: ../src/applets/battery.c:192
+#, c-format
+msgid "Battery level: %.0lf%%%s"
+msgstr "Batterie : %.0lf%%%s"
+
+#: ../src/applets/battery.c:193
+msgid " (charging)"
+msgstr " (en charge)"
+
+#: ../src/applets/bluetooth.c:100
+msgid "Bluetooth is enabled"
+msgstr "Bluetooth actif"
+
 #: ../src/applets/clock.c:86 ../src/applets/clock.c:97
 msgid "%H:%M"
 msgstr "%H:%M"
@@ -41,18 +54,26 @@ msgstr ""
 msgid "CPU:"
 msgstr ""
 
-#: ../src/applets/cpu.c:111 ../src/applets/cpufreq.c:127
+#: ../src/applets/cpu.c:111 ../src/applets/cpufreq.c:128
 #: ../src/applets/memory.c:105 ../src/applets/swap.c:105
 msgid "Unsupported platform"
 msgstr "Plate-forme non supportée"
 
-#: ../src/applets/cpufreq.c:119
+#: ../src/applets/cpufreq.c:120
 msgid "MHz"
 msgstr "MHz"
 
 #: ../src/applets/desktop.c:66
 msgid "Show desktop"
 msgstr "Afficher le bureau"
+
+#: ../src/applets/gps.c:92
+msgid "GPS is enabled"
+msgstr "GPS actif"
+
+#: ../src/applets/gsm.c:99
+msgid "GSM is enabled"
+msgstr "GSM actif"
 
 #: ../src/applets/lock.c:63 ../src/applets/main.c:307
 msgid "Lock screen"
@@ -62,8 +83,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:70 ../src/panel.c:632 ../src/panel.c:639
-#: ../src/panel.c:647
+#: ../src/applets/logout.c:70 ../src/panel.c:634 ../src/panel.c:641
+#: ../src/panel.c:649
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -155,19 +176,19 @@ msgstr "Taille invalide pour le panel"
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:461
+#: ../src/panel.c:463
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:472
+#: ../src/panel.c:474
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:483
+#: ../src/panel.c:485
 msgid "General"
 msgstr "Générales"
 
-#: ../src/panel.c:622
+#: ../src/panel.c:624
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -178,7 +199,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:695
+#: ../src/panel.c:697
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -189,7 +210,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:700
+#: ../src/panel.c:702
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -200,11 +221,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:717 ../src/panel.c:722 ../src/panel.c:729
+#: ../src/panel.c:719 ../src/panel.c:724 ../src/panel.c:731
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:721
+#: ../src/panel.c:723
 msgid "Restart"
 msgstr "Redémarrer"
 

@@ -221,8 +221,8 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 	if(pixbuf != NULL)
 		gtk_image_set_from_pixbuf(GTK_IMAGE(task->image), pixbuf);
 	else
-		gtk_image_set_from_stock(GTK_IMAGE(task->image),
-				GTK_STOCK_MISSING_IMAGE,
+		gtk_image_set_from_icon_name(GTK_IMAGE(task->image),
+				"application-x-executable",
 				task->tasks->icon_size);
 }
 

@@ -189,8 +189,8 @@ static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 	gtk_label_set_text(GTK_LABEL(battery->label), buf);
 #endif
 #if GTK_CHECK_VERSION(2, 12, 0)
-	snprintf(buf, sizeof(buf), "%s%.0lf%%%s", "Battery level: ", value,
-			charging ? " (charging)" : "");
+	snprintf(buf, sizeof(buf), _("Battery level: %.0lf%%%s"), value,
+			charging ? _(" (charging)") : "");
 	gtk_widget_set_tooltip_text(battery->hbox, buf);
 #endif
 }

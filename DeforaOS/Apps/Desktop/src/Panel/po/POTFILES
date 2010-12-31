@@ -1,8 +1,11 @@
 ../src/applets/battery.c
+../src/applets/bluetooth.c
 ../src/applets/clock.c
 ../src/applets/cpu.c
 ../src/applets/cpufreq.c
 ../src/applets/desktop.c
+../src/applets/gps.c
+../src/applets/gsm.c
 ../src/applets/lock.c
 ../src/applets/logout.c
 ../src/applets/main.c
@@ -10,5 +13,4 @@
 ../src/applets/swap.c
 ../src/applets/tasks.c
 ../src/panel.c
-../src/run.c
 ../src/run.c
