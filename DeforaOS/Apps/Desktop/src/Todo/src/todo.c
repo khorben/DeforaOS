@@ -215,11 +215,8 @@ Todo * todo_new(void)
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 
-	if((todo = malloc(sizeof(*todo))) == NULL)
-	{
-		error_set_code(1, "%s", strerror(errno));
+	if((todo = object_new(sizeof(*todo))) == NULL)
 		return NULL;
-	}
 	/* main window */
 	group = gtk_accel_group_new();
 	todo->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -383,6 +380,7 @@ void todo_delete(Todo * todo)
 	todo_task_save_all(todo);
 	todo_task_remove_all(todo);
 	free(todo);
+	object_delete(todo);
 }
 
 
