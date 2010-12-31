@@ -296,16 +296,11 @@ static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 	static char buf[256] = "gnome-mime-";
 	char * p;
 	GdkPixbuf * icon;
+	GtkIconLookupFlags flags = GTK_ICON_LOOKUP_USE_BUILTIN
+		| GTK_ICON_LOOKUP_GENERIC_FALLBACK;
 
 	strncpy(&buf[11], type, sizeof(buf) - 11);
-	for(buf[sizeof(buf) - 1] = '\0'; (p = strchr(&buf[11], '/')) != NULL;
-			*p = '-');
-	if((icon = gtk_icon_theme_load_icon(theme, buf, size, 0, NULL)) != NULL)
-		return icon;
-	if((p = strchr(&buf[11], '-')) != NULL)
-	{
-		*p = '\0';
-		return gtk_icon_theme_load_icon(theme, buf, size, 0, NULL);
-	}
-	return icon;
+	buf[sizeof(buf) - 1] = '\0';
+	for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
+	return gtk_icon_theme_load_icon(theme, buf, size, flags, NULL);
 }
