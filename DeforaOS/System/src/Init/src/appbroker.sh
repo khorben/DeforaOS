@@ -6,7 +6,7 @@
 #usage
 _usage()
 {
-	echo "Usage: ./appbroker.sh target" 1>&2
+	echo "Usage: appbroker.sh target" 1>&2
 	return 1
 }
 
