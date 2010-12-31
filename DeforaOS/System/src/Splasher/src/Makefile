@@ -18,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 ../data/Splasher.h: ../data/Splasher.interface
-	./appbroker.sh "../data/Splasher.h"
+	./appbroker.sh -P "$(PREFIX)" -- "../data/Splasher.h"
 
 Splasher_OBJS = splasher.o main.o
 Splasher_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)

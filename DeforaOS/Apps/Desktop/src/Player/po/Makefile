@@ -10,10 +10,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 Player.pot: POTFILES
-	./gettext.sh "Player.pot"
+	./gettext.sh -P "$(PREFIX)" -- "Player.pot"
 
 fr.mo: Player.pot fr.po
-	./gettext.sh "fr.mo"
+	./gettext.sh -P "$(PREFIX)" -- "fr.mo"
 
 clean:
 	$(RM) -- $(Player.pot_OBJS) $(fr.mo_OBJS)
@@ -22,9 +22,9 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "fr.mo"
 
 uninstall:
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "fr.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "fr.mo"
 
 .PHONY: all clean distclean install uninstall

@@ -10,10 +10,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 Phone.pot: POTFILES
-	./gettext.sh "Phone.pot"
+	./gettext.sh -P "$(PREFIX)" -- "Phone.pot"
 
 fr.mo: Phone.pot fr.po
-	./gettext.sh "fr.mo"
+	./gettext.sh -P "$(PREFIX)" -- "fr.mo"
 
 clean:
 	$(RM) -- $(Phone.pot_OBJS) $(fr.mo_OBJS)
@@ -22,9 +22,9 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "fr.mo"
 
 uninstall:
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "fr.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "fr.mo"
 
 .PHONY: all clean distclean install uninstall

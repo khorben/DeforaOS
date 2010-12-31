@@ -18,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 ../data/Probe.h: ../data/Probe.interface
-	./appbroker.sh "../data/Probe.h"
+	./appbroker.sh -P "$(PREFIX)" -- "../data/Probe.h"
 
 Probe_OBJS = probe.o
 Probe_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)

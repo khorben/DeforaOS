@@ -18,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 ../data/VPN.h: ../data/VPN.interface
-	./appbroker.sh "../data/VPN.h"
+	./appbroker.sh -P "$(PREFIX)" -- "../data/VPN.h"
 
 VPN_OBJS = vpn.o main.o
 VPN_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)

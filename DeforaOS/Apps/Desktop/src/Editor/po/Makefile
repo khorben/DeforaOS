@@ -10,19 +10,19 @@ INSTALL	= install
 all: $(TARGETS)
 
 Editor.pot: POTFILES
-	./gettext.sh "Editor.pot"
+	./gettext.sh -P "$(PREFIX)" -- "Editor.pot"
 
 de.mo: Editor.pot de.po
-	./gettext.sh "de.mo"
+	./gettext.sh -P "$(PREFIX)" -- "de.mo"
 
 es.mo: Editor.pot es.po
-	./gettext.sh "es.mo"
+	./gettext.sh -P "$(PREFIX)" -- "es.mo"
 
 fr.mo: Editor.pot fr.po
-	./gettext.sh "fr.mo"
+	./gettext.sh -P "$(PREFIX)" -- "fr.mo"
 
 it.mo: Editor.pot it.po
-	./gettext.sh "it.mo"
+	./gettext.sh -P "$(PREFIX)" -- "it.mo"
 
 clean:
 	$(RM) -- $(Editor.pot_OBJS) $(de.mo_OBJS) $(es.mo_OBJS) $(fr.mo_OBJS) $(it.mo_OBJS)
@@ -31,15 +31,15 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: all
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "de.mo"
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "es.mo"
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "it.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "de.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "es.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "fr.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "it.mo"
 
 uninstall:
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "de.mo"
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "es.mo"
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "fr.mo"
-	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "it.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "de.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "es.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "fr.mo"
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "it.mo"
 
 .PHONY: all clean distclean install uninstall

@@ -18,21 +18,19 @@ XGETTEXT="xgettext --force-po"
 
 
 #functions
-#usage
-_usage()
-{
-	echo "Usage: ./gettext.sh <target>" 1>&2
-	echo "       ./gettext.sh -p <prefix> install <target>" 1>&2
-	echo "       ./gettext.sh -p <prefix> uninstall <target>" 1>&2
-	return 1
-}
-
-
 #debug
 _debug()
 {
 	echo $@
 	$@
+}
+
+
+#usage
+_usage()
+{
+	echo "Usage: gettext.sh [-i|-u][-P prefix] <target>" 1>&2
+	return 1
 }
 
 
@@ -63,38 +61,65 @@ _gettext_pot()
 
 
 #main
-if [ $# -eq 4 -a "$1" = "-p" ]; then
-	PREFIX="$2"
-	LOCALEDIR="$PREFIX/share/locale"
-	lang="${4%%.mo}"
-
-	if [ "$3" = "install" ]; then
-		$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"	|| exit 2
-		$DEBUG $INSTALL "$4" \
-			"$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
-								|| exit 2
-		exit 0
-	elif [ "$3" = "uninstall" ]; then
-		$DEBUG $RM "$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
-								|| exit 2
-		exit 0
-	else
-		echo "gettext.sh: $3: Unknown operation" 1>&2
-	fi
-fi
-if [ $# -ne 1 ]; then
+args=`getopt iuP: $*`
+if [ $? -ne 0 ]; then
 	_usage
 	exit $?
 fi
-case "$1" in
-	*.mo)
-		_gettext_mo "$PACKAGE" "${1%%.mo}"		|| exit 2
-		;;
-	*.pot)
-		_gettext_pot "${1%%.pot}"			|| exit 2
-		;;
-	*)
-		exit 2
-		;;
-esac
-exit 0
+set -- $args
+install=0
+uninstall=0
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-i)
+			install=1
+			;;
+		-u)
+			uninstall=1
+			;;
+		-P)
+			PREFIX="$2"
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+	esac
+	shift
+done
+
+LOCALEDIR="$PREFIX/share/locale"
+while [ $# -gt 0 ]; do
+	target="$1"
+	lang="${target%%.mo}"
+	shift
+
+	#uninstall
+	if [ "$uninstall" -eq 1 ]; then
+		$DEBUG $RM "$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
+								|| exit 2
+		continue
+	fi
+
+	#create
+	case "$target" in
+		*.mo)
+			_gettext_mo "$PACKAGE" "$lang"		|| exit 2
+			;;
+		*.pot)
+			_gettext_pot "${target%%.pot}"		|| exit 2
+			;;
+		*)
+			exit 2
+			;;
+	esac
+
+	#install
+	if [ "$install" -eq 1 ]; then
+		$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"	|| exit 2
+		$DEBUG $INSTALL "$target" \
+			"$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
+								|| exit 2
+	fi
+done
