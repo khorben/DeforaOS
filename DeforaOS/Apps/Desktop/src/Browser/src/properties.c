@@ -78,19 +78,18 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 static int _properties_refresh(Properties * properties);
 
 /* callbacks */
-static void _properties_on_apply(GtkWidget * widget, gpointer data);
-static void _properties_on_close(GtkWidget * widget);
-static gboolean _properties_on_closex(GtkWidget * widget);
+static void _properties_on_apply(gpointer data);
+static void _properties_on_close(gpointer data);
+static gboolean _properties_on_closex(gpointer data);
 static void _properties_on_refresh(gpointer data);
 
-static int _properties(int filec, char * const filev[])
+static int _properties(Mime * mime, int filec, char * const filev[])
 {
 	int ret = 0;
-	Mime * mime;
 	GtkIconTheme * theme = NULL;
 	int i;
 
-	if((mime = mime_new()) != NULL)
+	if(mime != NULL)
 		theme = gtk_icon_theme_get_default();
 	for(i = 0; i < filec; i++)
 	{
@@ -98,8 +97,6 @@ static int _properties(int filec, char * const filev[])
 		/* FIXME if relative path get the full path */
 		ret |= _properties_do(mime, theme, filev[i]);
 	}
-	if(mime != NULL)
-		mime_delete(mime);
 	return ret;
 }
 
@@ -221,28 +218,24 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	}
 	else
 		type = "Unknown type";
+	if(image == NULL && theme != NULL && (pixbuf = gtk_icon_theme_load_icon(
+					theme, "gnome-fs-regular", 48, 0, NULL))
+			!= NULL)
+		image = gtk_image_new_from_pixbuf(pixbuf);
 	if(image == NULL)
-	{
-		if(theme != NULL && (pixbuf = gtk_icon_theme_load_icon(theme,
-						"gnome-fs-regular", 48, 0,
-						NULL)) != NULL)
-			image = gtk_image_new_from_pixbuf(pixbuf);
-		if(image == NULL)
-			image = gtk_image_new_from_stock(GTK_STOCK_FILE,
-					GTK_ICON_SIZE_DIALOG);
-		if(image == NULL)
-			image = gtk_image_new_from_stock(
-					GTK_STOCK_MISSING_IMAGE,
-					GTK_ICON_SIZE_DIALOG);
-	}
+		image = gtk_image_new_from_stock(GTK_STOCK_FILE,
+				GTK_ICON_SIZE_DIALOG);
+	if(image == NULL)
+		image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE,
+				GTK_ICON_SIZE_DIALOG);
 	properties->window = gtk_dialog_new();
 	p = g_filename_display_basename(filename);
 	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), p);
 	g_free(p);
 	gtk_window_set_title(GTK_WINDOW(properties->window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(properties->window), FALSE);
-	g_signal_connect(G_OBJECT(properties->window), "delete-event",
-			G_CALLBACK(_properties_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(properties->window), "delete-event",
+			G_CALLBACK(_properties_on_closex), properties);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(properties->window));
 #else
@@ -342,13 +335,13 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 				G_CALLBACK(_properties_on_refresh), properties);
 		gtk_container_add(GTK_CONTAINER(bbox), widget);
 		widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
-		g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-					_properties_on_apply), properties);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(_properties_on_apply), properties);
 		gtk_container_add(GTK_CONTAINER(bbox), widget);
 	}
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_properties_on_close), NULL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_properties_on_close), properties);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	pango_font_description_free(bold);
 	g_free(gfilename);
@@ -512,7 +505,7 @@ static void _refresh_time(GtkWidget * widget, time_t t)
 
 
 /* callbacks */
-static void _properties_on_apply(GtkWidget * widget, gpointer data)
+static void _properties_on_apply(gpointer data)
 {
 	Properties * properties = data;
 	char * p;
@@ -531,21 +524,22 @@ static void _properties_on_apply(GtkWidget * widget, gpointer data)
 					properties->mode[i])) << i;
 	if(chown(properties->filename, properties->uid, gid) != 0
 			|| chmod(properties->filename, mode) != 0)
-		_properties_error(gtk_widget_get_toplevel(widget),
-				properties->filename, 0);
+		_properties_error(properties->window, properties->filename, 0);
 }
 
-static void _properties_on_close(GtkWidget * widget)
+static void _properties_on_close(gpointer data)
 {
+	Properties * properties = data;
+
 	if(--_properties_cnt == 0)
 		gtk_main_quit();
 	else
-		gtk_widget_destroy(gtk_widget_get_toplevel(widget));
+		gtk_widget_destroy(properties->window);
 }
 
-static gboolean _properties_on_closex(GtkWidget * widget)
+static gboolean _properties_on_closex(gpointer data)
 {
-	_properties_on_close(widget);
+	_properties_on_close(data);
 	return FALSE;
 }
 
@@ -570,6 +564,7 @@ int main(int argc, char * argv[])
 {
 	int ret;
 	int o;
+	Mime * mime;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -583,7 +578,10 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	ret = _properties(argc - optind, &argv[optind]) ? 0 : 2;
+	mime = mime_new();
+	ret = _properties(mime, argc - optind, &argv[optind]);
 	gtk_main();
-	return ret ? 0 : 2;
+	if(mime != NULL)
+		mime_delete(mime);
+	return (ret == 0) ? 0 : 2;
 }
