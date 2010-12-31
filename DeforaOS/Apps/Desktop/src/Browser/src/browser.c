@@ -179,7 +179,7 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st);
 static void _browser_set_status(Browser * browser, char const * status);
 
 static char * _config_get_filename(void);
-static void _config_load_boolean(Config * config, char const * variable,
+static int _config_load_boolean(Config * config, char const * variable,
 		gboolean * value);
 static int _config_load_string(Config * config, char const * variable,
 		char ** value);
@@ -1993,17 +1993,20 @@ static char * _config_get_filename(void)
 
 
 /* config_load_boolean */
-static void _config_load_boolean(Config * config, char const * variable,
+static int _config_load_boolean(Config * config, char const * variable,
 		gboolean * value)
 {
 	char const * str;
 
 	if((str = config_get(config, "", variable)) == NULL)
-		return; /* XXX default to something? */
+		return -1;
 	if(strcmp(str, "0") == 0)
 		*value = FALSE;
 	else if(strcmp(str, "1") == 0)
 		*value = TRUE;
+	else
+		return -1;
+	return 0;
 }
 
 
