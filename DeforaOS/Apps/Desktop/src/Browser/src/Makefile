@@ -78,10 +78,10 @@ view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop` m
 view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(view_LDFLAGS)
 
-browser.o: browser.c mime.h callbacks.h browser.h
+browser.o: browser.c mime.h callbacks.h browser.h ../config.h
 	$(CC) $(browser_CFLAGS) -c browser.c
 
-callbacks.o: callbacks.c browser.h callbacks.h ../config.h common.c
+callbacks.o: callbacks.c browser.h callbacks.h common.c
 	$(CC) $(browser_CFLAGS) -c callbacks.c
 
 mime.o: mime.c mime.h ../config.h
