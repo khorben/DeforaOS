@@ -4,7 +4,7 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= -DWITH_SSL
+CPPFLAGS= -D WITH_SSL
 CFLAGSF	= -W -Wall -fPIC
 CFLAGS	= -g -O2 -pedantic
 AR	= ar -rc
@@ -33,10 +33,10 @@ appclient.o: appclient.c appinterface.h
 	$(CC) $(libSystem_CFLAGS) -c appclient.c
 
 appinterface.o: appinterface.c ../config.h
-	$(CC) -DPREFIX=\"$(PREFIX)\" $(libSystem_CFLAGS) -c appinterface.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(libSystem_CFLAGS) -c appinterface.c
 
 appserver.o: appserver.c appinterface.h ../config.h
-	$(CC) -DPREFIX=\"$(PREFIX)\" $(libSystem_CFLAGS) -c appserver.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(libSystem_CFLAGS) -c appserver.c
 
 array.o: array.c
 	$(CC) $(libSystem_CFLAGS) -c array.c
