@@ -431,10 +431,12 @@ void ghtml_print(GtkWidget * widget)
 /* ghtml_redo */
 void ghtml_redo(GtkWidget * widget)
 {
+#if WEBKIT_CHECK_VERSION(1, 1, 14)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	webkit_web_view_redo(WEBKIT_WEB_VIEW(ghtml->view));
+#endif
 }
 
 
@@ -481,10 +483,12 @@ void ghtml_select_all(GtkWidget * widget)
 /* ghtml_undo */
 void ghtml_undo(GtkWidget * widget)
 {
+#if WEBKIT_CHECK_VERSION(1, 1, 14)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	webkit_web_view_undo(WEBKIT_WEB_VIEW(ghtml->view));
+#endif
 }
 
 
