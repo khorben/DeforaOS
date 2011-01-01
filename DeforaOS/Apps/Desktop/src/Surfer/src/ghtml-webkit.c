@@ -143,6 +143,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 static void _new_init(GHtml * ghtml)
 {
 	static int initialized = 0;
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
 	SoupSession * session;
 	char const * cacerts[] =
 	{
@@ -151,6 +152,7 @@ static void _new_init(GHtml * ghtml)
 		"/etc/openssl/certs/ca-certificates.crt"
 	};
 	size_t i;
+#endif
 
 	if(initialized++ == 1)
 	{
@@ -160,6 +162,7 @@ static void _new_init(GHtml * ghtml)
 	}
 	else if(initialized != 1)
 		return;
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
 	session = webkit_get_default_session();
 	for(i = 0; i < sizeof(cacerts) / sizeof(*cacerts); i++)
 		if(access(cacerts[i], R_OK) == 0)
@@ -169,6 +172,7 @@ static void _new_init(GHtml * ghtml)
 			ghtml->ssl = TRUE;
 			return;
 		}
+#endif
 	surfer_warning(ghtml->surfer, "Could not load certificate bundle:\n"
 			"SSL certificates will not be verified.");
 	initialized++;
