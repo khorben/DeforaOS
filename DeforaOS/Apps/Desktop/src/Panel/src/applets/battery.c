@@ -308,6 +308,7 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 	ssize_t buf_cnt;
 	double d;
 	unsigned int u;
+	unsigned int x = 0;
 	int i;
 	int b;
 
@@ -326,14 +327,15 @@ static gdouble _battery_get(Battery * battery, gboolean * charging)
 		return 0.0 / 0.0;
 	}
 	buf[--buf_cnt] = '\0';
-	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, &u, charging,
-				&u, &u, &b, &i) != 8)
+	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, &u, &x, &u,
+				&u, &b, &i) != 8)
 	{
 		error_set("%s: %s", apm, strerror(errno));
 		d = 0.0 / 0.0;
 	}
 	else
 		d = b;
+	*charging = (x != 0) ? TRUE : FALSE;
 	close(battery->fd);
 	battery->fd = -1;
 	return d;
