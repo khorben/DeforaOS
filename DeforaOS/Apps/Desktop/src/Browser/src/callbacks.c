@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,14 +115,16 @@ void on_file_new_folder(gpointer data)
 	char const * newfolder = _("New folder");
 	Browser * browser = data;
 	char const * cur = browser->current->data;
+	size_t len;
 	char * path;
 
-	if((path = malloc(strlen(cur) + strlen(newfolder) + 2)) == NULL)
+	len = strlen(cur) + strlen(newfolder) + 2;
+	if((path = malloc(len)) == NULL)
 	{
 		browser_error(browser, "malloc", 0);
 		return;
 	}
-	sprintf(path, "%s/%s", cur, newfolder);
+	snprintf(path, len, "%s/%s", cur, newfolder);
 	if(mkdir(path, 0777) != 0)
 		browser_error(browser, path, 0);
 	free(path);
@@ -810,19 +812,21 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 
 static void _on_popup_new_text_file(gpointer data)
 {
-	static char const newtext[] = "New text file.txt";
+	char const * newtext = _("New text file.txt");
 	IconCallback * ic = data;
 	Browser * browser = ic->browser;
 	char const * cur = browser->current->data;
+	size_t len;
 	char * path;
 	int fd;
 
-	if((path = malloc(strlen(cur) + sizeof(newtext) + 1)) == NULL)
+	len = strlen(cur) + strlen(newtext) + 1;
+	if((path = malloc(len)) == NULL)
 	{
 		browser_error(browser, "malloc", 0);
 		return;
 	}
-	sprintf(path, "%s/%s", cur, newtext);
+	snprintf(path, len, "%s/%s", cur, newtext);
 	if((fd = creat(path, 0666)) < 0)
 		browser_error(browser, path, 0);
 	else
