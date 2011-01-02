@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Devel GEDI */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -186,7 +186,7 @@ void on_help_about(gpointer data)
 	static GtkWidget * window = NULL; /* FIXME do not make it static */
 	const char * authors[] = { "Pierre Pronchery <khorben@defora.org>",
 		NULL };
-	const char license[] = "GNU GPL version 2";
+	const char license[] = "GNU GPL version 3";
 
 	if(window != NULL)
 	{
