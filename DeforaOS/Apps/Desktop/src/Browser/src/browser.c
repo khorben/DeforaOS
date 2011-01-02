@@ -1979,16 +1979,10 @@ static void _browser_set_status(Browser * browser, char const * status)
 static char * _config_get_filename(void)
 {
 	char const * homedir;
-	size_t len;
-	char * filename;
 
 	if((homedir = getenv("HOME")) == NULL)
 		homedir = g_get_home_dir();
-	len = strlen(homedir) + 1 + sizeof(BROWSER_CONFIG_FILE);
-	if((filename = malloc(len)) == NULL)
-		return NULL;
-	snprintf(filename, len, "%s/%s", homedir, BROWSER_CONFIG_FILE);
-	return filename;
+	return string_new_append(homedir, "/", BROWSER_CONFIG_FILE, NULL);
 }
 
 
