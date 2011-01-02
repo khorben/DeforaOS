@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Accessories */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,9 @@ static int _progress(Prefs * prefs, char * argv[])
   
 	memset(&p, 0, sizeof(p));
 	p.prefs = prefs;
-	if((p.buf = malloc(prefs->bufsiz)) == NULL)
+	if(prefs->bufsiz == 0)
+		errno = EINVAL;
+	if(prefs->bufsiz == 0 || (p.buf = malloc(prefs->bufsiz)) == NULL)
 		return _progress_error(&p, "malloc", 1);
 	p.bufsiz = prefs->bufsiz;
 	if(pipe(p.fds) != 0)
