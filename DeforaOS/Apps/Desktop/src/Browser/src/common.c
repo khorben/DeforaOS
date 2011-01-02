@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,6 +130,7 @@ static int _common_symlink(GtkWidget * window, char const * cur)
 {
 	static char const * newsymlink = NULL;
 	int ret = 0;
+	size_t len;
 	char * path;
 	GtkWidget * dialog;
 	GtkWidget * hbox;
@@ -138,9 +139,10 @@ static int _common_symlink(GtkWidget * window, char const * cur)
 
 	if(newsymlink == NULL)
 		newsymlink = _("New symbolic link");
-	if((path = malloc(strlen(cur) + strlen(newsymlink) + 2)) == NULL)
+	len = strlen(cur) + strlen(newsymlink) + 2;
+	if((path = malloc(len)) == NULL)
 		return 1;
-	sprintf(path, "%s/%s", cur, newsymlink);
+	snprintf(path, len, "%s/%s", cur, newsymlink);
 	dialog = gtk_dialog_new_with_buttons(newsymlink, GTK_WINDOW(window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,

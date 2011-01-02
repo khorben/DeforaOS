@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -419,7 +419,7 @@ static int _move_multiple(Move * move, char const * src, char const * dst)
 		return _move_filename_error(move, src, 1);
 	to = basename(p);
 	len = strlen(dst) + strlen(to) + 2;
-	if((q = malloc(len * sizeof(char))) == NULL)
+	if((q = malloc(len)) == NULL)
 	{
 		free(p);
 		return _move_filename_error(move, src, 1);
