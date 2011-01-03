@@ -395,7 +395,7 @@ Player * player_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(player->window), "multimedia");
 #endif
-	gtk_window_set_title(GTK_WINDOW(player->window), _("Player"));
+	gtk_window_set_title(GTK_WINDOW(player->window), _("Media player"));
 	gtk_widget_realize(player->window);
 	g_signal_connect_swapped(G_OBJECT(player->window), "delete-event",
 			G_CALLBACK(on_player_closex), player);
@@ -732,7 +732,7 @@ int player_open(Player * player, char const * filename)
 		return 1;
 	player->paused = 1;
 	p = strdup(filename);
-	snprintf(cmd, sizeof(cmd), "%s - %s", _("Player"), p != NULL
+	snprintf(cmd, sizeof(cmd), "%s - %s", _("Media player"), p != NULL
 			? basename(p) : filename);
 	free(p);
 	gtk_window_set_title(GTK_WINDOW(player->window), cmd);

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Player 0.1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-03 02:25+0100\n"
+"POT-Creation-Date: 2011-01-03 02:27+0100\n"
 "PO-Revision-Date: 2010-04-23 03:44+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -97,8 +97,8 @@ msgid "Next"
 msgstr "Suivant"
 
 #: ../src/player.c:398 ../src/player.c:735
-msgid "Player"
-msgstr "Player"
+msgid "Media player"
+msgstr "Lecteur média"
 
 #: ../src/player.c:432
 msgid "Fullscreen"
