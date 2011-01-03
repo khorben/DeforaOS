@@ -63,9 +63,9 @@ void on_file_open(gpointer data)
 /* on_file_preferences */
 static void _file_preferences_new(GEDI * g);
 static gboolean _on_preferences_closex(gpointer data);
-static void _on_preferences_apply(GtkWidget * widget, gpointer data);
-static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
-static void _on_preferences_ok(GtkWidget * widget, gpointer data);
+static void _on_preferences_apply(gpointer data);
+static void _on_preferences_cancel(gpointer data);
+static void _on_preferences_ok(gpointer data);
 
 void on_file_preferences(gpointer data)
 {
@@ -111,15 +111,15 @@ static void _file_preferences_new(GEDI * g)
 	/* buttons */
 	hbox = gtk_hbox_new(TRUE, 4);
 	b_ok = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect(G_OBJECT(b_ok), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(b_ok), "clicked", G_CALLBACK(
 				_on_preferences_ok), g);
 	gtk_box_pack_end(GTK_BOX(hbox), b_ok, FALSE, TRUE, 0);
 	b_apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
-	g_signal_connect(G_OBJECT(b_apply), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(b_apply), "clicked", G_CALLBACK(
 				_on_preferences_apply), g);
 	gtk_box_pack_end(GTK_BOX(hbox), b_apply, FALSE, TRUE, 0);
 	b_cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect(G_OBJECT(b_cancel), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(b_cancel), "clicked", G_CALLBACK(
 				_on_preferences_cancel), g);
 	gtk_box_pack_end(GTK_BOX(hbox), b_cancel, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
@@ -128,14 +128,14 @@ static void _file_preferences_new(GEDI * g)
 
 
 /* _on_preferences_apply */
-static void _on_preferences_apply(GtkWidget * widget, gpointer data)
+static void _on_preferences_apply(gpointer data)
 {
 	/* FIXME implement */
 }
 
 
 /* _on_preferences_cancel */
-static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
+static void _on_preferences_cancel(gpointer data)
 {
 	GEDI * gedi = data;
 
@@ -145,12 +145,12 @@ static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
 
 
 /* _on_preferences_ok */
-static void _on_preferences_ok(GtkWidget * widget, gpointer data)
+static void _on_preferences_ok(gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 
-	_on_preferences_apply(widget, data);
-	gtk_widget_hide(g->pr_window);
+	_on_preferences_apply(gedi);
+	gtk_widget_hide(gedi->pr_window);
 }
 
 
