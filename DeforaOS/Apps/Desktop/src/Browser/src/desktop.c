@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -494,7 +494,7 @@ static void _on_popup_preferences(gpointer data)
 	desktop->menu = NULL;
 	if(desktop->pr_window != NULL)
 	{
-		gtk_widget_show(desktop->pr_window);
+		gtk_window_present(GTK_WINDOW(desktop->pr_window));
 		return;
 	}
 	/* window */
