@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		str = malloc(sizeof(char) * (max+1));
+		str = malloc(sizeof(char) * (max + 1));
 		if(str == NULL)
 		{
 			perror("malloc");
@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
 		/* choose random length if necessary */
 		if(min != max)
 		{
-			l = min + (rand() % (max+1 - min));
+			l = min + (rand() % (max + 1 - min));
 			str[l] = '\0';
 		}
 
@@ -352,7 +352,10 @@ int main(int argc, char* argv[])
 	}
 
 	if(password == NULL)
+	{
+		memset(str, 0, strlen(str));
 		free(str);
+	}
 
 	return 0;
 }
