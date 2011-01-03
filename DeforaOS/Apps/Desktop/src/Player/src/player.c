@@ -23,6 +23,7 @@ static char const _license[] =
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
+#include <time.h>
 #include <libgen.h>
 #include <errno.h>
 #include <libintl.h>
@@ -558,15 +559,33 @@ static void _new_column_text(GtkWidget * view, char const * title, int id)
 /* player_delete */
 void player_delete(Player * player)
 {
-	char cmd[] = "quit\n";
+	char const cmd[] = "\nquit\n";
+	gsize written;
+	size_t i;
+	int status = 0;
+	pid_t res;
+	struct timespec ts = { 0, 500000 };
 
 	if(player->read_id != 0)
 		g_source_remove(player->read_id);
 	if(player->timeout_id != 0)
 		g_source_remove(player->timeout_id);
-	_player_command(player, cmd, sizeof(cmd) - 1);
-	g_io_channel_shutdown(player->channel[1], TRUE, NULL);
-	kill(player->pid, SIGTERM);
+	g_io_channel_write(player->channel[1], cmd, sizeof(cmd) - 1, &written);
+	g_io_channel_shutdown(player->channel[1], FALSE, NULL);
+	for(i = 0; i < 6; i++)
+	{
+		if((res = waitpid(player->pid, &status, WNOHANG)) == -1)
+		{
+			_player_error("waitpid", 0);
+			break;
+		}
+		else if(res == 0)
+			nanosleep(&ts, NULL);
+		else if(WIFEXITED(status) || WIFSIGNALED(status))
+				break;
+		if(i == 4)
+			kill(player->pid, SIGTERM);
+	}
 	free(player);
 }
 
@@ -706,9 +725,9 @@ void player_next(Player * player)
 
 void player_previous(Player * player)
 {
-	char cmd[] = "pt_step -1\n";
+	char const cmd[] = "pt_step -1\n";
 
-	_player_command(player, cmd, sizeof(cmd)-1);
+	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
 
@@ -815,7 +834,7 @@ int player_play(Player * player)
 
 void player_pause(Player * player)
 {
-	char cmd[] = "pause\n";
+	char const cmd[] = "pause\n";
 
 	if(player->filename == NULL)
 		return;
@@ -837,9 +856,9 @@ void player_pause(Player * player)
 
 void player_stop(Player * player)
 {
-	char cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
+	char const cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
 
-	_player_command(player, cmd, sizeof(cmd)-1);
+	_player_command(player, cmd, sizeof(cmd) - 1);
 	_player_set_progress(player, 0);
 	player->paused = 0; /* FIXME also needs a stopped state */
 	if(player->read_id != 0)
@@ -857,21 +876,21 @@ void player_stop(Player * player)
 
 void player_rewind(Player * player)
 {
-	char cmd[] = "speed_incr -0.5\n";
+	char const cmd[] = "speed_incr -0.5\n";
 
 	if(player->filename == NULL)
 		return;
-	_player_command(player, cmd, sizeof(cmd)-1);
+	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
 
 void player_forward(Player * player)
 {
-	char cmd[] = "speed_incr 0.5\n";
+	char const cmd[] = "speed_incr 0.5\n";
 
 	if(player->filename == NULL)
 		return;
-	_player_command(player, cmd, sizeof(cmd)-1);
+	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
 
