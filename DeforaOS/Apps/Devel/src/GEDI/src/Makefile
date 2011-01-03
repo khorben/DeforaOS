@@ -24,11 +24,11 @@ gedi_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 gedi: $(gedi_OBJS)
 	$(CC) -o gedi $(gedi_OBJS) $(gedi_LDFLAGS)
 
-callbacks.o: callbacks.c ../config.h callbacks.h gedi.h
+callbacks.o: callbacks.c callbacks.h gedi.h
 	$(CC) $(gedi_CFLAGS) -c callbacks.c
 
-gedi.o: gedi.c ../config.h callbacks.h gedi.h
-	$(CC) $(gedi_CFLAGS) -c gedi.c
+gedi.o: gedi.c callbacks.h gedi.h ../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(gedi_CFLAGS) -c gedi.c
 
 main.o: main.c
 	$(CC) $(gedi_CFLAGS) -c main.c

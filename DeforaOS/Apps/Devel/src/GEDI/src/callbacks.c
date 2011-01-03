@@ -17,7 +17,6 @@
 
 #include "gedi.h"
 #include "callbacks.h"
-#include "../config.h"
 
 
 /* functions */
