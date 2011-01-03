@@ -30,7 +30,7 @@ callbacks.o: callbacks.c callbacks.h gedi.h
 gedi.o: gedi.c callbacks.h gedi.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(gedi_CFLAGS) -c gedi.c
 
-main.o: main.c
+main.o: main.c gedi.h
 	$(CC) $(gedi_CFLAGS) -c main.c
 
 project.o: project.c
