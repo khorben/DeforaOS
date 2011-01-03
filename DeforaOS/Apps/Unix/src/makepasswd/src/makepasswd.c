@@ -300,8 +300,8 @@ int main(int argc, char* argv[])
 				puts(str);
 				break;
 			case EB64:
-				puts(str);
-				for(; l <= max; l++)
+				fputs(str, stdout);
+				for(j = strlen(str); j <= max; j++)
 					printf(" ");
 				base64(str);
 				printf("\n");
