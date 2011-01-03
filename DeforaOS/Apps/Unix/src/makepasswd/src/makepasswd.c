@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of Makepasswd.
  *
  * Makepasswd is free software; you can redistribute it and/or modify
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
 				if(n != 2)
 				{
 					_usage();
-					printf("DES salt is 2 characters long, chosen from \"A..Za..z0..9./\"\n");
+					puts("DES salt is 2 characters long, chosen from \"A..Za..z0..9./\"");
 					return 1;
 				}
 				break;
@@ -219,13 +219,13 @@ int main(int argc, char* argv[])
 				if(n > 8)
 				{
 					_usage();
-					printf("SHMD5 salt is up to 8 characters long, chosen from \"A..Za..z0..9./\"\n");
+					puts("SHMD5 salt is up to 8 characters long, chosen from \"A..Za..z0..9./\"");
 					exit(1);
 				}
 				break;
 			default:
 				_usage();
-				printf("Salt is only used with DES and SHMD5 encryptions\n");
+				puts("Salt is only used with DES and SHMD5 encryptions");
 				exit(1);
 				break;
 		}
@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
 			if(j == salt_stringn)
 			{
 				_usage();
-				printf("Salt is chosen from \"A..Za..z0..9./\"\n");
+				puts("Salt is chosen from \"A..Za..z0..9./\"");
 				exit(1);
 			}
 		}
@@ -339,11 +339,11 @@ int main(int argc, char* argv[])
 				{
 					int n = rand() % 9;
 					{
-						char s[n+1];
+						char s[n + 1];
 						s[n--] = '\0';
 						for(; n >= 0; n--)
 							s[n] = salt_string[rand() % salt_stringn];
-						printf("%s\n", shmd5in(str, s));
+						puts(shmd5in(str, s));
 					}
 				}
 				l = min;
