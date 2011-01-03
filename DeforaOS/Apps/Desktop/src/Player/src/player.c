@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Player */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program. If not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
@@ -36,6 +38,8 @@
 /* Player */
 /* private */
 /* constants */
+#define ICON_NAME "multimedia"
+
 #ifndef EMBEDDED
 static DesktopMenu _player_menu_file[] =
 {
@@ -105,6 +109,12 @@ static DesktopToolbar _player_toolbar[] =
 		NULL },
 	{ N_("Next"), G_CALLBACK(on_next), GTK_STOCK_MEDIA_NEXT, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
+};
+
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
 };
 
 
@@ -182,7 +192,7 @@ static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 
 	if(player->pid == -1)
 	{
-		fputs(PACKAGE ": mplayer not running\n", stderr);
+		fputs("player: mplayer not running\n", stderr);
 		return 1;
 	}
 #ifdef DEBUG
@@ -359,7 +369,7 @@ Player * player_new(void)
 		return NULL;
 	/* view */
 	player->paused = 0;
-	player->fullscreen = 0;
+	player->fullscreen = FALSE;
 	/* current file */
 	player->filename = NULL;
 	player->audio_codec = NULL;
@@ -475,6 +485,10 @@ Player * player_new(void)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(player->pl_window), vbox);
+	/* about window */
+	player->ab_window = NULL;
+	/* preferences window */
+	player->pr_window = NULL;
 #ifdef DEBUG
 	gtk_widget_show_all(player->pl_window);
 #else
@@ -558,34 +572,35 @@ void player_delete(Player * player)
 
 
 /* accessors */
-int player_get_fullscreen(Player * player)
+/* player_get_fullscreen */
+gboolean player_get_fullscreen(Player * player)
 {
-	return player->fullscreen ? 1 : 0;
+	return player->fullscreen;
 }
 
 
-void player_set_fullscreen(Player * player, int fullscreen)
+/* player_set_fullscreen */
+void player_set_fullscreen(Player * player, gboolean fullscreen)
 {
+	if(player->fullscreen == fullscreen)
+		return;
 	if(fullscreen)
 	{
-		if(player->fullscreen)
-			return;
 #ifndef EMBEDDED
 		gtk_widget_hide(player->menubar);
 		gtk_widget_hide(player->statusbar);
 #endif
 		gtk_window_fullscreen(GTK_WINDOW(player->window));
-		player->fullscreen = !player->fullscreen;
-		return;
 	}
-	if(!player->fullscreen)
-		return;
-	gtk_window_unfullscreen(GTK_WINDOW(player->window));
+	else
+	{
+		gtk_window_unfullscreen(GTK_WINDOW(player->window));
 #ifndef EMBEDDED
-	gtk_widget_show(player->menubar);
-	gtk_widget_show(player->statusbar);
+		gtk_widget_show(player->menubar);
+		gtk_widget_show(player->statusbar);
 #endif
-	player->fullscreen = !player->fullscreen;
+	}
+	player->fullscreen = fullscreen;
 }
 
 
@@ -603,6 +618,39 @@ void player_set_size(Player * player, int width, int height)
 
 
 /* useful */
+/* player_about */
+static gboolean _about_on_closex(gpointer data);
+
+void player_about(Player * player)
+{
+	if(player->ab_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(player->ab_window));
+		return;
+	}
+	player->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(player->ab_window), GTK_WINDOW(
+				player->window));
+	desktop_about_dialog_set_authors(player->ab_window, _authors);
+	desktop_about_dialog_set_copyright(player->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(player->ab_window, ICON_NAME);
+	desktop_about_dialog_set_license(player->ab_window, _license);
+	desktop_about_dialog_set_name(player->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(player->ab_window, VERSION);
+	g_signal_connect_swapped(G_OBJECT(player->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), player);
+	gtk_widget_show(player->ab_window);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Player * player = data;
+
+	gtk_widget_hide(player->ab_window);
+	return TRUE;
+}
+
+
 /* player_error */
 int player_error(Player * player, char const * message, int ret)
 {
@@ -824,4 +872,81 @@ void player_forward(Player * player)
 	if(player->filename == NULL)
 		return;
 	_player_command(player, cmd, sizeof(cmd)-1);
+}
+
+
+/* player_view_preferences */
+static void _preferences_set(Player * player);
+static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
+static void _preferences_on_cancel(gpointer data);
+static void _preferences_on_ok(gpointer data);
+
+void player_view_preferences(Player * player)
+{
+	GtkWidget * vbox;
+
+	if(player->pr_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(player->pr_window));
+		return;
+	}
+	player->pr_window = gtk_dialog_new_with_buttons(
+			_("Media player preferences"),
+			GTK_WINDOW(player->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	g_signal_connect_swapped(G_OBJECT(player->pr_window), "delete-event",
+			G_CALLBACK(_preferences_on_closex), player);
+	g_signal_connect(G_OBJECT(player->pr_window), "response",
+			G_CALLBACK(_preferences_on_response), player);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(player->pr_window));
+#else
+	vbox = GTK_DIALOG(player->pr_window)->vbox;
+#endif
+	/* FIXME implement */
+	_preferences_set(player);
+	gtk_widget_show_all(player->pr_window);
+}
+
+static void _preferences_set(Player * player)
+{
+	/* FIXME implement */
+}
+
+static gboolean _preferences_on_closex(gpointer data)
+{
+	Player * player = data;
+
+	_preferences_on_cancel(player);
+	return TRUE;
+}
+
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_preferences_on_cancel(data);
+}
+
+static void _preferences_on_cancel(gpointer data)
+{
+	Player * player = data;
+
+	gtk_widget_hide(player->pr_window);
+	_preferences_set(player);
+}
+
+static void _preferences_on_ok(gpointer data)
+{
+	Player * player = data;
+
+	gtk_widget_hide(player->pr_window);
+	/* FIXME implement */
 }

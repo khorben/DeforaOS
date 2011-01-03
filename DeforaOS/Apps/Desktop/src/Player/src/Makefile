@@ -30,8 +30,8 @@ callbacks.o: callbacks.c callbacks.h player.h
 player.o: player.c callbacks.h player.h ../config.h
 	$(CC) $(player_CFLAGS) -c player.c
 
-main.o: main.c player.h
-	$(CC) $(player_CFLAGS) -c main.c
+main.o: main.c player.h ../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(player_CFLAGS) -c main.c
 
 clean:
 	$(RM) -- $(player_OBJS)

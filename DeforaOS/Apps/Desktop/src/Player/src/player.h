@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Player */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ typedef struct _Player
 {
 	/* view */
 	int paused;
-	int fullscreen;
+	gboolean fullscreen;
 
 	/* current file */
 	char * filename;
@@ -77,6 +77,12 @@ typedef struct _Player
 	gint statusbar_id;
 #endif
 
+	/* about */
+	GtkWidget * ab_window;
+
+	/* preferences */
+	GtkWidget * pr_window;
+
 	/* playlist */
 	GtkWidget * pl_window;
 	GtkListStore * pl_store;
@@ -102,11 +108,12 @@ Player * player_new(void);
 void player_delete(Player * player);
 
 /* accessors */
-int player_get_fullscreen(Player * player);
-void player_set_fullscreen(Player * player, int fullscreen);
+gboolean player_get_fullscreen(Player * player);
+void player_set_fullscreen(Player * player, gboolean fullscreen);
 void player_set_size(Player * player, int width, int height);
 
 /* useful */
+void player_about(Player * player);
 int player_error(Player * player, char const * message, int ret);
 int player_sigchld(Player * player);
 
@@ -126,4 +133,7 @@ void player_stop(Player * player);
 void player_rewind(Player * player);
 void player_forward(Player * player);
 
-#endif
+/* user interface */
+void player_view_preferences(Player * player);
+
+#endif /* !PLAYER_PLAYER_H */
