@@ -1,6 +1,5 @@
 /* $Id$ */
-static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel GEDI */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +20,7 @@ static char const _copyright[] =
 #include "../config.h"
 
 
-/* constants */
-#define ICON_NAME	"applications-development"
-
-
+/* functions */
 /* callbacks */
 /* _on_closex */
 gboolean on_closex(gpointer data)
@@ -177,44 +173,11 @@ void on_file_exit(gpointer data)
 
 
 /* on_help_about */
-static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-
 void on_help_about(gpointer data)
 {
 	GEDI * gedi = data;
-	static GtkWidget * window = NULL; /* FIXME do not make it static */
-	const char * authors[] = { "Pierre Pronchery <khorben@defora.org>",
-		NULL };
-	const char license[] = "GNU GPL version 3";
 
-	if(window != NULL)
-	{
-		gtk_widget_show(window);
-		return;
-	}
-	window = gtk_about_dialog_new();
-	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				gedi->tb_window));
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
-	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
-			ICON_NAME);
-	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
-	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_on_about_closex), NULL);
-	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
-				gtk_widget_hide), NULL);
-	gtk_widget_show(window);
-}
-
-static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
-{
-	gtk_widget_hide(widget);
-	return TRUE;
+	gedi_about(gedi);
 }
 
 

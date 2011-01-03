@@ -42,6 +42,9 @@ typedef struct _GEDI
 	GtkWidget * fi_window;
 	GtkWidget * fi_combo;
 	GtkWidget * fi_view;
+
+	/* about */
+	GtkWidget * ab_window;
 } GEDI;
 
 
@@ -50,6 +53,8 @@ GEDI * gedi_new(void);
 void gedi_delete(GEDI * gedi);
 
 /* useful */
+void gedi_about(GEDI * gedi);
+
 int gedi_error(GEDI * gedi, char const * message, int ret);
 
 void gedi_file_open(GEDI * gedi, char const * filename);

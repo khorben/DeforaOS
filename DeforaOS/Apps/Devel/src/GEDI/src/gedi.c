@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Devel GEDI */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program. If not, see <http://www.gnu.org/licenses/>.";
 
 
 
@@ -24,15 +26,21 @@
 #include "gedi.h"
 #include "../config.h"
 
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+
 
 /* GEDI */
 /* private */
 /* constants */
 #define ICON_NAME	"applications-development"
 
-#ifndef PREFIX
-# define PREFIX		"/usr/local"
-#endif
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
 
 
 /* variables */
@@ -139,6 +147,8 @@ GEDI * gedi_new(void)
 	gedi->fi_view = gtk_tree_view_new();
 	gtk_box_pack_start(GTK_BOX(vbox), gedi->fi_view, TRUE, TRUE, 2);
 	gtk_container_add(GTK_CONTAINER(gedi->fi_window), hbox);
+	/* about */
+	gedi->ab_window = NULL;
 	gtk_widget_show_all(gedi->tb_window);
 	gtk_widget_show_all(gedi->fi_window);
 	return gedi;
@@ -198,6 +208,39 @@ void gedi_delete(GEDI * gedi)
 
 
 /* useful */
+/* gedi_about */
+static gboolean _about_on_closex(gpointer data);
+
+void gedi_about(GEDI * gedi)
+{
+	if(gedi->ab_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(gedi->ab_window));
+		return;
+	}
+	gedi->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(gedi->ab_window), GTK_WINDOW(
+				gedi->tb_window));
+	desktop_about_dialog_set_authors(gedi->ab_window, _authors);
+	desktop_about_dialog_set_copyright(gedi->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(gedi->ab_window, ICON_NAME);
+	desktop_about_dialog_set_license(gedi->ab_window, _license);
+	desktop_about_dialog_set_name(gedi->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(gedi->ab_window, VERSION);
+	g_signal_connect_swapped(G_OBJECT(gedi->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), gedi);
+	gtk_widget_show(gedi->ab_window);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	GEDI * gedi = data;
+
+	gtk_widget_hide(gedi->ab_window);
+	return TRUE;
+}
+
+
 /* gedi_error */
 int gedi_error(GEDI * gedi, char const * message, int ret)
 {
