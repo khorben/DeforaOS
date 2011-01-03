@@ -297,10 +297,10 @@ int main(int argc, char* argv[])
 		switch(encryption)
 		{
 			case ENONE:
-				printf("%s\n", str);
+				puts(str);
 				break;
 			case EB64:
-				printf("%s", str);
+				puts(str);
 				for(; l <= max; l++)
 					printf(" ");
 				base64(str);
@@ -311,7 +311,7 @@ int main(int argc, char* argv[])
 				printf("%s", str);
 				for(; l <= max; l++)
 					printf(" ");
-				printf("%s\n", md5out);
+				puts(md5out);
 				l = min;
 				break;
 			case EDES:
@@ -319,13 +319,13 @@ int main(int argc, char* argv[])
 				for(; l <= max; l++)
 					printf(" ");
 				if(salt != NULL)
-					printf("%s\n", desin(str, salt));
+					puts(desin(str, salt));
 				else
 				{
 					char salt[2];
 					salt[0] = salt_string[rand() % salt_stringn];
 					salt[1] = salt_string[rand() % salt_stringn];
-					printf("%s\n", desin(str, salt));
+					puts(desin(str, salt));
 				}
 				l = min;
 				break;
@@ -334,7 +334,7 @@ int main(int argc, char* argv[])
 				for(; l <= max; l++)
 					printf(" ");
 				if(salt != NULL)
-					printf("%s\n", shmd5in(str, salt));
+					puts(shmd5in(str, salt));
 				else
 				{
 					int n = rand() % 9;
