@@ -271,6 +271,12 @@ static char * _hash_blowfish(char const * password, char const * salt,
 		_error("blowfish", 1);
 		ret = NULL;
 	}
+	else if(strncmp(ret, prefix, sizeof(prefix) - 1) != 0)
+	{
+		errno = ENOTSUP;
+		_error("blowfish", 1);
+		ret = NULL;
+	}
 	else if((ret = strdup(ret)) == NULL)
 		_error("malloc", 1);
 	return ret;
