@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -803,6 +803,16 @@ static void _modem_set_functional_callback(GSM * gsm)
 {
 	/* did it really work? */
 	gsm_is_functional(gsm);
+}
+
+
+/* gsm_modem_set_gprs_attach */
+int gsm_modem_set_gprs_attach(GSMModem * gsmm, gboolean set)
+{
+	char cmd[] = "AT+CGATT=X";
+
+	cmd[9] = set ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
 }
 
 
