@@ -3143,6 +3143,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->gprs_attachment.attached ? TRUE
 					: FALSE);
 			return 0;
+		case GSM_EVENT_TYPE_GPRS_REGISTRATION:
+			return 0; /* XXX not used at the moment */
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
 					"");

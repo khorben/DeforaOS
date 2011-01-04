@@ -818,15 +818,15 @@ int gsm_modem_set_gprs_attachment(GSMModem * gsmm, gboolean set)
 
 /* gsm_modem_set_gprs_registration_report */
 int gsm_modem_set_gprs_registration_report(GSMModem * gsmm,
-		GSMGPRSRegistrationReport report)
+		GSMRegistrationReport report)
 {
 	char cmd[] = "AT+CGREG=X";
 
 	switch(report)
 	{
-		case GSM_GPRS_REGISTRATION_REPORT_DISABLE:
-		case GSM_GPRS_REGISTRATION_REPORT_ENABLE:
-		case GSM_GPRS_REGISTRATION_REPORT_ENABLE_WITH_LOCATION:
+		case GSM_REGISTRATION_REPORT_DISABLE:
+		case GSM_REGISTRATION_REPORT_ENABLE:
+		case GSM_REGISTRATION_REPORT_ENABLE_WITH_LOCATION:
 			break;
 		default:
 			return 1;

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-04 18:33+0100\n"
+"POT-Creation-Date: 2011-01-04 18:53+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -112,8 +112,8 @@ msgstr "Délai d'attente du réseau dépassé"
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:172 ../src/gsm.c:1270 ../src/gsm.c:1494 ../src/gsm.c:1554
-#: ../src/gsm.c:2096
+#: ../src/gsm.c:172 ../src/gsm.c:1273 ../src/gsm.c:1524 ../src/gsm.c:1584
+#: ../src/gsm.c:2126
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -189,11 +189,11 @@ msgstr "Vitesse minimum pour les fax"
 msgid "Conflict with command details"
 msgstr "Conflit dans la syntaxe de commande"
 
-#: ../src/gsm.c:392
+#: ../src/gsm.c:394
 msgid ": Unknown baudrate, assuming 115200"
 msgstr ": Débit inconnu, tente 115200"
 
-#: ../src/gsm.c:1109
+#: ../src/gsm.c:1112
 msgid "Event not handled"
 msgstr "Événement non géré"
 
@@ -472,35 +472,35 @@ msgstr "Le nom ne peut être vide"
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3153
+#: ../src/phone.c:3155
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:3169
+#: ../src/phone.c:3171
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3202
+#: ../src/phone.c:3204
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:3254
+#: ../src/phone.c:3256
 msgid "Could not request new message indications"
 msgstr "Impossible d'obtenir des notifications de nouveaux messages"
 
-#: ../src/phone.c:3265
+#: ../src/phone.c:3267
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:3273
+#: ../src/phone.c:3275
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/phone.c:3309
+#: ../src/phone.c:3311
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:3324
+#: ../src/phone.c:3326
 msgid "Message deleted"
 msgstr "Message supprimé"
 

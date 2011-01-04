@@ -91,6 +91,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_CONTACT_LIST,
 	GSM_EVENT_TYPE_FUNCTIONAL,
 	GSM_EVENT_TYPE_GPRS_ATTACHMENT,
+	GSM_EVENT_TYPE_GPRS_REGISTRATION,
 	GSM_EVENT_TYPE_INCOMING_CALL,
 	GSM_EVENT_TYPE_INCOMING_MESSAGE,
 	GSM_EVENT_TYPE_MESSAGE,
@@ -110,13 +111,6 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_SUSPEND,
 	GSM_EVENT_TYPE_UNKNOWN
 } GSMEventType;
-
-typedef enum _GSMGPRSRegistrationReport
-{
-	GSM_GPRS_REGISTRATION_REPORT_DISABLE = 0,
-	GSM_GPRS_REGISTRATION_REPORT_ENABLE = 1,
-	GSM_GPRS_REGISTRATION_REPORT_ENABLE_WITH_LOCATION = 2
-} GSMGPRSRegistrationReport;
 
 typedef enum _GSMMessageFormat
 {
@@ -344,7 +338,7 @@ typedef union _GSMEvent
 		GSMRegistrationStatus stat;
 		unsigned int cell;
 		unsigned int area;
-	} registration;
+	} registration, gprs_registration;
 
 	/* GSM_EVENT_TYPE_SIGNAL_LEVEL */
 	struct

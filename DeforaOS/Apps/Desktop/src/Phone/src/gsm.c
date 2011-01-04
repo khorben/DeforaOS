@@ -265,6 +265,7 @@ static int _gsm_trigger_ccwa(GSM * gsm, char const * result);
 static int _gsm_trigger_cfun(GSM * gsm, char const * result);
 static int _gsm_trigger_cgatt(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
+static int _gsm_trigger_cgreg(GSM * gsm, char const * result);
 static int _gsm_trigger_clip(GSM * gsm, char const * result);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 		gboolean * answered);
@@ -306,6 +307,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CFUN: ",		cfun),
 	GSM_TRIGGER("+CGATT: ",		cgatt),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
+	GSM_TRIGGER("+CGREG: ",		cgreg),
 	GSM_TRIGGER("+CLIP: ",		clip),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
@@ -750,6 +752,7 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 					GSMPhoneActivity);
 			break;
 		case GSM_EVENT_TYPE_REGISTRATION:
+		case GSM_EVENT_TYPE_GPRS_REGISTRATION:
 			event->registration.n = va_arg(ap, unsigned int);
 			event->registration.stat = va_arg(ap, unsigned int);
 			event->registration.area = va_arg(ap, unsigned int);
@@ -1457,6 +1460,33 @@ static int _gsm_trigger_cgmm(GSM * gsm, char const * result)
 		return 1; /* we do not know this model */
 	gsm_modem_set_quirks(gsm->modem, _gsm_models[i].quirks);
 	return 0;
+}
+
+
+/* gsm_trigger_cgreg */
+static int _gsm_trigger_cgreg(GSM * gsm, char const * result)
+{
+	int ret;
+	int res;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if((res = sscanf(result, "%u,%u,%X,%X", &gsm->event.gprs_registration.n,
+					&gsm->event.gprs_registration.stat,
+					&gsm->event.gprs_registration.area,
+					&gsm->event.gprs_registration.cell))
+			== 4)
+		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_GPRS_REGISTRATION);
+	else if(res == 2)
+	{
+		gsm->event.gprs_registration.area = 0;
+		gsm->event.gprs_registration.cell = 0;
+		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_GPRS_REGISTRATION);
+	}
+	else
+		return 1;
+	return ret;
 }
 
 

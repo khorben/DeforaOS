@@ -99,7 +99,7 @@ int gsm_modem_set_line_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_functional(GSMModem * gsmm, gboolean functional);
 int gsm_modem_set_gprs_attachment(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_gprs_registration_report(GSMModem * gsmm,
-		GSMGPRSRegistrationReport report);
+		GSMRegistrationReport report);
 int gsm_modem_set_message_format(GSMModem * gsmm, GSMMessageFormat format);
 int gsm_modem_set_message_indications(GSMModem * gsmm, GSMMessageMode mode,
 		gboolean unsollicited);
