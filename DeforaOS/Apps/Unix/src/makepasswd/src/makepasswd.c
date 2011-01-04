@@ -46,7 +46,8 @@ typedef struct _Prefs
 
 typedef enum _PrefsEncryption
 {
-	PE_NONE = 0, PE_BASE64, PE_BLOWFISH, PE_DES, PE_MD5, PE_SHA1, PE_SHMD5
+	PE_NONE = 0, PE_BASE64, PE_BLOWFISH, PE_DES, PE_MD5, PE_SHA1, PE_SHA256,
+	PE_SHMD5
 } PrefsEncryption;
 #define PE_LAST PE_SHMD5
 #define PE_COUNT (PE_LAST + 1)
@@ -56,7 +57,8 @@ typedef enum _PrefsEncryption
 /* options */
 static const char * _encryption_strings[PE_COUNT + 1] =
 {
-	"none", "base64", "blowfish", "des", "md5", "sha1", "shmd5", NULL
+	"none", "base64", "blowfish", "des", "md5", "sha1", "sha256", "shmd5",
+	NULL
 };
 
 
@@ -148,6 +150,7 @@ static char * _hash_md5(char const * password);
 static char * _hash_none(void);
 static char * _hash_sha1(char const * password, char const * salt,
 		int iterations);
+static char * _hash_sha256(char const * password, char const * salt);
 static char * _hash_shmd5(char const * password, char const * salt);
 
 static char * _makepasswd_hash(PrefsEncryption encryption,
@@ -167,6 +170,8 @@ static char * _makepasswd_hash(PrefsEncryption encryption,
 			return _hash_none();
 		case PE_SHA1:
 			return _hash_sha1(password, salt, iterations);
+		case PE_SHA256:
+			return _hash_sha256(password, salt);
 		case PE_SHMD5:
 			return _hash_shmd5(password, salt);
 		default:
@@ -386,6 +391,40 @@ static char * _hash_sha1(char const * password, char const * salt,
 	return ret;
 }
 
+static char * _hash_sha256(char const * password, char const * salt)
+{
+	const char prefix[] = "$5$";
+	const char characters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz0123456789./";
+	char * ret;
+	char * p = NULL;
+	size_t len;
+	char * s;
+
+	if(salt == NULL)
+	{
+		if((p = _makepasswd_password(characters, 8, 64)) == NULL)
+			return NULL;
+		salt = p;
+	}
+	len = sizeof(prefix) + strlen(salt);
+	if((s = malloc(len)) == NULL)
+	{
+		_error("malloc", 1);
+		free(p);
+		return NULL;
+	}
+	snprintf(s, len, "%s%s", prefix, salt);
+	ret = crypt(password, s);
+	free(p);
+	free(s);
+	if(ret == NULL)
+		_error("crypt", 1);
+	else if((ret = strdup(ret)) == NULL)
+		_error("malloc", 1);
+	return ret;
+}
+
 static char * _hash_shmd5(char const * password, char const * salt)
 {
 	const char prefix[] = "$1$";
@@ -539,7 +578,7 @@ static int _usage(void)
 {
 	fputs("Usage: makepasswd -ceilMnps\n"
 "  -c	String of allowed characters (A-Za-z0-9`~!@#$%^&*()-_=+)\n"
-"  -e	Encryption algorithm (none,base64,blowfish,des,md5,sha1,shmd5)\n"
+"  -e	Encryption algorithm (none,base64,blowfish,des,md5,sha1,sha256,shmd5)\n"
 "  -i	Number of iterations in encryption algorithm\n"
 "  -l	Password length\n"
 "  -M	Maximum password length\n"
