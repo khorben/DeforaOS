@@ -464,6 +464,15 @@ int gsm_modem_is_functional(GSMModem * gsmm)
 }
 
 
+/* gsm_modem_is_gprs_attached */
+int gsm_modem_is_gprs_attached(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CGATT?";
+
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_is_mute */
 int gsm_modem_is_mute(GSMModem * gsmm)
 {
@@ -807,12 +816,21 @@ static void _modem_set_functional_callback(GSM * gsm)
 
 
 /* gsm_modem_set_gprs_attachment */
+static void _modem_set_gprs_attachment_callback(GSM * gsm);
+
 int gsm_modem_set_gprs_attachment(GSMModem * gsmm, gboolean set)
 {
 	char cmd[] = "AT+CGATT=X";
 
 	cmd[9] = set ? '1' : '0';
-	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_UNKNOWN, _modem_set_gprs_attachment_callback);
+}
+
+static void _modem_set_gprs_attachment_callback(GSM * gsm)
+{
+	/* did it really work? */
+	gsm_is_gprs_attached(gsm);
 }
 
 

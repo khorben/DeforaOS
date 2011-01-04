@@ -78,6 +78,7 @@ int gsm_modem_get_signal_level(GSMModem * gsmm);
 int gsm_modem_is_alive(GSMModem * gsmm);
 int gsm_modem_is_call_waiting_control(GSMModem * gsmm);
 int gsm_modem_is_functional(GSMModem * gsmm);
+int gsm_modem_is_gprs_attached(GSMModem * gsmm);
 int gsm_modem_is_mute(GSMModem * gsmm);
 int gsm_modem_is_phone_active(GSMModem * gsmm);
 int gsm_modem_is_pin_needed(GSMModem * gsmm);

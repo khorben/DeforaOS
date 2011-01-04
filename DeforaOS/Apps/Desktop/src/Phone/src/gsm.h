@@ -431,6 +431,7 @@ int gsm_message_send(GSM * gsm, char const * number, GSMEncoding encoding,
 int gsm_is_alive(GSM * gsm);
 int gsm_is_call_waiting_control(GSM * gsm);
 int gsm_is_functional(GSM * gsm);
+int gsm_is_gprs_attached(GSM * gsm);
 int gsm_is_mute(GSM * gsm);
 int gsm_is_phone_active(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);

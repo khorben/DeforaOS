@@ -858,6 +858,13 @@ int gsm_is_functional(GSM * gsm)
 }
 
 
+/* gsm_is_gprs_attached */
+int gsm_is_gprs_attached(GSM * gsm)
+{
+	return gsm_modem_is_gprs_attached(gsm->modem);
+}
+
+
 /* gsm_is_mute */
 int gsm_is_mute(GSM * gsm)
 {

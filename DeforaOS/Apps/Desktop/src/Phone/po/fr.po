@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-04 18:53+0100\n"
+"POT-Creation-Date: 2011-01-04 22:44+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -112,8 +112,8 @@ msgstr "Délai d'attente du réseau dépassé"
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:172 ../src/gsm.c:1273 ../src/gsm.c:1524 ../src/gsm.c:1584
-#: ../src/gsm.c:2126
+#: ../src/gsm.c:172 ../src/gsm.c:1280 ../src/gsm.c:1531 ../src/gsm.c:1591
+#: ../src/gsm.c:2133
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -193,7 +193,7 @@ msgstr "Conflit dans la syntaxe de commande"
 msgid ": Unknown baudrate, assuming 115200"
 msgstr ": Débit inconnu, tente 115200"
 
-#: ../src/gsm.c:1112
+#: ../src/gsm.c:1119
 msgid "Event not handled"
 msgstr "Événement non géré"
 
