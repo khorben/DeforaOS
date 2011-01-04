@@ -73,13 +73,13 @@ gsm.o: gsm.c command.h modem.h gsm.h
 	$(CC) $(phone_CFLAGS) -c gsm.c
 
 main.o: main.c ../include/Phone.h phone.h ../config.h
-	$(CC) $(phone_CFLAGS) -c main.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c main.c
 
 modem.o: modem.c gsm.h modem.h
 	$(CC) $(phone_CFLAGS) -c modem.c
 
 phone.o: phone.c ../include/Phone.h phone.h gsm.h callbacks.h ../config.h
-	$(CC) $(phone_CFLAGS) -c phone.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c phone.c
 
 contacts.o: contacts.c common.c
 	$(CC) $(phone-contacts_CFLAGS) -c contacts.c
