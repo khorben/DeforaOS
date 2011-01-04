@@ -63,6 +63,8 @@ typedef struct _Panel
 	PanelBattery battery_level;
 	GtkWidget * battery_image;
 	guint battery_timeout;
+	/* cell type */
+	GtkWidget * cell;
 	/* signal */
 	PanelSignal signal_level;
 	GtkWidget * signal_image;
@@ -137,6 +139,11 @@ static int _panel_init(PhonePlugin * plugin)
 					"battery")) == NULL
 			|| strcmp(p, "1") != 0)
 		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
+	/* cell type */
+	panel->cell = gtk_label_new("G");
+	gtk_widget_modify_font(panel->cell, bold);
+	gtk_widget_set_no_show_all(panel->cell, TRUE);
+	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->cell, FALSE, TRUE, 0);
 	/* signal */
 	panel->signal_level = -1;
 	panel->signal_image = gtk_image_new();
@@ -227,6 +234,7 @@ static int _panel_destroy(PhonePlugin * plugin)
 
 /* panel_event */
 static int _event_set_battery_level(Panel * panel, gdouble level);
+static int _event_set_cell_type(Panel * panel, gboolean gprs);
 static void _set_battery_image(Panel * panel, PanelBattery battery);
 
 static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
@@ -235,6 +243,7 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	va_list ap;
 	char const * operator;
 	gdouble level;
+	gboolean active;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(plugin, %u, ...)\n", __func__, event);
@@ -254,6 +263,10 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			panel->battery_timeout = g_timeout_add(5000,
 					_on_battery_timeout, plugin);
 			_on_battery_timeout(plugin);
+			break;
+		case PHONE_EVENT_GPRS_ATTACHMENT:
+			active = va_arg(ap, gboolean);
+			_event_set_cell_type(panel, active);
 			break;
 		case PHONE_EVENT_SET_OPERATOR:
 			operator = va_arg(ap, char const *);
@@ -311,6 +324,15 @@ static void _set_battery_image(Panel * panel, PanelBattery battery)
 	/* XXX may not be the correct size */
 	gtk_image_set_from_icon_name(GTK_IMAGE(panel->battery_image),
 			icons[battery], GTK_ICON_SIZE_SMALL_TOOLBAR);
+}
+
+static int _event_set_cell_type(Panel * panel, gboolean gprs)
+{
+	if(gprs)
+		gtk_widget_show(panel->cell);
+	else
+		gtk_widget_hide(panel->cell);
+	return 0;
 }
 
 
