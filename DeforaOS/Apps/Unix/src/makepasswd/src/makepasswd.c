@@ -24,6 +24,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#ifdef __linux__ /* XXX for linux portability */
+# include <crypt.h>
+#endif
 #include "global.h"
 #include "md5.h"
 #include "../config.h"
