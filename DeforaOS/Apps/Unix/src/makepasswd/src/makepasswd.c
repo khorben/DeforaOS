@@ -423,6 +423,12 @@ static char * _hash_sha256(char const * password, char const * salt)
 	free(s);
 	if(ret == NULL)
 		_error("crypt", 1);
+	else if(strncmp(ret, prefix, sizeof(prefix) - 1) != 0)
+	{
+		errno = ENOTSUP;
+		_error("sha256", 1);
+		ret = NULL;
+	}
 	else if((ret = strdup(ret)) == NULL)
 		_error("malloc", 1);
 	return ret;
@@ -457,6 +463,12 @@ static char * _hash_sha512(char const * password, char const * salt)
 	free(s);
 	if(ret == NULL)
 		_error("crypt", 1);
+	else if(strncmp(ret, prefix, sizeof(prefix) - 1) != 0)
+	{
+		errno = ENOTSUP;
+		_error("sha512", 1);
+		ret = NULL;
+	}
 	else if((ret = strdup(ret)) == NULL)
 		_error("malloc", 1);
 	return ret;
