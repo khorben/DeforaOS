@@ -791,6 +791,7 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 	va_list ap;
 	char const * operator;
 	gdouble level;
+	gboolean active;
 	char const * number;
 	GSMEncoding * encoding;
 	char ** buf;
@@ -814,6 +815,10 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_CALLING:
 				number = va_arg(ap, char const *);
 				ret |= plugin->event(plugin, event, number);
+				break;
+			case PHONE_EVENT_GPRS_ATTACHMENT:
+				active = va_arg(ap, gboolean);
+				ret |= plugin->event(plugin, event, active);
 				break;
 			case PHONE_EVENT_SET_OPERATOR:
 				operator = va_arg(ap, char const *);
@@ -3097,7 +3102,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, event->type);
 #endif
-	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
+	report = GSM_REGISTRATION_REPORT_ENABLE_WITH_LOCATION;
 	switch(event->type)
 	{
 		case GSM_EVENT_TYPE_ERROR:
@@ -3132,6 +3137,11 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			}
 			phone_event(phone, PHONE_EVENT_FUNCTIONAL);
 			gsm_is_pin_needed(phone->gsm);
+			return 0;
+		case GSM_EVENT_TYPE_GPRS_ATTACHMENT:
+			phone_event(phone, PHONE_EVENT_GPRS_ATTACHMENT,
+					event->gprs_attachment.attached ? TRUE
+					: FALSE);
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",

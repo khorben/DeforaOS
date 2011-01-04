@@ -263,6 +263,7 @@ static int _gsm_trigger_busy(GSM * gsm, char const * result,
 static int _gsm_trigger_cbc(GSM * gsm, char const * result);
 static int _gsm_trigger_ccwa(GSM * gsm, char const * result);
 static int _gsm_trigger_cfun(GSM * gsm, char const * result);
+static int _gsm_trigger_cgatt(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
 static int _gsm_trigger_clip(GSM * gsm, char const * result);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
@@ -303,6 +304,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CBC: ",		cbc),
 	GSM_TRIGGER("+CCWA: ",		ccwa),
 	GSM_TRIGGER("+CFUN: ",		cfun),
+	GSM_TRIGGER("+CGATT: ",		cgatt),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CLIP: ",		clip),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
@@ -701,6 +703,10 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			break;
 		case GSM_EVENT_TYPE_FUNCTIONAL:
 			event->functional.functional = va_arg(ap, unsigned int);
+			break;
+		case GSM_EVENT_TYPE_GPRS_ATTACHMENT:
+			event->gprs_attachment.attached = va_arg(ap,
+					unsigned int);
 			break;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			event->incoming_call.calltype = va_arg(ap,
@@ -1419,6 +1425,20 @@ static int _gsm_trigger_cfun(GSM * gsm, char const * result)
 		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_FUNCTIONAL_FAILED, result);
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_FUNCTIONAL);
+}
+
+
+/* gsm_trigger_cgatt */
+static int _gsm_trigger_cgatt(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u", &gsm->event.gprs_attachment.attached) != 1)
+		/* XXX nicer message */
+		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN,
+				result);
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT);
 }
 
 

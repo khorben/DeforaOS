@@ -806,12 +806,32 @@ static void _modem_set_functional_callback(GSM * gsm)
 }
 
 
-/* gsm_modem_set_gprs_attach */
-int gsm_modem_set_gprs_attach(GSMModem * gsmm, gboolean set)
+/* gsm_modem_set_gprs_attachment */
+int gsm_modem_set_gprs_attachment(GSMModem * gsmm, gboolean set)
 {
 	char cmd[] = "AT+CGATT=X";
 
 	cmd[9] = set ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
+/* gsm_modem_set_gprs_registration_report */
+int gsm_modem_set_gprs_registration_report(GSMModem * gsmm,
+		GSMGPRSRegistrationReport report)
+{
+	char cmd[] = "AT+CGREG=X";
+
+	switch(report)
+	{
+		case GSM_GPRS_REGISTRATION_REPORT_DISABLE:
+		case GSM_GPRS_REGISTRATION_REPORT_ENABLE:
+		case GSM_GPRS_REGISTRATION_REPORT_ENABLE_WITH_LOCATION:
+			break;
+		default:
+			return 1;
+	}
+	cmd[9] = report + '0';
 	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
 }
 
@@ -935,9 +955,9 @@ int gsm_modem_set_registration_report(GSMModem * gsmm,
 
 	switch(report)
 	{
-		case GSM_REGISTRATION_REPORT_DISABLE_UNSOLLICITED:
-		case GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED:
-		case GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION:
+		case GSM_REGISTRATION_REPORT_DISABLE:
+		case GSM_REGISTRATION_REPORT_ENABLE:
+		case GSM_REGISTRATION_REPORT_ENABLE_WITH_LOCATION:
 			break;
 		default:
 			return 1;

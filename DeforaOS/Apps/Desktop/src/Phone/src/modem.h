@@ -97,7 +97,9 @@ int gsm_modem_set_extended_errors(GSMModem * gsmm, gboolean extended);
 int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended);
 int gsm_modem_set_line_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_functional(GSMModem * gsmm, gboolean functional);
-int gsm_modem_set_gprs_attach(GSMModem * gsmm, gboolean set);
+int gsm_modem_set_gprs_attachment(GSMModem * gsmm, gboolean set);
+int gsm_modem_set_gprs_registration_report(GSMModem * gsmm,
+		GSMGPRSRegistrationReport report);
 int gsm_modem_set_message_format(GSMModem * gsmm, GSMMessageFormat format);
 int gsm_modem_set_message_indications(GSMModem * gsmm, GSMMessageMode mode,
 		gboolean unsollicited);
