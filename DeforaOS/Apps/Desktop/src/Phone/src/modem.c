@@ -755,6 +755,16 @@ static void _modem_set_call_waiting_control_callback(GSM * gsm)
 }
 
 
+/* gsm_modem_set_connected_presentation */
+int gsm_modem_set_connected_presentation(GSMModem * gsmm, gboolean set)
+{
+	char cmd[] = "AT+COLP=X";
+
+	cmd[8] = set ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_set_echo */
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo)
 {
