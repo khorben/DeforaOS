@@ -69,13 +69,14 @@ while [ $# -gt 0 ]; do
 		continue
 	fi
 
-	#create
-	$SED -e "s,PREFIX,$PREFIX," -e "s,VERSION,$VERSION," "$target.in" \
-		> "$target"					|| exit 2
-
 	#install
 	if [ "$install" -eq 1 ]; then
 		$DEBUG $MKDIR "$PKGCONFIG"			|| exit 2
 		$DEBUG $INSTALL "$target" "$PKGCONFIG/$target"	|| exit 2
+		continue
 	fi
+
+	#create
+	$SED -e "s,PREFIX,$PREFIX," -e "s,VERSION,$VERSION," "$target.in" \
+		> "$target"					|| exit 2
 done
