@@ -22,7 +22,7 @@ dist:
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/makepasswd.c \
-		$(PACKAGE)-$(VERSION)/src/md5.c \
+		$(PACKAGE)-$(VERSION)/src/md5c.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/global.h \
 		$(PACKAGE)-$(VERSION)/src/md5.h \
