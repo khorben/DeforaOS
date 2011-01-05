@@ -703,6 +703,8 @@ void compose_send_cancel(Compose * compose)
 
 
 /* compose_show_about */
+static gboolean _about_on_closex(gpointer data);
+
 void compose_show_about(Compose * compose, gboolean show)
 {
 	GtkWidget * dialog;
@@ -717,6 +719,8 @@ void compose_show_about(Compose * compose, gboolean show)
 	}
 	dialog = desktop_about_dialog_new();
 	compose->ab_window = dialog;
+	g_signal_connect_swapped(G_OBJECT(compose->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), compose);
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 				compose->window));
 	desktop_about_dialog_set_name(dialog, PACKAGE);
@@ -726,4 +730,12 @@ void compose_show_about(Compose * compose, gboolean show)
 	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
 	desktop_about_dialog_set_license(dialog, _license);
 	gtk_widget_show(dialog);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Compose * compose = data;
+
+	gtk_widget_hide(compose->ab_window);
+	return TRUE;
 }
