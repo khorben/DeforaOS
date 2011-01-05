@@ -2492,8 +2492,8 @@ void phone_unload_all(Phone * phone)
 void phone_write_count_buffer(Phone * phone)
 {
 	GtkTextBuffer * tbuf;
-	const int max = 140;
 	gint cnt;
+	int max = 160;
 	gint msg_cnt;
 	gint cur_cnt;
 	char buf[32];
@@ -2501,12 +2501,21 @@ void phone_write_count_buffer(Phone * phone)
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 	if((cnt = gtk_text_buffer_get_char_count(tbuf)) < 0)
 		return;
-	msg_cnt = (cnt / max) + 1;
-	if((cur_cnt = cnt % max) == 0)
+	if(cnt <= max)
 	{
-		msg_cnt--;
-		if(cnt > 0)
-			cur_cnt = max;
+		cur_cnt = cnt;
+		msg_cnt = 1;
+	}
+	else
+	{
+		max = 153; /* for the User Data Header */
+		msg_cnt = (cnt / max) + 1;
+		if((cur_cnt = cnt % max) == 0)
+		{
+			msg_cnt--;
+			if(cnt > 0)
+				cur_cnt = max;
+		}
 	}
 	snprintf(buf, sizeof(buf), _("%d message%s, %d/%d characters"),
 			msg_cnt, (msg_cnt > 1) ? _("s") : "", cur_cnt, max);
