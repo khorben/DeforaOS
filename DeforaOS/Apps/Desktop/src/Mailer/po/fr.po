@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-05 16:33+0100\n"
+"POT-Creation-Date: 2011-01-05 17:08+0100\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -157,26 +157,26 @@ msgstr "Suivre sur:"
 msgid "Subject: "
 msgstr "Sujet: "
 
-#: ../src/compose.c:425 ../src/compose.c:434
+#: ../src/compose.c:423 ../src/compose.c:432
 msgid "Warning"
 msgstr ""
 
-#: ../src/compose.c:429
+#: ../src/compose.c:427
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
 msgstr ""
 
-#: ../src/compose.c:455 ../src/compose.c:460 ../src/mailer.c:717
+#: ../src/compose.c:453 ../src/compose.c:458 ../src/mailer.c:717
 #: ../src/mailer.c:722
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/compose.c:544
+#: ../src/compose.c:542
 msgid "Sending mail..."
 msgstr "Envoi du message..."
 
-#: ../src/compose.c:551
+#: ../src/compose.c:549
 msgid "Progression: "
 msgstr "Progression: "
 

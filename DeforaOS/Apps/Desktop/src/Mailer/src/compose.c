@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -299,13 +299,14 @@ Compose * compose_new(Mailer * mailer)
 
 static GtkWidget * _new_text_view(Mailer * mailer)
 {
-	static const char signature[] = "/.signature";
-	static const char prefix[] = "\n-- \n";
+	const char signature[] = "/.signature";
+	const char prefix[] = "\n-- \n";
 	GtkWidget * textview;
 	char const * font;
 	PangoFontDescription * desc;
 	char const * homedir;
 	char * filename;
+	gboolean res;
 	gchar * buf;
 	size_t cnt;
 	GtkTextBuffer * buffer;
@@ -321,15 +322,12 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	/* signature */
 	if((homedir = getenv("HOME")) == NULL)
 		return textview;
-	if((filename = malloc(strlen(homedir) + sizeof(signature))) == NULL)
+	if((filename = string_new_append(homedir, signature, NULL)) == NULL)
 		return textview;
-	sprintf(filename, "%s%s", homedir, signature);
-	if(g_file_get_contents(filename, &buf, &cnt, NULL) != TRUE)
-	{
-		free(filename);
+	res = g_file_get_contents(filename, &buf, &cnt, NULL);
+	string_delete(filename);
+	if(res != TRUE)
 		return textview;
-	}
-	free(filename);
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
 	gtk_text_buffer_set_text(buffer, prefix, sizeof(prefix) - 1);
 	gtk_text_buffer_insert_at_cursor(buffer, buf, cnt);
