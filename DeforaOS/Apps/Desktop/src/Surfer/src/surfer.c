@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -160,6 +160,9 @@ static DesktopMenu _menu_view[] =
 		GDK_CONTROL_MASK, GDK_minus },
 	{ N_("Normal size"),	G_CALLBACK(on_view_normal_size),
 		"zoom-original", GDK_CONTROL_MASK, GDK_0 },
+	{ "",			NULL, NULL, 0, 0 },
+	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen),
+		GTK_STOCK_FULLSCREEN, 0, 0 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_R },

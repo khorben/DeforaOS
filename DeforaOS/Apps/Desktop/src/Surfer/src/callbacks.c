@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -331,6 +331,15 @@ void on_forward(gpointer data)
 	Surfer * surfer = data;
 
 	surfer_go_forward(surfer);
+}
+
+
+/* on_view_fullscreen */
+void on_view_fullscreen(gpointer data)
+{
+	Surfer * surfer = data;
+
+	on_fullscreen(surfer);
 }
 
 
