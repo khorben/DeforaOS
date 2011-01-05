@@ -41,6 +41,12 @@ void on_view_playlist(gpointer data);
 void on_help_about(gpointer data);
 
 /* toolbar */
+void on_close(gpointer data);
+void on_open(gpointer data);
+void on_properties(gpointer data);
+void on_preferences(gpointer data);
+
+/* playbar */
 void on_previous(gpointer data);
 void on_rewind(gpointer data);
 void on_play(gpointer data);

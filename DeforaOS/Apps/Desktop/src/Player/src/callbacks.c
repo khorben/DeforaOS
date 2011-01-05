@@ -33,6 +33,15 @@
 
 /* functions */
 /* callbacks */
+/* on_close */
+void on_close(gpointer data)
+{
+	Player * player = data;
+
+	on_player_closex(player);
+}
+
+
 /* on_player_closex */
 gboolean on_player_closex(gpointer data)
 {
@@ -114,7 +123,6 @@ void on_help_about(gpointer data)
 }
 
 
-/* toolbar */
 /* on_fullscreen */
 void on_fullscreen(gpointer data)
 {
@@ -129,6 +137,33 @@ void on_next(gpointer data)
 	Player * player = data;
 
 	player_next(player);
+}
+
+
+/* on_open */
+void on_open(gpointer data)
+{
+	Player * player = data;
+
+	player_open_dialog(player);
+}
+
+
+/* on_properties */
+void on_properties(gpointer data)
+{
+	Player * player = data;
+
+	player_view_properties(player);
+}
+
+
+/* on_preferences */
+void on_preferences(gpointer data)
+{
+	Player * player = data;
+
+	player_view_preferences(player);
 }
 
 

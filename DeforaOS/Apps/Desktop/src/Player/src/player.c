@@ -76,9 +76,7 @@ struct _Player
 
 	/* widgets */
 	GtkWidget * window;
-#ifndef EMBEDDED
 	GtkWidget * menubar;
-#endif
 	GtkWidget * view;
 	GtkWidget * view_window;
 	GtkToolItem * tb_previous;
@@ -114,6 +112,9 @@ struct _Player
 static DesktopAccel _player_accel[] =
 {
 	{ G_CALLBACK(on_fullscreen), GDK_CONTROL_MASK, GDK_F },
+#ifdef EMBEDDED
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
+#endif
 	{ NULL, 0, 0 }
 };
 
@@ -171,7 +172,22 @@ static DesktopMenubar _player_menubar[] =
 };
 #endif
 
+#ifdef EMBEDDED
 static DesktopToolbar _player_toolbar[] =
+{
+	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
+		GDK_O, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0,
+		0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
+		0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
+};
+#endif
+
+static DesktopToolbar _player_playbar[] =
 {
 	{ N_("Previous"), G_CALLBACK(on_previous), GTK_STOCK_MEDIA_PREVIOUS, 0,
 		0, NULL },
@@ -274,8 +290,12 @@ Player * player_new(void)
 	/* menubar */
 	player->menubar = desktop_menubar_create(_player_menubar, player,
 			group);
-	gtk_box_pack_start(GTK_BOX(vbox), player->menubar, FALSE, FALSE, 0);
+#else
+	/* toolbar */
+	player->menubar = desktop_toolbar_create(_player_toolbar, player,
+			group);
 #endif
+	gtk_box_pack_start(GTK_BOX(vbox), player->menubar, FALSE, FALSE, 0);
 	/* view */
 	player->view_window = gtk_socket_new();
 	gtk_widget_modify_bg(player->view_window, GTK_STATE_NORMAL, &black);
@@ -288,8 +308,8 @@ Player * player_new(void)
 	player->statusbar_id = 0;
 	gtk_box_pack_end(GTK_BOX(vbox), player->statusbar, FALSE, FALSE, 0);
 #endif
-	/* toolbar */
-	toolbar = desktop_toolbar_create(_player_toolbar, player, group);
+	/* playbar */
+	toolbar = desktop_toolbar_create(_player_playbar, player, group);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
@@ -478,8 +498,8 @@ void player_set_fullscreen(Player * player, gboolean fullscreen)
 		return;
 	if(fullscreen)
 	{
-#ifndef EMBEDDED
 		gtk_widget_hide(player->menubar);
+#ifndef EMBEDDED
 		gtk_widget_hide(player->statusbar);
 #endif
 		gtk_window_fullscreen(GTK_WINDOW(player->window));
@@ -487,8 +507,8 @@ void player_set_fullscreen(Player * player, gboolean fullscreen)
 	else
 	{
 		gtk_window_unfullscreen(GTK_WINDOW(player->window));
-#ifndef EMBEDDED
 		gtk_widget_show(player->menubar);
+#ifndef EMBEDDED
 		gtk_widget_show(player->statusbar);
 #endif
 	}
