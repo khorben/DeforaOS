@@ -52,6 +52,7 @@ void on_fullscreen(gpointer data);
 
 /* view */
 /* playlist */
+void on_playlist_activated(gpointer data);
 void on_playlist_add(gpointer data);
 gboolean on_playlist_closex(gpointer data);
 void on_playlist_load(gpointer data);

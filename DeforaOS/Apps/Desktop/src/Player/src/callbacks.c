@@ -64,25 +64,8 @@ void on_file_open(gpointer data)
 void on_file_properties(gpointer data)
 {
 	Player * player = data;
-	GtkWidget * window;
-	char * p;
-	char buf[256];
 
-	if(player->filename == NULL)
-		return;
-	if((p = strdup(player->filename)) == NULL)
-	{
-		player_error(player, strerror(errno), 0);
-		return;
-	}
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(p));
-	free(p);
-	gtk_window_set_title(GTK_WINDOW(window), buf);
-	/* FIXME implement */
-	gtk_widget_show_all(window);
+	player_view_properties(player);
 }
 
 
@@ -118,7 +101,7 @@ void on_view_playlist(gpointer data)
 {
 	Player * player = data;
 
-	gtk_widget_show(player->pl_window);
+	player_view_playlist(player, TRUE);
 }
 
 
@@ -199,6 +182,15 @@ void on_forward(gpointer data)
 
 /* view */
 /* playlist */
+/* on_playlist_activated */
+void on_playlist_activated(gpointer data)
+{
+	Player * player = data;
+
+	player_playlist_play_selected(player);
+}
+
+
 /* on_playlist_add */
 void on_playlist_add(gpointer data)
 {
@@ -213,7 +205,7 @@ gboolean on_playlist_closex(gpointer data)
 {
 	Player * player = data;
 
-	gtk_widget_hide(player->pl_window);
+	player_view_playlist(player, FALSE);
 	return TRUE;
 }
 

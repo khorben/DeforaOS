@@ -30,7 +30,7 @@ typedef struct _Player
 	gboolean fullscreen;
 
 	/* current file */
-	char * filename;
+	GtkTreeRowReference * current;
 	int width;
 	int height;
 	int audio_bitrate;
@@ -124,6 +124,7 @@ void player_playlist_add_dialog(Player * player);
 void player_playlist_clear(Player * player);
 void player_playlist_open(Player * player, char const * filename);
 void player_playlist_open_dialog(Player * player);
+void player_playlist_play_selected(Player * player);
 void player_playlist_save_as_dialog(Player * player);
 
 /* playback */
@@ -136,6 +137,8 @@ void player_rewind(Player * player);
 void player_forward(Player * player);
 
 /* user interface */
+void player_view_playlist(Player * player, gboolean view);
 void player_view_preferences(Player * player);
+void player_view_properties(Player * player);
 
 #endif /* !PLAYER_PLAYER_H */

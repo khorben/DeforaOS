@@ -121,11 +121,13 @@ static char const * _authors[] =
 
 /* prototypes */
 /* accessors */
+static char * _player_get_filename(Player * player);
 static void _player_set_progress(Player * player, unsigned int progress);
 
 /* useful */
+static int _player_command(Player * player, char const * cmd, size_t cmd_len);
 static int _player_error(char const * message, int ret);
-static void _player_reset(Player * player);
+static void _player_reset(Player * player, char const * filename);
 
 /* callbacks */
 static gboolean _command_read(GIOChannel * source, GIOCondition condition,
@@ -135,221 +137,8 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 
 
-/* functions */
-/* accessors */
-static void _player_set_progress(Player * player, unsigned int progress)
-{
-	gdouble fraction;
-	static char buf[16];
-
-	fraction = progress <= 100 ? progress : 100;
-	fraction /= 100;
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(player->progress),
-			fraction);
-	snprintf(buf, sizeof(buf), "%d%%", progress);
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), buf);
-}
-
-
-/* useful */
-/* player_error */
-static int _player_error(char const * message, int ret)
-{
-	fputs("player: ", stderr);
-	perror(message);
-	return ret;
-}
-
-
-/* player_reset */
-static void _player_reset(Player * player)
-{
-	if(player->filename != NULL)
-		free(player->filename);
-	player->filename = NULL;
-	player->width = 0;
-	player->height = 0;
-	player->audio_bitrate = 0;
-	player->audio_channels = 0;
-	if(player->audio_codec != NULL)
-		free(player->audio_codec);
-	player->audio_codec = NULL;
-	player->audio_rate = 0;
-	player->video_aspect = 0.0;
-	player->video_bitrate = 0;
-	if(player->video_codec != NULL)
-		free(player->video_codec);
-	player->video_codec = NULL;
-	player->video_fps = 0.0;
-	player->video_rate = 0;
-	_player_set_progress(player, 0);
-}
-
-
-/* player_command */
-static int _player_command(Player * player, char const * cmd, size_t cmd_len)
-{
-	char * p;
-
-	if(player->pid == -1)
-	{
-		fputs("player: mplayer not running\n", stderr);
-		return 1;
-	}
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s\"%s\"\n", "DEBUG: pid ", player->pid,
-			": write ", cmd);
-#endif
-	if((p = realloc(player->buf, player->buf_len + cmd_len)) == NULL)
-		return _player_error("malloc", 1);
-	player->buf = p;
-	memcpy(&p[player->buf_len], cmd, cmd_len);
-	player->buf_len += cmd_len;
-	g_io_add_watch(player->channel[1], G_IO_OUT, _command_write, player);
-	return 0;
-}
-
-
-/* callbacks */
-/* command_read */
-static void _read_parse(Player * player, char const * buf);
-
-static gboolean _command_read(GIOChannel * source, GIOCondition condition,
-		gpointer data)
-{
-	Player * player = data;
-	static char buf[512];
-	static size_t buf_len = 0;
-	gsize read;
-	size_t i;
-	size_t j;
-
-	if(condition != G_IO_IN)
-	{
-		player_error(player, "", 0); /* FIXME */
-		gtk_main_quit();
-		return FALSE; /* FIXME report error */
-	}
-	if(g_io_channel_read(source, &buf[buf_len], sizeof(buf) - buf_len,
-				&read) != G_IO_ERROR_NONE)
-	{
-		player_error(player, "", 0); /* FIXME */
-		gtk_main_quit();
-		return FALSE; /* FIXME report error */
-	}
-	if(read == 0)
-	{
-		player->read_id = 0;
-		return FALSE; /* FIXME end of file? */
-	}
-	buf_len += read;
-	j = 0;
-	for(i = 0; i < buf_len; i++)
-	{
-		if(buf[i] != '\n')
-			continue;
-		buf[i] = '\0';
-		_read_parse(player, &buf[j]);
-		j = i + 1;
-	}
-	buf_len -= j;
-	memmove(buf, &buf[j], buf_len);
-	return TRUE;
-}
-
-static void _read_parse(Player * player, char const * buf)
-{
-	unsigned int u32;
-	gdouble db;
-	char str[256];
-
-	if(sscanf(buf, "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
-		_player_set_progress(player, u32);
-	else if(sscanf(buf, "ID_AUDIO_BITRATE=%u\n", &u32) == 1)
-		player->audio_bitrate = u32;
-	else if(sscanf(buf, "ID_AUDIO_CODEC=%255s", str) == 1)
-	{
-		if(player->audio_codec != NULL)
-			free(player->audio_codec);
-		player->audio_codec = strdup(str);
-	}
-	else if(sscanf(buf, "ID_AUDIO_NCH=%u\n", &u32) == 1)
-		player->audio_channels = u32;
-	else if(sscanf(buf, "ID_AUDIO_RATE=%u\n", &u32) == 1)
-		player->audio_rate = u32;
-	else if(sscanf(buf, "ID_LENGTH=%lf\n", &db) == 1)
-		player->length = db;
-	else if(sscanf(buf, "ID_VIDEO_ASPECT=%lf\n", &db) == 1)
-		player->video_aspect = db;
-	else if(sscanf(buf, "ID_VIDEO_BITRATE=%u\n", &u32) == 1)
-		player->video_bitrate = u32;
-	else if(sscanf(buf, "ID_VIDEO_CODEC=%255s", str) == 1)
-	{
-		if(player->video_codec != NULL)
-			free(player->video_codec);
-		player->video_codec = strdup(str);
-	}
-	else if(sscanf(buf, "ID_VIDEO_FPS=%lf\n", &db) == 1)
-		player->video_fps = db;
-	else if(sscanf(buf, "ID_VIDEO_HEIGHT=%u\n", &u32) == 1)
-		player_set_size(player, -1, u32);
-	else if(sscanf(buf, "ID_VIDEO_RATE=%u\n", &u32) == 1)
-		player->video_rate = u32;
-	else if(sscanf(buf, "ID_VIDEO_WIDTH=%u\n", &u32) == 1)
-		player_set_size(player, u32, -1);
-#ifdef DEBUG
-	else
-		fprintf(stderr, "DEBUG: unknown output \"%s\"\n", buf);
-#endif
-}
-
-
-/* command_timeout */
-static gboolean _command_timeout(gpointer data)
-{
-	Player * player = data;
-	static const char cmd[] = "pausing_keep get_percent_pos\n";
-
-	_player_command(player, cmd, sizeof(cmd) - 1);
-	return TRUE;
-}
-
-
-/* command_write */
-static gboolean _command_write(GIOChannel * source, GIOCondition condition,
-		gpointer data)
-{
-	Player * player = data;
-	gsize written;
-	char * p;
-
-	if(condition != G_IO_OUT)
-	{
-		player_error(player, "", 0); /* FIXME */
-		gtk_main_quit();
-		return FALSE; /* FIXME report error */
-	}
-	if(g_io_channel_write(source, player->buf, player->buf_len, &written)
-			!= G_IO_ERROR_NONE)
-	{
-		player_error(player, "", 0); /* FIXME */
-		gtk_main_quit();
-		return FALSE; /* FIXME report error */
-	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: wrote %zu bytes\n", written);
-#endif
-	player->buf_len -= written;
-	memmove(player->buf, &player->buf[written], player->buf_len);
-	if(player->buf_len == 0)
-		return FALSE;
-	if((p = realloc(player->buf, player->buf_len)) != NULL)
-		player->buf = p;
-	return TRUE;
-}
-
-
 /* public */
+/* functions */
 /* player_new */
 static int _player_error(char const * message, int ret);
 static void _new_mplayer(Player * player);
@@ -365,6 +154,7 @@ Player * player_new(void)
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GdkColor black = { 0, 0, 0, 0 };
+	GtkTreeSelection * selection;
 
 	if((player = malloc(sizeof(*player))) == NULL)
 		return NULL;
@@ -372,7 +162,7 @@ Player * player_new(void)
 	player->paused = 0;
 	player->fullscreen = FALSE;
 	/* current file */
-	player->filename = NULL;
+	player->current = NULL;
 	player->audio_codec = NULL;
 	player->video_codec = NULL;
 	/* mplayer */
@@ -457,6 +247,8 @@ Player * player_new(void)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	player->pl_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				player->pl_store));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(player->pl_view));
+	gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(player->pl_view), TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(player->pl_view),
 			gtk_tree_view_column_new_with_attributes("",
@@ -465,6 +257,8 @@ Player * player_new(void)
 	_new_column_text(player->pl_view, _("Artist"), PL_COL_ARTIST);
 	_new_column_text(player->pl_view, _("Album"), PL_COL_ALBUM);
 	_new_column_text(player->pl_view, _("Title"), PL_COL_TITLE);
+	g_signal_connect_swapped(G_OBJECT(player->pl_view), "row-activated",
+			G_CALLBACK(on_playlist_activated), player);
 	gtk_container_add(GTK_CONTAINER(widget), player->pl_view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(TRUE, 0);
@@ -509,7 +303,7 @@ static void _new_mplayer(Player * player)
 		"-noconsolecontrols", "-nomouseinput", NULL };
 
 	argv[3] = wid;
-	_player_reset(player);
+	_player_reset(player, NULL);
 	snprintf(wid, sizeof(wid), "%u", gtk_socket_get_id(GTK_SOCKET(
 					player->view_window)));
 	if((player->pid = fork()) == -1)
@@ -697,8 +491,6 @@ void player_forward(Player * player)
 {
 	char const cmd[] = "speed_incr 0.5\n";
 
-	if(player->filename == NULL)
-		return;
 	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
@@ -728,24 +520,46 @@ int player_sigchld(Player * player)
 /* player_next */
 void player_next(Player * player)
 {
-	char cmd[] = "pt_step 1\n";
+	GtkTreeModel * model = GTK_TREE_MODEL(player->pl_store);
+	GtkTreePath * path;
+	GtkTreeIter iter;
 
-	_player_command(player, cmd, sizeof(cmd)-1);
+	if(player->current == NULL)
+		return;
+	if((path = gtk_tree_row_reference_get_path(player->current)) == NULL)
+		return;
+	if(gtk_tree_model_get_iter(model, &iter, path) != TRUE)
+		return;
+	if(gtk_tree_model_iter_next(model, &iter) != TRUE)
+		return;
+	gtk_tree_row_reference_free(player->current);
+	path = gtk_tree_model_get_path(model, &iter);
+	player->current = gtk_tree_row_reference_new(model, path);
+	gtk_tree_path_free(path);
+	player_play(player);
 }
 
 
 /* player_open */
 int player_open(Player * player, char const * filename)
 {
+	GtkTreeModel * model = GTK_TREE_MODEL(player->pl_store);
+	GtkTreeIter iter;
+	GtkTreePath * path;
 	char cmd[512];
 	size_t len;
-	char * p;
 
-	_player_reset(player);
-	if((player->filename = strdup(filename)) == NULL)
-		return player_error(player, strerror(errno), 1);
+	player_playlist_clear(player);
+	player_playlist_add(player, filename);
+	if(gtk_tree_model_get_iter_first(model, &iter) == TRUE)
+	{
+		path = gtk_tree_model_get_path(model, &iter);
+		player->current = gtk_tree_row_reference_new(model, path);
+		gtk_tree_path_free(path);
+	}
+	_player_reset(player, filename);
 	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "pausing loadfile \"",
-			player->filename, "\" 0\nframe_step\n");
+			filename, "\" 0\nframe_step\n");
 	if(len >= sizeof(cmd))
 	{
 		fputs("player: String too long\n", stderr);
@@ -754,11 +568,6 @@ int player_open(Player * player, char const * filename)
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 1;
-	p = strdup(filename);
-	snprintf(cmd, sizeof(cmd), "%s - %s", _("Media player"), p != NULL
-			? basename(p) : filename);
-	free(p);
-	gtk_window_set_title(GTK_WINDOW(player->window), cmd);
 	return 0;
 }
 
@@ -792,8 +601,6 @@ void player_pause(Player * player)
 {
 	char const cmd[] = "pause\n";
 
-	if(player->filename == NULL)
-		return;
 	if(player->paused != 0)
 	{
 		if(player->timeout_id == 0)
@@ -815,21 +622,23 @@ int player_play(Player * player)
 {
 	char cmd[512];
 	size_t len;
+	char * filename;
 
-	if(player->filename == NULL)
-		return 0;
+	if((filename = _player_get_filename(player)) == NULL)
+		return 1;
 	/* FIXME escape double quotes in filename? */
 	if(player->paused == 1)
 		len = snprintf(cmd, sizeof(cmd), "%s", "pause\n");
 	else if((len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"",
-					player->filename, "\" 0\n"))
+					filename, "\" 0\n"))
 			>= sizeof(cmd))
 	{
 		fputs("player: String too long\n", stderr);
 		return 1;
 	}
 	else
-		_player_reset(player);
+		_player_reset(player, filename);
+	free(filename);
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 0;
@@ -893,6 +702,9 @@ void player_playlist_add_dialog(Player * player)
 /* player_playlist_clear */
 void player_playlist_clear(Player * player)
 {
+	if(player->current != NULL)
+		gtk_tree_row_reference_free(player->current);
+	player->current = NULL;
 	gtk_list_store_clear(player->pl_store);
 }
 
@@ -925,6 +737,29 @@ void player_playlist_open_dialog(Player * player)
 }
 
 
+/* player_playlist_play_selected */
+void player_playlist_play_selected(Player * player)
+{
+	GtkTreeSelection * selection;
+	GList * rows;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(player->pl_view));
+	if((rows = gtk_tree_selection_get_selected_rows(selection, NULL))
+			== NULL)
+		return;
+	if(rows->data != NULL && rows->next == NULL)
+	{
+		if(player->current != NULL)
+			gtk_tree_row_reference_free(player->current);
+		player->current = gtk_tree_row_reference_new(GTK_TREE_MODEL(
+					player->pl_store), rows->data);
+		player_play(player);
+	}
+	g_list_foreach(rows, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(rows);
+}
+
+
 /* player_playlist_save_as_dialog */
 void player_playlist_save_as_dialog(Player * player)
 {
@@ -935,9 +770,20 @@ void player_playlist_save_as_dialog(Player * player)
 /* player_previous */
 void player_previous(Player * player)
 {
-	char const cmd[] = "pt_step -1\n";
+	GtkTreeModel * model = GTK_TREE_MODEL(player->pl_store);
+	GtkTreePath * path;
 
-	_player_command(player, cmd, sizeof(cmd) - 1);
+	if(player->current == NULL)
+		return;
+	if((path = gtk_tree_row_reference_get_path(player->current)) == NULL)
+		return;
+	if(gtk_tree_path_prev(path) != TRUE)
+		return;
+	path = gtk_tree_path_copy(path);
+	gtk_tree_row_reference_free(player->current);
+	player->current = gtk_tree_row_reference_new(model, path);
+	gtk_tree_path_free(path);
+	player_play(player);
 }
 
 
@@ -946,8 +792,6 @@ void player_rewind(Player * player)
 {
 	char const cmd[] = "speed_incr -0.5\n";
 
-	if(player->filename == NULL)
-		return;
 	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
@@ -970,6 +814,16 @@ void player_stop(Player * player)
 		g_source_remove(player->timeout_id);
 		player->timeout_id = 0;
 	}
+}
+
+
+/* player_view_playlist */
+void player_view_playlist(Player * player, gboolean view)
+{
+	if(view)
+		gtk_window_present(GTK_WINDOW(player->pl_window));
+	else
+		gtk_widget_hide(player->pl_window);
 }
 
 
@@ -1047,4 +901,267 @@ static void _preferences_on_ok(gpointer data)
 
 	gtk_widget_hide(player->pr_window);
 	/* FIXME implement */
+}
+
+
+/* player_view_properties */
+void player_view_properties(Player * player)
+{
+	GtkWidget * window;
+	char * filename;
+	char buf[256];
+
+	if((filename = _player_get_filename(player)) == NULL)
+		return;
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
+				filename));
+	free(filename);
+	gtk_window_set_title(GTK_WINDOW(window), buf);
+	/* FIXME implement */
+	gtk_widget_show_all(window);
+}
+
+
+/* private */
+/* functions */
+/* accessors */
+/* player_get_filename */
+static char * _player_get_filename(Player * player)
+{
+	char * ret;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+
+	if(player->current == NULL)
+		return NULL;
+	if((path = gtk_tree_row_reference_get_path(player->current)) == NULL)
+		return NULL;
+	if(gtk_tree_model_get_iter(GTK_TREE_MODEL(player->pl_store), &iter,
+				path) != TRUE)
+		return NULL;
+	gtk_tree_model_get(GTK_TREE_MODEL(player->pl_store), &iter,
+			PL_COL_FILENAME, &ret, -1);
+	return ret;
+}
+
+
+/* player_set_progress */
+static void _player_set_progress(Player * player, unsigned int progress)
+{
+	gdouble fraction;
+	static char buf[16];
+
+	fraction = progress <= 100 ? progress : 100;
+	fraction /= 100;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(player->progress),
+			fraction);
+	snprintf(buf, sizeof(buf), "%d%%", progress);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), buf);
+}
+
+
+/* useful */
+/* player_error */
+static int _player_error(char const * message, int ret)
+{
+	fputs("player: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
+/* player_reset */
+static void _player_reset(Player * player, char const * filename)
+{
+	char * p = NULL;
+	char buf[256];
+
+	player->width = 0;
+	player->height = 0;
+	player->audio_bitrate = 0;
+	player->audio_channels = 0;
+	if(player->audio_codec != NULL)
+		free(player->audio_codec);
+	player->audio_codec = NULL;
+	player->audio_rate = 0;
+	player->video_aspect = 0.0;
+	player->video_bitrate = 0;
+	if(player->video_codec != NULL)
+		free(player->video_codec);
+	player->video_codec = NULL;
+	player->video_fps = 0.0;
+	player->video_rate = 0;
+	_player_set_progress(player, 0);
+	if(filename != NULL)
+		p = strdup(filename);
+	snprintf(buf, sizeof(buf), "%s - %s", _("Media player"), p != NULL
+			? basename(p) : filename);
+	free(p);
+	gtk_window_set_title(GTK_WINDOW(player->window), buf);
+}
+
+
+/* player_command */
+static int _player_command(Player * player, char const * cmd, size_t cmd_len)
+{
+	char * p;
+
+	if(player->pid == -1)
+	{
+		fputs("player: mplayer not running\n", stderr);
+		return 1;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s\"%s\"\n", "DEBUG: pid ", player->pid,
+			": write ", cmd);
+#endif
+	if((p = realloc(player->buf, player->buf_len + cmd_len)) == NULL)
+		return _player_error("malloc", 1);
+	player->buf = p;
+	memcpy(&p[player->buf_len], cmd, cmd_len);
+	player->buf_len += cmd_len;
+	g_io_add_watch(player->channel[1], G_IO_OUT, _command_write, player);
+	return 0;
+}
+
+
+/* callbacks */
+/* command_read */
+static void _read_parse(Player * player, char const * buf);
+
+static gboolean _command_read(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Player * player = data;
+	static char buf[512];
+	static size_t buf_len = 0;
+	gsize read;
+	size_t i;
+	size_t j;
+
+	if(condition != G_IO_IN)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+	if(g_io_channel_read(source, &buf[buf_len], sizeof(buf) - buf_len,
+				&read) != G_IO_ERROR_NONE)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+	if(read == 0)
+	{
+		player->read_id = 0;
+		return FALSE; /* FIXME end of file? */
+	}
+	buf_len += read;
+	j = 0;
+	for(i = 0; i < buf_len; i++)
+	{
+		if(buf[i] != '\n')
+			continue;
+		buf[i] = '\0';
+		_read_parse(player, &buf[j]);
+		j = i + 1;
+	}
+	buf_len -= j;
+	memmove(buf, &buf[j], buf_len);
+	return TRUE;
+}
+
+static void _read_parse(Player * player, char const * buf)
+{
+	unsigned int u32;
+	gdouble db;
+	char str[256];
+
+	if(sscanf(buf, "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
+		_player_set_progress(player, u32);
+	else if(sscanf(buf, "ID_AUDIO_BITRATE=%u\n", &u32) == 1)
+		player->audio_bitrate = u32;
+	else if(sscanf(buf, "ID_AUDIO_CODEC=%255s", str) == 1)
+	{
+		if(player->audio_codec != NULL)
+			free(player->audio_codec);
+		player->audio_codec = strdup(str);
+	}
+	else if(sscanf(buf, "ID_AUDIO_NCH=%u\n", &u32) == 1)
+		player->audio_channels = u32;
+	else if(sscanf(buf, "ID_AUDIO_RATE=%u\n", &u32) == 1)
+		player->audio_rate = u32;
+	else if(sscanf(buf, "ID_LENGTH=%lf\n", &db) == 1)
+		player->length = db;
+	else if(sscanf(buf, "ID_VIDEO_ASPECT=%lf\n", &db) == 1)
+		player->video_aspect = db;
+	else if(sscanf(buf, "ID_VIDEO_BITRATE=%u\n", &u32) == 1)
+		player->video_bitrate = u32;
+	else if(sscanf(buf, "ID_VIDEO_CODEC=%255s", str) == 1)
+	{
+		if(player->video_codec != NULL)
+			free(player->video_codec);
+		player->video_codec = strdup(str);
+	}
+	else if(sscanf(buf, "ID_VIDEO_FPS=%lf\n", &db) == 1)
+		player->video_fps = db;
+	else if(sscanf(buf, "ID_VIDEO_HEIGHT=%u\n", &u32) == 1)
+		player_set_size(player, -1, u32);
+	else if(sscanf(buf, "ID_VIDEO_RATE=%u\n", &u32) == 1)
+		player->video_rate = u32;
+	else if(sscanf(buf, "ID_VIDEO_WIDTH=%u\n", &u32) == 1)
+		player_set_size(player, u32, -1);
+#ifdef DEBUG
+	else
+		fprintf(stderr, "DEBUG: unknown output \"%s\"\n", buf);
+#endif
+}
+
+
+/* command_timeout */
+static gboolean _command_timeout(gpointer data)
+{
+	Player * player = data;
+	static const char cmd[] = "pausing_keep get_percent_pos\n";
+
+	_player_command(player, cmd, sizeof(cmd) - 1);
+	return TRUE;
+}
+
+
+/* command_write */
+static gboolean _command_write(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Player * player = data;
+	gsize written;
+	char * p;
+
+	if(condition != G_IO_OUT)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+	if(g_io_channel_write(source, player->buf, player->buf_len, &written)
+			!= G_IO_ERROR_NONE)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: wrote %zu bytes\n", written);
+#endif
+	player->buf_len -= written;
+	memmove(player->buf, &player->buf[written], player->buf_len);
+	if(player->buf_len == 0)
+		return FALSE;
+	if((p = realloc(player->buf, player->buf_len)) != NULL)
+		player->buf = p;
+	return TRUE;
 }
