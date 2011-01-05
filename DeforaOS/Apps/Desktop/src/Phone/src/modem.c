@@ -595,19 +595,17 @@ static int _message_to_pdu(unsigned long quirks, char const * number,
 		GSMModemAlphabet alphabet, char const * text, size_t length,
 		char ** cmd, char ** pdu)
 {
-	char * buf1;
-	unsigned long len1;
+	unsigned long cmdlen;
 	char const cmd1[] = "AT+CMGS=";
 	char const cmd2[] = "1100";
-	char * buf2;
-	unsigned long len2;
+	unsigned long pdulen;
 	char * addr;
 	char * data = NULL;
 	char const pid[] = "00";
 	char dcs[] = "0X";
 	char const vp[] = "AA";
 
-	if(!_is_number(number) || text == NULL)
+	if(!_is_number(number) || text == NULL || cmd == NULL || pdu == NULL)
 		return -1;
 	switch(alphabet)
 	{
@@ -621,33 +619,31 @@ static int _message_to_pdu(unsigned long quirks, char const * number,
 			break;
 	}
 	addr = _number_to_address(number);
-	len2 = 2 + sizeof(cmd2) + 2 + strlen(addr ? addr : "") + sizeof(pid)
+	cmdlen = sizeof(cmd1) + 4;
+	*cmd = malloc(cmdlen);
+	pdulen = 2 + sizeof(cmd2) + 2 + strlen(addr ? addr : "") + sizeof(pid)
 		+ sizeof(dcs) + sizeof(vp) + 2 + strlen(data ? data : "") + 1;
-	buf2 = malloc(len2);
-	len1 = sizeof(cmd1) + 4;
-	buf1 = malloc(len1);
-	if(addr == NULL || data == NULL || buf1 == NULL || buf2 == NULL)
+	*pdu = malloc(pdulen);
+	if(addr == NULL || data == NULL || *cmd == NULL || *pdu == NULL)
 	{
 		free(addr);
 		free(data);
-		free(buf1);
-		free(buf2);
+		free(*cmd);
+		free(*pdu);
 		return -1;
 	}
 	if(number[0] == '+')
 		number++;
-	snprintf(buf2, len2, "%s%s%02lX%s%s%s%s%02lX%s\x1a", quirks
+	snprintf(*pdu, pdulen, "%s%s%02lX%s%s%s%s%02lX%s\x1a", quirks
 			& GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU ? "00" : "",
 			cmd2, (unsigned long)strlen(number),
 			addr, pid, dcs, vp, (unsigned long)length, data);
-	len2 = strlen(buf2); /* XXX obtain it from snprintf() */
+	pdulen = strlen(*pdu); /* XXX obtain it from snprintf() */
 	if(quirks & GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU)
-		len2 -= 2;
-	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
+		pdulen -= 2;
+	snprintf(*cmd, cmdlen, "%s%lu", cmd1, (pdulen - 1) / 2);
 	free(addr);
 	free(data);
-	*cmd = buf1;
-	*pdu = buf2;
 	return 0;
 }
 
