@@ -16,6 +16,7 @@
 
 
 #include <stdlib.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #include "Phone.h"
@@ -28,6 +29,7 @@ typedef struct _GPRS
 {
 	GtkWidget * window;
 	GtkWidget * attach;
+	GtkWidget * apn;
 } GPRS;
 
 
@@ -38,6 +40,7 @@ static int _gprs_destroy(PhonePlugin * plugin);
 static int _gprs_event(PhonePlugin * plugin, PhoneEvent event, ...);
 static void _gprs_settings(PhonePlugin * plugin);
 
+static int _gprs_access_point(PhonePlugin * plugin);
 static int _gprs_attach(PhonePlugin * plugin);
 
 
@@ -99,7 +102,7 @@ static int _gprs_event(PhonePlugin * plugin, PhoneEvent event, ...)
 
 static int _gprs_event_functional(PhonePlugin * plugin)
 {
-	return _gprs_attach(plugin);
+	return _gprs_attach(plugin) | _gprs_access_point(plugin);
 }
 
 
@@ -130,9 +133,14 @@ static void _gprs_settings(PhonePlugin * plugin)
 	g_signal_connect_swapped(G_OBJECT(gprs->window), "delete-event",
 			G_CALLBACK(_on_settings_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* check button */
+	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label("Always on");
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->attach, FALSE, TRUE, 0);
+	/* access point */
+	widget = gtk_label_new("Access point:");
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gprs->apn = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->apn, FALSE, TRUE, 0);
 	/* button box */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
@@ -158,6 +166,10 @@ static void _on_settings_cancel(gpointer data)
 	char const * p;
 
 	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+					"apn")) == NULL)
+		p = "";
+	gtk_entry_set_text(GTK_ENTRY(gprs->apn), p);
+	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
 					"attach")) != NULL
 			&& strtoul(p, NULL, 10) != 0)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gprs->attach),
@@ -180,14 +192,39 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	GPRS * gprs = plugin->priv;
-	gboolean value;
+	char const * p;
+	gboolean active;
 
-	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+	if((p = gtk_entry_get_text(GTK_ENTRY(gprs->apn))) != NULL
+			&& strlen(p) != 0
+			&& plugin->helper->config_set(plugin->helper->phone,
+				"gprs", "apn", p) == 0)
+		_gprs_access_point(plugin);
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				gprs->attach));
-	plugin->helper->config_set(plugin->helper->phone, "gprs",
-			"attach", value ? "1" : "0");
-	_gprs_attach(plugin);
+	if(plugin->helper->config_set(plugin->helper->phone, "gprs", "attach",
+				active ? "1" : "0") == 0)
+		_gprs_attach(plugin);
 	gtk_widget_hide(gprs->window);
+}
+
+
+/* gprs_access_point */
+static int _gprs_access_point(PhonePlugin * plugin)
+{
+	int ret;
+	char const cmd[] = "AT+CGDCONT=1,\"IP\",";
+	char const * p;
+	char * q;
+
+	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+					"apn")) == NULL)
+		return 0;
+	if((q = string_new_append(cmd, "\"", p, "\"", NULL)) == NULL)
+		return -1;
+	ret = plugin->helper->queue(plugin->helper->phone, q);
+	string_delete(q);
+	return ret;
 }
 
 
