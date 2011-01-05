@@ -24,7 +24,7 @@ engineering: $(engineering_OBJS)
 
 pdu_OBJS = pdu.o
 pdu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem glib-2.0`
-pdu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem glib-2.0` ../src/command.o ../src/modem.o
+pdu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem glib-2.0` ../src/command.o
 
 pdu: $(pdu_OBJS)
 	$(CC) -o pdu $(pdu_OBJS) $(pdu_LDFLAGS)
@@ -39,7 +39,7 @@ smscrypt: $(smscrypt_OBJS)
 engineering.o: engineering.c ../include/Phone.h ../src/plugins/engineering.c
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
-pdu.o: pdu.c ../include/Phone.h ../src/gsm.c
+pdu.o: pdu.c ../include/Phone.h ../src/gsm.c ../src/modem.c
 	$(CC) $(pdu_CFLAGS) -c pdu.c
 
 smscrypt.o: smscrypt.c ../include/Phone.h ../src/plugins/smscrypt.c

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,64 @@
 
 
 #include "../src/gsm.c"
+#include "../src/modem.c"
+
+
+/* pdu */
+/* prototypes */
+static int _pdu_decode(char const * string);
+static int _pdu_encode(char const * number, char const * string);
+
+static void _hexdump(char const * buf, size_t len);
+
+
+/* functions */
+/* pdu_decode */
+static int _pdu_decode(char const * string)
+{
+	time_t timestamp;
+	char number[32];
+	GSMEncoding encoding;
+	char * p;
+	struct tm t;
+	char buf[32];
+	size_t len;
+
+	if((p = _cmgr_pdu_parse(string, &timestamp, number, &encoding, &len))
+			== NULL)
+	{
+		fputs("pdu: Unable to decode PDU\n", stderr);
+		return -1;
+	}
+	printf("Number: %s\n", number);
+	localtime_r(&timestamp, &t);
+	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	printf("Timestamp: %s\n", buf);
+	printf("Encoding: %u\n", encoding);
+	_hexdump(p, len);
+	if(encoding == GSM_ENCODING_UTF8)
+		printf("Message: %s\n", p);
+	free(p);
+	return 0;
+}
+
+static int _pdu_encode(char const * number, char const * string)
+{
+	char * cmd;
+	char * pdu;
+
+	if(_message_to_pdu(0, number, GSM_MODEM_ALPHABET_DEFAULT, string,
+				strlen(string), &cmd, &pdu) != 0)
+	{
+		fputs("pdu: Unable to encode PDU\n", stderr);
+		return -1;
+	}
+	puts(cmd);
+	puts(pdu);
+	free(cmd);
+	free(pdu);
+	return 0;
+}
 
 
 /* hexdump */
@@ -39,7 +97,8 @@ static void _hexdump(char const * buf, size_t len)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: pdu string\n", stderr);
+	fputs("Usage: pdu -d pdu\n"
+"       pdu -e -n number text\n", stderr);
 	return 1;
 }
 
@@ -47,28 +106,25 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	time_t timestamp;
-	char number[32];
-	GSMEncoding encoding;
-	char * p;
-	struct tm t;
-	char buf[32];
-	size_t len;
+	int o;
+	int op = 0;
+	char const * number = NULL;
 
-	if(argc != 2)
+	while((o = getopt(argc, argv, "den:")) != -1)
+		switch(o)
+		{
+			case 'd':
+			case 'e':
+				op = o;
+				break;
+			case 'n':
+				number = optarg;
+				break;
+			default:
+				return _usage();
+		}
+	if(op == 0 || optind + 1 != argc || (op == 'e' && number == NULL))
 		return _usage();
-	if((p = _cmgr_pdu_parse(argv[1], &timestamp, number, &encoding, &len))
-			!= NULL)
-	{
-		printf("Number: %s\n", number);
-		localtime_r(&timestamp, &t);
-		strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
-		printf("Timestamp: %s\n", buf);
-		printf("Encoding: %u\n", encoding);
-		_hexdump(p, len);
-		if(encoding == GSM_ENCODING_UTF8)
-			printf("Message: %s\n", p);
-		free(p);
-	}
-	return 0;
+	return ((op == 'd') ? _pdu_decode(argv[optind])
+			: _pdu_encode(number, argv[optind])) == 0 ? 0 : 2;
 }

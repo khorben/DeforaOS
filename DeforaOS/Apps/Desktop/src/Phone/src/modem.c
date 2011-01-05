@@ -545,6 +545,9 @@ int gsm_modem_message_delete(GSMModem * gsmm, unsigned int index)
 
 
 /* gsm_modem_message_send */
+static int _message_to_pdu(unsigned long quirks, char const * number,
+		GSMModemAlphabet alphabet, char const * text, size_t length,
+		char ** cmd, char ** pdu);
 static char * _number_to_address(char const * number);
 static char * _text_to_data(char const * text, size_t length);
 static char * _text_to_sept(char const * text, size_t length);
@@ -552,10 +555,49 @@ static char * _text_to_sept(char const * text, size_t length);
 int gsm_modem_message_send(GSMModem * gsmm, char const * number,
 		GSMModemAlphabet alphabet, char const * text, size_t length)
 {
-	int ret = 1;
-	char const cmd1[] = "AT+CMGS=";
+	int ret = -1;
+	char * cmd;
+	char * pdu;
+	GSMCommand * gsmc;
+
+	if(gsm_modem_set_message_format(gsmm, GSM_MESSAGE_FORMAT_PDU) != 0)
+		return -1;
+	if(_message_to_pdu(gsmm->quirks, number, alphabet, text, length, &cmd,
+				&pdu) != 0)
+		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
+	if((gsmc = gsm_command_new(cmd)) != NULL
+			&& (ret = gsm_queue_command(gsmm->gsm, gsmc)) == 0)
+	{
+		gsm_command_set_error(gsmc, GSM_ERROR_MESSAGE_SEND_FAILED);
+		gsm_command_set_mode(gsmc, GSM_MODE_PDU);
+		gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
+		if((gsmc = gsm_command_new(pdu)) != NULL
+				/* XXX if this fails we're stuck in PDU mode */
+				&& (ret = gsm_queue_command(gsmm->gsm, gsmc))
+				== 0)
+		{
+			gsm_command_set_error(gsmc,
+					GSM_ERROR_MESSAGE_SEND_FAILED);
+			/* this ensures that no command gets in between */
+			gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
+			gsm_command_set_timeout(gsmc, 60000);
+		}
+	}
+	if(ret != 0)
+		gsm_command_delete(gsmc);
+	free(cmd);
+	free(pdu);
+	return ret;
+}
+
+static int _message_to_pdu(unsigned long quirks, char const * number,
+		GSMModemAlphabet alphabet, char const * text, size_t length,
+		char ** cmd, char ** pdu)
+{
 	char * buf1;
 	unsigned long len1;
+	char const cmd1[] = "AT+CMGS=";
 	char const cmd2[] = "1100";
 	char * buf2;
 	unsigned long len2;
@@ -564,13 +606,9 @@ int gsm_modem_message_send(GSMModem * gsmm, char const * number,
 	char const pid[] = "00";
 	char dcs[] = "0X";
 	char const vp[] = "AA";
-	GSMCommand * gsmc;
 
-	if(!_is_number(number) || text == NULL
-			|| gsm_modem_set_message_format(gsmm,
-				GSM_MESSAGE_FORMAT_PDU) != 0)
-		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
-				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
+	if(!_is_number(number) || text == NULL)
+		return -1;
 	switch(alphabet)
 	{
 		case GSM_MODEM_ALPHABET_DEFAULT:
@@ -594,44 +632,23 @@ int gsm_modem_message_send(GSMModem * gsmm, char const * number,
 		free(data);
 		free(buf1);
 		free(buf2);
-		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
-				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
+		return -1;
 	}
 	if(number[0] == '+')
 		number++;
-	snprintf(buf2, len2, "%s%s%02lX%s%s%s%s%02lX%s\x1a", gsmm->quirks
+	snprintf(buf2, len2, "%s%s%02lX%s%s%s%s%02lX%s\x1a", quirks
 			& GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU ? "00" : "",
 			cmd2, (unsigned long)strlen(number),
 			addr, pid, dcs, vp, (unsigned long)length, data);
 	len2 = strlen(buf2); /* XXX obtain it from snprintf() */
-	if(gsmm->quirks & GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU)
+	if(quirks & GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU)
 		len2 -= 2;
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
 	free(data);
-	if((gsmc = gsm_command_new(buf1)) != NULL
-			&& (ret = gsm_queue_command(gsmm->gsm, gsmc)) == 0)
-	{
-		gsm_command_set_error(gsmc, GSM_ERROR_MESSAGE_SEND_FAILED);
-		gsm_command_set_mode(gsmc, GSM_MODE_PDU);
-		gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
-		if((gsmc = gsm_command_new(buf2)) != NULL
-				/* XXX if this fails we're stuck in PDU mode */
-				&& (ret = gsm_queue_command(gsmm->gsm, gsmc))
-				== 0)
-		{
-			gsm_command_set_error(gsmc,
-					GSM_ERROR_MESSAGE_SEND_FAILED);
-			/* this ensures that no command gets in between */
-			gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
-			gsm_command_set_timeout(gsmc, 60000);
-		}
-	}
-	if(ret != 0)
-		gsm_command_delete(gsmc);
-	free(buf1);
-	free(buf2);
-	return ret;
+	*cmd = buf1;
+	*pdu = buf2;
+	return 0;
 }
 
 static char * _number_to_address(char const * number)
