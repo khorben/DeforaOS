@@ -104,7 +104,6 @@ void on_edit_preferences(gpointer data)
 }
 
 
-/* view menu */
 /* on_view_fullscreen */
 void on_view_fullscreen(gpointer data)
 {
@@ -133,6 +132,39 @@ void on_help_about(gpointer data)
 
 
 /* toolbar */
+/* on_fullscreen */
+void on_fullscreen(gpointer data)
+{
+	Player * player = data;
+
+	player_set_fullscreen(player, !player_get_fullscreen(player));
+}
+
+
+void on_next(gpointer data)
+{
+	Player * player = data;
+
+	player_next(player);
+}
+
+
+void on_pause(gpointer data)
+{
+	Player * player = data;
+
+	player_pause(player);
+}
+
+
+void on_play(gpointer data)
+{
+	Player * player = data;
+
+	player_play(player);
+}
+
+
 void on_previous(gpointer data)
 {
 	Player * player = data;
@@ -146,22 +178,6 @@ void on_rewind(gpointer data)
 	Player * player = data;
 
 	player_rewind(player);
-}
-
-
-void on_play(gpointer data)
-{
-	Player * player = data;
-
-	player_play(player);
-}
-
-
-void on_pause(gpointer data)
-{
-	Player * player = data;
-
-	player_pause(player);
 }
 
 
@@ -181,28 +197,14 @@ void on_forward(gpointer data)
 }
 
 
-void on_next(gpointer data)
-{
-	Player * player = data;
-
-	player_next(player);
-}
-
-
-void on_fullscreen(gpointer data)
-{
-	Player * player = data;
-
-	player_set_fullscreen(player, !player_get_fullscreen(player));
-}
-
-
 /* view */
 /* playlist */
 /* on_playlist_add */
 void on_playlist_add(gpointer data)
 {
-	/* FIXME implement */
+	Player * player = data;
+
+	player_playlist_add_dialog(player);
 }
 
 
@@ -219,7 +221,9 @@ gboolean on_playlist_closex(gpointer data)
 /* on_playlist_load */
 void on_playlist_load(gpointer data)
 {
-	/* FIXME implement */
+	Player * player = data;
+
+	player_playlist_open_dialog(player);
 }
 
 
@@ -233,5 +237,7 @@ void on_playlist_remove(gpointer data)
 /* on_playlist_save */
 void on_playlist_save(gpointer data)
 {
-	/* FIXME implement */
+	Player * player = data;
+
+	player_playlist_save_as_dialog(player);
 }

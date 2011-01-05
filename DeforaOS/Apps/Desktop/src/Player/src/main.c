@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
 	if(optind < argc)
 		player_open(player, argv[optind]);
 	for(i = optind + 1; i < argc; i++)
-		player_queue_add(player, argv[i]);
+		player_playlist_add(player, argv[i]);
 	gtk_main();
 	player_delete(player);
 	return 0;

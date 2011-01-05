@@ -118,17 +118,20 @@ int player_error(Player * player, char const * message, int ret);
 int player_sigchld(Player * player);
 
 /* playlist management */
-void player_next(Player * player);
-void player_previous(Player * player);
 int player_open(Player * player, char const * filename);
 int player_open_dialog(Player * player);
-void player_queue_add(Player * player, char const * filename);
-/* void player_queue_remove(Player * player, char const * filename);
-void player_queue_save(Player * player, char const * filename);
-void player_queue_save_dialog(Player * player); */
+void player_playlist_add(Player * player, char const * filename);
+void player_playlist_add_dialog(Player * player);
+void player_playlist_clear(Player * player);
+void player_playlist_open(Player * player, char const * filename);
+void player_playlist_open_dialog(Player * player);
+void player_playlist_save_as_dialog(Player * player);
 
+/* playback */
+void player_next(Player * player);
 int player_play(Player * player);
 void player_pause(Player * player);
+void player_previous(Player * player);
 void player_stop(Player * player);
 void player_rewind(Player * player);
 void player_forward(Player * player);

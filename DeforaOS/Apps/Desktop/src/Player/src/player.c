@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Player */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -692,6 +692,17 @@ int player_error(Player * player, char const * message, int ret)
 }
 
 
+/* player_forward */
+void player_forward(Player * player)
+{
+	char const cmd[] = "speed_incr 0.5\n";
+
+	if(player->filename == NULL)
+		return;
+	_player_command(player, cmd, sizeof(cmd) - 1);
+}
+
+
 int player_sigchld(Player * player)
 {
 	pid_t pid;
@@ -714,7 +725,7 @@ int player_sigchld(Player * player)
 }
 
 
-/* playlist management */
+/* player_next */
 void player_next(Player * player)
 {
 	char cmd[] = "pt_step 1\n";
@@ -723,14 +734,7 @@ void player_next(Player * player)
 }
 
 
-void player_previous(Player * player)
-{
-	char const cmd[] = "pt_step -1\n";
-
-	_player_command(player, cmd, sizeof(cmd) - 1);
-}
-
-
+/* player_open */
 int player_open(Player * player, char const * filename)
 {
 	char cmd[512];
@@ -759,6 +763,7 @@ int player_open(Player * player, char const * filename)
 }
 
 
+/* player_open_dialog */
 int player_open_dialog(Player * player)
 {
 	int ret;
@@ -782,56 +787,7 @@ int player_open_dialog(Player * player)
 }
 
 
-void player_queue_add(Player * player, char const * filename)
-{
-	char cmd[512];
-	size_t len;
-
-	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"", filename,
-			"\" 1\n");
-	if(len >= sizeof(cmd))
-		fputs("player: String too long\n", stderr);
-	else
-		_player_command(player, cmd, len);
-}
-
-
-/* player_play */
-int player_play(Player * player)
-{
-	char cmd[512];
-	size_t len;
-
-	if(player->filename == NULL)
-		return 0;
-	/* FIXME escape double quotes in filename? */
-	if(player->paused == 1)
-	{
-		strcpy(cmd, "pause\n");
-		len = 6;
-	}
-	else if((len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"",
-					player->filename, "\" 0\n"))
-			>= sizeof(cmd))
-	{
-		fputs("player: String too long\n", stderr);
-		return 1;
-	}
-	else
-		_player_reset(player);
-	if(_player_command(player, cmd, len) != 0)
-		return 1;
-	player->paused = 0;
-	if(player->read_id == 0)
-		player->read_id = g_io_add_watch(player->channel[0], G_IO_IN,
-				_command_read, player);
-	if(player->timeout_id == 0)
-		player->timeout_id = g_timeout_add(500, _command_timeout,
-				player);
-	return 0;
-}
-
-
+/* player_pause */
 void player_pause(Player * player)
 {
 	char const cmd[] = "pause\n";
@@ -854,6 +810,149 @@ void player_pause(Player * player)
 }
 
 
+/* player_play */
+int player_play(Player * player)
+{
+	char cmd[512];
+	size_t len;
+
+	if(player->filename == NULL)
+		return 0;
+	/* FIXME escape double quotes in filename? */
+	if(player->paused == 1)
+		len = snprintf(cmd, sizeof(cmd), "%s", "pause\n");
+	else if((len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"",
+					player->filename, "\" 0\n"))
+			>= sizeof(cmd))
+	{
+		fputs("player: String too long\n", stderr);
+		return 1;
+	}
+	else
+		_player_reset(player);
+	if(_player_command(player, cmd, len) != 0)
+		return 1;
+	player->paused = 0;
+	if(player->read_id == 0)
+		player->read_id = g_io_add_watch(player->channel[0], G_IO_IN,
+				_command_read, player);
+	if(player->timeout_id == 0)
+		player->timeout_id = g_timeout_add(500, _command_timeout,
+				player);
+	return 0;
+}
+
+
+/* player_playlist_add */
+void player_playlist_add(Player * player, char const * filename)
+{
+	GtkTreeIter iter;
+
+	/* FIXME fetch the actual artists/albums/titles */
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_list_store_insert_with_values(player->pl_store, &iter, -1,
+#else
+	gtk_list_store_insert_after(player->pl_store, iter, NULL);
+	gtk_list_store_set(player->pl_store, iter,
+#endif
+			PL_COL_FILENAME, filename,
+			PL_COL_ALBUM, _("Unknown album"),
+			PL_COL_ARTIST, _("Unknown artist"),
+			PL_COL_TITLE, _("Unknown title"), -1);
+}
+
+
+/* player_playlist_add_dialog */
+void player_playlist_add_dialog(Player * player)
+{
+	GtkWidget * widget;
+	GSList * files = NULL;
+	GSList * p;
+	char const * filename;
+
+	widget = gtk_file_chooser_dialog_new(_("Add file(s)..."),
+			GTK_WINDOW(player->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_ADD, GTK_RESPONSE_ACCEPT, NULL);
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(widget), TRUE);
+	if(gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT)
+		files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(widget));
+	gtk_widget_destroy(widget);
+	for(p = files; p != NULL; p = p->next)
+	{
+		filename = p->data;
+		if(strncmp(filename, "file://", 7) == 0)
+			player_playlist_add(player, &filename[7]);
+	}
+	g_slist_foreach(files, (GFunc)g_free, NULL);
+	g_slist_free(files);
+}
+
+
+/* player_playlist_clear */
+void player_playlist_clear(Player * player)
+{
+	gtk_list_store_clear(player->pl_store);
+}
+
+
+/* player_playlist_open */
+void player_playlist_open(Player * player, char const * filename)
+{
+	/* FIXME implement */
+}
+
+
+/* player_playlist_open_dialog */
+void player_playlist_open_dialog(Player * player)
+{
+	GtkWidget * widget;
+	gchar * filename = NULL;
+
+	widget = gtk_file_chooser_dialog_new(_("Open playlist..."),
+			GTK_WINDOW(player->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_ADD, GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					widget));
+	gtk_widget_destroy(widget);
+	if(filename != NULL)
+		player_playlist_open(player, filename);
+	g_free(filename);
+}
+
+
+/* player_playlist_save_as_dialog */
+void player_playlist_save_as_dialog(Player * player)
+{
+	/* FIXME implement */
+}
+
+
+/* player_previous */
+void player_previous(Player * player)
+{
+	char const cmd[] = "pt_step -1\n";
+
+	_player_command(player, cmd, sizeof(cmd) - 1);
+}
+
+
+/* player_rewind */
+void player_rewind(Player * player)
+{
+	char const cmd[] = "speed_incr -0.5\n";
+
+	if(player->filename == NULL)
+		return;
+	_player_command(player, cmd, sizeof(cmd) - 1);
+}
+
+
+/* player_stop */
 void player_stop(Player * player)
 {
 	char const cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
@@ -871,26 +970,6 @@ void player_stop(Player * player)
 		g_source_remove(player->timeout_id);
 		player->timeout_id = 0;
 	}
-}
-
-
-void player_rewind(Player * player)
-{
-	char const cmd[] = "speed_incr -0.5\n";
-
-	if(player->filename == NULL)
-		return;
-	_player_command(player, cmd, sizeof(cmd) - 1);
-}
-
-
-void player_forward(Player * player)
-{
-	char const cmd[] = "speed_incr 0.5\n";
-
-	if(player->filename == NULL)
-		return;
-	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
 
