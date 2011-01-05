@@ -349,14 +349,12 @@ static int _new_plugins(Mailer * mailer)
 			mailer->helper.theme, "mail-read", 16, 0, NULL);
 	mailer->helper.mail_unread = gtk_icon_theme_load_icon(
 			mailer->helper.theme, "mail-unread", 16, 0, NULL);
-	if((dirname = malloc(sizeof(PLUGINDIR) + strlen("/account")))
-			== NULL)
-		return error_set_print("mailer", 1, "%s", strerror(errno));
-	sprintf(dirname, "%s%s", PLUGINDIR, "/account");
+	if((dirname = string_new_append(PLUGINDIR, "/account", NULL)) == NULL)
+		return -1;
 	if((dir = opendir(dirname)) == NULL)
 	{
 		error_set_code(1, "%s: %s", dirname, strerror(errno));
-		free(dirname);
+		string_delete(dirname);
 		return error_print("mailer");
 	}
 	for(de = readdir(dir); de != NULL; de = readdir(dir))
@@ -384,7 +382,7 @@ static int _new_plugins(Mailer * mailer)
 	if(closedir(dir) != 0)
 		ret = error_set_print("mailer", 1, "%s: %s", dirname, strerror(
 					errno));
-	free(dirname);
+	string_delete(dirname);
 	return ret;
 }
 
