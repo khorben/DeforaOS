@@ -409,13 +409,13 @@ static void _on_settings_cancel(gpointer data)
 	char const * p;
 
 	if((p = plugin->helper->config_get(plugin->helper->phone, "openmoko",
-					"deepsleep")) == NULL
-			|| strtoul(p, NULL, 10) == 0)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
-					openmoko->deepsleep), FALSE);
-	else
+					"deepsleep")) != NULL
+			&& strtoul(p, NULL, 10) != 0)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					openmoko->deepsleep), TRUE);
+	else
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					openmoko->deepsleep), FALSE);
 	gtk_widget_hide(openmoko->window);
 }
 
