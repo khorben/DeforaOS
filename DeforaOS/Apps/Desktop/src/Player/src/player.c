@@ -38,6 +38,76 @@ static char const _license[] =
 
 /* Player */
 /* private */
+/* types */
+struct _Player
+{
+	/* view */
+	int paused;
+	gboolean fullscreen;
+
+	/* current file */
+	GtkTreeRowReference * current;
+	int width;
+	int height;
+	int audio_bitrate;
+	int audio_channels;
+	char * audio_codec;
+	int audio_rate;
+	gdouble length;
+	gdouble video_aspect;
+	int video_bitrate;
+	char * video_codec;
+	gdouble video_fps;
+	int video_rate;
+	int album;
+	int artist;
+	int title;
+
+	/* mplayer */
+	pid_t pid;
+	int fd[2][2];				/* mplayer pipes	*/
+	GIOChannel * channel[2];
+	char * buf;				/* pipe write buffer	*/
+	size_t buf_len;
+
+	/* callbacks */
+	guint read_id;				/* pipe read source id	*/
+	guint timeout_id;			/* timeout source id	*/
+
+	/* widgets */
+	GtkWidget * window;
+#ifndef EMBEDDED
+	GtkWidget * menubar;
+#endif
+	GtkWidget * view;
+	GtkWidget * view_window;
+	GtkToolItem * tb_previous;
+	GtkToolItem * tb_rewind;
+	GtkToolItem * tb_play;
+	GtkToolItem * tb_pause;
+	GtkToolItem * tb_stop;
+	GtkToolItem * tb_forward;
+	GtkToolItem * tb_next;
+	GtkWidget * progress;
+	GtkToolItem * tb_fullscreen;
+#ifndef EMBEDDED
+	GtkWidget * statusbar;
+	gint statusbar_id;
+#endif
+
+	/* about */
+	GtkWidget * ab_window;
+
+	/* preferences */
+	GtkWidget * pr_window;
+
+	/* playlist */
+	GtkWidget * pl_window;
+	GtkListStore * pl_store;
+	GtkWidget * pl_view;
+};
+
+
 /* constants */
 #define ICON_NAME "multimedia"
 
