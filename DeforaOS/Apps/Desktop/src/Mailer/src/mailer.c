@@ -644,7 +644,7 @@ static gboolean _new_config_load(gpointer data)
 		gtk_widget_modify_font(mailer->view_body, font);
 		pango_font_description_free(font);
 	}
-	if((value = config_get(mailer->config, "", "accounts")) == NULL
+	if((value = config_get(mailer->config, NULL, "accounts")) == NULL
 			|| value[0] == '\0')
 		return FALSE;
 	if((p = strdup(value)) == NULL)
@@ -686,7 +686,7 @@ void mailer_delete(Mailer * mailer)
 /* mailer_get_config */
 char const * mailer_get_config(Mailer * mailer, char const * variable)
 {
-	return config_get(mailer->config, "", variable);
+	return config_get(mailer->config, NULL, variable);
 }
 
 
@@ -897,7 +897,7 @@ static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	widget = gtk_text_view_new_with_buffer(tbuf);
-	if((p = config_get(mailer->config, "", "messages_font")) != NULL)
+	if((p = config_get(mailer->config, NULL, "messages_font")) != NULL)
 	{
 		font = pango_font_description_from_string(p);
 		gtk_widget_modify_font(widget, font);
@@ -1000,6 +1000,8 @@ void mailer_select_all(Mailer * mailer)
 
 
 /* mailer_show_about */
+static gboolean _about_on_closex(gpointer data);
+
 void mailer_show_about(Mailer * mailer, gboolean show)
 {
 	GtkWidget * dialog;
@@ -1014,6 +1016,8 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 	}
 	dialog = desktop_about_dialog_new();
 	mailer->ab_window = dialog;
+	g_signal_connect_swapped(G_OBJECT(dialog), "delete-event", G_CALLBACK(
+				_about_on_closex), mailer);
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 				mailer->window));
 	desktop_about_dialog_set_name(dialog, PACKAGE);
@@ -1023,6 +1027,14 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
 	desktop_about_dialog_set_license(dialog, _license);
 	gtk_widget_show(dialog);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Mailer * mailer = data;
+
+	gtk_widget_hide(mailer->ab_window);
+	return TRUE;
 }
 
 
