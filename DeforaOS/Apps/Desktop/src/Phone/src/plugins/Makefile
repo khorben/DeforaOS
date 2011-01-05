@@ -1,4 +1,4 @@
-TARGETS	= blacklist.so debug.so engineering.so openmoko.so oss.so panel.so profiles.so smscrypt.so
+TARGETS	= blacklist.so debug.so engineering.so gprs.so openmoko.so oss.so panel.so profiles.so smscrypt.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -38,6 +38,13 @@ engineering_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 engineering.so: $(engineering_OBJS)
 	$(LD) -o engineering.so $(engineering_OBJS) $(engineering_LDFLAGS)
+
+gprs_OBJS = gprs.o
+gprs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+gprs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+gprs.so: $(gprs_OBJS)
+	$(LD) -o gprs.so $(gprs_OBJS) $(gprs_LDFLAGS)
 
 openmoko_OBJS = openmoko.o
 openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
@@ -83,6 +90,9 @@ debug.o: debug.c ../../include/Phone.h
 engineering.o: engineering.c ../../include/Phone.h
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
+gprs.o: gprs.c
+	$(CC) $(gprs_CFLAGS) -c gprs.c
+
 openmoko.o: openmoko.c ../../include/Phone.h
 	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
@@ -99,7 +109,7 @@ smscrypt.o: smscrypt.c ../../include/Phone.h
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -111,6 +121,8 @@ install: all
 	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 -- gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -124,6 +136,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so

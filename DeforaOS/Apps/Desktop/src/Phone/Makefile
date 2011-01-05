@@ -78,6 +78,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/blacklist.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/debug.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/engineering.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/gprs.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/oss.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \
