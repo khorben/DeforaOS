@@ -19,7 +19,6 @@
 # define PLAYER_PLAYER_H
 
 # include <gtk/gtk.h>
-# include <gdk/gdkx.h>
 
 
 /* Player */
