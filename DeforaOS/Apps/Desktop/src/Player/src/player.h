@@ -43,6 +43,9 @@ typedef struct _Player
 	char * video_codec;
 	gdouble video_fps;
 	int video_rate;
+	int album;
+	int artist;
+	int title;
 
 	/* mplayer */
 	pid_t pid;

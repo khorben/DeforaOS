@@ -122,6 +122,8 @@ static char const * _authors[] =
 /* prototypes */
 /* accessors */
 static char * _player_get_filename(Player * player);
+static void _player_set_metadata(Player * player, unsigned int column,
+		char const * value);
 static void _player_set_progress(Player * player, unsigned int progress);
 
 /* useful */
@@ -948,17 +950,35 @@ static char * _player_get_filename(Player * player)
 }
 
 
+/* player_set_metadata */
+static void _player_set_metadata(Player * player, unsigned int column,
+		char const * value)
+{
+	GtkTreePath * path;
+	GtkTreeIter iter;
+
+	if(player->current == NULL)
+		return;
+	if((path = gtk_tree_row_reference_get_path(player->current)) == NULL)
+		return;
+	if(gtk_tree_model_get_iter(GTK_TREE_MODEL(player->pl_store), &iter,
+				path) != TRUE)
+		return;
+	gtk_list_store_set(player->pl_store, &iter, column, value, -1);
+}
+
+
 /* player_set_progress */
 static void _player_set_progress(Player * player, unsigned int progress)
 {
 	gdouble fraction;
-	static char buf[16];
+	char buf[16];
 
-	fraction = progress <= 100 ? progress : 100;
+	fraction = (progress <= 100) ? progress : 100;
 	fraction /= 100;
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(player->progress),
 			fraction);
-	snprintf(buf, sizeof(buf), "%d%%", progress);
+	snprintf(buf, sizeof(buf), "%u%%", progress);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), buf);
 }
 
@@ -994,6 +1014,9 @@ static void _player_reset(Player * player, char const * filename)
 	player->video_codec = NULL;
 	player->video_fps = 0.0;
 	player->video_rate = 0;
+	player->album = -1;
+	player->artist = -1;
+	player->title = -1;
 	_player_set_progress(player, 0);
 	if(filename != NULL)
 		p = strdup(filename);
@@ -1095,6 +1118,24 @@ static void _read_parse(Player * player, char const * buf)
 		player->audio_channels = u32;
 	else if(sscanf(buf, "ID_AUDIO_RATE=%u\n", &u32) == 1)
 		player->audio_rate = u32;
+	else if(sscanf(buf, "ID_CLIP_INFO_NAME%u=%255s", &u32, str) == 2)
+	{
+		if(strcmp(str, "Album") == 0)
+			player->album = u32;
+		else if(strcmp(str, "Artist") == 0)
+			player->artist = u32;
+		else if(strcmp(str, "Title") == 0)
+			player->title = u32;
+	}
+	else if(sscanf(buf, "ID_CLIP_INFO_VALUE%u=%255[^\n]", &u32, str) == 2)
+	{
+		if(player->album >= 0 && (unsigned)player->album == u32)
+			_player_set_metadata(player, PL_COL_ALBUM, str);
+		else if(player->artist >= 0 && (unsigned)player->artist == u32)
+			_player_set_metadata(player, PL_COL_ARTIST, str);
+		else if(player->title >= 0 && (unsigned)player->title == u32)
+			_player_set_metadata(player, PL_COL_TITLE, str);
+	}
 	else if(sscanf(buf, "ID_LENGTH=%lf\n", &db) == 1)
 		player->length = db;
 	else if(sscanf(buf, "ID_VIDEO_ASPECT=%lf\n", &db) == 1)
