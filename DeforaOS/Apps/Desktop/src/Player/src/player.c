@@ -111,6 +111,12 @@ struct _Player
 /* constants */
 #define ICON_NAME "multimedia"
 
+static DesktopAccel _player_accel[] =
+{
+	{ G_CALLBACK(on_fullscreen), GDK_CONTROL_MASK, GDK_F },
+	{ NULL, 0, 0 }
+};
+
 #ifndef EMBEDDED
 static DesktopMenu _player_menu_file[] =
 {
@@ -138,11 +144,10 @@ static DesktopMenu _player_menu_view[] =
 		GDK_L },
 # if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen),
-		GTK_STOCK_FULLSCREEN,
+		GTK_STOCK_FULLSCREEN, 0, 0 },
 # else
-	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen), NULL,
+	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen), NULL, 0, 0 },
 # endif
-		GDK_CONTROL_MASK, GDK_F },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -264,7 +269,9 @@ Player * player_new(void)
 			G_CALLBACK(on_player_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(player->window), vbox);
+	desktop_accel_create(_player_accel, player, group);
 #ifndef EMBEDDED
+	/* menubar */
 	player->menubar = desktop_menubar_create(_player_menubar, player,
 			group);
 	gtk_box_pack_start(GTK_BOX(vbox), player->menubar, FALSE, FALSE, 0);
@@ -1090,8 +1097,9 @@ static void _player_reset(Player * player, char const * filename)
 	_player_set_progress(player, 0);
 	if(filename != NULL)
 		p = strdup(filename);
-	snprintf(buf, sizeof(buf), "%s - %s", _("Media player"), p != NULL
-			? basename(p) : filename);
+	snprintf(buf, sizeof(buf), "%s%s%s", _("Media player"),
+			(filename != NULL) ? " - " : "", (filename != NULL)
+			? ((p != NULL) ? basename(p) : filename) : "");
 	free(p);
 	gtk_window_set_title(GTK_WINDOW(player->window), buf);
 }
