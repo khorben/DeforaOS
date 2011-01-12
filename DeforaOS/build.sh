@@ -296,6 +296,7 @@ target_image()
 
 _image_pre()
 {
+	:
 }
 
 _image_targets()
@@ -345,6 +346,7 @@ _image_targets()
 
 _image_post()
 {
+	:
 }
 
 
