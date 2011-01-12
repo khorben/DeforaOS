@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -20,7 +20,7 @@
 #functions
 #private
 #image_image
-_image_image()
+_image_image_pre()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:
   IMAGE_BOOT	Path to the bootloader
@@ -49,8 +49,11 @@ _image_image()
 	$SUDO $MKFS "${VND}e"					&&
 	$SUDO $MOUNT "/dev/${VND}e" "$DESTDIR"			&&
 	$SUDO $CHOWN "$UID:$GID" "$DESTDIR"			&&
-	$MKDIR "$DESTDIR$PREFIX"				&&
-	_image_targets						&&
+	$MKDIR "$DESTDIR$PREFIX"
+}
+
+_image_image_post()
+{
 	$SUDO $CHOWN -R "0:0" "$DESTDIR"			&&
 	$SUDO $MKDIR "$DESTDIR/bin"				&&
 	$SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
@@ -87,7 +90,7 @@ EOF
 
 
 #image_iso
-_image_iso()
+_image_iso_pre()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:
   IMAGE_BOOT	Path to the bootloader
@@ -100,7 +103,10 @@ _image_iso()
 
 	#sanity check
 	check "$USAGE" IMAGE_BOOT IMAGE_FILE IMAGE_KERNEL LDSO MKISOFS
-	target "install"					|| exit 2
+}
+
+_image_iso_post()
+{
 	$MKDIR "$DESTDIR/dev"					|| exit 2
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
 	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	|| exit 2
@@ -115,40 +121,4 @@ _image_iso()
 	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
 	$INSTALLBOOT -m "$MACHINE" -o "console=pc" -e bootxx	|| exit 2
 	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
-}
-
-
-#image_targets
-_image_targets()
-{
-	#global settings
-	CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
-	CFLAGS="-Wall -ffreestanding -g"
-
-	#libc
-	LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
-	SUBDIRS="System/src/libc"
-	target install						|| return 2
-
-	#libSystem
-	LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib -lc"
-	SUBDIRS="System/src/libSystem/src System/src/libSystem/include"
-	target install						|| return 2
-	LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
-	SUBDIRS="System/src/libSystem/tools"
-	target install						|| return 2
-
-	#POSIX environment
-	SUBDIRS="Apps/Unix/src/sh
-	Apps/Unix/src/utils
-	Apps/Unix/src/devel
-	Apps/Unix/src/others
-	Apps/Servers/src/inetd"
-	target install						|| return 2
-
-	#DeforaOS environment
-	SUBDIRS="System/src/Init
-	System/src/Splasher
-	System/src/VFS/src"
-	target install						|| return 2
 }

@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -9,8 +9,15 @@
 
 #functions
 #public
-#target_image
-target_image()
+#_image_post
+_image_post()
 {
-	_image_image
+	_image_image_post
+}
+
+
+#_image_pre
+_image_pre()
+{
+	_image_image_pre
 }

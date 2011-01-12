@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -286,6 +286,68 @@ target_distclean()
 }
 
 
+#target_image
+target_image()
+{
+	_image_pre							&&
+	_image_targets							&&
+	_image_post
+}
+
+_image_pre()
+{
+}
+
+_image_targets()
+{
+	#global settings
+	_CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
+	_CFLAGS="-Wall -ffreestanding -g"
+	_LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
+	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+	PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+	export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS PKG_CONFIG_ALLOW_SYSTEM_LIBS
+	PKG_CONFIG_LIBDIR="$DESTDIR$PREFIX/lib/pkgconfig"
+	PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
+	export PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
+
+	S="$SUBDIRS"
+	L="$LDFLAGS"
+	for i in $SUBDIRS; do
+		SUBDIRS="$i"
+		case "$i" in
+			System/src/libc)
+				LDFLAGS="$_LDFLAGS $L"
+				target install			|| return 2
+				;;
+			System/src/libSystem)
+				LDFLAGS="$_LDFLAGS -lc $L"
+				SUBDIRS="System/src/libSystem/src System/src/libSystem/include"
+				target install			|| return 2
+				LDFLAGS="$LDFLAGS `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				SUBDIRS="$i"
+				target install			|| return 2
+				;;
+			System/src/*)
+				#XXX why is -lSystem needed?
+				LDFLAGS="$_LDFLAGS -lc -lSystem `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				target install			|| return 2
+				;;
+			*)
+				LDFLAGS="$_LDFLAGS -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				target install			|| return 2
+				;;
+		esac
+	done
+	SUBDIRS="$S"
+	LDFLAGS="$L"
+}
+
+_image_post()
+{
+}
+
+
 #target_install
 target_install()
 {
@@ -372,9 +434,6 @@ fi
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CC" ] && CC="cc"
-[ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
-[ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 

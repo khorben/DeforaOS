@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -9,15 +9,29 @@
 
 #functions
 #public
-#target_image
-target_image()
+#_image_post
+_image_post()
 {
 	case "$IMAGE_TYPE" in
 		"iso")
-			_image_iso
+			_image_iso_post
 			;;
 		*)
-			_image_image
+			_image_image_post
+			;;
+	esac
+}
+
+
+#_image_pre
+_image_pre()
+{
+	case "$IMAGE_TYPE" in
+		"iso")
+			_image_iso_pre
+			;;
+		*)
+			_image_image_pre
 			;;
 	esac
 }

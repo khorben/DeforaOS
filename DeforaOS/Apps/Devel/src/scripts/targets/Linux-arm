@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -16,7 +16,7 @@
 #functions
 #private
 #image_ramdisk
-_image_ramdisk()
+_image_ramdisk_pre()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
@@ -24,9 +24,10 @@ _image_ramdisk()
 
 	#sanity check
 	check "$USAGE" DU GZIP IMAGE_FILE MKFS
+}
 
-	target "install"					|| exit 2
-
+_image_ramdisk_post()
+{
 	_create_directories "bin" "dev" "lib" "proc" "mnt/root"
 
 	echo
@@ -72,7 +73,7 @@ EOF
 
 
 #image_rootfs
-_image_rootfs()
+_image_rootfs_pre()
 {
 	#FIXME make IMAGE_SIZE optional and use ext2 then
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
@@ -82,9 +83,10 @@ _image_rootfs()
 
 	#sanity check
 	check "$USAGE" DESTDIR DU GZIP IMAGE_FILE MKFS MV SUDO TAR
+}
 
-	target "install"					|| exit 2
-
+_image_rootfs_post()
+{
 	_create_directories "bin" "dev" "etc" "lib" "sbin"
 
 	echo
@@ -143,15 +145,29 @@ EOF
 
 
 #public
-#target_image
-target_image()
+#_image_post
+_image_post()
 {
 	case "$IMAGE_TYPE" in
 		"ramdisk")
-			_image_ramdisk
+			_image_ramdisk_post
 			;;
 		"rootfs"|*)
-			_image_rootfs
+			_image_rootfs_post
+			;;
+	esac
+}
+
+
+#_image_pre
+_image_pre()
+{
+	case "$IMAGE_TYPE" in
+		"ramdisk")
+			_image_ramdisk_pre
+			;;
+		"rootfs"|*)
+			_image_rootfs_pre
 			;;
 	esac
 }

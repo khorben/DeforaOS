@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -15,7 +15,7 @@
 
 #functions
 #private
-_image_image()
+_image_image_pre()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
@@ -32,14 +32,17 @@ _image_image()
 	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
 	$MKFS "$IMAGE_FILE"					|| exit 2
 	$MOUNT "$IMAGE_FILE" "$DESTDIR"				|| exit 2
-	target "install"
+}
+
+_image_image_post()
+{
 	RET=$?
 	$UMOUNT "$DESTDIR"
 	exit $RET
 }
 
 
-_image_iso()
+_image_iso_pre()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
@@ -54,8 +57,10 @@ _image_iso()
 		MKDIR MKISOFS RAMDISK TAR
 
 	$MKDIR "$DESTDIR"					|| exit 2
-	target "install"					|| exit 2
+}
 
+_image_iso_post()
+{
 	#install kernel with ramdisk and modules
 	$MKDIR "$DESTDIR/boot"					|| exit 2
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL"	|| exit 2
@@ -84,7 +89,7 @@ EOF
 }
 
 
-_image_ramdisk()
+_image_ramdisk_pre()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
@@ -98,8 +103,10 @@ _image_ramdisk()
 		IMAGE_SIZE INSTALL LN MKDIR MKFS MV
 
 	$MKDIR "$DESTDIR"					|| exit 2
-	target "install"					|| exit 2
+}
 
+_image_ramdisk_post()
+{
 	#install kernel modules
 	[ ! -z "$IMAGE_MODULES" ] && $CAT "$IMAGE_MODULES" | \
 			(cd "$DESTDIR" && $TAR -xzf -)
@@ -133,17 +140,35 @@ _image_ramdisk()
 
 
 #public
-target_image()
+#_image_post
+_image_post()
 {
 	case "$IMAGE_TYPE" in
 		"iso")
-			_image_iso
+			_image_iso_post
 			;;
 		"ramdisk")
-			_image_ramdisk
+			_image_ramdisk_post
 			;;
 		*)
-			_image_image
+			_image_image_post
+			;;
+	esac
+}
+
+
+#_image_pre
+_image_pre()
+{
+	case "$IMAGE_TYPE" in
+		"iso")
+			_image_iso_pre
+			;;
+		"ramdisk")
+			_image_ramdisk_pre
+			;;
+		*)
+			_image_image_pre
 			;;
 	esac
 }
