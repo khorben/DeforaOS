@@ -22,6 +22,9 @@
 #ifdef MOUNT_FFS
 # include <ufs/ufs/ufsmount.h>
 #endif
+#ifdef MOUNT_NFS
+# include <nfs/nfsmount.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -163,7 +166,7 @@ static int _mount_print(void)
 }
 
 static int _mount_do(Prefs * prefs, char const * special, char const * node)
-	/* FIXME handle more flags and options */
+	/* FIXME handle more flags and options, create one function per type */
 {
 	void * data = NULL;
 	int flags = 0;
@@ -172,6 +175,11 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 #endif
 #ifdef MOUNT_MFS
 	struct mfs_args mfs;
+#endif
+#ifdef MOUNT_NFS
+	struct nfs_args nfs;
+	char * p;
+	char * q;
 #endif
 	struct stat st;
 
@@ -190,6 +198,26 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_MFS) == 0)
 	{
 		mfs.fspec = special;
+		/* FIXME implement the rest */
+		data = &ffs;
+	}
+#endif
+#ifdef MOUNT_NFS
+	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_NFS) == 0)
+	{
+		if(special == NULL || strchr(special, ':') == NULL)
+		{
+			errno = EINVAL;
+			return -_mount_error(node, 1);
+		}
+		if((p = strdup(special)) == NULL)
+			return -_mount_error(node, 1);
+		q = strchr(p, ':');
+		*(q++) = '\0';
+		/* FIXME untested */
+		nfs.version = NFS_ARGSVERSION;
+		nfs.hostname = p;
+		nfs.fh = q;
 		/* FIXME implement the rest */
 		data = &ffs;
 	}
