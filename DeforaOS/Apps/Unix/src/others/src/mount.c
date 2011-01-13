@@ -44,11 +44,47 @@ typedef struct _Prefs
 #define PREFS_f 0x2
 
 
+/* prototypes */
+#ifdef MOUNT_FFS
+static int _mount_callback_ffs(int flags, char const * special,
+		char const * node);
+#endif
+#ifdef MOUNT_MFS
+static int _mount_callback_mfs(int flags, char const * special,
+		char const * node);
+#endif
+#ifdef MOUNT_NFS
+static int _mount_callback_nfs(int flags, char const * special,
+		char const * node);
+#endif
+
+
+/* variables */
+static struct
+{
+	char * type;
+	int (*callback)(int flags, char const * special, char const * node);
+} _mount_supported[] =
+{
+#ifdef MOUNT_FFS
+	{ MOUNT_FFS,	_mount_callback_ffs	},
+#endif
+#ifdef MOUNT_MFS
+	{ MOUNT_MFS,	_mount_callback_mfs	},
+#endif
+#ifdef MOUNT_NFS
+	{ MOUNT_NFS,	_mount_callback_nfs	},
+#endif
+};
+
+
 /* functions */
 /* mount */
 static int _mount_all(Prefs * prefs);
 static int _mount_print(void);
 static int _mount_do(Prefs * prefs, char const * special, char const * node);
+static int _mount_do_mount(int flags, char const * type, char const * special,
+		char const * node, void * data);
 
 static int _mount(Prefs * prefs, char const * special, char const * node)
 {
@@ -166,67 +202,39 @@ static int _mount_print(void)
 }
 
 static int _mount_do(Prefs * prefs, char const * special, char const * node)
-	/* FIXME handle more flags and options, create one function per type */
+	/* FIXME handle more flags and options */
 {
-	void * data = NULL;
 	int flags = 0;
-#ifdef MOUNT_FFS
-	struct ufs_args ffs;
-#endif
-#ifdef MOUNT_MFS
-	struct mfs_args mfs;
-#endif
-#ifdef MOUNT_NFS
-	struct nfs_args nfs;
-	char * p;
-	char * q;
-#endif
-	struct stat st;
+	size_t i;
 
 #ifdef MNT_FORCE
 	if(prefs->flags & PREFS_f)
 		flags |= MNT_FORCE;
 #endif
-#ifdef MOUNT_FFS
-	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_FFS) == 0)
+	if(prefs->type == NULL)
 	{
-		ffs.fspec = special;
-		data = &ffs;
+		errno = EINVAL;
+		return -_mount_error(node, 1);
 	}
-#endif
-#ifdef MOUNT_MFS
-	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_MFS) == 0)
-	{
-		mfs.fspec = special;
-		/* FIXME implement the rest */
-		data = &ffs;
-	}
-#endif
-#ifdef MOUNT_NFS
-	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_NFS) == 0)
-	{
-		if(special == NULL || strchr(special, ':') == NULL)
-		{
-			errno = EINVAL;
-			return -_mount_error(node, 1);
-		}
-		if((p = strdup(special)) == NULL)
-			return -_mount_error(node, 1);
-		q = strchr(p, ':');
-		*(q++) = '\0';
-		/* FIXME untested */
-		nfs.version = NFS_ARGSVERSION;
-		nfs.hostname = p;
-		nfs.fh = q;
-		/* FIXME implement the rest */
-		data = &ffs;
-	}
-#endif
+	for(i = 0; i < sizeof(_mount_supported) / sizeof(*_mount_supported);
+			i++)
+		if(strcmp(_mount_supported[i].type, prefs->type) == 0)
+			return _mount_supported[i].callback(flags, special,
+					node);
+	errno = ENOTSUP;
+	return -_mount_error(prefs->type, 1);
+}
+
+static int _mount_do_mount(int flags, char const * type, char const * special,
+		char const * node, void * data)
+{
+	struct stat st;
+
 #ifdef __NetBSD_Version__ /* NetBSD */
 # if __NetBSD_Version__ >= 499000000
-	if(mount(prefs->type, node, flags, data, 0) == 0)
+	if(mount(type, node, flags, data, 0) == 0)
 # else
-	if(mount(prefs->type, node, flags, data) == 0)
+	if(mount(type, node, flags, data) == 0)
 # endif
 #endif
 		return 0;
@@ -242,6 +250,67 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 			return -_mount_error(node, 1);
 	}
 }
+
+#ifdef MOUNT_FFS
+static int _mount_callback_ffs(int flags, char const * special,
+		char const * node)
+{
+	int ret;
+	struct ufs_args ffs;
+	void * data = &ffs;
+
+	if((ffs.fspec = strdup(special)) == NULL)
+		return -_mount_error(node, 1);
+	ret = _mount_do_mount(flags, MOUNT_FFS, special, node, data);
+	free(ffs.fspec);
+	return ret;
+}
+#endif
+
+#ifdef MOUNT_MFS
+static int _mount_callback_mfs(int flags, char const * special,
+		char const * node)
+{
+	int ret;
+	struct mfs_args mfs;
+
+	if((mfs.fspec = strdup(special)) == NULL)
+		return -_mount_error(node, 1);
+	ret = _mount_do_mount(flags, MOUNT_MFS, special, node, &mfs);
+	free(mfs.fspec);
+	return ret;
+}
+#endif
+
+#ifdef MOUNT_NFS
+static int _mount_callback_nfs(int flags, char const * special,
+		char const * node)
+{
+	int ret;
+	struct nfs_args nfs;
+	void * data = &nfs;
+	char * p;
+	char * q;
+
+	if(special == NULL || strchr(special, ':') == NULL)
+	{
+		errno = EINVAL;
+		return -_mount_error(node, 1);
+	}
+	if((p = strdup(special)) == NULL)
+		return -_mount_error(node, 1);
+	q = strchr(p, ':');
+	*(q++) = '\0';
+	/* FIXME untested */
+	nfs.version = NFS_ARGSVERSION;
+	nfs.hostname = p;
+	nfs.fh = q;
+	/* FIXME implement the rest */
+	ret = _mount_do_mount(flags, MOUNT_NFS, special, node, data);
+	free(q);
+	return ret;
+}
+#endif
 
 
 /* usage */
