@@ -22,6 +22,9 @@
 #ifdef MOUNT_FFS
 # include <ufs/ufs/ufsmount.h>
 #endif
+#ifdef MOUNT_MSDOS
+# include <msdosfs/msdosfsmount.h>
+#endif
 #ifdef MOUNT_NFS
 # include <nfs/nfsmount.h>
 #endif
@@ -53,6 +56,10 @@ static int _mount_callback_ffs(int flags, char const * special,
 static int _mount_callback_mfs(int flags, char const * special,
 		char const * node);
 #endif
+#ifdef MOUNT_MSDOS
+static int _mount_callback_msdosfs(int flags, char const * special,
+		char const * node);
+#endif
 #ifdef MOUNT_NFS
 static int _mount_callback_nfs(int flags, char const * special,
 		char const * node);
@@ -71,6 +78,9 @@ static struct
 #endif
 #ifdef MOUNT_MFS
 	{ MOUNT_MFS,	_mount_callback_mfs	},
+#endif
+#ifdef MOUNT_MSDOS
+	{ MOUNT_MSDOS,	_mount_callback_msdosfs	},
 #endif
 #ifdef MOUNT_NFS
 	{ MOUNT_NFS,	_mount_callback_nfs	},
@@ -273,12 +283,28 @@ static int _mount_callback_mfs(int flags, char const * special,
 {
 	int ret;
 	struct mfs_args mfs;
+	void * data = &mfs;
 
+	memset(&mfs, 0, sizeof(mfs));
 	if((mfs.fspec = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
-	ret = _mount_do_mount(flags, MOUNT_MFS, special, node, &mfs);
+	ret = _mount_do_mount(flags, MOUNT_MFS, special, node, data);
 	free(mfs.fspec);
 	return ret;
+}
+#endif
+
+#ifdef MOUNT_MSDOS
+static int _mount_callback_msdosfs(int flags, char const * special,
+		char const * node)
+{
+	struct msdosfs_args msdosfs;
+	void * data = & msdosfs;
+
+	memset(&msdosfs, 0, sizeof(msdosfs));
+	msdosfs.fspec = special;
+	/* FIXME implement the rest */
+	return _mount_do_mount(flags, MOUNT_MSDOS, special, node, data);
 }
 #endif
 
@@ -292,6 +318,7 @@ static int _mount_callback_nfs(int flags, char const * special,
 	char * p;
 	char * q;
 
+	memset(&nfs, 0, sizeof(nfs));
 	if(special == NULL || strchr(special, ':') == NULL)
 	{
 		errno = EINVAL;
