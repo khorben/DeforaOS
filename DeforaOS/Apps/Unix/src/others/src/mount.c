@@ -133,9 +133,25 @@ static int _mount_print(void)
 	free(f);
 	return 0;
 #else /* FIXME workaround when getvfsstat() is missing */
-	errno = ENOSYS;
-	perror("mount");
-	return 1;
+	int ret = 0;
+	FILE * fp;
+	const char mtab[] = "/etc/mtab";
+	const char mounts[] = "/proc/mounts";
+	char const * file = mtab;
+	size_t res;
+	char buf[256];
+
+	if((fp = fopen(file, "r")) == NULL)
+		file = mounts;
+	if((fp = fopen(file, "r")) == NULL)
+		return -_mount_error(file, 1);
+	while((res = fread(buf, 1, sizeof(buf), fp)) > 0)
+		fwrite(buf, 1, res, stdout);
+	if(!feof(fp))
+		ret = -_mount_error(file, 1);
+	if(fclose(fp) != 0)
+		ret = -_mount_error(file, 1);
+	return ret;
 #endif
 }
 
