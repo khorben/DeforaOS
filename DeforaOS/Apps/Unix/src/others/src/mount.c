@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,11 @@
 typedef struct _Prefs
 {
 	int flags;
-	char * options;
-	char * type;
+	char const * options;
+	char const * type;
 } Prefs;
 #define PREFS_a 0x1
+#define PREFS_f 0x2
 
 
 /* functions */
@@ -59,8 +60,54 @@ static int _mount_error(char const * message, int ret)
 
 static int _mount_all(Prefs * prefs)
 {
-	errno = ENOSYS;
-	return _mount_error("-a", 1);
+	int ret = 0;
+	const char fstab[] = "/etc/fstab";
+	FILE * fp;
+	char buf[128];
+	size_t len;
+	int res;
+	char special[32];
+	char node[32];
+	char type[32];
+	char options[32];
+	unsigned int freq;
+	unsigned int passno;
+
+	prefs->options = options;
+	if((fp = fopen(fstab, "r")) == NULL)
+		return -_mount_error(fstab, 1);
+	while(fgets(buf, sizeof(buf), fp) != NULL)
+	{
+		if((len = strlen(buf)) == 0)
+			continue; /* empty line */
+		if(buf[len - 1] != '\n')
+		{
+			errno = E2BIG; /* XXX */
+			break; /* line is too long */
+		}
+		if(buf[0] == '#')
+			continue; /* comment */
+		freq = 0;
+		passno = 0;
+		options[0] = '\0';
+		res = sscanf(buf, "%31s %31s %31s %31s %u %u\n", special, node,
+				type, options, &freq, &passno);
+		if(res < 3)
+		{
+			errno = EINVAL;
+			break; /* not enough arguments */
+		}
+		special[sizeof(special) - 1] = '\0';
+		node[sizeof(node) - 1] = '\0';
+		type[sizeof(type) - 1] = '\0';
+		options[sizeof(options) - 1] = '\0';
+		_mount_do(prefs, special, node);
+	}
+	if(!feof(fp))
+		ret = -_mount_error(fstab, 1);
+	if(fclose(fp) != 0)
+		ret = -_mount_error(fstab, 1);
+	return ret;
 }
 
 static int _mount_print(void)
@@ -93,13 +140,20 @@ static int _mount_print(void)
 }
 
 static int _mount_do(Prefs * prefs, char const * special, char const * node)
-	/* FIXME handle flags */
+	/* FIXME handle more flags and options */
 {
+	void * data = NULL;
+	int flags = 0;
+
+#ifdef MNT_FORCE
+	if(prefs->flags & PREFS_f)
+		flags |= MNT_FORCE;
+#endif
 #ifdef __NetBSD_Version__ /* NetBSD */
 # if __NetBSD_Version__ >= 499000000
-	if(mount(prefs->type, node, 0, NULL, 0) == 0)
+	if(mount(prefs->type, node, flags, data, 0) == 0)
 # else
-	if(mount(prefs->type, node, 0, NULL) == 0)
+	if(mount(prefs->type, node, flags, data) == 0)
 # endif
 #endif
 		return 0;
@@ -111,8 +165,8 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 static int _usage(void)
 {
 	fputs("Usage: mount [-a][-t type]\n"
-"       mount [-o options] special | node\n"
-"       mount [-o options] special node\n", stderr);
+"       mount [-f][-o options] special | node\n"
+"       mount [-f][-o options] special node\n", stderr);
 	return 1;
 }
 
@@ -122,13 +176,18 @@ int main(int argc, char * argv[])
 {
 	Prefs prefs;
 	int o;
+	char const * special = NULL;
+	char const * node = NULL;
 
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "ao:t:")) != -1)
+	while((o = getopt(argc, argv, "afo:t:")) != -1)
 		switch(o)
 		{
 			case 'a':
 				prefs.flags |= PREFS_a;
+				break;
+			case 'f':
+				prefs.flags |= PREFS_f;
 				break;
 			case 'o':
 				prefs.options = optarg;
@@ -139,12 +198,11 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind == argc)
-		return _mount(&prefs, NULL, NULL) == 0 ? 0 : 2;
-	if(optind + 1 == argc)
-		return _mount(&prefs, argv[optind], NULL) == 0 ? 0 : 2;
+	if(optind + 1 <= argc)
+		special = argv[optind];
 	if(optind + 2 == argc)
-		return _mount(&prefs, argv[optind], argv[optind + 1]) == 0
-			? 0 : 2;
-	return _usage();
+		node = argv[optind + 1];
+	else if(optind + 2 < argc)
+		return _usage();
+	return (_mount(&prefs, special, node) == 0) ? 0 : 2;
 }
