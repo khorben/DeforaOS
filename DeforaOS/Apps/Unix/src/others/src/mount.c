@@ -15,9 +15,13 @@
 
 
 
+#include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#ifdef MOUNT_FFS
+# include <ufs/ufs/ufsmount.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -61,6 +65,7 @@ static int _mount_error(char const * message, int ret)
 static int _mount_all(Prefs * prefs)
 {
 	int ret = 0;
+	Prefs p;
 	const char fstab[] = "/etc/fstab";
 	FILE * fp;
 	char buf[128];
@@ -73,7 +78,9 @@ static int _mount_all(Prefs * prefs)
 	unsigned int freq;
 	unsigned int passno;
 
-	prefs->options = options;
+	memcpy(&p, prefs, sizeof(p));
+	p.type = type;
+	p.options = options;
 	if((fp = fopen(fstab, "r")) == NULL)
 		return -_mount_error(fstab, 1);
 	while(fgets(buf, sizeof(buf), fp) != NULL)
@@ -101,7 +108,7 @@ static int _mount_all(Prefs * prefs)
 		node[sizeof(node) - 1] = '\0';
 		type[sizeof(type) - 1] = '\0';
 		options[sizeof(options) - 1] = '\0';
-		_mount_do(prefs, special, node);
+		_mount_do(&p, special, node);
 	}
 	if(!feof(fp))
 		ret = -_mount_error(fstab, 1);
@@ -160,10 +167,21 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 {
 	void * data = NULL;
 	int flags = 0;
+#ifdef MOUNT_FFS
+	struct ufs_args ffs;
+#endif
+	struct stat st;
 
 #ifdef MNT_FORCE
 	if(prefs->flags & PREFS_f)
 		flags |= MNT_FORCE;
+#endif
+#ifdef MOUNT_FFS
+	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_FFS) == 0)
+	{
+		ffs.fspec = special;
+		data = &ffs;
+	}
 #endif
 #ifdef __NetBSD_Version__ /* NetBSD */
 # if __NetBSD_Version__ >= 499000000
@@ -173,7 +191,17 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 # endif
 #endif
 		return 0;
-	return _mount_error(node, 1);
+	switch(errno)
+	{
+		case ENOENT:
+			if(stat(node, &st) == 0)
+				return -_mount_error(special, 1);
+			return -_mount_error(node, 1);
+		case ENXIO:
+			return -_mount_error(special, 1);
+		default:
+			return -_mount_error(node, 1);
+	}
 }
 
 
