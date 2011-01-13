@@ -95,7 +95,7 @@ static int _mount_all(Prefs * prefs);
 static int _mount_print(void);
 static int _mount_do(Prefs * prefs, char const * special, char const * node);
 static int _mount_do_mount(int flags, char const * type, char const * special,
-		char const * node, void * data);
+		char const * node, void * data, size_t datalen);
 
 static int _mount(Prefs * prefs, char const * special, char const * node)
 {
@@ -236,13 +236,13 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 }
 
 static int _mount_do_mount(int flags, char const * type, char const * special,
-		char const * node, void * data)
+		char const * node, void * data, size_t datalen)
 {
 	struct stat st;
 
 #ifdef __NetBSD_Version__ /* NetBSD */
 # if __NetBSD_Version__ >= 499000000
-	if(mount(type, node, flags, data, 0) == 0)
+	if(mount(type, node, flags, data, datalen) == 0)
 # else
 	if(mount(type, node, flags, data) == 0)
 # endif
@@ -271,7 +271,8 @@ static int _mount_callback_ffs(int flags, char const * special,
 
 	if((ffs.fspec = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
-	ret = _mount_do_mount(flags, MOUNT_FFS, special, node, data);
+	ret = _mount_do_mount(flags, MOUNT_FFS, special, node, data,
+			sizeof(ffs));
 	free(ffs.fspec);
 	return ret;
 }
@@ -288,7 +289,8 @@ static int _mount_callback_mfs(int flags, char const * special,
 	memset(&mfs, 0, sizeof(mfs));
 	if((mfs.fspec = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
-	ret = _mount_do_mount(flags, MOUNT_MFS, special, node, data);
+	ret = _mount_do_mount(flags, MOUNT_MFS, special, node, data,
+			sizeof(mfs));
 	free(mfs.fspec);
 	return ret;
 }
@@ -304,7 +306,8 @@ static int _mount_callback_msdosfs(int flags, char const * special,
 	memset(&msdosfs, 0, sizeof(msdosfs));
 	msdosfs.fspec = special;
 	/* FIXME implement the rest */
-	return _mount_do_mount(flags, MOUNT_MSDOS, special, node, data);
+	return _mount_do_mount(flags, MOUNT_MSDOS, special, node, data,
+			sizeof(msdosfs));
 }
 #endif
 
@@ -333,7 +336,8 @@ static int _mount_callback_nfs(int flags, char const * special,
 	nfs.hostname = p;
 	nfs.fh = q;
 	/* FIXME implement the rest */
-	ret = _mount_do_mount(flags, MOUNT_NFS, special, node, data);
+	ret = _mount_do_mount(flags, MOUNT_NFS, special, node, data,
+			sizeof(nfs));
 	free(q);
 	return ret;
 }
