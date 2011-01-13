@@ -132,7 +132,7 @@ static int _mount_print(void)
 				" (", f[i].f_flag, ")\n");
 	free(f);
 	return 0;
-#else /* FIXME workaround when getvfsstat() is missing */
+#else /* workaround when getvfsstat() is missing */
 	int ret = 0;
 	FILE * fp;
 	const char mtab[] = "/etc/mtab";
