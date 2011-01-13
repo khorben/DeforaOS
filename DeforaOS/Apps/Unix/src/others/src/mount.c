@@ -75,6 +75,7 @@ static struct
 #ifdef MOUNT_NFS
 	{ MOUNT_NFS,	_mount_callback_nfs	},
 #endif
+	{ NULL,		NULL			}
 };
 
 
@@ -216,8 +217,7 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 		errno = EINVAL;
 		return -_mount_error(node, 1);
 	}
-	for(i = 0; i < sizeof(_mount_supported) / sizeof(*_mount_supported);
-			i++)
+	for(i = 0; _mount_supported[i].type != NULL; i++)
 		if(strcmp(_mount_supported[i].type, prefs->type) == 0)
 			return _mount_supported[i].callback(flags, special,
 					node);
