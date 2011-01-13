@@ -170,6 +170,9 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 #ifdef MOUNT_FFS
 	struct ufs_args ffs;
 #endif
+#ifdef MOUNT_MFS
+	struct mfs_args mfs;
+#endif
 	struct stat st;
 
 #ifdef MNT_FORCE
@@ -180,6 +183,14 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_FFS) == 0)
 	{
 		ffs.fspec = special;
+		data = &ffs;
+	}
+#endif
+#ifdef MOUNT_MFS
+	if(prefs->type != NULL && strcmp(prefs->type, MOUNT_MFS) == 0)
+	{
+		mfs.fspec = special;
+		/* FIXME implement the rest */
 		data = &ffs;
 	}
 #endif
