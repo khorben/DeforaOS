@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,22 +30,23 @@
 /* types */
 typedef int Prefs;
 #define PREFS_a 0x1
+#define PREFS_f 0x2
 
 
 /* functions */
 /* umount */
-static int _umount_all(void);
-static int _umount_do(char const * pathname);
+static int _umount_all(Prefs * prefs);
+static int _umount_do(Prefs * prefs, char const * pathname);
 
-static int _umount(Prefs prefs, int pathc, char * pathv[])
+static int _umount(Prefs * prefs, int pathc, char * pathv[])
 {
 	int ret = 0;
 	int i;
 
-	if(prefs & PREFS_a && pathc == 0)
-		return _umount_all();
+	if(*prefs & PREFS_a && pathc == 0)
+		return _umount_all(prefs);
 	for(i = 0; i < pathc; i++)
-		ret |= _umount_do(pathv[i]);
+		ret |= _umount_do(prefs, pathv[i]);
 	return ret;
 }
 
@@ -57,7 +58,7 @@ static int _umount_error(char const * message, int ret)
 }
 
 #ifdef ST_WAIT
-static int _umount_all(void)
+static int _umount_all(Prefs * prefs)
 {
 	int ret = 0;
 	int cnt;
@@ -77,7 +78,7 @@ static int _umount_all(void)
 		if(strcmp("/", f[i].f_mntonname) == 0)
 			continue;
 		else
-			ret |= _umount_do(f[i].f_mntonname);
+			ret |= _umount_do(prefs, f[i].f_mntonname);
 	free(f);
 	return ret;
 #else /* FIXME workaround when getvfsstat() is missing */
@@ -90,12 +91,18 @@ static int _umount_all(void)
 #endif
 }
 
-static int _umount_do(char const * pathname)
+static int _umount_do(Prefs * prefs, char const * pathname)
 {
+	int flags = 0;
+
+#ifdef MNT_FORCE
+	if(*prefs & PREFS_f)
+		flags |= MNT_FORCE;
+#endif
 #ifdef MS_RDONLY /* Linux */
 	if(umount(pathname) == 0)
 #else
-	if(unmount(pathname, 0) == 0)
+	if(unmount(pathname, flags) == 0)
 #endif
 		return 0;
 	return _umount_error(pathname, 1);
@@ -105,8 +112,8 @@ static int _umount_do(char const * pathname)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: umount -a\n"
-"       umount special | node ...\n", stderr);
+	fputs("Usage: umount -a [-f]\n"
+"       umount [-f] special | node ...\n", stderr);
 	return 1;
 }
 
@@ -118,16 +125,19 @@ int main(int argc, char * argv[])
 	int o;
 
 	prefs = 0;
-	while((o = getopt(argc, argv, "a")) != -1)
+	while((o = getopt(argc, argv, "af")) != -1)
 		switch(o)
 		{
 			case 'a':
 				prefs |= PREFS_a;
+				break;
+			case 'f':
+				prefs |= PREFS_f;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind == argc && (prefs & PREFS_a) != PREFS_a)
 		return _usage();
-	return _umount(prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	return (_umount(&prefs, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }
