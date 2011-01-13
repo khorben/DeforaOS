@@ -83,7 +83,7 @@ static int _umount_all(Prefs * prefs)
 	return ret;
 #else /* FIXME workaround when getvfsstat() is missing */
 # include <errno.h>
-static int _umount_all(void)
+static int _umount_all(Prefs * prefs)
 {
 	errno = ENOSYS;
 	perror("umount");
