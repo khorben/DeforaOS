@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -308,7 +308,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, (device != NULL)
 			? device : "", baudrate);
 #endif
-	if((phone = malloc(sizeof(*phone))) == NULL)
+	if((phone = object_new(sizeof(*phone))) == NULL)
 		return NULL;
 	_new_config(phone);
 	if(phone->config != NULL)
@@ -379,6 +379,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	/* check errors */
 	if(phone->gsm == NULL)
 	{
+		phone_error(NULL, error_get(), 1);
 		phone_delete(phone);
 		return NULL;
 	}
@@ -490,7 +491,7 @@ void phone_delete(Phone * phone)
 	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
 		gsm_delete(phone->gsm);
-	free(phone);
+	object_delete(phone);
 }
 
 
