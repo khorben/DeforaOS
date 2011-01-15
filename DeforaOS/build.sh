@@ -302,12 +302,9 @@ _image_pre()
 _image_targets()
 {
 	#global settings
-	_CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
-	_CFLAGS="-Wall -ffreestanding -g"
+	CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
+	CFLAGS="-Wall -ffreestanding -g"
 	_LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
-	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
-	PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
-	export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS PKG_CONFIG_ALLOW_SYSTEM_LIBS
 	PKG_CONFIG_LIBDIR="$DESTDIR$PREFIX/lib/pkgconfig"
 	PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
 	export PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
@@ -323,15 +320,7 @@ _image_targets()
 				;;
 			System/src/libSystem)
 				LDFLAGS="$_LDFLAGS -lc $L"
-				SUBDIRS="System/src/libSystem/src System/src/libSystem/include"
-				target install			|| return 2
-				LDFLAGS="$LDFLAGS `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
-				SUBDIRS="$i"
-				target install			|| return 2
-				;;
-			System/src/*)
-				#XXX why is -lSystem needed?
-				LDFLAGS="$_LDFLAGS -lc -lSystem `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				SUBDIRS="$i/src $i/include $i/data"
 				target install			|| return 2
 				;;
 			*)
