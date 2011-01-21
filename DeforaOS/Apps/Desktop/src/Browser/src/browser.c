@@ -121,10 +121,10 @@ static DesktopMenu _browser_menu_view[] =
 		GDK_Home },
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Details"), G_CALLBACK(on_view_details), "stock_view-details", 0,
-		0 },
-	{ N_("_Icons"), G_CALLBACK(on_view_icons), NULL, 0, 0 },
-	{ N_("_List"), G_CALLBACK(on_view_list), NULL, 0, 0 },
+	{ N_("_Details"), G_CALLBACK(on_view_details), "browser-view-details",
+		0, 0 },
+	{ N_("_Icons"), G_CALLBACK(on_view_icons), "browser-view-icons", 0, 0 },
+	{ N_("_List"), G_CALLBACK(on_view_list), "browser-view-list", 0, 0 },
 	{ N_("_Thumbnails"), G_CALLBACK(on_view_thumbnails), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
@@ -293,16 +293,22 @@ Browser * browser_new(char const * directory)
 	menu = gtk_menu_new();
 	menuitem = gtk_image_menu_item_new_with_label(_("Details"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
-			gtk_image_new_from_icon_name("stock_view-details",
+			gtk_image_new_from_icon_name("browser-view-details",
 				GTK_ICON_SIZE_MENU));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_details), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_label(_("Icons"));
+	menuitem = gtk_image_menu_item_new_with_label(_("Icons"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
+			gtk_image_new_from_icon_name("browser-view-icons",
+				GTK_ICON_SIZE_MENU));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_icons), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_label(_("List"));
+	menuitem = gtk_image_menu_item_new_with_label(_("List"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
+			gtk_image_new_from_icon_name("browser-view-list",
+				GTK_ICON_SIZE_MENU));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_list), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1024,9 +1030,9 @@ static char const * _insert_date(time_t date)
 	sixmonths = time(NULL) - 15552000;
 	localtime_r(&date, &tm);
 	if(date < sixmonths)
-		len = strftime(buf, sizeof(buf), "%b %d %Y", &tm);
+		len = strftime(buf, sizeof(buf), "%b %e %Y", &tm);
 	else
-		len = strftime(buf, sizeof(buf), "%b %d %H:%M", &tm);
+		len = strftime(buf, sizeof(buf), "%b %e %H:%M", &tm);
 	buf[len] = '\0';
 	return buf;
 }
