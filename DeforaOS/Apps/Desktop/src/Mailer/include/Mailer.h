@@ -47,8 +47,8 @@ typedef enum _AccountConfigType
 
 typedef struct _AccountConfig
 {
-	char * name;
-	char * title;
+	char const * name;
+	char const * title;
 	AccountConfigType type;
 	void * value;
 } AccountConfig;
