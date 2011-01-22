@@ -143,6 +143,8 @@ static GdkFilterReturn _filter_clientmessage(Systray * systray,
 	switch(xev->data.l[1])
 	{
 		case SYSTEM_TRAY_REQUEST_DOCK:
+			if(xev->data.l[2] == 0)
+				return GDK_FILTER_CONTINUE;
 			socket = gtk_socket_new();
 			gtk_widget_show(socket);
 			gtk_box_pack_start(GTK_BOX(systray->hbox), socket,
