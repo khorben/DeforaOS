@@ -2,7 +2,7 @@
 Name=Todo
 Comment=Remember what you have to do
 Exec=todo
-Icon=stock_todo
+Icon=todo
 Type=Application
 Categories=Office;GTK;
 StartupNotify=true

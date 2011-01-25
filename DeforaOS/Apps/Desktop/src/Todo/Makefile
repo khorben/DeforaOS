@@ -24,6 +24,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/todo.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/data/16x16/todo.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/data/24x24/todo.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
+		$(PACKAGE)-$(VERSION)/data/48x48/todo.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
