@@ -222,7 +222,7 @@ Todo * todo_new(void)
 	todo->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(todo->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(todo->window), 300, 400);
-	gtk_window_set_icon_name(GTK_WINDOW(todo->window), "stock_todo");
+	gtk_window_set_icon_name(GTK_WINDOW(todo->window), "todo");
 	gtk_window_set_title(GTK_WINDOW(todo->window), _("Todo"));
 	g_signal_connect_swapped(G_OBJECT(todo->window), "delete-event",
 			G_CALLBACK(on_closex), todo);
@@ -416,7 +416,7 @@ void todo_about(Todo * todo)
 			GTK_WINDOW(todo->window));
 	desktop_about_dialog_set_authors(todo->about, _authors);
 	desktop_about_dialog_set_copyright(todo->about, _copyright);
-	desktop_about_dialog_set_logo_icon_name(todo->about, "stock_todo");
+	desktop_about_dialog_set_logo_icon_name(todo->about, "todo");
 	desktop_about_dialog_set_license(todo->about, _license);
 	desktop_about_dialog_set_name(todo->about, PACKAGE);
 	desktop_about_dialog_set_version(todo->about, VERSION);
