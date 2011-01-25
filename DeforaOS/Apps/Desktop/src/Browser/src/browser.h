@@ -106,6 +106,7 @@ typedef struct _Browser
 	time_t refresh_mti;
 	unsigned int refresh_cnt;
 	unsigned int refresh_hid;
+	GtkTreeIter refresh_iter;
 
 	/* selection */
 	GList * selection;

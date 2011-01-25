@@ -981,17 +981,12 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 #endif
 	else if(browser->mime != NULL && *type == NULL
 			&& (*type = mime_type(browser->mime, path)) != NULL)
-	{
 		mime_icons(browser->mime, browser->theme, *type, 24, icon_24,
 #if !GTK_CHECK_VERSION(2, 6, 0)
 				-1);
 #else
 				48, icon_48, 96, icon_96, -1);
-		if(strncmp(*type, "image/", 6) == 0)
-			*icon_96 = gdk_pixbuf_new_from_file_at_size(path, 96,
-					96, NULL);
 #endif
-	}
 }
 
 static char const * _insert_size(off_t size)
@@ -1103,13 +1098,60 @@ static gboolean _refresh_new_idle(gpointer data)
 	return FALSE;
 }
 
+#if GTK_CHECK_VERSION(2, 6, 0)
+static gboolean _done_thumbnails(gpointer data);
+#endif
 static gboolean _done_timeout(gpointer data);
 static void _refresh_done(Browser * browser)
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
+	GtkTreeIter * iter = &browser->refresh_iter;
+#endif
+
 	closedir(browser->refresh_dir);
 	browser->refresh_dir = NULL;
-	browser->refresh_id = g_timeout_add(1000, _done_timeout, browser);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(gtk_tree_model_get_iter_first(model, iter) == TRUE)
+		browser->refresh_id = g_idle_add(_done_thumbnails, browser);
+	else
+#endif
+		browser->refresh_id = g_timeout_add(1000, _done_timeout,
+				browser);
 }
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+static gboolean _done_thumbnails(gpointer data)
+{
+	Browser * browser = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
+	GtkTreeIter * iter = &browser->refresh_iter;
+	size_t i;
+	char * type;
+	char * path;
+	GdkPixbuf * icon;
+
+	for(i = 0; i < IDLE_LOOP_ICON_CNT; i++)
+	{
+		gtk_tree_model_get(model, iter, BR_COL_MIME_TYPE, &type,
+				BR_COL_PATH, &path, -1);
+		if(type != NULL && path != NULL
+				&& strncmp(type, "image/", 6) == 0
+				&& (icon = gdk_pixbuf_new_from_file_at_size(
+						path, 96, 96, NULL)) != NULL)
+			gtk_list_store_set(browser->store, iter,
+					BR_COL_PIXBUF_96, icon, -1);
+		free(type);
+		free(path);
+		if(gtk_tree_model_iter_next(model, iter) != TRUE)
+			break;
+	}
+	if(i == IDLE_LOOP_ICON_CNT)
+		return TRUE;
+	browser->refresh_id = g_timeout_add(1000, _done_timeout, browser);
+	return FALSE;
+}
+#endif
 
 static gboolean _done_timeout(gpointer data)
 {

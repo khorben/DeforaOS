@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-22 00:48+0100\n"
+"POT-Creation-Date: 2011-01-26 00:55+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -165,19 +165,19 @@ msgstr ""
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:294 ../src/browser.c:1756
+#: ../src/browser.c:294 ../src/browser.c:1798
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:301 ../src/browser.c:1757
+#: ../src/browser.c:301 ../src/browser.c:1799
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:308 ../src/browser.c:1758
+#: ../src/browser.c:308 ../src/browser.c:1800
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:315 ../src/browser.c:1759
+#: ../src/browser.c:315 ../src/browser.c:1801
 msgid "Thumbnails"
 msgstr ""
 
@@ -198,7 +198,7 @@ msgstr ""
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:845 ../src/browser.c:1179
+#: ../src/browser.c:845 ../src/browser.c:1221
 msgid "Refreshing folder: "
 msgstr ""
 
@@ -207,59 +207,59 @@ msgstr ""
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1481
+#: ../src/browser.c:1523
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1483
+#: ../src/browser.c:1525
 msgid "Size"
 msgstr ""
 
-#: ../src/browser.c:1485
+#: ../src/browser.c:1527
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1487
+#: ../src/browser.c:1529
 msgid "Group"
 msgstr ""
 
-#: ../src/browser.c:1489
+#: ../src/browser.c:1531
 msgid "Date"
 msgstr ""
 
-#: ../src/browser.c:1491
+#: ../src/browser.c:1533
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1736
+#: ../src/browser.c:1778
 msgid "File browser preferences"
 msgstr ""
 
-#: ../src/browser.c:1752
+#: ../src/browser.c:1794
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:1765
+#: ../src/browser.c:1807
 msgid "_Alternate rows in detailed view"
 msgstr ""
 
-#: ../src/browser.c:1769
+#: ../src/browser.c:1811
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/browser.c:1772
+#: ../src/browser.c:1814
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/browser.c:1775
+#: ../src/browser.c:1817
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:1778
+#: ../src/browser.c:1820
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:1913
+#: ../src/browser.c:1955
 msgid "Refreshing folder..."
 msgstr ""
 
