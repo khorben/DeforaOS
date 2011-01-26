@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-05 18:03+0100\n"
+"POT-Creation-Date: 2011-01-26 02:33+0100\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -65,33 +65,33 @@ msgstr "Port :"
 msgid "Network"
 msgstr "Réseau"
 
-#: ../src/common/conn.c:204 ../src/download.c:185 ../src/ghtml-gtkhtml.c:855
+#: ../src/common/conn.c:204 ../src/download.c:185 ../src/ghtml-gtkhtml.c:862
 msgid "Resolving..."
 msgstr "Résolution du domaine..."
 
-#: ../src/common/conn.c:253 ../src/download.c:477 ../src/ghtml-gtkhtml.c:905
+#: ../src/common/conn.c:253 ../src/download.c:477 ../src/ghtml-gtkhtml.c:912
 msgid "Connected"
 msgstr "Connecté"
 
-#: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:940
-#: ../src/ghtml-webkit.c:546 ../src/ghtml-webkit.c:687
-#: ../src/ghtml-webkit.c:699
+#: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:947
+#: ../src/ghtml-webkit.c:556 ../src/ghtml-webkit.c:697
+#: ../src/ghtml-webkit.c:709
 msgid "Downloading..."
 msgstr "Téléchargement..."
 
-#: ../src/common/conn.c:305 ../src/ghtml-gtkhtml.c:986
+#: ../src/common/conn.c:305 ../src/ghtml-gtkhtml.c:993
 msgid "Unsupported protocol"
 msgstr "Protocole non supporté"
 
-#: ../src/common/conn.c:309 ../src/ghtml-gtkhtml.c:990
+#: ../src/common/conn.c:309 ../src/ghtml-gtkhtml.c:997
 msgid "Unknown host"
 msgstr "Hôte inconnu"
 
-#: ../src/common/conn.c:314 ../src/ghtml-gtkhtml.c:995
+#: ../src/common/conn.c:314 ../src/ghtml-gtkhtml.c:1002
 msgid "Unspecified error"
 msgstr "Erreur non spécifiée"
 
-#: ../src/common/conn.c:348 ../src/download.c:554 ../src/ghtml-gtkhtml.c:1091
+#: ../src/common/conn.c:348 ../src/download.c:554 ../src/ghtml-gtkhtml.c:1098
 msgid "Timeout"
 msgstr "Délai dépassé"
 
@@ -183,7 +183,7 @@ msgstr "Résolu"
 msgid "Code "
 msgstr "Code "
 
-#: ../src/download.c:605 ../src/ghtml-webkit.c:645 ../src/surfer.c:909
+#: ../src/download.c:605 ../src/ghtml-webkit.c:655 ../src/surfer.c:909
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -197,32 +197,32 @@ msgstr ""
 "  -O\tfichier de destination\n"
 "  -U\tuser-agent à utiliser\n"
 
-#: ../src/ghtml-gtkhtml.c:732
+#: ../src/ghtml-gtkhtml.c:739
 msgid "Unknown protocol"
 msgstr "Protocole inconnu"
 
-#: ../src/ghtml-gtkhtml.c:798
+#: ../src/ghtml-gtkhtml.c:805
 msgid "Reading file..."
 msgstr "Lecture du fichier..."
 
-#: ../src/ghtml-gtkhtml.c:1010
+#: ../src/ghtml-gtkhtml.c:1017
 msgid "Redirecting..."
 msgstr "Redirection..."
 
-#: ../src/ghtml-gtkhtml.c:1018
+#: ../src/ghtml-gtkhtml.c:1025
 msgid "Redirecting to "
 msgstr "Redirection vers "
 
-#: ../src/ghtml-gtkhtml.c:1052 ../src/ghtml-webkit.c:413
-#: ../src/ghtml-webkit.c:544
+#: ../src/ghtml-gtkhtml.c:1059 ../src/ghtml-webkit.c:423
+#: ../src/ghtml-webkit.c:554
 msgid "Connecting..."
 msgstr "Connexion..."
 
-#: ../src/ghtml-gtkhtml.c:1055
+#: ../src/ghtml-gtkhtml.c:1062
 msgid "Connecting to "
 msgstr "Connexion à "
 
-#: ../src/ghtml-gtkhtml.c:1213
+#: ../src/ghtml-gtkhtml.c:1220
 msgid "Unsupported method"
 msgstr "Méthode non supportée"
 
@@ -312,7 +312,7 @@ msgstr "Taille normale"
 
 #: ../src/surfer.c:164
 msgid "_Fullscreen"
-msgstr ""
+msgstr "_Plein écran"
 
 #: ../src/surfer.c:167
 msgid "_Refresh"
