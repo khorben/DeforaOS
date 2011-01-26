@@ -352,6 +352,13 @@ int ghtml_set_proxy(GtkWidget * widget, SurferProxyType type, char const * http,
 
 
 /* useful */
+/* ghtml_copy */
+void ghtml_copy(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * widget, char const * code)
 {

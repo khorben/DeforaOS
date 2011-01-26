@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -443,6 +443,20 @@ int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
 
 
 /* useful */
+/* ghtml_copy */
+void ghtml_copy(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	clipboard = gtk_widget_get_clipboard(ghtml->view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_copy_clipboard(ghtml->tbuffer, clipboard);
+}
+
+
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * ghtml, char const * code)
 {
