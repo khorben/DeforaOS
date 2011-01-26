@@ -13,7 +13,7 @@ clean:
 
 distclean: clean
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/System/Parser
 	$(INSTALL) -m 0644 -- XML.h $(DESTDIR)$(PREFIX)/include/System/Parser/XML.h
 
