@@ -38,6 +38,31 @@ static char const _license[] =
 #define EDITOR_DEFAULT_FONT	"Monospace 9"
 
 
+/* types */
+struct _Editor
+{
+	char * filename;
+	size_t search;
+
+	Config * config;
+
+	/* widgets */
+	GtkWidget * window;
+	GtkWidget * view;
+	GtkWidget * statusbar;
+	/* preferences */
+	GtkWidget * pr_window;
+	GtkWidget * pr_font;
+	/* find */
+	GtkWidget * fi_dialog;
+	GtkWidget * fi_text;
+	GtkWidget * fi_case;
+	GtkWidget * fi_wrap;
+	/* about */
+	GtkWidget * ab_window;
+};
+
+
 /* variables */
 static char const * _authors[] =
 {
@@ -747,6 +772,104 @@ void editor_select_all(Editor * editor)
 	gtk_text_buffer_get_end_iter(tbuf, &end);
 	gtk_text_buffer_select_range(tbuf, &start, &end);
 #endif
+}
+
+
+/* editor_show_preferences */
+static void _preferences_set(Editor * editor);
+static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
+static void _preferences_on_cancel(gpointer data);
+static void _preferences_on_ok(gpointer data);
+
+void editor_show_preferences(Editor * editor, gboolean show)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkSizeGroup * group;
+
+	if(editor->pr_window != NULL)
+	{
+		if(show)
+			gtk_window_present(GTK_WINDOW(editor->pr_window));
+		else
+			gtk_widget_hide(editor->pr_window);
+		return;
+	}
+	editor->pr_window = gtk_dialog_new_with_buttons(
+			_("Text editor preferences"),
+			GTK_WINDOW(editor->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	g_signal_connect_swapped(G_OBJECT(editor->pr_window), "delete-event",
+			G_CALLBACK(_preferences_on_closex), editor);
+	g_signal_connect(G_OBJECT(editor->pr_window), "response",
+			G_CALLBACK(_preferences_on_response), editor);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(editor->pr_window));
+#else
+	vbox = GTK_DIALOG(editor->pr_window)->vbox;
+#endif
+	hbox = gtk_hbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* font */
+	widget = gtk_label_new(_("Font:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	editor->pr_font = gtk_font_button_new();
+	gtk_font_button_set_use_font(GTK_FONT_BUTTON(editor->pr_font), TRUE);
+	gtk_size_group_add_widget(group, editor->pr_font);
+	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	_preferences_set(editor);
+	gtk_widget_show_all(vbox);
+	if(show)
+		gtk_widget_show(editor->pr_window);
+}
+
+static void _preferences_set(Editor * editor)
+{
+	gtk_font_button_set_font_name(GTK_FONT_BUTTON(editor->pr_font),
+			editor_get_font(editor));
+}
+
+static gboolean _preferences_on_closex(gpointer data)
+{
+	Editor * editor = data;
+
+	_preferences_on_cancel(editor);
+	return TRUE;
+}
+
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_preferences_on_cancel(data);
+}
+
+static void _preferences_on_cancel(gpointer data)
+{
+	Editor * editor = data;
+
+	gtk_widget_hide(editor->pr_window);
+	_preferences_set(editor);
+}
+
+static void _preferences_on_ok(gpointer data)
+{
+	Editor * editor = data;
+	char const * font;
+
+	gtk_widget_hide(editor->pr_window);
+	font = gtk_font_button_get_font_name(GTK_FONT_BUTTON(editor->pr_font));
+	editor_set_font(editor, font);
+	editor_config_save(editor);
 }
 
 
