@@ -42,6 +42,15 @@ void on_edit_find(gpointer data)
 }
 
 
+/* on_edit_paste */
+void on_edit_paste(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_paste(editor);
+}
+
+
 /* on_edit_preferences */
 static void _preferences_set(Editor * editor);
 static gboolean _preferences_on_closex(gpointer data);

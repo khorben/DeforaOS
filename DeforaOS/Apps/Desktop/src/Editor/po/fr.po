@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-27 16:20+0100\n"
+"POT-Creation-Date: 2011-01-26 01:17+0100\n"
 "PO-Revision-Date: 2010-04-11 12:32+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/callbacks.c:67
+#: ../src/callbacks.c:76
 msgid "Text editor preferences"
 msgstr "Préférences de l'éditeur de texte"
 
-#: ../src/callbacks.c:84
+#: ../src/callbacks.c:93
 msgid "Font:"
 msgstr "Police :"
 
@@ -64,80 +64,80 @@ msgstr "_Copier"
 msgid "_Paste"
 msgstr "C_oller"
 
-#: ../src/editor.c:89
+#: ../src/editor.c:90
 msgid "Select _all"
 msgstr "Sélectionner _tout"
 
-#: ../src/editor.c:96
+#: ../src/editor.c:97
 msgid "_Unselect all"
 msgstr "Tout _désélectionner"
 
-#: ../src/editor.c:98
+#: ../src/editor.c:99
 msgid "_Find"
 msgstr "_Rechercher"
 
-#: ../src/editor.c:101
+#: ../src/editor.c:102
 msgid "_Preferences"
 msgstr "_Préférences"
 
-#: ../src/editor.c:108
+#: ../src/editor.c:109
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/editor.c:119
+#: ../src/editor.c:120
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/editor.c:120
+#: ../src/editor.c:121
 msgid "_Edit"
 msgstr "É_dition"
 
-#: ../src/editor.c:121
+#: ../src/editor.c:122
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/editor.c:128
+#: ../src/editor.c:129
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/editor.c:129
+#: ../src/editor.c:130
 msgid "Open"
 msgstr "Ouvrir"
 
-#: ../src/editor.c:131
+#: ../src/editor.c:132
 msgid "Save"
 msgstr "Enregistrer"
 
-#: ../src/editor.c:132
+#: ../src/editor.c:133
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: ../src/editor.c:136
+#: ../src/editor.c:137
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/editor.c:227
+#: ../src/editor.c:228
 msgid "Text editor - "
 msgstr "Éditeur de texte - "
 
-#: ../src/editor.c:228
+#: ../src/editor.c:229
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/editor.c:341
+#: ../src/editor.c:342
 msgid "Could not save configuration"
 msgstr "Erreur lors de la sauvegarde de la configuration"
 
-#: ../src/editor.c:355 ../src/editor.c:360
+#: ../src/editor.c:356 ../src/editor.c:361
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/editor.c:387 ../src/editor.c:397 ../src/editor.c:509
-#: ../src/editor.c:523 ../src/editor.c:650 ../src/editor.c:655
+#: ../src/editor.c:388 ../src/editor.c:398 ../src/editor.c:510
+#: ../src/editor.c:524 ../src/editor.c:664 ../src/editor.c:669
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/editor.c:391
+#: ../src/editor.c:392
 msgid ""
 "There are unsaved changes.\n"
 "Discard or save them?"
@@ -145,27 +145,27 @@ msgstr ""
 "Il y a des changements non enregistrés.\n"
 "Ignorer ou sauvegarder ?"
 
-#: ../src/editor.c:429
+#: ../src/editor.c:430
 msgid "Find text"
 msgstr "Rechercher"
 
-#: ../src/editor.c:436
+#: ../src/editor.c:437
 msgid "Text:"
 msgstr "Texte :"
 
-#: ../src/editor.c:443
+#: ../src/editor.c:444
 msgid "Case-sensitive"
 msgstr "Sensible à la casse"
 
-#: ../src/editor.c:445
+#: ../src/editor.c:446
 msgid "Wrap"
 msgstr "Boucler"
 
-#: ../src/editor.c:468
+#: ../src/editor.c:469
 msgid "Text not found"
 msgstr "Texte non trouvé"
 
-#: ../src/editor.c:513
+#: ../src/editor.c:514
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to discard them?"
@@ -173,38 +173,30 @@ msgstr ""
 "Il y a des changements non enregistrés.\n"
 "Êtes-vous sûr de vouloir les annuler ?"
 
-#: ../src/editor.c:520
+#: ../src/editor.c:521
 msgid "Discard"
 msgstr "Annuler"
 
-#: ../src/editor.c:579
+#: ../src/editor.c:580
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/editor.c:626
+#: ../src/editor.c:640
 msgid "Partial write"
 msgstr "Écriture partielle"
 
-#: ../src/editor.c:654
+#: ../src/editor.c:668
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"
 
-#: ../src/editor.c:663
+#: ../src/editor.c:677
 msgid "Allocation error"
 msgstr "Erreur d'allocation"
 
-#: ../src/editor.c:678
+#: ../src/editor.c:692
 msgid "Save as..."
 msgstr "Enregistrer sous..."
 
 #: ../src/main.c:43
 msgid "Usage: editor [file]\n"
 msgstr "Usage: editor [fichier]\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "There are unsaved changes.\n"
-#~ "Are you sure you want to close?"
-#~ msgstr ""
-#~ "Il y a des changements non enregistrés.\n"
-#~ "Êtes-vous sûr de vouloir les annuler ?"

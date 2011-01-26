@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -84,7 +84,8 @@ static DesktopMenu _editor_menu_edit[] =
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Cut"), NULL, GTK_STOCK_CUT, 0, 0 }, /* FIXME implement */
 	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0, 0 }, /* FIXME implement */
-	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, 0, 0 }, /* FIXME implement */
+	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
+		GDK_CONTROL_MASK, GDK_v },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -589,6 +590,19 @@ void editor_open_dialog(Editor * editor)
 		return;
 	editor_open(editor, filename);
 	g_free(filename);
+}
+
+
+/* editor_paste */
+void editor_paste(Editor * editor)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	clipboard = gtk_widget_get_clipboard(editor->view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL, TRUE);
 }
 
 
