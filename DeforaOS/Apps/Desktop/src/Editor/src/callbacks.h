@@ -23,6 +23,8 @@
 
 /* functions */
 gboolean on_closex(gpointer data);
+void on_edit_copy(gpointer data);
+void on_edit_cut(gpointer data);
 void on_edit_find(gpointer data);
 void on_edit_paste(gpointer data);
 void on_edit_preferences(gpointer data);

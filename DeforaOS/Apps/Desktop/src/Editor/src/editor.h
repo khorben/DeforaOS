@@ -68,6 +68,8 @@ gboolean editor_close(Editor * editor);
 void editor_open(Editor * editor, char const * filename);
 void editor_open_dialog(Editor * editor);
 
+void editor_copy(Editor * editor);
+void editor_cut(Editor * editor);
 void editor_paste(Editor * editor);
 
 gboolean editor_save(Editor * editor);

@@ -82,8 +82,10 @@ static DesktopMenu _editor_menu_edit[] =
 		GDK_z },
 	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_r },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Cut"), NULL, GTK_STOCK_CUT, 0, 0 }, /* FIXME implement */
-	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0, 0 }, /* FIXME implement */
+	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
+		GDK_x },
+	{ N_("_Copy"), G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
+		GDK_CONTROL_MASK, GDK_c },
 	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
 		GDK_CONTROL_MASK, GDK_v },
 	{ "", NULL, NULL, 0, 0 },
@@ -404,6 +406,32 @@ gboolean editor_close(Editor * editor)
 		return TRUE;
 	gtk_main_quit();
 	return FALSE;
+}
+
+
+/* editor_copy */
+void editor_copy(Editor * editor)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	clipboard = gtk_widget_get_clipboard(editor->view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_copy_clipboard(buffer, clipboard);
+}
+
+
+/* editor_cut */
+void editor_cut(Editor * editor)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	clipboard = gtk_widget_get_clipboard(editor->view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_cut_clipboard(buffer, clipboard, TRUE);
 }
 
 

@@ -33,6 +33,24 @@ gboolean on_closex(gpointer data)
 }
 
 
+/* on_edit_copy */
+void on_edit_copy(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_copy(editor);
+}
+
+
+/* on_edit_cut */
+void on_edit_cut(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_cut(editor);
+}
+
+
 /* on_edit_find */
 void on_edit_find(gpointer data)
 {
