@@ -1545,7 +1545,7 @@ static int _write_install(Configure * configure, FILE * fp)
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	fputs("\ninstall: all\n", fp);
+	fputs("\ninstall: $(TARGETS)\n", fp);
 	if(config_get(configure->config, "", "subdirs") != NULL)
 		fputs("\t@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install)"
 				" || exit; done\n", fp);
