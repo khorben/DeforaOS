@@ -24,6 +24,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/surfer.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
+		$(PACKAGE)-$(VERSION)/data/16x16/surfer-view-html-source.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
+		$(PACKAGE)-$(VERSION)/data/24x24/surfer-view-html-source.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \

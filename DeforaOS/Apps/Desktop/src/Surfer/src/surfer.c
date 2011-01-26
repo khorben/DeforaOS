@@ -174,7 +174,7 @@ static DesktopMenu _menu_view[] =
 	{ N_("Javascript _console"), G_CALLBACK(on_view_javascript_console),
 		NULL, 0, 0 },
 	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
-		"stock_view-html-source", GDK_CONTROL_MASK, GDK_U },
+		"surfer-view-html-source", GDK_CONTROL_MASK, GDK_U },
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
