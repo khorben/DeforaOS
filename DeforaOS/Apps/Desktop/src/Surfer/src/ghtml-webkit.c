@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME
- * - implement copy/cut/paste */
+ * - implement cut/paste */
 
 
 
@@ -353,9 +353,12 @@ int ghtml_set_proxy(GtkWidget * widget, SurferProxyType type, char const * http,
 
 /* useful */
 /* ghtml_copy */
-void ghtml_copy(GtkWidget * ghtml)
+void ghtml_copy(GtkWidget * widget)
 {
-	/* FIXME implement */
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_copy_clipboard(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 
