@@ -39,8 +39,11 @@ void on_help_about(gpointer data);
 
 /* toolbar */
 void on_close(gpointer data);
+void on_copy(gpointer data);
+void on_cut(gpointer data);
 void on_new(gpointer data);
 void on_open(gpointer data);
+void on_paste(gpointer data);
 void on_save(gpointer data);
 void on_save_as(gpointer data);
 void on_preferences(gpointer data);

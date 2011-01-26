@@ -160,6 +160,24 @@ void on_close(gpointer data)
 }
 
 
+/* on_copy */
+void on_copy(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_copy(editor);
+}
+
+
+/* on_cut */
+void on_cut(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_cut(editor);
+}
+
+
 /* on_new */
 void on_new(gpointer data)
 {
@@ -175,6 +193,15 @@ void on_open(gpointer data)
 	Editor * editor = data;
 
 	editor_open_dialog(editor);
+}
+
+
+/* on_paste */
+void on_paste(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_paste(editor);
 }
 
 
