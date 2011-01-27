@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1545,7 +1545,10 @@ static int _write_install(Configure * configure, FILE * fp)
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	fputs("\ninstall: $(TARGETS)\n", fp);
+	fputs("\ninstall:", fp);
+	if(config_get(configure->config, "", "targets") != NULL)
+		fputs(" $(TARGETS)", fp);
+	fputc('\n', fp);
 	if(config_get(configure->config, "", "subdirs") != NULL)
 		fputs("\t@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install)"
 				" || exit; done\n", fp);
