@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 #This file is part of the DeforaOS Project
 
 
@@ -29,7 +29,7 @@ dist:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-install: all
+install:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 
 uninstall:
