@@ -30,7 +30,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "de.mo"
 	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "es.mo"
 	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "fr.mo"

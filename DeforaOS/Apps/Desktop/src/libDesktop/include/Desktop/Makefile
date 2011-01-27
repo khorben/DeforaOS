@@ -13,7 +13,7 @@ clean:
 
 distclean: clean
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- about.h $(DESTDIR)$(PREFIX)/include/Desktop/about.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop

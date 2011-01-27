@@ -50,7 +50,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 -- libDesktop.a $(DESTDIR)$(PREFIX)/lib/libDesktop.a
 	$(INSTALL) -m 0755 -- libDesktop.so $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0

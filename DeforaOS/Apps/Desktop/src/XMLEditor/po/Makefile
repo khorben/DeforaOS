@@ -21,7 +21,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "fr.mo"
 
 uninstall:

@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps
 	$(INSTALL) -m 0644 -- browser-view-details.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps/browser-view-details.png
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps

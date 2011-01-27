@@ -25,6 +25,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/browser.desktop \
 		$(PACKAGE)-$(VERSION)/data/desktop-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
+		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-details.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-icons.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-list.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
@@ -66,7 +71,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
-install: all
+install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 
 uninstall:

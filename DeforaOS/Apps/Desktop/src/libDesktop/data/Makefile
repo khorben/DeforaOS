@@ -18,7 +18,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	./pkgconfig.sh -P "$(DESTDIR)$(PREFIX)" -i -- "libDesktop.pc"
 
 uninstall:

@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 -- player.desktop $(DESTDIR)$(PREFIX)/share/applications/player.desktop
 
