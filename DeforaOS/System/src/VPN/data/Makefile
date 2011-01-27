@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/etc/AppInterface
 	$(INSTALL) -m 0644 -- VPN.interface $(DESTDIR)$(PREFIX)/etc/AppInterface/VPN.interface
 

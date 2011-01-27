@@ -13,7 +13,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
 	$(INSTALL) -m 0644 -- GWidget.h $(DESTDIR)$(INCLUDEDIR)/GWidget.h
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)

@@ -19,7 +19,7 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-install: $(TARGETS)
+install:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/System
 	$(INSTALL) -m 0644 -- Parser.h $(DESTDIR)$(PREFIX)/include/System/Parser.h
