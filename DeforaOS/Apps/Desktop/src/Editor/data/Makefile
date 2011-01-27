@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: $(TARGETS)
+install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 -- editor.desktop $(DESTDIR)$(PREFIX)/share/applications/editor.desktop
 
