@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef PANEL_PANEL_H
-# define PANEL_PANEL_H
+#ifndef DESKTOP_PANEL_H
+# define DESKTOP_PANEL_H
 
 # include <gtk/gtk.h>
 
@@ -66,4 +66,4 @@ struct _PanelApplet
 	void * priv;
 };
 
-#endif /* !PANEL_PANEL_H */
+#endif /* !DESKTOP_PANEL_H */

@@ -13,11 +13,11 @@ clean:
 
 distclean: clean
 
-install: all
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 -- Panel.h $(DESTDIR)$(INCLUDEDIR)/Panel.h
+install:
+	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
+	$(INSTALL) -m 0644 -- Panel.h $(DESTDIR)$(PREFIX)/include/Desktop/Panel.h
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/Panel.h
+	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Panel.h
 
 .PHONY: all clean distclean install uninstall
