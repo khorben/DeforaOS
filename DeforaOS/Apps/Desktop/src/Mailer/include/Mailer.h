@@ -15,8 +15,8 @@
 
 
 
-#ifndef MAILER_MAILER_H
-# define MAILER_MAILER_H
+#ifndef DESKTOP_MAILER_H
+# define DESKTOP_MAILER_H
 
 # include <gtk/gtk.h>
 
@@ -123,4 +123,4 @@ enum
 # define MH_COL_LAST MH_COL_WEIGHT
 # define MH_COL_COUNT (MH_COL_LAST + 1)
 
-#endif /* !MAILER_MAILER_H */
+#endif /* !DESKTOP_MAILER_H */

@@ -13,11 +13,11 @@ clean:
 
 distclean: clean
 
-install: all
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 -- Mailer.h $(DESTDIR)$(INCLUDEDIR)/Mailer.h
+install:
+	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
+	$(INSTALL) -m 0644 -- Mailer.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer.h
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/Mailer.h
+	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer.h
 
 .PHONY: all clean distclean install uninstall
