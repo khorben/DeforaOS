@@ -602,9 +602,12 @@ void todo_task_cursor_changed(Todo * todo)
 	GdkRectangle rect;
 	GtkWidget * popup;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
 	time_t tim;
 	struct tm t;
 	GtkWidget * button;
+	GtkWidget * label;
+	GtkWidget * image;
 	GtkWidget * calendar;
 
 	gtk_tree_view_get_cursor(GTK_TREE_VIEW(todo->view), &path, &column);
@@ -616,19 +619,45 @@ void todo_task_cursor_changed(Todo * todo)
 		id = gtk_tree_view_column_get_sort_column_id(column);
 	if(id == TD_COL_END || id == TD_COL_START)
 	{
-		gtk_tree_view_get_cell_area(GTK_TREE_VIEW(todo->view), path,
-				column, &rect);
+		/* window */
 		popup = gtk_window_new(GTK_WINDOW_POPUP);
+		gtk_container_set_border_width(GTK_CONTAINER(popup), 4);
+		gtk_window_set_modal(GTK_WINDOW(popup), TRUE);
+		gtk_window_set_transient_for(GTK_WINDOW(popup), GTK_WINDOW(
+					todo->window));
 		vbox = gtk_vbox_new(FALSE, 4);
+		hbox = gtk_hbox_new(FALSE, 4);
 		if((tim = (id == TD_COL_START) ? task_get_start(task)
 					: task_get_end(task)) == 0)
 			tim = time(NULL);
 		localtime_r(&tim, &t);
-		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+		/* time */
+		label = gtk_label_new(_("Time: "));
+		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+		button = gtk_spin_button_new_with_range(0.0, 23.0, 1.0);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(button), t.tm_hour);
+		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+		label = gtk_label_new(_(":"));
+		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+		button = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(button), t.tm_min);
+		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+		label = gtk_label_new(_(":"));
+		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+		button = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(button), t.tm_sec);
+		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+		/* close button */
+		button = gtk_button_new();
+		image = gtk_image_new_from_stock(GTK_STOCK_CLOSE,
+				GTK_ICON_SIZE_MENU);
+		gtk_button_set_image(GTK_BUTTON(button), image);
 		gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 		g_signal_connect_swapped(G_OBJECT(button), "clicked",
 				G_CALLBACK(gtk_widget_destroy), popup);
-		gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, TRUE, 0);
+		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		/* date */
 		calendar = gtk_calendar_new();
 		gtk_calendar_select_day(GTK_CALENDAR(calendar), t.tm_mday);
 		gtk_calendar_select_month(GTK_CALENDAR(calendar), t.tm_mon,
@@ -639,10 +668,9 @@ void todo_task_cursor_changed(Todo * todo)
 					? _task_cursor_changed_date_start
 					: _task_cursor_changed_date_end), task);
 		gtk_box_pack_start(GTK_BOX(vbox), calendar, FALSE, TRUE, 0);
-		gtk_window_set_modal(GTK_WINDOW(popup), TRUE);
-		gtk_window_set_transient_for(GTK_WINDOW(popup), GTK_WINDOW(
-					todo->window));
 		gtk_container_add(GTK_CONTAINER(popup), vbox);
+		gtk_tree_view_get_cell_area(GTK_TREE_VIEW(todo->view), path,
+				column, &rect);
 		gtk_window_get_position(GTK_WINDOW(todo->window), &rect.width,
 				&rect.height);
 		gtk_window_move(GTK_WINDOW(popup), rect.width + rect.x,
