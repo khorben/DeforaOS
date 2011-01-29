@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* FIXME
- * - implement cut/paste */
 
 
 
@@ -362,6 +360,16 @@ void ghtml_copy(GtkWidget * widget)
 }
 
 
+/* ghtml_cut */
+void ghtml_cut(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_cut_clipboard(WEBKIT_WEB_VIEW(ghtml->view));
+}
+
+
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * widget, char const * code)
 {
@@ -421,6 +429,16 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	surfer_set_progress(ghtml->surfer, 0.0);
 	surfer_set_security(ghtml->surfer, SS_NONE);
 	_ghtml_set_status(widget, _("Connecting..."));
+}
+
+
+/* ghtml_paste */
+void ghtml_paste(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_paste_clipboard(WEBKIT_WEB_VIEW(ghtml->view));
 }
 
 

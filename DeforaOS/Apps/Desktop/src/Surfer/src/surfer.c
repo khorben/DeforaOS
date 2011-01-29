@@ -130,10 +130,12 @@ static DesktopMenu _menu_edit[] =
 	{ N_("_Redo"),		G_CALLBACK(on_edit_redo), GTK_STOCK_REDO,
 		GDK_CONTROL_MASK, GDK_Y },
 	{ "",			NULL, NULL, 0, 0 },
-	{ N_("_Cut"),		NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
-	{ N_("Cop_y"),		NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
-	{ N_("_Paste"),		NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK,
-		GDK_V },
+	{ N_("_Cut"),		G_CALLBACK(on_edit_cut), GTK_STOCK_CUT,
+		GDK_CONTROL_MASK, GDK_X },
+	{ N_("Cop_y"),		G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
+		GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"),		G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
+		GDK_CONTROL_MASK, GDK_V },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("Select _all"),	G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -842,6 +844,34 @@ void surfer_console_message(Surfer * surfer, char const * message,
 }
 
 
+/* surfer_copy */
+void surfer_copy(Surfer * surfer)
+{
+	GtkWidget * entry;
+	GtkWidget * view;
+
+	entry = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(surfer->window)) == entry)
+		gtk_editable_copy_clipboard(GTK_EDITABLE(entry));
+	else if((view = surfer_get_view(surfer)) != NULL)
+		ghtml_copy(view);
+}
+
+
+/* surfer_cut */
+void surfer_cut(Surfer * surfer)
+{
+	GtkWidget * entry;
+	GtkWidget * view;
+
+	entry = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(surfer->window)) == entry)
+		gtk_editable_cut_clipboard(GTK_EDITABLE(entry));
+	else if((view = surfer_get_view(surfer)) != NULL)
+		ghtml_cut(view);
+}
+
+
 /* surfer_download */
 int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 {
@@ -1145,6 +1175,20 @@ static GtkWidget * _tab_button(Surfer * surfer, GtkWidget * widget,
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
 	gtk_widget_show_all(hbox);
 	return hbox;
+}
+
+
+/* surfer_paste */
+void surfer_paste(Surfer * surfer)
+{
+	GtkWidget * entry;
+	GtkWidget * view;
+
+	entry = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(surfer->window)) == entry)
+		gtk_editable_paste_clipboard(GTK_EDITABLE(entry));
+	else if((view = surfer_get_view(surfer)) != NULL)
+		ghtml_paste(view);
 }
 
 

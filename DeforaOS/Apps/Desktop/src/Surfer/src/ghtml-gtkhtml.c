@@ -298,6 +298,13 @@ void ghtml_copy(GtkWidget * ghtml)
 }
 
 
+/* ghtml_cut */
+void ghtml_cut(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * ghtml, char const * code)
 {
@@ -356,6 +363,13 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 		url = link;
 	_ghtml_document_load(ghtml, url, NULL);
 	g_free(link);
+}
+
+
+/* ghtml_paste */
+void ghtml_paste(GtkWidget * ghtml)
+{
+	/* FIXME implement */
 }
 
 

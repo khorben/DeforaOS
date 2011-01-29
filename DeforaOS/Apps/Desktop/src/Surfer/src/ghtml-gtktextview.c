@@ -457,6 +457,20 @@ void ghtml_copy(GtkWidget * widget)
 }
 
 
+/* ghtml_cut */
+void ghtml_cut(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	clipboard = gtk_widget_get_clipboard(ghtml->view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_cut_clipboard(ghtml->tbuffer, clipboard, FALSE);
+}
+
+
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * ghtml, char const * code)
 {
@@ -568,6 +582,20 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 		url = link;
 	_ghtml_document_load(ghtml, url, NULL);
 	g_free(link);
+}
+
+
+/* ghtml_paste */
+void ghtml_paste(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	clipboard = gtk_widget_get_clipboard(ghtml->view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_paste_clipboard(ghtml->tbuffer, clipboard, NULL, FALSE);
 }
 
 

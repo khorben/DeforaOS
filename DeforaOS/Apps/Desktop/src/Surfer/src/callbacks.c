@@ -151,12 +151,39 @@ void on_edit_redo(gpointer data)
 }
 
 
+/* on_edit_copy */
+void on_edit_copy(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_copy(surfer);
+}
+
+
+/* on_edit_cut */
+void on_edit_cut(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_cut(surfer);
+}
+
+
 /* on_edit_find */
 void on_edit_find(gpointer data)
 {
 	Surfer * surfer = data;
 
 	surfer_find(surfer, NULL);
+}
+
+
+/* on_edit_paste */
+void on_edit_paste(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_paste(surfer);
 }
 
 

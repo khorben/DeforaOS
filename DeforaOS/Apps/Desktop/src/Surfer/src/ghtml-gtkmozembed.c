@@ -419,6 +419,13 @@ void ghtml_copy(GtkWidget * ghtml)
 }
 
 
+/* ghtml_cut */
+void ghtml_cut(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_execute */
 void ghtml_execute(GtkWidget * ghtml, char const * code)
 {
@@ -459,6 +466,13 @@ gboolean ghtml_go_forward(GtkWidget * ghtml)
 void ghtml_load_url(GtkWidget * ghtml, char const * url)
 {
 	gtk_moz_embed_load_url(GTK_MOZ_EMBED(ghtml), url);
+}
+
+
+/* ghtml_paste */
+void ghtml_paste(GtkWidget * ghtml)
+{
+	/* FIXME implement */
 }
 
 
