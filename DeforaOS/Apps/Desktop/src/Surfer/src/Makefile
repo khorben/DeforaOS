@@ -58,7 +58,7 @@ distclean:
 	$(RM) -- $(download_OBJS) $(surfer_OBJS)
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- download $(DESTDIR)$(BINDIR)/download

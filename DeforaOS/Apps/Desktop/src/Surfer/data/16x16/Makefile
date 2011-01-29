@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps
 	$(INSTALL) -m 0644 -- surfer-view-html-source.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps/surfer-view-html-source.png
 
