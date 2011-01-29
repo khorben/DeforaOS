@@ -39,6 +39,10 @@ void compose_add_field(Compose * compose, char const * field,
 
 gboolean compose_close(Compose * compose);
 
+void compose_copy(Compose * compose);
+void compose_cut(Compose * compose);
+void compose_paste(Compose * compose);
+
 int compose_error(Compose * compose, char const * message, int ret);
 
 int compose_save(Compose * compose);

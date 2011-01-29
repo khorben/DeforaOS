@@ -57,6 +57,10 @@ void mailer_open_selected_source(Mailer * mailer);
 void mailer_reply_selected(Mailer * mailer);
 void mailer_reply_selected_to_all(Mailer * mailer);
 
+void mailer_cut(Mailer * mailer);
+void mailer_copy(Mailer * mailer);
+void mailer_paste(Mailer * mailer);
+
 void mailer_select_all(Mailer * mailer);
 void mailer_unselect_all(Mailer * mailer);
 

@@ -97,6 +97,30 @@ void on_message_view_source(gpointer data)
 
 
 /* edit menu */
+void on_edit_cut(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_cut(mailer);
+}
+
+
+void on_edit_copy(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_copy(mailer);
+}
+
+
+void on_edit_paste(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_paste(mailer);
+}
+
+
 void on_edit_preferences(gpointer data)
 {
 	Mailer * mailer = data;
@@ -233,6 +257,33 @@ void on_compose_file_close(gpointer data)
 
 
 /* compose edit menu */
+/* on_compose_edit_copy */
+void on_compose_edit_copy(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_copy(compose);
+}
+
+
+/* on_compose_edit_cut */
+void on_compose_edit_cut(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_cut(compose);
+}
+
+
+/* on_compose_edit_paste */
+void on_compose_edit_paste(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_paste(compose);
+}
+
+
 /* on_compose_edit_select_all */
 void on_compose_edit_select_all(gpointer data)
 {

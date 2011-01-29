@@ -29,6 +29,9 @@ void on_file_new_mail(gpointer data);
 void on_file_quit(gpointer data);
 
 /* edit menu */
+void on_edit_cut(gpointer data);
+void on_edit_copy(gpointer data);
+void on_edit_paste(gpointer data);
 void on_edit_preferences(gpointer data);
 void on_edit_select_all(gpointer data);
 void on_edit_unselect_all(gpointer data);

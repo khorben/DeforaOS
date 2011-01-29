@@ -118,9 +118,12 @@ static DesktopMenu _menu_file[] =
 
 static DesktopMenu _menu_edit[] =
 {
-	{ N_("_Cut"), NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
-	{ N_("Cop_y"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
-	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_V },
+	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
+		GDK_X },
+	{ N_("Cop_y"), G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
+		GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
+		GDK_CONTROL_MASK, GDK_V },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -862,6 +865,44 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 }
 
 
+/* mailer_copy */
+void mailer_copy(Mailer * mailer)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
+			== mailer->view_body)
+	{
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+					mailer->view_body));
+		clipboard = gtk_widget_get_clipboard(mailer->view_body,
+				GDK_SELECTION_CLIPBOARD);
+		gtk_text_buffer_copy_clipboard(buffer, clipboard);
+	}
+	/* FIXME implement the other widgets */
+}
+
+
+/* mailer_cut */
+void mailer_cut(Mailer * mailer)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
+			== mailer->view_body) /* XXX copies, really */
+	{
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+					mailer->view_body));
+		clipboard = gtk_widget_get_clipboard(mailer->view_body,
+				GDK_SELECTION_CLIPBOARD);
+		gtk_text_buffer_cut_clipboard(buffer, clipboard, FALSE);
+	}
+	/* FIXME implement the other widgets */
+}
+
+
 /* mailer_open_selected_source */
 static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
 		GtkTreeIter * iter);
@@ -908,6 +949,25 @@ static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
 	gtk_container_add(GTK_CONTAINER(window), scrolled);
 	gtk_widget_show_all(window);
 	/* FIXME count the window */
+}
+
+
+/* mailer_paste */
+void mailer_paste(Mailer * mailer)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
+			== mailer->view_body) /* XXX does nothing, really */
+	{
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+					mailer->view_body));
+		clipboard = gtk_widget_get_clipboard(mailer->view_body,
+				GDK_SELECTION_CLIPBOARD);
+		gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL, FALSE);
+	}
+	/* FIXME implement the other widgets */
 }
 
 

@@ -93,9 +93,12 @@ static DesktopMenu _menu_edit[] =
 	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_Z },
 	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_Y },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Cut"), NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
-	{ N_("_Copy"), NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
-	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK, GDK_P },
+	{ N_("_Cut"), G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT,
+		GDK_CONTROL_MASK, GDK_X },
+	{ N_("_Copy"), G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY,
+		GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"), G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE,
+		GDK_CONTROL_MASK, GDK_V },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Select all"), G_CALLBACK(on_compose_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -142,9 +145,12 @@ static DesktopToolbar _compose_toolbar[] =
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Save"), G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Cut"), NULL, GTK_STOCK_CUT, 0, 0, NULL },
-	{ N_("Copy"), NULL, GTK_STOCK_COPY, 0, 0, NULL },
-	{ N_("Paste"), NULL, GTK_STOCK_PASTE, 0, 0, NULL },
+	{ N_("Cut"), G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT, 0, 0,
+		NULL },
+	{ N_("Copy"), G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY, 0, 0,
+		NULL },
+	{ N_("Paste"), G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE, 0, 0,
+		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Attach"), NULL, "stock_attach", 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
@@ -439,6 +445,50 @@ gboolean compose_close(Compose * compose)
 }
 
 
+/* compose_copy */
+void compose_copy(Compose * compose)
+{
+	GtkWidget * focus;
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if((focus = gtk_window_get_focus(GTK_WINDOW(compose->window)))
+			== compose->view)
+	{
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+		clipboard = gtk_widget_get_clipboard(compose->view,
+				GDK_SELECTION_CLIPBOARD);
+		gtk_text_buffer_copy_clipboard(buffer, clipboard);
+	}
+	else if(focus == gtk_bin_get_child(GTK_BIN(compose->from))
+			|| focus == compose->subject)
+		gtk_editable_copy_clipboard(GTK_EDITABLE(focus));
+	/* FIXME also implement the headers */
+}
+
+
+/* compose_cut */
+void compose_cut(Compose * compose)
+{
+	GtkWidget * focus;
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if((focus = gtk_window_get_focus(GTK_WINDOW(compose->window)))
+			== compose->view)
+	{
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+		clipboard = gtk_widget_get_clipboard(compose->view,
+				GDK_SELECTION_CLIPBOARD);
+		gtk_text_buffer_cut_clipboard(buffer, clipboard, TRUE);
+	}
+	else if(focus == gtk_bin_get_child(GTK_BIN(compose->from))
+			|| focus == compose->subject)
+		gtk_editable_cut_clipboard(GTK_EDITABLE(focus));
+	/* FIXME also implement the headers */
+}
+
+
 /* compose_error */
 int compose_error(Compose * compose, char const * message, int ret)
 {
@@ -462,6 +512,28 @@ int compose_error(Compose * compose, char const * message, int ret)
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
 	return ret;
+}
+
+
+/* compose_paste */
+void compose_paste(Compose * compose)
+{
+	GtkWidget * focus;
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if((focus = gtk_window_get_focus(GTK_WINDOW(compose->window)))
+			== compose->view)
+	{
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+		clipboard = gtk_widget_get_clipboard(compose->view,
+				GDK_SELECTION_CLIPBOARD);
+		gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL, TRUE);
+	}
+	else if(focus == gtk_bin_get_child(GTK_BIN(compose->from))
+			|| focus == compose->subject)
+		gtk_editable_copy_clipboard(GTK_EDITABLE(focus));
+	/* FIXME also implement the headers */
 }
 
 
