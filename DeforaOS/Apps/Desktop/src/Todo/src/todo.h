@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,6 +67,7 @@ void todo_task_set_priority(Todo * todo, GtkTreePath * path,
 		char const * priority);
 void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title);
 
+void todo_task_cursor_changed(Todo * todo);
 void todo_task_edit(Todo * todo);
 int todo_task_reload_all(Todo * todo);
 void todo_task_save_all(Todo * todo);

@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Todo */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -310,6 +310,8 @@ static void _new_view(Todo * todo)
 	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
 			!= NULL)
 		gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
+	g_signal_connect_swapped(G_OBJECT(todo->view), "cursor-changed",
+			G_CALLBACK(on_task_cursor_changed), todo);
 	g_signal_connect_swapped(G_OBJECT(todo->view), "row-activated",
 			G_CALLBACK(on_task_activated), todo);
 	/* done column */
@@ -582,6 +584,109 @@ static void _task_delete_selected_foreach(GtkTreeRowReference * reference,
 	}
 	gtk_list_store_remove(todo->store, &iter);
 	gtk_tree_path_free(path);
+}
+
+
+/* todo_task_cursor_changed */
+static void _task_cursor_changed_date_end(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_date_start(GtkWidget * widget, gpointer data);
+
+void todo_task_cursor_changed(Todo * todo)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	GtkTreePath * path = NULL;
+	GtkTreeViewColumn * column = NULL;
+	GtkTreeIter iter;
+	Task * task = NULL;
+	gint id = -1;
+	GdkRectangle rect;
+	GtkWidget * popup;
+	GtkWidget * vbox;
+	time_t tim;
+	struct tm t;
+	GtkWidget * button;
+	GtkWidget * calendar;
+
+	gtk_tree_view_get_cursor(GTK_TREE_VIEW(todo->view), &path, &column);
+	if(path == NULL)
+		return;
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
+	if(column != NULL)
+		id = gtk_tree_view_column_get_sort_column_id(column);
+	if(id == TD_COL_END || id == TD_COL_START)
+	{
+		gtk_tree_view_get_cell_area(GTK_TREE_VIEW(todo->view), path,
+				column, &rect);
+		popup = gtk_window_new(GTK_WINDOW_POPUP);
+		vbox = gtk_vbox_new(FALSE, 4);
+		if((tim = (id == TD_COL_START) ? task_get_start(task)
+					: task_get_end(task)) == 0)
+			tim = time(NULL);
+		localtime_r(&tim, &t);
+		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+		gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
+		g_signal_connect_swapped(G_OBJECT(button), "clicked",
+				G_CALLBACK(gtk_widget_destroy), popup);
+		gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, TRUE, 0);
+		calendar = gtk_calendar_new();
+		gtk_calendar_select_day(GTK_CALENDAR(calendar), t.tm_mday);
+		gtk_calendar_select_month(GTK_CALENDAR(calendar), t.tm_mon,
+				1900 + t.tm_year);
+		g_signal_connect(G_OBJECT(calendar),
+				"day-selected-double-click", G_CALLBACK(
+					(id == TD_COL_START)
+					? _task_cursor_changed_date_start
+					: _task_cursor_changed_date_end), task);
+		gtk_box_pack_start(GTK_BOX(vbox), calendar, FALSE, TRUE, 0);
+		gtk_window_set_modal(GTK_WINDOW(popup), TRUE);
+		gtk_window_set_transient_for(GTK_WINDOW(popup), GTK_WINDOW(
+					todo->window));
+		gtk_container_add(GTK_CONTAINER(popup), vbox);
+		gtk_window_get_position(GTK_WINDOW(todo->window), &rect.width,
+				&rect.height);
+		gtk_window_move(GTK_WINDOW(popup), rect.width + rect.x,
+				rect.height + rect.y);
+		gtk_widget_show_all(popup);
+	}
+	gtk_tree_path_free(path);
+}
+
+static time_t _task_cursor_changed_date_get(GtkWidget * widget, time_t time)
+{
+	struct tm t;
+	unsigned int year;
+	unsigned int month;
+	unsigned int day;
+
+	localtime_r(&time, &t);
+	gtk_calendar_get_date(GTK_CALENDAR(widget), &year, &month, &day);
+	t.tm_year = year - 1900;
+	t.tm_mon = month;
+	t.tm_mday = day;
+	return mktime(&t);
+}
+
+static void _task_cursor_changed_date_end(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+
+	time = task_get_end(task);
+	time = _task_cursor_changed_date_get(widget, time);
+	task_set_end(task, time);
+	task_save(task);
+}
+
+static void _task_cursor_changed_date_start(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+
+	time = task_get_start(task);
+	time = _task_cursor_changed_date_get(widget, time);
+	task_set_start(task, time);
+	task_save(task);
 }
 
 

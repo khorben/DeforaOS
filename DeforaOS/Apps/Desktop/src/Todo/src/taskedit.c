@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 	GtkWidget * hbox;
 	GtkWidget * scrolled;
 	GtkWidget * widget;
+	GtkWidget * entry;
 	GtkWidget * bbox;
 	char const * description;
 
@@ -85,9 +86,9 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	taskedit->priority = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(taskedit->priority), task_get_priority(
-				task));
+	taskedit->priority = gtk_combo_box_entry_new_text();
+	entry = gtk_bin_get_child(GTK_BIN(taskedit->priority));
+	gtk_entry_set_text(GTK_ENTRY(entry), task_get_priority(task));
 	gtk_box_pack_start(GTK_BOX(hbox), taskedit->priority, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* description */
@@ -135,6 +136,7 @@ static void _on_taskedit_cancel(gpointer data)
 static void _on_taskedit_ok(gpointer data)
 {
 	TaskEdit * taskedit = data;
+	GtkWidget * entry;
 	GtkTextBuffer * tbuf;
 	GtkTextIter start;
 	GtkTextIter end;
@@ -142,8 +144,8 @@ static void _on_taskedit_ok(gpointer data)
 	
 	task_set_title(taskedit->task, gtk_entry_get_text(GTK_ENTRY(
 					taskedit->title)));
-	task_set_priority(taskedit->task, gtk_entry_get_text(GTK_ENTRY(
-					taskedit->priority)));
+	entry = gtk_bin_get_child(GTK_BIN(taskedit->priority));
+	task_set_priority(taskedit->task, gtk_entry_get_text(GTK_ENTRY(entry)));
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(taskedit->description));
 	gtk_text_buffer_get_start_iter(tbuf, &start);
 	gtk_text_buffer_get_end_iter(tbuf, &end);

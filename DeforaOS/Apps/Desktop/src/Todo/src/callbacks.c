@@ -192,6 +192,15 @@ void on_task_activated(gpointer data)
 }
 
 
+/* on_task_cursor_changed */
+void on_task_cursor_changed(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_cursor_changed(todo);
+}
+
+
 /* on_task_done_toggled */
 void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
 		gpointer data)
