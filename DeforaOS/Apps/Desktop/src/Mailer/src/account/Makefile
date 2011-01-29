@@ -74,7 +74,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
 	$(INSTALL) -m 0644 -- mbox.so $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
 

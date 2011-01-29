@@ -86,23 +86,27 @@ typedef struct _AccountPluginHelper
 	GtkIconTheme * theme;
 	GdkPixbuf * mail_read;
 	GdkPixbuf * mail_unread;
+	int (*error)(Mailer * mailer, char const * message, int ret);
 } AccountPluginHelper;
 
-typedef struct _AccountPlugin
+typedef struct _AccountPlugin AccountPlugin;
+
+struct _AccountPlugin
 {
 	AccountPluginHelper * helper;
 	char const * type;
 	char const * name;
+	char const * icon;
 	AccountConfig * config;
-	int (*init)(GtkTreeStore * store, GtkTreeIter * parent,
-			GtkTextBuffer * buffer);
-	int (*quit)(void);
-	GtkTextBuffer * (*select)(AccountFolder * folder,
-			AccountMessage * message);
-	GtkTextBuffer * (*select_source)(AccountFolder * folder,
-			AccountMessage * message);
+	int (*init)(AccountPlugin * plugin, GtkTreeStore * store,
+			GtkTreeIter * parent, GtkTextBuffer * buffer);
+	int (*destroy)(AccountPlugin * plugin);
+	GtkTextBuffer * (*select)(AccountPlugin * plugin,
+			AccountFolder * folder, AccountMessage * message);
+	GtkTextBuffer * (*select_source)(AccountPlugin * plugin,
+			AccountFolder * folder, AccountMessage * message);
 	void * priv;
-} AccountPlugin;
+};
 
 
 /* constants */

@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps
 	$(INSTALL) -m 0644 -- mailer.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/mailer.png
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps

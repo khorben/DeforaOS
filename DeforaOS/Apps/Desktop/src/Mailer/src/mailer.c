@@ -349,6 +349,7 @@ static int _new_plugins(Mailer * mailer)
 			mailer->helper.theme, "mail-read", 16, 0, NULL);
 	mailer->helper.mail_unread = gtk_icon_theme_load_icon(
 			mailer->helper.theme, "mail-unread", 16, 0, NULL);
+	mailer->helper.error = mailer_error;
 	if((dirname = string_new_append(PLUGINDIR, "/account", NULL)) == NULL)
 		return -1;
 	if((dir = opendir(dirname)) == NULL)

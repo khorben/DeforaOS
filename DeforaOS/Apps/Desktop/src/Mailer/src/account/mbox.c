@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@
 
 /* Mbox */
 /* private */
+#define _FOLDER_CNT 5
+
+
 /* types */
 typedef enum _ParserContext
 {
@@ -39,8 +42,12 @@ typedef enum _ParserContext
 	PC_GARBAGE	/* inside crap */
 } ParserContext;
 
+typedef struct _Mbox Mbox;
+
 typedef struct _MboxFolder
 {
+	Mbox * mbox;
+	AccountFolder folder;
 	AccountConfig * config;
 	AccountMessage ** messages;
 	size_t messages_cnt;
@@ -62,17 +69,17 @@ typedef struct _MboxFolder
 	char * pixbuf;
 } MboxFolder;
 
+struct _Mbox
+{
+	AccountPlugin * plugin;
+	MboxFolder folders[_FOLDER_CNT];
+};
+
 
 /* constants */
-#define _FOLDER_CNT 5
 
 
 /* variables */
-static char const _mbox_type[] = "MBOX";
-static char const _mbox_name[] = "Local folders";
-
-static char const * _error = NULL;
-
 static AccountConfig _mbox_config[_FOLDER_CNT + 1] =
 {
 	{ "mbox",	"Inbox file",		ACT_FILE,	NULL },
@@ -83,73 +90,69 @@ static AccountConfig _mbox_config[_FOLDER_CNT + 1] =
 	{ NULL,		NULL,			0,		NULL }
 };
 
-static MboxFolder _mbox_inbox =
+static const MboxFolder _mbox_folder_defaults[_FOLDER_CNT] =
 {
-	&_mbox_config[0], NULL, 0, NULL,
-	0, NULL, -1,
-	0, PC_FROM, NULL, 0, NULL,
-	"mailer-inbox"
-};
-
-static MboxFolder _mbox_spool =
-{
-	&_mbox_config[1], NULL, 0, NULL,
-	0, NULL, -1,
-	0, PC_FROM, NULL, 0, NULL,
-	"mailer-inbox"
-};
-
-static MboxFolder _mbox_drafts =
-{
-	&_mbox_config[2], NULL, 0, NULL,
-	0, NULL, -1,
-	0, PC_FROM, NULL, 0, NULL,
-	"stock_mail-handling"
-};
-
-static MboxFolder _mbox_sent =
-{
-	&_mbox_config[3], NULL, 0, NULL,
-	0, NULL, -1,
-	0, PC_FROM, NULL, 0, NULL,
-	"mailer-sent"
-};
-
-static MboxFolder _mbox_trash =
-{
-	&_mbox_config[4], NULL, 0, NULL,
-	0, NULL, -1,
-	0, PC_FROM, NULL, 0, NULL,
-	"stock_trash_full"
-};
-
-static AccountFolder _config_folder[_FOLDER_CNT] =
-{
-	{ AFT_INBOX,	"Inbox",	NULL,	&_mbox_inbox	},
-	{ AFT_INBOX,	"Spool",	NULL,	&_mbox_spool	},
-	{ AFT_DRAFTS,	"Drafts",	NULL,	&_mbox_drafts	},
-	{ AFT_SENT,	"Sent",		NULL,	&_mbox_sent	},
-	{ AFT_TRASH,	"Trash",	NULL,	&_mbox_trash	}
+	{
+		NULL,
+		{ AFT_INBOX, "Inbox", NULL, NULL },
+		&_mbox_config[0], NULL, 0, NULL,
+		0, NULL, -1,
+		0, PC_FROM, NULL, 0, NULL,
+		"mailer-inbox"
+	},
+	{
+		NULL,
+		{ AFT_INBOX, "Spool", NULL, NULL },
+		&_mbox_config[1], NULL, 0, NULL,
+		0, NULL, -1,
+		0, PC_FROM, NULL, 0, NULL,
+		"mailer-inbox"
+	},
+	{
+		NULL,
+		{ AFT_DRAFTS, "Drafts", NULL, NULL },
+		&_mbox_config[2], NULL, 0, NULL,
+		0, NULL, -1,
+		0, PC_FROM, NULL, 0, NULL,
+		"stock_mail-handling"
+	},
+	{
+		NULL,
+		{ AFT_SENT, "Sent", NULL, NULL },
+		&_mbox_config[3], NULL, 0, NULL,
+		0, NULL, -1,
+		0, PC_FROM, NULL, 0, NULL,
+		"mailer-sent"
+	},
+	{
+		NULL,
+		{ AFT_TRASH, "Trash", NULL, NULL },
+		&_mbox_config[4], NULL, 0, NULL,
+		0, NULL, -1,
+		0, PC_FROM, NULL, 0, NULL,
+		"stock_trash_full"
+	}
 };
 
 
 /* plug-in */
-static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
-		GtkTextBuffer * buffer);
-static int _mbox_quit(void);
-static GtkTextBuffer * _mbox_select(AccountFolder * folder,
-		AccountMessage * message);
-static GtkTextBuffer * _mbox_select_source(AccountFolder * folder,
-		AccountMessage * message);
+static int _mbox_init(AccountPlugin * plugin, GtkTreeStore * store,
+		GtkTreeIter * parent, GtkTextBuffer * buffer);
+static int _mbox_destroy(AccountPlugin * plugin);
+static GtkTextBuffer * _mbox_select(AccountPlugin * plugin,
+		AccountFolder * folder, AccountMessage * message);
+static GtkTextBuffer * _mbox_select_source(AccountPlugin * plugin,
+		AccountFolder * folder, AccountMessage * message);
 
 AccountPlugin account_plugin =
 {
 	NULL,
-	_mbox_type,
-	_mbox_name,
+	"MBOX",
+	"Local folders",
+	NULL,
 	_mbox_config,
 	_mbox_init,
-	_mbox_quit,
+	_mbox_destroy,
 	_mbox_select,
 	_mbox_select_source,
 	NULL
@@ -190,31 +193,39 @@ static int _message_set_header(AccountMessage * message, char const * header,
 /* Mbox */
 /* functions */
 /* mbox_init */
-static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
-		GtkTextBuffer * buffer)
+static int _mbox_init(AccountPlugin * plugin, GtkTreeStore * store,
+		GtkTreeIter * parent, GtkTextBuffer * buffer)
 {
 	int ret = 0;
+	Mbox * mbox;
 	size_t i;
 	char * filename;
 	AccountFolder * af;
-	MboxFolder * mbox;
+	MboxFolder * folder;
 	GdkPixbuf * pixbuf;
 	GtkTreeIter iter;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if((mbox = malloc(sizeof(*mbox))) == NULL)
+		return -1;
+	plugin->priv = mbox;
+	mbox->plugin = plugin;
+	memcpy(mbox->folders, _mbox_folder_defaults, sizeof(mbox->folders));
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
-		af = &_config_folder[i];
-		mbox = af->data;
-		mbox->buffer = buffer;
-		filename = mbox->config->value;
+		af = &mbox->folders[i].folder;
+		af->data = &mbox->folders[i];
+		folder = &mbox->folders[i];
+		folder->mbox = mbox;
+		folder->buffer = buffer;
+		filename = folder->config->value;
 		if(filename == NULL)
 			continue;
 		pixbuf = gtk_icon_theme_load_icon(account_plugin.helper->theme,
-				(mbox->pixbuf != NULL)
-				? mbox->pixbuf : "stock_folder", 16,
+				(folder->pixbuf != NULL)
+				? folder->pixbuf : "stock_folder", 16,
 				0, NULL);
 		gtk_tree_store_append(store, &iter, parent);
 		gtk_tree_store_set(store, &iter, MF_COL_ACCOUNT, NULL,
@@ -222,40 +233,42 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 				MF_COL_NAME, af->name, -1);
 		g_object_unref(pixbuf);
 		/* XXX should not be done here? */
-		_config_folder[i].store = gtk_list_store_new(MH_COL_COUNT,
-				G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
-				GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING,
-				G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-				G_TYPE_BOOLEAN, G_TYPE_INT);
-		mbox->source = g_idle_add(_folder_idle, &_config_folder[i]);
+		af->store = gtk_list_store_new(MH_COL_COUNT, G_TYPE_POINTER,
+				G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
+				G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				G_TYPE_UINT, G_TYPE_STRING, G_TYPE_BOOLEAN,
+				G_TYPE_INT);
+		folder->source = g_idle_add(_folder_idle, af);
 	}
 	return ret;
 }
 
 
-/* mbox_quit */
-static int _mbox_quit(void)
+/* mbox_destroy */
+static int _mbox_destroy(AccountPlugin * plugin)
 {
+	Mbox * mbox = plugin->priv;
 	size_t i;
 	MboxFolder * mf;
 	size_t j;
 
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
-		mf = _config_folder[i].data;
+		mf = &mbox->folders[i];
 		for(j = 0; j < mf->messages_cnt; j++)
 			_message_delete(mf->messages[j]);
 		free(mf->messages);
 		mf->messages = NULL;
 		mf->messages_cnt = 0;
 	}
+	free(mbox);
 	return 0;
 }
 
 
 /* mbox_select */
-static GtkTextBuffer * _mbox_select(AccountFolder * folder,
-		AccountMessage * message)
+static GtkTextBuffer * _mbox_select(AccountPlugin * plugin,
+		AccountFolder * folder, AccountMessage * message)
 {
 	MboxFolder * mf = folder->data;
 	char const * filename = mf->config->value;
@@ -272,7 +285,10 @@ static GtkTextBuffer * _mbox_select(AccountFolder * folder,
 	gtk_text_buffer_get_end_iter(mf->buffer, &iter);
 	/* XXX we may still be reading the file... */
 	if((fp = fopen(filename, "r")) == NULL)
+	{
+		plugin->helper->error(NULL, strerror(errno), 1);
 		return NULL;
+	}
 	if(message->body_offset != 0 && message->body_length > 0
 			&& fseek(fp, message->body_offset, SEEK_SET) == 0
 			&& (buf = malloc(message->body_length)) != NULL)
@@ -287,8 +303,8 @@ static GtkTextBuffer * _mbox_select(AccountFolder * folder,
 
 
 /* mbox_select_source */
-static GtkTextBuffer * _mbox_select_source(AccountFolder * folder,
-		AccountMessage * message)
+static GtkTextBuffer * _mbox_select_source(AccountPlugin * plugin,
+		AccountFolder * folder, AccountMessage * message)
 {
 	/* FIXME code duplication with _mbox_select */
 	GtkTextBuffer * ret;
@@ -307,7 +323,10 @@ static GtkTextBuffer * _mbox_select_source(AccountFolder * folder,
 	gtk_text_buffer_get_end_iter(ret, &iter);
 	/* XXX we may still be reading the file... */
 	if((fp = fopen(filename, "r")) == NULL)
+	{
+		plugin->helper->error(NULL, strerror(errno), 1);
 		return NULL;
+	}
 	size = message->body_offset - message->offset + message->body_length;
 	if(fseek(fp, message->offset, SEEK_SET) == 0
 			&& (buf = malloc(size)) != NULL)
@@ -476,9 +495,10 @@ AccountMessage * _folder_message_add(AccountFolder * folder, off_t offset)
 static gboolean _folder_idle(gpointer data)
 {
 	AccountFolder * folder = data;
-	MboxFolder * mbox = folder->data;
+	MboxFolder * mf = folder->data;
+	Mbox * mbox = mf->mbox;
 	struct stat st;
-	char const * filename = mbox->config->value;
+	char const * filename = mf->config->value;
 	GError * error = NULL;
 
 #ifdef DEBUG
@@ -488,26 +508,26 @@ static gboolean _folder_idle(gpointer data)
 		return FALSE;
 	if(stat(filename, &st) != 0)
 	{
-		_error = strerror(errno);
-		mbox->source = g_timeout_add(1000, _folder_idle, folder);
+		mbox->plugin->helper->error(NULL, strerror(errno), 1);
+		mf->source = g_timeout_add(1000, _folder_idle, folder);
 		return FALSE;
 	}
-	if(st.st_mtime == mbox->mtime)
+	if(st.st_mtime == mf->mtime)
 	{
-		mbox->source = g_timeout_add(1000, _folder_idle, folder);
+		mf->source = g_timeout_add(1000, _folder_idle, folder);
 		return FALSE;
 	}
-	mbox->mtime = st.st_mtime; /* FIXME only when done */
-	if(mbox->channel == NULL)
-		if((mbox->channel = g_io_channel_new_file(filename, "r",
+	mf->mtime = st.st_mtime; /* FIXME only when done */
+	if(mf->channel == NULL)
+		if((mf->channel = g_io_channel_new_file(filename, "r",
 						&error)) == NULL)
 	{
-		_error = error->message;
-		mbox->source = g_timeout_add(1000, _folder_idle, folder);
+		mbox->plugin->helper->error(NULL, error->message, 1);
+		mf->source = g_timeout_add(1000, _folder_idle, folder);
 		return FALSE;
 	}
-	g_io_channel_set_encoding(mbox->channel, NULL, NULL);
-	mbox->source = g_io_add_watch(mbox->channel, G_IO_IN, _folder_watch,
+	g_io_channel_set_encoding(mf->channel, NULL, NULL);
+	mf->source = g_io_add_watch(mf->channel, G_IO_IN, _folder_watch,
 			folder);
 	return FALSE;
 }
@@ -529,7 +549,8 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	AccountFolder * folder = data;
-	MboxFolder * mbox = folder->data;
+	MboxFolder * mf = folder->data;
+	Mbox * mbox = mf->mbox;
 	char buf[BUFSIZ];
 	size_t read;
 	GError * error = NULL;
@@ -537,7 +558,7 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			(char const *)mbox->config->value);
+			(char const *)mf->config->value);
 #endif
 	if(condition != G_IO_IN)
 		return FALSE; /* FIXME implement message deletion */
@@ -546,7 +567,7 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 	switch(status)
 	{
 		case G_IO_STATUS_ERROR:
-			_error = error->message;
+			mbox->plugin->helper->error(NULL, error->message, 1);
 			/* FIXME new timeout 1000 function after invalidating
 			 * mtime */
 			return FALSE;
@@ -560,14 +581,12 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 	if(status == G_IO_STATUS_EOF)
 	{
 		/* XXX should not be necessary here */
-		if(mbox->message != NULL)
-			_message_set_body(mbox->message,
-					mbox->message->body_offset,
-					mbox->offset
-					- mbox->message->body_offset);
+		if(mf->message != NULL)
+			_message_set_body(mf->message, mf->message->body_offset,
+					mf->offset - mf->message->body_offset);
 		g_io_channel_close(source);
-		mbox->channel = NULL;
-		mbox->source = g_timeout_add(1000, _folder_idle, folder);
+		mf->channel = NULL;
+		mf->source = g_timeout_add(1000, _folder_idle, folder);
 		return FALSE;
 	}
 	return TRUE;

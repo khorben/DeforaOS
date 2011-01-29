@@ -108,8 +108,8 @@ void account_delete(Account * account)
 
 	if(account->plugin != NULL)
 	{
-		if(account->plugin->quit != NULL)
-			account->plugin->quit();
+		if(account->plugin->destroy != NULL)
+			account->plugin->destroy(account->plugin);
 		if(account->plugin->config != NULL)
 			for(p = account->plugin->config; p->name != NULL; p++)
 				switch(p->type)
@@ -287,7 +287,8 @@ int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 #endif
 	if(account->plugin->init == NULL)
 		return 0;
-	return account->plugin->init(store, parent, account->buffer);
+	return account->plugin->init(account->plugin, store, parent,
+			account->buffer);
 }
 
 
@@ -301,7 +302,7 @@ GtkTextBuffer * account_select(Account * account, AccountFolder * folder,
 #endif
 	if(account->plugin->select == NULL)
 		return NULL;
-	return account->plugin->select(folder, message);
+	return account->plugin->select(account->plugin, folder, message);
 }
 
 
@@ -315,5 +316,5 @@ GtkTextBuffer * account_select_source(Account * account, AccountFolder * folder,
 #endif
 	if(account->plugin->select_source == NULL)
 		return NULL;
-	return account->plugin->select_source(folder, message);
+	return account->plugin->select_source(account->plugin, folder, message);
 }
