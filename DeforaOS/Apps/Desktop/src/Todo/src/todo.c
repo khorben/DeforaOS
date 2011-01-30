@@ -590,6 +590,12 @@ static void _task_delete_selected_foreach(GtkTreeRowReference * reference,
 /* todo_task_cursor_changed */
 static void _task_cursor_changed_date_end(GtkWidget * widget, gpointer data);
 static void _task_cursor_changed_date_start(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_hour_end(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_hour_start(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_min_end(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_min_start(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_sec_end(GtkWidget * widget, gpointer data);
+static void _task_cursor_changed_sec_start(GtkWidget * widget, gpointer data);
 
 void todo_task_cursor_changed(Todo * todo)
 {
@@ -636,16 +642,28 @@ void todo_task_cursor_changed(Todo * todo)
 		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 		button = gtk_spin_button_new_with_range(0.0, 23.0, 1.0);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(button), t.tm_hour);
+		g_signal_connect(G_OBJECT(button), "value-changed", G_CALLBACK(
+					(id == TD_COL_START)
+					? _task_cursor_changed_hour_start
+					: _task_cursor_changed_hour_end), task);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
 		label = gtk_label_new(_(":"));
 		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 		button = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(button), t.tm_min);
+		g_signal_connect(G_OBJECT(button), "value-changed", G_CALLBACK(
+					(id == TD_COL_START)
+					? _task_cursor_changed_min_start
+					: _task_cursor_changed_min_end), task);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
 		label = gtk_label_new(_(":"));
 		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 		button = gtk_spin_button_new_with_range(0.0, 59.0, 1.0);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(button), t.tm_sec);
+		g_signal_connect(G_OBJECT(button), "value-changed", G_CALLBACK(
+					(id == TD_COL_START)
+					? _task_cursor_changed_sec_start
+					: _task_cursor_changed_sec_end), task);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
 		/* close button */
 		button = gtk_button_new();
@@ -704,6 +722,7 @@ static void _task_cursor_changed_date_end(GtkWidget * widget, gpointer data)
 	time = _task_cursor_changed_date_get(widget, time);
 	task_set_end(task, time);
 	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
 }
 
 static void _task_cursor_changed_date_start(GtkWidget * widget, gpointer data)
@@ -715,6 +734,97 @@ static void _task_cursor_changed_date_start(GtkWidget * widget, gpointer data)
 	time = _task_cursor_changed_date_get(widget, time);
 	task_set_start(task, time);
 	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
+}
+
+static void _task_cursor_changed_hour_end(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+	struct tm t;
+
+	time = task_get_end(task);
+	localtime_r(&time, &t);
+	t.tm_hour = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	time = mktime(&t);
+	task_set_end(task, time);
+	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
+}
+
+static void _task_cursor_changed_hour_start(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+	struct tm t;
+
+	time = task_get_start(task);
+	localtime_r(&time, &t);
+	t.tm_hour = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	time = mktime(&t);
+	task_set_start(task, time);
+	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
+}
+
+static void _task_cursor_changed_min_end(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+	struct tm t;
+
+	time = task_get_end(task);
+	localtime_r(&time, &t);
+	t.tm_min = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	time = mktime(&t);
+	task_set_end(task, time);
+	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
+}
+
+static void _task_cursor_changed_min_start(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+	struct tm t;
+
+	time = task_get_start(task);
+	localtime_r(&time, &t);
+	t.tm_min = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	time = mktime(&t);
+	task_set_start(task, time);
+	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
+}
+
+static void _task_cursor_changed_sec_end(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+	struct tm t;
+
+	time = task_get_end(task);
+	localtime_r(&time, &t);
+	t.tm_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	time = mktime(&t);
+	task_set_end(task, time);
+	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
+}
+
+static void _task_cursor_changed_sec_start(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	time_t time;
+	struct tm t;
+
+	time = task_get_start(task);
+	localtime_r(&time, &t);
+	t.tm_sec = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+	time = mktime(&t);
+	task_set_start(task, time);
+	task_save(task);
+	/* FIXME actually reflect this in the GtkTreeView */
 }
 
 
