@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-31 04:41+0100\n"
+"POT-Creation-Date: 2011-01-31 04:43+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -187,8 +187,8 @@ msgstr ""
 
 #: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1440 ../src/desktop.c:1445 ../src/move.c:444
-#: ../src/move.c:448 ../src/properties.c:114 ../src/properties.c:118
+#: ../src/desktop.c:1440 ../src/desktop.c:1445 ../src/move.c:452
+#: ../src/move.c:456 ../src/properties.c:114 ../src/properties.c:118
 #: ../src/view.c:364 ../src/view.c:367
 msgid "Error"
 msgstr ""
@@ -351,7 +351,7 @@ msgstr ""
 msgid "Speed: "
 msgstr ""
 
-#: ../src/copy.c:206 ../src/delete.c:159 ../src/move.c:151
+#: ../src/copy.c:206 ../src/delete.c:159 ../src/move.c:154
 #, c-format
 msgid "File %u of %u"
 msgstr ""
@@ -373,11 +373,11 @@ msgid "MB"
 msgstr ""
 
 #: ../src/copy.c:692 ../src/copy.c:696 ../src/delete.c:327 ../src/delete.c:331
-#: ../src/delete.c:359 ../src/delete.c:364 ../src/move.c:468 ../src/move.c:472
+#: ../src/delete.c:359 ../src/delete.c:364 ../src/move.c:476 ../src/move.c:480
 msgid "Question"
 msgstr ""
 
-#: ../src/copy.c:695 ../src/move.c:471
+#: ../src/copy.c:695 ../src/move.c:479
 #, c-format
 msgid ""
 "%s will be overwritten\n"
@@ -500,15 +500,15 @@ msgstr ""
 msgid "Could not load MIME globs"
 msgstr ""
 
-#: ../src/move.c:99
+#: ../src/move.c:100
 msgid "Move file(s)"
 msgstr ""
 
-#: ../src/move.c:107
+#: ../src/move.c:108
 msgid "Moving: "
 msgstr ""
 
-#: ../src/move.c:498
+#: ../src/move.c:506
 msgid ""
 "Usage: move [-fi] file...\n"
 "  -f\tDo not prompt for confirmation if the destination path exists\n"

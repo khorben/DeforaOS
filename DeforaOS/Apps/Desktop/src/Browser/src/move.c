@@ -75,6 +75,7 @@ static int _move_filename_error(Move * move, char const * filename, int ret);
 static void _move_refresh(Move * move);
 /* callbacks */
 static void _move_on_closex(void);
+static void _move_on_cancel(void);
 static gboolean _move_idle_first(gpointer data);
 
 static int _move(Prefs * prefs, unsigned int filec, char * filev[])
@@ -126,6 +127,8 @@ static int _move(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_box_pack_start(GTK_BOX(vbox), move.progress, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_move_on_cancel), NULL);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(move.window), 4);
@@ -158,6 +161,11 @@ static void _move_refresh(Move * move)
 }
 
 static void _move_on_closex(void)
+{
+	gtk_main_quit();
+}
+
+static void _move_on_cancel(void)
 {
 	gtk_main_quit();
 }
