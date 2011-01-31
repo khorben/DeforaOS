@@ -101,6 +101,7 @@ static void _copy_filename_info(Copy * copy, char const * filename,
 static void _copy_refresh(Copy * copy);
 /* callbacks */
 static void _copy_on_closex(void);
+static void _copy_on_cancel(void);
 static gboolean _copy_idle_first(gpointer data);
 
 static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
@@ -178,6 +179,8 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_box_pack_start(GTK_BOX(vbox), copy.fprogress, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_copy_on_cancel), NULL);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(copy.window), 4);
@@ -210,6 +213,11 @@ static void _copy_refresh(Copy * copy)
 }
 
 static void _copy_on_closex(void)
+{
+	gtk_main_quit();
+}
+
+static void _copy_on_cancel(void)
 {
 	gtk_main_quit();
 }

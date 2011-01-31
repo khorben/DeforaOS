@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-31 04:37+0100\n"
+"POT-Creation-Date: 2011-01-31 04:41+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -185,8 +185,8 @@ msgstr "Vignettes"
 msgid " Location: "
 msgstr " Chemin: "
 
-#: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:660
-#: ../src/copy.c:664 ../src/delete.c:421 ../src/delete.c:426
+#: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
+#: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1440 ../src/desktop.c:1445 ../src/move.c:444
 #: ../src/move.c:448 ../src/properties.c:114 ../src/properties.c:118
 #: ../src/view.c:364 ../src/view.c:367
@@ -335,49 +335,49 @@ msgstr "Nouveau lien symbolique"
 msgid "Destination: "
 msgstr "Destination: "
 
-#: ../src/copy.c:125
+#: ../src/copy.c:126
 msgid "Copy file(s)"
 msgstr "Copie de fichier(s)"
 
-#: ../src/copy.c:133
+#: ../src/copy.c:134
 msgid "Copying: "
 msgstr "Copie de : "
 
-#: ../src/copy.c:151
+#: ../src/copy.c:152
 msgid "Filename: "
 msgstr "Nom de fichier: "
 
-#: ../src/copy.c:165
+#: ../src/copy.c:166
 msgid "Speed: "
 msgstr "Débit: "
 
-#: ../src/copy.c:203 ../src/delete.c:159 ../src/move.c:151
+#: ../src/copy.c:206 ../src/delete.c:159 ../src/move.c:151
 #, c-format
 msgid "File %u of %u"
 msgstr "Fichier %u sur %u"
 
-#: ../src/copy.c:320
+#: ../src/copy.c:328
 msgid "Omitting directory"
 msgstr "Omission du dossier"
 
-#: ../src/copy.c:576 ../src/properties.c:477
+#: ../src/copy.c:584 ../src/properties.c:477
 msgid "kB"
 msgstr "Kio"
 
-#: ../src/copy.c:585
+#: ../src/copy.c:593
 msgid "0.0 kB/s"
 msgstr "0.0 Kio/s"
 
-#: ../src/copy.c:601 ../src/properties.c:479
+#: ../src/copy.c:609 ../src/properties.c:479
 msgid "MB"
 msgstr "Mio"
 
-#: ../src/copy.c:684 ../src/copy.c:688 ../src/delete.c:327 ../src/delete.c:331
+#: ../src/copy.c:692 ../src/copy.c:696 ../src/delete.c:327 ../src/delete.c:331
 #: ../src/delete.c:359 ../src/delete.c:364 ../src/move.c:468 ../src/move.c:472
 msgid "Question"
 msgstr "Question"
 
-#: ../src/copy.c:687 ../src/move.c:471
+#: ../src/copy.c:695 ../src/move.c:471
 #, c-format
 msgid ""
 "%s will be overwritten\n"
@@ -386,11 +386,11 @@ msgstr ""
 "%s va être écrasé\n"
 "Continuer ?"
 
-#: ../src/copy.c:719 ../src/copy.c:723
+#: ../src/copy.c:727 ../src/copy.c:731
 msgid "Information"
 msgstr "Information"
 
-#: ../src/copy.c:745
+#: ../src/copy.c:753
 msgid ""
 "Usage: copy [-fip] source_file target_file\n"
 "       copy [-fip] source_file ... target\n"
