@@ -492,6 +492,8 @@ void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 {
 	Browser * browser = data;
 
+	if(GTK_TREE_VIEW(browser->detailview) != view)
+		return;
 	_default_do(browser, path);
 }
 
@@ -514,11 +516,12 @@ static void _default_do(Browser * browser, GtkTreePath * path)
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-void on_icon_default(GtkIconView * view,
-		GtkTreePath * path, gpointer data)
+void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data)
 {
 	Browser * browser = data;
 
+	if(GTK_ICON_VIEW(browser->iconview) != view)
+		return;
 	_default_do(browser, path);
 }
 #endif
@@ -610,7 +613,6 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 		gint x, gint y, GtkSelectionData * seldata, guint info,
 		guint time, gpointer data)
 	/* FIXME - may not be an icon view
-	 *       - icon view may not be supported (< 2.6)
 	 *       - not fully checking if the source matches */
 {
 	Browser * browser = data;
