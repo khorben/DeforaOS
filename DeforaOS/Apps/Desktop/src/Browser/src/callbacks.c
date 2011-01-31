@@ -686,7 +686,6 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 {
 	static IconCallback ic;
 	Browser * browser = data;
-	GtkWidget * menu;
 	GtkTreePath * path = NULL;
 	GtkTreeIter iter;
 	GtkTreeSelection * sel;
@@ -696,9 +695,9 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	if(event->type != GDK_BUTTON_PRESS
 			|| (event->button != 3 && event->button != 0))
 		return FALSE;
-	menu = gtk_menu_new();
+	widget = gtk_menu_new();
 	/* FIXME prevents actions to be called but probably leaks memory
-	g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(
+	g_signal_connect(G_OBJECT(widget), "deactivate", G_CALLBACK(
 				gtk_widget_destroy), NULL); */
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser->iconview != NULL)
@@ -715,7 +714,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	ic.isexec = 0;
 	ic.path = NULL;
 	if(path == NULL)
-		return _press_context(browser, event, menu, &ic);
+		return _press_context(browser, event, widget, &ic);
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -747,21 +746,21 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 			BR_COL_IS_MOUNT_POINT, &ic.ismnt, BR_COL_MIME_TYPE,
 			&mimetype, -1);
 	if(ic.isdir == TRUE)
-		_press_directory(menu, &ic);
+		_press_directory(widget, &ic);
 	else
-		_press_file(browser, menu, mimetype, &ic);
+		_press_file(browser, widget, mimetype, &ic);
 	g_free(mimetype);
 	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_menu_shell_append(GTK_MENU_SHELL(widget), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_properties), browser);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_menu_shell_append(GTK_MENU_SHELL(widget), menuitem);
 #if !GTK_CHECK_VERSION(2, 6, 0)
 	gtk_tree_path_free(path);
 #endif
-	return _press_show(browser, event, menu);
+	return _press_show(browser, event, widget);
 }
 
 static void _on_popup_new_text_file(gpointer data);
