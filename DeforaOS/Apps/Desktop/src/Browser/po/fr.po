@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-26 00:55+0100\n"
+"POT-Creation-Date: 2011-01-31 02:17+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -267,8 +267,8 @@ msgstr "Actualisation du dossier..."
 msgid "New folder"
 msgstr "Nouveau dossier"
 
-#: ../src/callbacks.c:195 ../src/callbacks.c:201 ../src/callbacks.c:1029
-#: ../src/callbacks.c:1034 ../src/desktopicon.c:796 ../src/desktopicon.c:801
+#: ../src/callbacks.c:195 ../src/callbacks.c:201 ../src/callbacks.c:1050
+#: ../src/callbacks.c:1055 ../src/desktopicon.c:796 ../src/desktopicon.c:801
 #: ../src/desktopicon.c:848 ../src/desktopicon.c:853
 msgid "Warning"
 msgstr "Avertissement"
@@ -278,40 +278,40 @@ msgstr "Avertissement"
 msgid "Are you sure you want to delete %lu file(s)?"
 msgstr "Voulez-vous vraiment effacer %lu fichier(s)?"
 
-#: ../src/callbacks.c:760
+#: ../src/callbacks.c:781
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/callbacks.c:765 ../src/callbacks.c:769 ../src/desktop.c:334
+#: ../src/callbacks.c:786 ../src/callbacks.c:790 ../src/desktop.c:334
 msgid "Folder"
 msgstr "Dossier"
 
-#: ../src/callbacks.c:776 ../src/desktop.c:342
+#: ../src/callbacks.c:797 ../src/desktop.c:342
 msgid "Symbolic link..."
 msgstr "Lien symbolique..."
 
-#: ../src/callbacks.c:780 ../src/desktop.c:346
+#: ../src/callbacks.c:801 ../src/desktop.c:346
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:815 ../src/desktop.c:445
+#: ../src/callbacks.c:836 ../src/desktop.c:445
 msgid "New text file.txt"
 msgstr "Nouveau fichier texte.txt"
 
-#: ../src/callbacks.c:862
+#: ../src/callbacks.c:883
 msgid "Open in new _window"
 msgstr "Ouvrir dans une _nouvelle fenêtre"
 
-#: ../src/callbacks.c:890
+#: ../src/callbacks.c:911
 msgid "_Unmount"
 msgstr "Démonter"
 
-#: ../src/callbacks.c:925 ../src/desktopicon.c:693 ../src/view.c:100
+#: ../src/callbacks.c:946 ../src/desktopicon.c:693 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
 
-#: ../src/callbacks.c:1033 ../src/desktopicon.c:800
+#: ../src/callbacks.c:1054 ../src/desktopicon.c:800
 msgid "Are you sure you want to execute this file?"
 msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 

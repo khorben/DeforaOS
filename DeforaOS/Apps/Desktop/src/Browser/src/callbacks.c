@@ -321,7 +321,14 @@ void on_back(gpointer data)
 void on_copy(gpointer data)
 {
 	Browser * browser = data;
+	GtkWidget * entry;
 
+	entry = gtk_bin_get_child(GTK_BIN(browser->tb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(browser->window)) == entry)
+	{
+		gtk_editable_copy_clipboard(GTK_EDITABLE(entry));
+		return;
+	}
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);
 	browser->selection = _copy_selection(browser);
@@ -333,7 +340,14 @@ void on_copy(gpointer data)
 void on_cut(gpointer data)
 {
 	Browser * browser = data;
+	GtkWidget * entry;
 
+	entry = gtk_bin_get_child(GTK_BIN(browser->tb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(browser->window)) == entry)
+	{
+		gtk_editable_cut_clipboard(GTK_EDITABLE(entry));
+		return;
+	}
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);
 	browser->selection = _copy_selection(browser);
@@ -369,8 +383,15 @@ void on_home(gpointer data)
 void on_paste(gpointer data)
 {
 	Browser * browser = data;
+	GtkWidget * entry;
 	char * p = browser->current->data;
 
+	entry = gtk_bin_get_child(GTK_BIN(browser->tb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(browser->window)) == entry)
+	{
+		gtk_editable_paste_clipboard(GTK_EDITABLE(entry));
+		return;
+	}
 	if(browser->selection == NULL)
 		return;
 	browser->selection = g_list_append(browser->selection, p);
