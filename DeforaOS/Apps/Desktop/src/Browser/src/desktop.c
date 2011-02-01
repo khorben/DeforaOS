@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 #include <errno.h>
 #include <locale.h>
 #include <libintl.h>
@@ -1555,14 +1554,11 @@ static int _usage(void)
 
 
 /* main */
-static void _main_sigchld(int signum);
-
 int main(int argc, char * argv[])
 {
 	int o;
 	Desktop * desktop;
 	DesktopPrefs prefs;
-	struct sigaction sa;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -1606,17 +1602,7 @@ int main(int argc, char * argv[])
 		gtk_main();
 		return 2;
 	}
-	sa.sa_handler = _main_sigchld;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		desktop_error(desktop, "sigaction", 0);
 	gtk_main();
 	desktop_delete(desktop);
 	return 0;
-}
-
-static void _main_sigchld(int signum)
-{
-	wait(NULL);
 }
