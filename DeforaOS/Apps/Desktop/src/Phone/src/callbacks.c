@@ -439,21 +439,27 @@ void on_phone_write_changed(gpointer data)
 /* on_phone_write_copy */
 void on_phone_write_copy(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_write_copy(phone);
 }
 
 
 /* on_phone_write_cut */
 void on_phone_write_cut(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_write_cut(phone);
 }
 
 
 /* on_phone_write_paste */
 void on_phone_write_paste(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_write_paste(phone);
 }
 
 

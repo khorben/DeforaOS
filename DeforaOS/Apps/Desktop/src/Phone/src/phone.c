@@ -2489,6 +2489,25 @@ void phone_unload_all(Phone * phone)
 
 
 /* write */
+/* phone_write_copy */
+void phone_write_copy(Phone * phone)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if(gtk_window_get_focus(GTK_WINDOW(phone->wr_window))
+			== phone->wr_entry)
+	{
+		gtk_editable_copy_clipboard(GTK_EDITABLE(phone->wr_entry));
+		return;
+	}
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	clipboard = gtk_widget_get_clipboard(phone->wr_view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_copy_clipboard(buffer, clipboard);
+}
+
+
 /* phone_write_count_buffer */
 void phone_write_count_buffer(Phone * phone)
 {
@@ -2521,6 +2540,44 @@ void phone_write_count_buffer(Phone * phone)
 	snprintf(buf, sizeof(buf), _("%d message%s, %d/%d characters"),
 			msg_cnt, (msg_cnt > 1) ? _("s") : "", cur_cnt, max);
 	gtk_label_set_text(GTK_LABEL(phone->wr_count), buf);
+}
+
+
+/* phone_write_cut */
+void phone_write_cut(Phone * phone)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if(gtk_window_get_focus(GTK_WINDOW(phone->wr_window))
+			== phone->wr_entry)
+	{
+		gtk_editable_cut_clipboard(GTK_EDITABLE(phone->wr_entry));
+		return;
+	}
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	clipboard = gtk_widget_get_clipboard(phone->wr_view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_cut_clipboard(buffer, clipboard, TRUE);
+}
+
+
+/* phone_write_paste */
+void phone_write_paste(Phone * phone)
+{
+	GtkTextBuffer * buffer;
+	GtkClipboard * clipboard;
+
+	if(gtk_window_get_focus(GTK_WINDOW(phone->wr_window))
+			== phone->wr_entry)
+	{
+		gtk_editable_paste_clipboard(GTK_EDITABLE(phone->wr_entry));
+		return;
+	}
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	clipboard = gtk_widget_get_clipboard(phone->wr_view,
+			GDK_SELECTION_CLIPBOARD);
+	gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL, TRUE);
 }
 
 

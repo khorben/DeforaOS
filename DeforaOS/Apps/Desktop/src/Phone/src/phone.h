@@ -104,7 +104,10 @@ void phone_read_reply(Phone * phone);
 void phone_settings_open_selected(Phone * phone);
 
 /* write */
+void phone_write_copy(Phone * phone);
 void phone_write_count_buffer(Phone * phone);
+void phone_write_cut(Phone * phone);
+void phone_write_paste(Phone * phone);
 void phone_write_send(Phone * phone);
 
 #endif /* !PHONE_SRC_PHONE_H */

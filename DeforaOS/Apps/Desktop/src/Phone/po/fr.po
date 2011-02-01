@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-14 20:48+0100\n"
+"POT-Creation-Date: 2011-02-01 23:22+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -205,6 +205,11 @@ msgid ""
 "  -r\tDelay between two tries to open and settle with the modem (ms)\n"
 "  -F\tEnable hardware flow control (RTS/CTS)\n"
 msgstr ""
+"Usage: phone [-b débit][-d noeud][-r délai][-F]\n"
+"  -b\tDébit à utiliser pour communiquer avec le modem\n"
+"  -d\tChemin vers le noeud d'accès au modem\n"
+"  -r\tDélai entre deux tentatives d'accès au modem (ms)\n"
+"  -F\tActiver le contrôle de flux matériel (RTS/CTS)\n"
 
 #: ../src/phone.c:388
 msgid "Initializing..."
@@ -373,11 +378,11 @@ msgstr "Paramètres du téléphone"
 
 #: ../src/phone.c:2228
 msgid "Phone device:"
-msgstr ""
+msgstr "Noeud d'accès:"
 
 #: ../src/phone.c:2230
 msgid "Set the phone device"
-msgstr ""
+msgstr "Définir le noeud d'accès"
 
 #: ../src/phone.c:2235
 msgid "Enable flow control"
@@ -395,112 +400,112 @@ msgstr "Envoyer"
 msgid "Attach"
 msgstr "Attacher"
 
-#: ../src/phone.c:2521
+#: ../src/phone.c:2540
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:2522
+#: ../src/phone.c:2541
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:2551
+#: ../src/phone.c:2608
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:2578
+#: ../src/phone.c:2635
 msgid "Outgoing"
 msgstr "Sortant"
 
-#: ../src/phone.c:2741
+#: ../src/phone.c:2798
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:2769 ../src/phone.c:2774
+#: ../src/phone.c:2826 ../src/phone.c:2831
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:2794 ../src/phone.c:2799
+#: ../src/phone.c:2851 ../src/phone.c:2856
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:2847 ../src/phone.c:2852
+#: ../src/phone.c:2904 ../src/phone.c:2909
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:2931
+#: ../src/phone.c:2988
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/phone.c:2934
+#: ../src/phone.c:2991
 msgid "Registering..."
 msgstr "Enregistrement..."
 
-#: ../src/phone.c:2937
+#: ../src/phone.c:2994
 msgid "Denied"
 msgstr "Refusé"
 
-#: ../src/phone.c:2942
+#: ../src/phone.c:2999
 msgid "SIM check..."
 msgstr "Vérification SIM..."
 
-#: ../src/phone.c:2948
+#: ../src/phone.c:3005
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:3005
+#: ../src/phone.c:3062
 msgid "Name: "
 msgstr "Nom: "
 
-#: ../src/phone.c:3013
+#: ../src/phone.c:3070
 msgid "Number: "
 msgstr "Numéro: "
 
-#: ../src/phone.c:3028
+#: ../src/phone.c:3085
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:3030
+#: ../src/phone.c:3087
 msgid "Edit contact: "
 msgstr "Modifier contact: "
 
-#: ../src/phone.c:3057
+#: ../src/phone.c:3114
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:3062
+#: ../src/phone.c:3119
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3165
+#: ../src/phone.c:3222
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:3181
+#: ../src/phone.c:3238
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3214
+#: ../src/phone.c:3271
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:3266
+#: ../src/phone.c:3323
 msgid "Could not request new message indications"
 msgstr "Impossible d'obtenir des notifications de nouveaux messages"
 
-#: ../src/phone.c:3277
+#: ../src/phone.c:3334
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:3285
+#: ../src/phone.c:3342
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/phone.c:3321
+#: ../src/phone.c:3378
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:3336
+#: ../src/phone.c:3393
 msgid "Message deleted"
 msgstr "Message supprimé"
 
