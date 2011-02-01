@@ -105,7 +105,7 @@ distclean:
 	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- phone $(DESTDIR)$(BINDIR)/phone
