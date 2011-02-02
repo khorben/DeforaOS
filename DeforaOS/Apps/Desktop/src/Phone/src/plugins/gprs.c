@@ -122,8 +122,10 @@ static void _gprs_settings(PhonePlugin * plugin)
 {
 	GPRS * gprs = plugin->priv;
 	GtkWidget * vbox;
-	GtkWidget * bbox;
+	GtkWidget * hbox;
+	GtkSizeGroup * group;
 	GtkWidget * widget;
+	GtkWidget * bbox;
 
 	if(gprs->window != NULL)
 	{
@@ -140,27 +142,38 @@ static void _gprs_settings(PhonePlugin * plugin)
 	g_signal_connect_swapped(G_OBJECT(gprs->window), "delete-event",
 			G_CALLBACK(_on_settings_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label("Always on");
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->attach, FALSE, TRUE, 0);
 	/* access point */
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Access point:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->apn = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(vbox), gprs->apn, FALSE, TRUE, 0);
-	/* credentials */
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->apn, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* username */
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Username:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->username = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(vbox), gprs->username, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->username, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* password */
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Password:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->password = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
-	gtk_box_pack_start(GTK_BOX(vbox), gprs->password, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* connect */
 	widget = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
