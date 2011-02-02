@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,8 +140,8 @@ static int _panel_init(PhonePlugin * plugin)
 			|| strcmp(p, "1") != 0)
 		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
 	/* cell type */
-	panel->cell = gtk_label_new("G");
-	gtk_widget_modify_font(panel->cell, bold);
+	panel->cell = gtk_image_new_from_icon_name("stock_internet",
+			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_widget_set_no_show_all(panel->cell, TRUE);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->cell, FALSE, TRUE, 0);
 	/* signal */
