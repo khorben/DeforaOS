@@ -33,7 +33,9 @@ void editor_delete(Editor * editor);
 
 /* accessors */
 char const * editor_get_font(Editor * editor);
+GtkWrapMode editor_get_wrap_mode(Editor * editor);
 void editor_set_font(Editor * editor, char const * font);
+void editor_set_wrap_mode(Editor * editor, GtkWrapMode wrap);
 
 /* useful */
 void editor_about(Editor * editor);

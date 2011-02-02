@@ -20,6 +20,7 @@ static char const _license[] =
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
@@ -53,6 +54,7 @@ struct _Editor
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_font;
+	GtkWidget * pr_wrap;
 	/* find */
 	GtkWidget * fi_dialog;
 	GtkWidget * fi_text;
@@ -171,6 +173,18 @@ static DesktopToolbar _editor_toolbar[] =
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
+static struct
+{
+	char const * name;
+	GtkWrapMode wrap;
+} _editor_wrap[] =
+{
+	{ N_("none"),			GTK_WRAP_NONE		},
+	{ N_("characters"),		GTK_WRAP_CHAR		},
+	{ N_("words"),			GTK_WRAP_WORD		},
+	{ N_("words then characters"),	GTK_WRAP_WORD_CHAR	}
+};
+
 
 /* prototypes */
 static char * _editor_config_filename(void);
@@ -229,11 +243,9 @@ Editor * editor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
-	/* FIXME make it an option */
-	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor->view),
-			GTK_WRAP_WORD_CHAR);
 	desc = pango_font_description_from_string(editor_get_font(editor));
 	editor_set_font(editor, pango_font_description_to_string(desc));
+	editor_set_wrap_mode(editor, editor_get_wrap_mode(editor));
 	pango_font_description_free(desc);
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -303,6 +315,22 @@ char const * editor_get_font(Editor * editor)
 }
 
 
+/* editor_get_wrap_mode */
+GtkWrapMode editor_get_wrap_mode(Editor * editor)
+{
+	char const * p;
+	unsigned int i;
+
+	if((p = config_get(editor->config, NULL, "wrap")) != NULL)
+	{
+		i = strtoul(p, NULL, 10);
+		if(i < sizeof(_editor_wrap) / sizeof(*_editor_wrap))
+			return _editor_wrap[i].wrap;
+	}
+	return GTK_WRAP_WORD_CHAR;
+}
+
+
 /* editor_set_font */
 void editor_set_font(Editor * editor, char const * font)
 {
@@ -312,6 +340,24 @@ void editor_set_font(Editor * editor, char const * font)
 	gtk_widget_modify_font(editor->view, desc);
 	pango_font_description_free(desc);
 	config_set(editor->config, NULL, "font", font);
+}
+
+
+/* editor_set_wrap_mode */
+void editor_set_wrap_mode(Editor * editor, GtkWrapMode wrap)
+{
+	size_t i;
+	char buf[10];
+
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor->view),
+			wrap);
+	for(i = 0; i < sizeof(_editor_wrap) / sizeof(*_editor_wrap); i++)
+		if(_editor_wrap[i].wrap == wrap)
+		{
+			snprintf(buf, sizeof(buf), "%lu", i);
+			config_set(editor->config, NULL, "wrap", buf);
+			return;
+		}
 }
 
 
@@ -780,7 +826,6 @@ void editor_select_all(Editor * editor)
 
 
 /* editor_show_preferences */
-static void _preferences_set(Editor * editor);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -793,6 +838,7 @@ void editor_show_preferences(Editor * editor, gboolean show)
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkSizeGroup * group;
+	size_t i;
 
 	if(editor->pr_window != NULL)
 	{
@@ -817,26 +863,31 @@ void editor_show_preferences(Editor * editor, gboolean show)
 #else
 	vbox = GTK_DIALOG(editor->pr_window)->vbox;
 #endif
-	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* font */
+	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Font:"));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	editor->pr_font = gtk_font_button_new();
 	gtk_font_button_set_use_font(GTK_FONT_BUTTON(editor->pr_font), TRUE);
 	gtk_size_group_add_widget(group, editor->pr_font);
-	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
-	_preferences_set(editor);
+	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	/* wrap mode */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Wrap mode:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	editor->pr_wrap = gtk_combo_box_new_text();
+	for(i = 0; i < sizeof(_editor_wrap) / sizeof(*_editor_wrap); i++)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(editor->pr_wrap),
+				_(_editor_wrap[i].name));
+	gtk_size_group_add_widget(group, editor->pr_wrap);
+	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_wrap, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	_preferences_on_cancel(editor);
 	gtk_widget_show_all(vbox);
 	if(show)
 		gtk_widget_show(editor->pr_window);
-}
-
-static void _preferences_set(Editor * editor)
-{
-	gtk_font_button_set_font_name(GTK_FONT_BUTTON(editor->pr_font),
-			editor_get_font(editor));
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -860,19 +911,29 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 static void _preferences_on_cancel(gpointer data)
 {
 	Editor * editor = data;
+	char const * p;
+	gint u = 0;
 
 	gtk_widget_hide(editor->pr_window);
-	_preferences_set(editor);
+	gtk_font_button_set_font_name(GTK_FONT_BUTTON(editor->pr_font),
+			editor_get_font(editor));
+	if((p = config_get(editor->config, NULL, "wrap")) != NULL)
+		u = strtol(p, NULL, 10);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(editor->pr_wrap), u);
 }
 
 static void _preferences_on_ok(gpointer data)
 {
 	Editor * editor = data;
 	char const * font;
+	size_t i;
 
 	gtk_widget_hide(editor->pr_window);
 	font = gtk_font_button_get_font_name(GTK_FONT_BUTTON(editor->pr_font));
 	editor_set_font(editor, font);
+	i = gtk_combo_box_get_active(GTK_COMBO_BOX(editor->pr_wrap));
+	if(i < sizeof(_editor_wrap) / sizeof(*_editor_wrap))
+		editor_set_wrap_mode(editor, _editor_wrap[i].wrap);
 	editor_config_save(editor);
 }
 
