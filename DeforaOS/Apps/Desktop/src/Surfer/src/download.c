@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,6 +72,8 @@ struct _Download
 
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * address;
+	GtkWidget * filename;
 	GtkWidget * status;
 	GtkWidget * done;
 	GtkWidget * speed;
@@ -179,8 +181,10 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	_download_label(vbox, bold, left, right, _("File: "), &download->status,
-			prefs->output);
+	_download_label(vbox, bold, left, right, _("Address: "),
+			&download->address, url);
+	_download_label(vbox, bold, left, right, _("File: "),
+			&download->filename, download->prefs.output);
 	_download_label(vbox, bold, left, right, _("Status: "),
 			&download->status, _("Resolving..."));
 	_download_label(vbox, bold, left, right, _("Done: "), &download->done,
@@ -669,8 +673,8 @@ static gboolean _download_on_timeout(gpointer data)
 static int _usage(void)
 {
 	fputs(_("Usage: download [-O output][-U user-agent] URL...\n"
-"  -O	file to write document to\n"
-"  -U	user agent string to send\n"), stderr);
+"  -O	File to write document to\n"
+"  -U	User-agent string to send\n"), stderr);
 	return 1;
 }
 
