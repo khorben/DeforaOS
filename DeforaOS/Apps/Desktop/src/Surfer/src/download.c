@@ -566,8 +566,8 @@ static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
 	DownloadPrefs * prefs = &download->prefs;
-	char * p = NULL;
 #ifdef WITH_WEBKIT
+	char * p = NULL;
 	char * cwd = NULL;
 	size_t len;
 	WebKitNetworkRequest * request;
