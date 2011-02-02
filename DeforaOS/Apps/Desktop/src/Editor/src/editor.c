@@ -346,7 +346,7 @@ void editor_set_font(Editor * editor, char const * font)
 /* editor_set_wrap_mode */
 void editor_set_wrap_mode(Editor * editor, GtkWrapMode wrap)
 {
-	size_t i;
+	unsigned int i;
 	char buf[10];
 
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor->view),
@@ -354,7 +354,7 @@ void editor_set_wrap_mode(Editor * editor, GtkWrapMode wrap)
 	for(i = 0; i < sizeof(_editor_wrap) / sizeof(*_editor_wrap); i++)
 		if(_editor_wrap[i].wrap == wrap)
 		{
-			snprintf(buf, sizeof(buf), "%lu", i);
+			snprintf(buf, sizeof(buf), "%u", i);
 			config_set(editor->config, NULL, "wrap", buf);
 			return;
 		}
