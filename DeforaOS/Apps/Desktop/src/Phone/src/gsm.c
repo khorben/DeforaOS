@@ -193,6 +193,7 @@ static struct
 	{ 304,	N_("Invalid PDU mode parameter")		},
 	{ 310,	N_("SIM not inserted")				},
 	{ 311,	N_("SIM PIN required")				},
+	{ 314,	N_("SIM busy")					},
 	{ 320,	N_("Memory failure")				},
 	{ 321,	N_("Invalid memory index")			},
 	{ 322,	N_("Memory full")				},
@@ -2642,7 +2643,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		}
 		if(gsm->source != 0)
 			g_source_remove(gsm->source);
-		if(timeout != 0)
+		if(gsm->mode != GSM_MODE_DATA && timeout != 0)
 			gsm->source = g_timeout_add(timeout, _on_timeout, gsm);
 	}
 	return FALSE;
