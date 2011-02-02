@@ -1015,8 +1015,8 @@ int gsm_queue_command(GSM * gsm, GSMCommand * gsmc)
 
 	if(gsmc == NULL)
 		return 1;
-	if(gsm->mode == GSM_MODE_DATA && (p = gsm_command_get_command(gsmc))
-			&& strcmp(p, "ATH") == 0) /* XXX */
+	if(gsm->mode == GSM_MODE_DATA && (q = gsm_command_get_command(gsmc))
+			&& strcmp(q, "ATH") == 0) /* XXX */
 	{
 		gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 0);
 		gsm_reset(gsm, 0, NULL);
