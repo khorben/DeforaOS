@@ -50,7 +50,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"GPRS",
-	"network-wireless",
+	"stock_internet",
 	_gprs_init,
 	_gprs_destroy,
 	_gprs_event,
