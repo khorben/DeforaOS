@@ -137,7 +137,7 @@ typedef enum _GSMMessageMode
 
 typedef enum _GSMMode
 {
-	GSM_MODE_INIT = 0, GSM_MODE_COMMAND, GSM_MODE_PDU
+	GSM_MODE_INIT = 0, GSM_MODE_COMMAND, GSM_MODE_DATA, GSM_MODE_PDU
 } GSMMode;
 
 typedef enum _GSMOperatorFormat

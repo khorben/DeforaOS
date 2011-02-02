@@ -78,6 +78,10 @@ struct _GSM
 	char * wr_buf;
 	size_t wr_buf_cnt;
 	guint wr_source;
+	GIOChannel * rd_ppp_channel;
+	guint rd_ppp_source;
+	GIOChannel * wr_ppp_channel;
+	guint wr_ppp_source;
 
 	/* temporary buffers */
 	char number[32];
@@ -338,8 +342,12 @@ static gboolean _on_reset(gpointer data);
 static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _on_watch_can_read_ppp(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _on_watch_can_write_ppp(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 
 
 /* public */
@@ -378,6 +386,10 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 	gsm->wr_buf = NULL;
 	gsm->wr_buf_cnt = 0;
 	gsm->wr_source = 0;
+	gsm->rd_ppp_channel = NULL;
+	gsm->rd_ppp_source = 0;
+	gsm->wr_ppp_channel = NULL;
+	gsm->wr_ppp_source = 0;
 	/* error checking */
 	if(gsm->device == NULL || gsm->baudrate == 0 || gsm->modem == NULL)
 	{
@@ -1086,6 +1098,12 @@ int gsm_stop(GSM * gsm)
 	if(gsm->source != 0)
 		g_source_remove(gsm->source);
 	gsm->source = 0;
+	if(gsm->rd_ppp_source != 0)
+		g_source_remove(gsm->rd_ppp_source);
+	gsm->rd_ppp_source = 0;
+	if(gsm->wr_ppp_source != 0)
+		g_source_remove(gsm->wr_ppp_source);
+	gsm->wr_ppp_source = 0;
 	_gsm_event_send(gsm, GSM_EVENT_TYPE_SUSPEND);
 	return 0;
 }
@@ -1158,9 +1176,12 @@ static int _gsm_parse(GSM * gsm)
 #endif
 	while(i < gsm->rd_buf_cnt)
 	{
-		if(gsm->rd_buf[i++] != '\r' && gsm->rd_buf[i - 1] != '\n')
+		if(gsm->rd_buf[i] != '\r' && gsm->rd_buf[i] != '\n')
+		{
+			i++;
 			continue;
-		gsm->rd_buf[i - 1] = '\0';
+		}
+		gsm->rd_buf[i++] = '\0';
 		if(i < gsm->rd_buf_cnt && gsm->rd_buf[i] == '\n')
 			i++;
 		if(gsm->rd_buf[0] != '\0')
@@ -1937,14 +1958,35 @@ static int _gsm_trigger_cmut(GSM * gsm, char const * result)
 static int _gsm_trigger_connect(GSM * gsm, char const * result,
 		gboolean * answered)
 {
+	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "phone", NULL };
+	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
+	int wfd;
+	int rfd;
+	GError * error = NULL;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
 	if(answered != NULL)
 		*answered = TRUE;
-	/* FIXME implement pass-through */
-	/* FIXME reset is probably not enough (send "+++"?) */
-	return gsm_reset(gsm, gsm->retry, NULL);
+	gsm->mode = GSM_MODE_DATA;
+	if(g_spawn_async_with_pipes(NULL, argv, NULL, flags, NULL, NULL, NULL,
+				&wfd, &rfd, NULL, &error)
+			== FALSE)
+	{
+		gsm_reset(gsm, 0, NULL);
+		return 1;
+	}
+	gsm->rd_ppp_channel = g_io_channel_unix_new(rfd);
+	g_io_channel_set_encoding(gsm->rd_ppp_channel, NULL, &error);
+	g_io_channel_set_buffered(gsm->rd_ppp_channel, FALSE);
+	gsm->rd_ppp_source = g_io_add_watch(gsm->rd_ppp_channel, G_IO_IN,
+			_on_watch_can_read_ppp, gsm);
+	gsm->wr_ppp_channel = g_io_channel_unix_new(wfd);
+	g_io_channel_set_encoding(gsm->wr_ppp_channel, NULL, &error);
+	g_io_channel_set_buffered(gsm->wr_ppp_channel, FALSE);
+	gsm->wr_ppp_source = 0;
+	return gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 1);
 }
 
 
@@ -2240,6 +2282,7 @@ static int _gsm_trigger_no_dialtone(GSM * gsm, char const * result,
 
 /* callbacks */
 /* on_reset */
+static void _reset_channel(GIOChannel * channel);
 static int _reset_do(GSM * gsm, int fd);
 static gboolean _reset_settle(gpointer data);
 
@@ -2254,13 +2297,12 @@ static gboolean _on_reset(gpointer data)
 #endif
 	if(gsm->source != 0)
 		g_source_remove(gsm->source);
-	if(gsm->channel != NULL)
-	{
-		/* XXX should the file descriptor also be freed? */
-		g_io_channel_shutdown(gsm->channel, TRUE, &error);
-		g_io_channel_unref(gsm->channel);
-		gsm->channel = NULL;
-	}
+	_reset_channel(gsm->channel);
+	gsm->channel = NULL;
+	_reset_channel(gsm->rd_ppp_channel);
+	gsm->rd_ppp_channel = NULL;
+	_reset_channel(gsm->wr_ppp_channel);
+	gsm->wr_ppp_channel = NULL;
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
 			|| _reset_do(gsm, fd) != 0)
 	{
@@ -2285,6 +2327,17 @@ static gboolean _on_reset(gpointer data)
 	gsm->source = g_timeout_add(500, _reset_settle, gsm);
 	_reset_settle(gsm);
 	return FALSE;
+}
+
+static void _reset_channel(GIOChannel * channel)
+{
+	GError * error = NULL;
+
+	if(channel == NULL)
+		return;
+	/* XXX should the file descriptor also be freed? */
+	g_io_channel_shutdown(channel, TRUE, &error);
+	g_io_channel_unref(channel);
 }
 
 static int _reset_do(GSM * gsm, int fd)
@@ -2411,7 +2464,58 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 			gsm->rd_source = 0;
 			return FALSE;
 	}
-	_gsm_parse(gsm);
+	switch(gsm->mode)
+	{
+		case GSM_MODE_INIT:
+		case GSM_MODE_COMMAND:
+		case GSM_MODE_PDU: /* XXX really parse? */
+			_gsm_parse(gsm);
+			break;
+		case GSM_MODE_DATA:
+			if(gsm->wr_ppp_channel == NULL
+					|| gsm->wr_ppp_source != 0)
+				break;
+			gsm->wr_ppp_source = g_io_add_watch(gsm->wr_ppp_channel,
+					G_IO_OUT, _on_watch_can_write_ppp, gsm);
+			break;
+	}
+	return TRUE;
+}
+
+
+/* on_watch_can_read_ppp */
+static gboolean _on_watch_can_read_ppp(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	GSM * gsm = data;
+	gsize cnt = 0;
+	GError * error = NULL;
+	GIOStatus status;
+	char * p;
+
+	if(condition != G_IO_IN || source != gsm->rd_ppp_channel)
+		return FALSE; /* should not happen */
+	if((p = realloc(gsm->wr_buf, gsm->wr_buf_cnt + 256)) == NULL)
+		return TRUE; /* XXX retries immediately (delay?) */
+	gsm->wr_buf = p;
+	status = g_io_channel_read_chars(source,
+			&gsm->wr_buf[gsm->wr_buf_cnt], 256, &cnt, &error);
+	gsm->wr_buf_cnt += cnt;
+	switch(status)
+	{
+		case G_IO_STATUS_NORMAL:
+			break;
+		case G_IO_STATUS_ERROR:
+			error_set("%s", error->message); /* XXX really print */
+		case G_IO_STATUS_EOF:
+		default:
+			gsm->rd_ppp_source = 0;
+			gsm_reset(gsm, 0, NULL);
+			return FALSE;
+	}
+	if(gsm->channel != NULL && gsm->wr_source == 0)
+		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
+				_on_watch_can_write, gsm);
 	return TRUE;
 }
 
@@ -2479,5 +2583,47 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		if(timeout != 0)
 			gsm->source = g_timeout_add(timeout, _on_timeout, gsm);
 	}
+	return FALSE;
+}
+
+
+/* on_watch_can_write_ppp */
+static gboolean _on_watch_can_write_ppp(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	GSM * gsm = data;
+	gsize cnt = 0;
+	GError * error = NULL;
+	GIOStatus status;
+	char * p;
+
+	if(condition != G_IO_OUT || source != gsm->wr_ppp_channel)
+		return FALSE; /* should not happen */
+	status = g_io_channel_write_chars(source, gsm->rd_buf, gsm->rd_buf_cnt,
+			&cnt, &error);
+	if(cnt != 0) /* some data may have been written anyway */
+	{
+		gsm->rd_buf_cnt -= cnt;
+		memmove(gsm->rd_buf, &gsm->rd_buf[cnt], gsm->rd_buf_cnt);
+		if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt)) != NULL)
+			gsm->rd_buf = p; /* we can ignore errors... */
+		else if(gsm->rd_buf_cnt == 0)
+			gsm->rd_buf = NULL; /* ...except when it's not one */
+	}
+	switch(status)
+	{
+		case G_IO_STATUS_NORMAL:
+			break;
+		case G_IO_STATUS_ERROR:
+			error_set("%s", error->message); /* XXX really print */
+		case G_IO_STATUS_EOF:
+		default:
+			gsm->wr_ppp_source = 0;
+			gsm_reset(gsm, 0, NULL);
+			return FALSE;
+	}
+	if(gsm->rd_buf_cnt > 0) /* there is more data to write */
+		return TRUE;
+	gsm->wr_ppp_source = 0;
 	return FALSE;
 }

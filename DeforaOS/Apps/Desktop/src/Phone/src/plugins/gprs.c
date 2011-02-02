@@ -30,6 +30,8 @@ typedef struct _GPRS
 	GtkWidget * window;
 	GtkWidget * attach;
 	GtkWidget * apn;
+	GtkWidget * username;
+	GtkWidget * password;
 } GPRS;
 
 
@@ -42,6 +44,8 @@ static void _gprs_settings(PhonePlugin * plugin);
 
 static int _gprs_access_point(PhonePlugin * plugin);
 static int _gprs_attach(PhonePlugin * plugin);
+static int _gprs_connect(PhonePlugin * plugin);
+static int _gprs_disconnect(PhonePlugin * plugin);
 
 
 /* public */
@@ -109,6 +113,8 @@ static int _gprs_event_functional(PhonePlugin * plugin)
 /* gprs_settings */
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
+static void _on_settings_disconnect(gpointer data);
+static void _on_settings_connect(gpointer data);
 static void _on_settings_ok(gpointer data);
 
 static void _gprs_settings(PhonePlugin * plugin)
@@ -127,20 +133,43 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_container_set_border_width(GTK_CONTAINER(gprs->window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(gprs->window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "network-wireless");
+	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "stock_internet");
 #endif
 	gtk_window_set_title(GTK_WINDOW(gprs->window), "GPRS preferences");
 	g_signal_connect_swapped(G_OBJECT(gprs->window), "delete-event",
 			G_CALLBACK(_on_settings_closex), plugin);
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 4);
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label("Always on");
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->attach, FALSE, TRUE, 0);
 	/* access point */
 	widget = gtk_label_new("Access point:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	gprs->apn = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->apn, FALSE, TRUE, 0);
+	/* credentials */
+	widget = gtk_label_new("Username:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gprs->username = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->username, FALSE, TRUE, 0);
+	widget = gtk_label_new("Password:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gprs->password = gtk_entry_new();
+	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->password, FALSE, TRUE, 0);
+	/* connect */
+	widget = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_connect), plugin);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* disconnect */
+	widget = gtk_button_new_from_stock(GTK_STOCK_DISCONNECT);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_disconnect), plugin);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* button box */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
@@ -165,10 +194,7 @@ static void _on_settings_cancel(gpointer data)
 	GPRS * gprs = plugin->priv;
 	char const * p;
 
-	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
-					"apn")) == NULL)
-		p = "";
-	gtk_entry_set_text(GTK_ENTRY(gprs->apn), p);
+	gtk_widget_hide(gprs->window);
 	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
 					"attach")) != NULL
 			&& strtoul(p, NULL, 10) != 0)
@@ -177,7 +203,18 @@ static void _on_settings_cancel(gpointer data)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gprs->attach),
 				FALSE);
-	gtk_widget_hide(gprs->window);
+	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+					"apn")) == NULL)
+		p = "";
+	gtk_entry_set_text(GTK_ENTRY(gprs->apn), p);
+	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+					"username")) == NULL)
+		p = "";
+	gtk_entry_set_text(GTK_ENTRY(gprs->username), p);
+	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+					"password")) == NULL)
+		p = "";
+	gtk_entry_set_text(GTK_ENTRY(gprs->password), p);
 }
 
 static gboolean _on_settings_closex(gpointer data)
@@ -188,6 +225,20 @@ static gboolean _on_settings_closex(gpointer data)
 	return TRUE;
 }
 
+static void _on_settings_connect(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_gprs_connect(plugin);
+}
+
+static void _on_settings_disconnect(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	_gprs_disconnect(plugin);
+}
+
 static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
@@ -195,17 +246,20 @@ static void _on_settings_ok(gpointer data)
 	char const * p;
 	gboolean active;
 
-	if((p = gtk_entry_get_text(GTK_ENTRY(gprs->apn))) != NULL
-			&& strlen(p) != 0
-			&& plugin->helper->config_set(plugin->helper->phone,
-				"gprs", "apn", p) == 0)
-		_gprs_access_point(plugin);
-	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				gprs->attach));
-	if(plugin->helper->config_set(plugin->helper->phone, "gprs", "attach",
-				active ? "1" : "0") == 0)
-		_gprs_attach(plugin);
 	gtk_widget_hide(gprs->window);
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gprs->attach));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "attach",
+				active ? "1" : "0");
+	_gprs_attach(plugin);
+	p = gtk_entry_get_text(GTK_ENTRY(gprs->apn));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "apn", p);
+	_gprs_access_point(plugin);
+	p = gtk_entry_get_text(GTK_ENTRY(gprs->username));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "username",
+			p);
+	p = gtk_entry_get_text(GTK_ENTRY(gprs->password));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "password",
+			p);
 }
 
 
@@ -241,4 +295,22 @@ static int _gprs_attach(PhonePlugin * plugin)
 	if(plugin->helper->queue(plugin->helper->phone, cmd) != 0)
 		return 1;
 	return plugin->helper->queue(plugin->helper->phone, "AT+CGATT?");
+}
+
+
+/* gprs_connect */
+static int _gprs_connect(PhonePlugin * plugin)
+{
+	char const * cmd = "ATD*99***1#";
+
+	return plugin->helper->queue(plugin->helper->phone, cmd);
+}
+
+
+/* gprs_disconnect */
+static int _gprs_disconnect(PhonePlugin * plugin)
+{
+	char const * cmd = "ATH"; /* XXX requires interpretation from Phone */
+
+	return plugin->helper->queue(plugin->helper->phone, cmd);
 }
