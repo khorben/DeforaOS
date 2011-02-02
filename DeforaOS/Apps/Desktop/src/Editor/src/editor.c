@@ -867,21 +867,23 @@ void editor_show_preferences(Editor * editor, gboolean show)
 	/* font */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Font:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	editor->pr_font = gtk_font_button_new();
 	gtk_font_button_set_use_font(GTK_FONT_BUTTON(editor->pr_font), TRUE);
-	gtk_size_group_add_widget(group, editor->pr_font);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	/* wrap mode */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Wrap mode:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	editor->pr_wrap = gtk_combo_box_new_text();
 	for(i = 0; i < sizeof(_editor_wrap) / sizeof(*_editor_wrap); i++)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(editor->pr_wrap),
 				_(_editor_wrap[i].name));
-	gtk_size_group_add_widget(group, editor->pr_wrap);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_wrap, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	_preferences_on_cancel(editor);

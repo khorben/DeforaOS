@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-02 06:40+0100\n"
+"POT-Creation-Date: 2011-02-02 06:43+0100\n"
 "PO-Revision-Date: 2010-04-11 12:32+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -225,7 +225,7 @@ msgstr "Préférences de l'éditeur de texte"
 msgid "Font:"
 msgstr "Police :"
 
-#: ../src/editor.c:878
+#: ../src/editor.c:879
 msgid "Wrap mode:"
 msgstr "Retour à la ligne :"
 

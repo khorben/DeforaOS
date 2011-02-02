@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-02 06:40+0100\n"
+"POT-Creation-Date: 2011-02-02 06:43+0100\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -222,7 +222,7 @@ msgstr ""
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:878
+#: ../src/editor.c:879
 msgid "Wrap mode:"
 msgstr ""
 
