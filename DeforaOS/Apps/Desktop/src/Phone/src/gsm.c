@@ -996,12 +996,6 @@ GSMCommand * gsm_queue(GSM * gsm, char const * command)
 
 	if(command == NULL || command[0] == '\0')
 		return NULL;
-	if(gsm->mode == GSM_MODE_DATA && strcmp(command, "ATH") == 0) /* XXX */
-	{
-		gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 0);
-		gsm_reset(gsm, 0, NULL);
-		return NULL;
-	}
 	if((gsmc = gsm_command_new(command)) == NULL)
 		return NULL;
 	if(gsm_queue_command(gsm, gsmc) == 0)
@@ -1017,9 +1011,17 @@ int gsm_queue_command(GSM * gsm, GSMCommand * gsmc)
 	GSMPriority priority;
 	GSList * l;
 	GSMCommand * p;
+	char const * q;
 
 	if(gsmc == NULL)
 		return 1;
+	if(gsm->mode == GSM_MODE_DATA && (p = gsm_command_get_command(gsmc))
+			&& strcmp(p, "ATH") == 0) /* XXX */
+	{
+		gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 0);
+		gsm_reset(gsm, 0, NULL);
+		return 0;
+	}
 	/* the GSM_PRIORITY_HIGHEST priority is meant to avoid races */
 	if((priority = gsm_command_get_priority(gsmc)) > GSM_PRIORITY_HIGH)
 		priority = GSM_PRIORITY_HIGH;
