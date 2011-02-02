@@ -5,8 +5,9 @@ LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include
 CPPFLAGS= 
-CFLAGSF	= -W
+CFLAGSF	= -W `pkg-config --cflags cpp`
 CFLAGS	= -Wall -g -O2 -fPIC -pedantic
+LDFLAGSF= `pkg-config --libs cpp`
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
@@ -19,7 +20,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 as_OBJS = as.o
-as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags as`
 as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs as`
 
 as.so: $(as_OBJS)
@@ -54,7 +55,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
 	$(INSTALL) -m 0644 -- as.so $(DESTDIR)$(LIBDIR)/c99/target/as.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
