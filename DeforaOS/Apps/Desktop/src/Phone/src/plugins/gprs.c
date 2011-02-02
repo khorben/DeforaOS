@@ -111,6 +111,7 @@ static int _gprs_event_functional(PhonePlugin * plugin)
 
 
 /* gprs_settings */
+static void _on_settings_apply(gpointer data);
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_disconnect(gpointer data);
@@ -188,6 +189,28 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_widget_show_all(gprs->window);
 }
 
+static void _on_settings_apply(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	GPRS * gprs = plugin->priv;
+	char const * p;
+	gboolean active;
+
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gprs->attach));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "attach",
+				active ? "1" : "0");
+	_gprs_attach(plugin);
+	p = gtk_entry_get_text(GTK_ENTRY(gprs->apn));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "apn", p);
+	_gprs_access_point(plugin);
+	p = gtk_entry_get_text(GTK_ENTRY(gprs->username));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "username",
+			p);
+	p = gtk_entry_get_text(GTK_ENTRY(gprs->password));
+	plugin->helper->config_set(plugin->helper->phone, "gprs", "password",
+			p);
+}
+
 static void _on_settings_cancel(gpointer data)
 {
 	PhonePlugin * plugin = data;
@@ -229,7 +252,7 @@ static void _on_settings_connect(gpointer data)
 {
 	PhonePlugin * plugin = data;
 
-	_on_settings_ok(plugin); /* XXX not so elegant */
+	_on_settings_apply(plugin);
 	_gprs_connect(plugin);
 }
 
@@ -244,23 +267,9 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	GPRS * gprs = plugin->priv;
-	char const * p;
-	gboolean active;
 
 	gtk_widget_hide(gprs->window);
-	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gprs->attach));
-	plugin->helper->config_set(plugin->helper->phone, "gprs", "attach",
-				active ? "1" : "0");
-	_gprs_attach(plugin);
-	p = gtk_entry_get_text(GTK_ENTRY(gprs->apn));
-	plugin->helper->config_set(plugin->helper->phone, "gprs", "apn", p);
-	_gprs_access_point(plugin);
-	p = gtk_entry_get_text(GTK_ENTRY(gprs->username));
-	plugin->helper->config_set(plugin->helper->phone, "gprs", "username",
-			p);
-	p = gtk_entry_get_text(GTK_ENTRY(gprs->password));
-	plugin->helper->config_set(plugin->helper->phone, "gprs", "password",
-			p);
+	_on_settings_apply(plugin);
 }
 
 
