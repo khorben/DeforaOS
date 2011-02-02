@@ -379,6 +379,9 @@ Surfer * _new_do(char const * url)
 	widget = gtk_button_new();
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	surfer->security = gtk_image_new();
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(widget, _("Security information"));
+#endif
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				on_security), surfer);
 	gtk_container_add(GTK_CONTAINER(widget), surfer->security);
@@ -1530,12 +1533,12 @@ void surfer_view_security(Surfer * surfer)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "%s",
 #if GTK_CHECK_VERSION(2, 8, 0)
-			_("Security"));
+			_("Security information"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s",
 #endif
 			text);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Security"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Security information"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 }
