@@ -378,6 +378,8 @@ int gsm_set_call_presentation(GSM * gsm, int set);
 int gsm_set_call_waiting_control(GSM * gsm, int unsollicited);
 int gsm_set_extended_ring_reports(GSM * gsm, int extended);
 int gsm_set_functional(GSM * gsm, int functional);
+int gsm_set_gprs_password(GSM * gsm, char const * password);
+int gsm_set_gprs_username(GSM * gsm, char const * username);
 int gsm_set_line_presentation(GSM * gsm, int set);
 int gsm_set_message_indications(GSM * gsm, GSMMessageMode mode,
 		int unsollicited);

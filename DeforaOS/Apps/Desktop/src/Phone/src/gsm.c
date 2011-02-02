@@ -57,6 +57,8 @@ struct _GSM
 	unsigned int baudrate;
 	unsigned int retry;
 	unsigned int hwflow;
+	char * username;
+	char * password;
 
 	/* callback */
 	GSMCallback callback;
@@ -368,6 +370,8 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 	gsm->baudrate = _new_baudrate(baudrate);
 	gsm->retry = 1000;
 	gsm->hwflow = hwflow;
+	gsm->username = NULL;
+	gsm->password = NULL;
 	/* callback */
 	gsm->callback = NULL;
 	gsm->callback_data = NULL;
@@ -453,6 +457,8 @@ void gsm_delete(GSM * gsm)
 		g_source_remove(gsm->rd_source);
 	gsm->rd_source = 0;
 	_gsm_queue_flush(gsm);
+	free(gsm->password);
+	free(gsm->username);
 	free(gsm->device);
 	free(gsm);
 }
@@ -513,6 +519,30 @@ int gsm_set_functional(GSM * gsm, int functional)
 {
 	return gsm_modem_set_functional(gsm->modem, (functional != 0) ? TRUE
 			: FALSE);
+}
+
+
+/* gsm_set_gprs_password */
+int gsm_set_gprs_password(GSM * gsm, char const * password)
+{
+	free(gsm->password);
+	if(password == NULL)
+		gsm->password = NULL;
+	else if((gsm->password = strdup(password)) == NULL)
+		return -1;
+	return 0;
+}
+
+
+/* gsm_set_gprs_username */
+int gsm_set_gprs_username(GSM * gsm, char const * username)
+{
+	free(gsm->username);
+	if(username == NULL)
+		gsm->username = NULL;
+	else if((gsm->username = strdup(username)) == NULL)
+		return -1;
+	return 0;
 }
 
 
@@ -1984,7 +2014,8 @@ static int _gsm_trigger_cmut(GSM * gsm, char const * result)
 static int _gsm_trigger_connect(GSM * gsm, char const * result,
 		gboolean * answered)
 {
-	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "phone", NULL };
+	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "phone",
+		"user", "", "password", "", NULL };
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
 	int wfd;
 	int rfd;
@@ -1996,6 +2027,10 @@ static int _gsm_trigger_connect(GSM * gsm, char const * result,
 	if(answered != NULL)
 		*answered = TRUE;
 	gsm->mode = GSM_MODE_DATA;
+	if(gsm->username != NULL)
+		argv[5] = gsm->username;
+	if(gsm->password != NULL)
+		argv[7] = gsm->password;
 	if(g_spawn_async_with_pipes(NULL, argv, NULL, flags, NULL, NULL, NULL,
 				&wfd, &rfd, NULL, &error)
 			== FALSE)

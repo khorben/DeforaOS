@@ -404,7 +404,7 @@ static void _new_config(Phone * phone)
 static gboolean _new_idle(gpointer data)
 {
 	Phone * phone = data;
-	char const * plugins;
+	char const * p;
 
 	phone_show_call(phone, FALSE);
 	phone_show_contacts(phone, FALSE);
@@ -415,10 +415,14 @@ static gboolean _new_idle(gpointer data)
 	phone_show_system(phone, FALSE);
 	phone_show_write(phone, FALSE);
 	_idle_settings(phone);
-	if((plugins = config_get(phone->config, NULL, "plugins")) != NULL)
-		_idle_load_plugins(phone, plugins);
-	phone->source = 0;
+	if((p = config_get(phone->config, NULL, "plugins")) != NULL)
+		_idle_load_plugins(phone, p);
+	if((p = config_get(phone->config, "gprs", "username")) != NULL)
+		gsm_set_gprs_username(phone->gsm, p); /* XXX move elsewhere */
+	if((p = config_get(phone->config, "gprs", "password")) != NULL)
+		gsm_set_gprs_password(phone->gsm, p); /* XXX move elsewhere */
 	gsm_start(phone->gsm, 0);
+	phone->source = 0;
 	return FALSE;
 }
 
@@ -2226,6 +2230,7 @@ void phone_show_system(Phone * phone, gboolean show)
 			G_CALLBACK(_on_system_closex), phone);
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Phone device:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_file_chooser_button_new(_("Set the phone device"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -2693,6 +2698,13 @@ static int _phone_config_set(Phone * phone, char const * section,
 {
 	if(config_set(phone->config, section, variable, value) != 0)
 		return -1;
+	if(section != NULL && strcmp(section, "gprs") == 0) /* XXX move */
+	{
+		if(variable != NULL && strcmp(variable, "username") == 0)
+			gsm_set_gprs_username(phone->gsm, variable);
+		if(variable != NULL && strcmp(variable, "password") == 0)
+			gsm_set_gprs_password(phone->gsm, variable);
+	}
 	return _phone_config_save(phone);
 }
 
