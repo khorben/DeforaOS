@@ -326,8 +326,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 			retry = strtoul(p, NULL, 10);
 	}
 	phone->gsm = gsm_new(device, baudrate, hwflow);
-	if(retry >= 0)
-		gsm_set_retry(phone->gsm, retry);
 	phone->source = 0;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
@@ -383,6 +381,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 		phone_delete(phone);
 		return NULL;
 	}
+	if(retry >= 0)
+		gsm_set_retry(phone->gsm, retry);
 	phone->source = g_idle_add(_new_idle, phone);
 	gsm_set_callback(phone->gsm, _phone_gsm_event, phone);
 	_phone_set_operator(phone, _("Initializing..."));
