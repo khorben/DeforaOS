@@ -13,7 +13,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/c99
 	$(INSTALL) -m 0644 -- target.h $(DESTDIR)$(INCLUDEDIR)/c99/target.h
 

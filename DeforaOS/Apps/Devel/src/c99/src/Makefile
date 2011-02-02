@@ -55,7 +55,7 @@ distclean:
 	$(RM) -- $(c99_OBJS)
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- c99 $(DESTDIR)$(BINDIR)/c99
