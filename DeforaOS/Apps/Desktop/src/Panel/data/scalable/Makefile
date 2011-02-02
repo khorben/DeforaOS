@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps
 	$(INSTALL) -m 0644 -- panel-applet-bluetooth.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/panel-applet-bluetooth.svg
 

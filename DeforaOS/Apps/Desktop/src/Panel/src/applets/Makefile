@@ -224,7 +224,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- battery.so $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
