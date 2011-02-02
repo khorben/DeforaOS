@@ -2284,17 +2284,17 @@ static gboolean _on_system_closex(gpointer data)
 static void _on_system_ok(gpointer data)
 {
 	Phone * phone = data;
-	char const * p;
+	char const * device;
 
 	gtk_widget_hide(phone->sy_window);
-	/* FIXME requires a restart to be applied at the moment */
-	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+	if((device = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 						phone->sy_device))) != NULL)
-		config_set(phone->config, NULL, "device", p);
+		config_set(phone->config, NULL, "device", device);
 	config_set(phone->config, NULL, "hwflow", gtk_toggle_button_get_active(
 				GTK_TOGGLE_BUTTON(phone->sy_hwflow))
 			? "1" : "0");
 	_phone_config_save(phone);
+	gsm_reset(phone->gsm, 0, device);
 }
 
 

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1041,13 +1041,25 @@ int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error)
 
 
 /* gsm_reset */
-int gsm_reset(GSM * gsm, unsigned int delay)
+int gsm_reset(GSM * gsm, unsigned int delay, char const * device)
 {
 	int ret;
+	char * p = NULL;
 
-	if((ret = gsm_stop(gsm)) != 0)
-		return ret;
-	return gsm_start(gsm, delay);
+	if(device != NULL && (p = strdup(device)) == NULL)
+		return -1;
+	if((ret = gsm_stop(gsm)) == 0)
+	{
+		if(p != NULL)
+		{
+			free(gsm->device);
+			gsm->device = p;
+		}
+		ret = gsm_start(gsm, delay);
+	}
+	else
+		free(p);
+	return ret;
 }
 
 
@@ -1932,7 +1944,7 @@ static int _gsm_trigger_connect(GSM * gsm, char const * result,
 		*answered = TRUE;
 	/* FIXME implement pass-through */
 	/* FIXME reset is probably not enough (send "+++"?) */
-	return gsm_reset(gsm, gsm->retry);
+	return gsm_reset(gsm, gsm->retry, NULL);
 }
 
 
@@ -2395,7 +2407,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
 			if(gsm->retry > 0)
-				gsm_reset(gsm, gsm->retry);
+				gsm_reset(gsm, gsm->retry, NULL);
 			gsm->rd_source = 0;
 			return FALSE;
 	}
@@ -2446,7 +2458,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
 			if(gsm->retry > 0)
-				gsm_reset(gsm, gsm->retry);
+				gsm_reset(gsm, gsm->retry, NULL);
 			gsm->wr_source = 0;
 			return FALSE;
 	}

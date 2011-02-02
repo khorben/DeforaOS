@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -447,7 +447,7 @@ int gsm_queue_full_mode(GSM * gsm, GSMPriority priority, char const * command,
 		GSMError error, GSMCommandCallback callback, GSMMode mode);
 int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error);
 
-int gsm_reset(GSM * gsm, unsigned int delay);
+int gsm_reset(GSM * gsm, unsigned int delay, char const * device);
 int gsm_start(GSM * gsm, unsigned int delay);
 int gsm_stop(GSM * gsm);
 
