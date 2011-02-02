@@ -1141,9 +1141,9 @@ int gsm_stop(GSM * gsm)
 	gsm->channel = NULL;
 	if(gsm->rd_ppp_source != 0)
 		g_source_remove(gsm->rd_ppp_source);
+	gsm->rd_ppp_source = 0;
 	_stop_channel(gsm->rd_ppp_channel);
 	gsm->rd_ppp_channel = NULL;
-	gsm->rd_ppp_source = 0;
 	if(gsm->wr_ppp_source != 0)
 		g_source_remove(gsm->wr_ppp_source);
 	gsm->wr_ppp_source = 0;
