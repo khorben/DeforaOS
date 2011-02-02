@@ -2948,7 +2948,15 @@ static void _phone_progress_pulse(GtkWidget * widget)
 /* phone_queue */
 static int _phone_queue(Phone * phone, char const * command)
 {
-	return (gsm_queue(phone->gsm, command) != NULL) ? 0 : 1;
+	GSMCommand * c;
+
+	if((c = gsm_command_new(command)) == NULL)
+		return -1;
+	gsm_command_set_timeout(c, 30000);
+	if(gsm_queue_command(phone->gsm, c) == 0)
+		return 0;
+	gsm_command_delete(c);
+	return -1;
 }
 
 
