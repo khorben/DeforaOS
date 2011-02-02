@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-01 23:22+0100\n"
+"POT-Creation-Date: 2011-02-02 05:19+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,184 +16,184 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/gsm.c:148
+#: ../src/gsm.c:152
 msgid "Phone failure"
 msgstr "Défaillance du téléphone"
 
-#: ../src/gsm.c:149
+#: ../src/gsm.c:153
 msgid "No connection to phone"
 msgstr "Pas de connexion au téléphone"
 
-#: ../src/gsm.c:150 ../src/gsm.c:185
+#: ../src/gsm.c:154 ../src/gsm.c:189
 msgid "Operation not allowed"
 msgstr "Opération non autorisée"
 
-#: ../src/gsm.c:151 ../src/gsm.c:186
+#: ../src/gsm.c:155 ../src/gsm.c:190
 msgid "Operation not supported"
 msgstr "Opération non supportée"
 
-#: ../src/gsm.c:152 ../src/gsm.c:188
+#: ../src/gsm.c:156 ../src/gsm.c:192
 msgid "SIM not inserted"
 msgstr "SIM non insérée"
 
-#: ../src/gsm.c:153 ../src/gsm.c:189
+#: ../src/gsm.c:157 ../src/gsm.c:193
 msgid "SIM PIN required"
 msgstr "Code SIM PIN requis"
 
-#: ../src/gsm.c:154
+#: ../src/gsm.c:158
 msgid "SIM PUK required"
 msgstr "Code PUK requis"
 
-#: ../src/gsm.c:155
+#: ../src/gsm.c:159
 msgid "SIM failure"
 msgstr "Défaillance SIM"
 
-#: ../src/gsm.c:156
+#: ../src/gsm.c:160
 msgid "SIM busy"
 msgstr "SIM occupée"
 
-#: ../src/gsm.c:157
+#: ../src/gsm.c:161
 msgid "SIM wrong"
 msgstr "SIM erronée"
 
-#: ../src/gsm.c:158
+#: ../src/gsm.c:162
 msgid "Incorrect password"
 msgstr "Mot de passe incorrect"
 
-#: ../src/gsm.c:159
+#: ../src/gsm.c:163
 msgid "SIM PIN2 required"
 msgstr "Code SIM PIN2 requis"
 
-#: ../src/gsm.c:160
+#: ../src/gsm.c:164
 msgid "SIM PUK2 required"
 msgstr "Code SIM PUK2 requis"
 
-#: ../src/gsm.c:161 ../src/gsm.c:192
+#: ../src/gsm.c:165 ../src/gsm.c:196
 msgid "Memory full"
 msgstr "Mémoire pleine"
 
-#: ../src/gsm.c:162 ../src/gsm.c:203
+#: ../src/gsm.c:166 ../src/gsm.c:207
 msgid "Invalid index"
 msgstr "Index invalide"
 
-#: ../src/gsm.c:163
+#: ../src/gsm.c:167
 msgid "Not found"
 msgstr "Non trouvé"
 
-#: ../src/gsm.c:164 ../src/gsm.c:190
+#: ../src/gsm.c:168 ../src/gsm.c:194
 msgid "Memory failure"
 msgstr "Défaillance mémoire"
 
-#: ../src/gsm.c:165
+#: ../src/gsm.c:169
 msgid "Text string too long"
 msgstr "Texte trop long"
 
-#: ../src/gsm.c:166
+#: ../src/gsm.c:170
 msgid "Invalid characters in text string"
 msgstr "Caractère invalide dans le texte"
 
-#: ../src/gsm.c:167
+#: ../src/gsm.c:171
 msgid "Dial string too long"
 msgstr "Le numéro composé est trop long"
 
-#: ../src/gsm.c:168
+#: ../src/gsm.c:172
 msgid "Invalid characters in dial string"
 msgstr "Caractères invalides dans le numéro"
 
-#: ../src/gsm.c:169
+#: ../src/gsm.c:173
 msgid "No network service"
 msgstr "Pas de couverture réseau"
 
-#: ../src/gsm.c:170
+#: ../src/gsm.c:174
 msgid "Network timeout"
 msgstr "Délai d'attente du réseau dépassé"
 
-#: ../src/gsm.c:171
+#: ../src/gsm.c:175
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:172 ../src/gsm.c:1280 ../src/gsm.c:1531 ../src/gsm.c:1591
-#: ../src/gsm.c:2133
+#: ../src/gsm.c:176 ../src/gsm.c:1339 ../src/gsm.c:1590 ../src/gsm.c:1650
+#: ../src/gsm.c:2213
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
-#: ../src/gsm.c:183
+#: ../src/gsm.c:187
 msgid "ME failure"
 msgstr "Défaillance ME"
 
-#: ../src/gsm.c:184
+#: ../src/gsm.c:188
 msgid "SMS service of ME reserved"
 msgstr "Service SMS du ME réservé"
 
-#: ../src/gsm.c:187
+#: ../src/gsm.c:191
 msgid "Invalid PDU mode parameter"
 msgstr "Paramètre de mode PDU invalide"
 
-#: ../src/gsm.c:191
+#: ../src/gsm.c:195
 msgid "Invalid memory index"
 msgstr "Index mémoire invalide"
 
-#: ../src/gsm.c:204
+#: ../src/gsm.c:208
 msgid "Parameter not allowed"
 msgstr "Paramètre non autorisé"
 
-#: ../src/gsm.c:205
+#: ../src/gsm.c:209
 msgid "Data corrupted"
 msgstr "Données corrompues"
 
-#: ../src/gsm.c:206
+#: ../src/gsm.c:210
 msgid "Internal error"
 msgstr "Erreur interne"
 
-#: ../src/gsm.c:207
+#: ../src/gsm.c:211
 msgid "Call table full"
 msgstr "Table d'appel pleine"
 
-#: ../src/gsm.c:208
+#: ../src/gsm.c:212
 msgid "Service table full"
 msgstr "Table de service pleine"
 
-#: ../src/gsm.c:209
+#: ../src/gsm.c:213
 msgid "Call not found"
 msgstr "Appel non trouvé"
 
-#: ../src/gsm.c:210
+#: ../src/gsm.c:214
 msgid "No data-call supported"
 msgstr "Les appels data ne sont pas gérés"
 
-#: ../src/gsm.c:211
+#: ../src/gsm.c:215
 msgid "One call on hold"
 msgstr "Un appel en attente"
 
-#: ../src/gsm.c:212
+#: ../src/gsm.c:216
 msgid "Hold call not supported for this type"
 msgstr "La mise en attente n'est pas gérée dans ce cas"
 
-#: ../src/gsm.c:213
+#: ../src/gsm.c:217
 msgid "Number not allowed by FDN"
 msgstr "Numéro non autorisé par FDN"
 
-#: ../src/gsm.c:214
+#: ../src/gsm.c:218
 msgid "Number not allowed by BDN"
 msgstr "Numéro non autorisé par BDN"
 
-#: ../src/gsm.c:215
+#: ../src/gsm.c:219
 msgid "Parallel USSD not supported"
 msgstr "USSD parallèle non supporté"
 
-#: ../src/gsm.c:216
+#: ../src/gsm.c:220
 msgid "Fax minimum speed condition"
 msgstr "Vitesse minimum pour les fax"
 
-#: ../src/gsm.c:217
+#: ../src/gsm.c:221
 msgid "Conflict with command details"
 msgstr "Conflit dans la syntaxe de commande"
 
-#: ../src/gsm.c:394
+#: ../src/gsm.c:406
 msgid ": Unknown baudrate, assuming 115200"
 msgstr ": Débit inconnu, tente 115200"
 
-#: ../src/gsm.c:1119
+#: ../src/gsm.c:1175
 msgid "Event not handled"
 msgstr "Événement non géré"
 

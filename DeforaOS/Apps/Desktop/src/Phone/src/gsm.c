@@ -965,6 +965,12 @@ GSMCommand * gsm_queue(GSM * gsm, char const * command)
 
 	if(command == NULL || command[0] == '\0')
 		return NULL;
+	if(gsm->mode == GSM_MODE_DATA && strcmp(command, "ATH") == 0) /* XXX */
+	{
+		gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 0);
+		gsm_reset(gsm, 0, NULL);
+		return NULL;
+	}
 	if((gsmc = gsm_command_new(command)) == NULL)
 		return NULL;
 	if(gsm_queue_command(gsm, gsmc) == 0)
@@ -1090,6 +1096,8 @@ int gsm_start(GSM * gsm, unsigned int delay)
 
 
 /* gsm_stop */
+static void _stop_channel(GIOChannel * channel);
+
 int gsm_stop(GSM * gsm)
 {
 	_gsm_event_send(gsm, GSM_EVENT_TYPE_OFFLINE);
@@ -1098,14 +1106,32 @@ int gsm_stop(GSM * gsm)
 	if(gsm->source != 0)
 		g_source_remove(gsm->source);
 	gsm->source = 0;
+	_stop_channel(gsm->channel);
+	gsm->channel = NULL;
 	if(gsm->rd_ppp_source != 0)
 		g_source_remove(gsm->rd_ppp_source);
+	_stop_channel(gsm->rd_ppp_channel);
+	gsm->rd_ppp_channel = NULL;
 	gsm->rd_ppp_source = 0;
 	if(gsm->wr_ppp_source != 0)
 		g_source_remove(gsm->wr_ppp_source);
 	gsm->wr_ppp_source = 0;
+	_stop_channel(gsm->wr_ppp_channel);
+	gsm->wr_ppp_channel = NULL;
 	_gsm_event_send(gsm, GSM_EVENT_TYPE_SUSPEND);
 	return 0;
+}
+
+static void _stop_channel(GIOChannel * channel)
+	/* XXX code duplication with _reset_channel() */
+{
+	GError * error = NULL;
+
+	if(channel == NULL)
+		return;
+	/* XXX should the file descriptor also be closed? */
+	g_io_channel_shutdown(channel, TRUE, &error);
+	g_io_channel_unref(channel);
 }
 
 
@@ -2303,6 +2329,7 @@ static gboolean _on_reset(gpointer data)
 	gsm->rd_ppp_channel = NULL;
 	_reset_channel(gsm->wr_ppp_channel);
 	gsm->wr_ppp_channel = NULL;
+	gsm->mode = GSM_MODE_INIT;
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
 			|| _reset_do(gsm, fd) != 0)
 	{
