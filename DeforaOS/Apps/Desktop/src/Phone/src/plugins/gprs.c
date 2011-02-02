@@ -229,6 +229,7 @@ static void _on_settings_connect(gpointer data)
 {
 	PhonePlugin * plugin = data;
 
+	_on_settings_ok(plugin); /* XXX not so elegant */
 	_gprs_connect(plugin);
 }
 
