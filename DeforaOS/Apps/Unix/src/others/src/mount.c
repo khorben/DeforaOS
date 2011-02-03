@@ -58,6 +58,7 @@
 #ifdef MOUNT_PROCFS
 # define MT_PROCFS	MOUNT_PROCFS
 # include <miscfs/procfs/procfs.h>
+# define PROCFS_ARGS_VERSION	PROCFS_ARGSVERSION
 #endif
 #ifdef MOUNT_TMPFS
 # define MT_TMPFS	MOUNT_TMPFS
@@ -76,6 +77,12 @@
 /* portability */
 #ifndef MT_PROCFS
 # define MT_PROCFS	"proc"
+struct procfs_args
+{
+	int version;
+	int args;
+};
+# define PROCFS_ARGS_VERSION	0
 #endif
 
 
@@ -133,6 +140,10 @@ static const struct
 #ifdef MNT_RDONLY
 	{ 2,	"ro",		MNT_RDONLY	},
 	{ 2,	"rw",		-MNT_RDONLY	},
+#endif
+#ifdef MS_RDONLY
+	{ 2,	"ro",		MS_RDONLY	},
+	{ 2,	"rw",		-MS_RDONLY	},
 #endif
 #ifdef MNT_SYNCHRONOUS
 # ifndef MNT_ASYNC
@@ -723,7 +734,7 @@ static int _mount_callback_procfs(char const * type, int flags,
 	void * data = &procfs;
 
 	memset(&procfs, 0, sizeof(procfs));
-	procfs.version = PROCFS_ARGSVERSION;
+	procfs.version = PROCFS_ARGS_VERSION;
 	type = MT_PROCFS;
 	return _mount_do_mount(type, flags, special, node, data,
 			sizeof(procfs));
