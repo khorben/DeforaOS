@@ -422,6 +422,8 @@ static int _mount_do_mount(char const * type, int flags, char const * special,
 # else
 	if(mount(type, node, flags, data) == 0)
 # endif
+#else
+	if(mount(special, node, type, flags, data) == 0)
 #endif
 		return 0;
 	switch(errno)
@@ -489,7 +491,7 @@ static int _mount_callback_adosfs(char const * type, int flags,
 	}
 	/* FIXME actually parse options */
 	adosfs.mask = 0755;
-	type = MOUNT_ADOSFS;
+	type = MT_ADOSFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(adosfs));
 	free(adosfs.fspec);
 	return ret;
@@ -507,7 +509,7 @@ static int _mount_callback_ext2fs(char const * type, int flags,
 	memset(&ffs, 0, sizeof(ffs));
 	if((ffs.fspec = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
-	type = MOUNT_EXT2FS;
+	type = MT_EXT2FS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(ffs));
 	free(ffs.fspec);
 	return ret;
@@ -535,7 +537,7 @@ static int _mount_callback_fat(char const * type, int flags,
 	}
 	/* FIXME actually parse options */
 	msdosfs.version = MSDOSFSMNT_VERSION;
-	type = MOUNT_MSDOS;
+	type = MT_FAT;
 	ret = _mount_do_mount(type, flags, special, node, data,
 			sizeof(msdosfs));
 	free(msdosfs.fspec);
@@ -554,7 +556,7 @@ static int _mount_callback_ffs(char const * type, int flags,
 	memset(&ffs, 0, sizeof(ffs));
 	if((ffs.fspec = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
-	type = MOUNT_FFS;
+	type = MT_FFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(ffs));
 	free(ffs.fspec);
 	return ret;
@@ -594,7 +596,7 @@ static int _mount_callback_hfs(char const * type, int flags,
 	if((hfs.fspec = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
 	/* XXX does not support options at the moment */
-	type = MOUNT_HFS;
+	type = MT_HFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(hfs));
 	free(hfs.fspec);
 	return ret;
@@ -611,7 +613,7 @@ static int _mount_callback_iso9660(char const * type, int flags,
 	memset(&cd9660fs, 0, sizeof(cd9660fs));
 	cd9660fs.fspec = special;
 	/* FIXME actually parse options */
-	type = MOUNT_CD9660;
+	type = MT_ISO9660;
 	return _mount_do_mount(type, flags, special, node, data,
 			sizeof(cd9660fs));
 }
@@ -630,7 +632,7 @@ static int _mount_callback_mfs(char const * type, int flags,
 		return -_mount_error(node, 1);
 	/* FIXME actually parse options */
 	mfs.size = (2 << 24);
-	type = MOUNT_MFS;
+	type = MT_MFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(mfs));
 	free(mfs.fspec);
 	return ret;
@@ -662,7 +664,7 @@ static int _mount_callback_nfs(char const * type, int flags,
 	nfs.hostname = p;
 	nfs.fh = q;
 	/* FIXME implement the rest */
-	type = MOUNT_NFS;
+	type = MT_NFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(nfs));
 	free(q);
 	return ret;
@@ -688,7 +690,7 @@ static int _mount_callback_ntfs(char const * type, int flags,
 		ntfs.mode = ~st.st_mode & 0777;
 	}
 	/* FIXME actually parse options */
-	type = MOUNT_NTFS;
+	type = MT_NTFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(ntfs));
 	free(ntfs.fspec);
 	return ret;
@@ -706,7 +708,7 @@ static int _mount_callback_nullfs(char const * type, int flags,
 	memset(&nullfs, 0, sizeof(nullfs));
 	if((nullfs.la.target = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
-	type = MOUNT_NULLFS;
+	type = MT_NULLFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(nullfs));
 	free(nullfs.la.target);
 	return ret;
@@ -747,7 +749,7 @@ static int _mount_callback_tmpfs(char const * type, int flags,
 	/* FIXME actually parse options */
 	tmpfs.ta_nodes_max = 1024;
 	tmpfs.ta_root_mode = 0755;
-	type = MOUNT_TMPFS;
+	type = MT_TMPFS;
 	return _mount_do_mount(type, flags, special, node, data, sizeof(tmpfs));
 }
 #endif
@@ -764,7 +766,7 @@ static int _mount_callback_unionfs(char const * type, int flags,
 	if((unionfs.target = strdup(special)) == NULL)
 		return -_mount_error(node, 1);
 	/* FIXME actually parse options */
-	type = MOUNT_UNION;
+	type = MT_UNIONFS;
 	ret = _mount_do_mount(type, flags, special, node, data,
 			sizeof(unionfs));
 	free(unionfs.target);
