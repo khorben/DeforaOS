@@ -324,9 +324,9 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 	if(prefs->flags & PREFS_f)
 		flags |= MNT_FORCE;
 #endif
-#ifdef MNT_RELOAD
+#ifdef MNT_UPDATE
 	if(prefs->flags & PREFS_u)
-		flags |= MNT_RELOAD;
+		flags |= MNT_UPDATE;
 #endif
 	for(i = 0; _mount_supported[i].type != NULL; i++)
 		if(prefs->type != NULL && strcmp(_mount_supported[i].type,
