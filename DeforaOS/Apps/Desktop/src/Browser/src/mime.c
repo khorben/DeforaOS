@@ -295,7 +295,6 @@ static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 {
 	static char buf[256] = "gnome-mime-";
 	char * p;
-	GdkPixbuf * icon;
 	GtkIconLookupFlags flags = GTK_ICON_LOOKUP_USE_BUILTIN
 		| GTK_ICON_LOOKUP_GENERIC_FALLBACK;
 
