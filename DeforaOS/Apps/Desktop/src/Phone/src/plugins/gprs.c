@@ -153,7 +153,7 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->apn = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), gprs->apn, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->apn, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* username */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -162,7 +162,7 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->username = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), gprs->username, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->username, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* password */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -172,7 +172,7 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->password = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
-	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* connect */
 	widget = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
