@@ -820,7 +820,7 @@ static int _usage(void)
 
 	fputs("Usage: mount [-a][-t type]\n"
 "       mount [-f] special | node\n"
-"       mount [-f][-o options] special node\n", stderr);
+"       mount [-f][-u][-o options] special node\n", stderr);
 	fputs("\nOptions supported:", stderr);
 	for(i = 0; _mount_options[i].name != NULL; i++)
 		if(_mount_options[i].flags >= 0)
