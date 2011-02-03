@@ -757,9 +757,20 @@ static int _mount_callback_unionfs(char const * type, int flags,
 /* usage */
 static int _usage(void)
 {
+	size_t i;
+	char const * sep = " ";
+
 	fputs("Usage: mount [-a][-t type]\n"
 "       mount [-f] special | node\n"
 "       mount [-f][-o options] special node\n", stderr);
+	fputs("\nOptions supported:", stderr);
+	for(i = 0; _mount_options[i].name != NULL; i++)
+		if(_mount_options[i].flags >= 0)
+		{
+			fprintf(stderr, "%s%s", sep, _mount_options[i].name);
+			sep = ",";
+		}
+	fputc('\n', stderr);
 	return 1;
 }
 
