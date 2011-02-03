@@ -72,6 +72,7 @@ typedef struct _Prefs
 } Prefs;
 #define PREFS_a 0x1
 #define PREFS_f 0x2
+#define PREFS_u	0x4
 
 
 /* prototypes */
@@ -322,6 +323,10 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 #ifdef MNT_FORCE
 	if(prefs->flags & PREFS_f)
 		flags |= MNT_FORCE;
+#endif
+#ifdef MNT_RELOAD
+	if(prefs->flags & PREFS_u)
+		flags |= MNT_RELOAD;
 #endif
 	for(i = 0; _mount_supported[i].type != NULL; i++)
 		if(prefs->type != NULL && strcmp(_mount_supported[i].type,
@@ -679,7 +684,7 @@ int main(int argc, char * argv[])
 	char const * node = NULL;
 
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "afo:t:")) != -1)
+	while((o = getopt(argc, argv, "afo:t:u")) != -1)
 		switch(o)
 		{
 			case 'a':
@@ -693,6 +698,9 @@ int main(int argc, char * argv[])
 				break;
 			case 't':
 				prefs.type = optarg;
+				break;
+			case 'u':
+				prefs.flags |= PREFS_u;
 				break;
 			default:
 				return _usage();
