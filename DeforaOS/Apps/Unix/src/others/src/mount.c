@@ -20,39 +20,51 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 #ifdef MOUNT_ADOSFS
+# define MT_ADOSFS	MOUNT_ADOSFS
 # include <adosfs/adosfs.h>
 #endif
 #ifdef MOUNT_CD9660
+# define MT_ISO9660	MOUNT_CD9660
 # include <isofs/cd9660/cd9660_mount.h>
 #endif
 #ifdef MOUNT_EXT2FS
+# define MT_EXT2FS	MOUNT_EXT2FS
 # include <ufs/ufs/ufsmount.h>
 #endif
 #ifdef MOUNT_FFS
+# define MT_FFS		MOUNT_FFS
 # include <ufs/ufs/ufsmount.h>
 #endif
 #ifdef MOUNT_HFS
+# define MT_HFS		MOUNT_HFS
 # include <fs/hfs/hfs.h>
 #endif
 #ifdef MOUNT_MSDOS
+# define MT_FAT		MOUNT_MSDOS
 # include <msdosfs/msdosfsmount.h>
 #endif
 #ifdef MOUNT_NFS
+# define MT_NFS		MOUNT_NFS
 # include <nfs/nfsmount.h>
 #endif
 #ifdef MOUNT_NTFS
+# define MT_NTFS	MOUNT_NTFS
 # include <ntfs/ntfsmount.h>
 #endif
 #ifdef MOUNT_NULLFS
+# define MT_NULLFS	MOUNT_NULLFS
 # include <miscfs/nullfs/null.h>
 #endif
 #ifdef MOUNT_PROCFS
+# define MT_PROCFS	MOUNT_PROCFS
 # include <miscfs/procfs/procfs.h>
 #endif
 #ifdef MOUNT_TMPFS
+# define MT_TMPFS	MOUNT_TMPFS
 # include <fs/tmpfs/tmpfs_args.h>
 #endif
 #ifdef MOUNT_UNION
+# define MT_UNIONFS	MOUNT_UNION
 # include <miscfs/union/union.h>
 #endif
 #include <unistd.h>
@@ -60,6 +72,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+
+/* portability */
+#ifndef MT_PROCFS
+# define MT_PROCFS	"proc"
+#endif
 
 
 /* mount */
@@ -132,57 +149,57 @@ static const struct
 
 
 /* prototypes */
-#ifdef MOUNT_ADOSFS
+#ifdef MT_ADOSFS
 static int _mount_callback_adosfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_CD9660
-static int _mount_callback_cd9660fs(char const * type, int flags,
-		char const * special, char const * node);
-#endif
-#ifdef MOUNT_EXT2FS
+#ifdef MT_EXT2FS
 static int _mount_callback_ext2fs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_FFS
+#ifdef MT_FAT
+static int _mount_callback_fat(char const * type, int flags,
+		char const * special, char const * node);
+#endif
+#ifdef MT_FFS
 static int _mount_callback_ffs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
 static int _mount_callback_generic(char const * type, int flags,
 		char const * special, char const * node);
-#ifdef MOUNT_HFS
+#ifdef MT_HFS
 static int _mount_callback_hfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_MFS
+#ifdef MT_ISO9660
+static int _mount_callback_iso9660(char const * type, int flags,
+		char const * special, char const * node);
+#endif
+#ifdef MT_MFS
 static int _mount_callback_mfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_MSDOS
-static int _mount_callback_msdosfs(char const * type, int flags,
-		char const * special, char const * node);
-#endif
-#ifdef MOUNT_NFS
+#ifdef MT_NFS
 static int _mount_callback_nfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_NTFS
+#ifdef MT_NTFS
 static int _mount_callback_ntfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_NULLFS
+#ifdef MT_NULLFS
 static int _mount_callback_nullfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_PROCFS
+#ifdef MT_PROCFS
 static int _mount_callback_procfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_TMPFS
+#ifdef MT_TMPFS
 static int _mount_callback_tmpfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
-#ifdef MOUNT_UNION
+#ifdef MT_UNIONFS
 static int _mount_callback_unionfs(char const * type, int flags,
 		char const * special, char const * node);
 #endif
@@ -191,51 +208,52 @@ static int _mount_callback_unionfs(char const * type, int flags,
 /* variables */
 static struct
 {
+	char * name;
 	char * type;
 	int (*callback)(char const * type, int flags, char const * special,
 			char const * node);
 } _mount_supported[] =
 {
-#ifdef MOUNT_ADOSFS
-	{ MOUNT_ADOSFS,	_mount_callback_adosfs	},
+#ifdef MT_ADOSFS
+	{ "adosfs",	MT_ADOSFS,	_mount_callback_adosfs	},
 #endif
-#ifdef MOUNT_CD9660
-	{ MOUNT_CD9660,	_mount_callback_cd9660fs},
+#ifdef MT_EXT2FS
+	{ "ext2fs",	MT_EXT2FS,	_mount_callback_ext2fs	},
 #endif
-#ifdef MOUNT_EXT2FS
-	{ MOUNT_EXT2FS,	_mount_callback_ext2fs	},
+#ifdef MT_FAT
+	{ "fat",	MT_FAT,		_mount_callback_fat	},
 #endif
-#ifdef MOUNT_FFS
-	{ MOUNT_FFS,	_mount_callback_ffs	},
+#ifdef MT_FFS
+	{ "ffs",	MT_FFS,		_mount_callback_ffs	},
 #endif
-#ifdef MOUNT_HFS
-	{ MOUNT_HFS,	_mount_callback_hfs	},
+#ifdef MT_HFS
+	{ "hfs",	MT_HFS,		_mount_callback_hfs	},
 #endif
-#ifdef MOUNT_MFS
-	{ MOUNT_MFS,	_mount_callback_mfs	},
+#ifdef MT_ISO9660
+	{ "iso9660",	MT_ISO9660,	_mount_callback_iso9660	},
 #endif
-#ifdef MOUNT_MSDOS
-	{ MOUNT_MSDOS,	_mount_callback_msdosfs	},
+#ifdef MT_MFS
+	{ "mfs",	MT_MFS,		_mount_callback_mfs	},
 #endif
-#ifdef MOUNT_NFS
-	{ MOUNT_NFS,	_mount_callback_nfs	},
+#ifdef MT_NFS
+	{ "nfs",	MT_NFS,		_mount_callback_nfs	},
 #endif
-#ifdef MOUNT_NTFS
-	{ MOUNT_NTFS,	_mount_callback_ntfs	},
+#ifdef MT_NTFS
+	{ "ntfs",	MT_NTFS,	_mount_callback_ntfs	},
 #endif
-#ifdef MOUNT_NULLFS
-	{ MOUNT_NULLFS,	_mount_callback_nullfs	},
+#ifdef MT_NULLFS
+	{ "nullfs",	MT_NULLFS,	_mount_callback_nullfs	},
 #endif
-#ifdef MOUNT_PROCFS
-	{ MOUNT_PROCFS,	_mount_callback_procfs	},
+#ifdef MT_PROCFS
+	{ "procfs",	MT_PROCFS,	_mount_callback_procfs	},
 #endif
-#ifdef MOUNT_TMPFS
-	{ MOUNT_TMPFS,	_mount_callback_tmpfs	},
+#ifdef MT_TMPFS
+	{ "tmpfs",	MT_TMPFS,	_mount_callback_tmpfs	},
 #endif
-#ifdef MOUNT_UNION
-	{ MOUNT_UNION,	_mount_callback_unionfs	},
+#ifdef MT_UNIONFS
+	{ "unionfs",	MT_UNIONFS,	_mount_callback_unionfs	},
 #endif
-	{ NULL,		_mount_callback_generic	}
+	{ NULL,		NULL,		_mount_callback_generic	}
 };
 
 
@@ -385,11 +403,12 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 		flags |= MNT_UPDATE;
 #endif
 	_mount_do_options(prefs, &flags);
-	for(i = 0; _mount_supported[i].type != NULL; i++)
-		if(prefs->type != NULL && strcmp(_mount_supported[i].type,
+	for(i = 0; _mount_supported[i].name != NULL; i++)
+		if(prefs->type != NULL && strcmp(_mount_supported[i].name,
 					prefs->type) == 0)
 			break;
-	return _mount_supported[i].callback(prefs->type, flags, special, node);
+	return _mount_supported[i].callback(_mount_supported[i].type, flags,
+			special, node);
 }
 
 static int _mount_do_mount(char const * type, int flags, char const * special,
@@ -450,7 +469,7 @@ static void _mount_do_options(Prefs * prefs, int * flags)
 	}
 }
 
-#ifdef MOUNT_ADOSFS
+#ifdef MT_ADOSFS
 static int _mount_callback_adosfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -477,23 +496,7 @@ static int _mount_callback_adosfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_CD9660
-static int _mount_callback_cd9660fs(char const * type, int flags,
-		char const * special, char const * node)
-{
-	struct iso_args cd9660fs;
-	void * data = &cd9660fs;
-
-	memset(&cd9660fs, 0, sizeof(cd9660fs));
-	cd9660fs.fspec = special;
-	/* FIXME actually parse options */
-	type = MOUNT_CD9660;
-	return _mount_do_mount(type, flags, special, node, data,
-			sizeof(cd9660fs));
-}
-#endif
-
-#ifdef MOUNT_EXT2FS
+#ifdef MT_EXT2FS
 static int _mount_callback_ext2fs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -511,7 +514,36 @@ static int _mount_callback_ext2fs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_FFS
+#ifdef MT_FAT
+static int _mount_callback_fat(char const * type, int flags,
+		char const * special, char const * node)
+{
+	int ret;
+	struct msdosfs_args msdosfs;
+	void * data = & msdosfs;
+	struct stat st;
+
+	memset(&msdosfs, 0, sizeof(msdosfs));
+	if((msdosfs.fspec = strdup(special)) == NULL)
+		return -_mount_error(node, 1);
+	if(stat(node, &st) == 0)
+	{
+		msdosfs.uid = st.st_uid;
+		msdosfs.gid = st.st_gid;
+		msdosfs.mask = ~st.st_mode & 0666;
+		msdosfs.dirmask = ~st.st_mode & 0777;
+	}
+	/* FIXME actually parse options */
+	msdosfs.version = MSDOSFSMNT_VERSION;
+	type = MOUNT_MSDOS;
+	ret = _mount_do_mount(type, flags, special, node, data,
+			sizeof(msdosfs));
+	free(msdosfs.fspec);
+	return ret;
+}
+#endif
+
+#ifdef MT_FFS
 static int _mount_callback_ffs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -550,7 +582,7 @@ static int _mount_callback_generic(char const * type, int flags,
 	return ret;
 }
 
-#ifdef MOUNT_HFS
+#ifdef MT_HFS
 static int _mount_callback_hfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -569,7 +601,23 @@ static int _mount_callback_hfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_MFS
+#ifdef MT_ISO9660
+static int _mount_callback_iso9660(char const * type, int flags,
+		char const * special, char const * node)
+{
+	struct iso_args cd9660fs;
+	void * data = &cd9660fs;
+
+	memset(&cd9660fs, 0, sizeof(cd9660fs));
+	cd9660fs.fspec = special;
+	/* FIXME actually parse options */
+	type = MOUNT_CD9660;
+	return _mount_do_mount(type, flags, special, node, data,
+			sizeof(cd9660fs));
+}
+#endif
+
+#ifdef MT_MFS
 static int _mount_callback_mfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -589,36 +637,7 @@ static int _mount_callback_mfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_MSDOS
-static int _mount_callback_msdosfs(char const * type, int flags,
-		char const * special, char const * node)
-{
-	int ret;
-	struct msdosfs_args msdosfs;
-	void * data = & msdosfs;
-	struct stat st;
-
-	memset(&msdosfs, 0, sizeof(msdosfs));
-	if((msdosfs.fspec = strdup(special)) == NULL)
-		return -_mount_error(node, 1);
-	if(stat(node, &st) == 0)
-	{
-		msdosfs.uid = st.st_uid;
-		msdosfs.gid = st.st_gid;
-		msdosfs.mask = ~st.st_mode & 0666;
-		msdosfs.dirmask = ~st.st_mode & 0777;
-	}
-	/* FIXME actually parse options */
-	msdosfs.version = MSDOSFSMNT_VERSION;
-	type = MOUNT_MSDOS;
-	ret = _mount_do_mount(type, flags, special, node, data,
-			sizeof(msdosfs));
-	free(msdosfs.fspec);
-	return ret;
-}
-#endif
-
-#ifdef MOUNT_NFS
+#ifdef MT_NFS
 static int _mount_callback_nfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -650,7 +669,7 @@ static int _mount_callback_nfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_NTFS
+#ifdef MT_NTFS
 static int _mount_callback_ntfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -676,7 +695,7 @@ static int _mount_callback_ntfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_NULLFS
+#ifdef MT_NULLFS
 static int _mount_callback_nullfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -694,7 +713,7 @@ static int _mount_callback_nullfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_PROCFS
+#ifdef MT_PROCFS
 static int _mount_callback_procfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -703,13 +722,13 @@ static int _mount_callback_procfs(char const * type, int flags,
 
 	memset(&procfs, 0, sizeof(procfs));
 	procfs.version = PROCFS_ARGSVERSION;
-	type = MOUNT_PROCFS;
+	type = MT_PROCFS;
 	return _mount_do_mount(type, flags, special, node, data,
 			sizeof(procfs));
 }
 #endif
 
-#ifdef MOUNT_TMPFS
+#ifdef MT_TMPFS
 static int _mount_callback_tmpfs(char const * type, int flags,
 		char const * special, char const * node)
 {
@@ -733,7 +752,7 @@ static int _mount_callback_tmpfs(char const * type, int flags,
 }
 #endif
 
-#ifdef MOUNT_UNION
+#ifdef MT_UNIONFS
 static int _mount_callback_unionfs(char const * type, int flags,
 		char const * special, char const * node)
 {
