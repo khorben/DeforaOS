@@ -117,6 +117,10 @@ static const struct
 	{ 5,	"atime",	-MNT_NOATIME	},
 	{ 7,	"noatime",	MNT_NOATIME	},
 #endif
+#ifdef MS_NOATIME
+	{ 5,	"atime",	-MS_NOATIME	},
+	{ 7,	"noatime",	MS_NOATIME	},
+#endif
 #ifdef MNT_NOCOREDUMP
 	{ 8,	"coredump",	-MNT_NOCOREDUMP	},
 	{ 10,	"nocoredump",	MNT_NOCOREDUMP	},
@@ -133,9 +137,17 @@ static const struct
 	{ 4,	"exec",		-MNT_NOEXEC	},
 	{ 6,	"noexec",	MNT_NOEXEC	},
 #endif
+#ifdef MS_NOEXEC
+	{ 4,	"exec",		-MS_NOEXEC	},
+	{ 6,	"noexec",	MS_NOEXEC	},
+#endif
 #ifdef MNT_NOSUID
 	{ 4,	"suid",		-MNT_NOSUID	},
 	{ 6,	"nosuid",	MNT_NOSUID	},
+#endif
+#ifdef MS_NOSUID
+	{ 4,	"suid",		-MS_NOSUID	},
+	{ 6,	"nosuid",	MS_NOSUID	},
 #endif
 #ifdef MNT_RDONLY
 	{ 2,	"ro",		MNT_RDONLY	},
@@ -150,6 +162,12 @@ static const struct
 	{ 5,	"async",	-MNT_SYNCHRONOUS},
 # endif
 	{ 4,	"sync",		MNT_SYNCHRONOUS	},
+#endif
+#ifdef MS_SYNCHRONOUS
+# ifndef MS_ASYNC
+	{ 5,	"async",	-MS_SYNCHRONOUS},
+# endif
+	{ 4,	"sync",		MS_SYNCHRONOUS	},
 #endif
 #ifdef MNT_UNION
 	{ 5,	"union",	MNT_UNION	},
