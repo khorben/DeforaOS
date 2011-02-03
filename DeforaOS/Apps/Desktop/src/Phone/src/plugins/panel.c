@@ -139,11 +139,6 @@ static int _panel_init(PhonePlugin * plugin)
 					"battery")) == NULL
 			|| strcmp(p, "1") != 0)
 		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
-	/* cell type */
-	panel->cell = gtk_image_new_from_icon_name("stock_internet",
-			GTK_ICON_SIZE_SMALL_TOOLBAR);
-	gtk_widget_set_no_show_all(panel->cell, TRUE);
-	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->cell, FALSE, TRUE, 0);
 	/* signal */
 	panel->signal_level = -1;
 	panel->signal_image = gtk_image_new();
@@ -159,6 +154,11 @@ static int _panel_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->operator, TRUE, TRUE,
 			0);
 	_panel_set_signal_level(panel, 0.0 / 0.0);
+	/* cell type */
+	panel->cell = gtk_image_new_from_icon_name("stock_internet",
+			GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gtk_widget_set_no_show_all(panel->cell, TRUE);
+	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->cell, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(panel->plug), panel->hbox);
 	gtk_widget_show_all(panel->hbox);
 	/* preferences */
