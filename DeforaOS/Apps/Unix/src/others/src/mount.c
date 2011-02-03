@@ -75,6 +75,62 @@ typedef struct _Prefs
 #define PREFS_u	0x4
 
 
+/* variables */
+static const struct
+{
+	size_t len;
+	char const * name;
+	int flags;
+} _mount_options[] =
+{
+#ifdef MNT_ASYNC
+	{ 5,	"async",	MNT_ASYNC	},
+# ifndef MNT_SYNCHRONOUS
+	{ 4,	"sync",		-MNT_ASYNC	},
+# endif
+#endif
+#ifdef MNT_NOATIME
+	{ 5,	"atime",	-MNT_NOATIME	},
+	{ 7,	"noatime",	MNT_NOATIME	},
+#endif
+#ifdef MNT_NOCOREDUMP
+	{ 8,	"coredump",	-MNT_NOCOREDUMP	},
+	{ 10,	"nocoredump",	MNT_NOCOREDUMP	},
+#endif
+#ifdef MNT_NODEV
+	{ 3,	"dev",		-MNT_NODEV	},
+	{ 5,	"nodev",	MNT_NODEV	},
+#endif
+#ifdef MNT_NODEVMTIME
+	{ 8,	"devmtime",	-MNT_NODEVMTIME	},
+	{ 10,	"nodevmtime",	MNT_NODEVMTIME	},
+#endif
+#ifdef MNT_NOEXEC
+	{ 4,	"exec",		-MNT_NOEXEC	},
+	{ 6,	"noexec",	MNT_NOEXEC	},
+#endif
+#ifdef MNT_NOSUID
+	{ 4,	"suid",		-MNT_NOSUID	},
+	{ 6,	"nosuid",	MNT_NOSUID	},
+#endif
+#ifdef MNT_RDONLY
+	{ 2,	"ro",		MNT_RDONLY	},
+	{ 2,	"rw",		-MNT_RDONLY	},
+#endif
+#ifdef MNT_SYNCHRONOUS
+# ifndef MNT_ASYNC
+	{ 5,	"async",	-MNT_SYNCHRONOUS},
+# endif
+	{ 4,	"sync",		MNT_SYNCHRONOUS	},
+#endif
+#ifdef MNT_UNION
+	{ 5,	"union",	MNT_UNION	},
+	{ 7,	"nounion",	-MNT_UNION	},
+#endif
+	{ 0,	NULL,		0		}
+};
+
+
 /* prototypes */
 #ifdef MOUNT_ADOSFS
 static int _mount_callback_adosfs(char const * type, int flags,
@@ -190,6 +246,7 @@ static int _mount_print(void);
 static int _mount_do(Prefs * prefs, char const * special, char const * node);
 static int _mount_do_mount(char const * type, int flags, char const * special,
 		char const * node, void * data, size_t datalen);
+static void _mount_do_options(Prefs * prefs, int * flags);
 
 static int _mount(Prefs * prefs, char const * special, char const * node)
 {
@@ -315,7 +372,6 @@ static int _mount_print(void)
 }
 
 static int _mount_do(Prefs * prefs, char const * special, char const * node)
-	/* FIXME handle more flags and options */
 {
 	int flags = 0;
 	size_t i;
@@ -328,6 +384,7 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 	if(prefs->flags & PREFS_u)
 		flags |= MNT_UPDATE;
 #endif
+	_mount_do_options(prefs, &flags);
 	for(i = 0; _mount_supported[i].type != NULL; i++)
 		if(prefs->type != NULL && strcmp(_mount_supported[i].type,
 					prefs->type) == 0)
@@ -358,6 +415,38 @@ static int _mount_do_mount(char const * type, int flags, char const * special,
 			return -_mount_error(special, 1);
 		default:
 			return -_mount_error(node, 1);
+	}
+}
+
+static void _mount_do_options(Prefs * prefs, int * flags)
+{
+	char const * o;
+	size_t i;
+	size_t j;
+
+	if((o = prefs->options) == NULL)
+		return;
+	for(i = 0;; i++)
+	{
+		if(o[i] != ',' && o[i] != '\0')
+			continue;
+		for(j = 0; j < sizeof(_mount_options) / sizeof(*_mount_options);
+				j++)
+			if(i > 0 && _mount_options[j].len == i
+					&& strncmp(_mount_options[j].name, o, i)
+					== 0)
+			{
+				if(_mount_options[j].flags >= 0)
+					*flags |= _mount_options[j].flags;
+				else
+					*flags &= ~(_mount_options[j].flags);
+				break;
+			}
+		o += i;
+		i = 0;
+		if(o[i] == '\0')
+			break;
+		o++;
 	}
 }
 
