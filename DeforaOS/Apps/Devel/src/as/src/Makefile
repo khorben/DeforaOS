@@ -82,7 +82,7 @@ distclean:
 	$(RM) -- $(libas_OBJS) $(as_OBJS) $(disas_OBJS)
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 -- libas.a $(DESTDIR)$(LIBDIR)/libas.a

@@ -11,7 +11,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
 	$(INSTALL) -m 0755 -- dirstats $(DESTDIR)$(PREFIX)/bin/dirstats
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin

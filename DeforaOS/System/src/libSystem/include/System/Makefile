@@ -13,7 +13,7 @@ clean:
 
 distclean: clean
 
-install: $(TARGETS)
+install:
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
 	$(INSTALL) -m 0644 -- appclient.h $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System

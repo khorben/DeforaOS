@@ -57,7 +57,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib/GServer/video
 	$(INSTALL) -m 0644 -- glut.so $(DESTDIR)$(PREFIX)/lib/GServer/video/glut.so
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib/GServer/video

@@ -13,7 +13,7 @@ clean:
 
 distclean: clean
 
-install: all
+install:
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
 	$(INSTALL) -m 0644 -- cpp.h $(DESTDIR)$(INCLUDEDIR)/cpp.h
 

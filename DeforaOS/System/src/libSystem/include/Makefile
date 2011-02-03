@@ -19,7 +19,7 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-install: $(TARGETS)
+install:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
 	$(INSTALL) -m 0644 -- System.h $(DESTDIR)$(INCLUDEDIR)/System.h

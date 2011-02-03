@@ -114,7 +114,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
 	$(INSTALL) -m 0644 -- amd64.so $(DESTDIR)$(LIBDIR)/as/arch/amd64.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch

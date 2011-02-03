@@ -57,7 +57,7 @@ clean:
 distclean: clean
 	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 -- libcpp.a $(DESTDIR)$(LIBDIR)/libcpp.a
 	$(INSTALL) -m 0755 -- libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
