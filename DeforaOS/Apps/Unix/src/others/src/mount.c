@@ -75,6 +75,13 @@
 #include <errno.h>
 
 /* portability */
+#ifndef MT_ISO9660
+# define MT_ISO9660	"iso9660"
+struct iso_args
+{
+	char const * fspec;
+};
+#endif
 #ifndef MT_PROCFS
 # define MT_PROCFS	"proc"
 struct procfs_args
@@ -460,7 +467,9 @@ static int _mount_do_mount(char const * type, int flags, char const * special,
 	if(mount(type, node, flags, data) == 0)
 # endif
 #else
-	if(mount(special, node, type, flags, data) == 0)
+	struct { char const * fspec; } * d = data;
+
+	if(mount(special, node, type, flags, d->fspec) == 0)
 #endif
 		return 0;
 	switch(errno)
@@ -644,15 +653,15 @@ static int _mount_callback_hfs(char const * type, int flags,
 static int _mount_callback_iso9660(char const * type, int flags,
 		char const * special, char const * node)
 {
-	struct iso_args cd9660fs;
-	void * data = &cd9660fs;
+	struct iso_args iso9660;
+	void * data = &iso9660;
 
-	memset(&cd9660fs, 0, sizeof(cd9660fs));
-	cd9660fs.fspec = special;
+	memset(&iso9660, 0, sizeof(iso9660));
+	iso9660.fspec = special;
 	/* FIXME actually parse options */
 	type = MT_ISO9660;
 	return _mount_do_mount(type, flags, special, node, data,
-			sizeof(cd9660fs));
+			sizeof(iso9660));
 }
 #endif
 
