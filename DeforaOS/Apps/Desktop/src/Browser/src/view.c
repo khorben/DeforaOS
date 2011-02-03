@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "view is free software; you can redistribute it and/or modify it under the\n"
@@ -361,12 +361,16 @@ static int _view_error(View * view, char const * message, int ret)
 	dialog = gtk_message_dialog_new(view != NULL && view->window != NULL
 			? GTK_WINDOW(view->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s",
+#endif
+			message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				_error_response), ret != 0 ? view : NULL);
+				_error_response), (ret != 0) ? view : NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }
