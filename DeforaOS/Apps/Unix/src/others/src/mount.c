@@ -129,6 +129,10 @@ static const struct
 	{ 3,	"dev",		-MNT_NODEV	},
 	{ 5,	"nodev",	MNT_NODEV	},
 #endif
+#ifdef MS_NODEV
+	{ 3,	"dev",		-MS_NODEV	},
+	{ 5,	"nodev",	MS_NODEV	},
+#endif
 #ifdef MNT_NODEVMTIME
 	{ 8,	"devmtime",	-MNT_NODEVMTIME	},
 	{ 10,	"nodevmtime",	MNT_NODEVMTIME	},
@@ -430,6 +434,10 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 #ifdef MNT_UPDATE
 	if(prefs->flags & PREFS_u)
 		flags |= MNT_UPDATE;
+#endif
+#ifdef MS_REMOUNT
+	if(prefs->flags & PREFS_u)
+		flags |= MS_REMOUNT;
 #endif
 	_mount_do_options(prefs, &flags);
 	for(i = 0; _mount_supported[i].name != NULL; i++)
