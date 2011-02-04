@@ -47,6 +47,7 @@ typedef struct _Run
 	Config * config;
 	gboolean terminal;
 	GPid pid;		/* current child */
+	guint source;
 
 	/* widgets */
 	GtkWidget * window;
@@ -89,6 +90,7 @@ static Run * _run_new(void)
 	run->config = config_new();
 	run->terminal = FALSE;
 	run->pid = -1;
+	run->source = 0;
 	run->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(run->window);
 	gtk_window_set_keep_above(window, TRUE);
@@ -257,7 +259,8 @@ static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 
 /* on_run_execute */
 static void _execute_watch(GPid pid, gint status, gpointer data);
-static void _watch_save_config(Run * run);
+static void _execute_save_config(Run * run);
+static gboolean _execute_timeout(gpointer data);
 
 static void _on_run_execute(gpointer data)
 {
@@ -290,6 +293,7 @@ static void _on_run_execute(gpointer data)
 	}
 	gtk_widget_hide(run->window);
 	g_child_watch_add(run->pid, _execute_watch, run);
+	run->source = g_timeout_add(30000, _execute_timeout, run);
 }
 
 static void _execute_watch(GPid pid, gint status, gpointer data)
@@ -302,17 +306,20 @@ static void _execute_watch(GPid pid, gint status, gpointer data)
 	{
 		if(WEXITSTATUS(status) == 127) /* XXX may mean anything... */
 		{
+			if(run->source != 0)
+				g_source_remove(run->source);
+			run->source = 0;
 			gtk_widget_show(run->window);
 			_run_error(run, _("Child exited with error code 127"),
 					0);
 			return;
 		}
-		_watch_save_config(run);
+		_execute_save_config(run);
 		gtk_main_quit();
 	}
 }
 
-static void _watch_save_config(Run * run)
+static void _execute_save_config(Run * run)
 {
 	char const * p;
 	int i;
@@ -354,6 +361,15 @@ static void _watch_save_config(Run * run)
 	if(config_save(run->config, filename) != 0)
 		error_print("run");
 	free(filename);
+}
+
+static gboolean _execute_timeout(gpointer data)
+{
+	Run * run = data;
+
+	_execute_save_config(run);
+	gtk_main_quit();
+	return FALSE;
 }
 
 
