@@ -214,16 +214,10 @@ static int _run_error(Run * run, char const * message, int ret)
 static char * _run_get_config_filename(void)
 {
 	char const * homedir;
-	size_t len;
-	char * filename;
 
 	if((homedir = getenv("HOME")) == NULL)
 		homedir = g_get_home_dir();
-	len = strlen(homedir) + 1 + sizeof(RUN_CONFIG_FILE);
-	if((filename = malloc(len)) == NULL)
-		return NULL;
-	snprintf(filename, len, "%s/%s", homedir, RUN_CONFIG_FILE);
-	return filename;
+	return string_new_append(homedir, "/", RUN_CONFIG_FILE, NULL);
 }
 
 
