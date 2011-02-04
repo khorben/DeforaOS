@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-01 01:12+0100\n"
+"POT-Creation-Date: 2010-12-31 22:07+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:360 ../src/panel.c:364
+#: ../src/applets/battery.c:186 ../src/panel.c:361 ../src/panel.c:365
 #: ../src/run.c:196 ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
@@ -83,8 +83,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:70 ../src/panel.c:633 ../src/panel.c:640
-#: ../src/panel.c:648
+#: ../src/applets/logout.c:70 ../src/panel.c:634 ../src/panel.c:641
+#: ../src/panel.c:649
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -172,23 +172,23 @@ msgstr "très petite"
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
 
-#: ../src/panel.c:447
+#: ../src/panel.c:448
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:462
+#: ../src/panel.c:463
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:473
+#: ../src/panel.c:474
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:484
+#: ../src/panel.c:485
 msgid "General"
 msgstr "Générales"
 
-#: ../src/panel.c:623
+#: ../src/panel.c:624
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -199,7 +199,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:696
+#: ../src/panel.c:697
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -210,7 +210,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:701
+#: ../src/panel.c:702
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -221,11 +221,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:718 ../src/panel.c:723 ../src/panel.c:730
+#: ../src/panel.c:719 ../src/panel.c:724 ../src/panel.c:731
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:722
+#: ../src/panel.c:723
 msgid "Restart"
 msgstr "Redémarrer"
 
