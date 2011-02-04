@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ typedef struct _Run
 
 /* functions */
 /* useful */
-static int _run_error(char const * message, int ret);
+static int _run_error(Run * run, char const * message, int ret);
 static char * _run_get_config_filename(void);
 
 /* callbacks */
@@ -188,14 +188,19 @@ static void _run_delete(Run * run)
 
 /* useful */
 /* run_error */
-static int _run_error(char const * message, int ret)
+static int _run_error(Run * run, char const * message, int ret)
 {
 	GtkWidget * dialog;
+	GtkWindow * window = (run != NULL) ? GTK_WINDOW(run->window) : NULL;
 
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+	dialog = gtk_message_dialog_new(window, 0, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s",
+#endif
+			message);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_widget_show(dialog);
@@ -258,71 +263,62 @@ static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 
 
 /* on_run_execute */
-static gboolean _execute_idle(gpointer data);
-static void _idle_save_config(Run * run);
+static void _execute_watch(GPid pid, gint status, gpointer data);
+static void _watch_save_config(Run * run);
 
 static void _on_run_execute(gpointer data)
 {
 	Run * run = data;
 	char const * path;
+	char * argv_shell[] = { "/bin/sh", "run", "-c", NULL, NULL };
+	char * argv_xterm[] = { "xterm", "xterm", "-e", "sh", "-c", NULL,
+		NULL };
+	char ** argv = argv_shell;
+	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_SEARCH_PATH
+		| G_SPAWN_DO_NOT_REAP_CHILD;
+	GPid pid;
+	GError * error = NULL;
 
 	path = gtk_entry_get_text(GTK_ENTRY(run->entry));
-	if((run->pid = fork()) == -1) /* handle error */
+	if((argv[3] = strdup(path)) == NULL)
 	{
-		gtk_widget_hide(run->window);
-		_run_error(strerror(errno), 0);
-		gtk_widget_show(run->window);
+		_run_error(run, strerror(errno), 1);
+		return;
 	}
-	else if(run->pid != 0) /* parent process */
+	if(run->terminal)
 	{
-		gtk_widget_hide(run->window);
-		g_idle_add(_execute_idle, run);
+		argv_xterm[5] = argv[3];
+		argv = argv_xterm;
 	}
-	else /* child process */
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &pid, &error)
+		== FALSE)
 	{
-		if(run->terminal == TRUE)
-			execlp("xterm", "xterm", "-e", "sh", "-c", path, NULL);
-		else
-			execlp("/bin/sh", "run", "-c", path, NULL);
-		_exit(127); /* an error occured */
+		_run_error(run, error->message, 1);
+		return;
 	}
+	gtk_widget_hide(run->window);
+	g_child_watch_add(pid, _execute_watch, run);
 }
 
-static gboolean _execute_idle(gpointer data)
+static void _execute_watch(GPid pid, gint status, gpointer data)
 {
 	Run * run = data;
-	pid_t p;
-	int status;
 
-	if((p = waitpid(run->pid, &status, 0)) == -1) /* XXX blocks Gtk+ */
-	{
-		if(errno == ECHILD) /* should not happen */
-		{
-			_run_error(strerror(errno), 0);
-			gtk_main_quit();
-			return FALSE;
-		}
-		if(errno == EINTR)
-			return TRUE;
-		_run_error(strerror(errno), 0);
-		gtk_widget_show(run->window);
-		return FALSE;
-	}
 	if(WIFEXITED(status))
 	{
 		if(WEXITSTATUS(status) == 127) /* XXX may mean anything... */
 		{
-			_run_error(_("Child exited with error code 127"), 0);
 			gtk_widget_show(run->window);
-			return FALSE;
+			_run_error(run, _("Child exited with error code 127"),
+					0);
+			return;
 		}
-		_idle_save_config(run);
+		_watch_save_config(run);
 		gtk_main_quit();
 	}
-	return FALSE;
 }
 
-static void _idle_save_config(Run * run)
+static void _watch_save_config(Run * run)
 {
 	char const * p;
 	int i;
@@ -410,7 +406,7 @@ int main(int argc, char * argv[])
 	if(optind != argc)
 		return _usage();
 	if((run = _run_new()) == NULL)
-		return _run_error(error_get(), 2);
+		return _run_error(NULL, error_get(), 2);
 	gtk_main();
 	_run_delete(run);
 	return 0;
