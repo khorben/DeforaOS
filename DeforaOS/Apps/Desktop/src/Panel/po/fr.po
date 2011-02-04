@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-31 22:07+0100\n"
+"POT-Creation-Date: 2011-02-05 00:15+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,8 +20,8 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:361 ../src/panel.c:365
-#: ../src/run.c:196 ../src/run.c:200
+#: ../src/applets/battery.c:186 ../src/panel.c:365 ../src/panel.c:369
+#: ../src/run.c:200 ../src/run.c:206
 msgid "Error"
 msgstr "Erreur"
 
@@ -81,7 +81,7 @@ msgstr "Verrouiller l'écran"
 
 #: ../src/applets/logout.c:61
 msgid "Logging out is disabled"
-msgstr ""
+msgstr "Se déconnecter est désactivé"
 
 #: ../src/applets/logout.c:70 ../src/panel.c:634 ../src/panel.c:641
 #: ../src/panel.c:649
@@ -172,19 +172,19 @@ msgstr "très petite"
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
 
-#: ../src/panel.c:448
+#: ../src/panel.c:459
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:463
+#: ../src/panel.c:474
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:474
+#: ../src/panel.c:485
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:485
+#: ../src/panel.c:496
 msgid "General"
 msgstr "Générales"
 
@@ -229,22 +229,22 @@ msgstr "Arrêter"
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: ../src/run.c:100 ../src/run.c:112
+#: ../src/run.c:101 ../src/run.c:113
 msgid "Run program..."
 msgstr "Exécuter..."
 
-#: ../src/run.c:106
+#: ../src/run.c:107
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/run.c:121
+#: ../src/run.c:122
 msgid "Run in a terminal"
 msgstr "Exécuter dans un terminal"
 
-#: ../src/run.c:315
+#: ../src/run.c:313
 msgid "Child exited with error code 127"
 msgstr "La commande a retourné un code d'erreur 127"
 
-#: ../src/run.c:389
+#: ../src/run.c:395
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
