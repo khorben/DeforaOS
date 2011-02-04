@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -351,10 +351,14 @@ void panel_delete(Panel * panel)
 
 /* useful */
 /* panel_error */
+static int _error_text(char const * message, int ret);
+
 int panel_error(Panel * panel, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
+	if(panel == NULL)
+		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -365,6 +369,13 @@ int panel_error(Panel * panel, char const * message, int ret)
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs(PACKAGE ": ", stderr);
+	perror(message);
 	return ret;
 }
 
@@ -491,7 +502,7 @@ static void _show_preferences_window(Panel * panel)
 	gtk_box_pack_start(GTK_BOX(vbox), panel->pr_notebook, TRUE, TRUE, 0);
 	/* FIXME implement a way to enable plug-ins per panel (and in order) */
 	_preferences_on_cancel(panel);
-	gtk_widget_show_all(panel->pr_window);
+	gtk_widget_show_all(vbox);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -599,20 +610,9 @@ static int _panel_helper_config_set(Panel * panel, char const * section,
 
 
 /* panel_helper_error */
-static int _error_text(char const * message, int ret);
-
 static int _panel_helper_error(Panel * panel, char const * message, int ret)
 {
-	if(panel == NULL)
-		return _error_text(message, ret);
 	return panel_error(panel, message, ret);
-}
-
-static int _error_text(char const * message, int ret)
-{
-	fputs(PACKAGE ": ", stderr);
-	perror(message);
-	return ret;
 }
 
 
