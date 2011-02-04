@@ -14,7 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - choose a correct size for the window
- * - track if xkbd's process ever dies
+ * - move and resize when the root window changes
+ * - track if child process ever dies
+ * - default to DeforaOS' own keyboard implementation
  * - write own keyboard implementation (dlopen keyboard's binary) */
 
 
@@ -92,6 +94,9 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 	keyboard->window = NULL;
 	keyboard->pr_box = NULL;
 	ret = gtk_toggle_button_new();
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(ret, _("Show keyboard"));
+#endif
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
 				_on_keyboard_toggled), keyboard);

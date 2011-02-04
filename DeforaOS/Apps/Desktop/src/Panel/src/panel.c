@@ -192,7 +192,9 @@ Panel * panel_new(PanelPrefs const * prefs)
 #endif
 	gtk_window_resize(GTK_WINDOW(panel->window), panel->root_width,
 			panel->height);
+#if 0
 	gtk_window_set_accept_focus(GTK_WINDOW(panel->window), FALSE);
+#endif
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	if(prefs->position == PANEL_POSITION_TOP)

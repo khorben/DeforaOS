@@ -46,13 +46,11 @@ typedef struct _Run
 {
 	Config * config;
 	gboolean terminal;
+	GPid pid;		/* current child */
 
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * entry;
-
-	/* internal */
-	pid_t pid;		/* current child */
 } Run;
 
 
@@ -90,6 +88,7 @@ static Run * _run_new(void)
 		return NULL;
 	run->config = config_new();
 	run->terminal = FALSE;
+	run->pid = -1;
 	run->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(run->window);
 	gtk_window_set_keep_above(window, TRUE);
@@ -270,7 +269,6 @@ static void _on_run_execute(gpointer data)
 	char ** argv = argv_shell;
 	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO | G_SPAWN_SEARCH_PATH
 		| G_SPAWN_DO_NOT_REAP_CHILD;
-	GPid pid;
 	GError * error = NULL;
 
 	path = gtk_entry_get_text(GTK_ENTRY(run->entry));
@@ -284,20 +282,22 @@ static void _on_run_execute(gpointer data)
 		argv_xterm[5] = argv[3];
 		argv = argv_xterm;
 	}
-	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &pid, &error)
-		== FALSE)
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, &run->pid,
+				&error) == FALSE)
 	{
 		_run_error(run, error->message, 1);
 		return;
 	}
 	gtk_widget_hide(run->window);
-	g_child_watch_add(pid, _execute_watch, run);
+	g_child_watch_add(run->pid, _execute_watch, run);
 }
 
 static void _execute_watch(GPid pid, gint status, gpointer data)
 {
 	Run * run = data;
 
+	if(run->pid != pid)
+		return; /* should not happen */
 	if(WIFEXITED(status))
 	{
 		if(WEXITSTATUS(status) == 127) /* XXX may mean anything... */
