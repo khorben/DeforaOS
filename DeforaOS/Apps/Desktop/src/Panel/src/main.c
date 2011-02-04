@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -57,8 +56,6 @@ static int _usage(void)
 
 
 /* main */
-static void _main_sigchld(int signum);
-
 int main(int argc, char * argv[])
 {
 	int o;
@@ -66,7 +63,6 @@ int main(int argc, char * argv[])
 	Panel * panel2 = NULL;
 	PanelPrefs prefs;
 	char * p;
-	struct sigaction sa;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -115,20 +111,10 @@ int main(int argc, char * argv[])
 	}
 	if((panel2 = panel_new(&prefs)) == NULL)
 		return 2;
-	sa.sa_handler = _main_sigchld;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		panel_error(NULL, "sigaction", 0);
 	gtk_main();
 	if(panel1 != NULL)
 		panel_delete(panel1);
 	if(panel2 != NULL)
 		panel_delete(panel2);
 	return 0;
-}
-
-static void _main_sigchld(int signum)
-{
-	wait(NULL);
 }

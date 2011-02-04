@@ -12,5 +12,6 @@
 ../src/applets/memory.c
 ../src/applets/swap.c
 ../src/applets/tasks.c
+../src/main.c
 ../src/panel.c
 ../src/run.c
