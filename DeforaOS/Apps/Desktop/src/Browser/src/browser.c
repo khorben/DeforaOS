@@ -541,7 +541,7 @@ void browser_about(Browser * browser)
 {
 	if(browser->ab_window != NULL)
 	{
-		gtk_widget_show(browser->ab_window);
+		gtk_window_present(GTK_WINDOW(browser->ab_window));
 		return;
 	}
 	browser->ab_window = desktop_about_dialog_new();
