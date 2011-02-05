@@ -634,6 +634,8 @@ static void _panel_helper_about_dialog(Panel * panel)
 	desktop_about_dialog_set_license(panel->ab_window, _license);
 	desktop_about_dialog_set_name(panel->ab_window, PACKAGE);
 	desktop_about_dialog_set_version(panel->ab_window, VERSION);
+	gtk_window_set_position(GTK_WINDOW(panel->ab_window),
+			GTK_WIN_POS_CENTER_ALWAYS);
 	g_signal_connect_swapped(G_OBJECT(panel->ab_window), "delete-event",
 			G_CALLBACK(_about_on_closex), panel);
 	gtk_widget_show(panel->ab_window);
