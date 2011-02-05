@@ -46,9 +46,9 @@ static int _usage(void)
 	fputs(_("Usage: panel [-m monitor][-bBsStx]\n"
 "  -B	Place the panel at both top and bottom of the screen\n"
 "  -b	Place the panel only at the bottom of the screen\n"
+"  -l	Use icons the size of a large toolbar (default)\n"
 "  -m	Monitor to use (default: 0)\n"
 "  -s	Use icons the size of a small toolbar\n"
-"  -S	Use icons the size of a large toolbar (default)\n"
 "  -t	Place the panel only at the top of the screen\n"
 "  -x	Use icons the size of menus\n"), stderr);
 	return 1;
@@ -59,8 +59,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	Panel * panel1 = NULL;
-	Panel * panel2 = NULL;
+	Panel * panel;
 	PanelPrefs prefs;
 	char * p;
 
@@ -71,7 +70,7 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.iconsize = PANEL_ICON_SIZE_UNSET;
 	prefs.position = PANEL_POSITION_BOTH;
-	while((o = getopt(argc, argv, "bBm:sStx")) != -1)
+	while((o = getopt(argc, argv, "bBlm:stx")) != -1)
 		switch(o)
 		{
 			case 'B':
@@ -80,6 +79,9 @@ int main(int argc, char * argv[])
 			case 'b':
 				prefs.position = PANEL_POSITION_BOTTOM;
 				break;
+			case 'l':
+				prefs.iconsize = PANEL_ICON_SIZE_LARGE;
+				break;
 			case 'm':
 				prefs.monitor = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
@@ -87,9 +89,6 @@ int main(int argc, char * argv[])
 				break;
 			case 's':
 				prefs.iconsize = PANEL_ICON_SIZE_SMALL;
-				break;
-			case 'S':
-				prefs.iconsize = PANEL_ICON_SIZE_LARGE;
 				break;
 			case 't':
 				prefs.position = PANEL_POSITION_TOP;
@@ -102,19 +101,9 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	if(prefs.position == PANEL_POSITION_BOTH)
-	{
-		prefs.position = PANEL_POSITION_TOP;
-		if((panel1 = panel_new(&prefs)) == NULL)
-			return 2;
-		prefs.position = PANEL_POSITION_BOTTOM;
-	}
-	if((panel2 = panel_new(&prefs)) == NULL)
+	if((panel = panel_new(&prefs)) == NULL)
 		return 2;
 	gtk_main();
-	if(panel1 != NULL)
-		panel_delete(panel1);
-	if(panel2 != NULL)
-		panel_delete(panel2);
+	panel_delete(panel);
 	return 0;
 }

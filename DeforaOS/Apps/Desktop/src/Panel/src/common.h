@@ -26,10 +26,10 @@
 /* types */
 typedef enum _PanelPosition
 {
-	PANEL_POSITION_BOTH,
-	PANEL_POSITION_BOTTOM,
-	PANEL_POSITION_TOP
+	PANEL_POSITION_BOTTOM	= 0x1,
+	PANEL_POSITION_TOP	= 0x2
 } PanelPosition;
+# define PANEL_POSITION_BOTH	(PANEL_POSITION_BOTTOM | PANEL_POSITION_TOP)
 # define PANEL_POSITION_DEFAULT PANEL_POSITION_BOTTOM
 
 typedef struct _PanelPrefs
@@ -55,7 +55,7 @@ void panel_delete(Panel * panel);
 
 /* useful */
 int panel_error(Panel * panel, char const * message, int ret);
-int panel_load(Panel * panel, char const * applet);
+int panel_load(Panel * panel, PanelPosition position, char const * applet);
 
 void panel_show_preferences(Panel * panel, gboolean show);
 

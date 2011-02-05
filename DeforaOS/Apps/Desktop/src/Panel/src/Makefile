@@ -21,7 +21,7 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-panel_OBJS = panel.o main.o
+panel_OBJS = panel.o window.o main.o
 panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -35,8 +35,11 @@ run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 run: $(run_OBJS)
 	$(CC) -o run $(run_OBJS) $(run_LDFLAGS)
 
-panel.o: panel.c common.h ../include/Panel.h ../config.h
+panel.o: panel.c common.h window.h ../include/Panel.h ../config.h
 	$(CC) $(panel_CFLAGS) -c panel.c
+
+window.o: window.c common.h window.h
+	$(CC) $(panel_CFLAGS) -c window.c
 
 main.o: main.c common.h ../config.h
 	$(CC) $(panel_CFLAGS) -c main.c

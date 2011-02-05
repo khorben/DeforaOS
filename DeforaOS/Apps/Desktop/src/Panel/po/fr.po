@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-05 00:25+0100\n"
+"POT-Creation-Date: 2011-02-05 02:39+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:365 ../src/panel.c:369
+#: ../src/applets/battery.c:186 ../src/panel.c:384 ../src/panel.c:388
 #: ../src/run.c:200 ../src/run.c:206
 msgid "Error"
 msgstr "Erreur"
@@ -83,8 +83,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:70 ../src/panel.c:634 ../src/panel.c:641
-#: ../src/panel.c:649
+#: ../src/applets/logout.c:70 ../src/panel.c:642 ../src/panel.c:649
+#: ../src/panel.c:657
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -168,39 +168,35 @@ msgid ""
 "  -x\tUse icons the size of menus\n"
 msgstr ""
 
-#: ../src/panel.c:78
+#: ../src/panel.c:91
 msgid "large"
 msgstr "grande"
 
-#: ../src/panel.c:79
+#: ../src/panel.c:92
 msgid "small"
 msgstr "petite"
 
-#: ../src/panel.c:80
+#: ../src/panel.c:93
 msgid "smaller"
 msgstr "très petite"
 
-#: ../src/panel.c:157
-msgid "Invalid panel size"
-msgstr "Taille invalide pour le panel"
-
-#: ../src/panel.c:459
+#: ../src/panel.c:467
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:474
+#: ../src/panel.c:482
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:485
+#: ../src/panel.c:493
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:496
+#: ../src/panel.c:504
 msgid "General"
 msgstr "Générales"
 
-#: ../src/panel.c:624
+#: ../src/panel.c:632
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -211,7 +207,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:697
+#: ../src/panel.c:726
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -222,7 +218,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:702
+#: ../src/panel.c:731
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -233,11 +229,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:719 ../src/panel.c:724 ../src/panel.c:731
+#: ../src/panel.c:748 ../src/panel.c:753 ../src/panel.c:760
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:723
+#: ../src/panel.c:752
 msgid "Restart"
 msgstr "Redémarrer"
 
@@ -253,10 +249,18 @@ msgstr "Commande :"
 msgid "Run in a terminal"
 msgstr "Exécuter dans un terminal"
 
-#: ../src/run.c:313
-msgid "Child exited with error code 127"
-msgstr "La commande a retourné un code d'erreur 127"
+#: ../src/run.c:311
+msgid "Command not found"
+msgstr "Commande non trouvée"
 
-#: ../src/run.c:395
+#: ../src/run.c:314
+msgid "Permission denied"
+msgstr "Permissions insuffisantes"
+
+#: ../src/run.c:401
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
+
+#: ../src/window.c:55
+msgid "Invalid panel size"
+msgstr "Taille invalide pour le panel"

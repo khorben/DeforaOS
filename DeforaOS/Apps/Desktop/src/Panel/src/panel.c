@@ -24,10 +24,18 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include "window.h"
 #include "common.h"
 #include "../config.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
 
 
 /* Panel */
@@ -39,14 +47,10 @@ struct _Panel
 
 	PanelPrefs prefs;
 
-	gint height;
-
-	gint icon_width;
-	gint icon_height;
-
-	PanelAppletHelper helper;
-	GtkWidget * window;
-	GtkWidget * hbox;
+	PanelAppletHelper top_helper;
+	PanelWindow * top;
+	PanelAppletHelper bottom_helper;
+	PanelWindow * bottom;
 
 	GdkWindow * root;
 	gint root_width;		/* width of the root window	*/
@@ -61,12 +65,6 @@ struct _Panel
 
 
 /* constants */
-#ifndef PREFIX
-# define PREFIX		"/usr/local"
-#endif
-#ifndef LIBDIR
-# define LIBDIR		PREFIX "/lib"
-#endif
 #define PANEL_CONFIG_FILE ".panel"
 
 static struct
@@ -92,6 +90,10 @@ static int _panel_helper_error(Panel * panel, char const * message, int ret);
 static int _panel_helper_logout_dialog(void);
 #endif
 static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
+		gboolean * push_in, PanelPosition position, gpointer data);
+static void _panel_helper_position_menu_bottom(GtkMenu * menu, gint * x,
+		gint * y, gboolean * push_in, gpointer data);
+static void _panel_helper_position_menu_top(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 static void _panel_helper_preferences_dialog(Panel * panel);
 static int _panel_helper_shutdown_dialog(void);
@@ -103,111 +105,77 @@ static char * _config_get_filename(void);
 /* panel_new */
 static int _new_config(Panel * panel);
 static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user);
-static void _new_strut(Panel * panel, GdkRectangle * rect);
+static GtkIconSize _new_size(Panel * panel, PanelPosition position);
 static gboolean _on_idle(gpointer data);
-static gboolean _idle_load(Panel * panel, char const * plugins);
-static gboolean _on_closex(void);
+static void _idle_load(Panel * panel, PanelPosition position,
+		char const * plugins);
 
 Panel * panel_new(PanelPrefs const * prefs)
 {
 	Panel * panel;
-	char const * p = NULL;
 	GdkScreen * screen;
 	GdkRectangle rect;
 
-	if((panel = malloc(sizeof(*panel))) == NULL)
-	{
-		panel_error(NULL, "malloc", 1);
+	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
-	}
-	if(_new_config(panel) != 0)
-	{
-		/* FIXME visually warn the user */
-		panel_delete(panel);
-		return NULL;
-	}
+	_new_config(panel);
 	_new_prefs(&panel->prefs, prefs);
 	prefs = &panel->prefs;
-	panel->icon_width = 48;
-	panel->icon_height = 48;
+	panel->top_helper.panel = panel;
+	panel->top_helper.config_get = _panel_helper_config_get;
+	panel->top_helper.config_set = _panel_helper_config_set;
+	panel->top_helper.error = _panel_helper_error;
+	panel->top_helper.icon_size = PANEL_ICON_SIZE_UNSET;
+#ifndef EMBEDDED
+	panel->top_helper.logout_dialog = _panel_helper_logout_dialog;
+#else
+	panel->top_helper.logout_dialog = NULL;
+#endif
+	panel->top_helper.position_menu = _panel_helper_position_menu_top;
+	panel->top_helper.preferences_dialog = _panel_helper_preferences_dialog;
+	panel->top_helper.shutdown_dialog = _panel_helper_shutdown_dialog;
+	panel->top = NULL;
+	panel->bottom_helper = panel->top_helper;
+	panel->bottom_helper.position_menu = _panel_helper_position_menu_bottom;
+	panel->bottom = NULL;
 	switch(prefs->iconsize)
 	{
 		case PANEL_ICON_SIZE_LARGE:
 		case PANEL_ICON_SIZE_SMALL:
 		case PANEL_ICON_SIZE_SMALLER:
+			panel->top_helper.icon_size = prefs->iconsize;
+			panel->bottom_helper.icon_size = prefs->iconsize;
 			break;
 		case PANEL_ICON_SIZE_UNSET:
 		default:
-			if(prefs->position == PANEL_POSITION_TOP)
-				p = "top_size";
-			else if(prefs->position == PANEL_POSITION_BOTTOM)
-				p = "bottom_size";
-			if(p == NULL || (p = config_get(panel->config, NULL, p))
-					== NULL)
-				p = config_get(panel->config, NULL, "size");
-			if(p != NULL)
-				panel->prefs.iconsize = gtk_icon_size_from_name(
-						p);
-			if(prefs->iconsize == GTK_ICON_SIZE_INVALID)
-				panel->prefs.iconsize = PANEL_ICON_SIZE_DEFAULT;
+			panel->top_helper.icon_size = _new_size(panel,
+					PANEL_POSITION_TOP);
+			panel->bottom_helper.icon_size = _new_size(panel,
+					PANEL_POSITION_BOTTOM);
 			break;
 	}
-	if(gtk_icon_size_lookup(prefs->iconsize, &panel->icon_width,
-			&panel->icon_height) != TRUE)
-		error_set_print(PACKAGE, 0, _("Invalid panel size"));
-	panel->helper.panel = panel;
-	panel->helper.config_get = _panel_helper_config_get;
-	panel->helper.config_set = _panel_helper_config_set;
-	panel->helper.error = _panel_helper_error;
-	panel->helper.icon_size = prefs->iconsize;
-#ifndef EMBEDDED
-	panel->helper.logout_dialog = _panel_helper_logout_dialog;
-#else
-	panel->helper.logout_dialog = NULL;
-#endif
-	panel->helper.position_menu = _panel_helper_position_menu;
-	panel->helper.preferences_dialog = _panel_helper_preferences_dialog;
-	panel->helper.shutdown_dialog = _panel_helper_shutdown_dialog;
+	panel->pr_window = NULL;
+	if(panel->config == NULL)
+	{
+		panel_error(NULL, error_get(), 0); /* XXX put up a dialog box */
+		panel_delete(panel);
+		return NULL;
+	}
 	/* root window */
 	screen = gdk_screen_get_default();
 	panel->root = gdk_screen_get_root_window(screen);
-	if(prefs->monitor > 0 && prefs->monitor < gdk_screen_get_n_monitors(
-				screen))
-		gdk_screen_get_monitor_geometry(screen, prefs->monitor, &rect);
-	else
-		gdk_screen_get_monitor_geometry(screen, 0, &rect);
-	panel->root_width = rect.width;
+	gdk_screen_get_monitor_geometry(screen, (prefs->monitor > 0
+				&& prefs->monitor < gdk_screen_get_n_monitors(
+					screen)) ? prefs->monitor : 0, &rect);
 	panel->root_height = rect.height;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() width=%d height=%d\n", __func__,
-			panel->root_width, panel->root_height);
-#endif
-	/* panel */
-	panel->pr_window = NULL;
+	panel->root_width = rect.width;
+	panel->top = (prefs->position & PANEL_POSITION_TOP)
+		? panel_window_new(PANEL_POSITION_TOP, &panel->top_helper,
+				&rect) : NULL;
+	panel->bottom = (prefs->position & PANEL_POSITION_BOTTOM)
+		? panel_window_new(PANEL_POSITION_BOTTOM,
+				&panel->bottom_helper, &rect) : NULL;
 	g_idle_add(_on_idle, panel);
-	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 4);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, panel->height);
-#endif
-	gtk_window_resize(GTK_WINDOW(panel->window), panel->root_width,
-			panel->height);
-	gtk_window_set_accept_focus(GTK_WINDOW(panel->window), FALSE);
-	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
-			GDK_WINDOW_TYPE_HINT_DOCK);
-	if(prefs->position == PANEL_POSITION_TOP)
-		gtk_window_move(GTK_WINDOW(panel->window), rect.x, 0);
-	else
-		gtk_window_move(GTK_WINDOW(panel->window), rect.x,
-				rect.y + panel->root_height - panel->height);
-	gtk_window_stick(GTK_WINDOW(panel->window));
-	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
-				_on_closex), panel);
-	panel->hbox = gtk_hbox_new(FALSE, 2);
-	gtk_container_add(GTK_CONTAINER(panel->window), panel->hbox);
-	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
-	gtk_widget_show_all(panel->window);
-	_new_strut(panel, &rect);
 	return panel;
 }
 
@@ -243,99 +211,90 @@ static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
 	prefs->position = PANEL_POSITION_DEFAULT;
 }
 
-static void _new_strut(Panel * panel, GdkRectangle * rect)
+static GtkIconSize _new_size(Panel * panel, PanelPosition position)
 {
-	GdkWindow * window;
-	GdkAtom atom;
-	GdkAtom cardinal;
-	unsigned long strut[12];
+	GtkIconSize ret = GTK_ICON_SIZE_INVALID;
+	char const * variable = NULL;
+	char const * p = NULL;
 
-#if GTK_CHECK_VERSION(2, 14, 0)
-	window = gtk_widget_get_window(panel->window);
-#else
-	window = panel->window->window;
-#endif
-	cardinal = gdk_atom_intern("CARDINAL", FALSE);
-	memset(strut, 0, sizeof(strut));
-	if(panel->prefs.position == PANEL_POSITION_TOP)
+	switch(position)
 	{
-		strut[2] = panel->height;
-		strut[8] = rect->x;
-		strut[9] = rect->x + rect->width;
+		case PANEL_POSITION_BOTTOM:
+			variable = "bottom_size";
+			break;
+		case PANEL_POSITION_TOP:
+			variable = "top_size";
+			break;
 	}
-	else
-	{
-		strut[3] = panel->height;
-		strut[10] = rect->x;
-		strut[11] = rect->x + rect->width;
-	}
-	atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
-	gdk_property_change(window, atom, cardinal, 32, GDK_PROP_MODE_REPLACE,
-			(guchar*)strut, 4);
-	atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
-	gdk_property_change(window, atom, cardinal, 32, GDK_PROP_MODE_REPLACE,
-			(guchar*)strut, 12);
+	if(variable != NULL)
+		p = config_get(panel->config, NULL, variable);
+	if(p == NULL)
+		p = config_get(panel->config, NULL, "size");
+	if(p != NULL)
+		ret = gtk_icon_size_from_name(p);
+	if(ret == GTK_ICON_SIZE_INVALID)
+		ret = PANEL_ICON_SIZE_DEFAULT;
+	return ret;
 }
 
 static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
 #ifndef EMBEDDED
-	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
-		"clock", "swap", "memory", "cpufreq", "cpu", "desktop", "gps",
-		"gsm", "lock", "logout", "main", "pager", "tasks", NULL };
+	const char * plugins = "volume,systray,battery,bluetooth,clock,swap"
+		",memory,cpufreq,cpu,desktop,gps,gsm,lock,logout,main,pager"
+		",tasks";
 #else
-	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
-		"clock", "cpufreq", "gps", "gsm", "main", "pager", "tasks",
-		NULL };
+	const char * plugins = "volume,systray,battery,bluetooth,clock,cpufreq"
+		",gps,gsm,main,pager,tasks";
 #endif
 	char const * p;
-	size_t i;
+	char const * top;
+	char const * bottom;
 
 	panel_show_preferences(panel, FALSE);
-	p = config_get(panel->config, NULL, (panel->prefs.position
-				== PANEL_POSITION_TOP) ? "top" : "bottom");
-	if(p != NULL || (p = config_get(panel->config, NULL, "plugins"))
-			!= NULL)
-		return _idle_load(panel, p);
-	for(i = 0; plugins[i] != NULL; i++)
-		if(panel_load(panel, plugins[i]) != 0)
-			error_print(PACKAGE); /* we can ignore errors */
+	if((p = config_get(panel->config, NULL, "plugins")) == NULL)
+		p = plugins;
+	if(panel->top != NULL)
+		if((top = config_get(panel->config, NULL, "top")) != NULL
+				|| (top = p) != NULL)
+			_idle_load(panel, PANEL_POSITION_TOP, top);
+	if(panel->bottom != NULL)
+		if((bottom = config_get(panel->config, NULL, "bottom")) != NULL
+				|| (bottom = p) != NULL)
+			_idle_load(panel, PANEL_POSITION_BOTTOM, bottom);
 	return FALSE;
 }
 
-static gboolean _idle_load(Panel * panel, char const * plugins)
+static void _idle_load(Panel * panel, PanelPosition position,
+		char const * plugins)
 {
 	char * p;
 	char * q;
 	size_t i;
 
-	if((p = strdup(plugins)) == NULL)
-		return panel_error(panel, "strdup", FALSE);
+	if((p = string_new(plugins)) == NULL)
+	{
+		panel_error(panel, error_get(), FALSE);
+		return;
+	}
 	for(q = p, i = 0;;)
 	{
 		if(q[i] == '\0')
 		{
-			if(panel_load(panel, q) != 0)
+			if(panel_load(panel, position, q) != 0)
 				error_print(PACKAGE); /* we can ignore errors */
 			break;
 		}
 		if(q[i++] != ',')
 			continue;
 		q[i - 1] = '\0';
-		if(panel_load(panel, q) != 0)
+		if(panel_load(panel, position, q) != 0)
 			error_print(PACKAGE); /* we can ignore errors */
 		q += i;
 		i = 0;
 	}
 	free(p);
-	return FALSE;
-}
-
-static gboolean _on_closex(void)
-{
-	/* ignore delete events */
-	return TRUE;
 }
 
 
@@ -343,9 +302,13 @@ static gboolean _on_closex(void)
 void panel_delete(Panel * panel)
 {
 	/* FIXME destroy plugins as well */
+	if(panel->top != NULL)
+		panel_window_delete(panel->top);
+	if(panel->bottom != NULL)
+		panel_window_delete(panel->bottom);
 	if(panel->config != NULL)
 		config_delete(panel->config);
-	free(panel);
+	object_delete(panel);
 }
 
 
@@ -381,49 +344,38 @@ static int _error_text(char const * message, int ret)
 
 
 /* panel_load */
-int panel_load(Panel * panel, char const * applet)
+int panel_load(Panel * panel, PanelPosition position, char const * applet)
 {
+	PanelWindow * window;
+	PanelAppletHelper * helper;
 	Plugin * plugin;
 	PanelApplet * pa;
 	GtkWidget * widget;
-	gboolean exp;
-	gboolean fill;
 
+	if(position == PANEL_POSITION_BOTTOM && panel->bottom != NULL)
+	{
+		window = panel->bottom;
+		helper = &panel->bottom_helper;
+	}
+	else if(position == PANEL_POSITION_TOP && panel->top != NULL)
+	{
+		window = panel->top;
+		helper = &panel->top_helper;
+	}
+	else
+		return -1;
 	if((plugin = plugin_new(LIBDIR, PACKAGE, "applets", applet)) == NULL)
 		return -1;
 	if((pa = plugin_lookup(plugin, "applet")) == NULL
-			|| (pa->helper = &panel->helper) == NULL
+			|| (pa->helper = helper) == NULL
 			|| pa->init == NULL || (widget = pa->init(pa)) == NULL)
 	{
 		plugin_delete(plugin);
 		return -1;
 	}
-	exp = pa->expand;
-	fill = pa->fill;
-	switch(pa->position)
-	{
-		case PANEL_APPLET_POSITION_END:
-			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, exp,
-					fill, 0);
-			break;
-		case PANEL_APPLET_POSITION_FIRST:
-			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, exp,
-					fill, 0);
-			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
-			break;
-		case PANEL_APPLET_POSITION_LAST:
-			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, exp,
-					fill, 0);
-			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
-			break;
-		case PANEL_APPLET_POSITION_START:
-			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, exp,
-					fill, 0);
-			break;
-	}
+	panel_window_append(window, widget, pa->expand, pa->fill, pa->position);
 	if(pa->settings != NULL
 			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
-		/* FIXME only affects the current panel's preferences */
 		gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook),
 				widget, gtk_label_new(pa->name));
 	return 0;
@@ -659,7 +611,7 @@ static int _panel_helper_logout_dialog(void)
 
 /* panel_helper_position_menu */
 static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, gpointer data)
+		gboolean * push_in, PanelPosition position, gpointer data)
 {
 	Panel * panel = data;
 	GtkRequisition req;
@@ -673,11 +625,32 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		return;
 	*x = (req.width < panel->root_width - PANEL_BORDER_WIDTH)
 		? PANEL_BORDER_WIDTH : 0;
-	if(panel->prefs.position == PANEL_POSITION_TOP)
-		*y = panel->height;
-	else
-		*y = panel->root_height - panel->height - req.height;
+	if(position == PANEL_POSITION_TOP)
+		*y = panel_window_get_height(panel->top);
+	else if(position == PANEL_POSITION_BOTTOM)
+		*y = panel->root_height
+			- panel_window_get_height(panel->bottom) - req.height;
+	else /* XXX generic */
+		*y = panel->root_height - req.height;
 	*push_in = TRUE;
+}
+
+
+/* panel_helper_position_menu_bottom */
+static void _panel_helper_position_menu_bottom(GtkMenu * menu, gint * x,
+		gint * y, gboolean * push_in, gpointer data)
+{
+	_panel_helper_position_menu(menu, x, y, push_in, PANEL_POSITION_BOTTOM,
+			data);
+}
+
+
+/* panel_helper_position_menu_top */
+static void _panel_helper_position_menu_top(GtkMenu * menu, gint * x, gint * y,
+		gboolean * push_in, gpointer data)
+{
+	_panel_helper_position_menu(menu, x, y, push_in, PANEL_POSITION_TOP,
+			data);
 }
 
 

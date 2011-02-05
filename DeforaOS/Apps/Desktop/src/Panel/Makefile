@@ -50,10 +50,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/panel.c \
+		$(PACKAGE)-$(VERSION)/src/window.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/run.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/window.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/applets/battery.c \
 		$(PACKAGE)-$(VERSION)/src/applets/bluetooth.c \
