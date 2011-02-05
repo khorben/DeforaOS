@@ -529,7 +529,8 @@ static void _preferences_on_cancel(gpointer data)
 	const size_t cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
 
 	gtk_widget_hide(panel->pr_window);
-	if((p = config_get(panel->config, NULL, "bottom_size")) != NULL)
+	if((p = config_get(panel->config, "", "bottom_size")) != NULL
+			|| (p = config_get(panel->config, "", "size")) != NULL)
 		for(i = 0; i < cnt; i++)
 		{
 			if(strcmp(p, _panel_sizes[i].alias) != 0)
@@ -538,7 +539,8 @@ static void _preferences_on_cancel(gpointer data)
 						panel->pr_bottom_size), i);
 			break;
 		}
-	if((p = config_get(panel->config, NULL, "top_size")) != NULL)
+	if((p = config_get(panel->config, "", "top_size")) != NULL
+			|| (p = config_get(panel->config, "", "size")) != NULL)
 		for(i = 0; i < cnt; i++)
 		{
 			if(strcmp(p, _panel_sizes[i].alias) != 0)
