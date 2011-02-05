@@ -6,10 +6,8 @@ BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS=
-CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
+CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs libSystem gtk+-2.0`
-LDFLAGS	= 
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -22,22 +20,22 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 panel_OBJS = panel.o window.o main.o
-panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
-panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem libDesktop`
+panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop`
 
 panel: $(panel_OBJS)
 	$(CC) -o panel $(panel_OBJS) $(panel_LDFLAGS)
 
 panel-settings_OBJS = settings.o
-panel-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-panel-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+panel-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+panel-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 panel-settings: $(panel-settings_OBJS)
 	$(CC) -o panel-settings $(panel-settings_OBJS) $(panel-settings_LDFLAGS)
 
 run_OBJS = run.o
-run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
-run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
+run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0`
 
 run: $(run_OBJS)
 	$(CC) -o run $(run_OBJS) $(run_LDFLAGS)

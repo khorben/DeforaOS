@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,12 +82,12 @@ static GtkWidget * _main_image(char const * name);
 static GtkWidget * _main_menuitem(char const * label, char const * stock);
 
 /* callbacks */
+static void _on_about(gpointer data);
 static void _on_clicked(gpointer data);
 static gboolean _on_idle(gpointer data);
 static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
 static void _on_run(void);
-static void _on_preferences(gpointer data);
 static void _on_shutdown(gpointer data);
 static gboolean _on_timeout(gpointer data);
 
@@ -277,6 +277,15 @@ static GtkWidget * _main_menuitem(char const * label, char const * stock)
 
 
 /* callbacks */
+/* on_about */
+static void _on_about(gpointer data)
+{
+	Main * main = data;
+
+	main->helper->about_dialog(main->helper->panel);
+}
+
+
 /* on_clicked */
 static void _on_clicked(gpointer data)
 {
@@ -297,10 +306,9 @@ static void _on_clicked(gpointer data)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
-			NULL);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_preferences), main);
+				_on_about), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -441,15 +449,6 @@ static void _on_logout(gpointer data)
 	Main * main = data;
 
 	main->helper->logout_dialog();
-}
-
-
-/* on_preferences */
-static void _on_preferences(gpointer data)
-{
-	Main * main = data;
-
-	main->helper->preferences_dialog(main->helper->panel);
 }
 
 

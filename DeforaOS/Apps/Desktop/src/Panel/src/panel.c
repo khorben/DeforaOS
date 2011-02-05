@@ -1,21 +1,24 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+static char _copyright[] =
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Panel */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 
 
 
 #include <System.h>
+#include <Desktop.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -61,11 +64,20 @@ struct _Panel
 	GtkWidget * pr_notebook;
 	GtkWidget * pr_bottom_size;
 	GtkWidget * pr_top_size;
+
+	/* about */
+	GtkWidget * ab_window;
 };
 
 
 /* constants */
 #define PANEL_CONFIG_FILE ".panel"
+
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
 
 static struct
 {
@@ -86,6 +98,7 @@ static char const * _panel_helper_config_get(Panel * panel,
 static int _panel_helper_config_set(Panel * panel, char const * section,
 		char const * variable, char const * value);
 static int _panel_helper_error(Panel * panel, char const * message, int ret);
+static void _panel_helper_about_dialog(Panel * panel);
 #ifndef EMBEDDED
 static int _panel_helper_logout_dialog(void);
 #endif
@@ -128,6 +141,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->top_helper.config_set = _panel_helper_config_set;
 	panel->top_helper.error = _panel_helper_error;
 	panel->top_helper.icon_size = PANEL_ICON_SIZE_UNSET;
+	panel->top_helper.about_dialog = _panel_helper_about_dialog;
 #ifndef EMBEDDED
 	panel->top_helper.logout_dialog = _panel_helper_logout_dialog;
 #else
@@ -157,6 +171,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 			break;
 	}
 	panel->pr_window = NULL;
+	panel->ab_window = NULL;
 	if(panel->config == NULL)
 	{
 		panel_error(NULL, error_get(), 0); /* XXX put up a dialog box */
@@ -596,6 +611,38 @@ static int _panel_helper_config_set(Panel * panel, char const * section,
 static int _panel_helper_error(Panel * panel, char const * message, int ret)
 {
 	return panel_error(panel, message, ret);
+}
+
+
+/* panel_helper_about_dialog */
+static gboolean _about_on_closex(gpointer data);
+
+static void _panel_helper_about_dialog(Panel * panel)
+{
+	if(panel->ab_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(panel->ab_window));
+		return;
+	}
+	panel->ab_window = desktop_about_dialog_new();
+	desktop_about_dialog_set_authors(panel->ab_window, _authors);
+	desktop_about_dialog_set_copyright(panel->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(panel->ab_window,
+			"panel-settings"); /* XXX */
+	desktop_about_dialog_set_license(panel->ab_window, _license);
+	desktop_about_dialog_set_name(panel->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(panel->ab_window, VERSION);
+	g_signal_connect_swapped(G_OBJECT(panel->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), panel);
+	gtk_widget_show(panel->ab_window);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Panel * panel = data;
+
+	gtk_widget_hide(panel->ab_window);
+	return TRUE;
 }
 
 
