@@ -299,24 +299,30 @@ static void _on_run_execute(gpointer data)
 static void _execute_watch(GPid pid, gint status, gpointer data)
 {
 	Run * run = data;
+	char const * error;
 
 	if(run->pid != pid)
 		return; /* should not happen */
-	if(WIFEXITED(status))
+	if(!WIFEXITED(status))
+		return;
+	switch(WEXITSTATUS(status))
 	{
-		if(WEXITSTATUS(status) == 127) /* XXX may mean anything... */
-		{
-			if(run->source != 0)
-				g_source_remove(run->source);
-			run->source = 0;
-			gtk_widget_show(run->window);
-			_run_error(run, _("Child exited with error code 127"),
-					0);
+		case 127:
+			error = _("Command not found");
+			break;
+		case 126:
+			error = _("Permission denied");
+			break;
+		default:
+			_execute_save_config(run);
+			gtk_main_quit();
 			return;
-		}
-		_execute_save_config(run);
-		gtk_main_quit();
 	}
+	if(run->source != 0)
+		g_source_remove(run->source);
+	run->source = 0;
+	gtk_widget_show(run->window);
+	_run_error(run, error, 0);
 }
 
 static void _execute_save_config(Run * run)
