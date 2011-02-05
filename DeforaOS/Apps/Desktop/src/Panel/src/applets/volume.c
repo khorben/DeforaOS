@@ -163,12 +163,12 @@ static Volume * _volume_new(PanelApplet * applet)
 		else if(strcmp(md.label.name, "mix") == 0)
 			volume->mix = i;
 	}
-	volume->source = g_timeout_add(50, _on_volume_timeout, applet);
+	volume->source = g_timeout_add(500, _on_volume_timeout, applet);
 #else
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
 		applet->helper->error(applet->helper->panel, volume->device, 0);
 	else
-		volume->source = g_timeout_add(50, _on_volume_timeout, applet);
+		volume->source = g_timeout_add(500, _on_volume_timeout, applet);
 #endif
 	return volume;
 }
