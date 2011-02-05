@@ -777,7 +777,7 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 		"-h",
 #endif
 		"now", NULL };
-	char * suspend[] = { "/sbin/apm", "apm", "-s", NULL };
+	char * suspend[] = { "/usr/bin/sudo", "sudo", "/sbin/apm", "-s", NULL };
 #ifdef __NetBSD__
 	int sleep_state = 3;
 #endif
