@@ -41,7 +41,7 @@ typedef struct _PanelAppletHelper
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
 			gboolean * push_in, gpointer data);
 	void (*preferences_dialog)(Panel * panel);
-	int (*shutdown_dialog)(void);
+	int (*shutdown_dialog)(Panel * panel);
 } PanelAppletHelper;
 
 typedef enum _PanelAppletPosition

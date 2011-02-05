@@ -469,7 +469,7 @@ static void _on_shutdown(gpointer data)
 {
 	Main * main = data;
 
-	main->helper->shutdown_dialog();
+	main->helper->shutdown_dialog(main->helper->panel);
 }
 
 
