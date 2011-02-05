@@ -13,7 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME
- * - track multiple selection on delete/properties... */
+ * - track multiple selection on delete/properties...
+ * - add a "Rename..." menu action */
 
 
 
@@ -160,7 +161,7 @@ static int _desktop_get_workarea(Desktop * desktop);
 /* desktop_new */
 /* callbacks */
 static gboolean _new_idle(gpointer data);
-static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
+static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
 Desktop * desktop_new(DesktopPrefs * prefs)
@@ -188,16 +189,15 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 		desktop->home = "/";
 	desktop_set_layout(desktop, desktop->prefs.layout);
 	/* manage root window events */
-	gdk_add_client_message_filter(gdk_atom_intern(
-				DESKTOP_CLIENT_MESSAGE, FALSE),
-			_new_on_root_event, desktop);
+	gdk_add_client_message_filter(gdk_atom_intern(DESKTOP_CLIENT_MESSAGE,
+				FALSE), _on_root_event, desktop);
 	gdk_window_get_geometry(desktop->root, &desktop->window.x,
 			&desktop->window.y, &desktop->window.width,
 			&desktop->window.height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
 				desktop->root) | GDK_BUTTON_PRESS_MASK
 			| GDK_PROPERTY_CHANGE_MASK);
-	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
+	gdk_window_add_filter(desktop->root, _on_root_event, desktop);
 	/* draw background when idle */
 	g_idle_add(_new_idle, desktop);
 	return desktop;
@@ -288,7 +288,7 @@ static void _on_popup_paste(gpointer data);
 static void _on_popup_preferences(gpointer data);
 static void _on_popup_symlink(gpointer data);
 
-static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
+static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
 {
 	Desktop * desktop = data;

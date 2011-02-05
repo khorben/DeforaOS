@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-01 15:17+0100\n"
+"POT-Creation-Date: 2011-02-05 04:38+0100\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -189,12 +189,12 @@ msgstr ""
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1439 ../src/desktop.c:1444 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:114 ../src/properties.c:118
-#: ../src/view.c:364 ../src/view.c:367
+#: ../src/view.c:366 ../src/view.c:371
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:753 ../src/desktopicon.c:814 ../src/view.c:144
-#: ../src/view.c:415
+#: ../src/browser.c:753 ../src/desktopicon.c:804 ../src/view.c:144
+#: ../src/view.c:419
 msgid "Open with..."
 msgstr ""
 
@@ -268,8 +268,8 @@ msgid "New folder"
 msgstr ""
 
 #: ../src/callbacks.c:195 ../src/callbacks.c:201 ../src/callbacks.c:1051
-#: ../src/callbacks.c:1056 ../src/desktopicon.c:796 ../src/desktopicon.c:801
-#: ../src/desktopicon.c:848 ../src/desktopicon.c:853
+#: ../src/callbacks.c:1056 ../src/desktopicon.c:784 ../src/desktopicon.c:789
+#: ../src/desktopicon.c:836 ../src/desktopicon.c:841
 msgid "Warning"
 msgstr ""
 
@@ -311,7 +311,7 @@ msgstr ""
 msgid "Open _with..."
 msgstr ""
 
-#: ../src/callbacks.c:1055 ../src/desktopicon.c:800
+#: ../src/callbacks.c:1055 ../src/desktopicon.c:788
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
@@ -484,11 +484,11 @@ msgid ""
 "  -m\tMonitor where to display the desktop\n"
 msgstr ""
 
-#: ../src/desktopicon.c:851
+#: ../src/desktopicon.c:839
 msgid "Are you sure you want to delete "
 msgstr ""
 
-#: ../src/desktopicon.c:852
+#: ../src/desktopicon.c:840
 msgid " file(s)?"
 msgstr ""
 
@@ -614,10 +614,10 @@ msgstr ""
 msgid "View file..."
 msgstr ""
 
-#: ../src/view.c:403 ../src/view.c:496
+#: ../src/view.c:407 ../src/view.c:500
 msgid "Could not edit file"
 msgstr ""
 
-#: ../src/view.c:510
+#: ../src/view.c:514
 msgid "Usage: view file...\n"
 msgstr ""

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -718,7 +718,9 @@ static void _on_icon_open(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	Mime * mime;
-	pid_t pid;
+	char * argv[] = { "browser", "browser", "--", NULL, NULL };
+	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_FILE_AND_ARGV_ZERO;
+	GError * error = NULL;
 
 	if(desktopicon->path == NULL && desktopicon->callback != NULL)
 	{
@@ -733,16 +735,10 @@ static void _on_icon_open(gpointer data)
 				_on_icon_open_with(desktopicon);
 		return;
 	}
-	if((pid = fork()) == -1)
-	{
-		desktop_error(desktopicon->desktop, "fork", 0);
-		return;
-	}
-	if(pid != 0)
-		return;
-	execlp("browser", "browser", "--", desktopicon->path, NULL);
-	fprintf(stderr, "%s%s\n", "desktop: browser: ", strerror(errno));
-	exit(127);
+	argv[3] = desktopicon->path;
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
+			!= TRUE)
+		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
 }
 
 static void _on_icon_edit(gpointer data)
@@ -758,31 +754,23 @@ static gboolean _run_confirm(DesktopIcon * desktopicon);
 static void _on_icon_run(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
-	pid_t pid;
+	char * argv[] = { NULL, NULL, NULL };
+	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_FILE_AND_ARGV_ZERO;
+	GError * error = NULL;
 
 	if(desktopicon->confirm != FALSE && _run_confirm(desktopicon) != TRUE)
 		return;
-	if((pid = fork()) == -1)
-		desktop_error(desktopicon->desktop, "fork", 0);
-	else if(pid != 0)
-		return;
 	if(desktopicon->tryexec != NULL) /* XXX ugly */
-	{
-		execlp(desktopicon->tryexec, desktopicon->tryexec, NULL);
-		desktop_error(NULL, desktopicon->tryexec, 0);
-	}
-	if(desktopicon->exec != NULL)
-	{
+		argv[0] = desktopicon->tryexec;
+	else if(desktopicon->exec != NULL)
 		/* FIXME it's actually a format string */
-		execlp(desktopicon->exec, desktopicon->exec, NULL);
-		desktop_error(NULL, desktopicon->exec, 0);
-	}
+		argv[0] = desktopicon->exec;
 	else
-	{
-		execl(desktopicon->path, desktopicon->path, NULL);
-		desktop_error(NULL, desktopicon->path, 0);
-	}
-	exit(127);
+		argv[0] = desktopicon->path;
+	argv[1] = argv[0];
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
+			!= TRUE)
+		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
 }
 
 static gboolean _run_confirm(DesktopIcon * desktopicon)
@@ -809,7 +797,9 @@ static void _on_icon_open_with(gpointer data)
 	DesktopIcon * desktopicon = data;
 	GtkWidget * dialog;
 	char * filename = NULL;
-	pid_t pid;
+	char * argv[] = { NULL, NULL, NULL, NULL };
+	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_FILE_AND_ARGV_ZERO;
+	GError * error = NULL;
 
 	dialog = gtk_file_chooser_dialog_new(_("Open with..."),
 			GTK_WINDOW(desktopicon->window),
@@ -822,14 +812,12 @@ static void _on_icon_open_with(gpointer data)
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return;
-	if((pid = fork()) == -1)
-		desktop_error(desktopicon->desktop, "fork", 0);
-	else if(pid == 0)
-	{
-		execlp(filename, filename, desktopicon->path, NULL);
-		desktop_error(NULL, filename, 0);
-		exit(127);
-	}
+	argv[0] = filename;
+	argv[1] = filename;
+	argv[2] = desktopicon->path;
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
+			!= TRUE)
+		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
 	g_free(filename);
 }
 
@@ -858,7 +846,7 @@ static void _on_icon_delete(gpointer data)
 		/* FIXME check if needs UTF-8 conversion */
 		selection = g_list_append(selection, desktopicon->path);
 		if(_common_exec("delete", "-ir", selection) != 0)
-			desktop_error(desktopicon->desktop, "fork", 0);
+			desktop_error(desktopicon->desktop, "fork", 1);
 		g_list_free(selection);
 	}
 }
@@ -866,18 +854,14 @@ static void _on_icon_delete(gpointer data)
 static void _on_icon_properties(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
-	pid_t pid;
+	char * argv[] = { "properties", "properties", "--", NULL, NULL };
+	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_FILE_AND_ARGV_ZERO;
+	GError * error = NULL;
 
-	if((pid = fork()) == -1)
-	{
-		desktop_error(desktopicon->desktop, "fork", 0);
-		return;
-	}
-	else if(pid != 0)
-		return;
-	execlp("properties", "properties", "--", desktopicon->path, NULL);
-	desktop_error(NULL, "properties", 0);
-	exit(127);
+	argv[3] = desktopicon->path;
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
+			!= TRUE)
+		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
 }
 
 static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
@@ -920,5 +904,5 @@ static void _on_icon_drag_data_received(GtkWidget * widget,
 	DesktopIcon * desktopicon = data;
 
 	if(_common_drag_data_received(context, seldata, desktopicon->path) != 0)
-		desktop_error(desktopicon->desktop, "fork", 0);
+		desktop_error(desktopicon->desktop, "fork", 1);
 }
