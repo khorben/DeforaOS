@@ -284,6 +284,7 @@ static gboolean _on_idle(gpointer data)
 		if((bottom = config_get(panel->config, NULL, "bottom")) != NULL
 				|| (bottom = p) != NULL)
 			_idle_load(panel, PANEL_POSITION_BOTTOM, bottom);
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(panel->pr_notebook), 0);
 	return FALSE;
 }
 
