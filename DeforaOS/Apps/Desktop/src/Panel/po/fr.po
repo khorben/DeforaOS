@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-05 12:22+0100\n"
+"POT-Creation-Date: 2011-02-05 12:58+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:380 ../src/panel.c:384
+#: ../src/applets/battery.c:186 ../src/panel.c:385 ../src/panel.c:390
 #: ../src/run.c:200 ../src/run.c:206
 msgid "Error"
 msgstr "Erreur"
@@ -75,7 +75,7 @@ msgstr "GPS actif"
 msgid "GSM is enabled"
 msgstr "GSM actif"
 
-#: ../src/applets/lock.c:63 ../src/applets/main.c:315
+#: ../src/applets/lock.c:63 ../src/applets/main.c:316
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
@@ -83,28 +83,32 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:70 ../src/panel.c:674 ../src/panel.c:681
-#: ../src/panel.c:689
+#: ../src/applets/logout.c:70 ../src/panel.c:702 ../src/panel.c:709
+#: ../src/panel.c:717
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:134
+#: ../src/applets/main.c:135
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:297
+#: ../src/applets/main.c:298
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:303
+#: ../src/applets/main.c:304
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:321
+#: ../src/applets/main.c:322
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:326
+#: ../src/applets/main.c:329
+msgid "Suspend"
+msgstr "Suspendre"
+
+#: ../src/applets/main.c:334
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
@@ -180,23 +184,23 @@ msgstr "petite"
 msgid "smaller"
 msgstr "très petite"
 
-#: ../src/panel.c:463
+#: ../src/panel.c:469
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:478
+#: ../src/panel.c:484
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:489
+#: ../src/panel.c:495
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:500
+#: ../src/panel.c:506
 msgid "General"
 msgstr "Générales"
 
-#: ../src/panel.c:664
+#: ../src/panel.c:692
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -207,7 +211,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:760
+#: ../src/panel.c:786
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -218,7 +222,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:765
+#: ../src/panel.c:791
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -229,17 +233,13 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:790 ../src/panel.c:805 ../src/panel.c:812
+#: ../src/panel.c:812 ../src/panel.c:819 ../src/panel.c:826
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:797
+#: ../src/panel.c:818
 msgid "Restart"
 msgstr "Redémarrer"
-
-#: ../src/panel.c:801
-msgid "Suspend"
-msgstr "Suspendre"
 
 #: ../src/run.c:101 ../src/run.c:113
 msgid "Run program..."

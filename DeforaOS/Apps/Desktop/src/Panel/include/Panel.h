@@ -42,6 +42,7 @@ typedef struct _PanelAppletHelper
 			gboolean * push_in, gpointer data);
 	void (*preferences_dialog)(Panel * panel);
 	int (*shutdown_dialog)(Panel * panel);
+	int (*suspend)(Panel * panel);
 } PanelAppletHelper;
 
 typedef enum _PanelAppletPosition

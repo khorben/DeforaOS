@@ -97,6 +97,8 @@ static struct
 
 
 /* prototypes */
+static gboolean _panel_can_suspend(void);
+
 /* helpers */
 static char const * _panel_helper_config_get(Panel * panel,
 		char const * section, char const * variable);
@@ -115,6 +117,7 @@ static void _panel_helper_position_menu_top(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 static void _panel_helper_preferences_dialog(Panel * panel);
 static int _panel_helper_shutdown_dialog(Panel * panel);
+static int _panel_helper_suspend(Panel * panel);
 
 static char * _config_get_filename(void);
 
@@ -155,6 +158,8 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->top_helper.position_menu = _panel_helper_position_menu_top;
 	panel->top_helper.preferences_dialog = _panel_helper_preferences_dialog;
 	panel->top_helper.shutdown_dialog = _panel_helper_shutdown_dialog;
+	panel->top_helper.suspend = (_panel_can_suspend())
+		? _panel_helper_suspend : NULL;
 	panel->top = NULL;
 	panel->bottom_helper = panel->top_helper;
 	panel->bottom_helper.position_menu = _panel_helper_position_menu_bottom;
@@ -381,6 +386,7 @@ int panel_error(Panel * panel, char const * message, int ret)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s: %s", message, strerror(errno));
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -597,6 +603,28 @@ static char * _config_get_filename(void)
 }
 
 
+/* panel_can_suspend */
+static gboolean _panel_can_suspend(void)
+{
+#ifdef __NetBSD__
+	int sleep_state = -1;
+	size_t size = sizeof(sleep_state);
+
+	if(sysctlbyname("machdep.sleep_state", &sleep_state, &size, NULL, 0)
+			== 0 && sleep_state == 0
+			&& sysctlbyname("machdep.sleep_state", &sleep_state,
+				&size, &sleep_state, size) == 0)
+		return TRUE;
+#else
+	struct stat st;
+
+	if(lstat("/proc/apm", &st) == 0)
+		return TRUE;
+#endif
+	return TRUE;
+}
+
+
 /* helpers */
 /* panel_helper_config_get */
 static char const * _panel_helper_config_get(Panel * panel,
@@ -750,8 +778,6 @@ static void _panel_helper_preferences_dialog(Panel * panel)
 
 
 /* panel_helper_shutdown_dialog */
-static int _helper_shutdown_dialog_can_suspend(void);
-
 static int _panel_helper_shutdown_dialog(Panel * panel)
 {
 	GtkWidget * dialog;
@@ -767,7 +793,7 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 			" and losing any unsaved data.\n"
 			"Do you really want to proceed?");
 #endif
-	enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN, RES_SUSPEND };
+	enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
 	int res;
 	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
 	char * shutdown[] = { "/sbin/shutdown", "shutdown",
@@ -777,10 +803,6 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 		"-h",
 #endif
 		"now", NULL };
-	char * suspend[] = { "/usr/bin/sudo", "sudo", "/sbin/apm", "-s", NULL };
-#ifdef __NetBSD__
-	int sleep_state = 3;
-#endif
 	char ** argv;
 	GError * error = NULL;
 
@@ -792,16 +814,8 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 			"%s",
 #endif
 			message);
-	/* reboot */
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
 			_("Restart"), RES_REBOOT, NULL);
-	/* suspend */
-	if(_helper_shutdown_dialog_can_suspend())
-	{
-		gtk_dialog_add_buttons(GTK_DIALOG(dialog), _("Suspend"),
-				RES_SUSPEND, NULL);
-	}
-	/* shutdown */
 	widget = gtk_button_new_with_label(_("Shutdown"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"gnome-shutdown", GTK_ICON_SIZE_BUTTON));
@@ -814,39 +828,36 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 	gtk_widget_destroy(dialog);
 	if(res == RES_SHUTDOWN)
 		argv = shutdown;
-	else if(res == RES_SUSPEND)
-		argv = suspend;
 	else if(res == RES_REBOOT)
 		argv = reboot;
 	else
 		return 1;
-#ifdef __NetBSD__
-	if(res == RES_SUSPEND && sysctlbyname("machdep.sleep_state", NULL, NULL,
-				&sleep_state, sizeof(sleep_state)) != 0)
-		return panel_error(panel, "sysctl", 1);
-#endif
 	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
 				NULL, NULL, &error) != TRUE)
 		return panel_error(panel, error->message, 1);
 	return 0;
 }
 
-static int _helper_shutdown_dialog_can_suspend(void)
+
+/* panel_helper_suspend */
+static int _panel_helper_suspend(Panel * panel)
 {
-	struct stat st;
 #ifdef __NetBSD__
-	int sleep_state = -1;
-	size_t size = sizeof(sleep_state);
+	int sleep_state = 3;
+#else
+	char * suspend[] = { "/usr/bin/sudo", "sudo", "/sbin/apm", "-s", NULL };
+	GError * error = NULL;
 #endif
 
-	if(lstat("/proc/apm", &st) == 0)
-		return 1;
 #ifdef __NetBSD__
-	if(sysctlbyname("machdep.sleep_state", &sleep_state, &size, NULL, 0)
-			== 0 && sleep_state == 0
-			&& sysctlbyname("machdep.sleep_state", &sleep_state,
-				&size, &sleep_state, size) == 0)
-		return 1;
-#endif
+	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
+				sizeof(sleep_state)) != 0)
+		return panel_error(panel, "sysctl", 1);
 	return 0;
+#else
+	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
+				NULL, NULL, &error) != TRUE)
+		return panel_error(panel, error->message, 1);
+	return 0;
+#endif
 }

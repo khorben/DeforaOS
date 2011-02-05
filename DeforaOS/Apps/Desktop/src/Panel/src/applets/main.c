@@ -89,6 +89,7 @@ static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
 static void _on_run(void);
 static void _on_shutdown(gpointer data);
+static void _on_suspend(gpointer data);
 static gboolean _on_timeout(gpointer data);
 
 
@@ -323,6 +324,13 @@ static void _on_clicked(gpointer data)
 				G_CALLBACK(_on_logout), data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
+	if(main->helper->suspend != NULL)
+	{
+		menuitem = _main_menuitem(_("Suspend"), "gtk-media-pause");
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_suspend), data);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	menuitem = _main_menuitem(_("Shutdown..."), "gnome-shutdown");
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_shutdown), data);
@@ -470,6 +478,15 @@ static void _on_shutdown(gpointer data)
 	Main * main = data;
 
 	main->helper->shutdown_dialog(main->helper->panel);
+}
+
+
+/* on_suspend */
+static void _on_suspend(gpointer data)
+{
+	Main * main = data;
+
+	main->helper->suspend(main->helper->panel);
 }
 
 
