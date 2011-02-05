@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-05 02:39+0100\n"
+"POT-Creation-Date: 2011-02-05 03:07+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:384 ../src/panel.c:388
+#: ../src/applets/battery.c:186 ../src/panel.c:328 ../src/panel.c:332
 #: ../src/run.c:200 ../src/run.c:206
 msgid "Error"
 msgstr "Erreur"
@@ -83,8 +83,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:70 ../src/panel.c:642 ../src/panel.c:649
-#: ../src/panel.c:657
+#: ../src/applets/logout.c:70 ../src/panel.c:586 ../src/panel.c:593
+#: ../src/panel.c:601
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -161,42 +161,42 @@ msgid ""
 "Usage: panel [-m monitor][-bBsStx]\n"
 "  -B\tPlace the panel at both top and bottom of the screen\n"
 "  -b\tPlace the panel only at the bottom of the screen\n"
+"  -l\tUse icons the size of a large toolbar (default)\n"
 "  -m\tMonitor to use (default: 0)\n"
 "  -s\tUse icons the size of a small toolbar\n"
-"  -S\tUse icons the size of a large toolbar (default)\n"
 "  -t\tPlace the panel only at the top of the screen\n"
 "  -x\tUse icons the size of menus\n"
 msgstr ""
 
-#: ../src/panel.c:91
+#: ../src/panel.c:76
 msgid "large"
 msgstr "grande"
 
-#: ../src/panel.c:92
+#: ../src/panel.c:77
 msgid "small"
 msgstr "petite"
 
-#: ../src/panel.c:93
+#: ../src/panel.c:78
 msgid "smaller"
 msgstr "très petite"
 
-#: ../src/panel.c:467
+#: ../src/panel.c:411
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:482
+#: ../src/panel.c:426
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:493
+#: ../src/panel.c:437
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:504
+#: ../src/panel.c:448
 msgid "General"
 msgstr "Générales"
 
-#: ../src/panel.c:632
+#: ../src/panel.c:576
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -207,7 +207,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:726
+#: ../src/panel.c:670
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -218,7 +218,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:731
+#: ../src/panel.c:675
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -229,11 +229,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:748 ../src/panel.c:753 ../src/panel.c:760
+#: ../src/panel.c:692 ../src/panel.c:697 ../src/panel.c:704
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:752
+#: ../src/panel.c:696
 msgid "Restart"
 msgstr "Redémarrer"
 
@@ -261,6 +261,6 @@ msgstr "Permissions insuffisantes"
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
-#: ../src/window.c:55
+#: ../src/window.c:58
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
