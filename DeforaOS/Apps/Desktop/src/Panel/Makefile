@@ -22,21 +22,27 @@ dist:
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/panel-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/22x22/Makefile \
 		$(PACKAGE)-$(VERSION)/data/22x22/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/project.conf \
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
 		$(PACKAGE)-$(VERSION)/data/24x24/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/data/32x32/Makefile \
 		$(PACKAGE)-$(VERSION)/data/32x32/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/32x32/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/32x32/project.conf \
 		$(PACKAGE)-$(VERSION)/data/48x48/Makefile \
 		$(PACKAGE)-$(VERSION)/data/48x48/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/data/scalable/Makefile \
 		$(PACKAGE)-$(VERSION)/data/scalable/panel-applet-bluetooth.svg \
@@ -52,6 +58,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/panel.c \
 		$(PACKAGE)-$(VERSION)/src/window.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/settings.c \
 		$(PACKAGE)-$(VERSION)/src/run.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/common.h \

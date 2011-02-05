@@ -109,6 +109,8 @@ static GtkIconSize _new_size(Panel * panel, PanelPosition position);
 static gboolean _on_idle(gpointer data);
 static void _idle_load(Panel * panel, PanelPosition position,
 		char const * plugins);
+static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data);
 
 Panel * panel_new(PanelPrefs const * prefs)
 {
@@ -175,6 +177,10 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->bottom = (prefs->position & PANEL_POSITION_BOTTOM)
 		? panel_window_new(PANEL_POSITION_BOTTOM,
 				&panel->bottom_helper, &rect) : NULL;
+	/* manage root window events */
+	gdk_add_client_message_filter(gdk_atom_intern(PANEL_CLIENT_MESSAGE,
+				FALSE), _on_root_event, panel);
+	/* load plug-ins when idle */
 	g_idle_add(_on_idle, panel);
 	return panel;
 }
@@ -295,6 +301,31 @@ static void _idle_load(Panel * panel, PanelPosition position,
 		i = 0;
 	}
 	free(p);
+}
+
+static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data)
+{
+	Panel * panel = data;
+	XEvent * xe = xevent;
+	XClientMessageEvent * xcme;
+	PanelMessage message;
+
+	if(xe->type != ClientMessage)
+		return GDK_FILTER_CONTINUE;
+	xcme = &xe->xclient;
+	if(xcme->message_type != gdk_x11_get_xatom_by_name(
+				PANEL_CLIENT_MESSAGE))
+		return GDK_FILTER_CONTINUE;
+	message = xcme->data.b[0];
+	switch(message)
+	{
+		case PANEL_MESSAGE_SHOW:
+			if(xcme->data.b[1] == PANEL_MESSAGE_SHOW_SETTINGS)
+				panel_show_preferences(panel, TRUE);
+			break;
+	}
+	return GDK_FILTER_CONTINUE;
 }
 
 

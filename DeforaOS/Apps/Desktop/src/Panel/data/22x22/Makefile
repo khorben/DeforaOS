@@ -14,8 +14,11 @@ distclean: clean
 install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps
 	$(INSTALL) -m 0644 -- panel-applet-bluetooth.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/panel-applet-bluetooth.png
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps
+	$(INSTALL) -m 0644 -- panel-settings.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/panel-settings.png
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/panel-applet-bluetooth.png
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/panel-settings.png
 
 .PHONY: all clean distclean install uninstall

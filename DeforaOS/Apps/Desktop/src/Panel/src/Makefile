@@ -1,5 +1,5 @@
 SUBDIRS	= applets
-TARGETS	= panel run
+TARGETS	= panel panel-settings run
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -28,6 +28,13 @@ panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 panel: $(panel_OBJS)
 	$(CC) -o panel $(panel_OBJS) $(panel_LDFLAGS)
 
+panel-settings_OBJS = settings.o
+panel-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+panel-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+panel-settings: $(panel-settings_OBJS)
+	$(CC) -o panel-settings $(panel-settings_OBJS) $(panel-settings_LDFLAGS)
+
 run_OBJS = run.o
 run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -44,16 +51,19 @@ window.o: window.c common.h window.h
 main.o: main.c common.h ../config.h
 	$(CC) $(panel_CFLAGS) -c main.c
 
+settings.o: settings.c
+	$(CC) $(panel-settings_CFLAGS) -c settings.c
+
 run.o: run.c
 	$(CC) $(run_CFLAGS) -c run.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(panel_OBJS) $(run_OBJS)
+	$(RM) -- $(panel_OBJS) $(panel-settings_OBJS) $(run_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(panel_OBJS) $(run_OBJS)
+	$(RM) -- $(panel_OBJS) $(panel-settings_OBJS) $(run_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -61,11 +71,14 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- panel $(DESTDIR)$(BINDIR)/panel
 	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- panel-settings $(DESTDIR)$(BINDIR)/panel-settings
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- run $(DESTDIR)$(BINDIR)/run
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(BINDIR)/panel
+	$(RM) -- $(DESTDIR)$(BINDIR)/panel-settings
 	$(RM) -- $(DESTDIR)$(BINDIR)/run
 
 .PHONY: all subdirs clean distclean install uninstall

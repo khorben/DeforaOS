@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Panel settings
+Exec=panel-settings
+Icon=panel-settings
+Type=Application
+Categories=Settings;GTK;
