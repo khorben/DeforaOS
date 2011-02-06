@@ -1023,6 +1023,7 @@ static void _on_icon_edit(gpointer data)
 }
 
 static void _on_icon_run(gpointer data)
+	/* FIXME does not work with scripts */
 {
 	IconCallback * cb = data;
 	GtkWidget * dialog;
