@@ -874,7 +874,7 @@ static int _loop_status(Browser * browser, char const * prefix)
 
 /* _loop_insert */
 static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
-		char const ** display, uint64_t * inode, size_t * size,
+		char const ** display, uint64_t * inode, uint64_t * size,
 		char const ** dsize, struct passwd ** pw, struct group ** gr,
 		char const ** ddate, char const ** type, char const * path,
 		GdkPixbuf ** icon_24,
@@ -945,7 +945,7 @@ static void _insert_dir(Browser * browser, GdkPixbuf ** icon_24,
 		dev_t dev);
 
 static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
-		char const ** display, uint64_t * inode, size_t * size,
+		char const ** display, uint64_t * inode, uint64_t * size,
 		char const ** dsize, struct passwd ** pw, struct group ** gr,
 		char const ** ddate, char const ** type, char const * path,
 		GdkPixbuf ** icon_24,
