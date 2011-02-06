@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-06 19:44+0100\n"
+"POT-Creation-Date: 2011-02-06 20:03+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -267,8 +267,8 @@ msgstr "Aktualisierung..."
 msgid "New folder"
 msgstr "Neu Ordner"
 
-#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1036
-#: ../src/callbacks.c:1041 ../src/desktopicon.c:784 ../src/desktopicon.c:789
+#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1037
+#: ../src/callbacks.c:1042 ../src/desktopicon.c:784 ../src/desktopicon.c:789
 #: ../src/desktopicon.c:836 ../src/desktopicon.c:841
 msgid "Warning"
 msgstr "Achtung"
@@ -311,7 +311,7 @@ msgstr ""
 msgid "Open _with..."
 msgstr "Offnen _mit..."
 
-#: ../src/callbacks.c:1040 ../src/desktopicon.c:788
+#: ../src/callbacks.c:1041 ../src/desktopicon.c:788
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 

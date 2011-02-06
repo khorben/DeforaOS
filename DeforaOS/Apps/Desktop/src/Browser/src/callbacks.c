@@ -827,7 +827,7 @@ static void _on_popup_new_text_file(gpointer data)
 	char * path;
 	int fd;
 
-	len = strlen(cur) + strlen(newtext) + 1;
+	len = strlen(cur) + strlen(newtext) + 2;
 	if((path = malloc(len)) == NULL)
 	{
 		browser_error(browser, "malloc", 0);
@@ -1027,7 +1027,8 @@ static void _on_icon_run(gpointer data)
 	IconCallback * cb = data;
 	GtkWidget * dialog;
 	int res;
-	pid_t pid;
+	GError * error = NULL;
+	char * argv[2];
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(cb->browser->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
@@ -1043,14 +1044,9 @@ static void _on_icon_run(gpointer data)
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_YES)
 		return;
-	if((pid = fork()) == -1)
-		browser_error(cb->browser, "fork", 0);
-	else if(pid == 0)
-	{
-		execl(cb->path, cb->path, NULL);
-		browser_error(cb->browser, "fork", 0);
-		exit(127);
-	}
+	argv[0] = cb->path;
+	if(g_spawn_async(NULL, argv, NULL, 0, NULL, NULL, NULL, &error) != TRUE)
+		browser_error(cb->browser, cb->path, 1);
 }
 
 static void _on_icon_open_with(gpointer data)
