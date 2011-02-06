@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-05 04:38+0100\n"
+"POT-Creation-Date: 2011-02-06 19:44+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -240,7 +240,7 @@ msgid "Default view:"
 msgstr ""
 
 #: ../src/browser.c:1807
-msgid "_Alternate rows in detailed view"
+msgid "_Alternate row colors in detailed view"
 msgstr ""
 
 #: ../src/browser.c:1811
@@ -263,55 +263,55 @@ msgstr ""
 msgid "Refreshing folder..."
 msgstr ""
 
-#: ../src/callbacks.c:115 ../src/desktop.c:425
+#: ../src/callbacks.c:116 ../src/desktop.c:425
 msgid "New folder"
 msgstr ""
 
-#: ../src/callbacks.c:195 ../src/callbacks.c:201 ../src/callbacks.c:1051
-#: ../src/callbacks.c:1056 ../src/desktopicon.c:784 ../src/desktopicon.c:789
+#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1036
+#: ../src/callbacks.c:1041 ../src/desktopicon.c:784 ../src/desktopicon.c:789
 #: ../src/desktopicon.c:836 ../src/desktopicon.c:841
 msgid "Warning"
 msgstr ""
 
-#: ../src/callbacks.c:199
+#: ../src/callbacks.c:200
 #, c-format
 msgid "Are you sure you want to delete %lu file(s)?"
 msgstr ""
 
-#: ../src/callbacks.c:782
+#: ../src/callbacks.c:767
 msgid "New"
 msgstr ""
 
-#: ../src/callbacks.c:787 ../src/callbacks.c:791 ../src/desktop.c:333
+#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:333
 msgid "Folder"
 msgstr ""
 
-#: ../src/callbacks.c:798 ../src/desktop.c:341
+#: ../src/callbacks.c:783 ../src/desktop.c:341
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:802 ../src/desktop.c:345
+#: ../src/callbacks.c:787 ../src/desktop.c:345
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:837 ../src/desktop.c:444
+#: ../src/callbacks.c:822 ../src/desktop.c:444
 msgid "New text file.txt"
 msgstr ""
 
-#: ../src/callbacks.c:884
+#: ../src/callbacks.c:869
 msgid "Open in new _window"
 msgstr ""
 
-#: ../src/callbacks.c:912
+#: ../src/callbacks.c:897
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:947 ../src/desktopicon.c:693 ../src/view.c:100
+#: ../src/callbacks.c:932 ../src/desktopicon.c:693 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr ""
 
-#: ../src/callbacks.c:1055 ../src/desktopicon.c:788
+#: ../src/callbacks.c:1040 ../src/desktopicon.c:788
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 

@@ -47,6 +47,7 @@
 /* private */
 /* prototypes */
 static GList * _copy_selection(Browser * browser);
+static void _paste_selection(Browser * browser);
 
 
 /* public */
@@ -384,7 +385,6 @@ void on_paste(gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * entry;
-	char * p = browser->current->data;
 
 	entry = gtk_bin_get_child(GTK_BIN(browser->tb_path));
 	if(gtk_window_get_focus(GTK_WINDOW(browser->window)) == entry)
@@ -392,22 +392,7 @@ void on_paste(gpointer data)
 		gtk_editable_paste_clipboard(GTK_EDITABLE(entry));
 		return;
 	}
-	if(browser->selection == NULL)
-		return;
-	browser->selection = g_list_append(browser->selection, p);
-	if(browser->selection_cut != 1)
-	{
-		if(_common_exec("copy", "-ir", browser->selection) != 0)
-			browser_error(browser, "fork", 0);
-		browser->selection = g_list_remove(browser->selection, p);
-		return;
-	}
-	if(_common_exec("move", "-i", browser->selection) != 0)
-		browser_error(browser, "fork", 0);
-	browser->selection = g_list_remove(browser->selection, p);
-	g_list_foreach(browser->selection, (GFunc)free, NULL);
-	g_list_free(browser->selection);
-	browser->selection = NULL;
+	_paste_selection(browser);
 }
 
 
@@ -818,7 +803,7 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
 	if(browser->selection != NULL)
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
-				G_CALLBACK(on_edit_paste), browser);
+				G_CALLBACK(_on_icon_paste), ic);
 	else
 		gtk_widget_set_sensitive(menuitem, FALSE);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1078,10 +1063,13 @@ static void _on_icon_open_with(gpointer data)
 static void _on_icon_paste(gpointer data)
 {
 	IconCallback * cb = data;
-	char * p = cb->browser->current->data;
+	char * p;
 
-	cb->browser->current->data = cb->path; /* XXX this is totally ugly */
-	on_edit_paste(cb->browser);
+	/* XXX this is totally ugly */
+	p = cb->browser->current->data;
+	if(cb->path != NULL)
+		cb->browser->current->data = cb->path;
+	_paste_selection(cb->browser);
 	cb->browser->current->data = p;
 }
 
@@ -1132,4 +1120,28 @@ static GList * _copy_selection(Browser * browser)
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel); /* XXX can probably be optimized for re-use */
 	return p;
+}
+
+
+/* paste_selection */
+static void _paste_selection(Browser * browser)
+{
+	char * p = browser->current->data;
+
+	if(browser->selection == NULL)
+		return;
+	browser->selection = g_list_append(browser->selection, p);
+	if(browser->selection_cut != 1)
+	{
+		if(_common_exec("copy", "-ir", browser->selection) != 0)
+			browser_error(browser, "fork", 0);
+		browser->selection = g_list_remove(browser->selection, p);
+		return;
+	}
+	if(_common_exec("move", "-i", browser->selection) != 0)
+		browser_error(browser, "fork", 0);
+	browser->selection = g_list_remove(browser->selection, p);
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = NULL;
 }
