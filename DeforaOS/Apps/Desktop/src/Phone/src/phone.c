@@ -1337,11 +1337,11 @@ static void _show_call_window(Phone * phone)
 	g_signal_connect_swapped(G_OBJECT(phone->ca_close), "clicked",
 			G_CALLBACK(on_phone_call_close), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_close, TRUE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
 	/* volume bar */
+	hbox = gtk_hbox_new(FALSE, 4);
 	phone->ca_image = gtk_image_new_from_icon_name(
 			"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
-	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 0);
 	phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
 	g_signal_connect(G_OBJECT(phone->ca_volume), "value-changed",
 			G_CALLBACK(on_phone_call_volume), phone);
