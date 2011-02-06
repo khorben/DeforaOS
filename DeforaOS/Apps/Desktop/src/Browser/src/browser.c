@@ -1804,7 +1804,7 @@ void browser_view_preferences(Browser * browser)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 #endif
 	browser->pr_alternate = gtk_check_button_new_with_mnemonic(
-			_("_Alternate rows in detailed view"));
+			_("_Alternate row colors in detailed view"));
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_alternate, FALSE, FALSE,
 			0);
 	browser->pr_confirm = gtk_check_button_new_with_mnemonic(
