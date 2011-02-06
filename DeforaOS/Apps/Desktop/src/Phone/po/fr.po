@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-02 05:55+0100\n"
+"POT-Creation-Date: 2011-02-06 13:05+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -48,7 +48,7 @@ msgstr "Code PUK requis"
 msgid "SIM failure"
 msgstr "Défaillance SIM"
 
-#: ../src/gsm.c:162
+#: ../src/gsm.c:162 ../src/gsm.c:196
 msgid "SIM busy"
 msgstr "SIM occupée"
 
@@ -68,11 +68,11 @@ msgstr "Code SIM PIN2 requis"
 msgid "SIM PUK2 required"
 msgstr "Code SIM PUK2 requis"
 
-#: ../src/gsm.c:167 ../src/gsm.c:198
+#: ../src/gsm.c:167 ../src/gsm.c:199
 msgid "Memory full"
 msgstr "Mémoire pleine"
 
-#: ../src/gsm.c:168 ../src/gsm.c:209
+#: ../src/gsm.c:168 ../src/gsm.c:210
 msgid "Invalid index"
 msgstr "Index invalide"
 
@@ -80,7 +80,7 @@ msgstr "Index invalide"
 msgid "Not found"
 msgstr "Non trouvé"
 
-#: ../src/gsm.c:170 ../src/gsm.c:196
+#: ../src/gsm.c:170 ../src/gsm.c:197
 msgid "Memory failure"
 msgstr "Défaillance mémoire"
 
@@ -112,8 +112,8 @@ msgstr "Délai d'attente du réseau dépassé"
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:178 ../src/gsm.c:1369 ../src/gsm.c:1620 ../src/gsm.c:1680
-#: ../src/gsm.c:2248
+#: ../src/gsm.c:178 ../src/gsm.c:1372 ../src/gsm.c:1623 ../src/gsm.c:1683
+#: ../src/gsm.c:2251
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -129,71 +129,71 @@ msgstr "Service SMS du ME réservé"
 msgid "Invalid PDU mode parameter"
 msgstr "Paramètre de mode PDU invalide"
 
-#: ../src/gsm.c:197
+#: ../src/gsm.c:198
 msgid "Invalid memory index"
 msgstr "Index mémoire invalide"
 
-#: ../src/gsm.c:210
+#: ../src/gsm.c:211
 msgid "Parameter not allowed"
 msgstr "Paramètre non autorisé"
 
-#: ../src/gsm.c:211
+#: ../src/gsm.c:212
 msgid "Data corrupted"
 msgstr "Données corrompues"
 
-#: ../src/gsm.c:212
+#: ../src/gsm.c:213
 msgid "Internal error"
 msgstr "Erreur interne"
 
-#: ../src/gsm.c:213
+#: ../src/gsm.c:214
 msgid "Call table full"
 msgstr "Table d'appel pleine"
 
-#: ../src/gsm.c:214
+#: ../src/gsm.c:215
 msgid "Service table full"
 msgstr "Table de service pleine"
 
-#: ../src/gsm.c:215
+#: ../src/gsm.c:216
 msgid "Call not found"
 msgstr "Appel non trouvé"
 
-#: ../src/gsm.c:216
+#: ../src/gsm.c:217
 msgid "No data-call supported"
 msgstr "Les appels data ne sont pas gérés"
 
-#: ../src/gsm.c:217
+#: ../src/gsm.c:218
 msgid "One call on hold"
 msgstr "Un appel en attente"
 
-#: ../src/gsm.c:218
+#: ../src/gsm.c:219
 msgid "Hold call not supported for this type"
 msgstr "La mise en attente n'est pas gérée dans ce cas"
 
-#: ../src/gsm.c:219
+#: ../src/gsm.c:220
 msgid "Number not allowed by FDN"
 msgstr "Numéro non autorisé par FDN"
 
-#: ../src/gsm.c:220
+#: ../src/gsm.c:221
 msgid "Number not allowed by BDN"
 msgstr "Numéro non autorisé par BDN"
 
-#: ../src/gsm.c:221
+#: ../src/gsm.c:222
 msgid "Parallel USSD not supported"
 msgstr "USSD parallèle non supporté"
 
-#: ../src/gsm.c:222
+#: ../src/gsm.c:223
 msgid "Fax minimum speed condition"
 msgstr "Vitesse minimum pour les fax"
 
-#: ../src/gsm.c:223
+#: ../src/gsm.c:224
 msgid "Conflict with command details"
 msgstr "Conflit dans la syntaxe de commande"
 
-#: ../src/gsm.c:410
+#: ../src/gsm.c:411
 msgid ": Unknown baudrate, assuming 115200"
 msgstr ": Débit inconnu, tente 115200"
 
-#: ../src/gsm.c:1205
+#: ../src/gsm.c:1208
 msgid "Event not handled"
 msgstr "Événement non géré"
 
@@ -421,91 +421,91 @@ msgstr "Sortant"
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:2838 ../src/phone.c:2843
+#: ../src/phone.c:2844 ../src/phone.c:2849
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:2863 ../src/phone.c:2868
+#: ../src/phone.c:2869 ../src/phone.c:2874
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:2916 ../src/phone.c:2921
+#: ../src/phone.c:2922 ../src/phone.c:2927
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:3000
+#: ../src/phone.c:3014
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/phone.c:3003
+#: ../src/phone.c:3017
 msgid "Registering..."
 msgstr "Enregistrement..."
 
-#: ../src/phone.c:3006
+#: ../src/phone.c:3020
 msgid "Denied"
 msgstr "Refusé"
 
-#: ../src/phone.c:3011
+#: ../src/phone.c:3025
 msgid "SIM check..."
 msgstr "Vérification SIM..."
 
-#: ../src/phone.c:3017
+#: ../src/phone.c:3031
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:3074
+#: ../src/phone.c:3088
 msgid "Name: "
 msgstr "Nom: "
 
-#: ../src/phone.c:3082
+#: ../src/phone.c:3096
 msgid "Number: "
 msgstr "Numéro: "
 
-#: ../src/phone.c:3097
+#: ../src/phone.c:3111
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:3099
+#: ../src/phone.c:3113
 msgid "Edit contact: "
 msgstr "Modifier contact: "
 
-#: ../src/phone.c:3126
+#: ../src/phone.c:3140
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:3131
+#: ../src/phone.c:3145
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3234
+#: ../src/phone.c:3248
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:3250
+#: ../src/phone.c:3264
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3283
+#: ../src/phone.c:3297
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:3335
+#: ../src/phone.c:3349
 msgid "Could not request new message indications"
 msgstr "Impossible d'obtenir des notifications de nouveaux messages"
 
-#: ../src/phone.c:3346
+#: ../src/phone.c:3360
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:3354
+#: ../src/phone.c:3368
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/phone.c:3390
+#: ../src/phone.c:3404
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:3405
+#: ../src/phone.c:3419
 msgid "Message deleted"
 msgstr "Message supprimé"
 
