@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-06 21:14+0100\n"
+"POT-Creation-Date: 2011-02-09 01:01+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -101,7 +101,7 @@ msgstr ""
 msgid "_File"
 msgstr ""
 
-#: ../src/browser.c:146 ../src/desktopicon.c:680 ../src/view.c:109
+#: ../src/browser.c:146 ../src/desktopicon.c:688 ../src/view.c:109
 msgid "_Edit"
 msgstr ""
 
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:156 ../src/desktop.c:784 ../src/desktop.c:803
+#: ../src/browser.c:156 ../src/desktop.c:781 ../src/desktop.c:800
 msgid "Back"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:164 ../src/desktop.c:863
+#: ../src/browser.c:164 ../src/desktop.c:860
 msgid "Home"
 msgstr ""
 
@@ -187,13 +187,13 @@ msgstr ""
 
 #: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1439 ../src/desktop.c:1444 ../src/move.c:452
+#: ../src/desktop.c:1436 ../src/desktop.c:1441 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:114 ../src/properties.c:118
 #: ../src/view.c:366 ../src/view.c:371
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:753 ../src/desktopicon.c:804 ../src/view.c:144
+#: ../src/browser.c:753 ../src/desktopicon.c:818 ../src/view.c:144
 #: ../src/view.c:419
 msgid "Open with..."
 msgstr ""
@@ -263,13 +263,13 @@ msgstr ""
 msgid "Refreshing folder..."
 msgstr ""
 
-#: ../src/callbacks.c:116 ../src/desktop.c:425
+#: ../src/callbacks.c:116 ../src/desktop.c:422
 msgid "New folder"
 msgstr ""
 
 #: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1038
-#: ../src/callbacks.c:1043 ../src/desktopicon.c:784 ../src/desktopicon.c:789
-#: ../src/desktopicon.c:836 ../src/desktopicon.c:841
+#: ../src/callbacks.c:1043 ../src/desktopicon.c:798 ../src/desktopicon.c:803
+#: ../src/desktopicon.c:921 ../src/desktopicon.c:926
 msgid "Warning"
 msgstr ""
 
@@ -294,7 +294,7 @@ msgstr ""
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:822 ../src/desktop.c:444
+#: ../src/callbacks.c:822 ../src/desktop.c:441
 msgid "New text file.txt"
 msgstr ""
 
@@ -306,12 +306,12 @@ msgstr ""
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:932 ../src/desktopicon.c:693 ../src/view.c:100
+#: ../src/callbacks.c:932 ../src/desktopicon.c:701 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr ""
 
-#: ../src/callbacks.c:1042 ../src/desktopicon.c:788
+#: ../src/callbacks.c:1042 ../src/desktopicon.c:802
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
@@ -436,43 +436,43 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:501
+#: ../src/desktop.c:498
 msgid "Desktop preferences"
 msgstr ""
 
-#: ../src/desktop.c:521
+#: ../src/desktop.c:518
 msgid "Background: "
 msgstr ""
 
-#: ../src/desktop.c:526
+#: ../src/desktop.c:523
 msgid "Background"
 msgstr ""
 
-#: ../src/desktop.c:532
+#: ../src/desktop.c:529
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:534
+#: ../src/desktop.c:531
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:536
+#: ../src/desktop.c:533
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:542
+#: ../src/desktop.c:539
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:883
+#: ../src/desktop.c:880
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1488
+#: ../src/desktop.c:1485
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1544
+#: ../src/desktop.c:1541
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -484,11 +484,27 @@ msgid ""
 "  -m\tMonitor where to display the desktop\n"
 msgstr ""
 
-#: ../src/desktopicon.c:839
+#: ../src/desktopicon.c:660 ../src/desktopicon.c:707
+msgid "_Rename..."
+msgstr ""
+
+#: ../src/desktopicon.c:851 ../src/desktopicon.c:852
+msgid "Rename"
+msgstr ""
+
+#: ../src/desktopicon.c:861
+msgid "Rename: "
+msgstr ""
+
+#: ../src/desktopicon.c:872
+msgid "To: "
+msgstr ""
+
+#: ../src/desktopicon.c:924
 msgid "Are you sure you want to delete "
 msgstr ""
 
-#: ../src/desktopicon.c:840
+#: ../src/desktopicon.c:925
 msgid " file(s)?"
 msgstr ""
 

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -100,6 +101,7 @@ static void _on_icon_open(gpointer data);
 static void _on_icon_edit(gpointer data);
 static void _on_icon_run(gpointer data);
 static void _on_icon_open_with(gpointer data);
+static void _on_icon_rename(gpointer data);
 static void _on_icon_delete(gpointer data);
 static void _on_icon_properties(gpointer data);
 
@@ -653,6 +655,12 @@ static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon)
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_mnemonic(_("_Rename..."));
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+			G_CALLBACK(_on_icon_rename), desktopicon);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
 static void _popup_callback(GtkWidget * menu, DesktopIcon * desktopicon)
@@ -693,6 +701,12 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 		menuitem = gtk_menu_item_new_with_mnemonic(_("Open _with..."));
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(_on_icon_open_with), desktopicon);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_separator_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_menu_item_new_with_mnemonic(_("_Rename..."));
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_icon_rename), desktopicon);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 }
@@ -819,6 +833,77 @@ static void _on_icon_open_with(gpointer data)
 			!= TRUE)
 		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
 	g_free(filename);
+}
+
+static void _on_icon_rename(gpointer data)
+{
+	DesktopIcon * desktopicon = data;
+	GtkWidget * dialog;
+	GtkSizeGroup * group;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	int res;
+	char * p;
+	char * q;
+	char * r;
+
+	dialog = gtk_dialog_new_with_buttons(_("Rename"), NULL, 0,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, _("Rename"),
+			GTK_RESPONSE_ACCEPT, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Rename: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
+	gtk_entry_set_text(GTK_ENTRY(widget), desktopicon->name);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* entry */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("To: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(widget), desktopicon->name);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_hide(dialog);
+	if(res != GTK_RESPONSE_ACCEPT)
+	{
+		gtk_widget_destroy(dialog);
+		return;
+	}
+	/* FIXME check errors */
+	p = string_new(desktopicon->path);
+	q = string_new(gtk_entry_get_text(GTK_ENTRY(widget)));
+	/* FIXME convert entry from UTF-8 to filesystem's charset */
+	if(q[0] == '/')
+		r = string_new(q);
+	else
+		r = string_new_append(dirname(p), "/", q, NULL);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() rename(\"%s\", \"%s\")\n", __func__,
+			desktopicon->path, r);
+#else
+	if(rename(desktopicon->path, r) != 0)
+		desktop_error(desktopicon->desktop, r, 1);
+#endif
+	string_delete(p);
+	string_delete(q);
+	string_delete(r);
+	gtk_widget_destroy(dialog);
 }
 
 static void _on_icon_delete(gpointer data)

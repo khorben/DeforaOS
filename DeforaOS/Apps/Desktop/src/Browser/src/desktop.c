@@ -410,9 +410,6 @@ static GdkFilterReturn _event_property(XPropertyEvent * xevent,
 {
 	Atom atom;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
 	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
 	if(xevent->atom != atom)
 		return GDK_FILTER_CONTINUE;
