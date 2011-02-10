@@ -45,17 +45,11 @@
 # define MF_NOEXEC		MNT_NOEXEC
 # define MF_NOSUID		MNT_NOSUID
 # define MF_RDONLY		MNT_RDONLY
-# if defined(__FreeBSD__) || \
-	(defined(__NetBSD_Version__) && __NetBSD_Version__ < 499000000)
+# if defined(__FreeBSD__) || (defined(__NetBSD__) && (!defined(__NetBSD_Version__) || __NetBSD_Version__ < 499000000)) /* XXX check */
 #  define mount(type, dir, flags, data, data_len) \
 	mount(type, dir, flags, data)
 # endif
-#elif defined(MT_ISO9660)
-struct iso_args
-{
-	char const * fspec;
-};
-#else
+#elif !defined(MT_ISO9660)
 # define MF_ASYNC		MS_ASYNC
 # define MF_NODEV		MS_NODEV
 # define MF_NOEXEC		MS_NOEXEC
