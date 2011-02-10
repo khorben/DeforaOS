@@ -260,6 +260,9 @@ static struct
 #ifdef MT_EXT2FS
 	{ "ext2fs",	MT_EXT2FS,	_mount_callback_ext2fs	},
 #endif
+#ifdef MT_EXT3FS
+	{ "ext3fs",	MT_EXT3FS,	_mount_callback_ext2fs	}, /* XXX */
+#endif
 #ifdef MT_FAT
 	{ "fat",	MT_FAT,		_mount_callback_fat	},
 #endif
