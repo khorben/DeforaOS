@@ -15,6 +15,7 @@
 
 
 
+#include <stdio.h>
 #include <libintl.h>
 
 
@@ -81,31 +82,28 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 {
 	unsigned long i = flags != NULL ? 3 : 2;
 	char const ** argv = NULL;
-	pid_t pid;
 	GList * a;
 	char const ** p;
+	GError * error = NULL;
 
 	if(args == NULL)
-		return 0;
-	if((pid = fork()) == -1)
-		return 1;
-	else if(pid != 0) /* the parent returns */
 		return 0;
 	for(a = args; a != NULL; a = a->next)
 	{
 		if(a->data == NULL)
 			continue;
 		if((p = realloc(argv, sizeof(*argv) * (i + 2))) == NULL)
-		{
-			fprintf(stderr, "%s%s%s%s%s", PROGNAME ": ", program,
-					": ", strerror(errno), "\n");
-			exit(2);
-		}
+			break;
 		argv = p;
 		argv[i++] = a->data;
 	}
+	if(a != NULL)
+	{
+		free(argv);
+		return -error_set_code(1, "%s: %s", program, strerror(errno));
+	}
 	if(argv == NULL)
-		exit(0);
+		return 0;
 #ifdef DEBUG
 	argv[0] = "echo";
 #else
@@ -116,10 +114,10 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 	if(flags != NULL)
 		argv[i++] = flags;
 	argv[i] = "--";
-	execvp(argv[0], argv);
-	fprintf(stderr, "%s%s%s%s\n", PROGNAME ": ", argv[0], ": ", strerror(
-				errno));
-	exit(2);
+	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+				NULL, &error) != TRUE)
+		return -error_set_code(1, "%s", error->message);
+	return 0;
 }
 #endif /* COMMON_EXEC */
 
