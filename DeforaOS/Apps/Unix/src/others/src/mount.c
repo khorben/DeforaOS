@@ -460,8 +460,8 @@ static int _mount_do_mount(char const * type, int flags, char const * special,
 {
 	struct stat st;
 
-#ifdef __NetBSD_Version__ /* NetBSD */
-# if __NetBSD_Version__ >= 499000000
+#ifdef __NetBSD__ /* NetBSD */
+#if !defined(__NetBSD_Version__) || __NetBSD_Version__ >= 499000000
 	if(mount(type, node, flags, data, datalen) == 0)
 # else
 	if(mount(type, node, flags, data) == 0)
@@ -568,7 +568,7 @@ static int _mount_callback_fat(char const * type, int flags,
 {
 	int ret;
 	struct msdosfs_args msdosfs;
-	void * data = & msdosfs;
+	void * data = &msdosfs;
 	struct stat st;
 
 	memset(&msdosfs, 0, sizeof(msdosfs));
