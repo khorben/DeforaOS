@@ -232,8 +232,12 @@ static int _error_do(Progress * progress, char const * message,
 	dialog = gtk_message_dialog_new((progress != NULL)
 			? GTK_WINDOW(progress->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s: %s", message,
-			error);
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s: %s", message, error);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
