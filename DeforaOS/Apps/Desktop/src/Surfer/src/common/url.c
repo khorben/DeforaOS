@@ -16,6 +16,7 @@
 
 
 #include <string.h>
+#include <ctype.h>
 #include <glib.h>
 
 
@@ -27,6 +28,7 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 
 	if(url == NULL)
 		return NULL;
+	for(; isspace(*url); url++);
 	/* XXX use a more generic protocol finder (strchr(':')) */
 	if(strncmp("about:", url, 6) == 0)
 		return g_strdup(url);
