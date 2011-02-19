@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-09 01:01+0100\n"
+"POT-Creation-Date: 2011-02-19 15:59+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -113,7 +113,7 @@ msgstr "_Vue"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/browser.c:156 ../src/desktop.c:781 ../src/desktop.c:800
+#: ../src/browser.c:156 ../src/desktop.c:780 ../src/desktop.c:799
 msgid "Back"
 msgstr "Retour"
 
@@ -129,7 +129,7 @@ msgstr "Suivant"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/browser.c:164 ../src/desktop.c:860
+#: ../src/browser.c:164 ../src/desktop.c:859
 msgid "Home"
 msgstr "Dossier personnel"
 
@@ -187,8 +187,8 @@ msgstr " Chemin: "
 
 #: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1436 ../src/desktop.c:1441 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:114 ../src/properties.c:118
+#: ../src/desktop.c:1435 ../src/desktop.c:1440 ../src/move.c:452
+#: ../src/move.c:456 ../src/properties.c:113 ../src/properties.c:117
 #: ../src/view.c:366 ../src/view.c:371
 msgid "Error"
 msgstr "Erreur"
@@ -263,7 +263,7 @@ msgstr "_Apparence"
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
-#: ../src/callbacks.c:116 ../src/desktop.c:422
+#: ../src/callbacks.c:116 ../src/desktop.c:421
 msgid "New folder"
 msgstr "Nouveau dossier"
 
@@ -282,19 +282,19 @@ msgstr "Voulez-vous vraiment effacer %lu fichier(s)?"
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:333
+#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:332
 msgid "Folder"
 msgstr "Dossier"
 
-#: ../src/callbacks.c:783 ../src/desktop.c:341
+#: ../src/callbacks.c:783 ../src/desktop.c:340
 msgid "Symbolic link..."
 msgstr "Lien symbolique..."
 
-#: ../src/callbacks.c:787 ../src/desktop.c:345
+#: ../src/callbacks.c:787 ../src/desktop.c:344
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:822 ../src/desktop.c:441
+#: ../src/callbacks.c:822 ../src/desktop.c:440
 msgid "New text file.txt"
 msgstr "Nouveau fichier texte.txt"
 
@@ -315,23 +315,23 @@ msgstr "Ouvrir _avec..."
 msgid "Are you sure you want to execute this file?"
 msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 
-#: ../src/common.c:61
+#: ../src/common.c:62
 msgid "copying"
 msgstr "copie en cours"
 
-#: ../src/common.c:61
+#: ../src/common.c:62
 msgid "moving"
 msgstr "déplacement en cours"
 
-#: ../src/common.c:61
+#: ../src/common.c:62
 msgid " to \""
 msgstr " vers \""
 
-#: ../src/common.c:141
+#: ../src/common.c:139
 msgid "New symbolic link"
 msgstr "Nouveau lien symbolique"
 
-#: ../src/common.c:151
+#: ../src/common.c:149
 msgid "Destination: "
 msgstr "Destination: "
 
@@ -360,7 +360,7 @@ msgstr "Fichier %u sur %u"
 msgid "Omitting directory"
 msgstr "Omission du dossier"
 
-#: ../src/copy.c:584 ../src/properties.c:477
+#: ../src/copy.c:584 ../src/properties.c:476
 msgid "kB"
 msgstr "Kio"
 
@@ -368,7 +368,7 @@ msgstr "Kio"
 msgid "0.0 kB/s"
 msgstr "0.0 Kio/s"
 
-#: ../src/copy.c:609 ../src/properties.c:479
+#: ../src/copy.c:609 ../src/properties.c:478
 msgid "MB"
 msgstr "Mio"
 
@@ -456,43 +456,43 @@ msgstr ""
 "  -R\tSupprimer récursivement\n"
 "  -r\tÉquivalent à -R\n"
 
-#: ../src/desktop.c:498
+#: ../src/desktop.c:497
 msgid "Desktop preferences"
 msgstr "Préférences du bureau"
 
-#: ../src/desktop.c:518
+#: ../src/desktop.c:517
 msgid "Background: "
 msgstr "Arrière-plan: "
 
-#: ../src/desktop.c:523
+#: ../src/desktop.c:522
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: ../src/desktop.c:529
+#: ../src/desktop.c:528
 msgid "Scaled"
 msgstr "Étiré"
 
-#: ../src/desktop.c:531
+#: ../src/desktop.c:530
 msgid "Scaled (keep ratio)"
 msgstr "Étiré (sans déformer)"
 
-#: ../src/desktop.c:533
+#: ../src/desktop.c:532
 msgid "Tiled"
 msgstr "Mosaïque"
 
-#: ../src/desktop.c:539
+#: ../src/desktop.c:538
 msgid "Appearance"
 msgstr "Apparence"
 
-#: ../src/desktop.c:880
+#: ../src/desktop.c:879
 msgid "Applications"
 msgstr "Applications"
 
-#: ../src/desktop.c:1485
+#: ../src/desktop.c:1484
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1541
+#: ../src/desktop.c:1540
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -576,67 +576,67 @@ msgstr ""
 "  -m\tType MIME à forcer (défaut: auto-détecté)\n"
 "  -a\taction à appeler (défaut: \"open\")\n"
 
-#: ../src/properties.c:233
+#: ../src/properties.c:232
 msgid "Properties of "
 msgstr "Propriétés de "
 
-#: ../src/properties.c:258
+#: ../src/properties.c:257
 msgid "Size:"
 msgstr "Taille:"
 
-#: ../src/properties.c:265 ../src/properties.c:315
+#: ../src/properties.c:264 ../src/properties.c:314
 msgid "Owner:"
 msgstr "Propriétaire:"
 
-#: ../src/properties.c:271 ../src/properties.c:318
+#: ../src/properties.c:270 ../src/properties.c:317
 msgid "Group:"
 msgstr "Groupe:"
 
-#: ../src/properties.c:279
+#: ../src/properties.c:278
 msgid "Accessed:"
 msgstr "Accédé:"
 
-#: ../src/properties.c:285
+#: ../src/properties.c:284
 msgid "Modified:"
 msgstr "Modifié:"
 
-#: ../src/properties.c:291
+#: ../src/properties.c:290
 msgid "Changed:"
 msgstr "Changé:"
 
-#: ../src/properties.c:297
+#: ../src/properties.c:296
 msgid "Permissions:"
 msgstr "Permissions:"
 
-#: ../src/properties.c:321
+#: ../src/properties.c:320
 msgid "Others:"
 msgstr "Autres:"
 
-#: ../src/properties.c:440
+#: ../src/properties.c:439
 msgid "read"
 msgstr "lecture"
 
-#: ../src/properties.c:444
+#: ../src/properties.c:443
 msgid "write"
 msgstr "écriture"
 
-#: ../src/properties.c:448
+#: ../src/properties.c:447
 msgid "execute"
 msgstr "exécution"
 
-#: ../src/properties.c:471
+#: ../src/properties.c:470
 msgid "bytes"
 msgstr "octets"
 
-#: ../src/properties.c:481
+#: ../src/properties.c:480
 msgid "GB"
 msgstr "Gio"
 
-#: ../src/properties.c:485
+#: ../src/properties.c:484
 msgid "TB"
 msgstr "Tio"
 
-#: ../src/properties.c:557
+#: ../src/properties.c:556
 msgid "Usage: properties file...\n"
 msgstr "Usage: properties fichier...\n"
 

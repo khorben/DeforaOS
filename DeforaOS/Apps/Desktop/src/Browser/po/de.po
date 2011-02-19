@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-09 01:01+0100\n"
+"POT-Creation-Date: 2011-02-19 15:59+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:156 ../src/desktop.c:781 ../src/desktop.c:800
+#: ../src/browser.c:156 ../src/desktop.c:780 ../src/desktop.c:799
 msgid "Back"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:164 ../src/desktop.c:860
+#: ../src/browser.c:164 ../src/desktop.c:859
 msgid "Home"
 msgstr "Persönlicher Ordner"
 
@@ -187,8 +187,8 @@ msgstr ""
 
 #: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1436 ../src/desktop.c:1441 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:114 ../src/properties.c:118
+#: ../src/desktop.c:1435 ../src/desktop.c:1440 ../src/move.c:452
+#: ../src/move.c:456 ../src/properties.c:113 ../src/properties.c:117
 #: ../src/view.c:366 ../src/view.c:371
 msgid "Error"
 msgstr "Fehler"
@@ -263,7 +263,7 @@ msgstr ""
 msgid "Refreshing folder..."
 msgstr "Aktualisierung..."
 
-#: ../src/callbacks.c:116 ../src/desktop.c:422
+#: ../src/callbacks.c:116 ../src/desktop.c:421
 msgid "New folder"
 msgstr "Neu Ordner"
 
@@ -282,19 +282,19 @@ msgstr ""
 msgid "New"
 msgstr "Neu"
 
-#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:333
+#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:332
 msgid "Folder"
 msgstr "Ordner"
 
-#: ../src/callbacks.c:783 ../src/desktop.c:341
+#: ../src/callbacks.c:783 ../src/desktop.c:340
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:787 ../src/desktop.c:345
+#: ../src/callbacks.c:787 ../src/desktop.c:344
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:822 ../src/desktop.c:441
+#: ../src/callbacks.c:822 ../src/desktop.c:440
 msgid "New text file.txt"
 msgstr ""
 
@@ -315,23 +315,23 @@ msgstr "Offnen _mit..."
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
-#: ../src/common.c:61
+#: ../src/common.c:62
 msgid "copying"
 msgstr ""
 
-#: ../src/common.c:61
+#: ../src/common.c:62
 msgid "moving"
 msgstr ""
 
-#: ../src/common.c:61
+#: ../src/common.c:62
 msgid " to \""
 msgstr ""
 
-#: ../src/common.c:141
+#: ../src/common.c:139
 msgid "New symbolic link"
 msgstr ""
 
-#: ../src/common.c:151
+#: ../src/common.c:149
 msgid "Destination: "
 msgstr ""
 
@@ -360,7 +360,7 @@ msgstr ""
 msgid "Omitting directory"
 msgstr ""
 
-#: ../src/copy.c:584 ../src/properties.c:477
+#: ../src/copy.c:584 ../src/properties.c:476
 msgid "kB"
 msgstr ""
 
@@ -368,7 +368,7 @@ msgstr ""
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/copy.c:609 ../src/properties.c:479
+#: ../src/copy.c:609 ../src/properties.c:478
 msgid "MB"
 msgstr ""
 
@@ -436,43 +436,43 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:498
+#: ../src/desktop.c:497
 msgid "Desktop preferences"
 msgstr "Desktop Einstellungen"
 
-#: ../src/desktop.c:518
+#: ../src/desktop.c:517
 msgid "Background: "
 msgstr "Hintergrund: "
 
-#: ../src/desktop.c:523
+#: ../src/desktop.c:522
 msgid "Background"
 msgstr "Hintergrund"
 
-#: ../src/desktop.c:529
+#: ../src/desktop.c:528
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:531
+#: ../src/desktop.c:530
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:533
+#: ../src/desktop.c:532
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:539
+#: ../src/desktop.c:538
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:880
+#: ../src/desktop.c:879
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1485
+#: ../src/desktop.c:1484
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1541
+#: ../src/desktop.c:1540
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -542,67 +542,67 @@ msgid ""
 "  -a\taction to call (default: \"open\")\n"
 msgstr ""
 
-#: ../src/properties.c:233
+#: ../src/properties.c:232
 msgid "Properties of "
 msgstr "Eigenschaften von "
 
-#: ../src/properties.c:258
+#: ../src/properties.c:257
 msgid "Size:"
 msgstr "Größe:"
 
-#: ../src/properties.c:265 ../src/properties.c:315
+#: ../src/properties.c:264 ../src/properties.c:314
 msgid "Owner:"
 msgstr ""
 
-#: ../src/properties.c:271 ../src/properties.c:318
+#: ../src/properties.c:270 ../src/properties.c:317
 msgid "Group:"
 msgstr "Gruppe:"
 
-#: ../src/properties.c:279
+#: ../src/properties.c:278
 msgid "Accessed:"
 msgstr ""
 
-#: ../src/properties.c:285
+#: ../src/properties.c:284
 msgid "Modified:"
 msgstr ""
 
-#: ../src/properties.c:291
+#: ../src/properties.c:290
 msgid "Changed:"
 msgstr ""
 
-#: ../src/properties.c:297
+#: ../src/properties.c:296
 msgid "Permissions:"
 msgstr ""
 
-#: ../src/properties.c:321
+#: ../src/properties.c:320
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:440
+#: ../src/properties.c:439
 msgid "read"
 msgstr ""
 
-#: ../src/properties.c:444
+#: ../src/properties.c:443
 msgid "write"
 msgstr ""
 
-#: ../src/properties.c:448
+#: ../src/properties.c:447
 msgid "execute"
 msgstr ""
 
-#: ../src/properties.c:471
+#: ../src/properties.c:470
 msgid "bytes"
 msgstr ""
 
-#: ../src/properties.c:481
+#: ../src/properties.c:480
 msgid "GB"
 msgstr ""
 
-#: ../src/properties.c:485
+#: ../src/properties.c:484
 msgid "TB"
 msgstr ""
 
-#: ../src/properties.c:557
+#: ../src/properties.c:556
 msgid "Usage: properties file...\n"
 msgstr ""
 
