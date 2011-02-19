@@ -1,8 +1,5 @@
 - conditional compilation for embedded/finger interface
 
-[browser.c]
-- C-c C-x C-v menu shortcuts break cut/copy/paste in the location bar
-
 [common.c]
 - conform to http://www.freedesktop.org/wiki/Specifications/XDND:
   * the target should be "text/uri-list"
