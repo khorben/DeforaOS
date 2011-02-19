@@ -155,6 +155,7 @@ static int _desktop_serror(Desktop * desktop, char const * message, int ret);
 static Config * _desktop_get_config(Desktop * desktop);
 static int _desktop_get_workarea(Desktop * desktop);
 
+static int _desktop_icon_add(Desktop * desktop, DesktopIcon * icon);
 static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
 
 
@@ -789,7 +790,7 @@ static int _layout_applications(Desktop * desktop)
 				DESKTOPICON_ICON_SIZE, 0, NULL);
 		if(icon != NULL)
 			desktopicon_set_icon(desktopicon, icon);
-		desktop_icon_add(desktop, desktopicon);
+		_desktop_icon_add(desktop, desktopicon);
 	}
 	return 0;
 }
@@ -809,7 +810,7 @@ static int _layout_categories(Desktop * desktop)
 			DESKTOPICON_ICON_SIZE, 0, NULL);
 	if(icon != NULL)
 		desktopicon_set_icon(desktopicon, icon);
-	desktop_icon_add(desktop, desktopicon);
+	_desktop_icon_add(desktop, desktopicon);
 	return 0;
 }
 
@@ -886,7 +887,7 @@ static int _layout_homescreen(Desktop * desktop)
 		return desktop_error(NULL, error_get(), 1);
 	desktopicon_set_callback(desktopicon, _layout_set_categories, NULL);
 	desktopicon_set_immutable(desktopicon, TRUE);
-	desktop_icon_add(desktop, desktopicon);
+	_desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-applications",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
 	if(icon != NULL)
@@ -1042,7 +1043,7 @@ static int _current_loop_applications(Desktop * desktop)
 			continue;
 		if((icon = desktopicon_new_application(desktop, path)) == NULL)
 			continue;
-		desktop_icon_add(desktop, icon);
+		_desktop_icon_add(desktop, icon);
 		free(path);
 		config_delete(config);
 		return 0;
@@ -1228,7 +1229,7 @@ static void _done_categories(Desktop * desktop)
 		if((q = config_get(config, section, "Categories")) == NULL)
 		{
 			icon = desktopicon_new_application(desktop, path);
-			desktop_icon_add(desktop, icon);
+			_desktop_icon_add(desktop, icon);
 			continue;
 		}
 		for(i = 0; (dc = &_desktop_categories[i]) != NULL &&
@@ -1237,7 +1238,7 @@ static void _done_categories(Desktop * desktop)
 		if(dc->category == NULL)
 		{
 			icon = desktopicon_new_application(desktop, path);
-			desktop_icon_add(desktop, icon);
+			_desktop_icon_add(desktop, icon);
 			continue;
 		}
 		if(dc->show == TRUE)
@@ -1245,7 +1246,7 @@ static void _done_categories(Desktop * desktop)
 		dc->show = TRUE;
 		icon = desktopicon_new_category(desktop, dc->name, dc->icon);
 		desktopicon_set_callback(icon, _done_categories_open, dc);
-		desktop_icon_add(desktop, icon);
+		_desktop_icon_add(desktop, icon);
 	}
 }
 
@@ -1280,18 +1281,8 @@ static gboolean _done_timeout(gpointer data)
 /* desktop_icon_add */
 void desktop_icon_add(Desktop * desktop, DesktopIcon * icon)
 {
-	DesktopIcon ** p;
-
-	if((p = realloc(desktop->icon, sizeof(*p) * (desktop->icon_cnt + 1)))
-			== NULL)
-	{
-		desktop_error(desktop, desktopicon_get_name(icon), 0);
-		return;
-	}
-	desktop->icon = p;
-	desktop->icon[desktop->icon_cnt++] = icon;
-	desktop_icons_align(desktop);
-	desktopicon_show(icon);
+	if(_desktop_icon_add(desktop, icon) == 0)
+		desktop_icons_align(desktop);
 }
 
 
@@ -1511,6 +1502,24 @@ static int _desktop_get_workarea(Desktop * desktop)
 	}
 	XFree(p);
 	desktop_icons_align(desktop);
+	return 0;
+}
+
+
+/* desktop_icon_add */
+static int _desktop_icon_add(Desktop * desktop, DesktopIcon * icon)
+{
+	DesktopIcon ** p;
+
+	if((p = realloc(desktop->icon, sizeof(*p) * (desktop->icon_cnt + 1)))
+			== NULL)
+	{
+		desktop_error(desktop, desktopicon_get_name(icon), 0);
+		return -1;
+	}
+	desktop->icon = p;
+	desktop->icon[desktop->icon_cnt++] = icon;
+	desktopicon_show(icon);
 	return 0;
 }
 
