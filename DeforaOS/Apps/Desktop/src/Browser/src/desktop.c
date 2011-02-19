@@ -155,6 +155,8 @@ static int _desktop_serror(Desktop * desktop, char const * message, int ret);
 static Config * _desktop_get_config(Desktop * desktop);
 static int _desktop_get_workarea(Desktop * desktop);
 
+static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
+
 
 /* public */
 /* functions */
@@ -1152,10 +1154,10 @@ static int _current_loop_files(Desktop * desktop)
 		break;
 	}
 	if(de == NULL)
-		return 1;
+		return -1;
 	if((p = string_new_append(desktop->path, "/", de->d_name, NULL))
 			== NULL)
-		return _desktop_serror(NULL, de->d_name, 1);
+		return -_desktop_serror(NULL, de->d_name, 1);
 	if((desktopicon = desktopicon_new(desktop, de->d_name, p)) != NULL)
 		desktop_icon_add(desktop, desktopicon);
 	string_delete(p);
@@ -1209,12 +1211,13 @@ static gboolean _current_done(Desktop * desktop)
 		if(desktopicon_get_immutable(desktop->icon[i]) == TRUE)
 			i++;
 		else if(desktopicon_get_updated(desktop->icon[i]) != TRUE)
-			desktop_icon_remove(desktop, desktop->icon[i]);
+			_desktop_icon_remove(desktop, desktop->icon[i]);
 		else
 			desktopicon_set_updated(desktop->icon[i++], FALSE);
 	if(desktop->refresh_dir != NULL)
 		closedir(desktop->refresh_dir);
 	desktop->refresh_dir = NULL;
+	desktop_icons_align(desktop);
 	desktop->refresh_source = g_timeout_add(1000, _done_timeout, desktop);
 	return FALSE;
 }
@@ -1249,7 +1252,7 @@ static void _done_categories(Desktop * desktop)
 			desktop_icon_add(desktop, icon);
 			continue;
 		}
-		if(dc->show != FALSE)
+		if(dc->show == TRUE)
 			continue;
 		dc->show = TRUE;
 		icon = desktopicon_new_category(desktop, dc->name, dc->icon);
@@ -1294,7 +1297,7 @@ void desktop_icon_add(Desktop * desktop, DesktopIcon * icon)
 	if((p = realloc(desktop->icon, sizeof(*p) * (desktop->icon_cnt + 1)))
 			== NULL)
 	{
-		desktop_error(desktop, "Adding icon", 0);
+		desktop_error(desktop, desktopicon_get_name(icon), 0);
 		return;
 	}
 	desktop->icon = p;
@@ -1307,23 +1310,8 @@ void desktop_icon_add(Desktop * desktop, DesktopIcon * icon)
 /* desktop_icon_remove */
 void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 {
-	size_t i;
-	DesktopIcon ** p;
-
-	for(i = 0; i < desktop->icon_cnt; i++)
-	{
-		if(desktop->icon[i] != icon)
-			continue;
-		desktopicon_delete(icon);
-		for(desktop->icon_cnt--; i < desktop->icon_cnt; i++)
-			desktop->icon[i] = desktop->icon[i + 1];
-		if((p = realloc(desktop->icon, sizeof(*p)
-						* (desktop->icon_cnt))) != NULL
-				|| desktop->icon_cnt == 0)
-			desktop->icon = p;
+	if(_desktop_icon_remove(desktop, icon) == 0)
 		desktop_icons_align(desktop);
-		break;
-	}
 }
 
 
@@ -1536,6 +1524,30 @@ static int _desktop_get_workarea(Desktop * desktop)
 	XFree(p);
 	desktop_icons_align(desktop);
 	return 0;
+}
+
+
+/* desktop_icon_remove */
+static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
+{
+	size_t i;
+	DesktopIcon ** p;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(desktop->icon[i] != icon)
+			continue;
+		desktopicon_delete(icon);
+		for(desktop->icon_cnt--; i < desktop->icon_cnt; i++)
+			desktop->icon[i] = desktop->icon[i + 1];
+		if((p = realloc(desktop->icon, sizeof(*p)
+						* (desktop->icon_cnt))) != NULL)
+			desktop->icon = p; /* we can ignore errors... */
+		else if(desktop->icon_cnt == 0)
+			desktop->icon = NULL; /* ...except when it's not one */
+		return 0;
+	}
+	return 1;
 }
 
 
