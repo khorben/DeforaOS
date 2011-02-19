@@ -73,10 +73,14 @@ struct _Mbox
 {
 	AccountPlugin * plugin;
 	MboxFolder folders[_FOLDER_CNT];
+
+	/* refresh */
+	unsigned int timeout;
 };
 
 
 /* constants */
+#define MBOX_REFRESH_TIMEOUT	5000
 
 
 /* variables */
@@ -213,6 +217,7 @@ static int _mbox_init(AccountPlugin * plugin, GtkTreeStore * store,
 	plugin->priv = mbox;
 	mbox->plugin = plugin;
 	memcpy(mbox->folders, _mbox_folder_defaults, sizeof(mbox->folders));
+	mbox->timeout = MBOX_REFRESH_TIMEOUT;
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
 		af = &mbox->folders[i].folder;
@@ -510,12 +515,12 @@ static gboolean _folder_idle(gpointer data)
 	if(stat(filename, &st) != 0)
 	{
 		mbox->plugin->helper->error(NULL, strerror(errno), 1);
-		mf->source = g_timeout_add(1000, _folder_idle, folder);
+		mf->source = g_timeout_add(mbox->timeout, _folder_idle, folder);
 		return FALSE;
 	}
 	if(st.st_mtime == mf->mtime)
 	{
-		mf->source = g_timeout_add(1000, _folder_idle, folder);
+		mf->source = g_timeout_add(mbox->timeout, _folder_idle, folder);
 		return FALSE;
 	}
 	mf->mtime = st.st_mtime; /* FIXME only when done */
@@ -524,7 +529,7 @@ static gboolean _folder_idle(gpointer data)
 						&error)) == NULL)
 	{
 		mbox->plugin->helper->error(NULL, error->message, 1);
-		mf->source = g_timeout_add(1000, _folder_idle, folder);
+		mf->source = g_timeout_add(mbox->timeout, _folder_idle, folder);
 		return FALSE;
 	}
 	g_io_channel_set_encoding(mf->channel, NULL, NULL);
@@ -587,7 +592,7 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 					mf->offset - mf->message->body_offset);
 		g_io_channel_close(source);
 		mf->channel = NULL;
-		mf->source = g_timeout_add(1000, _folder_idle, folder);
+		mf->source = g_timeout_add(mbox->timeout, _folder_idle, folder);
 		return FALSE;
 	}
 	return TRUE;
