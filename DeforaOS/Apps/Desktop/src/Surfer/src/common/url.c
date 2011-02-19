@@ -23,12 +23,13 @@
 /* ghtml_make_url */
 static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 {
+	int d;
 	char * b;
 	char * p;
 
 	if(url == NULL)
 		return NULL;
-	for(; isspace(*url); url++);
+	for(; (d = *url) != '\0' && isspace(d); url++);
 	/* XXX use a more generic protocol finder (strchr(':')) */
 	if(strncmp("about:", url, 6) == 0)
 		return g_strdup(url);
