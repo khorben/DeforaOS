@@ -435,7 +435,7 @@ void ghtml_execute(GtkWidget * ghtml, char const * code)
 
 /* ghtml_find */
 gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive,
-		gboolean wrap)
+		gboolean backwards, gboolean wrap)
 {
 	/* FIXME implement */
 	return FALSE;

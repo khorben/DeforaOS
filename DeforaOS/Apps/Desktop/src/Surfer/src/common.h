@@ -68,6 +68,7 @@ struct _Surfer
 	GtkWidget * fi_dialog;
 	GtkWidget * fi_text;
 	GtkWidget * fi_case;
+	GtkWidget * fi_back;
 	GtkWidget * fi_wrap;
 
 	/* console */

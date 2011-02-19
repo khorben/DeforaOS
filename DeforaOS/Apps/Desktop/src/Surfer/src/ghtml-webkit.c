@@ -382,13 +382,13 @@ void ghtml_execute(GtkWidget * widget, char const * code)
 
 /* ghtml_find */
 gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive,
-		gboolean wrap)
+		gboolean backwards, gboolean wrap)
 {
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	return webkit_web_view_search_text(WEBKIT_WEB_VIEW(ghtml->view), text,
-			sensitive, TRUE, wrap);
+			sensitive, !backwards, wrap);
 }
 
 

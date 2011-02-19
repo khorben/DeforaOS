@@ -58,7 +58,7 @@ void ghtml_select_all(GtkWidget * ghtml);
 void ghtml_unselect_all(GtkWidget * ghtml);
 
 gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive,
-		gboolean wrap);
+		gboolean backwards, gboolean wrap);
 
 void ghtml_redo(GtkWidget * ghtml);
 void ghtml_undo(GtkWidget * ghtml);

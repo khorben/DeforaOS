@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - implement backwards text search */
 
 
 
@@ -485,7 +487,7 @@ static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 		size_t tlen);
 
 gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive,
-		gboolean wrap)
+		gboolean backwards, gboolean wrap)
 {
 	gboolean ret = FALSE;
 	GHtml * ghtml;

@@ -973,7 +973,12 @@ static void _find_dialog(Surfer * surfer)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 			GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(surfer->fi_dialog));
+#else
 	vbox = GTK_DIALOG(surfer->fi_dialog)->vbox;
+#endif
+	/* text */
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Text:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -982,8 +987,14 @@ static void _find_dialog(Surfer * surfer)
 				_on_find_activate), surfer);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->fi_text, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	/* case-sensitive */
 	surfer->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_case, TRUE, TRUE, 4);
+	/* search backwards */
+	surfer->fi_back = gtk_check_button_new_with_label(
+			_("Search backwards"));
+	gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_back, TRUE, TRUE, 4);
+	/* wrap */
 	surfer->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_wrap, TRUE, TRUE, 4);
 	gtk_widget_show_all(vbox);
@@ -997,6 +1008,7 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 	GtkWidget * view;
 	char const * text;
 	gboolean sensitive;
+	gboolean backwards;
 	gboolean wrap;
 
 	if((view = surfer_get_view(surfer)) == NULL)
@@ -1006,9 +1018,11 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 		return;
 	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				surfer->fi_case));
+	backwards = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				surfer->fi_back));
 	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				surfer->fi_wrap));
-	if(ghtml_find(view, text, sensitive, wrap) == TRUE)
+	if(ghtml_find(view, text, sensitive, backwards, wrap) == TRUE)
 		return;
 	surfer_error(surfer, _("Text not found"), 0);
 }
