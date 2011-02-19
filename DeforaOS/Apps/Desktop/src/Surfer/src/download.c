@@ -254,8 +254,12 @@ void download_delete(Download * download)
 		g_source_remove(download->timeout);
 #ifdef WITH_WEBKIT
 	if(download->conn != NULL)
+	{
 		webkit_download_cancel(download->conn);
-	/* XXX should also unlink the (temporary) output file */
+		if(unlink(download->prefs.output) != 0)
+			_download_error(download, download->prefs.output, 1);
+		/* XXX should also unlink the (temporary) output file */
+	}
 #else
 	if(download->conn != NULL)
 		gnet_conn_http_delete(download->conn);

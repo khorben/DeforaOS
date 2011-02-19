@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-19 14:34+0100\n"
+"POT-Creation-Date: 2011-02-19 14:37+0100\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -67,7 +67,7 @@ msgstr ""
 msgid "Resolving..."
 msgstr ""
 
-#: ../src/common/conn.c:253 ../src/download.c:493 ../src/ghtml-gtkhtml.c:926
+#: ../src/common/conn.c:253 ../src/download.c:497 ../src/ghtml-gtkhtml.c:926
 msgid "Connected"
 msgstr ""
 
@@ -89,7 +89,7 @@ msgstr ""
 msgid "Unspecified error"
 msgstr ""
 
-#: ../src/common/conn.c:348 ../src/download.c:570 ../src/ghtml-gtkhtml.c:1112
+#: ../src/common/conn.c:348 ../src/download.c:574 ../src/ghtml-gtkhtml.c:1112
 msgid "Timeout"
 msgstr ""
 
@@ -129,67 +129,67 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:307 ../src/download.c:312 ../src/download.c:647
+#: ../src/download.c:311 ../src/download.c:316 ../src/download.c:651
 #: ../src/surfer.c:940 ../src/surfer.c:943
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/download.c:325 ../src/download.c:351
+#: ../src/download.c:329 ../src/download.c:355
 msgid "kB"
 msgstr ""
 
-#: ../src/download.c:346 ../src/download.c:357 ../src/download.c:376
+#: ../src/download.c:350 ../src/download.c:361 ../src/download.c:380
 msgid "MB"
 msgstr ""
 
-#: ../src/download.c:348
+#: ../src/download.c:352
 #, c-format
 msgid "%.1f %s/s"
 msgstr ""
 
-#: ../src/download.c:359
+#: ../src/download.c:363
 #, c-format
 msgid "%.1f %s"
 msgstr ""
 
-#: ../src/download.c:378
+#: ../src/download.c:382
 #, c-format
 msgid "%.1f of %.1f %s"
 msgstr ""
 
-#: ../src/download.c:501
+#: ../src/download.c:505
 msgid "Error "
 msgstr "Fehler "
 
-#: ../src/download.c:526 ../src/download.c:658
+#: ../src/download.c:530 ../src/download.c:662
 msgid "Complete"
 msgstr ""
 
-#: ../src/download.c:534 ../src/download.c:666
+#: ../src/download.c:538 ../src/download.c:670
 msgid "Downloading"
 msgstr ""
 
-#: ../src/download.c:545
+#: ../src/download.c:549
 msgid "Redirected to"
 msgstr ""
 
-#: ../src/download.c:548
+#: ../src/download.c:552
 msgid "Redirected"
 msgstr ""
 
-#: ../src/download.c:555
+#: ../src/download.c:559
 msgid "Resolved"
 msgstr ""
 
-#: ../src/download.c:563
+#: ../src/download.c:567
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:621 ../src/ghtml-webkit.c:673 ../src/surfer.c:942
+#: ../src/download.c:625 ../src/ghtml-webkit.c:673 ../src/surfer.c:942
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/download.c:687
+#: ../src/download.c:691
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tFile to write document to\n"
