@@ -77,6 +77,7 @@ struct _Desktop
 	size_t path_cnt;
 	DIR * refresh_dir;
 	time_t refresh_mti;
+	guint refresh_source;
 	/* files */
 	Mime * mime;
 	char const * home;
@@ -639,6 +640,8 @@ void desktop_delete(Desktop * desktop)
 {
 	size_t i;
 
+	if(desktop->refresh_source != 0)
+		g_source_remove(desktop->refresh_source);
 	for(i = 0; i < desktop->icon_cnt; i++)
 		desktopicon_delete(desktop->icon[i]);
 	free(desktop->icon);
@@ -938,6 +941,9 @@ void desktop_refresh(Desktop * desktop)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(desktop->refresh_source != 0)
+		g_source_remove(desktop->refresh_source);
+	desktop->refresh_source = 0;
 	if(desktop->path == NULL)
 	{
 		_refresh_current(desktop);
@@ -977,7 +983,7 @@ static void _refresh_current(Desktop * desktop)
 
 	for(i = 0; i < 16 && _current_loop(desktop) == 0; i++);
 	if(i == 16)
-		g_idle_add(_current_idle, desktop);
+		desktop->refresh_source = g_idle_add(_current_idle, desktop);
 	else
 		_current_done(desktop);
 }
@@ -996,7 +1002,7 @@ static int _current_loop(Desktop * desktop)
 		case DESKTOP_LAYOUT_NULL:
 			break; /* nothing to do */
 	}
-	return 1;
+	return -1;
 }
 
 static int _current_loop_applications(Desktop * desktop)
@@ -1055,7 +1061,7 @@ static int _current_loop_applications(Desktop * desktop)
 		return 0;
 	}
 	free(path);
-	return 1;
+	return -1;
 }
 
 static int _current_loop_categories(Desktop * desktop)
@@ -1113,7 +1119,7 @@ static int _current_loop_categories(Desktop * desktop)
 		return 0;
 	}
 	free(path);
-	return 1;
+	return -1;
 }
 
 static gint _categories_apps_compare(gconstpointer a, gconstpointer b)
@@ -1211,7 +1217,7 @@ static gboolean _current_done(Desktop * desktop)
 	if(desktop->refresh_dir != NULL)
 		closedir(desktop->refresh_dir);
 	desktop->refresh_dir = NULL;
-	g_timeout_add(1000, _done_timeout, desktop);
+	desktop->refresh_source = g_timeout_add(1000, _done_timeout, desktop);
 	return FALSE;
 }
 
@@ -1270,6 +1276,7 @@ static gboolean _done_timeout(gpointer data)
 	Desktop * desktop = data;
 	struct stat st;
 
+	desktop->refresh_source = 0;
 	if(desktop->path == NULL)
 		return FALSE;
 	if(stat(desktop->path, &st) != 0)
