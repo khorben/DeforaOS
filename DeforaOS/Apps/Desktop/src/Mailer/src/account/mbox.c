@@ -451,7 +451,8 @@ static int _message_set_header(AccountMessage * message, char const * header,
 	{
 		read = (index(&header[8], 'R') != NULL) ? TRUE : FALSE;
 		gtk_list_store_set(store, &message->iter, MH_COL_READ, read,
-				MH_COL_WEIGHT, PANGO_WEIGHT_BOLD, -1);
+				MH_COL_WEIGHT, read ? PANGO_WEIGHT_NORMAL
+				: PANGO_WEIGHT_BOLD, -1);
 		gtk_list_store_set(store, &message->iter, MH_COL_PIXBUF, read
 				? account_plugin.helper->mail_read
 				: account_plugin.helper->mail_unread, -1);
