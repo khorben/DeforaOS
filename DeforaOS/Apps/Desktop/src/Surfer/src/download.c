@@ -35,6 +35,7 @@
 #endif
 #include "download.h"
 #include "../config.h"
+#include "common/url.c"
 #define _(string) gettext(string)
 #define N_(string) (string)
 
@@ -127,6 +128,7 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 Download * download_new(DownloadPrefs * prefs, char const * url)
 {
 	Download * download;
+	char * p;
 	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -151,7 +153,10 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 		: NULL;
 	download->prefs.user_agent = (prefs->user_agent != NULL)
 		? strdup(prefs->user_agent) : NULL;
+	if((p = _ghtml_make_url(NULL, url)) != NULL)
+		url = p;
 	download->url = strdup(url);
+	free(p);
 	if(download->url != NULL && prefs->output == NULL)
 		download->prefs.output = strdup(basename(download->url));
 	download->conn = NULL;
@@ -172,7 +177,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	}
 	/* window */
 	download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s %s", _("Download"), url);
+	snprintf(buf, sizeof(buf), "%s %s", _("Download"), download->url);
 	gtk_window_set_title(GTK_WINDOW(download->window), buf);
 	g_signal_connect_swapped(G_OBJECT(download->window), "delete-event",
 			G_CALLBACK(_download_on_closex), download);
@@ -188,7 +193,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	download->address = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(download->address), url);
+	gtk_entry_set_text(GTK_ENTRY(download->address), download->url);
 	gtk_editable_set_editable(GTK_EDITABLE(download->address), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), download->address, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
