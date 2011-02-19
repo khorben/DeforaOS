@@ -71,7 +71,8 @@ typedef struct _Properties
 static unsigned int _properties_cnt = 0; /* XXX set as static in _properties */
 
 /* functions */
-static int _properties_error(GtkWidget * window, char const * message, int ret);
+static int _properties_error(Properties * properties, char const * message,
+		int ret);
 static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		char const * filename);
 static int _properties_refresh(Properties * properties);
@@ -103,21 +104,23 @@ static int _properties(Mime * mime, int filec, char * const filev[])
 /* _properties_error */
 static void _error_response(GtkWidget * widget, gint arg, gpointer data);
 
-static int _properties_error(GtkWidget * window, char const * message, int ret)
+static int _properties_error(Properties * properties, char const * message,
+		int ret)
 {
 	GtkWidget * dialog;
 
-	dialog = gtk_message_dialog_new(window != NULL ? GTK_WINDOW(window)
-			: NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+	dialog = gtk_message_dialog_new((properties != NULL)
+			? GTK_WINDOW(properties->window) : NULL, 0,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	if(window != NULL)
+	if(properties != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
-					window));
+					properties->window));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				_error_response), (ret != 0)
 			? &_properties_cnt : NULL);
@@ -376,7 +379,7 @@ static GtkWidget * _do_groups(Properties * properties)
 
 	if((gr = getgrgid(getgid())) == NULL)
 	{
-		_properties_error(properties->window, properties->filename, 0);
+		_properties_error(properties, properties->filename, 0);
 		return gtk_label_new("");
 	}
 	box = gtk_hbox_new(TRUE, 0);
@@ -387,7 +390,7 @@ static GtkWidget * _do_groups(Properties * properties)
 	gtk_box_pack_start(GTK_BOX(box), combo, FALSE, FALSE, 0);
 	if((pw = getpwuid(getuid())) == NULL)
 	{
-		_properties_error(properties->window, properties->filename, 0);
+		_properties_error(properties, properties->filename, 0);
 		return combo;
 	}
 	setgrent();
@@ -514,7 +517,7 @@ static void _properties_on_apply(gpointer data)
 
 	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(properties->combo));
 	if((gr = getgrnam(p)) == NULL)
-		_properties_error(properties->window, p, 0);
+		_properties_error(properties, p, 0);
 	else
 		gid = gr->gr_gid;
 	for(i = 0; i < 9; i++)
@@ -522,7 +525,7 @@ static void _properties_on_apply(gpointer data)
 					properties->mode[i])) << i;
 	if(chown(properties->filename, properties->uid, gid) != 0
 			|| chmod(properties->filename, mode) != 0)
-		_properties_error(properties->window, properties->filename, 0);
+		_properties_error(properties, properties->filename, 0);
 }
 
 static void _properties_on_close(gpointer data)
