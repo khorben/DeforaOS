@@ -716,13 +716,12 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 		return error_set_print("mailer", ret, "%s", message);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			_("Error"));
+			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			message);
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 				mailer->window));
