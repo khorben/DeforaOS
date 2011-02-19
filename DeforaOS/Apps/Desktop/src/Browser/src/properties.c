@@ -108,7 +108,9 @@ static int _properties_error(Properties * properties, char const * message,
 		int ret)
 {
 	GtkWidget * dialog;
+	char const * error;
 
+	error = strerror(errno);
 	dialog = gtk_message_dialog_new((properties != NULL)
 			? GTK_WINDOW(properties->window) : NULL, 0,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
@@ -116,7 +118,7 @@ static int _properties_error(Properties * properties, char const * message,
 			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
-			"%s: %s", message, strerror(errno));
+			"%s: %s", message, error);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(properties != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
