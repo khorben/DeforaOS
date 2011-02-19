@@ -622,7 +622,7 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 		_popup_callback(menu, desktopicon);
 	else
 		_popup_file(menu, desktopicon);
-	if(desktopicon->immutable != TRUE)
+	if(desktopicon->immutable == FALSE)
 	{
 		menuitem = gtk_separator_menu_item_new();
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -655,12 +655,15 @@ static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon)
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_mnemonic(_("_Rename..."));
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
-			G_CALLBACK(_on_icon_rename), desktopicon);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(desktopicon->immutable == FALSE)
+	{
+		menuitem = gtk_separator_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_menu_item_new_with_mnemonic(_("_Rename..."));
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_icon_rename), desktopicon);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 }
 
 static void _popup_callback(GtkWidget * menu, DesktopIcon * desktopicon)
@@ -702,12 +705,17 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(_on_icon_open_with), desktopicon);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		menuitem = gtk_separator_menu_item_new();
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		menuitem = gtk_menu_item_new_with_mnemonic(_("_Rename..."));
-		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
-				G_CALLBACK(_on_icon_rename), desktopicon);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		if(desktopicon->immutable == FALSE)
+		{
+			menuitem = gtk_separator_menu_item_new();
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			menuitem = gtk_menu_item_new_with_mnemonic(
+					_("_Rename..."));
+			g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+					G_CALLBACK(_on_icon_rename),
+					desktopicon);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		}
 	}
 }
 
