@@ -121,8 +121,8 @@ static gboolean _download_on_timeout(gpointer data);
 /* functions */
 /* download_new */
 static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
-		GtkSizeGroup * left, GtkSizeGroup * right, char const * label,
-		GtkWidget ** widget, char const * text);
+		GtkSizeGroup * left, char const * label, GtkWidget ** widget,
+		char const * text);
 
 Download * download_new(DownloadPrefs * prefs, char const * url)
 {
@@ -131,7 +131,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkSizeGroup * left;
-	GtkSizeGroup * right;
+	GtkWidget * widget;
 	PangoFontDescription * bold;
 
 	/* verify arguments */
@@ -180,27 +180,35 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	_download_label(vbox, bold, left, right, _("Address: "),
-			&download->address, url);
-	_download_label(vbox, bold, left, right, _("File: "),
-			&download->filename, download->prefs.output);
-	_download_label(vbox, bold, left, right, _("Status: "),
-			&download->status, _("Resolving..."));
-	_download_label(vbox, bold, left, right, _("Done: "), &download->done,
+	/* address */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Address: "));
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	download->address = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(download->address), url);
+	gtk_editable_set_editable(GTK_EDITABLE(download->address), FALSE);
+	gtk_box_pack_start(GTK_BOX(hbox), download->address, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	_download_label(vbox, bold, left, _("File: "), &download->filename,
+			download->prefs.output);
+	_download_label(vbox, bold, left, _("Status: "), &download->status,
+			_("Resolving..."));
+	_download_label(vbox, bold, left, _("Done: "), &download->done,
 			_("0.0 kB"));
-	_download_label(vbox, bold, left, right, _("Speed: "), &download->speed,
+	_download_label(vbox, bold, left, _("Speed: "), &download->speed,
 			_("0.0 kB/s"));
 	/* progress bar */
 	download->progress = gtk_progress_bar_new();
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), download->progress, TRUE, TRUE, 4);
 	/* checkbox */
 	download->check = gtk_check_button_new_with_label(
 			_("Close window when the download is complete"));
 	gtk_box_pack_start(GTK_BOX(vbox), download->check, TRUE, TRUE, 0);
 	/* button */
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	download->cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(G_OBJECT(download->cancel), "clicked",
 			G_CALLBACK(_download_on_cancel), download);
@@ -216,20 +224,19 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 }
 
 static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
-		GtkSizeGroup * left, GtkSizeGroup * right, char const * label,
-		GtkWidget ** widget, char const * text)
+		GtkSizeGroup * left, char const * label, GtkWidget ** widget,
+		char const * text)
 {
 	GtkWidget * hbox;
 
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
 	*widget = gtk_label_new(label);
 	gtk_widget_modify_font(*widget, bold);
-	gtk_misc_set_alignment(GTK_MISC(*widget), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.5);
 	gtk_size_group_add_widget(left, *widget);
-	gtk_box_pack_start(GTK_BOX(hbox), *widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), *widget, FALSE, TRUE, 0);
 	*widget = gtk_label_new(text);
-	gtk_misc_set_alignment(GTK_MISC(*widget), 0, 0);
-	gtk_size_group_add_widget(right, *widget);
+	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), *widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 }
@@ -346,7 +353,7 @@ static void _download_refresh(Download * download)
 		}
 		snprintf(buf, sizeof(buf), _("%.1f %s"), rate, _(unit));
 		gtk_label_set_text(GTK_LABEL(download->done), buf);
-		buf[0] = '\0';
+		snprintf(buf, sizeof(buf), " ");
 		if(download->pulse != 0)
 		{
 			gtk_progress_bar_pulse(GTK_PROGRESS_BAR(
