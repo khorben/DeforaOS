@@ -1,5 +1,3 @@
-- conditional compilation for embedded/finger interface
-
 [common.c]
 - conform to http://www.freedesktop.org/wiki/Specifications/XDND:
   * the target should be "text/uri-list"
