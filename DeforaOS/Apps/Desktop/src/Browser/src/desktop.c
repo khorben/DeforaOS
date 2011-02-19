@@ -1016,6 +1016,8 @@ static int _current_loop_applications(Desktop * desktop)
 	char const * q;
 	DesktopIcon * icon;
 
+	if(desktop->category == NULL)
+		return -1;
 	if((config = config_new()) == NULL)
 		return -1;
 	while((de = readdir(desktop->refresh_dir)) != NULL)
@@ -1040,8 +1042,6 @@ static int _current_loop_applications(Desktop * desktop)
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, path);
 #endif
-		if(desktop->category == NULL)
-			continue;
 		config_reset(config);
 		if(config_load(config, path) != 0)
 			continue;
