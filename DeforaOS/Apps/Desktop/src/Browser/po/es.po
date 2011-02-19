@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-19 15:59+0100\n"
+"POT-Creation-Date: 2011-02-19 16:07+0100\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -360,7 +360,7 @@ msgstr ""
 msgid "Omitting directory"
 msgstr ""
 
-#: ../src/copy.c:584 ../src/properties.c:476
+#: ../src/copy.c:584 ../src/properties.c:475
 msgid "kB"
 msgstr ""
 
@@ -368,7 +368,7 @@ msgstr ""
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/copy.c:609 ../src/properties.c:478
+#: ../src/copy.c:609 ../src/properties.c:477
 msgid "MB"
 msgstr ""
 
@@ -550,59 +550,59 @@ msgstr "Propriedades con "
 msgid "Size:"
 msgstr ""
 
-#: ../src/properties.c:264 ../src/properties.c:314
+#: ../src/properties.c:263 ../src/properties.c:313
 msgid "Owner:"
 msgstr ""
 
-#: ../src/properties.c:270 ../src/properties.c:317
+#: ../src/properties.c:269 ../src/properties.c:316
 msgid "Group:"
 msgstr ""
 
-#: ../src/properties.c:278
+#: ../src/properties.c:277
 msgid "Accessed:"
 msgstr ""
 
-#: ../src/properties.c:284
+#: ../src/properties.c:283
 msgid "Modified:"
 msgstr ""
 
-#: ../src/properties.c:290
+#: ../src/properties.c:289
 msgid "Changed:"
 msgstr ""
 
-#: ../src/properties.c:296
+#: ../src/properties.c:295
 msgid "Permissions:"
 msgstr ""
 
-#: ../src/properties.c:320
+#: ../src/properties.c:319
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:439
+#: ../src/properties.c:438
 msgid "read"
 msgstr ""
 
-#: ../src/properties.c:443
+#: ../src/properties.c:442
 msgid "write"
 msgstr ""
 
-#: ../src/properties.c:447
+#: ../src/properties.c:446
 msgid "execute"
 msgstr ""
 
-#: ../src/properties.c:470
+#: ../src/properties.c:469
 msgid "bytes"
 msgstr ""
 
-#: ../src/properties.c:480
+#: ../src/properties.c:479
 msgid "GB"
 msgstr ""
 
-#: ../src/properties.c:484
+#: ../src/properties.c:483
 msgid "TB"
 msgstr ""
 
-#: ../src/properties.c:556
+#: ../src/properties.c:555
 msgid "Usage: properties file...\n"
 msgstr ""
 

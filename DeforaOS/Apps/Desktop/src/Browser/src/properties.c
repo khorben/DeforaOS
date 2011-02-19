@@ -254,9 +254,8 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 0, 1);
 	widget = gtk_label_new(type);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 1, 2);
-	widget = gtk_label_new(_("Size:")); /* XXX justification doesn't work */
+	widget = gtk_label_new(_("Size:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
 	properties->size = gtk_label_new("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->size, 1, 2, 2,
