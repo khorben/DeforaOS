@@ -373,8 +373,8 @@ static void _download_refresh(Download * download)
 		snprintf(buf, sizeof(buf), _("%.1f of %.1f %s"), rate,
 				fraction, _(unit));
 		gtk_label_set_text(GTK_LABEL(download->done), buf);
-		fraction = (double)download->data_received
-			/ (double)download->content_length;
+		fraction = download->data_received;
+		fraction /= download->content_length;
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
 					download->progress), fraction);
