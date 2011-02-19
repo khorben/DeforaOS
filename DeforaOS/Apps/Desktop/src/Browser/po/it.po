@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-19 22:24+0100\n"
+"POT-Creation-Date: 2011-02-19 22:33+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -187,7 +187,7 @@ msgstr ""
 
 #: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1428 ../src/desktop.c:1433 ../src/move.c:452
+#: ../src/desktop.c:1416 ../src/desktop.c:1421 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
 #: ../src/view.c:366 ../src/view.c:371
 msgid "Error"
@@ -468,11 +468,11 @@ msgstr ""
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1477
+#: ../src/desktop.c:1465
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1556
+#: ../src/desktop.c:1545
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"

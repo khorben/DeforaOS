@@ -920,7 +920,6 @@ int desktop_error(Desktop * desktop, char const * message, int ret)
 
 
 /* desktop_refresh */
-static void _refresh_current(Desktop * desktop);
 static int _current_loop(Desktop * desktop);
 static int _current_loop_applications(Desktop * desktop);
 static gint _categories_apps_compare(gconstpointer a, gconstpointer b);
@@ -945,12 +944,12 @@ void desktop_refresh(Desktop * desktop)
 #endif
 	if(desktop->refresh_source != 0)
 		g_source_remove(desktop->refresh_source);
-	desktop->refresh_source = 0;
 	if(desktop->path == NULL)
 	{
-		_refresh_current(desktop);
+		desktop->refresh_source = g_idle_add(_current_idle, desktop);
 		return;
 	}
+	desktop->refresh_source = 0;
 #ifdef __sun__
 	if((fd = open(desktop->path, O_RDONLY)) < 0
 			|| fstat(fd, &st) != 0
@@ -976,18 +975,7 @@ void desktop_refresh(Desktop * desktop)
 	}
 #endif
 	desktop->refresh_mti = st.st_mtime;
-	_refresh_current(desktop);
-}
-
-static void _refresh_current(Desktop * desktop)
-{
-	unsigned int i;
-
-	for(i = 0; i < 16 && _current_loop(desktop) == 0; i++);
-	if(i == 16)
-		desktop->refresh_source = g_idle_add(_current_idle, desktop);
-	else
-		_current_done(desktop);
+	desktop->refresh_source = g_idle_add(_current_idle, desktop);
 }
 
 static int _current_loop(Desktop * desktop)
