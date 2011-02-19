@@ -1016,6 +1016,8 @@ static int _current_loop_applications(Desktop * desktop)
 	char const * q;
 	DesktopIcon * icon;
 
+	if((config = config_new()) == NULL)
+		return -1;
 	while((de = readdir(desktop->refresh_dir)) != NULL)
 	{
 		if(de->d_name[0] == '.')
@@ -1038,29 +1040,25 @@ static int _current_loop_applications(Desktop * desktop)
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, path);
 #endif
-		/* XXX not very elegant */
-		if(desktop->category != NULL && (config = config_new()) != NULL)
-		{
-			if(config_load(config, path) != 0
-					|| (q = config_get(config,
-							"Desktop Entry",
-							"Categories")) == NULL
-					|| string_find(q,
-						desktop->category->name)
-					== NULL)
-			{
-				config_delete(config);
-				continue;
-			}
-			config_delete(config);
-		}
+		if(desktop->category == NULL)
+			continue;
+		config_reset(config);
+		if(config_load(config, path) != 0)
+			continue;
+		if((q = config_get(config, "Desktop Entry", "Categories"))
+				== NULL)
+			continue;
+		if(string_find(q, desktop->category->name) == NULL)
+			continue;
 		if((icon = desktopicon_new_application(desktop, path)) == NULL)
 			continue;
 		desktop_icon_add(desktop, icon);
 		free(path);
+		config_delete(config);
 		return 0;
 	}
 	free(path);
+	config_delete(config);
 	return -1;
 }
 
