@@ -664,6 +664,8 @@ static gboolean _download_on_timeout(gpointer data)
 					GTK_STOCK_CLOSE);
 			d->data_received = webkit_download_get_current_size(
 					d->conn);
+			g_object_unref(d->conn);
+			d->conn = NULL;
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_STARTED:
 			gtk_label_set_text(GTK_LABEL(d->status),

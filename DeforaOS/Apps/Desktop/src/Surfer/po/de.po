@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-19 14:37+0100\n"
+"POT-Creation-Date: 2011-02-20 01:08+0100\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -165,7 +165,7 @@ msgstr "Fehler "
 msgid "Complete"
 msgstr ""
 
-#: ../src/download.c:538 ../src/download.c:670
+#: ../src/download.c:538 ../src/download.c:672
 msgid "Downloading"
 msgstr ""
 
@@ -189,7 +189,7 @@ msgstr ""
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/download.c:691
+#: ../src/download.c:693
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tFile to write document to\n"
