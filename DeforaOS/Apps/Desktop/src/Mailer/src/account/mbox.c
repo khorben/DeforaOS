@@ -257,6 +257,8 @@ static int _mbox_destroy(AccountPlugin * plugin)
 	MboxFolder * mf;
 	size_t j;
 
+	if(mbox == NULL) /* XXX _mbox_destroy() may be called uninitialized */
+		return 0;
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
 		mf = &mbox->folders[i];
