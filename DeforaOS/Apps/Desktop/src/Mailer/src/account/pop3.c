@@ -34,6 +34,8 @@ typedef enum _P3Context
 	P3C_INIT = 0,
 	P3C_AUTHORIZATION_USER,
 	P3C_AUTHORIZATION_PASS,
+	P3C_TRANSACTION_LIST,
+	P3C_TRANSACTION_RETR,
 	P3C_TRANSACTION_STAT
 } P3Context;
 
@@ -259,6 +261,8 @@ static int _pop3_parse(AccountPlugin * plugin)
 					&pop3->rd_buf[j + 4], 1);
 		else if(strncmp("+OK", &pop3->rd_buf[j], 3) == 0)
 			ret |= _parse_context(plugin, &pop3->rd_buf[j + 3]);
+		else
+			ret |= _parse_context(plugin, &pop3->rd_buf[j]);
 	}
 	if(j != 0)
 	{
@@ -303,7 +307,20 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case P3C_TRANSACTION_STAT:
 			if(sscanf(answer, "%u %u", &u, &v) != 2)
 				return -1;
-			return 0;
+			pop3->context = P3C_TRANSACTION_LIST;
+			return _pop3_command(plugin, "LIST");
+		case P3C_TRANSACTION_LIST:
+			if(strcmp(answer, ".") == 0)
+			{
+				pop3->context = P3C_TRANSACTION_RETR;
+				return 0;
+			}
+			if(sscanf(answer, "%u %u", &u, &v) != 2)
+				return -1;
+			q = g_strdup_printf("%s %u", "RETR", u);
+			ret = _pop3_command(plugin, q);
+			free(q);
+			return ret;
 	}
 	return -1;
 }
