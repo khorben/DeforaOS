@@ -77,8 +77,11 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
 	$(INSTALL) -m 0644 -- mbox.so $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
+	$(INSTALL) -m 0644 -- pop3.so $(DESTDIR)$(LIBDIR)/Mailer/account/pop3.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/pop3.so
 
 .PHONY: all clean distclean install uninstall
