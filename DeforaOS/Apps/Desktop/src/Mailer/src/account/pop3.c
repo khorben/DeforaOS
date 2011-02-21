@@ -71,7 +71,9 @@ static AccountConfig _pop3_config[] =
 	{ "password",	"Password",		ACT_PASSWORD,	NULL },
 	{ "hostname",	"Server hostname",	ACT_STRING,	NULL },
 	{ "port",	"Server port",		ACT_UINT16,	NULL },
+#if 0 /* FIXME SSL is not supported yet */
 	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	NULL },
+#endif
 	{ "delete",	"Delete read mails on server",
 						ACT_BOOLEAN,	NULL },
 	{ NULL,		NULL,			ACT_NONE,	NULL }
