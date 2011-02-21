@@ -15,8 +15,39 @@
 
 
 
+#include <sys/socket.h>
 #include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
+#include <string.h>
+#include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "Mailer.h"
+
+
+/* POP3 */
+/* private */
+/* types */
+typedef struct _POP3
+{
+	int fd;
+	guint source;
+
+	GIOChannel * channel;
+	char * rd_buf;
+	size_t rd_buf_cnt;
+	guint rd_source;
+	char * wr_buf;
+	size_t wr_buf_cnt;
+	guint wr_source;
+
+	AccountFolder inbox;
+	AccountFolder trash;
+	GtkTextBuffer * tbuf;
+} POP3;
 
 
 /* variables */
@@ -35,10 +66,34 @@ static AccountConfig _pop3_config[] =
 	{ NULL,		NULL,			ACT_NONE,	NULL }
 };
 
+static const AccountFolder _pop3_folder_inbox =
+{
+	AFT_INBOX, "Inbox", NULL, NULL
+};
 
-/* functions */
+static const AccountFolder _pop3_folder_trash =
+{
+	AFT_TRASH, "Trash", NULL, NULL
+};
 
 
+/* prototypes */
+static int _pop3_init(AccountPlugin * plugin, GtkTreeStore * store,
+		GtkTreeIter * parent, GtkTextBuffer * buffer);
+static int _pop3_destroy(AccountPlugin * plugin);
+static GtkTextBuffer * _pop3_select(AccountPlugin * plugin,
+		AccountFolder * folder, AccountMessage * message);
+
+/* callbacks */
+static gboolean _on_idle(gpointer data);
+static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
+		gpointer data);
+static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
+		gpointer data);
+
+
+/* public */
+/* variables */
 AccountPlugin account_plugin =
 {
 	NULL,
@@ -46,9 +101,229 @@ AccountPlugin account_plugin =
 	_pop3_name,
 	NULL,
 	_pop3_config,
-	NULL,
-	NULL,
-	NULL,
+	_pop3_init,
+	_pop3_destroy,
+	_pop3_select,
 	NULL,
 	NULL
 };
+
+
+/* private */
+/* functions */
+/* pop3_init */
+static int _pop3_init(AccountPlugin * plugin, GtkTreeStore * store,
+		GtkTreeIter * parent, GtkTextBuffer * buffer)
+{
+	POP3 * pop3;
+	GdkPixbuf * pixbuf;
+	GtkTreeIter iter;
+
+	if((pop3 = malloc(sizeof(*pop3))) == NULL)
+		return -1;
+	plugin->priv = pop3;
+	pop3->fd = -1;
+	pop3->source = g_idle_add(_on_idle, plugin);
+	pop3->channel = NULL;
+	pop3->rd_buf = NULL;
+	pop3->rd_buf_cnt = 0;
+	pop3->rd_source = 0;
+	pop3->wr_buf = NULL;
+	pop3->wr_buf_cnt = 0;
+	pop3->wr_source = 0;
+	memcpy(&pop3->inbox, &_pop3_folder_inbox, sizeof(pop3->inbox));
+	memcpy(&pop3->trash, &_pop3_folder_trash, sizeof(pop3->trash));
+	pop3->tbuf = gtk_text_buffer_new(NULL);
+	/* inbox */
+	pixbuf = gtk_icon_theme_load_icon(plugin->helper->theme, "mailer-inbox",
+			16, 0, NULL);
+	gtk_tree_store_append(store, &iter, parent);
+	gtk_tree_store_set(store, &iter, MF_COL_ACCOUNT, NULL, MF_COL_FOLDER,
+			&pop3->inbox, MF_COL_ICON, pixbuf, MF_COL_NAME,
+			pop3->inbox.name, -1);
+	/* trash */
+	pixbuf = gtk_icon_theme_load_icon(plugin->helper->theme,
+			"stock_trash_full", 16, 0, NULL);
+	gtk_tree_store_append(store, &iter, parent);
+	gtk_tree_store_set(store, &iter, MF_COL_ACCOUNT, NULL, MF_COL_FOLDER,
+			&pop3->trash, MF_COL_ICON, pixbuf, MF_COL_NAME,
+			pop3->trash.name, -1);
+	return 0;
+}
+
+
+/* pop3_destroy */
+static int _pop3_destroy(AccountPlugin * plugin)
+{
+	POP3 * pop3 = plugin->priv;
+	GError * error = NULL;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(pop3 == NULL) /* XXX _pop3_destroy() may be called uninitialized */
+		return 0;
+	if(pop3->rd_source != 0)
+		g_source_remove(pop3->rd_source);
+	free(pop3->rd_buf);
+	if(pop3->wr_source != 0)
+		g_source_remove(pop3->wr_source);
+	free(pop3->wr_buf);
+	if(pop3->source != 0)
+		g_source_remove(pop3->source);
+	if(pop3->channel != NULL)
+	{
+		g_io_channel_shutdown(pop3->channel, TRUE, &error);
+		g_io_channel_unref(pop3->channel);
+	}
+	if(pop3->fd >= 0)
+		close(pop3->fd);
+	free(pop3);
+	return 0;
+}
+
+
+/* pop3_select */
+static GtkTextBuffer * _pop3_select(AccountPlugin * plugin,
+		AccountFolder * folder, AccountMessage * message)
+{
+	POP3 * pop3 = plugin->priv;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return pop3->tbuf;
+}
+
+
+/* callbacks */
+/* on_idle */
+static gboolean _idle_connect(AccountPlugin * plugin);
+static gboolean _idle_channel(AccountPlugin * plugin);
+
+static gboolean _on_idle(gpointer data)
+{
+	gboolean ret = FALSE;
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(pop3->fd < 0)
+		ret = _idle_connect(plugin);
+	else if(pop3->channel == NULL)
+		ret = _idle_channel(plugin);
+	if(ret == FALSE)
+		pop3->source = 0;
+	return ret;
+}
+
+static gboolean _idle_connect(AccountPlugin * plugin)
+{
+	POP3 * pop3 = plugin->priv;
+	char const * p;
+	struct hostent * he;
+	unsigned short port;
+	struct sockaddr_in sa;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	/* FIXME report errors */
+	if((p = plugin->config[2].value) == NULL)
+		return FALSE;
+	if((he = gethostbyname(p)) == NULL)
+	{
+		plugin->helper->error(NULL, hstrerror(h_errno), 1);
+		return FALSE;
+	}
+	if((p = plugin->config[3].value) == NULL)
+		return FALSE;
+	port = (unsigned long)p;
+	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	{
+		plugin->helper->error(NULL, strerror(errno), 1);
+		return FALSE;
+	}
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(port);
+	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() connecting to %s:%u\n", __func__,
+			inet_ntoa(sa.sin_addr), port);
+#endif
+	if(connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+	{
+		plugin->helper->error(NULL, strerror(errno), 1);
+		close(pop3->fd);
+		pop3->fd = -1;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static gboolean _idle_channel(AccountPlugin * plugin)
+{
+	POP3 * pop3 = plugin->priv;
+	GError * error = NULL;
+
+	pop3->channel = g_io_channel_unix_new(pop3->fd);
+	g_io_channel_set_encoding(pop3->channel, NULL, &error);
+	g_io_channel_set_buffered(pop3->channel, FALSE);
+	pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+			_on_watch_can_read, plugin);
+	return TRUE;
+}
+
+
+/* on_watch_can_read */
+static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+	char * p;
+	gsize cnt = 0;
+	GError * error = NULL;
+	GIOStatus status;
+
+	if(condition != G_IO_IN || source != pop3->channel)
+		return FALSE; /* should not happen */
+	if((p = realloc(pop3->rd_buf, pop3->rd_buf_cnt + 256)) == NULL)
+		return TRUE; /* XXX retries immediately (delay?) */
+	pop3->rd_buf = p;
+	status = g_io_channel_read_chars(source,
+			&pop3->rd_buf[pop3->rd_buf_cnt], 256, &cnt, &error);
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: POP3 SERVER: ");
+	fwrite(&pop3->rd_buf[pop3->rd_buf_cnt], sizeof(*p), cnt, stderr);
+#endif
+	pop3->rd_buf_cnt += cnt;
+	switch(status)
+	{
+		case G_IO_STATUS_NORMAL:
+			break;
+		case G_IO_STATUS_ERROR:
+			plugin->helper->error(NULL, error->message, 1);
+		case G_IO_STATUS_EOF:
+		default: /* XXX find a way to recover */
+			pop3->rd_source = 0;
+			return FALSE;
+	}
+	/* FIXME implement the rest */
+	return TRUE;
+}
+
+
+/* on_watch_can_write */
+static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+
+	/* FIXME implement */
+	pop3->wr_source = 0;
+	return FALSE;
+}
