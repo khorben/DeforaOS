@@ -36,7 +36,8 @@ typedef enum _P3Context
 	P3C_AUTHORIZATION_PASS,
 	P3C_TRANSACTION_LIST,
 	P3C_TRANSACTION_RETR,
-	P3C_TRANSACTION_STAT
+	P3C_TRANSACTION_STAT,
+	P3C_TRANSACTION_TOP
 } P3Context;
 
 typedef struct _POP3
@@ -52,6 +53,7 @@ typedef struct _POP3
 	char * wr_buf;
 	size_t wr_buf_cnt;
 	guint wr_source;
+	GtkTreeIter iter;
 
 	AccountFolder inbox;
 	AccountFolder trash;
@@ -147,6 +149,12 @@ static int _pop3_init(AccountPlugin * plugin, GtkTreeStore * store,
 	pop3->wr_source = 0;
 	memcpy(&pop3->inbox, &_pop3_folder_inbox, sizeof(pop3->inbox));
 	memcpy(&pop3->trash, &_pop3_folder_trash, sizeof(pop3->trash));
+	/* XXX should not be done here? */
+	pop3->inbox.store = gtk_list_store_new(MH_COL_COUNT, G_TYPE_POINTER,
+			G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_INT);
 	pop3->tbuf = gtk_text_buffer_new(NULL);
 	/* inbox */
 	pixbuf = gtk_icon_theme_load_icon(plugin->helper->theme, "mailer-inbox",
@@ -256,11 +264,10 @@ static int _pop3_parse(AccountPlugin * plugin)
 		if(i == pop3->rd_buf_cnt)
 			break;
 		pop3->rd_buf[i - 1] = '\0';
+		/* FIXME this string may be found inside mail content */
 		if(strncmp("-ERR", &pop3->rd_buf[j], 4) == 0)
 			ret |= -plugin->helper->error(plugin->helper->mailer,
 					&pop3->rd_buf[j + 4], 1);
-		else if(strncmp("+OK", &pop3->rd_buf[j], 3) == 0)
-			ret |= _parse_context(plugin, &pop3->rd_buf[j + 3]);
 		else
 			ret |= _parse_context(plugin, &pop3->rd_buf[j]);
 	}
@@ -281,6 +288,9 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 	unsigned int u;
 	unsigned int v;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, answer);
+#endif
 	switch(pop3->context)
 	{
 		case P3C_INIT:
@@ -304,23 +314,51 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case P3C_AUTHORIZATION_PASS:
 			pop3->context = P3C_TRANSACTION_STAT;
 			return _pop3_command(plugin, "STAT");
-		case P3C_TRANSACTION_STAT:
-			if(sscanf(answer, "%u %u", &u, &v) != 2)
-				return -1;
-			pop3->context = P3C_TRANSACTION_LIST;
-			return _pop3_command(plugin, "LIST");
 		case P3C_TRANSACTION_LIST:
 			if(strcmp(answer, ".") == 0)
 			{
-				pop3->context = P3C_TRANSACTION_RETR;
+				pop3->context = P3C_TRANSACTION_TOP;
 				return 0;
 			}
 			if(sscanf(answer, "%u %u", &u, &v) != 2)
 				return -1;
-			q = g_strdup_printf("%s %u", "RETR", u);
+			/* FIXME may not be supported by the server */
+			q = g_strdup_printf("%s %u 0", "TOP", u);
 			ret = _pop3_command(plugin, q);
 			free(q);
 			return ret;
+		case P3C_TRANSACTION_STAT:
+			if(sscanf(answer, "+OK %u %u", &u, &v) != 2)
+				return -1;
+			pop3->context = P3C_TRANSACTION_LIST;
+			return _pop3_command(plugin, "LIST");
+		case P3C_TRANSACTION_TOP:
+			/* FIXME this string may be found inside mail content */
+			if(strcmp(answer, "+OK") == 0)
+			{
+				gtk_list_store_append(pop3->inbox.store,
+						&pop3->iter);
+				return 0;
+			}
+			/* FIXME rewrite more dynamically */
+			if(strncmp(answer, "Date: ", 6) == 0)
+				gtk_list_store_set(pop3->inbox.store,
+						&pop3->iter,
+						MH_COL_DATE_DISPLAY, &answer[6],
+						-1);
+			else if(strncmp(answer, "From: ", 6) == 0)
+				gtk_list_store_set(pop3->inbox.store,
+						&pop3->iter, MH_COL_FROM,
+						&answer[6], -1);
+			else if(strncmp(answer, "Subject: ", 9) == 0)
+				gtk_list_store_set(pop3->inbox.store,
+						&pop3->iter, MH_COL_SUBJECT,
+						&answer[9], -1);
+			else if(strncmp(answer, "To: ", 4) == 0)
+				gtk_list_store_set(pop3->inbox.store,
+						&pop3->iter, MH_COL_TO,
+						&answer[4], -1);
+			return 0;
 	}
 	return -1;
 }
