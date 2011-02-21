@@ -338,6 +338,13 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			{
 				gtk_list_store_append(pop3->inbox.store,
 						&pop3->iter);
+				gtk_list_store_set(pop3->inbox.store,
+						&pop3->iter,
+						MH_COL_PIXBUF,
+						plugin->helper->mail_unread,
+						MH_COL_READ, FALSE,
+						MH_COL_WEIGHT,
+						PANGO_WEIGHT_BOLD, -1);
 				return 0;
 			}
 			/* FIXME rewrite more dynamically */
