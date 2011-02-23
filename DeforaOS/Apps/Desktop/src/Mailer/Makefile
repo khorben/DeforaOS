@@ -41,6 +41,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Mailer.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Mailer/account.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/folder.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/mailer.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/message.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/transport.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/Makefile \
+		$(PACKAGE)-$(VERSION)/include/Mailer/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
@@ -49,14 +56,18 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/compose.c \
+		$(PACKAGE)-$(VERSION)/src/folder.c \
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/message.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account.h \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/compose.h \
+		$(PACKAGE)-$(VERSION)/src/folder.h \
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
+		$(PACKAGE)-$(VERSION)/src/message.h \
 		$(PACKAGE)-$(VERSION)/src/gtkassistant.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/account/imap4.c \

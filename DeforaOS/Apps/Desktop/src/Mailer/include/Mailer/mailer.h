@@ -15,33 +15,12 @@
 
 
 
-#include <stdlib.h>
-#include "Mailer.h"
+#ifndef DESKTOP_MAILER_MAILER_H
+# define DESKTOP_MAILER_MAILER_H
 
 
-/* variables */
-static char const _rss_type[] = "RSS";
-static char const _rss_name[] = "RSS reader";
+/* Mailer */
+/* types */
+typedef struct _Mailer Mailer;
 
-static AccountConfig _rss_config[] =
-{
-	{ "uri",	"Address",		ACT_STRING,	NULL },
-	{ NULL,		NULL,			ACT_NONE,	NULL }
-};
-
-
-/* functions */
-
-
-AccountPlugin account_plugin =
-{
-	NULL,
-	_rss_type,
-	_rss_name,
-	NULL,
-	_rss_config,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+#endif /* !DESKTOP_MAILER_MAILER_H */

@@ -47,6 +47,5 @@ AccountPlugin account_plugin =
 	NULL,
 	NULL,
 	NULL,
-	NULL,
 	NULL
 };

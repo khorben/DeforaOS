@@ -15,33 +15,28 @@
 
 
 
-#include <stdlib.h>
-#include "Mailer.h"
+#ifndef MAILER_SRC_FOLDER_H
+# define MAILER_SRC_FOLDER_H
+
+# include <gtk/gtk.h>
+# include "Mailer.h"
 
 
-/* variables */
-static char const _rss_type[] = "RSS";
-static char const _rss_name[] = "RSS reader";
-
-static AccountConfig _rss_config[] =
-{
-	{ "uri",	"Address",		ACT_STRING,	NULL },
-	{ NULL,		NULL,			ACT_NONE,	NULL }
-};
+/* Folder */
+/* types */
 
 
 /* functions */
+Folder * folder_new(AccountFolder * folder, FolderType type, char const * name,
+		GtkTreeStore * store, GtkTreeIter * iter);
+void folder_delete(Folder * folder);
 
+/* accessors */
+AccountFolder * folder_get_data(Folder * folder);
+char const * folder_get_name(Folder * folder);
+GtkListStore * folder_get_messages(Folder * folder);
+FolderType folder_get_type(Folder * folder);
 
-AccountPlugin account_plugin =
-{
-	NULL,
-	_rss_type,
-	_rss_name,
-	NULL,
-	_rss_config,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+void folder_set_type(Folder * folder, FolderType type);
+
+#endif /* !MAILER_SRC_MAILER_H */

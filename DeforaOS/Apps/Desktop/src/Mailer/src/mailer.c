@@ -24,6 +24,8 @@
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
+#include "folder.h"
+#include "message.h"
 #include "compose.h"
 #include "callbacks.h"
 #include "mailer.h"
@@ -53,11 +55,10 @@ struct _Mailer
 	Account ** available; /* XXX consider using another data type */
 	unsigned int available_cnt;
 
-	AccountPluginHelper helper;
 	Account ** account;
 	unsigned int account_cnt;
 	Account * account_cur;
-	AccountFolder * folder_cur;
+	Folder * folder_cur;
 
 	guint source;
 
@@ -66,6 +67,7 @@ struct _Mailer
 
 	/* widgets */
 	GtkWidget * window;
+	GtkTreeStore * folders;
 	GtkWidget * view_folders;
 	GtkWidget * view_headers;
 	GtkTreeViewColumn * view_from;
@@ -222,7 +224,7 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 #endif
 	if((type = config_get(mailer->config, name, "type")) == NULL)
 		return -1;
-	if((account = account_new(type, name, &mailer->helper)) == NULL)
+	if((account = account_new(mailer, type, name, mailer->folders)) == NULL)
 		return -mailer_error(mailer, error_get(), 1);
 	account_config_load(account, mailer->config);
 	mailer_account_add(mailer, account);
@@ -346,13 +348,6 @@ static int _new_plugins(Mailer * mailer)
 
 	mailer->available = NULL;
 	mailer->available_cnt = 0;
-	mailer->helper.mailer = mailer;
-	mailer->helper.theme = gtk_icon_theme_get_default();
-	mailer->helper.mail_read = gtk_icon_theme_load_icon(
-			mailer->helper.theme, "mail-read", 16, 0, NULL);
-	mailer->helper.mail_unread = gtk_icon_theme_load_icon(
-			mailer->helper.theme, "mail-unread", 16, 0, NULL);
-	mailer->helper.error = mailer_error;
 	if((dirname = string_new_append(PLUGINDIR, "/account", NULL)) == NULL)
 		return -1;
 	if((dir = opendir(dirname)) == NULL)
@@ -375,8 +370,8 @@ static int _new_plugins(Mailer * mailer)
 			continue;
 		}
 		mailer->available = p;
-		if((p[mailer->available_cnt] = account_new(de->d_name, NULL,
-						&mailer->helper)) == NULL)
+		if((p[mailer->available_cnt] = account_new(mailer, de->d_name,
+						NULL, NULL)) == NULL)
 		{
 			error_print("mailer");
 			continue;
@@ -393,21 +388,19 @@ static int _new_plugins(Mailer * mailer)
 static GtkWidget * _new_folders_view(Mailer * mailer)
 {
 	GtkWidget * widget;
-	GtkTreeStore * model;
 	GtkCellRenderer * renderer;
 	GtkTreeSelection * treesel;
 
-	model = gtk_tree_store_new(MF_COL_COUNT, G_TYPE_POINTER, G_TYPE_BOOLEAN,
-			G_TYPE_BOOLEAN, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
-			G_TYPE_STRING);
-	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(model));
-	g_object_unref(model);
+	mailer->folders = gtk_tree_store_new(MFC_COUNT, G_TYPE_POINTER,
+			G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_POINTER,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mailer->folders));
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			NULL, renderer, "pixbuf", MF_COL_ICON, NULL);
+			NULL, renderer, "pixbuf", MFC_ICON, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			_("Folders"), renderer, "text", MF_COL_NAME, NULL);
+			_("Folders"), renderer, "text", MFC_NAME, NULL);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
 	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
 				_on_folders_changed), mailer);
@@ -419,8 +412,8 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	Mailer * mailer = data;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
-	GtkListStore * store;
 	GtkTreePath * path;
+	gboolean sent;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -435,33 +428,24 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 		return;
 	}
 	/* get current folder */
-	gtk_tree_model_get(model, &iter, MF_COL_FOLDER, &mailer->folder_cur,
+	gtk_tree_model_get(model, &iter, MFC_FOLDER, &mailer->folder_cur,
 			-1);
 	/* get current account */
 	path = gtk_tree_model_get_path(model, &iter);
 	while(gtk_tree_path_get_depth(path) > 1 && gtk_tree_path_up(path));
 	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, MF_COL_ACCOUNT, &mailer->account_cur,
+	gtk_tree_model_get(model, &iter, MFC_ACCOUNT, &mailer->account_cur,
 			-1);
 	gtk_tree_path_free(path);
 	/* display relevant columns */
-	if(mailer->folder_cur != NULL && mailer->folder_cur->type == AFT_SENT)
-	{
-		gtk_tree_view_column_set_visible(mailer->view_from, FALSE);
-		gtk_tree_view_column_set_visible(mailer->view_to, TRUE);
-	}
-	else
-	{
-		gtk_tree_view_column_set_visible(mailer->view_from, TRUE);
-		gtk_tree_view_column_set_visible(mailer->view_to, FALSE);
-	}
+	sent = (mailer->folder_cur != NULL && folder_get_type(
+				mailer->folder_cur) == FT_SENT) ? TRUE : FALSE;
+	gtk_tree_view_column_set_visible(mailer->view_from, !sent);
+	gtk_tree_view_column_set_visible(mailer->view_to, sent);
 	/* display headers */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() account_get_store()\n", __func__);
-#endif
-	store = account_get_store(mailer->account_cur, mailer->folder_cur);
-	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
-			GTK_TREE_MODEL(store));
+	model = (mailer->folder_cur != NULL) ? GTK_TREE_MODEL(
+			folder_get_messages(mailer->folder_cur)) : NULL;
+	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers), model);
 	_mailer_update_status(mailer);
 }
 
@@ -474,15 +458,15 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
 	gtk_tree_view_set_rules_hint(treeview, TRUE);
-	_headers_view_column_pixbuf(treeview, "", MH_COL_PIXBUF, MH_COL_READ);
-	_headers_view_column_text(treeview, _("Subject"), MH_COL_SUBJECT,
-			MH_COL_SUBJECT, MH_COL_WEIGHT);
+	_headers_view_column_pixbuf(treeview, "", MHC_PIXBUF, MHC_READ);
+	_headers_view_column_text(treeview, _("Subject"), MHC_SUBJECT,
+			MHC_SUBJECT, MHC_WEIGHT);
 	mailer->view_from = _headers_view_column_text(treeview, _("From"),
-			MH_COL_FROM, MH_COL_FROM, MH_COL_WEIGHT);
+			MHC_FROM, MHC_FROM, MHC_WEIGHT);
 	mailer->view_to = _headers_view_column_text(treeview, _("To"),
-			MH_COL_TO, MH_COL_TO, MH_COL_WEIGHT);
-	_headers_view_column_text(treeview, _("Date"), MH_COL_DATE_DISPLAY,
-			MH_COL_DATE, MH_COL_WEIGHT);
+			MHC_TO, MHC_TO, MHC_WEIGHT);
+	_headers_view_column_text(treeview, _("Date"), MHC_DATE_DISPLAY,
+			MHC_DATE, MHC_WEIGHT);
 	treesel = gtk_tree_view_get_selection(treeview);
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
 	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
@@ -497,7 +481,7 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	GList * sel;
 	GtkTreeIter iter;
 	char * p;
-	AccountMessage * message;
+	Message * message;
 	GtkTextBuffer * tbuf;
 
 #ifdef DEBUG
@@ -513,24 +497,20 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	else
 	{
 		gtk_tree_model_get_iter(model, &iter, sel->data);
-		gtk_tree_model_get(model, &iter, MH_COL_MESSAGE, &message, -1);
-		gtk_tree_model_get(model, &iter, MH_COL_SUBJECT, &p, -1);
+		gtk_tree_model_get(model, &iter, MHC_MESSAGE, &message, -1);
+		gtk_tree_model_get(model, &iter, MHC_SUBJECT, &p, -1);
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_subject), p);
-		gtk_tree_model_get(model, &iter, MH_COL_FROM, &p, -1);
+		gtk_tree_model_get(model, &iter, MHC_FROM, &p, -1);
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_from), p);
-		gtk_tree_model_get(model, &iter, MH_COL_TO, &p, -1);
+		gtk_tree_model_get(model, &iter, MHC_TO, &p, -1);
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_to), p);
-		gtk_tree_model_get(model, &iter, MH_COL_DATE_DISPLAY, &p, -1);
+		gtk_tree_model_get(model, &iter, MHC_DATE_DISPLAY, &p, -1);
 		gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
-		/* FIXME really set as read and simplify code */
-		gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-				MH_COL_PIXBUF, mailer->helper.mail_read,
-				MH_COL_READ, TRUE,
-				MH_COL_WEIGHT, PANGO_WEIGHT_NORMAL, -1);
+		message_set_read(message, TRUE);
 		gtk_widget_show(mailer->hdr_vbox);
 		if((tbuf = account_select(mailer->account_cur,
-						mailer->folder_cur, message))
-				!= NULL)
+						mailer->folder_cur,
+						message)) != NULL)
 			gtk_text_view_set_buffer(GTK_TEXT_VIEW(
 						mailer->view_body), tbuf);
 	}
@@ -734,34 +714,21 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 
 /* mailer_account_add */
 int mailer_account_add(Mailer * mailer, Account * account)
-	/* FIXME */
 {
 	Account ** p;
-	GtkTreeModel * model;
-	GtkTreeIter iter;
-	GtkIconTheme * theme;
-	GdkPixbuf * pixbuf;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)account);
 #endif
 	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt
 						+ 1))) == NULL)
-		return mailer_error(mailer, "realloc", FALSE);
+		return -mailer_error(mailer, "realloc", 1);
 	mailer->account = p;
 	mailer->account[mailer->account_cnt] = account;
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->view_folders));
-	gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
-	theme = gtk_icon_theme_get_default();
-	pixbuf = gtk_icon_theme_load_icon(theme, "mailer-accounts", 16, 0,
-			NULL);
-	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, MF_COL_ACCOUNT,
-			account, MF_COL_ENABLED, account_get_enabled(account),
-			MF_COL_DELETE, FALSE, MF_COL_FOLDER, NULL, MF_COL_ICON,
-			pixbuf, MF_COL_NAME, account_get_title(account), -1);
-	account_init(account, GTK_TREE_STORE(model), &iter);
+	if(account_init(account) != 0)
+		return -mailer_error(mailer, account_get_title(account), 1);
 	mailer->account_cnt++;
-	return FALSE;
+	return 0;
 }
 
 
@@ -846,7 +813,7 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 	GtkTreeModel * model;
 	GtkTreePath * path;
 	GtkTreeIter iter;
-	AccountMessage * message;
+	Message * message;
 
 	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
 						mailer->view_headers))) == NULL)
@@ -857,7 +824,7 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 		return;
 	if(gtk_tree_model_get_iter(model, &iter, path) == TRUE)
 	{
-		gtk_tree_model_get(model, &iter, MH_COL_MESSAGE, &message, -1);
+		gtk_tree_model_get(model, &iter, MHC_MESSAGE, &message, -1);
 	}
 	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 	gtk_tree_path_free(path);
@@ -914,7 +881,7 @@ void mailer_open_selected_source(Mailer * mailer)
 static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
 		GtkTreeIter * iter)
 {
-	AccountMessage * message;
+	Message * message;
 	GtkWidget * window;
 	GtkWidget * scrolled;
 	PangoFontDescription * font;
@@ -922,7 +889,7 @@ static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
 	GtkWidget * widget;
 	GtkTextBuffer * tbuf;
 
-	gtk_tree_model_get(model, iter, MH_COL_MESSAGE, &message, -1);
+	gtk_tree_model_get(model, iter, MHC_MESSAGE, &message, -1);
 	if(message == NULL)
 		return;
 	if((tbuf = account_select_source(mailer->account_cur,
@@ -990,7 +957,7 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 
 	if((compose = compose_new(mailer)) == NULL)
 		return; /* XXX error message? */
-	gtk_tree_model_get(model, iter, MH_COL_FROM, &from, MH_COL_SUBJECT,
+	gtk_tree_model_get(model, iter, MHC_FROM, &from, MHC_SUBJECT,
 			&subject, -1);
 #if 0 /* FIXME adapt */
 	if(from != NULL)
@@ -1424,8 +1391,8 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 			if(ad->account != NULL)
 				account_delete(ad->account);
 			ac = ad->mailer->available[ad->available];
-			ad->account = account_new(account_get_type(ac),
-					ad->type, &ad->mailer->helper);
+			ad->account = account_new(ad->mailer,
+					account_get_type(ac), ad->type, NULL);
 		}
 		if(ad->account == NULL)
 		{
@@ -2203,7 +2170,7 @@ static void _mailer_update_status(Mailer * mailer)
 				NULL);
 		snprintf(buf, sizeof(buf), _("%s/%s: %d %s"),
 				account_get_name(mailer->account_cur),
-				mailer->folder_cur->name, cnt,
+				folder_get_name(mailer->folder_cur), cnt,
 				(cnt > 1) ? _("messages") : _("message"));
 	}
 	else

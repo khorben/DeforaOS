@@ -15,33 +15,25 @@
 
 
 
-#include <stdlib.h>
-#include "Mailer.h"
+#ifndef DESKTOP_MAILER_FOLDER_H
+# define DESKTOP_MAILER_FOLDER_H
 
 
-/* variables */
-static char const _rss_type[] = "RSS";
-static char const _rss_name[] = "RSS reader";
+/* Folder */
+/* types */
+typedef struct _Folder Folder;
 
-static AccountConfig _rss_config[] =
+typedef struct _AccountFolder AccountFolder;
+
+typedef enum _FolderType
 {
-	{ "uri",	"Address",		ACT_STRING,	NULL },
-	{ NULL,		NULL,			ACT_NONE,	NULL }
-};
+	FT_INBOX = 0,
+	FT_DRAFTS,
+	FT_SENT,
+	FT_TRASH,
+	FT_FOLDER
+} FolderType;
+# define FT_LAST FT_FOLDER
+# define FT_COUNT (FT_LAST + 1)
 
-
-/* functions */
-
-
-AccountPlugin account_plugin =
-{
-	NULL,
-	_rss_type,
-	_rss_name,
-	NULL,
-	_rss_config,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+#endif /* !DESKTOP_MAILER_FOLDER_H */

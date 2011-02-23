@@ -21,14 +21,14 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-mailer_OBJS = account.o callbacks.o compose.o mailer.o main.o
+mailer_OBJS = account.o callbacks.o compose.o folder.o mailer.o main.o message.o
 mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mailer: $(mailer_OBJS)
 	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
 
-account.o: account.c mailer.h account.h ../config.h
+account.o: account.c mailer.h message.h account.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c account.c
 
 callbacks.o: callbacks.c account.h callbacks.h compose.h mailer.h gtkassistant.c
@@ -37,11 +37,17 @@ callbacks.o: callbacks.c account.h callbacks.h compose.h mailer.h gtkassistant.c
 compose.o: compose.c callbacks.h mailer.h compose.h ../config.h
 	$(CC) $(mailer_CFLAGS) -c compose.c
 
+folder.o: folder.c
+	$(CC) $(mailer_CFLAGS) -c folder.c
+
 mailer.o: mailer.c account.h callbacks.h compose.h mailer.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c mailer.c
 
 main.o: main.c mailer.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c main.c
+
+message.o: message.c
+	$(CC) $(mailer_CFLAGS) -c message.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
