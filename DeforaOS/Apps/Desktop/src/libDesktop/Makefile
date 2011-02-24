@@ -1,5 +1,5 @@
 PACKAGE	= libDesktop
-VERSION	= 0.0.3
+VERSION	= 0.0.4
 SUBDIRS	= data include src
 RM	= rm -f
 LN	= ln -f
