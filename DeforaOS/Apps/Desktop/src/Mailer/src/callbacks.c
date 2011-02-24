@@ -205,6 +205,14 @@ void on_reply_to_all(gpointer data)
 
 
 /* compose window */
+void on_compose_attach(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_attach_dialog(compose);
+}
+
+
 gboolean on_compose_closex(gpointer data)
 {
 	Compose * compose = data;

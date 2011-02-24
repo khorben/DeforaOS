@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
@@ -52,16 +53,32 @@ struct _Compose
 
 	/* widgets */
 	GtkWidget * window;
+	/* headers */
 	GtkWidget * from;
 	GtkListStore * h_store;
 	GtkListStore * h_headers;
 	GtkWidget * h_view;
 	GtkWidget * subject;
+	/* body */
 	GtkWidget * view;
+	/* attachments */
+	GtkListStore * a_store;
+	GtkWidget * a_view;
+	/* statusbar */
 	GtkWidget * statusbar;
 	gint statusbar_id;
+	/* about */
 	GtkWidget * ab_window;
 };
+
+typedef enum _ComposeAttachmentColumn
+{
+	CAC_FILENAME = 0,
+	CAC_BASENAME,
+	CAC_ICON
+} ComposeAttachmentColumn;
+#define CAC_LAST CAC_ICON
+#define CAC_COUNT (CAC_LAST + 1)
 
 
 /* constants */
@@ -152,7 +169,8 @@ static DesktopToolbar _compose_toolbar[] =
 	{ N_("Paste"), G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE, 0, 0,
 		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Attach"), NULL, "stock_attach", 0, 0, NULL },
+	{ N_("Attach"), G_CALLBACK(on_compose_attach), "stock_attach", 0, 0,
+		NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -293,6 +311,18 @@ Compose * compose_new(Mailer * mailer)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), compose->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	/* attachments */
+	compose->a_store = gtk_list_store_new(CAC_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING, GDK_TYPE_PIXBUF);
+	compose->a_view = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
+				compose->a_store));
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(compose->a_view),
+			CAC_ICON);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(compose->a_view),
+			CAC_BASENAME);
+	gtk_widget_set_no_show_all(compose->a_view, TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), compose->a_view, FALSE, TRUE, 0);
+	/* statusbar */
 	compose->statusbar = gtk_statusbar_new();
 	compose->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), compose->statusbar, FALSE, TRUE, 0);
@@ -407,6 +437,36 @@ void compose_add_field(Compose * compose, char const * field,
 		gtk_list_store_set(compose->h_store, &iter, 0, field, -1);
 	if(value != NULL)
 		gtk_list_store_set(compose->h_store, &iter, 1, value, -1);
+}
+
+
+/* compose_attach_dialog */
+void compose_attach_dialog(Compose * compose)
+{
+	GtkWidget * dialog;
+	char * filename = NULL;
+	GtkIconTheme * theme;
+	GdkPixbuf * pixbuf;
+	GtkTreeIter iter;
+
+	dialog = gtk_file_chooser_dialog_new(_("Attach file..."),
+			GTK_WINDOW(compose->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	theme = gtk_icon_theme_get_default();
+	pixbuf = gtk_icon_theme_load_icon(theme, GTK_STOCK_FILE, 48, 0, NULL);
+	gtk_list_store_append(compose->a_store, &iter);
+	gtk_list_store_set(compose->a_store, &iter, CAC_FILENAME, filename,
+			CAC_BASENAME, basename(filename), CAC_ICON, pixbuf, -1);
+	free(filename);
+	gtk_widget_show(compose->a_view);
 }
 
 

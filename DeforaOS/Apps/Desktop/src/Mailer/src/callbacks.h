@@ -62,6 +62,7 @@ void on_header_change(GtkTreeSelection * selection, gpointer data);
 
 
 /* compose window */
+void on_compose_attach(gpointer data);
 gboolean on_compose_closex(gpointer data);
 void on_compose_save(gpointer data);
 void on_compose_send(gpointer data);

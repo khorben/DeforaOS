@@ -37,6 +37,8 @@ void compose_set_subject(Compose * compose, char const * subject);
 void compose_add_field(Compose * compose, char const * field,
 		char const * value);
 
+void compose_attach_dialog(Compose * compose);
+
 gboolean compose_close(Compose * compose);
 
 void compose_copy(Compose * compose);

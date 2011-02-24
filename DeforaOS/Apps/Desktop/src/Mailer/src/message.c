@@ -46,6 +46,9 @@ struct _Message
 
 	GtkTextBuffer * body;
 
+	char ** attachments;
+	size_t attachments_cnt;
+
 	AccountMessage * data;
 };
 
@@ -103,6 +106,8 @@ Message * message_new(AccountMessage * message, GtkListStore * store,
 	ret->headers = NULL;
 	ret->headers_cnt = 0;
 	ret->body = gtk_text_buffer_new(NULL);
+	ret->attachments = NULL;
+	ret->attachments_cnt = NULL;
 	ret->data = message;
 	gtk_list_store_set(store, iter, MHC_MESSAGE, ret, -1);
 	_message_set_date(ret, NULL);
