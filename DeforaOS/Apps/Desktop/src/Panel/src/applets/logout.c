@@ -82,5 +82,5 @@ static void _on_clicked(gpointer data)
 {
 	PanelApplet * applet = data;
 
-	applet->helper->logout_dialog();
+	applet->helper->logout_dialog(applet->helper->panel);
 }

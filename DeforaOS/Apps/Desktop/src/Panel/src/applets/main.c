@@ -87,7 +87,7 @@ static void _on_clicked(gpointer data);
 static gboolean _on_idle(gpointer data);
 static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
-static void _on_run(void);
+static void _on_run(gpointer data);
 static void _on_shutdown(gpointer data);
 static void _on_suspend(gpointer data);
 static gboolean _on_timeout(gpointer data);
@@ -303,7 +303,7 @@ static void _on_clicked(gpointer data)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = _main_menuitem(_("Run..."), GTK_STOCK_EXECUTE);
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_run), NULL);
+				_on_run), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -447,7 +447,7 @@ static void _on_lock(gpointer data)
 	if((p = helper->config_get(helper->panel, "lock", "command")) != NULL)
 		command = p;
 	if(g_spawn_command_line_async(command, &error) != TRUE)
-		helper->error(NULL, error->message, 0);
+		helper->error(helper->panel, error->message, 1);
 }
 
 
@@ -456,19 +456,23 @@ static void _on_logout(gpointer data)
 {
 	Main * main = data;
 
-	main->helper->logout_dialog();
+	main->helper->logout_dialog(main->helper->panel);
 }
 
 
 /* on_run */
-static void _on_run(void)
+static void _on_run(gpointer data)
 {
+	Main * main = data;
 	char * argv[] = { "run", NULL };
 	GSpawnFlags flags = G_SPAWN_SEARCH_PATH
 		| G_SPAWN_STDOUT_TO_DEV_NULL
 		| G_SPAWN_STDERR_TO_DEV_NULL;
+	GError * error = NULL;
 
-	g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, NULL);
+	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
+			!= TRUE)
+		main->helper->error(main->helper->panel, error->message, 1);
 }
 
 

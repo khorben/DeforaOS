@@ -70,8 +70,12 @@ struct _Panel
 	GtkWidget * pr_bottom_size;
 	GtkWidget * pr_top_size;
 
-	/* about */
+	/* dialogs */
 	GtkWidget * ab_window;
+#ifndef EMBEDDED
+	GtkWidget * lo_window;
+#endif
+	GtkWidget * sh_window;
 };
 
 
@@ -107,7 +111,7 @@ static int _panel_helper_config_set(Panel * panel, char const * section,
 static int _panel_helper_error(Panel * panel, char const * message, int ret);
 static void _panel_helper_about_dialog(Panel * panel);
 #ifndef EMBEDDED
-static int _panel_helper_logout_dialog(void);
+static void _panel_helper_logout_dialog(Panel * panel);
 #endif
 static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, PanelPosition position, gpointer data);
@@ -116,7 +120,7 @@ static void _panel_helper_position_menu_bottom(GtkMenu * menu, gint * x,
 static void _panel_helper_position_menu_top(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 static void _panel_helper_preferences_dialog(Panel * panel);
-static int _panel_helper_shutdown_dialog(Panel * panel);
+static void _panel_helper_shutdown_dialog(Panel * panel);
 static int _panel_helper_suspend(Panel * panel);
 
 static char * _config_get_filename(void);
@@ -372,6 +376,8 @@ void panel_delete(Panel * panel)
 /* useful */
 /* panel_error */
 static int _error_text(char const * message, int ret);
+static gboolean _error_on_closex(GtkWidget * widget);
+static void _error_on_response(GtkWidget * widget);
 
 int panel_error(Panel * panel, char const * message, int ret)
 {
@@ -388,8 +394,11 @@ int panel_error(Panel * panel, char const * message, int ret)
 			"%s: %s", message, strerror(errno));
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
+	g_signal_connect(G_OBJECT(dialog), "delete-event", G_CALLBACK(
+				_error_on_closex), NULL);
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				_error_on_response), NULL);
+	gtk_widget_show_all(dialog);
 	return ret;
 }
 
@@ -398,6 +407,17 @@ static int _error_text(char const * message, int ret)
 	fputs(PACKAGE ": ", stderr);
 	perror(message);
 	return ret;
+}
+
+static gboolean _error_on_closex(GtkWidget * widget)
+{
+	gtk_widget_hide(widget);
+	return FALSE;
+}
+
+static void _error_on_response(GtkWidget * widget)
+{
+	gtk_widget_destroy(widget);
 }
 
 
@@ -686,41 +706,62 @@ static gboolean _about_on_closex(gpointer data)
 
 #ifndef EMBEDDED
 /* panel_helper_logout_dialog */
-static int _panel_helper_logout_dialog(void)
+static gboolean _logout_dialog_on_closex(gpointer data);
+static void _logout_dialog_on_response(GtkWidget * widget, gint response);
+
+static void _panel_helper_logout_dialog(Panel * panel)
 {
-	GtkWidget * dialog;
 	const char * message = _("This will log you out of the current session,"
 			" therefore closing any application currently opened"
 			" and losing any unsaved data.\n"
 			"Do you really want to proceed?");
 	GtkWidget * widget;
-	int res;
 
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_NONE, "%s",
+	if(panel->lo_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(panel->lo_window));
+		return;
+	}
+	panel->lo_window = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+			GTK_BUTTONS_NONE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			_("Logout"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
+			"%s", _("Logout"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+				panel->lo_window),
 #endif
-			message);
-	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+			"%s", message);
+	gtk_dialog_add_buttons(GTK_DIALOG(panel->lo_window), GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, NULL);
 	widget = gtk_button_new_with_label(_("Logout"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"gnome-logout", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_show_all(widget);
-	gtk_dialog_add_action_widget(GTK_DIALOG(dialog), widget,
+	gtk_dialog_add_action_widget(GTK_DIALOG(panel->lo_window), widget,
 			GTK_RESPONSE_ACCEPT);
-	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
-	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Logout"));
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_ACCEPT)
-		return 1;
-	gtk_main_quit();
-	return 0;
+	gtk_window_set_keep_above(GTK_WINDOW(panel->lo_window), TRUE);
+	gtk_window_set_position(GTK_WINDOW(panel->lo_window),
+			GTK_WIN_POS_CENTER_ALWAYS);
+	gtk_window_set_title(GTK_WINDOW(panel->lo_window), _("Logout"));
+	g_signal_connect(G_OBJECT(panel->lo_window), "delete-event", G_CALLBACK(
+				_logout_dialog_on_closex), panel);
+	g_signal_connect(G_OBJECT(panel->lo_window), "response", G_CALLBACK(
+				_logout_dialog_on_response), panel);
+	gtk_widget_show_all(panel->lo_window);
+}
+
+static gboolean _logout_dialog_on_closex(gpointer data)
+{
+	Panel * panel = data;
+
+	gtk_widget_hide(panel->lo_window);
+	return TRUE;
+}
+
+static void _logout_dialog_on_response(GtkWidget * widget, gint response)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_ACCEPT)
+		gtk_main_quit();
 }
 #endif
 
@@ -778,9 +819,13 @@ static void _panel_helper_preferences_dialog(Panel * panel)
 
 
 /* panel_helper_shutdown_dialog */
-static int _panel_helper_shutdown_dialog(Panel * panel)
+static gboolean _shutdown_dialog_on_closex(gpointer data);
+static void _shutdown_dialog_on_response(GtkWidget * widget, gint response,
+		gpointer data);
+enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
+
+static void _panel_helper_shutdown_dialog(Panel * panel)
 {
-	GtkWidget * dialog;
 	GtkWidget * widget;
 #ifdef EMBEDDED
 	const char * message = _("This will shutdown your device,"
@@ -793,8 +838,51 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 			" and losing any unsaved data.\n"
 			"Do you really want to proceed?");
 #endif
-	enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
-	int res;
+
+	if(panel->sh_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(panel->sh_window));
+		return;
+	}
+	panel->sh_window = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+			GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Shutdown"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+				panel->sh_window),
+#endif
+			"%s", message);
+	gtk_dialog_add_buttons(GTK_DIALOG(panel->sh_window), GTK_STOCK_CANCEL,
+			RES_CANCEL, _("Restart"), RES_REBOOT, NULL);
+	widget = gtk_button_new_with_label(_("Shutdown"));
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"gnome-shutdown", GTK_ICON_SIZE_BUTTON));
+	gtk_widget_show_all(widget);
+	gtk_dialog_add_action_widget(GTK_DIALOG(panel->sh_window), widget,
+			RES_SHUTDOWN);
+	gtk_window_set_keep_above(GTK_WINDOW(panel->sh_window), TRUE);
+	gtk_window_set_position(GTK_WINDOW(panel->sh_window),
+			GTK_WIN_POS_CENTER_ALWAYS);
+	gtk_window_set_title(GTK_WINDOW(panel->sh_window), _("Shutdown"));
+	g_signal_connect(G_OBJECT(panel->lo_window), "delete-event", G_CALLBACK(
+				_shutdown_dialog_on_closex), panel);
+	g_signal_connect(G_OBJECT(panel->lo_window), "response", G_CALLBACK(
+				_shutdown_dialog_on_response), panel);
+	gtk_widget_show_all(panel->lo_window);
+}
+
+static gboolean _shutdown_dialog_on_closex(gpointer data)
+{
+	Panel * panel = data;
+
+	gtk_widget_hide(panel->sh_window);
+	return TRUE;
+}
+
+static void _shutdown_dialog_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	Panel * panel = data;
 	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
 	char * shutdown[] = { "/sbin/shutdown", "shutdown",
 #ifdef __NetBSD__
@@ -806,36 +894,16 @@ static int _panel_helper_shutdown_dialog(Panel * panel)
 	char ** argv;
 	GError * error = NULL;
 
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_NONE, "%s",
-#if GTK_CHECK_VERSION(2, 6, 0)
-			_("Shutdown"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
-#endif
-			message);
-	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
-			_("Restart"), RES_REBOOT, NULL);
-	widget = gtk_button_new_with_label(_("Shutdown"));
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
-				"gnome-shutdown", GTK_ICON_SIZE_BUTTON));
-	gtk_widget_show_all(widget);
-	gtk_dialog_add_action_widget(GTK_DIALOG(dialog), widget, RES_SHUTDOWN);
-	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
-	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Shutdown"));
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	if(res == RES_SHUTDOWN)
+	gtk_widget_hide(widget);
+	if(response == RES_SHUTDOWN)
 		argv = shutdown;
-	else if(res == RES_REBOOT)
+	else if(response == RES_REBOOT)
 		argv = reboot;
 	else
-		return 1;
+		return;
 	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
 				NULL, NULL, &error) != TRUE)
-		return panel_error(panel, error->message, 1);
-	return 0;
+		panel_error(panel, error->message, 1);
 }
 
 
