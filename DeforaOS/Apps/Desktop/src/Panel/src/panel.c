@@ -870,11 +870,11 @@ static void _panel_helper_shutdown_dialog(Panel * panel)
 	gtk_window_set_position(GTK_WINDOW(panel->sh_window),
 			GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(panel->sh_window), _("Shutdown"));
-	g_signal_connect(G_OBJECT(panel->lo_window), "delete-event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(panel->sh_window), "delete-event", G_CALLBACK(
 				_shutdown_dialog_on_closex), panel);
-	g_signal_connect(G_OBJECT(panel->lo_window), "response", G_CALLBACK(
+	g_signal_connect(G_OBJECT(panel->sh_window), "response", G_CALLBACK(
 				_shutdown_dialog_on_response), panel);
-	gtk_widget_show_all(panel->lo_window);
+	gtk_widget_show_all(panel->sh_window);
 }
 
 static gboolean _shutdown_dialog_on_closex(gpointer data)
