@@ -95,7 +95,11 @@ void desktop_about_dialog_set_name(GtkWidget * about, char const * name)
 /* desktop_about_dialog_set_program_name */
 void desktop_about_dialog_set_program_name(GtkWidget * about, char const * name)
 {
+#if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(about), name);
+#else
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(about), name);
+#endif
 }
 
 
