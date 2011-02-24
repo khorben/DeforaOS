@@ -1,6 +1,5 @@
 /* $Id$ */
-static char _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -87,6 +86,9 @@ static char const * _authors[] =
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
+
+static char const _copyright[] =
+"Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
 
 static struct
 {
@@ -686,8 +688,12 @@ static void _panel_helper_about_dialog(Panel * panel)
 	desktop_about_dialog_set_logo_icon_name(panel->ab_window,
 			"panel-settings"); /* XXX */
 	desktop_about_dialog_set_license(panel->ab_window, _license);
-	desktop_about_dialog_set_name(panel->ab_window, PACKAGE);
+	desktop_about_dialog_set_program_name(panel->ab_window, PACKAGE);
+	desktop_about_dialog_set_translator_credits(panel->ab_window,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(panel->ab_window, VERSION);
+	desktop_about_dialog_set_website(panel->ab_window,
+			"http://www.defora.org/");
 	gtk_window_set_position(GTK_WINDOW(panel->ab_window),
 			GTK_WIN_POS_CENTER_ALWAYS);
 	g_signal_connect_swapped(G_OBJECT(panel->ab_window), "delete-event",
