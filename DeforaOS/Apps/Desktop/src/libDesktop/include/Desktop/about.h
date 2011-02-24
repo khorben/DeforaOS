@@ -32,7 +32,10 @@ void desktop_about_dialog_set_copyright(GtkWidget * about,
 void desktop_about_dialog_set_license(GtkWidget * about, char const * license);
 void desktop_about_dialog_set_logo_icon_name(GtkWidget * about,
 		char const * icon);
+/* XXX desktop_about_dialog_set_name() is deprecated */
 void desktop_about_dialog_set_name(GtkWidget * about, char const * name);
+void desktop_about_dialog_set_program_name(GtkWidget * about,
+		char const * name);
 void desktop_about_dialog_set_translator_credits(GtkWidget * about,
 		char const * translator);
 void desktop_about_dialog_set_version(GtkWidget * about, char const * version);

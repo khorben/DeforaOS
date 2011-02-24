@@ -88,7 +88,14 @@ void desktop_about_dialog_set_logo_icon_name(GtkWidget * about,
 /* desktop_about_dialog_set_name */
 void desktop_about_dialog_set_name(GtkWidget * about, char const * name)
 {
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(about), name);
+	desktop_about_dialog_set_program_name(about, name);
+}
+
+
+/* desktop_about_dialog_set_program_name */
+void desktop_about_dialog_set_program_name(GtkWidget * about, char const * name)
+{
+	gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(about), name);
 }
 
 
