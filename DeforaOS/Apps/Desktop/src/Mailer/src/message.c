@@ -342,8 +342,8 @@ static int _message_set_status(Message * message, char const * status)
 	pixbuf = gtk_icon_theme_load_icon(theme, read ? "mail-read"
 			: "mail-unread", 16, 0, NULL);
 	_message_set(message, MHC_READ, read, MHC_WEIGHT, (read)
-			? PANGO_WEIGHT_NORMAL : PANGO_WEIGHT_BOLD,
-			MHC_PIXBUF, pixbuf, -1);
+			? PANGO_WEIGHT_NORMAL : PANGO_WEIGHT_BOLD, MHC_ICON,
+			pixbuf, -1);
 	return 0;
 }
 
