@@ -62,6 +62,7 @@ struct _Compose
 	/* body */
 	GtkWidget * view;
 	/* attachments */
+	GtkWidget * a_window;
 	GtkListStore * a_store;
 	GtkWidget * a_view;
 	/* statusbar */
@@ -312,6 +313,9 @@ Compose * compose_new(Mailer * mailer)
 	gtk_container_add(GTK_CONTAINER(widget), compose->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* attachments */
+	compose->a_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
 	compose->a_store = gtk_list_store_new(CAC_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, GDK_TYPE_PIXBUF);
 	compose->a_view = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
@@ -320,8 +324,9 @@ Compose * compose_new(Mailer * mailer)
 			CAC_ICON);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(compose->a_view),
 			CAC_BASENAME);
-	gtk_widget_set_no_show_all(compose->a_view, TRUE);
-	gtk_box_pack_start(GTK_BOX(vbox), compose->a_view, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(compose->a_window), compose->a_view);
+	gtk_widget_set_no_show_all(compose->a_window, TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), compose->a_window, FALSE, TRUE, 0);
 	/* statusbar */
 	compose->statusbar = gtk_statusbar_new();
 	compose->statusbar_id = 0;
@@ -467,6 +472,7 @@ void compose_attach_dialog(Compose * compose)
 			CAC_BASENAME, basename(filename), CAC_ICON, pixbuf, -1);
 	free(filename);
 	gtk_widget_show(compose->a_view);
+	gtk_widget_show(compose->a_window);
 }
 
 
