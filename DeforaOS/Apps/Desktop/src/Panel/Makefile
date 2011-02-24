@@ -26,22 +26,27 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/panel-applet-desktop.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/22x22/Makefile \
 		$(PACKAGE)-$(VERSION)/data/22x22/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/panel-applet-desktop.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/project.conf \
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
 		$(PACKAGE)-$(VERSION)/data/24x24/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/panel-applet-desktop.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/data/32x32/Makefile \
 		$(PACKAGE)-$(VERSION)/data/32x32/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/32x32/panel-applet-desktop.png \
 		$(PACKAGE)-$(VERSION)/data/32x32/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/32x32/project.conf \
 		$(PACKAGE)-$(VERSION)/data/48x48/Makefile \
 		$(PACKAGE)-$(VERSION)/data/48x48/panel-applet-bluetooth.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/panel-applet-desktop.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/data/scalable/Makefile \
