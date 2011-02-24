@@ -47,7 +47,7 @@ GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
 		{
 			widget = gtk_image_new_from_icon_name(p->stock,
 					GTK_ICON_SIZE_LARGE_TOOLBAR);
-			p->widget = gtk_tool_button_new(widget, NULL);
+			p->widget = gtk_tool_button_new(widget, p->name);
 		}
 		else
 			p->widget = gtk_tool_button_new(NULL, _(p->name));
