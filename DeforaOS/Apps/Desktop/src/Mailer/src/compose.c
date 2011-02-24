@@ -325,6 +325,7 @@ Compose * compose_new(Mailer * mailer)
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(compose->a_view),
 			CAC_BASENAME);
 	gtk_container_add(GTK_CONTAINER(compose->a_window), compose->a_view);
+	gtk_widget_show_all(compose->a_view);
 	gtk_widget_set_no_show_all(compose->a_window, TRUE);
 	gtk_box_pack_start(GTK_BOX(vbox), compose->a_window, FALSE, TRUE, 0);
 	/* statusbar */
@@ -471,7 +472,6 @@ void compose_attach_dialog(Compose * compose)
 	gtk_list_store_set(compose->a_store, &iter, CAC_FILENAME, filename,
 			CAC_BASENAME, basename(filename), CAC_ICON, pixbuf, -1);
 	free(filename);
-	gtk_widget_show(compose->a_view);
 	gtk_widget_show(compose->a_window);
 }
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-24 02:53+0100\n"
+"POT-Creation-Date: 2011-02-24 02:55+0100\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -157,7 +157,7 @@ msgstr "Suivre sur:"
 msgid "Subject: "
 msgstr "Sujet: "
 
-#: ../src/compose.c:457
+#: ../src/compose.c:458
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
