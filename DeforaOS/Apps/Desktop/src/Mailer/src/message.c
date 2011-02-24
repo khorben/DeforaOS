@@ -51,11 +51,17 @@ struct _Message
 
 
 /* prototypes */
+/* accessors */
 static gboolean _message_get_iter(Message * message, GtkTreeIter * iter);
 
 static gboolean _message_set(Message * message, ...);
 static int _message_set_date(Message * message, char const * date);
 static int _message_set_status(Message * message, char const * status);
+
+/* useful */
+/* message headers */
+static int _message_header_set(MessageHeader * mh, char const * header,
+		char const * value);
 
 
 /* constants */
@@ -199,7 +205,6 @@ int message_set_header_value(Message * message, char const * header,
 {
 	size_t i;
 	MessageHeader * p;
-	char * q;
 	MailerHeaderColumn column;
 
 #ifdef DEBUG
@@ -218,24 +223,13 @@ int message_set_header_value(Message * message, char const * header,
 			return -1;
 		message->headers = p;
 		p = &message->headers[message->headers_cnt];
-		p->header = strdup(header);
-		p->value = strdup(value);
-		if(p->header == NULL || p->value == NULL)
-		{
-			free(p->header);
-			free(p->value);
+		memset(p, 0, sizeof(*p));
+		if(_message_header_set(p, header, value) != 0)
 			return -1;
-		}
 		message->headers_cnt++;
 	}
-	else
-	{
-		p = &message->headers[i];
-		if((q = strdup(value)) != NULL)
-			return -1;
-		free(p->value);
-		p->value = q;
-	}
+	else if(_message_header_set(&message->headers[i], NULL, value) != 0)
+		return -1;
 	/* FIXME parse/convert input */
 	for(i = 0; _message_columns[i].header != NULL; i++)
 	{
@@ -350,5 +344,34 @@ static int _message_set_status(Message * message, char const * status)
 	_message_set(message, MHC_READ, read, MHC_WEIGHT, (read)
 			? PANGO_WEIGHT_NORMAL : PANGO_WEIGHT_BOLD,
 			MHC_PIXBUF, pixbuf, -1);
+	return 0;
+}
+
+
+/* useful */
+/* message_header */
+static int _message_header_set(MessageHeader * mh, char const * header,
+		char const * value)
+{
+	int ret = 0;
+	char * h = NULL;
+	char * v = NULL;
+
+	if(header != NULL && (h = strdup(header)) == NULL)
+		ret |= -1;
+	if(value != NULL && (v = strdup(value)) == NULL)
+		ret |= -1;
+	if(ret != 0)
+		return ret;
+	if(h != NULL)
+	{
+		free(mh->header);
+		mh->header = h;
+	}
+	if(v != NULL)
+	{
+		free(mh->value);
+		mh->value = v;
+	}
 	return 0;
 }

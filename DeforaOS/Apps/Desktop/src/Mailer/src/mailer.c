@@ -458,7 +458,7 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
 	gtk_tree_view_set_rules_hint(treeview, TRUE);
-	_headers_view_column_pixbuf(treeview, "", MHC_PIXBUF, MHC_READ);
+	_headers_view_column_pixbuf(treeview, "", MHC_ICON, MHC_READ);
 	_headers_view_column_text(treeview, _("Subject"), MHC_SUBJECT,
 			MHC_SUBJECT, MHC_WEIGHT);
 	mailer->view_from = _headers_view_column_text(treeview, _("From"),
