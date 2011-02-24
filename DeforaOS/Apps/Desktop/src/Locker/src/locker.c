@@ -129,6 +129,7 @@ void locker_delete(Locker * locker)
 /* functions */
 /* useful */
 /* locker_lock */
+static gboolean _lock_on_closex(void);
 static gboolean _lock_on_timeout(gpointer data);
 static void _lock_on_value_changed(gpointer data);
 static gboolean _lock_on_value_timeout(gpointer data);
@@ -146,15 +147,17 @@ static void _locker_lock(Locker * locker)
 	{
 		gtk_widget_hide(locker->unlock);
 		gtk_range_set_value(GTK_RANGE(locker->scale), 0.0);
-		gtk_window_present(GTK_WINDOW(locker->window));
+		gtk_widget_show(locker->window);
+		gtk_window_fullscreen(GTK_WINDOW(locker->window));
 		return;
 	}
 	locker->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(locker->window), 4);
 	memset(&black, 0, sizeof(black));
 	gtk_widget_modify_bg(locker->window, GTK_STATE_NORMAL, &black);
-	gtk_window_fullscreen(GTK_WINDOW(locker->window));
 	gtk_window_set_keep_above(GTK_WINDOW(locker->window), TRUE);
+	g_signal_connect_swapped(G_OBJECT(locker->window), "delete-event",
+			G_CALLBACK(_lock_on_closex), NULL);
 	/* FIXME implement a plug-in system instead */
 	locker->unlock = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -182,6 +185,12 @@ static void _locker_lock(Locker * locker)
 		g_source_remove(locker->source);
 	locker->source = 0;
 	gtk_widget_show(locker->window);
+	gtk_window_fullscreen(GTK_WINDOW(locker->window));
+}
+
+static gboolean _lock_on_closex(void)
+{
+	return TRUE;
 }
 
 static gboolean _lock_on_timeout(gpointer data)
