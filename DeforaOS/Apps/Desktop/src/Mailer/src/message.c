@@ -30,12 +30,18 @@
 /* Message */
 /* private */
 /* types */
+typedef struct _MessageHeader
+{
+	char * header;
+	char * value;
+} MessageHeader;
+
 struct _Message
 {
 	GtkListStore * store;
 	GtkTreeRowReference * row;
 
-	char ** headers;
+	MessageHeader * headers;
 	size_t headers_cnt;
 
 	GtkTextBuffer * body;
@@ -126,7 +132,11 @@ AccountMessage * message_get_data(Message * message)
 /* message_get_header */
 char const * message_get_header(Message * message, char const * header)
 {
-	/* FIXME implement */
+	size_t i;
+
+	for(i = 0; i < message->headers_cnt; i++)
+		if(strcmp(message->headers[i].header, header) == 0)
+			return message->headers[i].value;
 	return NULL;
 }
 
@@ -188,13 +198,45 @@ int message_set_header_value(Message * message, char const * header,
 		char const * value)
 {
 	size_t i;
+	MessageHeader * p;
+	char * q;
 	MailerHeaderColumn column;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
 			(void*)message, header, value);
 #endif
-	/* FIXME save the header, parse/convert input */
+	/* FIXME remove the header when value == NULL */
+	for(i = 0; i < message->headers_cnt; i++)
+		if(strcmp(message->headers[i].header, header) == 0)
+			break;
+	if(i == message->headers_cnt)
+	{
+		if((p = realloc(message->headers, sizeof(*p)
+						* (message->headers_cnt + 1)))
+				== NULL)
+			return -1;
+		message->headers = p;
+		p = &message->headers[message->headers_cnt];
+		p->header = strdup(header);
+		p->value = strdup(value);
+		if(p->header == NULL || p->value == NULL)
+		{
+			free(p->header);
+			free(p->value);
+			return -1;
+		}
+		message->headers_cnt++;
+	}
+	else
+	{
+		p = &message->headers[i];
+		if((q = strdup(value)) != NULL)
+			return -1;
+		free(p->value);
+		p->value = q;
+	}
+	/* FIXME parse/convert input */
 	for(i = 0; _message_columns[i].header != NULL; i++)
 	{
 		if(strcmp(_message_columns[i].header, header) != 0)
