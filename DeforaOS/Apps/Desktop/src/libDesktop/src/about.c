@@ -33,10 +33,24 @@ GtkWidget * desktop_about_dialog_new(void)
 }
 
 
+/* desktop_about_dialog_set_artists */
+void desktop_about_dialog_set_artists(GtkWidget * about, char const * artists[])
+{
+	gtk_about_dialog_set_artists(GTK_ABOUT_DIALOG(about), artists);
+}
+
+
 /* desktop_about_dialog_set_authors */
 void desktop_about_dialog_set_authors(GtkWidget * about, char const * authors[])
 {
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(about), authors);
+}
+
+
+/* desktop_about_dialog_set_comments */
+void desktop_about_dialog_set_comments(GtkWidget * about, char const * comments)
+{
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(about), comments);
 }
 
 
@@ -45,6 +59,14 @@ void desktop_about_dialog_set_copyright(GtkWidget * about,
 		char const * copyright)
 {
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about), copyright);
+}
+
+
+/* desktop_about_dialog_set_documenters */
+void desktop_about_dialog_set_documenters(GtkWidget * about,
+		char const * documenters[])
+{
+	gtk_about_dialog_set_documenters(GTK_ABOUT_DIALOG(about), documenters);
 }
 
 
@@ -70,8 +92,24 @@ void desktop_about_dialog_set_name(GtkWidget * about, char const * name)
 }
 
 
+/* desktop_about_dialog_set_translator_credits */
+void desktop_about_dialog_set_translator_credits(GtkWidget * about,
+		char const * translator)
+{
+	gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(about),
+			translator);
+}
+
+
 /* desktop_about_dialog_set_version */
 void desktop_about_dialog_set_version(GtkWidget * about, char const * version)
 {
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(about), version);
+}
+
+
+/* desktop_about_dialog_set_website */
+void desktop_about_dialog_set_website(GtkWidget * about, char const * website)
+{
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(about), website);
 }

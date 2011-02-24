@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,21 @@
 
 /* About */
 GtkWidget * desktop_about_dialog_new(void);
+void desktop_about_dialog_set_artists(GtkWidget * about,
+		char const * artists[]);
 void desktop_about_dialog_set_authors(GtkWidget * about,
 		char const * authors[]);
+void desktop_about_dialog_set_comments(GtkWidget * about,
+		char const * comments);
 void desktop_about_dialog_set_copyright(GtkWidget * about,
 		char const * copyright);
 void desktop_about_dialog_set_license(GtkWidget * about, char const * license);
 void desktop_about_dialog_set_logo_icon_name(GtkWidget * about,
 		char const * icon);
 void desktop_about_dialog_set_name(GtkWidget * about, char const * name);
+void desktop_about_dialog_set_translator_credits(GtkWidget * about,
+		char const * translator);
 void desktop_about_dialog_set_version(GtkWidget * about, char const * version);
+void desktop_about_dialog_set_website(GtkWidget * about, char const * website);
 
 #endif /* !LIBDESKTOP_ABOUT_H */
