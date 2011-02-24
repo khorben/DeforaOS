@@ -148,13 +148,13 @@ static void _locker_lock(Locker * locker)
 		gtk_widget_hide(locker->unlock);
 		gtk_range_set_value(GTK_RANGE(locker->scale), 0.0);
 		gtk_widget_show(locker->window);
-		gtk_window_fullscreen(GTK_WINDOW(locker->window));
 		return;
 	}
 	locker->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(locker->window), 4);
 	memset(&black, 0, sizeof(black));
 	gtk_widget_modify_bg(locker->window, GTK_STATE_NORMAL, &black);
+	gtk_window_fullscreen(GTK_WINDOW(locker->window));
 	gtk_window_set_keep_above(GTK_WINDOW(locker->window), TRUE);
 	g_signal_connect_swapped(G_OBJECT(locker->window), "delete-event",
 			G_CALLBACK(_lock_on_closex), NULL);
@@ -185,7 +185,6 @@ static void _locker_lock(Locker * locker)
 		g_source_remove(locker->source);
 	locker->source = 0;
 	gtk_widget_show(locker->window);
-	gtk_window_fullscreen(GTK_WINDOW(locker->window));
 }
 
 static gboolean _lock_on_closex(void)
