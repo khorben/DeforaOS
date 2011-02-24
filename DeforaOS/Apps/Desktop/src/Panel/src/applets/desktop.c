@@ -42,7 +42,7 @@ PanelApplet applet =
 	_desktop_init,
 	NULL,
 	NULL,
-	PANEL_APPLET_POSITION_FIRST,
+	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL
