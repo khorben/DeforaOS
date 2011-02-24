@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-23 15:24+0100\n"
+"POT-Creation-Date: 2011-02-24 02:07+0100\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,168 +16,173 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/compose.c:73
+#: ../src/compose.c:90
 msgid "_New message"
 msgstr "_Nouveau message"
 
-#: ../src/compose.c:76
+#: ../src/compose.c:93
 msgid "_Save"
 msgstr "_Enregistrer"
 
-#: ../src/compose.c:77
+#: ../src/compose.c:94
 msgid "Save _as..."
 msgstr "Enregistrer _sous..."
 
-#: ../src/compose.c:79 ../src/mailer.c:112
+#: ../src/compose.c:96 ../src/mailer.c:112
 msgid "_Print"
 msgstr "_Imprimer"
 
-#: ../src/compose.c:80 ../src/mailer.c:113
+#: ../src/compose.c:97 ../src/mailer.c:113
 msgid "Print pre_view"
 msgstr "_Aperçu avant impression"
 
-#: ../src/compose.c:83
+#: ../src/compose.c:100
 msgid "S_end"
 msgstr "En_voyer"
 
-#: ../src/compose.c:86
+#: ../src/compose.c:103
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/compose.c:93
+#: ../src/compose.c:110
 msgid "_Undo"
 msgstr "_Annuler"
 
-#: ../src/compose.c:94
+#: ../src/compose.c:111
 msgid "_Redo"
 msgstr "_Refaire"
 
-#: ../src/compose.c:96 ../src/mailer.c:123
+#: ../src/compose.c:113 ../src/mailer.c:123
 msgid "_Cut"
 msgstr "Co_uper"
 
-#: ../src/compose.c:98
+#: ../src/compose.c:115
 msgid "_Copy"
 msgstr "_Copier"
 
-#: ../src/compose.c:100 ../src/mailer.c:127
+#: ../src/compose.c:117 ../src/mailer.c:127
 msgid "_Paste"
 msgstr "C_oller"
 
-#: ../src/compose.c:103
+#: ../src/compose.c:120
 msgid "_Select all"
 msgstr "Sélectionner _tout"
 
-#: ../src/compose.c:110 ../src/mailer.c:137
+#: ../src/compose.c:127 ../src/mailer.c:137
 msgid "_Unselect all"
 msgstr "Tout _désélectionner"
 
-#: ../src/compose.c:116
+#: ../src/compose.c:133
 msgid "Add field"
 msgstr "Ajouter un champ"
 
-#: ../src/compose.c:123 ../src/compose.c:126 ../src/mailer.c:164
+#: ../src/compose.c:140 ../src/compose.c:143 ../src/mailer.c:164
 #: ../src/mailer.c:166
 msgid "_About"
 msgstr "_A propos"
 
-#: ../src/compose.c:133 ../src/mailer.c:173
+#: ../src/compose.c:150 ../src/mailer.c:173
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/compose.c:134 ../src/mailer.c:174
+#: ../src/compose.c:151 ../src/mailer.c:174
 msgid "_Edit"
 msgstr "_Edition"
 
-#: ../src/compose.c:135
+#: ../src/compose.c:152
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/compose.c:136 ../src/mailer.c:176
+#: ../src/compose.c:153 ../src/mailer.c:176
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/compose.c:143
+#: ../src/compose.c:160
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/compose.c:146
+#: ../src/compose.c:163
 msgid "Save"
 msgstr "Enregistrer"
 
-#: ../src/compose.c:148
+#: ../src/compose.c:165
 msgid "Cut"
 msgstr "Couper"
 
-#: ../src/compose.c:150
+#: ../src/compose.c:167
 msgid "Copy"
 msgstr "Copier"
 
-#: ../src/compose.c:152
+#: ../src/compose.c:169
 msgid "Paste"
 msgstr "Coller"
 
-#: ../src/compose.c:155
+#: ../src/compose.c:172
 msgid "Attach"
-msgstr "Attacher"
+msgstr "Joindre"
 
-#: ../src/compose.c:191
+#: ../src/compose.c:209
 msgid " - Compose"
 msgstr " - Composer"
 
-#: ../src/compose.c:207
+#: ../src/compose.c:225
 msgid "From: "
 msgstr "De: "
 
-#: ../src/compose.c:233
+#: ../src/compose.c:251
 msgid "To:"
 msgstr "À:"
 
-#: ../src/compose.c:236
+#: ../src/compose.c:254
 msgid "Cc:"
 msgstr "Cc:"
 
-#: ../src/compose.c:239
+#: ../src/compose.c:257
 msgid "Bcc:"
 msgstr "Ccc"
 
-#: ../src/compose.c:243
+#: ../src/compose.c:261
 msgid "Reply-To:"
 msgstr "Répondre à:"
 
-#: ../src/compose.c:246
+#: ../src/compose.c:264
 msgid "Newsgroup:"
 msgstr ""
 
-#: ../src/compose.c:249
+#: ../src/compose.c:267
 msgid "Followup-To:"
 msgstr "Suivre sur:"
 
-#: ../src/compose.c:275
+#: ../src/compose.c:293
 msgid "Subject: "
 msgstr "Sujet: "
 
-#: ../src/compose.c:429 ../src/compose.c:438
+#: ../src/compose.c:452
+msgid "Attach file..."
+msgstr "Joindre un fichier..."
+
+#: ../src/compose.c:489 ../src/compose.c:498
 msgid "Warning"
 msgstr "Attention"
 
-#: ../src/compose.c:433
+#: ../src/compose.c:493
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
-msgstr "Certains changements n'ont pas été enregistrés.\n"
+msgstr ""
+"Certains changements n'ont pas été enregistrés.\n"
 "Voulez-vous vraiment fermer la fenêtre?"
 
-#: ../src/compose.c:503 ../src/compose.c:508 ../src/mailer.c:701
+#: ../src/compose.c:563 ../src/compose.c:568 ../src/mailer.c:701
 #: ../src/mailer.c:705
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/compose.c:614
+#: ../src/compose.c:674
 msgid "Sending mail..."
 msgstr "Envoi du message..."
 
-#: ../src/compose.c:621
+#: ../src/compose.c:681
 msgid "Progression: "
 msgstr "Progression: "
 
