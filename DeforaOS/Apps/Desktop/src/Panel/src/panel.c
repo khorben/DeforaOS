@@ -431,6 +431,7 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 	Plugin * plugin;
 	PanelApplet * pa;
 	GtkWidget * widget;
+	GtkWidget * vbox;
 
 	if(position == PANEL_POSITION_BOTTOM && panel->bottom != NULL)
 	{
@@ -456,8 +457,14 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 	panel_window_append(window, widget, pa->expand, pa->fill, pa->position);
 	if(pa->settings != NULL
 			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
+	{
+		vbox = gtk_vbox_new(FALSE, 4);
+		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		gtk_widget_show(vbox);
 		gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook),
-				widget, gtk_label_new(pa->name));
+				vbox, gtk_label_new(pa->name));
+	}
 	return 0;
 }
 
