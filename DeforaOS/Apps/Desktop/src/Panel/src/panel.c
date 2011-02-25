@@ -739,7 +739,7 @@ static void _panel_helper_logout_dialog(Panel * panel)
 		gtk_window_present(GTK_WINDOW(panel->lo_window));
 		return;
 	}
-	panel->lo_window = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+	panel->lo_window = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_NONE,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Logout"));
@@ -861,7 +861,7 @@ static void _panel_helper_shutdown_dialog(Panel * panel)
 		gtk_window_present(GTK_WINDOW(panel->sh_window));
 		return;
 	}
-	panel->sh_window = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+	panel->sh_window = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_NONE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
 			_("Shutdown"));
