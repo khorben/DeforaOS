@@ -163,6 +163,9 @@ static void _locker_lock(Locker * locker)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(locker->source != 0)
+		g_source_remove(locker->source);
+	locker->source = 0;
 	if(locker->windows != NULL)
 	{
 		gtk_widget_hide(locker->unlock);
@@ -220,9 +223,6 @@ static void _locker_lock(Locker * locker)
 	gtk_widget_show_all(hbox);
 	gtk_box_pack_end(GTK_BOX(locker->unlock), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(locker->windows[0]), locker->unlock);
-	if(locker->source != 0)
-		g_source_remove(locker->source);
-	locker->source = 0;
 	for(i = 0; i < locker->windows_cnt; i++)
 	{
 		gtk_widget_show(locker->windows[i]);
