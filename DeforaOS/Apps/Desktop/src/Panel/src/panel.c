@@ -188,6 +188,10 @@ Panel * panel_new(PanelPrefs const * prefs)
 	}
 	panel->pr_window = NULL;
 	panel->ab_window = NULL;
+#ifndef EMBEDDED
+	panel->lo_window = NULL;
+#endif
+	panel->sh_window = NULL;
 	if(panel->config == NULL)
 	{
 		panel_error(NULL, error_get(), 0); /* XXX put up a dialog box */
