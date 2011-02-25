@@ -57,6 +57,10 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 static void _on_keyboard_toggled(GtkWidget * widget, gpointer data);
 
 
+/* constants */
+#define PANEL_KEYBOARD_COMMAND_DEFAULT "keyboard -x"
+
+
 /* public */
 /* variables */
 PanelApplet applet =
@@ -110,7 +114,7 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 static gboolean _init_idle(gpointer data)
 {
 	Keyboard * keyboard = data;
-	char * argv[] = { "sh", "-c", "keyboard -x", NULL };
+	char * argv[] = { "sh", "-c", PANEL_KEYBOARD_COMMAND_DEFAULT, NULL };
 	char const * p;
 	char * q = NULL;
 	gboolean res;
@@ -189,10 +193,10 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 	}
 	if(reset == TRUE)
 	{
-		p = applet->helper->config_get(applet->helper->panel,
-				"keyboard", "command");
-		if(p != NULL)
-			gtk_entry_set_text(GTK_ENTRY(keyboard->pr_command), p);
+		if((p = applet->helper->config_get(applet->helper->panel,
+						"keyboard", "command")) == NULL)
+			p = PANEL_KEYBOARD_COMMAND_DEFAULT;
+		gtk_entry_set_text(GTK_ENTRY(keyboard->pr_command), p);
 	}
 	if(apply == TRUE)
 	{
