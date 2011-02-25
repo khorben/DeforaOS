@@ -200,9 +200,7 @@ static gboolean _lock_on_timeout(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	locker->source = 0;
-#if 0 /* FIXME makes it currently impossible to unlock the screen again */
-	_locker_lock(locker);
-#endif
+	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
 	return FALSE;
 }
 
@@ -272,8 +270,6 @@ static gboolean _unlock_dialog_on_timeout(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	locker->source = 0;
-#if 0 /* FIXME makes it currently impossible to unlock the screen again */
-	_locker_lock(locker);
-#endif
+	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
 	return FALSE;
 }
