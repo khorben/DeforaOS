@@ -169,7 +169,7 @@ static void _locker_lock(Locker * locker)
 	locker->scale = gtk_hscale_new_with_range(0.0, 100.0, 0.1);
 	gtk_range_set_value(GTK_RANGE(locker->scale), 0.0);
 	gtk_scale_set_draw_value(GTK_SCALE(locker->scale), FALSE);
-	gtk_widget_set_size_request(locker->scale, 400, -1);
+	gtk_widget_set_size_request(locker->scale, 240, -1);
 	g_signal_connect_swapped(G_OBJECT(locker->scale), "value-changed",
 			G_CALLBACK(_lock_on_value_changed), locker);
 	gtk_box_pack_start(GTK_BOX(hbox), locker->scale, FALSE, TRUE, 0);
