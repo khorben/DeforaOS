@@ -44,6 +44,7 @@ struct _Locker
 
 
 /* prototypes */
+static void _locker_activate(Locker * locker);
 static void _locker_lock(Locker * locker);
 static void _locker_unlock(Locker * locker);
 static void _locker_unlock_dialog(Locker * locker);
@@ -128,6 +129,16 @@ void locker_delete(Locker * locker)
 /* private */
 /* functions */
 /* useful */
+/* locker_activate */
+static void _locker_activate(Locker * locker)
+{
+	if(locker->source != 0)
+		g_source_remove(locker->source);
+	locker->source = 0;
+	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
+}
+
+
 /* locker_lock */
 static gboolean _lock_on_closex(void);
 static gboolean _lock_on_timeout(gpointer data);
@@ -200,7 +211,7 @@ static gboolean _lock_on_timeout(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	locker->source = 0;
-	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
+	_locker_activate(locker);
 	return FALSE;
 }
 
@@ -270,6 +281,6 @@ static gboolean _unlock_dialog_on_timeout(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	locker->source = 0;
-	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
+	_locker_activate(locker);
 	return FALSE;
 }
