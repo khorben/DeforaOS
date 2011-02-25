@@ -16,7 +16,6 @@
  * - choose a correct size for the window
  * - move and resize when the root window changes
  * - track if child process ever dies
- * - default to DeforaOS' own keyboard implementation
  * - write own keyboard implementation (dlopen keyboard's binary) */
 
 
@@ -111,7 +110,7 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 static gboolean _init_idle(gpointer data)
 {
 	Keyboard * keyboard = data;
-	char * argv[] = { "sh", "-c", "xkbd -xid", NULL };
+	char * argv[] = { "sh", "-c", "keyboard -x", NULL };
 	char const * p;
 	char * q = NULL;
 	gboolean res;
