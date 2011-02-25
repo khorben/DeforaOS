@@ -16,6 +16,7 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -36,7 +37,8 @@ struct _Locker
 	GdkDisplay * display;
 	int screen;
 	int event;
-	GtkWidget * window;
+	GtkWidget ** windows;
+	size_t windows_cnt;
 	GtkWidget * unlock;
 	GtkWidget * scale;
 	guint source;
@@ -68,7 +70,8 @@ Locker * locker_new(void)
 	screen = gdk_screen_get_default();
 	locker->display = gdk_screen_get_display(screen);
 	locker->screen = gdk_x11_get_default_screen();
-	locker->window = NULL;
+	locker->windows = NULL;
+	locker->windows_cnt = 0;
 	locker->source = 0;
 	if(XScreenSaverQueryExtension(GDK_DISPLAY_XDISPLAY(locker->display),
 				&locker->event, &error) == 0
@@ -120,6 +123,7 @@ void locker_delete(Locker * locker)
 {
 	if(locker->source != 0)
 		g_source_remove(locker->source);
+	free(locker->windows);
 	XScreenSaverUnregister(GDK_DISPLAY_XDISPLAY(locker->display),
 			locker->screen);
 	object_delete(locker);
@@ -147,29 +151,53 @@ static gboolean _lock_on_value_timeout(gpointer data);
 
 static void _locker_lock(Locker * locker)
 {
+	size_t i;
+	GdkDisplay * display;
+	GdkScreen * screen;
 	GdkColor black;
+	size_t cnt;
+	GdkRectangle rect;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(locker->window != NULL)
+	if(locker->windows != NULL)
 	{
 		gtk_widget_hide(locker->unlock);
 		gtk_range_set_value(GTK_RANGE(locker->scale), 0.0);
-		gtk_widget_show(locker->window);
+		for(i = 0; i < locker->windows_cnt; i++)
+		{
+			gtk_widget_show(locker->windows[i]);
+			gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
+		}
 		return;
 	}
-	locker->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(locker->window), 4);
+	display = gdk_display_get_default();
+	screen = gdk_display_get_default_screen(display);
 	memset(&black, 0, sizeof(black));
-	gtk_widget_modify_bg(locker->window, GTK_STATE_NORMAL, &black);
-	gtk_window_fullscreen(GTK_WINDOW(locker->window));
-	gtk_window_set_keep_above(GTK_WINDOW(locker->window), TRUE);
-	g_signal_connect_swapped(G_OBJECT(locker->window), "delete-event",
-			G_CALLBACK(_lock_on_closex), NULL);
+	cnt = gdk_screen_get_n_monitors(screen);
+	if((locker->windows = malloc(sizeof(*locker->windows) * cnt)) == NULL)
+		return; /* XXX report error */
+	locker->windows_cnt = cnt;
+	for(i = 0; i < locker->windows_cnt; i++)
+	{
+		locker->windows[i] = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gdk_screen_get_monitor_geometry(screen, i, &rect);
+		gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x, rect.y);
+		gtk_window_resize(GTK_WINDOW(locker->windows[i]), rect.width,
+				rect.height);
+		gtk_window_stick(GTK_WINDOW(locker->windows[i]));
+		gtk_widget_modify_bg(locker->windows[i], GTK_STATE_NORMAL,
+				&black);
+		gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
+		g_signal_connect_swapped(G_OBJECT(locker->windows[i]),
+				"delete-event", G_CALLBACK(_lock_on_closex),
+				NULL);
+	}
 	/* FIXME implement a plug-in system instead */
+	gtk_container_set_border_width(GTK_CONTAINER(locker->windows[0]), 4);
 	locker->unlock = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_image_new_from_icon_name("stock_lock",
@@ -191,11 +219,15 @@ static void _locker_lock(Locker * locker)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_widget_show_all(hbox);
 	gtk_box_pack_end(GTK_BOX(locker->unlock), hbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(locker->window), locker->unlock);
+	gtk_container_add(GTK_CONTAINER(locker->windows[0]), locker->unlock);
 	if(locker->source != 0)
 		g_source_remove(locker->source);
 	locker->source = 0;
-	gtk_widget_show(locker->window);
+	for(i = 0; i < locker->windows_cnt; i++)
+	{
+		gtk_widget_show(locker->windows[i]);
+		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
+	}
 }
 
 static gboolean _lock_on_closex(void)
@@ -250,9 +282,12 @@ static gboolean _lock_on_value_timeout(gpointer data)
 /* locker_unlock */
 static void _locker_unlock(Locker * locker)
 {
-	if(locker->window == NULL)
+	size_t i;
+
+	if(locker->windows == NULL)
 		return;
-	gtk_widget_hide(locker->window);
+	for(i = 0; i < locker->windows_cnt; i++)
+		gtk_widget_hide(locker->windows[i]);
 }
 
 
@@ -264,7 +299,7 @@ static void _locker_unlock_dialog(Locker * locker)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(locker->window == NULL)
+	if(locker->windows == NULL)
 		return;
 	gtk_widget_show(locker->unlock);
 	if(locker->source != 0)
