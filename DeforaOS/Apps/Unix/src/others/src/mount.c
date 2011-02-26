@@ -463,12 +463,14 @@ static int _mount_do_mount(char const * type, int flags, char const * special,
 {
 	struct stat st;
 
-#ifdef __NetBSD__ /* NetBSD */
+#if defined(__NetBSD__) /* NetBSD */
 #if !defined(__NetBSD_Version__) || __NetBSD_Version__ >= 499000000
 	if(mount(type, node, flags, data, datalen) == 0)
 # else
 	if(mount(type, node, flags, data) == 0)
 # endif
+#elif defined(__FreeBSD__) /* FreeBSD */
+	if(mount(type, node, flags, data) == 0)
 #else
 	struct { char const * fspec; } * d = data;
 
