@@ -69,6 +69,9 @@ PanelWindow * panel_window_new(PanelPosition position,
 	gtk_window_resize(GTK_WINDOW(panel->window), root->width,
 			panel->height);
 	gtk_window_set_accept_focus(GTK_WINDOW(panel->window), FALSE);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_focus_on_map(GTK_WINDOW(panel->window), FALSE);
+#endif
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	if(position == PANEL_POSITION_TOP)
