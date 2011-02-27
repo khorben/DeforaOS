@@ -1,5 +1,5 @@
 PACKAGE	= utils
-VERSION	= 0.0.2
+VERSION	= 0.0.3
 SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -f
