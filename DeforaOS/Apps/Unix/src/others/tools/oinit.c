@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -25,12 +25,13 @@
 /* main */
 int main(void)
 {
-	char shell[] = "/bin/sh";
+	const char shell[] = "/bin/sh";
+	char * const argv[] = { "sh", "-i", NULL };
 
 	open("/dev/console", O_RDONLY);
 	open("/dev/console", O_WRONLY);
 	open("/dev/console", O_WRONLY);
-	execl(shell, shell, "-i", NULL);
+	execv(shell, argv);
 	perror(shell);
 	return errno;
 }
