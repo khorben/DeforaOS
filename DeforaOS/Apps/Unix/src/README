@@ -1,6 +1,6 @@
-devel		susv3 compliant developer utilities
-gputty		clone of the well-known windows putty program
-others		general-purpose utilities not part of susv3
-scripts		general-purpose shell scripts
-sh		susv3 compliant minimal shell
-utils		susv3 compliant utilities
+devel		SUSv3-compliant developer utilities
+makepasswd	Random password and hashes generator
+others		General-purpose utilities not part of susv3
+scripts		General-purpose shell scripts
+sh		SUSv3-compliant minimal shell
+utils		SUSv3-compliant utilities
