@@ -449,8 +449,8 @@ static int _t_print_long(char const * archive, struct ar_hdr * hdr,
 	}
 	if(strftime(buf, sizeof(buf), "%b %d %H:%M %Y", tm) == 0)
 		return _ar_error("strftime", 1);
-	printf("%s %u/%u %zu %s %s\n", _long_mode(mode), uid, gid, size,
-			buf, name);
+	printf("%s %u/%u %lu %s %s\n", _long_mode(mode), uid, gid,
+			(unsigned long)size, buf, name);
 	return 0;
 }
 
