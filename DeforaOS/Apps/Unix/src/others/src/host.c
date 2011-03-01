@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,11 @@ static int _host(char * hostname)
 
 	if((he = gethostbyname(hostname)) == NULL)
 		return _host_herror(hostname, 1);
-	printf("%s has address %hhu.%hhu.%hhu.%hhu\n", hostname,
-			he->h_addr_list[0][0], he->h_addr_list[0][1],
-			he->h_addr_list[0][2], he->h_addr_list[0][3]);
+	printf("%s has address %u.%u.%u.%u\n", hostname,
+			(unsigned char)he->h_addr_list[0][0],
+			(unsigned char)he->h_addr_list[0][1],
+			(unsigned char)he->h_addr_list[0][2],
+			(unsigned char)he->h_addr_list[0][3]);
 	return 0;
 }
 
