@@ -713,7 +713,7 @@ static int _mount_callback_nfs(char const * type, int flags,
 	/* FIXME untested */
 	nfs.version = NFS_ARGSVERSION;
 	nfs.hostname = p;
-	nfs.fh = q;
+	nfs.fh = (unsigned char *)q;
 	/* FIXME implement the rest */
 	type = MT_NFS;
 	ret = _mount_do_mount(type, flags, special, node, data, sizeof(nfs));
