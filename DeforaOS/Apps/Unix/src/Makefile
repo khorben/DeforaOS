@@ -1,4 +1,4 @@
-SUBDIRS	= devel makepasswd others scripts sh utils
+SUBDIRS	= sh utils devel others scripts makepasswd
 
 
 all: subdirs
