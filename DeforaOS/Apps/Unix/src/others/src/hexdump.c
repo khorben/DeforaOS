@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ static int _hexdump_do(char * filename)
 			printf("%08x ", pos);
 		else if(pos % 16 == 8)
 			fputc(' ', stdout);
-		printf(" %02hhx", c);
+		printf(" %02x", (unsigned char)c);
 		buf[pos % 16] = isprint(c) ? c : '.';
 		if(++pos % 16 == 0)
 			printf("  |%s|\n", buf);
