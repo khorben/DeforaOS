@@ -72,7 +72,7 @@ Folder * folder_new(AccountFolder * folder, FolderType type, char const * name,
 			G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_BOOLEAN,
-			G_TYPE_INT);
+			G_TYPE_UINT);
 	ret->data = folder;
 	if(ret->name == NULL)
 	{
