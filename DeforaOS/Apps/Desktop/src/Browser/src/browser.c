@@ -44,6 +44,16 @@ static char const _license[] =
 
 /* Browser */
 /* private */
+/* types */
+enum
+{
+	MI_COL_ICON,
+	MI_COL_NAME
+};
+#define MI_COL_LAST MI_COL_NAME
+#define MI_COL_COUNT (MI_COL_LAST + 1)
+
+
 /* constants */
 static char const * _authors[] =
 {
@@ -487,7 +497,7 @@ static GtkListStore * _create_store(Browser * browser)
 {
 	GtkListStore * store;
 
-	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
+	store = gtk_list_store_new(BR_COL_COUNT, G_TYPE_BOOLEAN, G_TYPE_STRING,
 			G_TYPE_STRING, GDK_TYPE_PIXBUF,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF,
@@ -1756,6 +1766,8 @@ void browser_unselect_all(Browser * browser)
 /* browser_view_preferences */
 static void _preferences_set(Browser * browser);
 /* callbacks */
+static void _preferences_on_mime_foreach(void * data, char const * name,
+		GdkPixbuf * icon_24, GdkPixbuf * icon_48, GdkPixbuf * icon_96);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -1768,6 +1780,7 @@ void browser_view_preferences(Browser * browser)
 	GtkWidget * vbox;
 	GtkWidget * notebook;
 	GtkWidget * hbox;
+	GtkTreeViewColumn * column;
 
 	if(browser->pr_window != NULL)
 	{
@@ -1818,6 +1831,33 @@ void browser_view_preferences(Browser * browser)
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
 			gtk_label_new_with_mnemonic(_("_Appearance")));
+	/* file associations tab */
+	browser->pr_mime_store = gtk_list_store_new(MI_COL_COUNT,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	browser->pr_mime_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				browser->pr_mime_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->pr_mime_view),
+			FALSE);
+	column = gtk_tree_view_column_new_with_attributes(_("Type"),
+			gtk_cell_renderer_pixbuf_new(), "pixbuf", MI_COL_ICON,
+			NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_mime_view),
+			column);
+	column = gtk_tree_view_column_new_with_attributes(_("Type"),
+			gtk_cell_renderer_text_new(), "text", MI_COL_NAME,
+			NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_mime_view),
+			column);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
+				browser->pr_mime_store), MI_COL_NAME,
+			GTK_SORT_ASCENDING);
+	mime_foreach(browser->mime, _preferences_on_mime_foreach, browser);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_container_add(GTK_CONTAINER(widget), browser->pr_mime_view);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
+			gtk_label_new_with_mnemonic(_("_File associations")));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(browser->pr_window));
 #else
@@ -1842,6 +1882,17 @@ static void _preferences_set(Browser * browser)
 			browser->prefs.sort_folders_first);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
 			browser->prefs.show_hidden_files);
+}
+
+static void _preferences_on_mime_foreach(void * data, char const * name,
+		GdkPixbuf * icon_24, GdkPixbuf * icon_48, GdkPixbuf * icon_96)
+{
+	Browser * browser = data;
+	GtkTreeIter iter;
+
+	gtk_list_store_append(browser->pr_mime_store, &iter);
+	gtk_list_store_set(browser->pr_mime_store, &iter, MI_COL_NAME, name,
+			MI_COL_ICON, icon_24, -1);
 }
 
 static gboolean _preferences_on_closex(gpointer data)

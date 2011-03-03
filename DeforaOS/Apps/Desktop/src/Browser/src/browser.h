@@ -53,10 +53,10 @@ enum
 	BR_COL_GROUP,
 	BR_COL_DATE,
 	BR_COL_DISPLAY_DATE,
-	BR_COL_MIME_TYPE,
-	BR_NUM_COLS
+	BR_COL_MIME_TYPE
 };
-# define BR_LAST BR_NUM_COLS
+# define BR_COL_LAST BR_COL_MIME_TYPE
+# define BR_COL_COUNT (BR_COL_LAST + 1)
 
 typedef enum _BrowserView
 {
@@ -146,6 +146,8 @@ typedef struct _Browser
 	GtkWidget * pr_confirm;
 	GtkWidget * pr_sort;
 	GtkWidget * pr_hidden;
+	GtkListStore * pr_mime_store;
+	GtkWidget * pr_mime_view;
 	/* about */
 	GtkWidget * ab_window;
 } Browser;

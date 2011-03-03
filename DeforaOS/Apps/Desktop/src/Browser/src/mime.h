@@ -25,6 +25,9 @@
 /* types */
 typedef struct _Mime Mime;
 
+typedef void (*MimeForeachCallback)(void * data, char const * name,
+		GdkPixbuf * icon_24, GdkPixbuf * icon_48, GdkPixbuf * icon_96);
+
 
 /* functions */
 Mime * mime_new(void);
@@ -42,6 +45,9 @@ char const * mime_type(Mime * mime, char const * path);
 int mime_action(Mime * mime, char const * action, char const * path);
 int mime_action_type(Mime * mime, char const * action, char const * path,
 		char const * type);
+
+void mime_foreach(Mime * mime, MimeForeachCallback callback, void * data);
+
 void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...);
 
 #endif /* !BROWSER_MIME_H */

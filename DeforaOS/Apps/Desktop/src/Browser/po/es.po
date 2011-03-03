@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-03 05:32+0100\n"
+"POT-Creation-Date: 2011-03-03 06:41+0100\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -16,176 +16,176 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../src/browser.c:73
+#: ../src/browser.c:83
 msgid "_New window"
 msgstr ""
 
-#: ../src/browser.c:75
+#: ../src/browser.c:85
 msgid "New _folder"
 msgstr ""
 
-#: ../src/browser.c:77
+#: ../src/browser.c:87
 msgid "New _symbolic link..."
 msgstr ""
 
-#: ../src/browser.c:79 ../src/browser.c:731
+#: ../src/browser.c:89 ../src/browser.c:741
 msgid "Open file..."
 msgstr ""
 
-#: ../src/browser.c:82
+#: ../src/browser.c:92
 msgid "_Properties"
 msgstr "_Propriedades"
 
-#: ../src/browser.c:85 ../src/view.c:102 ../src/view.c:113
+#: ../src/browser.c:95 ../src/view.c:102 ../src/view.c:113
 msgid "_Close"
 msgstr ""
 
-#: ../src/browser.c:92
+#: ../src/browser.c:102
 msgid "_Cut"
 msgstr ""
 
-#: ../src/browser.c:94
+#: ../src/browser.c:104
 msgid "Cop_y"
 msgstr ""
 
-#: ../src/browser.c:96
+#: ../src/browser.c:106
 msgid "_Paste"
 msgstr ""
 
-#: ../src/browser.c:99
+#: ../src/browser.c:109
 msgid "_Delete"
 msgstr ""
 
-#: ../src/browser.c:101
+#: ../src/browser.c:111
 msgid "Select _all"
 msgstr ""
 
-#: ../src/browser.c:108
+#: ../src/browser.c:118
 msgid "_Unselect all"
 msgstr ""
 
-#: ../src/browser.c:110
+#: ../src/browser.c:120
 msgid "_Preferences"
 msgstr "_Preferencias"
 
-#: ../src/browser.c:117
+#: ../src/browser.c:127
 msgid "_Refresh"
 msgstr ""
 
-#: ../src/browser.c:120
+#: ../src/browser.c:130
 msgid "_Home"
 msgstr "_Inicio"
 
-#: ../src/browser.c:124
+#: ../src/browser.c:134
 msgid "_Details"
 msgstr ""
 
-#: ../src/browser.c:126
+#: ../src/browser.c:136
 msgid "_Icons"
 msgstr ""
 
-#: ../src/browser.c:127
+#: ../src/browser.c:137
 msgid "_List"
 msgstr ""
 
-#: ../src/browser.c:128
+#: ../src/browser.c:138
 msgid "_Thumbnails"
 msgstr ""
 
-#: ../src/browser.c:136 ../src/browser.c:138 ../src/view.c:121
+#: ../src/browser.c:146 ../src/browser.c:148 ../src/view.c:121
 #: ../src/view.c:123
 msgid "_About"
 msgstr ""
 
-#: ../src/browser.c:145 ../src/view.c:130 ../src/view.c:137
+#: ../src/browser.c:155 ../src/view.c:130 ../src/view.c:137
 msgid "_File"
 msgstr ""
 
-#: ../src/browser.c:146 ../src/desktopicon.c:691 ../src/view.c:109
+#: ../src/browser.c:156 ../src/desktopicon.c:691 ../src/view.c:109
 msgid "_Edit"
 msgstr ""
 
-#: ../src/browser.c:147
+#: ../src/browser.c:157
 msgid "_View"
 msgstr ""
 
-#: ../src/browser.c:148 ../src/view.c:131 ../src/view.c:138
+#: ../src/browser.c:158 ../src/view.c:131 ../src/view.c:138
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:156 ../src/desktop.c:786 ../src/desktop.c:805
+#: ../src/browser.c:166 ../src/desktop.c:786 ../src/desktop.c:805
 msgid "Back"
 msgstr ""
 
-#: ../src/browser.c:158
+#: ../src/browser.c:168
 msgid "Up"
 msgstr ""
 
-#: ../src/browser.c:159
+#: ../src/browser.c:169
 msgid "Forward"
 msgstr ""
 
-#: ../src/browser.c:161
+#: ../src/browser.c:171
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:164 ../src/desktop.c:865
+#: ../src/browser.c:174 ../src/desktop.c:865
 msgid "Home"
 msgstr "Inicio"
 
-#: ../src/browser.c:166
+#: ../src/browser.c:176
 msgid "Cut"
 msgstr ""
 
-#: ../src/browser.c:167
+#: ../src/browser.c:177
 msgid "Copy"
 msgstr ""
 
-#: ../src/browser.c:168
+#: ../src/browser.c:178
 msgid "Paste"
 msgstr ""
 
-#: ../src/browser.c:170
+#: ../src/browser.c:180
 msgid "Properties"
 msgstr "Propriedades"
 
-#: ../src/browser.c:227
+#: ../src/browser.c:237
 msgid "Error while loading default icons"
 msgstr ""
 
-#: ../src/browser.c:244
+#: ../src/browser.c:254
 msgid "Error while loading configuration"
 msgstr ""
 
-#: ../src/browser.c:271
+#: ../src/browser.c:281
 msgid "File browser"
 msgstr ""
 
-#: ../src/browser.c:290
+#: ../src/browser.c:300
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:294 ../src/browser.c:1798
+#: ../src/browser.c:304 ../src/browser.c:1811
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:301 ../src/browser.c:1799
+#: ../src/browser.c:311 ../src/browser.c:1812
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:308 ../src/browser.c:1800
+#: ../src/browser.c:318 ../src/browser.c:1813
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:315 ../src/browser.c:1801
+#: ../src/browser.c:325 ../src/browser.c:1814
 msgid "Thumbnails"
 msgstr ""
 
-#: ../src/browser.c:336
+#: ../src/browser.c:346
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:592 ../src/browser.c:597 ../src/copy.c:668
+#: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1407 ../src/desktop.c:1412 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
@@ -193,73 +193,81 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:753 ../src/desktopicon.c:826 ../src/view.c:144
+#: ../src/browser.c:763 ../src/desktopicon.c:826 ../src/view.c:144
 #: ../src/view.c:419
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:845 ../src/browser.c:1221
+#: ../src/browser.c:855 ../src/browser.c:1231
 msgid "Refreshing folder: "
 msgstr ""
 
-#: ../src/browser.c:866
+#: ../src/browser.c:876
 #, c-format
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1523
+#: ../src/browser.c:1533
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1525
+#: ../src/browser.c:1535
 msgid "Size"
 msgstr ""
 
-#: ../src/browser.c:1527
+#: ../src/browser.c:1537
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1529
+#: ../src/browser.c:1539
 msgid "Group"
 msgstr ""
 
-#: ../src/browser.c:1531
+#: ../src/browser.c:1541
 msgid "Date"
 msgstr ""
 
-#: ../src/browser.c:1533
+#: ../src/browser.c:1543
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1778
+#: ../src/browser.c:1791
 msgid "File browser preferences"
 msgstr "File browser preferencias"
 
-#: ../src/browser.c:1794
+#: ../src/browser.c:1807
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:1807
+#: ../src/browser.c:1820
 msgid "_Alternate row colors in detailed view"
 msgstr ""
 
-#: ../src/browser.c:1811
+#: ../src/browser.c:1824
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/browser.c:1814
+#: ../src/browser.c:1827
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/browser.c:1817
+#: ../src/browser.c:1830
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:1820
+#: ../src/browser.c:1833
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:1955
+#: ../src/browser.c:1841 ../src/browser.c:1846
+msgid "Type"
+msgstr ""
+
+#: ../src/browser.c:1860
+msgid "_File associations"
+msgstr ""
+
+#: ../src/browser.c:2006
 msgid "Refreshing folder..."
 msgstr ""
 
@@ -512,7 +520,7 @@ msgstr ""
 msgid "Usage: browser [directory...]\n"
 msgstr ""
 
-#: ../src/mime.c:86
+#: ../src/mime.c:89
 msgid "Could not load MIME globs"
 msgstr ""
 

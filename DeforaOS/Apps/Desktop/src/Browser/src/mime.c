@@ -35,7 +35,8 @@
 typedef struct _MimeType
 {
 	char * type;
-	char * glob;
+	char ** globs;
+	size_t globs_cnt;
 	GdkPixbuf * icon_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * icon_48;
@@ -75,6 +76,8 @@ Mime * mime_new(void)
 	size_t len;
 	char * glob;
 	MimeType * p;
+	size_t i;
+	char ** q;
 
 	if((mime = malloc(sizeof(*mime))) == NULL)
 		return NULL;
@@ -101,19 +104,37 @@ Mime * mime_new(void)
 		buf[len] = '\0';
 		glob = strchr(buf, ':');
 		*(glob++) = '\0';
-		if((p = realloc(mime->types, sizeof(*p) * (mime->types_cnt
+		for(i = 0; i < mime->types_cnt; i++)
+			if(strcmp(mime->types[i].type, buf) == 0)
+				break;
+		if(i < mime->types_cnt)
+			p = &mime->types[i];
+		else if((p = realloc(mime->types, sizeof(*p) * (mime->types_cnt
 							+ 1))) == NULL)
-			break;
-		mime->types = p;
-		p = &p[mime->types_cnt];
-		p->type = strdup(buf);
-		p->glob = strdup(glob);
-		if(p->type == NULL || p->glob == NULL)
+				break;
+		else
+		{
+			mime->types = p;
+			p = &p[mime->types_cnt];
+			p->type = strdup(buf);
+			p->globs = NULL;
+			p->globs_cnt = 0;
+		}
+		if((q = realloc(p->globs, sizeof(*p->globs)
+						* (p->globs_cnt + 1))) != NULL)
+		{
+			p->globs = q;
+			p->globs[p->globs_cnt] = strdup(glob);
+		}
+		if(p->type == NULL || p->globs == NULL
+				|| p->globs[p->globs_cnt] == NULL)
 		{
 			free(p->type);
-			free(p->glob);
+			free(p->globs);
 			break;
 		}
+		if(p->globs_cnt++ == 0)
+			mime->types_cnt++;
 		p->icon_24 = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
 		p->icon_48 = NULL;
@@ -125,7 +146,6 @@ Mime * mime_new(void)
 		p->edit = mime->config != NULL
 			? config_get(mime->config, buf, "edit") : NULL;
 #endif
-		mime->types_cnt++;
 	}
 	if(!feof(fp))
 	{
@@ -159,12 +179,15 @@ static void _new_config(Mime * mime)
 /* mime_delete */
 void mime_delete(Mime * mime)
 {
-	unsigned int i;
+	size_t i;
+	size_t j;
 
 	for(i = 0; i < mime->types_cnt; i++)
 	{
 		free(mime->types[i].type);
-		free(mime->types[i].glob);
+		for(j = 0; j < mime->types[i].globs_cnt; j++)
+			free(mime->types[i].globs[j]);
+		free(mime->types[i].globs);
 		free(mime->types[i].icon_24);
 #if GTK_CHECK_VERSION(2, 6, 0)
 		free(mime->types[i].icon_48);
@@ -214,22 +237,31 @@ char const * mime_get_handler(Mime * mime, char const * type,
 char const * mime_type(Mime * mime, char const * path)
 {
 	char const * p;
-	unsigned int i;
+	size_t i;
+	size_t j;
 
 	p = strrchr(path, '/');
 	p = (p != NULL) ? p + 1 : path;
 	for(i = 0; i < mime->types_cnt; i++)
-		if(fnmatch(mime->types[i].glob, p, FNM_NOESCAPE) == 0)
+	{
+		for(j = 0; j < mime->types[i].globs_cnt; j++)
+			if(fnmatch(mime->types[i].globs[j], p, FNM_NOESCAPE)
+					== 0)
+				break;
+		if(j < mime->types[i].globs_cnt)
 			break;
+	}
 #ifdef FNM_CASEFOLD
 	if(i < mime->types_cnt)
 		return mime->types[i].type;
 	for(i = 0; i < mime->types_cnt; i++)
-		if(fnmatch(mime->types[i].glob, p, FNM_NOESCAPE | FNM_CASEFOLD)
-				== 0)
-			break;
+		for(j = 0; j < mime->types[i].globs_cnt; j++)
+			if(fnmatch(mime->types[i].globs[j], p,
+						FNM_NOESCAPE | FNM_CASEFOLD)
+					== 0)
+				return mime->types[i].type;
 #endif
-	return i < mime->types_cnt ? mime->types[i].type : NULL;
+	return NULL;
 }
 
 
@@ -269,13 +301,28 @@ int mime_action_type(Mime * mime, char const * action, char const * path,
 }
 
 
+/* mime_foreach */
+void mime_foreach(Mime * mime, MimeForeachCallback callback, void * data)
+{
+	size_t i;
+
+	for(i = 0; i < mime->types_cnt; i++)
+		callback(data, mime->types[i].type, mime->types[i].icon_24,
+#if GTK_CHECK_VERSION(2, 6, 0)
+				mime->types[i].icon_48, mime->types[i].icon_96);
+#else
+				NULL, NULL);
+#endif
+}
+
+
 /* mime_icons */
 static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 		int size);
 
 void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 {
-	unsigned int i;
+	size_t i;
 	va_list arg;
 	int size;
 	GdkPixbuf ** icon;
