@@ -1766,6 +1766,7 @@ void browser_unselect_all(Browser * browser)
 /* browser_view_preferences */
 static void _preferences_set(Browser * browser);
 /* callbacks */
+static void _preferences_on_mime_edit(gpointer data);
 static void _preferences_on_mime_foreach(void * data, char const * name,
 		GdkPixbuf * icon_24, GdkPixbuf * icon_48, GdkPixbuf * icon_96);
 static gboolean _preferences_on_closex(gpointer data);
@@ -1832,6 +1833,7 @@ void browser_view_preferences(Browser * browser)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
 			gtk_label_new_with_mnemonic(_("_Appearance")));
 	/* file associations tab */
+	hbox = gtk_hbox_new(FALSE, 4);
 	browser->pr_mime_store = gtk_list_store_new(MI_COL_COUNT,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	browser->pr_mime_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
@@ -1856,7 +1858,14 @@ void browser_view_preferences(Browser * browser)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), browser->pr_mime_view);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	vbox = gtk_vbox_new(FALSE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_EDIT);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_mime_edit), browser);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox,
 			gtk_label_new_with_mnemonic(_("_File associations")));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(browser->pr_window));
@@ -1882,6 +1891,98 @@ static void _preferences_set(Browser * browser)
 			browser->prefs.sort_folders_first);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
 			browser->prefs.show_hidden_files);
+}
+
+static void _preferences_on_mime_edit(gpointer data)
+{
+	Browser * browser = data;
+	GtkTreeSelection * selection;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	char * type;
+	GtkWidget * dialog;
+	int flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	GtkSizeGroup * group;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkWidget * open;
+	GtkWidget * view;
+	GtkWidget * edit;
+	char const * p;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				browser->pr_mime_view));
+	if(gtk_tree_selection_get_selected(selection, &model, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, MI_COL_NAME, &type, -1);
+	dialog = gtk_dialog_new_with_buttons(_("Edit file association"),
+			GTK_WINDOW(browser->pr_window), flags, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_APPLY,
+			GTK_RESPONSE_APPLY, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
+	gtk_box_set_spacing(GTK_BOX(vbox), 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* type */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Type:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_label_new(type);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* open */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Open with:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	open = gtk_entry_new();
+	p = mime_get_handler(browser->mime, type, "open");
+	gtk_entry_set_text(GTK_ENTRY(open), (p != NULL) ? p : "");
+	gtk_box_pack_start(GTK_BOX(hbox), open, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* view */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("View with:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	view = gtk_entry_new();
+	p = mime_get_handler(browser->mime, type, "view");
+	gtk_entry_set_text(GTK_ENTRY(view), (p != NULL) ? p : "");
+	gtk_box_pack_start(GTK_BOX(hbox), view, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* edit */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Edit with:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	edit = gtk_entry_new();
+	p = mime_get_handler(browser->mime, type, "edit");
+	gtk_entry_set_text(GTK_ENTRY(edit), (p != NULL) ? p : "");
+	gtk_box_pack_start(GTK_BOX(hbox), edit, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	/* response */
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_APPLY)
+	{
+		mime_set_handler(browser->mime, type, "open",
+				gtk_entry_get_text(GTK_ENTRY(open)));
+		mime_set_handler(browser->mime, type, "view",
+				gtk_entry_get_text(GTK_ENTRY(view)));
+		mime_set_handler(browser->mime, type, "edit",
+				gtk_entry_get_text(GTK_ENTRY(edit)));
+		mime_save(browser->mime);
+	}
+	gtk_widget_destroy(dialog);
+	free(type);
 }
 
 static void _preferences_on_mime_foreach(void * data, char const * name,

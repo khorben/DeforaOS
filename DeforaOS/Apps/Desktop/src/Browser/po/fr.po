@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-03 06:41+0100\n"
+"POT-Creation-Date: 2011-03-03 08:07+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -165,19 +165,19 @@ msgstr "Gestionnaire de fichiers"
 msgid "View as..."
 msgstr "Vue..."
 
-#: ../src/browser.c:304 ../src/browser.c:1811
+#: ../src/browser.c:304 ../src/browser.c:1812
 msgid "Details"
 msgstr "Détails"
 
-#: ../src/browser.c:311 ../src/browser.c:1812
+#: ../src/browser.c:311 ../src/browser.c:1813
 msgid "Icons"
 msgstr "Icônes"
 
-#: ../src/browser.c:318 ../src/browser.c:1813
+#: ../src/browser.c:318 ../src/browser.c:1814
 msgid "List"
 msgstr "Liste"
 
-#: ../src/browser.c:325 ../src/browser.c:1814
+#: ../src/browser.c:325 ../src/browser.c:1815
 msgid "Thumbnails"
 msgstr "Vignettes"
 
@@ -231,43 +231,63 @@ msgstr "Date"
 msgid "MIME type"
 msgstr "Type MIME"
 
-#: ../src/browser.c:1791
+#: ../src/browser.c:1792
 msgid "File browser preferences"
 msgstr "Gestionnaire de fichiers - Préférences"
 
-#: ../src/browser.c:1807
+#: ../src/browser.c:1808
 msgid "Default view:"
 msgstr "Vue par défaut:"
 
-#: ../src/browser.c:1820
+#: ../src/browser.c:1821
 msgid "_Alternate row colors in detailed view"
 msgstr "_Alterner les couleurs dans la vue détaillée"
 
-#: ../src/browser.c:1824
+#: ../src/browser.c:1825
 msgid "_Confirm before deletion"
 msgstr "_Confirmer l'effacement"
 
-#: ../src/browser.c:1827
+#: ../src/browser.c:1828
 msgid "Sort _folders first"
 msgstr "_Dossiers affichés en premier"
 
-#: ../src/browser.c:1830
+#: ../src/browser.c:1831
 msgid "Show _hidden files"
 msgstr "Afficher les fichiers cac_hés"
 
-#: ../src/browser.c:1833
+#: ../src/browser.c:1834
 msgid "_Appearance"
 msgstr "_Apparence"
 
-#: ../src/browser.c:1841 ../src/browser.c:1846
+#: ../src/browser.c:1843 ../src/browser.c:1848
 msgid "Type"
 msgstr "Type"
 
-#: ../src/browser.c:1860
+#: ../src/browser.c:1869
 msgid "_File associations"
 msgstr "_Types de fichiers"
 
-#: ../src/browser.c:2006
+#: ../src/browser.c:1919
+msgid "Edit file association"
+msgstr "Modifier les associations de type"
+
+#: ../src/browser.c:1932
+msgid "Type:"
+msgstr "Type :"
+
+#: ../src/browser.c:1941
+msgid "Open with:"
+msgstr "Ouvrir avec :"
+
+#: ../src/browser.c:1952
+msgid "View with:"
+msgstr "Visualiser avec :"
+
+#: ../src/browser.c:1963
+msgid "Edit with:"
+msgstr "Modifier avec :"
+
+#: ../src/browser.c:2107
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
@@ -548,7 +568,7 @@ msgstr " fichier(s) ?"
 msgid "Usage: browser [directory...]\n"
 msgstr "Usage: browser [dossier...]\n"
 
-#: ../src/mime.c:89
+#: ../src/mime.c:99
 msgid "Could not load MIME globs"
 msgstr "Impossible de charger les infos MIME"
 
@@ -662,7 +682,7 @@ msgstr "Type de fichier inconnu"
 
 #: ../src/view.c:197
 msgid "View - "
-msgstr "Voir - "
+msgstr "Visualiseur - "
 
 #: ../src/view.c:225
 msgid "Unable to view file type"

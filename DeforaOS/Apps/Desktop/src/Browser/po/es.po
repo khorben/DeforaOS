@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-03 06:41+0100\n"
+"POT-Creation-Date: 2011-03-03 08:07+0100\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -165,19 +165,19 @@ msgstr ""
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:304 ../src/browser.c:1811
+#: ../src/browser.c:304 ../src/browser.c:1812
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:311 ../src/browser.c:1812
+#: ../src/browser.c:311 ../src/browser.c:1813
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:318 ../src/browser.c:1813
+#: ../src/browser.c:318 ../src/browser.c:1814
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:325 ../src/browser.c:1814
+#: ../src/browser.c:325 ../src/browser.c:1815
 msgid "Thumbnails"
 msgstr ""
 
@@ -231,43 +231,63 @@ msgstr ""
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1791
+#: ../src/browser.c:1792
 msgid "File browser preferences"
 msgstr "File browser preferencias"
 
-#: ../src/browser.c:1807
+#: ../src/browser.c:1808
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:1820
+#: ../src/browser.c:1821
 msgid "_Alternate row colors in detailed view"
 msgstr ""
 
-#: ../src/browser.c:1824
+#: ../src/browser.c:1825
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/browser.c:1827
+#: ../src/browser.c:1828
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/browser.c:1830
+#: ../src/browser.c:1831
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:1833
+#: ../src/browser.c:1834
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:1841 ../src/browser.c:1846
+#: ../src/browser.c:1843 ../src/browser.c:1848
 msgid "Type"
 msgstr ""
 
-#: ../src/browser.c:1860
+#: ../src/browser.c:1869
 msgid "_File associations"
 msgstr ""
 
-#: ../src/browser.c:2006
+#: ../src/browser.c:1919
+msgid "Edit file association"
+msgstr ""
+
+#: ../src/browser.c:1932
+msgid "Type:"
+msgstr ""
+
+#: ../src/browser.c:1941
+msgid "Open with:"
+msgstr ""
+
+#: ../src/browser.c:1952
+msgid "View with:"
+msgstr ""
+
+#: ../src/browser.c:1963
+msgid "Edit with:"
+msgstr ""
+
+#: ../src/browser.c:2107
 msgid "Refreshing folder..."
 msgstr ""
 
@@ -520,7 +540,7 @@ msgstr ""
 msgid "Usage: browser [directory...]\n"
 msgstr ""
 
-#: ../src/mime.c:89
+#: ../src/mime.c:99
 msgid "Could not load MIME globs"
 msgstr ""
 

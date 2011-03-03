@@ -58,6 +58,7 @@ struct _Mime
 
 
 /* prototypes */
+static char * _mime_get_config_filename(void);
 static GdkPixbuf * _mime_icons_size(Mime * mime, char const * type,
 		int size);
 
@@ -168,18 +169,12 @@ Mime * mime_new(GtkIconTheme * theme)
 
 static void _new_config(Mime * mime)
 {
-	size_t len;
-	char * homedir;
 	char * filename;
 
-	if((homedir = getenv("HOME")) == NULL)
-		return;
 	if((mime->config = config_new()) == NULL)
 		return;
-	len = strlen(homedir) + 1 + strlen(MIME_CONFIG_FILE) + 1;
-	if((filename = malloc(len)) == NULL)
+	if((filename = _mime_get_config_filename()) == NULL)
 		return;
-	snprintf(filename, len, "%s/%s", homedir, MIME_CONFIG_FILE);
 	config_load(mime->config, filename);
 	free(filename);
 }
@@ -238,6 +233,16 @@ char const * mime_get_handler(Mime * mime, char const * type,
 	program = config_get(mime->config, p, action);
 	free(p);
 	return program;
+}
+
+
+/* mime_set_handler */
+int mime_set_handler(Mime * mime, char const * type, char const * action,
+		char const * handler)
+{
+	if(handler != NULL && strcmp(handler, "") == 0)
+		handler = NULL;
+	return config_set(mime->config, type, action, handler);
 }
 
 
@@ -384,8 +389,35 @@ void mime_icons(Mime * mime, char const * type, ...)
 }
 
 
+/* mime_save */
+int mime_save(Mime * mime)
+{
+	int ret;
+	char * filename;
+
+	if((filename = _mime_get_config_filename()) == NULL)
+		return -1;
+	ret = config_save(mime->config, filename);
+	free(filename);
+	return ret;
+}
+
+
 /* private */
 /* functions */
+/* mime_get_config_filename */
+static char * _mime_get_config_filename(void)
+{
+	char const * homedir;
+
+	if((homedir = getenv("HOME")) == NULL
+			&& (homedir = g_get_home_dir()) == NULL)
+		return NULL; /* XXX set error */
+	return string_new_append(homedir, "/", MIME_CONFIG_FILE, NULL);
+}
+
+
+/* mime_icons_size */
 static GdkPixbuf * _mime_icons_size(Mime * mime, char const * type,
 		int size)
 {

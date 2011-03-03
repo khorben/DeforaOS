@@ -51,4 +51,6 @@ void mime_foreach(Mime * mime, MimeForeachCallback callback, void * data);
 
 void mime_icons(Mime * mime, char const * type, ...);
 
+int mime_save(Mime * mime);
+
 #endif /* !BROWSER_MIME_H */
