@@ -1,5 +1,9 @@
+- fix displaying/refreshing desktop icons in category view
+- fix category for audio/multimedia applications on the desktop
+- no longer display empty categories on the desktop
+
 [common.c]
-- conform to http://www.freedesktop.org/wiki/Specifications/XDND:
+- comply with http://www.freedesktop.org/wiki/Specifications/XDND:
   * the target should be "text/uri-list"
   * filenames should be prepended with "file:///"
   * how is this supposed to handle multiple filenames then? "\r\n"?
