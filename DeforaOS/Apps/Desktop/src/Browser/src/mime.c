@@ -23,6 +23,7 @@
 #include <fnmatch.h>
 #include <errno.h>
 #include <libintl.h>
+#include <System.h>
 #include "mime.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -48,6 +49,10 @@ struct _Mime
 	size_t types_cnt;
 	Config * config;
 };
+
+
+/* constants */
+#define MIME_CONFIG_FILE ".mime"
 
 
 /* public */

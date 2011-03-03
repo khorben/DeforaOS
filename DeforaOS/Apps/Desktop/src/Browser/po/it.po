@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-03 05:29+0100\n"
+"POT-Creation-Date: 2011-03-03 05:32+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -512,7 +512,7 @@ msgstr ""
 msgid "Usage: browser [directory...]\n"
 msgstr ""
 
-#: ../src/mime.c:81
+#: ../src/mime.c:86
 msgid "Could not load MIME globs"
 msgstr ""
 

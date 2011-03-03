@@ -18,10 +18,7 @@
 #ifndef BROWSER_MIME_H
 # define BROWSER_MIME_H
 
-# include <System.h>
 # include <gtk/gtk.h>
-
-# define MIME_CONFIG_FILE ".mime"
 
 
 /* Mime */
