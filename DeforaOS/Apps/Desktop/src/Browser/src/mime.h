@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,23 +26,7 @@
 
 /* Mime */
 /* types */
-typedef struct _MimeType
-{
-	char * type;
-	char * glob;
-	GdkPixbuf * icon_24;
-#if GTK_CHECK_VERSION(2, 6, 0)
-	GdkPixbuf * icon_48;
-	GdkPixbuf * icon_96;
-#endif
-} MimeType;
-
-typedef struct _Mime
-{
-	MimeType * types;
-	unsigned int types_cnt;
-	Config * config;
-} Mime;
+typedef struct _Mime Mime;
 
 
 /* functions */
