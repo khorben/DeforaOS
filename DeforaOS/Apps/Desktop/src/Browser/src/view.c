@@ -185,7 +185,7 @@ static View * _view_new(char const * pathname)
 		return NULL;
 	}
 	if(_mime == NULL)
-		_mime = mime_new();
+		_mime = mime_new(NULL);
 	if((type = mime_type(_mime, pathname)) == NULL)
 	{
 		_view_error(view, _("Unknown file type"), 2);

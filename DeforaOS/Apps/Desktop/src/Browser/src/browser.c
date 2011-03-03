@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -255,7 +255,7 @@ Browser * browser_new(char const * directory)
 				0);
 
 	/* mime */
-	browser->mime = mime_new(); /* FIXME share MIME instances */
+	browser->mime = mime_new(NULL); /* FIXME share MIME instances */
 
 	/* history */
 	browser->history = NULL;
@@ -982,8 +982,8 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 #endif
 				st->st_dev);
 	else if(st->st_mode & S_IXUSR)
-		mime_icons(browser->mime, browser->theme,
-				"application/x-executable", 24, icon_24,
+		mime_icons(browser->mime, "application/x-executable", 24,
+				icon_24,
 #if !GTK_CHECK_VERSION(2, 6, 0)
 				-1);
 #else
@@ -991,7 +991,7 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 #endif
 	else if(browser->mime != NULL && *type == NULL
 			&& (*type = mime_type(browser->mime, path)) != NULL)
-		mime_icons(browser->mime, browser->theme, *type, 24, icon_24,
+		mime_icons(browser->mime, *type, 24, icon_24,
 #if !GTK_CHECK_VERSION(2, 6, 0)
 				-1);
 #else

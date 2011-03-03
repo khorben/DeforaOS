@@ -215,7 +215,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		type = mime_type(mime, filename);
 		if(theme != NULL && type != NULL)
 		{
-			mime_icons(mime, theme, type, 48, &pixbuf, -1);
+			mime_icons(mime, type, 48, &pixbuf, -1);
 			if(pixbuf != NULL)
 				image = gtk_image_new_from_pixbuf(pixbuf);
 		}
@@ -581,7 +581,7 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	mime = mime_new();
+	mime = mime_new(NULL);
 	ret = _properties(mime, argc - optind, &argv[optind]);
 	gtk_main();
 	if(mime != NULL)

@@ -46,6 +46,7 @@ typedef struct _MimeType
 
 struct _Mime
 {
+	GtkIconTheme * theme;
 	MimeType * types;
 	size_t types_cnt;
 	Config * config;
@@ -56,12 +57,17 @@ struct _Mime
 #define MIME_CONFIG_FILE ".mime"
 
 
+/* prototypes */
+static GdkPixbuf * _mime_icons_size(Mime * mime, char const * type,
+		int size);
+
+
 /* public */
 /* functions */
 /* mime_new */
 static void _new_config(Mime * mime);
 
-Mime * mime_new(void)
+Mime * mime_new(GtkIconTheme * theme)
 {
 	Mime * mime;
 	char * globs[] = {
@@ -81,6 +87,9 @@ Mime * mime_new(void)
 
 	if((mime = malloc(sizeof(*mime))) == NULL)
 		return NULL;
+	if(theme == NULL)
+		theme = gtk_icon_theme_get_default();
+	mime->theme = theme;
 	for(g = globs; *g != NULL; g++)
 		if((fp = fopen(*g, "r")) != NULL)
 			break;
@@ -307,20 +316,29 @@ void mime_foreach(Mime * mime, MimeForeachCallback callback, void * data)
 	size_t i;
 
 	for(i = 0; i < mime->types_cnt; i++)
-		callback(data, mime->types[i].type, mime->types[i].icon_24,
+	{
+		if(mime->types[i].icon_24 == NULL)
+			mime->types[i].icon_24 = _mime_icons_size(mime,
+					mime->types[i].type, 24);
 #if GTK_CHECK_VERSION(2, 6, 0)
+		if(mime->types[i].icon_48 == NULL)
+			mime->types[i].icon_48 = _mime_icons_size(mime,
+					mime->types[i].type, 48);
+		if(mime->types[i].icon_96 == NULL)
+			mime->types[i].icon_96 = _mime_icons_size(mime,
+					mime->types[i].type, 96);
+		callback(data, mime->types[i].type, mime->types[i].icon_24,
 				mime->types[i].icon_48, mime->types[i].icon_96);
 #else
+		callback(data, mime->types[i].type, mime->types[i].icon_24,
 				NULL, NULL);
 #endif
+	}
 }
 
 
 /* mime_icons */
-static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
-		int size);
-
-void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
+void mime_icons(Mime * mime, char const * type, ...)
 {
 	size_t i;
 	va_list arg;
@@ -339,7 +357,7 @@ void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 		if(size == 24)
 		{
 			if(mime->types[i].icon_24 == NULL)
-				mime->types[i].icon_24 = _icons_size(theme,
+				mime->types[i].icon_24 = _mime_icons_size(mime,
 						type, 24);
 			*icon = mime->types[i].icon_24;
 		}
@@ -347,25 +365,28 @@ void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 		else if(size == 48)
 		{
 			if(mime->types[i].icon_48 == NULL)
-				mime->types[i].icon_48 = _icons_size(theme,
+				mime->types[i].icon_48 = _mime_icons_size(mime,
 						type, 48);
 			*icon = mime->types[i].icon_48;
 		}
 		else if(size == 96)
 		{
 			if(mime->types[i].icon_96 == NULL)
-				mime->types[i].icon_96 = _icons_size(theme,
+				mime->types[i].icon_96 = _mime_icons_size(mime,
 						type, 96);
 			*icon = mime->types[i].icon_96;
 		}
 #endif
 		else
-			*icon = _icons_size(theme, type, size);
+			*icon = _mime_icons_size(mime, type, size);
 	}
 	va_end(arg);
 }
 
-static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
+
+/* private */
+/* functions */
+static GdkPixbuf * _mime_icons_size(Mime * mime, char const * type,
 		int size)
 {
 	static char buf[256] = "gnome-mime-";
@@ -376,5 +397,5 @@ static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 	strncpy(&buf[11], type, sizeof(buf) - 11);
 	buf[sizeof(buf) - 1] = '\0';
 	for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
-	return gtk_icon_theme_load_icon(theme, buf, size, flags, NULL);
+	return gtk_icon_theme_load_icon(mime->theme, buf, size, flags, NULL);
 }

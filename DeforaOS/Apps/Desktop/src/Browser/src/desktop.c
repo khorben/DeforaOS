@@ -831,7 +831,7 @@ static int _layout_files(Desktop * desktop)
 	struct stat st;
 
 	if(desktop->mime == NULL)
-		desktop->mime = mime_new();
+		desktop->mime = mime_new(NULL);
 	if(desktop->file == NULL)
 		for(p = file; *p != NULL && desktop->file == NULL; p++)
 			desktop->file = gtk_icon_theme_load_icon(desktop->theme,

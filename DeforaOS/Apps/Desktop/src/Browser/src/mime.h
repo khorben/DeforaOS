@@ -30,7 +30,7 @@ typedef void (*MimeForeachCallback)(void * data, char const * name,
 
 
 /* functions */
-Mime * mime_new(void);
+Mime * mime_new(GtkIconTheme * theme);
 void mime_delete(Mime * mime);
 
 /* accessors */
@@ -38,6 +38,7 @@ char const * mime_get_handler(Mime * mime, char const * type,
 		char const * action);
 int mime_set_handler(Mime * mime, char const * type, char const * action,
 		char const * handler);
+void mime_set_theme(Mime * mime, GtkIconTheme * theme);
 
 /* useful */
 char const * mime_type(Mime * mime, char const * path);
@@ -48,6 +49,6 @@ int mime_action_type(Mime * mime, char const * action, char const * path,
 
 void mime_foreach(Mime * mime, MimeForeachCallback callback, void * data);
 
-void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...);
+void mime_icons(Mime * mime, char const * type, ...);
 
 #endif /* !BROWSER_MIME_H */

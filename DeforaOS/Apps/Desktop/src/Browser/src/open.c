@@ -44,7 +44,7 @@ static int _open(char const * type, char const * action, int filec,
 	Mime * mime;
 	int ret = 0;
 
-	if((mime = mime_new()) == NULL)
+	if((mime = mime_new(NULL)) == NULL)
 		return 1;
 	for(i = 0; i < filec; i++)
 	{
