@@ -261,11 +261,11 @@ msgstr "_Apparence"
 
 #: ../src/browser.c:1841 ../src/browser.c:1846
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/browser.c:1860
 msgid "_File associations"
-msgstr ""
+msgstr "_Types de fichiers"
 
 #: ../src/browser.c:2006
 msgid "Refreshing folder..."
