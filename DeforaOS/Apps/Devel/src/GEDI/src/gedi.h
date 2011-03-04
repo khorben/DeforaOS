@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel GEDI */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,29 +23,9 @@
 # include "project.h"
 
 
+/* GEDI */
 /* types */
-typedef struct _GEDI
-{
-	Config * config;
-	Project ** projects;
-	size_t projects_cnt;
-	Project * cur;
-
-	/* widgets */
-	/* toolbar */
-	GtkWidget * tb_window;
-
-	/* preferences */
-	GtkWidget * pr_window;
-
-	/* files */
-	GtkWidget * fi_window;
-	GtkWidget * fi_combo;
-	GtkWidget * fi_view;
-
-	/* about */
-	GtkWidget * ab_window;
-} GEDI;
+typedef struct _GEDI GEDI;
 
 
 /* functions */
@@ -58,8 +38,16 @@ void gedi_about(GEDI * gedi);
 int gedi_error(GEDI * gedi, char const * message, int ret);
 
 void gedi_file_open(GEDI * gedi, char const * filename);
+
+/* project */
 int gedi_project_open(GEDI * gedi, char const * filename);
+void gedi_project_open_dialog(GEDI * gedi);
+int gedi_project_open_project(GEDI * gedi, Project * project);
+void gedi_project_properties(GEDI * gedi);
 void gedi_project_save(GEDI * gedi);
 void gedi_project_save_as(GEDI * gedi, char const * filename);
+
+/* interface */
+void gedi_show_preferences(GEDI * gedi, gboolean show);
 
 #endif /* !GEDI_GEDI_H */

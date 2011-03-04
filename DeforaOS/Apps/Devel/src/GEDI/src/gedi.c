@@ -33,6 +33,31 @@ static char const _license[] =
 
 /* GEDI */
 /* private */
+/* private */
+struct _GEDI
+{
+	Config * config;
+	Project ** projects;
+	size_t projects_cnt;
+	Project * cur;
+
+	/* widgets */
+	/* toolbar */
+	GtkWidget * tb_window;
+
+	/* preferences */
+	GtkWidget * pr_window;
+
+	/* files */
+	GtkWidget * fi_window;
+	GtkWidget * fi_combo;
+	GtkWidget * fi_view;
+
+	/* about */
+	GtkWidget * ab_window;
+};
+
+
 /* constants */
 #define ICON_NAME	"applications-development"
 
@@ -248,13 +273,12 @@ int gedi_error(GEDI * gedi, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(gedi->tb_window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"Error");
+			"%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			message);
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -281,29 +305,75 @@ void gedi_file_open(GEDI * gedi, char const * filename)
 /* gedi_project_open */
 int gedi_project_open(GEDI * gedi, char const * filename)
 {
-	Project ** p;
+	Project * project;
 
-	if((p = realloc(gedi->projects, sizeof(*p) * (gedi->projects_cnt + 1)))
-			== NULL)
-		return gedi_error(gedi, strerror(errno), 1);
-	gedi->projects = p;
-	p = &gedi->projects[gedi->projects_cnt];
-	if((*p = project_new()) == NULL)
-		return gedi_error(gedi, error_get(), 1);
-	if(project_load(*p, filename) != 0)
+	if((project = project_new()) == NULL)
+		return -gedi_error(gedi, error_get(), 1);
+	if(project_load(project, filename) != 0
+			|| gedi_project_open_project(gedi, project) != 0)
 	{
-		project_delete(*p);
-		return gedi_error(gedi, error_get(), 1);
+		project_delete(project);
+		return -gedi_error(gedi, error_get(), 1);
 	}
-	gedi->projects_cnt++;
-	gedi->cur = *p;
+	gedi->cur = project;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(gedi->fi_combo),
-			project_get_package(*p));
+			project_get_package(project));
 	/* FIXME doesn't always select the last project opened */
 	gtk_combo_box_set_active(GTK_COMBO_BOX(gedi->fi_combo),
 			gtk_combo_box_get_active(GTK_COMBO_BOX(gedi->fi_combo))
 			+ 1);
 	return 0;
+}
+
+
+/* gedi_project_open_dialog */
+void gedi_project_open_dialog(GEDI * gedi)
+{
+	GtkWidget * dialog;
+	gchar * filename = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Open project...",
+			GTK_WINDOW(gedi->tb_window),
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	gedi_project_open(gedi, filename);
+	g_free(filename);
+}
+
+
+/* gedi_project_open_project */
+int gedi_project_open_project(GEDI * gedi, Project * project)
+{
+	Project ** p;
+
+	if(project == NULL)
+		return -error_set_code(1, "%s", strerror(EINVAL));;
+	if((p = realloc(gedi->projects, sizeof(*p) * (gedi->projects_cnt + 1)))
+			== NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	gedi->projects = p;
+	gedi->projects[gedi->projects_cnt++] = project;
+	return 0;
+}
+
+
+/* gedi_project_properties */
+void gedi_project_properties(GEDI * gedi)
+{
+	if(gedi->cur == NULL)
+	{
+		/* FIXME should not happen (disable callback action) */
+		gedi_error(gedi, "No project opened", 0);
+		return;
+	}
+	project_properties(gedi->cur);
 }
 
 
@@ -318,4 +388,108 @@ void gedi_project_save(GEDI * gedi)
 void gedi_project_save_as(GEDI * gedi, char const * filename)
 {
 	/* FIXME */
+}
+
+
+/* gedi_show_preferences */
+static void _show_preferences_window(GEDI * gedi);
+static gboolean _on_preferences_closex(gpointer data);
+static void _on_preferences_apply(gpointer data);
+static void _on_preferences_cancel(gpointer data);
+static void _on_preferences_ok(gpointer data);
+
+void gedi_show_preferences(GEDI * gedi, gboolean show)
+{
+	if(gedi->pr_window == NULL)
+		_show_preferences_window(gedi);
+	if(show)
+		gtk_window_present(GTK_WINDOW(gedi->pr_window));
+	else
+		gtk_widget_hide(gedi->pr_window);
+}
+
+static void _show_preferences_window(GEDI * gedi)
+{
+	GtkWidget * vbox;
+	GtkWidget * nb;
+	GtkWidget * nb_vbox;
+	GtkWidget * hbox;
+	GtkWidget * b_ok;
+	GtkWidget * b_apply;
+	GtkWidget * b_cancel;
+
+	gedi->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL); /* XXX dialog */
+	gtk_container_set_border_width(GTK_CONTAINER(gedi->pr_window), 4);
+	gtk_window_set_title(GTK_WINDOW(gedi->pr_window), "Preferences");
+	g_signal_connect_swapped(G_OBJECT(gedi->pr_window), "delete-event",
+			G_CALLBACK(_on_preferences_closex), gedi);
+	vbox = gtk_vbox_new(FALSE, 4);
+	nb = gtk_notebook_new();
+	/* notebook page editor */
+	nb_vbox = gtk_vbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new("Choose editor"),
+			FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new(
+				"Program executable"), FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new(
+				"Runs in a terminal"), FALSE, FALSE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
+				"Editor"));
+	/* notebook page plug-ins */
+	nb_vbox = gtk_vbox_new(FALSE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
+				"Plug-ins"));
+	gtk_box_pack_start(GTK_BOX(vbox), nb, TRUE, TRUE, 0);
+	/* buttons */
+	hbox = gtk_hbox_new(TRUE, 4);
+	b_ok = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect_swapped(G_OBJECT(b_ok), "clicked", G_CALLBACK(
+				_on_preferences_ok), gedi);
+	gtk_box_pack_end(GTK_BOX(hbox), b_ok, FALSE, TRUE, 0);
+	b_apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	g_signal_connect_swapped(G_OBJECT(b_apply), "clicked", G_CALLBACK(
+				_on_preferences_apply), gedi);
+	gtk_box_pack_end(GTK_BOX(hbox), b_apply, FALSE, TRUE, 0);
+	b_cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(b_cancel), "clicked", G_CALLBACK(
+				_on_preferences_cancel), gedi);
+	gtk_box_pack_end(GTK_BOX(hbox), b_cancel, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(gedi->pr_window), vbox);
+	gtk_widget_show_all(vbox);
+}
+
+static void _preferences_set(GEDI * gedi)
+{
+	/* FIXME implement */
+}
+
+static void _on_preferences_apply(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+static void _on_preferences_cancel(gpointer data)
+{
+	GEDI * gedi = data;
+
+	_preferences_set(gedi);
+	gtk_widget_hide(gedi->pr_window);
+}
+
+static void _on_preferences_ok(gpointer data)
+{
+	GEDI * gedi = data;
+
+	_on_preferences_apply(gedi);
+	gtk_widget_hide(gedi->pr_window);
+}
+
+static gboolean _on_preferences_closex(gpointer data)
+{
+	GEDI * gedi = data;
+
+	_on_preferences_cancel(gedi);
+	return TRUE;
 }

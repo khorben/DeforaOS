@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel GEDI */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,32 @@
 
 
 #include <stdlib.h>
+#include <gtk/gtk.h>
+#include <System.h>
 #include "project.h"
 
 
 /* Project */
-/* callbacks */
-static gboolean _on_properties_closex(gpointer data);
+/* private */
+/* types */
+struct _Project
+{
+	Config * config;
 
+	/* widgets */
+	/* properties window */
+	GtkWidget * pr_window;
+};
+
+
+/* public */
+/* functions */
 /* project_new */
 Project * project_new(void)
 {
 	Project * p;
 
-	if((p = malloc(sizeof(*p))) == NULL)
+	if((p = object_new(sizeof(*p))) == NULL)
 		return NULL;
 	p->config = config_new();
 	p->pr_window = NULL;
@@ -46,7 +59,7 @@ void project_delete(Project * project)
 {
 	if(project->config != NULL)
 		config_delete(project->config);
-	free(project);
+	object_delete(project);
 }
 
 
@@ -54,7 +67,7 @@ void project_delete(Project * project)
 /* project_get_package */
 char const * project_get_package(Project * package)
 {
-	return config_get(package->config, "", "package");
+	return config_get(package->config, NULL, "package");
 }
 
 
@@ -68,8 +81,8 @@ int project_load(Project * project, char const * filename)
 	config_reset(project->config);
 	if(config_load(project->config, filename) != 0)
 		return 1;
-	package = config_get(project->config, "", "package");
-	version = config_get(project->config, "", "version");
+	package = config_get(project->config, NULL, "package");
+	version = config_get(project->config, NULL, "version");
 	if(package == NULL || version == NULL)
 		return error_set_code(1, "%s", "Project file is missing"
 				" package name and version");
@@ -79,6 +92,7 @@ int project_load(Project * project, char const * filename)
 
 /* project_properties */
 static void _properties_new(Project * p);
+static gboolean _on_properties_closex(gpointer data);
 
 void project_properties(Project * project)
 {
@@ -97,8 +111,6 @@ static void _properties_new(Project * p)
 	/* FIXME */
 }
 
-
-/* callbacks */
 static gboolean _on_properties_closex(gpointer data)
 {
 	Project * p = data;
