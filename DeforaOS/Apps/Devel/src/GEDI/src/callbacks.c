@@ -119,30 +119,16 @@ void on_project_properties(gpointer data)
 /* on_project_save */
 void on_project_save(gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 
-	/* FIXME implement */
-	gedi_project_save(g);
+	gedi_project_save(gedi);
 }
 
 
 /* on_project_save_as */
 void on_project_save_as(gpointer data)
 {
-	GEDI * g = data;
-	GtkWidget * dialog;
-	char * file;
+	GEDI * gedi = data;
 
-	dialog = gtk_file_chooser_dialog_new("Save project as...", NULL,
-			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
-			GTK_RESPONSE_ACCEPT, NULL);
-	/* FIXME add options? (recursive save) */
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-	{
-		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gedi_project_save_as(g, file);
-		g_free(file);
-	}
-	gtk_widget_destroy(dialog);
+	gedi_project_save_dialog(gedi);
 }

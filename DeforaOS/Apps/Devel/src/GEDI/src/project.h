@@ -29,10 +29,13 @@ Project * project_new(void);
 void project_delete(Project * project);
 
 /* accessors */
-char const * project_get_package(Project * package);
+char const * project_get_package(Project * project);
+char const * project_get_pathname(Project * project);
+int project_set_pathname(Project * project, char const * pathname);
 
 /* useful */
-int project_load(Project * project, char const * filename);
+int project_load(Project * project, char const * pathname);
+int project_save(Project * project);
 
 void project_properties(Project * project);
 

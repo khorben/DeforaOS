@@ -12,6 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* FIXME:
+ * - make sure all pathnames point to the top directory
+ * - load the configuration by appending "/project.conf" as required */
 
 
 
@@ -26,6 +29,7 @@
 /* types */
 struct _Project
 {
+	String * pathname;		/* project's top directory */
 	Config * config;
 
 	/* widgets */
@@ -43,6 +47,7 @@ Project * project_new(void)
 
 	if((p = object_new(sizeof(*p))) == NULL)
 		return NULL;
+	p->pathname = NULL;
 	p->config = config_new();
 	p->pr_window = NULL;
 	if(p->config == NULL)
@@ -57,6 +62,7 @@ Project * project_new(void)
 /* project_delete */
 void project_delete(Project * project)
 {
+	string_delete(project->pathname);
 	if(project->config != NULL)
 		config_delete(project->config);
 	object_delete(project);
@@ -65,28 +71,70 @@ void project_delete(Project * project)
 
 /* accessors */
 /* project_get_package */
-char const * project_get_package(Project * package)
+char const * project_get_package(Project * project)
 {
-	return config_get(package->config, NULL, "package");
+	return config_get(project->config, NULL, "package");
+}
+
+
+/* project_get_pathname */
+char const * project_get_pathname(Project * project)
+{
+	return project->pathname;
+}
+
+
+/* project_set_pathname */
+int project_set_pathname(Project * project, char const * pathname)
+{
+	String * p;
+
+	if((p = string_new(pathname)) == NULL)
+		return -1;
+	string_delete(project->pathname);
+	project->pathname = p;
+	return 0;
 }
 
 
 /* useful */
 /* project_load */
-int project_load(Project * project, char const * filename)
+int project_load(Project * project, char const * pathname)
 {
+	Config * config;
+	String * p;
 	char const * package;
 	char const * version;
 
-	config_reset(project->config);
-	if(config_load(project->config, filename) != 0)
-		return 1;
-	package = config_get(project->config, NULL, "package");
-	version = config_get(project->config, NULL, "version");
-	if(package == NULL || version == NULL)
-		return error_set_code(1, "%s", "Project file is missing"
-				" package name and version");
-	return 0;
+	config = config_new();
+	p = string_new(pathname);
+	if(config != NULL && p != NULL && config_load(config, p) == 0)
+	{
+		package = config_get(config, NULL, "package");
+		version = config_get(config, NULL, "version");
+		if(package != NULL && version != NULL)
+		{
+			string_delete(project->pathname);
+			project->pathname = p;
+			config_delete(project->config);
+			project->config = config;
+			return 0;
+		}
+		error_set_code(1, "%s", "Project file is missing"
+					" package name and version");
+	}
+	return -1;
+}
+
+
+/* project_save */
+int project_save(Project * project)
+{
+	if(project->pathname == NULL)
+		return -error_set_code(1, "%s",
+				"No path defined for the project");
+	/* FIXME implement */
+	return -error_set_code(1, "%s", "Not implemented yet");
 }
 
 

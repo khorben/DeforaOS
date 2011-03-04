@@ -44,8 +44,9 @@ int gedi_project_open(GEDI * gedi, char const * filename);
 void gedi_project_open_dialog(GEDI * gedi);
 int gedi_project_open_project(GEDI * gedi, Project * project);
 void gedi_project_properties(GEDI * gedi);
-void gedi_project_save(GEDI * gedi);
-void gedi_project_save_as(GEDI * gedi, char const * filename);
+int gedi_project_save(GEDI * gedi);
+int gedi_project_save_as(GEDI * gedi, char const * filename);
+int gedi_project_save_dialog(GEDI * gedi);
 
 /* interface */
 void gedi_show_preferences(GEDI * gedi, gboolean show);

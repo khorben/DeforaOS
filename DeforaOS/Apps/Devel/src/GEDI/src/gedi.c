@@ -33,7 +33,7 @@ static char const _license[] =
 
 /* GEDI */
 /* private */
-/* private */
+/* types */
 struct _GEDI
 {
 	Config * config;
@@ -120,6 +120,10 @@ static DesktopToolbar _gedi_toolbar[] =
 	{ "Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
+
+
+/* prototypes */
+static Project * _gedi_get_current_project(GEDI * gedi);
 
 
 /* public */
@@ -367,27 +371,63 @@ int gedi_project_open_project(GEDI * gedi, Project * project)
 /* gedi_project_properties */
 void gedi_project_properties(GEDI * gedi)
 {
-	if(gedi->cur == NULL)
-	{
-		/* FIXME should not happen (disable callback action) */
-		gedi_error(gedi, "No project opened", 0);
+	Project * project;
+
+	if((project = _gedi_get_current_project(gedi)) == NULL)
 		return;
-	}
-	project_properties(gedi->cur);
+	project_properties(project);
 }
 
 
 /* gedi_project_save */
-void gedi_project_save(GEDI * gedi)
+int gedi_project_save(GEDI * gedi)
 {
-	/* FIXME */
+	Project * project;
+
+	if((project = _gedi_get_current_project(gedi)) == NULL)
+		return -1;
+	if(project_get_pathname(project) == NULL)
+		return gedi_project_save_dialog(gedi);
+	return project_save(project);
 }
 
 
 /* gedi_project_save_as */
-void gedi_project_save_as(GEDI * gedi, char const * filename)
+int gedi_project_save_as(GEDI * gedi, char const * filename)
 {
-	/* FIXME */
+	Project * project;
+
+	if((project = _gedi_get_current_project(gedi)) == NULL)
+		return -1;
+	if(project_set_pathname(project, filename) != 0)
+		return -1;
+	return project_save(project);
+}
+
+
+/* gedi_project_save_dialog */
+int gedi_project_save_dialog(GEDI * gedi)
+{
+	int ret = -1;
+	Project * project;
+	GtkWidget * dialog;
+	gchar * filename = NULL;
+
+	if((project = _gedi_get_current_project(gedi)) == NULL)
+		return -1;
+	dialog = gtk_file_chooser_dialog_new("Save project as...", NULL,
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	/* FIXME add options? (recursive save) */
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename != NULL)
+		ret = gedi_project_save_as(gedi, filename);
+	g_free(filename);
+	return ret;
 }
 
 
@@ -492,4 +532,18 @@ static gboolean _on_preferences_closex(gpointer data)
 
 	_on_preferences_cancel(gedi);
 	return TRUE;
+}
+
+
+/* private */
+/* gedi_get_current_project */
+static Project * _gedi_get_current_project(GEDI * gedi)
+{
+	if(gedi->cur == NULL)
+	{
+		/* FIXME should not happen (disable callback action) */
+		gedi_error(gedi, "No project opened", 1);
+		return NULL;
+	}
+	return gedi->cur;
 }
