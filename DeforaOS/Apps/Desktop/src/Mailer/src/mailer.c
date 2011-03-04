@@ -1877,7 +1877,7 @@ static void _on_preferences_account_edit(gpointer data)
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 				mailer->pr_accounts));
-	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+	if(gtk_tree_selection_get_selected(selection, &model, &iter) != TRUE)
 		return;
 	gtk_tree_model_get(model, &iter, AC_DATA, &account, -1);
 	_account_edit(mailer, account);

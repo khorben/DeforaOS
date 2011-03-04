@@ -339,7 +339,6 @@ int account_init(Account * account)
 GtkTextBuffer * account_select(Account * account, Folder * folder,
 		Message * message)
 {
-	GtkTextBuffer * ret;
 	AccountFolder * af;
 	AccountMessage * am;
 
