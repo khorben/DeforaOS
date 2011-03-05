@@ -382,7 +382,6 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id)
 {
-	POP3 * pop3 = plugin->priv;
 	size_t i;
 
 	for(i = 0; i < folder->messages_cnt; i++)
