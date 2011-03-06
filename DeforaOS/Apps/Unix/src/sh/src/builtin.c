@@ -81,10 +81,10 @@ int builtin_cd(int argc, char * argv[])
 
 static int _cd_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: cd [-L | -P] directory\n\
+	fputs("Usage: cd [-L | -P] directory\n\
        cd -\n\
   -L	resolve symbolic links after parent directories\n\
-  -P	resolve symbolic links before parent directories\n");
+  -P	resolve symbolic links before parent directories\n", stderr);
 	return 1;
 }
 
@@ -95,7 +95,7 @@ static int _cd_home(void)
 
 	if((home = getenv("HOME")) == NULL)
 	{
-		fprintf(stderr, "%s", "sh: cd: $HOME is not set\n");
+		fputs("sh: cd: $HOME is not set\n", stderr);
 		return 125;
 	}
 	return _cd_chdir(&prefs, home);
@@ -109,7 +109,7 @@ static int _cd_previous(void)
 
 	if((oldpwd = getenv("OLDPWD")) == NULL)
 	{
-		fprintf(stderr, "%s", "sh: cd: $OLDPWD is not set\n");
+		fputs("sh: cd: $OLDPWD is not set\n", stderr);
 		return 125;
 	}
 	if((ret = _cd_chdir(&prefs, oldpwd)) == 0)
@@ -169,7 +169,7 @@ int builtin_exit(int argc, char * argv[])
 
 static int _exit_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: exit [n]\n");
+	fputs("Usage: exit [n]\n", stderr);
 	return 1;
 }
 
@@ -206,9 +206,9 @@ int builtin_export(int argc, char * argv[])
 
 static int _export_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: export name[=value]...\n\
+	fputs("Usage: export name[=value]...\n\
        export -p\n\
-  -p	list all variables\n");
+  -p	list all variables\n", stderr);
 	return 1;
 }
 
@@ -308,9 +308,10 @@ int builtin_jobs(int argc, char * argv[])
 
 static int _jobs_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: jobs [-l | -p][job_id...]\n\
+	fputs("Usage: jobs [-l | -p][job_id...]\n\
   -l	provide information about listed jobs (default: all)\n\
-  -p	display process group leaders ID about listed jobs (default: all)\n");
+  -p	display process group leaders ID about listed jobs (default: all)\n",
+			stderr);
 	return 1;
 }
 
@@ -337,8 +338,8 @@ int builtin_read(int argc, char * argv[])
 
 static int _read_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: read [-r] var...\n\
-  -r	do not escape backslashes\n");
+	fputs("Usage: read [-r] var...\n\
+  -r	do not escape backslashes\n", stderr);
 	return 1;
 }
 
@@ -417,9 +418,9 @@ int builtin_set(int argc, char * argv[])
 static int _set_usage(void)
 {
 	/* FIXME */
-	fprintf(stderr, "%s", "Usage: set -- [argument...]\n\
+	fputs("Usage: set -- [argument...]\n\
        set -o\n\
-       set +o\n");
+       set +o\n", stderr);
 	return 1;
 }
 
@@ -457,7 +458,7 @@ static int _set_unset(void)
 	unsigned int pos;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_set_unset()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	for(e = *environ; e != NULL; e = *environ)
 	{
@@ -500,8 +501,8 @@ int builtin_umask(int argc, char * argv[])
 
 static int _umask_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: umask [-s][mask]\n\
-  -S	provide symbolic output\n");
+	fputs("Usage: umask [-s][mask]\n\
+  -S	provide symbolic output\n", stderr);
 	return 1;
 }
 
@@ -555,8 +556,8 @@ int builtin_unset(int argc, char * argv[])
 
 static int _unset_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: unset [-fv] name [...]\n\
+	fputs("Usage: unset [-fv] name [...]\n\
   -f	\n\
-  -v	\n");
+  -v	\n", stderr);
 	return 1;
 }
