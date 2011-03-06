@@ -119,6 +119,7 @@ static int _cd_previous(void)
 
 static int _cd_chdir(int * prefs, char const * path)
 {
+	char * p;
 	char const * oldpwd;
 
 	/* FIXME use prefs */
@@ -127,9 +128,11 @@ static int _cd_chdir(int * prefs, char const * path)
 	if((oldpwd = getenv("PWD")) != NULL)
 		if(setenv("OLDPWD", oldpwd, 1) != 0)
 			sh_error("setenv OLDPWD", 0);
-	/* FIXME else get current directory using getcwd */
+	if((p = getcwd(NULL, 0)) != NULL)
+		path = p;
 	if(setenv("PWD", path, 1) != 0)
 		sh_error("setenv PWD", 0);
+	free(p);
 	return 0;
 }
 
