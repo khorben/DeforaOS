@@ -63,6 +63,7 @@ static int _sh(Prefs * prefs, int argc, char * argv[])
 	int ret;
 	FILE * fp;
 
+	setenv("PATH", "/usr/bin:/bin", 0);
 	export = sh_export();
 	if(*prefs & PREFS_c)
 		ret = parser(prefs, *argv, NULL, argc - 1, &argv[1]);
