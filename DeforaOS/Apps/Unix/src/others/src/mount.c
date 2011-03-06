@@ -450,12 +450,15 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 		flags |= MS_REMOUNT;
 #endif
 	_mount_do_options(prefs, &flags);
+	if(prefs->type == NULL)
+		return _mount_callback_generic(NULL, flags, special, node);
 	for(i = 0; _mount_supported[i].name != NULL; i++)
-		if(prefs->type != NULL && strcmp(_mount_supported[i].name,
-					prefs->type) == 0)
-			break;
-	return _mount_supported[i].callback(_mount_supported[i].type, flags,
-			special, node);
+		if(strcmp(_mount_supported[i].name, prefs->type) == 0)
+			return _mount_supported[i].callback(
+					_mount_supported[i].type, flags,
+					special, node);
+	errno = ENOTSUP;
+	return -_mount_error(prefs->type, 1);
 }
 
 static int _mount_do_mount(char const * type, int flags, char const * special,
