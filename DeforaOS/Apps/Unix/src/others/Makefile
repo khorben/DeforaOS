@@ -1,5 +1,5 @@
 PACKAGE	= others
-VERSION	= 0.0.1
+VERSION	= 0.0.2
 SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -f
