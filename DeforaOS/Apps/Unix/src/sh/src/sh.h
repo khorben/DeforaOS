@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix sh */
 /* sh is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -33,7 +33,7 @@ extern char ** export;
 
 
 /* functions */
-int sh_error(char * message, int ret);
+int sh_error(char const * message, int ret);
 char ** sh_export(void);
 void sh_handler(int signum);
 

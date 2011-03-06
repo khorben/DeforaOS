@@ -88,7 +88,8 @@ static int _sh(Prefs * prefs, int argc, char * argv[])
 }
 
 
-int sh_error(char * message, int ret)
+/* sh_error */
+int sh_error(char const * message, int ret)
 {
 	fputs("sh: ", stderr);
 	perror(message);
