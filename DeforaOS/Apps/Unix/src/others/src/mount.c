@@ -833,19 +833,26 @@ static int _mount_callback_unionfs(char const * type, int flags,
 static int _usage(void)
 {
 	size_t i;
-	char const * sep = " ";
+	char const * sep = "";
 
 	fputs("Usage: mount [-a][-t type]\n"
 "       mount [-f] special | node\n"
 "       mount [-f][-u][-o options] special node\n", stderr);
-	fputs("\nOptions supported:", stderr);
+	fputs("\nFilesystems supported:\n", stderr);
+	for(i = 0; _mount_supported[i].name != NULL; i++)
+	{
+		fprintf(stderr, "%s%s", sep, _mount_supported[i].name);
+		sep = ", ";
+	}
+	fputs("\n\nOptions supported:\n", stderr);
+	sep = "";
 	for(i = 0; _mount_options[i].name != NULL; i++)
 		if(_mount_options[i].flags >= 0)
 		{
 			fprintf(stderr, "%s%s", sep, _mount_options[i].name);
-			sep = ",";
+			sep = ", ";
 		}
-	fputc('\n', stderr);
+	fputs("\n\nEach filesystem may not support every option.\n", stderr);
 	return 1;
 }
 
