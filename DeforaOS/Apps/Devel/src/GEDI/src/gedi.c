@@ -47,6 +47,8 @@ struct _GEDI
 
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_editor_command;
+	GtkWidget * pr_editor_terminal;
 
 	/* files */
 	GtkWidget * fi_window;
@@ -202,7 +204,7 @@ static void _new_config(GEDI * gedi)
 
 static char * _config_file(void)
 {
-	char const conffile[] = ".gedirc";
+	char const conffile[] = ".gedi";
 	char const * homedir;
 	size_t len;
 	char * filename;
@@ -293,16 +295,22 @@ int gedi_error(GEDI * gedi, char const * message, int ret)
 /* gedi_file_open */
 void gedi_file_open(GEDI * gedi, char const * filename)
 {
-	/* FIXME really use the MIME sub-system (and preferences) */
-	char * argv[] = { "editor", NULL, NULL };
+	/* FIXME really use the MIME sub-system */
+	char * argv[] = { NULL, NULL, NULL };
+	char const * p;
 	GError * error = NULL;
 
+	if((p = config_get(gedi->config, "editor", "command")) == NULL)
+		p = "editor"; /* XXX gather defaults in a common place */
+	if((argv[0] = strdup(p)) == NULL)
+		return; /* XXX report error */
 	if(filename != NULL)
-		argv[1] = g_strdup(filename);
+		argv[1] = strdup(filename); /* XXX check and report error */
 	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
 				NULL, &error) != TRUE)
-		gedi_error(gedi, argv[0], 0);
-	g_free(argv[1]);
+		gedi_error(gedi, error->message, 1);
+	free(argv[1]);
+	free(argv[0]);
 }
 
 
@@ -433,6 +441,7 @@ int gedi_project_save_dialog(GEDI * gedi)
 
 /* gedi_show_preferences */
 static void _show_preferences_window(GEDI * gedi);
+static void _preferences_set(GEDI * gedi);
 static gboolean _on_preferences_closex(gpointer data);
 static void _on_preferences_apply(gpointer data);
 static void _on_preferences_cancel(gpointer data);
@@ -467,16 +476,23 @@ static void _show_preferences_window(GEDI * gedi)
 	nb = gtk_notebook_new();
 	/* notebook page editor */
 	nb_vbox = gtk_vbox_new(FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new("Choose editor"),
-			FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new(
-				"Program executable"), FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new(
-				"Runs in a terminal"), FALSE, FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(nb_vbox), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Editor:"), FALSE, TRUE,
+			0);
+	gedi->pr_editor_command = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), gedi->pr_editor_command, TRUE, TRUE,
+			0);
+	gtk_box_pack_start(GTK_BOX(nb_vbox), hbox, FALSE, TRUE, 0);
+	gedi->pr_editor_terminal = gtk_check_button_new_with_mnemonic(
+			"Run in a _terminal");
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gedi->pr_editor_terminal, FALSE,
+			TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
 				"Editor"));
 	/* notebook page plug-ins */
 	nb_vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(nb_vbox), 4);
 	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
 				"Plug-ins"));
 	gtk_box_pack_start(GTK_BOX(vbox), nb, TRUE, TRUE, 0);
@@ -496,17 +512,27 @@ static void _show_preferences_window(GEDI * gedi)
 	gtk_box_pack_end(GTK_BOX(hbox), b_cancel, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(gedi->pr_window), vbox);
+	_preferences_set(gedi);
 	gtk_widget_show_all(vbox);
 }
 
 static void _preferences_set(GEDI * gedi)
 {
-	/* FIXME implement */
+	char const * p;
+
+	if((p = config_get(gedi->config, "editor", "command")) == NULL)
+		p = "editor";
+	gtk_entry_set_text(GTK_ENTRY(gedi->pr_editor_command), p);
+	/* FIXME implement the rest */
 }
 
 static void _on_preferences_apply(gpointer data)
 {
-	/* FIXME implement */
+	GEDI * gedi = data;
+
+	config_set(gedi->config, "editor", "command", gtk_entry_get_text(
+				GTK_ENTRY(gedi->pr_editor_command)));
+	/* FIXME implement the rest */
 }
 
 
@@ -524,6 +550,7 @@ static void _on_preferences_ok(gpointer data)
 
 	_on_preferences_apply(gedi);
 	gtk_widget_hide(gedi->pr_window);
+	/* FIXME actually save preferences */
 }
 
 static gboolean _on_preferences_closex(gpointer data)
