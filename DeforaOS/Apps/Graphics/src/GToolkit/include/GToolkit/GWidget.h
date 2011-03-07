@@ -1,4 +1,4 @@
-/* GToolkit/GWidget.h */
+/* $Id$ */
 
 
 
@@ -6,6 +6,7 @@
 # define GTOOLKIT_GWIDGET_H
 
 
+/* GWidget */
 /* types */
 typedef struct _GWidget GWidget;
 

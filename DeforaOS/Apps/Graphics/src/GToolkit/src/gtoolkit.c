@@ -7,10 +7,19 @@
 #include "common.h"
 
 
+/* GToolkit */
+/* private */
+/* variables */
 static int _gt_init = 0; /* FIXME pointer(s) to function(s) instead? */
+
+
+/* protected */
+/* variables */
 GToolkit gt;
 
 
+/* public */
+/* functions */
 /* g_init */
 int g_init(void)
 {

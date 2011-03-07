@@ -1,4 +1,4 @@
-/* GToolkit.h */
+/* $Id$ */
 
 
 
@@ -8,6 +8,7 @@
 # include "GToolkit/GWindow.h"
 
 
+/* GToolkit */
 /* functions */
 int g_init(void);
 int g_quit(void);

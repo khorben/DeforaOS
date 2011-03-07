@@ -1,4 +1,4 @@
-/* GToolkit/GWindow.h */
+/* $Id$ */
 
 
 
@@ -6,11 +6,15 @@
 # define GTOOLKIT_GWINDOW_H
 
 
+/* GWindow */
 /* types */
 typedef struct _GWindow GWindow;
 
 
 /* functions */
-GWindow * gwindow_new();
+GWindow * gwindow_new(void);
+
+/* useful */
+void gwindow_show(GWindow * gwindow);
 
 #endif /* !GTOOLKIT_GWINDOW_H */

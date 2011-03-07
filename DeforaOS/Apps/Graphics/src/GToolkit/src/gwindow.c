@@ -8,6 +8,8 @@
 #include "GToolkit/GWindow.h"
 
 
+/* GWindow */
+/* private */
 /* types */
 struct _GWindow
 {
@@ -19,6 +21,7 @@ struct _GWindow
 };
 
 
+/* public */
 /* functions */
 /* gwindow_new */
 GWindow * gwindow_new(void)
@@ -45,6 +48,7 @@ GWindow * gwindow_new(void)
 }
 
 
+/* gwindow_delete */
 void gwindow_delete(GWindow * gwindow)
 {
 	if(g_alloced(gwindow) != gwindow)
@@ -55,8 +59,9 @@ void gwindow_delete(GWindow * gwindow)
 
 
 /* useful */
+/* gwindow_show */
 void gwindow_show(GWindow * gwindow)
-	/* FIXME generic widget_show() instead */
+	/* FIXME accept flags (focus...) */
 {
 	XMapRaised(gt.display, gwindow->window);
 	glXMakeCurrent(gt.display, gwindow->window, gwindow->context);
