@@ -23,7 +23,7 @@ makepasswd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 makepasswd: $(makepasswd_OBJS)
 	$(CC) -o makepasswd $(makepasswd_OBJS) $(makepasswd_LDFLAGS)
 
-makepasswd.o: makepasswd.c global.h md5.h
+makepasswd.o: makepasswd.c global.h md5.h ../config.h
 	$(CC) $(makepasswd_CFLAGS) -c makepasswd.c
 
 md5c.o: md5c.c global.h md5.h
