@@ -3,8 +3,7 @@ It is able to generate its crypted equivalent.
 
 
 Newest versions can be found at:
-http://www.defora.org/projects/makepasswd
-
+http://www.defora.org/os/project/117/makepasswd
 
 It just needs GCC, make and your glibc headers to compile (I'm using linux, glibc 2.2.5 and gcc 3.2.1).
 
