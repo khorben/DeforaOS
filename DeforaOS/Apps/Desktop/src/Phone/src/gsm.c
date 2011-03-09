@@ -1369,7 +1369,9 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 			*answered = TRUE;
 		if(gsmc != NULL)
 			error = gsm_command_get_error(gsmc);
+#if 0 /* XXX disabled for now */
 		gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error, _("Unknown error"));
+#endif
 		return 0;
 	}
 	/* XXX look for a potential trigger */

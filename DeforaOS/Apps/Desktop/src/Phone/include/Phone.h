@@ -61,6 +61,7 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_OFFLINE,
 	PHONE_EVENT_ONLINE,
 	PHONE_EVENT_RESUME,
+	PHONE_EVENT_RESUMING,
 	PHONE_EVENT_SET_OPERATOR,	/* char const * operator */
 	PHONE_EVENT_SET_SIGNAL_LEVEL,	/* gdouble level */
 	PHONE_EVENT_SET_VOLUME,		/* gdouble volume */
@@ -80,8 +81,15 @@ typedef enum _PhoneEvent
 
 typedef enum _PhoneMessage
 {
-	PHONE_MESSAGE_SHOW = 0
+	PHONE_MESSAGE_SHOW = 0,
+	PHONE_MESSAGE_POWER_MANAGEMENT
 } PhoneMessage;
+
+typedef enum _PhoneMessagePowerManagement
+{
+	PHONE_MESSAGE_POWER_MANAGEMENT_RESUME = 0,
+	PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND
+} PhoneMessagePowerManagement;
 
 typedef enum _PhoneMessageShow
 {

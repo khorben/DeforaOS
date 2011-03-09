@@ -120,6 +120,8 @@ static int _openmoko_destroy(PhonePlugin * plugin)
 /* openmoko_event */
 static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
 static int _event_power_on(PhonePlugin * plugin, gboolean power);
+static int _event_resuming(PhonePlugin * plugin);
+static int _event_suspend(PhonePlugin * plugin);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
 static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
@@ -164,6 +166,9 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_ONLINE:
 			_event_power_on(plugin, TRUE);
 			break;
+		case PHONE_EVENT_RESUMING:
+			_event_resuming(plugin);
+			break;
 		case PHONE_EVENT_SET_VOLUME:
 			va_start(ap, event);
 			level = va_arg(ap, gdouble);
@@ -177,6 +182,9 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_SPEAKER_OFF:
 			/* XXX assumes there's an ongoing call */
 			_event_mixer_set(plugin, "gsmhandset.state");
+			break;
+		case PHONE_EVENT_SUSPEND:
+			_event_suspend(plugin);
 			break;
 		case PHONE_EVENT_VIBRATOR_OFF:
 			_event_vibrator(plugin, FALSE);
@@ -239,6 +247,35 @@ static int _event_power_on(PhonePlugin * plugin, gboolean power)
 		ret = plugin->helper->error(NULL, buf, 1);
 	}
 	return ret;
+}
+
+static int _event_resuming(PhonePlugin * plugin)
+{
+	plugin->helper->queue(plugin->helper->phone, "AT+CTZU=1");
+	plugin->helper->queue(plugin->helper->phone, "AT+CTZR=1");
+	plugin->helper->queue(plugin->helper->phone, "AT+CREG=2");
+	plugin->helper->queue(plugin->helper->phone, "AT+CGEREP=2,1");
+#if 0 /* XXX not enabled in the first place */
+	plugin->helper->queue(plugin->helper->phone, "AT%CSQ=1");
+	plugin->helper->queue(plugin->helper->phone, "AT%CPRI=1");
+	plugin->helper->queue(plugin->helper->phone, "AT%CNIV=1");
+#endif
+	return 0;
+}
+
+static int _event_suspend(PhonePlugin * plugin)
+{
+	plugin->helper->queue(plugin->helper->phone, "AT+CTZU=0");
+	plugin->helper->queue(plugin->helper->phone, "AT+CTZR=0");
+	plugin->helper->queue(plugin->helper->phone, "AT+CREG=0");
+	plugin->helper->queue(plugin->helper->phone, "AT+CGEREP=0,0");
+#if 0 /* XXX not enabled in the first place */
+	plugin->helper->queue(plugin->helper->phone, "AT%CSQ=0");
+	plugin->helper->queue(plugin->helper->phone, "AT%CPRI=0");
+	plugin->helper->queue(plugin->helper->phone, "AT%CNIV=0");
+	plugin->helper->queue(plugin->helper->phone, "AT%CBHZ=0");
+#endif
+	return 0;
 }
 
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)

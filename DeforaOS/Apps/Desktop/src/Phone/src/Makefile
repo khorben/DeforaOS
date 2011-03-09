@@ -1,5 +1,5 @@
 SUBDIRS	= plugins
-TARGETS	= phone phone-contacts phone-dialer phone-logs phone-messages phone-settings
+TARGETS	= phone phone-contacts phone-dialer phone-logs phone-messages phone-resume phone-settings phone-suspend
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -56,12 +56,26 @@ phone-messages_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 phone-messages: $(phone-messages_OBJS)
 	$(CC) -o phone-messages $(phone-messages_OBJS) $(phone-messages_LDFLAGS)
 
+phone-resume_OBJS = resume.o
+phone-resume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-resume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+phone-resume: $(phone-resume_OBJS)
+	$(CC) -o phone-resume $(phone-resume_OBJS) $(phone-resume_LDFLAGS)
+
 phone-settings_OBJS = settings.o
 phone-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 phone-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 phone-settings: $(phone-settings_OBJS)
 	$(CC) -o phone-settings $(phone-settings_OBJS) $(phone-settings_LDFLAGS)
+
+phone-suspend_OBJS = suspend.o
+phone-suspend_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-suspend_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+phone-suspend: $(phone-suspend_OBJS)
+	$(CC) -o phone-suspend $(phone-suspend_OBJS) $(phone-suspend_LDFLAGS)
 
 callbacks.o: callbacks.c ../include/Phone.h phone.h callbacks.h
 	$(CC) $(phone_CFLAGS) -c callbacks.c
@@ -93,16 +107,22 @@ logs.o: logs.c common.c
 messages.o: messages.c common.c
 	$(CC) $(phone-messages_CFLAGS) -c messages.c
 
+resume.o: resume.c common.c
+	$(CC) $(phone-resume_CFLAGS) -c resume.c
+
 settings.o: settings.c common.c
 	$(CC) $(phone-settings_CFLAGS) -c settings.c
 
+suspend.o: suspend.c common.c
+	$(CC) $(phone-suspend_CFLAGS) -c suspend.c
+
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
+	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-resume_OBJS) $(phone-settings_OBJS) $(phone-suspend_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
+	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-logs_OBJS) $(phone-messages_OBJS) $(phone-resume_OBJS) $(phone-settings_OBJS) $(phone-suspend_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -118,7 +138,11 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- phone-messages $(DESTDIR)$(BINDIR)/phone-messages
 	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- phone-resume $(DESTDIR)$(BINDIR)/phone-resume
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- phone-settings $(DESTDIR)$(BINDIR)/phone-settings
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- phone-suspend $(DESTDIR)$(BINDIR)/phone-suspend
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
@@ -127,6 +151,8 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-dialer
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-logs
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-messages
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-resume
 	$(RM) -- $(DESTDIR)$(BINDIR)/phone-settings
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-suspend
 
 .PHONY: all subdirs clean distclean install uninstall

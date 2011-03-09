@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@ gboolean on_phone_closex(gpointer data)
 
 
 /* on_phone_filter */
+static GdkFilterReturn _filter_message_power_management(Phone * phone,
+                PhoneMessagePowerManagement what);
 static GdkFilterReturn _filter_message_show(Phone * phone,
 		PhoneMessageShow what, gboolean show);
 
@@ -54,6 +56,25 @@ GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
 		case PHONE_MESSAGE_SHOW:
 			return _filter_message_show(phone, xclient->data.b[1],
 					xclient->data.b[2]);
+		case PHONE_MESSAGE_POWER_MANAGEMENT:
+			return _filter_message_power_management(phone,
+					xclient->data.b[1]);
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _filter_message_power_management(Phone * phone,
+                PhoneMessagePowerManagement what)
+{
+	switch(what)
+	{
+		case PHONE_MESSAGE_POWER_MANAGEMENT_RESUME:
+			/* XXX workaround an infinite loop with the Openmoko */
+			phone_event(phone, PHONE_EVENT_RESUMING);
+			break;
+		case PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND:
+			phone_event(phone, PHONE_EVENT_SUSPEND);
+			break;
 	}
 	return GDK_FILTER_CONTINUE;
 }
