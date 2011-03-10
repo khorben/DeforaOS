@@ -30,6 +30,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
 		$(PACKAGE)-$(VERSION)/data/24x24/todo.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
+		$(PACKAGE)-$(VERSION)/data/48x48/Makefile \
 		$(PACKAGE)-$(VERSION)/data/48x48/todo.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
