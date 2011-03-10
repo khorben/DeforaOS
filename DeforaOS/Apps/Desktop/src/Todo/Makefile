@@ -1,5 +1,5 @@
 PACKAGE	= Todo
-VERSION	= 0.1.0
+VERSION	= 0.1.1
 SUBDIRS	= data po src
 RM	= rm -f
 LN	= ln -f
