@@ -37,6 +37,7 @@ typedef struct _PanelAppletHelper
 			char const * variable, char const * value);
 	int (*error)(Panel * panel, char const * message, int ret);
 	void (*about_dialog)(Panel * panel);
+	int (*lock)(Panel * panel);
 	void (*logout_dialog)(Panel * panel);
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
 			gboolean * push_in, gpointer data);

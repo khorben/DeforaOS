@@ -112,6 +112,7 @@ static int _panel_helper_config_set(Panel * panel, char const * section,
 		char const * variable, char const * value);
 static int _panel_helper_error(Panel * panel, char const * message, int ret);
 static void _panel_helper_about_dialog(Panel * panel);
+static int _panel_helper_lock(Panel * panel);
 #ifndef EMBEDDED
 static void _panel_helper_logout_dialog(Panel * panel);
 #endif
@@ -156,6 +157,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->top_helper.error = _panel_helper_error;
 	panel->top_helper.icon_size = PANEL_ICON_SIZE_UNSET;
 	panel->top_helper.about_dialog = _panel_helper_about_dialog;
+	panel->top_helper.lock = _panel_helper_lock;
 #ifndef EMBEDDED
 	panel->top_helper.logout_dialog = _panel_helper_logout_dialog;
 #else
@@ -463,6 +465,7 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
 	{
 		vbox = gtk_vbox_new(FALSE, 4);
+		g_object_set_data(G_OBJECT(vbox), "applet", pa); /* XXX ugly */
 		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		gtk_widget_show(vbox);
@@ -600,8 +603,10 @@ static void _preferences_on_ok(gpointer data)
 {
 	Panel * panel = data;
 	gint i;
-	const gint cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
+	gint cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
 	char * filename;
+	GtkWidget * widget;
+	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
 	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_bottom_size)))
@@ -612,6 +617,17 @@ static void _preferences_on_ok(gpointer data)
 			>= 0 && i < cnt)
 		config_set(panel->config, NULL, "top_size",
 				_panel_sizes[i].alias);
+	/* XXX applets should be known from Panel already */
+	cnt = gtk_notebook_get_n_pages(GTK_NOTEBOOK(panel->pr_notebook));
+	for(i = 1; i < cnt; i++)
+	{
+		widget = gtk_notebook_get_nth_page(GTK_NOTEBOOK(
+					panel->pr_notebook), i);
+		if(widget == NULL || (pa = g_object_get_data(G_OBJECT(widget),
+						"applet")) == NULL)
+			continue;
+		pa->settings(pa, TRUE, FALSE);
+	}
 	if((filename = _config_get_filename()) != NULL)
 		config_save(panel->config, filename);
 	free(filename);
@@ -718,6 +734,22 @@ static gboolean _about_on_closex(gpointer data)
 
 	gtk_widget_hide(panel->ab_window);
 	return TRUE;
+}
+
+
+/* panel_helper_lock */
+static int _panel_helper_lock(Panel * panel)
+{
+	/* FIXME default to calling XActivateScreenSaver() */
+	char const * command = "xset s activate";
+	char const * p;
+	GError * error = NULL;
+
+	if((p = config_get(panel->config, "lock", "command")) != NULL)
+		command = p;
+	if(g_spawn_command_line_async(command, &error) != TRUE)
+		return panel_error(panel, error->message, 1);
+	return 0;
 }
 
 
@@ -930,7 +962,8 @@ static int _panel_helper_suspend(Panel * panel)
 #ifdef __NetBSD__
 	int sleep_state = 3;
 #else
-	char * suspend[] = { "/usr/bin/sudo", "sudo", "/sbin/apm", "-s", NULL };
+	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
+		NULL };
 	GError * error = NULL;
 #endif
 
@@ -938,11 +971,11 @@ static int _panel_helper_suspend(Panel * panel)
 	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
 				sizeof(sleep_state)) != 0)
 		return panel_error(panel, "sysctl", 1);
-	return 0;
 #else
 	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
 				NULL, NULL, &error) != TRUE)
 		return panel_error(panel, error->message, 1);
-	return 0;
 #endif
+	_panel_helper_lock(panel); /* XXX may already be suspended */
+	return 0;
 }

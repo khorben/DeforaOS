@@ -71,8 +71,6 @@ static const MainMenu _main_menus[] =
 };
 #define MAIN_MENUS_COUNT (sizeof(_main_menus) / sizeof(*_main_menus))
 
-#define PANEL_MAIN_COMMAND_LOCK_DEFAULT "xset s activate"
-
 
 /* prototypes */
 static GtkWidget * _main_init(PanelApplet * applet);
@@ -441,16 +439,8 @@ static gint _idle_apps_compare(gconstpointer a, gconstpointer b)
 static void _on_lock(gpointer data)
 {
 	Main * main = data;
-	PanelAppletHelper * helper = main->helper;
-	char const * command = PANEL_MAIN_COMMAND_LOCK_DEFAULT;
-	char const * p;
-	GError * error = NULL;
 
-	/* FIXME implement a helper instead */
-	if((p = helper->config_get(helper->panel, "lock", "command")) != NULL)
-		command = p;
-	if(g_spawn_command_line_async(command, &error) != TRUE)
-		helper->error(helper->panel, error->message, 1);
+	main->helper->lock(main->helper->panel);
 }
 
 

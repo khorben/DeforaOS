@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* FIXME:
- * - use XActivateScreenSaver() */
 
 
 
@@ -42,10 +40,6 @@ static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
 
 /* callbacks */
 static void _on_clicked(gpointer data);
-
-
-/* constants */
-#define PANEL_LOCK_COMMAND_DEFAULT "xset s activate"
 
 
 /* public */
@@ -131,7 +125,7 @@ static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
 	{
 		if((p = applet->helper->config_get(applet->helper->panel,
 						"lock", "command")) == NULL)
-			p = PANEL_LOCK_COMMAND_DEFAULT;
+			p = "xset s activate";
 		gtk_entry_set_text(GTK_ENTRY(lock->pr_command), p);
 	}
 	if(apply == TRUE)
@@ -149,12 +143,6 @@ static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
 static void _on_clicked(gpointer data)
 {
 	PanelAppletHelper * helper = data;
-	char const * command = PANEL_LOCK_COMMAND_DEFAULT;
-	char const * p;
-	GError * error = NULL;
 
-	if((p = helper->config_get(helper->panel, "lock", "command")) != NULL)
-		command = p;
-	if(g_spawn_command_line_async(command, &error) != TRUE)
-		helper->error(NULL, error->message, 1);
+	helper->lock(helper->panel);
 }
