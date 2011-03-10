@@ -153,20 +153,31 @@ static void _gsm_set_operator(GSM * gsm, char const * operator)
 static gboolean _gsm_get(GSM * gsm)
 {
 	/* XXX currently hard-coded for the Openmoko Freerunner */
-	const char dev[] = "/sys/bus/platform/devices/neo1973-pm-gsm.0/"
+	char const dv1[] = "/sys/bus/platform/devices/gta02-pm-gsm.0/"
 		"power_on";
+	char const dv2[] = "/sys/bus/platform/devices/neo1973-pm-gsm.0/"
+		"power_on";
+	char const * dev = dv1;
 	char on;
 
-	if(gsm->fd == -1 && (gsm->fd = open(dev, O_RDONLY)) == -1)
+	if(gsm->fd < 0)
 	{
-		error_set("%s: %s", dev, strerror(errno));
-		return FALSE;
+		if((gsm->fd = open(dev, O_RDONLY)) < 0)
+		{
+			dev = dv2;
+			gsm->fd = open(dev, O_RDONLY);
+		}
+		if(gsm->fd < 0)
+		{
+			error_set_code(1, "%s: %s", dev, strerror(errno));
+			return FALSE;
+		}
 	}
 	errno = ENODATA; /* in case the pseudo-file is empty */
 	if(lseek(gsm->fd, 0, SEEK_SET) != 0
 			|| read(gsm->fd, &on, sizeof(on)) != 1)
 	{
-		error_set("%s: %s", dev, strerror(errno));
+		error_set(1, "%s: %s", dev, strerror(errno));
 		close(gsm->fd);
 		gsm->fd = -1;
 		return FALSE;

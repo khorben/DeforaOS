@@ -128,23 +128,24 @@ static void _gps_set(GPS * gps, gboolean on)
 static gboolean _gps_get(GPS * gps)
 {
 	/* XXX currently hard-coded for the Openmoko Freerunner */
-	const char path1[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
-		"neo1973-pm-gps.0/power_on";
-	const char path2[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
+	char const p1[] = "/sys/bus/platform/devices/gta02-pm-gps.0/power_on";
+	char const p2[] = "/sys/bus/platform/devices/neo1973-pm-gps.0/power_on";
+	char const p3[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
 		"neo1973-pm-gps.0/pwron";
 	char on;
 
-	if(gps->fd == -1 && (gps->fd = open(path1, O_RDONLY)) == -1
-			&& (gps->fd = open(path2, O_RDONLY)) == -1)
+	if(gps->fd < 0 && (gps->fd = open(p1, O_RDONLY)) < 0
+			&& (gps->fd = open(p2, O_RDONLY)) < 0
+			&& (gps->fd = open(p3, O_RDONLY)) < 0)
 	{
-		error_set("%s: %s", path1, strerror(errno));
+		error_set("%s: %s", p1, strerror(errno));
 		return FALSE;
 	}
 	errno = ENODATA; /* in case the pseudo-file is empty */
 	if(lseek(gps->fd, 0, SEEK_SET) != 0
 			|| read(gps->fd, &on, sizeof(on)) != 1)
 	{
-		error_set("%s: %s", path1, strerror(errno));
+		error_set("%s: %s", p1, strerror(errno));
 		close(gps->fd);
 		gps->fd = -1;
 		return FALSE;

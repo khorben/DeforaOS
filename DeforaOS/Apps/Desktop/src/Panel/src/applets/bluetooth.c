@@ -162,13 +162,23 @@ static gboolean _bluetooth_get(Bluetooth * bluetooth)
 static gboolean _bluetooth_get(Bluetooth * bluetooth)
 {
 	/* XXX currently hard-coded for the Openmoko Freerunner */
-	const char dev[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
+	char const dv1[] = "/sys/bus/platform/devices/gta02-pm-bt.0/power_on";
+	char const dv2[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
+	char const * dev = dv1;
 	char on;
 
-	if(bluetooth->fd == -1 && (bluetooth->fd = open(dev, O_RDONLY)) == -1)
+	if(bluetooth->fd < 0)
 	{
-		error_set("%s: %s", dev, strerror(errno));
-		return FALSE;
+		if((bluetooth->fd = open(dev, O_RDONLY)) < 0)
+		{
+			dev = dv2;
+			bluetooth->fd = open(dev, O_RDONLY);
+		}
+		if(bluetooth->fd < 0)
+		{
+			error_set("%s: %s", dev, strerror(errno));
+			return FALSE;
+		}
 	}
 	errno = ENODATA; /* in case the pseudo-file is empty */
 	if(lseek(bluetooth->fd, 0, SEEK_SET) != 0
