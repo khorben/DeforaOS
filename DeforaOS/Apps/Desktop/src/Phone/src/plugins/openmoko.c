@@ -226,17 +226,15 @@ static int _event_mixer_set(PhonePlugin * plugin, char const * filename)
 static int _event_power_on(PhonePlugin * plugin, gboolean power)
 {
 	int ret = 0;
-	char const path1[] = "/sys/bus/platform/drivers/gta02-pm-gsm"
-		"/gta02-pm-gsm.0/power_on";
-	char const path2[] = "/sys/bus/platform/drivers/neo1973-pm-gsm"
-		"/neo1973-pm-gsm.0/power_on";
-	char const * path = path1;
+	char const p1[] = "/sys/bus/platform/devices/gta02-pm-gsm.0/power_on";
+	char const p2[] = "/sys/bus/platform/devices/neo1973-pm-gsm.0/power_on";
+	char const * path = p1;
 	int fd;
 	char buf[256];
 
 	if((fd = open(path, O_WRONLY)) < 0)
 	{
-		path = path2;
+		path = p2;
 		fd = open(path, O_WRONLY);
 	}
 	if(fd < 0)
