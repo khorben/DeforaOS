@@ -574,7 +574,9 @@ static void _preferences_on_cancel(gpointer data)
 	Panel * panel = data;
 	char const * p;
 	size_t i;
-	const size_t cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
+	size_t cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
+	GtkWidget * widget;
+	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
 	if((p = config_get(panel->config, "", "bottom_size")) != NULL
@@ -597,6 +599,17 @@ static void _preferences_on_cancel(gpointer data)
 						panel->pr_top_size), i);
 			break;
 		}
+	/* XXX applets should be known from Panel already */
+	cnt = gtk_notebook_get_n_pages(GTK_NOTEBOOK(panel->pr_notebook));
+	for(i = 1; i < cnt; i++)
+	{
+		widget = gtk_notebook_get_nth_page(GTK_NOTEBOOK(
+					panel->pr_notebook), i);
+		if(widget == NULL || (pa = g_object_get_data(G_OBJECT(widget),
+						"applet")) == NULL)
+			continue;
+		pa->settings(pa, FALSE, TRUE);
+	}
 }
 
 static void _preferences_on_ok(gpointer data)
