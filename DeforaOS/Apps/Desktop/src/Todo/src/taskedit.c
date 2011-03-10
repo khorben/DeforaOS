@@ -34,7 +34,9 @@ struct _TaskEdit
 	GtkWidget * window;
 	GtkWidget * title;
 	GtkWidget * priority;
+#if 0 /* XXX disabled for now */
 	GtkWidget * description;
+#endif
 };
 
 
@@ -51,11 +53,13 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
-	GtkWidget * scrolled;
 	GtkWidget * widget;
 	GtkWidget * entry;
 	GtkWidget * bbox;
+#if 0 /* XXX disabled for now */
+	GtkWidget * scrolled;
 	char const * description;
+#endif
 
 	if((taskedit = malloc(sizeof(*taskedit))) == NULL)
 		return NULL;
@@ -91,6 +95,7 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 	gtk_entry_set_text(GTK_ENTRY(entry), task_get_priority(task));
 	gtk_box_pack_start(GTK_BOX(hbox), taskedit->priority, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+#if 0 /* XXX disabled for now */
 	/* description */
 	widget = gtk_label_new(_("Description:"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -108,6 +113,7 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 				description, -1);
 	gtk_container_add(GTK_CONTAINER(scrolled), taskedit->description);
 	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
+#endif
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
@@ -137,21 +143,25 @@ static void _on_taskedit_ok(gpointer data)
 {
 	TaskEdit * taskedit = data;
 	GtkWidget * entry;
+#if 0 /* XXX disabled for now */
 	GtkTextBuffer * tbuf;
 	GtkTextIter start;
 	GtkTextIter end;
 	gchar * description;
+#endif
 	
 	task_set_title(taskedit->task, gtk_entry_get_text(GTK_ENTRY(
 					taskedit->title)));
 	entry = gtk_bin_get_child(GTK_BIN(taskedit->priority));
 	task_set_priority(taskedit->task, gtk_entry_get_text(GTK_ENTRY(entry)));
+#if 0 /* XXX disabled for now */
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(taskedit->description));
 	gtk_text_buffer_get_start_iter(tbuf, &start);
 	gtk_text_buffer_get_end_iter(tbuf, &end);
 	description = gtk_text_buffer_get_text(tbuf, &start, &end, FALSE);
 	task_set_description(taskedit->task, description);
 	g_free(description);
+#endif
 	task_save(taskedit->task);
 	todo_task_reload_all(taskedit->todo); /* XXX violent solution */
 	_on_taskedit_cancel(taskedit);

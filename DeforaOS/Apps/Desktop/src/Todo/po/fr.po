@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Todo 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-30 03:04+0100\n"
+"POT-Creation-Date: 2011-03-10 18:04+0100\n"
 "PO-Revision-Date: 2010-04-23 14:35+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,170 +20,170 @@ msgstr ""
 msgid "Usage: todo\n"
 msgstr "Usage: todo\n"
 
-#: ../src/taskedit.c:65
+#: ../src/taskedit.c:69
 msgid "Edit task: "
 msgstr "Modifier la tâche : "
 
-#: ../src/taskedit.c:75
+#: ../src/taskedit.c:79
 msgid "Title:"
 msgstr "Titre:"
 
-#: ../src/taskedit.c:85
+#: ../src/taskedit.c:89
 msgid "Priority:"
 msgstr "Priorité:"
 
-#: ../src/taskedit.c:95
+#: ../src/taskedit.c:100
 msgid "Description:"
 msgstr "Description:"
 
-#: ../src/todo.c:74
+#: ../src/todo.c:77
 msgid "Done"
 msgstr "Effectuée"
 
-#: ../src/todo.c:76
+#: ../src/todo.c:79
 msgid "Title"
 msgstr "Titre"
 
-#: ../src/todo.c:78
+#: ../src/todo.c:81
 msgid "Beginning"
 msgstr "Départ"
 
-#: ../src/todo.c:79
+#: ../src/todo.c:82
 msgid "Completion"
 msgstr "Fin"
 
-#: ../src/todo.c:89
+#: ../src/todo.c:92
 msgid "Unknown"
 msgstr "Inconnue"
 
-#: ../src/todo.c:90
+#: ../src/todo.c:93
 msgid "Low"
 msgstr "Faible"
 
-#: ../src/todo.c:91
+#: ../src/todo.c:94
 msgid "Medium"
 msgstr "Moyenne"
 
-#: ../src/todo.c:92
+#: ../src/todo.c:95
 msgid "High"
 msgstr "Haute"
 
-#: ../src/todo.c:93
+#: ../src/todo.c:96
 msgid "Urgent"
 msgstr "Urgent"
 
-#: ../src/todo.c:109
+#: ../src/todo.c:112
 msgid "_New"
 msgstr "_Nouvelle"
 
-#: ../src/todo.c:111 ../src/todo.c:156
+#: ../src/todo.c:114 ../src/todo.c:159
 msgid "_Edit"
 msgstr "Modifier"
 
-#: ../src/todo.c:114
+#: ../src/todo.c:117
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/todo.c:120
+#: ../src/todo.c:123
 msgid "Select _all"
 msgstr "Sélectionner _tout"
 
-#: ../src/todo.c:128
+#: ../src/todo.c:131
 msgid "_Delete"
 msgstr "_Supprimer"
 
-#: ../src/todo.c:130
+#: ../src/todo.c:133
 msgid "_Preferences"
 msgstr "_Préférences"
 
-#: ../src/todo.c:136
+#: ../src/todo.c:139
 msgid "_All tasks"
 msgstr "_Toutes les tâches"
 
-#: ../src/todo.c:137
+#: ../src/todo.c:140
 msgid "_Completed tasks"
 msgstr "Tâches _complétées"
 
-#: ../src/todo.c:139
+#: ../src/todo.c:142
 msgid "_Remaining tasks"
 msgstr "Tâches _restantes"
 
-#: ../src/todo.c:145
+#: ../src/todo.c:148
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/todo.c:155
+#: ../src/todo.c:158
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/todo.c:157
+#: ../src/todo.c:160
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/todo.c:158
+#: ../src/todo.c:161
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/todo.c:166 ../src/todo.c:499
+#: ../src/todo.c:169 ../src/todo.c:502
 msgid "New task"
 msgstr "Nouvelle tâche"
 
-#: ../src/todo.c:167
+#: ../src/todo.c:170
 msgid "Edit task"
 msgstr "Modifier la tâche"
 
-#: ../src/todo.c:170 ../src/todo.c:173
+#: ../src/todo.c:173 ../src/todo.c:176
 msgid "Select all"
 msgstr "Tout sélectionner"
 
-#: ../src/todo.c:176
+#: ../src/todo.c:179
 msgid "Delete task"
 msgstr "Supprimer la tâche"
 
-#: ../src/todo.c:180
+#: ../src/todo.c:183
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/todo.c:226
+#: ../src/todo.c:229
 msgid "Todo"
 msgstr "Todo"
 
-#: ../src/todo.c:237
+#: ../src/todo.c:240
 msgid "View as..."
 msgstr "Vue de..."
 
-#: ../src/todo.c:241
+#: ../src/todo.c:244
 msgid "All tasks"
 msgstr "Toutes les tâches"
 
-#: ../src/todo.c:245
+#: ../src/todo.c:248
 msgid "Completed tasks"
 msgstr "Tâches complétées"
 
-#: ../src/todo.c:249
+#: ../src/todo.c:252
 msgid "Remaining tasks"
 msgstr "Tâches restantes"
 
-#: ../src/todo.c:359
+#: ../src/todo.c:362
 msgid "Priority"
 msgstr "Priorité"
 
-#: ../src/todo.c:452 ../src/todo.c:457
+#: ../src/todo.c:455 ../src/todo.c:460
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/todo.c:552
+#: ../src/todo.c:555
 msgid "Are you sure you want to delete the selected task(s)?"
 msgstr "Voulez-vous vraiment supprimer la sélection?"
 
-#: ../src/todo.c:641
+#: ../src/todo.c:644
 msgid "Time: "
 msgstr "Heure: "
 
-#: ../src/todo.c:650 ../src/todo.c:659
+#: ../src/todo.c:653 ../src/todo.c:662
 msgid ":"
 msgstr ":"
 
-#: ../src/todo.c:1028 ../src/todo.c:1033
+#: ../src/todo.c:1031 ../src/todo.c:1036
 msgid "Question"
 msgstr "Question"

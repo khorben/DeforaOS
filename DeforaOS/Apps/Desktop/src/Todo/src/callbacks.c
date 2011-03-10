@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,8 @@
 
 /* callbacks */
 /* on_closex */
-gboolean on_closex(gpointer data)
+gboolean on_closex(void)
 {
-	Todo * todo = data;
-
 	gtk_main_quit();
 	return FALSE;
 }
@@ -34,9 +32,7 @@ gboolean on_closex(gpointer data)
 /* on_file_close */
 void on_file_close(gpointer data)
 {
-	Todo * todo = data;
-
-	on_closex(todo);
+	on_closex();
 }
 
 
@@ -73,7 +69,7 @@ void on_edit_preferences(gpointer data)
 {
 	Todo * todo = data;
 
-	/* FIXME implement */
+	on_preferences(todo);
 }
 
 

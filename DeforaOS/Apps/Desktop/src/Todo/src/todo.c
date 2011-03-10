@@ -14,6 +14,9 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
+/* TODO:
+ * - handle when the time/date is not set yet
+ * - add a clear/apply button (allocate a temporary object) */
 
 
 
@@ -221,11 +224,11 @@ Todo * todo_new(void)
 	group = gtk_accel_group_new();
 	todo->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(todo->window), group);
-	gtk_window_set_default_size(GTK_WINDOW(todo->window), 300, 400);
+	gtk_window_set_default_size(GTK_WINDOW(todo->window), 640, 480);
 	gtk_window_set_icon_name(GTK_WINDOW(todo->window), "todo");
 	gtk_window_set_title(GTK_WINDOW(todo->window), _("Todo"));
 	g_signal_connect_swapped(G_OBJECT(todo->window), "delete-event",
-			G_CALLBACK(on_closex), todo);
+			G_CALLBACK(on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
 	/* menubar */

@@ -22,7 +22,7 @@
 
 
 /* callbacks */
-gboolean on_closex(gpointer data);
+gboolean on_closex(void);
 
 /* menus */
 /* file menu */
