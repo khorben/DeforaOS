@@ -416,6 +416,7 @@ gboolean ghtml_go_forward(GtkWidget * widget)
 }
 
 
+/* ghtml_load_url */
 void ghtml_load_url(GtkWidget * widget, char const * url)
 {
 	GHtml * ghtml;
@@ -424,7 +425,11 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
 		url = p;
+#if WEBKIT_CHECK_VERSION(1, 1, 1)
+	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(ghtml->view), url);
+#else
 	webkit_web_view_open(WEBKIT_WEB_VIEW(ghtml->view), url);
+#endif
 	g_free(p);
 	surfer_set_progress(ghtml->surfer, 0.0);
 	surfer_set_security(ghtml->surfer, SS_NONE);
