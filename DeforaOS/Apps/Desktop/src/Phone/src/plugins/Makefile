@@ -1,3 +1,4 @@
+SUBDIRS	= 16x16 24x24 32x32 48x48
 TARGETS	= blacklist.so debug.so engineering.so gprs.so openmoko.so oss.so panel.so profiles.so smscrypt.so
 PREFIX	= /usr/local
 DESTDIR	= 
@@ -16,7 +17,10 @@ MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 blacklist_OBJS = blacklist.o
 blacklist_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -109,12 +113,16 @@ smscrypt.o: smscrypt.c ../../include/Phone.h
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -133,6 +141,7 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
@@ -142,4 +151,4 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

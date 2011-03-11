@@ -79,7 +79,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"Openmoko",
-	"stock_cell-phone",
+	"phone-openmoko",
 	_openmoko_init,
 	_openmoko_destroy,
 	_openmoko_event,
