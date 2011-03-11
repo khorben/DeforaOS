@@ -25,6 +25,7 @@
 #include <webkit/webkit.h>
 #include "ghtml.h"
 #include "common/url.c"
+#include "../config.h"
 #define _(string) gettext(string)
 
 
@@ -421,15 +422,29 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 {
 	GHtml * ghtml;
 	gchar * p;
+	const char about[] = "<html>\n<head><title>About " PACKAGE "</title>"
+		"</head>\n<body>\n<h1>" PACKAGE " " VERSION "</h1>\n"
+		"<p>Copyright (c) 2011 <a href=\"http://www.defora.org/\">"
+		"DeforaOS Project</a></p>\n</body>\n</html>";
+	const char blank[] = "";
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
 		url = p;
+	if(strcmp("about:blank", url) == 0)
+		webkit_web_view_load_string(WEBKIT_WEB_VIEW(ghtml->view),
+				blank, NULL, NULL, url);
+	else if(strncmp("about:", url, 6) == 0)
+		webkit_web_view_load_string(WEBKIT_WEB_VIEW(ghtml->view),
+				about, NULL, NULL, url);
+	else
+	{
 #if WEBKIT_CHECK_VERSION(1, 1, 1)
-	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(ghtml->view), url);
+		webkit_web_view_load_uri(WEBKIT_WEB_VIEW(ghtml->view), url);
 #else
-	webkit_web_view_open(WEBKIT_WEB_VIEW(ghtml->view), url);
+		webkit_web_view_open(WEBKIT_WEB_VIEW(ghtml->view), url);
 #endif
+	}
 	g_free(p);
 	surfer_set_progress(ghtml->surfer, 0.0);
 	surfer_set_security(ghtml->surfer, SS_NONE);
