@@ -431,7 +431,6 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
 		url = p;
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, url);
 	if(strcmp("about:blank", url) == 0)
 		webkit_web_view_load_string(WEBKIT_WEB_VIEW(ghtml->view), "",
 				NULL, NULL, url);
