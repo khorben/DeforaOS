@@ -528,6 +528,7 @@ static void _http_data_complete(GConnHttpEventData * event,
 		return;
 	}
 	gtk_label_set_text(GTK_LABEL(download->status), _("Complete"));
+	gtk_widget_set_sensitive(download->check, FALSE);
 	gtk_button_set_label(GTK_BUTTON(download->cancel), GTK_STOCK_CLOSE);
 }
 
@@ -660,6 +661,7 @@ static gboolean _download_on_timeout(gpointer data)
 				break;
 			}
 			gtk_label_set_text(GTK_LABEL(d->status), _("Complete"));
+			gtk_widget_set_sensitive(d->check, FALSE);
 			gtk_button_set_label(GTK_BUTTON(d->cancel),
 					GTK_STOCK_CLOSE);
 			d->data_received = webkit_download_get_current_size(
