@@ -423,9 +423,9 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	GHtml * ghtml;
 	gchar * p;
 	const char about[] = "<html>\n<head><title>About " PACKAGE "</title>"
-		"</head>\n<body>\n<h1>" PACKAGE " " VERSION "</h1>\n"
-		"<p>Copyright (c) 2011 <a href=\"http://www.defora.org/\">"
-		"DeforaOS Project</a></p>\n</body>\n</html>";
+		"</head>\n<body>\n<center>\n<h1>" PACKAGE " " VERSION "</h1>\n"
+		"<p>Copyright (c) 2011 Pierre Pronchery &lt;khorben@"
+		"defora.org&gt;</p>\n</center>\n</body>\n</html>";
 	const char blank[] = "";
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");

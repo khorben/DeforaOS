@@ -678,7 +678,7 @@ void surfer_about(Surfer * surfer)
 	desktop_about_dialog_set_authors(surfer->ab_dialog, _authors);
 	desktop_about_dialog_set_copyright(surfer->ab_dialog, _copyright);
 	desktop_about_dialog_set_logo_icon_name(surfer->ab_dialog,
-			"stock_internet");
+			"web-browser");
 	desktop_about_dialog_set_license(surfer->ab_dialog, _license);
 	desktop_about_dialog_set_name(surfer->ab_dialog, PACKAGE);
 	desktop_about_dialog_set_version(surfer->ab_dialog, VERSION);
