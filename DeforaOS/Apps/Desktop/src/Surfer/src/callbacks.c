@@ -412,6 +412,24 @@ void on_home(gpointer data)
 }
 
 
+/* on_new_tab */
+void on_new_tab(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_open_tab(surfer, NULL);
+}
+
+
+/* on_new_window */
+void on_new_window(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_new_copy(surfer);
+}
+
+
 /* on_normal_size */
 void on_normal_size(gpointer data)
 {

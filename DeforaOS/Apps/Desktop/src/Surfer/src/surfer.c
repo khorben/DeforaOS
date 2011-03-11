@@ -14,6 +14,9 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* FIXME:
+ * - implement a default download directory (and "always ask")
+ * - add "new tab" and "new window" buttons to the embedded interface */
 
 
 
@@ -85,7 +88,6 @@ static char const * _authors[] =
 static DesktopAccel _surfer_accel[] =
 {
 #ifdef EMBEDDED
-	/* FIXME implement the missing accelerators in embedded mode */
 	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
 	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
 	{ G_CALLBACK(on_normal_size), GDK_CONTROL_MASK, GDK_0 },
@@ -218,6 +220,11 @@ static DesktopToolbar _surfer_toolbar[] =
 	{ N_("Zoom out"), G_CALLBACK(on_zoom_out), "zoom-out", 0, 0, NULL },
 	{ N_("Normal size"), G_CALLBACK(on_normal_size), "zoom-original", 0, 0,
 		NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("New tab"), G_CALLBACK(on_new_tab), "tab-new", GDK_CONTROL_MASK,
+		GDK_T, NULL },
+	{ N_("New window"), G_CALLBACK(on_new_window), "window-new",
+		GDK_CONTROL_MASK, GDK_N, NULL },
 #endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };

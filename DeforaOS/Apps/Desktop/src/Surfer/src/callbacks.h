@@ -67,6 +67,8 @@ void on_close(gpointer data);
 void on_forward(gpointer data);
 void on_fullscreen(gpointer data);
 void on_home(gpointer data);
+void on_new_tab(gpointer data);
+void on_new_window(gpointer data);
 void on_normal_size(gpointer data);
 void on_path_activate(gpointer data);
 void on_preferences(gpointer data);
