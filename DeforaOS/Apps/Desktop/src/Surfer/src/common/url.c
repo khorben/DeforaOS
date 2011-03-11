@@ -33,6 +33,8 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 	/* XXX use a more generic protocol finder (strchr(':')) */
 	if(strncmp("about:", url, 6) == 0)
 		return g_strdup(url);
+	if(strncmp("file:/", url, 6) == 0)
+		return g_strdup(url);
 	if(strncmp("ftp://", url, 6) == 0)
 		return g_strdup(url);
 	if(strncmp("http://", url, 7) == 0)
@@ -76,7 +78,7 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 	}
 	/* base is NULL, url is not NULL */
 	if(url[0] == '/')
-		return g_strdup(url);
+		return g_strdup_printf("%s%s", "file:", url);
 	/* guess protocol */
 	if(strncmp("ftp", url, 3) == 0)
 		return g_strdup_printf("%s%s", "ftp://", url);

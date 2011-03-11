@@ -421,19 +421,20 @@ gboolean ghtml_go_forward(GtkWidget * widget)
 void ghtml_load_url(GtkWidget * widget, char const * url)
 {
 	GHtml * ghtml;
-	gchar * p;
+	char * p;
+	char * q = NULL;
 	const char about[] = "<html>\n<head><title>About " PACKAGE "</title>"
 		"</head>\n<body>\n<center>\n<h1>" PACKAGE " " VERSION "</h1>\n"
 		"<p>Copyright (c) 2011 Pierre Pronchery &lt;khorben@"
 		"defora.org&gt;</p>\n</center>\n</body>\n</html>";
-	const char blank[] = "";
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
 		url = p;
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, url);
 	if(strcmp("about:blank", url) == 0)
-		webkit_web_view_load_string(WEBKIT_WEB_VIEW(ghtml->view),
-				blank, NULL, NULL, url);
+		webkit_web_view_load_string(WEBKIT_WEB_VIEW(ghtml->view), "",
+				NULL, NULL, url);
 	else if(strncmp("about:", url, 6) == 0)
 		webkit_web_view_load_string(WEBKIT_WEB_VIEW(ghtml->view),
 				about, NULL, NULL, url);
@@ -446,6 +447,7 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 #endif
 	}
 	g_free(p);
+	g_free(q);
 	surfer_set_progress(ghtml->surfer, 0.0);
 	surfer_set_security(ghtml->surfer, SS_NONE);
 	_ghtml_set_status(widget, _("Connecting..."));
