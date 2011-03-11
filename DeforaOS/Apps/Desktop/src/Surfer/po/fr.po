@@ -379,14 +379,12 @@ msgid "Home"
 msgstr "Page d'accueil"
 
 #: ../src/surfer.c:224
-#, fuzzy
 msgid "New tab"
-msgstr "Nouvel ongle_t"
+msgstr "Nouvel onglet"
 
 #: ../src/surfer.c:226
-#, fuzzy
 msgid "New window"
-msgstr "_Nouvelle fenêtre"
+msgstr "Nouvelle fenêtre"
 
 #: ../src/surfer.c:309 ../src/surfer.c:646
 msgid "Web surfer"
