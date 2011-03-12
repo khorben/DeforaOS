@@ -188,6 +188,12 @@ void on_preferences(gpointer data)
 }
 
 
+void on_quit(gpointer data)
+{
+	on_closex(data);
+}
+
+
 void on_reply(gpointer data)
 {
 	Mailer * mailer = data;
@@ -201,6 +207,14 @@ void on_reply_to_all(gpointer data)
 	Mailer * mailer = data;
 
 	mailer_reply_selected_to_all(mailer);
+}
+
+
+void on_view_source(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_open_selected_source(mailer);
 }
 
 

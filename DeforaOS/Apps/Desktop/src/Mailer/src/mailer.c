@@ -100,6 +100,18 @@ static const char * _title[3] =
 	N_("New account"), N_("Account settings"), N_("Account confirmation")
 };
 
+
+/* variables */
+#ifdef EMBEDDED
+static DesktopAccel _mailer_accel[] =
+{
+	{ G_CALLBACK(on_quit),		GDK_CONTROL_MASK,	GDK_Q	},
+	{ G_CALLBACK(on_view_source),	GDK_CONTROL_MASK,	GDK_U	},
+	{ NULL,				0,			0	}
+};
+#endif
+
+
 #ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
 {
@@ -202,8 +214,6 @@ static DesktopToolbar _mailer_toolbar[] =
 };
 
 
-/* Mailer */
-/* private */
 /* prototypes */
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 static gboolean _mailer_confirm(Mailer * mailer, char const * message);
@@ -283,6 +293,8 @@ Mailer * mailer_new(void)
 #ifndef EMBEDDED
 	widget = desktop_menubar_create(_mailer_menubar, mailer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+#else
+	desktop_accel_create(_mailer_accel, mailer, group);
 #endif
 	/* toolbar */
 	widget = desktop_toolbar_create(_mailer_toolbar, mailer, group);

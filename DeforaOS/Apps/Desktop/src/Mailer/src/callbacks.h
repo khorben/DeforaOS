@@ -53,6 +53,8 @@ void on_reply_to_all(gpointer data);
 void on_forward(gpointer data);
 void on_delete(gpointer data);
 void on_preferences(gpointer data);
+void on_quit(gpointer data);
+void on_view_source(gpointer data);
 
 /* folder view */
 void on_folder_change(GtkTreeSelection * selection, gpointer data);
