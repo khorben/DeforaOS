@@ -15,11 +15,10 @@
 
 
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <System.h>
@@ -59,10 +58,17 @@ static gboolean _message_get_iter(Message * message, GtkTreeIter * iter);
 
 static gboolean _message_set(Message * message, ...);
 static int _message_set_date(Message * message, char const * date);
+static int _message_set_from(Message * message, char const * from);
 static int _message_set_status(Message * message, char const * status);
+static int _message_set_to(Message * message, char const * to);
 
 /* useful */
 /* message headers */
+static char * _message_header_get_email(char const * header);
+static char * _message_header_get_name(char const * header);
+
+static int _message_header_is_email(char const * header);
+
 static int _message_header_set(MessageHeader * mh, char const * header,
 		char const * value);
 
@@ -76,10 +82,10 @@ static struct
 } _message_columns[] =
 {
 	{ "Date",	0,			_message_set_date	},
-	{ "From",	MHC_FROM,		NULL			},
+	{ "From",	0,			_message_set_from	},
 	{ "Status",	0,			_message_set_status	},
 	{ "Subject",	MHC_SUBJECT,		NULL			},
-	{ "To",		MHC_TO,			NULL			},
+	{ "To",		0,			_message_set_to		},
 	{ NULL,		0,			NULL			}
 };
 
@@ -335,6 +341,23 @@ static int _message_set_date(Message * message, char const * date)
 }
 
 
+/* message_set_from */
+static int _message_set_from(Message * message, char const * from)
+{
+	char * name;
+	char * email;
+
+	if((email = _message_header_get_email(from)) == NULL)
+		return -1;
+	name = _message_header_get_name(from);
+	_message_set(message, MHC_FROM, (name != NULL) ? name : email,
+			MHC_FROM_EMAIL, email, -1);
+	free(email);
+	free(name);
+	return 0;
+}
+
+
 /* message_set_status */
 static int _message_set_status(Message * message, char const * status)
 {
@@ -353,8 +376,111 @@ static int _message_set_status(Message * message, char const * status)
 }
 
 
+/* message_set_to */
+static int _message_set_to(Message * message, char const * to)
+{
+	char * name;
+	char * email;
+
+	if((email = _message_header_get_email(to)) == NULL)
+		return -1;
+	name = _message_header_get_name(to);
+	_message_set(message, MHC_TO, (name != NULL) ? name : email,
+			MHC_TO_EMAIL, email, -1);
+	free(email);
+	free(name);
+	return 0;
+}
+
+
 /* useful */
-/* message_header */
+/* message_header_get_email */
+static char * _message_header_get_email(char const * header)
+{
+	char * ret;
+	size_t len;
+	char * buf = NULL;
+
+	if(header == NULL)
+		return NULL;
+	len = strlen(header);
+	if((ret = malloc(len + 1)) == NULL || (buf = malloc(len + 1)) == NULL)
+	{
+		free(buf);
+		free(ret);
+		return NULL;
+	}
+	if(_message_header_is_email(header))
+	{
+		strcpy(ret, header);
+		free(buf);
+		return ret;
+	}
+	if(sscanf(header, "%[^(](%[^)])", ret, buf) == 2
+			|| sscanf(header, "%[^<]<%[^>]>", buf, ret) == 2)
+	{
+		for(len = strlen(ret); len > 0 && isblank(ret[len - 1]); len--)
+			ret[len - 1] = '\0';
+		if(_message_header_is_email(ret))
+		{
+			free(buf);
+			return ret;
+		}
+	}
+	free(buf);
+	free(ret);
+	return NULL;
+}
+
+
+/* message_header_get_name */
+static char * _message_header_get_name(char const * header)
+{
+	char * ret;
+	size_t len;
+	char * buf = NULL;
+
+	if(header == NULL)
+		return NULL;
+	len = strlen(header);
+	if((ret = malloc(len + 1)) == NULL || (buf = malloc(len + 1)) == NULL)
+	{
+		free(buf);
+		free(ret);
+		return NULL;
+	}
+	if(sscanf(header, "%[^(](%[^)])", buf, ret) == 2
+			|| sscanf(header, "%[^<]<%[^>]>", ret, buf) == 2)
+	{
+		free(buf);
+		return ret;
+	}
+	free(buf);
+	free(ret);
+	return NULL;
+}
+
+
+/* message_header_is_email */
+static int _message_header_is_email(char const * header)
+{
+	size_t i = 0;
+	int c;
+
+	/* FIXME this is neither strict nor standard at the moment */
+	for(i = 0; (c = header[i]) != '@'; i++)
+		if(c == '\0')
+			return 0;
+		else if(!isalnum(c) && c != '.' && c != '_')
+			return 0;
+	for(i++; (c = header[i]) != '\0'; i++)
+		if(!isalnum(c) && c != '.' && c != '_')
+			return 0;
+	return 1;
+}
+
+
+/* message_header_set */
 static int _message_header_set(MessageHeader * mh, char const * header,
 		char const * value)
 {
