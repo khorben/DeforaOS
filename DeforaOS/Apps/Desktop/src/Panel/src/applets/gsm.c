@@ -177,7 +177,7 @@ static gboolean _gsm_get(GSM * gsm)
 	if(lseek(gsm->fd, 0, SEEK_SET) != 0
 			|| read(gsm->fd, &on, sizeof(on)) != 1)
 	{
-		error_set(1, "%s: %s", dev, strerror(errno));
+		error_set_code(1, "%s: %s", dev, strerror(errno));
 		close(gsm->fd);
 		gsm->fd = -1;
 		return FALSE;
