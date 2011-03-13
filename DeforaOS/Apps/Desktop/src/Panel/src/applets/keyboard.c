@@ -143,7 +143,9 @@ static gboolean _init_idle(gpointer data)
 	buf[size] = '\0';
 	if(sscanf(buf, "%lu", &xid) != 1)
 		return FALSE; /* XXX warn the user */
-	keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
+	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_type_hint(GTK_WINDOW(keyboard->window),
+			GDK_WINDOW_TYPE_HINT_DOCK);
 	socket = gtk_socket_new();
 	gtk_widget_set_size_request(socket, 480, 150);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), socket);
