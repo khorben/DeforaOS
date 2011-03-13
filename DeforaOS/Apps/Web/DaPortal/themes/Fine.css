@@ -166,11 +166,11 @@ img#logo {
 	padding-right:			50px;
 }
 
+ol li, ul li {
+	margin-left:			2em;
+}
+
 p {
 	padding-top:			0.5em;
 	text-align:			justify;
-}
-
-ul li {
-	margin-left:			2em;
 }
