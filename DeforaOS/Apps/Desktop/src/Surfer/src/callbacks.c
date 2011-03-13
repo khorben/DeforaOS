@@ -311,7 +311,7 @@ void on_close(gpointer data)
 {
 	Surfer * surfer = data;
 
-	on_closex(surfer);
+	surfer_close_tab(surfer, NULL);
 }
 
 
