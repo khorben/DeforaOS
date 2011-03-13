@@ -144,6 +144,10 @@ static gboolean _init_idle(gpointer data)
 	if(sscanf(buf, "%lu", &xid) != 1)
 		return FALSE; /* XXX warn the user */
 	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
+#endif
 	gtk_window_set_type_hint(GTK_WINDOW(keyboard->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	socket = gtk_socket_new();
