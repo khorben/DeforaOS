@@ -1780,6 +1780,7 @@ static GtkWidget * _display_string(AccountConfig * config,
 	hbox = gtk_hbox_new(FALSE, 0);
 	_account_add_label(hbox, desc, group, config->title);
 	widget = gtk_label_new(config->value);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	return hbox;
 }
