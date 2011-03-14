@@ -328,6 +328,7 @@ static int _message_set_date(Message * message, char const * date)
 	time_t t;
 	char buf[32];
 
+	memset(&tm, 0, sizeof(tm));
 	if(date != NULL && strptime(date, "%a, %d %b %Y %T", &tm) != NULL)
 		t = mktime(&tm);
 	else
