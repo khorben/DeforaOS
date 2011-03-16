@@ -113,7 +113,7 @@ static void _bluetooth_destroy(PanelApplet * applet)
 	if(bluetooth->timeout > 0)
 		g_source_remove(bluetooth->timeout);
 #if defined(__NetBSD__) || defined(__linux__)
-	if(bluetooth->fd != -1)
+	if(bluetooth->fd >= 0)
 		close(bluetooth->fd);
 #endif
 	free(bluetooth);
@@ -138,8 +138,8 @@ static gboolean _bluetooth_get(Bluetooth * bluetooth)
 	struct btreq btr;
 	const char name[] = "ubt0";
 
-	if(bluetooth->fd == -1 && (bluetooth->fd = socket(PF_BLUETOOTH,
-					SOCK_RAW, BTPROTO_HCI)) == -1)
+	if(bluetooth->fd < 0 && (bluetooth->fd = socket(AF_BLUETOOTH,
+					SOCK_RAW, BTPROTO_HCI)) < 0)
 	{
 		error_set("%s: %s", "socket", strerror(errno));
 		return FALSE;
