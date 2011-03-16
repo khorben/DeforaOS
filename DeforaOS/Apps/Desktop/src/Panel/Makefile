@@ -27,6 +27,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/panel-applet-bluetooth.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/panel-applet-desktop.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/panel-applet-usb.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/22x22/Makefile \
@@ -37,6 +38,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
 		$(PACKAGE)-$(VERSION)/data/24x24/panel-applet-bluetooth.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/panel-applet-desktop.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/panel-applet-usb.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/panel-settings.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/data/32x32/Makefile \
@@ -87,6 +89,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/swap.c \
 		$(PACKAGE)-$(VERSION)/src/applets/systray.c \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
+		$(PACKAGE)-$(VERSION)/src/applets/usb.c \
 		$(PACKAGE)-$(VERSION)/src/applets/volume.c \
 		$(PACKAGE)-$(VERSION)/src/applets/wpa_supplicant.c \
 		$(PACKAGE)-$(VERSION)/src/applets/Makefile \

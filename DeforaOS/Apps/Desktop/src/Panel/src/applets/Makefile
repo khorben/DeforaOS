@@ -1,4 +1,4 @@
-TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so pager.so phone.so swap.so systray.so tasks.so volume.so wpa_supplicant.so
+TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so pager.so phone.so swap.so systray.so tasks.so usb.so volume.so wpa_supplicant.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -144,6 +144,13 @@ tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 tasks.so: $(tasks_OBJS)
 	$(LD) -o tasks.so $(tasks_OBJS) $(tasks_LDFLAGS)
 
+usb_OBJS = usb.o
+usb_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+usb_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+usb.so: $(usb_OBJS)
+	$(LD) -o usb.so $(usb_OBJS) $(usb_LDFLAGS)
+
 volume_OBJS = volume.o
 volume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -212,6 +219,9 @@ systray.o: systray.c ../../include/Panel.h
 tasks.o: tasks.c ../../include/Panel.h tasks.atoms
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
+usb.o: usb.c ../../include/Panel.h
+	$(CC) $(usb_CFLAGS) -c usb.c
+
 volume.o: volume.c ../../include/Panel.h
 	$(CC) $(volume_CFLAGS) -c volume.c
 
@@ -219,7 +229,7 @@ wpa_supplicant.o: wpa_supplicant.c ../../include/Panel.h
 	$(CC) $(wpa_supplicant_CFLAGS) -c wpa_supplicant.c
 
 clean:
-	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
+	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(usb_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -262,6 +272,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 -- usb.so $(DESTDIR)$(LIBDIR)/Panel/applets/usb.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- volume.so $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- wpa_supplicant.so $(DESTDIR)$(LIBDIR)/Panel/applets/wpa_supplicant.so
@@ -285,6 +297,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/usb.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/wpa_supplicant.so
 
