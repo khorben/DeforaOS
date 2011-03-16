@@ -654,12 +654,6 @@ static gboolean _download_on_timeout(gpointer data)
 		case WEBKIT_DOWNLOAD_STATUS_FINISHED:
 			/* XXX pasted from _http_data_complete */
 			ret = FALSE;
-			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-							d->check)))
-			{
-				g_idle_add(_download_on_closex, d);
-				break;
-			}
 			gtk_label_set_text(GTK_LABEL(d->status), _("Complete"));
 			gtk_widget_set_sensitive(d->check, FALSE);
 			gtk_button_set_label(GTK_BUTTON(d->cancel),
@@ -668,6 +662,12 @@ static gboolean _download_on_timeout(gpointer data)
 					d->conn);
 			g_object_unref(d->conn);
 			d->conn = NULL;
+			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+							d->check)))
+			{
+				g_idle_add(_download_on_closex, d);
+				break;
+			}
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_STARTED:
 			gtk_label_set_text(GTK_LABEL(d->status),
