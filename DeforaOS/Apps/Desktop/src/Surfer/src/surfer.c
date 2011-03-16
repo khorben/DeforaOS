@@ -87,9 +87,9 @@ static char const * _authors[] =
 #endif
 static DesktopAccel _surfer_accel[] =
 {
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
 #ifdef EMBEDDED
 	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
-	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
 	{ G_CALLBACK(on_normal_size), GDK_CONTROL_MASK, GDK_0 },
 	{ G_CALLBACK(on_zoom_in), GDK_CONTROL_MASK, GDK_plus },
 	{ G_CALLBACK(on_zoom_out), GDK_CONTROL_MASK, GDK_minus },
