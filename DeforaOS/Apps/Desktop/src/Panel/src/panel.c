@@ -90,15 +90,19 @@ static char const * _authors[] =
 static char const _copyright[] =
 "Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
 
-static struct
+static const struct
 {
+	char const * name;
 	char const * alias;
 	GtkIconSize iconsize;
+	gint size;
 } _panel_sizes[] =
 {
-	{ N_("large"),		PANEL_ICON_SIZE_LARGE },
-	{ N_("small"),		PANEL_ICON_SIZE_SMALL },
-	{ N_("smaller"),	PANEL_ICON_SIZE_SMALLER },
+	{ "panel-large",	N_("large"),	GTK_ICON_SIZE_LARGE_TOOLBAR,
+		48 },
+	{ "panel-small",	N_("small"),	GTK_ICON_SIZE_SMALL_TOOLBAR,
+		24 },
+	{ "panel-smaller",	N_("smaller"),	GTK_ICON_SIZE_MENU, 16 },
 };
 
 
@@ -145,6 +149,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 	Panel * panel;
 	GdkScreen * screen;
 	GdkRectangle rect;
+	GtkIconSize iconsize;
 
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
@@ -155,7 +160,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->top_helper.config_get = _panel_helper_config_get;
 	panel->top_helper.config_set = _panel_helper_config_set;
 	panel->top_helper.error = _panel_helper_error;
-	panel->top_helper.icon_size = PANEL_ICON_SIZE_UNSET;
+	panel->top_helper.icon_size = GTK_ICON_SIZE_LARGE_TOOLBAR;
 	panel->top_helper.about_dialog = _panel_helper_about_dialog;
 	panel->top_helper.lock = _panel_helper_lock;
 #ifndef EMBEDDED
@@ -172,20 +177,20 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->bottom_helper = panel->top_helper;
 	panel->bottom_helper.position_menu = _panel_helper_position_menu_bottom;
 	panel->bottom = NULL;
-	switch(prefs->iconsize)
+	iconsize = GTK_ICON_SIZE_INVALID;
+	if(prefs->iconsize != NULL)
+		iconsize = gtk_icon_size_from_name(prefs->iconsize);
+	switch(iconsize)
 	{
-		case PANEL_ICON_SIZE_LARGE:
-		case PANEL_ICON_SIZE_SMALL:
-		case PANEL_ICON_SIZE_SMALLER:
-			panel->top_helper.icon_size = prefs->iconsize;
-			panel->bottom_helper.icon_size = prefs->iconsize;
-			break;
-		case PANEL_ICON_SIZE_UNSET:
-		default:
+		case GTK_ICON_SIZE_INVALID:
 			panel->top_helper.icon_size = _new_size(panel,
 					PANEL_POSITION_TOP);
 			panel->bottom_helper.icon_size = _new_size(panel,
 					PANEL_POSITION_BOTTOM);
+			break;
+		default:
+			panel->top_helper.icon_size = iconsize;
+			panel->bottom_helper.icon_size = iconsize;
 			break;
 	}
 	panel->pr_window = NULL;
@@ -238,12 +243,19 @@ static int _new_config(Panel * panel)
 static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
 {
 	size_t i;
+	gint width;
+	gint height;
 
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
-		if(gtk_icon_size_from_name(_panel_sizes[i].alias)
-				== GTK_ICON_SIZE_INVALID)
-			gtk_icon_size_register_alias(_panel_sizes[i].alias,
-					_panel_sizes[i].iconsize);
+	{
+		if(gtk_icon_size_from_name(_panel_sizes[i].name)
+				!= GTK_ICON_SIZE_INVALID)
+			continue;
+		if(gtk_icon_size_lookup(_panel_sizes[i].iconsize, &width,
+					&height) != TRUE)
+			width = height = _panel_sizes[i].size;
+		gtk_icon_size_register(_panel_sizes[i].name, width, height);
+	}
 	if(user != NULL)
 	{
 		memcpy(prefs, user, sizeof(*prefs));
@@ -276,7 +288,7 @@ static GtkIconSize _new_size(Panel * panel, PanelPosition position)
 	if(p != NULL)
 		ret = gtk_icon_size_from_name(p);
 	if(ret == GTK_ICON_SIZE_INVALID)
-		ret = PANEL_ICON_SIZE_DEFAULT;
+		ret = GTK_ICON_SIZE_LARGE_TOOLBAR;
 	return ret;
 }
 
@@ -516,6 +528,7 @@ static void _show_preferences_window(Panel * panel)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+	/* FIXME this needs a restart to apply */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Top size:"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -583,7 +596,7 @@ static void _preferences_on_cancel(gpointer data)
 			|| (p = config_get(panel->config, "", "size")) != NULL)
 		for(i = 0; i < cnt; i++)
 		{
-			if(strcmp(p, _panel_sizes[i].alias) != 0)
+			if(strcmp(p, _panel_sizes[i].name) != 0)
 				continue;
 			gtk_combo_box_set_active(GTK_COMBO_BOX(
 						panel->pr_bottom_size), i);
@@ -593,7 +606,7 @@ static void _preferences_on_cancel(gpointer data)
 			|| (p = config_get(panel->config, "", "size")) != NULL)
 		for(i = 0; i < cnt; i++)
 		{
-			if(strcmp(p, _panel_sizes[i].alias) != 0)
+			if(strcmp(p, _panel_sizes[i].name) != 0)
 				continue;
 			gtk_combo_box_set_active(GTK_COMBO_BOX(
 						panel->pr_top_size), i);
@@ -625,11 +638,11 @@ static void _preferences_on_ok(gpointer data)
 	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_bottom_size)))
 			>= 0 && i < cnt)
 		config_set(panel->config, NULL, "bottom_size",
-				_panel_sizes[i].alias);
+				_panel_sizes[i].name);
 	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_top_size)))
 			>= 0 && i < cnt)
 		config_set(panel->config, NULL, "top_size",
-				_panel_sizes[i].alias);
+				_panel_sizes[i].name);
 	/* XXX applets should be known from Panel already */
 	cnt = gtk_notebook_get_n_pages(GTK_NOTEBOOK(panel->pr_notebook));
 	for(i = 1; i < cnt; i++)

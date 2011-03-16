@@ -44,7 +44,7 @@ typedef enum _PanelPosition
 
 typedef struct _PanelPrefs
 {
-	GtkIconSize iconsize;
+	char const * iconsize;
 	int monitor;
 	PanelPosition position;
 } PanelPrefs;
@@ -55,11 +55,11 @@ typedef struct _PanelPrefs
 
 # define PANEL_CLIENT_MESSAGE		"DEFORAOS_DESKTOP_PANEL_CLIENT"
 
-# define PANEL_ICON_SIZE_DEFAULT	GTK_ICON_SIZE_LARGE_TOOLBAR
-# define PANEL_ICON_SIZE_UNSET		GTK_ICON_SIZE_INVALID
-# define PANEL_ICON_SIZE_SMALL		GTK_ICON_SIZE_SMALL_TOOLBAR
-# define PANEL_ICON_SIZE_SMALLER	GTK_ICON_SIZE_MENU
-# define PANEL_ICON_SIZE_LARGE		GTK_ICON_SIZE_LARGE_TOOLBAR
+# define PANEL_ICON_SIZE_DEFAULT	"panel-large"
+# define PANEL_ICON_SIZE_UNSET		NULL
+# define PANEL_ICON_SIZE_SMALL		"panel-small"
+# define PANEL_ICON_SIZE_SMALLER	"panel-smaller"
+# define PANEL_ICON_SIZE_LARGE		"panel-large"
 
 
 /* functions */
