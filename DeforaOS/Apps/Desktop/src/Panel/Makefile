@@ -1,5 +1,5 @@
 PACKAGE	= Panel
-VERSION	= 0.2.3
+VERSION	= 0.2.4
 SUBDIRS	= data include po src
 RM	= rm -f
 LN	= ln -f
