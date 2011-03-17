@@ -170,7 +170,7 @@ static gboolean _usb_get(USB * usb)
 	/* XXX currently hard-coded for the Openmoko Freerunner */
 	char const dv1[] = "/sys/bus/platform/devices/gta02-pm-usbhost.0"
 		"/power_on";
-	char const dv2[] = "/sys/bus/platform/devices/neo1973-pm-usbhost.0"
+	char const dv2[] = "/sys/bus/platform/devices/neo1973-pm-host.0"
 		"/power_on";
 	char const * dev = dv1;
 	char on;
