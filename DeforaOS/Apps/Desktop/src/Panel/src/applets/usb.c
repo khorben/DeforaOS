@@ -19,7 +19,6 @@
 # include <sys/types.h>
 # include <sys/ioctl.h>
 # include <net/if.h>
-# include <usb.h>
 # include <unistd.h>
 # include <stdio.h>
 # include <string.h>
