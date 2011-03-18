@@ -15,17 +15,12 @@
 
 
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__linux__)
 # include <sys/types.h>
 # include <sys/ioctl.h>
 # include <net/if.h>
 # include <unistd.h>
 # include <stdio.h>
-# include <string.h>
-# include <errno.h>
-#elif defined(__linux__)
-# include <fcntl.h>
-# include <unistd.h>
 # include <string.h>
 # include <errno.h>
 #endif
@@ -93,12 +88,9 @@ static GtkWidget * _usb_init(PanelApplet * applet)
 	applet->priv = usb;
 	usb->helper = applet->helper;
 	usb->timeout = 0;
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__linux__)
 	usb->fd = -1;
 	tooltip = _("USB networking device connected");
-#elif defined(__linux__)
-	usb->fd = -1;
-	tooltip = _("USB host mode is enabled");
 #endif
 	usb->image = gtk_image_new_from_icon_name("panel-applet-usb",
 			applet->helper->icon_size);
@@ -139,11 +131,15 @@ static void _usb_set(USB * usb, gboolean on)
 
 /* callbacks */
 /* on_timeout */
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__linux__)
 static gboolean _usb_get(USB * usb)
 {
 	struct ifreq ifr;
+# if defined(__NetBSD__)
 	const char name[] = "cdce0";
+# elif defined(__linux__)
+	const char name[] = "usb0";
+#endif
 
 	if(usb->fd < 0 && (usb->fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
@@ -162,41 +158,6 @@ static gboolean _usb_get(USB * usb)
 	close(usb->fd);
 	usb->fd = -1;
 	return TRUE;
-}
-#elif defined(__linux__)
-static gboolean _usb_get(USB * usb)
-{
-	/* XXX currently hard-coded for the Openmoko Freerunner */
-	char const dv1[] = "/sys/bus/platform/devices/gta02-pm-usbhost.0"
-		"/power_on";
-	char const dv2[] = "/sys/bus/platform/devices/neo1973-pm-host.0"
-		"/power_on";
-	char const * dev = dv1;
-	char on;
-
-	if(usb->fd < 0)
-	{
-		if((usb->fd = open(dev, O_RDONLY)) < 0)
-		{
-			dev = dv2;
-			usb->fd = open(dev, O_RDONLY);
-		}
-		if(usb->fd < 0)
-		{
-			error_set("%s: %s", dev, strerror(errno));
-			return FALSE;
-		}
-	}
-	errno = ENODATA; /* in case the pseudo-file is empty */
-	if(lseek(usb->fd, 0, SEEK_SET) != 0
-			|| read(usb->fd, &on, sizeof(on)) != 1)
-	{
-		error_set("%s: %s", dev, strerror(errno));
-		close(usb->fd);
-		usb->fd = -1;
-		return FALSE;
-	}
-	return (on == '1') ? TRUE : FALSE;
 }
 #else
 static gboolean _usb_get(USB * usb)
