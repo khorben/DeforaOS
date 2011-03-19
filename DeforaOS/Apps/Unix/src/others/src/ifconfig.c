@@ -91,28 +91,20 @@ static int _ifconfig_error(char const * message, int ret)
 
 static int _ifconfig_all(Prefs prefs)
 {
-#ifdef __NetBSD__
-	struct ifaddrs * ifa;
-	struct ifaddrs * i;
+	struct if_nameindex * ifni;
+	struct if_nameindex * i;
 	char const * sep = "";
-	char const * p = NULL;
 
-	if(getifaddrs(&ifa) != 0)
-		return -_ifconfig_error("getifaddrs", 1);
-	for(i = ifa; i != NULL; i = i->ifa_next)
+	if((ifni = if_nameindex()) == NULL)
+		return -_ifconfig_error("if_nameindex", 1);
+	for(i = ifni; i != NULL && i->if_index != 0; i++)
 	{
-		if(p != NULL && strcmp(p, i->ifa_name) == 0)
-			continue;
 		fputs(sep, stderr);
-		_ifconfig_show(prefs, i->ifa_name);
+		_ifconfig_show(prefs, i->if_name);
 		sep = "\n";
-		p = i->ifa_name;
 	}
+	if_freenameindex(ifni);
 	return 0;
-#else
-	/* FIXME implement */
-	return 0;
-#endif
 }
 
 static int _ifconfig_do(Prefs prefs, char const * name, int argc,
@@ -131,8 +123,7 @@ static int _ifconfig_show(Prefs prefs, char const * name)
 	if((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		return _ifconfig_error("socket", 1);
 	snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", name);
-	if((ret = _show_mac(prefs, fd, &ifr)) != 0)
-		return ret;
+	ret = _show_mac(prefs, fd, &ifr);
 	ret |= _show_inet(prefs, fd, &ifr);
 	close(fd);
 	ret |= _show_inet6(prefs, name);
@@ -149,7 +140,7 @@ static int _show_mac(Prefs prefs, int fd, struct ifreq * ifr)
 	printf("%s:", ifr->ifr_name);
 #ifdef SIOCGIFFLAGS
 	if(ioctl(fd, SIOCGIFFLAGS, ifr) != 0)
-		return _ifconfig_error("SIOCGIFFLAGS", 1);
+		ret |= _ifconfig_error("SIOCGIFFLAGS", 1);
 	else
 		printf(" flags=%x", (unsigned short)ifr->ifr_flags);
 #endif
