@@ -23,7 +23,8 @@
 #include <errno.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#if defined(__FreeBSD__)
+#if defined(__DeforaOS__)
+#elif defined(__FreeBSD__)
 # include <ifaddrs.h>
 #elif defined(__NetBSD__)
 # include <ifaddrs.h>
@@ -66,7 +67,7 @@ static int _show_mac(Prefs prefs, int fd, struct ifreq * ifr);
 static int _mac_media(Prefs prefs, int fd, struct ifreq * ifr);
 static int _show_inet(Prefs prefs, int fd, struct ifreq * ifr);
 static int _show_inet6(Prefs prefs, char const * name);
-#ifdef __NetBSD__
+#if !defined(__DeforaOS__) && (defined(__NetBSD__) || defined(__FreeBSD__))
 static int _inet6_do(Prefs prefs, char const * name, int fd,
 		struct ifaddrs * ifa);
 #else
@@ -211,7 +212,7 @@ static int _show_inet6(Prefs prefs, char const * name)
 
 	if((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
 		return -_ifconfig_error("socket", 1);
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if !defined(__DeforaOS__) && (defined(__FreeBSD__) || defined(__NetBSD__))
 	if(getifaddrs(&ifa) != 0)
 		ret = -_ifconfig_error("getifaddrs", 1);
 	else
@@ -229,7 +230,7 @@ static int _show_inet6(Prefs prefs, char const * name)
 	return ret;
 }
 
-#ifdef __NetBSD__
+#if !defined(__DeforaOS__) && (defined(__FreeBSD__) || defined(__NetBSD__))
 static int _inet6_do(Prefs prefs, char const * name, int fd,
 		struct ifaddrs * ifa)
 {
