@@ -120,6 +120,8 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	GdkPixbuf * image = NULL;
 	GError * error = NULL;
 	char * p;
+	GtkTargetEntry targets[] = { { "deforaos_browser_dnd", 0, 0 } };
+	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
@@ -161,6 +163,14 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	}
 	if((desktopicon = _desktopicon_new_do(desktop, image, name)) == NULL)
 		return NULL;
+	gtk_drag_source_set(desktopicon->event, GDK_BUTTON1_MASK, targets,
+			targets_cnt, GDK_ACTION_COPY | GDK_ACTION_MOVE);
+	gtk_drag_dest_set(desktopicon->event, GTK_DEST_DEFAULT_ALL, targets,
+			targets_cnt, GDK_ACTION_COPY | GDK_ACTION_MOVE);
+	g_signal_connect(G_OBJECT(desktopicon->event), "drag-data-get",
+			G_CALLBACK(_on_icon_drag_data_get), desktopicon);
+	g_signal_connect(G_OBJECT(desktopicon->event), "drag-data-received",
+			G_CALLBACK(_on_icon_drag_data_received), desktopicon);
 	desktopicon->isdir = isdir;
 	desktopicon_set_executable(desktopicon, isexec);
 	desktopicon->mimetype = mimetype;
@@ -423,8 +433,6 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 {
 	DesktopIcon * desktopicon;
 	GtkWindow * window;
-	GtkTargetEntry targets[] = { { "deforaos_browser_dnd", 0, 0 } };
-	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
 	GtkWidget * vbox;
 	GdkGeometry geometry;
 
@@ -449,18 +457,10 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 			G_CALLBACK(_on_desktopicon_closex), NULL);
 	/* event */
 	desktopicon->event = gtk_event_box_new();
-	gtk_drag_source_set(desktopicon->event, GDK_BUTTON1_MASK, targets,
-			targets_cnt, GDK_ACTION_COPY | GDK_ACTION_MOVE);
-	gtk_drag_dest_set(desktopicon->event, GTK_DEST_DEFAULT_ALL, targets,
-			targets_cnt, GDK_ACTION_COPY | GDK_ACTION_MOVE);
 	g_signal_connect(G_OBJECT(desktopicon->event), "button-press-event",
 			G_CALLBACK(_on_icon_button_press), desktopicon);
 	g_signal_connect(G_OBJECT(desktopicon->event), "key-press-event",
 			G_CALLBACK(_on_icon_key_press), desktopicon);
-	g_signal_connect(G_OBJECT(desktopicon->event), "drag-data-get",
-			G_CALLBACK(_on_icon_drag_data_get), desktopicon);
-	g_signal_connect(G_OBJECT(desktopicon->event), "drag-data-received",
-			G_CALLBACK(_on_icon_drag_data_received), desktopicon);
 	vbox = gtk_vbox_new(FALSE, 4);
 	geometry.min_width = DESKTOPICON_MIN_WIDTH;
 	geometry.min_height = DESKTOPICON_MIN_HEIGHT;
