@@ -22,9 +22,9 @@
 #include <errno.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#include <netinet/in_var.h>
 #ifdef __NetBSD__
 # include <ifaddrs.h>
+# include <netinet/in_var.h>
 #endif
 
 
@@ -60,12 +60,15 @@ static int _ifconfig_do(Prefs prefs, char const * name, int argc,
 		char * argv[]);
 static int _ifconfig_show(Prefs prefs, char const * name);
 static int _show_mac(Prefs prefs, int fd, struct ifreq * ifr);
-static int _mac_media(Prefs prefs, int fd, struct ifreq * ifr,
-		struct ifdatareq * ifi);
+static int _mac_media(Prefs prefs, int fd, struct ifreq * ifr);
 static int _show_inet(Prefs prefs, int fd, struct ifreq * ifr);
 static int _show_inet6(Prefs prefs, char const * name);
+#ifdef __NetBSD__
 static int _inet6_do(Prefs prefs, char const * name, int fd,
 		struct ifaddrs * ifa);
+#else
+static int _inet6_do(Prefs prefs, char const * name, int fd, void * ifa);
+#endif
 static void _inet6_print_addr(struct in6_addr * addr);
 
 int ifconfig(Prefs prefs, int argc, char * argv[])
@@ -138,24 +141,33 @@ static int _ifconfig_show(Prefs prefs, char const * name)
 
 static int _show_mac(Prefs prefs, int fd, struct ifreq * ifr)
 {
+	int ret = 0;
+#ifdef SIOCGIFDATA
 	struct ifdatareq ifi;
-	int flags;
+#endif
 
-	memcpy(ifi.ifdr_name, ifr->ifr_name, sizeof(ifi.ifdr_name));
-	if(ioctl(fd, SIOCGIFDATA, &ifi) != 0)
-		return _ifconfig_error("SIOCGIFDATA", 1);
+	printf("%s:", ifr->ifr_name);
+#ifdef SIOCGIFFLAGS
 	if(ioctl(fd, SIOCGIFFLAGS, ifr) != 0)
 		return _ifconfig_error("SIOCGIFFLAGS", 1);
-	flags = ifr->ifr_flags;
-	printf("%s: flags=%hx mtu %lu\n", ifr->ifr_name, flags,
-			ifi.ifdr_data.ifi_mtu);
-	_mac_media(prefs, fd, ifr, &ifi);
-	return 0;
+	else
+		printf(" flags=%x", (unsigned short)ifr->ifr_flags);
+#endif
+#ifdef SIOCGIFDATA
+	memcpy(ifi.ifdr_name, ifr->ifr_name, sizeof(ifi.ifdr_name));
+	if(ioctl(fd, SIOCGIFDATA, &ifi) != 0)
+		ret |= -_ifconfig_error("SIOCGIFDATA", 1);
+	else
+		printf(" mtu %lu", ifi.ifdr_data.ifi_mtu);
+#endif
+	putchar('\n');
+	ret |= _mac_media(prefs, fd, ifr);
+	return ret;
 }
 
-static int _mac_media(Prefs prefs, int fd, struct ifreq * ifr,
-		struct ifdatareq * ifi)
+static int _mac_media(Prefs prefs, int fd, struct ifreq * ifr)
 {
+#ifdef SIOCGIFMEDIA
 	struct ifmediareq ifm;
 
 	memset(&ifm, 0, sizeof(ifm));
@@ -163,6 +175,7 @@ static int _mac_media(Prefs prefs, int fd, struct ifreq * ifr,
 	if(ioctl(fd, SIOCGIFMEDIA, &ifm) != 0)
 		return _ifconfig_error("SIOCGIFMEDIA", 1);
 	printf("\tmedia: %s\n", _mac_media_str(ifm.ifm_current));
+#endif
 	return 0;
 }
 
@@ -181,10 +194,14 @@ static int _show_inet(Prefs prefs, int fd, struct ifreq * ifr)
 		return -_ifconfig_error("SIOCGIFADDR", 1);
 	}
 	printf("%s%s", "\tinet: ", _inet_str(&ifr->ifr_addr));
+#ifdef SIOCGIFDSTADDR
 	if(ioctl(fd, SIOCGIFDSTADDR, ifr) == 0)
 		printf(" -> %s", _inet_str(&ifr->ifr_dstaddr));
+#endif
+#ifdef SIOCGIFBRDADDR
 	if(ioctl(fd, SIOCGIFBRDADDR, ifr) == 0)
 		printf(" broadcast %s", _inet_str(&ifr->ifr_broadaddr));
+#endif
 	putchar('\n');
 	return 0;
 }
@@ -198,6 +215,7 @@ static int _show_inet6(Prefs prefs, char const * name)
 
 	if((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
 		return -_ifconfig_error("socket", 1);
+#ifdef __NetBSD__
 	if(getifaddrs(&ifa) != 0)
 		ret = -_ifconfig_error("getifaddrs", 1);
 	else
@@ -208,10 +226,14 @@ static int _show_inet6(Prefs prefs, char const * name)
 				continue;
 			else
 				ret |= _inet6_do(prefs, name, fd, i);
+#else
+	/* FIXME implement */
+#endif
 	close(fd);
 	return ret;
 }
 
+#ifdef __NetBSD__
 static int _inet6_do(Prefs prefs, char const * name, int fd,
 		struct ifaddrs * ifa)
 {
@@ -229,6 +251,11 @@ static int _inet6_do(Prefs prefs, char const * name, int fd,
 		_inet6_print_addr(&ifr.ifr_ifru.ifru_dstaddr.sin6_addr);
 	}
 	putchar('\n');
+#else
+static int _inet6_do(Prefs prefs, char const * name, int fd, void * ifa)
+{
+	/* FIXME implement */
+#endif
 	return 0;
 }
 
