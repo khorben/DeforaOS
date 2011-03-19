@@ -289,6 +289,7 @@ target_distclean()
 #target_image
 target_image()
 {
+	[ -z "$CPPFLAGS" ] && CPPFLAGS="-D __DeforaOS__"
 	_image_pre							&&
 	_image_targets							&&
 	_image_post
@@ -302,9 +303,9 @@ _image_pre()
 _image_targets()
 {
 	#global settings
-	CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
-	CFLAGS="-Wall -ffreestanding -g"
-	_LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
+	CPPFLAGS="$CPPFLAGS -nostdinc -isystem $DESTDIR$PREFIX/include"
+	CFLAGS="$CFLAGS -Wall -ffreestanding -g"
+	_LDFLAGS="$LDFLAGS -nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
 	PKG_CONFIG_LIBDIR="$DESTDIR$PREFIX/lib/pkgconfig"
 	PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
 	export PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
