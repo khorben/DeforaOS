@@ -84,8 +84,7 @@ static int _desktopicon_set_name(DesktopIcon * desktopicon, char const * name);
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon);
 
 /* callbacks */
-static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _on_desktopicon_closex(void);
 static gboolean _on_icon_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data);
 static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
@@ -446,7 +445,7 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 	gtk_window_set_focus_on_map(window, FALSE);
 #endif
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
-			G_CALLBACK(_on_desktopicon_closex), desktopicon);
+			G_CALLBACK(_on_desktopicon_closex), NULL);
 	/* event */
 	desktopicon->event = gtk_event_box_new();
 	gtk_drag_source_set(desktopicon->event, GDK_BUTTON1_MASK, targets,
@@ -570,13 +569,8 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon)
 
 
 /* callbacks */
-static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _on_desktopicon_closex(void)
 {
-	DesktopIcon * di = data;
-
-	gtk_widget_hide(widget);
-	desktopicon_delete(di);
 	return TRUE;
 }
 
