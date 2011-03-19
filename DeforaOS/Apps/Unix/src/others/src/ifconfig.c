@@ -26,6 +26,8 @@
 #if defined(__DeforaOS__)
 #elif defined(__FreeBSD__)
 # include <ifaddrs.h>
+# include <net/if_var.h>
+# include <netinet6/in6_var.h>
 #elif defined(__NetBSD__)
 # include <ifaddrs.h>
 # include <netinet6/in6_var.h>
