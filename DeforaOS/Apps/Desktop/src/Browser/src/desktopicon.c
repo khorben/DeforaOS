@@ -437,13 +437,14 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 	/* window */
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(desktopicon->window);
-	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
-	gtk_window_set_resizable(window, FALSE);
 	gtk_window_set_decorated(window, FALSE);
-	gtk_window_set_keep_below(window, TRUE);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_focus_on_map(window, FALSE);
 #endif
+	gtk_window_set_keep_below(window, TRUE);
+	gtk_window_set_resizable(window, FALSE);
+	gtk_window_set_skip_pager_hint(window, TRUE);
+	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
 			G_CALLBACK(_on_desktopicon_closex), NULL);
 	/* event */
@@ -472,19 +473,18 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 			| GDK_HINT_BASE_SIZE);
 	/* image */
 	desktopicon->image = gtk_image_new();
-	gtk_widget_set_size_request(desktopicon->image, DESKTOPICON_MIN_WIDTH,
+	gtk_widget_set_size_request(desktopicon->image, DESKTOPICON_ICON_SIZE,
 			DESKTOPICON_ICON_SIZE);
-	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->image, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->image, FALSE, TRUE, 0);
 	/* label */
 	desktopicon->label = gtk_label_new(NULL);
-	gtk_label_set_justify(GTK_LABEL(desktopicon->label),
-			GTK_JUSTIFY_CENTER);
+	gtk_misc_set_alignment(GTK_MISC(desktopicon->label), 0.5, 0.0);
 #if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_label_set_line_wrap_mode(GTK_LABEL(desktopicon->label),
 			PANGO_WRAP_WORD_CHAR);
 #endif
 	gtk_label_set_line_wrap(GTK_LABEL(desktopicon->label), TRUE);
-	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(desktopicon->event), vbox);
 	gtk_container_add(GTK_CONTAINER(desktopicon->window),
 			desktopicon->event);
@@ -548,19 +548,18 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon)
 	gc = gdk_gc_new(mask);
 	gdk_gc_set_foreground(gc, &black);
 	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, height);
-	gdk_draw_drawable(mask, gc, iconmask, 0, 0,
-			(width - iwidth) / 2,
-			(DESKTOPICON_ICON_SIZE + 8 - iheight) / 2, -1, -1);
+	gdk_draw_drawable(mask, gc, iconmask, 0, 0, (width - iwidth) / 2,
+			(DESKTOPICON_ICON_SIZE - iheight) / 2, -1, -1);
 	gdk_gc_set_foreground(gc, &white);
 	gtk_widget_size_request(desktopicon->label, &req);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") label is %dx%d\n", __func__,
 			desktopicon->name, req.width, req.height);
 #endif
-	offset = DESKTOPICON_ICON_SIZE + 8;
+	offset = DESKTOPICON_ICON_SIZE + 4;
 	gdk_draw_rectangle(mask, gc, TRUE, (width - req.width - 8) / 2,
-			offset + ((height - offset - req.height - 8)
-				/ 2), req.width + 8, req.height + 8);
+			offset /* + ((height - offset - req.height - 8)
+				/ 2) */, req.width + 8, req.height + 8);
 	gtk_widget_shape_combine_mask(desktopicon->window, mask, 0, 0);
 	g_object_unref(gc);
 	g_object_unref(iconmask);
