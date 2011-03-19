@@ -23,9 +23,11 @@
 #include <errno.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#ifdef __NetBSD__
+#if defined(__FreeBSD__)
 # include <ifaddrs.h>
-# include <netinet/in_var.h>
+#elif defined(__NetBSD__)
+# include <ifaddrs.h>
+# include <netinet6/in6_var.h>
 #endif
 
 
