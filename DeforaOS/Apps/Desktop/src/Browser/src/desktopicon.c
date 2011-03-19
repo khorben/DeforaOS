@@ -598,6 +598,16 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 		desktop_unselect_all(desktopicon->desktop);
 		desktopicon_set_selected(desktopicon, TRUE);
 	}
+	/* single click open for applications */
+	if(desktopicon->path == NULL && event->type == GDK_BUTTON_PRESS
+			&& event->button == 1)
+	{
+		if(desktopicon->isexec == TRUE)
+			_on_icon_run(desktopicon);
+		else if(desktopicon->callback != NULL)
+			_on_icon_open(desktopicon);
+		return FALSE;
+	}
 	if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
 	{
 		if(desktopicon->isexec == TRUE) /* XXX slightly ugly */
@@ -608,6 +618,7 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 	}
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
 		return FALSE;
+	/* popup menu */
 	menu = gtk_menu_new();
 	if(desktopicon->isdir == TRUE)
 		_popup_directory(menu, desktopicon);
