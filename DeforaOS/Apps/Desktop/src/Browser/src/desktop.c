@@ -786,6 +786,7 @@ static int _layout_applications(Desktop * desktop)
 		desktopicon = desktopicon_new(desktop, _("Back"), NULL);
 		desktopicon_set_callback(desktopicon, _layout_set_categories,
 				NULL);
+		desktopicon_set_immutable(desktopicon, TRUE);
 		icon = gtk_icon_theme_load_icon(desktop->theme, "back",
 				DESKTOPICON_ICON_SIZE, 0, NULL);
 		if(icon != NULL)
