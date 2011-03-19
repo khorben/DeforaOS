@@ -1469,7 +1469,7 @@ static int _desktop_get_workarea(Desktop * desktop)
 	int format;
 	unsigned long cnt;
 	unsigned long bytes;
-	unsigned char * p;
+	unsigned char * p = NULL;
 	unsigned long * u;
 
 	screen = gdk_screen_get_default();
@@ -1478,29 +1478,36 @@ static int _desktop_get_workarea(Desktop * desktop)
 	{
 		gdk_screen_get_monitor_geometry(screen, desktop->prefs.monitor,
 				&desktop->workarea);
-		return 0;
-	}
-	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
-	if(XGetWindowProperty(GDK_DISPLAY_XDISPLAY(desktop->display),
-				GDK_WINDOW_XWINDOW(desktop->root), atom, 0,
-				G_MAXLONG, False, XA_CARDINAL, &type, &format,
-				&cnt, &bytes, &p) != Success)
-		return 1;
-	if(cnt >= 4)
-	{
-		u = (unsigned long *)p;
-		desktop->workarea.x = u[0];
-		desktop->workarea.y = u[1];
-		desktop->workarea.width = u[2];
-		desktop->workarea.height = u[3];
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() (%d, %d) %dx%d\n", __func__,
 				desktop->workarea.x, desktop->workarea.y,
 				desktop->workarea.width,
 				desktop->workarea.height);
 #endif
+		return 0;
 	}
+	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
+	if(XGetWindowProperty(GDK_DISPLAY_XDISPLAY(desktop->display),
+				GDK_WINDOW_XWINDOW(desktop->root), atom, 0,
+				G_MAXLONG, False, XA_CARDINAL, &type, &format,
+				&cnt, &bytes, &p) == Success && cnt >= 4)
+	{
+		u = (unsigned long *)p;
+		desktop->workarea.x = u[0];
+		desktop->workarea.y = u[1];
+		if((desktop->workarea.width = u[2]) == 0
+				|| (desktop->workarea.height = u[3]) == 0)
+			gdk_screen_get_monitor_geometry(screen, 0,
+					&desktop->workarea);
+	}
+	else
+		gdk_screen_get_monitor_geometry(screen, 0, &desktop->workarea);
 	XFree(p);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() (%d, %d) %dx%d\n", __func__,
+			desktop->workarea.x, desktop->workarea.y,
+			desktop->workarea.width, desktop->workarea.height);
+#endif
 	desktop_icons_align(desktop);
 	return 0;
 }
