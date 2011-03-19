@@ -3,6 +3,7 @@ halt
 hexdump
 host
 hostname
+ifconfig
 login
 mktemp
 mount
