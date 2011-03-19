@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-19 03:41+0100\n"
+"POT-Creation-Date: 2011-03-19 20:57+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -101,7 +101,7 @@ msgstr "À _propos"
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/browser.c:156 ../src/desktopicon.c:685 ../src/view.c:109
+#: ../src/browser.c:156 ../src/desktopicon.c:684 ../src/view.c:109
 msgid "_Edit"
 msgstr "É_dition"
 
@@ -193,7 +193,7 @@ msgstr " Chemin: "
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/browser.c:763 ../src/desktopicon.c:820 ../src/view.c:144
+#: ../src/browser.c:763 ../src/desktopicon.c:819 ../src/view.c:144
 #: ../src/view.c:419
 msgid "Open with..."
 msgstr "Ouvrir avec..."
@@ -296,8 +296,8 @@ msgid "New folder"
 msgstr "Nouveau dossier"
 
 #: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1038
-#: ../src/callbacks.c:1043 ../src/desktopicon.c:800 ../src/desktopicon.c:805
-#: ../src/desktopicon.c:923 ../src/desktopicon.c:928
+#: ../src/callbacks.c:1043 ../src/desktopicon.c:799 ../src/desktopicon.c:804
+#: ../src/desktopicon.c:922 ../src/desktopicon.c:927
 msgid "Warning"
 msgstr "Avertissement"
 
@@ -334,12 +334,12 @@ msgstr "Ouvrir dans une _nouvelle fenêtre"
 msgid "_Unmount"
 msgstr "Démonter"
 
-#: ../src/callbacks.c:932 ../src/desktopicon.c:698 ../src/view.c:100
+#: ../src/callbacks.c:932 ../src/desktopicon.c:697 ../src/view.c:100
 #: ../src/view.c:111
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
 
-#: ../src/callbacks.c:1042 ../src/desktopicon.c:804
+#: ../src/callbacks.c:1042 ../src/desktopicon.c:803
 msgid "Are you sure you want to execute this file?"
 msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 
@@ -520,7 +520,7 @@ msgstr "Applications"
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1554
+#: ../src/desktop.c:1561
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -540,27 +540,27 @@ msgstr ""
 "  -h\tAfficher l'écran d'accueil\n"
 "  -m\tMoniteur où afficher le bureau\n"
 
-#: ../src/desktopicon.c:656 ../src/desktopicon.c:707
+#: ../src/desktopicon.c:655 ../src/desktopicon.c:706
 msgid "_Rename..."
 msgstr "_Renommer..."
 
-#: ../src/desktopicon.c:853 ../src/desktopicon.c:854
+#: ../src/desktopicon.c:852 ../src/desktopicon.c:853
 msgid "Rename"
 msgstr "Renommer"
 
-#: ../src/desktopicon.c:863
+#: ../src/desktopicon.c:862
 msgid "Rename: "
 msgstr "Renommer : "
 
-#: ../src/desktopicon.c:874
+#: ../src/desktopicon.c:873
 msgid "To: "
 msgstr "Vers : "
 
-#: ../src/desktopicon.c:926
+#: ../src/desktopicon.c:925
 msgid "Are you sure you want to delete "
 msgstr "Voulez-vous vraiment effacer "
 
-#: ../src/desktopicon.c:927
+#: ../src/desktopicon.c:926
 msgid " file(s)?"
 msgstr " fichier(s) ?"
 
