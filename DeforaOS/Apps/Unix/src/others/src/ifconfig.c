@@ -210,8 +210,10 @@ static int _show_inet6(Prefs prefs, char const * name)
 {
 	int ret = 0;
 	int fd;
+#ifdef __NetBSD__
 	struct ifaddrs * ifa;
 	struct ifaddrs * i;
+#endif
 
 	if((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
 		return -_ifconfig_error("socket", 1);
