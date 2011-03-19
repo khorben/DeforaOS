@@ -25,6 +25,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/hexdump.c \
 		$(PACKAGE)-$(VERSION)/src/host.c \
 		$(PACKAGE)-$(VERSION)/src/hostname.c \
+		$(PACKAGE)-$(VERSION)/src/ifconfig.c \
 		$(PACKAGE)-$(VERSION)/src/login.c \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
 		$(PACKAGE)-$(VERSION)/src/mount.c \

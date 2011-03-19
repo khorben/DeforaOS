@@ -1,4 +1,4 @@
-TARGETS	= halt hexdump host hostname login mktemp mount poweroff reboot tar umount uptime w
+TARGETS	= halt hexdump host hostname ifconfig login mktemp mount poweroff reboot tar umount uptime w
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -42,6 +42,13 @@ hostname_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 hostname: $(hostname_OBJS)
 	$(CC) -o hostname $(hostname_OBJS) $(hostname_LDFLAGS)
+
+ifconfig_OBJS = ifconfig.o
+ifconfig_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+ifconfig_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) 
+
+ifconfig: $(ifconfig_OBJS)
+	$(CC) -o ifconfig $(ifconfig_OBJS) $(ifconfig_LDFLAGS)
 
 login_OBJS = login.o
 login_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -118,6 +125,9 @@ host.o: host.c
 hostname.o: hostname.c
 	$(CC) $(hostname_CFLAGS) -c hostname.c
 
+ifconfig.o: ifconfig.c
+	$(CC) $(ifconfig_CFLAGS) -c ifconfig.c
+
 login.o: login.c
 	$(CC) $(login_CFLAGS) -c login.c
 
@@ -146,7 +156,7 @@ w.o: w.c utmpx.c
 	$(CC) $(w_CFLAGS) -c w.c
 
 clean:
-	$(RM) -- $(halt_OBJS) $(hexdump_OBJS) $(host_OBJS) $(hostname_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(poweroff_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
+	$(RM) -- $(halt_OBJS) $(hexdump_OBJS) $(host_OBJS) $(hostname_OBJS) $(ifconfig_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(poweroff_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -160,6 +170,8 @@ install: $(TARGETS)
 	$(INSTALL) -m 0755 -- host $(DESTDIR)$(BINDIR)/host
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- hostname $(DESTDIR)$(BINDIR)/hostname
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- ifconfig $(DESTDIR)$(BINDIR)/ifconfig
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- login $(DESTDIR)$(BINDIR)/login
 	$(MKDIR) $(DESTDIR)$(BINDIR)
@@ -184,6 +196,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/hexdump
 	$(RM) -- $(DESTDIR)$(BINDIR)/host
 	$(RM) -- $(DESTDIR)$(BINDIR)/hostname
+	$(RM) -- $(DESTDIR)$(BINDIR)/ifconfig
 	$(RM) -- $(DESTDIR)$(BINDIR)/login
 	$(RM) -- $(DESTDIR)$(BINDIR)/mktemp
 	$(RM) -- $(DESTDIR)$(BINDIR)/mount
