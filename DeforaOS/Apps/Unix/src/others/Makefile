@@ -35,6 +35,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/uptime.c \
 		$(PACKAGE)-$(VERSION)/src/w.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/ifconfig.c \
 		$(PACKAGE)-$(VERSION)/src/tar.h \
 		$(PACKAGE)-$(VERSION)/src/utmpx.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
