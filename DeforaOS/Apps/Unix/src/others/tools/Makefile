@@ -31,7 +31,7 @@ oinit: $(oinit_OBJS)
 
 otherbox_OBJS = otherbox.o others.o
 otherbox_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-otherbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+otherbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) 
 
 otherbox: $(otherbox_OBJS)
 	$(CC) -o otherbox $(otherbox_OBJS) $(otherbox_LDFLAGS)
