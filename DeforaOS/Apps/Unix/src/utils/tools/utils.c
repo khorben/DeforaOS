@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -393,6 +393,21 @@
 #undef _prefs_parse
 #undef _mkfifo
 
+/* more.c */
+#define main _more_main
+#define _usage _more_usage
+#define _Prefs _more_Prefs
+#define Prefs more_Prefs
+#define _prefs_parse _more_prefs_parse
+#define _more __more
+#include "../src/more.c"
+#undef main
+#undef _usage
+#undef _Prefs
+#undef Prefs
+#undef _prefs_parse
+#undef _more
+
 /* mv.c */
 #define main _mv_main
 #define _usage _mv_usage
@@ -737,6 +752,7 @@ Call calls[] =
 	{ "ls",	_ls_main	},
 	{ "mkdir",	_mkdir_main	},
 	{ "mkfifo",	_mkfifo_main	},
+	{ "more",	_more_main	},
 	{ "mv",	_mv_main	},
 	{ "nice",	_nice_main	},
 	{ "pr",	_pr_main	},

@@ -32,7 +32,7 @@ typedef struct _Prefs
 
 
 /* prototypes */
-static int _error(char const * message, int ret);
+static int _more_error(char const * message, int ret);
 
 
 /* functions */
@@ -60,7 +60,7 @@ static int _more_do(Prefs * prefs, char const * filename)
 	int c;
 
 	if(filename != NULL && (fp = fopen(filename, "r")) == NULL)
-		return _error(filename, 1);
+		return _more_error(filename, 1);
 	while(fgets(buf, sizeof(buf), fp) != NULL)
 	{
 		len = strlen(buf);
@@ -82,8 +82,8 @@ static int _more_do(Prefs * prefs, char const * filename)
 }
 
 
-/* error */
-static int _error(char const * message, int ret)
+/* more_error */
+static int _more_error(char const * message, int ret)
 {
 	fputs("more: ", stderr);
 	perror(message);
