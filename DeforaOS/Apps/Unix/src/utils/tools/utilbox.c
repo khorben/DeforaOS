@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ static int _list(Call * calls)
 	size_t i;
 
 	for(i = 0; calls[i].name != NULL; i++)
-		printf("%s\n", calls[i].name);
+		puts(calls[i].name);
 	return 0;
 }
 
