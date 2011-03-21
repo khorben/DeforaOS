@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
 # include <string.h>
 
 /* types */
+# ifndef utmpx
+#  define utmpx utmpx
 struct utmpx
 {
 	char ut_name[UT_NAMESIZE];
@@ -36,21 +38,24 @@ struct utmpx
 	pid_t ut_pid;
 	struct timeval ut_tv;
 };
-# define ut_user ut_name
+#  define ut_user ut_name
+# endif /* !utmpx */
 
 /* constants */
-#define EMPTY		0
-#define USER_PROCESS	1
+# define EMPTY		0
+# define USER_PROCESS	1
 
 
 /* macros */
-#ifndef min
-# define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
+# ifndef min
+#  define min(a, b) ((a) < (b) ? (a) : (b))
+# endif
 
 
 /* functions */
 /* getutxent */
+# ifndef getutxent
+#  define getutxent getutxent
 struct utmpx * getutxent(void)
 	/* FIXME implement */
 {
@@ -74,4 +79,5 @@ struct utmpx * getutxent(void)
 	utx.ut_tv.tv_usec = 0;
 	return &utx;
 }
+# endif /* !getutxent */
 #endif

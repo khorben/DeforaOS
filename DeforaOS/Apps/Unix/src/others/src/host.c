@@ -43,7 +43,7 @@ static int _host_herror(char const * message, int ret)
 {
 	struct
 	{
-		int errno;
+		int error;
 		char const * message;
 	} em[] = {
 		{ HOST_NOT_FOUND,	"Host not found"	},
@@ -55,7 +55,7 @@ static int _host_herror(char const * message, int ret)
 	int i;
 
 	fprintf(stderr, "%s%s%s", "host: ", message, ": ");
-	for(i = 0; em[i].errno != 0 && em[i].errno != h_errno; i++);
+	for(i = 0; em[i].error != 0 && em[i].error != h_errno; i++);
 	fprintf(stderr, "%s\n", em[i].message);
 	return ret;
 }

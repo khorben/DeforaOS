@@ -42,7 +42,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/linuxrc.c \
 		$(PACKAGE)-$(VERSION)/tools/oinit.c \
+		$(PACKAGE)-$(VERSION)/tools/otherbox.c \
+		$(PACKAGE)-$(VERSION)/tools/others.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/others.sh \
+		$(PACKAGE)-$(VERSION)/tools/otherbox.h \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \

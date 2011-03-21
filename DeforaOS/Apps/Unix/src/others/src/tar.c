@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,9 @@
 #include <string.h>
 #include "tar.h"
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#ifndef min
+# define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 
 /* constants */
