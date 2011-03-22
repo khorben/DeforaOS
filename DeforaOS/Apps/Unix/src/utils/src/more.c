@@ -59,7 +59,8 @@ static int _more_do(Prefs * prefs, char const * filename)
 	int n = 1;
 	int c;
 
-	if(filename != NULL && (fp = fopen(filename, "r")) == NULL)
+	if(filename != NULL && strcmp(filename, "-") != 0
+			&& (fp = fopen(filename, "r")) == NULL)
 		return _more_error(filename, 1);
 	while(fgets(buf, sizeof(buf), fp) != NULL)
 	{
@@ -76,7 +77,7 @@ static int _more_do(Prefs * prefs, char const * filename)
 		fputs("--more--", stderr);
 		while((c = getchar()) != EOF && c != '\n');
 	}
-	if(filename != NULL)
+	if(filename != NULL && strcmp(filename, "-") != 0)
 		fclose(fp);
 	return 0;
 }
