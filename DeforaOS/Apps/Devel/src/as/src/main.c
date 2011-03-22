@@ -86,6 +86,8 @@ int main(int argc, char * argv[])
 				o = 0;
 				if(as_plugin_list(ASPT_ARCH) != 0)
 					o = error_print(PACKAGE);
+				else
+					putchar('\n');
 				if(as_plugin_list(ASPT_FORMAT) != 0)
 					o = error_print(PACKAGE);
 				return (o == 0) ? 0 : 2;
