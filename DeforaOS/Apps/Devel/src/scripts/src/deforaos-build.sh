@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -78,13 +78,6 @@ deforaos_build()
 	$MAKE DESTDIR="$DST" PREFIX="$PREFIX" bootstrap < "$DEVNULL" \
 								|| error
 
-	#build
-	echo ""
-	echo "Building CVS module $MODULE:"
-	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
-			DESTDIR="$DST" PREFIX="$PREFIX" \
-			clean all				|| error
-
 	#create CD-ROM image
 	echo ""
 	echo "Creating CD-ROM image:"
@@ -93,7 +86,7 @@ deforaos_build()
 			IMAGE_TYPE="ramdisk" \
 			IMAGE_FILE="initrd.img" IMAGE_SIZE=8192 \
 			IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
-			image					|| error
+			clean image				|| error
 	$RM -r "$DST"
 	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
 			DESTDIR="$DST" PREFIX="$PREFIX" \
@@ -103,7 +96,7 @@ deforaos_build()
 			IMAGE_MODULES="$KERNEL_PATH/modules.tgz" \
 			IMAGE_RAMDISK="initrd.img" \
 			KERNEL_ARGS="vga=0x301 rw" \
-			image					|| error
+			clean image				|| error
 	$CP "$FILE" "$DESTDIR"					|| error
 	echo "http://www.defora.org/download/snapshots/$FILE"
 
