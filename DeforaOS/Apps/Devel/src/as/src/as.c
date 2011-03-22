@@ -199,10 +199,11 @@ int as_plugin_list(AsPluginType type)
 	DIR * dir;
 	struct dirent * de;
 	size_t len;
+	char const * sep = "";
 
 	aspd = &_as_plugin_description[type];
 	fprintf(stderr, "%s%s%s", "Available ", aspd->description,
-			" plug-ins:");
+			" plug-ins:\n");
 	len = strlen(LIBDIR) + 1 + strlen(PACKAGE) + 1 + strlen(aspd->name) + 1;
 	if((path = malloc(len)) == NULL)
 	{
@@ -225,7 +226,8 @@ int as_plugin_list(AsPluginType type)
 		if(strcmp(".so", &de->d_name[len - 3]) != 0)
 			continue;
 		de->d_name[len - 3] = '\0';
-		fprintf(stderr, " %s", de->d_name);
+		fprintf(stderr, "%s%s", sep, de->d_name);
+		sep = ", ";
 	}
 	free(path);
 	closedir(dir);
