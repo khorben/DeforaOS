@@ -21,7 +21,6 @@
 #include <string.h>
 #include <errno.h>
 #include "As/format.h"
-#include "as.h"
 #include "format.h"
 #include "../config.h"
 

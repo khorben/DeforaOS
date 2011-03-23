@@ -35,7 +35,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/disas.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/arch.h \
-		$(PACKAGE)-$(VERSION)/src/as.h \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/format.h \
@@ -79,6 +78,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/include/As/arch.h \
+		$(PACKAGE)-$(VERSION)/include/As/as.h \
 		$(PACKAGE)-$(VERSION)/include/As/format.h \
 		$(PACKAGE)-$(VERSION)/include/As/Makefile \
 		$(PACKAGE)-$(VERSION)/include/As/project.conf \

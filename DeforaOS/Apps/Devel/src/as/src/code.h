@@ -19,10 +19,8 @@
 # define AS_CODE_H
 
 # include <stdio.h>
+# include "As/as.h"
 # include "token.h"
-# include "arch.h"
-# include "format.h"
-# include "as.h"
 
 
 /* types */

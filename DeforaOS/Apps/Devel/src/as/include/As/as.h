@@ -15,8 +15,8 @@
 
 
 
-#ifndef AS_AS_H
-# define AS_AS_H
+#ifndef DEVEL_AS_AS_H
+# define DEVEL_AS_AS_H
 
 
 /* As */
@@ -33,10 +33,6 @@ typedef struct _AsOperand
 } AsOperand;
 
 typedef enum _AsPluginType { ASPT_ARCH = 0, ASPT_FORMAT } AsPluginType;
-
-
-/* constants */
-# define AS_FILENAME_DEFAULT "a.out"
 
 
 /* functions */
@@ -62,4 +58,4 @@ int as_instruction(As * as, char const * name, unsigned int operands_cnt, ...);
 /* plugins helpers */
 int as_plugin_list(AsPluginType type);
 
-#endif /* !AS_AS_H */
+#endif /* !DEVEL_AS_AS_H */

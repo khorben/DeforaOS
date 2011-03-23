@@ -87,6 +87,7 @@ As * as_new(char const * arch, char const * format)
 {
 	As * as;
 
+	/* FIXME add signatures to the format plug-in (for disas too) */
 	if((as = object_new(sizeof(*as))) == NULL)
 		return NULL;
 	if(arch == NULL)

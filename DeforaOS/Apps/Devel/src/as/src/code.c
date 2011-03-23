@@ -19,9 +19,12 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include "arch.h"
+#include "format.h"
 #include "common.h"
 #include "code.h"
 

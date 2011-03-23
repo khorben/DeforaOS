@@ -19,6 +19,7 @@
 # define DEVEL_AS_H
 
 # include "As/arch.h"
+# include "As/as.h"
 # include "As/format.h"
 
 #endif /* !DEVEL_AS_H */

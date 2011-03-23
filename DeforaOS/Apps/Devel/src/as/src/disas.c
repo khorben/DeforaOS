@@ -25,7 +25,7 @@
 #ifndef EM_486
 # define EM_486 6
 #endif
-#include "as.h"
+#include "As/as.h"
 #include "arch.h"
 
 

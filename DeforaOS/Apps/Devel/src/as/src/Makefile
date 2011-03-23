@@ -52,7 +52,7 @@ disas: $(disas_OBJS) libas.so
 arch.o: arch.c arch.h ../config.h
 	$(CC) $(libas_CFLAGS) -c arch.c
 
-as.o: as.c ../include/As.h as.h ../config.h
+as.o: as.c ../include/As.h ../config.h
 	$(CC) $(libas_CFLAGS) -c as.c
 
 code.o: code.c ../include/As.h arch.h code.h

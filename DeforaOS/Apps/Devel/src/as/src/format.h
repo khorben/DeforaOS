@@ -18,6 +18,8 @@
 #ifndef AS_FORMAT_H
 # define AS_FORMAT_H
 
+# include <stdio.h>
+
 
 /* Format */
 /* public */
