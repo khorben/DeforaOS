@@ -24,6 +24,13 @@
 
 
 /* as */
+/* private */
+/* constants */
+# define AS_FILENAME_DEFAULT "a.out"
+
+
+/* functions */
+/* as */
 static int _as(char const * arch, char const * format, char const * infile,
 		char const * outfile)
 {
@@ -62,6 +69,7 @@ static unsigned int _usage(void)
 }
 
 
+/* public */
 /* main */
 int main(int argc, char * argv[])
 {

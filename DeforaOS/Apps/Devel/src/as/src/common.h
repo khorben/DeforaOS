@@ -101,8 +101,4 @@ typedef enum _ASCode
 # define AS_CODE_KEYWORD_FIRST AS_CODE_KEYWORD_AUTO
 # define AS_CODE_KEYWORD_LAST AS_CODE_IMMEDIATE
 
-
-/* constants */
-# define AS_FILENAME_DEFAULT "a.out"
-
 #endif /* !AS_COMMON_H */
