@@ -60,7 +60,8 @@ static int _java_exit(FormatPlugin * format);
 FormatPlugin format_plugin =
 {
 	NULL,
-	NULL,
+	"\xca\xfe\xba\xbe",
+	4,
 	_java_init,
 	_java_exit,
 	NULL,
@@ -80,11 +81,11 @@ static int _java_init(FormatPlugin * format, char const * arch)
 	if(strcmp(arch, "java") != 0)
 		return error_set_code(1, "%s: %s", arch,
 				"Unsupported architecture for java");
-	jh.magic = _htob32(0xcafebabe);
+	memcpy(&jh.magic, format->signature, format->signature_len);
 	jh.minor = _htob16(0);
 	jh.major = _htob16(0x32); /* XXX choose a more appropriate version */
-	if(fwrite(&jh, sizeof(jh), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&jh, sizeof(jh), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	if((java = malloc(sizeof(*java))) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
@@ -126,8 +127,8 @@ static int _exit_constant_pool(FormatPlugin * format)
 	JavaPlugin * java = format->priv;
 	uint16_t cnt = _htob16(java->constants_cnt + 1);
 
-	if(fwrite(&cnt, sizeof(cnt), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	/* XXX output the constants */
 	return 0;
@@ -138,8 +139,8 @@ static int _exit_access_flags(FormatPlugin * format)
 	JavaPlugin * java = format->priv;
 	uint16_t flags = _htob16(java->access_flags);
 
-	if(fwrite(&flags, sizeof(flags), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&flags, sizeof(flags), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	return 0;
 }
@@ -149,8 +150,8 @@ static int _exit_class_name(FormatPlugin * format)
 	uint16_t index = _htob16(0);
 
 	/* FIXME really implement */
-	if(fwrite(&index, sizeof(index), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&index, sizeof(index), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	return 0;
 }
@@ -160,8 +161,8 @@ static int _exit_super_name(FormatPlugin * format)
 	uint16_t index = _htob16(0);
 
 	/* FIXME really implement */
-	if(fwrite(&index, sizeof(index), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&index, sizeof(index), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	return 0;
 }
@@ -171,8 +172,8 @@ static int _exit_interface_table(FormatPlugin * format)
 	JavaPlugin * java = format->priv;
 	uint16_t cnt = _htob16(java->interfaces_cnt);
 
-	if(fwrite(&cnt, sizeof(cnt), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	/* XXX output the interfaces */
 	return 0;
@@ -183,8 +184,8 @@ static int _exit_field_table(FormatPlugin * format)
 	JavaPlugin * java = format->priv;
 	uint16_t cnt = _htob16(java->fields_cnt);
 
-	if(fwrite(&cnt, sizeof(cnt), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	/* XXX output the fields */
 	return 0;
@@ -195,8 +196,8 @@ static int _exit_method_table(FormatPlugin * format)
 	JavaPlugin * java = format->priv;
 	uint16_t cnt = _htob16(java->methods_cnt);
 
-	if(fwrite(&cnt, sizeof(cnt), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	/* XXX output the methods */
 	return 0;
@@ -207,8 +208,8 @@ static int _exit_attribute_table(FormatPlugin * format)
 	JavaPlugin * java = format->priv;
 	uint16_t cnt = _htob16(java->attributes_cnt);
 
-	if(fwrite(&cnt, sizeof(cnt), 1, format->fp) != 1)
-		return error_set_code(1, "%s: %s", format->filename,
+	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
+		return error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	/* XXX output the attributes */
 	return 0;

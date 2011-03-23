@@ -32,6 +32,7 @@ struct _Format
 {
 	char * name;
 	char * arch;
+	FormatPluginHelper helper;
 	FormatPlugin * plugin;
 	Plugin * handle;
 };
@@ -101,8 +102,9 @@ int format_exit(Format * format)
 #endif
 	if(format->plugin->exit != NULL)
 		ret = format->plugin->exit(format->plugin);
-	format->plugin->fp = NULL;
-	format->plugin->filename = NULL;
+	format->plugin->helper = NULL;
+	format->helper.fp = NULL;
+	format->helper.filename = NULL;
 	return ret;
 }
 
@@ -122,8 +124,9 @@ int format_init(Format * format, char const * filename, FILE * fp)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, filename, fp);
 #endif
-	format->plugin->filename = filename;
-	format->plugin->fp = fp;
+	format->helper.filename = filename;
+	format->helper.fp = fp;
+	format->plugin->helper = &format->helper;
 	if(format->plugin->init != NULL)
 		return format->plugin->init(format->plugin, format->arch);
 	return 0;

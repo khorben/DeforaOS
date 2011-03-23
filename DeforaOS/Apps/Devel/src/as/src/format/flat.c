@@ -25,6 +25,7 @@ FormatPlugin format_plugin =
 {
 	NULL,
 	NULL,
+	0,
 	NULL,
 	NULL,
 	NULL,

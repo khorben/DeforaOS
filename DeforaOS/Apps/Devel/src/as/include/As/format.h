@@ -23,12 +23,20 @@
 
 /* As */
 /* types */
+typedef struct _FormatPluginHelper
+{
+	char const * filename;
+	FILE * fp;
+} FormatPluginHelper;
+
 typedef struct _FormatPlugin FormatPlugin;
 
 struct _FormatPlugin
 {
-	char const * filename;
-	FILE * fp;
+	FormatPluginHelper * helper;
+
+	char const * signature;
+	size_t signature_len;
 
 	int (*init)(FormatPlugin * format, char const * arch);
 	int (*exit)(FormatPlugin * format);
