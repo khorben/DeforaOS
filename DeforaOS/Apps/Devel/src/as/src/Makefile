@@ -24,7 +24,7 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-libas_OBJS = as.o code.o parser.o token.o arch/arch.o format/format.o
+libas_OBJS = arch.o as.o code.o format.o parser.o token.o
 libas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs cpp`
 
@@ -49,11 +49,17 @@ disas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L. -Wl,-rpath,$(LIBDIR) -las
 disas: $(disas_OBJS) libas.so
 	$(CC) -o disas $(disas_OBJS) $(disas_LDFLAGS)
 
-as.o: as.c ../include/as.h ../config.h
+arch.o: arch.c arch.h ../config.h
+	$(CC) $(libas_CFLAGS) -c arch.c
+
+as.o: as.c ../include/As.h as.h ../config.h
 	$(CC) $(libas_CFLAGS) -c as.c
 
-code.o: code.c ../include/as.h arch/arch.h code.h
+code.o: code.c ../include/As.h arch.h code.h
 	$(CC) $(libas_CFLAGS) -c code.c
+
+format.o: format.c format.h
+	$(CC) $(libas_CFLAGS) -c format.c
 
 parser.o: parser.c parser.h
 	$(CC) $(libas_CFLAGS) -c parser.c
@@ -61,16 +67,10 @@ parser.o: parser.c parser.h
 token.o: token.c token.h
 	$(CC) $(libas_CFLAGS) -c token.c
 
-arch/arch.o: arch/arch.c
-	$(CC) $(libas_CFLAGS) -o arch/arch.o -c arch/arch.c
-
-format/format.o: format/format.c format/format.h
-	$(CC) $(libas_CFLAGS) -o format/format.o -c format/format.c
-
-main.o: main.c ../include/as.h
+main.o: main.c ../include/As.h
 	$(CC) $(as_CFLAGS) -c main.c
 
-disas.o: disas.c ../include/as.h
+disas.o: disas.c ../include/As.h
 	$(CC) $(disas_CFLAGS) -c disas.c
 
 clean:

@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF= -I $(PREFIX)/include
+CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W -Wall -fPIC
 CFLAGS	= -g
@@ -39,13 +39,13 @@ java_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 java.so: $(java_OBJS)
 	$(LD) -o java.so $(java_OBJS) $(java_LDFLAGS)
 
-elf.o: elf.c format.h
+elf.o: elf.c
 	$(CC) $(elf_CFLAGS) -c elf.c
 
-flat.o: flat.c format.h
+flat.o: flat.c
 	$(CC) $(flat_CFLAGS) -c flat.c
 
-java.o: java.c format.h
+java.o: java.c
 	$(CC) $(java_CFLAGS) -c java.c
 
 clean:

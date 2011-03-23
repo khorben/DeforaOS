@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,56 +15,17 @@
 
 
 
-#ifndef AS_ARCH_ARCH_H
-# define AS_ARCH_ARCH_H
+#ifndef AS_ARCH_H
+# define AS_ARCH_H
 
 # include <sys/types.h>
 # include <stdint.h>
+# include "As/arch.h"
 
 
 /* Arch */
 /* public */
 /* types */
-typedef struct _ArchRegister
-{
-	char * name;
-	unsigned int size;
-	unsigned int id;
-} ArchRegister;
-
-typedef unsigned int ArchOperands;
-# define _AO_NONE	(00)
-# define _AO_IMM	(01)
-# define _AO_REG	(02)
-# define _AO_DREG	(03)
-# define _AO_OP		(03)
-# define _AO_IMM_	(_AO_IMM << 8)
-# define _AO_REG_	(_AO_REG << 8)
-# define _AO_DREG_	(_AO_DREG << 8)
-# define _AO_OP_	(_AO_OP  << 8)
-# define _AO_IMM__	(_AO_IMM_ << 8)
-# define _AO_REG__	(_AO_REG_ << 8)
-# define _AO_DREG__	(_AO_DREG_ << 8)
-# define _AO_OP__	(_AO_OP_  << 8)
-
-typedef struct _ArchInstruction
-{
-	char * name;
-	unsigned long opcode;
-	ArchOperands operands;
-	uint8_t size;
-	uint8_t op1size;
-	uint8_t op2size;
-	uint8_t op3size;
-} ArchInstruction;
-
-typedef struct _ArchPlugin
-{
-	char const * format;
-	ArchRegister * registers;
-	ArchInstruction * instructions;
-} ArchPlugin;
-
 typedef struct _Arch Arch;
 
 
@@ -87,4 +48,4 @@ ArchRegister * arch_register_get_by_id(Arch * arch, unsigned int id);
 /* ArchOperands */
 int archoperands_count(int operands);
 
-#endif /* !AS_ARCH_ARCH_H */
+#endif /* !AS_ARCH_H */

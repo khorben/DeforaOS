@@ -15,19 +15,10 @@
 
 
 
-#include "As/format.h"
+#ifndef DEVEL_AS_H
+# define DEVEL_AS_H
 
+# include "As/arch.h"
+# include "As/format.h"
 
-/* Flat */
-
-
-FormatPlugin format_plugin =
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+#endif /* !DEVEL_AS_H */

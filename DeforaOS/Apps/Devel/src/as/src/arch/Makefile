@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF=
+CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -fPIC -pedantic
@@ -81,31 +81,31 @@ sparc64_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 sparc64.so: $(sparc64_OBJS)
 	$(LD) -o sparc64.so $(sparc64_OBJS) $(sparc64_LDFLAGS)
 
-amd64.o: amd64.c arch.h 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
+amd64.o: amd64.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
 	$(CC) $(amd64_CFLAGS) -c amd64.c
 
-i386.o: i386.c arch.h 80386.ins 80386.reg
+i386.o: i386.c 80386.ins 80386.reg
 	$(CC) $(i386_CFLAGS) -c i386.c
 
-i386_real.o: i386_real.c arch.h 80386.ins 80386.reg
+i386_real.o: i386_real.c 80386.ins 80386.reg
 	$(CC) $(i386_real_CFLAGS) -c i386_real.c
 
-i486.o: i486.c arch.h 80386.ins 80386.reg 80486.ins 80486.reg
+i486.o: i486.c 80386.ins 80386.reg 80486.ins 80486.reg
 	$(CC) $(i486_CFLAGS) -c i486.c
 
-i586.o: i586.c arch.h 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg
+i586.o: i586.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg
 	$(CC) $(i586_CFLAGS) -c i586.c
 
-i686.o: i686.c arch.h 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
+i686.o: i686.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
 	$(CC) $(i686_CFLAGS) -c i686.c
 
-java.o: java.c arch.h
+java.o: java.c
 	$(CC) $(java_CFLAGS) -c java.c
 
-sparc.o: sparc.c arch.h sparc.ins sparc.reg
+sparc.o: sparc.c sparc.ins sparc.reg
 	$(CC) $(sparc_CFLAGS) -c sparc.c
 
-sparc64.o: sparc64.c arch.h sparc.ins sparc.reg sparc64.ins sparc64.reg
+sparc64.o: sparc64.c sparc.ins sparc.reg sparc64.ins sparc64.reg
 	$(CC) $(sparc64_CFLAGS) -c sparc64.c
 
 clean:

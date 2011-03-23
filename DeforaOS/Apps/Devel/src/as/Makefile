@@ -25,17 +25,20 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/as.pc.in \
 		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/src/arch.c \
 		$(PACKAGE)-$(VERSION)/src/as.c \
 		$(PACKAGE)-$(VERSION)/src/code.c \
+		$(PACKAGE)-$(VERSION)/src/format.c \
 		$(PACKAGE)-$(VERSION)/src/parser.c \
 		$(PACKAGE)-$(VERSION)/src/token.c \
-		$(PACKAGE)-$(VERSION)/src/arch/arch.c \
-		$(PACKAGE)-$(VERSION)/src/format/format.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/disas.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/arch.h \
+		$(PACKAGE)-$(VERSION)/src/as.h \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/format.h \
 		$(PACKAGE)-$(VERSION)/src/parser.h \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
@@ -49,7 +52,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.c \
 		$(PACKAGE)-$(VERSION)/src/arch/Makefile \
-		$(PACKAGE)-$(VERSION)/src/arch/arch.h \
 		$(PACKAGE)-$(VERSION)/src/arch/80386.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/80386.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/80486.ins \
@@ -72,11 +74,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
 		$(PACKAGE)-$(VERSION)/src/format/java.c \
 		$(PACKAGE)-$(VERSION)/src/format/Makefile \
-		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
-		$(PACKAGE)-$(VERSION)/include/as.h \
+		$(PACKAGE)-$(VERSION)/include/As.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/As/arch.h \
+		$(PACKAGE)-$(VERSION)/include/As/format.h \
+		$(PACKAGE)-$(VERSION)/include/As/Makefile \
+		$(PACKAGE)-$(VERSION)/include/As/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \

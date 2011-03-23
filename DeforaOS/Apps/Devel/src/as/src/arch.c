@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "as.h"
+#include "As/arch.h"
 #include "arch.h"
-#include "../../config.h"
+#include "../config.h"
 
 
 /* Arch */

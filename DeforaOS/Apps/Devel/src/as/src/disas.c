@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # define EM_486 6
 #endif
 #include "as.h"
-#include "arch/arch.h"
+#include "arch.h"
 
 
 /* disas */
@@ -195,7 +195,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size)
 	printf("\n%08lx:\n", (unsigned long)offset);
 	for(i = 0; i < size; i++)
 	{
-		printf("%5zx: ", i);
+		printf("%5lx: ", i);
 		opcode = 0;
 		ret = 0;
 		for(j = 0; j < 4; j++)
