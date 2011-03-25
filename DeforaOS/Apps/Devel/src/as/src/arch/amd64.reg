@@ -1,1 +1,9 @@
+REG(rax,32,	0x17)
+REG(rbx,32,	0x18)
+REG(rcx,32,	0x19)
+REG(rdx,32,	0x1a)
+REG(rsi,32,	0x1b)
+REG(rdi,32,	0x1c)
+REG(rsp,32,	0x1d)
+REG(rbp,32,	0x1e)
 #include "80686.reg"
