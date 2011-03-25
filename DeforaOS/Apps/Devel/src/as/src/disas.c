@@ -196,7 +196,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	printf("\n%08lx:\n", (unsigned long)offset + base);
 	for(i = 0; i < size; i++)
 	{
-		printf("%5lx: ", i);
+		printf(" %5lx: ", (unsigned long)offset + base + i);
 		opcode = 0;
 		ret = 0;
 		for(j = 0; j < 4; j++)
