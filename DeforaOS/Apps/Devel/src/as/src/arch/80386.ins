@@ -463,6 +463,7 @@
 	{ "bts",	0x0fbaee,AO_IMM|AO_SI_,		3, 1, 0, 0 },
 	{ "bts",	0x0fbaef,AO_IMM|AO_DI_,		3, 1, 0, 0 },
 	{ "call",	0xe8,	AO_IMM,			1, W, 0, 0 },
+	{ "call",	0xffd0,	AO_D_AX,		2, 0, 0, 0 },
 #ifdef ARCH_i386_real
 	{ "cbw",	0x98,	AO_ax,			1, 0, 0, 0 },
 #endif /* ARCH_i386_real */
@@ -1185,6 +1186,7 @@
 #if 0
 	{ "mov",	0x88,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
+	{ "mov",	0x89c3,	AO_AX|AO_BX_,		2, 0, 0, 0 },
 	{ "mov",	0x89e5,	AO_SP|AO_BP_,		2, 0, 0, 0 },
 	{ "mov",	0x89fb,	AO_DI|AO_BX_,		2, 0, 0, 0 },
 #if 0
@@ -1361,6 +1363,7 @@
 	{ "test",	0x84,	AO_REG|AO_REG_,		2, 0, 0, 0 },
 	{ "test",	0x85,	AO_REG|AO_REG_,		2, 0, 0, 0 },
 #endif
+	{ "test",	0x85c0,	AO_AX|AO_AX_,		2, 0, 0, 0 },
 	{ "ud2",	0x0f0b,	AO_NONE,		2, 0, 0, 0 },
 	{ "wait",	0x9b,	AO_NONE,		1, 0, 0, 0 },
 	{ "wbinvd",	0x0f09,	AO_NONE,		2, 0, 0, 0 },

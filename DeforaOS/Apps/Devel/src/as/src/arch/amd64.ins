@@ -1,5 +1,7 @@
 /* $Id$ */
 	{ "mov",	0x41b8,	AO_IMM|AO_r8_,		2, 4, 0, 0 },
+	{ "xor",	0x4531e4,AO_r12|AO_r12_,	3, 0, 0, 0 },
+	{ "xor",	0x4531ed,AO_r13|AO_r13_,	3, 0, 0, 0 },
 	{ "add",	0x4883c4,AO_IMM|AO_rsp_,	3, 1, 0, 0 },
 	{ "sub",	0x4883ec,AO_IMM|AO_rsp_,	3, 1, 0, 0 },
 	{ "test",	0x4885c0,AO_rax|AO_rax_,	3, 0, 0, 0 },
@@ -14,6 +16,7 @@
 	{ "mov",	0x4889ef,AO_rbp|AO_rdi_,	3, 0, 0, 0 },
 	{ "mov",	0x4889f3,AO_rsi|AO_rbx_,	3, 0, 0, 0 },
 	{ "mov",	0x4889f5,AO_rsi|AO_rbp_,	3, 0, 0, 0 },
+	{ "mov",	0x488b03,AO_D_rbx|AO_rax_,	3, 0, 0, 0 },
 	{ "mov",	0x488b1c24,AO_D_rsp|AO_rbx_,	4, 0, 0, 0 },
 	{ "mov",	0x488b3e,AO_D_rsi|AO_rdi_,	3, 0, 0, 0 },
 	{ "mov",	0x488b3c24,AO_D_rsp|AO_rdi_,	4, 0, 0, 0 },
@@ -22,5 +25,10 @@
 	{ "mov",	0x4989c1,AO_rax|AO_r9_,		3, 0, 0, 0 },
 	{ "mov",	0x4989c8,AO_rcx|AO_r8_,		3, 0, 0, 0 },
 	{ "mov",	0x4989d9,AO_rbx|AO_r9_,		3, 0, 0, 0 },
+	{ "mov",	0x4c8920,AO_r12|AO_D_rax_,	3, 0, 0, 0 },
+	{ "mov",	0x4c89e6,AO_r12|AO_rsi_,	3, 0, 0, 0 },
+	{ "mov",	0x4c89ee,AO_r13|AO_rsi_,	3, 0, 0, 0 },
+	{ "mov",	0x4c89ef,AO_r13|AO_rdi_,	3, 0, 0, 0 },
+	{ "mov",	0x4c89f2,AO_r14|AO_rdx_,	3, 0, 0, 0 },
 	{ "mov",	0x4d89cc,AO_r9|AO_r12_,		3, 0, 0, 0 },
 #include "80686.ins"
