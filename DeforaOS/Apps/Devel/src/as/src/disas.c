@@ -89,7 +89,7 @@ static int _disas_error(char const * message, int ret);
 static int _disas_do_format(Disas * disas, char const * format);
 static int _disas_do(Disas * disas);
 static int _do_callback(Disas * disas, size_t i);
-static int _do_flat(Disas * disas, off_t offset, size_t size);
+static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base);
 static int _do_flat_print(Disas * disas, ArchInstruction * ai);
 
 static int _disas(char const * arch, char const * format, char const * filename)
@@ -141,7 +141,7 @@ static int _disas_do(Disas * disas)
 			|| fread(buf, sizeof(*buf), s, disas->fp) != s)
 	{
 		free(buf);
-		return _disas_error(disas->filename, 1);
+		return -_disas_error(disas->filename, 1);
 	}
 	for(i = 0; i < _disas_signatures_cnt; i++)
 		if(memcmp(_disas_signatures[i].signature, buf,
@@ -176,7 +176,7 @@ static int _do_callback(Disas * disas, size_t i)
 	return ret;
 }
 
-static int _do_flat(Disas * disas, off_t offset, size_t size)
+static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 {
 	int ret = 0;
 	size_t i;
@@ -191,8 +191,8 @@ static int _do_flat(Disas * disas, off_t offset, size_t size)
 			as_get_arch(disas->as));
 #endif
 	if(fseek(disas->fp, offset, SEEK_SET) != 0)
-		return _disas_error(disas->filename, 1);
-	printf("\n%08lx:\n", (unsigned long)offset);
+		return -_disas_error(disas->filename, 1);
+	printf("\n%08lx:\n", (unsigned long)offset + base);
 	for(i = 0; i < size; i++)
 	{
 		printf("%5lx: ", i);
@@ -252,7 +252,7 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 			{
 				if((c = fgetc(disas->fp)) == EOF)
 				{
-					ret = _disas_error(disas->filename, -1);
+					ret = -_disas_error(disas->filename, 1);
 					break;
 				}
 				u = (u << 8) | c; /* XXX endian */
@@ -277,7 +277,7 @@ static int _elf_detect(Disas * disas)
 	char * p;
 
 	if(fseek(disas->fp, 0, SEEK_SET) != 0)
-		return _disas_error(disas->filename, 1);
+		return -_disas_error(disas->filename, 1);
 	if(fread(&disas->elf, sizeof(disas->elf), 1, disas->fp) != 1)
 	{
 		fprintf(stderr, "disas: %s: %s\n", disas->filename,
@@ -355,6 +355,8 @@ static char const * _elf_detect64(Disas * disas)
 /* elf_disas32 */
 static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
 		Elf32_Ehdr * ehdr);
+static int _do_elf32_addr(char const * filename, FILE * fp, Elf32_Ehdr * ehdr,
+		Elf32_Addr * addr);
 static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
 		uint16_t ndx, char ** strtab, size_t * strtab_cnt);
 
@@ -362,6 +364,7 @@ static int _elf_disas32(Disas * disas)
 {
 	Elf32_Ehdr * ehdr = &disas->elf.ehdr32;
 	Elf32_Shdr * shdr;
+	Elf32_Addr base = 0x0;
 	char * shstrtab = NULL;
 	size_t shstrtab_cnt = 0;
 	size_t i;
@@ -371,8 +374,10 @@ static int _elf_disas32(Disas * disas)
 #endif
 	if((shdr = _do_elf32_shdr(disas->filename, disas->fp, ehdr)) == NULL)
 		return 1;
-	if(_do_elf32_strtab(disas, shdr, ehdr->e_shnum, ehdr->e_shstrndx,
-				&shstrtab, &shstrtab_cnt) != 0)
+	if(_do_elf32_addr(disas->filename, disas->fp, ehdr, &base) != 0
+			|| _do_elf32_strtab(disas, shdr, ehdr->e_shnum,
+				ehdr->e_shstrndx, &shstrtab, &shstrtab_cnt)
+			!= 0)
 	{
 		free(shdr);
 		return 1;
@@ -381,13 +386,13 @@ static int _elf_disas32(Disas * disas)
 	{
 		if(shdr[i].sh_name >= shstrtab_cnt)
 			continue;
-		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0
-				|| strcmp(".init", &shstrtab[shdr[i].sh_name])
-				== 0)
+		if(shdr[i].sh_type == SHT_PROGBITS
+				&& shdr[i].sh_flags & SHF_EXECINSTR)
 		{
 			printf("\nDisassembly of section %s:\n",
 					&shstrtab[shdr[i].sh_name]);
-			_do_flat(disas, shdr[i].sh_offset, shdr[i].sh_size);
+			_do_flat(disas, shdr[i].sh_offset, shdr[i].sh_size,
+					base);
 		}
 	}
 	free(shstrtab);
@@ -421,6 +426,26 @@ static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
 	return shdr;
 }
 
+static int _do_elf32_addr(char const * filename, FILE * fp, Elf32_Ehdr * ehdr,
+		Elf32_Addr * addr)
+{
+	Elf32_Half i;
+	Elf32_Phdr phdr;
+
+	if(fseek(fp, ehdr->e_phoff, SEEK_SET) != 0)
+		return -_disas_error(filename, 1);
+	for(i = 0; i < ehdr->e_phnum; i++)
+		if(fread(&phdr, sizeof(phdr), 1, fp) != 1)
+			return -_disas_error(filename, 1);
+		else if(phdr.p_type == PT_LOAD && phdr.p_flags & (PF_R | PF_X))
+		{
+			*addr = phdr.p_vaddr;
+			return 0;
+		}
+	*addr = 0x0;
+	return 0;
+}
+
 static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
 		uint16_t ndx, char ** strtab, size_t * strtab_cnt)
 {
@@ -429,7 +454,7 @@ static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
 	shdr = &shdr[ndx];
 	if(fseek(disas->fp, shdr->sh_offset, SEEK_SET) != 0
 			|| (*strtab = malloc(shdr->sh_size)) == NULL)
-		return _disas_error(disas->filename, 1);
+		return -_disas_error(disas->filename, 1);
 	if(fread(*strtab, sizeof(**strtab), shdr->sh_size, disas->fp)
 			!= shdr->sh_size)
 	{
@@ -446,6 +471,8 @@ static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
 /* elf_disas64 */
 static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
 		Elf64_Ehdr * ehdr);
+static int _do_elf64_addr(char const * filename, FILE * fp, Elf64_Ehdr * ehdr,
+		Elf64_Addr * addr);
 static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
 		uint16_t ndx, char ** strtab, size_t * strtab_cnt);
 
@@ -453,14 +480,17 @@ static int _elf_disas64(Disas * disas)
 {
 	Elf64_Ehdr * ehdr = &disas->elf.ehdr64;
 	Elf64_Shdr * shdr;
+	Elf64_Addr base = 0x0;
 	char * shstrtab = NULL;
 	size_t shstrtab_cnt = 0;
 	size_t i;
 
 	if((shdr = _do_elf64_shdr(disas->filename, disas->fp, ehdr)) == NULL)
 		return 1;
-	if(_do_elf64_strtab(disas, shdr, ehdr->e_shnum, ehdr->e_shstrndx,
-				&shstrtab, &shstrtab_cnt) != 0)
+	if(_do_elf64_addr(disas->filename, disas->fp, ehdr, &base) != 0
+			|| _do_elf64_strtab(disas, shdr, ehdr->e_shnum,
+				ehdr->e_shstrndx, &shstrtab, &shstrtab_cnt)
+			!= 0)
 	{
 		free(shdr);
 		return 1;
@@ -469,13 +499,13 @@ static int _elf_disas64(Disas * disas)
 	{
 		if(shdr[i].sh_name >= shstrtab_cnt)
 			continue;
-		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0
-				|| strcmp(".init", &shstrtab[shdr[i].sh_name])
-				== 0)
+		if(shdr[i].sh_type == SHT_PROGBITS
+				&& shdr[i].sh_flags & SHF_EXECINSTR)
 		{
 			printf("\nDisassembly of section %s:\n",
 					&shstrtab[shdr[i].sh_name]);
-			_do_flat(disas, shdr[i].sh_offset, shdr[i].sh_size);
+			_do_flat(disas, shdr[i].sh_offset, shdr[i].sh_size,
+					base);
 		}
 	}
 	free(shstrtab);
@@ -509,6 +539,26 @@ static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
 	return shdr;
 }
 
+static int _do_elf64_addr(char const * filename, FILE * fp, Elf64_Ehdr * ehdr,
+		Elf64_Addr * addr)
+{
+	Elf64_Quarter i;
+	Elf64_Phdr phdr;
+
+	if(fseek(fp, ehdr->e_phoff, SEEK_SET) != 0)
+		return -_disas_error(filename, 1);
+	for(i = 0; i < ehdr->e_phnum; i++)
+		if(fread(&phdr, sizeof(phdr), 1, fp) != 1)
+			return -_disas_error(filename, 1);
+		else if(phdr.p_type == PT_LOAD && phdr.p_flags & (PF_R | PF_X))
+		{
+			*addr = phdr.p_vaddr;
+			return 0;
+		}
+	*addr = 0x0;
+	return 0;
+}
+
 static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
 		uint16_t ndx, char ** strtab, size_t * strtab_cnt)
 {
@@ -517,14 +567,14 @@ static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
 	shdr = &shdr[ndx];
 	if(fseek(disas->fp, shdr->sh_offset, SEEK_SET) != 0
 			|| (*strtab = malloc(shdr->sh_size)) == NULL)
-		return _disas_error(disas->filename, 1);
+		return -_disas_error(disas->filename, 1);
 	if(fread(*strtab, sizeof(**strtab), shdr->sh_size, disas->fp)
 			!= shdr->sh_size)
 	{
 		free(*strtab);
 		fprintf(stderr, "disas: %s: %s\n", disas->filename,
 				"Short read");
-		return 1;
+		return -1;
 	}
 	*strtab_cnt = shdr->sh_size;
 	return 0;
@@ -537,8 +587,8 @@ static int _flat_disas(Disas * disas)
 	struct stat st;
 
 	if(fstat(fileno(disas->fp), &st) != 0)
-		return _disas_error(disas->filename, 1);
-	return _do_flat(disas, 0, st.st_size);
+		return -_disas_error(disas->filename, 1);
+	return _do_flat(disas, 0, st.st_size, 0);
 }
 
 
@@ -561,8 +611,8 @@ static int _java_disas(Disas * disas)
 	struct stat st;
 
 	if(fstat(fileno(disas->fp), &st) != 0)
-		return _disas_error(disas->filename, 1);
-	return _do_flat(disas, 8, st.st_size - 8);
+		return -_disas_error(disas->filename, 1);
+	return _do_flat(disas, 8, st.st_size - 8, 0);
 }
 
 
@@ -570,11 +620,15 @@ static int _java_disas(Disas * disas)
 static int _disas_list(void)
 {
 	size_t i;
+	char const * sep = "";
 
 	as_plugin_list(ASPT_ARCH);
-	fprintf(stderr, "%s", "Available format plug-ins:");
+	fputs("\nAvailable format plug-ins:\n", stderr);
 	for(i = 0; i < _disas_signatures_cnt; i++)
-		fprintf(stderr, " %s", _disas_signatures[i].format);
+	{
+		fprintf(stderr, "%s%s", sep, _disas_signatures[i].format);
+		sep = ", ";
+	}
 	fputc('\n', stderr);
 	return 0;
 }
