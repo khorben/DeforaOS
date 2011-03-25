@@ -17,6 +17,7 @@
 
 #include <stddef.h>
 #include "As/arch.h"
+#define ARCH_amd64
 
 
 /* types */

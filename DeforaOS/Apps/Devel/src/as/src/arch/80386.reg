@@ -20,7 +20,7 @@ REG(ds, 16,	0x13)
 REG(es, 16,	0x14)
 REG(fs, 16,	0x15)
 REG(gs, 16,	0x16)
-#ifndef I386_REAL
+#ifndef ARCH_i386_real
 REG(eax,32,	0x17)
 REG(ebx,32,	0x18)
 REG(ecx,32,	0x19)
@@ -29,7 +29,7 @@ REG(esi,32,	0x1b)
 REG(edi,32,	0x1c)
 REG(esp,32,	0x1d)
 REG(ebp,32,	0x1e)
-#endif /* !I386_REAL */
+#endif /* !ARCH_i386_real */
 REG(st0,32,	0x20)
 REG(st1,32,	0x21)
 REG(st2,32,	0x22)

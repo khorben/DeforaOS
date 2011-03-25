@@ -17,8 +17,7 @@
 
 #include <stddef.h>
 #include "As/arch.h"
-
-#define I386_REAL
+#define ARCH_i386_real
 
 
 /* types */
