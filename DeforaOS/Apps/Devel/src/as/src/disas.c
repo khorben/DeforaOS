@@ -48,6 +48,7 @@ typedef struct _Disas
 	} elf;
 } Disas;
 
+/* FIXME use signatures from the format plug-ins directly */
 typedef struct _DisasSignature
 {
 	char const * format;
@@ -200,6 +201,10 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 		ret = 0;
 		for(j = 0; j < 4; j++)
 		{
+			/* FIXME instead:
+			 * - work on a longer buffer
+			 * - look for possible interpretations
+			 * - choose the longest available */
 			if((c = fgetc(disas->fp)) == EOF)
 				break;
 			printf(" %02x", c);
@@ -222,6 +227,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 {
 	int ret = 0;
+	fpos_t pos; /* XXX work on a buffer instead */
 	int i;
 	ArchOperands operands;
 	unsigned int reg;
@@ -232,7 +238,25 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 	unsigned long u;
 	int c;
 
-	printf("\t\t%s", ai->name);
+	if(fgetpos(disas->fp, &pos) != 0)
+		return -_disas_error(disas->filename, 1);
+	u = ai->size;
+	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
+		if((operands & _AO_OP) == _AO_IMM)
+		{
+			size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
+					: ai->op3size);
+			for(j = 0; j < size; j++, u++)
+			{
+				if((c = fgetc(disas->fp)) == EOF)
+					return -_disas_error(disas->filename,
+							1);
+				printf(" %02x", c);
+			}
+		}
+	if(fsetpos(disas->fp, &pos) != 0)
+		return -_disas_error(disas->filename, 1);
+	printf("%s%s", (u < 3) ? "\t\t\t" : (u < 6) ? "\t\t" : "\t", ai->name);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
 		if((operands & _AO_OP) == _AO_REG)
 		{
