@@ -1,5 +1,10 @@
 /* $Id$ */
-	{ "mov",	0x4889d9,AO_rbx|AO_r9_,		3, 0, 0, 0 },
+	{ "mov",	0x4889d1,AO_rdx|AO_rcx_,	3, 0, 0, 0 },
+	{ "mov",	0x4889ee,AO_rbp|AO_rsi_,	3, 0, 0, 0 },
+	{ "mov",	0x4889f5,AO_rsi|AO_rbp_,	3, 0, 0, 0 },
+	{ "mov",	0x488b3e,AO_D_rsi|AO_rdi_,	3, 0, 0, 0 },
+	{ "mov",	0x488b3c24,AO_D_rsp|AO_rdi_,	4, 0, 0, 0 },
 	{ "mov",	0x4989c8,AO_rcx|AO_r8_,		3, 0, 0, 0 },
-	{ "mov",	0x4989d1,AO_rdx|AO_rcx_,	3, 0, 0, 0 },
+	{ "mov",	0x4989d9,AO_rbx|AO_r9_,		3, 0, 0, 0 },
+	{ "mov",	0x4d89cc,AO_r9|AO_r12_,		3, 0, 0, 0 },
 #include "80686.ins"

@@ -102,12 +102,17 @@
 # define AO_D_DI AO_D_edi
 # define W 4
 #endif
+	/* instructions */
+#ifndef ARCH_amd64
 	{ "aaa",	0x37,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "aad",	0xd50a,	AO_NONE,		2, 0, 0, 0 },
 	{ "aad",	0xd5,	AO_IMM,			1, 1, 0, 0 },
 	{ "aam",	0xd40a,	AO_NONE,		2, 0, 0, 0 },
 	{ "aam",	0xd4,	AO_IMM,			1, 1, 0, 0 },
+#ifndef ARCH_amd64
 	{ "aas",	0x3f,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "adc",	0x14,	AO_IMM|AO_al_,		1, 1, 0, 0 },
 	{ "adc",	0x15,	AO_IMM|AO_AX_,		1, W, 0, 0 },
 #ifndef ARCH_i386_real
@@ -544,8 +549,10 @@
 #ifndef ARCH_i386_real
 	{ "cwde",	0x98,	AO_eax,			1, 0, 0, 0 },
 #endif /* !ARCH_i386_real */
+#ifndef ARCH_amd64
 	{ "daa",	0x27,	AO_NONE,		1, 0, 0, 0 },
 	{ "das",	0x2f,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "dec",	0xfec8,	AO_al,			2, 0, 0, 0 },
 	{ "dec",	0xfec9,	AO_cl,			2, 0, 0, 0 },
 	{ "dec",	0xfeca,	AO_dl,			2, 0, 0, 0 },
@@ -1244,15 +1251,17 @@
 	{ "pop",	0x5f,	AO_IMM,			1, 0, 0, 0 },
 #endif
 	{ "pop",	0x1f,	AO_ds,			1, 0, 0, 0 },
+#ifndef ARCH_amd64
 	{ "pop",	0x07,	AO_es,			1, 0, 0, 0 },
 	{ "pop",	0x17,	AO_ss,			1, 0, 0, 0 },
+#endif
 	{ "pop",	0x0fa1,	AO_fs,			2, 0, 0, 0 },
 	{ "pop",	0x0fa9,	AO_gs,			2, 0, 0, 0 },
-#ifdef ARCH_i386_real
+#if defined(ARCH_i386_real)
 	{ "popa",	0x61,	AO_NONE,		1, 0, 0, 0 },
-#else
+#elif !defined(ARCH_amd64)
 	{ "popad",	0x61,	AO_NONE,		1, 0, 0, 0 },
-#endif /* ARCH_i386_real */
+#endif
 #ifdef ARCH_i386_real
 	{ "popf",	0x9d,	AO_NONE,		1, 0, 0, 0 },
 #else
@@ -1266,21 +1275,23 @@
 	{ "push",	0x55,	AO_BP,			1, 0, 0, 0 },
 	{ "push",	0x56,	AO_SI,			1, 0, 0, 0 },
 	{ "push",	0x57,	AO_DI,			1, 0, 0, 0 },
+#ifndef ARCH_amd64
 	{ "push",	0x06,	AO_es,			1, 0, 0, 0 },
 	{ "push",	0x0e,	AO_cs,			1, 0, 0, 0 },
 	{ "push",	0x16,	AO_ss,			1, 0, 0, 0 },
 	{ "push",	0x1e,	AO_ds,			1, 0, 0, 0 },
+#endif
 	{ "push",	0x0fa0,	AO_fs,			2, 0, 0, 0 },
 	{ "push",	0x0fa8,	AO_gs,			2, 0, 0, 0 },
 	{ "push",	0x68,	AO_IMM,			1, W, 0, 0 },
 #if 0
 	{ "push",	0x6a,	AO_IMM,			1, 1, 0, 0 },
 #endif
-#ifdef ARCH_i386_real
+#if defined(ARCH_i386_real)
 	{ "pusha",	0x60,	AO_NONE,		1, 0, 0, 0 },
-#else
+#elif !defined(ARCH_amd64)
 	{ "pusha",	0x60,	AO_NONE,		1, 0, 0, 0 },
-#endif /* ARCH_i386_real */
+#endif
 #ifdef ARCH_i386_real
 	{ "pushf",	0x9c,	AO_NONE,		1, 0, 0, 0 },
 #else
