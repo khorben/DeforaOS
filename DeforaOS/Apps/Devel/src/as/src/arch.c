@@ -125,11 +125,12 @@ ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 		if(arch->instructions[i].size == size
 				&& arch->instructions[i].opcode == opcode)
 			return &arch->instructions[i];
-	/* XXX this is experimental and may not be adequate */
+#if 0 /* XXX this is experimental and may not be adequate */
 	for(i = 0; i < arch->instructions_cnt; i++)
 		if(arch->instructions[i].size == 0
 				&& arch->instructions[i].op1size == size)
 			return &arch->instructions[i];
+#endif
 	return NULL;
 }
 
