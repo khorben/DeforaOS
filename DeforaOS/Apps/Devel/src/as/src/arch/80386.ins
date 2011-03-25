@@ -998,7 +998,7 @@
 	{ "in",		0xe5,	AO_IMM|AO_AX_,		1, 1, 0, 0 },
 	{ "in",		0xec,	AO_dx|AO_al_,		1, 0, 0, 0 },
 	{ "in",		0xed,	AO_dx|AO_AX_,		1, 0, 0, 0 },
-#ifdef ARCH_amd64
+#ifndef ARCH_amd64
 	{ "inc",	0x40,	AO_AX,			1, 0, 0, 0 },
 	{ "inc",	0x41,	AO_CX,			1, 0, 0, 0 },
 	{ "inc",	0x42,	AO_DX,			1, 0, 0, 0 },
@@ -1186,20 +1186,21 @@
 	{ "mov",	0x88,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
 	{ "mov",	0x89e5,	AO_SP|AO_BP_,		2, 0, 0, 0 },
+	{ "mov",	0x89fb,	AO_DI|AO_BX_,		2, 0, 0, 0 },
 #if 0
 	{ "mov",	0x8a,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0x8b,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
 	{ "mov",	0xb8,	AO_IMM|AO_AX_,		1, W, 0, 0 },
+	{ "mov",	0xb9,	AO_IMM|AO_CX_,		1, W, 0, 0 },
+	{ "mov",	0xba,	AO_IMM|AO_DX_,		1, W, 0, 0 },
 #if 0
-	{ "mov",	0xb9,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
-	{ "mov",	0xba,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0xbb,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0xbc,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0xbd,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
-	{ "mov",	0xbe,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
-	{ "mov",	0xbf,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
+	{ "mov",	0xbe,	AO_IMM|AO_SI_,		1, W, 0, 0 },
+	{ "mov",	0xbf,	AO_IMM|AO_DI_,		1, W, 0, 0 },
 #if 1
 	{ "mov",	0xc70424,AO_IMM|AO_IMM_|AO_SP__,3, 0, 4, 0 },
 	{ "mov",	0xc74424,AO_IMM|AO_IMM_|AO_SP__,3, 1, 4, 0 },
@@ -1407,6 +1408,10 @@
 	{ "xor",	0x31c5,	AO_AX|AO_BP_,		2, 0, 0, 0 },
 	{ "xor",	0x31c6,	AO_AX|AO_SI_,		2, 0, 0, 0 },
 	{ "xor",	0x31c7,	AO_AX|AO_DI_,		2, 0, 0, 0 },
+	{ "xor",	0x31c9,	AO_CX|AO_CX_,		2, 0, 0, 0 },
+	{ "xor",	0x31db,	AO_BX|AO_BX_,		2, 0, 0, 0 },
+	{ "xor",	0x31f6,	AO_SI|AO_SI_,		2, 0, 0, 0 },
+	{ "xor",	0x31ff,	AO_DI|AO_DI_,		2, 0, 0, 0 },
 	{ "xor",	0x32c0,	AO_al|AO_al_,		2, 0, 0, 0 },
 	{ "xor",	0x32c1,	AO_cl|AO_al_,		2, 0, 0, 0 },
 	{ "xor",	0x32c2,	AO_dl|AO_al_,		2, 0, 0, 0 },
