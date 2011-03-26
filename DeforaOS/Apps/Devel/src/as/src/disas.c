@@ -41,7 +41,6 @@ typedef struct _Disas
 	FILE * fp;
 	char * archname;
 	As * as;
-	Arch * arch;
 
 	/* ELF */
 	union
@@ -121,7 +120,6 @@ static int _disas(char const * arch, char const * format, char const * filename)
 		return -_disas_error(filename, 1);
 	}
 	disas.filename = filename;
-	disas.arch = NULL;
 	ret = _disas_do_format(&disas, format);
 	free(disas.archname);
 	if(disas.as != NULL)
@@ -134,6 +132,9 @@ static int _disas_do_format(Disas * disas, char const * format)
 {
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, format);
+#endif
 	if(format == NULL)
 		return _disas_do(disas);
 	for(i = 0; i < _disas_signatures_cnt; i++)
@@ -150,6 +151,9 @@ static int _disas_do(Disas * disas)
 	size_t s = 0;
 	char * buf;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	for(i = 0; i < _disas_signatures_cnt; i++)
 		if(_disas_signatures[i].size > s)
 			s = _disas_signatures[i].size;
@@ -182,11 +186,6 @@ static int _do_callback(Disas * disas, size_t i)
 		return -1;
 	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].format,
 			as_get_arch_name(disas->as));
-	if(disas->arch != NULL)
-		arch_delete(disas->arch);
-	disas->arch = arch_new(as_get_arch_name(disas->as));
-	if(disas->arch == NULL)
-		return -1;
 	ret = _disas_signatures[i].callback(disas);
 	return ret;
 }
@@ -194,6 +193,7 @@ static int _do_callback(Disas * disas, size_t i)
 static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 {
 	int ret = 0;
+	Arch * arch = as_get_arch(disas->as);
 	size_t pos;
 	char buf[8];
 	size_t buf_cnt = 0;
@@ -202,8 +202,8 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, 0x%lx, 0x%lx) arch=\"%s\"\n", __func__,
-			disas, (unsigned long)offset, (unsigned long)size,
-			as_get_arch(disas->as));
+			(void *)disas, (unsigned long)offset, size,
+			as_get_arch_name(disas->as));
 #endif
 	if(fseek(disas->fp, offset, SEEK_SET) != 0)
 		return -_disas_error(disas->filename, 1);
@@ -213,17 +213,18 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	{
 		cnt = min(sizeof(buf) - buf_cnt, size - pos);
 		if((cnt = fread(&buf[buf_cnt], 1, cnt, disas->fp)) == 0)
-			return -_disas_error(disas->filename, 1);
+			break;
 		buf_cnt += cnt;
 		cnt = buf_cnt;
 		if((ai = as_decode(disas->as, buf, &cnt)) != NULL)
-			_do_flat_print(disas->arch, base + offset + pos, buf,
-					cnt, ai);
+			_do_flat_print(arch, base + offset + pos, buf, cnt, ai);
 		else
 			cnt = 1; /* FIXME print missing instruction */
 		memmove(buf, &buf[cnt], buf_cnt - cnt);
 		buf_cnt -= cnt;
 	}
+	if(ferror(disas->fp))
+		return -_disas_error(disas->filename, 1);
 	return ret;
 }
 
@@ -564,6 +565,9 @@ static int _elf_disas64(Disas * disas)
 	size_t shstrtab_cnt = 0;
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() e_shnum=%u\n", __func__, ehdr->e_shnum);
+#endif
 	if((shdr = _do_elf64_shdr(disas->filename, disas->fp, ehdr)) == NULL)
 		return 1;
 	if(_do_elf64_addr(disas->filename, disas->fp, ehdr, &base) != 0
@@ -665,6 +669,9 @@ static int _flat_disas(Disas * disas)
 {
 	struct stat st;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, disas->filename);
+#endif
 	if(fstat(fileno(disas->fp), &st) != 0)
 		return -_disas_error(disas->filename, 1);
 	return _do_flat(disas, 0, st.st_size, 0);
@@ -689,6 +696,9 @@ static int _java_disas(Disas * disas)
 {
 	struct stat st;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, disas->filename);
+#endif
 	if(fstat(fileno(disas->fp), &st) != 0)
 		return -_disas_error(disas->filename, 1);
 	return _do_flat(disas, 8, st.st_size - 8, 0);
