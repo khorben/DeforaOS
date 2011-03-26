@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -197,7 +197,7 @@ int code_instruction(Code * code, char const * instruction,
 					operands_cnt)) != 0)
 		return ret;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: instruction %s, opcode 0x%lx, operands: 0x%x\n",
+	fprintf(stderr, "DEBUG: instruction %s, opcode 0x%x, operands: 0x%x\n",
 			instruction, ai->opcode, ai->operands);
 #endif
 	switch(ai->size)
@@ -305,7 +305,7 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 				/* FIXME also check the operand size */
 				o = _AO_IMM;
 #ifdef DEBUG
-				fprintf(stderr, "DEBUG: op %zu: imm; ", i);
+				fprintf(stderr, "DEBUG: op %lu: imm; ", i);
 #endif
 				break;
 			case AOT_REGISTER:
@@ -322,7 +322,7 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 				else
 					o = (_AO_REG | (ar->id << 2));
 #ifdef DEBUG
-				fprintf(stderr, "DEBUG: op %zu: reg %s; ", i,
+				fprintf(stderr, "DEBUG: op %lu: reg %s; ", i,
 						reg);
 #endif
 				break;
