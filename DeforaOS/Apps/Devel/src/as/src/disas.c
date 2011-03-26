@@ -28,6 +28,8 @@
 #include "As/as.h"
 #include "arch.h"
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 
 /* disas */
 /* private */
@@ -37,6 +39,7 @@ typedef struct _Disas
 	char const * filename;
 	FILE * fp;
 	char * archname;
+	As * as;
 	Arch * arch;
 
 	/* ELF */
@@ -55,7 +58,7 @@ typedef struct _DisasSignature
 	char const * signature;
 	size_t size;
 	int (*detect)(Disas * disas);
-	int (*disas)(Disas * disas);
+	int (*callback)(Disas * disas);
 } DisasSignature;
 
 
@@ -91,13 +94,15 @@ static int _disas_do_format(Disas * disas, char const * format);
 static int _disas_do(Disas * disas);
 static int _do_callback(Disas * disas, size_t i);
 static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base);
-static int _do_flat_print(Disas * disas, ArchInstruction * ai, int col);
+static void _do_flat_print(Disas * disas, unsigned long address,
+		char const * buffer, size_t size, ArchInstruction * ai);
 
 static int _disas(char const * arch, char const * format, char const * filename)
 {
 	int ret = 1;
 	Disas disas;
 
+	disas.as = NULL;
 	if(arch == NULL)
 		disas.archname = NULL;
 	else if((disas.archname = strdup(arch)) == NULL)
@@ -111,6 +116,8 @@ static int _disas(char const * arch, char const * format, char const * filename)
 	disas.arch = NULL;
 	ret = _disas_do_format(&disas, format);
 	free(disas.archname);
+	if(disas.as != NULL)
+		as_delete(disas.as);
 	fclose(disas.fp);
 	return ret;
 }
@@ -158,34 +165,32 @@ static int _disas_do(Disas * disas)
 static int _do_callback(Disas * disas, size_t i)
 {
 	int ret;
-	As * as;
 
 	if(_disas_signatures[i].detect != NULL
 			&& _disas_signatures[i].detect(disas) != 0)
 		return -1;
-	if((as = as_new(disas->archname, _disas_signatures[i].format)) == NULL)
+	if((disas->as = as_new(disas->archname, _disas_signatures[i].format))
+			== NULL)
 		return -1;
 	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].format,
-			as_get_arch(as));
+			as_get_arch(disas->as));
 	if(disas->arch != NULL)
 		arch_delete(disas->arch);
-	disas->arch = arch_new(as_get_arch(as));
-	as_delete(as);
+	disas->arch = arch_new(as_get_arch(disas->as));
 	if(disas->arch == NULL)
 		return -1;
-	ret = _disas_signatures[i].disas(disas);
+	ret = _disas_signatures[i].callback(disas);
 	return ret;
 }
 
 static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 {
 	int ret = 0;
-	size_t i;
-	unsigned int opcode;
-	size_t j;
-	int c;
+	size_t pos;
+	char buf[8];
+	size_t buf_cnt = 0;
+	size_t cnt;
 	ArchInstruction * ai;
-	int col;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, 0x%lx, 0x%lx) arch=\"%s\"\n", __func__,
@@ -195,71 +200,45 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	if(fseek(disas->fp, offset, SEEK_SET) != 0)
 		return -_disas_error(disas->filename, 1);
 	printf("\n%08lx:\n", (unsigned long)offset + base);
-	for(i = 0; i < size; i++)
+	memset(buf, 0, sizeof(buf));
+	for(pos = 0; pos < size; pos += cnt)
 	{
-		col = printf(" %5lx: ", (unsigned long)offset + base + i);
-		opcode = 0;
-		ret = 0;
-		for(j = 0; j < 4; j++)
-		{
-			/* FIXME instead:
-			 * - work on a longer buffer
-			 * - look for possible interpretations
-			 * - choose the longest available */
-			if((c = fgetc(disas->fp)) == EOF)
-				break;
-			col += printf(" %02x", c);
-			opcode = (opcode << 8) | c;
-			if((ai = arch_instruction_get_by_opcode(disas->arch,
-							j + 1, opcode)) == NULL)
-				continue;
-			ret = _do_flat_print(disas, ai, col);
-			j++;
-			break;
-		}
-		fputc('\n', stdout);
-		if(ret < 0)
-			break;
-		i += ret + j - 1;
+		cnt = min(sizeof(buf) - buf_cnt, size - pos);
+		if((cnt = fread(&buf[buf_cnt], 1, cnt, disas->fp)) == 0)
+			return -_disas_error(disas->filename, 1);
+		buf_cnt += cnt;
+		cnt = buf_cnt;
+		if((ai = as_decode(disas->as, buf, &cnt)) != NULL)
+			_do_flat_print(disas, base + offset + pos, buf, cnt,
+					ai);
+		else
+			cnt = 1; /* FIXME print missing instruction */
+		memmove(buf, &buf[cnt], buf_cnt - cnt);
+		buf_cnt -= cnt;
 	}
-	return -ret;
+	return ret;
 }
 
-static int _do_flat_print(Disas * disas, ArchInstruction * ai, int col)
+static void _do_flat_print(Disas * disas, unsigned long address,
+		char const * buffer, size_t size, ArchInstruction * ai)
 {
-	int ret = 0;
-	fpos_t pos; /* XXX work on a buffer instead */
-	int i;
+	size_t pos = ai->size;
+	size_t i;
+	int col;
 	ArchOperands operands;
 	unsigned int reg;
 	ArchRegister * ar;
 	char const * sep = " ";
-	uint8_t size;
-	int j;
 	unsigned long u;
-	int c;
+	size_t j;
+	size_t s;
 
-	if(fgetpos(disas->fp, &pos) != 0)
-		return -_disas_error(disas->filename, 1);
-	u = ai->size;
-	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
-		if((operands & _AO_OP) == _AO_IMM)
-		{
-			size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
-					: ai->op3size);
-			for(j = 0; j < size; j++, u++)
-			{
-				if((c = fgetc(disas->fp)) == EOF)
-					return -_disas_error(disas->filename,
-							1);
-				col += printf(" %02x", c);
-			}
-		}
-	if(fsetpos(disas->fp, &pos) != 0)
-		return -_disas_error(disas->filename, 1);
-	for(putchar(' '); col < 39; col++)
+	col = printf(" %5lx:", address);
+	for(i = 0; i < size; i++)
+		col += printf(" %02x", (unsigned char)buffer[i]);
+	for(; col < 31; col++)
 		putchar(' ');
-	fputs(ai->name, stdout);
+	printf(" %s", ai->name);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
 		if((operands & _AO_OP) == _AO_REG)
 		{
@@ -283,24 +262,15 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai, int col)
 		}
 		else if((operands & _AO_OP) == _AO_IMM)
 		{
-			size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
+			s = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
 					: ai->op3size);
-			for(j = 0, u = 0; j < size; j++)
-			{
-				if((c = fgetc(disas->fp)) == EOF)
-				{
-					ret = -_disas_error(disas->filename, 1);
-					break;
-				}
-				u = (u << 8) | c; /* XXX endian */
-			}
-			if(j != size)
-				break;
+			for(j = 0, u = 0; j < s; j++)
+				u = (u << 8) | (unsigned char)buffer[pos++];
+			/* XXX fix endian */
 			printf("%s$0x%lx", sep, u);
 			sep = ", ";
-			ret += size;
 		}
-	return ret;
+	putchar('\n');
 }
 
 
@@ -350,7 +320,7 @@ static int _elf_detect(Disas * disas)
 
 static char const * _elf_detect32(Disas * disas)
 {
-	_disas_signatures[0].disas = _elf_disas32; /* XXX hard-coded */
+	_disas_signatures[0].callback = _elf_disas32; /* XXX hard-coded */
 	switch(disas->elf.ehdr32.e_machine)
 	{
 		case EM_SPARC:
@@ -373,7 +343,7 @@ static char const * _elf_detect32(Disas * disas)
 
 static char const * _elf_detect64(Disas * disas)
 {
-	_disas_signatures[0].disas = _elf_disas64; /* XXX hard-coded */
+	_disas_signatures[0].callback = _elf_disas64; /* XXX hard-coded */
 	switch(disas->elf.ehdr64.e_machine)
 	{
 		case EM_SPARC:

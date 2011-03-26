@@ -39,6 +39,7 @@ char const * arch_get_format(Arch * arch);
 char const * arch_get_name(Arch * arch);
 
 ArchInstruction * arch_instruction_get(Arch * arch, size_t index);
+ArchInstruction * arch_instruction_get_by_name(Arch * arch, char const * name);
 ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 		unsigned long opcode);
 ArchRegister * arch_register_get(Arch * arch, size_t index);

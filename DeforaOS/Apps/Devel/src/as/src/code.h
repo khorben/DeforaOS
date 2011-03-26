@@ -39,6 +39,8 @@ char const * code_get_format(Code * code);
 int code_open(Code * code, char const * filename);
 int code_close(Code * code);
 
+ArchInstruction * code_decode(Code * code, char const * buffer, size_t * size);
+
 int code_function(Code * code, char const * function);
 int code_instruction(Code * code, char const * instruction,
 		AsOperand * operands[], size_t operands_cnt);

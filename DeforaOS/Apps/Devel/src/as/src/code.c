@@ -109,6 +109,47 @@ int code_close(Code * code)
 }
 
 
+/* code_decode */
+static ArchInstruction * _decode_size(size_t * size, ArchInstruction * ai);
+
+ArchInstruction * code_decode(Code * code, char const * buffer, size_t * size)
+{
+	size_t i;
+	uint32_t opcode = 0;
+	ArchInstruction * ai;
+
+	if(size == NULL || *size == 0)
+		return NULL;
+	for(i = 0; i < *size && i < sizeof(opcode); i++)
+	{
+		opcode = (opcode << 8) | (unsigned char)buffer[i];
+		if((ai = arch_instruction_get_by_opcode(code->arch, i + 1,
+						opcode)) != NULL)
+			return _decode_size(size, ai);
+	}
+	if((ai = arch_instruction_get_by_name(code->arch, "db")) != NULL)
+		return _decode_size(size, ai);
+	return NULL;
+}
+
+static ArchInstruction * _decode_size(size_t * size, ArchInstruction * ai)
+{
+	size_t i;
+	ArchOperands operands;
+	size_t s;
+
+	s = ai->size;
+	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
+		if((operands & _AO_OP) == _AO_IMM)
+			s += (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
+					: ai->op3size);
+	if(s > *size)
+		return NULL;
+	*size = s;
+	return ai;
+}
+
+
 /* code_function */
 int code_function(Code * code, char const * function)
 {

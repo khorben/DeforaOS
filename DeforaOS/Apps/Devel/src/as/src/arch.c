@@ -18,6 +18,7 @@
 #include <System.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include "As/arch.h"
 #include "arch.h"
@@ -108,6 +109,21 @@ ArchInstruction * arch_instruction_get(Arch * arch, size_t index)
 	if(index >= arch->instructions_cnt)
 		return NULL;
 	return &arch->instructions[index];
+}
+
+
+/* arch_instruction_get_by_name */
+ArchInstruction * arch_instruction_get_by_name(Arch * arch, char const * name)
+{
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, name);
+#endif
+	for(i = 0; i < arch->instructions_cnt; i++)
+		if(strcmp(arch->instructions[i].name, name) == 0)
+			return &arch->instructions[i];
+	return NULL;
 }
 
 
