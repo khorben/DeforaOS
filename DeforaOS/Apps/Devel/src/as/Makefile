@@ -35,6 +35,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/disas.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/arch.h \
+		$(PACKAGE)-$(VERSION)/src/as.h \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/format.h \

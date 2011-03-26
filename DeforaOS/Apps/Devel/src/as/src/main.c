@@ -55,8 +55,8 @@ static unsigned int _usage(void)
 
 	if((as = as_new(NULL, NULL)) == NULL)
 		return error_print(PACKAGE);
-	arch = as_get_arch(as);
-	format = as_get_format(as);
+	arch = as_get_arch_name(as);
+	format = as_get_format_name(as);
 	fprintf(stderr, "%s%s%s%s%s",
 "Usage: as [-a arch][-f format][-o file] file\n"
 "       as -l\n"

@@ -82,14 +82,28 @@ int code_delete(Code * code)
 
 /* accessors */
 /* code_get_arch */
-char const * code_get_arch(Code * code)
+Arch * code_get_arch(Code * code)
+{
+	return code->arch;
+}
+
+
+/* code_get_arch_name */
+char const * code_get_arch_name(Code * code)
 {
 	return arch_get_name(code->arch);
 }
 
 
 /* code_get_format */
-char const * code_get_format(Code * code)
+Format * code_get_format(Code * code)
+{
+	return code->format;
+}
+
+
+/* code_get_format_name */
+char const * code_get_format_name(Code * code)
 {
 	return format_get_name(code->format);
 }

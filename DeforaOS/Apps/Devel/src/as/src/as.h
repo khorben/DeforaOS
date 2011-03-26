@@ -15,39 +15,17 @@
 
 
 
-#ifndef AS_CODE_H
-# define AS_CODE_H
+#ifndef AS_AS_H
+# define AS_AS_H
 
-# include <stdio.h>
 # include "As/as.h"
 # include "arch.h"
 # include "format.h"
-# include "token.h"
-
-
-/* types */
-typedef struct _Code Code;
 
 
 /* functions */
-Code * code_new(char const * arch, char const * format);
-int code_delete(Code * code);
-
 /* accessors */
-Arch * code_get_arch(Code * code);
-char const * code_get_arch_name(Code * code);
-Format * code_get_format(Code * code);
-char const * code_get_format_name(Code * code);
+Arch * as_get_arch(As * as);
+Format * as_get_format(As * as);
 
-/* useful */
-int code_open(Code * code, char const * filename);
-int code_close(Code * code);
-
-ArchInstruction * code_decode(Code * code, char const * buffer, size_t * size);
-
-int code_function(Code * code, char const * function);
-int code_instruction(Code * code, char const * instruction,
-		AsOperand * operands[], size_t operands_cnt);
-int code_section(Code * code, char const * section);
-
-#endif /* !AS_CODE_H */
+#endif /* !AS_AS_H */

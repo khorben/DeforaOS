@@ -27,6 +27,7 @@
 #endif
 #include "As/as.h"
 #include "arch.h"
+#include "as.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
@@ -83,6 +84,8 @@ static DisasSignature _disas_signatures[] =
 /* prototypes */
 static int _disas(char const * arch, char const * format,
 		char const * filename);
+static int _disas_buffer(char const * arch, char const * format,
+		char const * buffer, size_t size);
 static int _disas_list(void);
 
 static int _disas_error(char const * message, int ret);
@@ -94,7 +97,7 @@ static int _disas_do_format(Disas * disas, char const * format);
 static int _disas_do(Disas * disas);
 static int _do_callback(Disas * disas, size_t i);
 static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base);
-static void _do_flat_print(Disas * disas, unsigned long address,
+static void _do_flat_print(Arch * arch, unsigned long address,
 		char const * buffer, size_t size, ArchInstruction * ai);
 
 static int _disas(char const * arch, char const * format, char const * filename)
@@ -173,10 +176,10 @@ static int _do_callback(Disas * disas, size_t i)
 			== NULL)
 		return -1;
 	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].format,
-			as_get_arch(disas->as));
+			as_get_arch_name(disas->as));
 	if(disas->arch != NULL)
 		arch_delete(disas->arch);
-	disas->arch = arch_new(as_get_arch(disas->as));
+	disas->arch = arch_new(as_get_arch_name(disas->as));
 	if(disas->arch == NULL)
 		return -1;
 	ret = _disas_signatures[i].callback(disas);
@@ -209,8 +212,8 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 		buf_cnt += cnt;
 		cnt = buf_cnt;
 		if((ai = as_decode(disas->as, buf, &cnt)) != NULL)
-			_do_flat_print(disas, base + offset + pos, buf, cnt,
-					ai);
+			_do_flat_print(disas->arch, base + offset + pos, buf,
+					cnt, ai);
 		else
 			cnt = 1; /* FIXME print missing instruction */
 		memmove(buf, &buf[cnt], buf_cnt - cnt);
@@ -219,7 +222,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	return ret;
 }
 
-static void _do_flat_print(Disas * disas, unsigned long address,
+static void _do_flat_print(Arch * arch, unsigned long address,
 		char const * buffer, size_t size, ArchInstruction * ai)
 {
 	size_t pos = ai->size;
@@ -243,7 +246,7 @@ static void _do_flat_print(Disas * disas, unsigned long address,
 		if((operands & _AO_OP) == _AO_REG)
 		{
 			reg = (operands & 0xff) >> 2;
-			if((ar = arch_register_get_by_id(disas->arch, reg))
+			if((ar = arch_register_get_by_id(arch, reg))
 					!= NULL)
 				printf("%s%%%s", sep, ar->name);
 			else
@@ -253,7 +256,7 @@ static void _do_flat_print(Disas * disas, unsigned long address,
 		else if((operands & _AO_OP) == _AO_DREG)
 		{
 			reg = (operands & 0xff) >> 2;
-			if((ar = arch_register_get_by_id(disas->arch, reg))
+			if((ar = arch_register_get_by_id(arch, reg))
 					!= NULL)
 				printf("%s(%%%s)", sep, ar->name);
 			else
@@ -271,6 +274,36 @@ static void _do_flat_print(Disas * disas, unsigned long address,
 			sep = ", ";
 		}
 	putchar('\n');
+}
+
+
+/* disas_buffer */
+static int _disas_buffer(char const * arch, char const * format,
+		char const * buffer, size_t size)
+{
+	As * as;
+	Arch * a;
+	size_t pos;
+	size_t cnt;
+	ArchInstruction * ai;
+
+	if((as = as_new(arch, format)) == NULL)
+		return -1;
+	if((a = as_get_arch(as)) == NULL)
+	{
+		as_delete(as);
+		return -1;
+	}
+	for(pos = 0; pos < size; pos += cnt)
+	{
+		cnt = size - pos;
+		if((ai = as_decode(as, &buffer[pos], &cnt)) != NULL)
+			_do_flat_print(a, pos, &buffer[pos], cnt, ai);
+		else
+			cnt = 1;
+	}
+	as_delete(as);
+	return 0;
 }
 
 
@@ -654,6 +687,7 @@ static int _disas_error(char const * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: disas [-a arch][-f format] filename\n"
+"       disas [-a arch][-f format] -s string\n"
 "       disas -l\n", stderr);
 	return 1;
 }
@@ -665,8 +699,9 @@ int main(int argc, char * argv[])
 	int o;
 	char const * arch = NULL;
 	char const * format = NULL;
+	char const * string = NULL;
 
-	while((o = getopt(argc, argv, "a:f:l")) != -1)
+	while((o = getopt(argc, argv, "a:f:ls:")) != -1)
 		switch(o)
 		{
 			case 'a':
@@ -677,10 +712,16 @@ int main(int argc, char * argv[])
 				break;
 			case 'l':
 				return _disas_list();
+			case 's':
+				string = optarg;
+				break;
 			default:
 				return _usage();
 		}
-	if(optind + 1 != argc)
+	if(optind == argc && string != NULL)
+		return _disas_buffer(arch, format, string, strlen(string));
+	else if(optind + 1 == argc && string == NULL)
+		return (_disas(arch, format, argv[optind])) == 0 ? 0 : 2;
+	else
 		return _usage();
-	return (_disas(arch, format, argv[optind])) == 0 ? 0 : 2;
 }

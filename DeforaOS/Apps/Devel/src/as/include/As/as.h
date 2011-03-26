@@ -43,8 +43,8 @@ void as_delete(As * as);
 
 
 /* accessors */
-char const * as_get_arch(As * as);
-char const * as_get_format(As * as);
+char const * as_get_arch_name(As * as);
+char const * as_get_format_name(As * as);
 
 
 /* useful */

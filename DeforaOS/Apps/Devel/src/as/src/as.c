@@ -24,7 +24,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include "code.h"
 #include "parser.h"
+#include "as.h"
 #include "../config.h"
 
 
@@ -111,16 +113,30 @@ void as_delete(As * as)
 
 /* accessors */
 /* as_get_arch */
-char const * as_get_arch(As * as)
+Arch * as_get_arch(As * as)
 {
 	return code_get_arch(as->code);
 }
 
 
+/* as_get_arch_name */
+char const * as_get_arch_name(As * as)
+{
+	return code_get_arch_name(as->code);
+}
+
+
 /* as_get_format */
-char const * as_get_format(As * as)
+Format * as_get_format(As * as)
 {
 	return code_get_format(as->code);
+}
+
+
+/* as_get_format_name */
+char const * as_get_format_name(As * as)
+{
+	return code_get_format_name(as->code);
 }
 
 
