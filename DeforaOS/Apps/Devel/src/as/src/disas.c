@@ -257,7 +257,7 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai, int col)
 		}
 	if(fsetpos(disas->fp, &pos) != 0)
 		return -_disas_error(disas->filename, 1);
-	for(putchar(' '); col < 31; col++)
+	for(putchar(' '); col < 39; col++)
 		putchar(' ');
 	fputs(ai->name, stdout);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
