@@ -86,9 +86,14 @@ static int _disas(char const * arch, char const * format,
 		char const * filename);
 static int _disas_buffer(char const * arch, char const * format,
 		char const * buffer, size_t size);
+static int _disas_string(char const * arch, char const * format,
+		char const * string);
 static int _disas_list(void);
 
 static int _disas_error(char const * message, int ret);
+
+static int _ishex(int c);
+static int _hex2bin(int c);
 
 
 /* functions */
@@ -304,6 +309,40 @@ static int _disas_buffer(char const * arch, char const * format,
 	}
 	as_delete(as);
 	return 0;
+}
+
+
+/* disas_string */
+static int _disas_string(char const * arch, char const * format,
+		char const * string)
+{
+	int ret;
+	unsigned char * str = (unsigned char *)string;
+	size_t len = strlen(string);
+	char * s;
+	size_t i;
+	size_t j;
+
+	if((s = malloc(len + 1)) == NULL)
+		return -_disas_error("string", 1);
+	for(i = 0, j = 0; i < len; i++)
+	{
+		if(str[i] != '\\')
+			s[j++] = str[i];
+		else if(str[i + 1] != 'x') /* "\\" */
+			s[j++] = str[++i];
+		else if(i + 3 < len && _ishex(str[i + 2])
+				&& _ishex(str[i + 3])) /* "\xHH" */
+		{
+			s[j++] = (_hex2bin(str[i + 2]) << 4)
+				| _hex2bin(str[i + 3]);
+			i += 3;
+		}
+	}
+	s[j] = '\0'; /* not really necessary */
+	ret = _disas_buffer(arch, format, s, j);
+	free(s);
+	return ret;
 }
 
 
@@ -683,6 +722,27 @@ static int _disas_error(char const * message, int ret)
 }
 
 
+/* hex2bin */
+static int _hex2bin(int c)
+{
+	if(c >= '0' && c <= '9')
+		return c - '0';
+	if(c >= 'a' && c <= 'f')
+		return c - 'a' + 10;
+	if(c >= 'A' && c <= 'F')
+		return c - 'A' + 10;
+	return -1;
+}
+
+
+/* ishex */
+static int _ishex(int c)
+{
+	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')
+		|| (c >= 'A' || c <= 'F');
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -719,7 +779,7 @@ int main(int argc, char * argv[])
 				return _usage();
 		}
 	if(optind == argc && string != NULL)
-		return _disas_buffer(arch, format, string, strlen(string));
+		return _disas_string(arch, format, string);
 	else if(optind + 1 == argc && string == NULL)
 		return (_disas(arch, format, argv[optind])) == 0 ? 0 : 2;
 	else
