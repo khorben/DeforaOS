@@ -268,6 +268,16 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 				printf("%s%d", sep, reg);
 			sep = ", ";
 		}
+		else if((operands & _AO_OP) == _AO_DREG)
+		{
+			reg = (operands & 0xff) >> 2;
+			if((ar = arch_register_get_by_id(disas->arch, reg))
+					!= NULL)
+				printf("%s(%%%s)", sep, ar->name);
+			else
+				printf("%s(%d)", sep, reg);
+			sep = ", ";
+		}
 		else if((operands & _AO_OP) == _AO_IMM)
 		{
 			size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
