@@ -91,7 +91,7 @@ static int _disas_do_format(Disas * disas, char const * format);
 static int _disas_do(Disas * disas);
 static int _do_callback(Disas * disas, size_t i);
 static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base);
-static int _do_flat_print(Disas * disas, ArchInstruction * ai);
+static int _do_flat_print(Disas * disas, ArchInstruction * ai, int col);
 
 static int _disas(char const * arch, char const * format, char const * filename)
 {
@@ -185,6 +185,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	size_t j;
 	int c;
 	ArchInstruction * ai;
+	int col;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, 0x%lx, 0x%lx) arch=\"%s\"\n", __func__,
@@ -196,7 +197,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	printf("\n%08lx:\n", (unsigned long)offset + base);
 	for(i = 0; i < size; i++)
 	{
-		printf(" %5lx: ", (unsigned long)offset + base + i);
+		col = printf(" %5lx: ", (unsigned long)offset + base + i);
 		opcode = 0;
 		ret = 0;
 		for(j = 0; j < 4; j++)
@@ -207,12 +208,12 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 			 * - choose the longest available */
 			if((c = fgetc(disas->fp)) == EOF)
 				break;
-			printf(" %02x", c);
+			col += printf(" %02x", c);
 			opcode = (opcode << 8) | c;
 			if((ai = arch_instruction_get_by_opcode(disas->arch,
 							j + 1, opcode)) == NULL)
 				continue;
-			ret = _do_flat_print(disas, ai);
+			ret = _do_flat_print(disas, ai, col);
 			j++;
 			break;
 		}
@@ -224,7 +225,7 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	return -ret;
 }
 
-static int _do_flat_print(Disas * disas, ArchInstruction * ai)
+static int _do_flat_print(Disas * disas, ArchInstruction * ai, int col)
 {
 	int ret = 0;
 	fpos_t pos; /* XXX work on a buffer instead */
@@ -251,12 +252,14 @@ static int _do_flat_print(Disas * disas, ArchInstruction * ai)
 				if((c = fgetc(disas->fp)) == EOF)
 					return -_disas_error(disas->filename,
 							1);
-				printf(" %02x", c);
+				col += printf(" %02x", c);
 			}
 		}
 	if(fsetpos(disas->fp, &pos) != 0)
 		return -_disas_error(disas->filename, 1);
-	printf("%s%s", (u < 3) ? "\t\t\t" : (u < 6) ? "\t\t" : "\t", ai->name);
+	for(putchar(' '); col < 31; col++)
+		putchar(' ');
+	fputs(ai->name, stdout);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
 		if((operands & _AO_OP) == _AO_REG)
 		{
