@@ -32,6 +32,14 @@
 # define AO_D_BP AO_D_rbp
 # define AO_D_SI AO_D_rsi
 # define AO_D_DI AO_D_rdi
+# define AO_D_AX_ AO_D_rax_
+# define AO_D_BX_ AO_D_rbx_
+# define AO_D_CX_ AO_D_rcx_
+# define AO_D_DX_ AO_D_rdx_
+# define AO_D_SP_ AO_D_rsp_
+# define AO_D_BP_ AO_D_rbp_
+# define AO_D_SI_ AO_D_rsi_
+# define AO_D_DI_ AO_D_rdi_
 # define W 4
 #elif defined(ARCH_i386_real)
 # define AO_AX__ AO_ax__
@@ -66,6 +74,14 @@
 # define AO_D_BP AO_D_bp
 # define AO_D_SI AO_D_si
 # define AO_D_DI AO_D_di
+# define AO_D_AX_ AO_D_ax_
+# define AO_D_BX_ AO_D_bx_
+# define AO_D_CX_ AO_D_cx_
+# define AO_D_DX_ AO_D_dx_
+# define AO_D_SP_ AO_D_sp_
+# define AO_D_BP_ AO_D_bp_
+# define AO_D_SI_ AO_D_si_
+# define AO_D_DI_ AO_D_di_
 # define W 2
 #else
 # define AO_AX__ AO_eax__
@@ -100,6 +116,14 @@
 # define AO_D_BP AO_D_ebp
 # define AO_D_SI AO_D_esi
 # define AO_D_DI AO_D_edi
+# define AO_D_AX_ AO_D_eax_
+# define AO_D_BX_ AO_D_ebx_
+# define AO_D_CX_ AO_D_ecx_
+# define AO_D_DX_ AO_D_edx_
+# define AO_D_SP_ AO_D_esp_
+# define AO_D_BP_ AO_D_ebp_
+# define AO_D_SI_ AO_D_esi_
+# define AO_D_DI_ AO_D_edi_
 # define W 4
 #endif
 	/* instructions */
@@ -485,6 +509,7 @@
 	{ "cmp",	0x80fe,	AO_IMM|AO_ch_,		2, 1, 0, 0 },
 	{ "cmp",	0x80fd,	AO_IMM|AO_dh_,		2, 1, 0, 0 },
 	{ "cmp",	0x80ff,	AO_IMM|AO_bh_,		2, 1, 0, 0 },
+	{ "cmp",	0x813e,	AO_IMM|AO_D_SI_,	2, W, 0, 0 },
 	{ "cmp",	0x81f8,	AO_IMM|AO_AX_,		2, W, 0, 0 },
 	{ "cmp",	0x81f9,	AO_IMM|AO_CX_,		2, W, 0, 0 },
 	{ "cmp",	0x81fa,	AO_IMM|AO_DX_,		2, W, 0, 0 },
@@ -1187,7 +1212,12 @@
 	{ "mov",	0x88,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
 	{ "mov",	0x89c3,	AO_AX|AO_BX_,		2, 0, 0, 0 },
+	{ "mov",	0x89c6,	AO_AX|AO_SI_,		2, 0, 0, 0 },
+	{ "mov",	0x89d8,	AO_BX|AO_AX_,		2, 0, 0, 0 },
 	{ "mov",	0x89e5,	AO_SP|AO_BP_,		2, 0, 0, 0 },
+	{ "mov",	0x89e8,	AO_BP|AO_AX_,		2, 0, 0, 0 },
+	{ "mov",	0x89ea,	AO_BP|AO_DX_,		2, 0, 0, 0 },
+	{ "mov",	0x89ee,	AO_BP|AO_SI_,		2, 0, 0, 0 },
 	{ "mov",	0x89fb,	AO_DI|AO_BX_,		2, 0, 0, 0 },
 #if 0
 	{ "mov",	0x8a,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
@@ -1196,8 +1226,8 @@
 	{ "mov",	0xb8,	AO_IMM|AO_AX_,		1, W, 0, 0 },
 	{ "mov",	0xb9,	AO_IMM|AO_CX_,		1, W, 0, 0 },
 	{ "mov",	0xba,	AO_IMM|AO_DX_,		1, W, 0, 0 },
+	{ "mov",	0xbb,	AO_IMM|AO_BX_,		1, W, 0, 0 },
 #if 0
-	{ "mov",	0xbb,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0xbc,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0xbd,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
@@ -1208,7 +1238,10 @@
 	{ "mov",	0xc74424,AO_IMM|AO_IMM_|AO_SP__,3, 1, 4, 0 },
 #endif
 	{ "mwait",	0x0f01c9,AO_NONE,		3, 0, 0, 0 },
+	{ "neg",	0xf7d8,	AO_AX,			2, 0, 0, 0 },
+	{ "neg",	0xf7db,	AO_BX,			2, 0, 0, 0 },
 	{ "nop",	0x90,	AO_NONE,		1, 0, 0, 0 },
+	{ "or",		0x09dd,	AO_BX|AO_BP_,		2, 0, 0, 0 },
 	{ "or",		0x0c,	AO_IMM|AO_al_,		1, 1, 0, 0 },
 	{ "or",		0x0d,	AO_IMM|AO_AX_,		1, W, 0, 0 },
 	{ "out",	0xe6,	AO_al|AO_IMM_,		1, 0, 1, 0 },
@@ -1328,6 +1361,8 @@
 #if 0
 	{ "sfence",	0x0fae,	AO_NONE,		2, 0, 0, 0 },
 #endif
+	{ "shl",	0xc1e5,	AO_IMM|AO_BP_,		2, 1, 0, 0 },
+	{ "shr",	0xc1ed,	AO_IMM|AO_BP_,		2, 1, 0, 0 },
 	{ "stc",	0xf9,	AO_NONE,		1, 0, 0, 0 },
 	{ "std",	0xfd,	AO_NONE,		1, 0, 0, 0 },
 	{ "sti",	0xfb,	AO_NONE,		1, 0, 0, 0 },
@@ -1355,6 +1390,10 @@
 	{ "sysenter",	0x0f34,	AO_NONE,		2, 0, 0, 0 },
 	{ "sysleave",	0x0f35,	AO_NONE,		2, 0, 0, 0 },
 	{ "sysret",	0x0f07,	AO_NONE,		2, 0, 0, 0 },
+	{ "test",	0x85c0,	AO_AX|AO_AX_,		2, 0, 0, 0 },
+	{ "test",	0x85d2,	AO_DX|AO_DX_,		2, 0, 0, 0 },
+	{ "test",	0x85db,	AO_BX|AO_BX_,		2, 0, 0, 0 },
+	{ "test",	0x85ed,	AO_BP|AO_BP_,		2, 0, 0, 0 },
 	{ "test",	0xa8,	AO_IMM|AO_al_,		1, 1, 0, 0 },
 	{ "test",	0xa9,	AO_IMM|AO_AX_,		1, W, 0, 0 },
 #if 0 /* FIXME implement */
@@ -1363,7 +1402,6 @@
 	{ "test",	0x84,	AO_REG|AO_REG_,		2, 0, 0, 0 },
 	{ "test",	0x85,	AO_REG|AO_REG_,		2, 0, 0, 0 },
 #endif
-	{ "test",	0x85c0,	AO_AX|AO_AX_,		2, 0, 0, 0 },
 	{ "ud2",	0x0f0b,	AO_NONE,		2, 0, 0, 0 },
 	{ "wait",	0x9b,	AO_NONE,		1, 0, 0, 0 },
 	{ "wbinvd",	0x0f09,	AO_NONE,		2, 0, 0, 0 },
@@ -1412,7 +1450,9 @@
 	{ "xor",	0x31c6,	AO_AX|AO_SI_,		2, 0, 0, 0 },
 	{ "xor",	0x31c7,	AO_AX|AO_DI_,		2, 0, 0, 0 },
 	{ "xor",	0x31c9,	AO_CX|AO_CX_,		2, 0, 0, 0 },
+	{ "xor",	0x31d2,	AO_DX|AO_DX_,		2, 0, 0, 0 },
 	{ "xor",	0x31db,	AO_BX|AO_BX_,		2, 0, 0, 0 },
+	{ "xor",	0x31ed,	AO_BP|AO_BP_,		2, 0, 0, 0 },
 	{ "xor",	0x31f6,	AO_SI|AO_SI_,		2, 0, 0, 0 },
 	{ "xor",	0x31ff,	AO_DI|AO_DI_,		2, 0, 0, 0 },
 	{ "xor",	0x32c0,	AO_al|AO_al_,		2, 0, 0, 0 },
