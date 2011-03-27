@@ -28,8 +28,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
-		$(PACKAGE)-$(VERSION)/include/System/appclient.h \
-		$(PACKAGE)-$(VERSION)/include/System/appserver.h \
 		$(PACKAGE)-$(VERSION)/include/System/array.h \
 		$(PACKAGE)-$(VERSION)/include/System/buffer.h \
 		$(PACKAGE)-$(VERSION)/include/System/config.h \

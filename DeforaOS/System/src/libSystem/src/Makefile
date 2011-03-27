@@ -4,7 +4,7 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= -D WITH_SSL
+CPPFLAGS= 
 CFLAGSF	= -W -Wall -fPIC
 CFLAGS	= -g -O2 -pedantic
 AR	= ar -rc
@@ -18,9 +18,9 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o error.o event.o hash.o object.o parser.o plugin.o string.o token.o
+libSystem_OBJS = array.o buffer.o config.o error.o event.o hash.o object.o parser.o plugin.o string.o token.o
 libSystem_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)   -lssl
+libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  
 
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
@@ -28,15 +28,6 @@ libSystem.a: $(libSystem_OBJS)
 
 libSystem.so: $(libSystem_OBJS)
 	$(LD) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(libSystem_LDFLAGS)
-
-appclient.o: appclient.c appinterface.h
-	$(CC) $(libSystem_CFLAGS) -c appclient.c
-
-appinterface.o: appinterface.c ../config.h
-	$(CC) -D PREFIX=\"$(PREFIX)\" $(libSystem_CFLAGS) -c appinterface.c
-
-appserver.o: appserver.c appinterface.h ../config.h
-	$(CC) -D PREFIX=\"$(PREFIX)\" $(libSystem_CFLAGS) -c appserver.c
 
 array.o: array.c
 	$(CC) $(libSystem_CFLAGS) -c array.c

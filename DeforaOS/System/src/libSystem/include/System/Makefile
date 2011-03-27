@@ -15,10 +15,6 @@ distclean: clean
 
 install:
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
-	$(INSTALL) -m 0644 -- appclient.h $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
-	$(INSTALL) -m 0644 -- appserver.h $(DESTDIR)$(INCLUDEDIR)/System/appserver.h
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
 	$(INSTALL) -m 0644 -- array.h $(DESTDIR)$(INCLUDEDIR)/System/array.h
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
 	$(INSTALL) -m 0644 -- buffer.h $(DESTDIR)$(INCLUDEDIR)/System/buffer.h
@@ -44,8 +40,6 @@ install:
 	$(INSTALL) -m 0644 -- token.h $(DESTDIR)$(INCLUDEDIR)/System/token.h
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/appserver.h
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/array.h
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/buffer.h
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/config.h
