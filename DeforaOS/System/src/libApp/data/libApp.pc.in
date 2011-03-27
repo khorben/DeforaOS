@@ -1,0 +1,11 @@
+prefix=PREFIX
+includedir=${prefix}/include
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+
+Name: libApp
+Description: DeforaOS System essential library
+Version: VERSION
+Requires: libSystem
+Cflags: -I${includedir}
+Libs: -Wl,-rpath,${libdir} -L${libdir} -lApp

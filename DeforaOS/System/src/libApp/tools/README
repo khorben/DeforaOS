@@ -1,0 +1,46 @@
+broker reads a configuration file for a given AppInterface, eg:
+
+=== BEGIN FILE ===
+service=VFS
+
+[chmod]
+ret=INT32
+arg1=STRING,pathname
+arg2=UINT32,mode
+=== END FILE ===
+
+which is then translated into a C header file, eg:
+=== BEGIN FILE ===
+/* $Id$ */
+
+
+
+#ifndef VFS_H
+# define VFS_H
+
+# include <stdint.h>
+# include <System.h>
+
+
+/* types */
+typedef Buffer * BUFFER;
+typedef int32_t INT32;
+typedef uint32_t UINT32;
+typedef String * STRING;
+
+
+/* functions */
+INT32 VFS_chmod(STRING pathname, UINT32 mode);
+
+#endif /* !VFS_H */
+=== END FILE ===
+
+This service definition file and corresponding header may then be committed
+along the relevant source code.
+
+It would also be helpful to:
+- add scripting possibilities to configure (to regenerate the headers
+  accordingly)
+- place this code directly inside AppInterface's class
+- implement dynamic port assignment: it currently has to be explicitly specified
+  in the interface file
