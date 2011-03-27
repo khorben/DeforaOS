@@ -1,6 +1,6 @@
 PACKAGE	= libSystem
 VERSION	= 0.1.5
-SUBDIRS	= data include src tools
+SUBDIRS	= data include src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -44,9 +44,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/token.h \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
-		$(PACKAGE)-$(VERSION)/src/appclient.c \
-		$(PACKAGE)-$(VERSION)/src/appinterface.c \
-		$(PACKAGE)-$(VERSION)/src/appserver.c \
 		$(PACKAGE)-$(VERSION)/src/array.c \
 		$(PACKAGE)-$(VERSION)/src/buffer.c \
 		$(PACKAGE)-$(VERSION)/src/config.c \
@@ -59,17 +56,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/string.c \
 		$(PACKAGE)-$(VERSION)/src/token.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/appinterface.h \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/tools/appbroker.c \
-		$(PACKAGE)-$(VERSION)/tools/appclient.c \
-		$(PACKAGE)-$(VERSION)/tools/Makefile \
-		$(PACKAGE)-$(VERSION)/tools/README \
-		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
-		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
