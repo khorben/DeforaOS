@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,43 +116,44 @@ static const KeyboardKeys _layout_letters[] =
 	{ 2, 0, XK_Shift_L, XK_comma, "<" },
 	{ 2, 2, 0, XK_period, "." },
 	{ 2, 0, XK_Shift_L, XK_period, ">" },
+	{ 3, 2, 0, 0, NULL },
 	{ 3, 3, 0, XK_Control_L, "Ctrl" },
 	{ 3, 2, 0, XK_Alt_L, "Alt" },
-	{ 3, 9, 0, XK_space, " " },
+	{ 3, 7, 0, XK_space, " " },
 	{ 3, 3, 0, XK_Return, "\xe2\x86\xb2" },
 	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
 }, _layout_keypad[] =
 {
 	{ 0, 2, 0, XK_Num_Lock, "Num" },
-	{ 0, 2, 0, XK_KP_Divide, "/" },
-	{ 0, 2, 0, XK_KP_Multiply, "*" },
+	{ 0, 2, 0, XK_KP_Home, "\xe2\x86\x96" },
+	{ 0, 0, XK_Num_Lock, XK_7, "7" },
+	{ 0, 2, 0, XK_KP_Up, "\xe2\x86\x91" },
+	{ 0, 0, XK_Num_Lock, XK_8, "8" },
+	{ 0, 2, 0, XK_KP_Page_Up, "\xe2\x87\x9e" },
+	{ 0, 0, XK_Num_Lock, XK_9, "9" },
 	{ 0, 2, 0, XK_KP_Subtract, "-" },
-	{ 1, 2, 0, XK_KP_Home, "\xe2\x86\x96" },
-	{ 1, 0, XK_Num_Lock, XK_7, "7" },
-	{ 1, 2, 0, XK_KP_Up, "\xe2\x86\x91" },
-	{ 1, 0, XK_Num_Lock, XK_8, "8" },
-	{ 1, 2, 0, XK_KP_Page_Up, "\xe2\x87\x9e" },
-	{ 1, 0, XK_Num_Lock, XK_9, "9" },
+	{ 1, 2, 0, XK_KP_Divide, "/" },
+	{ 1, 2, 0, XK_KP_Left, "\xe2\x86\x90" },
+	{ 1, 0, XK_Num_Lock, XK_4, "4" },
+	{ 1, 2, 0, XK_5, "5" },
+	{ 1, 2, 0, XK_KP_Right, "\xe2\x86\x92" },
+	{ 1, 0, XK_Num_Lock, XK_6, "6" },
 	{ 1, 2, 0, XK_KP_Add, "+" },
-	{ 2, 2, 0, XK_KP_Left, "\xe2\x86\x90" },
-	{ 2, 0, XK_Num_Lock, XK_4, "4" },
-	{ 2, 2, 0, XK_5, "5" },
-	{ 2, 2, 0, XK_KP_Right, "\xe2\x86\x92" },
-	{ 2, 0, XK_Num_Lock, XK_6, "6" },
-	{ 2, 2, 0, XK_KP_Add, "+" },
-	{ 3, 2, 0, XK_KP_End, "\xe2\x86\x99" },
-	{ 3, 0, XK_Num_Lock, XK_1, "1" },
-	{ 3, 2, 0, XK_KP_Down, "\xe2\x86\x93" },
-	{ 3, 0, XK_Num_Lock, XK_2, "2" },
-	{ 3, 2, 0, XK_KP_Page_Down, "\xe2\x87\x9f" },
-	{ 3, 0, XK_Num_Lock, XK_3, "3" },
-	{ 3, 2, 0, XK_KP_Enter, "\xe2\x86\xb2" },
-	{ 4, 4, 0, XK_KP_Insert, "Ins" },
-	{ 4, 0, XK_Num_Lock, XK_0, "0" },
-	{ 4, 2, 0, XK_KP_Delete, "Del" },
-	{ 4, 0, XK_Num_Lock, XK_KP_Decimal, "." },
-	{ 4, 2, 0, XK_BackSpace, "\xe2\x8c\xab" },
+	{ 2, 2, 0, XK_KP_Multiply, "*" },
+	{ 2, 2, 0, XK_KP_End, "\xe2\x86\x99" },
+	{ 2, 0, XK_Num_Lock, XK_1, "1" },
+	{ 2, 2, 0, XK_KP_Down, "\xe2\x86\x93" },
+	{ 2, 0, XK_Num_Lock, XK_2, "2" },
+	{ 2, 2, 0, XK_KP_Page_Down, "\xe2\x87\x9f" },
+	{ 2, 0, XK_Num_Lock, XK_3, "3" },
+	{ 2, 2, 0, XK_KP_Enter, "\xe2\x86\xb2" },
+	{ 3, 2, 0, 0, NULL },
+	{ 3, 4, 0, XK_KP_Insert, "Ins" },
+	{ 3, 0, XK_Num_Lock, XK_0, "0" },
+	{ 3, 2, 0, XK_KP_Delete, "Del" },
+	{ 3, 0, XK_Num_Lock, XK_KP_Decimal, "." },
+	{ 3, 2, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
 }, _layout_special[] =
 {
@@ -204,8 +205,9 @@ static const KeyboardKeys _layout_letters[] =
 	{ 2, 0, XK_Shift_L, XK_semicolon, ":" },
 	{ 2, 2, 0, XK_apostrophe, "'" },
 	{ 2, 0, XK_Shift_L, XK_apostrophe, "\"" },
+	{ 3, 2, 0, 0, NULL },
 	{ 3, 2, 0, XK_Shift_L, "\xe2\x87\xa7" },
-	{ 3, 6, 0, XK_space, " " },
+	{ 3, 4, 0, XK_space, " " },
 	{ 3, 2, 0, XK_comma, "," },
 	{ 3, 0, XK_Shift_L, XK_comma, "<" },
 	{ 3, 2, 0, XK_period, "." },
@@ -220,7 +222,7 @@ static const KeyboardKeys _layout_letters[] =
 
 /* prototypes */
 static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
-		KeyboardKeys const * keys);
+		KeyboardKeys const * keys, unsigned int n);
 
 
 /* public */
@@ -230,7 +232,6 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 {
 	Keyboard * keyboard;
 	GdkScreen * screen;
-	GtkWidget * hbox;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
@@ -291,37 +292,18 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	pango_font_description_set_weight(keyboard->font, PANGO_WEIGHT_BOLD);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
-	/* chooser */
-	hbox = gtk_hbox_new(FALSE, 4);
-	vbox = gtk_vbox_new(TRUE, 4);
-	widget = gtk_button_new_with_label("Abc");
-	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)), bold);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_keyboard_set_layout_letters), keyboard);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	widget = gtk_button_new_with_label("123");
-	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)), bold);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_keyboard_set_layout_keypad), keyboard);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	widget = gtk_button_new_with_label(",./");
-	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)), bold);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_keyboard_set_layout_special), keyboard);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
-	gtk_widget_show_all(hbox);
 	/* layouts */
 	vbox = gtk_vbox_new(TRUE, 4);
 	gtk_widget_show(vbox);
-	if((widget = _keyboard_add_layout(keyboard, _layout_letters)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard, _layout_letters, 0))
+			!= NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	if((widget = _keyboard_add_layout(keyboard, _layout_keypad)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard, _layout_keypad, 1)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	if((widget = _keyboard_add_layout(keyboard, _layout_special)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard, _layout_special, 2))
+			!= NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(keyboard->window), hbox);
+	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	if(prefs->embedded == 0)
 		gtk_widget_show(keyboard->window);
 	else
@@ -403,14 +385,18 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 
 /* private */
 /* keyboard_add_layout */
+static void _layout_changed(GtkWidget * widget, gpointer data);
+
 static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
-		KeyboardKeys const * keys)
+		KeyboardKeys const * keys, unsigned int n)
 {
 	KeyboardLayout ** p;
 	KeyboardLayout * layout;
 	size_t i;
 	KeyboardKey * key;
 	GtkWidget * widget;
+	char const * labels[] = { "Abc", "123", ",./", NULL };
+	unsigned long l;
 
 	if((p = realloc(keyboard->layouts, sizeof(*p) * (keyboard->layouts_cnt
 						+ 1))) == NULL)
@@ -431,5 +417,44 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 			keyboard_key_set_modifier(key, keys[i + 1].modifier,
 					keys[i + 1].keysym, keys[i + 1].label);
 	}
+	widget = gtk_combo_box_new_text();
+	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
+			keyboard->font);
+	for(l = 0; labels[l] != NULL; l++)
+	{
+		gtk_combo_box_append_text(GTK_COMBO_BOX(widget), labels[l]);
+		if(l == n)
+		{
+			g_object_set_data(G_OBJECT(widget), "layout",
+					(void *)l);
+			gtk_combo_box_set_active(GTK_COMBO_BOX(widget), l);
+		}
+	}
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				_layout_changed), keyboard);
+	keyboard_layout_add_widget(layout, 3, 0, 2, widget);
 	return keyboard_layout_get_widget(layout);
+}
+
+static void _layout_changed(GtkWidget * widget, gpointer data)
+{
+	Keyboard * keyboard = data;
+	unsigned long d;
+	int n;
+
+	d = (unsigned long)g_object_get_data(G_OBJECT(widget), "layout");
+	n = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), d);
+	switch(n)
+	{
+		case 0:
+			on_keyboard_set_layout_letters(keyboard);
+			break;
+		case 1:
+			on_keyboard_set_layout_keypad(keyboard);
+			break;
+		case 2:
+			on_keyboard_set_layout_special(keyboard);
+			break;
+	}
 }

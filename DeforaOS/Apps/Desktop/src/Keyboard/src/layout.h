@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,8 @@ GtkWidget * keyboard_layout_get_widget(KeyboardLayout * layout);
 /* useful */
 KeyboardKey * keyboard_layout_add(KeyboardLayout * layout, unsigned int row,
 		unsigned int width, unsigned int keysym, char const * label);
+void keyboard_layout_add_widget(KeyboardLayout * layout, unsigned int row,
+		unsigned int column, unsigned int width, GtkWidget * widget);
 void keyboard_layout_apply_modifier(KeyboardLayout * layout,
 		unsigned int modifier);
 
