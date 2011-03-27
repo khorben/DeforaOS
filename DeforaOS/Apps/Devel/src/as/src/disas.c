@@ -211,10 +211,12 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	memset(buf, 0, sizeof(buf));
 	for(pos = 0; pos < size; pos += cnt)
 	{
-		cnt = min(sizeof(buf) - buf_cnt, size - pos);
-		if((cnt = fread(&buf[buf_cnt], 1, cnt, disas->fp)) == 0)
-			break;
-		buf_cnt += cnt;
+		if((cnt = sizeof(buf) - buf_cnt) > 0 && size - pos - 1 > 0)
+		{
+			if((cnt = fread(&buf[buf_cnt], 1, cnt, disas->fp)) == 0)
+				break;
+			buf_cnt += cnt;
+		}
 		cnt = buf_cnt;
 		if((ai = as_decode(disas->as, buf, &cnt)) != NULL)
 			_do_flat_print(arch, base + offset + pos, buf, cnt, ai);
