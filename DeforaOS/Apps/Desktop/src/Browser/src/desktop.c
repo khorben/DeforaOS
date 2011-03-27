@@ -775,8 +775,7 @@ static int _layout_applications(Desktop * desktop)
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
 
-	if(desktop->path != NULL)
-		free(desktop->path);
+	free(desktop->path);
 	if((desktop->path = strdup(path)) == NULL)
 		return desktop_error(NULL, strerror(errno), 1);
 	desktop->path_cnt = sizeof(path);
