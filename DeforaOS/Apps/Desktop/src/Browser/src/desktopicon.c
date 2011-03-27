@@ -189,7 +189,7 @@ DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
 	DesktopIcon * desktopicon;
 	Config * config;
 	const char section[] = "Desktop Entry";
-	char const * name;
+	char const * p;
 	char const * icon;
 	char * exec = NULL;
 	char * tryexec = NULL;
@@ -202,18 +202,17 @@ DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void *)desktop,
 			path);
 #endif
-	if((config = config_new()) == NULL
-			|| config_load(config, path) != 0)
+	if((config = config_new()) == NULL || config_load(config, path) != 0)
 	{
 		if(config != NULL)
 			config_delete(config);
 		return NULL;
 	}
-	if((name = config_get(config, section, "Exec")) != NULL)
-		exec = strdup(name);
-	if((name = config_get(config, section, "TryExec")) != NULL)
-		tryexec = strdup(name);
-	if(exec == NULL || (name = config_get(config, section, "Name")) == NULL
+	if((p = config_get(config, section, "Exec")) != NULL)
+		exec = strdup(p);
+	if((p = config_get(config, section, "TryExec")) != NULL)
+		tryexec = strdup(p);
+	if(exec == NULL || (p = config_get(config, section, "Name")) == NULL
 			|| (icon = config_get(config, section, "Icon")) == NULL)
 	{
 		free(exec);
@@ -237,7 +236,7 @@ DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
 				icon, DESKTOPICON_ICON_SIZE, 0, NULL);
 	if(image == NULL)
 		image = desktop_get_file(desktop);
-	desktopicon = _desktopicon_new_do(desktop, image, name);
+	desktopicon = _desktopicon_new_do(desktop, image, p);
 	config_delete(config); /* XXX also remove reference to the pixbuf */
 	if(desktopicon == NULL)
 	{
@@ -500,7 +499,25 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 /* desktopicon_set_icon */
 static void _desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
+	GdkPixbuf * i = NULL;
+
+	if(icon == NULL)
+		return;
+	if(gdk_pixbuf_get_width(icon) != DESKTOPICON_ICON_SIZE
+			&& gdk_pixbuf_get_height(icon) != DESKTOPICON_ICON_SIZE
+			&& (i = gdk_pixbuf_scale_simple(icon,
+					DESKTOPICON_ICON_SIZE,
+					DESKTOPICON_ICON_SIZE,
+#ifdef EMBEDDED
+					GDK_INTERP_NEAREST
+#else
+					GDK_INTERP_HYPER
+#endif
+					)) != NULL)
+		icon = i;
 	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
+	if(i != NULL)
+		g_object_unref(i);
 }
 
 
@@ -781,21 +798,24 @@ static void _on_icon_run(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	char * argv[] = { NULL, NULL, NULL };
+	gboolean res;
 	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_FILE_AND_ARGV_ZERO;
 	GError * error = NULL;
 
 	if(desktopicon->confirm != FALSE && _run_confirm(desktopicon) != TRUE)
 		return;
-	if(desktopicon->tryexec != NULL) /* XXX ugly */
-		argv[0] = desktopicon->tryexec;
-	else if(desktopicon->exec != NULL)
+	if((argv[0] = desktopicon->exec) != NULL
+			|| (argv[0] = desktopicon->tryexec) != NULL)
 		/* FIXME it's actually a format string */
-		argv[0] = desktopicon->exec;
+		res = g_spawn_command_line_async(argv[0], &error);
 	else
+	{
 		argv[0] = desktopicon->path;
-	argv[1] = argv[0];
-	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
-			!= TRUE)
+		argv[1] = argv[0];
+		res = g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL,
+				&error);
+	}
+	if(res != TRUE)
 		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
 }
 
