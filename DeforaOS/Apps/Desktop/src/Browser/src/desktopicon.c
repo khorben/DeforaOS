@@ -451,7 +451,11 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 	gtk_window_set_keep_below(window, TRUE);
 	gtk_window_set_resizable(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
+#ifdef EMBEDDED
+	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_UTILITY);
+#else
 	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
+#endif
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
 			G_CALLBACK(_on_desktopicon_closex), NULL);
 	/* event */
