@@ -1059,7 +1059,7 @@ static int _current_loop_applications(Desktop * desktop)
 		if((q = config_get(config, "Desktop Entry", "Categories"))
 				== NULL)
 			continue;
-		if(string_find(q, desktop->category->name) == NULL)
+		if(string_find(q, desktop->category->category) == NULL)
 			continue;
 		if((icon = desktopicon_new_application(desktop, path)) == NULL)
 			continue;
