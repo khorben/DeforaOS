@@ -775,6 +775,8 @@ static int _layout_applications(Desktop * desktop)
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
 
+	if(desktop->path != NULL)
+		free(desktop->path);
 	if((desktop->path = strdup(path)) == NULL)
 		return desktop_error(NULL, strerror(errno), 1);
 	desktop->path_cnt = sizeof(path);
@@ -882,17 +884,34 @@ static int _layout_homescreen(Desktop * desktop)
 {
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
+#ifdef EMBEDDED
+	char const * paths[] =
+	{
+		DATADIR "/applications/phone-contacts.desktop",
+		DATADIR "/applications/phone-dialer.desktop",
+		DATADIR "/applications/phone-messages.desktop",
+		NULL
+	};
+	char const ** p;
+#endif
 
 	if((desktopicon = desktopicon_new(desktop, _("Applications"), NULL))
 			== NULL)
 		return desktop_error(NULL, error_get(), 1);
 	desktopicon_set_callback(desktopicon, _layout_set_categories, NULL);
 	desktopicon_set_immutable(desktopicon, TRUE);
-	_desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-applications",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
 	if(icon != NULL)
 		desktopicon_set_icon(desktopicon, icon);
+	_desktop_icon_add(desktop, desktopicon);
+#ifdef EMBEDDED
+	for(p = paths; *p != NULL; p++)
+		if(access(*p, R_OK) == 0
+				&& (desktopicon = desktopicon_new_application(
+						desktop, *p)) != NULL)
+			_desktop_icon_add(desktop, desktopicon);
+#endif
 	return 0;
 }
 
