@@ -185,9 +185,9 @@ static int _new_init(AppServerOptions options, GServer * gserver, Event * event)
 }
 
 static int _init_video(GServer * gserver)
-	/* FIXME ask Hardware what to load instead of hard-coding glx */
+	/* FIXME ask Hardware what to load instead of hard-coding glut */
 {
-	char const filename[] = PREFIX "/lib/" PACKAGE "/video/glx.so";
+	char const filename[] = PREFIX "/lib/" PACKAGE "/video/glut.so";
 
 	if((gserver->video_handle = dlopen(filename, RTLD_LAZY)) == NULL)
 		return error_set_code(1, "%s: %s", filename, dlerror());
