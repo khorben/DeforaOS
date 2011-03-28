@@ -72,9 +72,9 @@ static int _java_disas(Disas * disas);
 
 static DisasSignature _disas_signatures[] =
 {
-	{ "elf",	ELFMAG, SELFMAG,	_elf_detect, NULL },
-	{ "java",	"\xca\xfe\xba\xbe", 4,	_java_detect, _java_disas },
-	{ "flat",	NULL, 0,		NULL, _flat_disas }
+	{ "elf",	ELFMAG, SELFMAG,	_elf_detect,	NULL },
+	{ "flat",	NULL, 0,		NULL,		_flat_disas },
+	{ "java",	"\xca\xfe\xba\xbe", 4,	_java_detect,	_java_disas }
 };
 #define _disas_signatures_cnt (sizeof(_disas_signatures) \
 		/ sizeof(*_disas_signatures))
@@ -167,16 +167,22 @@ static int _disas_do(Disas * disas)
 		if(ferror(disas->fp))
 			ret = -_disas_error(disas->filename, 1);
 		else
-			ret = _do_callback(disas, 2); /* FIXME hard-coded */
+			ret = _disas_do_format(disas, "flat");
 	}
 	else
+	{
 		for(i = 0; i < _disas_signatures_cnt; i++)
-			if(memcmp(_disas_signatures[i].signature, buf,
+			if(_disas_signatures[i].size == 0)
+				continue;
+			else if(memcmp(_disas_signatures[i].signature, buf,
 						_disas_signatures[i].size) == 0)
 			{
 				ret = _do_callback(disas, i);
 				break;
 			}
+		if(i == _disas_signatures_cnt)
+			ret = _disas_do_format(disas, "flat");
+	}
 	free(buf);
 	return ret;
 }
