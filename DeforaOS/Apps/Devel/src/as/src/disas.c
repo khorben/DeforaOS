@@ -39,7 +39,7 @@ typedef struct _Disas
 {
 	char const * filename;
 	FILE * fp;
-	char * archname;
+	char * arch;
 	As * as;
 
 	/* ELF */
@@ -111,17 +111,17 @@ static int _disas(char const * arch, char const * format, char const * filename)
 
 	disas.as = NULL;
 	if(arch == NULL)
-		disas.archname = NULL;
-	else if((disas.archname = strdup(arch)) == NULL)
+		disas.arch = NULL;
+	else if((disas.arch = strdup(arch)) == NULL)
 		return -_disas_error(filename, 1);
 	if((disas.fp = fopen(filename, "r")) == NULL)
 	{
-		free(disas.archname);
+		free(disas.arch);
 		return -_disas_error(filename, 1);
 	}
 	disas.filename = filename;
 	ret = _disas_do_format(&disas, format);
-	free(disas.archname);
+	free(disas.arch);
 	if(disas.as != NULL)
 		as_delete(disas.as);
 	fclose(disas.fp);
@@ -157,19 +157,26 @@ static int _disas_do(Disas * disas)
 	for(i = 0; i < _disas_signatures_cnt; i++)
 		if(_disas_signatures[i].size > s)
 			s = _disas_signatures[i].size;
-	if((buf = malloc(s)) == NULL
-			|| fread(buf, sizeof(*buf), s, disas->fp) != s)
+	if((buf = malloc(s)) == NULL)
 	{
 		free(buf);
 		return -_disas_error(disas->filename, 1);
 	}
-	for(i = 0; i < _disas_signatures_cnt; i++)
-		if(memcmp(_disas_signatures[i].signature, buf,
-					_disas_signatures[i].size) == 0)
-		{
-			ret = _do_callback(disas, i);
-			break;
-		}
+	if(fread(buf, sizeof(*buf), s, disas->fp) != s)
+	{
+		if(ferror(disas->fp))
+			ret = -_disas_error(disas->filename, 1);
+		else
+			ret = _do_callback(disas, 2); /* FIXME hard-coded */
+	}
+	else
+		for(i = 0; i < _disas_signatures_cnt; i++)
+			if(memcmp(_disas_signatures[i].signature, buf,
+						_disas_signatures[i].size) == 0)
+			{
+				ret = _do_callback(disas, i);
+				break;
+			}
 	free(buf);
 	return ret;
 }
@@ -181,7 +188,7 @@ static int _do_callback(Disas * disas, size_t i)
 	if(_disas_signatures[i].detect != NULL
 			&& _disas_signatures[i].detect(disas) != 0)
 		return -1;
-	if((disas->as = as_new(disas->archname, _disas_signatures[i].format))
+	if((disas->as = as_new(disas->arch, _disas_signatures[i].format))
 			== NULL)
 		return -1;
 	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].format,
@@ -355,7 +362,7 @@ static char const * _elf_detect64(Disas * disas);
 
 static int _elf_detect(Disas * disas)
 {
-	char const * archname;
+	char const * arch;
 	char * p;
 
 	if(fseek(disas->fp, 0, SEEK_SET) != 0)
@@ -373,10 +380,10 @@ static int _elf_detect(Disas * disas)
 	switch(disas->elf.e_ident[EI_CLASS])
 	{
 		case ELFCLASS32:
-			archname = _elf_detect32(disas);
+			arch = _elf_detect32(disas);
 			break;
 		case ELFCLASS64:
-			archname = _elf_detect64(disas);
+			arch = _elf_detect64(disas);
 			break;
 		default:
 			fprintf(stderr, "disas: %s: %s 0x%x\n", disas->filename,
@@ -384,12 +391,12 @@ static int _elf_detect(Disas * disas)
 					disas->elf.e_ident[EI_CLASS]);
 			return -1;
 	}
-	if(archname == NULL)
+	if(arch == NULL)
 		return -1;
-	if((p = strdup(archname)) == NULL)
+	if((p = strdup(arch)) == NULL)
 		return -1;
-	free(disas->archname);
-	disas->archname = p;
+	free(disas->arch);
+	disas->arch = p;
 	return 0;
 }
 
@@ -687,8 +694,8 @@ static int _java_detect(Disas * disas)
 
 	if((p = strdup("java")) == NULL)
 		return -1;
-	free(disas->archname);
-	disas->archname = p;
+	free(disas->arch);
+	disas->arch = p;
 	return 0;
 }
 
