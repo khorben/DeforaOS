@@ -18,7 +18,7 @@
 #ifndef LIBAPP_APPSERVER_H
 # define LIBAPP_APPSERVER_H
 
-# include "event.h"
+# include <System/event.h>
 
 
 /* AppServer */

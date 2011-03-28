@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System VFS */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <System.h>
+#include "vfs.h"
 #include "common.c"
 #include "../data/VFS.h"
 #include "../config.h"

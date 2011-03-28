@@ -21,6 +21,7 @@
 #include <string.h>
 #include <errno.h>
 #include <System.h>
+#include "System/App.h"
 
 #define APPCLIENT_PROGNAME "AppClient"
 

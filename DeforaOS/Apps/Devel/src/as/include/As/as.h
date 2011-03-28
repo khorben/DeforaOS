@@ -18,6 +18,7 @@
 #ifndef DEVEL_AS_AS_H
 # define DEVEL_AS_AS_H
 
+# include <sys/types.h>
 # include "arch.h"
 
 

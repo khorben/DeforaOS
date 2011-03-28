@@ -19,6 +19,7 @@
 # define INIT_INIT_H
 
 # include <System.h>
+# include <System/App.h>
 
 
 /* Init */

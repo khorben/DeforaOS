@@ -19,6 +19,7 @@
 # define DIRECTORY_DIRECTORY_H
 
 # include <System.h>
+# include <System/App.h>
 
 
 /* Directory */

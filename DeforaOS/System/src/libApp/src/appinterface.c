@@ -28,7 +28,8 @@
 # include <openssl/ssl.h>
 #endif
 #include <errno.h>
-#include "System.h"
+#include <System.h>
+#include "System/App.h"
 #include "appinterface.h"
 #include "../config.h"
 

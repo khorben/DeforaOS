@@ -22,7 +22,9 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <System.h>
 #include "VPN.h"
+#include "vpn.h"
 #include "../data/VPN.h"
 #include "../config.h"
 

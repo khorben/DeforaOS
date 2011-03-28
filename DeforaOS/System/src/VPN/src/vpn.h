@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System VPN */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
 
 
 
-#ifndef VPN_VPN_H
-# define VPN_VPN_H
+#ifndef VPN_SRC_VPN_H
+# define VPN_SRC_VPN_H
 
-# include <System.h>
+# include <System/App.h>
 
 
 /* VPN */
 int vpn(AppServerOptions options);
 
-#endif /* !VPN_VPN_H */
+#endif /* !VPN_SRC_VPN_H */

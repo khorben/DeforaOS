@@ -31,7 +31,8 @@
 # include <openssl/ssl.h>
 # include <openssl/err.h>
 #endif
-#include "System.h"
+#include <System.h>
+#include "System/App.h"
 #include "appinterface.h"
 #include "../config.h"
 

@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <dlfcn.h>
 #include <System.h>
+#include <System/App.h>
 #include "../src/common.c"
 
 

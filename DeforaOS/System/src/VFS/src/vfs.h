@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System VFS */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,14 @@
 
 
 
-#ifndef VFS_VFS_H
-# define VFS_VFS_H
+#ifndef VFS_SRC_VFS_H
+# define VFS_SRC_VFS_H
 
 # include <sys/stat.h>
-# include <System.h>
+# include <System/App.h>
 
 
 /* VFS */
 int vfs(AppServerOptions options, mode_t mask, char const * root);
 
-#endif /* !VFS_VFS_H */
+#endif /* !VFS_SRC_VFS_H */
