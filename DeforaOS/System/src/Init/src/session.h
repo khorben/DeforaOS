@@ -18,7 +18,7 @@
 #ifndef INIT_SESSION_H
 # define INIT_SESSION_H
 
-# include <sys/types.h>
+# include <stdint.h>
 # include <System.h>
 
 
