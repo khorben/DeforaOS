@@ -448,8 +448,8 @@ static char const * _elf_detect64(Disas * disas)
 
 
 /* elf_disas32 */
-static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
-		Elf32_Ehdr * ehdr);
+static int _do_elf32_shdr(char const * filename, FILE * fp, Elf32_Ehdr * ehdr,
+		Elf32_Shdr ** shdr);
 static int _do_elf32_addr(char const * filename, FILE * fp, Elf32_Ehdr * ehdr,
 		Elf32_Addr * addr);
 static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
@@ -467,7 +467,7 @@ static int _elf_disas32(Disas * disas)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() e_shnum=%u\n", __func__, ehdr->e_shnum);
 #endif
-	if((shdr = _do_elf32_shdr(disas->filename, disas->fp, ehdr)) == NULL)
+	if(_do_elf32_shdr(disas->filename, disas->fp, ehdr, &shdr) != 0)
 		return 1;
 	if(_do_elf32_addr(disas->filename, disas->fp, ehdr, &base) != 0
 			|| _do_elf32_strtab(disas, shdr, ehdr->e_shnum,
@@ -495,30 +495,26 @@ static int _elf_disas32(Disas * disas)
 	return 0;
 }
 
-static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
-		Elf32_Ehdr * ehdr)
+static int _do_elf32_shdr(char const * filename, FILE * fp, Elf32_Ehdr * ehdr,
+		Elf32_Shdr ** shdr)
 {
-	Elf32_Shdr * shdr;
-
-	if(ehdr->e_shentsize != sizeof(*shdr))
+	if(ehdr->e_shentsize != sizeof(**shdr))
 	{
 		fprintf(stderr, "disas: %s: %s\n", filename,
 				"Invalid section header size");
-		return NULL;
+		return -1;
 	}
 	if(fseek(fp, ehdr->e_shoff, SEEK_SET) != 0
-			|| (shdr = malloc(ehdr->e_shentsize * ehdr->e_shnum))
+			|| (*shdr = malloc(ehdr->e_shentsize * ehdr->e_shnum))
 			== NULL)
-	{
-		_disas_error(filename, 1);
-		return NULL;
-	}
+		return -_disas_error(filename, 1);
 	if(fread(shdr, sizeof(*shdr), ehdr->e_shnum, fp) != ehdr->e_shnum)
 	{
 		fprintf(stderr, "disas: %s: %s\n", filename, "Short read");
-		return NULL;
+		free(*shdr);
+		return -1;
 	}
-	return shdr;
+	return 0;
 }
 
 static int _do_elf32_addr(char const * filename, FILE * fp, Elf32_Ehdr * ehdr,
@@ -564,8 +560,8 @@ static int _do_elf32_strtab(Disas * disas, Elf32_Shdr * shdr, size_t shdr_cnt,
 
 
 /* elf_disas64 */
-static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
-		Elf64_Ehdr * ehdr);
+static int _do_elf64_shdr(char const * filename, FILE * fp, Elf64_Ehdr * ehdr,
+		Elf64_Shdr ** shdr);
 static int _do_elf64_addr(char const * filename, FILE * fp, Elf64_Ehdr * ehdr,
 		Elf64_Addr * addr);
 static int _do_elf64_strtab(Disas * disas, Elf64_Shdr * shdr, size_t shdr_cnt,
@@ -583,7 +579,7 @@ static int _elf_disas64(Disas * disas)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() e_shnum=%u\n", __func__, ehdr->e_shnum);
 #endif
-	if((shdr = _do_elf64_shdr(disas->filename, disas->fp, ehdr)) == NULL)
+	if(_do_elf64_shdr(disas->filename, disas->fp, ehdr, &shdr) != 0)
 		return 1;
 	if(_do_elf64_addr(disas->filename, disas->fp, ehdr, &base) != 0
 			|| _do_elf64_strtab(disas, shdr, ehdr->e_shnum,
@@ -611,30 +607,31 @@ static int _elf_disas64(Disas * disas)
 	return 0;
 }
 
-static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
-		Elf64_Ehdr * ehdr)
+static int _do_elf64_shdr(char const * filename, FILE * fp, Elf64_Ehdr * ehdr,
+		Elf64_Shdr ** shdr)
 {
-	Elf64_Shdr * shdr;
-
-	if(ehdr->e_shentsize != sizeof(*shdr))
+	if(ehdr->e_shnum == 0)
+	{
+		*shdr = NULL;
+		return 0;
+	}
+	if(ehdr->e_shentsize != sizeof(**shdr))
 	{
 		fprintf(stderr, "disas: %s: %s\n", filename,
 				"Invalid section header size");
-		return NULL;
+		return -1;
 	}
 	if(fseek(fp, ehdr->e_shoff, SEEK_SET) != 0
-			|| (shdr = malloc(ehdr->e_shentsize * ehdr->e_shnum))
+			|| (*shdr = malloc(ehdr->e_shentsize * ehdr->e_shnum))
 			== NULL)
-	{
-		_disas_error(filename, 1);
-		return NULL;
-	}
+		return -_disas_error(filename, 1);
 	if(fread(shdr, sizeof(*shdr), ehdr->e_shnum, fp) != ehdr->e_shnum)
 	{
 		fprintf(stderr, "disas: %s: %s\n", filename, "Short read");
-		return NULL;
+		free(*shdr);
+		return -1;
 	}
-	return shdr;
+	return 0;
 }
 
 static int _do_elf64_addr(char const * filename, FILE * fp, Elf64_Ehdr * ehdr,
