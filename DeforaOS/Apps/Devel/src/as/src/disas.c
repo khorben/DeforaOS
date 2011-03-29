@@ -43,12 +43,32 @@ typedef struct _Disas
 	As * as;
 
 	/* ELF */
+#pragma pack(1)
 	union
 	{
 		unsigned char e_ident[EI_NIDENT];
 		Elf32_Ehdr ehdr32;
 		Elf64_Ehdr ehdr64;
 	} elf;
+#pragma pack()
+
+	/* PE */
+#pragma pack(1)
+	union
+	{
+		struct
+		{
+			char sig[2];
+			char _padding[0x3a];
+			uint32_t offset;
+		} msdos;
+		struct
+		{
+			char sig[4];
+			uint16_t machine;
+		} hdr;
+	} pe;
+#pragma pack()
 } Disas;
 
 /* FIXME use signatures from the format plug-ins directly */
@@ -69,12 +89,15 @@ static int _elf_disas64(Disas * disas);
 static int _flat_disas(Disas * disas);
 static int _java_detect(Disas * disas);
 static int _java_disas(Disas * disas);
+static int _pe_detect(Disas * disas);
+static int _pe_disas(Disas * disas);
 
 static DisasSignature _disas_signatures[] =
 {
-	{ "elf",	ELFMAG, SELFMAG,	_elf_detect,	NULL },
-	{ "flat",	NULL, 0,		NULL,		_flat_disas },
-	{ "java",	"\xca\xfe\xba\xbe", 4,	_java_detect,	_java_disas }
+	{ "elf",	ELFMAG,		SELFMAG,_elf_detect,	NULL },
+	{ "flat",	NULL,		0,	NULL,		_flat_disas },
+	{ "java",	"\xca\xfe\xba\xbe", 4,	_java_detect,	_java_disas },
+	{ "pe",		"MZ",		2,	_pe_detect,	_pe_disas }
 };
 #define _disas_signatures_cnt (sizeof(_disas_signatures) \
 		/ sizeof(*_disas_signatures))
@@ -191,12 +214,15 @@ static int _do_callback(Disas * disas, size_t i)
 {
 	int ret;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%lu)\n", __func__, i);
+#endif
 	if(_disas_signatures[i].detect != NULL
 			&& _disas_signatures[i].detect(disas) != 0)
 		return -1;
 	if((disas->as = as_new(disas->arch, _disas_signatures[i].format))
 			== NULL)
-		return -1;
+		return -error_print("disas");
 	printf("\n%s: %s-%s\n", disas->filename, _disas_signatures[i].format,
 			as_get_arch_name(disas->as));
 	ret = _disas_signatures[i].callback(disas);
@@ -714,6 +740,61 @@ static int _java_disas(Disas * disas)
 	if(fstat(fileno(disas->fp), &st) != 0)
 		return -_disas_error(disas->filename, 1);
 	return _do_flat(disas, 8, st.st_size - 8, 0);
+}
+
+
+/* pe_detect */
+static int _pe_detect(Disas * disas)
+{
+	struct
+	{
+		uint16_t machine;
+		char * arch;
+	} machines[] =
+	{
+		{ 0x014c,	"i386"	},
+		{ 0x0000,	NULL	}
+	};
+	size_t i;
+	char * p = NULL;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(fseek(disas->fp, 0, SEEK_SET) != 0)
+		return -1;
+	if(fread(&disas->pe.msdos, sizeof(disas->pe.msdos), 1, disas->fp) != 1)
+		return -1;
+	if(fseek(disas->fp, disas->pe.msdos.offset, SEEK_SET) != 0)
+		return -1;
+	if(fread(&disas->pe.hdr, sizeof(disas->pe.hdr), 1, disas->fp) != 1)
+		return -1;
+	if(memcmp(disas->pe.hdr.sig, "PE\0\0", 4) != 0)
+		return -1;
+	for(i = 0; machines[i].arch != NULL; i++)
+		if(disas->pe.hdr.machine == machines[i].machine)
+		{
+			p = strdup(machines[i].arch);
+			break;
+		}
+	if(p == NULL)
+	{
+		fprintf(stderr, "disas: %s: %s 0x%04x\n", disas->filename,
+				"Unsupported PE architecture",
+				disas->pe.hdr.machine);
+		return -1;
+	}
+	free(disas->arch);
+	disas->arch = p;
+	return 0;
+}
+
+
+/* pe_disas */
+static int _pe_disas(Disas * disas)
+{
+	/* FIXME implement */
+	return 0;
 }
 
 
