@@ -21,13 +21,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "As/as.h"
+#include "arch.h"
+#include "as.h"
+
+/* ELF */
 #include <elf.h>
 #ifndef EM_486
 # define EM_486 6
 #endif
-#include "As/as.h"
-#include "arch.h"
-#include "as.h"
+
+/* macros */
+#if defined(BYTE_ORDER) && defined(BIG_ENDIAN)
+# if BYTE_ORDER == BIG_ENDIAN
+#  define htol16(a) (((a) >> 8) & 0xff | ((a) & 0xff) << 8)
+#  define htol32(a) (((a) & 0xff) << 24 | ((a) & 0xff00) << 8 \
+		| ((a) >> 8) & 0xff00 | ((a) & 0xff) << 8)
+# else
+#  define htol16(a) (a)
+#  define htol32(a) (a)
+# endif
+#else
+# warning Unable to detect endian
+# define htol16(a) (a)
+# define htol32(a) (a)
+#endif
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
@@ -765,12 +783,14 @@ static int _pe_detect(Disas * disas)
 		return -1;
 	if(fread(&disas->pe.msdos, sizeof(disas->pe.msdos), 1, disas->fp) != 1)
 		return -1;
+	disas->pe.msdos.offset = htol32(disas->pe.msdos.offset);
 	if(fseek(disas->fp, disas->pe.msdos.offset, SEEK_SET) != 0)
 		return -1;
 	if(fread(&disas->pe.hdr, sizeof(disas->pe.hdr), 1, disas->fp) != 1)
 		return -1;
 	if(memcmp(disas->pe.hdr.sig, "PE\0\0", 4) != 0)
 		return -1;
+	disas->pe.hdr.machine = htol16(disas->pe.hdr.machine);
 	for(i = 0; machines[i].arch != NULL; i++)
 		if(disas->pe.hdr.machine == machines[i].machine)
 		{
