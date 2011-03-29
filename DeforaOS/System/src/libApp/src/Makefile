@@ -5,8 +5,10 @@ LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS= 
-CFLAGSF	= -W -Wall -fPIC
+CFLAGSF	= -W -Wall -fPIC `pkg-config --cflags libSystem`
 CFLAGS	= -g -O2 -pedantic
+LDFLAGSF= `pkg-config --libs libSystem`
+LDFLAGS	= 
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
@@ -20,7 +22,7 @@ all: $(TARGETS)
 
 libApp_OBJS = appclient.o appinterface.o appserver.o
 libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem` -lssl
+libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 libApp.a: $(libApp_OBJS)
 	$(AR) libApp.a $(libApp_OBJS)
