@@ -5,10 +5,14 @@
 
 #variables
 [ -z "$FDISK"		] && FDISK="fdisk"
+[ -z "$GZIP"		] && GZIP="gzip"
 [ -z "$IMAGE_BOOT"	] && IMAGE_BOOT="/usr/mdec/boot"
+[ -z "$IMAGE_KERNEL"	] && IMAGE_KERNEL="/netbsd.gz"
+[ -z "$IMAGE_SIZE"	] && IMAGE_SIZE="65536"
 [ -z "$INSTALLBOOT"	] && INSTALLBOOT="installboot"
 [ -z "$LDSO"		] && LDSO="/libexec/ld.elf_so"
 [ -z "$MBRLABEL"	] && MBRLABEL="mbrlabel"
+[ -z "$MDSETIMAGE"	] && MDSETIMAGE="mdsetimage"
 [ -z "$MKFS"		] && MKFS="newfs"
 [ -z "$MKISOFS"		] && MKISOFS="makefs -t cd9660"
 [ -z "$MOUNT"		] && MOUNT="mount"
@@ -25,7 +29,7 @@ _image_image_pre()
 	USAGE="Options for $IMAGE_TYPE on $TARGET:
   IMAGE_BOOT	Path to the bootloader
   IMAGE_FILE	Where to write the filesystem image
-  IMAGE_KERNEL	Path to the kernel
+  IMAGE_KERNEL	Path to the kernel (optional)
   IMAGE_SIZE	Size of the filesystem image in kilobytes
   IMAGE_TYPE	The type of image to generate
   LDSO		Path to the dynamic loader
@@ -33,8 +37,8 @@ _image_image_pre()
 
 	#sanity check
 	check "$USAGE" CHOWN DD DESTDIR DEVZERO FDISK IMAGE_BOOT IMAGE_FILE \
-		IMAGE_KERNEL IMAGE_SIZE INSTALL INSTALLBOOT LDSO LN MBRLABEL \
-		MKDIR MKFS MKNOD MOUNT MV UMOUNT VNCONFIG VND
+		IMAGE_SIZE INSTALL INSTALLBOOT LDSO LN MBRLABEL MKDIR MKFS \
+		MKNOD MOUNT MV UMOUNT VNCONFIG VND
 
 	$MKDIR "$DESTDIR"					|| exit 2
 	$SUDO $UMOUNT "$DESTDIR"
@@ -59,10 +63,28 @@ _image_image_post()
 	$SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
 	$SUDO $MKDIR "$DESTDIR/dev"				&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0a" b 0 0		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0b" b 0 1		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0c" b 0 2		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0d" b 0 3		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0e" b 0 4		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0f" b 0 5		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0g" b 0 6		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0h" b 0 7		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0a" c 3 0		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0b" c 3 1		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0c" c 3 2		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0d" c 3 3		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0e" c 3 4		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0f" c 3 5		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0g" c 3 6		&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0h" c 3 7		&&
+	$SUDO $MKDIR "$DESTDIR/etc"				&&
 	$SUDO $MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
 	$SUDO $INSTALL -m 555 "$LDSO" \
 			"$DESTDIR/libexec/ld.elf_so"		&&
 	$SUDO $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"&&
+	$SUDO $MKDIR "$DESTDIR/proc"				&&
 	$SUDO $MKDIR "$DESTDIR/sbin"				&&
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	&&
 	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
@@ -79,9 +101,11 @@ menu=Drop to boot prompt:prompt
 default=1
 timeout=10
 EOF
-	$SUDO $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
-	$SUDO $INSTALLBOOT -m "$MACHINE" -o "timeout=10" "/dev/r${VND}e" \
-			"/usr/mdec/bootxx_ffsv1"
+	if [ -n "$IMAGE_KERNEL" ]; then
+		$SUDO $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
+		$SUDO $INSTALLBOOT -m "$MACHINE" -o "timeout=10" \
+			"/dev/r${VND}e" "/usr/mdec/bootxx_ffsv1"
+	fi
 	RET=$?
 	$SUDO $UMOUNT "$DESTDIR"
 	$SUDO $VNCONFIG -u "$VND"
@@ -96,13 +120,15 @@ _image_iso_pre()
   IMAGE_BOOT	Path to the bootloader
   IMAGE_FILE	Where to write the filesystem image
   IMAGE_KERNEL	Path to the kernel
+  IMAGE_RAMDISK	Path to a ramdisk image (optional)
   IMAGE_TYPE	The type of image to generate
   LDSO		Path to the dynamic loader
   MKISOFS	Command used to format the filesystem"
 	MKISOFS_ARGS="-o bootimage=i386;bootxx,no-emul-boot,rockridge"
 
 	#sanity check
-	check "$USAGE" IMAGE_BOOT IMAGE_FILE IMAGE_KERNEL LDSO MKISOFS
+	check "$USAGE" IMAGE_BOOT IMAGE_FILE IMAGE_KERNEL LDSO MDSETIMAGE \
+		MKISOFS
 }
 
 _image_iso_post()
@@ -117,7 +143,22 @@ _image_iso_post()
 	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
 			"$DESTDIR/sbin/init"			|| exit 2
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	|| exit 2
+	if [ -n "$IMAGE_RAMDISK" ]; then
+		$MDSETIMAGE "$DESTDIR/netbsd" "$IMAGE_RAMDISK"	|| exit 2
+	fi
+	$GZIP -9 "$DESTDIR/netbsd"				|| exit 2
 	$INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"		|| exit 2
+	$SUDO sh -c "cat > $DESTDIR/boot.cfg" << EOF
+banner=Welcome to DeforaOS
+banner====================
+banner=
+banner=Please choose an option from the following menu:
+menu=Boot DeforaOS:vesa 640x480x8;boot netbsd
+menu=Boot DeforaOS (text mode):boot netbsd
+menu=Drop to boot prompt:prompt
+default=1
+timeout=10
+EOF
 	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
 	$INSTALLBOOT -m "$MACHINE" -o "console=pc" -e bootxx	|| exit 2
 	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
