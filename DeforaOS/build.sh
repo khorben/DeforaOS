@@ -54,6 +54,7 @@ DEVNULL="/dev/null"
 DEVZERO="/dev/zero"
 SUBDIRS="System/src/libc \
 	System/src/libSystem \
+	System/src/libApp \
 	System/src/Init \
 	System/src/Splasher \
 	System/src/VFS/src \
@@ -257,12 +258,11 @@ _bootstrap_posix()
 _bootstrap_system()
 {
 	RET=0
-	S="System/src/libParser \
-		System/src/Init \
+	S="System/src/Init \
 		System/src/VFS"
 
-	#bootstrap libSystem and libParser
-	SUBDIRS="System/src/libSystem System/src/libParser"
+	#bootstrap libSystem, libApp and libParser
+	SUBDIRS="System/src/libSystem System/src/libApp System/src/libParser"
 	target "clean" "install"				|| return 2
 	for i in $S; do
 		SUBDIRS="$i"
