@@ -125,7 +125,7 @@ target()
 #target_all
 target_all()
 {
-	target "install"
+	target_install
 }
 
 
@@ -338,7 +338,7 @@ target_install()
 				target "install"		|| return 2
 				;;
 			*)
-				LDFLAGS="$_LDFLAGS -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 				target "install"		|| return 2
 				;;
 		esac
