@@ -1,4 +1,4 @@
-SUBDIRS	= libSystem libParser libc Loader Init Splasher VFS VPN
+SUBDIRS	= libSystem libApp libParser libc Loader Init Splasher VFS VPN
 
 
 all: subdirs
