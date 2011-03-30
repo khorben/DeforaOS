@@ -7,4 +7,4 @@ Name: libSystem
 Description: DeforaOS System essential library
 Version: VERSION
 Cflags: -I${includedir}
-Libs: -Wl,-R${libdir} -L${libdir} -lSystem
+Libs: -L${libdir} -Wl,-rpath-link,${libdir} -Wl,-rpath,${libdir} -lSystem
