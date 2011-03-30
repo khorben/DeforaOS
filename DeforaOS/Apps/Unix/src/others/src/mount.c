@@ -437,9 +437,17 @@ static int _mount_do(Prefs * prefs, char const * special, char const * node)
 	int flags = 0;
 	size_t i;
 
+#ifdef MF_FORCE
+	if(prefs->flags & PREFS_f)
+		flags |= MF_FORCE;
+#endif
 #ifdef MNT_FORCE
 	if(prefs->flags & PREFS_f)
 		flags |= MNT_FORCE;
+#endif
+#ifdef MF_REMOUNT
+	if(prefs->flags & PREFS_u)
+		flags |= MF_REMOUNT;
 #endif
 #ifdef MNT_UPDATE
 	if(prefs->flags & PREFS_u)
