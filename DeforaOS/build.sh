@@ -420,7 +420,7 @@ fi
 
 #initialize variables
 [ -z "$CC" ] && CC="cc"
-[ -z "$CONFIGURE" ] && CONFIGURE="configure -O DeforaOS"
+[ -z "$CONFIGURE" ] && CONFIGURE="configure"
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
