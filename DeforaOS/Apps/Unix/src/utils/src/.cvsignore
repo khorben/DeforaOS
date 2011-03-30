@@ -24,6 +24,7 @@ logname
 ls
 mkdir
 mkfifo
+more
 mv
 nice
 pr
