@@ -22,7 +22,7 @@ all: $(TARGETS)
 
 libApp_OBJS = appclient.o appinterface.o appserver.o
 libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  
 
 libApp.a: $(libApp_OBJS)
 	$(AR) libApp.a $(libApp_OBJS)
