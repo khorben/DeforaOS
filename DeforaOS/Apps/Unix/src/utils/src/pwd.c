@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 
 
 /* types */
@@ -34,8 +35,8 @@ static int _pwd_error(char const * message, int ret);
 static int _pwd(pwd_flag pf)
 {
 	char * pwd;
-#ifdef MAXPATHLEN
-	char buf[MAXPATHLEN];
+#ifdef PATH_MAX
+	char buf[PATH_MAX];
 #else
 	char buf[1024];
 #endif
