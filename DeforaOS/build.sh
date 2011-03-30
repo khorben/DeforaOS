@@ -30,6 +30,7 @@ IMAGE_FILE=
 IMAGE_TYPE=
 MACHINE=
 PKG_CONFIG_LIBDIR=
+PKG_CONFIG_PATH=
 PKG_CONFIG_SYSROOT_DIR=
 PREFIX=
 SYSTEM=
@@ -322,18 +323,18 @@ target_install()
 		case "$i" in
 			System/src/libApp)
 				SUBDIRS="System/src/libApp/src"
-				LDFLAGS="$_LDFLAGS -lc $L"
+				LDFLAGS="$L -lc"
 				target "install"		|| return 2
-				LDFLAGS="$_LDFLAGS -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 				SUBDIRS="System/src/libApp"
 				target "install"		|| return 2
 				;;
 			System/src/libc)
-				LDFLAGS="$_LDFLAGS $L"
+				LDFLAGS="$L"
 				target "install"		|| return 2
 				;;
 			System/src/libSystem)
-				LDFLAGS="$_LDFLAGS -lc $L"
+				LDFLAGS="$L -lc"
 				target "install"		|| return 2
 				;;
 			*)
