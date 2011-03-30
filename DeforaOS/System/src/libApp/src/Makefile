@@ -3,11 +3,10 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF= -I ../include -I $(PREFIX)/include
-CPPFLAGS= 
+CPPFLAGSF= -I ../include
+CPPFLAGS= -I $(PREFIX)/include
 CFLAGSF	= -W -fPIC `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs libSystem`
 LDFLAGS	= 
 AR	= ar -rc
 RANLIB	= ranlib
@@ -22,7 +21,7 @@ all: $(TARGETS)
 
 libApp_OBJS = appclient.o appinterface.o appserver.o
 libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  
+libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`  
 
 libApp.a: $(libApp_OBJS)
 	$(AR) libApp.a $(libApp_OBJS)
