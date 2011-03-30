@@ -148,9 +148,8 @@ target_bootstrap()
 	echo '================================================================='
 	echo
 	read IGNORE						|| return 0
-	_bootstrap_configure install				|| return 2
 	#configure, build and install essential libraries and tools
-	CONFIGURE="$PREFIX/bin/configure -v"
+	CONFIGURE="./Apps/Devel/src/configure/src/configure -v -p $PREFIX"
 	FAILED=
 	_bootstrap_system			|| FAILED="$FAILED System"
 	_bootstrap_network			|| FAILED="$FAILED Network"
