@@ -58,6 +58,7 @@ DEVZERO="/dev/zero"
 SUBDIRS="System/src/libc \
 	System/src/libSystem \
 	System/src/libApp \
+	System/src/Loader \
 	System/src/Init \
 	System/src/Splasher \
 	System/src/VFS/src \
