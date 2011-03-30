@@ -29,6 +29,8 @@ HOST=
 IMAGE_FILE=
 IMAGE_TYPE=
 MACHINE=
+PKG_CONFIG_LIBDIR=
+PKG_CONFIG_SYSROOT_DIR=
 PREFIX=
 SYSTEM=
 TARGET=
@@ -301,36 +303,7 @@ _image_pre()
 
 _image_targets()
 {
-	#global settings
-	CPPFLAGS="$CPPFLAGS -nostdinc -isystem $DESTDIR$PREFIX/include"
-	CFLAGS="$CFLAGS -Wall -ffreestanding -g"
-	_LDFLAGS="$LDFLAGS -nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
-	PKG_CONFIG_LIBDIR="$DESTDIR$PREFIX/lib/pkgconfig"
-	PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
-	export PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
-
-	S="$SUBDIRS"
-	L="$LDFLAGS"
-	for i in $SUBDIRS; do
-		SUBDIRS="$i"
-		case "$i" in
-			System/src/libc)
-				LDFLAGS="$_LDFLAGS $L"
-				target install			|| return 2
-				;;
-			System/src/libSystem)
-				LDFLAGS="$_LDFLAGS -lc $L"
-				SUBDIRS="$i/src $i/include $i/data"
-				target install			|| return 2
-				;;
-			*)
-				LDFLAGS="$_LDFLAGS -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
-				target install			|| return 2
-				;;
-		esac
-	done
-	SUBDIRS="$S"
-	LDFLAGS="$L"
+	target_install
 }
 
 _image_post()
@@ -342,7 +315,35 @@ _image_post()
 #target_install
 target_install()
 {
-	target "install"
+	S="$SUBDIRS"
+	L="$LDFLAGS"
+	for i in $SUBDIRS; do
+		SUBDIRS="$i"
+		case "$i" in
+			System/src/libApp)
+				SUBDIRS="System/src/libApp/src"
+				LDFLAGS="$_LDFLAGS -lc $L"
+				target "install"		|| return 2
+				LDFLAGS="$_LDFLAGS -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				SUBDIRS="System/src/libApp"
+				target "install"		|| return 2
+				;;
+			System/src/libc)
+				LDFLAGS="$_LDFLAGS $L"
+				target "install"		|| return 2
+				;;
+			System/src/libSystem)
+				LDFLAGS="$_LDFLAGS -lc $L"
+				target "install"		|| return 2
+				;;
+			*)
+				LDFLAGS="$_LDFLAGS -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o $L"
+				target "install"		|| return 2
+				;;
+		esac
+	done
+	SUBDIRS="$S"
+	LDFLAGS="$L"
 }
 
 
@@ -420,13 +421,24 @@ fi
 
 #initialize variables
 [ -z "$CC" ] && CC="cc"
-[ -z "$CONFIGURE" ] && CONFIGURE="configure -O DeforaOS"
+[ -z "$CFLAGS" ] && CFLAGS="-Wall -g -O2 -ffreestanding"
+if [ -z "$CONFIGURE" ]; then
+	if [ -z "$PREFIX" ]; then
+		CONFIGURE="configure -O DeforaOS"
+	else
+		CONFIGURE="configure -O DeforaOS -p $PREFIX"
+	fi
+fi
+[ -z "$PREFIX" ] && PREFIX="/usr/local"
+[ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include -D __DeforaOS__"
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
-[ -z "$PREFIX" ] && PREFIX="/usr/local"
-[ -z "$CC" ] && CC="cc"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
+[ -z "$PKG_CONFIG_LIBDIR" ] && PKG_CONFIG_LIBDIR="$DESTDIR$PREFIX/lib/pkgconfig"
+[ -z "$PKG_CONFIG_SYSROOT_DIR" ] && PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
+export PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
 
 #run targets
 if [ $# -lt 1 ]; then
