@@ -20,6 +20,7 @@
 # include <sys/param.h>
 #endif
 #include <sys/mount.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -81,13 +82,42 @@ static int _umount_all(Prefs * prefs)
 			ret |= _umount_do(prefs, f[i].f_mntonname);
 	free(f);
 	return ret;
-#else /* FIXME workaround when getvfsstat() is missing */
+#else
 # include <errno.h>
 static int _umount_all(Prefs * prefs)
 {
-	errno = ENOSYS;
-	perror("umount");
-	return 1;
+	int ret = 0;
+	char const path[] = "/proc/mounts";
+	FILE * fp;
+	char buf[1024];
+	size_t i;
+	size_t j;
+	int c;
+
+	if((fp = fopen(path, "r")) == NULL)
+		return -_umount_error(path, 1);
+	while(fgets(buf, sizeof(buf), fp) != NULL)
+	{
+		/* skip device */
+		for(i = 0; buf[i] != '\0' && !isspace((c = buf[i])); i++);
+		for(; isspace((c = buf[i])); i++);
+		/* determine mountpoint */
+		for(j = i; buf[j] != '\0' && !isspace((c = buf[j])); j++);
+		if(buf[j] != '\0')
+		{
+			buf[j] = '\0';
+			ret |= _umount_do(prefs, &buf[i]);
+		}
+		for(; buf[j] != '\0' && buf[j] != '\n'; j++);
+		if(buf[j] == '\n')
+			continue;
+		/* flush longer lines */
+		for(c = fgetc(fp); c != EOF && c != '\n'; c = fgetc(fp));
+	}
+	if(ferror(fp))
+		ret |= -_umount_error(path, 1);
+	fclose(fp);
+	return ret;
 #endif
 }
 
