@@ -468,6 +468,21 @@
 #undef _prefs_parse
 #undef _printf
 
+/* ps.c */
+#define main _ps_main
+#define _usage _ps_usage
+#define _Prefs _ps_Prefs
+#define Prefs ps_Prefs
+#define _prefs_parse _ps_prefs_parse
+#define _ps __ps
+#include "../src/ps.c"
+#undef main
+#undef _usage
+#undef _Prefs
+#undef Prefs
+#undef _prefs_parse
+#undef _ps
+
 /* pwd.c */
 #define main _pwd_main
 #define _usage _pwd_usage
@@ -757,6 +772,7 @@ Call calls[] =
 	{ "nice",	_nice_main	},
 	{ "pr",	_pr_main	},
 	{ "printf",	_printf_main	},
+	{ "ps",	_ps_main	},
 	{ "pwd",	_pwd_main	},
 	{ "renice",	_renice_main	},
 	{ "rm",	_rm_main	},
