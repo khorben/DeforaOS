@@ -103,9 +103,9 @@ static int _umount_all(Prefs * prefs)
 		for(; isspace((c = buf[i])); i++);
 		/* determine mountpoint */
 		for(j = i; buf[j] != '\0' && !isspace((c = buf[j])); j++);
-		if(buf[j] != '\0')
+		if(j > i && buf[j] != '\0' && strncmp(&buf[i], "/", j - i) != 0)
 		{
-			buf[j] = '\0';
+			buf[j++] = '\0';
 			ret |= _umount_do(prefs, &buf[i]);
 		}
 		for(; buf[j] != '\0' && buf[j] != '\n'; j++);
