@@ -31,7 +31,7 @@ pdu: $(pdu_OBJS)
 
 smscrypt_OBJS = smscrypt.o
 smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
-smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0`
+smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0` -lssl
 
 smscrypt: $(smscrypt_OBJS)
 	$(CC) -o smscrypt $(smscrypt_OBJS) $(smscrypt_LDFLAGS)

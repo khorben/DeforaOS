@@ -80,7 +80,7 @@ profiles.so: $(profiles_OBJS)
 
 smscrypt_OBJS = smscrypt.o
 smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lssl
 
 smscrypt.so: $(smscrypt_OBJS)
 	$(LD) -o smscrypt.so $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
