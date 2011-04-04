@@ -41,6 +41,7 @@ typedef struct _Prefs
 	char const * password;
 	size_t min;
 	size_t max;
+	int enumerate;
 	int encryption;
 	char const * salt;
 	int iterations;
@@ -88,11 +89,20 @@ static int _usage(void);
 /* functions */
 /* makepasswd */
 static int _makepasswd_do(Prefs * prefs);
+static int _makepasswd_enumerate(Prefs * prefs);
+static void _enumerate_apply(Prefs * prefs, unsigned char const * idx,
+		unsigned char * buf, size_t size);
 
 static int _makepasswd(Prefs * prefs)
 {
 	size_t i;
+	const char characters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz0123456789`~!@#$%^&*()-_=+";
 
+	if(prefs->characters == NULL || strlen(prefs->characters) == 0)
+		prefs->characters = characters;
+	if(prefs->enumerate != 0)
+		return _makepasswd_enumerate(prefs);
 	if(_makepasswd_seed() != 0)
 		return -1;
 	for(i = 0; i < prefs->count; i++)
@@ -141,6 +151,54 @@ static int _makepasswd_do(Prefs * prefs)
 		memset(password, 0, strlen(password));
 	free(password);
 	return ret;
+}
+
+static int _makepasswd_enumerate(Prefs * prefs)
+{
+	size_t size = prefs->max + 1;
+	size_t csize = strlen(prefs->characters);
+	size_t i;
+	size_t j;
+	unsigned char * idx;
+	unsigned char * buf = NULL;
+
+	if((idx = malloc(size)) == NULL
+			|| (buf = malloc(size)) == NULL)
+	{
+		free(idx);
+		free(buf);
+		return -_error("malloc", 1);
+	}
+	memset(idx, 0, size);
+	prefs->password = (char *)buf;
+	for(i = prefs->min - 1; i < prefs->max;)
+	{
+		_enumerate_apply(prefs, idx, buf, i + 1);
+		_makepasswd_do(prefs);
+		if(++idx[i] == csize)
+		{
+			idx[i] = 0;
+			for(j = i; j > 0; j--)
+				if(++idx[j - 1] < csize)
+					break;
+				else
+					idx[j - 1] = 0;
+			if(j == 0)
+				i++;
+		}
+	}
+	free(idx);
+	free(buf);
+	return 0;
+}
+
+static void _enumerate_apply(Prefs * prefs, unsigned char const * idx,
+		unsigned char * buf, size_t size)
+{
+	size_t i;
+
+	for(i = 0; i < size; i++)
+		buf[i] = prefs->characters[idx[i]];
 }
 
 
@@ -528,8 +586,7 @@ static char * _makepasswd_password(char const * characters, size_t min,
 	size_t i;
 
 	if(characters == NULL)
-		characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			"abcdefghijklmnopqrstuvwxyz0123456789`~!@#$%^&*()-_=+";
+		return NULL;
 	if((clen = strlen(characters)) == 0)
 	{
 		errno = EINVAL;
@@ -636,6 +693,7 @@ static int _usage(void)
 {
 	fputs("Usage: makepasswd -ceilMnps\n"
 "  -c	String of allowed characters (A-Za-z0-9`~!@#$%^&*()-_=+)\n"
+"  -E	Enumerate all possible values\n"
 "  -e	Encryption algorithm (none,base64,blowfish,des,md5,sha1,sha256,shmd5)\n"
 "  -i	Number of iterations in encryption algorithm\n"
 "  -l	Password length\n"
@@ -659,11 +717,14 @@ int main(int argc, char * argv[])
 	prefs.count = 1;
 	prefs.max = 8;
 	prefs.min = 6;
-	while((o = getopt(argc, argv, "c:e:i:l:M:m:n:p:s:")) != -1)
+	while((o = getopt(argc, argv, "c:Ee:i:l:M:m:n:p:s:")) != -1)
 		switch(o)
 		{
 			case 'c':
 				prefs.characters = optarg;
+				break;
+			case 'E':
+				prefs.enumerate = 1;
 				break;
 			case 'e':
 				prefs.encryption = _parse_enum(
