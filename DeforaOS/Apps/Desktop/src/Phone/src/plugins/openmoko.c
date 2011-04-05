@@ -362,10 +362,10 @@ static int _openmoko_mixer_open(PhonePlugin * plugin)
 	openmoko->mixer_elem = NULL;
 	if((audio_device = plugin->helper->config_get(plugin->helper->phone,
 					"openmoko", "audio_device")) == NULL)
-		audio_device = "neo1973-gta02";
+		audio_device = "hw:0";
 	if((audio_control = plugin->helper->config_get(plugin->helper->phone,
 					"openmoko", "audio_control")) == NULL)
-		audio_control = "Speaker";
+		audio_control = "PCM";
 	if(snd_mixer_open(&openmoko->mixer, 0) != 0)
 	{
 		openmoko->mixer = NULL;
