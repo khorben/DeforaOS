@@ -12,12 +12,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - add a pulseaudio version */
 
 
 
 #include <sys/ioctl.h>
 #if defined(__NetBSD__) || defined(__sun__)
 # include <sys/audioio.h>
+#elif defined(__linux__)
+# include <alsa/asoundlib.h>
 #else
 # include <sys/soundcard.h>
 #endif
@@ -59,11 +63,16 @@ PanelApplet applet =
 typedef struct _Volume
 {
 	char const * device;
-#ifdef AUDIO_MIXER_DEVINFO
+	char const * control;
+#if defined(AUDIO_MIXER_DEVINFO) /* audioio */
 	int fd;
 	int mix;
 	int outputs;
-#else
+#elif defined(SND_LIB_MAJOR) /* Alsa */
+	snd_mixer_t * mixer;
+	snd_mixer_elem_t * mixer_elem;
+	long mixer_elem_max;
+#else /* OSS */
 	int fd;
 #endif
 	guint source;
@@ -129,9 +138,13 @@ static void _volume_destroy(PanelApplet * applet)
 static Volume * _volume_new(PanelApplet * applet)
 {
 	Volume * volume;
-#ifdef AUDIO_MIXER_DEVINFO
+#if defined(AUDIO_MIXER_DEVINFO)
 	int i;
 	mixer_devinfo_t md;
+#elif defined(SND_LIB_MAJOR)
+	int err;
+	snd_mixer_elem_t * elem = NULL;
+	long min;
 #endif
 
 	if((volume = malloc(sizeof(*volume))) == NULL)
@@ -139,11 +152,14 @@ static Volume * _volume_new(PanelApplet * applet)
 		applet->helper->error(applet->helper->panel, "malloc", 0);
 		return NULL;
 	}
-	if((volume->device = applet->helper->config_get(applet->helper->panel,
-					"volume", "device")) == NULL)
-		volume->device = "/dev/mixer";
+	volume->device = applet->helper->config_get(applet->helper->panel,
+					"volume", "device");
+	volume->control = applet->helper->config_get(applet->helper->panel,
+			"volume", "control");
 	volume->source = 0;
-#ifdef AUDIO_MIXER_DEVINFO
+#if defined(AUDIO_MIXER_DEVINFO)
+	if(volume->device == NULL)
+		volume->device = "/dev/mixer";
 	volume->mix = -1;
 	volume->outputs = -1;
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
@@ -164,7 +180,35 @@ static Volume * _volume_new(PanelApplet * applet)
 			volume->mix = i;
 	}
 	volume->source = g_timeout_add(500, _on_volume_timeout, applet);
+#elif defined(SND_LIB_MAJOR)
+	if(volume->device == NULL)
+		volume->device = "hw:0";
+	if(volume->control == NULL)
+		volume->control = "Master";
+	if((err = snd_mixer_open(&volume->mixer, 0)) != 0
+			|| (err = snd_mixer_attach(volume->mixer,
+				       	volume->device)) != 0
+			|| (err = snd_mixer_selem_register(volume->mixer, NULL,
+				       	NULL)) != 0
+			|| (err = snd_mixer_load(volume->mixer)) != 0)
+		fprintf(stderr, "%s: %s: %s\n", "Panel", volume->device,
+			       	snd_strerror(err));
+	else
+		for(elem = snd_mixer_first_elem(volume->mixer); elem != NULL;
+				elem = snd_mixer_elem_next(elem))
+			if(strcmp(snd_mixer_selem_get_name(elem),
+						volume->control) == 0)
+				break;
+	if((volume->mixer_elem = elem) != NULL
+			&& snd_mixer_selem_get_playback_volume_range(
+				volume->mixer_elem, &min,
+			       	&volume->mixer_elem_max) == 0)
+		volume->source = g_timeout_add(500, _on_volume_timeout, applet);
+	else
+		volume->mixer_elem = NULL;
 #else
+	if(volume->device == NULL)
+		volume->device = "/dev/mixer";
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
 		applet->helper->error(applet->helper->panel, volume->device, 0);
 	else
@@ -181,9 +225,12 @@ static void _volume_delete(PanelApplet * applet)
 
 	if(volume->source != 0)
 		g_source_remove(volume->source);
-#ifdef AUDIO_MIXER_DEVINFO
+#if defined(AUDIO_MIXER_DEVINFO)
 	if(volume->fd >= 0 && close(volume->fd) != 0)
 		applet->helper->error(applet->helper->panel, volume->device, 0);
+#elif defined(SND_LIB_MAJOR)
+	if(volume->mixer != NULL)
+		snd_mixer_close(volume->mixer);
 #else /* XXX equivalent for now */
 	if(volume->fd >= 0 && close(volume->fd) != 0)
 		applet->helper->error(applet->helper->panel, volume->device, 0);
@@ -198,7 +245,7 @@ static gdouble _volume_get(PanelApplet * applet)
 {
 	Volume * volume = applet->priv;
 	gdouble ret = -1.0;
-#ifdef AUDIO_MIXER_DEVINFO
+#if defined(AUDIO_MIXER_DEVINFO)
 	mixer_devinfo_t md;
 	mixer_ctrl_t mc;
 	int i;
@@ -229,6 +276,16 @@ static gdouble _volume_get(PanelApplet * applet)
 			ret = mc.un.value.level[0] / 255.0;
 		break;
 	}
+#elif defined(SND_LIB_MAJOR)
+	long value;
+
+	if(volume->mixer_elem == NULL)
+		return ret;
+	if(snd_mixer_selem_get_playback_volume(volume->mixer_elem,
+				SND_MIXER_SCHN_FRONT_LEFT, &value) != 0)
+		return ret;
+	ret = value;
+	ret /= volume->mixer_elem_max;
 #else
 	int value;
 
@@ -255,7 +312,7 @@ int _volume_set(PanelApplet * applet, gdouble value)
 {
 	Volume * volume = applet->priv;
 	int ret = 0;
-#ifdef AUDIO_MIXER_DEVINFO
+#if defined(AUDIO_MIXER_DEVINFO)
 	mixer_devinfo_t md;
 	mixer_ctrl_t mc;
 	int i;
@@ -273,6 +330,7 @@ int _volume_set(PanelApplet * applet, gdouble value)
 		md.index = i;
 		if(ioctl(volume->fd, AUDIO_MIXER_DEVINFO, &md) < 0)
 			break;
+		/* FIXME use volume->control */
 		if(_volume_match(applet, &md) != 1)
 			continue;
 		mc.dev = i;
@@ -286,6 +344,12 @@ int _volume_set(PanelApplet * applet, gdouble value)
 					"AUDIO_MIXER_WRITE", 0);
 		break;
 	}
+#elif defined(SND_LIB_MAJOR)
+	long v = value * volume->mixer_elem_max;
+
+	if(volume->mixer_elem == NULL)
+		return 0;
+	snd_mixer_selem_set_playback_volume_all(volume->mixer_elem, v);
 #else
 	int v = value * 100;
 
@@ -303,7 +367,7 @@ int _volume_set(PanelApplet * applet, gdouble value)
 }
 
 
-#ifdef AUDIO_MIXER_DEVINFO
+#if defined(AUDIO_MIXER_DEVINFO)
 /* volume_match */
 static int _volume_match(PanelApplet * applet, mixer_devinfo_t * md)
 {

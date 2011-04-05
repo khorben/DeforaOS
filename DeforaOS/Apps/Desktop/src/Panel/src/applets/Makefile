@@ -152,8 +152,8 @@ usb.so: $(usb_OBJS)
 	$(LD) -o usb.so $(usb_OBJS) $(usb_LDFLAGS)
 
 volume_OBJS = volume.o
-volume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+volume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) `pkg-config --cflags alsa` $(CFLAGSF) $(CFLAGS)
+volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs alsa`
 
 volume.so: $(volume_OBJS)
 	$(LD) -o volume.so $(volume_OBJS) $(volume_LDFLAGS)
