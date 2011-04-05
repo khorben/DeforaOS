@@ -753,6 +753,10 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->gprs_attachment.attached = va_arg(ap,
 					unsigned int);
 			break;
+		case GSM_EVENT_TYPE_GPRS_CONNECTION:
+			event->gprs_connection.connected = va_arg(ap,
+					unsigned int);
+			break;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			event->incoming_call.calltype = va_arg(ap,
 					unsigned int);
@@ -1018,6 +1022,7 @@ int gsm_queue_command(GSM * gsm, GSMCommand * gsmc)
 	if(gsm->mode == GSM_MODE_DATA && (q = gsm_command_get_command(gsmc))
 			&& strcmp(q, "ATH") == 0) /* XXX */
 	{
+		gsm_event(gsm, GSM_EVENT_TYPE_GPRS_CONNECTION, 0);
 		gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 0);
 		gsm_reset(gsm, 0, NULL);
 		return 0;
@@ -2052,7 +2057,9 @@ static int _gsm_trigger_connect(GSM * gsm, char const * result,
 	g_io_channel_set_encoding(gsm->wr_ppp_channel, NULL, &error);
 	g_io_channel_set_buffered(gsm->wr_ppp_channel, FALSE);
 	gsm->wr_ppp_source = 0;
-	return gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 1);
+	gsm_event(gsm, GSM_EVENT_TYPE_GPRS_ATTACHMENT, 1);
+	gsm_event(gsm, GSM_EVENT_TYPE_GPRS_CONNECTION, 1);
+	return 0;
 }
 
 
@@ -2577,6 +2584,7 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 		case G_IO_STATUS_EOF:
 		default:
 			gsm->rd_ppp_source = 0;
+			gsm_event(gsm, GSM_EVENT_TYPE_GPRS_CONNECTION, 0);
 			gsm_reset(gsm, 0, NULL);
 			return FALSE;
 	}
@@ -2686,6 +2694,7 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		case G_IO_STATUS_EOF:
 		default:
 			gsm->wr_ppp_source = 0;
+			gsm_event(gsm, GSM_EVENT_TYPE_GPRS_CONNECTION, 0);
 			gsm_reset(gsm, 0, NULL);
 			return FALSE;
 	}

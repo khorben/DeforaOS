@@ -825,6 +825,10 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 				active = va_arg(ap, gboolean);
 				ret |= plugin->event(plugin, event, active);
 				break;
+			case PHONE_EVENT_GPRS_CONNECTION:
+				active = va_arg(ap, gboolean);
+				ret |= plugin->event(plugin, event, active);
+				break;
 			case PHONE_EVENT_SET_OPERATOR:
 				operator = va_arg(ap, char const *);
 				ret |= plugin->event(plugin, event, operator);
@@ -3235,6 +3239,11 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_GPRS_ATTACHMENT:
 			phone_event(phone, PHONE_EVENT_GPRS_ATTACHMENT,
 					event->gprs_attachment.attached ? TRUE
+					: FALSE);
+			return 0;
+		case GSM_EVENT_TYPE_GPRS_CONNECTION:
+			phone_event(phone, PHONE_EVENT_GPRS_CONNECTION,
+					event->gprs_connection.connected ? TRUE
 					: FALSE);
 			return 0;
 		case GSM_EVENT_TYPE_GPRS_REGISTRATION:

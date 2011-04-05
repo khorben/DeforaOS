@@ -55,6 +55,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_CONTACT_LIST,
 	GSM_EVENT_TYPE_FUNCTIONAL,
 	GSM_EVENT_TYPE_GPRS_ATTACHMENT,
+	GSM_EVENT_TYPE_GPRS_CONNECTION,
 	GSM_EVENT_TYPE_GPRS_REGISTRATION,
 	GSM_EVENT_TYPE_INCOMING_CALL,
 	GSM_EVENT_TYPE_INCOMING_MESSAGE,
@@ -217,6 +218,13 @@ typedef union _GSMEvent
 		GSMEventType type;
 		unsigned int attached;
 	} gprs_attachment;
+
+	/* GSM_EVENT_TYPE_GPRS_CONNECTION */
+	struct
+	{
+		GSMEventType type;
+		unsigned int connected;
+	} gprs_connection;
 
 	/* GSM_EVENT_TYPE_INCOMING_CALL */
 	struct
