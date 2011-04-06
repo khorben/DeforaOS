@@ -24,10 +24,10 @@ locker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 locker: $(locker_OBJS)
 	$(CC) -o locker $(locker_OBJS) $(locker_LDFLAGS)
 
-locker.o: locker.c
+locker.o: locker.c locker.h
 	$(CC) $(locker_CFLAGS) -c locker.c
 
-main.o: main.c
+main.o: main.c locker.h
 	$(CC) $(locker_CFLAGS) -c main.c
 
 clean:
