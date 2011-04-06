@@ -22,6 +22,8 @@ static char const _license[] =
 #ifdef __NetBSD__
 # include <sys/param.h>
 # include <sys/sysctl.h>
+#else
+# include <fcntl.h>
 #endif
 #include <unistd.h>
 #include <stdlib.h>
