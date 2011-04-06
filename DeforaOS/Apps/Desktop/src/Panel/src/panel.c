@@ -693,10 +693,12 @@ static gboolean _panel_can_suspend(void)
 #else
 	struct stat st;
 
+	if(access("/sys/power/state", W_OK) == 0)
+		return TRUE;
 	if(lstat("/proc/apm", &st) == 0)
 		return TRUE;
 #endif
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -988,6 +990,7 @@ static int _panel_helper_suspend(Panel * panel)
 #ifdef __NetBSD__
 	int sleep_state = 3;
 #else
+	int fd;
 	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
 		NULL };
 	GError * error = NULL;
@@ -998,6 +1001,12 @@ static int _panel_helper_suspend(Panel * panel)
 				sizeof(sleep_state)) != 0)
 		return panel_error(panel, "sysctl", 1);
 #else
+	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
+	{
+		write(fd, "mem\n", 4);
+		close(fd);
+		return 0;
+	}
 	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
 				NULL, NULL, &error) != TRUE)
 		return panel_error(panel, error->message, 1);
