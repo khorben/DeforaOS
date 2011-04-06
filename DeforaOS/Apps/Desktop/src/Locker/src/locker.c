@@ -224,7 +224,11 @@ static void _locker_lock(Locker * locker)
 #endif
 	if(locker->source != 0)
 		g_source_remove(locker->source);
-	locker->source = 0;
+	if(locker->suspend != 0)
+		locker->source = g_timeout_add(10000, _activate_on_timeout,
+				locker);
+	else
+		locker->source = 0;
 	if(locker->windows != NULL)
 	{
 		gtk_widget_hide(locker->unlock);
