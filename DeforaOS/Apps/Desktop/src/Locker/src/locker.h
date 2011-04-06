@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ typedef struct _Locker Locker;
 
 
 /* functions */
-Locker * locker_new(void);
+Locker * locker_new(int suspend);
 void locker_delete(Locker * locker);
 
 #endif /* !LOCKER_LOCKER_H */

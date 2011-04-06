@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,8 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: locker\n", stderr);
+	fputs("Usage: locker [-s]\n"
+"  -s	Suspend automatically when locked\n", stderr);
 	return 1;
 }
 
@@ -33,16 +34,20 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	int suspend = 0;
 	Locker * locker;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "s")) != -1)
 		switch(o)
 		{
+			case 's':
+				suspend = 1;
+				break;
 			default:
 				return _usage();
 		}
-	if((locker = locker_new()) == NULL)
+	if((locker = locker_new(suspend)) == NULL)
 		return 2;
 	gtk_main();
 	locker_delete(locker);

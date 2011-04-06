@@ -15,6 +15,12 @@
 
 
 
+#ifdef __NetBSD__
+# include <sys/param.h>
+# include <sys/sysctl.h>
+#else
+# include <fcntl.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +40,10 @@
 /* types */
 struct _Locker
 {
+	/* preferences */
+	int suspend;
+
+	/* internal */
 	GdkDisplay * display;
 	int screen;
 	int event;
@@ -47,6 +57,7 @@ struct _Locker
 
 /* prototypes */
 static void _locker_activate(Locker * locker);
+static int _locker_error(Locker * locker, char const * message, int ret);
 static void _locker_lock(Locker * locker);
 static void _locker_unlock(Locker * locker);
 static void _locker_unlock_dialog(Locker * locker);
@@ -58,7 +69,7 @@ static void _locker_unlock_dialog(Locker * locker);
 static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
-Locker * locker_new(void)
+Locker * locker_new(int suspend)
 {
 	Locker * locker;
 	GdkScreen * screen;
@@ -67,6 +78,7 @@ Locker * locker_new(void)
 
 	if((locker = object_new(sizeof(*locker))) == NULL)
 		return NULL;
+	locker->suspend = (suspend != 0) ? 1 : 0;
 	screen = gdk_screen_get_default();
 	locker->display = gdk_screen_get_display(screen);
 	locker->screen = gdk_x11_get_default_screen();
@@ -134,12 +146,59 @@ void locker_delete(Locker * locker)
 /* functions */
 /* useful */
 /* locker_activate */
+static gboolean _activate_on_timeout(gpointer data);
+
 static void _locker_activate(Locker * locker)
 {
 	if(locker->source != 0)
 		g_source_remove(locker->source);
-	locker->source = 0;
 	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
+	if(locker->suspend != 0)
+		locker->source = g_timeout_add(10000, _activate_on_timeout,
+				locker);
+	else
+		locker->source = 0;
+}
+
+static gboolean _activate_on_timeout(gpointer data)
+{
+	Locker * locker = data;
+	/* XXX this code is duplicated from DeforaOS' Desktop Panel */
+#ifdef __NetBSD__
+	int sleep_state = 3;
+#else
+	int fd;
+	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
+		NULL };
+	GError * error = NULL;
+#endif
+
+	locker->source = 0;
+#ifdef __NetBSD__
+	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
+				sizeof(sleep_state)) != 0)
+		_locker_error(NULL, "sysctl", 1);
+#else
+	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
+	{
+		write(fd, "mem\n", 4);
+		close(fd);
+	}
+	else if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
+				NULL, NULL, NULL, &error) != TRUE)
+		_locker_error(NULL, error->message, 1);
+#endif
+	return FALSE;
+}
+
+
+/* locker_error */
+static int _locker_error(Locker * locker, char const * message, int ret)
+{
+	if(locker == NULL)
+		fprintf(stderr, "%s: %s\n", "locker", message);
+	/* XXX otherwise popup an error dialog */
+	return ret;
 }
 
 
