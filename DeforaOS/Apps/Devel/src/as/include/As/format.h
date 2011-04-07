@@ -57,7 +57,6 @@ struct _FormatPlugin
 
 /* helpers */
 # if _BYTE_ORDER == _BIG_ENDIAN
-#  warning are you nuts?
 #  define _htob16(a) (a) 
 #  define _htol16(a) (((a) & 0xff) << 8 | ((a) & 0xff00) >> 8)
 #  define _htob32(a) (a) 
