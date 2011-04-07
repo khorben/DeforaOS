@@ -18,6 +18,11 @@
 #ifndef DEVEL_AS_FORMAT_H
 # define DEVEL_AS_FORMAT_H
 
+# if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#  include <sys/endian.h>
+# elif defined(__linux__)
+#  include <endian.h>
+# endif
 # include <stdio.h>
 
 
@@ -43,7 +48,7 @@ struct _FormatPlugin
 	int (*function)(FormatPlugin * format, char const * function);
 	int (*section)(FormatPlugin * format, char const * section);
 
-	int (*detect)(FormatPlugin * format);
+	char const * (*detect)(FormatPlugin * format);
 	int (*disas)(FormatPlugin * format);
 
 	void * priv;
@@ -51,7 +56,8 @@ struct _FormatPlugin
 
 
 /* helpers */
-# if BYTE_ORDER == BIG_ENDIAN 
+# if _BYTE_ORDER == _BIG_ENDIAN
+#  warning are you nuts?
 #  define _htob16(a) (a) 
 #  define _htol16(a) (((a) & 0xff) << 8 | ((a) & 0xff00) >> 8)
 #  define _htob32(a) (a) 
@@ -64,7 +70,7 @@ struct _FormatPlugin
 		| (((a) & 0xff0000000000) >> 24) \
 		| (((a) & 0xff000000000000) >> 40) \
 		| (((a) & 0xff00000000000000) >> 56)
-# else
+# elif _BYTE_ORDER == _LITTLE_ENDIAN
 #  define _htob16(a) (((a) & 0xff) << 8 | ((a) & 0xff00) >> 8)
 #  define _htol16(a) (a)
 #  define _htob32(a) (((a) & 0xff) << 24 | (((a) & 0xff00) << 8) \
@@ -77,6 +83,8 @@ struct _FormatPlugin
 		| (((a) & 0xff000000000000) >> 40) \
 		| (((a) & 0xff00000000000000) >> 56)
 #  define _htol64(a) (a)
+# else
+#  warning "Could not determine endian on your system"
 # endif
 
 #endif /* !DEVEL_AS_FORMAT_H */
