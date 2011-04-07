@@ -73,6 +73,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
 		$(PACKAGE)-$(VERSION)/src/format/java.c \
+		$(PACKAGE)-$(VERSION)/src/format/pe.c \
 		$(PACKAGE)-$(VERSION)/src/format/Makefile \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
 		$(PACKAGE)-$(VERSION)/include/As.h \

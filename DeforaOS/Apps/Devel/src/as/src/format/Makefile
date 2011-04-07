@@ -1,4 +1,4 @@
-TARGETS	= elf.so flat.so java.so
+TARGETS	= elf.so flat.so java.so pe.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -39,6 +39,13 @@ java_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 java.so: $(java_OBJS)
 	$(LD) -o java.so $(java_OBJS) $(java_LDFLAGS)
 
+pe_OBJS = pe.o
+pe_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+pe_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+pe.so: $(pe_OBJS)
+	$(LD) -o pe.so $(pe_OBJS) $(pe_LDFLAGS)
+
 elf.o: elf.c
 	$(CC) $(elf_CFLAGS) -c elf.c
 
@@ -48,8 +55,11 @@ flat.o: flat.c
 java.o: java.c
 	$(CC) $(java_CFLAGS) -c java.c
 
+pe.o: pe.c
+	$(CC) $(pe_CFLAGS) -c pe.c
+
 clean:
-	$(RM) -- $(elf_OBJS) $(flat_OBJS) $(java_OBJS)
+	$(RM) -- $(elf_OBJS) $(flat_OBJS) $(java_OBJS) $(pe_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -61,10 +71,13 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- flat.so $(DESTDIR)$(LIBDIR)/as/format/flat.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
 	$(INSTALL) -m 0644 -- java.so $(DESTDIR)$(LIBDIR)/as/format/java.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
+	$(INSTALL) -m 0644 -- pe.so $(DESTDIR)$(LIBDIR)/as/format/pe.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/elf.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/flat.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/java.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/pe.so
 
 .PHONY: all clean distclean install uninstall
