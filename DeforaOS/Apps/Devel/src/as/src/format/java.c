@@ -66,6 +66,8 @@ FormatPlugin format_plugin =
 	_java_exit,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
 	NULL
 };
 

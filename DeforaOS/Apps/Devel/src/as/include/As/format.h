@@ -43,6 +43,9 @@ struct _FormatPlugin
 	int (*function)(FormatPlugin * format, char const * function);
 	int (*section)(FormatPlugin * format, char const * section);
 
+	int (*detect)(FormatPlugin * format);
+	int (*disas)(FormatPlugin * format);
+
 	void * priv;
 };
 

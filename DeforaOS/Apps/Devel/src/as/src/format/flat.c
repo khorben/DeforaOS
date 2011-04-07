@@ -30,5 +30,7 @@ FormatPlugin format_plugin =
 	NULL,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
 	NULL
 };
