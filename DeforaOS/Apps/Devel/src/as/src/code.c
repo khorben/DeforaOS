@@ -364,6 +364,7 @@ int code_open(Code * code, char const * filename)
 	{
 		fclose(code->fp);
 		code->fp = NULL;
+		unlink(code->filename); /* XXX may fail */
 		string_delete(code->filename);
 		code->filename = NULL;
 		return -1;
