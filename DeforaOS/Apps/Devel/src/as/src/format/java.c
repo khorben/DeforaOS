@@ -16,6 +16,7 @@
 
 
 #include <System.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -50,8 +51,13 @@ typedef struct _JavaPlugin
 
 
 /* prototypes */
+/* plug-in */
 static int _java_init(FormatPlugin * format, char const * arch);
 static int _java_exit(FormatPlugin * format);
+static char const * _java_detect(FormatPlugin * format);
+static int _java_disas(FormatPlugin * format,
+		int (*callback)(FormatPlugin * format, off_t offset,
+			size_t size, off_t base));
 
 
 /* public */
@@ -60,14 +66,15 @@ static int _java_exit(FormatPlugin * format);
 FormatPlugin format_plugin =
 {
 	NULL,
+	"java",
 	"\xca\xfe\xba\xbe",
 	4,
 	_java_init,
 	_java_exit,
 	NULL,
 	NULL,
-	NULL,
-	NULL,
+	_java_detect,
+	_java_disas,
 	NULL
 };
 
@@ -211,8 +218,32 @@ static int _exit_attribute_table(FormatPlugin * format)
 	uint16_t cnt = _htob16(java->attributes_cnt);
 
 	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
+		return -error_set_code(1, "%s: %s", format->helper->filename,
 				strerror(errno));
 	/* XXX output the attributes */
 	return 0;
+}
+
+
+/* java_detect */
+static char const * _java_detect(FormatPlugin * format)
+{
+	return "java";
+}
+
+
+/* java_disas */
+static int _java_disas(FormatPlugin * format,
+		int (*callback)(FormatPlugin * format, off_t offset,
+			size_t size, off_t base))
+{
+	struct stat st;
+
+	/* FIXME really implement */
+	if(fstat(fileno(format->helper->fp), &st) != 0)
+		return -error_set_code(1, "%s: %s", format->helper->filename,
+				strerror(errno));
+	if(st.st_size < 8)
+		return -1; /* XXX report error */
+	return callback(format, 8, st.st_size - 8, 0);
 }

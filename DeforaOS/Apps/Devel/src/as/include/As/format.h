@@ -32,6 +32,7 @@ typedef struct _FormatPluginHelper
 {
 	char const * filename;
 	FILE * fp;
+	void * priv;
 } FormatPluginHelper;
 
 typedef struct _FormatPlugin FormatPlugin;
@@ -39,6 +40,8 @@ typedef struct _FormatPlugin FormatPlugin;
 struct _FormatPlugin
 {
 	FormatPluginHelper * helper;
+
+	char const * name;
 
 	char const * signature;
 	size_t signature_len;
@@ -49,7 +52,9 @@ struct _FormatPlugin
 	int (*section)(FormatPlugin * format, char const * section);
 
 	char const * (*detect)(FormatPlugin * format);
-	int (*disas)(FormatPlugin * format);
+	int (*disas)(FormatPlugin * format,
+			int (*callback)(FormatPlugin * format, off_t offset,
+				size_t size, off_t base));
 
 	void * priv;
 };

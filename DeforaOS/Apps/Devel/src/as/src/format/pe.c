@@ -89,6 +89,9 @@ static char const _pe_header_signature[4] = "PE\0\0";
 /* plug-in */
 static int _pe_init(FormatPlugin * format, char const * arch);
 static char const * _pe_detect(FormatPlugin * format);
+static int _pe_disas(FormatPlugin * format,
+		int (*callback)(FormatPlugin * format, off_t offset,
+			size_t size, off_t base));
 
 /* useful */
 static char const * _pe_get_arch(uint16_t machine);
@@ -100,6 +103,7 @@ static int _pe_get_machine(char const * arch);
 FormatPlugin format_plugin =
 {
 	NULL,
+	"pe",
 	_pe_msdos_signature,
 	sizeof(_pe_msdos_signature),
 	_pe_init,
@@ -107,7 +111,7 @@ FormatPlugin format_plugin =
 	NULL,
 	NULL,
 	_pe_detect,
-	NULL,
+	_pe_disas,
 	NULL
 };
 
@@ -154,7 +158,7 @@ static char const * _pe_detect(FormatPlugin * format)
 	if(fread(&pm, sizeof(pm), 1, format->helper->fp) != 1)
 		return _detect_error(format);
 	if((pm.offset = _htol16(pm.offset)) != sizeof(pm)
-			&& fseek(format->helper->fp, pm.offset, SEEK_SET) != -1)
+			&& fseek(format->helper->fp, pm.offset, SEEK_SET) != 0)
 		return _detect_error(format);
 	if(fread(&ph, sizeof(ph), 1, format->helper->fp) != 1)
 		return _detect_error(format);
@@ -169,6 +173,16 @@ static char const * _detect_error(FormatPlugin * format)
 }
 
 
+/* pe_disas */
+static int _pe_disas(FormatPlugin * format,
+		int (*callback)(FormatPlugin * format, off_t offset,
+			size_t size, off_t base))
+{
+	/* FIXME implement */
+	return -error_set_code(1, "%s: %s", "pe", strerror(ENOSYS));
+}
+
+
 /* accessors */
 /* pe_get_arch */
 static char const * _pe_get_arch(uint16_t machine)
@@ -178,7 +192,7 @@ static char const * _pe_get_arch(uint16_t machine)
 	for(i = 0; _pe_arch[i].arch != NULL; i++)
 		if(_pe_arch[i].machine == machine)
 			return _pe_arch[i].arch;
-	error_set_code(1, "%u: %s", machine, "Unknown machine for PE");
+	error_set_code(1, "%s: %s 0x%x", "pe", "Unknown architecture", machine);
 	return NULL;
 }
 

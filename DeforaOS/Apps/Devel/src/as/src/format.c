@@ -105,6 +105,7 @@ int format_exit(Format * format)
 	format->plugin->helper = NULL;
 	format->helper.fp = NULL;
 	format->helper.filename = NULL;
+	format->helper.priv = NULL;
 	return ret;
 }
 
@@ -126,6 +127,7 @@ int format_init(Format * format, char const * filename, FILE * fp)
 #endif
 	format->helper.filename = filename;
 	format->helper.fp = fp;
+	format->helper.priv = NULL;
 	format->plugin->helper = &format->helper;
 	if(format->plugin->init != NULL)
 		return format->plugin->init(format->plugin, format->arch);
