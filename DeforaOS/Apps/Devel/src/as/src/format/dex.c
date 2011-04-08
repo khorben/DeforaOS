@@ -25,27 +25,39 @@
 /* Flat */
 /* private */
 /* types */
+#pragma pack(1)
 typedef struct _DexHeader
 {
 	char signature[4];
 	char _padding0[4];
 	uint32_t checksum;
 	char sha1sum[20];
-	uint32_t size;
+	uint32_t size;			/* 0x20 */
 	uint32_t hsize;
-	char _padding1[8];
-	uint32_t string_cnt;
-	uint32_t string_offset;
-	char _padding2[4];
+	uint32_t endian;
+	char _padding1[4];
+	char _padding2[4];		/* 0x30 */
+	char _padding3[4];
+	uint32_t strings_cnt;
+	uint32_t strings_offset;
+	char _padding4[4];		/* 0x40 */
 	uint32_t classes_cnt;
 	uint32_t classes_offset;
 	uint32_t fields_cnt;
 	uint32_t fields_offset;
-	uint32_t methods_cnt;
+	uint32_t methods_cnt;		/* 0x50 */
 	uint32_t methods_offset;
 	uint32_t classdefs_cnt;
 	uint32_t classdefs_offset;
 } DexHeader;
+
+typedef struct _DexMethod
+{
+	uint32_t class;
+	uint32_t name;
+	uint32_t type;
+} DexMethod;
+#pragma pack()
 
 
 /* variables */
@@ -98,13 +110,32 @@ static int _dex_disas(FormatPlugin * format, int (*callback)(
 {
 	FILE * fp = format->helper->fp;
 	DexHeader dh;
+	size_t i;
+	DexMethod dm;
 	off_t offset;
 	off_t end;
 
-	if(fseek(fp, sizeof(DexHeader), SEEK_SET) != 0)
+	if(fseek(fp, 0, SEEK_SET) != 0)
 		return -_dex_error(format);
 	if(fread(&dh, sizeof(dh), 1, fp) != 1)
 		return _dex_error_fread(format);
+	dh.strings_cnt = _htol32(dh.strings_cnt);
+	dh.strings_offset = _htol32(dh.strings_offset);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() cnt=0x%x offset=0x%x\n", __func__,
+			dh.strings_cnt, dh.strings_offset);
+#endif
+	dh.methods_cnt = _htol32(dh.methods_cnt);
+	dh.methods_offset = _htol32(dh.methods_offset);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() cnt=0x%x offset=0x%x\n", __func__,
+			dh.methods_cnt, dh.methods_offset);
+#endif
+	if(fseek(fp, dh.methods_offset, SEEK_SET) != 0)
+		return -_dex_error(format);
+	for(i = 0; i < dh.methods_cnt; i++)
+		if(fread(&dm, sizeof(dm), 1, fp) != 1)
+			return _dex_error_fread(format);
 	/* FIXME really implement */
 	/* disassemble the rest */
 	if((offset = ftello(fp)) == -1
