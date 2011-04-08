@@ -1,4 +1,4 @@
-TARGETS	= elf.so flat.so java.so pe.so
+TARGETS	= dex.so elf.so flat.so java.so pe.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -17,6 +17,13 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+dex_OBJS = dex.o
+dex_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+dex_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+dex.so: $(dex_OBJS)
+	$(LD) -o dex.so $(dex_OBJS) $(dex_LDFLAGS)
 
 elf_OBJS = elf.o
 elf_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -46,6 +53,9 @@ pe_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 pe.so: $(pe_OBJS)
 	$(LD) -o pe.so $(pe_OBJS) $(pe_LDFLAGS)
 
+dex.o: dex.c
+	$(CC) $(dex_CFLAGS) -c dex.c
+
 elf.o: elf.c
 	$(CC) $(elf_CFLAGS) -c elf.c
 
@@ -59,12 +69,14 @@ pe.o: pe.c
 	$(CC) $(pe_CFLAGS) -c pe.c
 
 clean:
-	$(RM) -- $(elf_OBJS) $(flat_OBJS) $(java_OBJS) $(pe_OBJS)
+	$(RM) -- $(dex_OBJS) $(elf_OBJS) $(flat_OBJS) $(java_OBJS) $(pe_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
+	$(INSTALL) -m 0644 -- dex.so $(DESTDIR)$(LIBDIR)/as/format/dex.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
 	$(INSTALL) -m 0644 -- elf.so $(DESTDIR)$(LIBDIR)/as/format/elf.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
@@ -75,6 +87,7 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- pe.so $(DESTDIR)$(LIBDIR)/as/format/pe.so
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/dex.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/elf.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/flat.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/java.so

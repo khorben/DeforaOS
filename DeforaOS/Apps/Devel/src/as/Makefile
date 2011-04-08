@@ -70,6 +70,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/null.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
+		$(PACKAGE)-$(VERSION)/src/format/dex.c \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
 		$(PACKAGE)-$(VERSION)/src/format/java.c \
