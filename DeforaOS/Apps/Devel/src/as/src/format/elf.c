@@ -332,6 +332,11 @@ static int _elf_disas32(FormatPlugin * format, int (*callback)(
 static int _disas32_shdr(FormatPlugin * format, Elf32_Ehdr * ehdr,
 		Elf32_Shdr ** shdr)
 {
+	if(ehdr->e_shentsize == 0)
+	{
+		*shdr = NULL;
+		return 0;
+	}
 	if(ehdr->e_shentsize != sizeof(**shdr))
 		return -error_set_code(1, "%s: %s", format->helper->filename,
 				"Invalid section header size");
@@ -374,7 +379,8 @@ static int _disas32_strtab(FormatPlugin * format, Elf32_Shdr * shdr,
 		size_t * strtab_cnt)
 {
 	if(ndx >= shdr_cnt)
-		return 1;
+		return -error_set_code(1, "%s: %s", format->helper->filename,
+				"Unable to read the string table");
 	shdr = &shdr[ndx];
 	if(fseek(format->helper->fp, shdr->sh_offset, SEEK_SET) != 0
 			|| (*strtab = malloc(shdr->sh_size)) == NULL)
@@ -447,6 +453,11 @@ static int _elf_disas64(FormatPlugin * format, int (*callback)(
 static int _disas64_shdr(FormatPlugin * format, Elf64_Ehdr * ehdr,
 		Elf64_Shdr ** shdr)
 {
+	if(ehdr->e_shentsize == 0)
+	{
+		*shdr = NULL;
+		return 0;
+	}
 	if(ehdr->e_shentsize != sizeof(**shdr))
 		return -error_set_code(1, "%s: %s", format->helper->filename,
 				"Invalid section header size");
@@ -489,7 +500,8 @@ static int _disas64_strtab(FormatPlugin * format, Elf64_Shdr * shdr,
 		size_t * strtab_cnt)
 {
 	if(ndx >= shdr_cnt)
-		return 1;
+		return -error_set_code(1, "%s: %s", format->helper->filename,
+				"Unable to read the string table");
 	shdr = &shdr[ndx];
 	if(fseek(format->helper->fp, shdr->sh_offset, SEEK_SET) != 0
 			|| (*strtab = malloc(shdr->sh_size)) == NULL)
