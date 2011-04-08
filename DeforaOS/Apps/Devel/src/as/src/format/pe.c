@@ -203,6 +203,7 @@ static int _pe_disas(FormatPlugin * format, int (*callback)(
 	{
 		if(fread(&psh, sizeof(psh), 1, format->helper->fp) != 1)
 			return _disas_error(format);
+		psh.name[sizeof(psh.name) - 1] = '\0';
 		psh.vaddr = _htol32(psh.vaddr);
 		psh.raw_size = _htol32(psh.raw_size);
 		psh.raw_offset = _htol32(psh.raw_offset);
