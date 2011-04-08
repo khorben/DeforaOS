@@ -28,35 +28,45 @@
 #pragma pack(1)
 typedef struct _DexHeader
 {
-	char signature[4];
+	char magic[4];
 	char _padding0[4];
 	uint32_t checksum;
-	char sha1sum[20];
-	uint32_t size;			/* 0x20 */
-	uint32_t hsize;
-	uint32_t endian;
-	char _padding1[4];
-	char _padding2[4];		/* 0x30 */
-	char _padding3[4];
-	uint32_t strings_cnt;
-	uint32_t strings_offset;
-	char _padding4[4];		/* 0x40 */
-	uint32_t classes_cnt;
-	uint32_t classes_offset;
-	uint32_t fields_cnt;
-	uint32_t fields_offset;
-	uint32_t methods_cnt;		/* 0x50 */
-	uint32_t methods_offset;
-	uint32_t classdefs_cnt;
-	uint32_t classdefs_offset;
+	unsigned char signature[20];
+	uint32_t file_size;		/* 0x20 */
+	uint32_t header_size;
+	uint32_t endian_tag;
+	uint32_t link_size;
+	uint32_t link_off;		/* 0x30 */
+	uint32_t map_off;
+	uint32_t string_ids_size;
+	uint32_t string_ids_off;
+	uint32_t type_ids_size;		/* 0x40 */
+	uint32_t type_ids_off;
+	uint32_t proto_ids_size;
+	uint32_t proto_ids_off;
+	uint32_t fields_ids_size;	/* 0x50 */
+	uint32_t fields_ids_off;
+	uint32_t method_ids_size;
+	uint32_t method_ids_off;
+	uint32_t class_defs_size;	/* 0x60 */
+	uint32_t class_defs_off;
+	uint32_t data_size;
+	uint32_t data_off;
 } DexHeader;
 
-typedef struct _DexMethod
+enum
 {
-	uint32_t class;
-	uint32_t name;
-	uint32_t type;
-} DexMethod;
+	TYPE_HEADER_ITEM	= 0x0000,
+	TYPE_CODE_ITEM		= 0x2001
+};
+
+typedef struct _DexMapItem
+{
+	uint16_t type;
+	uint16_t _padding;
+	uint32_t size;
+	uint32_t offset;
+} DexMapItem;
 #pragma pack()
 
 
@@ -99,19 +109,24 @@ FormatPlugin format_plugin =
 /* dex_detect */
 static char const * _dex_detect(FormatPlugin * format)
 {
+	/* FIXME this may not be true:
+	 * - it is apparently not exactly Java bytecode
+	 * - some sections might contain native code */
 	return "java";
 }
 
 
 /* dex_disas */
+static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
+
 static int _dex_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base))
 {
 	FILE * fp = format->helper->fp;
 	DexHeader dh;
-	size_t i;
-	DexMethod dm;
 	off_t offset;
 	off_t end;
 
@@ -119,30 +134,51 @@ static int _dex_disas(FormatPlugin * format, int (*callback)(
 		return -_dex_error(format);
 	if(fread(&dh, sizeof(dh), 1, fp) != 1)
 		return _dex_error_fread(format);
-	dh.strings_cnt = _htol32(dh.strings_cnt);
-	dh.strings_offset = _htol32(dh.strings_offset);
+	/* FIXME implement endian */
+	if(_disas_map(format, &dh, callback) != 0)
+		return -1;
+	return 0;
+}
+
+static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
+{
+	FILE * fp = format->helper->fp;
+	uint32_t size;
+	uint32_t i;
+	fpos_t pos;
+	DexMapItem dmi;
+
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=0x%x offset=0x%x\n", __func__,
-			dh.strings_cnt, dh.strings_offset);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	dh.methods_cnt = _htol32(dh.methods_cnt);
-	dh.methods_offset = _htol32(dh.methods_offset);
+	if(fseek(fp, dh->map_off, SEEK_SET) != 0)
+		return -_dex_error(format);
+	if(fread(&size, sizeof(size), 1, fp) != 1)
+		return -_dex_error_fread(format);
+	size = _htol32(size);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=0x%x offset=0x%x\n", __func__,
-			dh.methods_cnt, dh.methods_offset);
+	fprintf(stderr, "DEBUG: %s() %u items\n", __func__, size);
 #endif
-	if(fseek(fp, dh.methods_offset, SEEK_SET) != 0)
-		return -_dex_error(format);
-	for(i = 0; i < dh.methods_cnt; i++)
-		if(fread(&dm, sizeof(dm), 1, fp) != 1)
-			return _dex_error_fread(format);
-	/* FIXME really implement */
-	/* disassemble the rest */
-	if((offset = ftello(fp)) == -1
-			|| fseek(fp, 0, SEEK_END) != 0
-			|| (end = ftello(fp)) == -1)
-		return -_dex_error(format);
-	return callback(format, NULL, offset, end - offset, 0);
+	for(i = 0; i < size; i++)
+	{
+		if(fread(&dmi, sizeof(dmi), 1, fp) != 1)
+			return -_dex_error_fread(format);
+		fgetpos(fp, &pos);
+		dmi.type = _htol16(dmi.type);
+		dmi.size = _htol32(dmi.size);
+		dmi.offset = _htol32(dmi.offset);
+		switch(dmi.type)
+		{
+			case TYPE_CODE_ITEM:
+				callback(format, NULL, dmi.offset, dmi.size,
+						0);
+				break;
+		}
+		fsetpos(fp, &pos);
+	}
+	return 0;
 }
 
 
