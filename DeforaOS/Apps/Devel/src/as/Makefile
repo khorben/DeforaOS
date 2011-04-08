@@ -43,6 +43,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/arch/amd64.c \
+		$(PACKAGE)-$(VERSION)/src/arch/dalvik.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i386.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i386_real.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i486.c \

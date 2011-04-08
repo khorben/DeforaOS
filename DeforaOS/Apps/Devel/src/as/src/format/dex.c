@@ -22,7 +22,7 @@
 #include "As/format.h"
 
 
-/* Flat */
+/* DEX */
 /* private */
 /* types */
 #pragma pack(1)
@@ -109,10 +109,8 @@ FormatPlugin format_plugin =
 /* dex_detect */
 static char const * _dex_detect(FormatPlugin * format)
 {
-	/* FIXME this may not be true:
-	 * - it is apparently not exactly Java bytecode
-	 * - some sections might contain native code */
-	return "java";
+	/* FIXME some sections might contain native code */
+	return "dalvik";
 }
 
 

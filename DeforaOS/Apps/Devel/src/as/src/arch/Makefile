@@ -1,4 +1,4 @@
-TARGETS	= amd64.so i386.so i386_real.so i486.so i586.so i686.so java.so sparc.so sparc64.so
+TARGETS	= amd64.so dalvik.so i386.so i386_real.so i486.so i586.so i686.so java.so sparc.so sparc64.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -24,6 +24,13 @@ amd64_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 amd64.so: $(amd64_OBJS)
 	$(LD) -o amd64.so $(amd64_OBJS) $(amd64_LDFLAGS)
+
+dalvik_OBJS = dalvik.o
+dalvik_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+dalvik_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+dalvik.so: $(dalvik_OBJS)
+	$(LD) -o dalvik.so $(dalvik_OBJS) $(dalvik_LDFLAGS)
 
 i386_OBJS = i386.o
 i386_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -81,8 +88,11 @@ sparc64_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 sparc64.so: $(sparc64_OBJS)
 	$(LD) -o sparc64.so $(sparc64_OBJS) $(sparc64_LDFLAGS)
 
-amd64.o: amd64.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg amd64.ins amd64.reg
+amd64.o: amd64.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg amd64.ins amd64.reg common.ins common.reg
 	$(CC) $(amd64_CFLAGS) -c amd64.c
+
+dalvik.o: dalvik.c common.ins common.reg
+	$(CC) $(dalvik_CFLAGS) -c dalvik.c
 
 i386.o: i386.c 80386.ins 80386.reg
 	$(CC) $(i386_CFLAGS) -c i386.c
@@ -99,17 +109,17 @@ i586.o: i586.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg
 i686.o: i686.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
 	$(CC) $(i686_CFLAGS) -c i686.c
 
-java.o: java.c
+java.o: java.c common.ins common.reg
 	$(CC) $(java_CFLAGS) -c java.c
 
-sparc.o: sparc.c sparc.ins sparc.reg
+sparc.o: sparc.c common.ins common.reg sparc.ins sparc.reg
 	$(CC) $(sparc_CFLAGS) -c sparc.c
 
-sparc64.o: sparc64.c sparc.ins sparc.reg sparc64.ins sparc64.reg
+sparc64.o: sparc64.c common.ins common.reg sparc.ins sparc.reg sparc64.ins sparc64.reg
 	$(CC) $(sparc64_CFLAGS) -c sparc64.c
 
 clean:
-	$(RM) -- $(amd64_OBJS) $(i386_OBJS) $(i386_real_OBJS) $(i486_OBJS) $(i586_OBJS) $(i686_OBJS) $(java_OBJS) $(sparc_OBJS) $(sparc64_OBJS)
+	$(RM) -- $(amd64_OBJS) $(dalvik_OBJS) $(i386_OBJS) $(i386_real_OBJS) $(i486_OBJS) $(i586_OBJS) $(i686_OBJS) $(java_OBJS) $(sparc_OBJS) $(sparc64_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -117,6 +127,8 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
 	$(INSTALL) -m 0644 -- amd64.so $(DESTDIR)$(LIBDIR)/as/arch/amd64.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 -- dalvik.so $(DESTDIR)$(LIBDIR)/as/arch/dalvik.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
 	$(INSTALL) -m 0644 -- i386.so $(DESTDIR)$(LIBDIR)/as/arch/i386.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
@@ -136,6 +148,7 @@ install: $(TARGETS)
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/arch/amd64.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/as/arch/dalvik.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/arch/i386.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/arch/i386_real.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/as/arch/i486.so
