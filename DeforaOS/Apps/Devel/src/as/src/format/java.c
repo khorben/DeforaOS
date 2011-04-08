@@ -95,6 +95,11 @@ typedef struct _JavaPlugin
 } JavaPlugin;
 
 
+/* variables */
+/* plug-in */
+static char _java_signature[4] = "\xca\xfe\xba\xbe";
+
+
 /* prototypes */
 /* plug-in */
 static int _java_init(FormatPlugin * format, char const * arch);
@@ -115,8 +120,8 @@ FormatPlugin format_plugin =
 {
 	NULL,
 	"java",
-	"\xca\xfe\xba\xbe",
-	4,
+	_java_signature,
+	sizeof(_java_signature),
 	_java_init,
 	_java_exit,
 	NULL,
