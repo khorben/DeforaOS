@@ -174,12 +174,45 @@ static char const * _detect_error(FormatPlugin * format)
 
 
 /* pe_disas */
+static int _disas_error(FormatPlugin * format);
+
 static int _pe_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base))
 {
-	/* FIXME implement */
-	return -error_set_code(1, "%s: %s", "pe", strerror(ENOSYS));
+	struct pe_msdos pm;
+	struct pe_header ph;
+	size_t i;
+	struct pe_section_header psh;
+
+	if(fseek(format->helper->fp, 0, SEEK_SET) != 0)
+		return _disas_error(format);
+	if(fread(&pm, sizeof(pm), 1, format->helper->fp) != 1)
+		return _disas_error(format);
+	if((pm.offset = _htol16(pm.offset)) != sizeof(pm)
+			&& fseek(format->helper->fp, pm.offset, SEEK_SET) != 0)
+		return _disas_error(format);
+	if(fread(&ph, sizeof(ph), 1, format->helper->fp) != 1)
+		return _disas_error(format);
+	ph.section_cnt = _htol16(ph.section_cnt);
+	ph.opthdr_size = _htol16(ph.opthdr_size);
+	if(ph.section_cnt > 0 && ph.opthdr_size != 0
+			&& fseek(format->helper->fp, ph.opthdr_size, SEEK_CUR))
+		return _disas_error(format);
+	for(i = 0; i < ph.section_cnt; i++)
+	{
+		if(fread(&psh, sizeof(psh), 1, format->helper->fp) != 1)
+			return _disas_error(format);
+		callback(format, psh.name, psh.raw_offset, psh.raw_size,
+				psh.vaddr);
+	}
+	return 0;
+}
+
+static int _disas_error(FormatPlugin * format)
+{
+	return -error_set_code(1, "%s: %s", format->helper->filename,
+			strerror(errno));
 }
 
 
