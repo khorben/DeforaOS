@@ -237,6 +237,8 @@
 	{ "adc",	0x13,	AO_IMM|AO_IMM_,		1, 0, 0, 0 },
 	{ "adc",	0x13,	AO_IMM|AO_IMM_,		1, 0, 0, 0 },
 #endif
+	{ "add",	0x0000,	AO_al|AO_D_AX_,		2, 0, 0, 0 },
+	{ "add",	0x000d,	AO_cl|AO_IMM_,		2, 0, W, 0 },
 	{ "add",	0x00c0,	AO_al|AO_al_,		2, 0, 0, 0 },
 	{ "add",	0x00c1,	AO_al|AO_cl_,		2, 0, 0, 0 },
 	{ "add",	0x00c2,	AO_al|AO_dl_,		2, 0, 0, 0 },
@@ -335,6 +337,7 @@
 	{ "addb",	0x83c5, AO_IMM|AO_BP_,		2, 1, 0, 0 },
 	{ "addb",	0x83c6, AO_IMM|AO_SI_,		2, 1, 0, 0 },
 	{ "addb",	0x83c7, AO_IMM|AO_DI_,		2, 1, 0, 0 },
+	{ "and",	0x2000,	AO_al|AO_D_AX_,		2, 0, 0, 0 },
 	{ "and",	0x24,	AO_IMM|AO_al_,		1, 1, 0, 0 },
 	{ "and",	0x25,	AO_IMM|AO_AX_,		1, W, 0, 0 },
 	{ "and",	0x80e0,	AO_IMM|AO_al_,		2, 1, 0, 0 },
