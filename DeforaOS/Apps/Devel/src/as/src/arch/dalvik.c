@@ -21,19 +21,29 @@
 
 /* Dalvik */
 /* private */
-/* variables */
+/* types */
+#define REG(name, size, id) AO_ ## name = ((id << 2) | AO_REG), \
+				AO_ ## name ## _ = ((id << 10) | AO_REG_), \
+				AO_ ## name ## __ = ((id << 18) | AO_REG__),
 enum
 {
 #include "common.reg"
+#include "dalvik.reg"
 };
 
+
+/* variables */
+#undef REG
+#define REG(name, size, id) { "" # name, size, id },
 static ArchRegister _dalvik_regs[] =
 {
+#include "dalvik.reg"
 	{ NULL,		0, 0 }
 };
 
 static ArchInstruction _dalvik_set[] =
 {
+	{ "mov",	0x0100,	AO_v0|AO_v0_,	2, 0, 0, 0 },
 	{ "nop",	0x0000,	AO_NONE,	2, 0, 0, 0 },
 	{ "ret",	0x0f00,	AO_NONE,	2, 0, 0, 0 },
 #include "common.ins"

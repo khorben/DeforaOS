@@ -64,12 +64,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/amd64.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/amd64.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/common.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/dalvik.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/null.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.reg \
-		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
-		$(PACKAGE)-$(VERSION)/src/arch/null.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
 		$(PACKAGE)-$(VERSION)/src/format/dex.c \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \

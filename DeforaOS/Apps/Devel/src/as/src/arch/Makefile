@@ -91,7 +91,7 @@ sparc64.so: $(sparc64_OBJS)
 amd64.o: amd64.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg amd64.ins amd64.reg common.ins common.reg
 	$(CC) $(amd64_CFLAGS) -c amd64.c
 
-dalvik.o: dalvik.c common.ins common.reg
+dalvik.o: dalvik.c common.ins common.reg dalvik.reg
 	$(CC) $(dalvik_CFLAGS) -c dalvik.c
 
 i386.o: i386.c 80386.ins 80386.reg
