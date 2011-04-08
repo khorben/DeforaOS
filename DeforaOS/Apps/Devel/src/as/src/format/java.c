@@ -294,6 +294,7 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 			case CONSTANT_Float:
 			case CONSTANT_Integer:
 			case CONSTANT_InterfaceMethodref:
+			case CONSTANT_Methodref:
 			case CONSTANT_NameAndType:
 				size = 4;
 				break;
