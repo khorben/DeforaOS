@@ -57,6 +57,14 @@ typedef struct _JavaCpInfo
 	uint8_t tag;
 	char info[0];
 } JavaCpInfo;
+
+typedef struct _JavaHeader2
+{
+	uint16_t access;
+	uint16_t this;
+	uint16_t super;
+	uint16_t interfaces_cnt;
+} JavaHeader2;
 #pragma pack()
 
 typedef struct _JavaPlugin
@@ -259,6 +267,8 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 	JavaCpInfo jci;
 	size_t size;
 	char buf[8];
+	uint16_t u16;
+	JavaHeader2 jh2;
 	off_t offset;
 	off_t end;
 
@@ -266,6 +276,9 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 			|| fread(&jh, sizeof(jh), 1, fp) != 1)
 		return -_java_error(format);
 	jh.cp_cnt = _htob16(jh.cp_cnt);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() jh.cp_cnt=%u\n", __func__, jh.cp_cnt);
+#endif
 	/* skip the constant pool */
 	for(i = 1; i < jh.cp_cnt; i++)
 	{
@@ -286,14 +299,36 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 				break;
 			case CONSTANT_Class:
 			case CONSTANT_String:
-			case CONSTANT_Utf8: /* XXX requires special care */
-			default:
 				size = 2;
 				break;
+			case CONSTANT_Utf8:
+				if(fread(&u16, sizeof(u16), 1, fp) != 1)
+					return -_java_error(format);
+				u16 = _htob16(u16);
+				if(fseek(fp, u16, SEEK_CUR) != 0)
+					return -_java_error(format);
+				size = 0;
+				break;
+			default:
+				return -error_set_code(1, "%s: %s 0x%x",
+						format->helper->filename,
+						"Unknown constant tag",
+						jci.tag);
 		}
-		if(fread(buf, sizeof(*buf), size, fp) != size)
+		if(size != 0 && fread(buf, sizeof(*buf), size, fp) != size)
 			return -_java_error(format);
 	}
+	/* skip the interfaces pool */
+	if(fread(&jh2, sizeof(jh2), 1, fp) != 1)
+		return -_java_error(format);
+	jh2.interfaces_cnt = _htob16(jh2.interfaces_cnt);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() jh2.interfaces_cnt=%u\n", __func__,
+			jh2.interfaces_cnt);
+#endif
+	for(i = 0; i < jh2.interfaces_cnt; i++)
+		if(fread(buf, sizeof(*buf), 2, fp) != 2)
+			return -_java_error(format);
 	if((offset = ftello(fp)) == -1
 			|| fseek(fp, 0, SEEK_END) != 0
 			|| (end = ftello(fp)) == -1)
