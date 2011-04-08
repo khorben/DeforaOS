@@ -73,6 +73,13 @@ typedef struct _JavaFieldInfo
 	uint16_t descriptor;
 	uint16_t attributes_cnt;
 } JavaFieldInfo;
+
+typedef struct _JavaAttributeInfo
+{
+	uint16_t name;
+	uint32_t length;
+	char info[0];
+} JavaAttributeInfo;
 #pragma pack()
 
 typedef struct _JavaPlugin
@@ -266,6 +273,7 @@ static char const * _java_detect(FormatPlugin * format)
 
 
 /* java_disas */
+static int _disas_skip_attributes(FormatPlugin * format, uint16_t cnt);
 static int _disas_skip_constants(FormatPlugin * format, uint16_t cnt);
 static int _disas_skip_fields(FormatPlugin * format, uint16_t cnt);
 static int _disas_skip_interfaces(FormatPlugin * format, uint16_t cnt);
@@ -307,6 +315,30 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 			|| (end = ftello(fp)) == -1)
 		return -_java_error(format);
 	return callback(format, NULL, offset, end - offset, 0);
+}
+
+static int _disas_skip_attributes(FormatPlugin * format, uint16_t cnt)
+{
+	FILE * fp = format->helper->fp;
+	size_t i;
+	JavaAttributeInfo jai;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, cnt);
+#endif
+	for(i = 0; i < cnt; i++)
+	{
+		if(fread(&jai, sizeof(jai), 1, fp) != 1)
+			return -_java_error_fread(format);
+		jai.length = _htob32(jai.length);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() length=%u\n", __func__,
+				jai.length);
+#endif
+		if(fseek(fp, jai.length, SEEK_CUR) != 0)
+			return -_java_error(format);
+	}
+	return 0;
 }
 
 static int _disas_skip_constants(FormatPlugin * format, uint16_t cnt)
@@ -373,8 +405,12 @@ static int _disas_skip_fields(FormatPlugin * format, uint16_t cnt)
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, cnt);
 #endif
 	for(i = 0; i < cnt; i++)
+	{
 		if(fread(&jfi, sizeof(jfi), 1, fp) != 1)
 			return -_java_error_fread(format);
+		jfi.attributes_cnt = _htob16(jfi.attributes_cnt);
+		_disas_skip_attributes(format, jfi.attributes_cnt);
+	}
 	return 0;
 }
 
