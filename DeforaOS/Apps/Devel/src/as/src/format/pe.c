@@ -89,9 +89,9 @@ static char const _pe_header_signature[4] = "PE\0\0";
 /* plug-in */
 static int _pe_init(FormatPlugin * format, char const * arch);
 static char const * _pe_detect(FormatPlugin * format);
-static int _pe_disas(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base));
+static int _pe_disas(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
 
 /* useful */
 static char const * _pe_get_arch(uint16_t machine);
@@ -174,9 +174,9 @@ static char const * _detect_error(FormatPlugin * format)
 
 
 /* pe_disas */
-static int _pe_disas(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base))
+static int _pe_disas(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
 {
 	/* FIXME implement */
 	return -error_set_code(1, "%s: %s", "pe", strerror(ENOSYS));

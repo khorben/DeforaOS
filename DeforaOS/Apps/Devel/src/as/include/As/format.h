@@ -52,9 +52,9 @@ struct _FormatPlugin
 	int (*section)(FormatPlugin * format, char const * section);
 
 	char const * (*detect)(FormatPlugin * format);
-	int (*disas)(FormatPlugin * format,
-			int (*callback)(FormatPlugin * format, off_t offset,
-				size_t size, off_t base));
+	int (*disas)(FormatPlugin * format, int (*callback)(
+				FormatPlugin * format, char const * section,
+				off_t offset, size_t size, off_t base));
 
 	void * priv;
 };

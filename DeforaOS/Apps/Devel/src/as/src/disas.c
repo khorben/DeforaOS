@@ -71,8 +71,8 @@ static void _disas_format_close(DisasFormat const * format);
 static void _disas_format_close_all(Disas * disas);
 
 /* callbacks */
-static int _disas_format_callback(FormatPlugin * format, off_t offset,
-		size_t size, off_t base);
+static int _disas_format_callback(FormatPlugin * format, char const * section,
+		off_t offset, size_t size, off_t base);
 
 /* helpers */
 static int _hex2bin(int c);
@@ -469,11 +469,13 @@ static void _disas_format_close_all(Disas * disas)
 
 
 /* callbacks */
-static int _disas_format_callback(FormatPlugin * format, off_t offset,
-		size_t size, off_t base)
+static int _disas_format_callback(FormatPlugin * format, char const * section,
+		off_t offset, size_t size, off_t base)
 {
 	Disas * disas = format->helper->priv;
 
+	if(section != NULL)
+		printf("\nDisassembly of section %s:\n", section);
 	return _do_flat(disas, offset, size, base);
 }
 

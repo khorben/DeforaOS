@@ -53,15 +53,15 @@ typedef struct _ElfStrtab
 /* plug-in */
 static int _elf_init(FormatPlugin * format, char const * arch);
 static char const * _elf_detect(FormatPlugin * format);
-static int _elf_disas(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base));
-static int _elf_disas32(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base));
-static int _elf_disas64(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base));
+static int _elf_disas(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
+static int _elf_disas32(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
+static int _elf_disas64(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
 
 /* ELF32 */
 static int _init_32(FormatPlugin * format);
@@ -266,9 +266,9 @@ static char const * _detect_64(FormatPlugin * format, Elf64_Ehdr * ehdr)
 
 
 /* elf_disas */
-static int _elf_disas(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base))
+static int _elf_disas(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
 {
 	if(_elf_detect(format) == NULL)
 		return -1;
@@ -285,9 +285,9 @@ static int _disas32_strtab(FormatPlugin * format, Elf32_Shdr * shdr,
 		size_t shdr_cnt, uint16_t ndx, char ** strtab,
 		size_t * strtab_cnt);
 
-static int _elf_disas32(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base))
+static int _elf_disas32(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
 {
 	Elf32_Ehdr ehdr;
 	Elf32_Shdr * shdr;
@@ -321,12 +321,9 @@ static int _elf_disas32(FormatPlugin * format,
 			continue;
 		if(shdr[i].sh_type == SHT_PROGBITS
 				&& shdr[i].sh_flags & SHF_EXECINSTR)
-		{
-			printf("\nDisassembly of section %s:\n",
-					&shstrtab[shdr[i].sh_name]);
-			callback(format, shdr[i].sh_offset, shdr[i].sh_size,
+			callback(format, &shstrtab[shdr[i].sh_name],
+					shdr[i].sh_offset, shdr[i].sh_size,
 					base);
-		}
 	}
 	free(shstrtab);
 	free(shdr);
@@ -408,9 +405,9 @@ static int _disas64_strtab(FormatPlugin * format, Elf64_Shdr * shdr,
 		size_t shdr_cnt, uint16_t ndx, char ** strtab,
 		size_t * strtab_cnt);
 
-static int _elf_disas64(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base))
+static int _elf_disas64(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
 {
 	Elf64_Ehdr ehdr;
 	Elf64_Shdr * shdr;
@@ -444,12 +441,9 @@ static int _elf_disas64(FormatPlugin * format,
 			continue;
 		if(shdr[i].sh_type == SHT_PROGBITS
 				&& shdr[i].sh_flags & SHF_EXECINSTR)
-		{
-			printf("\nDisassembly of section %s:\n",
-					&shstrtab[shdr[i].sh_name]);
-			callback(format, shdr[i].sh_offset, shdr[i].sh_size,
+			callback(format, &shstrtab[shdr[i].sh_name],
+					shdr[i].sh_offset, shdr[i].sh_size,
 					base);
-		}
 	}
 	free(shstrtab);
 	free(shdr);

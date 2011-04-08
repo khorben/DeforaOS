@@ -55,9 +55,9 @@ typedef struct _JavaPlugin
 static int _java_init(FormatPlugin * format, char const * arch);
 static int _java_exit(FormatPlugin * format);
 static char const * _java_detect(FormatPlugin * format);
-static int _java_disas(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base));
+static int _java_disas(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
 
 
 /* public */
@@ -233,9 +233,9 @@ static char const * _java_detect(FormatPlugin * format)
 
 
 /* java_disas */
-static int _java_disas(FormatPlugin * format,
-		int (*callback)(FormatPlugin * format, off_t offset,
-			size_t size, off_t base))
+static int _java_disas(FormatPlugin * format, int (*callback)(
+			FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
 {
 	struct stat st;
 
@@ -245,5 +245,5 @@ static int _java_disas(FormatPlugin * format,
 				strerror(errno));
 	if(st.st_size < 8)
 		return -1; /* XXX report error */
-	return callback(format, 8, st.st_size - 8, 0);
+	return callback(format, NULL, 8, st.st_size - 8, 0);
 }
