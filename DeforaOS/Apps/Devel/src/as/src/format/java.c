@@ -65,6 +65,14 @@ typedef struct _JavaHeader2
 	uint16_t super;
 	uint16_t interfaces_cnt;
 } JavaHeader2;
+
+typedef struct _JavaFieldInfo
+{
+	uint16_t access;
+	uint16_t name;
+	uint16_t descriptor;
+	uint16_t attributes_cnt;
+} JavaFieldInfo;
 #pragma pack()
 
 typedef struct _JavaPlugin
@@ -90,6 +98,7 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 			off_t offset, size_t size, off_t base));
 
 static int _java_error(FormatPlugin * format);
+static int _java_error_fread(FormatPlugin * format);
 
 
 /* public */
@@ -257,33 +266,65 @@ static char const * _java_detect(FormatPlugin * format)
 
 
 /* java_disas */
+static int _disas_skip_constants(FormatPlugin * format, uint16_t cnt);
+static int _disas_skip_fields(FormatPlugin * format, uint16_t cnt);
+static int _disas_skip_interfaces(FormatPlugin * format, uint16_t cnt);
+
 static int _java_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base))
 {
 	FILE * fp = format->helper->fp;
 	JavaHeader jh;
+	JavaHeader2 jh2;
+	uint16_t u16;
+	off_t offset;
+	off_t end;
+
+	if(fseek(fp, sizeof(JavaHeader), SEEK_SET) != 0)
+		return -_java_error(format);
+	if(fread(&jh, sizeof(jh), 1, fp) != 1)
+		return -_java_error_fread(format);
+	/* skip constants */
+	jh.cp_cnt = _htob16(jh.cp_cnt);
+	if(jh.cp_cnt > 1 && _disas_skip_constants(format, jh.cp_cnt) != 0)
+		return -1;
+	/* skip interfaces */
+	if(fread(&jh2, sizeof(jh2), 1, fp) != 1)
+		return -_java_error_fread(format);
+	jh2.interfaces_cnt = _htob16(jh2.interfaces_cnt);
+	if(_disas_skip_interfaces(format, jh2.interfaces_cnt) != 0)
+		return -1;
+	/* skip fields */
+	if(fread(&u16, sizeof(u16), 1, fp) != 1)
+		return -_java_error_fread(format);
+	u16 = _htob16(u16);
+	if(_disas_skip_fields(format, u16) != 0)
+		return -1;
+	/* disassemble the rest */
+	if((offset = ftello(fp)) == -1
+			|| fseek(fp, 0, SEEK_END) != 0
+			|| (end = ftello(fp)) == -1)
+		return -_java_error(format);
+	return callback(format, NULL, offset, end - offset, 0);
+}
+
+static int _disas_skip_constants(FormatPlugin * format, uint16_t cnt)
+{
+	FILE * fp = format->helper->fp;
 	size_t i;
 	JavaCpInfo jci;
 	size_t size;
 	char buf[8];
 	uint16_t u16;
-	JavaHeader2 jh2;
-	off_t offset;
-	off_t end;
 
-	if(fseek(fp, sizeof(JavaHeader), SEEK_SET) != 0
-			|| fread(&jh, sizeof(jh), 1, fp) != 1)
-		return -_java_error(format);
-	jh.cp_cnt = _htob16(jh.cp_cnt);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() jh.cp_cnt=%u\n", __func__, jh.cp_cnt);
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, cnt);
 #endif
-	/* skip the constant pool */
-	for(i = 1; i < jh.cp_cnt; i++)
+	for(i = 0; i < cnt; i++)
 	{
 		if(fread(&jci, sizeof(jci), 1, fp) != 1)
-			return -_java_error(format);
+			return -_java_error_fread(format);
 		switch(jci.tag)
 		{
 			case CONSTANT_Double:
@@ -304,7 +345,7 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 				break;
 			case CONSTANT_Utf8:
 				if(fread(&u16, sizeof(u16), 1, fp) != 1)
-					return -_java_error(format);
+					return -_java_error_fread(format);
 				u16 = _htob16(u16);
 				if(fseek(fp, u16, SEEK_CUR) != 0)
 					return -_java_error(format);
@@ -317,24 +358,39 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 						jci.tag);
 		}
 		if(size != 0 && fread(buf, sizeof(*buf), size, fp) != size)
-			return -_java_error(format);
+			return -_java_error_fread(format);
 	}
-	/* skip the interfaces pool */
-	if(fread(&jh2, sizeof(jh2), 1, fp) != 1)
-		return -_java_error(format);
-	jh2.interfaces_cnt = _htob16(jh2.interfaces_cnt);
+	return 0;
+}
+
+static int _disas_skip_fields(FormatPlugin * format, uint16_t cnt)
+{
+	FILE * fp = format->helper->fp;
+	size_t i;
+	JavaFieldInfo jfi;
+
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() jh2.interfaces_cnt=%u\n", __func__,
-			jh2.interfaces_cnt);
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, cnt);
 #endif
-	for(i = 0; i < jh2.interfaces_cnt; i++)
-		if(fread(buf, sizeof(*buf), 2, fp) != 2)
-			return -_java_error(format);
-	if((offset = ftello(fp)) == -1
-			|| fseek(fp, 0, SEEK_END) != 0
-			|| (end = ftello(fp)) == -1)
-		return -_java_error(format);
-	return callback(format, NULL, offset, end - offset, 0);
+	for(i = 0; i < cnt; i++)
+		if(fread(&jfi, sizeof(jfi), 1, fp) != 1)
+			return -_java_error_fread(format);
+	return 0;
+}
+
+static int _disas_skip_interfaces(FormatPlugin * format, uint16_t cnt)
+{
+	FILE * fp = format->helper->fp;
+	size_t i;
+	uint16_t u16;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, cnt);
+#endif
+	for(i = 0; i < cnt; i++)
+		if(fread(&u16, sizeof(u16), 1, fp) != 1)
+			return -_java_error_fread(format);
+	return 0;
 }
 
 
@@ -343,4 +399,14 @@ static int _java_error(FormatPlugin * format)
 {
 	return -error_set_code(1, "%s: %s", format->helper->filename,
 			strerror(errno));
+}
+
+
+/* java_error_fread */
+static int _java_error_fread(FormatPlugin * format)
+{
+	if(ferror(format->helper->fp))
+		return _java_error(format);
+	return -error_set_code(1, "%s: %s", format->helper->filename,
+			"End of file reached");
 }
