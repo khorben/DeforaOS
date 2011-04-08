@@ -34,7 +34,29 @@ typedef struct _JavaHeader
 	uint32_t magic;
 	uint16_t minor;
 	uint16_t major;
+	uint16_t cp_cnt;
 } JavaHeader;
+
+typedef enum _JavaCpInfoTag
+{
+	CONSTANT_Utf8 = 1,
+	CONSTANT_Integer = 3,
+	CONSTANT_Float = 4,
+	CONSTANT_Long = 5,
+	CONSTANT_Double = 6,
+	CONSTANT_Class = 7,
+	CONSTANT_String = 8,
+	CONSTANT_Fieldref = 9,
+	CONSTANT_Methodref = 10,
+	CONSTANT_InterfaceMethodref = 11,
+	CONSTANT_NameAndType = 12
+} JavaCpInfoTag;
+
+typedef struct _JavaCpInfo
+{
+	uint8_t tag;
+	char info[0];
+} JavaCpInfo;
 #pragma pack()
 
 typedef struct _JavaPlugin
@@ -58,6 +80,8 @@ static char const * _java_detect(FormatPlugin * format);
 static int _java_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base));
+
+static int _java_error(FormatPlugin * format);
 
 
 /* public */
@@ -93,11 +117,11 @@ static int _java_init(FormatPlugin * format, char const * arch)
 	memcpy(&jh.magic, format->signature, format->signature_len);
 	jh.minor = _htob16(0);
 	jh.major = _htob16(0x32); /* XXX choose a more appropriate version */
+	jh.cp_cnt = _htob16(0);
 	if(fwrite(&jh, sizeof(jh), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	if((java = malloc(sizeof(*java))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+		return -_java_error(format);
 	memset(java, 0, sizeof(*java));
 	format->priv = java;
 	return 0;
@@ -137,8 +161,7 @@ static int _exit_constant_pool(FormatPlugin * format)
 	uint16_t cnt = _htob16(java->constants_cnt + 1);
 
 	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	/* XXX output the constants */
 	return 0;
 }
@@ -149,8 +172,7 @@ static int _exit_access_flags(FormatPlugin * format)
 	uint16_t flags = _htob16(java->access_flags);
 
 	if(fwrite(&flags, sizeof(flags), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	return 0;
 }
 
@@ -160,8 +182,7 @@ static int _exit_class_name(FormatPlugin * format)
 
 	/* FIXME really implement */
 	if(fwrite(&index, sizeof(index), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	return 0;
 }
 
@@ -171,8 +192,7 @@ static int _exit_super_name(FormatPlugin * format)
 
 	/* FIXME really implement */
 	if(fwrite(&index, sizeof(index), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	return 0;
 }
 
@@ -182,8 +202,7 @@ static int _exit_interface_table(FormatPlugin * format)
 	uint16_t cnt = _htob16(java->interfaces_cnt);
 
 	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	/* XXX output the interfaces */
 	return 0;
 }
@@ -194,8 +213,7 @@ static int _exit_field_table(FormatPlugin * format)
 	uint16_t cnt = _htob16(java->fields_cnt);
 
 	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	/* XXX output the fields */
 	return 0;
 }
@@ -206,8 +224,7 @@ static int _exit_method_table(FormatPlugin * format)
 	uint16_t cnt = _htob16(java->methods_cnt);
 
 	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
-		return error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	/* XXX output the methods */
 	return 0;
 }
@@ -218,8 +235,7 @@ static int _exit_attribute_table(FormatPlugin * format)
 	uint16_t cnt = _htob16(java->attributes_cnt);
 
 	if(fwrite(&cnt, sizeof(cnt), 1, format->helper->fp) != 1)
-		return -error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
+		return -_java_error(format);
 	/* XXX output the attributes */
 	return 0;
 }
@@ -237,13 +253,58 @@ static int _java_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base))
 {
-	struct stat st;
+	FILE * fp = format->helper->fp;
+	JavaHeader jh;
+	size_t i;
+	JavaCpInfo jci;
+	size_t size;
+	char buf[8];
+	off_t offset;
+	off_t end;
 
-	/* FIXME really implement */
-	if(fstat(fileno(format->helper->fp), &st) != 0)
-		return -error_set_code(1, "%s: %s", format->helper->filename,
-				strerror(errno));
-	if(st.st_size < 8)
-		return -1; /* XXX report error */
-	return callback(format, NULL, 8, st.st_size - 8, 0);
+	if(fseek(fp, sizeof(JavaHeader), SEEK_SET) != 0
+			|| fread(&jh, sizeof(jh), 1, fp) != 1)
+		return -_java_error(format);
+	jh.cp_cnt = _htob16(jh.cp_cnt);
+	/* skip the constant pool */
+	for(i = 1; i < jh.cp_cnt; i++)
+	{
+		if(fread(&jci, sizeof(jci), 1, fp) != 1)
+			return -_java_error(format);
+		switch(jci.tag)
+		{
+			case CONSTANT_Double:
+			case CONSTANT_Long:
+				size = 8;
+				break;
+			case CONSTANT_Fieldref:
+			case CONSTANT_Float:
+			case CONSTANT_Integer:
+			case CONSTANT_InterfaceMethodref:
+			case CONSTANT_NameAndType:
+				size = 4;
+				break;
+			case CONSTANT_Class:
+			case CONSTANT_String:
+			case CONSTANT_Utf8: /* XXX requires special care */
+			default:
+				size = 2;
+				break;
+		}
+		if(fread(buf, sizeof(*buf), size, fp) != size)
+			return -_java_error(format);
+	}
+	if((offset = ftello(fp)) == -1
+			|| fseek(fp, 0, SEEK_END) != 0
+			|| (end = ftello(fp)) == -1)
+		return -_java_error(format);
+	return callback(format, NULL, offset, end - offset, 0);
+}
+
+
+/* java_error */
+static int _java_error(FormatPlugin * format)
+{
+	return -error_set_code(1, "%s: %s", format->helper->filename,
+			strerror(errno));
 }
