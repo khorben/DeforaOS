@@ -200,6 +200,7 @@
 	{ "adc",	0x10dd,	AO_bl|AO_ch_,		2, 0, 0, 0 },
 	{ "adc",	0x10de,	AO_bl|AO_dh_,		2, 0, 0, 0 },
 	{ "adc",	0x10df,	AO_bl|AO_bh_,		2, 0, 0, 0 },
+	{ "adc",	0x1100,	AO_AX|AO_D_AX_,		2, 0, 0, 0 },
 	{ "adc",	0x11c0,	AO_AX|AO_AX_,		2, 0, 0, 0 },
 	{ "adc",	0x11c1,	AO_AX|AO_CX_,		2, 0, 0, 0 },
 	{ "adc",	0x11c2,	AO_AX|AO_DX_,		2, 0, 0, 0 },
@@ -238,6 +239,7 @@
 	{ "adc",	0x13,	AO_IMM|AO_IMM_,		1, 0, 0, 0 },
 #endif
 	{ "add",	0x0000,	AO_al|AO_D_AX_,		2, 0, 0, 0 },
+	{ "add",	0x0032,	AO_dh|AO_D_DX_,		2, 0, 0, 0 },
 	{ "add",	0x000d,	AO_cl|AO_IMM_,		2, 0, W, 0 },
 	{ "add",	0x00c0,	AO_al|AO_al_,		2, 0, 0, 0 },
 	{ "add",	0x00c1,	AO_al|AO_cl_,		2, 0, 0, 0 },
@@ -887,6 +889,7 @@
 	{ "fprem1",	0xd9f5,	AO_NONE,		2, 0, 0, 0 },
 	{ "fptan",	0xd9f2,	AO_NONE,		2, 0, 0, 0 },
 	{ "frndint",	0xd9fc,	AO_NONE,		2, 0, 0, 0 },
+	{ "fs",		0x64,	AO_NONE,		1, 0, 0, 0 },
 	{ "fscale",	0xd9fd,	AO_st0__|AO_st1_|AO_st0,2, 0, 0, 0 },
 	{ "fsin",	0xd9fe,	AO_st0,			2, 0, 0, 0 },
 	{ "fsincos",	0xd9fb,	AO_st0,			2, 0, 0, 0 },
@@ -1006,6 +1009,7 @@
 	{ "fxtract",	0xd9f4,	AO_st0,			2, 0, 0, 0 },
 	{ "fyl2x",	0xd9f1,	AO_st1|AO_st0_|AO_st1__,2, 0, 0, 0 },
 	{ "fyl2xp1",	0xd9f9,	AO_st1|AO_st0_|AO_st1__,2, 0, 0, 0 },
+	{ "gs",		0x65,	AO_NONE,		1, 0, 0, 0 },
 	{ "hlt",	0xf4,	AO_NONE,		1, 0, 0, 0 },
 	{ "idiv",	0xf6f8,	AO_ax|AO_al_|AO_al__,	2, 0, 0, 0 },
 	{ "idiv",	0xf6f9,	AO_ax|AO_cl_|AO_al__,	2, 0, 0, 0 },
@@ -1226,6 +1230,7 @@
 	{ "mov",	0x8a,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 	{ "mov",	0x8b,	AO_IMM|AO_REG_,		1, 0, 0, 0 },
 #endif
+	{ "mov",	0xa0,	AO_IMM|AO_al_,		1, 4, 0, 0 },
 	{ "mov",	0xb8,	AO_IMM|AO_AX_,		1, W, 0, 0 },
 	{ "mov",	0xb9,	AO_IMM|AO_CX_,		1, W, 0, 0 },
 	{ "mov",	0xba,	AO_IMM|AO_DX_,		1, W, 0, 0 },
@@ -1341,9 +1346,7 @@
 	{ "rdtsc",	0x0f31,	AO_NONE,		2, 0, 0, 0 },
 	{ "ret",	0xc3,	AO_NONE,		1, 0, 0, 0 },
 	{ "ret",	0xcb,	AO_NONE,		1, 0, 0, 0 },
-#if 0
 	{ "ret",	0xc2,	AO_IMM,			1, 2, 0, 0 },
-#endif
 	{ "ret",	0xca,	AO_IMM,			1, 2, 0, 0 },
 	{ "rsm",	0x0faa,	AO_NONE,		2, 0, 0, 0 },
 	{ "sahf",	0x9e,	AO_NONE,		1, 0, 0, 0 },
