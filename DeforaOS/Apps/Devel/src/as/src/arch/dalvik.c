@@ -43,6 +43,8 @@ static ArchRegister _dalvik_regs[] =
 
 static ArchInstruction _dalvik_set[] =
 {
+	{ "add-int",	0x90,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "add-long",	0x9b,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget",	0x44,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget-boolean",0x47,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget-byte",	0x48,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
@@ -50,6 +52,7 @@ static ArchInstruction _dalvik_set[] =
 	{ "aget-object",0x46,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget-short",	0x4a,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget-wide",	0x45,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "and-int",	0x95,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput",	0x4b,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput-boolean",0x4e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput-byte",	0x4f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
@@ -68,6 +71,8 @@ static ArchInstruction _dalvik_set[] =
 	{ "const-wide",	0x18,	AO_REG|AO_IMM_,			1, 1, 8, 0 },
 	{ "const-wide/16",0x16,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "const-wide/32",0x17,	AO_REG|AO_IMM_,			1, 1, 4, 0 },
+	{ "div-int",	0x93,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "div-long",	0x9e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "goto",	0x28,	AO_IMM,				1, 1, 0, 0 },
 	{ "goto/16",	0x2900,	AO_IMM,				2, 2, 0, 0 },
 	{ "if-eqz",	0x38,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
@@ -82,11 +87,22 @@ static ArchInstruction _dalvik_set[] =
 	{ "move-exception",0x0d,AO_REG,				1, 1, 0, 0 },
 	{ "move-result",0x0a,	AO_REG,				1, 1, 0, 0 },
 	{ "move-result-wide",0x0b,AO_REG,			1, 1, 0, 0 },
+	{ "mul-int",	0x92,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "mul-long",	0x9d,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "nop",	0x0000,	AO_NONE,			2, 0, 0, 0 },
+	{ "or-int",	0x96,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "rem-int",	0x94,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "rem-long",	0x9f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "return",	0x0f,	AO_REG,				1, 1, 0, 0 },
 	{ "return-object",0x11,	AO_REG,				1, 1, 0, 0 },
 	{ "return-void",0x0e00,	AO_NONE,			2, 0, 0, 0 },
+	{ "shl-int",	0x98,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "shr-int",	0x99,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "sub-int",	0x91,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "sub-long",	0x9c,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "throw",	0x27,	AO_REG,				1, 1, 0, 0 },
+	{ "ushr-int",	0x9a,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "xor-int",	0x97,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 #include "common.ins"
 #include "null.ins"
 };
