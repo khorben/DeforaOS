@@ -51,11 +51,17 @@ typedef struct _Openmoko
 {
 	GtkWidget * window;
 	GtkWidget * deepsleep;
-#ifdef __linux__
 
+	/* hardware support */
+	GtkWidget * hw_bluetooth;
+	GtkWidget * hw_gps;
+
+#ifdef __linux__
 	/* alsa support */
 	snd_mixer_t * mixer;
 	snd_mixer_elem_t * mixer_elem;
+	snd_mixer_elem_t * mixer_elem_headphone;
+	snd_mixer_elem_t * mixer_elem_speaker;
 #endif
 } Openmoko;
 
@@ -67,6 +73,11 @@ static int _openmoko_destroy(PhonePlugin * plugin);
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
 static void _openmoko_deepsleep(PhonePlugin * plugin);
 static void _openmoko_settings(PhonePlugin * plugin);
+
+static int _openmoko_get_state(PhonePlugin * plugin, char const * device,
+		gboolean * enabled);
+static int _openmoko_set_state(PhonePlugin * plugin, char const * device,
+		gboolean enabled);
 
 static int _openmoko_mixer_open(PhonePlugin * plugin);
 static int _openmoko_mixer_close(PhonePlugin * plugin);
@@ -126,6 +137,7 @@ static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
+	Openmoko * openmoko = plugin->priv;
 	va_list ap;
 	gdouble level;
 
@@ -177,10 +189,16 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_SPEAKER_ON:
 			/* XXX assumes there's an ongoing call */
 			_event_mixer_set(plugin, "gsmspeakerout.state");
+#ifdef __linux__
+			openmoko->mixer_elem = openmoko->mixer_elem_headphone;
+#endif
 			break;
 		case PHONE_EVENT_SPEAKER_OFF:
 			/* XXX assumes there's an ongoing call */
 			_event_mixer_set(plugin, "gsmhandset.state");
+#ifdef __linux__
+			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
+#endif
 			break;
 		case PHONE_EVENT_SUSPEND:
 			_event_suspend(plugin);
@@ -350,22 +368,61 @@ static int _openmoko_mixer_close(PhonePlugin * plugin)
 }
 
 
+/* openmoko_get_state */
+static int _openmoko_get_state(PhonePlugin * plugin, char const * device,
+		gboolean * enabled)
+{
+	int ret = -1;
+	int fd;
+	char buf[2];
+
+	if((fd = open(device, O_RDONLY)) < 0)
+		return plugin->helper->error(NULL, strerror(errno), 1);
+	if(read(fd, &buf, sizeof(buf)) == 2)
+	{
+		if(buf[0] == '1')
+			*enabled = TRUE;
+		else if(buf[0] == '0')
+			*enabled = FALSE;
+		ret = 0;
+	}
+	close(fd);
+	return ret;
+}
+
+
+/* openmoko_set_state */
+static int _openmoko_set_state(PhonePlugin * plugin, char const * device,
+		gboolean enabled)
+{
+	int ret = -1;
+	int fd;
+	char buf[2] = "\0\0";
+
+	if((fd = open(device, O_WRONLY)) < 0)
+		return plugin->helper->error(NULL, strerror(errno), 1);
+	buf[0] = enabled ? '1' : '0';
+	if(write(fd, buf, sizeof(buf)) == sizeof(buf))
+		ret = 0;
+	close(fd);
+	return ret;
+}
+
+
 /* openmoko_mixer_open */
 static int _openmoko_mixer_open(PhonePlugin * plugin)
 {
 #ifdef __linux__
 	Openmoko * openmoko = plugin->priv;
 	char const * audio_device;
-	char const * audio_control;
 	snd_mixer_elem_t * elem;
 
 	openmoko->mixer_elem = NULL;
+	openmoko->mixer_elem_headphone = NULL;
+	openmoko->mixer_elem_speaker = NULL;
 	if((audio_device = plugin->helper->config_get(plugin->helper->phone,
 					"openmoko", "audio_device")) == NULL)
 		audio_device = "hw:0";
-	if((audio_control = plugin->helper->config_get(plugin->helper->phone,
-					"openmoko", "audio_control")) == NULL)
-		audio_control = "PCM";
 	if(snd_mixer_open(&openmoko->mixer, 0) != 0)
 	{
 		openmoko->mixer = NULL;
@@ -380,8 +437,10 @@ static int _openmoko_mixer_open(PhonePlugin * plugin)
 	}
 	for(elem = snd_mixer_first_elem(openmoko->mixer); elem != NULL;
 			elem = snd_mixer_elem_next(elem))
-		if(strcmp(snd_mixer_selem_get_name(elem), audio_control) == 0)
-			break;
+		if(strcmp(snd_mixer_selem_get_name(elem), "Headphone") == 0)
+			openmoko->mixer_elem_headphone = elem;
+		else if(strcmp(snd_mixer_selem_get_name(elem), "Speaker") == 0)
+			openmoko->mixer_elem_speaker = elem;
 	if(elem == NULL)
 	{
 		_openmoko_mixer_close(plugin);
@@ -402,6 +461,8 @@ static void _openmoko_settings(PhonePlugin * plugin)
 {
 	Openmoko * openmoko = plugin->priv;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * frame;
 	GtkWidget * bbox;
 	GtkWidget * widget;
 
@@ -426,6 +487,30 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	openmoko->deepsleep = gtk_check_button_new_with_label(
 			"Prevent deep sleep");
 	gtk_box_pack_start(GTK_BOX(vbox), openmoko->deepsleep, FALSE, TRUE, 0);
+	/* hardware */
+	frame = gtk_frame_new("Hardware");
+	gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
+	bbox = gtk_vbox_new(TRUE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(bbox), 4);
+	/* bluetooth */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Bluetooth");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	openmoko->hw_bluetooth = gtk_toggle_button_new_with_label("OFF");
+	gtk_box_pack_start(GTK_BOX(hbox), openmoko->hw_bluetooth, FALSE, TRUE,
+			0);
+	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
+	/* GPS */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("GPS");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	openmoko->hw_gps = gtk_toggle_button_new_with_label("OFF");
+	gtk_box_pack_start(GTK_BOX(hbox), openmoko->hw_gps, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), bbox);
+	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
 	/* button box */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
@@ -448,8 +533,18 @@ static void _on_settings_cancel(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Openmoko * openmoko = plugin->priv;
+	char const bt1[] = "/sys/bus/platform/devices/gta02-pm-bt.0/power_on";
+	char const bt2[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
+	char const gps1[] = "/sys/bus/platform/devices/gta02-pm-gps.0/power_on";
+	char const gps2[] = "/sys/bus/platform/devices/neo1973-pm-gps.0/"
+		"power_on";
+	char const gps3[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
+		"neo1973-pm-gps.0/pwron";
+
+	gboolean enabled;
 	char const * p;
 
+	gtk_widget_hide(openmoko->window);
 	if((p = plugin->helper->config_get(plugin->helper->phone, "openmoko",
 					"deepsleep")) != NULL
 			&& strtoul(p, NULL, 10) != 0)
@@ -458,7 +553,28 @@ static void _on_settings_cancel(gpointer data)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					openmoko->deepsleep), FALSE);
-	gtk_widget_hide(openmoko->window);
+	/* hardware */
+	if(_openmoko_get_state(plugin, bt1, &enabled) != 0
+			|| _openmoko_get_state(plugin, bt2, &enabled) != 0)
+		gtk_widget_set_sensitive(openmoko->hw_bluetooth, FALSE);
+	else
+	{
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					openmoko->hw_bluetooth), enabled);
+		gtk_button_set_label(GTK_BUTTON(openmoko->hw_bluetooth), enabled
+				? "ON" : "OFF");
+	}
+	if(_openmoko_get_state(plugin, gps1, &enabled) != 0
+			|| _openmoko_get_state(plugin, gps2, &enabled) != 0
+			|| _openmoko_get_state(plugin, gps3, &enabled) != 0)
+		gtk_widget_set_sensitive(openmoko->hw_gps, FALSE);
+	else
+	{
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					openmoko->hw_gps), enabled);
+		gtk_button_set_label(GTK_BUTTON(openmoko->hw_gps), enabled
+				? "ON" : "OFF");
+	}
 }
 
 static gboolean _on_settings_closex(gpointer data)
@@ -473,12 +589,30 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Openmoko * openmoko = plugin->priv;
+	char const bt1[] = "/sys/bus/platform/devices/gta02-pm-bt.0/power_on";
+	char const bt2[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
+	char const gps1[] = "/sys/bus/platform/devices/gta02-pm-gps.0/power_on";
+	char const gps2[] = "/sys/bus/platform/devices/neo1973-pm-gps.0/"
+		"power_on";
+	char const gps3[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
+		"neo1973-pm-gps.0/pwron";
 	gboolean value;
 
+	gtk_widget_hide(openmoko->window);
+	/* deepsleep */
 	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				openmoko->deepsleep));
 	plugin->helper->config_set(plugin->helper->phone, "openmoko",
 			"deepsleep", value ? "1" : "0");
 	_openmoko_deepsleep(plugin);
-	gtk_widget_hide(openmoko->window);
+	/* hardware */
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				openmoko->hw_bluetooth));
+	if(_openmoko_set_state(plugin, bt1, value) != 0)
+		_openmoko_set_state(plugin, bt2, value);
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				openmoko->hw_gps));
+	if(_openmoko_set_state(plugin, gps1, value) != 0
+			|| _openmoko_set_state(plugin, gps2, value) != 0)
+		_openmoko_set_state(plugin, gps3, value);
 }
