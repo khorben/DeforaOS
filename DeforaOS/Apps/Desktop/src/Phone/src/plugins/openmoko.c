@@ -493,12 +493,6 @@ static int _openmoko_mixer_open(PhonePlugin * plugin)
 		else if(strcmp(snd_mixer_selem_get_name(elem), "Speaker") == 0
 				&& snd_mixer_selem_has_playback_volume(elem))
 			openmoko->mixer_elem_speaker = elem;
-	if(elem == NULL)
-	{
-		_openmoko_mixer_close(plugin);
-		return -1;
-	}
-	openmoko->mixer_elem = elem;
 #endif /* __linux__ */
 	return 0;
 }
