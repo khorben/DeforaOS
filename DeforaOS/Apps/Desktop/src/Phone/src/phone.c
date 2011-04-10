@@ -549,7 +549,7 @@ void phone_call_reject(Phone * phone)
 /* phone_call_set_volume */
 void phone_call_set_volume(Phone * phone, gdouble volume)
 {
-	phone_event(phone, PHONE_EVENT_SET_VOLUME, volume);
+	phone_event(phone, PHONE_EVENT_VOLUME_SET, volume);
 }
 
 
@@ -796,6 +796,7 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 	va_list ap;
 	char const * operator;
 	gdouble level;
+	gdouble * plevel;
 	gboolean active;
 	char const * number;
 	GSMEncoding * encoding;
@@ -837,10 +838,6 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 				level = va_arg(ap, gdouble);
 				ret |= plugin->event(plugin, event, level);
 				break;
-			case PHONE_EVENT_SET_VOLUME:
-				level = va_arg(ap, gdouble);
-				ret |= plugin->event(plugin, event, level);
-				break;
 			case PHONE_EVENT_SMS_RECEIVING:
 			case PHONE_EVENT_SMS_SENDING:
 				number = va_arg(ap, char const *);
@@ -849,6 +846,18 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 				len = va_arg(ap, size_t *);
 				ret |= plugin->event(plugin, event, number,
 						encoding, buf, len);
+				break;
+			case PHONE_EVENT_VOLUME_GET:
+				plevel = va_arg(ap, gdouble *);
+				ret |= plugin->event(plugin, event, plevel);
+				if(ret != 0)
+					break;
+				gtk_range_set_value(GTK_RANGE(phone->ca_volume),
+						*plevel);
+				break;
+			case PHONE_EVENT_VOLUME_SET:
+				level = va_arg(ap, gdouble);
+				ret |= plugin->event(plugin, event, level);
 				break;
 			/* no arguments */
 			case PHONE_EVENT_CALL_ESTABLISHED:

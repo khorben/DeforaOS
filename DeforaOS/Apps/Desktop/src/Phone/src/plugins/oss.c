@@ -121,7 +121,7 @@ static int _oss_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_CALL_OUTGOING:
 			/* FIXME tone */
 			break;
-		case PHONE_EVENT_SET_VOLUME:
+		case PHONE_EVENT_VOLUME_SET:
 			va_start(ap, event);
 			level = va_arg(ap, gdouble);
 			va_end(ap);

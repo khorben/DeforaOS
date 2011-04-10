@@ -65,7 +65,6 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_RESUMING,
 	PHONE_EVENT_SET_OPERATOR,	/* char const * operator */
 	PHONE_EVENT_SET_SIGNAL_LEVEL,	/* gdouble level */
-	PHONE_EVENT_SET_VOLUME,		/* gdouble volume */
 	PHONE_EVENT_SIM_PIN_VALID,
 	PHONE_EVENT_SMS_RECEIVED,
 	PHONE_EVENT_SMS_RECEIVING,	/* char const *, GSMEncoding *, char **,
@@ -77,7 +76,9 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_SPEAKER_OFF,
 	PHONE_EVENT_SUSPEND,
 	PHONE_EVENT_VIBRATOR_OFF,
-	PHONE_EVENT_VIBRATOR_ON
+	PHONE_EVENT_VIBRATOR_ON,
+	PHONE_EVENT_VOLUME_GET,		/* gdouble * volume */
+	PHONE_EVENT_VOLUME_SET		/* gdouble volume */
 } PhoneEvent;
 
 typedef enum _PhoneMessage

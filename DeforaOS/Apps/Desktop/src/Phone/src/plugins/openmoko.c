@@ -133,6 +133,7 @@ static int _event_power_on(PhonePlugin * plugin, gboolean power);
 static int _event_resuming(PhonePlugin * plugin);
 static int _event_suspend(PhonePlugin * plugin);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
+static int _event_volume_get(PhonePlugin * plugin, gdouble * level);
 static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
@@ -140,12 +141,18 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	Openmoko * openmoko = plugin->priv;
 	va_list ap;
 	gdouble level;
+	gdouble * plevel = &level;
 
 	switch(event)
 	{
 		case PHONE_EVENT_CALL_ESTABLISHED:
 			/* let us hear the call */
 			_event_mixer_set(plugin, "gsmhandset.state");
+#ifdef __linux__
+			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
+			plugin->helper->event(plugin->helper->phone,
+					PHONE_EVENT_GET_VOLUME, plevel);
+#endif
 			/* enable echo cancellation */
 			plugin->helper->queue(plugin->helper->phone,
 					"AT%N0187");
@@ -153,14 +160,25 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_CALL_INCOMING:
 			/* let us hear the ringtone */
 			_event_mixer_set(plugin, "stereoout.state");
+#ifdef __linux__
+			openmoko->mixer_elem = NULL;
+#endif
 			break;
 		case PHONE_EVENT_CALL_OUTGOING:
 			/* let us hear the connection */
 			_event_mixer_set(plugin, "gsmhandset.state");
+#ifdef __linux__
+			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
+			plugin->helper->event(plugin->helper->phone,
+					PHONE_EVENT_GET_VOLUME, plevel);
+#endif
 			break;
 		case PHONE_EVENT_CALL_TERMINATED:
 			/* restore regular audio */
 			_event_mixer_set(plugin, "stereoout.state");
+#ifdef __linux__
+			openmoko->mixer_elem = NULL;
+#endif
 			break;
 		case PHONE_EVENT_FUNCTIONAL:
 			_openmoko_deepsleep(plugin);
@@ -180,17 +198,13 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_RESUMING:
 			_event_resuming(plugin);
 			break;
-		case PHONE_EVENT_SET_VOLUME:
-			va_start(ap, event);
-			level = va_arg(ap, gdouble);
-			va_end(ap);
-			_event_volume_set(plugin, level);
-			break;
 		case PHONE_EVENT_SPEAKER_ON:
 			/* XXX assumes there's an ongoing call */
 			_event_mixer_set(plugin, "gsmspeakerout.state");
 #ifdef __linux__
 			openmoko->mixer_elem = openmoko->mixer_elem_headphone;
+			plugin->helper->event(plugin->helper->phone,
+					PHONE_EVENT_GET_VOLUME, plevel);
 #endif
 			break;
 		case PHONE_EVENT_SPEAKER_OFF:
@@ -198,6 +212,8 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			_event_mixer_set(plugin, "gsmhandset.state");
 #ifdef __linux__
 			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
+			plugin->helper->event(plugin->helper->phone,
+					PHONE_EVENT_GET_VOLUME, plevel);
 #endif
 			break;
 		case PHONE_EVENT_SUSPEND:
@@ -208,6 +224,18 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 		case PHONE_EVENT_VIBRATOR_ON:
 			_event_vibrator(plugin, TRUE);
+			break;
+		case PHONE_EVENT_VOLUME_GET:
+			va_start(ap, event);
+			plevel = va_arg(ap, gdouble *);
+			va_end(ap);
+			_event_volume_get(plugin, plevel);
+			break;
+		case PHONE_EVENT_VOLUME_SET:
+			va_start(ap, event);
+			level = va_arg(ap, gdouble);
+			va_end(ap);
+			_event_volume_set(plugin, level);
 			break;
 		default: /* not relevant */
 			break;
@@ -324,6 +352,28 @@ static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
 	return ret;
 }
 
+static int _event_volume_get(PhonePlugin * plugin, gdouble * level)
+{
+#ifdef __linux__
+	Openmoko * openmoko = plugin->priv;
+	long min;
+	long max;
+	long value;
+
+	if(openmoko->mixer_elem == NULL)
+		return 0;
+	if(snd_mixer_selem_get_playback_volume_range(openmoko->mixer_elem,
+				&min, &max) != 0)
+		return 0;
+	if(snd_mixer_selem_get_playback_volume(openmoko->mixer_elem,
+				SND_MIXER_SCHN_FRONT_LEFT, &value) != 0)
+		return 0;
+	*level = value;
+	*level /= max;
+#endif
+	return 0;
+}
+
 static int _event_volume_set(PhonePlugin * plugin, gdouble level)
 {
 #ifdef __linux__
@@ -437,9 +487,11 @@ static int _openmoko_mixer_open(PhonePlugin * plugin)
 	}
 	for(elem = snd_mixer_first_elem(openmoko->mixer); elem != NULL;
 			elem = snd_mixer_elem_next(elem))
-		if(strcmp(snd_mixer_selem_get_name(elem), "Headphone") == 0)
+		if(strcmp(snd_mixer_selem_get_name(elem), "Headphone") == 0
+				&& snd_mixer_selem_has_playback_volume(elem))
 			openmoko->mixer_elem_headphone = elem;
-		else if(strcmp(snd_mixer_selem_get_name(elem), "Speaker") == 0)
+		else if(strcmp(snd_mixer_selem_get_name(elem), "Speaker") == 0
+				&& snd_mixer_selem_has_playback_volume(elem))
 			openmoko->mixer_elem_speaker = elem;
 	if(elem == NULL)
 	{
