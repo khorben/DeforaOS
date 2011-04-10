@@ -67,12 +67,15 @@ static ArchInstruction _dalvik_set[] =
 	{ "aput-object",0x4d,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput-short",	0x51,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput-wide",	0x4c,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
-	{ "cmp-long",	0x31,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 0 },
-	{ "cmpg-double",0x30,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 0 },
-	{ "cmpg-float",	0x2e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 0 },
-	{ "cmpl-double",0x2f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 0 },
-	{ "cmpl-float",	0x2d,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 0 },
+	{ "cmp-long",	0x31,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "cmpg-double",0x30,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "cmpg-float",	0x2e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "cmpl-double",0x2f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "cmpl-float",	0x2d,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "const",	0x14,	AO_REG|AO_IMM_,			1, 1, 5, 0 },
+#if 1	/* XXX really implement */
+	{ "const/4",	0x12,	AO_v0|AO_IMM_,			1, 0, 1, 0 },
+#endif
 	{ "const/16",	0x13,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "const-string",0x1a,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "const-wide",	0x18,	AO_REG|AO_IMM_,			1, 1, 8, 0 },
@@ -113,6 +116,11 @@ static ArchInstruction _dalvik_set[] =
 	{ "int-to-float",0x82,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "int-to-long",0x81,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "int-to-short",0x8f,	AO_v0|AO_REG_,			1, 0, 1, 0 },
+	{ "invoke-direct",0x70,	AO_IMM|AO_IMM_|AO_IMM__,	1, 1, 2, 2 },
+	{ "invoke-interface",0x72,AO_IMM|AO_IMM_|AO_IMM__,	1, 1, 2, 2 },
+	{ "invoke-static",0x71,AO_IMM|AO_IMM_|AO_IMM__,		1, 1, 2, 2 },
+	{ "invoke-super",0x6f,AO_IMM|AO_IMM_|AO_IMM__,		1, 1, 2, 2 },
+	{ "invoke-virtual",0x6e,AO_IMM|AO_IMM_|AO_IMM__,	1, 1, 2, 2 },
 	{ "iput",	0x59,	AO_v0|AO_REG_|AO_IMM__,		1, 0, 1, 2 },
 	{ "iput-boolean",0x5c,	AO_v0|AO_REG_|AO_IMM__,		1, 0, 1, 2 },
 	{ "iput-byte",	0x5d,	AO_v0|AO_REG_|AO_IMM__,		1, 0, 1, 2 },
@@ -126,14 +134,24 @@ static ArchInstruction _dalvik_set[] =
 #endif
 	{ "monitor-enter",0x1d,	AO_REG,				1, 1, 0, 0 },
 	{ "monitor-exit",0x1e,	AO_REG,				1, 1, 0, 0 },
-	{ "move",	0x0100,	AO_v0|AO_v0_,			2, 0, 0, 0 },
+#if 1 /* XXX really implement */
+	{ "move",	0x01,	AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
+	{ "move/16",	0x03,	AO_REG|AO_REG_,			1, 2, 1, 0 },
 	{ "move/from16",0x02,	AO_REG|AO_REG_,			1, 1, 2, 0 },
 	{ "move-exception",0x0d,AO_REG,				1, 1, 0, 0 },
 #if 1 /* XXX really implement */
 	{ "move-object",0x07,	AO_v0|AO_REG_,			1, 0, 1, 0 },
+	{ "move-object/16",0x09,AO_v0|AO_REG_,			1, 2, 1, 0 },
+	{ "move-object/from16",0x08,AO_v0|AO_REG_,		1, 1, 2, 0 },
 #endif
 	{ "move-result",0x0a,	AO_REG,				1, 1, 0, 0 },
+	{ "move-result-object",0x0c,AO_REG,			1, 1, 0, 0 },
 	{ "move-result-wide",0x0b,AO_REG,			1, 1, 0, 0 },
+#if 1 /* XXX really implement */
+	{ "move-wide",0x04,	AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
+	{ "move-wide/16",0x06,	AO_REG|AO_REG_,			1, 2, 1, 0 },
 	{ "move-wide/from16",0x05,AO_REG|AO_REG_,		1, 1, 2, 0 },
 	{ "mul-double",	0xad,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "mul-float",	0xa8,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
@@ -165,6 +183,7 @@ static ArchInstruction _dalvik_set[] =
 	{ "return",	0x0f,	AO_REG,				1, 1, 0, 0 },
 	{ "return-object",0x11,	AO_REG,				1, 1, 0, 0 },
 	{ "return-void",0x0e00,	AO_NONE,			2, 0, 0, 0 },
+	{ "return-wide",0x10,	AO_REG,				1, 1, 0, 0 },
 	{ "sget",	0x60,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "sget-boolean",0x63,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "sget-byte",	0x64,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
