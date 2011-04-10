@@ -505,9 +505,11 @@ static int _openmoko_mixer_open(PhonePlugin * plugin)
 
 
 /* openmoko_settings */
+static void _on_settings_apply(gpointer data);
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_ok(gpointer data);
+static void _on_settings_toggled(GtkWidget * widget);
 
 static void _openmoko_settings(PhonePlugin * plugin)
 {
@@ -550,6 +552,8 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	openmoko->hw_bluetooth = gtk_toggle_button_new_with_label("OFF");
+	g_signal_connect(G_OBJECT(openmoko->hw_bluetooth), "toggled",
+			G_CALLBACK(_on_settings_toggled), NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), openmoko->hw_bluetooth, FALSE, TRUE,
 			0);
 	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
@@ -559,6 +563,8 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	openmoko->hw_gps = gtk_toggle_button_new_with_label("OFF");
+	g_signal_connect(G_OBJECT(openmoko->hw_gps), "toggled", G_CALLBACK(
+				_on_settings_toggled), NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), openmoko->hw_gps, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), bbox);
@@ -571,6 +577,10 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_settings_cancel), plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_apply), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_settings_ok), plugin);
@@ -579,6 +589,37 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	gtk_container_add(GTK_CONTAINER(openmoko->window), vbox);
 	_on_settings_cancel(plugin);
 	gtk_widget_show_all(openmoko->window);
+}
+
+static void _on_settings_apply(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Openmoko * openmoko = plugin->priv;
+	char const bt1[] = "/sys/bus/platform/devices/gta02-pm-bt.0/power_on";
+	char const bt2[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
+	char const gps1[] = "/sys/bus/platform/devices/gta02-pm-gps.0/power_on";
+	char const gps2[] = "/sys/bus/platform/devices/neo1973-pm-gps.0/"
+		"power_on";
+	char const gps3[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
+		"neo1973-pm-gps.0/pwron";
+	gboolean value;
+
+	/* deepsleep */
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				openmoko->deepsleep));
+	plugin->helper->config_set(plugin->helper->phone, "openmoko",
+			"deepsleep", value ? "1" : "0");
+	_openmoko_deepsleep(plugin);
+	/* hardware */
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				openmoko->hw_bluetooth));
+	if(_openmoko_set_state(plugin, bt1, value) != 0)
+		_openmoko_set_state(plugin, bt2, value);
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				openmoko->hw_gps));
+	if(_openmoko_set_state(plugin, gps1, value) != 0
+			|| _openmoko_set_state(plugin, gps2, value) != 0)
+		_openmoko_set_state(plugin, gps3, value);
 }
 
 static void _on_settings_cancel(gpointer data)
@@ -607,25 +648,23 @@ static void _on_settings_cancel(gpointer data)
 					openmoko->deepsleep), FALSE);
 	/* hardware */
 	if(_openmoko_get_state(plugin, bt1, &enabled) != 0
-			|| _openmoko_get_state(plugin, bt2, &enabled) != 0)
+			&& _openmoko_get_state(plugin, bt2, &enabled) != 0)
 		gtk_widget_set_sensitive(openmoko->hw_bluetooth, FALSE);
 	else
 	{
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					openmoko->hw_bluetooth), enabled);
-		gtk_button_set_label(GTK_BUTTON(openmoko->hw_bluetooth), enabled
-				? "ON" : "OFF");
+		gtk_widget_set_sensitive(openmoko->hw_bluetooth, TRUE);
 	}
 	if(_openmoko_get_state(plugin, gps1, &enabled) != 0
-			|| _openmoko_get_state(plugin, gps2, &enabled) != 0
-			|| _openmoko_get_state(plugin, gps3, &enabled) != 0)
+			&& _openmoko_get_state(plugin, gps2, &enabled) != 0
+			&& _openmoko_get_state(plugin, gps3, &enabled) != 0)
 		gtk_widget_set_sensitive(openmoko->hw_gps, FALSE);
 	else
 	{
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					openmoko->hw_gps), enabled);
-		gtk_button_set_label(GTK_BUTTON(openmoko->hw_gps), enabled
-				? "ON" : "OFF");
+		gtk_widget_set_sensitive(openmoko->hw_gps, TRUE);
 	}
 }
 
@@ -641,30 +680,15 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Openmoko * openmoko = plugin->priv;
-	char const bt1[] = "/sys/bus/platform/devices/gta02-pm-bt.0/power_on";
-	char const bt2[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
-	char const gps1[] = "/sys/bus/platform/devices/gta02-pm-gps.0/power_on";
-	char const gps2[] = "/sys/bus/platform/devices/neo1973-pm-gps.0/"
-		"power_on";
-	char const gps3[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
-		"neo1973-pm-gps.0/pwron";
-	gboolean value;
 
 	gtk_widget_hide(openmoko->window);
-	/* deepsleep */
-	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				openmoko->deepsleep));
-	plugin->helper->config_set(plugin->helper->phone, "openmoko",
-			"deepsleep", value ? "1" : "0");
-	_openmoko_deepsleep(plugin);
-	/* hardware */
-	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				openmoko->hw_bluetooth));
-	if(_openmoko_set_state(plugin, bt1, value) != 0)
-		_openmoko_set_state(plugin, bt2, value);
-	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				openmoko->hw_gps));
-	if(_openmoko_set_state(plugin, gps1, value) != 0
-			|| _openmoko_set_state(plugin, gps2, value) != 0)
-		_openmoko_set_state(plugin, gps3, value);
+	_on_settings_apply(plugin);
+}
+
+static void _on_settings_toggled(GtkWidget * widget)
+{
+	gboolean active;
+
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	gtk_button_set_label(GTK_BUTTON(widget), active ? "ON" : "OFF");
 }
