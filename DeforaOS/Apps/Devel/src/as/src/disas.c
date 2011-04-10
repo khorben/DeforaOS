@@ -266,11 +266,25 @@ static void _do_flat_print(Arch * arch, unsigned long address,
 		putchar(' ');
 	printf(" %s", ai->name);
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
-		if((operands & _AO_OP) == _AO_REG)
+	{
+		s = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
+				: ai->op3size);
+		if((operands & _AO_OP) == _AO_REG && s == 0)
 		{
 			reg = (operands & 0xff) >> 2;
 			if((ar = arch_register_get_by_id(arch, reg))
 					!= NULL)
+				printf("%s%%%s", sep, ar->name);
+			else
+				printf("%s%d", sep, reg);
+			sep = ", ";
+		}
+		else if((operands & _AO_OP) == _AO_REG)
+		{
+			for(j = 0, u = 0; j < s; j++)
+				u = (u << 8) | (unsigned char)buffer[pos++];
+			/* XXX fix endian */
+			if((ar = arch_register_get_by_id(arch, u)) != NULL)
 				printf("%s%%%s", sep, ar->name);
 			else
 				printf("%s%d", sep, reg);
@@ -288,14 +302,13 @@ static void _do_flat_print(Arch * arch, unsigned long address,
 		}
 		else if((operands & _AO_OP) == _AO_IMM)
 		{
-			s = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
-					: ai->op3size);
 			for(j = 0, u = 0; j < s; j++)
 				u = (u << 8) | (unsigned char)buffer[pos++];
 			/* XXX fix endian */
 			printf("%s$0x%lx", sep, u);
 			sep = ", ";
 		}
+	}
 	putchar('\n');
 }
 

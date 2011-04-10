@@ -43,9 +43,16 @@ static ArchRegister _dalvik_regs[] =
 
 static ArchInstruction _dalvik_set[] =
 {
-	{ "mov",	0x0100,	AO_v0|AO_v0_,	2, 0, 0, 0 },
-	{ "nop",	0x0000,	AO_NONE,	2, 0, 0, 0 },
-	{ "ret",	0x0f00,	AO_NONE,	2, 0, 0, 0 },
+	{ "aput",	0x4b,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "aput-boolean",0x4e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "aput-byte",	0x4f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "aput-char",	0x50,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "aput-object",0x4d,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "aput-short",	0x51,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "aput-wide",	0x4c,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+	{ "mov",	0x0100,	AO_v0|AO_v0_,			2, 0, 0, 0 },
+	{ "nop",	0x0000,	AO_NONE,			2, 0, 0, 0 },
+	{ "ret",	0x0f00,	AO_NONE,			2, 0, 0, 0 },
 #include "common.ins"
 #include "null.ins"
 };

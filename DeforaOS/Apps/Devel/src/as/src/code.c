@@ -154,7 +154,8 @@ static ArchInstruction * _decode_size(size_t * size, ArchInstruction * ai)
 
 	s = ai->size;
 	for(i = 0, operands = ai->operands; operands > 0; i++, operands >>= 8)
-		if((operands & _AO_OP) == _AO_IMM)
+		if((operands & _AO_OP) == _AO_IMM
+				|| (operands & _AO_OP) == _AO_REG)
 			s += (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
 					: ai->op3size);
 	if(s > *size)
