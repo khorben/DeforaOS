@@ -345,6 +345,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
 	phone->ca_window = NULL;
+	phone->ca_volume = NULL;
 	phone->en_code = -1;
 	phone->en_window = NULL;
 	phone->en_progress = NULL;
@@ -850,7 +851,7 @@ int phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_VOLUME_GET:
 				plevel = va_arg(ap, gdouble *);
 				ret |= plugin->event(plugin, event, plevel);
-				if(ret != 0)
+				if(ret != 0 || phone->ca_volume == NULL)
 					break;
 				gtk_range_set_value(GTK_RANGE(phone->ca_volume),
 						*plevel);
