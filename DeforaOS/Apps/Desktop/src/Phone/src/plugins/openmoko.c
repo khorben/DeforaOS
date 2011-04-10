@@ -140,7 +140,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
 	Openmoko * openmoko = plugin->priv;
 	va_list ap;
-	gdouble level;
+	gdouble level = 0.0;
 	gdouble * plevel = &level;
 
 	switch(event)
@@ -151,7 +151,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 #ifdef __linux__
 			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
 			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_GET_VOLUME, plevel);
+					PHONE_EVENT_VOLUME_GET, plevel);
 #endif
 			/* enable echo cancellation */
 			plugin->helper->queue(plugin->helper->phone,
@@ -170,7 +170,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 #ifdef __linux__
 			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
 			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_GET_VOLUME, plevel);
+					PHONE_EVENT_VOLUME_GET, plevel);
 #endif
 			break;
 		case PHONE_EVENT_CALL_TERMINATED:
@@ -204,7 +204,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 #ifdef __linux__
 			openmoko->mixer_elem = openmoko->mixer_elem_headphone;
 			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_GET_VOLUME, plevel);
+					PHONE_EVENT_VOLUME_GET, plevel);
 #endif
 			break;
 		case PHONE_EVENT_SPEAKER_OFF:
@@ -213,7 +213,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 #ifdef __linux__
 			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
 			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_GET_VOLUME, plevel);
+					PHONE_EVENT_VOLUME_GET, plevel);
 #endif
 			break;
 		case PHONE_EVENT_SUSPEND:
