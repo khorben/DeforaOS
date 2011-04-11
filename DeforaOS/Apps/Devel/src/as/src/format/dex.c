@@ -67,6 +67,17 @@ typedef struct _DexMapItem
 	uint32_t size;
 	uint32_t offset;
 } DexMapItem;
+
+typedef struct _DexMapCodeItem
+{
+	uint16_t registers_size;
+	uint16_t ins_size;
+	uint16_t outs_size;
+	uint16_t tries_size;
+	uint32_t debug_info_off;
+	uint32_t insns_size;
+	char insns[0];
+} DexMapCodeItem;
 #pragma pack()
 
 
@@ -118,6 +129,10 @@ static char const * _dex_detect(FormatPlugin * format)
 static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base));
+static int _disas_map_code_item(FormatPlugin * format, off_t offset,
+		size_t size, int (*callback)(FormatPlugin * format,
+			char const * section, off_t offset, size_t size,
+			off_t base));
 
 static int _dex_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
@@ -125,14 +140,12 @@ static int _dex_disas(FormatPlugin * format, int (*callback)(
 {
 	FILE * fp = format->helper->fp;
 	DexHeader dh;
-	off_t offset;
-	off_t end;
 
 	if(fseek(fp, 0, SEEK_SET) != 0)
 		return -_dex_error(format);
 	if(fread(&dh, sizeof(dh), 1, fp) != 1)
 		return _dex_error_fread(format);
-	/* FIXME implement endian */
+	dh.map_off = _htol32(dh.map_off);
 	if(_disas_map(format, &dh, callback) != 0)
 		return -1;
 	return 0;
@@ -142,6 +155,7 @@ static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base))
 {
+	int ret = 0;
 	FILE * fp = format->helper->fp;
 	uint32_t size;
 	uint32_t i;
@@ -167,14 +181,59 @@ static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
 		dmi.type = _htol16(dmi.type);
 		dmi.size = _htol32(dmi.size);
 		dmi.offset = _htol32(dmi.offset);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: item %u, type 0x%x, size 0x%x@0x%x\n",
+				i, dmi.type, dmi.size, dmi.offset);
+#endif
 		switch(dmi.type)
 		{
 			case TYPE_CODE_ITEM:
-				callback(format, NULL, dmi.offset, dmi.size,
-						0);
+				ret = _disas_map_code_item(format, dmi.offset,
+						dmi.size, callback);
 				break;
 		}
 		fsetpos(fp, &pos);
+		if(ret != 0)
+			break;
+	}
+	return ret;
+}
+
+static int _disas_map_code_item(FormatPlugin * format, off_t offset,
+		size_t size, int (*callback)(FormatPlugin * format,
+			char const * section, off_t offset, size_t size,
+			off_t base))
+{
+	FILE * fp = format->helper->fp;
+	DexMapCodeItem dmci;
+	size_t i;
+	off_t seek;
+
+	if(fseek(fp, offset, SEEK_SET) != 0)
+		return -_dex_error(format);
+	for(i = 0; i < size; i++)
+	{
+		if(fread(&dmci, sizeof(dmci), 1, fp) != 1)
+			return -_dex_error_fread(format);
+		dmci.registers_size = _htol16(dmci.registers_size);
+		dmci.ins_size = _htol16(dmci.ins_size);
+		dmci.outs_size = _htol16(dmci.outs_size);
+		dmci.tries_size = _htol16(dmci.tries_size);
+		dmci.insns_size = _htol32(dmci.insns_size);
+		seek = dmci.tries_size * 8;
+		if((dmci.insns_size % 2) == 1)
+			seek += 2;
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: code item %lu, registers 0x%x"
+				", size 0x%x, tries 0x%x, seek 0x%lx\n",
+				i, dmci.registers_size, dmci.insns_size * 2,
+				dmci.tries_size, seek);
+#endif
+		callback(format, NULL, ftello(fp), dmci.insns_size * 2, 0);
+		/* skip try_items */
+		if(seek != 0 && fseek(fp, seek, SEEK_CUR) != 0)
+			return -_dex_error(format);
+		/* FIXME parse the encoded_catch_handler_list */
 	}
 	return 0;
 }
