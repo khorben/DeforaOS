@@ -80,6 +80,7 @@ struct _Download
 	GtkWidget * speed;
 	GtkWidget * progress;
 	GtkWidget * check;
+	GtkWidget * browse;
 	GtkWidget * cancel;
 
 	guint timeout;
@@ -107,6 +108,7 @@ static int _download_write(Download * download);
 #endif
 
 /* callbacks */
+static void _download_on_browse(gpointer data);
 static void _download_on_cancel(gpointer data);
 static gboolean _download_on_closex(gpointer data);
 
@@ -218,6 +220,13 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	g_signal_connect_swapped(G_OBJECT(download->cancel), "clicked",
 			G_CALLBACK(_download_on_cancel), download);
 	gtk_box_pack_end(GTK_BOX(hbox), download->cancel, FALSE, TRUE, 0);
+	download->browse = gtk_button_new_with_mnemonic("_Open folder");
+	gtk_widget_set_no_show_all(download->browse, TRUE);
+	widget = gtk_image_new_from_stock(GTK_STOCK_OPEN, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(download->browse), widget);
+	g_signal_connect_swapped(G_OBJECT(download->browse), "clicked",
+			G_CALLBACK(_download_on_browse), download);
+	gtk_box_pack_end(GTK_BOX(hbox), download->browse, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(download->window), 4);
 	gtk_container_add(GTK_CONTAINER(download->window), vbox);
@@ -418,6 +427,22 @@ static int _download_write(Download * download)
 
 
 /* callbacks */
+/* download_on_browse */
+static void _download_on_browse(gpointer data)
+{
+	Download * download = data;
+	GError * error = NULL;
+	char * argv[] = { "browser", NULL, NULL };
+
+	if(download->prefs.output == NULL)
+		return;
+	argv[1] = dirname(download->prefs.output);
+	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+				NULL, &error) != TRUE)
+		_download_error(download, error->message, 1);
+}
+
+
 /* download_on_cancel */
 static void _download_on_cancel(gpointer data)
 {
@@ -530,6 +555,7 @@ static void _http_data_complete(GConnHttpEventData * event,
 	gtk_label_set_text(GTK_LABEL(download->status), _("Complete"));
 	gtk_widget_set_sensitive(download->check, FALSE);
 	gtk_button_set_label(GTK_BUTTON(download->cancel), GTK_STOCK_CLOSE);
+	gtk_widget_show(download->browse);
 }
 
 static void _http_data_partial(GConnHttpEventData * event, Download * download)
@@ -658,6 +684,7 @@ static gboolean _download_on_timeout(gpointer data)
 			gtk_widget_set_sensitive(d->check, FALSE);
 			gtk_button_set_label(GTK_BUTTON(d->cancel),
 					GTK_STOCK_CLOSE);
+			gtk_widget_show(d->browse);
 			d->data_received = webkit_download_get_current_size(
 					d->conn);
 			g_object_unref(d->conn);
