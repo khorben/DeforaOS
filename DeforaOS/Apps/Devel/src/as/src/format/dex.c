@@ -78,6 +78,13 @@ typedef struct _DexMapCodeItem
 	uint32_t insns_size;
 	char insns[0];
 } DexMapCodeItem;
+
+typedef struct _DexMapTryItem
+{
+	uint32_t start_addr;
+	uint16_t insn_count;
+	uint16_t handler_off;
+} DexMapTryItem;
 #pragma pack()
 
 
@@ -208,9 +215,12 @@ static int _disas_map_code_item(FormatPlugin * format, off_t offset,
 	DexMapCodeItem dmci;
 	size_t i;
 	off_t seek;
+	size_t j;
+	DexMapTryItem dmti;
 
 	if(fseek(fp, offset, SEEK_SET) != 0)
 		return -_dex_error(format);
+	callback(format, ".text", ftello(fp), 0, 0);
 	for(i = 0; i < size; i++)
 	{
 		if(fread(&dmci, sizeof(dmci), 1, fp) != 1)
@@ -219,21 +229,32 @@ static int _disas_map_code_item(FormatPlugin * format, off_t offset,
 		dmci.ins_size = _htol16(dmci.ins_size);
 		dmci.outs_size = _htol16(dmci.outs_size);
 		dmci.tries_size = _htol16(dmci.tries_size);
+		dmci.debug_info_off = _htol32(dmci.debug_info_off);
 		dmci.insns_size = _htol32(dmci.insns_size);
-		seek = dmci.tries_size * 8;
-		if((dmci.insns_size % 2) == 1)
-			seek += 2;
+		seek = (dmci.insns_size & 0x1) == 0x1 ? 2 : 0; /* padding */
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: code item %lu, registers 0x%x"
-				", size 0x%x, tries 0x%x, seek 0x%lx\n",
-				i, dmci.registers_size, dmci.insns_size * 2,
+				", size 0x%x, debug @0x%x, tries 0x%x"
+				", seek 0x%lx\n", i, dmci.registers_size,
+				dmci.insns_size * 2, dmci.debug_info_off,
 				dmci.tries_size, seek);
 #endif
 		callback(format, NULL, ftello(fp), dmci.insns_size * 2, 0);
-		/* skip try_items */
+		/* skip padding and try_items */
 		if(seek != 0 && fseek(fp, seek, SEEK_CUR) != 0)
 			return -_dex_error(format);
-		/* FIXME parse the encoded_catch_handler_list */
+		if(dmci.tries_size > 0)
+		{
+			for(j = 0; j < dmci.tries_size; j++)
+			{
+				if(fread(&dmti, sizeof(dmti), 1, fp) != 1)
+					return -_dex_error_fread(format);
+				dmti.start_addr = _htol32(dmti.start_addr);
+				dmti.insn_count = _htol16(dmti.insn_count);
+				dmti.handler_off = _htol16(dmti.handler_off);
+			}
+			callback(format, NULL, ftello(fp), 8, 0);
+		}
 	}
 	return 0;
 }
