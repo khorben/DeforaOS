@@ -242,6 +242,8 @@ static int _do_flat(Disas * disas, off_t offset, size_t size, off_t base)
 	}
 	if(ferror(disas->helper.fp))
 		return -_disas_error(disas->helper.filename, 1);
+	else if(fseek(disas->helper.fp, offset + size, SEEK_SET) != 0)
+		return -_disas_error(disas->helper.filename, 1);
 	return ret;
 }
 
@@ -287,7 +289,7 @@ static void _do_flat_print(Arch * arch, unsigned long address,
 			if((ar = arch_register_get_by_id(arch, u)) != NULL)
 				printf("%s%%%s", sep, ar->name);
 			else
-				printf("%s%d", sep, reg);
+				printf("%s%lu", sep, u);
 			sep = ", ";
 		}
 		else if((operands & _AO_OP) == _AO_DREG)
