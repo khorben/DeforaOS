@@ -49,6 +49,9 @@ static ArchInstruction _dalvik_set[] =
 	{ "add-int/lit8",0xd8,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "add-int/lit16",0xd0,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "add-long",	0x9b,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "add-long/2addr",0xbb,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "aget",	0x44,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget-boolean",0x47,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aget-byte",	0x48,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
@@ -60,6 +63,9 @@ static ArchInstruction _dalvik_set[] =
 	{ "and-int/lit8",0xdd,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "and-int/lit16",0xd5,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "and-long",	0xa0,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "and-long/2addr",0xc0,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "aput",	0x4b,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput-boolean",0x4e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "aput-byte",	0x4f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
@@ -87,7 +93,8 @@ static ArchInstruction _dalvik_set[] =
 	{ "div-int/lit8",0xdb,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "div-int/lit16",0xd3,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "div-long",	0x9e,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
-#if 1	/* XXX really implement */
+#if 1	/* XXX implement correctly */
+	{ "div-long/2addr",0xbe,AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "double-to-float",0x8c,AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "double-to-int",0x8a,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "double-to-long",0x8b,AO_v0|AO_REG_,			1, 0, 1, 0 },
@@ -159,7 +166,8 @@ static ArchInstruction _dalvik_set[] =
 	{ "mul-int/lit8",0xda,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "mul-int/lit16",0xd2,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "mul-long",	0x9d,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
-#if 1	/* XXX really implement */
+#if 1	/* XXX implement correctly */
+	{ "mul-long/2addr",0xbd,AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "neg-double",	0x80,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "neg-float",	0x7f,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "neg-int",	0x7b,	AO_v0|AO_REG_,			1, 0, 1, 0 },
@@ -174,12 +182,18 @@ static ArchInstruction _dalvik_set[] =
 	{ "or-int/lit8",0xdb,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "or-int/lit16",0xd6,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "or-long",	0xa1,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "or-long/2addr",0xc1,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "rem-double",	0xaf,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "rem-float",	0xaa,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "rem-int",	0x94,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "rem-int/lit8",0xdc,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "rem-int/lit16",0xd4,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "rem-long",	0x9f,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "rem-long/2addr",0xbf,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "return",	0x0f,	AO_REG,				1, 1, 0, 0 },
 	{ "return-object",0x11,	AO_REG,				1, 1, 0, 0 },
 	{ "return-void",0x0e00,	AO_NONE,			2, 0, 0, 0 },
@@ -191,19 +205,18 @@ static ArchInstruction _dalvik_set[] =
 	{ "sget-object",0x62,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "sget-short",	0x66,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "sget-wide",	0x61,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput",	0x67,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput-boolean",0x6a,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput-byte",	0x6b,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput-char",	0x6c,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput-object",0x69,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput-short",	0x6d,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
-	{ "sput-wide",	0x68,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "shl-int",	0x98,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "shl-int/lit8",0xe0,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "shl-long",	0xa3,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "shl-long/2addr",0xc3,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "shr-int",	0x99,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "shr-int/lit8",0xe1,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "shr-long",	0xa4,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "shr-long/2addr",0xc4,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "sput",	0x67,	AO_REG|AO_IMM_,			1, 1, 2 ,0 },
 	{ "sput-boolean",0x6a,	AO_REG|AO_IMM_,			1, 1, 2 ,0 },
 	{ "sput-byte",	0x6b,	AO_REG|AO_IMM_,			1, 1, 2 ,0 },
@@ -217,14 +230,23 @@ static ArchInstruction _dalvik_set[] =
 	{ "sub-int/lit8",0xd9,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "sub-int/lit16",0xd1,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "sub-long",	0x9c,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "sub-long/2addr",0xbc,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "throw",	0x27,	AO_REG,				1, 1, 0, 0 },
 	{ "ushr-int",	0x9a,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "ushr-int/lit8",0xe2,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "ushr-long",	0xa5,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "ushr-long/2addr",0xc5,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 	{ "xor-int",	0x97,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
 	{ "xor-int/lit8",0xdf,	AO_REG|AO_REG_|AO_IMM__,	1, 1, 1, 1 },
 	{ "xor-int/lit16",0xd7,	AO_REG|AO_IMM_,			1, 1, 2, 0 },
 	{ "xor-long",	0xa2,	AO_REG|AO_REG_|AO_REG__,	1, 1, 1, 1 },
+#if 1	/* XXX implement correctly */
+	{ "xor-long/2addr",0xc2,AO_v0|AO_REG_,			1, 0, 1, 0 },
+#endif
 #include "common.ins"
 #include "null.ins"
 };
