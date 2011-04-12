@@ -118,7 +118,7 @@ ArchInstruction * arch_instruction_get_by_name(Arch * arch, char const * name)
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, name);
+	fprintf(stderr, "DEBUG: %s(arch, \"%s\")\n", __func__, name);
 #endif
 	for(i = 0; i < arch->instructions_cnt; i++)
 		if(strcmp(arch->instructions[i].name, name) == 0)
@@ -134,8 +134,7 @@ ArchInstruction * arch_instruction_get_by_opcode(Arch * arch, uint8_t size,
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %u, 0x%lx)\n", __func__, arch, size,
-			opcode);
+	fprintf(stderr, "DEBUG: %s(arch, %u, 0x%lx)\n", __func__, size, opcode);
 #endif
 	for(i = 0; i < arch->instructions_cnt; i++)
 		if(arch->instructions[i].size == size
