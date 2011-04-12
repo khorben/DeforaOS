@@ -17,6 +17,7 @@
 
 #include <System.h>
 #include <sys/stat.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include "As/format.h"
@@ -57,7 +58,9 @@ typedef struct _DexHeader
 enum
 {
 	TYPE_HEADER_ITEM	= 0x0000,
-	TYPE_CODE_ITEM		= 0x2001
+	TYPE_STRING_ID_ITEM	= 0x0001,
+	TYPE_CODE_ITEM		= 0x2001,
+	TYPE_STRING_DATA_ITEM	= 0x2002
 };
 
 typedef struct _DexMapItem
@@ -85,7 +88,24 @@ typedef struct _DexMapTryItem
 	uint16_t insn_count;
 	uint16_t handler_off;
 } DexMapTryItem;
+
+typedef struct _DexStringIdItem
+{
+	uint32_t string_data_off;
+} DexStringIdItem;
 #pragma pack()
+
+typedef struct _DexString
+{
+	off_t offset;
+	char * string;
+} DexString;
+
+typedef struct _Dex
+{
+	DexString * strings;
+	size_t strings_cnt;
+} Dex;
 
 
 /* variables */
@@ -94,6 +114,8 @@ static char _dex_signature[4] = "dex\n";
 
 /* prototypes */
 /* plug-in */
+static int _dex_init(FormatPlugin * format, char const * arch);
+static int _dex_destroy(FormatPlugin * format);
 static char const * _dex_detect(FormatPlugin * format);
 static int _dex_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
@@ -111,8 +133,8 @@ FormatPlugin format_plugin =
 	"dex",
 	_dex_signature,
 	sizeof(_dex_signature),
-	NULL,
-	NULL,
+	_dex_init,
+	_dex_destroy,
 	NULL,
 	NULL,
 	_dex_detect,
@@ -124,6 +146,40 @@ FormatPlugin format_plugin =
 /* private */
 /* functions */
 /* plug-in */
+/* dex_init */
+static int _dex_init(FormatPlugin * format, char const * arch)
+{
+	Dex * dex;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, arch);
+#endif
+	if(arch != NULL && strcmp(arch, "dalvik") != 0)
+		return -error_set_code(1, "%s: %s", arch,
+				"Unsupported Dex architecture");
+	if((dex = object_new(sizeof(*dex))) == NULL)
+		return -1;
+	format->priv = dex;
+	dex->strings = NULL;
+	dex->strings_cnt = 0;
+	return 0;
+}
+
+
+/* dex_destroy */
+static int _dex_destroy(FormatPlugin * format)
+{
+	Dex * dex = format->priv;
+	size_t i;
+
+	for(i = 0; i < dex->strings_cnt; i++)
+		string_delete(dex->strings[i].string);
+	free(dex->strings);
+	object_delete(dex);
+	return 0;
+}
+
+
 /* dex_detect */
 static char const * _dex_detect(FormatPlugin * format)
 {
@@ -136,10 +192,11 @@ static char const * _dex_detect(FormatPlugin * format)
 static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
 			FormatPlugin * format, char const * section,
 			off_t offset, size_t size, off_t base));
-static int _disas_map_code_item(FormatPlugin * format, off_t offset,
-		size_t size, int (*callback)(FormatPlugin * format,
-			char const * section, off_t offset, size_t size,
-			off_t base));
+static int _disas_map_code(FormatPlugin * format, off_t offset, size_t size,
+		int (*callback)(FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base));
+static int _disas_map_string_id(FormatPlugin * format, off_t offset,
+		size_t size);
 
 static int _dex_disas(FormatPlugin * format, int (*callback)(
 			FormatPlugin * format, char const * section,
@@ -195,9 +252,12 @@ static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
 		switch(dmi.type)
 		{
 			case TYPE_CODE_ITEM:
-				ret = _disas_map_code_item(format, dmi.offset,
+				ret |= _disas_map_code(format, dmi.offset,
 						dmi.size, callback);
 				break;
+			case TYPE_STRING_ID_ITEM:
+				ret |= _disas_map_string_id(format, dmi.offset,
+						dmi.size);
 		}
 		fsetpos(fp, &pos);
 		if(ret != 0)
@@ -206,10 +266,9 @@ static int _disas_map(FormatPlugin * format, DexHeader * dh, int (*callback)(
 	return ret;
 }
 
-static int _disas_map_code_item(FormatPlugin * format, off_t offset,
-		size_t size, int (*callback)(FormatPlugin * format,
-			char const * section, off_t offset, size_t size,
-			off_t base))
+static int _disas_map_code(FormatPlugin * format, off_t offset, size_t size,
+		int (*callback)(FormatPlugin * format, char const * section,
+			off_t offset, size_t size, off_t base))
 {
 	FILE * fp = format->helper->fp;
 	DexMapCodeItem dmci;
@@ -256,6 +315,43 @@ static int _disas_map_code_item(FormatPlugin * format, off_t offset,
 			callback(format, NULL, ftello(fp), 8, 0);
 		}
 	}
+	return 0;
+}
+
+static int _disas_map_string_id(FormatPlugin * format, off_t offset,
+		size_t size)
+{
+	FILE * fp = format->helper->fp;
+	Dex * dex = format->priv;
+	size_t i;
+	DexStringIdItem dsii;
+
+	if(dex->strings_cnt != 0)
+		return -error_set_code("%s: %s", "dex",
+				"String section already parsed");
+	if(fseek(fp, offset, SEEK_SET) != 0)
+		return -_dex_error(format);
+	if((dex->strings = malloc(sizeof(*dex->strings) * size)) == NULL)
+		return -_dex_error(format);
+	for(i = 0; i < size; i++)
+	{
+		if(fread(&dsii, sizeof(dsii), 1, fp) != 1)
+			break;
+		dsii.string_data_off = _htol32(dsii.string_data_off);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() string %lu offset 0x%x\n",
+				__func__, i, dsii.string_data_off);
+#endif
+		dex->strings[i].offset = dsii.string_data_off;
+		dex->strings[i].string = NULL;
+	}
+	if(i != size)
+	{
+		free(dex->strings);
+		dex->strings = NULL;
+		return -_dex_error_fread(format);
+	}
+	dex->strings_cnt = size;
 	return 0;
 }
 
