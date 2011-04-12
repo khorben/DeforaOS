@@ -247,6 +247,8 @@ static ArchInstruction _java_set[] =
 ArchPlugin arch_plugin =
 {
 	"java",
+	"java",
+	NULL,
 	_java_regs,
 	_java_set
 };

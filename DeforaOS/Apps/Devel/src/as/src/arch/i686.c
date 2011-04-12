@@ -51,7 +51,9 @@ static ArchInstruction _i686_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"i686",
 	"elf",
+	NULL,
 	_i686_regs,
 	_i686_set
 };

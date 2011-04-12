@@ -343,6 +343,8 @@ static ArchInstruction _dalvik_set[] =
 ArchPlugin arch_plugin =
 {
 	"dalvik",
+	"dex",
+	NULL,
 	_dalvik_regs,
 	_dalvik_set
 };

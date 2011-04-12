@@ -23,6 +23,20 @@
 
 /* AsArch */
 /* types */
+typedef enum _ArchEndian
+{
+	ARCH_ENDIAN_BIG = 0,
+	ARCH_ENDIAN_LITTLE,
+	ARCH_ENDIAN_BOTH
+} ArchEndian;
+
+typedef struct _ArchDescription
+{
+	ArchEndian endian;
+	unsigned int alignment;
+	unsigned int instruction_size;		/* 0 if not constant */
+} ArchDescription;
+
 typedef unsigned int ArchOperands;
 # define _AO_NONE	(00)
 # define _AO_IMM	(01)
@@ -58,7 +72,9 @@ typedef struct _ArchRegister
 
 typedef struct _ArchPlugin
 {
-	char const * format;
+	char const * name;
+	char const * format;				/* default format */
+	ArchDescription * description;
 	ArchRegister * registers;
 	ArchInstruction * instructions;
 } ArchPlugin;

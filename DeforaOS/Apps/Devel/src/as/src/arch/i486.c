@@ -51,7 +51,9 @@ static ArchInstruction _i486_set[] =
 
 ArchPlugin arch_plugin =
 {
+	"i486",
 	"elf",
+	NULL,
 	_i486_regs,
 	_i486_set
 };
