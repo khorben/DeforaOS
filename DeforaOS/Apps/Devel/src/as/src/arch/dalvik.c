@@ -229,6 +229,7 @@ static ArchInstruction _dalvik_set[] =
 #endif
 	{ "nop",	0x0000,	AO_NONE,			2, 0, 0, 0 },
 #if 1	/* XXX really implement */
+	{ "nop",	0x00,	AO_IMM,				1, 1, 0, 0 },
 	{ "not-int",	0x7c,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 	{ "not-long",	0x7e,	AO_v0|AO_REG_,			1, 0, 1, 0 },
 #endif
