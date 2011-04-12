@@ -67,6 +67,8 @@ static int _disas_error(char const * message, int ret);
 static DisasFormat const * _disas_format_open(Disas * disas,
 		char const * format);
 static int _disas_format_open_all(Disas * disas);
+static int _disas_format_init(DisasFormat const * format, char const * arch);
+static int _disas_format_exit(DisasFormat const * format);
 static void _disas_format_close(DisasFormat const * format);
 static void _disas_format_close_all(Disas * disas);
 
@@ -119,6 +121,7 @@ static int _disas(char const * arch, char const * format, char const * filename)
 
 static int _disas_do_format(Disas * disas, char const * format)
 {
+	int ret;
 	DisasFormat const * df;
 
 #ifdef DEBUG
@@ -127,9 +130,15 @@ static int _disas_do_format(Disas * disas, char const * format)
 	if((df = _disas_format_open(disas, format)) == NULL)
 		return -1;
 	if(df->format->disas == NULL)
-		return -error_set_code(1, "%s: %s", format,
+		ret = -error_set_code(1, "%s: %s", format,
 				"Does not support disassembly");
-	return _do_callback(disas, df->format);
+	else if((ret = _disas_format_init(df, disas->arch)) == 0)
+	{
+		ret = _do_callback(disas, df->format);
+		_disas_format_exit(df);
+	}
+	_disas_format_close(df);
+	return ret;
 }
 
 static int _disas_do(Disas * disas)
@@ -169,7 +178,12 @@ static int _disas_do(Disas * disas)
 			else if(memcmp(format->signature, buf,
 						format->signature_len) == 0)
 			{
+				if((ret = _disas_format_init(&disas->format[i],
+								disas->arch))
+						!= 0)
+					break;
 				ret = _do_callback(disas, format);
+				_disas_format_exit(&disas->format[i]);
 				break;
 			}
 		}
@@ -178,6 +192,7 @@ static int _disas_do(Disas * disas)
 			ret = _disas_do_format(disas, "flat");
 	}
 	free(buf);
+	_disas_format_close_all(disas);
 	return ret;
 }
 
@@ -462,6 +477,24 @@ static int _disas_format_open_all(Disas * disas)
 	}
 	closedir(dir);
 	return 0;
+}
+
+
+/* disas_format_init */
+static int _disas_format_init(DisasFormat const * format, char const * arch)
+{
+	if(format->format->init == NULL)
+		return 0;
+	return format->format->init(format->format, arch);
+}
+
+
+/* disas_format_exit */
+static int _disas_format_exit(DisasFormat const * format)
+{
+	if(format->format->exit == NULL)
+		return 0;
+	return format->format->exit(format->format);
 }
 
 
