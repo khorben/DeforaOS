@@ -327,7 +327,7 @@ static int _disas_map_string_id(FormatPlugin * format, off_t offset,
 	DexStringIdItem dsii;
 
 	if(dex->strings_cnt != 0)
-		return -error_set_code("%s: %s", "dex",
+		return -error_set_code(1, "%s: %s", "dex",
 				"String section already parsed");
 	if(fseek(fp, offset, SEEK_SET) != 0)
 		return -_dex_error(format);
