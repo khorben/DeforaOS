@@ -171,6 +171,7 @@ _bootstrap_configure()
 	C="$CPPFLAGS"
 	L="$LDFLAGSF"
 	CPPFLAGS="-I ../../../../../System/src/libSystem/include"
+	CFLAGSF="-W"
 	LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a"
 	SUBDIRS="Apps/Devel/src/configure/src"
 	TARGETS="clean all"
