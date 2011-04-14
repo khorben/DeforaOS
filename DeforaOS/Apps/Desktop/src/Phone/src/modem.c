@@ -731,7 +731,7 @@ static char * _text_to_sept(char const * text, size_t length)
 /* gsm_modem_reset */
 int gsm_modem_reset(GSMModem * gsmm)
 {
-	char const cmd[] = "ATZ";
+	char const cmd[] = "ATZE0V1";
 
 	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
 			GSM_ERROR_RESET_FAILED, NULL);
