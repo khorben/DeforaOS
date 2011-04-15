@@ -110,12 +110,12 @@ static char const * _authors[] =
 static DesktopMenu _file_menu[] =
 {
 	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
-		GDK_N },
+		GDK_KEY_N },
 	{ N_("_Edit"), G_CALLBACK(on_file_edit), GTK_STOCK_EDIT,
-		GDK_CONTROL_MASK, GDK_E },
+		GDK_CONTROL_MASK, GDK_KEY_E },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 static DesktopMenu _edit_menu[] =
@@ -126,12 +126,12 @@ static DesktopMenu _edit_menu[] =
 #else
 		"edit-select-all",
 #endif
-		GDK_CONTROL_MASK, GDK_A },
+		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 static DesktopMenu _view_menu[] =
