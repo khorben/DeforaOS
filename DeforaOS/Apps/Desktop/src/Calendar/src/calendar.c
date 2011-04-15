@@ -156,7 +156,7 @@ static void _calendar_on_today(gpointer data)
 	Calendar * calendar = data;
 
 	gtk_calendar_select_month(GTK_CALENDAR(calendar->widget),
-			calendar->today.tm_year, calendar->today.tm_mon);
+			calendar->today.tm_mon, calendar->today.tm_year + 1900);
 	gtk_calendar_select_day(GTK_CALENDAR(calendar->widget),
 			calendar->today.tm_mday);
 }
