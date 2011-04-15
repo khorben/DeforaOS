@@ -41,7 +41,7 @@ GtkWidget * desktop_menubar_create(DesktopMenubar * menubar, gpointer data,
 		menuitem = gtk_menu_item_new_with_mnemonic(_(menubar[i].name));
 		menu = _menubar_create_menu(menubar[i].menu, data, accel);
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
-		gtk_menu_bar_append(GTK_MENU_BAR(ret), menuitem);
+		gtk_menu_shell_append(GTK_MENU_SHELL(ret), menuitem);
 	}
 	return ret;
 }

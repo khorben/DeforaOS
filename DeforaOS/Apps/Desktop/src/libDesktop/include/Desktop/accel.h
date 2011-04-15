@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 /* types */
 typedef struct _DesktopAccel
 {
-	GtkSignalFunc callback;
+	GCallback callback;
 	GdkModifierType modifier;
 	unsigned int accel;
 } DesktopAccel;
