@@ -75,12 +75,12 @@ static char const * _authors[] =
 #ifdef EMBEDDED
 static DesktopAccel _editor_accel[] =
 {
-	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_w },
-	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_n },
-	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_o },
-	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_p },
-	{ G_CALLBACK(on_save), GDK_CONTROL_MASK, GDK_s },
-	{ G_CALLBACK(on_save_as), GDK_CONTROL_MASK, GDK_S },
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_w },
+	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_KEY_n },
+	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_o },
+	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_KEY_p },
+	{ G_CALLBACK(on_save), GDK_CONTROL_MASK, GDK_KEY_s },
+	{ G_CALLBACK(on_save_as), GDK_CONTROL_MASK, GDK_KEY_S },
 	{ NULL, 0, 0 }
 };
 #endif
@@ -89,14 +89,14 @@ static DesktopAccel _editor_accel[] =
 static DesktopMenu _editor_menu_file[] =
 {
 	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
-		GDK_n },
+		GDK_KEY_n },
 	{ N_("_Open"), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
-		GDK_CONTROL_MASK, GDK_o },
+		GDK_CONTROL_MASK, GDK_KEY_o },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE,
-		GDK_CONTROL_MASK, GDK_s },
+		GDK_CONTROL_MASK, GDK_KEY_s },
 	{ N_("_Save as..."), G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
-		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_S },
+		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_KEY_S },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
@@ -106,15 +106,15 @@ static DesktopMenu _editor_menu_edit[] =
 {
 	/* FIXME implement undo and redo */
 	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK,
-		GDK_z },
-	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_r },
+		GDK_KEY_z },
+	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_KEY_r },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
-		GDK_x },
+		GDK_KEY_x },
 	{ N_("_Copy"), G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
-		GDK_CONTROL_MASK, GDK_c },
+		GDK_CONTROL_MASK, GDK_KEY_c },
 	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
-		GDK_CONTROL_MASK, GDK_v },
+		GDK_CONTROL_MASK, GDK_KEY_v },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -122,14 +122,14 @@ static DesktopMenu _editor_menu_edit[] =
 #else
 		"edit-select-all",
 #endif
-		GDK_CONTROL_MASK, GDK_A },
+		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"), G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Find"), G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
-		GDK_CONTROL_MASK, GDK_F },
+		GDK_CONTROL_MASK, GDK_KEY_F },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_p },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_p },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -535,7 +535,11 @@ static void _find_dialog(Editor * editor)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 			GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(editor->fi_dialog));
+#else
 	vbox = GTK_DIALOG(editor->fi_dialog)->vbox;
+#endif
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Text:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -880,10 +884,19 @@ void editor_show_preferences(Editor * editor, gboolean show)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(2, 24, 0)
+	editor->pr_wrap = gtk_combo_box_text_new();
+#else
 	editor->pr_wrap = gtk_combo_box_new_text();
+#endif
 	for(i = 0; i < sizeof(_editor_wrap) / sizeof(*_editor_wrap); i++)
+#if GTK_CHECK_VERSION(2, 24, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(editor->pr_wrap),
+				NULL, _(_editor_wrap[i].name));
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(editor->pr_wrap),
 				_(_editor_wrap[i].name));
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_wrap, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	_preferences_on_cancel(editor);

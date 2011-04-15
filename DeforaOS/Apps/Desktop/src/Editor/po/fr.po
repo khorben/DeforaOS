@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-02 06:43+0100\n"
+"POT-Creation-Date: 2011-04-16 01:54+0200\n"
 "PO-Revision-Date: 2010-04-11 12:32+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -152,8 +152,8 @@ msgstr "Erreur lors de la sauvegarde de la configuration"
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/editor.c:465 ../src/editor.c:475 ../src/editor.c:613
-#: ../src/editor.c:627 ../src/editor.c:767 ../src/editor.c:772
+#: ../src/editor.c:465 ../src/editor.c:475 ../src/editor.c:617
+#: ../src/editor.c:631 ../src/editor.c:771 ../src/editor.c:776
 msgid "Warning"
 msgstr "Avertissement"
 
@@ -169,23 +169,23 @@ msgstr ""
 msgid "Find text"
 msgstr "Rechercher"
 
-#: ../src/editor.c:540
+#: ../src/editor.c:544
 msgid "Text:"
 msgstr "Texte :"
 
-#: ../src/editor.c:547
+#: ../src/editor.c:551
 msgid "Case-sensitive"
 msgstr "Sensible à la casse"
 
-#: ../src/editor.c:549
+#: ../src/editor.c:553
 msgid "Wrap"
 msgstr "Boucler"
 
-#: ../src/editor.c:572
+#: ../src/editor.c:576
 msgid "Text not found"
 msgstr "Texte non trouvé"
 
-#: ../src/editor.c:617
+#: ../src/editor.c:621
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to discard them?"
@@ -193,39 +193,39 @@ msgstr ""
 "Il y a des changements non enregistrés.\n"
 "Êtes-vous sûr de vouloir les annuler ?"
 
-#: ../src/editor.c:624
+#: ../src/editor.c:628
 msgid "Discard"
 msgstr "Annuler"
 
-#: ../src/editor.c:683
+#: ../src/editor.c:687
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/editor.c:743
+#: ../src/editor.c:747
 msgid "Partial write"
 msgstr "Écriture partielle"
 
-#: ../src/editor.c:771
+#: ../src/editor.c:775
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"
 
-#: ../src/editor.c:780
+#: ../src/editor.c:784
 msgid "Allocation error"
 msgstr "Erreur d'allocation"
 
-#: ../src/editor.c:795
+#: ../src/editor.c:799
 msgid "Save as..."
 msgstr "Enregistrer sous..."
 
-#: ../src/editor.c:852
+#: ../src/editor.c:856
 msgid "Text editor preferences"
 msgstr "Préférences de l'éditeur de texte"
 
-#: ../src/editor.c:869
+#: ../src/editor.c:873
 msgid "Font:"
 msgstr "Police :"
 
-#: ../src/editor.c:879
+#: ../src/editor.c:883
 msgid "Wrap mode:"
 msgstr "Retour à la ligne :"
 

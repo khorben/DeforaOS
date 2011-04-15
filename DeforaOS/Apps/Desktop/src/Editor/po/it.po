@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-02 06:43+0100\n"
+"POT-Creation-Date: 2011-04-16 01:54+0200\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -153,8 +153,8 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: ../src/editor.c:465 ../src/editor.c:475 ../src/editor.c:613
-#: ../src/editor.c:627 ../src/editor.c:767 ../src/editor.c:772
+#: ../src/editor.c:465 ../src/editor.c:475 ../src/editor.c:617
+#: ../src/editor.c:631 ../src/editor.c:771 ../src/editor.c:776
 msgid "Warning"
 msgstr ""
 
@@ -168,61 +168,61 @@ msgstr ""
 msgid "Find text"
 msgstr ""
 
-#: ../src/editor.c:540
+#: ../src/editor.c:544
 msgid "Text:"
 msgstr ""
 
-#: ../src/editor.c:547
+#: ../src/editor.c:551
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/editor.c:549
+#: ../src/editor.c:553
 msgid "Wrap"
 msgstr ""
 
-#: ../src/editor.c:572
+#: ../src/editor.c:576
 msgid "Text not found"
 msgstr ""
 
-#: ../src/editor.c:617
+#: ../src/editor.c:621
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to discard them?"
 msgstr ""
 
-#: ../src/editor.c:624
+#: ../src/editor.c:628
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:683
+#: ../src/editor.c:687
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:743
+#: ../src/editor.c:747
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:771
+#: ../src/editor.c:775
 msgid "This file already exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:780
+#: ../src/editor.c:784
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:795
+#: ../src/editor.c:799
 msgid "Save as..."
 msgstr ""
 
-#: ../src/editor.c:852
+#: ../src/editor.c:856
 msgid "Text editor preferences"
 msgstr ""
 
-#: ../src/editor.c:869
+#: ../src/editor.c:873
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:879
+#: ../src/editor.c:883
 msgid "Wrap mode:"
 msgstr ""
 
