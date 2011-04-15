@@ -186,12 +186,13 @@ static int _progress(Prefs * prefs, char * argv[])
 	p.progress = gtk_progress_bar_new();
 	p.pulse = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
+	/* cancel */
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_progress_cancel), NULL);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(p.window), vbox);
 	gtk_container_set_border_width(GTK_CONTAINER(p.window), 4);
 	gtk_widget_show_all(p.window);
