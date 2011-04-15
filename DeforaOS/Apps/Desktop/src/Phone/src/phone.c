@@ -1825,7 +1825,7 @@ void phone_show_plugins(Phone * phone, gboolean show)
 #endif
 		gtk_window_set_title(GTK_WINDOW(widget), _("Plug-ins"));
 		g_signal_connect(G_OBJECT(widget), "delete-event", G_CALLBACK(
-					_on_plugins_closex), widget);
+					_on_plugins_closex), phone);
 		vbox = gtk_vbox_new(FALSE, 4);
 		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
