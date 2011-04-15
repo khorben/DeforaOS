@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mixer 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-13 02:43+0100\n"
+"POT-Creation-Date: 2011-04-16 01:48+0200\n"
 "PO-Revision-Date: 2010-04-23 04:08+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -64,46 +64,46 @@ msgstr "É_galisation"
 msgid "Mi_x"
 msgstr "Mi_x"
 
-#: ../src/mixer.c:137
+#: ../src/mixer.c:138
 msgid "_Modem"
 msgstr "_Modem"
 
-#: ../src/mixer.c:145
+#: ../src/mixer.c:146
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/mixer.c:151
+#: ../src/mixer.c:152
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/mixer.c:152
+#: ../src/mixer.c:153
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/mixer.c:153
+#: ../src/mixer.c:154
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/mixer.c:425
+#: ../src/mixer.c:426
 msgid "Bind"
 msgstr "Lier"
 
-#: ../src/mixer.c:580
+#: ../src/mixer.c:581
 msgid "Mixer properties"
 msgstr "Propriétés du mixer"
 
-#: ../src/mixer.c:596
+#: ../src/mixer.c:597
 msgid "Name: "
 msgstr "Nom : "
 
-#: ../src/mixer.c:606
+#: ../src/mixer.c:607
 msgid "Version: "
 msgstr "Version : "
 
-#: ../src/mixer.c:616
+#: ../src/mixer.c:617
 msgid "Device: "
 msgstr "Carte : "
 
-#: ../src/mixer.c:705 ../src/mixer.c:710
+#: ../src/mixer.c:706 ../src/mixer.c:711
 msgid "Error"
 msgstr "Erreur"

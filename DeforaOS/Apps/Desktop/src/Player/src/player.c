@@ -27,8 +27,11 @@ static char const _license[] =
 #include <libgen.h>
 #include <errno.h>
 #include <libintl.h>
-#include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
+#include <gdk/gdkkeysyms.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include "callbacks.h"
 #include "../config.h"
 #include "player.h"
@@ -111,9 +114,9 @@ struct _Player
 
 static DesktopAccel _player_accel[] =
 {
-	{ G_CALLBACK(on_fullscreen), GDK_CONTROL_MASK, GDK_F },
+	{ G_CALLBACK(on_fullscreen), GDK_CONTROL_MASK, GDK_KEY_F },
 #ifdef EMBEDDED
-	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_W },
 #endif
 	{ NULL, 0, 0 }
 };
@@ -122,27 +125,27 @@ static DesktopAccel _player_accel[] =
 static DesktopMenu _player_menu_file[] =
 {
 	{ N_("_Open..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
-		GDK_CONTROL_MASK, GDK_O },
+		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
-		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_Return },
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _player_menu_edit[] =
 {
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _player_menu_view[] =
 {
 	{ N_("_Playlist"), G_CALLBACK(on_view_playlist), NULL, GDK_CONTROL_MASK,
-		GDK_L },
+		GDK_KEY_L },
 # if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen),
 		GTK_STOCK_FULLSCREEN, 0, 0 },
@@ -176,7 +179,7 @@ static DesktopMenubar _player_menubar[] =
 static DesktopToolbar _player_toolbar[] =
 {
 	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
-		GDK_O, NULL },
+		GDK_KEY_O, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0,
 		0, NULL },

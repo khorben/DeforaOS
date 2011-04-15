@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Mixer */
 static char _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -113,29 +113,30 @@ static char const * _authors[] =
 static DesktopMenu _mixer_menu_file[] =
 {
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
-		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_Return },
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _mixer_menu_view[] =
 {
-	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK, GDK_A },
+	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK, GDK_KEY_A },
 #ifdef AUDIO_MIXER_DEVINFO
 	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_CONTROL_MASK,
-		GDK_O },
+		GDK_KEY_O },
 	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_CONTROL_MASK,
-		GDK_I },
+		GDK_KEY_I },
 	{ N_("_Record"), G_CALLBACK(on_view_record), NULL, GDK_CONTROL_MASK,
-		GDK_R },
+		GDK_KEY_R },
 	{ N_("Mo_nitor"), G_CALLBACK(on_view_monitor), NULL, GDK_CONTROL_MASK,
-		GDK_N },
+		GDK_KEY_N },
 	{ N_("_Equalization"), G_CALLBACK(on_view_equalization), NULL,
-		GDK_CONTROL_MASK, GDK_E },
-	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_CONTROL_MASK, GDK_X },
+		GDK_CONTROL_MASK, GDK_KEY_E },
+	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_CONTROL_MASK,
+		GDK_KEY_X },
 	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_CONTROL_MASK,
-		GDK_M },
+		GDK_KEY_M },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
