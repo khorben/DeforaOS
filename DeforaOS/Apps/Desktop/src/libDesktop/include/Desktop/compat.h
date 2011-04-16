@@ -60,6 +60,7 @@
 #  define GDK_KEY_Z		GDK_Z
 #  define GDK_KEY_asterisk	GDK_asterisk
 #  define GDK_KEY_Back		GDK_Back
+#  define GDK_KEY_Delete	GDK_Delete
 #  define GDK_KEY_Escape	GDK_Escape
 #  define GDK_KEY_F1		GDK_F1
 #  define GDK_KEY_F2		GDK_F2
