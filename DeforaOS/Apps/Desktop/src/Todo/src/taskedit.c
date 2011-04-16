@@ -90,7 +90,11 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	taskedit->priority = gtk_combo_box_text_new_with_entry();
+#else
 	taskedit->priority = gtk_combo_box_new_with_entry();
+#endif
 	entry = gtk_bin_get_child(GTK_BIN(taskedit->priority));
 	gtk_entry_set_text(GTK_ENTRY(entry), task_get_priority(task));
 	gtk_box_pack_start(GTK_BOX(hbox), taskedit->priority, TRUE, TRUE, 0);
