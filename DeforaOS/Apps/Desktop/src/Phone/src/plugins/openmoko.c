@@ -627,11 +627,11 @@ static void _on_settings_cancel(gpointer data)
 		"power_on";
 	char const gps3[] = "/sys/bus/platform/drivers/neo1973-pm-gps/"
 		"neo1973-pm-gps.0/pwron";
-
 	gboolean enabled;
 	char const * p;
 
 	gtk_widget_hide(openmoko->window);
+	/* deepsleep */
 	if((p = plugin->helper->config_get(plugin->helper->phone, "openmoko",
 					"deepsleep")) != NULL
 			&& strtoul(p, NULL, 10) != 0)
