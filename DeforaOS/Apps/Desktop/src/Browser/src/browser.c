@@ -63,16 +63,16 @@ static char const * _authors[] =
 
 static DesktopAccel _browser_accel[] =
 {
-	{ G_CALLBACK(on_location), GDK_CONTROL_MASK, GDK_L },
-	{ G_CALLBACK(on_properties), GDK_MOD1_MASK, GDK_Return },
+	{ G_CALLBACK(on_location), GDK_CONTROL_MASK, GDK_KEY_L },
+	{ G_CALLBACK(on_properties), GDK_MOD1_MASK, GDK_KEY_Return },
 #ifdef EMBEDDED
-	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
-	{ G_CALLBACK(on_copy), GDK_CONTROL_MASK, GDK_C },
-	{ G_CALLBACK(on_cut), GDK_CONTROL_MASK, GDK_X },
-	{ G_CALLBACK(on_new_window), GDK_CONTROL_MASK, GDK_N },
-	{ G_CALLBACK(on_open_file), GDK_CONTROL_MASK, GDK_O },
-	{ G_CALLBACK(on_paste), GDK_CONTROL_MASK, GDK_V },
-	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(on_copy), GDK_CONTROL_MASK, GDK_KEY_C },
+	{ G_CALLBACK(on_cut), GDK_CONTROL_MASK, GDK_KEY_X },
+	{ G_CALLBACK(on_new_window), GDK_CONTROL_MASK, GDK_KEY_N },
+	{ G_CALLBACK(on_open_file), GDK_CONTROL_MASK, GDK_KEY_O },
+	{ G_CALLBACK(on_paste), GDK_CONTROL_MASK, GDK_KEY_V },
+	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_KEY_R },
 #endif
 	{ NULL, 0, 0 }
 };
@@ -81,30 +81,30 @@ static DesktopAccel _browser_accel[] =
 static DesktopMenu _browser_menu_file[] =
 {
 	{ N_("_New window"), G_CALLBACK(on_file_new_window), "window-new",
-		GDK_CONTROL_MASK, GDK_N },
+		GDK_CONTROL_MASK, GDK_KEY_N },
 	{ N_("New _folder"), G_CALLBACK(on_file_new_folder), "folder-new", 0,
 		0 },
 	{ N_("New _symbolic link..."), G_CALLBACK(on_file_new_symlink), NULL,
 		0, 0 },
 	{ N_("Open file..."), G_CALLBACK(on_file_open_file), NULL,
-		GDK_CONTROL_MASK, GDK_O },
+		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES,
-		GDK_MOD1_MASK, GDK_Return },
+		GDK_MOD1_MASK, GDK_KEY_Return },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _browser_menu_edit[] =
 {
 	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
-		GDK_X },
+		GDK_KEY_X },
 	{ N_("Cop_y"), G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
-		GDK_CONTROL_MASK, GDK_C },
+		GDK_CONTROL_MASK, GDK_KEY_C },
 	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
-		GDK_CONTROL_MASK, GDK_V },
+		GDK_CONTROL_MASK, GDK_KEY_V },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
@@ -114,21 +114,21 @@ static DesktopMenu _browser_menu_edit[] =
 #else
 		"edit-select-all",
 #endif
-		GDK_CONTROL_MASK, GDK_A },
+		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"), G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _browser_menu_view[] =
 {
 	{ N_("_Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH,
-		GDK_CONTROL_MASK, GDK_R },
+		GDK_CONTROL_MASK, GDK_KEY_R },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Home"), G_CALLBACK(on_view_home), GTK_STOCK_HOME, GDK_MOD1_MASK,
-		GDK_Home },
+		GDK_KEY_Home },
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Details"), G_CALLBACK(on_view_details), "browser-view-details",
@@ -164,10 +164,10 @@ static DesktopMenubar _browser_menubar[] =
 static DesktopToolbar _browser_toolbar[] =
 {
 	{ N_("Back"), G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
-		GDK_Left, NULL },
+		GDK_KEY_Left, NULL },
 	{ N_("Up"), G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, 0, NULL },
 	{ N_("Forward"), G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
-		GDK_MOD1_MASK, GDK_Right, NULL },
+		GDK_MOD1_MASK, GDK_KEY_Right, NULL },
 	{ N_("Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0,
 		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
@@ -348,7 +348,11 @@ Browser * browser_new(char const * directory)
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+	browser->tb_path = gtk_combo_box_text_new_with_entry();
+#else
 	browser->tb_path = gtk_combo_box_entry_new_text();
+#endif
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
 	if(directory != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), directory);
@@ -629,7 +633,8 @@ static void _error_response(gpointer data)
 {
 	Browser * browser = data;
 
-	browser_delete(browser);
+	if(browser_cnt > 0) /* XXX ugly */
+		browser_delete(browser);
 	if(browser_cnt == 0)
 		gtk_main_quit();
 }
@@ -1604,8 +1609,13 @@ static void _view_icons(Browser * browser)
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
 			BROWSER_ICON_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(browser->iconview),
+			GTK_ORIENTATION_VERTICAL);
+#else
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
+#endif
 	gtk_widget_show(browser->iconview);
 }
 
@@ -1702,8 +1712,13 @@ static void _view_list(Browser * browser)
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
 			BROWSER_LIST_WRAP_WIDTH + 24);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(browser->iconview),
+			GTK_ORIENTATION_VERTICAL);
+#else
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_HORIZONTAL);
+#endif
 	gtk_widget_show(browser->iconview);
 }
 
@@ -1739,8 +1754,13 @@ static void _view_thumbnails(Browser * browser)
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
 			BROWSER_THUMBNAIL_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(browser->iconview),
+			GTK_ORIENTATION_VERTICAL);
+#else
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
+#endif
 	gtk_widget_show(browser->iconview);
 }
 #endif
@@ -1807,12 +1827,23 @@ void browser_view_preferences(Browser * browser)
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Default view:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+# if GTK_CHECK_VERSION(3, 0, 0)
+	widget = gtk_combo_box_text_new();
+	browser->pr_view = widget;
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL,
+			_("Details"));
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL, _("Icons"));
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL, _("List"));
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL,
+			_("Thumbnails"));
+# else
 	widget = gtk_combo_box_new_text();
 	browser->pr_view = widget;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Details"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Icons"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("List"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Thumbnails"));
+# endif
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 1);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -2142,19 +2173,34 @@ static void _refresh_path(Browser * browser)
 			: browser->current->data);
 	free(p);
 	for(i = 0; i < cnt; i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(browser->tb_path),
+				0);
+#else
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
+#endif
 	if((p = g_path_get_dirname(browser->current->data)) == NULL)
 		return;
 	if(strcmp(p, ".") != 0)
 	{
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(browser->tb_path),
+				NULL, p);
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
+#endif
 		for(cnt = 1; strcmp(p, "/") != 0; cnt++)
 		{
 			q = g_path_get_dirname(p);
 			g_free(p);
 			p = q;
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
+						browser->tb_path), NULL, p);
+#else
 			gtk_combo_box_append_text(GTK_COMBO_BOX(
 						browser->tb_path), p);
+#endif
 		}
 	}
 	g_free(p);
