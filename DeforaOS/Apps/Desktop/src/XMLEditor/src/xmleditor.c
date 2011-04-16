@@ -67,12 +67,13 @@ static char const * _authors[] =
 #ifdef EMBEDDED
 static DesktopAccel _xmleditor_accel[] =
 {
-	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_w },
-	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_KEY_n },
-	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_o },
-	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_KEY_p },
-	{ G_CALLBACK(on_save), GDK_CONTROL_MASK, GDK_KEY_s },
-	{ G_CALLBACK(on_save_as), GDK_CONTROL_MASK, GDK_KEY_S },
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_KEY_N },
+	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_O },
+	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_KEY_P },
+	{ G_CALLBACK(on_save), GDK_CONTROL_MASK, GDK_KEY_S },
+	{ G_CALLBACK(on_save_as), GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+		GDK_KEY_S },
 	{ NULL, 0, 0 }
 };
 #endif
@@ -81,24 +82,24 @@ static DesktopAccel _xmleditor_accel[] =
 static DesktopMenu _xmleditor_menu_file[] =
 {
 	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
-		GDK_KEY_n },
+		GDK_KEY_N },
 	{ N_("_Open"), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
-		GDK_CONTROL_MASK, GDK_KEY_o },
+		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE,
-		GDK_CONTROL_MASK, GDK_KEY_s },
+		GDK_CONTROL_MASK, GDK_KEY_S },
 	{ N_("_Save as..."), G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
 		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_KEY_S },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_KEY_w },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _xmleditor_menu_edit[] =
 {
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_p },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
