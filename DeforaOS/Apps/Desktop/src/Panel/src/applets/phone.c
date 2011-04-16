@@ -17,6 +17,9 @@
 
 #include <stdlib.h>
 #include <libintl.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include <gdk/gdkx.h>
 #include "Panel.h"
 #define _(string) gettext(string)
