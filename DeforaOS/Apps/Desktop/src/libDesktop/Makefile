@@ -31,6 +31,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Desktop/about.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/accel.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/assistant.h \
+		$(PACKAGE)-$(VERSION)/include/Desktop/compat.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/menubar.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/toolbar.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/Makefile \
