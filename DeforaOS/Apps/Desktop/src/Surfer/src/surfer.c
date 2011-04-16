@@ -87,16 +87,16 @@ static char const * _authors[] =
 #endif
 static DesktopAccel _surfer_accel[] =
 {
-	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_W },
 #ifdef EMBEDDED
-	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
-	{ G_CALLBACK(on_normal_size), GDK_CONTROL_MASK, GDK_0 },
-	{ G_CALLBACK(on_zoom_in), GDK_CONTROL_MASK, GDK_plus },
-	{ G_CALLBACK(on_zoom_out), GDK_CONTROL_MASK, GDK_minus },
+	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_KEY_R },
+	{ G_CALLBACK(on_normal_size), GDK_CONTROL_MASK, GDK_KEY_0 },
+	{ G_CALLBACK(on_zoom_in), GDK_CONTROL_MASK, GDK_KEY_plus },
+	{ G_CALLBACK(on_zoom_out), GDK_CONTROL_MASK, GDK_KEY_minus },
 #endif
-	{ G_CALLBACK(on_back), 0, GDK_Back },
-	{ G_CALLBACK(on_forward), 0, GDK_Forward },
-	{ G_CALLBACK(on_fullscreen), 0, GDK_F11 },
+	{ G_CALLBACK(on_back), 0, GDK_KEY_Back },
+	{ G_CALLBACK(on_forward), 0, GDK_KEY_Forward },
+	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
 	{ NULL, 0, 0 }
 };
 
@@ -104,22 +104,22 @@ static DesktopAccel _surfer_accel[] =
 static DesktopMenu _menu_file[] =
 {
 	{ N_("_New tab"),	G_CALLBACK(on_file_new_tab), "tab-new",
-		GDK_CONTROL_MASK, GDK_T },
+		GDK_CONTROL_MASK, GDK_KEY_T },
 	{ N_("_New window"),	G_CALLBACK(on_file_new_window), "window-new",
-		GDK_CONTROL_MASK, GDK_N },
+		GDK_CONTROL_MASK, GDK_KEY_N },
 	{ N_("_Open..."),	G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
-		GDK_CONTROL_MASK, GDK_O },
+		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ N_("Open _URL..."),	G_CALLBACK(on_file_open_url), NULL,
-		GDK_CONTROL_MASK, GDK_L },
+		GDK_CONTROL_MASK, GDK_KEY_L },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Save _as..."),	G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
-		GDK_CONTROL_MASK, GDK_S },
+		GDK_CONTROL_MASK, GDK_KEY_S },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Print..."),	G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0,
 		0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Close _tab"),	G_CALLBACK(on_file_close_tab), NULL,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ N_("_Close"),		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0,
 		0 },
 	{ NULL,			NULL, NULL, 0, 0 }
@@ -128,16 +128,16 @@ static DesktopMenu _menu_file[] =
 static DesktopMenu _menu_edit[] =
 {
 	{ N_("_Undo"),		G_CALLBACK(on_edit_undo), GTK_STOCK_UNDO,
-		GDK_CONTROL_MASK, GDK_Z },
+		GDK_CONTROL_MASK, GDK_KEY_Z },
 	{ N_("_Redo"),		G_CALLBACK(on_edit_redo), GTK_STOCK_REDO,
-		GDK_CONTROL_MASK, GDK_Y },
+		GDK_CONTROL_MASK, GDK_KEY_Y },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Cut"),		G_CALLBACK(on_edit_cut), GTK_STOCK_CUT,
-		GDK_CONTROL_MASK, GDK_X },
+		GDK_CONTROL_MASK, GDK_KEY_X },
 	{ N_("Cop_y"),		G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
-		GDK_CONTROL_MASK, GDK_C },
+		GDK_CONTROL_MASK, GDK_KEY_C },
 	{ N_("_Paste"),		G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
-		GDK_CONTROL_MASK, GDK_V },
+		GDK_CONTROL_MASK, GDK_KEY_V },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("Select _all"),	G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -145,40 +145,40 @@ static DesktopMenu _menu_edit[] =
 #else
 		NULL,
 #endif
-		GDK_CONTROL_MASK, GDK_A },
+		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Find"),		G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
-		GDK_CONTROL_MASK, GDK_F },
+		GDK_CONTROL_MASK, GDK_KEY_F },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Preferences"),	G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_view[] =
 {
 	{ N_("Zoom in"),	G_CALLBACK(on_view_zoom_in), "zoom-in",
-		GDK_CONTROL_MASK, GDK_plus },
+		GDK_CONTROL_MASK, GDK_KEY_plus },
 	{ N_("Zoom out"),	G_CALLBACK(on_view_zoom_out), "zoom-out",
-		GDK_CONTROL_MASK, GDK_minus },
+		GDK_CONTROL_MASK, GDK_KEY_minus },
 	{ N_("Normal size"),	G_CALLBACK(on_view_normal_size),
-		"zoom-original", GDK_CONTROL_MASK, GDK_0 },
+		"zoom-original", GDK_CONTROL_MASK, GDK_KEY_0 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen),
 		GTK_STOCK_FULLSCREEN, 0, 0 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
-		GDK_CONTROL_MASK, GDK_R },
+		GDK_CONTROL_MASK, GDK_KEY_R },
 	{ N_("_Force refresh"),	G_CALLBACK(on_view_force_refresh), NULL,
-		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_R },
+		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_KEY_R },
 	{ N_("_Stop"),		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0,
-		GDK_Escape },
+		GDK_KEY_Escape },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("Javascript _console"), G_CALLBACK(on_view_javascript_console),
 		NULL, 0, 0 },
 	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
-		"surfer-view-html-source", GDK_CONTROL_MASK, GDK_U },
+		"surfer-view-html-source", GDK_CONTROL_MASK, GDK_KEY_U },
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
@@ -206,9 +206,9 @@ static DesktopMenubar _surfer_menubar[] =
 static DesktopToolbar _surfer_toolbar[] =
 {
 	{ N_("Back"), G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
-		GDK_Left, NULL },
+		GDK_KEY_Left, NULL },
 	{ N_("Forward"), G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
-		GDK_MOD1_MASK, GDK_Right, NULL },
+		GDK_MOD1_MASK, GDK_KEY_Right, NULL },
 	{ N_("Stop"), G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, 0, NULL },
 	{ N_("Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0,
 		NULL },
@@ -222,9 +222,9 @@ static DesktopToolbar _surfer_toolbar[] =
 		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("New tab"), G_CALLBACK(on_new_tab), "tab-new", GDK_CONTROL_MASK,
-		GDK_T, NULL },
+		GDK_KEY_T, NULL },
 	{ N_("New window"), G_CALLBACK(on_new_window), "window-new",
-		GDK_CONTROL_MASK, GDK_N, NULL },
+		GDK_CONTROL_MASK, GDK_KEY_N, NULL },
 #endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
@@ -359,7 +359,11 @@ Surfer * _new_do(char const * url)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
 	toolitem = gtk_tool_item_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+	surfer->lb_path = gtk_combo_box_text_new_with_entry();
+#else
 	surfer->lb_path = gtk_combo_box_entry_new_text();
+#endif
 	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	g_signal_connect_swapped(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), surfer);
@@ -509,10 +513,20 @@ void surfer_set_location(Surfer * surfer, char const * url)
 	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
 	if(i == 8)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(surfer->lb_path),
+				0);
+#else
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->lb_path), 0);
+#endif
 	else
 		i++;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(surfer->lb_path), NULL,
+			url);
+#else
 	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->lb_path), url);
+#endif
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), ghtml_can_go_back(
 				view));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), 
@@ -1428,7 +1442,7 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	/* dialog */
 	hbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
+	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLEAR);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
@@ -1581,6 +1595,7 @@ void surfer_view_source(Surfer * surfer)
 	char buf[256];
 	char const * url;
 	char const * source;
+	size_t len;
 
 	if((widget = surfer_get_view(surfer)) == NULL)
 		return;
@@ -1591,7 +1606,7 @@ void surfer_view_source(Surfer * surfer)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	group = gtk_accel_group_new();
 	cc = g_cclosure_new_swap(G_CALLBACK(_on_source_close), window, NULL);
-	gtk_accel_group_connect(group, GDK_W, GDK_CONTROL_MASK,
+	gtk_accel_group_connect(group, GDK_KEY_W, GDK_CONTROL_MASK,
 			GTK_ACCEL_VISIBLE, cc);
 	gtk_window_add_accel_group(GTK_WINDOW(window), group);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
@@ -1609,8 +1624,9 @@ void surfer_view_source(Surfer * surfer)
 	pango_font_description_free(desc);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-	/* FIXME probably should convert to UTF-8 when not already */
-	gtk_text_buffer_set_text(tbuf, source, strlen(source));
+	if((len = strlen(source)) > 0)
+		/* FIXME probably should convert to UTF-8 when not already */
+		gtk_text_buffer_set_text(tbuf, source, len);
 	gtk_container_add(GTK_CONTAINER(scrolled), widget);
 	gtk_container_add(GTK_CONTAINER(window), scrolled);
 	gtk_widget_show_all(window);
