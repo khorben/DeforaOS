@@ -21,7 +21,7 @@
 
 /* Compatibility */
 /* constants */
-# if !GTK_CHECK_VERSION(3, 0, 0)
+# if !GTK_CHECK_VERSION(2, 24, 0)
 #  define GDK_KEY_A	GDK_A
 #  define GDK_KEY_B	GDK_B
 #  define GDK_KEY_C	GDK_C
