@@ -89,34 +89,34 @@ typedef enum _ComposeAttachmentColumn
 static DesktopMenu _menu_file[] =
 {
 	{ N_("_New message"), G_CALLBACK(on_compose_file_new),
-		"stock_mail-compose", GDK_CONTROL_MASK, GDK_N },
+		"stock_mail-compose", GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Save"), NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_S },
+	{ N_("_Save"), NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_KEY_S },
 	{ N_("Save _as..."), NULL, GTK_STOCK_SAVE_AS, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_P },
+	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ N_("Print pre_view"), NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
 		0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("S_end"), G_CALLBACK(on_compose_file_send), "stock_mail-send",
-		GDK_CONTROL_MASK, GDK_Return },
+		GDK_CONTROL_MASK, GDK_KEY_Return },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_edit[] =
 {
-	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_Z },
-	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_Y },
+	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_KEY_Z },
+	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_KEY_Y },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Cut"), G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT,
-		GDK_CONTROL_MASK, GDK_X },
+		GDK_CONTROL_MASK, GDK_KEY_X },
 	{ N_("_Copy"), G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY,
-		GDK_CONTROL_MASK, GDK_C },
+		GDK_CONTROL_MASK, GDK_KEY_C },
 	{ N_("_Paste"), G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE,
-		GDK_CONTROL_MASK, GDK_V },
+		GDK_CONTROL_MASK, GDK_KEY_V },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Select all"), G_CALLBACK(on_compose_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -124,7 +124,7 @@ static DesktopMenu _menu_edit[] =
 #else
 		"edit-select-all",
 #endif
-		GDK_CONTROL_MASK, GDK_A },
+		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"), NULL, NULL, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -230,7 +230,11 @@ Compose * compose_new(Mailer * mailer)
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	compose->from = gtk_combo_box_text_new_with_entry();
+#else
 	compose->from = gtk_combo_box_entry_new_text();
+#endif
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), compose->from);
@@ -731,7 +735,12 @@ static char * _send_headers(Compose * compose)
 	char * value;
 	char const * q;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	p = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
+				compose->from));
+#else
 	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(compose->from));
+#endif
 	if(*p != '\0')
 	{
 		msg_len = strlen(p) + 8;

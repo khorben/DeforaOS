@@ -106,8 +106,8 @@ static const char * _title[3] =
 #ifdef EMBEDDED
 static DesktopAccel _mailer_accel[] =
 {
-	{ G_CALLBACK(on_quit),		GDK_CONTROL_MASK,	GDK_Q	},
-	{ G_CALLBACK(on_view_source),	GDK_CONTROL_MASK,	GDK_U	},
+	{ G_CALLBACK(on_quit),		GDK_CONTROL_MASK,	GDK_KEY_Q	},
+	{ G_CALLBACK(on_view_source),	GDK_CONTROL_MASK,	GDK_KEY_U	},
 	{ NULL,				0,			0	}
 };
 #endif
@@ -117,28 +117,28 @@ static DesktopAccel _mailer_accel[] =
 static DesktopMenu _menu_file[] =
 {
 	{ N_("_New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose",
-		GDK_CONTROL_MASK, GDK_N },
+		GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Send / Receive"), NULL, "stock_mail-send-receive",
-		GDK_CONTROL_MASK, GDK_R },
+		GDK_CONTROL_MASK, GDK_KEY_R },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_P },
+	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ N_("Print pre_view"), NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
 		0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Quit"), G_CALLBACK(on_file_quit), GTK_STOCK_QUIT,
-		GDK_CONTROL_MASK, GDK_Q },
+		GDK_CONTROL_MASK, GDK_KEY_Q },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_edit[] =
 {
 	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
-		GDK_X },
+		GDK_KEY_X },
 	{ N_("Cop_y"), G_CALLBACK(on_edit_copy), GTK_STOCK_COPY,
-		GDK_CONTROL_MASK, GDK_C },
+		GDK_CONTROL_MASK, GDK_KEY_C },
 	{ N_("_Paste"), G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
-		GDK_CONTROL_MASK, GDK_V },
+		GDK_CONTROL_MASK, GDK_KEY_V },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -146,7 +146,7 @@ static DesktopMenu _menu_edit[] =
 #else
 		"edit-select-all",
 #endif
-		GDK_CONTROL_MASK, GDK_A },
+		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"), G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
@@ -164,10 +164,10 @@ static DesktopMenu _menu_message[] =
 		0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Delete"), G_CALLBACK(on_message_delete), GTK_STOCK_DELETE, 0,
-		GDK_Delete },
+		GDK_KEY_Delete },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_View source"), G_CALLBACK(on_message_view_source), NULL,
-		GDK_CONTROL_MASK, GDK_U },
+		GDK_CONTROL_MASK, GDK_KEY_U },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -197,7 +197,7 @@ static DesktopToolbar _mailer_toolbar[] =
 		0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Send / Receive"), NULL, "stock_mail-send-receive", 0, 0, NULL },
-	{ N_("Stop"), NULL, GTK_STOCK_STOP, 0, GDK_Escape, NULL },
+	{ N_("Stop"), NULL, GTK_STOCK_STOP, 0, GDK_KEY_Escape, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Reply"), G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
 	{ N_("Reply to all"), G_CALLBACK(on_reply_to_all),
@@ -1471,12 +1471,21 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	_account_add_label(hbox, desc, group, _("Type of account"));
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget = gtk_combo_box_text_new();
+#else
 	widget = gtk_combo_box_new_text();
+#endif
 	/* XXX this works because there is no plug-in list reload
 	 *     would it be implemented this will need validation later */
 	for(i = 0; i < ad->mailer->available_cnt; i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL,
+				account_get_name(ad->mailer->available[i]));
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(widget),
 				account_get_name(ad->mailer->available[i]));
+#endif
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_account_type_changed), ad);
