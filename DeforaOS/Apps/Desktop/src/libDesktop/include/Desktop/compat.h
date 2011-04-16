@@ -48,11 +48,13 @@
 #  define GDK_KEY_X		GDK_X
 #  define GDK_KEY_Y		GDK_Y
 #  define GDK_KEY_Z		GDK_Z
+#  define GDK_KEY_asterisk	GDK_asterisk
 #  define GDK_KEY_Escape	GDK_Escape
 #  define GDK_KEY_Home		GDK_Home
 #  define GDK_KEY_Left		GDK_Left
 #  define GDK_KEY_Return	GDK_Return
 #  define GDK_KEY_Right		GDK_Right
+#  define GDK_KEY_slash		GDK_slash
 #  define GDK_KEY_Up		GDK_Up
 # endif
 
