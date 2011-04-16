@@ -93,7 +93,7 @@ TaskEdit * taskedit_new(Todo * todo, Task * task)
 #if GTK_CHECK_VERSION(3, 0, 0)
 	taskedit->priority = gtk_combo_box_text_new_with_entry();
 #else
-	taskedit->priority = gtk_combo_box_new_with_entry();
+	taskedit->priority = gtk_combo_box_entry_new_text();
 #endif
 	entry = gtk_bin_get_child(GTK_BIN(taskedit->priority));
 	gtk_entry_set_text(GTK_ENTRY(entry), task_get_priority(task));
