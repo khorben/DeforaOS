@@ -233,12 +233,8 @@ Browser * browser_new(char const * directory)
 	}
 	browser->window = NULL;
 	if(_new_pixbufs(browser) != 0)
-	{
 		browser_error(browser, _("Error while loading default icons"),
-				-1);
-		free(browser);
-		return NULL;
-	}
+				1);
 
 	/* config */
 	/* set defaults */
@@ -1610,7 +1606,7 @@ static void _view_icons(Browser * browser)
 			BROWSER_ICON_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_orientable_set_orientation(GTK_ORIENTABLE(browser->iconview),
+	gtk_icon_view_set_item_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 #else
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
@@ -1713,7 +1709,7 @@ static void _view_list(Browser * browser)
 			BROWSER_LIST_WRAP_WIDTH + 24);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_orientable_set_orientation(GTK_ORIENTABLE(browser->iconview),
+	gtk_icon_view_set_item_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 #else
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
@@ -1755,7 +1751,7 @@ static void _view_thumbnails(Browser * browser)
 			BROWSER_THUMBNAIL_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 #if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_orientable_set_orientation(GTK_ORIENTABLE(browser->iconview),
+	gtk_icon_view_set_item_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 #else
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),

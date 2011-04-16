@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-16 02:33+0200\n"
+"POT-Creation-Date: 2011-04-16 02:54+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -28,7 +28,7 @@ msgstr ""
 msgid "New _symbolic link..."
 msgstr ""
 
-#: ../src/browser.c:89 ../src/browser.c:746
+#: ../src/browser.c:89 ../src/browser.c:742
 msgid "Open file..."
 msgstr ""
 
@@ -149,43 +149,43 @@ msgstr ""
 msgid "Properties"
 msgstr "Propriedades"
 
-#: ../src/browser.c:237
+#: ../src/browser.c:236
 msgid "Error while loading default icons"
 msgstr ""
 
-#: ../src/browser.c:254
+#: ../src/browser.c:250
 msgid "Error while loading configuration"
 msgstr ""
 
-#: ../src/browser.c:281
+#: ../src/browser.c:277
 msgid "File browser"
 msgstr ""
 
-#: ../src/browser.c:300
+#: ../src/browser.c:296
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:304 ../src/browser.c:1834 ../src/browser.c:1842
+#: ../src/browser.c:300 ../src/browser.c:1830 ../src/browser.c:1838
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:311 ../src/browser.c:1835 ../src/browser.c:1843
+#: ../src/browser.c:307 ../src/browser.c:1831 ../src/browser.c:1839
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:318 ../src/browser.c:1836 ../src/browser.c:1844
+#: ../src/browser.c:314 ../src/browser.c:1832 ../src/browser.c:1840
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:325 ../src/browser.c:1838 ../src/browser.c:1845
+#: ../src/browser.c:321 ../src/browser.c:1834 ../src/browser.c:1841
 msgid "Thumbnails"
 msgstr ""
 
-#: ../src/browser.c:346
+#: ../src/browser.c:342
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:606 ../src/browser.c:611 ../src/copy.c:668
+#: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:668
 #: ../src/copy.c:672 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1426 ../src/desktop.c:1431 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
@@ -193,101 +193,101 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:768 ../src/desktopicon.c:854 ../src/view.c:144
+#: ../src/browser.c:764 ../src/desktopicon.c:854 ../src/view.c:144
 #: ../src/view.c:419
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:860 ../src/browser.c:1236
+#: ../src/browser.c:856 ../src/browser.c:1232
 msgid "Refreshing folder: "
 msgstr ""
 
-#: ../src/browser.c:881
+#: ../src/browser.c:877
 #, c-format
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1538
+#: ../src/browser.c:1534
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1540
+#: ../src/browser.c:1536
 msgid "Size"
 msgstr ""
 
-#: ../src/browser.c:1542
+#: ../src/browser.c:1538
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1544
+#: ../src/browser.c:1540
 msgid "Group"
 msgstr ""
 
-#: ../src/browser.c:1546
+#: ../src/browser.c:1542
 msgid "Date"
 msgstr ""
 
-#: ../src/browser.c:1548
+#: ../src/browser.c:1544
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1812
+#: ../src/browser.c:1808
 msgid "File browser preferences"
 msgstr "File browser preferencias"
 
-#: ../src/browser.c:1828
+#: ../src/browser.c:1824
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:1852
+#: ../src/browser.c:1848
 msgid "_Alternate row colors in detailed view"
 msgstr ""
 
-#: ../src/browser.c:1856
+#: ../src/browser.c:1852
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/browser.c:1859
+#: ../src/browser.c:1855
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/browser.c:1862
+#: ../src/browser.c:1858
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:1865
+#: ../src/browser.c:1861
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:1874 ../src/browser.c:1879
+#: ../src/browser.c:1870 ../src/browser.c:1875
 msgid "Type"
 msgstr ""
 
-#: ../src/browser.c:1900
+#: ../src/browser.c:1896
 msgid "_File associations"
 msgstr ""
 
-#: ../src/browser.c:1950
+#: ../src/browser.c:1946
 msgid "Edit file association"
 msgstr ""
 
-#: ../src/browser.c:1963
+#: ../src/browser.c:1959
 msgid "Type:"
 msgstr ""
 
-#: ../src/browser.c:1972
+#: ../src/browser.c:1968
 msgid "Open with:"
 msgstr ""
 
-#: ../src/browser.c:1983
+#: ../src/browser.c:1979
 msgid "View with:"
 msgstr ""
 
-#: ../src/browser.c:1994
+#: ../src/browser.c:1990
 msgid "Edit with:"
 msgstr ""
 
-#: ../src/browser.c:2138
+#: ../src/browser.c:2134
 msgid "Refreshing folder..."
 msgstr ""
 
