@@ -536,10 +536,20 @@ static void _show_preferences_window(Panel * panel)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	panel->pr_top_size = gtk_combo_box_text_new();
+#else
 	panel->pr_top_size = gtk_combo_box_new_text();
+#endif
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
+					panel->pr_top_size), NULL,
+				_(_panel_sizes[i].alias));
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_top_size),
 				_(_panel_sizes[i].alias));
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_top_size, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -547,10 +557,20 @@ static void _show_preferences_window(Panel * panel)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	panel->pr_bottom_size = gtk_combo_box_text_new();
+#else
 	panel->pr_bottom_size = gtk_combo_box_new_text();
+#endif
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
+					panel->pr_bottom_size), NULL,
+				_(_panel_sizes[i].alias));
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_bottom_size),
 				_(_panel_sizes[i].alias));
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_bottom_size, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook), vbox,

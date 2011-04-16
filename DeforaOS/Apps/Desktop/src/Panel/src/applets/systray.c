@@ -15,14 +15,15 @@
 
 
 
+#include "Panel.h"
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #include <string.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
-#include "Panel.h"
 
 
 /* Systray */
