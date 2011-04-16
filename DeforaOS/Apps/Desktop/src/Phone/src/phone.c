@@ -1574,8 +1574,11 @@ static void _show_dialer_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
 	g_signal_connect(G_OBJECT(phone->di_window), "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
-	gdk_add_client_message_filter(gdk_atom_intern(PHONE_CLIENT_MESSAGE,
-				FALSE), on_phone_filter, phone);
+#if !GTK_CHECK_VERSION(3, 0, 0)
+	gdk_display_add_client_message_filter(gdk_display_get_default(),
+			gdk_atom_intern(PHONE_CLIENT_MESSAGE, FALSE),
+			on_phone_filter, phone);
+#endif
 	vbox = gtk_vbox_new(FALSE, 4);
 	/* entry */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -1870,7 +1873,7 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		bbox = gtk_hbutton_box_new();
 		gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox),
 				GTK_BUTTONBOX_END);
-		gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+		gtk_box_set_spacing(GTK_BOX(bbox), 4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_plugins_cancel), phone);
@@ -2256,7 +2259,7 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_box_pack_start(GTK_BOX(vbox), phone->sy_hwflow, FALSE, TRUE, 4);
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_system_cancel), phone);

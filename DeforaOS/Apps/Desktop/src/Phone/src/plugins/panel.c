@@ -22,6 +22,9 @@
 #endif
 #include <string.h>
 #include <gtk/gtk.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include "Phone.h"
 #include "../phone.h"
 
@@ -421,7 +424,7 @@ static void _panel_settings(PhonePlugin * plugin)
 	/* button box */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_settings_cancel), plugin);

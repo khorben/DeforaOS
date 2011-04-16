@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,10 +193,19 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* gsm queue */
 	debug->queue = NULL;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	debug->gsm = gtk_combo_box_text_new();
+#else
 	debug->gsm = gtk_combo_box_new_text();
+#endif
 	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->gsm), NULL,
+				_debug_gsm_commands[i].name);
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(debug->gsm),
 				_debug_gsm_commands[i].name);
+#endif
 	g_signal_connect_swapped(G_OBJECT(debug->gsm), "changed", G_CALLBACK(
 				_on_debug_queue_changed), plugin);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->gsm), 0);
@@ -279,8 +288,13 @@ static void _on_debug_queue_changed(gpointer data)
 
 	if(debug->queue == NULL)
 		return;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	if((text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
+						debug->gsm))) == NULL)
+#else
 	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(debug->gsm)))
 			== NULL)
+#endif
 		return;
 	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 		if(strcmp(_debug_gsm_commands[i].name, text) == 0)
