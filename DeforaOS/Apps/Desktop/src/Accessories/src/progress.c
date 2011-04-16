@@ -132,7 +132,9 @@ static int _progress(Prefs * prefs, char * argv[])
 	/* graphical interface */
 	p.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(p.window), 300, 100);
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_window_set_has_resize_grip(GTK_WINDOW(p.window), FALSE);
+#endif
 	gtk_window_set_title(GTK_WINDOW(p.window), prefs->title != NULL
 			? prefs->title : "Progress");
 	g_signal_connect_swapped(G_OBJECT(p.window), "delete-event", G_CALLBACK(
