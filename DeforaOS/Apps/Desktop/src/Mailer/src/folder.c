@@ -132,7 +132,7 @@ void folder_set_type(Folder * folder, FolderType type)
 	} icons[FT_COUNT] =
 	{
 		{ FT_INBOX,	"mailer-inbox"		},
-		{ FT_DRAFTS,	"stock_mail-handling"	},
+		{ FT_DRAFTS,	"mailer-drafts"		},
 		{ FT_SENT,	"mailer-sent"		},
 		{ FT_TRASH,	"gnome-stock-trash"	},
 		{ FT_FOLDER,	"stock_directory"	}
