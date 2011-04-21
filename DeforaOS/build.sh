@@ -148,9 +148,8 @@ target_bootstrap()
 	echo 'The source tree is now configured for your environment. Essential'
 	echo 'libraries and tools will now be installed in this folder:'
 	echo "\"$PREFIX\""
-	echo 'You can otherwise exit this script with the CTRL+C key'
-	echo 'combination.'
-	echo 'Press ENTER to proceed.'
+	echo 'You can still exit this script with the CTRL+C key combination.'
+	echo 'Otherwise, press ENTER to proceed.'
 	echo '================================================================='
 	echo
 	read ignore						|| return 0
