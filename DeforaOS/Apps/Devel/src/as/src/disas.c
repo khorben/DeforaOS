@@ -157,10 +157,7 @@ static int _disas_do(Disas * disas)
 		if(disas->format[i].format->signature_len > s)
 			s = disas->format[i].format->signature_len;
 	if((buf = malloc(s)) == NULL)
-	{
-		free(buf);
 		return -_disas_error(disas->helper.filename, 1);
-	}
 	if(fread(buf, sizeof(*buf), s, disas->helper.fp) != s)
 	{
 		if(ferror(disas->helper.fp))
