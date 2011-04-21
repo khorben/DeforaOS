@@ -156,6 +156,7 @@ target_bootstrap()
 	#build and install essential libraries and tools
 	CONFIGURE=
 	FAILED=
+	PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
 	_bootstrap_system			|| FAILED="$FAILED System"
 	_bootstrap_network			|| FAILED="$FAILED Network"
 	_bootstrap_posix			|| FAILED="$FAILED POSIX"
