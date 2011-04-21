@@ -146,14 +146,16 @@ target_bootstrap()
 	echo
 	echo '================================================================='
 	echo 'The source tree is now configured for your environment. Essential'
-	echo 'libraries and tools will be installed onto your system, unless'
-	echo 'you exit this script now with the CTRL+C key combination.'
-	echo 'Press ENTER to proceed with the installation.'
+	echo 'libraries and tools will now be installed in this folder:'
+	echo "\"$PREFIX\""
+	echo 'You can otherwise exit this script with the CTRL+C key'
+	echo 'combination.'
+	echo 'Press ENTER to proceed.'
 	echo '================================================================='
 	echo
-	read IGNORE						|| return 0
-	#configure, build and install essential libraries and tools
-	CONFIGURE="./Apps/Devel/src/configure/src/configure -v -p $PREFIX"
+	read ignore						|| return 0
+	#build and install essential libraries and tools
+	CONFIGURE=
 	FAILED=
 	_bootstrap_system			|| FAILED="$FAILED System"
 	_bootstrap_network			|| FAILED="$FAILED Network"
