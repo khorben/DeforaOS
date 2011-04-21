@@ -180,8 +180,8 @@ _bootstrap_configure()
 
 	[ $# -eq 1 -a "$1" = "install" ] && TARGETS="install"
 	target $TARGETS						|| return 2
-	./Apps/Devel/src/configure/src/configure -v "System/src" "Apps" \
-								|| return 2
+	./Apps/Devel/src/configure/src/configure -v -p "$PREFIX" \
+			"System/src" "Apps"			|| return 2
 	CPPFLAGS="$C"
 	LDFLAGSF="$L"
 }
