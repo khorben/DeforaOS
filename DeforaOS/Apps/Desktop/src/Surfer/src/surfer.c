@@ -16,7 +16,8 @@ static char const _license[] =
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* FIXME:
  * - implement a default download directory (and "always ask")
- * - add "new tab" and "new window" buttons to the embedded interface */
+ * - add "new tab" and "new window" buttons to the embedded interface
+ * - consider using GtkSourceView to display the page source */
 
 
 
@@ -1597,6 +1598,13 @@ void surfer_view_source(Surfer * surfer)
 	char const * source;
 	size_t len;
 
+	/* XXX this assumes the keyboard shortcut was used */
+	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(surfer->window)) == widget)
+	{
+		gtk_entry_set_text(GTK_ENTRY(widget), "");
+		return;
+	}
 	if((widget = surfer_get_view(surfer)) == NULL)
 		return;
 	if((url = ghtml_get_location(widget)) == NULL)
