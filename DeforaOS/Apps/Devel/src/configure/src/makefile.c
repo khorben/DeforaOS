@@ -831,7 +831,8 @@ static int _target_binary(Configure * configure, FILE * fp,
 		return 1;
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	_target_flags(configure, fp, target);
+	if(_target_flags(configure, fp, target) != 0)
+		return 1;
 	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 	{
@@ -865,7 +866,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 	char c;
 	size_t i;
 
-	memset(done, 0, sizeof(done));
+	memset(&done, 0, sizeof(done));
 	if((p = config_get(configure->config, target, "sources")) == NULL
 			|| string_length(p) == 0)
 	{
@@ -915,7 +916,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 		i = 0;
 	}
 	string_delete(q);
-	return 1;
+	return 0;
 }
 
 static void _flags_asm(Configure * configure, FILE * fp, String const * target)
@@ -975,7 +976,8 @@ static int _target_library(Configure * configure, FILE * fp,
 		return 1;
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	_target_flags(configure, fp, target);
+	if(_target_flags(configure, fp, target) != 0)
+		return 1;
 	fprintf(fp, "\n%s%s%s%s", target, ".a: $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
@@ -1021,7 +1023,8 @@ static int _target_libtool(Configure * configure, FILE * fp,
 		return 1;
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	_target_flags(configure, fp, target);
+	if(_target_flags(configure, fp, target) != 0)
+		return 1;
 	fprintf(fp, "\n%s%s%s%s", target, ".la: $(", target, "_OBJS)\n");
 	fprintf(fp, "%s%s%s%s%s", "\t$(LIBTOOL) --mode=link $(CC) -o ", target,
 			".la $(", target, "_OBJS)");
@@ -1103,7 +1106,8 @@ static int _target_plugin(Configure * configure, FILE * fp,
 		return 1;
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	_target_flags(configure, fp, target);
+	if(_target_flags(configure, fp, target) != 0)
+		return 1;
 	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
@@ -1213,6 +1217,7 @@ static int _target_source(Configure * configure, FILE * fp,
 static int _objects_target(Configure * configure, FILE * fp,
 		String const * target)
 {
+	int ret = 0;
 	String const * p;
 	String * sources;
 	String * q;
@@ -1230,14 +1235,14 @@ static int _objects_target(Configure * configure, FILE * fp,
 			continue;
 		c = sources[i];
 		sources[i] = '\0';
-		_target_source(configure, fp, target, sources);
+		ret |= _target_source(configure, fp, target, sources);
 		if(c == '\0')
 			break;
 		sources += i + 1;
 		i = 0;
 	}
 	string_delete(q);
-	return 0;
+	return ret;
 }
 
 static int _source_depends(Config * config, FILE * fp, String const * source);
