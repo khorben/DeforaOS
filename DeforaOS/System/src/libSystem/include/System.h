@@ -28,6 +28,5 @@
 # include "System/parser.h"
 # include "System/plugin.h"
 # include "System/string.h"
-# include "System/variable.h"
 
 #endif /* !LIBSYSTEM_SYSTEM_H */
