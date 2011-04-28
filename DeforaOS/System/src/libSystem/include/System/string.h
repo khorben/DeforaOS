@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,5 +48,7 @@ String ** string_explode(String const * string, String const * separator);
 
 String * string_find(String const * string, String const * key);
 ssize_t string_index(String const * string, String const * key);
+
+int string_replace(String ** string, String const * what, String const * by);
 
 #endif /* !LIBSYSTEM_STRING_H */

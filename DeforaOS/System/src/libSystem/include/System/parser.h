@@ -46,6 +46,8 @@ int parser_remove_callback(Parser * parser, ParserCallback callback);
 int parser_add_filter(Parser * parser, ParserFilter filter, void * data);
 int parser_remove_filter(Parser * parser, ParserFilter filter);
 
+int parser_inject(Parser * parser, char const * string);
+
 int parser_scan(Parser * parser);
 int parser_scan_filter(Parser * parser);
 

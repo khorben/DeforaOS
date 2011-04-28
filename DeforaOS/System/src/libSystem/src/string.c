@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -248,4 +248,39 @@ ssize_t string_index(String const * string, String const * key)
 	if(string[i] == '\0')
 		return -1;
 	return i;
+}
+
+
+/* string_replace */
+int string_replace(String ** string, String const * what, String const * by)
+{
+	String * ret = NULL;
+	String const * p;
+	size_t len = string_length(what);
+	ssize_t index;
+	String * q;
+
+	for(p = *string; (index = string_index(p, what)) >= 0; p += index + len)
+	{
+		if((q = string_new_length(p, index)) == NULL
+				|| string_append(&ret, q) != 0
+				|| string_append(&ret, by) != 0)
+		{
+			string_delete(q);
+			string_delete(ret);
+			return -1;
+		}
+		string_delete(q);
+	}
+	if(ret != NULL)
+	{
+		if(string_append(&ret, p) != 0)
+		{
+			string_delete(ret);
+			return -1;
+		}
+		string_delete(*string);
+		*string = ret;
+	}
+	return 0;
 }

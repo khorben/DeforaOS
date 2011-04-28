@@ -213,6 +213,7 @@ int config_load(Config * config, char const * filename)
 		string_delete(section);
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
 	}
+	/* FIXME unescape backslashes (eg allow multiple lines) */
 	for(line = 0; (c = fgetc(fp)) != EOF; line++)
 		if(c == '#')
 			while((c = fgetc(fp)) != EOF && c != '\n');
@@ -425,6 +426,7 @@ void _save_foreach_section(void const * key, void * value, void * data)
 
 	if(*fp == NULL)
 		return;
+	/* FIXME escape lines with a backslash */
 	if(val == NULL || fprintf(*fp, "%s=%s\n", var, val) >= 0)
 		return;
 	fclose(*fp);

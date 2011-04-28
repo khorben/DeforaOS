@@ -40,6 +40,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/plugin.h \
 		$(PACKAGE)-$(VERSION)/include/System/string.h \
 		$(PACKAGE)-$(VERSION)/include/System/token.h \
+		$(PACKAGE)-$(VERSION)/include/System/variable.h \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
 		$(PACKAGE)-$(VERSION)/src/array.c \
@@ -53,6 +54,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugin.c \
 		$(PACKAGE)-$(VERSION)/src/string.c \
 		$(PACKAGE)-$(VERSION)/src/token.c \
+		$(PACKAGE)-$(VERSION)/src/variable.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
