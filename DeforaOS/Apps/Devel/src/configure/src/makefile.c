@@ -758,11 +758,8 @@ static int _target_objs(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "type")) != NULL)
 		tt = enum_string(TT_LAST, sTargetType, p);
 	if((p = config_get(configure->config, target, "sources")) == NULL)
-	{
-		fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
-				": no sources defined for target\n");
-		return 1;
-	}
+		/* a binary target may have no sources */
+		return 0;
 	if((sources = string_new(p)) == NULL)
 		return 1;
 	q = sources;
@@ -828,6 +825,7 @@ static int _target_binary(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * p;
+	String * q;
 
 	if(_target_objs(configure, fp, target) != 0)
 		return 1;
@@ -835,9 +833,17 @@ static int _target_binary(Configure * configure, FILE * fp,
 		return 0;
 	_target_flags(configure, fp, target);
 	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)");
-	/* FIXME change commas to spaces */
 	if((p = config_get(configure->config, target, "depends")) != NULL)
-		fprintf(fp, " %s", p);
+	{
+		if((q = string_new(p)) == NULL
+				|| string_replace(&q, ",", " ") != 0)
+		{
+			string_delete(q);
+			return error_print(PACKAGE);
+		}
+		fprintf(fp, " %s", q);
+		string_delete(q);
+	}
 	fprintf(fp, "%s%s%s%s%s%s%s", "\n\t$(CC) -o ", target, " $(", target,
 			"_OBJS) $(", target, "_LDFLAGS)");
 	fputc('\n', fp);
@@ -860,8 +866,14 @@ static int _target_flags(Configure * configure, FILE * fp,
 	size_t i;
 
 	memset(done, 0, sizeof(done));
-	if((p = config_get(configure->config, target, "sources")) == NULL)
+	if((p = config_get(configure->config, target, "sources")) == NULL
+			|| string_length(p) == 0)
+	{
+		if((p = config_get(configure->config, target, "type")) != NULL
+				&& string_compare(p, "binary") == 0)
+			_flags_c(configure, fp, target);
 		return 0;
+	}
 	if((sources = string_new(p)) == NULL)
 		return 1;
 	q = sources;
