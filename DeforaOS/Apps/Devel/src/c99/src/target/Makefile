@@ -1,4 +1,4 @@
-TARGETS	= as.so graph.so indent.so
+TARGETS	= asm.so graph.so indent.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -19,12 +19,12 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-as_OBJS = as.o
-as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags as`
-as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs as`
+asm_OBJS = asm.o
+asm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags asm`
+asm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs asm`
 
-as.so: $(as_OBJS)
-	$(LD) -o as.so $(as_OBJS) $(as_LDFLAGS)
+asm.so: $(asm_OBJS)
+	$(LD) -o asm.so $(asm_OBJS) $(asm_LDFLAGS)
 
 graph_OBJS = graph.o
 graph_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -40,8 +40,8 @@ indent_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 indent.so: $(indent_OBJS)
 	$(LD) -o indent.so $(indent_OBJS) $(indent_LDFLAGS)
 
-as.o: as.c ../../include/c99/target.h ../../config.h
-	$(CC) $(as_CFLAGS) -c as.c
+asm.o: asm.c ../../include/c99/target.h ../../config.h
+	$(CC) $(asm_CFLAGS) -c asm.c
 
 graph.o: graph.c ../../include/c99/target.h
 	$(CC) $(graph_CFLAGS) -c graph.c
@@ -50,21 +50,21 @@ indent.o: indent.c ../../include/c99/target.h
 	$(CC) $(indent_CFLAGS) -c indent.c
 
 clean:
-	$(RM) -- $(as_OBJS) $(graph_OBJS) $(indent_OBJS)
+	$(RM) -- $(asm_OBJS) $(graph_OBJS) $(indent_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 -- as.so $(DESTDIR)$(LIBDIR)/c99/target/as.so
+	$(INSTALL) -m 0644 -- asm.so $(DESTDIR)$(LIBDIR)/c99/target/asm.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
 	$(INSTALL) -m 0644 -- graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
 	$(INSTALL) -m 0644 -- indent.so $(DESTDIR)$(LIBDIR)/c99/target/indent.so
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/as.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/asm.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/graph.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/indent.so
 

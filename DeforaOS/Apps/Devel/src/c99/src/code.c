@@ -274,7 +274,7 @@ static int _new_target(Code * code, char const * target,
 			: "NULL", options_cnt);
 #endif
 	if(target == NULL)
-		target = "as";
+		target = "asm";
 	if((code->plugin = plugin_new(LIBDIR, PACKAGE, "target", target))
 			== NULL
 			|| (code->target = plugin_lookup(code->plugin,

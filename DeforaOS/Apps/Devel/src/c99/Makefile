@@ -96,7 +96,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/sets/unary_expr.set \
 		$(PACKAGE)-$(VERSION)/src/sets/unary_operator.set \
 		$(PACKAGE)-$(VERSION)/src/sets/project.conf \
-		$(PACKAGE)-$(VERSION)/src/target/as.c \
+		$(PACKAGE)-$(VERSION)/src/target/asm.c \
 		$(PACKAGE)-$(VERSION)/src/target/graph.c \
 		$(PACKAGE)-$(VERSION)/src/target/indent.c \
 		$(PACKAGE)-$(VERSION)/src/target/Makefile \

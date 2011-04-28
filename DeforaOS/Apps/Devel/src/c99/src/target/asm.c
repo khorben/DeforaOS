@@ -15,7 +15,7 @@
 
 
 
-#include <Devel/As.h>
+#include <Devel/Asm.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,28 +29,28 @@
 /* as */
 /* private */
 /* types */
-typedef enum _AsOption
+typedef enum _AsmOption
 {
 	ASO_ARCH	= 0,
 	ASO_FORMAT
-} AsOption;
+} AsmOption;
 #define ASO_LAST	ASO_FORMAT
 #define ASO_COUNT	(ASO_LAST + 1)
 
-typedef struct _AsArch
+typedef struct _AsmArch
 {
 	char const * name;
 	int (*function_begin)(char const * name);
 	int (*function_call)(char const * name);
 	int (*function_end)(void);
-} AsArch;
+} AsmArch;
 
 
 /* variables */
-static As * _as_as;
-static int _as_optlevel;
+static Asm * _asm_as;
+static int _asm_optlevel;
 
-static C99Option _as_options[ASO_COUNT + 1] =
+static C99Option _asm_options[ASO_COUNT + 1] =
 {
 	{ "arch",	NULL	},
 	{ "format",	NULL	},
@@ -59,28 +59,28 @@ static C99Option _as_options[ASO_COUNT + 1] =
 
 /* platforms */
 /* amd64 */
-static int _as_arch_amd64_function_begin(char const * name);
-static int _as_arch_amd64_function_call(char const * name);
-static int _as_arch_amd64_function_end(void);
-static AsArch _as_arch_amd64 =
+static int _asm_arch_amd64_function_begin(char const * name);
+static int _asm_arch_amd64_function_call(char const * name);
+static int _asm_arch_amd64_function_end(void);
+static AsmArch _asm_arch_amd64 =
 {
 	"amd64",
-	_as_arch_amd64_function_begin,
-	_as_arch_amd64_function_call,
-	_as_arch_amd64_function_end
+	_asm_arch_amd64_function_begin,
+	_asm_arch_amd64_function_call,
+	_asm_arch_amd64_function_end
 };
 
-static AsArch * _as_arch[] =
+static AsmArch * _asm_arch[] =
 {
-	&_as_arch_amd64
+	&_asm_arch_amd64
 };
 
 
 /* protected */
 /* prototypes */
-static int _as_init(char const * outfile, int optlevel);
-static int _as_exit(void);
-static int _as_section(char const * name);
+static int _asm_init(char const * outfile, int optlevel);
+static int _asm_exit(void);
+static int _asm_section(char const * name);
 
 
 /* public */
@@ -88,11 +88,11 @@ static int _as_section(char const * name);
 TargetPlugin target_plugin =
 {
 	NULL,
-	_as_options,
-	_as_init,
-	_as_exit,
+	_asm_options,
+	_asm_init,
+	_asm_exit,
 	NULL,
-	_as_section,
+	_asm_section,
 	NULL,
 	NULL,
 	NULL,
@@ -102,28 +102,32 @@ TargetPlugin target_plugin =
 
 /* protected */
 /* functions */
-/* as_init */
+/* asm_init */
 static int _init_arch(char const * arch);
 static int _init_defines(char const * format);
 
-static int _as_init(char const * outfile, int optlevel)
+static int _asm_init(char const * outfile, int optlevel)
 {
-	char const * arch = _as_options[ASO_ARCH].value;
-	char const * format = _as_options[ASO_FORMAT].value;
+	char const * arch = _asm_options[ASO_ARCH].value;
+	char const * format = _asm_options[ASO_FORMAT].value;
 
-	_as_optlevel = optlevel;
-	if((_as_as = as_new(arch, format)) == NULL)
+	_asm_optlevel = optlevel;
+	if((_asm_as = asm_new(arch, format)) == NULL)
 		return 1;
+	if(arch == NULL)
+		asm_guess_arch(_asm_as);
+	if(format == NULL)
+		asm_guess_format(_asm_as);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s: architecture \"%s\", format \"%s\"\n",
-			PACKAGE, as_get_arch(_as_as), as_get_format(_as_as));
+			PACKAGE, asm_get_arch(_asm_as), asm_get_format(_asm_as));
 #endif
-	if(_init_arch(as_get_arch(_as_as)) != 0
-			|| _init_defines(as_get_format(_as_as)) != 0
-			|| as_open(_as_as, outfile) != 0
-			|| _as_section(".text") != 0)
+	if(_init_arch(asm_get_arch(_asm_as)) != 0
+			|| _init_defines(asm_get_format(_asm_as)) != 0
+			|| asm_open_assemble(_asm_as, outfile) != 0
+			|| _asm_section(".text") != 0)
 	{
-		as_delete(_as_as);
+		asm_delete(_asm_as);
 		return 1;
 	}
 #ifdef DEBUG
@@ -134,16 +138,16 @@ static int _as_init(char const * outfile, int optlevel)
 
 static int _init_arch(char const * arch)
 {
-	AsArch * aarch = NULL;
+	AsmArch * aarch = NULL;
 	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, arch);
 #endif
-	for(i = 0; i < sizeof(_as_arch) / sizeof(*_as_arch); i++)
-		if(strcmp(_as_arch[i]->name, arch) == 0)
+	for(i = 0; i < sizeof(_asm_arch) / sizeof(*_asm_arch); i++)
+		if(strcmp(_asm_arch[i]->name, arch) == 0)
 		{
-			aarch = _as_arch[i];
+			aarch = _asm_arch[i];
 			break;
 		}
 	if(aarch == NULL)
@@ -179,64 +183,66 @@ static int _init_defines(char const * format)
 }
 
 
-/* as_exit */
-static int _as_exit(void)
+/* asm_exit */
+static int _asm_exit(void)
 {
 	int ret;
 
-	ret = as_close(_as_as);
-	as_delete(_as_as);
+	ret = asm_close(_asm_as);
+	asm_delete(_asm_as);
 	return ret;
 }
 
 
-/* as_section */
-static int _as_section(char const * name)
+/* asm_section */
+static int _asm_section(char const * name)
 {
-	return as_section(_as_as, name);
+	return asm_set_section(_asm_as, name, 0, SEEK_CUR, -1);
 }
 
 
 /* platforms */
 /* amd64 */
-static int _as_arch_amd64_function_begin(char const * name)
+static int _asm_arch_amd64_function_begin(char const * name)
 {
+	ArchOperand arg1;
+	ArchOperand arg2;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(asm_set_function(_asm_as, name, 0, SEEK_CUR, -1) != 0)
+		return -1;
 	/* FIXME give real arguments */
-	AsOperand ao[2] =
-	{
-		{ AOT_IMMEDIATE, 0, NULL },
-		{ AOT_IMMEDIATE, 0, NULL }
-	};
-	unsigned long a0 = 0;
-	unsigned long a1 = 0;
+	memset(&arg1, 0, sizeof(arg1));
+	arg1.type = AO_IMMEDIATE(0, 0, 32);
+	arg1.value.immediate.value = 0;
+	memset(&arg2, 0, sizeof(arg2));
+	arg2.type = AO_IMMEDIATE(0, 0, 32);
+	arg2.value.immediate.value = 0;
+	return asm_instruction(_asm_as, "enter", 2, &arg1, &arg2);
+}
+
+
+static int _asm_arch_amd64_function_call(char const * name)
+{
+	ArchOperand arg;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	ao[0].value = &a0;
-	ao[1].value = &a1;
-	return as_instruction(_as_as, "enter", 2, &ao[0], &ao[1]);
-}
-
-
-static int _as_arch_amd64_function_call(char const * name)
-{
 	/* FIXME give a real argument */
-	AsOperand ao = { AOT_IMMEDIATE, 0, NULL };
-	unsigned long a0 = 0;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	ao.value = &a0;
-	return as_instruction(_as_as, "call", 1, &ao);
+	memset(&arg, 0, sizeof(arg));
+	arg.type = AO_IMMEDIATE(0, 0, 32);
+	arg.value.immediate.value = 0;
+	return asm_instruction(_asm_as, "call", 1, &arg);
 }
 
 
-static int _as_arch_amd64_function_end(void)
+static int _asm_arch_amd64_function_end(void)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return as_instruction(_as_as, "leave", 0);
+	return asm_instruction(_asm_as, "leave", 0);
 }
