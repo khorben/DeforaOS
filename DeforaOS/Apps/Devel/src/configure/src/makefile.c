@@ -1338,6 +1338,8 @@ static int _target_source(Configure * configure, FILE * fp,
 			fputc('\n', fp);
 			break;
 		case OT_UNKNOWN:
+			fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
+					": Unknown source type for object\n");
 			ret = 1;
 			break;
 	}
