@@ -1,3 +1,4 @@
+/* $Id$ */
 /* install/sqlite.sql */
 
 

@@ -1,3 +1,4 @@
+/* $Id$ */
 /* install/postgresql.sql */
 
 
