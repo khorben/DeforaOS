@@ -54,7 +54,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugin.c \
 		$(PACKAGE)-$(VERSION)/src/string.c \
 		$(PACKAGE)-$(VERSION)/src/token.c \
-		$(PACKAGE)-$(VERSION)/src/variable.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
