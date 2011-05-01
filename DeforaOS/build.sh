@@ -207,8 +207,8 @@ _bootstrap_devel()
 {
 	RET=0
 	S="Apps/Devel/src/cpp"
-	#FIXME we can't install cpp and as because of conflicts with the system
-	#	Apps/Devel/src/as \
+	#FIXME we can't install cpp because of conflicts with the system
+	#	Apps/Devel/src/asm \
 	#	Apps/Devel/src/c99 \
 	#	Apps/Devel/src/strace"
 
