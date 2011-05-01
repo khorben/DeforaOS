@@ -38,8 +38,6 @@ install:
 	$(INSTALL) -m 0644 -- string.h $(DESTDIR)$(INCLUDEDIR)/System/string.h
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
 	$(INSTALL) -m 0644 -- token.h $(DESTDIR)$(INCLUDEDIR)/System/token.h
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
-	$(INSTALL) -m 0644 -- variable.h $(DESTDIR)$(INCLUDEDIR)/System/variable.h
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/array.h
@@ -54,6 +52,5 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/plugin.h
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/string.h
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/token.h
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/variable.h
 
 .PHONY: all clean distclean install uninstall
