@@ -1,4 +1,4 @@
-SUBDIRS	= configure cpp as c99 GEDI scripts
+SUBDIRS	= configure cpp asm c99 GEDI scripts
 
 
 all: subdirs
