@@ -197,7 +197,7 @@ static int _asm_exit(void)
 /* asm_section */
 static int _asm_section(char const * name)
 {
-	return asm_set_section(_asm_as, name, 0, SEEK_CUR, -1);
+	return asm_set_section(_asm_as, name, -1, -1);
 }
 
 
@@ -211,14 +211,14 @@ static int _asm_arch_amd64_function_begin(char const * name)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(asm_set_function(_asm_as, name, 0, SEEK_CUR, -1) != 0)
+	if(asm_set_function(_asm_as, name, -1, -1) != 0)
 		return -1;
 	/* FIXME give real arguments */
 	memset(&arg1, 0, sizeof(arg1));
-	arg1.type = AO_IMMEDIATE(0, 0, 32);
+	arg1.definition = AO_IMMEDIATE(0, 0, 32);
 	arg1.value.immediate.value = 0;
 	memset(&arg2, 0, sizeof(arg2));
-	arg2.type = AO_IMMEDIATE(0, 0, 32);
+	arg2.definition = AO_IMMEDIATE(0, 0, 32);
 	arg2.value.immediate.value = 0;
 	return asm_instruction(_asm_as, "enter", 2, &arg1, &arg2);
 }
@@ -233,7 +233,7 @@ static int _asm_arch_amd64_function_call(char const * name)
 #endif
 	/* FIXME give a real argument */
 	memset(&arg, 0, sizeof(arg));
-	arg.type = AO_IMMEDIATE(0, 0, 32);
+	arg.definition = AO_IMMEDIATE(0, 0, 32);
 	arg.value.immediate.value = 0;
 	return asm_instruction(_asm_as, "call", 1, &arg);
 }
