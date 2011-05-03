@@ -238,6 +238,7 @@ static CppScope _if_do(Cpp * cpp, char const * str)
 {
 	char * p;
 	char const * q;
+	long l;
 
 	if(str == NULL)
 		/* FIXME it's probably an error case instead */
@@ -245,8 +246,9 @@ static CppScope _if_do(Cpp * cpp, char const * str)
 	if(str[0] == '!')
 		return (_if_do(cpp, &str[1]) == CPP_SCOPE_TAKING)
 			? CPP_SCOPE_NOTYET : CPP_SCOPE_TAKING;
-	if(strcmp(str, "1") == 0)
-		return CPP_SCOPE_TAKING;
+	l = strtol(str, &p, 0);
+	if(str[0] != '\0' && p != str)
+		return (l != 0) ? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET;
 	if(strncmp(str, "defined(", 8) == 0 && (p = strchr(str, ')')) != NULL)
 	{
 		*p = '\0';
