@@ -332,12 +332,19 @@ static int _event_suspend(PhonePlugin * plugin)
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
 {
 	int ret = 0;
-	char const path[] = "/sys/class/leds/neo1973:vibrator/brightness";
+	char const p1[] = "/sys/class/leds/gta02::vibrator/brightness";
+	char const p2[] = "/sys/class/leds/neo1973:vibrator/brightness";
+	char const * path = p1;
 	int fd;
 	char buf[256];
 	int len;
 
 	if((fd = open(path, O_WRONLY)) < 0)
+	{
+		path = p2;
+		fd = open(path, O_WRONLY);
+	}
+	if(fd < 0)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
 		return plugin->helper->error(NULL, buf, 1);
