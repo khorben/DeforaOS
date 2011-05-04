@@ -176,6 +176,7 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	if((desktop = object_new(sizeof(*desktop))) == NULL)
 		return NULL;
 	memset(desktop, 0, sizeof(*desktop));
+	desktop->prefs.alignment = DESKTOP_ALIGNMENT_VERTICAL;
 	desktop->prefs.layout = DESKTOP_LAYOUT_FILES;
 	desktop->prefs.monitor = -1;
 	if(prefs != NULL)
@@ -1315,24 +1316,16 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 
 /* desktop_icons_align */
 static int _align_compare(const void * a, const void * b);
+static void _align_horizontally(Desktop * desktop);
+static void _align_vertically(Desktop * desktop);
 
 void desktop_icons_align(Desktop * desktop)
 {
-	size_t i;
-	int x = desktop->workarea.x;
-	int y = desktop->workarea.y;
-
 	qsort(desktop->icon, desktop->icon_cnt, sizeof(void*), _align_compare);
-	for(i = 0; i < desktop->icon_cnt; i++)
-	{
-		if(y + DESKTOPICON_MAX_HEIGHT > desktop->workarea.height)
-		{
-			x += DESKTOPICON_MAX_WIDTH;
-			y = desktop->workarea.y;
-		}
-		desktopicon_move(desktop->icon[i], x, y);
-		y += DESKTOPICON_MAX_HEIGHT;
-	}
+	if(desktop->prefs.alignment == DESKTOP_ALIGNMENT_VERTICAL)
+		_align_vertically(desktop);
+	else
+		_align_horizontally(desktop);
 }
 
 static int _align_compare(const void * a, const void * b)
@@ -1355,6 +1348,44 @@ static int _align_compare(const void * a, const void * b)
 	else if(!dira && dirb)
 		return 1;
 	return strcmp(desktopicon_get_name(icona), desktopicon_get_name(iconb));
+}
+
+static void _align_horizontally(Desktop * desktop)
+{
+	size_t i;
+	int x = desktop->workarea.x;
+	int y = desktop->workarea.y;
+	int width = x + desktop->workarea.width;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(x + DESKTOPICON_MAX_WIDTH > width)
+		{
+			y += DESKTOPICON_MAX_HEIGHT;
+			x = desktop->workarea.x;
+		}
+		desktopicon_move(desktop->icon[i], x, y);
+		x += DESKTOPICON_MAX_WIDTH;
+	}
+}
+
+static void _align_vertically(Desktop * desktop)
+{
+	size_t i;
+	int x = desktop->workarea.x;
+	int y = desktop->workarea.y;
+	int height = desktop->workarea.y + desktop->workarea.height;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(y + DESKTOPICON_MAX_HEIGHT > height)
+		{
+			x += DESKTOPICON_MAX_WIDTH;
+			y = desktop->workarea.y;
+		}
+		desktopicon_move(desktop->icon[i], x, y);
+		y += DESKTOPICON_MAX_HEIGHT;
+	}
 }
 
 
@@ -1595,6 +1626,7 @@ int main(int argc, char * argv[])
 	int o;
 	Desktop * desktop;
 	DesktopPrefs prefs;
+	int alignment = -1;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -1607,8 +1639,10 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'H':
+				alignment = DESKTOP_ALIGNMENT_HORIZONTAL;
+				break;
 			case 'V':
-				/* FIXME implement */
+				alignment = DESKTOP_ALIGNMENT_VERTICAL;
 				break;
 			case 'a':
 				prefs.layout = DESKTOP_LAYOUT_APPLICATIONS;
@@ -1633,6 +1667,11 @@ int main(int argc, char * argv[])
 		}
 	if(optind < argc)
 		return _usage();
+	if(alignment < 0)
+		alignment = (prefs.layout == DESKTOP_LAYOUT_FILES)
+			? DESKTOP_ALIGNMENT_VERTICAL
+			: DESKTOP_ALIGNMENT_HORIZONTAL;
+	prefs.alignment = alignment;
 	if((desktop = desktop_new(&prefs)) == NULL)
 	{
 		gtk_main();

@@ -29,10 +29,18 @@
 #  define DesktopIcon DesktopIcon
 typedef struct _DesktopIcon DesktopIcon;
 # endif
+
 # ifndef Desktop
 #  define Desktop Desktop
 typedef struct _Desktop Desktop;
 # endif
+
+typedef enum _DesktopAlignment
+{
+	DESKTOP_ALIGNMENT_VERTICAL = 0,
+	DESKTOP_ALIGNMENT_HORIZONTAL
+} DesktopAlignment;
+
 typedef enum _DesktopLayout
 {
 	DESKTOP_LAYOUT_NULL = 0,
@@ -54,6 +62,7 @@ typedef enum _DesktopMessageShow
 
 typedef struct _DesktopPrefs
 {
+	DesktopAlignment alignment;
 	DesktopLayout layout;
 	int monitor;
 } DesktopPrefs;
