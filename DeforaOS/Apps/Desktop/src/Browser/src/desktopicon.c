@@ -140,13 +140,12 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 			/* FIXME use access() for this */
 			isexec = TRUE;
 			mime_icons(desktop_get_mime(desktop),
-					desktop_get_theme(desktop),
 					"application/x-executable",
 					DESKTOPICON_ICON_SIZE, &image, -1);
 		}
 		else if((mimetype = mime_type(mime, path)) != NULL)
-			mime_icons(mime, desktop_get_theme(desktop), mimetype,
-					DESKTOPICON_ICON_SIZE, &image, -1);
+			mime_icons(mime, mimetype, DESKTOPICON_ICON_SIZE,
+					&image, -1);
 	}
 	if(name == NULL)
 	{
