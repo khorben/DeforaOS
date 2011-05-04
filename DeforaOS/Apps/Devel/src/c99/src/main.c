@@ -193,7 +193,7 @@ static int _main_add_define(C99Prefs * prefs, char * define)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, define);
 #endif
 	if(strlen(define) == 0)
-		return 1;
+		return _usage();
 	value = strtok(define, "=");
 	if((p = realloc(prefs->defines, sizeof(*p) * (prefs->defines_cnt + 1)))
 			== NULL)
