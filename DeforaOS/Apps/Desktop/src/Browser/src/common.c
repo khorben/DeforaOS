@@ -80,10 +80,11 @@ static int _common_drag_data_received(GdkDragContext * context,
 /* common_exec */
 static int _common_exec(char const * program, char const * flags, GList * args)
 {
-	unsigned long i = flags != NULL ? 3 : 2;
-	char const ** argv = NULL;
+	int ret = 0;
+	unsigned long i = (flags != NULL) ? 3 : 2;
+	char ** argv = NULL;
 	GList * a;
-	char const ** p;
+	char ** p;
 	GError * error = NULL;
 
 	if(args == NULL)
@@ -105,19 +106,27 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 	if(argv == NULL)
 		return 0;
 #ifdef DEBUG
-	argv[0] = "echo";
+	argv[0] = strdup("echo");
 #else
-	argv[0] = program;
+	argv[0] = strdup(program);
 #endif
+	if(argv[0] == NULL)
+	{
+		free(argv);
+		return -error_set_code(1, "%s: %s", program, strerror(errno));
+	}
 	argv[i] = NULL;
-	i = 1;
+	i = 0;
 	if(flags != NULL)
-		argv[i++] = flags;
-	argv[i] = "--";
+		argv[++i] = strdup(flags); /* XXX may fail too */
+	argv[i + 1] = "--";
 	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
 				NULL, &error) != TRUE)
-		return -error_set_code(1, "%s", error->message);
-	return 0;
+		ret = error_set_code(1, "%s", error->message);
+	free(argv[0]);
+	if(flags != NULL)
+		free(argv[i]);
+	return ret;
 }
 #endif /* COMMON_EXEC */
 

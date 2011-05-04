@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 20:57+0200\n"
+"POT-Creation-Date: 2011-05-04 21:23+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -355,11 +355,11 @@ msgstr ""
 msgid " to \""
 msgstr ""
 
-#: ../src/common.c:139
+#: ../src/common.c:148
 msgid "New symbolic link"
 msgstr ""
 
-#: ../src/common.c:149
+#: ../src/common.c:158
 msgid "Destination: "
 msgstr ""
 
