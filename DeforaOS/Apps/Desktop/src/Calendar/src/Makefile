@@ -23,7 +23,7 @@ calendar_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 calendar: $(calendar_OBJS)
 	$(CC) -o calendar $(calendar_OBJS) $(calendar_LDFLAGS)
 
-calendar.o: calendar.c
+calendar.o: calendar.c ../config.h
 	$(CC) $(calendar_CFLAGS) -c calendar.c
 
 clean:
