@@ -362,20 +362,26 @@ static int _calendar_set_detail(Calendar * calendar, unsigned int year,
 /* calendar_set_event */
 static int _calendar_set_event(Calendar * calendar, CalendarEvent * event)
 {
-	struct tm start;
-	struct tm end;
+	time_t start;
+	time_t end;
+	struct tm t;
+	const int oneday = 60 * 60 * 24;
 
-	if(event->start < 0 || event->end < 0)
+	if((start = event->start) < 0 || (end = event->end) < 0)
 		return -1; /* XXX report error */
-	memset(&start, 0, sizeof(start));
-	memset(&end, 0, sizeof(end));
+	memset(&t, 0, sizeof(start));
 	/* FIXME check with the timezone */
-	if(gmtime_r(&event->start, &start) == NULL
-			|| gmtime_r(&event->end, &end) == NULL)
+	if(localtime_r(&start, &t) == NULL)
 		return -1; /* XXX report error */
-	/* FIXME really implement (not only start) */
-	_calendar_set_detail(calendar, start.tm_year + 1900, start.tm_mon + 1,
-			start.tm_mday, event->name);
+	_calendar_set_detail(calendar, t.tm_year + 1900, t.tm_mon + 1,
+			t.tm_mday, event->name);
+	for(start += oneday; start < end; start += oneday)
+	{
+		if(localtime_r(&start, &t) == NULL)
+			return -1; /* XXX report error */
+		_calendar_set_detail(calendar, t.tm_year + 1900, t.tm_mon + 1,
+				t.tm_mday, event->name);
+	}
 	return 0;
 }
 
