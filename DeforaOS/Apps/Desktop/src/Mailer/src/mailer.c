@@ -493,7 +493,9 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	GtkTreeModel * model;
 	GList * sel;
 	GtkTreeIter iter;
-	char * p;
+	gchar * p;
+	gchar * q;
+	gchar * r;
 	Message * message;
 	GtkTextBuffer * tbuf;
 
@@ -506,27 +508,42 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 		gtk_widget_hide(mailer->hdr_vbox);
 		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
 				mailer->view_buffer);
+		g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+		g_list_free(sel);
+		return;
 	}
+	gtk_tree_model_get_iter(model, &iter, sel->data);
+	gtk_tree_model_get(model, &iter, MHC_MESSAGE, &message, -1);
+	gtk_tree_model_get(model, &iter, MHC_SUBJECT, &p, -1);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_subject), p);
+	g_free(p);
+	gtk_tree_model_get(model, &iter, MHC_FROM, &p, MHC_FROM_EMAIL, &q, -1);
+	if(q == NULL || strlen(q) == 0 || strcmp(p, q) == 0)
+		r = g_strdup(p);
 	else
-	{
-		gtk_tree_model_get_iter(model, &iter, sel->data);
-		gtk_tree_model_get(model, &iter, MHC_MESSAGE, &message, -1);
-		gtk_tree_model_get(model, &iter, MHC_SUBJECT, &p, -1);
-		gtk_label_set_text(GTK_LABEL(mailer->hdr_subject), p);
-		gtk_tree_model_get(model, &iter, MHC_FROM, &p, -1);
-		gtk_label_set_text(GTK_LABEL(mailer->hdr_from), p);
-		gtk_tree_model_get(model, &iter, MHC_TO, &p, -1);
-		gtk_label_set_text(GTK_LABEL(mailer->hdr_to), p);
-		gtk_tree_model_get(model, &iter, MHC_DATE_DISPLAY, &p, -1);
-		gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
-		message_set_read(message, TRUE);
-		gtk_widget_show(mailer->hdr_vbox);
-		if((tbuf = account_select(mailer->account_cur,
-						mailer->folder_cur,
-						message)) != NULL)
-			gtk_text_view_set_buffer(GTK_TEXT_VIEW(
-						mailer->view_body), tbuf);
-	}
+		r = g_strdup_printf("%s <%s>", p, q);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_from), r);
+	g_free(p);
+	g_free(q);
+	g_free(r);
+	gtk_tree_model_get(model, &iter, MHC_TO, &p, MHC_TO_EMAIL, &q -1);
+	if(q == NULL || strlen(q) == 0 || strcmp(p, q) == 0)
+		r = g_strdup(p);
+	else
+		r = g_strdup_printf("%s <%s>", p, q);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_to), r);
+	g_free(p);
+	g_free(q);
+	g_free(r);
+	gtk_tree_model_get(model, &iter, MHC_DATE_DISPLAY, &p, -1);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
+	g_free(p);
+	message_set_read(message, TRUE);
+	gtk_widget_show(mailer->hdr_vbox);
+	if((tbuf = account_select(mailer->account_cur, mailer->folder_cur,
+					message)) != NULL)
+		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
+				tbuf);
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
 }
@@ -970,6 +987,8 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 
 	if((compose = compose_new(mailer)) == NULL)
 		return; /* XXX error message? */
+	if((q = mailer_get_config(mailer, "messages_font")) != NULL)
+		compose_set_font(compose, q);
 	gtk_tree_model_get(model, iter, MHC_FROM, &from, MHC_SUBJECT,
 			&subject, -1);
 #if 0 /* FIXME adapt */

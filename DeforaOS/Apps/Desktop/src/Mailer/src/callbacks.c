@@ -45,9 +45,7 @@ gboolean on_closex(gpointer data)
 /* file menu */
 void on_file_new_mail(gpointer data)
 {
-	Mailer * mailer = data;
-
-	compose_new(mailer);
+	on_new_mail(data);
 }
 
 
@@ -165,18 +163,22 @@ void on_delete(gpointer data)
 
 void on_forward(gpointer data)
 {
-	Mailer * mailer = data;
-
-	/* FIXME implement only if selection */
-	compose_new(mailer);
+	/* FIXME return directly if there is no selection */
+	on_new_mail(data);
+	/* FIXME really implement */
 }
 
 
 void on_new_mail(gpointer data)
 {
 	Mailer * mailer = data;
+	Compose * compose;
+	char const * p;
 
-	compose_new(mailer);
+	if((compose = compose_new(mailer)) == NULL)
+		return;
+	if((p = mailer_get_config(mailer, "messages_font")) != NULL)
+		compose_set_font(compose, p);
 }
 
 
@@ -215,139 +217,4 @@ void on_view_source(gpointer data)
 	Mailer * mailer = data;
 
 	mailer_open_selected_source(mailer);
-}
-
-
-/* compose window */
-void on_compose_attach(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_attach_dialog(compose);
-}
-
-
-gboolean on_compose_closex(gpointer data)
-{
-	Compose * compose = data;
-
-	return compose_close(compose);
-}
-
-
-void on_compose_save(gpointer data)
-{
-	Compose * c = data;
-
-	compose_save(c);
-}
-
-
-void on_compose_send(gpointer data)
-{
-	Compose * c = data;
-
-	compose_send(c);
-}
-
-
-/* compose file menu */
-void on_compose_file_new(gpointer data)
-{
-	Compose * compose = data;
-	Mailer * mailer;
-
-	mailer = compose_get_mailer(compose);
-	compose_new(mailer);
-}
-
-
-void on_compose_file_send(gpointer data)
-{
-	Compose * c = data;
-
-	compose_send(c);
-}
-
-
-void on_compose_file_close(gpointer data)
-{
-	Compose * compose = data;
-
-	on_compose_closex(compose);
-}
-
-
-/* compose edit menu */
-/* on_compose_edit_copy */
-void on_compose_edit_copy(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_copy(compose);
-}
-
-
-/* on_compose_edit_cut */
-void on_compose_edit_cut(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_cut(compose);
-}
-
-
-/* on_compose_edit_paste */
-void on_compose_edit_paste(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_paste(compose);
-}
-
-
-/* on_compose_edit_select_all */
-void on_compose_edit_select_all(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_select_all(compose);
-}
-
-
-/* compose view menu */
-/* on_compose_view_add_field */
-void on_compose_view_add_field(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_add_field(compose, NULL, NULL);
-}
-
-
-/* on_compose_help_about */
-void on_compose_help_about(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_show_about(compose, TRUE);
-}
-
-
-/* send mail */
-gboolean on_send_closex(gpointer data)
-{
-	Compose * compose = data;
-
-	on_send_cancel(compose);
-	return FALSE;
-}
-
-
-/* on_send_cancel */
-void on_send_cancel(gpointer data)
-{
-	Compose * compose = data;
-
-	compose_send_cancel(compose);
 }

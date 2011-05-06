@@ -26,7 +26,7 @@
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
-#include "callbacks.h"
+#include "compose-callbacks.h"
 #include "compose.h"
 #include "../config.h"
 #include "common.c"
@@ -126,6 +126,7 @@ static DesktopMenu _menu_edit[] =
 #endif
 		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"), NULL, NULL, 0, 0 },
+	/* FIXME add preferences */
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -174,6 +175,10 @@ static DesktopToolbar _compose_toolbar[] =
 		NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
+
+
+/* prototypes */
+static void _compose_delete(Compose * compose);
 
 
 /* public */
@@ -348,8 +353,6 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	const char signature[] = "/.signature";
 	const char prefix[] = "\n-- \n";
 	GtkWidget * textview;
-	char const * font;
-	PangoFontDescription * desc;
 	char const * homedir;
 	char * filename;
 	gboolean res;
@@ -358,13 +361,6 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	GtkTextBuffer * buffer;
 
 	textview = gtk_text_view_new();
-	/* font */
-	if((font = mailer_get_config(mailer, "messages_font")) != NULL)
-	{
-		desc = pango_font_description_from_string(font);
-		gtk_widget_modify_font(textview, desc);
-		pango_font_description_free(desc);
-	}
 	/* signature */
 	if((homedir = getenv("HOME")) == NULL)
 		return textview;
@@ -428,6 +424,17 @@ Mailer * compose_get_mailer(Compose * compose)
 }
 
 
+/* compose_set_font */
+void compose_set_font(Compose * compose, char const * font)
+{
+	PangoFontDescription * desc;
+
+	desc = pango_font_description_from_string(font);
+	gtk_widget_modify_font(compose->view, desc);
+	pango_font_description_free(desc);
+}
+
+
 /* compose_set_subject */
 void compose_set_subject(Compose * compose, char const * subject)
 {
@@ -488,10 +495,7 @@ gboolean compose_close(Compose * compose)
 
 	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
 						compose->view))) == FALSE)
-	{
-		compose_delete(compose);
-		return FALSE;
-	}
+		return TRUE;
 	dialog = gtk_message_dialog_new(GTK_WINDOW(compose->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE,
@@ -508,9 +512,8 @@ gboolean compose_close(Compose * compose)
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_CLOSE)
-		return TRUE;
-	compose_delete(compose);
-	return FALSE;
+		return FALSE;
+	return TRUE;
 }
 
 
@@ -830,7 +833,7 @@ static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 	if(compose->buf_pos >= compose->buf_len)
 	{
 		on_send_cancel(compose);
-		compose_delete(compose);
+		_compose_delete(compose);
 		return FALSE;
 	}
 	return TRUE;
@@ -883,4 +886,15 @@ static gboolean _about_on_closex(gpointer data)
 
 	gtk_widget_hide(compose->ab_window);
 	return TRUE;
+}
+
+
+/* private */
+/* functions */
+static void _compose_delete(Compose * compose)
+{
+	if(compose->mailer == NULL) /* XXX ugly hack */
+		gtk_main_quit();
+	else
+		compose_delete(compose);
 }

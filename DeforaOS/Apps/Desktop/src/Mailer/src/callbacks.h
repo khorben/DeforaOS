@@ -62,39 +62,4 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data);
 /* header view */
 void on_header_change(GtkTreeSelection * selection, gpointer data);
 
-
-/* compose window */
-void on_compose_attach(gpointer data);
-gboolean on_compose_closex(gpointer data);
-void on_compose_save(gpointer data);
-void on_compose_send(gpointer data);
-void on_compose_attach(gpointer data);
-
-/* file menu */
-void on_compose_file_new(gpointer data);
-void on_compose_file_save(gpointer data);
-void on_compose_file_save_as(gpointer data);
-void on_compose_file_send(gpointer data);
-void on_compose_file_close(gpointer data);
-
-/* edit menu */
-void on_compose_edit_undo(gpointer data);
-void on_compose_edit_redo(gpointer data);
-void on_compose_edit_cut(gpointer data);
-void on_compose_edit_copy(gpointer data);
-void on_compose_edit_paste(gpointer data);
-void on_compose_edit_select_all(gpointer data);
-
-/* view menu */
-void on_compose_view_add_field(gpointer data);
-
-/* help menu */
-void on_compose_help_about(gpointer data);
-
-/* send mail */
-gboolean on_send_closex(gpointer data);
-void on_send_cancel(gpointer data);
-gboolean on_send_write(GIOChannel * source, GIOCondition condition,
-		gpointer data);
-
 #endif /* !MAILER_CALLBACKS_H */
