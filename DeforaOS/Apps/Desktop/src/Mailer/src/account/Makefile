@@ -60,7 +60,7 @@ mbox.o: mbox.c ../../include/Mailer.h
 	$(CC) $(mbox_CFLAGS) -c mbox.c
 
 pop3.o: pop3.c ../../include/Mailer.h
-	$(CC) $(pop3_CFLAGS) -c pop3.c
+	$(CC) $(pop3_CFLAGS) `pkg-config --cflags libSystem` -c pop3.c
 
 nntp.o: nntp.c ../../include/Mailer.h
 	$(CC) $(nntp_CFLAGS) -c nntp.c
