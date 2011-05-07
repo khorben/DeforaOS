@@ -444,7 +444,7 @@ fi
 [ -z "$PKG_CONFIG_SYSROOT_DIR" ] && PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
-export PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
+export PKG_CONFIG_LIBDIR PKG_CONFIG_PATH PKG_CONFIG_SYSROOT_DIR
 
 #run targets
 if [ $# -lt 1 ]; then
