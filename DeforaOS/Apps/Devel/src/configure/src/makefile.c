@@ -798,12 +798,11 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source,
 	}
 	len = string_length(source) - string_length(extension) - 1;
 	source[len] = '\0';
-	switch(enum_string(OT_LAST, sObjectType, extension))
+	switch(_source_type(extension))
 	{
 		case OT_ASM_SOURCE:
 		case OT_C_SOURCE:
 		case OT_CXX_SOURCE:
-		case OT_CPP_SOURCE:
 			if(prefs->flags & PREFS_n)
 				break;
 			fprintf(fp, " %s%s", source, tt == TT_LIBTOOL ? ".lo"
@@ -890,7 +889,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 			sources[i] = c;
 			continue;
 		}
-		type = enum_string(OT_LAST, sObjectType, extension);
+		type = _source_type(extension);
 		if(!done[type])
 			switch(type)
 			{
@@ -901,9 +900,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 					_flags_c(configure, fp, target);
 					break;
 				case OT_CXX_SOURCE:
-				case OT_CPP_SOURCE:
 					done[OT_CXX_SOURCE] = 1;
-					done[OT_CPP_SOURCE] = 1;
 					_flags_cxx(configure, fp, target);
 					break;
 				case OT_UNKNOWN:
@@ -1056,7 +1053,7 @@ static int _target_object(Configure * configure, FILE * fp,
 		return 0;
 	if((extension = _source_extension(p)) == NULL)
 		return 1;
-	switch(enum_string(OT_LAST, sObjectType, extension))
+	switch(_source_type(extension))
 	{
 		case OT_ASM_SOURCE:
 			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
@@ -1078,7 +1075,6 @@ static int _target_object(Configure * configure, FILE * fp,
 			fputc('\n', fp);
 			break;
 		case OT_CXX_SOURCE:
-		case OT_CPP_SOURCE:
 			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
 					target, target, "_CXXFLAGS ="
 					" $(CPPFLAGSF) $(CPPFLAGS)"
@@ -1264,7 +1260,7 @@ static int _target_source(Configure * configure, FILE * fp,
 		return 1;
 	len = string_length(source) - string_length(extension) - 1;
 	source[len] = '\0';
-	switch((ot = enum_string(OT_LAST, sObjectType, extension)))
+	switch((ot = _source_type(extension)))
 	{
 		case OT_ASM_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
@@ -1272,7 +1268,7 @@ static int _target_source(Configure * configure, FILE * fp,
 			fprintf(fp, "\n%s.o", source);
 			if(tt == TT_LIBTOOL)
 				fprintf(fp, " %s.lo", source);
-			fprintf(fp, ": %s.%s", source, sObjectType[ot]);
+			fprintf(fp, ": %s.%s", source, extension);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			source[len] = '\0';
@@ -1281,7 +1277,7 @@ static int _target_source(Configure * configure, FILE * fp,
 				fputs("$(LIBTOOL) --mode=compile ", fp);
 			fprintf(fp, "%s%s%s", "$(AS) $(", target, "_ASFLAGS)");
 			fprintf(fp, "%s%s%s%s%s%s", " -o ", source, ".o ",
-					source, ".", sObjectType[ot]);
+					source, ".", extension);
 			fputc('\n', fp);
 			break;
 		case OT_C_SOURCE:
@@ -1290,7 +1286,7 @@ static int _target_source(Configure * configure, FILE * fp,
 			fprintf(fp, "\n%s%s", source, ".o");
 			if(tt == TT_LIBTOOL)
 				fprintf(fp, " %s%s", source, ".lo");
-			fprintf(fp, ": %s.%s", source, sObjectType[ot]);
+			fprintf(fp, ": %s.%s", source, extension);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			/* FIXME do both wherever also relevant */
@@ -1313,16 +1309,14 @@ static int _target_source(Configure * configure, FILE * fp,
 			}
 			if(string_find(source, "/"))
 				fprintf(fp, "%s%s%s", " -o ", source, ".o");
-			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
-					sObjectType[ot]);
+			fprintf(fp, "%s%s%s%s", " -c ", source, ".", extension);
 			fputc('\n', fp);
 			break;
 		case OT_CXX_SOURCE:
-		case OT_CPP_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
 			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
-					source, ".", sObjectType[ot]);
+					source, ".", extension);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			p = config_get(configure->config, source, "cxxflags");
@@ -1333,8 +1327,7 @@ static int _target_source(Configure * configure, FILE * fp,
 				fprintf(fp, " %s", p);
 			if(string_find(source, "/"))
 				fprintf(fp, "%s%s%s", " -o ", source, ".o");
-			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
-				       	sObjectType[ot]);
+			fprintf(fp, "%s%s%s%s", " -c ", source, ".", extension);
 			fputc('\n', fp);
 			break;
 		case OT_UNKNOWN:

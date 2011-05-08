@@ -76,14 +76,20 @@ extern const String * sTargetType[TT_COUNT];
 typedef enum _ObjectType
 {
 	OT_C_SOURCE = 0,
-       	OT_CXX_SOURCE, OT_CPP_SOURCE,
+       	OT_CXX_SOURCE,
        	OT_ASM_SOURCE,
        	OT_UNKNOWN
 } ObjectType;
 # define OT_LAST	OT_UNKNOWN
 # define OT_COUNT	(OT_LAST + 1)
-extern const String * sObjectType[OT_COUNT];
+struct ExtensionType
+{
+	const char * extension;
+	ObjectType type;
+};
+extern const struct ExtensionType * sExtensionType;
 String const * _source_extension(String const * source);
+ObjectType _source_type(String const * source);
 
 
 /* constants */

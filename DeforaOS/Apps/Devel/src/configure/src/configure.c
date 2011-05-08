@@ -67,7 +67,17 @@ const struct HostKernel sHostKernel[] =
 
 const String * sTargetType[TT_COUNT] = { "binary", "library", "libtool",
 	"object", "plugin", "script", NULL };
-const String * sObjectType[OT_COUNT] = { "c", "cc", "cpp", "S", NULL };
+const struct ExtensionType _sExtensionType[] =
+{
+	{ "c",		OT_C_SOURCE	},
+	{ "cpp",	OT_CXX_SOURCE	},
+	{ "cxx",	OT_CXX_SOURCE	},
+	{ "c++",	OT_CXX_SOURCE	},
+	{ "asm",	OT_ASM_SOURCE	},
+	{ "S",		OT_ASM_SOURCE	},
+	{ NULL,		0		}
+};
+const struct ExtensionType * sExtensionType = _sExtensionType;
 
 String const * _source_extension(String const * source)
 {
@@ -77,6 +87,19 @@ String const * _source_extension(String const * source)
 		if(source[len - 1] == '.')
 			return &source[len];
 	return NULL;
+}
+
+ObjectType _source_type(String const * source)
+{
+	String const * extension;
+	size_t i;
+
+	if((extension = _source_extension(source)) == NULL)
+		extension = source;
+	for(i = 0; sExtensionType[i].extension != NULL; i++)
+		if(string_compare(sExtensionType[i].extension, extension) == 0)
+			return sExtensionType[i].type;
+	return -1;
 }
 
 
