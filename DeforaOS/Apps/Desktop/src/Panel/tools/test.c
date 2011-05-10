@@ -22,7 +22,7 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <gtk/gtk.h>
-#include <Panel.h>
+#include "Panel.h"
 #include "../config.h"
 
 
