@@ -23,7 +23,7 @@ panel_test_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 panel_test: $(panel_test_OBJS)
 	$(CC) -o panel_test $(panel_test_OBJS) $(panel_test_LDFLAGS)
 
-test.o: test.c
+test.o: test.c ../config.h
 	$(CC) $(panel_test_CFLAGS) -c test.c
 
 clean:
@@ -33,7 +33,10 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- panel_test $(DESTDIR)$(BINDIR)/panel_test
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(BINDIR)/panel_test
 
 .PHONY: all clean distclean install uninstall

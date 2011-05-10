@@ -95,7 +95,7 @@ static char const * _helper_config_get(Panel * panel, char const * section,
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: test applet...\n", stderr);
+	fputs("Usage: panel_test applet...\n", stderr);
 	return 1;
 }
 
