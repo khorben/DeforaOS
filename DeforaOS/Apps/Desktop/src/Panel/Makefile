@@ -1,6 +1,6 @@
 PACKAGE	= Panel
 VERSION	= 0.2.5
-SUBDIRS	= data include po src
+SUBDIRS	= data include po src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -95,6 +95,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/Makefile \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.atoms \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/test.c \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
