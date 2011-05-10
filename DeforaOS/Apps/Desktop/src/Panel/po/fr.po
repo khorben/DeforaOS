@@ -277,7 +277,3 @@ msgstr "Usage: run\n"
 #: ../src/window.c:58
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
-
-#, fuzzy
-#~ msgid "USB host mode is enabled"
-#~ msgstr "Bluetooth actif"
