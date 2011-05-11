@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,6 +113,12 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 		return _cp_error(src, 1);
 	if(lstat(dst, &st2) == 0)
 	{
+		if(st.st_dev == st2.st_dev && st.st_ino == st2.st_ino)
+		{
+			fprintf(stderr, "%s: %s: \"%s\"%s\n", "cp", dst, src,
+					" is identical (not copied)");
+			return 0;
+		}
 		if(*prefs & CP_PREFS_i && _cp_confirm(dst) != 1)
 			return 0;
 		if(unlink(dst) != 0)
@@ -232,7 +238,7 @@ static int _cp_single_regular(char const * src, char const * dst)
 		if(fwrite(buf, sizeof(char), size, fdst) != size)
 			break;
 	if(!feof(fsrc))
-		ret |= _cp_error(size == 0 ? src : dst, 1);
+		ret |= _cp_error((size == 0) ? src : dst, 1);
 	if(fclose(fsrc) != 0)
 		ret |= _cp_error(src, 1);
 	if(fclose(fdst) != 0)
