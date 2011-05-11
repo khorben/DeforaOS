@@ -148,7 +148,7 @@ static DesktopMenu _player_menu_view[] =
 		GDK_KEY_L },
 # if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen),
-		GTK_STOCK_FULLSCREEN, 0, 0 },
+		GTK_STOCK_FULLSCREEN, 0, GDK_KEY_F11 },
 # else
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen), NULL, 0, 0 },
 # endif
