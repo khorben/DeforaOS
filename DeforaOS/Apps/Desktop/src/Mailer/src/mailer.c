@@ -853,9 +853,7 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 	if((path = gtk_tree_row_reference_get_path(reference)) == NULL)
 		return;
 	if(gtk_tree_model_get_iter(model, &iter, path) == TRUE)
-	{
 		gtk_tree_model_get(model, &iter, MHC_MESSAGE, &message, -1);
-	}
 	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 	gtk_tree_path_free(path);
 }
@@ -1569,7 +1567,7 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	for(i = 0; config[i].name != NULL; i++)
+	for(i = 0; config != NULL && config[i].name != NULL; i++)
 	{
 		switch(config[i].type)
 		{
