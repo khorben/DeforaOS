@@ -1,5 +1,5 @@
 TARGETS	= panel_test
-PREFIX	= /home/khorben
+PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
