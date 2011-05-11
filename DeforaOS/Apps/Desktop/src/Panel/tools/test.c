@@ -15,6 +15,8 @@
 
 
 
+#include <sys/types.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -33,9 +35,17 @@
 
 
 /* private */
+/* prototypes */
+static int _test(char * applets[]);
+static int _test_list(void);
+static int _error(char const * message, int ret);
+static int _usage(void);
+
+
 /* functions */
 static char const * _helper_config_get(Panel * panel, char const * section,
 		char const * variable);
+static int _helper_error(Panel * panel, char const * message, int ret);
 
 static int _test(char * applets[])
 {
@@ -60,6 +70,7 @@ static int _test(char * applets[])
 	memset(&helper, 0, sizeof(helper));
 	helper.icon_size = GTK_ICON_SIZE_SMALL_TOOLBAR;
 	helper.config_get = _helper_config_get;
+	helper.error = _helper_error;
 	for(i = 0; applets[i] != NULL; i++)
 	{
 		len = sizeof(path) + strlen(applets[i]) + sizeof(so);
@@ -91,11 +102,56 @@ static char const * _helper_config_get(Panel * panel, char const * section,
 	return NULL;
 }
 
+static int _helper_error(Panel * panel, char const * message, int ret)
+{
+	fputs("panel_test: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
+/* test_list */
+static int _test_list(void)
+{
+	char const path[] = PREFIX "/lib/Panel/applets";
+	DIR * dir;
+	struct dirent * de;
+	size_t len;
+	char const * sep = "";
+
+	puts("Applets available:");
+	if((dir = opendir(path)) == NULL)
+		return _error(path, 1);
+	while((de = readdir(dir)) != NULL)
+	{
+		len = strlen(de->d_name);
+		if(len < 4 || strcmp(&de->d_name[len - 3], ".so") != 0)
+			continue;
+		de->d_name[len - 3] = '\0';
+		printf("%s%s", sep, de->d_name);
+		sep = ", ";
+	}
+	putchar('\n');
+	closedir(dir);
+	return 0;
+}
+
+
+/* error */
+static int _error(char const * message, int ret)
+{
+	fputs("panel_test: ", stderr);
+	perror(message);
+	return ret;
+}
+
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel_test applet...\n", stderr);
+	fputs("Usage: panel_test applet...\n"
+"       panel_test -l\n"
+"  -l	Lists the plug-ins available\n", stderr);
 	return 1;
 }
 
@@ -108,9 +164,11 @@ int main(int argc, char * argv[])
 	int o;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "l")) != -1)
 		switch(o)
 		{
+			case 'l':
+				return _test_list();
 			default:
 				return _usage();
 		}
