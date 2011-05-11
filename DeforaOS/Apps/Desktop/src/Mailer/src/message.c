@@ -100,8 +100,8 @@ Message * message_new(AccountMessage * message, GtkListStore * store,
 	GtkTreePath * path;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p, %p)\n", __func__, message, store,
-			iter);
+	fprintf(stderr, "DEBUG: %s(%p, %p, %p)\n", __func__, (void *)message,
+			(void *)store, (void *)iter);
 #endif
 	if((ret = object_new(sizeof(*ret))) == NULL)
 		return NULL;
