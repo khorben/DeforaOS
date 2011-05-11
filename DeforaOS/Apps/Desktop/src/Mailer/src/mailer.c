@@ -526,7 +526,7 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	g_free(p);
 	g_free(q);
 	g_free(r);
-	gtk_tree_model_get(model, &iter, MHC_TO, &p, MHC_TO_EMAIL, &q -1);
+	gtk_tree_model_get(model, &iter, MHC_TO, &p, MHC_TO_EMAIL, &q, -1);
 	if(q == NULL || strlen(q) == 0 || strcmp(p, q) == 0)
 		r = g_strdup(p);
 	else
