@@ -35,7 +35,6 @@ typedef struct _ParserCallbackData ParserCallbackData;
 struct _Parser
 {
 	/* parsing sources */
-	char * inject;
 	char * filename;
 	FILE * fp;
 	char * string;
@@ -46,6 +45,7 @@ struct _Parser
 	unsigned int line;
 	unsigned int col;
 	int last;
+	unsigned int lookahead;
 
 	ParserFilter scanner;
 
@@ -80,28 +80,21 @@ int parser_scan_filter(Parser * parser)
 	int c = parser->last;
 	size_t i;
 	ParserFilterData * pfd;
+	int l;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, parser);
 #endif
-	if(parser->inject)
-	{
-		c = parser->inject[0];
-		if((i = strlen(parser->inject)) > 1)
-			memmove(parser->inject, &parser->inject[1], i);
-		else
-		{
-			string_delete(parser->inject);
-			parser->inject = NULL;
-		}
-	}
+	if(parser->lookahead)
+		parser->lookahead--;
 	else if(parser->scanner(&c, parser) != 0)
 		return EOF; /* FIXME report error */
 	for(i = 0; i < parser->filters_cnt; i++)
 	{
 		pfd = &parser->filters[i];
-		if(pfd->filter(&c, pfd->data) != 0)
+		if((l = pfd->filter(&c, pfd->data)) < 0)
 			return EOF;
+		parser->lookahead += l;
 	}
 	parser->last = c;
 	return c;
@@ -188,7 +181,6 @@ static Parser * _new_do(ParserFilter scanner)
 
 	if((parser = object_new(sizeof(*parser))) == NULL)
 		return NULL;
-	parser->inject = NULL;
 	parser->filename = NULL;
 	parser->fp = NULL;
 	parser->string = NULL;
@@ -197,6 +189,7 @@ static Parser * _new_do(ParserFilter scanner)
 	parser->line = 1;
 	parser->col = 1;
 	parser->last = EOF;
+	parser->lookahead = 0;
 	parser->scanner = scanner;
 	parser->filters = NULL;
 	parser->filters_cnt = 0;
@@ -238,7 +231,6 @@ int parser_delete(Parser * parser)
 	fprintf(stderr, "DEBUG: %s(%p) \"%s\"\n", __func__, parser,
 			parser->filename);
 #endif
-	free(parser->inject);
 	if(parser->fp != NULL
 			&& fclose(parser->fp) != 0)
 		ret = error_set_code(1, "%s: %s", parser->filename,
@@ -290,15 +282,6 @@ int parser_get_token(Parser * parser, Token ** token)
 }
 
 
-#if 0
-/* parser_set_lookahead */
-void parser_set_lookahead(Parser * parser, unsigned int lookahead)
-{
-	parser->lookahead = lookahead;
-}
-#endif
-
-
 /* useful */
 /* parser_add_callback */
 int parser_add_callback(Parser * parser, ParserCallback callback, void * data)
@@ -331,30 +314,6 @@ int parser_add_filter(Parser * parser, ParserFilter filter, void * data)
 	p = &parser->filters[parser->filters_cnt++];
 	p->filter = filter;
 	p->data = data;
-	return 0;
-}
-
-
-/* parser_inject */
-int parser_inject(Parser * parser, char const * string)
-{
-	int c;
-	char buf[2] = "\0";
-
-	if(string == NULL || string[0] == '\0')
-		return 0; /* don't bother */
-	c = parser->last;
-	parser->last = string[0];
-	if(parser->inject == NULL)
-	{
-		if((parser->inject = string_new(&string[1])) == NULL)
-			return -1;
-	}
-	else if(string_append(&parser->inject, &string[1]) != 0)
-		return -1;
-	buf[0] = c;
-	if(c != EOF && string_append(&parser->inject, buf) != 0)
-		return -1;
 	return 0;
 }
 
