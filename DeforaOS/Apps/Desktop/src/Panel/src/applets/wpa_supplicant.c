@@ -66,6 +66,7 @@ typedef struct _Wpa
 static GtkWidget * _wpa_init(PanelApplet * applet);
 static void _wpa_destroy(PanelApplet * applet);
 
+static int _wpa_error(PanelApplet * applet, char const * message, int ret);
 static int _wpa_queue(PanelApplet * applet, WpaCommand command, ...);
 
 /* callbacks */
@@ -146,17 +147,19 @@ static gboolean _init_timeout(gpointer data)
 	struct sockaddr_un ru;
 
 	if((dir = opendir(path)) == NULL)
+	{
+		gtk_label_set_text(GTK_LABEL(wpa->label), "Not running");
 		return applet->helper->error(NULL, path, TRUE);
+	}
 	if((wpa->fd = socket(PF_LOCAL, SOCK_DGRAM, 0)) == -1)
-		return applet->helper->error(applet->helper->panel, "socket",
-				TRUE);
+		return _wpa_error(applet, "socket", TRUE);
 	snprintf(lu.sun_path, sizeof(lu.sun_path), "%s", local);
 	lu.sun_family = AF_UNIX;
 	if(bind(wpa->fd, (struct sockaddr *)&lu, sizeof(lu)) != 0)
 	{
 		close(wpa->fd);
 		unlink(local);
-		return applet->helper->error(NULL, local, TRUE);
+		return _wpa_error(applet, local, TRUE);
 	}
 	ru.sun_family = AF_UNIX;
 	while((de = readdir(dir)) != NULL)
@@ -207,6 +210,16 @@ static void _wpa_destroy(PanelApplet * applet)
 		free(wpa->queue[i].buf);
 	free(wpa->queue);
 	object_delete(wpa);
+}
+
+
+/* wpa_error */
+static int _wpa_error(PanelApplet * applet, char const * message, int ret)
+{
+	Wpa * wpa = applet->priv;
+
+	gtk_label_set_text(GTK_LABEL(wpa->label), "Error");
+	return applet->helper->error(NULL, message, ret);
 }
 
 
