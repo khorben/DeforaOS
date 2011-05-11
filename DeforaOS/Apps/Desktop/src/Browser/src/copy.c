@@ -292,6 +292,12 @@ static int _copy_single(Copy * copy, char const * src, char const * dst)
 		return _copy_filename_error(copy, src, 1);
 	if(lstat(dst, &st2) == 0)
 	{
+		if(st.st_dev == st2.st_dev && st.st_ino == st2.st_ino)
+		{
+			fprintf(stderr, "%s: %s: \"%s\"%s\n", "cp", dst, src,
+					" is identical (not copied)");
+			return 0;
+		}
 		if(*(copy->prefs) & PREFS_i
 				&& _copy_filename_confirm(copy, dst) != 1)
 			return 0;
