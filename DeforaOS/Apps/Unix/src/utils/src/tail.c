@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,8 +116,8 @@ static int _tail_do_lines(Prefs * prefs, FILE * fp, char const * filename)
 		lines[pos][column] = '\0';
 		column = 0;
 	}
-	/* FIXME crashes if directly EOF */
-	_lines_print(lines, pos);
+	if(lines[0] != NULL)
+		_lines_print(lines, pos);
 	if(c != EOF || !feof(fp))
 		ret = _tail_error(filename, 1);
 	free(lines);
