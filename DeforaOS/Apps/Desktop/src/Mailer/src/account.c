@@ -361,11 +361,24 @@ GtkTextBuffer * account_select(Account * account, Folder * folder,
 GtkTextBuffer * account_select_source(Account * account, Folder * folder,
 		Message * message)
 {
+	GtkTextBuffer * ret;
+	char * p;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__,
 			folder_get_name(folder), (void*)message);
 #endif
-	return message_get_source(message);
+	if(account->account->get_source == NULL)
+		return NULL;
+	ret = gtk_text_buffer_new(NULL);
+	if((p = account->account->get_source(account->account,
+					folder_get_data(folder),
+					message_get_data(message))) != NULL)
+	{
+		gtk_text_buffer_set_text(ret, p, -1);
+		free(p);
+	}
+	return ret;
 }
 
 

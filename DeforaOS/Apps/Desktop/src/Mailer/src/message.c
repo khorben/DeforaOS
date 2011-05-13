@@ -158,30 +158,6 @@ char const * message_get_header(Message * message, char const * header)
 }
 
 
-/* message_get_source */
-GtkTextBuffer * message_get_source(Message * message)
-{
-	GtkTextBuffer * ret;
-	GtkTextIter iter;
-	size_t i;
-
-	ret = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_get_end_iter(ret, &iter);
-	for(i = 0; i < message->headers_cnt; i++)
-	{
-		gtk_text_buffer_insert(ret, &iter, message->headers[i].header,
-				-1);
-		gtk_text_buffer_insert(ret, &iter, ": ", 2);
-		gtk_text_buffer_insert(ret, &iter, message->headers[i].value,
-				-1);
-		gtk_text_buffer_insert(ret, &iter, "\n", 1);
-	}
-	gtk_text_buffer_insert(ret, &iter, "\n", 1);
-	/* FIXME obtain the body as well */
-	return ret;
-}
-
-
 /* message_set_body */
 int message_set_body(Message * message, char const * buf, size_t cnt,
 		gboolean append)

@@ -35,7 +35,6 @@ void message_delete(Message * message);
 GtkTextBuffer * message_get_body(Message * message);
 AccountMessage * message_get_data(Message * message);
 char const * message_get_header(Message * message, char const * header);
-GtkTextBuffer * message_get_source(Message * message);
 
 int message_set_body(Message * message, char const * buf, size_t cnt,
 		gboolean append);

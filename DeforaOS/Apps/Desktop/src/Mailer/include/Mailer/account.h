@@ -84,6 +84,8 @@ struct _AccountPlugin
 	AccountConfig * config;
 	int (*init)(AccountPlugin * plugin);
 	int (*destroy)(AccountPlugin * plugin);
+	char * (*get_source)(AccountPlugin * plugin, AccountFolder * folder,
+			AccountMessage * message);
 	int (*refresh)(AccountPlugin * plugin, AccountFolder * folder,
 			AccountMessage * message);
 	void * priv;

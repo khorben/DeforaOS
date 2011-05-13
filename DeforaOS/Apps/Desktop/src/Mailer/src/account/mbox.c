@@ -123,6 +123,8 @@ static const struct
 /* plug-in */
 static int _mbox_init(AccountPlugin * plugin);
 static int _mbox_destroy(AccountPlugin * plugin);
+static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
+		AccountMessage * message);
 static int _mbox_refresh(AccountPlugin * plugin, AccountFolder * folder,
 		AccountMessage * message);
 
@@ -135,6 +137,7 @@ AccountPlugin account_plugin =
 	_mbox_config,
 	_mbox_init,
 	_mbox_destroy,
+	_mbox_get_source,
 	_mbox_refresh,
 	NULL
 };
@@ -215,6 +218,39 @@ static int _mbox_destroy(AccountPlugin * plugin)
 	}
 	free(mbox);
 	return 0;
+}
+
+
+/* mbox_get_source */
+static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
+		AccountMessage * message)
+{
+	char * ret = NULL;
+	char const * filename = folder->config->value;
+	FILE * fp;
+	size_t len;
+
+	if(message->body_offset < message->offset)
+		return NULL;
+	if((fp = fopen(filename, "r")) == NULL)
+	{
+		plugin->helper->error(plugin->helper->account, filename, 1);
+		return NULL;
+	}
+	len = message->body_offset - message->offset + message->body_length;
+	if(fseek(fp, message->offset, SEEK_SET) == 0
+			&& (ret = malloc(len + 1)) != NULL
+			&& fread(ret, sizeof(*ret), len, fp) == len)
+		ret[len] = '\0';
+	else
+		free(ret);
+	if(fclose(fp) != 0)
+	{
+		plugin->helper->error(plugin->helper->account, filename, 1);
+		free(ret);
+		ret = NULL;
+	}
+	return ret;
 }
 
 

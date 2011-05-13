@@ -140,6 +140,7 @@ AccountPlugin account_plugin =
 	_pop3_config,
 	_pop3_init,
 	_pop3_destroy,
+	NULL,
 	_pop3_refresh,
 	NULL
 };
