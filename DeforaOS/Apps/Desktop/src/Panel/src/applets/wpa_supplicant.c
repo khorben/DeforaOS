@@ -296,13 +296,20 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	fwrite(buf, sizeof(*buf), cnt, stderr);
 	fprintf(stderr, "\"\n");
 #endif
-	switch(entry->command)
+	switch(status)
 	{
-		case WC_LIST_NETWORKS:
-			ret = _read_list_networks(applet, wpa, buf, cnt);
+		case G_IO_STATUS_NORMAL:
+			if(entry->command == WC_LIST_NETWORKS)
+				ret = _read_list_networks(applet, wpa, buf,
+						cnt);
+			else if(entry->command == WC_STATUS)
+				ret = _read_status(applet, wpa, buf, cnt);
 			break;
-		case WC_STATUS:
-			ret = _read_status(applet, wpa, buf, cnt);
+		case G_IO_STATUS_ERROR:
+			applet->helper->error(applet->helper->panel,
+					error->message, 1);
+		case G_IO_STATUS_EOF:
+		default: /* should not happen... */
 			break;
 	}
 	if(ret == TRUE)
