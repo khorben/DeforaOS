@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -119,7 +119,6 @@ static GtkWidget * _wpa_init(PanelApplet * applet)
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	hbox = gtk_hbox_new(FALSE, 4);
-	/* FIXME use this icon in the battery applet for charging */
 	wpa->image = gtk_image_new_from_stock(GTK_STOCK_DISCONNECT,
 			applet->helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(hbox), wpa->image, FALSE, TRUE, 0);
@@ -139,22 +138,24 @@ static gboolean _init_timeout(gpointer data)
 	PanelApplet * applet = data;
 	Wpa * wpa = applet->priv;
 	char const path[] = "/var/run/wpa_supplicant";
-	char const local[] = "/tmp/panel_wpa_supplicant"; /* XXX random */
+	char local[] = "/tmp/panel_wpa_supplicant.XXXXXX";
 	DIR * dir;
 	struct dirent * de;
 	struct stat st;
 	struct sockaddr_un lu;
 	struct sockaddr_un ru;
 
+	if(mktemp(local) == NULL)
+		return applet->helper->error(NULL, "mktemp", TRUE);
 	if((dir = opendir(path)) == NULL)
 	{
 		gtk_label_set_text(GTK_LABEL(wpa->label), "Not running");
 		return applet->helper->error(NULL, path, TRUE);
 	}
-	if((wpa->fd = socket(PF_LOCAL, SOCK_DGRAM, 0)) == -1)
+	if((wpa->fd = socket(AF_LOCAL, SOCK_DGRAM, 0)) == -1)
 		return _wpa_error(applet, "socket", TRUE);
 	snprintf(lu.sun_path, sizeof(lu.sun_path), "%s", local);
-	lu.sun_family = AF_UNIX;
+	lu.sun_family = AF_LOCAL;
 	if(bind(wpa->fd, (struct sockaddr *)&lu, sizeof(lu)) != 0)
 	{
 		close(wpa->fd);
@@ -173,7 +174,10 @@ static gboolean _init_timeout(gpointer data)
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
 #endif
 		if(connect(wpa->fd, (struct sockaddr *)&ru, sizeof(ru)) != 0)
+		{
+			applet->helper->error(NULL, "connect", 1);
 			continue;
+		}
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() connected\n", __func__);
 #endif
@@ -309,7 +313,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 			applet->helper->error(applet->helper->panel,
 					error->message, 1);
 		case G_IO_STATUS_EOF:
-		default: /* should not happen... */
+		default: /* should not happen */
 			break;
 	}
 	if(ret == TRUE)
@@ -427,8 +431,23 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	}
 	status = g_io_channel_write_chars(source, entry->buf, entry->buf_cnt,
 			&cnt, &error);
-	memmove(entry->buf, &entry->buf[cnt], entry->buf_cnt - cnt);
-	entry->buf_cnt -= cnt;
+	if(cnt != 0)
+	{
+		memmove(entry->buf, &entry->buf[cnt], entry->buf_cnt - cnt);
+		entry->buf_cnt -= cnt;
+	}
+	switch(status)
+	{
+		case G_IO_STATUS_NORMAL:
+			break;
+		case G_IO_STATUS_ERROR:
+			applet->helper->error(applet->helper->panel,
+					error->message, 1);
+		case G_IO_STATUS_EOF:
+		default: /* should not happen */
+			wpa->wr_source = 0;
+			return FALSE;
+	}
 	if(entry->buf_cnt != 0)
 		return TRUE;
 	wpa->rd_source = g_io_add_watch(wpa->channel, G_IO_IN,
