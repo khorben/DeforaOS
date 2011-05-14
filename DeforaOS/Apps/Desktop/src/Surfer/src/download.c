@@ -731,7 +731,6 @@ int main(int argc, char * argv[])
 {
 	DownloadPrefs prefs;
 	int o;
-	Download ** download;
 	int cnt;
 
 	setlocale(LC_ALL, "");
@@ -755,10 +754,8 @@ int main(int argc, char * argv[])
 		}
 	if((cnt = argc - optind) == 0)
 		return _usage();
-	if((download = malloc(sizeof(*download) * cnt)) == NULL)
-		return _download_error(NULL, "malloc", -2);
 	for(o = 0; o < cnt; o++)
-		download[o] = download_new(&prefs, argv[optind + o]);
+		download_new(&prefs, argv[optind + o]);
 	gtk_main();
 	return 0;
 }
