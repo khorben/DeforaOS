@@ -1,4 +1,4 @@
-#define PACKAGE "PDFviewer"
+#define PACKAGE "PDFViewer"
 #define VERSION "0.0.0"
 
 #ifndef PREFIX

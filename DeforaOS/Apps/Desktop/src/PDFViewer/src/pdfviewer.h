@@ -1,3 +1,4 @@
+/* $Id$ */
 /* Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net> */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +21,8 @@
 # include <poppler.h>
 
 
-/* Editor */
+/* PDFviewer */
 /* types */
-
 typedef struct _PDF PDF;
 typedef struct _PDFviewer PDFviewer;
 
@@ -47,7 +47,7 @@ gboolean pdfviewer_close(PDFviewer * pdfviewer);
 void pdfviewer_open(PDFviewer * pdfviewer, char const * filename);
 void pdfviewer_open_dialog(PDFviewer * pdfviewer);
 
-/* FIXME noy implemented */
+/* FIXME not implemented */
 void pdfviewer_find(PDFviewer * pdfviewer, char const * text);
 
 #endif /* !PDFVIEWER_PDFVIEWER_H */

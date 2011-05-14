@@ -1,3 +1,4 @@
+/* $Id$ */
 static char const _copyright[] =
 "Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net>";
 static char const _license[] =
@@ -19,6 +20,7 @@ static char const _license[] =
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
 #include <gdk/gdkkeysyms.h>
 #include <poppler.h>
 #include <Desktop.h>
@@ -128,10 +130,6 @@ static DesktopToolbar _pdfviewer_toolbar[] =
 	{ "FarAfter", G_CALLBACK(on_far_after), GTK_STOCK_MEDIA_NEXT, 0, 0, NULL },
 	{ "ZoomIn", G_CALLBACK(on_zoom_in), GTK_STOCK_ZOOM_IN, 0, 0, NULL },
 	{ "ZoomOut", G_CALLBACK(on_zoom_out), GTK_STOCK_ZOOM_OUT, 0, 0, NULL },
-	{ "", NULL, NULL, 0, 0, NULL },
-#ifdef EMBEDDED
-	{ "", NULL, NULL, 0, 0, NULL },
-#endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -206,9 +204,10 @@ static void _new_set_title(PDFviewer * pdfviewer)
 
 	snprintf(buf, sizeof(buf), "%s%s", "PDF viewer - ",
 			(pdfviewer->pdf == NULL) ? "(Untitled)"
-			: "FIXME"); // FIXME
+			: "FIXME"); /* FIXME */
 	gtk_window_set_title(GTK_WINDOW(pdfviewer->window), buf);
 }
+
 
 /* pdfviewer_delete */
 void pdfviewer_delete(PDFviewer * pdfviewer)
@@ -216,8 +215,10 @@ void pdfviewer_delete(PDFviewer * pdfviewer)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+#if 0 /* FIXME */
 	if(pdfviewer->pdf != NULL)
-		//FIXME pdf_delete(pdfviewer->pdf);
+		pdf_delete(pdfviewer->pdf);
+#endif
 	free(pdfviewer);
 }
 
@@ -391,11 +392,15 @@ void pdf_load_page(PDFviewer * pdfviewer)
 	poppler_page_get_size(page, &width, &height);
 
 	if(!pdfviewer->pdf->scale) {
-		/*gdk_drawable_get_size(gtk_widget_get_window(pdfviewer->view), &w, &h);*/
-fprintf(stderr, "scale not set !\n");
+		/* gdk_drawable_get_size(gtk_widget_get_window(pdfviewer->view), &w, &h); */
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() scale not set!\n", __func__);
+#endif
 		gtk_widget_get_allocation(pdfviewer->view, &view_allocation);
 		pdfviewer->pdf->scale = ((view_allocation.width - 20) / width); 
-		//pdfviewer->pdf->scale = (view_allocation.height / height); // wiew whole page
+#if 0
+		pdfviewer->pdf->scale = (view_allocation.height / height); /* view whole page */
+#endif
 	}
 
 	if (!page)
@@ -405,13 +410,16 @@ fprintf(stderr, "scale not set !\n");
 		gtk_statusbar_get_context_id(
 			GTK_STATUSBAR(pdfviewer->statusbar), "read-page"),
 		g_strdup_printf("Page %d/%d",
-			pdfviewer->pdf->current+1, pdfviewer->pdf->pages));
+			pdfviewer->pdf->current + 1, pdfviewer->pdf->pages));
 
 	if (pdfviewer->pdf->surface)
 		cairo_surface_destroy (pdfviewer->pdf->surface);
 	pdfviewer->pdf->surface = NULL;
 
-fprintf(stderr, "scale: %f\n", pdfviewer->pdf->scale);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() scale: %f\n", __func__,
+			pdfviewer->pdf->scale);
+#endif
 	pdfviewer->pdf->surface = cairo_image_surface_create(
 		CAIRO_FORMAT_ARGB32, ceil(pdfviewer->pdf->scale * width),
 		ceil(pdfviewer->pdf->scale * height));
@@ -423,7 +431,7 @@ fprintf(stderr, "scale: %f\n", pdfviewer->pdf->scale);
 	cairo_destroy(cr);
 	g_object_unref(page);
 
-	g_signal_connect(G_OBJECT(pdfviewer->view), "expose_event",
+	g_signal_connect(G_OBJECT(pdfviewer->view), "expose-event",
 		G_CALLBACK(pdf_render_area),
 		(gpointer) pdfviewer->pdf);
 

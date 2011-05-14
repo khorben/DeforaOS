@@ -4,11 +4,11 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I $(PREFIX)/include
-CPPFLAGS= -D EMBEDDED -D DEBUG
-CFLAGSF	= -W `pkg-config --cflags gtk+-2.0 poppler-glib`
+CPPFLAGS=
+CFLAGSF	= -W `pkg-config --cflags libDesktop poppler-glib`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs gtk+-2.0 poppler-glib` -lDesktop
-LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
+LDFLAGSF= `pkg-config --libs libDesktop poppler-glib` -lm
+LDFLAGS	= 
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -34,16 +34,16 @@ main.o: main.c
 	$(CC) $(pdfviewer_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(pdfviewer_OBJS)
+	$(RM) -- $(pdfviewer_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
-install: all
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 pdfviewer $(DESTDIR)$(BINDIR)/pdfviewer
+	$(INSTALL) -m 0755 -- pdfviewer $(DESTDIR)$(BINDIR)/pdfviewer
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/pdfviewer
+	$(RM) -- $(DESTDIR)$(BINDIR)/pdfviewer
 
 .PHONY: all clean distclean install uninstall
