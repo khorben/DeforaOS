@@ -242,7 +242,7 @@ void pdfviewer_about(PDFviewer * pdfviewer)
 	desktop_about_dialog_set_copyright(pdfviewer->ab_window, _copyright);
 	desktop_about_dialog_set_license(pdfviewer->ab_window, _license);
 	desktop_about_dialog_set_logo_icon_name(pdfviewer->ab_window,
-			"gnome-mime-application-pdf");
+			"document-print-preview");
 	desktop_about_dialog_set_name(pdfviewer->ab_window, PACKAGE);
 	desktop_about_dialog_set_version(pdfviewer->ab_window, VERSION);
 	gtk_widget_show(pdfviewer->ab_window);
@@ -262,13 +262,12 @@ int pdfviewer_error(PDFviewer * pdfviewer, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(pdfviewer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"Error");
+			"%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			message);
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
