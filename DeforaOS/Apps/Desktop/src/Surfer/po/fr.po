@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-14 18:27+0200\n"
+"POT-Creation-Date: 2011-05-14 20:54+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/callbacks.c:43 ../src/callbacks.c:53 ../src/surfer.c:814
-#: ../src/surfer.c:817 ../src/surfer.c:1260 ../src/surfer.c:1265
+#: ../src/callbacks.c:43 ../src/callbacks.c:53 ../src/surfer.c:820
+#: ../src/surfer.c:823 ../src/surfer.c:1269 ../src/surfer.c:1274
 msgid "Question"
 msgstr "Question"
 
@@ -96,7 +96,7 @@ msgid "Close window when the download is complete"
 msgstr "Fermer la fenêtre à la fin du téléchargement"
 
 #: ../src/download.c:325 ../src/download.c:330 ../src/download.c:719
-#: ../src/surfer.c:962 ../src/surfer.c:965
+#: ../src/surfer.c:971 ../src/surfer.c:974
 msgid "Error"
 msgstr "Erreur"
 
@@ -151,7 +151,7 @@ msgstr "Résolu"
 msgid "Code "
 msgstr "Code "
 
-#: ../src/download.c:693 ../src/ghtml-webkit.c:695 ../src/surfer.c:964
+#: ../src/download.c:693 ../src/ghtml-webkit.c:695 ../src/surfer.c:973
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -351,139 +351,161 @@ msgstr "Nouvel onglet"
 msgid "New window"
 msgstr "Nouvelle fenêtre"
 
-#: ../src/surfer.c:310 ../src/surfer.c:661
+#: ../src/surfer.c:311 ../src/surfer.c:663
 msgid "Web surfer"
 msgstr "Web surfer"
 
-#: ../src/surfer.c:358
+#: ../src/surfer.c:359
 msgid " Location: "
 msgstr " Adresse: "
 
-#: ../src/surfer.c:395 ../src/surfer.c:1741 ../src/surfer.c:1746
+#: ../src/surfer.c:396 ../src/surfer.c:1780 ../src/surfer.c:1785
 msgid "Security information"
 msgstr "Informations de sécurité"
 
-#: ../src/surfer.c:631
+#: ../src/surfer.c:633
 msgid "Ready"
 msgstr "Prêt"
 
-#: ../src/surfer.c:674 ../src/surfer.c:1176
+#: ../src/surfer.c:676 ../src/surfer.c:1185
 msgid "Untitled"
 msgstr "Sans titre"
 
-#: ../src/surfer.c:915 ../src/surfer.c:1343
+#: ../src/surfer.c:921 ../src/surfer.c:1352
 msgid "Save file as..."
 msgstr "Enregistrer sous..."
 
-#: ../src/surfer.c:993
+#: ../src/surfer.c:1002
 msgid "Find text"
 msgstr "Chercher du texte"
 
-#: ../src/surfer.c:1005
+#: ../src/surfer.c:1014
 msgid "Text:"
 msgstr "Texte: "
 
-#: ../src/surfer.c:1013
+#: ../src/surfer.c:1022
 msgid "Case-sensitive"
 msgstr "Sensible à la casse"
 
-#: ../src/surfer.c:1017
+#: ../src/surfer.c:1026
 msgid "Search backwards"
 msgstr "Inverser le sens de la recherche"
 
-#: ../src/surfer.c:1020
+#: ../src/surfer.c:1029
 msgid "Wrap"
 msgstr "Chercher en boucle"
 
-#: ../src/surfer.c:1049
+#: ../src/surfer.c:1058
 msgid "Text not found"
 msgstr "Texte non trouvé"
 
-#: ../src/surfer.c:1137
+#: ../src/surfer.c:1146
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/surfer.c:1166
+#: ../src/surfer.c:1175
 msgid "Could not initialize HTML renderer"
 msgstr "Ne peut charger le moteur de rendu HTML"
 
-#: ../src/surfer.c:1404
+#: ../src/surfer.c:1413
 msgid "Javascript console"
 msgstr "Console Javascript"
 
-#: ../src/surfer.c:1409
+#: ../src/surfer.c:1418
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/surfer.c:1428
+#: ../src/surfer.c:1437
 msgid "Message"
 msgstr "Message"
 
-#: ../src/surfer.c:1433
+#: ../src/surfer.c:1442
 msgid "Source"
 msgstr "Source"
 
-#: ../src/surfer.c:1438
+#: ../src/surfer.c:1447
 msgid "Line"
 msgstr "Ligne"
 
-#: ../src/surfer.c:1568
+#: ../src/surfer.c:1579
 msgid "Web surfer preferences"
 msgstr "Préférences de Web surfer"
 
-#: ../src/surfer.c:1588
+#: ../src/surfer.c:1599
 msgid "Homepage:"
 msgstr "Page d'accueil :"
 
-#: ../src/surfer.c:1596
+#: ../src/surfer.c:1605
+msgid "Tab handling"
+msgstr ""
+
+#: ../src/surfer.c:1610
 msgid "Focus new tabs"
 msgstr "Focaliser les nouveaux onglets"
 
-#: ../src/surfer.c:1600
+#: ../src/surfer.c:1615
+#, fuzzy
+msgid "Downloads"
+msgstr "Téléchargement"
+
+#: ../src/surfer.c:1618
+msgid "Default download directory:"
+msgstr ""
+
+#: ../src/surfer.c:1622
+msgid "Choose the default download directory"
+msgstr ""
+
+#: ../src/surfer.c:1629
 msgid "General"
 msgstr "Général"
 
-#: ../src/surfer.c:1604
+#: ../src/surfer.c:1633
+#, fuzzy
+msgid "Connectivity:"
+msgstr "Connexion à "
+
+#: ../src/surfer.c:1636
 msgid "Direct connection"
 msgstr "Connexion directe"
 
-#: ../src/surfer.c:1608
+#: ../src/surfer.c:1640
 msgid "HTTP proxy:"
 msgstr "Proxy HTTP :"
 
-#: ../src/surfer.c:1615
+#: ../src/surfer.c:1647
 msgid "Hostname:"
 msgstr "Hôte :"
 
-#: ../src/surfer.c:1619
+#: ../src/surfer.c:1651
 msgid "Port:"
 msgstr "Port :"
 
-#: ../src/surfer.c:1627
+#: ../src/surfer.c:1661
 msgid "Network"
 msgstr "Réseau"
 
-#: ../src/surfer.c:1727
+#: ../src/surfer.c:1766
 msgid "This connection is encrypted and trusted."
 msgstr "Cette connexion est chiffrée et de confiance."
 
-#: ../src/surfer.c:1730
+#: ../src/surfer.c:1769
 msgid "This connection is encrypted but not trusted."
 msgstr "Cette connexion est chiffrée mais pas de confiance."
 
-#: ../src/surfer.c:1734
+#: ../src/surfer.c:1773
 msgid "This connection is not encrypted."
 msgstr "Cette connexion n'est pas chiffrée."
 
-#: ../src/surfer.c:1790
+#: ../src/surfer.c:1829
 msgid "Web surfer - Source of "
 msgstr "Web surfer - Source de "
 
-#: ../src/surfer.c:1832 ../src/surfer.c:1835 ../src/surfer.c:1890
-#: ../src/surfer.c:1895
+#: ../src/surfer.c:1871 ../src/surfer.c:1874 ../src/surfer.c:1929
+#: ../src/surfer.c:1934
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/surfer.c:1894
+#: ../src/surfer.c:1933
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"

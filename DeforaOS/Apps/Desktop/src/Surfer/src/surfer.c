@@ -235,7 +235,7 @@ static DesktopToolbar _surfer_toolbar[] =
 static gboolean _surfer_filename_confirm(Surfer * surfer,
 		char const * filename);
 
-static char * _config_get_filename(void);
+static char * _config_get_filename(char const * filename);
 static int _config_load_integer(Config * config, char const * section,
 		char const * variable, unsigned int * value);
 static int _config_load_string(Config * config, char const * section,
@@ -289,6 +289,7 @@ Surfer * _new_do(char const * url)
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
 	surfer->homepage = NULL;
+	surfer->download_dir = NULL;
 	surfer->proxy_type = SPT_NONE;
 	surfer->proxy_http = NULL;
 	surfer->proxy_http_port = 0;
@@ -461,6 +462,7 @@ void surfer_delete(Surfer * surfer)
 	gtk_widget_destroy(surfer->window);
 	config_delete(surfer->config);
 	free(surfer->proxy_http);
+	free(surfer->download_dir);
 	free(surfer->homepage);
 	free(surfer);
 	if(--_surfer_cnt == 0)
@@ -747,12 +749,14 @@ int surfer_config_load(Surfer * surfer)
 	char buf[256];
 	unsigned int port;
 
-	if((filename = _config_get_filename()) == NULL)
+	if((filename = _config_get_filename(SURFER_CONFIG_FILE)) == NULL)
 		return 1;
 	config_load(surfer->config, filename); /* XXX ignore errors */
 	free(filename);
 	_config_load_string(surfer->config, NULL, "homepage",
 			&surfer->homepage);
+	_config_load_string(surfer->config, NULL, "download_directory",
+			&surfer->download_dir);
 	if((p = getenv("http_proxy")) != NULL && sscanf(p, "http://%255[^:]:%u",
 				buf, &port) == 2)
 	{
@@ -780,10 +784,12 @@ int surfer_config_save(Surfer * surfer)
 	int ret = 0;
 	char * filename;
 
-	if((filename = _config_get_filename()) == NULL)
+	if((filename = _config_get_filename(SURFER_CONFIG_FILE)) == NULL)
 		return 1;
 	ret |= _config_save_string(surfer->config, NULL, "homepage",
 			surfer->homepage);
+	ret |= _config_save_string(surfer->config, NULL, "download_directory",
+			surfer->download_dir);
 	ret |= _config_save_boolean(surfer->config, NULL, "focus_new_tabs",
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs)));
@@ -917,6 +923,9 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
 			GTK_RESPONSE_ACCEPT, NULL);
+	if(surfer->download_dir != NULL)
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+				surfer->download_dir);
 	if(suggested != NULL) /* XXX also suggest a name otherwise */
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
 				suggested);
@@ -1100,7 +1109,7 @@ void surfer_go_home(Surfer * surfer)
 	char const * homepage;
 
 	if((homepage = config_get(surfer->config, NULL, "homepage")) == NULL)
-		homepage = SURFER_DEFAULT_HOME;
+		return;
 	surfer_open(surfer, homepage);
 }
 
@@ -1557,6 +1566,8 @@ void surfer_view_preferences(Surfer * surfer)
 	GtkWidget * widget;
 	GtkWidget * notebook;
 	GtkWidget * page;
+	GtkWidget * frame;
+	GtkWidget * vbox2;
 	GtkWidget * hbox;
 
 	if(surfer->pr_window != NULL)
@@ -1590,26 +1601,47 @@ void surfer_view_preferences(Surfer * surfer)
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
+	/* tabs */
+	frame = gtk_frame_new(_("Tab handling"));
 	/* focus new tabs */
 	hbox = gtk_hbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	surfer->pr_focus_tabs = gtk_check_button_new_with_label(
 			_("Focus new tabs"));
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_focus_tabs, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), hbox);
+	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
+	/* downloads */
+	frame = gtk_frame_new(_("Downloads"));
+	hbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
+	widget = gtk_label_new(_("Default download directory:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	surfer->pr_download_dir = gtk_file_chooser_button_new(
+			_("Choose the default download directory"),
+			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_download_dir, TRUE, TRUE,
+			0);
+	gtk_container_add(GTK_CONTAINER(frame), hbox);
+	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("General")));
 	/* network tab */
 	page = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
+	frame = gtk_frame_new(_("Connectivity:"));
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	widget = gtk_radio_button_new_with_label(NULL, _("Direct connection"));
 	surfer->pr_proxy_radio_direct = widget;
-	gtk_box_pack_start(GTK_BOX(page), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(
 				widget), _("HTTP proxy:"));
 	surfer->pr_proxy_radio_http = widget;
 	g_signal_connect_swapped(G_OBJECT(widget), "toggled", G_CALLBACK(
 				_preferences_on_proxy_http_toggled), surfer);
-	gtk_box_pack_start(GTK_BOX(page), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	/* http proxy */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Hostname:"));
@@ -1622,7 +1654,9 @@ void surfer_view_preferences(Surfer * surfer)
 			1.0);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_proxy_http_port, FALSE,
 			TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox2);
+	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("Network")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
@@ -1634,8 +1668,8 @@ static void _preferences_set(Surfer * surfer)
 {
 	char const * p;
 
-	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
-			!= NULL ? surfer->homepage : "");
+	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage),
+			(surfer->homepage != NULL) ? surfer->homepage : "");
 	if((p = config_get(surfer->config, "", "focus_new_tabs")) != NULL
 			&& strcmp(p, "1") == 0)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
@@ -1643,6 +1677,11 @@ static void _preferences_set(Surfer * surfer)
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs), FALSE);
+	if(surfer->download_dir == NULL)
+		surfer->download_dir = _config_get_filename("Downloads");
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(surfer->pr_download_dir),
+			(surfer->download_dir != NULL) ? surfer->download_dir
+			: g_get_home_dir());
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_proxy_radio_http),
 			surfer->proxy_type == SPT_HTTP);
@@ -1902,19 +1941,19 @@ static gboolean _surfer_filename_confirm(Surfer * surfer,
 
 
 /* config_get_filename */
-static char * _config_get_filename(void)
+static char * _config_get_filename(char const * filename)
 {
+	char * ret;
 	char const * homedir;
 	size_t len;
-	char * filename;
 
 	if((homedir = getenv("HOME")) == NULL)
 		homedir = g_get_home_dir();
-	len = strlen(homedir) + 1 + sizeof(SURFER_CONFIG_FILE);
-	if((filename = malloc(len)) == NULL)
+	len = strlen(homedir) + 1 + strlen(filename) + 1;
+	if((ret = malloc(len)) == NULL)
 		return NULL;
-	snprintf(filename, len, "%s/%s", homedir, SURFER_CONFIG_FILE);
-	return filename;
+	snprintf(ret, len, "%s/%s", homedir, filename);
+	return ret;
 }
 
 
