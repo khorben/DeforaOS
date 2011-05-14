@@ -753,8 +753,8 @@ int surfer_config_load(Surfer * surfer)
 	free(filename);
 	_config_load_string(surfer->config, NULL, "homepage",
 			&surfer->homepage);
-	if((p = getenv("http_proxy")) != NULL && sscanf(p,
-				"http://%255[^:]:%u", buf, &port) == 2)
+	if((p = getenv("http_proxy")) != NULL && sscanf(p, "http://%255[^:]:%u",
+				buf, &port) == 2)
 	{
 		surfer->proxy_type = SPT_HTTP;
 		buf[sizeof(buf) - 1] = '\0';
