@@ -27,6 +27,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include <System.h>
 #ifdef WITH_WEBKIT
 # include <webkit/webkit.h>
 #else
@@ -102,6 +103,10 @@ static unsigned int _download_cnt = 0;
 
 /* prototypes */
 static int _download_error(Download * download, char const * message, int ret);
+
+static int _download_set_proxy(Download * download, char const * http,
+		unsigned int http_port);
+
 static void _download_refresh(Download * download);
 #ifndef WITH_WEBKIT
 static int _download_write(Download * download);
@@ -326,6 +331,42 @@ static int _download_error(Download * download, char const * message, int ret)
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+
+/* download_set_proxy */
+static int _download_set_proxy(Download * download, char const * http,
+		unsigned int http_port)
+{
+#ifdef WITH_WEBKIT
+# if WEBKIT_CHECK_VERSION(1, 1, 0)
+	SoupSession * session;
+	char buf[32];
+	struct hostent * he;
+	struct in_addr addr;
+	SoupURI * uri = NULL;
+
+	session = webkit_get_default_session();
+	if(strlen(http) > 0)
+	{
+		if((he = gethostbyname(http)) == NULL)
+			return -error_set_code(1, "%s: %s", http, hstrerror(
+						h_errno));
+		memcpy(&addr.s_addr, he->h_addr, sizeof(addr.s_addr));
+		snprintf(buf, sizeof(buf), "http://%s:%u/", inet_ntoa(addr),
+				http_port);
+		uri = soup_uri_new(buf);
+	}
+	g_object_set(session, "proxy-uri", uri, NULL);
+	return 0;
+# else
+	/* FIXME really implement */
+	return -error_set_code(1, "%s", strerror(ENOSYS));
+# endif
+#else
+	/* FIXME really implement */
+	return -error_set_code(1, "%s", strerror(ENOSYS));
+#endif
 }
 
 
@@ -732,6 +773,10 @@ int main(int argc, char * argv[])
 	DownloadPrefs prefs;
 	int o;
 	int cnt;
+	char const * p;
+	char http[256] = "";
+	unsigned int port;
+	Download * download;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -754,8 +799,12 @@ int main(int argc, char * argv[])
 		}
 	if((cnt = argc - optind) == 0)
 		return _usage();
+	if((p = getenv("http_proxy")) != NULL && sscanf(p, "http://%255[^:]:%u",
+				http, &port) == 2)
+		http[sizeof(http) - 1] = '\0';
 	for(o = 0; o < cnt; o++)
-		download_new(&prefs, argv[optind + o]);
+		if((download = download_new(&prefs, argv[optind + o])) != NULL)
+			_download_set_proxy(download, http, port);
 	gtk_main();
 	return 0;
 }

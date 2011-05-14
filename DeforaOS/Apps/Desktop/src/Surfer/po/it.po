@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-14 17:42+0200\n"
+"POT-Creation-Date: 2011-05-14 18:12+0200\n"
 "PO-Revision-Date: 2010-04-11 12:06+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -63,17 +63,17 @@ msgstr ""
 msgid "Network"
 msgstr ""
 
-#: ../src/common/conn.c:204 ../src/download.c:205 ../src/ghtml-gtkhtml.c:876
+#: ../src/common/conn.c:204 ../src/download.c:210 ../src/ghtml-gtkhtml.c:876
 msgid "Resolving..."
 msgstr ""
 
-#: ../src/common/conn.c:253 ../src/download.c:522 ../src/ghtml-gtkhtml.c:926
+#: ../src/common/conn.c:253 ../src/download.c:563 ../src/ghtml-gtkhtml.c:926
 msgid "Connected"
 msgstr ""
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:961
-#: ../src/ghtml-webkit.c:595 ../src/ghtml-webkit.c:736
-#: ../src/ghtml-webkit.c:748
+#: ../src/ghtml-webkit.c:596 ../src/ghtml-webkit.c:737
+#: ../src/ghtml-webkit.c:749
 msgid "Downloading..."
 msgstr ""
 
@@ -89,107 +89,107 @@ msgstr ""
 msgid "Unspecified error"
 msgstr ""
 
-#: ../src/common/conn.c:348 ../src/download.c:601 ../src/ghtml-gtkhtml.c:1112
+#: ../src/common/conn.c:348 ../src/download.c:642 ../src/ghtml-gtkhtml.c:1112
 msgid "Timeout"
 msgstr ""
 
-#: ../src/download.c:182
+#: ../src/download.c:187
 msgid "Download"
 msgstr ""
 
-#: ../src/download.c:192
+#: ../src/download.c:197
 msgid "Address: "
 msgstr ""
 
-#: ../src/download.c:202
+#: ../src/download.c:207
 msgid "File: "
 msgstr ""
 
-#: ../src/download.c:204
+#: ../src/download.c:209
 msgid "Status: "
 msgstr ""
 
-#: ../src/download.c:206
+#: ../src/download.c:211
 msgid "Done: "
 msgstr ""
 
-#: ../src/download.c:207
+#: ../src/download.c:212
 msgid "0.0 kB"
 msgstr ""
 
-#: ../src/download.c:208
+#: ../src/download.c:213
 msgid "Speed: "
 msgstr ""
 
-#: ../src/download.c:209
+#: ../src/download.c:214
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/download.c:215
+#: ../src/download.c:220
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:320 ../src/download.c:325 ../src/download.c:678
+#: ../src/download.c:325 ../src/download.c:330 ../src/download.c:719
 #: ../src/surfer.c:962 ../src/surfer.c:965
 msgid "Error"
 msgstr ""
 
-#: ../src/download.c:338 ../src/download.c:364
+#: ../src/download.c:379 ../src/download.c:405
 msgid "kB"
 msgstr ""
 
-#: ../src/download.c:359 ../src/download.c:370 ../src/download.c:389
+#: ../src/download.c:400 ../src/download.c:411 ../src/download.c:430
 msgid "MB"
 msgstr ""
 
-#: ../src/download.c:361
+#: ../src/download.c:402
 #, c-format
 msgid "%.1f %s/s"
 msgstr ""
 
-#: ../src/download.c:372
+#: ../src/download.c:413
 #, c-format
 msgid "%.1f %s"
 msgstr ""
 
-#: ../src/download.c:391
+#: ../src/download.c:432
 #, c-format
 msgid "%.1f of %.1f %s"
 msgstr ""
 
-#: ../src/download.c:530
+#: ../src/download.c:571
 msgid "Error "
 msgstr ""
 
-#: ../src/download.c:555 ../src/download.c:683
+#: ../src/download.c:596 ../src/download.c:724
 msgid "Complete"
 msgstr ""
 
-#: ../src/download.c:565 ../src/download.c:701
+#: ../src/download.c:606 ../src/download.c:742
 msgid "Downloading"
 msgstr ""
 
-#: ../src/download.c:576
+#: ../src/download.c:617
 msgid "Redirected to"
 msgstr ""
 
-#: ../src/download.c:579
+#: ../src/download.c:620
 msgid "Redirected"
 msgstr ""
 
-#: ../src/download.c:586
+#: ../src/download.c:627
 msgid "Resolved"
 msgstr ""
 
-#: ../src/download.c:594
+#: ../src/download.c:635
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:652 ../src/ghtml-webkit.c:694 ../src/surfer.c:964
+#: ../src/download.c:693 ../src/ghtml-webkit.c:695 ../src/surfer.c:964
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/download.c:722
+#: ../src/download.c:763
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tFile to write document to\n"
@@ -212,8 +212,8 @@ msgstr ""
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1073 ../src/ghtml-webkit.c:452
-#: ../src/ghtml-webkit.c:593
+#: ../src/ghtml-gtkhtml.c:1073 ../src/ghtml-webkit.c:453
+#: ../src/ghtml-webkit.c:594
 msgid "Connecting..."
 msgstr ""
 
