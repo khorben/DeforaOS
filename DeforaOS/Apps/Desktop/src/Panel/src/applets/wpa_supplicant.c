@@ -47,6 +47,7 @@ typedef struct _WpaEntry
 
 typedef struct _Wpa
 {
+	char path[36];
 	guint source;
 	int fd;
 	GIOChannel * channel;
@@ -68,6 +69,7 @@ static void _wpa_destroy(PanelApplet * applet);
 
 static int _wpa_error(PanelApplet * applet, char const * message, int ret);
 static int _wpa_queue(PanelApplet * applet, WpaCommand command, ...);
+static int _wpa_reset(PanelApplet * applet);
 
 /* callbacks */
 static gboolean _on_timeout(gpointer data);
@@ -138,15 +140,22 @@ static gboolean _init_timeout(gpointer data)
 	PanelApplet * applet = data;
 	Wpa * wpa = applet->priv;
 	char const path[] = "/var/run/wpa_supplicant";
-	char local[] = "/tmp/panel_wpa_supplicant.XXXXXX";
 	DIR * dir;
 	struct dirent * de;
 	struct stat st;
 	struct sockaddr_un lu;
 	struct sockaddr_un ru;
 
-	if(mktemp(local) == NULL)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	snprintf(wpa->path, sizeof(wpa->path), "%s",
+			"/tmp/panel_wpa_supplicant.XXXXXX");
+	if(mktemp(wpa->path) == NULL)
 		return applet->helper->error(NULL, "mktemp", TRUE);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, wpa->path);
+#endif
 	if((dir = opendir(path)) == NULL)
 	{
 		gtk_label_set_text(GTK_LABEL(wpa->label), "Not running");
@@ -154,13 +163,13 @@ static gboolean _init_timeout(gpointer data)
 	}
 	if((wpa->fd = socket(AF_LOCAL, SOCK_DGRAM, 0)) == -1)
 		return _wpa_error(applet, "socket", TRUE);
-	snprintf(lu.sun_path, sizeof(lu.sun_path), "%s", local);
+	snprintf(lu.sun_path, sizeof(lu.sun_path), "%s", wpa->path);
 	lu.sun_family = AF_LOCAL;
 	if(bind(wpa->fd, (struct sockaddr *)&lu, sizeof(lu)) != 0)
 	{
 		close(wpa->fd);
-		unlink(local);
-		return _wpa_error(applet, local, TRUE);
+		unlink(wpa->path);
+		return _wpa_error(applet, wpa->path, TRUE);
 	}
 	ru.sun_family = AF_UNIX;
 	while((de = readdir(dir)) != NULL)
@@ -183,6 +192,10 @@ static gboolean _init_timeout(gpointer data)
 #endif
 		gtk_label_set_text(GTK_LABEL(wpa->label), de->d_name);
 		wpa->channel = g_io_channel_unix_new(wpa->fd);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() %p\n", __func__,
+				(void *)wpa->channel);
+#endif
 		g_io_channel_set_encoding(wpa->channel, NULL, NULL);
 		g_io_channel_set_buffered(wpa->channel, FALSE);
 		_on_timeout(applet);
@@ -191,7 +204,10 @@ static gboolean _init_timeout(gpointer data)
 		break;
 	}
 	if(ret == TRUE)
+	{
 		close(wpa->fd);
+		wpa->fd = -1;
+	}
 	closedir(dir);
 	return ret;
 }
@@ -234,6 +250,9 @@ static int _wpa_queue(PanelApplet * applet, WpaCommand command, ...)
 	char const * cmd = NULL;
 	WpaEntry * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, ...)\n", __func__, command);
+#endif
 	switch(command)
 	{
 		case WC_LIST_NETWORKS:
@@ -261,12 +280,57 @@ static int _wpa_queue(PanelApplet * applet, WpaCommand command, ...)
 }
 
 
+/* wpa_reset */
+static int _wpa_reset(PanelApplet * applet)
+{
+	Wpa * wpa = applet->priv;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(wpa->source != 0)
+		g_source_remove(wpa->source);
+	wpa->source = 0;
+	if(wpa->rd_source != 0)
+		g_source_remove(wpa->rd_source);
+	wpa->rd_source = 0;
+	if(wpa->wr_source != 0)
+		g_source_remove(wpa->wr_source);
+	wpa->wr_source = 0;
+	for(i = 0; i < wpa->queue_cnt; i++)
+		free(wpa->queue[i].buf);
+	free(wpa->queue);
+	wpa->queue = NULL;
+	wpa->queue_cnt = 0;
+	if(wpa->channel != NULL)
+	{
+		g_io_channel_shutdown(wpa->channel, TRUE, NULL);
+		g_io_channel_unref(wpa->channel);
+		wpa->channel = NULL;
+		wpa->fd = -1;
+	}
+	if(wpa->fd != -1 && close(wpa->fd) != 0)
+		applet->helper->error(NULL, wpa->path, 1);
+	wpa->fd = -1;
+	if(unlink(wpa->path) != 0)
+		applet->helper->error(NULL, wpa->path, 1);
+	if(_init_timeout(applet) == FALSE)
+		return 0;
+	wpa->source = g_timeout_add(5000, _init_timeout, applet);
+	return 0;
+}
+
+
 /* callbacks */
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
 	PanelApplet * applet = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	_wpa_queue(applet, WC_STATUS);
 	return TRUE;
 }
@@ -277,6 +341,7 @@ static gboolean _read_status(PanelApplet * applet, Wpa * wpa, char const * buf,
 		size_t cnt);
 static gboolean _read_list_networks(PanelApplet * applet, Wpa * wpa,
 		char const * buf, size_t cnt);
+static gboolean _read_reset(gpointer data);
 
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
@@ -314,6 +379,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 					error->message, 1);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
+			wpa->source = g_idle_add(_read_reset, applet);
 			break;
 	}
 	if(ret == TRUE)
@@ -408,8 +474,20 @@ static gboolean _read_status(PanelApplet * applet, Wpa * wpa, char const * buf,
 	return FALSE;
 }
 
+static gboolean _read_reset(gpointer data)
+{
+	PanelApplet * applet = data;
+	Wpa * wpa = applet->priv;
+
+	wpa->source = 0;
+	_wpa_reset(applet);
+	return FALSE;
+}
+
 
 /* on_watch_can_write */
+static gboolean _write_reset(gpointer data);
+
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
@@ -445,7 +523,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 					error->message, 1);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
-			wpa->wr_source = 0;
+			wpa->source = g_idle_add(_write_reset, applet);
 			return FALSE;
 	}
 	if(entry->buf_cnt != 0)
@@ -453,5 +531,15 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	wpa->rd_source = g_io_add_watch(wpa->channel, G_IO_IN,
 			_on_watch_can_read, applet);
 	wpa->wr_source = 0;
+	return FALSE;
+}
+
+static gboolean _write_reset(gpointer data)
+{
+	PanelApplet * applet = data;
+	Wpa * wpa = applet->priv;
+
+	wpa->source = 0;
+	_wpa_reset(applet);
 	return FALSE;
 }
