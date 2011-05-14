@@ -335,7 +335,8 @@ int ghtml_set_proxy(GtkWidget * widget, SurferProxyType type, char const * http,
 	if(type == SPT_HTTP && http != NULL && strlen(http) > 0)
 	{
 		if((he = gethostbyname(http)) == NULL)
-			return -error_set_code(1, "%s", hstrerror(h_errno));
+			return -error_set_code(1, "%s: %s", http, hstrerror(
+						h_errno));
 		memcpy(&addr.s_addr, he->h_addr, sizeof(addr.s_addr));
 		snprintf(buf, sizeof(buf), "http://%s:%u/", inet_ntoa(addr),
 				http_port);
