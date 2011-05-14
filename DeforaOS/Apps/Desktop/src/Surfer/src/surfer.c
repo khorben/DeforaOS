@@ -1264,13 +1264,12 @@ int surfer_prompt(Surfer * surfer, char const * message,
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "%s",
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 #if GTK_CHECK_VERSION(2, 8, 0)
-			_("Question"));
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			message);
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-14 21:20+0200\n"
+"POT-Creation-Date: 2011-05-14 21:22+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../src/callbacks.c:43 ../src/callbacks.c:53 ../src/surfer.c:820
-#: ../src/surfer.c:823 ../src/surfer.c:1269 ../src/surfer.c:1274
+#: ../src/surfer.c:823 ../src/surfer.c:1269 ../src/surfer.c:1273
 msgid "Question"
 msgstr "Question"
 
@@ -358,7 +358,7 @@ msgstr "Web surfer"
 msgid " Location: "
 msgstr " Adresse: "
 
-#: ../src/surfer.c:396 ../src/surfer.c:1780 ../src/surfer.c:1784
+#: ../src/surfer.c:396 ../src/surfer.c:1779 ../src/surfer.c:1783
 msgid "Security information"
 msgstr "Informations de sécurité"
 
@@ -370,7 +370,7 @@ msgstr "Prêt"
 msgid "Untitled"
 msgstr "Sans titre"
 
-#: ../src/surfer.c:921 ../src/surfer.c:1352
+#: ../src/surfer.c:921 ../src/surfer.c:1351
 msgid "Save file as..."
 msgstr "Enregistrer sous..."
 
@@ -406,103 +406,103 @@ msgstr "Ouvrir un fichier..."
 msgid "Could not initialize HTML renderer"
 msgstr "Ne peut charger le moteur de rendu HTML"
 
-#: ../src/surfer.c:1413
+#: ../src/surfer.c:1412
 msgid "Javascript console"
 msgstr "Console Javascript"
 
-#: ../src/surfer.c:1418
+#: ../src/surfer.c:1417
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/surfer.c:1437
+#: ../src/surfer.c:1436
 msgid "Message"
 msgstr "Message"
 
-#: ../src/surfer.c:1442
+#: ../src/surfer.c:1441
 msgid "Source"
 msgstr "Source"
 
-#: ../src/surfer.c:1447
+#: ../src/surfer.c:1446
 msgid "Line"
 msgstr "Ligne"
 
-#: ../src/surfer.c:1579
+#: ../src/surfer.c:1578
 msgid "Web surfer preferences"
 msgstr "Préférences de Web surfer"
 
-#: ../src/surfer.c:1599
+#: ../src/surfer.c:1598
 msgid "Homepage:"
 msgstr "Page d'accueil :"
 
-#: ../src/surfer.c:1605
+#: ../src/surfer.c:1604
 msgid "Tab handling"
 msgstr "Gestion des onglets"
 
-#: ../src/surfer.c:1610
+#: ../src/surfer.c:1609
 msgid "Focus new tabs"
 msgstr "Focaliser les nouveaux onglets"
 
-#: ../src/surfer.c:1615
+#: ../src/surfer.c:1614
 msgid "Downloads"
 msgstr "Téléchargements"
 
-#: ../src/surfer.c:1618
+#: ../src/surfer.c:1617
 msgid "Default download directory:"
 msgstr "Répertoire par défaut :"
 
-#: ../src/surfer.c:1622
+#: ../src/surfer.c:1621
 msgid "Choose the default download directory"
 msgstr "Choix du répertoire par défaut :"
 
-#: ../src/surfer.c:1629
+#: ../src/surfer.c:1628
 msgid "General"
 msgstr "Général"
 
-#: ../src/surfer.c:1633
+#: ../src/surfer.c:1632
 msgid "Connectivity:"
 msgstr "Connectivité :"
 
-#: ../src/surfer.c:1636
+#: ../src/surfer.c:1635
 msgid "Direct connection"
 msgstr "Connexion directe"
 
-#: ../src/surfer.c:1640
+#: ../src/surfer.c:1639
 msgid "HTTP proxy:"
 msgstr "Proxy HTTP :"
 
-#: ../src/surfer.c:1647
+#: ../src/surfer.c:1646
 msgid "Hostname:"
 msgstr "Hôte :"
 
-#: ../src/surfer.c:1651
+#: ../src/surfer.c:1650
 msgid "Port:"
 msgstr "Port :"
 
-#: ../src/surfer.c:1661
+#: ../src/surfer.c:1660
 msgid "Network"
 msgstr "Réseau"
 
-#: ../src/surfer.c:1766
+#: ../src/surfer.c:1765
 msgid "This connection is encrypted and trusted."
 msgstr "Cette connexion est chiffrée et de confiance."
 
-#: ../src/surfer.c:1769
+#: ../src/surfer.c:1768
 msgid "This connection is encrypted but not trusted."
 msgstr "Cette connexion est chiffrée mais pas de confiance."
 
-#: ../src/surfer.c:1773
+#: ../src/surfer.c:1772
 msgid "This connection is not encrypted."
 msgstr "Cette connexion n'est pas chiffrée."
 
-#: ../src/surfer.c:1828
+#: ../src/surfer.c:1827
 msgid "Web surfer - Source of "
 msgstr "Web surfer - Source de "
 
-#: ../src/surfer.c:1870 ../src/surfer.c:1873 ../src/surfer.c:1928
-#: ../src/surfer.c:1933
+#: ../src/surfer.c:1869 ../src/surfer.c:1872 ../src/surfer.c:1927
+#: ../src/surfer.c:1932
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/surfer.c:1932
+#: ../src/surfer.c:1931
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"
