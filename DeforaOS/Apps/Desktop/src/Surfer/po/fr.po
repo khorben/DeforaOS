@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-14 20:54+0200\n"
+"POT-Creation-Date: 2011-05-14 21:20+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -358,7 +358,7 @@ msgstr "Web surfer"
 msgid " Location: "
 msgstr " Adresse: "
 
-#: ../src/surfer.c:396 ../src/surfer.c:1780 ../src/surfer.c:1785
+#: ../src/surfer.c:396 ../src/surfer.c:1780 ../src/surfer.c:1784
 msgid "Security information"
 msgstr "Informations de sécurité"
 
@@ -494,15 +494,15 @@ msgstr "Cette connexion est chiffrée mais pas de confiance."
 msgid "This connection is not encrypted."
 msgstr "Cette connexion n'est pas chiffrée."
 
-#: ../src/surfer.c:1829
+#: ../src/surfer.c:1828
 msgid "Web surfer - Source of "
 msgstr "Web surfer - Source de "
 
-#: ../src/surfer.c:1871 ../src/surfer.c:1874 ../src/surfer.c:1929
-#: ../src/surfer.c:1934
+#: ../src/surfer.c:1870 ../src/surfer.c:1873 ../src/surfer.c:1928
+#: ../src/surfer.c:1933
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/surfer.c:1933
+#: ../src/surfer.c:1932
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"

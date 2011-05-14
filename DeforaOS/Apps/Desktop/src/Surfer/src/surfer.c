@@ -1775,13 +1775,12 @@ void surfer_view_security(Surfer * surfer)
 	}
 	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "%s",
+			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 8, 0)
-			_("Security information"));
+			"%s", _("Security information"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			text);
+			"%s", text);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Security information"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
