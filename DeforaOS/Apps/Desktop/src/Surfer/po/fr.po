@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-14 18:12+0200\n"
+"POT-Creation-Date: 2011-05-14 18:27+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -28,42 +28,6 @@ msgid ""
 msgstr ""
 "Plusieurs onglets sont ouverts.\n"
 "Voulez-vous vraiment fermer tous les onglets de cette fenêtre ?"
-
-#: ../src/callbacks.c:524
-msgid "Web surfer preferences"
-msgstr "Préférences de Web surfer"
-
-#: ../src/callbacks.c:544
-msgid "Homepage:"
-msgstr "Page d'accueil :"
-
-#: ../src/callbacks.c:552
-msgid "Focus new tabs"
-msgstr "Focaliser les nouveaux onglets"
-
-#: ../src/callbacks.c:556
-msgid "General"
-msgstr "Général"
-
-#: ../src/callbacks.c:560
-msgid "Direct connection"
-msgstr "Connexion directe"
-
-#: ../src/callbacks.c:564
-msgid "HTTP proxy:"
-msgstr "Proxy HTTP :"
-
-#: ../src/callbacks.c:571
-msgid "Hostname:"
-msgstr "Hôte :"
-
-#: ../src/callbacks.c:575
-msgid "Port:"
-msgstr "Port :"
-
-#: ../src/callbacks.c:583
-msgid "Network"
-msgstr "Réseau"
 
 #: ../src/common/conn.c:204 ../src/download.c:210 ../src/ghtml-gtkhtml.c:876
 msgid "Resolving..."
@@ -395,7 +359,7 @@ msgstr "Web surfer"
 msgid " Location: "
 msgstr " Adresse: "
 
-#: ../src/surfer.c:395 ../src/surfer.c:1572 ../src/surfer.c:1577
+#: ../src/surfer.c:395 ../src/surfer.c:1741 ../src/surfer.c:1746
 msgid "Security information"
 msgstr "Informations de sécurité"
 
@@ -463,27 +427,63 @@ msgstr "Source"
 msgid "Line"
 msgstr "Ligne"
 
-#: ../src/surfer.c:1558
+#: ../src/surfer.c:1568
+msgid "Web surfer preferences"
+msgstr "Préférences de Web surfer"
+
+#: ../src/surfer.c:1588
+msgid "Homepage:"
+msgstr "Page d'accueil :"
+
+#: ../src/surfer.c:1596
+msgid "Focus new tabs"
+msgstr "Focaliser les nouveaux onglets"
+
+#: ../src/surfer.c:1600
+msgid "General"
+msgstr "Général"
+
+#: ../src/surfer.c:1604
+msgid "Direct connection"
+msgstr "Connexion directe"
+
+#: ../src/surfer.c:1608
+msgid "HTTP proxy:"
+msgstr "Proxy HTTP :"
+
+#: ../src/surfer.c:1615
+msgid "Hostname:"
+msgstr "Hôte :"
+
+#: ../src/surfer.c:1619
+msgid "Port:"
+msgstr "Port :"
+
+#: ../src/surfer.c:1627
+msgid "Network"
+msgstr "Réseau"
+
+#: ../src/surfer.c:1727
 msgid "This connection is encrypted and trusted."
 msgstr "Cette connexion est chiffrée et de confiance."
 
-#: ../src/surfer.c:1561
+#: ../src/surfer.c:1730
 msgid "This connection is encrypted but not trusted."
 msgstr "Cette connexion est chiffrée mais pas de confiance."
 
-#: ../src/surfer.c:1565
+#: ../src/surfer.c:1734
 msgid "This connection is not encrypted."
 msgstr "Cette connexion n'est pas chiffrée."
 
-#: ../src/surfer.c:1621
+#: ../src/surfer.c:1790
 msgid "Web surfer - Source of "
 msgstr "Web surfer - Source de "
 
-#: ../src/surfer.c:1663 ../src/surfer.c:1666 ../src/surfer.c:1721
-#: ../src/surfer.c:1726
+#: ../src/surfer.c:1832 ../src/surfer.c:1835 ../src/surfer.c:1890
+#: ../src/surfer.c:1895
 msgid "Warning"
 msgstr "Avertissement"
 
-#: ../src/surfer.c:1725
+#: ../src/surfer.c:1894
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"

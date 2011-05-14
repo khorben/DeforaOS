@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-14 18:12+0200\n"
+"POT-Creation-Date: 2011-05-14 18:27+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -25,42 +25,6 @@ msgstr ""
 msgid ""
 "There are multiple tabs opened.\n"
 "Do you really want to close every tab opened in this window?"
-msgstr ""
-
-#: ../src/callbacks.c:524
-msgid "Web surfer preferences"
-msgstr "Web surfer preferencias"
-
-#: ../src/callbacks.c:544
-msgid "Homepage:"
-msgstr ""
-
-#: ../src/callbacks.c:552
-msgid "Focus new tabs"
-msgstr ""
-
-#: ../src/callbacks.c:556
-msgid "General"
-msgstr ""
-
-#: ../src/callbacks.c:560
-msgid "Direct connection"
-msgstr ""
-
-#: ../src/callbacks.c:564
-msgid "HTTP proxy:"
-msgstr ""
-
-#: ../src/callbacks.c:571
-msgid "Hostname:"
-msgstr ""
-
-#: ../src/callbacks.c:575
-msgid "Port:"
-msgstr ""
-
-#: ../src/callbacks.c:583
-msgid "Network"
 msgstr ""
 
 #: ../src/common/conn.c:204 ../src/download.c:210 ../src/ghtml-gtkhtml.c:876
@@ -389,7 +353,7 @@ msgstr "Web surfer"
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:395 ../src/surfer.c:1572 ../src/surfer.c:1577
+#: ../src/surfer.c:395 ../src/surfer.c:1741 ../src/surfer.c:1746
 msgid "Security information"
 msgstr ""
 
@@ -457,27 +421,63 @@ msgstr ""
 msgid "Line"
 msgstr ""
 
-#: ../src/surfer.c:1558
+#: ../src/surfer.c:1568
+msgid "Web surfer preferences"
+msgstr "Web surfer preferencias"
+
+#: ../src/surfer.c:1588
+msgid "Homepage:"
+msgstr ""
+
+#: ../src/surfer.c:1596
+msgid "Focus new tabs"
+msgstr ""
+
+#: ../src/surfer.c:1600
+msgid "General"
+msgstr ""
+
+#: ../src/surfer.c:1604
+msgid "Direct connection"
+msgstr ""
+
+#: ../src/surfer.c:1608
+msgid "HTTP proxy:"
+msgstr ""
+
+#: ../src/surfer.c:1615
+msgid "Hostname:"
+msgstr ""
+
+#: ../src/surfer.c:1619
+msgid "Port:"
+msgstr ""
+
+#: ../src/surfer.c:1627
+msgid "Network"
+msgstr ""
+
+#: ../src/surfer.c:1727
 msgid "This connection is encrypted and trusted."
 msgstr ""
 
-#: ../src/surfer.c:1561
+#: ../src/surfer.c:1730
 msgid "This connection is encrypted but not trusted."
 msgstr ""
 
-#: ../src/surfer.c:1565
+#: ../src/surfer.c:1734
 msgid "This connection is not encrypted."
 msgstr ""
 
-#: ../src/surfer.c:1621
+#: ../src/surfer.c:1790
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:1663 ../src/surfer.c:1666 ../src/surfer.c:1721
-#: ../src/surfer.c:1726
+#: ../src/surfer.c:1832 ../src/surfer.c:1835 ../src/surfer.c:1890
+#: ../src/surfer.c:1895
 msgid "Warning"
 msgstr ""
 
-#: ../src/surfer.c:1725
+#: ../src/surfer.c:1894
 msgid "This file already exists. Overwrite?"
 msgstr ""
