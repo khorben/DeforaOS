@@ -69,7 +69,7 @@ static void _wpa_destroy(PanelApplet * applet);
 
 static int _wpa_error(PanelApplet * applet, char const * message, int ret);
 static int _wpa_queue(PanelApplet * applet, WpaCommand command, ...);
-static int _wpa_reset(PanelApplet * applet);
+static int _wpa_reset(PanelApplet * applet, gboolean connect);
 
 /* callbacks */
 static gboolean _on_timeout(gpointer data);
@@ -217,18 +217,8 @@ static gboolean _init_timeout(gpointer data)
 static void _wpa_destroy(PanelApplet * applet)
 {
 	Wpa * wpa = applet->priv;
-	size_t i;
 
-	/* FIXME test this code, disable the channel and close the socket */
-	if(wpa->source != 0)
-		g_source_remove(wpa->source);
-	if(wpa->rd_source != 0)
-		g_source_remove(wpa->rd_source);
-	if(wpa->wr_source != 0)
-		g_source_remove(wpa->wr_source);
-	for(i = 0; i < wpa->queue_cnt; i++)
-		free(wpa->queue[i].buf);
-	free(wpa->queue);
+	_wpa_reset(applet, FALSE);
 	object_delete(wpa);
 }
 
@@ -281,7 +271,7 @@ static int _wpa_queue(PanelApplet * applet, WpaCommand command, ...)
 
 
 /* wpa_reset */
-static int _wpa_reset(PanelApplet * applet)
+static int _wpa_reset(PanelApplet * applet, gboolean connect)
 {
 	Wpa * wpa = applet->priv;
 	size_t i;
@@ -315,6 +305,9 @@ static int _wpa_reset(PanelApplet * applet)
 	wpa->fd = -1;
 	if(unlink(wpa->path) != 0)
 		applet->helper->error(NULL, wpa->path, 1);
+	if(connect != TRUE)
+		return 0;
+	/* reconnect to the daemon */
 	if(_init_timeout(applet) == FALSE)
 		return 0;
 	wpa->source = g_timeout_add(5000, _init_timeout, applet);
@@ -480,7 +473,7 @@ static gboolean _read_reset(gpointer data)
 	Wpa * wpa = applet->priv;
 
 	wpa->source = 0;
-	_wpa_reset(applet);
+	_wpa_reset(applet, TRUE);
 	return FALSE;
 }
 
@@ -540,6 +533,6 @@ static gboolean _write_reset(gpointer data)
 	Wpa * wpa = applet->priv;
 
 	wpa->source = 0;
-	_wpa_reset(applet);
+	_wpa_reset(applet, TRUE);
 	return FALSE;
 }
