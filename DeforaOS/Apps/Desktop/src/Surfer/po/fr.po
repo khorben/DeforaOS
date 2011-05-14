@@ -69,15 +69,15 @@ msgstr "Adresse: "
 
 #: ../src/download.c:207
 msgid "File: "
-msgstr "Fichier : "
+msgstr "Fichier : "
 
 #: ../src/download.c:209
 msgid "Status: "
-msgstr "Statut : "
+msgstr "Statut : "
 
 #: ../src/download.c:211
 msgid "Done: "
-msgstr "Fait : "
+msgstr "Fait : "
 
 #: ../src/download.c:212
 msgid "0.0 kB"
@@ -85,7 +85,7 @@ msgstr "0.0 Kio"
 
 #: ../src/download.c:213
 msgid "Speed: "
-msgstr "Vitesse : "
+msgstr "Vitesse : "
 
 #: ../src/download.c:214
 msgid "0.0 kB/s"
@@ -156,7 +156,6 @@ msgid "Unknown error"
 msgstr "Erreur inconnue"
 
 #: ../src/download.c:763
-#, fuzzy
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tFile to write document to\n"
@@ -413,7 +412,7 @@ msgstr "Console Javascript"
 
 #: ../src/surfer.c:1418
 msgid "Command:"
-msgstr "Commande :"
+msgstr "Commande :"
 
 #: ../src/surfer.c:1437
 msgid "Message"
@@ -433,37 +432,35 @@ msgstr "Préférences de Web surfer"
 
 #: ../src/surfer.c:1599
 msgid "Homepage:"
-msgstr "Page d'accueil :"
+msgstr "Page d'accueil :"
 
 #: ../src/surfer.c:1605
 msgid "Tab handling"
-msgstr ""
+msgstr "Gestion des onglets"
 
 #: ../src/surfer.c:1610
 msgid "Focus new tabs"
 msgstr "Focaliser les nouveaux onglets"
 
 #: ../src/surfer.c:1615
-#, fuzzy
 msgid "Downloads"
-msgstr "Téléchargement"
+msgstr "Téléchargements"
 
 #: ../src/surfer.c:1618
 msgid "Default download directory:"
-msgstr ""
+msgstr "Répertoire par défaut :"
 
 #: ../src/surfer.c:1622
 msgid "Choose the default download directory"
-msgstr ""
+msgstr "Choix du répertoire par défaut :"
 
 #: ../src/surfer.c:1629
 msgid "General"
 msgstr "Général"
 
 #: ../src/surfer.c:1633
-#, fuzzy
 msgid "Connectivity:"
-msgstr "Connexion à "
+msgstr "Connectivité :"
 
 #: ../src/surfer.c:1636
 msgid "Direct connection"
@@ -471,15 +468,15 @@ msgstr "Connexion directe"
 
 #: ../src/surfer.c:1640
 msgid "HTTP proxy:"
-msgstr "Proxy HTTP :"
+msgstr "Proxy HTTP :"
 
 #: ../src/surfer.c:1647
 msgid "Hostname:"
-msgstr "Hôte :"
+msgstr "Hôte :"
 
 #: ../src/surfer.c:1651
 msgid "Port:"
-msgstr "Port :"
+msgstr "Port :"
 
 #: ../src/surfer.c:1661
 msgid "Network"

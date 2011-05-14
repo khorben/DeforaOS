@@ -199,11 +199,11 @@ msgstr ""
 
 #: ../src/surfer.c:109
 msgid "_New window"
-msgstr ""
+msgstr "_Neue Fenster"
 
 #: ../src/surfer.c:111
 msgid "_Open..."
-msgstr ""
+msgstr "_Offnen..."
 
 #: ../src/surfer.c:113
 msgid "Open _URL..."
@@ -223,7 +223,7 @@ msgstr ""
 
 #: ../src/surfer.c:124
 msgid "_Close"
-msgstr ""
+msgstr "_Schliessen"
 
 #: ../src/surfer.c:131
 msgid "_Undo"
@@ -255,11 +255,11 @@ msgstr ""
 
 #: ../src/surfer.c:152
 msgid "_Find"
-msgstr ""
+msgstr "_Suchen"
 
 #: ../src/surfer.c:155
 msgid "_Preferences"
-msgstr ""
+msgstr "_Einstellungen"
 
 #: ../src/surfer.c:162 ../src/surfer.c:220
 msgid "Zoom in"
@@ -279,7 +279,7 @@ msgstr ""
 
 #: ../src/surfer.c:172
 msgid "_Refresh"
-msgstr ""
+msgstr "_Aktualisieren"
 
 #: ../src/surfer.c:174
 msgid "_Force refresh"
@@ -299,11 +299,11 @@ msgstr ""
 
 #: ../src/surfer.c:188
 msgid "_About"
-msgstr ""
+msgstr "_Info"
 
 #: ../src/surfer.c:199
 msgid "_File"
-msgstr ""
+msgstr "_Datei"
 
 #: ../src/surfer.c:200
 msgid "_Edit"
@@ -315,11 +315,11 @@ msgstr ""
 
 #: ../src/surfer.c:202
 msgid "_Help"
-msgstr ""
+msgstr "_Hilfe"
 
 #: ../src/surfer.c:209
 msgid "Back"
-msgstr ""
+msgstr "Zurück"
 
 #: ../src/surfer.c:211
 msgid "Forward"
@@ -331,7 +331,7 @@ msgstr ""
 
 #: ../src/surfer.c:214
 msgid "Refresh"
-msgstr ""
+msgstr "Aktualisieren"
 
 #: ../src/surfer.c:217
 msgid "Home"
@@ -371,11 +371,11 @@ msgstr ""
 
 #: ../src/surfer.c:1002
 msgid "Find text"
-msgstr "Suchen"
+msgstr "Text suchen"
 
 #: ../src/surfer.c:1014
 msgid "Text:"
-msgstr ""
+msgstr "Text:"
 
 #: ../src/surfer.c:1022
 msgid "Case-sensitive"
@@ -427,7 +427,7 @@ msgstr "Web surfer Einstellungen"
 
 #: ../src/surfer.c:1599
 msgid "Homepage:"
-msgstr ""
+msgstr "Hauptseite:"
 
 #: ../src/surfer.c:1605
 msgid "Tab handling"
@@ -451,7 +451,7 @@ msgstr ""
 
 #: ../src/surfer.c:1629
 msgid "General"
-msgstr ""
+msgstr "Allgemein"
 
 #: ../src/surfer.c:1633
 msgid "Connectivity:"
@@ -459,11 +459,11 @@ msgstr ""
 
 #: ../src/surfer.c:1636
 msgid "Direct connection"
-msgstr ""
+msgstr "Direkt Verbindung"
 
 #: ../src/surfer.c:1640
 msgid "HTTP proxy:"
-msgstr ""
+msgstr "HTTP proxy:"
 
 #: ../src/surfer.c:1647
 msgid "Hostname:"
@@ -471,11 +471,11 @@ msgstr ""
 
 #: ../src/surfer.c:1651
 msgid "Port:"
-msgstr ""
+msgstr "Port:"
 
 #: ../src/surfer.c:1661
 msgid "Network"
-msgstr ""
+msgstr "Netzwerk"
 
 #: ../src/surfer.c:1766
 msgid "This connection is encrypted and trusted."
@@ -491,7 +491,7 @@ msgstr ""
 
 #: ../src/surfer.c:1829
 msgid "Web surfer - Source of "
-msgstr ""
+msgstr "Web surfer - Quellcode von "
 
 #: ../src/surfer.c:1871 ../src/surfer.c:1874 ../src/surfer.c:1929
 #: ../src/surfer.c:1934
