@@ -487,7 +487,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	PanelApplet * applet = data;
 	Wpa * wpa = applet->priv;
 	WpaEntry * entry = &wpa->queue[0];
-	gsize cnt;
+	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
 
