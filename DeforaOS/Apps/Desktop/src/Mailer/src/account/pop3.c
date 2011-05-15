@@ -63,6 +63,33 @@ typedef enum _POP3Context
 	P3C_TRANSACTION_TOP
 } POP3Context;
 
+typedef enum _POP3CommandStatus
+{
+	P3CS_QUEUED = 0,
+	P3CS_SENT,
+	P3CS_ERROR,
+	P3CS_PARSING,
+	P3CS_OK
+} POP3CommandStatus;
+
+typedef struct _POP3Command
+{
+	POP3CommandStatus status;
+	POP3Context context;
+	char * buf;
+	size_t buf_cnt;
+
+	union
+	{
+		struct
+		{
+			unsigned int id;
+			gboolean body;
+			AccountMessage * message;
+		} transaction_retr, transaction_top;
+	} data;
+} POP3Command;
+
 typedef struct _POP3
 {
 	int fd;
@@ -75,13 +102,10 @@ typedef struct _POP3
 	char * rd_buf;
 	size_t rd_buf_cnt;
 	guint rd_source;
-	char * wr_buf;
-	size_t wr_buf_cnt;
 	guint wr_source;
-	POP3Context context;
-	unsigned int id;
-	gboolean body;
-	AccountMessage * message;
+
+	POP3Command * queue;
+	size_t queue_cnt;
 } POP3;
 
 
@@ -111,7 +135,8 @@ static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
 		AccountMessage * message);
 
 /* useful */
-static int _pop3_command(AccountPlugin * plugin, char const * command);
+static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
+		char const * command);
 static int _pop3_parse(AccountPlugin * plugin);
 
 static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
@@ -155,9 +180,14 @@ static int _pop3_init(AccountPlugin * plugin)
 
 	if((pop3 = malloc(sizeof(*pop3))) == NULL)
 		return -1;
+	if((pop3->queue = malloc(sizeof(*pop3->queue))) == NULL)
+	{
+		free(pop3);
+		return -1;
+	}
 	plugin->priv = pop3;
 	pop3->fd = -1;
-	pop3->source = g_idle_add(_on_idle, plugin);
+	pop3->source = 0;
 	pop3->inbox.folder = plugin->helper->folder_new(plugin->helper->account,
 			&pop3->inbox, NULL, FT_INBOX, "Inbox");
 	pop3->inbox.messages = NULL;
@@ -170,12 +200,13 @@ static int _pop3_init(AccountPlugin * plugin)
 	pop3->rd_buf = NULL;
 	pop3->rd_buf_cnt = 0;
 	pop3->rd_source = 0;
-	pop3->wr_buf = NULL;
-	pop3->wr_buf_cnt = 0;
 	pop3->wr_source = 0;
-	pop3->context = P3C_INIT;
-	pop3->id = 0;
-	pop3->message = NULL;
+	pop3->queue[0].context = P3C_INIT;
+	pop3->queue[0].status = P3CS_SENT;
+	pop3->queue[0].buf = NULL;
+	pop3->queue[0].buf_cnt = 0;
+	pop3->queue_cnt = 1;
+	pop3->source = g_idle_add(_on_idle, plugin);
 	return 0;
 }
 
@@ -184,7 +215,7 @@ static int _pop3_init(AccountPlugin * plugin)
 static int _pop3_destroy(AccountPlugin * plugin)
 {
 	POP3 * pop3 = plugin->priv;
-	GError * error = NULL;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -196,14 +227,17 @@ static int _pop3_destroy(AccountPlugin * plugin)
 	free(pop3->rd_buf);
 	if(pop3->wr_source != 0)
 		g_source_remove(pop3->wr_source);
-	free(pop3->wr_buf);
 	if(pop3->source != 0)
 		g_source_remove(pop3->source);
 	if(pop3->channel != NULL)
 	{
-		g_io_channel_shutdown(pop3->channel, TRUE, &error);
+		g_io_channel_shutdown(pop3->channel, TRUE, NULL);
 		g_io_channel_unref(pop3->channel);
+		pop3->fd = -1;
 	}
+	for(i = 0; i < pop3->queue_cnt; i++)
+		free(pop3->queue[i].buf);
+	free(pop3->queue);
 	if(pop3->fd >= 0)
 		close(pop3->fd);
 	free(pop3);
@@ -215,47 +249,57 @@ static int _pop3_destroy(AccountPlugin * plugin)
 static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
 		AccountMessage * message)
 {
-	POP3 * pop3 = plugin->priv;
 	char buf[32];
+	POP3Command * cmd;
 
 	snprintf(buf, sizeof(buf), "%s %u", "RETR", message->id);
-	pop3->context = P3C_TRANSACTION_RETR;
-	pop3->id = message->id;
-	return _pop3_command(plugin, buf);
+	if((cmd = _pop3_command(plugin, P3C_TRANSACTION_RETR, buf)) == NULL)
+		return -1;
+	cmd->data.transaction_retr.id = message->id;
+	return 0;
 }
 
 
 /* useful */
 /* pop3_command */
-static int _pop3_command(AccountPlugin * plugin, char const * command)
+static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
+		char const * command)
 {
 	POP3 * pop3 = plugin->priv;
+	POP3Command * p;
 	size_t len;
-	char * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, command);
+#endif
 	if(command == NULL || (len = strlen(command)) == 0)
-		return -1;
+		return NULL;
 	len += 2;
-	if((p = realloc(pop3->wr_buf, pop3->wr_buf_cnt + len + 1)) == NULL)
-		return -1;
-	pop3->wr_buf = p;
-	snprintf(&pop3->wr_buf[pop3->wr_buf_cnt], len + 1, "%s%s", command,
-			"\r\n");
-	pop3->wr_buf_cnt += len;
-	/* FIXME may not be connected */
-	if(pop3->wr_source == 0)
+	if((p = realloc(pop3->queue, sizeof(*p) * (pop3->queue_cnt + 1)))
+			== NULL)
+		return NULL;
+	pop3->queue = p;
+	p = &pop3->queue[pop3->queue_cnt];
+	p->context = context;
+	p->status = P3CS_QUEUED;
+	if((p->buf = malloc(len + 1)) == NULL)
+		return NULL;
+	p->buf_cnt = snprintf(p->buf, len + 1, "%s\r\n", command);
+	memset(&p->data, 0, sizeof(p->data));
+	if(pop3->queue_cnt++ == 0)
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
 				_on_watch_can_write, plugin);
-	return 0;
+	return p;
 }
 
 
 /* pop3_parse */
 static int _parse_context(AccountPlugin * plugin, char const * answer);
+static int _parse_context_transaction_retr(AccountPlugin * plugin,
+		char const * answer);
 
 static int _pop3_parse(AccountPlugin * plugin)
 {
-	int ret = 0;
 	POP3 * pop3 = plugin->priv;
 	size_t i;
 	size_t j;
@@ -272,110 +316,148 @@ static int _pop3_parse(AccountPlugin * plugin)
 		if(i == pop3->rd_buf_cnt)
 			break;
 		pop3->rd_buf[i - 1] = '\0';
-		/* FIXME this string may be found inside mail content */
-		if(strncmp("-ERR", &pop3->rd_buf[j], 4) == 0)
-			ret |= -plugin->helper->error(plugin->helper->account,
+		if(pop3->queue_cnt == 0)
+			continue;
+		if(pop3->queue[0].status == P3CS_SENT
+				&& strncmp("-ERR", &pop3->rd_buf[j], 4) == 0)
+		{
+			pop3->queue[0].status = P3CS_ERROR;
+			plugin->helper->error(plugin->helper->account,
 					&pop3->rd_buf[j + 4], 1);
-		else
-			ret |= _parse_context(plugin, &pop3->rd_buf[j]);
+		}
+		else if(pop3->queue[0].status == P3CS_SENT
+				&& strncmp("+OK", &pop3->rd_buf[j], 3) == 0)
+			pop3->queue[0].status = P3CS_PARSING;
+		if(_parse_context(plugin, &pop3->rd_buf[j]) != 0)
+			pop3->queue[0].status = P3CS_ERROR;
 	}
 	if(j != 0)
 	{
 		pop3->rd_buf_cnt -= j;
 		memmove(pop3->rd_buf, &pop3->rd_buf[j], pop3->rd_buf_cnt);
 	}
-	return ret;
+	return (pop3->queue[0].status != P3CS_ERROR) ? 0 : -1;
 }
 
 static int _parse_context(AccountPlugin * plugin, char const * answer)
 {
-	int ret;
+	int ret = -1;
 	POP3 * pop3 = plugin->priv;
+	POP3Command * cmd;
 	char const * p;
 	char * q;
 	unsigned int u;
 	unsigned int v;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, answer);
+	fprintf(stderr, "DEBUG: %s(\"%s\") %u, %u\n", __func__, answer,
+			pop3->queue[0].context, pop3->queue[0].status);
 #endif
-	switch(pop3->context)
+	switch(pop3->queue[0].context)
 	{
 		case P3C_INIT:
-			pop3->context = P3C_AUTHORIZATION_USER;
-			if((p = plugin->config[0].value) != NULL)
-			{
-				q = g_strdup_printf("%s %s", "USER", p);
-				ret = _pop3_command(plugin, q);
-				free(q);
-				return ret;
-			}
+			if(pop3->queue[0].status != P3CS_PARSING)
+				return 0;
+			pop3->queue[0].status = P3CS_OK;
+			if((p = plugin->config[0].value) == NULL)
+				return -1;
+			q = g_strdup_printf("%s %s", "USER", p);
+			cmd = _pop3_command(plugin, P3C_AUTHORIZATION_USER, q);
+			free(q);
+			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_USER:
-			pop3->context = P3C_AUTHORIZATION_PASS;
-			if((p = plugin->config[1].value) != NULL)
-			{
-				q = g_strdup_printf("%s %s", "PASS", p);
-				ret = _pop3_command(plugin, q);
-				free(q);
-				return ret;
-			}
+			if(pop3->queue[0].status != P3CS_PARSING)
+				return 0;
+			pop3->queue[0].status = P3CS_OK;
+			if((p = plugin->config[1].value) == NULL)
+				p = ""; /* assumes an empty password */
+			q = g_strdup_printf("%s %s", "PASS", p);
+			cmd = _pop3_command(plugin, P3C_AUTHORIZATION_PASS, q);
+			free(q);
+			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_PASS:
-			pop3->context = P3C_TRANSACTION_STAT;
-			return _pop3_command(plugin, "STAT");
+			if(pop3->queue[0].status != P3CS_PARSING)
+				return 0;
+			pop3->queue[0].status = P3CS_OK;
+			return (_pop3_command(plugin, P3C_TRANSACTION_STAT,
+						"STAT") != NULL) ? 0 : -1;
 		case P3C_TRANSACTION_LIST:
+			if(pop3->queue[0].status != P3CS_PARSING)
+				return 0;
+			if(strncmp(answer, "+OK", 3) == 0)
+				return 0;
 			if(strcmp(answer, ".") == 0)
 			{
-				pop3->context = P3C_TRANSACTION_TOP;
+				pop3->queue[0].status = P3CS_OK;
 				return 0;
 			}
 			if(sscanf(answer, "%u %u", &u, &v) != 2)
 				return -1;
-			pop3->id = u;
 			/* FIXME may not be supported by the server */
 			q = g_strdup_printf("%s %u 0", "TOP", u);
-			ret = _pop3_command(plugin, q);
+			cmd = _pop3_command(plugin, P3C_TRANSACTION_TOP, q);
 			free(q);
-			return ret;
+			cmd->data.transaction_top.id = u;
+			return (cmd != NULL) ? 0 : -1;
 		case P3C_TRANSACTION_RETR:
-		case P3C_TRANSACTION_TOP: /* same as RETR without body */
-			/* FIXME this string may be found inside mail content */
-			if(strncmp(answer, "+OK", 3) == 0)
-			{
-				pop3->body = FALSE;
-				pop3->message = _pop3_message_get(plugin,
-						&pop3->inbox, pop3->id);
-				return 0;
-			}
-			if(strcmp(answer, ".") == 0)
-				return 0;
-			if(answer[0] == '\0')
-			{
-				pop3->body = TRUE;
-				plugin->helper->message_set_body(
-						pop3->message->message, NULL, 0,
-						0);
-				return 0;
-			}
-			if(pop3->body)
-			{
-				plugin->helper->message_set_body(
-						pop3->message->message, answer,
-						strlen(answer), 1);
-				plugin->helper->message_set_body(
-						pop3->message->message, "\r\n",
-						2, 1);
-			}
-			else
-				plugin->helper->message_set_header(
-						pop3->message->message, answer);
-			return 0;
+		case P3C_TRANSACTION_TOP: /* same as RETR without the body */
+			return _parse_context_transaction_retr(plugin, answer);
 		case P3C_TRANSACTION_STAT:
+			if(pop3->queue[0].status != P3CS_PARSING)
+				return 0;
 			if(sscanf(answer, "+OK %u %u", &u, &v) != 2)
 				return -1;
-			pop3->context = P3C_TRANSACTION_LIST;
-			return _pop3_command(plugin, "LIST");
+			pop3->queue[0].status = P3CS_OK;
+			return (_pop3_command(plugin, P3C_TRANSACTION_LIST,
+						"LIST") != NULL) ? 0 : -1;
 	}
-	return -1;
+	return ret;
+}
+
+static int _parse_context_transaction_retr(AccountPlugin * plugin,
+		char const * answer)
+{
+	POP3 * pop3 = plugin->priv;
+	POP3Command * cmd = &pop3->queue[0];
+
+	if(cmd->status != P3CS_PARSING)
+		return 0;
+	if(cmd->data.transaction_retr.message == NULL
+			&& strncmp(answer, "+OK", 3) == 0)
+	{
+		cmd->data.transaction_retr.body = FALSE;
+		cmd->data.transaction_retr.message = _pop3_message_get(plugin,
+					&pop3->inbox,
+					cmd->data.transaction_retr.id);
+		return 0;
+	}
+	if(strcmp(answer, ".") == 0)
+	{
+		cmd->status = P3CS_OK;
+		return 0;
+	}
+	if(answer[0] == '\0')
+	{
+		cmd->data.transaction_retr.body = TRUE;
+		plugin->helper->message_set_body(
+				cmd->data.transaction_retr.message->message,
+				NULL, 0, 0);
+		return 0;
+	}
+	if(cmd->data.transaction_retr.body)
+	{
+		plugin->helper->message_set_body(
+				cmd->data.transaction_retr.message->message,
+				answer, strlen(answer), 1);
+		plugin->helper->message_set_body(
+				cmd->data.transaction_retr.message->message,
+				"\r\n", 2, 1);
+	}
+	else
+		plugin->helper->message_set_header(
+				cmd->data.transaction_retr.message->message,
+				answer);
+	return 0;
 }
 
 
@@ -502,6 +584,9 @@ static gboolean _idle_channel(AccountPlugin * plugin)
 	POP3 * pop3 = plugin->priv;
 	GError * error = NULL;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	pop3->channel = g_io_channel_unix_new(pop3->fd);
 	g_io_channel_set_encoding(pop3->channel, NULL, &error);
 	g_io_channel_set_buffered(pop3->channel, FALSE);
@@ -521,6 +606,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
+	POP3Command * cmd;
 
 	if(condition != G_IO_IN || source != pop3->channel)
 		return FALSE; /* should not happen */
@@ -545,8 +631,26 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 			pop3->rd_source = 0;
 			return FALSE;
 	}
-	_pop3_parse(plugin);
-	return TRUE;
+	if(_pop3_parse(plugin) != 0 || pop3->queue_cnt == 0)
+	{
+		pop3->rd_source = 0;
+		return FALSE;
+	}
+	cmd = &pop3->queue[0];
+	if(cmd->buf_cnt == 0)
+	{
+		if(pop3->queue[0].status == P3CS_PARSING)
+			return TRUE;
+		if(pop3->queue[0].status == P3CS_OK)
+			memmove(cmd, &pop3->queue[1], sizeof(*cmd)
+					* --pop3->queue_cnt);
+	}
+	pop3->rd_source = 0;
+	if(pop3->queue_cnt == 0)
+		return FALSE;
+	pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+			_on_watch_can_write, plugin);
+	return FALSE;
 }
 
 
@@ -556,27 +660,29 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 {
 	AccountPlugin * plugin = data;
 	POP3 * pop3 = plugin->priv;
-	gsize cnt;
+	POP3Command * cmd = &pop3->queue[0];
+	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
 	char * p;
 
-	if(condition != G_IO_OUT || source != pop3->channel)
+	if(condition != G_IO_OUT || source != pop3->channel
+			|| pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
-	status = g_io_channel_write_chars(source, pop3->wr_buf,
-			pop3->wr_buf_cnt, &cnt, &error);
+	status = g_io_channel_write_chars(source, cmd->buf, cmd->buf_cnt, &cnt,
+			&error);
 #ifdef DEBUG
 	fprintf(stderr, "%s", "DEBUG: POP3 CLIENT: ");
-	fwrite(pop3->wr_buf, sizeof(*p), cnt, stderr);
+	fwrite(cmd->buf, sizeof(*p), cnt, stderr);
 #endif
 	if(cnt != 0)
 	{
-		pop3->wr_buf_cnt -= cnt;
-		memmove(pop3->wr_buf, &pop3->wr_buf[cnt], pop3->wr_buf_cnt);
-		if((p = realloc(pop3->wr_buf, pop3->wr_buf_cnt)) != NULL)
-			pop3->wr_buf = p; /* we can ignore errors... */
-		else if(pop3->wr_buf_cnt == 0)
-			pop3->wr_buf = NULL; /* ...except when it's not one */
+		cmd->buf_cnt -= cnt;
+		memmove(cmd->buf, &cmd->buf[cnt], cmd->buf_cnt);
+		if((p = realloc(cmd->buf, cmd->buf_cnt)) != NULL)
+			cmd->buf = p; /* we can ignore errors... */
+		else if(cmd->buf_cnt == 0)
+			cmd->buf = NULL; /* ...except when it's not one */
 	}
 	switch(status)
 	{
@@ -589,8 +695,12 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 			pop3->wr_source = 0;
 			return FALSE;
 	}
-	if(pop3->wr_buf_cnt > 0)
+	if(cmd->buf_cnt > 0)
 		return TRUE;
+	cmd->status = P3CS_SENT;
 	pop3->wr_source = 0;
+	if(pop3->rd_source == 0)
+		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+				_on_watch_can_read, plugin);
 	return FALSE;
 }
