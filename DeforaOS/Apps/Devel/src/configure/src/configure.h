@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ typedef enum _HostOS
 {
 	HO_DEFORAOS = 0,
 	HO_GNU_LINUX,
+	HO_MACOSX,
 	HO_FREEBSD, HO_NETBSD, HO_OPENBSD,
 	HO_SUNOS,
 	HO_UNKNOWN
@@ -50,7 +51,8 @@ extern const String * sHostOS[HO_COUNT];
 typedef enum _HostKernel
 {
 	HK_LINUX20 = 0, HK_LINUX22, HK_LINUX24, HK_LINUX26,
-	HK_NETBSD20, HK_NETBSD30, HK_NETBSD40,
+	HK_MACOSX106,
+	HK_NETBSD2, HK_NETBSD3, HK_NETBSD4, HK_NETBSD5, HK_NETBSD51,
 	HK_OPENBSD40, HK_OPENBSD41,
 	HK_SUNOS57, HK_SUNOS58, HK_SUNOS59, HK_SUNOS510,
 	HK_UNKNOWN

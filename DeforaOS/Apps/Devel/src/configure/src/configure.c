@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ const String * sHostOS[HO_COUNT] =
 {
 	"DeforaOS",
 	"Linux",
+	"MacOSX",
 	"FreeBSD", "NetBSD", "OpenBSD",
 	"SunOS",
 	"unknown"
@@ -53,9 +54,12 @@ const struct HostKernel sHostKernel[] =
 	{ HO_GNU_LINUX,	"2.2"		},
 	{ HO_GNU_LINUX,	"2.4"		},
 	{ HO_GNU_LINUX,	"2.6"		},
+	{ HO_MACOSX,	"10.5.0"	},
 	{ HO_NETBSD,	"2.0"		},
 	{ HO_NETBSD,	"3.0"		},
 	{ HO_NETBSD,	"4.0"		},
+	{ HO_NETBSD,	"5.0"		},
+	{ HO_NETBSD,	"5.1"		},
 	{ HO_OPENBSD,	"4.0"		},
 	{ HO_OPENBSD,	"4.1"		},
 	{ HO_SUNOS,	"5.7",		},
