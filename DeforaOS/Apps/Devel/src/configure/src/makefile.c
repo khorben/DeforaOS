@@ -512,6 +512,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		NULL };
 	char const * libs_deforaos[] = { "ossaudio", "resolv", "ssl", NULL };
 	char const * libs_gnu[] = { "ossaudio", "resolv", "socket", NULL };
+	char const * libs_macosx[] = { "crypt", "ossaudio", "socket", NULL };
 	char const * libs_netbsd[] = { "dl", "resolv", "socket", NULL };
 	char const * libs_sunos[] = { "dl", "ossaudio", NULL };
 	char buf[10];
@@ -533,6 +534,9 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		case HO_FREEBSD:
 		case HO_OPENBSD:
 			libs = libs_bsd;
+			break;
+		case HO_MACOSX:
+			libs = libs_macosx;
 			break;
 		case HO_NETBSD:
 			libs = libs_netbsd;
