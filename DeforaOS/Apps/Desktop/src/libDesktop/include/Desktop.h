@@ -26,6 +26,7 @@
 # include "Desktop/assistant.h"
 # include "Desktop/compat.h"
 # include "Desktop/menubar.h"
+# include "Desktop/mime.h"
 # include "Desktop/toolbar.h"
 
 #endif /* !LIBDESKTOP_DESKTOP_H */

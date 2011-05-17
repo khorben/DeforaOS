@@ -5,7 +5,7 @@ LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS=
-CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
+CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -fPIC
 AR	= ar -rc
 RANLIB	= ranlib
@@ -18,7 +18,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libDesktop_OBJS = about.o accel.o assistant.o menubar.o toolbar.o
+libDesktop_OBJS = about.o accel.o assistant.o menubar.o mime.o toolbar.o
 libDesktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libDesktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -40,6 +40,9 @@ assistant.o: assistant.c
 
 menubar.o: menubar.c
 	$(CC) $(libDesktop_CFLAGS) -c menubar.c
+
+mime.o: mime.c
+	$(CC) $(libDesktop_CFLAGS) -c mime.c
 
 toolbar.o: toolbar.c
 	$(CC) $(libDesktop_CFLAGS) -c toolbar.c
