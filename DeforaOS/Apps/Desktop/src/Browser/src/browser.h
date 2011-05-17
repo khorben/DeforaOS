@@ -21,7 +21,7 @@
 # include <dirent.h>
 # include <gtk/gtk.h>
 # include <System.h>
-# include "mime.h"
+# include <Desktop.h>
 
 
 /* Browser */

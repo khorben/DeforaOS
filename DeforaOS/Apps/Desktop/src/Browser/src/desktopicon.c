@@ -26,7 +26,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
-#include "mime.h"
 #include "desktopicon.h"
 #include "../config.h"
 #define _(string) gettext(string)

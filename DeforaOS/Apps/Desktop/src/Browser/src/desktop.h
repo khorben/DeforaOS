@@ -19,7 +19,7 @@
 # define BROWSER_DESKTOP_H
 
 # include <gtk/gtk.h>
-# include "mime.h"
+# include <Desktop.h>
 # include "desktopicon.h"
 
 

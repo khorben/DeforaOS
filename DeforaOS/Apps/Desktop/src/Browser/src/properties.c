@@ -30,7 +30,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
-#include "mime.h"
+#include <Desktop.h>
 #include "../config.h"
 #define _(string) gettext(string)
 

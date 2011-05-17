@@ -33,7 +33,6 @@
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #include <System.h>
-#include "mime.h"
 #include "desktop.h"
 #include "../config.h"
 #define _(string) gettext(string)
