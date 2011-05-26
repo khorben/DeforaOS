@@ -359,12 +359,20 @@ static void _executables_variables(Configure * configure, FILE * fp,
 	switch(tt)
 	{
 		case TT_BINARY:
+			_variables_binary(configure, fp, done);
+			done[TT_OBJECT] = 1;
+			break;
 		case TT_OBJECT:
 			_variables_binary(configure, fp, done);
+			done[TT_BINARY] = 1;
 			break;
 		case TT_LIBRARY:
+			_variables_library(configure, fp, done);
+			done[TT_PLUGIN] = 1;
+			break;
 		case TT_PLUGIN:
 			_variables_library(configure, fp, done);
+			done[TT_LIBRARY] = 1;
 			break;
 		case TT_LIBTOOL:
 			_variables_libtool(configure, fp, done);
