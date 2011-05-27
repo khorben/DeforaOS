@@ -6,3 +6,4 @@ Icon=text-editor
 Type=Application
 Categories=Utility;TextEditor;GTK;
 StartupNotify=true
+MimeType=text/plain

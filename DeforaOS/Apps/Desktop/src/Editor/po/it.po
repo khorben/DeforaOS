@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-16 23:43+0200\n"
+"POT-Creation-Date: 2011-05-27 16:36+0200\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -154,7 +154,7 @@ msgid "Error"
 msgstr ""
 
 #: ../src/editor.c:465 ../src/editor.c:475 ../src/editor.c:617
-#: ../src/editor.c:631 ../src/editor.c:771 ../src/editor.c:776
+#: ../src/editor.c:631 ../src/editor.c:780 ../src/editor.c:785
 msgid "Warning"
 msgstr ""
 
@@ -194,35 +194,43 @@ msgstr ""
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:687
+#: ../src/editor.c:688
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:747
+#: ../src/editor.c:694
+msgid "Text files"
+msgstr ""
+
+#: ../src/editor.c:698
+msgid "All files"
+msgstr ""
+
+#: ../src/editor.c:756
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:775
+#: ../src/editor.c:784
 msgid "This file already exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:784
+#: ../src/editor.c:793
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:799
+#: ../src/editor.c:808
 msgid "Save as..."
 msgstr ""
 
-#: ../src/editor.c:856
+#: ../src/editor.c:865
 msgid "Text editor preferences"
 msgstr ""
 
-#: ../src/editor.c:873
+#: ../src/editor.c:882
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:883
+#: ../src/editor.c:892
 msgid "Wrap mode:"
 msgstr ""
 

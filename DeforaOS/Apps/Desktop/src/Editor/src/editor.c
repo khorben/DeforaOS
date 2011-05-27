@@ -682,6 +682,7 @@ void editor_open(Editor * editor, char const * filename)
 void editor_open_dialog(Editor * editor)
 {
 	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	char * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
@@ -689,6 +690,14 @@ void editor_open_dialog(Editor * editor)
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Text files"));
+	gtk_file_filter_add_mime_type(filter, "text/plain");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
