@@ -17,7 +17,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 panel_test_OBJS = test.o
-panel_test_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+panel_test_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 panel_test_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 panel_test: $(panel_test_OBJS)
