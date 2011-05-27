@@ -1,6 +1,7 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net>";
+"Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net>\n"
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 static char const _license[] =
 "This program is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by the\n"
@@ -32,20 +33,7 @@ static char const _license[] =
 /* PDFviewer */
 /* private */
 /* types */
-struct _PDFviewer
-{
-	PDF * pdf;
-
-	/* widgets */
-	GtkWidget * window;
-	GtkWidget * view;
-	GtkWidget * statusbar;
-	GtkWidget * toolbar;
-	/* about */
-	GtkWidget * ab_window;
-};
-
-struct _PDF
+typedef struct _PDF
 {
 	PopplerDocument *document;
 
@@ -55,8 +43,24 @@ struct _PDF
 	GtkWidget       *area;
 	cairo_surface_t *surface;
 	double scale;
-};
+} PDF;
 
+struct _PDFviewer
+{
+	PDF * pdf;
+
+	/* widgets */
+	GtkWidget * window;
+#ifndef MENUBAR
+	GtkWidget * menubar;
+#endif
+	GtkWidget * view;
+	GtkWidget * statusbar;
+	GtkWidget * toolbar;
+	GtkToolItem * tb_fullscreen;
+	/* about */
+	GtkWidget * ab_window;
+};
 
 
 /* variables */
@@ -67,16 +71,17 @@ static char const * _authors[] =
 	NULL
 };
 
-#ifdef EMBEDDED
 static DesktopAccel _pdfviewer_accel[] =
 {
-	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_w },
-	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_o },
-	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_p },
+	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
+#ifdef EMBEDDED
 	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_n },
+	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_o },
+	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_w },
+	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_p },
+#endif
 	{ NULL, 0, 0 }
 };
-#endif
 
 #ifndef EMBEDDED
 static DesktopMenu _pdfviewer_menu_file[] =
@@ -100,6 +105,9 @@ static DesktopMenu _pdfviewer_menu_view[] =
 		GDK_CONTROL_MASK, GDK_KEY_plus },
 	{ "Zoom out", G_CALLBACK(on_view_zoom_out), "zoom-out",
 		GDK_CONTROL_MASK, GDK_KEY_minus },
+	{ "", NULL, NULL, 0, 0 },
+	{ "Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
+		0, GDK_KEY_F11 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -127,14 +135,15 @@ static DesktopMenubar _pdfviewer_menubar[] =
 static DesktopToolbar _pdfviewer_toolbar[] =
 {
 	{ "Open", G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, 0, NULL },
-	{ "FarBefore", G_CALLBACK(on_far_before), GTK_STOCK_MEDIA_PREVIOUS,
+	{ "Far before", G_CALLBACK(on_far_before), GTK_STOCK_MEDIA_PREVIOUS,
 		 0, 0, NULL },
 	{ "Previous", G_CALLBACK(on_previous), GTK_STOCK_GO_BACK,
 		 0, 0, NULL },
 	{ "Next", G_CALLBACK(on_next), GTK_STOCK_GO_FORWARD, 0, 0, NULL },
-	{ "FarAfter", G_CALLBACK(on_far_after), GTK_STOCK_MEDIA_NEXT, 0, 0, NULL },
-	{ "ZoomIn", G_CALLBACK(on_zoom_in), GTK_STOCK_ZOOM_IN, 0, 0, NULL },
-	{ "ZoomOut", G_CALLBACK(on_zoom_out), GTK_STOCK_ZOOM_OUT, 0, 0, NULL },
+	{ "Far after", G_CALLBACK(on_far_after), GTK_STOCK_MEDIA_NEXT, 0, 0,
+		NULL },
+	{ "Zoom in", G_CALLBACK(on_zoom_in), GTK_STOCK_ZOOM_IN, 0, 0, NULL },
+	{ "Zoom out", G_CALLBACK(on_zoom_out), GTK_STOCK_ZOOM_OUT, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -151,6 +160,7 @@ PDFviewer * pdfviewer_new(void)
 	GtkSettings * settings;
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
 
 	if((pdfviewer = malloc(sizeof(*pdfviewer))) == NULL)
 		return NULL;
@@ -171,15 +181,24 @@ PDFviewer * pdfviewer_new(void)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 #ifndef EMBEDDED
-	widget = desktop_menubar_create(_pdfviewer_menubar, pdfviewer, group);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
-#else
-	desktop_accel_create(_pdfviewer_accel, pdfviewer, group);
+	pdfviewer->menubar = desktop_menubar_create(_pdfviewer_menubar,
+			pdfviewer, group);
+	gtk_box_pack_start(GTK_BOX(vbox), pdfviewer->menubar, FALSE, FALSE, 0);
 #endif
+	desktop_accel_create(_pdfviewer_accel, pdfviewer, group);
 	/* toolbar */
 	pdfviewer->toolbar = desktop_toolbar_create(_pdfviewer_toolbar,
 		pdfviewer, group);
 	set_prevnext_sensitivity(pdfviewer);
+#if GTK_CHECK_VERSION(2, 8, 0)
+	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_FULLSCREEN);
+#else
+	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_ZOOM_FIT);
+#endif
+	pdfviewer->tb_fullscreen = toolitem;
+	g_signal_connect_swapped(G_OBJECT(toolitem), "toggled", G_CALLBACK(
+				on_fullscreen), pdfviewer);
+	gtk_toolbar_insert(GTK_TOOLBAR(pdfviewer->toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), pdfviewer->toolbar, FALSE, FALSE, 0);
 	/* view */
 	widget = gtk_scrolled_window_new(NULL, NULL);
@@ -226,6 +245,18 @@ void pdfviewer_delete(PDFviewer * pdfviewer)
 #endif
 	free(pdfviewer);
 }
+
+
+/* accessors */
+/* pdfviewer_set_fullscreen */
+void pdfviewer_set_fullscreen(PDFviewer * pdfviewer, gboolean fullscreen)
+{
+	if(fullscreen == TRUE)
+		gtk_window_fullscreen(GTK_WINDOW(pdfviewer->window));
+	else
+		gtk_window_unfullscreen(GTK_WINDOW(pdfviewer->window));
+}
+
 
 /* useful */
 /* pdfviewer_about */
@@ -293,6 +324,38 @@ gboolean pdfviewer_close(PDFviewer * pdfviewer)
 }
 
 
+/* pdfviewer_fullscreen_toggle */
+void pdfviewer_fullscreen_toggle(PDFviewer * pdfviewer)
+{
+	GdkWindow * window;
+
+#if GTK_CHECK_VERSION(2, 14, 0)
+	window = gtk_widget_get_window(pdfviewer->window);
+#else
+	window = pdfviewer->window->window;
+#endif
+	if((gdk_window_get_state(window) & GDK_WINDOW_STATE_FULLSCREEN)
+			!= GDK_WINDOW_STATE_FULLSCREEN)
+	{
+#ifndef EMBEDDED
+		gtk_widget_hide(pdfviewer->menubar);
+#endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					pdfviewer->tb_fullscreen), TRUE);
+		pdfviewer_set_fullscreen(pdfviewer, TRUE);
+	}
+	else
+	{
+#ifndef EMBEDDED
+		gtk_widget_show(pdfviewer->menubar);
+#endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					pdfviewer->tb_fullscreen), FALSE);
+		pdfviewer_set_fullscreen(pdfviewer, FALSE);
+	}
+}
+
+
 /* pdfviewer_open */
 void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
 {
@@ -310,6 +373,32 @@ void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
 }
 
 
+/* pdf_open */
+int pdf_open(PDFviewer * pdfviewer, const char * uri)
+{
+	GError * err = NULL;
+	PDF * pdf;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, uri);
+#endif
+	pdfviewer->pdf = g_new0(PDF, 1);
+	pdf = pdfviewer->pdf;
+	pdf->document = poppler_document_new_from_file(uri, NULL, &err);
+	if(err != NULL)
+	{
+		fprintf(stderr, "error: %s", err->message);
+		g_error_free(err);
+		return 1;
+	}
+	pdf->pages = poppler_document_get_n_pages(pdf->document);
+	pdf_update_current(pdfviewer, '=', 0);
+/*	pdfviewer->pdf->scale = 1.0; */	
+	pdf_load_page(pdfviewer);
+	return 0;
+}
+
+
 /* pdfviewer_open_dialog */
 void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 {
@@ -320,7 +409,6 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-
 	dialog = gtk_file_chooser_dialog_new("Open file...",
 			GTK_WINDOW(pdfviewer->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -329,6 +417,10 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 	filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, "PDF documents");
 	gtk_file_filter_add_mime_type(filter, "application/pdf");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(
@@ -340,37 +432,6 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 	g_free(uri);
 }
 
-/* pdf_open */
-int pdf_open(PDFviewer * pdfviewer, const char * uri)
-{
-	GError * err = NULL;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-
-	pdfviewer->pdf = g_new0(PDF, 1);
-	pdfviewer->pdf->document = 
-		poppler_document_new_from_file(uri, NULL, &err);
-
-	if(err != NULL) {
-		fprintf(stderr, "error: %s", err->message);
-		g_error_free (err);
-		return 1;
-	}
-
-	pdfviewer->pdf->pages = 
-		poppler_document_get_n_pages(pdfviewer->pdf->document);
-
-	pdf_update_current(pdfviewer, '=', 0);
-
-
-/*	pdfviewer->pdf->scale = 1.0;
-*/	
-	pdf_load_page(pdfviewer);
-
-	return 0;
-}
 
 /* pdf_close */
 void pdf_close(PDFviewer * pdfviewer)
@@ -383,6 +444,7 @@ void pdf_close(PDFviewer * pdfviewer)
 	if(pdfviewer->pdf != NULL)
 		free(pdfviewer->pdf);
 }
+
 
 /* pdf_load_page */
 void pdf_load_page(PDFviewer * pdfviewer)
@@ -450,6 +512,7 @@ void pdf_load_page(PDFviewer * pdfviewer)
 	gtk_widget_queue_draw(pdfviewer->view);
 }
 
+
 /* pdf_render_area */
 void pdf_render_area(GtkWidget *area, GdkEventExpose *event, void * data)
 {
@@ -459,17 +522,15 @@ void pdf_render_area(GtkWidget *area, GdkEventExpose *event, void * data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-
         gdk_window_clear(gtk_widget_get_window(area));
-
 	if(pdf == NULL)
 		return;
-
         cr = gdk_cairo_create(gtk_widget_get_window(area));
         cairo_set_source_surface(cr, pdf->surface, 0, 0);
         cairo_paint(cr);
         cairo_destroy(cr);
 }
+
 
 /* pdf_update_current */
 void pdf_update_current(PDFviewer * pdfviewer, const char op, int n)
@@ -477,7 +538,8 @@ void pdf_update_current(PDFviewer * pdfviewer, const char op, int n)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	switch(op) {
+	switch(op)
+	{
 		case '=':	if((n >= 0) && 
 				  (n <= (pdfviewer->pdf->pages - 1)))
 					pdfviewer->pdf->current = n;
@@ -526,6 +588,7 @@ void set_prevnext_sensitivity(PDFviewer * pdfviewer)
 		gtk_toolbar_get_nth_item(GTK_TOOLBAR(pdfviewer->toolbar), 4)
 		), farafter);
 }
+
 
 /* pdf_update_scale */
 void pdf_update_scale(PDFviewer * pdfviewer, const char op, double n)

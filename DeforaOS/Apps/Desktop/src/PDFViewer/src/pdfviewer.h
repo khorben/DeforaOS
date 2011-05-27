@@ -23,13 +23,15 @@
 
 /* PDFviewer */
 /* types */
-typedef struct _PDF PDF;
 typedef struct _PDFviewer PDFviewer;
 
 
 /* functions */
 PDFviewer * pdfviewer_new(void);
 void pdfviewer_delete(PDFviewer * pdfviewer);
+
+/* accessors */
+void pdfviewer_set_fullscreen(PDFviewer * pdfviewer, gboolean fullscreen);
 
 /* useful */
 int pdf_open(PDFviewer * pdfviewer, const char * filename);
@@ -46,6 +48,8 @@ int pdfviewer_error(PDFviewer * pdfviewer, char const * message, int ret);
 gboolean pdfviewer_close(PDFviewer * pdfviewer);
 void pdfviewer_open(PDFviewer * pdfviewer, char const * filename);
 void pdfviewer_open_dialog(PDFviewer * pdfviewer);
+
+void pdfviewer_fullscreen_toggle(PDFviewer * pdfviewer);
 
 /* FIXME not implemented */
 void pdfviewer_find(PDFviewer * pdfviewer, char const * text);

@@ -66,6 +66,15 @@ void on_file_open(gpointer data)
 }
 
 
+/* on_view_fullscreen */
+void on_view_fullscreen(gpointer data)
+{
+	PDFviewer * pdfviewer = data;
+
+	on_fullscreen(pdfviewer);
+}
+
+
 /* on_view_zoom_in */
 void on_view_zoom_in(gpointer data)
 {
@@ -99,6 +108,15 @@ void on_close(gpointer data)
 }
 
 
+/* on_fullscreen */
+void on_fullscreen(gpointer data)
+{
+	PDFviewer * pdfviewer = data;
+
+	pdfviewer_fullscreen_toggle(pdfviewer);
+}
+
+
 /* on_new */
 void on_new(gpointer data)
 {
@@ -116,6 +134,7 @@ void on_open(gpointer data)
 	pdfviewer_open_dialog(pdfviewer);
 }
 
+
 /* on_preferences */
 void on_preferences(gpointer data)
 {
@@ -123,6 +142,7 @@ void on_preferences(gpointer data)
 
 	on_edit_preferences(pdfviewer);
 }
+
 
 /* on_previous */
 void on_previous(gpointer data)
@@ -133,6 +153,7 @@ void on_previous(gpointer data)
 	pdf_load_page(pdfviewer);
 }
 
+
 /* on_next */
 void on_next(gpointer data)
 {
@@ -141,6 +162,7 @@ void on_next(gpointer data)
 	pdf_update_current(pdfviewer, '+', 1);
 	pdf_load_page(pdfviewer);
 }
+
 
 /* on_far_before */
 void on_far_before(gpointer data)

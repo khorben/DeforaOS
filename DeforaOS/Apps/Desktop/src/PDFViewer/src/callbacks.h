@@ -24,20 +24,23 @@
 gboolean on_closex(gpointer data);
 void on_file_close(gpointer data);
 void on_file_open(gpointer data);
+void on_help_about(gpointer data);
+void on_view_fullscreen(gpointer data);
 void on_view_zoom_in(gpointer data);
 void on_view_zoom_out(gpointer data);
-void on_help_about(gpointer data);
-void pdf_render_area(GtkWidget *drawing_area, GdkEventExpose *event, void *data);
+void pdf_render_area(GtkWidget * drawing_area, GdkEventExpose * event,
+		void * data);
 void on_previous(gpointer data);
 void on_next(gpointer data);
 void on_far_before(gpointer data);
 void on_far_after(gpointer data);
-void on_zoom_out(gpointer data);
-void on_zoom_in(gpointer data);
 
 /* toolbar */
 void on_close(gpointer data);
+void on_fullscreen(gpointer data);
 void on_open(gpointer data);
 void on_pdf_close(gpointer data);
+void on_zoom_in(gpointer data);
+void on_zoom_out(gpointer data);
 
 #endif /* !PDFVIEWER_CALLBACKS_H */
