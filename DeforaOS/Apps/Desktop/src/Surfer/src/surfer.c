@@ -167,7 +167,7 @@ static DesktopMenu _menu_view[] =
 		"zoom-original", GDK_CONTROL_MASK, GDK_KEY_0 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen),
-		GTK_STOCK_FULLSCREEN, 0, 0 },
+		GTK_STOCK_FULLSCREEN, 0, GDK_KEY_F11 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_KEY_R },
