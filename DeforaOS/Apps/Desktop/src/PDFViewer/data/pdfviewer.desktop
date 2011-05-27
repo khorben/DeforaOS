@@ -6,3 +6,4 @@ Icon=document-print-preview
 Type=Application
 Categories=Office;Viewer;GTK;
 StartupNotify=true
+MimeType=application/pdf
