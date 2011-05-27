@@ -13,7 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - let the checkbox to close window be a global option */
+ * - let the checkbox to close window be a global option
+ * - also use the proxy settings
+ * - use the "Last modified" header (if available?) to futimes() the file
+ * - with WebKit files of unknown length are considered as 100% all the time */
 
 
 

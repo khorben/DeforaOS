@@ -1055,6 +1055,7 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 				surfer->fi_wrap));
 	if(ghtml_find(view, text, sensitive, backwards, wrap) == TRUE)
 		return;
+	/* FIXME display this error on top of the text search box instead */
 	surfer_error(surfer, _("Text not found"), 0);
 }
 
@@ -1141,6 +1142,7 @@ void surfer_open(Surfer * surfer, char const * url)
 void surfer_open_dialog(Surfer * surfer)
 {
 	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	char * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
@@ -1148,6 +1150,15 @@ void surfer_open_dialog(Surfer * surfer)
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "HTML files");
+	gtk_file_filter_add_mime_type(filter, "application/xhtml+xml");
+	gtk_file_filter_add_mime_type(filter, "text/html");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
