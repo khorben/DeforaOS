@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-27 14:22+0200\n"
+"POT-Creation-Date: 2011-05-27 17:06+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -22,7 +22,7 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 #: ../src/applets/battery.c:186 ../src/panel.c:413 ../src/panel.c:418
-#: ../src/run.c:200 ../src/run.c:206
+#: ../src/run.c:210 ../src/run.c:216
 msgid "Error"
 msgstr "Erreur"
 
@@ -250,27 +250,35 @@ msgstr "Arrêter"
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: ../src/run.c:101 ../src/run.c:113
+#: ../src/run.c:102 ../src/run.c:114
 msgid "Run program..."
 msgstr "Exécuter..."
 
-#: ../src/run.c:107
+#: ../src/run.c:108
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/run.c:122
+#: ../src/run.c:119
+msgid "Shell scripts"
+msgstr "Scripts shell"
+
+#: ../src/run.c:123
+msgid "All files"
+msgstr "Tous les fichiers"
+
+#: ../src/run.c:132
 msgid "Run in a terminal"
 msgstr "Exécuter dans un terminal"
 
-#: ../src/run.c:311
+#: ../src/run.c:321
 msgid "Command not found"
 msgstr "Commande non trouvée"
 
-#: ../src/run.c:314
+#: ../src/run.c:324
 msgid "Permission denied"
 msgstr "Permissions insuffisantes"
 
-#: ../src/run.c:401
+#: ../src/run.c:411
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
