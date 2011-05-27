@@ -63,6 +63,7 @@ struct _PDF
 static char const * _authors[] =
 {
 	"Sébastien Bocahu <zecrazytux@zecrazytux.net>",
+	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
 
@@ -95,6 +96,10 @@ static DesktopMenu _pdfviewer_menu_edit[] =
 
 static DesktopMenu _pdfviewer_menu_view[] =
 {
+	{ "Zoom in", G_CALLBACK(on_view_zoom_in), "zoom-in",
+		GDK_CONTROL_MASK, GDK_KEY_plus },
+	{ "Zoom out", G_CALLBACK(on_view_zoom_out), "zoom-out",
+		GDK_CONTROL_MASK, GDK_KEY_minus },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -309,6 +314,7 @@ void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
 void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 {
 	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	char * uri = NULL;
 
 #ifdef DEBUG
@@ -320,6 +326,10 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "PDF documents");
+	gtk_file_filter_add_mime_type(filter, "application/pdf");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(
 					dialog));

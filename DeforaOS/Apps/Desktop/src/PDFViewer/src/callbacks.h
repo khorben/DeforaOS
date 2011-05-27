@@ -24,6 +24,8 @@
 gboolean on_closex(gpointer data);
 void on_file_close(gpointer data);
 void on_file_open(gpointer data);
+void on_view_zoom_in(gpointer data);
+void on_view_zoom_out(gpointer data);
 void on_help_about(gpointer data);
 void pdf_render_area(GtkWidget *drawing_area, GdkEventExpose *event, void *data);
 void on_previous(gpointer data);
