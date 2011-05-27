@@ -681,6 +681,7 @@ int player_open_dialog(Player * player)
 {
 	int ret;
 	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	char * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
@@ -688,6 +689,45 @@ int player_open_dialog(Player * player)
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Video files"));
+	gtk_file_filter_add_mime_type(filter, "video/3gpp");
+	gtk_file_filter_add_mime_type(filter, "video/3gpp2");
+	gtk_file_filter_add_mime_type(filter, "video/mp2t");
+	gtk_file_filter_add_mime_type(filter, "video/mp4");
+	gtk_file_filter_add_mime_type(filter, "video/mpeg");
+	gtk_file_filter_add_mime_type(filter, "video/ogg");
+	gtk_file_filter_add_mime_type(filter, "video/quicktime");
+	gtk_file_filter_add_mime_type(filter, "video/vivo");
+	gtk_file_filter_add_mime_type(filter, "video/vnd.vn-realvideo");
+	gtk_file_filter_add_mime_type(filter, "video/webm");
+	gtk_file_filter_add_mime_type(filter, "video/x-flv");
+	gtk_file_filter_add_mime_type(filter, "video/x-javafx");
+	gtk_file_filter_add_mime_type(filter, "video/x-matroska");
+	gtk_file_filter_add_mime_type(filter, "video/x-mng");
+	gtk_file_filter_add_mime_type(filter, "video/x-ms-asf");
+	gtk_file_filter_add_mime_type(filter, "video/x-ms-wmv");
+	gtk_file_filter_add_mime_type(filter, "video/x-msvideo");
+	gtk_file_filter_add_mime_type(filter, "video/x-ogm+ogg");
+	gtk_file_filter_add_mime_type(filter, "video/x-sgi-movie");
+	gtk_file_filter_add_mime_type(filter, "video/x-theora+ogg");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Audio files"));
+	gtk_file_filter_add_mime_type(filter, "audio/ac3");
+	gtk_file_filter_add_mime_type(filter, "audio/mp4");
+	gtk_file_filter_add_mime_type(filter, "audio/mpeg");
+	gtk_file_filter_add_mime_type(filter, "audio/vorbis");
+	gtk_file_filter_add_mime_type(filter, "audio/x-mp2");
+	gtk_file_filter_add_mime_type(filter, "audio/x-mp3");
+	gtk_file_filter_add_mime_type(filter, "audio/x-ms-wma");
+	gtk_file_filter_add_mime_type(filter, "audio/x-vorbis");
+	gtk_file_filter_add_mime_type(filter, "audio/x-wav");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
