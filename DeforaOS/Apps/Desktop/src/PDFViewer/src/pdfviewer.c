@@ -73,7 +73,7 @@ static char const * _authors[] =
 
 static DesktopAccel _pdfviewer_accel[] =
 {
-	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
+	{ G_CALLBACK(on_fullscreen), 0, GDK_F11 },
 #ifdef EMBEDDED
 	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_n },
 	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_o },
@@ -102,12 +102,12 @@ static DesktopMenu _pdfviewer_menu_edit[] =
 static DesktopMenu _pdfviewer_menu_view[] =
 {
 	{ "Zoom in", G_CALLBACK(on_view_zoom_in), "zoom-in",
-		GDK_CONTROL_MASK, GDK_KEY_plus },
+		GDK_CONTROL_MASK, GDK_plus },
 	{ "Zoom out", G_CALLBACK(on_view_zoom_out), "zoom-out",
-		GDK_CONTROL_MASK, GDK_KEY_minus },
+		GDK_CONTROL_MASK, GDK_minus },
 	{ "", NULL, NULL, 0, 0 },
 	{ "Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
-		0, GDK_KEY_F11 },
+		0, GDK_F11 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
