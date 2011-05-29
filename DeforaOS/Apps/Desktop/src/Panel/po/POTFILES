@@ -12,6 +12,7 @@
 ../src/applets/memory.c
 ../src/applets/swap.c
 ../src/applets/tasks.c
+../src/applets/title.c
 ../src/applets/usb.c
 ../src/main.c
 ../src/panel.c
