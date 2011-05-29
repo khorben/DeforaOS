@@ -65,6 +65,8 @@ void desktopicon_set_callback(DesktopIcon * desktopicon,
 void desktopicon_set_confirm(DesktopIcon * desktopicon, gboolean confirm);
 void desktopicon_set_executable(DesktopIcon * desktopicon, gboolean executable);
 void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first);
+void desktopicon_set_font(DesktopIcon * desktopicon,
+		PangoFontDescription * font);
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
 void desktopicon_set_immutable(DesktopIcon * desktopicon, gboolean immutable);
 void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected);

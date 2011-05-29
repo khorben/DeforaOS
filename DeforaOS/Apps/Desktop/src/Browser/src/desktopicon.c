@@ -363,6 +363,14 @@ void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first)
 }
 
 
+/* desktopicon_set_font */
+void desktopicon_set_font(DesktopIcon * desktopicon,
+		PangoFontDescription * font)
+{
+	gtk_widget_modify_font(desktopicon->label, font);
+}
+
+
 /* desktopicon_set_icon */
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
@@ -432,6 +440,7 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 	GtkWindow * window;
 	GtkWidget * vbox;
 	GdkGeometry geometry;
+	PangoFontDescription * font;
 
 	if((desktopicon = malloc(sizeof(*desktopicon))) == NULL)
 		return NULL;

@@ -14,6 +14,8 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License along with\n"
 "view; if not, see <http://www.gnu.org/licenses/>.\n";
+/* TODO:
+ * - zoom/dezoom images */
 
 
 

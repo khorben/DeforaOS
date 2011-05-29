@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME
+ * - let the user define the desktop folder
  * - track multiple selection on delete/properties */
 
 
@@ -62,6 +63,7 @@ typedef struct _DesktopCategory DesktopCategory;
 struct _Desktop
 {
 	DesktopPrefs prefs;
+	PangoFontDescription * font;
 
 	/* workarea */
 	GdkRectangle window;
@@ -180,6 +182,7 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	desktop->prefs.monitor = -1;
 	if(prefs != NULL)
 		memcpy(&desktop->prefs, prefs, sizeof(*prefs));
+	desktop->font = NULL;
 	/* workarea */
 	screen = gdk_screen_get_default();
 	desktop->display = gdk_screen_get_display(screen);
@@ -260,6 +263,12 @@ static gboolean _new_idle(gpointer data)
 			background = gdk_pixbuf_new_from_file(filename, &error);
 #endif
 			break;
+	}
+	if((p = config_get(config, NULL, "font")) != NULL)
+	{
+		desktop->font = pango_font_description_from_string(p);
+		for(i = 0; i < desktop->icon_cnt; i++)
+			desktopicon_set_font(desktop->icon[i], desktop->font);
 	}
 	config_delete(config);
 	if(background == NULL)
@@ -651,6 +660,8 @@ void desktop_delete(Desktop * desktop)
 	if(desktop->mime != NULL)
 		mime_delete(desktop->mime);
 	free(desktop->path);
+	if(desktop->font != NULL)
+		pango_font_description_free(desktop->font);
 	object_delete(desktop);
 }
 
@@ -787,6 +798,7 @@ static int _layout_applications(Desktop * desktop)
 		desktopicon = desktopicon_new(desktop, _("Back"), NULL);
 		desktopicon_set_callback(desktopicon, _layout_set_categories,
 				NULL);
+		desktopicon_set_font(desktopicon, desktop->font);
 		desktopicon_set_immutable(desktopicon, TRUE);
 		icon = gtk_icon_theme_load_icon(desktop->theme, "back",
 				DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -807,6 +819,7 @@ static int _layout_categories(Desktop * desktop)
 	desktopicon = desktopicon_new(desktop, _("Back"), NULL);
 	desktopicon_set_callback(desktopicon, _layout_set_homescreen, NULL);
 	desktopicon_set_first(desktopicon, TRUE);
+	desktopicon_set_font(desktopicon, desktop->font);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "back",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -868,6 +881,7 @@ static void _layout_files_add_home(Desktop * desktop)
 			== NULL)
 		return;
 	desktopicon_set_first(desktopicon, TRUE);
+	desktopicon_set_font(desktopicon, desktop->font);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-home",
@@ -898,6 +912,7 @@ static int _layout_homescreen(Desktop * desktop)
 			== NULL)
 		return desktop_error(NULL, error_get(), 1);
 	desktopicon_set_callback(desktopicon, _layout_set_categories, NULL);
+	desktopicon_set_font(desktopicon, desktop->font);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-applications",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -909,7 +924,10 @@ static int _layout_homescreen(Desktop * desktop)
 		if(access(*p, R_OK) == 0
 				&& (desktopicon = desktopicon_new_application(
 						desktop, *p)) != NULL)
+		{
+			desktopicon_set_font(desktopicon, desktop->font);
 			_desktop_icon_add(desktop, desktopicon);
+		}
 #endif
 	return 0;
 }
@@ -1062,6 +1080,7 @@ static int _current_loop_applications(Desktop * desktop)
 			continue;
 		if((icon = desktopicon_new_application(desktop, path)) == NULL)
 			continue;
+		desktopicon_set_font(icon, desktop->font);
 		_desktop_icon_add(desktop, icon);
 		free(path);
 		config_delete(config);
@@ -1167,7 +1186,10 @@ static int _current_loop_files(Desktop * desktop)
 			== NULL)
 		return -_desktop_serror(NULL, de->d_name, 1);
 	if((desktopicon = desktopicon_new(desktop, de->d_name, p)) != NULL)
+	{
 		desktop_icon_add(desktop, desktopicon);
+		desktopicon_set_font(desktopicon, desktop->font);
+	}
 	string_delete(p);
 	return 0;
 }
@@ -1248,6 +1270,7 @@ static void _done_categories(Desktop * desktop)
 		if((q = config_get(config, section, "Categories")) == NULL)
 		{
 			icon = desktopicon_new_application(desktop, path);
+			desktopicon_set_font(icon, desktop->font);
 			_desktop_icon_add(desktop, icon);
 			continue;
 		}
@@ -1257,6 +1280,7 @@ static void _done_categories(Desktop * desktop)
 		if(dc->category == NULL)
 		{
 			icon = desktopicon_new_application(desktop, path);
+			desktopicon_set_font(icon, desktop->font);
 			_desktop_icon_add(desktop, icon);
 			continue;
 		}
@@ -1264,6 +1288,7 @@ static void _done_categories(Desktop * desktop)
 			continue;
 		dc->show = TRUE;
 		icon = desktopicon_new_category(desktop, dc->name, dc->icon);
+		desktopicon_set_font(icon, desktop->font);
 		desktopicon_set_callback(icon, _done_categories_open, dc);
 		_desktop_icon_add(desktop, icon);
 	}
