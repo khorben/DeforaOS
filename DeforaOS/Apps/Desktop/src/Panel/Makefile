@@ -74,6 +74,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/battery.c \
 		$(PACKAGE)-$(VERSION)/src/applets/bluetooth.c \
 		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
+		$(PACKAGE)-$(VERSION)/src/applets/close.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpufreq.c \
 		$(PACKAGE)-$(VERSION)/src/applets/desktop.c \
@@ -89,6 +90,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/swap.c \
 		$(PACKAGE)-$(VERSION)/src/applets/systray.c \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
+		$(PACKAGE)-$(VERSION)/src/applets/title.c \
 		$(PACKAGE)-$(VERSION)/src/applets/usb.c \
 		$(PACKAGE)-$(VERSION)/src/applets/volume.c \
 		$(PACKAGE)-$(VERSION)/src/applets/wpa_supplicant.c \

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 static void _task_delete(Task * Task);
 static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf);
 static void _task_toggle_state(Task * task, TasksAtom state);
-static void _task_toggle_states(Task * task, TasksAtom state1,
+static void _task_toggle_state2(Task * task, TasksAtom state1,
 		TasksAtom state2);
 
 /* tasks */
@@ -230,12 +230,12 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 /* task_toggle_state */
 static void _task_toggle_state(Task * task, TasksAtom state)
 {
-	_task_toggle_states(task, state, 0);
+	_task_toggle_state2(task, state, 0);
 }
 
 
-/* task_toggle_states */
-static void _task_toggle_states(Task * task, TasksAtom state1,
+/* task_toggle_state2 */
+static void _task_toggle_state2(Task * task, TasksAtom state1,
 		TasksAtom state2)
 {
 	Tasks * tasks = task->tasks;
@@ -743,7 +743,7 @@ static gboolean _on_popup(gpointer data)
 		{ TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_VERT,
 			_on_popup_maximize_vert, N_("Maximize vertically") },
 		{ TASKS_ATOM__NET_WM_ACTION_FULLSCREEN, _on_popup_fullscreen,
-			GTK_STOCK_FULLSCREEN},
+			GTK_STOCK_FULLSCREEN },
 		{ TASKS_ATOM__NET_WM_ACTION_CHANGE_DESKTOP,
 			_on_popup_change_desktop, N_("Change desktop") },
 		{ TASKS_ATOM__NET_WM_ACTION_CLOSE, _on_popup_close,
@@ -844,7 +844,7 @@ static void _on_popup_maximize(gpointer data)
 {
 	Task * task = data;
 
-	_task_toggle_states(task, TASKS_ATOM__NET_WM_STATE_MAXIMIZED_HORZ,
+	_task_toggle_state2(task, TASKS_ATOM__NET_WM_STATE_MAXIMIZED_HORZ,
 			TASKS_ATOM__NET_WM_STATE_MAXIMIZED_VERT);
 }
 
