@@ -288,6 +288,9 @@ static void _on_about(gpointer data)
 
 
 /* on_clicked */
+static void _clicked_position_menu(GtkMenu * menu, gint * x, gint * y,
+		gboolean * push_in, gpointer data);
+
 static void _on_clicked(gpointer data)
 {
 	Main * main = data;
@@ -336,8 +339,16 @@ static void _on_clicked(gpointer data)
 				_on_shutdown), data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, main->helper->position_menu,
-			main->helper->panel, 0, gtk_get_current_event_time());
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, _clicked_position_menu,
+			main, 0, gtk_get_current_event_time());
+}
+
+static void _clicked_position_menu(GtkMenu * menu, gint * x, gint * y,
+		gboolean * push_in, gpointer data)
+{
+	Main * main = data;
+
+	main->helper->position_menu(main->helper->panel, menu, x, y, push_in);
 }
 
 

@@ -55,6 +55,8 @@ typedef struct _PanelPrefs
 
 # define PANEL_CLIENT_MESSAGE		"DEFORAOS_DESKTOP_PANEL_CLIENT"
 
+# define PANEL_CONFIG_FILE		".panel"
+
 # define PANEL_ICON_SIZE_DEFAULT	"panel-large"
 # define PANEL_ICON_SIZE_UNSET		NULL
 # define PANEL_ICON_SIZE_SMALL		"panel-small"

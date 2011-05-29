@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -227,8 +227,8 @@ static void _on_keyboard_toggled(GtkWidget * widget, gpointer data)
 		_init_idle(keyboard);
 	if(keyboard->window == NULL)
 		return;
-	keyboard->helper->position_menu((GtkMenu*)keyboard->window, &x, &y,
-			&push_in, keyboard->helper->panel);
+	keyboard->helper->position_menu(keyboard->helper->panel,
+			(GtkMenu*)keyboard->window, &x, &y, &push_in);
 	gtk_window_move(GTK_WINDOW(keyboard->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 		gtk_widget_show(keyboard->window);

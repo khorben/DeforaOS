@@ -81,8 +81,6 @@ struct _Panel
 
 
 /* constants */
-#define PANEL_CONFIG_FILE ".panel"
-
 static char const * _authors[] =
 {
 	"Pierre Pronchery <khorben@defora.org>",
@@ -122,12 +120,12 @@ static int _panel_helper_lock(Panel * panel);
 #ifndef EMBEDDED
 static void _panel_helper_logout_dialog(Panel * panel);
 #endif
-static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, PanelPosition position, gpointer data);
-static void _panel_helper_position_menu_bottom(GtkMenu * menu, gint * x,
-		gint * y, gboolean * push_in, gpointer data);
-static void _panel_helper_position_menu_top(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, gpointer data);
+static void _panel_helper_position_menu(Panel * panel, GtkMenu * menu, gint * x,
+		gint * y, gboolean * push_in, PanelPosition position);
+static void _panel_helper_position_menu_bottom(Panel * panel, GtkMenu * menu,
+		gint * x, gint * y, gboolean * push_in);
+static void _panel_helper_position_menu_top(Panel * panel, GtkMenu * menu,
+		gint * x, gint * y, gboolean * push_in);
 static void _panel_helper_preferences_dialog(Panel * panel);
 static void _panel_helper_shutdown_dialog(Panel * panel);
 static int _panel_helper_suspend(Panel * panel);
@@ -684,6 +682,7 @@ static void _preferences_on_ok(gpointer data)
 
 /* private */
 /* functions */
+/* config_get_filename */
 static char * _config_get_filename(void)
 {
 	char const * homedir;
@@ -866,10 +865,9 @@ static void _logout_dialog_on_response(GtkWidget * widget, gint response)
 
 
 /* panel_helper_position_menu */
-static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, PanelPosition position, gpointer data)
+static void _panel_helper_position_menu(Panel * panel, GtkMenu * menu, gint * x,
+		gint * y, gboolean * push_in, PanelPosition position)
 {
-	Panel * panel = data;
 	GtkRequisition req;
 
 	gtk_widget_size_request(GTK_WIDGET(menu), &req);
@@ -893,20 +891,20 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 
 
 /* panel_helper_position_menu_bottom */
-static void _panel_helper_position_menu_bottom(GtkMenu * menu, gint * x,
-		gint * y, gboolean * push_in, gpointer data)
+static void _panel_helper_position_menu_bottom(Panel * panel, GtkMenu * menu,
+		gint * x, gint * y, gboolean * push_in)
 {
-	_panel_helper_position_menu(menu, x, y, push_in, PANEL_POSITION_BOTTOM,
-			data);
+	_panel_helper_position_menu(panel, menu, x, y, push_in,
+			PANEL_POSITION_BOTTOM);
 }
 
 
 /* panel_helper_position_menu_top */
-static void _panel_helper_position_menu_top(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, gpointer data)
+static void _panel_helper_position_menu_top(Panel * panel, GtkMenu * menu,
+		gint * x, gint * y, gboolean * push_in)
 {
-	_panel_helper_position_menu(menu, x, y, push_in, PANEL_POSITION_TOP,
-			data);
+	_panel_helper_position_menu(panel, menu, x, y, push_in,
+			PANEL_POSITION_TOP);
 }
 
 
