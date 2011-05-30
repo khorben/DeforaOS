@@ -91,6 +91,7 @@ struct _Desktop
 
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_font;
 	GtkWidget * pr_background;
 	GtkWidget * pr_background_how;
 
@@ -526,9 +527,20 @@ static void _on_popup_preferences(gpointer data)
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* font */
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Font: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_font = gtk_font_button_new();
+	gtk_font_button_set_use_font(GTK_FONT_BUTTON(desktop->pr_font), TRUE);
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_font, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* background */
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.5, 0.25);
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.25);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	vbox3 = gtk_vbox_new(FALSE, 4);
@@ -586,11 +598,14 @@ static void _on_preferences_apply(gpointer data)
 	Config * config;
 	char * p;
 	int i;
+	size_t j;
 
 	/* XXX not very efficient */
 	g_idle_add(_new_idle, desktop);
 	if((config = _desktop_get_config(desktop)) == NULL)
 		return;
+	p = gtk_font_button_get_font_name(GTK_FONT_BUTTON(desktop->pr_font));
+	config_set(config, NULL, "font", p);
 	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background));
 	config_set(config, NULL, "background", p);
@@ -625,6 +640,9 @@ static void _preferences_set(Desktop * desktop)
 
 	if((config = _desktop_get_config(desktop)) != NULL)
 	{
+		if((p = config_get(config, NULL, "font")) != NULL)
+			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
+						desktop->pr_font), p);
 		filename = config_get(config, NULL, "background");
 		if((p = config_get(config, NULL, "background_how")) != NULL)
 			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
