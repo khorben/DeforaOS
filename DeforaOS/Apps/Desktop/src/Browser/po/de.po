@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-30 14:44+0200\n"
+"POT-Creation-Date: 2011-05-30 14:55+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: ../src/browser.c:166 ../src/desktop.c:816 ../src/desktop.c:837
+#: ../src/browser.c:166 ../src/desktop.c:833 ../src/desktop.c:854
 msgid "Back"
 msgstr "Zurück"
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:174 ../src/desktop.c:898
+#: ../src/browser.c:174 ../src/desktop.c:915
 msgid "Home"
 msgstr "Persönlicher Ordner"
 
@@ -187,7 +187,7 @@ msgstr ""
 
 #: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1499 ../src/desktop.c:1504 ../src/move.c:452
+#: ../src/desktop.c:1516 ../src/desktop.c:1521 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -464,47 +464,55 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:511
+#: ../src/desktop.c:512
 msgid "Desktop preferences"
 msgstr "Desktop Einstellungen"
 
-#: ../src/desktop.c:532
+#: ../src/desktop.c:533
 msgid "Font: "
 msgstr ""
 
-#: ../src/desktop.c:542
+#: ../src/desktop.c:543
 msgid "Background: "
 msgstr "Hintergrund: "
 
-#: ../src/desktop.c:547
+#: ../src/desktop.c:548
 msgid "Background"
 msgstr "Hintergrund"
 
-#: ../src/desktop.c:553
+#: ../src/desktop.c:551
+msgid "Picture files"
+msgstr ""
+
+#: ../src/desktop.c:561
+msgid "All files"
+msgstr ""
+
+#: ../src/desktop.c:569
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:555
+#: ../src/desktop.c:571
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:557
+#: ../src/desktop.c:573
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:563
+#: ../src/desktop.c:579
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:929
+#: ../src/desktop.c:946
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1548
+#: ../src/desktop.c:1565
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1653
+#: ../src/desktop.c:1670
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"

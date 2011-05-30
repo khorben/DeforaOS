@@ -497,6 +497,7 @@ static void _on_popup_preferences(gpointer data)
 	GtkWidget * widget;
 	GtkWidget * label;
 	GtkSizeGroup * group;
+	GtkFileFilter * filter;
 
 	if(desktop->menu != NULL)
 		gtk_widget_destroy(desktop->menu);
@@ -546,6 +547,21 @@ static void _on_popup_preferences(gpointer data)
 	vbox3 = gtk_vbox_new(FALSE, 4);
 	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Picture files"));
+	gtk_file_filter_add_mime_type(filter, "image/bmp");
+	gtk_file_filter_add_mime_type(filter, "image/gif");
+	gtk_file_filter_add_mime_type(filter, "image/jpeg");
+	gtk_file_filter_add_mime_type(filter, "image/pbm");
+	gtk_file_filter_add_mime_type(filter, "image/png");
+	gtk_file_filter_add_mime_type(filter, "image/svg+xml");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
+			filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
+			filter);
 	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_background, TRUE, TRUE,
 			0);
 	desktop->pr_background_how = gtk_combo_box_new_text();
@@ -597,6 +613,7 @@ static void _on_preferences_apply(gpointer data)
 	Desktop * desktop = data;
 	Config * config;
 	char * p;
+	char const * q;
 	int i;
 	size_t j;
 
@@ -604,8 +621,8 @@ static void _on_preferences_apply(gpointer data)
 	g_idle_add(_new_idle, desktop);
 	if((config = _desktop_get_config(desktop)) == NULL)
 		return;
-	p = gtk_font_button_get_font_name(GTK_FONT_BUTTON(desktop->pr_font));
-	config_set(config, NULL, "font", p);
+	q = gtk_font_button_get_font_name(GTK_FONT_BUTTON(desktop->pr_font));
+	config_set(config, NULL, "font", q);
 	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background));
 	config_set(config, NULL, "background", p);

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-30 14:44+0200\n"
+"POT-Creation-Date: 2011-05-30 14:55+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -113,7 +113,7 @@ msgstr "_Vue"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/browser.c:166 ../src/desktop.c:816 ../src/desktop.c:837
+#: ../src/browser.c:166 ../src/desktop.c:833 ../src/desktop.c:854
 msgid "Back"
 msgstr "Retour"
 
@@ -129,7 +129,7 @@ msgstr "Suivant"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/browser.c:174 ../src/desktop.c:898
+#: ../src/browser.c:174 ../src/desktop.c:915
 msgid "Home"
 msgstr "Dossier personnel"
 
@@ -183,11 +183,11 @@ msgstr "Vignettes"
 
 #: ../src/browser.c:342
 msgid " Location: "
-msgstr " Chemin: "
+msgstr " Chemin : "
 
 #: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1499 ../src/desktop.c:1504 ../src/move.c:452
+#: ../src/desktop.c:1516 ../src/desktop.c:1521 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -200,7 +200,7 @@ msgstr "Ouvrir avec..."
 
 #: ../src/browser.c:856 ../src/browser.c:1232
 msgid "Refreshing folder: "
-msgstr "Actualisation du dossier : "
+msgstr "Actualisation du dossier : "
 
 #: ../src/browser.c:877
 #, c-format
@@ -361,7 +361,7 @@ msgstr "Nouveau lien symbolique"
 
 #: ../src/common.c:158
 msgid "Destination: "
-msgstr "Destination: "
+msgstr "Destination : "
 
 #: ../src/copy.c:126
 msgid "Copy file(s)"
@@ -369,15 +369,15 @@ msgstr "Copie de fichier(s)"
 
 #: ../src/copy.c:134
 msgid "Copying: "
-msgstr "Copie de : "
+msgstr "Copie de : "
 
 #: ../src/copy.c:152
 msgid "Filename: "
-msgstr "Nom de fichier: "
+msgstr "Nom de fichier : "
 
 #: ../src/copy.c:166
 msgid "Speed: "
-msgstr "Débit: "
+msgstr "Débit : "
 
 #: ../src/copy.c:206 ../src/delete.c:159 ../src/move.c:154
 #, c-format
@@ -446,7 +446,7 @@ msgstr "Effacement du/des fichier(s)"
 
 #: ../src/delete.c:117
 msgid "Deleting: "
-msgstr "Effacement de : "
+msgstr "Effacement de : "
 
 #: ../src/delete.c:330
 #, c-format
@@ -484,47 +484,55 @@ msgstr ""
 "  -R\tSupprimer récursivement\n"
 "  -r\tÉquivalent à -R\n"
 
-#: ../src/desktop.c:511
+#: ../src/desktop.c:512
 msgid "Desktop preferences"
 msgstr "Préférences du bureau"
 
-#: ../src/desktop.c:532
+#: ../src/desktop.c:533
 msgid "Font: "
 msgstr "Fonte : "
 
-#: ../src/desktop.c:542
+#: ../src/desktop.c:543
 msgid "Background: "
-msgstr "Arrière-plan: "
+msgstr "Arrière-plan : "
 
-#: ../src/desktop.c:547
+#: ../src/desktop.c:548
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: ../src/desktop.c:553
+#: ../src/desktop.c:551
+msgid "Picture files"
+msgstr "Images"
+
+#: ../src/desktop.c:561
+msgid "All files"
+msgstr "Tous les fichiers"
+
+#: ../src/desktop.c:569
 msgid "Scaled"
 msgstr "Étiré"
 
-#: ../src/desktop.c:555
+#: ../src/desktop.c:571
 msgid "Scaled (keep ratio)"
 msgstr "Étiré (sans déformer)"
 
-#: ../src/desktop.c:557
+#: ../src/desktop.c:573
 msgid "Tiled"
 msgstr "Mosaïque"
 
-#: ../src/desktop.c:563
+#: ../src/desktop.c:579
 msgid "Appearance"
 msgstr "Apparence"
 
-#: ../src/desktop.c:929
+#: ../src/desktop.c:946
 msgid "Applications"
 msgstr "Applications"
 
-#: ../src/desktop.c:1548
+#: ../src/desktop.c:1565
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1653
+#: ../src/desktop.c:1670
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -554,11 +562,11 @@ msgstr "Renommer"
 
 #: ../src/desktopicon.c:904
 msgid "Rename: "
-msgstr "Renommer : "
+msgstr "Renommer : "
 
 #: ../src/desktopicon.c:915
 msgid "To: "
-msgstr "Vers : "
+msgstr "Vers : "
 
 #: ../src/desktopicon.c:967
 msgid "Are you sure you want to delete "
@@ -578,7 +586,7 @@ msgstr "Déplacer des fichier(s)"
 
 #: ../src/move.c:108
 msgid "Moving: "
-msgstr "Déplacement de : "
+msgstr "Déplacement de : "
 
 #: ../src/move.c:506
 msgid ""
@@ -699,6 +707,3 @@ msgstr "Impossible d'éditer le fichier"
 #: ../src/view.c:515
 msgid "Usage: view file...\n"
 msgstr "Usage: view fichier...\n"
-
-#~ msgid "Could not load MIME globs"
-#~ msgstr "Impossible de charger les infos MIME"
