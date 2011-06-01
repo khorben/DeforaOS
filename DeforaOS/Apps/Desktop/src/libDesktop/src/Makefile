@@ -7,6 +7,7 @@ CPPFLAGSF= -I ../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -fPIC
+LDFLAGSF= `pkg-config --libs libSystem gtk+-2.0`
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
