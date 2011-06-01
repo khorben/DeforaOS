@@ -35,7 +35,7 @@ mbox.so: $(mbox_OBJS)
 
 pop3_OBJS = pop3.o
 pop3_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
 pop3.so: $(pop3_OBJS)
 	$(LD) -o pop3.so $(pop3_OBJS) $(pop3_LDFLAGS)
