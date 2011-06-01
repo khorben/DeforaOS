@@ -353,7 +353,7 @@ static int _main_call_arg(AppClientCall * calls, size_t calls_cnt,
 	switch(type)
 	{
 		case ACCAT_DOUBLE:
-			q->doble = strtold(string, NULL); /* XXX check */
+			q->doble = strtod(string, NULL); /* XXX check */
 			break;
 		case ACCAT_FLOAT:
 			q->flot = strtof(string, NULL); /* XXX check */
