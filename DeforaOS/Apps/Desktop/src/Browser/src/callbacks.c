@@ -18,7 +18,7 @@
 #include <sys/param.h>
 #ifndef __GNU__ /* XXX hurd portability */
 # include <sys/mount.h>
-# ifdef __linux__ /* XXX linux portability */
+# if defined(__linux__) || defined(__CYGWIN__)
 #  define unmount(a, b) umount(a)
 # endif
 # ifndef unmount
