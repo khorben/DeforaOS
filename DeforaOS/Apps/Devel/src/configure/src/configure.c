@@ -18,7 +18,9 @@
 #include <System.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/utsname.h>
+#ifndef __WIN32__
+# include <sys/utsname.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -189,6 +191,11 @@ static HostKernel _detect_kernel(HostOS os, char const * release);
 
 static void _configure_detect(Configure * configure)
 {
+#ifdef __WIN32__
+	configure->arch = HA_I386;
+	configure->os = HO_WIN32;
+	configure->kernel = HK_UNKNOWN;
+#else
 	struct utsname un;
 
 	if(uname(&un) < 0)
@@ -204,6 +211,7 @@ static void _configure_detect(Configure * configure)
 			configure->prefs->os != NULL
 			? configure->prefs->os : un.sysname);
 	configure->kernel = _detect_kernel(configure->os, un.release);
+#endif
 	if(configure->prefs->flags & PREFS_v)
 		printf("Detected system %s version %s on %s\n",
 				sHostOS[configure->os],
