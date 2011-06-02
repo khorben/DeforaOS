@@ -20,7 +20,7 @@ all: $(TARGETS)
 
 libSystem_OBJS = array.o buffer.o config.o error.o event.o hash.o object.o parser.o plugin.o string.o token.o
 libSystem_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) 
+libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  
 
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
