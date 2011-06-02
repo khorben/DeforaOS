@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <dlfcn.h>
+#ifdef __WIN32__
+# include <windows.h>
+#else
+# include <dlfcn.h>
+#endif
 #include "System.h"
 
 
 /* Plugin */
 /* private */
 /* constants */
-#define PLUGIN_EXTENSION ".so"
+#ifdef __WIN32__
+# define PLUGIN_EXTENSION	".dll"
+#else
+# define PLUGIN_EXTENSION	".so"
+#endif
 
 
 /* prototypes */
@@ -36,11 +44,17 @@ static Plugin * _plugin_open(char const * filename);
 /* functions */
 static Plugin * _plugin_open(char const * filename)
 {
+#ifdef __WIN32__
+	if(filename == NULL)
+		return GetModuleHandle(NULL);
+	return LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+#else
 	Plugin * plugin;
 
 	if((plugin = dlopen(filename, RTLD_LAZY)) == NULL)
 		error_set_code(1, "%s", dlerror());
 	return plugin;
+#endif
 }
 
 
@@ -79,7 +93,11 @@ Plugin * plugin_new_self(void)
 /* plugin_delete */
 void plugin_delete(Plugin * plugin)
 {
+#ifdef __WIN32__
+	FreeLibrary(plugin);
+#else
 	dlclose(plugin);
+#endif
 }
 
 
@@ -87,9 +105,13 @@ void plugin_delete(Plugin * plugin)
 /* plugin_lookup */
 void * plugin_lookup(Plugin * plugin, char const * symbol)
 {
+#ifdef __WIN32__
+	return GetProcAddress(plugin, symbol);
+#else
 	void * ret;
 
 	if((ret = dlsym(plugin, symbol)) == NULL)
 		error_set_code(1, "%s", dlerror());
 	return ret;
+#endif
 }
