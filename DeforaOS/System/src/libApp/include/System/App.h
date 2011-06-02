@@ -19,7 +19,7 @@
 # define LIBAPP_APP_H
 
 
-# include "System/appclient.h"
-# include "System/appserver.h"
+# include "App/appclient.h"
+# include "App/appserver.h"
 
 #endif /* !LIBAPP_APP_H */

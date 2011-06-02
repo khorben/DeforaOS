@@ -28,8 +28,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System/App.h \
-		$(PACKAGE)-$(VERSION)/include/System/appclient.h \
-		$(PACKAGE)-$(VERSION)/include/System/appserver.h \
+		$(PACKAGE)-$(VERSION)/include/System/App/appclient.h \
+		$(PACKAGE)-$(VERSION)/include/System/App/appserver.h \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
 		$(PACKAGE)-$(VERSION)/src/appclient.c \

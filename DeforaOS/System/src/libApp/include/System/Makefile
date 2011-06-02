@@ -17,13 +17,13 @@ install:
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
 	$(INSTALL) -m 0644 -- App.h $(DESTDIR)$(INCLUDEDIR)/System/App.h
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
-	$(INSTALL) -m 0644 -- appclient.h $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
+	$(INSTALL) -m 0644 -- App/appclient.h $(DESTDIR)$(INCLUDEDIR)/System/App/appclient.h
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
-	$(INSTALL) -m 0644 -- appserver.h $(DESTDIR)$(INCLUDEDIR)/System/appserver.h
+	$(INSTALL) -m 0644 -- App/appserver.h $(DESTDIR)$(INCLUDEDIR)/System/App/appserver.h
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/App.h
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/appserver.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/App/appclient.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/App/appserver.h
 
 .PHONY: all clean distclean install uninstall
