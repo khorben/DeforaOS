@@ -16,7 +16,9 @@
 
 
 #include <assert.h>
-#ifndef __WIN32__
+#ifdef __WIN32__
+# include <Winsock2.h>
+#else
 # include <sys/select.h>
 #endif
 #include <sys/time.h>
