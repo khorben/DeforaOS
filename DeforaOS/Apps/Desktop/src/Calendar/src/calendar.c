@@ -25,6 +25,11 @@
 #include <System.h>
 #include "../config.h"
 
+/* macros */
+#ifdef __WIN32__
+# define localtime_r(a, b)	localtime_s(b, a)
+#endif
+
 
 /* Calendar */
 /* private */
