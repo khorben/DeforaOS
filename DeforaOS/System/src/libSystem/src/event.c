@@ -16,7 +16,9 @@
 
 
 #include <assert.h>
-#include <sys/select.h>
+#ifndef __WIN32__
+# include <sys/select.h>
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
