@@ -24,9 +24,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
+#ifdef __WIN32__
+# include <Winsock2.h>
+#else
+# include <netinet/in.h>
+# include <netdb.h>
+# include <arpa/inet.h>
+#endif
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
 # include <openssl/err.h>

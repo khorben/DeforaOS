@@ -21,8 +21,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#ifdef __WIN32__
+# include <Winsock2.h>
+#else
+# include <arpa/inet.h>
+# include <netinet/in.h>
+#endif
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
 #endif

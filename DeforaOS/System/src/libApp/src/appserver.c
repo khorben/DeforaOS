@@ -25,8 +25,12 @@
 #endif
 #include <string.h>
 #include <errno.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifdef __WIN32__
+# include <Winsock2.h>
+#else
+# include <netinet/in.h>
+# include <arpa/inet.h>
+#endif
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
 # include <openssl/err.h>
@@ -231,7 +235,7 @@ static int _appserver_client_remove(AppServer * appserver,
 static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
-	socklen_t sa_size = sizeof(struct sockaddr_in);
+	socklen_t sa_size = sizeof(sa);
 	int newfd;
 	AppServerClient * asc;
 
