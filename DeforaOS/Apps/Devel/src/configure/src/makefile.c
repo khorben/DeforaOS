@@ -517,12 +517,17 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
 	char const * libs_bsd[] = { "dl", "resolv", "ossaudio", "socket",
+		"ws2_32", NULL };
+	char const * libs_deforaos[] = { "ossaudio", "resolv", "ssl", "ws2_32",
 		NULL };
-	char const * libs_deforaos[] = { "ossaudio", "resolv", "ssl", NULL };
-	char const * libs_gnu[] = { "ossaudio", "resolv", "socket", NULL };
-	char const * libs_macosx[] = { "crypt", "ossaudio", "socket", NULL };
-	char const * libs_netbsd[] = { "dl", "resolv", "socket", NULL };
-	char const * libs_sunos[] = { "dl", "ossaudio", NULL };
+	char const * libs_gnu[] = { "ossaudio", "resolv", "socket", "ws2_32",
+		NULL };
+	char const * libs_macosx[] = { "crypt", "ossaudio", "socket", "ws2_32",
+		NULL };
+	char const * libs_netbsd[] = { "dl", "resolv", "socket", "ws2_32",
+		NULL };
+	char const * libs_sunos[] = { "dl", "ossaudio", "ws2_32", NULL };
+	char const * libs_win32[] = { "dl", "ossaudio", NULL };
 	char buf[10];
 	char const ** libs;
 	String * p;
@@ -536,12 +541,15 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 	}
 	switch(configure->os)
 	{
-		case HO_GNU_LINUX:
-			libs = libs_gnu;
+		case HO_DEFORAOS:
+			libs = libs_deforaos;
 			break;
 		case HO_FREEBSD:
 		case HO_OPENBSD:
 			libs = libs_bsd;
+			break;
+		case HO_GNU_LINUX:
+			libs = libs_gnu;
 			break;
 		case HO_MACOSX:
 			libs = libs_macosx;
@@ -552,8 +560,8 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		case HO_SUNOS:
 			libs = libs_sunos;
 			break;
-		case HO_DEFORAOS:
-			libs = libs_deforaos;
+		case HO_WIN32:
+			libs = libs_win32;
 			break;
 		default:
 			libs = libs_gnu;

@@ -46,6 +46,7 @@ const String * sHostOS[HO_COUNT] =
 	"MacOSX",
 	"FreeBSD", "NetBSD", "OpenBSD",
 	"SunOS",
+	"MINGW32_NT-5.0",
 	"unknown"
 };
 const struct HostKernel sHostKernel[] =
