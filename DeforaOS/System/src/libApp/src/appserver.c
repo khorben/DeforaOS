@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <stdlib.h>
 #ifdef DEBUG
@@ -28,6 +27,7 @@
 #ifdef __WIN32__
 # include <Winsock2.h>
 #else
+# include <sys/socket.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 #endif
