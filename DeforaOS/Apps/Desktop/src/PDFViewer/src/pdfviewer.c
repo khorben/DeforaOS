@@ -436,11 +436,18 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 /* pdf_close */
 void pdf_close(PDFviewer * pdfviewer)
 {
+	GdkWindow * window;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 
-	gdk_window_clear(gtk_widget_get_window(pdfviewer->view));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	window = gtk_widget_get_window(pdfviewer->view);
+#else
+	window = pdfviewer->view->window;
+#endif
+	gdk_window_clear(window);
 	if(pdfviewer->pdf != NULL)
 		free(pdfviewer->pdf);
 }
@@ -517,15 +524,21 @@ void pdf_load_page(PDFviewer * pdfviewer)
 void pdf_render_area(GtkWidget *area, GdkEventExpose *event, void * data)
 {
 	PDF * pdf = data;
+	GdkWindow * window;
         cairo_t *cr;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-        gdk_window_clear(gtk_widget_get_window(area));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	window = gtk_widget_get_window(area);
+#else
+	window = area->window;
+#endif
+        gdk_window_clear(window);
 	if(pdf == NULL)
 		return;
-        cr = gdk_cairo_create(gtk_widget_get_window(area));
+        cr = gdk_cairo_create(window);
         cairo_set_source_surface(cr, pdf->surface, 0, 0);
         cairo_paint(cr);
         cairo_destroy(cr);
