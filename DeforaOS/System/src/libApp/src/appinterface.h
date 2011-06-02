@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBSYSTEM_APPINTERFACE_H
-# define LIBSYSTEM_APPINTERFACE_H
+#ifndef LIBAPP_APPINTERFACE_H
+# define LIBAPP_APPINTERFACE_H
 
 # include <stdarg.h>
 
@@ -44,4 +44,4 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 int appinterface_receive(AppInterface * appinterface, int * ret, char buf[],
 		size_t buflen, char bufw[], size_t bufwlen, size_t * bufwpos);
 
-#endif /* !LIBSYSTEM_APPINTERFACE_H */
+#endif /* !LIBAPP_APPINTERFACE_H */
