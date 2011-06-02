@@ -33,7 +33,10 @@
 #include <errno.h>
 #include "System.h"
 
-#define max(a, b) ((a) >= (b)) ? (a) : (b)
+/* macros */
+#ifndef max
+# define max(a, b) ((a) >= (b)) ? (a) : (b)
+#endif
 
 
 /* Event */
