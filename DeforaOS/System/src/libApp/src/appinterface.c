@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #ifdef WITH_SSL
@@ -273,6 +272,7 @@ static int _new_foreach(char const * key, Hash * value,
 			break;
 		if(_new_append_arg(appinterface, p) != 0)
 		{
+			/* FIXME may crash here? */
 			appinterface->error = 1;
 			return -1;
 		}
@@ -340,32 +340,28 @@ static int _new_append_arg(AppInterface * ai, char const * arg)
 AppInterface * appinterface_new_server(char const * app)
 {
 	AppInterface * ai;
-	void * handle;
+	Plugin * handle;
 	size_t i;
 	String * name;
 
-	if((handle = dlopen(NULL, RTLD_LAZY)) == NULL)
-	{
-		error_set_code(1, "%s", dlerror());
+	if((handle = plugin_new_self()) == NULL)
 		return NULL;
-	}
 	if((ai = appinterface_new(app)) == NULL)
 		return NULL;
 	for(i = 0; i < ai->calls_cnt; i++)
 	{
 		name = string_new_append(ai->name, "_", ai->calls[i].name,
 				NULL);
-		ai->calls[i].func = dlsym(handle, name);
+		ai->calls[i].func = plugin_lookup(handle, name);
 		string_delete(name);
 		if(ai->calls[i].func == NULL)
 		{
-			error_set_code(1, "%s", dlerror());
 			appinterface_delete(ai);
-			dlclose(handle);
+			plugin_delete(handle);
 			return NULL;
 		}
 	}
-	dlclose(handle);
+	plugin_delete(handle);
 	return ai;
 }
 
