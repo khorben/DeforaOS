@@ -46,8 +46,10 @@ typedef enum _IMAP4CommandStatus
 typedef enum _IMAP4Context
 {
 	I4C_INIT = 0,
+	I4C_LIST,
 	I4C_LOGIN,
-	I4C_NOOP
+	I4C_NOOP,
+	I4C_SELECT
 } IMAP4Context;
 
 typedef struct _IMAP4Command
@@ -262,15 +264,15 @@ static int _imap4_parse(AccountPlugin * plugin)
 					|| strncmp("NO", &imap4->rd_buf[j], 2)
 					== 0)
 			{
-				imap4->queue[0].status = I4CS_ERROR;
+				cmd->status = I4CS_ERROR;
 				plugin->helper->error(plugin->helper->account,
 						&imap4->rd_buf[j + 4], 1);
 			}
 			else if(strncmp("OK", &imap4->rd_buf[j], 2) == 0)
-				imap4->queue[0].status = I4CS_PARSING;
+				cmd->status = I4CS_PARSING;
 		}
 		if(_parse_context(plugin, &imap4->rd_buf[j]) != 0)
-			imap4->queue[0].status = I4CS_ERROR;
+			cmd->status = I4CS_ERROR;
 	}
 	if(j != 0)
 	{
@@ -286,19 +288,21 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 {
 	int ret = -1;
 	IMAP4 * imap4 = plugin->priv;
+	IMAP4Command * cmd = &imap4->queue[0];
 	char const * p;
 	char const * q;
 	gchar * r;
-	IMAP4Command * cmd;
+	char const list[] = "LIST \"*\" \"*\"";
+	char buf[32];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") %u, %u\n", __func__, answer,
-			imap4->queue[0].context, imap4->queue[0].status);
+			cmd->context, cmd->status);
 #endif
-	switch(imap4->queue[0].context)
+	switch(cmd->context)
 	{
 		case I4C_INIT:
-			imap4->queue[0].status = I4CS_OK;
+			cmd->status = I4CS_OK;
 			if((p = plugin->config[0].value) == NULL)
 				return -1;
 			if((q = plugin->config[1].value) == NULL)
@@ -307,18 +311,49 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			cmd = _imap4_command(plugin, I4C_LOGIN, r);
 			g_free(r);
 			return (cmd != NULL) ? 0 : -1;
-		case I4C_LOGIN:
-			if(imap4->queue[0].status != I4CS_PARSING)
+		case I4C_LIST:
+			p = answer;
+			if(strncmp("OK", p, 2) == 0)
+			{
+				cmd->status = I4CS_OK;
 				return 0;
-			imap4->queue[0].status = I4CS_OK;
-			/* FIXME list folders */
+			}
+			if(strncmp("LIST ", p, 5) != 0)
+				return -1;
+			p += 5;
+			if(*p == '(')
+				for(p++; *p != '\0' && *p++ != ')';);
+			if(*p == ' ') /* skip spaces */
+				for(p++; *p != '\0' && *p == ' '; p++);
+			if(*p == '\"') /* skip reference */
+				for(p++; *p != '\0' && *p++ != '\"';);
+			if(*p == ' ') /* skip spaces */
+				for(p++; *p != '\0' && *p == ' '; p++);
+			if(*p == '\"' && sscanf(++p, "%31[^\"]", buf) == 1)
+			{
+				buf[31] = '\0';
+				r = g_strdup_printf("%s %s", "SELECT", buf);
+				cmd = _imap4_command(plugin, I4C_SELECT, r);
+				g_free(r);
+			}
 			return 0;
-		case I4C_NOOP:
-			imap4->queue[0].status = I4CS_OK;
-			if(strncmp(answer, "+OK", 3) == 0)
+		case I4C_LOGIN:
+			if(cmd->status != I4CS_PARSING)
 				return 0;
-			return -1;
-		/* FIXME implement */
+			cmd->status = I4CS_OK;
+			return (_imap4_command(plugin, I4C_LIST, list) != NULL)
+				? 0 : -1;
+		case I4C_NOOP:
+			cmd->status = I4CS_OK;
+			return 0;
+		case I4C_SELECT:
+			if(strncmp("OK", answer, 2) == 0)
+			{
+				cmd->status = I4CS_OK;
+				return 0;
+			}
+			/* FIXME implement */
+			return 0;
 	}
 	return ret;
 }
