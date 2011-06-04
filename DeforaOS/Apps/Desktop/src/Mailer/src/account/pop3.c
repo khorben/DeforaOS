@@ -354,7 +354,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 {
 	int ret = -1;
 	POP3 * pop3 = plugin->priv;
-	POP3Command * cmd;
+	POP3Command * cmd = &pop3->queue[0];
 	char const * p;
 	char * q;
 	unsigned int u;
@@ -364,12 +364,12 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 	fprintf(stderr, "DEBUG: %s(\"%s\") %u, %u\n", __func__, answer,
 			pop3->queue[0].context, pop3->queue[0].status);
 #endif
-	switch(pop3->queue[0].context)
+	switch(cmd->context)
 	{
 		case P3C_INIT:
-			if(pop3->queue[0].status != P3CS_PARSING)
+			if(cmd->status != P3CS_PARSING)
 				return 0;
-			pop3->queue[0].status = P3CS_OK;
+			cmd->status = P3CS_OK;
 			if((p = plugin->config[0].value) == NULL)
 				return -1;
 			q = g_strdup_printf("%s %s", "USER", p);
@@ -377,9 +377,9 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			g_free(q);
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_USER:
-			if(pop3->queue[0].status != P3CS_PARSING)
+			if(cmd->status != P3CS_PARSING)
 				return 0;
-			pop3->queue[0].status = P3CS_OK;
+			cmd->status = P3CS_OK;
 			if((p = plugin->config[1].value) == NULL)
 				p = ""; /* assumes an empty password */
 			q = g_strdup_printf("%s %s", "PASS", p);
@@ -387,24 +387,23 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			g_free(q);
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_PASS:
-			if(pop3->queue[0].status != P3CS_PARSING)
+			if(cmd->status != P3CS_PARSING)
 				return 0;
-			pop3->queue[0].status = P3CS_OK;
+			cmd->status = P3CS_OK;
 			return (_pop3_command(plugin, P3C_TRANSACTION_STAT,
 						"STAT") != NULL) ? 0 : -1;
 		case P3C_NOOP:
-			pop3->queue[0].status = P3CS_OK;
 			if(strncmp(answer, "+OK", 3) == 0)
-				return 0;
-			return -1;
+				cmd->status = P3CS_OK;
+			return 0;
 		case P3C_TRANSACTION_LIST:
-			if(pop3->queue[0].status != P3CS_PARSING)
+			if(cmd->status != P3CS_PARSING)
 				return 0;
 			if(strncmp(answer, "+OK", 3) == 0)
 				return 0;
 			if(strcmp(answer, ".") == 0)
 			{
-				pop3->queue[0].status = P3CS_OK;
+				cmd->status = P3CS_OK;
 				return 0;
 			}
 			if(sscanf(answer, "%u %u", &u, &v) != 2)
@@ -419,11 +418,11 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case P3C_TRANSACTION_TOP: /* same as RETR without the body */
 			return _parse_context_transaction_retr(plugin, answer);
 		case P3C_TRANSACTION_STAT:
-			if(pop3->queue[0].status != P3CS_PARSING)
+			if(cmd->status != P3CS_PARSING)
 				return 0;
 			if(sscanf(answer, "+OK %u %u", &u, &v) != 2)
 				return -1;
-			pop3->queue[0].status = P3CS_OK;
+			cmd->status = P3CS_OK;
 			return (_pop3_command(plugin, P3C_TRANSACTION_LIST,
 						"LIST") != NULL) ? 0 : -1;
 	}
