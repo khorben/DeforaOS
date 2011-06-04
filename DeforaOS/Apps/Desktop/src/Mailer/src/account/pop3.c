@@ -13,9 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
+ * - no longer block on connect()
  * - recovery on errors
  * - really queue commands with callbacks
- * - send keep-alives? (NOOP)
  * - support multiple connections? */
 
 
@@ -57,6 +57,7 @@ typedef enum _POP3Context
 	P3C_INIT = 0,
 	P3C_AUTHORIZATION_USER,
 	P3C_AUTHORIZATION_PASS,
+	P3C_NOOP,
 	P3C_TRANSACTION_LIST,
 	P3C_TRANSACTION_RETR,
 	P3C_TRANSACTION_STAT,
@@ -148,6 +149,7 @@ static void _pop3_message_delete(AccountPlugin * plugin,
 
 /* callbacks */
 static gboolean _on_idle(gpointer data);
+static gboolean _on_noop(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
@@ -287,8 +289,16 @@ static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
 	p->buf_cnt = snprintf(p->buf, len + 1, "%s\r\n", command);
 	memset(&p->data, 0, sizeof(p->data));
 	if(pop3->queue_cnt++ == 0)
+	{
+		if(pop3->source != 0)
+		{
+			/* cancel the pending NOOP operation */
+			g_source_remove(pop3->source);
+			pop3->source = 0;
+		}
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
 				_on_watch_can_write, plugin);
+	}
 	return p;
 }
 
@@ -381,6 +391,11 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			pop3->queue[0].status = P3CS_OK;
 			return (_pop3_command(plugin, P3C_TRANSACTION_STAT,
 						"STAT") != NULL) ? 0 : -1;
+		case P3C_NOOP:
+			pop3->queue[0].status = P3CS_OK;
+			if(strncmp(answer, "+OK", 3) == 0)
+				return 0;
+			return -1;
 		case P3C_TRANSACTION_LIST:
 			if(pop3->queue[0].status != P3CS_PARSING)
 				return 0;
@@ -596,6 +611,18 @@ static gboolean _idle_channel(AccountPlugin * plugin)
 }
 
 
+/* on_noop */
+static gboolean _on_noop(gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+
+	_pop3_command(plugin, P3C_NOOP, "NOOP");
+	pop3->source = 0;
+	return FALSE;
+}
+
+
 /* on_watch_can_read */
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
@@ -647,9 +674,10 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	}
 	pop3->rd_source = 0;
 	if(pop3->queue_cnt == 0)
-		return FALSE;
-	pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-			_on_watch_can_write, plugin);
+		pop3->source = g_timeout_add(30000, _on_noop, plugin);
+	else
+		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+				_on_watch_can_write, plugin);
 	return FALSE;
 }
 
