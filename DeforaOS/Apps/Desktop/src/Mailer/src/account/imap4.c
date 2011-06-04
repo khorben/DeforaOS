@@ -46,6 +46,7 @@ typedef enum _IMAP4CommandStatus
 typedef enum _IMAP4Context
 {
 	I4C_INIT = 0,
+	I4C_FETCH,
 	I4C_LIST,
 	I4C_LOGIN,
 	I4C_NOOP,
@@ -264,9 +265,6 @@ static int _imap4_parse(AccountPlugin * plugin)
 							&imap4->rd_buf[j + 4],
 							1);
 			}
-			else
-				/* FIXME untested code path */
-				break;
 		}
 		if(_parse_context(plugin, &imap4->rd_buf[j]) != 0)
 			cmd->status = I4CS_ERROR;
@@ -299,6 +297,12 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 #endif
 	switch(cmd->context)
 	{
+		case I4C_FETCH:
+			/* FIXME implement */
+			if(cmd->status != I4CS_PARSING)
+				return 0;
+			cmd->status = I4CS_OK;
+			return 0;
 		case I4C_INIT:
 			cmd->status = I4CS_OK;
 			if((p = plugin->config[0].value) == NULL || *p == '\0')
@@ -333,7 +337,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 				helper->folder_new(helper->account, NULL,
 						NULL, FT_INBOX, buf);
 				buf[31] = '\0';
-				r = g_strdup_printf("%s %s", "SELECT", buf);
+				r = g_strdup_printf("%s \"%s\"", "SELECT", buf);
 				cmd = _imap4_command(plugin, I4C_SELECT, r);
 				g_free(r);
 			}
@@ -352,9 +356,10 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case I4C_SELECT:
 			if(cmd->status != I4CS_PARSING)
 				return 0;
-			/* FIXME implement */
 			cmd->status = I4CS_OK;
-			return 0;
+			p = "FETCH 1:* (FLAGS ENVELOPE)";
+			cmd = _imap4_command(plugin, I4C_FETCH, p);
+			return (cmd != NULL) ? 0 : -1;
 	}
 	return ret;
 }
