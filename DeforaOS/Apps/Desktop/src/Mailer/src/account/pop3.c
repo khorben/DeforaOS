@@ -52,6 +52,15 @@ struct _AccountMessage
 	unsigned int id;
 };
 
+typedef enum _POP3CommandStatus
+{
+	P3CS_QUEUED = 0,
+	P3CS_SENT,
+	P3CS_ERROR,
+	P3CS_PARSING,
+	P3CS_OK
+} POP3CommandStatus;
+
 typedef enum _POP3Context
 {
 	P3C_INIT = 0,
@@ -63,15 +72,6 @@ typedef enum _POP3Context
 	P3C_TRANSACTION_STAT,
 	P3C_TRANSACTION_TOP
 } POP3Context;
-
-typedef enum _POP3CommandStatus
-{
-	P3CS_QUEUED = 0,
-	P3CS_SENT,
-	P3CS_ERROR,
-	P3CS_PARSING,
-	P3CS_OK
-} POP3CommandStatus;
 
 typedef struct _POP3Command
 {
@@ -130,6 +130,7 @@ static AccountConfig _pop3_config[] =
 
 
 /* prototypes */
+/* plug-in */
 static int _pop3_init(AccountPlugin * plugin);
 static int _pop3_destroy(AccountPlugin * plugin);
 static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
@@ -373,7 +374,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 				return -1;
 			q = g_strdup_printf("%s %s", "USER", p);
 			cmd = _pop3_command(plugin, P3C_AUTHORIZATION_USER, q);
-			free(q);
+			g_free(q);
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_USER:
 			if(pop3->queue[0].status != P3CS_PARSING)
@@ -383,7 +384,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 				p = ""; /* assumes an empty password */
 			q = g_strdup_printf("%s %s", "PASS", p);
 			cmd = _pop3_command(plugin, P3C_AUTHORIZATION_PASS, q);
-			free(q);
+			g_free(q);
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_PASS:
 			if(pop3->queue[0].status != P3CS_PARSING)
