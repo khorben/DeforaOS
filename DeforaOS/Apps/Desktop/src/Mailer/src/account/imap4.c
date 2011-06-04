@@ -52,6 +52,7 @@ typedef enum _IMAP4Context
 
 typedef struct _IMAP4Command
 {
+	uint16_t id;
 	IMAP4CommandStatus status;
 	IMAP4Context context;
 	char * buf;
@@ -71,6 +72,7 @@ typedef struct _IMAP4
 
 	IMAP4Command * queue;
 	size_t queue_cnt;
+	uint16_t queue_id;
 } IMAP4;
 
 
@@ -145,11 +147,13 @@ static int _imap4_init(AccountPlugin * plugin)
 		free(imap4);
 		return -1;
 	}
+	imap4->queue[0].id = 0;
 	imap4->queue[0].context = I4C_INIT;
 	imap4->queue[0].status = I4CS_SENT;
 	imap4->queue[0].buf = NULL;
 	imap4->queue[0].buf_cnt = 0;
 	imap4->queue_cnt = 1;
+	imap4->queue_id = 1;
 	imap4->source = g_idle_add(_on_idle, plugin);
 	return 0;
 }
@@ -189,11 +193,12 @@ static IMAP4Command * _imap4_command(AccountPlugin * plugin,
 		return NULL;
 	imap4->queue = p;
 	p = &imap4->queue[imap4->queue_cnt];
+	p->id = imap4->queue_id++;
 	p->context = context;
 	p->status = I4CS_QUEUED;
 	if((p->buf = malloc(len + 1)) == NULL)
 		return NULL;
-	p->buf_cnt = snprintf(p->buf, len + 1, "a%04x %s\r\n", 0, command);
+	p->buf_cnt = snprintf(p->buf, len + 1, "a%04x %s\r\n", p->id, command);
 #if 0 /* XXX later */
 	memset(&p->data, 0, sizeof(p->data));
 #endif
@@ -220,6 +225,8 @@ static int _imap4_parse(AccountPlugin * plugin)
 	IMAP4 * imap4 = plugin->priv;
 	size_t i;
 	size_t j;
+	IMAP4Command * cmd;
+	char buf[8];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -235,16 +242,33 @@ static int _imap4_parse(AccountPlugin * plugin)
 		imap4->rd_buf[i - 1] = '\0';
 		if(imap4->queue_cnt == 0)
 			continue;
-		if(imap4->queue[0].status == I4CS_SENT
-				&& strncmp("-ERR", &imap4->rd_buf[j], 4) == 0)
+		cmd = &imap4->queue[0];
+		if(cmd->status == I4CS_SENT)
 		{
-			imap4->queue[0].status = I4CS_ERROR;
-			plugin->helper->error(plugin->helper->account,
-					&imap4->rd_buf[j + 4], 1);
+			snprintf(buf, sizeof(buf), "a%04x ", cmd->id);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() expecting \"%s\"\n",
+					__func__, buf);
+#endif
+			if(strncmp(&imap4->rd_buf[j], "* ", 2) == 0)
+				j += 2;
+			/* FIXME may correspond to another command? */
+			else if(strncmp(&imap4->rd_buf[j], buf, 6) == 0)
+				j += 6;
+			else
+				/* FIXME untested code path */
+				break;
+			if(strncmp("BAD", &imap4->rd_buf[j], 3) == 0
+					|| strncmp("NO", &imap4->rd_buf[j], 2)
+					== 0)
+			{
+				imap4->queue[0].status = I4CS_ERROR;
+				plugin->helper->error(plugin->helper->account,
+						&imap4->rd_buf[j + 4], 1);
+			}
+			else if(strncmp("OK", &imap4->rd_buf[j], 2) == 0)
+				imap4->queue[0].status = I4CS_PARSING;
 		}
-		else if(imap4->queue[0].status == I4CS_SENT
-				&& strncmp("* OK", &imap4->rd_buf[j], 4) == 0)
-			imap4->queue[0].status = I4CS_PARSING;
 		if(_parse_context(plugin, &imap4->rd_buf[j]) != 0)
 			imap4->queue[0].status = I4CS_ERROR;
 	}
@@ -439,9 +463,9 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	cmd = &imap4->queue[0];
 	if(cmd->buf_cnt == 0)
 	{
-		if(imap4->queue[0].status == I4CS_PARSING)
+		if(cmd->status == I4CS_SENT || cmd->status == I4CS_PARSING)
 			return TRUE;
-		if(imap4->queue[0].status == I4CS_OK)
+		else if(cmd->status == I4CS_OK)
 			memmove(cmd, &imap4->queue[1], sizeof(*cmd)
 					* --imap4->queue_cnt);
 	}
