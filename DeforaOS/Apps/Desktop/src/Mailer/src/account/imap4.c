@@ -224,6 +224,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer);
 
 static int _imap4_parse(AccountPlugin * plugin)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	size_t i;
 	size_t j;
@@ -241,9 +242,9 @@ static int _imap4_parse(AccountPlugin * plugin)
 				break;
 		if(i == imap4->rd_buf_cnt)
 			break;
-		imap4->rd_buf[i - 1] = '\0';
 		if(imap4->queue_cnt == 0)
 			continue;
+		imap4->rd_buf[i - 1] = '\0';
 		cmd = &imap4->queue[0];
 		if(cmd->status == I4CS_SENT)
 		{
@@ -254,22 +255,18 @@ static int _imap4_parse(AccountPlugin * plugin)
 #endif
 			if(strncmp(&imap4->rd_buf[j], "* ", 2) == 0)
 				j += 2;
-			/* FIXME may correspond to another command? */
 			else if(strncmp(&imap4->rd_buf[j], buf, 6) == 0)
+			{
 				j += 6;
+				cmd->status = I4CS_PARSING;
+				if(strncmp("BAD ", &imap4->rd_buf[j], 4) == 0)
+					helper->error(helper->account,
+							&imap4->rd_buf[j + 4],
+							1);
+			}
 			else
 				/* FIXME untested code path */
 				break;
-			if(strncmp("BAD", &imap4->rd_buf[j], 3) == 0
-					|| strncmp("NO", &imap4->rd_buf[j], 2)
-					== 0)
-			{
-				cmd->status = I4CS_ERROR;
-				plugin->helper->error(plugin->helper->account,
-						&imap4->rd_buf[j + 4], 1);
-			}
-			else if(strncmp("OK", &imap4->rd_buf[j], 2) == 0)
-				cmd->status = I4CS_PARSING;
 		}
 		if(_parse_context(plugin, &imap4->rd_buf[j]) != 0)
 			cmd->status = I4CS_ERROR;
@@ -287,6 +284,7 @@ static int _imap4_parse(AccountPlugin * plugin)
 static int _parse_context(AccountPlugin * plugin, char const * answer)
 {
 	int ret = -1;
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	char const * p;
@@ -303,9 +301,9 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 	{
 		case I4C_INIT:
 			cmd->status = I4CS_OK;
-			if((p = plugin->config[0].value) == NULL)
+			if((p = plugin->config[0].value) == NULL || *p == '\0')
 				return -1;
-			if((q = plugin->config[1].value) == NULL)
+			if((q = plugin->config[1].value) == NULL || *q == '\0')
 				return -1;
 			r = g_strdup_printf("%s %s %s", "LOGIN", p, q);
 			cmd = _imap4_command(plugin, I4C_LOGIN, r);
@@ -331,12 +329,15 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 				for(p++; *p != '\0' && *p == ' '; p++);
 			if(*p == '\"' && sscanf(++p, "%31[^\"]", buf) == 1)
 			{
+				/* FIXME create metadata for this folder */
+				helper->folder_new(helper->account, NULL,
+						NULL, FT_INBOX, buf);
 				buf[31] = '\0';
 				r = g_strdup_printf("%s %s", "SELECT", buf);
 				cmd = _imap4_command(plugin, I4C_SELECT, r);
 				g_free(r);
 			}
-			return 0;
+			return (cmd != NULL) ? 0 : -1;
 		case I4C_LOGIN:
 			if(cmd->status != I4CS_PARSING)
 				return 0;
@@ -344,15 +345,15 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			return (_imap4_command(plugin, I4C_LIST, list) != NULL)
 				? 0 : -1;
 		case I4C_NOOP:
+			if(cmd->status != I4CS_PARSING)
+				return 0;
 			cmd->status = I4CS_OK;
 			return 0;
 		case I4C_SELECT:
-			if(strncmp("OK", answer, 2) == 0)
-			{
-				cmd->status = I4CS_OK;
+			if(cmd->status != I4CS_PARSING)
 				return 0;
-			}
 			/* FIXME implement */
+			cmd->status = I4CS_OK;
 			return 0;
 	}
 	return ret;
