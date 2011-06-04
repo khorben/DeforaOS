@@ -667,9 +667,9 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	cmd = &pop3->queue[0];
 	if(cmd->buf_cnt == 0)
 	{
-		if(pop3->queue[0].status == P3CS_PARSING)
+		if(cmd->status == P3CS_SENT || cmd->status == P3CS_PARSING)
 			return TRUE;
-		if(pop3->queue[0].status == P3CS_OK)
+		else if(cmd->status == P3CS_OK)
 			memmove(cmd, &pop3->queue[1], sizeof(*cmd)
 					* --pop3->queue_cnt);
 	}
