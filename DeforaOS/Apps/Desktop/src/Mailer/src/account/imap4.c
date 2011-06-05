@@ -430,6 +430,9 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 	switch(cmd->data.fetch.status)
 	{
 		case I4FS_BODY:
+			/* FIXME dirty hack for now */
+			if(strcmp(answer, ")") == 0)
+				return 0;
 			helper->message_set_body(message->message, answer,
 					strlen(answer), 1);
 			helper->message_set_body(message->message, "\r\n",
