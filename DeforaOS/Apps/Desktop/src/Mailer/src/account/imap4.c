@@ -75,6 +75,13 @@ typedef enum _IMAP4Context
 	I4C_SELECT
 } IMAP4Context;
 
+typedef enum _IMAP4FetchStatus
+{
+	I4FS_ID = 0,
+	I4FS_HEADERS,
+	I4FS_BODY
+} IMAP4FetchStatus;
+
 typedef struct _IMAP4Command
 {
 	uint16_t id;
@@ -88,7 +95,15 @@ typedef struct _IMAP4Command
 		struct
 		{
 			AccountFolder * folder;
-		} fetch, select;
+			AccountMessage * message;
+			unsigned int id;
+			IMAP4FetchStatus status;
+		} fetch;
+
+		struct
+		{
+			AccountFolder * folder;
+		} select;
 	} data;
 } IMAP4Command;
 
@@ -146,6 +161,8 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 		AccountFolder * parent, char const * name);
 static void _imap4_folder_delete(AccountPlugin * plugin,
 		AccountFolder * folder);
+static AccountMessage * _imap4_folder_get_message(AccountPlugin * plugin,
+		AccountFolder * folder, unsigned int id);
 
 static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id);
@@ -230,9 +247,13 @@ static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u\n", __func__, message->id);
 #endif
-	snprintf(buf, sizeof(buf), "FETCH %u FULL", message->id);
+	snprintf(buf, sizeof(buf), "FETCH %u BODY[]", message->id);
 	if((cmd = _imap4_command(plugin, I4C_FETCH, buf)) == NULL)
 		return -1;
+	cmd->data.fetch.folder = folder;
+	cmd->data.fetch.message = message;
+	cmd->data.fetch.id = message->id;
+	cmd->data.fetch.status = I4FS_ID;
 	return 0;
 }
 
@@ -390,10 +411,12 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 
 static int _context_fetch(AccountPlugin * plugin, char const * answer)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder = cmd->data.fetch.folder;
-	unsigned int id;
+	AccountMessage * message = cmd->data.fetch.message;
+	unsigned int id = cmd->data.fetch.id;
 	char * p;
 
 #ifdef DEBUG
@@ -404,17 +427,40 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 		cmd->status = I4CS_OK;
 		return 0;
 	}
-	id = strtol(answer, &p, 10);
-	if(answer[0] == '\0' || *p != ' ')
-		return 0;
+	switch(cmd->data.fetch.status)
+	{
+		case I4FS_BODY:
+			/* FIXME implement */
+			return 0;
+		case I4FS_ID:
+			id = strtol(answer, &p, 10);
+			if(answer[0] == '\0' || *p != ' ')
+				return 0;
+			if(cmd->data.fetch.id != 0 && cmd->data.fetch.id != id)
+				return 0;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %u\n", __func__, id);
+			fprintf(stderr, "DEBUG: %s() %u\n", __func__, id);
 #endif
-	answer = p;
-	if(strncmp(answer, " FETCH ", 7) != 0)
-		return 0;
-	/* FIXME parse the fields */
-	return (_imap4_message_new(plugin, folder, id) != NULL) ? 0 : -1;
+			answer = p;
+			if(strncmp(answer, " FETCH ", 7) != 0)
+				return 0;
+			/* FIXME parse the fields */
+			message = _imap4_folder_get_message(plugin, folder, id);
+			if(cmd->data.fetch.id != 0)
+			{
+				cmd->data.fetch.status = I4FS_HEADERS;
+				cmd->data.fetch.message = message;
+			}
+			return (message != NULL) ? 0 : -1;
+		case I4FS_HEADERS:
+			if(strcmp(answer, "") == 0)
+				cmd->data.fetch.status = I4FS_BODY;
+			else
+				helper->message_set_header(message->message,
+						answer);
+			return 0;
+	}
+	return -1;
 }
 
 static int _context_list(AccountPlugin * plugin, char const * answer)
@@ -469,7 +515,12 @@ static int _context_select(AccountPlugin * plugin, char const * answer)
 	if((folder = cmd->data.select.folder) == NULL)
 		return 0; /* XXX really is an error */
 	if((cmd = _imap4_command(plugin, I4C_FETCH, fetch)) != NULL)
+	{
 		cmd->data.fetch.folder = folder;
+		cmd->data.fetch.message = NULL;
+		cmd->data.fetch.id = 0;
+		cmd->data.fetch.status = I4FS_ID;
+	}
 	return (cmd != NULL) ? 0 : -1;
 }
 
@@ -488,7 +539,7 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	parent->folders = p;
 	if((folder = object_new(sizeof(*folder))) == NULL)
 		return NULL;
-	folder->folder = helper->folder_new(helper->account, NULL, NULL,
+	folder->folder = helper->folder_new(helper->account, folder, NULL,
 					FT_INBOX, name);
 	folder->name = strdup(name);
 	folder->messages = NULL;
@@ -515,6 +566,22 @@ static void _imap4_folder_delete(AccountPlugin * plugin, AccountFolder * folder)
 }
 
 
+/* imap4_folder_get_message */
+static AccountMessage * _imap4_folder_get_message(AccountPlugin * plugin,
+		AccountFolder * folder, unsigned int id)
+{
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, folder->name, id);
+#endif
+	for(i = 0; i < folder->messages_cnt; i++)
+		if(folder->messages[i]->id == id)
+			return folder->messages[i];
+	return _imap4_message_new(plugin, folder, id);
+}
+
+
 /* imap4_message_new */
 static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id)
@@ -529,13 +596,14 @@ static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
 	folder->messages = p;
 	if((message = object_new(sizeof(*message))) == NULL)
 		return NULL;
+	message->id = id;
 	if((message->message = helper->message_new(helper->account,
 					folder->folder, message)) == NULL)
 	{
 		_imap4_message_delete(plugin, message);
 		return NULL;
 	}
-	message->id = id;
+	folder->messages[folder->messages_cnt++] = message;
 	return message;
 }
 
