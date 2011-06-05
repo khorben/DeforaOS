@@ -442,7 +442,8 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, answer)\n", __func__, (void *)folder);
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void *)folder,
+			answer);
 #endif
 	if(cmd->status == I4CS_PARSING)
 	{
@@ -452,29 +453,32 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 	switch(cmd->data.fetch.status)
 	{
 		case I4FS_BODY:
-			/* FIXME dirty hack for now */
+#if 1 /* FIXME dirty hack for now */
 			if(strcmp(answer, ")") == 0)
+			{
+				cmd->data.fetch.status = I4FS_ID;
 				return 0;
+			}
+#endif
 			helper->message_set_body(message->message, answer,
 					strlen(answer), 1);
-			helper->message_set_body(message->message, "\r\n",
-					2, 1);
+			helper->message_set_body(message->message, "\r\n", 2,
+					1);
 			return 0;
 		case I4FS_ID:
 			id = strtol(answer, &p, 10);
 			if(answer[0] == '\0' || *p != ' ')
 				return 0;
-			if(cmd->data.fetch.id != 0 && cmd->data.fetch.id != id)
-				return 0;
+			if(cmd->data.fetch.id != id)
+				cmd->data.fetch.id = id;
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() %u\n", __func__, id);
 #endif
 			answer = p;
 			if(strncmp(answer, " FETCH ", 7) != 0)
 				return 0;
-			/* FIXME parse the fields */
-			message = _imap4_folder_get_message(plugin, folder, id);
-			if(cmd->data.fetch.id != 0)
+			if((message = _imap4_folder_get_message(plugin, folder,
+							id)) != NULL)
 			{
 				cmd->data.fetch.status = I4FS_HEADERS;
 				cmd->data.fetch.message = message;
@@ -539,7 +543,7 @@ static int _context_select(AccountPlugin * plugin, char const * answer)
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder;
-	char const fetch[] = "FETCH 1:* (FLAGS ENVELOPE)";
+	char const fetch[] = "FETCH 1:* BODY[HEADER]";
 
 	if(cmd->status != I4CS_PARSING)
 		return 0;
