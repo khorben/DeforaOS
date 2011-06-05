@@ -111,9 +111,9 @@ static const char * _title[3] =
 #ifdef EMBEDDED
 static DesktopAccel _mailer_accel[] =
 {
-	{ G_CALLBACK(on_quit),		GDK_CONTROL_MASK,	GDK_KEY_Q	},
-	{ G_CALLBACK(on_view_source),	GDK_CONTROL_MASK,	GDK_KEY_U	},
-	{ NULL,				0,			0	}
+	{ G_CALLBACK(on_quit),		GDK_CONTROL_MASK,	GDK_KEY_Q },
+	{ G_CALLBACK(on_view_source),	GDK_CONTROL_MASK,	GDK_KEY_U },
+	{ NULL,				0,			0	  }
 };
 #endif
 
