@@ -311,6 +311,7 @@ static int _parse_context_transaction_retr(AccountPlugin * plugin,
 
 static int _pop3_parse(AccountPlugin * plugin)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
 	size_t i;
 	size_t j;
@@ -326,15 +327,14 @@ static int _pop3_parse(AccountPlugin * plugin)
 				break;
 		if(i == pop3->rd_buf_cnt)
 			break;
-		pop3->rd_buf[i - 1] = '\0';
 		if(pop3->queue_cnt == 0)
 			continue;
+		pop3->rd_buf[i - 1] = '\0';
 		if(pop3->queue[0].status == P3CS_SENT
 				&& strncmp("-ERR", &pop3->rd_buf[j], 4) == 0)
 		{
 			pop3->queue[0].status = P3CS_ERROR;
-			plugin->helper->error(plugin->helper->account,
-					&pop3->rd_buf[j + 4], 1);
+			helper->error(helper->account, &pop3->rd_buf[j + 4], 1);
 		}
 		else if(pop3->queue[0].status == P3CS_SENT
 				&& strncmp("+OK", &pop3->rd_buf[j], 3) == 0)
@@ -495,6 +495,7 @@ static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
 static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	AccountMessage * message;
 	AccountMessage ** p;
 
@@ -504,14 +505,13 @@ static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
 	folder->messages = p;
 	if((message = object_new(sizeof(*message))) == NULL)
 		return NULL;
-	message->message = plugin->helper->message_new(plugin->helper->account,
-			folder->folder, message);
-	message->id = id;
-	if(message->message == NULL)
+	if((message->message = helper->message_new(helper->account,
+					folder->folder, message)) == NULL)
 	{
 		_pop3_message_delete(plugin, message);
 		return NULL;
 	}
+	message->id = id;
 	folder->messages[folder->messages_cnt++] = message;
 	return message;
 }
