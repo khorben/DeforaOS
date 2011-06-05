@@ -67,19 +67,24 @@ struct _Mailer
 	Config * config;
 
 	/* widgets */
-	GtkWidget * window;
-	GtkTreeStore * folders;
-	GtkWidget * view_folders;
-	GtkWidget * view_headers;
-	GtkTreeViewColumn * view_from;
-	GtkTreeViewColumn * view_to;
+	/* folders */
+	GtkWidget * fo_window;
+	GtkTreeStore * fo_store;
+	GtkWidget * fo_view;
+	/* headers */
+	GtkWidget * he_window;
+	GtkWidget * he_view;
+	GtkTreeViewColumn * he_view_from;
+	GtkTreeViewColumn * he_view_to;
+	/* body */
+	GtkWidget * bo_window;
 	GtkWidget * hdr_vbox;
 	GtkWidget * hdr_subject;
 	GtkWidget * hdr_from;
 	GtkWidget * hdr_to;
 	GtkWidget * hdr_date;
-	GtkTextBuffer * view_buffer;
-	GtkWidget * view_body;
+	GtkTextBuffer * bo_buffer;
+	GtkWidget * bo_view;
 	GtkWidget * statusbar;
 	gint statusbar_id;
 	/* about */
@@ -191,7 +196,7 @@ static DesktopMenubar _mailer_menubar[] =
 };
 #endif
 
-static DesktopToolbar _mailer_toolbar[] =
+static DesktopToolbar _mailer_fo_toolbar[] =
 {
 	{ N_("New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose", 0,
 		0, NULL },
@@ -199,11 +204,13 @@ static DesktopToolbar _mailer_toolbar[] =
 	{ N_("Send / Receive"), NULL, "stock_mail-send-receive", 0, 0, NULL },
 	{ N_("Stop"), NULL, GTK_STOCK_STOP, 0, GDK_KEY_Escape, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
+#ifndef EMBEDDED
 	{ N_("Reply"), G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
 	{ N_("Reply to all"), G_CALLBACK(on_reply_to_all),
 		"stock_mail-reply-to-all", 0, 0, NULL },
 	{ N_("Forward"), G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
 		NULL},
+#endif
 	{ N_("Delete"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, 0, NULL },
 	{ N_("Print"), NULL, GTK_STOCK_PRINT, 0, 0, NULL },
 #ifdef EMBEDDED
@@ -213,6 +220,37 @@ static DesktopToolbar _mailer_toolbar[] =
 #endif
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
+
+#ifdef EMBEDDED
+static DesktopToolbar _mailer_he_toolbar[] =
+{
+	{ N_("New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose", 0,
+		0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Reply"), G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
+	{ N_("Reply to all"), G_CALLBACK(on_reply_to_all),
+		"stock_mail-reply-to-all", 0, 0, NULL },
+	{ N_("Forward"), G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
+		NULL},
+	{ N_("Delete"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
+};
+
+static DesktopToolbar _mailer_bo_toolbar[] =
+{
+	{ N_("New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose", 0,
+		0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Reply"), G_CALLBACK(on_reply), "stock_mail-reply", 0, 0, NULL },
+	{ N_("Reply to all"), G_CALLBACK(on_reply_to_all),
+		"stock_mail-reply-to-all", 0, 0, NULL },
+	{ N_("Forward"), G_CALLBACK(on_forward), "stock_mail-forward", 0, 0,
+		NULL},
+	{ N_("Delete"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, 0, NULL },
+	{ N_("Print"), NULL, GTK_STOCK_PRINT, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
+};
+#endif
 
 
 /* prototypes */
@@ -235,7 +273,8 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 #endif
 	if((type = config_get(mailer->config, name, "type")) == NULL)
 		return -1;
-	if((account = account_new(mailer, type, name, mailer->folders)) == NULL)
+	if((account = account_new(mailer, type, name, mailer->fo_store))
+			== NULL)
 		return -mailer_error(mailer, error_get(), 1);
 	account_config_load(account, mailer->config);
 	mailer_account_add(mailer, account);
@@ -264,8 +303,10 @@ Mailer * mailer_new(void)
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
+#ifndef EMBEDDED
 	GtkWidget * hpaned;
 	GtkWidget * vpaned;
+#endif
 	GtkWidget * widget;
 
 	if((mailer = object_new(sizeof(*mailer))) == NULL)
@@ -280,14 +321,19 @@ Mailer * mailer_new(void)
 	mailer->folder_cur = NULL;
 	/* widgets */
 	group = gtk_accel_group_new();
-	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_add_accel_group(GTK_WINDOW(mailer->window), group);
-	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 800, 600);
-#if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(mailer->window), "mailer");
+	mailer->fo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(mailer->fo_window), group);
+#ifndef EMBEDDED
+	gtk_window_set_default_size(GTK_WINDOW(mailer->fo_window), 800, 600);
+	gtk_window_set_title(GTK_WINDOW(mailer->fo_window), _("Mailer"));
+#else
+	gtk_window_set_default_size(GTK_WINDOW(mailer->fo_window), 200, 300);
+	gtk_window_set_title(GTK_WINDOW(mailer->fo_window), _("Folders"));
 #endif
-	gtk_window_set_title(GTK_WINDOW(mailer->window), _("Mailer"));
-	g_signal_connect_swapped(G_OBJECT(mailer->window), "delete-event",
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(mailer->fo_window), "mailer");
+#endif
+	g_signal_connect_swapped(G_OBJECT(mailer->fo_window), "delete-event",
 			G_CALLBACK(on_closex), mailer);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
@@ -298,53 +344,107 @@ Mailer * mailer_new(void)
 	desktop_accel_create(_mailer_accel, mailer, group);
 #endif
 	/* toolbar */
-	widget = desktop_toolbar_create(_mailer_toolbar, mailer, group);
+	widget = desktop_toolbar_create(_mailer_fo_toolbar, mailer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-	hpaned = gtk_hpaned_new();
-	gtk_paned_set_position(GTK_PANED(hpaned), 160);
 	/* folders */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	mailer->view_folders = _new_folders_view(mailer);
-	gtk_container_add(GTK_CONTAINER(widget), mailer->view_folders);
+	mailer->fo_view = _new_folders_view(mailer);
+	gtk_container_add(GTK_CONTAINER(widget), mailer->fo_view);
+#ifndef EMBEDDED
+	hpaned = gtk_hpaned_new();
+	gtk_paned_set_position(GTK_PANED(hpaned), 160);
 	gtk_paned_add1(GTK_PANED(hpaned), widget);
 	vpaned = gtk_vpaned_new();
 	gtk_paned_set_position(GTK_PANED(vpaned), 160);
-	/* messages list */
-	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	mailer->view_headers = _new_headers_view(mailer);
-	gtk_container_add(GTK_CONTAINER(widget), mailer->view_headers);
-	gtk_paned_add1(GTK_PANED(vpaned), widget);
-	/* messages body */
-	vbox2 = _new_headers(mailer);
-	mailer->view_buffer = gtk_text_buffer_new(NULL);
-	mailer->view_body = gtk_text_view_new_with_buffer(mailer->view_buffer);
-	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(mailer->view_body),
-			FALSE);
-	gtk_text_view_set_editable(GTK_TEXT_VIEW(mailer->view_body), FALSE);
-	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add(GTK_CONTAINER(widget), mailer->view_body);
-	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
-	gtk_paned_add2(GTK_PANED(vpaned), vbox2);
-	gtk_paned_add2(GTK_PANED(hpaned), vpaned);
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
+#else
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+#endif
+	/* statusbar */
 	mailer->statusbar = gtk_statusbar_new();
 	mailer->statusbar_id = 0;
 	_mailer_update_status(mailer);
-	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(mailer->window), vbox);
+	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(mailer->fo_window), vbox);
+	gtk_widget_show_all(vbox);
+	/* messages list */
+#ifndef EMBEDDED
+	mailer->he_window = mailer->fo_window;
+#else
+	group = gtk_accel_group_new();
+	mailer->he_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(mailer->he_window), group);
+	gtk_window_set_default_size(GTK_WINDOW(mailer->he_window), 200, 300);
+# if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(mailer->he_window), "mailer");
+# endif
+	gtk_window_set_title(GTK_WINDOW(mailer->he_window), _("Message list"));
+	g_signal_connect_swapped(G_OBJECT(mailer->he_window), "delete-event",
+			G_CALLBACK(on_closex), mailer);
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(mailer->he_window), vbox);
+	widget = desktop_toolbar_create(_mailer_he_toolbar, mailer, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#endif
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	mailer->he_view = _new_headers_view(mailer);
+	gtk_container_add(GTK_CONTAINER(widget), mailer->he_view);
+#ifndef EMBEDDED
+	gtk_paned_add1(GTK_PANED(vpaned), widget);
+#else
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+#endif
+	gtk_widget_show_all(vbox);
+	/* messages body */
+#ifndef EMBEDDED
+	mailer->bo_window = mailer->fo_window;
+#else
+	group = gtk_accel_group_new();
+	mailer->bo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(mailer->bo_window), group);
+	gtk_window_set_default_size(GTK_WINDOW(mailer->bo_window), 200, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(mailer->bo_window), "mailer");
+#endif
+	gtk_window_set_title(GTK_WINDOW(mailer->bo_window), _("Message"));
+	g_signal_connect_swapped(G_OBJECT(mailer->bo_window), "delete-event",
+			G_CALLBACK(on_closex), mailer);
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(mailer->bo_window), vbox);
+	widget = desktop_toolbar_create(_mailer_bo_toolbar, mailer, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#endif
+	vbox2 = _new_headers(mailer);
+	mailer->bo_buffer = gtk_text_buffer_new(NULL);
+	mailer->bo_view = gtk_text_view_new_with_buffer(mailer->bo_buffer);
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(mailer->bo_view), FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(mailer->bo_view), FALSE);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(mailer->bo_view),
+			GTK_WRAP_WORD_CHAR);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_container_add(GTK_CONTAINER(widget), mailer->bo_view);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+#ifndef EMBEDDED
+	gtk_paned_add2(GTK_PANED(vpaned), vbox2);
+	gtk_paned_add2(GTK_PANED(hpaned), vpaned);
+#else
+	gtk_box_pack_start(GTK_BOX(vbox), vbox2, TRUE, TRUE, 0);
+#endif
+	gtk_widget_show_all(vbox);
 	/* widgets */
 	mailer->ab_window = NULL;
 	mailer->pr_window = NULL;
 	/* show window */
-	gtk_widget_show_all(vbox);
 	gtk_widget_hide(mailer->hdr_vbox);
-	gtk_widget_show(mailer->window);
+	gtk_widget_show(mailer->fo_window);
+	gtk_widget_show(mailer->he_window);
+	gtk_widget_show(mailer->bo_window);
 	/* load configuration */
 	mailer->source = g_idle_add(_new_config_load, mailer);
 	return mailer;
@@ -404,10 +504,10 @@ static GtkWidget * _new_folders_view(Mailer * mailer)
 	GtkCellRenderer * renderer;
 	GtkTreeSelection * treesel;
 
-	mailer->folders = gtk_tree_store_new(MFC_COUNT, G_TYPE_POINTER,
+	mailer->fo_store = gtk_tree_store_new(MFC_COUNT, G_TYPE_POINTER,
 			G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_POINTER,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
-	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mailer->folders));
+	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mailer->fo_store));
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
 			NULL, renderer, "pixbuf", MFC_ICON, NULL);
@@ -435,8 +535,7 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	{
 		mailer->account_cur = NULL;
 		mailer->folder_cur = NULL;
-		gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
-				NULL);
+		gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->he_view), NULL);
 		_mailer_update_status(mailer);
 		return;
 	}
@@ -453,12 +552,12 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	/* display relevant columns */
 	sent = (mailer->folder_cur != NULL && folder_get_type(
 				mailer->folder_cur) == FT_SENT) ? TRUE : FALSE;
-	gtk_tree_view_column_set_visible(mailer->view_from, !sent);
-	gtk_tree_view_column_set_visible(mailer->view_to, sent);
+	gtk_tree_view_column_set_visible(mailer->he_view_from, !sent);
+	gtk_tree_view_column_set_visible(mailer->he_view_to, sent);
 	/* display headers */
 	model = (mailer->folder_cur != NULL) ? GTK_TREE_MODEL(
 			folder_get_messages(mailer->folder_cur)) : NULL;
-	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers), model);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->he_view), model);
 	_mailer_update_status(mailer);
 }
 
@@ -474,9 +573,9 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 	_headers_view_column_pixbuf(treeview, "", MHC_ICON, MHC_READ);
 	_headers_view_column_text(treeview, _("Subject"), MHC_SUBJECT,
 			MHC_SUBJECT, MHC_WEIGHT);
-	mailer->view_from = _headers_view_column_text(treeview, _("From"),
+	mailer->he_view_from = _headers_view_column_text(treeview, _("From"),
 			MHC_FROM, MHC_FROM, MHC_WEIGHT);
-	mailer->view_to = _headers_view_column_text(treeview, _("To"),
+	mailer->he_view_to = _headers_view_column_text(treeview, _("To"),
 			MHC_TO, MHC_TO, MHC_WEIGHT);
 	_headers_view_column_text(treeview, _("Date"), MHC_DATE_DISPLAY,
 			MHC_DATE, MHC_WEIGHT);
@@ -506,8 +605,8 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	if(sel == NULL || sel->next != NULL) /* empty or multiple */
 	{
 		gtk_widget_hide(mailer->hdr_vbox);
-		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
-				mailer->view_buffer);
+		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->bo_view),
+				mailer->bo_buffer);
 		g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 		g_list_free(sel);
 		return;
@@ -542,8 +641,7 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 	gtk_widget_show(mailer->hdr_vbox);
 	if((tbuf = account_select(mailer->account_cur, mailer->folder_cur,
 					message)) != NULL)
-		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
-				tbuf);
+		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->bo_view), tbuf);
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
 }
@@ -621,11 +719,12 @@ static GtkWidget * _new_headers(Mailer * mailer)
 		gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.0);
 		gtk_size_group_add_widget(GTK_SIZE_GROUP(group), widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		*(widgets[i].widget) = gtk_label_new("");
-		gtk_misc_set_alignment(GTK_MISC(*(widgets[i].widget)), 0.0,
-				0.0);
-		gtk_box_pack_start(GTK_BOX(hbox), *(widgets[i].widget), TRUE,
-				TRUE, 0);
+		widget = gtk_label_new("");
+		*(widgets[i].widget) = widget;
+		gtk_label_set_ellipsize(GTK_LABEL(widget),
+				PANGO_ELLIPSIZE_MIDDLE);
+		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 		gtk_box_pack_start(GTK_BOX(mailer->hdr_vbox), hbox, FALSE,
 				FALSE, 0);
 	}
@@ -653,7 +752,7 @@ static gboolean _new_config_load(gpointer data)
 	if((value = config_get(mailer->config, NULL, "messages_font")) != NULL)
 	{
 		font = pango_font_description_from_string(value);
-		gtk_widget_modify_font(mailer->view_body, font);
+		gtk_widget_modify_font(mailer->bo_view, font);
 		pango_font_description_free(font);
 	}
 	if((value = config_get(mailer->config, NULL, "accounts")) == NULL
@@ -724,7 +823,7 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 
 	if(mailer == NULL)
 		return error_set_print("mailer", ret, "%s", message);
-	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
+	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->fo_window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -734,7 +833,7 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
-				mailer->window));
+				mailer->fo_window));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
@@ -808,11 +907,11 @@ void mailer_delete_selected(Mailer * mailer)
 	GtkTreePath * path;
 	GtkTreeRowReference * reference;
 
-	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->he_view)))
+			== NULL)
 		return;
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
+						mailer->he_view))) == NULL)
 		return;
 	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
 			== NULL)
@@ -845,8 +944,8 @@ static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 	GtkTreeIter iter;
 	Message * message;
 
-	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->he_view)))
+			== NULL)
 		return;
 	if(reference == NULL)
 		return;
@@ -865,12 +964,12 @@ void mailer_copy(Mailer * mailer)
 	GtkTextBuffer * buffer;
 	GtkClipboard * clipboard;
 
-	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
-			== mailer->view_body)
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->fo_window))
+			== mailer->bo_view)
 	{
 		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-					mailer->view_body));
-		clipboard = gtk_widget_get_clipboard(mailer->view_body,
+					mailer->bo_view));
+		clipboard = gtk_widget_get_clipboard(mailer->bo_view,
 				GDK_SELECTION_CLIPBOARD);
 		gtk_text_buffer_copy_clipboard(buffer, clipboard);
 	}
@@ -884,12 +983,12 @@ void mailer_cut(Mailer * mailer)
 	GtkTextBuffer * buffer;
 	GtkClipboard * clipboard;
 
-	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
-			== mailer->view_body) /* XXX copies, really */
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->fo_window))
+			== mailer->bo_view) /* XXX copies, really */
 	{
 		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-					mailer->view_body));
-		clipboard = gtk_widget_get_clipboard(mailer->view_body,
+					mailer->bo_view));
+		clipboard = gtk_widget_get_clipboard(mailer->bo_view,
 				GDK_SELECTION_CLIPBOARD);
 		gtk_text_buffer_cut_clipboard(buffer, clipboard, FALSE);
 	}
@@ -952,12 +1051,12 @@ void mailer_paste(Mailer * mailer)
 	GtkTextBuffer * buffer;
 	GtkClipboard * clipboard;
 
-	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
-			== mailer->view_body) /* XXX does nothing, really */
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->fo_window))
+			== mailer->bo_view) /* XXX does nothing, really */
 	{
 		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-					mailer->view_body));
-		clipboard = gtk_widget_get_clipboard(mailer->view_body,
+					mailer->bo_view));
+		clipboard = gtk_widget_get_clipboard(mailer->bo_view,
 				GDK_SELECTION_CLIPBOARD);
 		gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL, FALSE);
 	}
@@ -1037,19 +1136,17 @@ void mailer_select_all(Mailer * mailer)
 #endif
 
 #if GTK_CHECK_VERSION(2, 4, 0)
-	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
-			== mailer->view_body)
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->fo_window))
+			== mailer->bo_view)
 	{
-		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-					mailer->view_body));
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(mailer->bo_view));
 		gtk_text_buffer_get_start_iter(tbuf, &start);
 		gtk_text_buffer_get_end_iter(tbuf, &end);
 		gtk_text_buffer_select_range(tbuf, &start, &end);
 		return;
 	}
 #endif
-	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-				mailer->view_headers));
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(mailer->he_view));
 	gtk_tree_selection_select_all(treesel);
 }
 
@@ -1074,7 +1171,7 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 	g_signal_connect_swapped(G_OBJECT(dialog), "delete-event", G_CALLBACK(
 				_about_on_closex), mailer);
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
-				mailer->window));
+				mailer->fo_window));
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_authors(dialog, _authors);
@@ -1146,7 +1243,7 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_window_set_title(GTK_WINDOW(mailer->pr_window),
 			_("Mailer preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(mailer->pr_window), GTK_WINDOW(
-				mailer->window));
+				mailer->fo_window));
 	g_signal_connect_swapped(G_OBJECT(mailer->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), mailer);
 	vbox = gtk_vbox_new(FALSE, 4);
@@ -1937,7 +2034,7 @@ static void _account_edit(Mailer * mailer, Account * account)
 			account_get_title(account));
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				mailer->window));
+				mailer->fo_window));
 	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 	vbox = gtk_vbox_new(FALSE, 4);
 	/* FIXME also allow to modify the identity, plug-in values... */
@@ -2021,7 +2118,7 @@ static int _preferences_ok_accounts(Mailer * mailer)
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->pr_accounts));
 	view_model = gtk_tree_view_get_model(GTK_TREE_VIEW(
-				mailer->view_folders));
+				mailer->fo_view));
 	for(loop = gtk_tree_model_get_iter_first(model, &iter); loop == TRUE;
 			loop = gtk_tree_model_iter_next(model, &iter))
 	{
@@ -2075,7 +2172,7 @@ static int _preferences_ok_display(Mailer * mailer)
 	config_set(mailer->config, "", "messages_font", p);
 	if(p != NULL)
 		font = pango_font_description_from_string(p);
-	gtk_widget_modify_font(mailer->view_body, font);
+	gtk_widget_modify_font(mailer->bo_view, font);
 	if(font != NULL)
 		pango_font_description_free(font);
 	return 0;
@@ -2104,20 +2201,18 @@ void mailer_unselect_all(Mailer * mailer)
 	GtkTextIter iter;
 #endif
 
-	if(gtk_window_get_focus(GTK_WINDOW(mailer->window))
-			== mailer->view_body)
+	if(gtk_window_get_focus(GTK_WINDOW(mailer->fo_window))
+			== mailer->bo_view)
 	{
 #if GTK_CHECK_VERSION(2, 4, 0)
-		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-					mailer->view_body));
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(mailer->bo_view));
 		mark = gtk_text_buffer_get_mark(tbuf, "insert");
 		gtk_text_buffer_get_iter_at_mark(tbuf, &iter, mark);
 		gtk_text_buffer_select_range(tbuf, &iter, &iter);
 #endif
 		return;
 	}
-	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-				mailer->view_headers));
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(mailer->he_view));
 	gtk_tree_selection_unselect_all(treesel);
 }
 
@@ -2130,7 +2225,7 @@ static gboolean _mailer_confirm(Mailer * mailer, char const * message)
 	GtkWidget * dialog;
 	int res;
 
-	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
+	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->fo_window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
 #if GTK_CHECK_VERSION(2, 8, 0)
@@ -2159,11 +2254,11 @@ static void _mailer_foreach_message_selected(Mailer * mailer,
 	GtkTreePath * path;
 	GtkTreeIter iter;
 
-	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
+	if((model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->he_view)))
+			== NULL)
 		return;
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						mailer->view_headers))) == NULL)
+						mailer->he_view))) == NULL)
 		return;
 	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
 			== NULL)
@@ -2203,8 +2298,8 @@ static void _mailer_update_status(Mailer * mailer)
 	int cnt;
 	char buf[256];
 
-	if((store = gtk_tree_view_get_model(GTK_TREE_VIEW(
-						mailer->view_headers))) != NULL)
+	if((store = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->he_view)))
+			!= NULL)
 	{
 		cnt = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),
 				NULL);
