@@ -542,6 +542,20 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	AccountPluginHelper * helper = plugin->helper;
 	AccountFolder * folder;
 	AccountFolder ** p;
+	FolderType type = FT_FOLDER;
+	struct
+	{
+		char const * name;
+		FolderType type;
+	} name_type[] =
+	{
+		{ "Inbox",	FT_INBOX	},
+		{ "Drafts",	FT_DRAFTS	},
+		{ "Trash",	FT_TRASH	},
+		{ "Sent",	FT_SENT		},
+		{ NULL,		0		}
+	};
+	size_t i;
 
 	if((p = realloc(parent->folders, sizeof(*p) * (parent->folders_cnt
 						+ 1))) == NULL)
@@ -549,8 +563,14 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	parent->folders = p;
 	if((folder = object_new(sizeof(*folder))) == NULL)
 		return NULL;
-	folder->folder = helper->folder_new(helper->account, folder, NULL,
-					FT_INBOX, name);
+	for(i = 0; name_type[i].name != NULL; i++)
+		if(strcasecmp(name_type[i].name, name) == 0)
+		{
+			type = name_type[i].type;
+			break;
+		}
+	folder->folder = helper->folder_new(helper->account, folder, NULL, type,
+			name);
 	folder->name = strdup(name);
 	folder->messages = NULL;
 	folder->messages_cnt = 0;
