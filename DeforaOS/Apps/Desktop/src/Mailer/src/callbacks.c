@@ -31,7 +31,7 @@
 /* functions */
 /* public */
 /* callbacks */
-/* window */
+/* on_closex */
 gboolean on_closex(gpointer data)
 {
 	Mailer * mailer = data;
@@ -39,6 +39,26 @@ gboolean on_closex(gpointer data)
 	/* FIXME may be composing or viewing messages */
 	gtk_main_quit();
 	return FALSE;
+}
+
+
+/* on_headers_closex */
+gboolean on_headers_closex(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_show_headers(mailer, FALSE);
+	return TRUE;
+}
+
+
+/* on_body_closex */
+gboolean on_body_closex(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_show_body(mailer, FALSE);
+	return TRUE;
 }
 
 

@@ -382,7 +382,7 @@ Mailer * mailer_new(void)
 # endif
 	gtk_window_set_title(GTK_WINDOW(mailer->he_window), _("Message list"));
 	g_signal_connect_swapped(G_OBJECT(mailer->he_window), "delete-event",
-			G_CALLBACK(on_closex), mailer);
+			G_CALLBACK(on_headers_closex), mailer);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->he_window), vbox);
 	widget = desktop_toolbar_create(_mailer_he_toolbar, mailer, group);
@@ -412,7 +412,7 @@ Mailer * mailer_new(void)
 #endif
 	gtk_window_set_title(GTK_WINDOW(mailer->bo_window), _("Message"));
 	g_signal_connect_swapped(G_OBJECT(mailer->bo_window), "delete-event",
-			G_CALLBACK(on_closex), mailer);
+			G_CALLBACK(on_body_closex), mailer);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->bo_window), vbox);
 	widget = desktop_toolbar_create(_mailer_bo_toolbar, mailer, group);
@@ -443,8 +443,6 @@ Mailer * mailer_new(void)
 	/* show window */
 	gtk_widget_hide(mailer->hdr_vbox);
 	gtk_widget_show(mailer->fo_window);
-	gtk_widget_show(mailer->he_window);
-	gtk_widget_show(mailer->bo_window);
 	/* load configuration */
 	mailer->source = g_idle_add(_new_config_load, mailer);
 	return mailer;
@@ -531,7 +529,7 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+	if(gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 	{
 		mailer->account_cur = NULL;
 		mailer->folder_cur = NULL;
@@ -540,14 +538,12 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 		return;
 	}
 	/* get current folder */
-	gtk_tree_model_get(model, &iter, MFC_FOLDER, &mailer->folder_cur,
-			-1);
+	gtk_tree_model_get(model, &iter, MFC_FOLDER, &mailer->folder_cur, -1);
 	/* get current account */
 	path = gtk_tree_model_get_path(model, &iter);
 	while(gtk_tree_path_get_depth(path) > 1 && gtk_tree_path_up(path));
 	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, MFC_ACCOUNT, &mailer->account_cur,
-			-1);
+	gtk_tree_model_get(model, &iter, MFC_ACCOUNT, &mailer->account_cur, -1);
 	gtk_tree_path_free(path);
 	/* display relevant columns */
 	sent = (mailer->folder_cur != NULL && folder_get_type(
@@ -559,6 +555,10 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 			folder_get_messages(mailer->folder_cur)) : NULL;
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->he_view), model);
 	_mailer_update_status(mailer);
+#ifdef EMBEDDED
+	if(model != NULL)
+		gtk_window_present(GTK_WINDOW(mailer->he_window));
+#endif
 }
 
 static GtkWidget * _new_headers_view(Mailer * mailer)
@@ -644,6 +644,9 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->bo_view), tbuf);
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
+#ifdef EMBEDDED
+	gtk_window_present(GTK_WINDOW(mailer->bo_window));
+#endif
 }
 
 static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
@@ -1187,6 +1190,26 @@ static gboolean _about_on_closex(gpointer data)
 
 	gtk_widget_hide(mailer->ab_window);
 	return TRUE;
+}
+
+
+/* mailer_show_body */
+void mailer_show_body(Mailer * mailer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_window_present(GTK_WINDOW(mailer->bo_window));
+	else
+		gtk_widget_hide(mailer->bo_window);
+}
+
+
+/* mailer_show_headers */
+void mailer_show_headers(Mailer * mailer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_window_present(GTK_WINDOW(mailer->he_window));
+	else
+		gtk_widget_hide(mailer->he_window);
 }
 
 

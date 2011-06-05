@@ -21,8 +21,10 @@
 # include <gtk/gtk.h>
 
 
-/* mailer window */
+/* mailer windows */
 gboolean on_closex(gpointer data);
+gboolean on_headers_closex(gpointer data);
+gboolean on_body_closex(gpointer data);
 
 /* file menu */
 void on_file_new_mail(gpointer data);
