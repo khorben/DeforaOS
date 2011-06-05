@@ -542,6 +542,7 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	AccountPluginHelper * helper = plugin->helper;
 	AccountFolder * folder;
 	AccountFolder ** p;
+	IMAP4 * imap4 = plugin->priv;
 	FolderType type = FT_FOLDER;
 	struct
 	{
@@ -563,12 +564,13 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	parent->folders = p;
 	if((folder = object_new(sizeof(*folder))) == NULL)
 		return NULL;
-	for(i = 0; name_type[i].name != NULL; i++)
-		if(strcasecmp(name_type[i].name, name) == 0)
-		{
-			type = name_type[i].type;
-			break;
-		}
+	if(parent == &imap4->folders)
+		for(i = 0; name_type[i].name != NULL; i++)
+			if(strcasecmp(name_type[i].name, name) == 0)
+			{
+				type = name_type[i].type;
+				break;
+			}
 	folder->folder = helper->folder_new(helper->account, folder, NULL, type,
 			name);
 	folder->name = strdup(name);
