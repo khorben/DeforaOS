@@ -21,7 +21,7 @@ all: $(TARGETS)
 
 imap4_OBJS = imap4.o
 imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
 imap4.so: $(imap4_OBJS)
 	$(LD) -o imap4.so $(imap4_OBJS) $(imap4_LDFLAGS)
@@ -55,7 +55,7 @@ rss.so: $(rss_OBJS)
 	$(LD) -o rss.so $(rss_OBJS) $(rss_LDFLAGS)
 
 imap4.o: imap4.c ../../include/Mailer.h
-	$(CC) $(imap4_CFLAGS) -c imap4.c
+	$(CC) $(imap4_CFLAGS) `pkg-config --cflags libSystem` -c imap4.c
 
 mbox.o: mbox.c ../../include/Mailer.h
 	$(CC) $(mbox_CFLAGS) -c mbox.c
@@ -77,11 +77,14 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
+	$(INSTALL) -m 0644 -- imap4.so $(DESTDIR)$(LIBDIR)/Mailer/account/imap4.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
 	$(INSTALL) -m 0644 -- mbox.so $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Mailer/account
 	$(INSTALL) -m 0644 -- pop3.so $(DESTDIR)$(LIBDIR)/Mailer/account/pop3.so
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/imap4.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/mbox.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Mailer/account/pop3.so
 
