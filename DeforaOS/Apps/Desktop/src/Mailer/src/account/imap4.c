@@ -430,7 +430,10 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 	switch(cmd->data.fetch.status)
 	{
 		case I4FS_BODY:
-			/* FIXME implement */
+			helper->message_set_body(message->message, answer,
+					strlen(answer), 1);
+			helper->message_set_body(message->message, "\r\n",
+					2, 1);
 			return 0;
 		case I4FS_ID:
 			id = strtol(answer, &p, 10);
@@ -454,7 +457,11 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 			return (message != NULL) ? 0 : -1;
 		case I4FS_HEADERS:
 			if(strcmp(answer, "") == 0)
+			{
 				cmd->data.fetch.status = I4FS_BODY;
+				helper->message_set_body(message->message, NULL,
+						0, 0);
+			}
 			else
 				helper->message_set_header(message->message,
 						answer);
