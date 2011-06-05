@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
  * - no longer block on connect()
- * - recovery on errors
  * - support multiple connections? */
 
 
@@ -161,6 +160,8 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 		AccountFolder * parent, char const * name);
 static void _imap4_folder_delete(AccountPlugin * plugin,
 		AccountFolder * folder);
+static AccountFolder * _imap4_folder_get_folder(AccountPlugin * plugin,
+		AccountFolder * folder, char const * name);
 static AccountMessage * _imap4_folder_get_message(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id);
 
@@ -172,6 +173,7 @@ static void _imap4_message_delete(AccountPlugin * plugin,
 /* callbacks */
 static gboolean _on_idle(gpointer data);
 static gboolean _on_noop(gpointer data);
+static gboolean _on_reset(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
@@ -206,18 +208,6 @@ static int _imap4_init(AccountPlugin * plugin)
 	memset(imap4, 0, sizeof(*imap4));
 	plugin->priv = imap4;
 	imap4->fd = -1;
-	if((imap4->queue = malloc(sizeof(*imap4->queue))) == NULL)
-	{
-		free(imap4);
-		return -1;
-	}
-	imap4->queue[0].id = 0;
-	imap4->queue[0].context = I4C_INIT;
-	imap4->queue[0].status = I4CS_SENT;
-	imap4->queue[0].buf = NULL;
-	imap4->queue[0].buf_cnt = 0;
-	imap4->queue_cnt = 1;
-	imap4->queue_id = 1;
 	imap4->source = g_idle_add(_on_idle, plugin);
 	return 0;
 }
@@ -292,8 +282,13 @@ static IMAP4Command * _imap4_command(AccountPlugin * plugin,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, command);
 #endif
+	/* abort if the command is invalid */
 	if(command == NULL || (len = strlen(command) + 6) == 0)
 		return NULL;
+	/* abort if there is no active connection */
+	if(imap4->channel == NULL)
+		return NULL;
+	/* queue the command */
 	len += 2;
 	if((p = realloc(imap4->queue, sizeof(*p) * (imap4->queue_cnt + 1)))
 			== NULL)
@@ -526,8 +521,8 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
 	if(*p == '\"' && sscanf(++p, "%31[^\"]", buf) == 1
-			&& (folder = _imap4_folder_new(plugin, &imap4->folders,
-					buf)) != NULL)
+			&& (folder = _imap4_folder_get_folder(plugin,
+					&imap4->folders, buf)) != NULL)
 	{
 		buf[31] = '\0';
 		q = g_strdup_printf("%s \"%s\"", "SELECT", buf);
@@ -629,6 +624,23 @@ static void _imap4_folder_delete(AccountPlugin * plugin, AccountFolder * folder)
 		_imap4_folder_delete(plugin, folder->folders[i]);
 	free(folder->folders);
 	object_delete(folder);
+}
+
+
+/* imap4_folder_get_folder */
+static AccountFolder * _imap4_folder_get_folder(AccountPlugin * plugin,
+		AccountFolder * folder, char const * name)
+{
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, folder->name,
+			name);
+#endif
+	for(i = 0; i < folder->folders_cnt; i++)
+		if(strcmp(folder->folders[i]->name, name) == 0)
+			return folder->folders[i];
+	return _imap4_folder_new(plugin, folder, name);
 }
 
 
@@ -759,9 +771,21 @@ static gboolean _idle_channel(AccountPlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	/* prepare queue */
+	if((imap4->queue = malloc(sizeof(*imap4->queue))) == NULL)
+		return FALSE;
+	imap4->queue[0].id = 0;
+	imap4->queue[0].context = I4C_INIT;
+	imap4->queue[0].status = I4CS_SENT;
+	imap4->queue[0].buf = NULL;
+	imap4->queue[0].buf_cnt = 0;
+	imap4->queue_cnt = 1;
+	imap4->queue_id = 1;
+	/* setup channel */
 	imap4->channel = g_io_channel_unix_new(imap4->fd);
 	g_io_channel_set_encoding(imap4->channel, NULL, &error);
 	g_io_channel_set_buffered(imap4->channel, FALSE);
+	/* wait for the server's banner */
 	imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
 			_on_watch_can_read, plugin);
 	return TRUE;
@@ -776,6 +800,42 @@ static gboolean _on_noop(gpointer data)
 
 	_imap4_command(plugin, I4C_NOOP, "NOOP");
 	imap4->source = 0;
+	return FALSE;
+}
+
+
+/* on_reset */
+static gboolean _on_reset(gpointer data)
+{
+	AccountPlugin * plugin = data;
+	IMAP4 * imap4 = plugin->priv;
+	size_t i;
+
+	/* FIXME merge with _imap4_destroy() */
+	if(imap4->rd_source != 0)
+		g_source_remove(imap4->rd_source);
+	imap4->rd_source = 0;
+	if(imap4->wr_source != 0)
+		g_source_remove(imap4->wr_source);
+	imap4->wr_source = 0;
+	if(imap4->source != 0)
+		g_source_remove(imap4->source);
+	imap4->source = 0;
+	if(imap4->channel != NULL)
+	{
+		g_io_channel_shutdown(imap4->channel, TRUE, NULL);
+		g_io_channel_unref(imap4->channel);
+		imap4->fd = -1;
+	}
+	imap4->channel = NULL;
+	for(i = 0; i < imap4->queue_cnt; i++)
+		free(imap4->queue[i].buf);
+	free(imap4->queue);
+	imap4->queue = NULL;
+	imap4->queue_cnt = 0;
+	if(imap4->fd >= 0)
+		close(imap4->fd);
+	imap4->source = g_timeout_add(3000, _on_idle, plugin);
 	return FALSE;
 }
 
@@ -811,8 +871,8 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			plugin->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
-		default: /* XXX find a way to recover */
-			imap4->rd_source = 0;
+		default:
+			imap4->rd_source = g_idle_add(_on_reset, plugin);
 			return FALSE;
 	}
 	if(_imap4_parse(plugin) != 0 || imap4->queue_cnt == 0)
@@ -876,8 +936,8 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			plugin->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
-		default: /* XXX find a way to recover */
-			imap4->wr_source = 0;
+		default:
+			imap4->wr_source = g_idle_add(_on_reset, plugin);
 			return FALSE;
 	}
 	if(cmd->buf_cnt > 0)
