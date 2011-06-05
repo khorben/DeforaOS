@@ -1570,21 +1570,21 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, desc, group, _("Your name"));
+	_account_add_label(hbox, NULL, group, _("Your name"));
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.from));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, desc, group, _("e-mail address"));
+	_account_add_label(hbox, NULL, group, _("e-mail address"));
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.email));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, desc, group, _("Type of account"));
+	_account_add_label(hbox, NULL, group, _("Type of account"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	widget = gtk_combo_box_text_new();
 #else
@@ -1655,15 +1655,12 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 {
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
-	PangoFontDescription * desc;
 	GtkWidget * widget;
 	size_t i;
 
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	desc = pango_font_description_new();
-	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	for(i = 0; config != NULL && config[i].name != NULL; i++)
 	{
 		switch(config[i].type)
@@ -1671,18 +1668,18 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 			case ACT_NONE:
 				continue;
 			case ACT_STRING:
-				widget = _update_string(&config[i], desc,
+				widget = _update_string(&config[i], NULL,
 						group);
 				break;
 			case ACT_PASSWORD:
-				widget = _update_password(&config[i], desc,
+				widget = _update_password(&config[i], NULL,
 						group);
 				break;
 			case ACT_FILE:
-				widget = _update_file(&config[i], desc, group);
+				widget = _update_file(&config[i], NULL, group);
 				break;
 			case ACT_UINT16:
-				widget = _update_uint16(&config[i], desc,
+				widget = _update_uint16(&config[i], NULL,
 						group);
 				break;
 			case ACT_BOOLEAN:
@@ -1693,7 +1690,6 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
-	pango_font_description_free(desc);
 	return vbox;
 }
 
