@@ -432,18 +432,20 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 static int _parse_context_transaction_retr(AccountPlugin * plugin,
 		char const * answer)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
 	POP3Command * cmd = &pop3->queue[0];
+	AccountMessage * message;
 
 	if(cmd->status != P3CS_PARSING)
 		return 0;
-	if(cmd->data.transaction_retr.message == NULL
+	if((message = cmd->data.transaction_retr.message) == NULL
 			&& strncmp(answer, "+OK", 3) == 0)
 	{
 		cmd->data.transaction_retr.body = FALSE;
-		cmd->data.transaction_retr.message = _pop3_message_get(plugin,
-					&pop3->inbox,
+		message = _pop3_message_get(plugin, &pop3->inbox,
 					cmd->data.transaction_retr.id);
+		cmd->data.transaction_retr.message = message;
 		return 0;
 	}
 	if(strcmp(answer, ".") == 0)
@@ -454,24 +456,17 @@ static int _parse_context_transaction_retr(AccountPlugin * plugin,
 	if(answer[0] == '\0')
 	{
 		cmd->data.transaction_retr.body = TRUE;
-		plugin->helper->message_set_body(
-				cmd->data.transaction_retr.message->message,
-				NULL, 0, 0);
+		helper->message_set_body(message->message, NULL, 0, 0);
 		return 0;
 	}
 	if(cmd->data.transaction_retr.body)
 	{
-		plugin->helper->message_set_body(
-				cmd->data.transaction_retr.message->message,
-				answer, strlen(answer), 1);
-		plugin->helper->message_set_body(
-				cmd->data.transaction_retr.message->message,
-				"\r\n", 2, 1);
+		helper->message_set_body(message->message, answer,
+				strlen(answer), 1);
+		helper->message_set_body(message->message, "\r\n", 2, 1);
 	}
 	else
-		plugin->helper->message_set_header(
-				cmd->data.transaction_retr.message->message,
-				answer);
+		helper->message_set_header(message->message, answer);
 	return 0;
 }
 
