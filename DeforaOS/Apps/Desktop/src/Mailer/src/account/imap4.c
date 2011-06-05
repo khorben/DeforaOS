@@ -226,13 +226,33 @@ static int _imap4_init(AccountPlugin * plugin)
 /* imap4_destroy */
 static int _imap4_destroy(AccountPlugin * plugin)
 {
-	IMAP4 * imap = plugin->priv;
+	IMAP4 * imap4 = plugin->priv;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME implement */
-	free(imap);
+	if(imap4 == NULL) /* XXX _imap4_destroy() may be called uninitialized */
+		return 0;
+	if(imap4->rd_source != 0)
+		g_source_remove(imap4->rd_source);
+	if(imap4->wr_source != 0)
+		g_source_remove(imap4->wr_source);
+	if(imap4->source != 0)
+		g_source_remove(imap4->source);
+	if(imap4->channel != NULL)
+	{
+		g_io_channel_shutdown(imap4->channel, TRUE, NULL);
+		g_io_channel_unref(imap4->channel);
+		imap4->fd = -1;
+	}
+	for(i = 0; i < imap4->queue_cnt; i++)
+		free(imap4->queue[i].buf);
+	free(imap4->queue);
+	if(imap4->fd >= 0)
+		close(imap4->fd);
+	_imap4_folder_delete(plugin, &imap4->folders); /* XXX do not free() */
+	free(imap4);
 	return 0;
 }
 
@@ -591,9 +611,17 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 /* imap4_folder_delete */
 static void _imap4_folder_delete(AccountPlugin * plugin, AccountFolder * folder)
 {
+	size_t i;
+
 	if(folder->folder != NULL)
 		plugin->helper->folder_delete(folder->folder);
 	free(folder->name);
+	for(i = 0; i < folder->messages_cnt; i++)
+		_imap4_message_delete(plugin, folder->messages[i]);
+	free(folder->messages);
+	for(i = 0; i < folder->folders_cnt; i++)
+		_imap4_folder_delete(plugin, folder->folders[i]);
+	free(folder->folders);
 	object_delete(folder);
 }
 
