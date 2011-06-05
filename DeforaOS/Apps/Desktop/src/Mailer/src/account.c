@@ -343,8 +343,9 @@ GtkTextBuffer * account_select(Account * account, Folder * folder,
 	AccountMessage * am;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\", %p)\n", __func__, (void*)account,
-			folder_get_name(folder), (void*)message);
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\", %p)\n", __func__,
+			account_get_name(account), folder_get_name(folder),
+			(void *)message);
 #endif
 	if((af = folder_get_data(folder)) == NULL
 			|| (am = message_get_data(message)) == NULL)

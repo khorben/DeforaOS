@@ -484,9 +484,7 @@ static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
 
 	for(i = 0; i < folder->messages_cnt; i++)
 		if(folder->messages[i]->id == id)
-			break;
-	if(i != folder->messages_cnt)
-		return folder->messages[i];
+			return folder->messages[i];
 	return _pop3_message_new(plugin, folder, id);
 }
 
@@ -505,13 +503,13 @@ static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
 	folder->messages = p;
 	if((message = object_new(sizeof(*message))) == NULL)
 		return NULL;
+	message->id = id;
 	if((message->message = helper->message_new(helper->account,
 					folder->folder, message)) == NULL)
 	{
 		_pop3_message_delete(plugin, message);
 		return NULL;
 	}
-	message->id = id;
 	folder->messages[folder->messages_cnt++] = message;
 	return message;
 }
