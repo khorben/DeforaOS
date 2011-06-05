@@ -135,7 +135,11 @@ void folder_set_type(Folder * folder, FolderType type)
 		{ FT_DRAFTS,	"mailer-drafts"		},
 		{ FT_SENT,	"mailer-sent"		},
 		{ FT_TRASH,	"gnome-stock-trash"	},
+#if GTK_CHECK_VERSION(2, 6, 0)
+		{ FT_FOLDER,	GTK_STOCK_DIRECTORY	}
+#else
 		{ FT_FOLDER,	"stock_directory"	}
+#endif
 	};
 	size_t i;
 	GtkIconTheme * theme;
@@ -144,7 +148,7 @@ void folder_set_type(Folder * folder, FolderType type)
 	folder->type = type;
 	if(_folder_get_iter(folder, &iter) != TRUE)
 		return;
-	for(i = 0; i < FT_COUNT - 1; i++)
+	for(i = 0; i < FT_LAST; i++)
 		if(icons[i].type == type)
 			break;
 	theme = gtk_icon_theme_get_default();
