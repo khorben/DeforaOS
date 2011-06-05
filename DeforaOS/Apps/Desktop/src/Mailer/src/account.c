@@ -66,6 +66,7 @@ static gboolean _account_get_iter(Account * account, GtkTreeIter * iter);
 /* useful */
 static int _account_helper_error(Account * account, char const * message,
 		int ret);
+static void _account_helper_status(Account * account, char const * message);
 static Folder * _account_helper_folder_new(Account * account,
 		AccountFolder * folder, Folder * parent, FolderType type,
 		char const * name);
@@ -82,6 +83,7 @@ static const AccountPluginHelper _account_plugin_helper =
 {
 	NULL,
 	_account_helper_error,
+	_account_helper_status,
 	_account_helper_folder_new,
 	_account_helper_folder_delete,
 	_account_helper_message_new,
@@ -405,6 +407,16 @@ static int _account_helper_error(Account * account, char const * message,
 {
 	return mailer_error((account != NULL) ? account->mailer : NULL, message,
 			ret);
+}
+
+
+/* account_helper_status */
+static void _account_helper_status(Account * account, char const * message)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, message);
+#endif
+	/* FIXME implement */
 }
 
 

@@ -60,6 +60,7 @@ typedef struct _AccountPluginHelper
 {
 	Account * account;
 	int (*error)(Account * account, char const * message, int ret);
+	void (*status)(Account * account, char const * message);
 	/* folders */
 	Folder * (*folder_new)(Account * account, AccountFolder * folder,
 			Folder * parent, FolderType type, char const * name);
