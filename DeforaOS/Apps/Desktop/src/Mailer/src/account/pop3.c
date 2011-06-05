@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
  * - no longer block on connect()
- * - recovery on errors
  * - really queue commands with callbacks
  * - support multiple connections? */
 
@@ -151,6 +150,7 @@ static void _pop3_message_delete(AccountPlugin * plugin,
 /* callbacks */
 static gboolean _on_idle(gpointer data);
 static gboolean _on_noop(gpointer data);
+static gboolean _on_reset(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
@@ -183,32 +183,13 @@ static int _pop3_init(AccountPlugin * plugin)
 
 	if((pop3 = malloc(sizeof(*pop3))) == NULL)
 		return -1;
-	if((pop3->queue = malloc(sizeof(*pop3->queue))) == NULL)
-	{
-		free(pop3);
-		return -1;
-	}
+	memset(pop3, 0, sizeof(*pop3));
 	plugin->priv = pop3;
 	pop3->fd = -1;
-	pop3->source = 0;
 	pop3->inbox.folder = plugin->helper->folder_new(plugin->helper->account,
 			&pop3->inbox, NULL, FT_INBOX, "Inbox");
-	pop3->inbox.messages = NULL;
-	pop3->inbox.messages_cnt = 0;
 	pop3->trash.folder = plugin->helper->folder_new(plugin->helper->account,
 			&pop3->trash, NULL, FT_TRASH, "Trash");
-	pop3->trash.messages = NULL;
-	pop3->trash.messages_cnt = 0;
-	pop3->channel = NULL;
-	pop3->rd_buf = NULL;
-	pop3->rd_buf_cnt = 0;
-	pop3->rd_source = 0;
-	pop3->wr_source = 0;
-	pop3->queue[0].context = P3C_INIT;
-	pop3->queue[0].status = P3CS_SENT;
-	pop3->queue[0].buf = NULL;
-	pop3->queue[0].buf_cnt = 0;
-	pop3->queue_cnt = 1;
 	pop3->source = g_idle_add(_on_idle, plugin);
 	return 0;
 }
@@ -275,8 +256,13 @@ static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, command);
 #endif
+	/* abort if the command is invalid */
 	if(command == NULL || (len = strlen(command)) == 0)
 		return NULL;
+	/* abort if there is no active connection */
+	if(pop3->channel == NULL)
+		return NULL;
+	/* queue the command */
 	len += 2;
 	if((p = realloc(pop3->queue, sizeof(*p) * (pop3->queue_cnt + 1)))
 			== NULL)
@@ -311,6 +297,7 @@ static int _parse_context_transaction_retr(AccountPlugin * plugin,
 
 static int _pop3_parse(AccountPlugin * plugin)
 {
+	int ret = 0;
 	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
 	size_t i;
@@ -340,14 +327,17 @@ static int _pop3_parse(AccountPlugin * plugin)
 				&& strncmp("+OK", &pop3->rd_buf[j], 3) == 0)
 			pop3->queue[0].status = P3CS_PARSING;
 		if(_parse_context(plugin, &pop3->rd_buf[j]) != 0)
+		{
 			pop3->queue[0].status = P3CS_ERROR;
+			ret = -1;
+		}
 	}
 	if(j != 0)
 	{
 		pop3->rd_buf_cnt -= j;
 		memmove(pop3->rd_buf, &pop3->rd_buf[j], pop3->rd_buf_cnt);
 	}
-	return (pop3->queue[0].status != P3CS_ERROR) ? 0 : -1;
+	return ret;
 }
 
 static int _parse_context(AccountPlugin * plugin, char const * answer)
@@ -595,9 +585,19 @@ static gboolean _idle_channel(AccountPlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	/* prepare queue */
+	if((pop3->queue = malloc(sizeof(*pop3->queue))) == NULL)
+		return FALSE;
+	pop3->queue[0].context = P3C_INIT;
+	pop3->queue[0].status = P3CS_SENT;
+	pop3->queue[0].buf = NULL;
+	pop3->queue[0].buf_cnt = 0;
+	pop3->queue_cnt = 1;
+	/* setup channel */
 	pop3->channel = g_io_channel_unix_new(pop3->fd);
 	g_io_channel_set_encoding(pop3->channel, NULL, &error);
 	g_io_channel_set_buffered(pop3->channel, FALSE);
+	/* wait for the server's banner */
 	pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
 			_on_watch_can_read, plugin);
 	return TRUE;
@@ -612,6 +612,46 @@ static gboolean _on_noop(gpointer data)
 
 	_pop3_command(plugin, P3C_NOOP, "NOOP");
 	pop3->source = 0;
+	return FALSE;
+}
+
+
+/* on_reset */
+static gboolean _on_reset(gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	/* FIXME merge with _pop3_destroy() */
+	if(pop3->rd_source != 0)
+		g_source_remove(pop3->rd_source);
+	pop3->rd_source = 0;
+	if(pop3->wr_source != 0)
+		g_source_remove(pop3->wr_source);
+	pop3->wr_source = 0;
+	if(pop3->source != 0)
+		g_source_remove(pop3->source);
+	pop3->source = 0;
+	if(pop3->channel != NULL)
+	{
+		g_io_channel_shutdown(pop3->channel, TRUE, NULL);
+		g_io_channel_unref(pop3->channel);
+		pop3->fd = -1;
+	}
+	pop3->channel = NULL;
+	for(i = 0; i < pop3->queue_cnt; i++)
+		free(pop3->queue[i].buf);
+	free(pop3->queue);
+	pop3->queue = NULL;
+	pop3->queue_cnt = 0;
+	if(pop3->fd >= 0)
+		close(pop3->fd);
+	pop3->fd = -1;
+	pop3->source = g_timeout_add(3000, _on_idle, plugin);
 	return FALSE;
 }
 
@@ -647,11 +687,16 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			plugin->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
-		default: /* XXX find a way to recover */
-			pop3->rd_source = 0;
+		default:
+			pop3->rd_source = g_idle_add(_on_reset, plugin);
 			return FALSE;
 	}
-	if(_pop3_parse(plugin) != 0 || pop3->queue_cnt == 0)
+	if(_pop3_parse(plugin) != 0)
+	{
+		pop3->rd_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+	if(pop3->queue_cnt == 0)
 	{
 		pop3->rd_source = 0;
 		return FALSE;
@@ -712,8 +757,8 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			plugin->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
-		default: /* XXX find a way to recover */
-			pop3->wr_source = 0;
+		default:
+			pop3->wr_source = g_idle_add(_on_reset, plugin);
 			return FALSE;
 	}
 	if(cmd->buf_cnt > 0)
