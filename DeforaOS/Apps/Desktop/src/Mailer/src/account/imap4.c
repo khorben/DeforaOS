@@ -251,7 +251,9 @@ static int _imap4_destroy(AccountPlugin * plugin)
 	free(imap4->queue);
 	if(imap4->fd >= 0)
 		close(imap4->fd);
-	_imap4_folder_delete(plugin, &imap4->folders); /* XXX do not free() */
+#if 0 /* XXX do not free() */
+	_imap4_folder_delete(plugin, &imap4->folders);
+#endif
 	free(imap4);
 	return 0;
 }
