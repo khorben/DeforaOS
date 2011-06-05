@@ -835,6 +835,7 @@ static gboolean _on_reset(gpointer data)
 	imap4->queue_cnt = 0;
 	if(imap4->fd >= 0)
 		close(imap4->fd);
+	imap4->fd = -1;
 	imap4->source = g_timeout_add(3000, _on_idle, plugin);
 	return FALSE;
 }
@@ -875,7 +876,12 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 			imap4->rd_source = g_idle_add(_on_reset, plugin);
 			return FALSE;
 	}
-	if(_imap4_parse(plugin) != 0 || imap4->queue_cnt == 0)
+	if(_imap4_parse(plugin) != 0)
+	{
+		imap4->rd_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+	if(imap4->queue_cnt == 0)
 	{
 		imap4->rd_source = 0;
 		return FALSE;
