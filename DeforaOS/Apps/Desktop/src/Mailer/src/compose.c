@@ -211,9 +211,12 @@ Compose * compose_new(Mailer * mailer)
 	group = gtk_accel_group_new();
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(compose->window), group);
+	gtk_window_set_default_size(GTK_WINDOW(compose->window), 512, 384);
 	gtk_window_set_title(GTK_WINDOW(compose->window),
 			_(PACKAGE " - Compose"));
-	gtk_window_set_default_size(GTK_WINDOW(compose->window), 512, 384);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(compose->window), "mailer");
+#endif
 	g_signal_connect_swapped(G_OBJECT(compose->window), "delete-event",
 			G_CALLBACK(on_compose_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
