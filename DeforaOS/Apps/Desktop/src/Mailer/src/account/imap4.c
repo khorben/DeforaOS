@@ -69,10 +69,12 @@ typedef enum _IMAP4ConfigValue
 	I4CV_USERNAME = 0,
 	I4CV_PASSWORD,
 	I4CV_HOSTNAME,
-	I4CV_PORT,
+	I4CV_PORT
+#if 0 /* FIXME SSL is not supported yet */
 	I4CV_SSL
+#endif
 } IMAP4Config;
-#define I4CV_LAST I4CV_SSL
+#define I4CV_LAST I4CV_PORT
 #define I4CV_COUNT (I4CV_LAST + 1)
 
 typedef enum _IMAP4Context
@@ -140,7 +142,7 @@ typedef struct _IMAP4
 static char const _imap4_type[] = "IMAP4";
 static char const _imap4_name[] = "IMAP4 server";
 
-AccountConfig _imap4_config[I4CV_COUNT] =
+AccountConfig _imap4_config[I4CV_COUNT + 1] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
