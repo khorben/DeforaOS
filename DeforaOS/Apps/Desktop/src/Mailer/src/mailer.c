@@ -365,7 +365,6 @@ Mailer * mailer_new(void)
 	/* statusbar */
 	mailer->statusbar = gtk_statusbar_new();
 	mailer->statusbar_id = 0;
-	_mailer_update_status(mailer);
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->fo_window), vbox);
 	gtk_widget_show_all(vbox);
@@ -442,6 +441,7 @@ Mailer * mailer_new(void)
 	mailer->pr_window = NULL;
 	/* show window */
 	gtk_widget_hide(mailer->hdr_vbox);
+	_mailer_update_status(mailer);
 	gtk_widget_show(mailer->fo_window);
 	/* load configuration */
 	mailer->source = g_idle_add(_new_config_load, mailer);
