@@ -254,7 +254,8 @@ static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
 	size_t len;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, command);
+	fprintf(stderr, "DEBUG: %s(\"%s\") %p\n", __func__, command,
+			(void *)pop3->channel);
 #endif
 	/* abort if the command is invalid */
 	if(command == NULL || (len = strlen(command)) == 0)
@@ -706,7 +707,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	{
 		if(cmd->status == P3CS_SENT || cmd->status == P3CS_PARSING)
 			return TRUE;
-		else if(cmd->status == P3CS_OK)
+		else if(cmd->status == P3CS_OK || cmd->status == P3CS_ERROR)
 			memmove(cmd, &pop3->queue[1], sizeof(*cmd)
 					* --pop3->queue_cnt);
 	}

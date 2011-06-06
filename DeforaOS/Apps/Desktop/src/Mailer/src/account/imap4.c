@@ -891,7 +891,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	{
 		if(cmd->status == I4CS_SENT || cmd->status == I4CS_PARSING)
 			return TRUE;
-		else if(cmd->status == I4CS_OK)
+		else if(cmd->status == I4CS_OK || cmd->status == I4CS_ERROR)
 			memmove(cmd, &imap4->queue[1], sizeof(*cmd)
 					* --imap4->queue_cnt);
 	}
