@@ -536,7 +536,9 @@ static gboolean _on_idle(gpointer data)
 
 static gboolean _idle_connect(AccountPlugin * plugin)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
+	char const * hostname;
 	char const * p;
 	struct hostent * he;
 	unsigned short port;
@@ -546,11 +548,11 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	/* FIXME report errors */
-	if((p = plugin->config[2].value) == NULL)
+	if((hostname = plugin->config[2].value) == NULL)
 		return FALSE;
-	if((he = gethostbyname(p)) == NULL)
+	if((he = gethostbyname(hostname)) == NULL)
 	{
-		plugin->helper->error(NULL, hstrerror(h_errno), 1);
+		helper->error(NULL, hstrerror(h_errno), 1);
 		return FALSE;
 	}
 	if((p = plugin->config[3].value) == NULL)
@@ -558,19 +560,17 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 	port = (unsigned long)p;
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
-		plugin->helper->error(NULL, strerror(errno), 1);
+		helper->error(NULL, strerror(errno), 1);
 		return FALSE;
 	}
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(port);
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() connecting to %s:%u\n", __func__,
+	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
-#endif
 	if(connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 	{
-		plugin->helper->error(NULL, strerror(errno), 1);
+		helper->error(NULL, strerror(errno), 1);
 		close(pop3->fd);
 		pop3->fd = -1;
 		return FALSE;

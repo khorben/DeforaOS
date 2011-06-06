@@ -15,6 +15,7 @@
 
 
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -66,7 +67,7 @@ static gboolean _account_get_iter(Account * account, GtkTreeIter * iter);
 /* useful */
 static int _account_helper_error(Account * account, char const * message,
 		int ret);
-static void _account_helper_status(Account * account, char const * message);
+static void _account_helper_status(Account * account, char const * format, ...);
 static Folder * _account_helper_folder_new(Account * account,
 		AccountFolder * folder, Folder * parent, FolderType type,
 		char const * name);
@@ -411,12 +412,27 @@ static int _account_helper_error(Account * account, char const * message,
 
 
 /* account_helper_status */
-static void _account_helper_status(Account * account, char const * message)
+static void _account_helper_status(Account * account, char const * format, ...)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, message);
-#endif
-	/* FIXME implement */
+	va_list ap;
+	int res;
+	size_t size;
+	char * p = NULL;
+
+	va_start(ap, format);
+	res = vsprintf(NULL, format, ap);
+	va_end(ap);
+	if(res >= 0)
+	{
+		va_start(ap, format);
+		size = res;
+		if((p = malloc(++size)) != NULL)
+			vsnprintf(p, size, format, ap);
+		va_end(ap);
+	}
+	if(p != NULL)
+		mailer_set_status(account->mailer, p);
+	free(p);
 }
 
 
