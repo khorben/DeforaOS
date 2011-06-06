@@ -64,6 +64,17 @@ typedef enum _IMAP4CommandStatus
 	I4CS_OK
 } IMAP4CommandStatus;
 
+typedef enum _IMAP4ConfigValue
+{
+	I4CV_USERNAME = 0,
+	I4CV_PASSWORD,
+	I4CV_HOSTNAME,
+	I4CV_PORT,
+	I4CV_SSL
+} IMAP4Config;
+#define I4CV_LAST I4CV_SSL
+#define I4CV_COUNT (I4CV_LAST + 1)
+
 typedef enum _IMAP4Context
 {
 	I4C_INIT = 0,
@@ -129,7 +140,7 @@ typedef struct _IMAP4
 static char const _imap4_type[] = "IMAP4";
 static char const _imap4_name[] = "IMAP4 server";
 
-AccountConfig _imap4_config[] =
+AccountConfig _imap4_config[I4CV_COUNT] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
@@ -138,8 +149,10 @@ AccountConfig _imap4_config[] =
 #if 0 /* FIXME SSL is not supported yet */
 	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	1	},
 #endif
+#if 0 /* XXX not implemented yet */
 	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL	},
 	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL	},
+#endif
 	{ NULL,		NULL,			ACT_NONE,	NULL	}
 };
 
@@ -399,9 +412,11 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			return _context_fetch(plugin, answer);
 		case I4C_INIT:
 			cmd->status = I4CS_OK;
-			if((p = plugin->config[0].value) == NULL || *p == '\0')
+			if((p = plugin->config[I4CV_USERNAME].value) == NULL
+					|| *p == '\0')
 				return -1;
-			if((q = plugin->config[1].value) == NULL || *q == '\0')
+			if((q = plugin->config[I4CV_PASSWORD].value) == NULL
+					|| *q == '\0')
 				return -1;
 			r = g_strdup_printf("%s %s %s", "LOGIN", p, q);
 			cmd = _imap4_command(plugin, I4C_LOGIN, r);
@@ -733,14 +748,14 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	/* FIXME report errors */
-	if((hostname = plugin->config[2].value) == NULL)
+	if((hostname = plugin->config[I4CV_HOSTNAME].value) == NULL)
 		return FALSE;
 	if((he = gethostbyname(hostname)) == NULL)
 	{
 		helper->error(NULL, hstrerror(h_errno), 1);
 		return FALSE;
 	}
-	if((p = plugin->config[3].value) == NULL)
+	if((p = plugin->config[I4CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
