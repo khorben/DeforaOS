@@ -13,13 +13,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
- * - no longer block on connect()
  * - really queue commands with callbacks
  * - support multiple connections? */
 
 
 
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -148,9 +148,11 @@ static void _pop3_message_delete(AccountPlugin * plugin,
 		AccountMessage * message);
 
 /* callbacks */
-static gboolean _on_idle(gpointer data);
+static gboolean _on_connect(gpointer data);
 static gboolean _on_noop(gpointer data);
 static gboolean _on_reset(gpointer data);
+static gboolean _on_watch_can_connect(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
@@ -190,7 +192,7 @@ static int _pop3_init(AccountPlugin * plugin)
 			&pop3->inbox, NULL, FT_INBOX, "Inbox");
 	pop3->trash.folder = plugin->helper->folder_new(plugin->helper->account,
 			&pop3->trash, NULL, FT_TRASH, "Trash");
-	pop3->source = g_idle_add(_on_idle, plugin);
+	pop3->source = g_idle_add(_on_connect, plugin);
 	return 0;
 }
 
@@ -513,29 +515,11 @@ static void _pop3_message_delete(AccountPlugin * plugin,
 
 /* callbacks */
 /* on_idle */
-static gboolean _idle_connect(AccountPlugin * plugin);
-static gboolean _idle_channel(AccountPlugin * plugin);
+static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected);
 
-static gboolean _on_idle(gpointer data)
+static gboolean _on_connect(gpointer data)
 {
-	gboolean ret = FALSE;
 	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	if(pop3->fd < 0)
-		ret = _idle_connect(plugin);
-	else if(pop3->channel == NULL)
-		ret = _idle_channel(plugin);
-	if(ret == FALSE)
-		pop3->source = 0;
-	return ret;
-}
-
-static gboolean _idle_connect(AccountPlugin * plugin)
-{
 	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
 	char const * hostname;
@@ -547,6 +531,7 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	pop3->source = 0;
 	/* FIXME report errors */
 	if((hostname = plugin->config[2].value) == NULL)
 		return FALSE;
@@ -568,17 +553,24 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
+	if(fcntl(pop3->fd, F_SETFL, O_NONBLOCK) != 0)
+		helper->error(NULL, strerror(errno), 1);
 	if(connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 	{
-		helper->error(NULL, strerror(errno), 1);
-		close(pop3->fd);
-		pop3->fd = -1;
-		return FALSE;
+		if(errno != EINPROGRESS)
+		{
+			helper->error(NULL, strerror(errno), 1);
+			close(pop3->fd);
+			pop3->fd = -1;
+			return FALSE;
+		}
+		else
+			return _connect_channel(plugin, FALSE);
 	}
-	return TRUE;
+	return _connect_channel(plugin, TRUE);
 }
 
-static gboolean _idle_channel(AccountPlugin * plugin)
+static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 {
 	POP3 * pop3 = plugin->priv;
 	GError * error = NULL;
@@ -598,10 +590,14 @@ static gboolean _idle_channel(AccountPlugin * plugin)
 	pop3->channel = g_io_channel_unix_new(pop3->fd);
 	g_io_channel_set_encoding(pop3->channel, NULL, &error);
 	g_io_channel_set_buffered(pop3->channel, FALSE);
-	/* wait for the server's banner */
-	pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-			_on_watch_can_read, plugin);
-	return TRUE;
+	if(connected)
+		/* wait for the server's banner */
+		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+				_on_watch_can_read, plugin);
+	else
+		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+				_on_watch_can_connect, plugin);
+	return FALSE;
 }
 
 
@@ -652,7 +648,27 @@ static gboolean _on_reset(gpointer data)
 	if(pop3->fd >= 0)
 		close(pop3->fd);
 	pop3->fd = -1;
-	pop3->source = g_timeout_add(3000, _on_idle, plugin);
+	pop3->source = g_timeout_add(3000, _on_connect, plugin);
+	return FALSE;
+}
+
+
+/* on_watch_can_connect */
+static gboolean _on_watch_can_connect(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+
+	if(condition != G_IO_OUT || source != pop3->channel)
+		return FALSE; /* should not happen */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() connected\n", __func__);
+#endif
+	pop3->wr_source = 0;
+	/* wait for the server's banner */
+	pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+			_on_watch_can_read, plugin);
 	return FALSE;
 }
 
