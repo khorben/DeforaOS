@@ -13,12 +13,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
- * - no longer block on connect()
  * - support multiple connections? */
 
 
 
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -186,9 +186,11 @@ static void _imap4_message_delete(AccountPlugin * plugin,
 		AccountMessage * message);
 
 /* callbacks */
-static gboolean _on_idle(gpointer data);
+static gboolean _on_connect(gpointer data);
 static gboolean _on_noop(gpointer data);
 static gboolean _on_reset(gpointer data);
+static gboolean _on_watch_can_connect(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
@@ -223,7 +225,7 @@ static int _imap4_init(AccountPlugin * plugin)
 	memset(imap4, 0, sizeof(*imap4));
 	plugin->priv = imap4;
 	imap4->fd = -1;
-	imap4->source = g_idle_add(_on_idle, plugin);
+	imap4->source = g_idle_add(_on_connect, plugin);
 	return 0;
 }
 
@@ -602,16 +604,17 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	parent->folders = p;
 	if((folder = object_new(sizeof(*folder))) == NULL)
 		return NULL;
+	folder->name = strdup(name);
 	if(parent == &imap4->folders)
 		for(i = 0; name_type[i].name != NULL; i++)
 			if(strcasecmp(name_type[i].name, name) == 0)
 			{
 				type = name_type[i].type;
+				name = name_type[i].name;
 				break;
 			}
 	folder->folder = helper->folder_new(helper->account, folder, NULL, type,
 			name);
-	folder->name = strdup(name);
 	folder->messages = NULL;
 	folder->messages_cnt = 0;
 	folder->folders = NULL;
@@ -715,29 +718,11 @@ static void _imap4_message_delete(AccountPlugin * plugin,
 
 /* callbacks */
 /* on_idle */
-static gboolean _idle_connect(AccountPlugin * plugin);
-static gboolean _idle_channel(AccountPlugin * plugin);
+static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected);
 
-static gboolean _on_idle(gpointer data)
+static gboolean _on_connect(gpointer data)
 {
-	gboolean ret = FALSE;
 	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	if(imap4->fd < 0)
-		ret = _idle_connect(plugin);
-	else if(imap4->channel == NULL)
-		ret = _idle_channel(plugin);
-	if(ret == FALSE)
-		imap4->source = 0;
-	return ret;
-}
-
-static gboolean _idle_connect(AccountPlugin * plugin)
-{
 	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	char const * hostname;
@@ -749,6 +734,7 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	imap4->source = 0;
 	/* FIXME report errors */
 	if((hostname = plugin->config[I4CV_HOSTNAME].value) == NULL)
 		return FALSE;
@@ -770,17 +756,24 @@ static gboolean _idle_connect(AccountPlugin * plugin)
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
+	if(fcntl(imap4->fd, F_SETFL, O_NONBLOCK) != 0)
+		helper->error(NULL, strerror(errno), 1);
 	if(connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 	{
-		helper->error(NULL, strerror(errno), 1);
-		close(imap4->fd);
-		imap4->fd = -1;
-		return FALSE;
+		if(errno != EINPROGRESS)
+		{
+			helper->error(NULL, strerror(errno), 1);
+			close(imap4->fd);
+			imap4->fd = -1;
+			return FALSE;
+		}
+		else
+			return _connect_channel(plugin, FALSE);
 	}
-	return TRUE;
+	return _connect_channel(plugin, TRUE);
 }
 
-static gboolean _idle_channel(AccountPlugin * plugin)
+static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 {
 	IMAP4 * imap4 = plugin->priv;
 	GError * error = NULL;
@@ -802,10 +795,14 @@ static gboolean _idle_channel(AccountPlugin * plugin)
 	imap4->channel = g_io_channel_unix_new(imap4->fd);
 	g_io_channel_set_encoding(imap4->channel, NULL, &error);
 	g_io_channel_set_buffered(imap4->channel, FALSE);
-	/* wait for the server's banner */
-	imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-			_on_watch_can_read, plugin);
-	return TRUE;
+	if(connected)
+		/* wait for the server's banner */
+		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
+				_on_watch_can_read, plugin);
+	else
+		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_OUT,
+				_on_watch_can_connect, plugin);
+	return FALSE;
 }
 
 
@@ -853,7 +850,27 @@ static gboolean _on_reset(gpointer data)
 	if(imap4->fd >= 0)
 		close(imap4->fd);
 	imap4->fd = -1;
-	imap4->source = g_timeout_add(3000, _on_idle, plugin);
+	imap4->source = g_timeout_add(3000, _on_connect, plugin);
+	return FALSE;
+}
+
+
+/* on_watch_can_connect */
+static gboolean _on_watch_can_connect(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	IMAP4 * imap4 = plugin->priv;
+
+	if(condition != G_IO_OUT || source != imap4->channel)
+		return FALSE; /* should not happen */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() connected\n", __func__);
+#endif
+	imap4->wr_source = 0;
+	/* wait for the server's banner */
+	imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
+			_on_watch_can_read, plugin);
 	return FALSE;
 }
 
