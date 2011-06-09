@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System VFS */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -237,7 +237,7 @@ int closedir(DIR * dir)
 	else if(appclient_call(_appclient, &ret, "closedir", fd) != 0)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: closedir(%p) => %d\n", dir, ret);
+	fprintf(stderr, "DEBUG: closedir(%p) => %d\n", (void *)dir, ret);
 #endif
 #ifndef dirfd
 	free(d);
@@ -263,7 +263,7 @@ int dirfd(DIR * dir)
 	else if(appclient_call(_appclient, &ret, "dirfd", d->fd) != 0)
 		return -1;
 # ifdef DEBUG
-	fprintf(stderr, "DEBUG: dirfd(%p) => %d\n", dir, ret);
+	fprintf(stderr, "DEBUG: dirfd(%p) => %d\n", (void *)dir, ret);
 # endif
 	if(ret < 0)
 		return -1;
@@ -422,8 +422,8 @@ DIR * opendir(char const * path)
 			return NULL;
 		}
 # ifdef DEBUG
-		fprintf(stderr, "DEBUG: opendir(\"%s\") => %p %d\n", path, dir,
-				dir->fd);
+		fprintf(stderr, "DEBUG: opendir(\"%s\") => %p %d\n", path,
+				(void *)dir, dir->fd);
 # endif
 	}
 	return (DIR*)dir;
@@ -442,7 +442,8 @@ DIR * opendir(char const * path)
 		return NULL;
 	}
 # ifdef DEBUG
-	fprintf(stderr, "DEBUG: opendir(\"%s\") => %p %d\n", path, dir, fd);
+	fprintf(stderr, "DEBUG: opendir(\"%s\") => %p %d\n", path,
+			(void *)dir, fd);
 # endif
 	dirfd(dir) = fd + VFS_OFF;
 	return dir;
@@ -502,7 +503,7 @@ struct dirent * readdir(DIR * dir)
 	if(appclient_call(_appclient, &res, "readdir", fd, &filename) != 0)
 		return NULL;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: readdir(%p %d) => %d\n", dir, fd, res);
+	fprintf(stderr, "DEBUG: readdir(%p %d) => %d\n", (void *)dir, fd, res);
 #endif
 	if(res != 0)
 	{
@@ -517,7 +518,8 @@ struct dirent * readdir(DIR * dir)
 	de.d_namlen = strlen(de.d_name);
 #endif
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: readdir(%p) => \"%s\"\n", dir, de.d_name);
+	fprintf(stderr, "DEBUG: readdir(%p) => \"%s\"\n", (void *)dir,
+			de.d_name);
 #endif
 	return &de;
 }
@@ -572,7 +574,7 @@ void rewinddir(DIR * dir)
 		/* XXX this call ignores errors */
 		appclient_call(_appclient, NULL, "rewinddir", fd);
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: rewinddir(%p)\n", dir);
+		fprintf(stderr, "DEBUG: rewinddir(%p)\n", (void *)dir);
 #endif
 	}
 }
