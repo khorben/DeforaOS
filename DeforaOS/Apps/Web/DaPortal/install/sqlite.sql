@@ -327,13 +327,13 @@ CREATE TABLE daportal_caserver (
 	FOREIGN KEY (parent) REFERENCES daportal_ca (ca_id)
 );
 
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('17', 'Path to the PKI repository', 'string', 'root', '');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('18', 'Path to the PKI repository', 'string', 'root', '');
 
 
 /* module: browser */
 INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
 
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('18', 'Root of the file browser', 'string', 'root', '/');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('19', 'Root of the file browser', 'string', 'root', '/');
 
 
 /* module: translate */
