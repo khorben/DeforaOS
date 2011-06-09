@@ -112,8 +112,9 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 #endif
 	if(type == NULL)
 		return NULL;
-	if((account = calloc(1, sizeof(*account))) == NULL)
+	if((account = object_new(sizeof(*account))) == NULL)
 		return NULL;
+	memset(account, 0, sizeof(*account));
 	account->mailer = mailer;
 	account->type = string_new(type);
 	if(title != NULL)
