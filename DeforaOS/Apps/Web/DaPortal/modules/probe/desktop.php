@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -73,5 +73,12 @@ if(is_array($hosts) && count($hosts))
 				'title' => $h['title'],
 				'args' => 'id='.$h['id']);
 }
+
+//sort
+function _probe_desktop_sort(array $a, array $b)
+{
+	return strcmp($a['title'], $b['title']);
+}
+usort($actions['graph_list']['actions'], '_probe_desktop_sort');
 
 ?>
