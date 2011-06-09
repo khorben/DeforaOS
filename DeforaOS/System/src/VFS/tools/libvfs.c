@@ -327,7 +327,7 @@ off_t lseek(int fd, off_t offset, int whence)
 				whence) != 0)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: lseek(%d, %zd, %d) => %d\n", fd - VFS_OFF,
+	fprintf(stderr, "DEBUG: lseek(%d, %ld, %d) => %d\n", fd - VFS_OFF,
 			offset, whence, ret);
 #endif
 	return ret;
@@ -469,7 +469,7 @@ ssize_t read(int fd, void * buf, size_t count)
 		return -1;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: read(%d, buf, %zu) => %d\n", fd - VFS_OFF,
+	fprintf(stderr, "DEBUG: read(%d, buf, %lu) => %d\n", fd - VFS_OFF,
 			count, ret);
 #endif
 	if(ret <= 0)
@@ -666,7 +666,7 @@ ssize_t write(int fd, void const * buf, size_t count)
 		return -1;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: write(%d, buf, %zu) => %d\n", fd - VFS_OFF,
+	fprintf(stderr, "DEBUG: write(%d, buf, %lu) => %d\n", fd - VFS_OFF,
 			count, ret);
 #endif
 	if(ret <= 0)
