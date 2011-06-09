@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -46,5 +46,12 @@ foreach($modules as $m)
 	$d['args'] = 'module='.$d['name'].'&action=admin';
 	$actions['admin']['actions'][] = $d;
 }
+
+//sort
+function _admin_desktop_sort(array $a, array $b)
+{
+	return strcmp($a['title'], $b['title']);
+}
+usort($actions['admin']['actions'], '_admin_desktop_sort');
 
 ?>
