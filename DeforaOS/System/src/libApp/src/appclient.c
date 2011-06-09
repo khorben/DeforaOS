@@ -28,6 +28,7 @@
 #else
 # include <sys/socket.h>
 # include <netinet/in.h>
+# include <netinet/tcp.h>
 # include <netdb.h>
 # include <arpa/inet.h>
 #endif
@@ -122,7 +123,7 @@ static int _appclient_read(int fd, AppClient * ac)
 	if((len = ac->read(ac, &ac->buf_read[ac->buf_read_cnt], len)) <= 0)
 		return _read_error(ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: read(", fd, ") => ", len, "\n");
+	fprintf(stderr, "%s%d%s%ld%s", "DEBUG: read(", fd, ") => ", len, "\n");
 #endif
 	ac->buf_read_cnt += len;
 	len = appinterface_call_receive(ac->interface, ac->lastret,
@@ -182,7 +183,7 @@ static int _appclient_write(int fd, AppClient * ac)
 	if((len = ac->write(ac, ac->buf_write, ac->buf_write_cnt)) <= 0)
 		return _write_error(ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zu%s%zd%s", "DEBUG: write(", fd, ", ",
+	fprintf(stderr, "%s%d%s%lu%s%ld%s", "DEBUG: write(", fd, ", ",
 			ac->buf_write_cnt, ") ", len, "\n");
 #endif
 	memmove(ac->buf_write, &ac->buf_write[len], len);
@@ -322,7 +323,7 @@ AppClient * appclient_new_event(char const * app, Event * event)
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %p) => %p\n", __func__, app,
-			(void*)event, (void*)appclient);
+			(void *)event, (void *)appclient);
 #endif
 	return appclient;
 }
@@ -332,6 +333,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 	const char init[] = "Init";
 	struct sockaddr_in sa;
 	int32_t port = -1;
+	int optval = 1;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void*)appclient,
@@ -343,6 +345,9 @@ static int _new_connect(AppClient * appclient, char const * app)
 	sa.sin_port = htons(appinterface_get_port(appclient->interface));
 	if(_connect_addr(init, &sa.sin_addr.s_addr) != 0)
 		return 1;
+	if(setsockopt(appclient->fd, SOL_SOCKET, TCP_NODELAY, &optval,
+				sizeof(optval)) != 0)
+		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
 #ifdef DEBUG
