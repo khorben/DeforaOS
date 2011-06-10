@@ -756,7 +756,7 @@ static gboolean _on_connect(gpointer data)
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
-	if(fcntl(imap4->fd, F_SETFL, O_NONBLOCK) != 0)
+	if(fcntl(imap4->fd, F_SETFL, O_NONBLOCK) == -1)
 		helper->error(NULL, strerror(errno), 1);
 	if(connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 	{
