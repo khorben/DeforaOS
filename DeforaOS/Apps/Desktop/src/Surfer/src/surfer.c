@@ -213,7 +213,8 @@ static DesktopToolbar _surfer_toolbar[] =
 	{ N_("Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0,
 		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Home"), G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
+	{ N_("Home"), G_CALLBACK(on_home), GTK_STOCK_HOME, GDK_MOD1_MASK,
+		GDK_KEY_Home, NULL },
 #ifdef EMBEDDED
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Zoom in"), G_CALLBACK(on_zoom_in), "zoom-in", 0, 0, NULL },
