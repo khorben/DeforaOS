@@ -474,8 +474,12 @@ void pdf_load_page(PDFviewer * pdfviewer)
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() scale not set!\n", __func__);
 #endif
+#if GTK_CHECK_VERSION(2, 18, 0)
 		gtk_widget_get_allocation(pdfviewer->view, &view_allocation);
 		pdfviewer->pdf->scale = ((view_allocation.width - 20) / width); 
+#else
+		/* FIXME implement or re-work */
+#endif
 #if 0
 		pdfviewer->pdf->scale = (view_allocation.height / height); /* view whole page */
 #endif
