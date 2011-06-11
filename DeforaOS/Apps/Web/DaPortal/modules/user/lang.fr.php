@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 //check url
-if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: ../../index.php'));
 
 $text['APPEARANCE'] = 'Apparence';

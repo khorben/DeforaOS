@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 

@@ -83,7 +83,7 @@ function install_config($dbtype, $dbhost, $dbport, $dbname, $dbuser,
 
 
 //check url
-if(!ereg('/index.php$', \$_SERVER['SCRIPT_NAME']))
+if(preg_match('/\\/index.php$/', \$_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: index.php'));
 
 
