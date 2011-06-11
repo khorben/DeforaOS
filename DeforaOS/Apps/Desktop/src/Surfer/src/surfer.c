@@ -14,9 +14,8 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
-/* FIXME:
+/* TODO:
  * - implement a default download directory (and "always ask")
- * - add "new tab" and "new window" buttons to the embedded interface
  * - consider using GtkSourceView to display the page source */
 
 
@@ -286,10 +285,11 @@ Surfer * _new_do(char const * url)
 	GtkToolItem * toolitem;
 	GtkWidget * widget;
 
-	if((surfer = malloc(sizeof(*surfer))) == NULL)
+	if((surfer = object_new(sizeof(*surfer))) == NULL)
 		return NULL;
 	surfer->homepage = NULL;
 	surfer->download_dir = NULL;
+	surfer->download_close = 0;
 	surfer->proxy_type = SPT_NONE;
 	surfer->proxy_http = NULL;
 	surfer->proxy_http_port = 0;
@@ -464,7 +464,7 @@ void surfer_delete(Surfer * surfer)
 	free(surfer->proxy_http);
 	free(surfer->download_dir);
 	free(surfer->homepage);
-	free(surfer);
+	object_delete(surfer);
 	if(--_surfer_cnt == 0)
 		gtk_main_quit();
 }
@@ -757,6 +757,8 @@ int surfer_config_load(Surfer * surfer)
 			&surfer->homepage);
 	_config_load_string(surfer->config, NULL, "download_directory",
 			&surfer->download_dir);
+	_config_load_integer(surfer->config, NULL, "download_close",
+			&surfer->download_close);
 	if((p = getenv("http_proxy")) != NULL && sscanf(p, "http://%255[^:]:%u",
 				buf, &port) == 2)
 	{
@@ -790,6 +792,8 @@ int surfer_config_save(Surfer * surfer)
 			surfer->homepage);
 	ret |= _config_save_string(surfer->config, NULL, "download_directory",
 			surfer->download_dir);
+	ret |= _config_save_boolean(surfer->config, NULL, "download_close",
+			surfer->download_close);
 	ret |= _config_save_boolean(surfer->config, NULL, "focus_new_tabs",
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs)));
@@ -911,6 +915,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	char * filename = NULL;
 #ifdef WITH_DOWNLOAD
 	DownloadPrefs prefs;
+	Download * download;
 #else
 	char * argv[] = { "download", "-O", NULL, NULL, NULL };
 	GError * error = NULL;
@@ -943,7 +948,10 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 #ifdef WITH_DOWNLOAD
 	prefs.output = filename;
 	prefs.user_agent = NULL;
-	download_new(&prefs, url);
+	if((download = download_new(&prefs, url)) == NULL)
+		ret = -surfer_error(surfer, error_get(), 1);
+	else
+		download_set_close(download, surfer->download_close);
 #else
 	argv[2] = filename;
 	if((argv[3] = strdup(url)) == NULL)
@@ -1276,7 +1284,7 @@ int surfer_prompt(Surfer * surfer, char const * message,
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
-#if GTK_CHECK_VERSION(2, 8, 0)
+#if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
@@ -1633,6 +1641,10 @@ void surfer_view_preferences(Surfer * surfer)
 			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_download_dir, TRUE, TRUE,
 			0);
+	surfer->pr_download_close = gtk_check_button_new_with_label(
+			_("Close download windows when complete"));
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_download_close, FALSE,
+			TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
@@ -1680,7 +1692,7 @@ static void _preferences_set(Surfer * surfer)
 
 	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage),
 			(surfer->homepage != NULL) ? surfer->homepage : "");
-	if((p = config_get(surfer->config, "", "focus_new_tabs")) != NULL
+	if((p = config_get(surfer->config, NULL, "focus_new_tabs")) != NULL
 			&& strcmp(p, "1") == 0)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_focus_tabs), TRUE);
@@ -1692,6 +1704,9 @@ static void _preferences_set(Surfer * surfer)
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(surfer->pr_download_dir),
 			(surfer->download_dir != NULL) ? surfer->download_dir
 			: g_get_home_dir());
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+				surfer->pr_download_close),
+			surfer->download_close);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_proxy_radio_http),
 			surfer->proxy_type == SPT_HTTP);
@@ -1737,6 +1752,8 @@ static void _preferences_on_ok(gpointer data)
 	gtk_widget_hide(surfer->pr_window);
 	surfer_set_homepage(surfer, gtk_entry_get_text(GTK_ENTRY(
 					surfer->pr_homepage)));
+	surfer->download_close = gtk_toggle_button_get_active(
+			GTK_TOGGLE_BUTTON(surfer->pr_download_close));
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 					surfer->pr_proxy_radio_http)))
 		type = SPT_HTTP;

@@ -298,6 +298,13 @@ void download_delete(Download * download)
 }
 
 
+/* accessors */
+void download_set_close(Download * download, gboolean close)
+{
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(download->check), close);
+}
+
+
 /* useful */
 /* download_cancel */
 int download_cancel(Download * download)

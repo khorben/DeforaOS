@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-27 13:46+0200\n"
+"POT-Creation-Date: 2011-06-11 18:34+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../src/callbacks.c:43 ../src/callbacks.c:53 ../src/surfer.c:820
-#: ../src/surfer.c:823 ../src/surfer.c:1280 ../src/surfer.c:1284
+#: ../src/callbacks.c:43 ../src/callbacks.c:53 ../src/surfer.c:824
+#: ../src/surfer.c:827 ../src/surfer.c:1288 ../src/surfer.c:1292
 msgid "Question"
 msgstr ""
 
@@ -31,7 +31,7 @@ msgstr ""
 msgid "Resolving..."
 msgstr ""
 
-#: ../src/common/conn.c:253 ../src/download.c:566 ../src/ghtml-gtkhtml.c:926
+#: ../src/common/conn.c:253 ../src/download.c:573 ../src/ghtml-gtkhtml.c:926
 msgid "Connected"
 msgstr ""
 
@@ -53,7 +53,7 @@ msgstr ""
 msgid "Unspecified error"
 msgstr ""
 
-#: ../src/common/conn.c:348 ../src/download.c:645 ../src/ghtml-gtkhtml.c:1112
+#: ../src/common/conn.c:348 ../src/download.c:652 ../src/ghtml-gtkhtml.c:1112
 msgid "Timeout"
 msgstr ""
 
@@ -93,67 +93,67 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:328 ../src/download.c:333 ../src/download.c:722
-#: ../src/surfer.c:971 ../src/surfer.c:974
+#: ../src/download.c:335 ../src/download.c:340 ../src/download.c:729
+#: ../src/surfer.c:979 ../src/surfer.c:982
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/download.c:382 ../src/download.c:408
+#: ../src/download.c:389 ../src/download.c:415
 msgid "kB"
 msgstr ""
 
-#: ../src/download.c:403 ../src/download.c:414 ../src/download.c:433
+#: ../src/download.c:410 ../src/download.c:421 ../src/download.c:440
 msgid "MB"
 msgstr ""
 
-#: ../src/download.c:405
+#: ../src/download.c:412
 #, c-format
 msgid "%.1f %s/s"
 msgstr ""
 
-#: ../src/download.c:416
+#: ../src/download.c:423
 #, c-format
 msgid "%.1f %s"
 msgstr ""
 
-#: ../src/download.c:435
+#: ../src/download.c:442
 #, c-format
 msgid "%.1f of %.1f %s"
 msgstr ""
 
-#: ../src/download.c:574
+#: ../src/download.c:581
 msgid "Error "
 msgstr "Fehler "
 
-#: ../src/download.c:599 ../src/download.c:727
+#: ../src/download.c:606 ../src/download.c:734
 msgid "Complete"
 msgstr ""
 
-#: ../src/download.c:609 ../src/download.c:745
+#: ../src/download.c:616 ../src/download.c:752
 msgid "Downloading"
 msgstr ""
 
-#: ../src/download.c:620
+#: ../src/download.c:627
 msgid "Redirected to"
 msgstr ""
 
-#: ../src/download.c:623
+#: ../src/download.c:630
 msgid "Redirected"
 msgstr ""
 
-#: ../src/download.c:630
+#: ../src/download.c:637
 msgid "Resolved"
 msgstr ""
 
-#: ../src/download.c:638
+#: ../src/download.c:645
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:696 ../src/ghtml-webkit.c:695 ../src/surfer.c:973
+#: ../src/download.c:703 ../src/ghtml-webkit.c:695 ../src/surfer.c:981
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/download.c:766
+#: ../src/download.c:773
 msgid ""
 "Usage: download [-O output][-U user-agent] URL...\n"
 "  -O\tFile to write document to\n"
@@ -193,155 +193,155 @@ msgstr ""
 msgid "Usage: surfer [URL...]\n"
 msgstr "Usage: surfer [URL...]\n"
 
-#: ../src/surfer.c:107
+#: ../src/surfer.c:106
 msgid "_New tab"
 msgstr ""
 
-#: ../src/surfer.c:109
+#: ../src/surfer.c:108
 msgid "_New window"
 msgstr "_Neue Fenster"
 
-#: ../src/surfer.c:111
+#: ../src/surfer.c:110
 msgid "_Open..."
 msgstr "_Offnen..."
 
-#: ../src/surfer.c:113
+#: ../src/surfer.c:112
 msgid "Open _URL..."
 msgstr ""
 
-#: ../src/surfer.c:116
+#: ../src/surfer.c:115
 msgid "Save _as..."
 msgstr ""
 
-#: ../src/surfer.c:119
+#: ../src/surfer.c:118
 msgid "_Print..."
 msgstr ""
 
-#: ../src/surfer.c:122
+#: ../src/surfer.c:121
 msgid "Close _tab"
 msgstr ""
 
-#: ../src/surfer.c:124
+#: ../src/surfer.c:123
 msgid "_Close"
 msgstr "_Schliessen"
 
-#: ../src/surfer.c:131
+#: ../src/surfer.c:130
 msgid "_Undo"
 msgstr ""
 
-#: ../src/surfer.c:133
+#: ../src/surfer.c:132
 msgid "_Redo"
 msgstr ""
 
-#: ../src/surfer.c:136
+#: ../src/surfer.c:135
 msgid "_Cut"
 msgstr ""
 
-#: ../src/surfer.c:138
+#: ../src/surfer.c:137
 msgid "Cop_y"
 msgstr ""
 
-#: ../src/surfer.c:140
+#: ../src/surfer.c:139
 msgid "_Paste"
 msgstr ""
 
-#: ../src/surfer.c:143
+#: ../src/surfer.c:142
 msgid "Select _all"
 msgstr ""
 
-#: ../src/surfer.c:150
+#: ../src/surfer.c:149
 msgid "_Unselect all"
 msgstr ""
 
-#: ../src/surfer.c:152
+#: ../src/surfer.c:151
 msgid "_Find"
 msgstr "_Suchen"
 
-#: ../src/surfer.c:155
+#: ../src/surfer.c:154
 msgid "_Preferences"
 msgstr "_Einstellungen"
 
-#: ../src/surfer.c:162 ../src/surfer.c:220
+#: ../src/surfer.c:161 ../src/surfer.c:219
 msgid "Zoom in"
 msgstr ""
 
-#: ../src/surfer.c:164 ../src/surfer.c:221
+#: ../src/surfer.c:163 ../src/surfer.c:220
 msgid "Zoom out"
 msgstr ""
 
-#: ../src/surfer.c:166 ../src/surfer.c:222
+#: ../src/surfer.c:165 ../src/surfer.c:221
 msgid "Normal size"
 msgstr ""
 
-#: ../src/surfer.c:169
+#: ../src/surfer.c:168
 msgid "_Fullscreen"
 msgstr ""
 
-#: ../src/surfer.c:172
+#: ../src/surfer.c:171
 msgid "_Refresh"
 msgstr "_Aktualisieren"
 
-#: ../src/surfer.c:174
+#: ../src/surfer.c:173
 msgid "_Force refresh"
 msgstr ""
 
-#: ../src/surfer.c:176
+#: ../src/surfer.c:175
 msgid "_Stop"
 msgstr ""
 
-#: ../src/surfer.c:179
+#: ../src/surfer.c:178
 msgid "Javascript _console"
 msgstr ""
 
-#: ../src/surfer.c:181
+#: ../src/surfer.c:180
 msgid "Page so_urce"
 msgstr ""
 
-#: ../src/surfer.c:188
+#: ../src/surfer.c:187
 msgid "_About"
 msgstr "_Info"
 
-#: ../src/surfer.c:199
+#: ../src/surfer.c:198
 msgid "_File"
 msgstr "_Datei"
 
-#: ../src/surfer.c:200
+#: ../src/surfer.c:199
 msgid "_Edit"
 msgstr ""
 
-#: ../src/surfer.c:201
+#: ../src/surfer.c:200
 msgid "_View"
 msgstr ""
 
-#: ../src/surfer.c:202
+#: ../src/surfer.c:201
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: ../src/surfer.c:209
+#: ../src/surfer.c:208
 msgid "Back"
 msgstr "Zurück"
 
-#: ../src/surfer.c:211
+#: ../src/surfer.c:210
 msgid "Forward"
 msgstr ""
 
-#: ../src/surfer.c:213
+#: ../src/surfer.c:212
 msgid "Stop"
 msgstr ""
 
-#: ../src/surfer.c:214
+#: ../src/surfer.c:213
 msgid "Refresh"
 msgstr "Aktualisieren"
 
-#: ../src/surfer.c:217
+#: ../src/surfer.c:216
 msgid "Home"
 msgstr ""
 
-#: ../src/surfer.c:225
+#: ../src/surfer.c:224
 msgid "New tab"
 msgstr ""
 
-#: ../src/surfer.c:227
+#: ../src/surfer.c:226
 msgid "New window"
 msgstr ""
 
@@ -353,7 +353,7 @@ msgstr "Web surfer"
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:396 ../src/surfer.c:1790 ../src/surfer.c:1794
+#: ../src/surfer.c:396 ../src/surfer.c:1807 ../src/surfer.c:1811
 msgid "Security information"
 msgstr ""
 
@@ -361,143 +361,147 @@ msgstr ""
 msgid "Ready"
 msgstr ""
 
-#: ../src/surfer.c:676 ../src/surfer.c:1196
+#: ../src/surfer.c:676 ../src/surfer.c:1204
 msgid "Untitled"
 msgstr ""
 
-#: ../src/surfer.c:921 ../src/surfer.c:1362
+#: ../src/surfer.c:926 ../src/surfer.c:1370
 msgid "Save file as..."
 msgstr ""
 
-#: ../src/surfer.c:1002
+#: ../src/surfer.c:1010
 msgid "Find text"
 msgstr "Text suchen"
 
-#: ../src/surfer.c:1014
+#: ../src/surfer.c:1022
 msgid "Text:"
 msgstr "Text:"
 
-#: ../src/surfer.c:1022
+#: ../src/surfer.c:1030
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:1026
+#: ../src/surfer.c:1034
 msgid "Search backwards"
 msgstr ""
 
-#: ../src/surfer.c:1029
+#: ../src/surfer.c:1037
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:1059
+#: ../src/surfer.c:1067
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:1148
+#: ../src/surfer.c:1156
 msgid "Open file..."
 msgstr ""
 
-#: ../src/surfer.c:1186
+#: ../src/surfer.c:1194
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:1423
+#: ../src/surfer.c:1431
 msgid "Javascript console"
 msgstr ""
 
-#: ../src/surfer.c:1428
+#: ../src/surfer.c:1436
 msgid "Command:"
 msgstr ""
 
-#: ../src/surfer.c:1447
+#: ../src/surfer.c:1455
 msgid "Message"
 msgstr ""
 
-#: ../src/surfer.c:1452
+#: ../src/surfer.c:1460
 msgid "Source"
 msgstr ""
 
-#: ../src/surfer.c:1457
+#: ../src/surfer.c:1465
 msgid "Line"
 msgstr "Linie"
 
-#: ../src/surfer.c:1589
+#: ../src/surfer.c:1597
 msgid "Web surfer preferences"
 msgstr "Web surfer Einstellungen"
 
-#: ../src/surfer.c:1609
+#: ../src/surfer.c:1617
 msgid "Homepage:"
 msgstr "Hauptseite:"
 
-#: ../src/surfer.c:1615
+#: ../src/surfer.c:1623
 msgid "Tab handling"
 msgstr ""
 
-#: ../src/surfer.c:1620
+#: ../src/surfer.c:1628
 msgid "Focus new tabs"
 msgstr ""
 
-#: ../src/surfer.c:1625
+#: ../src/surfer.c:1633
 msgid "Downloads"
 msgstr ""
 
-#: ../src/surfer.c:1628
+#: ../src/surfer.c:1636
 msgid "Default download directory:"
 msgstr ""
 
-#: ../src/surfer.c:1632
+#: ../src/surfer.c:1640
 msgid "Choose the default download directory"
 msgstr ""
 
-#: ../src/surfer.c:1639
+#: ../src/surfer.c:1645
+msgid "Close download windows when complete"
+msgstr ""
+
+#: ../src/surfer.c:1651
 msgid "General"
 msgstr "Allgemein"
 
-#: ../src/surfer.c:1643
+#: ../src/surfer.c:1655
 msgid "Connectivity:"
 msgstr ""
 
-#: ../src/surfer.c:1646
+#: ../src/surfer.c:1658
 msgid "Direct connection"
 msgstr "Direkt Verbindung"
 
-#: ../src/surfer.c:1650
+#: ../src/surfer.c:1662
 msgid "HTTP proxy:"
 msgstr "HTTP proxy:"
 
-#: ../src/surfer.c:1657
+#: ../src/surfer.c:1669
 msgid "Hostname:"
 msgstr ""
 
-#: ../src/surfer.c:1661
+#: ../src/surfer.c:1673
 msgid "Port:"
 msgstr "Port:"
 
-#: ../src/surfer.c:1671
+#: ../src/surfer.c:1683
 msgid "Network"
 msgstr "Netzwerk"
 
-#: ../src/surfer.c:1776
+#: ../src/surfer.c:1793
 msgid "This connection is encrypted and trusted."
 msgstr ""
 
-#: ../src/surfer.c:1779
+#: ../src/surfer.c:1796
 msgid "This connection is encrypted but not trusted."
 msgstr ""
 
-#: ../src/surfer.c:1783
+#: ../src/surfer.c:1800
 msgid "This connection is not encrypted."
 msgstr ""
 
-#: ../src/surfer.c:1838
+#: ../src/surfer.c:1855
 msgid "Web surfer - Source of "
 msgstr "Web surfer - Quellcode von "
 
-#: ../src/surfer.c:1880 ../src/surfer.c:1883 ../src/surfer.c:1938
-#: ../src/surfer.c:1943
+#: ../src/surfer.c:1897 ../src/surfer.c:1900 ../src/surfer.c:1955
+#: ../src/surfer.c:1960
 msgid "Warning"
 msgstr "Achtung"
 
-#: ../src/surfer.c:1942
+#: ../src/surfer.c:1959
 msgid "This file already exists. Overwrite?"
 msgstr ""
