@@ -272,14 +272,14 @@ INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
 
 /* module: wiki */
 INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('15', 'Allow anonymous users on the wiki', 'bool', 'anonymous', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('15', 'Path to the wiki repository', 'string', 'root', '');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('15', 'Let wiki pages be tagged', 'bool', 'tags', '0');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('16', 'Allow anonymous users on the wiki', 'bool', 'anonymous', '1');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('16', 'Path to the wiki repository', 'string', 'root', '');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('16', 'Let wiki pages be tagged', 'bool', 'tags', '0');
 
 
 /* module: webmail */
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('16', 'Server hostname', 'string', 'server', '');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('17', 'Server hostname', 'string', 'server', '');
 
 
 /* module: pki */
