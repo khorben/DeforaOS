@@ -111,7 +111,7 @@ function top_delete($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	_sql_query("DELETE FROM daportal_top WHERE top_id='".$args['id']."'");
 }
@@ -122,7 +122,7 @@ function top_insert($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(_sql_query('INSERT INTO daportal_top (name, link) VALUES ('
 			."'".$args['name']."', '".$args['link']."')") == FALSE)
@@ -154,7 +154,7 @@ function top_move($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	$from = _sql_array('SELECT name, link FROM daportal_top'
 			." WHERE top_id='".$args['id']."'");
@@ -195,7 +195,7 @@ function top_update($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(!_sql_query('UPDATE daportal_top SET name='."'".$args['name']."'"
 			.", link='".$args['link']."'"
