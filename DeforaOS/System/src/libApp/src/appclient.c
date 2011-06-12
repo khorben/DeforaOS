@@ -345,9 +345,11 @@ static int _new_connect(AppClient * appclient, char const * app)
 	sa.sin_port = htons(appinterface_get_port(appclient->interface));
 	if(_connect_addr(init, &sa.sin_addr.s_addr) != 0)
 		return 1;
+#ifdef TCP_NODELAY
 	if(setsockopt(appclient->fd, SOL_SOCKET, TCP_NODELAY, &optval,
 				sizeof(optval)) != 0)
 		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
+#endif
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
 #ifdef DEBUG
