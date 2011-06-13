@@ -1,49 +1,49 @@
 h2.title.about:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-about.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-about.png');
 }
 
 h2.title.add:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-add.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-add.png');
 }
 
 h2.title.admin:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/categories/gtk-preferences.png');
+	content:			url('gnome-icon-theme/32x32/categories/gtk-preferences.png');
 }
 
 h2.title.appearance:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/wallpaper.png');
+	content:			url('gnome-icon-theme/32x32/apps/wallpaper.png');
 }
 
 h2.title.article:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/mimetypes/html.png');
+	content:			url('gnome-icon-theme/32x32/mimetypes/html.png');
 }
 
 h2.title.back:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/back.png');
+	content:			url('gnome-icon-theme/32x32/actions/back.png');
 }
 
 h2.title.blog:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/mimetypes/vcalendar.png');
+	content:			url('gnome-icon-theme/32x32/mimetypes/vcalendar.png');
 }
 
 h2.title.bold:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-bold.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-bold.png');
 }
 
 h2.title.bookmark:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/places/user-bookmarks.png');
+	content:			url('gnome-icon-theme/32x32/places/user-bookmarks.png');
 }
 
 h2.title.browse:before, h2.title.download:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/places/folder-download.png');
+	content:			url('gnome-icon-theme/32x32/places/folder-download.png');
 }
 
 h2.title.browser:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/file-manager.png');
+	content:			url('gnome-icon-theme/32x32/apps/file-manager.png');
 }
 
 h2.title.bug:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/status/task-due.png');
+	content:			url('gnome-icon-theme/32x32/status/task-due.png');
 }
 
 h2.title.bullet:before {
@@ -51,47 +51,47 @@ h2.title.bullet:before {
 }
 
 h2.title.ca:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/mimetypes/application-certificate.png');
+	content:			url('gnome-icon-theme/32x32/mimetypes/application-certificate.png');
 }
 
 h2.title.comment:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/mail_replyall.png');
+	content:			url('gnome-icon-theme/32x32/actions/mail_replyall.png');
 }
 
 h2.title.content:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/mimetypes/document.png');
+	content:			url('gnome-icon-theme/32x32/mimetypes/document.png');
 }
 
 h2.title.copy:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-copy.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-copy.png');
 }
 
 h2.title.copy:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-copy.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-copy.png');
 }
 
 h2.title.cut:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-cut.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-cut.png');
 }
 
 h2.title.delete:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-delete.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-delete.png');
 }
 
 h2.title.disabled:before, h2.title.cancel:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-cancel.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-cancel.png');
 }
 
 h2.title.down:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/down.png');
+	content:			url('gnome-icon-theme/32x32/actions/down.png');
 }
 
 h2.title.edit:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/text-editor.png');
+	content:			url('gnome-icon-theme/32x32/apps/text-editor.png');
 }
 
 h2.title.enabled:before, h2.title.submit:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/document-send.png');
+	content:			url('gnome-icon-theme/32x32/actions/document-send.png');
 }
 
 h2.title.enum:before {
@@ -99,11 +99,11 @@ h2.title.enum:before {
 }
 
 h2.title.forward:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/forward.png');
+	content:			url('gnome-icon-theme/32x32/actions/forward.png');
 }
 
 h2.title.home:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-home.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-home.png');
 }
 
 h2.title.hrule:before {
@@ -111,39 +111,39 @@ h2.title.hrule:before {
 }
 
 h2.title.indent:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-indent-ltr.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-indent-ltr.png');
 }
 
 h2.title.insert-image:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/insert-image.png');
+	content:			url('gnome-icon-theme/32x32/actions/insert-image.png');
 }
 
 h2.title.insert-link:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/insert-link.png');
+	content:			url('gnome-icon-theme/32x32/actions/insert-link.png');
 }
 
 h2.title.italic:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-italic.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-italic.png');
 }
 
 h2.title.justify-center:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-justify-center.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-justify-center.png');
 }
 
 h2.title.justify-fill:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-justify-fill.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-justify-fill.png');
 }
 
 h2.title.justify-left:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-justify-left.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-justify-left.png');
 }
 
 h2.title.justify-right:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-justify-right.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-justify-right.png');
 }
 
 h2.title.language:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/config-language.png');
+	content:			url('gnome-icon-theme/32x32/apps/config-language.png');
 }
 
 h2.title.link:before {
@@ -165,19 +165,19 @@ h2.title.listing_thumbnails:before {
 }
 
 h2.title.logout:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gnome-logout.png');
+	content:			url('gnome-icon-theme/32x32/actions/gnome-logout.png');
 }
 
 h2.title.new:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-new.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-new.png');
 }
 
 h2.title.news:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/web-browser.png');
+	content:			url('gnome-icon-theme/32x32/apps/web-browser.png');
 }
 
 h2.title.folder-new:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/folder-new.png');
+	content:			url('gnome-icon-theme/32x32/actions/folder-new.png');
 }
 
 h2.title.parent_directory:before {
@@ -185,7 +185,7 @@ h2.title.parent_directory:before {
 }
 
 h2.title.paste:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-paste.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-paste.png');
 }
 
 h2.title.read:before {
@@ -193,39 +193,39 @@ h2.title.read:before {
 }
 
 h2.title.redo:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-redo-ltr.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-redo-ltr.png');
 }
 
 h2.title.refresh:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-refresh.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-refresh.png');
 }
 
 h2.title.remove:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-remove.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-remove.png');
 }
 
 h2.title.reply:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/mail_reply.png');
+	content:			url('gnome-icon-theme/32x32/actions/mail_reply.png');
 }
 
 h2.title.reset:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/revert.png');
+	content:			url('gnome-icon-theme/32x32/actions/revert.png');
 }
 
 h2.title.search:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/search.png');
+	content:			url('gnome-icon-theme/32x32/actions/search.png');
 }
 
 h2.title.select_all:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-select-all.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-select-all.png');
 }
 
 h2.title.settings:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/categories/gtk-preferences.png');
+	content:			url('gnome-icon-theme/32x32/categories/gtk-preferences.png');
 }
 
 h2.title.strikethrough:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-strikethrough.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-strikethrough.png');
 }
 
 h2.title.subscript:before {
@@ -237,33 +237,33 @@ h2.title.superscript:before {
 }
 
 h2.title.translate:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/config-language.png');
+	content:			url('gnome-icon-theme/32x32/apps/config-language.png');
 }
 
 h2.title.underline:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-underline.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-underline.png');
 }
 
 h2.title.undo:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-undo-ltr.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-undo-ltr.png');
 }
 
 h2.title.unindent:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-unindent-ltr.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-unindent-ltr.png');
 }
 
 h2.title.upload_file:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/gtk-save-as.png');
+	content:			url('gnome-icon-theme/32x32/actions/gtk-save-as.png');
 }
 
 h2.title.up:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/actions/up.png');
+	content:			url('gnome-icon-theme/32x32/actions/up.png');
 }
 
 h2.title.users:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/config-users.png');
+	content:			url('gnome-icon-theme/32x32/apps/config-users.png');
 }
 
 h2.title.wiki:before {
-	content:			url('gnome-icon-theme-2.30.3/32x32/apps/help-browser.png');
+	content:			url('gnome-icon-theme/32x32/apps/help-browser.png');
 }
