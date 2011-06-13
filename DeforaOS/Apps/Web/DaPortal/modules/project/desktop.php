@@ -21,8 +21,7 @@ $icon = 'project';
 $admin = 1;
 $list = 1;
 $search = 1;
-$actions = array('download' => 'Downloads',
-		'list' => 'List',
+$actions = array('list' => 'List',
 		'bug_list' => 'Reports');
 global $lang;
 if($lang == 'de')
