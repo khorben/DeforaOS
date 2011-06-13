@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -15,6 +15,18 @@
 //along with DaPortal; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+
+
+function _html_icon($name, $size = 16, $alt = FALSE, $title = FALSE)
+{
+	require_once('./system/icon.php');
+	if($alt === FALSE)
+		$alt = $name;
+	$title = ($title !== FALSE) ? ' title="'._html_safe($title).'"' : '';
+	return '<img class="icon '._html_safe($name).'" src="'
+		._icon($name, $size).'" alt="'._html_safe($name).'"'
+		.$title.'/>';
+}
 
 
 //PRE	module, action and params are trusted
