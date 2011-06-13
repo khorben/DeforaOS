@@ -65,13 +65,12 @@ function top_admin($args)
 			$links[$i]['move'].='<a href="index.php?module=top'
 				.'&action=move&id='.$links[$i]['top_id']
 				.'&to='.$links[$i+1]['top_id'].'">'
-				.'<img src="icons/16x16/down.png" alt="down"/>'
-				.'</a>';
+				._html_icon('down').'</a>';
 		if($last_id)
 			$links[$i]['move'].= '<a href="index.php?module=top'
 				.'&action=move&id='.$links[$i]['top_id']
 				.'&to='.$last_id.'">'
-				.'<img src="icons/16x16/up.png" alt="up"/></a>';
+				._html_icon('up').'</a>';
 		$last_id = $links[$i]['top_id'];
 	}
 	$toolbar = array();
@@ -94,14 +93,10 @@ function top_default($args)
 	if(!is_array($links))
 		return _error('Unable to get links');
 	print("\t\t".'<div class="top">'."\n");
-	$sep = '';
 	foreach($links as $l)
-	{
-		print("\t\t\t".$sep.'<a href="'._html_safe($l['link']).'"'
+		print("\t\t\t".'<a href="'._html_safe($l['link']).'"'
 				.' title="'._html_safe($l['name']).'">'
 				._html_safe($l['name']).'</a>'."\n");
-		$sep = ' <span class="middot">&middot;</span> ';
-	}
 	print("\t\t".'</div>'."\n");
 }
 

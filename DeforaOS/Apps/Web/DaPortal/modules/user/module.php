@@ -102,6 +102,7 @@ function user_admin($args)
 	if(isset($args['id']))
 		return user_modify($args);
 	require_once('./system/user.php');
+	require_once('./system/icon.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title users">'._html_safe(USERS_ADMINISTRATION)
@@ -132,8 +133,8 @@ function user_admin($args)
 	{
 		$users[$i]['module'] = 'user';
 		$users[$i]['action'] = 'admin';
-		$users[$i]['icon'] = 'icons/48x48/user.png';
-		$users[$i]['thumbnail'] = 'icons/48x48/user.png';
+		$users[$i]['icon'] = _icon('user', 16);
+		$users[$i]['thumbnail'] = _icon('user', 48);
 		$users[$i]['name'] = _html_safe($users[$i]['name']);
 		$users[$i]['apply_module'] = 'user';
 		$users[$i]['apply_id'] = $users[$i]['id'];
@@ -233,28 +234,29 @@ function user_default($args)
 			."</h1>\n");
 	$modules = array();
 	require_once('./system/user.php');
+	require_once('./system/icon.php');
 	if(_user_admin($user_id) && ($d = _module_desktop('admin')) != FALSE)
 		$modules[] = array('name' => $d['title'],
-				'icon' => 'icons/16x16/admin.png',
-				'thumbnail' => 'icons/48x48/admin.png',
+				'icon' => _icon('admin', 16),
+				'thumbnail' => _icon('admin', 48),
 				'module' => 'admin', 'action' => 'default');
 	$modules[] = array('name' => APPEARANCE,
-			'icon' => 'icons/16x16/appearance.png',
-			'thumbnail' => 'icons/48x48/appearance.png',
+			'icon' => _icon('appearance', 16),
+			'thumbnail' => _icon('appearance', 48),
 			'module' => 'user', 'action' => 'appearance');
 	$modules[] = array('name' => MY_CONTENT,
-			'icon' => 'icons/16x16/content.png',
-			'thumbnail' => 'icons/48x48/content.png',
+			'icon' => _icon('content', 16),
+			'thumbnail' => _icon('content', 48),
 			'module' => 'user', 'action' => 'default',
 			'id' => $user_id);
 	$modules[] = array('name' => MY_PROFILE,
-			'icon' => 'icons/16x16/admin.png',
-			'thumbnail' => 'icons/48x48/admin.png',
+			'icon' => _icon('admin', 16),
+			'thumbnail' => _icon('admin', 48),
 			'module' => 'user', 'action' => 'modify',
 			'id' => $user_id);
 	$modules[] = array('name' => LOGOUT,
-			'icon' => 'icons/16x16/logout.png',
-			'thumbnail' => 'icons/48x48/logout.png',
+			'icon' => _icon('logout', 16),
+			'thumbnail' => _icon('logout', 48),
 			'module' => 'user', 'action' => 'logout');
 	_module('explorer', 'browse', array('entries' => $modules,
 				'view' => 'thumbnails', 'toolbar' => 0));
@@ -293,6 +295,7 @@ function user_display($args)
 {
 	global $user_id;
 
+	require_once('./system/icon.php');
 	if(!isset($args['id']))
 		$args['id'] = $user_id;
 	else if(!is_numeric($args['id']))
@@ -323,8 +326,8 @@ function user_display($args)
 				$e['action'] = 'default';
 			$e['icon'] = isset($e['icon']) ? $e['icon']
 				: $d['icon'];
-			$e['thumbnail'] = 'icons/48x48/'.$e['icon'];
-			$e['icon'] = 'icons/16x16/'.$e['icon'];
+			$e['thumbnail'] = _icon($e['icon'], 48);
+			$e['icon'] = _icon($e['icon'], 16);
 			$e['args'] = 'user_id='.$user['id'];
 			$entries[] = $e;
 		}

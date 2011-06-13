@@ -23,7 +23,7 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 
 
 $title = 'Administration';
-$icon = 'admin.png';
+$icon = 'admin';
 $admin = 1;
 $list = 0;
 $search = 0;

@@ -1,0 +1,257 @@
+.icon.about:before, h3.title.about:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-about.png');
+}
+
+.icon.add:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-add.png');
+}
+
+.icon.admin:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/categories/gtk-preferences.png');
+}
+
+.icon.article:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/mimetypes/html.png');
+}
+
+.icon.back:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/back.png');
+}
+
+.icon.blog:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/mimetypes/vcalendar.png');
+}
+
+.icon.bold:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-bold.png');
+}
+
+.icon.bookmark:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/places/user-bookmarks.png');
+}
+
+.icon.browse:before, .icon.download:before {
+	content:			url('download.png');
+}
+
+.icon.browser:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/file-manager.png');
+}
+
+.icon.bug:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/status/task-due.png');
+}
+
+.icon.bullet:before {
+	content:			url('bullet.png');
+}
+
+.icon.ca:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/mimetypes/application-certificate.png');
+}
+
+.icon.content:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/mimetypes/document.png');
+}
+
+.icon.copy:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-copy.png');
+}
+
+.icon.cut:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-cut.png');
+}
+
+.icon.delete:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-delete.png');
+}
+
+.icon.disabled:before, .icon.cancel:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-cancel.png');
+}
+
+.icon.down:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/down.png');
+}
+
+.icon.edit:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/text-editor.png');
+}
+
+.icon.enabled:before, .icon.submit:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/document-send.png');
+}
+
+.icon.enum:before {
+	content:			url('enum.png');
+}
+
+.icon.forward:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/forward.png');
+}
+
+.icon.home:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-home.png');
+}
+
+.icon.hrule:before {
+	content:			url('hrule.png');
+}
+
+.icon.indent:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-indent-ltr.png');
+}
+
+.icon.insert-image:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/insert-image.png');
+}
+
+.icon.insert-link:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/insert-link.png');
+}
+
+.icon.italic:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-italic.png');
+}
+
+.icon.justify-center:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-justify-center.png');
+}
+
+.icon.justify-fill:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-justify-fill.png');
+}
+
+.icon.justify-left:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-justify-left.png');
+}
+
+.icon.justify-right:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-justify-right.png');
+}
+
+.icon.link:before {
+	content:			url('news.png');
+}
+
+.icon.listing_details:before {
+	/* FIXME work-around for explorer */
+	display:			inline;
+	content:			url('listing_details.png');
+}
+
+.icon.listing_list:before {
+	content:			url('listing_list.png');
+}
+
+.icon.listing_thumbnails:before {
+	content:			url('listing_thumbnails.png');
+}
+
+.icon.logout:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gnome-logout.png');
+}
+
+.icon.new:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-new.png');
+}
+
+.icon.folder-new:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/folder-new.png');
+}
+
+.icon.language:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/config-language.png');
+}
+
+.icon.news:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/web-browser.png');
+}
+
+.icon.parent_directory:before {
+	content:			url('parent_directory.png');
+}
+
+.icon.paste:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-paste.png');
+}
+
+.icon.read:before {
+	content:			url('read.png');
+}
+
+.icon.redo:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-redo-ltr.png');
+}
+
+.icon.refresh:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-refresh.png');
+}
+
+.icon.remove:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-remove.png');
+}
+
+.icon.reply:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/mail_reply.png');
+}
+
+.icon.reset:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/revert.png');
+}
+
+.icon.search:before, h3.title.search:before, .icon.preview:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/search.png');
+}
+
+.icon.select_all:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-select-all.png');
+}
+
+.icon.settings:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/categories/gtk-preferences.png');
+}
+
+.icon.strikethrough:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-strikethrough.png');
+}
+
+.icon.subscript:before {
+	content:			url('subscript.png');
+}
+
+.icon.superscript:before {
+	content:			url('superscript.png');
+}
+
+.icon.translate:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/config-language.png');
+}
+
+.icon.underline:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-underline.png');
+}
+
+.icon.undo:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-undo-ltr.png');
+}
+
+.icon.unindent:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-unindent-ltr.png');
+}
+
+.icon.upload_file:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/gtk-save-as.png');
+}
+
+.icon.up:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/actions/up.png');
+}
+
+.icon.user:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/user-info.png');
+}
+
+.icon.users:before {
+	content:			url('gnome-icon-theme-2.30.3/16x16/apps/config-users.png');
+}

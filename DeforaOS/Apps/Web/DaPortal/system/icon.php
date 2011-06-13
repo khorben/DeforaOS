@@ -33,8 +33,21 @@ function _icon_find($name, $size)
 	global $icontheme;
 	$root = $_SERVER['DOCUMENT_ROOT'].'/'.dirname($_SERVER['SCRIPT_NAME'])
 		.'/';
-	$path = $size.'x'.$size.'/'.$name.'.png';
+	$path = './icons/'.$icontheme.'/'.$icontheme.'.php';
+	$prefix = FALSE;
+	$icon = array();
 
+	if(is_readable($path))
+		include($path);
+	if($path !== FALSE && isset($icon[$name]))
+	{
+		$prefix = ($prefix !== FALSE) ? '/'.$prefix : '';
+		$path = 'icons/'.$icontheme.$prefix.'/'.$size.'x'.$size
+			.'/'.$icon[$name].'.png';
+		if(is_readable($root.'/'.$path))
+			return $path;
+	}
+	$path = $size.'x'.$size.'/'.$name.'.png';
 	if(is_readable($root.'/icons/'.$icontheme.'/'.$path))
 		return 'icons/'.$icontheme.'/'.$path;
 	if(is_readable($root.'/icons/'.$path))

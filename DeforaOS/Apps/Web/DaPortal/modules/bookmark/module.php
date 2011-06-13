@@ -30,6 +30,7 @@ $text['BOOKMARK_PRIVATE'] = 'Private';
 $text['BOOKMARK_PUBLIC'] = 'Public';
 $text['BOOKMARKS'] = 'Bookmarks';
 $text['BOOKMARKS_ADMINISTRATION'] = 'Bookmarks administration';
+$text['DESCRIPTION'] = 'Description';
 $text['MODIFICATION_OF'] = 'Modification of';
 $text['NEW_BOOKMARK'] = 'New bookmark';
 global $lang;
@@ -311,7 +312,7 @@ function bookmark_update($args)
 {
 	global $user_id;
 
-	if(!$user_id || $_SERVER['REQUEST_METHOD'] != 'POST')
+	if($user_id == 0 || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
 	if(!_content_user_update($args['id'], $args['title'], $args['content'])
@@ -319,6 +320,7 @@ function bookmark_update($args)
 				." SET url='".$args['url']."'"
 				." WHERE bookmark_id='".$args['id']."'"))
 		return _error('Could not update bookmark');
+	//FIXME avoid the race condition
 	if($args['enabled'] == 'on')
 		_content_enable($args['id']);
 	else

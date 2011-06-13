@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -18,14 +18,14 @@
 
 
 $title = 'Blog';
-$icon = 'blog.png';
+$icon = 'blog';
 $admin = 1;
 $list = 1;
 $search = 1;
 global $user_id;
 if($user_id)
 	$actions = array('insert' => NEW_POST);
-$user = array(array('icon' => 'blog.png', 'name' => $title,
+$user = array(array('icon' => 'blog', 'name' => $title,
 			'action' => 'list'));
 
 

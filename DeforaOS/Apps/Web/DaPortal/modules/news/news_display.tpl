@@ -12,16 +12,16 @@
 <?php if(isset($news['preview'])) { ?>
 	<?php echo _html_safe(NEWS_PREVIEW); ?>
 <?php } else { ?>
-		<a href="<?php echo _html_link('news', FALSE, $news['id'], $news['tag']); ?>"><span class="icon read"></span> <?php echo _html_safe(READ); ?></a>
+		<a href="<?php echo _html_link('news', FALSE, $news['id'], $news['tag']); ?>"><?php echo _html_icon('read'); ?> <?php echo _html_safe(READ); ?></a>
 <?php if(_module_id('comment')) { ?>
 		(<?php echo _html_safe(_module('comment', 'count', array('id' => $news['id'])).' '.COMMENT_S); ?>)
 		<span class="middot">&middot;</span>
-		<a href="<?php echo _html_link('news', 'reply', $news['id']); ?>#edit"><span class="icon reply"></span> <?php echo _html_safe(REPLY); ?></a>
+		<a href="<?php echo _html_link('news', 'reply', $news['id']); ?>#edit"><?php echo _html_icon('reply'); ?> <?php echo _html_safe(REPLY); ?></a>
 <?php } ?>
 <?php global $user_id; require_once('./system/user.php');
 if(isset($news['id']) && _user_admin($user_id)) { ?>
 		<span class="middot">&middot;</span>
-		<a href="<?php echo _html_link('news', 'update', $news['id']); ?>"><span class="icon edit"></span> <?php echo _html_safe(EDIT); ?></a>
+		<a href="<?php echo _html_link('news', 'update', $news['id']); ?>"><?php echo _html_icon('edit'); ?> <?php echo _html_safe(EDIT); ?></a>
 <?php } } ?>
 	</div>
 </div>

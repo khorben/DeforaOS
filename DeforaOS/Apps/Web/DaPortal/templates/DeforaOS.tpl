@@ -28,7 +28,7 @@ _module('top'); ?>
 					<div>
 						<input type="hidden" name="module" value="search"/>
 						<input type="text" name="q" value="<?php echo _html_safe(SEARCH); ?>..." size="20" onfocus="if(value == '<?php echo _html_safe(SEARCH); ?>...') value=''"/>
-						<input id="search" type="submit" value="<?php echo _html_safe(SEARCH); ?>" class="icon search"/>
+						<button id="search" type="submit" class="icon search"><?php echo _html_safe(SEARCH); ?></button>
 					</div>
 				</form>
 				<script type="text/javascript"><!--
@@ -46,7 +46,7 @@ if(is_array(($langs = _sql_array('SELECT lang_id AS id, name FROM '
 					<option value="<?php echo _html_safe($l['id']); ?>"<?php if($lang == $l['id']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($l['name']); ?></option>
 <?php } ?>
 				</select>
-				<input id="lang" type="submit" value="Choose" class="icon submit"/>
+				<button id="lang" type="submit" class="icon submit">Choose</button>
 				<script type="text/javascript"><!--
 document.getElementById('lang').style.display='none';
 				//--></script>

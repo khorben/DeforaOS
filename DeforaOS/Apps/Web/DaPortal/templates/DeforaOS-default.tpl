@@ -90,11 +90,11 @@ dedicated micro-kernel may also be useful at some later stage.</p>
 		<div style="float: left; padding: 0.4em; max-width: 28em">
 		<h3 class="title news"><?php echo _html_safe(LATEST_NEWS); ?></h3>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
-<a href="<?php echo _html_link('news'); ?>" title="DeforaOS news"><span class="icon add"><?php echo _html_safe(MORE_NEWS); ?>...</span></a>
+<a href="<?php echo _html_link('news'); ?>" title="DeforaOS news"><?php echo _html_icon('add')._html_safe(MORE_NEWS); ?>...</a>
 		</div>
 		<div style="float: left; padding: 0.4em; max-width: 28em">
 		<h3 class="title wiki"><?php echo _html_safe(LATEST_WIKI_CHANGES); ?></h3>
 <?php _module('wiki', 'recent', array('npp' => 6)); ?>
-<a href="<?php echo _html_link('wiki'); ?>" title="DeforaOS wiki"><span class="icon add"><?php echo _html_safe(PUBLIC_WIKI); ?>...</span></a>
+<a href="<?php echo _html_link('wiki'); ?>" title="DeforaOS wiki"><?php echo _html_icon('add')._html_safe(PUBLIC_WIKI); ?>...</a>
 		</div>
 		<div style="clear: left"></div>

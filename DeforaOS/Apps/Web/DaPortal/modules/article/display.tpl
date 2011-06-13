@@ -10,11 +10,11 @@
 <?php } ?>
 	<div class="status">
 <?php if(!isset($article['preview'])) { ?>
-		<a href="<?php echo _html_link('article', FALSE, $article['id'], $article['tag']); ?>"><span class="icon read"></span><?php echo _html_safe(READ); ?></a>
+		<a href="<?php echo _html_link('article', FALSE, $article['id'], $article['tag']); ?>"><?php echo _html_icon('read'); ?><?php echo _html_safe(READ); ?></a>
 <?php global $user_id; require_once('./system/user.php');
 if($article['id'] && _user_admin($user_id)) { ?>
 		<span class="middot">&middot;</span>
-		<a href="<?php echo _html_link('article', 'modify', $article['id']); ?>"><span class="icon edit"></span><?php echo _html_safe(EDIT); ?></a>
+		<a href="<?php echo _html_link('article', 'modify', $article['id']); ?>"><?php echo _html_icon('edit'); ?><?php echo _html_safe(EDIT); ?></a>
 <?php } } ?>
 	</div>
 </div>

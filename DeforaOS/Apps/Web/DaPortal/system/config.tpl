@@ -11,6 +11,6 @@
 		default: ?><input type="text" size="30" name="<?php echo _html_safe($module.'_'.$configs[$i]['name']); ?>" value="<?php echo _html_safe($configs[$i]['value']); ?>"/><?php
 		break; ?><?php } ?></td></tr>
 <?php } ?>
-		<tr><td></td><td><button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('admin'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <button type="submit" class="icon submit"><?php echo _html_safe(UPDATE); ?></button></td></tr>
 	</table>
 </form>

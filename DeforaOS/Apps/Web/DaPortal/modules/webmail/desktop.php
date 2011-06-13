@@ -23,7 +23,7 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 
 
 $title = 'Webmail';
-$icon = 'webmail.png';
+$icon = 'webmail';
 $admin = 1;
 global $user_id;
 $list = $user_id != 0 ? 1 : 0;

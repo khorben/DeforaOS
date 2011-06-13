@@ -9,18 +9,18 @@
 <?php } ?>
 	<table>
 		<tr>
-			<td class="field">Title:</td>
+			<td class="field"><?php echo _html_safe(TITLE); ?>:</td>
 			<td><input type="text" name="title"<?php if(isset($article['title'])) print(' value="'._html_safe($article['title']).'"'); ?> size="50"/></td>
 		</tr>
 		<tr>
-			<td class="field">Content:</td>
+			<td class="field"><?php echo _html_safe(CONTENT); ?>:</td>
 			<td><textarea name="content" cols="50" rows="10"><?php
 if(isset($article['content'])) print(_html_safe($article['content']));
 			?></textarea></td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" name="preview" value="Preview"/><?php if(isset($article)) { ?> <input type="submit" name="send" value="<?php echo isset($article['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/><?php } ?></td>
+			<td><button type="submit" name="preview" class="icon preview"><?php echo _html_safe(PREVIEW); ?></button><?php if(isset($article)) { ?> <button type="submit" name="send" class="icon submit"><?php echo isset($article['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?></button><?php } ?></td>
 		</tr>
 	</table>
 </form>

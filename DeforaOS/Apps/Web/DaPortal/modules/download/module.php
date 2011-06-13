@@ -281,7 +281,7 @@ function download_default($args)
 	{
 		$toolbar[] = array();
 		$toolbar[] = array('title' => NEW_DIRECTORY,
-				'class' => 'new_directory',
+				'class' => 'folder-new',
 				'link' => _module_link('download',
 					'directory_new', $file['id']));
 		$toolbar[] = array('title' => UPLOAD_FILE,

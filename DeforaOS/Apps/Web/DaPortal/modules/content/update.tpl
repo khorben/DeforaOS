@@ -17,6 +17,6 @@
 				<option value="0"<?php if($content['enabled'] == SQL_FALSE) echo ' selected="selected"'; ?>><?php echo _html_safe(NO); ?></option>
 				<option value="1"<?php if($content['enabled'] == SQL_TRUE) echo ' selected="selected"'; ?>><?php echo _html_safe(YES); ?></option>
 			</select></td></tr>
-		<tr><td></td><td><a href="<?php echo _html_link('content', 'admin'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('content', 'admin'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <button type="submit" class="icon submit"><?php echo _html_safe(UPDATE); ?></button></td></tr>
 	</table>
 </form>

@@ -1268,11 +1268,12 @@ function project_download($args)
 	if(_user_admin($user_id) || _project_is_member($project['id']))
 		print('<p><a href="'._html_link('project', 'download_insert',
 					$project['id'])
-				.'"><div class="icon download"></div> '
-				.NEW_RELEASE.'</a> &middot; <a href="'
-				._html_link('project', 'screenshot_insert',
-					$project['id'])
-				.'"><div class="icon screenshot"></div> '
+				.'"><span class="icon download"></span>'
+				.NEW_RELEASE.'</a>'
+				.'<span class="middot">&middot;</span>'
+				.'<a href="'._html_link('project',
+					'screenshot_insert', $project['id'])
+				.'"><span class="icon screenshot"></span>'
 				.NEW_SCREENSHOT.'</a>'."</p>\n");
 	require_once('./system/mime.php');
 	/* FIXME factorize code */

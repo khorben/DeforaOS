@@ -28,7 +28,7 @@ require_once('./system/user.php'); if(_user_admin($user_id)) { ?>
 		</tr>
 		<tr>
 			<td></td>
-			<td><a href="<?php echo _html_link('user'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <input type="submit" value="<?php echo _html_safe(SUBMIT); ?>" class="icon submit"/></td>
+			<td><a href="<?php echo _html_link('user'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <button type="submit" class="icon submit"><?php echo _html_safe(SUBMIT); ?></button></td>
 		</tr>
 	</table>
 </form>

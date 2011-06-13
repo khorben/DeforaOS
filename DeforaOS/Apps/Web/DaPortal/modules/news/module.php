@@ -82,6 +82,7 @@ function news_admin($args)
 	global $user_id;
 
 	require_once('./system/user.php');
+	require_once('./system/icon.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title news">'._html_safe(NEWS_ADMINISTRATION)
@@ -116,8 +117,8 @@ function news_admin($args)
 		$res[$i]['apply_module'] = 'news';
 		$res[$i]['action'] = 'update';
 		$res[$i]['apply_id'] = $res[$i]['id'];
-		$res[$i]['icon'] = 'icons/16x16/news.png';
-		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
+		$res[$i]['icon'] = _icon('news', 16);
+		$res[$i]['thumbnail'] = _icon('news', 48);
 		$res[$i]['name'] = _html_safe($res[$i]['name']);
 		$res[$i]['username'] = '<a href="'._html_link('user', '',
 			$res[$i]['user_id'], $res[$i]['username']).'">'
@@ -209,6 +210,7 @@ function news_enable($args)
 //news_headline
 function news_headline($args)
 {
+	require_once('./system/icon.php');
 	$page = 1;
 	$npp = 10;
 	if(isset($args['npp']) && is_numeric($args['npp']))
@@ -226,8 +228,8 @@ function news_headline($args)
 	for($i = 0, $cnt = count($news); $i < $cnt; $i++)
 	{
 		$news[$i]['action'] = 'default';
-		$news[$i]['icon'] = 'icons/16x16/news.png';
-		$news[$i]['thumbnail'] = 'icons/48x48/news.png';
+		$news[$i]['icon'] = _icon('news', 16);
+		$news[$i]['thumbnail'] = _icon('news', 48);
 		$news[$i]['name'] = $news[$i]['title'];
 		$news[$i]['tag'] = $news[$i]['title'];
 	}
@@ -278,6 +280,7 @@ function news_list($args)
 
 function _news_list_user($user_id, $username)
 {
+	require_once('./system/icon.php');
 	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
 			."</h1>\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
@@ -296,8 +299,8 @@ function _news_list_user($user_id, $username)
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['action'] = 'default';
-		$res[$i]['icon'] = 'icons/16x16/news.png';
-		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
+		$res[$i]['icon'] = _icon('news', 16);
+		$res[$i]['thumbnail'] = _icon('news', 48);
 		$res[$i]['name'] = $res[$i]['title'];
 		$res[$i]['date'] = strftime('%d/%m/%Y %H:%M', strtotime(substr(
 						$res[$i]['date'], 0, 19)));

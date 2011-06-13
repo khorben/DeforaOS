@@ -34,7 +34,7 @@ _lang($text);
 
 
 $title = MONITORING;
-$icon = 'host.png';
+$icon = 'host';
 $admin = 1;
 $list = 1;
 $search = 1;

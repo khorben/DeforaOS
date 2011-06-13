@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 
 
 $title = 'Menu generation';
-$icon = 'menu.png';
+$icon = 'menu';
 $admin = 0;
 $list = 0;
 $search = 0;

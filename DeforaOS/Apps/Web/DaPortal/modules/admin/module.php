@@ -60,6 +60,7 @@ _lang($text);
 //admin_admin
 function admin_admin($args)
 {
+	require_once('./system/icon.php');
 	global $user_id, $debug;
 
 	if(!_user_admin($user_id))
@@ -81,7 +82,7 @@ function admin_admin($args)
 	{
 		for($cnt = count($lang), $i = 0; $i < $cnt; $i++)
 		{
-			$lang[$i]['icon'] = 'icons/16x16/language.png';
+			$lang[$i]['icon'] = _icon('language');
 			$lang[$i]['name'] = _html_safe($lang[$i]['name']);
 			$lang[$i]['apply_module'] = 'admin';
 			$lang[$i]['apply_id']
@@ -137,8 +138,8 @@ function admin_admin($args)
 		}
 		else
 			$modules[$i]['name'] = $modules[$i]['module'];
-		$modules[$i]['thumbnail'] = 'icons/48x48/'.$modules[$i]['icon'];
-		$modules[$i]['icon'] = 'icons/16x16/'.$modules[$i]['icon'];
+		$modules[$i]['thumbnail'] = _icon($modules[$i]['icon'], 48);
+		$modules[$i]['icon'] = _icon($modules[$i]['icon'], 16);
 		$modules[$i]['name'] = _html_safe($modules[$i]['name']);
 	}
 	$toolbar = array();
@@ -178,6 +179,7 @@ function admin_default()
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
+	require_once('./system/icon.php');
 	$res = _sql_array('SELECT name FROM daportal_module'
 			." WHERE enabled='1' ORDER BY name ASC");
 	$modules = array();
@@ -186,7 +188,7 @@ function admin_default()
 		if(($m = _module_desktop($r['name'])) == FALSE
 				|| $m['admin'] != 1)
 			continue;
-		$m['thumbnail'] = 'icons/48x48/'.$m['icon'];
+		$m['thumbnail'] = _icon($m['icon'], 48);
 		$modules[] = $m;
 	}
 	include('./modules/admin/default.tpl');
