@@ -216,7 +216,7 @@ h2.title.search:before {
 	content:			url('gnome-icon-theme/32x32/actions/search.png');
 }
 
-h2.title.select_all:before {
+h2.title.select-all:before {
 	content:			url('gnome-icon-theme/32x32/actions/gtk-select-all.png');
 }
 

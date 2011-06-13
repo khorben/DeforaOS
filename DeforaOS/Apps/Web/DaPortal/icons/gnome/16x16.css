@@ -2,31 +2,31 @@
 	content:			url('gnome-icon-theme/16x16/actions/gtk-about.png');
 }
 
-.icon.add:before {
+.icon.add:before, h3.title.add:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-add.png');
 }
 
-.icon.admin:before {
+.icon.admin:before, h3.title.admin:before {
 	content:			url('gnome-icon-theme/16x16/categories/gtk-preferences.png');
 }
 
-.icon.article:before {
+.icon.article:before, h3.title.article:before {
 	content:			url('gnome-icon-theme/16x16/mimetypes/html.png');
 }
 
-.icon.back:before {
+.icon.back:before, h3.title.back:before {
 	content:			url('gnome-icon-theme/16x16/actions/back.png');
 }
 
-.icon.blog:before {
+.icon.blog:before, h3.title.blog:before {
 	content:			url('gnome-icon-theme/16x16/mimetypes/vcalendar.png');
 }
 
-.icon.bold:before {
+.icon.bold:before, h3.title.bold:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-bold.png');
 }
 
-.icon.bookmark:before {
+.icon.bookmark:before, h3.title.bookmark:before {
 	content:			url('gnome-icon-theme/16x16/places/user-bookmarks.png');
 }
 
@@ -34,35 +34,35 @@
 	content:			url('download.png');
 }
 
-.icon.browser:before {
+.icon.browser:before, h3.title.browser:before {
 	content:			url('gnome-icon-theme/16x16/apps/file-manager.png');
 }
 
-.icon.bug:before {
+.icon.bug:before, h3.title.bug:before {
 	content:			url('gnome-icon-theme/16x16/status/task-due.png');
 }
 
-.icon.bullet:before {
+.icon.bullet:before, h3.title.bullet:before {
 	content:			url('bullet.png');
 }
 
-.icon.ca:before {
+.icon.ca:before, h3.title.ca:before {
 	content:			url('gnome-icon-theme/16x16/mimetypes/application-certificate.png');
 }
 
-.icon.content:before {
+.icon.content:before, h3.title.content:before {
 	content:			url('gnome-icon-theme/16x16/mimetypes/document.png');
 }
 
-.icon.copy:before {
+.icon.copy:before, h3.title.copy:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-copy.png');
 }
 
-.icon.cut:before {
+.icon.cut:before, h3.title.cut:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-cut.png');
 }
 
-.icon.delete:before {
+.icon.delete:before, h3.title.delete:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-delete.png');
 }
 
@@ -70,11 +70,11 @@
 	content:			url('gnome-icon-theme/16x16/actions/gtk-cancel.png');
 }
 
-.icon.down:before {
+.icon.down:before, h3.title.down:before {
 	content:			url('gnome-icon-theme/16x16/actions/down.png');
 }
 
-.icon.edit:before {
+.icon.edit:before, h3.title.edit:before {
 	content:			url('gnome-icon-theme/16x16/apps/text-editor.png');
 }
 
@@ -82,121 +82,121 @@
 	content:			url('gnome-icon-theme/16x16/actions/document-send.png');
 }
 
-.icon.enum:before {
+.icon.enum:before, h3.title.enum:before {
 	content:			url('enum.png');
 }
 
-.icon.forward:before {
+.icon.forward:before, h3.title.forward:before {
 	content:			url('gnome-icon-theme/16x16/actions/forward.png');
 }
 
-.icon.home:before {
+.icon.home:before, h3.title.home:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-home.png');
 }
 
-.icon.hrule:before {
+.icon.hrule:before, h3.title.hrule:before {
 	content:			url('hrule.png');
 }
 
-.icon.indent:before {
+.icon.indent:before, h3.title.indent:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-indent-ltr.png');
 }
 
-.icon.insert-image:before {
+.icon.insert-image:before, h3.title.insert-image:before {
 	content:			url('gnome-icon-theme/16x16/actions/insert-image.png');
 }
 
-.icon.insert-link:before {
+.icon.insert-link:before, h3.title.insert-link:before {
 	content:			url('gnome-icon-theme/16x16/actions/insert-link.png');
 }
 
-.icon.italic:before {
+.icon.italic:before, h3.title.italic:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-italic.png');
 }
 
-.icon.justify-center:before {
+.icon.justify-center:before, h3.title.justify-center:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-justify-center.png');
 }
 
-.icon.justify-fill:before {
+.icon.justify-fill:before, h3.title.justify-fill:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-justify-fill.png');
 }
 
-.icon.justify-left:before {
+.icon.justify-left:before, h3.title.justify-left:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-justify-left.png');
 }
 
-.icon.justify-right:before {
+.icon.justify-right:before, h3.title.justify-right:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-justify-right.png');
 }
 
-.icon.link:before {
+.icon.link:before, h3.title.link:before {
 	content:			url('news.png');
 }
 
-.icon.listing_details:before {
+.icon.listing_details:before, h3.title.listing_details:before {
 	/* FIXME work-around for explorer */
 	display:			inline;
 	content:			url('listing_details.png');
 }
 
-.icon.listing_list:before {
+.icon.listing_list:before, h3.title.listing_list:before {
 	content:			url('listing_list.png');
 }
 
-.icon.listing_thumbnails:before {
+.icon.listing_thumbnails:before, h3.title.listing_thumbnails:before {
 	content:			url('listing_thumbnails.png');
 }
 
-.icon.logout:before {
+.icon.logout:before, h3.title.logout:before {
 	content:			url('gnome-icon-theme/16x16/actions/gnome-logout.png');
 }
 
-.icon.new:before {
+.icon.new:before, h3.title.new:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-new.png');
 }
 
-.icon.folder-new:before {
+.icon.folder-new:before, h3.title.folder-new:before {
 	content:			url('gnome-icon-theme/16x16/actions/folder-new.png');
 }
 
-.icon.language:before {
+.icon.language:before, h3.title.language:before {
 	content:			url('gnome-icon-theme/16x16/apps/config-language.png');
 }
 
-.icon.news:before {
+.icon.news:before, h3.title.news:before {
 	content:			url('gnome-icon-theme/16x16/apps/web-browser.png');
 }
 
-.icon.parent_directory:before {
+.icon.parent_directory:before, h3.title.parent_directory:before {
 	content:			url('parent_directory.png');
 }
 
-.icon.paste:before {
+.icon.paste:before, h3.title.paste:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-paste.png');
 }
 
-.icon.read:before {
+.icon.read:before, h3.title.read:before {
 	content:			url('read.png');
 }
 
-.icon.redo:before {
+.icon.redo:before, h3.title.redo:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-redo-ltr.png');
 }
 
-.icon.refresh:before {
+.icon.refresh:before, h3.title.refresh:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-refresh.png');
 }
 
-.icon.remove:before {
+.icon.remove:before, h3.title.remove:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-remove.png');
 }
 
-.icon.reply:before {
+.icon.reply:before, h3.title.reply:before {
 	content:			url('gnome-icon-theme/16x16/actions/mail_reply.png');
 }
 
-.icon.reset:before {
+.icon.reset:before, h3.title.reset:before {
 	content:			url('gnome-icon-theme/16x16/actions/revert.png');
 }
 
@@ -204,54 +204,54 @@
 	content:			url('gnome-icon-theme/16x16/actions/search.png');
 }
 
-.icon.select_all:before {
+.icon.select-all:before, h3.title.select-all:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-select-all.png');
 }
 
-.icon.settings:before {
+.icon.settings:before, h3.title.settings:before {
 	content:			url('gnome-icon-theme/16x16/categories/gtk-preferences.png');
 }
 
-.icon.strikethrough:before {
+.icon.strikethrough:before, h3.title.strikethrough:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-strikethrough.png');
 }
 
-.icon.subscript:before {
+.icon.subscript:before, h3.title.subscript:before {
 	content:			url('subscript.png');
 }
 
-.icon.superscript:before {
+.icon.superscript:before, h3.title.superscript:before {
 	content:			url('superscript.png');
 }
 
-.icon.translate:before {
+.icon.translate:before, h3.title.translate:before {
 	content:			url('gnome-icon-theme/16x16/apps/config-language.png');
 }
 
-.icon.underline:before {
+.icon.underline:before, h3.title.underline:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-underline.png');
 }
 
-.icon.undo:before {
+.icon.undo:before, h3.title.undo:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-undo-ltr.png');
 }
 
-.icon.unindent:before {
+.icon.unindent:before, h3.title.unindent:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-unindent-ltr.png');
 }
 
-.icon.upload_file:before {
+.icon.upload_file:before, h3.title.upload_file:before {
 	content:			url('gnome-icon-theme/16x16/actions/gtk-save-as.png');
 }
 
-.icon.up:before {
+.icon.up:before, h3.title.up:before {
 	content:			url('gnome-icon-theme/16x16/actions/up.png');
 }
 
-.icon.user:before {
+.icon.user:before, h3.title.user:before {
 	content:			url('gnome-icon-theme/16x16/apps/user-info.png');
 }
 
-.icon.users:before {
+.icon.users:before, h3.title.users:before {
 	content:			url('gnome-icon-theme/16x16/apps/config-users.png');
 }
