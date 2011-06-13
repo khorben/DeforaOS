@@ -81,7 +81,7 @@
 		<tr><td colspan="2"><textarea id="editortext" name="content" cols="80" rows="20"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
 		<tr><td colspan="2"><iframe id="editor" class="hidden" width="100%" height="400px" onload="editorStart()"></iframe></td></tr>
 		<tr><td class="field"><?php echo _html_safe(MESSAGE); ?>:</td><td><input type="text" name="message" value="<?php if(isset($message)) echo _html_safe($message); ?>" size="30"/></td></tr>
-		<tr><td></td><td><a href="<?php echo _html_link('wiki', FALSE, isset($wiki['id']) ? $wiki['id'] : FALSE, isset($wiki['id']) ? $wiki['title'] : FALSE); ?>"><button type="button" class="icon cancel"/><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview" onclick="return editorPreview('wikicontent')"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>" class="icon submit"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('wiki', FALSE, isset($wiki['id']) ? $wiki['id'] : FALSE, isset($wiki['id']) ? $wiki['title'] : FALSE); ?>"><button type="button" class="icon cancel"/><?php echo _html_safe(CANCEL); ?></button></a> <button type="submit" name="preview" class="icon preview" onclick="return editorPreview('wikicontent')"><?php echo _html_safe(PREVIEW); ?></button> <button type="submit" name="send" class="icon submit"><?php echo _html_safe(SUBMIT); ?></button></td></tr>
 		</table>
 	</form>
 </div>
