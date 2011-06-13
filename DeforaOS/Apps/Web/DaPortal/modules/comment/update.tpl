@@ -17,7 +17,7 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td><a href="<?php echo _html_link($comment['module'], FALSE, $comment['id']); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>" class="icon submit"/></td>
+			<td><a href="<?php echo _html_link($comment['module'], FALSE, $comment['id']); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="submit" name="preview" class="icon preview"><?php echo _html_safe(PREVIEW); ?></button> <button type="submit" name="submit" class="icon submit"><?php echo _html_safe(SEND); ?></button></td>
 		</tr>
 	</table>
 </form>

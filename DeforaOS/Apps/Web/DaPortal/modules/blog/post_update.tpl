@@ -26,7 +26,7 @@ if(isset($post['content'])) print(_html_safe($post['content']));
 		</tr>
 		<tr>
 			<td></td>
-			<td><a href="<?php echo _html_link('blog', FALSE, isset($post['id']) ? $post['id'] : FALSE, isset($post['id']) ? $post['title'] : FALSE); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview"/><?php if(isset($post)) { ?> <input type="submit" name="send" value="<?php echo isset($post['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/><?php } ?></td>
+			<td><a href="<?php echo _html_link('blog', FALSE, isset($post['id']) ? $post['id'] : FALSE, isset($post['id']) ? $post['title'] : FALSE); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="submit" name="preview" class="icon preview"><?php echo _html_safe(PREVIEW); ?></button><?php if(isset($post)) { ?> <button type="submit" name="send" class="icon submit"><?php echo isset($post['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?></button><?php } ?></td>
 		</tr>
 	</table>
 </form>
