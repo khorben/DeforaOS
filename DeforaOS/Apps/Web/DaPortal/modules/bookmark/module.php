@@ -219,7 +219,8 @@ function bookmark_list($args)
 	$sql = 'SELECT bookmark_id AS id, title AS name, enabled, url'
 		.' FROM daportal_bookmark, daportal_content WHERE'
 		.' daportal_bookmark.bookmark_id=daportal_content.content_id'
-		." AND user_id='".$args['user_id']."'".$enabled;
+		." AND user_id='".$args['user_id']."'".$enabled
+		.' ORDER BY name ASC';
 	$bookmarks = _sql_array($sql);
 	if(!is_array($bookmarks))
 		return _error('Could not list bookmarks');

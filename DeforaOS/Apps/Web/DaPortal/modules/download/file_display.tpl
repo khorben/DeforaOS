@@ -9,7 +9,7 @@ if(_user_admin($user_id)) { ?>
 <?php } ?>
 </form>
 <table>
-	<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><?php echo _html_safe($file['name']); ?></td></tr>
+	<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><a href="<?php echo _html_link('download', 'download', $file['id'], $file['name']); ?>"><?php echo _html_safe($file['name']); ?></a></td></tr>
 	<tr><td class="field"><?php echo _html_safe(TYPE); ?>:</td><td><?php echo _html_safe($file['mime']); ?></td></tr>
 	<tr><td class="field"><?php echo _html_safe(OWNER); ?>:</td><td><a href="<?php echo _html_link('user', FALSE, $file['user_id'], $file['user']); ?>"><?php echo _html_safe($file['user']); ?></a></td></tr>
 	<tr><td class="field"><?php echo _html_safe(PERMISSIONS); ?>:</td><td style="font-family: monospace"><?php echo _html_safe($file['mode']); ?></td></tr>

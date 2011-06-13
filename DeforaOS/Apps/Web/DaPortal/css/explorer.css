@@ -99,12 +99,14 @@ form.explorer div.listing_thumbnails div.entry span.thumbnail img {
 form.explorer div.listing_thumbnails div.entry {
 	float:			left;
 	height:			100px;
+	overflow:		hidden;
 	text-align:		center;
 	width:			100px;
 }
 
 form.explorer div.listing_thumbnails div.entry span.name {
 	text-align:		center;
+	word-wrap:		break-word;
 }
 
 form.explorer div.listing_thumbnails div.entry span.name,

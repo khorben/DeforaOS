@@ -8,6 +8,7 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 
 $template = 'DaPortal';
 $theme = 'DaPortal';
+$icontheme = 'gnome';
 //$debug = 1;		//force debugging on
 $dbtype = 'pgsql';	//or 'mysql' or 'sqlite'
 //$dbhostname = '';	//defaults to local connections

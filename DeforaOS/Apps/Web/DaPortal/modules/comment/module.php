@@ -40,6 +40,7 @@ if($lang == 'de')
 {
 	$text['COMMENT_BY'] = 'Kommentar von';
 	$text['COMMENT_ON'] = 'am';
+	$text['SETTINGS'] = 'Einstellungen';
 }
 else if($lang == 'fr')
 {
