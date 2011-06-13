@@ -10,7 +10,7 @@
 <?php foreach($modules as $m) { if(!$m['search']) continue; ?>
 			<option value="<?php echo _html_safe($m['name']); ?>"<?php if(isset($args['inmodule']) && $args['inmodule'] == $m['name']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($m['title']); ?></option>
 <?php } ?></select></td>
-		<tr><td></td><td colspan="3"><button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <input type="submit" value="<?php echo _html_safe(SEARCH); ?>" class="icon search"/></td></tr>
+		<tr><td></td><td colspan="3"><button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <button type="submit" class="icon search"><?php echo _html_safe(SEARCH); ?></button></td></tr>
 	</table>
 	<p><a href="<?php echo _html_link('search', FALSE, FALSE, FALSE, isset($args['q']) ? array('q' => stripslashes($args['q'])) : FALSE); ?>"><?php echo _html_icon('remove'); ?><?php echo _html_safe(SIMPLER_SEARCH).'...'; ?></a></p>
 </form>
