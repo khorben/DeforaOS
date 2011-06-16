@@ -42,6 +42,7 @@ $icon['news'] = 'apps/web-browser';
 $icon['paste'] = 'actions/gtk-paste';
 $icon['preview'] = 'actions/search';
 $icon['redo'] = 'actions/gtk-redo-ltr';
+$icon['refresh'] = 'actions/gtk-refresh';
 $icon['reply'] = 'actions/mail_reply';
 $icon['reset'] = 'actions/revert';
 $icon['search'] = 'actions/search';
