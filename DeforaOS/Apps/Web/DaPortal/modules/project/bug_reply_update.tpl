@@ -38,6 +38,6 @@ foreach($priorities as $p) { ?>
 			</select></td></tr>
 <?php } ?>
 		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><?php if(isset($reply['content'])) echo _html_safe($reply['content']); ?></textarea></td></tr>
-		<tr><td></td><td><?php if(!isset($reply['id'])) { ?><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>" class="icon submit"/><?php } else { ?><input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/><?php } ?></td></tr>
+		<tr><td></td><td><?php if(!isset($reply['id'])) { ?><button type="submit" name="preview" class="icon preview"><?php echo _html_safe(PREVIEW); ?></button> <button type="submit" name="submit" class="icon submit"><?php echo _html_safe(SEND); ?></button><?php } else { ?><button type="submit" class="icon submit"><?php echo _html_safe(UPDATE); ?></button><?php } ?></td></tr>
 	</table>
 </form>
