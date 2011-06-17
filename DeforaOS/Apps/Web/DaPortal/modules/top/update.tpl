@@ -8,6 +8,6 @@
 	<table>
 		<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><input type="text" name="name" value="<?php if(isset($top['name'])) echo _html_safe($top['name']); ?>" size="40"/></td></tr>
 		<tr><td class="field"><?php echo _html_safe(ADDRESS); ?>:</td><td><input type="text" name="link" value="<?php if(isset($top['link'])) echo _html_safe($top['link']); ?>" size="40"/></td></tr>
-		<tr><td></td><td><a href="<?php echo _html_link('top', 'admin'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo _html_safe(isset($top) ? UPDATE : CREATE); ?>" class="icon submit"/>
+		<tr><td></td><td><a href="<?php echo _html_link('top', 'admin'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="submit" class="icon submit"><?php echo _html_safe(isset($top) ? UPDATE : CREATE); ?></button>
 	</table>
 </form>
