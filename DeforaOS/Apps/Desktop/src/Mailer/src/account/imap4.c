@@ -350,7 +350,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer);
 static int _context_fetch(AccountPlugin * plugin, char const * answer);
 static int _context_init(AccountPlugin * plugin);
 static int _context_list(AccountPlugin * plugin, char const * answer);
-static int _context_select(AccountPlugin * plugin, char const * answer);
+static int _context_select(AccountPlugin * plugin);
 static int _context_status(AccountPlugin * plugin, char const * answer);
 
 static int _imap4_parse(AccountPlugin * plugin)
@@ -443,7 +443,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			cmd->status = I4CS_OK;
 			return 0;
 		case I4C_SELECT:
-			return _context_select(plugin, answer);
+			return _context_select(plugin);
 		case I4C_STATUS:
 			return _context_status(plugin, answer);
 	}
@@ -598,7 +598,7 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	return (cmd != NULL) ? 0 : -1;
 }
 
-static int _context_select(AccountPlugin * plugin, char const * answer)
+static int _context_select(AccountPlugin * plugin)
 {
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
@@ -631,7 +631,6 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 {
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
-	AccountFolder * folder = cmd->data.select.folder;
 	char const * p;
 	unsigned int m;
 	unsigned int r;
