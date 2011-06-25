@@ -115,6 +115,11 @@ typedef struct _IMAP4Command
 
 		struct
 		{
+			AccountFolder * parent;
+		} list;
+
+		struct
+		{
 			AccountFolder * folder;
 			AccountMessage * message;
 		} select;
@@ -427,8 +432,11 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			if(cmd->status != I4CS_PARSING)
 				return 0;
 			cmd->status = I4CS_OK;
-			return (_imap4_command(plugin, I4C_LIST, list) != NULL)
-				? 0 : -1;
+			if((cmd = _imap4_command(plugin, I4C_LIST, list))
+					== NULL)
+				return -1;
+			cmd->data.list.parent = &imap4->folders;
+			return 0;
 		case I4C_NOOP:
 			if(cmd->status != I4CS_PARSING)
 				return 0;
@@ -534,9 +542,13 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder;
+	AccountFolder * parent = cmd->data.list.parent;
 	char const * p;
 	gchar * q;
-	char buf[32];
+	char const haschildren[] = "(\\HasChildren) ";
+	int recurse = 0;
+	char reference = '\0';
+	char buf[64];
 
 	p = answer;
 	if(strncmp("OK", p, 2) == 0)
@@ -547,25 +559,41 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	if(strncmp("LIST ", p, 5) != 0)
 		return -1;
 	p += 5;
-	if(*p == '(')
+	if(*p == '(') /* skip flags */
+	{
+		if(strncmp(p, haschildren, sizeof(haschildren) - 1) == 0)
+			recurse = 1;
 		for(p++; *p != '\0' && *p++ != ')';);
+	}
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
 	if(*p == '\"') /* skip reference */
+	{
+		if(p[1] != '\0' && p[1] != '"' && p[2] == '"')
+			reference = p[1];
 		for(p++; *p != '\0' && *p++ != '\"';);
+	}
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
-	if(*p == '\"' && sscanf(++p, "%31[^\"]", buf) == 1
-			&& (folder = _imap4_folder_get_folder(plugin,
-					&imap4->folders, buf)) != NULL)
+	if(*p == '\"' && sscanf(++p, "%63[^\"]", buf) == 1
+			&& (folder = _imap4_folder_get_folder(plugin, parent,
+					buf)) != NULL)
 	{
-		buf[31] = '\0';
+		buf[63] = '\0';
 		/* FIXME escape the mailbox name (double quotes...) */
 		q = g_strdup_printf("%s \"%s\" (%s)", "STATUS", buf,
 				"MESSAGES RECENT");
 		if((cmd = _imap4_command(plugin, I4C_STATUS, q)) != NULL)
 			cmd->data.status.folder = folder;
 		g_free(q);
+		if(cmd != NULL && recurse == 1 && reference != '\0')
+		{
+			q = g_strdup_printf("%s \"\" \"%s%c%%\"", "LIST", buf,
+					reference);
+			if((cmd = _imap4_command(plugin, I4C_LIST, q)) != NULL)
+				cmd->data.list.parent = folder;
+			g_free(q);
+		}
 	}
 	return (cmd != NULL) ? 0 : -1;
 }
@@ -615,16 +643,16 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 		return 0;
 	}
 	if(strncmp("STATUS ", p, 7) != 0)
-		return -1;
+		return 0;
 	p += 7;
 	if(*p == '\"') /* skip reference */
 		for(p++; *p != '\0' && *p++ != '\"';);
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
 	if(*p != '(')
-		return -1;
+		return 0;
 	if(sscanf(p, "(MESSAGES %u RECENT %u)", &m, &r) != 2)
-		return -1;
+		return 0;
 	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\" %u (%u)\n", __func__, folder->name,
@@ -672,8 +700,8 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 				name = name_type[i].name;
 				break;
 			}
-	folder->folder = helper->folder_new(helper->account, folder, NULL, type,
-			name);
+	folder->folder = helper->folder_new(helper->account, folder,
+			parent->folder, type, name);
 	folder->messages = NULL;
 	folder->messages_cnt = 0;
 	folder->folders = NULL;

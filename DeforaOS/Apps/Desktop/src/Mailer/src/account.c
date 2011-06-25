@@ -459,7 +459,21 @@ static Folder * _account_helper_folder_new(Account * account,
 	/* lookup the account */
 	if(_account_get_iter(account, &iter) == TRUE)
 		p = &iter;
-	/* FIXME lookup the real parent */
+	/* lookup the parent folder */
+	if(p != NULL)
+	{
+		for(i = 0; gtk_tree_model_iter_nth_child(model, &iter3, p, i)
+				!= FALSE; i++)
+		{
+			gtk_tree_model_get(model, &iter3, MFC_FOLDER, &ret, -1);
+			if(ret == parent)
+				break;
+			ret = NULL;
+		}
+		if(ret != NULL)
+			memcpy(&iter, &iter3, sizeof(iter));
+	}
+	ret = NULL;
 	/* lookup the following folder in sort order */
 	if(p != NULL)
 		for(i = 0; gtk_tree_model_iter_nth_child(model, &iter3, p, i)
