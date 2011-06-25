@@ -337,6 +337,7 @@ static IMAP4Command * _imap4_command(AccountPlugin * plugin,
 /* imap4_parse */
 static int _parse_context(AccountPlugin * plugin, char const * answer);
 static int _context_fetch(AccountPlugin * plugin, char const * answer);
+static int _context_init(AccountPlugin * plugin);
 static int _context_list(AccountPlugin * plugin, char const * answer);
 static int _context_select(AccountPlugin * plugin, char const * answer);
 
@@ -401,10 +402,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 	int ret = -1;
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
-	char const * p;
-	char const * q;
-	gchar * r;
-	char const list[] = "LIST \"*\" \"*\"";
+	char const list[] = "LIST \"\" %";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") %u, %u\n", __func__, answer,
@@ -415,17 +413,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case I4C_FETCH:
 			return _context_fetch(plugin, answer);
 		case I4C_INIT:
-			cmd->status = I4CS_OK;
-			if((p = plugin->config[I4CV_USERNAME].value) == NULL
-					|| *p == '\0')
-				return -1;
-			if((q = plugin->config[I4CV_PASSWORD].value) == NULL
-					|| *q == '\0')
-				return -1;
-			r = g_strdup_printf("%s %s %s", "LOGIN", p, q);
-			cmd = _imap4_command(plugin, I4C_LOGIN, r);
-			g_free(r);
-			return (cmd != NULL) ? 0 : -1;
+			return _context_init(plugin);
 		case I4C_LIST:
 			return _context_list(plugin, answer);
 		case I4C_LOGIN:
@@ -511,6 +499,25 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 			return 0;
 	}
 	return -1;
+}
+
+static int _context_init(AccountPlugin * plugin)
+{
+	IMAP4 * imap4 = plugin->priv;
+	IMAP4Command * cmd = &imap4->queue[0];
+	char const * p;
+	char const * q;
+	gchar * r;
+
+	cmd->status = I4CS_OK;
+	if((p = plugin->config[I4CV_USERNAME].value) == NULL || *p == '\0')
+		return -1;
+	if((q = plugin->config[I4CV_PASSWORD].value) == NULL || *q == '\0')
+		return -1;
+	r = g_strdup_printf("%s %s %s", "LOGIN", p, q);
+	cmd = _imap4_command(plugin, I4C_LOGIN, r);
+	g_free(r);
+	return (cmd != NULL) ? 0 : -1;
 }
 
 static int _context_list(AccountPlugin * plugin, char const * answer)
