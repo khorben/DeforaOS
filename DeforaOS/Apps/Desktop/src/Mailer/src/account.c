@@ -482,8 +482,6 @@ static Folder * _account_helper_folder_new(Account * account,
 			gtk_tree_model_get(model, &iter3, MFC_FOLDER, &ret, -1);
 			if(type == FT_INBOX && folder_get_type(ret) != FT_INBOX)
 				break;
-			if(type == FT_TRASH && folder_get_type(ret) != FT_TRASH)
-				break;
 			if(type < folder_get_type(ret))
 				break;
 			if(folder_get_type(ret) == type && strcmp(name,
