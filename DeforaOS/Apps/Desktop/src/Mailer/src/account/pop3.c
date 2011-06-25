@@ -238,6 +238,8 @@ static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
 	char buf[32];
 	POP3Command * cmd;
 
+	if(message == NULL)
+		return 0;
 	snprintf(buf, sizeof(buf), "%s %u", "RETR", message->id);
 	if((cmd = _pop3_command(plugin, P3C_TRANSACTION_RETR, buf)) == NULL)
 		return -1;

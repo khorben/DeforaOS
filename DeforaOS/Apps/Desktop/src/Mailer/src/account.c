@@ -344,21 +344,22 @@ GtkTextBuffer * account_select(Account * account, Folder * folder,
 		Message * message)
 {
 	AccountFolder * af;
-	AccountMessage * am;
+	AccountMessage * am = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\", %p)\n", __func__,
 			account_get_name(account), folder_get_name(folder),
 			(void *)message);
 #endif
-	if((af = folder_get_data(folder)) == NULL
-			|| (am = message_get_data(message)) == NULL)
+	if((af = folder_get_data(folder)) == NULL)
+		return NULL;
+	if(message != NULL && (am = message_get_data(message)) == NULL)
 		return NULL;
 	if(account->account->refresh != NULL
 			&& account->account->refresh(account->account, af, am)
 			!= 0)
 		return NULL;
-	return message_get_body(message);
+	return (message != NULL) ? message_get_body(message) : NULL;
 }
 
 

@@ -551,8 +551,13 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data)
 	gtk_tree_view_column_set_visible(mailer->he_view_from, !sent);
 	gtk_tree_view_column_set_visible(mailer->he_view_to, sent);
 	/* display headers */
-	model = (mailer->folder_cur != NULL) ? GTK_TREE_MODEL(
-			folder_get_messages(mailer->folder_cur)) : NULL;
+	if(mailer->folder_cur != NULL)
+	{
+		model = GTK_TREE_MODEL(folder_get_messages(mailer->folder_cur));
+		account_select(mailer->account_cur, mailer->folder_cur, NULL);
+	}
+	else
+		model = NULL;
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->he_view), model);
 	_mailer_update_status(mailer);
 #ifdef EMBEDDED

@@ -267,6 +267,8 @@ static int _mbox_refresh(AccountPlugin * plugin, AccountFolder * folder,
 	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void*)folder,
 			(void*)message);
 #endif
+	if(message == NULL)
+		return 0;
 	plugin->helper->message_set_body(message->message, NULL, 0, 0);
 	/* XXX we may still be reading the file... */
 	if((fp = fopen(filename, "r")) == NULL)

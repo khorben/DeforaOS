@@ -84,7 +84,8 @@ typedef enum _IMAP4Context
 	I4C_LIST,
 	I4C_LOGIN,
 	I4C_NOOP,
-	I4C_SELECT
+	I4C_SELECT,
+	I4C_STATUS
 } IMAP4Context;
 
 typedef enum _IMAP4FetchStatus
@@ -115,7 +116,13 @@ typedef struct _IMAP4Command
 		struct
 		{
 			AccountFolder * folder;
+			AccountMessage * message;
 		} select;
+
+		struct
+		{
+			AccountFolder * folder;
+		} status;
 	} data;
 } IMAP4Command;
 
@@ -274,15 +281,14 @@ static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
 	IMAP4Command * cmd;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %u\n", __func__, message->id);
+	fprintf(stderr, "DEBUG: %s() %u\n", __func__, (message != NULL)
+			? message->id : 0);
 #endif
-	snprintf(buf, sizeof(buf), "FETCH %u BODY[]", message->id);
-	if((cmd = _imap4_command(plugin, I4C_FETCH, buf)) == NULL)
+	snprintf(buf, sizeof(buf), "SELECT \"%s\"", folder->name);
+	if((cmd = _imap4_command(plugin, I4C_SELECT, buf)) == NULL)
 		return -1;
-	cmd->data.fetch.folder = folder;
-	cmd->data.fetch.message = message;
-	cmd->data.fetch.id = message->id;
-	cmd->data.fetch.status = I4FS_ID;
+	cmd->data.select.folder = folder;
+	cmd->data.select.message = message;
 	return 0;
 }
 
@@ -340,6 +346,7 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer);
 static int _context_init(AccountPlugin * plugin);
 static int _context_list(AccountPlugin * plugin, char const * answer);
 static int _context_select(AccountPlugin * plugin, char const * answer);
+static int _context_status(AccountPlugin * plugin, char const * answer);
 
 static int _imap4_parse(AccountPlugin * plugin)
 {
@@ -429,6 +436,8 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			return 0;
 		case I4C_SELECT:
 			return _context_select(plugin, answer);
+		case I4C_STATUS:
+			return _context_status(plugin, answer);
 	}
 	return ret;
 }
@@ -551,9 +560,11 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 					&imap4->folders, buf)) != NULL)
 	{
 		buf[31] = '\0';
-		q = g_strdup_printf("%s \"%s\"", "SELECT", buf);
-		if((cmd = _imap4_command(plugin, I4C_SELECT, q)) != NULL)
-			cmd->data.select.folder = folder;
+		/* FIXME escape the mailbox name (double quotes...) */
+		q = g_strdup_printf("%s \"%s\" (%s)", "STATUS", buf,
+				"MESSAGES RECENT");
+		if((cmd = _imap4_command(plugin, I4C_STATUS, q)) != NULL)
+			cmd->data.status.folder = folder;
 		g_free(q);
 	}
 	return (cmd != NULL) ? 0 : -1;
@@ -564,21 +575,62 @@ static int _context_select(AccountPlugin * plugin, char const * answer)
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder;
-	char const fetch[] = "FETCH 1:* BODY[HEADER]";
+	AccountMessage * message;
+	char buf[32];
 
 	if(cmd->status != I4CS_PARSING)
 		return 0;
 	cmd->status = I4CS_OK;
 	if((folder = cmd->data.select.folder) == NULL)
 		return 0; /* XXX really is an error */
-	if((cmd = _imap4_command(plugin, I4C_FETCH, fetch)) != NULL)
+	if((message = cmd->data.select.message) == NULL)
+		/* FIXME queue commands in batches instead */
+		snprintf(buf, sizeof(buf), "%s %s %s", "FETCH", "1:*",
+				"BODY[HEADER]");
+	else
+		snprintf(buf, sizeof(buf), "%s %u %s", "FETCH", message->id,
+				"BODY[]");
+	if((cmd = _imap4_command(plugin, I4C_FETCH, buf)) == NULL)
+		return -1;
+	cmd->data.fetch.folder = folder;
+	cmd->data.fetch.message = message;
+	cmd->data.fetch.id = (message != NULL) ? message->id : 0;
+	cmd->data.fetch.status = I4FS_ID;
+	return 0;
+}
+
+static int _context_status(AccountPlugin * plugin, char const * answer)
+{
+	IMAP4 * imap4 = plugin->priv;
+	IMAP4Command * cmd = &imap4->queue[0];
+	AccountFolder * folder = cmd->data.select.folder;
+	char const * p;
+	unsigned int m;
+	unsigned int r;
+
+	p = answer;
+	if(strncmp("OK", p, 2) == 0)
 	{
-		cmd->data.fetch.folder = folder;
-		cmd->data.fetch.message = NULL;
-		cmd->data.fetch.id = 0;
-		cmd->data.fetch.status = I4FS_ID;
+		cmd->status = I4CS_OK;
+		return 0;
 	}
-	return (cmd != NULL) ? 0 : -1;
+	if(strncmp("STATUS ", p, 7) != 0)
+		return -1;
+	p += 7;
+	if(*p == '\"') /* skip reference */
+		for(p++; *p != '\0' && *p++ != '\"';);
+	if(*p == ' ') /* skip spaces */
+		for(p++; *p != '\0' && *p == ' '; p++);
+	if(*p != '(')
+		return -1;
+	if(sscanf(p, "(MESSAGES %u RECENT %u)", &m, &r) != 2)
+		return -1;
+	/* FIXME implement */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\" %u (%u)\n", __func__, folder->name,
+			m, r);
+#endif
+	return 0;
 }
 
 
