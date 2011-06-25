@@ -443,24 +443,46 @@ static Folder * _account_helper_folder_new(Account * account,
 		AccountFolder * folder, Folder * parent, FolderType type,
 		char const * name)
 {
-	Folder * ret;
+	Folder * ret = NULL;
+	GtkTreeModel * model = GTK_TREE_MODEL(account->store);
 	GtkTreeIter iter;
 	GtkTreeIter iter2;
+	GtkTreeIter iter3;
 	GtkTreeIter * p = NULL;
+	gint i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %p, %p, %u, \"%s\")\n", __func__,
 			(void*)account, (void*)folder, (void*)parent, type,
 			name);
 #endif
+	/* lookup the account */
 	if(_account_get_iter(account, &iter) == TRUE)
 		p = &iter;
 	/* FIXME lookup the real parent */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() gtk_tree_store_append(%p)\n", __func__,
-			(void*)p);
-#endif
-	gtk_tree_store_append(account->store, &iter2, p);
+	/* lookup the following folder in sort order */
+	if(p != NULL)
+		for(i = 0; gtk_tree_model_iter_nth_child(model, &iter3, p, i)
+				!= FALSE; i++)
+		{
+			gtk_tree_model_get(model, &iter3, MFC_FOLDER, &ret, -1);
+			if(type == FT_INBOX && folder_get_type(ret) != FT_INBOX)
+				break;
+			if(type == FT_TRASH && folder_get_type(ret) != FT_TRASH)
+				break;
+			if(type < folder_get_type(ret))
+				break;
+			if(folder_get_type(ret) == type && strcmp(name,
+						folder_get_name(ret)) < 0)
+				break;
+			ret = NULL;
+		}
+	/* insert the folder in the model */
+	if(ret != NULL)
+		gtk_tree_store_insert_before(account->store, &iter2, p, &iter3);
+	else
+		gtk_tree_store_append(account->store, &iter2, p);
+	/* actually register the folder */
 	if((ret = folder_new(folder, type, name, account->store, &iter2))
 			== NULL)
 		gtk_tree_store_remove(account->store, &iter2);
