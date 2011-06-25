@@ -653,10 +653,6 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 	if(sscanf(p, "(MESSAGES %u RECENT %u)", &m, &r) != 2)
 		return 0;
 	/* FIXME implement */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\" %u (%u)\n", __func__, folder->name,
-			m, r);
-#endif
 	return 0;
 }
 
@@ -683,6 +679,7 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 		{ NULL,		0		}
 	};
 	size_t i;
+	size_t len;
 
 	if((p = realloc(parent->folders, sizeof(*p) * (parent->folders_cnt
 						+ 1))) == NULL)
@@ -699,6 +696,10 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 				name = name_type[i].name;
 				break;
 			}
+	/* shorten the name as required if has a parent */
+	if(parent->name != NULL && (len = strlen(parent->name)) > 0
+			&& strncmp(name, parent->name, len) == 0)
+		name = &name[len + 1];
 	folder->folder = helper->folder_new(helper->account, folder,
 			parent->folder, type, name);
 	folder->messages = NULL;
