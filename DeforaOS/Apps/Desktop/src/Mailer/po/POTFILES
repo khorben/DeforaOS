@@ -1,4 +1,5 @@
 ../src/compose.c
 ../src/compose-main.c
+../src/folder.c
 ../src/mailer.c
 ../src/main.c

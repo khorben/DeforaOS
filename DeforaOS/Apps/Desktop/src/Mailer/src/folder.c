@@ -20,9 +20,12 @@
 # include <stdio.h>
 #endif
 #include <string.h>
+#include <libintl.h>
 #include <System.h>
 #include "mailer.h"
 #include "folder.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Folder */
@@ -47,6 +50,8 @@ static gboolean _folder_get_iter(Folder * folder, GtkTreeIter * iter);
 static gboolean _folder_set(Folder * folder, MailerFolderColumn column,
 		void * value);
 
+static char const * _get_local_name(FolderType type, char const * name);
+
 
 /* functions */
 /* folder_new */
@@ -61,6 +66,7 @@ Folder * folder_new(AccountFolder * folder, FolderType type, char const * name,
 #endif
 	if((ret = object_new(sizeof(*ret))) == NULL)
 		return NULL;
+	name = _get_local_name(type, name);
 	ret->name = string_new(name);
 	ret->store = store;
 	path = gtk_tree_model_get_path(GTK_TREE_MODEL(store), iter);
@@ -180,4 +186,29 @@ static gboolean _folder_set(Folder * folder, MailerFolderColumn column,
 		return FALSE;
 	gtk_tree_store_set(folder->store, &iter, column, value, -1);
 	return TRUE;
+}
+
+
+/* get_local_name */
+static char const * _get_local_name(FolderType type, char const * name)
+{
+	struct
+	{
+		FolderType type;
+		char const * name;
+		char const * lname;
+	} names[] =
+	{
+		{ FT_INBOX,	"Inbox",	N_("Inbox")	},
+		{ FT_DRAFTS,	"Drafts",	N_("Drafts")	},
+		{ FT_SENT,	"Sent",		N_("Sent")	},
+		{ FT_TRASH,	"Trash",	N_("Trash")	}
+	};
+	size_t i;
+
+	for(i = 0; i < sizeof(names) / sizeof(*names); i++)
+		if(names[i].type == type && strcasecmp(names[i].name, name)
+				== 0)
+			return _(names[i].lname);
+	return name;
 }

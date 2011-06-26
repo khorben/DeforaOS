@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-25 03:26+0200\n"
+"POT-Creation-Date: 2011-06-27 00:59+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -189,6 +189,22 @@ msgstr "Progression: "
 #: ../src/compose-main.c:45
 msgid "Usage: compose address...\n"
 msgstr "Usage: compose adresse...\n"
+
+#: ../src/folder.c:202
+msgid "Inbox"
+msgstr "Courrier entrant"
+
+#: ../src/folder.c:203
+msgid "Drafts"
+msgstr "Brouillons"
+
+#: ../src/folder.c:204
+msgid "Sent"
+msgstr "Envoyés"
+
+#: ../src/folder.c:205
+msgid "Trash"
+msgstr "Corbeille"
 
 #: ../src/mailer.c:106
 msgid "New account"
