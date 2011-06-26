@@ -69,12 +69,13 @@ typedef enum _IMAP4ConfigValue
 	I4CV_USERNAME = 0,
 	I4CV_PASSWORD,
 	I4CV_HOSTNAME,
-	I4CV_PORT
+	I4CV_PORT,
 #if 0 /* FIXME SSL is not supported yet */
-	I4CV_SSL
+	I4CV_SSL,
 #endif
+	I4CV_PREFIX
 } IMAP4Config;
-#define I4CV_LAST I4CV_PORT
+#define I4CV_LAST I4CV_PREFIX
 #define I4CV_COUNT (I4CV_LAST + 1)
 
 typedef enum _IMAP4Context
@@ -167,6 +168,7 @@ AccountConfig _imap4_config[I4CV_COUNT + 1] =
 	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL	},
 	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL	},
 #endif
+	{ "prefix",	"Prefix",		ACT_STRING,	NULL	},
 	{ NULL,		NULL,			ACT_NONE,	NULL	}
 };
 
@@ -350,6 +352,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer);
 static int _context_fetch(AccountPlugin * plugin, char const * answer);
 static int _context_init(AccountPlugin * plugin);
 static int _context_list(AccountPlugin * plugin, char const * answer);
+static int _context_login(AccountPlugin * plugin);
 static int _context_select(AccountPlugin * plugin);
 static int _context_status(AccountPlugin * plugin, char const * answer);
 
@@ -414,7 +417,6 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 	int ret = -1;
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
-	char const list[] = "LIST \"\" %";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") %u, %u\n", __func__, answer,
@@ -429,14 +431,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case I4C_LIST:
 			return _context_list(plugin, answer);
 		case I4C_LOGIN:
-			if(cmd->status != I4CS_PARSING)
-				return 0;
-			cmd->status = I4CS_OK;
-			if((cmd = _imap4_command(plugin, I4C_LIST, list))
-					== NULL)
-				return -1;
-			cmd->data.list.parent = &imap4->folders;
-			return 0;
+			return _context_login(plugin);
 		case I4C_NOOP:
 			if(cmd->status != I4CS_PARSING)
 				return 0;
@@ -596,6 +591,27 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 		}
 	}
 	return (cmd != NULL) ? 0 : -1;
+}
+
+static int _context_login(AccountPlugin * plugin)
+{
+	IMAP4 * imap4 = plugin->priv;
+	IMAP4Command * cmd = &imap4->queue[0];
+	char const * prefix = plugin->config[I4CV_PREFIX].value;
+	gchar * q;
+
+	if(cmd->status != I4CS_PARSING)
+		return 0;
+	cmd->status = I4CS_OK;
+	if((q = g_strdup_printf("%s \"\" \"%s%%\"", "LIST", (prefix != NULL)
+					? prefix : "")) == NULL)
+		return -1;
+	cmd = _imap4_command(plugin, I4C_LIST, q);
+	g_free(q);
+	if(cmd == NULL)
+		return -1;
+	cmd->data.list.parent = &imap4->folders;
+	return 0;
 }
 
 static int _context_select(AccountPlugin * plugin)
