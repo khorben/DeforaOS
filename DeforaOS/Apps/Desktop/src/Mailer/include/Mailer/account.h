@@ -43,7 +43,8 @@ typedef enum _AccountConfigType
 	ACT_PASSWORD,
 	ACT_FILE,
 	ACT_UINT16,
-	ACT_BOOLEAN
+	ACT_BOOLEAN,
+	ACT_SEPARATOR
 } AccountConfigType;
 
 typedef struct _AccountConfig

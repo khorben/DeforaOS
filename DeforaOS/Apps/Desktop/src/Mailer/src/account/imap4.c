@@ -73,6 +73,7 @@ typedef enum _IMAP4ConfigValue
 #if 0 /* FIXME SSL is not supported yet */
 	I4CV_SSL,
 #endif
+	I4CV_PADDING0,
 	I4CV_PREFIX
 } IMAP4Config;
 #define I4CV_LAST I4CV_PREFIX
@@ -168,6 +169,7 @@ AccountConfig _imap4_config[I4CV_COUNT + 1] =
 	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL	},
 	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL	},
 #endif
+	{ NULL,		NULL,			ACT_SEPARATOR,	NULL	},
 	{ "prefix",	"Prefix",		ACT_STRING,	NULL	},
 	{ NULL,		NULL,			ACT_NONE,	NULL	}
 };

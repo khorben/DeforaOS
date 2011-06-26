@@ -1689,12 +1689,10 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	for(i = 0; config != NULL && config[i].name != NULL; i++)
+	for(i = 0; config != NULL && config[i].type != ACT_NONE; i++)
 	{
 		switch(config[i].type)
 		{
-			case ACT_NONE:
-				continue;
 			case ACT_STRING:
 				widget = _update_string(&config[i], NULL,
 						group);
@@ -1713,7 +1711,11 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 			case ACT_BOOLEAN:
 				widget = _update_boolean(&config[i]);
 				break;
+			case ACT_SEPARATOR:
+				widget = gtk_hseparator_new();
+				break;
 			default: /* should not happen */
+				assert(0);
 				continue;
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -1883,12 +1885,10 @@ static GtkWidget * _account_display(Account * account)
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	widget = _display_string(&p, desc, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-	for(i = 0; config[i].name != NULL; i++)
+	for(i = 0; config[i].type != ACT_NONE; i++)
 	{
 		switch(config[i].type)
 		{
-			case ACT_NONE:
-				continue;
 			case ACT_STRING:
 				widget = _display_string(&config[i], desc,
 						group);
@@ -1907,6 +1907,9 @@ static GtkWidget * _account_display(Account * account)
 			case ACT_BOOLEAN:
 				widget = _display_boolean(&config[i], desc,
 						group);
+				break;
+			case ACT_SEPARATOR:
+				widget = gtk_hseparator_new();
 				break;
 			default: /* should not happen */
 				assert(0);
@@ -2065,10 +2068,6 @@ static void _account_edit(Mailer * mailer, Account * account)
 	/* FIXME this affects the account directly (eg cancel does not) */
 	widget = _assistant_account_config(account_get_config(account));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);

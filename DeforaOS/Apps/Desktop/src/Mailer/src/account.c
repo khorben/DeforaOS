@@ -266,9 +266,10 @@ int account_config_load(Account * account, Config * config)
 			continue;
 		switch(p->type)
 		{
+			case ACT_PASSWORD:
+				/* FIXME unscramble */
 			case ACT_FILE:
 			case ACT_STRING:
-			case ACT_PASSWORD: /* FIXME unscramble */
 				free(p->value);
 				p->value = strdup(value);
 				break;
@@ -277,8 +278,10 @@ int account_config_load(Account * account, Config * config)
 				if(value[0] != '\0' && *q == '\0')
 					p->value = (void*)l;
 				break;
-			case ACT_BOOLEAN: /* FIXME implement the rest */
+			case ACT_BOOLEAN:
+				/* FIXME implement */
 			case ACT_NONE:
+			case ACT_SEPARATOR:
 				break;
 		}
 	}
@@ -304,9 +307,10 @@ int account_config_save(Account * account, Config * config)
 	{
 		switch(p->type)
 		{
+			case ACT_PASSWORD:
+				/* FIXME scramble */
 			case ACT_FILE:
 			case ACT_STRING:
-			case ACT_PASSWORD: /* FIXME scramble */
 				if(config_set(config, account->title, p->name,
 							p->value) != 0)
 					return 1;
@@ -318,8 +322,10 @@ int account_config_save(Account * account, Config * config)
 							buf) != 0)
 					return 1;
 				break;
-			case ACT_BOOLEAN: /* FIXME implement the rest */
+			case ACT_BOOLEAN:
+				/* FIXME implement */
 			case ACT_NONE:
+			case ACT_SEPARATOR:
 				break;
 		}
 	}
