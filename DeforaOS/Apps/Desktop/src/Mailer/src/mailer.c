@@ -2306,7 +2306,7 @@ static char * _mailer_get_config_filename(void)
 	char * filename;
 
 	if((homedir = getenv("HOME")) == NULL)
-		return NULL;
+		homedir = g_get_home_dir();
 	if((filename = malloc(strlen(homedir) + sizeof(MAILER_CONFIG_FILE) + 1))
 			== NULL)
 		return NULL;

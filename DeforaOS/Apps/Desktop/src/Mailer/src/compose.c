@@ -366,7 +366,7 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 			GTK_WRAP_WORD_CHAR);
 	/* signature */
 	if((homedir = getenv("HOME")) == NULL)
-		return textview;
+		homedir = g_get_home_dir();
 	if((filename = string_new_append(homedir, signature, NULL)) == NULL)
 		return textview;
 	res = g_file_get_contents(filename, &buf, &cnt, NULL);
