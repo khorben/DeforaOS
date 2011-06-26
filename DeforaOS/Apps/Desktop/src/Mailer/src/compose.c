@@ -364,6 +364,8 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	GtkTextBuffer * buffer;
 
 	textview = gtk_text_view_new();
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview),
+			GTK_WRAP_WORD_CHAR);
 	/* signature */
 	if((homedir = getenv("HOME")) == NULL)
 		return textview;
