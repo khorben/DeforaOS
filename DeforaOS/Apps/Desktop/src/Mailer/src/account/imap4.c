@@ -675,8 +675,7 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 		{ "Inbox",	FT_INBOX	},
 		{ "Drafts",	FT_DRAFTS	},
 		{ "Trash",	FT_TRASH	},
-		{ "Sent",	FT_SENT		},
-		{ NULL,		0		}
+		{ "Sent",	FT_SENT		}
 	};
 	size_t i;
 	size_t len;
@@ -689,7 +688,7 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 		return NULL;
 	folder->name = strdup(name);
 	if(parent == &imap4->folders)
-		for(i = 0; name_type[i].name != NULL; i++)
+		for(i = 0; i < sizeof(name_type) / sizeof(*name_type); i++)
 			if(strcasecmp(name_type[i].name, name) == 0)
 			{
 				type = name_type[i].type;
