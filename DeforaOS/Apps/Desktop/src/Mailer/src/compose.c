@@ -314,19 +314,17 @@ Compose * compose_new(Mailer * mailer)
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), compose->subject);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* view */
-	compose->view = _new_text_view(mailer);
 	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	compose->view = _new_text_view(mailer);
 	gtk_container_add(GTK_CONTAINER(widget), compose->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* attachments */
 	compose->a_window = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(compose->a_window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
 	compose->a_store = gtk_list_store_new(CAC_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, GDK_TYPE_PIXBUF);
