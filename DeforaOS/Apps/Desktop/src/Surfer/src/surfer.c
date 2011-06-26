@@ -1401,11 +1401,18 @@ void surfer_save(Surfer * surfer, char const * filename)
 /* surfer_select_all */
 void surfer_select_all(Surfer * surfer)
 {
-	GtkWidget * view;
+	GtkWidget * widget;
 
-	if((view = surfer_get_view(surfer)) == NULL)
+	/* XXX this assumes the keyboard shortcut was used */
+	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
+	if(gtk_window_get_focus(GTK_WINDOW(surfer->window)) == widget)
+	{
+		gtk_editable_set_position(GTK_EDITABLE(widget), 0);
 		return;
-	ghtml_select_all(view);
+	}
+	if((widget = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_select_all(widget);
 }
 
 
