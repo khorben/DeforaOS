@@ -1229,8 +1229,13 @@ typedef enum _AccountColumn
 } AccountColumn;
 #define AC_LAST AC_TYPE
 #define AC_COUNT (AC_LAST + 1)
+
 static void _preferences_set(Mailer * mailer);
+
+/* callbacks */
 static gboolean _on_preferences_closex(gpointer data);
+static void _on_preferences_response(GtkWidget * widget, gint response,
+		gpointer data);
 static void _on_preferences_account_delete(gpointer data);
 static void _on_preferences_account_edit(gpointer data);
 static void _on_preferences_account_new(gpointer data);
@@ -1260,21 +1265,25 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	if(mailer->pr_window != NULL)
 	{
 		if(show)
-			gtk_widget_show(mailer->pr_window);
+			gtk_window_present(GTK_WINDOW(mailer->pr_window));
 		else
 			gtk_widget_hide(mailer->pr_window);
 		return;
 	}
-	mailer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(mailer->pr_window), 300, 200);
-	gtk_container_set_border_width(GTK_CONTAINER(mailer->pr_window), 4);
-	gtk_window_set_title(GTK_WINDOW(mailer->pr_window),
-			_("Mailer preferences"));
-	gtk_window_set_transient_for(GTK_WINDOW(mailer->pr_window), GTK_WINDOW(
-				mailer->fo_window));
+	mailer->pr_window = gtk_dialog_new_with_buttons(
+			_("Mailer preferences"), GTK_WINDOW(mailer->fo_window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	g_signal_connect_swapped(G_OBJECT(mailer->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), mailer);
-	vbox = gtk_vbox_new(FALSE, 4);
+	g_signal_connect(G_OBJECT(mailer->pr_window), "response",
+			G_CALLBACK(_on_preferences_response), mailer);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(mailer->pr_window));
+#else
+	vbox = GTK_DIALOG(mailer->pr_window)->vbox;
+#endif
 	notebook = gtk_notebook_new();
 	/* accounts */
 	vbox2 = gtk_vbox_new(FALSE, 4);
@@ -1356,21 +1365,6 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
 				_("Display")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	/* dialog */
-	hbox = gtk_hbox_new(FALSE, 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_preferences_ok), mailer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_preferences_cancel), mailer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(mailer->pr_window), vbox);
 	_preferences_set(mailer);
 	gtk_widget_show_all(vbox);
 	if(show)
@@ -1397,6 +1391,18 @@ static gboolean _on_preferences_closex(gpointer data)
 	return TRUE;
 }
 
+static void _on_preferences_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	Mailer * mailer = data;
+
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_on_preferences_ok(mailer);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_on_preferences_cancel(mailer);
+}
+
 
 /* _on_preferences_account_new */
 /* types */
@@ -1421,7 +1427,7 @@ static GtkWidget * _assistant_account_config(AccountConfig * config);
 #endif
 static void _on_assistant_cancel(GtkWidget * widget, gpointer data);
 static void _on_assistant_close(GtkWidget * widget, gpointer data);
-static void _on_assistant_apply(GtkWidget * widget, gpointer data);
+static void _on_assistant_apply(gpointer data);
 static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data);
 static void _on_entry_changed(GtkWidget * widget, gpointer data);
@@ -1455,7 +1461,7 @@ static void _on_preferences_account_new(gpointer data)
 				_on_assistant_cancel), ad);
 	g_signal_connect(G_OBJECT(ad->assistant), "close", G_CALLBACK(
 				_on_assistant_close), ad);
-	g_signal_connect(G_OBJECT(ad->assistant), "apply", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(ad->assistant), "apply", G_CALLBACK(
 				_on_assistant_apply), ad);
 	g_signal_connect(G_OBJECT(ad->assistant), "prepare", G_CALLBACK(
 				_on_assistant_prepare), ad);
@@ -1501,7 +1507,7 @@ static void _on_assistant_close(GtkWidget * widget, gpointer data)
 	gtk_widget_destroy(widget);
 }
 
-static void _on_assistant_apply(GtkWidget * widget, gpointer data)
+static void _on_assistant_apply(gpointer data)
 {
 	AccountData * ad = data;
 	GtkTreeModel * model;
@@ -1880,7 +1886,7 @@ static GtkWidget * _account_display(Account * account)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	p.name = NULL;
 	p.title = _("Account name");
-	p.value = account_get_title(account);
+	p.value = (void *)account_get_title(account);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	widget = _display_string(&p, desc, group);

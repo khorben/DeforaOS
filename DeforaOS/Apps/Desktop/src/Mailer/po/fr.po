@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-27 01:44+0200\n"
+"POT-Creation-Date: 2011-06-27 01:56+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -362,104 +362,104 @@ msgstr "Mailer - Source"
 msgid "Re: "
 msgstr "Re: "
 
-#: ../src/mailer.c:1272
+#: ../src/mailer.c:1274
 msgid "Mailer preferences"
 msgstr "Préférences de Mailer"
 
-#: ../src/mailer.c:1308
+#: ../src/mailer.c:1317
 msgid "Enabled"
 msgstr "Actif"
 
-#: ../src/mailer.c:1312
+#: ../src/mailer.c:1321
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/mailer.c:1316
+#: ../src/mailer.c:1325
 msgid "Type"
 msgstr "Type"
 
-#: ../src/mailer.c:1340
+#: ../src/mailer.c:1349
 msgid "Accounts"
 msgstr "Comptes"
 
-#: ../src/mailer.c:1347
+#: ../src/mailer.c:1356
 msgid "Messages font:"
 msgstr "Police des messages:"
 
-#: ../src/mailer.c:1357
+#: ../src/mailer.c:1366
 msgid "Display"
 msgstr "Affichage"
 
-#: ../src/mailer.c:1439
+#: ../src/mailer.c:1445
 msgid "No account plug-in available"
 msgstr "Aucun greffon de compte disponible"
 
-#: ../src/mailer.c:1594 ../src/mailer.c:1882
+#: ../src/mailer.c:1600 ../src/mailer.c:1888
 msgid "Account name"
 msgstr "Nom du compte"
 
-#: ../src/mailer.c:1601
+#: ../src/mailer.c:1607
 msgid "Your name"
 msgstr "Votre nom"
 
-#: ../src/mailer.c:1608
+#: ../src/mailer.c:1614
 msgid "e-mail address"
 msgstr "Adresse e-mail"
 
-#: ../src/mailer.c:1615
+#: ../src/mailer.c:1621
 msgid "Type of account"
 msgstr "Type de compte"
 
-#: ../src/mailer.c:1771
+#: ../src/mailer.c:1777
 msgid "Choose file"
 msgstr "Choisir un fichier"
 
-#: ../src/mailer.c:1953
+#: ../src/mailer.c:1959
 msgid "hidden"
 msgstr "masqué"
 
-#: ../src/mailer.c:1987
+#: ../src/mailer.c:1993
 msgid "Yes"
 msgstr "Oui"
 
-#: ../src/mailer.c:1987
+#: ../src/mailer.c:1993
 msgid "No"
 msgstr "Non"
 
-#: ../src/mailer.c:2015
+#: ../src/mailer.c:2021
 msgid "Account type "
 msgstr "Type de compte "
 
-#: ../src/mailer.c:2016
+#: ../src/mailer.c:2022
 msgid " active\n"
 msgstr " actif\n"
 
-#: ../src/mailer.c:2060
+#: ../src/mailer.c:2066
 msgid "Edit account: "
 msgstr "Modification du compte: "
 
-#: ../src/mailer.c:2123
+#: ../src/mailer.c:2129
 msgid "An error occured while saving preferences"
 msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
-#: ../src/mailer.c:2255 ../src/mailer.c:2260
+#: ../src/mailer.c:2261 ../src/mailer.c:2266
 msgid "Question"
 msgstr "Question"
 
-#: ../src/mailer.c:2329
+#: ../src/mailer.c:2335
 #, c-format
 msgid "%s/%s: %d %s"
 msgstr "%s/%s: %d %s"
 
-#: ../src/mailer.c:2332
+#: ../src/mailer.c:2338
 msgid "messages"
 msgstr "messages"
 
-#: ../src/mailer.c:2332
+#: ../src/mailer.c:2338
 msgid "message"
 msgstr "message"
 
-#: ../src/mailer.c:2335
+#: ../src/mailer.c:2341
 msgid "Ready"
 msgstr "Prêt"
 
