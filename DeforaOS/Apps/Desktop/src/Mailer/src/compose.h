@@ -49,6 +49,7 @@ void compose_paste(Compose * compose);
 int compose_error(Compose * compose, char const * message, int ret);
 
 int compose_save(Compose * compose);
+int compose_save_as_dialog(Compose * compose);
 
 void compose_select_all(Compose * compose);
 

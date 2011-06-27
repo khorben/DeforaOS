@@ -90,6 +90,9 @@ typedef enum _ComposeAttachmentColumn
 /* prototypes */
 static void _compose_delete(Compose * compose);
 
+/* accessors */
+static char const * _compose_get_font(Compose * compose);
+
 /* useful */
 static gboolean _compose_close(Compose * compose);
 
@@ -106,8 +109,11 @@ static DesktopMenu _menu_file[] =
 	{ N_("_New message"), G_CALLBACK(compose_new_copy),
 		"stock_mail-compose", GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Save"), NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_KEY_S },
-	{ N_("Save _as..."), NULL, GTK_STOCK_SAVE_AS, 0, 0 },
+	{ N_("_Save"), G_CALLBACK(compose_save), GTK_STOCK_SAVE,
+		GDK_CONTROL_MASK, GDK_KEY_S },
+	{ N_("Save _as..."), G_CALLBACK(compose_save_as_dialog),
+		GTK_STOCK_SAVE_AS, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+		GDK_KEY_S },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Print"), NULL, GTK_STOCK_PRINT, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ N_("Print pre_view"), NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
@@ -191,7 +197,7 @@ static DesktopToolbar _compose_toolbar[] =
 
 /* public */
 /* compose_new */
-static GtkWidget * _new_text_view(void);
+static GtkWidget * _new_text_view(Compose * compose);
 static void _on_header_field_edited(GtkCellRendererText * renderer,
 		gchar * path, gchar * text, gpointer data);
 static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
@@ -209,7 +215,6 @@ Compose * compose_new(Config * config)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeIter iter;
-	char const * p;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
@@ -329,7 +334,8 @@ Compose * compose_new(Config * config)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	compose->view = _new_text_view();
+	compose->view = _new_text_view(compose);
+	compose_set_font(compose, _compose_get_font(compose));
 	gtk_container_add(GTK_CONTAINER(widget), compose->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* attachments */
@@ -355,18 +361,13 @@ Compose * compose_new(Config * config)
 	gtk_container_add(GTK_CONTAINER(compose->window), vbox);
 	/* about dialog */
 	compose->ab_window = NULL;
-	/* preferences */
-	if(config == NULL || (p = config_get(config, NULL, "messages_font"))
-			== NULL)
-		p = MAILER_MESSAGES_FONT;
-	compose_set_font(compose, p);
 	/* display */
 	gtk_widget_show_all(vbox);
 	gtk_widget_show(compose->window);
 	return compose;
 }
 
-static GtkWidget * _new_text_view(void)
+static GtkWidget * _new_text_view(Compose * compose)
 {
 	const char signature[] = "/.signature";
 	const char prefix[] = "\n-- \n";
@@ -607,6 +608,14 @@ void compose_paste(Compose * compose)
 
 /* compose_save */
 int compose_save(Compose * compose)
+{
+	/* FIXME implement */
+	return 0;
+}
+
+
+/* compose_save_as_dialog */
+int compose_save_as_dialog(Compose * compose)
 {
 	/* FIXME implement */
 	return 0;
@@ -904,6 +913,36 @@ static void _compose_delete(Compose * compose)
 		gtk_main_quit();
 	else
 		compose_delete(compose);
+}
+
+
+/* accessors */
+/* compose_get_font */
+static char const * _compose_get_font(Compose * compose)
+{
+	char const * p;
+	char * q;
+	GtkSettings * settings;
+	PangoFontDescription * desc;
+
+	if((p = config_get(compose->config, NULL, "messages_font")) != NULL)
+		return p;
+	settings = gtk_settings_get_default();
+	g_object_get(G_OBJECT(settings), "gtk-font-name", &q, NULL);
+	if(q != NULL)
+	{
+		desc = pango_font_description_from_string(q);
+		g_free(q);
+		pango_font_description_set_family(desc, "monospace");
+		q = pango_font_description_to_string(desc);
+		config_set(compose->config, NULL, "messages_font", q);
+		g_free(q);
+		pango_font_description_free(desc);
+		if((p = config_get(compose->config, NULL, "messages_font"))
+				!= NULL)
+			return p;
+	}
+	return MAILER_MESSAGES_FONT;
 }
 
 

@@ -254,11 +254,15 @@ static DesktopToolbar _mailer_bo_toolbar[] =
 
 
 /* prototypes */
+/* accessors */
+static char const * _mailer_get_font(Mailer * mailer);
+static char * _mailer_get_config_filename(void);
+
+/* useful */
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 static gboolean _mailer_confirm(Mailer * mailer, char const * message);
 static void _mailer_foreach_message_selected(Mailer * mailer,
 		MailerForeachMessageCallback callback);
-static char * _mailer_get_config_filename(void);
 static void _mailer_update_status(Mailer * mailer);
 
 
@@ -757,12 +761,10 @@ static gboolean _new_config_load(gpointer data)
 		return FALSE;
 	config_load(mailer->config, filename);
 	free(filename);
-	if((value = config_get(mailer->config, NULL, "messages_font")) != NULL)
-	{
-		font = pango_font_description_from_string(value);
-		gtk_widget_modify_font(mailer->bo_view, font);
-		pango_font_description_free(font);
-	}
+	value = _mailer_get_font(mailer);
+	font = pango_font_description_from_string(value);
+	gtk_widget_modify_font(mailer->bo_view, font);
+	pango_font_description_free(font);
 	if((value = config_get(mailer->config, NULL, "accounts")) == NULL
 			|| value[0] == '\0')
 		return FALSE;
@@ -1381,8 +1383,7 @@ static void _preferences_set(Mailer * mailer)
 {
 	char const * p;
 
-	if((p = mailer_get_config(mailer, "messages_font")) == NULL)
-		p = MAILER_MESSAGES_FONT;
+	p = _mailer_get_font(mailer);
 	gtk_font_button_set_font_name(GTK_FONT_BUTTON(mailer->pr_messages_font),
 			p);
 }
@@ -2252,6 +2253,53 @@ void mailer_unselect_all(Mailer * mailer)
 
 /* private */
 /* functions */
+/* accessors */
+/* mailer_get_config_filename */
+static char * _mailer_get_config_filename(void)
+	/* FIXME consider replacing with mailer_save_config() */
+{
+	char const * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((filename = malloc(strlen(homedir) + sizeof(MAILER_CONFIG_FILE) + 1))
+			== NULL)
+		return NULL;
+	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
+	return filename;
+}
+
+
+/* mailer_get_font */
+static char const * _mailer_get_font(Mailer * mailer)
+{
+	char const * p;
+	char * q;
+	GtkSettings * settings;
+	PangoFontDescription * desc;
+
+	settings = gtk_settings_get_default();
+	g_object_get(G_OBJECT(settings), "gtk-font-name", &q, NULL);
+	if((p = mailer_get_config(mailer, "messages_font")) == NULL
+			&& q != NULL)
+	{
+		desc = pango_font_description_from_string(q);
+		g_free(q);
+		pango_font_description_set_family(desc, "monospace");
+		q = pango_font_description_to_string(desc);
+		config_set(mailer->config, NULL, "messages_font", q);
+		g_free(q);
+		pango_font_description_free(desc);
+		if((p = config_get(mailer->config, NULL, "messages_font"))
+				!= NULL)
+			return p;
+	}
+	return MAILER_MESSAGES_FONT;
+}
+
+
+/* useful */
 /* mailer_confirm */
 static gboolean _mailer_confirm(Mailer * mailer, char const * message)
 {
@@ -2304,23 +2352,6 @@ static void _mailer_foreach_message_selected(Mailer * mailer,
 		callback(mailer, model, &iter);
 	}
 	g_list_free(selected);
-}
-
-
-/* mailer_get_config_filename */
-static char * _mailer_get_config_filename(void)
-	/* FIXME consider replacing with mailer_save_config() */
-{
-	char const * homedir;
-	char * filename;
-
-	if((homedir = getenv("HOME")) == NULL)
-		homedir = g_get_home_dir();
-	if((filename = malloc(strlen(homedir) + sizeof(MAILER_CONFIG_FILE) + 1))
-			== NULL)
-		return NULL;
-	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
-	return filename;
 }
 
 

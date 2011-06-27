@@ -46,7 +46,7 @@ typedef enum _MailerHeaderColumn
 /* constants */
 # define MAILER_CONFIG_FILE	".mailer"
 
-# define MAILER_MESSAGES_FONT	"Monospace 8"
+# define MAILER_MESSAGES_FONT	"Monospace 9"
 
 
 /* functions */
