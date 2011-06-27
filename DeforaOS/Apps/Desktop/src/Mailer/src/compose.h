@@ -19,20 +19,21 @@
 # define MAILER_COMPOSE_H
 
 # include <sys/types.h>
-# include "mailer.h"
+# include <glib.h>
+# include <System.h>
 
 
 /* types */
 typedef struct _Compose Compose;
 
 /* methods */
-Compose * compose_new(Mailer * mailer);
+Compose * compose_new(Config * config);
+Compose * compose_new_copy(Compose * compose);
 void compose_delete(Compose * compose);
 
 /* accessors */
-Mailer * compose_get_mailer(Compose * compose);
-
 void compose_set_font(Compose * compose, char const * font);
+void compose_set_standalone(Compose * compose, gboolean standalone);
 void compose_set_subject(Compose * compose, char const * subject);
 
 /* useful */
@@ -40,8 +41,6 @@ void compose_add_field(Compose * compose, char const * field,
 		char const * value);
 
 void compose_attach_dialog(Compose * compose);
-
-gboolean compose_close(Compose * compose);
 
 void compose_copy(Compose * compose);
 void compose_cut(Compose * compose);

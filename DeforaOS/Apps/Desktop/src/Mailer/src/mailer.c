@@ -901,6 +901,13 @@ int mailer_account_enable(Mailer * mailer, Account * account)
 #endif
 
 
+/* mailer_compose */
+void mailer_compose(Mailer * mailer)
+{
+	compose_new(mailer->config);
+}
+
+
 /* mailer_delete_selected */
 static void _mailer_delete_selected_foreach(GtkTreeRowReference * reference,
 		Mailer * mailer);
@@ -1090,10 +1097,8 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 	char * p;
 	char const * q;
 
-	if((compose = compose_new(mailer)) == NULL)
+	if((compose = compose_new(mailer->config)) == NULL)
 		return; /* XXX error message? */
-	if((q = mailer_get_config(mailer, "messages_font")) != NULL)
-		compose_set_font(compose, q);
 	gtk_tree_model_get(model, iter, MHC_FROM, &from, MHC_SUBJECT,
 			&subject, -1);
 #if 0 /* FIXME adapt */
@@ -1101,8 +1106,7 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 		compose_set_to(compose, from);
 #endif
 	q = N_("Re: ");
-	if(subject != NULL
-			&& strncasecmp(subject, q, strlen(q)) != 0
+	if(subject != NULL && strncasecmp(subject, q, strlen(q)) != 0
 			&& strncasecmp(subject, _(q), strlen(_(q))) != 0
 			&& (p = malloc(strlen(q) + strlen(subject) + 1))
 			!= NULL)

@@ -1,5 +1,5 @@
 SUBDIRS	= account
-TARGETS	= compose-callbacks.o compose mailer
+TARGETS	= compose mailer
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -21,25 +21,19 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-compose-callbacks.o_OBJS = compose-callbacks.o
-compose-callbacks.o_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-
 compose_OBJS = compose.o compose-main.o
 compose_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-compose_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) compose-callbacks.o
+compose_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-compose: $(compose_OBJS) compose-callbacks.o
+compose: $(compose_OBJS)
 	$(CC) -o compose $(compose_OBJS) $(compose_LDFLAGS)
 
 mailer_OBJS = account.o callbacks.o folder.o mailer.o main.o message.o
 mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) compose.o compose-callbacks.o
+mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) compose.o
 
-mailer: $(mailer_OBJS) compose-callbacks.o
+mailer: $(mailer_OBJS) compose.o
 	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
-
-compose-callbacks.o: compose-callbacks.c
-	$(CC) $(compose-callbacks.o_CFLAGS) -c compose-callbacks.c
 
 compose.o: compose.c callbacks.h mailer.h compose.h ../config.h
 	$(CC) $(compose_CFLAGS) -c compose.c
@@ -67,11 +61,11 @@ message.o: message.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(compose-callbacks.o_OBJS) $(compose_OBJS) $(mailer_OBJS)
+	$(RM) -- $(compose_OBJS) $(mailer_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(compose-callbacks.o_OBJS) $(compose_OBJS) $(mailer_OBJS)
+	$(RM) -- $(compose_OBJS) $(mailer_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)

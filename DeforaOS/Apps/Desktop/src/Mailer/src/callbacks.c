@@ -192,13 +192,8 @@ void on_forward(gpointer data)
 void on_new_mail(gpointer data)
 {
 	Mailer * mailer = data;
-	Compose * compose;
-	char const * p;
 
-	if((compose = compose_new(mailer)) == NULL)
-		return;
-	if((p = mailer_get_config(mailer, "messages_font")) != NULL)
-		compose_set_font(compose, p);
+	mailer_compose(mailer);
 }
 
 

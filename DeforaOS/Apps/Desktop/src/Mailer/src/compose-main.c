@@ -65,6 +65,9 @@ int main(int argc, char * argv[])
 		}
 	if((compose = compose_new(NULL)) == NULL)
 		return 2;
+	compose_set_standalone(compose, TRUE);
+	for(; optind < argc; optind++)
+		compose_add_field(compose, "To:", argv[optind]);
 	gtk_main();
 	compose_delete(compose);
 	return 0;

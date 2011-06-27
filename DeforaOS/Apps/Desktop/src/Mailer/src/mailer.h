@@ -87,4 +87,6 @@ void mailer_show_body(Mailer * mailer, gboolean show);
 void mailer_show_headers(Mailer * mailer, gboolean show);
 void mailer_show_preferences(Mailer * mailer, gboolean show);
 
+void mailer_compose(Mailer * mailer);
+
 #endif /* !MAILER_SRC_MAILER_H */

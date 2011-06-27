@@ -26,7 +26,7 @@
 #include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
-#include "compose-callbacks.h"
+#include "mailer.h"
 #include "compose.h"
 #include "../config.h"
 #include "common.c"
@@ -39,7 +39,8 @@
 /* types */
 struct _Compose
 {
-	Mailer * mailer;
+	Config * config;
+	gboolean standalone;
 
 	/* sending mail */
 	pid_t pid;
@@ -85,10 +86,24 @@ typedef enum _ComposeAttachmentColumn
 /* constants */
 #define SENDMAIL "/usr/sbin/sendmail"
 
+
+/* prototypes */
+static void _compose_delete(Compose * compose);
+
+/* useful */
+static gboolean _compose_close(Compose * compose);
+
+/* callbacks */
+static void _compose_on_about(gpointer data);
+static gboolean _compose_on_closex(gpointer data);
+static void _compose_on_view_add_field(gpointer data);
+
+
+/* variables */
 #ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
 {
-	{ N_("_New message"), G_CALLBACK(on_compose_file_new),
+	{ N_("_New message"), G_CALLBACK(compose_new_copy),
 		"stock_mail-compose", GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Save"), NULL, GTK_STOCK_SAVE, GDK_CONTROL_MASK, GDK_KEY_S },
@@ -98,10 +113,10 @@ static DesktopMenu _menu_file[] =
 	{ N_("Print pre_view"), NULL, GTK_STOCK_PRINT_PREVIEW, GDK_CONTROL_MASK,
 		0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("S_end"), G_CALLBACK(on_compose_file_send), "stock_mail-send",
+	{ N_("S_end"), G_CALLBACK(compose_send), "stock_mail-send",
 		GDK_CONTROL_MASK, GDK_KEY_Return },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Close"), G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(_compose_on_closex), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -111,14 +126,14 @@ static DesktopMenu _menu_edit[] =
 	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK, GDK_KEY_Z },
 	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_KEY_Y },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Cut"), G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT,
-		GDK_CONTROL_MASK, GDK_KEY_X },
-	{ N_("_Copy"), G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY,
+	{ N_("_Cut"), G_CALLBACK(compose_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
+		GDK_KEY_X },
+	{ N_("_Copy"), G_CALLBACK(compose_copy), GTK_STOCK_COPY,
 		GDK_CONTROL_MASK, GDK_KEY_C },
-	{ N_("_Paste"), G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE,
+	{ N_("_Paste"), G_CALLBACK(compose_paste), GTK_STOCK_PASTE,
 		GDK_CONTROL_MASK, GDK_KEY_V },
 	{ "", NULL, NULL, 0, 0 },
-	{ N_("_Select all"), G_CALLBACK(on_compose_edit_select_all),
+	{ N_("_Select all"), G_CALLBACK(compose_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else
@@ -132,17 +147,17 @@ static DesktopMenu _menu_edit[] =
 
 static DesktopMenu _menu_view[] =
 {
-	{ N_("Add field"), G_CALLBACK(on_compose_view_add_field), "add", 0, 0 },
+	{ N_("Add field"), G_CALLBACK(_compose_on_view_add_field), "add", 0,
+		0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT, 0,
-		0 },
+	{ N_("_About"), G_CALLBACK(_compose_on_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ N_("_About"), G_CALLBACK(on_compose_help_about), NULL, 0, 0 },
+	{ N_("_About"), G_CALLBACK(_compose_on_about), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -159,37 +174,30 @@ static DesktopMenubar _compose_menubar[] =
 
 static DesktopToolbar _compose_toolbar[] =
 {
-	{ N_("Send"), G_CALLBACK(on_compose_send), "stock_mail-send", 0, 0,
+	{ N_("Send"), G_CALLBACK(compose_send), "stock_mail-send", 0, 0,
 		NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Save"), G_CALLBACK(on_compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
+	{ N_("Save"), G_CALLBACK(compose_save), GTK_STOCK_SAVE, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Cut"), G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT, 0, 0,
-		NULL },
-	{ N_("Copy"), G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY, 0, 0,
-		NULL },
-	{ N_("Paste"), G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE, 0, 0,
-		NULL },
+	{ N_("Cut"), G_CALLBACK(compose_cut), GTK_STOCK_CUT, 0, 0, NULL },
+	{ N_("Copy"), G_CALLBACK(compose_copy), GTK_STOCK_COPY, 0, 0, NULL },
+	{ N_("Paste"), G_CALLBACK(compose_paste), GTK_STOCK_PASTE, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Attach"), G_CALLBACK(on_compose_attach), "stock_attach", 0, 0,
+	{ N_("Attach"), G_CALLBACK(compose_attach_dialog), "stock_attach", 0, 0,
 		NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 
-/* prototypes */
-static void _compose_delete(Compose * compose);
-
-
 /* public */
 /* compose_new */
-static GtkWidget * _new_text_view(Mailer * mailer);
+static GtkWidget * _new_text_view(void);
 static void _on_header_field_edited(GtkCellRendererText * renderer,
 		gchar * path, gchar * text, gpointer data);
 static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 		gchar * text, gpointer data);
 
-Compose * compose_new(Mailer * mailer)
+Compose * compose_new(Config * config)
 {
 	Compose * compose;
 	GtkAccelGroup * group;
@@ -201,13 +209,15 @@ Compose * compose_new(Mailer * mailer)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeIter iter;
+	char const * p;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
 		compose_error(NULL, strerror(errno), 0);
 		return NULL;
 	}
-	compose->mailer = mailer;
+	compose->config = config;
+	compose->standalone = FALSE;
 	group = gtk_accel_group_new();
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(compose->window), group);
@@ -218,7 +228,7 @@ Compose * compose_new(Mailer * mailer)
 	gtk_window_set_icon_name(GTK_WINDOW(compose->window), "mailer");
 #endif
 	g_signal_connect_swapped(G_OBJECT(compose->window), "delete-event",
-			G_CALLBACK(on_compose_closex), compose);
+			G_CALLBACK(_compose_on_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 #ifndef EMBEDDED
@@ -319,7 +329,7 @@ Compose * compose_new(Mailer * mailer)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	compose->view = _new_text_view(mailer);
+	compose->view = _new_text_view();
 	gtk_container_add(GTK_CONTAINER(widget), compose->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* attachments */
@@ -343,13 +353,20 @@ Compose * compose_new(Mailer * mailer)
 	compose->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), compose->statusbar, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(compose->window), vbox);
+	/* about dialog */
 	compose->ab_window = NULL;
+	/* preferences */
+	if(config == NULL || (p = config_get(config, NULL, "messages_font"))
+			== NULL)
+		p = MAILER_MESSAGES_FONT;
+	compose_set_font(compose, p);
+	/* display */
 	gtk_widget_show_all(vbox);
 	gtk_widget_show(compose->window);
 	return compose;
 }
 
-static GtkWidget * _new_text_view(Mailer * mailer)
+static GtkWidget * _new_text_view(void)
 {
 	const char signature[] = "/.signature";
 	const char prefix[] = "\n-- \n";
@@ -411,6 +428,13 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 }
 
 
+/* compose_new_copy */
+Compose * compose_new_copy(Compose * compose)
+{
+	return compose_new(compose->config);
+}
+
+
 /* compose_delete */
 void compose_delete(Compose * compose)
 {
@@ -420,13 +444,6 @@ void compose_delete(Compose * compose)
 
 
 /* accessors */
-/* compose_get_mailer */
-Mailer * compose_get_mailer(Compose * compose)
-{
-	return compose->mailer;
-}
-
-
 /* compose_set_font */
 void compose_set_font(Compose * compose, char const * font)
 {
@@ -435,6 +452,13 @@ void compose_set_font(Compose * compose, char const * font)
 	desc = pango_font_description_from_string(font);
 	gtk_widget_modify_font(compose->view, desc);
 	pango_font_description_free(desc);
+}
+
+
+/* compose_set_standalone */
+void compose_set_standalone(Compose * compose, gboolean standalone)
+{
+	compose->standalone = standalone;
 }
 
 
@@ -487,36 +511,6 @@ void compose_attach_dialog(Compose * compose)
 			CAC_BASENAME, basename(filename), CAC_ICON, pixbuf, -1);
 	free(filename);
 	gtk_widget_show(compose->a_window);
-}
-
-
-/* compose_close */
-gboolean compose_close(Compose * compose)
-{
-	GtkWidget * dialog;
-	int res;
-
-	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-						compose->view))) == FALSE)
-		return TRUE;
-	dialog = gtk_message_dialog_new(GTK_WINDOW(compose->window),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE,
-#if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", _("Warning"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-#endif
-			"%s", _("There are unsaved changes.\n"
-				"Are you sure you want to close?"));
-	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
-			GTK_RESPONSE_CLOSE, NULL);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_CLOSE)
-		return FALSE;
-	return TRUE;
 }
 
 
@@ -638,6 +632,7 @@ static char * _send_headers(Compose * compose);
 static char * _send_body(GtkWidget * view);
 static int _send_mail(Compose * compose, char * msg, size_t msg_len);
 static int _mail_child(int fd[2]);
+static gboolean _on_send_closex(gpointer data);
 static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 
@@ -690,7 +685,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	gtk_window_set_transient_for(GTK_WINDOW(compose->snd_window),
 			GTK_WINDOW(compose->window));
 	g_signal_connect_swapped(G_OBJECT(compose->snd_window), "delete-event",
-			G_CALLBACK(on_send_closex), compose);
+			G_CALLBACK(_on_send_closex), compose);
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("Progression: ")),
 			FALSE, FALSE, 0);
@@ -700,7 +695,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	gtk_box_pack_start(GTK_BOX(hbox), compose->snd_progress, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_send_cancel), compose);
+				compose_send_cancel), compose);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(compose->snd_window), 4);
 	gtk_container_add(GTK_CONTAINER(compose->snd_window), hbox);
@@ -813,6 +808,14 @@ static char * _send_body(GtkWidget * view)
 			FALSE);
 }
 
+static gboolean _on_send_closex(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_send_cancel(compose);
+	return FALSE;
+}
+
 static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
@@ -827,7 +830,7 @@ static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 				&i, NULL) != G_IO_STATUS_NORMAL)
 	{
 		compose_error(compose, strerror(errno), FALSE);
-		on_send_cancel(compose);
+		compose_send_cancel(compose);
 		return FALSE;
 	}
 	compose->buf_pos+=i;
@@ -835,7 +838,7 @@ static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 			compose->buf_pos / compose->buf_len);
 	if(compose->buf_pos >= compose->buf_len)
 	{
-		on_send_cancel(compose);
+		compose_send_cancel(compose);
 		_compose_delete(compose);
 		return FALSE;
 	}
@@ -894,10 +897,72 @@ static gboolean _about_on_closex(gpointer data)
 
 /* private */
 /* functions */
+/* compose_delete */
 static void _compose_delete(Compose * compose)
 {
-	if(compose->mailer == NULL) /* XXX ugly hack */
+	if(compose->standalone == TRUE)
 		gtk_main_quit();
 	else
 		compose_delete(compose);
+}
+
+
+/* useful */
+/* compose_close */
+static gboolean _compose_close(Compose * compose)
+{
+	GtkWidget * dialog;
+	int res;
+
+	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+						compose->view))) == FALSE)
+		return TRUE;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(compose->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Warning"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", _("There are unsaved changes.\n"
+				"Are you sure you want to close?"));
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
+			GTK_RESPONSE_CLOSE, NULL);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_CLOSE)
+		return FALSE;
+	return TRUE;
+}
+
+
+/* callbacks */
+/* compose_on_about */
+static void _compose_on_about(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_show_about(compose, TRUE);
+}
+
+
+/* compose_on_closex */
+static gboolean _compose_on_closex(gpointer data)
+{
+	Compose * compose = data;
+
+	if(_compose_close(compose) == TRUE)
+		_compose_delete(compose);
+	return TRUE;
+}
+
+
+/* compose_on_view_add_fields */
+static void _compose_on_view_add_field(gpointer data)
+{
+	Compose * compose = data;
+
+	compose_add_field(compose, NULL, NULL);
 }
