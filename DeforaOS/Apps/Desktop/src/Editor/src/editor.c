@@ -203,7 +203,6 @@ Editor * editor_new(void)
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
-	PangoFontDescription * desc;
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
@@ -243,15 +242,13 @@ Editor * editor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
-	desc = pango_font_description_from_string(editor_get_font(editor));
-	editor_set_font(editor, pango_font_description_to_string(desc));
+	editor_set_font(editor, editor_get_font(editor));
 	editor_set_wrap_mode(editor, editor_get_wrap_mode(editor));
-	pango_font_description_free(desc);
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* statusbar */
 	editor->statusbar = gtk_statusbar_new();
-	gtk_box_pack_start(GTK_BOX(vbox), editor->statusbar, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), editor->statusbar, FALSE, TRUE, 0);
 	/* preferences */
 	editor->pr_window = NULL;
 	/* find */
