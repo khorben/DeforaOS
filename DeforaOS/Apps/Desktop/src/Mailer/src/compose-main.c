@@ -16,10 +16,12 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include "mailer.h"
 #include "compose.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -39,6 +41,42 @@
 
 
 /* functions */
+/* compose */
+static Compose * _compose(Config * config, int toc, char * tov[])
+{
+	Compose * compose;
+	int i;
+
+	if((compose = compose_new(config)) == NULL)
+		return NULL;
+	compose_set_standalone(compose, TRUE);
+	for(i = 0; i < toc; i++)
+		compose_add_field(compose, "To:", tov[i]);
+	return compose;
+}
+
+
+/* compose_config */
+static Config * _compose_config(void)
+{
+	Config * config;
+	char const * homedir;
+	String * filename;
+
+	if((config = config_new()) == NULL)
+		return NULL;
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((filename = string_new_append(homedir, "/" MAILER_CONFIG_FILE))
+			!= NULL)
+	{
+		config_load(config, filename);
+		string_delete(filename);
+	}
+	return config;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -50,6 +88,7 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Config * config;
 	Compose * compose;
 	int o;
 
@@ -63,12 +102,13 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if((compose = compose_new(NULL)) == NULL)
-		return 2;
-	compose_set_standalone(compose, TRUE);
-	for(; optind < argc; optind++)
-		compose_add_field(compose, "To:", argv[optind]);
-	gtk_main();
-	compose_delete(compose);
+	config = _compose_config();
+	if((compose = _compose(config, argc - optind, &argv[optind])) != NULL)
+	{
+		gtk_main();
+		compose_delete(compose);
+	}
+	if(config != NULL)
+		config_delete(config);
 	return 0;
 }
