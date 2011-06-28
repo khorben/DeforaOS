@@ -696,7 +696,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	g_signal_connect_swapped(G_OBJECT(compose->snd_window), "delete-event",
 			G_CALLBACK(_on_send_closex), compose);
 	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("Progression: ")),
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("Progress: ")),
 			FALSE, FALSE, 0);
 	compose->snd_progress = gtk_progress_bar_new();
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(compose->snd_progress),
