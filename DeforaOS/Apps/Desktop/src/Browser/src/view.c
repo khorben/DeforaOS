@@ -269,8 +269,8 @@ static GtkWidget * _new_image(View * view, char const * path)
 #endif
 	gdk_screen_get_monitor_geometry(screen, monitor, &rect);
 	/* set an upper bound to the size of the window */
-	gtk_widget_set_size_request(window, min(pw, rect.width), min(ph,
-				rect.height));
+	gtk_window_set_default_size(GTK_WINDOW(view->window), min(pw,
+				rect.width), min(ph, rect.height));
 	return window;
 }
 
