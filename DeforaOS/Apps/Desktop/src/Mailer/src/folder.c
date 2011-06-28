@@ -79,6 +79,8 @@ Folder * folder_new(AccountFolder * folder, FolderType type, char const * name,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_UINT);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(ret->messages),
+			MHC_DATE, GTK_SORT_DESCENDING);
 	ret->data = folder;
 	if(ret->name == NULL)
 	{
