@@ -279,7 +279,10 @@ int account_config_load(Account * account, Config * config)
 					p->value = (void*)l;
 				break;
 			case ACT_BOOLEAN:
-				/* FIXME implement */
+				p->value = (strcmp(value, "yes") == 0
+						|| strcmp(value, "1") == 0)
+					? (void *)1 : NULL;
+				break;
 			case ACT_NONE:
 			case ACT_SEPARATOR:
 				break;
