@@ -1,4 +1,4 @@
-SUBDIRS	= 24x24 48x48
+SUBDIRS	= 16x16 24x24 48x48
 PREFIX	= /usr/local
 DESTDIR	= 
 MKDIR	= mkdir -p

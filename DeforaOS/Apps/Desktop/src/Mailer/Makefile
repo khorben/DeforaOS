@@ -24,6 +24,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/mailer.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
+		$(PACKAGE)-$(VERSION)/data/16x16/mailer.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/mailer-accounts.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/mailer-drafts.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/mailer-inbox.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/mailer-outbox.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/mailer-sent.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
 		$(PACKAGE)-$(VERSION)/data/24x24/mailer.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/mailer-accounts.png \
