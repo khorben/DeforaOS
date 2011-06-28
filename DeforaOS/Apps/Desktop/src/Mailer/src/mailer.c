@@ -1281,6 +1281,7 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	gtk_window_set_default_size(GTK_WINDOW(mailer->pr_window), 400, 300);
 	g_signal_connect_swapped(G_OBJECT(mailer->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), mailer);
 	g_signal_connect(G_OBJECT(mailer->pr_window), "response",
