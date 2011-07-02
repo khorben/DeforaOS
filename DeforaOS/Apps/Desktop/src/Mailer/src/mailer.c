@@ -2276,26 +2276,25 @@ static char * _mailer_get_config_filename(void)
 static char const * _mailer_get_font(Mailer * mailer)
 {
 	char const * p;
-	char * q;
+	char * q = NULL;
 	GtkSettings * settings;
 	PangoFontDescription * desc;
 
+	if((p = mailer_get_config(mailer, "messages_font")) != NULL)
+		return p;
 	settings = gtk_settings_get_default();
 	g_object_get(G_OBJECT(settings), "gtk-font-name", &q, NULL);
-	if((p = mailer_get_config(mailer, "messages_font")) == NULL
-			&& q != NULL)
-	{
-		desc = pango_font_description_from_string(q);
-		g_free(q);
-		pango_font_description_set_family(desc, "monospace");
-		q = pango_font_description_to_string(desc);
-		config_set(mailer->config, NULL, "messages_font", q);
-		g_free(q);
-		pango_font_description_free(desc);
-		if((p = config_get(mailer->config, NULL, "messages_font"))
-				!= NULL)
-			return p;
-	}
+	if(q == NULL)
+		return MAILER_MESSAGES_FONT;
+	desc = pango_font_description_from_string(q);
+	g_free(q);
+	pango_font_description_set_family(desc, "monospace");
+	q = pango_font_description_to_string(desc);
+	config_set(mailer->config, NULL, "messages_font", q);
+	g_free(q);
+	pango_font_description_free(desc);
+	if((p = config_get(mailer->config, NULL, "messages_font")) != NULL)
+		return p;
 	return MAILER_MESSAGES_FONT;
 }
 
@@ -2309,19 +2308,16 @@ static gboolean _mailer_confirm(Mailer * mailer, char const * message)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->fo_window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 8, 0)
-			_("Question"));
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			message);
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(res == GTK_RESPONSE_YES)
-		return TRUE;
-	return FALSE;
+	return (res == GTK_RESPONSE_YES) ? TRUE : FALSE;
 }
 
 
