@@ -45,8 +45,6 @@ struct _Folder
 
 
 /* prototypes */
-static gboolean _folder_get_iter(Folder * folder, GtkTreeIter * iter);
-
 static gboolean _folder_set(Folder * folder, MailerFolderColumn column,
 		void * value);
 
@@ -108,6 +106,18 @@ AccountFolder * folder_get_data(Folder * folder)
 }
 
 
+/* folder_get_iter */
+gboolean folder_get_iter(Folder * folder, GtkTreeIter * iter)
+{
+	GtkTreePath * path;
+
+	if((path = gtk_tree_row_reference_get_path(folder->row)) == NULL)
+		return FALSE;
+	return gtk_tree_model_get_iter(GTK_TREE_MODEL(folder->store), iter,
+			path);
+}
+
+
 /* folder_get_messages */
 GtkListStore * folder_get_messages(Folder * folder)
 {
@@ -154,7 +164,7 @@ void folder_set_type(Folder * folder, FolderType type)
 	GdkPixbuf * pixbuf;
 
 	folder->type = type;
-	if(_folder_get_iter(folder, &iter) != TRUE)
+	if(folder_get_iter(folder, &iter) != TRUE)
 		return;
 	for(i = 0; i < FT_LAST; i++)
 		if(icons[i].type == type)
@@ -166,25 +176,13 @@ void folder_set_type(Folder * folder, FolderType type)
 
 
 /* private */
-/* folder_get_iter */
-static gboolean _folder_get_iter(Folder * folder, GtkTreeIter * iter)
-{
-	GtkTreePath * path;
-
-	if((path = gtk_tree_row_reference_get_path(folder->row)) == NULL)
-		return FALSE;
-	return gtk_tree_model_get_iter(GTK_TREE_MODEL(folder->store), iter,
-			path);
-}
-
-
 /* folder_set */
 static gboolean _folder_set(Folder * folder, MailerFolderColumn column,
 		void * value)
 {
 	GtkTreeIter iter;
 
-	if(_folder_get_iter(folder, &iter) != TRUE)
+	if(folder_get_iter(folder, &iter) != TRUE)
 		return FALSE;
 	gtk_tree_store_set(folder->store, &iter, column, value, -1);
 	return TRUE;
