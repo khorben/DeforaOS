@@ -326,7 +326,11 @@ int account_config_save(Account * account, Config * config)
 					return 1;
 				break;
 			case ACT_BOOLEAN:
-				/* FIXME implement */
+				if(config_set(config, account->title, p->name,
+							(p->value != NULL) ? "1"
+							: "0") != 0)
+					return 1;
+				break;
 			case ACT_NONE:
 			case ACT_SEPARATOR:
 				break;
