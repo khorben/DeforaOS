@@ -15,6 +15,7 @@
 
 
 
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,6 +36,7 @@ typedef struct _Prefs
 static int _tail_error(char const * message, int ret);
 static int _tail_do_bytes(Prefs * prefs, FILE * fp, char const * filename);
 static int _tail_do_lines(Prefs * prefs, FILE * fp, char const * filename);
+static int _tail_wait(FILE * fp, char const * filename);
 
 static int _tail(Prefs * prefs, char const * filename)
 {
@@ -49,6 +51,8 @@ static int _tail(Prefs * prefs, char const * filename)
 	else
 		ret = _tail_do_lines(prefs, fp, filename != NULL
 				? filename : "stdin");
+	if(prefs->flags & TAIL_PREFS_f)
+		_tail_wait(fp, filename);
 	if(filename != NULL && fclose(fp) != 0)
 		return _tail_error(filename, 1);
 	return ret;
@@ -153,6 +157,47 @@ static void _lines_print(char ** lines, int pos)
 		puts(lines[i]);
 		free(lines[i]);
 	}
+}
+
+static int _tail_wait(FILE * fp, char const * filename)
+{
+	int fd = fileno(fp);
+	struct stat st1;
+	struct stat st2;
+	off_t seek;
+	size_t size;
+	size_t i;
+	char buf[1024];
+	ssize_t ssize;
+
+	if(fstat(fd, &st1) != 0)
+		return -_tail_error(filename, 1);
+	for(;;)
+	{
+		sleep(1);
+		if(fstat(fd, &st2) != 0)
+			return -_tail_error(filename, 1);
+		if(st1.st_dev != st2.st_dev || st1.st_ino != st2.st_ino)
+		{
+			/* XXX this code path is probably impossible */
+			seek = 0;
+			size = st2.st_size;
+		}
+		else if(st2.st_size > st1.st_size)
+		{
+			seek = st1.st_size;
+			size = st2.st_size - st1.st_size;
+		}
+		else
+			continue;
+		fseek(fp, seek, SEEK_SET);
+		for(i = 0; i < size; i+=sizeof(buf))
+			if((ssize = fread(buf, sizeof(*buf), sizeof(buf), fp))
+					> 0)
+				fwrite(buf, sizeof(*buf), ssize, stdout);
+		st1 = st2;
+	}
+	return 0;
 }
 
 
