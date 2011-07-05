@@ -36,6 +36,3 @@
 
 [rm]
 - check for symlinks in recursive removal?
-
-[tail]
-- implement
