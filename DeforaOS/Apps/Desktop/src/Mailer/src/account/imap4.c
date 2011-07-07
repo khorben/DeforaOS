@@ -558,6 +558,7 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	p += 5;
 	if(*p == '(') /* skip flags */
 	{
+		/* FIXME there may be other flags set */
 		if(strncmp(p, haschildren, sizeof(haschildren) - 1) == 0)
 			recurse = 1;
 		for(p++; *p != '\0' && *p++ != ')';);
@@ -632,10 +633,10 @@ static int _context_select(AccountPlugin * plugin)
 	if((message = cmd->data.select.message) == NULL)
 		/* FIXME queue commands in batches instead */
 		snprintf(buf, sizeof(buf), "%s %s %s", "FETCH", "1:*",
-				"BODY[HEADER]");
+				"BODY.PEEK[HEADER]");
 	else
 		snprintf(buf, sizeof(buf), "%s %u %s", "FETCH", message->id,
-				"BODY[]");
+				"BODY.PEEK[]");
 	if((cmd = _imap4_command(plugin, I4C_FETCH, buf)) == NULL)
 		return -1;
 	cmd->data.fetch.folder = folder;
