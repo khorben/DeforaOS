@@ -965,13 +965,14 @@ static gboolean _compose_close(Compose * compose)
 #endif
 			"%s", _("There are unsaved changes.\n"
 				"Are you sure you want to close?"));
-	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
-			GTK_RESPONSE_CLOSE, NULL);
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			/* XXX GTK_RESPONSE_OK probably fits Maemo better */
+			GTK_STOCK_CLOSE, GTK_RESPONSE_OK, NULL);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_CLOSE)
+	if(res != GTK_RESPONSE_OK)
 		return FALSE;
 	return TRUE;
 }
