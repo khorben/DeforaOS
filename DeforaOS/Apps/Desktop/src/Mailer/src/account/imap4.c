@@ -286,15 +286,21 @@ static int _imap4_destroy(AccountPlugin * plugin)
 static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
 		AccountMessage * message)
 {
-	char buf[32];
 	IMAP4Command * cmd;
+	int len;
+	char * buf;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u\n", __func__, (message != NULL)
 			? message->id : 0);
 #endif
-	snprintf(buf, sizeof(buf), "SELECT \"%s\"", folder->name);
-	if((cmd = _imap4_command(plugin, I4C_SELECT, buf)) == NULL)
+	if((len = snprintf(NULL, 0, "EXAMINE \"%s\"", folder->name)) < 0
+			|| (buf = malloc(++len)) == NULL)
+		return -1;
+	snprintf(buf, len, "EXAMINE \"%s\"", folder->name);
+	cmd = _imap4_command(plugin, I4C_SELECT, buf);
+	free(buf);
+	if(cmd == NULL)
 		return -1;
 	cmd->data.select.folder = folder;
 	cmd->data.select.message = message;
