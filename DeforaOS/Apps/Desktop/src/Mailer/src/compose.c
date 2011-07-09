@@ -215,6 +215,10 @@ Compose * compose_new(Config * config)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeIter iter;
+	char const * headers[] = {
+		N_("To:"), N_("Cc:"), N_("Bcc:"), N_("Reply-To:"),
+		N_("Newsgroup:"), N_("Followup-To:") };
+	size_t i;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
@@ -275,24 +279,12 @@ Compose * compose_new(Config * config)
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(compose->h_view), TRUE);
 	compose->h_headers = gtk_list_store_new(2, G_TYPE_STRING,
 			G_TYPE_STRING);
-	gtk_list_store_append(compose->h_headers, &iter);
-	gtk_list_store_set(compose->h_headers, &iter, 0, "To:", 1, _("To:"),
-			-1);
-	gtk_list_store_append(compose->h_headers, &iter);
-	gtk_list_store_set(compose->h_headers, &iter, 0, "Cc:", 1, _("Cc:"),
-			-1);
-	gtk_list_store_append(compose->h_headers, &iter);
-	gtk_list_store_set(compose->h_headers, &iter, 0, "Bcc:", 1, _("Bcc:"),
-			-1);
-	gtk_list_store_append(compose->h_headers, &iter);
-	gtk_list_store_set(compose->h_headers, &iter, 0, "Reply-To:", 1,
-			_("Reply-To:"), -1);
-	gtk_list_store_append(compose->h_headers, &iter);
-	gtk_list_store_set(compose->h_headers, &iter, 0, "Newsgroup:", 1,
-			_("Newsgroup:"), -1);
-	gtk_list_store_append(compose->h_headers, &iter);
-	gtk_list_store_set(compose->h_headers, &iter, 0, "Followup-To:", 1,
-			_("Followup-To:"), -1);
+	for(i = 0; i < sizeof(headers) / sizeof(*headers); i++)
+	{
+		gtk_list_store_append(compose->h_headers, &iter);
+		gtk_list_store_set(compose->h_headers, &iter, 0, headers[i], 1,
+				_(headers[i]), -1);
+	}
 	renderer = gtk_cell_renderer_combo_new();
 	g_object_set(renderer, "editable", TRUE, "model", compose->h_headers,
 			"text-column", 1, NULL);
@@ -404,10 +396,14 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 	Compose * compose = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
 	GtkTreeIter iter;
+	gboolean last;
 
+	last = (gtk_tree_model_get_iter_first(model, &iter) == FALSE
+			|| gtk_tree_model_iter_next(model, &iter) == FALSE)
+		? TRUE : FALSE;
 	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
 		return;
-	if(text == NULL || strlen(text) == 0)
+	if(!last && (text == NULL || strlen(text) == 0 ))
 		gtk_list_store_remove(compose->h_store, &iter);
 	else
 		gtk_list_store_set(compose->h_store, &iter, 0, text, -1);
@@ -419,10 +415,14 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 	Compose * compose = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
 	GtkTreeIter iter;
+	gboolean last;
 
+	last = (gtk_tree_model_get_iter_first(model, &iter) == FALSE
+			|| gtk_tree_model_iter_next(model, &iter) == FALSE)
+		? TRUE : FALSE;
 	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
 		return;
-	if(text == NULL || strlen(text) == 0)
+	if(!last && (text == NULL || strlen(text) == 0))
 		gtk_list_store_remove(compose->h_store, &iter);
 	else
 		gtk_list_store_set(compose->h_store, &iter, 1, text, -1);
