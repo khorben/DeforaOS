@@ -398,9 +398,7 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 	GtkTreeIter iter;
 	gboolean last;
 
-	last = (gtk_tree_model_get_iter_first(model, &iter) == FALSE
-			|| gtk_tree_model_iter_next(model, &iter) == FALSE)
-		? TRUE : FALSE;
+	last = (gtk_tree_model_iter_n_children(model, NULL) > 1) ? FALSE : TRUE;
 	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
 		return;
 	if(!last && (text == NULL || strlen(text) == 0 ))
@@ -417,9 +415,7 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 	GtkTreeIter iter;
 	gboolean last;
 
-	last = (gtk_tree_model_get_iter_first(model, &iter) == FALSE
-			|| gtk_tree_model_iter_next(model, &iter) == FALSE)
-		? TRUE : FALSE;
+	last = (gtk_tree_model_iter_n_children(model, NULL) > 1) ? FALSE : TRUE;
 	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
 		return;
 	if(!last && (text == NULL || strlen(text) == 0))
