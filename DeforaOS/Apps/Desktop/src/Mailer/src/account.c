@@ -533,8 +533,11 @@ static Message * _account_helper_message_new(Account * account, Folder * folder,
 	if((ret = message_new(message, store, &iter)) == NULL)
 		gtk_list_store_remove(store, &iter);
 	else
+	{
 		gtk_list_store_set(store, &iter, MHC_ACCOUNT, account,
 				MHC_FOLDER, folder, -1);
+		mailer_set_status(account->mailer, NULL);
+	}
 	return ret;
 }
 

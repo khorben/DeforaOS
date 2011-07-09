@@ -816,6 +816,11 @@ void mailer_set_status(Mailer * mailer, char const * status)
 {
 	GtkStatusbar * sb;
 
+	if(status == NULL)
+	{
+		_mailer_update_status(mailer);
+		return;
+	}
 	sb = GTK_STATUSBAR(mailer->statusbar);
 	if(mailer->statusbar_id != 0)
 		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
