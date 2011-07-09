@@ -545,7 +545,12 @@ static Message * _account_helper_message_new(Account * account, Folder * folder,
 /* account_helper_message_delete */
 static void _account_helper_message_delete(Message * message)
 {
-	/* FIXME remove from folder */
+	GtkListStore * store;
+	GtkTreeIter iter;
+
+	if((store = message_get_store(message)) != NULL
+			&& message_get_iter(message, &iter) != FALSE)
+		gtk_list_store_remove(store, &iter);
 	message_delete(message);
 }
 

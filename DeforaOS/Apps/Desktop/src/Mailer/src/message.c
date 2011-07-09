@@ -54,8 +54,6 @@ struct _Message
 
 /* prototypes */
 /* accessors */
-static gboolean _message_get_iter(Message * message, GtkTreeIter * iter);
-
 static gboolean _message_set(Message * message, ...);
 static int _message_set_date(Message * message, char const * date);
 static int _message_set_from(Message * message, char const * from);
@@ -155,6 +153,25 @@ char const * message_get_header(Message * message, char const * header)
 		if(strcmp(message->headers[i].header, header) == 0)
 			return message->headers[i].value;
 	return NULL;
+}
+
+
+/* message_get_iter */
+gboolean message_get_iter(Message * message, GtkTreeIter * iter)
+{
+	GtkTreePath * path;
+
+	if((path = gtk_tree_row_reference_get_path(message->row)) == NULL)
+		return FALSE;
+	return gtk_tree_model_get_iter(GTK_TREE_MODEL(message->store), iter,
+			path);
+}
+
+
+/* message_get_store */
+GtkListStore * message_get_store(Message * message)
+{
+	return message->store;
 }
 
 
@@ -286,25 +303,13 @@ void message_set_read(Message * message, gboolean read)
 /* private */
 /* functions */
 /* accessors */
-/* message_get */
-static gboolean _message_get_iter(Message * message, GtkTreeIter * iter)
-{
-	GtkTreePath * path;
-
-	if((path = gtk_tree_row_reference_get_path(message->row)) == NULL)
-		return FALSE;
-	return gtk_tree_model_get_iter(GTK_TREE_MODEL(message->store), iter,
-			path);
-}
-
-
 /* message_set */
 static gboolean _message_set(Message * message, ...)
 {
 	va_list ap;
 	GtkTreeIter iter;
 
-	if(_message_get_iter(message, &iter) != TRUE)
+	if(message_get_iter(message, &iter) != TRUE)
 		return FALSE;
 	va_start(ap, message);
 	gtk_list_store_set_valist(message->store, &iter, ap);
