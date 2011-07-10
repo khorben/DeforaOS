@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Loader */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,6 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
+
+#include <sys/stat.h>
 
 
 /* macros */
@@ -40,6 +43,7 @@ static int ELFFUNC(phdr)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
 		ELFTYPE(Phdr) * phdr);
 static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Phdr) * phdr, ELFTYPE(Dyn) * dyn);
+static void ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath);
 static char * ELFFUNC(string)(char const * filename, FILE * fp,
 		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Addr) addr, ELFTYPE(Addr) index);
 
@@ -114,6 +118,7 @@ static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 	ssize_t r = -1;
 	size_t i;
 	char * p;
+	char * rpath = NULL;
 
 	for(i = 0; (i + 1) * sizeof(*dyn) < phdr->p_filesz; i++)
 	{
@@ -126,8 +131,12 @@ static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 	}
 	if(s < 0)
 		return -_error(filename, "Missing string section", 1);
+	if(s >= 0 && r >= 0)
+		rpath = ELFFUNC(string)(filename, fp, ehdr, dyn[s].d_un.d_val,
+				dyn[r].d_un.d_val);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() strtab=%ld\n", __func__, s);
+	fprintf(stderr, "DEBUG: %s() strtab=%ld rpath=%ld \"%s\"\n", __func__,
+			dyn[s].d_un.d_val, dyn[r].d_un.d_val, rpath);
 #endif
 	for(i = 0; (i + 1) * sizeof(*dyn) < phdr->p_filesz; i++)
 	{
@@ -138,11 +147,46 @@ static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 		if((p = ELFFUNC(string)(filename, fp, ehdr, dyn[s].d_un.d_ptr,
 						dyn[i].d_un.d_val)) == NULL)
 			continue;
-		printf("\t%s\n", p);
-		/* FIXME display the full filename and address */
+		ELFFUNC(phdr_dyn_print)(p, rpath);
 		free(p);
 	}
 	return 0;
+}
+
+static void ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath)
+{
+	size_t len = strlen(filename);
+	size_t i;
+	char * p;
+	struct stat st;
+	int res;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, filename,
+			rpath);
+#endif
+	if(rpath != NULL)
+		for(i = 0;;)
+		{
+			if(rpath[i] != ':' && rpath[i] != '\0')
+			{
+				i++;
+				continue;
+			}
+			p = malloc(i + len + 2);
+			snprintf(p, i + 1, "%s", rpath);
+			snprintf(&p[i], len, "/%s", filename);
+			if((res = stat(p, &st)) == 0)
+				printf("\t%s => %s\n", filename, p);
+			free(p);
+			if(res == 0)
+				return;
+			if(rpath[i] == '\0')
+				break;
+			rpath += i + 1;
+			i = 0;
+		}
+	printf("\t%s\n", filename);
 }
 
 static char * ELFFUNC(string)(char const * filename, FILE * fp,
