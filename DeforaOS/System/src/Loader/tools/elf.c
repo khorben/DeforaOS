@@ -33,21 +33,23 @@
 
 
 /* prototypes */
-static int ELFFUNC(ldd)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr);
+static int ELFFUNC(ldd)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
+		char const * ldpath);
 
 
 /* functions */
 /* ldd */
-static int ELFFUNC(ldd)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr);
 static int ELFFUNC(phdr)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
-		ELFTYPE(Phdr) * phdr);
+		ELFTYPE(Phdr) * phdr, char const * ldpath);
 static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
-		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Phdr) * phdr, ELFTYPE(Dyn) * dyn);
+		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Phdr) * phdr, ELFTYPE(Dyn) * dyn,
+		char const * ldpath);
 static int ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath);
 static char * ELFFUNC(string)(char const * filename, FILE * fp,
 		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Addr) addr, ELFTYPE(Addr) index);
 
-static int ELFFUNC(ldd)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr)
+static int ELFFUNC(ldd)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
+		char const * ldpath)
 {
 	int ret;
 	ELFTYPE(Phdr) * phdr;
@@ -60,13 +62,13 @@ static int ELFFUNC(ldd)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr)
 		return -_error(filename, strerror(errno), 1);
 	if((phdr = malloc(sizeof(*phdr) * ehdr->e_phnum)) == NULL)
 		return -_error(filename, strerror(errno), 1);
-	ret = ELFFUNC(phdr)(filename, fp, ehdr, phdr);
+	ret = ELFFUNC(phdr)(filename, fp, ehdr, phdr, ldpath);
 	free(phdr);
 	return ret;
 }
 
 static int ELFFUNC(phdr)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
-		ELFTYPE(Phdr) * phdr)
+		ELFTYPE(Phdr) * phdr, char const * ldpath)
 {
 	int ret = 0;
 	size_t i;
@@ -97,7 +99,7 @@ static int ELFFUNC(phdr)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
 		}
 		if(fread(dyn, phdr[i].p_filesz, 1, fp) == 1)
 			ret = ELFFUNC(phdr_dyn)(filename, fp, ehdr, &phdr[i],
-					dyn);
+					dyn, ldpath);
 		else
 		{
 			if(ferror(fp) != 0)
@@ -112,7 +114,8 @@ static int ELFFUNC(phdr)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
 }
 
 static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
-		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Phdr) * phdr, ELFTYPE(Dyn) * dyn)
+		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Phdr) * phdr, ELFTYPE(Dyn) * dyn,
+		char const * ldpath)
 {
 	ssize_t s = -1;
 	ssize_t r = -1;
@@ -147,7 +150,8 @@ static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 		if((p = ELFFUNC(string)(filename, fp, ehdr, dyn[s].d_un.d_ptr,
 						dyn[i].d_un.d_val)) == NULL)
 			continue;
-		if(ELFFUNC(phdr_dyn_print)(p, rpath) != 0
+		if(ELFFUNC(phdr_dyn_print)(p, ldpath) != 0
+				&& ELFFUNC(phdr_dyn_print)(p, rpath) != 0
 				&& ELFFUNC(phdr_dyn_print)(p,
 					"/usr/lib:/lib") != 0)
 			printf("\t%s\n", p);

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Loader */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 /* private */
 /* prototypes */
 static int _error(char const * error1, char const * error2, int ret);
-static int _ldd(char const * filename);
+static int _ldd(char const * filename, char const * ldpath);
 #undef ELFSIZE
 #define ELFSIZE 32
 #include "elf.c"
@@ -44,6 +44,7 @@ int main(int argc, char * argv[])
 	int ret = 0;
 	int o;
 	int i;
+	char const * ldpath;
 
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
@@ -53,8 +54,9 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
+	ldpath = getenv("LD_LIBRARY_PATH");
 	for(i = optind; i < argc; i++)
-		ret |= _ldd(argv[i]);
+		ret |= _ldd(argv[i], ldpath);
 	return (ret == 0) ? 0 : 2;
 }
 
@@ -62,7 +64,7 @@ int main(int argc, char * argv[])
 /* private */
 /* functions */
 /* ldd */
-static int _ldd(char const * filename)
+static int _ldd(char const * filename, char const * ldpath)
 {
 	int ret = 1;
 	FILE * fp;
@@ -80,9 +82,9 @@ static int _ldd(char const * filename)
 		if(memcmp(elf.e_ident, ELFMAG, SELFMAG) != 0)
 			ret = -_error(filename, "Not an ELF file", 1);
 		else if(elf.e_ident[EI_CLASS] == ELFCLASS32)
-			ret = _do_ldd32(filename, fp, &elf.ehdr32);
+			ret = _do_ldd32(filename, fp, &elf.ehdr32, ldpath);
 		else if(elf.e_ident[EI_CLASS] == ELFCLASS64)
-			ret = _do_ldd64(filename, fp, &elf.ehdr64);
+			ret = _do_ldd64(filename, fp, &elf.ehdr64, ldpath);
 		else
 			ret = -_error(filename, "Could not determine ELF class",
 					1);
