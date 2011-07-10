@@ -43,7 +43,7 @@ static int ELFFUNC(phdr)(char const * filename, FILE * fp, ELFTYPE(Ehdr) * ehdr,
 		ELFTYPE(Phdr) * phdr);
 static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Phdr) * phdr, ELFTYPE(Dyn) * dyn);
-static void ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath);
+static int ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath);
 static char * ELFFUNC(string)(char const * filename, FILE * fp,
 		ELFTYPE(Ehdr) * ehdr, ELFTYPE(Addr) addr, ELFTYPE(Addr) index);
 
@@ -147,13 +147,16 @@ static int ELFFUNC(phdr_dyn)(char const * filename, FILE * fp,
 		if((p = ELFFUNC(string)(filename, fp, ehdr, dyn[s].d_un.d_ptr,
 						dyn[i].d_un.d_val)) == NULL)
 			continue;
-		ELFFUNC(phdr_dyn_print)(p, rpath);
+		if(ELFFUNC(phdr_dyn_print)(p, rpath) != 0
+				&& ELFFUNC(phdr_dyn_print)(p,
+					"/usr/lib:/lib") != 0)
+			printf("\t%s\n", p);
 		free(p);
 	}
 	return 0;
 }
 
-static void ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath)
+static int ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath)
 {
 	size_t len = strlen(filename);
 	size_t i;
@@ -175,18 +178,18 @@ static void ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath)
 			}
 			p = malloc(i + len + 2);
 			snprintf(p, i + 1, "%s", rpath);
-			snprintf(&p[i], len, "/%s", filename);
+			snprintf(&p[i], len + 2, "/%s", filename);
 			if((res = stat(p, &st)) == 0)
 				printf("\t%s => %s\n", filename, p);
 			free(p);
 			if(res == 0)
-				return;
+				return 0;
 			if(rpath[i] == '\0')
 				break;
 			rpath += i + 1;
 			i = 0;
 		}
-	printf("\t%s\n", filename);
+	return -1;
 }
 
 static char * ELFFUNC(string)(char const * filename, FILE * fp,
