@@ -168,27 +168,28 @@ static int ELFFUNC(phdr_dyn_print)(char const * filename, char const * rpath)
 	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, filename,
 			rpath);
 #endif
-	if(rpath != NULL)
-		for(i = 0;;)
+	if(rpath == NULL)
+		return -1;
+	for(i = 0;;)
+	{
+		if(rpath[i] != ':' && rpath[i] != '\0')
 		{
-			if(rpath[i] != ':' && rpath[i] != '\0')
-			{
-				i++;
-				continue;
-			}
-			p = malloc(i + len + 2);
-			snprintf(p, i + 1, "%s", rpath);
-			snprintf(&p[i], len + 2, "/%s", filename);
-			if((res = stat(p, &st)) == 0)
-				printf("\t%s => %s\n", filename, p);
-			free(p);
-			if(res == 0)
-				return 0;
-			if(rpath[i] == '\0')
-				break;
-			rpath += i + 1;
-			i = 0;
+			i++;
+			continue;
 		}
+		p = malloc(i + len + 2);
+		snprintf(p, i + 1, "%s", rpath);
+		snprintf(&p[i], len + 2, "/%s", filename);
+		if((res = stat(p, &st)) == 0)
+			printf("\t%s => %s\n", filename, p);
+		free(p);
+		if(res == 0)
+			return 0;
+		if(rpath[i] == '\0')
+			break;
+		rpath += i + 1;
+		i = 0;
+	}
 	return -1;
 }
 
