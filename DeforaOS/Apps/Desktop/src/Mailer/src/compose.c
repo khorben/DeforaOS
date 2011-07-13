@@ -211,6 +211,8 @@ Compose * compose_new(Config * config)
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GtkSizeGroup * sizegroup;
+	GtkWidget * vpaned;
+	GtkWidget * vbox2;
 	GtkWidget * widget;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
@@ -267,6 +269,8 @@ Compose * compose_new(Config * config)
 	gtk_container_add(GTK_CONTAINER(toolitem), compose->from);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+	/* paned */
+	vpaned = gtk_vpaned_new();
 	/* headers */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -307,7 +311,9 @@ Compose * compose_new(Config * config)
 	gtk_list_store_append(compose->h_store, &iter);
 	gtk_list_store_set(compose->h_store, &iter, 0, "To:", -1);
 	gtk_container_add(GTK_CONTAINER(widget), compose->h_view);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_paned_add1(GTK_PANED(vpaned), widget);
+	/* paned */
+	vbox2 = gtk_vbox_new(FALSE, 0);
 	/* subject */
 	toolbar = gtk_toolbar_new();
 	widget = gtk_label_new(_("Subject: "));
@@ -321,7 +327,7 @@ Compose * compose_new(Config * config)
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), compose->subject);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), toolbar, FALSE, TRUE, 0);
 	/* view */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -329,7 +335,9 @@ Compose * compose_new(Config * config)
 	compose->view = _new_text_view(compose);
 	compose_set_font(compose, _compose_get_font(compose));
 	gtk_container_add(GTK_CONTAINER(widget), compose->view);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+	gtk_paned_add2(GTK_PANED(vpaned), vbox2);
+	gtk_box_pack_start(GTK_BOX(vbox), vpaned, TRUE, TRUE, 0);
 	/* attachments */
 	compose->a_window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(compose->a_window),
