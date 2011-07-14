@@ -1099,18 +1099,24 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 		GtkTreeIter * iter)
 {
 	Compose * compose;
+	char * date;
 	char * from;
 	char * subject;
 	char * p;
 	char const * q;
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
 
 	if((compose = compose_new(mailer->config)) == NULL)
 		return; /* XXX error message? */
-	gtk_tree_model_get(model, iter, MHC_FROM, &from, MHC_SUBJECT,
-			&subject, -1);
+	gtk_tree_model_get(model, iter, MHC_DATE_DISPLAY, &date,
+			MHC_FROM_EMAIL, &from, MHC_SUBJECT, &subject, -1);
+	/* from */
 	if(from != NULL)
 		compose_set_field(compose, "To:", from);
 	/* FIXME also set the In-Reply-To field */
+	/* subject */
 	q = N_("Re: ");
 	if(subject != NULL && strncasecmp(subject, q, strlen(q)) != 0
 			&& strncasecmp(subject, _(q), strlen(_(q))) != 0
@@ -1122,8 +1128,32 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 		subject = p;
 	}
 	compose_set_subject(compose, subject);
-	free(subject);
+	/* body */
+	compose_set_text(compose, "\nOn ");
+	compose_append_text(compose, date);
+	compose_append_text(compose, ", ");
+	compose_append_text(compose, from);
+	compose_append_text(compose, " wrote:\n");
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(mailer->bo_view));
+	for(gtk_text_buffer_get_start_iter(tbuf, &start), end = start;
+			gtk_text_iter_is_end(&start) != TRUE; start = end)
+	{
+		gtk_text_iter_forward_line(&end);
+		p = gtk_text_iter_get_text(&start, &end);
+		/* stop if we recognize an unquoted signature */
+		if(strcmp(p, "-- \n") == 0)
+		{
+			g_free(p);
+			break;
+		}
+		compose_append_text(compose, (p[0] == '>') ? ">" : "> ");
+		compose_append_text(compose, p);
+		g_free(p);
+	}
+	compose_set_modified(compose, FALSE);
+	free(date);
 	free(from);
+	free(subject);
 }
 
 

@@ -93,7 +93,6 @@ static void _compose_delete(Compose * compose);
 
 /* accessors */
 static char const * _compose_get_font(Compose * compose);
-static void _compose_set_modified(Compose * compose, gboolean modified);
 
 /* useful */
 static gboolean _compose_close(Compose * compose);
@@ -499,6 +498,16 @@ void compose_set_font(Compose * compose, char const * font)
 }
 
 
+/* compose_set_modified */
+void compose_set_modified(Compose * compose, gboolean modified)
+{
+	GtkTextBuffer * tbuf;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	gtk_text_buffer_set_modified(tbuf, modified);
+}
+
+
 /* compose_set_standalone */
 void compose_set_standalone(Compose * compose, gboolean standalone)
 {
@@ -510,6 +519,16 @@ void compose_set_standalone(Compose * compose, gboolean standalone)
 void compose_set_subject(Compose * compose, char const * subject)
 {
 	gtk_entry_set_text(GTK_ENTRY(compose->subject), subject);
+}
+
+
+/* compose_set_text */
+void compose_set_text(Compose * compose, char const * text)
+{
+	GtkTextBuffer * tbuf;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	gtk_text_buffer_set_text(tbuf, text, -1);
 }
 
 
@@ -525,6 +544,18 @@ void compose_add_field(Compose * compose, char const * field,
 		gtk_list_store_set(compose->h_store, &iter, 0, field, -1);
 	if(value != NULL)
 		gtk_list_store_set(compose->h_store, &iter, 1, value, -1);
+}
+
+
+/* compose_append_text */
+void compose_append_text(Compose * compose, char const * text)
+{
+	GtkTextBuffer * tbuf;
+	GtkTextIter iter;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	gtk_text_buffer_get_end_iter(tbuf, &iter);
+	gtk_text_buffer_insert(tbuf, &iter, text, -1);
 }
 
 
@@ -551,7 +582,7 @@ void compose_attach_dialog(Compose * compose)
 	gtk_widget_destroy(dialog);
 	if(filenames == NULL)
 		return;
-	_compose_set_modified(compose, TRUE);
+	compose_set_modified(compose, TRUE);
 	theme = gtk_icon_theme_get_default();
 	for(p = filenames; p != NULL; p = p->next)
 	{
@@ -1000,16 +1031,6 @@ static char const * _compose_get_font(Compose * compose)
 			return p;
 	}
 	return MAILER_MESSAGES_FONT;
-}
-
-
-/* compose_set_modified */
-static void _compose_set_modified(Compose * compose, gboolean modified)
-{
-	GtkTextBuffer * tbuf;
-
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
-	gtk_text_buffer_set_modified(tbuf, modified);
 }
 
 

@@ -35,12 +35,16 @@ void compose_delete(Compose * compose);
 void compose_set_field(Compose * compose, char const * field,
 		char const * value);
 void compose_set_font(Compose * compose, char const * font);
+void compose_set_modified(Compose * compose, gboolean modified);
 void compose_set_standalone(Compose * compose, gboolean standalone);
 void compose_set_subject(Compose * compose, char const * subject);
+void compose_set_text(Compose * compose, char const * text);
 
 /* useful */
 void compose_add_field(Compose * compose, char const * field,
 		char const * value);
+
+void compose_append_text(Compose * compose, char const * text);
 
 void compose_attach_dialog(Compose * compose);
 
