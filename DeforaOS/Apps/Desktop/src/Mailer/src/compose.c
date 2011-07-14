@@ -93,6 +93,7 @@ static void _compose_delete(Compose * compose);
 
 /* accessors */
 static char const * _compose_get_font(Compose * compose);
+static void _compose_set_modified(Compose * compose, gboolean modified);
 
 /* useful */
 static gboolean _compose_close(Compose * compose);
@@ -357,6 +358,8 @@ Compose * compose_new(Config * config)
 				compose->a_store));
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(compose->a_view),
 			CAC_ICON);
+	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(compose->a_view),
+			GTK_SELECTION_MULTIPLE);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(compose->a_view),
 			CAC_BASENAME);
 	gtk_container_add(GTK_CONTAINER(compose->a_window), compose->a_view);
@@ -503,9 +506,10 @@ void compose_add_field(Compose * compose, char const * field,
 void compose_attach_dialog(Compose * compose)
 {
 	GtkWidget * dialog;
-	char * filename = NULL;
+	GSList * filenames = NULL;
+	GSList * p;
 	char const * type;
-	GdkPixbuf * pixbuf = NULL;
+	GdkPixbuf * pixbuf;
 	GtkIconTheme * theme;
 	GtkTreeIter iter;
 
@@ -514,24 +518,30 @@ void compose_attach_dialog(Compose * compose)
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+		filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(
 					dialog));
 	gtk_widget_destroy(dialog);
-	if(filename == NULL)
+	if(filenames == NULL)
 		return;
-	if((type = mime_type(compose->mime, filename)) != NULL)
-		mime_icons(compose->mime, type, 48, &pixbuf, -1);
-	if(pixbuf == NULL)
+	_compose_set_modified(compose, TRUE);
+	theme = gtk_icon_theme_get_default();
+	for(p = filenames; p != NULL; p = p->next)
 	{
-		theme = gtk_icon_theme_get_default();
-		pixbuf = gtk_icon_theme_load_icon(theme, GTK_STOCK_FILE, 48, 0,
-				NULL);
+		pixbuf = NULL;
+		if((type = mime_type(compose->mime, p->data)) != NULL)
+			mime_icons(compose->mime, type, 48, &pixbuf, -1);
+		if(pixbuf == NULL)
+			pixbuf = gtk_icon_theme_load_icon(theme, GTK_STOCK_FILE,
+					48, 0, NULL);
+		gtk_list_store_append(compose->a_store, &iter);
+		gtk_list_store_set(compose->a_store, &iter, CAC_FILENAME,
+				p->data, CAC_BASENAME, basename(p->data),
+				CAC_ICON, pixbuf, -1);
 	}
-	gtk_list_store_append(compose->a_store, &iter);
-	gtk_list_store_set(compose->a_store, &iter, CAC_FILENAME, filename,
-			CAC_BASENAME, basename(filename), CAC_ICON, pixbuf, -1);
-	free(filename);
+	g_slist_foreach(filenames, (GFunc)g_free, NULL);
+	g_slist_free(filenames);
 	gtk_widget_show(compose->a_window);
 }
 
@@ -964,6 +974,16 @@ static char const * _compose_get_font(Compose * compose)
 			return p;
 	}
 	return MAILER_MESSAGES_FONT;
+}
+
+
+/* compose_set_modified */
+static void _compose_set_modified(Compose * compose, gboolean modified)
+{
+	GtkTextBuffer * tbuf;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	gtk_text_buffer_set_modified(tbuf, modified);
 }
 
 
