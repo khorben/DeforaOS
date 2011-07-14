@@ -39,6 +39,7 @@
 /* types */
 struct _Compose
 {
+	Mime * mime;
 	Config * config;
 	gboolean standalone;
 
@@ -227,8 +228,16 @@ Compose * compose_new(Config * config)
 		compose_error(NULL, strerror(errno), 0);
 		return NULL;
 	}
+	compose->mime = mime_new(NULL);
+	/* check errors */
+	if(compose->mime == NULL)
+	{
+		free(compose);
+		return NULL;
+	}
 	compose->config = config;
 	compose->standalone = FALSE;
+	/* window */
 	group = gtk_accel_group_new();
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(compose->window), group);
@@ -444,6 +453,7 @@ Compose * compose_new_copy(Compose * compose)
 void compose_delete(Compose * compose)
 {
 	gtk_widget_destroy(compose->window);
+	mime_delete(compose->mime);
 	free(compose);
 }
 
@@ -494,8 +504,9 @@ void compose_attach_dialog(Compose * compose)
 {
 	GtkWidget * dialog;
 	char * filename = NULL;
+	char const * type;
+	GdkPixbuf * pixbuf = NULL;
 	GtkIconTheme * theme;
-	GdkPixbuf * pixbuf;
 	GtkTreeIter iter;
 
 	dialog = gtk_file_chooser_dialog_new(_("Attach file..."),
@@ -509,8 +520,14 @@ void compose_attach_dialog(Compose * compose)
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return;
-	theme = gtk_icon_theme_get_default();
-	pixbuf = gtk_icon_theme_load_icon(theme, GTK_STOCK_FILE, 48, 0, NULL);
+	if((type = mime_type(compose->mime, filename)) != NULL)
+		mime_icons(compose->mime, type, 48, &pixbuf, -1);
+	if(pixbuf == NULL)
+	{
+		theme = gtk_icon_theme_get_default();
+		pixbuf = gtk_icon_theme_load_icon(theme, GTK_STOCK_FILE, 48, 0,
+				NULL);
+	}
 	gtk_list_store_append(compose->a_store, &iter);
 	gtk_list_store_set(compose->a_store, &iter, CAC_FILENAME, filename,
 			CAC_BASENAME, basename(filename), CAC_ICON, pixbuf, -1);
