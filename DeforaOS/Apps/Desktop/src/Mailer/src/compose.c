@@ -462,6 +462,32 @@ void compose_delete(Compose * compose)
 
 
 /* accessors */
+/* compose_set_field */
+void compose_set_field(Compose * compose, char const * field,
+		char const * value)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, -1);
+		if(p != NULL && strcmp(p, field) == 0)
+		{
+			g_free(p);
+			gtk_list_store_set(compose->h_store, &iter, 1, value,
+					-1);
+			return;
+		}
+		g_free(p);
+	}
+	compose_add_field(compose, field, value);
+}
+
+
 /* compose_set_font */
 void compose_set_font(Compose * compose, char const * font)
 {

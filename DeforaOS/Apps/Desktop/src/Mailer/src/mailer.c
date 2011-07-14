@@ -1108,10 +1108,9 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 		return; /* XXX error message? */
 	gtk_tree_model_get(model, iter, MHC_FROM, &from, MHC_SUBJECT,
 			&subject, -1);
-#if 0 /* FIXME adapt */
 	if(from != NULL)
-		compose_set_to(compose, from);
-#endif
+		compose_set_field(compose, "To:", from);
+	/* FIXME also set the In-Reply-To field */
 	q = N_("Re: ");
 	if(subject != NULL && strncasecmp(subject, q, strlen(q)) != 0
 			&& strncasecmp(subject, _(q), strlen(_(q))) != 0
