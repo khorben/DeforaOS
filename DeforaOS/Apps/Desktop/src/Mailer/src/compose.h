@@ -32,6 +32,8 @@ Compose * compose_new_copy(Compose * compose);
 void compose_delete(Compose * compose);
 
 /* accessors */
+void compose_set_field(Compose * compose, char const * field,
+		char const * value);
 void compose_set_font(Compose * compose, char const * font);
 void compose_set_standalone(Compose * compose, gboolean standalone);
 void compose_set_subject(Compose * compose, char const * subject);
