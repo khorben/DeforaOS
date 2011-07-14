@@ -985,19 +985,17 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 	else if(st->st_mode & S_IXUSR)
 		mime_icons(browser->mime, "application/x-executable", 24,
 				icon_24,
-#if !GTK_CHECK_VERSION(2, 6, 0)
-				-1);
-#else
-				48, icon_48, 96, icon_96, -1);
+#if GTK_CHECK_VERSION(2, 6, 0)
+				48, icon_48, 96, icon_96,
 #endif
+				-1);
 	else if(browser->mime != NULL && *type == NULL
 			&& (*type = mime_type(browser->mime, path)) != NULL)
 		mime_icons(browser->mime, *type, 24, icon_24,
-#if !GTK_CHECK_VERSION(2, 6, 0)
-				-1);
-#else
-				48, icon_48, 96, icon_96, -1);
+#if GTK_CHECK_VERSION(2, 6, 0)
+				48, icon_48, 96, icon_96,
 #endif
+				-1);
 }
 
 static char const * _insert_size(off_t size)
