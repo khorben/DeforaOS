@@ -1102,6 +1102,7 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 	char * date;
 	char * from;
 	char * subject;
+	char * to;
 	char * p;
 	char const * q;
 	GtkTextBuffer * tbuf;
@@ -1111,10 +1112,14 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 	if((compose = compose_new(mailer->config)) == NULL)
 		return; /* XXX error message? */
 	gtk_tree_model_get(model, iter, MHC_DATE_DISPLAY, &date,
-			MHC_FROM_EMAIL, &from, MHC_SUBJECT, &subject, -1);
+			MHC_FROM_EMAIL, &from, MHC_SUBJECT, &subject,
+			MHC_TO_EMAIL, &to, -1);
 	/* from */
 	if(from != NULL)
 		compose_set_field(compose, "To:", from);
+	/* to */
+	if(to != NULL)
+		compose_set_from(compose, to);
 	/* FIXME also set the In-Reply-To field */
 	/* subject */
 	q = N_("Re: ");

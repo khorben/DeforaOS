@@ -470,6 +470,11 @@ void compose_set_field(Compose * compose, char const * field,
 	gboolean valid;
 	gchar * p;
 
+	if(strcmp(field, "From:") == 0)
+	{
+		compose_set_from(compose, value);
+		return;
+	}
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
@@ -495,6 +500,14 @@ void compose_set_font(Compose * compose, char const * font)
 	desc = pango_font_description_from_string(font);
 	gtk_widget_modify_font(compose->view, desc);
 	pango_font_description_free(desc);
+}
+
+
+/* compose_set_from */
+void compose_set_from(Compose * compose, char const * from)
+{
+	gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(compose->from))),
+				from);
 }
 
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-14 03:41+0200\n"
+"POT-Creation-Date: 2011-07-14 04:04+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -157,28 +157,28 @@ msgstr "De: "
 msgid "Subject: "
 msgstr "Sujet: "
 
-#: ../src/compose.c:573
+#: ../src/compose.c:586
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
-#: ../src/compose.c:661 ../src/compose.c:665 ../src/mailer.c:845
+#: ../src/compose.c:674 ../src/compose.c:678 ../src/mailer.c:845
 #: ../src/mailer.c:849
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/compose.c:780
+#: ../src/compose.c:793
 msgid "Sending mail..."
 msgstr "Envoi du message..."
 
-#: ../src/compose.c:787
+#: ../src/compose.c:800
 msgid "Progress: "
 msgstr "Progression : "
 
-#: ../src/compose.c:1051 ../src/compose.c:1060
+#: ../src/compose.c:1064 ../src/compose.c:1073
 msgid "Warning"
 msgstr "Attention"
 
-#: ../src/compose.c:1054
+#: ../src/compose.c:1067
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
@@ -358,108 +358,108 @@ msgstr ""
 msgid "Mailer - View source"
 msgstr "Mailer - Source"
 
-#: ../src/mailer.c:1120
+#: ../src/mailer.c:1125
 msgid "Re: "
 msgstr "Re: "
 
-#: ../src/mailer.c:1314
+#: ../src/mailer.c:1319
 msgid "Mailer preferences"
 msgstr "Préférences de Mailer"
 
-#: ../src/mailer.c:1358
+#: ../src/mailer.c:1363
 msgid "Enabled"
 msgstr "Actif"
 
-#: ../src/mailer.c:1362
+#: ../src/mailer.c:1367
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/mailer.c:1366
+#: ../src/mailer.c:1371
 msgid "Type"
 msgstr "Type"
 
-#: ../src/mailer.c:1390
+#: ../src/mailer.c:1395
 msgid "Accounts"
 msgstr "Comptes"
 
-#: ../src/mailer.c:1397
+#: ../src/mailer.c:1402
 msgid "Messages font:"
 msgstr "Police des messages:"
 
-#: ../src/mailer.c:1407
+#: ../src/mailer.c:1412
 msgid "Display"
 msgstr "Affichage"
 
-#: ../src/mailer.c:1485
+#: ../src/mailer.c:1490
 msgid "No account plug-in available"
 msgstr "Aucun greffon de compte disponible"
 
-#: ../src/mailer.c:1640 ../src/mailer.c:1928
+#: ../src/mailer.c:1645 ../src/mailer.c:1933
 msgid "Account name"
 msgstr "Nom du compte"
 
-#: ../src/mailer.c:1647
+#: ../src/mailer.c:1652
 msgid "Your name"
 msgstr "Votre nom"
 
-#: ../src/mailer.c:1654
+#: ../src/mailer.c:1659
 msgid "e-mail address"
 msgstr "Adresse e-mail"
 
-#: ../src/mailer.c:1661
+#: ../src/mailer.c:1666
 msgid "Type of account"
 msgstr "Type de compte"
 
-#: ../src/mailer.c:1817
+#: ../src/mailer.c:1822
 msgid "Choose file"
 msgstr "Choisir un fichier"
 
-#: ../src/mailer.c:1999
+#: ../src/mailer.c:2004
 msgid "hidden"
 msgstr "masqué"
 
-#: ../src/mailer.c:2033
+#: ../src/mailer.c:2038
 msgid "Yes"
 msgstr "Oui"
 
-#: ../src/mailer.c:2033
+#: ../src/mailer.c:2038
 msgid "No"
 msgstr "Non"
 
-#: ../src/mailer.c:2061
+#: ../src/mailer.c:2066
 msgid "Account type "
 msgstr "Type de compte "
 
-#: ../src/mailer.c:2062
+#: ../src/mailer.c:2067
 msgid " active\n"
 msgstr " actif\n"
 
-#: ../src/mailer.c:2106
+#: ../src/mailer.c:2111
 msgid "Edit account: "
 msgstr "Modification du compte: "
 
-#: ../src/mailer.c:2169
+#: ../src/mailer.c:2174
 msgid "An error occured while saving preferences"
 msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
-#: ../src/mailer.c:2347 ../src/mailer.c:2351
+#: ../src/mailer.c:2352 ../src/mailer.c:2356
 msgid "Question"
 msgstr "Question"
 
-#: ../src/mailer.c:2401
+#: ../src/mailer.c:2406
 #, c-format
 msgid "%s/%s: %d %s"
 msgstr "%s/%s: %d %s"
 
-#: ../src/mailer.c:2404
+#: ../src/mailer.c:2409
 msgid "messages"
 msgstr "messages"
 
-#: ../src/mailer.c:2404
+#: ../src/mailer.c:2409
 msgid "message"
 msgstr "message"
 
-#: ../src/mailer.c:2407
+#: ../src/mailer.c:2412
 msgid "Ready"
 msgstr "Prêt"
 
