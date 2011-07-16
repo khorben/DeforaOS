@@ -596,7 +596,6 @@ static void _on_popup_preferences(gpointer data)
 	Desktop * desktop = data;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
-	GtkWidget * vbox3;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkWidget * label;
@@ -632,25 +631,20 @@ static void _on_popup_preferences(gpointer data)
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	/* font */
+	/* background */
 	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Font: "));
+	label = gtk_label_new(_("Default color: "));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	desktop->pr_font = gtk_font_button_new();
-	gtk_font_button_set_use_font(GTK_FONT_BUTTON(desktop->pr_font), TRUE);
-	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_font, TRUE, TRUE, 0);
+	desktop->pr_color = gtk_color_button_new();
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_color, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-	/* background */
 	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Background: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.1);
+	label = gtk_label_new(_("Filename: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	vbox3 = gtk_vbox_new(FALSE, 4);
-	desktop->pr_color = gtk_color_button_new();
-	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_color, TRUE, TRUE, 0);
 	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	filter = gtk_file_filter_new();
@@ -668,8 +662,14 @@ static void _on_popup_preferences(gpointer data)
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
 			filter);
-	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_background, TRUE, TRUE,
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background, TRUE, TRUE,
 			0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Position: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	desktop->pr_background_how = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Centered"));
@@ -679,12 +679,26 @@ static void _on_popup_preferences(gpointer data)
 			_("Scaled (keep ratio)"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Tiled"));
-	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_background_how, TRUE,
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background_how, TRUE,
 			TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), vbox3, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
-				_("Appearance")));
+				_("Background")));
+	/* theme */
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Desktop font: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_font = gtk_font_button_new();
+	gtk_font_button_set_use_font(GTK_FONT_BUTTON(desktop->pr_font), TRUE);
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_font, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
+				_("Theme")));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* container */
 	_preferences_set(desktop);

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-16 16:50+0200\n"
+"POT-Creation-Date: 2011-07-16 17:07+0200\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:166 ../src/desktop.c:950 ../src/desktop.c:971
+#: ../src/browser.c:166 ../src/desktop.c:964 ../src/desktop.c:985
 msgid "Back"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:174 ../src/desktop.c:1032
+#: ../src/browser.c:174 ../src/desktop.c:1046
 msgid "Home"
 msgstr ""
 
@@ -187,7 +187,7 @@ msgstr ""
 
 #: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1633 ../src/desktop.c:1638 ../src/move.c:452
+#: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -371,7 +371,7 @@ msgstr ""
 msgid "Copying: "
 msgstr ""
 
-#: ../src/copy.c:152
+#: ../src/copy.c:152 ../src/desktop.c:644
 msgid "Filename: "
 msgstr ""
 
@@ -464,28 +464,28 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:616
+#: ../src/desktop.c:615
 msgid "Desktop preferences"
 msgstr ""
 
-#: ../src/desktop.c:637
-msgid "Font: "
+#: ../src/desktop.c:636
+msgid "Default color: "
 msgstr ""
 
-#: ../src/desktop.c:647
-msgid "Background: "
-msgstr ""
-
-#: ../src/desktop.c:654
+#: ../src/desktop.c:648 ../src/desktop.c:686
 msgid "Background"
 msgstr ""
 
-#: ../src/desktop.c:657
+#: ../src/desktop.c:651
 msgid "Picture files"
 msgstr ""
 
-#: ../src/desktop.c:667
+#: ../src/desktop.c:661
 msgid "All files"
+msgstr ""
+
+#: ../src/desktop.c:669
+msgid "Position: "
 msgstr ""
 
 #: ../src/desktop.c:675
@@ -504,19 +504,23 @@ msgstr ""
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:687
-msgid "Appearance"
+#: ../src/desktop.c:692
+msgid "Desktop font: "
 msgstr ""
 
-#: ../src/desktop.c:1063
+#: ../src/desktop.c:701
+msgid "Theme"
+msgstr ""
+
+#: ../src/desktop.c:1077
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1682
+#: ../src/desktop.c:1696
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1787
+#: ../src/desktop.c:1801
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"

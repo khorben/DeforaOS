@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-16 16:50+0200\n"
+"POT-Creation-Date: 2011-07-16 17:07+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -113,7 +113,7 @@ msgstr "_Vue"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/browser.c:166 ../src/desktop.c:950 ../src/desktop.c:971
+#: ../src/browser.c:166 ../src/desktop.c:964 ../src/desktop.c:985
 msgid "Back"
 msgstr "Retour"
 
@@ -129,7 +129,7 @@ msgstr "Suivant"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/browser.c:174 ../src/desktop.c:1032
+#: ../src/browser.c:174 ../src/desktop.c:1046
 msgid "Home"
 msgstr "Dossier personnel"
 
@@ -187,7 +187,7 @@ msgstr " Chemin : "
 
 #: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1633 ../src/desktop.c:1638 ../src/move.c:452
+#: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -341,7 +341,7 @@ msgstr "Ouvrir _avec..."
 
 #: ../src/callbacks.c:1042 ../src/desktopicon.c:845
 msgid "Are you sure you want to execute this file?"
-msgstr "Voulez-vous vraiment exécuter ce fichier ?"
+msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 
 #: ../src/common.c:62
 msgid "copying"
@@ -371,7 +371,7 @@ msgstr "Copie de fichier(s)"
 msgid "Copying: "
 msgstr "Copie de : "
 
-#: ../src/copy.c:152
+#: ../src/copy.c:152 ../src/desktop.c:644
 msgid "Filename: "
 msgstr "Nom de fichier : "
 
@@ -412,7 +412,7 @@ msgid ""
 "Proceed?"
 msgstr ""
 "%s va être écrasé\n"
-"Continuer ?"
+"Continuer ?"
 
 #: ../src/copy.c:733 ../src/copy.c:737
 msgid "Information"
@@ -455,7 +455,7 @@ msgid ""
 "Recursively delete?"
 msgstr ""
 "%s est un dossier.\n"
-"Effacer récursivement ?"
+"Effacer récursivement ?"
 
 #: ../src/delete.c:332 ../src/delete.c:365
 msgid "Yes to all"
@@ -468,7 +468,7 @@ msgid ""
 "Continue?"
 msgstr ""
 "%s sera définitivement effacé.\n"
-"Continuer ?"
+"Continuer ?"
 
 #: ../src/delete.c:452
 msgid ""
@@ -484,29 +484,29 @@ msgstr ""
 "  -R\tSupprimer récursivement\n"
 "  -r\tÉquivalent à -R\n"
 
-#: ../src/desktop.c:616
+#: ../src/desktop.c:615
 msgid "Desktop preferences"
 msgstr "Préférences du bureau"
 
-#: ../src/desktop.c:637
-msgid "Font: "
-msgstr "Fonte : "
+#: ../src/desktop.c:636
+msgid "Default color: "
+msgstr "Couleur par défaut :"
 
-#: ../src/desktop.c:647
-msgid "Background: "
-msgstr "Arrière-plan : "
-
-#: ../src/desktop.c:654
+#: ../src/desktop.c:648 ../src/desktop.c:686
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: ../src/desktop.c:657
+#: ../src/desktop.c:651
 msgid "Picture files"
 msgstr "Images"
 
-#: ../src/desktop.c:667
+#: ../src/desktop.c:661
 msgid "All files"
 msgstr "Tous les fichiers"
+
+#: ../src/desktop.c:669
+msgid "Position: "
+msgstr "Position : "
 
 #: ../src/desktop.c:675
 msgid "Centered"
@@ -524,19 +524,23 @@ msgstr "Étiré (sans déformer)"
 msgid "Tiled"
 msgstr "Mosaïque"
 
-#: ../src/desktop.c:687
-msgid "Appearance"
-msgstr "Apparence"
+#: ../src/desktop.c:692
+msgid "Desktop font: "
+msgstr "Police du bureau : "
 
-#: ../src/desktop.c:1063
+#: ../src/desktop.c:701
+msgid "Theme"
+msgstr "Thème"
+
+#: ../src/desktop.c:1077
 msgid "Applications"
 msgstr "Applications"
 
-#: ../src/desktop.c:1682
+#: ../src/desktop.c:1696
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1787
+#: ../src/desktop.c:1801
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
