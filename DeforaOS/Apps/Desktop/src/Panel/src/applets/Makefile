@@ -215,7 +215,7 @@ lock.o: lock.c ../../include/Panel.h
 logout.o: logout.c ../../include/Panel.h
 	$(CC) $(logout_CFLAGS) -c logout.c
 
-main.o: main.c ../../include/Panel.h
+main.o: main.c ../../include/Panel.h ../../config.h
 	$(CC) $(main_CFLAGS) -c main.c
 
 memory.o: memory.c ../../include/Panel.h
