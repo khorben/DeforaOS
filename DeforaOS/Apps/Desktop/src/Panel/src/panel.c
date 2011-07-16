@@ -288,7 +288,7 @@ static GtkIconSize _new_size(Panel * panel, PanelPosition position)
 	if(p != NULL)
 		ret = gtk_icon_size_from_name(p);
 	if(ret == GTK_ICON_SIZE_INVALID)
-		ret = GTK_ICON_SIZE_LARGE_TOOLBAR;
+		ret = GTK_ICON_SIZE_SMALL_TOOLBAR;
 	return ret;
 }
 
