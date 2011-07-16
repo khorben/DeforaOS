@@ -262,7 +262,7 @@ static void _idle_background(Desktop * desktop, Config * config)
 	gc = gdk_gc_new(pixmap);
 	if((p = config_get(config, NULL, "background_color")) != NULL)
 		gdk_color_parse(p, &color);
-	gdk_gc_set_foreground(gc, &color);
+	gdk_gc_set_rgb_fg_color(gc, &color);
 	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, desktop->window.width,
 			desktop->window.height);
 	/* open background file */
@@ -645,7 +645,7 @@ static void _on_popup_preferences(gpointer data)
 	/* background */
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.25);
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.1);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	vbox3 = gtk_vbox_new(FALSE, 4);
