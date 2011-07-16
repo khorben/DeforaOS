@@ -764,7 +764,7 @@ static void _preferences_set(Desktop * desktop)
 	Config * config;
 	String const * p;
 	String const * filename = NULL;
-	GdkColor color = { 0, 0, 0, 0, 0 };
+	GdkColor color = { 0, 0, 0, 0 };
 	int how = 0;
 	size_t i;
 
