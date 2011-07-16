@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-16 16:04+0200\n"
+"POT-Creation-Date: 2011-07-16 16:50+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: ../src/browser.c:166 ../src/desktop.c:935 ../src/desktop.c:956
+#: ../src/browser.c:166 ../src/desktop.c:950 ../src/desktop.c:971
 msgid "Back"
 msgstr "Zurück"
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:174 ../src/desktop.c:1017
+#: ../src/browser.c:174 ../src/desktop.c:1032
 msgid "Home"
 msgstr "Persönlicher Ordner"
 
@@ -187,7 +187,7 @@ msgstr ""
 
 #: ../src/browser.c:602 ../src/browser.c:607 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1618 ../src/desktop.c:1623 ../src/move.c:452
+#: ../src/desktop.c:1633 ../src/desktop.c:1638 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:118 ../src/properties.c:122
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -291,7 +291,7 @@ msgstr ""
 msgid "Refreshing folder..."
 msgstr "Aktualisierung..."
 
-#: ../src/callbacks.c:116 ../src/desktop.c:536
+#: ../src/callbacks.c:116 ../src/desktop.c:539
 msgid "New folder"
 msgstr "Neu Ordner"
 
@@ -310,19 +310,19 @@ msgstr ""
 msgid "New"
 msgstr "Neu"
 
-#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:447
+#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:450
 msgid "Folder"
 msgstr "Ordner"
 
-#: ../src/callbacks.c:783 ../src/desktop.c:455
+#: ../src/callbacks.c:783 ../src/desktop.c:458
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:787 ../src/desktop.c:459
+#: ../src/callbacks.c:787 ../src/desktop.c:462
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:822 ../src/desktop.c:555
+#: ../src/callbacks.c:822 ../src/desktop.c:558
 msgid "New text file.txt"
 msgstr ""
 
@@ -464,59 +464,59 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:613
+#: ../src/desktop.c:616
 msgid "Desktop preferences"
 msgstr "Desktop Einstellungen"
 
-#: ../src/desktop.c:634
+#: ../src/desktop.c:637
 msgid "Font: "
 msgstr ""
 
-#: ../src/desktop.c:644
+#: ../src/desktop.c:647
 msgid "Background: "
 msgstr "Hintergrund: "
 
-#: ../src/desktop.c:649
+#: ../src/desktop.c:654
 msgid "Background"
 msgstr "Hintergrund"
 
-#: ../src/desktop.c:652
+#: ../src/desktop.c:657
 msgid "Picture files"
 msgstr ""
 
-#: ../src/desktop.c:662
+#: ../src/desktop.c:667
 msgid "All files"
 msgstr ""
 
-#: ../src/desktop.c:670
+#: ../src/desktop.c:675
 msgid "Centered"
 msgstr ""
 
-#: ../src/desktop.c:672
+#: ../src/desktop.c:677
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:674
+#: ../src/desktop.c:679
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:676
+#: ../src/desktop.c:681
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:682
+#: ../src/desktop.c:687
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:1048
+#: ../src/desktop.c:1063
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1667
+#: ../src/desktop.c:1682
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1772
+#: ../src/desktop.c:1787
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"

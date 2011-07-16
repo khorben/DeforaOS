@@ -92,6 +92,7 @@ struct _Desktop
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_font;
+	GtkWidget * pr_color;
 	GtkWidget * pr_background;
 	GtkWidget * pr_background_how;
 
@@ -247,7 +248,7 @@ static gboolean _new_idle(gpointer data)
 static void _idle_background(Desktop * desktop, Config * config)
 {
 	GdkGC * gc;
-	GdkColor black = { 0, 0, 0, 0 };
+	GdkColor color = { 0, 0, 0, 0 };
 	char const * filename;
 	char const * p;
 	DesktopHows how = DESKTOP_HOW_SCALED;
@@ -259,7 +260,9 @@ static void _idle_background(Desktop * desktop, Config * config)
 	pixmap = gdk_pixmap_new(desktop->root, desktop->window.width,
 			desktop->window.height, -1);
 	gc = gdk_gc_new(pixmap);
-	gdk_gc_set_foreground(gc, &black);
+	if((p = config_get(config, NULL, "background_color")) != NULL)
+		gdk_color_parse(p, &color);
+	gdk_gc_set_foreground(gc, &color);
 	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, desktop->window.width,
 			desktop->window.height);
 	/* open background file */
@@ -646,6 +649,8 @@ static void _on_popup_preferences(gpointer data)
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	vbox3 = gtk_vbox_new(FALSE, 4);
+	desktop->pr_color = gtk_color_button_new();
+	gtk_box_pack_start(GTK_BOX(vbox3), desktop->pr_color, TRUE, TRUE, 0);
 	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	filter = gtk_file_filter_new();
@@ -715,6 +720,7 @@ static void _on_preferences_apply(gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
+	GdkColor color;
 	char * p;
 	char const * q;
 	int i;
@@ -728,6 +734,10 @@ static void _on_preferences_apply(gpointer data)
 	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background));
 	config_set(config, NULL, "background", p);
+	g_free(p);
+	gtk_color_button_get_color(GTK_COLOR_BUTTON(desktop->pr_color), &color);
+	p = gdk_color_to_string(&color);
+	config_set(config, NULL, "background_color", p);
 	g_free(p);
 	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
 	if(i >= 0 && i < DESKTOP_HOW_COUNT)
@@ -754,6 +764,7 @@ static void _preferences_set(Desktop * desktop)
 	Config * config;
 	String const * p;
 	String const * filename = NULL;
+	GdkColor color = { 0, 0, 0, 0, 0 };
 	int how = 0;
 	size_t i;
 
@@ -763,6 +774,10 @@ static void _preferences_set(Desktop * desktop)
 			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
 						desktop->pr_font), p);
 		filename = config_get(config, NULL, "background");
+		if((p = config_get(config, NULL, "background_color")) != NULL
+				&& gdk_color_parse(p, &color) == TRUE)
+			gtk_color_button_set_color(GTK_COLOR_BUTTON(
+						desktop->pr_color), &color);
 		if((p = config_get(config, NULL, "background_how")) != NULL)
 			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
 				if(strcmp(_desktop_hows[i], p) == 0)
