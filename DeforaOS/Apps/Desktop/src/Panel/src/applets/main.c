@@ -23,6 +23,7 @@
 #include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#include "../../config.h"
 #define _(string) gettext(string)
 
 /* XXX to avoid pointless warnings with GCC */
