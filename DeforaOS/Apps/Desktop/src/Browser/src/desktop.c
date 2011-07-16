@@ -112,7 +112,8 @@ struct _DesktopCategory
 
 typedef enum _DesktopHows
 {
-	DESKTOP_HOW_SCALED = 0,
+	DESKTOP_HOW_CENTERED = 0,
+	DESKTOP_HOW_SCALED,
 	DESKTOP_HOW_SCALED_RATIO,
 	DESKTOP_HOW_TILED
 } DesktopHows;
@@ -126,6 +127,7 @@ typedef enum _DesktopHows
 
 static const char * _desktop_hows[DESKTOP_HOW_COUNT] =
 {
+	"centered",
 	"scaled",
 	"scaled_ratio",
 	"tiled"
@@ -166,6 +168,15 @@ static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
 /* desktop_new */
 /* callbacks */
 static gboolean _new_idle(gpointer data);
+static void _idle_background(Desktop * desktop, Config * config);
+static void _background_centered(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
+static void _background_scaled(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
+static void _background_scaled_ratio(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
+static void _background_tiled(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
 static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
@@ -214,57 +225,15 @@ static gboolean _new_idle(gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
-	char const * filename;
 	char const * p;
-	DesktopHows how = DESKTOP_HOW_SCALED;
 	size_t i;
-	GdkPixbuf * background = NULL;
-	GError * error = NULL;
-	GdkPixmap * pixmap = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((config = _desktop_get_config(desktop)) == NULL)
 		return FALSE;
-	if((filename = config_get(config, NULL, "background")) == NULL)
-	{
-		config_delete(config);
-		return FALSE;
-	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, filename);
-#endif
-	if((p = config_get(config, NULL, "background_how")) != NULL)
-		for(i = 0; i < DESKTOP_HOW_COUNT; i++)
-			if(strcmp(_desktop_hows[i], p) == 0)
-				how = i;
-	switch(how)
-	{
-		case DESKTOP_HOW_SCALED_RATIO:
-#if GTK_CHECK_VERSION(2, 4, 0)
-			background = gdk_pixbuf_new_from_file_at_size(filename,
-					desktop->window.width,
-					desktop->window.height, &error);
-			break;
-#endif
-		case DESKTOP_HOW_TILED:
-			background = gdk_pixbuf_new_from_file(filename, &error);
-			break;
-		case DESKTOP_HOW_SCALED:
-#if GTK_CHECK_VERSION(2, 6, 0)
-			background = gdk_pixbuf_new_from_file_at_scale(filename,
-					desktop->window.width,
-					desktop->window.height, FALSE, &error);
-#elif GTK_CHECK_VERSION(2, 4, 0)
-			background = gdk_pixbuf_new_from_file_at_size(filename,
-					desktop->window.width,
-					desktop->window.height, &error);
-#else
-			background = gdk_pixbuf_new_from_file(filename, &error);
-#endif
-			break;
-	}
+	_idle_background(desktop, config);
 	if((p = config_get(config, NULL, "font")) != NULL)
 	{
 		desktop->font = pango_font_description_from_string(p);
@@ -272,19 +241,151 @@ static gboolean _new_idle(gpointer data)
 			desktopicon_set_font(desktop->icon[i], desktop->font);
 	}
 	config_delete(config);
-	if(background == NULL)
-	{
-		desktop_error(desktop, error->message, 0);
-		return FALSE;
-	}
+	return FALSE;
+}
+
+static void _idle_background(Desktop * desktop, Config * config)
+{
+	GdkGC * gc;
+	GdkColor black = { 0, 0, 0, 0 };
+	char const * filename;
+	char const * p;
+	DesktopHows how = DESKTOP_HOW_SCALED;
+	size_t i;
+	GdkPixmap * pixmap = NULL;
+	GError * error = NULL;
+
+	/* draw default color */
 	pixmap = gdk_pixmap_new(desktop->root, desktop->window.width,
 			desktop->window.height, -1);
-	gdk_pixbuf_render_pixmap_and_mask(background, &pixmap, NULL, 0);
+	gc = gdk_gc_new(pixmap);
+	gdk_gc_set_foreground(gc, &black);
+	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, desktop->window.width,
+			desktop->window.height);
+	/* open background file */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, filename);
+#endif
+	if((filename = config_get(config, NULL, "background")) == NULL)
+		return;
+	if((p = config_get(config, NULL, "background_how")) != NULL)
+		for(i = 0; i < DESKTOP_HOW_COUNT; i++)
+			if(strcmp(_desktop_hows[i], p) == 0)
+				how = i;
+	switch(how)
+	{
+		case DESKTOP_HOW_CENTERED:
+			_background_centered(desktop, pixmap, filename, &error);
+			break;
+		case DESKTOP_HOW_SCALED_RATIO:
+			_background_scaled_ratio(desktop, pixmap, filename,
+					&error);
+			break;
+		case DESKTOP_HOW_TILED:
+			_background_tiled(desktop, pixmap, filename, &error);
+			break;
+		case DESKTOP_HOW_SCALED:
+			_background_scaled(desktop, pixmap, filename, &error);
+			break;
+	}
+	if(error != NULL)
+	{
+		desktop_error(desktop, error->message, 1);
+		g_error_free(error);
+	}
 	gdk_window_set_back_pixmap(desktop->root, pixmap, FALSE);
 	gdk_window_clear(desktop->root);
 	gdk_pixmap_unref(pixmap);
+}
+
+static void _background_centered(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
+{
+	GdkPixbuf * background;
+	gint w;
+	gint h;
+
+	if((background = gdk_pixbuf_new_from_file(filename, error)) == NULL)
+		return;
+	w = gdk_pixbuf_get_width(background);
+	h = gdk_pixbuf_get_height(background);
+	gdk_draw_pixbuf(pixmap, NULL, background, 0, 0,
+			(desktop->window.width - w) / 2,
+			(desktop->window.height - h) / 2, w, h,
+			GDK_RGB_DITHER_NONE, 0, 0);
 	g_object_unref(background);
-	return FALSE;
+}
+
+static void _background_scaled(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
+{
+	GdkPixbuf * background;
+	gint w;
+	gint h;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	background = gdk_pixbuf_new_from_file_at_scale(filename,
+			desktop->window.width, desktop->window.height, FALSE,
+			error);
+#elif GTK_CHECK_VERSION(2, 4, 0)
+	background = gdk_pixbuf_new_from_file_at_size(filename,
+			desktop->window.width, desktop->window.height, error);
+#else
+	background = gdk_pixbuf_new_from_file(filename, &error);
+#endif
+	if(background == NULL)
+		return;
+	w = gdk_pixbuf_get_width(background);
+	h = gdk_pixbuf_get_height(background);
+	gdk_draw_pixbuf(pixmap, NULL, background, 0, 0,
+			(desktop->window.width - w) / 2,
+			(desktop->window.height - h) / 2, w, h,
+			GDK_RGB_DITHER_NONE, 0, 0);
+	g_object_unref(background);
+}
+
+static void _background_scaled_ratio(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
+{
+	GdkPixbuf * background;
+	gint w;
+	gint h;
+
+#if GTK_CHECK_VERSION(2, 4, 0)
+	background = gdk_pixbuf_new_from_file_at_size(filename,
+			desktop->window.width, desktop->window.height, error);
+	if(background == NULL)
+		return; /* XXX report error */
+	w = gdk_pixbuf_get_width(background);
+	h = gdk_pixbuf_get_height(background);
+	gdk_draw_pixbuf(pixmap, NULL, background, 0, 0,
+			(desktop->window.width - w) / 2,
+			(desktop->window.height - h) / 2, w, h,
+			GDK_RGB_DITHER_NONE, 0, 0);
+	g_object_unref(background);
+#else
+	_background_scaled(desktop, pixmap, filename);
+#endif
+}
+
+static void _background_tiled(Desktop * desktop, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
+{
+	GdkPixbuf * background;
+	gint w;
+	gint h;
+	gint i;
+	gint j;
+
+	if((background = gdk_pixbuf_new_from_file(filename, error)) == NULL)
+		return; /* XXX report error */
+	w = gdk_pixbuf_get_width(background);
+	h = gdk_pixbuf_get_height(background);
+	for(j = 0; j < desktop->window.height; j += h)
+		for(i = 0; i < desktop->window.width; i += w)
+			gdk_draw_pixbuf(pixmap, NULL, background, 0, 0, i, j,
+					w, h, GDK_RGB_DITHER_NONE, 0, 0);
+	g_object_unref(background);
 }
 
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
@@ -566,6 +667,8 @@ static void _on_popup_preferences(gpointer data)
 			0);
 	desktop->pr_background_how = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Centered"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Scaled"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Scaled (keep ratio)"));
@@ -615,7 +718,6 @@ static void _on_preferences_apply(gpointer data)
 	char * p;
 	char const * q;
 	int i;
-	size_t j;
 
 	/* XXX not very efficient */
 	g_idle_add(_new_idle, desktop);
