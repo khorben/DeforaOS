@@ -1,6 +1,7 @@
 ../src/applets/battery.c
 ../src/applets/bluetooth.c
 ../src/applets/clock.c
+../src/applets/close.c
 ../src/applets/cpu.c
 ../src/applets/cpufreq.c
 ../src/applets/desktop.c

@@ -23,6 +23,7 @@
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Close */
@@ -91,6 +92,9 @@ static GtkWidget * _close_init(PanelApplet * applet)
 	close->helper = applet->helper;
 	close->widget = gtk_button_new();
 	gtk_button_set_relief(GTK_BUTTON(close->widget), GTK_RELIEF_NONE);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(close->widget, _("Close"));
+#endif
 	image = gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(close->widget), image);
 	g_signal_connect_swapped(G_OBJECT(close->widget), "clicked", G_CALLBACK(
