@@ -305,7 +305,7 @@ static gboolean _on_idle(gpointer data)
 	char const * bottom = "desktop,tasks,pager";
 #else /* EMBEDDED */
 	char const * plugins = "main,desktop,keyboard,tasks"
-		",clock,systray,battery,volume"
+		",close,clock,systray,battery,volume"
 		",gsm,gps,bluetooth";
 	char const * top = "main,lock,logout"
 		",clock,systray,battery,volume,cpufreq"

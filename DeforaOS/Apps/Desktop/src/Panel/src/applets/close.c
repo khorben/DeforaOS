@@ -40,6 +40,7 @@ typedef struct _Close
 	Atom atom_active;
 	Atom atom_close;
 	Window window;
+	Window panel;
 } Close;
 
 
@@ -102,6 +103,7 @@ static GtkWidget * _close_init(PanelApplet * applet)
 	close->atom_active = 0;
 	close->atom_close = 0;
 	close->window = None;
+	close->panel = None;
 	gtk_widget_show(close->widget);
 	return close->widget;
 }
@@ -161,7 +163,8 @@ static void _close_do(Close * close)
 				close->atom_active, XA_WINDOW, &cnt,
 				(void*)&window) != 0 || cnt != 1)
 		return;
-	close->window = *window;
+	if(*window != close->panel)
+		close->window = *window;
 	XFree(window);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u\n", __func__, close->window);
@@ -220,6 +223,7 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 		gpointer data)
 {
 	Close * close = data;
+	GdkWindow * window;
 	GdkEventMask events;
 
 #ifdef DEBUG
@@ -228,6 +232,8 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	close->screen = gtk_widget_get_screen(widget);
 	close->display = gdk_screen_get_display(close->screen);
 	close->root = gdk_screen_get_root_window(close->screen);
+	close->panel = ((window = gtk_widget_get_parent_window(widget)) != NULL)
+		? GDK_WINDOW_XID(window) : None;
 	events = gdk_window_get_events(close->root);
 	gdk_window_set_events(close->root, events
 			| GDK_PROPERTY_CHANGE_MASK);
