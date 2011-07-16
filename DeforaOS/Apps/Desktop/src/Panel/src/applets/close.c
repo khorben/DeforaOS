@@ -95,7 +95,8 @@ static GtkWidget * _close_init(PanelApplet * applet)
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(close->widget, _("Close"));
 #endif
-	image = gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON);
+	image = gtk_image_new_from_stock(GTK_STOCK_CLOSE,
+			applet->helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(close->widget), image);
 	g_signal_connect_swapped(G_OBJECT(close->widget), "clicked", G_CALLBACK(
 				_on_close), close);
