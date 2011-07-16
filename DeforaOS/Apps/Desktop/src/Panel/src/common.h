@@ -39,14 +39,12 @@ typedef enum _PanelPosition
 	PANEL_POSITION_BOTTOM	= 0x1,
 	PANEL_POSITION_TOP	= 0x2
 } PanelPosition;
-# define PANEL_POSITION_BOTH	(PANEL_POSITION_BOTTOM | PANEL_POSITION_TOP)
 # define PANEL_POSITION_DEFAULT PANEL_POSITION_BOTTOM
 
 typedef struct _PanelPrefs
 {
 	char const * iconsize;
 	int monitor;
-	PanelPosition position;
 } PanelPrefs;
 
 

@@ -104,7 +104,7 @@ PanelApplet applet =
 	_main_init,
 	_main_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_FIRST,
+	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL

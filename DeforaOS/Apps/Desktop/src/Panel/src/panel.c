@@ -98,11 +98,11 @@ static const struct
 	gint size;
 } _panel_sizes[] =
 {
-	{ "panel-large",	N_("large"),	GTK_ICON_SIZE_LARGE_TOOLBAR,
+	{ "panel-large",	N_("Large"),	GTK_ICON_SIZE_LARGE_TOOLBAR,
 		48 },
-	{ "panel-small",	N_("small"),	GTK_ICON_SIZE_SMALL_TOOLBAR,
+	{ "panel-small",	N_("Small"),	GTK_ICON_SIZE_SMALL_TOOLBAR,
 		24 },
-	{ "panel-smaller",	N_("smaller"),	GTK_ICON_SIZE_MENU, 16 },
+	{ "panel-smaller",	N_("Smaller"),	GTK_ICON_SIZE_MENU, 16 },
 };
 
 
@@ -213,10 +213,11 @@ Panel * panel_new(PanelPrefs const * prefs)
 					screen)) ? prefs->monitor : 0, &rect);
 	panel->root_height = rect.height;
 	panel->root_width = rect.width;
-	panel->top = (prefs->position & PANEL_POSITION_TOP)
+	panel->top = (config_get(panel->config, NULL, "top") != NULL)
 		? panel_window_new(PANEL_POSITION_TOP, &panel->top_helper,
 				&rect) : NULL;
-	panel->bottom = (prefs->position & PANEL_POSITION_BOTTOM)
+	panel->bottom = (config_get(panel->config, NULL, "bottom") != NULL
+			|| config_get(panel->config, NULL, "top") == NULL)
 		? panel_window_new(PANEL_POSITION_BOTTOM,
 				&panel->bottom_helper, &rect) : NULL;
 	/* manage root window events */
@@ -263,7 +264,6 @@ static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
 	}
 	prefs->iconsize = PANEL_ICON_SIZE_DEFAULT;
 	prefs->monitor = -1;
-	prefs->position = PANEL_POSITION_DEFAULT;
 }
 
 static GtkIconSize _new_size(Panel * panel, PanelPosition position)
@@ -296,28 +296,36 @@ static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
 #ifndef EMBEDDED
-	const char * plugins = "volume,systray,battery,bluetooth,clock,swap"
-		",memory,cpufreq,cpu,desktop,gps,gsm,lock,logout,main,pager"
-		",tasks";
-#else
-	const char * plugins = "volume,systray,battery,bluetooth,clock,cpufreq"
-		",gps,gsm,main,pager,tasks";
+	char const * plugins = "main,desktop,lock,logout,pager,tasks"
+		",clock,systray,battery,volume,cpufreq"
+		",gsm,gps,bluetooth";
+	char const * top = "main,lock,logout"
+		",clock,systray,battery,volume,cpufreq"
+		",gsm,gps,bluetooth";
+	char const * bottom = "desktop,tasks,pager";
+#else /* EMBEDDED */
+	char const * plugins = "main,desktop,keyboard,tasks"
+		",clock,systray,battery,volume"
+		",gsm,gps,bluetooth";
+	char const * top = "main,lock,logout"
+		",clock,systray,battery,volume,cpufreq"
+		",gsm,gps,bluetooth";
+	char const * bottom = "keyboard,desktop,tasks";
 #endif
 	char const * p;
-	char const * top;
-	char const * bottom;
 
 	panel_show_preferences(panel, FALSE);
-	if((p = config_get(panel->config, NULL, "plugins")) == NULL)
-		p = plugins;
+	if((p = config_get(panel->config, NULL, "plugins")) != NULL)
+		plugins = p;
 	if(panel->top != NULL)
-		if((top = config_get(panel->config, NULL, "top")) != NULL
-				|| (top = p) != NULL)
-			_idle_load(panel, PANEL_POSITION_TOP, top);
+		if((p = config_get(panel->config, NULL, "top")) != NULL
+				|| (p = top) != NULL)
+			_idle_load(panel, PANEL_POSITION_TOP, p);
 	if(panel->bottom != NULL)
-		if((bottom = config_get(panel->config, NULL, "bottom")) != NULL
-				|| (bottom = p) != NULL)
-			_idle_load(panel, PANEL_POSITION_BOTTOM, bottom);
+		if((p = config_get(panel->config, NULL, "bottom")) != NULL
+				|| (p = (panel->top != NULL) ? bottom : plugins)
+				!= NULL)
+			_idle_load(panel, PANEL_POSITION_BOTTOM, p);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(panel->pr_notebook), 0);
 	return FALSE;
 }
@@ -536,8 +544,11 @@ static void _show_preferences_window(Panel * panel)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	panel->pr_top_size = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(panel->pr_top_size), NULL,
+			"Default");
 #else
 	panel->pr_top_size = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_top_size), "Default");
 #endif
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -557,8 +568,12 @@ static void _show_preferences_window(Panel * panel)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	panel->pr_bottom_size = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(panel->pr_bottom_size),
+			NULL, "Default");
 #else
 	panel->pr_bottom_size = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_bottom_size),
+			"Default");
 #endif
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -612,24 +627,29 @@ static void _preferences_on_cancel(gpointer data)
 	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
-	if((p = config_get(panel->config, "", "bottom_size")) != NULL
-			|| (p = config_get(panel->config, "", "size")) != NULL)
+	if((p = config_get(panel->config, NULL, "bottom_size")) == NULL
+			&& (p = config_get(panel->config, "", "size")) == NULL)
+		gtk_combo_box_set_active(GTK_COMBO_BOX(panel->pr_bottom_size),
+				0);
+	else
 		for(i = 0; i < cnt; i++)
 		{
 			if(strcmp(p, _panel_sizes[i].name) != 0)
 				continue;
 			gtk_combo_box_set_active(GTK_COMBO_BOX(
-						panel->pr_bottom_size), i);
+						panel->pr_bottom_size), i + 1);
 			break;
 		}
-	if((p = config_get(panel->config, "", "top_size")) != NULL
-			|| (p = config_get(panel->config, "", "size")) != NULL)
+	if((p = config_get(panel->config, NULL, "top_size")) == NULL
+			&& (p = config_get(panel->config, "", "size")) == NULL)
+		gtk_combo_box_set_active(GTK_COMBO_BOX(panel->pr_top_size), 0);
+	else
 		for(i = 0; i < cnt; i++)
 		{
 			if(strcmp(p, _panel_sizes[i].name) != 0)
 				continue;
 			gtk_combo_box_set_active(GTK_COMBO_BOX(
-						panel->pr_top_size), i);
+						panel->pr_top_size), i + 1);
 			break;
 		}
 	/* XXX applets should be known from Panel already */
@@ -656,13 +676,13 @@ static void _preferences_on_ok(gpointer data)
 
 	gtk_widget_hide(panel->pr_window);
 	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_bottom_size)))
-			>= 0 && i < cnt)
-		config_set(panel->config, NULL, "bottom_size",
-				_panel_sizes[i].name);
+			>= 0 && i <= cnt)
+		config_set(panel->config, NULL, "bottom_size", (i > 0)
+				? _panel_sizes[i - 1].name : NULL);
 	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_top_size)))
-			>= 0 && i < cnt)
-		config_set(panel->config, NULL, "top_size",
-				_panel_sizes[i].name);
+			>= 0 && i <= cnt)
+		config_set(panel->config, NULL, "top_size", (i > 0)
+				? _panel_sizes[i - 1].name : NULL);
 	/* XXX applets should be known from Panel already */
 	cnt = gtk_notebook_get_n_pages(GTK_NOTEBOOK(panel->pr_notebook));
 	for(i = 1; i < cnt; i++)

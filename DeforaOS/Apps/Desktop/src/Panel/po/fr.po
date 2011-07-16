@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-29 03:19+0200\n"
+"POT-Creation-Date: 2011-07-16 04:29+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:411 ../src/panel.c:416
+#: ../src/applets/battery.c:186 ../src/panel.c:419 ../src/panel.c:424
 #: ../src/run.c:210 ../src/run.c:216
 msgid "Error"
 msgstr "Erreur"
@@ -76,7 +76,7 @@ msgstr "GPS actif"
 msgid "GSM is enabled"
 msgstr "GSM actif"
 
-#: ../src/applets/lock.c:77 ../src/applets/main.c:319
+#: ../src/applets/lock.c:77 ../src/applets/main.c:320
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
@@ -84,32 +84,32 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:70 ../src/panel.c:826 ../src/panel.c:833
-#: ../src/panel.c:842
+#: ../src/applets/logout.c:70 ../src/panel.c:846 ../src/panel.c:853
+#: ../src/panel.c:862
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:135
+#: ../src/applets/main.c:136
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:301
+#: ../src/applets/main.c:302
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:307
+#: ../src/applets/main.c:308
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:325
+#: ../src/applets/main.c:326
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:332
+#: ../src/applets/main.c:333
 msgid "Suspend"
 msgstr "Suspendre"
 
-#: ../src/applets/main.c:337
+#: ../src/applets/main.c:338
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
@@ -168,48 +168,45 @@ msgstr "Périphérique réseau USB connecté"
 #: ../src/main.c:46
 msgid ""
 "Usage: panel [-m monitor][-bBsStx]\n"
-"  -B\tPlace the panel at both top and bottom of the screen\n"
-"  -b\tPlace the panel only at the bottom of the screen\n"
 "  -l\tUse icons the size of a large toolbar (default)\n"
 "  -m\tMonitor to use (default: 0)\n"
 "  -s\tUse icons the size of a small toolbar\n"
-"  -t\tPlace the panel only at the top of the screen\n"
 "  -x\tUse icons the size of menus\n"
 msgstr ""
 
 #: ../src/panel.c:101
-msgid "large"
-msgstr "grande"
+msgid "Large"
+msgstr "Grande"
 
 #: ../src/panel.c:103
-msgid "small"
-msgstr "petite"
+msgid "Small"
+msgstr "Petite"
 
 #: ../src/panel.c:105
-msgid "smaller"
-msgstr "très petite"
+msgid "Smaller"
+msgstr "Très petite"
 
-#: ../src/panel.c:517
+#: ../src/panel.c:525
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:533
+#: ../src/panel.c:541
 msgid "Top size:"
 msgstr "Taille du haut :"
 
-#: ../src/panel.c:554
+#: ../src/panel.c:565
 msgid "Bottom size:"
 msgstr "Taille du bas :"
 
-#: ../src/panel.c:575
+#: ../src/panel.c:590
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:769
+#: ../src/panel.c:789
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:812
+#: ../src/panel.c:832
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -220,7 +217,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:928
+#: ../src/panel.c:948
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -231,7 +228,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:933
+#: ../src/panel.c:953
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -242,11 +239,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:947 ../src/panel.c:954 ../src/panel.c:963
+#: ../src/panel.c:967 ../src/panel.c:974 ../src/panel.c:983
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:953
+#: ../src/panel.c:973
 msgid "Restart"
 msgstr "Redémarrer"
 

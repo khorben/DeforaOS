@@ -49,9 +49,7 @@ typedef struct _PanelAppletHelper
 typedef enum _PanelAppletPosition
 {
 	PANEL_APPLET_POSITION_START = 0,
-	PANEL_APPLET_POSITION_END,
-	PANEL_APPLET_POSITION_FIRST,
-	PANEL_APPLET_POSITION_LAST
+	PANEL_APPLET_POSITION_END
 } PanelAppletPosition;
 
 struct _PanelApplet

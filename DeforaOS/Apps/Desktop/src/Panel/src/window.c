@@ -158,16 +158,6 @@ void panel_window_append(PanelWindow * panel, GtkWidget * widget,
 			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, expand,
 					fill, 0);
 			break;
-		case PANEL_APPLET_POSITION_FIRST:
-			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, expand,
-					fill, 0);
-			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
-			break;
-		case PANEL_APPLET_POSITION_LAST:
-			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, expand,
-					fill, 0);
-			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
-			break;
 		case PANEL_APPLET_POSITION_START:
 			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, expand,
 					fill, 0);
