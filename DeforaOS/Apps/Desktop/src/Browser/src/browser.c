@@ -2429,7 +2429,7 @@ static void _browser_on_plugin_combo_change(gpointer data)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->pl_store), &iter,
 			BPC_BROWSERPLUGIN, &bp, BPC_WIDGET, &widget, -1);
-	if(bp->refresh != NULL)
+	if(bp->refresh != NULL && browser->current != NULL)
 		bp->refresh(bp, browser->current->data);
 	gtk_widget_show(widget);
 }
