@@ -2415,6 +2415,7 @@ static void _browser_on_plugin_combo_change(gpointer data)
 	GtkTreeIter iter;
 	gboolean valid;
 	GtkWidget * widget;
+	BrowserPlugin * bp;
 
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
@@ -2426,7 +2427,9 @@ static void _browser_on_plugin_combo_change(gpointer data)
 	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
 				&iter) != TRUE)
 		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->pl_store), &iter, BPC_WIDGET,
-				&widget, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->pl_store), &iter,
+			BPC_BROWSERPLUGIN, &bp, BPC_WIDGET, &widget, -1);
+	if(bp->refresh != NULL)
+		bp->refresh(bp, browser->current->data);
 	gtk_widget_show(widget);
 }

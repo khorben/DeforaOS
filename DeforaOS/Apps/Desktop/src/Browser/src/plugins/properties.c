@@ -41,6 +41,7 @@ BrowserPlugin plugin =
 	"Properties",
 	_properties_init,
 	_properties_destroy,
+	NULL,
 	NULL
 };
 

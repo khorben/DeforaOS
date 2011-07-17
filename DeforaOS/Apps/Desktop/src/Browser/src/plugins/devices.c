@@ -45,6 +45,7 @@ BrowserPlugin plugin =
 	"Devices",
 	_devices_init,
 	_devices_destroy,
+	NULL,
 	NULL
 };
 

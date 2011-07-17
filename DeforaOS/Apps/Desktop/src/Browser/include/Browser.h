@@ -40,6 +40,7 @@ struct _BrowserPlugin
 	char const * name;
 	GtkWidget * (*init)(BrowserPlugin * plugin);
 	void (*destroy)(BrowserPlugin * plugin);
+	void (*refresh)(BrowserPlugin * plugin, char const * path);
 	void * priv;
 };
 
