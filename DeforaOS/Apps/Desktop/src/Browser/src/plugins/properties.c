@@ -24,6 +24,7 @@
 /* types */
 typedef struct _Properties
 {
+	GtkWidget * vbox;
 } Properties;
 
 
@@ -52,10 +53,13 @@ static GtkWidget * _properties_init(BrowserPlugin * plugin)
 	Properties * properties;
 
 	if((properties = object_new(sizeof(*properties))) == NULL)
-		return 1;
+		return NULL;
 	plugin->priv = properties;
+	properties->vbox = gtk_vbox_new(FALSE, 4);
 	/* FIXME really implement */
-	return gtk_label_new("Folder");
+	gtk_box_pack_start(GTK_BOX(properties->vbox), gtk_label_new("Folder"),
+			FALSE, TRUE, 0);
+	return properties->vbox;
 }
 
 
