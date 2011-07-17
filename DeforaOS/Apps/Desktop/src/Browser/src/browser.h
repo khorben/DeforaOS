@@ -22,6 +22,7 @@
 # include <gtk/gtk.h>
 # include <System.h>
 # include <Desktop.h>
+# include "Browser.h"
 
 
 /* Browser */
@@ -86,7 +87,7 @@ typedef struct _BrowserPrefs
 	gboolean show_hidden_files;
 } BrowserPrefs;
 
-typedef struct _Browser
+struct _Browser
 {
 	/* config */
 	Config * config;
@@ -113,6 +114,9 @@ typedef struct _Browser
 	GList * selection;
 	gboolean selection_cut;
 
+	/* helper */
+	BrowserPluginHelper pl_helper;
+
 	/* widgets */
 	GtkIconTheme * theme;
 	GdkPixbuf * pb_file_24;
@@ -137,6 +141,10 @@ typedef struct _Browser
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
+	/* plugins */
+	GtkListStore * pl_store;
+	GtkWidget * pl_combo;
+	GtkWidget * pl_view;
 	/* preferences */
 	GtkWidget * pr_window;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -150,7 +158,7 @@ typedef struct _Browser
 	GtkWidget * pr_mime_view;
 	/* about */
 	GtkWidget * ab_window;
-} Browser;
+};
 
 
 /* variables */
@@ -177,6 +185,8 @@ int browser_config_save(Browser * browser);
 void browser_focus_location(Browser * browser);
 
 void browser_go_home(Browser * browser);
+
+int browser_load(Browser * browser, char const * plugin);
 
 void browser_open(Browser * browser, char const * path);
 void browser_open_with(Browser * browser, char const * path);

@@ -36,6 +36,13 @@ static char const _license[] =
 #define _(string) gettext(string)
 #define N_(string) (string)
 
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
+
 
 /* constants */
 #define IDLE_LOOP_ICON_CNT	16	/* number of icons added in a loop */
@@ -52,6 +59,16 @@ enum
 };
 #define MI_COL_LAST MI_COL_NAME
 #define MI_COL_COUNT (MI_COL_LAST + 1)
+
+enum _BrowserPluginColumn
+{
+	BPC_NAME = 0,
+	BPC_PLUGIN,
+	BPC_BROWSERPLUGIN,
+	BPC_WIDGET
+};
+#define BPC_LAST BPC_WIDGET
+#define BPC_COUNT (BPC_LAST + 1)
 
 
 /* constants */
@@ -202,10 +219,16 @@ static int _config_save_boolean(Config * config, char const * variable,
 unsigned int browser_cnt = 0;
 
 
+/* functions */
+/* callbacks */
+static void _browser_on_plugin_combo_change(gpointer data);
+
+
 /* public */
 /* functions */
 /* browser_new */
 static gboolean _new_idle(gpointer data);
+static void _idle_load_plugins(Browser * browser);
 static int _new_pixbufs(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
 
@@ -220,6 +243,8 @@ Browser * browser_new(char const * directory)
 	GtkWidget * toolbar;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
+	GtkWidget * hpaned;
+	GtkCellRenderer * renderer;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GtkWidget * menu;
 	GtkWidget * menuitem;
@@ -265,6 +290,9 @@ Browser * browser_new(char const * directory)
 	/* selection */
 	browser->selection = NULL;
 	browser->selection_cut = 0;
+
+	/* plugins */
+	browser->pl_helper.browser = browser;
 
 	/* widgets */
 	group = gtk_accel_group_new();
@@ -363,11 +391,32 @@ Browser * browser_new(char const * directory)
 				on_path_activate), browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+	/* paned */
+	hpaned = gtk_hpaned_new();
+	/* plugins */
+	widget = gtk_vbox_new(FALSE, 4);
+	gtk_container_border_width(GTK_CONTAINER(widget), 4);
+	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
+	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
+				browser->pl_store));
+	g_signal_connect_swapped(G_OBJECT(browser->pl_combo), "changed",
+			G_CALLBACK(_browser_on_plugin_combo_change), browser);
+	renderer = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->pl_combo),
+			renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->pl_combo),
+			renderer, "text", BPC_NAME, NULL);
+	gtk_box_pack_start(GTK_BOX(widget), browser->pl_combo, FALSE, TRUE, 0);
+	browser->pl_view = gtk_vbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(widget), browser->pl_view, TRUE, TRUE, 0);
+	gtk_paned_add1(GTK_PANED(hpaned), widget);
 	/* view */
 	browser->scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(browser->scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start(GTK_BOX(vbox), browser->scrolled, TRUE, TRUE, 0);
+	gtk_paned_add2(GTK_PANED(hpaned), browser->scrolled);
+	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
 	/* statusbar */
 	browser->statusbar = gtk_statusbar_new();
 	browser->statusbar_id = 0;
@@ -410,11 +459,40 @@ static gboolean _new_idle(gpointer data)
 {
 	Browser * browser = data;
 
+	_idle_load_plugins(browser);
 	if(browser->current == NULL)
 		browser_go_home(browser);
 	else
 		browser_set_location(browser, browser->current->data);
 	return FALSE;
+}
+
+static void _idle_load_plugins(Browser * browser)
+{
+	char const * plugins;
+	char * p;
+	char * q;
+	size_t i;
+
+	if((plugins = config_get(browser->config, NULL, "plugins")) == NULL)
+		return;
+	if((p = strdup(plugins)) == NULL)
+		return; /* XXX report error */
+	for(q = p, i = 0;;)
+	{
+		if(q[i] == '\0')
+		{
+			browser_load(browser, q);
+			break;
+		}
+		if(q[i++] != ',')
+			continue;
+		q[i - 1] = '\0';
+		browser_load(browser, q);
+		q += i;
+		i = 0;
+	}
+	free(p);
 }
 
 static int _new_pixbufs(Browser * browser)
@@ -728,7 +806,40 @@ void browser_go_home(Browser * browser)
 	if((home = getenv("HOME")) == NULL)
 		home = g_get_home_dir();
 	/* XXX use open while set_location should only update the toolbar? */
-	browser_set_location(browser, home != NULL ? home : "/");
+	browser_set_location(browser, (home != NULL) ? home : "/");
+}
+
+
+/* browser_load */
+int browser_load(Browser * browser, char const * plugin)
+{
+	Plugin * p;
+	BrowserPlugin * bp;
+	GtkWidget * widget;
+	GtkTreeIter iter;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
+#endif
+	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
+		return -browser_error(NULL, error_get(), 1);
+	if((bp = plugin_lookup(p, "plugin")) == NULL)
+	{
+		plugin_delete(p);
+		return -browser_error(NULL, error_get(), 1);
+	}
+	bp->helper = &browser->pl_helper;
+	if(bp->init == NULL || (widget = bp->init(bp)) == NULL)
+	{
+		plugin_delete(p);
+		return -browser_error(NULL, error_get(), 1);
+	}
+	gtk_list_store_append(browser->pl_store, &iter);
+	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, bp->name,
+			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
+			BPC_WIDGET, widget, -1);
+	gtk_box_pack_start(GTK_BOX(browser->pl_view), widget, TRUE, TRUE, 0);
+	return 0;
 }
 
 
@@ -2266,4 +2377,12 @@ static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value)
 {
 	return config_set(config, "", variable, value ? "1" : "0");
+}
+
+
+/* callbacks */
+/* browser_on_plugin_combo */
+static void _browser_on_plugin_combo_change(gpointer data)
+{
+	/* FIXME implement */
 }

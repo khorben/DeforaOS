@@ -1,6 +1,6 @@
 PACKAGE	= Browser
 VERSION	= 0.3.4
-SUBDIRS	= data po src tools
+SUBDIRS	= data include po src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -30,6 +30,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-icons.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-list.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Browser.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
@@ -57,6 +60,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/desktop.h \
 		$(PACKAGE)-$(VERSION)/src/desktopicon.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/plugins/properties.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/dirtree.c \
 		$(PACKAGE)-$(VERSION)/tools/iconlist.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \

@@ -1,9 +1,10 @@
+SUBDIRS	= plugins
 TARGETS	= browser copy delete desktop desktop-settings move open properties view
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
+CPPFLAGSF= -I ../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
@@ -14,7 +15,10 @@ MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 browser_OBJS = browser.o callbacks.o main.o
 browser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -80,7 +84,7 @@ view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(view_LDFLAGS)
 
 browser.o: browser.c callbacks.h browser.h ../config.h
-	$(CC) $(browser_CFLAGS) -c browser.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(browser_CFLAGS) -c browser.c
 
 callbacks.o: callbacks.c browser.h callbacks.h common.c
 	$(CC) $(browser_CFLAGS) -c callbacks.c
@@ -116,12 +120,16 @@ view.o: view.c
 	$(CC) $(view_CFLAGS) -c view.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(desktop-settings_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(desktop-settings_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- browser $(DESTDIR)$(BINDIR)/browser
 	$(MKDIR) $(DESTDIR)$(BINDIR)
@@ -142,6 +150,7 @@ install: $(TARGETS)
 	$(INSTALL) -m 0755 -- view $(DESTDIR)$(BINDIR)/view
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(BINDIR)/browser
 	$(RM) -- $(DESTDIR)$(BINDIR)/copy
 	$(RM) -- $(DESTDIR)$(BINDIR)/delete
@@ -152,4 +161,4 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/properties
 	$(RM) -- $(DESTDIR)$(BINDIR)/view
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall
