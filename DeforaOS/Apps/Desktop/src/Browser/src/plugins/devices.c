@@ -16,6 +16,10 @@
 
 
 #include <System.h>
+#ifdef __NetBSD__
+# include <sys/types.h>
+# include <sys/statvfs.h>
+#endif
 #include "Browser.h"
 
 
@@ -106,12 +110,25 @@ static gboolean _devices_on_idle(gpointer data)
 	BrowserPlugin * plugin = data;
 	Devices * devices = plugin->priv;
 	GtkTreeIter iter;
+	struct statvfs * mnt;
+	int res;
+	int i;
 
 	devices->source = 0;
+#ifdef __NetBSD__
+	if((res = getmntinfo(&mnt, ST_WAIT)) <= 0)
+		return FALSE;
+	for(i = 0; i < res; i++)
+	{
+		gtk_list_store_append(devices->store, &iter);
+		gtk_list_store_set(devices->store, &iter, 0, mnt[i].f_mntonname,
+				1, mnt[i].f_mntonname, -1);
+	}
+#else
 	gtk_list_store_append(devices->store, &iter);
 	gtk_list_store_set(devices->store, &iter, 0, "Root filesystem", 1, "/",
 			-1);
-	/* FIXME implement the rest */
+#endif
 	return FALSE;
 }
 
