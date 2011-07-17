@@ -24,7 +24,9 @@
 /* types */
 typedef struct _Devices
 {
+	guint source;
 	GtkWidget * window;
+	GtkListStore * store;
 	GtkWidget * view;
 } Devices;
 
@@ -34,6 +36,7 @@ static GtkWidget * _devices_init(BrowserPlugin * plugin);
 static void _devices_destroy(BrowserPlugin * plugin);
 
 /* callbacks */
+static gboolean _devices_on_idle(gpointer data);
 static void _devices_on_selection_changed(gpointer data);
 
 
@@ -56,6 +59,8 @@ BrowserPlugin plugin =
 static GtkWidget * _devices_init(BrowserPlugin * plugin)
 {
 	Devices * devices;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
 
 	if((devices = object_new(sizeof(*devices))) == NULL)
@@ -64,12 +69,20 @@ static GtkWidget * _devices_init(BrowserPlugin * plugin)
 	devices->window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(devices->window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	devices->view = gtk_tree_view_new();
+	devices->store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	devices->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				devices->store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(devices->view), FALSE);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Name", renderer,
+			"text", 0, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(devices->view), column);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(devices->view));
 	g_signal_connect_swapped(G_OBJECT(treesel), "changed", G_CALLBACK(
 				_devices_on_selection_changed), plugin);
 	gtk_container_add(GTK_CONTAINER(devices->window), devices->view);
 	gtk_widget_show_all(devices->window);
+	devices->source = g_idle_add(_devices_on_idle, plugin);
 	return devices->window;
 }
 
@@ -79,17 +92,44 @@ static void _devices_destroy(BrowserPlugin * plugin)
 {
 	Devices * devices = plugin->priv;
 
+	if(devices->source != 0)
+		g_source_remove(devices->source);
 	gtk_widget_destroy(devices->view);
 	object_delete(devices);
 }
 
 
 /* callbacks */
+/* devices_on_idle */
+static gboolean _devices_on_idle(gpointer data)
+{
+	BrowserPlugin * plugin = data;
+	Devices * devices = plugin->priv;
+	GtkTreeIter iter;
+
+	devices->source = 0;
+	gtk_list_store_append(devices->store, &iter);
+	gtk_list_store_set(devices->store, &iter, 0, "Root filesystem", 1, "/",
+			-1);
+	/* FIXME implement the rest */
+	return FALSE;
+}
+
+
 /* devices_on_selection_changed */
 static void _devices_on_selection_changed(gpointer data)
 {
 	BrowserPlugin * plugin = data;
+	Devices * devices = plugin->priv;
+	GtkTreeSelection * treesel;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gchar * location;
 
-	/* FIXME really implement */
-	plugin->helper->set_location(plugin->helper->browser, "/mnt");
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(devices->view));
+	if(gtk_tree_selection_get_selected(treesel, &model, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, 1, &location, -1);
+	plugin->helper->set_location(plugin->helper->browser, location);
+	g_free(location);
 }
