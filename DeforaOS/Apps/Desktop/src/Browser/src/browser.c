@@ -394,8 +394,8 @@ Browser * browser_new(char const * directory)
 	/* paned */
 	hpaned = gtk_hpaned_new();
 	/* plugins */
-	widget = gtk_vbox_new(FALSE, 4);
-	gtk_container_border_width(GTK_CONTAINER(widget), 4);
+	browser->pl_view = gtk_vbox_new(FALSE, 4);
+	gtk_container_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
 			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
 	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
@@ -407,10 +407,13 @@ Browser * browser_new(char const * directory)
 			renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->pl_combo),
 			renderer, "text", BPC_NAME, NULL);
-	gtk_box_pack_start(GTK_BOX(widget), browser->pl_combo, FALSE, TRUE, 0);
-	browser->pl_view = gtk_vbox_new(FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(widget), browser->pl_view, TRUE, TRUE, 0);
-	gtk_paned_add1(GTK_PANED(hpaned), widget);
+	gtk_box_pack_start(GTK_BOX(browser->pl_view), browser->pl_combo, FALSE,
+			TRUE, 0);
+	browser->pl_box = gtk_vbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(browser->pl_view), browser->pl_box, TRUE,
+			TRUE, 0);
+	gtk_paned_add1(GTK_PANED(hpaned), browser->pl_view);
+	gtk_widget_set_no_show_all(browser->pl_view, TRUE);
 	/* view */
 	browser->scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(browser->scrolled),
@@ -605,6 +608,21 @@ Browser * browser_new_copy(Browser * browser)
 /* browser_delete */
 void browser_delete(Browser * browser)
 {
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	BrowserPlugin * bp;
+	Plugin * plugin;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, BPC_PLUGIN, &plugin,
+				BPC_BROWSERPLUGIN, &bp, -1);
+		if(bp->destroy != NULL)
+			bp->destroy(bp);
+		plugin_delete(plugin);
+	}
 	if(browser->config != NULL)
 		config_delete(browser->config);
 	gtk_widget_hide(browser->window);
@@ -838,7 +856,13 @@ int browser_load(Browser * browser, char const * plugin)
 	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, bp->name,
 			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
 			BPC_WIDGET, widget, -1);
-	gtk_box_pack_start(GTK_BOX(browser->pl_view), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
+	if(gtk_widget_get_no_show_all(browser->pl_view) == TRUE)
+	{
+		gtk_combo_box_set_active(GTK_COMBO_BOX(browser->pl_combo), 0);
+		gtk_widget_set_no_show_all(browser->pl_view, FALSE);
+		gtk_widget_show_all(browser->pl_view);
+	}
 	return 0;
 }
 
@@ -1347,8 +1371,8 @@ static int _current_loop(Browser * browser)
 			g_free(path);
 		return 0;
 	}
-	valid = gtk_tree_model_get_iter_first(model, &iter);
-	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, BR_COL_INODE, &inode, -1);
 		if(inode == lst.st_ino)
@@ -2384,5 +2408,23 @@ static int _config_save_boolean(Config * config, char const * variable,
 /* browser_on_plugin_combo */
 static void _browser_on_plugin_combo_change(gpointer data)
 {
-	/* FIXME implement */
+	Browser * browser = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	GtkWidget * widget;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->pl_store), &iter,
+				BPC_WIDGET, &widget, -1);
+		gtk_widget_hide(widget);
+	}
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
+				&iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->pl_store), &iter, BPC_WIDGET,
+				&widget, -1);
+	gtk_widget_show(widget);
 }

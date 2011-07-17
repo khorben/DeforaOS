@@ -24,7 +24,7 @@
 /* types */
 typedef struct _Properties
 {
-	GtkWidget * vbox;
+	GtkWidget * view;
 } Properties;
 
 
@@ -51,15 +51,17 @@ BrowserPlugin plugin =
 static GtkWidget * _properties_init(BrowserPlugin * plugin)
 {
 	Properties * properties;
+	GtkWidget * widget;
 
 	if((properties = object_new(sizeof(*properties))) == NULL)
 		return NULL;
 	plugin->priv = properties;
-	properties->vbox = gtk_vbox_new(FALSE, 4);
+	properties->view = gtk_vbox_new(FALSE, 4);
 	/* FIXME really implement */
-	gtk_box_pack_start(GTK_BOX(properties->vbox), gtk_label_new("Folder"),
-			FALSE, TRUE, 0);
-	return properties->vbox;
+	widget = gtk_label_new("Folder");
+	gtk_box_pack_start(GTK_BOX(properties->view), widget, FALSE, TRUE, 0);
+	gtk_widget_show(widget);
+	return properties->view;
 }
 
 
@@ -68,5 +70,6 @@ static void _properties_destroy(BrowserPlugin * plugin)
 {
 	Properties * properties = plugin->priv;
 
+	gtk_widget_destroy(properties->view);
 	object_delete(properties);
 }

@@ -142,9 +142,10 @@ struct _Browser
 	GtkWidget * statusbar;
 	guint statusbar_id;
 	/* plugins */
+	GtkWidget * pl_view;
 	GtkListStore * pl_store;
 	GtkWidget * pl_combo;
-	GtkWidget * pl_view;
+	GtkWidget * pl_box;
 	/* preferences */
 	GtkWidget * pr_window;
 #if GTK_CHECK_VERSION(2, 6, 0)
