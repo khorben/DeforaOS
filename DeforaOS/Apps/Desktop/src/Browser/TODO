@@ -1,6 +1,4 @@
 - fix displaying/refreshing desktop icons in category view
-- fix category for audio/multimedia applications on the desktop
-- no longer display empty categories on the desktop
 
 [common.c]
 - comply with http://www.freedesktop.org/wiki/Specifications/XDND:
