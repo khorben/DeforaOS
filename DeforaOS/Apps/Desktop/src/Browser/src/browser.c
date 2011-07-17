@@ -293,6 +293,7 @@ Browser * browser_new(char const * directory)
 
 	/* plugins */
 	browser->pl_helper.browser = browser;
+	browser->pl_helper.set_location = browser_set_location;
 
 	/* widgets */
 	group = gtk_accel_group_new();
@@ -852,6 +853,7 @@ int browser_load(Browser * browser, char const * plugin)
 		plugin_delete(p);
 		return -browser_error(NULL, error_get(), 1);
 	}
+	gtk_widget_hide(widget);
 	gtk_list_store_append(browser->pl_store, &iter);
 	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, bp->name,
 			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,

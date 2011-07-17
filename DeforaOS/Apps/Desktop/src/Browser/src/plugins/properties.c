@@ -60,7 +60,7 @@ static GtkWidget * _properties_init(BrowserPlugin * plugin)
 	/* FIXME really implement */
 	widget = gtk_label_new("Folder");
 	gtk_box_pack_start(GTK_BOX(properties->view), widget, FALSE, TRUE, 0);
-	gtk_widget_show(widget);
+	gtk_widget_show_all(properties->view);
 	return properties->view;
 }
 
