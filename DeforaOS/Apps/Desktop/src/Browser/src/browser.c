@@ -2369,7 +2369,7 @@ static int _config_load_boolean(Config * config, char const * variable,
 {
 	char const * str;
 
-	if((str = config_get(config, "", variable)) == NULL)
+	if((str = config_get(config, NULL, variable)) == NULL)
 		return -1;
 	if(strcmp(str, "0") == 0)
 		*value = FALSE;
@@ -2388,7 +2388,7 @@ static int _config_load_string(Config * config, char const * variable,
 	char const * str;
 	char * p;
 
-	if((str = config_get(config, "", variable)) == NULL)
+	if((str = config_get(config, NULL, variable)) == NULL)
 		return 0;
 	if((p = strdup(str)) == NULL)
 		return -1;
@@ -2402,7 +2402,7 @@ static int _config_load_string(Config * config, char const * variable,
 static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value)
 {
-	return config_set(config, "", variable, value ? "1" : "0");
+	return config_set(config, NULL, variable, value ? "1" : "0");
 }
 
 
