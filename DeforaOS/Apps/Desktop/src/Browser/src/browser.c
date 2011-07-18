@@ -394,6 +394,7 @@ Browser * browser_new(char const * directory)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* paned */
 	hpaned = gtk_hpaned_new();
+	gtk_paned_set_position(GTK_PANED(hpaned), 100);
 	/* plugins */
 	browser->pl_view = gtk_vbox_new(FALSE, 4);
 	gtk_container_border_width(GTK_CONTAINER(browser->pl_view), 4);
