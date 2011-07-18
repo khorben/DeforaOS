@@ -157,6 +157,8 @@ struct _Browser
 	GtkWidget * pr_hidden;
 	GtkListStore * pr_mime_store;
 	GtkWidget * pr_mime_view;
+	GtkListStore * pr_plugin_store;
+	GtkWidget * pr_plugin_view;
 	/* about */
 	GtkWidget * ab_window;
 };

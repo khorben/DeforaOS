@@ -2027,6 +2027,18 @@ void browser_show_preferences(Browser * browser)
 	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox,
 			gtk_label_new_with_mnemonic(_("_File associations")));
+	/* plug-ins tab */
+	/* FIXME really implement */
+	browser->pr_plugin_store = gtk_list_store_new(3, G_TYPE_BOOLEAN,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	browser->pr_plugin_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				browser->pr_plugin_store));
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_container_add(GTK_CONTAINER(widget), browser->pr_plugin_view);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
+			gtk_label_new_with_mnemonic(_("_Plug-ins")));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(browser->pr_window));
 #else
