@@ -172,6 +172,7 @@ target_bootstrap()
 _bootstrap_configure()
 {
 	C="$CPPFLAGS"
+	CF="$CFLAGSF"
 	L="$LDFLAGSF"
 	CPPFLAGS="-I ../../../../../System/src/libSystem/include"
 	CFLAGSF="-W"
@@ -184,6 +185,7 @@ _bootstrap_configure()
 	./Apps/Devel/src/configure/src/configure -v -p "$PREFIX" \
 			"System/src" "Apps"			|| return 2
 	CPPFLAGS="$C"
+	CFLAGSF="$CF"
 	LDFLAGSF="$L"
 }
 
