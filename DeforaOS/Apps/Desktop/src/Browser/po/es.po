@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-18 01:01+0200\n"
+"POT-Creation-Date: 2011-07-18 02:08+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -165,19 +165,19 @@ msgstr ""
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:329 ../src/browser.c:1965 ../src/browser.c:1973
+#: ../src/browser.c:329 ../src/browser.c:1979 ../src/browser.c:1987
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:336 ../src/browser.c:1966 ../src/browser.c:1974
+#: ../src/browser.c:336 ../src/browser.c:1980 ../src/browser.c:1988
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:343 ../src/browser.c:1967 ../src/browser.c:1975
+#: ../src/browser.c:343 ../src/browser.c:1981 ../src/browser.c:1989
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:350 ../src/browser.c:1969 ../src/browser.c:1976
+#: ../src/browser.c:350 ../src/browser.c:1983 ../src/browser.c:1990
 msgid "Thumbnails"
 msgstr ""
 
@@ -193,101 +193,113 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:901 ../src/desktopicon.c:861 ../src/view.c:145
+#: ../src/browser.c:902 ../src/desktopicon.c:861 ../src/view.c:145
 #: ../src/view.c:420
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:993 ../src/browser.c:1367
+#: ../src/browser.c:908
+msgid "Executable files"
+msgstr ""
+
+#: ../src/browser.c:913
+msgid "Shell scripts"
+msgstr ""
+
+#: ../src/browser.c:917 ../src/desktop.c:661
+msgid "All files"
+msgstr ""
+
+#: ../src/browser.c:1007 ../src/browser.c:1381
 msgid "Refreshing folder: "
 msgstr ""
 
-#: ../src/browser.c:1014
+#: ../src/browser.c:1028
 #, c-format
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1669
+#: ../src/browser.c:1683
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1671
+#: ../src/browser.c:1685
 msgid "Size"
 msgstr ""
 
-#: ../src/browser.c:1673
+#: ../src/browser.c:1687
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1675
+#: ../src/browser.c:1689
 msgid "Group"
 msgstr ""
 
-#: ../src/browser.c:1677
+#: ../src/browser.c:1691
 msgid "Date"
 msgstr ""
 
-#: ../src/browser.c:1679
+#: ../src/browser.c:1693
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1943
+#: ../src/browser.c:1957
 msgid "File browser preferences"
 msgstr "File browser preferencias"
 
-#: ../src/browser.c:1959
+#: ../src/browser.c:1973
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:1983
+#: ../src/browser.c:1997
 msgid "_Alternate row colors in detailed view"
 msgstr ""
 
-#: ../src/browser.c:1987
+#: ../src/browser.c:2001
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/browser.c:1990
+#: ../src/browser.c:2004
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/browser.c:1993
+#: ../src/browser.c:2007
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:1996
+#: ../src/browser.c:2010
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:2005 ../src/browser.c:2010
+#: ../src/browser.c:2019 ../src/browser.c:2024
 msgid "Type"
 msgstr ""
 
-#: ../src/browser.c:2031
+#: ../src/browser.c:2045
 msgid "_File associations"
 msgstr ""
 
-#: ../src/browser.c:2081
+#: ../src/browser.c:2095
 msgid "Edit file association"
 msgstr ""
 
-#: ../src/browser.c:2094
+#: ../src/browser.c:2108
 msgid "Type:"
 msgstr ""
 
-#: ../src/browser.c:2103
+#: ../src/browser.c:2117
 msgid "Open with:"
 msgstr ""
 
-#: ../src/browser.c:2114
+#: ../src/browser.c:2128
 msgid "View with:"
 msgstr ""
 
-#: ../src/browser.c:2125
+#: ../src/browser.c:2139
 msgid "Edit with:"
 msgstr ""
 
-#: ../src/browser.c:2269
+#: ../src/browser.c:2283
 msgid "Refreshing folder..."
 msgstr ""
 
@@ -478,10 +490,6 @@ msgstr ""
 
 #: ../src/desktop.c:651
 msgid "Picture files"
-msgstr ""
-
-#: ../src/desktop.c:661
-msgid "All files"
 msgstr ""
 
 #: ../src/desktop.c:669
