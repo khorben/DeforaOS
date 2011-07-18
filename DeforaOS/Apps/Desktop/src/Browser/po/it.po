@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-18 02:08+0200\n"
+"POT-Creation-Date: 2011-07-18 02:12+0200\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -194,19 +194,19 @@ msgid "Error"
 msgstr ""
 
 #: ../src/browser.c:902 ../src/desktopicon.c:861 ../src/view.c:145
-#: ../src/view.c:420
+#: ../src/view.c:421
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:908
+#: ../src/browser.c:908 ../src/view.c:427
 msgid "Executable files"
 msgstr ""
 
-#: ../src/browser.c:913
+#: ../src/browser.c:913 ../src/view.c:432
 msgid "Shell scripts"
 msgstr ""
 
-#: ../src/browser.c:917 ../src/desktop.c:661
+#: ../src/browser.c:917 ../src/desktop.c:661 ../src/view.c:436
 msgid "All files"
 msgstr ""
 
@@ -682,10 +682,10 @@ msgstr ""
 msgid "View file..."
 msgstr ""
 
-#: ../src/view.c:408 ../src/view.c:501
+#: ../src/view.c:408 ../src/view.c:515
 msgid "Could not edit file"
 msgstr ""
 
-#: ../src/view.c:515
+#: ../src/view.c:529
 msgid "Usage: view file...\n"
 msgstr ""
