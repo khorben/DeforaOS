@@ -1221,7 +1221,7 @@ static void _insert_dir(Browser * browser, GdkPixbuf ** icon_24,
 #endif
 		dev_t dev)
 {
-	char * rmt = "folder-remote";
+	char * rmt = "mount-point";
 
 	if(browser->refresh_dev == dev)
 	{
