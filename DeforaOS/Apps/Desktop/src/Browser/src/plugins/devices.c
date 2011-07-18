@@ -177,8 +177,8 @@ static void _refresh_add(Devices * devices, char const * name,
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\", \"%s\")\n", __func__, name,
-			mountpoint, filesystem);
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\", \"%s\", \"%s\")\n", __func__,
+			name, device, mountpoint, filesystem);
 #endif
 	for(i = 0; i < sizeof(ignore) / sizeof(*ignore); i++)
 		if(strcmp(ignore[i], filesystem) == 0)
