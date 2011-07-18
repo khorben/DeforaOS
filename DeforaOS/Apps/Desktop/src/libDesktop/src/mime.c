@@ -429,7 +429,10 @@ static GdkPixbuf * _mime_icons_size(Mime * mime, char const * type,
 	static char buf[256] = "gnome-mime-";
 	char * p;
 	GtkIconLookupFlags flags = GTK_ICON_LOOKUP_USE_BUILTIN
-		| GTK_ICON_LOOKUP_GENERIC_FALLBACK;
+#if GTK_CHECK_VERSION(2, 12, 0)
+		| GTK_ICON_LOOKUP_GENERIC_FALLBACK
+#endif
+		;
 
 	strncpy(&buf[11], type, sizeof(buf) - 11);
 	buf[sizeof(buf) - 1] = '\0';
