@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-18 16:34+0200\n"
+"POT-Creation-Date: 2011-07-19 01:53+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -165,19 +165,19 @@ msgstr ""
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:329 ../src/browser.c:1963 ../src/browser.c:1971
+#: ../src/browser.c:329 ../src/browser.c:1964 ../src/browser.c:1972
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:336 ../src/browser.c:1964 ../src/browser.c:1972
+#: ../src/browser.c:336 ../src/browser.c:1965 ../src/browser.c:1973
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:343 ../src/browser.c:1965 ../src/browser.c:1973
+#: ../src/browser.c:343 ../src/browser.c:1966 ../src/browser.c:1974
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:350 ../src/browser.c:1967 ../src/browser.c:1974
+#: ../src/browser.c:350 ../src/browser.c:1968 ../src/browser.c:1975
 msgid "Thumbnails"
 msgstr ""
 
@@ -243,67 +243,75 @@ msgstr "Datum"
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1941
+#: ../src/browser.c:1942
 msgid "File browser preferences"
 msgstr "File browser Einstellungen"
 
-#: ../src/browser.c:1957
+#: ../src/browser.c:1958
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:1981
+#: ../src/browser.c:1982
 msgid "_Alternate row colors in detailed view"
 msgstr ""
 
-#: ../src/browser.c:1985
+#: ../src/browser.c:1986
 msgid "_Confirm before deletion"
 msgstr "_Bestätigen vor löschung"
 
-#: ../src/browser.c:1988
+#: ../src/browser.c:1989
 msgid "Sort _folders first"
 msgstr "List _Ordner zuerst"
 
-#: ../src/browser.c:1991
+#: ../src/browser.c:1992
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:1994
+#: ../src/browser.c:1995
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:2003 ../src/browser.c:2008
+#: ../src/browser.c:2009
 msgid "Type"
 msgstr ""
 
-#: ../src/browser.c:2029
+#: ../src/browser.c:2030
 msgid "_File associations"
 msgstr ""
 
-#: ../src/browser.c:2041
+#: ../src/browser.c:2039
+msgid "Enabled"
+msgstr ""
+
+#: ../src/browser.c:2047
+msgid "Name"
+msgstr ""
+
+#: ../src/browser.c:2060
 msgid "_Plug-ins"
 msgstr ""
 
-#: ../src/browser.c:2091
+#: ../src/browser.c:2151
 msgid "Edit file association"
 msgstr ""
 
-#: ../src/browser.c:2104
+#: ../src/browser.c:2164
 msgid "Type:"
 msgstr ""
 
-#: ../src/browser.c:2113
+#: ../src/browser.c:2173
 msgid "Open with:"
 msgstr "Offnen mit:"
 
-#: ../src/browser.c:2124
+#: ../src/browser.c:2184
 msgid "View with:"
 msgstr ""
 
-#: ../src/browser.c:2135
+#: ../src/browser.c:2195
 msgid "Edit with:"
 msgstr ""
 
-#: ../src/browser.c:2296
+#: ../src/browser.c:2356
 msgid "Refreshing folder..."
 msgstr "Aktualisierung..."
 

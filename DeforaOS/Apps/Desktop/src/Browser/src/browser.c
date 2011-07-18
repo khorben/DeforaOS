@@ -1914,6 +1914,7 @@ static void _view_thumbnails(Browser * browser)
 
 /* browser_show_preferences */
 static void _preferences_set(Browser * browser);
+static void _preferences_set_plugins(Browser * browser);
 /* callbacks */
 static void _preferences_on_mime_edit(gpointer data);
 static void _preferences_on_mime_foreach(void * data, char const * name,
@@ -2000,7 +2001,7 @@ void browser_show_preferences(Browser * browser)
 				browser->pr_mime_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->pr_mime_view),
 			FALSE);
-	column = gtk_tree_view_column_new_with_attributes(_("Type"),
+	column = gtk_tree_view_column_new_with_attributes(NULL,
 			gtk_cell_renderer_pixbuf_new(), "pixbuf", MI_COL_ICON,
 			NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_mime_view),
@@ -2028,11 +2029,29 @@ void browser_show_preferences(Browser * browser)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox,
 			gtk_label_new_with_mnemonic(_("_File associations")));
 	/* plug-ins tab */
-	/* FIXME really implement */
 	browser->pr_plugin_store = gtk_list_store_new(3, G_TYPE_BOOLEAN,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	browser->pr_plugin_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->pr_plugin_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(
+				browser->pr_plugin_view), FALSE);
+	/* FIXME track the renderer's "toggled" signal */
+	column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
+			gtk_cell_renderer_toggle_new(), "active", 0, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
+			column);
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+			gtk_cell_renderer_pixbuf_new(), "pixbuf", 1, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
+			column);
+	column = gtk_tree_view_column_new_with_attributes(_("Name"),
+			gtk_cell_renderer_text_new(), "text", 2, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, 2);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
+			column);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
+				browser->pr_plugin_store), 2,
+			GTK_SORT_ASCENDING);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -2063,6 +2082,47 @@ static void _preferences_set(Browser * browser)
 			browser->prefs.sort_folders_first);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
 			browser->prefs.show_hidden_files);
+	_preferences_set_plugins(browser);
+}
+
+static void _preferences_set_plugins(Browser * browser)
+{
+	DIR * dir;
+	struct dirent * de;
+	char const ext[] = ".so";
+	size_t len;
+	GtkTreeIter iter;
+	Plugin * p;
+	BrowserPlugin * bp;
+
+	gtk_list_store_clear(browser->pr_plugin_store);
+	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
+		return;
+	while((de = readdir(dir)) != NULL)
+	{
+		if((len = strlen(de->d_name)) < sizeof(ext))
+			continue;
+		if(strcmp(&de->d_name[len - sizeof(ext) + 1], ext) != 0)
+			continue;
+		de->d_name[len - sizeof(ext) + 1] = '\0';
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
+#endif
+		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
+				== NULL)
+			continue;
+		if((bp = plugin_lookup(p, "plugin")) == NULL)
+		{
+			plugin_delete(p);
+			continue;
+		}
+		gtk_list_store_append(browser->pr_plugin_store, &iter);
+		gtk_list_store_set(browser->pr_plugin_store, &iter, 2, bp->name,
+				-1);
+		/* FIXME determine if the plug-in is enabled already */
+		plugin_delete(p);
+	}
+	closedir(dir);
 }
 
 static void _preferences_on_mime_edit(gpointer data)
