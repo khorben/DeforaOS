@@ -116,6 +116,11 @@ static Run * _run_new(void)
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
 	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Executable files"));
+	gtk_file_filter_add_mime_type(filter, "application/x-executable");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(widget), filter);
+	gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(widget), filter);
+	filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, _("Shell scripts"));
 	gtk_file_filter_add_mime_type(filter, "application/x-shellscript");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(widget), filter);
@@ -123,7 +128,6 @@ static Run * _run_new(void)
 	gtk_file_filter_set_name(filter, _("All files"));
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(widget), filter);
-	gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(widget), filter);
 	g_signal_connect(G_OBJECT(widget), "response", G_CALLBACK(
 				_on_run_choose_activate), run);
 	widget = gtk_file_chooser_button_new_with_dialog(widget);
