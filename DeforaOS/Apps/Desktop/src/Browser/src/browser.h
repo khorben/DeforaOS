@@ -197,6 +197,6 @@ void browser_refresh(Browser * browser);
 void browser_select_all(Browser * browser);
 void browser_unselect_all(Browser * browser);
 
-void browser_view_preferences(Browser * browser);
+void browser_show_preferences(Browser * browser);
 
 #endif /* !BROWSER_BROWSER_H */

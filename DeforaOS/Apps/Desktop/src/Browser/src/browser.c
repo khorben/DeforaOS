@@ -1912,24 +1912,7 @@ static void _view_thumbnails(Browser * browser)
 #endif
 
 
-/* browser_unselect_all */
-void browser_unselect_all(Browser * browser)
-{
-	GtkTreeSelection * sel;
-
-#if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
-	{
-		gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
-		return;
-	}
-#endif
-	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
-	gtk_tree_selection_unselect_all(sel);
-}
-
-
-/* browser_view_preferences */
+/* browser_show_preferences */
 static void _preferences_set(Browser * browser);
 /* callbacks */
 static void _preferences_on_mime_edit(gpointer data);
@@ -1941,7 +1924,7 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
-void browser_view_preferences(Browser * browser)
+void browser_show_preferences(Browser * browser)
 {
 	GtkWidget * widget;
 	GtkWidget * vbox;
@@ -2221,6 +2204,23 @@ static void _preferences_on_ok(gpointer data)
 			GTK_TOGGLE_BUTTON(browser->pr_hidden));
 	browser_config_save(browser);
 	browser_refresh(browser);
+}
+
+
+/* browser_unselect_all */
+void browser_unselect_all(Browser * browser)
+{
+	GtkTreeSelection * sel;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+	{
+		gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
+		return;
+	}
+#endif
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
+	gtk_tree_selection_unselect_all(sel);
 }
 
 

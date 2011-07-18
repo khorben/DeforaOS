@@ -232,7 +232,7 @@ void on_edit_preferences(gpointer data)
 {
 	Browser * browser = data;
 
-	browser_view_preferences(browser);
+	browser_show_preferences(browser);
 }
 
 
