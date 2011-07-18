@@ -149,9 +149,11 @@ static void _refresh_add(Devices * devices, char const * name,
 static void _devices_refresh(BrowserPlugin * plugin, char const * path)
 {
 	Devices * devices = plugin->priv;
+#ifdef __NetBSD__
 	struct statvfs * mnt;
 	int res;
 	int i;
+#endif
 
 	gtk_list_store_clear(devices->store);
 #ifdef __NetBSD__
