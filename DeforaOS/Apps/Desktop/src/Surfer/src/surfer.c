@@ -16,6 +16,7 @@ static char const _license[] =
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
  * - implement a default download directory (and "always ask")
+ * - consider drawing the progress bar inside the location bar
  * - consider using GtkSourceView to display the page source */
 
 

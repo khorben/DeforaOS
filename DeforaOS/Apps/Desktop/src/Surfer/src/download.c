@@ -188,6 +188,10 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	/* window */
 	download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	snprintf(buf, sizeof(buf), "%s %s", _("Download"), download->url);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(download->window),
+			"stock_download");
+#endif
 	gtk_window_set_title(GTK_WINDOW(download->window), buf);
 	g_signal_connect_swapped(G_OBJECT(download->window), "delete-event",
 			G_CALLBACK(_download_on_closex), download);
