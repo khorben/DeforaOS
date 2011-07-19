@@ -2089,15 +2089,18 @@ static void _preferences_set_plugins(Browser * browser)
 {
 	DIR * dir;
 	struct dirent * de;
+	GtkIconTheme * theme;
 	char const ext[] = ".so";
 	size_t len;
 	GtkTreeIter iter;
 	Plugin * p;
 	BrowserPlugin * bp;
+	GdkPixbuf * pixbuf;
 
 	gtk_list_store_clear(browser->pr_plugin_store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
 		return;
+	theme = gtk_icon_theme_get_default();
 	while((de = readdir(dir)) != NULL)
 	{
 		if((len = strlen(de->d_name)) < sizeof(ext))
@@ -2116,10 +2119,16 @@ static void _preferences_set_plugins(Browser * browser)
 			plugin_delete(p);
 			continue;
 		}
-		gtk_list_store_append(browser->pr_plugin_store, &iter);
-		gtk_list_store_set(browser->pr_plugin_store, &iter, 2, bp->name,
-				-1);
 		/* FIXME determine if the plug-in is enabled already */
+		if(bp->icon == NULL)
+			pixbuf = gtk_icon_theme_load_icon(theme,
+					"gnome-settings", 24, 0, NULL);
+		else
+			pixbuf = gtk_icon_theme_load_icon(theme, bp->icon, 24,
+					0, NULL);
+		gtk_list_store_append(browser->pr_plugin_store, &iter);
+		gtk_list_store_set(browser->pr_plugin_store, &iter, 1, pixbuf,
+				2, bp->name, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);

@@ -39,6 +39,7 @@ BrowserPlugin plugin =
 {
 	NULL,
 	"Properties",
+	GTK_STOCK_PROPERTIES,
 	_properties_init,
 	_properties_destroy,
 	NULL,

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 01:53+0200\n"
+"POT-Creation-Date: 2011-07-19 02:03+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -291,27 +291,27 @@ msgstr ""
 msgid "_Plug-ins"
 msgstr ""
 
-#: ../src/browser.c:2151
+#: ../src/browser.c:2160
 msgid "Edit file association"
 msgstr ""
 
-#: ../src/browser.c:2164
+#: ../src/browser.c:2173
 msgid "Type:"
 msgstr ""
 
-#: ../src/browser.c:2173
+#: ../src/browser.c:2182
 msgid "Open with:"
 msgstr ""
 
-#: ../src/browser.c:2184
+#: ../src/browser.c:2193
 msgid "View with:"
 msgstr ""
 
-#: ../src/browser.c:2195
+#: ../src/browser.c:2204
 msgid "Edit with:"
 msgstr ""
 
-#: ../src/browser.c:2356
+#: ../src/browser.c:2365
 msgid "Refreshing folder..."
 msgstr ""
 

@@ -71,6 +71,7 @@ BrowserPlugin plugin =
 {
 	NULL,
 	"Devices",
+	"drive-harddisk",
 	_devices_init,
 	_devices_destroy,
 	_devices_refresh,

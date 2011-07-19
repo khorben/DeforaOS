@@ -38,6 +38,7 @@ struct _BrowserPlugin
 {
 	BrowserPluginHelper * helper;
 	char const * name;
+	char const * icon;
 	GtkWidget * (*init)(BrowserPlugin * plugin);
 	void (*destroy)(BrowserPlugin * plugin);
 	void (*refresh)(BrowserPlugin * plugin, char const * path);
