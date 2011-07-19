@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 19:20+0200\n"
+"POT-Creation-Date: 2011-07-19 22:52+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -36,8 +36,8 @@ msgid "Connected"
 msgstr ""
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:971
-#: ../src/ghtml-webkit.c:613 ../src/ghtml-webkit.c:754
-#: ../src/ghtml-webkit.c:766
+#: ../src/ghtml-webkit.c:620 ../src/ghtml-webkit.c:761
+#: ../src/ghtml-webkit.c:773
 msgid "Downloading..."
 msgstr ""
 
@@ -149,7 +149,7 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:707 ../src/ghtml-webkit.c:712 ../src/surfer.c:1014
+#: ../src/download.c:707 ../src/ghtml-webkit.c:719 ../src/surfer.c:1014
 msgid "Unknown error"
 msgstr ""
 
@@ -176,8 +176,8 @@ msgstr ""
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1083 ../src/ghtml-webkit.c:470
-#: ../src/ghtml-webkit.c:611
+#: ../src/ghtml-gtkhtml.c:1083 ../src/ghtml-webkit.c:477
+#: ../src/ghtml-webkit.c:618
 msgid "Connecting..."
 msgstr ""
 

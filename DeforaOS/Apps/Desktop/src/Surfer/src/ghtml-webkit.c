@@ -144,6 +144,9 @@ static void _new_init(GHtml * ghtml)
 	static int initialized = 0;
 #if WEBKIT_CHECK_VERSION(1, 1, 0)
 	SoupSession * session;
+# if WEBKIT_CHECK_VERSION(1, 3, 5) && defined(EMBEDDED)
+	WebKitWebSettings * settings;
+# endif
 	char const * cacerts[] =
 	{
 		"/etc/pki/tls/certs/ca-bundle.crt",
@@ -163,6 +166,10 @@ static void _new_init(GHtml * ghtml)
 		return;
 #if WEBKIT_CHECK_VERSION(1, 1, 0)
 	session = webkit_get_default_session();
+# if WEBKIT_CHECK_VERSION(1, 3, 5) && defined(EMBEDDED)
+	settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(ghtml->view));
+	g_object_set(settings, "enable-frame-flattening", TRUE, NULL);
+# endif
 	for(i = 0; i < sizeof(cacerts) / sizeof(*cacerts); i++)
 		if(access(cacerts[i], R_OK) == 0)
 		{
