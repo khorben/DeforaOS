@@ -17,11 +17,14 @@
 
 #include <System.h>
 #include <string.h>
+#include <libintl.h>
 #ifdef __NetBSD__
 # include <sys/types.h>
 # include <sys/statvfs.h>
 #endif
 #include "Browser.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Devices */
@@ -70,7 +73,7 @@ static void _devices_on_selection_changed(gpointer data);
 BrowserPlugin plugin =
 {
 	NULL,
-	"Devices",
+	N_("Devices"),
 	"drive-harddisk",
 	_devices_init,
 	_devices_destroy,
@@ -201,7 +204,7 @@ static void _refresh_add(Devices * devices, char const * name,
 	if(name == NULL)
 	{
 		if(strcmp(mountpoint, "/") == 0)
-			name = "Root filesystem";
+			name = _("Root filesystem");
 		else
 			name = mountpoint;
 	}

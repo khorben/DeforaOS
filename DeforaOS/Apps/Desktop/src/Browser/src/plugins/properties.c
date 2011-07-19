@@ -16,7 +16,9 @@
 
 
 #include <System.h>
+#include <libintl.h>
 #include "Browser.h"
+#define N_(string) (string)
 
 
 /* Properties */
@@ -38,7 +40,7 @@ static void _properties_destroy(BrowserPlugin * plugin);
 BrowserPlugin plugin =
 {
 	NULL,
-	"Properties",
+	N_("Properties"),
 	GTK_STOCK_PROPERTIES,
 	_properties_init,
 	_properties_destroy,

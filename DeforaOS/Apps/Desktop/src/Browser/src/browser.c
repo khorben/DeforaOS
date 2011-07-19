@@ -856,7 +856,7 @@ int browser_load(Browser * browser, char const * plugin)
 	}
 	gtk_widget_hide(widget);
 	gtk_list_store_append(browser->pl_store, &iter);
-	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, bp->name,
+	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, _(bp->name),
 			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
 			BPC_WIDGET, widget, -1);
 	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
@@ -2128,7 +2128,7 @@ static void _preferences_set_plugins(Browser * browser)
 					0, NULL);
 		gtk_list_store_append(browser->pr_plugin_store, &iter);
 		gtk_list_store_set(browser->pr_plugin_store, &iter, 1, pixbuf,
-				2, bp->name, -1);
+				2, _(bp->name), -1);
 		plugin_delete(p);
 	}
 	closedir(dir);

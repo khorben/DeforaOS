@@ -10,3 +10,5 @@
 ../src/open.c
 ../src/properties.c
 ../src/view.c
+../src/plugins/devices.c
+../src/plugins/properties.c
