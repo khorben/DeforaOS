@@ -18,21 +18,17 @@
 #include <System.h>
 #include <libintl.h>
 #include "Browser.h"
-#define N_(string) (string)
+#define _properties_refresh _properties_do_refresh
+#include "../properties.c"
+#undef _properties_refresh
 
 
 /* Properties */
 /* private */
-/* types */
-typedef struct _Properties
-{
-	GtkWidget * view;
-} Properties;
-
-
 /* prototypes */
 static GtkWidget * _properties_init(BrowserPlugin * plugin);
 static void _properties_destroy(BrowserPlugin * plugin);
+static void _properties_refresh(BrowserPlugin * plugin, char const * path);
 
 
 /* public */
@@ -44,7 +40,7 @@ BrowserPlugin plugin =
 	GTK_STOCK_PROPERTIES,
 	_properties_init,
 	_properties_destroy,
-	NULL,
+	_properties_refresh,
 	NULL
 };
 
@@ -55,17 +51,11 @@ BrowserPlugin plugin =
 static GtkWidget * _properties_init(BrowserPlugin * plugin)
 {
 	Properties * properties;
-	GtkWidget * widget;
 
-	if((properties = object_new(sizeof(*properties))) == NULL)
+	if((properties = _properties_new(NULL, NULL)) == NULL)
 		return NULL;
 	plugin->priv = properties;
-	properties->view = gtk_vbox_new(FALSE, 4);
-	/* FIXME really implement */
-	widget = gtk_label_new("Folder");
-	gtk_box_pack_start(GTK_BOX(properties->view), widget, FALSE, TRUE, 0);
-	gtk_widget_show_all(properties->view);
-	return properties->view;
+	return _properties_get_view(properties);
 }
 
 
@@ -74,6 +64,17 @@ static void _properties_destroy(BrowserPlugin * plugin)
 {
 	Properties * properties = plugin->priv;
 
-	gtk_widget_destroy(properties->view);
-	object_delete(properties);
+	_properties_delete(properties);
+}
+
+
+/* properties_refresh */
+static void _properties_refresh(BrowserPlugin * plugin, char const * path)
+{
+	Properties * properties = plugin->priv;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
+#endif
+	_properties_set_filename(properties, path);
 }

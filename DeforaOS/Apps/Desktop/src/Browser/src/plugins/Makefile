@@ -35,7 +35,7 @@ properties.so: $(properties_OBJS)
 devices.o: devices.c ../../include/Browser.h
 	$(CC) $(devices_CFLAGS) -c devices.c
 
-properties.o: properties.c ../../include/Browser.h
+properties.o: properties.c ../../include/Browser.h ../properties.c
 	$(CC) $(properties_CFLAGS) -c properties.c
 
 clean:

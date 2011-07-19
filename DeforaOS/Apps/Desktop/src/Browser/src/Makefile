@@ -114,7 +114,7 @@ open.o: open.c
 	$(CC) $(open_CFLAGS) -c open.c
 
 properties.o: properties.c
-	$(CC) $(properties_CFLAGS) -c properties.c
+	$(CC) -D WITH_MAIN $(properties_CFLAGS) -c properties.c
 
 view.o: view.c
 	$(CC) $(view_CFLAGS) -c view.c
