@@ -1164,12 +1164,12 @@ void surfer_open_dialog(Surfer * surfer)
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "HTML files");
+	gtk_file_filter_set_name(filter, _("HTML files"));
 	gtk_file_filter_add_mime_type(filter, "application/xhtml+xml");
 	gtk_file_filter_add_mime_type(filter, "text/html");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_set_name(filter, _("All files"));
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)

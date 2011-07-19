@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 17:50+0200\n"
+"POT-Creation-Date: 2011-07-19 17:52+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -401,6 +401,14 @@ msgstr "Texte non trouvé"
 #: ../src/surfer.c:1161
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
+
+#: ../src/surfer.c:1167
+msgid "HTML files"
+msgstr "Fichiers HTML"
+
+#: ../src/surfer.c:1172
+msgid "All files"
+msgstr "Tous les fichiers"
 
 #: ../src/surfer.c:1199
 msgid "Could not initialize HTML renderer"

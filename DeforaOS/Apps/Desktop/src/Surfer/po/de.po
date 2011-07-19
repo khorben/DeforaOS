@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 17:50+0200\n"
+"POT-Creation-Date: 2011-07-19 17:52+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -59,11 +59,11 @@ msgstr ""
 
 #: ../src/download.c:190
 msgid "Download"
-msgstr ""
+msgstr "Herunterladen"
 
 #: ../src/download.c:204
 msgid "Address: "
-msgstr ""
+msgstr "Addresse: "
 
 #: ../src/download.c:214
 msgid "File: "
@@ -71,7 +71,7 @@ msgstr ""
 
 #: ../src/download.c:216
 msgid "Status: "
-msgstr ""
+msgstr "Status: "
 
 #: ../src/download.c:218
 msgid "Done: "
@@ -127,7 +127,7 @@ msgstr "Fehler "
 
 #: ../src/download.c:610 ../src/download.c:738
 msgid "Complete"
-msgstr ""
+msgstr "Fertig"
 
 #: ../src/download.c:620 ../src/download.c:756
 msgid "Downloading"
@@ -207,7 +207,7 @@ msgstr "_Offnen..."
 
 #: ../src/surfer.c:113
 msgid "Open _URL..."
-msgstr ""
+msgstr "Offnen _URL..."
 
 #: ../src/surfer.c:116
 msgid "Save _as..."
@@ -215,7 +215,7 @@ msgstr ""
 
 #: ../src/surfer.c:119
 msgid "_Print..."
-msgstr ""
+msgstr "_Drücken..."
 
 #: ../src/surfer.c:122
 msgid "Close _tab"
@@ -295,7 +295,7 @@ msgstr ""
 
 #: ../src/surfer.c:181
 msgid "Page so_urce"
-msgstr ""
+msgstr "Q_uellcode"
 
 #: ../src/surfer.c:188
 msgid "_About"
@@ -343,7 +343,7 @@ msgstr ""
 
 #: ../src/surfer.c:228
 msgid "New window"
-msgstr ""
+msgstr "Neue Fenster"
 
 #: ../src/surfer.c:313 ../src/surfer.c:665
 msgid "Web surfer"
@@ -397,6 +397,14 @@ msgstr ""
 msgid "Open file..."
 msgstr ""
 
+#: ../src/surfer.c:1167
+msgid "HTML files"
+msgstr "HTML Dateien"
+
+#: ../src/surfer.c:1172
+msgid "All files"
+msgstr "Alle Dateien"
+
 #: ../src/surfer.c:1199
 msgid "Could not initialize HTML renderer"
 msgstr ""
@@ -411,11 +419,11 @@ msgstr ""
 
 #: ../src/surfer.c:1467
 msgid "Message"
-msgstr ""
+msgstr "Nachricht"
 
 #: ../src/surfer.c:1472
 msgid "Source"
-msgstr ""
+msgstr "Quelle"
 
 #: ../src/surfer.c:1477
 msgid "Line"
@@ -459,7 +467,7 @@ msgstr "Allgemein"
 
 #: ../src/surfer.c:1667
 msgid "Connectivity:"
-msgstr ""
+msgstr "Verbindung:"
 
 #: ../src/surfer.c:1670
 msgid "Direct connection"
