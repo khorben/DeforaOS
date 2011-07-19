@@ -307,7 +307,8 @@ static int _properties_error(Properties * properties, char const * message,
 	char const * error;
 
 	error = strerror(errno);
-	dialog = gtk_message_dialog_new((properties != NULL)
+	dialog = gtk_message_dialog_new((properties != NULL
+				&& properties->window != NULL)
 			? GTK_WINDOW(properties->window) : NULL, 0,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -316,7 +317,7 @@ static int _properties_error(Properties * properties, char const * message,
 #endif
 			"%s: %s", message, error);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	if(properties != NULL)
+	if(properties != NULL && properties->window != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 					properties->window));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
@@ -555,7 +556,10 @@ static void _properties_show_window(Properties * properties)
 	char buf[256];
 
 	if(properties->window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(properties->window));
 		return;
+	}
 	properties->window = gtk_dialog_new();
 	p = g_filename_display_basename(properties->filename);
 	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), p);

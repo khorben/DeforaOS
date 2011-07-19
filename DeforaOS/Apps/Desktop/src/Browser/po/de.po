@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 05:28+0200\n"
+"POT-Creation-Date: 2011-07-19 05:32+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -188,7 +188,7 @@ msgstr ""
 #: ../src/browser.c:700 ../src/browser.c:705 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:314 ../src/properties.c:318
+#: ../src/move.c:456 ../src/properties.c:315 ../src/properties.c:319
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
 msgstr "Fehler"
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Omitting directory"
 msgstr ""
 
-#: ../src/copy.c:590 ../src/properties.c:517
+#: ../src/copy.c:590 ../src/properties.c:518
 msgid "kB"
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/copy.c:615 ../src/properties.c:519
+#: ../src/copy.c:615 ../src/properties.c:520
 msgid "MB"
 msgstr ""
 
@@ -650,27 +650,27 @@ msgstr ""
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:431
+#: ../src/properties.c:432
 msgid "Unknown type"
 msgstr ""
 
-#: ../src/properties.c:511
+#: ../src/properties.c:512
 msgid "bytes"
 msgstr ""
 
-#: ../src/properties.c:521
+#: ../src/properties.c:522
 msgid "GB"
 msgstr ""
 
-#: ../src/properties.c:525
+#: ../src/properties.c:526
 msgid "TB"
 msgstr ""
 
-#: ../src/properties.c:561
+#: ../src/properties.c:565
 msgid "Properties of "
 msgstr "Eigenschaften von "
 
-#: ../src/properties.c:647
+#: ../src/properties.c:651
 msgid "Usage: properties file...\n"
 msgstr ""
 
