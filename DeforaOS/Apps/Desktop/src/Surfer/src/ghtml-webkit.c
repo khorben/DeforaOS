@@ -351,6 +351,23 @@ int ghtml_set_proxy(GtkWidget * widget, SurferProxyType type, char const * http,
 }
 
 
+/* ghtml_set_user_agent */
+int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent)
+{
+#if WEBKIT_CHECK_VERSION(1, 1, 0)
+	SoupSession * session;
+
+	session = webkit_get_default_session();
+	g_object_set(session, "user-agent", user_agent, NULL);
+	return 0;
+#else
+	if(user_agent == NULL)
+		return 0;
+	return -error_set_code(1, "%s", strerror(ENOSYS));
+#endif
+}
+
+
 /* useful */
 /* ghtml_copy */
 void ghtml_copy(GtkWidget * widget)

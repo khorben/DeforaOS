@@ -41,6 +41,7 @@ char const * ghtml_get_title(GtkWidget * ghtml);
 
 int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
 		unsigned int http_port);
+int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent);
 
 /* useful */
 gboolean ghtml_go_back(GtkWidget * ghtml);

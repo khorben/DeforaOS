@@ -295,6 +295,7 @@ Surfer * _new_do(char const * url)
 	surfer->proxy_type = SPT_NONE;
 	surfer->proxy_http = NULL;
 	surfer->proxy_http_port = 0;
+	surfer->user_agent = NULL;
 	if((surfer->config = config_new()) == NULL
 			|| surfer_config_load(surfer) != 0)
 	{
@@ -463,6 +464,7 @@ void surfer_delete(Surfer * surfer)
 {
 	gtk_widget_destroy(surfer->window);
 	config_delete(surfer->config);
+	free(surfer->user_agent);
 	free(surfer->proxy_http);
 	free(surfer->download_dir);
 	free(surfer->homepage);
@@ -680,6 +682,28 @@ void surfer_set_title(Surfer * surfer, char const * title)
 }
 
 
+/* surfer_set_user_agent */
+void surfer_set_user_agent(Surfer * surfer, char const * user_agent)
+{
+	GtkWidget * view;
+	char * p = NULL;
+	gint n;
+	gint i;
+
+	if(user_agent != NULL && (p = strdup(user_agent)) == NULL)
+		return; /* XXX report error */
+	free(surfer->user_agent);
+	surfer->user_agent = p;
+	n = gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook));
+	for(i = 0; i < n; i++)
+	{
+		view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook),
+				i);
+		ghtml_set_user_agent(view, user_agent);
+	}
+}
+
+
 /* useful */
 /* surfer_about */
 static gboolean _about_on_closex(gpointer data);
@@ -778,6 +802,8 @@ int surfer_config_load(Surfer * surfer)
 		_config_load_integer(surfer->config, "proxy", "http_port",
 				&surfer->proxy_http_port);
 	}
+	_config_load_string(surfer->config, NULL, "user_agent",
+			&surfer->user_agent);
 	return 0;
 }
 
@@ -805,6 +831,8 @@ int surfer_config_save(Surfer * surfer)
 			surfer->proxy_http);
 	ret |= _config_save_integer(surfer->config, "proxy", "http_port",
 			surfer->proxy_http_port);
+	ret |= _config_save_string(surfer->config, NULL, "user_agent",
+			surfer->user_agent);
 	if(ret == 0)
 		ret |= config_save(surfer->config, filename);
 	free(filename);
@@ -1202,6 +1230,10 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 	if(surfer->proxy_http != NULL)
 		ghtml_set_proxy(widget, surfer->proxy_type, surfer->proxy_http,
 				surfer->proxy_http_port);
+	if(surfer->user_agent == NULL || surfer->user_agent[0] == '\0')
+		ghtml_set_user_agent(widget, NULL);
+	else
+		ghtml_set_user_agent(widget, surfer->user_agent);
 	gtk_widget_show_all(widget); /* must be before set_current_page() */
 	if(url != NULL && url[0] != '\0')
 		ghtml_load_url(widget, url);
@@ -1693,6 +1725,17 @@ void surfer_view_preferences(Surfer * surfer)
 	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("Network")));
+	/* advanced tab */
+	page = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("User agent:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	surfer->pr_user_agent = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_user_agent, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new(_("Advanced")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	_preferences_set(surfer);
 	gtk_widget_show_all(surfer->pr_window);
@@ -1728,6 +1771,9 @@ static void _preferences_set(Surfer * surfer)
 				surfer->proxy_http);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(surfer->pr_proxy_http_port),
 			surfer->proxy_http_port);
+	p = config_get(surfer->config, NULL, "user_agent");
+	gtk_entry_set_text(GTK_ENTRY(surfer->pr_user_agent), (p != NULL) ? p
+			: "");
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -1773,6 +1819,8 @@ static void _preferences_on_ok(gpointer data)
 					surfer->pr_proxy_http)),
 			gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(
 					surfer->pr_proxy_http_port)));
+	surfer_set_user_agent(surfer, gtk_entry_get_text(GTK_ENTRY(
+					surfer->pr_user_agent)));
 	surfer_config_save(surfer);
 }
 

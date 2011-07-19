@@ -74,6 +74,7 @@ void surfer_set_proxy(Surfer * surfer, SurferProxyType type, char const * http,
 void surfer_set_security(Surfer * surfer, SurferSecurity security);
 void surfer_set_status(Surfer * surfer, char const * status);
 void surfer_set_title(Surfer * surfer, char const * title);
+void surfer_set_user_agent(Surfer * surfer, char const * user_agent);
 
 
 /* useful */

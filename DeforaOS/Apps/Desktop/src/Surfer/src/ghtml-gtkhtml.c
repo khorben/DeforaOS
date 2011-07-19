@@ -290,6 +290,16 @@ int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
 }
 
 
+/* ghtml_set_user_agent */
+int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent)
+{
+	if(user_agent == NULL)
+		return 0;
+	/* FIXME really implement */
+	return -error_set_code(1, "%s", strerror(ENOSYS));;
+}
+
+
 /* useful */
 /* ghtml_copy */
 void ghtml_copy(GtkWidget * ghtml)
