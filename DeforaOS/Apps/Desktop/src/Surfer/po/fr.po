@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 22:52+0200\n"
+"POT-Creation-Date: 2011-07-19 23:40+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -38,8 +38,8 @@ msgid "Connected"
 msgstr "Connecté"
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:971
-#: ../src/ghtml-webkit.c:620 ../src/ghtml-webkit.c:761
-#: ../src/ghtml-webkit.c:773
+#: ../src/ghtml-webkit.c:622 ../src/ghtml-webkit.c:763
+#: ../src/ghtml-webkit.c:775
 msgid "Downloading..."
 msgstr "Téléchargement..."
 
@@ -151,7 +151,7 @@ msgstr "Résolu"
 msgid "Code "
 msgstr "Code "
 
-#: ../src/download.c:707 ../src/ghtml-webkit.c:719 ../src/surfer.c:1014
+#: ../src/download.c:707 ../src/ghtml-webkit.c:721 ../src/surfer.c:1014
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -181,8 +181,8 @@ msgstr "Redirection..."
 msgid "Redirecting to "
 msgstr "Redirection vers "
 
-#: ../src/ghtml-gtkhtml.c:1083 ../src/ghtml-webkit.c:477
-#: ../src/ghtml-webkit.c:618
+#: ../src/ghtml-gtkhtml.c:1083 ../src/ghtml-webkit.c:479
+#: ../src/ghtml-webkit.c:620
 msgid "Connecting..."
 msgstr "Connexion..."
 

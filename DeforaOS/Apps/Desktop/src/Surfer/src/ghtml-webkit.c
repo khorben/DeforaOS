@@ -151,7 +151,9 @@ static void _new_init(GHtml * ghtml)
 	{
 		"/etc/pki/tls/certs/ca-bundle.crt",
 		"/etc/ssl/certs/ca-certificates.crt",
-		"/etc/openssl/certs/ca-certificates.crt"
+		"/etc/openssl/certs/ca-certificates.crt",
+		PREFIX "/etc/ssl/certs/ca-certificates.crt",
+		PREFIX "/etc/openssl/certs/ca-certificates.crt"
 	};
 	size_t i;
 #endif
