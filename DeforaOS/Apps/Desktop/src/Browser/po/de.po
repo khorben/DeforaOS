@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 05:11+0200\n"
+"POT-Creation-Date: 2011-07-19 05:28+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -188,7 +188,7 @@ msgstr ""
 #: ../src/browser.c:700 ../src/browser.c:705 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:300 ../src/properties.c:304
+#: ../src/move.c:456 ../src/properties.c:314 ../src/properties.c:318
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
 msgstr "Fehler"
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Omitting directory"
 msgstr ""
 
-#: ../src/copy.c:590 ../src/properties.c:506
+#: ../src/copy.c:590 ../src/properties.c:517
 msgid "kB"
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/copy.c:615 ../src/properties.c:508
+#: ../src/copy.c:615 ../src/properties.c:519
 msgid "MB"
 msgstr ""
 
@@ -610,11 +610,11 @@ msgstr ""
 msgid "Size:"
 msgstr "Größe:"
 
-#: ../src/properties.c:182 ../src/properties.c:230
+#: ../src/properties.c:182 ../src/properties.c:244
 msgid "Owner:"
 msgstr ""
 
-#: ../src/properties.c:188 ../src/properties.c:233
+#: ../src/properties.c:188 ../src/properties.c:247
 msgid "Group:"
 msgstr "Gruppe:"
 
@@ -634,43 +634,43 @@ msgstr ""
 msgid "Permissions:"
 msgstr ""
 
-#: ../src/properties.c:236
+#: ../src/properties.c:216
+msgid "Read:"
+msgstr ""
+
+#: ../src/properties.c:220
+msgid "Write:"
+msgstr ""
+
+#: ../src/properties.c:224
+msgid "Execute:"
+msgstr ""
+
+#: ../src/properties.c:250
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:417
+#: ../src/properties.c:431
 msgid "Unknown type"
 msgstr ""
 
-#: ../src/properties.c:436
-msgid "read"
-msgstr ""
-
-#: ../src/properties.c:440
-msgid "write"
-msgstr ""
-
-#: ../src/properties.c:444
-msgid "execute"
-msgstr ""
-
-#: ../src/properties.c:500
+#: ../src/properties.c:511
 msgid "bytes"
 msgstr ""
 
-#: ../src/properties.c:510
+#: ../src/properties.c:521
 msgid "GB"
 msgstr ""
 
-#: ../src/properties.c:514
+#: ../src/properties.c:525
 msgid "TB"
 msgstr ""
 
-#: ../src/properties.c:550
+#: ../src/properties.c:561
 msgid "Properties of "
 msgstr "Eigenschaften von "
 
-#: ../src/properties.c:636
+#: ../src/properties.c:647
 msgid "Usage: properties file...\n"
 msgstr ""
 

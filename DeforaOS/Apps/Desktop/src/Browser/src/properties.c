@@ -156,7 +156,7 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
 				properties->view), GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 4);
-	table = gtk_table_new(12, 2, FALSE);
+	table = gtk_table_new(13, 2, FALSE);
 	gtk_container_set_border_width(GTK_CONTAINER(table), 4);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
@@ -213,6 +213,20 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 8, 9);
 	hbox = gtk_hbox_new(TRUE, 4);
+	widget = gtk_label_new(_("Read:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_widget_modify_font(widget, bold);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_label_new(_("Write:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_widget_modify_font(widget, bold);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_label_new(_("Execute:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_widget_modify_font(widget, bold);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2, 9, 10);
+	hbox = gtk_hbox_new(TRUE, 4);
 	for(i = 0; i < sizeof(properties->mode) / sizeof(*properties->mode);
 			i++)
 	{
@@ -224,25 +238,25 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 		if((i % 3) != 2)
 			continue;
 		gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2,
-				11 - (i / 3), 12 - (i / 3));
+				12 - (i / 3), 13 - (i / 3));
 		hbox = NULL;
 	}
 	widget = gtk_label_new(_("Owner:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
 	widget = gtk_label_new(_("Group:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
 	widget = gtk_label_new(_("Others:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 12, 13);
 	pango_font_description_free(bold);
 	if(filename != NULL)
 		_properties_set_filename(properties, filename);
 	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, TRUE, 0);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
 				properties->view), vbox);
-	gtk_widget_set_size_request(properties->view, 300, 300);
+	gtk_widget_set_size_request(properties->view, 200, 320);
 	gtk_widget_show_all(properties->view);
 	return properties;
 }
@@ -433,15 +447,12 @@ static void _refresh_type(Properties * properties, struct stat * st)
 
 static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive)
 {
-	gtk_button_set_label(GTK_BUTTON(widget[2]), _("read")); /* read */
 	gtk_widget_set_sensitive(widget[2], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
 			mode & S_IROTH);
-	gtk_button_set_label(GTK_BUTTON(widget[1]), _("write")); /* write */
 	gtk_widget_set_sensitive(widget[1], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[1]),
 			mode & S_IWOTH);
-	gtk_button_set_label(GTK_BUTTON(widget[0]), _("execute")); /* execute */
 	gtk_widget_set_sensitive(widget[0], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[0]),
 			mode & S_IXOTH);
