@@ -134,6 +134,7 @@ static int _properties(Mime * mime, int filec, char * const filev[])
 static Properties * _properties_new(char const * filename, Mime * mime)
 {
 	Properties * properties;
+	GtkWidget * vbox;
 	GtkWidget * table;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -149,7 +150,12 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	properties->theme = gtk_icon_theme_get_default();
 	properties->window = NULL;
 	properties->group = NULL;
-	properties->view = gtk_vbox_new(FALSE, 4);
+	properties->view = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(properties->view),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
+				properties->view), GTK_SHADOW_NONE);
+	vbox = gtk_vbox_new(FALSE, 4);
 	table = gtk_table_new(12, 2, FALSE);
 	gtk_container_set_border_width(GTK_CONTAINER(table), 4);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
@@ -233,7 +239,10 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	pango_font_description_free(bold);
 	if(filename != NULL)
 		_properties_set_filename(properties, filename);
-	gtk_box_pack_start(GTK_BOX(properties->view), table, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, TRUE, 0);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
+				properties->view), vbox);
+	gtk_widget_set_size_request(properties->view, 300, 300);
 	gtk_widget_show_all(properties->view);
 	return properties;
 }
