@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <netdb.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <glib.h>
 #include <System.h>
