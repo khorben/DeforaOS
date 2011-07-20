@@ -1,4 +1,4 @@
-TARGETS	= devices.so properties.so
+TARGETS	= properties.so volumes.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -18,13 +18,6 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-devices_OBJS = devices.o
-devices_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-devices_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-devices.so: $(devices_OBJS)
-	$(LD) -o devices.so $(devices_OBJS) $(devices_LDFLAGS)
-
 properties_OBJS = properties.o
 properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -32,26 +25,33 @@ properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 properties.so: $(properties_OBJS)
 	$(LD) -o properties.so $(properties_OBJS) $(properties_LDFLAGS)
 
-devices.o: devices.c ../../include/Browser.h
-	$(CC) $(devices_CFLAGS) -c devices.c
+volumes_OBJS = volumes.o
+volumes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+volumes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+volumes.so: $(volumes_OBJS)
+	$(LD) -o volumes.so $(volumes_OBJS) $(volumes_LDFLAGS)
 
 properties.o: properties.c ../../include/Browser.h ../properties.c
 	$(CC) $(properties_CFLAGS) -c properties.c
 
+volumes.o: volumes.c ../../include/Browser.h
+	$(CC) $(volumes_CFLAGS) -c volumes.c
+
 clean:
-	$(RM) -- $(devices_OBJS) $(properties_OBJS)
+	$(RM) -- $(properties_OBJS) $(volumes_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
-	$(INSTALL) -m 0644 -- devices.so $(DESTDIR)$(LIBDIR)/Browser/plugins/devices.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- properties.so $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
+	$(INSTALL) -m 0644 -- volumes.so $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/devices.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
 
 .PHONY: all clean distclean install uninstall

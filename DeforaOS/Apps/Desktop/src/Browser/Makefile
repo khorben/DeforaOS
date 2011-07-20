@@ -60,8 +60,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/desktop.h \
 		$(PACKAGE)-$(VERSION)/src/desktopicon.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/plugins/devices.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/properties.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/volumes.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/dirtree.c \
