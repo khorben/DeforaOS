@@ -1270,9 +1270,10 @@ typedef enum _AccountColumn
 	AC_ACTIVE,
 	AC_ENABLED,
 	AC_TITLE,
-	AC_TYPE
+	AC_TYPE,
+	AC_WIDGET
 } AccountColumn;
-#define AC_LAST AC_TYPE
+#define AC_LAST AC_WIDGET
 #define AC_COUNT (AC_LAST + 1)
 
 static void _preferences_set(Mailer * mailer);
@@ -1294,8 +1295,8 @@ static int _preferences_ok_save(Mailer * mailer);
 
 void mailer_show_preferences(Mailer * mailer, gboolean show)
 {
-	GtkWidget * notebook;
 	GtkWidget * vbox;
+	GtkWidget * notebook;
 	GtkWidget * hbox;
 	GtkWidget * vbox2;
 	GtkWidget * vbox3;
@@ -1341,7 +1342,8 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	store = gtk_list_store_new(AC_COUNT, G_TYPE_POINTER, G_TYPE_BOOLEAN,
-			G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_POINTER);
 	for(i = 0; i < mailer->account_cnt; i++)
 	{
 		ac = mailer->account[i];
@@ -2080,7 +2082,11 @@ static void _on_preferences_account_toggle(GtkCellRendererToggle * renderer,
 }
 
 /* _on_preferences_account_edit */
-static void _account_edit(Mailer * mailer, Account * account);
+static GtkWidget * _account_edit(Mailer * mailer, Account * account);
+static gboolean _account_edit_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+static void _account_edit_on_response(GtkWidget * widget, gint response,
+		gpointer data);
 
 static void _on_preferences_account_edit(gpointer data)
 {
@@ -2089,52 +2095,113 @@ static void _on_preferences_account_edit(gpointer data)
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 	Account * account;
+	GtkWidget * widget;
 
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 				mailer->pr_accounts));
 	if(gtk_tree_selection_get_selected(selection, &model, &iter) != TRUE)
 		return;
-	gtk_tree_model_get(model, &iter, AC_DATA, &account, -1);
-	_account_edit(mailer, account);
+	gtk_tree_model_get(model, &iter, AC_DATA, &account, AC_WIDGET, &widget,
+			-1);
+	if(widget != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(widget));
+		return;
+	}
+	widget = _account_edit(mailer, account);
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, AC_WIDGET, widget, -1);
 }
 
-static void _account_edit(Mailer * mailer, Account * account)
+static GtkWidget * _account_edit(Mailer * mailer, Account * account)
 {
 	GtkWidget * window;
 	char buf[80];
+	GtkWidget * content;
+	GtkWidget * notebook;
 	GtkWidget * vbox;
+	GtkWidget * frame;
+	GtkWidget * vbox2;
 	GtkWidget * widget;
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
 
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	snprintf(buf, sizeof(buf), "%s%s", _("Edit account: "),
 			account_get_title(account));
-	gtk_window_set_title(GTK_WINDOW(window), buf);
-	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				mailer->fo_window));
-	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
-	vbox = gtk_vbox_new(FALSE, 4);
-	/* FIXME also allow to modify the identity, plug-in values... */
-	/* FIXME this affects the account directly (eg cancel does not) */
-	widget = _assistant_account_config(account_get_config(account));
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
+	window = gtk_dialog_new_with_buttons(buf, GTK_WINDOW(mailer->pr_window),
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_OK,
+			NULL);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_account_edit_on_closex), NULL);
+	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
+				_account_edit_on_response), NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	content = gtk_dialog_get_content_area(GTK_DIALOG(window));
+#else
+	content = GTK_DIALOG(window)->vbox;
+#endif
+	gtk_container_set_border_width(GTK_CONTAINER(content), 4);
+	notebook = gtk_notebook_new();
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	/* account tab */
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+	/* account name */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Account name:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
-	/* FIXME implement properly */
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				gtk_widget_destroy), window);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(widget), account_get_title(account));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* identity */
+	frame = gtk_frame_new(_("Identity:"));
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Name:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				gtk_widget_destroy), window);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
-	gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Address:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox2);
+	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(
+				_("Account")));
+	/* settings tab */
+	/* FIXME this affects the account directly (eg cancel does not work) */
+	widget = _assistant_account_config(account_get_config(account));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget, gtk_label_new(
+				_("Settings")));
+	gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 	gtk_widget_show_all(window);
+	return window;
+}
+
+static gboolean _account_edit_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	_account_edit_on_response(widget, GTK_RESPONSE_CANCEL, data);
+	return TRUE;
+}
+
+static void _account_edit_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	/* FIXME really implement */
+	gtk_widget_hide(widget);
 }
 
 static void _on_preferences_account_delete(gpointer data)
