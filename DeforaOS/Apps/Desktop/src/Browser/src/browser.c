@@ -63,6 +63,7 @@ enum
 enum _BrowserPluginColumn
 {
 	BPC_NAME = 0,
+	BPC_NAME_DISPLAY,
 	BPC_PLUGIN,
 	BPC_BROWSERPLUGIN,
 	BPC_WIDGET
@@ -399,7 +400,8 @@ Browser * browser_new(char const * directory)
 	browser->pl_view = gtk_vbox_new(FALSE, 4);
 	gtk_container_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
-			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
+			G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER,
+			G_TYPE_POINTER);
 	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				browser->pl_store));
 	g_signal_connect_swapped(G_OBJECT(browser->pl_combo), "changed",
@@ -408,7 +410,7 @@ Browser * browser_new(char const * directory)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->pl_combo),
 			renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->pl_combo),
-			renderer, "text", BPC_NAME, NULL);
+			renderer, "text", BPC_NAME_DISPLAY, NULL);
 	gtk_box_pack_start(GTK_BOX(browser->pl_view), browser->pl_combo, FALSE,
 			TRUE, 0);
 	browser->pl_box = gtk_vbox_new(FALSE, 4);
@@ -855,9 +857,9 @@ int browser_load(Browser * browser, char const * plugin)
 	}
 	gtk_widget_hide(widget);
 	gtk_list_store_append(browser->pl_store, &iter);
-	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, _(bp->name),
-			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
-			BPC_WIDGET, widget, -1);
+	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, plugin,
+			BPC_NAME_DISPLAY, _(bp->name), BPC_PLUGIN, p,
+			BPC_BROWSERPLUGIN, bp, BPC_WIDGET, widget, -1);
 	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
 	if(gtk_widget_get_no_show_all(browser->pl_view) == TRUE)
 	{
@@ -2091,10 +2093,14 @@ static void _preferences_set_plugins(Browser * browser)
 	GtkIconTheme * theme;
 	char const ext[] = ".so";
 	size_t len;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
 	GtkTreeIter iter;
+	gboolean valid;
 	Plugin * p;
 	BrowserPlugin * bp;
+	gboolean enabled;
 	GdkPixbuf * pixbuf;
+	char * q;
 
 	gtk_list_store_clear(browser->pr_plugin_store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
@@ -2118,7 +2124,17 @@ static void _preferences_set_plugins(Browser * browser)
 			plugin_delete(p);
 			continue;
 		}
-		/* FIXME determine if the plug-in is enabled already */
+		/* FIXME allow plug-ins to be enabled or disabled */
+		enabled = FALSE;
+		for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+				valid = gtk_tree_model_iter_next(model, &iter))
+		{
+			gtk_tree_model_get(model, &iter, BPC_NAME, &q, -1);
+			enabled = (strcmp(q, de->d_name) == 0) ? TRUE : FALSE;
+			g_free(q);
+			if(enabled)
+				break;
+		}
 		if(bp->icon == NULL)
 			pixbuf = gtk_icon_theme_load_icon(theme,
 					"gnome-settings", 24, 0, NULL);
@@ -2126,8 +2142,8 @@ static void _preferences_set_plugins(Browser * browser)
 			pixbuf = gtk_icon_theme_load_icon(theme, bp->icon, 24,
 					0, NULL);
 		gtk_list_store_append(browser->pr_plugin_store, &iter);
-		gtk_list_store_set(browser->pr_plugin_store, &iter, 1, pixbuf,
-				2, _(bp->name), -1);
+		gtk_list_store_set(browser->pr_plugin_store, &iter, 0, enabled,
+				1, pixbuf, 2, _(bp->name), -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
