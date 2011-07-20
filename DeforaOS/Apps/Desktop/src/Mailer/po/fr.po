@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-20 13:09+0200\n"
+"POT-Creation-Date: 2011-07-20 13:19+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -434,56 +434,60 @@ msgstr "Type de compte "
 msgid " active\n"
 msgstr " actif\n"
 
-#: ../src/mailer.c:2128
+#: ../src/mailer.c:2131
 msgid "Edit account: "
 msgstr "Modification du compte: "
 
-#: ../src/mailer.c:2151
+#: ../src/mailer.c:2153
 msgid "Account name:"
 msgstr "Nom du compte :"
 
-#: ../src/mailer.c:2160
+#: ../src/mailer.c:2162
 msgid "Identity:"
 msgstr "Identité :"
 
-#: ../src/mailer.c:2164
+#: ../src/mailer.c:2167
 msgid "Name:"
 msgstr "Nom :"
 
-#: ../src/mailer.c:2172
+#: ../src/mailer.c:2178
 msgid "Address:"
 msgstr "Adresse :"
 
-#: ../src/mailer.c:2182
+#: ../src/mailer.c:2189
+msgid "Organization:"
+msgstr "Organisation :"
+
+#: ../src/mailer.c:2202
 msgid "Account"
 msgstr "Compte"
 
-#: ../src/mailer.c:2187
+#: ../src/mailer.c:2207
 msgid "Settings"
 msgstr "Paramètres"
 
-#: ../src/mailer.c:2241
+#: ../src/mailer.c:2261
 msgid "An error occured while saving preferences"
 msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
-#: ../src/mailer.c:2419 ../src/mailer.c:2423
+#: ../src/mailer.c:2439 ../src/mailer.c:2443
 msgid "Question"
 msgstr "Question"
 
-#: ../src/mailer.c:2473
+#: ../src/mailer.c:2493
 #, c-format
 msgid "%s/%s: %d %s"
 msgstr "%s/%s: %d %s"
 
-#: ../src/mailer.c:2476
+#: ../src/mailer.c:2496
 msgid "messages"
 msgstr "messages"
 
-#: ../src/mailer.c:2476
+#: ../src/mailer.c:2496
 msgid "message"
 msgstr "message"
 
-#: ../src/mailer.c:2479
+#: ../src/mailer.c:2499
 msgid "Ready"
 msgstr "Prêt"
 

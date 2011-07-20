@@ -2114,6 +2114,8 @@ static void _on_preferences_account_edit(gpointer data)
 
 static GtkWidget * _account_edit(Mailer * mailer, Account * account)
 {
+	char const * title;
+	char const * p;
 	GtkWidget * window;
 	char buf[80];
 	GtkWidget * content;
@@ -2125,8 +2127,8 @@ static GtkWidget * _account_edit(Mailer * mailer, Account * account)
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
 
-	snprintf(buf, sizeof(buf), "%s%s", _("Edit account: "),
-			account_get_title(account));
+	title = account_get_title(account);
+	snprintf(buf, sizeof(buf), "%s%s", _("Edit account: "), title);
 	window = gtk_dialog_new_with_buttons(buf, GTK_WINDOW(mailer->pr_window),
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -2153,27 +2155,45 @@ static GtkWidget * _account_edit(Mailer * mailer, Account * account)
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(widget), account_get_title(account));
+	gtk_entry_set_text(GTK_ENTRY(widget), title);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* identity */
 	frame = gtk_frame_new(_("Identity:"));
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	/* identity: name */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Name:"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_entry_new();
+	if((p = config_get(mailer->config, title, "identity_name")) != NULL)
+		gtk_entry_set_text(GTK_ENTRY(widget), p);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* identity: address */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Address:"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_entry_new();
+	if((p = config_get(mailer->config, title, "identity_email")) != NULL)
+		gtk_entry_set_text(GTK_ENTRY(widget), p);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* identity: organization */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Organization:"));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	if((p = config_get(mailer->config, title, "identity_organization"))
+			!= NULL)
+		gtk_entry_set_text(GTK_ENTRY(widget), p);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox2);
