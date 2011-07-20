@@ -37,7 +37,7 @@
 # define LIBDIR		PREFIX "/lib"
 #endif
 
-#define ACCOUNT "account"
+#define ACCOUNT		"account"
 
 
 /* Account */

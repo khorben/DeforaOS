@@ -477,15 +477,14 @@ static int _new_plugins(Mailer * mailer)
 				|| strcmp(".so", &de->d_name[len - 3]) != 0)
 			continue;
 		de->d_name[len - 3] = '\0';
-		if((p = realloc(mailer->available, sizeof(*p)
-						* (mailer->available_cnt + 1)))
-				== NULL)
+		if((p = realloc(mailer->available, (mailer->available_cnt + 1)
+						* sizeof(*p))) == NULL)
 		{
 			error_set_print("mailer", 1, "%s", strerror(errno));
 			continue;
 		}
 		mailer->available = p;
-		if((p[mailer->available_cnt] = account_new(mailer, de->d_name,
+		if((p[mailer->available_cnt] = account_new(NULL, de->d_name,
 						NULL, NULL)) == NULL)
 		{
 			error_print("mailer");
@@ -862,7 +861,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	Account ** p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)account);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void *)account);
 #endif
 	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt
 						+ 1))) == NULL)
@@ -911,7 +910,42 @@ int mailer_account_enable(Mailer * mailer, Account * account)
 /* mailer_compose */
 void mailer_compose(Mailer * mailer)
 {
-	compose_new(mailer->config);
+	Compose * compose;
+	Account * account;
+	char const * title;
+	char const * name;
+	char const * email;
+	char const * organization;
+	gchar * p;
+
+	if((compose = compose_new(mailer->config)) == NULL)
+		return; /* XXX report error */
+	if((account = mailer->account_cur) == NULL)
+	{
+		if(mailer->account_cnt == 0)
+			return;
+		account = mailer->account[0];
+	}
+	title = account_get_title(account);
+	if((name = config_get(mailer->config, title, "identity_name")) != NULL
+			&& name[0] == '\0')
+		name = NULL;
+	if((email = config_get(mailer->config, title, "identity_email")) != NULL
+			&& email[0] == '\0')
+		email = NULL;
+	if((p = g_strdup_printf("%s%s%s%s", (name != NULL) ? name : "",
+					(name != NULL && email != NULL) ? " <"
+					: "", (email != NULL) ? email : "",
+					(name != NULL && email != NULL) ? ">"
+					: "")) != NULL)
+	{
+		compose_set_from(compose, p);
+		g_free(p);
+	}
+	organization = config_get(mailer->config, title,
+			"identity_organization");
+	if(organization != NULL && organization[0] != '\0')
+		compose_set_field(compose, "Organization:", organization);
 }
 
 
