@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 17:49+0200\n"
+"POT-Creation-Date: 2011-07-20 12:06+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -188,7 +188,7 @@ msgstr " Chemin : "
 #: ../src/browser.c:700 ../src/browser.c:704 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:315 ../src/properties.c:319
+#: ../src/move.c:456 ../src/properties.c:312 ../src/properties.c:316
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
 msgstr "Erreur"
@@ -319,8 +319,8 @@ msgstr "Actualisation du dossier..."
 msgid "New folder"
 msgstr "Nouveau dossier"
 
-#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1038
-#: ../src/callbacks.c:1043 ../src/desktopicon.c:841 ../src/desktopicon.c:846
+#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1039
+#: ../src/callbacks.c:1044 ../src/desktopicon.c:841 ../src/desktopicon.c:846
 #: ../src/desktopicon.c:964 ../src/desktopicon.c:969
 msgid "Warning"
 msgstr "Avertissement"
@@ -330,40 +330,40 @@ msgstr "Avertissement"
 msgid "Are you sure you want to delete %lu file(s)?"
 msgstr "Voulez-vous vraiment effacer %lu fichier(s)?"
 
-#: ../src/callbacks.c:767
+#: ../src/callbacks.c:768
 msgid "New"
 msgstr "Nouveau"
 
-#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:450
+#: ../src/callbacks.c:773 ../src/callbacks.c:777 ../src/desktop.c:450
 msgid "Folder"
 msgstr "Dossier"
 
-#: ../src/callbacks.c:783 ../src/desktop.c:458
+#: ../src/callbacks.c:784 ../src/desktop.c:458
 msgid "Symbolic link..."
 msgstr "Lien symbolique..."
 
-#: ../src/callbacks.c:787 ../src/desktop.c:462
+#: ../src/callbacks.c:788 ../src/desktop.c:462
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:822 ../src/desktop.c:558
+#: ../src/callbacks.c:823 ../src/desktop.c:558
 msgid "New text file.txt"
 msgstr "Nouveau fichier texte.txt"
 
-#: ../src/callbacks.c:869
+#: ../src/callbacks.c:870
 msgid "Open in new _window"
 msgstr "Ouvrir dans une _nouvelle fenêtre"
 
-#: ../src/callbacks.c:897
+#: ../src/callbacks.c:898
 msgid "_Unmount"
 msgstr "Démonter"
 
-#: ../src/callbacks.c:932 ../src/desktopicon.c:736 ../src/view.c:101
+#: ../src/callbacks.c:933 ../src/desktopicon.c:736 ../src/view.c:101
 #: ../src/view.c:112
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
 
-#: ../src/callbacks.c:1042 ../src/desktopicon.c:845
+#: ../src/callbacks.c:1043 ../src/desktopicon.c:845
 msgid "Are you sure you want to execute this file?"
 msgstr "Voulez-vous vraiment exécuter ce fichier ?"
 
@@ -412,7 +412,7 @@ msgstr "Fichier %u sur %u"
 msgid "Omitting directory"
 msgstr "Omission du dossier"
 
-#: ../src/copy.c:590 ../src/properties.c:518
+#: ../src/copy.c:590 ../src/properties.c:515
 msgid "kB"
 msgstr "Kio"
 
@@ -420,7 +420,7 @@ msgstr "Kio"
 msgid "0.0 kB/s"
 msgstr "0.0 Kio/s"
 
-#: ../src/copy.c:615 ../src/properties.c:520
+#: ../src/copy.c:615 ../src/properties.c:517
 msgid "MB"
 msgstr "Mio"
 
@@ -644,11 +644,11 @@ msgstr ""
 msgid "Size:"
 msgstr "Taille:"
 
-#: ../src/properties.c:182 ../src/properties.c:244
+#: ../src/properties.c:182 ../src/properties.c:241
 msgid "Owner:"
 msgstr "Propriétaire:"
 
-#: ../src/properties.c:188 ../src/properties.c:247
+#: ../src/properties.c:188 ../src/properties.c:244
 msgid "Group:"
 msgstr "Groupe:"
 
@@ -664,47 +664,43 @@ msgstr "Modifié:"
 msgid "Changed:"
 msgstr "Changé:"
 
-#: ../src/properties.c:212
-msgid "Permissions:"
-msgstr "Permissions:"
-
-#: ../src/properties.c:216
+#: ../src/properties.c:213
 msgid "Read:"
 msgstr "Lecture :"
 
-#: ../src/properties.c:220
+#: ../src/properties.c:217
 msgid "Write:"
 msgstr "Écriture :"
 
-#: ../src/properties.c:224
+#: ../src/properties.c:221
 msgid "Execute:"
 msgstr "Exécution :"
 
-#: ../src/properties.c:250
+#: ../src/properties.c:247
 msgid "Others:"
 msgstr "Autres:"
 
-#: ../src/properties.c:432
+#: ../src/properties.c:429
 msgid "Unknown type"
 msgstr "Type de fichier inconnu"
 
-#: ../src/properties.c:512
+#: ../src/properties.c:509
 msgid "bytes"
 msgstr "octets"
 
-#: ../src/properties.c:522
+#: ../src/properties.c:519
 msgid "GB"
 msgstr "Gio"
 
-#: ../src/properties.c:526
+#: ../src/properties.c:523
 msgid "TB"
 msgstr "Tio"
 
-#: ../src/properties.c:565
+#: ../src/properties.c:562
 msgid "Properties of "
 msgstr "Propriétés de "
 
-#: ../src/properties.c:651
+#: ../src/properties.c:648
 msgid "Usage: properties file...\n"
 msgstr "Usage: properties fichier...\n"
 
@@ -747,12 +743,3 @@ msgstr "Périphériques"
 #: ../src/plugins/devices.c:207
 msgid "Root filesystem"
 msgstr "Racine"
-
-#~ msgid "read"
-#~ msgstr "lecture"
-
-#~ msgid "write"
-#~ msgstr "écriture"
-
-#~ msgid "execute"
-#~ msgstr "exécution"

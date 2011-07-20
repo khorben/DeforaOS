@@ -555,6 +555,7 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		if(rename(path, p) != 0)
 			browser_error(browser, path, 0);
 	}
+	/* FIXME implement workaround for FAT */
 	else if(link(path, p) != 0 || unlink(path) != 0)
 		browser_error(browser, path, 0);
 	free(p);

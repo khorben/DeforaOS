@@ -156,7 +156,7 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
 				properties->view), GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 4);
-	table = gtk_table_new(13, 2, FALSE);
+	table = gtk_table_new(12, 2, FALSE);
 	gtk_container_set_border_width(GTK_CONTAINER(table), 4);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
@@ -209,9 +209,6 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	properties->ctime = gtk_label_new("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->ctime, 1, 2, 7,
 			8);
-	widget = gtk_label_new(_("Permissions:")); /* permissions */
-	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 8, 9);
 	hbox = gtk_hbox_new(TRUE, 4);
 	widget = gtk_label_new(_("Read:"));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -225,7 +222,7 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2, 9, 10);
+	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2, 8, 9);
 	hbox = gtk_hbox_new(TRUE, 4);
 	for(i = 0; i < sizeof(properties->mode) / sizeof(*properties->mode);
 			i++)
@@ -238,18 +235,18 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 		if((i % 3) != 2)
 			continue;
 		gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2,
-				12 - (i / 3), 13 - (i / 3));
+				11 - (i / 3), 12 - (i / 3));
 		hbox = NULL;
 	}
 	widget = gtk_label_new(_("Owner:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
 	widget = gtk_label_new(_("Group:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
 	widget = gtk_label_new(_("Others:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 12, 13);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
 	pango_font_description_free(bold);
 	if(filename != NULL)
 		_properties_set_filename(properties, filename);

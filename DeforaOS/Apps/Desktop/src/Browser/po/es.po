@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 17:49+0200\n"
+"POT-Creation-Date: 2011-07-20 12:06+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -188,7 +188,7 @@ msgstr ""
 #: ../src/browser.c:700 ../src/browser.c:704 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:315 ../src/properties.c:319
+#: ../src/move.c:456 ../src/properties.c:312 ../src/properties.c:316
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
 msgstr ""
@@ -319,8 +319,8 @@ msgstr ""
 msgid "New folder"
 msgstr ""
 
-#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1038
-#: ../src/callbacks.c:1043 ../src/desktopicon.c:841 ../src/desktopicon.c:846
+#: ../src/callbacks.c:196 ../src/callbacks.c:202 ../src/callbacks.c:1039
+#: ../src/callbacks.c:1044 ../src/desktopicon.c:841 ../src/desktopicon.c:846
 #: ../src/desktopicon.c:964 ../src/desktopicon.c:969
 msgid "Warning"
 msgstr ""
@@ -330,40 +330,40 @@ msgstr ""
 msgid "Are you sure you want to delete %lu file(s)?"
 msgstr ""
 
-#: ../src/callbacks.c:767
+#: ../src/callbacks.c:768
 msgid "New"
 msgstr ""
 
-#: ../src/callbacks.c:772 ../src/callbacks.c:776 ../src/desktop.c:450
+#: ../src/callbacks.c:773 ../src/callbacks.c:777 ../src/desktop.c:450
 msgid "Folder"
 msgstr ""
 
-#: ../src/callbacks.c:783 ../src/desktop.c:458
+#: ../src/callbacks.c:784 ../src/desktop.c:458
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:787 ../src/desktop.c:462
+#: ../src/callbacks.c:788 ../src/desktop.c:462
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:822 ../src/desktop.c:558
+#: ../src/callbacks.c:823 ../src/desktop.c:558
 msgid "New text file.txt"
 msgstr ""
 
-#: ../src/callbacks.c:869
+#: ../src/callbacks.c:870
 msgid "Open in new _window"
 msgstr ""
 
-#: ../src/callbacks.c:897
+#: ../src/callbacks.c:898
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:932 ../src/desktopicon.c:736 ../src/view.c:101
+#: ../src/callbacks.c:933 ../src/desktopicon.c:736 ../src/view.c:101
 #: ../src/view.c:112
 msgid "Open _with..."
 msgstr ""
 
-#: ../src/callbacks.c:1042 ../src/desktopicon.c:845
+#: ../src/callbacks.c:1043 ../src/desktopicon.c:845
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Omitting directory"
 msgstr ""
 
-#: ../src/copy.c:590 ../src/properties.c:518
+#: ../src/copy.c:590 ../src/properties.c:515
 msgid "kB"
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "0.0 kB/s"
 msgstr ""
 
-#: ../src/copy.c:615 ../src/properties.c:520
+#: ../src/copy.c:615 ../src/properties.c:517
 msgid "MB"
 msgstr ""
 
@@ -610,11 +610,11 @@ msgstr ""
 msgid "Size:"
 msgstr ""
 
-#: ../src/properties.c:182 ../src/properties.c:244
+#: ../src/properties.c:182 ../src/properties.c:241
 msgid "Owner:"
 msgstr ""
 
-#: ../src/properties.c:188 ../src/properties.c:247
+#: ../src/properties.c:188 ../src/properties.c:244
 msgid "Group:"
 msgstr ""
 
@@ -630,47 +630,43 @@ msgstr ""
 msgid "Changed:"
 msgstr ""
 
-#: ../src/properties.c:212
-msgid "Permissions:"
-msgstr ""
-
-#: ../src/properties.c:216
+#: ../src/properties.c:213
 msgid "Read:"
 msgstr ""
 
-#: ../src/properties.c:220
+#: ../src/properties.c:217
 msgid "Write:"
 msgstr ""
 
-#: ../src/properties.c:224
+#: ../src/properties.c:221
 msgid "Execute:"
 msgstr ""
 
-#: ../src/properties.c:250
+#: ../src/properties.c:247
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:432
+#: ../src/properties.c:429
 msgid "Unknown type"
 msgstr ""
 
-#: ../src/properties.c:512
+#: ../src/properties.c:509
 msgid "bytes"
 msgstr ""
 
-#: ../src/properties.c:522
+#: ../src/properties.c:519
 msgid "GB"
 msgstr ""
 
-#: ../src/properties.c:526
+#: ../src/properties.c:523
 msgid "TB"
 msgstr ""
 
-#: ../src/properties.c:565
+#: ../src/properties.c:562
 msgid "Properties of "
 msgstr "Propriedades con "
 
-#: ../src/properties.c:651
+#: ../src/properties.c:648
 msgid "Usage: properties file...\n"
 msgstr ""
 
