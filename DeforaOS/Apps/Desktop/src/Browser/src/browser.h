@@ -190,6 +190,7 @@ void browser_focus_location(Browser * browser);
 void browser_go_home(Browser * browser);
 
 int browser_load(Browser * browser, char const * plugin);
+int browser_unload(Browser * browser, char const * plugin);
 
 void browser_open(Browser * browser, char const * path);
 void browser_open_with(Browser * browser, char const * path);

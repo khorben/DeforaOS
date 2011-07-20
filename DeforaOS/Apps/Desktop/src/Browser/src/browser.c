@@ -202,9 +202,13 @@ static DesktopToolbar _browser_toolbar[] =
 
 
 /* prototypes */
+/* accessors */
+static gboolean _browser_plugin_is_enabled(Browser * browser,
+		char const * plugin);
+static void _browser_set_status(Browser * browser, char const * status);
+
 static DIR * _browser_opendir(char const * pathname, struct stat * st);
 static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st);
-static void _browser_set_status(Browser * browser, char const * status);
 
 static char * _config_get_filename(void);
 static int _config_load_boolean(Config * config, char const * variable,
@@ -610,7 +614,27 @@ Browser * browser_new_copy(Browser * browser)
 
 
 /* browser_delete */
+static void _delete_plugins(Browser * browser);
+
 void browser_delete(Browser * browser)
+{
+	_delete_plugins(browser);
+	if(browser->config != NULL)
+		config_delete(browser->config);
+	gtk_widget_hide(browser->window);
+	if(browser->refresh_id)
+		g_source_remove(browser->refresh_id);
+	g_list_foreach(browser->history, (GFunc)free, NULL);
+	g_list_free(browser->history);
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	g_object_unref(browser->store);
+	gtk_widget_destroy(browser->window);
+	free(browser);
+	browser_cnt--;
+}
+
+static void _delete_plugins(Browser * browser)
 {
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
 	GtkTreeIter iter;
@@ -627,19 +651,6 @@ void browser_delete(Browser * browser)
 			bp->destroy(bp);
 		plugin_delete(plugin);
 	}
-	if(browser->config != NULL)
-		config_delete(browser->config);
-	gtk_widget_hide(browser->window);
-	if(browser->refresh_id)
-		g_source_remove(browser->refresh_id);
-	g_list_foreach(browser->history, (GFunc)free, NULL);
-	g_list_free(browser->history);
-	g_list_foreach(browser->selection, (GFunc)free, NULL);
-	g_list_free(browser->selection);
-	g_object_unref(browser->store);
-	gtk_widget_destroy(browser->window);
-	free(browser);
-	browser_cnt--;
 }
 
 
@@ -842,6 +853,8 @@ int browser_load(Browser * browser, char const * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
 #endif
+	if(_browser_plugin_is_enabled(browser, plugin))
+		return 0;
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -browser_error(NULL, error_get(), 1);
 	if((bp = plugin_lookup(p, "plugin")) == NULL)
@@ -947,7 +960,7 @@ void browser_refresh(Browser * browser)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__, browser->current != NULL
-			? (char*)browser->current->data : "NULL");
+			? (char *)browser->current->data : "NULL");
 #endif
 	if(browser->current == NULL)
 		return;
@@ -1159,21 +1172,21 @@ static char const * _insert_size(off_t size)
 
 	if(sz < 1024)
 	{
-		snprintf(buf, sizeof(buf), "%.0f%s", sz, " bytes");
+		snprintf(buf, sizeof(buf), "%.0f %s", sz, _("bytes"));
 		return buf;
 	}
 	else if((sz /= 1024) < 1024)
-		unit = "KB";
+		unit = N_("kB");
 	else if((sz /= 1024) < 1024)
-		unit = "MB";
+		unit = N_("MB");
 	else if((sz /= 1024) < 1024)
-		unit = "GB";
+		unit = N_("GB");
 	else
 	{
 		sz /= 1024;
-		unit = "TB";
+		unit = N_("TB");
 	}
-	snprintf(buf, sizeof(buf), "%.1f %s", sz, unit);
+	snprintf(buf, sizeof(buf), "%.1f %s", sz, _(unit));
 	return buf;
 }
 
@@ -1920,6 +1933,8 @@ static void _preferences_set_plugins(Browser * browser);
 static void _preferences_on_mime_edit(gpointer data);
 static void _preferences_on_mime_foreach(void * data, char const * name,
 		GdkPixbuf * icon_24, GdkPixbuf * icon_48, GdkPixbuf * icon_96);
+static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -1932,6 +1947,7 @@ void browser_show_preferences(Browser * browser)
 	GtkWidget * vbox;
 	GtkWidget * notebook;
 	GtkWidget * hbox;
+	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
 	if(browser->pr_window != NULL)
@@ -2030,28 +2046,30 @@ void browser_show_preferences(Browser * browser)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox,
 			gtk_label_new_with_mnemonic(_("_File associations")));
 	/* plug-ins tab */
-	browser->pr_plugin_store = gtk_list_store_new(3, G_TYPE_BOOLEAN,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	browser->pr_plugin_store = gtk_list_store_new(4, G_TYPE_STRING,
+			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	browser->pr_plugin_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->pr_plugin_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(
 				browser->pr_plugin_view), FALSE);
-	/* FIXME track the renderer's "toggled" signal */
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
+				_preferences_on_plugin_toggled), browser);
 	column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
-			gtk_cell_renderer_toggle_new(), "active", 0, NULL);
+			renderer, "active", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
 			column);
 	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_pixbuf_new(), "pixbuf", 1, NULL);
+			gtk_cell_renderer_pixbuf_new(), "pixbuf", 2, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
 			column);
 	column = gtk_tree_view_column_new_with_attributes(_("Name"),
-			gtk_cell_renderer_text_new(), "text", 2, NULL);
-	gtk_tree_view_column_set_sort_column_id(column, 2);
+			gtk_cell_renderer_text_new(), "text", 3, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, 3);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
 			column);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
-				browser->pr_plugin_store), 2,
+				browser->pr_plugin_store), 3,
 			GTK_SORT_ASCENDING);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -2093,14 +2111,11 @@ static void _preferences_set_plugins(Browser * browser)
 	GtkIconTheme * theme;
 	char const ext[] = ".so";
 	size_t len;
-	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
-	GtkTreeIter iter;
-	gboolean valid;
 	Plugin * p;
 	BrowserPlugin * bp;
+	GtkTreeIter iter;
 	gboolean enabled;
 	GdkPixbuf * pixbuf;
-	char * q;
 
 	gtk_list_store_clear(browser->pr_plugin_store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
@@ -2124,17 +2139,7 @@ static void _preferences_set_plugins(Browser * browser)
 			plugin_delete(p);
 			continue;
 		}
-		/* FIXME allow plug-ins to be enabled or disabled */
-		enabled = FALSE;
-		for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
-				valid = gtk_tree_model_iter_next(model, &iter))
-		{
-			gtk_tree_model_get(model, &iter, BPC_NAME, &q, -1);
-			enabled = (strcmp(q, de->d_name) == 0) ? TRUE : FALSE;
-			g_free(q);
-			if(enabled)
-				break;
-		}
+		enabled = _browser_plugin_is_enabled(browser, de->d_name);
 		if(bp->icon == NULL)
 			pixbuf = gtk_icon_theme_load_icon(theme,
 					"gnome-settings", 24, 0, NULL);
@@ -2142,8 +2147,9 @@ static void _preferences_set_plugins(Browser * browser)
 			pixbuf = gtk_icon_theme_load_icon(theme, bp->icon, 24,
 					0, NULL);
 		gtk_list_store_append(browser->pr_plugin_store, &iter);
-		gtk_list_store_set(browser->pr_plugin_store, &iter, 0, enabled,
-				1, pixbuf, 2, _(bp->name), -1);
+		gtk_list_store_set(browser->pr_plugin_store, &iter,
+				0, de->d_name, 1, enabled, 2, pixbuf,
+				3, _(bp->name), -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
@@ -2252,6 +2258,18 @@ static void _preferences_on_mime_foreach(void * data, char const * name,
 			MI_COL_ICON, icon_24, -1);
 }
 
+static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data)
+{
+	Browser * browser = data;
+	GtkTreeIter iter;
+
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(
+				browser->pr_plugin_store), &iter, path);
+	gtk_list_store_set(browser->pr_plugin_store, &iter, 1,
+			!gtk_cell_renderer_toggle_get_active(renderer), -1);
+}
+
 static gboolean _preferences_on_closex(gpointer data)
 {
 	Browser * browser = data;
@@ -2281,8 +2299,16 @@ static void _preferences_on_cancel(gpointer data)
 static void _preferences_on_ok(gpointer data)
 {
 	Browser * browser = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pr_plugin_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+	gboolean enabled;
+	String * value = string_new("");
+	String * sep = "";
 
 	gtk_widget_hide(browser->pr_window);
+	/* appearance */
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->prefs.default_view = gtk_combo_box_get_active(GTK_COMBO_BOX(
 				browser->pr_view));
@@ -2298,8 +2324,65 @@ static void _preferences_on_ok(gpointer data)
 			GTK_TOGGLE_BUTTON(browser->pr_sort));
 	browser->prefs.show_hidden_files = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_hidden));
+	/* plug-ins */
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, 1, &enabled, -1);
+		if(enabled)
+		{
+			browser_load(browser, p);
+			string_append(&value, sep);
+			string_append(&value, p);
+			sep = ",";
+		}
+		else if(_browser_plugin_is_enabled(browser, p))
+			browser_unload(browser, p);
+		g_free(p);
+	}
+	config_set(browser->config, NULL, "plugins", value);
+	string_delete(value);
 	browser_config_save(browser);
 	browser_refresh(browser);
+}
+
+
+/* browser_unload */
+int browser_unload(Browser * browser, char const * plugin)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+	Plugin * pp;
+	BrowserPlugin * bp;
+	GtkWidget * widget;
+	gboolean enabled = FALSE;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, BPC_NAME, &p, BPC_PLUGIN, &pp,
+				BPC_BROWSERPLUGIN, &bp, BPC_WIDGET, &widget,
+				-1);
+		enabled = (strcmp(p, plugin) == 0) ? TRUE : FALSE;
+		g_free(p);
+		if(enabled)
+			break;
+	}
+	if(enabled != TRUE)
+		return 0;
+	gtk_list_store_remove(browser->pl_store, &iter);
+	gtk_container_remove(GTK_CONTAINER(browser->pl_box), widget);
+	if(bp->destroy != NULL)
+		bp->destroy(bp);
+	plugin_delete(pp);
+	if(gtk_tree_model_iter_n_children(model, NULL) == 0)
+	{
+		gtk_widget_set_no_show_all(browser->pl_view, TRUE);
+		gtk_widget_hide(browser->pl_view);
+	}
+	return 0;
 }
 
 
@@ -2364,7 +2447,7 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
-			(char*)browser->current->data);
+			(char *)browser->current->data);
 #endif
 	if(browser->refresh_id != 0)
 		g_source_remove(browser->refresh_id);
@@ -2395,8 +2478,8 @@ static void _refresh_title(Browser * browser)
 	char * p;
 
 	p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL, NULL);
-	snprintf(buf, sizeof(buf), "%s%s", "File browser - ", p != NULL ? p
-			: (char*)browser->current->data);
+	snprintf(buf, sizeof(buf), "%s%s%s", _("File browser"), " - ",
+			(p != NULL) ? p : (char *)browser->current->data);
 	free(p);
 	gtk_window_set_title(GTK_WINDOW(browser->window), buf);
 }
@@ -2446,6 +2529,29 @@ static void _refresh_path(Browser * browser)
 		}
 	}
 	g_free(p);
+}
+
+
+/* browser_plugin_is_enabled */
+static gboolean _browser_plugin_is_enabled(Browser * browser,
+		char const * plugin)
+{
+	gboolean ret = FALSE;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
+	GtkTreeIter iter;
+	gchar * p;
+	gboolean valid;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, BPC_NAME, &p, -1);
+		ret = (strcmp(p, plugin) == 0) ? TRUE : FALSE;
+		g_free(p);
+		if(ret)
+			break;
+	}
+	return ret;
 }
 
 

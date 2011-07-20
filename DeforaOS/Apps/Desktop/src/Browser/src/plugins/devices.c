@@ -140,7 +140,6 @@ static void _devices_destroy(BrowserPlugin * plugin)
 
 	if(devices->source != 0)
 		g_source_remove(devices->source);
-	gtk_widget_destroy(devices->view);
 	object_delete(devices);
 }
 

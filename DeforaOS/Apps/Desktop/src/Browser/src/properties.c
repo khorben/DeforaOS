@@ -147,6 +147,7 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 		return NULL;
 	}
 	properties->mime = mime;
+	properties->filename = NULL;
 	properties->theme = gtk_icon_theme_get_default();
 	properties->window = NULL;
 	properties->group = NULL;
@@ -262,10 +263,9 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 /* properties_delete */
 static void _properties_delete(Properties * properties)
 {
-	gtk_widget_destroy(properties->view);
 	if(properties->window != NULL)
 		gtk_widget_destroy(properties->window);
-	/* FIXME implement the rest */
+	free(properties->filename);
 	free(properties);
 	_properties_cnt--;
 }
