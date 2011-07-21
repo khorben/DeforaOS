@@ -191,7 +191,11 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	widget = gtk_label_new(_("Group:")); /* group name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 4, 5);
+#ifndef WITH_MAIN
+	properties->group = _new_label_left("");
+#else
 	properties->group = gtk_combo_box_new_text();
+#endif
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->group, 1, 2, 4,
 			5);
 	widget = gtk_label_new(_("Accessed:")); /* last access */
@@ -481,6 +485,21 @@ static void _refresh_owner(Properties * properties, uid_t uid)
 	gtk_label_set_text(GTK_LABEL(properties->owner), p);
 }
 
+#ifndef WITH_MAIN
+static int _refresh_group(Properties * properties, gid_t gid)
+{
+	char buf[256];
+	char const * p = buf;
+	struct group * gr;
+
+	if((gr = getgrgid(gid)) != NULL)
+		p = gr->gr_name;
+	else
+		snprintf(buf, sizeof(buf), "%lu", (unsigned long)gid);
+	gtk_label_set_text(GTK_LABEL(properties->group), p);
+	return 0;
+}
+#else
 static int _refresh_group(Properties * properties, gid_t gid)
 {
 	GtkWidget * combo;
@@ -513,6 +532,7 @@ static int _refresh_group(Properties * properties, gid_t gid)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), active);
 	return 0;
 }
+#endif
 
 static void _refresh_size(Properties * properties, size_t size)
 {
