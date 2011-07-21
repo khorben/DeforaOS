@@ -131,6 +131,8 @@ static int _properties(Mime * mime, int filec, char * const filev[])
 
 
 /* properties_new */
+static GtkWidget * _new_label_left(char const * text);
+
 static Properties * _properties_new(char const * filename, Mime * mime)
 {
 	Properties * properties;
@@ -171,19 +173,19 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_widget_modify_font(properties->name, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->name, 1, 2, 0,
 			1);
-	properties->type = gtk_label_new(NULL);
+	properties->type = _new_label_left(NULL);
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->type, 1, 2, 1,
 			2);
 	widget = gtk_label_new(_("Size:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
-	properties->size = gtk_label_new("");
+	properties->size = _new_label_left("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->size, 1, 2, 2,
 			3);
 	widget = gtk_label_new(_("Owner:")); /* owner name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
-	properties->owner = gtk_label_new("");
+	properties->owner = _new_label_left("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->owner, 1, 2, 3,
 			4);
 	widget = gtk_label_new(_("Group:")); /* group name */
@@ -195,32 +197,29 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	widget = gtk_label_new(_("Accessed:")); /* last access */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 5, 6);
-	properties->atime = gtk_label_new("");
+	properties->atime = _new_label_left("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->atime, 1, 2, 5,
 			6);
 	widget = gtk_label_new(_("Modified:")); /* last modification */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 6, 7);
-	properties->mtime = gtk_label_new("");
+	properties->mtime = _new_label_left("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->mtime, 1, 2, 6,
 			7);
 	widget = gtk_label_new(_("Changed:")); /* last change */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 7, 8);
-	properties->ctime = gtk_label_new("");
+	properties->ctime = _new_label_left("");
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->ctime, 1, 2, 7,
 			8);
 	hbox = gtk_hbox_new(TRUE, 4);
-	widget = gtk_label_new(_("Read:"));
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	widget = _new_label_left(_("Read:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = gtk_label_new(_("Write:"));
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	widget = _new_label_left(_("Write:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = gtk_label_new(_("Execute:"));
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	widget = _new_label_left(_("Execute:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2, 8, 9);
@@ -257,6 +256,15 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_widget_set_size_request(properties->view, 200, 320);
 	gtk_widget_show_all(properties->view);
 	return properties;
+}
+
+static GtkWidget * _new_label_left(char const * text)
+{
+	GtkWidget * ret;
+
+	ret = gtk_label_new(text);
+	gtk_misc_set_alignment(GTK_MISC(ret), 0.0, 0.5);
+	return ret;
 }
 
 
