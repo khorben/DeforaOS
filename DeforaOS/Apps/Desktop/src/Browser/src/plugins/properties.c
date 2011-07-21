@@ -80,8 +80,10 @@ static void _properties_destroy(BrowserPlugin * plugin)
 {
 	PropertiesPlugin * properties = plugin->priv;
 
-	_properties_delete(properties->properties);
-	mime_delete(properties->mime);
+	if(properties->properties != NULL)
+		_properties_delete(properties->properties);
+	if(properties->mime != NULL)
+		mime_delete(properties->mime);
 	object_delete(properties);
 }
 
