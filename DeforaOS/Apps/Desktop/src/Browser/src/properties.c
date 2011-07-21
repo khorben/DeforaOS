@@ -374,7 +374,11 @@ static void _refresh_name(GtkWidget * widget, char const * filename)
 {
 	gchar * gfilename;
 
+#ifdef WITH_MAIN
 	gfilename = g_filename_display_name(filename);
+#else
+	gfilename = g_filename_display_basename(filename);
+#endif
 	gtk_entry_set_text(GTK_ENTRY(widget), gfilename);
 	g_free(gfilename);
 }

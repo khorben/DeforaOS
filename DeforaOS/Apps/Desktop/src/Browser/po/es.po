@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-21 18:05+0200\n"
+"POT-Creation-Date: 2011-07-21 18:21+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -219,23 +219,23 @@ msgstr ""
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1175 ../src/properties.c:509
+#: ../src/browser.c:1175 ../src/properties.c:513
 msgid "bytes"
 msgstr ""
 
-#: ../src/browser.c:1179 ../src/copy.c:590 ../src/properties.c:515
+#: ../src/browser.c:1179 ../src/copy.c:590 ../src/properties.c:519
 msgid "kB"
 msgstr ""
 
-#: ../src/browser.c:1181 ../src/copy.c:615 ../src/properties.c:517
+#: ../src/browser.c:1181 ../src/copy.c:615 ../src/properties.c:521
 msgid "MB"
 msgstr ""
 
-#: ../src/browser.c:1183 ../src/properties.c:519
+#: ../src/browser.c:1183 ../src/properties.c:523
 msgid "GB"
 msgstr ""
 
-#: ../src/browser.c:1187 ../src/properties.c:523
+#: ../src/browser.c:1187 ../src/properties.c:527
 msgid "TB"
 msgstr ""
 
@@ -658,15 +658,15 @@ msgstr ""
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:429
+#: ../src/properties.c:433
 msgid "Unknown type"
 msgstr ""
 
-#: ../src/properties.c:562
+#: ../src/properties.c:566
 msgid "Properties of "
 msgstr "Propriedades con "
 
-#: ../src/properties.c:648
+#: ../src/properties.c:652
 msgid "Usage: properties file...\n"
 msgstr ""
 
