@@ -228,6 +228,7 @@ unsigned int browser_cnt = 0;
 /* functions */
 /* callbacks */
 static void _browser_on_plugin_combo_change(gpointer data);
+static void _browser_on_selection_changed(gpointer data);
 
 
 /* public */
@@ -1687,6 +1688,9 @@ static void _view_details(Browser * browser)
 			g_list_free(sel);
 		}
 #endif
+		g_signal_connect_swapped(G_OBJECT(treesel), "changed",
+				G_CALLBACK(_browser_on_selection_changed),
+				browser);
 	}
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes("", renderer,
@@ -1812,6 +1816,9 @@ static void _view_icon_view(Browser * browser)
 				browser->store));
 	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
 			GTK_SELECTION_MULTIPLE); /* needs to be done now */
+	g_signal_connect_swapped(G_OBJECT(browser->iconview),
+			"selection-changed", G_CALLBACK(
+				_browser_on_selection_changed), browser);
 	if(sel != NULL)
 	{
 		for(p = sel; p != NULL; p = p->next)
@@ -2404,7 +2411,6 @@ void browser_unselect_all(Browser * browser)
 #endif
 	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
 	gtk_tree_selection_unselect_all(sel);
-	_browser_plugin_refresh(browser, browser->current->data);
 }
 
 
@@ -2670,4 +2676,43 @@ static void _browser_on_plugin_combo_change(gpointer data)
 	if(bp->refresh != NULL && browser->current != NULL)
 		bp->refresh(bp, browser->current->data);
 	gtk_widget_show(widget);
+}
+
+
+/* browser_on_selection_changed */
+static void _browser_on_selection_changed(gpointer data)
+{
+	Browser * browser = data;
+	GtkTreeSelection * treesel;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
+	GtkTreeIter iter;
+	GList * sel;
+	gchar * path = NULL;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+					browser->iconview));
+	else
+#endif
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						browser->detailview))) == NULL)
+	{
+		_browser_plugin_refresh(browser, browser->current->data);
+		return;
+	}
+	else
+		sel = gtk_tree_selection_get_selected_rows(treesel, NULL);
+	if(sel != NULL && sel->data != NULL && sel->next == NULL
+			&& gtk_tree_model_get_iter(model, &iter, sel->data))
+	{
+		gtk_tree_model_get(model, &iter, BR_COL_PATH, &path, -1);
+		_browser_plugin_refresh(browser, (path != NULL) ? path
+				: browser->current->data);
+		g_free(path);
+	}
+	else
+		_browser_plugin_refresh(browser, browser->current->data);
+	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(sel);
 }
