@@ -16,6 +16,7 @@
 
 
 #include <System.h>
+#include <Desktop.h>
 #include <libintl.h>
 #include "Browser.h"
 #define _properties_refresh _properties_do_refresh
@@ -25,6 +26,14 @@
 
 /* Properties */
 /* private */
+/* types */
+typedef struct _PropertiesPlugin
+{
+	Mime * mime;
+	Properties * properties;
+} PropertiesPlugin;
+
+
 /* prototypes */
 static GtkWidget * _properties_init(BrowserPlugin * plugin);
 static void _properties_destroy(BrowserPlugin * plugin);
@@ -50,31 +59,40 @@ BrowserPlugin plugin =
 /* properties_init */
 static GtkWidget * _properties_init(BrowserPlugin * plugin)
 {
-	Properties * properties;
+	PropertiesPlugin * properties;
 
-	if((properties = _properties_new(NULL, NULL)) == NULL)
+	if((properties = object_new(sizeof(*properties))) == NULL)
 		return NULL;
 	plugin->priv = properties;
-	return _properties_get_view(properties);
+	properties->mime = mime_new(NULL);
+	properties->properties = _properties_new(NULL, properties->mime);
+	if(properties->mime == NULL || properties->properties == NULL)
+	{
+		_properties_destroy(plugin);
+		return NULL;
+	}
+	return _properties_get_view(properties->properties);
 }
 
 
 /* properties_destroy */
 static void _properties_destroy(BrowserPlugin * plugin)
 {
-	Properties * properties = plugin->priv;
+	PropertiesPlugin * properties = plugin->priv;
 
-	_properties_delete(properties);
+	_properties_delete(properties->properties);
+	mime_delete(properties->mime);
+	object_delete(properties);
 }
 
 
 /* properties_refresh */
 static void _properties_refresh(BrowserPlugin * plugin, char const * path)
 {
-	Properties * properties = plugin->priv;
+	PropertiesPlugin * properties = plugin->priv;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
 #endif
-	_properties_set_filename(properties, path);
+	_properties_set_filename(properties->properties, path);
 }
