@@ -461,6 +461,9 @@ static void _refresh_type(Properties * properties, struct stat * st)
 
 static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive)
 {
+#ifndef WITH_MAIN
+	sensitive = FALSE;
+#endif
 	gtk_widget_set_sensitive(widget[2], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
 			mode & S_IROTH);
