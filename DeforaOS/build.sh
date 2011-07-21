@@ -298,7 +298,6 @@ target_distclean()
 #target_image
 target_image()
 {
-	[ -z "$CPPFLAGS" ] && CPPFLAGS="-D __DeforaOS__"
 	_image_pre							&&
 	_image_targets							&&
 	_image_post
@@ -323,8 +322,14 @@ _image_post()
 #target_install
 target_install()
 {
+	D="$DESTDIR"
+	P="$PREFIX"
 	S="$SUBDIRS"
 	L="$LDFLAGS"
+
+	[ -z "$PKG_CONFIG_LIBDIR" ] && PKG_CONFIG_LIBDIR="$D$P/lib/pkgconfig"
+	[ -z "$PKG_CONFIG_SYSROOT_DIR" ] && PKG_CONFIG_SYSROOT_DIR="$D"
+	export PKG_CONFIG_LIBDIR PKG_CONFIG_PATH PKG_CONFIG_SYSROOT_DIR
 	for i in $SUBDIRS; do
 		SUBDIRS="$i"
 		case "$i" in
@@ -442,11 +447,8 @@ fi
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
-[ -z "$PKG_CONFIG_LIBDIR" ] && PKG_CONFIG_LIBDIR="$DESTDIR$PREFIX/lib/pkgconfig"
-[ -z "$PKG_CONFIG_SYSROOT_DIR" ] && PKG_CONFIG_SYSROOT_DIR="$DESTDIR"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
-export PKG_CONFIG_LIBDIR PKG_CONFIG_PATH PKG_CONFIG_SYSROOT_DIR
 
 #run targets
 if [ $# -lt 1 ]; then
