@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-22 01:08+0200\n"
+"POT-Creation-Date: 2011-07-22 01:30+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -188,7 +188,7 @@ msgstr " Chemin : "
 #: ../src/browser.c:715 ../src/browser.c:719 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1647 ../src/desktop.c:1652 ../src/move.c:452
-#: ../src/move.c:456 ../src/properties.c:324 ../src/properties.c:328
+#: ../src/move.c:456 ../src/properties.c:336 ../src/properties.c:340
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
 msgstr "Erreur"
@@ -219,23 +219,23 @@ msgstr "Actualisation du dossier : "
 msgid "%s%u file%c (%u hidden)"
 msgstr "%s%u fichier%c (%u cachés)"
 
-#: ../src/browser.c:1177 ../src/properties.c:544
+#: ../src/browser.c:1177 ../src/properties.c:543
 msgid "bytes"
 msgstr "octets"
 
-#: ../src/browser.c:1181 ../src/copy.c:590 ../src/properties.c:550
+#: ../src/browser.c:1181 ../src/copy.c:590 ../src/properties.c:549
 msgid "kB"
 msgstr "Kio"
 
-#: ../src/browser.c:1183 ../src/copy.c:615 ../src/properties.c:552
+#: ../src/browser.c:1183 ../src/copy.c:615 ../src/properties.c:551
 msgid "MB"
 msgstr "Mio"
 
-#: ../src/browser.c:1185 ../src/properties.c:554
+#: ../src/browser.c:1185 ../src/properties.c:553
 msgid "GB"
 msgstr "Gio"
 
-#: ../src/browser.c:1189 ../src/properties.c:558
+#: ../src/browser.c:1189 ../src/properties.c:557
 msgid "TB"
 msgstr "Tio"
 
@@ -652,55 +652,55 @@ msgstr ""
 "  -m\tType MIME à forcer (défaut: auto-détecté)\n"
 "  -a\taction à appeler (défaut: \"open\")\n"
 
-#: ../src/properties.c:179
+#: ../src/properties.c:180
 msgid "Size:"
 msgstr "Taille:"
 
-#: ../src/properties.c:185 ../src/properties.c:245
+#: ../src/properties.c:186 ../src/properties.c:242
 msgid "Owner:"
 msgstr "Propriétaire:"
 
-#: ../src/properties.c:191 ../src/properties.c:248
+#: ../src/properties.c:192 ../src/properties.c:245
 msgid "Group:"
 msgstr "Groupe:"
 
-#: ../src/properties.c:201
+#: ../src/properties.c:198
 msgid "Accessed:"
 msgstr "Accédé:"
 
-#: ../src/properties.c:207
+#: ../src/properties.c:204
 msgid "Modified:"
 msgstr "Modifié:"
 
-#: ../src/properties.c:213
+#: ../src/properties.c:210
 msgid "Changed:"
 msgstr "Changé:"
 
-#: ../src/properties.c:220
+#: ../src/properties.c:217
 msgid "Read:"
 msgstr "Lecture :"
 
-#: ../src/properties.c:223
+#: ../src/properties.c:220
 msgid "Write:"
 msgstr "Écriture :"
 
-#: ../src/properties.c:226
+#: ../src/properties.c:223
 msgid "Execute:"
 msgstr "Exécution :"
 
-#: ../src/properties.c:251
+#: ../src/properties.c:248
 msgid "Others:"
 msgstr "Autres:"
 
-#: ../src/properties.c:445
+#: ../src/properties.c:460
 msgid "Unknown type"
 msgstr "Type de fichier inconnu"
 
-#: ../src/properties.c:597
+#: ../src/properties.c:601
 msgid "Properties of "
 msgstr "Propriétés de "
 
-#: ../src/properties.c:683
+#: ../src/properties.c:687
 msgid "Usage: properties file...\n"
 msgstr "Usage: properties fichier...\n"
 

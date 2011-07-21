@@ -71,6 +71,7 @@ typedef struct _Properties
 	GtkWidget * mtime;
 	GtkWidget * ctime;
 	GtkWidget * mode[9];
+	GtkWidget * apply;
 } Properties;
 
 
@@ -98,11 +99,11 @@ static int _properties_refresh(Properties * properties);
 static void _properties_show_window(Properties * properties);
 
 /* callbacks */
-static void _properties_on_apply(gpointer data);
 static void _properties_on_close(gpointer data);
 static gboolean _properties_on_closex(gpointer data);
-static void _properties_on_refresh(gpointer data);
 #endif
+static void _properties_on_apply(gpointer data);
+static void _properties_on_refresh(gpointer data);
 
 
 #ifdef WITH_MAIN
@@ -159,8 +160,8 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
 				properties->view), GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	table = gtk_table_new(12, 2, FALSE);
-	gtk_container_set_border_width(GTK_CONTAINER(table), 4);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
 	properties->image = gtk_image_new();
@@ -191,11 +192,7 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	widget = gtk_label_new(_("Group:")); /* group name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 4, 5);
-#ifndef WITH_MAIN
-	properties->group = _new_label_left("");
-#else
 	properties->group = gtk_combo_box_new_text();
-#endif
 	gtk_table_attach_defaults(GTK_TABLE(table), properties->group, 1, 2, 4,
 			5);
 	widget = gtk_label_new(_("Accessed:")); /* last access */
@@ -255,6 +252,21 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	if(filename != NULL)
 		_properties_set_filename(properties, filename);
 	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, TRUE, 0);
+#ifndef WITH_MAIN
+	hbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_START);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_properties_on_refresh), properties);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	properties->apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	widget = properties->apply;
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_properties_on_apply), properties);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+#endif
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
 				properties->view), vbox);
 	gtk_widget_set_size_request(properties->view, 200, 320);
@@ -354,9 +366,11 @@ static void _refresh_name(GtkWidget * widget, char const * filename);
 static void _refresh_type(Properties * properties, struct stat * st);
 static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive);
 static void _refresh_owner(Properties * properties, uid_t uid);
-static int _refresh_group(Properties * properties, gid_t gid);
+static int _refresh_group(Properties * properties, gid_t gid,
+		gboolean sensitive);
 static void _refresh_size(Properties * properties, size_t size);
 static void _refresh_time(GtkWidget * widget, time_t time);
+static void _refresh_apply(GtkWidget * widget, gboolean sensitive);
 
 static int _properties_refresh(Properties * properties)
 {
@@ -374,11 +388,12 @@ static int _properties_refresh(Properties * properties)
 	_refresh_mode(&properties->mode[3], (st.st_mode & 0070) >> 3, writable);
 	_refresh_mode(&properties->mode[0], st.st_mode & 0007, writable);
 	_refresh_owner(properties, st.st_uid);
-	_refresh_group(properties, st.st_gid);
+	_refresh_group(properties, st.st_gid, writable);
 	_refresh_size(properties, st.st_size);
 	_refresh_time(properties->atime, st.st_atime);
 	_refresh_time(properties->mtime, st.st_mtime);
 	_refresh_time(properties->ctime, st.st_ctime);
+	_refresh_apply(properties->apply, writable);
 	return 0;
 }
 
@@ -461,9 +476,6 @@ static void _refresh_type(Properties * properties, struct stat * st)
 
 static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive)
 {
-#ifndef WITH_MAIN
-	sensitive = FALSE;
-#endif
 	gtk_widget_set_sensitive(widget[2], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
 			mode & S_IROTH);
@@ -488,22 +500,8 @@ static void _refresh_owner(Properties * properties, uid_t uid)
 	gtk_label_set_text(GTK_LABEL(properties->owner), p);
 }
 
-#ifndef WITH_MAIN
-static int _refresh_group(Properties * properties, gid_t gid)
-{
-	char buf[256];
-	char const * p = buf;
-	struct group * gr;
-
-	if((gr = getgrgid(gid)) != NULL)
-		p = gr->gr_name;
-	else
-		snprintf(buf, sizeof(buf), "%lu", (unsigned long)gid);
-	gtk_label_set_text(GTK_LABEL(properties->group), p);
-	return 0;
-}
-#else
-static int _refresh_group(Properties * properties, gid_t gid)
+static int _refresh_group(Properties * properties, gid_t gid,
+		gboolean sensitive)
 {
 	GtkWidget * combo;
 	GtkListStore * store;
@@ -513,6 +511,7 @@ static int _refresh_group(Properties * properties, gid_t gid)
 	struct group * gr;
 	char ** p;
 
+	/* FIXME the group may not be modifiable (sensitive) or in the list */
 	combo = properties->group;
 	store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(combo)));
 	gtk_list_store_clear(store);
@@ -533,9 +532,9 @@ static int _refresh_group(Properties * properties, gid_t gid)
 						i++, gr->gr_name);
 			}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), active);
+	gtk_widget_set_sensitive(combo, sensitive);
 	return 0;
 }
-#endif
 
 static void _refresh_size(Properties * properties, size_t size)
 {
@@ -574,6 +573,11 @@ static void _refresh_time(GtkWidget * widget, time_t t)
 	else
 		strftime(buf, sizeof(buf), "%b %d %H:%M", &tm);
 	gtk_label_set_text(GTK_LABEL(widget), buf);
+}
+
+static void _refresh_apply(GtkWidget * widget, gboolean sensitive)
+{
+	gtk_widget_set_sensitive(widget, sensitive);
 }
 
 
@@ -616,10 +620,10 @@ static void _properties_show_window(Properties * properties)
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 			G_CALLBACK(_properties_on_refresh), properties);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
-	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+	properties->apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	g_signal_connect_swapped(G_OBJECT(properties->apply), "clicked",
 			G_CALLBACK(_properties_on_apply), properties);
-	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_container_add(GTK_CONTAINER(bbox), properties->apply);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_properties_on_close), properties);
@@ -630,6 +634,22 @@ static void _properties_show_window(Properties * properties)
 
 
 /* callbacks */
+static void _properties_on_close(gpointer data)
+{
+	Properties * properties = data;
+
+	_properties_delete(properties);
+	if(_properties_cnt == 0)
+		gtk_main_quit();
+}
+
+static gboolean _properties_on_closex(gpointer data)
+{
+	_properties_on_close(data);
+	return FALSE;
+}
+#endif
+
 static void _properties_on_apply(gpointer data)
 {
 	Properties * properties = data;
@@ -652,28 +672,12 @@ static void _properties_on_apply(gpointer data)
 		_properties_error(properties, properties->filename, 0);
 }
 
-static void _properties_on_close(gpointer data)
-{
-	Properties * properties = data;
-
-	_properties_delete(properties);
-	if(_properties_cnt == 0)
-		gtk_main_quit();
-}
-
-static gboolean _properties_on_closex(gpointer data)
-{
-	_properties_on_close(data);
-	return FALSE;
-}
-
 static void _properties_on_refresh(gpointer data)
 {
 	Properties * properties = data;
 
 	_properties_refresh(properties);
 }
-#endif
 
 
 #ifdef WITH_MAIN
