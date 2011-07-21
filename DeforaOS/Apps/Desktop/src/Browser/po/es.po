@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-20 18:26+0200\n"
+"POT-Creation-Date: 2011-07-21 18:05+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -157,7 +157,7 @@ msgstr ""
 msgid "Error while loading configuration"
 msgstr ""
 
-#: ../src/browser.c:311 ../src/browser.c:2481
+#: ../src/browser.c:311 ../src/browser.c:2484
 msgid "File browser"
 msgstr ""
 
@@ -331,7 +331,7 @@ msgstr ""
 msgid "Edit with:"
 msgstr ""
 
-#: ../src/browser.c:2463
+#: ../src/browser.c:2466
 msgid "Refreshing folder..."
 msgstr ""
 

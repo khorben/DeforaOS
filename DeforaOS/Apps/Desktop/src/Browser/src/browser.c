@@ -2382,6 +2382,8 @@ int browser_unload(Browser * browser, char const * plugin)
 		gtk_widget_set_no_show_all(browser->pl_view, TRUE);
 		gtk_widget_hide(browser->pl_view);
 	}
+	else if(gtk_combo_box_get_active(GTK_COMBO_BOX(browser->pl_combo)) < 0)
+		gtk_combo_box_set_active(GTK_COMBO_BOX(browser->pl_combo), 0);
 	return 0;
 }
 
@@ -2412,7 +2414,6 @@ static DIR * _browser_opendir(char const * pathname, struct stat * st)
 	int fd;
 
 #ifdef DEBUG
-	/* FIXME errno may be modified before reaching this point */
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pathname);
 #endif
 #if defined(__sun__)
@@ -2440,6 +2441,7 @@ static DIR * _browser_opendir(char const * pathname, struct stat * st)
 /* browser_refresh_do */
 static void _refresh_title(Browser * browser);
 static void _refresh_path(Browser * browser);
+static void _refresh_plugin(Browser * browser);
 static void _refresh_new(Browser * browser);
 static void _refresh_current(Browser * browser);
 
@@ -2460,6 +2462,7 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st)
 	browser->refresh_hid = 0;
 	_refresh_title(browser);
 	_refresh_path(browser);
+	_refresh_plugin(browser);
 	_browser_set_status(browser, _("Refreshing folder..."));
 	if(st->st_dev != browser->refresh_dev
 			|| st->st_ino != browser->refresh_ino)
@@ -2529,6 +2532,20 @@ static void _refresh_path(Browser * browser)
 		}
 	}
 	g_free(p);
+}
+
+static void _refresh_plugin(Browser * browser)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
+	GtkTreeIter iter;
+	BrowserPlugin * bp;
+
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
+				&iter) != TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, BPC_BROWSERPLUGIN, &bp, -1);
+	if(bp->refresh != NULL)
+		bp->refresh(bp, browser->current->data);
 }
 
 
