@@ -326,6 +326,8 @@ target_install()
 	P="$PREFIX"
 	S="$SUBDIRS"
 	L="$LDFLAGS"
+	PKL="$PKG_CONFIG_LIBDIR"
+	PKS="$PKG_CONFIG_SYSROOT_DIR"
 
 	[ -z "$PKG_CONFIG_LIBDIR" ] && PKG_CONFIG_LIBDIR="$D$P/lib/pkgconfig"
 	[ -z "$PKG_CONFIG_SYSROOT_DIR" ] && PKG_CONFIG_SYSROOT_DIR="$D"
@@ -337,7 +339,7 @@ target_install()
 				SUBDIRS="System/src/libApp/src"
 				LDFLAGS="$L -lc"
 				target "install"		|| return 2
-				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
+				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $D$P/lib/start.o"
 				SUBDIRS="System/src/libApp"
 				target "install"		|| return 2
 				;;
@@ -350,13 +352,15 @@ target_install()
 				target "install"		|| return 2
 				;;
 			*)
-				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
+				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $D$P/lib/start.o"
 				target "install"		|| return 2
 				;;
 		esac
 	done
 	SUBDIRS="$S"
 	LDFLAGS="$L"
+	PKG_CONFIG_LIBDIR="$PKL"
+	PKG_CONFIG_SYSROOT_DIR="$PKS"
 }
 
 
