@@ -208,6 +208,7 @@ static gboolean _browser_plugin_is_enabled(Browser * browser,
 static void _browser_set_status(Browser * browser, char const * status);
 
 static DIR * _browser_opendir(char const * pathname, struct stat * st);
+static void _browser_plugin_refresh(Browser * browser, char const * pathname);
 static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st);
 
 static char * _config_get_filename(void);
@@ -1650,6 +1651,7 @@ void browser_set_view(Browser * browser, BrowserView view)
 static void _view_details(Browser * browser)
 {
 	GtkTreeSelection * treesel;
+	GtkTreeViewColumn * column;
 	GtkCellRenderer * renderer;
 	GtkTreeView * view;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1686,10 +1688,10 @@ static void _view_details(Browser * browser)
 		}
 #endif
 	}
-	gtk_tree_view_append_column(view,
-			gtk_tree_view_column_new_with_attributes("",
-				gtk_cell_renderer_pixbuf_new(), "pixbuf",
-				BR_COL_PIXBUF_24, NULL));
+	renderer = gtk_cell_renderer_pixbuf_new();
+	column = gtk_tree_view_column_new_with_attributes("", renderer,
+		"pixbuf", BR_COL_PIXBUF_24, NULL);
+	gtk_tree_view_append_column(view, column);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, "ellipsize",
 			PANGO_ELLIPSIZE_END, NULL);
@@ -2402,6 +2404,7 @@ void browser_unselect_all(Browser * browser)
 #endif
 	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
 	gtk_tree_selection_unselect_all(sel);
+	_browser_plugin_refresh(browser, browser->current->data);
 }
 
 
@@ -2438,10 +2441,25 @@ static DIR * _browser_opendir(char const * pathname, struct stat * st)
 }
 
 
+/* browser_plugin_refresh */
+static void _browser_plugin_refresh(Browser * browser, char const * pathname)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
+	GtkTreeIter iter;
+	BrowserPlugin * bp;
+
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
+				&iter) != TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, BPC_BROWSERPLUGIN, &bp, -1);
+	if(bp->refresh != NULL)
+		bp->refresh(bp, pathname);
+}
+
+
 /* browser_refresh_do */
 static void _refresh_title(Browser * browser);
 static void _refresh_path(Browser * browser);
-static void _refresh_plugin(Browser * browser);
 static void _refresh_new(Browser * browser);
 static void _refresh_current(Browser * browser);
 
@@ -2462,8 +2480,8 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st)
 	browser->refresh_hid = 0;
 	_refresh_title(browser);
 	_refresh_path(browser);
-	_refresh_plugin(browser);
 	_browser_set_status(browser, _("Refreshing folder..."));
+	_browser_plugin_refresh(browser, browser->current->data);
 	if(st->st_dev != browser->refresh_dev
 			|| st->st_ino != browser->refresh_ino)
 	{
@@ -2532,20 +2550,6 @@ static void _refresh_path(Browser * browser)
 		}
 	}
 	g_free(p);
-}
-
-static void _refresh_plugin(Browser * browser)
-{
-	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
-	GtkTreeIter iter;
-	BrowserPlugin * bp;
-
-	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
-				&iter) != TRUE)
-		return;
-	gtk_tree_model_get(model, &iter, BPC_BROWSERPLUGIN, &bp, -1);
-	if(bp->refresh != NULL)
-		bp->refresh(bp, browser->current->data);
 }
 
 
