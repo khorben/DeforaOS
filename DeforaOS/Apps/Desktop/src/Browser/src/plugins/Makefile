@@ -1,4 +1,4 @@
-TARGETS	= properties.so volumes.so
+TARGETS	= cvs.so properties.so volumes.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -18,6 +18,13 @@ INSTALL	= install
 
 all: $(TARGETS)
 
+cvs_OBJS = cvs.o
+cvs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cvs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+cvs.so: $(cvs_OBJS)
+	$(LD) -o cvs.so $(cvs_OBJS) $(cvs_LDFLAGS)
+
 properties_OBJS = properties.o
 properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -32,6 +39,9 @@ volumes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 volumes.so: $(volumes_OBJS)
 	$(LD) -o volumes.so $(volumes_OBJS) $(volumes_LDFLAGS)
 
+cvs.o: cvs.c ../../include/Browser.h
+	$(CC) $(cvs_CFLAGS) -c cvs.c
+
 properties.o: properties.c ../../include/Browser.h ../properties.c
 	$(CC) $(properties_CFLAGS) -c properties.c
 
@@ -39,18 +49,21 @@ volumes.o: volumes.c ../../include/Browser.h
 	$(CC) $(volumes_CFLAGS) -c volumes.c
 
 clean:
-	$(RM) -- $(properties_OBJS) $(volumes_OBJS)
+	$(RM) -- $(cvs_OBJS) $(properties_OBJS) $(volumes_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
+	$(INSTALL) -m 0644 -- cvs.so $(DESTDIR)$(LIBDIR)/Browser/plugins/cvs.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- properties.so $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- volumes.so $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/cvs.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-24 17:10+0200\n"
+"POT-Creation-Date: 2011-07-24 17:29+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -700,6 +700,22 @@ msgstr ""
 
 #: ../src/view.c:529
 msgid "Usage: view file...\n"
+msgstr ""
+
+#: ../src/plugins/cvs.c:62
+msgid "CVS"
+msgstr "CVS"
+
+#: ../src/plugins/cvs.c:101
+msgid "Root:"
+msgstr ""
+
+#: ../src/plugins/cvs.c:103
+msgid "Repository:"
+msgstr ""
+
+#: ../src/plugins/cvs.c:195
+msgid "Not a CVS repository"
 msgstr ""
 
 #: ../src/plugins/volumes.c:76
