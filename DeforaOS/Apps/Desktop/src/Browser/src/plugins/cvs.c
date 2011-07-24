@@ -42,6 +42,7 @@ typedef struct _CVS
 	GtkWidget * directory;
 	GtkWidget * d_root;
 	GtkWidget * d_repository;
+	GtkWidget * d_tag;
 	/* file */
 	GtkWidget * file;
 } CVS;
@@ -101,6 +102,8 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	widget = _init_label(group, _("Root:"), &cvs->d_root);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_label(group, _("Repository:"), &cvs->d_repository);
+	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
+	widget = _init_label(group, _("Tag:"), &cvs->d_tag);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->directory);
 	gtk_widget_set_no_show_all(cvs->directory, TRUE);
@@ -180,12 +183,17 @@ static void _refresh_dir(CVS * cvs, struct stat * st)
 	char const dir[] = "CVS";
 	char const root[] = "CVS/Root";
 	char const repository[] = "CVS/Repository";
+	char const tag[] = "CVS/Tag";
 	size_t len = strlen(cvs->filename);
 	char * p;
 	gchar * q;
 
 	gtk_label_set_text(GTK_LABEL(cvs->d_root), NULL);
 	gtk_label_set_text(GTK_LABEL(cvs->d_repository), NULL);
+	gtk_label_set_text(GTK_LABEL(cvs->d_tag), NULL);
+	if((len = strlen(cvs->filename)) >= 4 && strcmp(&cvs->filename[len - 4],
+				"/CVS") == 0)
+		cvs->filename[len - 4] = '\0';
 	len = strlen(cvs->filename) + sizeof(dir) + 1;
 	if((p = malloc(len)) != NULL)
 	{
@@ -215,6 +223,18 @@ static void _refresh_dir(CVS * cvs, struct stat * st)
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
 			gtk_label_set_text(GTK_LABEL(cvs->d_repository), q);
+			g_free(q);
+		}
+	}
+	len = strlen(cvs->filename) + sizeof(tag) + 1;
+	if((p = realloc(p, len)) != NULL)
+	{
+		snprintf(p, len, "%s/%s", cvs->filename, tag);
+		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
+		{
+			if(q[0] == 'T')
+				gtk_label_set_text(GTK_LABEL(cvs->d_tag),
+						&q[1]);
 			g_free(q);
 		}
 	}
