@@ -154,6 +154,7 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 	properties->theme = gtk_icon_theme_get_default();
 	properties->window = NULL;
 	properties->group = NULL;
+	properties->apply = NULL;
 	properties->view = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(properties->view),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -261,10 +262,9 @@ static Properties * _properties_new(char const * filename, Mime * mime)
 				_properties_on_refresh), properties);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	properties->apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
-	widget = properties->apply;
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_properties_on_apply), properties);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	g_signal_connect_swapped(G_OBJECT(properties->apply), "clicked",
+			G_CALLBACK(_properties_on_apply), properties);
+	gtk_box_pack_start(GTK_BOX(hbox), properties->apply, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 #endif
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
@@ -577,7 +577,8 @@ static void _refresh_time(GtkWidget * widget, time_t t)
 
 static void _refresh_apply(GtkWidget * widget, gboolean sensitive)
 {
-	gtk_widget_set_sensitive(widget, sensitive);
+	if(widget != NULL)
+		gtk_widget_set_sensitive(widget, sensitive);
 }
 
 

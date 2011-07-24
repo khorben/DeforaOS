@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-22 01:30+0200\n"
+"POT-Creation-Date: 2011-07-24 17:10+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -652,43 +652,43 @@ msgstr ""
 "  -m\tType MIME à forcer (défaut: auto-détecté)\n"
 "  -a\taction à appeler (défaut: \"open\")\n"
 
-#: ../src/properties.c:180
+#: ../src/properties.c:181
 msgid "Size:"
 msgstr "Taille:"
 
-#: ../src/properties.c:186 ../src/properties.c:242
+#: ../src/properties.c:187 ../src/properties.c:243
 msgid "Owner:"
 msgstr "Propriétaire:"
 
-#: ../src/properties.c:192 ../src/properties.c:245
+#: ../src/properties.c:193 ../src/properties.c:246
 msgid "Group:"
 msgstr "Groupe:"
 
-#: ../src/properties.c:198
+#: ../src/properties.c:199
 msgid "Accessed:"
 msgstr "Accédé:"
 
-#: ../src/properties.c:204
+#: ../src/properties.c:205
 msgid "Modified:"
 msgstr "Modifié:"
 
-#: ../src/properties.c:210
+#: ../src/properties.c:211
 msgid "Changed:"
 msgstr "Changé:"
 
-#: ../src/properties.c:217
+#: ../src/properties.c:218
 msgid "Read:"
 msgstr "Lecture :"
 
-#: ../src/properties.c:220
+#: ../src/properties.c:221
 msgid "Write:"
 msgstr "Écriture :"
 
-#: ../src/properties.c:223
+#: ../src/properties.c:224
 msgid "Execute:"
 msgstr "Exécution :"
 
-#: ../src/properties.c:248
+#: ../src/properties.c:249
 msgid "Others:"
 msgstr "Autres:"
 
@@ -696,11 +696,11 @@ msgstr "Autres:"
 msgid "Unknown type"
 msgstr "Type de fichier inconnu"
 
-#: ../src/properties.c:601
+#: ../src/properties.c:602
 msgid "Properties of "
 msgstr "Propriétés de "
 
-#: ../src/properties.c:687
+#: ../src/properties.c:688
 msgid "Usage: properties file...\n"
 msgstr "Usage: properties fichier...\n"
 
