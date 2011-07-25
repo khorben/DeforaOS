@@ -153,6 +153,7 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_label_set_ellipsize(GTK_LABEL(cvs->status), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment(GTK_MISC(cvs->status), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->status, FALSE, TRUE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* directory */
 	cvs->directory = gtk_vbox_new(FALSE, 4);
 	widget = _init_label(group, _("Root:"), &cvs->d_root);
@@ -161,13 +162,21 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_label(group, _("Tag:"), &cvs->d_tag);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
+	widget = _init_button(group, _("Request diff"), G_CALLBACK(
+				_cvs_on_diff), plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
+	widget = _init_button(group, _("Update"), G_CALLBACK(_cvs_on_update),
+			plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
+	widget = _init_button(group, _("Commit"), G_CALLBACK(_cvs_on_commit),
+			plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->directory);
 	gtk_widget_set_no_show_all(cvs->directory, TRUE);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->directory, FALSE, TRUE,
 			0);
 	/* file */
 	cvs->file = gtk_vbox_new(FALSE, 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = _init_label(group, _("Revision:"), &cvs->f_revision);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(group, _("Request diff"), G_CALLBACK(
@@ -553,18 +562,21 @@ static void _cvs_on_commit(gpointer data)
 {
 	BrowserPlugin * plugin = data;
 	CVS * cvs = plugin->priv;
-	gchar * basename;
+	struct stat st;
 	gchar * dirname;
+	gchar * basename;
 	char * argv[] = { "cvs", "commit", NULL, NULL };
 
-	if(cvs->filename == NULL)
+	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
-	basename = g_path_get_basename(cvs->filename);
-	dirname = g_path_get_dirname(cvs->filename);
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	basename = S_ISDIR(st.st_mode) ? NULL
+		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
 	_cvs_add_task(plugin, dirname, argv);
-	g_free(dirname);
 	g_free(basename);
+	g_free(dirname);
 }
 
 
@@ -573,18 +585,21 @@ static void _cvs_on_diff(gpointer data)
 {
 	BrowserPlugin * plugin = data;
 	CVS * cvs = plugin->priv;
-	gchar * basename;
+	struct stat st;
 	gchar * dirname;
+	gchar * basename;
 	char * argv[] = { "cvs", "diff", NULL, NULL };
 
-	if(cvs->filename == NULL)
+	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
-	basename = g_path_get_basename(cvs->filename);
-	dirname = g_path_get_dirname(cvs->filename);
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	basename = S_ISDIR(st.st_mode) ? NULL
+		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
 	_cvs_add_task(plugin, dirname, argv);
-	g_free(dirname);
 	g_free(basename);
+	g_free(dirname);
 }
 
 
@@ -611,18 +626,21 @@ static void _cvs_on_update(gpointer data)
 {
 	BrowserPlugin * plugin = data;
 	CVS * cvs = plugin->priv;
-	gchar * basename;
+	struct stat st;
 	gchar * dirname;
+	gchar * basename;
 	char * argv[] = { "cvs", "update", NULL, NULL };
 
-	if(cvs->filename == NULL)
+	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
-	basename = g_path_get_basename(cvs->filename);
-	dirname = g_path_get_dirname(cvs->filename);
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	basename = S_ISDIR(st.st_mode) ? NULL
+		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
 	_cvs_add_task(plugin, dirname, argv);
-	g_free(dirname);
 	g_free(basename);
+	g_free(dirname);
 }
 
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-25 12:39+0200\n"
+"POT-Creation-Date: 2011-07-25 13:36+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -702,43 +702,47 @@ msgstr ""
 msgid "Usage: view file...\n"
 msgstr ""
 
-#: ../src/plugins/cvs.c:108
+#: ../src/plugins/cvs.c:113
 msgid "CVS"
 msgstr "CVS"
 
-#: ../src/plugins/cvs.c:153
+#: ../src/plugins/cvs.c:159
 msgid "Root:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:155
+#: ../src/plugins/cvs.c:161
 msgid "Repository:"
 msgstr "Repository:"
 
-#: ../src/plugins/cvs.c:157
+#: ../src/plugins/cvs.c:163
 msgid "Tag:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:166
-msgid "Revision:"
-msgstr ""
-
-#: ../src/plugins/cvs.c:168
+#: ../src/plugins/cvs.c:165 ../src/plugins/cvs.c:182
 msgid "Request diff"
 msgstr ""
 
-#: ../src/plugins/cvs.c:171
+#: ../src/plugins/cvs.c:168 ../src/plugins/cvs.c:185
 msgid "Update"
 msgstr ""
 
-#: ../src/plugins/cvs.c:174
+#: ../src/plugins/cvs.c:171 ../src/plugins/cvs.c:188
 msgid "Commit"
 msgstr ""
 
-#: ../src/plugins/cvs.c:290 ../src/plugins/cvs.c:359
+#: ../src/plugins/cvs.c:180
+msgid "Revision:"
+msgstr ""
+
+#: ../src/plugins/cvs.c:195
+msgid "Run make"
+msgstr ""
+
+#: ../src/plugins/cvs.c:312 ../src/plugins/cvs.c:381
 msgid "Not a CVS repository"
 msgstr "Kein CVS Inhalt"
 
-#: ../src/plugins/cvs.c:380
+#: ../src/plugins/cvs.c:402
 msgid "Not managed by CVS"
 msgstr ""
 
