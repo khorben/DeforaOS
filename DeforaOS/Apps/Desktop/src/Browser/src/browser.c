@@ -300,6 +300,7 @@ Browser * browser_new(char const * directory)
 
 	/* plugins */
 	browser->pl_helper.browser = browser;
+	browser->pl_helper.error = browser_error;
 	browser->pl_helper.set_location = browser_set_location;
 
 	/* widgets */

@@ -31,6 +31,7 @@ typedef struct _BrowserPlugin BrowserPlugin;
 typedef struct _BrowserPluginHelper
 {
 	Browser * browser;
+	int (*error)(Browser * browser, char const * message, int ret);
 	void (*set_location)(Browser * browser, char const * path);
 } BrowserPluginHelper;
 
