@@ -51,6 +51,7 @@ typedef struct _CVS
 	GtkWidget * file;
 	GtkWidget * f_revision;
 	/* additional actions */
+	GtkWidget * add;
 	GtkWidget * make;
 
 	/* tasks */
@@ -94,6 +95,7 @@ static void _cvs_task_close(CVSTask * task);
 static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel);
 
 /* callbacks */
+static void _cvs_on_add(gpointer data);
 static void _cvs_on_commit(gpointer data);
 static void _cvs_on_diff(gpointer data);
 static void _cvs_on_make(gpointer data);
@@ -192,6 +194,9 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_widget_set_no_show_all(cvs->file, TRUE);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->file, FALSE, TRUE, 0);
 	/* additional actions */
+	cvs->add = _init_button(group, _("Add to CVS"), G_CALLBACK(_cvs_on_add),
+			plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->add, FALSE, TRUE, 0);
 	cvs->make = _init_button(group, _("Run make"), G_CALLBACK(_cvs_on_make),
 			plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->make, FALSE, TRUE, 0);
@@ -275,6 +280,7 @@ static void _cvs_refresh(BrowserPlugin * plugin, char const * path)
 	_refresh_status(cvs, NULL);
 	gtk_widget_hide(cvs->directory);
 	gtk_widget_hide(cvs->file);
+	gtk_widget_hide(cvs->add);
 	gtk_widget_hide(cvs->make);
 	if(S_ISDIR(st.st_mode))
 		_refresh_dir(cvs);
@@ -399,7 +405,10 @@ static void _refresh_file(CVS * cvs)
 		break;
 	}
 	if(s == NULL)
+	{
+		gtk_widget_show(cvs->add);
 		_refresh_status(cvs, _("Not managed by CVS"));
+	}
 	else
 		gtk_widget_show(cvs->file);
 	g_free(basename);
@@ -557,6 +566,26 @@ static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel)
 
 
 /* callbacks */
+/* cvs_on_add */
+static void _cvs_on_add(gpointer data)
+{
+	BrowserPlugin * plugin = data;
+	CVS * cvs = plugin->priv;
+	gchar * dirname;
+	gchar * basename;
+	char * argv[] = { "cvs", "add", NULL, NULL };
+
+	if(cvs->filename == NULL)
+		return;
+	dirname = g_path_get_dirname(cvs->filename);
+	basename = g_path_get_basename(cvs->filename);
+	argv[2] = basename;
+	_cvs_add_task(plugin, dirname, argv);
+	g_free(basename);
+	g_free(dirname);
+}
+
+
 /* cvs_on_commit */
 static void _cvs_on_commit(gpointer data)
 {
