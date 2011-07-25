@@ -758,15 +758,15 @@ msgstr "Révision :"
 
 #: ../src/plugins/cvs.c:168
 msgid "Request diff"
-msgstr ""
+msgstr "Différences"
 
 #: ../src/plugins/cvs.c:171
 msgid "Update"
-msgstr ""
+msgstr "Actualiser"
 
 #: ../src/plugins/cvs.c:174
 msgid "Commit"
-msgstr ""
+msgstr "Soumettre"
 
 #: ../src/plugins/cvs.c:290 ../src/plugins/cvs.c:359
 msgid "Not a CVS repository"
