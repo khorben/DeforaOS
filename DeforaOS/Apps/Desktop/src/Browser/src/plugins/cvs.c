@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - track tasks' completion, error code... */
 
 
 
@@ -48,6 +50,8 @@ typedef struct _CVS
 	/* file */
 	GtkWidget * file;
 	GtkWidget * f_revision;
+	/* additional actions */
+	GtkWidget * make;
 
 	/* tasks */
 	CVSTask ** tasks;
@@ -92,6 +96,7 @@ static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel);
 /* callbacks */
 static void _cvs_on_commit(gpointer data);
 static void _cvs_on_diff(gpointer data);
+static void _cvs_on_make(gpointer data);
 static void _cvs_on_update(gpointer data);
 /* tasks */
 static gboolean _cvs_task_on_closex(gpointer data);
@@ -177,6 +182,10 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_widget_show_all(cvs->file);
 	gtk_widget_set_no_show_all(cvs->file, TRUE);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->file, FALSE, TRUE, 0);
+	/* additional actions */
+	cvs->make = _init_button(group, _("Run make"), G_CALLBACK(_cvs_on_make),
+			plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->make, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->widget);
 	pango_font_description_free(font);
 	/* tasks */
@@ -232,8 +241,9 @@ static void _cvs_destroy(BrowserPlugin * plugin)
 
 
 /* cvs_refresh */
-static void _refresh_dir(CVS * cvs, struct stat * st);
+static void _refresh_dir(CVS * cvs);
 static void _refresh_file(CVS * cvs);
+static void _refresh_make(CVS * cvs, struct stat * st);
 static void _refresh_status(CVS * cvs, char const * status);
 
 static void _cvs_refresh(BrowserPlugin * plugin, char const * path)
@@ -256,13 +266,15 @@ static void _cvs_refresh(BrowserPlugin * plugin, char const * path)
 	_refresh_status(cvs, NULL);
 	gtk_widget_hide(cvs->directory);
 	gtk_widget_hide(cvs->file);
+	gtk_widget_hide(cvs->make);
 	if(S_ISDIR(st.st_mode))
-		_refresh_dir(cvs, &st);
+		_refresh_dir(cvs);
 	else
 		_refresh_file(cvs);
+	_refresh_make(cvs, &st);
 }
 
-static void _refresh_dir(CVS * cvs, struct stat * st)
+static void _refresh_dir(CVS * cvs)
 {
 	char const dir[] = "CVS";
 	char const root[] = "CVS/Root";
@@ -270,6 +282,7 @@ static void _refresh_dir(CVS * cvs, struct stat * st)
 	char const tag[] = "CVS/Tag";
 	size_t len = strlen(cvs->filename);
 	char * p;
+	struct stat st;
 	gchar * q;
 
 	/* reset the interface */
@@ -285,7 +298,7 @@ static void _refresh_dir(CVS * cvs, struct stat * st)
 	if((p = malloc(len)) != NULL)
 	{
 		snprintf(p, len, "%s/%s", cvs->filename, dir);
-		if(lstat(p, st) != 0)
+		if(lstat(p, &st) != 0)
 		{
 			_refresh_status(cvs, _("Not a CVS repository"));
 			free(p);
@@ -382,6 +395,28 @@ static void _refresh_file(CVS * cvs)
 		gtk_widget_show(cvs->file);
 	g_free(basename);
 	g_free(q);
+}
+
+static void _refresh_make(CVS * cvs, struct stat * st)
+{
+	gboolean show = FALSE;
+	gchar * dirname;
+	char const * makefile[] = { "Makefile", "makefile", "GNUmakefile" };
+	size_t i;
+	gchar * p;
+
+	dirname = S_ISDIR(st->st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	for(i = 0; show == FALSE && i < sizeof(makefile) / sizeof(*makefile);
+			i++)
+	{
+		p = g_strdup_printf("%s/%s", dirname, makefile[i]);
+		show = (lstat(p, st) == 0) ? TRUE : FALSE;
+		g_free(p);
+	}
+	g_free(dirname);
+	if(show)
+		gtk_widget_show(cvs->make);
 }
 
 static void _refresh_status(CVS * cvs, char const * status)
@@ -550,6 +585,24 @@ static void _cvs_on_diff(gpointer data)
 	_cvs_add_task(plugin, dirname, argv);
 	g_free(dirname);
 	g_free(basename);
+}
+
+
+/* cvs_on_make */
+static void _cvs_on_make(gpointer data)
+{
+	BrowserPlugin * plugin = data;
+	CVS * cvs = plugin->priv;
+	struct stat st;
+	gchar * dirname;
+	char * argv[] = { "make", NULL };
+
+	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
+		return;
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	_cvs_add_task(plugin, dirname, argv);
+	g_free(dirname);
 }
 
 
