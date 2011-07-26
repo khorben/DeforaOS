@@ -46,13 +46,7 @@ struct _Locker
 	GtkWidget ** windows;
 	size_t windows_cnt;
 
-#if 0
-	GtkWidget * unlock;
-	GtkWidget * scale;
-	guint source;
-#else
 	LockerPlugin * plugin;
-#endif
 };
 
 
@@ -116,6 +110,9 @@ Locker * locker_new(int suspend, char const * name)
 			|| (locker->windows = malloc(sizeof(*locker->windows)
 					* cnt)) == NULL)
 	{
+		locker->plugin = NULL;
+		if(plugin != NULL)
+			plugin_delete(plugin);
 		locker_delete(locker);
 		return NULL;
 	}
@@ -150,10 +147,9 @@ Locker * locker_new(int suspend, char const * name)
 /* locker_delete */
 void locker_delete(Locker * locker)
 {
-#if 0
-	if(locker->source != 0)
-		g_source_remove(locker->source);
-#endif
+	if(locker->plugin != NULL)
+		/* FIXME also call plugin_delete() */
+		locker->plugin->destroy(locker->plugin);
 	free(locker->windows);
 	XScreenSaverUnregister(GDK_DISPLAY_XDISPLAY(locker->display),
 			locker->screen);
