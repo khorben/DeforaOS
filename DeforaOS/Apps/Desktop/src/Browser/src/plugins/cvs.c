@@ -133,6 +133,7 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	CVS * cvs;
 	PangoFontDescription * font;
 	GtkSizeGroup * group;
+	GtkSizeGroup * bgroup;
 	GtkWidget * widget;
 
 	if((cvs = object_new(sizeof(*cvs))) == NULL)
@@ -145,6 +146,7 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	font = pango_font_description_new();
 	pango_font_description_set_weight(font, PANGO_WEIGHT_BOLD);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	bgroup = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* label */
 	cvs->name = gtk_label_new("");
 	gtk_label_set_ellipsize(GTK_LABEL(cvs->name), PANGO_ELLIPSIZE_MIDDLE);
@@ -155,7 +157,6 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_label_set_ellipsize(GTK_LABEL(cvs->status), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment(GTK_MISC(cvs->status), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->status, FALSE, TRUE, 0);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* directory */
 	cvs->directory = gtk_vbox_new(FALSE, 4);
 	widget = _init_label(group, _("Root:"), &cvs->d_root);
@@ -164,13 +165,13 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_label(group, _("Tag:"), &cvs->d_tag);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, NULL, _("Request diff"), G_CALLBACK(
+	widget = _init_button(bgroup, NULL, _("Request diff"), G_CALLBACK(
 				_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, GTK_STOCK_REFRESH, _("Update"), G_CALLBACK(
-				_cvs_on_update), plugin);
+	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
+			G_CALLBACK(_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, NULL, _("Commit"), G_CALLBACK(
+	widget = _init_button(bgroup, NULL, _("Commit"), G_CALLBACK(
 				_cvs_on_commit), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->directory);
@@ -181,23 +182,23 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	cvs->file = gtk_vbox_new(FALSE, 4);
 	widget = _init_label(group, _("Revision:"), &cvs->f_revision);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, NULL, _("Request diff"), G_CALLBACK(
+	widget = _init_button(bgroup, NULL, _("Request diff"), G_CALLBACK(
 				_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, GTK_STOCK_REFRESH, _("Update"), G_CALLBACK(
-				_cvs_on_update), plugin);
+	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
+			G_CALLBACK(_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, NULL, _("Commit"), G_CALLBACK(
+	widget = _init_button(bgroup, NULL, _("Commit"), G_CALLBACK(
 				_cvs_on_commit), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->file);
 	gtk_widget_set_no_show_all(cvs->file, TRUE);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->file, FALSE, TRUE, 0);
 	/* additional actions */
-	cvs->add = _init_button(group, GTK_STOCK_ADD, _("Add to CVS"),
+	cvs->add = _init_button(bgroup, GTK_STOCK_ADD, _("Add to CVS"),
 			G_CALLBACK(_cvs_on_add), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->add, FALSE, TRUE, 0);
-	cvs->make = _init_button(group, GTK_STOCK_EXECUTE, _("Run make"),
+	cvs->make = _init_button(bgroup, GTK_STOCK_EXECUTE, _("Run make"),
 			G_CALLBACK(_cvs_on_make), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->make, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->widget);
