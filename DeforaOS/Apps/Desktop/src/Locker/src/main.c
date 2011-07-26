@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if((locker = locker_new(suspend)) == NULL)
+	if((locker = locker_new(suspend, NULL)) == NULL)
 		return 2;
 	gtk_main();
 	locker_delete(locker);
