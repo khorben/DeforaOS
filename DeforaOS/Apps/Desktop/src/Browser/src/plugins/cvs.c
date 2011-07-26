@@ -123,8 +123,8 @@ BrowserPlugin plugin =
 
 /* private */
 /* functions */
-static GtkWidget * _init_button(GtkSizeGroup * group, char const * label,
-		GCallback callback, gpointer data);
+static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
+		char const * label, GCallback callback, gpointer data);
 static GtkWidget * _init_label(GtkSizeGroup * group, char const * label,
 		GtkWidget ** widget);
 
@@ -164,14 +164,14 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_label(group, _("Tag:"), &cvs->d_tag);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, _("Request diff"), G_CALLBACK(
+	widget = _init_button(group, NULL, _("Request diff"), G_CALLBACK(
 				_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, _("Update"), G_CALLBACK(_cvs_on_update),
-			plugin);
+	widget = _init_button(group, GTK_STOCK_REFRESH, _("Update"), G_CALLBACK(
+				_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, _("Commit"), G_CALLBACK(_cvs_on_commit),
-			plugin);
+	widget = _init_button(group, NULL, _("Commit"), G_CALLBACK(
+				_cvs_on_commit), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->directory);
 	gtk_widget_set_no_show_all(cvs->directory, TRUE);
@@ -181,24 +181,24 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	cvs->file = gtk_vbox_new(FALSE, 4);
 	widget = _init_label(group, _("Revision:"), &cvs->f_revision);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, _("Request diff"), G_CALLBACK(
+	widget = _init_button(group, NULL, _("Request diff"), G_CALLBACK(
 				_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, _("Update"), G_CALLBACK(_cvs_on_update),
-			plugin);
+	widget = _init_button(group, GTK_STOCK_REFRESH, _("Update"), G_CALLBACK(
+				_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(group, _("Commit"), G_CALLBACK(_cvs_on_commit),
-			plugin);
+	widget = _init_button(group, NULL, _("Commit"), G_CALLBACK(
+				_cvs_on_commit), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->file);
 	gtk_widget_set_no_show_all(cvs->file, TRUE);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->file, FALSE, TRUE, 0);
 	/* additional actions */
-	cvs->add = _init_button(group, _("Add to CVS"), G_CALLBACK(_cvs_on_add),
-			plugin);
+	cvs->add = _init_button(group, GTK_STOCK_ADD, _("Add to CVS"),
+			G_CALLBACK(_cvs_on_add), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->add, FALSE, TRUE, 0);
-	cvs->make = _init_button(group, _("Run make"), G_CALLBACK(_cvs_on_make),
-			plugin);
+	cvs->make = _init_button(group, GTK_STOCK_EXECUTE, _("Run make"),
+			G_CALLBACK(_cvs_on_make), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->make, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->widget);
 	pango_font_description_free(font);
@@ -208,15 +208,22 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	return cvs->widget;
 }
 
-static GtkWidget * _init_button(GtkSizeGroup * group, char const * label,
-		GCallback callback, gpointer data)
+static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
+		char const * label, GCallback callback, gpointer data)
 {
 	GtkWidget * hbox;
+	GtkWidget * image;
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_with_label(label);
 	gtk_size_group_add_widget(group, widget);
+	if(icon != NULL)
+	{
+		image = gtk_image_new_from_icon_name(icon,
+				GTK_ICON_SIZE_BUTTON);
+		gtk_button_set_image(GTK_BUTTON(widget), image);
+	}
 	g_signal_connect_swapped(widget, "clicked", callback, data);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
