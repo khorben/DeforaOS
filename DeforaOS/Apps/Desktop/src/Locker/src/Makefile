@@ -29,7 +29,7 @@ locker: $(locker_OBJS)
 	$(CC) -o locker $(locker_OBJS) $(locker_LDFLAGS)
 
 locker.o: locker.c locker.h ../include/Locker.h ../config.h
-	$(CC) $(locker_CFLAGS) -c locker.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(locker_CFLAGS) -c locker.c
 
 main.o: main.c locker.h ../include/Locker.h
 	$(CC) $(locker_CFLAGS) -c main.c
