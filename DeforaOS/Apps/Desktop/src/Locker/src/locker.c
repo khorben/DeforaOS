@@ -81,7 +81,11 @@ Locker * locker_new(int suspend, char const * name)
 	GdkWindow * root;
 
 	if(name == NULL)
+#ifdef EMBEDDED
 		name = "slider";
+#else
+		name = "password";
+#endif
 	if((locker = object_new(sizeof(*locker))) == NULL)
 		return NULL;
 	locker->helper.locker = locker;
