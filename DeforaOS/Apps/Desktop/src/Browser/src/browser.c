@@ -2481,7 +2481,7 @@ static void _browser_plugin_refresh(Browser * browser)
 				: browser->current->data);
 		g_free(path);
 	}
-	else
+	else if(browser->current != NULL)
 		_plugin_refresh_do(browser, browser->current->data);
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
