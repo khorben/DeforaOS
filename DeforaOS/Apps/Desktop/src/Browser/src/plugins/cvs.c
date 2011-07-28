@@ -12,13 +12,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - track tasks' completion, error code... */
 
 
 
 #include <System.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <stdlib.h>
 #include <string.h>
 #include <libintl.h>
@@ -64,6 +63,7 @@ struct _CVSTask
 	BrowserPlugin * plugin;
 
 	GPid pid;
+	guint source;
 
 	/* stdout */
 	gint o_fd;
@@ -78,6 +78,8 @@ struct _CVSTask
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * view;
+	GtkWidget * statusbar;
+	guint statusbar_id;
 };
 
 
@@ -91,6 +93,7 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 
 /* tasks */
 static void _cvs_task_delete(CVSTask * task);
+static void _cvs_task_set_status(CVSTask * task, char const * status);
 static void _cvs_task_close(CVSTask * task);
 static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel);
 
@@ -102,6 +105,7 @@ static void _cvs_on_make(gpointer data);
 static void _cvs_on_update(gpointer data);
 /* tasks */
 static gboolean _cvs_task_on_closex(gpointer data);
+static void _cvs_task_on_child_watch(GPid pid, gint status, gpointer data);
 static gboolean _cvs_task_on_io_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);
 
@@ -466,9 +470,11 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 	CVS * cvs = plugin->priv;
 	CVSTask ** p;
 	CVSTask * task;
+	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
 	gboolean res;
 	GError * error = NULL;
 	PangoFontDescription * font;
+	GtkWidget * vbox;
 	GtkWidget * widget;
 
 	if((p = realloc(cvs->tasks, sizeof(*p) * (cvs->tasks_cnt + 1))) == NULL)
@@ -477,9 +483,8 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 	if((task = object_new(sizeof(*task))) == NULL)
 		return -helper->error(helper->browser, error_get(), 1);
 	task->plugin = plugin;
-	res = g_spawn_async_with_pipes(directory, argv, NULL,
-			G_SPAWN_SEARCH_PATH, NULL, NULL, &task->pid, NULL,
-			&task->o_fd, &task->e_fd, &error);
+	res = g_spawn_async_with_pipes(directory, argv, NULL, flags, NULL, NULL,
+			&task->pid, NULL, &task->o_fd, &task->e_fd, &error);
 	if(res != TRUE)
 	{
 		helper->error(helper->browser, error->message, 1);
@@ -499,6 +504,7 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 	gtk_window_set_title(GTK_WINDOW(task->window), cvs->filename);
 	g_signal_connect_swapped(task->window, "delete-event", G_CALLBACK(
 				_cvs_task_on_closex), task);
+	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -510,10 +516,16 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 	gtk_widget_modify_font(task->view, font);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(widget),
 			task->view);
-	gtk_container_add(GTK_CONTAINER(task->window), widget);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	task->statusbar = gtk_statusbar_new();
+	task->statusbar_id = 0;
+	gtk_box_pack_start(GTK_BOX(vbox), task->statusbar, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(task->window), vbox);
 	gtk_widget_show_all(task->window);
 	pango_font_description_free(font);
 	/* events */
+	task->source = g_child_watch_add(task->pid, _cvs_task_on_child_watch,
+			task);
 	task->o_channel = g_io_channel_unix_new(task->o_fd);
 	if((g_io_channel_set_encoding(task->o_channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
@@ -532,6 +544,7 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 	}
 	task->e_source = g_io_add_watch(task->e_channel, G_IO_IN,
 			_cvs_task_on_io_can_read, task);
+	_cvs_task_set_status(task, _("Running command..."));
 	return 0;
 }
 
@@ -541,8 +554,24 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 static void _cvs_task_delete(CVSTask * task)
 {
 	_cvs_task_close(task);
+	if(task->source != 0)
+		g_source_remove(task->source);
+	task->source = 0;
 	gtk_widget_destroy(task->window);
 	object_delete(task);
+}
+
+
+/* cvs_task_set_status */
+static void _cvs_task_set_status(CVSTask * task, char const * status)
+{
+	GtkStatusbar * sb = GTK_STATUSBAR(task->statusbar);
+
+	if(task->statusbar_id != 0)
+		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
+				task->statusbar_id);
+	task->statusbar_id = gtk_statusbar_push(sb,
+			gtk_statusbar_get_context_id(sb, ""), status);
 }
 
 
@@ -695,6 +724,30 @@ static gboolean _cvs_task_on_closex(gpointer data)
 	_cvs_task_close(task);
 	/* FIXME really implement */
 	return TRUE;
+}
+
+
+/* cvs_task_on_child_watch */
+static void _cvs_task_on_child_watch(GPid pid, gint status, gpointer data)
+{
+	CVSTask * task = data;
+	char buf[256];
+
+	task->source = 0;
+	if(WIFEXITED(status))
+	{
+		snprintf(buf, sizeof(buf),
+				_("Command exited with error code %d"),
+				WEXITSTATUS(status));
+		_cvs_task_set_status(task, buf);
+	}
+	else if(WIFSIGNALED(status))
+	{
+		snprintf(buf, sizeof(buf), _("Command exited with signal %d"),
+				WTERMSIG(status));
+		_cvs_task_set_status(task, buf);
+	}
+	g_spawn_close_pid(pid);
 }
 
 

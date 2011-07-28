@@ -2624,9 +2624,8 @@ static gboolean _browser_plugin_is_enabled(Browser * browser,
 /* browser_set_status */
 static void _browser_set_status(Browser * browser, char const * status)
 {
-	GtkStatusbar * sb;
+	GtkStatusbar * sb = GTK_STATUSBAR(browser->statusbar);
 
-	sb = GTK_STATUSBAR(browser->statusbar);
 	if(browser->statusbar_id != 0)
 		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
 				browser->statusbar_id);
