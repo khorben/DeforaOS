@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-26 14:31+0200\n"
+"POT-Creation-Date: 2011-07-28 03:48+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -742,11 +742,11 @@ msgstr ""
 msgid "Run make"
 msgstr ""
 
-#: ../src/plugins/cvs.c:326 ../src/plugins/cvs.c:395
+#: ../src/plugins/cvs.c:331 ../src/plugins/cvs.c:400
 msgid "Not a CVS repository"
 msgstr "Kein CVS Inhalt"
 
-#: ../src/plugins/cvs.c:418
+#: ../src/plugins/cvs.c:423
 msgid "Not managed by CVS"
 msgstr ""
 

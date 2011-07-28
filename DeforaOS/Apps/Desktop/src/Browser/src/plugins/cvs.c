@@ -150,12 +150,12 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	/* label */
 	cvs->name = gtk_label_new("");
 	gtk_label_set_ellipsize(GTK_LABEL(cvs->name), PANGO_ELLIPSIZE_MIDDLE);
-	gtk_misc_set_alignment(GTK_MISC(cvs->name), 0.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(cvs->name), 0.0, 0.0);
 	gtk_widget_modify_font(cvs->name, font);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->name, FALSE, TRUE, 0);
 	cvs->status = gtk_label_new("");
 	gtk_label_set_ellipsize(GTK_LABEL(cvs->status), PANGO_ELLIPSIZE_END);
-	gtk_misc_set_alignment(GTK_MISC(cvs->status), 0.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(cvs->status), 0.0, 0.0);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->status, FALSE, TRUE, 0);
 	/* directory */
 	cvs->directory = gtk_vbox_new(FALSE, 4);
@@ -165,14 +165,14 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_label(group, _("Tag:"), &cvs->d_tag);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(bgroup, NULL, _("Request diff"), G_CALLBACK(
-				_cvs_on_diff), plugin);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
+			G_CALLBACK(_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
 			G_CALLBACK(_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
-	widget = _init_button(bgroup, NULL, _("Commit"), G_CALLBACK(
-				_cvs_on_commit), plugin);
+	widget = _init_button(bgroup, GTK_STOCK_JUMP_TO, _("Commit"),
+			G_CALLBACK(_cvs_on_commit), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->directory);
 	gtk_widget_set_no_show_all(cvs->directory, TRUE);
@@ -182,14 +182,14 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	cvs->file = gtk_vbox_new(FALSE, 4);
 	widget = _init_label(group, _("Revision:"), &cvs->f_revision);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(bgroup, NULL, _("Request diff"), G_CALLBACK(
-				_cvs_on_diff), plugin);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
+			G_CALLBACK(_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
 			G_CALLBACK(_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
-	widget = _init_button(bgroup, NULL, _("Commit"), G_CALLBACK(
-				_cvs_on_commit), plugin);
+	widget = _init_button(bgroup, GTK_STOCK_JUMP_TO, _("Commit"),
+			G_CALLBACK(_cvs_on_commit), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(cvs->file);
 	gtk_widget_set_no_show_all(cvs->file, TRUE);
@@ -215,14 +215,19 @@ static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
 	GtkWidget * hbox;
 	GtkWidget * image;
 	GtkWidget * widget;
+	char const stock[] = "gtk-";
 
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_with_label(label);
 	gtk_size_group_add_widget(group, widget);
 	if(icon != NULL)
 	{
-		image = gtk_image_new_from_icon_name(icon,
-				GTK_ICON_SIZE_BUTTON);
+		if(strncmp(icon, stock, sizeof(stock) - 1) == 0)
+			image = gtk_image_new_from_stock(icon,
+					GTK_ICON_SIZE_BUTTON);
+		else
+			image = gtk_image_new_from_icon_name(icon,
+					GTK_ICON_SIZE_BUTTON);
 		gtk_button_set_image(GTK_BUTTON(widget), image);
 	}
 	g_signal_connect_swapped(widget, "clicked", callback, data);
@@ -237,12 +242,12 @@ static GtkWidget * _init_label(GtkSizeGroup * group, char const * label,
 
 	hbox = gtk_hbox_new(FALSE, 4);
 	*widget = gtk_label_new(label);
-	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.0);
 	gtk_size_group_add_widget(group, *widget);
 	gtk_box_pack_start(GTK_BOX(hbox), *widget, FALSE, TRUE, 0);
 	*widget = gtk_label_new("");
 	gtk_label_set_ellipsize(GTK_LABEL(*widget), PANGO_ELLIPSIZE_MIDDLE);
-	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.0);
 	gtk_box_pack_start(GTK_BOX(hbox), *widget, TRUE, TRUE, 0);
 	return hbox;
 }
