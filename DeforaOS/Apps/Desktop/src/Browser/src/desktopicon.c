@@ -440,7 +440,6 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 	GtkWindow * window;
 	GtkWidget * vbox;
 	GdkGeometry geometry;
-	PangoFontDescription * font;
 
 	if((desktopicon = malloc(sizeof(*desktopicon))) == NULL)
 		return NULL;
