@@ -88,8 +88,8 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin);
 static void _cvs_destroy(BrowserPlugin * plugin);
 static void _cvs_refresh(BrowserPlugin * plugin, char const * path);
 
-static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
-		char * argv[]);
+static int _cvs_add_task(BrowserPlugin * plugin, char const * title,
+		char const * directory, char * argv[]);
 
 /* tasks */
 static void _cvs_task_delete(CVSTask * task);
@@ -463,8 +463,8 @@ static void _refresh_status(CVS * cvs, char const * status)
 
 
 /* cvs_add_task */
-static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
-		char * argv[])
+static int _cvs_add_task(BrowserPlugin * plugin, char const * title,
+		char const * directory, char * argv[])
 {
 	BrowserPluginHelper * helper = plugin->helper;
 	CVS * cvs = plugin->priv;
@@ -474,6 +474,7 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 	gboolean res;
 	GError * error = NULL;
 	PangoFontDescription * font;
+	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
@@ -501,7 +502,8 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * directory,
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(task->window), plugin->icon);
 #endif
-	gtk_window_set_title(GTK_WINDOW(task->window), cvs->filename);
+	snprintf(buf, sizeof(buf), "%s - %s (%s)", _("CVS"), title, directory);
+	gtk_window_set_title(GTK_WINDOW(task->window), buf);
 	g_signal_connect_swapped(task->window, "delete-event", G_CALLBACK(
 				_cvs_task_on_closex), task);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -622,7 +624,7 @@ static void _cvs_on_add(gpointer data)
 	dirname = g_path_get_dirname(cvs->filename);
 	basename = g_path_get_basename(cvs->filename);
 	argv[2] = basename;
-	_cvs_add_task(plugin, dirname, argv);
+	_cvs_add_task(plugin, "cvs add", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -645,7 +647,7 @@ static void _cvs_on_commit(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
-	_cvs_add_task(plugin, dirname, argv);
+	_cvs_add_task(plugin, "cvs commit", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -668,7 +670,7 @@ static void _cvs_on_diff(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
-	_cvs_add_task(plugin, dirname, argv);
+	_cvs_add_task(plugin, "cvs diff", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -687,7 +689,7 @@ static void _cvs_on_make(gpointer data)
 		return;
 	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
 		: g_path_get_dirname(cvs->filename);
-	_cvs_add_task(plugin, dirname, argv);
+	_cvs_add_task(plugin, "make", dirname, argv);
 	g_free(dirname);
 }
 
@@ -709,7 +711,7 @@ static void _cvs_on_update(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
-	_cvs_add_task(plugin, dirname, argv);
+	_cvs_add_task(plugin, "cvs update", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }

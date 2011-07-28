@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-28 04:34+0200\n"
+"POT-Creation-Date: 2011-07-28 04:45+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -702,7 +702,7 @@ msgstr ""
 msgid "Usage: view file...\n"
 msgstr ""
 
-#: ../src/plugins/cvs.c:119
+#: ../src/plugins/cvs.c:119 ../src/plugins/cvs.c:505
 msgid "CVS"
 msgstr "CVS"
 
@@ -750,16 +750,16 @@ msgstr "Kein CVS Inhalt"
 msgid "Not managed by CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:547
+#: ../src/plugins/cvs.c:549
 msgid "Running command..."
 msgstr ""
 
-#: ../src/plugins/cvs.c:740
+#: ../src/plugins/cvs.c:742
 #, c-format
 msgid "Command exited with error code %d"
 msgstr ""
 
-#: ../src/plugins/cvs.c:746
+#: ../src/plugins/cvs.c:748
 #, c-format
 msgid "Command exited with signal %d"
 msgstr ""
