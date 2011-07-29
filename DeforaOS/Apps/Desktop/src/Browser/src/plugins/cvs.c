@@ -20,6 +20,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <libintl.h>
 #include "Browser.h"
 #define _(string) gettext(string)
@@ -479,7 +480,7 @@ static int _cvs_add_task(BrowserPlugin * plugin, char const * title,
 	GtkWidget * widget;
 
 	if((p = realloc(cvs->tasks, sizeof(*p) * (cvs->tasks_cnt + 1))) == NULL)
-		return -helper->error(helper->browser, "malloc", 1);
+		return -helper->error(helper->browser, strerror(errno), 1);
 	cvs->tasks = p;
 	if((task = object_new(sizeof(*task))) == NULL)
 		return -helper->error(helper->browser, error_get(), 1);

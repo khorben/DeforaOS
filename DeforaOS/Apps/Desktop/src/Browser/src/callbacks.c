@@ -122,12 +122,12 @@ void on_file_new_folder(gpointer data)
 	len = strlen(cur) + strlen(newfolder) + 2;
 	if((path = malloc(len)) == NULL)
 	{
-		browser_error(browser, "malloc", 0);
+		browser_error(browser, strerror(errno), 1);
 		return;
 	}
 	snprintf(path, len, "%s/%s", cur, newfolder);
 	if(mkdir(path, 0777) != 0)
-		browser_error(browser, path, 0);
+		browser_error(browser, strerror(errno), 1);
 	free(path);
 }
 
@@ -138,7 +138,7 @@ void on_file_new_symlink(gpointer data)
 	char const * cur = browser->current->data;
 
 	if(_common_symlink(browser->window, cur) != 0)
-		browser_error(browser, "symlink", 0);
+		browser_error(browser, strerror(errno), 1);
 }
 
 
@@ -205,7 +205,7 @@ void on_edit_delete(gpointer data)
 	}
 	if(res == GTK_RESPONSE_YES
 			&& _common_exec("delete", "-ir", selection) != 0)
-		browser_error(browser, "fork", 0);
+		browser_error(browser, strerror(errno), 1);
 	g_list_foreach(selection, (GFunc)free, NULL);
 	g_list_free(selection);
 }
@@ -405,7 +405,7 @@ void on_properties(gpointer data)
 	if((selection = _copy_selection(browser)) == NULL)
 		selection = g_list_append(NULL, strdup(browser->current->data));
 	if(_common_exec("properties", NULL, selection) != 0)
-		browser_error(browser, "fork", 0);
+		browser_error(browser, strerror(errno), 1);
 	g_list_foreach(selection, (GFunc)free, NULL);
 	g_list_free(selection);
 }
@@ -544,7 +544,7 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	{
 		q = g_filename_from_utf8(p, -1, NULL, NULL, NULL);
 		if(rename(path, (q != NULL) ? q : p) != 0)
-			browser_error(browser, path, 0);
+			browser_error(browser, strerror(errno), 1);
 		else
 			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
 					p, BR_COL_DISPLAY_NAME, arg2, -1);
@@ -553,11 +553,11 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	else if(lstat(path, &st) == 0 && S_ISLNK(st.st_mode))
 	{
 		if(rename(path, p) != 0)
-			browser_error(browser, path, 0);
+			browser_error(browser, strerror(errno), 1);
 	}
 	/* FIXME implement workaround for FAT */
 	else if(link(path, p) != 0 || unlink(path) != 0)
-		browser_error(browser, path, 0);
+		browser_error(browser, strerror(errno), 1);
 	free(p);
 	free(path);
 }
@@ -618,7 +618,7 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 				BR_COL_PATH, &dest, -1);
 	}
 	if(_common_drag_data_received(context, seldata, dest) != 0)
-		browser_error(browser, "fork", 0);
+		browser_error(browser, strerror(errno), 1);
 }
 #endif /* GTK_CHECK_VERSION(2, 8, 0) */
 
@@ -831,12 +831,12 @@ static void _on_popup_new_text_file(gpointer data)
 	len = strlen(cur) + strlen(newtext) + 2;
 	if((path = malloc(len)) == NULL)
 	{
-		browser_error(browser, "malloc", 0);
+		browser_error(browser, strerror(errno), 1);
 		return;
 	}
 	snprintf(path, len, "%s/%s", cur, newtext);
 	if((fd = creat(path, 0666)) < 0)
-		browser_error(browser, path, 0);
+		browser_error(browser, strerror(errno), 1);
 	else
 		close(fd);
 	free(path);
@@ -1034,13 +1034,12 @@ static void _on_icon_run(gpointer data)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(cb->browser->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_YES_NO, "%s",
+			GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			_("Warning"));
+			"%s", _("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
 #endif
-			_("Are you sure you want to execute this file?"));
+			"%s", _("Are you sure you want to execute this file?"));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -1048,7 +1047,10 @@ static void _on_icon_run(gpointer data)
 		return;
 	argv[0] = cb->path;
 	if(g_spawn_async(NULL, argv, NULL, 0, NULL, NULL, NULL, &error) != TRUE)
-		browser_error(cb->browser, cb->path, 1);
+	{
+		browser_error(cb->browser, error->message, 1);
+		g_error_free(error);
+	}
 }
 
 static void _on_icon_open_with(gpointer data)
@@ -1080,7 +1082,7 @@ static void _on_icon_unmount(gpointer data)
 #else
 	if(unmount(cb->path, 0) != 0)
 #endif
-		browser_error(cb->browser, cb->path, 0);
+		browser_error(cb->browser, strerror(errno), 1);
 }
 
 
@@ -1132,12 +1134,12 @@ static void _paste_selection(Browser * browser)
 	if(browser->selection_cut != 1)
 	{
 		if(_common_exec("copy", "-ir", browser->selection) != 0)
-			browser_error(browser, "fork", 0);
+			browser_error(browser, strerror(errno), 1);
 		browser->selection = g_list_remove(browser->selection, p);
 		return;
 	}
 	if(_common_exec("move", "-i", browser->selection) != 0)
-		browser_error(browser, "fork", 0);
+		browser_error(browser, strerror(errno), 1);
 	browser->selection = g_list_remove(browser->selection, p);
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);

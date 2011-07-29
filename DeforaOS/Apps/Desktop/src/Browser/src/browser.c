@@ -261,7 +261,7 @@ Browser * browser_new(char const * directory)
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
 	{
-		browser_error(NULL, directory != NULL ? directory : ".", 0);
+		browser_error(NULL, directory != NULL ? directory : ".", 1);
 		return NULL;
 	}
 	browser->window = NULL;
@@ -281,7 +281,7 @@ Browser * browser_new(char const * directory)
 	if((browser->config = config_new()) == NULL
 			|| browser_config_load(browser) != 0)
 		browser_error(browser, _("Error while loading configuration"),
-				0);
+				1);
 
 	/* mime */
 	browser->mime = mime_new(NULL); /* FIXME share MIME instances */
@@ -702,7 +702,6 @@ static void _error_response(gpointer data);
 int browser_error(Browser * browser, char const * message, int ret)
 {
 	GtkWidget * dialog;
-	char const * error;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %d) errno=%d\n", __func__, message,
@@ -710,7 +709,6 @@ int browser_error(Browser * browser, char const * message, int ret)
 #endif
 	if(browser == NULL)
 		return _browser_error(message, ret);
-	error = strerror(errno);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE,
@@ -718,7 +716,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
-			"%s: %s", message, error);
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
 	{
@@ -735,8 +733,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 
 static int _browser_error(char const * message, int ret)
 {
-	fputs("browser: ", stderr);
-	perror(message);
+	fprintf(stderr, "%s: %s", "browser", message);
 	return ret;
 }
 
@@ -944,13 +941,13 @@ void browser_open_with(Browser * browser, char const * path)
 	if(filename == NULL)
 		return;
 	if((pid = fork()) == -1)
-		browser_error(browser, "fork", 0);
+		browser_error(browser, strerror(errno), 1);
 	else if(pid == 0)
 	{
 		if(close(0) != 0)
-			browser_error(NULL, "stdin", 0);
+			browser_error(NULL, strerror(errno), 0);
 		execlp(filename, filename, path, NULL);
-		browser_error(NULL, filename, 0);
+		browser_error(NULL, strerror(errno), 0);
 		exit(2);
 	}
 	g_free(filename);
@@ -970,7 +967,7 @@ void browser_refresh(Browser * browser)
 	if(browser->current == NULL)
 		return;
 	if((dir = _browser_opendir(browser->current->data, &st)) == NULL)
-		browser_error(browser, browser->current->data, 0);
+		browser_error(browser, strerror(errno), 1);
 	else
 		_browser_refresh_do(browser, dir, &st);
 }
@@ -1028,7 +1025,7 @@ static int _refresh_new_loop(Browser * browser)
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			== NULL || lstat(path, &lst) != 0)
 	{
-		browser_error(NULL, de->d_name, 0);
+		browser_error(NULL, strerror(errno), 1);
 		if(path != NULL)
 			g_free(path);
 		return 0;
@@ -1341,7 +1338,8 @@ static gboolean _done_timeout(gpointer data)
 	if(stat(browser->current->data, &st) != 0)
 	{
 		browser->refresh_id = 0;
-		return browser_error(NULL, browser->current->data, FALSE);
+		browser_error(NULL, strerror(errno), 1);
+		return FALSE;
 	}
 	if(st.st_mtime == browser->refresh_mti)
 		return TRUE;
@@ -1402,7 +1400,7 @@ static int _current_loop(Browser * browser)
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			== NULL || lstat(path, &lst) != 0)
 	{
-		browser_error(NULL, de->d_name, 0);
+		browser_error(NULL, strerror(errno), 1);
 		if(path != NULL)
 			g_free(path);
 		return 0;
@@ -1553,7 +1551,7 @@ void browser_set_location(Browser * browser, char const * path)
 	}
 	else
 		/* XXX errno may not be set */
-		browser_error(browser, realpath, 0);
+		browser_error(browser, strerror(errno), 1);
 	free(realpath);
 }
 
