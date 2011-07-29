@@ -167,7 +167,9 @@ static void _preview_refresh(BrowserPlugin * plugin, char const * path)
 	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
 	char const image[] = "image/";
 	char const text[] = "text/";
-	char const * types[] = { "application/xml" };
+	char const * types[] = { "application/x-perl",
+		"application/x-shellscript",
+		"application/xml" };
 	char const * type;
 	size_t i;
 
