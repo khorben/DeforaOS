@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-29 03:36+0200\n"
+"POT-Creation-Date: 2011-07-29 03:37+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -798,7 +798,7 @@ msgstr "La commande a terminé avec le code d'erreur %d"
 msgid "Command exited with signal %d"
 msgstr "La commande a été terminée par le signal %d"
 
-#: ../src/plugins/preview.c:64
+#: ../src/plugins/preview.c:65
 msgid "Preview"
 msgstr "Prévisualisation"
 
