@@ -128,6 +128,10 @@ struct _Browser
 	GdkPixbuf * pb_folder_96;
 #endif
 	GtkWidget * window;
+#if GTK_CHECK_VERSION(2, 18, 0)
+	GtkWidget * infobar;
+	GtkWidget * infobar_label;
+#endif
 	GtkToolItem * tb_back;
 	GtkToolItem * tb_updir;
 	GtkToolItem * tb_forward;

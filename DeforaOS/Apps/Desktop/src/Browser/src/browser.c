@@ -402,6 +402,22 @@ Browser * browser_new(char const * directory)
 				on_path_activate), browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+#if GTK_CHECK_VERSION(2, 18, 0)
+	/* infobar */
+	browser->infobar = gtk_info_bar_new_with_buttons(GTK_STOCK_CLOSE,
+			GTK_RESPONSE_CLOSE, NULL);
+	gtk_info_bar_set_message_type(GTK_INFO_BAR(browser->infobar),
+			GTK_MESSAGE_ERROR);
+	g_signal_connect(browser->infobar, "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
+	widget = gtk_info_bar_get_content_area(GTK_INFO_BAR(browser->infobar));
+	browser->infobar_label = gtk_label_new(NULL);
+	gtk_widget_show(browser->infobar_label);
+	gtk_box_pack_start(GTK_BOX(widget), browser->infobar_label, TRUE, TRUE,
+			0);
+	gtk_widget_set_no_show_all(browser->infobar, TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), browser->infobar, FALSE, TRUE, 0);
+#endif
 	/* paned */
 	hpaned = gtk_hpaned_new();
 	gtk_paned_set_position(GTK_PANED(hpaned), 120);
@@ -697,11 +713,15 @@ static gboolean _about_on_closex(gpointer data)
 /* browser_error */
 static int _browser_error(char const * message, int ret);
 /* callbacks */
+#if !GTK_CHECK_VERSION(2, 18, 0)
 static void _error_response(gpointer data);
+#endif
 
 int browser_error(Browser * browser, char const * message, int ret)
 {
+#if !GTK_CHECK_VERSION(2, 18, 0)
 	GtkWidget * dialog;
+#endif
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %d) errno=%d\n", __func__, message,
@@ -709,13 +729,17 @@ int browser_error(Browser * browser, char const * message, int ret)
 #endif
 	if(browser == NULL)
 		return _browser_error(message, ret);
+#if GTK_CHECK_VERSION(2, 18, 0)
+	gtk_label_set_text(GTK_LABEL(browser->infobar_label), message);
+	gtk_widget_show(browser->infobar);
+#else
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE,
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-#endif
+# endif
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
@@ -728,6 +752,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 					gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
+#endif
 	return ret;
 }
 
@@ -737,6 +762,7 @@ static int _browser_error(char const * message, int ret)
 	return ret;
 }
 
+#if !GTK_CHECK_VERSION(2, 18, 0)
 static void _error_response(gpointer data)
 {
 	Browser * browser = data;
@@ -746,6 +772,7 @@ static void _error_response(gpointer data)
 	if(browser_cnt == 0)
 		gtk_main_quit();
 }
+#endif
 
 
 /* browser_config_load */
