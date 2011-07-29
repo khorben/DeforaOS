@@ -36,6 +36,8 @@ typedef struct _Preview
 
 	/* widgets */
 	GtkWidget * name;
+	GtkWidget * open;
+	GtkWidget * edit;
 	GtkWidget * view_image;
 	GtkWidget * view_text;
 	GtkTextBuffer * view_text_buffer;
@@ -48,8 +50,10 @@ static void _preview_destroy(BrowserPlugin * plugin);
 static void _preview_refresh(BrowserPlugin * plugin, char const * path);
 
 /* callbacks */
+static void _preview_on_edit(gpointer data);
 static gboolean _preview_on_idle_image(gpointer data);
 static gboolean _preview_on_idle_text(gpointer data);
+static void _preview_on_open(gpointer data);
 
 
 /* public */
@@ -73,6 +77,7 @@ static GtkWidget * _preview_init(BrowserPlugin * plugin)
 {
 	Preview * preview;
 	PangoFontDescription * font;
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
@@ -82,6 +87,7 @@ static GtkWidget * _preview_init(BrowserPlugin * plugin)
 	preview->path = NULL;
 	preview->source = 0;
 	/* widgets */
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	/* name */
 	preview->name = gtk_label_new(NULL);
@@ -93,6 +99,21 @@ static GtkWidget * _preview_init(BrowserPlugin * plugin)
 	gtk_widget_modify_font(preview->name, font);
 	pango_font_description_free(font);
 	gtk_box_pack_start(GTK_BOX(vbox), preview->name, FALSE, TRUE, 0);
+	/* mime */
+	widget = gtk_hbox_new(FALSE, 4);
+	preview->open = gtk_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_size_group_add_widget(group, preview->open);
+	g_signal_connect_swapped(preview->open, "clicked", G_CALLBACK(
+				_preview_on_open), plugin);
+	gtk_box_pack_start(GTK_BOX(widget), preview->open, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	widget = gtk_hbox_new(FALSE, 4);
+	preview->edit = gtk_button_new_from_stock(GTK_STOCK_EDIT);
+	gtk_size_group_add_widget(group, preview->edit);
+	g_signal_connect_swapped(preview->edit, "clicked", G_CALLBACK(
+				_preview_on_edit), plugin);
+	gtk_box_pack_start(GTK_BOX(widget), preview->edit, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* image */
 	preview->view_image = gtk_image_new();
 	gtk_widget_set_no_show_all(preview->view_image, TRUE);
@@ -134,6 +155,7 @@ static void _preview_destroy(BrowserPlugin * plugin)
 
 
 /* preview_refresh */
+static void _refresh_mime(Preview * preview, Mime * mime, char const * type);
 static int _refresh_name(BrowserPlugin * plugin, Preview * preview,
 		char const * path);
 static void _refresh_reset(Preview * preview);
@@ -155,6 +177,7 @@ static void _preview_refresh(BrowserPlugin * plugin, char const * path)
 		return;
 	if((type = mime_type(mime, path)) == NULL)
 		return;
+	_refresh_mime(preview, mime, type);
 	if(strncmp(type, image, sizeof(image) - 1) == 0)
 		preview->source = g_idle_add(_preview_on_idle_image, plugin);
 	else if(strncmp(type, text, sizeof(text) - 1) == 0)
@@ -167,6 +190,14 @@ static void _preview_refresh(BrowserPlugin * plugin, char const * path)
 						_preview_on_idle_text, plugin);
 				break;
 			}
+}
+
+static void _refresh_mime(Preview * preview, Mime * mime, char const * type)
+{
+	if(mime_get_handler(mime, type, "open") != NULL)
+		gtk_widget_show(preview->open);
+	if(mime_get_handler(mime, type, "edit") != NULL)
+		gtk_widget_show(preview->edit);
 }
 
 static int _refresh_name(BrowserPlugin * plugin, Preview * preview,
@@ -189,12 +220,26 @@ static void _refresh_reset(Preview * preview)
 	if(preview->source != 0)
 		g_source_remove(preview->source);
 	preview->source = 0;
+	gtk_widget_hide(preview->open);
+	gtk_widget_hide(preview->edit);
 	gtk_widget_hide(preview->view_image);
 	gtk_widget_hide(preview->view_text);
 }
 
 
 /* callbacks */
+/* preview_on_edit */
+static void _preview_on_edit(gpointer data)
+{
+	BrowserPlugin * plugin = data;
+	Preview * preview = plugin->priv;
+	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
+
+	if(preview->path != NULL)
+		mime_action(mime, "edit", preview->path);
+}
+
+
 /* preview_on_idle_image */
 static gboolean _preview_on_idle_image(gpointer data)
 {
@@ -243,8 +288,28 @@ static gboolean _preview_on_idle_text(gpointer data)
 	}
 	/* FIXME use a GIOChannel instead */
 	if((s = read(fd, buf, sizeof(buf))) > 0)
+	{
+		if(s == sizeof(buf))
+		{
+			buf[sizeof(buf) - 3] = '.';
+			buf[sizeof(buf) - 2] = '.';
+			buf[sizeof(buf) - 1] = '.';
+		}
 		gtk_text_buffer_set_text(preview->view_text_buffer, buf, s);
+	}
 	close(fd);
 	gtk_widget_show(preview->view_text);
 	return FALSE;
+}
+
+
+/* preview_on_open */
+static void _preview_on_open(gpointer data)
+{
+	BrowserPlugin * plugin = data;
+	Preview * preview = plugin->priv;
+	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
+
+	if(preview->path != NULL)
+		mime_action(mime, "open", preview->path);
 }
