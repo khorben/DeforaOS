@@ -11,5 +11,6 @@
 ../src/properties.c
 ../src/view.c
 ../src/plugins/cvs.c
+../src/plugins/preview.c
 ../src/plugins/properties.c
 ../src/plugins/volumes.c

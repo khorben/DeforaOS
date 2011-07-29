@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - get rid of the PropertiesPlugin class */
 
 
 
@@ -29,7 +31,6 @@
 /* types */
 typedef struct _PropertiesPlugin
 {
-	Mime * mime;
 	Properties * properties;
 } PropertiesPlugin;
 
@@ -60,13 +61,13 @@ BrowserPlugin plugin =
 static GtkWidget * _properties_init(BrowserPlugin * plugin)
 {
 	PropertiesPlugin * properties;
+	Mime * mime;
 
 	if((properties = object_new(sizeof(*properties))) == NULL)
 		return NULL;
 	plugin->priv = properties;
-	properties->mime = mime_new(NULL);
-	properties->properties = _properties_new(NULL, properties->mime);
-	if(properties->mime == NULL || properties->properties == NULL)
+	mime = plugin->helper->get_mime(plugin->helper->browser);
+	if((properties->properties = _properties_new(NULL, mime)) == NULL)
 	{
 		_properties_destroy(plugin);
 		return NULL;
@@ -82,8 +83,6 @@ static void _properties_destroy(BrowserPlugin * plugin)
 
 	if(properties->properties != NULL)
 		_properties_delete(properties->properties);
-	if(properties->mime != NULL)
-		mime_delete(properties->mime);
 	object_delete(properties);
 }
 

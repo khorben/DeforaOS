@@ -19,6 +19,7 @@
 # define DESKTOP_BROWSER_H
 
 # include <gtk/gtk.h>
+# include <Desktop.h>
 
 
 /* Browser */
@@ -32,6 +33,7 @@ typedef struct _BrowserPluginHelper
 {
 	Browser * browser;
 	int (*error)(Browser * browser, char const * message, int ret);
+	Mime * (*get_mime)(Browser * browser);
 	void (*set_location)(Browser * browser, char const * path);
 } BrowserPluginHelper;
 

@@ -205,6 +205,7 @@ static DesktopToolbar _browser_toolbar[] =
 /* accessors */
 static gboolean _browser_plugin_is_enabled(Browser * browser,
 		char const * plugin);
+static Mime * _browser_get_mime(Browser * browser);
 static void _browser_set_status(Browser * browser, char const * status);
 
 static DIR * _browser_opendir(char const * pathname, struct stat * st);
@@ -301,6 +302,7 @@ Browser * browser_new(char const * directory)
 	/* plugins */
 	browser->pl_helper.browser = browser;
 	browser->pl_helper.error = browser_error;
+	browser->pl_helper.get_mime = _browser_get_mime;
 	browser->pl_helper.set_location = browser_set_location;
 
 	/* widgets */
@@ -2618,6 +2620,13 @@ static gboolean _browser_plugin_is_enabled(Browser * browser,
 			break;
 	}
 	return ret;
+}
+
+
+/* browser_get_mime */
+static Mime * _browser_get_mime(Browser * browser)
+{
+	return browser->mime;
 }
 
 
