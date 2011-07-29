@@ -408,6 +408,8 @@ Browser * browser_new(char const * directory)
 			GTK_RESPONSE_CLOSE, NULL);
 	gtk_info_bar_set_message_type(GTK_INFO_BAR(browser->infobar),
 			GTK_MESSAGE_ERROR);
+	g_signal_connect(browser->infobar, "close", G_CALLBACK(gtk_widget_hide),
+			NULL);
 	g_signal_connect(browser->infobar, "response", G_CALLBACK(
 				gtk_widget_hide), NULL);
 	widget = gtk_info_bar_get_content_area(GTK_INFO_BAR(browser->infobar));
