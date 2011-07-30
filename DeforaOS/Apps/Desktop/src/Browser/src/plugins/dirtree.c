@@ -16,6 +16,9 @@
 
 
 #include <System.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <string.h>
 #include <libintl.h>
 #include "Browser.h"
 #define _(string) gettext(string)
@@ -125,11 +128,80 @@ static void _dirtree_destroy(BrowserPlugin * plugin)
 
 
 /* dirtree_refresh */
+static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
+		char const * path, char const * basename);
+
 static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 {
 	Dirtree * dirtree = plugin->priv;
+	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
+	GtkTreeIter iter;
+	gboolean valid;
+	GtkTreeSelection * treesel;
+	size_t i;
+	size_t j;
+	char * p;
+	char c;
 
-	/* FIXME implement */
+	if(path == NULL || (p = strdup(path)) == NULL)
+		return;
+	valid = gtk_tree_model_iter_children(model, &iter, NULL);
+	for(i = 0; valid == TRUE && p[i] != '\0'; i++)
+	{
+		if(p[i] != '/')
+			continue;
+		p[i] = '\0';
+		for(j = i + 1; p[j] != '\0' && p[j] != '/'; j++);
+		c = p[j];
+		p[j] = '\0';
+		valid = _refresh_child(dirtree, &iter, (i == 0) ? "/" : p,
+				&p[i + 1]);
+		p[i] = '/';
+		p[j] = c;
+	}
+	free(p);
+	if(valid == TRUE)
+	{
+		treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+					dirtree->view));
+		gtk_tree_selection_select_iter(treesel, &iter);
+	}
+}
+
+static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
+		char const * path, char const * basename)
+{
+	DIR * dir;
+	struct dirent * de;
+	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
+	GtkTreeIter iter;
+	gboolean valid;
+	GtkTreePath * p = NULL;
+
+	for(valid = gtk_tree_model_iter_children(model, &iter, parent);
+			valid == TRUE;
+			valid = gtk_tree_store_remove(dirtree->store, &iter));
+	if((dir = opendir(path)) == NULL)
+		return FALSE;
+	while((de = readdir(dir)) != NULL)
+	{
+		/* FIXME d_type is not portable */
+		if(de->d_name[0] == '.' || de->d_type != DT_DIR)
+			continue;
+		gtk_tree_store_insert(dirtree->store, &iter, parent, -1);
+		gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder,
+				/* XXX may not be valid UTF-8, need full path */
+				1, de->d_name, -1);
+		if(p == NULL && strcmp(de->d_name, basename) == 0)
+			p = gtk_tree_model_get_path(model, &iter);
+	}
+	closedir(dir);
+	if(p == NULL)
+		return FALSE;
+	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dirtree->view), p);
+	gtk_tree_model_get_iter(model, parent, p); /* XXX may fail */
+	gtk_tree_path_free(p);
+	return TRUE;
 }
 
 
