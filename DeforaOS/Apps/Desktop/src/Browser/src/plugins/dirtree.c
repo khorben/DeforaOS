@@ -185,8 +185,9 @@ static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
 		return FALSE;
 	while((de = readdir(dir)) != NULL)
 	{
-		/* FIXME d_type is not portable */
-		if(de->d_name[0] == '.' || de->d_type != DT_DIR)
+		if(de->d_name[0] == '.' && strcmp(de->d_name, basename) != 0)
+			continue;
+		if(de->d_type != DT_DIR) /* XXX d_type is not portable */
 			continue;
 		gtk_tree_store_insert(dirtree->store, &iter, parent, -1);
 		gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder,
