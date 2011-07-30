@@ -166,6 +166,7 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 		treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 					dirtree->view));
 		gtk_tree_selection_select_iter(treesel, &iter);
+		_refresh_child(dirtree, &iter, path, NULL);
 	}
 }
 
@@ -182,6 +183,8 @@ static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
 	String * q;
 	gchar * r;
 
+	if(basename == NULL)
+		basename = "";
 	for(valid = gtk_tree_model_iter_children(model, &iter, parent);
 			valid == TRUE;
 			valid = gtk_tree_store_remove(dirtree->store, &iter));
