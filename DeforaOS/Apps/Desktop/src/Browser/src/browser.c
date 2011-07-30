@@ -760,7 +760,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 
 static int _browser_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s: %s", "browser", message);
+	fprintf(stderr, "%s: %s\n", "browser", message);
 	return ret;
 }
 
