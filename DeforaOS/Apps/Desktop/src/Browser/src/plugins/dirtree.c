@@ -42,7 +42,8 @@ static void _dirtree_destroy(BrowserPlugin * plugin);
 static void _dirtree_refresh(BrowserPlugin * plugin, char const * path);
 
 /* callbacks */
-static void _dirtree_on_selection_changed(gpointer data);
+static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 
 
 /* public */
@@ -108,8 +109,8 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(dirtree->view), column);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(dirtree->view));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
-	g_signal_connect_swapped(treesel, "changed", G_CALLBACK(
-				_dirtree_on_selection_changed), plugin);
+	g_signal_connect(dirtree->view, "row-activated", G_CALLBACK(
+				_dirtree_on_row_activated), plugin);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(widget),
 			dirtree->view);
 	gtk_widget_show_all(widget);
@@ -171,12 +172,15 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
 		char const * path, char const * basename)
 {
+	gboolean ret = FALSE;
 	DIR * dir;
 	struct dirent * de;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
 	gboolean valid;
 	GtkTreePath * p = NULL;
+	String * q;
+	gchar * r;
 
 	for(valid = gtk_tree_model_iter_children(model, &iter, parent);
 			valid == TRUE;
@@ -185,41 +189,44 @@ static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
 		return FALSE;
 	while((de = readdir(dir)) != NULL)
 	{
+		/* skip hidden folders except if we traverse it */
 		if(de->d_name[0] == '.' && strcmp(de->d_name, basename) != 0)
 			continue;
 		if(de->d_type != DT_DIR) /* XXX d_type is not portable */
 			continue;
+		q = string_new_append(path, "/", de->d_name, NULL);
+		r = (q != NULL) ? g_filename_display_basename(q) : NULL;
 		gtk_tree_store_insert(dirtree->store, &iter, parent, -1);
 		gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder,
-				/* XXX may not be valid UTF-8, need full path */
-				1, de->d_name, -1);
+				1, (r != NULL) ? r : de->d_name, 2, q, -1);
+		/* remember the folder we mean to traverse */
 		if(p == NULL && strcmp(de->d_name, basename) == 0)
 			p = gtk_tree_model_get_path(model, &iter);
+		g_free(r);
+		string_delete(q);
 	}
 	closedir(dir);
 	if(p == NULL)
 		return FALSE;
 	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dirtree->view), p);
-	gtk_tree_model_get_iter(model, parent, p); /* XXX may fail */
+	ret = gtk_tree_model_get_iter(model, parent, p);
 	gtk_tree_path_free(p);
-	return TRUE;
+	return ret;
 }
 
 
 /* callbacks */
-/* dirtree_on_selection_changed */
-static void _dirtree_on_selection_changed(gpointer data)
+/* dirtree_on_row_activated */
+static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
 {
 	BrowserPlugin * plugin = data;
 	Dirtree * dirtree = plugin->priv;
-	GtkTreeSelection * treesel;
-	GtkTreeModel * model;
+	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
 	gchar * location;
 
-	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(dirtree->view));
-	if(gtk_tree_selection_get_selected(treesel, &model, &iter) != TRUE)
-		return;
+	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, 2, &location, -1);
 	plugin->helper->set_location(plugin->helper->browser, location);
 	g_free(location);
