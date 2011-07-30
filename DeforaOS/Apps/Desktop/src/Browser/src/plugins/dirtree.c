@@ -32,6 +32,7 @@ typedef struct _Dirtree
 {
 	GdkPixbuf * folder;
 	GtkTreeStore * store;
+	GtkTreeModel * sorted;
 	GtkWidget * view;
 } Dirtree;
 
@@ -96,16 +97,22 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 	gtk_tree_store_insert(dirtree->store, &iter, NULL, -1);
 	gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder, 1, "/",
 			2, "/", -1);
-	dirtree->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+	dirtree->sorted = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(
 				dirtree->store));
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(dirtree->sorted),
+			1, GTK_SORT_ASCENDING);
+	dirtree->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				dirtree->sorted));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(dirtree->view), FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
 			"pixbuf", 0, NULL);
+	gtk_tree_view_column_set_expand(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(dirtree->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
 			"text", 1, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, 1);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(dirtree->view), column);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(dirtree->view));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
@@ -137,6 +144,7 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 	Dirtree * dirtree = plugin->priv;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
+	GtkTreeIter siter;
 	gboolean valid;
 	GtkTreeSelection * treesel;
 	size_t i;
@@ -165,7 +173,10 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 	{
 		treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 					dirtree->view));
-		gtk_tree_selection_select_iter(treesel, &iter);
+		gtk_tree_model_sort_convert_child_iter_to_iter(
+				GTK_TREE_MODEL_SORT(dirtree->sorted), &siter,
+				&iter);
+		gtk_tree_selection_select_iter(treesel, &siter);
 		_refresh_child(dirtree, &iter, path, NULL);
 	}
 }
@@ -180,6 +191,7 @@ static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
 	GtkTreeIter iter;
 	gboolean valid;
 	GtkTreePath * p = NULL;
+	GtkTreePath * s = NULL;
 	String * q;
 	gchar * r;
 
@@ -211,7 +223,10 @@ static gboolean _refresh_child(Dirtree * dirtree, GtkTreeIter * parent,
 	closedir(dir);
 	if(p == NULL)
 		return FALSE;
-	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dirtree->view), p);
+	s = gtk_tree_model_sort_convert_child_path_to_path(GTK_TREE_MODEL_SORT(
+				dirtree->sorted), p);
+	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dirtree->view), s);
+	gtk_tree_path_free(s);
 	ret = gtk_tree_model_get_iter(model, parent, p);
 	gtk_tree_path_free(p);
 	return ret;
@@ -225,7 +240,7 @@ static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
 {
 	BrowserPlugin * plugin = data;
 	Dirtree * dirtree = plugin->priv;
-	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
+	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->sorted);
 	GtkTreeIter iter;
 	gchar * location;
 
