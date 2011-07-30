@@ -63,6 +63,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/desktopicon.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/cvs.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/dirtree.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/preview.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/properties.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/volumes.c \

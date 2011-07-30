@@ -1,4 +1,4 @@
-TARGETS	= cvs.so preview.so properties.so volumes.so
+TARGETS	= cvs.so dirtree.so preview.so properties.so volumes.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -25,6 +25,13 @@ cvs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 cvs.so: $(cvs_OBJS)
 	$(LD) -o cvs.so $(cvs_OBJS) $(cvs_LDFLAGS)
 
+dirtree_OBJS = dirtree.o
+dirtree_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+dirtree_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+dirtree.so: $(dirtree_OBJS)
+	$(LD) -o dirtree.so $(dirtree_OBJS) $(dirtree_LDFLAGS)
+
 preview_OBJS = preview.o
 preview_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 preview_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -49,6 +56,9 @@ volumes.so: $(volumes_OBJS)
 cvs.o: cvs.c ../../include/Browser.h
 	$(CC) $(cvs_CFLAGS) -c cvs.c
 
+dirtree.o: dirtree.c ../../include/Browser.h
+	$(CC) $(dirtree_CFLAGS) -c dirtree.c
+
 preview.o: preview.c ../../include/Browser.h
 	$(CC) $(preview_CFLAGS) -c preview.c
 
@@ -59,7 +69,7 @@ volumes.o: volumes.c ../../include/Browser.h
 	$(CC) $(volumes_CFLAGS) -c volumes.c
 
 clean:
-	$(RM) -- $(cvs_OBJS) $(preview_OBJS) $(properties_OBJS) $(volumes_OBJS)
+	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(preview_OBJS) $(properties_OBJS) $(volumes_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -67,6 +77,8 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- cvs.so $(DESTDIR)$(LIBDIR)/Browser/plugins/cvs.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
+	$(INSTALL) -m 0644 -- dirtree.so $(DESTDIR)$(LIBDIR)/Browser/plugins/dirtree.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- preview.so $(DESTDIR)$(LIBDIR)/Browser/plugins/preview.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
@@ -76,6 +88,7 @@ install: $(TARGETS)
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/cvs.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/dirtree.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/preview.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
