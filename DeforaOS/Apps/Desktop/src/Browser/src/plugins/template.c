@@ -56,11 +56,11 @@ BrowserPlugin plugin =
 /* template_init */
 static GtkWidget * _template_init(BrowserPlugin * plugin)
 {
-	Template * volumes;
+	Template * template;
 
-	if((volumes = object_new(sizeof(*volumes))) == NULL)
+	if((template = object_new(sizeof(*template))) == NULL)
 		return NULL;
-	plugin->priv = volumes;
+	plugin->priv = template;
 	/* FIXME implement */
 	return gtk_label_new("Template");
 }
@@ -69,16 +69,16 @@ static GtkWidget * _template_init(BrowserPlugin * plugin)
 /* template_destroy */
 static void _template_destroy(BrowserPlugin * plugin)
 {
-	Template * volumes = plugin->priv;
+	Template * template = plugin->priv;
 
-	object_delete(volumes);
+	object_delete(template);
 }
 
 
 /* template_refresh */
 static void _template_refresh(BrowserPlugin * plugin, char const * path)
 {
-	Template * volumes = plugin->priv;
+	Template * template = plugin->priv;
 
 	/* FIXME implement */
 }
