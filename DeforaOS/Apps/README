@@ -1,4 +1,6 @@
-Devel		development tools
-Servers		networking servers
-Unix		regular unix applications
-Web		web serving applications
+Desktop		Desktop environment
+Devel		Development tools
+Graphics	Graphical sub-system
+Servers		Network services
+Unix		POSIX and Unix applications
+Web		Web-based content management
