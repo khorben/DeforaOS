@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-31 01:07+0200\n"
+"POT-Creation-Date: 2011-08-01 00:18+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -702,64 +702,68 @@ msgstr ""
 msgid "Usage: view file...\n"
 msgstr ""
 
-#: ../src/plugins/cvs.c:120 ../src/plugins/cvs.c:506
+#: ../src/plugins/cvs.c:121 ../src/plugins/cvs.c:513
 msgid "CVS"
 msgstr "CVS"
 
-#: ../src/plugins/cvs.c:167
+#: ../src/plugins/cvs.c:168
 msgid "Root:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:169
+#: ../src/plugins/cvs.c:170
 msgid "Repository:"
 msgstr "Repository:"
 
-#: ../src/plugins/cvs.c:171
+#: ../src/plugins/cvs.c:172
 msgid "Tag:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:173 ../src/plugins/cvs.c:190
+#: ../src/plugins/cvs.c:174 ../src/plugins/cvs.c:194
 msgid "Request diff"
 msgstr ""
 
-#: ../src/plugins/cvs.c:176 ../src/plugins/cvs.c:193
+#: ../src/plugins/cvs.c:177 ../src/plugins/cvs.c:197
+msgid "View log"
+msgstr ""
+
+#: ../src/plugins/cvs.c:180 ../src/plugins/cvs.c:200
 msgid "Update"
 msgstr ""
 
-#: ../src/plugins/cvs.c:179 ../src/plugins/cvs.c:196
+#: ../src/plugins/cvs.c:183 ../src/plugins/cvs.c:203
 msgid "Commit"
 msgstr ""
 
-#: ../src/plugins/cvs.c:188
+#: ../src/plugins/cvs.c:192
 msgid "Revision:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:203
+#: ../src/plugins/cvs.c:210
 msgid "Add to CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:206
+#: ../src/plugins/cvs.c:213
 msgid "Run make"
 msgstr ""
 
-#: ../src/plugins/cvs.c:336 ../src/plugins/cvs.c:405
+#: ../src/plugins/cvs.c:343 ../src/plugins/cvs.c:412
 msgid "Not a CVS repository"
 msgstr "Kein CVS Inhalt"
 
-#: ../src/plugins/cvs.c:428
+#: ../src/plugins/cvs.c:435
 msgid "Not managed by CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:550
+#: ../src/plugins/cvs.c:557
 msgid "Running command..."
 msgstr ""
 
-#: ../src/plugins/cvs.c:743
+#: ../src/plugins/cvs.c:773
 #, c-format
 msgid "Command exited with error code %d"
 msgstr ""
 
-#: ../src/plugins/cvs.c:749
+#: ../src/plugins/cvs.c:779
 #, c-format
 msgid "Command exited with signal %d"
 msgstr ""

@@ -102,6 +102,7 @@ static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel);
 static void _cvs_on_add(gpointer data);
 static void _cvs_on_commit(gpointer data);
 static void _cvs_on_diff(gpointer data);
+static void _cvs_on_log(gpointer data);
 static void _cvs_on_make(gpointer data);
 static void _cvs_on_update(gpointer data);
 /* tasks */
@@ -173,6 +174,9 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
 			G_CALLBACK(_cvs_on_diff), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
+			G_CALLBACK(_cvs_on_log), plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
 			G_CALLBACK(_cvs_on_update), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
@@ -189,6 +193,9 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
 			G_CALLBACK(_cvs_on_diff), plugin);
+	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
+			G_CALLBACK(_cvs_on_log), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
 			G_CALLBACK(_cvs_on_update), plugin);
@@ -672,6 +679,29 @@ static void _cvs_on_diff(gpointer data)
 		: g_path_get_basename(cvs->filename);
 	argv[2] = basename;
 	_cvs_add_task(plugin, "cvs diff", dirname, argv);
+	g_free(basename);
+	g_free(dirname);
+}
+
+
+/* cvs_on_log */
+static void _cvs_on_log(gpointer data)
+{
+	BrowserPlugin * plugin = data;
+	CVS * cvs = plugin->priv;
+	struct stat st;
+	gchar * dirname;
+	gchar * basename;
+	char * argv[] = { "cvs", "log", NULL, NULL };
+
+	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
+		return;
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	basename = S_ISDIR(st.st_mode) ? NULL
+		: g_path_get_basename(cvs->filename);
+	argv[2] = basename;
+	_cvs_add_task(plugin, "cvs log", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
