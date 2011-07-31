@@ -22,6 +22,7 @@
 # include <errno.h>
 #else
 # include <fcntl.h>
+# include <unistd.h>
 #endif
 #include <string.h>
 #include "Locker.h"
