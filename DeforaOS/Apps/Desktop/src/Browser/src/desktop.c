@@ -200,13 +200,11 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	screen = gdk_screen_get_default();
 	desktop->display = gdk_screen_get_display(screen);
 	desktop->root = gdk_screen_get_root_window(screen);
-	_desktop_get_workarea(desktop);
 	desktop->theme = gtk_icon_theme_get_default();
 	desktop->menu = NULL;
 	if((desktop->home = getenv("HOME")) == NULL
 			&& (desktop->home = g_get_home_dir()) == NULL)
 		desktop->home = "/";
-	desktop_set_layout(desktop, desktop->prefs.layout);
 	/* manage root window events */
 	gdk_add_client_message_filter(gdk_atom_intern(DESKTOP_CLIENT_MESSAGE,
 				FALSE), _on_root_event, desktop);
@@ -217,7 +215,7 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 				desktop->root) | GDK_BUTTON_PRESS_MASK
 			| GDK_PROPERTY_CHANGE_MASK);
 	gdk_window_add_filter(desktop->root, _on_root_event, desktop);
-	/* draw background when idle */
+	/* draw the icons and background when idle */
 	g_idle_add(_new_idle, desktop);
 	return desktop;
 }
@@ -228,6 +226,7 @@ static gboolean _new_idle(gpointer data)
 	Config * config;
 	char const * p;
 	size_t i;
+	char * q;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -241,7 +240,16 @@ static gboolean _new_idle(gpointer data)
 		for(i = 0; i < desktop->icon_cnt; i++)
 			desktopicon_set_font(desktop->icon[i], desktop->font);
 	}
+	if(desktop->prefs.monitor < 0 && (p = config_get(config, NULL,
+					"monitor")) != NULL)
+	{
+		desktop->prefs.monitor = strtol(p, &q, 10);
+		if(p[0] == '\0' || *q != '\0')
+			desktop->prefs.monitor = -1;
+	}
 	config_delete(config);
+	_desktop_get_workarea(desktop);
+	desktop_set_layout(desktop, desktop->prefs.layout);
 	return FALSE;
 }
 
