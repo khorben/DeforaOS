@@ -1817,6 +1817,7 @@ int main(int argc, char * argv[])
 	Desktop * desktop;
 	DesktopPrefs prefs;
 	int alignment = -1;
+	char * p;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -1847,7 +1848,9 @@ int main(int argc, char * argv[])
 				prefs.layout = DESKTOP_LAYOUT_HOMESCREEN;
 				break;
 			case 'm':
-				prefs.monitor = strtol(optarg, NULL, 0);
+				prefs.monitor = strtol(optarg, &p, 0);
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
 				break;
 			case 'n':
 				prefs.layout = DESKTOP_LAYOUT_NULL;
