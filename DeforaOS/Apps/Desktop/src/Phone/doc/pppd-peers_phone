@@ -1,0 +1,7 @@
+notty
+local
+noauth
+defaultroute
+usepeerdns
+mru 296
+mtu 296
