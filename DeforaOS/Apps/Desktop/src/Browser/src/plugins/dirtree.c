@@ -41,7 +41,6 @@ typedef struct _Dirtree
 /* prototypes */
 static GtkWidget * _dirtree_init(BrowserPlugin * plugin);
 static void _dirtree_destroy(BrowserPlugin * plugin);
-static void _dirtree_refresh(BrowserPlugin * plugin, char const * path);
 
 static void _dirtree_refresh_folder(BrowserPlugin * plugin,
 		GtkTreeIter * parent, char const * path, gboolean recurse);
@@ -63,7 +62,7 @@ BrowserPlugin plugin =
 	"stock_folder",
 	_dirtree_init,
 	_dirtree_destroy,
-	_dirtree_refresh,
+	NULL,
 	NULL
 };
 
@@ -152,13 +151,6 @@ static void _dirtree_destroy(BrowserPlugin * plugin)
 		g_source_remove(dirtree->source);
 	g_object_unref(dirtree->folder);
 	object_delete(dirtree);
-}
-
-
-/* dirtree_refresh */
-static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
-{
-	/* FIXME no longer force plug-ins to implement this callback */
 }
 
 
