@@ -41,9 +41,11 @@ typedef struct _Dirtree
 /* prototypes */
 static GtkWidget * _dirtree_init(BrowserPlugin * plugin);
 static void _dirtree_destroy(BrowserPlugin * plugin);
+static void _dirtree_refresh(BrowserPlugin * plugin, char const * path);
 
-static void _dirtree_refresh_folder(BrowserPlugin * plugin,
-		GtkTreeIter * parent, char const * path, gboolean recurse);
+static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
+		GtkTreeIter * parent, char const * path, char const * basename,
+		gboolean recurse);
 
 /* callbacks */
 static gboolean _dirtree_on_idle(gpointer data);
@@ -62,7 +64,7 @@ BrowserPlugin plugin =
 	"stock_folder",
 	_dirtree_init,
 	_dirtree_destroy,
-	NULL,
+	_dirtree_refresh,
 	NULL
 };
 
@@ -154,10 +156,50 @@ static void _dirtree_destroy(BrowserPlugin * plugin)
 }
 
 
-/* dirtree_refresh_folder */
-static void _dirtree_refresh_folder(BrowserPlugin * plugin,
-		GtkTreeIter * parent, char const * path, gboolean recurse)
+/* dirtree_refresh */
+static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 {
+	Dirtree * dirtree = plugin->priv;
+	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
+	GtkTreeIter iter;
+	char * p;
+	gboolean valid;
+	size_t i;
+	size_t j;
+	char c;
+
+	/* only take care of the tree if this is the first invocation */
+	if(dirtree->source == 0 || path == NULL || (p = strdup(path)) == NULL)
+		return;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
+#endif
+	g_source_remove(dirtree->source);
+	dirtree->source = 0;
+	valid = gtk_tree_model_iter_children(model, &iter, NULL);
+	for(i = 0; valid == TRUE && p[i] != '\0'; i++)
+	{
+		if(p[i] != '/')
+			continue;
+		p[i] = '\0';
+		for(j = i + 1; p[j] != '\0' && p[j] != '/'; j++);
+		c = p[j];
+		p[j] = '\0';
+		valid = _dirtree_refresh_folder(plugin, &iter, (i == 0)
+				? "/" : p, &p[i + 1], FALSE);
+		p[i] = '/';
+		p[j] = c;
+	}
+	free(p);
+}
+
+
+/* dirtree_refresh_folder */
+static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
+		GtkTreeIter * parent, char const * path, char const * basename,
+		gboolean recurse)
+{
+	gboolean ret = FALSE;
 	Dirtree * dirtree = plugin->priv;
 	DIR * dir;
 	struct dirent * de;
@@ -169,8 +211,8 @@ static void _dirtree_refresh_folder(BrowserPlugin * plugin,
 	gboolean b;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(parent, \"%s\", %s)\n", __func__, path,
-			recurse ? "TRUE" : "FALSE");
+	fprintf(stderr, "DEBUG: %s(parent, \"%s\", \"%s\", %s)\n", __func__,
+			path, basename, recurse ? "TRUE" : "FALSE");
 #endif
 	/* consider all the current nodes obsolete */
 	for(valid = gtk_tree_model_iter_children(model, &iter, parent);
@@ -178,29 +220,32 @@ static void _dirtree_refresh_folder(BrowserPlugin * plugin,
 			valid = gtk_tree_model_iter_next(model, &iter))
 		gtk_tree_store_set(dirtree->store, &iter, 3, FALSE, -1);
 	if((dir = opendir(path)) == NULL)
-		return;
+		return FALSE;
 	if(strcmp(path, "/") == 0) /* XXX hack */
 		path = "";
 	while((de = readdir(dir)) != NULL)
 	{
 		/* skip hidden folders except if we traverse it */
-		if(de->d_name[0] == '.')
+		if(basename != NULL && strcmp(de->d_name, basename) == 0)
+			ret = TRUE;
+		else if(de->d_name[0] == '.')
 			continue;
-		if(de->d_type != DT_DIR) /* XXX d_type is not portable */
+		else if(de->d_type != DT_DIR) /* XXX d_type is not portable */
 			continue;
 		q = string_new_append(path, "/", de->d_name, NULL);
+		/* FIXME check if the node already exists */
 		r = (q != NULL) ? g_filename_display_basename(q) : NULL;
 		gtk_tree_store_insert(dirtree->store, &iter, parent, -1);
 		gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder,
 				1, (r != NULL) ? r : de->d_name, 2, q, 3, TRUE,
 				-1);
 		if(recurse)
-			_dirtree_refresh_folder(plugin, &iter, q, FALSE);
+			_dirtree_refresh_folder(plugin, &iter, q, NULL, FALSE);
 		g_free(r);
 		string_delete(q);
 	}
 	closedir(dir);
-	/* move all of the obsolete nodes */
+	/* remove all the obsolete nodes */
 	for(valid = gtk_tree_model_iter_children(model, &iter, parent);
 			valid == TRUE;)
 	{
@@ -208,6 +253,7 @@ static void _dirtree_refresh_folder(BrowserPlugin * plugin,
 		valid = b ? gtk_tree_model_iter_next(model, &iter)
 			: gtk_tree_store_remove(dirtree->store, &iter);
 	}
+	return ret;
 }
 
 
@@ -222,7 +268,7 @@ static gboolean _dirtree_on_idle(gpointer data)
 
 	dirtree->source = 0;
 	gtk_tree_model_iter_children(model, &iter, NULL);
-	_dirtree_refresh_folder(plugin, &iter, "/", TRUE);
+	_dirtree_refresh_folder(plugin, &iter, "/", NULL, TRUE);
 	return FALSE;
 }
 
@@ -257,6 +303,6 @@ static void _dirtree_on_row_expanded(GtkTreeView * view, GtkTreeIter * iter,
 	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
 				dirtree->sorted), &child, iter);
 	gtk_tree_model_get(model, &child, 2, &p, -1);
-	_dirtree_refresh_folder(plugin, &child, p, TRUE);
+	_dirtree_refresh_folder(plugin, &child, p, NULL, TRUE);
 	g_free(p);
 }
