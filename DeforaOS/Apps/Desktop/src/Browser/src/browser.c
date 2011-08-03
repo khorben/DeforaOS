@@ -1126,7 +1126,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			BR_COL_IS_DIRECTORY, S_ISDIR(st->st_mode),
 			BR_COL_IS_EXECUTABLE, st->st_mode & S_IXUSR,
 			BR_COL_IS_MOUNT_POINT,
-			st->st_dev != browser->refresh_dev,
+			(st->st_dev != browser->refresh_dev) ? TRUE : FALSE,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1482,7 +1482,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			BR_COL_INODE, inode, BR_COL_IS_DIRECTORY,
 			S_ISDIR(st->st_mode), BR_COL_IS_EXECUTABLE,
 			st->st_mode & S_IXUSR, BR_COL_IS_MOUNT_POINT,
-			st->st_dev != browser->refresh_dev,
+			(st->st_dev != browser->refresh_dev) ? TRUE : FALSE,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
