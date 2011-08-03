@@ -31,6 +31,7 @@
 typedef struct _Dirtree
 {
 	guint source;
+	gboolean expanding;
 	GdkPixbuf * folder;
 	GtkTreeStore * store;
 	GtkTreeModel * sorted;
@@ -89,6 +90,7 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 		return NULL;
 	plugin->priv = dirtree;
 	dirtree->source = 0;
+	dirtree->expanding = FALSE;
 	icontheme = gtk_icon_theme_get_default();
 	gtk_icon_size_lookup(GTK_ICON_SIZE_BUTTON, &size, &size);
 	dirtree->folder = gtk_icon_theme_load_icon(icontheme, "stock_folder",
@@ -162,6 +164,8 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 	Dirtree * dirtree = plugin->priv;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
+	GtkTreeIter siter;
+	GtkTreePath * q;
 	char * p;
 	gboolean valid;
 	size_t i;
@@ -191,6 +195,18 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 		p[j] = c;
 	}
 	free(p);
+	if(valid != TRUE)
+		return;
+	/* expand and scroll to the correct position */
+	gtk_tree_model_sort_convert_child_iter_to_iter(GTK_TREE_MODEL_SORT(
+				dirtree->sorted), &siter, &iter);
+	q = gtk_tree_model_get_path(GTK_TREE_MODEL(dirtree->sorted), &siter);
+	dirtree->expanding = TRUE;
+	gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dirtree->view), q);
+	gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(dirtree->view), q, NULL,
+			TRUE, 1.0, 1.0);
+	dirtree->expanding = FALSE;
+	gtk_tree_path_free(q);
 }
 
 
@@ -205,6 +221,7 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 	struct dirent * de;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
+	GtkTreePath * s = NULL;
 	gboolean valid;
 	String * q;
 	gchar * r;
@@ -243,6 +260,8 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 			_dirtree_refresh_folder(plugin, &iter, q, NULL, FALSE);
 		g_free(r);
 		string_delete(q);
+		if(ret == TRUE && strcmp(de->d_name, basename) == 0)
+			s = gtk_tree_model_get_path(model, &iter);
 	}
 	closedir(dir);
 	/* remove all the obsolete nodes */
@@ -252,6 +271,12 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 		gtk_tree_model_get(model, &iter, 3, &b, -1);
 		valid = b ? gtk_tree_model_iter_next(model, &iter)
 			: gtk_tree_store_remove(dirtree->store, &iter);
+	}
+	/* return the parent if appropriate */
+	if(s != NULL)
+	{
+		gtk_tree_model_get_iter(model, parent, s);
+		gtk_tree_path_free(s);
 	}
 	return ret;
 }
@@ -300,6 +325,8 @@ static void _dirtree_on_row_expanded(GtkTreeView * view, GtkTreeIter * iter,
 	GtkTreeIter child;
 	gchar * p;
 
+	if(dirtree->expanding == TRUE)
+		return;
 	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
 				dirtree->sorted), &child, iter);
 	gtk_tree_model_get(model, &child, 2, &p, -1);
