@@ -190,7 +190,7 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 		c = p[j];
 		p[j] = '\0';
 		valid = _dirtree_refresh_folder(plugin, &iter, (i == 0)
-				? "/" : p, &p[i + 1], FALSE);
+				? "/" : p, &p[i + 1], TRUE);
 		p[i] = '/';
 		p[j] = c;
 	}
@@ -221,7 +221,8 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 	struct dirent * de;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
-	GtkTreePath * s = NULL;
+	GtkTreePath * s;
+	GtkTreeRowReference * t = NULL;
 	gboolean valid;
 	String * q;
 	gchar * r;
@@ -247,7 +248,8 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 			ret = TRUE;
 		else if(de->d_name[0] == '.')
 			continue;
-		else if(de->d_type != DT_DIR) /* XXX d_type is not portable */
+		/* XXX d_type is not portable */
+		else if(de->d_type != DT_DIR && de->d_type != DT_LNK)
 			continue;
 		q = string_new_append(path, "/", de->d_name, NULL);
 		/* FIXME check if the node already exists */
@@ -257,26 +259,30 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 				1, (r != NULL) ? r : de->d_name, 2, q, 3, TRUE,
 				-1);
 		if(recurse)
-			_dirtree_refresh_folder(plugin, &iter, q, NULL, FALSE);
+			_dirtree_refresh_folder(plugin, &iter, q, NULL,
+					(basename != NULL) ? TRUE : FALSE);
 		g_free(r);
 		string_delete(q);
 		if(ret == TRUE && strcmp(de->d_name, basename) == 0)
+		{
 			s = gtk_tree_model_get_path(model, &iter);
+			t = gtk_tree_row_reference_new(model, s);
+			gtk_tree_path_free(s);
+		}
 	}
 	closedir(dir);
 	/* remove all the obsolete nodes */
 	for(valid = gtk_tree_model_iter_children(model, &iter, parent);
-			valid == TRUE;)
-	{
+			valid == TRUE; valid = (b == TRUE)
+			? gtk_tree_model_iter_next(model, &iter)
+			: gtk_tree_store_remove(dirtree->store, &iter))
 		gtk_tree_model_get(model, &iter, 3, &b, -1);
-		valid = b ? gtk_tree_model_iter_next(model, &iter)
-			: gtk_tree_store_remove(dirtree->store, &iter);
-	}
 	/* return the parent if appropriate */
-	if(s != NULL)
+	if(t != NULL)
 	{
+		s = gtk_tree_row_reference_get_path(t);
 		gtk_tree_model_get_iter(model, parent, s);
-		gtk_tree_path_free(s);
+		gtk_tree_row_reference_free(t);
 	}
 	return ret;
 }
