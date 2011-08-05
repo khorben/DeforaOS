@@ -627,13 +627,13 @@ static void _cvs_on_add(gpointer data)
 	CVS * cvs = plugin->priv;
 	gchar * dirname;
 	gchar * basename;
-	char * argv[] = { "cvs", "add", NULL, NULL };
+	char * argv[] = { "cvs", "add", "--", NULL, NULL };
 
 	if(cvs->filename == NULL)
 		return;
 	dirname = g_path_get_dirname(cvs->filename);
 	basename = g_path_get_basename(cvs->filename);
-	argv[2] = basename;
+	argv[3] = basename;
 	_cvs_add_task(plugin, "cvs add", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
@@ -648,7 +648,7 @@ static void _cvs_on_commit(gpointer data)
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
-	char * argv[] = { "cvs", "commit", NULL, NULL };
+	char * argv[] = { "cvs", "commit", "--", NULL, NULL };
 
 	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
@@ -656,7 +656,7 @@ static void _cvs_on_commit(gpointer data)
 		: g_path_get_dirname(cvs->filename);
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
-	argv[2] = basename;
+	argv[3] = basename;
 	_cvs_add_task(plugin, "cvs commit", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
@@ -671,7 +671,7 @@ static void _cvs_on_diff(gpointer data)
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
-	char * argv[] = { "cvs", "diff", NULL, NULL };
+	char * argv[] = { "cvs", "diff", "--", NULL, NULL };
 
 	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
@@ -679,7 +679,7 @@ static void _cvs_on_diff(gpointer data)
 		: g_path_get_dirname(cvs->filename);
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
-	argv[2] = basename;
+	argv[3] = basename;
 	_cvs_add_task(plugin, "cvs diff", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
@@ -694,7 +694,7 @@ static void _cvs_on_log(gpointer data)
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
-	char * argv[] = { "cvs", "log", NULL, NULL };
+	char * argv[] = { "cvs", "log", "--", NULL, NULL };
 
 	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
@@ -702,7 +702,7 @@ static void _cvs_on_log(gpointer data)
 		: g_path_get_dirname(cvs->filename);
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
-	argv[2] = basename;
+	argv[3] = basename;
 	_cvs_add_task(plugin, "cvs log", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
@@ -735,7 +735,7 @@ static void _cvs_on_update(gpointer data)
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
-	char * argv[] = { "cvs", "update", NULL, NULL };
+	char * argv[] = { "cvs", "update", "--", NULL, NULL };
 
 	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
 		return;
@@ -743,7 +743,7 @@ static void _cvs_on_update(gpointer data)
 		: g_path_get_dirname(cvs->filename);
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(cvs->filename);
-	argv[2] = basename;
+	argv[3] = basename;
 	_cvs_add_task(plugin, "cvs update", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
