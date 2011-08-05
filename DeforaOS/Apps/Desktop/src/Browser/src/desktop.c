@@ -95,6 +95,7 @@ struct _Desktop
 	GtkWidget * pr_color;
 	GtkWidget * pr_background;
 	GtkWidget * pr_background_how;
+	GtkWidget * pr_background_extend;
 
 	/* internal */
 	GdkScreen * screen;
@@ -164,7 +165,7 @@ static int _desktop_get_workarea(Desktop * desktop);
 
 /* useful */
 static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
-		char const * filename, DesktopHows how, gboolean permonitor);
+		char const * filename, DesktopHows how, gboolean extend);
 
 static int _desktop_icon_add(Desktop * desktop, DesktopIcon * icon);
 static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
@@ -255,6 +256,7 @@ static void _idle_background(Desktop * desktop, Config * config)
 	GdkColor color = { 0, 0, 0, 0 };
 	char const * filename;
 	DesktopHows how = DESKTOP_HOW_SCALED;
+	gboolean extend = FALSE;
 	size_t i;
 	char const * p;
 
@@ -265,7 +267,9 @@ static void _idle_background(Desktop * desktop, Config * config)
 		for(i = 0; i < DESKTOP_HOW_COUNT; i++)
 			if(strcmp(_desktop_hows[i], p) == 0)
 				how = i;
-	_desktop_draw_background(desktop, &color, filename, how, TRUE);
+	if((p = config_get(config, NULL, "background_extend")) != NULL)
+		extend = strtol(p, NULL, 10) ? TRUE : FALSE;
+	_desktop_draw_background(desktop, &color, filename, how, extend);
 }
 
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
@@ -559,6 +563,10 @@ static void _on_popup_preferences(gpointer data)
 	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background_how, TRUE,
 			TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	desktop->pr_background_extend = gtk_check_button_new_with_mnemonic(
+			_("E_xtend background to all monitors"));
+	gtk_box_pack_start(GTK_BOX(vbox2), desktop->pr_background_extend, FALSE,
+			TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
 				_("Background")));
 	/* theme */
@@ -633,6 +641,9 @@ static void _on_preferences_apply(gpointer data)
 	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
 	if(i >= 0 && i < DESKTOP_HOW_COUNT)
 		config_set(config, NULL, "background_how", _desktop_hows[i]);
+	p = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				desktop->pr_background_extend)) ? "1" : "0";
+	config_set(config, NULL, "background_extend", p);
 	/* XXX code duplication */
 	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
 	{
@@ -657,6 +668,7 @@ static void _preferences_set(Desktop * desktop)
 	String const * filename = NULL;
 	GdkColor color = { 0, 0, 0, 0 };
 	int how = 0;
+	gboolean extend = FALSE;
 	size_t i;
 
 	if((config = _desktop_get_config(desktop)) != NULL)
@@ -673,12 +685,16 @@ static void _preferences_set(Desktop * desktop)
 			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
 				if(strcmp(_desktop_hows[i], p) == 0)
 					how = i;
+		if((p = config_get(config, NULL, "background_extend")) != NULL)
+			extend = strtol(p, NULL, 10) ? TRUE : FALSE;
 		config_delete(config);
 	}
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(desktop->pr_background),
 			filename);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_background_how),
 			how);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+				desktop->pr_background_extend), extend);
 }
 
 static void _on_popup_symlink(gpointer data)
@@ -1563,8 +1579,7 @@ static Config * _desktop_get_config(Desktop * desktop)
 
 	if((config = config_new()) == NULL
 			|| (pathname = string_new_append(desktop->home,
-					"/" DESKTOPRC, NULL)) == NULL
-			|| config_load(config, pathname) != 0)
+					"/" DESKTOPRC, NULL)) == NULL)
 	{
 		if(config != NULL)
 			config_delete(config);
@@ -1573,6 +1588,7 @@ static Config * _desktop_get_config(Desktop * desktop)
 		_desktop_serror(NULL, _("Could not load preferences"), FALSE);
 		return NULL;
 	}
+	config_load(config, pathname); /* XXX ignore errors */
 	return config;
 }
 
@@ -1641,7 +1657,7 @@ static void _background_tiled(Desktop * desktop, GdkRectangle * window,
 		GdkPixmap * pixmap, char const * filename, GError ** error);
 
 static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
-		char const * filename, DesktopHows how, gboolean permonitor)
+		char const * filename, DesktopHows how, gboolean extend)
 {
 	GdkGC * gc;
 	GdkPixmap * pixmap;
@@ -1656,11 +1672,11 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 	gdk_gc_set_rgb_fg_color(gc, color);
 	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, window.width, window.height);
 	/* obtain monitor information */
-	if(permonitor)
+	if(extend != TRUE)
 		n = gdk_screen_get_n_monitors(desktop->screen);
 	for(i = 0; i < n; i++)
 	{
-		if(permonitor)
+		if(extend != TRUE)
 			gdk_screen_get_monitor_geometry(desktop->screen, i,
 					&window);
 		switch(how)
