@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-05 23:14+0200\n"
+"POT-Creation-Date: 2011-08-06 00:01+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -206,7 +206,7 @@ msgstr "Fichiers exécutables"
 msgid "Shell scripts"
 msgstr "Scripts shell"
 
-#: ../src/browser.c:963 ../src/desktop.c:1717 ../src/view.c:436
+#: ../src/browser.c:963 ../src/desktop.c:1715 ../src/view.c:436
 msgid "All files"
 msgstr "Tous les fichiers"
 
@@ -415,7 +415,7 @@ msgstr "Copie de fichier(s)"
 msgid "Copying: "
 msgstr "Copie de : "
 
-#: ../src/copy.c:152 ../src/desktop.c:1700
+#: ../src/copy.c:152 ../src/desktop.c:1698
 msgid "Filename: "
 msgstr "Nom de fichier : "
 
@@ -528,86 +528,90 @@ msgstr "Applications"
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1655
+#: ../src/desktop.c:1653
 msgid "Desktop preferences"
 msgstr "Préférences du bureau"
 
-#: ../src/desktop.c:1692
+#: ../src/desktop.c:1690
 msgid "Default color: "
 msgstr "Couleur par défaut :"
 
-#: ../src/desktop.c:1704 ../src/desktop.c:1746
+#: ../src/desktop.c:1702 ../src/desktop.c:1744
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: ../src/desktop.c:1707
+#: ../src/desktop.c:1705
 msgid "Picture files"
 msgstr "Images"
 
-#: ../src/desktop.c:1725
+#: ../src/desktop.c:1723
 msgid "Position: "
 msgstr "Position : "
 
-#: ../src/desktop.c:1731
+#: ../src/desktop.c:1729
 msgid "Centered"
 msgstr "Centré"
 
-#: ../src/desktop.c:1733
+#: ../src/desktop.c:1731
 msgid "Scaled"
 msgstr "Étiré"
 
-#: ../src/desktop.c:1735
+#: ../src/desktop.c:1733
 msgid "Scaled (keep ratio)"
 msgstr "Étiré (sans déformer)"
 
-#: ../src/desktop.c:1737
+#: ../src/desktop.c:1735
 msgid "Tiled"
 msgstr "Mosaïque"
 
-#: ../src/desktop.c:1742
+#: ../src/desktop.c:1740
 msgid "E_xtend background to all monitors"
 msgstr "Étendre l'arrière-plan à tous les moniteurs"
 
-#: ../src/desktop.c:1766
+#: ../src/desktop.c:1765
 msgid "Monitor: "
 msgstr "Moniteur : "
 
-#: ../src/desktop.c:1774
+#: ../src/desktop.c:1771
+msgid "Whole screen"
+msgstr "Écran complet"
+
+#: ../src/desktop.c:1776
 #, c-format
 msgid "Monitor %d"
 msgstr "Moniteur %d"
 
-#: ../src/desktop.c:1784
+#: ../src/desktop.c:1787
 msgid "Resolution: "
 msgstr "Résolution : "
 
-#: ../src/desktop.c:1795
+#: ../src/desktop.c:1798
 msgid "Size: "
 msgstr "Taille: "
 
-#: ../src/desktop.c:1809
+#: ../src/desktop.c:1812
 msgid "Monitors"
 msgstr "Moniteurs"
 
-#: ../src/desktop.c:1824
+#: ../src/desktop.c:1826
 msgid "Desktop font: "
 msgstr "Police du bureau : "
 
-#: ../src/desktop.c:1833
+#: ../src/desktop.c:1835
 msgid "Theme"
 msgstr "Thème"
 
-#: ../src/desktop.c:1856
+#: ../src/desktop.c:1871
 #, c-format
 msgid "%dx%d (at %d,%d)"
-msgstr ""
+msgstr "%dx%d (à %d,%d)"
 
-#: ../src/desktop.c:1859
+#: ../src/desktop.c:1874
 #, c-format
 msgid "%dx%d mm (%.0lfx%.0lf DPI)"
-msgstr ""
+msgstr "%dx%d mm (%.0lfx%.0lf DPI)"
 
-#: ../src/desktop.c:1971
+#: ../src/desktop.c:1985
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -771,68 +775,68 @@ msgstr "Impossible d'éditer le fichier"
 msgid "Usage: view file...\n"
 msgstr "Usage: view fichier...\n"
 
-#: ../src/plugins/cvs.c:121 ../src/plugins/cvs.c:513
+#: ../src/plugins/cvs.c:123 ../src/plugins/cvs.c:515
 msgid "CVS"
 msgstr "CVS"
 
-#: ../src/plugins/cvs.c:168
+#: ../src/plugins/cvs.c:170
 msgid "Root:"
 msgstr "Racine :"
 
-#: ../src/plugins/cvs.c:170
+#: ../src/plugins/cvs.c:172
 msgid "Repository:"
 msgstr "Dépôt :"
 
-#: ../src/plugins/cvs.c:172
+#: ../src/plugins/cvs.c:174
 msgid "Tag:"
 msgstr "Tag :"
 
-#: ../src/plugins/cvs.c:174 ../src/plugins/cvs.c:194
+#: ../src/plugins/cvs.c:176 ../src/plugins/cvs.c:196
 msgid "Request diff"
 msgstr "Différences"
 
-#: ../src/plugins/cvs.c:177 ../src/plugins/cvs.c:197
+#: ../src/plugins/cvs.c:179 ../src/plugins/cvs.c:199
 msgid "View log"
 msgstr "Journal"
 
-#: ../src/plugins/cvs.c:180 ../src/plugins/cvs.c:200
+#: ../src/plugins/cvs.c:182 ../src/plugins/cvs.c:202
 msgid "Update"
 msgstr "Actualiser"
 
-#: ../src/plugins/cvs.c:183 ../src/plugins/cvs.c:203
+#: ../src/plugins/cvs.c:185 ../src/plugins/cvs.c:205
 msgid "Commit"
 msgstr "Soumettre"
 
-#: ../src/plugins/cvs.c:192
+#: ../src/plugins/cvs.c:194
 msgid "Revision:"
 msgstr "Révision :"
 
-#: ../src/plugins/cvs.c:210
+#: ../src/plugins/cvs.c:212
 msgid "Add to CVS"
 msgstr "Ajouter à CVS"
 
-#: ../src/plugins/cvs.c:213
+#: ../src/plugins/cvs.c:215
 msgid "Run make"
 msgstr "Exécuter make"
 
-#: ../src/plugins/cvs.c:343 ../src/plugins/cvs.c:412
+#: ../src/plugins/cvs.c:345 ../src/plugins/cvs.c:414
 msgid "Not a CVS repository"
 msgstr "Pas un dépôt CVS"
 
-#: ../src/plugins/cvs.c:435
+#: ../src/plugins/cvs.c:437
 msgid "Not managed by CVS"
 msgstr "Pas maintenu par CVS"
 
-#: ../src/plugins/cvs.c:557
+#: ../src/plugins/cvs.c:559
 msgid "Running command..."
 msgstr "Exécution en cours..."
 
-#: ../src/plugins/cvs.c:773
+#: ../src/plugins/cvs.c:775
 #, c-format
 msgid "Command exited with error code %d"
 msgstr "La commande a terminé avec le code d'erreur %d"
 
-#: ../src/plugins/cvs.c:779
+#: ../src/plugins/cvs.c:781
 #, c-format
 msgid "Command exited with signal %d"
 msgstr "La commande a été terminée par le signal %d"
