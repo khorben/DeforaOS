@@ -64,8 +64,8 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	memset(&prefs, 0, sizeof(prefs));
 	prefs.iconsize = PANEL_ICON_SIZE_UNSET;
+	prefs.monitor = -1;
 	while((o = getopt(argc, argv, "lm:sx")) != -1)
 		switch(o)
 		{

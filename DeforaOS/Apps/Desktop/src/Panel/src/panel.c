@@ -136,7 +136,8 @@ static char * _config_get_filename(void);
 /* public */
 /* panel_new */
 static int _new_config(Panel * panel);
-static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user);
+static void _new_prefs(GdkScreen * screen, PanelPrefs * prefs,
+		PanelPrefs const * user);
 static GtkIconSize _new_size(Panel * panel, PanelPosition position);
 static gboolean _on_idle(gpointer data);
 static void _idle_load(Panel * panel, PanelPosition position,
@@ -154,7 +155,8 @@ Panel * panel_new(PanelPrefs const * prefs)
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
 	_new_config(panel);
-	_new_prefs(&panel->prefs, prefs);
+	screen = gdk_screen_get_default();
+	_new_prefs(screen, &panel->prefs, prefs);
 	prefs = &panel->prefs;
 	panel->top_helper.panel = panel;
 	panel->top_helper.config_get = _panel_helper_config_get;
@@ -206,7 +208,6 @@ Panel * panel_new(PanelPrefs const * prefs)
 		return NULL;
 	}
 	/* root window */
-	screen = gdk_screen_get_default();
 	panel->root = gdk_screen_get_root_window(screen);
 	gdk_screen_get_monitor_geometry(screen, (prefs->monitor > 0
 				&& prefs->monitor < gdk_screen_get_n_monitors(
@@ -241,7 +242,8 @@ static int _new_config(Panel * panel)
 	return 0;
 }
 
-static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
+static void _new_prefs(GdkScreen * screen, PanelPrefs * prefs,
+		PanelPrefs const * user)
 {
 	size_t i;
 	gint width;
@@ -258,12 +260,16 @@ static void _new_prefs(PanelPrefs * prefs, PanelPrefs const * user)
 		gtk_icon_size_register(_panel_sizes[i].name, width, height);
 	}
 	if(user != NULL)
-	{
 		memcpy(prefs, user, sizeof(*prefs));
-		return;
+	else
+	{
+		prefs->iconsize = PANEL_ICON_SIZE_DEFAULT;
+		prefs->monitor = -1;
 	}
-	prefs->iconsize = PANEL_ICON_SIZE_DEFAULT;
-	prefs->monitor = -1;
+#if GTK_CHECK_VERSION(2, 20, 0)
+	if(prefs->monitor == -1)
+		prefs->monitor = gdk_screen_get_primary_monitor(screen);
+#endif
 }
 
 static GtkIconSize _new_size(Panel * panel, PanelPosition position)
