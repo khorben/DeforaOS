@@ -61,6 +61,7 @@ struct _Panel
 	PanelAppletHelper bottom_helper;
 	PanelWindow * bottom;
 
+	GdkScreen * screen;
 	GdkWindow * root;
 	gint root_width;		/* width of the root window	*/
 	gint root_height;		/* height of the root window	*/
@@ -148,15 +149,14 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 Panel * panel_new(PanelPrefs const * prefs)
 {
 	Panel * panel;
-	GdkScreen * screen;
 	GdkRectangle rect;
 	GtkIconSize iconsize;
 
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
 	_new_config(panel);
-	screen = gdk_screen_get_default();
-	_new_prefs(screen, &panel->prefs, prefs);
+	panel->screen = gdk_screen_get_default();
+	_new_prefs(panel->screen, &panel->prefs, prefs);
 	prefs = &panel->prefs;
 	panel->top_helper.panel = panel;
 	panel->top_helper.config_get = _panel_helper_config_get;
@@ -208,10 +208,11 @@ Panel * panel_new(PanelPrefs const * prefs)
 		return NULL;
 	}
 	/* root window */
-	panel->root = gdk_screen_get_root_window(screen);
-	gdk_screen_get_monitor_geometry(screen, (prefs->monitor > 0
+	panel->root = gdk_screen_get_root_window(panel->screen);
+	gdk_screen_get_monitor_geometry(panel->screen, (prefs->monitor > 0
 				&& prefs->monitor < gdk_screen_get_n_monitors(
-					screen)) ? prefs->monitor : 0, &rect);
+					panel->screen))
+			? prefs->monitor : 0, &rect);
 	panel->root_height = rect.height;
 	panel->root_width = rect.width;
 	panel->top = (config_get(panel->config, NULL, "top") != NULL)
@@ -543,18 +544,20 @@ static void _show_preferences_window(Panel * panel)
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* FIXME this needs a restart to apply */
+	/* top size */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new(_("Top size:"));
+	widget = gtk_label_new(_("Top size: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	panel->pr_top_size = gtk_combo_box_text_new();
 	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(panel->pr_top_size), NULL,
-			"Default");
+			_("Default"));
 #else
 	panel->pr_top_size = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_top_size), "Default");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_top_size),
+			_("Default"));
 #endif
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -567,19 +570,20 @@ static void _show_preferences_window(Panel * panel)
 #endif
 	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_top_size, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* bottom size */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new(_("Bottom size:"));
+	widget = gtk_label_new(_("Bottom size: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	panel->pr_bottom_size = gtk_combo_box_text_new();
 	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(panel->pr_bottom_size),
-			NULL, "Default");
+			NULL, _("Default"));
 #else
 	panel->pr_bottom_size = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_bottom_size),
-			"Default");
+			_("Default"));
 #endif
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
