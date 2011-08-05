@@ -96,6 +96,7 @@ struct _Desktop
 	GtkWidget * pr_background;
 	GtkWidget * pr_background_how;
 	GtkWidget * pr_background_extend;
+	GtkWidget * pr_monitors;
 
 	/* internal */
 	GdkScreen * screen;
@@ -169,6 +170,8 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 
 static int _desktop_icon_add(Desktop * desktop, DesktopIcon * icon);
 static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
+
+static void _desktop_show_preferences(Desktop * desktop);
 
 
 /* public */
@@ -465,236 +468,11 @@ static void _on_popup_paste(gpointer data)
 	desktop->menu = NULL;
 }
 
-static void _preferences_set(Desktop * desktop);
-static gboolean _on_preferences_closex(gpointer data);
-static void _on_preferences_response(GtkWidget * widget, gint response,
-		gpointer data);
-static void _on_preferences_ok(gpointer data);
-static void _on_preferences_apply(gpointer data);
-static void _on_preferences_cancel(gpointer data);
 static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
-	GtkWidget * vbox;
-	GtkWidget * vbox2;
-	GtkWidget * hbox;
-	GtkWidget * widget;
-	GtkWidget * label;
-	GtkSizeGroup * group;
-	GtkFileFilter * filter;
 
-	if(desktop->menu != NULL)
-		gtk_widget_destroy(desktop->menu);
-	desktop->menu = NULL;
-	if(desktop->pr_window != NULL)
-	{
-		gtk_window_present(GTK_WINDOW(desktop->pr_window));
-		return;
-	}
-	/* window */
-	desktop->pr_window = gtk_dialog_new_with_buttons(
-			_("Desktop preferences"), NULL,
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
-			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-	g_signal_connect_swapped(G_OBJECT(desktop->pr_window), "delete-event",
-			G_CALLBACK(_on_preferences_closex), desktop);
-	g_signal_connect(G_OBJECT(desktop->pr_window), "response", G_CALLBACK(
-				_on_preferences_response), desktop);
-#if GTK_CHECK_VERSION(2, 14, 0)
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(desktop->pr_window));
-#else
-	vbox = GTK_DIALOG(desktop->pr_window)->vbox;
-#endif
-	/* notebook */
-	widget = gtk_notebook_new();
-	vbox2 = gtk_vbox_new(FALSE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	/* background */
-	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Default color: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_size_group_add_widget(group, label);
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	desktop->pr_color = gtk_color_button_new();
-	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_color, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Filename: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_size_group_add_widget(group, label);
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
-			GTK_FILE_CHOOSER_ACTION_OPEN);
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("Picture files"));
-	gtk_file_filter_add_mime_type(filter, "image/bmp");
-	gtk_file_filter_add_mime_type(filter, "image/gif");
-	gtk_file_filter_add_mime_type(filter, "image/jpeg");
-	gtk_file_filter_add_mime_type(filter, "image/pbm");
-	gtk_file_filter_add_mime_type(filter, "image/png");
-	gtk_file_filter_add_mime_type(filter, "image/svg+xml");
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
-			filter);
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("All files"));
-	gtk_file_filter_add_pattern(filter, "*");
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
-			filter);
-	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background, TRUE, TRUE,
-			0);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Position: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_size_group_add_widget(group, label);
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	desktop->pr_background_how = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
-			_("Centered"));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
-			_("Scaled"));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
-			_("Scaled (keep ratio)"));
-	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
-			_("Tiled"));
-	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background_how, TRUE,
-			TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-	desktop->pr_background_extend = gtk_check_button_new_with_mnemonic(
-			_("E_xtend background to all monitors"));
-	gtk_box_pack_start(GTK_BOX(vbox2), desktop->pr_background_extend, FALSE,
-			TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
-				_("Background")));
-	/* theme */
-	vbox2 = gtk_vbox_new(FALSE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Desktop font: "));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_size_group_add_widget(group, label);
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	desktop->pr_font = gtk_font_button_new();
-	gtk_font_button_set_use_font(GTK_FONT_BUTTON(desktop->pr_font), TRUE);
-	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_font, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
-				_("Theme")));
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	/* container */
-	_preferences_set(desktop);
-	gtk_widget_show_all(desktop->pr_window);
-}
-
-static gboolean _on_preferences_closex(gpointer data)
-{
-	_on_preferences_cancel(data);
-	return TRUE;
-}
-
-static void _on_preferences_response(GtkWidget * widget, gint response,
-		gpointer data)
-{
-	if(response == GTK_RESPONSE_OK)
-		_on_preferences_ok(data);
-	else if(response == GTK_RESPONSE_APPLY)
-		_on_preferences_apply(data);
-	else if(response == GTK_RESPONSE_CANCEL)
-		_on_preferences_cancel(data);
-}
-
-static void _on_preferences_ok(gpointer data)
-{
-	Desktop * desktop = data;
-
-	gtk_widget_hide(desktop->pr_window);
-	_on_preferences_apply(data);
-}
-
-static void _on_preferences_apply(gpointer data)
-{
-	Desktop * desktop = data;
-	Config * config;
-	GdkColor color;
-	char * p;
-	char const * q;
-	int i;
-
-	/* XXX not very efficient */
-	g_idle_add(_new_idle, desktop);
-	if((config = _desktop_get_config(desktop)) == NULL)
-		return;
-	q = gtk_font_button_get_font_name(GTK_FONT_BUTTON(desktop->pr_font));
-	config_set(config, NULL, "font", q);
-	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
-				desktop->pr_background));
-	config_set(config, NULL, "background", p);
-	g_free(p);
-	gtk_color_button_get_color(GTK_COLOR_BUTTON(desktop->pr_color), &color);
-	p = gdk_color_to_string(&color);
-	config_set(config, NULL, "background_color", p);
-	g_free(p);
-	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
-	if(i >= 0 && i < DESKTOP_HOW_COUNT)
-		config_set(config, NULL, "background_how", _desktop_hows[i]);
-	p = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				desktop->pr_background_extend)) ? "1" : "0";
-	config_set(config, NULL, "background_extend", p);
-	/* XXX code duplication */
-	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
-	{
-		config_save(config, p);
-		string_delete(p);
-	}
-	config_delete(config);
-}
-
-static void _on_preferences_cancel(gpointer data)
-{
-	Desktop * desktop = data;
-
-	gtk_widget_hide(desktop->pr_window);
-	_preferences_set(desktop);
-}
-
-static void _preferences_set(Desktop * desktop)
-{
-	Config * config;
-	String const * p;
-	String const * filename = NULL;
-	GdkColor color = { 0, 0, 0, 0 };
-	int how = 0;
-	gboolean extend = FALSE;
-	size_t i;
-
-	if((config = _desktop_get_config(desktop)) != NULL)
-	{
-		if((p = config_get(config, NULL, "font")) != NULL)
-			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
-						desktop->pr_font), p);
-		filename = config_get(config, NULL, "background");
-		if((p = config_get(config, NULL, "background_color")) != NULL
-				&& gdk_color_parse(p, &color) == TRUE)
-			gtk_color_button_set_color(GTK_COLOR_BUTTON(
-						desktop->pr_color), &color);
-		if((p = config_get(config, NULL, "background_how")) != NULL)
-			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
-				if(strcmp(_desktop_hows[i], p) == 0)
-					how = i;
-		if((p = config_get(config, NULL, "background_extend")) != NULL)
-			extend = strtol(p, NULL, 10) ? TRUE : FALSE;
-		config_delete(config);
-	}
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(desktop->pr_background),
-			filename);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_background_how),
-			how);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
-				desktop->pr_background_extend), extend);
+	_desktop_show_preferences(desktop);
 }
 
 static void _on_popup_symlink(gpointer data)
@@ -1647,14 +1425,14 @@ static int _desktop_get_workarea(Desktop * desktop)
 
 /* useful */
 /* desktop_background */
-static void _background_centered(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error);
-static void _background_scaled(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error);
-static void _background_scaled_ratio(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error);
-static void _background_tiled(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error);
+static void _background_centered(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
+static void _background_scaled(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
+static void _background_scaled_ratio(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
+static void _background_tiled(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error);
 
 static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 		char const * filename, DesktopHows how, gboolean extend)
@@ -1682,20 +1460,20 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 		switch(how)
 		{
 			case DESKTOP_HOW_CENTERED:
-				_background_centered(desktop, &window, pixmap,
-						filename, &error);
+				_background_centered(&window, pixmap, filename,
+						&error);
 				break;
 			case DESKTOP_HOW_SCALED_RATIO:
-				_background_scaled_ratio(desktop, &window,
-						pixmap, filename, &error);
+				_background_scaled_ratio(&window, pixmap,
+						filename, &error);
 				break;
 			case DESKTOP_HOW_TILED:
-				_background_tiled(desktop, &window, pixmap,
-						filename, &error);
+				_background_tiled(&window, pixmap, filename,
+						&error);
 				break;
 			case DESKTOP_HOW_SCALED:
-				_background_scaled(desktop, &window, pixmap,
-						filename, &error);
+				_background_scaled(&window, pixmap, filename,
+						&error);
 				break;
 		}
 		if(error != NULL)
@@ -1709,8 +1487,8 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 	gdk_pixmap_unref(pixmap);
 }
 
-static void _background_centered(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error)
+static void _background_centered(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
 {
 	GdkPixbuf * background;
 	gint w;
@@ -1727,8 +1505,8 @@ static void _background_centered(Desktop * desktop, GdkRectangle * window,
 	g_object_unref(background);
 }
 
-static void _background_scaled(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error)
+static void _background_scaled(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
 {
 	GdkPixbuf * background;
 	gint w;
@@ -1754,8 +1532,8 @@ static void _background_scaled(Desktop * desktop, GdkRectangle * window,
 	g_object_unref(background);
 }
 
-static void _background_scaled_ratio(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error)
+static void _background_scaled_ratio(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
 {
 	GdkPixbuf * background;
 	gint w;
@@ -1778,8 +1556,8 @@ static void _background_scaled_ratio(Desktop * desktop, GdkRectangle * window,
 #endif
 }
 
-static void _background_tiled(Desktop * desktop, GdkRectangle * window,
-		GdkPixmap * pixmap, char const * filename, GError ** error)
+static void _background_tiled(GdkRectangle * window, GdkPixmap * pixmap,
+		char const * filename, GError ** error)
 {
 	GdkPixbuf * background;
 	gint w;
@@ -1839,6 +1617,296 @@ static int _desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 		return 0;
 	}
 	return 1;
+}
+
+
+/* desktop_show_preferences */
+static void _preferences_background(Desktop * desktop, GtkWidget * notebook);
+static void _preferences_monitors(Desktop * desktop, GtkWidget * notebook);
+static void _preferences_theme(Desktop * desktop, GtkWidget * notebook);
+static void _preferences_set(Desktop * desktop);
+static gboolean _on_preferences_closex(gpointer data);
+static void _on_preferences_response(GtkWidget * widget, gint response,
+		gpointer data);
+static void _on_preferences_ok(gpointer data);
+static void _on_preferences_apply(gpointer data);
+static void _on_preferences_cancel(gpointer data);
+
+static void _desktop_show_preferences(Desktop * desktop)
+{
+	GtkWidget * vbox;
+	GtkWidget * notebook;
+
+	if(desktop->menu != NULL)
+		gtk_widget_destroy(desktop->menu);
+	desktop->menu = NULL;
+	if(desktop->pr_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(desktop->pr_window));
+		return;
+	}
+	/* window */
+	desktop->pr_window = gtk_dialog_new_with_buttons(
+			_("Desktop preferences"), NULL,
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	g_signal_connect_swapped(G_OBJECT(desktop->pr_window), "delete-event",
+			G_CALLBACK(_on_preferences_closex), desktop);
+	g_signal_connect(G_OBJECT(desktop->pr_window), "response", G_CALLBACK(
+				_on_preferences_response), desktop);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(desktop->pr_window));
+#else
+	vbox = GTK_DIALOG(desktop->pr_window)->vbox;
+#endif
+	/* notebook */
+	notebook = gtk_notebook_new();
+	_preferences_background(desktop, notebook);
+	_preferences_monitors(desktop, notebook);
+	_preferences_theme(desktop, notebook);
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
+	/* container */
+	_preferences_set(desktop);
+	gtk_widget_show_all(desktop->pr_window);
+}
+
+static void _preferences_background(Desktop * desktop, GtkWidget * notebook)
+{
+	GtkSizeGroup * group;
+	GtkWidget * vbox2;
+	GtkWidget * hbox;
+	GtkWidget * label;
+	GtkFileFilter * filter;
+
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Default color: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_color = gtk_color_button_new();
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_color, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Filename: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
+			GTK_FILE_CHOOSER_ACTION_OPEN);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Picture files"));
+	gtk_file_filter_add_mime_type(filter, "image/bmp");
+	gtk_file_filter_add_mime_type(filter, "image/gif");
+	gtk_file_filter_add_mime_type(filter, "image/jpeg");
+	gtk_file_filter_add_mime_type(filter, "image/pbm");
+	gtk_file_filter_add_mime_type(filter, "image/png");
+	gtk_file_filter_add_mime_type(filter, "image/svg+xml");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
+			filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
+			filter);
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background, TRUE, TRUE,
+			0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Position: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_background_how = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Centered"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Scaled"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Scaled (keep ratio)"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Tiled"));
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background_how, TRUE,
+			TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	desktop->pr_background_extend = gtk_check_button_new_with_mnemonic(
+			_("E_xtend background to all monitors"));
+	gtk_box_pack_start(GTK_BOX(vbox2), desktop->pr_background_extend, FALSE,
+			TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
+				_("Background")));
+}
+
+static void _preferences_monitors(Desktop * desktop, GtkWidget * notebook)
+{
+#if GTK_CHECK_VERSION(2, 14, 0)
+	GtkSizeGroup * group;
+	GtkWidget * vbox2;
+	GtkWidget * hbox;
+	GtkWidget * label;
+	gint n;
+	gint i;
+	char * name;
+	char buf[32];
+
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Monitor: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_monitors = gtk_combo_box_new_text();
+	n = gdk_screen_get_n_monitors(desktop->screen);
+	for(i = 0; i < n; i++)
+	{
+		snprintf(buf, sizeof(buf), _("Monitor %d"), i);
+		name = gdk_screen_get_monitor_plug_name(desktop->screen, i);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
+				(name != NULL) ? name : buf);
+		g_free(name);
+	}
+	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_monitors), 0);
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_monitors, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
+				_("Monitors")));
+#endif
+}
+
+static void _preferences_theme(Desktop * desktop, GtkWidget * notebook)
+{
+	GtkSizeGroup * group;
+	GtkWidget * vbox2;
+	GtkWidget * hbox;
+	GtkWidget * label;
+
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Desktop font: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_font = gtk_font_button_new();
+	gtk_font_button_set_use_font(GTK_FONT_BUTTON(desktop->pr_font), TRUE);
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_font, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
+				_("Theme")));
+}
+
+static gboolean _on_preferences_closex(gpointer data)
+{
+	_on_preferences_cancel(data);
+	return TRUE;
+}
+
+static void _on_preferences_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	if(response == GTK_RESPONSE_OK)
+		_on_preferences_ok(data);
+	else if(response == GTK_RESPONSE_APPLY)
+		_on_preferences_apply(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_on_preferences_cancel(data);
+}
+
+static void _on_preferences_ok(gpointer data)
+{
+	Desktop * desktop = data;
+
+	gtk_widget_hide(desktop->pr_window);
+	_on_preferences_apply(data);
+}
+
+static void _on_preferences_apply(gpointer data)
+{
+	Desktop * desktop = data;
+	Config * config;
+	GdkColor color;
+	char * p;
+	char const * q;
+	int i;
+
+	/* XXX not very efficient */
+	g_idle_add(_new_idle, desktop);
+	if((config = _desktop_get_config(desktop)) == NULL)
+		return;
+	q = gtk_font_button_get_font_name(GTK_FONT_BUTTON(desktop->pr_font));
+	config_set(config, NULL, "font", q);
+	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+				desktop->pr_background));
+	config_set(config, NULL, "background", p);
+	g_free(p);
+	gtk_color_button_get_color(GTK_COLOR_BUTTON(desktop->pr_color), &color);
+	p = gdk_color_to_string(&color);
+	config_set(config, NULL, "background_color", p);
+	g_free(p);
+	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
+	if(i >= 0 && i < DESKTOP_HOW_COUNT)
+		config_set(config, NULL, "background_how", _desktop_hows[i]);
+	p = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				desktop->pr_background_extend)) ? "1" : "0";
+	config_set(config, NULL, "background_extend", p);
+	/* XXX code duplication */
+	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
+	{
+		config_save(config, p);
+		string_delete(p);
+	}
+	config_delete(config);
+}
+
+static void _on_preferences_cancel(gpointer data)
+{
+	Desktop * desktop = data;
+
+	gtk_widget_hide(desktop->pr_window);
+	_preferences_set(desktop);
+}
+
+static void _preferences_set(Desktop * desktop)
+{
+	Config * config;
+	String const * p;
+	String const * filename = NULL;
+	GdkColor color = { 0, 0, 0, 0 };
+	int how = 0;
+	gboolean extend = FALSE;
+	size_t i;
+
+	if((config = _desktop_get_config(desktop)) != NULL)
+	{
+		if((p = config_get(config, NULL, "font")) != NULL)
+			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
+						desktop->pr_font), p);
+		filename = config_get(config, NULL, "background");
+		if((p = config_get(config, NULL, "background_color")) != NULL
+				&& gdk_color_parse(p, &color) == TRUE)
+			gtk_color_button_set_color(GTK_COLOR_BUTTON(
+						desktop->pr_color), &color);
+		if((p = config_get(config, NULL, "background_how")) != NULL)
+			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
+				if(strcmp(_desktop_hows[i], p) == 0)
+					how = i;
+		if((p = config_get(config, NULL, "background_extend")) != NULL)
+			extend = strtol(p, NULL, 10) ? TRUE : FALSE;
+		config_delete(config);
+	}
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(desktop->pr_background),
+			filename);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_background_how),
+			how);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+				desktop->pr_background_extend), extend);
 }
 
 
