@@ -24,7 +24,8 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: locker [-s]\n"
+	fputs("Usage: locker [-p plugin][-s]\n"
+"  -p	Authentication plug-in to load\n"
 "  -s	Suspend automatically when locked\n", stderr);
 	return 1;
 }
@@ -35,19 +36,23 @@ int main(int argc, char * argv[])
 {
 	int o;
 	int suspend = 0;
+	char const * plugin = NULL;
 	Locker * locker;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "s")) != -1)
+	while((o = getopt(argc, argv, "p:s")) != -1)
 		switch(o)
 		{
 			case 's':
 				suspend = 1;
 				break;
+			case 'p':
+				plugin = optarg;
+				break;
 			default:
 				return _usage();
 		}
-	if((locker = locker_new(suspend, NULL)) == NULL)
+	if((locker = locker_new(suspend, plugin)) == NULL)
 		return 2;
 	gtk_main();
 	locker_delete(locker);
