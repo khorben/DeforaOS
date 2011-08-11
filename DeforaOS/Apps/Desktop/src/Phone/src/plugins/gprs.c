@@ -15,7 +15,6 @@
 
 
 
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -28,8 +27,10 @@
 /* types */
 typedef struct _GPRS
 {
+	guint source;
 	gboolean connected;
 
+	gboolean active;
 	GtkWidget * window;
 	GtkWidget * attach;
 	GtkWidget * apn;
@@ -38,6 +39,8 @@ typedef struct _GPRS
 	GtkWidget * connect;
 	GtkWidget * st_image;
 	GtkWidget * st_label;
+	GtkWidget * st_in;
+	GtkWidget * st_out;
 } GPRS;
 
 
@@ -45,16 +48,18 @@ typedef struct _GPRS
 /* plugins */
 static int _gprs_init(PhonePlugin * plugin);
 static int _gprs_destroy(PhonePlugin * plugin);
-static int _gprs_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _gprs_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _gprs_settings(PhonePlugin * plugin);
 
 static void _gprs_set_connected(PhonePlugin * plugin, gboolean connected,
-		char const * message);
+		char const * message, size_t in, size_t out);
 
 static int _gprs_access_point(PhonePlugin * plugin);
-static int _gprs_attach(PhonePlugin * plugin);
 static int _gprs_connect(PhonePlugin * plugin);
 static int _gprs_disconnect(PhonePlugin * plugin);
+
+/* callbacks */
+static gboolean _gprs_on_timeout(gpointer data);
 
 
 /* public */
@@ -82,10 +87,10 @@ static int _gprs_init(PhonePlugin * plugin)
 	if((gprs = object_new(sizeof(*gprs))) == NULL)
 		return 1;
 	plugin->priv = gprs;
+	gprs->source = 0;
 	gprs->connected = FALSE;
+	gprs->active = FALSE;
 	gprs->window = NULL;
-	gprs->st_image = NULL;
-	gprs->st_label = NULL;
 	return 0;
 }
 
@@ -95,6 +100,8 @@ static int _gprs_destroy(PhonePlugin * plugin)
 {
 	GPRS * gprs = plugin->priv;
 
+	if(gprs->source != 0)
+		g_source_remove(gprs->source);
 	if(gprs->window != NULL)
 		gtk_widget_destroy(gprs->window);
 	object_delete(gprs);
@@ -103,38 +110,49 @@ static int _gprs_destroy(PhonePlugin * plugin)
 
 
 /* gprs_event */
-static int _gprs_event_functional(PhonePlugin * plugin);
-static int _gprs_event_gprs_connection(PhonePlugin * plugin,
-		gboolean connected);
+static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event);
 
-static int _gprs_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _gprs_event(PhonePlugin * plugin, PhoneEvent * event)
 {
-	va_list ap;
-	gboolean connected;
-
-	switch(event)
+	switch(event->type)
 	{
-		case PHONE_EVENT_FUNCTIONAL:
-			return _gprs_event_functional(plugin);
-		case PHONE_EVENT_GPRS_CONNECTION:
-			va_start(ap, event);
-			connected = va_arg(ap, gboolean);
-			va_end(ap);
-			return _gprs_event_gprs_connection(plugin, connected);
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			return _gprs_event_modem(plugin,
+					event->modem_event.event);
 		default: /* not relevant */
 			return 0;
 	}
 }
 
-static int _gprs_event_functional(PhonePlugin * plugin)
+static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 {
-	return _gprs_attach(plugin) | _gprs_access_point(plugin);
-}
+	GPRS * gprs = plugin->priv;
+	gboolean connected;
 
-static int _gprs_event_gprs_connection(PhonePlugin * plugin, gboolean connected)
-{
-	_gprs_set_connected(plugin, connected, connected ? "Connected"
-			: "Not connected");
+	switch(event->type)
+	{
+		case MODEM_EVENT_TYPE_CONNECTION:
+			connected = event->connection.connected;
+			if(connected && gprs->source == 0)
+				gprs->source = g_timeout_add(1000,
+						_gprs_on_timeout, plugin);
+			_gprs_set_connected(plugin, connected, connected
+					? "Connected" : "Not connected",
+					event->connection.in,
+					event->connection.out);
+			return 0;
+		case MODEM_EVENT_TYPE_REGISTRATION:
+			if(gprs->active != FALSE)
+				break;
+			if(event->registration.status
+					!= MODEM_REGISTRATION_STATUS_REGISTERED)
+				break;
+			gprs->active = TRUE;
+			/* FIXME optionally force GPRS registration */
+			return 0;
+		default:
+			break;
+	}
 	return 0;
 }
 
@@ -152,8 +170,8 @@ static void _gprs_settings(PhonePlugin * plugin)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
-	GtkWidget * widget;
 	GtkWidget * bbox;
+	GtkWidget * widget;
 
 	if(gprs->window != NULL)
 	{
@@ -216,15 +234,25 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* status */
 	widget = gtk_frame_new("Status");
+	bbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(bbox), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	gprs->st_image = gtk_image_new_from_icon_name(GTK_STOCK_DISCONNECT,
 			GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->st_image, FALSE, TRUE, 0);
 	gprs->st_label = gtk_label_new("Not connected");
 	gtk_misc_set_alignment(GTK_MISC(gprs->st_label), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->st_label, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(widget), hbox);
+	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
+	gprs->st_in = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(gprs->st_in), 0.0, 0.5);
+	gtk_widget_set_no_show_all(gprs->st_in, TRUE);
+	gtk_box_pack_start(GTK_BOX(bbox), gprs->st_in, FALSE, TRUE, 0);
+	gprs->st_out = gtk_label_new(NULL);
+	gtk_misc_set_alignment(GTK_MISC(gprs->st_out), 0.0, 0.5);
+	gtk_widget_set_no_show_all(gprs->st_out, TRUE);
+	gtk_box_pack_start(GTK_BOX(bbox), gprs->st_out, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(widget), bbox);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* button box */
 	bbox = gtk_hbutton_box_new();
@@ -248,22 +276,22 @@ static void _on_settings_apply(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	GPRS * gprs = plugin->priv;
-	char const * p;
 	gboolean active;
+	char const * p;
 
 	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gprs->attach));
 	plugin->helper->config_set(plugin->helper->phone, "gprs", "attach",
-				active ? "1" : "0");
-	_gprs_attach(plugin);
+			active ? "1" : "0");
 	p = gtk_entry_get_text(GTK_ENTRY(gprs->apn));
 	plugin->helper->config_set(plugin->helper->phone, "gprs", "apn", p);
-	_gprs_access_point(plugin);
 	p = gtk_entry_get_text(GTK_ENTRY(gprs->username));
 	plugin->helper->config_set(plugin->helper->phone, "gprs", "username",
 			p);
 	p = gtk_entry_get_text(GTK_ENTRY(gprs->password));
 	plugin->helper->config_set(plugin->helper->phone, "gprs", "password",
 			p);
+	_gprs_access_point(plugin);
+	gprs->active = FALSE;
 }
 
 static void _on_settings_cancel(gpointer data)
@@ -325,11 +353,13 @@ static void _on_settings_ok(gpointer data)
 }
 
 
+/* accessors */
 /* gprs_set_connected */
 static void _gprs_set_connected(PhonePlugin * plugin, gboolean connected,
-		char const * message)
+		char const * message, size_t in, size_t out)
 {
 	GPRS * gprs = plugin->priv;
+	char buf[32];
 
 	gprs->connected = connected;
 	if(gprs->window == NULL)
@@ -340,61 +370,93 @@ static void _gprs_set_connected(PhonePlugin * plugin, gboolean connected,
 	gtk_label_set_text(GTK_LABEL(gprs->st_label), message);
 	gtk_button_set_label(GTK_BUTTON(gprs->connect), connected
 			? GTK_STOCK_DISCONNECT : GTK_STOCK_CONNECT);
+	if(connected)
+	{
+		snprintf(buf, sizeof(buf), "Received: %lu kB", in / 1024);
+		gtk_label_set_text(GTK_LABEL(gprs->st_in), buf);
+		snprintf(buf, sizeof(buf), "Sent: %lu kB", out / 1024);
+		gtk_label_set_text(GTK_LABEL(gprs->st_out), buf);
+		gtk_widget_show(gprs->st_in);
+		gtk_widget_show(gprs->st_out);
+	}
+	else
+	{
+		if(gprs->source != 0)
+			g_source_remove(gprs->source);
+		gprs->source = 0;
+		gtk_widget_hide(gprs->st_in);
+		gtk_widget_hide(gprs->st_out);
+	}
 }
 
 
+/* useful */
 /* gprs_access_point */
 static int _gprs_access_point(PhonePlugin * plugin)
 {
-	int ret;
-	char const cmd[] = "AT+CGDCONT=1,\"IP\",";
+	int ret = 0;
 	char const * p;
-	char * q;
+	ModemRequest request;
 
 	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
 					"apn")) == NULL)
 		return 0;
-	if((q = string_new_append(cmd, "\"", p, "\"", NULL)) == NULL)
-		return -1;
-	ret = plugin->helper->queue(plugin->helper->phone, q);
-	string_delete(q);
+	memset(&request, 0, sizeof(request));
+	request.type = MODEM_REQUEST_AUTHENTICATE;
+	/* set the access point */
+	request.authenticate.name = "APN";
+	request.authenticate.username = "IP";
+	request.authenticate.password = p;
+	ret |= plugin->helper->request(plugin->helper->phone, &request);
+	/* set the credentials */
+	request.authenticate.name = "GPRS";
+	p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+			"username");
+	request.authenticate.username = p;
+	p = plugin->helper->config_get(plugin->helper->phone, "gprs",
+			"password");
+	request.authenticate.password = p;
+	ret |= plugin->helper->request(plugin->helper->phone, &request);
 	return ret;
-}
-
-
-/* gprs_attach */
-static int _gprs_attach(PhonePlugin * plugin)
-{
-	char const * cmd = "AT+CGATT=0";
-	char const * p;
-
-	if((p = plugin->helper->config_get(plugin->helper->phone, "gprs",
-					"attach")) != NULL
-			&& strtoul(p, NULL, 10) != 0)
-		cmd = "AT+CGATT=1";
-	if(plugin->helper->queue(plugin->helper->phone, cmd) != 0)
-		return 1;
-	return plugin->helper->queue(plugin->helper->phone, "AT+CGATT?");
 }
 
 
 /* gprs_connect */
 static int _gprs_connect(PhonePlugin * plugin)
 {
-	GPRS * gprs = plugin->priv;
-	char const * cmd = "ATD*99***1#";
+	ModemRequest request;
 
-	_gprs_set_connected(plugin, gprs->connected, "Connecting...");
-	return plugin->helper->queue(plugin->helper->phone, cmd);
+	if(_gprs_access_point(plugin) != 0)
+		return -1;
+	_gprs_set_connected(plugin, TRUE, "Connecting...", 0, 0);
+	memset(&request, 0, sizeof(request));
+	request.type = MODEM_REQUEST_CALL;
+	request.call.call_type = MODEM_CALL_TYPE_DATA;
+	request.call.number = "*99***1#";
+	return plugin->helper->request(plugin->helper->phone, &request);
 }
 
 
 /* gprs_disconnect */
 static int _gprs_disconnect(PhonePlugin * plugin)
 {
-	GPRS * gprs = plugin->priv;
-	char const * cmd = "ATH"; /* XXX requires interpretation from Phone */
+	ModemRequest request;
 
-	_gprs_set_connected(plugin, gprs->connected, "Disconnecting...");
-	return plugin->helper->queue(plugin->helper->phone, cmd);
+	if(_gprs_access_point(plugin) != 0)
+		return -1;
+	_gprs_set_connected(plugin, TRUE, "Disconnecting...", 0, 0);
+	memset(&request, 0, sizeof(request));
+	request.type = MODEM_REQUEST_CALL_HANGUP;
+	return plugin->helper->request(plugin->helper->phone, &request);
+}
+
+
+/* callbacks */
+static gboolean _gprs_on_timeout(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->trigger(plugin->helper->phone,
+			MODEM_EVENT_TYPE_CONNECTION);
+	return TRUE;
 }

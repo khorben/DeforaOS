@@ -1,5 +1,5 @@
 #define PACKAGE "Phone"
-#define VERSION "0.2.10"
+#define VERSION "0.3.0"
 
 #ifndef PREFIX
 # define PREFIX "/usr/local"

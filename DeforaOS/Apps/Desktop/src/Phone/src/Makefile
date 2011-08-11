@@ -1,4 +1,4 @@
-SUBDIRS	= plugins
+SUBDIRS	= modems plugins
 TARGETS	= phone phone-contacts phone-dialer phone-logs phone-messages phone-resume phone-settings phone-suspend
 PREFIX	= /usr/local
 DESTDIR	= 
@@ -21,7 +21,7 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-phone_OBJS = callbacks.o command.o gsm.o main.o modem.o phone.o
+phone_OBJS = callbacks.o main.o modem.o phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -77,22 +77,16 @@ phone-suspend_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 phone-suspend: $(phone-suspend_OBJS)
 	$(CC) -o phone-suspend $(phone-suspend_OBJS) $(phone-suspend_LDFLAGS)
 
-callbacks.o: callbacks.c ../include/Phone.h phone.h callbacks.h
+callbacks.o: callbacks.c ../include/Phone/phone.h phone.h callbacks.h
 	$(CC) $(phone_CFLAGS) -c callbacks.c
 
-command.o: command.c gsm.h command.h
-	$(CC) $(phone_CFLAGS) -c command.c
-
-gsm.o: gsm.c command.h modem.h gsm.h
-	$(CC) $(phone_CFLAGS) -c gsm.c
-
-main.o: main.c ../include/Phone.h phone.h ../config.h
+main.o: main.c ../include/Phone/phone.h phone.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c main.c
 
-modem.o: modem.c gsm.h modem.h
+modem.o: modem.c modem.h ../config.h
 	$(CC) $(phone_CFLAGS) -c modem.c
 
-phone.o: phone.c ../include/Phone.h phone.h gsm.h callbacks.h ../config.h
+phone.o: phone.c ../include/Phone/phone.h modem.h phone.h callbacks.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c phone.c
 
 contacts.o: contacts.c common.c

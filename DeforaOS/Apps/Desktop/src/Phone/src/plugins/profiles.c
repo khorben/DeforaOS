@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include <System.h>
 #include "Phone.h"
 #include "../../config.h"
-#define _(string) gettext(string)
 
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -88,7 +87,7 @@ static ProfileDefinition _profiles_definitions[] =
 /* prototypes */
 static int _profiles_init(PhonePlugin * plugin);
 static int _profiles_destroy(PhonePlugin * plugin);
-static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _profiles_settings(PhonePlugin * plugin);
 
 
@@ -110,7 +109,9 @@ PhonePlugin plugin =
 /* private */
 /* functions */
 /* profiles_init */
+#if 0
 static gboolean _init_idle(gpointer data);
+#endif
 
 static int _profiles_init(PhonePlugin * plugin)
 {
@@ -122,8 +123,8 @@ static int _profiles_init(PhonePlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((profiles = malloc(sizeof(*profiles))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((profiles = object_new(sizeof(*profiles))) == NULL)
+		return -1;
 	plugin->priv = profiles;
 	profiles->source = 0;
 	profiles->profiles = _profiles_definitions;
@@ -147,7 +148,7 @@ static int _profiles_init(PhonePlugin * plugin)
 	{
 		_profiles_destroy(plugin);
 		return error_set_code(1, "%s",
-				_("Could not initialize PulseAudio"));
+				"Could not initialize PulseAudio");
 	}
 	mapi = pa_threaded_mainloop_get_api(profiles->pam);
 	/* XXX update the context name */
@@ -155,24 +156,31 @@ static int _profiles_init(PhonePlugin * plugin)
 	{
 		_profiles_destroy(plugin);
 		return error_set_code(1, "%s",
-				_("Could not initialize PulseAudio"));
+				"Could not initialize PulseAudio");
 	}
 	pa_context_connect(profiles->pac, NULL, 0, NULL);
 	pa_threaded_mainloop_start(profiles->pam);
+#if 0
 	profiles->source = g_idle_add(_init_idle, plugin);
+#endif
 	return 0;
 }
 
+#if 0
 static gboolean _init_idle(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
+	PhoneEvent event;
 
 	/* FIXME may already be online, may not be desired */
-	plugin->helper->event(plugin->helper->phone, PHONE_EVENT_ONLINE);
+	/* FIXME ask to go online if currently offline */
+	event.type = PHONE_EVENT_TYPE_ONLINE;
+	plugin->helper->event(plugin->helper->phone, &event);
 	profiles->source = 0;
 	return FALSE;
 }
+#endif
 
 
 /* profiles_destroy */
@@ -192,44 +200,49 @@ static int _profiles_destroy(PhonePlugin * plugin)
 	if(profiles->pac != NULL)
 		pa_context_unref(profiles->pac);
 	pa_threaded_mainloop_free(profiles->pam);
-	free(profiles);
+	object_delete(profiles);
 	return 0;
 }
 
 
 /* profiles_event */
-static void _event_key_tone(PhonePlugin * plugin);
+static int _event_key_tone(PhonePlugin * plugin);
+static int _event_starting(PhonePlugin * plugin);
+#if 0
 static void _event_call_incoming_do(PhonePlugin * plugin);
 static gboolean _event_call_incoming_timeout(gpointer data);
+#endif
 
-static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 {
-	Profiles * profiles = plugin->priv;
-	PhonePluginHelper * helper = plugin->helper;
-
-	switch(event)
+	switch(event->type)
 	{
-		case PHONE_EVENT_CALL_INCOMING:
+		/* FIXME implement again */
+#if 0
+		case PHONE_EVENT_TYPE_CALL_INCOMING:
 			_event_call_incoming_do(plugin);
 			break;
-		case PHONE_EVENT_KEY_TONE:
-			_event_key_tone(plugin);
-			break;
-		case PHONE_EVENT_SMS_RECEIVED:
+#endif
+		case PHONE_EVENT_TYPE_KEY_TONE:
+			return _event_key_tone(plugin);
+		case PHONE_EVENT_TYPE_STARTING:
+			return _event_starting(plugin);
+#if 0
+		case PHONE_EVENT_TYPE_SMS_RECEIVED:
 			if(profiles->pao == NULL)
 				/* FIXME else queue the notification */
 				profiles->pao = pa_context_play_sample(
 						profiles->pac, "message", NULL,
 						PA_VOLUME_NORM, NULL, NULL);
 			break;
-		case PHONE_EVENT_SIM_PIN_VALID:
-		case PHONE_EVENT_SMS_SENT:
+		case PHONE_EVENT_TYPE_SIM_PIN_VALID:
+		case PHONE_EVENT_TYPE_SMS_SENT:
 			/* FIXME beep in general profile? */
 			break;
-		case PHONE_EVENT_CALL_OUTGOING:
-		case PHONE_EVENT_CALL_TERMINATED:
-		case PHONE_EVENT_CALL_ESTABLISHED:
-			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_OFF);
+		case PHONE_EVENT_TYPE_CALL_OUTGOING:
+		case PHONE_EVENT_TYPE_CALL_TERMINATED:
+		case PHONE_EVENT_TYPE_CALL_ESTABLISHED:
+			helper->event(helper->phone, PHONE_EVENT_TYPE_VIBRATOR_OFF);
 			/* cancel the incoming call notification */
 			if(profiles->source != 0)
 				g_source_remove(profiles->source);
@@ -239,13 +252,14 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			profiles->pao = NULL;
 			profiles->vibrator = 0;
 			break;
+#endif
 		default: /* not relevant */
 			break;
 	}
 	return 0;
 }
 
-static void _event_key_tone(PhonePlugin * plugin)
+static int _event_key_tone(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
 	ProfileDefinition * definition = &profiles->profiles[
@@ -257,14 +271,45 @@ static void _event_key_tone(PhonePlugin * plugin)
 	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
 		profiles->pao = pa_context_play_sample(profiles->pac,
 				"keytone", NULL, PA_VOLUME_NORM, NULL, NULL);
+	return 0;
 }
 
+static int _event_starting(PhonePlugin * plugin)
+{
+	Profiles * profiles = plugin->priv;
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
+	GtkWidget * dialog;
+	int res;
+
+	if(definition->online)
+		return 0;
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Question");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", "You are currently offline."
+			" Do you want to go online?");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_YES)
+		return 1;
+	profiles->profiles_cur = 0;
+	plugin->helper->config_set(plugin->helper->phone, "profiles", "default",
+			profiles->profiles[profiles->profiles_cur].name);
+	return 0;
+}
+
+#if 0
 static void _event_call_incoming_do(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
 	PhonePluginHelper * helper = plugin->helper;
 	ProfileDefinition * definition = &profiles->profiles[
 		profiles->profiles_cur];
+	PhoneEvent event;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -274,19 +319,23 @@ static void _event_call_incoming_do(PhonePlugin * plugin)
 				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
 	if(definition->vibrate && profiles->vibrator == 0)
 	{
-		helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
+		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
+		helper->event(helper->phone, &event);
 		profiles->vibrator = 1;
 	}
 	if(profiles->source == 0)
 		profiles->source = g_timeout_add(500,
 				_event_call_incoming_timeout, plugin);
 }
+#endif
 
+#if 0
 static gboolean _event_call_incoming_timeout(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
 	PhonePluginHelper * helper = plugin->helper;
+	PhoneEvent event;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -294,10 +343,14 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 	if(profiles->vibrator != 0) /* vibrating with a pause */
 	{
 		if(profiles->vibrator++ == 1)
-			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
+		{
+			event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
+			helper->event(helper->phone, &event);
+		}
 		else if((profiles->vibrator % 5) == 0)
 		{
-			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_OFF);
+			event.type = PHONE_EVENT_TYPE_VIBRATOR_OFF;
+			helper->event(helper->phone, &event);
 			profiles->vibrator = 1;
 		}
 	}
@@ -311,6 +364,7 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 	}
 	return TRUE;
 }
+#endif
 
 
 /* profiles_settings */
@@ -387,10 +441,21 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
+	size_t profiles_cur = profiles->profiles_cur;
+	ModemRequest request;
 
 	gtk_widget_hide(profiles->window);
 	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
 				profiles->combo));
 	plugin->helper->config_set(plugin->helper->phone, "profiles", "default",
 			profiles->profiles[profiles->profiles_cur].name);
+	if(profiles->profiles[profiles_cur].online
+			&& !profiles->profiles[profiles->profiles_cur].online)
+	{
+		/* XXX should really go offline */
+		memset(&request, 0, sizeof(request));
+		request.type = MODEM_REQUEST_REGISTRATION;
+		request.registration.mode = MODEM_REGISTRATION_MODE_DISABLED;
+		plugin->helper->request(plugin->helper->phone, &request);
+	}
 }

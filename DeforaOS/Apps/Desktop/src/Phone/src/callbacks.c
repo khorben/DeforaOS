@@ -15,6 +15,7 @@
 
 
 
+#include <string.h>
 #include <gdk/gdkx.h>
 #include "phone.h"
 #include "callbacks.h"
@@ -33,7 +34,7 @@ gboolean on_phone_closex(gpointer data)
 
 /* on_phone_filter */
 static GdkFilterReturn _filter_message_power_management(Phone * phone,
-                PhoneMessagePowerManagement what);
+		PhoneMessagePowerManagement what);
 static GdkFilterReturn _filter_message_show(Phone * phone,
 		PhoneMessageShow what, gboolean show);
 
@@ -53,27 +54,31 @@ GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
 	message = xclient->data.b[0];
 	switch(message)
 	{
-		case PHONE_MESSAGE_SHOW:
-			return _filter_message_show(phone, xclient->data.b[1],
-					xclient->data.b[2]);
 		case PHONE_MESSAGE_POWER_MANAGEMENT:
 			return _filter_message_power_management(phone,
 					xclient->data.b[1]);
+		case PHONE_MESSAGE_SHOW:
+			return _filter_message_show(phone, xclient->data.b[1],
+					xclient->data.b[2]);
 	}
 	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_message_power_management(Phone * phone,
-                PhoneMessagePowerManagement what)
+		PhoneMessagePowerManagement what)
 {
+	PhoneEvent event;
+
+	memset(&event, 0, sizeof(event));
 	switch(what)
 	{
 		case PHONE_MESSAGE_POWER_MANAGEMENT_RESUME:
-			/* XXX workaround an infinite loop with the Openmoko */
-			phone_event(phone, PHONE_EVENT_RESUMING);
+			event.type = PHONE_EVENT_TYPE_RESUME;
+			phone_event(phone, &event);
 			break;
 		case PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND:
-			phone_event(phone, PHONE_EVENT_SUSPEND);
+			event.type = PHONE_EVENT_TYPE_SUSPEND;
+			phone_event(phone, &event);
 			break;
 	}
 	return GDK_FILTER_CONTINUE;
@@ -94,7 +99,8 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 			phone_show_logs(phone, show);
 			break;
 		case PHONE_MESSAGE_SHOW_MESSAGES:
-			phone_show_messages(phone, show);
+			phone_show_messages(phone, show,
+					MODEM_MESSAGE_FOLDER_INBOX);
 			break;
 		case PHONE_MESSAGE_SHOW_SETTINGS:
 			phone_show_settings(phone, show);
@@ -273,8 +279,10 @@ void on_phone_contacts_write(gpointer data)
 void on_phone_dialer_call(gpointer data)
 {
 	Phone * phone = data;
+	PhoneEvent event;
 
-	phone_event(phone, PHONE_EVENT_KEY_TONE);
+	event.type = PHONE_EVENT_TYPE_KEY_TONE;
+	phone_event(phone, &event);
 	phone_dialer_call(phone, NULL);
 }
 
@@ -284,9 +292,11 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data)
 {
 	Phone * phone = data;
 	char const * character;
+	PhoneEvent event;
 
 	character = g_object_get_data(G_OBJECT(widget), "character");
-	phone_event(phone, PHONE_EVENT_KEY_TONE);
+	event.type = PHONE_EVENT_TYPE_KEY_TONE;
+	phone_event(phone, &event);
 	phone_dialer_append(phone, *character);
 }
 
@@ -295,8 +305,10 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data)
 void on_phone_dialer_hangup(gpointer data)
 {
 	Phone * phone = data;
+	PhoneEvent event;
 
-	phone_event(phone, PHONE_EVENT_KEY_TONE);
+	event.type = PHONE_EVENT_TYPE_KEY_TONE;
+	phone_event(phone, &event);
 	phone_dialer_hangup(phone);
 }
 
@@ -367,24 +379,6 @@ void on_phone_messages_delete(gpointer data)
 }
 
 
-/* on_phone_messages_inbox */
-void on_phone_messages_inbox(gpointer data)
-{
-	Phone * phone = data;
-
-	/* FIXME implement */
-}
-
-
-/* on_phone_messages_outbox */
-void on_phone_messages_outbox(gpointer data)
-{
-	Phone * phone = data;
-
-	/* FIXME implement */
-}
-
-
 /* on_phone_messages_reply */
 void on_phone_messages_reply(gpointer data)
 {
@@ -444,7 +438,9 @@ void on_phone_read_reply(gpointer data)
 /* on_phone_write_attach */
 void on_phone_write_attach(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_write_attach_dialog(phone);
 }
 
 

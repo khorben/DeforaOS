@@ -1,6 +1,6 @@
 PACKAGE	= Phone
-VERSION	= 0.2.10
-SUBDIRS	= data include po src tools
+VERSION	= 0.3.0
+SUBDIRS	= data doc include po src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -27,38 +27,52 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/phone-log.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-messages.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-settings.desktop \
-		$(PACKAGE)-$(VERSION)/data/phone-signal-00.png \
-		$(PACKAGE)-$(VERSION)/data/phone-signal-25.png \
-		$(PACKAGE)-$(VERSION)/data/phone-signal-50.png \
-		$(PACKAGE)-$(VERSION)/data/phone-signal-75.png \
-		$(PACKAGE)-$(VERSION)/data/phone-signal-100.png \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/phone-drafts.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/phone-inbox.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/22x22/Makefile \
 		$(PACKAGE)-$(VERSION)/data/22x22/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-00.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-25.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-50.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-75.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-100.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/project.conf \
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
 		$(PACKAGE)-$(VERSION)/data/24x24/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/phone-drafts.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/phone-inbox.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/data/32x32/Makefile \
 		$(PACKAGE)-$(VERSION)/data/32x32/phone-dialer.png \
 		$(PACKAGE)-$(VERSION)/data/32x32/project.conf \
 		$(PACKAGE)-$(VERSION)/data/48x48/Makefile \
 		$(PACKAGE)-$(VERSION)/data/48x48/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/phone-inbox.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/pppd-peers_phone \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Phone.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Phone/modem.h \
+		$(PACKAGE)-$(VERSION)/include/Phone/phone.h \
+		$(PACKAGE)-$(VERSION)/include/Phone/plugin.h \
+		$(PACKAGE)-$(VERSION)/include/Phone/Makefile \
+		$(PACKAGE)-$(VERSION)/include/Phone/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
-		$(PACKAGE)-$(VERSION)/src/command.c \
-		$(PACKAGE)-$(VERSION)/src/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/modem.c \
 		$(PACKAGE)-$(VERSION)/src/phone.c \
@@ -71,12 +85,16 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/suspend.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
-		$(PACKAGE)-$(VERSION)/src/command.h \
-		$(PACKAGE)-$(VERSION)/src/gsm.h \
 		$(PACKAGE)-$(VERSION)/src/modem.h \
 		$(PACKAGE)-$(VERSION)/src/phone.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modems/debug.c \
+		$(PACKAGE)-$(VERSION)/src/modems/hayes.c \
+		$(PACKAGE)-$(VERSION)/src/modems/sofia.c \
+		$(PACKAGE)-$(VERSION)/src/modems/hayes.h \
+		$(PACKAGE)-$(VERSION)/src/modems/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modems/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/blacklist.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/debug.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/engineering.c \

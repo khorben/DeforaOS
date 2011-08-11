@@ -15,7 +15,6 @@
 
 
 
-#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,7 +45,7 @@ static void _smscrypt_clear(PhonePlugin * plugin);
 static gboolean _smscrypt_confirm(PhonePlugin * plugin, char const * message);
 static int _smscrypt_init(PhonePlugin * plugin);
 static int _smscrypt_destroy(PhonePlugin * plugin);
-static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent * event);
 static int _smscrypt_secret(PhonePlugin * plugin, char const * number);
 static void _smscrypt_settings(PhonePlugin * plugin);
 
@@ -152,20 +151,19 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len);
 
-static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent * event)
 {
 	int ret = 0;
-	va_list ap;
 	char const * number;
 	PhoneEncoding * encoding;
 	char ** buf;
 	size_t * len;
 
-	va_start(ap, event);
-	switch(event)
+	switch(event->type)
 	{
+#if 0 /* FIXME re-implement */
 		/* our deal */
-		case PHONE_EVENT_SMS_RECEIVING:
+		case PHONE_EVENT_TYPE_SMS_RECEIVING:
 			number = va_arg(ap, char const *);
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
@@ -173,7 +171,7 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			ret = _smscrypt_event_sms_receiving(plugin, number,
 					encoding, *buf, len);
 			break;
-		case PHONE_EVENT_SMS_SENDING:
+		case PHONE_EVENT_TYPE_SMS_SENDING:
 			number = va_arg(ap, char const *);
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
@@ -181,11 +179,11 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			ret = _smscrypt_event_sms_sending(plugin, number,
 					encoding, *buf, len);
 			break;
+#endif
 		/* ignore the rest */
 		default:
 			break;
 	}
-	va_end(ap);
 	return ret;
 }
 

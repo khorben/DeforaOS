@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,11 @@
 
 
 
-#include <stdarg.h>
-#include <stdlib.h>
+#include <System.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
-#include <System.h>
 #include "Phone.h"
 
 
@@ -39,7 +37,7 @@ typedef struct _Blacklist
 /* prototypes */
 static int _blacklist_init(PhonePlugin * plugin);
 static int _blacklist_destroy(PhonePlugin * plugin);
-static int _blacklist_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _blacklist_settings(PhonePlugin * plugin);
 
 
@@ -96,28 +94,27 @@ static int _blacklist_destroy(PhonePlugin * plugin)
 
 	if(blacklist->window != NULL)
 		gtk_widget_destroy(blacklist->window);
-	free(blacklist);
+	object_delete(blacklist);
 	return 0;
 }
 
 
 /* blacklist_event */
-static int _blacklist_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event)
 {
-	va_list ap;
 	char const * number = NULL;
 	char const * reason;
 
-	va_start(ap, event);
-	switch(event)
+	switch(event->type)
 	{
-		case PHONE_EVENT_CALLING:
-			number = va_arg(ap, char const *);
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			if(event->modem_event.type != MODEM_EVENT_TYPE_CALL)
+				break; /* FIXME many more events to handle */
+			number = event->modem_event.event->call.number;
 			break;
 		default:
 			break;
 	}
-	va_end(ap);
 	if(number == NULL)
 		return 0;
 	reason = plugin->helper->config_get(plugin->helper->phone, "blacklist",

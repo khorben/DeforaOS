@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include <sys/soundcard.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -54,7 +53,7 @@ typedef struct _OSS
 /* prototypes */
 static int _oss_init(PhonePlugin * plugin);
 static int _oss_destroy(PhonePlugin * plugin);
-static int _oss_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _oss_event(PhonePlugin * plugin, PhoneEvent * event);
 static int _oss_open(PhonePlugin * plugin);
 static void _oss_settings(PhonePlugin * plugin);
 
@@ -106,28 +105,43 @@ static int _oss_destroy(PhonePlugin * plugin)
 
 
 /* oss_event */
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
 static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
-static int _oss_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _oss_event(PhonePlugin * plugin, PhoneEvent * event)
 {
-	va_list ap;
-	gdouble level;
-
-	switch(event)
+	switch(event->type)
 	{
-		case PHONE_EVENT_CALL_INCOMING:
-			/* FIXME ringtone */
-			break;
-		case PHONE_EVENT_CALL_OUTGOING:
-			/* FIXME tone */
-			break;
-		case PHONE_EVENT_VOLUME_SET:
-			va_start(ap, event);
-			level = va_arg(ap, gdouble);
-			va_end(ap);
-			_event_volume_set(plugin, level);
-			break;
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			return _event_modem_event(plugin,
+					event->modem_event.event);
+		case PHONE_EVENT_TYPE_SET_VOLUME:
+			return _event_volume_set(plugin,
+					event->volume_set.level);
 		default: /* not relevant */
+			break;
+	}
+	return 0;
+}
+
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
+{
+	ModemCallDirection direction;
+
+	switch(event->type)
+	{
+		case MODEM_EVENT_TYPE_CALL:
+			if(event->call.status != MODEM_CALL_STATUS_RINGING)
+				break;
+			direction = event->call.direction;
+			if(direction == MODEM_CALL_DIRECTION_INCOMING)
+				/* FIXME ringtone */
+				break;
+			else if(direction == MODEM_CALL_DIRECTION_OUTGOING)
+				/* FIXME tone */
+				break;
+			break;
+		default:
 			break;
 	}
 	return 0;

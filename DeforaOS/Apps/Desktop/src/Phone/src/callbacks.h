@@ -64,8 +64,6 @@ void on_phone_logs_write(gpointer data);
 void on_phone_messages_activated(gpointer data);
 void on_phone_messages_call(gpointer data);
 void on_phone_messages_delete(gpointer data);
-void on_phone_messages_inbox(gpointer data);
-void on_phone_messages_outbox(gpointer data);
 void on_phone_messages_reply(gpointer data);
 void on_phone_messages_write(gpointer data);
 

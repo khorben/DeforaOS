@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -317,8 +317,10 @@ static int _engineering_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(vbox), paned, TRUE, TRUE, 0);
 	gtk_widget_show_all(engineering->window);
 	/* trigger */
+#if 0 /* FIXME reimplement using an extension to the Hayes modem plug-in */
 	plugin->helper->register_trigger(plugin->helper->phone, plugin, "%EM",
 			_on_engineering_trigger_em);
+#endif
 	return 0;
 }
 
@@ -416,10 +418,12 @@ static gboolean _on_engineering_timeout(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	engineering->source = 0;
+#if 0 /* FIXME implement again otherwise */
 	engineering->helper->queue(engineering->helper->phone, "AT%EM=2,1");
 	engineering->helper->queue(engineering->helper->phone, "AT%EM=2,2");
 	engineering->helper->queue(engineering->helper->phone, "AT%EM=2,3");
 	engineering->helper->queue(engineering->helper->phone, "AT%EM=2,4");
+#endif
 	return FALSE;
 }
 

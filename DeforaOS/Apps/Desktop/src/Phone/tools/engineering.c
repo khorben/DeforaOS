@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ typedef struct _PhoneEngineering
 {
 	Config * config;
 	PhonePlugin * plugin;
-	PhoneTriggerCallback * callback;
 } PhoneEngineering;
 
 
@@ -86,23 +85,13 @@ static int _helper_queue(Phone * phone, char const * command)
 		answers = answers3;
 	else if(strcmp(command, "AT%EM=2,4") == 0)
 		answers = answers4;
+#if 0 /* FIXME re-implement */
 	else
 		return pe->callback(pe->plugin, "ERROR");
 	for(i = 0; answers[i] != NULL; i++)
 		if(pe->callback(pe->plugin, answers[i]) != 0)
 			error_print("engineering");
-	return 0;
-}
-
-
-/* helper_register_trigger */
-static int _helper_register_trigger(Phone * phone, PhonePlugin * plugin,
-		char const * trigger, PhoneTriggerCallback callback)
-{
-	PhoneEngineering * pe = (PhoneEngineering *)phone;
-
-	pe->plugin = plugin;
-	pe->callback = callback;
+#endif
 	return 0;
 }
 
@@ -120,8 +109,6 @@ int main(int argc, char * argv[])
 	p = &pe;
 	helper.phone = p;
 	helper.config_get = _helper_config_get;
-	helper.queue = _helper_queue;
-	helper.register_trigger = _helper_register_trigger;
 	plugin.helper = &helper;
 	_engineering_init(&plugin);
 	gtk_main();

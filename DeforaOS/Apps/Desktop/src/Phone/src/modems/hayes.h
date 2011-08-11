@@ -15,12 +15,24 @@
 
 
 
-#ifndef DESKTOP_PHONE_H
-# define DESKTOP_PHONE_H
+#ifndef DESKTOP_PHONE_MODEM_HAYES_H
+# define DESKTOP_PHONE_MODEM_HAYES_H
 
 
-# include "Phone/modem.h"
-# include "Phone/phone.h"
-# include "Phone/plugin.h"
+/* Hayes */
+/* types */
+typedef enum _HayesRequestType
+{
+	HAYES_REQUEST_COMMAND_QUEUE	= 0
+} HayesRequestType;
 
-#endif /* !DESKTOP_PHONE_H */
+typedef union _HayesRequest
+{
+	/* COMMAND_QUEUE */
+	struct
+	{
+		char const * command;
+	} command_queue;
+} HayesRequest;
+
+#endif /* !DESKTOP_PHONE_MODEM_HAYES_H */

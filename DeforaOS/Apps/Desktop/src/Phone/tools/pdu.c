@@ -15,7 +15,8 @@
 
 
 
-#include "../src/gsm.c"
+#include <unistd.h>
+#include <stdio.h>
 #include "../src/modem.c"
 
 
@@ -31,6 +32,7 @@ static void _hexdump(char const * buf, size_t len);
 /* pdu_decode */
 static int _pdu_decode(char const * string)
 {
+#if 0
 	time_t timestamp;
 	char number[32];
 	GSMEncoding encoding;
@@ -41,10 +43,12 @@ static int _pdu_decode(char const * string)
 
 	if((p = _cmgr_pdu_parse(string, &timestamp, number, &encoding, &len))
 			== NULL)
+#endif
 	{
 		fputs("pdu: Unable to decode PDU\n", stderr);
 		return -1;
 	}
+#if 0
 	printf("Number: %s\n", number);
 	localtime_r(&timestamp, &t);
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
@@ -55,24 +59,29 @@ static int _pdu_decode(char const * string)
 		printf("Message: %s\n", p);
 	free(p);
 	return 0;
+#endif
 }
 
 static int _pdu_encode(char const * number, char const * string)
 {
+#if 0
 	char * cmd;
 	char * pdu;
 
 	if(_message_to_pdu(0, number, GSM_MODEM_ALPHABET_DEFAULT, string,
 				strlen(string), &cmd, &pdu) != 0)
+#endif
 	{
 		fputs("pdu: Unable to encode PDU\n", stderr);
 		return -1;
 	}
+#if 0
 	puts(cmd);
 	puts(pdu);
 	free(cmd);
 	free(pdu);
 	return 0;
+#endif
 }
 
 

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,12 @@
 # define PHONE_SRC_PHONE_H
 
 # include <gtk/gtk.h>
-# include <Phone.h>
+# include "Phone/phone.h"
 
 
 /* Phone */
 /* functions */
-Phone * phone_new(char const * device, unsigned int baudrate, int retry,
-		int hwflow);
+Phone * phone_new(char const * plugin, int retry);
 void phone_delete(Phone * phone);
 
 
@@ -60,7 +59,7 @@ void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
 /* events */
-int phone_event(Phone * phone, PhoneEvent event, ...);
+int phone_event(Phone * phone, PhoneEvent * event);
 
 /* interface */
 void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
@@ -68,10 +67,11 @@ void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_logs(Phone * phone, gboolean show);
-void phone_show_messages(Phone * phone, gboolean show);
+void phone_show_messages(Phone * phone, gboolean show, ...);
 void phone_show_plugins(Phone * phone, gboolean show);
 void phone_show_read(Phone * phone, gboolean show, ...);
 void phone_show_settings(Phone * phone, gboolean show);
+void phone_show_status(Phone * phone, gboolean show, ...);
 void phone_show_system(Phone * phone, gboolean show);
 void phone_show_write(Phone * phone, gboolean show, ...);
 
@@ -85,13 +85,14 @@ void phone_messages_call_selected(Phone * phone);
 void phone_messages_delete_selected(Phone * phone);
 void phone_messages_read_selected(Phone * phone);
 void phone_messages_set(Phone * phone, unsigned int index, char const * number,
-		time_t date, char const * content);
+		time_t date, ModemMessageFolder folder,
+		ModemMessageStatus status, size_t length, char const * content);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
 
 /* plugins */
 int phone_load(Phone * phone, char const * plugin);
-int phone_unload(Phone * phone, PhonePlugin * plugin);
+int phone_unload(Phone * phone, char const * plugin);
 void phone_unload_all(Phone * phone);
 
 /* read */
@@ -104,6 +105,7 @@ void phone_read_reply(Phone * phone);
 void phone_settings_open_selected(Phone * phone);
 
 /* write */
+void phone_write_attach_dialog(Phone * phone);
 void phone_write_copy(Phone * phone);
 void phone_write_count_buffer(Phone * phone);
 void phone_write_cut(Phone * phone);

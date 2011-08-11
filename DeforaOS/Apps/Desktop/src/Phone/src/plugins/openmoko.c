@@ -20,7 +20,6 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,6 +30,7 @@
 # include <alsa/asoundlib.h>
 #endif
 #include "Phone.h"
+#include "hayes.h"
 #include "../../config.h"
 
 #ifndef PREFIX
@@ -70,8 +70,9 @@ typedef struct _Openmoko
 /* plugins */
 static int _openmoko_init(PhonePlugin * plugin);
 static int _openmoko_destroy(PhonePlugin * plugin);
-static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _openmoko_deepsleep(PhonePlugin * plugin);
+static void _openmoko_queue(PhonePlugin * plugin, char const * command);
 static void _openmoko_settings(PhonePlugin * plugin);
 
 static int _openmoko_get_state(PhonePlugin * plugin, char const * device,
@@ -129,113 +130,85 @@ static int _openmoko_destroy(PhonePlugin * plugin)
 
 /* openmoko_event */
 static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
 static int _event_power_on(PhonePlugin * plugin, gboolean power);
-static int _event_resuming(PhonePlugin * plugin);
-static int _event_suspend(PhonePlugin * plugin);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
 static int _event_volume_get(PhonePlugin * plugin, gdouble * level);
 static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
-static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 {
-	Openmoko * openmoko = plugin->priv;
-	va_list ap;
-	gdouble level = 0.0;
-	gdouble * plevel = &level;
-
-	switch(event)
+	switch(event->type)
 	{
-		case PHONE_EVENT_CALL_ESTABLISHED:
-			/* let us hear the call */
-			_event_mixer_set(plugin, "gsmhandset.state");
-#ifdef __linux__
-			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
-			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_VOLUME_GET, plevel);
-#endif
-			/* enable echo cancellation */
-			plugin->helper->queue(plugin->helper->phone,
-					"AT%N0187");
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			_event_modem_event(plugin, event->modem_event.event);
 			break;
-		case PHONE_EVENT_CALL_INCOMING:
-			/* let us hear the ringtone */
-			_event_mixer_set(plugin, "stereoout.state");
-#ifdef __linux__
-			openmoko->mixer_elem = NULL;
-#endif
-			break;
-		case PHONE_EVENT_CALL_OUTGOING:
-			/* let us hear the connection */
-			_event_mixer_set(plugin, "gsmhandset.state");
-#ifdef __linux__
-			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
-			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_VOLUME_GET, plevel);
-#endif
-			break;
-		case PHONE_EVENT_CALL_TERMINATED:
-			/* restore regular audio */
-			_event_mixer_set(plugin, "stereoout.state");
-#ifdef __linux__
-			openmoko->mixer_elem = NULL;
-#endif
-			break;
-		case PHONE_EVENT_FUNCTIONAL:
-			_openmoko_deepsleep(plugin);
-			break;
-		case PHONE_EVENT_NOTIFICATION_OFF:
+		case PHONE_EVENT_TYPE_NOTIFICATION_OFF:
 			/* FIXME implement */
 			break;
-		case PHONE_EVENT_NOTIFICATION_ON:
+		case PHONE_EVENT_TYPE_NOTIFICATION_ON:
 			/* FIXME implement */
 			break;
-		case PHONE_EVENT_OFFLINE:
+		case PHONE_EVENT_TYPE_OFFLINE:
 			_event_power_on(plugin, FALSE);
 			break;
-		case PHONE_EVENT_ONLINE:
+		case PHONE_EVENT_TYPE_ONLINE:
 			_event_power_on(plugin, TRUE);
 			break;
-		case PHONE_EVENT_RESUMING:
-			_event_resuming(plugin);
-			break;
-		case PHONE_EVENT_SPEAKER_ON:
-			/* XXX assumes there's an ongoing call */
-			_event_mixer_set(plugin, "gsmspeakerout.state");
-#ifdef __linux__
-			openmoko->mixer_elem = openmoko->mixer_elem_headphone;
-			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_VOLUME_GET, plevel);
+		case PHONE_EVENT_TYPE_RESUME:
+			/* FIXME implement in Hayes plug-in if possible */
+			_openmoko_queue(plugin, "AT+CTZU=1");
+			_openmoko_queue(plugin, "AT+CTZR=1");
+			_openmoko_queue(plugin, "AT+CREG=2");
+			_openmoko_queue(plugin, "AT+CGEREP=2,1");
+#if 0 /* XXX not enabled in the first place */
+			_openmoko_queue(plugin, "AT%CSQ=1");
+			_openmoko_queue(plugin, "AT%CPRI=1");
+			_openmoko_queue(plugin, "AT%CNIV=1");
 #endif
 			break;
-		case PHONE_EVENT_SPEAKER_OFF:
-			/* XXX assumes there's an ongoing call */
-			_event_mixer_set(plugin, "gsmhandset.state");
-#ifdef __linux__
-			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
-			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_VOLUME_GET, plevel);
-#endif
-			break;
-		case PHONE_EVENT_SUSPEND:
-			_event_suspend(plugin);
-			break;
-		case PHONE_EVENT_VIBRATOR_OFF:
-			_event_vibrator(plugin, FALSE);
-			break;
-		case PHONE_EVENT_VIBRATOR_ON:
-			_event_vibrator(plugin, TRUE);
-			break;
-		case PHONE_EVENT_VOLUME_GET:
+#if 0
+		case PHONE_EVENT_GET_VOLUME:
 			va_start(ap, event);
 			plevel = va_arg(ap, gdouble *);
 			va_end(ap);
 			_event_volume_get(plugin, plevel);
 			break;
-		case PHONE_EVENT_VOLUME_SET:
-			va_start(ap, event);
-			level = va_arg(ap, gdouble);
-			va_end(ap);
-			_event_volume_set(plugin, level);
+#endif
+		case PHONE_EVENT_TYPE_SET_VOLUME:
+			_event_volume_set(plugin, event->volume_set.level);
+			break;
+		case PHONE_EVENT_TYPE_SPEAKER_ON:
+			/* XXX assumes there's an ongoing call */
+			_event_mixer_set(plugin, "gsmspeakerout.state");
+#ifdef __linux__
+			openmoko->mixer_elem = openmoko->mixer_elem_headphone;
+#endif
+			break;
+		case PHONE_EVENT_TYPE_SPEAKER_OFF:
+			/* XXX assumes there's an ongoing call */
+			_event_mixer_set(plugin, "gsmhandset.state");
+#ifdef __linux__
+			openmoko->mixer_elem = openmoko->mixer_elem_speaker;
+#endif
+			break;
+		case PHONE_EVENT_TYPE_SUSPEND:
+			_openmoko_queue(plugin, "AT+CTZU=0");
+			_openmoko_queue(plugin, "AT+CTZR=0");
+			_openmoko_queue(plugin, "AT+CREG=0");
+			_openmoko_queue(plugin, "AT+CGEREP=0,0");
+#if 0 /* XXX not enabled in the first place */
+			_openmoko_queue(plugin, "AT%CSQ=0");
+			_openmoko_queue(plugin, "AT%CPRI=0");
+			_openmoko_queue(plugin, "AT%CNIV=0");
+			_openmoko_queue(plugin, "AT%CBHZ=0");
+#endif
+			break;
+		case PHONE_EVENT_TYPE_VIBRATOR_OFF:
+			_event_vibrator(plugin, FALSE);
+			break;
+		case PHONE_EVENT_TYPE_VIBRATOR_ON:
+			_event_vibrator(plugin, TRUE);
 			break;
 		default: /* not relevant */
 			break;
@@ -268,6 +241,32 @@ static int _event_mixer_set(PhonePlugin * plugin, char const * filename)
 	return ret;
 }
 
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
+{
+	char const * profile = "stereoout.state";
+
+	switch(event->type)
+	{
+		case MODEM_EVENT_TYPE_CALL:
+			if(event->call.status == MODEM_CALL_STATUS_ACTIVE)
+				profile = "gsmhandset.state";
+			else if(event->call.status == MODEM_CALL_STATUS_RINGING
+					&& event->call.direction
+					== MODEM_CALL_DIRECTION_OUTGOING)
+				profile = "gsmhandset.state";
+			_event_mixer_set(plugin, profile);
+			/* enable echo cancellation */
+			_openmoko_queue(plugin, "AT%N0187");
+			break;
+		case PHONE_EVENT_TYPE_ONLINE:
+			_openmoko_deepsleep(plugin);
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
 static int _event_power_on(PhonePlugin * plugin, gboolean power)
 {
 	int ret = 0;
@@ -298,35 +297,6 @@ static int _event_power_on(PhonePlugin * plugin, gboolean power)
 		ret = plugin->helper->error(NULL, buf, 1);
 	}
 	return ret;
-}
-
-static int _event_resuming(PhonePlugin * plugin)
-{
-	plugin->helper->queue(plugin->helper->phone, "AT+CTZU=1");
-	plugin->helper->queue(plugin->helper->phone, "AT+CTZR=1");
-	plugin->helper->queue(plugin->helper->phone, "AT+CREG=2");
-	plugin->helper->queue(plugin->helper->phone, "AT+CGEREP=2,1");
-#if 0 /* XXX not enabled in the first place */
-	plugin->helper->queue(plugin->helper->phone, "AT%CSQ=1");
-	plugin->helper->queue(plugin->helper->phone, "AT%CPRI=1");
-	plugin->helper->queue(plugin->helper->phone, "AT%CNIV=1");
-#endif
-	return 0;
-}
-
-static int _event_suspend(PhonePlugin * plugin)
-{
-	plugin->helper->queue(plugin->helper->phone, "AT+CTZU=0");
-	plugin->helper->queue(plugin->helper->phone, "AT+CTZR=0");
-	plugin->helper->queue(plugin->helper->phone, "AT+CREG=0");
-	plugin->helper->queue(plugin->helper->phone, "AT+CGEREP=0,0");
-#if 0 /* XXX not enabled in the first place */
-	plugin->helper->queue(plugin->helper->phone, "AT%CSQ=0");
-	plugin->helper->queue(plugin->helper->phone, "AT%CPRI=0");
-	plugin->helper->queue(plugin->helper->phone, "AT%CNIV=0");
-	plugin->helper->queue(plugin->helper->phone, "AT%CBHZ=0");
-#endif
-	return 0;
 }
 
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
@@ -405,8 +375,8 @@ static void _openmoko_deepsleep(PhonePlugin * plugin)
 			&& strtoul(p, NULL, 10) != 0)
 		cmd = "AT%SLEEP=2"; /* prevent deep sleep */
 	/* XXX may reset the hardware modem */
-	plugin->helper->queue(plugin->helper->phone, cmd);
-	plugin->helper->queue(plugin->helper->phone, "AT+CPIN?");
+	_openmoko_queue(plugin, cmd);
+	_openmoko_queue(plugin, "AT+CPIN?");
 }
 
 
@@ -427,7 +397,7 @@ static int _openmoko_mixer_close(PhonePlugin * plugin)
 
 /* openmoko_get_state */
 static int _openmoko_get_state(PhonePlugin * plugin, char const * device,
-		gboolean * enabled)
+                gboolean * enabled)
 {
 	int ret = -1;
 	int fd;
@@ -450,7 +420,7 @@ static int _openmoko_get_state(PhonePlugin * plugin, char const * device,
 
 /* openmoko_set_state */
 static int _openmoko_set_state(PhonePlugin * plugin, char const * device,
-		gboolean enabled)
+                gboolean enabled)
 {
 	int ret = -1;
 	int fd;
@@ -502,6 +472,22 @@ static int _openmoko_mixer_open(PhonePlugin * plugin)
 			openmoko->mixer_elem_speaker = elem;
 #endif /* __linux__ */
 	return 0;
+}
+
+
+/* openmoko_queue */
+static void _openmoko_queue(PhonePlugin * plugin, char const * command)
+{
+	ModemRequest request;
+	HayesRequest hrequest;
+
+	request.type = MODEM_REQUEST_UNSUPPORTED;
+	request.unsupported.modem = "Hayes";
+	request.unsupported.request_type = HAYES_REQUEST_COMMAND_QUEUE;
+	request.unsupported.request = &hrequest;
+	request.unsupported.size = sizeof(hrequest);
+	hrequest.command_queue.command = command;
+	plugin->helper->request(plugin->helper->phone, &request);
 }
 
 

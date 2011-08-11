@@ -51,7 +51,7 @@ gprs.so: $(gprs_OBJS)
 	$(LD) -o gprs.so $(gprs_OBJS) $(gprs_LDFLAGS)
 
 openmoko_OBJS = openmoko.o
-openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
+openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -I../modems $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
 openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs alsa`
 
 openmoko.so: $(openmoko_OBJS)
@@ -80,7 +80,7 @@ profiles.so: $(profiles_OBJS)
 
 smscrypt_OBJS = smscrypt.o
 smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lssl
+smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 smscrypt.so: $(smscrypt_OBJS)
 	$(LD) -o smscrypt.so $(smscrypt_OBJS) $(smscrypt_LDFLAGS)

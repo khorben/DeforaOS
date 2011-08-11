@@ -26,7 +26,6 @@
 # include <gtk/gtkx.h>
 #endif
 #include "Phone.h"
-#include "../phone.h"
 
 
 /* Panel */
@@ -82,10 +81,13 @@ typedef struct _Panel
 /* prototypes */
 static int _panel_init(PhonePlugin * plugin);
 static int _panel_destroy(PhonePlugin * plugin);
-static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _panel_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _panel_settings(PhonePlugin * plugin);
 
-static void _panel_set_operator(Panel * panel, char const * operator);
+static void _panel_set_battery_level(Panel * panel, gdouble level);
+static void _panel_set_cell_type(Panel * panel, gboolean gprs);
+static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
+		char const * _operator);
 static void _panel_set_signal_level(Panel * panel, gdouble level);
 
 
@@ -142,6 +144,9 @@ static int _panel_init(PhonePlugin * plugin)
 					"battery")) == NULL
 			|| strcmp(p, "1") != 0)
 		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
+	else if(_on_battery_timeout(plugin) == TRUE)
+		panel->battery_timeout = g_timeout_add(5000,
+				_on_battery_timeout, plugin);
 	/* signal */
 	panel->signal_level = -1;
 	panel->signal_image = gtk_image_new();
@@ -207,16 +212,16 @@ static void _on_plug_embedded(gpointer data)
 		g_source_remove(panel->timeout);
 	panel->timeout = 0;
 	gtk_widget_show(panel->plug);
-#if 0 /* XXX disabled for now because of a race condition */
-	plugin->helper->queue(plugin->helper->phone, "AT+COPS?");
-#endif
+	plugin->helper->trigger(plugin->helper->phone,
+			MODEM_EVENT_TYPE_REGISTRATION);
 }
 
 static gboolean _on_battery_timeout(gpointer data)
 {
 	PhonePlugin * plugin = data;
 
-	plugin->helper->queue(plugin->helper->phone, "AT+CBC");
+	plugin->helper->trigger(plugin->helper->phone,
+			MODEM_EVENT_TYPE_BATTERY_LEVEL);
 	return TRUE;
 }
 
@@ -236,76 +241,71 @@ static int _panel_destroy(PhonePlugin * plugin)
 
 
 /* panel_event */
-static int _event_set_battery_level(Panel * panel, gdouble level);
-static int _event_set_cell_type(Panel * panel, gboolean gprs);
-static void _set_battery_image(Panel * panel, PanelBattery battery);
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
 
-static int _panel_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
+{
+	switch(event->type)
+	{
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			return _event_modem_event(plugin,
+					event->modem_event.event);
+		default:
+			break;
+	}
+	return 0;
+}
+
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 {
 	Panel * panel = plugin->priv;
-	va_list ap;
-	char const * operator;
-	gdouble level;
-	gboolean active;
+	char const * media = "";
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(plugin, %u, ...)\n", __func__, event);
-#endif
-	va_start(ap, event);
-	switch(event)
+	switch(event->type)
 	{
-		case PHONE_EVENT_BATTERY_LEVEL:
-			level = va_arg(ap, gdouble);
-			_event_set_battery_level(panel, level);
+		case MODEM_EVENT_TYPE_BATTERY_LEVEL:
+			_panel_set_battery_level(panel,
+					event->battery_level.level);
 			break;
-		case PHONE_EVENT_FUNCTIONAL:
-			/* FIXME should be disabled upon errors fetching CBC */
-			if(gtk_widget_get_no_show_all(panel->battery_image)
-					== TRUE || panel->battery_timeout != 0)
-				break;
-			panel->battery_timeout = g_timeout_add(5000,
-					_on_battery_timeout, plugin);
-			_on_battery_timeout(plugin);
-			break;
-		case PHONE_EVENT_GPRS_ATTACHMENT:
-			active = va_arg(ap, gboolean);
-			_event_set_cell_type(panel, active);
-			break;
-		case PHONE_EVENT_SET_OPERATOR:
-			operator = va_arg(ap, char const *);
-			_panel_set_operator(panel, operator);
-			break;
-		case PHONE_EVENT_SET_SIGNAL_LEVEL:
-			level = va_arg(ap, gdouble);
-			_panel_set_signal_level(panel, level);
+		case MODEM_EVENT_TYPE_REGISTRATION:
+			if(event->registration.media != NULL)
+				media = event->registration.media;
+			_panel_set_cell_type(panel, (strcmp("GPRS", media) == 0)
+					? TRUE : FALSE);
+			_panel_set_operator(panel, event->registration.status,
+					event->registration._operator);
+			_panel_set_signal_level(panel,
+					event->registration.signal);
 			break;
 		default:
 			break;
 	}
-	va_end(ap);
 	return 0;
 }
 
-static int _event_set_battery_level(Panel * panel, gdouble level)
+
+/* panel_set_battery_level */
+static void _set_battery_image(Panel * panel, PanelBattery battery);
+
+static void _panel_set_battery_level(Panel * panel, gdouble level)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(plugin, %lf)\n", __func__, level);
 #endif
 	if(level < 0.0)
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN);
-	else if(level <= 1.0)
+	else if(level <= 0.01)
 		_set_battery_image(panel, PANEL_BATTERY_EMPTY);
-	else if(level <= 10.0)
+	else if(level <= 0.1)
 		_set_battery_image(panel, PANEL_BATTERY_CAUTION);
-	else if(level <= 20.0)
+	else if(level <= 0.2)
 		_set_battery_image(panel, PANEL_BATTERY_LOW);
-	else if(level <= 75.0)
+	else if(level <= 0.75)
 		_set_battery_image(panel, PANEL_BATTERY_GOOD);
-	else if(level <= 100.0)
+	else if(level <= 1.0)
 		_set_battery_image(panel, PANEL_BATTERY_FULL);
 	else
 		_set_battery_image(panel, PANEL_BATTERY_ERROR);
-	return 0;
 }
 
 static void _set_battery_image(Panel * panel, PanelBattery battery)
@@ -329,20 +329,40 @@ static void _set_battery_image(Panel * panel, PanelBattery battery)
 			icons[battery], GTK_ICON_SIZE_SMALL_TOOLBAR);
 }
 
-static int _event_set_cell_type(Panel * panel, gboolean gprs)
+
+/* panel_set_cell_type */
+static void _panel_set_cell_type(Panel * panel, gboolean gprs)
 {
 	if(gprs)
 		gtk_widget_show(panel->cell);
 	else
 		gtk_widget_hide(panel->cell);
-	return 0;
 }
 
 
 /* panel_set_operator */
-static void _panel_set_operator(Panel * panel, char const * operator)
+static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
+		char const * _operator)
 {
-	gtk_label_set_text(GTK_LABEL(panel->operator), operator);
+	switch(status)
+	{
+		case MODEM_REGISTRATION_STATUS_DENIED:
+			_operator = "Denied";
+			break;
+		case MODEM_REGISTRATION_STATUS_NOT_SEARCHING:
+			_operator = "Not registering";
+			break;
+		case MODEM_REGISTRATION_STATUS_SEARCHING:
+			_operator = "Registering...";
+			break;
+		case MODEM_REGISTRATION_STATUS_UNKNOWN:
+			_operator = "Unknown";
+			break;
+		case MODEM_REGISTRATION_STATUS_REGISTERED:
+		default:
+			break;
+	}
+	gtk_label_set_text(GTK_LABEL(panel->operator), _operator);
 }
 
 
@@ -352,11 +372,7 @@ static void _signal_level_set_image(Panel * panel, PanelSignal signal);
 static void _panel_set_signal_level(Panel * panel, gdouble level)
 {
 	if(level < 0.0)
-	{
-		if(panel->signal_level != PANEL_SIGNAL_00)
-			_panel_set_operator(panel, "");
 		_signal_level_set_image(panel, PANEL_SIGNAL_00);
-	}
 	else if(level < 0.25)
 		_signal_level_set_image(panel, PANEL_SIGNAL_25);
 	else if(level < 0.50)

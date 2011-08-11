@@ -1,5 +1,5 @@
 PACKAGE="Phone"
-VERSION="0.2.10"
+VERSION="0.3.0"
 
 PREFIX="/usr/local"
 LIBDIR="${PREFIX}/lib"

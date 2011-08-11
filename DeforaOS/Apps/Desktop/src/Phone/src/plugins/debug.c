@@ -16,7 +16,9 @@
 
 
 #include <System.h>
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <gtk/gtk.h>
 #include "Phone.h"
 
@@ -28,82 +30,62 @@ typedef struct _Debug
 {
 	GtkWidget * window;
 	GtkWidget * gsm;
-	GtkWidget * queue;
 	GtkListStore * events;
 	GtkWidget * view;
 } Debug;
+
+typedef struct _DebugPhoneEvents
+{
+	PhoneEventType event;
+	char const * string;
+} DebugPhoneEvents;
 
 
 /* variables */
 static struct
 {
 	char const * name;
-	char const * command;
+	ModemEventType event;
 } _debug_gsm_commands[] =
 {
-	{ "Alive",			"AT"		},
-	{ "Answer call",		"ATA"		},
-	{ "Battery charge",		"AT+CBC"	},
-	{ "Call waiting control",	"AT+CCWA?"	},
-	{ "Contact list",		"AT+CPBR=?"	},
-	{ "Disable phone",		"AT+CFUN=0"	},
-	{ "Enable phone",		"AT+CFUN=1"	},
-	{ "Hangup call",		"ATH"		},
-	{ "Messages",			"AT+CMGL=4"	},
-	{ "Messages read",		"AT+CMGL=1"	},
-	{ "Messages sent",		"AT+CMGL=3"	},
-	{ "Messages unread",		"AT+CMGL=0"	},
-	{ "Messages unsent",		"AT+CMGL=2"	},
-	{ "Mute",			"AT+CMUT?"	},
-	{ "Operator",			"AT+COPS?"	},
-	{ "Phone active",		"AT+CPAS"	},
-	{ "Phone functional",		"AT+CFUN?"	},
-	{ "Registered",			"AT+CREG?"	},
-	{ "Reject call",		"AT+CHUP"	},
-	{ "Reset",			"ATZ"		},
-	{ "Signal level",		"AT+CSQ"	},
-	{ "SIM PIN status",		"AT+CPIN?"	},
-	{ NULL,				NULL		}
+	{ "Battery charge",	MODEM_EVENT_TYPE_BATTERY_LEVEL	},
+	{ "Call status",	MODEM_EVENT_TYPE_CALL		},
+	{ "Contact list",	MODEM_EVENT_TYPE_CONTACT	},
+	{ "Model",		MODEM_EVENT_TYPE_MODEL		},
+	{ "Registration",	MODEM_EVENT_TYPE_REGISTRATION	},
+	{ "Status",		MODEM_EVENT_TYPE_STATUS		},
+	{ NULL,			0				}
 };
 
-static struct
+static DebugPhoneEvents _debug_phone_events[] =
 {
-	PhoneEvent event;
-	char const * string;
-} _debug_phone_events[] =
-{
-	{ PHONE_EVENT_BATTERY_LEVEL,	"PHONE_EVENT_BATTERY_LEVEL"	},
-	{ PHONE_EVENT_CALL_ESTABLISHED,	"PHONE_EVENT_CALL_ESTABLISHED"	},
-	{ PHONE_EVENT_CALL_INCOMING,	"PHONE_EVENT_CALL_INCOMING"	},
-	{ PHONE_EVENT_CALL_OUTGOING,	"PHONE_EVENT_CALL_OUTGOING"	},
-	{ PHONE_EVENT_CALL_TERMINATED,	"PHONE_EVENT_CALL_TERMINATED"	},
-	{ PHONE_EVENT_CALLING,		"PHONE_EVENT_CALLING"		},
-	{ PHONE_EVENT_FUNCTIONAL,	"PHONE_EVENT_FUNCTIONAL"	},
-	{ PHONE_EVENT_GPRS_ATTACHMENT,	"PHONE_EVENT_GPRS_ATTACHMENT"	},
-	{ PHONE_EVENT_KEY_TONE,		"PHONE_EVENT_KEY_TONE"		},
-	{ PHONE_EVENT_OFFLINE,		"PHONE_EVENT_OFFLINE"		},
-	{ PHONE_EVENT_ONLINE,		"PHONE_EVENT_ONLINE"		},
-	{ PHONE_EVENT_RESUME,		"PHONE_EVENT_RESUME"		},
-	{ PHONE_EVENT_SET_OPERATOR,	"PHONE_EVENT_SET_OPERATOR"	},
-	{ PHONE_EVENT_SET_SIGNAL_LEVEL,	"PHONE_EVENT_SET_SIGNAL_LEVEL"	},
-	{ PHONE_EVENT_SIM_PIN_VALID,	"PHONE_EVENT_SIM_PIN_VALID"	},
-	{ PHONE_EVENT_SMS_RECEIVED,	"PHONE_EVENT_SMS_RECEIVED"	},
-	{ PHONE_EVENT_SMS_RECEIVING,	"PHONE_EVENT_SMS_RECEIVING"	},
-	{ PHONE_EVENT_SMS_SENDING,	"PHONE_EVENT_SMS_SENDING"	},
-	{ PHONE_EVENT_SMS_SENT,		"PHONE_EVENT_SMS_SENT"		},
-	{ PHONE_EVENT_SPEAKER_OFF,	"PHONE_EVENT_SPEAKER_OFF"	},
-	{ PHONE_EVENT_SPEAKER_ON,	"PHONE_EVENT_SPEAKER_ON"	},
-	{ PHONE_EVENT_SUSPEND,		"PHONE_EVENT_SUSPEND"		},
-	{ PHONE_EVENT_VIBRATOR_OFF,	"PHONE_EVENT_VIBRATOR_OFF"	},
-	{ PHONE_EVENT_VIBRATOR_ON,	"PHONE_EVENT_VIBRATOR_ON"	},
-	{ 0,				NULL				},
+	{ PHONE_EVENT_TYPE_CALLING,		"CALLING"		},
+	{ PHONE_EVENT_TYPE_KEY_TONE,		"KEY_TONE"		},
+	{ PHONE_EVENT_TYPE_MODEM_EVENT,		"MODEM_EVENT"		},
+	{ PHONE_EVENT_TYPE_NOTIFICATION_OFF,	"NOTIFICATION_OFF"	},
+	{ PHONE_EVENT_TYPE_NOTIFICATION_ON,	"NOTIFICATION_ON"	},
+	{ PHONE_EVENT_TYPE_ONLINE,		"ONLINE"		},
+	{ PHONE_EVENT_TYPE_OFFLINE,		"OFFLINE"		},
+	{ PHONE_EVENT_TYPE_ONLINE,		"ONLINE"		},
+	{ PHONE_EVENT_TYPE_RESUME,		"RESUME"		},
+	{ PHONE_EVENT_TYPE_SET_VOLUME,		"SET_VOLUME"		},
+	{ PHONE_EVENT_TYPE_SMS_RECEIVING,	"SMS_RECEIVING"		},
+	{ PHONE_EVENT_TYPE_SMS_SENDING,		"SMS_SENDING"		},
+	{ PHONE_EVENT_TYPE_SMS_SENT,		"SMS_SENT"		},
+	{ PHONE_EVENT_TYPE_SPEAKER_OFF,		"SPEAKER_OFF"		},
+	{ PHONE_EVENT_TYPE_SPEAKER_ON,		"SPEAKER_ON"		},
+	{ PHONE_EVENT_TYPE_STARTING,		"STARTING"		},
+	{ PHONE_EVENT_TYPE_SUSPEND,		"SUSPEND"		},
+	{ PHONE_EVENT_TYPE_VIBRATOR_OFF,	"VIBRATOR_OFF"		},
+	{ PHONE_EVENT_TYPE_VIBRATOR_ON,		"VIBRATOR_ON"		},
+	{ 0,					NULL			},
 };
 
 
 /* prototypes */
 static int _debug_init(PhonePlugin * plugin);
 static int _debug_destroy(PhonePlugin * plugin);
-static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static int _debug_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show);
 
 
@@ -113,7 +95,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"Debugging",
-	"stock_compile",
+	"applications-development",
 	_debug_init,
 	_debug_destroy,
 	_debug_event,
@@ -128,7 +110,6 @@ static void _on_debug_contacts(gpointer data);
 static void _on_debug_dialer(gpointer data);
 static void _on_debug_logs(gpointer data);
 static void _on_debug_messages(gpointer data);
-static void _on_debug_queue_changed(gpointer data);
 static void _on_debug_queue_execute(gpointer data);
 static void _on_debug_settings(gpointer data);
 
@@ -184,6 +165,10 @@ static int _debug_init(PhonePlugin * plugin)
 	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				_on_debug_settings), plugin);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_QUIT);
+	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				gtk_main_quit), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* vbox */
 	widget = gtk_vbox_new(FALSE, 4);
@@ -192,12 +177,8 @@ static int _debug_init(PhonePlugin * plugin)
 	vbox = widget;
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* gsm queue */
-	debug->queue = NULL;
-#if GTK_CHECK_VERSION(3, 0, 0)
-	debug->gsm = gtk_combo_box_text_new();
-#else
+	hbox = gtk_hbox_new(FALSE, 4);
 	debug->gsm = gtk_combo_box_new_text();
-#endif
 	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
 		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->gsm), NULL,
@@ -206,15 +187,8 @@ static int _debug_init(PhonePlugin * plugin)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(debug->gsm),
 				_debug_gsm_commands[i].name);
 #endif
-	g_signal_connect_swapped(G_OBJECT(debug->gsm), "changed", G_CALLBACK(
-				_on_debug_queue_changed), plugin);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->gsm), 0);
-	gtk_box_pack_start(GTK_BOX(vbox), debug->gsm, FALSE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 4);
-	debug->queue = gtk_entry_new();
-	g_signal_connect_swapped(G_OBJECT(debug->queue), "activate",
-			G_CALLBACK(_on_debug_queue_execute), plugin);
-	gtk_box_pack_start(GTK_BOX(hbox), debug->queue, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->gsm, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 			G_CALLBACK(_on_debug_queue_execute), plugin);
@@ -240,13 +214,6 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), debug->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	/* quit */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_button_new_from_stock(GTK_STOCK_QUIT);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				gtk_main_quit), NULL);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(debug->window);
 	return 0;
 }
@@ -279,41 +246,22 @@ static void _on_debug_messages(gpointer data)
 	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_MESSAGES);
 }
 
-static void _on_debug_queue_changed(gpointer data)
+static void _on_debug_queue_execute(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Debug * debug = plugin->priv;
 	gchar * text;
 	size_t i;
 
-	if(debug->queue == NULL)
-		return;
-#if GTK_CHECK_VERSION(3, 0, 0)
-	if((text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
-						debug->gsm))) == NULL)
-#else
 	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(debug->gsm)))
 			== NULL)
-#endif
 		return;
 	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 		if(strcmp(_debug_gsm_commands[i].name, text) == 0)
 			break;
 	g_free(text);
-	if(_debug_gsm_commands[i].command != NULL)
-		gtk_entry_set_text(GTK_ENTRY(debug->queue),
-				_debug_gsm_commands[i].command);
-}
-
-static void _on_debug_queue_execute(gpointer data)
-{
-	PhonePlugin * plugin = data;
-	Debug * debug = plugin->priv;
-	char const * text;
-
-	if((text = gtk_entry_get_text(GTK_ENTRY(debug->queue))) == NULL)
-		return;
-	plugin->helper->queue(plugin->helper->phone, text);
+	plugin->helper->trigger(plugin->helper->phone,
+			_debug_gsm_commands[i].event);
 }
 
 static void _on_debug_settings(gpointer data)
@@ -336,7 +284,7 @@ static int _debug_destroy(PhonePlugin * plugin)
 
 
 /* debug_event */
-static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...)
+static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 {
 	Debug * debug = plugin->priv;
 	time_t date;
@@ -344,19 +292,29 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	char tbuf[32];
 	size_t i;
 	char ebuf[32];
+	DebugPhoneEvents * dbe = _debug_phone_events;
 	GtkTreeIter iter;
 
 	date = time(NULL);
 	localtime_r(&date, &t);
 	strftime(tbuf, sizeof(tbuf), "%d/%m/%Y %H:%M:%S", &t);
-	snprintf(ebuf, sizeof(ebuf), "Unknown (%u)", event);
-	for(i = 0; _debug_phone_events[i].string != NULL; i++)
-		if(_debug_phone_events[i].event == event)
-		{
-			snprintf(ebuf, sizeof(ebuf), "%s",
-					_debug_phone_events[i].string);
+	snprintf(ebuf, sizeof(ebuf), "Unknown (%u)", event->type);
+	switch(event->type)
+	{
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			snprintf(ebuf, sizeof(ebuf), "MODEM (%u)",
+					event->modem_event.event->type);
 			break;
-		}
+		default:
+			for(i = 0; dbe[i].string != NULL; i++)
+				if(dbe[i].event == event->type)
+				{
+					snprintf(ebuf, sizeof(ebuf), "%s",
+							dbe[i].string);
+					break;
+				}
+			break;
+	}
 	gtk_list_store_append(debug->events, &iter);
 	gtk_list_store_set(debug->events, &iter, 0, date, 1, tbuf, 2, ebuf, -1);
 	return 0;

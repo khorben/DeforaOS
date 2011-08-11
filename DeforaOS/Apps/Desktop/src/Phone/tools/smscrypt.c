@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,16 +110,18 @@ int main(int argc, char * argv[])
 
 static gboolean _main_idle(gpointer data)
 {
+#if 0
 	struct { char const * message; char const * number; } * mn = data;
 	PhonePluginHelper helper;
 	Config * config;
 	PhoneEncoding encoding = PHONE_ENCODING_UTF8;
+	PhoneEvent event;
 	char * p;
 	size_t len;
 
 	config = config_new();
 	config_load(config, "/home/khorben/.phone"); /* FIXME hardcoded */
-	helper.phone = (Phone *)config;
+	helper.phone = (Phone*)config;
 	helper.config_foreach = _helper_config_foreach;
 	helper.config_get = _helper_config_get;
 	plugin.helper = &helper;
@@ -132,15 +134,19 @@ static gboolean _main_idle(gpointer data)
 		return FALSE;
 	printf("Message: \"%s\"\n", p);
 	len = strlen(p);
-	if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, mn->number,
-				&encoding, &p, &len) != 0)
+	event.type = PHONE_EVENT_TYPE_SMS_SENDING;
+	if(_smscrypt_event(&plugin, &event, mn->number, &encoding, &p, &len)
+			!= 0)
+#endif
 		puts("Could not encrypt");
+#if 0
 	else
 	{
 		printf("Encrypted:\n");
 		_hexdump(p, len);
-		if(_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING,
-					mn->number, &encoding, &p, &len) != 0)
+		event.type = PHONE_EVENT_TYPE_SMS_RECEIVING;
+		if(_smscrypt_event(&plugin, &event, mn->number, &encoding, &p,
+					&len) != 0)
 			puts("Could not decrypt");
 		else
 			printf("Decrypted: \"%s\"\n", p);
@@ -148,6 +154,7 @@ static gboolean _main_idle(gpointer data)
 	free(p);
 	_smscrypt_destroy(&plugin);
 	config_delete(config);
+#endif
 	gtk_main_quit();
 	return FALSE;
 }
