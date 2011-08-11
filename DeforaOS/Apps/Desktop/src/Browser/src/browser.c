@@ -1494,6 +1494,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
 			BR_COL_MIME_TYPE, type != NULL ? type : "", -1);
+	/* FIXME refresh the plug-in if the icon is currently selected */
 }
 
 static gboolean _current_idle(gpointer data)

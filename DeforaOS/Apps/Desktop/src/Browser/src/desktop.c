@@ -1634,6 +1634,7 @@ static void _on_preferences_response(GtkWidget * widget, gint response,
 static void _on_preferences_ok(gpointer data);
 static void _on_preferences_apply(gpointer data);
 static void _on_preferences_cancel(gpointer data);
+static void _on_preferences_update_preview(gpointer data);
 
 static void _desktop_show_preferences(Desktop * desktop)
 {
@@ -1716,6 +1717,10 @@ static void _preferences_background(Desktop * desktop, GtkWidget * notebook)
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(desktop->pr_background),
 			filter);
+	gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(
+				desktop->pr_background), gtk_image_new());
+	g_signal_connect_swapped(desktop->pr_background, "update-preview",
+			G_CALLBACK(_on_preferences_update_preview), desktop);
 	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_background, TRUE, TRUE,
 			0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
@@ -1940,6 +1945,45 @@ static void _on_preferences_cancel(gpointer data)
 
 	gtk_widget_hide(desktop->pr_window);
 	_preferences_set(desktop);
+}
+
+static void _on_preferences_update_preview(gpointer data)
+{
+	Desktop * desktop = data;
+#if !GTK_CHECK_VERSION(2, 6, 0)
+	gint ratio = desktop->window.width / desktop->window.height;
+#endif
+	GtkFileChooser * chooser = GTK_FILE_CHOOSER(desktop->pr_background);
+	GtkWidget * widget;
+	char * filename;
+	GdkPixbuf * pixbuf;
+	gboolean active = FALSE;
+	GError * error = NULL;
+
+	widget = gtk_file_chooser_get_preview_widget(chooser);
+	if((filename = gtk_file_chooser_get_preview_filename(chooser)) != NULL)
+	{
+#if GTK_CHECK_VERSION(2, 6, 0)
+		pixbuf = gdk_pixbuf_new_from_file_at_scale(filename, 96, -1,
+				TRUE, &error);
+#else
+		pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 96,
+				96 / ratio, &error);
+#endif
+		if(pixbuf != NULL)
+		{
+			gtk_image_set_from_pixbuf(GTK_IMAGE(widget), pixbuf);
+			g_object_unref(pixbuf);
+			active = TRUE;
+		}
+		else if(error != NULL)
+		{
+			desktop_error(NULL, error->message, 1);
+			g_error_free(error);
+		}
+	}
+	g_free(filename);
+	gtk_file_chooser_set_preview_widget_active(chooser, active);
 }
 
 static void _preferences_set(Desktop * desktop)
