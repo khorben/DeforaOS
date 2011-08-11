@@ -2357,7 +2357,7 @@ static void _show_status_window(Phone * phone)
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(phone->st_window));
 #else
-	vbox = GTK_DIALOG(phone->st_window)->dialog;
+	vbox = GTK_DIALOG(phone->st_window)->vbox;
 #endif
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	group2 = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
