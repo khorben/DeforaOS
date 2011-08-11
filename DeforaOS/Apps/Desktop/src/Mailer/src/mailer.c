@@ -1490,7 +1490,7 @@ static void _on_preferences_response(GtkWidget * widget, gint response,
 typedef struct _AccountData
 {
 	Mailer * mailer;
-	char * type;
+	char * title;
 	AccountIdentity identity;
 	unsigned int available;
 	Account * account;
@@ -1532,7 +1532,7 @@ static void _on_preferences_account_new(gpointer data)
 		return;
 	}
 	ad->mailer = mailer;
-	ad->type = strdup("");
+	ad->title = strdup("");
 	memset(&(ad->identity), 0, sizeof(ad->identity));
 	ad->available = 0;
 	ad->account = NULL;
@@ -1634,7 +1634,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 				account_delete(ad->account);
 			ac = ad->mailer->available[ad->available];
 			ad->account = account_new(ad->mailer,
-					account_get_type(ac), ad->type, NULL);
+					account_get_type(ac), ad->title, NULL);
 		}
 		if(ad->account == NULL)
 		{
@@ -1731,12 +1731,12 @@ static void _on_account_name_changed(GtkWidget * widget, gpointer data)
 	int current;
 	GtkWidget * page;
 
-	_on_entry_changed(widget, &ad->type);
+	_on_entry_changed(widget, &ad->title);
 	current = gtk_assistant_get_current_page(GTK_ASSISTANT(ad->assistant));
 	page = gtk_assistant_get_nth_page(GTK_ASSISTANT(ad->assistant),
 			current);
 	gtk_assistant_set_page_complete(GTK_ASSISTANT(ad->assistant), page,
-			strlen(ad->type) ? TRUE : FALSE);
+			strlen(ad->title) ? TRUE : FALSE);
 }
 
 static void _account_add_label(GtkWidget * box, PangoFontDescription * desc,
