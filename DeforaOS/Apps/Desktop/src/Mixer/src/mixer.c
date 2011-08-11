@@ -109,6 +109,25 @@ static char const * _authors[] =
 	NULL
 };
 
+#ifdef EMBEDDED
+static DesktopAccel _mixer_accel[] =
+{
+	{ G_CALLBACK(on_file_properties), GDK_MOD1_MASK, GDK_KEY_Return },
+	{ G_CALLBACK(on_file_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(on_view_all), GDK_CONTROL_MASK, GDK_KEY_A },
+# ifdef AUDIO_MIXER_DEVINFO
+	{ G_CALLBACK(on_view_outputs), GDK_CONTROL_MASK, GDK_KEY_O },
+	{ G_CALLBACK(on_view_inputs), GDK_CONTROL_MASK, GDK_KEY_I },
+	{ G_CALLBACK(on_view_record), GDK_CONTROL_MASK, GDK_KEY_R },
+	{ G_CALLBACK(on_view_monitor), GDK_CONTROL_MASK, GDK_KEY_N },
+	{ G_CALLBACK(on_view_equalization), GDK_CONTROL_MASK, GDK_KEY_E },
+	{ G_CALLBACK(on_view_mix), GDK_CONTROL_MASK, GDK_KEY_X },
+	{ G_CALLBACK(on_view_modem), GDK_CONTROL_MASK, GDK_KEY_M },
+# endif
+	{ NULL, 0, 0 }
+};
+#endif
+
 #ifndef EMBEDDED
 static DesktopMenu _mixer_menu_file[] =
 {
@@ -121,8 +140,9 @@ static DesktopMenu _mixer_menu_file[] =
 
 static DesktopMenu _mixer_menu_view[] =
 {
-	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK, GDK_KEY_A },
-#ifdef AUDIO_MIXER_DEVINFO
+	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK,
+		GDK_KEY_A },
+# ifdef AUDIO_MIXER_DEVINFO
 	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_CONTROL_MASK,
 		GDK_KEY_O },
 	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_CONTROL_MASK,
@@ -137,7 +157,7 @@ static DesktopMenu _mixer_menu_view[] =
 		GDK_KEY_X },
 	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_CONTROL_MASK,
 		GDK_KEY_M },
-#endif
+# endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -234,6 +254,8 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	/* menubar */
 	widget = desktop_menubar_create(_mixer_menubar, mixer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#else
+	desktop_accel_create(_mixer_accel, mixer, group);
 #endif
 	/* classes */
 	if(orientation == MO_VERTICAL)
