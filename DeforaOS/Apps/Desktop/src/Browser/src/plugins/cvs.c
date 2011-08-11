@@ -619,6 +619,8 @@ static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel)
 
 /* callbacks */
 /* cvs_on_add */
+static gboolean _add_is_binary(char const * type);
+
 static void _cvs_on_add(gpointer data)
 {
 	BrowserPlugin * plugin = data;
@@ -635,8 +637,8 @@ static void _cvs_on_add(gpointer data)
 	basename = g_path_get_basename(cvs->filename);
 	argv[3] = basename;
 	mime = plugin->helper->get_mime(plugin->helper->browser);
-	if((type = mime_type(mime, cvs->filename)) == NULL
-			|| strncmp("text/", type, 5) != 0)
+	type = mime_type(mime, cvs->filename);
+	if(_add_is_binary(type))
 	{
 		argv[4] = argv[3];
 		argv[3] = argv[2];
@@ -645,6 +647,25 @@ static void _cvs_on_add(gpointer data)
 	_cvs_add_task(plugin, "cvs add", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
+}
+
+static gboolean _add_is_binary(char const * type)
+{
+	char const text[] = "text/";
+	char const * types[] = { "application/x-perl",
+		"application/x-shellscript",
+		"application/xml",
+		"application/xslt+xml" };
+	size_t i;
+
+	if(type == NULL)
+		return TRUE;
+	if(strncmp(text, type, sizeof(text) - 1) == 0)
+		return FALSE;
+	for(i = 0; i < sizeof(types) / sizeof(*types); i++)
+		if(strcmp(types[i], type) == 0)
+			return FALSE;
+	return TRUE;
 }
 
 

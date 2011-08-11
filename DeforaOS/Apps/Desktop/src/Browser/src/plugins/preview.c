@@ -169,7 +169,8 @@ static void _preview_refresh(BrowserPlugin * plugin, char const * path)
 	char const text[] = "text/";
 	char const * types[] = { "application/x-perl",
 		"application/x-shellscript",
-		"application/xml" };
+		"application/xml",
+		"application/xslt+xml" };
 	char const * type;
 	size_t i;
 
