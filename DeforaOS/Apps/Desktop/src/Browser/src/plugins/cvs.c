@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - use the MIME type to add the "-kb" flag to "cvs add" */
 
 
 
@@ -627,13 +625,23 @@ static void _cvs_on_add(gpointer data)
 	CVS * cvs = plugin->priv;
 	gchar * dirname;
 	gchar * basename;
-	char * argv[] = { "cvs", "add", "--", NULL, NULL };
+	char * argv[] = { "cvs", "add", "--", NULL, NULL, NULL };
+	Mime * mime;
+	char const * type;
 
 	if(cvs->filename == NULL)
 		return;
 	dirname = g_path_get_dirname(cvs->filename);
 	basename = g_path_get_basename(cvs->filename);
 	argv[3] = basename;
+	mime = plugin->helper->get_mime(plugin->helper->browser);
+	if((type = mime_type(mime, cvs->filename)) == NULL
+			|| strncmp("text/", type, 5) != 0)
+	{
+		argv[4] = argv[3];
+		argv[3] = argv[2];
+		argv[2] = "-kb";
+	}
 	_cvs_add_task(plugin, "cvs add", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
