@@ -138,6 +138,10 @@ static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 {
+#ifdef __linux__
+	Openmoko * openmoko = plugin->priv;
+#endif
+
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
