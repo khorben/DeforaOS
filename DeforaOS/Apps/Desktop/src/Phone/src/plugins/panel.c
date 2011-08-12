@@ -245,11 +245,17 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
 
 static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
 {
+	Panel * panel = plugin->priv;
+
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _event_modem_event(plugin,
 					event->modem_event.event);
+		case PHONE_EVENT_TYPE_OFFLINE:
+			_panel_set_operator(panel, -1, "Offline");
+			_panel_set_signal_level(panel, 0.0 / 0.0);
+			break;
 		default:
 			break;
 	}
@@ -350,7 +356,7 @@ static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
 			_operator = "Denied";
 			break;
 		case MODEM_REGISTRATION_STATUS_NOT_SEARCHING:
-			_operator = "Not registering";
+			_operator = "Not searching";
 			break;
 		case MODEM_REGISTRATION_STATUS_SEARCHING:
 			_operator = "Registering...";
