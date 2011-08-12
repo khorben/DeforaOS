@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <ctype.h>
 #include <termios.h>
 #include <errno.h>
@@ -75,6 +76,7 @@ typedef struct _Hayes
 	char * contact_number;
 	char * gprs_username;
 	char * gprs_password;
+	char * message_number;
 	char * model_name;
 	char * model_vendor;
 	char * model_version;
@@ -293,6 +295,7 @@ static void _on_trigger_cgmr(ModemPlugin * modem, char const * answer);
 static void _on_trigger_clip(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer);
+static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cmgs(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cmti(ModemPlugin * modem, char const * answer);
@@ -449,6 +452,7 @@ static HayesTriggerHandler _hayes_trigger_handlers[] =
 	{ "+CLIP",	_on_trigger_clip	},
 	{ "+CME ERROR",	_on_trigger_cme_error	},
 	{ "+CMGL",	_on_trigger_cmgl	},
+	{ "+CMGR",	_on_trigger_cmgr	},
 	{ "+CMGS",	_on_trigger_cmgs	},
 	{ "+CMS ERROR",	_on_trigger_cms_error	},
 	{ "+CMTI",	_on_trigger_cmti	},
@@ -520,6 +524,7 @@ static int _hayes_destroy(ModemPlugin * modem)
 	string_delete(hayes->contact_number);
 	string_delete(hayes->gprs_username);
 	string_delete(hayes->gprs_password);
+	string_delete(hayes->message_number);
 	string_delete(hayes->model_name);
 	string_delete(hayes->model_vendor);
 	string_delete(hayes->model_version);
@@ -744,6 +749,7 @@ static char * _request_attention_message(ModemPlugin * modem, unsigned int id)
 	char const cmd[] = "AT+CMGR=";
 	char buf[32];
 
+	/* FIXME force the message format to be in PDU mode? */
 	snprintf(buf, sizeof(buf), "%s%u", cmd, id);
 	return strdup(buf);
 }
@@ -2496,7 +2502,6 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 /* on_trigger_cmgl */
 static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
 	ModemRequest request;
 	unsigned int id;
 	unsigned int u;
@@ -2509,6 +2514,70 @@ static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer)
 	request.type = MODEM_REQUEST_MESSAGE;
 	request.message.id = id;
 	_hayes_request(modem, &request);
+}
+
+
+/* on_trigger_cmgr */
+static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
+		char * number, ModemMessageEncoding * encoding,
+		size_t * length);
+
+static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
+{
+	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MESSAGE];
+	char buf[32];
+	char number[32];
+	char date[32];
+	struct tm t;
+	unsigned int mbox;
+	unsigned int alpha = 0;
+	unsigned int length;
+	char * p;
+
+	/* text mode support */
+	if(sscanf(answer, "\"%31[^\"]\",\"%31[^\"]\",,\"%31[^\"]\"", buf,
+				number, date) == 3)
+	{
+		number[sizeof(number) - 1] = '\0';
+		string_delete(hayes->message_number);
+		hayes->message_number = string_new(number);
+		event->message.number = hayes->message_number;
+		date[sizeof(date) - 1] = '\0';
+		if(strptime(date, "%y/%m/%d,%H:%M:%S", &t) == NULL)
+			/* XXX also parse the timezone? */
+			localtime_r(NULL, &t);
+		event->message.date = mktime(&t);
+		event->message.length = 0;
+		return; /* we need to wait for the next line */
+	}
+	/* PDU mode support */
+	if(sscanf(answer, "%u,%u,%u", &mbox, &alpha, &length) == 3
+			|| sscanf(answer, "%u,,%u", &mbox, &length) == 2)
+		return; /* we need to wait for the next line */
+	/* message content */
+	if(event->message.length == 0) /* XXX assumes this is text mode */
+	{
+		event->message.encoding = MODEM_MESSAGE_ENCODING_UTF8;
+		event->message.content = answer;
+		event->message.length = strlen(answer);
+		modem->helper->event(modem->helper->modem, event);
+		return;
+	}
+	if((p = _cmgr_pdu_parse(answer, &event->message.date, number,
+					&event->message.encoding,
+					&event->message.length)) == NULL)
+		return;
+	event->message.number = number; /* XXX */
+	modem->helper->event(modem->helper->modem, event);
+	free(p);
+}
+
+static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
+		char * number, ModemMessageEncoding * encoding, size_t * length)
+{
+	/* FIXME implement */
+	return NULL;
 }
 
 
