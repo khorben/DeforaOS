@@ -180,6 +180,9 @@ enum
 	HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,
 	HAYES_REQUEST_SIGNAL_LEVEL,
 	HAYES_REQUEST_SIM_PIN_VALID,
+	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,
+	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,
+	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_DISABLE,
 	HAYES_REQUEST_VENDOR,
 	HAYES_REQUEST_VERBOSE,
 	HAYES_REQUEST_VERSION
@@ -308,6 +311,7 @@ static void _on_trigger_cpin(ModemPlugin * modem, char const * answer);
 static void _on_trigger_creg(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cring(ModemPlugin * modem, char const * answer);
 static void _on_trigger_csq(ModemPlugin * modem, char const * answer);
+static void _on_trigger_cusd(ModemPlugin * modem, char const * answer);
 
 /* helpers */
 static int _is_figure(int c);
@@ -462,6 +466,12 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_SIM_PIN_VALID,			"AT+CPIN?",
 		_on_request_authentication },
+	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,"AT+CUSD=2",
+		_on_request_generic },
+	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_DISABLE,"AT+CUSD=0",
+		_on_request_generic },
+	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,"AT+CUSD=1",
+		_on_request_generic },
 	{ HAYES_REQUEST_VENDOR,				"AT+CGMI",
 		_on_request_model },
 	{ HAYES_REQUEST_VERBOSE,			"ATV1",
@@ -515,6 +525,7 @@ static HayesTriggerHandler _hayes_trigger_handlers[] =
 	{ "+CREG",	_on_trigger_creg	},
 	{ "+CRING",	_on_trigger_cring	},
 	{ "+CSQ",	_on_trigger_csq		},
+	{ "+CUSD",	_on_trigger_cusd	},
 	{ "BUSY",	_on_trigger_call_error	},
 	{ "CONNECT",	_on_trigger_connect	},
 	{ "NO CARRIER",	_on_trigger_call_error	},
@@ -756,7 +767,7 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 
 	/* FIXME check that this works on all phones, including:
-	 * - while calling (still ringing)
+	 * - while calling (still ringing) => simply inject "\r\n"?
 	 * - while ringing (incoming) */
 	if(hayes->mode == HAYES_MODE_DATA)
 	{
@@ -2154,7 +2165,11 @@ static HayesCommandStatus _on_request_authentication(HayesCommand * command,
 		/* force a registration report */
 		request.type = HAYES_REQUEST_REGISTRATION;
 		_hayes_request(modem, &request);
+		/* report new messages */
 		request.type = HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE;
+		_hayes_request(modem, &request);
+		/* report new notifications */
+		request.type = HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE;
 		_hayes_request(modem, &request);
 		/* refresh the current call status */
 		_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
@@ -3223,6 +3238,17 @@ static void _on_trigger_csq(ModemPlugin * modem, char const * answer)
 		event->registration.signal = (u / 32) + 0.0;
 	/* this is usually worth an event */
 	modem->helper->event(modem->helper->modem, event);
+}
+
+
+/* on_trigger_cusd */
+static void _on_trigger_cusd(ModemPlugin * modem, char const * answer)
+{
+	unsigned int u;
+
+	/* FIXME really implement */
+	if(sscanf(answer, "%u", &u) != 1)
+		return;
 }
 
 

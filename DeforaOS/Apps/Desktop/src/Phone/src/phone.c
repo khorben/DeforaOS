@@ -326,7 +326,7 @@ static const struct
 	GtkTreeModelFilterVisibleFunc filter;
 } _phone_message_filters[5] =
 {
-	/* FIXME provide the icons ourselves */
+	/* FIXME provide the icon ourselves */
 	{ "stock_all",		N_("All"),	_phone_messages_filter_all    },
 	{ "phone-inbox",	N_("Inbox"),	_phone_messages_filter_inbox  },
 	{ "phone-sent",		N_("Outbox"),	_phone_messages_filter_outbox },
@@ -3611,6 +3611,7 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			modem_request_type(phone->modem,
 					MODEM_REQUEST_CONTACT_LIST);
 #ifndef DEBUG
+			/* FIXME this is clearly out of place */
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 #endif
 			break;
