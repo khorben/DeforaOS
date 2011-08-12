@@ -164,7 +164,6 @@ enum
 	HAYES_REQUEST_GPRS_ATTACHED,
 	HAYES_REQUEST_LOCAL_ECHO_DISABLE,
 	HAYES_REQUEST_LOCAL_ECHO_ENABLE,
-	HAYES_REQUEST_MESSAGE,
 	HAYES_REQUEST_MESSAGE_FORMAT_PDU,
 	HAYES_REQUEST_MESSAGE_UNSOLLICITED_DISABLE,
 	HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE,
@@ -269,11 +268,13 @@ static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
-static HayesCommandStatus _on_request_contacts(HayesCommand * command,
+static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_functional(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_generic(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_message(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
@@ -291,6 +292,7 @@ static void _on_trigger_cgmm(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cgmr(ModemPlugin * modem, char const * answer);
 static void _on_trigger_clip(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer);
+static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cmgs(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cmti(ModemPlugin * modem, char const * answer);
@@ -423,7 +425,9 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ MODEM_REQUEST_CALL_PRESENTATION,		NULL,
 		_on_request_generic },
 	{ MODEM_REQUEST_CONTACT_LIST,			"AT+CPBR=?",
-		_on_request_contacts },
+		_on_request_contact_list },
+	{ MODEM_REQUEST_MESSAGE,			NULL,
+		_on_request_message },
 	{ MODEM_REQUEST_MESSAGE_LIST,			"AT+CMGL=4",
 		_on_request_message_list },
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
@@ -444,6 +448,7 @@ static HayesTriggerHandler _hayes_trigger_handlers[] =
 	{ "+CGMR",	_on_trigger_cgmr	},
 	{ "+CLIP",	_on_trigger_clip	},
 	{ "+CME ERROR",	_on_trigger_cme_error	},
+	{ "+CMGL",	_on_trigger_cmgl	},
 	{ "+CMGS",	_on_trigger_cmgs	},
 	{ "+CMS ERROR",	_on_trigger_cms_error	},
 	{ "+CMTI",	_on_trigger_cmti	},
@@ -534,6 +539,7 @@ static char * _request_attention_call_hangup(ModemPlugin * modem);
 static char * _request_attention_contact_list(ModemRequest * request);
 static char * _request_attention_gprs(ModemPlugin * modem,
 		char const * username, char const * password);
+static char * _request_attention_message(ModemPlugin * modem, unsigned int id);
 static char * _request_attention_message_send(ModemPlugin * modem,
 		char const * number, ModemMessageEncoding encoding,
 		size_t length, char const * content);
@@ -619,6 +625,9 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 					request->call_presentation.enabled
 					? 1 : 0);
 			return strdup(buf);
+		case MODEM_REQUEST_MESSAGE:
+			return _request_attention_message(modem,
+					request->message.id);
 		case MODEM_REQUEST_MESSAGE_SEND:
 			return _request_attention_message_send(modem,
 					request->message_send.number,
@@ -728,6 +737,15 @@ static char * _request_attention_gprs(ModemPlugin * modem,
 	free(hayes->gprs_password);
 	hayes->gprs_password = (password != NULL) ? strdup(password) : NULL;
 	return NULL; /* we don't need to issue any command */
+}
+
+static char * _request_attention_message(ModemPlugin * modem, unsigned int id)
+{
+	char const cmd[] = "AT+CMGR=";
+	char buf[32];
+
+	snprintf(buf, sizeof(buf), "%s%u", cmd, id);
+	return strdup(buf);
 }
 
 static char * _request_attention_message_send(ModemPlugin * modem,
@@ -2075,6 +2093,9 @@ static HayesCommandStatus _on_request_authentication(HayesCommand * command,
 		/* refresh the contact list */
 		request.type = MODEM_REQUEST_CONTACT_LIST;
 		_hayes_request(modem, &request);
+		/* refresh the message list */
+		request.type = MODEM_REQUEST_MESSAGE_LIST;
+		_hayes_request(modem, &request);
 	}
 	return status;
 }
@@ -2162,8 +2183,8 @@ static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 }
 
 
-/* on_request_contacts */
-static HayesCommandStatus _on_request_contacts(HayesCommand * command,
+/* on_request_contact_list */
+static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	/* FIXME implement */
@@ -2212,6 +2233,15 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 		else if((answer = strchr(answer, '\n')) != NULL)
 			answer++;
 	return HCS_ACTIVE;
+}
+
+
+/* on_request_message */
+static HayesCommandStatus _on_request_message(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	/* FIXME implement */
+	return _on_request_generic(command, status, priv);
 }
 
 
@@ -2460,6 +2490,25 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 		case 16: /* Incorrect SIM PUK */
 			break;
 	}
+}
+
+
+/* on_trigger_cmgl */
+static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer)
+{
+	Hayes * hayes = modem->priv;
+	ModemRequest request;
+	unsigned int id;
+	unsigned int u;
+
+	/* XXX we could already be reading the message at this point */
+	if(sscanf(answer, "%u,%u,%u,%u", &id, &u, &u, &u) != 4
+			&& sscanf(answer, "%u,%u,,%u", &id, &u, &u) != 3)
+		/* XXX we may be stuck in PDU mode at this point */
+		return;
+	request.type = MODEM_REQUEST_MESSAGE;
+	request.message.id = id;
+	_hayes_request(modem, &request);
 }
 
 
