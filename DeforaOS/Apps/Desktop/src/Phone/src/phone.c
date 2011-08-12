@@ -486,7 +486,7 @@ static void _idle_settings(Phone * phone)
 			PHONE_SETTINGS_COLUMN_NAME, _("System preferences"),
 			-1);
 	theme = gtk_icon_theme_get_default();
-	if((pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 48, 0,
+	if((pixbuf = gtk_icon_theme_load_icon(theme, "gtk-preferences", 48, 0,
 					NULL)) != NULL)
 		gtk_list_store_set(phone->se_store, &iter,
 				PHONE_SETTINGS_COLUMN_ICON, pixbuf, -1);

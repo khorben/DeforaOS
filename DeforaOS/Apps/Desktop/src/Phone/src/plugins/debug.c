@@ -159,9 +159,7 @@ static int _debug_init(PhonePlugin * plugin)
 	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				_on_debug_messages), plugin);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	toolitem = gtk_tool_button_new(NULL, "Settings");
-	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-			"gnome-settings");
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
 	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				_on_debug_settings), plugin);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
