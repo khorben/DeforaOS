@@ -204,9 +204,9 @@ static char * _hayes_message_to_pdu(ModemPlugin * modem, char const * number,
 		ModemMessageEncoding encoding, size_t length,
 		char const * content);
 
-/* numbers */
-static char * _hayes_number_to_address(ModemPlugin * modem,
-		char const * number);
+/* conversions */
+static unsigned char _hayes_convert_char_to_iso(unsigned char c);
+static char * _hayes_convert_number_to_address(char const * number);
 
 /* parser */
 static int _hayes_parse(ModemPlugin * modem);
@@ -330,6 +330,57 @@ static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
 	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void*)1      },
 	{ "device",	"Modem device",		MCT_FILENAME,	NULL	      },
 	{ NULL,		NULL,			MCT_NONE,	NULL	      }
+};
+
+static struct
+{
+	unsigned char gsm;
+	unsigned char iso;
+} _hayes_gsm_iso[] =
+{
+	{ '\0', '@'	},
+	{ 0x01, 163	}, /* £ */
+	{ 0x02, '$'	},
+	{ 0x03, 165	}, /* ¥ */
+	{ 0x04, 232	}, /* è */
+	{ 0x05, 233	}, /* é */
+	{ 0x06, 249	}, /* ù */
+	{ 0x07, 236	}, /* ì */
+	{ 0x08, 242	}, /* ò */
+	{ 0x09, 199	}, /* Ç */
+	{ 0x0b, 216	}, /* Ø */
+	{ 0x0c, 248	}, /* ø */
+	{ 0x0e, 197	}, /* Å */
+	{ 0x0f, 229	}, /* å */
+	{ 0x10, ' '	}, /* XXX delta */
+	{ 0x11, '_'	},
+	{ 0x12, ' '	}, /* XXX phi */
+	{ 0x13, ' '	}, /* XXX gamma */
+	{ 0x14, ' '	}, /* XXX lambda */
+	{ 0x15, ' '	}, /* XXX omega */
+	{ 0x16, ' '	}, /* XXX pi */
+	{ 0x17, ' '	}, /* XXX psi */
+	{ 0x18, ' '	}, /* XXX sigma */
+	{ 0x19, ' '	}, /* XXX theta */
+	{ 0x1a, ' '	}, /* XXX xi */
+	{ 0x1b, ' '	}, /* FIXME escape */
+	{ 0x1c, 198	},
+	{ 0x1d, 230	},
+	{ 0x1e, 223	},
+	{ 0x1f, 201	},
+	{ 0x24, 164	}, /* $ */
+	{ 0x40, 161	}, /* @ */
+	{ 0x5b, 196	}, /* [ */
+	{ 0x5c, 214	}, /* \ */
+	{ 0x5d, 209	}, /* ] */
+	{ 0x5e, 220	}, /* ^ */
+	{ 0x5f, 167	}, /* _ */
+	{ 0x60, 191	}, /* ` */
+	{ 0x7b, 228	}, /* { */
+	{ 0x7c, 246	}, /* | */
+	{ 0x7d, 241	}, /* } */
+	{ 0x7e, 252	}, /* ~ */
+	{ 0x7f, 224	}
 };
 
 static const struct
@@ -1084,7 +1135,7 @@ static char * _hayes_message_to_pdu(ModemPlugin * modem, char const * number,
 		default:
 			return NULL;
 	}
-	addr = _hayes_number_to_address(modem, number);
+	addr = _hayes_convert_number_to_address(number);
 	len = 2 + sizeof(prefix) + 2 + strlen((addr != NULL) ? addr : "")
 		+ sizeof(pid) + sizeof(dcs) + sizeof(vp) + 2
 		+ strlen((data != NULL) ? data : "") + 1;
@@ -1156,10 +1207,21 @@ static char * _text_to_sept(char const * text, size_t length)
 }
 
 
-/* numbers */
-/* hayes_number_to_address */
-static char * _hayes_number_to_address(ModemPlugin * modem,
-		char const * number)
+/* conversions */
+/* hayes_convert_char_to_iso */
+static unsigned char _hayes_convert_char_to_iso(unsigned char c)
+{
+	size_t i;
+
+	for(i = 0; i < sizeof(_hayes_gsm_iso) / sizeof(*_hayes_gsm_iso); i++)
+		if(_hayes_gsm_iso[i].gsm == c)
+			return _hayes_gsm_iso[i].iso;
+	return c;
+}
+
+
+/* hayes_convert_number_to_address */
+static char * _hayes_convert_number_to_address(char const * number)
 {
 	char * ret;
 	size_t len;
@@ -2521,6 +2583,15 @@ static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer)
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		char * number, ModemMessageEncoding * encoding,
 		size_t * length);
+static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
+		size_t i, size_t hdr, ModemMessageEncoding * encoding,
+		size_t * length);
+static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
+                size_t i, size_t hdr, ModemMessageEncoding * encoding,
+		size_t * length);
+static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
+		size_t length, char * buf);
+static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 
 static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 {
@@ -2576,8 +2647,217 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		char * number, ModemMessageEncoding * encoding, size_t * length)
 {
-	/* FIXME implement */
+	size_t len;
+	unsigned int smscl;
+	unsigned int tp;
+	unsigned int hdr;
+	unsigned int addrl;
+	unsigned int pid;
+	unsigned int dcs;
+	unsigned int datal;
+	unsigned int u;
+	char const * q;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pdu);
+#endif
+	len = strlen(pdu);
+	if(sscanf(pdu, "%02X", &smscl) != 1) /* SMSC length */
+		return NULL;
+	if((smscl * 2) + 2 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2;
+	if(sscanf(q, "%02X", &tp) != 1)
+		return NULL;
+	if((tp & 0x03) != 0x00) /* TP-MTI not SMS-DELIVER */
+		return NULL;
+	hdr = ((tp & 0x40) == 0x40) ? 1 : 0; /* TP-UDHI header present */
+	if((smscl * 2) + 4 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 4;
+	if(sscanf(q, "%02X", &addrl) != 1) /* address length */
+		return NULL;
+	if((smscl * 2) + 6 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 6;
+	if(sscanf(q, "%02X", &u) != 1) /* type of address */
+		return NULL;
+	/* FIXME this probably depends on the type of address */
+	if(addrl % 2 == 1)
+		addrl++;
+	if((smscl * 2) + 2 + 4 + addrl + 2 > len)
+		return NULL;
+	_cmgr_pdu_parse_number(u, q + 2, addrl, number);
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 2;
+	if(sscanf(q, "%02X", &pid) != 1) /* PID */
+		return NULL;
+	if((smscl * 2) + 2 + 4 + addrl + 4 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 4;
+	if(sscanf(q, "%02X", &dcs) != 1) /* DCS */
+		return NULL;
+	if((smscl * 2) + 2 + 4 + addrl + 6 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6;
+	if(timestamp != NULL)
+		*timestamp = _cmgr_pdu_parse_timestamp(q);
+	if((smscl * 2) + 2 + 4 + addrl + 6 + 14 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6 + 14;
+	if(sscanf(q, "%02X", &datal) != 1) /* data length */
+		return NULL;
+	/* XXX check the data length */
+	if((i = (smscl * 2) + 2 + 4 + addrl + 6 + 16) > len)
+		return NULL;
+	if(hdr != 0 && sscanf(&pdu[i], "%02X", &hdr) != 1)
+		return NULL;
+	if(dcs == 0x00)
+		return _cmgr_pdu_parse_encoding_default(pdu, len, i, hdr,
+				encoding, length);
+	if(dcs == 0x04)
+		return _cmgr_pdu_parse_encoding_data(pdu, len, i, hdr,
+				encoding, length);
+
 	return NULL;
+}
+
+static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
+		size_t i, size_t hdr, ModemMessageEncoding * encoding,
+		size_t * length)
+{
+	unsigned char * p;
+	size_t j;
+	unsigned int u;
+
+	if((p = malloc(len - i + 1)) == NULL) /* XXX 2 times big enough? */
+		return NULL;
+	/* FIXME actually parse the header */
+	if(hdr != 0)
+		i += 2 + (hdr * 2);
+	for(j = 0; i + 1 < len; i+=2)
+	{
+		if(sscanf(&pdu[i], "%02X", &u) != 1)
+		{
+			free(p);
+			return NULL;
+		}
+		p[j++] = u;
+	}
+	*encoding = MODEM_MESSAGE_ENCODING_DATA;
+	*length = j;
+	p[j] = '\0';
+	return (char *)p;
+}
+
+static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
+                size_t i, size_t hdr, ModemMessageEncoding * encoding,
+		size_t * length)
+{
+	unsigned char * p;
+	size_t j;
+	unsigned char rest;
+	int shift = 0;
+	char const * q;
+	unsigned int u;
+	unsigned char byte;
+	char * r;
+
+	if((p = malloc(len - i + 1)) == NULL)
+		return NULL;
+	if(hdr != 0)
+	{
+		/* FIXME actually parse the header */
+		u = 2 + (hdr * 2);
+		if(u % 7 != 0) /* fill bits */
+			u += 7 - (u % 7);
+		i += u;
+	}
+	p[0] = '\0';
+	for(j = 0, rest = 0; i + 1 < len; i+=2)
+	{
+		q = &pdu[i];
+		if(sscanf(q, "%02X", &u) != 1)
+			break; /* FIXME report an error instead? */
+		byte = u;
+		p[j] = (byte << (shift + 1) >> (shift + 1) << shift) & 0x7f;
+		p[j] |= rest;
+		p[j] = _hayes_convert_char_to_iso(p[j]);
+		j++;
+		rest = (byte >> (7 - shift)) & 0x7f;
+		if(++shift == 7)
+		{
+			shift = 0;
+			p[j++] = rest;
+			rest = 0;
+		}
+	}
+	*encoding = MODEM_MESSAGE_ENCODING_UTF8;
+	if((r = g_convert((char *)p, j, "UTF-8", "ISO-8859-1", NULL, NULL,
+					NULL)) != NULL)
+	{
+		free(p);
+		p = (unsigned char *)r;
+		j = strlen(r);
+	}
+	*length = j;
+	return (char *)p;
+}
+
+
+static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
+		size_t length, char * buf)
+{
+	char * b = buf;
+	size_t i;
+
+	if(type == 0x91)
+		*(b++) = '+';
+	for(i = 0; i < length - 1 && i < 32 - 1; i+=2)
+	{
+		if((number[i] != 'F' && (number[i] < '0' || number[i] > '9'))
+				|| number[i + 1] < '0' || number[i + 1] > '9')
+			break;
+		b[i] = number[i + 1];
+		if((b[i + 1] = number[i]) == 'F')
+			b[i + 1] = '\0';
+	}
+	b[i] = '\0';
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %lu) => \"%s\"\n", __func__, number,
+			(unsigned long)length, b);
+#endif
+}
+
+static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
+{
+	char const * p = timestamp;
+	size_t i;
+	struct tm t;
+#ifdef DEBUG
+	char buf[32];
+#endif
+
+	if(strlen(p) < 14)
+		return 0;
+	for(i = 0; i < 14; i++)
+		if(p[i] < '0' || p[i] > '9')
+			return 0;
+	memset(&t, 0, sizeof(t));
+	t.tm_year = (p[0] - '0') + ((p[1] - '0') * 10);
+	t.tm_year = (t.tm_year > 70) ? t.tm_year : (100 + t.tm_year);
+	t.tm_mon = (p[2] - '0') + ((p[3] - '0') * 10);
+	if(t.tm_mon > 0)
+		t.tm_mon--;
+	t.tm_mday = (p[4] - '0') + ((p[5] - '0') * 10);
+	t.tm_hour = (p[6] - '0') + ((p[7] - '0') * 10);
+	t.tm_min = (p[8] - '0') + ((p[9] - '0') * 10);
+	t.tm_sec = (p[10] - '0') + ((p[11] - '0') * 10);
+#ifdef DEBUG
+	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, buf);
+#endif
+	return mktime(&t);
 }
 
 
