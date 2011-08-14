@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-12 00:05+0200\n"
+"POT-Creation-Date: 2011-08-15 01:39+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -807,7 +807,7 @@ msgstr ""
 msgid "Command exited with signal %d"
 msgstr ""
 
-#: ../src/plugins/dirtree.c:64
+#: ../src/plugins/dirtree.c:74
 msgid "Directory tree"
 msgstr ""
 
