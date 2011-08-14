@@ -28,6 +28,7 @@ DESTDIR=
 HOST=
 IMAGE_FILE=
 IMAGE_TYPE=
+LIBGCC=
 MACHINE=
 PKG_CONFIG_LIBDIR=
 PKG_CONFIG_PATH=
@@ -339,7 +340,7 @@ target_install()
 				SUBDIRS="System/src/libApp/src"
 				LDFLAGS="$L -lc"
 				target "install"		|| return 2
-				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $D$P/lib/start.o"
+				LDFLAGS="$L -lc $LIBGCC $D$P/lib/start.o"
 				SUBDIRS="System/src/libApp"
 				target "install"		|| return 2
 				;;
@@ -352,7 +353,7 @@ target_install()
 				target "install"		|| return 2
 				;;
 			*)
-				LDFLAGS="$L -lc `$CC -print-libgcc-file-name` $D$P/lib/start.o"
+				LDFLAGS="$L -lc $LIBGCC $D$P/lib/start.o"
 				target "install"		|| return 2
 				;;
 		esac
@@ -451,6 +452,7 @@ fi
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
+[ -z "$LIBGCC" ] && LIBGCC=`$CC -print-libgcc-file-name`
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
