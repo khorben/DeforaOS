@@ -38,6 +38,16 @@ typedef struct _Dirtree
 	GtkWidget * view;
 } Dirtree;
 
+enum _DirtreeColumn
+{
+	DC_ICON,
+	DC_NAME,
+	DC_PATH,
+	DC_UPDATED
+} DirtreeColumn;
+#define DC_LAST DC_UPDATED
+#define DC_COUNT (DC_LAST + 1)
+
 
 /* prototypes */
 static GtkWidget * _dirtree_init(BrowserPlugin * plugin);
@@ -104,11 +114,11 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	/* backend store */
-	dirtree->store = gtk_tree_store_new(4, GDK_TYPE_PIXBUF, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_BOOLEAN);
+	dirtree->store = gtk_tree_store_new(DC_COUNT, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
 	gtk_tree_store_insert(dirtree->store, &iter, NULL, -1);
-	gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder, 1, "/",
-			2, "/", 3, TRUE, -1);
+	gtk_tree_store_set(dirtree->store, &iter, DC_ICON, dirtree->folder,
+			DC_NAME, "/", DC_PATH, "/", DC_UPDATED, TRUE, -1);
 	/* sorted store */
 	dirtree->sorted = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(
 				dirtree->store));
@@ -255,9 +265,10 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 		/* FIXME check if the node already exists */
 		r = (q != NULL) ? g_filename_display_basename(q) : NULL;
 		gtk_tree_store_insert(dirtree->store, &iter, parent, -1);
-		gtk_tree_store_set(dirtree->store, &iter, 0, dirtree->folder,
-				1, (r != NULL) ? r : de->d_name, 2, q, 3, TRUE,
-				-1);
+		gtk_tree_store_set(dirtree->store, &iter,
+				DC_ICON, dirtree->folder,
+				DC_NAME, (r != NULL) ? r : de->d_name,
+				DC_PATH, q, DC_UPDATED, TRUE, -1);
 		if(recurse)
 			_dirtree_refresh_folder(plugin, &iter, q, NULL,
 					(basename != NULL) ? TRUE : FALSE);
@@ -276,7 +287,7 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 			valid == TRUE; valid = (b == TRUE)
 			? gtk_tree_model_iter_next(model, &iter)
 			: gtk_tree_store_remove(dirtree->store, &iter))
-		gtk_tree_model_get(model, &iter, 3, &b, -1);
+		gtk_tree_model_get(model, &iter, DC_UPDATED, &b, -1);
 	/* return the parent if appropriate */
 	if(t != NULL)
 	{
@@ -314,8 +325,9 @@ static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
 	GtkTreeIter iter;
 	gchar * location;
 
+	gtk_tree_view_expand_row(view, path, FALSE);
 	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, 2, &location, -1);
+	gtk_tree_model_get(model, &iter, DC_PATH, &location, -1);
 	plugin->helper->set_location(plugin->helper->browser, location);
 	g_free(location);
 }
@@ -335,7 +347,7 @@ static void _dirtree_on_row_expanded(GtkTreeView * view, GtkTreeIter * iter,
 		return;
 	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
 				dirtree->sorted), &child, iter);
-	gtk_tree_model_get(model, &child, 2, &p, -1);
+	gtk_tree_model_get(model, &child, DC_PATH, &p, -1);
 	_dirtree_refresh_folder(plugin, &child, p, NULL, TRUE);
 	g_free(p);
 }
