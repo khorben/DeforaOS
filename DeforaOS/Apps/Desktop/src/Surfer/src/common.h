@@ -36,6 +36,7 @@ struct _Surfer
 	char * proxy_http;
 	unsigned int proxy_http_port;
 	char * user_agent;
+	gboolean javascript;
 
 	/* widgets */
 	/* main window */
@@ -69,6 +70,7 @@ struct _Surfer
 	GtkWidget * pr_proxy_http;
 	GtkWidget * pr_proxy_http_port;
 	GtkWidget * pr_user_agent;
+	GtkWidget * pr_javascript;
 
 	/* find */
 	GtkWidget * fi_dialog;

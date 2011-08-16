@@ -158,14 +158,11 @@ static void _new_init(GHtml * ghtml)
 	size_t i;
 #endif
 
-	if(initialized++ == 1)
+	if(initialized++ != 0)
 	{
-		ghtml->ssl = TRUE;
 		initialized = 1;
 		return;
 	}
-	else if(initialized != 1)
-		return;
 #if WEBKIT_CHECK_VERSION(1, 1, 0)
 	session = webkit_get_default_session();
 # if WEBKIT_CHECK_VERSION(1, 3, 5) && defined(EMBEDDED)
@@ -183,7 +180,6 @@ static void _new_init(GHtml * ghtml)
 #endif
 	surfer_warning(ghtml->surfer, "Could not load certificate bundle:\n"
 			"SSL certificates will not be verified.");
-	initialized++;
 }
 
 
@@ -326,6 +322,19 @@ char const * ghtml_get_title(GtkWidget * widget)
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(ghtml->view));
 	return webkit_web_frame_get_title(frame);
+}
+
+
+/* ghtml_set_enable_javascript */
+int ghtml_set_enable_javascript(GtkWidget * widget, gboolean enable)
+{
+	GHtml * ghtml;
+	WebKitWebSettings * settings;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(ghtml->view));
+	g_object_set(settings, "enable-scripts", enable, NULL);
+	return 0;
 }
 
 

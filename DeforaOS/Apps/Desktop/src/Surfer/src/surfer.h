@@ -65,6 +65,7 @@ void surfer_delete(Surfer * surfer);
 /* accessors */
 GtkWidget * surfer_get_view(Surfer * surfer);
 
+void surfer_set_enable_javascript(Surfer * surfer, gboolean enable);
 void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen);
 void surfer_set_homepage(Surfer * surfer, char const * homepage);
 void surfer_set_location(Surfer * surfer, char const * url);

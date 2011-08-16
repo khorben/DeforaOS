@@ -279,6 +279,15 @@ char const * ghtml_get_title(GtkWidget * widget)
 }
 
 
+/* ghtml_set_enable_javascript */
+int ghtml_set_enable_javascript(GtkWidget * widget, gboolean enable)
+{
+	if(enable == TRUE)
+		return 0;
+	return -error_set_code(1, "%s", strerror(ENOSYS));
+}
+
+
 /* ghtml_set_proxy */
 int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
 		unsigned int http_port)

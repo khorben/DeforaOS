@@ -296,6 +296,7 @@ Surfer * _new_do(char const * url)
 	surfer->proxy_http = NULL;
 	surfer->proxy_http_port = 0;
 	surfer->user_agent = NULL;
+	surfer->javascript = TRUE;
 	if((surfer->config = config_new()) == NULL
 			|| surfer_config_load(surfer) != 0)
 	{
@@ -307,7 +308,7 @@ Surfer * _new_do(char const * url)
 	group = gtk_accel_group_new();
 	surfer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(surfer->window), group);
-	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 800, 600);
+	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 1024, 768);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "web-browser");
 #endif
@@ -484,6 +485,23 @@ GtkWidget * surfer_get_view(Surfer * surfer)
 			< 0)
 		return NULL;
 	return gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook), cur);
+}
+
+
+/* surfer_set_enable_javascript */
+void surfer_set_enable_javascript(Surfer * surfer, gboolean enable)
+{
+	GtkWidget * view;
+	gint n;
+	gint i;
+
+	n = gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook));
+	for(i = 0; i < n; i++)
+	{
+		view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook),
+				i);
+		ghtml_set_enable_javascript(view, enable);
+	}
 }
 
 
@@ -773,7 +791,7 @@ int surfer_config_load(Surfer * surfer)
 	char * filename;
 	char const * p;
 	char buf[256];
-	unsigned int port;
+	unsigned int u;
 
 	if((filename = _config_get_filename(SURFER_CONFIG_FILE)) == NULL)
 		return 1;
@@ -786,12 +804,12 @@ int surfer_config_load(Surfer * surfer)
 	_config_load_integer(surfer->config, NULL, "download_close",
 			&surfer->download_close);
 	if((p = getenv("http_proxy")) != NULL && sscanf(p, "http://%255[^:]:%u",
-				buf, &port) == 2)
+				buf, &u) == 2)
 	{
 		surfer->proxy_type = SPT_HTTP;
 		buf[sizeof(buf) - 1] = '\0';
 		surfer->proxy_http = strdup(buf);
-		surfer->proxy_http_port = port;
+		surfer->proxy_http_port = u;
 	}
 	else
 	{
@@ -804,6 +822,8 @@ int surfer_config_load(Surfer * surfer)
 	}
 	_config_load_string(surfer->config, NULL, "user_agent",
 			&surfer->user_agent);
+	_config_load_integer(surfer->config, NULL, "javascript", &u);
+	surfer->javascript = u;
 	return 0;
 }
 
@@ -833,6 +853,8 @@ int surfer_config_save(Surfer * surfer)
 			surfer->proxy_http_port);
 	ret |= _config_save_string(surfer->config, NULL, "user_agent",
 			surfer->user_agent);
+	ret |= _config_save_boolean(surfer->config, NULL, "javascript",
+			surfer->javascript);
 	if(ret == 0)
 		ret |= config_save(surfer->config, filename);
 	free(filename);
@@ -1234,6 +1256,7 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 		ghtml_set_user_agent(widget, NULL);
 	else
 		ghtml_set_user_agent(widget, surfer->user_agent);
+	ghtml_set_enable_javascript(widget, surfer->javascript);
 	gtk_widget_show_all(widget); /* must be before set_current_page() */
 	if(url != NULL && url[0] != '\0')
 		ghtml_load_url(widget, url);
@@ -1613,6 +1636,9 @@ void surfer_unselect_all(Surfer * surfer)
 
 
 /* surfer_view_preferences */
+static GtkWidget * _preferences_general(Surfer * surfer);
+static GtkWidget * _preferences_network(Surfer * surfer);
+static GtkWidget * _preferences_advanced(Surfer * surfer);
 static void _preferences_set(Surfer * surfer);
 /* callbacks */
 static gboolean _preferences_on_closex(gpointer data);
@@ -1625,12 +1651,8 @@ static void _preferences_on_proxy_http_toggled(gpointer data);
 void surfer_view_preferences(Surfer * surfer)
 {
 	GtkWidget * vbox;
-	GtkWidget * widget;
 	GtkWidget * notebook;
 	GtkWidget * page;
-	GtkWidget * frame;
-	GtkWidget * vbox2;
-	GtkWidget * hbox;
 
 	if(surfer->pr_window != NULL)
 	{
@@ -1654,6 +1676,29 @@ void surfer_view_preferences(Surfer * surfer)
 	/* notebook */
 	notebook = gtk_notebook_new();
 	/* general tab */
+	page = _preferences_general(surfer);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new(_("General")));
+	/* network tab */
+	page = _preferences_network(surfer);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new(_("Network")));
+	/* advanced tab */
+	page = _preferences_advanced(surfer);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new(_("Advanced")));
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
+	_preferences_set(surfer);
+	gtk_widget_show_all(surfer->pr_window);
+}
+
+static GtkWidget * _preferences_general(Surfer * surfer)
+{
+	GtkWidget * page;
+	GtkWidget * hbox;
+	GtkWidget * frame;
+	GtkWidget * widget;
+
 	page = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
 	/* homepage */
@@ -1685,29 +1730,37 @@ void surfer_view_preferences(Surfer * surfer)
 			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_download_dir, TRUE, TRUE,
 			0);
-	surfer->pr_download_close = gtk_check_button_new_with_label(
-			_("Close download windows when complete"));
+	surfer->pr_download_close = gtk_check_button_new_with_mnemonic(
+			_("_Close download windows when complete"));
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_download_close, FALSE,
 			TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
-			gtk_label_new(_("General")));
-	/* network tab */
+	return page;
+}
+
+static GtkWidget * _preferences_network(Surfer * surfer)
+{
+	GtkWidget * page;
+	GtkWidget * frame;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
 	page = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
 	frame = gtk_frame_new(_("Connectivity:"));
-	vbox2 = gtk_vbox_new(FALSE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	widget = gtk_radio_button_new_with_label(NULL, _("Direct connection"));
 	surfer->pr_proxy_radio_direct = widget;
-	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(
 				widget), _("HTTP proxy:"));
 	surfer->pr_proxy_radio_http = widget;
 	g_signal_connect_swapped(G_OBJECT(widget), "toggled", G_CALLBACK(
 				_preferences_on_proxy_http_toggled), surfer);
-	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* http proxy */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Hostname:"));
@@ -1720,12 +1773,18 @@ void surfer_view_preferences(Surfer * surfer)
 			1.0);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_proxy_http_port, FALSE,
 			TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(frame), vbox2);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox);
 	gtk_box_pack_start(GTK_BOX(page), frame, FALSE, TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
-			gtk_label_new(_("Network")));
-	/* advanced tab */
+	return page;
+}
+
+static GtkWidget * _preferences_advanced(Surfer * surfer)
+{
+	GtkWidget * page;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
 	page = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(page), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -1734,11 +1793,11 @@ void surfer_view_preferences(Surfer * surfer)
 	surfer->pr_user_agent = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_user_agent, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
-			gtk_label_new(_("Advanced")));
-	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	_preferences_set(surfer);
-	gtk_widget_show_all(surfer->pr_window);
+	surfer->pr_javascript = gtk_check_button_new_with_mnemonic(
+			_("Enable _Javascript"));
+	gtk_box_pack_start(GTK_BOX(page), surfer->pr_javascript, FALSE, TRUE,
+			0);
+	return page;
 }
 
 static void _preferences_set(Surfer * surfer)
@@ -1774,6 +1833,8 @@ static void _preferences_set(Surfer * surfer)
 	p = config_get(surfer->config, NULL, "user_agent");
 	gtk_entry_set_text(GTK_ENTRY(surfer->pr_user_agent), (p != NULL) ? p
 			: "");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+				surfer->pr_javascript), surfer->javascript);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -1821,6 +1882,9 @@ static void _preferences_on_ok(gpointer data)
 					surfer->pr_proxy_http_port)));
 	surfer_set_user_agent(surfer, gtk_entry_get_text(GTK_ENTRY(
 					surfer->pr_user_agent)));
+	surfer->javascript = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				surfer->pr_javascript));
+	surfer_set_enable_javascript(surfer, surfer->javascript);
 	surfer_config_save(surfer);
 }
 
