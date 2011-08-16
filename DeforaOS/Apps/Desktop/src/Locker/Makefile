@@ -26,6 +26,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/locker.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/lockerctl.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/locker.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \

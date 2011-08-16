@@ -144,6 +144,9 @@ Locker * locker_new(int suspend, char const * name)
 			GDK_WINDOW_XWINDOW(root), ScreenSaverNotifyMask);
 	gdk_x11_register_standard_event_type(locker->display, locker->event, 1);
 	gdk_window_add_filter(root, _locker_on_filter, locker);
+	gdk_display_add_client_message_filter(locker->display, gdk_atom_intern(
+				LOCKER_CLIENT_MESSAGE, FALSE),
+			_locker_on_filter, locker);
 	return locker;
 }
 
@@ -238,17 +241,53 @@ static gboolean _lock_on_closex(void)
 
 
 /* locker_on_filter */
+static GdkFilterReturn _filter_client_message(Locker * locker,
+		XClientMessageEvent * xclient);
+static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
+		XScreenSaverNotifyEvent * xssne);
+
 static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
 {
 	Locker * locker = data;
-	XScreenSaverNotifyEvent * xssne = xevent;
+	XEvent * xev = xevent;
 
-	if(xssne->type != locker->event)
-		return GDK_FILTER_CONTINUE;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() 0x%x\n", __func__, event->type);
+	fprintf(stderr, "DEBUG: %s() 0x%x 0x%x\n", __func__, xev->type,
+			event->type);
 #endif
+	if(xev->type == ClientMessage)
+		return _filter_client_message(locker, xevent);
+	else if(xev->type == locker->event)
+		return _filter_xscreensaver_notify(locker, xevent);
+	else
+		return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _filter_client_message(Locker * locker,
+		XClientMessageEvent * xclient)
+{
+	LockerMessage message;
+
+	if(xclient->message_type != gdk_x11_get_xatom_by_name(
+				LOCKER_CLIENT_MESSAGE))
+		return GDK_FILTER_CONTINUE;
+	message = xclient->data.b[1];
+	switch(message)
+	{
+		case LOCKER_MESSAGE_LOCK:
+			_locker_lock(locker);
+			break;
+		case LOCKER_MESSAGE_UNLOCK:
+			_locker_unlock(locker);
+			break;
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
+		XScreenSaverNotifyEvent * xssne)
+{
 	switch(xssne->state)
 	{
 		case ScreenSaverOff:

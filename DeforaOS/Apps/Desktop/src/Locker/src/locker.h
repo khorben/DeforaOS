@@ -23,6 +23,19 @@
 
 /* Locker */
 /* public */
+/* types */
+typedef enum _LockerMessage
+{
+	LOCKER_MESSAGE_LOCK = 0,
+	LOCKER_MESSAGE_UNLOCK
+} LockerMessage;
+
+
+/* constants */
+# define LOCKER_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_LOCKER_CLIENT"
+# define LOCKER_MESSAGE		0
+
+
 /* functions */
 Locker * locker_new(int suspend, char const * name);
 void locker_delete(Locker * locker);
