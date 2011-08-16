@@ -133,6 +133,8 @@ static void _password_action(LockerPlugin * plugin, LockerAction action)
 	switch(action)
 	{
 		case LOCKER_ACTION_LOCK:
+			gtk_widget_set_sensitive(password->password, TRUE);
+			gtk_widget_set_sensitive(password->button, TRUE);
 			gtk_entry_set_text(GTK_ENTRY(password->password), "");
 			gtk_widget_grab_focus(password->password);
 			if(password->source != 0)
@@ -169,7 +171,7 @@ static void _password_on_password_activate(gpointer data)
 	}
 	helper->error(helper->locker, "Authentication failed", 1);
 	gtk_widget_show(password->wrong);
-	password->source = g_timeout_add(10000, _password_on_password_wrong,
+	password->source = g_timeout_add(3000, _password_on_password_wrong,
 			plugin);
 }
 
@@ -178,12 +180,10 @@ static void _password_on_password_activate(gpointer data)
 static gboolean _password_on_password_wrong(gpointer data)
 {
 	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
 	Password * password = plugin->priv;
 
 	password->source = 0;
 	gtk_widget_hide(password->wrong);
-	helper->action(helper->locker, LOCKER_ACTION_ACTIVATE);
 	gtk_widget_set_sensitive(password->password, TRUE);
 	gtk_widget_set_sensitive(password->button, TRUE);
 	return FALSE;
