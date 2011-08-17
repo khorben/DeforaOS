@@ -2955,18 +2955,12 @@ void phone_write_send(Phone * phone)
 /* phone_call_number */
 static int _phone_call_number(Phone * phone, char const * number)
 {
-	PhoneEvent event;
 	GtkTreeIter iter;
 	time_t date;
 	struct tm t;
 	char dd[32];
 
 	if(number == NULL)
-		return -1;
-	memset(&event, 0, sizeof(event));
-	event.type = PHONE_EVENT_TYPE_CALLING;
-	event.calling.number = number;
-	if(phone_event(phone, &event) != 0)
 		return -1;
 	modem_request_type(phone->modem, MODEM_REQUEST_CALL,
 			MODEM_CALL_TYPE_VOICE, number, 0);

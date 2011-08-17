@@ -59,7 +59,6 @@ static struct
 
 static DebugPhoneEvents _debug_phone_events[] =
 {
-	{ PHONE_EVENT_TYPE_CALLING,		"CALLING"		},
 	{ PHONE_EVENT_TYPE_KEY_TONE,		"KEY_TONE"		},
 	{ PHONE_EVENT_TYPE_MODEM_EVENT,		"MODEM_EVENT"		},
 	{ PHONE_EVENT_TYPE_NOTIFICATION_OFF,	"NOTIFICATION_OFF"	},
