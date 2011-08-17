@@ -62,13 +62,13 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- hayes.so $(DESTDIR)$(LIBDIR)/Phone/modem/hayes.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
 	$(INSTALL) -m 0644 -- sofia.so $(DESTDIR)$(LIBDIR)/Phone/modem/sofia.so
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/Phone/modem
-	$(INSTALL) -m 0644 -- hayes.h $(DESTDIR)$(INCLUDEDIR)/Phone/modem/hayes.h
+	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems
+	$(INSTALL) -m 0644 -- hayes.h $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems/hayes.h
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/modem/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/modem/hayes.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/modem/sofia.so
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/Phone/modem/hayes.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems/hayes.h
 
 .PHONY: all clean distclean install uninstall
