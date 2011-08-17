@@ -41,7 +41,7 @@ locker.o: locker.c locker.h ../include/Locker.h ../config.h
 main.o: main.c locker.h ../include/Locker.h
 	$(CC) $(locker_CFLAGS) -c main.c
 
-lockerctl.o: lockerctl.c locker.h
+lockerctl.o: lockerctl.c ../include/Locker.h
 	$(CC) $(lockerctl_CFLAGS) -c lockerctl.c
 
 clean:

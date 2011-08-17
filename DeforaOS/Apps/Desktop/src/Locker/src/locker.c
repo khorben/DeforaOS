@@ -267,18 +267,22 @@ static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 static GdkFilterReturn _filter_client_message(Locker * locker,
 		XClientMessageEvent * xclient)
 {
-	LockerMessage message;
+	LockerAction action;
 
 	if(xclient->message_type != gdk_x11_get_xatom_by_name(
-				LOCKER_CLIENT_MESSAGE))
+				LOCKER_CLIENT_MESSAGE)
+			|| xclient->data.b[0] != LOCKER_MESSAGE_ACTION)
 		return GDK_FILTER_CONTINUE;
-	message = xclient->data.b[1];
-	switch(message)
+	action = xclient->data.b[1];
+	switch(action)
 	{
-		case LOCKER_MESSAGE_LOCK:
+		case LOCKER_ACTION_ACTIVATE:
+			_locker_activate(locker);
+			break;
+		case LOCKER_ACTION_LOCK:
 			_locker_lock(locker);
 			break;
-		case LOCKER_MESSAGE_UNLOCK:
+		case LOCKER_ACTION_UNLOCK:
 			_locker_unlock(locker);
 			break;
 	}

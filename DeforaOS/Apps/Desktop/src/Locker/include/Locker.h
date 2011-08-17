@@ -52,4 +52,9 @@ struct _LockerPlugin
 	void * priv;
 };
 
+
+/* constants */
+# define LOCKER_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_LOCKER_CLIENT"
+# define LOCKER_MESSAGE_ACTION	0
+
 #endif /* !DESKTOP_LOCKER_H */

@@ -18,13 +18,16 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include "locker.h"
+#include "Locker.h"
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: lockerctl [-lu]\n", stderr);
+	fputs("Usage: lockerctl [-lsu]\n"
+"  -l	Lock the screen\n"
+"  -s	Enable the screen saver\n"
+"  -u	Unlock the screen\n", stderr);
 	return 1;
 }
 
@@ -38,14 +41,17 @@ int main(int argc, char * argv[])
 	GdkEventClient * client = &event.client;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "lu")) != -1)
+	while((o = getopt(argc, argv, "lsu")) != -1)
 		switch(o)
 		{
 			case 'l':
-				lock = LOCKER_MESSAGE_LOCK;
+				lock = LOCKER_ACTION_LOCK;
+				break;
+			case 's':
+				lock = LOCKER_ACTION_ACTIVATE;
 				break;
 			case 'u':
-				lock = LOCKER_MESSAGE_UNLOCK;
+				lock = LOCKER_ACTION_UNLOCK;
 				break;
 			default:
 				return _usage();
@@ -58,7 +64,7 @@ int main(int argc, char * argv[])
 	client->send_event = TRUE;
 	client->message_type = gdk_atom_intern(LOCKER_CLIENT_MESSAGE, FALSE);
 	client->data_format = 8;
-	client->data.b[0] = LOCKER_MESSAGE;
+	client->data.b[0] = LOCKER_MESSAGE_ACTION;
 	if(lock != -1)
 	{
 		client->data.b[1] = lock;
