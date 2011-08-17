@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - move PulseAudio support in a dedicated plug-in */
 
 
 
@@ -38,12 +40,12 @@
 /* types */
 typedef enum _ProfileVolume
 {
-	PROFILE_VOLUME_SILENT = 0,
-	PROFILE_VOLUME_25,
-	PROFILE_VOLUME_50,
-	PROFILE_VOLUME_75,
-	PROFILE_VOLUME_100,
-	PROFILE_VOLUME_ASC
+	PROFILE_VOLUME_SILENT	= 0,
+	PROFILE_VOLUME_25	= 25,
+	PROFILE_VOLUME_50	= 50,
+	PROFILE_VOLUME_75	= 75,
+	PROFILE_VOLUME_100	= 100,
+	PROFILE_VOLUME_ASC	= -1
 } ProfileVolume;
 
 typedef struct _ProfileDefinition
@@ -67,8 +69,11 @@ typedef struct _Profiles
 	int vibrator;
 
 	/* settings */
-	GtkWidget * window;
-	GtkWidget * combo;
+	GtkWidget * pr_window;
+	GtkWidget * pr_combo;
+	GtkWidget * pr_online;
+	GtkWidget * pr_volume;
+	GtkWidget * pr_vibrator;
 
 	/* pulseaudio */
 	pa_threaded_mainloop * pam;
@@ -140,7 +145,7 @@ static int _profiles_init(PhonePlugin * plugin)
 				break;
 			}
 	profiles->vibrator = 0;
-	profiles->window = NULL;
+	profiles->pr_window = NULL;
 	profiles->pam = pa_threaded_mainloop_new();
 	profiles->pac = NULL;
 	profiles->pao = NULL;
@@ -193,8 +198,8 @@ static int _profiles_destroy(PhonePlugin * plugin)
 #endif
 	if(profiles->source != 0)
 		g_source_remove(profiles->source);
-	if(profiles->window != NULL)
-		gtk_widget_destroy(profiles->window);
+	if(profiles->pr_window != NULL)
+		gtk_widget_destroy(profiles->pr_window);
 	if(profiles->pao != NULL)
 		pa_operation_cancel(profiles->pao);
 	if(profiles->pac != NULL)
@@ -370,12 +375,14 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 /* profiles_settings */
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_cancel(gpointer data);
+static void _on_settings_changed(gpointer data);
 static void _on_settings_ok(gpointer data);
 
 static void _profiles_settings(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
 	GtkWidget * vbox;
+	GtkWidget * frame;
 	GtkWidget * bbox;
 	GtkWidget * widget;
 	size_t i;
@@ -383,24 +390,49 @@ static void _profiles_settings(PhonePlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin->name);
 #endif
-	if(profiles->window != NULL)
+	if(profiles->pr_window != NULL)
 	{
-		gtk_window_present(GTK_WINDOW(profiles->window));
+		gtk_window_present(GTK_WINDOW(profiles->pr_window));
 		return;
 	}
-	profiles->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width(GTK_CONTAINER(profiles->window), 4);
-	gtk_window_set_default_size(GTK_WINDOW(profiles->window), 200, 300);
-	gtk_window_set_title(GTK_WINDOW(profiles->window), "Profiles");
-	g_signal_connect_swapped(G_OBJECT(profiles->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), profiles);
+	profiles->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(profiles->pr_window), 4);
+	gtk_window_set_default_size(GTK_WINDOW(profiles->pr_window), 200, 300);
+	gtk_window_set_title(GTK_WINDOW(profiles->pr_window), "Profiles");
+	g_signal_connect_swapped(G_OBJECT(profiles->pr_window), "delete-event",
+			G_CALLBACK(_on_settings_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* entry */
-	profiles->combo = gtk_combo_box_new_text();
+	/* combo */
+	profiles->pr_combo = gtk_combo_box_new_text();
 	for(i = 0; i < profiles->profiles_cnt; i++)
-		gtk_combo_box_append_text(GTK_COMBO_BOX(profiles->combo),
+		gtk_combo_box_append_text(GTK_COMBO_BOX(profiles->pr_combo),
 				profiles->profiles[i].name);
-	gtk_box_pack_start(GTK_BOX(vbox), profiles->combo, FALSE, TRUE, 0);
+	g_signal_connect_swapped(profiles->pr_combo, "changed", G_CALLBACK(
+				_on_settings_changed), plugin);
+	gtk_box_pack_start(GTK_BOX(vbox), profiles->pr_combo, FALSE, TRUE, 0);
+	/* frame */
+	frame = gtk_frame_new("Overview");
+	widget = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
+	profiles->pr_online = gtk_check_button_new_with_label("Online");
+	gtk_widget_set_sensitive(profiles->pr_online, FALSE);
+	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_online, FALSE, TRUE,
+			0);
+	bbox = gtk_hbox_new(FALSE, 4);
+	profiles->pr_volume = gtk_label_new("Volume: ");
+	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
+	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, FALSE, TRUE, 0);
+	profiles->pr_volume = gtk_progress_bar_new();
+	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
+	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), bbox, FALSE, TRUE, 0);
+	profiles->pr_vibrator = gtk_check_button_new_with_label("Vibrate");
+	gtk_widget_set_sensitive(profiles->pr_vibrator, FALSE);
+	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_vibrator, FALSE, TRUE,
+			0);
+	gtk_container_add(GTK_CONTAINER(frame), widget);
+	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
+	/* dialog */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
@@ -413,15 +445,16 @@ static void _profiles_settings(PhonePlugin * plugin)
 				_on_settings_ok), plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(profiles->window), vbox);
+	gtk_container_add(GTK_CONTAINER(profiles->pr_window), vbox);
 	gtk_widget_show_all(vbox);
 	_on_settings_cancel(plugin);
-	gtk_window_present(GTK_WINDOW(profiles->window));
+	gtk_window_present(GTK_WINDOW(profiles->pr_window));
 }
 
 static gboolean _on_settings_closex(gpointer data)
 {
-	Profiles * profiles = data;
+	PhonePlugin * plugin = data;
+	Profiles * profiles = plugin->priv;
 
 	_on_settings_cancel(profiles);
 	return TRUE;
@@ -432,9 +465,40 @@ static void _on_settings_cancel(gpointer data)
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
 
-	gtk_widget_hide(profiles->window);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->combo),
+	gtk_widget_hide(profiles->pr_window);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->pr_combo),
 			profiles->profiles_cur);
+}
+
+static void _on_settings_changed(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Profiles * profiles = plugin->priv;
+	int i;
+	char buf[16];
+	double fraction;
+
+	i = gtk_combo_box_get_active(GTK_COMBO_BOX(profiles->pr_combo));
+	if(i < 0)
+		return;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_online),
+			_profiles_definitions[i].online);
+	fraction = _profiles_definitions[i].volume;
+	if(_profiles_definitions[i].volume > 0)
+		snprintf(buf, sizeof(buf), "%u %%",
+				_profiles_definitions[i].volume);
+	else if(_profiles_definitions[i].volume == 0)
+		snprintf(buf, sizeof(buf), "%s", "Silent");
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s", "Ascending");
+		fraction = 0.0;
+	}
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(profiles->pr_volume),
+			fraction / 100.0);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(profiles->pr_volume), buf);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_vibrator),
+			_profiles_definitions[i].vibrate);
 }
 
 static void _on_settings_ok(gpointer data)
@@ -444,9 +508,9 @@ static void _on_settings_ok(gpointer data)
 	size_t profiles_cur = profiles->profiles_cur;
 	ModemRequest request;
 
-	gtk_widget_hide(profiles->window);
+	gtk_widget_hide(profiles->pr_window);
 	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
-				profiles->combo));
+				profiles->pr_combo));
 	plugin->helper->config_set(plugin->helper->phone, "profiles", "default",
 			profiles->profiles[profiles->profiles_cur].name);
 	if(profiles->profiles[profiles_cur].online
