@@ -43,6 +43,7 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 
 
 /* helper_queue */
+#if 0 /* FIXME re-implement */
 static int _helper_queue(Phone * phone, char const * command)
 {
 	PhoneEngineering * pe = (PhoneEngineering *)phone;
@@ -85,15 +86,14 @@ static int _helper_queue(Phone * phone, char const * command)
 		answers = answers3;
 	else if(strcmp(command, "AT%EM=2,4") == 0)
 		answers = answers4;
-#if 0 /* FIXME re-implement */
 	else
 		return pe->callback(pe->plugin, "ERROR");
 	for(i = 0; answers[i] != NULL; i++)
 		if(pe->callback(pe->plugin, answers[i]) != 0)
 			error_print("engineering");
-#endif
 	return 0;
 }
+#endif
 
 
 /* main */
