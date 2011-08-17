@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-13 01:21+0200\n"
+"POT-Creation-Date: 2011-08-17 02:32+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -217,7 +217,7 @@ msgstr "nouveaux messages"
 msgid "new message"
 msgstr "nouveau message"
 
-#: ../src/phone.c:2342 ../src/phone.c:3253 ../src/phone.c:3257
+#: ../src/phone.c:2342 ../src/phone.c:3247 ../src/phone.c:3251
 msgid "Information"
 msgstr "Information"
 
@@ -266,60 +266,60 @@ msgstr "s"
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:2981
+#: ../src/phone.c:2975
 msgid "Outgoing"
 msgstr "Sortant"
 
-#: ../src/phone.c:3167
+#: ../src/phone.c:3161
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:3205 ../src/phone.c:3209
+#: ../src/phone.c:3199 ../src/phone.c:3203
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:3229 ../src/phone.c:3233
+#: ../src/phone.c:3223 ../src/phone.c:3227
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:3417
+#: ../src/phone.c:3411
 msgid "Name: "
 msgstr "Nom: "
 
-#: ../src/phone.c:3426
+#: ../src/phone.c:3420
 msgid "Number: "
 msgstr "Numéro: "
 
-#: ../src/phone.c:3442
+#: ../src/phone.c:3436
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:3444
+#: ../src/phone.c:3438
 msgid "Edit contact: "
 msgstr "Modifier contact: "
 
-#: ../src/phone.c:3471
+#: ../src/phone.c:3465
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:3476
+#: ../src/phone.c:3470
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3607
+#: ../src/phone.c:3601
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3643
+#: ../src/phone.c:3637
 #, c-format
 msgid "Wrong %s"
 msgstr "Mauvais %s"
 
-#: ../src/phone.c:3650
+#: ../src/phone.c:3644
 #, c-format
 msgid "%s is valid"
 msgstr "%s valide"
 
-#: ../src/phone.c:3713
+#: ../src/phone.c:3707
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
