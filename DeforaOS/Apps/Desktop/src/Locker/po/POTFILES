@@ -1,2 +1,3 @@
 ../src/lockerctl.c
 ../src/main.c
+../src/plugins/password.c

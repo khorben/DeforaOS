@@ -17,7 +17,9 @@
 
 #include <System.h>
 #include <string.h>
+#include <libintl.h>
 #include "Locker.h"
+#define _(string) gettext(string)
 
 
 /* Password */
@@ -82,7 +84,7 @@ static GtkWidget * _password_init(LockerPlugin * plugin)
 	password->widget = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	/* label */
-	widget = gtk_label_new("Enter password:");
+	widget = gtk_label_new(_("Enter password: "));
 	gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.5);
 	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, &white);
 	gtk_widget_modify_font(widget, font);
@@ -104,7 +106,7 @@ static GtkWidget * _password_init(LockerPlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(password->widget), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(password->widget);
 	/* wrong */
-	password->wrong = gtk_label_new("Wrong password!");
+	password->wrong = gtk_label_new(_("Wrong password!"));
 	gtk_widget_modify_fg(password->wrong, GTK_STATE_NORMAL, &red);
 	gtk_widget_modify_font(password->wrong, font);
 	gtk_box_pack_start(GTK_BOX(password->widget), password->wrong, FALSE,
@@ -169,7 +171,7 @@ static void _password_on_password_activate(gpointer data)
 		helper->action(helper->locker, LOCKER_ACTION_UNLOCK);
 		return;
 	}
-	helper->error(helper->locker, "Authentication failed", 1);
+	helper->error(helper->locker, _("Authentication failed"), 1);
 	gtk_widget_show(password->wrong);
 	password->source = g_timeout_add(3000, _password_on_password_wrong,
 			plugin);
