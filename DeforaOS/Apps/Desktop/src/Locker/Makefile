@@ -1,6 +1,6 @@
 PACKAGE	= Locker
 VERSION	= 0.0.2
-SUBDIRS	= include src
+SUBDIRS	= include po src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -24,6 +24,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Locker.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/locker.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/lockerctl.c \
@@ -37,6 +42,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 

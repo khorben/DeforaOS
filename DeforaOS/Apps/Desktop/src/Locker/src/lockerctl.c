@@ -18,16 +18,18 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <libintl.h>
 #include "Locker.h"
+#define _(string) gettext(string)
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: lockerctl [-lsu]\n"
+	fputs(_("Usage: lockerctl [-lsu]\n"
 "  -l	Lock the screen\n"
 "  -s	Enable the screen saver\n"
-"  -u	Unlock the screen\n", stderr);
+"  -u	Unlock the screen\n"), stderr);
 	return 1;
 }
 

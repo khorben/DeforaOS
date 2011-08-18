@@ -17,16 +17,33 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "locker.h"
+#include "../config.h"
+#define _(string) gettext(string)
 
 
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
+
+
+/* functions */
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: locker [-p plugin][-s]\n"
+	fputs(_("Usage: locker [-p plug-in][-s]\n"
 "  -p	Authentication plug-in to load\n"
-"  -s	Suspend automatically when locked\n", stderr);
+"  -s	Suspend automatically when locked\n"), stderr);
 	return 1;
 }
 
@@ -39,6 +56,9 @@ int main(int argc, char * argv[])
 	char const * plugin = NULL;
 	Locker * locker;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "p:s")) != -1)
 		switch(o)
