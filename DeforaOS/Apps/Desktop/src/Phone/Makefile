@@ -109,15 +109,19 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/16x16/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/16x16/phone-n900.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/16x16/phone-openmoko.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/24x24/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/24x24/phone-n900.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/24x24/phone-openmoko.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/32x32/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/32x32/phone-n900.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/32x32/phone-openmoko.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/32x32/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/48x48/phone-n900.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/phone-openmoko.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/engineering.c \

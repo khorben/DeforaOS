@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* This code is inspired by existing work by Sebastian Reichel <sre@debian.org>,
  * see https://elektranox.org/n900/libisi */
+/* The N900 icon is adapted from an original work by Luc Andrea, CC BY-SA 3.0,
+ * see http://en.wikipedia.org/wiki/File:Nokia_N900_Maemo_icon.svg */
 /* TODO:
  * - test on actual hardware */
 
@@ -41,7 +43,7 @@ PhonePlugin plugin =
 {
 	NULL,
 	"Nokia N900",
-	NULL,
+	"phone-n900",
 	NULL,
 	NULL,
 	_n900_event,
