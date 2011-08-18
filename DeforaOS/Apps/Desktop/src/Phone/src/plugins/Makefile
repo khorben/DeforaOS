@@ -1,5 +1,5 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= blacklist.so debug.so engineering.so gprs.so locker.so openmoko.so oss.so panel.so profiles.so smscrypt.so
+TARGETS	= blacklist.so debug.so engineering.so gprs.so locker.so n900.so openmoko.so oss.so panel.so profiles.so smscrypt.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -57,6 +57,13 @@ locker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 locker.so: $(locker_OBJS)
 	$(LD) -o locker.so $(locker_OBJS) $(locker_LDFLAGS)
 
+n900_OBJS = n900.o
+n900_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+n900_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+n900.so: $(n900_OBJS)
+	$(LD) -o n900.so $(n900_OBJS) $(n900_LDFLAGS)
+
 openmoko_OBJS = openmoko.o
 openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -I../modems $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
 openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs alsa`
@@ -107,6 +114,9 @@ gprs.o: gprs.c ../../include/Phone.h
 locker.o: locker.c ../../include/Phone.h
 	$(CC) $(locker_CFLAGS) -c locker.c
 
+n900.o: n900.c ../../include/Phone.h
+	$(CC) $(n900_CFLAGS) -c n900.c
+
 openmoko.o: openmoko.c ../../include/Phone.h
 	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
@@ -124,11 +134,11 @@ smscrypt.o: smscrypt.c ../../include/Phone.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(locker_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(locker_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -143,6 +153,8 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 -- n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -159,6 +171,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so

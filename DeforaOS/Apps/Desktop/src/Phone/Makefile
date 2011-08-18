@@ -100,6 +100,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/engineering.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/gprs.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/locker.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/n900.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/oss.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \
