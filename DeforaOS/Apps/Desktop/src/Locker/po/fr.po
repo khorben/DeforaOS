@@ -1,5 +1,6 @@
+# $Id$
 # DeforaOS Desktop Locker.
-# Copyright (c) 2011 Pierre Pronchery
+# Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 # This file is distributed under the same license as the Locker package.
 # Pierre Pronchery <EMAIL@ADDRESS>, 2011.
 #
