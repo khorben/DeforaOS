@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
+ * - implement "mute" with the mixer (GSM Line Out)
  * - register a handler for deep sleep (just to avoid unknown errors)
  * - implement notification lights */
 
@@ -67,7 +68,7 @@ typedef struct _Openmoko
 
 
 /* prototypes */
-/* plugins */
+/* plug-in */
 static int _openmoko_init(PhonePlugin * plugin);
 static int _openmoko_destroy(PhonePlugin * plugin);
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event);
