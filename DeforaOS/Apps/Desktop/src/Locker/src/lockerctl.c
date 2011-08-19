@@ -26,7 +26,9 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: lockerctl [-lsu]\n"
+	fputs(_("Usage: lockerctl -l\n"
+"       lockerctl -s\n"
+"       lockerctl -u\n"
 "  -l	Lock the screen\n"
 "  -s	Enable the screen saver\n"
 "  -u	Unlock the screen\n"), stderr);
@@ -38,7 +40,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	int lock = -1;
+	int action = -1;
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
 
@@ -47,18 +49,24 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'l':
-				lock = LOCKER_ACTION_LOCK;
+				if(action != -1)
+					return _usage();
+				action = LOCKER_ACTION_LOCK;
 				break;
 			case 's':
-				lock = LOCKER_ACTION_ACTIVATE;
+				if(action != -1)
+					return _usage();
+				action = LOCKER_ACTION_ACTIVATE;
 				break;
 			case 'u':
-				lock = LOCKER_ACTION_UNLOCK;
+				if(action != -1)
+					return _usage();
+				action = LOCKER_ACTION_UNLOCK;
 				break;
 			default:
 				return _usage();
 		}
-	if(optind != argc)
+	if(action == -1 || optind != argc)
 		return _usage();
 	memset(&event, 0, sizeof(event));
 	client->type = GDK_CLIENT_EVENT;
@@ -67,9 +75,9 @@ int main(int argc, char * argv[])
 	client->message_type = gdk_atom_intern(LOCKER_CLIENT_MESSAGE, FALSE);
 	client->data_format = 8;
 	client->data.b[0] = LOCKER_MESSAGE_ACTION;
-	if(lock != -1)
+	if(action != -1)
 	{
-		client->data.b[1] = lock;
+		client->data.b[1] = action;
 		client->data.b[2] = TRUE;
 		gdk_event_send_clientmessage_toall(&event);
 	}
