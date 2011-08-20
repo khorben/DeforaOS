@@ -288,7 +288,7 @@ static gboolean _phone_messages_filter_drafts(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
 static gboolean _phone_messages_filter_inbox(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
-static gboolean _phone_messages_filter_outbox(GtkTreeModel * model,
+static gboolean _phone_messages_filter_sent(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
 static gboolean _phone_messages_filter_trash(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
@@ -327,9 +327,9 @@ static const struct
 } _phone_message_filters[5] =
 {
 	/* FIXME provide the icon ourselves */
-	{ "stock_all",		N_("All"),	_phone_messages_filter_all    },
+	{ "stock_select-all",	N_("All"),	_phone_messages_filter_all    },
 	{ "phone-inbox",	N_("Inbox"),	_phone_messages_filter_inbox  },
-	{ "phone-sent",		N_("Outbox"),	_phone_messages_filter_outbox },
+	{ "phone-sent",		N_("Sent"),	_phone_messages_filter_sent },
 	{ "phone-drafts",	N_("Drafts"),	_phone_messages_filter_drafts },
 	{ "gnome-stock-trash",	N_("Trash"),	_phone_messages_filter_trash  }
 };
@@ -3291,8 +3291,8 @@ static gboolean _phone_messages_filter_inbox(GtkTreeModel * model,
 }
 
 
-/* phone_messages_filter_outbox */
-static gboolean _phone_messages_filter_outbox(GtkTreeModel * model,
+/* phone_messages_filter_sent */
+static gboolean _phone_messages_filter_sent(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	ModemMessageFolder folder;

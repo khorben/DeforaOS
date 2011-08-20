@@ -76,13 +76,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/modem.c \
 		$(PACKAGE)-$(VERSION)/src/phone.c \
-		$(PACKAGE)-$(VERSION)/src/contacts.c \
-		$(PACKAGE)-$(VERSION)/src/dialer.c \
-		$(PACKAGE)-$(VERSION)/src/logs.c \
-		$(PACKAGE)-$(VERSION)/src/messages.c \
-		$(PACKAGE)-$(VERSION)/src/resume.c \
-		$(PACKAGE)-$(VERSION)/src/settings.c \
-		$(PACKAGE)-$(VERSION)/src/suspend.c \
+		$(PACKAGE)-$(VERSION)/src/phonectl.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/modem.h \
