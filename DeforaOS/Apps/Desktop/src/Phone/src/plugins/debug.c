@@ -82,9 +82,13 @@ static DebugPhoneEvents _debug_phone_events[] =
 
 
 /* prototypes */
+/* plug-in */
 static int _debug_init(PhonePlugin * plugin);
 static int _debug_destroy(PhonePlugin * plugin);
 static int _debug_event(PhonePlugin * plugin, PhoneEvent * event);
+static void _debug_settings(PhonePlugin * plugin);
+
+/* useful */
 static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show);
 
 
@@ -98,13 +102,16 @@ PhonePlugin plugin =
 	_debug_init,
 	_debug_destroy,
 	_debug_event,
-	NULL,
+	_debug_settings,
 	NULL
 };
 
 
 /* private */
 /* functions */
+/* plug-in */
+/* debug_init */
+static gboolean _on_debug_closex(gpointer data);
 static void _on_debug_contacts(gpointer data);
 static void _on_debug_dialer(gpointer data);
 static void _on_debug_logs(gpointer data);
@@ -132,6 +139,8 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_window_set_icon_name(GTK_WINDOW(debug->window), plugin->icon);
 #endif
 	gtk_window_set_title(GTK_WINDOW(debug->window), plugin->name);
+	g_signal_connect_swapped(debug->window, "delete-event", G_CALLBACK(
+				_on_debug_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 4);
 	/* toolbar */
 	widget = gtk_toolbar_new();
@@ -213,6 +222,15 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_widget_show_all(debug->window);
 	return 0;
+}
+
+static gboolean _on_debug_closex(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Debug * debug = plugin->priv;
+
+	gtk_widget_hide(debug->window);
+	return TRUE;
 }
 
 static void _on_debug_contacts(gpointer data)
@@ -318,6 +336,16 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 }
 
 
+/* debug_settings */
+static void _debug_settings(PhonePlugin * plugin)
+{
+	Debug * debug = plugin->priv;
+
+	gtk_window_present(GTK_WINDOW(debug->window));
+}
+
+
+/* useful */
 /* debug_send_message */
 static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show)
 {
