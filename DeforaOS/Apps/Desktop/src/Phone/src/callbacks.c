@@ -105,6 +105,9 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 		case PHONE_MESSAGE_SHOW_SETTINGS:
 			phone_show_settings(phone, show);
 			break;
+		case PHONE_MESSAGE_SHOW_WRITE:
+			phone_show_write(phone, show, NULL, NULL);
+			break;
 	}
 	return GDK_FILTER_CONTINUE;
 }

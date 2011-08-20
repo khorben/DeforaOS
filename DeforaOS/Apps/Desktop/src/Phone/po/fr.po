@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-21 00:40+0200\n"
+"POT-Creation-Date: 2011-08-21 01:15+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: DeforaOS development (French) <devel-fr@lists.defora.org>\n"
@@ -283,45 +283,45 @@ msgstr "Question"
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:3454
+#: ../src/phone.c:3456
 msgid "Name: "
 msgstr "Nom: "
 
-#: ../src/phone.c:3463
+#: ../src/phone.c:3465
 msgid "Number: "
 msgstr "Numéro: "
 
-#: ../src/phone.c:3479
+#: ../src/phone.c:3481
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:3481
+#: ../src/phone.c:3483
 msgid "Edit contact: "
 msgstr "Modifier contact: "
 
-#: ../src/phone.c:3508
+#: ../src/phone.c:3510
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:3513
+#: ../src/phone.c:3515
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3644
+#: ../src/phone.c:3646
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3680
+#: ../src/phone.c:3682
 #, c-format
 msgid "Wrong %s"
 msgstr "Mauvais %s"
 
-#: ../src/phone.c:3687
+#: ../src/phone.c:3689
 #, c-format
 msgid "%s is valid"
 msgstr "%s valide"
 
-#: ../src/phone.c:3750
+#: ../src/phone.c:3752
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
@@ -332,6 +332,7 @@ msgid ""
 "       phonectl -L\n"
 "       phonectl -M\n"
 "       phonectl -S\n"
+"       phonectl -W\n"
 "       phonectl -r\n"
 "       phonectl -s\n"
 "  -C\tOpen the contacts window\n"
@@ -348,6 +349,7 @@ msgstr ""
 "       phonectl -L\n"
 "       phonectl -M\n"
 "       phonectl -S\n"
+"       phonectl -W\n"
 "       phonectl -r\n"
 "       phonectl -s\n"
 "  -C\tAfficher les contacts\n"

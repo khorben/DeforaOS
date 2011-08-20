@@ -151,10 +151,12 @@ static gboolean _activate_on_closex(gpointer data)
 
 
 /* systray_on_popup_menu */
+static void _popup_menu_on_show_contacts(gpointer data);
 static void _popup_menu_on_show_dialer(gpointer data);
 static void _popup_menu_on_show_logs(gpointer data);
 static void _popup_menu_on_show_messages(gpointer data);
 static void _popup_menu_on_show_settings(gpointer data);
+static void _popup_menu_on_show_write(gpointer data);
 static void _popup_menu_on_resume(gpointer data);
 static void _popup_menu_on_suspend(gpointer data);
 
@@ -164,38 +166,64 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	PhonePlugin * plugin = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
+	GtkWidget * hbox;
+	GtkWidget * label;
+	struct
+	{
+		char const * icon;
+		char const * name;
+		void (*callback)(gpointer data);
+	} items[] = {
+		{ "stock_addressbook", "Show _contacts",
+			_popup_menu_on_show_contacts },
+		{ "phone-dialer", "Show _dialer", _popup_menu_on_show_dialer },
+		{ "logviewer", "Show _logs", _popup_menu_on_show_logs },
+		{ "stock_mail-compose", "Show _messages",
+			_popup_menu_on_show_messages },
+		{ "gtk-preferences", "Show _settings",
+			_popup_menu_on_show_settings },
+		{ "stock_mail-compose", "_Write a message",
+			_popup_menu_on_show_write },
+		{ NULL, NULL, NULL },
+		{ "gtk-media-play-ltr", "_Resume telephony",
+			_popup_menu_on_resume },
+		{ "gtk-media-pause", "S_uspend telephony",
+			_popup_menu_on_suspend },
+	};
+	size_t i;
 
 	menu = gtk_menu_new();
-	/* show windows */
-	menuitem = gtk_menu_item_new_with_mnemonic("Show _dialer");
-	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-				_popup_menu_on_show_dialer), plugin);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_mnemonic("Show _logs");
-	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-				_popup_menu_on_show_logs), plugin);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_mnemonic("Show _messages");
-	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-				_popup_menu_on_show_messages), plugin);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_mnemonic("Show _settings");
-	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-				_popup_menu_on_show_settings), plugin);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	/* suspend and resume */
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_mnemonic("_Resume telephony");
-	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-				_popup_menu_on_resume), plugin);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_mnemonic("S_uspend telephony");
-	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-				_popup_menu_on_suspend), plugin);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	for(i = 0; i < sizeof(items) / sizeof(*items); i++)
+	{
+		if(items[i].name == NULL)
+		{
+			menuitem = gtk_separator_menu_item_new();
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			continue;
+		}
+		hbox = gtk_hbox_new(FALSE, 4);
+		gtk_box_pack_start(GTK_BOX(hbox), gtk_image_new_from_icon_name(
+					items[i].icon, GTK_ICON_SIZE_MENU),
+				FALSE, FALSE, 0);
+		label = gtk_label_new_with_mnemonic(items[i].name);
+		gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+		gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+		menuitem = gtk_menu_item_new();
+		g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+					items[i].callback), plugin);
+		gtk_container_add(GTK_CONTAINER(menuitem), hbox);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
+
+static void _popup_menu_on_show_contacts(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_CONTACTS);
 }
 
 static void _popup_menu_on_show_dialer(gpointer data)
@@ -228,6 +256,14 @@ static void _popup_menu_on_show_settings(gpointer data)
 
 	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_SETTINGS);
+}
+
+static void _popup_menu_on_show_write(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_WRITE);
 }
 
 static void _popup_menu_on_resume(gpointer data)

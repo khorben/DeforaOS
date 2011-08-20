@@ -46,6 +46,7 @@ static int _usage(void)
 "       phonectl -L\n"
 "       phonectl -M\n"
 "       phonectl -S\n"
+"       phonectl -W\n"
 "       phonectl -r\n"
 "       phonectl -s\n"
 "  -C	Open the contacts window\n"
@@ -73,7 +74,7 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "CDLMSrs")) != -1)
+	while((o = getopt(argc, argv, "CDLMSWrs")) != -1)
 		switch(o)
 		{
 			case 'C':
@@ -100,6 +101,11 @@ int main(int argc, char * argv[])
 				if(action != -1)
 					return _usage();
 				action = PHONE_MESSAGE_SHOW_SETTINGS;
+				break;
+			case 'W':
+				if(action != -1)
+					return _usage();
+				action = PHONE_MESSAGE_SHOW_WRITE;
 				break;
 			case 'r':
 				if(action != -1)

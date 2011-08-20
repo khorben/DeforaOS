@@ -3292,6 +3292,8 @@ static void _phone_message(Phone * phone, PhoneMessage message, ...)
 				phone_show_messages(phone, TRUE);
 			else if(show == PHONE_MESSAGE_SHOW_SETTINGS)
 				phone_show_settings(phone, TRUE);
+			else if(show == PHONE_MESSAGE_SHOW_WRITE)
+				phone_show_write(phone, TRUE, NULL, NULL);
 			break;
 	}
 	va_end(ap);
