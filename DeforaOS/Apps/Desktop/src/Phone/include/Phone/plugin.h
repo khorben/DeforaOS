@@ -39,6 +39,7 @@ typedef struct _PhonePluginHelper
 			char const * variable, char const * value);
 	int (*error)(Phone * phone, char const * message, int ret);
 	int (*event)(Phone * phone, PhoneEvent * event);
+	void (*message)(Phone * phone, PhoneMessage message, ...);
 	int (*request)(Phone * phone, ModemRequest * request);
 	int (*trigger)(Phone * phone, ModemEventType event);
 } PhonePluginHelper;

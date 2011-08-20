@@ -300,6 +300,8 @@ static GtkWidget * _phone_messages_get_view(Phone * phone);
 static GtkWidget * _phone_progress_delete(GtkWidget * widget);
 static void _phone_progress_pulse(GtkWidget * widget);
 
+static void _phone_message(Phone * phone, PhoneMessage message, ...);
+
 static int _phone_request(Phone * phone, ModemRequest * request);
 
 static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
@@ -376,6 +378,7 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->helper.config_set = _phone_config_set;
 	phone->helper.error = phone_error;
 	phone->helper.event = phone_event;
+	phone->helper.message = _phone_message;
 	phone->helper.request = _phone_request;
 	phone->helper.trigger = _phone_trigger;
 	phone->helper.phone = phone;
@@ -3252,6 +3255,46 @@ static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(callback),
 			phone);
 	gtk_widget_show(dialog);
+}
+
+
+/* phone_message */
+static void _phone_message(Phone * phone, PhoneMessage message, ...)
+{
+	va_list ap;
+	PhoneMessagePowerManagement power;
+	PhoneMessageShow show;
+	PhoneEvent event;
+
+	memset(&event, 0, sizeof(event));
+	va_start(ap, message);
+	switch(message)
+	{
+		case PHONE_MESSAGE_POWER_MANAGEMENT:
+			power = va_arg(ap, PhoneMessagePowerManagement);
+			if(power == PHONE_MESSAGE_POWER_MANAGEMENT_RESUME)
+				event.type = PHONE_EVENT_TYPE_SUSPEND;
+			else if(power == PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND)
+				event.type = PHONE_EVENT_TYPE_RESUME;
+			else
+				break;
+			phone_event(phone, &event);
+			break;
+		case PHONE_MESSAGE_SHOW:
+			show = va_arg(ap, PhoneMessageShow);
+			if(show == PHONE_MESSAGE_SHOW_CONTACTS)
+				phone_show_contacts(phone, TRUE);
+			else if(show == PHONE_MESSAGE_SHOW_DIALER)
+				phone_show_dialer(phone, TRUE);
+			else if(show == PHONE_MESSAGE_SHOW_LOGS)
+				phone_show_logs(phone, TRUE);
+			else if(show == PHONE_MESSAGE_SHOW_MESSAGES)
+				phone_show_messages(phone, TRUE);
+			else if(show == PHONE_MESSAGE_SHOW_SETTINGS)
+				phone_show_settings(phone, TRUE);
+			break;
+	}
+	va_end(ap);
 }
 
 

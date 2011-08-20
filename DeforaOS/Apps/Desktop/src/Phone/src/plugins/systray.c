@@ -44,6 +44,8 @@ static int _systray_destroy(PhonePlugin * plugin);
 /* callbacks */
 #if GTK_CHECK_VERSION(2, 10, 0)
 static void _systray_on_activate(gpointer data);
+static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
+		guint time, gpointer data);
 #endif
 
 
@@ -90,6 +92,8 @@ static int _systray_init(PhonePlugin * plugin)
 	systray->icon = gtk_status_icon_new_from_icon_name("phone-dialer");
 	g_signal_connect_swapped(systray->icon, "activate", G_CALLBACK(
 				_systray_on_activate), plugin);
+	g_signal_connect(systray->icon, "popup-menu", G_CALLBACK(
+				_systray_on_popup_menu), plugin);
 	systray->ab_window = NULL;
 	return 0;
 #else
@@ -143,5 +147,72 @@ static gboolean _activate_on_closex(gpointer data)
 
 	gtk_widget_hide(systray->ab_window);
 	return TRUE;
+}
+
+
+/* systray_on_popup_menu */
+static void _popup_menu_on_show_dialer(gpointer data);
+static void _popup_menu_on_show_logs(gpointer data);
+static void _popup_menu_on_show_messages(gpointer data);
+static void _popup_menu_on_show_settings(gpointer data);
+
+static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
+		guint time, gpointer data)
+{
+	PhonePlugin * plugin = data;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+
+	menu = gtk_menu_new();
+	menuitem = gtk_menu_item_new_with_mnemonic("Show _dialer");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_popup_menu_on_show_dialer), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_mnemonic("Show _logs");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_popup_menu_on_show_logs), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_mnemonic("Show _messages");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_popup_menu_on_show_messages), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_mnemonic("Show _settings");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_popup_menu_on_show_settings), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
+
+static void _popup_menu_on_show_dialer(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_DIALER);
+}
+
+static void _popup_menu_on_show_logs(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_LOGS);
+}
+
+static void _popup_menu_on_show_messages(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_MESSAGES);
+}
+
+static void _popup_menu_on_show_settings(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_SETTINGS);
 }
 #endif
