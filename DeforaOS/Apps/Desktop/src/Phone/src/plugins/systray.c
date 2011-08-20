@@ -155,10 +155,11 @@ static void _popup_menu_on_show_contacts(gpointer data);
 static void _popup_menu_on_show_dialer(gpointer data);
 static void _popup_menu_on_show_logs(gpointer data);
 static void _popup_menu_on_show_messages(gpointer data);
-static void _popup_menu_on_show_settings(gpointer data);
 static void _popup_menu_on_show_write(gpointer data);
+static void _popup_menu_on_show_settings(gpointer data);
 static void _popup_menu_on_resume(gpointer data);
 static void _popup_menu_on_suspend(gpointer data);
+static void _popup_menu_on_quit(gpointer data);
 
 static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		guint time, gpointer data)
@@ -180,15 +181,18 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ "logviewer", "Show _logs", _popup_menu_on_show_logs },
 		{ "stock_mail-compose", "Show _messages",
 			_popup_menu_on_show_messages },
-		{ "gtk-preferences", "Show _settings",
-			_popup_menu_on_show_settings },
 		{ "stock_mail-compose", "_Write a message",
 			_popup_menu_on_show_write },
+		{ NULL, NULL, NULL },
+		{ "gtk-preferences", "_Settings",
+			_popup_menu_on_show_settings },
 		{ NULL, NULL, NULL },
 		{ "gtk-media-play-ltr", "_Resume telephony",
 			_popup_menu_on_resume },
 		{ "gtk-media-pause", "S_uspend telephony",
 			_popup_menu_on_suspend },
+		{ NULL, NULL, NULL },
+		{ "gtk-quit", "_Quit", _popup_menu_on_quit },
 	};
 	size_t i;
 
@@ -282,5 +286,10 @@ static void _popup_menu_on_suspend(gpointer data)
 	plugin->helper->message(plugin->helper->phone,
 			PHONE_MESSAGE_POWER_MANAGEMENT,
 			PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND);
+}
+
+static void _popup_menu_on_quit(gpointer data)
+{
+	gtk_main_quit();
 }
 #endif
