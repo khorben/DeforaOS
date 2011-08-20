@@ -81,7 +81,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/modem.h \
 		$(PACKAGE)-$(VERSION)/src/phone.h \
-		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modems/debug.c \
 		$(PACKAGE)-$(VERSION)/src/modems/hayes.c \
@@ -100,6 +99,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/profiles.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/systray.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/16x16/Makefile \
