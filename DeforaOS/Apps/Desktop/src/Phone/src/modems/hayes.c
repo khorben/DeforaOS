@@ -287,6 +287,8 @@ static HayesCommandStatus _on_request_message_send(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_model(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_unsupported(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
 
 static void _on_trigger_call_error(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cbc(ModemPlugin * modem, char const * answer);
@@ -499,7 +501,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ MODEM_REQUEST_REGISTRATION,			NULL,
 		_on_request_generic }, /* FIXME really track */
 	{ MODEM_REQUEST_UNSUPPORTED,			NULL,
-		_on_request_generic }
+		_on_request_unsupported }
 };
 
 static HayesTriggerHandler _hayes_trigger_handlers[] =
@@ -1826,6 +1828,8 @@ static unsigned int _reset_configure_baudrate(ModemPlugin * modem,
 			return B57600;
 		case 115200:
 			return B115200;
+		case 230400:
+			return B230400;
 		case 460800:
 			return B460800;
 		case 921600:
@@ -2358,6 +2362,15 @@ static HayesCommandStatus _on_request_model(HayesCommand * command,
 		return status;
 	modem->helper->event(modem->helper->modem, event);
 	return status;
+}
+
+
+/* on_request_unsupported */
+static HayesCommandStatus _on_request_unsupported(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	/* FIXME report an unsupported event with the result of the command */
+	return _on_request_generic(command, status, priv);
 }
 
 
