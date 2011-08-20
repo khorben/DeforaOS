@@ -155,6 +155,8 @@ static void _popup_menu_on_show_dialer(gpointer data);
 static void _popup_menu_on_show_logs(gpointer data);
 static void _popup_menu_on_show_messages(gpointer data);
 static void _popup_menu_on_show_settings(gpointer data);
+static void _popup_menu_on_resume(gpointer data);
+static void _popup_menu_on_suspend(gpointer data);
 
 static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		guint time, gpointer data)
@@ -164,6 +166,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	GtkWidget * menuitem;
 
 	menu = gtk_menu_new();
+	/* show windows */
 	menuitem = gtk_menu_item_new_with_mnemonic("Show _dialer");
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				_popup_menu_on_show_dialer), plugin);
@@ -179,6 +182,17 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	menuitem = gtk_menu_item_new_with_mnemonic("Show _settings");
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				_popup_menu_on_show_settings), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* suspend and resume */
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_mnemonic("_Resume telephony");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_popup_menu_on_resume), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_mnemonic("S_uspend telephony");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_popup_menu_on_suspend), plugin);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
@@ -214,5 +228,23 @@ static void _popup_menu_on_show_settings(gpointer data)
 
 	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_SETTINGS);
+}
+
+static void _popup_menu_on_resume(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone,
+			PHONE_MESSAGE_POWER_MANAGEMENT,
+			PHONE_MESSAGE_POWER_MANAGEMENT_RESUME);
+}
+
+static void _popup_menu_on_suspend(gpointer data)
+{
+	PhonePlugin * plugin = data;
+
+	plugin->helper->message(plugin->helper->phone,
+			PHONE_MESSAGE_POWER_MANAGEMENT,
+			PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND);
 }
 #endif

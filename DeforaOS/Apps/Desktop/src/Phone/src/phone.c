@@ -3273,9 +3273,9 @@ static void _phone_message(Phone * phone, PhoneMessage message, ...)
 		case PHONE_MESSAGE_POWER_MANAGEMENT:
 			power = va_arg(ap, PhoneMessagePowerManagement);
 			if(power == PHONE_MESSAGE_POWER_MANAGEMENT_RESUME)
-				event.type = PHONE_EVENT_TYPE_SUSPEND;
-			else if(power == PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND)
 				event.type = PHONE_EVENT_TYPE_RESUME;
+			else if(power == PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND)
+				event.type = PHONE_EVENT_TYPE_SUSPEND;
 			else
 				break;
 			phone_event(phone, &event);
