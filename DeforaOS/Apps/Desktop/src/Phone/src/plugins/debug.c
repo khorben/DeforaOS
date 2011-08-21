@@ -350,17 +350,6 @@ static void _debug_settings(PhonePlugin * plugin)
 /* debug_send_message */
 static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show)
 {
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
-
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PHONE_CLIENT_MESSAGE, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = PHONE_MESSAGE_SHOW;
-	client->data.b[1] = show;
-	client->data.b[2] = TRUE;
-	gdk_event_send_clientmessage_toall(&event);
+	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+			show);
 }
