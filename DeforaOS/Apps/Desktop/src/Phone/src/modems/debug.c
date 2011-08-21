@@ -124,6 +124,10 @@ static int _debug_init(ModemPlugin * modem)
 	g_signal_connect_swapped(debug->operator, "activate", G_CALLBACK(
 				_debug_on_operator_set), modem);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->operator, TRUE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_debug_on_operator_set), modem);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* message */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -151,6 +155,8 @@ static int _debug_init(ModemPlugin * modem)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
 	debug->message = gtk_text_view_new();
 	gtk_container_add(GTK_CONTAINER(widget), debug->message);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -237,6 +243,7 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 	ModemPluginHelper * helper = modem->helper;
 	Debug * debug = modem->priv;
 	ModemEvent event;
+	unsigned int u;
 
 	if(request == NULL)
 		return -1;
@@ -247,6 +254,20 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 			event.type = MODEM_EVENT_TYPE_CONTACT_DELETED;
 			event.contact_deleted.id = request->contact_delete.id;
 			helper->event(helper->modem, &event);
+			break;
+		case MODEM_REQUEST_CONTACT_EDIT:
+			debug->event_contact.type = MODEM_EVENT_TYPE_CONTACT;
+			u = debug->event_contact.contact.id;
+			debug->event_contact.contact.id
+				= request->contact_edit.id;
+			debug->event_contact.contact.status
+				= rand() % MODEM_CONTACT_STATUS_COUNT;
+			debug->event_contact.contact.name
+				= request->contact_edit.name;
+			debug->event_contact.contact.number
+				= request->contact_edit.number;
+			helper->event(helper->modem, &debug->event_contact);
+			debug->event_contact.contact.id = u;
 			break;
 		case MODEM_REQUEST_CONTACT_NEW:
 			debug->event_contact.type = MODEM_EVENT_TYPE_CONTACT;
