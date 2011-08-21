@@ -186,6 +186,8 @@ static int _mixer_set_control(Mixer * mixer, int index, MixerControl * control);
 
 /* public */
 /* mixer_new */
+static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
+		char const * label);
 #ifdef AUDIO_MIXER_DEVINFO
 static GtkWidget * _new_enum(Mixer * mixer, int dev,
 		struct audio_mixer_enum * e);
@@ -199,6 +201,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	GtkAccelGroup * group;
 	GtkWidget * scrolled;
 	GtkWidget * vbox;
+	GtkWidget * label;
 	GtkWidget * widget;
 	GtkWidget * hvbox;
 	GtkWidget * hbox;
@@ -210,7 +213,8 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	size_t u;
 #else
 	int value;
-	char const * names[] = SOUND_DEVICE_LABELS;
+	char const * labels[] = SOUND_DEVICE_LABELS;
+	char const * names[] = SOUND_DEVICE_NAMES;
 #endif
 
 	if((mixer = malloc(sizeof(*mixer))) == NULL)
@@ -262,6 +266,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		hvbox = gtk_vbox_new(TRUE, 4);
 	else
 		hvbox = gtk_hbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(hvbox), 4);
 	for(i = 0;; i++)
 	{
 #ifdef AUDIO_MIXER_DEVINFO
@@ -321,7 +326,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		if(control == NULL)
 			continue;
 		gtk_container_set_border_width(GTK_CONTAINER(control), 4);
-		widget = gtk_frame_new(md.label.name);
+		label = _new_frame_label(NULL, md.label.name, NULL);
+		widget = gtk_frame_new(NULL);
+		gtk_frame_set_label_widget(GTK_FRAME(widget), label);
 		gtk_container_add(GTK_CONTAINER(widget), control);
 		if(hbox == NULL)
 		{
@@ -338,7 +345,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 			continue;
 		control = _new_value(mixer, i);
 		gtk_container_set_border_width(GTK_CONTAINER(control), 4);
-		widget = gtk_frame_new(names[i]);
+		label = _new_frame_label(NULL, names[i], labels[i]);
+		widget = gtk_frame_new(NULL);
+		gtk_frame_set_label_widget(GTK_FRAME(widget), label);
 		gtk_container_add(GTK_CONTAINER(widget), control);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
@@ -351,6 +360,63 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 #endif
 	gtk_widget_show(mixer->window);
 	return mixer;
+}
+
+static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
+		char const * label)
+{
+	GtkIconTheme * icontheme;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	icontheme = gtk_icon_theme_get_default();
+	hbox = gtk_hbox_new(FALSE, 4);
+	if(pixbuf == NULL)
+	{
+		if(strncmp(name, "cd", 2) == 0)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"media-cdrom", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+		else if(strncmp(name, "line", 4) == 0
+				|| strncmp(name, "source", 5) == 0)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"stock_line-in", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+		else if(strncmp(name, "master", 6) == 0
+				|| strncmp(name, "pcm", 3) == 0
+				|| strncmp(name, "vol", 3) == 0)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"audio-volume-high", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+		else if(strncmp(name, "mic", 3) == 0)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"audio-input-microphone", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+		else if(strncmp(name, "rec", 3) == 0)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"gtk-media-record", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+		/* more generic fallbacks */
+		else if(strstr(name, "sel") != NULL)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"stock_line-in", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+		else if(strstr(name, ".mute") != NULL)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					"audio-volume-muted", 16,
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+	}
+	if(pixbuf != NULL)
+	{
+		widget = gtk_image_new_from_pixbuf(pixbuf);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	}
+	if(label == NULL)
+		label = name;
+	widget = gtk_label_new(label);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	return hbox;
 }
 
 #ifdef AUDIO_MIXER_DEVINFO
