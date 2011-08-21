@@ -168,6 +168,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 	GtkWidget * hbox;
+	GtkWidget * image;
 	GtkWidget * label;
 	struct
 	{
@@ -184,7 +185,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ "stock_mail-compose", "_Write a message",
 			_popup_menu_on_show_write },
 		{ NULL, NULL, NULL },
-		{ "gtk-preferences", "_Settings",
+		{ "gtk-preferences", "_Preferences",
 			_popup_menu_on_show_settings },
 		{ NULL, NULL, NULL },
 		{ "gtk-media-play-ltr", "_Resume telephony",
@@ -206,9 +207,9 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 			continue;
 		}
 		hbox = gtk_hbox_new(FALSE, 4);
-		gtk_box_pack_start(GTK_BOX(hbox), gtk_image_new_from_icon_name(
-					items[i].icon, GTK_ICON_SIZE_MENU),
-				FALSE, FALSE, 0);
+		image = gtk_image_new_from_icon_name(items[i].icon,
+				GTK_ICON_SIZE_MENU),
+		gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
 		label = gtk_label_new_with_mnemonic(items[i].name);
 		gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 		gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);

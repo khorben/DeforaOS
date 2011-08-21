@@ -632,7 +632,7 @@ void phone_call_set_volume(Phone * phone, gdouble volume)
 	PhoneEvent event;
 
 	memset(&event, 0, sizeof(event));
-	event.type = PHONE_EVENT_TYPE_SET_VOLUME;
+	event.type = PHONE_EVENT_TYPE_VOLUME_SET;
 	event.volume_set.level = volume;
 	phone_event(phone, &event);
 }
@@ -1301,6 +1301,7 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	PhoneCall call;
 	char const * name = NULL;
 	char const * number = NULL;
+	PhoneEvent event;
 
 	if(show == FALSE)
 	{
@@ -1319,6 +1320,14 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	if(phone->ca_window == NULL)
 		_show_call_window(phone);
 	phone_show_dialer(phone, FALSE);
+	/* get the current volume */
+	memset(&event, 0, sizeof(event));
+	event.type = PHONE_EVENT_TYPE_VOLUME_GET;
+	event.volume_get.level = gtk_range_get_value(GTK_RANGE(
+				phone->ca_volume));
+	if(phone_event(phone, &event) == 0)
+		gtk_range_set_value(GTK_RANGE(phone->ca_volume),
+				event.volume_get.level);
 	if(name != NULL)
 	{
 		if(name[0] == '\0')
@@ -1394,6 +1403,8 @@ static void _show_call_window(Phone * phone)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window), "call-start");
 #endif
+	g_signal_connect(phone->ca_window, "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* party */
@@ -1429,8 +1440,8 @@ static void _show_call_window(Phone * phone)
 			"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 0);
 	phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
-	g_signal_connect(G_OBJECT(phone->ca_volume), "value-changed",
-			G_CALLBACK(on_phone_call_volume), phone);
+	g_signal_connect(phone->ca_volume, "value-changed", G_CALLBACK(
+				on_phone_call_volume), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* speaker mode */
@@ -2433,7 +2444,7 @@ static void _show_status_window(Phone * phone)
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmessages), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(phone->st_messages_box), phone->st_lmessages,
 			TRUE, TRUE, 0);
-	widget = _phone_create_button("stock_inbox", _("_Read"));
+	widget = _phone_create_button("phone-inbox", _("_Read"));
 	gtk_size_group_add_widget(group2, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_status_on_messages_read), phone);

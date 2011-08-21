@@ -73,7 +73,7 @@ openmoko.so: $(openmoko_OBJS)
 
 oss_OBJS = oss.o
 oss_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-oss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+oss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lossaudio
 
 oss.so: $(oss_OBJS)
 	$(LD) -o oss.so $(oss_OBJS) $(oss_LDFLAGS)
@@ -168,6 +168,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 -- oss.so $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
@@ -185,6 +187,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so

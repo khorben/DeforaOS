@@ -172,17 +172,6 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 			_openmoko_queue(plugin, "AT%CNIV=1");
 #endif
 			break;
-#if 0
-		case PHONE_EVENT_GET_VOLUME:
-			va_start(ap, event);
-			plevel = va_arg(ap, gdouble *);
-			va_end(ap);
-			_event_volume_get(plugin, plevel);
-			break;
-#endif
-		case PHONE_EVENT_TYPE_SET_VOLUME:
-			_event_volume_set(plugin, event->volume_set.level);
-			break;
 		case PHONE_EVENT_TYPE_SPEAKER_ON:
 			/* XXX assumes there's an ongoing call */
 			_event_mixer_set(plugin, "gsmspeakerout.state");
@@ -214,6 +203,12 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 			break;
 		case PHONE_EVENT_TYPE_VIBRATOR_ON:
 			_event_vibrator(plugin, TRUE);
+			break;
+		case PHONE_EVENT_TYPE_VOLUME_GET:
+			_event_volume_get(plugin, &event->volume_get.level);
+			break;
+		case PHONE_EVENT_TYPE_VOLUME_SET:
+			_event_volume_set(plugin, event->volume_set.level);
 			break;
 		default: /* not relevant */
 			break;

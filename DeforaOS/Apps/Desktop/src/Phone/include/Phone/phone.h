@@ -54,7 +54,6 @@ typedef enum _PhoneEventType
 	PHONE_EVENT_TYPE_OFFLINE,
 	PHONE_EVENT_TYPE_ONLINE,
 	PHONE_EVENT_TYPE_RESUME,
-	PHONE_EVENT_TYPE_SET_VOLUME,
 	PHONE_EVENT_TYPE_SMS_RECEIVING,		/* char const *, GSMEncoding *,
 						   char **, size_t * */
 	PHONE_EVENT_TYPE_SMS_SENDING,		/* char const *, GSMEncoding *,
@@ -66,7 +65,9 @@ typedef enum _PhoneEventType
 	PHONE_EVENT_TYPE_STOPPING,
 	PHONE_EVENT_TYPE_SUSPEND,
 	PHONE_EVENT_TYPE_VIBRATOR_OFF,
-	PHONE_EVENT_TYPE_VIBRATOR_ON
+	PHONE_EVENT_TYPE_VIBRATOR_ON,
+	PHONE_EVENT_TYPE_VOLUME_GET,
+	PHONE_EVENT_TYPE_VOLUME_SET
 } PhoneEventType;
 
 typedef union _PhoneEvent
@@ -80,12 +81,12 @@ typedef union _PhoneEvent
 		ModemEvent * event;
 	} modem_event;
 
-	/* PHONE_EVENT_TYPE_VOLUME_SET */
+	/* PHONE_EVENT_TYPE_VOLUME_GET, PHONE_EVENT_TYPE_VOLUME_SET */
 	struct
 	{
 		PhoneEventType type;
 		double level;
-	} volume_set;
+	} volume_get, volume_set;
 } PhoneEvent;
 
 typedef enum _PhoneMessage

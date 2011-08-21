@@ -63,7 +63,7 @@ static void _oss_settings(PhonePlugin * plugin);
 PhonePlugin plugin =
 {
 	NULL,
-	"Audio settings",
+	"OSS audio",
 	"audio-x-generic",
 	_oss_init,
 	_oss_destroy,
@@ -106,6 +106,7 @@ static int _oss_destroy(PhonePlugin * plugin)
 
 /* oss_event */
 static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
+static int _event_volume_get(PhonePlugin * plugin, gdouble * level);
 static int _event_volume_set(PhonePlugin * plugin, gdouble level);
 
 static int _oss_event(PhonePlugin * plugin, PhoneEvent * event)
@@ -115,7 +116,10 @@ static int _oss_event(PhonePlugin * plugin, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _event_modem_event(plugin,
 					event->modem_event.event);
-		case PHONE_EVENT_TYPE_SET_VOLUME:
+		case PHONE_EVENT_TYPE_VOLUME_GET:
+			return _event_volume_get(plugin,
+					&event->volume_get.level);
+		case PHONE_EVENT_TYPE_VOLUME_SET:
 			return _event_volume_set(plugin,
 					event->volume_set.level);
 		default: /* not relevant */
@@ -145,6 +149,26 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 			break;
 	}
 	return 0;
+}
+
+static int _event_volume_get(PhonePlugin * plugin, gdouble * level)
+{
+	int ret = 0;
+	OSS * oss = plugin->priv;
+	int v;
+	char buf[256];
+
+	if(oss->fd < 0)
+		return 1;
+	if(ioctl(oss->fd, MIXER_READ(SOUND_MIXER_VOLUME), &v) < 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", "MIXER_READ", strerror(
+					errno));
+		ret |= plugin->helper->error(plugin->helper->phone, buf, 0);
+	}
+	*level = (((v & 0xff00) >> 8) + (v & 0xff)) / 2;
+	*level /= 100;
+	return ret;
 }
 
 static int _event_volume_set(PhonePlugin * plugin, gdouble level)
@@ -217,6 +241,7 @@ static void _oss_settings(PhonePlugin * plugin)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* device */
 	widget = gtk_label_new("Mixer device:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_file_chooser_button_new("Set the mixer device",
 			GTK_FILE_CHOOSER_ACTION_OPEN);

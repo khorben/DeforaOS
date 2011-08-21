@@ -33,6 +33,7 @@ typedef struct _Debug
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * status;
+	GtkWidget * operator;
 	GtkWidget * number;
 	GtkWidget * folder;
 	GtkWidget * message;
@@ -57,6 +58,7 @@ static void _debug_set_status(ModemPlugin * modem, char const * status);
 /* callbacks */
 static gboolean _debug_on_closex(gpointer data);
 static void _debug_on_message_send(gpointer data);
+static void _debug_on_operator_set(gpointer data);
 
 
 /* public */
@@ -112,9 +114,20 @@ static int _debug_init(ModemPlugin * modem)
 	gtk_misc_set_alignment(GTK_MISC(debug->status), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->status, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* operator */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Operator: ");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	debug->operator = gtk_entry_new();
+	g_signal_connect_swapped(debug->operator, "activate", G_CALLBACK(
+				_debug_on_operator_set), modem);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->operator, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* message */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Number:");
+	widget = gtk_label_new("Number: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -122,7 +135,7 @@ static int _debug_init(ModemPlugin * modem)
 	gtk_box_pack_start(GTK_BOX(hbox), debug->number, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Folder:");
+	widget = gtk_label_new("Folder: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -276,7 +289,7 @@ static gboolean _debug_on_closex(gpointer data)
 	Debug * debug = modem->priv;
 
 	gtk_widget_hide(debug->window);
-	/* FIXME tell the application we're closing */
+	gtk_main_quit();
 	return TRUE;
 }
 
@@ -308,4 +321,21 @@ static void _debug_on_message_send(gpointer data)
 	debug->event_message.message.content = content;
 	modem->helper->event(modem->helper->modem, &debug->event_message);
 	g_free(content);
+}
+
+
+/* debug_on_operator_set */
+static void _debug_on_operator_set(gpointer data)
+{
+	ModemPlugin * modem = data;
+	Debug * debug = modem->priv;
+	ModemEvent event;
+	char const * p;
+
+	memset(&event, 0, sizeof(event));
+	p = gtk_entry_get_text(GTK_ENTRY(debug->operator));
+	event.type = MODEM_EVENT_TYPE_REGISTRATION;
+	event.registration.status = MODEM_REGISTRATION_STATUS_REGISTERED;
+	event.registration._operator = p;
+	modem->helper->event(modem->helper->modem, &event);
 }

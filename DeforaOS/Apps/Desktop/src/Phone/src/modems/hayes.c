@@ -1127,7 +1127,7 @@ static void _hayes_set_mode(ModemPlugin * modem, HayesMode mode)
 			event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(hayes->registration_media);
 			hayes->registration_media = NULL;
-			event->registration.media = hayes->registration_media;
+			event->registration.media = NULL;
 			/* reset modem */
 			_hayes_reset(modem);
 			break;
