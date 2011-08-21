@@ -71,6 +71,7 @@ typedef enum _PhoneContactColumn
 	PHONE_CONTACT_COLUMN_STATUS,
 	PHONE_CONTACT_COLUMN_STATUS_DISPLAY,
 	PHONE_CONTACT_COLUMN_NAME,
+	PHONE_CONTACT_COLUMN_NAME_DISPLAY,
 	PHONE_CONTACT_COLUMN_NUMBER
 } PhoneContactColumn;
 #define PHONE_CONTACT_COLUMN_LAST	PHONE_CONTACT_COLUMN_NUMBER
@@ -400,7 +401,7 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->co_window = NULL;
 	phone->co_store = gtk_list_store_new(PHONE_CONTACT_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_UINT, GDK_TYPE_PIXBUF,
-			G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	icontheme = gtk_icon_theme_get_default();
 	phone->co_status[MODEM_CONTACT_STATUS_AWAY]
 		= gtk_icon_theme_load_icon(icontheme, "user-away", 24,
@@ -412,7 +413,7 @@ Phone * phone_new(char const * plugin, int retry)
 		= gtk_icon_theme_load_icon(icontheme, "user-offline", 24,
 				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
 	phone->co_status[MODEM_CONTACT_STATUS_ONLINE]
-		= gtk_icon_theme_load_icon(icontheme, "user-online", 24,
+		= gtk_icon_theme_load_icon(icontheme, "user-available", 24,
 				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
 	phone->co_dialog = NULL;
 	phone->di_window = NULL;
@@ -792,6 +793,7 @@ void phone_contacts_set(Phone * phone, unsigned int index,
 	GtkTreeIter iter;
 	gboolean valid;
 	unsigned int id;
+	gchar * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
@@ -807,13 +809,16 @@ void phone_contacts_set(Phone * phone, unsigned int index,
 	}
 	if(valid != TRUE)
 		gtk_list_store_append(phone->co_store, &iter);
+	p = g_strdup_printf("%s\n%s", name, number);
 	gtk_list_store_set(phone->co_store, &iter,
 			PHONE_CONTACT_COLUMN_ID, index,
 			PHONE_CONTACT_COLUMN_STATUS, status,
 			PHONE_CONTACT_COLUMN_STATUS_DISPLAY,
 			phone->co_status[status],
 			PHONE_CONTACT_COLUMN_NAME, name,
+			PHONE_CONTACT_COLUMN_NAME_DISPLAY, p,
 			PHONE_CONTACT_COLUMN_NUMBER, number, -1);
+	g_free(p);
 }
 
 
@@ -1607,8 +1612,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				column);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("Name"),
-				renderer, "text", PHONE_CONTACT_COLUMN_NAME,
-				NULL);
+				renderer, "text",
+				PHONE_CONTACT_COLUMN_NAME_DISPLAY, NULL);
 		gtk_tree_view_column_set_sort_column_id(column,
 				PHONE_CONTACT_COLUMN_NAME);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
