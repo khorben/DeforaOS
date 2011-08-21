@@ -48,6 +48,7 @@ static int _debug_init(ModemPlugin * modem);
 static int _debug_destroy(ModemPlugin * modem);
 static int _debug_start(ModemPlugin * modem, unsigned int retry);
 static int _debug_stop(ModemPlugin * modem);
+static int _debug_request(ModemPlugin * modem, ModemRequest * request);
 
 /* accessors */
 static void _debug_set_status(ModemPlugin * modem, char const * status);
@@ -69,7 +70,7 @@ ModemPlugin plugin =
 	_debug_destroy,
 	_debug_start,
 	_debug_stop,
-	NULL,
+	_debug_request,
 	NULL,
 	NULL
 };
@@ -126,7 +127,7 @@ static int _debug_init(ModemPlugin * modem)
 	debug->folder = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Unknown");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Inbox");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Outbox");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Sent");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Drafts");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Trash");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->folder), 1);
@@ -212,6 +213,28 @@ static gboolean _stop_on_idle(gpointer data)
 	debug->source = 0;
 	_debug_set_status(modem, "stopped");
 	return FALSE;
+}
+
+
+/* debug_request */
+static int _debug_request(ModemPlugin * modem, ModemRequest * request)
+{
+	ModemEvent event;
+
+	if(request == NULL)
+		return -1;
+	memset(&event, 0, sizeof(event));
+	switch(request->type)
+	{
+		case MODEM_REQUEST_MESSAGE_DELETE:
+			event.type = MODEM_EVENT_TYPE_MESSAGE_DELETED;
+			event.message_deleted.id = request->message_delete.id;
+			modem->helper->event(modem->helper->modem, &event);
+			break;
+		default:
+			break;
+	}
+	return 0;
 }
 
 

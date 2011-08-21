@@ -281,6 +281,8 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_message(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_message_send(HayesCommand * command,
@@ -494,6 +496,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_contact_list },
 	{ MODEM_REQUEST_MESSAGE,			NULL,
 		_on_request_message },
+	{ MODEM_REQUEST_MESSAGE_DELETE,			NULL,
+		_on_request_message_delete },
 	{ MODEM_REQUEST_MESSAGE_LIST,			"AT+CMGL=4",
 		_on_request_message_list },
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
@@ -609,6 +613,8 @@ static char * _request_attention_contact_list(ModemRequest * request);
 static char * _request_attention_gprs(ModemPlugin * modem,
 		char const * username, char const * password);
 static char * _request_attention_message(ModemPlugin * modem, unsigned int id);
+static char * _request_attention_message_delete(ModemPlugin * modem,
+		unsigned int id);
 static char * _request_attention_message_send(ModemPlugin * modem,
 		char const * number, ModemMessageEncoding encoding,
 		size_t length, char const * content);
@@ -696,6 +702,9 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 			return strdup(buf);
 		case MODEM_REQUEST_MESSAGE:
 			return _request_attention_message(modem,
+					request->message.id);
+		case MODEM_REQUEST_MESSAGE_DELETE:
+			return _request_attention_message_delete(modem,
 					request->message.id);
 		case MODEM_REQUEST_MESSAGE_SEND:
 			return _request_attention_message_send(modem,
@@ -814,6 +823,19 @@ static char * _request_attention_message(ModemPlugin * modem, unsigned int id)
 	char buf[32];
 
 	/* FIXME force the message format to be in PDU mode? */
+	snprintf(buf, sizeof(buf), "%s%u", cmd, id);
+	return strdup(buf);
+}
+
+static char * _request_attention_message_delete(ModemPlugin * modem,
+		unsigned int id)
+{
+	Hayes * hayes = modem->priv;
+	char const cmd[] = "AT+CMGD=";
+	char buf[32];
+
+	/* FIXME store in the command itself */
+	hayes->events[MODEM_EVENT_TYPE_MESSAGE_DELETED].message_deleted.id = id;
 	snprintf(buf, sizeof(buf), "%s%u", cmd, id);
 	return strdup(buf);
 }
@@ -1049,6 +1071,7 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			break;
 		case MODEM_EVENT_TYPE_ERROR: /* do not make sense */
 		case MODEM_EVENT_TYPE_MESSAGE:
+		case MODEM_EVENT_TYPE_MESSAGE_DELETED:
 		case MODEM_EVENT_TYPE_MESSAGE_SENT:
 			ret = -1;
 			break;
@@ -2332,6 +2355,21 @@ static HayesCommandStatus _on_request_message(HayesCommand * command,
 }
 
 
+/* on_request_message_delete */
+static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	ModemPlugin * modem = priv;
+	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MESSAGE_DELETED];
+
+	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+		return status;
+	modem->helper->event(modem->helper->modem, event);
+	return status;
+}
+
+
 /* on_request_message_list */
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
@@ -3130,6 +3168,7 @@ static void _on_trigger_cpbr(ModemPlugin * modem, char const * answer)
 	free(hayes->contact_name);
 	hayes->contact_name = strdup(name);
 	event->contact.name = hayes->contact_name;
+	event->contact.status = MODEM_CONTACT_STATUS_OFFLINE;
 	/* send event */
 	modem->helper->event(modem->helper->modem, event);
 }

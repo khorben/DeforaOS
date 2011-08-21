@@ -132,6 +132,7 @@ typedef enum _PhoneSettingsColumn
 typedef enum _PhoneTrack
 {
 	PHONE_TRACK_CODE_ENTERED = 0,
+	PHONE_TRACK_MESSAGE_DELETED,
 	PHONE_TRACK_MESSAGE_LIST,
 	PHONE_TRACK_MESSAGE_SENT
 } PhoneTrack;
@@ -1034,6 +1035,7 @@ void phone_messages_delete_selected(Phone * phone)
 		phone_show_read(phone, FALSE);
 	phone->me_progress = _phone_create_progress(phone->me_window,
 			_("Deleting message..."));
+	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, TRUE);
 	modem_request_type(phone->modem, MODEM_REQUEST_MESSAGE_DELETE, index);
 }
 
@@ -1198,6 +1200,7 @@ void phone_read_delete(Phone * phone)
 	phone_show_read(phone, FALSE);
 	phone->me_progress = _phone_create_progress(phone->me_window,
 			_("Deleting message..."));
+	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, TRUE);
 	modem_request_type(phone->modem, MODEM_REQUEST_MESSAGE_DELETE,
 			phone->re_index);
 }
@@ -3610,6 +3613,7 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event);
 static void _modem_event_call(Phone * phone, ModemEvent * event);
 static void _modem_event_error(Phone * phone, ModemEvent * event);
 static void _modem_event_message(Phone * phone, ModemEvent * event);
+static void _modem_event_message_deleted(Phone * phone, ModemEvent * event);
 
 static void _phone_modem_event(void * priv, ModemEvent * event)
 {
@@ -3638,6 +3642,9 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			break;
 		case MODEM_EVENT_TYPE_MESSAGE:
 			_modem_event_message(phone, event);
+			break;
+		case MODEM_EVENT_TYPE_MESSAGE_DELETED:
+			_modem_event_message_deleted(phone, event);
 			break;
 		case MODEM_EVENT_TYPE_MESSAGE_SENT:
 			_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
@@ -3762,6 +3769,29 @@ static void _modem_event_message(Phone * phone, ModemEvent * event)
 		phone_show_status(phone, TRUE, 0, 1);
 }
 
+static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->me_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	unsigned int id;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PHONE_MESSAGE_COLUMN_ID, &id,
+				-1);
+		if(id == event->message_deleted.id)
+		{
+			gtk_list_store_remove(phone->me_store, &iter);
+			break;
+		}
+	}
+	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, FALSE);
+	phone->me_progress = _phone_progress_delete(phone->me_progress);
+	_phone_info(phone, phone->me_window, _("Message deleted"), NULL);
+}
+
 
 /* phone_modem_event_authentication */
 static void _phone_modem_event_authentication(GtkWidget * widget, gint response,
@@ -3781,6 +3811,8 @@ static gboolean _phone_timeout_track(gpointer data)
 
 	if(phone->tracks[PHONE_TRACK_CODE_ENTERED])
 		_phone_progress_pulse(phone->en_progress);
+	if(phone->tracks[PHONE_TRACK_MESSAGE_DELETED])
+		_phone_progress_pulse(phone->me_progress);
 	if(phone->tracks[PHONE_TRACK_MESSAGE_LIST])
 	{
 		_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, FALSE);

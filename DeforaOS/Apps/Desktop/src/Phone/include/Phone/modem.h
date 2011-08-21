@@ -67,6 +67,14 @@ typedef enum _ModemCallType
 	MODEM_CALL_TYPE_DATA
 } ModemCallType;
 
+typedef enum _ModemContactStatus
+{
+	MODEM_CONTACT_STATUS_OFFLINE = 0,
+	MODEM_CONTACT_STATUS_ONLINE,
+	MODEM_CONTACT_STATUS_AWAY,
+	MODEM_CONTACT_STATUS_IDLE
+} ModemContactStatus;
+
 typedef enum _ModemMessageEncoding
 {
 	MODEM_MESSAGE_ENCODING_NONE = 0,
@@ -137,6 +145,7 @@ typedef enum _ModemEventType
 	MODEM_EVENT_TYPE_CONNECTION,
 	MODEM_EVENT_TYPE_CONTACT,
 	MODEM_EVENT_TYPE_MESSAGE,
+	MODEM_EVENT_TYPE_MESSAGE_DELETED,
 	MODEM_EVENT_TYPE_MESSAGE_SENT,
 	MODEM_EVENT_TYPE_MODEL,
 	MODEM_EVENT_TYPE_REGISTRATION,
@@ -198,6 +207,7 @@ typedef union _ModemEvent
 	{
 		ModemEventType type;
 		unsigned int id;
+		ModemContactStatus status;
 		char const * name;
 		char const * number;
 	} contact;
@@ -216,12 +226,12 @@ typedef union _ModemEvent
 		char const * content;
 	} message;
 
-	/* MODEM_EVENT_TYPE_MESSAGE_SENT */
+	/* MODEM_EVENT_TYPE_MESSAGE_DELETED, MODEM_EVENT_TYPE_MESSAGE_SENT */
 	struct
 	{
 		ModemEventType type;
 		unsigned int id;
-	} message_sent;
+	} message_deleted, message_sent;
 
 	/* MODEM_EVENT_TYPE_MODEL */
 	struct
@@ -321,12 +331,12 @@ typedef union _ModemRequest
 		unsigned int id;
 	} contact, contact_delete;
 
-	/* MODEM_REQUEST_MESSAGE */
+	/* MODEM_REQUEST_MESSAGE, MODEM_REQUEST_MESSAGE_DELETE */
 	struct
 	{
 		ModemRequestType type;
 		unsigned int id;
-	} message;
+	} message, message_delete;
 
 	/* MODEM_REQUEST_MESSAGE_SEND */
 	struct
