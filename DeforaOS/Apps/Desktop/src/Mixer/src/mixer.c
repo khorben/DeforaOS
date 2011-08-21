@@ -368,43 +368,52 @@ static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
 	GtkIconTheme * icontheme;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	struct
+	{
+		char const * name;
+		char const * icon;
+	} icons[] = {
+		{ "cd",		"media-cdrom"		},
+		{ "line",	"stock_line-in"		},
+		{ "master",	"audio-volume-high"	},
+		{ "mic",	"audio-input-microphone"},
+		{ "pcm",	"audio-volume-high"	},
+		{ "rec",	"gtk-media-record"	},
+		{ "source",	"stock_line-in"		},
+		{ "vol",	"audio-volume-high"	}
+	};
+	size_t i;
 
 	icontheme = gtk_icon_theme_get_default();
 	hbox = gtk_hbox_new(FALSE, 4);
+	for(i = 0; pixbuf == NULL && i < sizeof(icons) / sizeof(*icons); i++)
+		if(strncmp(icons[i].name, name, strlen(icons[i].name)) == 0)
+			pixbuf = gtk_icon_theme_load_icon(icontheme,
+					icons[i].icon, 16,
+#if GTK_CHECK_VERSION(2, 12, 0)
+					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+#else
+					0, NULL);
+#endif
 	if(pixbuf == NULL)
 	{
-		if(strncmp(name, "cd", 2) == 0)
-			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"media-cdrom", 16,
-					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-		else if(strncmp(name, "line", 4) == 0
-				|| strncmp(name, "source", 5) == 0)
-			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"stock_line-in", 16,
-					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-		else if(strncmp(name, "master", 6) == 0
-				|| strncmp(name, "pcm", 3) == 0
-				|| strncmp(name, "vol", 3) == 0)
-			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"audio-volume-high", 16,
-					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-		else if(strncmp(name, "mic", 3) == 0)
-			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"audio-input-microphone", 16,
-					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-		else if(strncmp(name, "rec", 3) == 0)
-			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"gtk-media-record", 16,
-					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
 		/* more generic fallbacks */
-		else if(strstr(name, "sel") != NULL)
+		if(strstr(name, "sel") != NULL)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
 					"stock_line-in", 16,
+#if GTK_CHECK_VERSION(2, 12, 0)
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+#else
+					0, NULL);
+#endif
 		else if(strstr(name, ".mute") != NULL)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
 					"audio-volume-muted", 16,
+#if GTK_CHECK_VERSION(2, 12, 0)
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+#else
+					0, NULL);
+#endif
 	}
 	if(pixbuf != NULL)
 	{
