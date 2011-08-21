@@ -49,7 +49,8 @@ void phone_contacts_call_selected(Phone * phone);
 void phone_contacts_delete_selected(Phone * phone);
 void phone_contacts_edit_selected(Phone * phone);
 void phone_contacts_new(Phone * phone);
-void phone_contacts_set(Phone * phone, unsigned int index, char const * name,
+void phone_contacts_set(Phone * phone, unsigned int index,
+		ModemContactStatus status, char const * name,
 		char const * number);
 void phone_contacts_write_selected(Phone * phone);
 

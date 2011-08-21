@@ -70,10 +70,12 @@ typedef enum _ModemCallType
 typedef enum _ModemContactStatus
 {
 	MODEM_CONTACT_STATUS_OFFLINE = 0,
-	MODEM_CONTACT_STATUS_ONLINE,
 	MODEM_CONTACT_STATUS_AWAY,
-	MODEM_CONTACT_STATUS_IDLE
+	MODEM_CONTACT_STATUS_IDLE,
+	MODEM_CONTACT_STATUS_ONLINE
 } ModemContactStatus;
+# define MODEM_CONTACT_STATUS_LAST	MODEM_CONTACT_STATUS_ONLINE
+# define MODEM_CONTACT_STATUS_COUNT	(MODEM_CONTACT_STATUS_LAST + 1)
 
 typedef enum _ModemMessageEncoding
 {
@@ -330,6 +332,15 @@ typedef union _ModemRequest
 		ModemRequestType type;
 		unsigned int id;
 	} contact, contact_delete;
+
+	/* MODEM_REQUEST_CONTACT_NEW */
+	struct
+	{
+		ModemRequestType type;
+		unsigned int id;
+		char const * name;
+		char const * number;
+	} contact_new;
 
 	/* MODEM_REQUEST_MESSAGE, MODEM_REQUEST_MESSAGE_DELETE */
 	struct

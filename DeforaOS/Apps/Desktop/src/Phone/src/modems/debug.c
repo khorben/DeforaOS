@@ -38,6 +38,7 @@ typedef struct _Debug
 	GtkWidget * message;
 
 	/* events */
+	ModemEvent event_contact;
 	ModemEvent event_message;
 } Debug;
 
@@ -91,6 +92,7 @@ static int _debug_init(ModemPlugin * modem)
 		return -1;
 	modem->priv = debug;
 	debug->source = 0;
+	memset(&debug->event_contact, 0, sizeof(debug->event_contact));
 	memset(&debug->event_message, 0, sizeof(debug->event_message));
 	/* window */
 	debug->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -219,6 +221,8 @@ static gboolean _stop_on_idle(gpointer data)
 /* debug_request */
 static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 {
+	ModemPluginHelper * helper = modem->helper;
+	Debug * debug = modem->priv;
 	ModemEvent event;
 
 	if(request == NULL)
@@ -226,10 +230,21 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 	memset(&event, 0, sizeof(event));
 	switch(request->type)
 	{
+		case MODEM_REQUEST_CONTACT_NEW:
+			debug->event_contact.type = MODEM_EVENT_TYPE_CONTACT;
+			debug->event_contact.contact.id++;
+			debug->event_contact.contact.status
+				= rand() % MODEM_CONTACT_STATUS_COUNT;
+			debug->event_contact.contact.name
+				= request->contact_new.name;
+			debug->event_contact.contact.number
+				= request->contact_new.number;
+			helper->event(helper->modem, &debug->event_contact);
+			break;
 		case MODEM_REQUEST_MESSAGE_DELETE:
 			event.type = MODEM_EVENT_TYPE_MESSAGE_DELETED;
 			event.message_deleted.id = request->message_delete.id;
-			modem->helper->event(modem->helper->modem, &event);
+			helper->event(helper->modem, &event);
 			break;
 		default:
 			break;
