@@ -811,7 +811,7 @@ static char * _request_attention_contact_delete(ModemPlugin * modem,
 
 	/* FIXME store in the command itself */
 	hayes->events[MODEM_EVENT_TYPE_CONTACT_DELETED].contact_deleted.id = id;
-	snprintf(buf, sizeof(buf), "%s%u%s", cmd, id, ",\"\"");
+	snprintf(buf, sizeof(buf), "%s%u%s", cmd, id, ",");
 	return strdup(buf);
 }
 
