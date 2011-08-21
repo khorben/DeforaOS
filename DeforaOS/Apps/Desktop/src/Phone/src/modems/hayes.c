@@ -273,6 +273,8 @@ static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_functional(HayesCommand * command,
@@ -492,6 +494,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_call_status },
 	{ MODEM_REQUEST_CALL_PRESENTATION,		NULL,
 		_on_request_generic },
+	{ MODEM_REQUEST_CONTACT_DELETE,			NULL,
+		_on_request_contact_delete },
 	{ MODEM_REQUEST_CONTACT_LIST,			"AT+CPBR=?",
 		_on_request_contact_list },
 	{ MODEM_REQUEST_MESSAGE,			NULL,
@@ -609,6 +613,8 @@ static char * _request_attention_apn(char const * protocol, char const * apn);
 static char * _request_attention_call(ModemPlugin * modem,
 		ModemRequest * request);
 static char * _request_attention_call_hangup(ModemPlugin * modem);
+static char * _request_attention_contact_delete(ModemPlugin * modem,
+		unsigned int id);
 static char * _request_attention_contact_list(ModemRequest * request);
 static char * _request_attention_gprs(ModemPlugin * modem,
 		char const * username, char const * password);
@@ -700,12 +706,15 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 					request->call_presentation.enabled
 					? 1 : 0);
 			return strdup(buf);
+		case MODEM_REQUEST_CONTACT_DELETE:
+			return _request_attention_contact_delete(modem,
+					request->contact_delete.id);
 		case MODEM_REQUEST_MESSAGE:
 			return _request_attention_message(modem,
 					request->message.id);
 		case MODEM_REQUEST_MESSAGE_DELETE:
 			return _request_attention_message_delete(modem,
-					request->message.id);
+					request->message_delete.id);
 		case MODEM_REQUEST_MESSAGE_SEND:
 			return _request_attention_message_send(modem,
 					request->message_send.number,
@@ -791,6 +800,19 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 		return strdup("ATH");
 	_hayes_set_mode(modem, HAYES_MODE_INIT);
 	return NULL;
+}
+
+static char * _request_attention_contact_delete(ModemPlugin * modem,
+		unsigned int id)
+{
+	Hayes * hayes = modem->priv;
+	char const cmd[] = "AT+CPBW=";
+	char buf[32];
+
+	/* FIXME store in the command itself */
+	hayes->events[MODEM_EVENT_TYPE_CONTACT_DELETED].contact_deleted.id = id;
+	snprintf(buf, sizeof(buf), "%s%u%s", cmd, id, ",\"\"");
+	return strdup(buf);
 }
 
 static char * _request_attention_contact_list(ModemRequest * request)
@@ -1069,7 +1091,8 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			e = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 			modem->helper->event(modem->helper->modem, e);
 			break;
-		case MODEM_EVENT_TYPE_ERROR: /* do not make sense */
+		case MODEM_EVENT_TYPE_CONTACT_DELETED: /* do not make sense */
+		case MODEM_EVENT_TYPE_ERROR:
 		case MODEM_EVENT_TYPE_MESSAGE:
 		case MODEM_EVENT_TYPE_MESSAGE_DELETED:
 		case MODEM_EVENT_TYPE_MESSAGE_SENT:
@@ -2289,6 +2312,21 @@ static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 			&& status != HCS_ERROR)
 		return status;
 	_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
+	return status;
+}
+
+
+/* on_request_contact_delete */
+static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	ModemPlugin * modem = priv;
+	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONTACT_DELETED];
+
+	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+		return status;
+	modem->helper->event(modem->helper->modem, event);
 	return status;
 }
 

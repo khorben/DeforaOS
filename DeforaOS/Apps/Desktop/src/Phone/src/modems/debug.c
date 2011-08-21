@@ -230,6 +230,11 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 	memset(&event, 0, sizeof(event));
 	switch(request->type)
 	{
+		case MODEM_REQUEST_CONTACT_DELETE:
+			event.type = MODEM_EVENT_TYPE_CONTACT_DELETED;
+			event.contact_deleted.id = request->contact_delete.id;
+			helper->event(helper->modem, &event);
+			break;
 		case MODEM_REQUEST_CONTACT_NEW:
 			debug->event_contact.type = MODEM_EVENT_TYPE_CONTACT;
 			debug->event_contact.contact.id++;

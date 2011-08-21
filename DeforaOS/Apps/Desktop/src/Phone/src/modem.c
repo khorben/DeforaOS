@@ -205,7 +205,6 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 			request.contact.id = va_arg(ap, unsigned int);
 			break;
 		case MODEM_REQUEST_CONTACT_NEW:
-			request.contact_new.id = va_arg(ap, unsigned int);
 			request.contact_new.name = va_arg(ap, char const *);
 			request.contact_new.number = va_arg(ap, char const *);
 			break;

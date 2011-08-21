@@ -146,6 +146,7 @@ typedef enum _ModemEventType
 	MODEM_EVENT_TYPE_CALL,
 	MODEM_EVENT_TYPE_CONNECTION,
 	MODEM_EVENT_TYPE_CONTACT,
+	MODEM_EVENT_TYPE_CONTACT_DELETED,
 	MODEM_EVENT_TYPE_MESSAGE,
 	MODEM_EVENT_TYPE_MESSAGE_DELETED,
 	MODEM_EVENT_TYPE_MESSAGE_SENT,
@@ -213,6 +214,13 @@ typedef union _ModemEvent
 		char const * name;
 		char const * number;
 	} contact;
+
+	/* MODEM_EVENT_TYPE_CONTACT_DELETED */
+	struct
+	{
+		ModemEventType type;
+		unsigned int id;
+	} contact_deleted;
 
 	/* MODEM_EVENT_TYPE_MESSAGE */
 	struct
@@ -337,7 +345,6 @@ typedef union _ModemRequest
 	struct
 	{
 		ModemRequestType type;
-		unsigned int id;
 		char const * name;
 		char const * number;
 	} contact_new;
