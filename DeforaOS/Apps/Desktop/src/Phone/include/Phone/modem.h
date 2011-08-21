@@ -341,6 +341,15 @@ typedef union _ModemRequest
 		unsigned int id;
 	} contact, contact_delete;
 
+	/* MODEM_REQUEST_CONTACT_EDIT */
+	struct
+	{
+		ModemRequestType type;
+		unsigned int id;
+		char const * name;
+		char const * number;
+	} contact_edit;
+
 	/* MODEM_REQUEST_CONTACT_NEW */
 	struct
 	{
