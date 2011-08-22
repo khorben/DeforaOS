@@ -262,7 +262,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		GIOCondition condition, gpointer data);
 
-static HayesCommandStatus _on_request_authentication(HayesCommand * command,
+static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_battery_level(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
@@ -293,6 +293,8 @@ static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 static HayesCommandStatus _on_request_message_send(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_model(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_unsupported(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
@@ -475,7 +477,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ HAYES_REQUEST_SIGNAL_LEVEL,			"AT+CSQ",
 		_on_request_generic },
 	{ HAYES_REQUEST_SIM_PIN_VALID,			"AT+CPIN?",
-		_on_request_authentication },
+		_on_request_sim_pin_valid },
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,"AT+CUSD=2",
 		_on_request_generic },
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_DISABLE,"AT+CUSD=0",
@@ -491,7 +493,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ HAYES_REQUEST_VERSION,			"AT+CGMR",
 		_on_request_model },
 	{ MODEM_REQUEST_AUTHENTICATE,			NULL,
-		_on_request_authentication },
+		_on_request_authenticate },
 	{ MODEM_REQUEST_CALL,				NULL,
 		_on_request_call_outgoing },
 	{ MODEM_REQUEST_CALL_ANSWER,			"ATA",
@@ -801,11 +803,10 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 		event->connection.in = 0;
 		event->connection.out = 0;
 		modem->helper->event(modem->helper->modem, event);
+		_hayes_set_mode(modem, HAYES_MODE_INIT);
+		return NULL;
 	}
-	else
-		return strdup("ATH");
-	_hayes_set_mode(modem, HAYES_MODE_INIT);
-	return NULL;
+	return strdup("ATH");
 }
 
 static char * _request_attention_contact_delete(ModemPlugin * modem,
@@ -2186,8 +2187,8 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 }
 
 
-/* on_request_authentication */
-static HayesCommandStatus _on_request_authentication(HayesCommand * command,
+/* on_request_authenticate */
+static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
@@ -2209,31 +2210,9 @@ static HayesCommandStatus _on_request_authentication(HayesCommand * command,
 	}
 	if(event->authentication.name != NULL)
 		modem->helper->event(modem->helper->modem, event);
-	if(event->authentication.status == MODEM_AUTHENTICATION_STATUS_OK)
+	if(status == HCS_SUCCESS)
 	{
-		request.type = HAYES_REQUEST_OPERATOR_FORMAT_LONG;
-		_hayes_request(modem, &request);
-		request.type = HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE;
-		_hayes_request(modem, &request);
-		request.type = MODEM_REQUEST_REGISTRATION;
-		request.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
-		_hayes_request(modem, &request);
-		/* force a registration report */
-		request.type = HAYES_REQUEST_REGISTRATION;
-		_hayes_request(modem, &request);
-		/* report new messages */
-		request.type = HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE;
-		_hayes_request(modem, &request);
-		/* report new notifications */
-		request.type = HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE;
-		_hayes_request(modem, &request);
-		/* refresh the current call status */
-		_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
-		/* refresh the contact list */
-		request.type = MODEM_REQUEST_CONTACT_LIST;
-		_hayes_request(modem, &request);
-		/* refresh the message list */
-		request.type = MODEM_REQUEST_MESSAGE_LIST;
+		request.type = HAYES_REQUEST_SIM_PIN_VALID;
 		_hayes_request(modem, &request);
 	}
 	return status;
@@ -2468,6 +2447,52 @@ static HayesCommandStatus _on_request_model(HayesCommand * command,
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
 	modem->helper->event(modem->helper->modem, event);
+	return status;
+}
+
+
+/* on_request_sim_pin_valid */
+static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	ModemPlugin * modem = priv;
+	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_AUTHENTICATION];
+	ModemRequest request;
+
+	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+		return status;
+	modem->helper->event(modem->helper->modem, event);
+	/* return if not successful */
+	if(event->authentication.status != MODEM_AUTHENTICATION_STATUS_OK)
+		return status;
+	/* automatically register */
+	/* XXX should really wait for the telephony application for this */
+	memset(&request, 0, sizeof(&request));
+	request.type = HAYES_REQUEST_OPERATOR_FORMAT_LONG;
+	_hayes_request(modem, &request);
+	request.type = HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE;
+	_hayes_request(modem, &request);
+	request.type = MODEM_REQUEST_REGISTRATION;
+	request.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
+	_hayes_request(modem, &request);
+	/* force a registration report */
+	request.type = HAYES_REQUEST_REGISTRATION;
+	_hayes_request(modem, &request);
+	/* report new messages */
+	request.type = HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE;
+	_hayes_request(modem, &request);
+	/* report new notifications */
+	request.type = HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE;
+	_hayes_request(modem, &request);
+	/* refresh the current call status */
+	_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
+	/* refresh the contact list */
+	request.type = MODEM_REQUEST_CONTACT_LIST;
+	_hayes_request(modem, &request);
+	/* refresh the message list */
+	request.type = MODEM_REQUEST_MESSAGE_LIST;
+	_hayes_request(modem, &request);
 	return status;
 }
 
@@ -3177,6 +3202,12 @@ static void _on_trigger_cpas(ModemPlugin * modem, char const * answer)
 		case 0:
 			event->call.status = MODEM_CALL_STATUS_NONE;
 			event->call.direction = MODEM_CALL_DIRECTION_NONE;
+			/* report connection status */
+			event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
+			event->connection.connected = 0;
+			event->connection.in = 0;
+			event->connection.out = 0;
+			modem->helper->event(modem->helper->modem, event);
 			break;
 		case 3:
 			event->call.status = MODEM_CALL_STATUS_RINGING;

@@ -3700,14 +3700,6 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			_phone_info(phone, phone->wr_window, _("Message sent"),
 					NULL);
 			break;
-		case MODEM_EVENT_TYPE_MODEL:
-			modem_request_type(phone->modem,
-					MODEM_REQUEST_CONTACT_LIST);
-#ifndef DEBUG
-			/* FIXME this is clearly out of place */
-			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
-#endif
-			break;
 		case MODEM_EVENT_TYPE_STATUS:
 			pevent.type = (event->status.online != 0)
 				? PHONE_EVENT_TYPE_ONLINE
@@ -3747,6 +3739,8 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 			if(event->authentication.method
 					== MODEM_AUTHENTICATION_METHOD_PIN)
 				phone_show_code(phone, TRUE, method, name);
+			break;
+		case MODEM_AUTHENTICATION_STATUS_UNKNOWN:
 			break;
 	}
 }
