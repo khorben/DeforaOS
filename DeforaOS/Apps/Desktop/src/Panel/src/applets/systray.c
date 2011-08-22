@@ -66,7 +66,6 @@ PanelApplet applet =
 	_systray_init,
 	_systray_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

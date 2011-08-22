@@ -71,7 +71,6 @@ PanelApplet applet =
 	_bluetooth_init,
 	_bluetooth_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

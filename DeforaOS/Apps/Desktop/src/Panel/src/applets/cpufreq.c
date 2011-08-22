@@ -66,7 +66,6 @@ PanelApplet applet =
 	_cpufreq_init,
 	_cpufreq_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

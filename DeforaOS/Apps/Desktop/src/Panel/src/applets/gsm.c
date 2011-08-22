@@ -68,7 +68,6 @@ PanelApplet applet =
 	_gsm_init,
 	_gsm_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

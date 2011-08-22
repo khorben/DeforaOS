@@ -15,27 +15,50 @@
 
 
 
-#ifndef PANEL_WINDOW_H
-# define PANEL_WINDOW_H
-
-# include "common.h"
+#include "Panel.h"
 
 
-/* PanelWindow */
-/* types */
-typedef struct _PanelWindow PanelWindow;
+/* spacer */
+/* private */
+/* prototypes */
+/* plug-in */
+static GtkWidget * _spacer_init(PanelApplet * applet);
+static void _spacer_destroy(PanelApplet * applet);
 
 
+/* public */
+/* variables */
+PanelApplet applet =
+{
+	NULL,
+	"Spacer",
+	NULL,
+	_spacer_init,
+	_spacer_destroy,
+	NULL,
+	TRUE,
+	TRUE,
+	NULL
+};
+
+
+/* private */
 /* functions */
-PanelWindow * panel_window_new(PanelPosition position,
-		PanelAppletHelper * helper, GdkRectangle * root);
-void panel_window_delete(PanelWindow * panel);
+static GtkWidget * _spacer_init(PanelApplet * applet)
+{
+	GtkWidget * widget;
 
-/* accessors */
-int panel_window_get_height(PanelWindow * panel);
+	widget = gtk_label_new(NULL);
+	applet->priv = widget;
+	gtk_widget_show(widget);
+	return widget;
+}
 
-/* useful */
-void panel_window_append(PanelWindow * panel, GtkWidget * widget,
-		gboolean expand, gboolean fill);
 
-#endif /* !PANEL_WINDOW_H */
+/* spacer_destroy */
+static void _spacer_destroy(PanelApplet * applet)
+{
+	GtkWidget * widget = applet->priv;
+
+	gtk_widget_destroy(widget);
+}

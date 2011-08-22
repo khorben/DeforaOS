@@ -63,7 +63,6 @@ PanelApplet applet =
 	_gps_init,
 	_gps_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

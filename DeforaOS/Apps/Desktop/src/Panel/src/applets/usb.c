@@ -66,7 +66,6 @@ PanelApplet applet =
 	_usb_init,
 	_usb_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

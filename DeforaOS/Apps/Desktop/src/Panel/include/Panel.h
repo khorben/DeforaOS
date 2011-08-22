@@ -46,12 +46,6 @@ typedef struct _PanelAppletHelper
 	int (*suspend)(Panel * panel);
 } PanelAppletHelper;
 
-typedef enum _PanelAppletPosition
-{
-	PANEL_APPLET_POSITION_START = 0,
-	PANEL_APPLET_POSITION_END
-} PanelAppletPosition;
-
 struct _PanelApplet
 {
 	PanelAppletHelper * helper;
@@ -61,7 +55,6 @@ struct _PanelApplet
 	void (*destroy)(PanelApplet * applet);
 	GtkWidget * (*settings)(PanelApplet * applet, gboolean apply,
 			gboolean reset);
-	PanelAppletPosition position;
 	gboolean expand;
 	gboolean fill;
 	void * priv;

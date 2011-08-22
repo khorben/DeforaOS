@@ -89,7 +89,6 @@ PanelApplet applet =
 	_wpa_init,
 	_wpa_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

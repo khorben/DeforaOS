@@ -487,7 +487,7 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 		plugin_delete(plugin);
 		return -1;
 	}
-	panel_window_append(window, widget, pa->expand, pa->fill, pa->position);
+	panel_window_append(window, widget, pa->expand, pa->fill);
 	if(pa->settings != NULL
 			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
 	{

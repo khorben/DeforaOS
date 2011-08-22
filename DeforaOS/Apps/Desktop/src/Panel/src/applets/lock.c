@@ -52,7 +52,6 @@ PanelApplet applet =
 	_lock_init,
 	_lock_destroy,
 	_lock_settings,
-	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL

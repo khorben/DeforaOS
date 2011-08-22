@@ -60,7 +60,6 @@ PanelApplet applet =
 	_swap_init,
 	_swap_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

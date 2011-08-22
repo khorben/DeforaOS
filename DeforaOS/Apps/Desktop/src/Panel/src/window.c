@@ -150,17 +150,7 @@ int panel_window_get_height(PanelWindow * panel)
 
 /* useful */
 void panel_window_append(PanelWindow * panel, GtkWidget * widget,
-		gboolean expand, gboolean fill, PanelAppletPosition position)
+		gboolean expand, gboolean fill)
 {
-	switch(position)
-	{
-		case PANEL_APPLET_POSITION_END:
-			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, expand,
-					fill, 0);
-			break;
-		case PANEL_APPLET_POSITION_START:
-			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, expand,
-					fill, 0);
-			break;
-	}
+	gtk_box_pack_start(GTK_BOX(panel->hbox), widget, expand, fill, 0);
 }

@@ -71,7 +71,6 @@ PanelApplet applet =
 	_keyboard_init,
 	_keyboard_destroy,
 	_keyboard_settings,
-	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL

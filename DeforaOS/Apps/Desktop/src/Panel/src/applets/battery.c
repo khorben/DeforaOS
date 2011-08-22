@@ -94,7 +94,6 @@ PanelApplet applet =
 	_battery_init,
 	_battery_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

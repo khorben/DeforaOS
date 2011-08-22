@@ -60,7 +60,6 @@ PanelApplet applet =
 	_memory_init,
 	_memory_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

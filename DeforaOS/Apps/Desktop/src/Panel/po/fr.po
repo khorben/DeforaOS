@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-06 01:55+0200\n"
+"POT-Creation-Date: 2011-08-23 01:18+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -17,33 +17,33 @@ msgstr ""
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:170
+#: ../src/applets/battery.c:169
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:186 ../src/panel.c:426 ../src/panel.c:431
+#: ../src/applets/battery.c:185 ../src/panel.c:426 ../src/panel.c:431
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/applets/battery.c:192
+#: ../src/applets/battery.c:191
 #, c-format
 msgid "Battery level: %.0lf%%%s"
 msgstr "Batterie : %.0lf%%%s"
 
-#: ../src/applets/battery.c:193
+#: ../src/applets/battery.c:192
 msgid " (charging)"
 msgstr " (en charge)"
 
-#: ../src/applets/bluetooth.c:100
+#: ../src/applets/bluetooth.c:99
 msgid "Bluetooth is enabled"
 msgstr "Bluetooth actif"
 
-#: ../src/applets/clock.c:86 ../src/applets/clock.c:97
+#: ../src/applets/clock.c:85 ../src/applets/clock.c:96
 msgid "%H:%M"
 msgstr "%H:%M"
 
-#: ../src/applets/clock.c:95
+#: ../src/applets/clock.c:94
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
@@ -51,121 +51,121 @@ msgstr ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
 
-#: ../src/applets/close.c:96
+#: ../src/applets/close.c:95
 msgid "Close"
 msgstr "Fermer"
 
-#: ../src/applets/cpu.c:95
+#: ../src/applets/cpu.c:94
 msgid "CPU:"
 msgstr ""
 
-#: ../src/applets/cpu.c:111 ../src/applets/cpufreq.c:128
-#: ../src/applets/memory.c:105 ../src/applets/swap.c:105
+#: ../src/applets/cpu.c:110 ../src/applets/cpufreq.c:127
+#: ../src/applets/memory.c:104 ../src/applets/swap.c:104
 msgid "Unsupported platform"
 msgstr "Plate-forme non supportée"
 
-#: ../src/applets/cpufreq.c:120
+#: ../src/applets/cpufreq.c:119
 msgid "MHz"
 msgstr "MHz"
 
-#: ../src/applets/desktop.c:66
+#: ../src/applets/desktop.c:65
 msgid "Show desktop"
 msgstr "Afficher le bureau"
 
-#: ../src/applets/gps.c:92
+#: ../src/applets/gps.c:91
 msgid "GPS is enabled"
 msgstr "GPS actif"
 
-#: ../src/applets/gsm.c:99
+#: ../src/applets/gsm.c:98
 msgid "GSM is enabled"
 msgstr "GSM actif"
 
-#: ../src/applets/lock.c:77 ../src/applets/main.c:320
+#: ../src/applets/lock.c:76 ../src/applets/main.c:319
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
-#: ../src/applets/logout.c:61
+#: ../src/applets/logout.c:60
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:70 ../src/panel.c:856 ../src/panel.c:863
+#: ../src/applets/logout.c:69 ../src/panel.c:856 ../src/panel.c:863
 #: ../src/panel.c:872
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:136
+#: ../src/applets/main.c:135
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:302
+#: ../src/applets/main.c:301
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:308
+#: ../src/applets/main.c:307
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:326
+#: ../src/applets/main.c:325
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:333
+#: ../src/applets/main.c:332
 msgid "Suspend"
 msgstr "Suspendre"
 
-#: ../src/applets/main.c:338
+#: ../src/applets/main.c:337
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
-#: ../src/applets/memory.c:91
+#: ../src/applets/memory.c:90
 msgid "RAM:"
 msgstr "Mémoire :"
 
-#: ../src/applets/swap.c:91
+#: ../src/applets/swap.c:90
 msgid "Swap:"
 msgstr "Échange :"
 
-#: ../src/applets/tasks.c:459 ../src/applets/title.c:230
+#: ../src/applets/tasks.c:458 ../src/applets/title.c:229
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/applets/tasks.c:732
+#: ../src/applets/tasks.c:731
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../src/applets/tasks.c:734
+#: ../src/applets/tasks.c:733
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: ../src/applets/tasks.c:736
+#: ../src/applets/tasks.c:735
 msgid "Minimize"
 msgstr "Réduire"
 
-#: ../src/applets/tasks.c:738
+#: ../src/applets/tasks.c:737
 msgid "Shade"
 msgstr "Masquer"
 
-#: ../src/applets/tasks.c:740
+#: ../src/applets/tasks.c:739
 msgid "Stick"
 msgstr "Attacher"
 
-#: ../src/applets/tasks.c:742
+#: ../src/applets/tasks.c:741
 msgid "Maximize horizontally"
 msgstr "Maximiser horizontalement"
 
-#: ../src/applets/tasks.c:744
+#: ../src/applets/tasks.c:743
 msgid "Maximize vertically"
 msgstr "Maximiser verticalement"
 
-#: ../src/applets/tasks.c:748
+#: ../src/applets/tasks.c:747
 msgid "Change desktop"
 msgstr "Déplacer vers le bureau"
 
-#: ../src/applets/tasks.c:785
+#: ../src/applets/tasks.c:784
 msgid "Maximize"
 msgstr "Maximiser"
 
-#: ../src/applets/usb.c:93
+#: ../src/applets/usb.c:92
 msgid "USB networking device connected"
 msgstr "Périphérique réseau USB connecté"
 

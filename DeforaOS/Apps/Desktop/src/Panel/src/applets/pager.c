@@ -91,7 +91,6 @@ PanelApplet applet =
 	_pager_init,
 	_pager_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL

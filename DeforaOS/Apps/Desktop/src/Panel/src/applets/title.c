@@ -75,7 +75,6 @@ PanelApplet applet =
 	_title_init,
 	_title_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL

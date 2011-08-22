@@ -51,7 +51,6 @@ PanelApplet applet =
 	_volume_init,
 	_volume_destroy,
 	NULL,
-	PANEL_APPLET_POSITION_END,
 	FALSE,
 	TRUE,
 	NULL

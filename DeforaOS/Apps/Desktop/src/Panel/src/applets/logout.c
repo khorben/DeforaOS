@@ -40,7 +40,6 @@ PanelApplet applet =
 	_logout_init,
 	NULL,
 	NULL,
-	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
 	NULL

@@ -88,6 +88,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/pager.c \
 		$(PACKAGE)-$(VERSION)/src/applets/phone.c \
 		$(PACKAGE)-$(VERSION)/src/applets/separator.c \
+		$(PACKAGE)-$(VERSION)/src/applets/spacer.c \
 		$(PACKAGE)-$(VERSION)/src/applets/swap.c \
 		$(PACKAGE)-$(VERSION)/src/applets/systray.c \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
