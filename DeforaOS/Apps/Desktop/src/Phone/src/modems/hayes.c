@@ -184,7 +184,8 @@ enum
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_DISABLE,
 	HAYES_REQUEST_VENDOR,
-	HAYES_REQUEST_VERBOSE,
+	HAYES_REQUEST_VERBOSE_DISABLE,
+	HAYES_REQUEST_VERBOSE_ENABLE,
 	HAYES_REQUEST_VERSION
 };
 
@@ -278,6 +279,8 @@ static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
 static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_functional(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_functional_enable(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_generic(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
@@ -401,14 +404,15 @@ static const struct
 {
 	{ "\"Neo1973 Embedded GSM Modem\"",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED },
+			| HAYES_QUIRK_CONNECTED_LINE_DISABLED		},
 	{ "\"Neo1973 GTA01/GTA02 Embedded GSM Modem\"",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED },
+			| HAYES_QUIRK_CONNECTED_LINE_DISABLED		},
 	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED },
-	{ "Nokia N900",		HAYES_QUIRK_BATTERY_70			},
+			| HAYES_QUIRK_CONNECTED_LINE_DISABLED		},
+	{ "Nokia N900",
+		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_BATTERY_70	},
 	{ NULL,			0					}
 };
 
@@ -433,11 +437,11 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ HAYES_REQUEST_EXTENDED_RING_REPORTS,		"AT+CRC=1",
 		_on_request_generic },
 	{ HAYES_REQUEST_FUNCTIONAL,			"AT+CFUN?",
-		_on_request_generic },
+		_on_request_functional },
 	{ HAYES_REQUEST_FUNCTIONAL_DISABLE,		"AT+CFUN=0",
 		_on_request_generic },
 	{ HAYES_REQUEST_FUNCTIONAL_ENABLE,		"AT+CFUN=1",
-		_on_request_functional },
+		_on_request_functional_enable },
 	{ HAYES_REQUEST_GPRS_ATTACHED,			"AT+CGATT?",
 		_on_request_generic },
 	{ HAYES_REQUEST_LOCAL_ECHO_DISABLE,		"ATE0",
@@ -480,7 +484,9 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_VENDOR,				"AT+CGMI",
 		_on_request_model },
-	{ HAYES_REQUEST_VERBOSE,			"ATV1",
+	{ HAYES_REQUEST_VERBOSE_DISABLE,		"ATV0",
+		_on_request_generic },
+	{ HAYES_REQUEST_VERBOSE_ENABLE,			"ATV1",
 		_on_request_generic },
 	{ HAYES_REQUEST_VERSION,			"AT+CGMR",
 		_on_request_model },
@@ -1938,7 +1944,7 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			_hayes_set_mode(modem, HAYES_MODE_COMMAND);
 			request.type = HAYES_REQUEST_LOCAL_ECHO_DISABLE;
 			_hayes_request(modem, &request);
-			request.type = HAYES_REQUEST_VERBOSE;
+			request.type = HAYES_REQUEST_VERBOSE_ENABLE;
 			_hayes_request(modem, &request);
 			request.type = HAYES_REQUEST_MODEL;
 			_hayes_request(modem, &request);
@@ -2350,6 +2356,31 @@ static HayesCommandStatus _on_request_functional(HayesCommand * command,
 	memset(&request, 0, sizeof(request));
 	switch((status = _on_request_generic(command, status, priv)))
 	{
+		case HCS_ERROR:
+			/* try to enable */
+			request.type = HAYES_REQUEST_FUNCTIONAL_ENABLE;
+			_hayes_request(modem, &request);
+			break;
+		default:
+			break;
+	}
+	return status;
+}
+
+
+/* on_request_functional_enable */
+static HayesCommandStatus _on_request_functional_enable(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	ModemPlugin * modem = priv;
+	ModemRequest request;
+
+	memset(&request, 0, sizeof(request));
+	switch((status = _on_request_generic(command, status, priv)))
+	{
+		case HCS_SUCCESS:
+			_on_trigger_cfun(modem, "1"); /* XXX ugly workaround */
+			break;
 		case HCS_TIMEOUT:
 			/* repeat request */
 			request.type = HAYES_REQUEST_FUNCTIONAL_ENABLE;
