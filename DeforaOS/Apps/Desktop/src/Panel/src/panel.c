@@ -304,20 +304,16 @@ static gboolean _on_idle(gpointer data)
 	Panel * panel = data;
 #ifndef EMBEDDED
 	char const * plugins = "main,desktop,lock,logout,pager,tasks"
-		",clock,systray,battery,volume,cpufreq"
-		",gsm,gps,bluetooth";
-	char const * top = "main,lock,logout"
-		",clock,systray,battery,volume,cpufreq"
-		",gsm,gps,bluetooth";
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock";
+	char const * top = "main,lock,logout,separator,phone,spacer"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock";
 	char const * bottom = "desktop,tasks,pager";
 #else /* EMBEDDED */
-	char const * plugins = "main,desktop,keyboard,tasks"
-		",close,clock,systray,battery,volume"
-		",gsm,gps,bluetooth";
-	char const * top = "main,lock,logout"
-		",clock,systray,battery,volume,cpufreq"
-		",gsm,gps,bluetooth";
-	char const * bottom = "keyboard,desktop,tasks";
+	char const * plugins = "main,desktop,keyboard,tasks,spacer"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock,close";
+	char const * top = "phone,spacer"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock,close";
+	char const * bottom = "main,keyboard,desktop,tasks";
 #endif
 	char const * p;
 
