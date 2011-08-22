@@ -89,9 +89,6 @@ static int _debug_destroy(PhonePlugin * plugin);
 static int _debug_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _debug_settings(PhonePlugin * plugin);
 
-/* useful */
-static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show);
-
 
 /* public */
 /* variables */
@@ -113,19 +110,13 @@ PhonePlugin plugin =
 /* plug-in */
 /* debug_init */
 static gboolean _on_debug_closex(gpointer data);
-static void _on_debug_contacts(gpointer data);
-static void _on_debug_dialer(gpointer data);
-static void _on_debug_logs(gpointer data);
-static void _on_debug_messages(gpointer data);
 static void _on_debug_queue_execute(gpointer data);
-static void _on_debug_settings(gpointer data);
 
 static int _debug_init(PhonePlugin * plugin)
 {
 	Debug * debug;
 	GtkWidget * vbox;
 	GtkWidget * widget;
-	GtkToolItem * toolitem;
 	GtkWidget * hbox;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
@@ -143,40 +134,6 @@ static int _debug_init(PhonePlugin * plugin)
 	g_signal_connect_swapped(debug->window, "delete-event", G_CALLBACK(
 				_on_debug_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 4);
-	/* toolbar */
-	widget = gtk_toolbar_new();
-	toolitem = gtk_tool_button_new(NULL, "Contacts");
-	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-			"stock_addressbook");
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_debug_contacts), plugin);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	toolitem = gtk_tool_button_new(NULL, "Dialer");
-	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-			"phone-dialer");
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_debug_dialer), plugin);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	toolitem = gtk_tool_button_new(NULL, "Logs");
-	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem), "logviewer");
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_debug_logs), plugin);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	toolitem = gtk_tool_button_new(NULL, "Messages");
-	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-			"stock_mail-compose");
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_debug_messages), plugin);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_debug_settings), plugin);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_QUIT);
-	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				gtk_main_quit), NULL);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* vbox */
 	widget = gtk_vbox_new(FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -234,34 +191,6 @@ static gboolean _on_debug_closex(gpointer data)
 	return TRUE;
 }
 
-static void _on_debug_contacts(gpointer data)
-{
-	PhonePlugin * plugin = data;
-
-	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_CONTACTS);
-}
-
-static void _on_debug_dialer(gpointer data)
-{
-	PhonePlugin * plugin = data;
-
-	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_DIALER);
-}
-
-static void _on_debug_logs(gpointer data)
-{
-	PhonePlugin * plugin = data;
-
-	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_LOGS);
-}
-
-static void _on_debug_messages(gpointer data)
-{
-	PhonePlugin * plugin = data;
-
-	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_MESSAGES);
-}
-
 static void _on_debug_queue_execute(gpointer data)
 {
 	PhonePlugin * plugin = data;
@@ -278,13 +207,6 @@ static void _on_debug_queue_execute(gpointer data)
 	g_free(text);
 	plugin->helper->trigger(plugin->helper->phone,
 			_debug_gsm_commands[i].event);
-}
-
-static void _on_debug_settings(gpointer data)
-{
-	PhonePlugin * plugin = data;
-
-	_debug_send_message(plugin, PHONE_MESSAGE_SHOW_SETTINGS);
 }
 
 
@@ -343,13 +265,4 @@ static void _debug_settings(PhonePlugin * plugin)
 	Debug * debug = plugin->priv;
 
 	gtk_window_present(GTK_WINDOW(debug->window));
-}
-
-
-/* useful */
-/* debug_send_message */
-static void _debug_send_message(PhonePlugin * plugin, PhoneMessageShow show)
-{
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
-			show);
 }
