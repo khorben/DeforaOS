@@ -269,6 +269,7 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(gprs->window), vbox);
 	_on_settings_cancel(plugin);
+	_gprs_on_timeout(plugin);
 	gtk_widget_show_all(gprs->window);
 }
 
