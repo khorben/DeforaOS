@@ -3701,9 +3701,10 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 					NULL);
 			break;
 		case MODEM_EVENT_TYPE_STATUS:
-			pevent.type = (event->status.online != 0)
-				? PHONE_EVENT_TYPE_ONLINE
-				: PHONE_EVENT_TYPE_OFFLINE;
+			if(event->status.status == MODEM_STATUS_ONLINE)
+				pevent.type = PHONE_EVENT_TYPE_ONLINE;
+			else /* XXX may not always be right */
+				pevent.type = PHONE_EVENT_TYPE_OFFLINE;
 			phone_event(phone, &pevent);
 			break;
 		default:

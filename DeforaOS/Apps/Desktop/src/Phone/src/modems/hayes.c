@@ -1030,9 +1030,15 @@ static int _hayes_stop(ModemPlugin * modem)
 	event->registration._operator = NULL;
 	event->registration.signal = 0.0 / 0.0;
 	event->registration.roaming = 0;
-	/* report as being offline */
+	/* reset battery information */
+	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
+	event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
+	event->battery_level.level = 0.0 / 0.0;
+	event->battery_level.charging = 0;
+	modem->helper->event(modem->helper->modem, event);
+	/* report as being unavailable */
 	event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-	event->status.online = 0;
+	event->status.status = MODEM_STATUS_UNAVAILABLE;
 	modem->helper->event(modem->helper->modem, event);
 	/* FIXME some more? */
 	return 0;
@@ -1953,8 +1959,8 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			_hayes_request(modem, &request);
 			request.type = HAYES_REQUEST_FUNCTIONAL;
 			_hayes_request(modem, &request);
-			/* report being online */
-			event->status.online = 1;
+			/* report being offline */
+			event->status.status = MODEM_STATUS_OFFLINE;
 			modem->helper->event(modem->helper->modem, event);
 			return HCS_SUCCESS;
 		case HCS_TIMEOUT:
@@ -2532,6 +2538,7 @@ static void _on_trigger_cbc(ModemPlugin * modem, char const * answer)
 	if((res = sscanf(answer, "%u,%u", &u, &v)) != 2)
 		return;
 	event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
+	event->battery_level.charging = 0;
 	if(u == 0)
 		u = MODEM_BATTERY_STATUS_CONNECTED;
 	else if(u == 1)
@@ -2544,8 +2551,9 @@ static void _on_trigger_cbc(ModemPlugin * modem, char const * answer)
 		u = MODEM_BATTERY_STATUS_UNKNOWN;
 	switch((event->battery_level.status = u))
 	{
-		case MODEM_BATTERY_STATUS_CONNECTED:
 		case MODEM_BATTERY_STATUS_CHARGING:
+			event->battery_level.charging = 1;
+		case MODEM_BATTERY_STATUS_CONNECTED:
 			f = v;
 			if(hayes->quirks & HAYES_QUIRK_BATTERY_70)
 				f /= 70.0;
@@ -2564,18 +2572,22 @@ static void _on_trigger_cbc(ModemPlugin * modem, char const * answer)
 /* on_trigger_cfun */
 static void _on_trigger_cfun(ModemPlugin * modem, char const * answer)
 {
-	unsigned int u;
+	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 	ModemRequest request;
+	unsigned int u;
 
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
-	memset(&request, 0, sizeof(request));
 	if(u != 1)
 	{
-		/* FIXME only enable if requested to */
-		request.type = HAYES_REQUEST_FUNCTIONAL_ENABLE;
+		event->status.status = MODEM_STATUS_OFFLINE;
+		modem->helper->event(modem->helper->modem, event);
 		return;
 	}
+	event->status.status = MODEM_STATUS_ONLINE;
+	modem->helper->event(modem->helper->modem, event);
+	memset(&request, 0, sizeof(request));
 	request.type = HAYES_REQUEST_EXTENDED_RING_REPORTS;
 	_hayes_request(modem, &request);
 	request.type = MODEM_REQUEST_CALL_PRESENTATION;

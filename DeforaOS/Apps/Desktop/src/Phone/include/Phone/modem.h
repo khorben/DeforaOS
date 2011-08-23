@@ -120,6 +120,13 @@ typedef enum _ModemRegistrationStatus
 	MODEM_REGISTRATION_STATUS_DENIED
 } ModemRegistrationStatus;
 
+typedef enum _ModemStatus
+{
+	MODEM_STATUS_UNAVAILABLE = 0,
+	MODEM_STATUS_OFFLINE,
+	MODEM_STATUS_ONLINE
+} ModemStatus;
+
 /* ModemConfig */
 typedef enum _ModemConfigType
 {
@@ -185,6 +192,7 @@ typedef union _ModemEvent
 		ModemEventType type;
 		ModemBatteryStatus status;
 		double level;
+		int charging;
 	} battery_level;
 
 	/* MODEM_EVENT_TYPE_CALL */
@@ -268,7 +276,7 @@ typedef union _ModemEvent
 	/* MODEM_EVENT_TYPE_STATUS */
 	struct {
 		ModemEventType type;
-		int online;
+		ModemStatus status;
 	} status;
 } ModemEvent;
 
