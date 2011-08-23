@@ -65,8 +65,9 @@ typedef struct _Panel
 	PanelBattery battery_level;
 	GtkWidget * battery_image;
 	guint battery_timeout;
-	/* cell type */
-	GtkWidget * cell;
+	/* connection status */
+	GtkWidget * data;
+	GtkWidget * roaming;
 	/* signal */
 	PanelSignal signal_level;
 	GtkWidget * signal_image;
@@ -85,10 +86,10 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _panel_settings(PhonePlugin * plugin);
 
 static void _panel_set_battery_level(Panel * panel, gdouble level);
-static void _panel_set_cell_type(Panel * panel, gboolean gprs);
 static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
 		char const * _operator);
 static void _panel_set_signal_level(Panel * panel, gdouble level);
+static void _panel_set_status(Panel * panel, gboolean data, gboolean roaming);
 
 
 /* public */
@@ -162,11 +163,16 @@ static int _panel_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->operator, TRUE, TRUE,
 			0);
 	_panel_set_signal_level(panel, 0.0 / 0.0);
-	/* cell type */
-	panel->cell = gtk_image_new_from_icon_name("stock_internet",
+	/* connection status */
+	panel->data = gtk_image_new_from_icon_name("stock_internet",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
-	gtk_widget_set_no_show_all(panel->cell, TRUE);
-	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->cell, FALSE, TRUE, 0);
+	gtk_widget_set_no_show_all(panel->data, TRUE);
+	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->data, FALSE, TRUE, 0);
+	panel->roaming = gtk_image_new_from_icon_name("phone-roaming",
+			GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gtk_widget_set_no_show_all(panel->roaming, TRUE);
+	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->roaming, FALSE, TRUE,
+			0);
 	gtk_container_add(GTK_CONTAINER(panel->plug), panel->hbox);
 	gtk_widget_show_all(panel->hbox);
 	/* preferences */
@@ -255,6 +261,7 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_OFFLINE:
 			_panel_set_operator(panel, -1, "Offline");
 			_panel_set_signal_level(panel, 0.0 / 0.0);
+			_panel_set_status(panel, FALSE, FALSE);
 			break;
 		default:
 			break;
@@ -266,6 +273,7 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 {
 	Panel * panel = plugin->priv;
 	char const * media = "";
+	gboolean data;
 
 	switch(event->type)
 	{
@@ -274,14 +282,15 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 					event->battery_level.level);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
-			if(event->registration.media != NULL)
-				media = event->registration.media;
-			_panel_set_cell_type(panel, (strcmp("GPRS", media) == 0)
-					? TRUE : FALSE);
+			media = event->registration.media;
+			data = (media != NULL && strcmp("GPRS", media) == 0)
+				? TRUE : FALSE;
 			_panel_set_operator(panel, event->registration.status,
 					event->registration._operator);
 			_panel_set_signal_level(panel,
 					event->registration.signal);
+			_panel_set_status(panel, data,
+					event->registration.roaming);
 			break;
 		default:
 			break;
@@ -333,16 +342,6 @@ static void _set_battery_image(Panel * panel, PanelBattery battery)
 	/* XXX may not be the correct size */
 	gtk_image_set_from_icon_name(GTK_IMAGE(panel->battery_image),
 			icons[battery], GTK_ICON_SIZE_SMALL_TOOLBAR);
-}
-
-
-/* panel_set_cell_type */
-static void _panel_set_cell_type(Panel * panel, gboolean gprs)
-{
-	if(gprs)
-		gtk_widget_show(panel->cell);
-	else
-		gtk_widget_hide(panel->cell);
 }
 
 
@@ -409,6 +408,20 @@ static void _signal_level_set_image(Panel * panel, PanelSignal signal)
 	/* XXX may not be the correct size */
 	gtk_image_set_from_icon_name(GTK_IMAGE(panel->signal_image),
 			icons[signal], GTK_ICON_SIZE_SMALL_TOOLBAR);
+}
+
+
+/* panel_set_status */
+static void _panel_set_status(Panel * panel, gboolean data, gboolean roaming)
+{
+	if(data)
+		gtk_widget_show(panel->data);
+	else
+		gtk_widget_hide(panel->data);
+	if(roaming)
+		gtk_widget_show(panel->roaming);
+	else
+		gtk_widget_hide(panel->roaming);
 }
 
 
