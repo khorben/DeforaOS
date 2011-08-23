@@ -85,7 +85,8 @@ static int _panel_destroy(PhonePlugin * plugin);
 static int _panel_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _panel_settings(PhonePlugin * plugin);
 
-static void _panel_set_battery_level(Panel * panel, gdouble level);
+static void _panel_set_battery_level(Panel * panel, gdouble level,
+		gboolean charging);
 static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
 		char const * _operator);
 static void _panel_set_signal_level(Panel * panel, gdouble level);
@@ -279,7 +280,8 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 	{
 		case MODEM_EVENT_TYPE_BATTERY_LEVEL:
 			_panel_set_battery_level(panel,
-					event->battery_level.level);
+					event->battery_level.level,
+					event->battery_level.charging);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			media = event->registration.media;
@@ -300,48 +302,56 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 
 
 /* panel_set_battery_level */
-static void _set_battery_image(Panel * panel, PanelBattery battery);
+static void _set_battery_image(Panel * panel, PanelBattery battery,
+		gboolean charging);
 
-static void _panel_set_battery_level(Panel * panel, gdouble level)
+static void _panel_set_battery_level(Panel * panel, gdouble level,
+		gboolean charging)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(plugin, %lf)\n", __func__, level);
 #endif
 	if(level < 0.0)
-		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN);
+		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN, charging);
 	else if(level <= 0.01)
-		_set_battery_image(panel, PANEL_BATTERY_EMPTY);
+		_set_battery_image(panel, PANEL_BATTERY_EMPTY, charging);
 	else if(level <= 0.1)
-		_set_battery_image(panel, PANEL_BATTERY_CAUTION);
+		_set_battery_image(panel, PANEL_BATTERY_CAUTION, charging);
 	else if(level <= 0.2)
-		_set_battery_image(panel, PANEL_BATTERY_LOW);
+		_set_battery_image(panel, PANEL_BATTERY_LOW, charging);
 	else if(level <= 0.75)
-		_set_battery_image(panel, PANEL_BATTERY_GOOD);
+		_set_battery_image(panel, PANEL_BATTERY_GOOD, charging);
 	else if(level <= 1.0)
-		_set_battery_image(panel, PANEL_BATTERY_FULL);
+		_set_battery_image(panel, PANEL_BATTERY_FULL, charging);
 	else
-		_set_battery_image(panel, PANEL_BATTERY_ERROR);
+		_set_battery_image(panel, PANEL_BATTERY_ERROR, FALSE);
 }
 
-static void _set_battery_image(Panel * panel, PanelBattery battery)
+static void _set_battery_image(Panel * panel, PanelBattery battery,
+		gboolean charging)
 {
-	char const * icons[PANEL_BATTERY_COUNT] =
+	struct
 	{
-		"stock_dialog-question",
-		"battery-missing",
-		"battery-empty",
-		"battery-caution",
-		"battery-low",
-		"battery-good",
-		"battery-full"
+		char const * icon;
+		char const * charging;
+	} icons[PANEL_BATTERY_COUNT] =
+	{
+		{ "stock_dialog-question", "stock_dialog-question" },
+		{ "battery-missing", "battery-missing" },
+		{ "battery-empty", "battery-caution-charging" },
+		{ "battery-caution", "battery-caution-charging" },
+		{ "battery-low", "battery-low-charging" },
+		{ "battery-good", "battery-good-charging" },
+		{ "battery-full", "battery-full-charging" }
 	};
 
 	if(panel->battery_level == battery)
 		return;
 	panel->battery_level = battery;
 	/* XXX may not be the correct size */
-	gtk_image_set_from_icon_name(GTK_IMAGE(panel->battery_image),
-			icons[battery], GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gtk_image_set_from_icon_name(GTK_IMAGE(panel->battery_image), charging
+			? icons[battery].charging : icons[battery].icon,
+			GTK_ICON_SIZE_SMALL_TOOLBAR);
 }
 
 
