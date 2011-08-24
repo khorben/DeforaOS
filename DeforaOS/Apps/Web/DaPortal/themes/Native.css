@@ -108,6 +108,26 @@ pre {
 }
 
 
+/* tables */
+table.bordered {
+	border:			1px solid #808080;
+	border-collapse:	collapse;
+	margin:			0.2em;
+	padding:		0;
+}
+
+table.bordered td {
+	border:			1px dotted #808080;
+	padding:		0.2em;
+}
+
+table.bordered th {
+	border:			1px solid #808080;
+	padding:		0.2em;
+	vertical-align:		top;
+}
+
+
 /* classes */
 #container {
 	padding-bottom:		22px;
@@ -132,6 +152,10 @@ pre {
 	display:		none;
 }
 
+.highlight {
+	background-color:	#ffff00;
+}
+
 #main {
 	border-top:		1px solid #000000;
 	clear:			both;
@@ -145,7 +169,10 @@ pre {
 }
 
 #main .toolbar a {
+	border:			1px solid #dcdad5;
 	padding:		2px;
+	padding-bottom:		4px;
+	padding-top:		4px;
 }
 
 #main .toolbar a:hover {
@@ -154,7 +181,6 @@ pre {
 	border-left:		1px solid #ffffff;
 	border-right:		1px solid #afa699;
 	border-top:		1px solid #ffffff;
-	padding:		1px;
 }
 
 .style1 img {
@@ -248,19 +274,6 @@ form.explorer .toolbar {
 	background-color:	#dcdad5;
 	border-bottom:		1px solid #000000;
 	border-top:		1px solid #ffffff;
-}
-
-form.explorer .toolbar img {
-	border:			1px solid #dcdad5;
-}
-
-form.explorer .toolbar img:hover {
-	background-color:	#eeebe7;
-	border-bottom:		1px solid #afa699;
-	border-left:		1px solid #ffffff;
-	border-right:		1px solid #afa699;
-	border-top:		1px solid #ffffff;
-	padding:		2px;
 }
 
 form.explorer .toolbar .separator {
