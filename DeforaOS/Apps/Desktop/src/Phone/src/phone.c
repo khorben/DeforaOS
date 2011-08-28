@@ -1,17 +1,18 @@
 /* $Id$ */
 /* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* FIXME:
  * - keep track of missed calls */
 
@@ -28,6 +29,7 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#include <Desktop.h>
 #include "Phone.h"
 #include "modem.h"
 #include "callbacks.h"
@@ -160,6 +162,9 @@ struct _Phone
 	/* widgets */
 	PangoFontDescription * bold;
 
+	/* about */
+	GtkWidget * ab_window;
+
 	/* call */
 	GtkWidget * ca_window;
 	GtkWidget * ca_name;
@@ -255,7 +260,20 @@ struct _Phone
 #define PHONE_CONFIG_FILE	".phone"
 
 
+/* variables */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
+static char _copyright[] =
+"Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
+
+
 /* prototypes */
+static void _phone_about(Phone * phone);
+
 static int _phone_call_number(Phone * phone, char const * number);
 
 static void _phone_config_foreach(Phone * phone, char const * section,
@@ -383,6 +401,7 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->helper.config_get = _phone_config_get;
 	phone->helper.config_set = _phone_config_set;
 	phone->helper.error = phone_error;
+	phone->helper.about_dialog = _phone_about;
 	phone->helper.event = phone_event;
 	phone->helper.message = _phone_message;
 	phone->helper.request = _phone_request;
@@ -393,6 +412,7 @@ Phone * phone_new(char const * plugin, int retry)
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
+	phone->ab_window = NULL;
 	phone->ca_window = NULL;
 	phone->en_window = NULL;
 	phone->en_method = MODEM_AUTHENTICATION_METHOD_NONE;
@@ -1291,6 +1311,37 @@ void phone_settings_open_selected(Phone * phone)
 
 
 /* show */
+void phone_show_about(Phone * phone, gboolean show)
+{
+	if(phone->ab_window != NULL)
+	{
+		if(show)
+			gtk_window_present(GTK_WINDOW(phone->ab_window));
+		else
+			gtk_widget_hide(phone->ab_window);
+		return;
+	}
+	phone->ab_window = desktop_about_dialog_new();
+	desktop_about_dialog_set_authors(phone->ab_window, _authors);
+	desktop_about_dialog_set_copyright(phone->ab_window, _copyright);
+	desktop_about_dialog_set_license(phone->ab_window, _license);
+	desktop_about_dialog_set_logo_icon_name(phone->ab_window,
+			"phone-dialer");
+	desktop_about_dialog_set_name(phone->ab_window, PACKAGE);
+	desktop_about_dialog_set_translator_credits(phone->ab_window,
+			_("translator-credits"));
+	desktop_about_dialog_set_version(phone->ab_window, VERSION);
+	desktop_about_dialog_set_website(phone->ab_window,
+			"http://www.defora.org/");
+	gtk_window_set_position(GTK_WINDOW(phone->ab_window),
+			GTK_WIN_POS_CENTER_ALWAYS);
+	g_signal_connect_swapped(phone->ab_window, "delete-event",
+			G_CALLBACK(on_phone_closex), NULL);
+	if(show)
+		gtk_window_present(GTK_WINDOW(phone->ab_window));
+}
+
+
 /* phone_show_call */
 static void _show_call_window(Phone * phone);
 
@@ -2524,7 +2575,7 @@ void phone_show_system(Phone * phone, gboolean show)
 			G_CALLBACK(_on_system_closex), phone);
 	vbox = gtk_vbox_new(FALSE, 4);
 	config = modem_get_config(phone->modem);
-	for(i = 0; config[i].name != NULL; i++)
+	for(i = 0; config != NULL && config[i].name != NULL; i++)
 	{
 		widget = NULL;
 		switch(config[i].type)
@@ -2597,7 +2648,8 @@ static void _on_system_cancel(gpointer data)
 	char buf[16];
 
 	gtk_widget_hide(phone->sy_window);
-	config = modem_get_config(phone->modem);
+	if((config = modem_get_config(phone->modem)) == NULL)
+		return;
 	for(i = 0; config[i].name != NULL; i++)
 	{
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
@@ -2651,7 +2703,7 @@ static void _on_system_ok(gpointer data)
 
 	gtk_widget_hide(phone->sy_window);
 	config = modem_get_config(phone->modem);
-	for(i = 0; config[i].name != NULL; i++)
+	for(i = 0; config != NULL && config[i].name != NULL; i++)
 	{
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
 						config[i].name)) == NULL)
@@ -3004,6 +3056,13 @@ void phone_write_send(Phone * phone)
 
 
 /* private */
+/* phone_about */
+static void _phone_about(Phone * phone)
+{
+	phone_show_about(phone, TRUE);
+}
+
+
 /* phone_call_number */
 static int _phone_call_number(Phone * phone, char const * number)
 {

@@ -100,8 +100,8 @@ smscrypt.so: $(smscrypt_OBJS)
 	$(LD) -o smscrypt.so $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
 
 systray_OBJS = systray.o
-systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
-systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
+systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 systray.so: $(systray_OBJS)
 	$(LD) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)

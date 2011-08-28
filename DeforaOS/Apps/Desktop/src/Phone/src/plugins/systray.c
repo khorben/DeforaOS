@@ -1,18 +1,17 @@
 /* $Id$ */
 /* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
-static char const _license[] =
-"This program is free software: you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation, version 3 of the License.\n"
-"\n"
-"This program is distributed in the hope that it will be useful,\n"
-"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"GNU General Public License for more details.\n"
-"\n"
-"You should have received a copy of the GNU General Public License\n"
-"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 
@@ -47,17 +46,6 @@ static void _systray_on_activate(gpointer data);
 static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		guint time, gpointer data);
 #endif
-
-
-/* variables */
-static char const * _authors[] =
-{
-	"Pierre Pronchery <khorben@defora.org>",
-	NULL
-};
-
-static char _copyright[] =
-"Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
 
 
 /* public */
@@ -115,42 +103,11 @@ static int _systray_destroy(PhonePlugin * plugin)
 #if GTK_CHECK_VERSION(2, 10, 0)
 /* callbacks */
 /* systray_on_activate */
-static gboolean _activate_on_closex(gpointer data);
-
 static void _systray_on_activate(gpointer data)
 {
 	PhonePlugin * plugin = data;
-	Systray * systray = plugin->priv;
 
-	if(systray->ab_window != NULL)
-	{
-		gtk_window_present(GTK_WINDOW(systray->ab_window));
-		return;
-	}
-	systray->ab_window = desktop_about_dialog_new();
-	desktop_about_dialog_set_authors(systray->ab_window, _authors);
-	desktop_about_dialog_set_copyright(systray->ab_window, _copyright);
-	desktop_about_dialog_set_license(systray->ab_window, _license);
-	desktop_about_dialog_set_logo_icon_name(systray->ab_window,
-			"phone-dialer");
-	desktop_about_dialog_set_name(systray->ab_window, PACKAGE);
-	desktop_about_dialog_set_version(systray->ab_window, VERSION);
-	desktop_about_dialog_set_website(systray->ab_window,
-			"http://www.defora.org/");
-	gtk_window_set_position(GTK_WINDOW(systray->ab_window),
-			GTK_WIN_POS_CENTER_ALWAYS);
-	g_signal_connect_swapped(systray->ab_window, "delete-event",
-			G_CALLBACK(_activate_on_closex), plugin);
-	gtk_widget_show(systray->ab_window);
-}
-
-static gboolean _activate_on_closex(gpointer data)
-{
-	PhonePlugin * plugin = data;
-	Systray * systray = plugin->priv;
-
-	gtk_widget_hide(systray->ab_window);
-	return TRUE;
+	plugin->helper->about_dialog(plugin->helper->phone);
 }
 
 

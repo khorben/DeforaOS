@@ -63,6 +63,7 @@ void phone_dialer_hangup(Phone * phone);
 int phone_event(Phone * phone, PhoneEvent * event);
 
 /* interface */
+void phone_show_about(Phone * phone, gboolean show);
 void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
 void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
 void phone_show_contacts(Phone * phone, gboolean show);
