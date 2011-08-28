@@ -1335,8 +1335,8 @@ void phone_show_about(Phone * phone, gboolean show)
 			"http://www.defora.org/");
 	gtk_window_set_position(GTK_WINDOW(phone->ab_window),
 			GTK_WIN_POS_CENTER_ALWAYS);
-	g_signal_connect_swapped(phone->ab_window, "delete-event",
-			G_CALLBACK(on_phone_closex), NULL);
+	g_signal_connect(phone->ab_window, "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
 	if(show)
 		gtk_window_present(GTK_WINDOW(phone->ab_window));
 }
