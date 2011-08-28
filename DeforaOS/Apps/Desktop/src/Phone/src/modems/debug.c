@@ -34,6 +34,7 @@ typedef struct _Debug
 	GtkWidget * window;
 	GtkWidget * status;
 	GtkWidget * operator;
+	GtkWidget * roaming;
 	GtkWidget * number;
 	GtkWidget * folder;
 	GtkWidget * message;
@@ -128,6 +129,13 @@ static int _debug_init(ModemPlugin * modem)
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_debug_on_operator_set), modem);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(NULL);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	debug->roaming = gtk_check_button_new_with_mnemonic("_Roaming");
+	gtk_box_pack_start(GTK_BOX(hbox), debug->roaming, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* message */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -358,5 +366,7 @@ static void _debug_on_operator_set(gpointer data)
 	event.type = MODEM_EVENT_TYPE_REGISTRATION;
 	event.registration.status = MODEM_REGISTRATION_STATUS_REGISTERED;
 	event.registration._operator = p;
+	event.registration.roaming = gtk_toggle_button_get_active(
+			GTK_TOGGLE_BUTTON(debug->roaming));
 	modem->helper->event(modem->helper->modem, &event);
 }

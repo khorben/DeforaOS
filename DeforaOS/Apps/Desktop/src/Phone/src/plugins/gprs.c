@@ -28,6 +28,7 @@
 typedef struct _GPRS
 {
 	guint source;
+	gboolean roaming;
 	gboolean connected;
 
 	gboolean active;
@@ -88,6 +89,7 @@ static int _gprs_init(PhonePlugin * plugin)
 		return 1;
 	plugin->priv = gprs;
 	gprs->source = 0;
+	gprs->roaming = FALSE;
 	gprs->connected = FALSE;
 	gprs->active = FALSE;
 	gprs->window = NULL;
@@ -114,11 +116,17 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event);
 
 static int _gprs_event(PhonePlugin * plugin, PhoneEvent * event)
 {
+	GPRS * gprs = plugin->priv;
+
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _gprs_event_modem(plugin,
 					event->modem_event.event);
+		case PHONE_EVENT_TYPE_OFFLINE:
+		case PHONE_EVENT_TYPE_UNAVAILABLE:
+			gprs->roaming = FALSE;
+			return 0;
 		default: /* not relevant */
 			return 0;
 	}
@@ -142,6 +150,7 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 					event->connection.out);
 			return 0;
 		case MODEM_EVENT_TYPE_REGISTRATION:
+			gprs->roaming = event->registration.roaming;
 			if(gprs->active != FALSE)
 				break;
 			if(event->registration.status
@@ -425,15 +434,39 @@ static int _gprs_access_point(PhonePlugin * plugin)
 /* gprs_connect */
 static int _gprs_connect(PhonePlugin * plugin)
 {
+	GPRS * gprs = plugin->priv;
+	GtkDialogFlags flags = GTK_DIALOG_MODAL
+		| GTK_DIALOG_DESTROY_WITH_PARENT;
+	char const message[] = "You are currently roaming, and additional"
+		" charges are therefore likely to apply.\n"
+		"Do you really want to connect?";
+	GtkWidget * widget;
+	int res;
 	ModemRequest request;
 
 	if(_gprs_access_point(plugin) != 0)
 		return -1;
+	if(gprs->roaming)
+	{
+		widget = gtk_message_dialog_new(GTK_WINDOW(gprs->window), flags,
+				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+				"Warning");
+		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+					widget),
+#endif
+				message);
+		gtk_window_set_title(GTK_WINDOW(widget), "Warning");
+		res = gtk_dialog_run(GTK_DIALOG(widget));
+		gtk_widget_destroy(widget);
+		if(res != GTK_RESPONSE_YES)
+			return 0;
+	}
 	_gprs_set_connected(plugin, TRUE, "Connecting...", 0, 0);
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_CALL;
 	request.call.call_type = MODEM_CALL_TYPE_DATA;
-	request.call.number = "*99***1#";
+	request.call.number = "*99***1#"; /* XXX specific to GSM/GPRS */
 	return plugin->helper->request(plugin->helper->phone, &request);
 }
 
