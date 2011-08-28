@@ -3703,8 +3703,10 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 		case MODEM_EVENT_TYPE_STATUS:
 			if(event->status.status == MODEM_STATUS_ONLINE)
 				pevent.type = PHONE_EVENT_TYPE_ONLINE;
-			else /* XXX may not always be right */
+			else if(event->status.status == MODEM_STATUS_OFFLINE)
 				pevent.type = PHONE_EVENT_TYPE_OFFLINE;
+			else /* XXX may not always be right */
+				pevent.type = PHONE_EVENT_TYPE_UNAVAILABLE;
 			phone_event(phone, &pevent);
 			break;
 		default:

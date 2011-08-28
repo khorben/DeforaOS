@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-24 00:46+0200\n"
+"POT-Creation-Date: 2011-08-28 18:15+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: DeforaOS development (French) <devel-fr@lists.defora.org>\n"
@@ -311,21 +311,21 @@ msgstr "Le numéro ne peut être vide"
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3729
+#: ../src/phone.c:3731
 #, c-format
 msgid "Wrong %s"
 msgstr "Mauvais %s"
 
-#: ../src/phone.c:3736
+#: ../src/phone.c:3738
 #, c-format
 msgid "%s is valid"
 msgstr "%s valide"
 
-#: ../src/phone.c:3801
+#: ../src/phone.c:3803
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:3834
+#: ../src/phone.c:3836
 msgid "Message deleted"
 msgstr "Message effacé"
 
