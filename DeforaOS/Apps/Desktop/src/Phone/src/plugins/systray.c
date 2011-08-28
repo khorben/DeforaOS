@@ -135,6 +135,10 @@ static void _systray_on_activate(gpointer data)
 			"phone-dialer");
 	desktop_about_dialog_set_name(systray->ab_window, PACKAGE);
 	desktop_about_dialog_set_version(systray->ab_window, VERSION);
+	desktop_about_dialog_set_website(systray->ab_window,
+			"http://www.defora.org/");
+	gtk_window_set_position(GTK_WINDOW(systray->ab_window),
+			GTK_WIN_POS_CENTER_ALWAYS);
 	g_signal_connect_swapped(systray->ab_window, "delete-event",
 			G_CALLBACK(_activate_on_closex), plugin);
 	gtk_widget_show(systray->ab_window);
