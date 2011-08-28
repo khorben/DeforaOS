@@ -1629,6 +1629,7 @@ static void _preferences_theme(Desktop * desktop, GtkWidget * notebook);
 static void _preferences_set(Desktop * desktop);
 static gboolean _on_preferences_closex(gpointer data);
 static void _on_preferences_monitors_changed(gpointer data);
+static void _on_preferences_monitors_refresh(gpointer data);
 static void _on_preferences_response(GtkWidget * widget, gint response,
 		gpointer data);
 static void _on_preferences_ok(gpointer data);
@@ -1755,12 +1756,7 @@ static void _preferences_monitors(Desktop * desktop, GtkWidget * notebook)
 	GtkWidget * vbox2;
 	GtkWidget * hbox;
 	GtkWidget * label;
-#if GTK_CHECK_VERSION(2, 14, 0)
-	gint n;
-	gint i;
-	char * name;
-	char buf[32];
-#endif
+	GtkWidget * widget;
 
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox2 = gtk_vbox_new(FALSE, 4);
@@ -1772,19 +1768,6 @@ static void _preferences_monitors(Desktop * desktop, GtkWidget * notebook)
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	desktop->pr_monitors = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
-			_("Whole screen"));
-#if GTK_CHECK_VERSION(2, 14, 0)
-	n = gdk_screen_get_n_monitors(desktop->screen);
-	for(i = 0; i < n; i++)
-	{
-		snprintf(buf, sizeof(buf), _("Monitor %d"), i);
-		name = gdk_screen_get_monitor_plug_name(desktop->screen, i);
-		gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
-				(name != NULL) ? name : buf);
-		g_free(name);
-	}
-#endif
 	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_monitors, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* geometry */
@@ -1810,9 +1793,19 @@ static void _preferences_monitors(Desktop * desktop, GtkWidget * notebook)
 			0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* refresh */
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(NULL);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_on_preferences_monitors_refresh), desktop);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* updates */
 	g_signal_connect_swapped(desktop->pr_monitors, "changed", G_CALLBACK(
 				_on_preferences_monitors_changed), desktop);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_monitors), 0);
+	_on_preferences_monitors_refresh(desktop);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
 				_("Monitors")));
 }
@@ -1880,6 +1873,35 @@ static void _on_preferences_monitors_changed(gpointer data)
 			height, geometry.width * 25.4 / width,
 			geometry.height * 25.4 / height);
 	gtk_label_set_text(GTK_LABEL(desktop->pr_monitors_size), buf);
+}
+
+static void _on_preferences_monitors_refresh(gpointer data)
+{
+	Desktop * desktop = data;
+	GtkTreeModel * model;
+#if GTK_CHECK_VERSION(2, 14, 0)
+	gint n;
+	gint i;
+	char * name;
+	char buf[32];
+#endif
+
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(desktop->pr_monitors));
+	gtk_list_store_clear(GTK_LIST_STORE(model));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
+			_("Whole screen"));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	n = gdk_screen_get_n_monitors(desktop->screen);
+	for(i = 0; i < n; i++)
+	{
+		snprintf(buf, sizeof(buf), _("Monitor %d"), i);
+		name = gdk_screen_get_monitor_plug_name(desktop->screen, i);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
+				(name != NULL) ? name : buf);
+		g_free(name);
+	}
+#endif
+	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_monitors), 0);
 }
 
 static void _on_preferences_response(GtkWidget * widget, gint response,

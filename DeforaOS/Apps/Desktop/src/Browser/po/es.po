@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-15 01:39+0200\n"
+"POT-Creation-Date: 2011-08-28 19:40+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -206,7 +206,7 @@ msgstr ""
 msgid "Shell scripts"
 msgstr ""
 
-#: ../src/browser.c:963 ../src/desktop.c:1716 ../src/view.c:436
+#: ../src/browser.c:963 ../src/desktop.c:1717 ../src/view.c:436
 msgid "All files"
 msgstr ""
 
@@ -415,7 +415,7 @@ msgstr ""
 msgid "Copying: "
 msgstr ""
 
-#: ../src/copy.c:152 ../src/desktop.c:1699
+#: ../src/copy.c:152 ../src/desktop.c:1700
 msgid "Filename: "
 msgstr ""
 
@@ -508,90 +508,90 @@ msgstr ""
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1654
+#: ../src/desktop.c:1655
 msgid "Desktop preferences"
 msgstr "Desktop preferencias"
 
-#: ../src/desktop.c:1691
+#: ../src/desktop.c:1692
 msgid "Default color: "
 msgstr ""
 
-#: ../src/desktop.c:1703 ../src/desktop.c:1749
+#: ../src/desktop.c:1704 ../src/desktop.c:1750
 msgid "Background"
 msgstr ""
 
-#: ../src/desktop.c:1706
+#: ../src/desktop.c:1707
 msgid "Picture files"
 msgstr ""
 
-#: ../src/desktop.c:1728
+#: ../src/desktop.c:1729
 msgid "Position: "
 msgstr ""
 
-#: ../src/desktop.c:1734
+#: ../src/desktop.c:1735
 msgid "Centered"
 msgstr ""
 
-#: ../src/desktop.c:1736
+#: ../src/desktop.c:1737
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:1738
+#: ../src/desktop.c:1739
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:1740
+#: ../src/desktop.c:1741
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:1745
+#: ../src/desktop.c:1746
 msgid "E_xtend background to all monitors"
 msgstr ""
 
-#: ../src/desktop.c:1770
+#: ../src/desktop.c:1766
 msgid "Monitor: "
 msgstr ""
 
-#: ../src/desktop.c:1776
-msgid "Whole screen"
-msgstr ""
-
-#: ../src/desktop.c:1781
-#, c-format
-msgid "Monitor %d"
-msgstr ""
-
-#: ../src/desktop.c:1792
+#: ../src/desktop.c:1775
 msgid "Resolution: "
 msgstr ""
 
-#: ../src/desktop.c:1803
+#: ../src/desktop.c:1786
 msgid "Size: "
 msgstr ""
 
-#: ../src/desktop.c:1817
+#: ../src/desktop.c:1810
 msgid "Monitors"
 msgstr ""
 
-#: ../src/desktop.c:1831
+#: ../src/desktop.c:1824
 msgid "Desktop font: "
 msgstr ""
 
-#: ../src/desktop.c:1840
+#: ../src/desktop.c:1833
 msgid "Theme"
 msgstr ""
 
-#: ../src/desktop.c:1876
+#: ../src/desktop.c:1869
 #, c-format
 msgid "%dx%d (at %d,%d)"
 msgstr ""
 
-#: ../src/desktop.c:1879
+#: ../src/desktop.c:1872
 #, c-format
 msgid "%dx%d mm (%.0lfx%.0lf DPI)"
 msgstr ""
 
-#: ../src/desktop.c:2029
+#: ../src/desktop.c:1892
+msgid "Whole screen"
+msgstr ""
+
+#: ../src/desktop.c:1897
+#, c-format
+msgid "Monitor %d"
+msgstr ""
+
+#: ../src/desktop.c:2051
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -819,6 +819,6 @@ msgstr ""
 msgid "Volumes"
 msgstr ""
 
-#: ../src/plugins/volumes.c:206
+#: ../src/plugins/volumes.c:208
 msgid "Root filesystem"
 msgstr ""
