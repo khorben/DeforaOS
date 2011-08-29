@@ -13,7 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - only check the PREFS_n flags inside a wrapper around fputs()/fprintf() */
+ * - only check the PREFS_n flags inside a wrapper around fputs()/fprintf()
+ * - use "$(RM)" instead of "$(RM) --" on NetBSD < 5.0  */
 
 
 
@@ -528,7 +529,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		NULL };
 	char const * libs_sunos[] = { "dl", "ossaudio", "ws2_32", NULL };
 	char const * libs_win32[] = { "dl", "ossaudio", NULL };
-	char buf[10];
+	char buf[16];
 	char const ** libs;
 	String * p;
 	String * q;
@@ -1439,6 +1440,7 @@ static int _write_distclean(Configure * configure, FILE * fp)
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	fputs("\ndistclean:", fp);
+	/* only depend on the "clean" target if we do not have subfolders */
 	if((subdirs = config_get(configure->config, "", "subdirs")) == NULL)
 		fputs(" clean\n", fp);
 	else
@@ -1447,6 +1449,7 @@ static int _write_distclean(Configure * configure, FILE * fp)
 				" && $(MAKE) distclean) || exit; done\n", fp);
 		_clean_targets(configure->config, fp);
 	}
+	/* FIXME do not erase targets that need be distributed */
 	if(config_get(configure->config, "", "targets") != NULL)
 		fputs("\t$(RM) -- $(TARGETS)\n", fp);
 	return 0;
