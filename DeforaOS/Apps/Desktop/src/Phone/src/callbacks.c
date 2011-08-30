@@ -89,6 +89,9 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 {
 	switch(what)
 	{
+		case PHONE_MESSAGE_SHOW_ABOUT:
+			phone_show_about(phone, show);
+			break;
 		case PHONE_MESSAGE_SHOW_CONTACTS:
 			phone_show_contacts(phone, show);
 			break;
