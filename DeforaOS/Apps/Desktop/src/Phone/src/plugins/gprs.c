@@ -33,6 +33,7 @@ typedef struct _GPRS
 
 	gboolean active;
 	GtkWidget * window;
+	GtkWidget * notebook;
 	GtkWidget * attach;
 	GtkWidget * apn;
 	GtkWidget * username;
@@ -64,6 +65,9 @@ static int _gprs_connect(PhonePlugin * plugin);
 static int _gprs_disconnect(PhonePlugin * plugin);
 
 /* callbacks */
+static void _gprs_on_activate(gpointer data);
+static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
+		guint time, gpointer data);
 static gboolean _gprs_on_timeout(gpointer data);
 
 
@@ -111,7 +115,9 @@ static int _gprs_init(PhonePlugin * plugin)
 #  endif
 # endif
 	g_signal_connect_swapped(gprs->icon, "activate", G_CALLBACK(
-				_gprs_settings), plugin);
+				_gprs_on_activate), plugin);
+	g_signal_connect(gprs->icon, "popup-menu", G_CALLBACK(
+				_gprs_on_popup_menu), plugin);
 	active = ((p = helper->config_get(helper->phone, "gprs", "systray"))
 			!= NULL && strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
 	gtk_status_icon_set_visible(gprs->icon, active);
@@ -167,9 +173,6 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 	{
 		case MODEM_EVENT_TYPE_CONNECTION:
 			connected = event->connection.connected;
-			if(connected && gprs->source == 0)
-				gprs->source = g_timeout_add(1000,
-						_gprs_on_timeout, plugin);
 			_gprs_set_connected(plugin, connected, connected
 					? "Connected" : "Not connected",
 					event->connection.in,
@@ -193,6 +196,8 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 
 
 /* gprs_settings */
+static GtkWidget * _settings_preferences(GPRS * gprs);
+static GtkWidget * _settings_status(PhonePlugin * plugin, GPRS * gprs);
 static void _on_settings_apply(gpointer data);
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
@@ -203,13 +208,12 @@ static void _gprs_settings(PhonePlugin * plugin)
 {
 	GPRS * gprs = plugin->priv;
 	GtkWidget * vbox;
-	GtkWidget * hbox;
-	GtkSizeGroup * group;
 	GtkWidget * bbox;
 	GtkWidget * widget;
 
 	if(gprs->window != NULL)
 	{
+		gtk_notebook_set_current_page(GTK_NOTEBOOK(gprs->notebook), 0);
 		gtk_window_present(GTK_WINDOW(gprs->window));
 		return;
 	}
@@ -219,9 +223,46 @@ static void _gprs_settings(PhonePlugin * plugin)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "stock_internet");
 #endif
-	gtk_window_set_title(GTK_WINDOW(gprs->window), "GPRS preferences");
+	gtk_window_set_title(GTK_WINDOW(gprs->window), "GPRS");
 	g_signal_connect_swapped(G_OBJECT(gprs->window), "delete-event",
 			G_CALLBACK(_on_settings_closex), plugin);
+	vbox = gtk_vbox_new(FALSE, 4);
+	gprs->notebook = gtk_notebook_new();
+	/* preferences */
+	widget = _settings_preferences(gprs);
+	gtk_notebook_append_page(GTK_NOTEBOOK(gprs->notebook), widget,
+			gtk_label_new("Preferences"));
+	/* status */
+	widget = _settings_status(plugin, gprs);
+	gtk_notebook_append_page(GTK_NOTEBOOK(gprs->notebook), widget,
+			gtk_label_new("Status"));
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->notebook, TRUE, TRUE, 0);
+	/* button box */
+	bbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_cancel), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_settings_ok), plugin);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(gprs->window), vbox);
+	_on_settings_cancel(plugin);
+	_gprs_on_timeout(plugin);
+	gtk_widget_show_all(gprs->window);
+}
+
+static GtkWidget * _settings_preferences(GPRS * gprs)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkSizeGroup * group;
+
 	vbox = gtk_vbox_new(FALSE, 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* attachment */
@@ -256,19 +297,22 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	/* connect */
-	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_size_group_add_widget(group, widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gprs->connect = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
-	g_signal_connect_swapped(G_OBJECT(gprs->connect), "clicked", G_CALLBACK(
-				_on_settings_connect), plugin);
-	gtk_box_pack_start(GTK_BOX(hbox), gprs->connect, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	/* status */
-	widget = gtk_frame_new("Status");
+	/* systray */
+	gprs->systray = gtk_check_button_new_with_label("Show in system tray");
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->systray, FALSE, TRUE, 0);
+	return vbox;
+}
+
+static GtkWidget * _settings_status(PhonePlugin * plugin, GPRS * gprs)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkWidget * bbox;
+
+	vbox = gtk_vbox_new(FALSE, 4);
+	/* details */
+	widget = gtk_frame_new("Details");
 	bbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(bbox), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -287,28 +331,19 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_misc_set_alignment(GTK_MISC(gprs->st_out), 0.0, 0.5);
 	gtk_widget_set_no_show_all(gprs->st_out, TRUE);
 	gtk_box_pack_start(GTK_BOX(bbox), gprs->st_out, FALSE, TRUE, 0);
-	gprs->systray = gtk_check_button_new_with_label(
-			"Display in system tray");
-	gtk_box_pack_start(GTK_BOX(bbox), gprs->systray, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(widget), bbox);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-	/* button box */
-	bbox = gtk_hbutton_box_new();
-	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_cancel), plugin);
-	gtk_container_add(GTK_CONTAINER(bbox), widget);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_ok), plugin);
-	gtk_container_add(GTK_CONTAINER(bbox), widget);
-	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(gprs->window), vbox);
-	_on_settings_cancel(plugin);
-	_gprs_on_timeout(plugin);
-	gtk_widget_show_all(gprs->window);
+	/* connect */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gprs->connect = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
+	g_signal_connect_swapped(G_OBJECT(gprs->connect), "clicked", G_CALLBACK(
+				_on_settings_connect), plugin);
+	gtk_box_pack_start(GTK_BOX(hbox), gprs->connect, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	return vbox;
 }
 
 static void _on_settings_apply(gpointer data)
@@ -425,6 +460,9 @@ static void _gprs_set_connected(PhonePlugin * plugin, gboolean connected,
 				message, in / 1024, out / 1024);
 		gtk_status_icon_set_tooltip_text(gprs->icon, buf);
 #endif
+		if(gprs->source == 0)
+			gprs->source = g_timeout_add(1000, _gprs_on_timeout,
+					plugin);
 	}
 	else
 	{
@@ -524,6 +562,73 @@ static int _gprs_disconnect(PhonePlugin * plugin)
 
 
 /* callbacks */
+/* gprs_on_activate */
+static void _gprs_on_activate(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	GPRS * gprs = plugin->priv;
+
+	_gprs_settings(plugin);
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(gprs->notebook), 1);
+	gtk_window_present(GTK_WINDOW(gprs->window));
+}
+
+
+/* gprs_on_popup_menu */
+static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
+		guint time, gpointer data)
+{
+	PhonePlugin * plugin = data;
+	GPRS * gprs = plugin->priv;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+	GtkWidget * hbox;
+	GtkWidget * image;
+	GtkWidget * label;
+
+	menu = gtk_menu_new();
+	/* status */
+	menuitem = gtk_menu_item_new_with_mnemonic("_Status");
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_gprs_on_activate), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* connection */
+	menuitem = gtk_menu_item_new();
+	hbox = gtk_hbox_new(FALSE, 4);
+	image = gtk_image_new_from_stock(gprs->connected ? GTK_STOCK_DISCONNECT
+			: GTK_STOCK_CONNECT, GTK_ICON_SIZE_MENU);
+	gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
+	label = gtk_label_new_with_mnemonic(gprs->connected ? "_Disconnect"
+			: "_Connect");
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(menuitem), hbox);
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				gprs->connected ? _gprs_disconnect
+				: _gprs_connect), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* preferences */
+	menuitem = gtk_menu_item_new();
+	hbox = gtk_hbox_new(FALSE, 4);
+	image = gtk_image_new_from_stock(GTK_STOCK_PREFERENCES,
+			GTK_ICON_SIZE_MENU);
+	gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
+	label = gtk_label_new_with_mnemonic("_Preferences");
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(menuitem), hbox);
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
+				_gprs_settings), plugin);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
+
+
 /* gprs_on_timeout */
 static gboolean _gprs_on_timeout(gpointer data)
 {
