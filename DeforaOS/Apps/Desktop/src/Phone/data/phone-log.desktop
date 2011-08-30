@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Phone log
-Exec=phone-log
+Exec=phonectl -L
 Icon=logviewer
 Type=Application
 Categories=Network;Telephony;GTK;

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Messages
 Comment=Phone messaging
-Exec=phone-messages
+Exec=phonectl -M
 Icon=stock_mail-compose
 Type=Application
 Categories=Network;Telephony;GTK;

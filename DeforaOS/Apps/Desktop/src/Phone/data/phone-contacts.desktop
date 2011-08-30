@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Contacts
 Comment=Phone address book
-Exec=phone-contacts
+Exec=phonectl -C
 Icon=stock_addressbook
 Type=Application
 Categories=Office;ContactManagement;GTK;
