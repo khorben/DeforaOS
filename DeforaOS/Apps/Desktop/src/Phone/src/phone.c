@@ -2537,6 +2537,8 @@ static void _status_on_response(gpointer data)
 
 
 /* phone_show_system */
+static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
+		GtkSizeGroup * group);
 static void _on_system_cancel(gpointer data);
 static gboolean _on_system_closex(gpointer data);
 static void _on_system_ok(gpointer data);
@@ -2546,9 +2548,9 @@ void phone_show_system(Phone * phone, gboolean show)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkWidget * bbox;
+	GtkSizeGroup * group;
 	ModemConfig * config;
 	size_t i;
-	String * label;
 
 	/* XXX creation of this window is not cached for performance reasons */
 	if(show == FALSE)
@@ -2562,6 +2564,7 @@ void phone_show_system(Phone * phone, gboolean show)
 		gtk_window_present(GTK_WINDOW(phone->sy_window));
 		return;
 	}
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	phone->sy_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(phone->sy_window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(phone->sy_window), 200, 300);
@@ -2577,45 +2580,9 @@ void phone_show_system(Phone * phone, gboolean show)
 	config = modem_get_config(phone->modem);
 	for(i = 0; config != NULL && config[i].name != NULL; i++)
 	{
-		widget = NULL;
-		switch(config[i].type)
-		{
-			case MCT_NONE: /* XXX should not happen */
-				break;
-			case MCT_BOOLEAN:
-				widget = gtk_check_button_new_with_label(
-						config[i].title);
-				break;
-			case MCT_FILENAME:
-				label = string_new_append(config[i].title, ":",
-						NULL);
-				widget = gtk_label_new(label);
-				string_delete(label);
-				gtk_misc_set_alignment(GTK_MISC(widget), 0.0,
-						0.5);
-				gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE,
-						TRUE, 0);
-				widget = gtk_file_chooser_button_new(
-						_("Open file..."),
-						GTK_FILE_CHOOSER_ACTION_OPEN);
-				break;
-			case MCT_STRING:
-			case MCT_UINT32:
-				label = string_new_append(config[i].title, ":",
-						NULL);
-				widget = gtk_label_new(label);
-				string_delete(label);
-				gtk_misc_set_alignment(GTK_MISC(widget), 0.0,
-						0.5);
-				gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE,
-						TRUE, 0);
-				widget = gtk_entry_new();
-				break;
-		}
+		widget = _system_widget(phone, &config[i], group);
 		if(widget == NULL)
 			continue;
-		g_object_set_data(G_OBJECT(phone->sy_window), config[i].name,
-				widget);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
 	bbox = gtk_hbutton_box_new();
@@ -2634,6 +2601,54 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_widget_show_all(vbox);
 	_on_system_cancel(phone);
 	gtk_window_present(GTK_WINDOW(phone->sy_window));
+}
+
+static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
+		GtkSizeGroup * group)
+{
+	GtkWidget * ret = NULL;
+	GtkWidget * widget = NULL;
+	String * label;
+
+	switch(config->type)
+	{
+		case MCT_NONE: /* XXX should not happen */
+			break;
+		case MCT_BOOLEAN:
+			widget = gtk_check_button_new_with_label(config->title);
+			ret = widget;
+			break;
+		case MCT_FILENAME:
+			ret = gtk_hbox_new(FALSE, 4);
+			label = string_new_append(config->title, ": ", NULL);
+			widget = gtk_label_new(label);
+			string_delete(label);
+			gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+			gtk_size_group_add_widget(group, widget);
+			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
+					0);
+			widget = gtk_file_chooser_button_new(_("Open file..."),
+					GTK_FILE_CHOOSER_ACTION_OPEN);
+			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
+			break;
+		case MCT_STRING:
+		case MCT_UINT32:
+			ret = gtk_hbox_new(FALSE, 4);
+			label = string_new_append(config->title, ": ", NULL);
+			widget = gtk_label_new(label);
+			string_delete(label);
+			gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+			gtk_size_group_add_widget(group, widget);
+			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
+					0);
+			widget = gtk_entry_new();
+			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
+			break;
+	}
+	if(ret == NULL || widget == NULL)
+		return NULL;
+	g_object_set_data(G_OBJECT(phone->sy_window), config->name, widget);
+	return ret;
 }
 
 static void _on_system_cancel(gpointer data)
