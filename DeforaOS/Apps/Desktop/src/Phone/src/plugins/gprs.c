@@ -334,15 +334,10 @@ static GtkWidget * _settings_status(PhonePlugin * plugin, GPRS * gprs)
 	gtk_container_add(GTK_CONTAINER(widget), bbox);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* connect */
-	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->connect = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
 	g_signal_connect_swapped(G_OBJECT(gprs->connect), "clicked", G_CALLBACK(
 				_on_settings_connect), plugin);
-	gtk_box_pack_start(GTK_BOX(hbox), gprs->connect, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->connect, FALSE, TRUE, 0);
 	return vbox;
 }
 
