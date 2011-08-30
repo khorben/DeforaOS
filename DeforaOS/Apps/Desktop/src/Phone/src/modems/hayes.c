@@ -332,18 +332,18 @@ static int _is_number(char const * number);
 /* variables */
 typedef enum _HayesConfig
 {
-	HAYES_CONFIG_BAUDRATE = 0,
+	HAYES_CONFIG_DEVICE = 0,
+	HAYES_CONFIG_BAUDRATE,
 	HAYES_CONFIG_HWFLOW,
-	HAYES_CONFIG_DEVICE
 } HayesConfig;
-#define HAYES_CONFIG_LAST HAYES_CONFIG_DEVICE
+#define HAYES_CONFIG_LAST HAYES_CONFIG_HWFLOW
 #define HAYES_CONFIG_COUNT (HAYES_CONFIG_LAST + 1)
 
 static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
 {
+	{ "device",	"Device",		MCT_FILENAME,	NULL	      },
 	{ "baudrate",	"Baudrate",		MCT_UINT32,	(void*)115200 },
 	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void*)1      },
-	{ "device",	"Modem device",		MCT_FILENAME,	NULL	      },
 	{ NULL,		NULL,			MCT_NONE,	NULL	      }
 };
 
