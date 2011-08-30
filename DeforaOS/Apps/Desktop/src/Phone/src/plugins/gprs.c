@@ -444,15 +444,18 @@ static void _gprs_set_connected(PhonePlugin * plugin, gboolean connected,
 			? GTK_STOCK_DISCONNECT : GTK_STOCK_CONNECT);
 	if(connected)
 	{
-		snprintf(buf, sizeof(buf), "Received: %lu kB", in / 1024);
+		snprintf(buf, sizeof(buf), "Received: %lu kB",
+				(unsigned long)in / 1024);
 		gtk_label_set_text(GTK_LABEL(gprs->st_in), buf);
-		snprintf(buf, sizeof(buf), "Sent: %lu kB", out / 1024);
+		snprintf(buf, sizeof(buf), "Sent: %lu kB",
+				(unsigned long)out / 1024);
 		gtk_label_set_text(GTK_LABEL(gprs->st_out), buf);
 		gtk_widget_show(gprs->st_in);
 		gtk_widget_show(gprs->st_out);
 #if GTK_CHECK_VERSION(2, 16, 0)
 		snprintf(buf, sizeof(buf), "%s\nReceived: %lu kB\nSent: %lu kB",
-				message, in / 1024, out / 1024);
+				message, (unsigned long)in / 1024,
+				(unsigned long)out / 1024);
 		gtk_status_icon_set_tooltip_text(gprs->icon, buf);
 #endif
 		if(gprs->source == 0)
