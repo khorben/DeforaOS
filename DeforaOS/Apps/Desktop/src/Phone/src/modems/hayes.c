@@ -895,7 +895,8 @@ static char * _request_attention_message_send(ModemPlugin * modem,
 		pdulen-=2;
 	/* FIXME really issue using two separate commands */
 	if(ret != NULL)
-		snprintf(ret, len, "%s%lu\r\n%s", cmd, (pdulen - 1) / 2, pdu);
+		snprintf(ret, len, "%s%lu\r\n%s", cmd, ((unsigned long)pdulen
+					- 1) / 2, pdu);
 	free(pdu);
 	return ret;
 }
