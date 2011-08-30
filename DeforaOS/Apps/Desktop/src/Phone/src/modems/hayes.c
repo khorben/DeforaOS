@@ -1498,11 +1498,18 @@ static void _hayes_queue_flush(ModemPlugin * modem)
 	if(hayes->rd_source != 0)
 		g_source_remove(hayes->rd_source);
 	hayes->rd_source = 0;
+	free(hayes->wr_buf);
 	hayes->wr_buf = NULL;
 	hayes->wr_buf_cnt = 0;
 	if(hayes->wr_source != 0)
 		g_source_remove(hayes->wr_source);
 	hayes->wr_source = 0;
+	if(hayes->rd_ppp_source != 0)
+		g_source_remove(hayes->rd_ppp_source);
+	hayes->rd_ppp_source = 0;
+	if(hayes->wr_ppp_source != 0)
+		g_source_remove(hayes->wr_ppp_source);
+	hayes->wr_ppp_source = 0;
 	if(hayes->source != 0)
 		g_source_remove(hayes->source);
 	hayes->source = 0;
@@ -2013,7 +2020,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	status = g_io_channel_read_chars(source,
 			&hayes->rd_buf[hayes->rd_buf_cnt], 256, &cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: MODEM: ");
+	fputs("DEBUG: MODEM: ", stderr);
 	fwrite(&hayes->rd_buf[hayes->rd_buf_cnt], sizeof(*p), cnt, stderr);
 #endif
 	hayes->rd_buf_cnt += cnt;
@@ -2110,7 +2117,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	status = g_io_channel_write_chars(source, hayes->wr_buf,
 			hayes->wr_buf_cnt, &cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: PHONE: ");
+	fputs("DEBUG: PHONE: ", stderr);
 	fwrite(hayes->wr_buf, sizeof(*p), cnt, stderr);
 #endif
 	if(cnt != 0) /* some data may have been written anyway */
@@ -3399,6 +3406,7 @@ static void _on_trigger_csq(ModemPlugin * modem, char const * answer)
 	if(u > 31)
 		event->registration.signal = 0.0 / 0.0;
 	else
+		/* FIXME check this */
 		event->registration.signal = (u / 32) + 0.0;
 	/* this is usually worth an event */
 	modem->helper->event(modem->helper->modem, event);
