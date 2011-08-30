@@ -42,7 +42,7 @@ main.o: main.c ../include/Phone/phone.h phone.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c main.c
 
 modem.o: modem.c modem.h ../config.h
-	$(CC) $(phone_CFLAGS) -c modem.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c modem.c
 
 phone.o: phone.c ../include/Phone/phone.h modem.h phone.h callbacks.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(phone_CFLAGS) -c phone.c
