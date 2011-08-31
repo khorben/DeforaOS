@@ -128,9 +128,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	PhonePlugin * plugin = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
-	GtkWidget * hbox;
 	GtkWidget * image;
-	GtkWidget * label;
 	struct
 	{
 		char const * icon;
@@ -167,17 +165,13 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 			continue;
 		}
-		hbox = gtk_hbox_new(FALSE, 4);
+		menuitem = gtk_image_menu_item_new_with_mnemonic(items[i].name);
 		image = gtk_image_new_from_icon_name(items[i].icon,
-				GTK_ICON_SIZE_MENU),
-		gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
-		label = gtk_label_new_with_mnemonic(items[i].name);
-		gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-		gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-		menuitem = gtk_menu_item_new();
+				GTK_ICON_SIZE_MENU);
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
+				image);
 		g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 					items[i].callback), plugin);
-		gtk_container_add(GTK_CONTAINER(menuitem), hbox);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	gtk_widget_show_all(menu);

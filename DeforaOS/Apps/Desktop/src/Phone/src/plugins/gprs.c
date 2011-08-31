@@ -580,29 +580,22 @@ static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 	GPRS * gprs = plugin->priv;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
-	GtkWidget * hbox;
 	GtkWidget * image;
-	GtkWidget * label;
 
 	menu = gtk_menu_new();
 	/* status */
-	menuitem = gtk_menu_item_new_with_mnemonic("_Status");
+	menuitem = gtk_image_menu_item_new_with_mnemonic("_Status");
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				_gprs_on_activate), plugin);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	/* connection */
-	menuitem = gtk_menu_item_new();
-	hbox = gtk_hbox_new(FALSE, 4);
+	menuitem = gtk_image_menu_item_new_with_mnemonic(gprs->connected
+			? "_Disconnect" : "_Connect");
 	image = gtk_image_new_from_stock(gprs->connected ? GTK_STOCK_DISCONNECT
 			: GTK_STOCK_CONNECT, GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
-	label = gtk_label_new_with_mnemonic(gprs->connected ? "_Disconnect"
-			: "_Connect");
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(menuitem), hbox);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				gprs->connected ? _gprs_disconnect
 				: _gprs_connect), plugin);
@@ -610,15 +603,8 @@ static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	/* preferences */
-	menuitem = gtk_menu_item_new();
-	hbox = gtk_hbox_new(FALSE, 4);
-	image = gtk_image_new_from_stock(GTK_STOCK_PREFERENCES,
-			GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, TRUE, 0);
-	label = gtk_label_new_with_mnemonic("_Preferences");
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(menuitem), hbox);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
+			NULL);
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				_gprs_settings), plugin);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
