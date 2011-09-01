@@ -334,7 +334,7 @@ typedef enum _HayesConfig
 {
 	HAYES_CONFIG_DEVICE = 0,
 	HAYES_CONFIG_BAUDRATE,
-	HAYES_CONFIG_HWFLOW,
+	HAYES_CONFIG_HWFLOW
 } HayesConfig;
 #define HAYES_CONFIG_LAST HAYES_CONFIG_HWFLOW
 #define HAYES_CONFIG_COUNT (HAYES_CONFIG_LAST + 1)
@@ -2063,6 +2063,7 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	ModemPlugin * modem = data;
+	ModemPluginHelper * helper = modem->helper;
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 	gsize cnt = 0;
@@ -2084,14 +2085,13 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			modem->helper->error(modem->helper->modem,
-					error->message, 1);
+			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
 		case G_IO_STATUS_EOF:
 		default:
 			hayes->rd_ppp_source = 0;
 			event->connection.connected = 0;
-			modem->helper->event(modem->helper->modem, event);
+			helper->event(helper->modem, event);
 			_hayes_set_mode(modem, HAYES_MODE_INIT);
 			return FALSE;
 	}
@@ -2157,6 +2157,7 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	ModemPlugin * modem = data;
+	ModemPluginHelper * helper = modem->helper;
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 	gsize cnt = 0;
@@ -2183,14 +2184,13 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			modem->helper->error(modem->helper->modem,
-					error->message, 1);
+			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
 		case G_IO_STATUS_EOF:
 		default:
 			hayes->wr_ppp_source = 0;
 			event->connection.connected = 0;
-			modem->helper->event(modem->helper->modem, event);
+			helper->event(helper->modem, event);
 			_hayes_set_mode(modem, HAYES_MODE_INIT);
 			return FALSE;
 	}
