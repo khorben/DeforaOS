@@ -506,8 +506,10 @@ static gboolean _new_idle(gpointer data)
 	phone_show_system(phone, FALSE);
 	phone_show_write(phone, FALSE);
 	_idle_settings(phone);
-	if((plugins = config_get(phone->config, NULL, "plugins")) != NULL)
-		_idle_load_plugins(phone, plugins);
+	/* default to the "systray" plug-in if nothing is configured */
+	if((plugins = config_get(phone->config, NULL, "plugins")) == NULL)
+		plugins = "systray";
+	_idle_load_plugins(phone, plugins);
 	/* try to go online */
 	memset(&event, 0, sizeof(event));
 	event.type = PHONE_EVENT_TYPE_STARTING;
