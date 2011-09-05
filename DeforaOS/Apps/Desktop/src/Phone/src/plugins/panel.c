@@ -76,6 +76,7 @@ typedef struct _Panel
 	/* preferences */
 	GtkWidget * window;
 	GtkWidget * battery;
+	GtkWidget * truncate;
 } Panel;
 
 
@@ -144,7 +145,7 @@ static int _panel_init(PhonePlugin * plugin)
 			TRUE, 0);
 	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
 					"battery")) == NULL
-			|| strcmp(p, "1") != 0)
+			|| strtol(p, NULL, 10) == 0)
 		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
 	else if(_on_battery_timeout(plugin) == TRUE)
 		panel->battery_timeout = g_timeout_add(5000,
@@ -154,9 +155,13 @@ static int _panel_init(PhonePlugin * plugin)
 	panel->signal_image = gtk_image_new();
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->signal_image, FALSE,
 			TRUE, 0);
+	/* operator */
 	panel->operator = gtk_label_new(NULL);
-	gtk_label_set_ellipsize(GTK_LABEL(panel->operator),
-			PANGO_ELLIPSIZE_END);
+	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
+					"truncate")) != NULL
+			&& strtol(p, NULL, 10) != 0)
+		gtk_label_set_ellipsize(GTK_LABEL(panel->operator),
+				PANGO_ELLIPSIZE_END);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_label_set_max_width_chars(GTK_LABEL(panel->operator), 12);
 #endif
@@ -167,10 +172,16 @@ static int _panel_init(PhonePlugin * plugin)
 	/* connection status */
 	panel->data = gtk_image_new_from_icon_name("stock_internet",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(panel->data, "Connected to GPRS");
+#endif
 	gtk_widget_set_no_show_all(panel->data, TRUE);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->data, FALSE, TRUE, 0);
 	panel->roaming = gtk_image_new_from_icon_name("phone-roaming",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(panel->roaming, "Roaming");
+#endif
 	gtk_widget_set_no_show_all(panel->roaming, TRUE);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->roaming, FALSE, TRUE,
 			0);
@@ -471,6 +482,9 @@ static void _panel_settings(PhonePlugin * plugin)
 	panel->battery = gtk_check_button_new_with_label(
 			"Monitor battery activity");
 	gtk_box_pack_start(GTK_BOX(vbox), panel->battery, FALSE, TRUE, 0);
+	panel->truncate = gtk_check_button_new_with_label(
+			"Shorten the operator name");
+	gtk_box_pack_start(GTK_BOX(vbox), panel->truncate, FALSE, TRUE, 0);
 	/* button box */
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
@@ -494,15 +508,17 @@ static void _on_settings_cancel(gpointer data)
 	PhonePlugin * plugin = data;
 	Panel * panel = plugin->priv;
 	char const * p;
+	gboolean active;
 
-	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
-					"battery")) == NULL
-			|| strtoul(p, NULL, 10) == 0)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->battery),
-				FALSE);
-	else
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->battery),
-				TRUE);
+	active = ((p = plugin->helper->config_get(plugin->helper->phone,
+					"panel", "battery")) != NULL
+			&& strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->battery), active);
+	active = ((p = plugin->helper->config_get(plugin->helper->phone,
+					"panel", "truncate")) != NULL
+			&& strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->truncate),
+			active);
 	gtk_widget_hide(panel->window);
 }
 
@@ -521,6 +537,8 @@ static void _on_settings_ok(gpointer data)
 	Panel * panel = plugin->priv;
 	gboolean value;
 
+	gtk_widget_hide(panel->window);
+	/* battery */
 	if((value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 						panel->battery))) == TRUE)
 	{
@@ -540,5 +558,11 @@ static void _on_settings_ok(gpointer data)
 	gtk_widget_set_no_show_all(panel->battery_image, !value);
 	plugin->helper->config_set(plugin->helper->phone, "panel", "battery",
 			value ? "1" : "0");
-	gtk_widget_hide(panel->window);
+	/* truncate */
+	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				panel->truncate));
+	gtk_label_set_ellipsize(GTK_LABEL(panel->operator), value
+			? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_NONE);
+	plugin->helper->config_set(plugin->helper->phone, "panel", "truncate",
+			value ? "1" : "0");
 }
