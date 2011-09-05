@@ -78,6 +78,9 @@ static int _systray_init(PhonePlugin * plugin)
 		return 1;
 	plugin->priv = systray;
 	systray->icon = gtk_status_icon_new_from_icon_name("phone-dialer");
+#if GTK_CHECK_VERSION(2, 16, 0)
+	gtk_status_icon_set_tooltip_text(systray->icon, "Phone");
+#endif
 	g_signal_connect_swapped(systray->icon, "activate", G_CALLBACK(
 				_systray_on_activate), plugin);
 	g_signal_connect(systray->icon, "popup-menu", G_CALLBACK(
