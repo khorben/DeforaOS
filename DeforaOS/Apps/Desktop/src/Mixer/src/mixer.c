@@ -242,7 +242,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	gtk_window_add_accel_group(GTK_WINDOW(mixer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(mixer->window), 800, 200);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(mixer->window), "gnome-mixer");
+	gtk_window_set_icon_name(GTK_WINDOW(mixer->window), "stock_volume");
 #endif
 	gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
 	g_signal_connect_swapped(G_OBJECT(mixer->window), "delete-event",
@@ -643,7 +643,7 @@ void mixer_about(Mixer * mixer)
 	desktop_about_dialog_set_authors(mixer->about, _authors);
 	desktop_about_dialog_set_copyright(mixer->about, _copyright);
 	desktop_about_dialog_set_license(mixer->about, _license);
-	desktop_about_dialog_set_logo_icon_name(mixer->about, "gnome-mixer");
+	desktop_about_dialog_set_logo_icon_name(mixer->about, "stock_volume");
 	desktop_about_dialog_set_name(mixer->about, PACKAGE);
 	desktop_about_dialog_set_version(mixer->about, VERSION);
 	gtk_widget_show(mixer->about);

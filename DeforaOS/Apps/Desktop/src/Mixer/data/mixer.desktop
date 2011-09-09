@@ -2,7 +2,7 @@
 Name=Volume mixer
 Comment=Set the volume on your sound card
 Exec=mixer
-Icon=gnome-mixer
+Icon=stock_volume
 Type=Application
 Categories=AudioVideo;Audio;Mixer;GTK;
 StartupNotify=true
