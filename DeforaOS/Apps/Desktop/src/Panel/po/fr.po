@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-23 01:47+0200\n"
+"POT-Creation-Date: 2011-09-09 09:39+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -88,8 +88,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:852 ../src/panel.c:859
-#: ../src/panel.c:868
+#: ../src/applets/logout.c:69 ../src/panel.c:976 ../src/panel.c:983
+#: ../src/panel.c:992
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -172,11 +172,16 @@ msgstr "Périphérique réseau USB connecté"
 #: ../src/main.c:46
 msgid ""
 "Usage: panel [-m monitor][-bBsStx]\n"
-"  -l\tUse icons the size of a large toolbar (default)\n"
+"  -l\tUse icons the size of a large toolbar\n"
 "  -m\tMonitor to use (default: 0)\n"
 "  -s\tUse icons the size of a small toolbar\n"
 "  -x\tUse icons the size of menus\n"
 msgstr ""
+"Usage: panel [-m moniteur][-bBsStx]\n"
+"  -l\tIcônes de la taille d'une grosse barre d'outils\n"
+"  -m\tMoniteur à utiliser (par défaut : 0)\n"
+"  -s\tIcônes de la taille d'une petite barre d'outils\n"
+"  -x\tIcônes de la taille de menus\n"
 
 #: ../src/panel.c:102
 msgid "Large"
@@ -190,31 +195,35 @@ msgstr "Petite"
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:528
+#: ../src/panel.c:529
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:545
-msgid "Top size: "
-msgstr "Taille du haut : "
-
-#: ../src/panel.c:552 ../src/panel.c:556 ../src/panel.c:578 ../src/panel.c:582
-msgid "Default"
-msgstr "Par défaut"
-
-#: ../src/panel.c:571
-msgid "Bottom size: "
-msgstr "Taille du bas : "
-
-#: ../src/panel.c:596
+#: ../src/panel.c:542
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:795
+#: ../src/panel.c:574
+msgid "Plug-ins:"
+msgstr "Greffons :"
+
+#: ../src/panel.c:631
+msgid "Top panel:"
+msgstr "Panneau supérieur :"
+
+#: ../src/panel.c:637 ../src/panel.c:641 ../src/panel.c:671 ../src/panel.c:675
+msgid "Default"
+msgstr "Par défaut"
+
+#: ../src/panel.c:665
+msgid "Bottom panel:"
+msgstr "Panneau inférieur :"
+
+#: ../src/panel.c:919
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:838
+#: ../src/panel.c:962
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -225,7 +234,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:954
+#: ../src/panel.c:1078
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -236,7 +245,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:959
+#: ../src/panel.c:1083
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -247,11 +256,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:973 ../src/panel.c:980 ../src/panel.c:989
+#: ../src/panel.c:1097 ../src/panel.c:1104 ../src/panel.c:1113
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:979
+#: ../src/panel.c:1103
 msgid "Restart"
 msgstr "Redémarrer"
 

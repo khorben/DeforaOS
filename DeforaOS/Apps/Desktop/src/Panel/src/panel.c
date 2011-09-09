@@ -501,6 +501,10 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 
 /* panel_show_preferences */
 static void _show_preferences_window(Panel * panel);
+static GtkWidget * _preferences_window_general(Panel * panel);
+static GtkListStore * _preferences_window_general_model(Panel * panel);
+static GtkWidget * _preferences_window_general_view(Panel * panel,
+		GtkListStore * store);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -520,10 +524,7 @@ void panel_show_preferences(Panel * panel, gboolean show)
 static void _show_preferences_window(Panel * panel)
 {
 	GtkWidget * vbox;
-	GtkWidget * hbox;
 	GtkWidget * widget;
-	GtkSizeGroup * group;
-	size_t i;
 
 	panel->pr_window = gtk_dialog_new_with_buttons(_("Panel preferences"),
 			NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -536,16 +537,100 @@ static void _show_preferences_window(Panel * panel)
 	panel->pr_notebook = gtk_notebook_new();
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(panel->pr_notebook), TRUE);
 	/* general */
+	widget = _preferences_window_general(panel);
+	gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook), widget,
+			gtk_label_new(_("General")));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(panel->pr_window));
+#else
+	vbox = GTK_DIALOG(panel->pr_window)->vbox;
+#endif
+	gtk_box_pack_start(GTK_BOX(vbox), panel->pr_notebook, TRUE, TRUE, 0);
+	/* FIXME implement a way to enable plug-ins per panel (and in order) */
+	_preferences_on_cancel(panel);
+	gtk_widget_show_all(vbox);
+}
+
+static GtkWidget * _preferences_window_general(Panel * panel)
+{
+	GtkSizeGroup * group;
+	GtkWidget * vbox;
+	GtkWidget * vbox2;
+	GtkWidget * vbox3;
+	GtkWidget * hbox;
+	GtkWidget * hbox2;
+	GtkWidget * frame;
+	GtkWidget * view;
+	GtkWidget * widget;
+	GtkListStore * store;
+	size_t i;
+
+	/* FIXME this needs a restart to apply */
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
-	/* FIXME this needs a restart to apply */
-	/* top size */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new(_("Top size: "));
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_size_group_add_widget(group, widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	/* plugins */
+	frame = gtk_frame_new(_("Plug-ins:"));
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	store = _preferences_window_general_model(panel);
+	view = _preferences_window_general_view(panel, store);
+	gtk_container_add(GTK_CONTAINER(widget), view);
+	gtk_container_add(GTK_CONTAINER(frame), widget);
+	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+	/* controls */
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	widget = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_FORWARD, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+	widget = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+	widget = gtk_label_new(NULL);
+	gtk_box_pack_end(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_FORWARD, GTK_ICON_SIZE_BUTTON));
+	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, TRUE, 0);
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	/* top plug-ins */
+	frame = gtk_frame_new(_("Top panel:"));
+	vbox3 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox3), 4);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	panel->pr_top_size = gtk_combo_box_text_new();
 	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(panel->pr_top_size), NULL,
@@ -564,14 +649,22 @@ static void _show_preferences_window(Panel * panel)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_top_size),
 				_(_panel_sizes[i].alias));
 #endif
-	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_top_size, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	/* bottom size */
-	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new(_("Bottom size: "));
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_size_group_add_widget(group, widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox3), panel->pr_top_size, FALSE, TRUE, 0);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	store = _preferences_window_general_model(panel);
+	view = _preferences_window_general_view(panel, store);
+	gtk_container_add(GTK_CONTAINER(widget), view);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox3);
+	gtk_box_pack_start(GTK_BOX(vbox2), frame, TRUE, TRUE, 0);
+	/* bottom plug-ins */
+	frame = gtk_frame_new(_("Bottom panel:"));
+	vbox3 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox3), 4);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	panel->pr_bottom_size = gtk_combo_box_text_new();
 	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(panel->pr_bottom_size),
@@ -590,19 +683,50 @@ static void _show_preferences_window(Panel * panel)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(panel->pr_bottom_size),
 				_(_panel_sizes[i].alias));
 #endif
-	gtk_box_pack_start(GTK_BOX(hbox), panel->pr_bottom_size, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook), vbox,
-			gtk_label_new(_("General")));
-#if GTK_CHECK_VERSION(2, 14, 0)
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(panel->pr_window));
-#else
-	vbox = GTK_DIALOG(panel->pr_window)->vbox;
-#endif
-	gtk_box_pack_start(GTK_BOX(vbox), panel->pr_notebook, TRUE, TRUE, 0);
-	/* FIXME implement a way to enable plug-ins per panel (and in order) */
-	_preferences_on_cancel(panel);
-	gtk_widget_show_all(vbox);
+	gtk_box_pack_start(GTK_BOX(vbox3), panel->pr_bottom_size, FALSE, TRUE,
+			0);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	store = _preferences_window_general_model(panel);
+	view = _preferences_window_general_view(panel, store);
+	gtk_container_add(GTK_CONTAINER(widget), view);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox3);
+	gtk_box_pack_start(GTK_BOX(vbox2), frame, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	return vbox;
+}
+
+static GtkListStore * _preferences_window_general_model(Panel * panel)
+{
+	GtkListStore * store;
+
+	store = gtk_list_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	return store;
+}
+
+static GtkWidget * _preferences_window_general_view(Panel * panel,
+		GtkListStore * store)
+{
+	GtkWidget * view;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	column = gtk_tree_view_column_new_with_attributes("", renderer,
+			"pixbuf", 0, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("", renderer,
+			"text", 1, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+	return view;
 }
 
 static gboolean _preferences_on_closex(gpointer data)

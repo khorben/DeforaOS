@@ -44,7 +44,7 @@
 static int _usage(void)
 {
 	fputs(_("Usage: panel [-m monitor][-bBsStx]\n"
-"  -l	Use icons the size of a large toolbar (default)\n"
+"  -l	Use icons the size of a large toolbar\n"
 "  -m	Monitor to use (default: 0)\n"
 "  -s	Use icons the size of a small toolbar\n"
 "  -x	Use icons the size of menus\n"), stderr);
