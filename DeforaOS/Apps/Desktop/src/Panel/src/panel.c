@@ -999,19 +999,55 @@ static void _preferences_on_ok(gpointer data)
 	Panel * panel = data;
 	gint i;
 	gint cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+	String * value;
+	String * sep;
 	char * filename;
 	GtkWidget * widget;
 	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
-	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_bottom_size)))
-			>= 0 && i <= cnt)
-		config_set(panel->config, NULL, "bottom_size", (i > 0)
-				? _panel_sizes[i - 1].name : NULL);
+	/* top panel */
 	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_top_size)))
 			>= 0 && i <= cnt)
 		config_set(panel->config, NULL, "top_size", (i > 0)
 				? _panel_sizes[i - 1].name : NULL);
+	model = GTK_TREE_MODEL(panel->pr_top_store);
+	value = NULL;
+	sep = "";
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, -1);
+		string_append(&value, sep);
+		string_append(&value, p);
+		sep = ",";
+		g_free(p);
+	}
+	config_set(panel->config, NULL, "top", value);
+	string_delete(value);
+	/* bottom panel */
+	if((i = gtk_combo_box_get_active(GTK_COMBO_BOX(panel->pr_bottom_size)))
+			>= 0 && i <= cnt)
+		config_set(panel->config, NULL, "bottom_size", (i > 0)
+				? _panel_sizes[i - 1].name : NULL);
+	model = GTK_TREE_MODEL(panel->pr_bottom_store);
+	value = NULL;
+	sep = "";
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, -1);
+		string_append(&value, sep);
+		string_append(&value, p);
+		sep = ",";
+		g_free(p);
+	}
+	config_set(panel->config, NULL, "bottom", value);
+	string_delete(value);
 	/* XXX applets should be known from Panel already */
 	cnt = gtk_notebook_get_n_pages(GTK_NOTEBOOK(panel->pr_notebook));
 	for(i = 1; i < cnt; i++)
