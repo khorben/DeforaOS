@@ -67,7 +67,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Bluetooth",
-	NULL,
+	"panel-applet-bluetooth",
 	_bluetooth_init,
 	_bluetooth_destroy,
 	NULL,

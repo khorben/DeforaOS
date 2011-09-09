@@ -13,6 +13,8 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* TODO:
+ * - get rid of the code duplication in the preferences callbacks */
 
 
 
@@ -71,10 +73,13 @@ struct _Panel
 	GtkWidget * pr_window;
 	GtkWidget * pr_notebook;
 	GtkListStore * pr_store;
+	GtkWidget * pr_view;
 	GtkWidget * pr_bottom_size;
 	GtkListStore * pr_bottom_store;
+	GtkWidget * pr_bottom_view;
 	GtkWidget * pr_top_size;
 	GtkListStore * pr_top_store;
+	GtkWidget * pr_top_view;
 
 	/* dialogs */
 	GtkWidget * ab_window;
@@ -506,15 +511,24 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 /* panel_show_preferences */
 static void _show_preferences_window(Panel * panel);
 static GtkWidget * _preferences_window_general(Panel * panel);
-static GtkListStore * _preferences_window_general_model(Panel * panel);
-static GtkWidget * _preferences_window_general_view(Panel * panel,
-		GtkListStore * store);
+static GtkListStore * _preferences_window_general_model(void);
+static GtkWidget * _preferences_window_general_view(GtkListStore * store);
+static void _preferences_window_general_plugin_add(GtkListStore * store,
+		char const * name);
+static void _preferences_on_bottom_add(gpointer data);
+static void _preferences_on_bottom_down(gpointer data);
+static void _preferences_on_bottom_remove(gpointer data);
+static void _preferences_on_bottom_up(gpointer data);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
 static void _preferences_on_cancel(gpointer data);
 static void _cancel_plugins(Panel * panel);
 static void _preferences_on_ok(gpointer data);
+static void _preferences_on_top_add(gpointer data);
+static void _preferences_on_top_down(gpointer data);
+static void _preferences_on_top_remove(gpointer data);
+static void _preferences_on_top_up(gpointer data);
 
 void panel_show_preferences(Panel * panel, gboolean show)
 {
@@ -535,6 +549,7 @@ static void _show_preferences_window(Panel * panel)
 			NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	gtk_window_set_default_size(GTK_WINDOW(panel->pr_window), 400, 300);
 	g_signal_connect_swapped(G_OBJECT(panel->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), panel);
 	g_signal_connect(G_OBJECT(panel->pr_window), "response",
@@ -563,9 +578,7 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 	GtkWidget * vbox2;
 	GtkWidget * vbox3;
 	GtkWidget * hbox;
-	GtkWidget * hbox2;
 	GtkWidget * frame;
-	GtkWidget * view;
 	GtkWidget * widget;
 	size_t i;
 
@@ -582,9 +595,11 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	panel->pr_store = _preferences_window_general_model(panel);
-	view = _preferences_window_general_view(panel, panel->pr_store);
-	gtk_container_add(GTK_CONTAINER(widget), view);
+	panel->pr_store = _preferences_window_general_model();
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(panel->pr_store),
+			2, GTK_SORT_ASCENDING);
+	panel->pr_view = _preferences_window_general_view(panel->pr_store);
+	gtk_container_add(GTK_CONTAINER(widget), panel->pr_view);
 	gtk_container_add(GTK_CONTAINER(frame), widget);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
 	/* controls */
@@ -594,18 +609,26 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_FORWARD, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_top_add), panel);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_top_up), panel);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_top_down), panel);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_top_remove), panel);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
@@ -616,18 +639,26 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_bottom_remove), panel);
 	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_bottom_down), panel);
 	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_bottom_up), panel);
 	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_FORWARD, GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_preferences_on_bottom_add), panel);
 	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, TRUE, 0);
 	vbox2 = gtk_vbox_new(FALSE, 4);
@@ -659,9 +690,10 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	panel->pr_top_store = _preferences_window_general_model(panel);
-	view = _preferences_window_general_view(panel, panel->pr_top_store);
-	gtk_container_add(GTK_CONTAINER(widget), view);
+	panel->pr_top_store = _preferences_window_general_model();
+	panel->pr_top_view = _preferences_window_general_view(
+			panel->pr_top_store);
+	gtk_container_add(GTK_CONTAINER(widget), panel->pr_top_view);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox3);
 	gtk_box_pack_start(GTK_BOX(vbox2), frame, TRUE, TRUE, 0);
@@ -694,9 +726,10 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	panel->pr_bottom_store = _preferences_window_general_model(panel);
-	view = _preferences_window_general_view(panel, panel->pr_bottom_store);
-	gtk_container_add(GTK_CONTAINER(widget), view);
+	panel->pr_bottom_store = _preferences_window_general_model();
+	panel->pr_bottom_view = _preferences_window_general_view(
+			panel->pr_bottom_store);
+	gtk_container_add(GTK_CONTAINER(widget), panel->pr_bottom_view);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox3);
 	gtk_box_pack_start(GTK_BOX(vbox2), frame, TRUE, TRUE, 0);
@@ -705,7 +738,7 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 	return vbox;
 }
 
-static GtkListStore * _preferences_window_general_model(Panel * panel)
+static GtkListStore * _preferences_window_general_model(void)
 {
 	GtkListStore * store;
 
@@ -714,15 +747,17 @@ static GtkListStore * _preferences_window_general_model(Panel * panel)
 	return store;
 }
 
-static GtkWidget * _preferences_window_general_view(Panel * panel,
-		GtkListStore * store)
+static GtkWidget * _preferences_window_general_view(GtkListStore * store)
 {
 	GtkWidget * view;
+	GtkTreeSelection * treesel;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
 	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes("", renderer,
 			"pixbuf", 1, NULL);
@@ -732,6 +767,100 @@ static GtkWidget * _preferences_window_general_view(Panel * panel,
 			"text", 2, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 	return view;
+}
+
+static void _preferences_window_general_plugin_add(GtkListStore * store,
+		char const * name)
+{
+	Plugin * p;
+	PanelApplet * pa;
+	GtkTreeIter iter;
+	GtkIconTheme * theme;
+	GdkPixbuf * pixbuf;
+
+	if((p = plugin_new(LIBDIR, PACKAGE, "applets", name)) == NULL)
+		return;
+	if((pa = plugin_lookup(p, "applet")) == NULL)
+	{
+		plugin_delete(p);
+		return;
+	}
+	theme = gtk_icon_theme_get_default();
+	pixbuf = (pa->icon != NULL) ? gtk_icon_theme_load_icon(theme, pa->icon,
+			24, 0, NULL) : NULL;
+	if(pixbuf == NULL)
+		pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 24,
+				0, NULL);
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, name, 1, pixbuf, 2, pa->name, -1);
+	plugin_delete(p);
+}
+
+static void _preferences_on_bottom_add(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeSelection * treesel;
+	gchar * p;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(panel->pr_view));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	gtk_tree_model_get(model, &iter, 0, &p, -1);
+	_preferences_window_general_plugin_add(panel->pr_bottom_store, p);
+	g_free(p);
+}
+
+static void _preferences_on_bottom_down(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeIter iter2;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				panel->pr_bottom_view));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	iter2 = iter;
+	if(!gtk_tree_model_iter_next(model, &iter))
+		return;
+	gtk_list_store_swap(panel->pr_bottom_store, &iter, &iter2);
+}
+
+static void _preferences_on_bottom_remove(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				panel->pr_bottom_view));
+	if(gtk_tree_selection_get_selected(treesel, &model, &iter))
+		gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+}
+
+static void _preferences_on_bottom_up(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeIter iter2;
+	GtkTreePath * path;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				panel->pr_bottom_view));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	path = gtk_tree_model_get_path(model, &iter);
+	gtk_tree_path_prev(path);
+	gtk_tree_model_get_iter(model, &iter2, path);
+	gtk_tree_path_free(path);
+	gtk_list_store_swap(panel->pr_bottom_store, &iter, &iter2);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -805,20 +934,19 @@ static void _cancel_plugins(Panel * panel)
 {
 	DIR * dir;
 	struct dirent * de;
-	GtkIconTheme * theme;
 	char const ext[] = ".so";
 	size_t len;
-	Plugin * p;
-	PanelApplet * pa;
-	GtkTreeIter iter;
-	GdkPixbuf * pixbuf;
+	char * q;
+	char const * r;
+	char c;
+	size_t i;
 
 	gtk_list_store_clear(panel->pr_store);
 	gtk_list_store_clear(panel->pr_bottom_store);
 	gtk_list_store_clear(panel->pr_top_store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/applets")) == NULL)
 		return;
-	theme = gtk_icon_theme_get_default();
+	/* plug-ins */
 	while((de = readdir(dir)) != NULL)
 	{
 		if((len = strlen(de->d_name)) < sizeof(ext))
@@ -829,26 +957,41 @@ static void _cancel_plugins(Panel * panel)
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
 #endif
-		if((p = plugin_new(LIBDIR, PACKAGE, "applets", de->d_name))
-				== NULL)
-			continue;
-		if((pa = plugin_lookup(p, "applet")) == NULL)
-		{
-			plugin_delete(p);
-			continue;
-		}
-		if(pa->icon == NULL)
-			pixbuf = gtk_icon_theme_load_icon(theme,
-					"gnome-settings", 24, 0, NULL);
-		else
-			pixbuf = gtk_icon_theme_load_icon(theme, pa->icon, 24,
-					0, NULL);
-		gtk_list_store_append(panel->pr_store, &iter);
-		gtk_list_store_set(panel->pr_store, &iter, 0, de->d_name,
-				1, pixbuf, 2, pa->name, -1);
-		plugin_delete(p);
+		_preferences_window_general_plugin_add(panel->pr_store,
+				de->d_name);
 	}
 	closedir(dir);
+	/* top panel */
+	r = config_get(panel->config, NULL, "top");
+	q = (r != NULL) ? strdup(r) : NULL;
+	for(i = 0, r = q; q != NULL; i++)
+	{
+		if(q[i] != '\0' && q[i] != ',')
+			continue;
+		c = q[i];
+		q[i] = '\0';
+		_preferences_window_general_plugin_add(panel->pr_top_store, r);
+		if(c == '\0')
+			break;
+		r = &q[i + 1];
+	}
+	free(q);
+	/* bottom panel */
+	r = config_get(panel->config, NULL, "bottom");
+	q = (r != NULL) ? strdup(r) : NULL;
+	for(i = 0, r = q; q != NULL; i++)
+	{
+		if(q[i] != '\0' && q[i] != ',')
+			continue;
+		c = q[i];
+		q[i] = '\0';
+		_preferences_window_general_plugin_add(panel->pr_bottom_store,
+				r);
+		if(c == '\0')
+			break;
+		r = &q[i + 1];
+	}
+	free(q);
 }
 
 static void _preferences_on_ok(gpointer data)
@@ -883,6 +1026,73 @@ static void _preferences_on_ok(gpointer data)
 	if((filename = _config_get_filename()) != NULL)
 		config_save(panel->config, filename);
 	free(filename);
+}
+
+static void _preferences_on_top_add(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeSelection * treesel;
+	gchar * p;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(panel->pr_view));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	gtk_tree_model_get(model, &iter, 0, &p, -1);
+	_preferences_window_general_plugin_add(panel->pr_top_store, p);
+	g_free(p);
+}
+
+static void _preferences_on_top_down(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeIter iter2;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				panel->pr_top_view));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	iter2 = iter;
+	if(!gtk_tree_model_iter_next(model, &iter))
+		return;
+	gtk_list_store_swap(panel->pr_top_store, &iter, &iter2);
+}
+
+static void _preferences_on_top_remove(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				panel->pr_top_view));
+	if(gtk_tree_selection_get_selected(treesel, &model, &iter))
+		gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+}
+
+static void _preferences_on_top_up(gpointer data)
+{
+	Panel * panel = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeIter iter2;
+	GtkTreePath * path;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				panel->pr_top_view));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	path = gtk_tree_model_get_path(model, &iter);
+	gtk_tree_path_prev(path);
+	gtk_tree_model_get_iter(model, &iter2, path);
+	gtk_tree_path_free(path);
+	gtk_list_store_swap(panel->pr_top_store, &iter, &iter2);
 }
 
 

@@ -56,7 +56,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Swap",
-	NULL,
+	"gnome-monitor",
 	_swap_init,
 	_swap_destroy,
 	NULL,

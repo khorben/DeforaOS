@@ -56,7 +56,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Memory",
-	NULL,
+	"gnome-monitor",
 	_memory_init,
 	_memory_destroy,
 	NULL,

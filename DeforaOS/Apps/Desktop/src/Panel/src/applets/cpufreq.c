@@ -62,7 +62,7 @@ PanelApplet applet =
 {
 	NULL,
 	"CPU frequency",
-	NULL,
+	"gnome-monitor",
 	_cpufreq_init,
 	_cpufreq_destroy,
 	NULL,

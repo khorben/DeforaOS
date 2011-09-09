@@ -60,7 +60,7 @@ PanelApplet applet =
 {
 	NULL,
 	"CPU",
-	NULL,
+	"gnome-monitor",
 	_cpu_init,
 	_cpu_destroy,
 	NULL,
