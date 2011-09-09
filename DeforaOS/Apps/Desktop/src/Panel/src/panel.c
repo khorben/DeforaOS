@@ -587,8 +587,8 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
-	/* plugins */
-	frame = gtk_frame_new(_("Plug-ins:"));
+	/* plug-ins */
+	frame = gtk_frame_new(_("Applets:"));
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
