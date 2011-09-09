@@ -16,6 +16,7 @@
 
 
 #include <System.h>
+#include <ctype.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <stdlib.h>
@@ -110,6 +111,8 @@ static gboolean _cvs_task_on_closex(gpointer data);
 static void _cvs_task_on_child_watch(GPid pid, gint status, gpointer data);
 static gboolean _cvs_task_on_io_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);
+
+static void _rtrim(char * string);
 
 
 /* public */
@@ -353,6 +356,7 @@ static void _refresh_dir(CVS * cvs)
 		snprintf(p, len, "%s/%s", cvs->filename, root);
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
+			_rtrim(q);
 			gtk_label_set_text(GTK_LABEL(cvs->d_root), q);
 			g_free(q);
 		}
@@ -364,6 +368,7 @@ static void _refresh_dir(CVS * cvs)
 		snprintf(p, len, "%s/%s", cvs->filename, repository);
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
+			_rtrim(q);
 			gtk_label_set_text(GTK_LABEL(cvs->d_repository), q);
 			g_free(q);
 		}
@@ -375,6 +380,7 @@ static void _refresh_dir(CVS * cvs)
 		snprintf(p, len, "%s/%s", cvs->filename, tag);
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
+			_rtrim(q);
 			if(q[0] == 'T')
 				gtk_label_set_text(GTK_LABEL(cvs->d_tag),
 						&q[1]);
@@ -854,4 +860,17 @@ static gboolean _cvs_task_on_io_can_read(GIOChannel * channel,
 			return FALSE;
 	}
 	return TRUE;
+}
+
+
+/* rtrim */
+static void _rtrim(char * string)
+{
+	size_t i;
+	int c;
+
+	if(string == NULL || (i = strlen(string)) == 0)
+		return;
+	for(i--; i > 0 && (c = string[i]) != '\0' && isspace(c); i--)
+		string[i] = '\0';
 }
