@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-09-09 09:39+0200\n"
+"POT-Creation-Date: 2011-09-09 10:08+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:185 ../src/panel.c:422 ../src/panel.c:427
+#: ../src/applets/battery.c:185 ../src/panel.c:426 ../src/panel.c:431
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
@@ -88,8 +88,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:976 ../src/panel.c:983
-#: ../src/panel.c:992
+#: ../src/applets/logout.c:69 ../src/panel.c:1032 ../src/panel.c:1039
+#: ../src/panel.c:1048
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -183,47 +183,47 @@ msgstr ""
 "  -s\tIcônes de la taille d'une petite barre d'outils\n"
 "  -x\tIcônes de la taille de menus\n"
 
-#: ../src/panel.c:102
+#: ../src/panel.c:106
 msgid "Large"
 msgstr "Grande"
 
-#: ../src/panel.c:104
+#: ../src/panel.c:108
 msgid "Small"
 msgstr "Petite"
 
-#: ../src/panel.c:106
+#: ../src/panel.c:110
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:529
+#: ../src/panel.c:534
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:542
+#: ../src/panel.c:547
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:574
+#: ../src/panel.c:578
 msgid "Plug-ins:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:631
+#: ../src/panel.c:635
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:637 ../src/panel.c:641 ../src/panel.c:671 ../src/panel.c:675
+#: ../src/panel.c:641 ../src/panel.c:645 ../src/panel.c:675 ../src/panel.c:679
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:665
+#: ../src/panel.c:669
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:919
+#: ../src/panel.c:975
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:962
+#: ../src/panel.c:1018
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -234,7 +234,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1078
+#: ../src/panel.c:1134
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -245,7 +245,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1083
+#: ../src/panel.c:1139
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -256,11 +256,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1097 ../src/panel.c:1104 ../src/panel.c:1113
+#: ../src/panel.c:1153 ../src/panel.c:1160 ../src/panel.c:1169
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1103
+#: ../src/panel.c:1159
 msgid "Restart"
 msgstr "Redémarrer"
 

@@ -25,6 +25,7 @@ static char const _license[] =
 #else
 # include <fcntl.h>
 #endif
+#include <dirent.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -69,8 +70,11 @@ struct _Panel
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_notebook;
+	GtkListStore * pr_store;
 	GtkWidget * pr_bottom_size;
+	GtkListStore * pr_bottom_store;
 	GtkWidget * pr_top_size;
+	GtkListStore * pr_top_store;
 
 	/* dialogs */
 	GtkWidget * ab_window;
@@ -509,6 +513,7 @@ static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
 static void _preferences_on_cancel(gpointer data);
+static void _cancel_plugins(Panel * panel);
 static void _preferences_on_ok(gpointer data);
 
 void panel_show_preferences(Panel * panel, gboolean show)
@@ -562,7 +567,6 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 	GtkWidget * frame;
 	GtkWidget * view;
 	GtkWidget * widget;
-	GtkListStore * store;
 	size_t i;
 
 	/* FIXME this needs a restart to apply */
@@ -578,8 +582,8 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	store = _preferences_window_general_model(panel);
-	view = _preferences_window_general_view(panel, store);
+	panel->pr_store = _preferences_window_general_model(panel);
+	view = _preferences_window_general_view(panel, panel->pr_store);
 	gtk_container_add(GTK_CONTAINER(widget), view);
 	gtk_container_add(GTK_CONTAINER(frame), widget);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -655,8 +659,8 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	store = _preferences_window_general_model(panel);
-	view = _preferences_window_general_view(panel, store);
+	panel->pr_top_store = _preferences_window_general_model(panel);
+	view = _preferences_window_general_view(panel, panel->pr_top_store);
 	gtk_container_add(GTK_CONTAINER(widget), view);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox3);
@@ -690,8 +694,8 @@ static GtkWidget * _preferences_window_general(Panel * panel)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	store = _preferences_window_general_model(panel);
-	view = _preferences_window_general_view(panel, store);
+	panel->pr_bottom_store = _preferences_window_general_model(panel);
+	view = _preferences_window_general_view(panel, panel->pr_bottom_store);
 	gtk_container_add(GTK_CONTAINER(widget), view);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox3);
@@ -705,7 +709,8 @@ static GtkListStore * _preferences_window_general_model(Panel * panel)
 {
 	GtkListStore * store;
 
-	store = gtk_list_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	store = gtk_list_store_new(3, G_TYPE_STRING, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING);
 	return store;
 }
 
@@ -720,11 +725,11 @@ static GtkWidget * _preferences_window_general_view(Panel * panel,
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes("", renderer,
-			"pixbuf", 0, NULL);
+			"pixbuf", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("", renderer,
-			"text", 1, NULL);
+			"text", 2, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 	return view;
 }
@@ -757,6 +762,7 @@ static void _preferences_on_cancel(gpointer data)
 	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
+	_cancel_plugins(panel);
 	if((p = config_get(panel->config, NULL, "bottom_size")) == NULL
 			&& (p = config_get(panel->config, "", "size")) == NULL)
 		gtk_combo_box_set_active(GTK_COMBO_BOX(panel->pr_bottom_size),
@@ -793,6 +799,56 @@ static void _preferences_on_cancel(gpointer data)
 			continue;
 		pa->settings(pa, FALSE, TRUE);
 	}
+}
+
+static void _cancel_plugins(Panel * panel)
+{
+	DIR * dir;
+	struct dirent * de;
+	GtkIconTheme * theme;
+	char const ext[] = ".so";
+	size_t len;
+	Plugin * p;
+	PanelApplet * pa;
+	GtkTreeIter iter;
+	GdkPixbuf * pixbuf;
+
+	gtk_list_store_clear(panel->pr_store);
+	gtk_list_store_clear(panel->pr_bottom_store);
+	gtk_list_store_clear(panel->pr_top_store);
+	if((dir = opendir(LIBDIR "/" PACKAGE "/applets")) == NULL)
+		return;
+	theme = gtk_icon_theme_get_default();
+	while((de = readdir(dir)) != NULL)
+	{
+		if((len = strlen(de->d_name)) < sizeof(ext))
+			continue;
+		if(strcmp(&de->d_name[len - sizeof(ext) + 1], ext) != 0)
+			continue;
+		de->d_name[len - sizeof(ext) + 1] = '\0';
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
+#endif
+		if((p = plugin_new(LIBDIR, PACKAGE, "applets", de->d_name))
+				== NULL)
+			continue;
+		if((pa = plugin_lookup(p, "applet")) == NULL)
+		{
+			plugin_delete(p);
+			continue;
+		}
+		if(pa->icon == NULL)
+			pixbuf = gtk_icon_theme_load_icon(theme,
+					"gnome-settings", 24, 0, NULL);
+		else
+			pixbuf = gtk_icon_theme_load_icon(theme, pa->icon, 24,
+					0, NULL);
+		gtk_list_store_append(panel->pr_store, &iter);
+		gtk_list_store_set(panel->pr_store, &iter, 0, de->d_name,
+				1, pixbuf, 2, pa->name, -1);
+		plugin_delete(p);
+	}
+	closedir(dir);
 }
 
 static void _preferences_on_ok(gpointer data)
