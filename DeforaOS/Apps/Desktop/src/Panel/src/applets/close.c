@@ -67,7 +67,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Close",
-	NULL,
+	GTK_STOCK_CLOSE,
 	_close_init,
 	_close_destroy,
 	NULL,

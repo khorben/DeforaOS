@@ -62,7 +62,7 @@ PanelApplet applet =
 {
 	NULL,
 	"USB",
-	NULL,
+	"panel-applet-usb",
 	_usb_init,
 	_usb_destroy,
 	NULL,

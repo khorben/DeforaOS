@@ -64,7 +64,7 @@ PanelApplet applet =
 {
 	NULL,
 	"GSM",
-	NULL,
+	"phone",
 	_gsm_init,
 	_gsm_destroy,
 	NULL,

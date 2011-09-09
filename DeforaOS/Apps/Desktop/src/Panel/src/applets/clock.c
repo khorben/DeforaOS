@@ -53,7 +53,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Clock",
-	NULL,
+	"stock_calendar",
 	_clock_init,
 	_clock_destroy,
 	NULL,

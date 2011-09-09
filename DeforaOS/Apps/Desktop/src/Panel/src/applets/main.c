@@ -100,7 +100,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Main menu",
-	NULL,
+	"gnome-main-menu",
 	_main_init,
 	_main_destroy,
 	NULL,

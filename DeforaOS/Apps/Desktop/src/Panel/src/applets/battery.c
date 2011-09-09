@@ -90,7 +90,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Battery",
-	NULL,
+	"battery",
 	_battery_init,
 	_battery_destroy,
 	NULL,

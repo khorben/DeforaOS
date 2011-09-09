@@ -36,7 +36,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Logout",
-	NULL,
+	"gnome-logout",
 	_logout_init,
 	NULL,
 	NULL,

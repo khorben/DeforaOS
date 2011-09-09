@@ -49,7 +49,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Phone",
-	NULL,
+	"phone-dialer",
 	_phone_init,
 	NULL,
 	NULL,

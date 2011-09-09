@@ -38,7 +38,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Desktop switch",
-	NULL,
+	"panel-applet-desktop",
 	_desktop_init,
 	NULL,
 	NULL,

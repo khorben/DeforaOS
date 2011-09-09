@@ -48,7 +48,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Lock screen",
-	NULL,
+	"gnome-lockscreen",
 	_lock_init,
 	_lock_destroy,
 	_lock_settings,

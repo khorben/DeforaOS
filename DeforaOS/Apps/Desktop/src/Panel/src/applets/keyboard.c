@@ -67,7 +67,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Keyboard",
-	NULL,
+	"input-keyboard",
 	_keyboard_init,
 	_keyboard_destroy,
 	_keyboard_settings,

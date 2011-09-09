@@ -85,7 +85,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Wifi",
-	NULL,
+	"network-wireless",
 	_wpa_init,
 	_wpa_destroy,
 	NULL,

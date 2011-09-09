@@ -47,7 +47,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Volume",
-	NULL,
+	"stock_volume",
 	_volume_init,
 	_volume_destroy,
 	NULL,

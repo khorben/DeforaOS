@@ -137,7 +137,7 @@ PanelApplet applet =
 {
 	NULL,
 	"Tasks",
-	NULL,
+	"application-x-executable",
 	_tasks_init,
 	_tasks_destroy,
 	NULL,

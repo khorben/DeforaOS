@@ -59,7 +59,7 @@ PanelApplet applet =
 {
 	NULL,
 	"GPS",
-	NULL,
+	"network-wireless",
 	_gps_init,
 	_gps_destroy,
 	NULL,
