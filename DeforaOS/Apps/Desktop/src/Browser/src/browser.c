@@ -1734,7 +1734,9 @@ static void _view_details(Browser * browser)
 				on_filename_edited), browser);
 	_details_column_text(view, renderer, _("Filename"), BR_COL_DISPLAY_NAME,
 			BR_COL_DISPLAY_NAME);
-	_details_column_text(view, NULL, _("Size"), BR_COL_DISPLAY_SIZE,
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "xalign", 1.0, NULL);
+	_details_column_text(view, renderer, _("Size"), BR_COL_DISPLAY_SIZE,
 			BR_COL_SIZE);
 	_details_column_text(view, NULL, _("Owner"), BR_COL_OWNER,
 			BR_COL_OWNER);
