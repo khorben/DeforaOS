@@ -21,7 +21,7 @@ all: $(TARGETS)
 
 imap4_OBJS = imap4.o
 imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
+imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem` -lssl
 
 imap4.so: $(imap4_OBJS)
 	$(LD) -o imap4.so $(imap4_OBJS) $(imap4_LDFLAGS)
