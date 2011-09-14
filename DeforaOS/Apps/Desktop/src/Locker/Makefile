@@ -24,6 +24,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Locker.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Locker/demo.h \
+		$(PACKAGE)-$(VERSION)/include/Locker/locker.h \
+		$(PACKAGE)-$(VERSION)/include/Locker/plugin.h \
+		$(PACKAGE)-$(VERSION)/include/Locker/Makefile \
+		$(PACKAGE)-$(VERSION)/include/Locker/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
@@ -35,6 +40,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/locker.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/demos/xscreensaver.c \
+		$(PACKAGE)-$(VERSION)/src/demos/Makefile \
+		$(PACKAGE)-$(VERSION)/src/demos/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/password.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/slider.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \

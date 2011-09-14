@@ -15,16 +15,25 @@
 
 
 
-#ifndef LOCKER_LOCKER_H
-# define LOCKER_LOCKER_H
-
-# include "Locker.h"
+#ifndef DESKTOP_LOCKER_LOCKER_H
+# define DESKTOP_LOCKER_LOCKER_H
 
 
 /* Locker */
 /* public */
-/* functions */
-Locker * locker_new(int suspend, char const * demo, char const * plugin);
-void locker_delete(Locker * locker);
+/* types */
+typedef struct _Locker Locker;
 
-#endif /* !LOCKER_LOCKER_H */
+typedef enum _LockerAction
+{
+	LOCKER_ACTION_ACTIVATE = 0,
+	LOCKER_ACTION_LOCK,
+	LOCKER_ACTION_UNLOCK
+} LockerAction;
+
+
+/* constants */
+# define LOCKER_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_LOCKER_CLIENT"
+# define LOCKER_MESSAGE_ACTION	0
+
+#endif /* !DESKTOP_LOCKER_LOCKER_H */

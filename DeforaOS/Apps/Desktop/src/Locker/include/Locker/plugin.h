@@ -15,16 +15,33 @@
 
 
 
-#ifndef LOCKER_LOCKER_H
-# define LOCKER_LOCKER_H
+#ifndef DESKTOP_LOCKER_PLUGIN_H
+# define DESKTOP_LOCKER_PLUGIN_H
 
-# include "Locker.h"
+# include <gtk/gtk.h>
+# include "locker.h"
 
 
-/* Locker */
+/* LockerPlugin */
 /* public */
-/* functions */
-Locker * locker_new(int suspend, char const * demo, char const * plugin);
-void locker_delete(Locker * locker);
+/* types */
+typedef struct _LockerPlugin LockerPlugin;
 
-#endif /* !LOCKER_LOCKER_H */
+typedef struct _LockerPluginHelper
+{
+	Locker * locker;
+	int (*error)(Locker * locker, char const * message, int ret);
+	void (*action)(Locker * locker, LockerAction action);
+} LockerPluginHelper;
+
+struct _LockerPlugin
+{
+	LockerPluginHelper * helper;
+	char const * name;
+	GtkWidget * (*init)(LockerPlugin * plugin);
+	void (*destroy)(LockerPlugin * plugin);
+	void (*action)(LockerPlugin * plugin, LockerAction action);
+	void * priv;
+};
+
+#endif /* !DESKTOP_LOCKER_PLUGIN_H */

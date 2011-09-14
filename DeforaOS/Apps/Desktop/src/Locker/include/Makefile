@@ -1,3 +1,4 @@
+SUBDIRS	= Locker
 PREFIX	= /usr/local
 DESTDIR	= 
 RM	= rm -f
@@ -7,17 +8,24 @@ INSTALL	= install
 INCLUDEDIR= $(PREFIX)/include
 
 
-all:
+all: subdirs
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 install:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- Locker.h $(DESTDIR)$(PREFIX)/include/Desktop/Locker.h
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Locker.h
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

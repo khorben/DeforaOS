@@ -18,43 +18,8 @@
 #ifndef DESKTOP_LOCKER_H
 # define DESKTOP_LOCKER_H
 
-# include <gtk/gtk.h>
-
-
-/* Locker */
-/* public */
-/* types */
-typedef struct _Locker Locker;
-
-typedef enum _LockerAction
-{
-	LOCKER_ACTION_ACTIVATE = 0,
-	LOCKER_ACTION_LOCK,
-	LOCKER_ACTION_UNLOCK
-} LockerAction;
-
-typedef struct _LockerPlugin LockerPlugin;
-
-typedef struct _LockerPluginHelper
-{
-	Locker * locker;
-	int (*error)(Locker * locker, char const * message, int ret);
-	void (*action)(Locker * locker, LockerAction action);
-} LockerPluginHelper;
-
-struct _LockerPlugin
-{
-	LockerPluginHelper * helper;
-	char const * name;
-	GtkWidget * (*init)(LockerPlugin * plugin);
-	void (*destroy)(LockerPlugin * plugin);
-	void (*action)(LockerPlugin * plugin, LockerAction action);
-	void * priv;
-};
-
-
-/* constants */
-# define LOCKER_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_LOCKER_CLIENT"
-# define LOCKER_MESSAGE_ACTION	0
+# include "Locker/demo.h"
+# include "Locker/locker.h"
+# include "Locker/plugin.h"
 
 #endif /* !DESKTOP_LOCKER_H */

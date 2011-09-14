@@ -34,8 +34,6 @@
 /* types */
 struct _Locker
 {
-	LockerPluginHelper helper;
-
 	/* preferences */
 	int suspend;
 
@@ -46,7 +44,15 @@ struct _Locker
 	GtkWidget ** windows;
 	size_t windows_cnt;
 
+	/* demo */
+	Plugin * dplugin;
+	LockerDemo * demo;
+	LockerDemoHelper dhelper;
+
+	/* plugin */
+	Plugin * pplugin;
 	LockerPlugin * plugin;
+	LockerPluginHelper phelper;
 };
 
 
@@ -62,15 +68,15 @@ static void _locker_unlock(Locker * locker);
 static gboolean _lock_on_closex(void);
 static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
+static void _locker_on_realize(GtkWidget * widget, gpointer data);
 
 
 /* public */
 /* functions */
 /* locker_new */
-Locker * locker_new(int suspend, char const * name)
+Locker * locker_new(int suspend, char const * demo, char const * plugin)
 {
 	Locker * locker;
-	LockerPlugin * plugin;
 	GdkScreen * screen;
 	int error;
 	GtkWidget * widget = NULL;
@@ -80,17 +86,21 @@ Locker * locker_new(int suspend, char const * name)
 	GdkRectangle rect;
 	GdkWindow * root;
 
-	if(name == NULL)
 #ifdef EMBEDDED
-		name = "slider";
+	plugin = (plugin != NULL) ? plugin : "slider";
 #else
-		name = "password";
+	plugin = (plugin != NULL) ? plugin : "password";
 #endif
 	if((locker = object_new(sizeof(*locker))) == NULL)
+	{
+		_locker_error(NULL, error_get(), 1);
 		return NULL;
-	locker->helper.locker = locker;
-	locker->helper.error = _locker_error;
-	locker->helper.action = _locker_action;
+	}
+	locker->dhelper.locker = locker;
+	locker->dhelper.error = _locker_error;
+	locker->phelper.locker = locker;
+	locker->phelper.error = _locker_error;
+	locker->phelper.action = _locker_action;
 	locker->suspend = (suspend != 0) ? 1 : 0;
 	screen = gdk_screen_get_default();
 	locker->display = gdk_screen_get_display(screen);
@@ -98,25 +108,43 @@ Locker * locker_new(int suspend, char const * name)
 	cnt = gdk_screen_get_n_monitors(screen);
 	locker->windows = NULL;
 	locker->windows_cnt = cnt;
-	if((plugin = plugin_new(LIBDIR, PACKAGE, "plugins", name)) != NULL
-			&& (locker->plugin = plugin_lookup(plugin, "plugin"))
-			!= NULL)
+	locker->dplugin = NULL;
+	locker->demo = NULL;
+	if(demo != NULL && (locker->dplugin = plugin_new(LIBDIR, PACKAGE,
+					"demos", demo)) != NULL
+			&& (locker->demo = plugin_lookup(locker->dplugin,
+					"demo")) != NULL)
 	{
-		locker->plugin->helper = &locker->helper;
-		widget = locker->plugin->init(locker->plugin);
+		locker->demo->helper = &locker->dhelper;
+		if(locker->demo->init(locker->demo) != 0)
+			locker->demo = NULL;
 	}
-	if(widget == NULL || XScreenSaverQueryExtension(GDK_DISPLAY_XDISPLAY(
-					locker->display), &locker->event,
-				&error) == 0
-			|| XScreenSaverRegister(
-				GDK_DISPLAY_XDISPLAY(locker->display),
-				locker->screen, getpid(), XA_INTEGER) == 0
+	if(demo != NULL && locker->demo == NULL)
+		_locker_error(locker, error_get(), 1);
+	if((locker->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
+			!= NULL
+			&& (locker->plugin = plugin_lookup(locker->pplugin,
+					"plugin")) != NULL)
+	{
+		locker->plugin->helper = &locker->phelper;
+		if((widget = locker->plugin->init(locker->plugin)) == NULL)
+			locker->plugin = NULL;
+	}
+	if(widget == NULL)
+	{
+		_locker_error(locker, error_get(), 1);
+		locker_delete(locker);
+		return NULL;
+	}
+	if(XScreenSaverQueryExtension(GDK_DISPLAY_XDISPLAY(locker->display),
+				&locker->event, &error) == 0
+			|| XScreenSaverRegister(GDK_DISPLAY_XDISPLAY(
+					locker->display), locker->screen,
+				getpid(), XA_INTEGER) == 0
 			|| (locker->windows = malloc(sizeof(*locker->windows)
 					* cnt)) == NULL)
 	{
-		locker->plugin = NULL;
-		if(plugin != NULL)
-			plugin_delete(plugin);
+		_locker_error(locker, "Could not register as screensaver", 1);
 		locker_delete(locker);
 		return NULL;
 	}
@@ -136,6 +164,8 @@ Locker * locker_new(int suspend, char const * name)
 		g_signal_connect_swapped(G_OBJECT(locker->windows[i]),
 				"delete-event", G_CALLBACK(_lock_on_closex),
 				NULL);
+		g_signal_connect(locker->windows[i], "realize", G_CALLBACK(
+					_locker_on_realize), locker);
 	}
 	gtk_container_set_border_width(GTK_CONTAINER(locker->windows[0]), 4);
 	gtk_container_add(GTK_CONTAINER(locker->windows[0]), widget);
@@ -155,8 +185,13 @@ Locker * locker_new(int suspend, char const * name)
 void locker_delete(Locker * locker)
 {
 	if(locker->plugin != NULL)
-		/* FIXME also call plugin_delete() */
 		locker->plugin->destroy(locker->plugin);
+	if(locker->pplugin != NULL)
+		plugin_delete(locker->pplugin);
+	if(locker->demo != NULL)
+		locker->demo->destroy(locker->demo);
+	if(locker->dplugin != NULL)
+		plugin_delete(locker->dplugin);
 	free(locker->windows);
 	XScreenSaverUnregister(GDK_DISPLAY_XDISPLAY(locker->display),
 			locker->screen);
@@ -196,9 +231,23 @@ static void _locker_activate(Locker * locker)
 /* locker_error */
 static int _locker_error(Locker * locker, char const * message, int ret)
 {
+	GtkWidget * dialog;
+
 	if(locker == NULL)
+	{
 		fprintf(stderr, "%s: %s\n", "locker", message);
-	/* XXX otherwise popup an error dialog */
+		return ret;
+	}
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
 }
 
@@ -305,4 +354,19 @@ static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
 			break;
 	}
 	return GDK_FILTER_CONTINUE;
+}
+
+
+/* locker_on_realize */
+static void _locker_on_realize(GtkWidget * widget, gpointer data)
+{
+	Locker * locker = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %lu\n", __func__, GDK_WINDOW_XWINDOW(
+				widget->window));
+#endif
+	if(locker->demo != NULL && locker->demo->add != NULL)
+		locker->demo->add(locker->demo, GDK_WINDOW_XWINDOW(
+					widget->window));
 }

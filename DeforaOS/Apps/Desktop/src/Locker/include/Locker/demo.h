@@ -15,16 +15,32 @@
 
 
 
-#ifndef LOCKER_LOCKER_H
-# define LOCKER_LOCKER_H
+#ifndef DESKTOP_LOCKER_DEMO_H
+# define DESKTOP_LOCKER_DEMO_H
 
-# include "Locker.h"
+# include <X11/X.h>
+# include "locker.h"
 
 
-/* Locker */
+/* LockerDemo */
 /* public */
-/* functions */
-Locker * locker_new(int suspend, char const * demo, char const * plugin);
-void locker_delete(Locker * locker);
+/* types */
+typedef struct _LockerDemoHelper
+{
+	Locker * locker;
+	int (*error)(Locker * locker, char const * message, int ret);
+} LockerDemoHelper;
 
-#endif /* !LOCKER_LOCKER_H */
+typedef struct _LockerDemo LockerDemo;
+
+struct _LockerDemo
+{
+	LockerDemoHelper * helper;
+	char const * name;
+	int (*init)(LockerDemo * demo);
+	int (*add)(LockerDemo * demo, XID xid);
+	void (*destroy)(LockerDemo * demo);
+	void * priv;
+};
+
+#endif /* !DESKTOP_LOCKER_DEMO_H */

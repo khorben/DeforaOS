@@ -1,4 +1,4 @@
-SUBDIRS	= plugins
+SUBDIRS	= demos plugins
 TARGETS	= locker lockerctl
 PREFIX	= /usr/local
 DESTDIR	= 
