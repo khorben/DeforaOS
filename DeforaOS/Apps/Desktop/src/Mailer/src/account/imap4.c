@@ -28,6 +28,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include <glib.h>
 #include <System.h>
 #include "Mailer.h"
@@ -71,9 +73,7 @@ typedef enum _IMAP4ConfigValue
 	I4CV_PASSWORD,
 	I4CV_HOSTNAME,
 	I4CV_PORT,
-#if 0 /* FIXME SSL is not supported yet */
 	I4CV_SSL,
-#endif
 	I4CV_PADDING0,
 	I4CV_PREFIX
 } IMAP4Config;
@@ -137,6 +137,8 @@ typedef struct _IMAP4Command
 typedef struct _IMAP4
 {
 	int fd;
+	SSL_CTX * ssl_ctx;
+	SSL * ssl;
 	guint source;
 
 	GIOChannel * channel;
@@ -162,10 +164,8 @@ AccountConfig _imap4_config[I4CV_COUNT + 1] =
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
 	{ "hostname",	"Server hostname",	ACT_STRING,	NULL	},
-	{ "port",	"Server port",		ACT_UINT16,	994	},
-#if 0 /* FIXME SSL is not supported yet */
-	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	1	},
-#endif
+	{ "port",	"Server port",		ACT_UINT16,	143	},
+	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	0	},
 #if 0 /* XXX not implemented yet */
 	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL	},
 	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL	},
@@ -208,10 +208,16 @@ static gboolean _on_noop(gpointer data);
 static gboolean _on_reset(gpointer data);
 static gboolean _on_watch_can_connect(GIOChannel * source,
 		GIOCondition condition, gpointer data);
+static gboolean _on_watch_can_handshake(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _on_watch_can_read_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _on_watch_can_write_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 
 
 /* public */
@@ -242,6 +248,10 @@ static int _imap4_init(AccountPlugin * plugin)
 	memset(imap4, 0, sizeof(*imap4));
 	plugin->priv = imap4;
 	imap4->fd = -1;
+	imap4->ssl_ctx = NULL;
+	imap4->ssl = NULL;
+	SSL_load_error_strings();
+	SSL_library_init();
 	imap4->source = g_idle_add(_on_connect, plugin);
 	return 0;
 }
@@ -273,6 +283,8 @@ static int _imap4_destroy(AccountPlugin * plugin)
 	for(i = 0; i < imap4->queue_cnt; i++)
 		free(imap4->queue[i].buf);
 	free(imap4->queue);
+	if(imap4->ssl_ctx != NULL)
+		SSL_CTX_free(imap4->ssl_ctx);
 	if(imap4->fd >= 0)
 		close(imap4->fd);
 #if 0 /* XXX do not free() */
@@ -350,7 +362,8 @@ static IMAP4Command * _imap4_command(AccountPlugin * plugin,
 			imap4->source = 0;
 		}
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-				_on_watch_can_write, plugin);
+				(imap4->ssl != NULL) ? _on_watch_can_write_ssl
+				: _on_watch_can_write, plugin);
 	}
 	return p;
 }
@@ -361,7 +374,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer);
 static int _context_fetch(AccountPlugin * plugin, char const * answer);
 static int _context_init(AccountPlugin * plugin);
 static int _context_list(AccountPlugin * plugin, char const * answer);
-static int _context_login(AccountPlugin * plugin);
+static int _context_login(AccountPlugin * plugin, char const * answer);
 static int _context_select(AccountPlugin * plugin);
 static int _context_status(AccountPlugin * plugin, char const * answer);
 
@@ -440,7 +453,7 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 		case I4C_LIST:
 			return _context_list(plugin, answer);
 		case I4C_LOGIN:
-			return _context_login(plugin);
+			return _context_login(plugin, answer);
 		case I4C_NOOP:
 			if(cmd->status != I4CS_PARSING)
 				return 0;
@@ -603,8 +616,9 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	return (cmd != NULL) ? 0 : -1;
 }
 
-static int _context_login(AccountPlugin * plugin)
+static int _context_login(AccountPlugin * plugin, char const * answer)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	char const * prefix = plugin->config[I4CV_PREFIX].value;
@@ -612,6 +626,9 @@ static int _context_login(AccountPlugin * plugin)
 
 	if(cmd->status != I4CS_PARSING)
 		return 0;
+	if(strncmp("OK", answer, 2) != 0)
+		return -helper->error(helper->account, "Authentication failed",
+				1);
 	cmd->status = I4CS_OK;
 	if((q = g_strdup_printf("%s \"\" \"%s%%\"", "LIST", (prefix != NULL)
 					? prefix : "")) == NULL)
@@ -830,7 +847,7 @@ static void _imap4_message_delete(AccountPlugin * plugin,
 
 /* callbacks */
 /* on_idle */
-static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected);
+static int _connect_channel(AccountPlugin * plugin);
 
 static gboolean _on_connect(gpointer data)
 {
@@ -842,6 +859,7 @@ static gboolean _on_connect(gpointer data)
 	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
+	char buf[128];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -858,6 +876,15 @@ static gboolean _on_connect(gpointer data)
 	if((p = plugin->config[I4CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
+	if(plugin->config[I4CV_SSL].value != NULL)
+		if((imap4->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
+				|| SSL_CTX_set_cipher_list(imap4->ssl_ctx,
+					SSL_DEFAULT_CIPHER_LIST) != 1)
+		{
+			helper->error(NULL, ERR_error_string(ERR_get_error(),
+						buf), 1);
+			return FALSE;
+		}
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -870,23 +897,26 @@ static gboolean _on_connect(gpointer data)
 			inet_ntoa(sa.sin_addr), port);
 	if(fcntl(imap4->fd, F_SETFL, O_NONBLOCK) == -1)
 		helper->error(NULL, strerror(errno), 1);
-	if(connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+	if((connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
+				&& errno != EINPROGRESS)
+			|| _connect_channel(plugin) != 0)
 	{
-		if(errno != EINPROGRESS)
-		{
-			helper->error(NULL, strerror(errno), 1);
-			close(imap4->fd);
-			imap4->fd = -1;
-			return FALSE;
-		}
-		else
-			return _connect_channel(plugin, FALSE);
+		helper->error(NULL, strerror(errno), 1);
+		if(imap4->ssl_ctx != NULL)
+			SSL_CTX_free(imap4->ssl_ctx);
+		imap4->ssl_ctx = NULL;
+		close(imap4->fd);
+		imap4->fd = -1;
+		return FALSE;
 	}
-	return _connect_channel(plugin, TRUE);
+	imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
+			_on_watch_can_connect, plugin);
+	return FALSE;
 }
 
-static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
+static int _connect_channel(AccountPlugin * plugin)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	GError * error = NULL;
 
@@ -895,7 +925,7 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 #endif
 	/* prepare queue */
 	if((imap4->queue = malloc(sizeof(*imap4->queue))) == NULL)
-		return FALSE;
+		return -helper->error(helper->account, strerror(errno), 1);
 	imap4->queue[0].id = 0;
 	imap4->queue[0].context = I4C_INIT;
 	imap4->queue[0].status = I4CS_SENT;
@@ -907,14 +937,7 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 	imap4->channel = g_io_channel_unix_new(imap4->fd);
 	g_io_channel_set_encoding(imap4->channel, NULL, &error);
 	g_io_channel_set_buffered(imap4->channel, FALSE);
-	if(connected)
-		/* wait for the server's banner */
-		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-				_on_watch_can_read, plugin);
-	else
-		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-				_on_watch_can_connect, plugin);
-	return FALSE;
+	return 0;
 }
 
 
@@ -959,6 +982,9 @@ static gboolean _on_reset(gpointer data)
 	free(imap4->queue);
 	imap4->queue = NULL;
 	imap4->queue_cnt = 0;
+	if(imap4->ssl_ctx != NULL)
+		SSL_CTX_free(imap4->ssl_ctx);
+	imap4->ssl_ctx = NULL;
 	if(imap4->fd >= 0)
 		close(imap4->fd);
 	imap4->fd = -1;
@@ -972,7 +998,9 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	AccountPlugin * plugin = data;
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
+	char buf[128];
 
 	if(condition != G_IO_OUT || source != imap4->channel)
 		return FALSE; /* should not happen */
@@ -980,9 +1008,66 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 	fprintf(stderr, "DEBUG: %s() connected\n", __func__);
 #endif
 	imap4->wr_source = 0;
+	/* setup SSL */
+	if(imap4->ssl_ctx != NULL)
+	{
+		if((imap4->ssl = SSL_new(imap4->ssl_ctx)) == NULL)
+		{
+			helper->error(NULL, ERR_error_string(ERR_get_error(),
+						buf), 1);
+			return FALSE;
+		}
+		if(SSL_set_fd(imap4->ssl, imap4->fd) != 1)
+			fprintf(stderr, "DEBUG: la\n"); /* FIXME handle error */
+		SSL_set_connect_state(imap4->ssl);
+		/* perform initial handshake */
+		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
+				_on_watch_can_handshake, plugin);
+		return FALSE;
+	}
 	/* wait for the server's banner */
 	imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
 			_on_watch_can_read, plugin);
+	return FALSE;
+}
+
+
+/* on_watch_can_handshake */
+static gboolean _on_watch_can_handshake(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	IMAP4 * imap4 = plugin->priv;
+	int res;
+
+	if((condition != G_IO_IN && condition != G_IO_OUT)
+			|| source != imap4->channel || imap4->ssl == NULL)
+		return FALSE; /* should not happen */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	imap4->wr_source = 0;
+	imap4->rd_source = 0;
+	if((res = SSL_do_handshake(imap4->ssl)) == 1)
+	{
+		/* wait for the server's banner */
+		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
+				_on_watch_can_read_ssl, plugin);
+		return FALSE;
+	}
+	else if(res == 0)
+	{
+		/* FIXME handle error */
+		return FALSE;
+	}
+	res = SSL_get_error(imap4->ssl, res);
+	if(res == SSL_ERROR_WANT_WRITE)
+		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
+				_on_watch_can_handshake, plugin);
+	else if(res == SSL_ERROR_WANT_READ)
+		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
+				_on_watch_can_handshake, plugin);
+	/* FIXME else handle error */
 	return FALSE;
 }
 
@@ -1051,6 +1136,70 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 }
 
 
+/* on_watch_can_read_ssl */
+static gboolean _on_watch_can_read_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	IMAP4 * imap4 = plugin->priv;
+	char * p;
+	int cnt;
+	IMAP4Command * cmd;
+	char buf[128];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_IN || source != imap4->channel)
+		return FALSE; /* should not happen */
+	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + 256)) == NULL)
+		return TRUE; /* XXX retries immediately (delay?) */
+	imap4->rd_buf = p;
+	if((cnt = SSL_read(imap4->ssl, &imap4->rd_buf[imap4->rd_buf_cnt], 256))
+			<= 0)
+	{
+		if(cnt < 0)
+		{
+			ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
+			plugin->helper->error(NULL, buf, 1);
+		}
+		imap4->rd_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: IMAP4 SERVER: ");
+	fwrite(&imap4->rd_buf[imap4->rd_buf_cnt], sizeof(*p), cnt, stderr);
+#endif
+	imap4->rd_buf_cnt += cnt;
+	if(_imap4_parse(plugin) != 0)
+	{
+		imap4->rd_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+	if(imap4->queue_cnt == 0)
+	{
+		imap4->rd_source = 0;
+		return FALSE;
+	}
+	cmd = &imap4->queue[0];
+	if(cmd->buf_cnt == 0)
+	{
+		if(cmd->status == I4CS_SENT || cmd->status == I4CS_PARSING)
+			return TRUE;
+		else if(cmd->status == I4CS_OK || cmd->status == I4CS_ERROR)
+			memmove(cmd, &imap4->queue[1], sizeof(*cmd)
+					* --imap4->queue_cnt);
+	}
+	imap4->rd_source = 0;
+	if(imap4->queue_cnt == 0)
+		imap4->source = g_timeout_add(30000, _on_noop, plugin);
+	else
+		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
+				_on_watch_can_write_ssl, plugin);
+	return FALSE;
+}
+
+
 /* on_watch_can_write */
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
@@ -1063,6 +1212,9 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 	char * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(condition != G_IO_OUT || source != imap4->channel
 			|| imap4->queue_cnt == 0 || cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
@@ -1099,5 +1251,53 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	if(imap4->rd_source == 0)
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
 				_on_watch_can_read, plugin);
+	return FALSE;
+}
+
+
+/* on_watch_can_write_ssl */
+static gboolean _on_watch_can_write_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	IMAP4 * imap4 = plugin->priv;
+	IMAP4Command * cmd = &imap4->queue[0];
+	int cnt;
+	char * p;
+	char buf[128];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_OUT || source != imap4->channel
+			|| imap4->queue_cnt == 0 || cmd->buf_cnt == 0)
+		return FALSE; /* should not happen */
+	if((cnt = SSL_write(imap4->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
+	{
+		if(cnt < 0)
+		{
+			ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
+			plugin->helper->error(NULL, buf, 1);
+		}
+		imap4->wr_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: IMAP4 CLIENT: ");
+	fwrite(cmd->buf, sizeof(*p), cnt, stderr);
+#endif
+	cmd->buf_cnt -= cnt;
+	memmove(cmd->buf, &cmd->buf[cnt], cmd->buf_cnt);
+	if((p = realloc(cmd->buf, cmd->buf_cnt)) != NULL)
+		cmd->buf = p; /* we can ignore errors... */
+	else if(cmd->buf_cnt == 0)
+		cmd->buf = NULL; /* ...except when it's not one */
+	if(cmd->buf_cnt > 0)
+		return TRUE;
+	cmd->status = I4CS_SENT;
+	imap4->wr_source = 0;
+	if(imap4->rd_source == 0)
+		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
+				_on_watch_can_read_ssl, plugin);
 	return FALSE;
 }
