@@ -1018,7 +1018,7 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 			return FALSE;
 		}
 		if(SSL_set_fd(imap4->ssl, imap4->fd) != 1)
-			fprintf(stderr, "DEBUG: la\n"); /* FIXME handle error */
+			; /* FIXME handle error */
 		SSL_set_connect_state(imap4->ssl);
 		/* perform initial handshake */
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
