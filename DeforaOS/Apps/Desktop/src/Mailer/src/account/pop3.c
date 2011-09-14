@@ -28,6 +28,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include <glib.h>
 #include <System.h>
 #include "Mailer.h"
@@ -59,6 +61,18 @@ typedef enum _POP3CommandStatus
 	P3CS_PARSING,
 	P3CS_OK
 } POP3CommandStatus;
+
+typedef enum _POP3ConfigValue
+{
+	P3CV_USERNAME = 0,
+	P3CV_PASSWORD,
+	P3CV_HOSTNAME,
+	P3CV_PORT,
+	P3CV_SSL,
+	P3CV_DELETE
+} POP3ConfigValue;
+#define P3CV_LAST P3CV_DELETE
+#define P3CV_COUNT (P3CV_LAST + 1)
 
 typedef enum _POP3Context
 {
@@ -93,6 +107,8 @@ typedef struct _POP3Command
 typedef struct _POP3
 {
 	int fd;
+	SSL_CTX * ssl_ctx;
+	SSL * ssl;
 	guint source;
 
 	AccountFolder inbox;
@@ -113,15 +129,13 @@ typedef struct _POP3
 static char const _pop3_type[] = "POP3";
 static char const _pop3_name[] = "POP3 server";
 
-static AccountConfig _pop3_config[] =
+static AccountConfig _pop3_config[P3CV_COUNT + 1] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL },
 	{ "password",	"Password",		ACT_PASSWORD,	NULL },
 	{ "hostname",	"Server hostname",	ACT_STRING,	NULL },
-	{ "port",	"Server port",		ACT_UINT16,	NULL },
-#if 0 /* FIXME SSL is not supported yet */
+	{ "port",	"Server port",		ACT_UINT16,	110 },
 	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	NULL },
-#endif
 	{ "delete",	"Delete read mails on server",
 						ACT_BOOLEAN,	NULL },
 	{ NULL,		NULL,			ACT_NONE,	NULL }
@@ -153,10 +167,16 @@ static gboolean _on_noop(gpointer data);
 static gboolean _on_reset(gpointer data);
 static gboolean _on_watch_can_connect(GIOChannel * source,
 		GIOCondition condition, gpointer data);
+static gboolean _on_watch_can_handshake(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _on_watch_can_read_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _on_watch_can_write_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data);
 
 
 /* public */
@@ -188,6 +208,10 @@ static int _pop3_init(AccountPlugin * plugin)
 	memset(pop3, 0, sizeof(*pop3));
 	plugin->priv = pop3;
 	pop3->fd = -1;
+	pop3->ssl_ctx = NULL;
+	pop3->ssl = NULL;
+	SSL_load_error_strings();
+	SSL_library_init();
 	pop3->inbox.folder = plugin->helper->folder_new(plugin->helper->account,
 			&pop3->inbox, NULL, FT_INBOX, "Inbox");
 	pop3->trash.folder = plugin->helper->folder_new(plugin->helper->account,
@@ -224,6 +248,8 @@ static int _pop3_destroy(AccountPlugin * plugin)
 	for(i = 0; i < pop3->queue_cnt; i++)
 		free(pop3->queue[i].buf);
 	free(pop3->queue);
+	if(pop3->ssl_ctx != NULL)
+		SSL_CTX_free(pop3->ssl_ctx);
 	if(pop3->fd >= 0)
 		close(pop3->fd);
 	free(pop3);
@@ -289,7 +315,8 @@ static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
 			pop3->source = 0;
 		}
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-				_on_watch_can_write, plugin);
+				(pop3->ssl != NULL) ? _on_watch_can_write_ssl
+				: _on_watch_can_write, plugin);
 	}
 	return p;
 }
@@ -517,7 +544,7 @@ static void _pop3_message_delete(AccountPlugin * plugin,
 
 /* callbacks */
 /* on_idle */
-static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected);
+static int _connect_channel(AccountPlugin * plugin);
 
 static gboolean _on_connect(gpointer data)
 {
@@ -529,22 +556,32 @@ static gboolean _on_connect(gpointer data)
 	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
+	char buf[128];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	pop3->source = 0;
 	/* FIXME report errors */
-	if((hostname = plugin->config[2].value) == NULL)
+	if((hostname = plugin->config[P3CV_HOSTNAME].value) == NULL)
 		return FALSE;
 	if((he = gethostbyname(hostname)) == NULL)
 	{
 		helper->error(NULL, hstrerror(h_errno), 1);
 		return FALSE;
 	}
-	if((p = plugin->config[3].value) == NULL)
+	if((p = plugin->config[P3CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
+	if(plugin->config[P3CV_SSL].value != NULL)
+		if((pop3->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
+				|| SSL_CTX_set_cipher_list(pop3->ssl_ctx,
+					SSL_DEFAULT_CIPHER_LIST) != 1)
+		{
+			helper->error(NULL, ERR_error_string(ERR_get_error(),
+						buf), 1);
+			return FALSE;
+		}
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -557,33 +594,32 @@ static gboolean _on_connect(gpointer data)
 			inet_ntoa(sa.sin_addr), port);
 	if(fcntl(pop3->fd, F_SETFL, O_NONBLOCK) == -1)
 		helper->error(NULL, strerror(errno), 1);
-	if(connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+	if((connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
+				&& errno != EINPROGRESS)
+			|| _connect_channel(plugin) != 0)
 	{
-		if(errno != EINPROGRESS)
-		{
-			helper->error(NULL, strerror(errno), 1);
-			close(pop3->fd);
-			pop3->fd = -1;
-			return FALSE;
-		}
-		else
-			return _connect_channel(plugin, FALSE);
+		helper->error(NULL, strerror(errno), 1);
+		close(pop3->fd);
+		pop3->fd = -1;
+		return FALSE;
 	}
-	return _connect_channel(plugin, TRUE);
+	pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+			_on_watch_can_connect, plugin);
+	return FALSE;
 }
 
-static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
+static int _connect_channel(AccountPlugin * plugin)
 {
+	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
 	GError * error = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, connected ? "TRUE"
-			: "FALSE");
+	fprintf(stderr, "DEBUG: %s()\n");
 #endif
 	/* prepare queue */
 	if((pop3->queue = malloc(sizeof(*pop3->queue))) == NULL)
-		return FALSE;
+		return -helper->error(helper->account, strerror(errno), 1);
 	pop3->queue[0].context = P3C_INIT;
 	pop3->queue[0].status = P3CS_SENT;
 	pop3->queue[0].buf = NULL;
@@ -593,6 +629,9 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 	pop3->channel = g_io_channel_unix_new(pop3->fd);
 	g_io_channel_set_encoding(pop3->channel, NULL, &error);
 	g_io_channel_set_buffered(pop3->channel, FALSE);
+	return 0;
+}
+#if 0
 	if(connected)
 		/* wait for the server's banner */
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
@@ -602,6 +641,7 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 				_on_watch_can_connect, plugin);
 	return FALSE;
 }
+#endif
 
 
 /* on_noop */
@@ -661,7 +701,9 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	AccountPlugin * plugin = data;
+	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
+	char buf[128];
 
 	if(condition != G_IO_OUT || source != pop3->channel)
 		return FALSE; /* should not happen */
@@ -669,9 +711,66 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 	fprintf(stderr, "DEBUG: %s() connected\n", __func__);
 #endif
 	pop3->wr_source = 0;
+	/* setup SSL */
+	if(pop3->ssl_ctx != NULL)
+	{
+		if((pop3->ssl = SSL_new(pop3->ssl_ctx)) == NULL)
+		{
+			helper->error(NULL, ERR_error_string(ERR_get_error(),
+						buf), 1);
+			return FALSE;
+		}
+		if(SSL_set_fd(pop3->ssl, pop3->fd) != 1)
+			; /* FIXME handle error */
+		SSL_set_connect_state(pop3->ssl);
+		/* perform initial handshake */
+		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+				_on_watch_can_handshake, plugin);
+		return FALSE;
+	}
 	/* wait for the server's banner */
 	pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
 			_on_watch_can_read, plugin);
+	return FALSE;
+}
+
+
+/* on_watch_can_handshake */
+static gboolean _on_watch_can_handshake(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+	int res;
+
+	if((condition != G_IO_IN && condition != G_IO_OUT)
+			|| source != pop3->channel || pop3->ssl == NULL)
+		return FALSE; /* should not happen */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	pop3->wr_source = 0;
+	pop3->rd_source = 0;
+	if((res = SSL_do_handshake(pop3->ssl)) == 1)
+	{
+		/* wait for the server's banner */
+		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+				_on_watch_can_read_ssl, plugin);
+		return FALSE;
+	}
+	else if(res == 0)
+	{
+		/* FIXME handle error */
+		return FALSE;
+	}
+	res = SSL_get_error(pop3->ssl, res);
+	if(res == SSL_ERROR_WANT_WRITE)
+		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+				_on_watch_can_handshake, plugin);
+	else if(res == SSL_ERROR_WANT_READ)
+		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+				_on_watch_can_handshake, plugin);
+	/* FIXME else handle error */
 	return FALSE;
 }
 
@@ -740,6 +839,70 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 }
 
 
+/* on_watch_can_read_ssl */
+static gboolean _on_watch_can_read_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+	char * p;
+	int cnt;
+	POP3Command * cmd;
+	char buf[128];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_IN || source != pop3->channel)
+		return FALSE; /* should not happen */
+	if((p = realloc(pop3->rd_buf, pop3->rd_buf_cnt + 256)) == NULL)
+		return TRUE; /* XXX retries immediately (delay?) */
+	pop3->rd_buf = p;
+	if((cnt = SSL_read(pop3->ssl, &pop3->rd_buf[pop3->rd_buf_cnt], 256))
+			<= 0)
+	{
+		if(cnt < 0)
+		{
+			ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
+			plugin->helper->error(NULL, buf, 1);
+		}
+		pop3->rd_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: IMAP4 SERVER: ");
+	fwrite(&pop3->rd_buf[pop3->rd_buf_cnt], sizeof(*p), cnt, stderr);
+#endif
+	pop3->rd_buf_cnt += cnt;
+	if(_pop3_parse(plugin) != 0)
+	{
+		pop3->rd_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+	if(pop3->queue_cnt == 0)
+	{
+		pop3->rd_source = 0;
+		return FALSE;
+	}
+	cmd = &pop3->queue[0];
+	if(cmd->buf_cnt == 0)
+	{
+		if(cmd->status == P3CS_SENT || cmd->status == P3CS_PARSING)
+			return TRUE;
+		else if(cmd->status == P3CS_OK || cmd->status == P3CS_ERROR)
+			memmove(cmd, &pop3->queue[1], sizeof(*cmd)
+					* --pop3->queue_cnt);
+	}
+	pop3->rd_source = 0;
+	if(pop3->queue_cnt == 0)
+		pop3->source = g_timeout_add(30000, _on_noop, plugin);
+	else
+		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+				_on_watch_can_write_ssl, plugin);
+	return FALSE;
+}
+
+
 /* on_watch_can_write */
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
@@ -788,5 +951,53 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	if(pop3->rd_source == 0)
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
 				_on_watch_can_read, plugin);
+	return FALSE;
+}
+
+
+/* on_watch_can_write_ssl */
+static gboolean _on_watch_can_write_ssl(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	AccountPlugin * plugin = data;
+	POP3 * pop3 = plugin->priv;
+	POP3Command * cmd = &pop3->queue[0];
+	int cnt;
+	char * p;
+	char buf[128];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(condition != G_IO_OUT || source != pop3->channel
+			|| pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
+		return FALSE; /* should not happen */
+	if((cnt = SSL_write(pop3->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
+	{
+		if(cnt < 0)
+		{
+			ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
+			plugin->helper->error(NULL, buf, 1);
+		}
+		pop3->wr_source = g_idle_add(_on_reset, plugin);
+		return FALSE;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: IMAP4 CLIENT: ");
+	fwrite(cmd->buf, sizeof(*p), cnt, stderr);
+#endif
+	cmd->buf_cnt -= cnt;
+	memmove(cmd->buf, &cmd->buf[cnt], cmd->buf_cnt);
+	if((p = realloc(cmd->buf, cmd->buf_cnt)) != NULL)
+		cmd->buf = p; /* we can ignore errors... */
+	else if(cmd->buf_cnt == 0)
+		cmd->buf = NULL; /* ...except when it's not one */
+	if(cmd->buf_cnt > 0)
+		return TRUE;
+	cmd->status = P3CS_SENT;
+	pop3->wr_source = 0;
+	if(pop3->rd_source == 0)
+		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+				_on_watch_can_read_ssl, plugin);
 	return FALSE;
 }
