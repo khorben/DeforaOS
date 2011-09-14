@@ -912,7 +912,7 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
 				_on_watch_can_read, plugin);
 	else
-		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_OUT,
+		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
 				_on_watch_can_connect, plugin);
 	return FALSE;
 }

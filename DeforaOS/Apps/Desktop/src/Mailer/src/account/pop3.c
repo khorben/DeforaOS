@@ -578,7 +578,8 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 	GError * error = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, connected ? "TRUE"
+			: "FALSE");
 #endif
 	/* prepare queue */
 	if((pop3->queue = malloc(sizeof(*pop3->queue))) == NULL)
@@ -597,7 +598,7 @@ static gboolean _connect_channel(AccountPlugin * plugin, gboolean connected)
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
 				_on_watch_can_read, plugin);
 	else
-		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_OUT,
+		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
 				_on_watch_can_connect, plugin);
 	return FALSE;
 }
