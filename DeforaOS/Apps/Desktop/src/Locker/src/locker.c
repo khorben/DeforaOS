@@ -34,7 +34,7 @@
 /* types */
 struct _Locker
 {
-	/* preferences */
+	/* settings */
 	int suspend;
 
 	/* internal */
@@ -53,6 +53,9 @@ struct _Locker
 	Plugin * pplugin;
 	LockerPlugin * plugin;
 	LockerPluginHelper phelper;
+
+	/* preferences */
+	GtkWidget * pr_window;
 };
 
 
@@ -110,6 +113,7 @@ Locker * locker_new(int suspend, char const * demo, char const * plugin)
 	locker->windows_cnt = cnt;
 	locker->dplugin = NULL;
 	locker->demo = NULL;
+	locker->pr_window = NULL;
 	if(demo != NULL && (locker->dplugin = plugin_new(LIBDIR, PACKAGE,
 					"demos", demo)) != NULL
 			&& (locker->demo = plugin_lookup(locker->dplugin,
@@ -199,6 +203,93 @@ void locker_delete(Locker * locker)
 }
 
 
+/* useful */
+/* locker_show_preferences */
+static void _preferences_window(Locker * locker);
+/* callbacks */
+static void _preferences_on_cancel(gpointer data);
+static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_ok(gpointer data);
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data);
+
+void locker_show_preferences(Locker * locker, gboolean show)
+{
+	if(locker->pr_window == NULL)
+		_preferences_window(locker);
+	if(locker->pr_window != NULL)
+	{
+		if(show)
+			gtk_window_present(GTK_WINDOW(locker->pr_window));
+		else
+			gtk_widget_hide(locker->pr_window);
+		return;
+	}
+}
+
+static void _preferences_window(Locker * locker)
+{
+	GtkWidget * vbox;
+	GtkWidget * notebook;
+
+	locker->pr_window = gtk_dialog_new_with_buttons(
+			"Screensaver preferences", NULL, 0,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	gtk_window_set_default_size(GTK_WINDOW(locker->pr_window), 400, 300);
+	g_signal_connect_swapped(locker->pr_window, "delete-event", G_CALLBACK(
+				_preferences_on_closex), locker);
+	g_signal_connect(locker->pr_window, "response", G_CALLBACK(
+				_preferences_on_response), locker);
+	notebook = gtk_notebook_new();
+	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
+	/* authentication */
+	/* FIXME implement */
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
+			gtk_label_new("Authentication"));
+	/* demos */
+	/* FIXME implement */
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
+			gtk_label_new("Demos"));
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(locker->pr_window));
+#else
+	vbox = GTK_DIALOG(locker->pr_window)->vbox;
+#endif
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
+	_preferences_on_cancel(locker);
+	gtk_widget_show_all(vbox);
+}
+
+static void _preferences_on_cancel(gpointer data)
+{
+	/* FIXME implement */
+}
+
+static gboolean _preferences_on_closex(gpointer data)
+{
+	Locker * locker = data;
+
+	gtk_widget_hide(locker->pr_window);
+	return TRUE;
+}
+
+static void _preferences_on_ok(gpointer data)
+{
+	/* FIXME implement */
+}
+
+static void _preferences_on_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	if(response == GTK_RESPONSE_OK)
+		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_CANCEL)
+		_preferences_on_cancel(data);
+}
+
+
 /* private */
 /* functions */
 /* useful */
@@ -213,6 +304,9 @@ static void _locker_action(Locker * locker, LockerAction action)
 		case LOCKER_ACTION_LOCK:
 			_locker_lock(locker);
 			break;
+		case LOCKER_ACTION_SHOW_PREFERENCES:
+			locker_show_preferences(locker, TRUE);
+			return;
 		case LOCKER_ACTION_UNLOCK:
 			_locker_unlock(locker);
 			break;
@@ -317,6 +411,7 @@ static GdkFilterReturn _filter_client_message(Locker * locker,
 		XClientMessageEvent * xclient)
 {
 	LockerAction action;
+	gboolean show;
 
 	if(xclient->message_type != gdk_x11_get_xatom_by_name(
 				LOCKER_CLIENT_MESSAGE)
@@ -330,6 +425,10 @@ static GdkFilterReturn _filter_client_message(Locker * locker,
 			break;
 		case LOCKER_ACTION_LOCK:
 			_locker_lock(locker);
+			break;
+		case LOCKER_ACTION_SHOW_PREFERENCES:
+			show = xclient->data.b[1] ? TRUE : FALSE;
+			locker_show_preferences(locker, show);
 			break;
 		case LOCKER_ACTION_UNLOCK:
 			_locker_unlock(locker);

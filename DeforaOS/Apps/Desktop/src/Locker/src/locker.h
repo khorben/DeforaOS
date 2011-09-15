@@ -27,4 +27,7 @@
 Locker * locker_new(int suspend, char const * demo, char const * plugin);
 void locker_delete(Locker * locker);
 
+/* useful */
+void locker_show_preferences(Locker * locker, gboolean show);
+
 #endif /* !LOCKER_LOCKER_H */

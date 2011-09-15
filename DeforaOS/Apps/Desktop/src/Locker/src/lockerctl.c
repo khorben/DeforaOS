@@ -27,9 +27,11 @@
 static int _usage(void)
 {
 	fputs(_("Usage: lockerctl -l\n"
+"       lockerctl -p\n"
 "       lockerctl -s\n"
 "       lockerctl -u\n"
 "  -l	Lock the screen\n"
+"  -p	Show the preferences window\n"
 "  -s	Enable the screen saver\n"
 "  -u	Unlock the screen\n"), stderr);
 	return 1;
@@ -45,13 +47,18 @@ int main(int argc, char * argv[])
 	GdkEventClient * client = &event.client;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "lsu")) != -1)
+	while((o = getopt(argc, argv, "lpsu")) != -1)
 		switch(o)
 		{
 			case 'l':
 				if(action != -1)
 					return _usage();
 				action = LOCKER_ACTION_LOCK;
+				break;
+			case 'p':
+				if(action != -1)
+					return _usage();
+				action = LOCKER_ACTION_SHOW_PREFERENCES;
 				break;
 			case 's':
 				if(action != -1)
