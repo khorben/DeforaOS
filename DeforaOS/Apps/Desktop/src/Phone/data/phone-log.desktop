@@ -4,4 +4,3 @@ Exec=phonectl -L
 Icon=logviewer
 Type=Application
 Categories=Network;Telephony;GTK;
-StartupNotify=true

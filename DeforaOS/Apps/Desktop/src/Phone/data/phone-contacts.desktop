@@ -5,4 +5,3 @@ Exec=phonectl -C
 Icon=stock_addressbook
 Type=Application
 Categories=Office;ContactManagement;GTK;
-StartupNotify=true

@@ -5,4 +5,3 @@ Exec=phonectl -D
 Icon=phone-dialer
 Type=Application
 Categories=Network;Telephony;GTK;
-StartupNotify=true
