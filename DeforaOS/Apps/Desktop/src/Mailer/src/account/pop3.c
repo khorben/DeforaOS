@@ -556,6 +556,7 @@ static gboolean _on_connect(gpointer data)
 	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
+	int res;
 	char buf[128];
 
 #ifdef DEBUG
@@ -592,7 +593,8 @@ static gboolean _on_connect(gpointer data)
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
-	if(fcntl(pop3->fd, F_SETFL, O_NONBLOCK) == -1)
+	if((res = fcntl(pop3->fd, F_GETFL)) >= 0
+			&& fcntl(pop3->fd, F_SETFL, res | O_NONBLOCK) == -1)
 		helper->error(NULL, strerror(errno), 1);
 	if((connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
@@ -849,23 +851,36 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	int cnt;
 	POP3Command * cmd;
 	char buf[128];
+	const int inc = 1024;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_IN || source != pop3->channel)
+	if(source != pop3->channel)
 		return FALSE; /* should not happen */
-	if((p = realloc(pop3->rd_buf, pop3->rd_buf_cnt + 256)) == NULL)
+	if((p = realloc(pop3->rd_buf, pop3->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
 	pop3->rd_buf = p;
-	if((cnt = SSL_read(pop3->ssl, &pop3->rd_buf[pop3->rd_buf_cnt], 256))
+	if((cnt = SSL_read(pop3->ssl, &pop3->rd_buf[pop3->rd_buf_cnt], inc))
 			<= 0)
 	{
-		if(cnt < 0)
+		if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
+				== SSL_ERROR_WANT_WRITE)
 		{
-			ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
-			plugin->helper->error(NULL, buf, 1);
+			pop3->rd_source = g_io_add_watch(pop3->channel,
+					G_IO_OUT, _on_watch_can_read_ssl,
+					plugin);
+			return FALSE;
 		}
+		else if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
+				== SSL_ERROR_WANT_READ)
+		{
+			pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
+					_on_watch_can_read_ssl, plugin);
+			return FALSE;
+		}
+		ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
+		plugin->helper->error(NULL, buf, 1);
 		pop3->rd_source = g_idle_add(_on_reset, plugin);
 		return FALSE;
 	}
@@ -969,16 +984,27 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_OUT || source != pop3->channel
-			|| pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
+	if(source != pop3->channel || pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
 	if((cnt = SSL_write(pop3->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
 	{
-		if(cnt < 0)
+		if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
+				== SSL_ERROR_WANT_READ)
 		{
-			ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
-			plugin->helper->error(NULL, buf, 1);
+			pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_IN,
+					_on_watch_can_write_ssl, plugin);
+			return FALSE;
 		}
+		else if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
+				== SSL_ERROR_WANT_WRITE)
+		{
+			pop3->wr_source = g_io_add_watch(pop3->channel,
+					G_IO_OUT, _on_watch_can_write_ssl,
+					plugin);
+			return FALSE;
+		}
+		ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
+		plugin->helper->error(NULL, buf, 1);
 		pop3->wr_source = g_idle_add(_on_reset, plugin);
 		return FALSE;
 	}
