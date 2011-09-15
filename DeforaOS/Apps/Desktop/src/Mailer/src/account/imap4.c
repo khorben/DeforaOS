@@ -562,7 +562,7 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	AccountFolder * parent = cmd->data.list.parent;
 	char const * p;
 	gchar * q;
-	char const haschildren[] = "(\\HasChildren) ";
+	char const haschildren[] = "\\HasChildren";
 	int recurse = 0;
 	char reference = '\0';
 	char buf[64];
@@ -576,12 +576,19 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	if(strncmp("LIST ", p, 5) != 0)
 		return -1;
 	p += 5;
-	if(*p == '(') /* skip flags */
+	if(*p == '(') /* parse flags */
 	{
-		/* FIXME there may be other flags set */
-		if(strncmp(p, haschildren, sizeof(haschildren) - 1) == 0)
-			recurse = 1;
-		for(p++; *p != '\0' && *p++ != ')';);
+		for(p++; *p != '\0' && *p != ')'; p++)
+			if(*p != '\\')
+				continue;
+			else if(strncmp(p, haschildren, sizeof(haschildren) - 1)
+					== 0) /* FIXME  */
+			{
+				p += sizeof(haschildren) - 2;
+				recurse = 1;
+			}
+			/* FIXME else skip until end of flag */
+		p++;
 	}
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
@@ -859,6 +866,7 @@ static gboolean _on_connect(gpointer data)
 	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
+	int res;
 	char buf[128];
 
 #ifdef DEBUG
@@ -895,7 +903,8 @@ static gboolean _on_connect(gpointer data)
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
-	if(fcntl(imap4->fd, F_SETFL, O_NONBLOCK) == -1)
+	if((res = fcntl(imap4->fd, F_GETFL)) >= 0
+			&& fcntl(imap4->fd, F_SETFL, res | O_NONBLOCK) == -1)
 		helper->error(NULL, strerror(errno), 1);
 	if((connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
@@ -1146,23 +1155,37 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	int cnt;
 	IMAP4Command * cmd;
 	char buf[128];
+	const int inc = 1024; /* FIXME does not work with smaller values */
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_IN || source != imap4->channel)
+	if(source != imap4->channel)
 		return FALSE; /* should not happen */
-	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + 256)) == NULL)
+	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
 	imap4->rd_buf = p;
-	if((cnt = SSL_read(imap4->ssl, &imap4->rd_buf[imap4->rd_buf_cnt], 256))
+	if((cnt = SSL_read(imap4->ssl, &imap4->rd_buf[imap4->rd_buf_cnt], inc))
 			<= 0)
 	{
-		if(cnt < 0)
+		if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
+				== SSL_ERROR_WANT_WRITE)
 		{
-			ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
-			plugin->helper->error(NULL, buf, 1);
+			imap4->rd_source = g_io_add_watch(imap4->channel,
+					G_IO_OUT, _on_watch_can_read_ssl,
+					plugin);
+			return FALSE;
 		}
+		else if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
+				== SSL_ERROR_WANT_READ)
+		{
+			imap4->rd_source = g_io_add_watch(imap4->channel,
+					G_IO_IN, _on_watch_can_read_ssl,
+					plugin);
+			return FALSE;
+		}
+		ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
+		plugin->helper->error(NULL, buf, 1);
 		imap4->rd_source = g_idle_add(_on_reset, plugin);
 		return FALSE;
 	}
@@ -1269,16 +1292,29 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_OUT || source != imap4->channel
-			|| imap4->queue_cnt == 0 || cmd->buf_cnt == 0)
+	if(source != imap4->channel || imap4->queue_cnt == 0
+			|| cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
 	if((cnt = SSL_write(imap4->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
 	{
-		if(cnt < 0)
+		if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
+				== SSL_ERROR_WANT_READ)
 		{
-			ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
-			plugin->helper->error(NULL, buf, 1);
+			imap4->wr_source = g_io_add_watch(imap4->channel,
+					G_IO_IN, _on_watch_can_write_ssl,
+					plugin);
+			return FALSE;
 		}
+		else if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
+				== SSL_ERROR_WANT_WRITE)
+		{
+			imap4->wr_source = g_io_add_watch(imap4->channel,
+					G_IO_OUT, _on_watch_can_write_ssl,
+					plugin);
+			return FALSE;
+		}
+		ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
+		plugin->helper->error(NULL, buf, 1);
 		imap4->wr_source = g_idle_add(_on_reset, plugin);
 		return FALSE;
 	}
