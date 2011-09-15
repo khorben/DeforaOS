@@ -187,6 +187,7 @@ static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
 static IMAP4Command * _imap4_command(AccountPlugin * plugin,
 		IMAP4Context context, char const * command);
 static int _imap4_parse(AccountPlugin * plugin);
+static void _imap4_reset(AccountPlugin * plugin);
 
 static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 		AccountFolder * parent, char const * name);
@@ -248,8 +249,6 @@ static int _imap4_init(AccountPlugin * plugin)
 	memset(imap4, 0, sizeof(*imap4));
 	plugin->priv = imap4;
 	imap4->fd = -1;
-	imap4->ssl_ctx = NULL;
-	imap4->ssl = NULL;
 	SSL_load_error_strings();
 	SSL_library_init();
 	imap4->source = g_idle_add(_on_connect, plugin);
@@ -261,32 +260,13 @@ static int _imap4_init(AccountPlugin * plugin)
 static int _imap4_destroy(AccountPlugin * plugin)
 {
 	IMAP4 * imap4 = plugin->priv;
-	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(imap4 == NULL) /* XXX _imap4_destroy() may be called uninitialized */
 		return 0;
-	if(imap4->rd_source != 0)
-		g_source_remove(imap4->rd_source);
-	if(imap4->wr_source != 0)
-		g_source_remove(imap4->wr_source);
-	if(imap4->source != 0)
-		g_source_remove(imap4->source);
-	if(imap4->channel != NULL)
-	{
-		g_io_channel_shutdown(imap4->channel, TRUE, NULL);
-		g_io_channel_unref(imap4->channel);
-		imap4->fd = -1;
-	}
-	for(i = 0; i < imap4->queue_cnt; i++)
-		free(imap4->queue[i].buf);
-	free(imap4->queue);
-	if(imap4->ssl_ctx != NULL)
-		SSL_CTX_free(imap4->ssl_ctx);
-	if(imap4->fd >= 0)
-		close(imap4->fd);
+	_imap4_reset(plugin);
 #if 0 /* XXX do not free() */
 	_imap4_folder_delete(plugin, &imap4->folders);
 #endif
@@ -607,7 +587,7 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 		buf[63] = '\0';
 		/* FIXME escape the mailbox name (double quotes...) */
 		q = g_strdup_printf("%s \"%s\" (%s)", "STATUS", buf,
-				"MESSAGES RECENT");
+				"MESSAGES RECENT UNSEEN");
 		if((cmd = _imap4_command(plugin, I4C_STATUS, q)) != NULL)
 			cmd->data.status.folder = folder;
 		g_free(q);
@@ -704,6 +684,42 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 		return 0;
 	/* FIXME implement */
 	return 0;
+}
+
+
+/* imap4_reset */
+static void _imap4_reset(AccountPlugin * plugin)
+{
+	IMAP4 * imap4 = plugin->priv;
+	size_t i;
+
+	if(imap4->rd_source != 0)
+		g_source_remove(imap4->rd_source);
+	imap4->rd_source = 0;
+	if(imap4->wr_source != 0)
+		g_source_remove(imap4->wr_source);
+	imap4->wr_source = 0;
+	if(imap4->source != 0)
+		g_source_remove(imap4->source);
+	imap4->source = 0;
+	if(imap4->channel != NULL)
+	{
+		g_io_channel_shutdown(imap4->channel, TRUE, NULL);
+		g_io_channel_unref(imap4->channel);
+		imap4->fd = -1;
+	}
+	imap4->channel = NULL;
+	for(i = 0; i < imap4->queue_cnt; i++)
+		free(imap4->queue[i].buf);
+	free(imap4->queue);
+	imap4->queue = NULL;
+	imap4->queue_cnt = 0;
+	if(imap4->ssl_ctx != NULL)
+		SSL_CTX_free(imap4->ssl_ctx);
+	imap4->ssl_ctx = NULL;
+	if(imap4->fd >= 0)
+		close(imap4->fd);
+	imap4->fd = -1;
 }
 
 
@@ -873,17 +889,20 @@ static gboolean _on_connect(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	imap4->source = 0;
-	/* FIXME report errors */
 	if((hostname = plugin->config[I4CV_HOSTNAME].value) == NULL)
+	{
+		helper->error(NULL, "No hostname set", 1);
 		return FALSE;
+	}
 	if((he = gethostbyname(hostname)) == NULL)
 	{
 		helper->error(NULL, hstrerror(h_errno), 1);
-		return FALSE;
+		return _on_reset(plugin);
 	}
 	if((p = plugin->config[I4CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
+	/* setup SSL */
 	if(plugin->config[I4CV_SSL].value != NULL)
 		if((imap4->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
 				|| SSL_CTX_set_cipher_list(imap4->ssl_ctx,
@@ -891,32 +910,28 @@ static gboolean _on_connect(gpointer data)
 		{
 			helper->error(NULL, ERR_error_string(ERR_get_error(),
 						buf), 1);
-			return FALSE;
+			return _on_reset(plugin);
 		}
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		return FALSE;
+		return _on_reset(plugin);
 	}
+	if((res = fcntl(imap4->fd, F_GETFL)) >= 0
+			&& fcntl(imap4->fd, F_SETFL, res | O_NONBLOCK) == -1)
+		/* ignore this error */
+		helper->error(NULL, strerror(errno), 1);
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(port);
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
-	if((res = fcntl(imap4->fd, F_GETFL)) >= 0
-			&& fcntl(imap4->fd, F_SETFL, res | O_NONBLOCK) == -1)
-		helper->error(NULL, strerror(errno), 1);
 	if((connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
 			|| _connect_channel(plugin) != 0)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		if(imap4->ssl_ctx != NULL)
-			SSL_CTX_free(imap4->ssl_ctx);
-		imap4->ssl_ctx = NULL;
-		close(imap4->fd);
-		imap4->fd = -1;
-		return FALSE;
+		return _on_reset(plugin);
 	}
 	imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
 			_on_watch_can_connect, plugin);
@@ -967,36 +982,8 @@ static gboolean _on_reset(gpointer data)
 {
 	AccountPlugin * plugin = data;
 	IMAP4 * imap4 = plugin->priv;
-	size_t i;
 
-	/* FIXME merge with _imap4_destroy() */
-	if(imap4->rd_source != 0)
-		g_source_remove(imap4->rd_source);
-	imap4->rd_source = 0;
-	if(imap4->wr_source != 0)
-		g_source_remove(imap4->wr_source);
-	imap4->wr_source = 0;
-	if(imap4->source != 0)
-		g_source_remove(imap4->source);
-	imap4->source = 0;
-	if(imap4->channel != NULL)
-	{
-		g_io_channel_shutdown(imap4->channel, TRUE, NULL);
-		g_io_channel_unref(imap4->channel);
-		imap4->fd = -1;
-	}
-	imap4->channel = NULL;
-	for(i = 0; i < imap4->queue_cnt; i++)
-		free(imap4->queue[i].buf);
-	free(imap4->queue);
-	imap4->queue = NULL;
-	imap4->queue_cnt = 0;
-	if(imap4->ssl_ctx != NULL)
-		SSL_CTX_free(imap4->ssl_ctx);
-	imap4->ssl_ctx = NULL;
-	if(imap4->fd >= 0)
-		close(imap4->fd);
-	imap4->fd = -1;
+	_imap4_reset(plugin);
 	imap4->source = g_timeout_add(3000, _on_connect, plugin);
 	return FALSE;
 }

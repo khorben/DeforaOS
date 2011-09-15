@@ -153,6 +153,7 @@ static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
 static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
 		char const * command);
 static int _pop3_parse(AccountPlugin * plugin);
+static void _pop3_reset(AccountPlugin * plugin);
 
 static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id);
@@ -208,8 +209,6 @@ static int _pop3_init(AccountPlugin * plugin)
 	memset(pop3, 0, sizeof(*pop3));
 	plugin->priv = pop3;
 	pop3->fd = -1;
-	pop3->ssl_ctx = NULL;
-	pop3->ssl = NULL;
 	SSL_load_error_strings();
 	SSL_library_init();
 	pop3->inbox.folder = plugin->helper->folder_new(plugin->helper->account,
@@ -225,33 +224,14 @@ static int _pop3_init(AccountPlugin * plugin)
 static int _pop3_destroy(AccountPlugin * plugin)
 {
 	POP3 * pop3 = plugin->priv;
-	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+
 	if(pop3 == NULL) /* XXX _pop3_destroy() may be called uninitialized */
 		return 0;
-	if(pop3->rd_source != 0)
-		g_source_remove(pop3->rd_source);
-	free(pop3->rd_buf);
-	if(pop3->wr_source != 0)
-		g_source_remove(pop3->wr_source);
-	if(pop3->source != 0)
-		g_source_remove(pop3->source);
-	if(pop3->channel != NULL)
-	{
-		g_io_channel_shutdown(pop3->channel, TRUE, NULL);
-		g_io_channel_unref(pop3->channel);
-		pop3->fd = -1;
-	}
-	for(i = 0; i < pop3->queue_cnt; i++)
-		free(pop3->queue[i].buf);
-	free(pop3->queue);
-	if(pop3->ssl_ctx != NULL)
-		SSL_CTX_free(pop3->ssl_ctx);
-	if(pop3->fd >= 0)
-		close(pop3->fd);
+	_pop3_reset(plugin);
 	free(pop3);
 	return 0;
 }
@@ -493,6 +473,35 @@ static int _parse_context_transaction_retr(AccountPlugin * plugin,
 }
 
 
+/* pop3_reset */
+static void _pop3_reset(AccountPlugin * plugin)
+{
+	POP3 * pop3 = plugin->priv;
+	size_t i;
+
+	if(pop3->rd_source != 0)
+		g_source_remove(pop3->rd_source);
+	free(pop3->rd_buf);
+	if(pop3->wr_source != 0)
+		g_source_remove(pop3->wr_source);
+	if(pop3->source != 0)
+		g_source_remove(pop3->source);
+	if(pop3->channel != NULL)
+	{
+		g_io_channel_shutdown(pop3->channel, TRUE, NULL);
+		g_io_channel_unref(pop3->channel);
+		pop3->fd = -1;
+	}
+	for(i = 0; i < pop3->queue_cnt; i++)
+		free(pop3->queue[i].buf);
+	free(pop3->queue);
+	if(pop3->ssl_ctx != NULL)
+		SSL_CTX_free(pop3->ssl_ctx);
+	if(pop3->fd >= 0)
+		close(pop3->fd);
+}
+
+
 /* pop3_message_get */
 static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
 		AccountFolder * folder, unsigned int id)
@@ -563,17 +572,20 @@ static gboolean _on_connect(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	pop3->source = 0;
-	/* FIXME report errors */
 	if((hostname = plugin->config[P3CV_HOSTNAME].value) == NULL)
+	{
+		helper->error(NULL, "No hostname set", 1);
 		return FALSE;
+	}
 	if((he = gethostbyname(hostname)) == NULL)
 	{
 		helper->error(NULL, hstrerror(h_errno), 1);
-		return FALSE;
+		return _on_reset(plugin);
 	}
 	if((p = plugin->config[P3CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
+	/* setup SSL */
 	if(plugin->config[P3CV_SSL].value != NULL)
 		if((pop3->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
 				|| SSL_CTX_set_cipher_list(pop3->ssl_ctx,
@@ -581,29 +593,28 @@ static gboolean _on_connect(gpointer data)
 		{
 			helper->error(NULL, ERR_error_string(ERR_get_error(),
 						buf), 1);
-			return FALSE;
+			return _on_reset(plugin);
 		}
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		return FALSE;
+		return _on_reset(plugin);
 	}
+	if((res = fcntl(pop3->fd, F_GETFL)) >= 0
+			&& fcntl(pop3->fd, F_SETFL, res | O_NONBLOCK) == -1)
+		/* ignore this error */
+		helper->error(NULL, strerror(errno), 1);
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(port);
 	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
-	if((res = fcntl(pop3->fd, F_GETFL)) >= 0
-			&& fcntl(pop3->fd, F_SETFL, res | O_NONBLOCK) == -1)
-		helper->error(NULL, strerror(errno), 1);
 	if((connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
 			|| _connect_channel(plugin) != 0)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		close(pop3->fd);
-		pop3->fd = -1;
-		return FALSE;
+		return _on_reset(plugin);
 	}
 	pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
 			_on_watch_can_connect, plugin);
@@ -633,17 +644,6 @@ static int _connect_channel(AccountPlugin * plugin)
 	g_io_channel_set_buffered(pop3->channel, FALSE);
 	return 0;
 }
-#if 0
-	if(connected)
-		/* wait for the server's banner */
-		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-				_on_watch_can_read, plugin);
-	else
-		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-				_on_watch_can_connect, plugin);
-	return FALSE;
-}
-#endif
 
 
 /* on_noop */
@@ -663,36 +663,11 @@ static gboolean _on_reset(gpointer data)
 {
 	AccountPlugin * plugin = data;
 	POP3 * pop3 = plugin->priv;
-	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME merge with _pop3_destroy() */
-	if(pop3->rd_source != 0)
-		g_source_remove(pop3->rd_source);
-	pop3->rd_source = 0;
-	if(pop3->wr_source != 0)
-		g_source_remove(pop3->wr_source);
-	pop3->wr_source = 0;
-	if(pop3->source != 0)
-		g_source_remove(pop3->source);
-	pop3->source = 0;
-	if(pop3->channel != NULL)
-	{
-		g_io_channel_shutdown(pop3->channel, TRUE, NULL);
-		g_io_channel_unref(pop3->channel);
-		pop3->fd = -1;
-	}
-	pop3->channel = NULL;
-	for(i = 0; i < pop3->queue_cnt; i++)
-		free(pop3->queue[i].buf);
-	free(pop3->queue);
-	pop3->queue = NULL;
-	pop3->queue_cnt = 0;
-	if(pop3->fd >= 0)
-		close(pop3->fd);
-	pop3->fd = -1;
+	_pop3_reset(plugin);
 	pop3->source = g_timeout_add(3000, _on_connect, plugin);
 	return FALSE;
 }
@@ -885,7 +860,7 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 		return FALSE;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: IMAP4 SERVER: ");
+	fprintf(stderr, "%s", "DEBUG: POP3 SERVER: ");
 	fwrite(&pop3->rd_buf[pop3->rd_buf_cnt], sizeof(*p), cnt, stderr);
 #endif
 	pop3->rd_buf_cnt += cnt;
@@ -1009,7 +984,7 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 		return FALSE;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: IMAP4 CLIENT: ");
+	fprintf(stderr, "%s", "DEBUG: POP3 CLIENT: ");
 	fwrite(cmd->buf, sizeof(*p), cnt, stderr);
 #endif
 	cmd->buf_cnt -= cnt;
