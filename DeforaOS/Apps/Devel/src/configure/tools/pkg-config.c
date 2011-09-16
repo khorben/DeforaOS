@@ -45,6 +45,8 @@
 typedef struct _PkgConfigPrefs
 {
 	int cflags;
+	int cflags_only_I;
+	int cflags_only_other;
 	int exists;
 	int libs;
 	int libs_only_L;
@@ -266,9 +268,22 @@ static int _pkgconfig_parse_directive(PkgConfig * pc, char const * directive,
 	/* FIXME parse and store arguments for later instead */
 	else if(strcmp(directive, "Version") == 0 && pc->prefs.modversion)
 		printf("%s\n", p);
-	else if(strcmp(directive, "Cflags") == 0 && pc->prefs.cflags)
-		printf(" %s", p);
-	else if(strcmp(directive, "Libs") == 0 && pc->prefs.libs) {
+	else if(strcmp(directive, "Cflags") == 0 && pc->prefs.cflags) {
+		if(pc->prefs.cflags_only_I) {
+			while((walk = strrchr(p, ' ')) != NULL) {
+				if (walk[1] == '-' && walk[2] == 'I')
+					printf(" %s", walk);
+				walk[0] = '\0';
+			}
+		} else if(pc->prefs.cflags_only_other) {
+			while((walk = strrchr(p, ' ')) != NULL) {
+				if (walk[1] == '-' && walk[2] != 'I')
+					printf(" %s", walk);
+				walk[0] = '\0';
+			}
+		} else
+			printf(" %s", p);
+	} else if(strcmp(directive, "Libs") == 0 && pc->prefs.libs) {
 		if(pc->prefs.libs_only_l) {
 			while((walk = strrchr(p, ' ')) != NULL) {
 				if (walk[1] == '-' && walk[2] == 'l')
@@ -534,6 +549,9 @@ static int _usage(int brief)
 				stderr);
 	else
 		fputs("Usage: pkg-config [OPTIONS...] [PACKAGES...]\n"
+"  --cflags		Output all pre-processor and compiler flags\n"
+"  --cflags-only-I	Output -I flags\n"
+"  --cflags-only-other	Output non -I flags\n"
 "  --libs		Output all linker flags\n"
 "  --libs_only_L	Ouput -L flags\n"
 "  --libs_only_l	Ouput -l flags\n"
@@ -552,6 +570,8 @@ static int _usage(int brief)
 /* main */
 static int _main_option(PkgConfigPrefs * prefs, char const * option);
 static int _main_option_cflags(PkgConfigPrefs * prefs);
+static int _main_option_cflags_only_I(PkgConfigPrefs * prefs);
+static int _main_option_cflags_only_other(PkgConfigPrefs * prefs);
 static int _main_option_exists(PkgConfigPrefs * prefs);
 static int _main_option_libs(PkgConfigPrefs * prefs);
 static int _main_option_libs_only_l(PkgConfigPrefs * prefs);
@@ -567,6 +587,8 @@ static struct
 	int (*callback)(PkgConfigPrefs * prefs);
 } _main_options[] = {
 	{ "cflags",		_main_option_cflags		},
+	{ "cflags-only-I",	_main_option_cflags_only_I	},
+	{ "cflags-only-other",	_main_option_cflags_only_other	},
 	{ "exists",		_main_option_exists		},
 	{ "libs",		_main_option_libs		},
 	{ "libs-only-l",	_main_option_libs_only_l	},
@@ -625,6 +647,18 @@ static int _main_option(PkgConfigPrefs * prefs, char const * option)
 static int _main_option_cflags(PkgConfigPrefs * prefs)
 {
 	prefs->cflags = 1;
+	return 0;
+}
+
+static int _main_option_cflags_only_I(PkgConfigPrefs * prefs)
+{
+	prefs->cflags_only_other = 1;
+	return 0;
+}
+
+static int _main_option_cflags_only_other(PkgConfigPrefs * prefs)
+{
+	prefs->cflags_only_other = 1;
 	return 0;
 }
 
