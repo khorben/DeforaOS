@@ -113,6 +113,8 @@ static int _pkgconfig(PkgConfigPrefs * prefs, int pkgc, char * pkgv[])
 	memset(&pc, 0, sizeof(pc));
 	/* default values */
 	pc.libdir = "/usr/lib/pkgconfig"
+		":/usr/libdata/pkgconfig"
+		":" PREFIX "/libdata/pkgconfig"
 		":" PREFIX "/lib/pkgconfig"
 		":" PREFIX "/share/pkgconfig";
 	/* preferences */
