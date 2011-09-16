@@ -5,13 +5,13 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS=
+CPPFLAGS?=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: subdirs $(TARGETS)

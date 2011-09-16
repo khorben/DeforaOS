@@ -1,9 +1,9 @@
 SUBDIRS	= 16x16 24x24
 PREFIX	= /usr/local
 DESTDIR	=
-MKDIR	= mkdir -p
-INSTALL	= install
-RM	= rm -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
+RM	?= rm -f
 
 
 all: subdirs

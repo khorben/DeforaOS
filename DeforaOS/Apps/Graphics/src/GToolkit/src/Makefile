@@ -4,16 +4,16 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags gl`
 CFLAGS	= -Wall -fPIC -g -O2 -pedantic
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,11 +23,11 @@ libGToolkit_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libGToolkit_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gl`
 
 libGToolkit.a: $(libGToolkit_OBJS)
-	$(AR) libGToolkit.a $(libGToolkit_OBJS)
+	$(AR) -rc libGToolkit.a $(libGToolkit_OBJS)
 	$(RANLIB) libGToolkit.a
 
 libGToolkit.so: $(libGToolkit_OBJS)
-	$(LD) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) $(libGToolkit_LDFLAGS)
+	$(CCSHARED) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) $(libGToolkit_LDFLAGS)
 
 common.o: common.c
 	$(CC) $(libGToolkit_CFLAGS) -c common.c

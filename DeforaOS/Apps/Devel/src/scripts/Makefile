@@ -1,9 +1,9 @@
 PACKAGE	= scripts
 VERSION	= 0.0.0
 SUBDIRS	= src targets
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

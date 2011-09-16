@@ -1,9 +1,9 @@
 PACKAGE	= libSystem
 VERSION	= 0.1.6
 SUBDIRS	= data include src
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs
@@ -20,7 +20,7 @@ distclean:
 dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
-	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+	$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/libSystem.pc.in \
 		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \

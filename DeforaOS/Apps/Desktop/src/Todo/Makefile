@@ -1,9 +1,9 @@
 PACKAGE	= Todo
 VERSION	= 0.1.2
 SUBDIRS	= data po src
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

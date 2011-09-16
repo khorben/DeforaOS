@@ -1,9 +1,9 @@
 PACKAGE	= DaPortal
 VERSION	= 20080408
 SUBDIRS	= css html icons js images install modules system templates themes
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

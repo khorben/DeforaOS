@@ -3,16 +3,16 @@ PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
-CPPFLAGS=
+CPPFLAGSF?=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -pedantic
 LDFLAGSF= `pkg-config --libs libDesktop`
 LDFLAGS	= 
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)

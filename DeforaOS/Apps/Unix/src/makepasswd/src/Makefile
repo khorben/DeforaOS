@@ -3,15 +3,15 @@ PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
-CPPFLAGS=
+CPPFLAGSF?=
+CPPFLAGS?=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGS	= -lcrypt
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)

@@ -7,13 +7,13 @@ CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,35 +23,35 @@ cvs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 cvs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cvs.so: $(cvs_OBJS)
-	$(LD) -o cvs.so $(cvs_OBJS) $(cvs_LDFLAGS)
+	$(CCSHARED) -o cvs.so $(cvs_OBJS) $(cvs_LDFLAGS)
 
 dirtree_OBJS = dirtree.o
 dirtree_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 dirtree_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 dirtree.so: $(dirtree_OBJS)
-	$(LD) -o dirtree.so $(dirtree_OBJS) $(dirtree_LDFLAGS)
+	$(CCSHARED) -o dirtree.so $(dirtree_OBJS) $(dirtree_LDFLAGS)
 
 preview_OBJS = preview.o
 preview_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 preview_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 preview.so: $(preview_OBJS)
-	$(LD) -o preview.so $(preview_OBJS) $(preview_LDFLAGS)
+	$(CCSHARED) -o preview.so $(preview_OBJS) $(preview_LDFLAGS)
 
 properties_OBJS = properties.o
 properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 properties.so: $(properties_OBJS)
-	$(LD) -o properties.so $(properties_OBJS) $(properties_LDFLAGS)
+	$(CCSHARED) -o properties.so $(properties_OBJS) $(properties_LDFLAGS)
 
 volumes_OBJS = volumes.o
 volumes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 volumes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 volumes.so: $(volumes_OBJS)
-	$(LD) -o volumes.so $(volumes_OBJS) $(volumes_LDFLAGS)
+	$(CCSHARED) -o volumes.so $(volumes_OBJS) $(volumes_LDFLAGS)
 
 cvs.o: cvs.c ../../include/Browser.h
 	$(CC) $(cvs_CFLAGS) -c cvs.c

@@ -1,9 +1,9 @@
 PACKAGE	= Calendar
 VERSION	= 0.0.0
 SUBDIRS	= data src
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

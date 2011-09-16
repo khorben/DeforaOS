@@ -7,13 +7,13 @@ CPPFLAGSF= -I ../include
 CPPFLAGS=
 CFLAGSF	= -W -fPIC
 CFLAGS	= -g -Wall -O2 -pedantic
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,11 +23,11 @@ libSystem_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  
 
 libSystem.a: $(libSystem_OBJS)
-	$(AR) libSystem.a $(libSystem_OBJS)
+	$(AR) -rc libSystem.a $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
 
 libSystem.so: $(libSystem_OBJS)
-	$(LD) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(libSystem_LDFLAGS)
+	$(CCSHARED) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(libSystem_LDFLAGS)
 
 array.o: array.c
 	$(CC) $(libSystem_CFLAGS) -c array.c

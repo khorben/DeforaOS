@@ -4,16 +4,16 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include -I $(PREFIX)/include
-CPPFLAGS=
+CPPFLAGS?=
 CFLAGSF	= -W -fPIC
 CFLAGS	= -Wall -g -O2 -pedantic
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,11 +23,11 @@ libParser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libParser_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem
 
 libParser.a: $(libParser_OBJS)
-	$(AR) libParser.a $(libParser_OBJS)
+	$(AR) -rc libParser.a $(libParser_OBJS)
 	$(RANLIB) libParser.a
 
 libParser.so: $(libParser_OBJS)
-	$(LD) -o libParser.so -Wl,-soname,libParser.so.0 $(libParser_OBJS) $(libParser_LDFLAGS)
+	$(CCSHARED) -o libParser.so -Wl,-soname,libParser.so.0 $(libParser_OBJS) $(libParser_LDFLAGS)
 
 xml.o: xml.c ../include/System/Parser/XML.h
 	$(CC) $(libParser_CFLAGS) -c xml.c

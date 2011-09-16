@@ -4,17 +4,17 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -fPIC
 LDFLAGSF= `pkg-config --libs libSystem gtk+-2.0`
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -24,11 +24,11 @@ libDesktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libDesktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 libDesktop.a: $(libDesktop_OBJS)
-	$(AR) libDesktop.a $(libDesktop_OBJS)
+	$(AR) -rc libDesktop.a $(libDesktop_OBJS)
 	$(RANLIB) libDesktop.a
 
 libDesktop.so: $(libDesktop_OBJS)
-	$(LD) -o libDesktop.so -Wl,-soname,libDesktop.so.0 $(libDesktop_OBJS) $(libDesktop_LDFLAGS)
+	$(CCSHARED) -o libDesktop.so -Wl,-soname,libDesktop.so.0 $(libDesktop_OBJS) $(libDesktop_LDFLAGS)
 
 about.o: about.c
 	$(CC) $(libDesktop_CFLAGS) -c about.c

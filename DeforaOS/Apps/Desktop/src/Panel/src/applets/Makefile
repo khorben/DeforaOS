@@ -4,16 +4,16 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include
-CPPFLAGS=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0` -fPIC
 CFLAGS	= -Wall -g -O2 -pedantic
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,175 +23,175 @@ battery_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 battery_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 battery.so: $(battery_OBJS)
-	$(LD) -o battery.so $(battery_OBJS) $(battery_LDFLAGS)
+	$(CCSHARED) -o battery.so $(battery_OBJS) $(battery_LDFLAGS)
 
 bluetooth_OBJS = bluetooth.o
 bluetooth_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 bluetooth_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 bluetooth.so: $(bluetooth_OBJS)
-	$(LD) -o bluetooth.so $(bluetooth_OBJS) $(bluetooth_LDFLAGS)
+	$(CCSHARED) -o bluetooth.so $(bluetooth_OBJS) $(bluetooth_LDFLAGS)
 
 clock_OBJS = clock.o
 clock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 clock_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 clock.so: $(clock_OBJS)
-	$(LD) -o clock.so $(clock_OBJS) $(clock_LDFLAGS)
+	$(CCSHARED) -o clock.so $(clock_OBJS) $(clock_LDFLAGS)
 
 close_OBJS = close.o
 close_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 close_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 close.so: $(close_OBJS)
-	$(LD) -o close.so $(close_OBJS) $(close_LDFLAGS)
+	$(CCSHARED) -o close.so $(close_OBJS) $(close_LDFLAGS)
 
 cpu_OBJS = cpu.o
 cpu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 cpu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cpu.so: $(cpu_OBJS)
-	$(LD) -o cpu.so $(cpu_OBJS) $(cpu_LDFLAGS)
+	$(CCSHARED) -o cpu.so $(cpu_OBJS) $(cpu_LDFLAGS)
 
 cpufreq_OBJS = cpufreq.o
 cpufreq_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 cpufreq_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cpufreq.so: $(cpufreq_OBJS)
-	$(LD) -o cpufreq.so $(cpufreq_OBJS) $(cpufreq_LDFLAGS)
+	$(CCSHARED) -o cpufreq.so $(cpufreq_OBJS) $(cpufreq_LDFLAGS)
 
 desktop_OBJS = desktop.o
 desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 desktop.so: $(desktop_OBJS)
-	$(LD) -o desktop.so $(desktop_OBJS) $(desktop_LDFLAGS)
+	$(CCSHARED) -o desktop.so $(desktop_OBJS) $(desktop_LDFLAGS)
 
 gps_OBJS = gps.o
 gps_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gps_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 gps.so: $(gps_OBJS)
-	$(LD) -o gps.so $(gps_OBJS) $(gps_LDFLAGS)
+	$(CCSHARED) -o gps.so $(gps_OBJS) $(gps_LDFLAGS)
 
 gsm_OBJS = gsm.o
 gsm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gsm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 gsm.so: $(gsm_OBJS)
-	$(LD) -o gsm.so $(gsm_OBJS) $(gsm_LDFLAGS)
+	$(CCSHARED) -o gsm.so $(gsm_OBJS) $(gsm_LDFLAGS)
 
 keyboard_OBJS = keyboard.o
 keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 keyboard.so: $(keyboard_OBJS)
-	$(LD) -o keyboard.so $(keyboard_OBJS) $(keyboard_LDFLAGS)
+	$(CCSHARED) -o keyboard.so $(keyboard_OBJS) $(keyboard_LDFLAGS)
 
 lock_OBJS = lock.o
 lock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 lock_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 lock.so: $(lock_OBJS)
-	$(LD) -o lock.so $(lock_OBJS) $(lock_LDFLAGS)
+	$(CCSHARED) -o lock.so $(lock_OBJS) $(lock_LDFLAGS)
 
 logout_OBJS = logout.o
 logout_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 logout_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 logout.so: $(logout_OBJS)
-	$(LD) -o logout.so $(logout_OBJS) $(logout_LDFLAGS)
+	$(CCSHARED) -o logout.so $(logout_OBJS) $(logout_LDFLAGS)
 
 main_OBJS = main.o
 main_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 main_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 main.so: $(main_OBJS)
-	$(LD) -o main.so $(main_OBJS) $(main_LDFLAGS)
+	$(CCSHARED) -o main.so $(main_OBJS) $(main_LDFLAGS)
 
 memory_OBJS = memory.o
 memory_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 memory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 memory.so: $(memory_OBJS)
-	$(LD) -o memory.so $(memory_OBJS) $(memory_LDFLAGS)
+	$(CCSHARED) -o memory.so $(memory_OBJS) $(memory_LDFLAGS)
 
 pager_OBJS = pager.o
 pager_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 pager_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pager.so: $(pager_OBJS)
-	$(LD) -o pager.so $(pager_OBJS) $(pager_LDFLAGS)
+	$(CCSHARED) -o pager.so $(pager_OBJS) $(pager_LDFLAGS)
 
 phone_OBJS = phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 phone.so: $(phone_OBJS)
-	$(LD) -o phone.so $(phone_OBJS) $(phone_LDFLAGS)
+	$(CCSHARED) -o phone.so $(phone_OBJS) $(phone_LDFLAGS)
 
 separator_OBJS = separator.o
 separator_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 separator_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 separator.so: $(separator_OBJS)
-	$(LD) -o separator.so $(separator_OBJS) $(separator_LDFLAGS)
+	$(CCSHARED) -o separator.so $(separator_OBJS) $(separator_LDFLAGS)
 
 spacer_OBJS = spacer.o
 spacer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 spacer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 spacer.so: $(spacer_OBJS)
-	$(LD) -o spacer.so $(spacer_OBJS) $(spacer_LDFLAGS)
+	$(CCSHARED) -o spacer.so $(spacer_OBJS) $(spacer_LDFLAGS)
 
 swap_OBJS = swap.o
 swap_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 swap_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 swap.so: $(swap_OBJS)
-	$(LD) -o swap.so $(swap_OBJS) $(swap_LDFLAGS)
+	$(CCSHARED) -o swap.so $(swap_OBJS) $(swap_LDFLAGS)
 
 systray_OBJS = systray.o
 systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 systray.so: $(systray_OBJS)
-	$(LD) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
+	$(CCSHARED) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
 
 tasks_OBJS = tasks.o
 tasks_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 tasks.so: $(tasks_OBJS)
-	$(LD) -o tasks.so $(tasks_OBJS) $(tasks_LDFLAGS)
+	$(CCSHARED) -o tasks.so $(tasks_OBJS) $(tasks_LDFLAGS)
 
 title_OBJS = title.o
 title_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 title_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 title.so: $(title_OBJS)
-	$(LD) -o title.so $(title_OBJS) $(title_LDFLAGS)
+	$(CCSHARED) -o title.so $(title_OBJS) $(title_LDFLAGS)
 
 usb_OBJS = usb.o
 usb_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 usb_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 usb.so: $(usb_OBJS)
-	$(LD) -o usb.so $(usb_OBJS) $(usb_LDFLAGS)
+	$(CCSHARED) -o usb.so $(usb_OBJS) $(usb_LDFLAGS)
 
 volume_OBJS = volume.o
 volume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) `pkg-config --cflags alsa` $(CFLAGSF) $(CFLAGS)
 volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs alsa`
 
 volume.so: $(volume_OBJS)
-	$(LD) -o volume.so $(volume_OBJS) $(volume_LDFLAGS)
+	$(CCSHARED) -o volume.so $(volume_OBJS) $(volume_LDFLAGS)
 
 wpa_supplicant_OBJS = wpa_supplicant.o
 wpa_supplicant_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 wpa_supplicant_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 wpa_supplicant.so: $(wpa_supplicant_OBJS)
-	$(LD) -o wpa_supplicant.so $(wpa_supplicant_OBJS) $(wpa_supplicant_LDFLAGS)
+	$(CCSHARED) -o wpa_supplicant.so $(wpa_supplicant_OBJS) $(wpa_supplicant_LDFLAGS)
 
 battery.o: battery.c ../../include/Panel.h
 	$(CC) $(battery_CFLAGS) -c battery.c

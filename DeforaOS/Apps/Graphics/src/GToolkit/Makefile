@@ -1,9 +1,9 @@
 PACKAGE	= GToolkit
 VERSION	= 0.0.0
 SUBDIRS	= include src tools
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

@@ -4,13 +4,13 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include -I $(PREFIX)/include
-CPPFLAGS=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)

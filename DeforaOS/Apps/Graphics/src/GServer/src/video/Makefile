@@ -3,17 +3,17 @@ PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGSF=
-CPPFLAGS=
+CPPFLAGSF?=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libApp`
 CFLAGS	= -Wall -g -O2 -fPIC -pedantic
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,21 +23,21 @@ glut_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 glut_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glut`
 
 glut.so: $(glut_OBJS)
-	$(LD) -o glut.so $(glut_OBJS) $(glut_LDFLAGS)
+	$(CCSHARED) -o glut.so $(glut_OBJS) $(glut_LDFLAGS)
 
 glx_OBJS = glx.o
 glx_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 glx_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glu`
 
 glx.so: $(glx_OBJS)
-	$(LD) -o glx.so $(glx_OBJS) $(glx_LDFLAGS)
+	$(CCSHARED) -o glx.so $(glx_OBJS) $(glx_LDFLAGS)
 
 vesa_OBJS = vbe.o vesa.o
 vesa_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 vesa_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 vesa.so: $(vesa_OBJS)
-	$(LD) -o vesa.so $(vesa_OBJS) $(vesa_LDFLAGS)
+	$(CCSHARED) -o vesa.so $(vesa_OBJS) $(vesa_LDFLAGS)
 
 glut.o: glut.c video.h
 	$(CC) $(glut_CFLAGS) `pkg-config --cflags glut` -c glut.c

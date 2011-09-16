@@ -1,9 +1,9 @@
 PACKAGE	= Loader
 VERSION	= 0.0.0
 SUBDIRS	= tools
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

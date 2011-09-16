@@ -1,9 +1,9 @@
 PACKAGE	= libApp
 VERSION	= 0.1.5
 SUBDIRS	= data include src tools
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

@@ -7,13 +7,13 @@ CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,14 +23,14 @@ password_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 password_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 password.so: $(password_OBJS)
-	$(LD) -o password.so $(password_OBJS) $(password_LDFLAGS)
+	$(CCSHARED) -o password.so $(password_OBJS) $(password_LDFLAGS)
 
 slider_OBJS = slider.o
 slider_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 slider_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 slider.so: $(slider_OBJS)
-	$(LD) -o slider.so $(slider_OBJS) $(slider_LDFLAGS)
+	$(CCSHARED) -o slider.so $(slider_OBJS) $(slider_LDFLAGS)
 
 password.o: password.c ../../include/Locker.h
 	$(CC) $(password_CFLAGS) -c password.c

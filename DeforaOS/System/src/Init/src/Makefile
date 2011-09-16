@@ -3,16 +3,16 @@ PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
-CPPFLAGS=
+CPPFLAGSF?=
+CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libApp`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs libApp` -Wl,--export-dynamic
 LDFLAGS	= 
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)

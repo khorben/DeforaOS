@@ -7,13 +7,13 @@ CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags x11`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -23,7 +23,7 @@ xscreensaver_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config 
 xscreensaver_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0`
 
 xscreensaver.so: $(xscreensaver_OBJS)
-	$(LD) -o xscreensaver.so $(xscreensaver_OBJS) $(xscreensaver_LDFLAGS)
+	$(CCSHARED) -o xscreensaver.so $(xscreensaver_OBJS) $(xscreensaver_LDFLAGS)
 
 xscreensaver.o: xscreensaver.c ../../include/Locker.h ../../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(xscreensaver_CFLAGS) -c xscreensaver.c

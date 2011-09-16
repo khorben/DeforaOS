@@ -9,14 +9,14 @@ CFLAGSF	= -W `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs libSystem`
 LDFLAGS	= 
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
 BINDIR	= $(PREFIX)/bin
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -26,11 +26,11 @@ libcpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 libcpp.a: $(libcpp_OBJS)
-	$(AR) libcpp.a $(libcpp_OBJS)
+	$(AR) -rc libcpp.a $(libcpp_OBJS)
 	$(RANLIB) libcpp.a
 
 libcpp.so: $(libcpp_OBJS)
-	$(LD) -o libcpp.so -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) $(libcpp_LDFLAGS)
+	$(CCSHARED) -o libcpp.so -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) $(libcpp_LDFLAGS)
 
 cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)

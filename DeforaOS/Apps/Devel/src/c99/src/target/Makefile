@@ -8,13 +8,13 @@ CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags cpp`
 CFLAGS	= -Wall -g -O2 -fPIC -pedantic
 LDFLAGSF= `pkg-config --libs cpp`
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -24,21 +24,21 @@ asm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags 
 asm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs asm`
 
 asm.so: $(asm_OBJS)
-	$(LD) -o asm.so $(asm_OBJS) $(asm_LDFLAGS)
+	$(CCSHARED) -o asm.so $(asm_OBJS) $(asm_LDFLAGS)
 
 graph_OBJS = graph.o
 graph_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 graph_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 graph.so: $(graph_OBJS)
-	$(LD) -o graph.so $(graph_OBJS) $(graph_LDFLAGS)
+	$(CCSHARED) -o graph.so $(graph_OBJS) $(graph_LDFLAGS)
 
 indent_OBJS = indent.o
 indent_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 indent_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 indent.so: $(indent_OBJS)
-	$(LD) -o indent.so $(indent_OBJS) $(indent_LDFLAGS)
+	$(CCSHARED) -o indent.so $(indent_OBJS) $(indent_LDFLAGS)
 
 asm.o: asm.c ../../include/c99/target.h ../../config.h
 	$(CC) $(asm_CFLAGS) -c asm.c

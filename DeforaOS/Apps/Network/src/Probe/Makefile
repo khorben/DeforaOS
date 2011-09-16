@@ -1,9 +1,9 @@
 PACKAGE	= Probe
 VERSION	= 0.0.2
 SUBDIRS	= data src tools
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

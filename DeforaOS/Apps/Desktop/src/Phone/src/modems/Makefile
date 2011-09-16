@@ -7,13 +7,13 @@ CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags glib-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 INCLUDEDIR= $(PREFIX)/include
 
 
@@ -24,21 +24,21 @@ debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflag
 debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 debug.so: $(debug_OBJS)
-	$(LD) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
+	$(CCSHARED) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
 
 hayes_OBJS = hayes.o
 hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem`
 hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
 hayes.so: $(hayes_OBJS)
-	$(LD) -o hayes.so $(hayes_OBJS) $(hayes_LDFLAGS)
+	$(CCSHARED) -o hayes.so $(hayes_OBJS) $(hayes_LDFLAGS)
 
 sofia_OBJS = sofia.o
 sofia_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem sofia-sip-ua-glib`
 sofia_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem sofia-sip-ua-glib`
 
 sofia.so: $(sofia_OBJS)
-	$(LD) -o sofia.so $(sofia_OBJS) $(sofia_LDFLAGS)
+	$(CCSHARED) -o sofia.so $(sofia_OBJS) $(sofia_LDFLAGS)
 
 debug.o: debug.c
 	$(CC) $(debug_CFLAGS) -c debug.c

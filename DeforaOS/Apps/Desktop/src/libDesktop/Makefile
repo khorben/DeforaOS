@@ -1,9 +1,9 @@
 PACKAGE	= libDesktop
 VERSION	= 0.0.5
 SUBDIRS	= data include src
-RM	= rm -f
-LN	= ln -f
-TAR	= tar -czvf
+RM	?= rm -f
+LN	?= ln -f
+TAR	?= tar -czvf
 
 
 all: subdirs

@@ -8,13 +8,13 @@ CPPFLAGS= -I $(PREFIX)/include -D WITH_SSL
 CFLAGSF	= -W -fPIC `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGS	= -lssl
-AR	= ar -rc
-RANLIB	= ranlib
-LD	= $(CC) -shared
-RM	= rm -f
-LN	= ln -f
-MKDIR	= mkdir -p
-INSTALL	= install
+AR	?= ar
+RANLIB	?= ranlib
+CCSHARED?= $(CC) -shared
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
 
 
 all: $(TARGETS)
@@ -24,11 +24,11 @@ libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`  
 
 libApp.a: $(libApp_OBJS)
-	$(AR) libApp.a $(libApp_OBJS)
+	$(AR) -rc libApp.a $(libApp_OBJS)
 	$(RANLIB) libApp.a
 
 libApp.so: $(libApp_OBJS)
-	$(LD) -o libApp.so -Wl,-soname,libApp.so.0 $(libApp_OBJS) $(libApp_LDFLAGS)
+	$(CCSHARED) -o libApp.so -Wl,-soname,libApp.so.0 $(libApp_OBJS) $(libApp_LDFLAGS)
 
 appclient.o: appclient.c appinterface.h ../include/System/App/appclient.h
 	$(CC) $(libApp_CFLAGS) -c appclient.c
