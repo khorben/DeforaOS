@@ -29,7 +29,13 @@
 ARRAY(Config *, config)
 
 
+/* prototypes */
+static int _makefile_output_variable(FILE * fp, char const * name,
+		char const * value);
+
+
 /* functions */
+/* makefile */
 static int _makefile_write(Configure * configure, FILE * fp, configArray * ca,
 	       	int from, int to);
 
@@ -141,9 +147,8 @@ static int _variables_package(Configure * configure, FILE * fp,
 	}
 	if(configure->prefs->flags & PREFS_v)
 		printf(" %s\n", version);
-	if(fp != NULL)
-		fprintf(fp, "%s%s%s%s%s", "PACKAGE\t= ", package,
-				"\nVERSION\t= ", version, "\n");
+	_makefile_output_variable(fp, "PACKAGE", package);
+	_makefile_output_variable(fp, "VERSION", version);
 	if((p = config_get(configure->config, "", "config")) != NULL)
 		return settings(configure->prefs, configure->config, directory,
 			       	package, version);
@@ -209,13 +214,15 @@ static int _variables_dist(Configure * configure, FILE * fp)
 		{
 			/* FIXME may still need to be output */
 			if(config_get(configure->config, "", "targets") == NULL)
-				fprintf(fp, "%s%s\n%s%s\n", "PREFIX\t= ",
-						configure->prefs->prefix,
-						"DESTDIR\t= ",
+			{
+				_makefile_output_variable(fp, "PREFIX",
+						configure->prefs->prefix);
+				_makefile_output_variable(fp, "DESTDIR",
 						configure->prefs->destdir);
-			fprintf(fp, "%s%s%s", "MKDIR\t= mkdir -p\n",
-					"INSTALL\t= install\n",
-					"RM\t= rm -f\n");
+			}
+			_makefile_output_variable(fp, "MKDIR", "mkdir -p");
+			_makefile_output_variable(fp, "INSTALL", "install");
+			_makefile_output_variable(fp, "RM", "rm -f");
 			break;
 		}
 		if(c == '\0')
@@ -321,17 +328,22 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	}
 	else if(includes != NULL)
 	{
-		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
-		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+		_makefile_output_variable(fp, "PREFIX",
+				configure->prefs->prefix);
+		_makefile_output_variable(fp, "DESTDIR",
+				configure->prefs->destdir);
 	}
 	if(targets != NULL || includes != NULL || package != NULL)
-		fputs("RM\t= rm -f\nLN\t= ln -f\n", fp);
+	{
+		_makefile_output_variable(fp, "RM", "rm -f");
+		_makefile_output_variable(fp, "LN", "ln -f");
+	}
 	if(package != NULL)
-		fprintf(fp, "%s", "TAR\t= tar -czvf\n");
+		_makefile_output_variable(fp, "TAR", "tar -czvf");
 	if(targets != NULL || includes != NULL)
 	{
-		fputs("MKDIR\t= mkdir -p\n", fp);
-		fputs("INSTALL\t= install\n", fp);
+		_makefile_output_variable(fp, "MKDIR", "mkdir -p");
+		_makefile_output_variable(fp, "INSTALL", "install");
 	}
 	return 0;
 }
@@ -396,16 +408,24 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
 static void _variables_binary(Configure * configure, FILE * fp, char * done)
 {
+	String * p;
+
 	if(!done[TT_LIBRARY] && !done[TT_SCRIPT])
 	{
-		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
-		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+		_makefile_output_variable(fp, "PREFIX",
+				configure->prefs->prefix);
+		_makefile_output_variable(fp, "DESTDIR",
+				configure->prefs->destdir);
 	}
 	if(configure->prefs->bindir[0] == '/')
-		fprintf(fp, "%s%s\n", "BINDIR\t= ", configure->prefs->bindir);
-	else
-		fprintf(fp, "%s%s\n", "BINDIR\t= $(PREFIX)/",
+		_makefile_output_variable(fp, "BINDIR",
 				configure->prefs->bindir);
+	else if((p = string_new_append("$(PREFIX)/", configure->prefs->bindir,
+					NULL)) != NULL)
+	{
+		_makefile_output_variable(fp, "BINDIR", p);
+		string_delete(p);
+	}
 	if(!done[TT_LIBRARY])
 	{
 		_targets_asflags(configure, fp);
@@ -423,8 +443,10 @@ static void _targets_asflags(Configure * configure, FILE * fp)
 	as = config_get(configure->config, "", "as");
 	asf = config_get(configure->config, "", "asflags");
 	if(as != NULL || asf != NULL)
-		fprintf(fp, "%s%s%s%s\n", "AS\t= ", as != NULL ? as : "as",
-				"\nASFLAGS\t= ", asf != NULL ? asf : "");
+	{
+		_makefile_output_variable(fp, "AS", (as != NULL) ? as : "as");
+		_makefile_output_variable(fp, "ASFLAGS", asf);
+	}
 }
 
 static void _targets_cflags(Configure * configure, FILE * fp)
@@ -434,43 +456,29 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * cf;
 	String const * cppf;
 	String const * cpp;
+	String * p;
 
-	/* FIXME should output CPPFLAGS even without cflags */
 	cppf = config_get(configure->config, "", "cppflags_force");
 	cpp = config_get(configure->config, "", "cppflags");
+	cff = config_get(configure->config, "", "cflags_force");
+	cf = config_get(configure->config, "", "cflags");
 	cc = config_get(configure->config, "", "cc");
-	if((cff = config_get(configure->config, "", "cflags_force")) != NULL)
-	{
-		fprintf(fp, "%s%s%s", "CC\t= ", cc != NULL ? cc : "cc",
-				"\nCPPFLAGSF=");
-		if(cppf != NULL)
-			fprintf(fp, " %s", cppf);
-		fputs("\nCPPFLAGS=", fp);
-		if(cpp != NULL)
-			fprintf(fp, " %s", cpp);
-		fprintf(fp, "%s%s", "\nCFLAGSF\t= ", cff);
-		if(configure->os == HO_GNU_LINUX && string_find(cff, "-ansi"))
-			fputs(" -D _GNU_SOURCE", fp); /* FIXME undup */
-		fputc('\n', fp);
-	}
-	if((cf = config_get(configure->config, "", "cflags")) != NULL)
-	{
-		if(cff == NULL)
-		{
-			fprintf(fp, "%s%s%s", "CC\t= ", cc != NULL ? cc : "cc",
-					"\nCPPFLAGSF=");
-			if(cppf != NULL)
-				fprintf(fp, " %s", cppf);
-			fputs("\nCPPFLAGS=", fp);
-			if(cpp != NULL)
-				fprintf(fp, " %s", cpp);
-			fputc('\n', fp);
-		}
-		fprintf(fp, "%s%s", "CFLAGS\t= ", cf);
-		if(configure->os == HO_GNU_LINUX && string_find(cf, "-ansi"))
-			fputs(" -D _GNU_SOURCE", fp);
-		fputc('\n', fp);
-	}
+	if(cppf == NULL && cpp == NULL && cff == NULL && cf == NULL
+			&& cc == NULL)
+		return;
+	_makefile_output_variable(fp, "CC", (cc != NULL) ? cc : "cc");
+	_makefile_output_variable(fp, "CPPFLAGSF", cppf);
+	_makefile_output_variable(fp, "CPPFLAGS", cpp);
+	p = NULL;
+	if(configure->os == HO_GNU_LINUX && string_find(cff, "-ansi"))
+		p = string_new_append(cff, " -D _GNU_SOURCE");
+	_makefile_output_variable(fp, "CFLAGSF", (p != NULL) ? p : cff);
+	string_delete(p);
+	p = NULL;
+	if(configure->os == HO_GNU_LINUX && string_find(cf, "-ansi"))
+		p = string_new_append(cf, " -D _GNU_SOURCE");
+	_makefile_output_variable(fp, "CFLAGS", (p != NULL) ? p : cf);
+	string_delete(p);
 }
 
 static void _targets_cxxflags(Configure * configure, FILE * fp)
@@ -480,7 +488,8 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 
 	if((p = config_get(configure->config, "", "cxxflags_force")) != NULL)
 	{
-		fprintf(fp, "%s%s", "CXX\t= c++\nCXXFLAGSF= ", p);
+		_makefile_output_variable(fp, "CXX", "c++");
+		fprintf(fp, "%s%s", "CXXFLAGSF= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
@@ -488,7 +497,7 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 	if((q = config_get(configure->config, "", "cxxflags")) != NULL)
 	{
 		if(p == NULL)
-			fprintf(fp, "%s", "CXX\t= c++\n");
+			_makefile_output_variable(fp, "CXX", "c++");
 		fprintf(fp, "%s%s", "CXXFLAGS= ", q);
 		if(configure->os == HO_GNU_LINUX && string_find(q, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
@@ -591,13 +600,15 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 
 	if(!done[TT_LIBRARY] && !done[TT_SCRIPT])
 	{
-		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
-		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+		_makefile_output_variable(fp, "PREFIX",
+				configure->prefs->prefix);
+		_makefile_output_variable(fp, "DESTDIR",
+				configure->prefs->destdir);
 	}
 	if((libdir = config_get(configure->config, "", "libdir")) == NULL)
 		libdir = configure->prefs->libdir;
 	if(libdir[0] == '/')
-		fprintf(fp, "%s%s\n", "LIBDIR\t= ", libdir);
+		_makefile_output_variable(fp, "LIBDIR", libdir);
 	else
 		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/", libdir);
 	if(!done[TT_BINARY])
@@ -607,31 +618,38 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_cxxflags(configure, fp);
 		_targets_ldflags(configure, fp);
 	}
-	/* FIXME create a function for the executables */
 	if((p = config_get(configure->config, "", "ar")) == NULL)
 		p = "ar -rc";
-	fprintf(fp, "%s%s\n", "AR\t= ", p);
+	_makefile_output_variable(fp, "AR", p);
 	if((p = config_get(configure->config, "", "ranlib")) == NULL)
 		p = "ranlib";
-	fprintf(fp, "%s%s\n", "RANLIB\t= ", p);
+	_makefile_output_variable(fp, "RANLIB", p);
 	if((p = config_get(configure->config, "", "ld")) == NULL)
 		p = "$(CC) -shared";
-	fprintf(fp, "%s%s\n", "LD\t= ", p);
+	_makefile_output_variable(fp, "LD", p);
 }
 
 static void _variables_libtool(Configure * configure, FILE * fp, char * done)
 {
+	String const * p;
+
 	_variables_library(configure, fp, done);
 	if(!done[TT_LIBTOOL])
-		fputs("LIBTOOL\t= libtool\n", fp);
+	{
+		if((p = config_get(configure->config, "", "libtool")) == NULL)
+			p = "libtool";
+		_makefile_output_variable(fp, "LIBTOOL", p);
+	}
 }
 
 static void _variables_script(Configure * configure, FILE * fp, char * done)
 {
 	if(!done[TT_BINARY] && !done[TT_LIBRARY] && !done[TT_SCRIPT])
 	{
-		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
-		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+		_makefile_output_variable(fp, "PREFIX",
+				configure->prefs->prefix);
+		_makefile_output_variable(fp, "DESTDIR",
+				configure->prefs->destdir);
 	}
 }
 
@@ -2056,4 +2074,25 @@ static int _uninstall_dist(Config * config, FILE * fp, String const * dist)
 		return 0;
 	fprintf(fp, "%s%s/%s\n", "\t$(RM) -- $(DESTDIR)", install, dist);
 	return 0;
+}
+
+
+/* makefile_output_variable */
+static int _makefile_output_variable(FILE * fp, char const * name,
+		char const * value)
+{
+	int res;
+	char const * align;
+	char const * equals;
+
+	if(fp == NULL)
+		return 0;
+	if(name == NULL)
+		return -1;
+	if(value == NULL)
+		value = "";
+	align = (strlen(name) >= 8) ? "" : "\t";
+	equals = (strlen(value) > 0) ? "= " : "=";
+	res = fprintf(fp, "%s%s%s%s\n", name, align, equals, value);
+	return (res >= 0) ? 0 : -1;
 }
