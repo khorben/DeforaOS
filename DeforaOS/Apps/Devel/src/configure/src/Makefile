@@ -1,10 +1,10 @@
 TARGETS	= configure makedepend
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs libSystem`

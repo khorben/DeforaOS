@@ -1,6 +1,6 @@
 TARGETS	= imap4.so mbox.so pop3.so nntp.so rss.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include

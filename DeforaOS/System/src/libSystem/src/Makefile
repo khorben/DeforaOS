@@ -1,10 +1,10 @@
 TARGETS	= libSystem.a libSystem.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W -fPIC
 CFLAGS	= -g -Wall -O2 -pedantic
 AR	= ar -rc

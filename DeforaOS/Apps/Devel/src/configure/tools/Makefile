@@ -1,6 +1,6 @@
 TARGETS	= pkg-config
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=

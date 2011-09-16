@@ -1,6 +1,6 @@
 SUBDIRS	= 16x16 22x22 24x24 32x32 48x48
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 MKDIR	= mkdir -p
 INSTALL	= install
 RM	= rm -f

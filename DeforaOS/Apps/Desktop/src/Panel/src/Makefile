@@ -1,7 +1,7 @@
 SUBDIRS	= applets
 TARGETS	= panel panel-settings run
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include

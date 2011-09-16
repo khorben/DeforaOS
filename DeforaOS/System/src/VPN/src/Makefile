@@ -1,10 +1,10 @@
 TARGETS	= ../data/VPN.h VPN
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libApp`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs libApp` -Wl,--export-dynamic

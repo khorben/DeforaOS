@@ -1,10 +1,10 @@
 TARGETS	= asm.so graph.so indent.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags cpp`
 CFLAGS	= -Wall -g -O2 -fPIC -pedantic
 LDFLAGSF= `pkg-config --libs cpp`

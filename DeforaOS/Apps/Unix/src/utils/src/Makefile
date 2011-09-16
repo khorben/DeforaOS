@@ -1,6 +1,6 @@
 TARGETS	= basename cat chgrp chmod chown cksum cmp cp df dirname du echo false file find head id kill link ln locale logname ls mkdir mkfifo more mv nice pr printf ps pwd renice rm rmdir sleep strings tail test time touch true tty uname uniq unlink wc who
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=

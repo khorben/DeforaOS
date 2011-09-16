@@ -1,10 +1,10 @@
 TARGETS	= password.so slider.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
 AR	= ar -rc

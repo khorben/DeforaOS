@@ -1,6 +1,6 @@
 TARGETS	= glut.so glx.so vesa.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF=

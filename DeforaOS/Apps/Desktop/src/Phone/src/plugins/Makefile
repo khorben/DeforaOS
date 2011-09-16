@@ -1,11 +1,11 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
 TARGETS	= blacklist.so debug.so engineering.so gprs.so locker.so n900.so openmoko.so oss.so panel.so profiles.so smscrypt.so systray.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
 AR	= ar -rc

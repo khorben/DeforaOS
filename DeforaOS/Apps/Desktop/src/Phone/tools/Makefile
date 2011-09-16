@@ -1,10 +1,10 @@
 TARGETS	= engineering pdu smscrypt
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2
 RM	= rm -f

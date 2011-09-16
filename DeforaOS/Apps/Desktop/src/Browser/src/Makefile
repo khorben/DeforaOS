@@ -1,7 +1,7 @@
 SUBDIRS	= plugins
 TARGETS	= browser copy delete desktop desktop-settings move open properties view
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include

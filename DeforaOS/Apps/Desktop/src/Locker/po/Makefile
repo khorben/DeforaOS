@@ -1,6 +1,6 @@
 TARGETS	= Locker.pot fr.po fr.mo
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p

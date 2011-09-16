@@ -1,7 +1,7 @@
 SUBDIRS	= common
 TARGETS	= download surfer
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=

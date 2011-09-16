@@ -1,10 +1,10 @@
 TARGETS	= xscreensaver.so
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CPPFLAGSF= -I ../../include
-CPPFLAGS= 
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags x11`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
 AR	= ar -rc

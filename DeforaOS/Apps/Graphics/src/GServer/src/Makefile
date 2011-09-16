@@ -1,7 +1,7 @@
 SUBDIRS	= video
 TARGETS	= ../data/GServer.h GServer
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=

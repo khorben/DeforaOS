@@ -1,7 +1,7 @@
 SUBDIRS	= demos plugins
 TARGETS	= locker lockerctl
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF= -I ../include

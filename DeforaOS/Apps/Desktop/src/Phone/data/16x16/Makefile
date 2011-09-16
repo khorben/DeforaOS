@@ -1,5 +1,5 @@
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 MKDIR	= mkdir -p
 INSTALL	= install
 RM	= rm -f

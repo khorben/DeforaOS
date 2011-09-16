@@ -1,6 +1,6 @@
 TARGETS	= halt hexdump host hostname ifconfig login mktemp mount poweroff reboot tar umount uptime w
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=

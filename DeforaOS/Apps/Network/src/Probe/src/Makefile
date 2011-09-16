@@ -1,6 +1,6 @@
 TARGETS	= ../data/Probe.h Probe DaMon
 PREFIX	= /usr/local
-DESTDIR	= 
+DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGSF=
