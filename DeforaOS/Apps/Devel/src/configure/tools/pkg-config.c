@@ -47,6 +47,9 @@ typedef struct _PkgConfigPrefs
 	int cflags;
 	int exists;
 	int libs;
+	int libs_only_L;
+	int libs_only_l;
+	int libs_only_other;
 	int modversion;
 	int _static;
 	int version;
@@ -248,6 +251,7 @@ static int _pkgconfig_parse_directive(PkgConfig * pc, char const * directive,
 {
 	int ret = 0;
 	char * p;
+	char * walk;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, directive,
@@ -264,8 +268,29 @@ static int _pkgconfig_parse_directive(PkgConfig * pc, char const * directive,
 		printf("%s\n", p);
 	else if(strcmp(directive, "Cflags") == 0 && pc->prefs.cflags)
 		printf(" %s", p);
-	else if(strcmp(directive, "Libs") == 0 && pc->prefs.libs)
-		printf(" %s", p);
+	else if(strcmp(directive, "Libs") == 0 && pc->prefs.libs) {
+		if(pc->prefs.libs_only_l) {
+			while((walk = strrchr(p, ' ')) != NULL) {
+				if (walk[1] == '-' && walk[2] == 'l')
+					printf(" %s", walk);
+				walk[0] = '\0';
+			}
+		} else if(pc->prefs.libs_only_L) {
+			while((walk = strrchr(p, ' ')) != NULL) {
+				if (walk[1] == '-' && walk[2] == 'L')
+					printf(" %s", walk);
+				walk[0] = '\0';
+			}
+		} else if(pc->prefs.libs_only_other) {
+			while((walk = strrchr(p, ' ')) != NULL) {
+				if (walk[1] == '-' && ( walk[2] != 'L' 
+							&& walk[2] != 'l'))
+					printf(" %s", walk);
+				walk[0] = '\0';
+			}
+		} else
+			printf(" %s", p);
+	}
 	/* FIXME implement the rest */
 #ifdef DEBUG
 	else
@@ -509,13 +534,17 @@ static int _usage(int brief)
 				stderr);
 	else
 		fputs("Usage: pkg-config [OPTIONS...] [PACKAGES...]\n"
-"  --libs	Output all linker flags\n"
-"  --static	Output linker flags for static linking\n"
-"  --version	Output version of pkg-config\n"
+"  --libs		Output all linker flags\n"
+"  --libs_only_L	Ouput -L flags\n"
+"  --libs_only_l	Ouput -l flags\n"
+"  --libs_only_other	other libs (e.g. -pthread)\n"
+"  --static		Output linker flags for static linking\n"
+"  --version		Output version of pkg-config\n"
+"  --modversion		Output version for package\n"
 "\n"
 "Help options:\n"
-"  -?, --help	Show this help message\n"
-"  --usage	Display brief usage message\n", stderr);
+"  -?, --help		Show this help message\n"
+"  --usage		Display brief usage message\n", stderr);
 	return 1;
 }
 
@@ -525,6 +554,9 @@ static int _main_option(PkgConfigPrefs * prefs, char const * option);
 static int _main_option_cflags(PkgConfigPrefs * prefs);
 static int _main_option_exists(PkgConfigPrefs * prefs);
 static int _main_option_libs(PkgConfigPrefs * prefs);
+static int _main_option_libs_only_l(PkgConfigPrefs * prefs);
+static int _main_option_libs_only_L(PkgConfigPrefs * prefs);
+static int _main_option_libs_only_other(PkgConfigPrefs * prefs);
 static int _main_option_static(PkgConfigPrefs * prefs);
 static int _main_option_usage(PkgConfigPrefs * prefs);
 static int _main_option_version(PkgConfigPrefs * prefs);
@@ -534,13 +566,16 @@ static struct
 	char const * option;
 	int (*callback)(PkgConfigPrefs * prefs);
 } _main_options[] = {
-	{ "cflags",	_main_option_cflags	},
-	{ "exists",	_main_option_exists	},
-	{ "libs",	_main_option_libs	},
-	{ "modversion", _main_option_modversion	},
-	{ "static",	_main_option_static	},
-	{ "usage",	_main_option_usage	},
-	{ "version",	_main_option_version	}
+	{ "cflags",		_main_option_cflags		},
+	{ "exists",		_main_option_exists		},
+	{ "libs",		_main_option_libs		},
+	{ "libs-only-l",	_main_option_libs_only_l	},
+	{ "libs-only-L",	_main_option_libs_only_L	},
+	{ "libs-only-other",	_main_option_libs_only_other	},
+	{ "modversion",		_main_option_modversion		},
+	{ "static",		_main_option_static		},
+	{ "usage",		_main_option_usage		},
+	{ "version",		_main_option_version		}
 };
 
 int main(int argc, char * argv[])
@@ -602,6 +637,24 @@ static int _main_option_exists(PkgConfigPrefs * prefs)
 static int _main_option_libs(PkgConfigPrefs * prefs)
 {
 	prefs->libs = 1;
+	return 0;
+}
+
+static int _main_option_libs_only_L(PkgConfigPrefs * prefs)
+{
+	prefs->libs_only_L = 1;
+	return 0;
+}
+
+static int _main_option_libs_only_l(PkgConfigPrefs * prefs)
+{
+	prefs->libs_only_l = 1;
+	return 0;
+}
+
+static int _main_option_libs_only_other(PkgConfigPrefs * prefs)
+{
+	prefs->libs_only_other = 1;
 	return 0;
 }
 
