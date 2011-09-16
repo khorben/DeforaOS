@@ -662,7 +662,7 @@ static int _variables_includes(Configure * configure, FILE * fp)
 	if(fp == NULL)
 		return 0;
 	if(configure->prefs->includedir[0] == '/')
-		fprintf(fp, "%s%s\n", "INCLUDEDIR= ",
+		_makefile_output_variable(fp, "INCLUDEDIR",
 				configure->prefs->includedir);
 	else
 		fprintf(fp, "%s%s\n", "INCLUDEDIR= $(PREFIX)/",
