@@ -467,7 +467,10 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	if(cppf == NULL && cpp == NULL && cff == NULL && cf == NULL
 			&& cc == NULL)
 		return;
-	_makefile_output_variable(fp, "CC", (cc != NULL) ? cc : "cc", 1);
+	if(cc == NULL)
+		_makefile_output_variable(fp, "CC", "cc", 0);
+	else
+		_makefile_output_variable(fp, "CC", cc, 1);
 	_makefile_output_variable(fp, "CPPFLAGSF", cppf, 1);
 	_makefile_output_variable(fp, "CPPFLAGS", cpp, 1);
 	p = NULL;
