@@ -1,6 +1,6 @@
 PACKAGE	= configure
 VERSION	= 0.0.7
-SUBDIRS	= src
+SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -30,6 +30,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/makefile.h \
 		$(PACKAGE)-$(VERSION)/src/settings.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/pkg-config.c \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
