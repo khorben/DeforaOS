@@ -626,7 +626,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 	_makefile_output_variable(fp, "RANLIB", p);
 	if((p = config_get(configure->config, "", "ld")) == NULL)
 		p = "$(CC) -shared";
-	_makefile_output_variable(fp, "LD", p);
+	_makefile_output_variable(fp, "CCSHARED", p);
 }
 
 static void _variables_libtool(Configure * configure, FILE * fp, char * done)
@@ -1032,7 +1032,7 @@ static int _target_library(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s", "\t$(LD) -o ", target, ".so");
+	fprintf(fp, "%s%s%s", "\t$(CCSHARED) -o ", target, ".so");
 	if((p = config_get(configure->config, target, "soname")) == NULL)
 		fprintf(fp, "%s%s%s", " -Wl,-soname,", target, ".so.0");
 	else
@@ -1147,7 +1147,7 @@ static int _target_plugin(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(",
+	fprintf(fp, "%s%s%s%s%s%s%s", "\t$(CCSHARED) -o ", target, ".so $(",
 			target, "_OBJS) $(", target, "_LDFLAGS)");
 	if((q = malloc(strlen(target) + 4)) != NULL)
 	{
