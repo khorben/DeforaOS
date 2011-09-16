@@ -47,6 +47,7 @@ typedef struct _PkgConfigPrefs
 	int cflags;
 	int exists;
 	int libs;
+	int modversion;
 	int _static;
 	int version;
 } PkgConfigPrefs;
@@ -259,6 +260,8 @@ static int _pkgconfig_parse_directive(PkgConfig * pc, char const * directive,
 	else if(pc->prefs.exists)
 		ret = 0;
 	/* FIXME parse and store arguments for later instead */
+	else if(strcmp(directive, "Version") == 0 && pc->prefs.modversion)
+		printf("%s\n", p);
 	else if(strcmp(directive, "Cflags") == 0 && pc->prefs.cflags)
 		printf(" %s", p);
 	else if(strcmp(directive, "Libs") == 0 && pc->prefs.libs)
@@ -525,6 +528,7 @@ static int _main_option_libs(PkgConfigPrefs * prefs);
 static int _main_option_static(PkgConfigPrefs * prefs);
 static int _main_option_usage(PkgConfigPrefs * prefs);
 static int _main_option_version(PkgConfigPrefs * prefs);
+static int _main_option_modversion(PkgConfigPrefs * prefs);
 static struct
 {
 	char const * option;
@@ -533,6 +537,7 @@ static struct
 	{ "cflags",	_main_option_cflags	},
 	{ "exists",	_main_option_exists	},
 	{ "libs",	_main_option_libs	},
+	{ "modversion", _main_option_modversion	},
 	{ "static",	_main_option_static	},
 	{ "usage",	_main_option_usage	},
 	{ "version",	_main_option_version	}
@@ -614,5 +619,11 @@ static int _main_option_usage(PkgConfigPrefs * prefs)
 static int _main_option_version(PkgConfigPrefs * prefs)
 {
 	prefs->version = 1;
+	return 0;
+}
+
+static int _main_option_modversion(PkgConfigPrefs * prefs)
+{
+	prefs->modversion = 1;
 	return 0;
 }
