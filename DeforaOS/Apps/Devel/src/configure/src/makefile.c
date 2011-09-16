@@ -619,7 +619,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_ldflags(configure, fp);
 	}
 	if((p = config_get(configure->config, "", "ar")) == NULL)
-		p = "ar -rc";
+		p = "ar";
 	_makefile_output_variable(fp, "AR", p);
 	if((p = config_get(configure->config, "", "ranlib")) == NULL)
 		p = "ranlib";
@@ -1018,7 +1018,7 @@ static int _target_library(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s%s%s", "\t$(AR) ", target, ".a $(", target,
+	fprintf(fp, "%s%s%s%s%s", "\t$(AR) -rc ", target, ".a $(", target,
 			"_OBJS)");
 	if((q = malloc(strlen(target) + 4)) != NULL) /* for ".so" later */
 	{
@@ -1147,8 +1147,8 @@ static int _target_plugin(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
-			"_OBJS) $(", target, "_LDFLAGS)");
+	fprintf(fp, "%s%s%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(",
+			target, "_OBJS) $(", target, "_LDFLAGS)");
 	if((q = malloc(strlen(target) + 4)) != NULL)
 	{
 		sprintf(q, "%s.so", target);
