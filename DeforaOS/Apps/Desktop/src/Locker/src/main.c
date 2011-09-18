@@ -77,6 +77,8 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
+	if(optind != argc)
+		return _usage();
 	if((locker = locker_new(suspend, demo, plugin)) == NULL)
 		return 2;
 	gtk_main();
