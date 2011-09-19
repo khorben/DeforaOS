@@ -68,6 +68,9 @@ static gboolean _account_get_iter(Account * account, GtkTreeIter * iter);
 static int _account_helper_error(Account * account, char const * message,
 		int ret);
 static void _account_helper_status(Account * account, char const * format, ...);
+static char * _account_helper_authenticate(Account * account,
+		char const * message);
+static int _account_helper_confirm(Account * account, char const * message);
 static Folder * _account_helper_folder_new(Account * account,
 		AccountFolder * folder, Folder * parent, FolderType type,
 		char const * name);
@@ -85,6 +88,8 @@ static const AccountPluginHelper _account_plugin_helper =
 	NULL,
 	_account_helper_error,
 	_account_helper_status,
+	_account_helper_authenticate,
+	_account_helper_confirm,
 	_account_helper_folder_new,
 	_account_helper_folder_delete,
 	_account_helper_message_new,
@@ -110,6 +115,7 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 	fprintf(stderr, "DEBUG: account_new(%p, \"%s\", \"%s\", %p)\n",
 			(void*)mailer, type, title, (void*)store);
 #endif
+	/* FIXME copy the AccountConfig structure */
 	if(type == NULL)
 		return NULL;
 	if((account = object_new(sizeof(*account))) == NULL)
@@ -421,8 +427,9 @@ static gboolean _account_get_iter(Account * account, GtkTreeIter * iter)
 static int _account_helper_error(Account * account, char const * message,
 		int ret)
 {
-	return mailer_error((account != NULL) ? account->mailer : NULL, message,
-			ret);
+	Mailer * mailer = (account != NULL) ? account->mailer : NULL;
+
+	return mailer_error(mailer, message, ret);
 }
 
 
@@ -448,6 +455,66 @@ static void _account_helper_status(Account * account, char const * format, ...)
 	if(p != NULL)
 		mailer_set_status(account->mailer, p);
 	free(p);
+}
+
+
+/* account_helper_authenticate */
+static char * _account_helper_authenticate(Account * account,
+		char const * message)
+{
+	char * ret = NULL;
+	GtkWidget * dialog;
+	GtkWidget * vbox;
+	GtkWidget * widget;
+
+	dialog = gtk_dialog_new();
+	/* XXX translate this, enumerate the methods available */
+	gtk_window_set_title(GTK_WINDOW(dialog), "Authentication");
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
+	widget = gtk_label_new(message);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	widget = gtk_entry_new();
+	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+			GTK_STOCK_OK, GTK_RESPONSE_OK,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+	gtk_widget_show_all(vbox);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+		ret = strdup(gtk_entry_get_text(GTK_ENTRY(widget)));
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
+/* account_helper_confirm */
+static int _account_helper_confirm(Account * account, char const * message)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * vbox;
+	GtkWidget * widget;
+
+	/* XXX set mailer's main window as the parent? */
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO, "%s", message);
+	/* XXX translate this */
+	gtk_window_set_title(GTK_WINDOW(dialog), "Confirm");
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
+	widget = gtk_label_new(message);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	ret = (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES) ? 0 : 1;
+	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
