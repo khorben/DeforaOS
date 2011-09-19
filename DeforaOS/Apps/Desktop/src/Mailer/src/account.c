@@ -496,22 +496,12 @@ static int _account_helper_confirm(Account * account, char const * message)
 {
 	int ret;
 	GtkWidget * dialog;
-	GtkWidget * vbox;
-	GtkWidget * widget;
 
 	/* XXX set mailer's main window as the parent? */
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO, "%s", message);
 	/* XXX translate this */
 	gtk_window_set_title(GTK_WINDOW(dialog), "Confirm");
-#if GTK_CHECK_VERSION(2, 14, 0)
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-#else
-	vbox = GTK_DIALOG(dialog)->vbox;
-#endif
-	widget = gtk_label_new(message);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-	gtk_widget_show_all(vbox);
 	ret = (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES) ? 0 : 1;
 	gtk_widget_destroy(dialog);
 	return ret;
