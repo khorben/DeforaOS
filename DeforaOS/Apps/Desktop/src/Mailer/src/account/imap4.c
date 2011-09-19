@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
+ * - openssl should be more explicit when SSL_set_fd() is missing (no BIO)
  * - support multiple connections? */
 
 
@@ -30,6 +31,7 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/x509.h>
 #include <glib.h>
 #include <System.h>
 #include "Mailer.h"
@@ -904,14 +906,22 @@ static gboolean _on_connect(gpointer data)
 	port = (unsigned long)p;
 	/* setup SSL */
 	if(plugin->config[I4CV_SSL].value != NULL)
+	{
+		/* FIXME obtain the SSL context from Mailer itself */
 		if((imap4->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
 				|| SSL_CTX_set_cipher_list(imap4->ssl_ctx,
-					SSL_DEFAULT_CIPHER_LIST) != 1)
+					SSL_DEFAULT_CIPHER_LIST) != 1
+				|| SSL_CTX_load_verify_locations(imap4->ssl_ctx,
+					NULL, "/etc/openssl") != 1)
 		{
 			helper->error(NULL, ERR_error_string(ERR_get_error(),
 						buf), 1);
 			return _on_reset(plugin);
 		}
+#if 0 /* XXX nicer for the server (knows why we shutdown) but not for us */
+		SSL_CTX_set_verify(imap4->ssl_ctx, SSL_VERIFY_PEER, NULL);
+#endif
+	}
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -1029,12 +1039,17 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 
 
 /* on_watch_can_handshake */
+static int _handshake_verify(AccountPlugin * plugin);
+
 static gboolean _on_watch_can_handshake(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	AccountPlugin * plugin = data;
+	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
 	int res;
+	int err;
+	char buf[128];
 
 	if((condition != G_IO_IN && condition != G_IO_OUT)
 			|| source != imap4->channel || imap4->ssl == NULL)
@@ -1046,25 +1061,51 @@ static gboolean _on_watch_can_handshake(GIOChannel * source,
 	imap4->rd_source = 0;
 	if((res = SSL_do_handshake(imap4->ssl)) == 1)
 	{
+		if(_handshake_verify(plugin) != 0)
+			return _on_reset(plugin);
 		/* wait for the server's banner */
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
 				_on_watch_can_read_ssl, plugin);
 		return FALSE;
 	}
-	else if(res == 0)
+	err = SSL_get_error(imap4->ssl, res);
+	ERR_error_string(err, buf);
+	if(res == 0)
 	{
-		/* FIXME handle error */
-		return FALSE;
+		helper->error(helper->account, buf, 1);
+		return _on_reset(plugin);
 	}
-	res = SSL_get_error(imap4->ssl, res);
-	if(res == SSL_ERROR_WANT_WRITE)
+	if(err == SSL_ERROR_WANT_WRITE)
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
 				_on_watch_can_handshake, plugin);
-	else if(res == SSL_ERROR_WANT_READ)
+	else if(err == SSL_ERROR_WANT_READ)
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
 				_on_watch_can_handshake, plugin);
-	/* FIXME else handle error */
+	else
+	{
+		helper->error(helper->account, buf, 1);
+		return _on_reset(plugin);
+	}
 	return FALSE;
+}
+
+static int _handshake_verify(AccountPlugin * plugin)
+{
+	AccountPluginHelper * helper = plugin->helper;
+	IMAP4 * imap4 = plugin->priv;
+	X509 * x509;
+	char buf[256] = "";
+
+	if(SSL_get_verify_result(imap4->ssl) != X509_V_OK)
+		return helper->confirm(helper->account, "The certificate could"
+				" not be verified.\nConnect anyway?");
+	x509 = SSL_get_peer_certificate(imap4->ssl);
+	X509_NAME_get_text_by_NID(X509_get_subject_name(x509), NID_commonName,
+			buf, sizeof(buf));
+	if(strcasecmp(buf, plugin->config[I4CV_HOSTNAME].value) != 0)
+		return helper->confirm(helper->account, "The certificate could"
+				" not be matched.\nConnect anyway?");
+	return 0;
 }
 
 
