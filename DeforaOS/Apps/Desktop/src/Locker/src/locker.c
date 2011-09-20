@@ -36,6 +36,7 @@ struct _Locker
 {
 	/* settings */
 	int suspend;
+	Config * config;
 
 	/* internal */
 	GdkDisplay * display;
@@ -59,6 +60,10 @@ struct _Locker
 };
 
 
+/* constants */
+#define LOCKER_CONFIG_FILE	".locker"
+
+
 /* prototypes */
 static void _locker_action(Locker * locker, LockerAction action);
 
@@ -77,11 +82,16 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data);
 /* public */
 /* functions */
 /* locker_new */
+static int _new_config(Locker * locker);
+static int _new_demo(Locker * locker, char const * demo);
+static void _new_helpers(Locker * locker);
+static GtkWidget * _new_plugin(Locker * locker, char const * plugin);
+static int _new_xss(Locker * locker, size_t cnt);
+
 Locker * locker_new(int suspend, char const * demo, char const * plugin)
 {
 	Locker * locker;
 	GdkScreen * screen;
-	int error;
 	GtkWidget * widget = NULL;
 	size_t cnt;
 	size_t i;
@@ -89,21 +99,12 @@ Locker * locker_new(int suspend, char const * demo, char const * plugin)
 	GdkRectangle rect;
 	GdkWindow * root;
 
-#ifdef EMBEDDED
-	plugin = (plugin != NULL) ? plugin : "slider";
-#else
-	plugin = (plugin != NULL) ? plugin : "password";
-#endif
 	if((locker = object_new(sizeof(*locker))) == NULL)
 	{
 		_locker_error(NULL, error_get(), 1);
 		return NULL;
 	}
-	locker->dhelper.locker = locker;
-	locker->dhelper.error = _locker_error;
-	locker->phelper.locker = locker;
-	locker->phelper.error = _locker_error;
-	locker->phelper.action = _locker_action;
+	_new_helpers(locker);
 	locker->suspend = (suspend != 0) ? 1 : 0;
 	screen = gdk_screen_get_default();
 	locker->display = gdk_screen_get_display(screen);
@@ -114,41 +115,13 @@ Locker * locker_new(int suspend, char const * demo, char const * plugin)
 	locker->dplugin = NULL;
 	locker->demo = NULL;
 	locker->pr_window = NULL;
-	if(demo != NULL && (locker->dplugin = plugin_new(LIBDIR, PACKAGE,
-					"demos", demo)) != NULL
-			&& (locker->demo = plugin_lookup(locker->dplugin,
-					"demo")) != NULL)
+	/* check for errors */
+	if(_new_config(locker) != 0
+			|| _new_demo(locker, demo) != 0
+			|| (widget = _new_plugin(locker, plugin)) == NULL
+			|| _new_xss(locker, cnt) != 0)
 	{
-		locker->demo->helper = &locker->dhelper;
-		if(locker->demo->init(locker->demo) != 0)
-			locker->demo = NULL;
-	}
-	if(demo != NULL && locker->demo == NULL)
-		_locker_error(locker, error_get(), 1);
-	if((locker->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
-			!= NULL
-			&& (locker->plugin = plugin_lookup(locker->pplugin,
-					"plugin")) != NULL)
-	{
-		locker->plugin->helper = &locker->phelper;
-		if((widget = locker->plugin->init(locker->plugin)) == NULL)
-			locker->plugin = NULL;
-	}
-	if(widget == NULL)
-	{
-		_locker_error(locker, error_get(), 1);
-		locker_delete(locker);
-		return NULL;
-	}
-	if(XScreenSaverQueryExtension(GDK_DISPLAY_XDISPLAY(locker->display),
-				&locker->event, &error) == 0
-			|| XScreenSaverRegister(GDK_DISPLAY_XDISPLAY(
-					locker->display), locker->screen,
-				getpid(), XA_INTEGER) == 0
-			|| (locker->windows = malloc(sizeof(*locker->windows)
-					* cnt)) == NULL)
-	{
-		_locker_error(locker, "Could not register as screensaver", 1);
+		_locker_error(NULL, error_get(), 1);
 		locker_delete(locker);
 		return NULL;
 	}
@@ -184,6 +157,96 @@ Locker * locker_new(int suspend, char const * demo, char const * plugin)
 	return locker;
 }
 
+static int _new_config(Locker * locker)
+{
+	char const * homedir;
+	char * filename;
+
+	if((locker->config = config_new()) == NULL)
+		return -1;
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((filename = malloc(strlen(homedir) + sizeof(LOCKER_CONFIG_FILE) + 1))
+			== NULL)
+		return -1;
+	sprintf(filename, "%s/%s", homedir, LOCKER_CONFIG_FILE);
+	if(config_load(locker->config, filename) != 0)
+		_locker_error(NULL, error_get(), 1);
+	free(filename);
+	return 0;
+}
+
+static int _new_demo(Locker * locker, char const * demo)
+{
+	if(demo == NULL && (demo = config_get(locker->config, NULL, "demo"))
+			== NULL)
+		return 0;
+	if((locker->dplugin = plugin_new(LIBDIR, PACKAGE, "demos", demo))
+			== NULL)
+		return -1;
+	if((locker->demo = plugin_lookup(locker->dplugin, "demo")) == NULL)
+		return -1;
+	locker->demo->helper = &locker->dhelper;
+	if(locker->demo->init(locker->demo) != 0)
+	{
+		locker->demo = NULL;
+		return -1;
+	}
+	return 0;
+}
+
+static void _new_helpers(Locker * locker)
+{
+	locker->dhelper.locker = locker;
+	locker->dhelper.error = _locker_error;
+	locker->phelper.locker = locker;
+	locker->phelper.error = _locker_error;
+	locker->phelper.action = _locker_action;
+}
+
+static GtkWidget * _new_plugin(Locker * locker, char const * plugin)
+{
+	GtkWidget * widget;
+
+	if(plugin == NULL)
+		plugin = config_get(locker->config, NULL, "plugin");
+	if(plugin == NULL)
+#ifdef EMBEDDED
+		plugin = "slider";
+#else
+		plugin = "password";
+#endif
+	if((locker->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
+			== NULL)
+		return NULL;
+	if((locker->plugin = plugin_lookup(locker->pplugin, "plugin")) == NULL)
+		return NULL;
+	locker->plugin->helper = &locker->phelper;
+	if((widget = locker->plugin->init(locker->plugin)) == NULL)
+	{
+		locker->plugin = NULL;
+		return NULL;
+	}
+	return widget;
+}
+
+static int _new_xss(Locker * locker, size_t cnt)
+{
+	int error;
+
+	/* register as screensaver */
+	if(XScreenSaverQueryExtension(GDK_DISPLAY_XDISPLAY(locker->display),
+				&locker->event, &error) == 0
+			|| XScreenSaverRegister(GDK_DISPLAY_XDISPLAY(
+					locker->display), locker->screen,
+				getpid(), XA_INTEGER) == 0
+			|| (locker->windows = malloc(sizeof(*locker->windows)
+					* cnt)) == NULL)
+		return -error_set_code(1, "%s", "Could not register as"
+				" screensaver");
+	return 0;
+}
+
 
 /* locker_delete */
 void locker_delete(Locker * locker)
@@ -199,6 +262,8 @@ void locker_delete(Locker * locker)
 	free(locker->windows);
 	XScreenSaverUnregister(GDK_DISPLAY_XDISPLAY(locker->display),
 			locker->screen);
+	if(locker->config != NULL)
+		config_delete(locker->config);
 	object_delete(locker);
 }
 

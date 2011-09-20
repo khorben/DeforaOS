@@ -18,7 +18,6 @@
 #ifndef DESKTOP_LOCKER_DEMO_H
 # define DESKTOP_LOCKER_DEMO_H
 
-# include <X11/X.h>
 # include "locker.h"
 
 
@@ -38,8 +37,9 @@ struct _LockerDemo
 	LockerDemoHelper * helper;
 	char const * name;
 	int (*init)(LockerDemo * demo);
-	int (*add)(LockerDemo * demo, XID xid);
 	void (*destroy)(LockerDemo * demo);
+	int (*add)(LockerDemo * demo, unsigned int id);
+	void (*remove)(LockerDemo * demo, unsigned int id);
 	void * priv;
 };
 

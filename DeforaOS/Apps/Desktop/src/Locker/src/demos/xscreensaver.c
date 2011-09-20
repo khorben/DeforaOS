@@ -34,7 +34,8 @@
 /* prototypes */
 /* plug-in */
 static int _xscreensaver_init(LockerDemo * demo);
-static int _xscreensaver_add(LockerDemo * demo, XID xid);
+static int _xscreensaver_add(LockerDemo * demo, unsigned int id);
+static void _xscreensaver_remove(LockerDemo * demo, unsigned int id);
 
 
 /* public */
@@ -45,8 +46,9 @@ LockerDemo demo =
 	NULL,
 	"XScreensaver",
 	_xscreensaver_init,
-	_xscreensaver_add,
 	NULL,
+	_xscreensaver_add,
+	_xscreensaver_remove,
 	NULL
 };
 
@@ -63,7 +65,7 @@ static int _xscreensaver_init(LockerDemo * demo)
 
 
 /* xscreensaver_add */
-static int _xscreensaver_add(LockerDemo * demo, XID xid)
+static int _xscreensaver_add(LockerDemo * demo, unsigned int id)
 {
 	int ret = 0;
 	LockerDemoHelper * helper = demo->helper;
@@ -73,9 +75,9 @@ static int _xscreensaver_add(LockerDemo * demo, XID xid)
 	char buf[16];
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %lu\n", __func__, xid);
+	fprintf(stderr, "DEBUG: %s() %u\n", __func__, id);
 #endif
-	snprintf(buf, sizeof(buf), "%lu", xid);
+	snprintf(buf, sizeof(buf), "%u", id);
 	argv[2] = buf;
 	if(g_spawn_async(NULL, argv, NULL, 0, NULL, NULL, NULL, &error) != TRUE)
 	{
@@ -83,4 +85,11 @@ static int _xscreensaver_add(LockerDemo * demo, XID xid)
 		g_error_free(error);
 	}
 	return ret;
+}
+
+
+/* xscreensaver_remove */
+static void _xscreensaver_remove(LockerDemo * demo, unsigned int id)
+{
+	/* FIXME implement */
 }
