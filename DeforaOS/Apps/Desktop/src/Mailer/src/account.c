@@ -499,7 +499,12 @@ static int _account_helper_confirm(Account * account, char const * message)
 
 	/* XXX set mailer's main window as the parent? */
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO, "%s", message);
+			GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Confirm");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", message);
 	/* XXX translate this */
 	gtk_window_set_title(GTK_WINDOW(dialog), "Confirm");
 	ret = (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES) ? 0 : 1;
