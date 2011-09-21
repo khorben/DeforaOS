@@ -664,9 +664,14 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	char const * p;
-	unsigned int m;
-	unsigned int r;
+	char const messages[] = "MESSAGES";
+	char const recent[] = "RECENT";
+	char const unseen[] = "UNSEEN";
+	unsigned int u;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, answer);
+#endif
 	p = answer;
 	if(strncmp("OK", p, 2) == 0)
 	{
@@ -680,11 +685,34 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 		for(p++; *p != '\0' && *p++ != '\"';);
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
-	if(*p != '(')
-		return 0;
-	if(sscanf(p, "(MESSAGES %u RECENT %u)", &m, &r) != 2)
-		return 0;
-	/* FIXME implement */
+	if(*p == '(')
+		for(p++; *p != '\0' && *p != ')'; p++)
+		{
+			if(strncmp(p, messages, sizeof(messages) - 1) == 0
+					&& p[sizeof(messages) - 1] == ' ')
+			{
+				p += sizeof(messages);
+				sscanf(p, "%u", &u);
+				/* FIXME really implement */
+			}
+			if(strncmp(p, recent, sizeof(recent) - 1) == 0
+					&& p[sizeof(recent) - 1] == ' ')
+			{
+				p += sizeof(recent);
+				sscanf(p, "%u", &u);
+				/* FIXME really implement */
+			}
+			if(strncmp(p, unseen, sizeof(unseen) - 1) == 0
+					&& p[sizeof(unseen) - 1] == ' ')
+			{
+				p += sizeof(unseen);
+				sscanf(p, "%u", &u);
+				/* FIXME really implement */
+			}
+			/* FIXME implement more */
+			/* skip until the next space */
+			for(; *p != '\0' && *p != ' '; p++);
+		}
 	return 0;
 }
 
