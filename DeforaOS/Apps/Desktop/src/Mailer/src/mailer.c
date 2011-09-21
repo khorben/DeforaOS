@@ -758,7 +758,8 @@ static gboolean _new_config_load(gpointer data)
 		return FALSE;
 	if((filename = _mailer_get_config_filename()) == NULL)
 		return FALSE;
-	config_load(mailer->config, filename);
+	if(config_load(mailer->config, filename) != 0)
+		mailer_error(NULL, error_get(), 1);
 	free(filename);
 	value = _mailer_get_font(mailer);
 	font = pango_font_description_from_string(value);
