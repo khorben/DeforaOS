@@ -99,7 +99,7 @@ static void _gdeasm_callback(void * priv, ArchInstructionCall * call)
 	char const * name;
 
 	gtk_list_store_append(store, &iter);
-	snprintf(buf, sizeof(buf), "%08lx", call->offset);
+	snprintf(buf, sizeof(buf), "%08lx", call->base);
 	gtk_list_store_set(store, &iter, 0, buf, 1, call->name, -1);
 	for(i = 0; i < call->operands_cnt; i++)
 	{
@@ -157,7 +157,7 @@ static void _gdeasm_open(char const * filename, GtkListStore * store)
 
 	if((a = asm_new(NULL, NULL)) == NULL)
 		return;
-	asm_open_deassemble(a, filename, 1, _gdeasm_callback, store);
+	asm_open_deassemble(a, filename, 0, _gdeasm_callback, store);
 	asm_close(a);
 }
 
