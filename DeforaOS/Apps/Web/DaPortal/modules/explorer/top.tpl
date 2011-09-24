@@ -1,4 +1,6 @@
+<?php if($explorer_id == 1) { ?>
 <script type="text/javascript" src="js/explorer.js"></script>
+<?php } ?>
 <form name="explorer_<?php echo $explorer_id; ?>" class="explorer" action="<?php echo _html_link(); ?>" method="post">
 	<div>
 		<input type="hidden" name="module" value="explorer"/>
