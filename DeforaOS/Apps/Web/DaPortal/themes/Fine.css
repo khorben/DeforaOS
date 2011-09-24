@@ -96,6 +96,15 @@ div.top a:hover {
 	padding-top:			1em;
 }
 
+form.explorer .selected {
+	background-color:		#aa000f;
+	color:				#d0d0d0;
+}
+
+form.explorer .selected a {
+	color:				#ffffff;
+}
+
 #latest {
 	background-color:		#1a1a1a;
 	border-bottom:			1px solid #3e1417;
