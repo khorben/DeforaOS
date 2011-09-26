@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ typedef struct _ParserCallbackData ParserCallbackData;
 struct _Parser
 {
 	/* parsing sources */
-	char * filename;
+	String * filename;
 	FILE * fp;
 	char * string;
 	size_t string_cnt;
@@ -163,7 +163,7 @@ Parser * parser_new(char const * pathname)
 #endif
 	if((parser = _new_do(_parser_scanner_file)) == NULL)
 		return NULL;
-	if((parser->filename = strdup(pathname)) == NULL)
+	if((parser->filename = string_new(pathname)) == NULL)
 		error_set_code(1, "%s", strerror(errno));
 	if((parser->fp = fopen(pathname, "r")) == NULL)
 		error_set_code(1, "%s: %s", pathname, strerror(errno));
@@ -235,7 +235,7 @@ int parser_delete(Parser * parser)
 			&& fclose(parser->fp) != 0)
 		ret = error_set_code(1, "%s: %s", parser->filename,
 				strerror(errno));
-	free(parser->filename);
+	string_delete(parser->filename);
 	free(parser->string);
 	free(parser->filters);
 	free(parser->callbacks);

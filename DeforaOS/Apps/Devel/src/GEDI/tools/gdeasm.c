@@ -37,10 +37,10 @@ static void _gdeasm_open(char const * filename, GtkListStore * store);
 /* callbacks */
 static gboolean _gdeasm_on_closex(void);
 static void _gdeasm_on_open(gpointer data);
+static void _gdeasm_callback(void * priv, ArchInstructionCall * call);
 static void _callback_dregister(char * buf, size_t size, ArchOperand * ao);
 static void _callback_dregister2(char * buf, size_t size, ArchOperand * ao);
 static void _callback_immediate(char * buf, size_t size, ArchOperand * ao);
-static void _gdeasm_callback(void * priv, ArchInstructionCall * call);
 
 static int _gdeasm(char const * filename)
 {
