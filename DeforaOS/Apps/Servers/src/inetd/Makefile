@@ -1,6 +1,6 @@
 PACKAGE	= inetd
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= doc src
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -21,6 +21,9 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/GRAMMAR \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/src/config.c \
 		$(PACKAGE)-$(VERSION)/src/parser.c \
 		$(PACKAGE)-$(VERSION)/src/scanner.c \
