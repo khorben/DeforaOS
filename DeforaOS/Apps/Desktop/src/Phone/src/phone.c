@@ -3785,6 +3785,8 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 			_phone_error(phone->en_window, buf, 0);
 			break;
 		case MODEM_AUTHENTICATION_STATUS_OK:
+			if(phone->en_progress == NULL)
+				break;
 			phone_code_clear(phone);
 			if(name == NULL)
 				break;
