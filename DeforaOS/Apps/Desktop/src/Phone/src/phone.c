@@ -379,6 +379,7 @@ Phone * phone_new(char const * plugin, int retry)
 #endif
 	if((phone = object_new(sizeof(*phone))) == NULL)
 		return NULL;
+	memset(phone, 0, sizeof(*phone));
 	if(_new_config(phone) != 0)
 	{
 		object_delete(phone);
@@ -394,9 +395,6 @@ Phone * phone_new(char const * plugin, int retry)
 			retry = strtoul(p, NULL, 10);
 	}
 	phone->modem = modem_new(phone->config, plugin, retry);
-	phone->source = 0;
-	phone->tr_source = 0;
-	memset(&phone->tracks, 0, sizeof(phone->tracks));
 	phone->helper.config_foreach = _phone_config_foreach;
 	phone->helper.config_get = _phone_config_get;
 	phone->helper.config_set = _phone_config_set;
@@ -407,18 +405,10 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->helper.request = _phone_request;
 	phone->helper.trigger = _phone_trigger;
 	phone->helper.phone = phone;
-	phone->plugins = NULL;
-	phone->plugins_cnt = 0;
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
-	phone->ab_window = NULL;
-	phone->ca_window = NULL;
-	phone->en_window = NULL;
 	phone->en_method = MODEM_AUTHENTICATION_METHOD_NONE;
-	phone->en_name = NULL;
-	phone->en_progress = NULL;
-	phone->co_window = NULL;
 	phone->co_store = gtk_list_store_new(PHONE_CONTACT_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_UINT, GDK_TYPE_PIXBUF,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -435,35 +425,22 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->co_status[MODEM_CONTACT_STATUS_ONLINE]
 		= gtk_icon_theme_load_icon(icontheme, "user-available", 24,
 				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-	phone->co_dialog = NULL;
-	phone->di_window = NULL;
-	phone->lo_window = NULL;
 	phone->lo_store = gtk_list_store_new(PHONE_LOGS_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING);
-	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_BOOLEAN, G_TYPE_UINT,
 			G_TYPE_STRING);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(phone->me_store),
 			PHONE_MESSAGE_COLUMN_DATE, GTK_SORT_DESCENDING);
-	phone->pl_window = NULL;
 	phone->pl_store = gtk_list_store_new(PHONE_PLUGINS_COLUMN_COUNT,
 			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	phone->re_index = -1;
-	phone->re_window = NULL;
-	phone->se_window = NULL;
-	phone->st_window = NULL;
-	phone->st_missed = 0;
-	phone->st_messages = 0;
-	phone->sy_window = NULL;
 	phone->se_store = gtk_list_store_new(PHONE_SETTINGS_COLUMN_COUNT,
 			G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
 			G_TYPE_STRING);
-	phone->wr_window = NULL;
-	phone->wr_progress = NULL;
 	/* check errors */
 	if(phone->modem == NULL)
 	{
@@ -707,6 +684,8 @@ void phone_code_enter(Phone * phone)
 	snprintf(buf, sizeof(buf), _("Checking %s..."), phone->en_name);
 	switch(phone->en_method)
 	{
+		case MODEM_AUTHENTICATION_METHOD_NONE:
+			break;
 		case MODEM_AUTHENTICATION_METHOD_PIN:
 			code = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
 			phone->en_progress = _phone_create_progress(
@@ -715,8 +694,6 @@ void phone_code_enter(Phone * phone)
 			modem_request_type(phone->modem,
 					MODEM_REQUEST_AUTHENTICATE, "SIM PIN",
 					NULL, code);
-			break;
-		default:
 			break;
 	}
 }
