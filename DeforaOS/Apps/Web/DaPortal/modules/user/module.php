@@ -357,7 +357,7 @@ function user_insert($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(!ereg('^[a-z]{1,9}$', $args['username']))
+	if(preg_match('/^[a-z]{1,9}$/', $args['username']) != 1)
 		return _error('Username must be lower-case and no longer than'
 				.' 9 characters', 1);
 	if(strlen($args['password1']) < 1
@@ -447,7 +447,7 @@ function user_register($args)
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
 			&& isset($args['email']))
 	{
-		if(!ereg('^[a-z]{1,9}$', $args['username']))
+		if(preg_match('^[a-z]{1,9}$', $args['username']) != 1)
 			$message = 'Username must be lower-case and no longer'
 				.' than 9 characters';
 		else
@@ -457,8 +457,9 @@ function user_register($args)
 					."'") == FALSE)
 			{
 				$email = $args['email'];
-				if(!eregi('^[a-z0-9_.-]+@[a-z0-9_.-]+\.'
-							.'[a-z]{1,4}$', $email))
+				if(preg_match('/^[a-z0-9_.-]+@[a-z0-9_.-]+\.'
+							.'[a-z]{1,4}$/i',
+							$email) != 1)
 					$message = EMAIL_INVALID;
 				else if(_sql_array('SELECT email'
 						.' FROM daportal_user'
