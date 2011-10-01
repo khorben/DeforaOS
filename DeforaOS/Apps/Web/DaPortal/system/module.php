@@ -44,9 +44,10 @@ function _module($module = '', $action = '', $args = FALSE)
 	}
 	else
 		return _error('Invalid module request', 0);
-	if(!strlen($action) || !ereg('^[a-z0-9_]{1,20}$', $action))
+	if(!strlen($action) || preg_match('/^[a-z0-9_]{1,20}$/', $action) != 1)
 		$action = 'default';
-	if(!ereg('^[a-z]{1,10}$', $module) || ($id = _module_id($module)) == 0)
+	if(preg_match('/^[a-z]{1,10}$/', $module) != 1
+			|| ($id = _module_id($module)) == 0)
 		return _error('Invalid module', 0);
 	$module_id = $id;
 	$module_name = $module;
