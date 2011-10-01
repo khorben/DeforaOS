@@ -378,7 +378,8 @@ function project_browse($args)
 		return _browse_dir($args['id'], $project['title'], $cvsrep,
 				$project['cvsroot'], '');
 	$file = stripslashes($args['file']);
-	if(!ereg('^[a-zA-Z0-9.,-_ /]+$', $file) || ereg('\.\.', $file))
+	if(preg_match('/^[a-zA-Z0-9.,-_ \/]+$/', $file) != 1
+			|| strpos($file, '..') !== FALSE)
 		return _error('Invalid path', 1);
 	$filename = $cvsrep.$project['cvsroot'].'/'.$file;
 	if(is_dir($filename))
