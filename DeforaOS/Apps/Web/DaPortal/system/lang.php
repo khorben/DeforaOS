@@ -51,8 +51,8 @@ else if(isset($_SESSION['lang']) && _lang_check($_SESSION['lang']))
 else if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 {
 	for($hal = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-			ereg('^,?([a-zA-Z]+)(;q=[0-9.]+)?(.*)$', $hal, $regs);
-			$hal = $regs[3])
+			preg_match('/^,?([a-zA-Z-]+)(;q=[0-9.]+)?(.*)$/', $hal,
+				$regs) == 1; $hal = $regs[3])
 	{
 		if(!_lang_check($regs[1]))
 			continue;
