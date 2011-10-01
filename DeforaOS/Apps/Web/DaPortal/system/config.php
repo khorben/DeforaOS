@@ -91,7 +91,7 @@ function _config_update($module, $args)
 {
 	$keys = array_keys($args);
 	foreach($keys as $k)
-		if(ereg('^'.$module.'_([a-zA-Z_]+)$', $k, $regs))
+		if(preg_match('/^'.$module.'_([a-zA-Z_]+)$/', $k, $regs) == 1)
 			_config_set($module, $regs[1], $args[$k], 0);
 }
 
