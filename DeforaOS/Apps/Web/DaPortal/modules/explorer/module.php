@@ -165,12 +165,12 @@ function _system_apply($args)
 	if(!isset($args['apply']))
 		return 'Need an action to apply';
 	$action = $args['apply'];
-	if(!ereg('^[a-z0-9_]{1,30}$', $action))
+	if(preg_match('/^[a-z0-9_]{1,30}$/', $action) != 1)
 		return 'Invalid action to apply';
 	$keys = array_keys($args);
 	foreach($keys as $k)
 	{
-		if(!ereg('^entry_[0-9]+_[0-9]+$', $k)
+		if(preg_match('/^entry_[0-9]+_[0-9]+$/', $k) != 1
 				|| !isset($args[$k.'_module'])
 				|| !isset($args[$k.'_id']))
 			continue;

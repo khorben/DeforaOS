@@ -217,7 +217,7 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 		$revision, $download)
 {
 	require_once('./system/html.php');
-	if(!ereg('^[0-9]+\.[0-9]+(\.[0-9]+\.[0-9]+)?$', $revision))
+	if(preg_match('/^[0-9]+\.[0-9]+(\.[0-9]+\.[0-9]+)?$/', $revision) != 1)
 		return _error('Invalid revision');
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);

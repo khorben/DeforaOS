@@ -370,8 +370,8 @@ function project_browse($args)
 				.' CVS</h1>'."\n");
 		return _info(NO_CVS_REPOSITORY, 1);
 	}
-	if(!ereg('^[a-zA-Z0-9. /]+$', $project['cvsroot'])
-			|| ereg('\.\.', $project['cvsroot']))
+	if(preg_match('/^[a-zA-Z0-9. \/]+$/', $project['cvsroot']) != 1
+			|| strpos($project['cvsroot'], '..') !== FALSE)
 		return _error('Invalid CVSROOT', 1);
 	require('./modules/project/browse.php');
 	if(!isset($args['file']))
