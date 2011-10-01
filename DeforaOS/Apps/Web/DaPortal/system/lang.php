@@ -64,7 +64,14 @@ if(!isset($lang) && !($lang = _config_get('admin', 'lang'))
 		&& !_lang_check($lang))
 	$lang = 'en';
 $locale = $lang.'_'.strtoupper($lang);
-if(!setlocale(LC_ALL, $locale.'@euro', $locale, $lang))
+switch($locale)
+{
+	case 'en_EN':
+		$locale = 'en_US';
+		break;
+}
+if(!setlocale(LC_ALL, $locale.'@euro', $locale, $lang)
+		|| !setlocale(LC_ALL, $locale, $locale, $lang))
 	_warning('Unable to set locale');
 //lang
 $text = array();
