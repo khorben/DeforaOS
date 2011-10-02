@@ -177,6 +177,7 @@ CREATE TABLE daportal_category_content (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('14', 'Output e-mail addresses in RSS feeds', 'bool', 'email', '0');
 
 
 /* module: download */
