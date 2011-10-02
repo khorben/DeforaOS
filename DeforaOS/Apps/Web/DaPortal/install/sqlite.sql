@@ -251,6 +251,7 @@ CREATE TABLE daportal_category_content (
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('13', 'Output e-mail addresses in RSS feeds', 'bool', 'email', '0');
 
 
 /* module: download */
@@ -263,7 +264,7 @@ CREATE TABLE daportal_download (
 	FOREIGN KEY (parent) REFERENCES daportal_download (download_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('13', 'Path to the download repository', 'string', 'root', '/tmp');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('14', 'Path to the download repository', 'string', 'root', '/tmp');
 
 
 /* module: article */
