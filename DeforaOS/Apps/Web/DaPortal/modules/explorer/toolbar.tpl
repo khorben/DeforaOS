@@ -7,9 +7,9 @@
 <?php } } ?>
 		<span class="separator"></span>
 <?php } ?>
-		<a onclick="select_all(<?php echo $explorer_id; ?>)" title="<?php echo _html_safe(SELECT_ALL); ?>"><?php echo _html_icon('select-all'); ?></a>
+		<a onclick="return select_all(<?php echo $explorer_id; ?>)" title="<?php echo _html_safe(SELECT_ALL); ?>"><?php echo _html_icon('select-all'); ?></a>
 		<span class="separator"></span>
-		<a onclick="change_class('explorer_<?php echo $explorer_id; ?>', 'listing_details')" title="<?php echo _html_safe(LISTING_DETAILS); ?>"><?php echo _html_icon('listing_details'); ?></a>
-		<a onclick="change_class('explorer_<?php echo $explorer_id; ?>', 'listing_list')" title="<?php echo _html_safe(LISTING_LIST); ?>"><?php echo _html_icon('listing_list'); ?></a>
-		<a onclick="change_class('explorer_<?php echo $explorer_id; ?>', 'listing_thumbnails')" title="<?php echo _html_safe(LISTING_THUMBNAILS); ?>"><?php echo _html_icon('listing_thumbnails'); ?></a>
+		<a onclick="return change_class('explorer_<?php echo $explorer_id; ?>', 'listing_details')" title="<?php echo _html_safe(LISTING_DETAILS); ?>"><?php echo _html_icon('listing_details'); ?></a>
+		<a onclick="return change_class('explorer_<?php echo $explorer_id; ?>', 'listing_list')" title="<?php echo _html_safe(LISTING_LIST); ?>"><?php echo _html_icon('listing_list'); ?></a>
+		<a onclick="return change_class('explorer_<?php echo $explorer_id; ?>', 'listing_thumbnails')" title="<?php echo _html_safe(LISTING_THUMBNAILS); ?>"><?php echo _html_icon('listing_thumbnails'); ?></a>
 	</div>
