@@ -382,7 +382,7 @@ function user_login($args)
 
 	if($user_id != 0)
 		return user_default($args);
-	$register = _config_get('user', 'register') == SQL_TRUE ? 1 : 0;
+	$register = _config_get('user', 'register') ? 1 : 0;
 	$username = isset($_POST['username']) ? stripslashes($_POST['username'])
 			: '';
 	include('./modules/user/user_login.tpl');
