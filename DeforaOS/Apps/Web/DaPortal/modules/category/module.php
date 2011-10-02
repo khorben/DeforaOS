@@ -427,7 +427,7 @@ function category_rss($args)
 		return _error(INVALID_ARGUMENT);
 	$sql = 'SELECT daportal_content.content_id AS id, name AS module'
 		.', daportal_content.user_id AS user_id, title'
-		.', username AS author, timestamp AS date, content'
+		.', username AS author, email, timestamp AS date, content'
 		.' FROM daportal_category_content, daportal_content'
 		.', daportal_module, daportal_user'
 		.' WHERE daportal_category_content.content_id'
@@ -442,6 +442,8 @@ function category_rss($args)
 		return _error('Could not list content');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
+		$res[$i]['author'] = $res[$i]['email'].' ('.$res[$i]['author']
+			.')';
 		$res[$i]['date'] = date('D, j M Y H:i:s O', strtotime(
 					substr($res[$i]['date'], 0, 19)));
 		$res[$i]['link'] = _module_link_full($res[$i]['module'], FALSE,
@@ -451,8 +453,10 @@ function category_rss($args)
 		$res[$i]['content'] = _html_pre($res[$i]['content']);
 	}
 	require_once('./system/rss.php');
-	$link = _module_link_full('category', FALSE, $args['id']);
-	$atomlink = _module_link_full('category', 'rss', $args['id']);
+	$link = _module_link_full('category', FALSE, $args['id'],
+		$category['title']);
+	$atomlink = _module_link_full('category', 'rss', $args['id'],
+		$category['title']);
 	_rss(CONTENT_TAGGED.' '.$category['title'], $link, $atomlink, '', $res);
 }
 
