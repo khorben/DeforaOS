@@ -28,6 +28,7 @@ $text['ADD'] = 'Add';
 $text['ALREADY_LINKED'] = 'Already linked';
 $text['ASSOCIATE_TO_CONTENT'] = 'Associate to content';
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
+$text['CATEGORIES'] = 'Categories';
 $text['CATEGORY'] = 'Category';
 $text['CATEGORY_LIST'] = 'Category list';
 $text['CHOOSE_CATEGORIES'] = 'Choose categories';
@@ -37,6 +38,7 @@ $text['DESCRIPTION'] = 'Description';
 $text['MEMBER_OF'] = 'Member of';
 $text['MODIFICATION_OF_CATEGORY'] = 'Modification of category';
 $text['NEW_CATEGORY'] = 'New category';
+$text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'de')
 	$text['DESCRIPTION'] = 'Beschreibung';
@@ -59,8 +61,17 @@ _lang($text);
 
 function category_admin($args)
 {
-	print('<h1 class="title category">'._html_safe(CATEGORIES_ADMINISTRATION)
-			.'</h1>'."\n");
+	print('<h1 class="title category">'
+			._html_safe(CATEGORIES_ADMINISTRATION)."</h1>\n");
+	if(($configs = _config_list('category')))
+	{
+		print('<h2 class="title settings">'._html_safe(SETTINGS)
+				."</h2>\n");
+		$module = 'category';
+		$action = 'config_update';
+		include('./system/config.tpl');
+	}
+	print('<h2 class="title category">'._html_safe(CATEGORIES)."</h2>\n");
 	$module_id = _module_id('category');
 	$categories = _sql_array('SELECT content_id AS id, title AS name'
 			.', enabled, content AS description'
@@ -105,6 +116,16 @@ function category_admin($args)
 					'members' => MEMBERS),
 				'toolbar' => $toolbar, 'view' => 'details',
 				'module' => 'category', 'action' => 'admin'));
+}
+
+
+function category_config_update($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return category_admin(array());
 }
 
 
@@ -440,10 +461,11 @@ function category_rss($args)
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list content');
+	$email = _config_get('category', 'email') ? 1 : 0;
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
-		$res[$i]['author'] = $res[$i]['email'].' ('.$res[$i]['author']
-			.')';
+		$res[$i]['author'] = $email ? $res[$i]['email']
+			.' ('.$res[$i]['author'].')' : $res[$i]['author'];
 		$res[$i]['date'] = date('D, j M Y H:i:s O', strtotime(
 					substr($res[$i]['date'], 0, 19)));
 		$res[$i]['link'] = _module_link_full($res[$i]['module'], FALSE,
@@ -511,16 +533,35 @@ function category_set($args)
 }
 
 
+//category_system
 function category_system($args)
 {
-	global $html;
+	global $html, $error;
 
-	if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($args['action'])
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
+	{
+		if($_POST['action'] == 'config_update')
+			$error = _category_system_config_update($args);
+	}
+	else if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($args['action'])
 			&& $args['action'] == 'rss')
 	{
 		$html = 0;
 		header('Content-Type: text/xml');
 	}
+}
+
+function _category_system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	$args['category_email'] = isset($args['category_email']) ? TRUE : FALSE;
+	_config_update('category', $args);
+	header('Location: '._module_link('category', 'admin'));
+	exit(0);
 }
 
 
