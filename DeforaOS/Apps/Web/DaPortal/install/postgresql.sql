@@ -16,14 +16,14 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
 CREATE TABLE daportal_config (
+	module_id SERIAL PRIMARY KEY,
 	module_id INTEGER NOT NULL REFERENCES daportal_module (module_id) ON DELETE CASCADE,
 	title VARCHAR(255),
 	type VARCHAR(255) CHECK (type IN ('bool', 'int', 'string')) NOT NULL,
 	name VARCHAR(255) NOT NULL,
 	value_bool BOOLEAN DEFAULT NULL,
 	value_int INTEGER DEFAULT NULL,
-	value_string VARCHAR(255) DEFAULT NULL,
-	PRIMARY KEY (module_id, name)
+	value_string VARCHAR(255) DEFAULT NULL
 );
 
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Path to MIME globs file', 'string', 'globs', '/usr/share/mime/globs');
