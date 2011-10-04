@@ -110,6 +110,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/project.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/search.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/top.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/translate.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/user.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/users.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/webmail.png \
@@ -130,6 +131,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/project.conf \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/add.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_center.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_justify.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_left.png \
@@ -143,12 +145,17 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/delete.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/disabled.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/download.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/edit.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enabled.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enum.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/forward.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/home.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/hrule.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/index.php \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/indent.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/insert-image.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/italic.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/language.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_details.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_list.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_thumbnails.png \
@@ -159,8 +166,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/redo.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/refresh.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/remove.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/reset.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/select-all.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/strikethrough.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/superscript.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/underline.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/undo.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/unindent.png \
@@ -168,9 +177,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/bug.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/ca.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/comment.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/download.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/host.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/index.php \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/language.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/project.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/settings.png \
@@ -466,6 +477,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/system/project.conf \
 		$(PACKAGE)-$(VERSION)/templates/Makefile \
 		$(PACKAGE)-$(VERSION)/templates/DaPortal.tpl \
+		$(PACKAGE)-$(VERSION)/templates/DeforaOS.tpl \
+		$(PACKAGE)-$(VERSION)/templates/DeforaOS-default.tpl \
+		$(PACKAGE)-$(VERSION)/templates/DeforaOS-menu.tpl \
+		$(PACKAGE)-$(VERSION)/templates/DeforaOS.de.tpl \
+		$(PACKAGE)-$(VERSION)/templates/DeforaOS.fr.tpl \
 		$(PACKAGE)-$(VERSION)/templates/index.php \
 		$(PACKAGE)-$(VERSION)/templates/papadmin.tpl \
 		$(PACKAGE)-$(VERSION)/templates/private.tpl \
@@ -474,6 +490,15 @@ dist:
 		$(PACKAGE)-$(VERSION)/themes/Makefile \
 		$(PACKAGE)-$(VERSION)/themes/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/themes/DeforaOS.css \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-bbl.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-bbr.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-btl.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-btr.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-menusep.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rbl.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rbr.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rtl.png \
+		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rtr.png \
 		$(PACKAGE)-$(VERSION)/themes/Fine.css \
 		$(PACKAGE)-$(VERSION)/themes/Fine-DeforaOS.png \
 		$(PACKAGE)-$(VERSION)/themes/khorben.css \
