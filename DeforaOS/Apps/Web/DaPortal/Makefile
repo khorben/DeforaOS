@@ -48,7 +48,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/down.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/enabled.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/host.png \
-		$(PACKAGE)-$(VERSION)/icons/16x16/language.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/news.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/pki.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/project.png \
@@ -91,7 +90,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/explorer.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/files.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/host.png \
-		$(PACKAGE)-$(VERSION)/icons/48x48/language.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/logout.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/menu.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/news.png \
@@ -111,6 +109,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/mime/index.php \
 		$(PACKAGE)-$(VERSION)/icons/48x48/mime/project.conf \
 		$(PACKAGE)-$(VERSION)/icons/gnome/Makefile \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16.css \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32.css \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/project.conf \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/Makefile \
@@ -132,7 +133,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enum.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/forward.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/home.png \
-		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/indent.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/italic.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_details.png \
@@ -145,7 +145,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/redo.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/refresh.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/remove.png \
-		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/select_all.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/select-all.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/strikethrough.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/underline.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/undo.png \
@@ -157,7 +157,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/comment.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/download.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/host.png \
-		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/language.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/project.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/settings.png \
@@ -181,7 +180,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/download.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/error.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/home.png \
-		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/info.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/logout.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/news.png \
