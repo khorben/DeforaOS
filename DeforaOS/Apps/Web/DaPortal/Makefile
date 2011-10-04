@@ -1,5 +1,5 @@
 PACKAGE	= DaPortal
-VERSION	= 20080408
+VERSION	= 1.0.0
 SUBDIRS	= css html icons js images install modules system templates themes
 RM	?= rm -f
 LN	?= ln -f
