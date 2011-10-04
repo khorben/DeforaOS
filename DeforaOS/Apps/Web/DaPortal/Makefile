@@ -235,6 +235,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/admin/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/admin/index.php \
 		$(PACKAGE)-$(VERSION)/modules/admin/module.php \
+		$(PACKAGE)-$(VERSION)/modules/admin/module_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/admin/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/article/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/article/desktop.php \
@@ -293,6 +294,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/download/file_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/download/file_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/download/index.php \
+		$(PACKAGE)-$(VERSION)/modules/download/lang.fr.php \
 		$(PACKAGE)-$(VERSION)/modules/download/module.php \
 		$(PACKAGE)-$(VERSION)/modules/download/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/explorer/Makefile \
