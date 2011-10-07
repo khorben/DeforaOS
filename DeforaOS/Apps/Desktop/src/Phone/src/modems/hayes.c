@@ -123,8 +123,8 @@ struct _HayesCommand
 	/* answer */
 	char * answer;
 
-	/* XXX should be handled a more generic way */
-	unsigned int id;
+	/* XXX should be handled a better way */
+	void * data;
 };
 
 typedef struct _HayesRequestContactList
@@ -132,6 +132,13 @@ typedef struct _HayesRequestContactList
 	unsigned int from;
 	unsigned int to;
 } HayesRequestContactList;
+
+typedef struct _HayesRequestMessageData
+{
+	unsigned int id;
+	ModemMessageFolder folder;
+	ModemMessageStatus status;
+} HayesRequestMessageData;
 
 typedef enum _HayesQuirk
 {
@@ -174,6 +181,10 @@ enum
 	HAYES_REQUEST_LOCAL_ECHO_DISABLE,
 	HAYES_REQUEST_LOCAL_ECHO_ENABLE,
 	HAYES_REQUEST_MESSAGE_FORMAT_PDU,
+	HAYES_REQUEST_MESSAGE_LIST_INBOX_READ,
+	HAYES_REQUEST_MESSAGE_LIST_INBOX_UNREAD,
+	HAYES_REQUEST_MESSAGE_LIST_SENT_READ,
+	HAYES_REQUEST_MESSAGE_LIST_SENT_UNREAD,
 	HAYES_REQUEST_MESSAGE_UNSOLLICITED_DISABLE,
 	HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE,
 	HAYES_REQUEST_MODEL,
@@ -241,7 +252,7 @@ static HayesCommand * _hayes_command_new(char const * attention);
 static void _hayes_command_delete(HayesCommand * command);
 static char const * _hayes_command_get_answer(HayesCommand * command);
 static char const * _hayes_command_get_attention(HayesCommand * command);
-static unsigned int _hayes_command_get_id(HayesCommand * command);
+static void * _hayes_command_get_data(HayesCommand * command);
 #if 0 /* XXX no longer being used */
 static char * _hayes_command_get_line(HayesCommand * command,
 		char const * prefix);
@@ -250,7 +261,7 @@ static HayesCommandStatus _hayes_command_get_status(HayesCommand * command);
 static unsigned int _hayes_command_get_timeout(HayesCommand * command);
 static void _hayes_command_set_callback(HayesCommand * command,
 		HayesCommandCallback callback, void * priv);
-static void _hayes_command_set_id(HayesCommand * command, unsigned int id);
+static void _hayes_command_set_data(HayesCommand * command, void * data);
 static void _hayes_command_set_priority(HayesCommand * command,
 		HayesCommandPriority priority);
 static void _hayes_command_set_status(HayesCommand * command,
@@ -463,6 +474,14 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_MESSAGE_FORMAT_PDU,		"AT+CMGF=0",
 		_on_request_generic },
+	{ HAYES_REQUEST_MESSAGE_LIST_INBOX_UNREAD,	"AT+CMGL=0",
+		_on_request_message_list },
+	{ HAYES_REQUEST_MESSAGE_LIST_INBOX_READ,	"AT+CMGL=1",
+		_on_request_message_list },
+	{ HAYES_REQUEST_MESSAGE_LIST_SENT_UNREAD,	"AT+CMGL=2",
+		_on_request_message_list },
+	{ HAYES_REQUEST_MESSAGE_LIST_SENT_READ,		"AT+CMGL=3",
+		_on_request_message_list },
 	{ HAYES_REQUEST_MESSAGE_UNSOLLICITED_DISABLE,	"AT+CNMI=0",
 		_on_request_generic },
 	{ HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE,	"AT+CNMI=1",
@@ -521,7 +540,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_message },
 	{ MODEM_REQUEST_MESSAGE_DELETE,			NULL,
 		_on_request_message_delete },
-	{ MODEM_REQUEST_MESSAGE_LIST,			"AT+CMGL=4",
+	{ MODEM_REQUEST_MESSAGE_LIST,			NULL,
 		_on_request_message_list },
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
 		_on_request_message_send },
@@ -627,6 +646,8 @@ static int _hayes_destroy(ModemPlugin * modem)
 
 
 /* hayes_request */
+static int _request_do(ModemPlugin * modem, ModemRequest * request,
+		void * data);
 static char * _request_attention(ModemPlugin * modem, ModemRequest * request);
 static char * _request_attention_apn(char const * protocol, char const * apn);
 static char * _request_attention_call(ModemPlugin * modem,
@@ -640,6 +661,7 @@ static char * _request_attention_gprs(ModemPlugin * modem,
 static char * _request_attention_message(ModemPlugin * modem, unsigned int id);
 static char * _request_attention_message_delete(ModemPlugin * modem,
 		unsigned int id);
+static char * _request_attention_message_list(ModemPlugin * modem);
 static char * _request_attention_message_send(ModemPlugin * modem,
 		char const * number, ModemMessageEncoding encoding,
 		size_t length, char const * content);
@@ -652,6 +674,11 @@ static char * _request_registration(ModemPlugin * modem,
 static char * _request_unsupported(ModemPlugin * modem, ModemRequest * request);
 
 static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
+{
+	return _request_do(modem, request, NULL);
+}
+
+static int _request_do(ModemPlugin * modem, ModemRequest * request, void * data)
 {
 	Hayes * hayes = modem->priv;
 	HayesCommand * command;
@@ -699,8 +726,8 @@ static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 		_hayes_command_delete(command);
 		return -1;
 	}
-	if(type == MODEM_REQUEST_MESSAGE)
-		_hayes_command_set_id(command, request->message.id);
+	if(data != NULL)
+		_hayes_command_set_data(command, data);
 	return 0;
 }
 
@@ -744,6 +771,8 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 		case MODEM_REQUEST_MESSAGE:
 			return _request_attention_message(modem,
 					request->message.id);
+		case MODEM_REQUEST_MESSAGE_LIST:
+			return _request_attention_message_list(modem);
 		case MODEM_REQUEST_MESSAGE_DELETE:
 			return _request_attention_message_delete(modem,
 					request->message_delete.id);
@@ -895,6 +924,55 @@ static char * _request_attention_message_delete(ModemPlugin * modem,
 	hayes->events[MODEM_EVENT_TYPE_MESSAGE_DELETED].message_deleted.id = id;
 	snprintf(buf, sizeof(buf), "%s%u", cmd, id);
 	return strdup(buf);
+}
+
+static char * _request_attention_message_list(ModemPlugin * modem)
+{
+	ModemRequest request;
+	HayesRequestMessageData * data;
+
+	memset(&request, 0, sizeof(request));
+	/* request received unread messages */
+	request.type = HAYES_REQUEST_MESSAGE_LIST_INBOX_UNREAD;
+	if((data = malloc(sizeof(*data))) != NULL)
+	{
+		data->id = 0;
+		data->folder = MODEM_MESSAGE_FOLDER_INBOX;
+		data->status = MODEM_MESSAGE_STATUS_UNREAD;
+	}
+	if(_request_do(modem, &request, data) != 0)
+		free(data);
+	/* request received read messages */
+	request.type = HAYES_REQUEST_MESSAGE_LIST_INBOX_READ;
+	if((data = malloc(sizeof(*data))) != NULL)
+	{
+		data->id = 0;
+		data->folder = MODEM_MESSAGE_FOLDER_INBOX;
+		data->status = MODEM_MESSAGE_STATUS_READ;
+	}
+	if(_request_do(modem, &request, data) != 0)
+		free(data);
+	/* request sent unread messages */
+	request.type = HAYES_REQUEST_MESSAGE_LIST_SENT_UNREAD;
+	if((data = malloc(sizeof(*data))) != NULL)
+	{
+		data->id = 0;
+		data->folder = MODEM_MESSAGE_FOLDER_OUTBOX;
+		data->status = MODEM_MESSAGE_STATUS_UNREAD;
+	}
+	if(_request_do(modem, &request, data) != 0)
+		free(data);
+	/* request sent read messages */
+	request.type = HAYES_REQUEST_MESSAGE_LIST_SENT_READ;
+	if((data = malloc(sizeof(*data))) != NULL)
+	{
+		data->id = 0;
+		data->folder = MODEM_MESSAGE_FOLDER_OUTBOX;
+		data->status = MODEM_MESSAGE_STATUS_READ;
+	}
+	if(_request_do(modem, &request, data) != 0)
+		free(data);
+	return NULL;
 }
 
 static char * _request_attention_message_send(ModemPlugin * modem,
@@ -1644,7 +1722,7 @@ static HayesCommand * _hayes_command_new(char const * attention)
 	command->callback = NULL;
 	command->priv = NULL;
 	command->answer = NULL;
-	command->id = 0;
+	command->data = NULL;
 	if(command->attention == NULL)
 	{
 		_hayes_command_delete(command);
@@ -1677,10 +1755,10 @@ static char const * _hayes_command_get_attention(HayesCommand * command)
 }
 
 
-/* hayes_command_get_id */
-static unsigned int _hayes_command_get_id(HayesCommand * command)
+/* hayes_command_get_data */
+static void * _hayes_command_get_data(HayesCommand * command)
 {
-	return command->id;
+	return command->data;
 }
 
 
@@ -1738,9 +1816,9 @@ static void _hayes_command_set_callback(HayesCommand * command,
 
 
 /* hayes_command_set_id */
-static void _hayes_command_set_id(HayesCommand * command, unsigned int id)
+static void _hayes_command_set_data(HayesCommand * command, void * data)
 {
-	command->id = id;
+	command->data = data;
 }
 
 
@@ -2461,8 +2539,16 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 static HayesCommandStatus _on_request_message(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
-	/* FIXME implement */
-	return _on_request_generic(command, status, priv);
+	HayesRequestMessageData * data;
+
+	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
+			|| status == HCS_ERROR)
+		if((data = _hayes_command_get_data(command)) != NULL)
+		{
+			free(data);
+			_hayes_command_set_data(command, NULL);
+		}
+	return status;
 }
 
 
@@ -2485,8 +2571,16 @@ static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
-	/* FIXME implement */
-	return _on_request_generic(command, status, priv);
+	HayesRequestMessageData * data;
+
+	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
+			|| status == HCS_ERROR)
+		if((data = _hayes_command_get_data(command)) != NULL)
+		{
+			free(data);
+			_hayes_command_set_data(command, NULL);
+		}
+	return status;
 }
 
 
@@ -2785,7 +2879,9 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		default: /* FIXME implement the rest */
+		case 14: /* SIM busy */
 		case 16: /* Incorrect SIM PUK */
+		case 20: /* Memory full */
 			break;
 	}
 }
@@ -2794,9 +2890,16 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 /* on_trigger_cmgl */
 static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer)
 {
+	Hayes * hayes = modem->priv;
+	/* XXX ugly */
+	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
+		: NULL;
 	ModemRequest request;
 	unsigned int id;
 	unsigned int u;
+	HayesRequestMessageData * data;
+	ModemMessageFolder folder = MODEM_MESSAGE_FOLDER_UNKNOWN;
+	ModemMessageStatus status = MODEM_MESSAGE_STATUS_READ;
 
 	/* XXX we could already be reading the message at this point */
 	if(sscanf(answer, "%u,%u,%u,%u", &id, &u, &u, &u) != 4
@@ -2805,7 +2908,19 @@ static void _on_trigger_cmgl(ModemPlugin * modem, char const * answer)
 		return;
 	request.type = MODEM_REQUEST_MESSAGE;
 	request.message.id = id;
-	_hayes_request(modem, &request);
+	if(command != NULL && (data = _hayes_command_get_data(command)) != NULL)
+	{
+		folder = data->folder;
+		status = data->status;
+	}
+	if((data = malloc(sizeof(*data))) != NULL)
+	{
+		data->id = id;
+		data->folder = folder;
+		data->status = status;
+	}
+	if(_request_do(modem, &request, data) != 0)
+		free(data);
 }
 
 
@@ -2838,6 +2953,7 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 	unsigned int alpha = 0;
 	unsigned int length;
 	char * p;
+	HayesRequestMessageData * data;
 
 	/* text mode support */
 	if(sscanf(answer, "\"%31[^\"]\",\"%31[^\"]\",,\"%31[^\"]\"", buf,
@@ -2863,9 +2979,12 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 	if(event->message.length == 0) /* XXX assumes this is text mode */
 	{
 		/* FIXME guarantee this would not happen */
-		if(command == NULL)
+		if(command == NULL || (data = _hayes_command_get_data(command))
+				== NULL)
 			return;
-		event->message.id = _hayes_command_get_id(command);
+		event->message.id = data->id;
+		event->message.folder = data->folder;
+		event->message.status = data->status;
 		event->message.encoding = MODEM_MESSAGE_ENCODING_UTF8;
 		event->message.content = answer;
 		event->message.length = strlen(answer);
@@ -2877,9 +2996,11 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 					&event->message.length)) == NULL)
 		return;
 	/* FIXME guarantee this would not happen */
-	if(command == NULL)
+	if(command == NULL || (data = _hayes_command_get_data(command)) == NULL)
 		return;
-	event->message.id = _hayes_command_get_id(command);
+	event->message.id = data->id;
+	event->message.folder = data->folder;
+	event->message.status = data->status;
 	event->message.number = number; /* XXX */
 	modem->helper->event(modem->helper->modem, event);
 	free(p);
