@@ -17,7 +17,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include "../src/modem.c"
+#include "../src/modems/hayes.c"
 
 
 /* pdu */
@@ -32,10 +32,9 @@ static void _hexdump(char const * buf, size_t len);
 /* pdu_decode */
 static int _pdu_decode(char const * string)
 {
-#if 0
 	time_t timestamp;
 	char number[32];
-	GSMEncoding encoding;
+	ModemMessageEncoding encoding;
 	char * p;
 	struct tm t;
 	char buf[32];
@@ -43,23 +42,20 @@ static int _pdu_decode(char const * string)
 
 	if((p = _cmgr_pdu_parse(string, &timestamp, number, &encoding, &len))
 			== NULL)
-#endif
 	{
 		fputs("pdu: Unable to decode PDU\n", stderr);
 		return -1;
 	}
-#if 0
 	printf("Number: %s\n", number);
 	localtime_r(&timestamp, &t);
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	printf("Timestamp: %s\n", buf);
 	printf("Encoding: %u\n", encoding);
 	_hexdump(p, len);
-	if(encoding == GSM_ENCODING_UTF8)
+	if(encoding == MODEM_MESSAGE_ENCODING_UTF8)
 		printf("Message: %s\n", p);
 	free(p);
 	return 0;
-#endif
 }
 
 static int _pdu_encode(char const * number, char const * string)
