@@ -12,6 +12,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* FIXME:
+ * - don't report SIM ready is not explicitly required? or in src/phone.c?
+ * - verify that the error when the SIM PIN code is wrong is handled properly
+ * - allow a trace log to be stored */
 
 
 
@@ -342,8 +346,8 @@ typedef enum _HayesConfig
 static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
 {
 	{ "device",	"Device",		MCT_FILENAME,	NULL	      },
-	{ "baudrate",	"Baudrate",		MCT_UINT32,	(void*)115200 },
-	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void*)1      },
+	{ "baudrate",	"Baudrate",		MCT_UINT32,	(void *)115200},
+	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void *)1     },
 	{ NULL,		NULL,			MCT_NONE,	NULL	      }
 };
 
@@ -644,6 +648,7 @@ static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 {
 	int ret;
 	Hayes * hayes = modem->priv;
+	unsigned int type = request->type;
 	size_t i;
 	size_t count = sizeof(_hayes_request_handlers)
 		/ sizeof(*_hayes_request_handlers);
@@ -657,7 +662,7 @@ static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 	if(request == NULL)
 		return -1;
 	if(hayes->quirks & HAYES_QUIRK_CONNECTED_LINE_DISABLED
-			&& request->type == HAYES_REQUEST_CONNECTED_LINE_ENABLE)
+			&& type == HAYES_REQUEST_CONNECTED_LINE_ENABLE)
 		request->type = HAYES_REQUEST_CONNECTED_LINE_DISABLE;
 	for(i = 0; i < count; i++)
 		if(_hayes_request_handlers[i].type == request->type)
@@ -683,9 +688,10 @@ static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 
 static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 {
+	unsigned int type = request->type;
 	char buf[32];
 
-	switch(request->type)
+	switch(type)
 	{
 		case HAYES_REQUEST_CONTACT_LIST:
 			return _request_attention_contact_list(request);
@@ -773,6 +779,8 @@ static char * _request_attention_call(ModemPlugin * modem,
 	else if(!_is_number(request->call.number))
 		return NULL;
 	event = &hayes->events[MODEM_EVENT_TYPE_CALL];
+	/* XXX should really be set at the time of the call */
+	event->call.call_type = request->call.call_type;
 	free(hayes->call_number);
 	if(request->call.call_type == MODEM_CALL_TYPE_DATA)
 		hayes->call_number = NULL;
@@ -795,7 +803,9 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 
 	/* FIXME check that this works on all phones, including:
-	 * - while calling (still ringing) => simply inject "\r\n"?
+	 * - while calling:
+	 *   . still ringing => simply inject "\r\n"?
+	 *   . in the queue => simply remove?
 	 * - while ringing (incoming) */
 	if(hayes->mode == HAYES_MODE_DATA)
 	{
@@ -2222,6 +2232,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		default:
 			return status;
 	}
+	/* XXX it should be bound to the request instead */
 	if(event->authentication.name != NULL)
 		modem->helper->event(modem->helper->modem, event);
 	if(status == HCS_SUCCESS)
@@ -3385,7 +3396,7 @@ static void _on_trigger_cring(ModemPlugin * modem, char const * answer)
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 
 	if(strcmp(answer, "VOICE") == 0)
-		; /* FIXME implement */
+		event->call.call_type = MODEM_CALL_TYPE_VOICE;
 	event->call.status = MODEM_CALL_STATUS_RINGING;
 	event->call.direction = MODEM_CALL_DIRECTION_INCOMING;
 	event->call.number = "";

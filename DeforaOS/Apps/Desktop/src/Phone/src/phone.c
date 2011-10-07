@@ -716,7 +716,7 @@ void phone_contacts_call_selected(Phone * phone)
 {
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
-	unsigned int id;
+	gchar * number;
 
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 						phone->co_view))) == NULL)
@@ -724,9 +724,9 @@ void phone_contacts_call_selected(Phone * phone)
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
-			PHONE_CONTACT_COLUMN_ID, &id, -1);
-	modem_request_type(phone->modem, MODEM_REQUEST_CALL_CONTACT,
-			MODEM_CALL_TYPE_VOICE, id);
+			PHONE_CONTACT_COLUMN_NUMBER, &number, -1);
+	_phone_call_number(phone, number);
+	g_free(number);
 }
 
 
@@ -1325,13 +1325,14 @@ void phone_show_about(Phone * phone, gboolean show)
 static void _show_call_window(Phone * phone);
 
 void phone_show_call(Phone * phone, gboolean show, ...)
-	/* FIXME let the API closer to ModemEvent.call */
 {
 	va_list ap;
-	PhoneCall call;
-	char const * name = NULL;
+	ModemEvent * me;
+	PhoneEvent pe;
+	char const * name;
 	char const * number = NULL;
-	PhoneEvent event;
+	ModemCallStatus status;
+	PhoneCall call;
 
 	if(show == FALSE)
 	{
@@ -1340,39 +1341,34 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 		return;
 	}
 	va_start(ap, show);
-	call = va_arg(ap, PhoneCall);
-	if(call == PHONE_CALL_INCOMING || call == PHONE_CALL_OUTGOING)
-	{
-		name = va_arg(ap, char const *);
-		number = va_arg(ap, char const *);
-	}
+	me = va_arg(ap, ModemEvent *);
 	va_end(ap);
 	if(phone->ca_window == NULL)
 		_show_call_window(phone);
 	phone_show_dialer(phone, FALSE);
 	/* get the current volume */
-	memset(&event, 0, sizeof(event));
-	event.type = PHONE_EVENT_TYPE_VOLUME_GET;
-	event.volume_get.level = gtk_range_get_value(GTK_RANGE(
+	memset(&pe, 0, sizeof(pe));
+	pe.type = PHONE_EVENT_TYPE_VOLUME_GET;
+	pe.volume_get.level = gtk_range_get_value(GTK_RANGE(
 				phone->ca_volume));
-	if(phone_event(phone, &event) == 0)
+	if(phone_event(phone, &pe) == 0)
 		gtk_range_set_value(GTK_RANGE(phone->ca_volume),
-				event.volume_get.level);
-	if(name != NULL)
-	{
-		if(name[0] == '\0')
-			/* XXX look it up if we have the number */
-			name = _("Unknown contact");
-		gtk_label_set_text(GTK_LABEL(phone->ca_name), name);
-	}
-	if(number != NULL)
-	{
-		if(number[0] == '\0')
-			/* XXX look it up if we have the name */
-			number = _("Unknown number");
-		gtk_label_set_text(GTK_LABEL(phone->ca_number), number);
-	}
+				pe.volume_get.level);
+	/* XXX look it up if we have the number */
+	name = _("Unknown contact");
+	gtk_label_set_text(GTK_LABEL(phone->ca_name), name);
+	if((number = me->call.number) == NULL)
+		number = _("Unknown number");
+	gtk_label_set_text(GTK_LABEL(phone->ca_number), number);
 	gtk_widget_show_all(phone->ca_window);
+	/* XXX this isn't so nice */
+	if((status = me->call.status) == MODEM_CALL_STATUS_ACTIVE)
+		call = PHONE_CALL_ESTABLISHED;
+	else if(status == MODEM_CALL_STATUS_RINGING)
+		call = (me->call.direction == MODEM_CALL_DIRECTION_INCOMING)
+			? PHONE_CALL_INCOMING : PHONE_CALL_OUTGOING;
+	else
+		call = PHONE_CALL_TERMINATED;
 	switch(call)
 	{
 		case PHONE_CALL_ESTABLISHED:
@@ -1467,7 +1463,7 @@ static void _show_call_window(Phone * phone)
 	/* volume bar */
 	hbox = gtk_hbox_new(FALSE, 4);
 	phone->ca_image = gtk_image_new_from_icon_name(
-			"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
+			"audio-volume-medium", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 0);
 	phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
 	g_signal_connect(phone->ca_volume, "value-changed", G_CALLBACK(
@@ -3069,7 +3065,6 @@ static int _phone_call_number(Phone * phone, char const * number)
 		return -1;
 	modem_request_type(phone->modem, MODEM_REQUEST_CALL,
 			MODEM_CALL_TYPE_VOICE, number, 0);
-	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, "", number);
 	/* add a log entry */
 	gtk_list_store_append(phone->lo_store, &iter);
 	date = time(NULL);
@@ -3805,22 +3800,12 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 
 static void _modem_event_call(Phone * phone, ModemEvent * event)
 {
-	PhoneCall call;
-	ModemCallStatus call_status;
-	ModemCallDirection call_direction;
-
-	if(event->call.number == NULL)
-		return; /* XXX ignore for now */
-	call_status = event->call.status;
-	call_direction = event->call.direction;
-	if(call_status == MODEM_CALL_STATUS_ACTIVE)
-		call = PHONE_CALL_ESTABLISHED;
-	else if(call_status == MODEM_CALL_STATUS_RINGING)
-		call = (call_direction == MODEM_CALL_DIRECTION_INCOMING)
-			? PHONE_CALL_INCOMING : PHONE_CALL_OUTGOING;
-	else
-		call = PHONE_CALL_TERMINATED;
-	phone_show_call(phone, TRUE, call, "", event->call.number);
+	fprintf(stderr, "DEBUG: %s() %u %u\n", __func__, event->call.call_type,
+			event->call.status);
+	if(event->call.call_type != MODEM_CALL_TYPE_VOICE
+			|| event->call.number == NULL)
+		return; /* XXX ignore these for now */
+	phone_show_call(phone, TRUE, event);
 }
 
 static void _modem_event_error(Phone * phone, ModemEvent * event)

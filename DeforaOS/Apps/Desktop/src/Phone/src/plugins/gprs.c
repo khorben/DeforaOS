@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* FIXME:
+ * - check if it resets the modem on "OK" (and if so, avoid it) */
 
 
 
@@ -108,6 +110,9 @@ static int _gprs_init(PhonePlugin * plugin)
 	gprs->window = NULL;
 #if GTK_CHECK_VERSION(2, 10, 0)
 	gprs->icon = gtk_status_icon_new_from_icon_name("stock_internet");
+# if GTK_CHECK_VERSION(2, 16, 0)
+	gtk_status_icon_set_tooltip_text(gprs->icon, "Not connected");
+# endif
 # if GTK_CHECK_VERSION(2, 18, 0)
 	gtk_status_icon_set_title(gprs->icon, "GPRS");
 #  if GTK_CHECK_VERSION(2, 20, 0)
