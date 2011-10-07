@@ -122,6 +122,9 @@ struct _HayesCommand
 
 	/* answer */
 	char * answer;
+
+	/* XXX should be handled a more generic way */
+	unsigned int id;
 };
 
 typedef struct _HayesRequestContactList
@@ -223,8 +226,10 @@ static int _hayes_parse_trigger(ModemPlugin * modem, char const * answer,
 
 /* queue */
 static int _hayes_queue_command(ModemPlugin * modem, HayesCommand * command);
+#if 0 /* XXX no longer used */
 static int _hayes_queue_command_full(ModemPlugin * modem,
 		char const * attention, HayesCommandCallback callback);
+#endif
 static void _hayes_queue_flush(ModemPlugin * modem);
 static int _hayes_queue_pop(ModemPlugin * modem);
 static int _hayes_queue_push(ModemPlugin * modem);
@@ -236,6 +241,7 @@ static HayesCommand * _hayes_command_new(char const * attention);
 static void _hayes_command_delete(HayesCommand * command);
 static char const * _hayes_command_get_answer(HayesCommand * command);
 static char const * _hayes_command_get_attention(HayesCommand * command);
+static unsigned int _hayes_command_get_id(HayesCommand * command);
 #if 0 /* XXX no longer being used */
 static char * _hayes_command_get_line(HayesCommand * command,
 		char const * prefix);
@@ -244,6 +250,7 @@ static HayesCommandStatus _hayes_command_get_status(HayesCommand * command);
 static unsigned int _hayes_command_get_timeout(HayesCommand * command);
 static void _hayes_command_set_callback(HayesCommand * command,
 		HayesCommandCallback callback, void * priv);
+static void _hayes_command_set_id(HayesCommand * command, unsigned int id);
 static void _hayes_command_set_priority(HayesCommand * command,
 		HayesCommandPriority priority);
 static void _hayes_command_set_status(HayesCommand * command,
@@ -646,8 +653,8 @@ static char * _request_unsupported(ModemPlugin * modem, ModemRequest * request);
 
 static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 {
-	int ret;
 	Hayes * hayes = modem->priv;
+	HayesCommand * command;
 	unsigned int type = request->type;
 	size_t i;
 	size_t count = sizeof(_hayes_request_handlers)
@@ -680,10 +687,21 @@ static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 			return 0; /* XXX errors should not be ignored */
 		attention = p;
 	}
-	ret = _hayes_queue_command_full(modem, attention,
-			_hayes_request_handlers[i].callback);
+	/* XXX using _hayes_queue_command_full() was more elegant */
+	command = _hayes_command_new(attention);
 	free(p);
-	return ret;
+	if(command == NULL)
+		return -1;
+	_hayes_command_set_callback(command,
+			_hayes_request_handlers[i].callback, modem);
+	if(_hayes_queue_command(modem, command) != 0)
+	{
+		_hayes_command_delete(command);
+		return -1;
+	}
+	if(type == MODEM_REQUEST_MESSAGE)
+		_hayes_command_set_id(command, request->message.id);
+	return 0;
 }
 
 static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
@@ -1099,6 +1117,9 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 		case MODEM_EVENT_TYPE_CONTACT:
 			request.type = MODEM_REQUEST_CONTACT_LIST;
 			return _hayes_request(modem, &request);
+		case MODEM_EVENT_TYPE_MESSAGE:
+			request.type = MODEM_REQUEST_MESSAGE_LIST;
+			return _hayes_request(modem, &request);
 		case MODEM_EVENT_TYPE_MODEL:
 			request.type = HAYES_REQUEST_VENDOR;
 			ret |= _hayes_request(modem, &request);
@@ -1117,7 +1138,6 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			break;
 		case MODEM_EVENT_TYPE_CONTACT_DELETED: /* do not make sense */
 		case MODEM_EVENT_TYPE_ERROR:
-		case MODEM_EVENT_TYPE_MESSAGE:
 		case MODEM_EVENT_TYPE_MESSAGE_DELETED:
 		case MODEM_EVENT_TYPE_MESSAGE_SENT:
 			ret = -1;
@@ -1473,6 +1493,7 @@ static int _hayes_queue_command(ModemPlugin * modem, HayesCommand * command)
 }
 
 
+#if 0 /* XXX no longer used */
 /* hayes_queue_command_full */
 static int _hayes_queue_command_full(ModemPlugin * modem,
 		char const * attention, HayesCommandCallback callback)
@@ -1493,6 +1514,7 @@ static int _hayes_queue_command_full(ModemPlugin * modem,
 	}
 	return 0;
 }
+#endif
 
 
 /* hayes_queue_flush */
@@ -1608,6 +1630,7 @@ static int _hayes_reset(ModemPlugin * modem)
 
 
 /* commands */
+/* hayes_command_new */
 static HayesCommand * _hayes_command_new(char const * attention)
 {
 	HayesCommand * command;
@@ -1621,6 +1644,7 @@ static HayesCommand * _hayes_command_new(char const * attention)
 	command->callback = NULL;
 	command->priv = NULL;
 	command->answer = NULL;
+	command->id = 0;
 	if(command->attention == NULL)
 	{
 		_hayes_command_delete(command);
@@ -1650,6 +1674,13 @@ static char const * _hayes_command_get_answer(HayesCommand * command)
 static char const * _hayes_command_get_attention(HayesCommand * command)
 {
 	return command->attention;
+}
+
+
+/* hayes_command_get_id */
+static unsigned int _hayes_command_get_id(HayesCommand * command)
+{
+	return command->id;
 }
 
 
@@ -1703,6 +1734,13 @@ static void _hayes_command_set_callback(HayesCommand * command,
 {
 	command->callback = callback;
 	command->priv = priv;
+}
+
+
+/* hayes_command_set_id */
+static void _hayes_command_set_id(HayesCommand * command, unsigned int id)
+{
+	command->id = id;
 }
 
 
@@ -2731,6 +2769,7 @@ static void _on_trigger_clip(ModemPlugin * modem, char const * answer)
 static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 {
 	Hayes * hayes = modem->priv;
+	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
 	unsigned int u;
@@ -2787,6 +2826,9 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 {
 	Hayes * hayes = modem->priv;
+	/* XXX ugly */
+	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
+		: NULL;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MESSAGE];
 	char buf[32];
 	char number[32];
@@ -2820,6 +2862,10 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 	/* message content */
 	if(event->message.length == 0) /* XXX assumes this is text mode */
 	{
+		/* FIXME guarantee this would not happen */
+		if(command == NULL)
+			return;
+		event->message.id = _hayes_command_get_id(command);
 		event->message.encoding = MODEM_MESSAGE_ENCODING_UTF8;
 		event->message.content = answer;
 		event->message.length = strlen(answer);
@@ -2830,6 +2876,10 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 					&event->message.encoding,
 					&event->message.length)) == NULL)
 		return;
+	/* FIXME guarantee this would not happen */
+	if(command == NULL)
+		return;
+	event->message.id = _hayes_command_get_id(command);
 	event->message.number = number; /* XXX */
 	modem->helper->event(modem->helper->modem, event);
 	free(p);
@@ -2921,6 +2971,9 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 	size_t j;
 	unsigned int u;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((p = malloc(len - i + 1)) == NULL) /* XXX 2 times big enough? */
 		return NULL;
 	/* FIXME actually parse the header */
@@ -2954,6 +3007,9 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 	unsigned char byte;
 	char * r;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((p = malloc(len - i + 1)) == NULL)
 		return NULL;
 	if(hdr != 0)
@@ -3002,6 +3058,9 @@ static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
 	char * b = buf;
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(type == 0x91)
 		*(b++) = '+';
 	for(i = 0; i < length - 1 && i < 32 - 1; i+=2)
@@ -3029,6 +3088,9 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	char buf[32];
 #endif
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, timestamp);
+#endif
 	if(strlen(p) < 14)
 		return 0;
 	for(i = 0; i < 14; i++)

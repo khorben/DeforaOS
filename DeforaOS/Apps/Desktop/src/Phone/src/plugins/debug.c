@@ -51,6 +51,7 @@ static struct
 	{ "Battery charge",	MODEM_EVENT_TYPE_BATTERY_LEVEL	},
 	{ "Call status",	MODEM_EVENT_TYPE_CALL		},
 	{ "Contact list",	MODEM_EVENT_TYPE_CONTACT	},
+	{ "Message list",	MODEM_EVENT_TYPE_MESSAGE	},
 	{ "Model",		MODEM_EVENT_TYPE_MODEL		},
 	{ "Registration",	MODEM_EVENT_TYPE_REGISTRATION	},
 	{ "Status",		MODEM_EVENT_TYPE_STATUS		},
