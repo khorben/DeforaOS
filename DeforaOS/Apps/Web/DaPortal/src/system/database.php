@@ -59,7 +59,7 @@ abstract class Database
 				return FALSE;
 			$name = ucfirst($name).'Database';
 			$ret = new $name();
-			$ret->attach();
+			$ret->attach($engine);
 			return $ret;
 		}
 		if(($dir = opendir('database')) === FALSE)
