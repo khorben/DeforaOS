@@ -57,14 +57,33 @@ class BlogModule extends Module
 	//BlogModule::call
 	public function call(&$engine, $request)
 	{
-		return FALSE;
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'delete':
+			case 'disable':
+			case 'display':
+			case 'enable':
+			case 'headline':
+			case 'insert':
+			case 'planet':
+			case 'rss':
+			case 'system':
+			case 'update':
+				return $this->$action($args);
+			case 'list':
+				return $this->_list($args);
+			default:
+				return $this->_default($args);
+		}
 	}
-}
 
 
 //private
-//blog_description
-function _blog_description($id)
+//accessors
+//BlogModule::getDescription
+private function getDescription($id)
 {
 	$sql = 'SELECT blog.content AS description'
 		.' FROM daportal_content blog, daportal_blog_user'
@@ -79,8 +98,8 @@ function _blog_description($id)
 }
 
 
-//blog_description_user
-function _blog_description_user($user_id)
+//BlogModule::getDescriptionUser
+private function getDescriptionUser($user_id)
 {
 	$sql = 'SELECT content'
 		.' FROM daportal_content, daportal_blog_user'
@@ -93,8 +112,43 @@ function _blog_description_user($user_id)
 }
 
 
-//blog_insert
-function _blog_insert($post)
+//BlogModule::getTitle
+private function getTitle($id)
+{
+	$sql = 'SELECT blog.title AS title'
+		.' FROM daportal_content blog, daportal_blog_user'
+		.', daportal_content post, daportal_blog_content'
+		.' WHERE blog.content_id=daportal_blog_user.blog_user_id'
+		.' AND blog.user_id=post.user_id'
+		.' AND post.content_id=daportal_blog_content.blog_content_id'
+		." AND daportal_blog_content.blog_content_id='$id'";
+	if(($res = _sql_single($sql)) != FALSE)
+		return $res;
+	require_once('./system/content.php');
+	if(($content = _content_select($id, TRUE)) != FALSE)
+		return BLOG_BY.' '.$content['username'];
+	return BLOG;
+}
+
+
+//BlogModule::getTitleUser
+private function getTitleUser($user_id)
+{
+	$sql = 'SELECT title'
+		.' FROM daportal_content, daportal_blog_user'
+		.' WHERE daportal_content.content_id'
+		.'=daportal_blog_user.blog_user_id'
+		." AND daportal_content.user_id='$user_id'";
+	if(($res = _sql_single($sql)) != FALSE)
+		return $res;
+	require_once('./system/user.php');
+	return BLOG_BY.' '._user_name($user_id);
+}
+
+
+//useful
+//BlogModule::_insert
+private function _insert($post)
 {
 	global $user_id;
 
@@ -120,8 +174,8 @@ function _blog_insert($post)
 }
 
 
-//blog_list_blogs
-function _blog_list_blogs($args)
+//BlogModule::list_blogs
+private function listBlogs($args)
 {
 	print('<h1 class="title blog">'._html_safe(BLOG_LIST)."</h1>\n");
 	$sql = 'SELECT title AS name, daportal_user.user_id AS user_id'
@@ -153,43 +207,9 @@ function _blog_list_blogs($args)
 }
 
 
-//blog_title
-function _blog_title($id)
-{
-	$sql = 'SELECT blog.title AS title'
-		.' FROM daportal_content blog, daportal_blog_user'
-		.', daportal_content post, daportal_blog_content'
-		.' WHERE blog.content_id=daportal_blog_user.blog_user_id'
-		.' AND blog.user_id=post.user_id'
-		.' AND post.content_id=daportal_blog_content.blog_content_id'
-		." AND daportal_blog_content.blog_content_id='$id'";
-	if(($res = _sql_single($sql)) != FALSE)
-		return $res;
-	require_once('./system/content.php');
-	if(($content = _content_select($id, TRUE)) != FALSE)
-		return BLOG_BY.' '.$content['username'];
-	return BLOG;
-}
-
-
-//blog_title_user
-function _blog_title_user($user_id)
-{
-	$sql = 'SELECT title'
-		.' FROM daportal_content, daportal_blog_user'
-		.' WHERE daportal_content.content_id'
-		.'=daportal_blog_user.blog_user_id'
-		." AND daportal_content.user_id='$user_id'";
-	if(($res = _sql_single($sql)) != FALSE)
-		return $res;
-	require_once('./system/user.php');
-	return BLOG_BY.' '._user_name($user_id);
-}
-
-
 //public
-//blog_admin
-function blog_admin($args)
+//BlogModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -315,18 +335,18 @@ function blog_admin($args)
 }
 
 
-//blog_default
-function blog_default($args)
+//BlogModule::_default
+protected function _default($args)
 {
 	if(!isset($args['id']))
-		return blog_planet($args);
-	blog_display($args);
+		return $this->planet($args);
+	$this->display($args);
 }
 
 
-//blog_delete
+//BlogModule::delete
 //FIXME allow to delete one's own content
-function blog_delete($args)
+protected function delete($args)
 {
 	global $user_id;
 
@@ -339,9 +359,9 @@ function blog_delete($args)
 }
 
 
-//blog_disable
-//FIXME allow to delete one's own content
-function blog_disable($args)
+//BlogModule::disable
+//FIXME allow to disable one's own content
+protected function disable($args)
 {
 	global $user_id;
 
@@ -354,8 +374,8 @@ function blog_disable($args)
 }
 
 
-//blog_display
-function blog_display($args)
+//BlogModule::display
+protected function display($args)
 {
 	/* FIXME make a difference between blog descriptions and posts */
 	if(!isset($args['id']))
@@ -366,8 +386,8 @@ function blog_display($args)
 		_error(INVALID_ARGUMENT);
 		return FALSE;
 	}
-	$title = _blog_title($args['id']);
-	$description = _blog_description($args['id']);
+	$title = $this->getTitle($args['id']);
+	$description = $this->getDescription($args['id']);
 	$long = 1;
 	$post['date'] = _sql_date($post['timestamp']);
 	include('./modules/blog/post_display.tpl');
@@ -375,9 +395,9 @@ function blog_display($args)
 }
 
 
-//blog_enable
-//FIXME allow to delete one's own content
-function blog_enable($args)
+//BlogModule::enable
+//FIXME allow to enable one's own content
+protected function enable($args)
 {
 	global $user_id;
 
@@ -390,8 +410,8 @@ function blog_enable($args)
 }
 
 
-//blog_headline
-function blog_headline($args)
+//BlogModule::headline
+protected function headline($args)
 {
 	$page = 1;
 	$npp = 10;
@@ -421,8 +441,8 @@ function blog_headline($args)
 }
 
 
-//blog_insert
-function blog_insert($args)
+//BlogModule::insert
+protected function insert($args)
 {
 	global $error, $user_id, $user_name;
 
@@ -446,13 +466,13 @@ function blog_insert($args)
 }
 
 
-//blog_list
-function blog_list($args)
+//BlogModule::_list
+protected function _list($args)
 {
 	global $user_id;
 
 	if(!isset($args['user_id']) && !isset($args['user']))
-		return _blog_list_blogs($args);
+		return $this->listBlogs($args);
 	$title = BLOG_POSTS;
 	$and = '';
 	$myself = 0;
@@ -528,9 +548,9 @@ function blog_list($args)
 }
 
 
-//blog_planet
+//BlogModule::planet
 //FIXME code duplication with blog_list
-function blog_planet($args)
+protected function planet($args)
 {
 	$title = BLOG_PLANET;
 	$and = '';
@@ -541,8 +561,8 @@ function blog_planet($args)
 	if(isset($args['user_id']) && $args['user_id'] != FALSE
 			&& ($username = _user_name($args['user_id'])) != FALSE)
 	{
-		$title = _blog_title_user($args['user_id']);
-		$description = _blog_description_user($args['user_id']);
+		$title = $this->getTitleUser($args['user_id']);
+		$description = $this->getDescriptionUser($args['user_id']);
 		$and = " AND daportal_user.user_id='".$args['user_id']."'";
 		$paging = 'user_id='._html_safe($args['user_id']).'&';
 	}
@@ -585,8 +605,8 @@ function blog_planet($args)
 }
 
 
-//blog_rss
-function blog_rss($args)
+//BlogModule::rss
+protected function rss($args)
 {
 	global $title;
 
@@ -609,7 +629,7 @@ function blog_rss($args)
 				array('user' => $args['user']));
 		//FIXME get the description instead
 		$content = $title.' - '.BLOG_BY.' '.$args['user'];
-		$title = _blog_title_user($args['user_id']);
+		$title = $this->getTitleUser($args['user_id']);
 	}
 	else
 	{
@@ -647,8 +667,8 @@ function blog_rss($args)
 }
 
 
-//blog_system
-function blog_system($args)
+//BlogModule::system
+protected function system($args)
 {
 	global $html, $error;
 
@@ -664,15 +684,15 @@ function blog_system($args)
 		switch($args['action'])
 		{
 			case 'insert':
-				$error = _system_blog_insert($args);
+				$error = $this->_system_insert($args);
 				return;
 			case 'update':
-				$error = _system_blog_update($args);
+				$error = $this->_system_update($args);
 				return;
 		}
 }
 
-function _system_blog_insert($args)
+private function _system_insert($args)
 {
 	global $user_id, $user_name;
 
@@ -683,13 +703,13 @@ function _system_blog_insert($args)
 	$post = array('user_id' => $user_id, 'username' => $user_name,
 			'title' => $args['title'],
 			'content' => $args['content']);
-	if(($post['id'] = _blog_insert($post)) == FALSE)
+	if(($post['id'] = $this->_insert($post)) == FALSE)
 		return 'Could not insert blog post';
 	header('Location: '._module_link('blog', FALSE, $post['id']));
 	exit(0);
 }
 
-function _system_blog_update($args)
+private function _system_update($args)
 {
 	if(!isset($args['id']) || !isset($args['title'])
 			|| !isset($args['content'])
@@ -706,8 +726,8 @@ function _system_blog_update($args)
 }
 
 
-//blog_update
-function blog_update($args)
+//BlogModule::update
+protected function update($args)
 {
 	global $error, $user_id;
 
@@ -740,6 +760,7 @@ function blog_update($args)
 		$post['title'] = stripslashes($args['title']);
 	}
 	include('./modules/blog/post_update.tpl');
+}
 }
 
 ?>

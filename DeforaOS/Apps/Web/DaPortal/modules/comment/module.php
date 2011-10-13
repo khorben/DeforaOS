@@ -60,9 +60,13 @@ class CommentModule extends Module
 	//CommentModule::call
 	public function call(&$engine, $request)
 	{
-		return FALSE;
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			default:
+				return $this->_default($args);
+		}
 	}
-}
 
 
 //private
@@ -272,13 +276,13 @@ function comment_childs($args)
 }
 
 
-//comment_default
-function comment_default($args)
+//CommentModule::_default
+protected function _default($args)
 {
 	if(isset($args['id']))
 	{
-		_comment_display(array('id' => $args['id']));
-		comment_childs(array('id' => $args['id']));
+		$this->_display(array('id' => $args['id']));
+		$this->childs(array('id' => $args['id']));
 	}
 	_error(INVALID_ARGUMENT);
 }
@@ -386,8 +390,8 @@ function comment_reply($args)
 }
 
 
-//comment_system
-function comment_system($args)
+//Comment::system
+protected function system($args)
 {
 	global $user_id, $error;
 
@@ -419,6 +423,7 @@ function _system_comment_config_update($args)
 	_config_update('comment', $args);
 	header('Location: '._module_link('comment', 'admin'));
 	exit(0);
+}
 }
 
 ?>
