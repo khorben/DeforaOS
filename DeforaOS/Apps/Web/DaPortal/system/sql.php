@@ -22,6 +22,12 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
+function _sql_array($query)
+{
+	return _sql_query($query);
+}
+
+
 function _sql_date($timestamp = FALSE)
 {
 	if($timestamp == FALSE)
@@ -30,27 +36,26 @@ function _sql_date($timestamp = FALSE)
 }
 
 
+function _sql_offset($offset, $limit)
+{
+	return 'LIMIT '.$limit.' OFFSET '.$offset;
+}
+
+
 function _sql_query($query)
 {
-	return _query($query);
+	global $engine, $db;
+
+	$query = stripslashes(str_replace("\'", "''", $query));
+	return $db->query($engine, $query);
 }
 
 
-//main
-$connection = FALSE;
-switch($dbtype)
+function _sql_single($query)
 {
-	case 'mysql':
-		require('./system/sql.mysql.php');
-		break;
-	case 'pgsql':
-		require('./system/sql.pgsql.php');
-		break;
-	case 'sqlite':
-		require('./system/sql.sqlite.php');
-		break;
+	if(($res = _sql_query($query)) === FALSE || count($res) != 1)
+		return FALSE;
+	return $res[0][0];
 }
-if($connection == FALSE)
-	exit(_error('Unable to connect to SQL server'));
 
 ?>

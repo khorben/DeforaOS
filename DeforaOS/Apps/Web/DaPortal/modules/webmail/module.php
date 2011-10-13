@@ -45,6 +45,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//WebmailModule
+class WebmailModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//WebmailModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 
 //private
 function _webmail_connect($folder = 'INBOX')

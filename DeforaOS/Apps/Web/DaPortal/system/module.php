@@ -17,49 +17,36 @@
 
 
 
-function _module($module = '', $action = '', $args = FALSE)
+function _module($module = FALSE, $action = FALSE, $args = FALSE)
 {
-	global $module_id, $module_name;
+	global $engine, $module_id, $module_name;
 
-	if(strlen($module))
+	if($module == '')
+		$module = FALSE;
+	if($args == FALSE)
+		$args = array();
+	$id = isset($args['id']) ? $args['id'] : FALSE;
+	$title = isset($args['title']) ? $args['title'] : FALSE;
+	if($module === FALSE && $action !== FALSE)
 	{
-		if(!is_array($args))
-			$args = array();
+		$request = $engine->getRequest();
+		$module = $request->getModule();
+		$args = $request->getParameters();
 	}
-	else if($_SERVER['REQUEST_METHOD'] == 'GET')
-	{
-		$module = isset($_GET['module']) ? $_GET['module'] : '';
-		if(!strlen($action) || $args == FALSE)
-			$args =& $_GET;
-		$action = strlen($action) ? $action : (isset($_GET['action'])
-				? $_GET['action'] : '');
-	}
-	else if($_SERVER['REQUEST_METHOD'] == 'POST')
-	{
-		$module = isset($_POST['module']) ? $_POST['module'] : '';
-		if(!strlen($action) || $args == FALSE)
-			$args =& $_POST;
-		$action = strlen($action) ? $action : (isset($_POST['action'])
-				? $_POST['action'] : '');
-	}
+	$args['module'] = $module;
+	$args['action'] = $action;
+	if($id !== FALSE)
+		$args['id'] = $id;
+	if($title !== FALSE)
+		$args['title'] = $title;
+	if($module !== FALSE)
+		$request = new Request($engine, $module, $action, $id, $title,
+				$args);
 	else
-		return _error('Invalid module request', 0);
-	if(!strlen($action) || preg_match('/^[a-z0-9_]{1,20}$/', $action) != 1)
-		$action = 'default';
-	if(preg_match('/^[a-z]{1,10}$/', $module) != 1
-			|| ($id = _module_id($module)) == 0)
-		return _error('Invalid module', 0);
-	$module_id = $id;
-	$module_name = $module;
-	if(!include_once('./modules/'.$module_name.'/module.php'))
-		return _error('Could not include module "'.$module_name.'"', 0);
-	$function = $module_name.'_'.$action;
-	if(!function_exists($function))
-		return _warning('Unknown action "'.$action.'" for module "'
-				.$module_name.'"');
-	_info('Module "'.$module_name.'", action "'.$action.'"');
-	return call_user_func_array($function, array($args));
-	//FIXME restore old module_id?
+		$request = $engine->getRequest();
+	$module_name = $request->getModule();
+	$module_id = _module_id($module_name);
+	return $engine->process($request);
 }
 
 
@@ -96,14 +83,11 @@ function _desktop_include($name)
 
 function _module_id($name)
 {
-	static $cache = array();
-	global $user_id;
+	global $engine;
 
-	if(isset($cache[$name]))
-		return $cache[$name];
-	$cache[$name] = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='$name' AND enabled='1'");
-	return $cache[$name];
+	if(($module = Module::load($engine, $name)) === FALSE)
+		return FALSE;
+	return $module->getId($engine);
 }
 
 

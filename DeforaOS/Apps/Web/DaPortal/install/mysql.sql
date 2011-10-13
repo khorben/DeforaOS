@@ -17,13 +17,15 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', 1);
 
 
 CREATE TABLE daportal_config (
-	module_id int(11) NOT NULL auto_increment,
+	config_id int(11) NOT NULL auto_increment,
+	module_id int(11) NOT NULL,
 	title varchar(255),
 	type enum ('bool', 'int', 'string') NOT NULL DEFAULT 'string',
 	name varchar(255) NOT NULL,
 	value_bool boolean NOT NULL,
 	value_int int(11) NOT NULL,
 	value_string varchar(255) NOT NULL,
+	PRIMARY KEY (config_id),
 	KEY module_id (module_id)
 ) TYPE=InnoDB;
 ALTER TABLE daportal_config

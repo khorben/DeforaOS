@@ -30,7 +30,38 @@ $text['NEW_LINK'] = 'New link';
 _lang($text);
 
 
-function top_admin($args)
+//TopModule
+class TopModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//TopModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'delete':
+			case 'insert':
+			case 'modify':
+			case 'move':
+			case 'update':
+				return $this->$action($args);
+			case 'new':
+				return $this->_new($args);
+			case 'system':
+				return FALSE;
+			default:
+				$this->_default($args);
+		}
+		return FALSE;
+	}
+
+
+//TopModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -86,7 +117,8 @@ function top_admin($args)
 }
 
 
-function top_default($args)
+//TopModule::_default
+protected function _default($args)
 {
 	$links = _sql_array('SELECT name, link FROM daportal_top'
 			.' ORDER BY top_id ASC');
@@ -101,7 +133,8 @@ function top_default($args)
 }
 
 
-function top_delete($args)
+//TopModule::delete
+protected function delete($args)
 {
 	global $user_id;
 
@@ -112,7 +145,8 @@ function top_delete($args)
 }
 
 
-function top_insert($args)
+//TopModule::insert
+protected function insert($args)
 {
 	global $user_id;
 
@@ -122,11 +156,12 @@ function top_insert($args)
 	if(_sql_query('INSERT INTO daportal_top (name, link) VALUES ('
 			."'".$args['name']."', '".$args['link']."')") == FALSE)
 		return _error('Unable to insert link');
-	top_admin(array());
+	$this->admin(array());
 }
 
 
-function top_modify($args)
+//TopModule::modify
+protected function modify($args)
 {
 	global $user_id;
 
@@ -144,7 +179,8 @@ function top_modify($args)
 }
 
 
-function top_move($args)
+//TopModule::move
+protected function move($args)
 {
 	global $user_id;
 
@@ -168,11 +204,12 @@ function top_move($args)
 					.", link='".$to['link']."'"
 					." WHERE top_id='".$args['id']."'"))
 		_error('Error while moving links');
-	top_admin(array());
+	$this->admin(array());
 }
 
 
-function top_new($args)
+//TopModule::_new
+protected function _new($args)
 {
 	global $user_id;
 
@@ -185,7 +222,8 @@ function top_new($args)
 }
 
 
-function top_update($args)
+//TopModule::update
+protected function update($args)
 {
 	global $user_id;
 
@@ -196,7 +234,8 @@ function top_update($args)
 			.", link='".$args['link']."'"
 			." WHERE top_id='".$args['id']."'"))
 		return _error('Unable to update link');
-	top_admin(array());
+	$this->admin(array());
+}
 }
 
 ?>

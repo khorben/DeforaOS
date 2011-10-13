@@ -57,6 +57,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//SearchModule
+class SearchModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//SearchModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 //search_do
 function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,

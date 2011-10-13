@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 function _config_get($module, $name)
 {
-	if(!($module_id = _module_id($module)))
+	if(($module_id = _module_id($module)) === FALSE)
 		return FALSE;
 	$res = _sql_array('SELECT type, value_bool, value_int, value_string'
 			.' FROM daportal_config'

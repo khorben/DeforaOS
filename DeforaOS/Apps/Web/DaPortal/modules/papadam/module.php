@@ -74,6 +74,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//PapadamModule
+class PapadamModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//PapadamModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 //get a CA
 function _ca_get($id)

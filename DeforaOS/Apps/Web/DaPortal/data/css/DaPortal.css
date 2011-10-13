@@ -1,0 +1,165 @@
+/* $Id$ */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Web DaPortal */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+/* global */
+div.buttonbox > button, div.buttonbox > a > button {
+	margin:				2px;
+	padding:			2px;
+	width:				8em;
+}
+
+div.frame > span.title {
+	float:				left;
+}
+
+div.frame > div {
+	clear:				left;
+}
+
+div.frame:after {
+	clear:				left;
+	content:			"";
+	display:			block;
+}
+
+div.hbox {
+	clear:				both;
+}
+
+div.hbox:after {
+	clear:				left;
+	content:			"";
+	display:			block;
+}
+
+div.hbox > div.pack {
+	float:				left;
+	padding-left:			2px;
+	padding-right:			2px;
+}
+
+div.hbox > div.pack:first-child {
+	padding-left:			0;
+}
+
+div.link, a {
+	text-decoration:		none;
+}
+
+div.menubar {
+	padding:			2px;
+}
+
+div.menubar:after {
+	clear:				both;
+}
+
+div.menubar div.menuitem {
+	float:				left;
+	text-align:			center;
+	width:				10ex;
+}
+
+div.menubar > div.menuitem > div.link, div.menubar > div.menuitem > a {
+	display:			block;
+}
+
+div.messagebox {
+	padding:			4px;
+}
+
+.title {
+	font-weight:			bold;
+}
+
+form.treeview:after {
+	clear:				left;
+	content:			"";
+	display:			block;
+}
+
+form.treeview > div.header {
+	display:			none;
+	font-weight:			bold;
+	text-align:			left;
+}
+
+form.treeview > div.row span.detail {
+	display:			none;
+}
+
+form.treeview div.row > div.row {
+	padding:			2px;
+	padding-left:			16px;
+}
+
+form.treeview.details {
+	display:			table;
+}
+
+form.treeview.details > div.row, form.treeview.details > div.header {
+	display:			table-row;
+}
+
+form.treeview.details > div.header > span.detail,
+form.treeview.details > div.row > span.detail {
+	display:			table-cell;
+	padding-right:			2px;
+}
+
+form.treeview.icons > div.row {
+	float:				left;
+	padding:			2px;
+	text-align:			center;
+	width:				120px;
+}
+
+form.treeview.icons > div.row img {
+	display:			none;
+}
+
+form.treeview.icons > div.row img.icon {
+	display:			block;
+	height:				48px;
+	margin-left:			auto;
+	margin-right:			auto;
+	width:				48px;
+}
+
+form.treeview.preview > div.rom span.detail.preview {
+	display:			block;
+}
+
+div.vbox {
+	clear:				both;
+}
+
+div.vbox:after {
+	clear:				left;
+	content:			"";
+	display:			block;
+}
+
+div.vbox > div.pack {
+	padding-bottom:			2px;
+	padding-top:			2px;
+	clear:				left;
+}
+
+div.vbox > div.pack:first-child {
+	padding-top:			0;
+}

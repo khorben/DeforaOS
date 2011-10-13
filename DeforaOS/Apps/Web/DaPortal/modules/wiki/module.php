@@ -74,27 +74,62 @@ if($lang == 'fr')
 _lang($text);
 
 
-//private
-//functions
-function _wiki_exec($cmd)
+//WikiModule
+class WikiModule extends Module
 {
-	$output = array();
-	$ret = 1;
-	exec($cmd, $output, $ret);
-	_info("Command \"$cmd\" returned $ret");
-	$i = 1;
-	foreach($output as $o)
-		_info($i++.": $o");
-	return $ret == 0 ? TRUE : FALSE;
-}
+	//public
+	//methods
+	//useful
+	//WikiModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'delete':
+			case 'disable':
+			case 'display':
+			case 'enable':
+			case 'list':
+			case 'modify':
+			case 'recent':
+			case 'system':
+			case 'update':
+				return $this->$action($args);
+			case 'config_update':
+				return $this->configUpdate($args);
+			case 'new':
+				return $this->_new($args);
+			default:
+				return $this->_default($args);
+		}
+		return FALSE;
+	}
 
-function _wiki_get($id, $lock = FALSE, $revision = FALSE)
+
+	//WikiModule::exec
+	private function exec($cmd)
+	{
+		$output = array();
+		$ret = 1;
+		exec($cmd, $output, $ret);
+		_info("Command \"$cmd\" returned $ret");
+		$i = 1;
+		foreach($output as $o)
+			_info($i++.": $o");
+		return $ret == 0 ? TRUE : FALSE;
+	}
+
+
+//WikiModule::get
+private function get($id, $lock = FALSE, $revision = FALSE)
 {
 	require_once('./system/content.php');
 	$wiki = _content_select($id);
 	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
 		return _error(INVALID_ARGUMENT);
-	if(($root = _wiki_root()) == FALSE
+	if(($root = $this->getRoot()) == FALSE
 			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
 		return _error('Internal server error');
 	$filename = $root.'/'.$wiki['title'];
@@ -102,7 +137,7 @@ function _wiki_get($id, $lock = FALSE, $revision = FALSE)
 	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
 		$cmd.=' -r'.escapeshellarg($revision);
-	if(_wiki_exec($cmd.' '.escapeshellarg($filename)) == FALSE)
+	if($this->exec($cmd.' '.escapeshellarg($filename)) == FALSE)
 		return _error('Could not checkout page');
 	$wiki['content'] = file_get_contents($filename);
 	@unlink($filename); //we can ignore errors
@@ -114,31 +149,35 @@ function _wiki_get($id, $lock = FALSE, $revision = FALSE)
 	return $wiki;
 }
 
-function _wiki_root()
-{
-	if(($root = _config_get('wiki', 'root')) == FALSE)
-		return FALSE;
-	if(is_link($root.'/RCS'))
-		return FALSE;
-	if(!is_dir($root.'/RCS') && mkdir($root.'/RCS') != TRUE)
-		return FALSE;
-	return $root;
-}
 
-function _wiki_validate_title($title)
-{
-	if(strlen($title) == 0 || $title == '.' || $title == '..')
-		return FALSE;
-	if(strpos('/', $title) !== FALSE)
-		return FALSE;
-	if($title == 'RCS')
-		return FALSE;
-	return TRUE;
-}
+	//WikiModule::getRoot
+	private function getRoot()
+	{
+		if(($root = _config_get('wiki', 'root')) == FALSE)
+			return FALSE;
+		if(is_link($root.'/RCS'))
+			return FALSE;
+		if(!is_dir($root.'/RCS') && mkdir($root.'/RCS') != TRUE)
+			return FALSE;
+		return $root;
+	}
 
 
-//public
-function wiki_admin($args)
+	//WikiModule::validateTitle
+	private function validateTitle($title)
+	{
+		if(strlen($title) == 0 || $title == '.' || $title == '..')
+			return FALSE;
+		if(strpos('/', $title) !== FALSE)
+			return FALSE;
+		if($title == 'RCS')
+			return FALSE;
+		return TRUE;
+	}
+
+
+//WikiModule::admin
+protected function admin($args)
 {
 	global $user_id, $module_id;
 
@@ -202,31 +241,33 @@ function wiki_admin($args)
 }
 
 
-function wiki_config_update($args)
-{
-	global $error;
+	//WikiModule::configUpdate
+	protected function configUpdate($args)
+	{
+		global $error;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	return wiki_admin(array());
-}
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->admin(array());
+	}
 
 
-function wiki_default($args)
+//WikiModule::_default
+private function _default($args)
 {
 	//FIXME factorize code
 
 	if(isset($args['id']))
-		return wiki_display($args);
+		return $this->display($args);
 	if(isset($args['user_id']))
-		return wiki_list($args);
+		return $this->_list($args);
 	if(!isset($args['title']) || strlen($args['title']) == 0)
 	{
 		print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
 		include('./modules/wiki/default.tpl');
 		print('<h2 class="title wiki">'._html_safe(RECENT_CHANGES)
 				."</h2>\n");
-		return wiki_recent($args);
+		return $this->recent($args);
 	}
 	$title = stripslashes($args['title']);
 	$sql = 'SELECT content_id AS id, name AS module, title, content'
@@ -250,7 +291,7 @@ function wiki_default($args)
 		return;
 	}
 	if(count($res) == 1)
-		return wiki_display(array('id' => $res[0]['id']));
+		return $this->display(array('id' => $res[0]['id']));
 	print('<h1 class="title wiki">'._html_safe(WIKI_SEARCH)."</h1>\n");
 	include('./modules/wiki/default.tpl');
 	print('<p>More than one page matched:</p>'."\n");
@@ -266,8 +307,8 @@ function wiki_default($args)
 }
 
 
-//wiki_delete
-function wiki_delete($args)
+//WikiModule::delete
+protected function delete($args)
 {
 	global $user_id;
 
@@ -282,9 +323,9 @@ function wiki_delete($args)
 	$res = _content_select($args['id']);
 	if(!is_array($res))
 		return _error(INVALID_ARGUMENT);
-	if(($root = _wiki_root()) == FALSE)
+	if(($root = $this->getRoot()) == FALSE)
 		return 'Internal server error';
-	if(_wiki_validate_title($res['title']) != TRUE)
+	if($this->validateTitle($res['title']) != TRUE)
 		return _error(INVALID_ARGUMENT);
 	@unlink($root.'/'.$res['title']); /* we can ignore this error */
 	if(unlink($root.'/RCS/'.$res['title'].',v') != TRUE)
@@ -294,30 +335,31 @@ function wiki_delete($args)
 }
 
 
-//wiki_disable
-function wiki_disable($args)
+	//WikiModule::disable
+	protected function disable($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		require_once('./system/content.php');
+		if(!_content_disable($args['id']))
+			return _error('Could not disable wiki page');
+	}
+
+
+//WikiModule::display
+protected function display($args)
 {
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	require_once('./system/content.php');
-	if(!_content_disable($args['id']))
-		return _error('Could not disable wiki page');
-}
-
-
-function wiki_display($args)
-{
-	$wiki = _wiki_get($args['id'], FALSE, isset($args['revision'])
+	$wiki = $this->get($args['id'], FALSE, isset($args['revision'])
 			? $args['revision'] : FALSE);
 	if(!is_array($wiki))
 		return;
 	$title = WIKI.': '.$wiki['title'];
 	include('./modules/wiki/display.tpl');
 	print('<h2 class="title users">'._html_safe(REVISIONS)."</h2>\n");
-	exec('rlog '.escapeshellarg(_wiki_root().'/'.$wiki['title']), $rcs);
+	exec('rlog '.escapeshellarg($this->getRoot().'/'.$wiki['title']), $rcs);
 	for($i = 0, $cnt = count($rcs); $i < $cnt;)
 		if($rcs[$i++] == '----------------------------')
 			break;
@@ -365,21 +407,22 @@ function wiki_display($args)
 }
 
 
-//wiki_enable
-function wiki_enable($args)
-{
-	global $user_id;
+	//WikiModule::enable
+	protected function enable($args)
+	{
+		global $user_id;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	require_once('./system/content.php');
-	if(!_content_enable($args['id']))
-		return _error('Could not enable wiki page');
-}
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		require_once('./system/content.php');
+		if(!_content_enable($args['id']))
+			return _error('Could not enable wiki page');
+	}
 
 
-function wiki_insert($args)
+//WikiModule::insert
+protected function insert($args)
 {
 	global $error, $user_id;
 
@@ -412,7 +455,8 @@ function wiki_insert($args)
 }
 
 
-function wiki_list($args)
+//WikiModule::_list
+protected function _list($args)
 {
 	global $module_id;
 
@@ -460,32 +504,35 @@ function wiki_list($args)
 }
 
 
-function wiki_modify($args)
-{
-	global $user_id;
+	//WikiModule::modify
+	protected function modify($args)
+	{
+		global $user_id;
 
-	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
-		return _error(PERMISSION_DENIED);
-	$wiki = _wiki_get($args['id']);
-	if(!is_array($wiki))
-		return;
-	$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
-	include('./modules/wiki/update.tpl');
-}
-
-
-function wiki_new($args)
-{
-	global $user_id;
-
-	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
-		return _error(PERMISSION_DENIED);
-	$title = NEW_WIKI_PAGE;
-	include('./modules/wiki/update.tpl');
-}
+		if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
+			return _error(PERMISSION_DENIED);
+		$wiki = $this->get($args['id']);
+		if(!is_array($wiki))
+			return;
+		$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
+		include('./modules/wiki/update.tpl');
+	}
 
 
-function wiki_recent($args)
+	//WikiModule::_new
+	protected function _new($args)
+	{
+		global $user_id;
+
+		if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
+			return _error(PERMISSION_DENIED);
+		$title = NEW_WIKI_PAGE;
+		include('./modules/wiki/update.tpl');
+	}
+
+
+//WikiModule::recent
+protected function recent($args)
 {
 	$npp = 6;
 	$classes = array('date' => DATE, 'username' => AUTHOR,
@@ -533,111 +580,118 @@ function wiki_recent($args)
 }
 
 
-function wiki_system($args)
-{
-	global $title, $error;
-
-	$title.=' - '.WIKI;
-	if($_SERVER['REQUEST_METHOD'] != 'POST')
-		return;
-	switch($args['action'])
+	//WikiModule::system
+	protected function system($args)
 	{
-		case 'config_update':
-			$error = _wiki_system_config_update($args);
-			break;
-		case 'insert':
-			$error = _wiki_system_insert($args);
-			break;
-		case 'update':
-			$error = _wiki_system_update($args);
-			break;
+		global $title, $error;
+
+		$title.=' - '.WIKI;
+		if($_SERVER['REQUEST_METHOD'] != 'POST')
+			return;
+		switch($args['action'])
+		{
+			case 'config_update':
+				$error = $this->_system_config_update($args);
+				break;
+			case 'insert':
+				$error = $this->_system_insert($args);
+				break;
+			case 'update':
+				$error = $this->_system_update($args);
+				break;
+		}
 	}
-}
 
-function _wiki_system_config_update($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return PERMISSION_DENIED;
-	$args['wiki_anonymous'] = isset($args['wiki_anonymous']) ? TRUE : FALSE;
-	$args['wiki_tags'] = isset($args['wiki_tags']) ? TRUE : FALSE;
-	_config_update('wiki', $args);
-	header('Location: '._module_link('wiki', 'admin'));
-	exit(0);
-}
-
-function _wiki_system_insert($args)
-{
-	global $user_id, $user_name;
-
-	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
-		return PERMISSION_DENIED;
-	if(isset($args['preview']) || !isset($args['send']))
-		return;
-	if(($root = _wiki_root()) == FALSE)
-		return 'Internal server error';
-	if(!isset($args['title']))
-		return INVALID_ARGUMENT;
-	$title = stripslashes($args['title']);
-	if(_wiki_validate_title($title) != TRUE)
-		return INVALID_ARGUMENT;
-	$content = stripslashes($args['content']);
-	require_once('./system/xml.php');
-	if(_xml_validate($content, $message) == FALSE)
-		return DOCUMENT_NOT_VALID.": $message";
-	$sql = 'SELECT content_id FROM daportal_content, daportal_module'
-		.' WHERE daportal_content.module_id=daportal_module.module_id'
-		." AND daportal_module.name='wiki'"
-		." AND title='".$args['title']."'";
-	if(($id = _sql_single($sql)) != FALSE)
-		return 'Title already exists';
-	require_once('./system/xml.php');
-	if(($text = _xml_text($content, $message)) === FALSE)
+	private function _system_config_update($args)
 	{
-		_error($message, 0);
-		$text = 'HTML content';
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return PERMISSION_DENIED;
+		$args['wiki_anonymous'] = isset($args['wiki_anonymous'])
+			? TRUE : FALSE;
+		$args['wiki_tags'] = isset($args['wiki_tags']) ? TRUE : FALSE;
+		_config_update('wiki', $args);
+		header('Location: '._module_link('wiki', 'admin'));
+		exit(0);
 	}
-	$text = addslashes($text);
-	require_once('./system/content.php');
-	if(($id = _content_insert($args['title'], $text, 1)) == FALSE)
-		return 'Could not insert content';
-	$filename = $root.'/'.$title;
-	if(file_exists($filename) || file_exists($root.'/RCS/'.$title.',v'))
+
+	private function _system_insert($args)
 	{
-		_content_delete($id);
-		return 'Page already exists';
-	}
-	if(($fp = fopen($filename, 'w')) == FALSE)
-	{
-		_content_delete($id);
-		return 'Could not write to page';
-	}
-	if(fwrite($fp, $content) === FALSE)
-	{
-		_content_delete($id);
+		global $user_id, $user_name;
+
+		if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
+			return PERMISSION_DENIED;
+		if(isset($args['preview']) || !isset($args['send']))
+			return;
+		if(($root = $this->getRoot()) == FALSE)
+			return 'Internal server error';
+		if(!isset($args['title']))
+			return INVALID_ARGUMENT;
+		$title = stripslashes($args['title']);
+		if($this->validateTitle($title) != TRUE)
+			return INVALID_ARGUMENT;
+		$content = stripslashes($args['content']);
+		require_once('./system/xml.php');
+		if(_xml_validate($content, $message) == FALSE)
+			return DOCUMENT_NOT_VALID.": $message";
+		$sql = 'SELECT content_id FROM daportal_content'
+			.', daportal_module'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_module.name='wiki'"
+			." AND title='".$args['title']."'";
+		if(($id = _sql_single($sql)) != FALSE)
+			return 'Title already exists';
+		require_once('./system/xml.php');
+		if(($text = _xml_text($content, $message)) === FALSE)
+		{
+			_error($message, 0);
+			$text = 'HTML content';
+		}
+		$text = addslashes($text);
+		require_once('./system/content.php');
+		if(($id = _content_insert($args['title'], $text, 1)) == FALSE)
+			return 'Could not insert content';
+		$filename = $root.'/'.$title;
+		if(file_exists($filename)
+				|| file_exists($root.'/RCS/'.$title.',v'))
+		{
+			_content_delete($id);
+			return 'Page already exists';
+		}
+		if(($fp = fopen($filename, 'w')) == FALSE)
+		{
+			_content_delete($id);
+			return 'Could not write to page';
+		}
+		if(fwrite($fp, $content) === FALSE)
+		{
+			_content_delete($id);
+			fclose($fp);
+			unlink($filename);
+			return 'An error occured while writing';
+		}
 		fclose($fp);
-		unlink($filename);
-		return 'An error occured while writing';
+		if(isset($args['message']) && strlen($args['message']))
+			$message = ' -m'.escapeshellarg(stripslashes(
+						$args['message']));
+		else
+			$message = '';
+		if($this->exec('ci -u'.$message.' -w'.escapeshellarg($user_name)
+					.' '.escapeshellarg($filename))
+				== FALSE)
+		{
+			_content_delete($id);
+			unlink($filename);
+			return 'An error occured while checking in';
+		}
+		header('Location: '._module_link('wiki', FALSE, $id, $title));
+		exit(0);
 	}
-	fclose($fp);
-	if(isset($args['message']) && strlen($args['message']))
-		$message = ' -m'.escapeshellarg(stripslashes($args['message']));
-	else
-		$message = '';
-	if(_wiki_exec('ci -u'.$message.' -w'.escapeshellarg($user_name).' '
-				.escapeshellarg($filename)) == FALSE)
-	{
-		_content_delete($id);
-		unlink($filename);
-		return 'An error occured while checking in';
-	}
-	header('Location: '._module_link('wiki', FALSE, $id, $title));
-	exit(0);
-}
 
-function _wiki_system_update($args)
+private function _system_update($args)
 {
 	global $user_id, $user_name, $wiki_content;
 
@@ -645,10 +699,10 @@ function _wiki_system_update($args)
 		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
-	if(($root = _wiki_root()) == FALSE)
+	if(($root = $this->getRoot()) == FALSE)
 		return 'Internal server error';
-	$wiki = _wiki_get($args['id'], TRUE);
-	if(!is_array($wiki) || _wiki_validate_title($wiki['title']) != TRUE)
+	$wiki = $this->get($args['id'], TRUE);
+	if(!is_array($wiki) || $this->validateTitle($wiki['title']) != TRUE)
 		return INVALID_ARGUMENT;
 	$id = $wiki['id'];
 	$title = $wiki['title'];
@@ -673,7 +727,7 @@ function _wiki_system_update($args)
 		$message = ' -m'.escapeshellarg(stripslashes($args['message']));
 	else
 		$message = '';
-	if(_wiki_exec('ci -u'.$message.' -w'.escapeshellarg($user_name)
+	if($this->exec('ci -u'.$message.' -w'.escapeshellarg($user_name)
 				.' '.escapeshellarg($filename)) == FALSE)
 	{
 		unlink($filename);
@@ -695,29 +749,30 @@ function _wiki_system_update($args)
 }
 
 
-function wiki_update($args)
-{
-	global $error;
-
-	if(isset($error) && strlen($error))
-		return _error($error);
-	$wiki = _wiki_get($args['id']);
-	if(!is_array($wiki))
-		return _error(INVALID_ARGUMENT);
-	$wiki['content'] = stripslashes($args['content']);
-	require_once('./system/xml.php');
-	if(!_xml_validate($wiki['content'], $message))
-		return _error(DOCUMENT_NOT_VALID.": $message");
-	$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
-	if(isset($args['preview']))
+	//WikiModule::update
+	protected function update($args)
 	{
-		include('./modules/wiki/display.tpl');
-	}
-	$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
-	$message = isset($args['message']) ? stripslashes($args['message'])
-		: '';
-	include('./modules/wiki/update.tpl');
-}
+		global $error;
 
+		if(isset($error) && strlen($error))
+			return _error($error);
+		$wiki = $this->get($args['id']);
+		if(!is_array($wiki))
+			return _error(INVALID_ARGUMENT);
+		$wiki['content'] = stripslashes($args['content']);
+		require_once('./system/xml.php');
+		if(!_xml_validate($wiki['content'], $message))
+			return _error(DOCUMENT_NOT_VALID.": $message");
+		$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
+		if(isset($args['preview']))
+		{
+			include('./modules/wiki/display.tpl');
+		}
+		$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
+		$message = isset($args['message'])
+			? stripslashes($args['message']) : '';
+		include('./modules/wiki/update.tpl');
+	}
+}
 
 ?>

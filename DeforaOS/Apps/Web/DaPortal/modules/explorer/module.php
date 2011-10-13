@@ -41,7 +41,29 @@ else if($lang == 'fr')
 _lang($text);
 
 
-function _explorer(&$args)
+//ExplorerModule
+class ExplorerModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//ExplorerModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch($request->getAction())
+		{
+			case 'browse':
+				return $this->browse($args);
+			case 'browse_trusted':
+				return $this->browseTrusted($args);
+		}
+		return FALSE;
+	}
+
+
+//ExplorerModule::explorer
+private function explorer(&$args)
 {
 	static $explorer_id = 0;
 
@@ -64,14 +86,14 @@ function _explorer(&$args)
 	foreach($args['entries'] as $entry)
 	{
 		$i++;
-		$link = _explorer_link($entry);
+		$link = $this->explorer_link($entry);
 		$link_end = strlen($link) ? '</a>' : '';
 		include('./modules/explorer/entry.tpl');
 	}
 	include('./modules/explorer/bottom.tpl');
 }
 
-function _explorer_link(&$entry)
+private function explorer_link(&$entry)
 {
 	if(isset($entry['link']))
 	{
@@ -96,7 +118,8 @@ function _explorer_link(&$entry)
 	return '';
 }
 
-function _explorer_sort($module, $action, $args, $class, $sort, $name)
+//ExplorerModule::sort
+private function sort($module, $action, $args, $class, $sort, $name)
 {
 	if($class == $sort)
 		return print(' sort">'._html_safe($name));
@@ -106,7 +129,8 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 }
 
 
-function explorer_apply($args)
+//ExplorerModule::apply
+private function apply($args)
 {
 	global $error;
 
@@ -120,7 +144,8 @@ function explorer_apply($args)
 }
 
 
-function explorer_browse($args)
+//ExplorerModule::browse
+protected function browse($args)
 {
 	for($i = 0, $cnt = count($args['entries']); $i < $cnt; $i++)
 	{
@@ -133,17 +158,19 @@ function explorer_browse($args)
 			$args['entries'][$i][$c] = _html_safe(
 					$args['entries'][$i][$c]);
 	}
-	return _explorer($args);
+	return $this->explorer($args);
 }
 
 
-function explorer_browse_trusted($args)
+//ExplorerModule::browseTrusted
+protected function browseTrusted($args)
 {
-	return _explorer($args);
+	return $this->explorer($args);
 }
 
 
-function explorer_system($args)
+//ExplorerModule::system
+protected function system($args)
 {
 	global $error;
 
@@ -153,12 +180,12 @@ function explorer_system($args)
 	switch($args['action'])
 	{
 		case 'apply':
-			$error = _system_apply($args);
+			$error = $this->_system_apply($args);
 			break;
 	}
 }
 
-function _system_apply($args)
+private function _system_apply($args)
 {
 	if(!isset($args['link_module']) || !isset($args['link_action']))
 		return 'Need a module and action to link to';
@@ -195,6 +222,7 @@ function _system_apply($args)
 			? $args['link_id'] : FALSE);
 	header('Location: '.$link);
 	exit(0);
+}
 }
 
 ?>

@@ -72,6 +72,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//PkiModule
+class PkiModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//PkiModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 //pki_ca_get
 //get a CA

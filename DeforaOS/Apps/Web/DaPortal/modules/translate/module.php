@@ -42,8 +42,31 @@ if($lang == 'fr')
 _lang($text);
 
 
-//translate_admin
-function translate_admin($args)
+//TranslateModule
+class TranslateModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//TranslateModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'update':
+				return $this->$action($args);
+			default:
+				//FIXME implement
+				return $this->_default($args);
+		}
+		return FALSE;
+	}
+
+
+//TranslateModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -107,8 +130,8 @@ function translate_admin($args)
 }
 
 
-//translate_update
-function translate_update($args)
+//TranslateModule::update
+protected function update($args)
 {
 	global $error, $user_id;
 
@@ -138,8 +161,8 @@ function translate_update($args)
 }
 
 
-//translate_system
-function translate_system($args)
+//TranslateModule::system
+protected function system($args)
 {
 	global $title, $error;
 
@@ -147,10 +170,10 @@ function translate_system($args)
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
 	if($args['action'] == 'update')
-		$error = _translate_system_update($args);
+		$error = $this->_system_update($args);
 }
 
-function _translate_system_update($args)
+private function _system_update($args)
 {
 	global $user_id;
 
@@ -179,6 +202,7 @@ function _translate_system_update($args)
 			." WHERE content_id='$id' AND lang_id='$lid'";
 	if(_sql_query($sql) == FALSE)
 		return 'An error occured while updating';
+}
 }
 
 ?>

@@ -46,9 +46,34 @@ if($lang == 'fr')
 _lang($text);
 
 
-//private
-//news_display
-function _news_display($id, $title = NEWS)
+//NewsModule
+class NewsModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//NewsModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'display':
+			case 'submit':
+			case 'system':
+			case 'update':
+				return $this->$action($args);
+			case 'list':
+				return $this->_list($args);
+			default:
+				return $this->_default($args);
+		}
+		return FALSE;
+	}
+
+
+//NewsModule::_display
+private function _display($id, $title = NEWS)
 {
 	require_once('./system/content.php');
 	if(($news = _content_select($id, 1)) == FALSE)
@@ -75,9 +100,8 @@ function _news_insert($news)
 }
 
 
-//public
-//news_admin
-function news_admin($args)
+//NewsModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -155,12 +179,12 @@ function news_admin($args)
 }
 
 
-//news_default
-function news_default($args)
+//NewsModule::_default
+protected function _default($args)
 {
 	if(!isset($args['id']))
-		return news_list($args);
-	if(_news_display($args['id']) && _module_id('comment'))
+		return $this->_list($args);
+	if($this->display($args['id']) && _module_id('comment'))
 		_module('comment', 'childs', array('id' => $args['id']));
 }
 
@@ -238,13 +262,13 @@ function news_headline($args)
 }
 
 
-//news_list
-function news_list($args)
+//NewsModule::_list
+protected function _list($args)
 {
 	require_once('./system/user.php');
 	if(isset($args['user_id'])
 			&& ($username = _user_name($args['user_id'])) != FALSE)
-		return _news_list_user($args['user_id'], $username);
+		return $this->_list_user($args['user_id'], $username);
 	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
@@ -278,7 +302,7 @@ function news_list($args)
 			$pages);
 }
 
-function _news_list_user($user_id, $username)
+private function _list_user($user_id, $username)
 {
 	require_once('./system/icon.php');
 	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
@@ -384,8 +408,8 @@ function news_rss($args)
 }
 
 
-//news_submit
-function news_submit($args)
+//NewsModule::submit
+protected function submit($args)
 {
 	global $error, $user_id, $user_name;
 
@@ -413,8 +437,8 @@ function news_submit($args)
 }
 
 
-//news_system
-function news_system($args)
+//NewsModule::system
+protected function system($args)
 {
 	global $html, $title, $error;
 
@@ -432,18 +456,18 @@ function news_system($args)
 		switch($args['action'])
 		{
 			case 'reply':
-				$error = _system_news_reply($args);
+				$error = $this->_system_reply($args);
 				return;
 			case 'submit':
-				$error = _system_news_submit($args);
+				$error = $this->_system_submit($args);
 				return;
 			case 'update':
-				$error = _system_news_update($args);
+				$error = $this->_system_update($args);
 				return;
 		}
 }
 
-function _system_news_reply($args)
+private function _system_reply($args)
 {
 	global $error;
 
@@ -463,7 +487,7 @@ function _system_news_reply($args)
 	exit(0);
 }
 
-function _system_news_submit($args)
+private function _system_submit($args)
 {
 	global $user_id, $user_name;
 
@@ -474,15 +498,15 @@ function _system_news_submit($args)
 	$news = array('user_id' => $user_id, 'username' => $user_name,
 			'title' => $args['title'],
 			'content' => $args['content']);
-	if(!($news['id'] = _news_insert($news)))
+	if(!($news['id'] = $this->_insert($news)))
 		return 'Could not insert news';
-	_submit_send_mail($news);
+	$this->_submit_send_mail($news);
 	header('Location: '._module_link('news', 'submit', FALSE, FALSE,
 				'send='));
 	exit(0);
 }
 
-function _submit_send_mail($news)
+private function _submit_send_mail($news)
 {
 	//send mail
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
@@ -508,7 +532,7 @@ function _submit_send_mail($news)
 			wordwrap($news['content'], 72));
 }
 
-function _system_news_update($args)
+private function _system_update($args)
 {
 	global $user_id;
 
@@ -529,8 +553,8 @@ function _system_news_update($args)
 }
 
 
-//news_update
-function news_update($args)
+//NewsModule::update
+protected function update($args)
 {
 	global $error, $user_id, $user_name;
 
@@ -555,6 +579,7 @@ function news_update($args)
 		include('./modules/news/news_display.tpl');
 	}
 	include('./modules/news/news_update.tpl');
+}
 }
 
 ?>

@@ -61,6 +61,20 @@ _lang($text);
 define('S_IFDIR', 01000);
 
 
+//DownloadModule
+class DownloadModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//DownloadModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 function _permissions($mode)
 {

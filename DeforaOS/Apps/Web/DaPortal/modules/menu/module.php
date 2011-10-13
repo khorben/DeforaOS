@@ -22,7 +22,41 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: ../../index.php'));
 
 
-function _default_submenu($module, $level, $entry)
+//MenuModule
+class MenuModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//MenuModule::call
+	public function call(&$engine, $request)
+	{
+		return $this->_default();
+	}
+
+
+
+//MenuModule::_default
+protected function _default()
+{
+	global $user_id;
+
+	if(($modules = _sql_array('SELECT name FROM daportal_module'
+			." WHERE enabled='1' ORDER BY name ASC")) == FALSE)
+		return _error('No modules to link to');
+	print('<ul class="menu">'."\n");
+	foreach($modules as $m)
+	{
+		if(($d = _module_desktop($m['name'])) == FALSE
+				|| $d['list'] != 1)
+			continue;
+		$d['args'] = '';
+		$this->_default_submenu($m['name'], 1, $d);
+	}
+	print('</ul>'."\n");
+}
+
+private function _default_submenu($module, $level, $entry)
 {
 	for($i = 0; $i < $level; $i++)
 		print('	');
@@ -51,8 +85,8 @@ function _default_submenu($module, $level, $entry)
 		{
 			if(!is_array($actions[$k]))
 			{
-				_default_submenu($module, $level+1, array(
-						'title' => $actions[$k],
+				$this->_default_submenu($module, $level + 1,
+						array('title' => $actions[$k],
 						'args' => 'action='.$k));
 				continue;
 			}
@@ -61,7 +95,7 @@ function _default_submenu($module, $level, $entry)
 				? $actions[$k]['args'] : 'action='.$k;
 			if(isset($actions[$k]['actions']))
 				$entry['actions'] = $actions[$k]['actions'];
-			_default_submenu($module, $level+1, $entry);
+			$this->_default_submenu($module, $level + 1, $entry);
 		}
 		for($i = 0; $i < $level+1; $i++)
 			print('	');
@@ -69,25 +103,6 @@ function _default_submenu($module, $level, $entry)
 	}
 	print("</li>\n");
 }
-
-
-function menu_default()
-{
-	global $user_id;
-
-	if(($modules = _sql_array('SELECT name FROM daportal_module'
-			." WHERE enabled='1' ORDER BY name ASC")) == FALSE)
-		return _error('No modules to link to');
-	print('<ul class="menu">'."\n");
-	foreach($modules as $m)
-	{
-		if(($d = _module_desktop($m['name'])) == FALSE
-				|| $d['list'] != 1)
-			continue;
-		$d['args'] = '';
-		_default_submenu($m['name'], 1, $d);
-	}
-	print('</ul>'."\n");
 }
 
 ?>

@@ -48,6 +48,20 @@ else if($lang == 'fr')
 _lang($text);
 
 
+//BookmarkModule
+class BookmarkModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//BookmarkModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //bookmark_admin
 function bookmark_admin($args)
 {

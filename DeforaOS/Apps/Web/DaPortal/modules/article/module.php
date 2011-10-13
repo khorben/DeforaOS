@@ -43,6 +43,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//ArticleModule
+class ArticleModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//ArticleModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 function _article_insert($article)
 {
 	global $user_id;

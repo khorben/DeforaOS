@@ -31,6 +31,7 @@ function _rss($title, $link, $atomlink, $content, $entries)
 		<description>'._html_safe($content).'</description>
 		<language>'._html_safe($lang).'</language>'."\n";
 	foreach($entries as $e)
+		//FIXME this is probably vulnerable to corruption through "]]>"
 		echo '		<item>
 			<title>'._html_safe($e['title']).'</title>
 			<author>'._html_safe($e['author']).'</author>

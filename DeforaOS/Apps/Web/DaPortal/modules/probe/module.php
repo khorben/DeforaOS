@@ -36,6 +36,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//ProbeModule
+class ProbeModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//ProbeModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 //constants
 global $probe_types;

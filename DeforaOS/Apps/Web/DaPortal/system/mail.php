@@ -26,6 +26,7 @@ function _mail($from, $to, $subject, $content, $headers = array())
 			$hdr .= $h."\n";
 	else if(strlen($headers))
 		$hdr.=$headers;
+	//FIXME check $from, $to and $subject for newlines
 	if(!mail($to, $subject, $content, $hdr))
 		_error('Could not send mail to: '.$to, 0);
 	else

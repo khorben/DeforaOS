@@ -51,6 +51,20 @@ else if($lang == 'fr')
 _lang($text);
 
 
+//CommentModule
+class CommentModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//CommentModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 //comment_display
 function _comment_display($module, $parent, $id)
@@ -334,7 +348,8 @@ function comment_reply($args)
 	global $user_id, $user_name;
 
 	if(!isset($args['module']) || !isset($args['id'])
-			|| !isset($args['parent']))
+			|| !is_numeric($args['id']) || !isset($args['parent'])
+			|| !is_numeric($args['parent']))
 		return _error(INVALID_ARGUMENT);
 	//display parents
 	$comment = array();

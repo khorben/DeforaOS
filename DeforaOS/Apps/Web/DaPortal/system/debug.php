@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 
 $debug_messages = '';
+//FIXME force a timezone or use a different function than gettimeofday()
 $debug_time_before = gettimeofday();
 
 
@@ -27,8 +28,6 @@ function _debug()
 
 	if(!$debug || !$html)
 		return;
-	print('<div class="debug system">'."\n");
-	print($debug_messages);
 	$debug_time_after = gettimeofday();
 	$sec = $debug_time_after['sec'] - $debug_time_before['sec'];
 	$usec = $debug_time_after['usec'] - $debug_time_before['usec'];
@@ -37,15 +36,16 @@ function _debug()
 		$usec = -$usec;
 		$sec++;
 	}
-	print('<div class="info"><b>Info:</b> Page execution duration: '
-			.$sec.'s and '.ceil($usec / 1000).'ms</div>'."\n");
-	print('</div>'."\n");
+	_info('Page execution duration: '.$sec.'s and '.ceil($usec / 1000).'ms',
+			FALSE);
+	print('<div class="debug system">'."\n");
+	print($debug_messages);
 }
 
 
 //PRE
 //	$level is trusted
-function _debug_message($level, $title, $message, $visible = 0)
+function _debug_message($level, $title, $message, $visible = FALSE)
 {
 	global $debug, $debug_messages, $html;
 
@@ -63,21 +63,33 @@ function _debug_message($level, $title, $message, $visible = 0)
 }
 
 
-function _error($message, $visible = 1)
+function _error($message, $visible = TRUE)
 {
-	_debug_message('error', 'Error', $message, $visible);
+	global $engine;
+
+	$engine->log('LOG_ERR', $message);
+	if($visible)
+		_debug_message('error', 'Error', $message, $visible);
 }
 
 
-function _info($message, $visible = 0)
+function _info($message, $visible = FALSE)
 {
-	_debug_message('info', 'Information', $message, $visible);
+	global $engine;
+
+	$engine->log('LOG_WARN', $message);
+	if($visible)
+		_debug_message('info', 'Information', $message, $visible);
 }
 
 
-function _warning($message, $visible = 0)
+function _warning($message, $visible = FALSE)
 {
-	_debug_message('warning', 'Warning', $message, $visible);
+	global $engine;
+
+	$engine->log('LOG_WARN', $message);
+	if($visible)
+		_debug_message('warning', 'Warning', $message, $visible);
 }
 
 ?>

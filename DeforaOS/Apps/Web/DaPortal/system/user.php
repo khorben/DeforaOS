@@ -38,7 +38,7 @@ function _user_id($username)
 {
 	static $cache = array();
 
-	if(array_key_exists($username, $cache))
+	if(isset($cache[$username]))
 		return $cache[$username];
 	$id = _sql_single('SELECT user_id FROM daportal_user'
 			." WHERE username='".addslashes($username)."'");

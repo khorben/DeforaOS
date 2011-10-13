@@ -64,12 +64,48 @@ else if($lang == 'fr')
 _lang($text);
 
 
-function _password_mail($id, $username, $email, $password = FALSE)
+//UserModule
+class UserModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//UserModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'appearance':
+			case 'config_update':
+			case 'confirm':
+			case 'delete':
+			case 'disable':
+			case 'display':
+			case 'enable':
+			case 'login':
+			case 'logout':
+			case 'modify':
+			case 'register':
+			case 'system':
+			case 'update':
+				return $this->$action($args);
+			case 'new':
+				return $this->_new($args);
+			default:
+				return $this->_default($args);
+		}
+		return FALSE;
+	}
+
+
+private function _password_mail($id, $username, $email, $password = FALSE)
 	//FIXME weak passwords and keys...?
 {
 	if($password == FALSE)
-		$password = _password_new();
-	$key = md5(_password_new());
+		$password = $this->_password_new();
+	$key = md5($this->_password_new());
 	if(_sql_query('INSERT INTO daportal_user_register (user_id, key)'
 			.' VALUES ('."'$id', '$key')") == FALSE)
 		return _error('Could not create confirmation key');
@@ -83,7 +119,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 }
 
 
-function _password_new()
+private function _password_new()
 {
 	$string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 			.'0123456789';
@@ -94,13 +130,13 @@ function _password_new()
 }
 
 
-//user_admin
-function user_admin($args)
+//UserModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
 	if(isset($args['id']))
-		return user_modify($args);
+		return $this->modify($args);
 	require_once('./system/user.php');
 	require_once('./system/icon.php');
 	if(!_user_admin($user_id))
@@ -175,7 +211,7 @@ function user_admin($args)
 }
 
 
-function user_appearance($args)
+protected function appearance($args)
 {
 	global $theme;
 
@@ -199,7 +235,7 @@ function user_appearance($args)
 }
 
 
-function user_config_update($args)
+protected function config_update($args)
 {
 	global $error;
 
@@ -209,7 +245,7 @@ function user_config_update($args)
 }
 
 
-function user_confirm($args)
+protected function confirm($args)
 {
 	global $error, $info;
 
@@ -217,17 +253,18 @@ function user_confirm($args)
 }
 
 
-function user_default($args)
+protected function _default($args)
 {
 	global $user_id, $user_name;
 
 	if(isset($args['id']))
-		return user_display($args);
+		return $this->display($args);
 	if($user_id == 0)
-		return user_login($args);
+		return $this->login($args);
 	if(($user = _sql_array('SELECT user_id, username, admin'
 			.' FROM daportal_user'
-			." WHERE user_id='$user_id'")) == FALSE)
+			." WHERE user_id='$user_id'")) == FALSE
+			|| count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
 	print('<h1 class="title home">'._html_safe($user['username'].S_PAGE)
@@ -263,7 +300,8 @@ function user_default($args)
 }
 
 
-function user_delete($args)
+//UserModule::delete
+protected function delete($args)
 {
 	global $user_id;
 
@@ -278,7 +316,8 @@ function user_delete($args)
 }
 
 
-function user_disable($args)
+//UserModule::disable
+protected function disable($args)
 {
 	global $user_id;
 
@@ -291,7 +330,8 @@ function user_disable($args)
 }
 
 
-function user_display($args)
+//UserModule::display
+protected function display($args)
 {
 	global $user_id;
 
@@ -337,7 +377,8 @@ function user_display($args)
 }
 
 
-function user_enable($args)
+//UserModule::enable
+protected function enable($args)
 {
 	global $user_id;
 
@@ -350,7 +391,8 @@ function user_enable($args)
 }
 
 
-function user_insert($args)
+//UserModule::insert
+protected function user_insert($args)
 {
 	global $user_id;
 
@@ -376,12 +418,13 @@ function user_insert($args)
 }
 
 
-function user_login($args)
+//UserModule::login
+protected function login($args)
 {
 	global $user_id, $error;
 
 	if($user_id != 0)
-		return user_default($args);
+		return $this->_default($args);
 	$register = _config_get('user', 'register') ? 1 : 0;
 	$username = isset($_POST['username']) ? stripslashes($_POST['username'])
 			: '';
@@ -391,7 +434,8 @@ function user_login($args)
 }
 
 
-function user_logout($args)
+//UserModule::logout
+protected function logout($args)
 {
 	global $user_id;
 
@@ -401,7 +445,8 @@ function user_logout($args)
 }
 
 
-function user_modify($args)
+//UserModule::modify
+protected function modify($args)
 {
 	global $user_id;
 
@@ -422,7 +467,8 @@ function user_modify($args)
 }
 
 
-function user_new($args)
+//UserModule::new
+protected function _new($args)
 {
 	global $user_id;
 
@@ -435,7 +481,8 @@ function user_new($args)
 }
 
 
-function user_register($args)
+//UserModule::register
+protected function register($args)
 {
 	global $user_id;
 
@@ -465,7 +512,8 @@ function user_register($args)
 						.' FROM daportal_user'
 						." WHERE email='$email'")
 						== FALSE)
-					return _register_mail($args['username'],
+					return $this->_register_mail(
+							$args['username'],
 							$email);
 				else
 					$message = EMAIL_ALREADY_ASSIGNED;
@@ -481,9 +529,9 @@ function user_register($args)
 	include('./modules/user/user_register.tpl');
 }
 
-function _register_mail($username, $email)
+private function _register_mail($username, $email)
 {
-	$password = _password_new();
+	$password = $this->_password_new();
 	_info('New password is: '.$password);
 	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
 			.', admin, email) VALUES ('
@@ -492,11 +540,79 @@ function _register_mail($username, $email)
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
 	include('./modules/user/user_pending.tpl');
-	_password_mail($id, $username, $email, $password);
+	$this->_password_mail($id, $username, $email, $password);
 }
 
 
-function _system_confirm($key)
+//UserModule::system
+protected function system($args)
+{
+	global $html, $error;
+
+	if(!isset($args['action']))
+		return;
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
+	{
+		if($_POST['action'] == 'login')
+			$error = $this->_system_login($args);
+		else if($_POST['action'] == 'config_update')
+			$error = $this->_system_config_update($args);
+		else if($_POST['action'] == 'error')
+			$_POST['action'] = 'default';
+		else if($_POST['action'] == 'appearance')
+			return $this->_system_appearance($args);
+		else if($_POST['action'] == 'update')
+			$error = $this->_system_update($args);
+	}
+	else if($_SERVER['REQUEST_METHOD'] == 'GET')
+	{
+		if($_GET['action'] == 'logout')
+			$this->_system_logout();
+		else if($_GET['action'] == 'confirm' && isset($args['key']))
+			$this->_system_confirm($args['key']);
+		else if($_GET['action'] == 'error')
+			$_GET['action'] = 'default';
+	}
+}
+
+private function _system_appearance($args)
+{
+	global $debug, $user_id;
+
+	unset($_SESSION['theme']);
+	if(isset($args['theme']) && strpos($args['theme'], '/') === FALSE
+			&& is_readable(dirname($_SERVER['SCRIPT_FILENAME'])
+				.'/themes/'.$args['theme'].'.css'))
+		$_SESSION['theme'] = $args['theme'];
+	unset($_SESSION['view']);
+	$views = array('details', 'list', 'thumbnails');
+	if(isset($args['view']) && in_array($args['view'], $views))
+		$_SESSION['view'] = $args['view'];
+	require_once('./system/user.php');
+	if(_user_admin($user_id))
+	{
+		unset($_SESSION['debug']);
+		if(isset($args['debug']))
+			$_SESSION['debug'] = 1;
+	}
+	header('Location: '._module_link('user', 'appearance'));
+}
+
+private function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	$args['user_register'] = isset($args['user_register']) ? TRUE : FALSE;
+	$args['user_manual'] = isset($args['user_manual']) ? TRUE : FALSE;
+	_config_update('user', $args);
+	header('Location: '._module_link('user', 'admin'));
+	exit(0);
+}
+
+private function _system_confirm($key)
 {
 	global $error;
 
@@ -512,11 +628,11 @@ function _system_confirm($key)
 		return;
 	$user = $user[0];
 	if(_config_get('user', 'manual') == FALSE)
-		return _confirm_auto($key, $user);
-	return _confirm_manual($key, $user);
+		return $this->_system_confirm_auto($key, $user);
+	return $this->_system_confirm_manual($key, $user);
 }
 
-function _confirm_auto($key, $user)
+private function _system_confirm_auto($key, $user)
 {
 	if(_sql_query('UPDATE daportal_user SET enabled='."'1'"
 			." WHERE user_id='".$user['user_id']."'") == FALSE)
@@ -532,7 +648,7 @@ function _confirm_auto($key, $user)
 	exit(0);
 }
 
-function _confirm_manual($key, $user)
+private function _system_confirm_manual($key, $user)
 {
 	global $info;
 
@@ -564,13 +680,13 @@ function _confirm_manual($key, $user)
 	_mail('Administration Team', $to, $subject, $content);
 }
 
-
-function _user_system_login($args)
+private function _system_login($args)
 {
 	global $user_id; 
 
 	if(strlen(session_id()) == 0)
 		session_start();
+	print_r($args);
 	if(!isset($args['username']) || !isset($args['password']))
 		return INVALID_ARGUMENT;
 	$password = md5(stripslashes($args['password']));
@@ -586,7 +702,7 @@ function _user_system_login($args)
 	exit(0);
 }
 
-function _system_logout()
+private function _system_logout()
 {
 	global $user_id, $user_name;
 
@@ -598,74 +714,7 @@ function _system_logout()
 	$user_name = $_SESSION['user_name'];
 }
 
-function user_system($args)
-{
-	global $html, $error;
-
-	if(!isset($args['action']))
-		return;
-	if($_SERVER['REQUEST_METHOD'] == 'POST')
-	{
-		if($_POST['action'] == 'login')
-			$error = _user_system_login($args);
-		else if($_POST['action'] == 'config_update')
-			$error = _user_system_config_update($args);
-		else if($_POST['action'] == 'error')
-			$_POST['action'] = 'default';
-		else if($_POST['action'] == 'appearance')
-			return _user_system_appearance($args);
-		else if($_POST['action'] == 'update')
-			$error = _user_system_update($args);
-	}
-	else if($_SERVER['REQUEST_METHOD'] == 'GET')
-	{
-		if($_GET['action'] == 'logout')
-			_system_logout();
-		else if($_GET['action'] == 'confirm' && isset($args['key']))
-			_system_confirm($args['key']);
-		else if($_GET['action'] == 'error')
-			$_GET['action'] = 'default';
-	}
-}
-
-function _user_system_appearance($args)
-{
-	global $debug, $user_id;
-
-	unset($_SESSION['theme']);
-	if(isset($args['theme']) && strpos($args['theme'], '/') === FALSE
-			&& is_readable(dirname($_SERVER['SCRIPT_FILENAME'])
-				.'/themes/'.$args['theme'].'.css'))
-		$_SESSION['theme'] = $args['theme'];
-	unset($_SESSION['view']);
-	$views = array('details', 'list', 'thumbnails');
-	if(isset($args['view']) && in_array($args['view'], $views))
-		$_SESSION['view'] = $args['view'];
-	require_once('./system/user.php');
-	if(_user_admin($user_id))
-	{
-		unset($_SESSION['debug']);
-		if(isset($args['debug']))
-			$_SESSION['debug'] = 1;
-	}
-	header('Location: '._module_link('user', 'appearance'));
-}
-
-function _user_system_config_update($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return PERMISSION_DENIED;
-	$args['user_register'] = isset($args['user_register']) ? TRUE : FALSE;
-	$args['user_manual'] = isset($args['user_manual']) ? TRUE : FALSE;
-	_config_update('user', $args);
-	header('Location: '._module_link('user', 'admin'));
-	exit(0);
-}
-
-function _user_system_update($args)
+private function _system_update($args)
 {
 	global $user_id;
 
@@ -700,13 +749,15 @@ function _user_system_update($args)
 }
 
 
-function user_update($args)
+//UserModule::update
+protected function update($args)
 {
 	global $user_id, $error;
 
 	user_modify($args);
 	if(isset($error) && strlen($error))
 		_error($error);
+}
 }
 
 ?>

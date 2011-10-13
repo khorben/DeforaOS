@@ -59,7 +59,43 @@ else if($lang == 'fr')
 _lang($text);
 
 
-function category_admin($args)
+//CategoryModule
+class CategoryModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//CategoryModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'delete':
+			case 'disable':
+			case 'enable':
+			case 'get':
+			case 'insert':
+			case 'modify':
+			case 'rss':
+			case 'set':
+			case 'system':
+				return $this->$action($args);
+			case 'config_update':
+				return $this->configUpdate($args);
+			case 'list':
+				return $this->_list($args);
+			case 'new':
+				return $this->_new($args);
+			default:
+				return $this->_default($args);
+		}
+	}
+
+
+//CategoryModule::admin
+protected function admin($args)
 {
 	print('<h1 class="title category">'
 			._html_safe(CATEGORIES_ADMINISTRATION)."</h1>\n");
@@ -119,25 +155,28 @@ function category_admin($args)
 }
 
 
-function category_config_update($args)
+//CategoryModule::configUpdate
+protected function configUpdate($args)
 {
 	global $error;
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return category_admin(array());
+	return $this->admin(array());
 }
 
 
-function category_default($args)
+//CategoryModule::_default
+protected function _default($args)
 {
 	if(isset($args['id']))
-		return category_display($args);
-	return category_list($args);
+		return $this->display($args);
+	return $this->_list($args);
 }
 
 
-function category_delete($args)
+//CategoryModule::delete
+protected function delete($args)
 {
 	global $user_id;
 
@@ -151,7 +190,8 @@ function category_delete($args)
 }
 
 
-function category_disable($args)
+//CategoryModule::disable
+protected function disable($args)
 {
 	global $user_id;
 
@@ -163,7 +203,8 @@ function category_disable($args)
 }
 
 
-function category_display($args)
+//CategoryModule::display
+protected function display($args)
 {
 	$module = _module_id('category');
 	$category = _sql_array('SELECT title, content FROM daportal_content'
@@ -204,7 +245,8 @@ function category_display($args)
 }
 
 
-function category_enable($args)
+//CategoryModule::enable
+protected function enable($args)
 {
 	global $user_id;
 
@@ -216,7 +258,8 @@ function category_enable($args)
 }
 
 
-function category_get($args)
+//CategoryModule::get
+protected function get($args)
 {
 	global $user_id;
 
@@ -275,7 +318,8 @@ function category_get($args)
 }
 
 
-function category_insert($args)
+//CategoryModule::insert
+protected function insert($args)
 {
 	global $user_id;
 
@@ -285,7 +329,7 @@ function category_insert($args)
 	if(($id = _content_insert($args['title'], $args['content'], 1))
 			== FALSE)
 		return _error('Unable to insert category');
-	category_display(array('id' => $id));
+	$this->display(array('id' => $id));
 }
 
 
@@ -377,7 +421,8 @@ function category_link_insert_new($args)
 }
 
 
-function category_list($args)
+//CategoryModule::_list
+protected function _list($args)
 {
 	print('<h1 class="title category">'._html_safe(CATEGORY_LIST).'</h1>'
 			."\n");
@@ -407,7 +452,8 @@ function category_list($args)
 }
 
 
-function category_modify($args)
+//CategoryModule::modify
+protected function modify($args)
 {
 	global $user_id;
 
@@ -428,7 +474,8 @@ function category_modify($args)
 }
 
 
-function category_new($args)
+//CategoryModule::_new
+protected function _new($args)
 {
 	global $user_id;
 
@@ -439,7 +486,8 @@ function category_new($args)
 }
 
 
-function category_rss($args)
+//CategoryModule::rss
+protected function rss($args)
 {
 	if(!isset($args['id']))
 		return _error(INVALID_ARGUMENT);
@@ -483,7 +531,8 @@ function category_rss($args)
 }
 
 
-function category_set($args)
+//CategoryModule::set
+protected function set($args)
 {
 	global $user_id;
 
@@ -533,15 +582,15 @@ function category_set($args)
 }
 
 
-//category_system
-function category_system($args)
+//CategoryModule::system
+protected function system($args)
 {
 	global $html, $error;
 
 	if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		if($_POST['action'] == 'config_update')
-			$error = _category_system_config_update($args);
+			$error = $this->_system_config_update($args);
 	}
 	else if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($args['action'])
 			&& $args['action'] == 'rss')
@@ -551,7 +600,7 @@ function category_system($args)
 	}
 }
 
-function _category_system_config_update($args)
+private function _system_config_update($args)
 {
 	global $user_id;
 
@@ -565,7 +614,8 @@ function _category_system_config_update($args)
 }
 
 
-function category_update($args)
+//CategoryModule::update
+protected function update($args)
 {
 	global $user_id;
 
@@ -579,7 +629,8 @@ function category_update($args)
 			." WHERE content_id='".$args['id']."'"
 			." AND module_id='$module'") == FALSE)
 		return _error('Unable to update category');
-	category_display(array('id' => $args['id']));
+	$this->display(array('id' => $args['id']));
+}
 }
 
 ?>

@@ -48,6 +48,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//BlogModule
+class BlogModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//BlogModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //private
 //blog_description
 function _blog_description($id)

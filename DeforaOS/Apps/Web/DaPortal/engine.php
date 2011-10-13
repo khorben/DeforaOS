@@ -36,10 +36,22 @@ $user_name = 'Anonymous';
 $module_id = 0;
 $module_name = '';
 
+//new engine
+if(chdir('./src') != TRUE)
+	exit(2);
+require_once('./system/config.php');
+global $config;
+$config = new Config();
+$config->load('../daportal.conf');
+require_once('./engines/daportal.php');
+$engine = new DaPortalEngine;
+$engine->attach();
+$db = $engine->getDatabase();
+if(chdir('..') != TRUE)
+	exit(2);
+
 //mandatory code
 require_once('./system/debug.php');
-if(!get_magic_quotes_gpc())
-	exit(_error('Magic quotes must be enabled'));
 if(isset($_COOKIE[session_name()]))
 {
 	session_start();
@@ -47,7 +59,9 @@ if(isset($_COOKIE[session_name()]))
 	foreach($vars as $v)
 		$$v = $_SESSION[$v];
 }
+//FIXME obtain credentials from DaPortalEngine
 require_once('./system/sql.php');
+require_once('./system/lang.php');
 require_once('./system/module.php');
 require_once('./system/config.php');
 
@@ -56,8 +70,6 @@ if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
 if(!isset($_SESSION['theme']) && ($t = _config_get('admin', 'theme')) != FALSE)
 	$theme = $t;
-
-require_once('./system/lang.php');
 
 //parse url
 if($friendlylinks == 1 && $_SERVER['REQUEST_METHOD'] == 'GET'
@@ -70,7 +82,7 @@ if($friendlylinks == 1 && $_SERVER['REQUEST_METHOD'] == 'GET'
 	exit(0);
 }
 
-_module('', 'system');
+_module(FALSE, 'system');
 
 if($html)
 {

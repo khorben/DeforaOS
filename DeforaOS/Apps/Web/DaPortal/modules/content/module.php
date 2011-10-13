@@ -37,6 +37,20 @@ if($lang == 'fr')
 _lang($text);
 
 
+//ContentModule
+class ContentModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//ContentModule::call
+	public function call(&$engine, $request)
+	{
+		return FALSE;
+	}
+}
+
+
 //content_admin
 function content_admin($args)
 {

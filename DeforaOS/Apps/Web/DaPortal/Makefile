@@ -1,6 +1,6 @@
 PACKAGE	= DaPortal
-VERSION	= 1.0.0
-SUBDIRS	= css html icons js images install modules system templates themes
+VERSION	= 1.9.0
+SUBDIRS	= css data html icons js images install modules src system templates themes
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -27,6 +27,20 @@ dist:
 		$(PACKAGE)-$(VERSION)/css/icons.css \
 		$(PACKAGE)-$(VERSION)/css/syntax.css \
 		$(PACKAGE)-$(VERSION)/css/project.conf \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/index.php \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/data/css/DaPortal.css \
+		$(PACKAGE)-$(VERSION)/data/css/Makefile \
+		$(PACKAGE)-$(VERSION)/data/css/index.php \
+		$(PACKAGE)-$(VERSION)/data/css/project.conf \
+		$(PACKAGE)-$(VERSION)/data/js/Makefile \
+		$(PACKAGE)-$(VERSION)/data/js/index.php \
+		$(PACKAGE)-$(VERSION)/data/js/project.conf \
+		$(PACKAGE)-$(VERSION)/data/themes/DaPortal.css \
+		$(PACKAGE)-$(VERSION)/data/themes/Makefile \
+		$(PACKAGE)-$(VERSION)/data/themes/index.php \
+		$(PACKAGE)-$(VERSION)/data/themes/project.conf \
 		$(PACKAGE)-$(VERSION)/html/Makefile \
 		$(PACKAGE)-$(VERSION)/html/404.html \
 		$(PACKAGE)-$(VERSION)/html/doctype.html \
@@ -453,6 +467,37 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/wiki/module.php \
 		$(PACKAGE)-$(VERSION)/modules/wiki/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/project.conf \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/daportal.php \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
+		$(PACKAGE)-$(VERSION)/src/auth/http.php \
+		$(PACKAGE)-$(VERSION)/src/auth/unix.php \
+		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
+		$(PACKAGE)-$(VERSION)/src/database/Makefile \
+		$(PACKAGE)-$(VERSION)/src/database/sqlite2.php \
+		$(PACKAGE)-$(VERSION)/src/database/project.conf \
+		$(PACKAGE)-$(VERSION)/src/engines/Makefile \
+		$(PACKAGE)-$(VERSION)/src/engines/cli.php \
+		$(PACKAGE)-$(VERSION)/src/engines/daportal.php \
+		$(PACKAGE)-$(VERSION)/src/engines/gtk.php \
+		$(PACKAGE)-$(VERSION)/src/engines/http.php \
+		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
+		$(PACKAGE)-$(VERSION)/src/system/Makefile \
+		$(PACKAGE)-$(VERSION)/src/system/auth.php \
+		$(PACKAGE)-$(VERSION)/src/system/config.php \
+		$(PACKAGE)-$(VERSION)/src/system/database.php \
+		$(PACKAGE)-$(VERSION)/src/system/engine.php \
+		$(PACKAGE)-$(VERSION)/src/system/module.php \
+		$(PACKAGE)-$(VERSION)/src/system/page.php \
+		$(PACKAGE)-$(VERSION)/src/system/request.php \
+		$(PACKAGE)-$(VERSION)/src/system/template.php \
+		$(PACKAGE)-$(VERSION)/src/system/project.conf \
+		$(PACKAGE)-$(VERSION)/src/templates/Makefile \
+		$(PACKAGE)-$(VERSION)/src/templates/html.php \
+		$(PACKAGE)-$(VERSION)/src/templates/project.conf \
 		$(PACKAGE)-$(VERSION)/system/Makefile \
 		$(PACKAGE)-$(VERSION)/system/config.php \
 		$(PACKAGE)-$(VERSION)/system/config.tpl \
@@ -517,6 +562,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/config.php \
+		$(PACKAGE)-$(VERSION)/daportal.conf \
 		$(PACKAGE)-$(VERSION)/engine.php \
 		$(PACKAGE)-$(VERSION)/index.php \
 		$(PACKAGE)-$(VERSION)/install.php \

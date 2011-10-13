@@ -40,19 +40,66 @@ else if($lang == 'fr')
 _lang($text);
 
 
-//private
-//constants
-define('S_IFDIR', 040000);
+//ProjectModule
+class ProjectModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//ProjectModule::call
+	public function call(&$engine, $request)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'browse':
+			case 'disable':
+			case 'display':
+			case 'download':
+			case 'insert':
+			case 'modify':
+			case 'system':
+			case 'timeline':
+			case 'update':
+				return $this->$action($args);
+			case 'bug_delete':
+				return $this->bugDelete($args);
+			case 'bug_disable':
+				return $this->bugDisable($args);
+			case 'bug_display':
+				return $this->bugDisplay($args);
+			case 'bug_enable':
+				return $this->bugEnable($args);
+			case 'bug_list':
+				return $this->bugList($args);
+			case 'delete':
+				return $this->_delete($args);
+			case 'download_insert':
+				return $this->downloadInsert($args);
+			case 'lastcommits':
+				return $this->lastCommits($args);
+			case 'list':
+				return $this->_list($args);
+			case 'new':
+				return $this->_new($args);
+			case 'screenshot_insert':
+				return $this->screenshotInsert($args);
+			default:
+				return $this->_default($args);
+		}
+		return FALSE;
+	}
 
 
 //functions
-function _project_toolbar($id)
+private function _toolbar($id)
 {
 	global $html;
 
 	if(!$html)
 		return;
-	$admin = _project_is_admin($id);
+	$admin = $this->_isAdmin($id);
 	$cvsroot = '';
 	$enabled = 0;
 	$project = _sql_array('SELECT title, cvsroot, enabled'
@@ -64,13 +111,14 @@ function _project_toolbar($id)
 	{
 		$title = $project[0]['title'];
 		$cvsroot = $project[0]['cvsroot'];
-		$enabled = $project[0]['enabled'] == SQL_TRUE ? 1 : 0;
+		$enabled = $project[0]['enabled'] == TRUE ? 1 : 0;
 	}
 	include('./modules/project/toolbar.tpl');
 }
 
 
-function _project_id($name)
+//ProjectModule::_getId
+private function _getId($name)
 {
 	return _sql_single('SELECT project_id FROM daportal_project'
 			.', daportal_content'
@@ -80,7 +128,8 @@ function _project_id($name)
 }
 
 
-function _project_is_admin($id)
+//ProjectModule::_isAdmin
+private function _isAdmin($id)
 {
 	global $user_id;
 
@@ -95,7 +144,7 @@ function _project_is_admin($id)
 }
 
 
-function _project_is_member($id, $members = FALSE, $user = FALSE)
+private function _isMember($id, $members = FALSE, $user = FALSE)
 {
 	global $user_id;
 
@@ -103,7 +152,7 @@ function _project_is_member($id, $members = FALSE, $user = FALSE)
 	if(_user_admin($user_id))
 		return 1;
 	if($members == FALSE)
-		$members = _project_members($id);
+		$members = $this->_getMembers($id);
 	if($user == FALSE)
 		$user = $user_id;
 	foreach($members as $m)
@@ -113,7 +162,7 @@ function _project_is_member($id, $members = FALSE, $user = FALSE)
 }
 
 
-function _project_members($id)
+private function _getMembers($id)
 {
 	$admin = _sql_array('SELECT daportal_user.user_id AS id'
 			.', username FROM daportal_project, daportal_content'
@@ -136,7 +185,7 @@ function _project_members($id)
 }
 
 
-function _project_name($id)
+private function _getName($id)
 {
 	return _sql_single('SELECT title FROM daportal_project'
 			.', daportal_content WHERE daportal_project.project_id'
@@ -145,7 +194,8 @@ function _project_name($id)
 }
 
 
-function _project_timeline($id, $cvsroot, $cpp = FALSE)
+//ProjectModule::_timeline
+private function _timeline($id, $cvsroot, $cpp = FALSE)
 {
 	require_once('./system/user.php');
 	if(($cvsrep = _config_get('project', 'cvsroot')) == FALSE
@@ -214,15 +264,14 @@ function _project_timeline($id, $cvsroot, $cpp = FALSE)
 }
 
 
-//public
 //functions
-//project_admin
-function project_admin($args)
+//ProjectModule::admin
+protected function admin($args)
 {
 	global $user_id, $module_id;
 
 	if(isset($args['id']))
-		return project_modify($args);
+		return $this->modify($args);
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
@@ -261,7 +310,7 @@ function project_admin($args)
 		$res[$i]['action'] = 'modify';
 		$res[$i]['apply_module'] = 'project';
 		$res[$i]['apply_id'] = $res[$i]['id'];
-		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
+		$res[$i]['enabled'] = ($res[$i]['enabled'] == TRUE)
 			? 'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
 			.$res[$i]['enabled'].'.png" alt="'
@@ -317,7 +366,7 @@ function project_admin($args)
 		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
 		$res[$i]['args'] = 'bug_id='.$res[$i]['bug_id'];
-		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
+		$res[$i]['enabled'] = ($res[$i]['enabled'] == TRUE)
 			? 'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
 			.$res[$i]['enabled'].'.png" alt="'
@@ -325,7 +374,7 @@ function project_admin($args)
 		$res[$i]['bug_id'] = '<a href="'._html_link('project',
 			'bug_display', $res[$i]['id'], $res[$i]['title'])
 				.'">#'._html_safe($res[$i]['bug_id']).'</a>';
-		$res[$i]['project'] = _project_name($res[$i]['project_id']);
+		$res[$i]['project'] = $this->_getName($res[$i]['project_id']);
 		$res[$i]['project'] = '<a href="'._html_link('module',
 			'project', $res[$i]['project_id'], $res[$i]['project'])
 				.'">'._html_safe($res[$i]['project']).'</a>';
@@ -349,7 +398,8 @@ function project_admin($args)
 }
 
 
-function project_browse($args)
+//ProjectModule::browse
+protected function browse($args)
 {
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
@@ -363,7 +413,7 @@ function project_browse($args)
 		return _error(INVALID_PROJECT);
 	$cvsrep.='/';
 	$project = $project[0];
-	_project_toolbar($args['id']);
+	$this->_toolbar($args['id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
 		print('<h1 class="title project">'._html_safe($project['title'])
@@ -403,7 +453,8 @@ function project_browse($args)
 }
 
 
-function project_bug_delete($args)
+//ProjectModule::bugDelete
+protected function bugDelete($args)
 {
 	global $user_id;
 
@@ -421,7 +472,8 @@ function project_bug_delete($args)
 }
 
 
-function project_bug_disable($args)
+//ProjectModule::bugDisable
+protected function bugDisable($args)
 {
 	global $user_id;
 
@@ -439,7 +491,8 @@ function project_bug_disable($args)
 }
 
 
-function project_bug_display($args)
+//ProjectModule::bugDisplay
+protected function bugDisplay($args)
 {
 	global $user_id;
 
@@ -468,7 +521,7 @@ function project_bug_display($args)
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug');
 	$bug = $bug[0];
-	_project_toolbar($bug['project_id']);
+	$this->_toolbar($bug['project_id']);
 	$title = 'Bug #'.$bug['bug_id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$bug['assigned'] = isset($bug['assigned_id']) 
@@ -502,7 +555,8 @@ function project_bug_display($args)
 }
 
 
-function project_bug_enable($args)
+//ProjectModule::bugEnable
+protected function bugEnable($args)
 {
 	global $user_id;
 
@@ -520,7 +574,8 @@ function project_bug_enable($args)
 }
 
 
-function project_bug_insert($args)
+//ProjectModule::bugInsert
+protected function bugInsert($args)
 {
 	global $user_id, $user_name;
 
@@ -531,11 +586,11 @@ function project_bug_insert($args)
 	if(!isset($args['project_id']) || !is_numeric($args['project_id'])
 			|| !isset($args['type']) || !isset($args['priority']))
 		return _error(INVALID_ARGUMENT); //FIXME return to form
-	_project_toolbar($args['project_id']);
+	$this->_toolbar($args['project_id']);
 	if(isset($args['preview']))
 	{
 		$bug = array();
-		if(($bug['project'] = _project_name($args['project_id']))
+		if(($bug['project'] = $this->_getName($args['project_id']))
 				== FALSE)
 			return _error(INVALID_ARGUMENT);
 		$bug['project_id'] = stripslashes($args['project_id']);
@@ -558,7 +613,7 @@ function project_bug_insert($args)
 	require_once('./system/content.php');
 	require_once('./system/user.php');
 	$enable = 0;
-	if(_user_admin($user_id) || _project_is_member($args['project_id']))
+	if(_user_admin($user_id) || $this->_isMember($args['project_id']))
 		$enable = 1;
 	if(($id = _content_insert($args['title'], $args['content'], $enable))
 			== FALSE)
@@ -617,12 +672,13 @@ function project_bug_insert($args)
 }
 
 
-function project_bug_list($args)
+//ProjectModule::bugList
+protected function bugList($args)
 {
 	$title = BUG_REPORTS;
 	if(isset($args['id']))
 	{
-		if(($args['project'] = _project_name($args['id'])) != FALSE)
+		if(($args['project'] = $this->_getName($args['id'])) != FALSE)
 		{
 			$project_id = $args['id'];
 			$project = $args['project'];
@@ -630,7 +686,7 @@ function project_bug_list($args)
 	}
 	else if(isset($args['project_id']))
 	{
-		if(($args['project'] = _project_name($args['project_id']))
+		if(($args['project'] = $this->_getName($args['project_id']))
 				!= FALSE)
 		{
 			$project_id = $args['project_id'];
@@ -639,7 +695,7 @@ function project_bug_list($args)
 	}
 	else if(isset($args['project']))
 	{
-		if(($project_id = _project_id($args['project'])) != FALSE)
+		if(($project_id = $this->_getId($args['project'])) != FALSE)
 			$project = stripslashes($args['project']);
 	}
 	if(isset($args['user_id']))
@@ -660,7 +716,7 @@ function project_bug_list($args)
 	}
 	if(isset($project) && isset($project_id))
 	{
-		_project_toolbar($project_id);
+		$this->_toolbar($project_id);
 		$title.=_FOR_.$project;
 	}
 	if(isset($username))
@@ -755,7 +811,8 @@ function project_bug_list($args)
 }
 
 
-function project_bug_modify($args)
+//ProjectModule::bugModify
+protected function bugModify($args)
 {
 	/* FIXME we won't use only bug_update.tpl here but propose a series of
 	 * logical actions (choose different project, assign to a user, etc) */
@@ -782,24 +839,26 @@ function project_bug_modify($args)
 		return _error(INVALID_ARGUMENT);
 	$bug = $bug[0];
 	$title = MODIFICATION_OF_BUG_HASH.$bug['bug_id'].': '.$bug['title'];
-	$members = _project_members($bug['project_id']);
+	$members = $this->_getMembers($bug['project_id']);
 	$project_id = $bug['project_id'];
 	include('./modules/project/bug_update.tpl');
 }
 
 
-function project_bug_new($args)
+//ProjectModule::bugNew
+protected function bugNew($args)
 {
 	if(!isset($args['project_id']) || !is_numeric($args['project_id'])
-			|| !($project = _project_name($args['project_id'])))
-		return project_list(array('action' => 'bug_new'));
+			|| !($project = $this->_getName($args['project_id'])))
+		return $this->_list(array('action' => 'bug_new'));
 	$title = REPORT_BUG_FOR.' '.$project;
 	$project_id = $args['project_id'];
 	include('./modules/project/bug_update.tpl');
 }
 
 
-function project_bug_reply($args)
+//ProjectModule::bugReply
+protected function bugReply($args)
 {
 	global $user_id, $user_name;
 
@@ -832,8 +891,8 @@ function project_bug_reply($args)
 		$bug['assigned'] = _user_name($bug['assigned_id']);
 	$title = REPLY_TO_BUG.' #'.$bug['bug_id'].': '.$bug['title'];
 	$admin = _user_admin($user_id) ? 1 : 0;
-	$members = _project_members($bug['project_id']);
-	$member = _project_is_member($bug['project_id'], $members, $user_id);
+	$members = $this->_getMembers($bug['project_id']);
+	$member = $this->_isMember($bug['project_id'], $members, $user_id);
 	if(isset($args['preview']))
 	{
 		include('./modules/project/bug_display.tpl');
@@ -868,7 +927,8 @@ function project_bug_reply($args)
 }
 
 
-function project_bug_reply_insert($args)
+//ProjectModule::bugReplyInsert
+protected function bugReplyInsert($args)
 {
 	global $user_id;
 
@@ -901,11 +961,11 @@ function project_bug_reply_insert($args)
 	$status = '';
 	$from = 'From: '._user_name($user_id)."\n";
 	$to = "\n";
-	if($admin || _project_is_member($project_id))
+	if($admin || $this->_isMember($project_id))
 	{
 		if(isset($args['assigned_id'])
 				&& is_numeric($args['assigned_id'])
-				&& _project_is_member($project_id, FALSE,
+				&& $this->_isMember($project_id, FALSE,
 					$args['assigned_id']))
 		{
 			if(!isset($args['state']) || $args['state'] == '')
@@ -987,7 +1047,7 @@ function project_bug_reply_insert($args)
 	$cnt = count($keys);
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
-	$project = _project_name($project_id);
+	$project = $this->_getName($project_id);
 	$title = '[Bug reply] '.$project.'/#'.$bug_id.': '
 		.stripslashes($args['title']);
 	$content = 'Project: '.$project."\n".$from.$status."\n"
@@ -999,7 +1059,8 @@ function project_bug_reply_insert($args)
 }
 
 
-function project_bug_reply_modify($args)
+//ProjectModule::bugReplyModify
+protected function bugReplyModify($args)
 {
 	global $user_id;
 
@@ -1035,12 +1096,13 @@ function project_bug_reply_modify($args)
 		$reply['assigned'] = _sql_single('SELECT username'
 				.' FROM daportal_user WHERE enabled='."'1'"
 				." AND user_id='".$reply['assigned_id']."'");
-	$members = _project_members($reply['project_id']);
+	$members = $this->_getMembers($reply['project_id']);
 	include('./modules/project/bug_reply_update.tpl');
 }
 
 
-function project_bug_reply_update($args)
+//ProjectModule::bugReplyUpdate
+protected function bugReplyUpdate($args)
 {
 	global $user_id;
 
@@ -1072,7 +1134,7 @@ function project_bug_reply_update($args)
 			: 'NULL');
 	$sql.=', assigned='.(isset($args['assigned_id'])
 			&& is_numeric($args['assigned_id'])
-			&& _project_is_member($project_id, FALSE,
+			&& $this->_isMember($project_id, FALSE,
 				$args['assigned_id']) ? "'".$args['assigned_id']
 			."'" : 'NULL');
 	_sql_query('UPDATE daportal_bug_reply SET'.$sql
@@ -1081,7 +1143,8 @@ function project_bug_reply_update($args)
 }
 
 
-function project_bug_update($args)
+//ProjectModule::bugUpdate
+protected function bugUpdate($args)
 {
 	global $user_id, $module_id;
 
@@ -1101,7 +1164,7 @@ function project_bug_update($args)
 	_content_update($id, $args['title'], $args['content']);
 	$assigned = ', assigned='.(isset($args['assigned_id'])
 			&& is_numeric($args['assigned_id'])
-			&& _project_is_member($project_id, FALSE,
+			&& $this->_isMember($project_id, FALSE,
 				$args['assigned_id']) ? "'".$args['assigned_id']
 			."'" : 'NULL');
 	_sql_query('UPDATE daportal_bug SET state='."'".$args['state']."'"
@@ -1112,17 +1175,19 @@ function project_bug_update($args)
 }
 
 
-function project_config_update($args)
+//ProjectModule::configUpdate
+protected function configUpdate($args)
 {
 	global $error;
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return project_admin(array());
+	return $this->admin(array());
 }
 
 
-function project_default($args)
+//ProjectModule::_default
+protected function _default($args)
 {
 	if(isset($args['id']))
 	{
@@ -1130,10 +1195,10 @@ function project_default($args)
 		if(_sql_single('SELECT content_id FROM daportal_bug WHERE'
 					." content_id='$id'") == $id)
 			return project_bug_display($args);
-		return project_display($args);
+		return $this->display($args);
 	}
 	if(isset($args['user_id']))
-		return project_list($args);
+		return $this->_list($args);
 	$project_cnt = _sql_single('SELECT COUNT(*) FROM daportal_project'
 			.', daportal_content WHERE daportal_project.project_id'
 			."=daportal_content.content_id AND enabled='1'");
@@ -1142,7 +1207,8 @@ function project_default($args)
 }
 
 
-function project_delete($args)
+//ProjectModule::_delete
+protected function _delete($args)
 	/* FIXME should determine if it's a project/bug/bug_reply... */
 {
 	global $user_id;
@@ -1159,7 +1225,8 @@ function project_delete($args)
 }
 
 
-function project_disable($args)
+//ProjectModule::disable
+protected function disable($args)
 {
 	global $user_id;
 
@@ -1172,16 +1239,17 @@ function project_disable($args)
 	require_once('./system/content.php');
 	_content_disable($id);
 	if($args['display'] != 0)
-		project_display(array('id' => $id));
+		$this->display(array('id' => $id));
 }
 
 
-function project_display($args)
+//ProjectModule::display
+protected function display($args)
 {
 	global $user_id;
 
 	if(!isset($args['id']))
-		return project_default($args);
+		return $this->_default($args);
 	require_once('./system/user.php');
 	$project = _sql_array('SELECT project_id AS id, title'
 			.', content AS description, synopsis'
@@ -1198,16 +1266,16 @@ function project_display($args)
 	$project = $project[0];
 	//FIXME or the user is the administrator of this project
 	$admin = _user_admin($user_id);
-	$enabled = ($project['enabled'] == SQL_TRUE);
+	$enabled = ($project['enabled'] == TRUE);
 	if($enabled == 0 && !$admin)
 	{
 		return include('./modules/project/project_submitted.tpl');
 	}
 	$title = $project['title'];
-	_project_toolbar($args['id']);
+	$this->_toolbar($args['id']);
 	include('./modules/project/project_display.tpl');
 	/* list members */
-	$members = _project_members($project['id']);
+	$members = $this->_getMembers($project['id']);
 	for($i = 0, $cnt = count($members); $i < $cnt; $i++)
 	{
 		$members[$i]['name'] = $members[$i]['username'];
@@ -1241,7 +1309,8 @@ function project_display($args)
 }
 
 
-function project_download($args)
+//ProjectModule::download
+protected function download($args)
 {
 	global $user_id;
 
@@ -1262,11 +1331,11 @@ function project_download($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	_project_toolbar($project['id']);
+	$this->_toolbar($project['id']);
 	print('<h1 class="title project">'._html_safe($project['name']).': '
 		._html_safe(FILES).'</h1>'."\n");
 	require_once('./system/user.php');
-	if(_user_admin($user_id) || _project_is_member($project['id']))
+	if(_user_admin($user_id) || $this->_isMember($project['id']))
 		print('<p><a href="'._html_link('project', 'download_insert',
 					$project['id'])
 				.'"><span class="icon download"></span>'
@@ -1316,7 +1385,8 @@ function project_download($args)
 				$files[$i]['thumbnail'] = _html_link('download',
 						'download', $files[$i]['id']);
 			}
-			else if($files[$i]['mode'] & S_IFDIR == S_IFDIR)
+			else if($files[$i]['mode'] & $this->S_IFDIR
+					== $this->S_IFDIR)
 			{
 				$files[$i]['icon'] = 'icons/16x16'
 					.'/mime/folder.png';
@@ -1356,7 +1426,8 @@ function project_download($args)
 					strtotime(substr($files[$i]['date'], 0,
 							19)));
 			$mime = _mime_from_ext($files[$i]['name']);
-			if($files[$i]['mode'] & S_IFDIR == S_IFDIR)
+			if(($files[$i]['mode'] & $this->S_IFDIR)
+					== $this->S_IFDIR)
 			{
 				$files[$i]['icon'] = 'icons/16x16'
 					.'/mime/folder.png';
@@ -1401,13 +1472,14 @@ function project_download($args)
 }
 
 
-function project_download_insert($args)
+//ProjectModule::downloadInsert
+protected function downloadInsert($args)
 {
 	global $error;
 
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
-	if(!_project_is_member($args['id']))
+	if(!$this->_isMember($args['id']))
 		return _error(PERMISSION_DENIED);
 	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
 			.' FROM daportal_project, daportal_content'
@@ -1418,7 +1490,7 @@ function project_download_insert($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	_project_toolbar($project['id']);
+	$this->_toolbar($project['id']);
 	print('<h1 class="title project">'._html_safe($project['name']).': '
 		.NEW_RELEASE.'</h1>'."\n");
 	if(isset($error) && strlen($error))
@@ -1429,7 +1501,8 @@ function project_download_insert($args)
 }
 
 
-function project_enable($args)
+//ProjectModule::enable
+protected function enable($args)
 {
 	global $user_id;
 
@@ -1446,7 +1519,8 @@ function project_enable($args)
 }
 
 
-function project_insert($args)
+//ProjectModule::insert
+protected function insert($args)
 {
 	global $user_id;
 
@@ -1464,19 +1538,20 @@ function project_insert($args)
 		_content_delete($id);
 		return _error('Unable to insert project');
 	}
-	project_display(array('id' => $id));
+	$this->display(array('id' => $id));
 }
 
 
-//project_lastcommits
-function project_lastcommits($args)
+//ProjectModule::lastCommits
+protected function lastCommits($args)
 {
 	$cpp = 6;
 	if(isset($args['cpp']) && is_numeric($args['cpp']))
 		$cpp = $args['cpp'];
-	if(($entries = _project_timeline(FALSE, '', $cpp)) === FALSE)
+	if(($entries = $this->_timeline(FALSE, '', $cpp)) === FALSE)
 		return;
-	_module('explorer', 'browse_trusted', array('entries' => $entries,
+	return _module('explorer', 'browse_trusted', array(
+			'entries' => $entries,
 			'class' => array('date' => DATE, 'event' => ACTION,
 				'revision' => REVISION,
 				'author' => AUTHOR), 'toolbar' => 0,
@@ -1484,8 +1559,8 @@ function project_lastcommits($args)
 }
 
 
-//project_list
-function project_list($args)
+//ProjectModule::_list
+protected function _list($args)
 {
 	global $user_id;
 
@@ -1548,7 +1623,8 @@ function project_list($args)
 }
 
 
-function project_member_add($args)
+//ProjectModule::memberAdd
+protected function memberAdd($args)
 {
 	global $user_id;
 
@@ -1592,7 +1668,8 @@ function project_member_add($args)
 }
 
 
-function project_member_delete($args)
+//ProjectModule::memberDelete
+protected function memberDelete($args)
 {
 	global $user_id;
 
@@ -1605,7 +1682,8 @@ function project_member_delete($args)
 }
 
 
-function project_member_insert($args)
+//ProjectModule::memberInsert
+protected function memberInsert($args)
 {
 	global $user_id;
 
@@ -1622,12 +1700,12 @@ function project_member_insert($args)
 }
 
 
-//project_modify
-function project_modify($args)
+//ProjectModule::modify
+protected function modify($args)
 {
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
-	if(!_project_is_admin($args['id']))
+	if(!$this->_isAdmin($args['id']))
 		return _error(PERMISSION_DENIED);
 	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
 			.', content, cvsroot'
@@ -1638,13 +1716,14 @@ function project_modify($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error('Unable to update project');
 	$project = $project[0];
-	_project_toolbar($project['id']);
+	$this->_toolbar($project['id']);
 	$title = MODIFICATION_OF.' '.$project['name'];
 	include('./modules/project/project_update.tpl');
 }
 
 
-function project_new($args)
+//ProjectModule::_new
+protected function _new($args)
 {
 	global $user_id;
 
@@ -1656,7 +1735,8 @@ function project_new($args)
 }
 
 
-function project_screenshot_insert($args)
+//ProjectModule::screenshotInsert
+protected function screenshotInsert($args)
 {
 	/* FIXME factorize with download_insert */
 	global $error;
@@ -1672,7 +1752,7 @@ function project_screenshot_insert($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	_project_toolbar($project['id']);
+	$this->_toolbar($project['id']);
 	print('<h1 class="title project">'._html_safe($project['name']).': '
 		.NEW_SCREENSHOT.'</h1>'."\n");
 	if(isset($error) && strlen($error))
@@ -1683,7 +1763,8 @@ function project_screenshot_insert($args)
 }
 
 
-function project_system($args)
+//ProjectModule::system
+protected function system($args)
 {
 	global $title, $html, $error;
 
@@ -1696,14 +1777,14 @@ function project_system($args)
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
 	if($args['action'] == 'config_update')
-		$error = _project_system_config_update($args);
+		$error = $this->_system_config_update($args);
 	else if($args['action'] == 'download_insert')
-		$error = _project_system_download_insert($args);
+		$error = $this->_system_download_insert($args);
 	else if($args['action'] == 'screenshot_insert')
-		$error = _project_system_download_insert($args, 'screenshot');
+		$error = $this->_system_download_insert($args, 'screenshot');
 }
 
-function _project_system_config_update($args)
+private function _system_config_update($args)
 {
 	global $user_id;
 
@@ -1715,12 +1796,11 @@ function _project_system_config_update($args)
 	exit(0);
 }
 
-
-function _project_system_download_insert($args, $category = 'release')
+private function _system_download_insert($args, $category = 'release')
 {
 	if(!isset($args['id']))
 		return INVALID_PROJECT;
-	if(!_project_is_member($args['id']))
+	if(!$this->_isMember($args['id']))
 		return PERMISSION_DENIED;
 	if(!isset($args['directory']))
 		return INVALID_ARGUMENT;
@@ -1789,7 +1869,8 @@ function _project_system_download_insert($args, $category = 'release')
 }
 
 
-function project_timeline($args)
+//ProjectModule::timeline
+protected function timeline($args)
 {
 	require_once('./system/content.php');
 	if(_content_readable($args['id']) == FALSE)
@@ -1804,7 +1885,7 @@ function project_timeline($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_ARGUMENT);
 	$project = $project[0];
-	_project_toolbar($project['id']);
+	$this->_toolbar($project['id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
 		print('<h1 class="title project">'._html_safe($project['name'])
@@ -1813,7 +1894,7 @@ function project_timeline($args)
 	}
 	print('<h1 class="title project">'._html_safe($project['name'])
 			.' '._html_safe(TIMELINE).'</h1>'."\n");
-	$entries = _project_timeline($project['id'], $project['cvsroot']);
+	$entries = $this->_timeline($project['id'], $project['cvsroot']);
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'onclick' => 'history.back(); return false');
@@ -1833,14 +1914,14 @@ function project_timeline($args)
 }
 
 
-//project_update
-function project_update($args)
+//ProjectModule::update
+protected function update($args)
 {
 	global $user_id;
 
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
-	if(!_project_is_admin($args['id'])
+	if(!$this->_isAdmin($args['id'])
 			|| $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	$sql = "UPDATE daportal_project SET synopsis='".$args['synopsis']."'";
@@ -1856,7 +1937,13 @@ function project_update($args)
 	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return _error('Could not update project');
 	_sql_query($sql);
-	project_display(array('id' => $args['id']));
+	$this->display(array('id' => $args['id']));
+}
+
+
+	//private
+	//properties
+	private $S_IFDIR = 040000;
 }
 
 ?>
