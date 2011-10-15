@@ -91,6 +91,7 @@ class WikiModule extends Module
 			case 'disable':
 			case 'display':
 			case 'enable':
+			case 'insert':
 			case 'list':
 			case 'modify':
 			case 'recent':
