@@ -88,8 +88,8 @@ Event * event_new(void)
 	FD_ZERO(&event->wfds);
 	event->reads = eventioarray_new();
 	event->writes = eventioarray_new();
-	event->timeout.tv_sec = LONG_MAX;
-	event->timeout.tv_usec = LONG_MAX;
+	event->timeout.tv_sec = (time_t)LONG_MAX;
+	event->timeout.tv_usec = (suseconds_t)LONG_MAX;
 	if(event->timeouts == NULL || event->reads == NULL
 			|| event->writes == NULL)
 	{
@@ -136,9 +136,9 @@ static void _loop_io(Event * event, eventioArray * eios, fd_set * fds);
 
 int event_loop(Event * event)
 {
-	struct timeval * timeout = (event->timeout.tv_sec == LONG_MAX
-			&& event->timeout.tv_usec == LONG_MAX) ? NULL
-		: &event->timeout;
+	struct timeval * timeout = (event->timeout.tv_sec == (time_t)LONG_MAX
+			&& event->timeout.tv_usec == (suseconds_t)LONG_MAX)
+		? NULL : &event->timeout;
 	fd_set rfds = event->rfds;
 	fd_set wfds = event->wfds;
 
@@ -151,8 +151,9 @@ int event_loop(Event * event)
 			return 1;
 		_loop_io(event, event->reads, &rfds);
 		_loop_io(event, event->writes, &wfds);
-		if(event->timeout.tv_sec == LONG_MAX
-				&& event->timeout.tv_usec == LONG_MAX)
+		if(event->timeout.tv_sec == (time_t)LONG_MAX
+				&& event->timeout.tv_usec
+				== (suseconds_t)LONG_MAX)
 			timeout = NULL;
 		else
 			timeout = &event->timeout;
@@ -173,8 +174,8 @@ static int _loop_timeout(Event * event)
 		error_set_code(1, "%s", strerror(errno));
 		return -1;
 	}
-	event->timeout.tv_sec = LONG_MAX;
-	event->timeout.tv_usec = LONG_MAX;
+	event->timeout.tv_sec = (time_t)LONG_MAX;
+	event->timeout.tv_usec = (suseconds_t)LONG_MAX;
 	while(i < array_count(event->timeouts))
 	{
 		array_get_copy(event->timeouts, i, &et);
@@ -224,9 +225,9 @@ static int _loop_timeout(Event * event)
 		i++;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s%s%ld%s%ld%s", __func__, "() tv_sec=",
-			event->timeout.tv_sec, ", tv_usec=",
-			event->timeout.tv_usec, "\n");
+	fprintf(stderr, "DEBUG: %s() %s%ld%s%ld => 0\n", __func__, "tv_sec=",
+			(long)event->timeout.tv_sec, ", tv_usec=",
+			(long)event->timeout.tv_usec);
 #endif
 	return 0;
 }
@@ -329,8 +330,8 @@ int event_register_timeout(Event * event, struct timeval * timeout,
 	{
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s%s%ld%s%ld%s", __func__, "() tv_sec=",
-				timeout->tv_sec, ", tv_usec=", timeout->tv_usec,
-				"\n");
+				(long)timeout->tv_sec, ", tv_usec=",
+				(long)timeout->tv_usec, "\n");
 #endif
 		event->timeout.tv_sec = timeout->tv_sec;
 		event->timeout.tv_usec = timeout->tv_usec;
@@ -403,8 +404,8 @@ int event_unregister_timeout(Event * event, EventTimeoutFunc func)
 	}
 	if(gettimeofday(&now, NULL) != 0)
 		return error_set_code(1, "%s", strerror(errno));
-	event->timeout.tv_sec = LONG_MAX;
-	event->timeout.tv_usec = LONG_MAX;
+	event->timeout.tv_sec = (time_t)LONG_MAX;
+	event->timeout.tv_usec = (suseconds_t)LONG_MAX;
 	for(i = 0; i < array_count(event->timeouts); i++)
 	{
 		array_get_copy(event->timeouts, i, &et);
