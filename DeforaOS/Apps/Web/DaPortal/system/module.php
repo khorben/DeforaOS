@@ -31,7 +31,14 @@ function _module($module = FALSE, $action = FALSE, $args = FALSE)
 		$request = $engine->getRequest();
 		$module = $request->getModule();
 		$action = $request->getAction();
-		$args = $request->getParameters();
+		if(($args = $request->getParameters()) === FALSE)
+			$args = array();
+		$args['module'] = $module;
+		$args['action'] = $action;
+		if(($id = $request->getId()) !== FALSE)
+			$args['id'] = $id;
+		if(($title = $request->getTitle()) !== FALSE)
+			$args['title'] = $title;
 	}
 	//action was set
 	else if($module === FALSE)
@@ -39,18 +46,15 @@ function _module($module = FALSE, $action = FALSE, $args = FALSE)
 		//obtain the default module
 		$request = $engine->getRequest();
 		$module = $request->getModule();
-		$args = FALSE;
-		$request = new Request($engine, $module, $action, $id, $title,
-				$args);
+		$args = array('module' => $module);
 	}
 	//create a complete request
 	else
 	{
 		$id = isset($args['id']) ? $args['id'] : FALSE;
 		$title = isset($args['title']) ? $args['title'] : FALSE;
-		$request = new Request($engine, $module, $action, $id, $title,
-				$args);
 	}
+	$request = new Request($engine, $module, $action, $id, $title, $args);
 	$module_name = $module;
 	$module_id = _module_id($module);
 	return $engine->process($request);
