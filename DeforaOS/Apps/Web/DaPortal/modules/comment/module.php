@@ -63,6 +63,15 @@ class CommentModule extends Module
 		$args = $request->getParameters();
 		switch(($action = $request->getAction()))
 		{
+			case 'admin':
+			case 'childs':
+			case 'count':
+			case 'insert':
+			case 'reply':
+			case 'system':
+				return $this->$action($args);
+			case 'config_update':
+				return $this->configUpdate($args);
 			default:
 				return $this->_default($args);
 		}
@@ -70,8 +79,8 @@ class CommentModule extends Module
 
 
 //private
-//comment_display
-function _comment_display($module, $parent, $id)
+//CommentModule::display
+private function _display($module, $parent, $id)
 {
 	global $user_id;
 
@@ -96,8 +105,8 @@ function _comment_display($module, $parent, $id)
 }
 
 
-//comment_parents
-function _comment_parents($module, $id)
+//CommentModule::_parents
+private function _parents($module, $id)
 {
 	$ids = array();
 	$module = '';
@@ -117,14 +126,14 @@ function _comment_parents($module, $id)
 		$ids[] = $child;
 	}
 	while($id = array_pop($ids))
-		_comment_display($module, $child, $id);
+		$this->_display($module, $child, $id);
 	return TRUE;
 }
 
 
 //public
-//comment_admin
-function comment_admin($args)
+//CommentModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -192,19 +201,19 @@ function comment_admin($args)
 }
 
 
-//comment_config_update
-function comment_config_update($args)
+//CommentModule::configUpdate
+protected function configUpdate($args)
 {
 	global $error;
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return comment_admin(array());
+	return $this->admin(array());
 }
 
 
-//comment_count
-function comment_count($args)
+//CommentModule::count
+protected function count($args)
 	//FIXME return a string instead (to keep the translations here)
 {
 	$cnt = 0;
@@ -235,8 +244,8 @@ function comment_count($args)
 }
 
 
-//comment_childs
-function comment_childs($args)
+//CommentModule::childs
+protected function childs($args)
 {
 	global $user_id;
 
@@ -269,7 +278,7 @@ function comment_childs($args)
 		{
 			if(in_array($c['id'], $ids))
 				continue;
-			_comment_display($module, $args['id'], $c['id']);
+			$this->_display($module, $args['id'], $c['id']);
 			$parents[] = $c['id'];
 		}
 	}
@@ -281,15 +290,16 @@ protected function _default($args)
 {
 	if(isset($args['id']))
 	{
-		$this->_display(array('id' => $args['id']));
+		//FIXME this call is wrong
+		//$this->_display(array('id' => $args['id']));
 		$this->childs(array('id' => $args['id']));
 	}
 	_error(INVALID_ARGUMENT);
 }
 
 
-//comment_insert
-function comment_insert($comment)
+//CommentModule::insert
+protected function insert($comment)
 {
 	global $user_id, $user_name, $error;
 
@@ -301,7 +311,7 @@ function comment_insert($comment)
 	if(!isset($comment['title']) || !isset($comment['content'])
 			|| !isset($comment['parent'])
 			|| !_sql_single('SELECT content_id'
-				.' FROM daportal_content'." WHERE enabled='1'"
+				." FROM daportal_content WHERE enabled='1'"
 				." AND content_id='".$comment['parent']."'"))
 	{
 		$error = INVALID_ARGUMENT;
@@ -346,8 +356,8 @@ function comment_insert($comment)
 }
 
 
-//comment_reply
-function comment_reply($args)
+//Comment::reply
+protected function reply($args)
 {
 	global $user_id, $user_name;
 
@@ -359,7 +369,7 @@ function comment_reply($args)
 	$comment = array();
 	$comment['module'] = $args['module'];
 	$comment['parent'] = $args['parent'];
-	if(_comment_parents($comment['module'], $comment['parent']) == FALSE)
+	if($this->_parents($comment['module'], $comment['parent']) == FALSE)
 		return;
 	//populate comment
 	$comment['title'] = isset($args['title']) ? stripslashes($args['title'])
@@ -406,12 +416,12 @@ protected function system($args)
 	switch($args['action'])
 	{
 		case 'config_update':
-			$error = _system_comment_config_update($args);
+			$error = $this->_system_config_update($args);
 			break;
 	}
 }
 
-function _system_comment_config_update($args)
+private function _system_config_update($args)
 {
 	global $user_id;
 
