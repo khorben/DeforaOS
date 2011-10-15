@@ -347,7 +347,7 @@ int32_t VFS_readdir(int32_t dir, String ** string)
 	if((d = _client_check_dir(dir)) == NULL)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, dir, string);
+	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, dir, (void *)string);
 #endif
 	if((de = readdir(d)) == NULL
 			|| (*string = string_new(de->d_name)) == NULL)
