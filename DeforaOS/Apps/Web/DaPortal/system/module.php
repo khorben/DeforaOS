@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -23,29 +23,36 @@ function _module($module = FALSE, $action = FALSE, $args = FALSE)
 
 	if($module == '')
 		$module = FALSE;
-	if($args == FALSE)
-		$args = array();
-	$id = isset($args['id']) ? $args['id'] : FALSE;
-	$title = isset($args['title']) ? $args['title'] : FALSE;
-	if($module === FALSE && $action !== FALSE)
+	$id = FALSE;
+	$title = FALSE;
+	//handle default requests
+	if($module === FALSE && $action === FALSE)
 	{
 		$request = $engine->getRequest();
 		$module = $request->getModule();
+		$action = $request->getAction();
 		$args = $request->getParameters();
 	}
-	$args['module'] = $module;
-	$args['action'] = $action;
-	if($id !== FALSE)
-		$args['id'] = $id;
-	if($title !== FALSE)
-		$args['title'] = $title;
-	if($module !== FALSE)
+	//action was set
+	else if($module === FALSE)
+	{
+		//obtain the default module
+		$request = $engine->getRequest();
+		$module = $request->getModule();
+		$args = FALSE;
 		$request = new Request($engine, $module, $action, $id, $title,
 				$args);
+	}
+	//create a complete request
 	else
-		$request = $engine->getRequest();
-	$module_name = $request->getModule();
-	$module_id = _module_id($module_name);
+	{
+		$id = isset($args['id']) ? $args['id'] : FALSE;
+		$title = isset($args['title']) ? $args['title'] : FALSE;
+		$request = new Request($engine, $module, $action, $id, $title,
+				$args);
+	}
+	$module_name = $module;
+	$module_id = _module_id($module);
 	return $engine->process($request);
 }
 
@@ -117,9 +124,7 @@ function _module_link($module = FALSE, $action = FALSE, $id = FALSE,
 	global $friendlylinks, $friendlykicker;
 
 	$link = $_SERVER['SCRIPT_NAME'];
-	if(!isset($friendlykicker))
-		$friendlylinks = 0;
-	else if(isset($_SERVER['DOCUMENT_ROOT'])
+	if(isset($_SERVER['DOCUMENT_ROOT'])
 			&& is_readable(dirname($_SERVER['SCRIPT_FILENAME'])
 				."/$friendlykicker.php"))
 		$link = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/').'/'
