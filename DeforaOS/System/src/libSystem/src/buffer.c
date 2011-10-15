@@ -42,7 +42,7 @@ Buffer * buffer_new(size_t size, char const * data)
 
 	if((buffer = object_new(sizeof(*buffer))) == NULL)
 		return NULL;
-	if((buffer->data = object_new(size)) == NULL)
+	if((buffer->data = object_new(size)) == NULL && size != 0)
 	{
 		object_delete(buffer);
 		return NULL;
