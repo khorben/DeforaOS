@@ -168,7 +168,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	asc->fd = fd;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %x, %u) => %p\n", __func__, fd, addr,
-			port, asc);
+			port, (void *)asc);
 #endif
 	return asc;
 }
@@ -178,7 +178,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 static void _appserverclient_delete(AppServerClient * appserverclient)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, appserverclient);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void *)appserverclient);
 #endif
 #ifdef WITH_SSL
 	if(appserverclient->ssl != NULL)
@@ -213,7 +213,8 @@ static int _appserver_client_remove(AppServer * appserver,
 	unsigned int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, appserver, asc);
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void *)appserver,
+			(void *)asc);
 #endif
 	for(i = 0; i < array_count(appserver->clients); i++)
 	{
@@ -291,7 +292,7 @@ static int _appserver_read(int fd, AppServer * appserver)
 		return _read_eof(appserver, asc);
 	asc->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: read(", fd, ") => ", len, "\n");
+	fprintf(stderr, "%s%d%s%ld%s", "DEBUG: read(", fd, ") => ", len, "\n");
 #endif
 	if(_read_process(appserver, asc) != 0)
 	{
@@ -304,7 +305,8 @@ static int _appserver_read(int fd, AppServer * appserver)
 static int _read_error(AppServer * appserver, AppServerClient * asc)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, appserver, asc);
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void *)appserver,
+			(void *)asc);
 #endif
 #ifdef WITH_SSL
 	error_set_code(1, "%s", _appserver_error_ssl());
@@ -322,7 +324,8 @@ static int _read_error(AppServer * appserver, AppServerClient * asc)
 static int _read_eof(AppServer * appserver, AppServerClient * asc)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, appserver, asc);
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void *)appserver,
+			(void *)asc);
 #endif
 	_appserver_client_remove(appserver, asc);
 	return 1;
@@ -390,7 +393,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 	if((len = asc->write(asc, asc->buf_write, asc->buf_write_cnt)) <= 0)
 		return _write_error(asc);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: write(%d, %zu) => %zd\n", fd,
+	fprintf(stderr, "DEBUG: write(%d, %lu) => %ld\n", fd,
 			asc->buf_write_cnt, len);
 #endif
 	memmove(asc->buf_write, &asc->buf_write[len], len);
@@ -529,9 +532,9 @@ static int _new_server(AppServer * appserver, char const * app, int options)
 	struct sockaddr_in sa;
 
 	if((appserver->interface = appinterface_new_server(app)) == NULL)
-		return 1;
+		return -1;
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		return error_set_code(1, "%s%s", "socket: ", strerror(errno));
+		return -error_set_code(1, "%s%s", "socket: ", strerror(errno));
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appinterface_get_port(appserver->interface));
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
@@ -550,13 +553,16 @@ static int _new_server(AppServer * appserver, char const * app, int options)
 	else
 		error_set_code(1, "%s%s", "bind: ", strerror(errno));
 	close(fd);
-	return 1;
+	return -1;
 }
 
 
 /* appserver_delete */
 void appserver_delete(AppServer * appserver)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(appserver->interface != NULL)
 		appinterface_delete(appserver->interface);
 	if(appserver->event_free != 0)
@@ -582,5 +588,8 @@ void * appserver_get_client_id(AppServer * appserver)
 /* appserver_loop */
 int appserver_loop(AppServer * appserver)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	return event_loop(appserver->event);
 }
