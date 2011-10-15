@@ -58,7 +58,11 @@ class NewsModule extends Module
 		$args = $request->getParameters();
 		switch(($action = $request->getAction()))
 		{
-			case 'display':
+			case 'disable':
+			case 'enable':
+			case 'headline':
+			case 'reply':
+			case 'rss':
 			case 'submit':
 			case 'system':
 			case 'update':
@@ -184,13 +188,13 @@ protected function _default($args)
 {
 	if(!isset($args['id']))
 		return $this->_list($args);
-	if($this->display($args['id']) && _module_id('comment'))
+	if($this->_display($args['id']) && _module_id('comment'))
 		_module('comment', 'childs', array('id' => $args['id']));
 }
 
 
-//news_delete
-function news_delete($args)
+//NewsModule::delete
+protected function delete($args)
 {
 	global $user_id;
 
@@ -203,8 +207,8 @@ function news_delete($args)
 }
 
 
-//news_disable
-function news_disable($args)
+//NewsModule::disable
+protected function disable($args)
 {
 	global $user_id;
 
@@ -217,8 +221,8 @@ function news_disable($args)
 }
 
 
-//news_enable
-function news_enable($args)
+//NewsModule::enable
+protected function enable($args)
 {
 	global $user_id;
 
@@ -231,8 +235,8 @@ function news_enable($args)
 }
 
 
-//news_headline
-function news_headline($args)
+//NewsModule::headline
+protected function headline($args)
 {
 	require_once('./system/icon.php');
 	$page = 1;
@@ -338,8 +342,8 @@ private function _list_user($user_id, $username)
 }
 
 
-//news_reply
-function news_reply($args)
+//NewsModule::reply
+protected function reply($args)
 {
 	global $error;
 
@@ -356,7 +360,7 @@ function news_reply($args)
 	$title = NEWS_RE.': '.$title;
 	$content = '';
 	//display news
-	_news_display($id, REPLY_TO_NEWS);
+	$this->_display($id, REPLY_TO_NEWS);
 	//check if there is a preview
 	$parent = isset($args['parent']) ? $args['parent'] : $args['id'];
 	if(($preview = isset($args['preview'])))
@@ -372,8 +376,8 @@ function news_reply($args)
 }
 
 
-//news_rss
-function news_rss($args)
+//NewsModule::rss
+protected function rss($args)
 {
 	global $title;
 
