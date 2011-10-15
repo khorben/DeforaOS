@@ -460,17 +460,16 @@ ssize_t read(int fd, void * buf, size_t count)
 	_libvfs_init();
 	if(fd < VFS_OFF)
 		return old_read(fd, buf, count);
+	fd -= VFS_OFF;
 	if((b = buffer_new(0, NULL)) == NULL)
 		return -1;
-	if(appclient_call(_appclient, &ret, "read", fd - VFS_OFF, b, count)
-			!= 0)
+	if(appclient_call(_appclient, &ret, "read", fd, b, count) != 0)
 	{
 		buffer_delete(b);
 		return -1;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: read(%d, buf, %lu) => %d\n", fd - VFS_OFF,
-			count, ret);
+	fprintf(stderr, "DEBUG: read(%d, buf, %lu) => %d\n", fd, count, ret);
 #endif
 	if(ret <= 0)
 		return ret;
