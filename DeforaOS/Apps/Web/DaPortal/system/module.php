@@ -46,7 +46,10 @@ function _module($module = FALSE, $action = FALSE, $args = FALSE)
 		//obtain the default module
 		$request = $engine->getRequest();
 		$module = $request->getModule();
-		$args = array('module' => $module);
+		if(($args = $request->getParameters()) === FALSE)
+			$args = array();
+		$args['module'] = $module;
+		$args['action'] = $request->getAction();
 	}
 	//create a complete request
 	else
