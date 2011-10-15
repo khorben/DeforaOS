@@ -25,6 +25,7 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 //global variables
 $debug = 0;
 $friendlylinks = 0;
+$friendlykicker = 'index.php';
 $html = 1;
 $template = 'DaPortal';
 $theme = 'DaPortal';
@@ -46,7 +47,11 @@ $config->load('../daportal.conf');
 require_once('./engines/daportal.php');
 $engine = new DaPortalEngine;
 $engine->attach();
-$db = $engine->getDatabase();
+if(($db = $engine->getDatabase()) === FALSE)
+{
+	print('Could not connect to the database');
+	exit(2);
+}
 if(chdir('..') != TRUE)
 	exit(2);
 
