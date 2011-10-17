@@ -28,90 +28,76 @@
 /* AppBroker */
 /* private */
 /* types */
-typedef struct _AppBrokerData
+typedef struct _AppBroker
 {
+	Config * config;
 	char const * prefix;
 	char const * outfile;
 	FILE * fp;
-} AppBrokerData;
+} AppBroker;
 
 
 /* functions */
-static void _appbroker_head(AppBrokerData * data);
-static int _appbroker_foreach(char const * key, Hash * value,
-		AppBrokerData * data);
-static int _appbroker_foreach_arg(AppBrokerData * data, char const * sep,
+static void _appbroker_calls(AppBroker * appbroker);
+static void _appbroker_constants(AppBroker * appbroker);
+static int _appbroker_foreach_call(char const * key, Hash * value, void * data);
+static int _appbroker_foreach_call_arg(AppBroker * appbroker, char const * sep,
 		char const * arg);
-static void _appbroker_tail(AppBrokerData * data);
+static int _appbroker_foreach_constant(char const * key, char const * value,
+		void * data);
+static void _appbroker_head(AppBroker * appbroker);
+static void _appbroker_tail(AppBroker * appbroker);
 
 static int _appbroker(char const * outfile, char const * filename)
 {
-	Config * config;
-	AppBrokerData data;
+	AppBroker appbroker;
 
-	if((config = config_new()) == NULL)
+	if((appbroker.config = config_new()) == NULL)
 		return error_print(APPBROKER_PROGNAME);
-	if(config_load(config, filename) != 0)
+	if(config_load(appbroker.config, filename) != 0)
 	{
-		config_delete(config);
+		config_delete(appbroker.config);
 		return error_print(APPBROKER_PROGNAME);
 	}
-	data.prefix = config_get(config, NULL, "service");
-	if((data.outfile = outfile) == NULL)
-		data.fp = stdout;
-	else if((data.fp = fopen(outfile, "w")) == NULL)
+	appbroker.prefix = config_get(appbroker.config, NULL, "service");
+	if((appbroker.outfile = outfile) == NULL)
+		appbroker.fp = stdout;
+	else if((appbroker.fp = fopen(outfile, "w")) == NULL)
 	{
-		config_delete(config);
+		config_delete(appbroker.config);
 		return error_set_print(APPBROKER_PROGNAME, 1, "%s: %s", outfile,
 				strerror(errno));
 	}
-	_appbroker_head(&data);
-	fputs("\n\n/* functions */\n", data.fp);
-	hash_foreach(config, (HashForeach)_appbroker_foreach, &data);
-	_appbroker_tail(&data);
+	_appbroker_head(&appbroker);
+	_appbroker_constants(&appbroker);
+	_appbroker_calls(&appbroker);
+	_appbroker_tail(&appbroker);
 	if(outfile != NULL)
-		fclose(data.fp);
-	config_delete(config);
+		fclose(appbroker.fp);
+	config_delete(appbroker.config);
 	return 0;
 }
 
-static void _appbroker_head(AppBrokerData * data)
+static void _appbroker_calls(AppBroker * appbroker)
 {
-	fputs("/* $""Id$ */\n\n\n\n", data->fp);
-	if(data->prefix != NULL)
-		fprintf(data->fp, "%s%s%s%s%s%s", "#ifndef ", data->prefix,
-				"_H\n",	"# define ", data->prefix, "_H\n");
-	fputs("\n# include <stdint.h>\n", data->fp);
-	fputs("# include <System.h>\n\n", data->fp);
-	fputs("\n/* types */\n", data->fp);
-	fputs("typedef Buffer * BUFFER;\n", data->fp);
-	fputs("typedef double * DOUBLE;\n", data->fp);
-	fputs("typedef float * FLOAT;\n", data->fp);
-	fputs("typedef int16_t INT16;\n", data->fp);
-	fputs("typedef int32_t INT32;\n", data->fp);
-	fputs("typedef uint16_t UINT16;\n", data->fp);
-	fputs("typedef uint32_t UINT32;\n", data->fp);
-	fputs("typedef String const * STRING;\n", data->fp);
-	fputs("typedef void VOID;\n", data->fp);
-	fputs("\ntypedef BUFFER BUFFER_IN;\n", data->fp);
-	fputs("\ntypedef DOUBLE DOUBLE_IN;\n", data->fp);
-	fputs("\ntypedef FLOAT FLOAT_IN;\n", data->fp);
-	fputs("typedef INT32 INT32_IN;\n", data->fp);
-	fputs("typedef UINT32 UINT32_IN;\n", data->fp);
-	fputs("typedef STRING STRING_IN;\n", data->fp);
-	fputs("\ntypedef Buffer * BUFFER_OUT;\n", data->fp);
-	fputs("typedef int32_t * INT32_OUT;\n", data->fp);
-	fputs("typedef uint32_t * UINT32_OUT;\n", data->fp);
-	fputs("typedef String ** STRING_OUT;\n", data->fp);
-	fputs("\ntypedef Buffer * BUFFER_INOUT;\n", data->fp);
-	fputs("typedef int32_t * INT32_INOUT;\n", data->fp);
-	fputs("typedef uint32_t * UINT32_INOUT;\n", data->fp);
-	fputs("typedef String ** STRING_INOUT;\n", data->fp);
+	fputs("\n\n/* calls */\n", appbroker->fp);
+	hash_foreach(appbroker->config,
+			(HashForeach)_appbroker_foreach_call, appbroker);
 }
 
-static int _appbroker_foreach(char const * key, Hash * value,
-		AppBrokerData * data)
+static void _appbroker_constants(AppBroker * appbroker)
 {
+	Hash * hash;
+
+	if((hash = hash_get(appbroker->config, "constants")) == NULL)
+		return;
+	fputs("\n\n/* constants */\n", appbroker->fp);
+	hash_foreach(hash, (HashForeach)_appbroker_foreach_constant, appbroker);
+}
+
+static int _appbroker_foreach_call(char const * key, Hash * value, void * data)
+{
+	AppBroker * appbroker = data;
 	int i;
 	char buf[8];
 	char const * p;
@@ -119,23 +105,27 @@ static int _appbroker_foreach(char const * key, Hash * value,
 
 	if(key == NULL || key[0] == '\0')
 		return 0;
+	if(strncmp(key, "call::", 6) != 0)
+		return 0;
+	key += 6;
 	if((p = hash_get(value, "ret")) == NULL)
 		p = "void";
-	fprintf(data->fp, "%s%s%s%s%s%s", p, " ", data->prefix, "_", key, "(");
+	fprintf(appbroker->fp, "%s%s%s%s%s%s", p, " ", appbroker->prefix, "_",
+			key, "(");
 	for(i = 0; i < APPSERVER_MAX_ARGUMENTS; i++)
 	{
 		snprintf(buf, sizeof(buf), "arg%d", i + 1);
 		if((p = hash_get(value, buf)) == NULL)
 			break;
-		if(_appbroker_foreach_arg(data, sep, p) != 0)
+		if(_appbroker_foreach_call_arg(appbroker, sep, p) != 0)
 			return 1;
 		sep = ", ";
 	}
-	fprintf(data->fp, "%s", ");\n");
+	fprintf(appbroker->fp, "%s", ");\n");
 	return 0;
 }
 
-static int _appbroker_foreach_arg(AppBrokerData * data, char const * sep,
+static int _appbroker_foreach_call_arg(AppBroker * appbroker, char const * sep,
 		char const * arg)
 {
 	char * p;
@@ -143,23 +133,68 @@ static int _appbroker_foreach_arg(AppBrokerData * data, char const * sep,
 
 	if((p = strchr(arg, ',')) == NULL)
 	{
-		fprintf(data->fp, "%s%s", sep, arg);
+		fprintf(appbroker->fp, "%s%s", sep, arg);
 		return 0;
 	}
-	fputs(sep, data->fp);
+	fputs(sep, appbroker->fp);
 	size = p - arg;
-	if(fwrite(arg, sizeof(*arg), size, data->fp) != size)
+	if(fwrite(arg, sizeof(*arg), size, appbroker->fp) != size)
 		return 1;
 	if(*(++p) != '\0')
-		fprintf(data->fp, " %s", p);
+		fprintf(appbroker->fp, " %s", p);
 	return 0;
 }
 
-static void _appbroker_tail(AppBrokerData * data)
+static int _appbroker_foreach_constant(char const * key, char const * value,
+		void * data)
 {
-	if(data->prefix != NULL)
-		fprintf(data->fp, "%s%s%s", "\n#endif /* !", data->prefix,
-				"_H */\n");
+	AppBroker * appbroker = data;
+
+	fprintf(appbroker->fp, "# define %s_%s\t%s\n", appbroker->prefix,
+			key, value);
+	return 0;
+}
+
+static void _appbroker_head(AppBroker * appbroker)
+{
+	fputs("/* $""Id$ */\n\n\n\n", appbroker->fp);
+	if(appbroker->prefix != NULL)
+		fprintf(appbroker->fp, "%s%s%s%s%s%s", "#ifndef ",
+				appbroker->prefix, "_H\n", "# define ",
+				appbroker->prefix, "_H\n");
+	fputs("\n# include <stdint.h>\n", appbroker->fp);
+	fputs("# include <System.h>\n\n", appbroker->fp);
+	fputs("\n/* types */\n", appbroker->fp);
+	fputs("typedef Buffer * BUFFER;\n", appbroker->fp);
+	fputs("typedef double * DOUBLE;\n", appbroker->fp);
+	fputs("typedef float * FLOAT;\n", appbroker->fp);
+	fputs("typedef int16_t INT16;\n", appbroker->fp);
+	fputs("typedef int32_t INT32;\n", appbroker->fp);
+	fputs("typedef uint16_t UINT16;\n", appbroker->fp);
+	fputs("typedef uint32_t UINT32;\n", appbroker->fp);
+	fputs("typedef String const * STRING;\n", appbroker->fp);
+	fputs("typedef void VOID;\n", appbroker->fp);
+	fputs("\ntypedef BUFFER BUFFER_IN;\n", appbroker->fp);
+	fputs("\ntypedef DOUBLE DOUBLE_IN;\n", appbroker->fp);
+	fputs("\ntypedef FLOAT FLOAT_IN;\n", appbroker->fp);
+	fputs("typedef INT32 INT32_IN;\n", appbroker->fp);
+	fputs("typedef UINT32 UINT32_IN;\n", appbroker->fp);
+	fputs("typedef STRING STRING_IN;\n", appbroker->fp);
+	fputs("\ntypedef Buffer * BUFFER_OUT;\n", appbroker->fp);
+	fputs("typedef int32_t * INT32_OUT;\n", appbroker->fp);
+	fputs("typedef uint32_t * UINT32_OUT;\n", appbroker->fp);
+	fputs("typedef String ** STRING_OUT;\n", appbroker->fp);
+	fputs("\ntypedef Buffer * BUFFER_INOUT;\n", appbroker->fp);
+	fputs("typedef int32_t * INT32_INOUT;\n", appbroker->fp);
+	fputs("typedef uint32_t * UINT32_INOUT;\n", appbroker->fp);
+	fputs("typedef String ** STRING_INOUT;\n", appbroker->fp);
+}
+
+static void _appbroker_tail(AppBroker * appbroker)
+{
+	if(appbroker->prefix != NULL)
+		fprintf(appbroker->fp, "%s%s%s", "\n#endif /* !",
+				appbroker->prefix, "_H */\n");
 }
 
 
