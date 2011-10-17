@@ -9,7 +9,12 @@ PREFIX	= /usr/local
 DEVNULL	= /dev/null
 
 
-all: subdirs
+all:
+	@if [ ! -x ./Apps/Devel/src/configure/src/configure ]; then \
+		$(MAKE) bootstrap; \
+	else \
+		for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done \
+	fi
 
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
@@ -22,7 +27,7 @@ clean:
 
 dist:
 	#XXX hack to bootstrap only configure
-	./build.sh bootstrap < "$(DEVNULL)"
+	./build.sh MAKE="$(MAKE)" bootstrap < "$(DEVNULL)"
 	./Apps/Devel/src/configure/src/configure -v
 	$(MAKE) dist
 
