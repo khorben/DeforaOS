@@ -98,12 +98,9 @@ static int _appclient_hostname(int verbose, char const * hostname,
 	if((buf = malloc(len)) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
 	snprintf(buf, len, "%s%s", prefix, service);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, buf);
-#endif
 	env = getenv(buf);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, env);
+	fprintf(stderr, "DEBUG: %s() \"%s\"=\"%s\"\n", __func__, buf, env);
 #endif
 	if(hostname == NULL)
 	{
