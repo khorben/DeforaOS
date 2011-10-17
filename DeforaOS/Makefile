@@ -5,7 +5,7 @@
 
 
 SUBDIRS	= System/src Apps
-PREFIX	= /usr/local
+PREFIX	?= /usr/local
 DEVNULL	= /dev/null
 
 
@@ -13,7 +13,7 @@ all:
 	@if [ ! -x ./Apps/Devel/src/configure/src/configure ]; then \
 		$(MAKE) bootstrap; \
 	else \
-		for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done \
+		$(MAKE) subdirs; \
 	fi
 
 subdirs:
