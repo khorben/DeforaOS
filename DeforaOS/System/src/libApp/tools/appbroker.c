@@ -159,8 +159,10 @@ static void _appbroker_head(AppBroker * appbroker)
 {
 	fputs("/* $""Id$ */\n\n\n\n", appbroker->fp);
 	if(appbroker->prefix != NULL)
-		fprintf(appbroker->fp, "%s%s%s%s%s%s", "#ifndef ",
+		fprintf(appbroker->fp, "%s%s%s%s%s%s%s%s%s%s", "#ifndef ",
+				appbroker->prefix, "_",
 				appbroker->prefix, "_H\n", "# define ",
+				appbroker->prefix, "_",
 				appbroker->prefix, "_H\n");
 	fputs("\n# include <stdint.h>\n", appbroker->fp);
 	fputs("# include <System.h>\n\n", appbroker->fp);
@@ -193,7 +195,8 @@ static void _appbroker_head(AppBroker * appbroker)
 static void _appbroker_tail(AppBroker * appbroker)
 {
 	if(appbroker->prefix != NULL)
-		fprintf(appbroker->fp, "%s%s%s", "\n#endif /* !",
+		fprintf(appbroker->fp, "%s%s%s%s%s", "\n#endif /* !",
+				appbroker->prefix, "_",
 				appbroker->prefix, "_H */\n");
 }
 
