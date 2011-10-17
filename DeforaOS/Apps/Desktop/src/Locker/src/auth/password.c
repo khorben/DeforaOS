@@ -39,9 +39,9 @@ typedef struct _Password
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _password_init(LockerPlugin * plugin);
-static void _password_destroy(LockerPlugin * plugin);
-static void _password_action(LockerPlugin * plugin, LockerAction action);
+static GtkWidget * _password_init(LockerAuth * plugin);
+static void _password_destroy(LockerAuth * plugin);
+static void _password_action(LockerAuth * plugin, LockerAction action);
 
 /* callbacks */
 static void _password_on_password_activate(gpointer data);
@@ -52,7 +52,7 @@ static gboolean _password_on_timeout(gpointer data);
 /* public */
 /* variables */
 /* plug-in */
-LockerPlugin plugin =
+LockerAuth plugin =
 {
 	NULL,
 	"Password",
@@ -66,7 +66,7 @@ LockerPlugin plugin =
 /* private */
 /* functions */
 /* password_init */
-static GtkWidget * _password_init(LockerPlugin * plugin)
+static GtkWidget * _password_init(LockerAuth * plugin)
 {
 	Password * password;
 	PangoFontDescription * font;
@@ -117,7 +117,7 @@ static GtkWidget * _password_init(LockerPlugin * plugin)
 
 
 /* password_destroy */
-static void _password_destroy(LockerPlugin * plugin)
+static void _password_destroy(LockerAuth * plugin)
 {
 	Password * password = plugin->priv;
 
@@ -128,7 +128,7 @@ static void _password_destroy(LockerPlugin * plugin)
 
 
 /* password_action */
-static void _password_action(LockerPlugin * plugin, LockerAction action)
+static void _password_action(LockerAuth * plugin, LockerAction action)
 {
 	Password * password = plugin->priv;
 
@@ -154,8 +154,8 @@ static void _password_action(LockerPlugin * plugin, LockerAction action)
 /* password_on_password_activate */
 static void _password_on_password_activate(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	LockerAuth * plugin = data;
+	LockerAuthHelper * helper = plugin->helper;
 	Password * password = plugin->priv;
 	gchar const * text;
 
@@ -181,7 +181,7 @@ static void _password_on_password_activate(gpointer data)
 /* password_on_password_wrong */
 static gboolean _password_on_password_wrong(gpointer data)
 {
-	LockerPlugin * plugin = data;
+	LockerAuth * plugin = data;
 	Password * password = plugin->priv;
 
 	password->source = 0;
@@ -195,8 +195,8 @@ static gboolean _password_on_password_wrong(gpointer data)
 /* password_on_timeout */
 static gboolean _password_on_timeout(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	LockerAuth * plugin = data;
+	LockerAuthHelper * helper = plugin->helper;
 	Password * password = plugin->priv;
 
 	password->source = 0;

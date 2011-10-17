@@ -40,9 +40,9 @@ typedef struct _Slider
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _slider_init(LockerPlugin * plugin);
-static void _slider_destroy(LockerPlugin * plugin);
-static void _slider_action(LockerPlugin * plugin, LockerAction action);
+static GtkWidget * _slider_init(LockerAuth * plugin);
+static void _slider_destroy(LockerAuth * plugin);
+static void _slider_action(LockerAuth * plugin, LockerAction action);
 
 /* callbacks */
 static void _slider_on_scale_value_changed(gpointer data);
@@ -54,7 +54,7 @@ static gboolean _slider_on_timeout_suspend(gpointer data);
 /* public */
 /* variables */
 /* plug-in */
-LockerPlugin plugin =
+LockerAuth plugin =
 {
 	NULL,
 	"Slider",
@@ -68,7 +68,7 @@ LockerPlugin plugin =
 /* private */
 /* functions */
 /* slider_init */
-static GtkWidget * _slider_init(LockerPlugin * plugin)
+static GtkWidget * _slider_init(LockerAuth * plugin)
 {
 	Slider * slider;
 	GtkWidget * vbox;
@@ -108,7 +108,7 @@ static GtkWidget * _slider_init(LockerPlugin * plugin)
 
 
 /* slider_destroy */
-static void _slider_destroy(LockerPlugin * plugin)
+static void _slider_destroy(LockerAuth * plugin)
 {
 	Slider * slider = plugin->priv;
 
@@ -119,7 +119,7 @@ static void _slider_destroy(LockerPlugin * plugin)
 
 
 /* slider_action */
-static void _slider_action(LockerPlugin * plugin, LockerAction action)
+static void _slider_action(LockerAuth * plugin, LockerAction action)
 {
 	Slider * slider = plugin->priv;
 
@@ -142,8 +142,8 @@ static void _slider_action(LockerPlugin * plugin, LockerAction action)
 /* slider_on_scale_value_changed */
 static void _slider_on_scale_value_changed(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	LockerAuth * plugin = data;
+	LockerAuthHelper * helper = plugin->helper;
 	Slider * slider = plugin->priv;
 	gdouble value;
 
@@ -162,7 +162,7 @@ static void _slider_on_scale_value_changed(gpointer data)
 /* slider_on_scale_value_changed_timeout */
 static gboolean _slider_on_scale_value_changed_timeout(gpointer data)
 {
-	LockerPlugin * plugin = data;
+	LockerAuth * plugin = data;
 	Slider * slider = plugin->priv;
 
 #ifdef DEBUG
@@ -177,8 +177,8 @@ static gboolean _slider_on_scale_value_changed_timeout(gpointer data)
 /* slider_on_timeout */
 static gboolean _slider_on_timeout(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	LockerAuth * plugin = data;
+	LockerAuthHelper * helper = plugin->helper;
 	Slider * slider = plugin->priv;
 
 	slider->source = 0;
@@ -190,8 +190,8 @@ static gboolean _slider_on_timeout(gpointer data)
 /* slider_on_timeout_suspend */
 static gboolean _slider_on_timeout_suspend(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	LockerAuth * plugin = data;
+	LockerAuthHelper * helper = plugin->helper;
 #ifdef __NetBSD__
 	int sleep_state = 3;
 #else

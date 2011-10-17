@@ -27,6 +27,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Locker.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Locker/auth.h \
 		$(PACKAGE)-$(VERSION)/include/Locker/demo.h \
 		$(PACKAGE)-$(VERSION)/include/Locker/locker.h \
 		$(PACKAGE)-$(VERSION)/include/Locker/plugin.h \
@@ -43,11 +44,15 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/locker.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/auth/password.c \
+		$(PACKAGE)-$(VERSION)/src/auth/slider.c \
+		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
+		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/demos/xscreensaver.c \
 		$(PACKAGE)-$(VERSION)/src/demos/Makefile \
 		$(PACKAGE)-$(VERSION)/src/demos/project.conf \
-		$(PACKAGE)-$(VERSION)/src/plugins/password.c \
-		$(PACKAGE)-$(VERSION)/src/plugins/slider.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/debug.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \

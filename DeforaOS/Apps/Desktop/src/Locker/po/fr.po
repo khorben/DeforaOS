@@ -1,56 +1,48 @@
 # $Id$
-# DeforaOS Desktop Locker.
 # Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
-# This file is distributed under the same license as the Locker package.
-# Pierre Pronchery <EMAIL@ADDRESS>, 2011.
+# This file is part of DeforaOS Desktop Locker
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Locker 0.0.2\n"
+"Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-19 05:06+0200\n"
-"PO-Revision-Date: 2011-08-18 03:11+0200\n"
-"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
-"Language-Team: DeforaOS development (French) <devel-fr@lists.defora.org>\n"
+"POT-Creation-Date: 2011-10-17 16:32+0200\n"
+"PO-Revision-Date: 2011-10-17 16:32+0200\n"
+"Last-Translator:  <EMAIL@ADDRESS>\n"
+"Language-Team: French\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=ASCII\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../src/lockerctl.c:29
 msgid ""
 "Usage: lockerctl -l\n"
+"       lockerctl -p\n"
 "       lockerctl -s\n"
 "       lockerctl -u\n"
 "  -l\tLock the screen\n"
+"  -p\tShow the preferences window\n"
 "  -s\tEnable the screen saver\n"
 "  -u\tUnlock the screen\n"
 msgstr ""
-"Usage: lockerctl -l\n"
-"       lockerctl -s\n"
-"       lockerctl -u\n"
-"  -l\tVerrouiller l'écran\n"
-"  -s\tActiver l'économiseur d'écran\n"
-"  -u\tDéverrouiller l'écran\n"
 
 #: ../src/main.c:44
 msgid ""
-"Usage: locker [-p plug-in][-s]\n"
+"Usage: locker [-d demo][-p plug-in][-s]\n"
+"  -d\tDemo sub-system to load\n"
 "  -p\tAuthentication plug-in to load\n"
 "  -s\tSuspend automatically when locked\n"
 msgstr ""
-"Usage locker [-p greffon][-s]\n"
-"  -p\tGreffon d'authentification à charger\n"
-"  -s\tSuspendre automatiquement au verrouillage\n"
 
-#: ../src/plugins/password.c:87
+#: ../src/auth/password.c:87
 msgid "Enter password: "
-msgstr "Mot de passe : "
+msgstr ""
 
-#: ../src/plugins/password.c:109
+#: ../src/auth/password.c:109
 msgid "Wrong password!"
-msgstr "Mot de passe erroné !"
+msgstr ""
 
-#: ../src/plugins/password.c:174
+#: ../src/auth/password.c:174
 msgid "Authentication failed"
-msgstr "Échec lors de l'authentification"
+msgstr ""

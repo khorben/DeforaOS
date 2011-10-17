@@ -1,4 +1,4 @@
-TARGETS	= password.so slider.so
+TARGETS	= debug.so openmoko.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -18,40 +18,40 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-password_OBJS = password.o
-password_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-password_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+debug_OBJS = debug.o
+debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-password.so: $(password_OBJS)
-	$(CCSHARED) -o password.so $(password_OBJS) $(password_LDFLAGS)
+debug.so: $(debug_OBJS)
+	$(CCSHARED) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
 
-slider_OBJS = slider.o
-slider_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-slider_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+openmoko_OBJS = openmoko.o
+openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-slider.so: $(slider_OBJS)
-	$(CCSHARED) -o slider.so $(slider_OBJS) $(slider_LDFLAGS)
+openmoko.so: $(openmoko_OBJS)
+	$(CCSHARED) -o openmoko.so $(openmoko_OBJS) $(openmoko_LDFLAGS)
 
-password.o: password.c ../../include/Locker.h
-	$(CC) $(password_CFLAGS) -c password.c
+debug.o: debug.c ../../include/Locker.h
+	$(CC) $(debug_CFLAGS) -c debug.c
 
-slider.o: slider.c ../../include/Locker.h
-	$(CC) $(slider_CFLAGS) -c slider.c
+openmoko.o: openmoko.c ../../include/Locker.h
+	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
 clean:
-	$(RM) -- $(password_OBJS) $(slider_OBJS)
+	$(RM) -- $(debug_OBJS) $(openmoko_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
-	$(INSTALL) -m 0644 -- password.so $(DESTDIR)$(LIBDIR)/Locker/plugins/password.so
+	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
-	$(INSTALL) -m 0644 -- slider.so $(DESTDIR)$(LIBDIR)/Locker/plugins/slider.so
+	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/password.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/slider.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 
 .PHONY: all clean distclean install uninstall

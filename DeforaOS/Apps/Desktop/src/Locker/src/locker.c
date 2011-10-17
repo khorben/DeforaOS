@@ -17,7 +17,9 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/scrnsaver.h>
@@ -32,6 +34,12 @@
 /* Locker */
 /* private */
 /* types */
+typedef struct _LockerPlugins
+{
+	Plugin * pplugin;
+	LockerPlugin * plugin;
+} LockerPlugins;
+
 struct _Locker
 {
 	/* settings */
@@ -45,14 +53,19 @@ struct _Locker
 	GtkWidget ** windows;
 	size_t windows_cnt;
 
+	/* auth */
+	Plugin * aplugin;
+	LockerAuth * auth;
+	LockerAuthHelper ahelper;
+
 	/* demo */
 	Plugin * dplugin;
 	LockerDemo * demo;
 	LockerDemoHelper dhelper;
 
-	/* plugin */
-	Plugin * pplugin;
-	LockerPlugin * plugin;
+	/* plug-ins */
+	LockerPlugins * plugins;
+	size_t plugins_cnt;
 	LockerPluginHelper phelper;
 
 	/* preferences */
@@ -69,6 +82,7 @@ static void _locker_action(Locker * locker, LockerAction action);
 
 static void _locker_activate(Locker * locker);
 static int _locker_error(Locker * locker, char const * message, int ret);
+static void _locker_event(Locker * locker, LockerEvent event);
 static void _locker_lock(Locker * locker);
 static void _locker_unlock(Locker * locker);
 
@@ -85,10 +99,12 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data);
 static int _new_config(Locker * locker);
 static int _new_demo(Locker * locker, char const * demo);
 static void _new_helpers(Locker * locker);
-static GtkWidget * _new_plugin(Locker * locker, char const * plugin);
+static GtkWidget * _new_auth(Locker * locker, char const * plugin);
+static int _new_plugins(Locker * locker);
+static int _new_plugins_load(Locker * locker, char const * plugin);
 static int _new_xss(Locker * locker, size_t cnt);
 
-Locker * locker_new(int suspend, char const * demo, char const * plugin)
+Locker * locker_new(int suspend, char const * demo, char const * auth)
 {
 	Locker * locker;
 	GdkScreen * screen;
@@ -114,17 +130,20 @@ Locker * locker_new(int suspend, char const * demo, char const * plugin)
 	locker->windows_cnt = cnt;
 	locker->dplugin = NULL;
 	locker->demo = NULL;
+	locker->plugins = NULL;
+	locker->plugins_cnt = 0;
 	locker->pr_window = NULL;
 	/* check for errors */
 	if(_new_config(locker) != 0
 			|| _new_demo(locker, demo) != 0
-			|| (widget = _new_plugin(locker, plugin)) == NULL
+			|| (widget = _new_auth(locker, auth)) == NULL
 			|| _new_xss(locker, cnt) != 0)
 	{
 		_locker_error(NULL, error_get(), 1);
 		locker_delete(locker);
 		return NULL;
 	}
+	_new_plugins(locker);
 	/* create windows */
 	memset(&black, 0, sizeof(black));
 	for(i = 0; i < locker->windows_cnt; i++)
@@ -176,6 +195,32 @@ static int _new_config(Locker * locker)
 	return 0;
 }
 
+static GtkWidget * _new_auth(Locker * locker, char const * plugin)
+{
+	GtkWidget * widget;
+
+	if(plugin == NULL)
+		plugin = config_get(locker->config, NULL, "auth");
+	if(plugin == NULL)
+#ifdef EMBEDDED
+		plugin = "slider";
+#else
+		plugin = "password";
+#endif
+	if((locker->aplugin = plugin_new(LIBDIR, PACKAGE, "auth", plugin))
+			== NULL)
+		return NULL;
+	if((locker->auth = plugin_lookup(locker->aplugin, "plugin")) == NULL)
+		return NULL;
+	locker->auth->helper = &locker->ahelper;
+	if((widget = locker->auth->init(locker->auth)) == NULL)
+	{
+		locker->auth = NULL;
+		return NULL;
+	}
+	return widget;
+}
+
 static int _new_demo(Locker * locker, char const * demo)
 {
 	if(demo == NULL && (demo = config_get(locker->config, NULL, "demo"))
@@ -199,35 +244,67 @@ static void _new_helpers(Locker * locker)
 {
 	locker->dhelper.locker = locker;
 	locker->dhelper.error = _locker_error;
+	locker->ahelper.locker = locker;
+	locker->ahelper.error = _locker_error;
+	locker->ahelper.action = _locker_action;
 	locker->phelper.locker = locker;
 	locker->phelper.error = _locker_error;
 	locker->phelper.action = _locker_action;
 }
 
-static GtkWidget * _new_plugin(Locker * locker, char const * plugin)
+static int _new_plugins(Locker * locker)
 {
-	GtkWidget * widget;
+	int ret = 0;
+	char const * p;
+	String * plugins;
+	size_t i;
+	int c;
 
-	if(plugin == NULL)
-		plugin = config_get(locker->config, NULL, "plugin");
-	if(plugin == NULL)
-#ifdef EMBEDDED
-		plugin = "slider";
-#else
-		plugin = "password";
-#endif
-	if((locker->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
-			== NULL)
-		return NULL;
-	if((locker->plugin = plugin_lookup(locker->pplugin, "plugin")) == NULL)
-		return NULL;
-	locker->plugin->helper = &locker->phelper;
-	if((widget = locker->plugin->init(locker->plugin)) == NULL)
+	if((p = config_get(locker->config, NULL, "plugins")) == NULL)
+		return 0;
+	if((plugins = string_new(p)) == NULL)
+		return -1;
+	for(i = 0;; i++)
 	{
-		locker->plugin = NULL;
-		return NULL;
+		if(plugins[i] != ',' && plugins[i] != '\0')
+			continue;
+		c = plugins[i];
+		plugins[i] = '\0';
+		ret |= _new_plugins_load(locker, plugins);
+		if(c == '\0')
+			break;
+		plugins += i + 1;
+		i = 0;
 	}
-	return widget;
+	string_delete(plugins);
+	return ret;
+}
+
+static int _new_plugins_load(Locker * locker, char const * plugin)
+{
+	LockerPlugins * p;
+
+	if((p = realloc(locker->plugins, sizeof(*p) * (locker->plugins_cnt
+						+ 1))) == NULL)
+		return _locker_error(NULL, strerror(errno), 1);
+	locker->plugins = p;
+	p = &locker->plugins[locker->plugins_cnt];
+	if((p->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
+			== NULL)
+		return _locker_error(NULL, error_get(), 1);
+	if((p->plugin = plugin_lookup(p->pplugin, "plugin")) == NULL)
+	{
+		plugin_delete(p->pplugin);
+		return _locker_error(NULL, error_get(), 1);
+	}
+	p->plugin->helper = &locker->phelper;
+	if(p->plugin->init(p->plugin) != 0)
+	{
+		plugin_delete(p->pplugin);
+		return _locker_error(NULL, error_get(), 1);
+	}
+	locker->plugins_cnt++;
+	return 0;
 }
 
 static int _new_xss(Locker * locker, size_t cnt)
@@ -251,10 +328,11 @@ static int _new_xss(Locker * locker, size_t cnt)
 /* locker_delete */
 void locker_delete(Locker * locker)
 {
-	if(locker->plugin != NULL)
-		locker->plugin->destroy(locker->plugin);
-	if(locker->pplugin != NULL)
-		plugin_delete(locker->pplugin);
+	/* FIXME also destroy plug-ins */
+	if(locker->auth != NULL)
+		locker->auth->destroy(locker->auth);
+	if(locker->aplugin != NULL)
+		plugin_delete(locker->aplugin);
 	if(locker->demo != NULL)
 		locker->demo->destroy(locker->demo);
 	if(locker->dplugin != NULL)
@@ -316,6 +394,10 @@ static void _preferences_window(Locker * locker)
 	/* FIXME implement */
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
 			gtk_label_new("Demos"));
+	/* plug-ins */
+	/* FIXME implement */
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
+			gtk_label_new("Plug-ins"));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(locker->pr_window));
 #else
@@ -376,13 +458,14 @@ static void _locker_action(Locker * locker, LockerAction action)
 			_locker_unlock(locker);
 			break;
 	}
-	locker->plugin->action(locker->plugin, LOCKER_ACTION_ACTIVATE);
+	locker->auth->action(locker->auth, LOCKER_ACTION_ACTIVATE);
 }
 
 
 /* locker_activate */
 static void _locker_activate(Locker * locker)
 {
+	_locker_event(locker, LOCKER_EVENT_ACTIVATING);
 	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
 }
 
@@ -411,6 +494,17 @@ static int _locker_error(Locker * locker, char const * message, int ret)
 }
 
 
+/* locker_event */
+static void _locker_event(Locker * locker, LockerEvent event)
+{
+	size_t i;
+
+	for(i = 0; i < locker->plugins_cnt; i++)
+		locker->plugins[i].plugin->event(locker->plugins[i].plugin,
+				event);
+}
+
+
 /* locker_lock */
 static void _locker_lock(Locker * locker)
 {
@@ -419,12 +513,13 @@ static void _locker_lock(Locker * locker)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	_locker_event(locker, LOCKER_EVENT_LOCKING);
 	for(i = 0; i < locker->windows_cnt; i++)
 	{
 		gtk_widget_show(locker->windows[i]);
 		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
 	}
-	locker->plugin->action(locker->plugin, LOCKER_ACTION_LOCK);
+	locker->auth->action(locker->auth, LOCKER_ACTION_LOCK);
 }
 
 
@@ -433,6 +528,7 @@ static void _locker_unlock(Locker * locker)
 {
 	size_t i;
 
+	_locker_event(locker, LOCKER_EVENT_UNLOCKING);
 	if(locker->windows == NULL)
 		return;
 	for(i = 0; i < locker->windows_cnt; i++)

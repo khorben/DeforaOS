@@ -32,6 +32,13 @@ typedef enum _LockerAction
 	LOCKER_ACTION_UNLOCK
 } LockerAction;
 
+typedef enum _LockerEvent
+{
+	LOCKER_EVENT_ACTIVATING = 0,
+	LOCKER_EVENT_LOCKING,
+	LOCKER_EVENT_UNLOCKING
+} LockerEvent;
+
 
 /* constants */
 # define LOCKER_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_LOCKER_CLIENT"

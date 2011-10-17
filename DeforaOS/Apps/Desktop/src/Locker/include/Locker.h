@@ -18,6 +18,7 @@
 #ifndef DESKTOP_LOCKER_H
 # define DESKTOP_LOCKER_H
 
+# include "Locker/auth.h"
 # include "Locker/demo.h"
 # include "Locker/locker.h"
 # include "Locker/plugin.h"
