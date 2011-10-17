@@ -1,60 +1,61 @@
+#$Id$
 service=GServer
 port=4248
 
-[glBegin]
+[call::glBegin]
 arg1=UINT32
 
-[glClear]
+[call::glClear]
 arg1=UINT32
 
-[glClearColor]
+[call::glClearColor]
 arg1=FLOAT
 arg2=FLOAT
 arg3=FLOAT
 arg4=FLOAT
 
-[glClearDepth]
+[call::glClearDepth]
 arg1=DOUBLE
 
-[glColor3f]
+[call::glColor3f]
 arg1=FLOAT
 arg2=FLOAT
 arg3=FLOAT
 
-[glColor3i]
+[call::glColor3i]
 arg1=INT32
 arg2=INT32
 arg3=INT32
 
-[glEnd]
+[call::glEnd]
 ret=VOID
 
-[glFlush]
+[call::glFlush]
 ret=VOID
 
-[glLoadIdentity]
+[call::glLoadIdentity]
 ret=VOID
 
-[glRotatef]
+[call::glRotatef]
 arg1=FLOAT
 arg2=FLOAT
 arg3=FLOAT
 arg4=FLOAT
 
-[glTranslatef]
+[call::glTranslatef]
 arg1=FLOAT
 arg2=FLOAT
 arg3=FLOAT
 
-[glVertex3f]
+[call::glVertex3f]
 arg1=FLOAT
 arg2=FLOAT
 arg3=FLOAT
 
-[glVertex3i]
+[call::glVertex3i]
 arg1=INT32
 arg2=INT32
 arg3=INT32
 
-[SwapBuffers]
+[call::SwapBuffers]
 ret=VOID

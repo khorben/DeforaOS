@@ -2,7 +2,7 @@
 service=Directory
 port=4247
 
-[register]
+[call::register]
 ret=INT32
 arg1=STRING,title
 arg2=BUFFER,csr

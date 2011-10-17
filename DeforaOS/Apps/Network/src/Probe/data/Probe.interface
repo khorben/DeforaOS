@@ -2,45 +2,45 @@
 service=Probe
 port=4243
 
-[uptime]
+[call::uptime]
 ret=UINT32
 
-[load]
+[call::load]
 arg1=UINT32_OUT,load_1
 arg2=UINT32_OUT,load_5
 arg3=UINT32_OUT,load_15
 ret=INT32
 
-[ram]
+[call::ram]
 arg1=UINT32_OUT,total
 arg2=UINT32_OUT,free
 arg3=UINT32_OUT,shared
 arg4=UINT32_OUT,buffer
 ret=INT32
 
-[swap]
+[call::swap]
 arg1=UINT32_OUT,total
 arg2=UINT32_OUT,free
 ret=INT32
 
-[users]
+[call::users]
 ret=UINT32
 
-[procs]
+[call::procs]
 ret=UINT32
 
-[ifrxbytes]
-ret=UINT32
-arg1=STRING,interface
-
-[iftxbytes]
+[call::ifrxbytes]
 ret=UINT32
 arg1=STRING,interface
 
-[voltotal]
+[call::iftxbytes]
+ret=UINT32
+arg1=STRING,interface
+
+[call::voltotal]
 ret=UINT32
 arg1=STRING,volume
 
-[volfree]
+[call::volfree]
 ret=UINT32
 arg1=STRING,volume

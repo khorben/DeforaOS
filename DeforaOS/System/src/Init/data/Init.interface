@@ -2,26 +2,26 @@
 service=Init
 port=4241
 
-[login]
+[call::login]
 ret=UINT16
 arg1=STRING,username
 
-[logout]
+[call::logout]
 ret=UINT16
 
-[register]
+[call::register]
 ret=UINT16
 arg1=STRING
 arg2=UINT16
 
-[get_session]
+[call::get_session]
 ret=INT32
 arg1=STRING
 
-[get_profile]
+[call::get_profile]
 ret=INT32
 arg1=STRING_OUT,profile
 
-[set_profile]
+[call::set_profile]
 ret=INT32
 arg1=STRING,profile

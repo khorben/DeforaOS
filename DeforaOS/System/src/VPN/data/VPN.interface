@@ -2,25 +2,36 @@
 service=VPN
 port=4246
 
-[close]
+[call::close]
 ret=INT32
 arg1=INT32,fd
 
-[connect]
+[call::connect]
 ret=INT32
 arg1=UINT32,protocol
 arg2=STRING,name
 
-[recv]
+[call:gethostbyname]
+ret=INT32
+arg1=STRING,name
+arg2=INT32_OUT,address
+
+[call::recv]
 ret=INT32
 arg1=INT32,fd
 arg2=BUFFER_IN,buf
 arg3=UINT32,size
 arg4=UINT32,flags
 
-[send]
+[call::send]
 ret=INT32
 arg1=INT32,fd
 arg2=BUFFER_OUT,buf
 arg3=UINT32,size
 arg4=UINT32,flags
+
+#[call::socket]
+#ret=INT32
+#arg1=INT32,domain
+#arg2=INT32,type
+#arg3=INT32,protocol
