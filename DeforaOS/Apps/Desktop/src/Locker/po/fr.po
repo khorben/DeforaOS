@@ -8,10 +8,10 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-10-17 16:32+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
-"Last-Translator:  <EMAIL@ADDRESS>\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
@@ -37,12 +37,12 @@ msgstr ""
 
 #: ../src/auth/password.c:87
 msgid "Enter password: "
-msgstr ""
+msgstr "Mot de passe : "
 
 #: ../src/auth/password.c:109
 msgid "Wrong password!"
-msgstr ""
+msgstr "Mot de passe erroné !"
 
 #: ../src/auth/password.c:174
 msgid "Authentication failed"
-msgstr ""
+msgstr "Échec de l'authentification"
