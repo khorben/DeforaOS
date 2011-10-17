@@ -21,6 +21,12 @@
 
 
 /* types */
+typedef struct _VFSErrno
+{
+	int native;
+	int error;
+} VFSError;
+
 typedef struct _VFSFlag
 {
 	unsigned int native;
@@ -29,6 +35,38 @@ typedef struct _VFSFlag
 
 
 /* variables */
+/* errors */
+static VFSError _vfs_error[] =
+{
+	{ EPERM,	VFS_EPERM	},
+	{ ENOENT,	VFS_ENOENT	},
+	{ EIO,		VFS_EIO		},
+	{ ENXIO,	VFS_ENXIO	},
+	{ EBADF,	VFS_EBADF	},
+	{ EACCES,	VFS_EACCES	},
+	{ EFAULT,	VFS_EFAULT	},
+	{ EBUSY,	VFS_EBUSY	},
+	{ EEXIST,	VFS_EEXIST	},
+	{ EXDEV,	VFS_EXDEV	},
+	{ ENODEV,	VFS_ENODEV	},
+	{ ENOTDIR,	VFS_ENOTDIR	},
+	{ EISDIR,	VFS_EISDIR	},
+	{ EINVAL,	VFS_EINVAL	},
+	{ ENFILE,	VFS_ENFILE	},
+	{ EMFILE,	VFS_EMFILE	},
+	{ ETXTBSY,	VFS_ETXTBUSY	},
+	{ EFBIG,	VFS_EFBIG	},
+	{ ENOSPC,	VFS_ENOSPC	},
+	{ EROFS,	VFS_EROFS	},
+	{ EMLINK,	VFS_EMLINK	},
+	{ ENOTEMPTY,	VFS_ENOTEMPTY	},
+	{ ENOSYS,	VFS_ENOSYS	},
+	{ ENOTSUP,	VFS_ENOTSUP	},
+	{ EPROTO,	VFS_EPROTO	},
+};
+static const size_t _vfs_error_cnt = sizeof(_vfs_error) / sizeof(*_vfs_error);
+
+
 /* flags */
 /* access */
 static VFSFlag _vfs_flags_access[] =
@@ -82,11 +120,36 @@ static const size_t _vfs_flags_open_cnt = sizeof(_vfs_flags_open)
 
 
 /* prototypes */
+static int _vfs_errno(VFSError * error, size_t error_cnt, int value,
+		int reverse);
 static int _vfs_flags(VFSFlag * flags, size_t flags_cnt, int value,
 		int reverse);
 
 
 /* functions */
+/* vfs_errno */
+static int _vfs_errno(VFSError * error, size_t error_cnt, int value,
+		int reverse)
+{
+	size_t i;
+
+	for(i = 0; i < error_cnt; i++)
+		if(reverse == 0 && value == error[i].native)
+			return -error[i].error;
+		else if(reverse != 0 && value == error[i].error)
+		{
+			errno = error[i].native;
+			return -1;
+		}
+	/* FIXME really is an unknown error */
+	if(reverse == 0)
+		return -VFS_EPROTO;
+	errno = EPROTO;
+	return -1;
+}
+
+
+/* vfs_flags */
 static int _vfs_flags(VFSFlag * flags, size_t flags_cnt, int value, int reverse)
 {
 	int ret = 0;

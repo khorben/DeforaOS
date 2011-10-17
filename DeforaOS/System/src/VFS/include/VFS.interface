@@ -2,120 +2,171 @@
 service=VFS
 port=4245
 
-[access]
+[constants]
+#access
+F_OK=0
+R_OK=1
+X_OK=2
+W_OK=4
+#errno
+EPERM=1
+ENOENT=2
+EIO=5
+ENXIO=6
+EBADF=9
+EACCES=13
+EFAULT=14
+EBUSY=16
+EEXIST=17
+EXDEV=18
+ENODEV=19
+ENOTDIR=20
+EISDIR=21
+EINVAL=22
+ENFILE=23
+EMFILE=24
+ETXTBUSY=26
+EFBIG=27
+ENOSPC=28
+EROFS=30
+EMLINK=31
+ENOTEMPTY=66
+ENOSYS=78
+ENOTSUP=86
+EPROTO=96
+#lseek
+SEEK_SET=0
+SEEK_CUR=1
+SEEK_END=2
+#open
+O_RDONLY=0x0
+O_WRONLY=0x1
+O_RDWR=0x2
+O_ACCMODE=0x4
+O_CREAT=0x10
+O_EXCL=0x20
+O_TRUNC=0x40
+O_NOCTTY=0x80
+O_APPEND=0x100
+O_DSYNC=0x200
+O_NONBLOCK=0x400
+O_RSYNC=0x800
+O_SYNC=0x1000
+
+[call::access]
 ret=INT32
 arg1=STRING,pathname
 arg2=UINT32,mode
 
-[chmod]
+[call::chmod]
 ret=INT32
 arg1=STRING,pathname
 arg2=UINT32,mode
 
-[chown]
+[call::chown]
 ret=INT32
 arg1=STRING,pathname
 arg2=UINT32,owner
 arg3=UINT32,group
 
-[close]
+[call::close]
 ret=INT32
 arg1=INT32,fd
 
-[closedir]
+[call::closedir]
 ret=INT32
 arg1=INT32,dir
 
-[dirfd]
+[call::dirfd]
 ret=INT32
 arg1=INT32,dir
 
-[fchmod]
+[call::fchmod]
 ret=INT32
 arg1=INT32,fd
 arg2=UINT32,mode
 
-[fchown]
+[call::fchown]
 ret=INT32
 arg1=INT32,fd
 arg2=UINT32,owner
 arg3=UINT32,group
 
-[flock]
+[call::flock]
 ret=INT32
 arg1=INT32,fd
 arg2=UINT32,operation
 
-[lchown]
+[call::lchown]
 ret=INT32
 arg1=STRING,pathname
 arg2=UINT32,owner
 arg3=UINT32,group
 
-[link]
+[call::link]
 ret=INT32
 arg1=STRING,name1
 arg2=STRING,name2
 
-[lseek]
+[call::lseek]
 ret=INT32
 arg1=INT32,fd
 arg2=INT32,offset
 arg3=INT32,whence
 
-[mkdir]
+[call::mkdir]
 ret=INT32
 arg1=STRING,pathname
 arg2=UINT32,mode
 
-[open]
+[call::open]
 ret=INT32
 arg1=STRING,pathname
 arg2=UINT32,flags
 arg3=UINT32,mode
 
-[opendir]
+[call::opendir]
 ret=INT32
 arg1=STRING,pathname
 
-[read]
+[call::read]
 ret=INT32
 arg1=INT32,fd
 arg2=BUFFER_OUT,buf
 arg3=UINT32,size
 
-[readdir]
+[call::readdir]
 ret=INT32
 arg1=INT32,dir
 arg2=STRING_OUT,de
 
-[rename]
+[call::rename]
 ret=INT32
 arg1=STRING,from
 arg2=STRING,to
 
-[rewinddir]
+[call::rewinddir]
 ret=INT32
 arg1=INT32,dir
 
-[rmdir]
+[call::rmdir]
 ret=INT32
 arg1=STRING,pathname
 
-[symlink]
+[call::symlink]
 ret=INT32
 arg1=STRING,name1
 arg2=STRING,name2
 
-[umask]
+[call::umask]
 ret=UINT32
 arg1=UINT32,mode
 
-[unlink]
+[call::unlink]
 ret=INT32
 arg1=STRING,pathname
 
-[write]
+[call::write]
 ret=INT32
 arg1=INT32,fd
 arg2=BUFFER,buffer

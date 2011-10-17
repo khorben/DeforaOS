@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - handle errno */
 
 
 
@@ -62,11 +60,10 @@ static int (*old_closedir)(DIR * dir);
 #ifndef dirfd
 static int (*old_dirfd)(DIR * dir);
 #endif
-#if 0
 static int (*old_fstat)(int fd, struct stat * st);
-#endif
 static int (*old_lchown)(char const * path, uid_t uid, gid_t gid);
 static off_t (*old_lseek)(int fd, off_t offset, int whence);
+static int (*old_lstat)(char const * path, struct stat * st);
 static int (*old_mkdir)(char const * path, mode_t mode);
 static void * (*old_mmap)(void * addr, size_t len, int prot, int flags, int fd,
 		off_t offset);
@@ -77,6 +74,7 @@ static struct dirent * (*old_readdir)(DIR * dir);
 static int (*old_rename)(char const * from, char const * to);
 static void (*old_rewinddir)(DIR * dir);
 static int (*old_rmdir)(char const * path);
+static int (*old_stat)(char const * path, struct stat * st);
 static int (*old_symlink)(char const * name1, char const * name2);
 static mode_t (*old_umask)(mode_t mode);
 static int (*old_unlink)(char const * path);
@@ -110,17 +108,38 @@ static void _libvfs_init(void)
 #ifndef dirfd
 			|| (old_dirfd = dlsym(hdl, "dirfd")) == NULL
 #endif
+#ifdef __NetBSD__
+			|| (old_fstat = dlsym(hdl, "__fstat50")) == NULL
+#else
+			|| (old_fstat = dlsym(hdl, "fstat")) == NULL
+#endif
 			|| (old_lchown = dlsym(hdl, "lchown")) == NULL
 			|| (old_lseek = dlsym(hdl, "lseek")) == NULL
+#ifdef __NetBSD__
+			|| (old_lstat = dlsym(hdl, "__lstat50")) == NULL
+#else
+			|| (old_lstat = dlsym(hdl, "lstat")) == NULL
+#endif
 			|| (old_mkdir = dlsym(hdl, "mkdir")) == NULL
 			|| (old_mmap = dlsym(hdl, "mmap")) == NULL
 			|| (old_open = dlsym(hdl, "open")) == NULL
 			|| (old_opendir = dlsym(hdl, "opendir")) == NULL
 			|| (old_read = dlsym(hdl, "read")) == NULL
+#ifdef __NetBSD__
+			|| (old_readdir = dlsym(hdl, "__readdir30")) == NULL
+#elif 0
+			|| (old_readdir = dlsym(hdl, NAME(readdir))) == NULL
+#else
 			|| (old_readdir = dlsym(hdl, "readdir")) == NULL
+#endif
 			|| (old_rewinddir = dlsym(hdl, "rewinddir")) == NULL
 			|| (old_rename = dlsym(hdl, "rename")) == NULL
 			|| (old_rmdir = dlsym(hdl, "rmdir")) == NULL
+#ifdef __NetBSD__
+			|| (old_stat = dlsym(hdl, "__stat50")) == NULL
+#else
+			|| (old_stat = dlsym(hdl, "stat")) == NULL
+#endif
 			|| (old_symlink = dlsym(hdl, "symlink")) == NULL
 			|| (old_umask = dlsym(hdl, "umask")) == NULL
 			|| (old_unlink = dlsym(hdl, "unlink")) == NULL
@@ -176,6 +195,8 @@ int chmod(char const * path, mode_t mode)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: chmod(\"%s\", %o) => %d\n", path, mode, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -194,6 +215,8 @@ int chown(char const * path, uid_t uid, gid_t gid)
 	fprintf(stderr, "DEBUG: chown(\"%s\", %d, %d) => %d\n", path, uid, gid,
 			ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -211,6 +234,8 @@ int close(int fd)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: close(%d) => %d\n", fd - VFS_OFF, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -246,12 +271,14 @@ int closedir(DIR * dir)
 	dirfd(dir) = -1;
 	old_closedir(dir);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
 
 /* dirfd */
-#ifndef dirfd /* XXX NetBSD... */
+#ifndef dirfd
 int dirfd(DIR * dir)
 {
 	int ret;
@@ -266,15 +293,13 @@ int dirfd(DIR * dir)
 	fprintf(stderr, "DEBUG: dirfd(%p) => %d\n", (void *)dir, ret);
 # endif
 	if(ret < 0)
-		return -1;
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret + VFS_OFF;
 }
 #endif
 
 
 /* fstat */
-#if 0
-/* FIXME disabled for now (infinite loop on NetBSD) */
 int fstat(int fd, struct stat * st)
 {
 	int ret = -1;
@@ -286,9 +311,10 @@ int fstat(int fd, struct stat * st)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: fstat(%d) => %d\n", fd - VFS_OFF, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
-#endif
 
 
 /* lchown */
@@ -305,6 +331,8 @@ int lchown(char const * path, uid_t uid, gid_t gid)
 	fprintf(stderr, "DEBUG: lchown(\"%s\", %d, %d) => %d\n", path, uid, gid,
 			ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -330,6 +358,26 @@ off_t lseek(int fd, off_t offset, int whence)
 	fprintf(stderr, "DEBUG: lseek(%d, %ld, %d) => %d\n", fd - VFS_OFF,
 			offset, whence, ret);
 #endif
+	if(ret < 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
+	return ret;
+}
+
+
+/* lstat */
+int lstat(char const * path, struct stat * st)
+{
+	int ret = -1;
+
+	_libvfs_init();
+	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
+		return old_lstat(path, st);
+	errno = ENOSYS;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: lstat(\"%s\") => %d\n", path, ret);
+#endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -347,6 +395,8 @@ int mkdir(char const * path, mode_t mode)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: mkdir(\"%s\", %d) => %d\n", path, mode, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -393,7 +443,7 @@ int open(const char * path, int flags, ...)
 			mode, ret);
 #endif
 	if(ret < 0)
-		return ret;
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret + VFS_OFF;
 }
 
@@ -466,14 +516,17 @@ ssize_t read(int fd, void * buf, size_t count)
 	if(appclient_call(_appclient, &ret, "read", fd, b, count) != 0)
 	{
 		buffer_delete(b);
+		/* FIXME define errno */
 		return -1;
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: read(%d, buf, %lu) => %d\n", fd, count, ret);
 #endif
-	if(ret <= 0)
-		return ret;
-	memcpy(buf, buffer_get_data(b), ret);
+	if(ret < 0)
+		ret = _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
+	else if(ret > 0)
+		memcpy(buf, buffer_get_data(b), ret);
+	buffer_delete(b);
 	return ret;
 }
 
@@ -546,6 +599,8 @@ int rename(char const * from, char const * to)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: rename(\"%s\", \"%s\") => %d\n", from, to, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -570,7 +625,7 @@ void rewinddir(DIR * dir)
 #endif
 	else
 	{
-		/* XXX this call ignores errors */
+		/* FIXME handle network errors */
 		appclient_call(_appclient, NULL, "rewinddir", fd);
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: rewinddir(%p)\n", (void *)dir);
@@ -592,6 +647,26 @@ int rmdir(char const * path)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: rmdir(\"%s\") => %d\n", path, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
+	return ret;
+}
+
+
+/* stat */
+int stat(char const * path, struct stat * st)
+{
+	int ret = -1;
+
+	_libvfs_init();
+	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
+		return old_stat(path, st);
+	errno = ENOSYS;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: stat(\"%s\") => %d\n", path, ret);
+#endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -610,6 +685,8 @@ int symlink(char const * name1, char const * name2)
 	fprintf(stderr, "DEBUG: symlink(\"%s\", \"%s\") => %d\n", name1, name2,
 			ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -643,6 +720,8 @@ int unlink(char const * path)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: unlink(\"%s\") => %d\n", path, ret);
 #endif
+	if(ret != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }
 
@@ -668,7 +747,8 @@ ssize_t write(int fd, void const * buf, size_t count)
 	fprintf(stderr, "DEBUG: write(%d, buf, %lu) => %d\n", fd - VFS_OFF,
 			count, ret);
 #endif
-	if(ret <= 0)
-		return ret;
+	buffer_delete(b);
+	if(ret < 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, -ret, 1);
 	return ret;
 }

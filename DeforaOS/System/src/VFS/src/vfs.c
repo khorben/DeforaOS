@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - implement root
+ * - implement read-only mode
  * - unify whence values */
 
 
@@ -31,7 +32,6 @@
 #include <System.h>
 #include "vfs.h"
 #include "common.c"
-#include "../data/VFS.h"
 #include "../config.h"
 
 
@@ -64,7 +64,10 @@ static size_t _clients_cnt;
 # define VFS_STUB1(type, name, type1, arg1) \
 	type VFS_ ## name(type1 arg1) \
 { \
-	return name(arg1); \
+	int res; \
+	if((res = name(arg1)) != 0) \
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0); \
+	return res; \
 }
 #else /* FIXME check if the following approach works too */
 # define VFS_STUB1(type, name, type1, arg1) \
@@ -74,7 +77,10 @@ static size_t _clients_cnt;
 #define VFS_STUB2(type, name, type1, arg1, type2, arg2) \
 	type VFS_ ## name(type1 arg1, type2 arg2) \
 { \
-	return name(arg1, arg2); \
+	int res; \
+	if((res = name(arg1, arg2)) != 0) \
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0); \
+	return res; \
 }
 
 #define VFS_STUB3(type, name, type1, arg1, type2, arg2, type3, arg3) \
@@ -144,8 +150,10 @@ int32_t VFS_access(String const * path, uint32_t mode)
 
 	if((vfsmode = _vfs_flags(_vfs_flags_access, _vfs_flags_access_cnt,
 					mode, 0)) < 0)
-		return -1;
-	return access(path, vfsmode);
+		return -VFS_EPROTO;
+	if(access(path, vfsmode) != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -155,13 +163,15 @@ int32_t VFS_close(int32_t fd)
 	int32_t ret;
 
 	if(!_client_check(fd))
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, fd);
 #endif
 	if((ret = close(fd)) == 0)
 		_client_remove_file(fd);
-	return ret;
+	else
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -172,13 +182,15 @@ int32_t VFS_closedir(int32_t dir)
 	DIR * d;
 
 	if((d = _client_check_dir(dir)) == NULL)
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, dir);
 #endif
 	if((ret = closedir(d)) == 0)
 		_client_remove_file(dir);
-	return ret;
+	else
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -186,7 +198,7 @@ int32_t VFS_closedir(int32_t dir)
 int32_t VFS_dirfd(int32_t dir)
 {
 	if(_client_check_dir(dir) == NULL)
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, dir);
 #endif
@@ -198,8 +210,10 @@ int32_t VFS_dirfd(int32_t dir)
 int32_t VFS_fchmod(int32_t fd, uint32_t mode)
 {
 	if(!_client_check(fd))
-		return -1;
-	return fchmod(fd, mode);
+		return -VFS_EPROTO;
+	if(fchmod(fd, mode) != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -207,8 +221,10 @@ int32_t VFS_fchmod(int32_t fd, uint32_t mode)
 int32_t VFS_fchown(int32_t fd, uint32_t owner, uint32_t group)
 {
 	if(!_client_check(fd))
-		return -1;
-	return fchown(fd, owner, group);
+		return -VFS_EPROTO;
+	if(fchown(fd, owner, group) != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -216,8 +232,10 @@ int32_t VFS_fchown(int32_t fd, uint32_t owner, uint32_t group)
 int32_t VFS_flock(int32_t fd, uint32_t operation)
 {
 	if(!_client_check(fd))
-		return -1;
-	return flock(fd, operation);
+		return -VFS_EPROTO;
+	if(flock(fd, operation) != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -225,16 +243,20 @@ int32_t VFS_flock(int32_t fd, uint32_t operation)
 int32_t VFS_lseek(int32_t fd, int32_t offset, int32_t whence)
 	/* FIXME check types sizes */
 {
+	int ret;
+
 	if(!_client_check(fd))
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, fd, offset,
 			whence);
 #endif
 	if((whence = _vfs_flags(_vfs_flags_lseek, _vfs_flags_lseek_cnt, whence,
 					0)) < 0)
-		return -1;
-	return lseek(fd, offset, whence);
+		return -VFS_EPROTO;
+	if((ret = lseek(fd, offset, whence)) < 0)
+		ret = _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return ret;
 }
 
 
@@ -244,7 +266,9 @@ int32_t VFS_mkdir(String const * path, uint32_t mode)
 	mode_t mask;
 
 	mask = _client_get_umask();
-	return mkdir(path, mode & mask);
+	if(mkdir(path, mode & mask) != 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
+	return 0;
 }
 
 
@@ -265,11 +289,11 @@ int32_t VFS_open(String const * filename, uint32_t flags, uint32_t mode)
 			flags, mode, fd);
 #endif
 	if(fd < 0)
-		return -1;
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
 	if(_client_add_file(fd, NULL) != 0)
 	{
 		close(fd);
-		return -1;
+		return -VFS_EPROTO;
 	}
 	return fd;
 }
@@ -289,20 +313,20 @@ int32_t VFS_opendir(String const * filename)
 	{
 		if(fd >= 0)
 			close(fd);
-		return -1;
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
 	}
 #else
 	if((dir = opendir(filename)) == NULL || (fd = dirfd(dir)) < 0)
 	{
 		if(dir != NULL)
 			closedir(dir);
-		return -1;
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
 	}
 #endif
 	if(_client_add_file(fd, dir) != 0)
 	{
 		closedir(dir);
-		return -1;
+		return -VFS_EPROTO;
 	}
 	return fd;
 }
@@ -314,13 +338,13 @@ int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
 	int32_t ret;
 
 	if(!_client_check(fd))
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %p, %u)\n", __func__, fd, (void*)b,
 			size);
 #endif
 	if(buffer_set_size(b, size) != 0)
-		return -1;
+		return -VFS_EPROTO;
 	ret = read(fd, buffer_get_data(b), size);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, buf, %u) => %d\n", __func__, fd, size,
@@ -329,11 +353,13 @@ int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
 	if(buffer_set_size(b, (ret < 0) ? 0 : ret) != 0)
 	{
 		memset(buffer_get_data(b), 0, size);
-		return -1;
+		return -VFS_EPROTO;
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, ret);
 #endif
+	if(ret < 0)
+		return _vfs_errno(_vfs_error, _vfs_error_cnt, errno, 0);
 	return ret;
 }
 
@@ -345,13 +371,13 @@ int32_t VFS_readdir(int32_t dir, String ** string)
 	struct dirent * de;
 
 	if((d = _client_check_dir(dir)) == NULL)
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, dir, (void *)string);
 #endif
 	if((de = readdir(d)) == NULL
 			|| (*string = string_new(de->d_name)) == NULL)
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, \"%s\") => 0\n", __func__, dir, *string);
 #endif
@@ -389,7 +415,7 @@ uint32_t VFS_umask(uint32_t mask)
 int32_t VFS_write(int32_t fd, Buffer * b, uint32_t size)
 {
 	if(!_client_check(fd))
-		return -1;
+		return -VFS_EPROTO;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, buf, %u)\n", __func__, fd, size);
 #endif
