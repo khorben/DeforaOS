@@ -37,8 +37,8 @@ typedef enum _AppClientCallArgType
 typedef struct _AppClientCallArg
 {
 	AppClientCallArgType type;
-	double doble;
-	float flot;
+	double _double;
+	float _float;
 	int integer;
 	char const * string;
 } AppClientCallArg;
@@ -101,8 +101,7 @@ static int _appclient_hostname(int verbose, char const * hostname,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, buf);
 #endif
-	if((env = getenv(buf)) == NULL && errno != ENOENT)
-		return error_set_code(1, "%s", strerror(errno));
+	env = getenv(buf);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, env);
 #endif
@@ -153,10 +152,10 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 #endif
 			if(call->args[0].type == ACCAT_DOUBLE)
 				ret = appclient_call(ac, &res, call->name,
-						call->args[0].doble);
+						call->args[0]._double);
 			else if(call->args[0].type == ACCAT_FLOAT)
 				ret = appclient_call(ac, &res, call->name,
-						call->args[0].flot);
+						call->args[0]._float);
 			else if(call->args[0].type == ACCAT_INTEGER)
 				ret = appclient_call(ac, &res, call->name,
 						call->args[0].integer);
@@ -185,14 +184,14 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 #ifdef DEBUG
 				fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f, %.1f)\n",
 						__func__, call->name,
-						call->args[0].flot,
-						call->args[1].flot,
-						call->args[2].flot);
+						call->args[0]._float,
+						call->args[1]._float,
+						call->args[2]._float);
 #endif
 				ret = appclient_call(ac, &res, call->name,
-						call->args[0].flot,
-						call->args[1].flot,
-						call->args[2].flot);
+						call->args[0]._float,
+						call->args[1]._float,
+						call->args[2]._float);
 				break;
 			}
 			/* FIXME arguments may be of different types */
@@ -212,16 +211,16 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f, %.1f, %.1f)\n",
 					__func__, call->name,
-					call->args[0].flot,
-					call->args[1].flot,
-					call->args[2].flot,
-					call->args[3].flot);
+					call->args[0]._float,
+					call->args[1]._float,
+					call->args[2]._float,
+					call->args[3]._float);
 #endif
 			ret = appclient_call(ac, &res, call->name,
-					call->args[0].flot,
-					call->args[1].flot,
-					call->args[2].flot,
-					call->args[3].flot);
+					call->args[0]._float,
+					call->args[1]._float,
+					call->args[2]._float,
+					call->args[3]._float);
 			break;
 		default:
 			return error_set_code(1, "%s",
@@ -353,10 +352,10 @@ static int _main_call_arg(AppClientCall * calls, size_t calls_cnt,
 	switch(type)
 	{
 		case ACCAT_DOUBLE:
-			q->doble = strtod(string, NULL); /* XXX check */
+			q->_double = strtod(string, NULL); /* XXX check */
 			break;
 		case ACCAT_FLOAT:
-			q->flot = strtof(string, NULL); /* XXX check */
+			q->_float = strtof(string, NULL); /* XXX check */
 			break;
 		case ACCAT_INTEGER:
 			q->integer = strtol(string, NULL, 0); /* XXX check */
