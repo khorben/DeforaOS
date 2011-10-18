@@ -1,8 +1,6 @@
 TARGETS	= ../include/VFS.h VFS
 PREFIX	= /usr/local
 DESTDIR	=
-PREFIX	= /usr/local
-DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	?= cc
 CPPFLAGSF= -I ../include
