@@ -291,9 +291,10 @@ static int _variables_targets(Configure * configure, FILE * fp)
 }
 
 static void _executables_variables(Configure * configure, FILE * fp,
-	       	String const * target);
+	       	String const * target, char * done);
 static int _variables_executables(Configure * configure, FILE * fp)
 {
+	char done[TT_LAST]; /* FIXME even better if'd be variable by variable */
 	String const * targets;
 	String const * includes;
 	String const * package;
@@ -304,6 +305,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
+	memset(&done, 0, sizeof(done));
 	targets = config_get(configure->config, "", "targets");
 	includes = config_get(configure->config, "", "includes");
 	package = config_get(configure->config, "", "package");
@@ -318,7 +320,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 				continue;
 			c = p[i];
 			p[i] = '\0';
-			_executables_variables(configure, fp, p);
+			_executables_variables(configure, fp, p, done);
 			if(c == '\0')
 				break;
 			p += i + 1;
@@ -353,18 +355,11 @@ static void _variables_library(Configure * configure, FILE * fp, char * done);
 static void _variables_libtool(Configure * configure, FILE * fp, char * done);
 static void _variables_script(Configure * configure, FILE * fp, char * done);
 static void _executables_variables(Configure * configure, FILE * fp,
-	       	String const * target)
+	       	String const * target, char * done)
 {
-	static Config * flag = NULL;
 	String const * type;
-	char done[TT_LAST]; /* FIXME even better if'd be variable by variable */
 	TargetType tt;
 
-	if(flag != configure->config)
-	{
-		flag = configure->config;
-		memset(done, 0, sizeof(done));
-	}
 	if((type = config_get(configure->config, target, "type")) == NULL)
 		return;
 	if(done[(tt = enum_string(TT_LAST, sTargetType, type))])
