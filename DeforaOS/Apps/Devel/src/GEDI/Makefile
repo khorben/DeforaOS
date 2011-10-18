@@ -1,6 +1,6 @@
 PACKAGE	= GEDI
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -30,6 +30,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/gedi.h \
 		$(PACKAGE)-$(VERSION)/src/project.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/gdeasm.c \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
