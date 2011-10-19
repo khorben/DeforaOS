@@ -434,10 +434,10 @@ int panel_error(Panel * panel, char const * message, int ret)
 			"%s: %s", message, strerror(errno));
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	g_signal_connect(G_OBJECT(dialog), "delete-event", G_CALLBACK(
-				_error_on_closex), NULL);
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				_error_on_response), NULL);
+	g_signal_connect(dialog, "delete-event", G_CALLBACK(_error_on_closex),
+			NULL);
+	g_signal_connect(dialog, "response", G_CALLBACK(_error_on_response),
+			NULL);
 	gtk_widget_show_all(dialog);
 	return ret;
 }
@@ -1224,8 +1224,8 @@ static void _panel_helper_about_dialog(Panel * panel)
 			"http://www.defora.org/");
 	gtk_window_set_position(GTK_WINDOW(panel->ab_window),
 			GTK_WIN_POS_CENTER_ALWAYS);
-	g_signal_connect_swapped(G_OBJECT(panel->ab_window), "delete-event",
-			G_CALLBACK(_about_on_closex), panel);
+	g_signal_connect_swapped(panel->ab_window, "delete-event", G_CALLBACK(
+				_about_on_closex), panel);
 	gtk_widget_show(panel->ab_window);
 }
 
@@ -1296,9 +1296,9 @@ static void _panel_helper_logout_dialog(Panel * panel)
 	gtk_window_set_position(GTK_WINDOW(panel->lo_window),
 			GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(panel->lo_window), _("Logout"));
-	g_signal_connect(G_OBJECT(panel->lo_window), "delete-event", G_CALLBACK(
+	g_signal_connect(panel->lo_window, "delete-event", G_CALLBACK(
 				_logout_dialog_on_closex), panel);
-	g_signal_connect(G_OBJECT(panel->lo_window), "response", G_CALLBACK(
+	g_signal_connect(panel->lo_window, "response", G_CALLBACK(
 				_logout_dialog_on_response), panel);
 	gtk_widget_show_all(panel->lo_window);
 }
@@ -1417,9 +1417,9 @@ static void _panel_helper_shutdown_dialog(Panel * panel)
 	gtk_window_set_position(GTK_WINDOW(panel->sh_window),
 			GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(panel->sh_window), _("Shutdown"));
-	g_signal_connect(G_OBJECT(panel->sh_window), "delete-event", G_CALLBACK(
+	g_signal_connect(panel->sh_window, "delete-event", G_CALLBACK(
 				_shutdown_dialog_on_closex), panel);
-	g_signal_connect(G_OBJECT(panel->sh_window), "response", G_CALLBACK(
+	g_signal_connect(panel->sh_window, "response", G_CALLBACK(
 				_shutdown_dialog_on_response), panel);
 	gtk_widget_show_all(panel->sh_window);
 }
