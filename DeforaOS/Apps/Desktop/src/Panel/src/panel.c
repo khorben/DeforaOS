@@ -550,10 +550,10 @@ static void _show_preferences_window(Panel * panel)
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	gtk_window_set_default_size(GTK_WINDOW(panel->pr_window), 400, 300);
-	g_signal_connect_swapped(G_OBJECT(panel->pr_window), "delete-event",
-			G_CALLBACK(_preferences_on_closex), panel);
-	g_signal_connect(G_OBJECT(panel->pr_window), "response",
-			G_CALLBACK(_preferences_on_response), panel);
+	g_signal_connect_swapped(panel->pr_window, "delete-event", G_CALLBACK(
+				_preferences_on_closex), panel);
+	g_signal_connect(panel->pr_window, "response", G_CALLBACK(
+				_preferences_on_response), panel);
 	panel->pr_notebook = gtk_notebook_new();
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(panel->pr_notebook), TRUE);
 	/* general */
@@ -1249,7 +1249,11 @@ static int _panel_helper_lock(Panel * panel)
 	if((p = config_get(panel->config, "lock", "command")) != NULL)
 		command = p;
 	if(g_spawn_command_line_async(command, &error) != TRUE)
-		return panel_error(panel, error->message, 1);
+	{
+		panel_error(panel, error->message, 1);
+		g_error_free(error);
+		return -1;
+	}
 	return 0;
 }
 
@@ -1452,7 +1456,10 @@ static void _shutdown_dialog_on_response(GtkWidget * widget, gint response,
 		return;
 	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
 				NULL, NULL, &error) != TRUE)
+	{
 		panel_error(panel, error->message, 1);
+		g_error_free(error);
+	}
 }
 
 
@@ -1471,7 +1478,7 @@ static int _panel_helper_suspend(Panel * panel)
 #ifdef __NetBSD__
 	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
 				sizeof(sleep_state)) != 0)
-		return panel_error(panel, "sysctl", 1);
+		return -panel_error(panel, "sysctl", 1);
 #else
 	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
 	{
@@ -1481,7 +1488,11 @@ static int _panel_helper_suspend(Panel * panel)
 	}
 	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
 				NULL, NULL, &error) != TRUE)
-		return panel_error(panel, error->message, 1);
+	{
+		panel_error(panel, error->message, 1);
+		g_error_free(error);
+		return -1;
+	}
 #endif
 	_panel_helper_lock(panel); /* XXX may already be suspended */
 	return 0;

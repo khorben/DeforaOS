@@ -476,7 +476,10 @@ static void _on_run(gpointer data)
 
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
 			!= TRUE)
+	{
 		main->helper->error(main->helper->panel, error->message, 1);
+		g_error_free(error);
+	}
 }
 
 
