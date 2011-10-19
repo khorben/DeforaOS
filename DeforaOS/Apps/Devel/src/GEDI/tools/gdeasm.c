@@ -157,7 +157,11 @@ static void _gdeasm_open(char const * filename, GtkListStore * store)
 
 	if((a = asm_new(NULL, NULL)) == NULL)
 		return;
+#if 0 /* FIXME requires patches to libasm */
 	asm_open_deassemble(a, filename, 0, _gdeasm_callback, store);
+#else
+	asm_open_deassemble(a, filename, 0);
+#endif
 	asm_close(a);
 }
 
