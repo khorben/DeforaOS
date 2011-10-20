@@ -214,28 +214,30 @@ protected function admin($args)
 }
 
 
-protected function appearance($args)
-{
-	global $theme;
+	protected function appearance($args)
+	{
+		global $theme;
 
-	print('<h1 class="title appearance">'._html_safe(APPEARANCE)."</h1>\n");
-	$themes = array();
-	if(($dir = opendir(dirname($_SERVER['SCRIPT_FILENAME']).'/themes'))
-			!= FALSE)
-		while(($de = readdir($dir)) != FALSE)
-		{
-			if(($len = strlen($de)) < 5
-					|| substr($de, -4) != '.css')
-				continue;
-			$themes[] = substr($de, 0, -4);
-		}
-	usort($themes, 'strcmp');
-	$views = array('details' => VIEW_DETAILS, 'list' => VIEW_LIST,
-			'thumbnails' => VIEW_THUMBNAILS);
-	if(isset($_SESSION['view']))
-		$view = $_SESSION['view'];
-	include('./modules/user/appearance.tpl'); //FIXME go to the users' page
-}
+		print('<h1 class="title appearance">'._html_safe(APPEARANCE)
+				."</h1>\n");
+		$themes = array();
+		$filename = dirname($_SERVER['SCRIPT_FILENAME']).'/themes';
+		if(($dir = opendir($filename))!= FALSE)
+			while(($de = readdir($dir)) != FALSE)
+			{
+				if(($len = strlen($de)) < 5
+						|| substr($de, -4) != '.css')
+					continue;
+				$themes[] = substr($de, 0, -4);
+			}
+		usort($themes, 'strcmp');
+		$views = array('details' => VIEW_DETAILS, 'list' => VIEW_LIST,
+				'thumbnails' => VIEW_THUMBNAILS);
+		if(isset($_SESSION['view']))
+			$view = $_SESSION['view'];
+		//FIXME go to the users' page
+		include('./modules/user/appearance.tpl');
+	}
 
 
 	protected function config_update($args)
