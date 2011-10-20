@@ -167,6 +167,8 @@ class HtmlTemplate extends Template
 				return $this->renderBlock($e, $level);
 			case 'row':
 				return $this->renderBlock($e, $level);
+			case 'statusbar':
+				return $this->renderStatusbar($e, $level);
 			case 'title':
 				return $this->renderHeading($e, $level);
 			case 'treeview':
@@ -184,12 +186,14 @@ class HtmlTemplate extends Template
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
 			$l = new PageElement('label');
-			$l->setProperty('text', $text);
+			$l->setProperty('text', $text.': ');
 			$this->renderElement($l, $level);
 		}
 		$name = $e->getProperty('name');
 		$value = $e->getProperty('value');
-		print('<input type="text"'
+		$type = ($e->getProperty('hidden') === TRUE) ? 'password'
+			: 'text';
+		print('<input type="'.$type.'"'
 				.' name="'.$this->escapeAttribute($name).'"'
 				.' value="'.$this->escapeAttribute($value).'"'
 				.'/>');
@@ -319,9 +323,19 @@ class HtmlTemplate extends Template
 		//FIXME really implement
 		$this->renderTabs($level);
 		print('<div class="menuitem">');
-		return $this->renderLabel($e, $level);
-		$this->renderTabs($level);
+		if(($text = $e->getProperty('text')) !== FALSE)
+			print($this->escape($text));
 		print('</div>');
+	}
+
+	private function renderStatusbar($e, $level)
+	{
+		$this->renderTabs($level);
+		print('<div class="statusbar">');
+		if(($text = $e->getProperty('text')) !== FALSE)
+			print($this->escape($text));
+		$this->renderTabs($level);
+		print("</div>");
 	}
 
 	private function renderTabs($level)

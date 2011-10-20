@@ -49,6 +49,16 @@ class GtkEngine extends CliEngine
 		$element->setProperty('Gtk::fill', TRUE);
 		switch($element->getType())
 		{
+			case 'button':
+				return $this->renderButton($element);
+			case 'checkbox':
+				return $this->renderCheckbox($element);
+			case 'entry':
+				return $this->renderEntry($element);
+			case 'form':
+				return $this->renderForm($element);
+			case 'frame':
+				return $this->renderFrame($element);
 			case 'label':
 				return $this->renderLabel($element);
 			case 'menubar':
@@ -57,12 +67,65 @@ class GtkEngine extends CliEngine
 				return $this->renderMenuitem($element);
 			case 'page':
 				return $this->renderWindow($element);
+			case 'statusbar':
+				return $this->renderStatusbar($element);
 			case 'title':
 				return $this->renderTitle($element);
 			case 'treeview':
 				return $this->renderTreeview($element);
 		}
 		return FALSE;
+	}
+
+	private function renderButton($e)
+	{
+		return new GtkButton($e->getProperty('text'));
+	}
+
+	private function renderCheckbox($e)
+	{
+		return new GtkCheckButton($e->getProperty('text'));
+	}
+
+	private function renderEntry($e)
+	{
+		$ret = new GtkHbox(FALSE, 4);
+		if(($label = $e->getProperty('text')) !== FALSE)
+			$ret->pack_start(new GtkLabel($label), FALSE, TRUE, 0);
+		$ret->pack_start(new GtkEntry($e->getProperty('value')), TRUE,
+				TRUE, 0);
+		return $ret;
+	}
+
+	private function renderForm($e)
+	{
+		//FIXME track the current request for submission
+		$ret = new GtkVbox(FALSE, 0);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if(($widget = $this->render($c)) === FALSE)
+				continue;
+			$ret->pack_start($widget, FALSE, TRUE, 0);
+		}
+		return $ret;
+	}
+
+	private function renderFrame($e)
+	{
+		$ret = new GtkFrame($e->getProperty('title'));
+		$ret->set_border_width(4);
+		$vbox = new GtkVbox(FALSE, 0);
+		$vbox->set_border_width(4);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if(($widget = $this->render($c)) === FALSE)
+				continue;
+			$vbox->pack_start($widget, FALSE, TRUE, 0);
+		}
+		$ret->add($vbox);
+		return $ret;
 	}
 
 	private function renderLabel($e)
@@ -90,6 +153,11 @@ class GtkEngine extends CliEngine
 		$ret = new GtkMenuItem($e->getProperty('text'));
 		//FIXME implement images...
 		return $ret;
+	}
+
+	private function renderStatusbar($e)
+	{
+		return new GtkStatusBar;
 	}
 
 	private function renderTitle($e)
