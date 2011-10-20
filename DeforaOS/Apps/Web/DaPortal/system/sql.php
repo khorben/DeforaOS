@@ -38,7 +38,10 @@ function _sql_date($timestamp = FALSE)
 
 function _sql_offset($offset, $limit)
 {
-	return 'LIMIT '.$limit.' OFFSET '.$offset;
+	global $engine;
+
+	$db = $engine->getDatabase();
+	return $db->offset($limit, $offset);
 }
 
 

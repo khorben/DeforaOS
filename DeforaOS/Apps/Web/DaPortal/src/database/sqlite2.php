@@ -32,6 +32,20 @@ class Sqlite2Database extends Database
 	//public
 	//methods
 	//useful
+	//Sqlite2Database::offset
+	public function offset($limit, $offset = FALSE)
+	{
+		//XXX report errors
+		if(!is_numeric($limit))
+			$limit = 0;
+		$ret = " LIMIT $limit";
+		if($offset !== FALSE && is_numeric($offset))
+			$ret .= " OFFSET $offset";
+		return $ret;
+	}
+
+
+	//Sqlite2Database::query
 	public function query(&$engine, $query, $parameters = FALSE)
 	{
 		if($this->handle === FALSE)
