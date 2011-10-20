@@ -33,6 +33,7 @@ $text['DEFAULT_VIEW'] = 'Default view';
 $text['EMAIL'] = 'e-mail';
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
+$text['FULLNAME'] = 'Full name';
 $text['MY_CONTENT'] = 'My content';
 $text['MY_PROFILE'] = 'My profile';
 $text['NONE'] = 'None';
@@ -100,6 +101,27 @@ class UserModule extends Module
 	}
 
 
+	private function _modify($args)
+	{
+		global $user_id;
+
+		if($user_id == 0)
+			return _error(PERMISSION_DENIED);
+		$id = $user_id;
+		require_once('./system/user.php');
+		$admin = _user_admin($id) ? TRUE : FALSE;
+		if(isset($args['id']) && $admin == TRUE)
+			$id = $args['id'];
+		$user = _sql_array('SELECT user_id, username, enabled, admin'
+				.', fullname, email'
+				." FROM daportal_user WHERE user_id='$id'");
+		if(!is_array($user) || count($user) != 1)
+			return _error('Invalid user');
+		$user = $user[0];
+		include('./modules/user/user_update.tpl');
+	}
+
+
 	private function _password_mail($id, $username, $email,
 			$password = FALSE)
 		//FIXME weak passwords and keys...?
@@ -160,11 +182,13 @@ protected function admin($args)
 		switch($args['sort'])
 		{
 			case 'admin':	$order = 'admin DESC';	break;
+			case 'fullname':$order = 'fullname ASC';break;
 			case 'email':	$order = 'email ASC';	break;
 			case 'enabled':	$order = 'enabled DESC';break;
 		}
 	$users = _sql_array('SELECT user_id AS id, username AS name, enabled'
-			.', admin, email FROM daportal_user ORDER BY '.$order);
+			.', admin, fullname, email FROM daportal_user'
+			.' ORDER BY '.$order);
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
@@ -191,6 +215,7 @@ protected function admin($args)
 				.$users[$i]['admin'].'" title="'
 				.($users[$i]['admin'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
+		$users[$i]['fullname'] = _html_safe($users[$i]['fullname']);
 		$users[$i]['email'] = '<a href="mailto:'.$users[$i]['email']
 				.'">'._html_safe($users[$i]['email']).'</a>';
 	}
@@ -207,7 +232,9 @@ protected function admin($args)
 	_module('explorer', 'browse_trusted', array('entries' => $users,
 				'toolbar' => $toolbar, 'view' => 'details',
 				'class' => array('enabled' => ENABLED,
-					'admin' => 'Admin', 'email' => EMAIL),
+					'admin' => 'Admin',
+					'fullname' => 'Full name',
+					'email' => EMAIL),
 				'module' => 'user', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 				: 'name'));
@@ -402,31 +429,32 @@ protected function display($args)
 	}
 
 
-//UserModule::insert
-protected function user_insert($args)
-{
-	global $user_id;
+	//UserModule::insert
+	protected function insert($args)
+	{
+		global $user_id;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	if(preg_match('/^[a-z]{1,9}$/', $args['username']) != 1)
-		return _error('Username must be lower-case and no longer than'
-				.' 9 characters', 1);
-	if(strlen($args['password1']) < 1
-			|| $args['password1'] != $args['password2'])
-		return _error('Passwords must be non-empty and match', 1);
-	$password = md5($args['password1']);
-	if(!_sql_query('INSERT INTO daportal_user (username, password, enabled'
-			.', admin, email) VALUES ('
-			."'".$args['username']."', '$password'"
-			.", '".(isset($args['enabled']) ? '1' : '0')."'"
-			.", '".(isset($args['admin']) ? '1' : '0')."'"
-			.", '".$args['email']."');"))
-		return _error('Could not insert user');
-	$id = _sql_id('daportal_user', 'user_id');
-	user_display(array('id' => $id));
-}
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		if(preg_match('/^[a-z]{1,9}$/', $args['username']) != 1)
+			return _error('Username must be lower-case and no'
+					.' longer than 9 characters', 1);
+		if(strlen($args['password1']) < 1
+				|| $args['password1'] != $args['password2'])
+			return _error('Passwords must be non-empty and match',
+					1);
+		$password = md5($args['password1']);
+		if(!_sql_query('INSERT INTO daportal_user (username, password'
+				.', enabled, admin, email) VALUES ('
+				."'".$args['username']."', '$password'"
+				.", '".(isset($args['enabled']) ? '1' : '0')."'"
+				.", '".(isset($args['admin']) ? '1' : '0')."'"
+				.", '".$args['email']."');"))
+			return _error('Could not insert user');
+		$id = _sql_id('daportal_user', 'user_id');
+		user_display(array('id' => $id));
+	}
 
 
 	//UserModule::login
@@ -459,23 +487,8 @@ protected function user_insert($args)
 	//UserModule::modify
 	protected function modify($args)
 	{
-		global $user_id;
-
-		if($user_id == 0)
-			return _error(PERMISSION_DENIED);
-		$id = $user_id;
-		require_once('./system/user.php');
-		$admin = _user_admin($user_id) ? TRUE : FALSE;
-		if(isset($args['id']) && $admin == TRUE)
-			$id = $args['id'];
-		$user = _sql_array('SELECT user_id, username, enabled, admin'
-				.', email'
-				." FROM daportal_user WHERE user_id='$id'");
-		if(!is_array($user) || count($user) != 1)
-			return _error('Invalid user');
-		$user = $user[0];
-		$title = USER_MODIFICATION;
-		include('./modules/user/user_update.tpl');
+		print('<h1 class="user title">'.USER_MODIFICATION."</h1>\n");
+		return $this->_modify($args);
 	}
 
 
@@ -487,7 +500,7 @@ protected function user_insert($args)
 		require_once('./system/user.php');
 		if(!_user_admin($user_id))
 			return _error(PERMISSION_DENIED);
-		$title = NEW_USER;
+		print('<h1 class="user title">'.NEW_USER."</h1>\n");
 		$admin = 1;
 		include('./modules/user/user_update.tpl');
 	}
@@ -758,28 +771,31 @@ protected function register($args)
 						? '1' : '0')."', admin='"
 				.(isset($args['admin'])
 						&& $args['admin'] == 'on'
-						? '1' : '0')."', email='"
-				.$args['email']."'".(strlen($password)
-						? ', '.$password
+						? '1' : '0')."'"
+				.", fullname='".$args['fullname']."'"
+				.", email='".$args['email']."'"
+				.(strlen($password) ? ', '.$password
 						: '')." WHERE user_id='$id'";
 		else if(strlen($password))
 			$sql = 'UPDATE daportal_user SET '.$password
 				." WHERE user_id='$id'";
-		if(strlen($sql) && _sql_query($sql) == FALSE)
+		print_r($sql);
+		if(strlen($sql) && _sql_query($sql) === FALSE)
 			return 'Could not update user';
-		header('Location: '._module_link_full('user', 'display',
-					array('id' => $id)));
+		header('Location: '._module_link_full('user', 'display', $id));
+		exit(0);
 	}
 
 
 	//UserModule::update
 	protected function update($args)
 	{
-		global $user_id, $error;
+		global $error;
 
-		user_modify($args);
+		print('<h1 class="user title">'.USER_MODIFICATION."</h1>\n");
 		if(isset($error) && strlen($error))
 			_error($error);
+		$this->_modify($args);
 	}
 }
 

@@ -1,4 +1,3 @@
-<h1 class="title user"><?php echo _html_safe($title); ?></h1>
 <form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="user"/>
 	<input type="hidden" name="action" value="<?php echo isset($user) ? 'update' : 'insert'; ?>"/>
@@ -15,6 +14,7 @@
 <?php if($admin) { ?>
 		<tr><td class="field"><?php echo _html_safe(ENABLED); ?>:</td><td><input type="checkbox" name="enabled"<?php if(isset($user) && $user['enabled'] == SQL_TRUE) { ?> checked="checked"<?php } ?>/></td>
 		<tr><td class="field"><?php echo _html_safe(ADMINISTRATOR); ?>:</td><td><input type="checkbox" name="admin"<?php if(isset($user['admin']) && $user['admin'] == SQL_TRUE) { ?> checked="checked"<?php } ?>/></td>
+		<tr><td class="field"><?php echo _html_safe(FULLNAME); ?>:</td><td><input type="text" name="fullname" value="<?php if(isset($user)) echo _html_safe($user['fullname']); ?>"/></td>
 		<tr><td class="field">e-mail:</td><td><input type="text" name="email" value="<?php if(isset($user)) echo _html_safe($user['email']); ?>"/></td>
 <?php } ?>
 		<tr><td></td><td><a href="<?php echo _html_link('user', $admin ? 'admin' : FALSE); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <button type="submit" class="icon submit"><?php echo _html_safe(isset($user) ? UPDATE : CREATE); ?></button></td></tr>
