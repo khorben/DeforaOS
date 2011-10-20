@@ -52,10 +52,18 @@ static VFSError _vfs_error[] =
 	{ ENOTDIR,	VFS_ENOTDIR	},
 	{ EISDIR,	VFS_EISDIR	},
 	{ EINVAL,	VFS_EINVAL	},
+#ifdef ENFILE
 	{ ENFILE,	VFS_ENFILE	},
+#endif
+#ifdef EMFILE
 	{ EMFILE,	VFS_EMFILE	},
+#endif
+#ifdef ETXTBSY
 	{ ETXTBSY,	VFS_ETXTBUSY	},
+#endif
+#ifdef EFBIG
 	{ EFBIG,	VFS_EFBIG	},
+#endif
 	{ ENOSPC,	VFS_ENOSPC	},
 	{ EROFS,	VFS_EROFS	},
 	{ EMLINK,	VFS_EMLINK	},
