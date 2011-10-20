@@ -36,6 +36,15 @@ function _sql_date($timestamp = FALSE)
 }
 
 
+function _sql_enum($table, $field)
+{
+	global $engine;
+
+	$db = $engine->getDatabase();
+	return $db->enum($engine, $table, $field);
+}
+
+
 function _sql_offset($offset, $limit)
 {
 	global $engine;

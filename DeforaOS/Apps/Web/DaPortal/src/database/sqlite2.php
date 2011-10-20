@@ -32,6 +32,19 @@ class Sqlite2Database extends Database
 	//public
 	//methods
 	//useful
+	//Sqlite2Database::enum
+	public function enum(&$engine, $table, $field)
+	{
+		$query = 'SELECT name FROM '.$table.'_enum_'.$field;
+		if(($res = $this->query($engine, $query)) === FALSE)
+			return FALSE;
+		$ret = array();
+		foreach($res as $r)
+			$ret[] = $r['name'];
+		return $ret;
+	}
+
+
 	//Sqlite2Database::offset
 	public function offset($limit, $offset = FALSE)
 	{
