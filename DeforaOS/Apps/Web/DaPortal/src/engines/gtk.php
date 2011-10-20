@@ -51,6 +51,10 @@ class GtkEngine extends CliEngine
 		{
 			case 'label':
 				return $this->renderLabel($element);
+			case 'menubar':
+				return $this->renderMenubar($element);
+			case 'menuitem':
+				return $this->renderMenuitem($element);
 			case 'page':
 				return $this->renderWindow($element);
 			case 'title':
@@ -64,6 +68,28 @@ class GtkEngine extends CliEngine
 	private function renderLabel($e)
 	{
 		return new GtkLabel($e->getProperty('text'), FALSE);
+	}
+
+	private function renderMenubar($e)
+	{
+		$ret = new GtkMenuBar;
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if($c->getType() != 'menuitem')
+				continue;
+			if(($menuitem = $this->render($c)) === FALSE)
+				continue;
+			$ret->append($menuitem);
+		}
+		return $ret;
+	}
+
+	private function renderMenuitem($e)
+	{
+		$ret = new GtkMenuItem($e->getProperty('text'));
+		//FIXME implement images...
+		return $ret;
 	}
 
 	private function renderTitle($e)
