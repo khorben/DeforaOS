@@ -62,7 +62,7 @@ CREATE TABLE daportal_user (
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
 INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('5', 'Allow users to register new accounts', 'bool', 'register', '0');
 INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('5', 'Moderate new user accounts', 'bool', 'manual', '1');
-INSERT INTO daportal_user (user_id, username, password, fullname, email) VALUES ('0', 'Anonymous', '', 'Anonymous user', '');
+INSERT INTO daportal_user (user_id, username, password, enabled, fullname, email) VALUES ('0', 'Anonymous', '', '1', 'Anonymous user', '');
 INSERT INTO daportal_user (username, password, enabled, admin, fullname, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'Administrator', 'username@domain.tld');
 
 CREATE TABLE daportal_user_register (
