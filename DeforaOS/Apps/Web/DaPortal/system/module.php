@@ -50,6 +50,10 @@ function _module($module = FALSE, $action = FALSE, $args = FALSE)
 			$args = array();
 		$args['module'] = $module;
 		$args['action'] = $request->getAction();
+		if(($id = $request->getId()) !== FALSE)
+			$args['id'] = $id;
+		if(($title = $request->getTitle()) !== FALSE)
+			$args['title'] = $title;
 	}
 	//create a complete request
 	else
