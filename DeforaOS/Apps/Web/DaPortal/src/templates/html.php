@@ -152,6 +152,8 @@ class HtmlTemplate extends Template
 				return $this->renderEntry($e, $level);
 			case 'form':
 				return $this->renderForm($e, $level);
+			case 'frame':
+				return $this->renderFrame($e, $level);
 			case 'hbox':
 			case 'vbox':
 				return $this->renderBox($e, $level, $type);
@@ -159,6 +161,8 @@ class HtmlTemplate extends Template
 				return $this->renderLabel($e, $level);
 			case 'link':
 				return $this->renderLink($e, $level);
+			case 'menubar':
+				return $this->renderMenubar($e, $level);
 			case 'page':
 				return $this->renderBlock($e, $level);
 			case 'row':
@@ -221,6 +225,21 @@ class HtmlTemplate extends Template
 				.'/>');
 	}
 
+	private function renderFrame($e, $level)
+	{
+		$this->renderTabs($level);
+		print('<div class="frame">');
+		if(($title = $e->getProperty('title')) !== FALSE)
+		{
+			$this->renderTabs($level + 1);
+			print('<div class="title">'.$this->escape($title)
+			.'</div>');
+		}
+		$this->renderChildren($e, $level);
+		$this->renderTabs($level);
+		print('</div>');
+	}
+
 	private function renderHeading($e, $level)
 	{
 		$tag = 'h'.($level - 1);
@@ -275,6 +294,34 @@ class HtmlTemplate extends Template
 		print('>');
 		print($this->escape($e->getProperty('text')));
 		print("</a>");
+	}
+
+	private function renderMenu($e, $level)
+	{
+		//FIXME really implement
+		$children = $e->getChildren();
+		foreach($children as $c)
+			if($c->getType() == 'menuitem')
+				$this->renderMenuitem($c, $level);
+	}
+
+	private function renderMenubar($e, $level)
+	{
+		$this->renderTabs($level);
+		print('<div class="menubar">');
+		$this->renderMenu($e, $level + 1);
+		$this->renderTabs($level);
+		print('</div>');
+	}
+
+	private function renderMenuitem($e, $level)
+	{
+		//FIXME really implement
+		$this->renderTabs($level);
+		print('<div class="menuitem">');
+		return $this->renderLabel($e, $level);
+		$this->renderTabs($level);
+		print('</div>');
 	}
 
 	private function renderTabs($level)
