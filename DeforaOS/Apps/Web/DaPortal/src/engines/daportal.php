@@ -21,6 +21,9 @@ require_once('./engines/http.php');
 
 
 //DaPortalEngine
+//XXX the mixed-case name makes it impossible to instantiate automatically!
+//    this is however intentional, as this engine is only useful during the
+//    migration period to the newer framework.
 class DaPortalEngine extends HttpEngine
 {
 	//public
@@ -73,7 +76,7 @@ class DaPortalEngine extends HttpEngine
 			$parameters['title'] = $title;
 		foreach($_REQUEST as $key => $value)
 		{
-			//FIXME prepare all SQL queries
+			//FIXME prepare all SQL queries before uncommenting
 			//if(get_magic_quotes_gpc() != 0)
 			//	$value = stripslashes($value);
 			$parameters[$key] = $value;
@@ -115,6 +118,14 @@ class DaPortalEngine extends HttpEngine
 		if($debug)
 			parent::log($priority, $message);
 		return FALSE;
+	}
+
+
+	//DaPortalEngine::match
+	protected function match()
+	{
+		//never instantiate automatically
+		return -1;
 	}
 }
 
