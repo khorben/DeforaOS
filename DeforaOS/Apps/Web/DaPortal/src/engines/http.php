@@ -45,16 +45,10 @@ class HttpEngine extends Engine
 			switch($key)
 			{
 				case 'module':
-					$module = $_REQUEST['module'];
-					break;
 				case 'action':
-					$action = $_REQUEST['action'];
-					break;
 				case 'id':
-					$id = $_REQUEST['id'];
-					break;
 				case 'title':
-					$title = $_REQUEST['title'];
+					$$key = $_REQUEST[$key];
 					break;
 				default:
 					if($parameters === FALSE)
