@@ -54,6 +54,7 @@ CREATE TABLE daportal_user (
 	password varchar(32) NOT NULL,
 	enabled tinyint(4) NOT NULL default '0',
 	admin tinyint(4) NOT NULL default '0',
+	fullname varchar(255) default '',
 	email varchar(255) NOT NULL,
 	PRIMARY KEY (user_id),
 	UNIQUE KEY username (username)
