@@ -26,8 +26,8 @@ if(($engine = Engine::attachDefault()) === FALSE)
 	exit(2);
 if(($request = $engine->getRequest()) === FALSE)
 	$page = FALSE;
-else
-	$page = $engine->process($request);
-$engine->render($page);
+else if(($page = $engine->process($request)) !== FALSE)
+	$engine->render($page);
+unset($engine);
 
 ?>
