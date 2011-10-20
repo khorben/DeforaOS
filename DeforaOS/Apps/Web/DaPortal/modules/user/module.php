@@ -588,11 +588,11 @@ protected function register($args)
 		global $debug, $user_id;
 
 		unset($_SESSION['theme']);
-		$filename = $_SERVER['SCRIPT_FILENAME'].'/themes/'
+		$filename = dirname($_SERVER['SCRIPT_FILENAME']).'/themes/'
 			.$args['theme'].'.css';
 		if(isset($args['theme'])
 				&& strpos($args['theme'], '/') === FALSE
-				&& is_readable(dirname($filename)))
+				&& is_readable($filename))
 			$_SESSION['theme'] = $args['theme'];
 		unset($_SESSION['view']);
 		$views = array('details', 'list', 'thumbnails');
@@ -606,6 +606,7 @@ protected function register($args)
 				$_SESSION['debug'] = 1;
 		}
 		header('Location: '._module_link('user', 'appearance'));
+		exit(0);
 	}
 
 	private function _system_config_update($args)
