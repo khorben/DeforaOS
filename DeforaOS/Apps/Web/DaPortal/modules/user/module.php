@@ -258,51 +258,54 @@ protected function admin($args)
 	}
 
 
-protected function _default($args)
-{
-	global $user_id, $user_name;
+	protected function _default($args)
+	{
+		global $user_id, $user_name;
 
-	if(isset($args['id']))
-		return $this->display($args);
-	if($user_id == 0)
-		return $this->login($args);
-	if(($user = _sql_array('SELECT user_id, username, admin'
-			.' FROM daportal_user'
-			." WHERE user_id='$user_id'")) == FALSE
-			|| count($user) != 1)
-		return _error('Invalid user');
-	$user = $user[0];
-	print('<h1 class="title home">'._html_safe($user['username'].S_PAGE)
-			."</h1>\n");
-	$modules = array();
-	require_once('./system/user.php');
-	require_once('./system/icon.php');
-	if(_user_admin($user_id) && ($d = _module_desktop('admin')) != FALSE)
-		$modules[] = array('name' => $d['title'],
+		if(isset($args['id']))
+			return $this->display($args);
+		if($user_id == 0)
+			return $this->login($args);
+		if(($user = _sql_array('SELECT user_id, username, admin'
+				.' FROM daportal_user'
+				." WHERE user_id='$user_id'")) == FALSE
+				|| count($user) != 1)
+			return _error('Invalid user');
+		$user = $user[0];
+		print('<h1 class="title home">'._html_safe($user['username']
+					.S_PAGE)."</h1>\n");
+		$modules = array();
+		require_once('./system/user.php');
+		require_once('./system/icon.php');
+		if(_user_admin($user_id) && ($d = _module_desktop('admin'))
+				!= FALSE)
+			$modules[] = array('name' => $d['title'],
+					'icon' => _icon('admin', 16),
+					'thumbnail' => _icon('admin', 48),
+					'module' => 'admin',
+					'action' => 'default');
+		$modules[] = array('name' => APPEARANCE,
+				'icon' => _icon('appearance', 16),
+				'thumbnail' => _icon('appearance', 48),
+				'module' => 'user', 'action' => 'appearance');
+		$modules[] = array('name' => MY_CONTENT,
+				'icon' => _icon('content', 16),
+				'thumbnail' => _icon('content', 48),
+				'module' => 'user', 'action' => 'default',
+				'id' => $user_id);
+		$modules[] = array('name' => MY_PROFILE,
 				'icon' => _icon('admin', 16),
 				'thumbnail' => _icon('admin', 48),
-				'module' => 'admin', 'action' => 'default');
-	$modules[] = array('name' => APPEARANCE,
-			'icon' => _icon('appearance', 16),
-			'thumbnail' => _icon('appearance', 48),
-			'module' => 'user', 'action' => 'appearance');
-	$modules[] = array('name' => MY_CONTENT,
-			'icon' => _icon('content', 16),
-			'thumbnail' => _icon('content', 48),
-			'module' => 'user', 'action' => 'default',
-			'id' => $user_id);
-	$modules[] = array('name' => MY_PROFILE,
-			'icon' => _icon('admin', 16),
-			'thumbnail' => _icon('admin', 48),
-			'module' => 'user', 'action' => 'modify',
-			'id' => $user_id);
-	$modules[] = array('name' => LOGOUT,
-			'icon' => _icon('logout', 16),
-			'thumbnail' => _icon('logout', 48),
-			'module' => 'user', 'action' => 'logout');
-	_module('explorer', 'browse', array('entries' => $modules,
-				'view' => 'thumbnails', 'toolbar' => 0));
-}
+				'module' => 'user', 'action' => 'modify',
+				'id' => $user_id);
+		$modules[] = array('name' => LOGOUT,
+				'icon' => _icon('logout', 16),
+				'thumbnail' => _icon('logout', 48),
+				'module' => 'user', 'action' => 'logout');
+		_module('explorer', 'browse', array('entries' => $modules,
+					'view' => 'thumbnails',
+					'toolbar' => 0));
+	}
 
 
 	//UserModule::delete
