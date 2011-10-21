@@ -66,7 +66,9 @@ static VFSError _vfs_error[] =
 #endif
 	{ ENOSPC,	VFS_ENOSPC	},
 	{ EROFS,	VFS_EROFS	},
+#ifdef EMLINK
 	{ EMLINK,	VFS_EMLINK	},
+#endif
 	{ ENOTEMPTY,	VFS_ENOTEMPTY	},
 	{ ENOSYS,	VFS_ENOSYS	},
 	{ ENOTSUP,	VFS_ENOTSUP	},
