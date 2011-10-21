@@ -24,9 +24,8 @@ $config->load('../daportal.conf');
 require_once('./system/engine.php');
 if(($engine = Engine::attachDefault()) === FALSE)
 	exit(2);
-if(($request = $engine->getRequest()) === FALSE)
-	$page = FALSE;
-else if(($page = $engine->process($request)) !== FALSE)
+if(($request = $engine->getRequest()) !== FALSE
+		&& ($page = $engine->process($request)) !== FALSE)
 	$engine->render($page);
 unset($engine);
 
