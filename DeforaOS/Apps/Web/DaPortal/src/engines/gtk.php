@@ -92,8 +92,10 @@ class GtkEngine extends CliEngine
 		$ret = new GtkHbox(FALSE, 4);
 		if(($label = $e->getProperty('text')) !== FALSE)
 			$ret->pack_start(new GtkLabel($label), FALSE, TRUE, 0);
-		$ret->pack_start(new GtkEntry($e->getProperty('value')), TRUE,
-				TRUE, 0);
+		$entry = new GtkEntry($e->getProperty('value'));
+		if($e->getProperty('hidden'))
+			$entry->set_visibility(FALSE);
+		$ret->pack_start($entry, TRUE, TRUE, 0);
 		return $ret;
 	}
 
