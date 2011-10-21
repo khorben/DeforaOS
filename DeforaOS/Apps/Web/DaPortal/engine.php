@@ -66,8 +66,8 @@ if(isset($_COOKIE[session_name()]))
 }
 //FIXME obtain credentials from DaPortalEngine
 require_once('./system/sql.php');
-require_once('./system/module.php');
-require_once('./system/config.php');
+require('./system/module.php');
+require('./system/config.php');
 require_once('./system/lang.php');
 
 //configuration variables
