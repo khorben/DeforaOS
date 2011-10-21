@@ -485,6 +485,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/search/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/search/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/search/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/top/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/top/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/top/project.conf \
 		$(PACKAGE)-$(VERSION)/src/system/Makefile \
 		$(PACKAGE)-$(VERSION)/src/system/auth.php \
 		$(PACKAGE)-$(VERSION)/src/system/config.php \
