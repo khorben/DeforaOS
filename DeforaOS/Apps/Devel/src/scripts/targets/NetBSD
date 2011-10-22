@@ -90,13 +90,20 @@ _image_image_post()
 	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
 			"$DESTDIR/sbin/init"			&&
 	$SUDO $INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"	&&
+	BOOT_SPLASH="vesa 640x480x8;boot netbsd"
+	if [ -n "$IMAGE_SPLASH" ]; then
+		$INSTALL -m 644 "$IMAGE_SPLASH" "$DESTDIR/netbsd.jpg" \
+								|| exit 2
+		BOOT_SPLASH="vesa 640x480x8;splash /netbsd.jpg;boot netbsd -z"
+	fi
 	$SUDO sh -c "cat > $DESTDIR/boot.cfg" << EOF
 banner=Welcome to DeforaOS
 banner====================
 banner=
 banner=Please choose an option from the following menu:
-menu=Boot DeforaOS:vesa 640x480x8;boot netbsd
+menu=Boot DeforaOS:$BOOT_SPLASH
 menu=Boot DeforaOS (text mode):boot netbsd
+menu=Reboot:quit
 menu=Drop to boot prompt:prompt
 default=1
 timeout=10
@@ -107,6 +114,7 @@ EOF
 			"/dev/r${VND}e" "/usr/mdec/bootxx_ffsv1"
 	fi
 	RET=$?
+	$SUDO $INSTALL -m 644 "/netbsd.jpg" "$DESTDIR/netbsd.jpg"
 	$SUDO $UMOUNT "$DESTDIR"
 	$SUDO $VNCONFIG -u "$VND"
 	return $RET
@@ -148,13 +156,20 @@ _image_iso_post()
 	fi
 	$GZIP -9 "$DESTDIR/netbsd"				|| exit 2
 	$INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"		|| exit 2
+	BOOT_SPLASH="vesa 640x480x8;boot netbsd"
+	if [ -n "$IMAGE_SPLASH" ]; then
+		$INSTALL -m 644 "$IMAGE_SPLASH" "$DESTDIR/netbsd.jpg" \
+								|| exit 2
+		BOOT_SPLASH="vesa 640x480x8;splash /netbsd.jpg;boot netbsd -z"
+	fi
 	$SUDO sh -c "cat > $DESTDIR/boot.cfg" << EOF
 banner=Welcome to DeforaOS
 banner====================
 banner=
 banner=Please choose an option from the following menu:
-menu=Boot DeforaOS:vesa 640x480x8;boot netbsd
+menu=Boot DeforaOS:$BOOT_SPLASH
 menu=Boot DeforaOS (text mode):boot netbsd
+menu=Reboot:quit
 menu=Drop to boot prompt:prompt
 default=1
 timeout=10
