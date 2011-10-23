@@ -849,10 +849,13 @@ static void _idle_plugins_load(Mailer * mailer)
 
 
 /* mailer_delete */
+static void _delete_plugins(Mailer * mailer);
+
 void mailer_delete(Mailer * mailer)
 {
 	unsigned int i;
 
+	_delete_plugins(mailer);
 	if(mailer->source != 0)
 		g_source_remove(mailer->source);
 	for(i = 0; i < mailer->available_cnt; i++)
@@ -863,6 +866,25 @@ void mailer_delete(Mailer * mailer)
 	free(mailer->account);
 	g_object_unref(mailer->pl_store);
 	object_delete(mailer);
+}
+
+static void _delete_plugins(Mailer * mailer)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	MailerPlugin * mp;
+	Plugin * plugin;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, MPC_PLUGIN, &plugin,
+				MPC_MAILERPLUGIN, &mp, -1);
+		if(mp->destroy != NULL)
+			mp->destroy(mp);
+		plugin_delete(plugin);
+	}
 }
 
 
