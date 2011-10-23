@@ -35,6 +35,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/layout.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/plug.c \
+		$(PACKAGE)-$(VERSION)/tools/xkey.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \

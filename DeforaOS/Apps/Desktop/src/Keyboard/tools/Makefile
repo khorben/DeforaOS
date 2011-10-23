@@ -1,4 +1,4 @@
-TARGETS	= plug
+TARGETS	= plug xkey
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -23,11 +23,21 @@ plug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 plug: $(plug_OBJS)
 	$(CC) -o plug $(plug_OBJS) $(plug_LDFLAGS)
 
+xkey_OBJS = xkey.o
+xkey_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+xkey_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -l Xtst
+
+xkey: $(xkey_OBJS)
+	$(CC) -o xkey $(xkey_OBJS) $(xkey_LDFLAGS)
+
 plug.o: plug.c
 	$(CC) $(plug_CFLAGS) -c plug.c
 
+xkey.o: xkey.c
+	$(CC) $(xkey_CFLAGS) -c xkey.c
+
 clean:
-	$(RM) -- $(plug_OBJS)
+	$(RM) -- $(plug_OBJS) $(xkey_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
