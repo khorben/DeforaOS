@@ -299,7 +299,7 @@ Browser * browser_new(char const * directory)
 	browser->selection = NULL;
 	browser->selection_cut = 0;
 
-	/* plugins */
+	/* plug-ins */
 	browser->pl_helper.browser = browser;
 	browser->pl_helper.error = browser_error;
 	browser->pl_helper.get_mime = _browser_get_mime;
@@ -423,7 +423,7 @@ Browser * browser_new(char const * directory)
 	/* paned */
 	hpaned = gtk_hpaned_new();
 	gtk_paned_set_position(GTK_PANED(hpaned), 200);
-	/* plugins */
+	/* plug-ins */
 	browser->pl_view = gtk_vbox_new(FALSE, 4);
 	gtk_container_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
@@ -698,6 +698,8 @@ void browser_about(Browser * browser)
 	desktop_about_dialog_set_license(browser->ab_window, _license);
 	desktop_about_dialog_set_name(browser->ab_window, PACKAGE);
 	desktop_about_dialog_set_version(browser->ab_window, VERSION);
+	desktop_about_dialog_set_website(browser->ab_window,
+			"http://www.defora.org/");
 	g_signal_connect_swapped(G_OBJECT(browser->ab_window), "delete-event",
 			G_CALLBACK(_about_on_closex), browser);
 	gtk_widget_show(browser->ab_window);
@@ -789,7 +791,8 @@ int browser_config_load(Browser * browser)
 		return 0; /* XXX ignore error */
 	if((filename = _config_get_filename()) == NULL)
 		return 1;
-	config_load(browser->config, filename); /* XXX ignore errors */
+	if(config_load(browser->config, filename) != 0)
+		browser_error(NULL, error_get(), 1);
 	free(filename);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	/* XXX deserves a rework (enum) */
@@ -2095,7 +2098,7 @@ void browser_show_preferences(Browser * browser)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(
 				browser->pr_plugin_view), FALSE);
 	renderer = gtk_cell_renderer_toggle_new();
-	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
+	g_signal_connect(renderer, "toggled", G_CALLBACK(
 				_preferences_on_plugin_toggled), browser);
 	column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
 			renderer, "active", 1, NULL);
@@ -2634,22 +2637,22 @@ static void _refresh_path(Browser * browser)
 static gboolean _browser_plugin_is_enabled(Browser * browser,
 		char const * plugin)
 {
-	gboolean ret = FALSE;
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
 	GtkTreeIter iter;
 	gchar * p;
 	gboolean valid;
+	int res;
 
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, BPC_NAME, &p, -1);
-		ret = (strcmp(p, plugin) == 0) ? TRUE : FALSE;
+		res = strcmp(p, plugin);
 		g_free(p);
-		if(ret)
-			break;
+		if(res == 0)
+			return TRUE;
 	}
-	return ret;
+	return FALSE;
 }
 
 
