@@ -23,6 +23,8 @@ install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
 	$(INSTALL) -m 0644 -- message.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/message.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
+	$(INSTALL) -m 0644 -- plugin.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/plugin.h
+	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
 	$(INSTALL) -m 0644 -- transport.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/transport.h
 
 uninstall:
@@ -30,6 +32,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/folder.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/mailer.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/message.h
+	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/plugin.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/transport.h
 
 .PHONY: all clean distclean install uninstall

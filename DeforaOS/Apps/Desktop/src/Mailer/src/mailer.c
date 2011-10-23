@@ -51,6 +51,17 @@
 /* Mailer */
 /* private */
 /* types */
+enum _MailerPluginColumn
+{
+	MPC_NAME = 0,
+	MPC_NAME_DISPLAY,
+	MPC_PLUGIN,
+	MPC_MAILERPLUGIN,
+	MPC_WIDGET
+};
+#define MPC_LAST MPC_WIDGET
+#define MPC_COUNT (MPC_LAST + 1)
+
 struct _Mailer
 {
 	Account ** available; /* XXX consider using another data type */
@@ -89,10 +100,15 @@ struct _Mailer
 	gint statusbar_id;
 	/* about */
 	GtkWidget * ab_window;
+	/* plug-ins */
+	GtkListStore * pl_store;
+	MailerPluginHelper pl_helper;
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_accounts;
 	GtkWidget * pr_messages_font;
+	GtkListStore * pr_plugins_store;
+	GtkWidget * pr_plugins;
 };
 
 /* FIXME use a more elegant model with an AccountMessage directly */
@@ -255,6 +271,7 @@ static DesktopToolbar _mailer_bo_toolbar[] =
 
 /* prototypes */
 /* accessors */
+static gboolean _mailer_plugin_is_enabled(Mailer * mailer, char const * plugin);
 static char const * _mailer_get_font(Mailer * mailer);
 static char * _mailer_get_config_filename(void);
 
@@ -289,7 +306,7 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 /* public */
 /* functions */
 /* mailer_new */
-static int _new_plugins(Mailer * mailer);
+static int _new_accounts(Mailer * mailer);
 static GtkWidget * _new_folders_view(Mailer * mailer);
 static void _on_folders_changed(GtkTreeSelection * selection, gpointer data);
 static GtkWidget * _new_headers_view(Mailer * mailer);
@@ -299,7 +316,9 @@ static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
 static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
 		char const * title, int id, int sortid, int boldid);
 static void _on_headers_changed(GtkTreeSelection * selection, gpointer data);
-static gboolean _new_config_load(gpointer data);
+static gboolean _new_idle(gpointer data);
+static void _idle_config_load(Mailer * mailer);
+static void _idle_plugins_load(Mailer * mailer);
 
 Mailer * mailer_new(void)
 {
@@ -318,11 +337,15 @@ Mailer * mailer_new(void)
 		error_print("mailer");
 		return NULL;
 	}
-	_new_plugins(mailer);
+	/* accounts */
+	_new_accounts(mailer);
 	mailer->account = NULL;
 	mailer->account_cnt = 0;
 	mailer->account_cur = NULL;
 	mailer->folder_cur = NULL;
+	/* plug-ins */
+	mailer->pl_helper.mailer = mailer;
+	mailer->pl_helper.error = mailer_error;
 	/* widgets */
 	group = gtk_accel_group_new();
 	mailer->fo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -372,6 +395,10 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->fo_window), vbox);
 	gtk_widget_show_all(vbox);
+	/* plug-ins */
+	mailer->pl_store = gtk_list_store_new(MPC_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER,
+			G_TYPE_POINTER);
 	/* messages list */
 #ifndef EMBEDDED
 	mailer->he_window = mailer->fo_window;
@@ -448,11 +475,11 @@ Mailer * mailer_new(void)
 	_mailer_update_status(mailer);
 	gtk_widget_show(mailer->fo_window);
 	/* load configuration */
-	mailer->source = g_idle_add(_new_config_load, mailer);
+	mailer->source = g_idle_add(_new_idle, mailer);
 	return mailer;
 }
 
-static int _new_plugins(Mailer * mailer)
+static int _new_accounts(Mailer * mailer)
 {
 	int ret = 0;
 	char * dirname;
@@ -744,9 +771,17 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	return vbox;
 }
 
-static gboolean _new_config_load(gpointer data)
+static gboolean _new_idle(gpointer data)
 {
 	Mailer * mailer = data;
+
+	_idle_config_load(mailer);
+	_idle_plugins_load(mailer);
+	return FALSE;
+}
+
+static void _idle_config_load(Mailer * mailer)
+{
 	char * filename;
 	char const * value;
 	PangoFontDescription * font;
@@ -755,9 +790,9 @@ static gboolean _new_config_load(gpointer data)
 
 	mailer->source = 0;
 	if((mailer->config = config_new()) == NULL)
-		return FALSE;
+		return;
 	if((filename = _mailer_get_config_filename()) == NULL)
-		return FALSE;
+		return;
 	if(config_load(mailer->config, filename) != 0)
 		mailer_error(NULL, error_get(), 1);
 	free(filename);
@@ -767,9 +802,9 @@ static gboolean _new_config_load(gpointer data)
 	pango_font_description_free(font);
 	if((value = config_get(mailer->config, NULL, "accounts")) == NULL
 			|| value[0] == '\0')
-		return FALSE;
+		return;
 	if((p = strdup(value)) == NULL)
-		return FALSE;
+		return;
 	value = p;
 	for(q = p; *q != '\0'; q++)
 	{
@@ -782,7 +817,34 @@ static gboolean _new_config_load(gpointer data)
 	if(value[0] != '\0')
 		_mailer_config_load_account(mailer, value);
 	free(p);
-	return FALSE;
+}
+
+static void _idle_plugins_load(Mailer * mailer)
+{
+	char const * plugins;
+	char * p;
+	char * q;
+	size_t i;
+
+	if((plugins = config_get(mailer->config, NULL, "plugins")) == NULL)
+		return;
+	if((p = strdup(plugins)) == NULL)
+		return; /* XXX report error */
+	for(q = p, i = 0;;)
+	{
+		if(q[i] == '\0')
+		{
+			mailer_load(mailer, q);
+			break;
+		}
+		if(q[i++] != ',')
+			continue;
+		q[i - 1] = '\0';
+		mailer_load(mailer, q);
+		q += i;
+		i = 0;
+	}
+	free(p);
 }
 
 
@@ -799,6 +861,7 @@ void mailer_delete(Mailer * mailer)
 	for(i = 0; i < mailer->account_cnt; i++)
 		account_delete(mailer->account[i]);
 	free(mailer->account);
+	g_object_unref(mailer->pl_store);
 	object_delete(mailer);
 }
 
@@ -1053,6 +1116,41 @@ void mailer_cut(Mailer * mailer)
 }
 
 
+/* mailer_load */
+int mailer_load(Mailer * mailer, char const * plugin)
+{
+	Plugin * p;
+	MailerPlugin * mp;
+	GtkWidget * widget;
+	GtkTreeIter iter;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
+#endif
+	if(_mailer_plugin_is_enabled(mailer, plugin))
+		return 0;
+	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
+		return -mailer_error(NULL, error_get(), 1);
+	if((mp = plugin_lookup(p, "plugin")) == NULL)
+	{
+		plugin_delete(p);
+		return -mailer_error(NULL, error_get(), 1);
+	}
+	mp->helper = &mailer->pl_helper;
+	if(mp->init == NULL || (widget = mp->init(mp)) == NULL)
+	{
+		plugin_delete(p);
+		return -mailer_error(NULL, error_get(), 1);
+	}
+	gtk_widget_hide(widget);
+	gtk_list_store_append(mailer->pl_store, &iter);
+	gtk_list_store_set(mailer->pl_store, &iter, MPC_NAME, plugin,
+			MPC_NAME_DISPLAY, mp->name, MPC_PLUGIN, p,
+			MPC_MAILERPLUGIN, mp, MPC_WIDGET, widget, -1);
+	return 0;
+}
+
+
 /* mailer_open_selected_source */
 static void _open_selected_source(Mailer * mailer, GtkTreeModel * model,
 		GtkTreeIter * iter);
@@ -1262,6 +1360,7 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 				mailer->fo_window));
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
+	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	desktop_about_dialog_set_authors(dialog, _authors);
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
@@ -1311,7 +1410,11 @@ typedef enum _AccountColumn
 #define AC_LAST AC_WIDGET
 #define AC_COUNT (AC_LAST + 1)
 
+static void _preferences_accounts(Mailer * mailer, GtkWidget * notebook);
+static void _preferences_display(Mailer * mailer, GtkWidget * notebook);
+static void _preferences_plugins(Mailer * mailer, GtkWidget * notebook);
 static void _preferences_set(Mailer * mailer);
+static void _preferences_set_plugins(Mailer * mailer);
 
 /* callbacks */
 static gboolean _on_preferences_closex(gpointer data);
@@ -1327,21 +1430,13 @@ static void _on_preferences_ok(gpointer data);
 static int _preferences_ok_accounts(Mailer * mailer);
 static int _preferences_ok_display(Mailer * mailer);
 static int _preferences_ok_save(Mailer * mailer);
+static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data);
 
 void mailer_show_preferences(Mailer * mailer, gboolean show)
 {
 	GtkWidget * vbox;
 	GtkWidget * notebook;
-	GtkWidget * hbox;
-	GtkWidget * vbox2;
-	GtkWidget * vbox3;
-	GtkWidget * widget;
-	GtkSizeGroup * group;
-	GtkListStore * store;
-	size_t i;
-	Account * ac;
-	GtkTreeIter iter;
-	GtkCellRenderer * renderer;
 
 	if(mailer->pr_window != NULL)
 	{
@@ -1368,6 +1463,32 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 #endif
 	notebook = gtk_notebook_new();
 	/* accounts */
+	_preferences_accounts(mailer, notebook);
+	/* display */
+	_preferences_display(mailer, notebook);
+	/* plug-ins */
+	_preferences_plugins(mailer, notebook);
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
+	_preferences_set(mailer);
+	gtk_widget_show_all(vbox);
+	if(show)
+		gtk_widget_show(mailer->pr_window);
+	else
+		gtk_widget_hide(mailer->pr_window);
+}
+
+static void _preferences_accounts(Mailer * mailer, GtkWidget * notebook)
+{
+	GtkWidget * vbox2;
+	GtkWidget * vbox3;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkListStore * store;
+	GtkCellRenderer * renderer;
+	size_t i;
+	Account * ac;
+	GtkTreeIter iter;
+
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -1430,10 +1551,18 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
 				_("Accounts")));
-	/* display */
+}
+
+static void _preferences_display(Mailer * mailer, GtkWidget * notebook)
+{
+	GtkSizeGroup * group;
+	GtkWidget * vbox2;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* default font */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Messages font:"));
@@ -1447,13 +1576,49 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, FALSE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
 				_("Display")));
-	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	_preferences_set(mailer);
-	gtk_widget_show_all(vbox);
-	if(show)
-		gtk_widget_show(mailer->pr_window);
-	else
-		gtk_widget_hide(mailer->pr_window);
+}
+
+static void _preferences_plugins(Mailer * mailer, GtkWidget * notebook)
+{
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_IN);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	mailer->pr_plugins_store = gtk_list_store_new(4, G_TYPE_STRING,
+			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	mailer->pr_plugins = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				mailer->pr_plugins_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_plugins),
+			FALSE);
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(renderer, "toggled", G_CALLBACK(
+				_preferences_on_plugin_toggled), mailer);
+	column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
+			renderer, "active", 1, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_plugins), column);
+	column = gtk_tree_view_column_new_with_attributes(NULL,
+			gtk_cell_renderer_pixbuf_new(), "pixbuf", 2, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_plugins), column);
+	column = gtk_tree_view_column_new_with_attributes(_("Name"),
+			gtk_cell_renderer_text_new(), "text", 3, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, 3);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_plugins), column);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
+				mailer->pr_plugins_store), 3,
+			GTK_SORT_ASCENDING);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(mailer->pr_plugins), TRUE);
+	gtk_container_add(GTK_CONTAINER(widget), mailer->pr_plugins);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(
+				_("Plug-ins")));
 }
 
 static void _preferences_set(Mailer * mailer)
@@ -1463,6 +1628,58 @@ static void _preferences_set(Mailer * mailer)
 	p = _mailer_get_font(mailer);
 	gtk_font_button_set_font_name(GTK_FONT_BUTTON(mailer->pr_messages_font),
 			p);
+	_preferences_set_plugins(mailer);
+}
+
+static void _preferences_set_plugins(Mailer * mailer)
+{
+	DIR * dir;
+	struct dirent * de;
+	GtkIconTheme * theme;
+	char const ext[] = ".so";
+	size_t len;
+	Plugin * p;
+	MailerPlugin * mp;
+	GtkTreeIter iter;
+	gboolean enabled;
+	GdkPixbuf * pixbuf;
+
+	gtk_list_store_clear(mailer->pr_plugins_store);
+	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
+		return;
+	theme = gtk_icon_theme_get_default();
+	while((de = readdir(dir)) != NULL)
+	{
+		if((len = strlen(de->d_name)) < sizeof(ext))
+			continue;
+		if(strcmp(&de->d_name[len - sizeof(ext) + 1], ext) != 0)
+			continue;
+		de->d_name[len - sizeof(ext) + 1] = '\0';
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
+#endif
+		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
+				== NULL)
+			continue;
+		if((mp = plugin_lookup(p, "plugin")) == NULL)
+		{
+			plugin_delete(p);
+			continue;
+		}
+		enabled = _mailer_plugin_is_enabled(mailer, de->d_name);
+		if(mp->icon == NULL)
+			pixbuf = gtk_icon_theme_load_icon(theme,
+					"gnome-settings", 24, 0, NULL);
+		else
+			pixbuf = gtk_icon_theme_load_icon(theme, mp->icon, 24,
+					0, NULL);
+		gtk_list_store_append(mailer->pr_plugins_store, &iter);
+		gtk_list_store_set(mailer->pr_plugins_store, &iter,
+				0, de->d_name, 1, enabled, 2, pixbuf,
+				3, mp->name, -1);
+		plugin_delete(p);
+	}
+	closedir(dir);
 }
 
 static gboolean _on_preferences_closex(gpointer data)
@@ -2386,6 +2603,18 @@ static int _preferences_ok_save(Mailer * mailer)
 	return ret;
 }
 
+static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data)
+{
+	Mailer * mailer = data;
+	GtkTreeIter iter;
+
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(
+				mailer->pr_plugins_store), &iter, path);
+	gtk_list_store_set(mailer->pr_plugins_store, &iter, 1,
+			!gtk_cell_renderer_toggle_get_active(renderer), -1);
+}
+
 
 /* mailer_unselect_all */
 void mailer_unselect_all(Mailer * mailer)
@@ -2430,6 +2659,28 @@ static char * _mailer_get_config_filename(void)
 		return NULL;
 	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
 	return filename;
+}
+
+
+/* mailer_plugin_is_enabled */
+static gboolean _mailer_plugin_is_enabled(Mailer * mailer, char const * plugin)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
+	GtkTreeIter iter;
+	gchar * p;
+	gboolean valid;
+	int res;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, MPC_NAME, &p, -1);
+		res = strcmp(p, plugin);
+		g_free(p);
+		if(res == 0)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 

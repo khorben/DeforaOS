@@ -1,4 +1,4 @@
-SUBDIRS	= account
+SUBDIRS	= account plugins
 TARGETS	= compose mailer
 PREFIX	= /usr/local
 DESTDIR	=

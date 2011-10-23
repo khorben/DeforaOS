@@ -53,6 +53,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Mailer/folder.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/mailer.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/message.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/plugin.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/transport.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/Makefile \
 		$(PACKAGE)-$(VERSION)/include/Mailer/project.conf \
@@ -86,6 +87,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account/project.conf \
+		$(PACKAGE)-$(VERSION)/src/plugins/search.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \

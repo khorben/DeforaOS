@@ -15,14 +15,28 @@
 
 
 
-#ifndef DESKTOP_MAILER_H
-# define DESKTOP_MAILER_H
+#ifndef DESKTOP_MAILER_PLUGIN_H
+# define DESKTOP_MAILER_PLUGIN_H
 
-# include "Mailer/folder.h"
-# include "Mailer/message.h"
-# include "Mailer/mailer.h"
-# include "Mailer/account.h"
-# include "Mailer/transport.h"
-# include "Mailer/plugin.h"
 
-#endif /* !DESKTOP_MAILER_H */
+/* MailerPlugin */
+/* types */
+typedef struct _MailerPluginHelper
+{
+	Mailer * mailer;
+	int (*error)(Mailer * mailer, char const * message, int ret);
+} MailerPluginHelper;
+
+typedef struct _MailerPlugin MailerPlugin;
+
+struct _MailerPlugin
+{
+	MailerPluginHelper * helper;
+	char const * name;
+	char const * icon;
+	int (*init)(MailerPlugin * plugin);
+	int (*destroy)(MailerPlugin * plugin);
+	void * priv;
+};
+
+#endif /* !DESKTOP_MAILER_PLUGIN_H */

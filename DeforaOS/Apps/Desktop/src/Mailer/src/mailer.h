@@ -60,6 +60,7 @@ void mailer_set_status(Mailer * mailer, char const * status);
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);
 
+/* accounts */
 int mailer_account_add(Mailer * mailer, Account * account);
 #if 0 /* FIXME deprecate? */
 int mailer_account_disable(Mailer * mailer, Account * account);
@@ -68,6 +69,12 @@ int mailer_account_enable(Mailer * mailer, Account * account);
 /* FIXME implement
 int mailer_account_remove(Mailer * mailer, Account * account); */
 
+/* plug-ins */
+int mailer_load(Mailer * mailer, char const * plugin);
+
+void mailer_compose(Mailer * mailer);
+
+/* selection */
 void mailer_delete_selected(Mailer * mailer);
 
 void mailer_open_selected_source(Mailer * mailer);
@@ -75,18 +82,18 @@ void mailer_open_selected_source(Mailer * mailer);
 void mailer_reply_selected(Mailer * mailer);
 void mailer_reply_selected_to_all(Mailer * mailer);
 
+void mailer_select_all(Mailer * mailer);
+void mailer_unselect_all(Mailer * mailer);
+
+/* clipboard */
 void mailer_cut(Mailer * mailer);
 void mailer_copy(Mailer * mailer);
 void mailer_paste(Mailer * mailer);
 
-void mailer_select_all(Mailer * mailer);
-void mailer_unselect_all(Mailer * mailer);
-
+/* interface */
 void mailer_show_about(Mailer * mailer, gboolean show);
 void mailer_show_body(Mailer * mailer, gboolean show);
 void mailer_show_headers(Mailer * mailer, gboolean show);
 void mailer_show_preferences(Mailer * mailer, gboolean show);
-
-void mailer_compose(Mailer * mailer);
 
 #endif /* !MAILER_SRC_MAILER_H */

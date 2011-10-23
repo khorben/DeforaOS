@@ -15,14 +15,20 @@
 
 
 
-#ifndef DESKTOP_MAILER_H
-# define DESKTOP_MAILER_H
+#include <stdlib.h>
+#include "Mailer.h"
 
-# include "Mailer/folder.h"
-# include "Mailer/message.h"
-# include "Mailer/mailer.h"
-# include "Mailer/account.h"
-# include "Mailer/transport.h"
-# include "Mailer/plugin.h"
 
-#endif /* !DESKTOP_MAILER_H */
+/* Sarch */
+/* protected */
+/* variables */
+/* plug-in */
+MailerPlugin plugin =
+{
+	NULL,
+	"Search",
+	"search",
+	NULL,
+	NULL,
+	NULL
+};
