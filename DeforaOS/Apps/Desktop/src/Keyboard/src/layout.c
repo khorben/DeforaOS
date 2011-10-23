@@ -171,14 +171,14 @@ static void _on_key_clicked(GtkWidget * widget, gpointer data)
 	KeyboardLayout * layout = data;
 	KeyboardKey * key;
 	Display * display;
-	unsigned int keysym;
-	unsigned int keycode;
+	KeySym keysym;
+	KeyCode keycode;
 	gboolean active;
 
 	key = g_object_get_data(G_OBJECT(widget), "key");
 	keysym = keyboard_key_get_keysym(key);
 	display = gdk_x11_get_default_xdisplay();
-	if((keycode = XKeysymToKeycode(display, keysym)) == 0)
+	if((keycode = XKeysymToKeycode(display, keysym)) == NoSymbol)
 		return;
 	XTestGrabControl(display, True);
 	if(keysym_is_modifier(keysym) != 0)
