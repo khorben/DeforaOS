@@ -145,7 +145,7 @@ struct _Browser
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
-	/* plugins */
+	/* plug-ins */
 	GtkWidget * pl_view;
 	GtkListStore * pl_store;
 	GtkWidget * pl_combo;
@@ -193,6 +193,7 @@ void browser_focus_location(Browser * browser);
 
 void browser_go_home(Browser * browser);
 
+/* plug-ins */
 int browser_load(Browser * browser, char const * plugin);
 int browser_unload(Browser * browser, char const * plugin);
 
@@ -201,9 +202,11 @@ void browser_open_with(Browser * browser, char const * path);
 
 void browser_refresh(Browser * browser);
 
+/* selection */
 void browser_select_all(Browser * browser);
 void browser_unselect_all(Browser * browser);
 
+/* interface */
 void browser_show_preferences(Browser * browser);
 
 #endif /* !BROWSER_BROWSER_H */
