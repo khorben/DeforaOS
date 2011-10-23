@@ -71,6 +71,7 @@ int mailer_account_remove(Mailer * mailer, Account * account); */
 
 /* plug-ins */
 int mailer_load(Mailer * mailer, char const * plugin);
+int mailer_unload(Mailer * mailer, char const * plugin);
 
 void mailer_compose(Mailer * mailer);
 

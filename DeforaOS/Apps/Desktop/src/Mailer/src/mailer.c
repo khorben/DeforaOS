@@ -1451,6 +1451,7 @@ static void _on_preferences_cancel(gpointer data);
 static void _on_preferences_ok(gpointer data);
 static int _preferences_ok_accounts(Mailer * mailer);
 static int _preferences_ok_display(Mailer * mailer);
+static int _preferences_ok_plugins(Mailer * mailer);
 static int _preferences_ok_save(Mailer * mailer);
 static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
 		char * path, gpointer data);
@@ -2531,6 +2532,7 @@ static void _on_preferences_ok(gpointer data)
 	mailer_show_preferences(mailer, FALSE);
 	if(_preferences_ok_accounts(mailer) != 0
 			|| _preferences_ok_display(mailer) != 0
+			|| _preferences_ok_plugins(mailer) != 0
 			|| _preferences_ok_save(mailer) != 0)
 		mailer_error(mailer, _("An error occured while saving"
 					" preferences"), 0);
@@ -2613,6 +2615,36 @@ static int _preferences_ok_display(Mailer * mailer)
 	return 0;
 }
 
+static int _preferences_ok_plugins(Mailer * mailer)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pr_plugins_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+	gboolean enabled;
+	String * value = string_new("");
+	String * sep = "";
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, 1, &enabled, -1);
+		if(enabled)
+		{
+			mailer_load(mailer, p);
+			string_append(&value, sep);
+			string_append(&value, p);
+			sep = ",";
+		}
+		else if(_mailer_plugin_is_enabled(mailer, p))
+			mailer_unload(mailer, p);
+		g_free(p);
+	}
+	config_set(mailer->config, NULL, "plugins", value);
+	string_delete(value);
+	return 0;
+}
+
 static int _preferences_ok_save(Mailer * mailer)
 {
 	int ret;
@@ -2635,6 +2667,39 @@ static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
 				mailer->pr_plugins_store), &iter, path);
 	gtk_list_store_set(mailer->pr_plugins_store, &iter, 1,
 			!gtk_cell_renderer_toggle_get_active(renderer), -1);
+}
+
+
+/* mailer_unload */
+int mailer_unload(Mailer * mailer, char const * plugin)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * p;
+	Plugin * pp;
+	MailerPlugin * mp;
+	GtkWidget * widget;
+	gboolean enabled = FALSE;
+
+	/* XXX this code is duplicated with _mailer_plugin_is_enabled() */
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, MPC_NAME, &p, MPC_PLUGIN, &pp,
+				MPC_MAILERPLUGIN, &mp, MPC_WIDGET, &widget, -1);
+		enabled = (strcmp(p, plugin) == 0) ? TRUE : FALSE;
+		g_free(p);
+		if(enabled)
+			break;
+	}
+	if(enabled != TRUE)
+		return 0;
+	gtk_list_store_remove(mailer->pl_store, &iter);
+	if(mp->destroy != NULL)
+		mp->destroy(mp);
+	plugin_delete(pp);
+	return 0;
 }
 
 
