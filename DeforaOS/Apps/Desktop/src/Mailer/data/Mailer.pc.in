@@ -1,0 +1,10 @@
+prefix=PREFIX
+includedir=${prefix}/include
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+
+Name: Mailer
+Description: DeforaOS Desktop Mailer plug-ins
+Version: VERSION
+Requires: libDesktop
+Cflags: -I${includedir}
