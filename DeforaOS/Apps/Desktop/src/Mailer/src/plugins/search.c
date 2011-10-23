@@ -30,5 +30,6 @@ MailerPlugin plugin =
 	"search",
 	NULL,
 	NULL,
+	NULL,
 	NULL
 };
