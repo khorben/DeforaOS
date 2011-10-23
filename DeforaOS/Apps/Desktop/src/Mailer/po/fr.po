@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-23 14:33+0200\n"
+"POT-Creation-Date: 2011-10-23 15:56+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -28,11 +28,11 @@ msgstr "_Enregistrer"
 msgid "Save _as..."
 msgstr "Enregistrer _sous..."
 
-#: ../src/compose.c:119 ../src/mailer.c:146
+#: ../src/compose.c:119 ../src/mailer.c:145
 msgid "_Print"
 msgstr "_Imprimer"
 
-#: ../src/compose.c:120 ../src/mailer.c:147
+#: ../src/compose.c:120 ../src/mailer.c:146
 msgid "Print pre_view"
 msgstr "_Aperçu avant impression"
 
@@ -52,7 +52,7 @@ msgstr "_Annuler"
 msgid "_Redo"
 msgstr "_Refaire"
 
-#: ../src/compose.c:136 ../src/mailer.c:157
+#: ../src/compose.c:136 ../src/mailer.c:156
 msgid "_Cut"
 msgstr "Co_uper"
 
@@ -60,7 +60,7 @@ msgstr "Co_uper"
 msgid "_Copy"
 msgstr "_Copier"
 
-#: ../src/compose.c:140 ../src/mailer.c:161
+#: ../src/compose.c:140 ../src/mailer.c:160
 msgid "_Paste"
 msgstr "C_oller"
 
@@ -68,7 +68,7 @@ msgstr "C_oller"
 msgid "_Select all"
 msgstr "Sélectionner _tout"
 
-#: ../src/compose.c:150 ../src/mailer.c:171
+#: ../src/compose.c:150 ../src/mailer.c:170
 msgid "_Unselect all"
 msgstr "Tout _désélectionner"
 
@@ -76,16 +76,16 @@ msgstr "Tout _désélectionner"
 msgid "Add field"
 msgstr "Ajouter un champ"
 
-#: ../src/compose.c:165 ../src/compose.c:167 ../src/mailer.c:198
-#: ../src/mailer.c:200
+#: ../src/compose.c:165 ../src/compose.c:167 ../src/mailer.c:197
+#: ../src/mailer.c:199
 msgid "_About"
 msgstr "_A propos"
 
-#: ../src/compose.c:174 ../src/mailer.c:207
+#: ../src/compose.c:174 ../src/mailer.c:206
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/compose.c:175 ../src/mailer.c:208
+#: ../src/compose.c:175 ../src/mailer.c:207
 msgid "_Edit"
 msgstr "_Edition"
 
@@ -93,7 +93,7 @@ msgstr "_Edition"
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/compose.c:177 ../src/mailer.c:210
+#: ../src/compose.c:177 ../src/mailer.c:209
 msgid "_Help"
 msgstr "_Aide"
 
@@ -161,8 +161,8 @@ msgstr "Sujet: "
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
-#: ../src/compose.c:674 ../src/compose.c:678 ../src/mailer.c:930
-#: ../src/mailer.c:934
+#: ../src/compose.c:674 ../src/compose.c:678 ../src/mailer.c:949
+#: ../src/mailer.c:953
 msgid "Error"
 msgstr "Erreur"
 
@@ -206,95 +206,95 @@ msgstr "Envoyés"
 msgid "Trash"
 msgstr "Corbeille"
 
-#: ../src/mailer.c:122
+#: ../src/mailer.c:121
 msgid "New account"
 msgstr "Nouveau compte"
 
-#: ../src/mailer.c:122
+#: ../src/mailer.c:121
 msgid "Account settings"
 msgstr "Paramètres du compte"
 
-#: ../src/mailer.c:122
+#: ../src/mailer.c:121
 msgid "Account confirmation"
 msgstr "Confirmation du compte"
 
-#: ../src/mailer.c:140
+#: ../src/mailer.c:139
 msgid "_New mail"
 msgstr "_Nouveau message"
 
-#: ../src/mailer.c:143 ../src/mailer.c:220
+#: ../src/mailer.c:142 ../src/mailer.c:219
 msgid "Send / Receive"
 msgstr "Envoyer / Recevoir"
 
-#: ../src/mailer.c:150
+#: ../src/mailer.c:149
 msgid "_Quit"
 msgstr "_Quitter"
 
-#: ../src/mailer.c:159
+#: ../src/mailer.c:158
 msgid "Cop_y"
 msgstr "_Copier"
 
-#: ../src/mailer.c:164
+#: ../src/mailer.c:163
 msgid "Select _all"
 msgstr "Sélectionner _tout"
 
-#: ../src/mailer.c:173
+#: ../src/mailer.c:172
 msgid "_Preferences"
 msgstr "_Préférences"
 
-#: ../src/mailer.c:180
+#: ../src/mailer.c:179
 msgid "_Reply"
 msgstr "_Répondre"
 
-#: ../src/mailer.c:182
+#: ../src/mailer.c:181
 msgid "Reply to _all"
 msgstr "Répondre à _tous"
 
-#: ../src/mailer.c:184
+#: ../src/mailer.c:183
 msgid "_Forward"
 msgstr "_Transmettre"
 
-#: ../src/mailer.c:187
+#: ../src/mailer.c:186
 msgid "_Delete"
 msgstr "_Supprimer"
 
-#: ../src/mailer.c:190
+#: ../src/mailer.c:189
 msgid "_View source"
 msgstr "Afficher la _source"
 
-#: ../src/mailer.c:209
+#: ../src/mailer.c:208
 msgid "_Message"
 msgstr "_Message"
 
-#: ../src/mailer.c:217 ../src/mailer.c:243 ../src/mailer.c:257
+#: ../src/mailer.c:216 ../src/mailer.c:242 ../src/mailer.c:256
 msgid "New mail"
 msgstr "Nouveau message"
 
-#: ../src/mailer.c:221
+#: ../src/mailer.c:220
 msgid "Stop"
 msgstr "Stop"
 
-#: ../src/mailer.c:224 ../src/mailer.c:246 ../src/mailer.c:260
+#: ../src/mailer.c:223 ../src/mailer.c:245 ../src/mailer.c:259
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/mailer.c:225 ../src/mailer.c:247 ../src/mailer.c:261
+#: ../src/mailer.c:224 ../src/mailer.c:246 ../src/mailer.c:260
 msgid "Reply to all"
 msgstr "Répondre à tous"
 
-#: ../src/mailer.c:227 ../src/mailer.c:249 ../src/mailer.c:263
+#: ../src/mailer.c:226 ../src/mailer.c:248 ../src/mailer.c:262
 msgid "Forward"
 msgstr "Transmettre"
 
-#: ../src/mailer.c:230 ../src/mailer.c:251 ../src/mailer.c:265
+#: ../src/mailer.c:229 ../src/mailer.c:250 ../src/mailer.c:264
 msgid "Delete"
 msgstr "Supprimer"
 
-#: ../src/mailer.c:231 ../src/mailer.c:266
+#: ../src/mailer.c:230 ../src/mailer.c:265
 msgid "Print"
 msgstr "Imprimer"
 
-#: ../src/mailer.c:234
+#: ../src/mailer.c:233
 msgid "Preferences"
 msgstr "Préférences"
 
@@ -302,51 +302,51 @@ msgstr "Préférences"
 msgid "Mailer"
 msgstr "Mailer"
 
-#: ../src/mailer.c:358 ../src/mailer.c:544
+#: ../src/mailer.c:358 ../src/mailer.c:543
 msgid "Folders"
 msgstr "Dossiers"
 
-#: ../src/mailer.c:413
+#: ../src/mailer.c:412
 msgid "Message list"
 msgstr "Liste des messages"
 
-#: ../src/mailer.c:443
+#: ../src/mailer.c:442
 msgid "Message"
 msgstr "Message"
 
-#: ../src/mailer.c:609
+#: ../src/mailer.c:628
 msgid "Subject"
 msgstr "Sujet"
 
-#: ../src/mailer.c:611
+#: ../src/mailer.c:630
 msgid "From"
 msgstr "De"
 
-#: ../src/mailer.c:613
+#: ../src/mailer.c:632
 msgid "To"
 msgstr "À"
 
-#: ../src/mailer.c:615
+#: ../src/mailer.c:634
 msgid "Date"
 msgstr "Date"
 
-#: ../src/mailer.c:730
+#: ../src/mailer.c:749
 msgid " Subject: "
 msgstr " Sujet: "
 
-#: ../src/mailer.c:731
+#: ../src/mailer.c:750
 msgid " From: "
 msgstr " De: "
 
-#: ../src/mailer.c:732
+#: ../src/mailer.c:751
 msgid " To: "
 msgstr " À: "
 
-#: ../src/mailer.c:733
+#: ../src/mailer.c:752
 msgid " Date: "
 msgstr " Date: "
 
-#: ../src/mailer.c:1062
+#: ../src/mailer.c:1081
 msgid ""
 "The messages selected will be deleted.\n"
 "Continue?"
@@ -354,144 +354,144 @@ msgstr ""
 "Les messages sélectionnés vont être effacés.\n"
 "Continuer?"
 
-#: ../src/mailer.c:1205
+#: ../src/mailer.c:1222
 msgid "Mailer - View source"
 msgstr "Mailer - Source"
 
-#: ../src/mailer.c:1280
+#: ../src/mailer.c:1297
 msgid "Re: "
 msgstr "Re: "
 
-#: ../src/mailer.c:1473
+#: ../src/mailer.c:1490
 msgid "Mailer preferences"
 msgstr "Préférences de Mailer"
 
-#: ../src/mailer.c:1544 ../src/mailer.c:1627
+#: ../src/mailer.c:1561 ../src/mailer.c:1644
 msgid "Enabled"
 msgstr "Actif"
 
-#: ../src/mailer.c:1548 ../src/mailer.c:1633
+#: ../src/mailer.c:1565 ../src/mailer.c:1650
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/mailer.c:1552
+#: ../src/mailer.c:1569
 msgid "Type"
 msgstr "Type"
 
-#: ../src/mailer.c:1576
+#: ../src/mailer.c:1593
 msgid "Accounts"
 msgstr "Comptes"
 
-#: ../src/mailer.c:1591
+#: ../src/mailer.c:1608
 msgid "Messages font:"
 msgstr "Police des messages:"
 
-#: ../src/mailer.c:1601
+#: ../src/mailer.c:1618
 msgid "Display"
 msgstr "Affichage"
 
-#: ../src/mailer.c:1644
+#: ../src/mailer.c:1661
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/mailer.c:1767
+#: ../src/mailer.c:1784
 msgid "No account plug-in available"
 msgstr "Aucun greffon de compte disponible"
 
-#: ../src/mailer.c:1922 ../src/mailer.c:2210
+#: ../src/mailer.c:1939 ../src/mailer.c:2227
 msgid "Account name"
 msgstr "Nom du compte"
 
-#: ../src/mailer.c:1929
+#: ../src/mailer.c:1946
 msgid "Your name"
 msgstr "Votre nom"
 
-#: ../src/mailer.c:1936
+#: ../src/mailer.c:1953
 msgid "e-mail address"
 msgstr "Adresse e-mail"
 
-#: ../src/mailer.c:1943
+#: ../src/mailer.c:1960
 msgid "Type of account"
 msgstr "Type de compte"
 
-#: ../src/mailer.c:2099
+#: ../src/mailer.c:2116
 msgid "Choose file"
 msgstr "Choisir un fichier"
 
-#: ../src/mailer.c:2281
+#: ../src/mailer.c:2298
 msgid "hidden"
 msgstr "masqué"
 
-#: ../src/mailer.c:2315
+#: ../src/mailer.c:2332
 msgid "Yes"
 msgstr "Oui"
 
-#: ../src/mailer.c:2315
+#: ../src/mailer.c:2332
 msgid "No"
 msgstr "Non"
 
-#: ../src/mailer.c:2343
+#: ../src/mailer.c:2360
 msgid "Account type "
 msgstr "Type de compte "
 
-#: ../src/mailer.c:2344
+#: ../src/mailer.c:2361
 msgid " active\n"
 msgstr " actif\n"
 
-#: ../src/mailer.c:2406
+#: ../src/mailer.c:2423
 msgid "Edit account: "
 msgstr "Modification du compte: "
 
-#: ../src/mailer.c:2428
+#: ../src/mailer.c:2445
 msgid "Account name:"
 msgstr "Nom du compte :"
 
-#: ../src/mailer.c:2437
+#: ../src/mailer.c:2454
 msgid "Identity:"
 msgstr "Identité :"
 
-#: ../src/mailer.c:2442
+#: ../src/mailer.c:2459
 msgid "Name:"
 msgstr "Nom :"
 
-#: ../src/mailer.c:2453
+#: ../src/mailer.c:2470
 msgid "Address:"
 msgstr "Adresse :"
 
-#: ../src/mailer.c:2464
+#: ../src/mailer.c:2481
 msgid "Organization:"
 msgstr "Organisation :"
 
-#: ../src/mailer.c:2477
+#: ../src/mailer.c:2494
 msgid "Account"
 msgstr "Compte"
 
-#: ../src/mailer.c:2482
+#: ../src/mailer.c:2499
 msgid "Settings"
 msgstr "Paramètres"
 
-#: ../src/mailer.c:2537
+#: ../src/mailer.c:2554
 msgid "An error occured while saving preferences"
 msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
-#: ../src/mailer.c:2812 ../src/mailer.c:2816
+#: ../src/mailer.c:2828 ../src/mailer.c:2832
 msgid "Question"
 msgstr "Question"
 
-#: ../src/mailer.c:2866
+#: ../src/mailer.c:2882
 #, c-format
 msgid "%s/%s: %d %s"
 msgstr "%s/%s: %d %s"
 
-#: ../src/mailer.c:2869
+#: ../src/mailer.c:2885
 msgid "messages"
 msgstr "messages"
 
-#: ../src/mailer.c:2869
+#: ../src/mailer.c:2885
 msgid "message"
 msgstr "message"
 
-#: ../src/mailer.c:2872
+#: ../src/mailer.c:2888
 msgid "Ready"
 msgstr "Prêt"
 

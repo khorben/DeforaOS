@@ -18,6 +18,8 @@
 #ifndef DESKTOP_MAILER_PLUGIN_H
 # define DESKTOP_MAILER_PLUGIN_H
 
+# include <gtk/gtk.h>
+
 
 /* MailerPlugin */
 /* types */
@@ -36,6 +38,7 @@ struct _MailerPlugin
 	char const * icon;
 	int (*init)(MailerPlugin * plugin);
 	int (*destroy)(MailerPlugin * plugin);
+	void (*set_folder)(MailerPlugin * plugin, GtkListStore * store);
 	void * priv;
 };
 
