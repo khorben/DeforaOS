@@ -19,7 +19,7 @@
 #include "Mailer.h"
 
 
-/* Sarch */
+/* Search */
 /* protected */
 /* variables */
 /* plug-in */
