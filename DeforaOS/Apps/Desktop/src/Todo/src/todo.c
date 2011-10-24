@@ -425,6 +425,7 @@ void todo_about(Todo * todo)
 	desktop_about_dialog_set_license(todo->about, _license);
 	desktop_about_dialog_set_name(todo->about, PACKAGE);
 	desktop_about_dialog_set_version(todo->about, VERSION);
+	desktop_about_dialog_set_website(todo->about, "http://www.defora.org/");
 	g_signal_connect_swapped(G_OBJECT(todo->about), "delete-event",
 			G_CALLBACK(_about_on_closex), todo);
 	gtk_widget_show(todo->about);

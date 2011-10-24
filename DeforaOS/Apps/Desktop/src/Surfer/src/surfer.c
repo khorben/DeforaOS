@@ -743,6 +743,8 @@ void surfer_about(Surfer * surfer)
 	desktop_about_dialog_set_license(surfer->ab_dialog, _license);
 	desktop_about_dialog_set_name(surfer->ab_dialog, PACKAGE);
 	desktop_about_dialog_set_version(surfer->ab_dialog, VERSION);
+	desktop_about_dialog_set_website(surfer->ab_dialog,
+			"http://www.defora.org/");
 	g_signal_connect_swapped(G_OBJECT(surfer->ab_dialog), "delete-event",
 			G_CALLBACK(_about_on_closex), surfer);
 	gtk_widget_show(surfer->ab_dialog);
