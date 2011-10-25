@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-28 19:40+0200\n"
+"POT-Creation-Date: 2011-10-25 13:10+0200\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -28,7 +28,7 @@ msgstr ""
 msgid "New _symbolic link..."
 msgstr ""
 
-#: ../src/browser.c:107 ../src/browser.c:925
+#: ../src/browser.c:107 ../src/browser.c:930
 msgid "Open file..."
 msgstr ""
 
@@ -157,7 +157,7 @@ msgstr ""
 msgid "Error while loading configuration"
 msgstr ""
 
-#: ../src/browser.c:316 ../src/browser.c:2577
+#: ../src/browser.c:316 ../src/browser.c:2584
 msgid "File browser"
 msgstr ""
 
@@ -165,19 +165,19 @@ msgstr ""
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:339 ../src/browser.c:2021 ../src/browser.c:2029
+#: ../src/browser.c:339 ../src/browser.c:2028 ../src/browser.c:2036
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:346 ../src/browser.c:2022 ../src/browser.c:2030
+#: ../src/browser.c:346 ../src/browser.c:2029 ../src/browser.c:2037
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:353 ../src/browser.c:2023 ../src/browser.c:2031
+#: ../src/browser.c:353 ../src/browser.c:2030 ../src/browser.c:2038
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:360 ../src/browser.c:2025 ../src/browser.c:2032
+#: ../src/browser.c:360 ../src/browser.c:2032 ../src/browser.c:2039
 msgid "Thumbnails"
 msgstr ""
 
@@ -185,7 +185,11 @@ msgstr ""
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:742 ../src/browser.c:746 ../src/copy.c:674
+#: ../src/browser.c:701
+msgid "translator-credits"
+msgstr ""
+
+#: ../src/browser.c:746 ../src/browser.c:750 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1320 ../src/desktop.c:1325 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:336 ../src/properties.c:340
@@ -193,145 +197,145 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:948 ../src/desktopicon.c:860 ../src/view.c:145
+#: ../src/browser.c:953 ../src/desktopicon.c:860 ../src/view.c:145
 #: ../src/view.c:421
 msgid "Open with..."
 msgstr ""
 
-#: ../src/browser.c:954 ../src/view.c:427
+#: ../src/browser.c:959 ../src/view.c:427
 msgid "Executable files"
 msgstr ""
 
-#: ../src/browser.c:959 ../src/view.c:432
+#: ../src/browser.c:964 ../src/view.c:432
 msgid "Shell scripts"
 msgstr ""
 
-#: ../src/browser.c:963 ../src/desktop.c:1717 ../src/view.c:436
+#: ../src/browser.c:968 ../src/desktop.c:1717 ../src/view.c:436
 msgid "All files"
 msgstr ""
 
-#: ../src/browser.c:1053 ../src/browser.c:1428
+#: ../src/browser.c:1058 ../src/browser.c:1433
 msgid "Refreshing folder: "
 msgstr ""
 
-#: ../src/browser.c:1074
+#: ../src/browser.c:1079
 #, c-format
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1206 ../src/properties.c:543
+#: ../src/browser.c:1211 ../src/properties.c:543
 msgid "bytes"
 msgstr ""
 
-#: ../src/browser.c:1210 ../src/copy.c:590 ../src/properties.c:549
+#: ../src/browser.c:1215 ../src/copy.c:590 ../src/properties.c:549
 msgid "kB"
 msgstr ""
 
-#: ../src/browser.c:1212 ../src/copy.c:615 ../src/properties.c:551
+#: ../src/browser.c:1217 ../src/copy.c:615 ../src/properties.c:551
 msgid "MB"
 msgstr ""
 
-#: ../src/browser.c:1214 ../src/properties.c:553
+#: ../src/browser.c:1219 ../src/properties.c:553
 msgid "GB"
 msgstr ""
 
-#: ../src/browser.c:1218 ../src/properties.c:557
+#: ../src/browser.c:1223 ../src/properties.c:557
 msgid "TB"
 msgstr ""
 
-#: ../src/browser.c:1735
+#: ../src/browser.c:1740
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1737
+#: ../src/browser.c:1744
 msgid "Size"
 msgstr ""
 
-#: ../src/browser.c:1739
+#: ../src/browser.c:1746
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1741
+#: ../src/browser.c:1748
 msgid "Group"
 msgstr ""
 
-#: ../src/browser.c:1743
+#: ../src/browser.c:1750
 msgid "Date"
 msgstr ""
 
-#: ../src/browser.c:1745
+#: ../src/browser.c:1752
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1999
+#: ../src/browser.c:2006
 msgid "File browser preferences"
 msgstr ""
 
-#: ../src/browser.c:2015
+#: ../src/browser.c:2022
 msgid "Default view:"
 msgstr ""
 
-#: ../src/browser.c:2039
+#: ../src/browser.c:2046
 msgid "_Alternate row colors in detailed view"
 msgstr ""
 
-#: ../src/browser.c:2043
+#: ../src/browser.c:2050
 msgid "_Confirm before deletion"
 msgstr ""
 
-#: ../src/browser.c:2046
+#: ../src/browser.c:2053
 msgid "Sort _folders first"
 msgstr ""
 
-#: ../src/browser.c:2049
+#: ../src/browser.c:2056
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/browser.c:2052
+#: ../src/browser.c:2059
 msgid "_Appearance"
 msgstr ""
 
-#: ../src/browser.c:2066
+#: ../src/browser.c:2073
 msgid "Type"
 msgstr ""
 
-#: ../src/browser.c:2087
+#: ../src/browser.c:2094
 msgid "_File associations"
 msgstr ""
 
-#: ../src/browser.c:2098
+#: ../src/browser.c:2105
 msgid "Enabled"
 msgstr ""
 
-#: ../src/browser.c:2106
+#: ../src/browser.c:2113
 msgid "Name"
 msgstr ""
 
-#: ../src/browser.c:2119
+#: ../src/browser.c:2126
 msgid "_Plug-ins"
 msgstr ""
 
-#: ../src/browser.c:2221
+#: ../src/browser.c:2228
 msgid "Edit file association"
 msgstr ""
 
-#: ../src/browser.c:2234
+#: ../src/browser.c:2241
 msgid "Type:"
 msgstr ""
 
-#: ../src/browser.c:2243
+#: ../src/browser.c:2250
 msgid "Open with:"
 msgstr ""
 
-#: ../src/browser.c:2254
+#: ../src/browser.c:2261
 msgid "View with:"
 msgstr ""
 
-#: ../src/browser.c:2265
+#: ../src/browser.c:2272
 msgid "Edit with:"
 msgstr ""
 
-#: ../src/browser.c:2558
+#: ../src/browser.c:2565
 msgid "Refreshing folder..."
 msgstr ""
 
@@ -741,68 +745,68 @@ msgstr ""
 msgid "Usage: view file...\n"
 msgstr ""
 
-#: ../src/plugins/cvs.c:121 ../src/plugins/cvs.c:513
+#: ../src/plugins/cvs.c:124 ../src/plugins/cvs.c:520
 msgid "CVS"
 msgstr "CVS"
 
-#: ../src/plugins/cvs.c:168
+#: ../src/plugins/cvs.c:171
 msgid "Root:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:170
+#: ../src/plugins/cvs.c:173
 msgid "Repository:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:172
+#: ../src/plugins/cvs.c:175
 msgid "Tag:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:174 ../src/plugins/cvs.c:194
+#: ../src/plugins/cvs.c:177 ../src/plugins/cvs.c:197
 msgid "Request diff"
 msgstr ""
 
-#: ../src/plugins/cvs.c:177 ../src/plugins/cvs.c:197
+#: ../src/plugins/cvs.c:180 ../src/plugins/cvs.c:200
 msgid "View log"
 msgstr ""
 
-#: ../src/plugins/cvs.c:180 ../src/plugins/cvs.c:200
+#: ../src/plugins/cvs.c:183 ../src/plugins/cvs.c:203
 msgid "Update"
 msgstr ""
 
-#: ../src/plugins/cvs.c:183 ../src/plugins/cvs.c:203
+#: ../src/plugins/cvs.c:186 ../src/plugins/cvs.c:206
 msgid "Commit"
 msgstr ""
 
-#: ../src/plugins/cvs.c:192
+#: ../src/plugins/cvs.c:195
 msgid "Revision:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:210
+#: ../src/plugins/cvs.c:213
 msgid "Add to CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:213
+#: ../src/plugins/cvs.c:216
 msgid "Run make"
 msgstr ""
 
-#: ../src/plugins/cvs.c:343 ../src/plugins/cvs.c:412
+#: ../src/plugins/cvs.c:347 ../src/plugins/cvs.c:419
 msgid "Not a CVS repository"
 msgstr ""
 
-#: ../src/plugins/cvs.c:435
+#: ../src/plugins/cvs.c:442
 msgid "Not managed by CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:557
+#: ../src/plugins/cvs.c:564
 msgid "Running command..."
 msgstr ""
 
-#: ../src/plugins/cvs.c:804
+#: ../src/plugins/cvs.c:811
 #, c-format
 msgid "Command exited with error code %d"
 msgstr ""
 
-#: ../src/plugins/cvs.c:810
+#: ../src/plugins/cvs.c:817
 #, c-format
 msgid "Command exited with signal %d"
 msgstr ""
@@ -819,6 +823,6 @@ msgstr ""
 msgid "Volumes"
 msgstr ""
 
-#: ../src/plugins/volumes.c:208
+#: ../src/plugins/volumes.c:206
 msgid "Root filesystem"
 msgstr ""

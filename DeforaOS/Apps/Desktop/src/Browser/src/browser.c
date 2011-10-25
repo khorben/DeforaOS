@@ -697,6 +697,8 @@ void browser_about(Browser * browser)
 			"system-file-manager");
 	desktop_about_dialog_set_license(browser->ab_window, _license);
 	desktop_about_dialog_set_name(browser->ab_window, PACKAGE);
+	desktop_about_dialog_set_translator_credits(browser->ab_window,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(browser->ab_window, VERSION);
 	desktop_about_dialog_set_website(browser->ab_window,
 			"http://www.defora.org/");
