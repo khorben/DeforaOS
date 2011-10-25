@@ -335,8 +335,8 @@ static int _new_xss(Locker * locker, size_t cnt)
 				getpid(), XA_INTEGER) == 0
 			|| (locker->windows = malloc(sizeof(*locker->windows)
 					* cnt)) == NULL)
-		return -error_set_code(1, "%s", "Could not register as"
-				" screensaver");
+		return -error_set_code(1, "%s", _(
+					"Could not register as screensaver"));
 	return 0;
 }
 
@@ -394,7 +394,7 @@ static void _preferences_window(Locker * locker)
 	GtkWidget * notebook;
 
 	locker->pr_window = gtk_dialog_new_with_buttons(
-			"Screensaver preferences", NULL, 0,
+			_("Screensaver preferences"), NULL, 0,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	gtk_window_set_default_size(GTK_WINDOW(locker->pr_window), 400, 300);
@@ -407,15 +407,15 @@ static void _preferences_window(Locker * locker)
 	/* authentication */
 	/* FIXME implement */
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
-			gtk_label_new("Authentication"));
+			gtk_label_new(_("Authentication")));
 	/* demos */
 	/* FIXME implement */
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
-			gtk_label_new("Demos"));
+			gtk_label_new(_("Demos")));
 	/* plug-ins */
 	/* FIXME implement */
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
-			gtk_label_new("Plug-ins"));
+			gtk_label_new(_("Plug-ins")));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(locker->pr_window));
 #else
@@ -476,11 +476,13 @@ static void _locker_about(Locker * locker)
 				_about_on_closex), locker);
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
-	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	desktop_about_dialog_set_authors(dialog, _authors);
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_logo_icon_name(dialog, "gnome-lockscreen");
 	desktop_about_dialog_set_license(dialog, _license);
+	desktop_about_dialog_set_translator_credits(dialog,
+			_("translator-credits"));
+	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	gtk_widget_show(dialog);
 }
 
