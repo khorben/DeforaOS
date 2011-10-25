@@ -1400,11 +1400,13 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 				mailer->fo_window));
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
-	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	desktop_about_dialog_set_authors(dialog, _authors);
 	desktop_about_dialog_set_copyright(dialog, _copyright);
-	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
 	desktop_about_dialog_set_license(dialog, _license);
+	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
+	desktop_about_dialog_set_translator_credits(dialog,
+			_("translator-credits"));
+	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
 	gtk_widget_show(dialog);
 }
 

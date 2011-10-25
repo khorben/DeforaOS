@@ -553,6 +553,8 @@ void player_about(Player * player)
 	desktop_about_dialog_set_logo_icon_name(player->ab_window, ICON_NAME);
 	desktop_about_dialog_set_license(player->ab_window, _license);
 	desktop_about_dialog_set_name(player->ab_window, PACKAGE);
+	desktop_about_dialog_set_translator_credits(player->ab_window,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(player->ab_window, VERSION);
 	g_signal_connect_swapped(G_OBJECT(player->ab_window), "delete-event",
 			G_CALLBACK(_about_on_closex), player);
