@@ -1387,7 +1387,7 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 	if(mailer->ab_window != NULL)
 	{
 		if(show)
-			gtk_widget_show(mailer->ab_window);
+			gtk_window_present(GTK_WINDOW(mailer->ab_window));
 		else
 			gtk_widget_hide(mailer->ab_window);
 		return;
