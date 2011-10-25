@@ -150,6 +150,15 @@ void on_help_about(gpointer data)
 }
 
 
+/* on_insert_file */
+void on_insert_file(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_insert_file_dialog(editor);
+}
+
+
 /* toolbar */
 /* on_close */
 void on_close(gpointer data)

@@ -133,6 +133,12 @@ static DesktopMenu _editor_menu_edit[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
+static DesktopMenu _editor_menu_insert[] =
+{
+	{ N_("_File..."), G_CALLBACK(on_insert_file), 0, 0, 0 },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
 static DesktopMenu _editor_menu_help[] =
 {
 	{ N_("_About"), G_CALLBACK(on_help_about),
@@ -148,6 +154,7 @@ static DesktopMenubar _editor_menubar[] =
 {
 	{ N_("_File"), _editor_menu_file },
 	{ N_("_Edit"), _editor_menu_edit },
+	{ N_("_Insert"), _editor_menu_insert },
 	{ N_("_Help"), _editor_menu_help },
 	{ NULL, NULL }
 };
@@ -590,6 +597,92 @@ static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
 }
 
 
+/* editor_insert_file */
+int editor_insert_file(Editor * editor, char const * filename)
+{
+	int ret = 0;
+	FILE * fp;
+	GtkTextBuffer * tbuf;
+	char buf[BUFSIZ];
+	size_t len;
+	char * p;
+	size_t rlen;
+	size_t wlen;
+	GError * error = NULL;
+
+	if((fp = fopen(filename, "r")) == NULL)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", filename, strerror(errno));
+		return -editor_error(editor, buf, 1);
+	}
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	while((len = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
+	{
+		/* FIXME code duplicated from editor_open() */
+#if 0
+		if((p = g_convert(buf, len, "UTF-8", "ISO-8859-15", &rlen, &wlen, NULL)) != NULL)
+		{
+			gtk_text_buffer_insert_at_cursor(tbuf, p, wlen);
+			g_free(p);
+		}
+		else
+			gtk_text_buffer_insert(tbuf, &iter, buf, len);
+#else
+		if((p = g_locale_to_utf8(buf, len, &rlen, &wlen, &error))
+				!= NULL)
+			/* FIXME may lose characters */
+			gtk_text_buffer_insert_at_cursor(tbuf, p, wlen);
+		else
+		{
+			editor_error(editor, error->message, 1);
+			g_error_free(error);
+			gtk_text_buffer_insert_at_cursor(tbuf, buf, len);
+		}
+#endif
+	}
+	if(ferror(fp))
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", filename, strerror(errno));
+		ret = -editor_error(editor, buf, 1);
+	}
+	fclose(fp);
+	return ret;
+}
+
+
+/* editor_insert_file_dialog */
+int editor_insert_file_dialog(Editor * editor)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkFileFilter * filter;
+	char * filename = NULL;
+
+	dialog = gtk_file_chooser_dialog_new(_("Insert file..."),
+			GTK_WINDOW(editor->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Text files"));
+	gtk_file_filter_add_mime_type(filter, "text/plain");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return 0;
+	ret = editor_insert_file(editor, filename);
+	g_free(filename);
+	return ret;
+}
+
+
 /* editor_open */
 void editor_open(Editor * editor, char const * filename)
 {
@@ -666,7 +759,11 @@ void editor_open(Editor * editor, char const * filename)
 			/* FIXME may lose characters */
 			gtk_text_buffer_insert(tbuf, &iter, p, wlen);
 		else
+		{
+			editor_error(editor, error->message, 1);
+			g_error_free(error);
 			gtk_text_buffer_insert(tbuf, &iter, buf, len);
+		}
 #endif
 	}
 	fclose(fp);
