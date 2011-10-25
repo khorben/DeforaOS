@@ -424,6 +424,8 @@ void todo_about(Todo * todo)
 	desktop_about_dialog_set_logo_icon_name(todo->about, "todo");
 	desktop_about_dialog_set_license(todo->about, _license);
 	desktop_about_dialog_set_name(todo->about, PACKAGE);
+	desktop_about_dialog_set_translator_credits(todo->about,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(todo->about, VERSION);
 	desktop_about_dialog_set_website(todo->about, "http://www.defora.org/");
 	g_signal_connect_swapped(G_OBJECT(todo->about), "delete-event",

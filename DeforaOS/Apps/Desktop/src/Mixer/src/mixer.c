@@ -645,6 +645,8 @@ void mixer_about(Mixer * mixer)
 	desktop_about_dialog_set_license(mixer->about, _license);
 	desktop_about_dialog_set_logo_icon_name(mixer->about, "stock_volume");
 	desktop_about_dialog_set_name(mixer->about, PACKAGE);
+	desktop_about_dialog_set_translator_credits(mixer->about,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(mixer->about, VERSION);
 	desktop_about_dialog_set_website(mixer->about,
 			"http://www.defora.org/");

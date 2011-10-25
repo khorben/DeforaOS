@@ -378,6 +378,8 @@ void editor_about(Editor * editor)
 			"text-editor");
 	desktop_about_dialog_set_license(editor->ab_window, _license);
 	desktop_about_dialog_set_name(editor->ab_window, PACKAGE);
+	desktop_about_dialog_set_translator_credits(editor->ab_window,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(editor->ab_window, VERSION);
 	g_signal_connect_swapped(G_OBJECT(editor->ab_window), "delete-event",
 			G_CALLBACK(_about_on_closex), editor);
