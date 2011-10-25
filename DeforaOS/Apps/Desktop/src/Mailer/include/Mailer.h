@@ -23,6 +23,5 @@
 # include "Mailer/mailer.h"
 # include "Mailer/account.h"
 # include "Mailer/transport.h"
-# include "Mailer/plugin.h"
 
 #endif /* !DESKTOP_MAILER_H */

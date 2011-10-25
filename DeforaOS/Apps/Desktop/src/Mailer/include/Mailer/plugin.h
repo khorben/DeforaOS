@@ -19,6 +19,7 @@
 # define DESKTOP_MAILER_PLUGIN_H
 
 # include <gtk/gtk.h>
+# include "mailer.h"
 
 
 /* MailerPlugin */

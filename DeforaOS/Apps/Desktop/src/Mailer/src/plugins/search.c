@@ -16,7 +16,7 @@
 
 
 #include <stdlib.h>
-#include "Mailer.h"
+#include "Mailer/plugin.h"
 
 
 /* Search */
