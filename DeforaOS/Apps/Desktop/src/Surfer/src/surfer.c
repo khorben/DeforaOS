@@ -742,6 +742,8 @@ void surfer_about(Surfer * surfer)
 			"web-browser");
 	desktop_about_dialog_set_license(surfer->ab_dialog, _license);
 	desktop_about_dialog_set_name(surfer->ab_dialog, PACKAGE);
+	desktop_about_dialog_set_translator_credits(surfer->ab_dialog,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(surfer->ab_dialog, VERSION);
 	desktop_about_dialog_set_website(surfer->ab_dialog,
 			"http://www.defora.org/");
