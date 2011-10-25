@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Locker */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 
 
 
@@ -20,12 +22,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/scrnsaver.h>
 #include <System.h>
+#include <Desktop.h>
 #include "locker.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -70,16 +75,25 @@ struct _Locker
 
 	/* preferences */
 	GtkWidget * pr_window;
+
+	/* about */
+	GtkWidget * ab_window;
 };
 
 
 /* constants */
 #define LOCKER_CONFIG_FILE	".locker"
 
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
 
 /* prototypes */
+static void _locker_about(Locker * locker);
 static void _locker_action(Locker * locker, LockerAction action);
-
 static void _locker_activate(Locker * locker);
 static int _locker_error(Locker * locker, char const * message, int ret);
 static void _locker_event(Locker * locker, LockerEvent event);
@@ -133,6 +147,7 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 	locker->plugins = NULL;
 	locker->plugins_cnt = 0;
 	locker->pr_window = NULL;
+	locker->ab_window = NULL;
 	/* check for errors */
 	if(_new_config(locker) != 0
 			|| _new_demo(locker, demo) != 0
@@ -249,6 +264,7 @@ static void _new_helpers(Locker * locker)
 	locker->ahelper.action = _locker_action;
 	locker->phelper.locker = locker;
 	locker->phelper.error = _locker_error;
+	locker->phelper.about_dialog = _locker_about;
 	locker->phelper.action = _locker_action;
 }
 
@@ -337,6 +353,8 @@ void locker_delete(Locker * locker)
 		locker->demo->destroy(locker->demo);
 	if(locker->dplugin != NULL)
 		plugin_delete(locker->dplugin);
+	if(locker->ab_window != NULL)
+		gtk_widget_destroy(locker->ab_window);
 	free(locker->windows);
 	XScreenSaverUnregister(GDK_DISPLAY_XDISPLAY(locker->display),
 			locker->screen);
@@ -440,6 +458,41 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 /* private */
 /* functions */
 /* useful */
+/* locker_about */
+static gboolean _about_on_closex(gpointer data);
+
+static void _locker_about(Locker * locker)
+{
+	GtkWidget * dialog;
+
+	if(locker->ab_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(locker->ab_window));
+		return;
+	}
+	dialog = desktop_about_dialog_new();
+	locker->ab_window = dialog;
+	g_signal_connect_swapped(G_OBJECT(dialog), "delete-event", G_CALLBACK(
+				_about_on_closex), locker);
+	desktop_about_dialog_set_name(dialog, PACKAGE);
+	desktop_about_dialog_set_version(dialog, VERSION);
+	desktop_about_dialog_set_website(dialog, "http://www.defora.org/");
+	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_copyright(dialog, _copyright);
+	desktop_about_dialog_set_logo_icon_name(dialog, "gnome-lockscreen");
+	desktop_about_dialog_set_license(dialog, _license);
+	gtk_widget_show(dialog);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Locker * locker = data;
+
+	gtk_widget_hide(locker->ab_window);
+	return TRUE;
+}
+
+
 /* locker_action */
 static void _locker_action(Locker * locker, LockerAction action)
 {
@@ -483,11 +536,11 @@ static int _locker_error(Locker * locker, char const * message, int ret)
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Error");
+			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -498,10 +551,14 @@ static int _locker_error(Locker * locker, char const * message, int ret)
 static void _locker_event(Locker * locker, LockerEvent event)
 {
 	size_t i;
+	LockerPlugin * lp;
 
 	for(i = 0; i < locker->plugins_cnt; i++)
-		locker->plugins[i].plugin->event(locker->plugins[i].plugin,
-				event);
+	{
+		lp = locker->plugins[i].plugin;
+		if(lp->event != NULL)
+			lp->event(lp, event);
+	}
 }
 
 

@@ -54,6 +54,7 @@ LockerPlugin plugin =
 {
 	NULL,
 	"Openmoko",
+	NULL,
 	_openmoko_init,
 	_openmoko_destroy,
 	NULL,

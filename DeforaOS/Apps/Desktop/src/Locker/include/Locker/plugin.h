@@ -30,6 +30,7 @@ typedef struct _LockerPluginHelper
 {
 	Locker * locker;
 	int (*error)(Locker * locker, char const * message, int ret);
+	void (*about_dialog)(Locker * locker);
 	void (*action)(Locker * locker, LockerAction action);
 } LockerPluginHelper;
 
@@ -37,7 +38,8 @@ struct _LockerPlugin
 {
 	LockerPluginHelper * helper;
 	char const * name;
-	GtkWidget * (*init)(LockerPlugin * plugin);
+	char const * icon;
+	int (*init)(LockerPlugin * plugin);
 	void (*destroy)(LockerPlugin * plugin);
 	void (*event)(LockerPlugin * plugin, LockerEvent event);
 	void * priv;

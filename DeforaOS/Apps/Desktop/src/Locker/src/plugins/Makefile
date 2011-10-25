@@ -1,4 +1,4 @@
-TARGETS	= debug.so openmoko.so
+TARGETS	= debug.so openmoko.so systray.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -32,14 +32,24 @@ openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 openmoko.so: $(openmoko_OBJS)
 	$(CCSHARED) -o openmoko.so $(openmoko_OBJS) $(openmoko_LDFLAGS)
 
+systray_OBJS = systray.o
+systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+systray.so: $(systray_OBJS)
+	$(CCSHARED) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
+
 debug.o: debug.c ../../include/Locker.h
 	$(CC) $(debug_CFLAGS) -c debug.c
 
 openmoko.o: openmoko.c ../../include/Locker.h
 	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
+systray.o: systray.c ../../include/Locker.h
+	$(CC) $(systray_CFLAGS) -c systray.c
+
 clean:
-	$(RM) -- $(debug_OBJS) $(openmoko_OBJS)
+	$(RM) -- $(debug_OBJS) $(openmoko_OBJS) $(systray_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -49,9 +59,12 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
+	$(INSTALL) -m 0644 -- systray.so $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
 
 .PHONY: all clean distclean install uninstall

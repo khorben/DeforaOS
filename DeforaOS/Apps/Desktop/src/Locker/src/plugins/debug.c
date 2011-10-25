@@ -36,6 +36,7 @@ LockerPlugin plugin =
 {
 	NULL,
 	"Debug",
+	NULL,
 	_debug_init,
 	_debug_destroy,
 	_debug_event,

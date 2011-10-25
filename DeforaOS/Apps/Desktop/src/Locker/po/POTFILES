@@ -1,3 +1,4 @@
+../src/locker.c
 ../src/lockerctl.c
 ../src/main.c
 ../src/auth/password.c
