@@ -283,6 +283,8 @@ void xmleditor_about(XMLEditor * xmleditor)
 	desktop_about_dialog_set_logo_icon_name(xmleditor->ab_window,
 			"text-editor");
 	desktop_about_dialog_set_name(xmleditor->ab_window, PACKAGE);
+	desktop_about_dialog_set_translator_credits(xmleditor->ab_window,
+			_("translator-credits"));
 	desktop_about_dialog_set_version(xmleditor->ab_window, VERSION);
 	gtk_widget_show(xmleditor->ab_window);
 }
