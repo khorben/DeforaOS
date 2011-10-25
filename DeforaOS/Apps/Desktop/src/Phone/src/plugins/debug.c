@@ -87,7 +87,7 @@ static DebugPhoneEvents _debug_phone_events[] =
 /* prototypes */
 /* plug-in */
 static int _debug_init(PhonePlugin * plugin);
-static int _debug_destroy(PhonePlugin * plugin);
+static void _debug_destroy(PhonePlugin * plugin);
 static int _debug_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _debug_settings(PhonePlugin * plugin);
 
@@ -213,13 +213,12 @@ static void _on_debug_queue_execute(gpointer data)
 
 
 /* debug_destroy */
-static int _debug_destroy(PhonePlugin * plugin)
+static void _debug_destroy(PhonePlugin * plugin)
 {
 	Debug * debug = plugin->priv;
 
 	gtk_widget_destroy(debug->window);
 	object_delete(debug);
-	return 0;
 }
 
 

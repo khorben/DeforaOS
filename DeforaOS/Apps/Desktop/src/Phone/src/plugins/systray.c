@@ -38,7 +38,7 @@ typedef struct _Systray
 /* prototypes */
 /* plug-in */
 static int _systray_init(PhonePlugin * plugin);
-static int _systray_destroy(PhonePlugin * plugin);
+static void _systray_destroy(PhonePlugin * plugin);
 
 /* callbacks */
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -94,12 +94,12 @@ static int _systray_init(PhonePlugin * plugin)
 
 
 /* systray_destroy */
-static int _systray_destroy(PhonePlugin * plugin)
+static void _systray_destroy(PhonePlugin * plugin)
 {
 	Systray * systray = plugin->priv;
 
 	g_object_unref(systray->icon);
-	return 0;
+	object_delete(systray);
 }
 
 

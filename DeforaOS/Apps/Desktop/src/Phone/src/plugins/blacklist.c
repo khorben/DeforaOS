@@ -36,7 +36,7 @@ typedef struct _Blacklist
 
 /* prototypes */
 static int _blacklist_init(PhonePlugin * plugin);
-static int _blacklist_destroy(PhonePlugin * plugin);
+static void _blacklist_destroy(PhonePlugin * plugin);
 static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _blacklist_settings(PhonePlugin * plugin);
 
@@ -88,14 +88,13 @@ static void _init_foreach(char const * variable, char const * value,
 
 
 /* blacklist_destroy */
-static int _blacklist_destroy(PhonePlugin * plugin)
+static void _blacklist_destroy(PhonePlugin * plugin)
 {
 	Blacklist * blacklist = plugin->priv;
 
 	if(blacklist->window != NULL)
 		gtk_widget_destroy(blacklist->window);
 	object_delete(blacklist);
-	return 0;
 }
 
 

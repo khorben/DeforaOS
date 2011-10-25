@@ -70,7 +70,7 @@ typedef struct _Openmoko
 /* prototypes */
 /* plug-in */
 static int _openmoko_init(PhonePlugin * plugin);
-static int _openmoko_destroy(PhonePlugin * plugin);
+static void _openmoko_destroy(PhonePlugin * plugin);
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _openmoko_deepsleep(PhonePlugin * plugin);
 static void _openmoko_queue(PhonePlugin * plugin, char const * command);
@@ -117,7 +117,7 @@ static int _openmoko_init(PhonePlugin * plugin)
 
 
 /* openmoko_destroy */
-static int _openmoko_destroy(PhonePlugin * plugin)
+static void _openmoko_destroy(PhonePlugin * plugin)
 {
 	Openmoko * openmoko = plugin->priv;
 
@@ -125,7 +125,6 @@ static int _openmoko_destroy(PhonePlugin * plugin)
 	if(openmoko->window != NULL)
 		gtk_widget_destroy(openmoko->window);
 	object_delete(openmoko);
-	return 0;
 }
 
 

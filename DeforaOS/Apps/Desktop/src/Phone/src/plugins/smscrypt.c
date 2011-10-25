@@ -44,7 +44,7 @@ typedef struct _SMSCrypt
 static void _smscrypt_clear(PhonePlugin * plugin);
 static gboolean _smscrypt_confirm(PhonePlugin * plugin, char const * message);
 static int _smscrypt_init(PhonePlugin * plugin);
-static int _smscrypt_destroy(PhonePlugin * plugin);
+static void _smscrypt_destroy(PhonePlugin * plugin);
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent * event);
 static int _smscrypt_secret(PhonePlugin * plugin, char const * number);
 static void _smscrypt_settings(PhonePlugin * plugin);
@@ -132,14 +132,13 @@ static void _init_foreach(char const * variable, char const * value,
 
 
 /* smscrypt_destroy */
-static int _smscrypt_destroy(PhonePlugin * plugin)
+static void _smscrypt_destroy(PhonePlugin * plugin)
 {
 	SMSCrypt * smscrypt = plugin->priv;
 
 	if(smscrypt->window != NULL)
 		gtk_widget_destroy(smscrypt->window);
 	free(smscrypt);
-	return 0;
 }
 
 

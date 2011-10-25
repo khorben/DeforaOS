@@ -82,7 +82,7 @@ typedef struct _Panel
 
 /* prototypes */
 static int _panel_init(PhonePlugin * plugin);
-static int _panel_destroy(PhonePlugin * plugin);
+static void _panel_destroy(PhonePlugin * plugin);
 static int _panel_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _panel_settings(PhonePlugin * plugin);
 
@@ -245,7 +245,7 @@ static gboolean _on_battery_timeout(gpointer data)
 
 
 /* panel_destroy */
-static int _panel_destroy(PhonePlugin * plugin)
+static void _panel_destroy(PhonePlugin * plugin)
 {
 	Panel * panel = plugin->priv;
 
@@ -254,7 +254,7 @@ static int _panel_destroy(PhonePlugin * plugin)
 	if(panel->timeout != 0)
 		g_source_remove(panel->timeout);
 	gtk_widget_destroy(panel->hbox);
-	return 0;
+	object_delete(panel);
 }
 
 

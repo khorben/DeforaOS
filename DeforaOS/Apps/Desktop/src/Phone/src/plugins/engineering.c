@@ -159,7 +159,7 @@ static struct
 
 /* prototypes */
 static int _engineering_init(PhonePlugin * plugin);
-static int _engineering_destroy(PhonePlugin * plugin);
+static void _engineering_destroy(PhonePlugin * plugin);
 
 static double _engineering_get_frequency(unsigned int arfcn);
 
@@ -326,7 +326,7 @@ static int _engineering_init(PhonePlugin * plugin)
 
 
 /* engineering_destroy */
-static int _engineering_destroy(PhonePlugin * plugin)
+static void _engineering_destroy(PhonePlugin * plugin)
 {
 	Engineering * engineering = plugin->priv;
 
@@ -334,7 +334,6 @@ static int _engineering_destroy(PhonePlugin * plugin)
 		g_source_remove(engineering->source);
 	gtk_widget_destroy(engineering->window);
 	free(engineering);
-	return 0;
 }
 
 

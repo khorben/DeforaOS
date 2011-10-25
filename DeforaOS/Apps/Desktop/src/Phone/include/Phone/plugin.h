@@ -51,7 +51,7 @@ struct _PhonePlugin
 	char const * name;
 	char const * icon;
 	int (*init)(PhonePlugin * plugin);
-	int (*destroy)(PhonePlugin * plugin);
+	void (*destroy)(PhonePlugin * plugin);
 	int (*event)(PhonePlugin * plugin, PhoneEvent * event);
 	void (*settings)(PhonePlugin * plugin);
 	void * priv;

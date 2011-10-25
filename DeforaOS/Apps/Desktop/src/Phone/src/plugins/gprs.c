@@ -55,7 +55,7 @@ typedef struct _GPRS
 /* prototypes */
 /* plugins */
 static int _gprs_init(PhonePlugin * plugin);
-static int _gprs_destroy(PhonePlugin * plugin);
+static void _gprs_destroy(PhonePlugin * plugin);
 static int _gprs_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _gprs_settings(PhonePlugin * plugin);
 
@@ -132,7 +132,7 @@ static int _gprs_init(PhonePlugin * plugin)
 
 
 /* gprs_destroy */
-static int _gprs_destroy(PhonePlugin * plugin)
+static void _gprs_destroy(PhonePlugin * plugin)
 {
 	GPRS * gprs = plugin->priv;
 
@@ -144,7 +144,6 @@ static int _gprs_destroy(PhonePlugin * plugin)
 	if(gprs->window != NULL)
 		gtk_widget_destroy(gprs->window);
 	object_delete(gprs);
-	return 0;
 }
 
 

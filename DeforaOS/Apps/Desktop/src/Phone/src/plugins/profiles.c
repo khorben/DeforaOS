@@ -91,7 +91,7 @@ static ProfileDefinition _profiles_definitions[] =
 
 /* prototypes */
 static int _profiles_init(PhonePlugin * plugin);
-static int _profiles_destroy(PhonePlugin * plugin);
+static void _profiles_destroy(PhonePlugin * plugin);
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _profiles_settings(PhonePlugin * plugin);
 
@@ -189,7 +189,7 @@ static gboolean _init_idle(gpointer data)
 
 
 /* profiles_destroy */
-static int _profiles_destroy(PhonePlugin * plugin)
+static void _profiles_destroy(PhonePlugin * plugin)
 {
 	Profiles * profiles = plugin->priv;
 
@@ -206,7 +206,6 @@ static int _profiles_destroy(PhonePlugin * plugin)
 		pa_context_unref(profiles->pac);
 	pa_threaded_mainloop_free(profiles->pam);
 	object_delete(profiles);
-	return 0;
 }
 
 

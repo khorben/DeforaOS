@@ -3685,8 +3685,8 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 		fprintf(stderr, "DEBUG: %s() plugin %lu\n", __func__,
 				(unsigned long)i);
 #endif
-		if(plugin->destroy != NULL && plugin->destroy(plugin) != 0)
-			phone_error(phone, error_get(), 0);
+		if(plugin->destroy != NULL)
+			plugin->destroy(plugin);
 		plugin_delete(phone->plugins[i].p);
 		memmove(&phone->plugins[i], &phone->plugins[i + 1],
 				sizeof(*phone->plugins)

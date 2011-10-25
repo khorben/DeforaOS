@@ -54,7 +54,7 @@ typedef struct _OSS
 
 /* prototypes */
 static int _oss_init(PhonePlugin * plugin);
-static int _oss_destroy(PhonePlugin * plugin);
+static void _oss_destroy(PhonePlugin * plugin);
 static int _oss_event(PhonePlugin * plugin, PhoneEvent * event);
 static int _oss_open(PhonePlugin * plugin);
 static void _oss_settings(PhonePlugin * plugin);
@@ -93,7 +93,7 @@ static int _oss_init(PhonePlugin * plugin)
 
 
 /* oss_destroy */
-static int _oss_destroy(PhonePlugin * plugin)
+static void _oss_destroy(PhonePlugin * plugin)
 {
 	OSS * oss = plugin->priv;
 
@@ -101,8 +101,7 @@ static int _oss_destroy(PhonePlugin * plugin)
 		close(oss->fd);
 	if(oss->window != NULL)
 		gtk_widget_destroy(oss->window);
-	free(oss);
-	return 0;
+	object_delete(oss);
 }
 
 
