@@ -338,7 +338,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
 		fclose(stdout);
 	}
-	keyboard_set_layout(keyboard, 0);
+	keyboard_set_layout(keyboard, KLS_LETTERS);
 	pango_font_description_free(bold);
 	return keyboard;
 }
@@ -478,13 +478,9 @@ static void _layout_changed(GtkWidget * widget, gpointer data)
 	switch(section)
 	{
 		case KLS_LETTERS:
-			on_keyboard_set_layout_letters(keyboard);
-			break;
 		case KLS_KEYPAD:
-			on_keyboard_set_layout_keypad(keyboard);
-			break;
 		case KLS_SPECIAL:
-			on_keyboard_set_layout_special(keyboard);
+			keyboard_set_layout(keyboard, section);
 			break;
 	}
 }
