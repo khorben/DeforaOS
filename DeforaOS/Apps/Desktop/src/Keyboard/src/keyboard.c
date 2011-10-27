@@ -54,9 +54,18 @@ typedef struct _KeyboardKeys
 	char const * label;
 } KeyboardKeys;
 
+typedef enum _KeyboardLayoutSection
+{
+	KLS_LETTERS = 0,
+	KLS_KEYPAD,
+	KLS_SPECIAL
+} KeyboardLayoutSection;
+#define KLS_LAST KLS_SPECIAL
+#define KLS_COUNT (KLS_LAST + 1)
+
 
 /* variables */
-static const KeyboardKeys _layout_letters[] =
+static const KeyboardKeys _keyboard_layout_letters[] =
 {
 	{ 0, 2, 0, XK_q, "q" },
 	{ 0, 0, XK_Shift_L, XK_Q, "Q" },
@@ -123,7 +132,9 @@ static const KeyboardKeys _layout_letters[] =
 	{ 3, 3, 0, XK_Return, "\xe2\x86\xb2" },
 	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
-}, _layout_keypad[] =
+};
+
+static const KeyboardKeys _keyboard_layout_keypad[] =
 {
 	{ 0, 3, 0, XK_Num_Lock, "Num" },
 	{ 0, 3, 0, XK_KP_Home, "\xe2\x86\x96" },
@@ -155,7 +166,9 @@ static const KeyboardKeys _layout_letters[] =
 	{ 3, 0, XK_Num_Lock, XK_KP_Decimal, "." },
 	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
-}, _layout_special[] =
+};
+
+static const KeyboardKeys _keyboard_layout_special[] =
 {
 	{ 0, 3, 0, XK_Escape, "Esc" },
 	{ 0, 2, 0, XK_F1, "F1" },
@@ -216,6 +229,13 @@ static const KeyboardKeys _layout_letters[] =
 	{ 3, 3, 0, XK_Return, "\xe2\x86\xb2" },
 	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
+};
+
+static const KeyboardKeys * _keyboard_layout[KLS_COUNT] =
+{
+	_keyboard_layout_letters,
+	_keyboard_layout_keypad,
+	_keyboard_layout_special
 };
 
 
@@ -294,13 +314,17 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	/* layouts */
 	vbox = gtk_vbox_new(TRUE, 4);
 	gtk_widget_show(vbox);
-	if((widget = _keyboard_add_layout(keyboard, _layout_letters, 0))
-			!= NULL)
+	if((widget = _keyboard_add_layout(keyboard,
+					_keyboard_layout[KLS_LETTERS],
+					KLS_LETTERS)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	if((widget = _keyboard_add_layout(keyboard, _layout_keypad, 1)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard,
+					_keyboard_layout[KLS_KEYPAD],
+					KLS_KEYPAD)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	if((widget = _keyboard_add_layout(keyboard, _layout_special, 2))
-			!= NULL)
+	if((widget = _keyboard_add_layout(keyboard,
+					_keyboard_layout[KLS_SPECIAL],
+					KLS_SPECIAL)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	if(prefs->embedded == 0)
