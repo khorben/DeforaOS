@@ -41,8 +41,6 @@ struct _PanelWindow
 /* public */
 /* functions */
 /* panel_window_new */
-static void _new_strut(PanelWindow * panel, PanelPosition position,
-		GdkRectangle * root);
 static gboolean _on_closex(void);
 
 PanelWindow * panel_window_new(PanelPosition position,
@@ -66,31 +64,73 @@ PanelWindow * panel_window_new(PanelPosition position,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, panel->height);
 #endif
-	gtk_window_resize(GTK_WINDOW(panel->window), root->width,
-			panel->height);
 	gtk_window_set_accept_focus(GTK_WINDOW(panel->window), FALSE);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_focus_on_map(GTK_WINDOW(panel->window), FALSE);
 #endif
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
-	if(position == PANEL_POSITION_TOP)
-		gtk_window_move(GTK_WINDOW(panel->window), root->x, 0);
-	else
-		gtk_window_move(GTK_WINDOW(panel->window), root->x,
-				root->y + root->height - panel->height);
 	gtk_window_stick(GTK_WINDOW(panel->window));
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);
 	panel->hbox = gtk_hbox_new(FALSE, 2);
 	gtk_container_add(GTK_CONTAINER(panel->window), panel->hbox);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
+	panel_window_reset(panel, position, root);
 	gtk_widget_show_all(panel->window);
-	_new_strut(panel, position, root);
 	return panel;
 }
 
-static void _new_strut(PanelWindow * panel, PanelPosition position,
+static gboolean _on_closex(void)
+{
+	/* ignore delete events */
+	return TRUE;
+}
+
+
+/* panel_window_delete */
+void panel_window_delete(PanelWindow * panel)
+{
+	gtk_widget_destroy(panel->window);
+	object_delete(panel);
+}
+
+
+/* accessors */
+/* panel_window_get_height */
+int panel_window_get_height(PanelWindow * panel)
+{
+	return panel->height;
+}
+
+
+/* useful */
+/* panel_window_append */
+void panel_window_append(PanelWindow * panel, GtkWidget * widget,
+		gboolean expand, gboolean fill)
+{
+	gtk_box_pack_start(GTK_BOX(panel->hbox), widget, expand, fill, 0);
+}
+
+
+/* panel_window_reset */
+static void _reset_strut(PanelWindow * panel, PanelPosition position,
+		GdkRectangle * root);
+
+void panel_window_reset(PanelWindow * panel, PanelPosition position,
+		GdkRectangle * root)
+{
+	gtk_window_resize(GTK_WINDOW(panel->window), root->width,
+			panel->height);
+	if(position == PANEL_POSITION_TOP)
+		gtk_window_move(GTK_WINDOW(panel->window), root->x, 0);
+	else
+		gtk_window_move(GTK_WINDOW(panel->window), root->x,
+				root->y + root->height - panel->height);
+	_reset_strut(panel, position, root);
+}
+
+static void _reset_strut(PanelWindow * panel, PanelPosition position,
 		GdkRectangle * root)
 {
 	GdkWindow * window;
@@ -124,33 +164,4 @@ static void _new_strut(PanelWindow * panel, PanelPosition position,
 	atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
 	gdk_property_change(window, atom, cardinal, 32, GDK_PROP_MODE_REPLACE,
 			(guchar*)strut, 12);
-}
-
-static gboolean _on_closex(void)
-{
-	/* ignore delete events */
-	return TRUE;
-}
-
-
-/* panel_window_delete */
-void panel_window_delete(PanelWindow * panel)
-{
-	gtk_widget_destroy(panel->window);
-	object_delete(panel);
-}
-
-
-/* accessors */
-int panel_window_get_height(PanelWindow * panel)
-{
-	return panel->height;
-}
-
-
-/* useful */
-void panel_window_append(PanelWindow * panel, GtkWidget * widget,
-		gboolean expand, gboolean fill)
-{
-	gtk_box_pack_start(GTK_BOX(panel->hbox), widget, expand, fill, 0);
 }

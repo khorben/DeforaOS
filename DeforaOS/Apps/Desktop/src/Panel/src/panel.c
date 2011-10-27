@@ -117,7 +117,11 @@ static const struct
 
 
 /* prototypes */
+/* accessors */
 static gboolean _panel_can_suspend(void);
+
+/* useful */
+static void _panel_reset(Panel * panel, GdkRectangle * rect);
 
 /* helpers */
 static char const * _panel_helper_config_get(Panel * panel,
@@ -154,6 +158,10 @@ static void _idle_load(Panel * panel, PanelPosition position,
 		char const * plugins);
 static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
+static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
+		Panel * panel);
+static GdkFilterReturn _event_configure_notify(XConfigureEvent * xevent,
+		Panel * panel);
 
 Panel * panel_new(PanelPrefs const * prefs)
 {
@@ -218,12 +226,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 	}
 	/* root window */
 	panel->root = gdk_screen_get_root_window(panel->screen);
-	gdk_screen_get_monitor_geometry(panel->screen, (prefs->monitor > 0
-				&& prefs->monitor < gdk_screen_get_n_monitors(
-					panel->screen))
-			? prefs->monitor : 0, &rect);
-	panel->root_height = rect.height;
-	panel->root_width = rect.width;
+	_panel_reset(panel, &rect);
 	panel->top = (config_get(panel->config, NULL, "top") != NULL)
 		? panel_window_new(PANEL_POSITION_TOP, &panel->top_helper,
 				&rect) : NULL;
@@ -234,6 +237,9 @@ Panel * panel_new(PanelPrefs const * prefs)
 	/* manage root window events */
 	gdk_add_client_message_filter(gdk_atom_intern(PANEL_CLIENT_MESSAGE,
 				FALSE), _on_root_event, panel);
+	gdk_window_set_events(panel->root, gdk_window_get_events(
+				panel->root) | GDK_PROPERTY_CHANGE_MASK);
+	gdk_window_add_filter(panel->root, _on_root_event, panel);
 	/* load plug-ins when idle */
 	g_idle_add(_on_idle, panel);
 	return panel;
@@ -378,23 +384,43 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 {
 	Panel * panel = data;
 	XEvent * xe = xevent;
-	XClientMessageEvent * xcme;
+
+	if(xe->type == ClientMessage)
+		return _event_client_message(xevent, panel);
+	else if(xe->type == ConfigureNotify)
+		return _event_configure_notify(xevent, panel);
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
+		Panel * panel)
+{
 	PanelMessage message;
 
-	if(xe->type != ClientMessage)
-		return GDK_FILTER_CONTINUE;
-	xcme = &xe->xclient;
-	if(xcme->message_type != gdk_x11_get_xatom_by_name(
+	if(xevent->message_type != gdk_x11_get_xatom_by_name(
 				PANEL_CLIENT_MESSAGE))
 		return GDK_FILTER_CONTINUE;
-	message = xcme->data.b[0];
+	message = xevent->data.b[0];
 	switch(message)
 	{
 		case PANEL_MESSAGE_SHOW:
-			if(xcme->data.b[1] == PANEL_MESSAGE_SHOW_SETTINGS)
+			if(xevent->data.b[1] == PANEL_MESSAGE_SHOW_SETTINGS)
 				panel_show_preferences(panel, TRUE);
 			break;
 	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _event_configure_notify(XConfigureEvent * xevent,
+		Panel * panel)
+{
+	GdkRectangle rect;
+
+	_panel_reset(panel, &rect);
+	if(panel->top != NULL)
+		panel_window_reset(panel->top, PANEL_POSITION_TOP, &rect);
+	if(panel->bottom != NULL)
+		panel_window_reset(panel->bottom, PANEL_POSITION_BOTTOM, &rect);
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -1151,6 +1177,7 @@ static char * _config_get_filename(void)
 }
 
 
+/* accessors */
 /* panel_can_suspend */
 static gboolean _panel_can_suspend(void)
 {
@@ -1172,6 +1199,18 @@ static gboolean _panel_can_suspend(void)
 		return TRUE;
 #endif
 	return FALSE;
+}
+
+
+/* useful */
+static void _panel_reset(Panel * panel, GdkRectangle * rect)
+{
+	gdk_screen_get_monitor_geometry(panel->screen, (panel->prefs.monitor > 0
+				&& panel->prefs.monitor
+				< gdk_screen_get_n_monitors(panel->screen))
+			? panel->prefs.monitor : 0, rect);
+	panel->root_height = rect->height;
+	panel->root_width = rect->width;
 }
 
 

@@ -37,5 +37,7 @@ int panel_window_get_height(PanelWindow * panel);
 /* useful */
 void panel_window_append(PanelWindow * panel, GtkWidget * widget,
 		gboolean expand, gboolean fill);
+void panel_window_reset(PanelWindow * panel, PanelPosition position,
+		GdkRectangle * root);
 
 #endif /* !PANEL_WINDOW_H */
