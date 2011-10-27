@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-28 00:15+0200\n"
+"POT-Creation-Date: 2011-10-28 00:40+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:185 ../src/panel.c:457 ../src/panel.c:462
+#: ../src/applets/battery.c:185 ../src/panel.c:454 ../src/panel.c:459
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
@@ -88,8 +88,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:1321 ../src/panel.c:1328
-#: ../src/panel.c:1337
+#: ../src/applets/logout.c:69 ../src/panel.c:1318 ../src/panel.c:1325
+#: ../src/panel.c:1334
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -195,35 +195,35 @@ msgstr "Petite"
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:574
+#: ../src/panel.c:571
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:588
+#: ../src/panel.c:585
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:617
+#: ../src/panel.c:614
 msgid "Applets:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:692
+#: ../src/panel.c:689
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:698 ../src/panel.c:702 ../src/panel.c:733 ../src/panel.c:737
+#: ../src/panel.c:695 ../src/panel.c:699 ../src/panel.c:730 ../src/panel.c:734
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:727
+#: ../src/panel.c:724
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:1260
+#: ../src/panel.c:1257
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1307
+#: ../src/panel.c:1304
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -234,7 +234,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1423
+#: ../src/panel.c:1420
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -245,7 +245,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1428
+#: ../src/panel.c:1425
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -256,11 +256,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1442 ../src/panel.c:1449 ../src/panel.c:1458
+#: ../src/panel.c:1439 ../src/panel.c:1446 ../src/panel.c:1455
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1448
+#: ../src/panel.c:1445
 msgid "Restart"
 msgstr "Redémarrer"
 
@@ -300,6 +300,6 @@ msgstr "Permissions insuffisantes"
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
-#: ../src/window.c:56
+#: ../src/window.c:63
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"

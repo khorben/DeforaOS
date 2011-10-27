@@ -38,6 +38,13 @@ struct _PanelWindow
 };
 
 
+/* prototypes */
+static void _panel_window_reset(PanelWindow * panel, PanelPosition position,
+		GdkRectangle * rect);
+static void _panel_window_reset_strut(PanelWindow * panel,
+		PanelPosition position, GdkRectangle * rect);
+
+
 /* public */
 /* functions */
 /* panel_window_new */
@@ -76,8 +83,9 @@ PanelWindow * panel_window_new(PanelPosition position,
 	panel->hbox = gtk_hbox_new(FALSE, 2);
 	gtk_container_add(GTK_CONTAINER(panel->window), panel->hbox);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
-	panel_window_reset(panel, position, root);
+	_panel_window_reset(panel, position, root);
 	gtk_widget_show_all(panel->window);
+	_panel_window_reset_strut(panel, position, root);
 	return panel;
 }
 
@@ -114,10 +122,18 @@ void panel_window_append(PanelWindow * panel, GtkWidget * widget,
 
 
 /* panel_window_reset */
-static void _reset_strut(PanelWindow * panel, PanelPosition position,
-		GdkRectangle * root);
-
 void panel_window_reset(PanelWindow * panel, PanelPosition position,
+		GdkRectangle * root)
+{
+	_panel_window_reset(panel, position, root);
+	_panel_window_reset_strut(panel, position, root);
+}
+
+
+/* private */
+/* functions */
+/* panel_window_reset */
+static void _panel_window_reset(PanelWindow * panel, PanelPosition position,
 		GdkRectangle * root)
 {
 	gtk_window_resize(GTK_WINDOW(panel->window), root->width,
@@ -127,11 +143,12 @@ void panel_window_reset(PanelWindow * panel, PanelPosition position,
 	else
 		gtk_window_move(GTK_WINDOW(panel->window), root->x,
 				root->y + root->height - panel->height);
-	_reset_strut(panel, position, root);
 }
 
-static void _reset_strut(PanelWindow * panel, PanelPosition position,
-		GdkRectangle * root)
+
+/* panel_window_reset_strut */
+static void _panel_window_reset_strut(PanelWindow * panel,
+		PanelPosition position, GdkRectangle * root)
 {
 	GdkWindow * window;
 	GdkAtom atom;
