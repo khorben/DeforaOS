@@ -470,20 +470,20 @@ static void _layout_changed(GtkWidget * widget, gpointer data)
 {
 	Keyboard * keyboard = data;
 	unsigned long d;
-	int n;
+	KeyboardLayoutSection section;
 
 	d = (unsigned long)g_object_get_data(G_OBJECT(widget), "layout");
-	n = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	section = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), d);
-	switch(n)
+	switch(section)
 	{
-		case 0:
+		case KLS_LETTERS:
 			on_keyboard_set_layout_letters(keyboard);
 			break;
-		case 1:
+		case KLS_KEYPAD:
 			on_keyboard_set_layout_keypad(keyboard);
 			break;
-		case 2:
+		case KLS_SPECIAL:
 			on_keyboard_set_layout_special(keyboard);
 			break;
 	}
