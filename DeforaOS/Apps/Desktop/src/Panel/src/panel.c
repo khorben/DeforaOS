@@ -160,8 +160,7 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 		Panel * panel);
-static GdkFilterReturn _event_configure_notify(XConfigureEvent * xevent,
-		Panel * panel);
+static GdkFilterReturn _event_configure_notify(Panel * panel);
 
 Panel * panel_new(PanelPrefs const * prefs)
 {
@@ -174,7 +173,6 @@ Panel * panel_new(PanelPrefs const * prefs)
 	_new_config(panel);
 	panel->screen = gdk_screen_get_default();
 	_new_prefs(panel->screen, &panel->prefs, prefs);
-	prefs = &panel->prefs;
 	panel->top_helper.panel = panel;
 	panel->top_helper.config_get = _panel_helper_config_get;
 	panel->top_helper.config_set = _panel_helper_config_set;
@@ -197,8 +195,8 @@ Panel * panel_new(PanelPrefs const * prefs)
 	panel->bottom_helper.position_menu = _panel_helper_position_menu_bottom;
 	panel->bottom = NULL;
 	iconsize = GTK_ICON_SIZE_INVALID;
-	if(prefs->iconsize != NULL)
-		iconsize = gtk_icon_size_from_name(prefs->iconsize);
+	if(panel->prefs.iconsize != NULL)
+		iconsize = gtk_icon_size_from_name(panel->prefs.iconsize);
 	switch(iconsize)
 	{
 		case GTK_ICON_SIZE_INVALID:
@@ -388,7 +386,7 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 	if(xe->type == ClientMessage)
 		return _event_client_message(xevent, panel);
 	else if(xe->type == ConfigureNotify)
-		return _event_configure_notify(xevent, panel);
+		return _event_configure_notify(panel);
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -411,8 +409,7 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 	return GDK_FILTER_CONTINUE;
 }
 
-static GdkFilterReturn _event_configure_notify(XConfigureEvent * xevent,
-		Panel * panel)
+static GdkFilterReturn _event_configure_notify(Panel * panel)
 {
 	GdkRectangle rect;
 
