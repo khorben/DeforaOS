@@ -62,7 +62,7 @@ PanelApplet applet =
 {
 	NULL,
 	"System tray",
-	NULL,
+	"gnome-monitor",
 	_systray_init,
 	_systray_destroy,
 	NULL,
@@ -102,6 +102,7 @@ static void _systray_destroy(PanelApplet * applet)
 {
 	Systray * systray = applet->priv;
 
+	gtk_widget_destroy(systray->hbox);
 	free(systray);
 }
 
