@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Panel settings
-Exec=panel-settings
+Exec=panelctl -S
 Icon=panel-settings
 Type=Application
 Categories=Settings;GTK;
