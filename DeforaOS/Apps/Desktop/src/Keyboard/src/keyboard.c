@@ -45,14 +45,14 @@ struct _Keyboard
 	int y;
 };
 
-typedef struct _KeyboardKeys
+typedef struct _KeyboardKeyDefinition
 {
 	unsigned int row;
 	unsigned int width;
 	unsigned int modifier;
 	unsigned int keysym;
 	char const * label;
-} KeyboardKeys;
+} KeyboardKeyDefinition;
 
 typedef enum _KeyboardLayoutSection
 {
@@ -63,9 +63,15 @@ typedef enum _KeyboardLayoutSection
 #define KLS_LAST KLS_SPECIAL
 #define KLS_COUNT (KLS_LAST + 1)
 
+typedef struct _KeyboardLayoutDefinition
+{
+	char const * label;
+	KeyboardKeyDefinition const * keys;
+} KeyboardLayoutDefinition;
+
 
 /* variables */
-static const KeyboardKeys _keyboard_layout_letters[] =
+static KeyboardKeyDefinition const _keyboard_layout_letters[] =
 {
 	{ 0, 2, 0, XK_q, "q" },
 	{ 0, 0, XK_Shift_L, XK_Q, "Q" },
@@ -134,7 +140,7 @@ static const KeyboardKeys _keyboard_layout_letters[] =
 	{ 0, 0, 0, 0, NULL }
 };
 
-static const KeyboardKeys _keyboard_layout_keypad[] =
+static KeyboardKeyDefinition const _keyboard_layout_keypad[] =
 {
 	{ 0, 3, 0, XK_Num_Lock, "Num" },
 	{ 0, 3, 0, XK_KP_Home, "\xe2\x86\x96" },
@@ -168,7 +174,7 @@ static const KeyboardKeys _keyboard_layout_keypad[] =
 	{ 0, 0, 0, 0, NULL }
 };
 
-static const KeyboardKeys _keyboard_layout_special[] =
+static KeyboardKeyDefinition const _keyboard_layout_special[] =
 {
 	{ 0, 3, 0, XK_Escape, "Esc" },
 	{ 0, 2, 0, XK_F1, "F1" },
@@ -231,17 +237,18 @@ static const KeyboardKeys _keyboard_layout_special[] =
 	{ 0, 0, 0, 0, NULL }
 };
 
-static const KeyboardKeys * _keyboard_layout[KLS_COUNT] =
+static KeyboardLayoutDefinition _keyboard_layout[KLS_COUNT] =
 {
-	_keyboard_layout_letters,
-	_keyboard_layout_keypad,
-	_keyboard_layout_special
+	{ "Abc", _keyboard_layout_letters	},
+	{ "123", _keyboard_layout_keypad	},
+	{ ",./", _keyboard_layout_special	}
 };
 
 
 /* prototypes */
 static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
-		KeyboardKeys const * keys, unsigned int n);
+		KeyboardLayoutDefinition * definitions,
+		size_t definitions_cnt, KeyboardLayoutSection section);
 
 
 /* public */
@@ -314,17 +321,14 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	/* layouts */
 	vbox = gtk_vbox_new(TRUE, 4);
 	gtk_widget_show(vbox);
-	if((widget = _keyboard_add_layout(keyboard,
-					_keyboard_layout[KLS_LETTERS],
-					KLS_LETTERS)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard, _keyboard_layout,
+					KLS_COUNT, KLS_LETTERS)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	if((widget = _keyboard_add_layout(keyboard,
-					_keyboard_layout[KLS_KEYPAD],
-					KLS_KEYPAD)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard, _keyboard_layout,
+					KLS_COUNT, KLS_KEYPAD)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	if((widget = _keyboard_add_layout(keyboard,
-					_keyboard_layout[KLS_SPECIAL],
-					KLS_SPECIAL)) != NULL)
+	if((widget = _keyboard_add_layout(keyboard, _keyboard_layout,
+					KLS_COUNT, KLS_SPECIAL)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	if(prefs->embedded == 0)
@@ -411,14 +415,15 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 static void _layout_changed(GtkWidget * widget, gpointer data);
 
 static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
-		KeyboardKeys const * keys, unsigned int n)
+		KeyboardLayoutDefinition * definitions,
+		size_t definitions_cnt, KeyboardLayoutSection section)
 {
 	KeyboardLayout ** p;
 	KeyboardLayout * layout;
+	KeyboardKeyDefinition const * keys;
 	size_t i;
 	KeyboardKey * key;
 	GtkWidget * widget;
-	char const * labels[] = { "Abc", "123", ",./", NULL };
 	unsigned long l;
 
 	if((p = realloc(keyboard->layouts, sizeof(*p) * (keyboard->layouts_cnt
@@ -428,6 +433,7 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 	if((layout = keyboard_layout_new()) == NULL)
 		return NULL;
 	keyboard->layouts[keyboard->layouts_cnt++] = layout;
+	keys = definitions[section].keys;
 	for(i = 0; keys[i].width != 0; i++)
 	{
 		key = keyboard_layout_add(layout, keys[i].row, keys[i].width,
@@ -443,10 +449,11 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 	widget = gtk_combo_box_new_text();
 	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
 			keyboard->font);
-	for(l = 0; labels[l] != NULL; l++)
+	for(l = 0; l < definitions_cnt; l++)
 	{
-		gtk_combo_box_append_text(GTK_COMBO_BOX(widget), labels[l]);
-		if(l == n)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(widget),
+				definitions[l].label);
+		if(l == section)
 		{
 			g_object_set_data(G_OBJECT(widget), "layout",
 					(void *)l);
