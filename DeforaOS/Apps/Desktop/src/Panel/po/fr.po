@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-28 00:40+0200\n"
+"POT-Creation-Date: 2011-10-29 14:08+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -79,6 +79,26 @@ msgstr "GPS actif"
 #: ../src/applets/gsm.c:98
 msgid "GSM is enabled"
 msgstr "GSM actif"
+
+#: ../src/applets/keyboard.c:115
+msgid "Show keyboard"
+msgstr "Afficher le clavier"
+
+#: ../src/applets/keyboard.c:302 ../src/applets/lock.c:114 ../src/run.c:108
+msgid "Command:"
+msgstr "Commande :"
+
+#: ../src/applets/keyboard.c:313
+msgid "Width:"
+msgstr "Largeur :"
+
+#: ../src/applets/keyboard.c:324
+msgid "Height:"
+msgstr "Hauteur :"
+
+#: ../src/applets/keyboard.c:334
+msgid "Keep ratio"
+msgstr "Respecter les proportions"
 
 #: ../src/applets/lock.c:76 ../src/applets/main.c:319
 msgid "Lock screen"
@@ -268,10 +288,6 @@ msgstr "Redémarrer"
 msgid "Run program..."
 msgstr "Exécuter..."
 
-#: ../src/run.c:108
-msgid "Command:"
-msgstr "Commande :"
-
 #: ../src/run.c:119
 msgid "Executable files"
 msgstr "Fichiers exécutables"
@@ -303,3 +319,6 @@ msgstr "Usage: run\n"
 #: ../src/window.c:63
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
+
+#~ msgid "Command: "
+#~ msgstr "Commande : "
