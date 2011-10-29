@@ -111,7 +111,7 @@ static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
 	{
 		lock->pr_box = gtk_vbox_new(FALSE, 4);
 		hbox = gtk_hbox_new(FALSE, 4);
-		widget = gtk_label_new("Command:");
+		widget = gtk_label_new(_("Command:"));
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		lock->pr_command = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), lock->pr_command, TRUE, TRUE,
