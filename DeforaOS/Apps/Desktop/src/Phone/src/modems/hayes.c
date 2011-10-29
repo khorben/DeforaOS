@@ -2093,9 +2093,6 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			_hayes_request(modem, &request);
 			request.type = HAYES_REQUEST_FUNCTIONAL;
 			_hayes_request(modem, &request);
-			/* report being offline */
-			event->status.status = MODEM_STATUS_OFFLINE;
-			modem->helper->event(modem->helper->modem, event);
 			return HCS_SUCCESS;
 		case HCS_TIMEOUT:
 			/* try again */
