@@ -1,4 +1,4 @@
-TARGETS	= libGToolkit.a libGToolkit.so
+TARGETS	= libGToolkit.a libGToolkit.so.0.0 libGToolkit.so.0 libGToolkit.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -26,8 +26,10 @@ libGToolkit.a: $(libGToolkit_OBJS)
 	$(AR) -rc libGToolkit.a $(libGToolkit_OBJS)
 	$(RANLIB) libGToolkit.a
 
-libGToolkit.so: $(libGToolkit_OBJS)
-	$(CCSHARED) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) $(libGToolkit_LDFLAGS)
+libGToolkit.so.0.0 libGToolkit.so.0 libGToolkit.so: $(libGToolkit_OBJS)
+	$(CCSHARED) -o libGToolkit.so.0.0 -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS) $(libGToolkit_LDFLAGS)
+	$(LN) -s -- libGToolkit.so.0.0 libGToolkit.so.0
+	$(LN) -s -- libGToolkit.so.0.0 libGToolkit.so
 
 common.o: common.c
 	$(CC) $(libGToolkit_CFLAGS) -c common.c
@@ -47,7 +49,7 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 -- libGToolkit.a $(DESTDIR)$(PREFIX)/lib/libGToolkit.a
-	$(INSTALL) -m 0755 -- libGToolkit.so $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0.0
+	$(INSTALL) -m 0755 -- libGToolkit.so.0.0 $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0.0
 	$(LN) -s -- libGToolkit.so.0.0 $(DESTDIR)$(PREFIX)/lib/libGToolkit.so.0
 	$(LN) -s -- libGToolkit.so.0.0 $(DESTDIR)$(PREFIX)/lib/libGToolkit.so
 

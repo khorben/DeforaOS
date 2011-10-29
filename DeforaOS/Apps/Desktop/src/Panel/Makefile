@@ -65,7 +65,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/panel.c \
 		$(PACKAGE)-$(VERSION)/src/window.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
-		$(PACKAGE)-$(VERSION)/src/settings.c \
+		$(PACKAGE)-$(VERSION)/src/panelctl.c \
 		$(PACKAGE)-$(VERSION)/src/run.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/common.h \

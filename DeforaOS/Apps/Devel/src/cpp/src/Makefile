@@ -1,4 +1,4 @@
-TARGETS	= libcpp.a libcpp.so cpp
+TARGETS	= libcpp.a libcpp.so.0.0 libcpp.so.0 libcpp.so cpp
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -29,8 +29,10 @@ libcpp.a: $(libcpp_OBJS)
 	$(AR) -rc libcpp.a $(libcpp_OBJS)
 	$(RANLIB) libcpp.a
 
-libcpp.so: $(libcpp_OBJS)
-	$(CCSHARED) -o libcpp.so -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) $(libcpp_LDFLAGS)
+libcpp.so.0.0 libcpp.so.0 libcpp.so: $(libcpp_OBJS)
+	$(CCSHARED) -o libcpp.so.0.0 -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) $(libcpp_LDFLAGS)
+	$(LN) -s -- libcpp.so.0.0 libcpp.so.0
+	$(LN) -s -- libcpp.so.0.0 libcpp.so
 
 cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -60,7 +62,7 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 -- libcpp.a $(DESTDIR)$(LIBDIR)/libcpp.a
-	$(INSTALL) -m 0755 -- libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
+	$(INSTALL) -m 0755 -- libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
 	$(LN) -s -- libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so.0
 	$(LN) -s -- libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)

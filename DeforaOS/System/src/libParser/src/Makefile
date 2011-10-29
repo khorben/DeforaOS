@@ -1,4 +1,4 @@
-TARGETS	= libParser.a libParser.so
+TARGETS	= libParser.a libParser.so.0.0 libParser.so.0 libParser.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -26,8 +26,10 @@ libParser.a: $(libParser_OBJS)
 	$(AR) -rc libParser.a $(libParser_OBJS)
 	$(RANLIB) libParser.a
 
-libParser.so: $(libParser_OBJS)
-	$(CCSHARED) -o libParser.so -Wl,-soname,libParser.so.0 $(libParser_OBJS) $(libParser_LDFLAGS)
+libParser.so.0.0 libParser.so.0 libParser.so: $(libParser_OBJS)
+	$(CCSHARED) -o libParser.so.0.0 -Wl,-soname,libParser.so.0 $(libParser_OBJS) $(libParser_LDFLAGS)
+	$(LN) -s -- libParser.so.0.0 libParser.so.0
+	$(LN) -s -- libParser.so.0.0 libParser.so
 
 xml.o: xml.c ../include/System/Parser/XML.h
 	$(CC) $(libParser_CFLAGS) -c xml.c
@@ -41,7 +43,7 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 -- libParser.a $(DESTDIR)$(PREFIX)/lib/libParser.a
-	$(INSTALL) -m 0755 -- libParser.so $(DESTDIR)$(PREFIX)/lib/libParser.so.0.0
+	$(INSTALL) -m 0755 -- libParser.so.0.0 $(DESTDIR)$(PREFIX)/lib/libParser.so.0.0
 	$(LN) -s -- libParser.so.0.0 $(DESTDIR)$(PREFIX)/lib/libParser.so.0
 	$(LN) -s -- libParser.so.0.0 $(DESTDIR)$(PREFIX)/lib/libParser.so
 

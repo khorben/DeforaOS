@@ -1,4 +1,4 @@
-TARGETS	= libSystem.a libSystem.so
+TARGETS	= libSystem.a libSystem.so.0.0 libSystem.so.0 libSystem.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -26,8 +26,10 @@ libSystem.a: $(libSystem_OBJS)
 	$(AR) -rc libSystem.a $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
 
-libSystem.so: $(libSystem_OBJS)
-	$(CCSHARED) -o libSystem.so -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(libSystem_LDFLAGS)
+libSystem.so.0.0 libSystem.so.0 libSystem.so: $(libSystem_OBJS)
+	$(CCSHARED) -o libSystem.so.0.0 -Wl,-soname,libSystem.so.0 $(libSystem_OBJS) $(libSystem_LDFLAGS)
+	$(LN) -s -- libSystem.so.0.0 libSystem.so.0
+	$(LN) -s -- libSystem.so.0.0 libSystem.so
 
 array.o: array.c
 	$(CC) $(libSystem_CFLAGS) -c array.c
@@ -71,7 +73,7 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 -- libSystem.a $(DESTDIR)$(LIBDIR)/libSystem.a
-	$(INSTALL) -m 0755 -- libSystem.so $(DESTDIR)$(LIBDIR)/libSystem.so.0.0
+	$(INSTALL) -m 0755 -- libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so.0.0
 	$(LN) -s -- libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so.0
 	$(LN) -s -- libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so
 

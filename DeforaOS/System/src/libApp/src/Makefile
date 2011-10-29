@@ -1,4 +1,4 @@
-TARGETS	= libApp.a libApp.so
+TARGETS	= libApp.a libApp.so.0.0 libApp.so.0 libApp.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -27,8 +27,10 @@ libApp.a: $(libApp_OBJS)
 	$(AR) -rc libApp.a $(libApp_OBJS)
 	$(RANLIB) libApp.a
 
-libApp.so: $(libApp_OBJS)
-	$(CCSHARED) -o libApp.so -Wl,-soname,libApp.so.0 $(libApp_OBJS) $(libApp_LDFLAGS)
+libApp.so.0.0 libApp.so.0 libApp.so: $(libApp_OBJS)
+	$(CCSHARED) -o libApp.so.0.0 -Wl,-soname,libApp.so.0 $(libApp_OBJS) $(libApp_LDFLAGS)
+	$(LN) -s -- libApp.so.0.0 libApp.so.0
+	$(LN) -s -- libApp.so.0.0 libApp.so
 
 appclient.o: appclient.c appinterface.h ../include/System/App/appclient.h
 	$(CC) $(libApp_CFLAGS) -c appclient.c
@@ -48,7 +50,7 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 -- libApp.a $(DESTDIR)$(LIBDIR)/libApp.a
-	$(INSTALL) -m 0755 -- libApp.so $(DESTDIR)$(LIBDIR)/libApp.so.0.0
+	$(INSTALL) -m 0755 -- libApp.so.0.0 $(DESTDIR)$(LIBDIR)/libApp.so.0.0
 	$(LN) -s -- libApp.so.0.0 $(DESTDIR)$(LIBDIR)/libApp.so.0
 	$(LN) -s -- libApp.so.0.0 $(DESTDIR)$(LIBDIR)/libApp.so
 

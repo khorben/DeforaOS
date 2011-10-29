@@ -1,4 +1,4 @@
-TARGETS	= libDesktop.a libDesktop.so
+TARGETS	= libDesktop.a libDesktop.so.0.0 libDesktop.so.0 libDesktop.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -27,8 +27,10 @@ libDesktop.a: $(libDesktop_OBJS)
 	$(AR) -rc libDesktop.a $(libDesktop_OBJS)
 	$(RANLIB) libDesktop.a
 
-libDesktop.so: $(libDesktop_OBJS)
-	$(CCSHARED) -o libDesktop.so -Wl,-soname,libDesktop.so.0 $(libDesktop_OBJS) $(libDesktop_LDFLAGS)
+libDesktop.so.0.0 libDesktop.so.0 libDesktop.so: $(libDesktop_OBJS)
+	$(CCSHARED) -o libDesktop.so.0.0 -Wl,-soname,libDesktop.so.0 $(libDesktop_OBJS) $(libDesktop_LDFLAGS)
+	$(LN) -s -- libDesktop.so.0.0 libDesktop.so.0
+	$(LN) -s -- libDesktop.so.0.0 libDesktop.so
 
 about.o: about.c
 	$(CC) $(libDesktop_CFLAGS) -c about.c
@@ -57,7 +59,7 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 -- libDesktop.a $(DESTDIR)$(PREFIX)/lib/libDesktop.a
-	$(INSTALL) -m 0755 -- libDesktop.so $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0
+	$(INSTALL) -m 0755 -- libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0
 	$(LN) -s -- libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0
 	$(LN) -s -- libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so
 

@@ -1,4 +1,4 @@
-TARGETS	= libvfs.a libvfs.so
+TARGETS	= libvfs.a libvfs.so.0.0 libvfs.so.0 libvfs.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -28,8 +28,10 @@ libvfs.a: $(libvfs_OBJS)
 	$(AR) -rc libvfs.a $(libvfs_OBJS)
 	$(RANLIB) libvfs.a
 
-libvfs.so: $(libvfs_OBJS)
-	$(CCSHARED) -o libvfs.so -Wl,-soname,libvfs.so.0 $(libvfs_OBJS) $(libvfs_LDFLAGS)
+libvfs.so.0.0 libvfs.so.0 libvfs.so: $(libvfs_OBJS)
+	$(CCSHARED) -o libvfs.so.0.0 -Wl,-soname,libvfs.so.0 $(libvfs_OBJS) $(libvfs_LDFLAGS)
+	$(LN) -s -- libvfs.so.0.0 libvfs.so.0
+	$(LN) -s -- libvfs.so.0.0 libvfs.so
 
 libvfs.o: libvfs.c ../src/common.c ../include/VFS.h
 	$(CC) $(libvfs_CFLAGS) -c libvfs.c
