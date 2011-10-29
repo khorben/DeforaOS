@@ -107,6 +107,8 @@ static int _variables_print(Configure * configure, FILE * fp,
 	       	char const * input, char const * output);
 static int _variables_dist(Configure * configure, FILE * fp);
 static int _variables_targets(Configure * configure, FILE * fp);
+static int _variables_targets_library(Configure * configure, FILE * fp,
+		char const * target);
 static int _variables_executables(Configure * configure, FILE * fp);
 static int _variables_includes(Configure * configure, FILE * fp);
 static int _write_variables(Configure * configure, FILE * fp)
@@ -236,6 +238,7 @@ static int _variables_dist(Configure * configure, FILE * fp)
 
 static int _variables_targets(Configure * configure, FILE * fp)
 {
+	int ret = 0;
 	String const * p;
 	String * prints;
 	String * q;
@@ -270,8 +273,8 @@ static int _variables_targets(Configure * configure, FILE * fp)
 					fprintf(fp, " %s", prints);
 					break;
 				case TT_LIBRARY:
-					fprintf(fp, " %s%s%s%s", prints, ".a ",
-							prints, ".so");
+					ret |= _variables_targets_library(
+							configure, fp, prints);
 					break;
 				case TT_LIBTOOL:
 					fprintf(fp, " %s%s", prints, ".la");
@@ -287,6 +290,24 @@ static int _variables_targets(Configure * configure, FILE * fp)
 	}
 	fputc('\n', fp);
 	string_delete(q);
+	return ret;
+}
+
+static int _variables_targets_library(Configure * configure, FILE * fp,
+		char const * target)
+{
+	String * soname;
+	String const * p;
+
+	if((p = config_get(configure->config, target, "soname")) != NULL)
+		soname = string_new(p);
+	else
+		soname = string_new_append(target, ".so.0", NULL);
+	if(soname == NULL)
+		return 1;
+	fprintf(fp, " %s%s%s%s%s%s%s%s", target, ".a ", soname, ".0 ", soname,
+			" ", target, ".so");
+	string_delete(soname);
 	return 0;
 }
 
@@ -1010,6 +1031,7 @@ static int _target_library(Configure * configure, FILE * fp,
 {
 	String const * p;
 	String * q;
+	String * soname;
 
 	if(_target_objs(configure, fp, target) != 0)
 		return 1;
@@ -1031,15 +1053,19 @@ static int _target_library(Configure * configure, FILE * fp,
 	}
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s", "\t$(RANLIB) ", target, ".a\n");
-	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)");
+	if((p = config_get(configure->config, target, "soname")) != NULL)
+		soname = string_new(p);
+	else
+		soname = string_new_append(target, ".so.0", NULL);
+	if(soname == NULL)
+		return 1;
+	fprintf(fp, "\n%s%s%s%s%s%s%s%s", soname, ".0 ", soname, " ", target,
+			".so: $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s", "\t$(CCSHARED) -o ", target, ".so");
-	if((p = config_get(configure->config, target, "soname")) == NULL)
-		fprintf(fp, "%s%s%s", " -Wl,-soname,", target, ".so.0");
-	else
-		fprintf(fp, "%s%s", " -Wl,-soname,", p);
+	fprintf(fp, "%s%s%s", "\t$(CCSHARED) -o ", soname, ".0");
+	fprintf(fp, "%s%s", " -Wl,-soname,", soname);
 	fprintf(fp, "%s%s%s%s%s", " $(", target, "_OBJS) $(", target,
 			"_LDFLAGS)");
 	if(q != NULL)
@@ -1050,6 +1076,11 @@ static int _target_library(Configure * configure, FILE * fp,
 		free(q);
 	}
 	fputc('\n', fp);
+	fprintf(fp, "%s%s%s%s%s", "\t$(LN) -s -- ", soname, ".0 ", soname,
+			"\n");
+	fprintf(fp, "%s%s%s%s%s", "\t$(LN) -s -- ", soname, ".0 ", target,
+			".so\n");
+	string_delete(soname);
 	return 0;
 }
 
@@ -1721,8 +1752,8 @@ static int _install_target_library(Config * config, FILE * fp,
 		soname = string_new_append(target, ".so.0", NULL);
 	if(soname == NULL)
 		return 1;
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 -- ", target,
-			".so $(DESTDIR)", path, soname, ".0\n");
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 -- ", soname,
+			".0 $(DESTDIR)", path, soname, ".0\n");
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s -- ", soname,
 			".0 $(DESTDIR)", path, soname, "\n");
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s -- ", soname,
