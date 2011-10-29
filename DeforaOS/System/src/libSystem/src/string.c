@@ -124,6 +124,16 @@ int string_append(String ** string, String const * append)
 }
 
 
+/* string_clear */
+void string_clear(String * string)
+{
+	String * s;
+
+	for(s = string; *s != '\0'; s++)
+		*s = '\0';
+}
+
+
 /* string_compare */
 int string_compare(String const * string, String const * string2)
 {

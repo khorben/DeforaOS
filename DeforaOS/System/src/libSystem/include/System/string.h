@@ -38,6 +38,7 @@ size_t string_length(String const * string);
 
 /* useful */
 int string_append(String ** string, String const * append);
+void string_clear(String * string);
 void string_cut(String * string, size_t length);
 
 int string_compare(String const * string, String const * string2);
