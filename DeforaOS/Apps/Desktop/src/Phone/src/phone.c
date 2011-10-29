@@ -3800,8 +3800,10 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 
 static void _modem_event_call(Phone * phone, ModemEvent * event)
 {
+#ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u %u\n", __func__, event->call.call_type,
 			event->call.status);
+#endif
 	if(event->call.call_type != MODEM_CALL_TYPE_VOICE
 			|| event->call.number == NULL)
 		return; /* XXX ignore these for now */
