@@ -425,7 +425,7 @@ Browser * browser_new(char const * directory)
 	gtk_paned_set_position(GTK_PANED(hpaned), 200);
 	/* plug-ins */
 	browser->pl_view = gtk_vbox_new(FALSE, 4);
-	gtk_container_border_width(GTK_CONTAINER(browser->pl_view), 4);
+	gtk_container_set_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER,
 			G_TYPE_POINTER);
