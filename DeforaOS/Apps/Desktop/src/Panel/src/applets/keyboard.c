@@ -201,7 +201,11 @@ static int _idle_child(Keyboard * keyboard, PanelAppletHelper * helper,
 			NULL, NULL, &keyboard->pid, NULL, &out, NULL, &error);
 	free(q);
 	if(res != TRUE)
-		return -helper->error(helper->panel, argv[0], 1);
+	{
+		helper->error(helper->panel, error->message, 1);
+		g_error_free(error);
+		return -1;
+	}
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
 		/* XXX not very explicit... */
 		return -helper->error(helper->panel, "read", 1);
