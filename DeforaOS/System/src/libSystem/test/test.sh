@@ -17,6 +17,6 @@
 
 FAILED=
 ./string		|| FAILED="$FAILED string"
-[ -z "$FAILED" ]	&& return 0
+[ -z "$FAILED" ]	&& exit 0
 echo "Failed tests:$FAILED" 1>&2
 return 2
