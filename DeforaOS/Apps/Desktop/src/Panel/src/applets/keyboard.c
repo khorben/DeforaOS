@@ -13,8 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - choose a correct size for the window
- * - move and resize when the root window changes
+ * - move and resize when the root window (or size) changes
  * - track if child process ever dies
  * - write own keyboard implementation (dlopen keyboard's binary) */
 
@@ -38,12 +37,21 @@
 /* types */
 typedef struct _Keyboard
 {
-	PanelAppletHelper * helper;
 	GPid pid;
+
+	/* settings */
+	gint width;
+	gint height;
+
+	/* widgets */
 	GtkWidget * window;
+	GtkWidget * socket;
 	/* preferences */
 	GtkWidget * pr_box;
 	GtkWidget * pr_command;
+	GtkWidget * pr_width;
+	GtkWidget * pr_height;
+	GtkWidget * pr_ratio;
 } Keyboard;
 
 
@@ -80,39 +88,103 @@ PanelApplet applet =
 /* private */
 /* functions */
 /* keyboard_init */
+static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper);
+/* callbacks */
 static gboolean _init_idle(gpointer data);
+static int _idle_child(Keyboard * keyboard, PanelAppletHelper * helper,
+		unsigned long * xid);
 
 static GtkWidget * _keyboard_init(PanelApplet * applet)
 {
+	PanelAppletHelper * helper = applet->helper;
+	Keyboard * keyboard;
 	GtkWidget * ret;
 	GtkWidget * image;
-	Keyboard * keyboard;
 
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
 	applet->priv = keyboard;
-	keyboard->helper = applet->helper;
 	keyboard->pid = -1;
+	keyboard->width = -1;
+	keyboard->height = -1;
 	keyboard->window = NULL;
 	keyboard->pr_box = NULL;
+	_init_size(keyboard, helper);
 	ret = gtk_toggle_button_new();
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(ret, _("Show keyboard"));
 #endif
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
-				_on_keyboard_toggled), keyboard);
+				_on_keyboard_toggled), applet);
 	image = gtk_image_new_from_icon_name("input-keyboard",
 			applet->helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(ret), image);
 	gtk_widget_show_all(ret);
-	g_idle_add(_init_idle, keyboard);
+	g_idle_add(_init_idle, applet);
 	return ret;
 }
 
+static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper)
+{
+	char const * p;
+	char * q;
+	long l;
+
+	if((p = helper->config_get(helper->panel, "keyboard", "width")) != NULL
+			&& p[0] != '\0' && (l = strtol(p, &q, 0)) > 0
+			&& *q == '\0')
+		keyboard->width = l;
+	if((p = helper->config_get(helper->panel, "keyboard", "height")) != NULL
+			&& p[0] != '\0' && (l = strtol(p, &q, 0)) > 0
+			&& *q == '\0')
+		keyboard->height = l;
+	if(keyboard->width == -1 && keyboard->height == -1)
+	{
+		keyboard->width = 480;
+		keyboard->height = 160;
+	}
+	else if(keyboard->width == -1)
+		keyboard->width = keyboard->height * 3;
+	else if(keyboard->height == -1)
+		keyboard->height = keyboard->width / 3;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() width=%d height=%d\n", __func__,
+			keyboard->width, keyboard->height);
+#endif
+}
+
+/* callbacks */
 static gboolean _init_idle(gpointer data)
 {
-	Keyboard * keyboard = data;
+	PanelApplet * applet = data;
+	PanelAppletHelper * helper = applet->helper;
+	Keyboard * keyboard = applet->priv;
+	unsigned long xid;
+
+	if(keyboard->window != NULL)
+		return FALSE;
+	if(_idle_child(keyboard, helper, &xid) != 0)
+		return FALSE;
+	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
+#endif
+	gtk_window_set_type_hint(GTK_WINDOW(keyboard->window),
+			GDK_WINDOW_TYPE_HINT_DOCK);
+	keyboard->socket = gtk_socket_new();
+	gtk_widget_set_size_request(keyboard->socket, keyboard->width,
+			keyboard->height);
+	gtk_container_add(GTK_CONTAINER(keyboard->window), keyboard->socket);
+	gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
+	gtk_widget_show(keyboard->socket);
+	return FALSE;
+}
+
+static int _idle_child(Keyboard * keyboard, PanelAppletHelper * helper,
+		unsigned long * xid)
+{
 	char * argv[] = { "sh", "-c", PANEL_KEYBOARD_COMMAND_DEFAULT, NULL };
 	char const * p;
 	char * q = NULL;
@@ -121,40 +193,22 @@ static gboolean _init_idle(gpointer data)
 	GError * error = NULL;
 	char buf[32];
 	ssize_t size;
-	unsigned long xid;
-	GtkWidget * socket;
 
-	if(keyboard->window != NULL)
-		return FALSE;
-	if((p = keyboard->helper->config_get(keyboard->helper->panel,
-					"keyboard", "command")) != NULL
-			&& (q = strdup(p)) != NULL)
+	if((p = helper->config_get(helper->panel, "keyboard", "command"))
+			!= NULL && (q = strdup(p)) != NULL)
 		argv[2] = q;
 	res = g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH,
 			NULL, NULL, &keyboard->pid, NULL, &out, NULL, &error);
 	free(q);
 	if(res != TRUE)
-		return keyboard->helper->error(keyboard->helper->panel,
-				argv[0], FALSE);
+		return -helper->error(helper->panel, argv[0], 1);
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
-		return keyboard->helper->error(keyboard->helper->panel,
-				"read", FALSE); /* XXX not very explicit... */
+		/* XXX not very explicit... */
+		return -helper->error(helper->panel, "read", 1);
 	buf[size] = '\0';
-	if(sscanf(buf, "%lu", &xid) != 1)
-		return FALSE; /* XXX warn the user */
-	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
-#if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
-#endif
-	gtk_window_set_type_hint(GTK_WINDOW(keyboard->window),
-			GDK_WINDOW_TYPE_HINT_DOCK);
-	socket = gtk_socket_new();
-	gtk_widget_set_size_request(socket, 480, 150);
-	gtk_container_add(GTK_CONTAINER(keyboard->window), socket);
-	gtk_socket_add_id(GTK_SOCKET(socket), xid);
-	gtk_widget_show(socket);
-	return FALSE;
+	if(sscanf(buf, "%lu", xid) != 1)
+		return -1; /* XXX warn the user */
+	return 0;
 }
 
 
@@ -170,13 +224,18 @@ static void _keyboard_destroy(PanelApplet * applet)
 
 
 /* keyboard_settings */
+static void _settings_apply(Keyboard * keyboard, PanelAppletHelper * helper);
+static void _settings_reset(Keyboard * keyboard, PanelAppletHelper * helper);
+static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet);
+/* callbacks */
+static void _settings_on_width_value_changed(gpointer data);
+static void _settings_on_height_value_changed(gpointer data);
+
 static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 		gboolean reset)
 {
+	PanelAppletHelper * helper = applet->helper;
 	Keyboard * keyboard = applet->priv;
-	GtkWidget * hbox;
-	GtkWidget * widget;
-	char const * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void*)applet,
@@ -184,32 +243,125 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 #endif
 	if(keyboard->pr_box == NULL)
 	{
-		keyboard->pr_box = gtk_vbox_new(FALSE, 4);
-		hbox = gtk_hbox_new(FALSE, 4);
-		widget = gtk_label_new("Command:");
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		keyboard->pr_command = gtk_entry_new();
-		gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_command, TRUE,
-				TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(keyboard->pr_box), hbox, FALSE, TRUE,
-				0);
-		gtk_widget_show_all(keyboard->pr_box);
+		keyboard->pr_box = _settings_widget(keyboard, applet);
 		reset = TRUE;
 	}
 	if(reset == TRUE)
-	{
-		if((p = applet->helper->config_get(applet->helper->panel,
-						"keyboard", "command")) == NULL)
-			p = PANEL_KEYBOARD_COMMAND_DEFAULT;
-		gtk_entry_set_text(GTK_ENTRY(keyboard->pr_command), p);
-	}
+		_settings_reset(keyboard, helper);
 	if(apply == TRUE)
-	{
-		p = gtk_entry_get_text(GTK_ENTRY(keyboard->pr_command));
-		applet->helper->config_set(applet->helper->panel, "keyboard",
-				"command", p);
-	}
+		_settings_apply(keyboard, helper);
 	return keyboard->pr_box;
+}
+
+static void _settings_apply(Keyboard * keyboard, PanelAppletHelper * helper)
+{
+	char const * p;
+	char buf[16];
+
+	p = gtk_entry_get_text(GTK_ENTRY(keyboard->pr_command));
+	helper->config_set(helper->panel, "keyboard", "command", p);
+	keyboard->width = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(
+				keyboard->pr_width));
+	snprintf(buf, sizeof(buf), "%u", (unsigned)keyboard->width);
+	helper->config_set(helper->panel, "keyboard", "width", buf);
+	keyboard->height = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(
+				keyboard->pr_height));
+	snprintf(buf, sizeof(buf), "%u", (unsigned)keyboard->height);
+	helper->config_set(helper->panel, "keyboard", "height", buf);
+	gtk_widget_set_size_request(keyboard->socket, keyboard->width,
+			keyboard->height);
+}
+
+static void _settings_reset(Keyboard * keyboard, PanelAppletHelper * helper)
+{
+	char const * p;
+	gdouble value;
+
+	if((p = helper->config_get(helper->panel, "keyboard", "command"))
+			== NULL)
+		p = PANEL_KEYBOARD_COMMAND_DEFAULT;
+	gtk_entry_set_text(GTK_ENTRY(keyboard->pr_command), p);
+	value = keyboard->width;
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(keyboard->pr_width), value);
+	value = keyboard->height;
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(keyboard->pr_height), value);
+}
+
+static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet)
+{
+	GtkSizeGroup * group;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * vbox2;
+	GtkWidget * frame;
+	GtkWidget * widget;
+
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	vbox = gtk_vbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Command:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	keyboard->pr_command = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_command, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* frame */
+	frame = gtk_frame_new("Size:");
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	/* width */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Width:"));
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	keyboard->pr_width = gtk_spin_button_new_with_range(1.0, 65535.0, 1.0);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(keyboard->pr_width), 0);
+	g_signal_connect_swapped(keyboard->pr_width, "value-changed",
+			G_CALLBACK(_settings_on_width_value_changed), applet);
+	gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_width, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* height */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Height:"));
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	keyboard->pr_height = gtk_spin_button_new_with_range(1.0, 65535.0, 1.0);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(keyboard->pr_height), 0);
+	g_signal_connect_swapped(keyboard->pr_height, "value-changed",
+			G_CALLBACK(_settings_on_height_value_changed), applet);
+	gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_height, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* ratio */
+	keyboard->pr_ratio = gtk_check_button_new_with_label(_("Keep ratio"));
+	gtk_box_pack_start(GTK_BOX(vbox2), keyboard->pr_ratio, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox2);
+	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	return vbox;
+}
+
+/* callbacks */
+static void _settings_on_width_value_changed(gpointer data)
+{
+	PanelApplet * applet = data;
+	Keyboard * keyboard = applet->priv;
+	gdouble value;
+
+	value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(keyboard->pr_width));
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(keyboard->pr_ratio)))
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(keyboard->pr_height),
+				value / 3);
+}
+
+static void _settings_on_height_value_changed(gpointer data)
+{
+	PanelApplet * applet = data;
+	Keyboard * keyboard = applet->priv;
+	gdouble value;
+
+	value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(keyboard->pr_height));
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(keyboard->pr_ratio)))
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(keyboard->pr_width),
+				value * 3);
 }
 
 
@@ -217,7 +369,9 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 /* on_keyboard_toggled */
 static void _on_keyboard_toggled(GtkWidget * widget, gpointer data)
 {
-	Keyboard * keyboard = data;
+	PanelApplet * applet = data;
+	PanelAppletHelper * helper = applet->helper;
+	Keyboard * keyboard = applet->priv;
 	gint x = 0;
 	gint y = 0;
 	gboolean push_in;
@@ -226,8 +380,8 @@ static void _on_keyboard_toggled(GtkWidget * widget, gpointer data)
 		_init_idle(keyboard);
 	if(keyboard->window == NULL)
 		return;
-	keyboard->helper->position_menu(keyboard->helper->panel,
-			(GtkMenu*)keyboard->window, &x, &y, &push_in);
+	helper->position_menu(helper->panel, (GtkMenu*)keyboard->window, &x, &y,
+			&push_in);
 	gtk_window_move(GTK_WINDOW(keyboard->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 		gtk_widget_show(keyboard->window);
