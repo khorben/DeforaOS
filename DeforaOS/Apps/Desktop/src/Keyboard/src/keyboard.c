@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - see if XKB could be used to define the keyboard */
 
 
 
@@ -143,33 +145,41 @@ static KeyboardKeyDefinition const _keyboard_layout_letters[] =
 static KeyboardKeyDefinition const _keyboard_layout_keypad[] =
 {
 	{ 0, 3, 0, XK_Num_Lock, "Num" },
-	{ 0, 3, 0, XK_KP_Home, "\xe2\x86\x96" },
+	{ 0, 1, 0, 0, NULL },
+	{ 0, 4, 0, XK_KP_Home, "\xe2\x86\x96" },
 	{ 0, 0, XK_Num_Lock, XK_7, "7" },
-	{ 0, 3, 0, XK_KP_Up, "\xe2\x86\x91" },
+	{ 0, 4, 0, XK_KP_Up, "\xe2\x86\x91" },
 	{ 0, 0, XK_Num_Lock, XK_8, "8" },
-	{ 0, 3, 0, XK_KP_Page_Up, "\xe2\x87\x9e" },
+	{ 0, 4, 0, XK_KP_Page_Up, "\xe2\x87\x9e" },
 	{ 0, 0, XK_Num_Lock, XK_9, "9" },
+	{ 0, 1, 0, 0, NULL },
 	{ 0, 3, 0, XK_KP_Subtract, "-" },
 	{ 1, 3, 0, XK_KP_Divide, "/" },
-	{ 1, 3, 0, XK_KP_Left, "\xe2\x86\x90" },
+	{ 1, 1, 0, 0, NULL },
+	{ 1, 4, 0, XK_KP_Left, "\xe2\x86\x90" },
 	{ 1, 0, XK_Num_Lock, XK_4, "4" },
-	{ 1, 3, 0, XK_5, "5" },
-	{ 1, 3, 0, XK_KP_Right, "\xe2\x86\x92" },
+	{ 1, 4, 0, XK_5, "5" },
+	{ 1, 4, 0, XK_KP_Right, "\xe2\x86\x92" },
 	{ 1, 0, XK_Num_Lock, XK_6, "6" },
+	{ 1, 1, 0, 0, NULL },
 	{ 1, 3, 0, XK_KP_Add, "+" },
 	{ 2, 3, 0, XK_KP_Multiply, "*" },
-	{ 2, 3, 0, XK_KP_End, "\xe2\x86\x99" },
+	{ 2, 1, 0, 0, NULL },
+	{ 2, 4, 0, XK_KP_End, "\xe2\x86\x99" },
 	{ 2, 0, XK_Num_Lock, XK_1, "1" },
-	{ 2, 3, 0, XK_KP_Down, "\xe2\x86\x93" },
+	{ 2, 4, 0, XK_KP_Down, "\xe2\x86\x93" },
 	{ 2, 0, XK_Num_Lock, XK_2, "2" },
-	{ 2, 3, 0, XK_KP_Page_Down, "\xe2\x87\x9f" },
+	{ 2, 4, 0, XK_KP_Page_Down, "\xe2\x87\x9f" },
 	{ 2, 0, XK_Num_Lock, XK_3, "3" },
+	{ 2, 1, 0, 0, NULL },
 	{ 2, 3, 0, XK_KP_Enter, "\xe2\x86\xb2" },
 	{ 3, 3, 0, 0, NULL },
-	{ 3, 6, 0, XK_KP_Insert, "Ins" },
+	{ 3, 1, 0, 0, NULL },
+	{ 3, 8, 0, XK_KP_Insert, "Ins" },
 	{ 3, 0, XK_Num_Lock, XK_0, "0" },
-	{ 3, 3, 0, XK_KP_Delete, "Del" },
+	{ 3, 4, 0, XK_KP_Delete, "Del" },
 	{ 3, 0, XK_Num_Lock, XK_KP_Decimal, "." },
+	{ 3, 1, 0, 0, NULL },
 	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
 };
@@ -412,7 +422,7 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 
 /* private */
 /* keyboard_add_layout */
-static void _layout_changed(GtkWidget * widget, gpointer data);
+static void _layout_clicked(GtkWidget * widget, gpointer data);
 
 static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 		KeyboardLayoutDefinition * definitions,
@@ -423,6 +433,7 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 	KeyboardKeyDefinition const * keys;
 	size_t i;
 	KeyboardKey * key;
+	GtkWidget * label;
 	GtkWidget * widget;
 	unsigned long l;
 
@@ -446,35 +457,26 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 			keyboard_key_set_modifier(key, keys[i + 1].modifier,
 					keys[i + 1].keysym, keys[i + 1].label);
 	}
-	widget = gtk_combo_box_new_text();
-	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(widget)),
-			keyboard->font);
-	for(l = 0; l < definitions_cnt; l++)
-	{
-		gtk_combo_box_append_text(GTK_COMBO_BOX(widget),
-				definitions[l].label);
-		if(l == section)
-		{
-			g_object_set_data(G_OBJECT(widget), "layout",
-					(void *)l);
-			gtk_combo_box_set_active(GTK_COMBO_BOX(widget), l);
-		}
-	}
-	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_layout_changed), keyboard);
+	l = (section + 1) % definitions_cnt;
+	label = gtk_label_new(definitions[l].label);
+	gtk_widget_modify_font(label, keyboard->font);
+	widget = gtk_button_new();
+	gtk_container_add(GTK_CONTAINER(widget), label);
+	g_object_set_data(G_OBJECT(widget), "layout", (void *)l);
+	g_signal_connect(widget, "clicked", G_CALLBACK(_layout_clicked),
+			keyboard);
 	keyboard_layout_add_widget(layout, 3, 0, 3, widget);
 	return keyboard_layout_get_widget(layout);
 }
 
-static void _layout_changed(GtkWidget * widget, gpointer data)
+static void _layout_clicked(GtkWidget * widget, gpointer data)
 {
 	Keyboard * keyboard = data;
 	unsigned long d;
 	KeyboardLayoutSection section;
 
 	d = (unsigned long)g_object_get_data(G_OBJECT(widget), "layout");
-	section = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), d);
+	section = d;
 	switch(section)
 	{
 		case KLS_LETTERS:
