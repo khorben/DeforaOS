@@ -1099,10 +1099,9 @@ static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 
+	/* considering us stopped */
+	event->status.status = MODEM_STATUS_STOPPED;
 	_hayes_reset_start(modem, retry);
-	/* report as being started */
-	event->status.status = MODEM_STATUS_STARTED;
-	modem->helper->event(modem->helper->modem, event);
 	return 0;
 }
 
@@ -1695,9 +1694,6 @@ static void _hayes_reset_stop(ModemPlugin * modem)
 	event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 	if(event->connection.connected)
 	{
-#if 1
-		fprintf(stderr, "DEBUG: %u\n", event->connection.connected);
-#endif
 		event->connection.connected = 0;
 		event->connection.in = 0;
 		event->connection.out = 0;
@@ -1947,6 +1943,11 @@ static gboolean _on_reset(gpointer data)
 			hayes->source = g_timeout_add(hayes->retry, _on_reset,
 					modem);
 		return FALSE;
+	}
+	if(event->status.status != MODEM_STATUS_STARTED)
+	{
+		event->status.status = MODEM_STATUS_STARTED;
+		modem->helper->event(modem->helper->modem, event);
 	}
 	hayes->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(hayes->channel, NULL, &error))
@@ -3037,6 +3038,7 @@ static void _on_trigger_cmgr(ModemPlugin * modem, char const * answer)
 	event->message.folder = data->folder;
 	event->message.status = data->status;
 	event->message.number = number; /* XXX */
+	event->message.content = p;
 	modem->helper->event(modem->helper->modem, event);
 	free(p);
 }
@@ -3582,6 +3584,11 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 			break;
 		case 4: /* unknown */
 		default:
+#ifdef DEBUG
+			if(u[1] != 4)
+				fprintf(stderr, "DEBUG: %s() Unknown CREG %u\n",
+						__func__, u[1]);
+#endif
 			u[0] = MODEM_REGISTRATION_MODE_UNKNOWN;
 			u[1] = MODEM_REGISTRATION_STATUS_UNKNOWN;
 			break;
