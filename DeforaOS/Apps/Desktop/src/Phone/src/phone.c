@@ -893,6 +893,7 @@ int phone_event(Phone * phone, PhoneEvent * event)
 	int ret = 0;
 	size_t i;
 	PhonePlugin * plugin;
+	ModemRequest request;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event->type);
@@ -906,6 +907,14 @@ int phone_event(Phone * phone, PhoneEvent * event)
 	}
 	switch(event->type)
 	{
+		case PHONE_EVENT_TYPE_OFFLINE:
+			/* go online */
+			memset(&request, 0, sizeof(&request));
+			request.type = MODEM_REQUEST_REGISTRATION;
+			request.registration.mode
+				= MODEM_REGISTRATION_MODE_AUTOMATIC;
+			modem_request(phone->modem, &request);
+			break;
 		case PHONE_EVENT_TYPE_STARTING:
 			if(ret == 0)
 				modem_start(phone->modem);

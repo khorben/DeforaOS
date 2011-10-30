@@ -547,7 +547,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
 		_on_request_message_send },
 	{ MODEM_REQUEST_REGISTRATION,			NULL,
-		_on_request_generic }, /* FIXME really track */
+		_on_request_generic },
 	{ MODEM_REQUEST_UNSUPPORTED,			NULL,
 		_on_request_unsupported }
 };
@@ -2763,7 +2763,7 @@ static void _on_trigger_cfun(ModemPlugin * modem, char const * answer)
 		return;
 	if(u != 1)
 	{
-		/* FIXME this is not the right event type */
+		/* FIXME this is maybe not the right event type */
 		event->status.status = MODEM_STATUS_OFFLINE;
 		modem->helper->event(modem->helper->modem, event);
 		return;
@@ -2911,6 +2911,7 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		default: /* FIXME implement the rest */
+		case 4:  /* operation not supported */
 		case 14: /* SIM busy */
 		case 16: /* Incorrect SIM PUK */
 		case 20: /* Memory full */
