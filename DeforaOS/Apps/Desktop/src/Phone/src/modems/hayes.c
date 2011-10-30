@@ -1950,7 +1950,7 @@ static gboolean _on_queue_timeout(gpointer data)
 	_hayes_queue_command(modem, command);
 	hayes->queue_timeout = g_slist_remove(hayes->queue_timeout, command);
 	if(hayes->queue_timeout != NULL)
-		hayes->source = g_timeout_add(2000, _on_queue_timeout, modem);
+		hayes->source = g_timeout_add(1000, _on_queue_timeout, modem);
 	return FALSE;
 }
 
@@ -2783,10 +2783,6 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	/* refresh the message list */
 	request.type = MODEM_REQUEST_MESSAGE_LIST;
 	_hayes_request(modem, &request);
-	/* report being online */
-	event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-	event->status.status = MODEM_STATUS_ONLINE;
-	modem->helper->event(modem->helper->modem, event);
 	return status;
 }
 
@@ -2870,8 +2866,10 @@ static void _on_trigger_cfun(ModemPlugin * modem, char const * answer)
 	switch(u)
 	{
 		case 1:
-			request.type = HAYES_REQUEST_SIM_PIN_VALID;
-			_hayes_request(modem, &request);
+			/* report being online */
+			event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
+			event->status.status = MODEM_STATUS_ONLINE;
+			modem->helper->event(modem->helper->modem, event);
 			break;
 		case 4: /* antennas disabled */
 		case 0: /* telephony disabled */
@@ -3020,7 +3018,7 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			hayes->queue_timeout = g_slist_append(
 					hayes->queue_timeout, p);
 			if(hayes->source == 0)
-				hayes->source = g_timeout_add(2000,
+				hayes->source = g_timeout_add(1000,
 						_on_queue_timeout, modem);
 			break;
 		default: /* FIXME implement the rest */
@@ -3425,7 +3423,7 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 			hayes->queue_timeout = g_slist_append(
 					hayes->queue_timeout, p);
 			if(hayes->source == 0)
-				hayes->source = g_timeout_add(2000,
+				hayes->source = g_timeout_add(1000,
 						_on_queue_timeout, modem);
 			break;
 		default: /* FIXME implement the rest */
@@ -3688,6 +3686,7 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 	if(res == 1 || res == 3)
 		memmove(&u[1], u, sizeof(*u) * 3);
 	u[0] = event->registration.mode;
+	event->registration.roaming = 0;
 	switch(u[1])
 	{
 		case 0:
@@ -3705,6 +3704,7 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 			break;
 		case 5:
 			u[1] = MODEM_REGISTRATION_STATUS_REGISTERED;
+			event->registration.roaming = 1;
 			break;
 		case 4: /* unknown */
 		default:
