@@ -305,9 +305,9 @@ static int _event_starting(PhonePlugin * plugin)
 	if(definition->online)
 		return 0;
 	if(helper->confirm(helper->phone, "You are currently offline.\n"
-				"Do you want to go online?") == 0)
+				"Do you want to go online?") != 0)
 		return 1;
-	_profiles_switch(plugin, 0);
+	_profiles_apply(plugin, 0);
 	return 0;
 }
 

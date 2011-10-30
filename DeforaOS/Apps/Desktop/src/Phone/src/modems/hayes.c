@@ -209,7 +209,7 @@ enum
 
 
 /* prototypes */
-/* modem */
+/* plug-in */
 static int _hayes_init(ModemPlugin * modem);
 static int _hayes_destroy(ModemPlugin * modem);
 static int _hayes_start(ModemPlugin * modem, unsigned int retry);
@@ -245,7 +245,9 @@ static void _hayes_queue_flush(ModemPlugin * modem);
 static int _hayes_queue_pop(ModemPlugin * modem);
 static int _hayes_queue_push(ModemPlugin * modem);
 
-static int _hayes_reset(ModemPlugin * modem);
+static void _hayes_reset(ModemPlugin * modem);
+static void _hayes_reset_start(ModemPlugin * modem, unsigned int retry);
+static void _hayes_reset_stop(ModemPlugin * modem);
 
 /* commands */
 static HayesCommand * _hayes_command_new(char const * attention);
@@ -601,6 +603,7 @@ ModemPlugin plugin =
 
 
 /* private */
+/* plug-in */
 /* functions */
 static int _hayes_init(ModemPlugin * modem)
 {
@@ -1096,8 +1099,7 @@ static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 
-	hayes->retry = retry;
-	hayes->source = g_idle_add(_on_reset, modem);
+	_hayes_reset_start(modem, retry);
 	/* report as being started */
 	event->status.status = MODEM_STATUS_STARTED;
 	modem->helper->event(modem->helper->modem, event);
@@ -1106,64 +1108,19 @@ static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 
 
 /* hayes_stop */
-static void _stop_channel(GIOChannel * channel);
-
 static int _hayes_stop(ModemPlugin * modem)
 {
 	Hayes * hayes = modem->priv;
-	ModemEvent * event;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 
-	/* close everything opened */
-	_hayes_queue_flush(modem);
-	_stop_channel(hayes->channel);
-	hayes->channel = NULL;
-	_stop_channel(hayes->rd_ppp_channel);
-	hayes->rd_ppp_channel = NULL;
-	_stop_channel(hayes->wr_ppp_channel);
-	hayes->wr_ppp_channel = NULL;
-	/* report disconnection if already connected */
-	event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
-	if(event->connection.connected)
+	_hayes_reset_stop(modem);
+	/* report as being stopped */
+	if(event->status.status != MODEM_STATUS_STOPPED)
 	{
-		event->connection.connected = 0;
-		event->connection.in = 0;
-		event->connection.out = 0;
+		event->status.status = MODEM_STATUS_STOPPED;
 		modem->helper->event(modem->helper->modem, event);
 	}
-	/* remove registration data */
-	string_delete(hayes->registration_media);
-	hayes->registration_media = NULL;
-	event->registration.media = NULL;
-	string_delete(hayes->registration_operator);
-	hayes->registration_operator = NULL;
-	event->registration._operator = NULL;
-	event->registration.signal = 0.0 / 0.0;
-	event->registration.roaming = 0;
-	/* reset battery information */
-	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
-	event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
-	event->battery_level.level = 0.0 / 0.0;
-	event->battery_level.charging = 0;
-	modem->helper->event(modem->helper->modem, event);
-	/* report as being stopped */
-	event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-	event->status.status = MODEM_STATUS_STOPPED;
-	modem->helper->event(modem->helper->modem, event);
-	/* FIXME some more? */
 	return 0;
-}
-
-static void _stop_channel(GIOChannel * channel)
-{
-	GError * error = NULL;
-
-	if(channel == NULL)
-		return;
-	/* XXX should the file descriptor also be closed? */
-	if(g_io_channel_shutdown(channel, TRUE, &error) == G_IO_STATUS_ERROR)
-		/* XXX report error */
-		g_error_free(error);
-	g_io_channel_unref(channel);
 }
 
 
@@ -1699,13 +1656,85 @@ static int _hayes_queue_push(ModemPlugin * modem)
 
 
 /* hayes_reset */
-static int _hayes_reset(ModemPlugin * modem)
+static void _hayes_reset(ModemPlugin * modem)
 {
 	Hayes * hayes = modem->priv;
 
-	_hayes_stop(modem);
-	_hayes_start(modem, hayes->retry);
-	return 0;
+	_hayes_reset_stop(modem);
+	_hayes_reset_start(modem, hayes->retry);
+}
+
+
+/* hayes_reset_start */
+static void _hayes_reset_start(ModemPlugin * modem, unsigned int retry)
+{
+	Hayes * hayes = modem->priv;
+
+	hayes->retry = retry;
+	hayes->source = g_idle_add(_on_reset, modem);
+}
+
+
+/* hayes_reset_stop */
+static void _reset_stop_channel(GIOChannel * channel);
+
+static void _hayes_reset_stop(ModemPlugin * modem)
+{
+	Hayes * hayes = modem->priv;
+	ModemEvent * event;
+
+	/* close everything opened */
+	_hayes_queue_flush(modem);
+	_reset_stop_channel(hayes->channel);
+	hayes->channel = NULL;
+	_reset_stop_channel(hayes->rd_ppp_channel);
+	hayes->rd_ppp_channel = NULL;
+	_reset_stop_channel(hayes->wr_ppp_channel);
+	hayes->wr_ppp_channel = NULL;
+	/* report disconnection if already connected */
+	event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
+	if(event->connection.connected)
+	{
+#if 1
+		fprintf(stderr, "DEBUG: %u\n", event->connection.connected);
+#endif
+		event->connection.connected = 0;
+		event->connection.in = 0;
+		event->connection.out = 0;
+		modem->helper->event(modem->helper->modem, event);
+	}
+	/* remove registration data */
+	string_delete(hayes->registration_media);
+	hayes->registration_media = NULL;
+	event->registration.media = NULL;
+	string_delete(hayes->registration_operator);
+	hayes->registration_operator = NULL;
+	event->registration._operator = NULL;
+	event->registration.signal = 0.0 / 0.0;
+	event->registration.roaming = 0;
+	/* reset battery information */
+	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
+	if(event->battery_level.status != MODEM_BATTERY_STATUS_UNKNOWN)
+	{
+		event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
+		event->battery_level.level = 0.0 / 0.0;
+		event->battery_level.charging = 0;
+		modem->helper->event(modem->helper->modem, event);
+	}
+	/* FIXME some more? */
+}
+
+static void _reset_stop_channel(GIOChannel * channel)
+{
+	GError * error = NULL;
+
+	if(channel == NULL)
+		return;
+	/* XXX should the file descriptor also be closed? */
+	if(g_io_channel_shutdown(channel, TRUE, &error) == G_IO_STATUS_ERROR)
+		/* XXX report error */
+		g_error_free(error);
+	g_io_channel_unref(channel);
 }
 
 
@@ -1898,15 +1927,21 @@ static gboolean _on_reset(gpointer data)
 {
 	ModemPlugin * modem = data;
 	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 	GError * error = NULL;
 	int fd;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_hayes_stop(modem);
+	_hayes_reset_stop(modem);
 	if((fd = _reset_open(modem)) < 0)
 	{
+		if(event->status.status != MODEM_STATUS_UNAVAILABLE)
+		{
+			event->status.status = MODEM_STATUS_UNAVAILABLE;
+			modem->helper->event(modem->helper->modem, event);
+		}
 		modem->helper->error(NULL, error_get(), 1);
 		if(hayes->retry > 0)
 			hayes->source = g_timeout_add(hayes->retry, _on_reset,

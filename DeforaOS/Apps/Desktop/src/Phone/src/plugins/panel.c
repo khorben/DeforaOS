@@ -275,6 +275,17 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
 			_panel_set_signal_level(panel, 0.0 / 0.0);
 			_panel_set_status(panel, FALSE, FALSE);
 			break;
+		case PHONE_EVENT_TYPE_STARTED:
+			_panel_set_operator(panel, -1, "Registering...");
+			_panel_set_signal_level(panel, 0.0 / 0.0);
+			_panel_set_status(panel, FALSE, FALSE);
+			break;
+		case PHONE_EVENT_TYPE_STARTING:
+		case PHONE_EVENT_TYPE_STOPPED:
+			_panel_set_operator(panel, -1, "Disconnected");
+			_panel_set_signal_level(panel, 0.0 / 0.0);
+			_panel_set_status(panel, FALSE, FALSE);
+			break;
 		case PHONE_EVENT_TYPE_UNAVAILABLE:
 			_panel_set_operator(panel, -1, "Unavailable");
 			_panel_set_signal_level(panel, 0.0 / 0.0);
