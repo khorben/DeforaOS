@@ -32,6 +32,7 @@ void on_phone_call_close(gpointer data);
 void on_phone_call_hangup(gpointer data);
 void on_phone_call_mute(GtkWidget * widget, gpointer data);
 void on_phone_call_reject(gpointer data);
+void on_phone_call_show_dialer(gpointer data);
 void on_phone_call_speaker(GtkWidget * widget, gpointer data);
 void on_phone_call_volume(GtkWidget * widget, gpointer data);
 

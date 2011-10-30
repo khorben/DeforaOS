@@ -83,6 +83,7 @@ static int _openmoko_set_state(PhonePlugin * plugin, char const * device,
 
 static int _openmoko_mixer_open(PhonePlugin * plugin);
 static int _openmoko_mixer_close(PhonePlugin * plugin);
+static int _openmoko_power(PhonePlugin * plugin, gboolean power);
 
 
 /* public */
@@ -112,6 +113,7 @@ static int _openmoko_init(PhonePlugin * plugin)
 	plugin->priv = openmoko;
 	openmoko->window = NULL;
 	_openmoko_mixer_open(plugin);
+	_openmoko_power(plugin, TRUE);
 	return 0;
 }
 
@@ -131,7 +133,6 @@ static void _openmoko_destroy(PhonePlugin * plugin)
 /* openmoko_event */
 static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
 static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
-static int _event_power_on(PhonePlugin * plugin, gboolean power);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
 static int _event_volume_get(PhonePlugin * plugin, gdouble * level);
 static int _event_volume_set(PhonePlugin * plugin, gdouble level);
@@ -153,11 +154,11 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_NOTIFICATION_ON:
 			/* FIXME implement */
 			break;
-		case PHONE_EVENT_TYPE_OFFLINE:
-			_event_power_on(plugin, FALSE);
+		case PHONE_EVENT_TYPE_STARTING:
+			_openmoko_power(plugin, TRUE);
 			break;
-		case PHONE_EVENT_TYPE_ONLINE:
-			_event_power_on(plugin, TRUE);
+		case PHONE_EVENT_TYPE_STOPPED:
+			_openmoko_power(plugin, FALSE);
 			break;
 		case PHONE_EVENT_TYPE_RESUME:
 			/* FIXME implement in Hayes plug-in if possible */
@@ -265,39 +266,6 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 	}
 	return 0;
 }
-
-static int _event_power_on(PhonePlugin * plugin, gboolean power)
-{
-	int ret = 0;
-	char const p1[] = "/sys/bus/platform/devices/gta02-pm-gsm.0/power_on";
-	char const p2[] = "/sys/bus/platform/devices/neo1973-pm-gsm.0/power_on";
-	char const * path = p1;
-	int fd;
-	char buf[256];
-
-	if((fd = open(path, O_WRONLY)) < 0)
-	{
-		path = p2;
-		fd = open(path, O_WRONLY);
-	}
-	if(fd < 0)
-	{
-		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
-		return plugin->helper->error(NULL, buf, 1);
-	}
-	if(write(fd, power ? "1\n" : "0\n", 2) != 2)
-	{
-		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
-		ret = plugin->helper->error(NULL, buf, 1);
-	}
-	if(close(fd) != 0)
-	{
-		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
-		ret = plugin->helper->error(NULL, buf, 1);
-	}
-	return ret;
-}
-
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
 {
 	int ret = 0;
@@ -391,6 +359,40 @@ static int _openmoko_mixer_close(PhonePlugin * plugin)
 	openmoko->mixer = NULL;
 #endif /* __linux__ */
 	return 0;
+}
+
+
+/* openmoko_power */
+static int _openmoko_power(PhonePlugin * plugin, gboolean power)
+{
+	int ret = 0;
+	char const p1[] = "/sys/bus/platform/devices/gta02-pm-gsm.0/power_on";
+	char const p2[] = "/sys/bus/platform/devices/neo1973-pm-gsm.0/power_on";
+	char const * path = p1;
+	int fd;
+	char buf[256];
+
+	if((fd = open(path, O_WRONLY)) < 0)
+	{
+		path = p2;
+		fd = open(path, O_WRONLY);
+	}
+	if(fd < 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		return plugin->helper->error(NULL, buf, 1);
+	}
+	if(write(fd, power ? "1\n" : "0\n", 2) != 2)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		ret = plugin->helper->error(NULL, buf, 1);
+	}
+	if(close(fd) != 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		ret = plugin->helper->error(NULL, buf, 1);
+	}
+	return ret;
 }
 
 
@@ -491,11 +493,11 @@ static void _openmoko_queue(PhonePlugin * plugin, char const * command)
 
 
 /* openmoko_settings */
-static void _on_settings_apply(gpointer data);
-static void _on_settings_cancel(gpointer data);
-static gboolean _on_settings_closex(gpointer data);
-static void _on_settings_ok(gpointer data);
-static void _on_settings_toggled(GtkWidget * widget);
+static void _settings_on_apply(gpointer data);
+static void _settings_on_cancel(gpointer data);
+static gboolean _settings_on_closex(gpointer data);
+static void _settings_on_ok(gpointer data);
+static void _settings_on_toggled(GtkWidget * widget);
 
 static void _openmoko_settings(PhonePlugin * plugin)
 {
@@ -520,8 +522,8 @@ static void _openmoko_settings(PhonePlugin * plugin)
 #endif
 	gtk_window_set_title(GTK_WINDOW(openmoko->window),
 			"Openmoko preferences");
-	g_signal_connect_swapped(G_OBJECT(openmoko->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+	g_signal_connect_swapped(openmoko->window, "delete-event", G_CALLBACK(
+				_settings_on_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* check button */
 	openmoko->deepsleep = gtk_check_button_new_with_label(
@@ -538,8 +540,8 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	openmoko->hw_bluetooth = gtk_toggle_button_new_with_label("OFF");
-	g_signal_connect(G_OBJECT(openmoko->hw_bluetooth), "toggled",
-			G_CALLBACK(_on_settings_toggled), NULL);
+	g_signal_connect(openmoko->hw_bluetooth, "toggled", G_CALLBACK(
+				_settings_on_toggled), NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), openmoko->hw_bluetooth, FALSE, TRUE,
 			0);
 	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
@@ -549,8 +551,8 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	openmoko->hw_gps = gtk_toggle_button_new_with_label("OFF");
-	g_signal_connect(G_OBJECT(openmoko->hw_gps), "toggled", G_CALLBACK(
-				_on_settings_toggled), NULL);
+	g_signal_connect(openmoko->hw_gps, "toggled", G_CALLBACK(
+				_settings_on_toggled), NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), openmoko->hw_gps, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), bbox);
@@ -560,24 +562,24 @@ static void _openmoko_settings(PhonePlugin * plugin)
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_cancel), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_settings_on_cancel), plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_apply), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_settings_on_apply), plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_ok), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(_settings_on_ok),
+			plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(openmoko->window), vbox);
-	_on_settings_cancel(plugin);
+	_settings_on_cancel(plugin);
 	gtk_widget_show_all(openmoko->window);
 }
 
-static void _on_settings_apply(gpointer data)
+static void _settings_on_apply(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Openmoko * openmoko = plugin->priv;
@@ -608,7 +610,7 @@ static void _on_settings_apply(gpointer data)
 		_openmoko_set_state(plugin, gps3, value);
 }
 
-static void _on_settings_cancel(gpointer data)
+static void _settings_on_cancel(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Openmoko * openmoko = plugin->priv;
@@ -654,24 +656,24 @@ static void _on_settings_cancel(gpointer data)
 	}
 }
 
-static gboolean _on_settings_closex(gpointer data)
+static gboolean _settings_on_closex(gpointer data)
 {
 	PhonePlugin * plugin = data;
 
-	_on_settings_cancel(plugin);
+	_settings_on_cancel(plugin);
 	return TRUE;
 }
 
-static void _on_settings_ok(gpointer data)
+static void _settings_on_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Openmoko * openmoko = plugin->priv;
 
 	gtk_widget_hide(openmoko->window);
-	_on_settings_apply(plugin);
+	_settings_on_apply(plugin);
 }
 
-static void _on_settings_toggled(GtkWidget * widget)
+static void _settings_on_toggled(GtkWidget * widget)
 {
 	gboolean active;
 

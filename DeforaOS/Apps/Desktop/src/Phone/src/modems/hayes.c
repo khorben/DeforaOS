@@ -613,11 +613,9 @@ static int _hayes_init(ModemPlugin * modem)
 	modem->priv = hayes;
 	hayes->mode = HAYES_MODE_INIT;
 	for(i = 0; i < sizeof(hayes->events) / sizeof(*hayes->events); i++)
-	{
 		hayes->events[i].type = i;
-		if(i == MODEM_EVENT_TYPE_REGISTRATION)
-			hayes->events[i].registration.signal = 0.0 / 0.0;
-	}
+	hayes->events[MODEM_EVENT_TYPE_REGISTRATION].registration.signal
+		= 0.0 / 0.0;
 	return 0;
 }
 
@@ -1143,9 +1141,9 @@ static int _hayes_stop(ModemPlugin * modem)
 	event->battery_level.level = 0.0 / 0.0;
 	event->battery_level.charging = 0;
 	modem->helper->event(modem->helper->modem, event);
-	/* report as being unavailable */
+	/* report as being stopped */
 	event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-	event->status.status = MODEM_STATUS_UNAVAILABLE;
+	event->status.status = MODEM_STATUS_STOPPED;
 	modem->helper->event(modem->helper->modem, event);
 	/* FIXME some more? */
 	return 0;
@@ -2729,6 +2727,7 @@ static void _on_trigger_cfun(ModemPlugin * modem, char const * answer)
 		return;
 	if(u != 1)
 	{
+		/* FIXME this is not the right event type */
 		event->status.status = MODEM_STATUS_OFFLINE;
 		modem->helper->event(modem->helper->modem, event);
 		return;

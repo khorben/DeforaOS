@@ -490,8 +490,7 @@ static gboolean _new_idle(gpointer data)
 	/* try to go online */
 	memset(&event, 0, sizeof(event));
 	event.type = PHONE_EVENT_TYPE_STARTING;
-	if(phone_event(phone, &event) != 0 || modem_start(phone->modem) != 0)
-		error_print(PACKAGE);
+	phone_event(phone, &event);
 	return FALSE;
 }
 
@@ -516,8 +515,7 @@ static void _idle_settings(Phone * phone)
 	gtk_list_store_set(phone->se_store, &iter,
 			PHONE_SETTINGS_COLUMN_CALLBACK, phone_show_plugins,
 			PHONE_SETTINGS_COLUMN_PLUGIN, NULL,
-			PHONE_SETTINGS_COLUMN_NAME, _("Plug-ins"),
-			-1);
+			PHONE_SETTINGS_COLUMN_NAME, _("Plug-ins"), -1);
 	theme = gtk_icon_theme_get_default();
 	if((pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 48, 0,
 					NULL)) != NULL)
@@ -561,8 +559,6 @@ void phone_delete(Phone * phone)
 	phone_event(phone, &event); /* ignore errors */
 	if(phone->modem != NULL)
 		modem_stop(phone->modem);
-	event.type = PHONE_EVENT_TYPE_OFFLINE;
-	phone_event(phone, &event);
 	phone_unload_all(phone);
 	if(phone->config != NULL)
 		config_delete(phone->config);
@@ -597,6 +593,7 @@ static int _error_text(char const * message, int ret)
 
 
 /* calls */
+/* phone_call_answer */
 void phone_call_answer(Phone * phone)
 {
 	modem_request_type(phone->modem, MODEM_REQUEST_CALL_ANSWER);
@@ -691,6 +688,7 @@ void phone_code_enter(Phone * phone)
 			phone->en_progress = _phone_create_progress(
 					phone->en_window, buf);
 			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, TRUE);
+			/* FIXME remember the real request name */
 			modem_request_type(phone->modem,
 					MODEM_REQUEST_AUTHENTICATE, "SIM PIN",
 					NULL, code);
@@ -903,6 +901,19 @@ int phone_event(Phone * phone, PhoneEvent * event)
 		if(plugin->event == NULL)
 			continue;
 		ret |= plugin->event(plugin, event);
+	}
+	switch(event->type)
+	{
+		case PHONE_EVENT_TYPE_STARTING:
+			if(ret == 0)
+				modem_start(phone->modem);
+			break;
+		case PHONE_EVENT_TYPE_STOPPING:
+			if(ret == 0)
+				modem_stop(phone->modem);
+			break;
+		default:
+			break;
 	}
 	return ret;
 }
@@ -1290,6 +1301,7 @@ void phone_settings_open_selected(Phone * phone)
 
 
 /* show */
+/* phone_show_about */
 void phone_show_about(Phone * phone, gboolean show)
 {
 	if(phone->ab_window != NULL)
@@ -1422,6 +1434,7 @@ static void _show_call_window(Phone * phone)
 {
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkWidget * widget;
 
 	/* FIXME the "Answer" button may be shown smaller than the others */
 	phone->ca_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -1475,7 +1488,7 @@ static void _show_call_window(Phone * phone)
 	gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
 			gtk_image_new_from_icon_name("stock_volume-max",
 				GTK_ICON_SIZE_BUTTON));
-	g_signal_connect(G_OBJECT(phone->ca_speaker), "toggled", G_CALLBACK(
+	g_signal_connect(phone->ca_speaker, "toggled", G_CALLBACK(
 				on_phone_call_speaker), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_speaker, TRUE, TRUE, 0);
 	/* mute microphone */
@@ -1483,9 +1496,16 @@ static void _show_call_window(Phone * phone)
 	gtk_button_set_image(GTK_BUTTON(phone->ca_mute),
 			gtk_image_new_from_icon_name("audio-input-microphone",
 				GTK_ICON_SIZE_BUTTON));
-	g_signal_connect(G_OBJECT(phone->ca_mute), "toggled", G_CALLBACK(
+	g_signal_connect(phone->ca_mute, "toggled", G_CALLBACK(
 				on_phone_call_mute), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_mute, TRUE, TRUE, 0);
+	/* show dialer */
+	widget = gtk_button_new_with_label(_("Show dialer"));
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"phone-dialer", GTK_ICON_SIZE_BUTTON));
+	g_signal_connect(widget, "clicked", G_CALLBACK(
+				on_phone_call_show_dialer), phone);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(phone->ca_window), vbox);
 }
 
@@ -1543,7 +1563,7 @@ static void _show_code_window(Phone * phone)
 			"stock_lock");
 #endif
 	gtk_container_set_border_width(GTK_CONTAINER(phone->en_window), 4);
-	g_signal_connect(G_OBJECT(phone->en_window), "delete-event", G_CALLBACK(
+	g_signal_connect(phone->en_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	phone->en_title = gtk_label_new("");
@@ -1595,8 +1615,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				300);
 		gtk_window_set_title(GTK_WINDOW(phone->co_window),
 				_("Contacts"));
-		g_signal_connect(G_OBJECT(phone->co_window), "delete-event",
-				G_CALLBACK(on_phone_closex), NULL);
+		g_signal_connect(phone->co_window, "delete-event", G_CALLBACK(
+					on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -1695,7 +1715,7 @@ static void _show_dialer_window(Phone * phone)
 #endif
 	gtk_container_set_border_width(GTK_CONTAINER(phone->di_window), 4);
 	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
-	g_signal_connect(G_OBJECT(phone->di_window), "delete-event", G_CALLBACK(
+	g_signal_connect(phone->di_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
 #if !GTK_CHECK_VERSION(3, 0, 0)
 	gdk_display_add_client_message_filter(gdk_display_get_default(),
@@ -1750,8 +1770,8 @@ void phone_show_logs(Phone * phone, gboolean show)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->lo_window),
 				_("Phone logs"));
-		g_signal_connect(G_OBJECT(phone->lo_window), "delete-event",
-				G_CALLBACK(on_phone_closex), NULL);
+		g_signal_connect(phone->lo_window, "delete-event", G_CALLBACK(
+					on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -1865,7 +1885,7 @@ static void _show_messages_window(Phone * phone)
 			"stock_mail-send-receive");
 #endif
 	gtk_window_set_title(GTK_WINDOW(phone->me_window), _("Messages"));
-	g_signal_connect(G_OBJECT(phone->me_window), "delete-event", G_CALLBACK(
+	g_signal_connect(phone->me_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* toolbar */
@@ -1975,7 +1995,7 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		gtk_window_set_icon_name(GTK_WINDOW(widget), "gnome-settings");
 #endif
 		gtk_window_set_title(GTK_WINDOW(widget), _("Plug-ins"));
-		g_signal_connect(G_OBJECT(widget), "delete-event", G_CALLBACK(
+		g_signal_connect(widget, "delete-event", G_CALLBACK(
 					_on_plugins_closex), phone);
 		vbox = gtk_vbox_new(FALSE, 4);
 		/* view */
@@ -1988,10 +2008,10 @@ void phone_show_plugins(Phone * phone, gboolean show)
 					phone->pl_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->pl_view),
 				FALSE);
-		g_signal_connect(G_OBJECT(phone->pl_view), "row-activated",
+		g_signal_connect(phone->pl_view, "row-activated",
 				G_CALLBACK(_on_plugins_activated), phone);
 		renderer = gtk_cell_renderer_toggle_new();
-		g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
+		g_signal_connect(renderer, "toggled", G_CALLBACK(
 					_on_plugins_enabled_toggle), phone);
 		column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
 				renderer, "active",
@@ -2221,7 +2241,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->re_window),
 				_("Read message"));
-		g_signal_connect(G_OBJECT(phone->re_window), "delete-event",
+		g_signal_connect(phone->re_window, "delete-event",
 				G_CALLBACK(on_phone_closex), phone->re_window);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
@@ -2313,7 +2333,7 @@ void phone_show_settings(Phone * phone, gboolean show)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->se_window),
 				_("Phone settings"));
-		g_signal_connect(G_OBJECT(phone->se_window), "delete-event",
+		g_signal_connect(phone->se_window, "delete-event",
 				G_CALLBACK(on_phone_closex), phone->se_window);
 		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
@@ -2774,7 +2794,7 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->wr_window),
 				_("Write message"));
-		g_signal_connect(G_OBJECT(phone->wr_window), "delete-event",
+		g_signal_connect(phone->wr_window, "delete-event",
 				G_CALLBACK(on_phone_closex), phone->wr_window);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
@@ -3238,7 +3258,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 		gtk_container_add(GTK_CONTAINER(button), label);
 		g_object_set_data(G_OBJECT(button), "character",
 				&numbers[i].character);
-		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+		g_signal_connect(button, "clicked", G_CALLBACK(
 					button_callback), phone);
 		gtk_table_attach(GTK_TABLE(table), button, (i % 3) * 2,
 				((i % 3) + 1) * 2, (i / 3) + 1, (i / 3) + 2,
@@ -3261,7 +3281,7 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	dialog = gtk_dialog_new_with_buttons(_("Operation in progress..."),
 			GTK_WINDOW(parent), flags, GTK_STOCK_CLOSE,
 			GTK_RESPONSE_CLOSE, NULL);
-	g_signal_connect(G_OBJECT(dialog), "delete-event", G_CALLBACK(
+	g_signal_connect(dialog, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -3277,8 +3297,8 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(widget));
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_hide), dialog);
+	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_hide),
+			dialog);
 	gtk_widget_show_all(vbox);
 	gtk_widget_show(dialog);
 	return dialog;
@@ -3325,8 +3345,8 @@ static int _phone_error(GtkWidget * window, char const * message, int ret)
 #endif
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
+	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy),
+			NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }
@@ -3349,8 +3369,7 @@ static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 #endif
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Information"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(callback),
-			phone);
+	g_signal_connect(dialog, "response", G_CALLBACK(callback), phone);
 	gtk_widget_show(dialog);
 }
 
@@ -3537,10 +3556,10 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 				GTK_WINDOW(phone->co_window), f,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 				GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
-		g_signal_connect(G_OBJECT(phone->co_dialog), "delete-event",
-				G_CALLBACK(on_phone_closex), NULL);
-		g_signal_connect(G_OBJECT(phone->co_dialog), "response",
-				G_CALLBACK(_on_contacts_dialog_response),
+		g_signal_connect(phone->co_dialog, "delete-event", G_CALLBACK(
+					on_phone_closex), NULL);
+		g_signal_connect(phone->co_dialog, "response", G_CALLBACK(
+					_on_contacts_dialog_response),
 				phone);
 #if GTK_CHECK_VERSION(2, 14, 0)
 		vbox = gtk_dialog_get_content_area(GTK_DIALOG(
@@ -3705,9 +3724,11 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 /* phone_modem_event */
 static void _modem_event_authentication(Phone * phone, ModemEvent * event);
 static void _modem_event_call(Phone * phone, ModemEvent * event);
+static void _modem_event_contact(Phone * phone, ModemEvent * event);
 static void _modem_event_error(Phone * phone, ModemEvent * event);
 static void _modem_event_message(Phone * phone, ModemEvent * event);
 static void _modem_event_message_deleted(Phone * phone, ModemEvent * event);
+static void _modem_event_status(Phone * phone, ModemEvent * event);
 
 static void _phone_modem_event(void * priv, ModemEvent * event)
 {
@@ -3730,10 +3751,7 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			_modem_event_call(phone, event);
 			break;
 		case MODEM_EVENT_TYPE_CONTACT:
-			phone_contacts_set(phone, event->contact.id,
-					event->contact.status,
-					event->contact.name,
-					event->contact.number);
+			_modem_event_contact(phone, event);
 			break;
 		case MODEM_EVENT_TYPE_MESSAGE:
 			_modem_event_message(phone, event);
@@ -3749,13 +3767,7 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 					NULL);
 			break;
 		case MODEM_EVENT_TYPE_STATUS:
-			if(event->status.status == MODEM_STATUS_ONLINE)
-				pevent.type = PHONE_EVENT_TYPE_ONLINE;
-			else if(event->status.status == MODEM_STATUS_OFFLINE)
-				pevent.type = PHONE_EVENT_TYPE_OFFLINE;
-			else /* XXX may not always be right */
-				pevent.type = PHONE_EVENT_TYPE_UNAVAILABLE;
-			phone_event(phone, &pevent);
+			_modem_event_status(phone, event);
 			break;
 		default:
 			break;
@@ -3813,6 +3825,15 @@ static void _modem_event_call(Phone * phone, ModemEvent * event)
 static void _modem_event_error(Phone * phone, ModemEvent * event)
 {
 	phone_error(phone, event->error.message, 0);
+}
+
+static void _modem_event_contact(Phone * phone, ModemEvent * event)
+{
+	PhoneEvent pevent;
+
+	memset(&pevent, 0, sizeof(pevent));
+	phone_contacts_set(phone, event->contact.id, event->contact.status,
+			event->contact.name, event->contact.number);
 }
 
 static void _modem_event_message(Phone * phone, ModemEvent * event)
@@ -3876,6 +3897,36 @@ static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
 	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, FALSE);
 	phone->me_progress = _phone_progress_delete(phone->me_progress);
 	_phone_info(phone, phone->me_window, _("Message deleted"), NULL);
+}
+
+static void _modem_event_status(Phone * phone, ModemEvent * event)
+{
+	PhoneEvent pevent;
+
+	memset(&pevent, 0, sizeof(pevent));
+	switch(event->status.status)
+	{
+		case MODEM_STATUS_ONLINE:
+			pevent.type = PHONE_EVENT_TYPE_ONLINE;
+			break;
+		case MODEM_STATUS_OFFLINE:
+			pevent.type = PHONE_EVENT_TYPE_OFFLINE;
+			break;
+		case MODEM_STATUS_STARTED:
+			pevent.type = PHONE_EVENT_TYPE_STARTED;
+			break;
+		case MODEM_STATUS_STOPPED:
+			pevent.type = PHONE_EVENT_TYPE_STOPPED;
+			break;
+		case MODEM_STATUS_UNAVAILABLE:
+			pevent.type = PHONE_EVENT_TYPE_UNAVAILABLE;
+			break;
+#ifndef DEBUG
+		default:
+			return;
+#endif
+	}
+	phone_event(phone, &pevent);
 }
 
 

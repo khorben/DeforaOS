@@ -164,6 +164,15 @@ void on_phone_call_reject(gpointer data)
 }
 
 
+/* on_phone_call_show_dialer */
+void on_phone_call_show_dialer(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_show_dialer(phone, TRUE);
+}
+
+
 /* on_phone_call_speaker */
 void on_phone_call_speaker(GtkWidget * widget, gpointer data)
 {
