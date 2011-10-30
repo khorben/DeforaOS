@@ -259,6 +259,7 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 	size_t i;
 	char ebuf[32];
 	DebugModemEvent * dme = _debug_modem_events;
+	ModemEventType met;
 	DebugPhoneEvent * dpe = _debug_phone_events;
 	GtkTreeIter iter;
 
@@ -269,10 +270,10 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			snprintf(ebuf, sizeof(ebuf), "%s (%u)", "MODEM",
-					event->modem_event.event->type);
+			met = event->modem_event.event->type;
+			snprintf(ebuf, sizeof(ebuf), "%s (%u)", "MODEM", met);
 			for(i = 0; dme[i].string != NULL; i++)
-				if(dme[i].event == event->type)
+				if(dme[i].event == met)
 				{
 					snprintf(ebuf, sizeof(ebuf), "%s %s",
 							"MODEM", dme[i].string);
