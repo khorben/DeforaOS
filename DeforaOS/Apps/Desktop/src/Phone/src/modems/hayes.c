@@ -72,6 +72,7 @@ typedef struct _Hayes
 	/* queue */
 	HayesMode mode;
 	GSList * queue;
+	GSList * queue_timeout;
 
 	/* internal */
 	ModemEvent events[MODEM_EVENT_TYPE_COUNT];
@@ -276,6 +277,7 @@ static int _hayes_command_answer_append(HayesCommand * command,
 static HayesCommandStatus _hayes_command_callback(HayesCommand * command);
 
 /* callbacks */
+static gboolean _on_queue_timeout(gpointer data);
 static gboolean _on_reset(gpointer data);
 static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
@@ -1578,6 +1580,10 @@ static void _hayes_queue_flush(ModemPlugin * modem)
 {
 	Hayes * hayes = modem->priv;
 
+	g_slist_foreach(hayes->queue_timeout, (GFunc)_hayes_command_delete,
+			NULL);
+	g_slist_free(hayes->queue_timeout);
+	hayes->queue_timeout = NULL;
 	g_slist_foreach(hayes->queue, (GFunc)_hayes_command_delete, NULL);
 	g_slist_free(hayes->queue);
 	hayes->queue = NULL;
@@ -1930,6 +1936,25 @@ static HayesCommandStatus _hayes_command_callback(HayesCommand * command)
 
 
 /* callbacks */
+/* on_queue_timeout */
+static gboolean _on_queue_timeout(gpointer data)
+{
+	ModemPlugin * modem = data;
+	Hayes * hayes = modem->priv;
+	HayesCommand * command;
+
+	hayes->source = 0;
+	if(hayes->queue_timeout == NULL) /* nothing to send */
+		return FALSE;
+	command = hayes->queue_timeout->data;
+	_hayes_queue_command(modem, command);
+	hayes->queue_timeout = g_slist_remove(hayes->queue_timeout, command);
+	if(hayes->queue_timeout != NULL)
+		hayes->source = g_timeout_add(2000, _on_queue_timeout, modem);
+	return FALSE;
+}
+
+
 /* on_reset */
 static int _reset_open(ModemPlugin * modem);
 static int _reset_configure(ModemPlugin * modem, char const * device, int fd);
@@ -2973,6 +2998,7 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
 	unsigned int u;
+	HayesCommand * p;
 
 	if(command != NULL)
 		_hayes_command_set_status(command, HCS_ERROR);
@@ -2985,11 +3011,17 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case 14: /* SIM busy */
-#if 0
-			/* FIXME should wait a bit first */
-			_hayes_queue_command_full(modem, command->attention,
-					command->callback);
-#endif
+			if(command == NULL)
+				break;
+			if((p = _hayes_command_new(command->attention)) == NULL)
+				break;
+			_hayes_command_set_callback(p, command->callback,
+					command->priv);
+			hayes->queue_timeout = g_slist_append(
+					hayes->queue_timeout, p);
+			if(hayes->source == 0)
+				hayes->source = g_timeout_add(2000,
+						_on_queue_timeout, modem);
 			break;
 		default: /* FIXME implement the rest */
 		case 4:  /* operation not supported */
@@ -3370,6 +3402,7 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
 	unsigned int u;
+	HayesCommand * p;
 
 	if(command != NULL)
 		_hayes_command_set_status(command, HCS_ERROR);
@@ -3380,6 +3413,20 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 		case 311: /* SIM PIN required */
 		case 316: /* SIM PUK required */
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
+			break;
+		case 500: /* unknown error */
+			/* FIXME duplicated from _on_trigger_cme_error() */
+			if(command == NULL)
+				break;
+			if((p = _hayes_command_new(command->attention)) == NULL)
+				break;
+			_hayes_command_set_callback(p, command->callback,
+					command->priv);
+			hayes->queue_timeout = g_slist_append(
+					hayes->queue_timeout, p);
+			if(hayes->source == 0)
+				hayes->source = g_timeout_add(2000,
+						_on_queue_timeout, modem);
 			break;
 		default: /* FIXME implement the rest */
 			break;
