@@ -106,7 +106,8 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _profiles_settings(PhonePlugin * plugin);
 
 /* useful */
-static void _profile_switch(PhonePlugin * plugin, ProfileType type);
+static void _profiles_apply(PhonePlugin * plugin, ProfileType type);
+static void _profiles_switch(PhonePlugin * plugin, ProfileType type);
 
 
 /* public */
@@ -306,7 +307,7 @@ static int _event_starting(PhonePlugin * plugin)
 	if(helper->confirm(helper->phone, "You are currently offline.\n"
 				"Do you want to go online?") == 0)
 		return 1;
-	_profile_switch(plugin, 0);
+	_profiles_switch(plugin, 0);
 	return 0;
 }
 
@@ -518,28 +519,16 @@ static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Profiles * profiles = plugin->priv;
-	size_t profiles_cur = profiles->profiles_cur;
-	ModemRequest request;
+	ProfileType type;
 
 	gtk_widget_hide(profiles->pr_window);
-	profiles->profiles_cur = gtk_combo_box_get_active(GTK_COMBO_BOX(
-				profiles->pr_combo));
-	plugin->helper->config_set(plugin->helper->phone, "profiles", "default",
-			profiles->profiles[profiles->profiles_cur].name);
-	if(profiles->profiles[profiles_cur].online
-			&& !profiles->profiles[profiles->profiles_cur].online)
-	{
-		/* XXX should really go offline */
-		memset(&request, 0, sizeof(request));
-		request.type = MODEM_REQUEST_REGISTRATION;
-		request.registration.mode = MODEM_REGISTRATION_MODE_DISABLED;
-		plugin->helper->request(plugin->helper->phone, &request);
-	}
+	type = gtk_combo_box_get_active(GTK_COMBO_BOX(profiles->pr_combo));
+	_profiles_switch(plugin, type);
 }
 
 
-/* profile_switch */
-static void _profile_switch(PhonePlugin * plugin, ProfileType type)
+/* profiles_apply */
+static void _profiles_apply(PhonePlugin * plugin, ProfileType type)
 {
 	PhonePluginHelper * helper = plugin->helper;
 	Profiles * profiles = plugin->priv;
@@ -550,4 +539,36 @@ static void _profile_switch(PhonePlugin * plugin, ProfileType type)
 	profiles->profiles_cur = type;
 	helper->config_set(helper->phone, "profiles", "default",
 			profiles->profiles[profiles->profiles_cur].name);
+}
+
+
+/* profiles_switch */
+static void _profiles_switch(PhonePlugin * plugin, ProfileType type)
+{
+	PhonePluginHelper * helper = plugin->helper;
+	Profiles * profiles = plugin->priv;
+	ProfileType current = profiles->profiles_cur;
+	PhoneEvent pevent;
+
+	if(type == current)
+		return;
+	if(type > profiles->profiles_cnt)
+		/* XXX report error */
+		return;
+	_profiles_apply(plugin, type);
+	memset(&pevent, 0, sizeof(pevent));
+	if(profiles->profiles[current].online
+			&& !profiles->profiles[type].online)
+	{
+		/* go offline */
+		pevent.type = PHONE_EVENT_TYPE_STOPPING;
+		helper->event(helper->phone, &pevent);
+	}
+	else if(!profiles->profiles[current].online
+			&& profiles->profiles[type].online)
+	{
+		/* go online */
+		pevent.type = PHONE_EVENT_TYPE_STARTING;
+		helper->event(helper->phone, &pevent);
+	}
 }
