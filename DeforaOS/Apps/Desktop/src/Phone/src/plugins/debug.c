@@ -223,6 +223,7 @@ static gboolean _on_debug_closex(gpointer data)
 static void _on_debug_queue_execute(gpointer data)
 {
 	PhonePlugin * plugin = data;
+	PhonePluginHelper * helper = plugin->helper;
 	Debug * debug = plugin->priv;
 	gchar * text;
 	size_t i;
@@ -234,8 +235,7 @@ static void _on_debug_queue_execute(gpointer data)
 		if(strcmp(_debug_gsm_commands[i].name, text) == 0)
 			break;
 	g_free(text);
-	plugin->helper->trigger(plugin->helper->phone,
-			_debug_gsm_commands[i].event);
+	helper->trigger(helper->phone, _debug_gsm_commands[i].event);
 }
 
 
