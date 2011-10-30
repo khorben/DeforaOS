@@ -107,7 +107,8 @@ static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			if(event->modem_event.type != MODEM_EVENT_TYPE_CALL)
+			if(event->modem_event.event->type
+					!= MODEM_EVENT_TYPE_CALL)
 				break; /* FIXME many more events to handle */
 			number = event->modem_event.event->call.number;
 			break;
