@@ -302,6 +302,8 @@ static int _phone_confirm(Phone * phone, GtkWidget * window,
 		char const * message);
 static int _phone_error(GtkWidget * window, char const * message, int ret);
 
+static int _phone_helper_confirm(Phone * phone, char const * message);
+
 static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 		GCallback callback);
 
@@ -398,6 +400,7 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->helper.config_foreach = _phone_config_foreach;
 	phone->helper.config_get = _phone_config_get;
 	phone->helper.config_set = _phone_config_set;
+	phone->helper.confirm = _phone_helper_confirm;
 	phone->helper.error = phone_error;
 	phone->helper.about_dialog = _phone_about;
 	phone->helper.event = phone_event;
@@ -3310,10 +3313,12 @@ static int _phone_confirm(Phone * phone, GtkWidget * window,
 		char const * message)
 {
 	GtkWidget * dialog;
+	GtkWindow * w = (window != NULL) ? GTK_WINDOW(window) : NULL;
+	int flags = (window != NULL)
+		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 	int res;
 
-	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+	dialog = gtk_message_dialog_new(w, flags,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Question"));
@@ -3349,6 +3354,13 @@ static int _phone_error(GtkWidget * window, char const * message, int ret)
 			NULL);
 	gtk_widget_show(dialog);
 	return ret;
+}
+
+
+/* phone_helper_confirm */
+static int _phone_helper_confirm(Phone * phone, char const * message)
+{
+	return _phone_confirm(phone, NULL, message);
 }
 
 

@@ -38,6 +38,15 @@
 /* Profiles */
 /* private */
 /* types */
+typedef enum _ProfileType
+{
+	PROFILE_TYPE_GENERAL = 0,
+	PROFILE_TYPE_SILENT,
+	PROFILE_TYPE_OFFLINE
+} ProfileType;
+#define PROFILE_TYPE_LAST PROFILE_TYPE_OFFLINE
+#define PROFILE_TYPE_COUNT (PROFILE_TYPE_LAST + 1)
+
 typedef enum _ProfileVolume
 {
 	PROFILE_VOLUME_SILENT	= 0,
@@ -82,7 +91,7 @@ typedef struct _Profiles
 } Profiles;
 
 /* variables */
-static ProfileDefinition _profiles_definitions[] =
+static ProfileDefinition _profiles_definitions[PROFILE_TYPE_COUNT] =
 {
 	{ "General",	TRUE,	PROFILE_VOLUME_ASC,	TRUE	},
 	{ "Silent",	TRUE,	PROFILE_VOLUME_SILENT,	TRUE	},
@@ -90,10 +99,14 @@ static ProfileDefinition _profiles_definitions[] =
 };
 
 /* prototypes */
+/* plug-in */
 static int _profiles_init(PhonePlugin * plugin);
 static void _profiles_destroy(PhonePlugin * plugin);
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event);
 static void _profiles_settings(PhonePlugin * plugin);
+
+/* useful */
+static void _profile_switch(PhonePlugin * plugin, ProfileType type);
 
 
 /* public */
@@ -212,6 +225,7 @@ static void _profiles_destroy(PhonePlugin * plugin)
 /* profiles_event */
 static int _event_key_tone(PhonePlugin * plugin);
 static int _event_starting(PhonePlugin * plugin);
+static int _event_stopping(PhonePlugin * plugin);
 #if 0
 static void _event_call_incoming_do(PhonePlugin * plugin);
 static gboolean _event_call_incoming_timeout(gpointer data);
@@ -231,6 +245,8 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 			return _event_key_tone(plugin);
 		case PHONE_EVENT_TYPE_STARTING:
 			return _event_starting(plugin);
+		case PHONE_EVENT_TYPE_STOPPING:
+			return _event_stopping(plugin);
 #if 0
 		case PHONE_EVENT_TYPE_SMS_RECEIVED:
 			if(profiles->pao == NULL)
@@ -280,30 +296,28 @@ static int _event_key_tone(PhonePlugin * plugin)
 
 static int _event_starting(PhonePlugin * plugin)
 {
+	PhonePluginHelper * helper = plugin->helper;
 	Profiles * profiles = plugin->priv;
 	ProfileDefinition * definition = &profiles->profiles[
 		profiles->profiles_cur];
-	GtkWidget * dialog;
-	int res;
 
 	if(definition->online)
 		return 0;
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO,
-#if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Question");
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-#endif
-			"%s", "You are currently offline."
-			" Do you want to go online?");
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_YES)
+	if(helper->confirm(helper->phone, "You are currently offline.\n"
+				"Do you want to go online?") == 0)
 		return 1;
-	profiles->profiles_cur = 0;
-	plugin->helper->config_set(plugin->helper->phone, "profiles", "default",
-			profiles->profiles[profiles->profiles_cur].name);
+	_profile_switch(plugin, 0);
 	return 0;
+}
+
+static int _event_stopping(PhonePlugin * plugin)
+{
+	Profiles * profiles = plugin->priv;
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
+
+	/* prevent stopping the modem except if we're going offline */
+	return definition->online ? 1 : 0;
 }
 
 #if 0
@@ -521,4 +535,19 @@ static void _on_settings_ok(gpointer data)
 		request.registration.mode = MODEM_REGISTRATION_MODE_DISABLED;
 		plugin->helper->request(plugin->helper->phone, &request);
 	}
+}
+
+
+/* profile_switch */
+static void _profile_switch(PhonePlugin * plugin, ProfileType type)
+{
+	PhonePluginHelper * helper = plugin->helper;
+	Profiles * profiles = plugin->priv;
+
+	if(type > profiles->profiles_cnt)
+		/* XXX report error */
+		return;
+	profiles->profiles_cur = type;
+	helper->config_set(helper->phone, "profiles", "default",
+			profiles->profiles[profiles->profiles_cur].name);
 }
