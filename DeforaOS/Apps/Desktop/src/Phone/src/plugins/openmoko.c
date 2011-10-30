@@ -154,7 +154,7 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_NOTIFICATION_ON:
 			/* FIXME implement */
 			break;
-		case PHONE_EVENT_TYPE_STARTING:
+		case PHONE_EVENT_TYPE_STARTED:
 			_openmoko_power(plugin, TRUE);
 			break;
 		case PHONE_EVENT_TYPE_STOPPED:

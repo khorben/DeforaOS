@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-30 12:01+0100\n"
+"POT-Creation-Date: 2011-10-30 13:11+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: DeforaOS development (French) <devel-fr@lists.defora.org>\n"
@@ -27,313 +27,313 @@ msgstr ""
 "  -m\tNom du greffon modem à charger\n"
 "  -r\tDélai entre deux tentatives d'accès au modem (ms)\n"
 
-#: ../src/phone.c:355
+#: ../src/phone.c:357
 msgid "All"
 msgstr "Tous"
 
-#: ../src/phone.c:356
+#: ../src/phone.c:358
 msgid "Inbox"
 msgstr "Reçus"
 
-#: ../src/phone.c:357
+#: ../src/phone.c:359
 msgid "Sent"
 msgstr "Envoyés"
 
-#: ../src/phone.c:358
+#: ../src/phone.c:360
 msgid "Drafts"
 msgstr "Brouillons"
 
-#: ../src/phone.c:359
+#: ../src/phone.c:361
 msgid "Trash"
 msgstr "Corbeille"
 
-#: ../src/phone.c:507 ../src/phone.c:2571
+#: ../src/phone.c:510 ../src/phone.c:2574
 msgid "System preferences"
 msgstr "Préférences système"
 
-#: ../src/phone.c:518 ../src/phone.c:1997
+#: ../src/phone.c:521 ../src/phone.c:2000
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/phone.c:681
+#: ../src/phone.c:684
 #, c-format
 msgid "Checking %s..."
 msgstr "Vérification %s..."
 
-#: ../src/phone.c:745
+#: ../src/phone.c:748
 msgid "Delete this contact?"
 msgstr "Supprimer ce contact?"
 
-#: ../src/phone.c:1068 ../src/phone.c:1234
+#: ../src/phone.c:1071 ../src/phone.c:1237
 msgid "Delete this message?"
 msgstr "Supprimer ce message?"
 
-#: ../src/phone.c:1074 ../src/phone.c:1239
+#: ../src/phone.c:1077 ../src/phone.c:1242
 msgid "Deleting message..."
 msgstr "Suppression du message..."
 
-#: ../src/phone.c:1323
+#: ../src/phone.c:1326
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/phone.c:1370
+#: ../src/phone.c:1373
 msgid "Unknown contact"
 msgstr "Contact inconnu"
 
-#: ../src/phone.c:1373
+#: ../src/phone.c:1376
 msgid "Unknown number"
 msgstr "Numéro inconnu"
 
-#: ../src/phone.c:1392
+#: ../src/phone.c:1395
 msgid "In conversation"
 msgstr "En conversation"
 
-#: ../src/phone.c:1403
+#: ../src/phone.c:1406
 msgid "Incoming call"
 msgstr "Appel entrant"
 
-#: ../src/phone.c:1413
+#: ../src/phone.c:1416
 msgid "Outgoing call"
 msgstr "Appel sortant"
 
-#: ../src/phone.c:1424
+#: ../src/phone.c:1427
 msgid "Call finished"
 msgstr "Appel terminé"
 
-#: ../src/phone.c:1457
+#: ../src/phone.c:1460
 msgid "_Answer"
 msgstr "_Répondre"
 
-#: ../src/phone.c:1462
+#: ../src/phone.c:1465
 msgid "_Hangup"
 msgstr "Ra_ccrocher"
 
-#: ../src/phone.c:1467
+#: ../src/phone.c:1470
 msgid "_Reject"
 msgstr "Re_jeter"
 
-#: ../src/phone.c:1487
+#: ../src/phone.c:1490
 msgid "Loudspeaker"
 msgstr "Haut-parleur"
 
-#: ../src/phone.c:1495
+#: ../src/phone.c:1498
 msgid "Mute microphone"
 msgstr "Couper le microphone"
 
-#: ../src/phone.c:1503
+#: ../src/phone.c:1506
 msgid "Show dialer"
 msgstr "Afficher le cadran"
 
-#: ../src/phone.c:1544
+#: ../src/phone.c:1547
 #, c-format
 msgid "Enter %s"
 msgstr "Entrer %s"
 
-#: ../src/phone.c:1587
+#: ../src/phone.c:1590
 msgid "Enter"
 msgstr "Entrer"
 
-#: ../src/phone.c:1589
+#: ../src/phone.c:1592
 msgid "Skip"
 msgstr "Ignorer"
 
-#: ../src/phone.c:1617
+#: ../src/phone.c:1620
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:1623 ../src/phone.c:1742 ../src/phone.c:1778
-#: ../src/phone.c:1893 ../src/phone.c:2249
+#: ../src/phone.c:1626 ../src/phone.c:1745 ../src/phone.c:1781
+#: ../src/phone.c:1896 ../src/phone.c:2252
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:1629
+#: ../src/phone.c:1632
 msgid "Write"
 msgstr "Écrire"
 
-#: ../src/phone.c:1671 ../src/phone.c:2028 ../src/phone.c:2360
+#: ../src/phone.c:1674 ../src/phone.c:2031 ../src/phone.c:2363
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/phone.c:1717
+#: ../src/phone.c:1720
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:1744
+#: ../src/phone.c:1747
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:1772
+#: ../src/phone.c:1775
 msgid "Phone logs"
 msgstr "Journal d'appels"
 
-#: ../src/phone.c:1784
+#: ../src/phone.c:1787
 msgid "Message"
 msgstr "Message"
 
-#: ../src/phone.c:1815
+#: ../src/phone.c:1818
 msgid "Direction"
 msgstr "Direction"
 
-#: ../src/phone.c:1820 ../src/phone.c:1939
+#: ../src/phone.c:1823 ../src/phone.c:1942
 msgid "To/From"
 msgstr "Vers/De"
 
-#: ../src/phone.c:1826 ../src/phone.c:1947
+#: ../src/phone.c:1829 ../src/phone.c:1950
 msgid "Date"
 msgstr "Date"
 
-#: ../src/phone.c:1887
+#: ../src/phone.c:1890
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:1898
+#: ../src/phone.c:1901
 msgid "New message"
 msgstr "Nouveau message"
 
-#: ../src/phone.c:1904 ../src/phone.c:2255
+#: ../src/phone.c:1907 ../src/phone.c:2258
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/phone.c:2016
+#: ../src/phone.c:2019
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/phone.c:2243
+#: ../src/phone.c:2246
 msgid "Read message"
 msgstr "Lire le message"
 
-#: ../src/phone.c:2261
+#: ../src/phone.c:2264
 msgid "Forward"
 msgstr "Transmettre"
 
-#: ../src/phone.c:2335
+#: ../src/phone.c:2338
 msgid "Phone settings"
 msgstr "Paramètres du téléphone"
 
-#: ../src/phone.c:2412
+#: ../src/phone.c:2415
 msgid "missed calls"
 msgstr "appels manqués"
 
-#: ../src/phone.c:2412
+#: ../src/phone.c:2415
 msgid "missed call"
 msgstr "appel manqué"
 
-#: ../src/phone.c:2421
+#: ../src/phone.c:2424
 msgid "new messages"
 msgstr "nouveaux messages"
 
-#: ../src/phone.c:2422
+#: ../src/phone.c:2425
 msgid "new message"
 msgstr "nouveau message"
 
-#: ../src/phone.c:2440 ../src/phone.c:3367 ../src/phone.c:3371
+#: ../src/phone.c:2443 ../src/phone.c:3379 ../src/phone.c:3383
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:2450
+#: ../src/phone.c:2453
 msgid "Status"
 msgstr "État"
 
-#: ../src/phone.c:2474
+#: ../src/phone.c:2477
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/phone.c:2493
+#: ../src/phone.c:2496
 msgid "_Read"
 msgstr "_Lire"
 
-#: ../src/phone.c:2625
+#: ../src/phone.c:2628
 msgid "Open file..."
 msgstr "Ouvrir fichier..."
 
-#: ../src/phone.c:2796
+#: ../src/phone.c:2799
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:2802
+#: ../src/phone.c:2805
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/phone.c:2808
+#: ../src/phone.c:2811
 msgid "Attach"
 msgstr "Joindre"
 
-#: ../src/phone.c:2924
+#: ../src/phone.c:2927
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
-#: ../src/phone.c:2995
+#: ../src/phone.c:2998
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:2996
+#: ../src/phone.c:2999
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:3060
+#: ../src/phone.c:3063
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:3095
+#: ../src/phone.c:3098
 msgid "Outgoing"
 msgstr "Sortant"
 
-#: ../src/phone.c:3281
+#: ../src/phone.c:3284
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:3319 ../src/phone.c:3323
+#: ../src/phone.c:3324 ../src/phone.c:3328
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:3343 ../src/phone.c:3347
+#: ../src/phone.c:3348 ../src/phone.c:3352
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:3572
+#: ../src/phone.c:3584
 msgid "Name: "
 msgstr "Nom: "
 
-#: ../src/phone.c:3581
+#: ../src/phone.c:3593
 msgid "Number: "
 msgstr "Numéro: "
 
-#: ../src/phone.c:3597
+#: ../src/phone.c:3609
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:3599
+#: ../src/phone.c:3611
 msgid "Edit contact: "
 msgstr "Modifier contact: "
 
-#: ../src/phone.c:3626
+#: ../src/phone.c:3638
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:3631
+#: ../src/phone.c:3643
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3766
+#: ../src/phone.c:3778
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3791
+#: ../src/phone.c:3803
 #, c-format
 msgid "Wrong %s"
 msgstr "Mauvais %s"
 
-#: ../src/phone.c:3800
+#: ../src/phone.c:3812
 #, c-format
 msgid "%s is valid"
 msgstr "%s valide"
 
-#: ../src/phone.c:3866
+#: ../src/phone.c:3878
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:3899
+#: ../src/phone.c:3911
 msgid "Message deleted"
 msgstr "Message effacé"
 

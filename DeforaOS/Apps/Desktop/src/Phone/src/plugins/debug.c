@@ -34,11 +34,17 @@ typedef struct _Debug
 	GtkWidget * view;
 } Debug;
 
-typedef struct _DebugPhoneEvents
+typedef struct _DebugModemEvent
+{
+	ModemEventType event;
+	char const * string;
+} DebugModemEvent;
+
+typedef struct _DebugPhoneEvent
 {
 	PhoneEventType event;
 	char const * string;
-} DebugPhoneEvents;
+} DebugPhoneEvent;
 
 
 /* variables */
@@ -58,7 +64,25 @@ static struct
 	{ NULL,			0				}
 };
 
-static DebugPhoneEvents _debug_phone_events[] =
+static DebugModemEvent _debug_modem_events[] =
+{
+	{ MODEM_EVENT_TYPE_AUTHENTICATION,	"AUTHENTICATION"	},
+	{ MODEM_EVENT_TYPE_BATTERY_LEVEL,	"BATTERY_LEVEL"		},
+	{ MODEM_EVENT_TYPE_CALL,		"CALL"			},
+	{ MODEM_EVENT_TYPE_CONNECTION,		"CONNECTION"		},
+	{ MODEM_EVENT_TYPE_CONTACT,		"CONTACT"		},
+	{ MODEM_EVENT_TYPE_CONTACT_DELETED,	"CONTACT_DELETED"	},
+	{ MODEM_EVENT_TYPE_ERROR,		"ERROR"			},
+	{ MODEM_EVENT_TYPE_MESSAGE,		"MESSAGE"		},
+	{ MODEM_EVENT_TYPE_MESSAGE_DELETED,	"MESSAGE_DELETED"	},
+	{ MODEM_EVENT_TYPE_MESSAGE_SENT,	"MESSAGE_SENT"		},
+	{ MODEM_EVENT_TYPE_MODEL,		"MODEL"			},
+	{ MODEM_EVENT_TYPE_REGISTRATION,	"REGISTRATION"		},
+	{ MODEM_EVENT_TYPE_STATUS,		"STATUS"		},
+	{ 0,					NULL			},
+};
+
+static DebugPhoneEvent _debug_phone_events[] =
 {
 	{ PHONE_EVENT_TYPE_KEY_TONE,		"KEY_TONE"		},
 	{ PHONE_EVENT_TYPE_MODEM_EVENT,		"MODEM_EVENT"		},
@@ -68,12 +92,15 @@ static DebugPhoneEvents _debug_phone_events[] =
 	{ PHONE_EVENT_TYPE_OFFLINE,		"OFFLINE"		},
 	{ PHONE_EVENT_TYPE_ONLINE,		"ONLINE"		},
 	{ PHONE_EVENT_TYPE_RESUME,		"RESUME"		},
-	{ PHONE_EVENT_TYPE_SMS_RECEIVING,	"SMS_RECEIVING"		},
-	{ PHONE_EVENT_TYPE_SMS_SENDING,		"SMS_SENDING"		},
-	{ PHONE_EVENT_TYPE_SMS_SENT,		"SMS_SENT"		},
+	{ PHONE_EVENT_TYPE_MESSAGE_RECEIVING,	"MESSAGE_RECEIVING"	},
+	{ PHONE_EVENT_TYPE_MESSAGE_SENDING,	"MESSAGE_SENDING"	},
+	{ PHONE_EVENT_TYPE_MESSAGE_SENT,	"MESSAGE_SENT"		},
 	{ PHONE_EVENT_TYPE_SPEAKER_OFF,		"SPEAKER_OFF"		},
 	{ PHONE_EVENT_TYPE_SPEAKER_ON,		"SPEAKER_ON"		},
+	{ PHONE_EVENT_TYPE_STARTED,		"STARTED"		},
 	{ PHONE_EVENT_TYPE_STARTING,		"STARTING"		},
+	{ PHONE_EVENT_TYPE_STOPPED,		"STOPPED"		},
+	{ PHONE_EVENT_TYPE_STOPPING,		"STOPPING"		},
 	{ PHONE_EVENT_TYPE_SUSPEND,		"SUSPEND"		},
 	{ PHONE_EVENT_TYPE_UNAVAILABLE,		"UNAVAILABLE"		},
 	{ PHONE_EVENT_TYPE_VIBRATOR_OFF,	"VIBRATOR_OFF"		},
@@ -231,7 +258,8 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 	char tbuf[32];
 	size_t i;
 	char ebuf[32];
-	DebugPhoneEvents * dbe = _debug_phone_events;
+	DebugModemEvent * dme = _debug_modem_events;
+	DebugPhoneEvent * dpe = _debug_phone_events;
 	GtkTreeIter iter;
 
 	date = time(NULL);
@@ -241,15 +269,24 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			snprintf(ebuf, sizeof(ebuf), "MODEM (%u)",
+			snprintf(ebuf, sizeof(ebuf), "%s (%u)", "MODEM",
 					event->modem_event.event->type);
+			for(i = 0; dme[i].string != NULL; i++)
+				if(dme[i].event == event->type)
+				{
+					snprintf(ebuf, sizeof(ebuf), "%s %s",
+							"MODEM", dme[i].string);
+					break;
+				}
 			break;
 		default:
-			for(i = 0; dbe[i].string != NULL; i++)
-				if(dbe[i].event == event->type)
+			snprintf(ebuf, sizeof(ebuf), "%s (%u)", "PHONE",
+					event->type);
+			for(i = 0; dpe[i].string != NULL; i++)
+				if(dpe[i].event == event->type)
 				{
-					snprintf(ebuf, sizeof(ebuf), "%s",
-							dbe[i].string);
+					snprintf(ebuf, sizeof(ebuf), "%s %s",
+							"PHONE", dpe[i].string);
 					break;
 				}
 			break;

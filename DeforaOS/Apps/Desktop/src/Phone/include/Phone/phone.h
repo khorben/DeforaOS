@@ -48,17 +48,17 @@ typedef enum _PhoneEncoding
 typedef enum _PhoneEventType
 {
 	PHONE_EVENT_TYPE_KEY_TONE,
+	PHONE_EVENT_TYPE_MESSAGE_RECEIVING,	/* char const *, GSMEncoding *,
+						   char **, size_t * */
+	PHONE_EVENT_TYPE_MESSAGE_SENDING,	/* char const *, GSMEncoding *,
+						   char **, size_t * */
+	PHONE_EVENT_TYPE_MESSAGE_SENT,
 	PHONE_EVENT_TYPE_MODEM_EVENT,		/* ModemEvent * event */
 	PHONE_EVENT_TYPE_NOTIFICATION_OFF,
 	PHONE_EVENT_TYPE_NOTIFICATION_ON,	/* char const * message? */
 	PHONE_EVENT_TYPE_OFFLINE,
 	PHONE_EVENT_TYPE_ONLINE,
 	PHONE_EVENT_TYPE_RESUME,
-	PHONE_EVENT_TYPE_SMS_RECEIVING,		/* char const *, GSMEncoding *,
-						   char **, size_t * */
-	PHONE_EVENT_TYPE_SMS_SENDING,		/* char const *, GSMEncoding *,
-						   char **, size_t * */
-	PHONE_EVENT_TYPE_SMS_SENT,
 	PHONE_EVENT_TYPE_SPEAKER_OFF,
 	PHONE_EVENT_TYPE_SPEAKER_ON,
 	PHONE_EVENT_TYPE_STARTED,

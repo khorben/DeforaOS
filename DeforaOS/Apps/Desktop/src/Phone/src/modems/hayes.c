@@ -1094,9 +1094,13 @@ static char * _request_unsupported(ModemPlugin * modem, ModemRequest * request)
 static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 {
 	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 
 	hayes->retry = retry;
 	hayes->source = g_idle_add(_on_reset, modem);
+	/* report as being started */
+	event->status.status = MODEM_STATUS_STARTED;
+	modem->helper->event(modem->helper->modem, event);
 	return 0;
 }
 
