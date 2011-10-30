@@ -691,10 +691,9 @@ void phone_code_enter(Phone * phone)
 			phone->en_progress = _phone_create_progress(
 					phone->en_window, buf);
 			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, TRUE);
-			/* FIXME remember the real request name */
 			modem_request_type(phone->modem,
-					MODEM_REQUEST_AUTHENTICATE, "SIM PIN",
-					NULL, code);
+					MODEM_REQUEST_AUTHENTICATE,
+					phone->en_name, NULL, code);
 			break;
 	}
 }

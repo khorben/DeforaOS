@@ -2659,7 +2659,6 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	if(event->authentication.status != MODEM_AUTHENTICATION_STATUS_OK)
 		return status;
 	/* automatically register */
-	/* XXX should really wait for the telephony application for this */
 	memset(&request, 0, sizeof(&request));
 	request.type = HAYES_REQUEST_OPERATOR_FORMAT_LONG;
 	_hayes_request(modem, &request);
@@ -2667,9 +2666,6 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	_hayes_request(modem, &request);
 	request.type = MODEM_REQUEST_REGISTRATION;
 	request.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
-	_hayes_request(modem, &request);
-	/* force a registration report */
-	request.type = HAYES_REQUEST_REGISTRATION;
 	_hayes_request(modem, &request);
 	/* report new messages */
 	request.type = HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE;
