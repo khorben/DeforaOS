@@ -908,8 +908,15 @@ int phone_event(Phone * phone, PhoneEvent * event)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_OFFLINE:
-			/* go online */
-			memset(&request, 0, sizeof(&request));
+			/* connect to the network */
+			memset(&request, 0, sizeof(request));
+			request.type = MODEM_REQUEST_CONNECTIVITY;
+			request.connectivity.enabled = 1;
+			modem_request(phone->modem, &request);
+			break;
+		case PHONE_EVENT_TYPE_ONLINE:
+			/* register to the network */
+			memset(&request, 0, sizeof(request));
 			request.type = MODEM_REQUEST_REGISTRATION;
 			request.registration.mode
 				= MODEM_REGISTRATION_MODE_AUTOMATIC;
@@ -3748,6 +3755,7 @@ static void _modem_event_contact(Phone * phone, ModemEvent * event);
 static void _modem_event_error(Phone * phone, ModemEvent * event);
 static void _modem_event_message(Phone * phone, ModemEvent * event);
 static void _modem_event_message_deleted(Phone * phone, ModemEvent * event);
+static void _modem_event_registration(Phone * phone, ModemEvent * event);
 static void _modem_event_status(Phone * phone, ModemEvent * event);
 
 static void _phone_modem_event(void * priv, ModemEvent * event)
@@ -3785,6 +3793,9 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 					phone->wr_progress);
 			_phone_info(phone, phone->wr_window, _("Message sent"),
 					NULL);
+			break;
+		case MODEM_EVENT_TYPE_REGISTRATION:
+			_modem_event_registration(phone, event);
 			break;
 		case MODEM_EVENT_TYPE_STATUS:
 			_modem_event_status(phone, event);
@@ -3917,6 +3928,31 @@ static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
 	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, FALSE);
 	phone->me_progress = _phone_progress_delete(phone->me_progress);
 	_phone_info(phone, phone->me_window, _("Message deleted"), NULL);
+}
+
+static void _modem_event_registration(Phone * phone, ModemEvent * event)
+{
+	ModemRequest request;
+
+	switch(event->registration.mode)
+	{
+		case MODEM_REGISTRATION_MODE_AUTOMATIC:
+			if(event->registration.status
+					== MODEM_REGISTRATION_STATUS_REGISTERED
+					|| event->registration.status
+					== MODEM_REGISTRATION_STATUS_SEARCHING)
+				break;
+		case MODEM_REGISTRATION_MODE_DISABLED:
+			/* register to the network */
+			memset(&request, 0, sizeof(request));
+			request.type = MODEM_REQUEST_REGISTRATION;
+			request.registration.mode
+				= MODEM_REGISTRATION_MODE_AUTOMATIC;
+			modem_request(phone->modem, &request);
+			break;
+		default:
+			break;
+	}
 }
 
 static void _modem_event_status(Phone * phone, ModemEvent * event)

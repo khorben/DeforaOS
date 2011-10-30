@@ -294,6 +294,7 @@ typedef enum _ModemRequestType
 	MODEM_REQUEST_CALL_MUTE_ENABLE,
 	MODEM_REQUEST_CALL_PRESENTATION,
 	MODEM_REQUEST_CALL_WAITING_CONTROL,
+	MODEM_REQUEST_CONNECTIVITY,
 	MODEM_REQUEST_CONTACT,
 	MODEM_REQUEST_CONTACT_DELETE,
 	MODEM_REQUEST_CONTACT_EDIT,
@@ -342,6 +343,13 @@ typedef union _ModemRequest
 		ModemRequestType type;
 		int enabled;
 	} call_presentation;
+
+	/* MODEM_REQUEST_CONNECTIVITY */
+	struct
+	{
+		ModemRequestType type;
+		int enabled;
+	} connectivity;
 
 	/* MODEM_REQUEST_CONTACT, MODEM_REQUEST_CONTACT_DELETE */
 	struct
