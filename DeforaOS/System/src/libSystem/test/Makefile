@@ -23,7 +23,7 @@ string_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 string: $(string_OBJS)
 	$(CC) -o string $(string_OBJS) $(string_LDFLAGS)
 
-test:
+test: string
 	./test.sh -P "$(PREFIX)" -- "test"
 
 string.o: string.c ../src/string.c
