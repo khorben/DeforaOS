@@ -543,7 +543,7 @@ static gboolean _profiles_on_vibrate(gpointer data)
 	if(profiles->vibrator < 0)
 	{
 		/* stop the vibrator */
-		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
+		event.type = PHONE_EVENT_TYPE_VIBRATOR_OFF;
 		helper->event(helper->phone, &event);
 		/* vibrate again only if necessary */
 		profiles->vibrator = (-profiles->vibrator) - 1;
