@@ -556,7 +556,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
 		_on_request_message_send },
 	{ MODEM_REQUEST_REGISTRATION,			NULL,
-		_on_request_generic },
+		_on_request_registration },
 	{ MODEM_REQUEST_UNSUPPORTED,			NULL,
 		_on_request_unsupported }
 };
