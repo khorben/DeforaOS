@@ -880,7 +880,7 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 		_hayes_set_mode(modem, HAYES_MODE_INIT);
 		return NULL;
 	}
-	return strdup("ATH");
+	return strdup("AT+CHUP");
 }
 
 static char * _request_attention_connectivity(ModemPlugin * modem, int enabled)
@@ -2634,7 +2634,6 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 	if((answer = _hayes_command_get_answer(command)) == NULL)
 		return HCS_ERROR;
 	while(answer != NULL)
-		/* FIXME also handle BUSY/NO CARRIER/CONNECT/etc */
 		if(strncmp(answer, "OK\n", 3) == 0
 				|| strncmp(answer, "OK\r\n", 4) == 0)
 			return HCS_SUCCESS;
