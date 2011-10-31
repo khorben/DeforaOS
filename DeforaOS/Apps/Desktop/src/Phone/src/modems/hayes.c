@@ -880,6 +880,12 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 		_hayes_set_mode(modem, HAYES_MODE_INIT);
 		return NULL;
 	}
+	/* return "ATH" if currently ringing */
+	event = &hayes->events[MODEM_EVENT_TYPE_CALL];
+	if(event->call.direction == MODEM_CALL_DIRECTION_INCOMING
+			&& event->call.status == MODEM_CALL_STATUS_RINGING)
+		return strdup("ATH");
+	/* force all calls to terminate */
 	return strdup("AT+CHUP");
 }
 
@@ -2988,12 +2994,15 @@ static void _on_trigger_clip(ModemPlugin * modem, char const * answer)
 /* on_trigger_cme_error */
 static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 {
+	ModemPluginHelper * helper = modem->helper;
 	Hayes * hayes = modem->priv;
 	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
 	unsigned int u;
 	HayesCommand * p;
+	ModemEvent * event;
+	ModemRequest request;
 
 	if(command != NULL)
 		_hayes_command_set_status(command, HCS_ERROR);
@@ -3017,6 +3026,20 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			if(hayes->source == 0)
 				hayes->source = g_timeout_add(1000,
 						_on_queue_timeout, modem);
+			break;
+		case 32: /* emergency calls only */
+			event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
+			free(hayes->registration_operator);
+			hayes->registration_operator = strdup("SOS");
+			event->registration._operator
+				= hayes->registration_operator;
+			event->registration.status
+				= MODEM_REGISTRATION_STATUS_REGISTERED;
+			helper->event(helper->modem, event);
+			/* verify the SIM card */
+			memset(&request, 0, sizeof(request));
+			request.type = HAYES_REQUEST_SIM_PIN_VALID;
+			_hayes_request(modem, &request);
 			break;
 		default: /* FIXME implement the rest */
 		case 4:  /* operation not supported */
@@ -3561,6 +3584,7 @@ static void _on_trigger_cops(ModemPlugin * modem, char const * answer)
 /* on_trigger_cpas */
 static void _on_trigger_cpas(ModemPlugin * modem, char const * answer)
 {
+	ModemPluginHelper * helper = modem->helper;
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 	unsigned int u;
@@ -3577,12 +3601,12 @@ static void _on_trigger_cpas(ModemPlugin * modem, char const * answer)
 			event->connection.connected = 0;
 			event->connection.in = 0;
 			event->connection.out = 0;
-			modem->helper->event(modem->helper->modem, event);
+			helper->event(helper->modem, event);
 			break;
 		case 3:
 			event->call.status = MODEM_CALL_STATUS_RINGING;
 			/* report event */
-			modem->helper->event(modem->helper->modem, event);
+			helper->event(helper->modem, event);
 			break;
 		case 4:
 			event->call.status = MODEM_CALL_STATUS_ACTIVE;
@@ -3678,10 +3702,15 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 	ModemRequest request;
 
 	res = sscanf(answer, "%u,%u,%X,%X", &u[0], &u[1], &u[2], &u[3]);
+	if(res == 1)
+		res = sscanf(answer, "%u,\"%X\",\"%X\"", &u[1], &u[2], &u[3]);
+	else if(res == 2)
+		res = sscanf(answer, "%u,%u,\"%X\",\"%X\"", &u[0], &u[1], &u[2],
+				&u[3]);
+	else if(res == 3)
+		res = sscanf(answer, "%u,%X,%X", &u[1], &u[2], &u[3]);
 	if(res == 0)
 		return;
-	if(res == 1 || res == 3)
-		memmove(&u[1], u, sizeof(*u) * 3);
 	u[0] = event->registration.mode;
 	event->registration.roaming = 0;
 	switch(u[1])

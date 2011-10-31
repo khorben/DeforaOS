@@ -258,7 +258,8 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 			if(direction == MODEM_CALL_DIRECTION_INCOMING
 					&& status == MODEM_CALL_STATUS_RINGING)
 				_profiles_play(plugin, "ringtone", 10);
-			else if(status == MODEM_CALL_STATUS_NONE)
+			else if(status == MODEM_CALL_STATUS_NONE
+					|| status == MODEM_CALL_STATUS_ACTIVE)
 				_profiles_play(plugin, NULL, 0);
 			break;
 		default:

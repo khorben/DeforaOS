@@ -1471,26 +1471,28 @@ static void _show_call_window(Phone * phone)
 	phone->ca_number = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_number, FALSE, TRUE, 0);
 	/* buttons */
+	hbox = gtk_hbox_new(FALSE, 4);
 	/* answer */
 	phone->ca_answer = _phone_create_button("call-start", _("_Answer"));
 	g_signal_connect_swapped(G_OBJECT(phone->ca_answer), "clicked",
 			G_CALLBACK(on_phone_call_answer), phone);
-	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_answer, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_answer, TRUE, TRUE, 0);
 	/* hangup */
 	phone->ca_hangup = _phone_create_button("call-stop", _("_Hangup"));
 	g_signal_connect_swapped(G_OBJECT(phone->ca_hangup), "clicked",
 			G_CALLBACK(on_phone_call_hangup), phone);
-	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_hangup, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_hangup, TRUE, TRUE, 0);
 	/* reject */
 	phone->ca_reject = _phone_create_button("call-stop", _("_Reject"));
 	g_signal_connect_swapped(G_OBJECT(phone->ca_reject), "clicked",
 			G_CALLBACK(on_phone_call_reject), phone);
-	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_reject, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_reject, TRUE, TRUE, 0);
 	/* close */
 	phone->ca_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect_swapped(G_OBJECT(phone->ca_close), "clicked",
 			G_CALLBACK(on_phone_call_close), phone);
-	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_close, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_close, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* volume bar */
 	hbox = gtk_hbox_new(FALSE, 4);
 	phone->ca_image = gtk_image_new_from_icon_name(
