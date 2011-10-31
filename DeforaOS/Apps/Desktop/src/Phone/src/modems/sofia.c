@@ -35,7 +35,27 @@ typedef struct _Sofia
 	su_root_t * root;
 	guint source;
 	nua_t * nua;
+	nua_handle_t * handle;
 } Sofia;
+
+typedef enum _SofiaConfig
+{
+	SOFIA_CONFIG_REGISTRAR = 0,
+	SOFIA_CONFIG_USERNAME,
+	SOFIA_CONFIG_PROXY
+} SofiaConfig;
+#define SOFIA_CONFIG_LAST SOFIA_CONFIG_PROXY
+#define SOFIA_CONFIG_COUNT (SOFIA_CONFIG_LAST + 1)
+
+
+/* variables */
+static ModemConfig _sofia_config[SOFIA_CONFIG_COUNT + 1] =
+{
+	{ "registrar",	"Registrar",	MCT_STRING,	NULL	},
+	{ "username",	"Username",	MCT_STRING,	NULL	},
+	{ "proxy",	"Proxy",	MCT_STRING,	NULL	},
+	{ NULL,		NULL,		MCT_NONE,	NULL	},
+};
 
 
 /* prototypes */
@@ -58,7 +78,7 @@ ModemPlugin plugin =
 	NULL,
 	"Sofia",
 	NULL,
-	NULL,
+	_sofia_config,
 	_sofia_init,
 	_sofia_destroy,
 	_sofia_start,
@@ -115,16 +135,22 @@ static int _sofia_destroy(ModemPlugin * modem)
 static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 {
 	Sofia * sofia = modem->priv;
+	char const * registrar = modem->config[SOFIA_CONFIG_REGISTRAR].value;
+	char const * proxy = modem->config[SOFIA_CONFIG_PROXY].value;
+	char const * username = modem->config[SOFIA_CONFIG_USERNAME].value;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(sofia->nua != NULL) /* already started */
 		return 0;
-	if((sofia->nua = nua_create(sofia->root, _sofia_callback, sofia,
+	if((sofia->nua = nua_create(sofia->root, _sofia_callback, modem,
 					TAG_NULL())) == NULL)
 		return -1;
-	nua_set_params(sofia->nua, TAG_NULL());
+	nua_set_params(sofia->nua, NUTAG_REGISTRAR(registrar),
+			NUTAG_PROXY(proxy), TAG_NULL());
+	sofia->handle = nua_handle(sofia->nua, modem, TAG_NULL());
+	nua_register(sofia->handle, NUTAG_M_USERNAME(username), TAG_NULL());
 	return 0;
 }
 
@@ -137,9 +163,13 @@ static int _sofia_stop(ModemPlugin * modem)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(sofia->handle != NULL)
+		nua_handle_destroy(sofia->handle);
+	sofia->handle = NULL;
 	if(sofia->nua != NULL)
 	{
 		nua_shutdown(sofia->nua);
+		su_root_run(sofia->root);
 		nua_destroy(sofia->nua);
 	}
 	sofia->nua = NULL;
@@ -159,6 +189,10 @@ static int _sofia_request(ModemPlugin * modem, ModemRequest * request)
 			return _request_call(modem, request);
 		case MODEM_REQUEST_MESSAGE_SEND:
 			return _request_message_send(modem, request);
+#ifndef DEBUG
+		default:
+			break;
+#endif
 	}
 	return 0;
 }
@@ -209,6 +243,9 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 		nua_t * nua, nua_magic_t * magic, nua_handle_t * nh,
 		nua_hmagic_t * hmagic, sip_t const * sip, tagi_t tags[])
 {
+	ModemPlugin * modem = magic;
+	Sofia * sofia = modem->priv;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
@@ -233,12 +270,24 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 				/* FIXME report error */
 				fprintf(stderr, "%03d %s\n", status, phrase);
 			break;
-#ifdef DEBUG
+		case nua_r_register:
+			/* FIXME implement */
+			fprintf(stderr, "register: %03d %s\n", status, phrase);
+			break;
+		case nua_r_set_params:
+			/* FIXME implement */
+			break;
+		case nua_r_shutdown:
+			/* exit the background loop when ready */
+			if(status == 200)
+				su_root_break(sofia->root);
+			break;
 		default:
+#ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() %s%d%s: %03d \"%s\"\n",
 					__func__, "event ", event,
 					" not handled: ", status, phrase);
-			break;
 #endif
+			break;
 	}
 }
