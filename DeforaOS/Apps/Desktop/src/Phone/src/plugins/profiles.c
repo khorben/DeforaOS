@@ -134,10 +134,6 @@ PhonePlugin plugin =
 /* private */
 /* functions */
 /* profiles_init */
-#if 0
-static gboolean _init_idle(gpointer data);
-#endif
-
 static int _profiles_init(PhonePlugin * plugin)
 {
 	Profiles * profiles;
@@ -185,27 +181,8 @@ static int _profiles_init(PhonePlugin * plugin)
 	}
 	pa_context_connect(profiles->pac, NULL, 0, NULL);
 	pa_threaded_mainloop_start(profiles->pam);
-#if 0
-	profiles->source = g_idle_add(_init_idle, plugin);
-#endif
 	return 0;
 }
-
-#if 0
-static gboolean _init_idle(gpointer data)
-{
-	PhonePlugin * plugin = data;
-	Profiles * profiles = plugin->priv;
-	PhoneEvent event;
-
-	/* FIXME may already be online, may not be desired */
-	/* FIXME ask to go online if currently offline */
-	event.type = PHONE_EVENT_TYPE_ONLINE;
-	plugin->helper->event(plugin->helper->phone, &event);
-	profiles->source = 0;
-	return FALSE;
-}
-#endif
 
 
 /* profiles_destroy */
@@ -248,13 +225,6 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_MESSAGE_RECEIVED:
 			_profiles_play(plugin, "message", 2);
 			break;
-#if 0
-		case PHONE_EVENT_TYPE_SIM_PIN_VALID:
-		case PHONE_EVENT_TYPE_SMS_SENT:
-			/* FIXME beep in general profile? */
-			break;
-		case PHONE_EVENT_TYPE_CALL_OUTGOING:
-#endif
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _event_modem_event(plugin,
 					event->modem_event.event);
@@ -322,70 +292,6 @@ static int _event_stopping(PhonePlugin * plugin)
 	/* prevent stopping the modem except if we're going offline */
 	return definition->online ? 1 : 0;
 }
-
-#if 0
-static void _event_call_incoming_do(PhonePlugin * plugin)
-{
-	Profiles * profiles = plugin->priv;
-	PhonePluginHelper * helper = plugin->helper;
-	ProfileDefinition * definition = &profiles->profiles[
-		profiles->profiles_cur];
-	PhoneEvent event;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
-		profiles->pao = pa_context_play_sample(profiles->pac,
-				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
-	if(definition->vibrate && profiles->vibrator == 0)
-	{
-		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
-		helper->event(helper->phone, &event);
-		profiles->vibrator = 1;
-	}
-	if(profiles->source == 0)
-		profiles->source = g_timeout_add(500,
-				_event_call_incoming_timeout, plugin);
-}
-#endif
-
-#if 0
-static gboolean _event_call_incoming_timeout(gpointer data)
-{
-	PhonePlugin * plugin = data;
-	Profiles * profiles = plugin->priv;
-	PhonePluginHelper * helper = plugin->helper;
-	PhoneEvent event;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	if(profiles->vibrator != 0) /* vibrating with a pause */
-	{
-		if(profiles->vibrator++ == 1)
-		{
-			event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
-			helper->event(helper->phone, &event);
-		}
-		else if((profiles->vibrator % 5) == 0)
-		{
-			event.type = PHONE_EVENT_TYPE_VIBRATOR_OFF;
-			helper->event(helper->phone, &event);
-			profiles->vibrator = 1;
-		}
-	}
-	if(profiles->pao != NULL && pa_operation_get_state(profiles->pao)
-			!= PA_OPERATION_RUNNING)
-	{
-		pa_operation_unref(profiles->pao);
-		/* ring again */
-		profiles->pao = pa_context_play_sample(profiles->pac,
-				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
-	}
-	return TRUE;
-}
-#endif
 
 
 /* profiles_settings */
