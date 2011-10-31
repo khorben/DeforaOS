@@ -2144,7 +2144,6 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 {
 	ModemPlugin * modem = priv;
 	Hayes * hayes = modem->priv;
-	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 	ModemRequest request;
 
 #ifdef DEBUG
@@ -2858,7 +2857,6 @@ static void _on_trigger_cfun(ModemPlugin * modem, char const * answer)
 {
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-	ModemRequest request;
 	unsigned int u;
 
 	if(sscanf(answer, "%u", &u) != 1)
