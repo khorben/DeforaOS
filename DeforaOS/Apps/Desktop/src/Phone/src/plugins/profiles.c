@@ -231,23 +231,14 @@ static void _profiles_destroy(PhonePlugin * plugin)
 
 /* profiles_event */
 static int _event_key_tone(PhonePlugin * plugin);
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
 static int _event_starting(PhonePlugin * plugin);
 static int _event_stopping(PhonePlugin * plugin);
-#if 0
-static void _event_call_incoming_do(PhonePlugin * plugin);
-static gboolean _event_call_incoming_timeout(gpointer data);
-#endif
 
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 {
 	switch(event->type)
 	{
-		/* FIXME implement again */
-#if 0
-		case PHONE_EVENT_TYPE_CALL_INCOMING:
-			_event_call_incoming_do(plugin);
-			break;
-#endif
 		case PHONE_EVENT_TYPE_KEY_TONE:
 			return _event_key_tone(plugin);
 		case PHONE_EVENT_TYPE_STARTING:
@@ -263,19 +254,10 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 			/* FIXME beep in general profile? */
 			break;
 		case PHONE_EVENT_TYPE_CALL_OUTGOING:
-		case PHONE_EVENT_TYPE_CALL_TERMINATED:
-		case PHONE_EVENT_TYPE_CALL_ESTABLISHED:
-			helper->event(helper->phone, PHONE_EVENT_TYPE_VIBRATOR_OFF);
-			/* cancel the incoming call notification */
-			if(profiles->source != 0)
-				g_source_remove(profiles->source);
-			profiles->source = 0;
-			if(profiles->pao != NULL)
-				pa_operation_cancel(profiles->pao);
-			profiles->pao = NULL;
-			profiles->vibrator = 0;
-			break;
 #endif
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			return _event_modem_event(plugin,
+					event->modem_event.event);
 		default: /* not relevant */
 			break;
 	}
@@ -284,16 +266,34 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 
 static int _event_key_tone(PhonePlugin * plugin)
 {
-	Profiles * profiles = plugin->priv;
-	ProfileDefinition * definition = &profiles->profiles[
-		profiles->profiles_cur];
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
-		profiles->pao = pa_context_play_sample(profiles->pac,
-				"keytone", NULL, PA_VOLUME_NORM, NULL, NULL);
+	_profiles_play(plugin, "keytone", 1);
+	return 0;
+}
+
+static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
+{
+	ModemCallDirection direction;
+	ModemCallStatus status;
+
+	switch(event->type)
+	{
+		case MODEM_EVENT_TYPE_CALL:
+			if(event->call.call_type != MODEM_CALL_TYPE_VOICE)
+				break;
+			direction = event->call.direction;
+			status = event->call.status;
+			if(direction == MODEM_CALL_DIRECTION_INCOMING
+					&& status == MODEM_CALL_STATUS_RINGING)
+				_profiles_play(plugin, "ringtone", 10);
+			else if(status == MODEM_CALL_STATUS_NONE)
+				_profiles_play(plugin, NULL, 0);
+			break;
+		default:
+			break;
+	}
 	return 0;
 }
 
@@ -554,12 +554,32 @@ static void _profiles_play(PhonePlugin * plugin, char const * sample,
 		profiles->profiles_cur];
 	PhoneEvent event;
 
-	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
+	if(sample == NULL)
+	{
+		/* cancel the current sample */
+		if(profiles->pao != NULL)
+			pa_operation_cancel(profiles->pao);
+		profiles->pao = NULL;
+	}
+	else if(definition->volume != PROFILE_VOLUME_SILENT
+			&& profiles->pao == NULL)
 		/* FIXME apply the proper volume */
 		profiles->pao = pa_context_play_sample(profiles->pac, sample,
 				NULL, PA_VOLUME_NORM, NULL, NULL);
 	profiles->vibrator = max(profiles->vibrator, vibrator);
-	if(definition->vibrate && profiles->vibrator != 0)
+	if(vibrator == 0)
+	{
+		/* stop the vibrator */
+		memset(&event, 0, sizeof(event));
+		event.type = PHONE_EVENT_TYPE_VIBRATOR_OFF;
+		helper->event(helper->phone, &event);
+		/* remove the callback */
+		if(profiles->source != 0)
+			g_source_remove(profiles->source);
+		profiles->source = 0;
+		profiles->vibrator = 0;
+	}
+	else if(definition->vibrate && profiles->vibrator != 0)
 	{
 		memset(&event, 0, sizeof(event));
 		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
