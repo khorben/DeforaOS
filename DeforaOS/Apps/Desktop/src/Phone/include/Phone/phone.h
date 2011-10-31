@@ -48,6 +48,7 @@ typedef enum _PhoneEncoding
 typedef enum _PhoneEventType
 {
 	PHONE_EVENT_TYPE_KEY_TONE,
+	PHONE_EVENT_TYPE_MESSAGE_RECEIVED,
 	PHONE_EVENT_TYPE_MESSAGE_RECEIVING,	/* char const *, GSMEncoding *,
 						   char **, size_t * */
 	PHONE_EVENT_TYPE_MESSAGE_SENDING,	/* char const *, GSMEncoding *,

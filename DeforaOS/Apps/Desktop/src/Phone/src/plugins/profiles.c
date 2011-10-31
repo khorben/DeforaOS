@@ -26,6 +26,7 @@
 #include <System.h>
 #include "Phone.h"
 #include "../../config.h"
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -107,7 +108,12 @@ static void _profiles_settings(PhonePlugin * plugin);
 
 /* useful */
 static void _profiles_apply(PhonePlugin * plugin, ProfileType type);
+static void _profiles_play(PhonePlugin * plugin, char const * sound,
+		int vibrate);
 static void _profiles_switch(PhonePlugin * plugin, ProfileType type);
+
+/* callbacks */
+static gboolean _profiles_on_vibrate(gpointer data);
 
 
 /* public */
@@ -248,14 +254,10 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 			return _event_starting(plugin);
 		case PHONE_EVENT_TYPE_STOPPING:
 			return _event_stopping(plugin);
-#if 0
-		case PHONE_EVENT_TYPE_SMS_RECEIVED:
-			if(profiles->pao == NULL)
-				/* FIXME else queue the notification */
-				profiles->pao = pa_context_play_sample(
-						profiles->pac, "message", NULL,
-						PA_VOLUME_NORM, NULL, NULL);
+		case PHONE_EVENT_TYPE_MESSAGE_RECEIVED:
+			_profiles_play(plugin, "message", 2);
 			break;
+#if 0
 		case PHONE_EVENT_TYPE_SIM_PIN_VALID:
 		case PHONE_EVENT_TYPE_SMS_SENT:
 			/* FIXME beep in general profile? */
@@ -542,6 +544,34 @@ static void _profiles_apply(PhonePlugin * plugin, ProfileType type)
 }
 
 
+/* profiles_play */
+static void _profiles_play(PhonePlugin * plugin, char const * sample,
+		int vibrator)
+{
+	PhonePluginHelper * helper = plugin->helper;
+	Profiles * profiles = plugin->priv;
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
+	PhoneEvent event;
+
+	if(definition->volume != PROFILE_VOLUME_SILENT && profiles->pao == NULL)
+		/* FIXME apply the proper volume */
+		profiles->pao = pa_context_play_sample(profiles->pac, sample,
+				NULL, PA_VOLUME_NORM, NULL, NULL);
+	profiles->vibrator = max(profiles->vibrator, vibrator);
+	if(definition->vibrate && profiles->vibrator != 0)
+	{
+		memset(&event, 0, sizeof(event));
+		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
+		helper->event(helper->phone, &event);
+		if(profiles->source != 0)
+			g_source_remove(profiles->source);
+		profiles->source = g_timeout_add(500, _profiles_on_vibrate,
+				plugin);
+	}
+}
+
+
 /* profiles_switch */
 static void _profiles_switch(PhonePlugin * plugin, ProfileType type)
 {
@@ -571,4 +601,39 @@ static void _profiles_switch(PhonePlugin * plugin, ProfileType type)
 		pevent.type = PHONE_EVENT_TYPE_STARTING;
 		helper->event(helper->phone, &pevent);
 	}
+}
+
+
+/* callbacks */
+/* profiles_on_vibrate */
+static gboolean _profiles_on_vibrate(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	PhonePluginHelper * helper = plugin->helper;
+	Profiles * profiles = plugin->priv;
+	PhoneEvent event;
+
+	memset(&event, 0, sizeof(event));
+	if(profiles->vibrator < 0)
+	{
+		/* stop the vibrator */
+		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
+		helper->event(helper->phone, &event);
+		/* vibrate again only if necessary */
+		profiles->vibrator = (-profiles->vibrator) - 1;
+	}
+	else if(profiles->vibrator > 0)
+	{
+		/* start the vibrator */
+		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
+		helper->event(helper->phone, &event);
+		/* pause the vibrator next time */
+		profiles->vibrator = -profiles->vibrator;
+	}
+	else
+	{
+		profiles->source = 0;
+		return FALSE;
+	}
+	return TRUE;
 }

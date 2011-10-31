@@ -3873,6 +3873,7 @@ static void _modem_event_message(Phone * phone, ModemEvent * event)
 	size_t length;
 	char * content;
 	char const * p;
+	PhoneEvent pevent;
 
 	encoding = event->message.encoding;
 	length = event->message.length;
@@ -3904,7 +3905,12 @@ static void _modem_event_message(Phone * phone, ModemEvent * event)
 			break;
 	}
 	if(event->message.status == MODEM_MESSAGE_STATUS_NEW)
+	{
+		memset(&pevent, 0, sizeof(pevent));
+		pevent.type = PHONE_EVENT_TYPE_MESSAGE_RECEIVED;
+		phone_event(phone, &pevent);
 		phone_show_status(phone, TRUE, 0, 1);
+	}
 }
 
 static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
