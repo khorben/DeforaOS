@@ -168,9 +168,9 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
 	vbox = widget;
-	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* gsm queue */
 	hbox = gtk_hbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	debug->gsm = gtk_combo_box_new_text();
 	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
