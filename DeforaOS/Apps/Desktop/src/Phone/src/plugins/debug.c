@@ -162,12 +162,8 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_window_set_title(GTK_WINDOW(debug->window), plugin->name);
 	g_signal_connect_swapped(debug->window, "delete-event", G_CALLBACK(
 				_on_debug_closex), plugin);
-	vbox = gtk_vbox_new(FALSE, 4);
 	/* vbox */
-	widget = gtk_vbox_new(FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
-	vbox = widget;
+	vbox = gtk_vbox_new(FALSE, 0);
 	/* gsm queue */
 	hbox = gtk_hbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
@@ -207,6 +203,7 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), debug->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
 	gtk_widget_show_all(debug->window);
 	return 0;
 }
