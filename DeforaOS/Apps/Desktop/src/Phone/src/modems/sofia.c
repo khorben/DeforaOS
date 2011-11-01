@@ -216,6 +216,7 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 		return -modem->helper->error(modem->helper->modem,
 				"Cannot create operation handle", 1);
 	nua_invite(op->handle, /* other tags as needed ... */ TAG_END());
+	/* XXX free url and op? */
 	return 0;
 }
 
@@ -245,6 +246,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 {
 	ModemPlugin * modem = magic;
 	Sofia * sofia = modem->priv;
+	ModemEvent mevent;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -253,29 +255,52 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 	{
 		case nua_i_error:
 			/* FIXME report error */
-			fprintf(stderr, "%03d %s\n", status, phrase);
+			fprintf(stderr, "i_error %03d %s\n", status, phrase);
 			break;
 		case nua_i_notify:
 			/* FIXME report event */
-			fprintf(stderr, "%03d %s\n", status, phrase);
+			fprintf(stderr, "i_notify %03d %s\n", status, phrase);
 			break;
 		case nua_i_state:
 			/* FIXME report event */
-			fprintf(stderr, "%03d %s\n", status, phrase);
+			fprintf(stderr, "i_state %03d %s\n", status, phrase);
 			break;
 		case nua_r_invite:
 			if(status == 200)
 				nua_ack(nh, TAG_END());
 			else
 				/* FIXME report error */
-				fprintf(stderr, "%03d %s\n", status, phrase);
+				fprintf(stderr, "r_invite %03d %s\n", status,
+						phrase);
+			break;
+		case nua_r_message:
+			/* FIXME report event */
+			fprintf(stderr, "r_message %03d %s\n", status, phrase);
 			break;
 		case nua_r_register:
-			/* FIXME implement */
-			fprintf(stderr, "register: %03d %s\n", status, phrase);
+			memset(&mevent, 0, sizeof(mevent));
+			mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
+			mevent.registration.mode
+				= MODEM_REGISTRATION_MODE_AUTOMATIC;
+			if(status == 200)
+				mevent.registration.status
+					= MODEM_REGISTRATION_STATUS_REGISTERED;
+			else if(status == 405)
+				mevent.registration.status
+					= MODEM_REGISTRATION_STATUS_DENIED;
+			else if(status >= 400 && status <= 499)
+				mevent.registration.status
+					= MODEM_REGISTRATION_STATUS_NOT_SEARCHING;
+			modem->helper->event(modem->helper->modem, &mevent);
+			/* FIXME report errors */
+			fprintf(stderr, "r_register %03d %s\n", status, phrase);
 			break;
 		case nua_r_set_params:
+			if(status == 200)
+				break;
 			/* FIXME implement */
+			fprintf(stderr, "r_set_params %03d %s\n", status,
+					phrase);
 			break;
 		case nua_r_shutdown:
 			/* exit the background loop when ready */

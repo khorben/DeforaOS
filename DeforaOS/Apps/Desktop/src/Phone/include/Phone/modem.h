@@ -250,6 +250,7 @@ typedef union _ModemEvent
 	{
 		ModemEventType type;
 		unsigned int id;
+		/* FIXME add a field for errors? */
 	} message_deleted, message_sent;
 
 	/* MODEM_EVENT_TYPE_MODEL */

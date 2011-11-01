@@ -181,7 +181,7 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 					? "Connected" : "Not connected",
 					event->connection.in,
 					event->connection.out);
-			return 0;
+			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			gprs->roaming = event->registration.roaming;
 			if(gprs->active != FALSE)
@@ -191,7 +191,7 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 				break;
 			gprs->active = TRUE;
 			/* FIXME optionally force GPRS registration */
-			return 0;
+			break;
 		default:
 			break;
 	}

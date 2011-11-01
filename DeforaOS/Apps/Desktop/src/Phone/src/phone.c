@@ -904,19 +904,15 @@ int phone_event(Phone * phone, PhoneEvent * event)
 			if(ret == 0)
 				ret = modem_start(phone->modem);
 			if(ret == 0)
-			{
-				event->type = PHONE_EVENT_TYPE_STARTED;
-				phone_event(phone, event);
-			}
+				phone_event_type(phone,
+						PHONE_EVENT_TYPE_STARTED);
 			break;
 		case PHONE_EVENT_TYPE_STOPPING:
 			if(ret == 0)
 				ret = modem_stop(phone->modem);
 			if(ret == 0)
-			{
-				event->type = PHONE_EVENT_TYPE_STOPPED;
-				phone_event(phone, event);
-			}
+				phone_event_type(phone,
+						PHONE_EVENT_TYPE_STOPPED);
 			break;
 		default:
 			break;
@@ -2780,6 +2776,7 @@ static void _on_system_ok(gpointer data)
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
 						config[i].name)) == NULL)
 			continue;
+		/* FIXME "hayes" is still hard-coded */
 		switch(config[i].type)
 		{
 			case MCT_NONE: /* XXX should not happen */
@@ -2816,10 +2813,10 @@ static void _on_system_ok(gpointer data)
 		}
 	}
 	_phone_config_save(phone);
-	if(modem_stop(phone->modem) != 0)
-		error_print(PACKAGE);
-	else if(modem_start(phone->modem) != 0)
-		error_print(PACKAGE);
+	/* restart the phone */
+	phone_event_type(phone, PHONE_EVENT_TYPE_STOPPING); /* ignore errors */
+	modem_stop(phone->modem);
+	phone_event_type(phone, PHONE_EVENT_TYPE_STARTING);
 }
 
 
@@ -3038,6 +3035,7 @@ void phone_write_count_buffer(Phone * phone)
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 	if((cnt = gtk_text_buffer_get_char_count(tbuf)) < 0)
 		return;
+	/* FIXME this only applies to the "hayes" plug-in */
 	if(cnt <= max)
 	{
 		cur_cnt = cnt;

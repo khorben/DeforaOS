@@ -113,7 +113,7 @@ static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event)
 			number = event->modem_event.event->call.number;
 			break;
 		default:
-			break;
+			return 0;
 	}
 	if(number == NULL)
 		return 0;
