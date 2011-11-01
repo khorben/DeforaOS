@@ -199,7 +199,11 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 			request.call.anonymous = va_arg(ap, int);
 			break;
 		case MODEM_REQUEST_CALL_PRESENTATION:
-			request.call_presentation.enabled = va_arg(ap, int);
+			request.call_presentation.enabled = va_arg(ap,
+					unsigned int);
+			break;
+		case MODEM_REQUEST_CONNECTIVITY:
+			request.connectivity.enabled = va_arg(ap, unsigned int);
 			break;
 		case MODEM_REQUEST_CONTACT:
 			request.contact.id = va_arg(ap, unsigned int);
@@ -231,7 +235,7 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 			request.registration.mode = va_arg(ap,
 					ModemRegistrationMode);
 			break;
-		default: /* XXX unknown request type */
+		default:
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s(%u) %s\n", __func__, type,
 					"Unsupported request type");

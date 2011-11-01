@@ -473,7 +473,6 @@ static gboolean _new_idle(gpointer data)
 {
 	Phone * phone = data;
 	char const * plugins;
-	PhoneEvent event;
 
 	phone->source = 0;
 	phone_show_call(phone, FALSE);
@@ -491,9 +490,7 @@ static gboolean _new_idle(gpointer data)
 		plugins = "systray";
 	_idle_load_plugins(phone, plugins);
 	/* try to go online */
-	memset(&event, 0, sizeof(event));
-	event.type = PHONE_EVENT_TYPE_STARTING;
-	phone_event(phone, &event);
+	phone_event_type(phone, PHONE_EVENT_TYPE_STARTING);
 	return FALSE;
 }
 
@@ -555,11 +552,7 @@ static void _idle_load_plugins(Phone * phone, char const * plugins)
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
-	PhoneEvent event;
-
-	memset(&event, 0, sizeof(event));
-	event.type = PHONE_EVENT_TYPE_STOPPING;
-	phone_event(phone, &event); /* ignore errors */
+	phone_event_type(phone, PHONE_EVENT_TYPE_STOPPING); /* ignore errors */
 	if(phone->modem != NULL)
 		modem_stop(phone->modem);
 	phone_unload_all(phone);
@@ -620,7 +613,6 @@ void phone_call_mute(Phone * phone, gboolean mute)
 /* phone_call_reject */
 void phone_call_reject(Phone * phone)
 {
-	/* XXX reject seemed to work better than hangup */
 	modem_request_type(phone->modem, MODEM_REQUEST_CALL_HANGUP);
 }
 
@@ -628,24 +620,15 @@ void phone_call_reject(Phone * phone)
 /* phone_call_set_volume */
 void phone_call_set_volume(Phone * phone, gdouble volume)
 {
-	PhoneEvent event;
-
-	memset(&event, 0, sizeof(event));
-	event.type = PHONE_EVENT_TYPE_VOLUME_SET;
-	event.volume_set.level = volume;
-	phone_event(phone, &event);
+	phone_event_type(phone, PHONE_EVENT_TYPE_VOLUME_SET, volume);
 }
 
 
 /* phone_call_speaker */
 void phone_call_speaker(Phone * phone, gboolean speaker)
 {
-	PhoneEvent event;
-
-	memset(&event, 0, sizeof(event));
-	event.type = speaker ? PHONE_EVENT_TYPE_SPEAKER_ON
-		: PHONE_EVENT_TYPE_SPEAKER_OFF;
-	phone_event(phone, &event);
+	phone_event_type(phone, speaker ? PHONE_EVENT_TYPE_SPEAKER_ON
+			: PHONE_EVENT_TYPE_SPEAKER_OFF);
 }
 
 
@@ -893,7 +876,6 @@ int phone_event(Phone * phone, PhoneEvent * event)
 	int ret = 0;
 	size_t i;
 	PhonePlugin * plugin;
-	ModemRequest request;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event->type);
@@ -909,31 +891,91 @@ int phone_event(Phone * phone, PhoneEvent * event)
 	{
 		case PHONE_EVENT_TYPE_OFFLINE:
 			/* connect to the network */
-			memset(&request, 0, sizeof(request));
-			request.type = MODEM_REQUEST_CONNECTIVITY;
-			request.connectivity.enabled = 1;
-			modem_request(phone->modem, &request);
+			modem_request_type(phone->modem,
+					MODEM_REQUEST_CONNECTIVITY, 1);
 			break;
 		case PHONE_EVENT_TYPE_ONLINE:
 			/* register to the network */
-			memset(&request, 0, sizeof(request));
-			request.type = MODEM_REQUEST_REGISTRATION;
-			request.registration.mode
-				= MODEM_REGISTRATION_MODE_AUTOMATIC;
-			modem_request(phone->modem, &request);
+			modem_request_type(phone->modem,
+					MODEM_REQUEST_REGISTRATION,
+					MODEM_REGISTRATION_MODE_AUTOMATIC);
 			break;
 		case PHONE_EVENT_TYPE_STARTING:
 			if(ret == 0)
-				modem_start(phone->modem);
+				ret = modem_start(phone->modem);
+			if(ret == 0)
+			{
+				event->type = PHONE_EVENT_TYPE_STARTED;
+				phone_event(phone, event);
+			}
 			break;
 		case PHONE_EVENT_TYPE_STOPPING:
 			if(ret == 0)
-				modem_stop(phone->modem);
+				ret = modem_stop(phone->modem);
+			if(ret == 0)
+			{
+				event->type = PHONE_EVENT_TYPE_STOPPED;
+				phone_event(phone, event);
+			}
 			break;
 		default:
 			break;
 	}
 	return ret;
+}
+
+
+/* phone_event_type */
+int phone_event_type(Phone * phone, PhoneEventType type, ...)
+{
+	va_list ap;
+	PhoneEvent event;
+	gdouble * level;
+	int res;
+
+	va_start(ap, type);
+	memset(&event, 0, sizeof(event));
+	switch((event.type = type))
+	{
+		/* no arguments */
+		case PHONE_EVENT_TYPE_KEY_TONE:
+		case PHONE_EVENT_TYPE_OFFLINE:
+		case PHONE_EVENT_TYPE_ONLINE:
+		case PHONE_EVENT_TYPE_RESUME:
+		case PHONE_EVENT_TYPE_STARTED:
+		case PHONE_EVENT_TYPE_STARTING:
+		case PHONE_EVENT_TYPE_STOPPED:
+		case PHONE_EVENT_TYPE_STOPPING:
+		case PHONE_EVENT_TYPE_SUSPEND:
+		case PHONE_EVENT_TYPE_UNAVAILABLE:
+		case PHONE_EVENT_TYPE_VIBRATOR_OFF:
+		case PHONE_EVENT_TYPE_VIBRATOR_ON:
+			break;
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			va_start(ap, type);
+			event.modem_event.event = va_arg(ap, ModemEvent *);
+			va_end(ap);
+			break;
+		case PHONE_EVENT_TYPE_VOLUME_GET:
+			level = va_arg(ap, double *);
+			va_end(ap);
+			event.volume_get.level = *level;
+			res = phone_event(phone, &event);
+			*level = event.volume_get.level;
+			return res;
+		case PHONE_EVENT_TYPE_VOLUME_SET:
+			event.volume_set.level = va_arg(ap, double);
+			break;
+		default:
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s(%u) %s\n", __func__, type,
+					"Unsupported event type");
+#endif
+			va_end(ap);
+			return -1;
+	}
+	va_end(ap);
+	return phone_event(phone, &event);
 }
 
 
@@ -3409,21 +3451,18 @@ static void _phone_message(Phone * phone, PhoneMessage message, ...)
 	va_list ap;
 	PhoneMessagePowerManagement power;
 	PhoneMessageShow show;
-	PhoneEvent event;
 
-	memset(&event, 0, sizeof(event));
 	va_start(ap, message);
 	switch(message)
 	{
 		case PHONE_MESSAGE_POWER_MANAGEMENT:
 			power = va_arg(ap, PhoneMessagePowerManagement);
 			if(power == PHONE_MESSAGE_POWER_MANAGEMENT_RESUME)
-				event.type = PHONE_EVENT_TYPE_RESUME;
+				phone_event_type(phone,
+						PHONE_EVENT_TYPE_RESUME);
 			else if(power == PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND)
-				event.type = PHONE_EVENT_TYPE_SUSPEND;
-			else
-				break;
-			phone_event(phone, &event);
+				phone_event_type(phone,
+						PHONE_EVENT_TYPE_SUSPEND);
 			break;
 		case PHONE_MESSAGE_SHOW:
 			show = va_arg(ap, PhoneMessageShow);
@@ -3763,12 +3802,10 @@ static void _modem_event_status(Phone * phone, ModemEvent * event);
 static void _phone_modem_event(void * priv, ModemEvent * event)
 {
 	Phone * phone = priv;
-	PhoneEvent pevent;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event->type);
 #endif
-	memset(&pevent, 0, sizeof(pevent));
 	switch(event->type)
 	{
 		case MODEM_EVENT_TYPE_ERROR:
@@ -3805,9 +3842,7 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 		default:
 			break;
 	}
-	pevent.type = PHONE_EVENT_TYPE_MODEM_EVENT;
-	pevent.modem_event.event = event;
-	phone_event(phone, &pevent);
+	phone_event_type(phone, PHONE_EVENT_TYPE_MODEM_EVENT, event);
 }
 
 static void _modem_event_authentication(Phone * phone, ModemEvent * event)
@@ -3862,9 +3897,6 @@ static void _modem_event_error(Phone * phone, ModemEvent * event)
 
 static void _modem_event_contact(Phone * phone, ModemEvent * event)
 {
-	PhoneEvent pevent;
-
-	memset(&pevent, 0, sizeof(pevent));
 	phone_contacts_set(phone, event->contact.id, event->contact.status,
 			event->contact.name, event->contact.number);
 }
@@ -3875,7 +3907,6 @@ static void _modem_event_message(Phone * phone, ModemEvent * event)
 	size_t length;
 	char * content;
 	char const * p;
-	PhoneEvent pevent;
 
 	encoding = event->message.encoding;
 	length = event->message.length;
@@ -3908,9 +3939,7 @@ static void _modem_event_message(Phone * phone, ModemEvent * event)
 	}
 	if(event->message.status == MODEM_MESSAGE_STATUS_NEW)
 	{
-		memset(&pevent, 0, sizeof(pevent));
-		pevent.type = PHONE_EVENT_TYPE_MESSAGE_RECEIVED;
-		phone_event(phone, &pevent);
+		phone_event_type(phone, PHONE_EVENT_TYPE_MESSAGE_RECEIVED);
 		phone_show_status(phone, TRUE, 0, 1);
 	}
 }
@@ -3940,8 +3969,6 @@ static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
 
 static void _modem_event_registration(Phone * phone, ModemEvent * event)
 {
-	ModemRequest request;
-
 	switch(event->registration.mode)
 	{
 		case MODEM_REGISTRATION_MODE_AUTOMATIC:
@@ -3950,13 +3977,12 @@ static void _modem_event_registration(Phone * phone, ModemEvent * event)
 					|| event->registration.status
 					== MODEM_REGISTRATION_STATUS_SEARCHING)
 				break;
+			/* XXX really fallback here? */
 		case MODEM_REGISTRATION_MODE_DISABLED:
 			/* register to the network */
-			memset(&request, 0, sizeof(request));
-			request.type = MODEM_REQUEST_REGISTRATION;
-			request.registration.mode
-				= MODEM_REGISTRATION_MODE_AUTOMATIC;
-			modem_request(phone->modem, &request);
+			modem_request_type(phone->modem,
+					MODEM_REQUEST_REGISTRATION,
+					MODEM_REGISTRATION_MODE_AUTOMATIC);
 			break;
 		default:
 			break;
@@ -3965,32 +3991,22 @@ static void _modem_event_registration(Phone * phone, ModemEvent * event)
 
 static void _modem_event_status(Phone * phone, ModemEvent * event)
 {
-	PhoneEvent pevent;
-
-	memset(&pevent, 0, sizeof(pevent));
 	switch(event->status.status)
 	{
 		case MODEM_STATUS_ONLINE:
-			pevent.type = PHONE_EVENT_TYPE_ONLINE;
+			phone_event_type(phone, PHONE_EVENT_TYPE_ONLINE);
 			break;
 		case MODEM_STATUS_OFFLINE:
-			pevent.type = PHONE_EVENT_TYPE_OFFLINE;
-			break;
-		case MODEM_STATUS_STARTED:
-			pevent.type = PHONE_EVENT_TYPE_STARTED;
-			break;
-		case MODEM_STATUS_STOPPED:
-			pevent.type = PHONE_EVENT_TYPE_STOPPED;
+			phone_event_type(phone, PHONE_EVENT_TYPE_OFFLINE);
 			break;
 		case MODEM_STATUS_UNAVAILABLE:
-			pevent.type = PHONE_EVENT_TYPE_UNAVAILABLE;
+			phone_event_type(phone, PHONE_EVENT_TYPE_UNAVAILABLE);
 			break;
 #ifndef DEBUG
 		default:
 			return;
 #endif
 	}
-	phone_event(phone, &pevent);
 }
 
 

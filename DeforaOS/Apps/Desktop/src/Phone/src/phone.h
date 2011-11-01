@@ -61,6 +61,7 @@ void phone_dialer_hangup(Phone * phone);
 
 /* events */
 int phone_event(Phone * phone, PhoneEvent * event);
+int phone_event_type(Phone * phone, PhoneEventType type, ...);
 
 /* interface */
 void phone_show_about(Phone * phone, gboolean show);

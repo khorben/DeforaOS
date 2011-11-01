@@ -124,9 +124,7 @@ typedef enum _ModemStatus
 {
 	MODEM_STATUS_UNAVAILABLE = 0,
 	MODEM_STATUS_OFFLINE,
-	MODEM_STATUS_ONLINE,
-	MODEM_STATUS_STARTED,
-	MODEM_STATUS_STOPPED
+	MODEM_STATUS_ONLINE
 } ModemStatus;
 
 /* ModemConfig */
@@ -340,14 +338,14 @@ typedef union _ModemRequest
 	struct
 	{
 		ModemRequestType type;
-		int enabled;
+		unsigned int enabled;
 	} call_presentation;
 
 	/* MODEM_REQUEST_CONNECTIVITY */
 	struct
 	{
 		ModemRequestType type;
-		int enabled;
+		unsigned int enabled;
 	} connectivity;
 
 	/* MODEM_REQUEST_CONTACT, MODEM_REQUEST_CONTACT_DELETE */

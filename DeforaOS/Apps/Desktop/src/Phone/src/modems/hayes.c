@@ -1124,11 +1124,6 @@ static char * _request_attention_unsupported(ModemPlugin * modem,
 /* hayes_start */
 static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 {
-	Hayes * hayes = modem->priv;
-	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-
-	/* considering us stopped */
-	event->status.status = MODEM_STATUS_STOPPED;
 	_hayes_reset_start(modem, retry);
 	return 0;
 }
@@ -1137,16 +1132,7 @@ static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 /* hayes_stop */
 static int _hayes_stop(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
-	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-
 	_hayes_reset_stop(modem);
-	/* report as being stopped */
-	if(event->status.status != MODEM_STATUS_STOPPED)
-	{
-		event->status.status = MODEM_STATUS_STOPPED;
-		modem->helper->event(modem->helper->modem, event);
-	}
 	return 0;
 }
 
@@ -1994,11 +1980,6 @@ static gboolean _on_reset(gpointer data)
 			hayes->source = g_timeout_add(hayes->retry, _on_reset,
 					modem);
 		return FALSE;
-	}
-	if(event->status.status != MODEM_STATUS_STARTED)
-	{
-		event->status.status = MODEM_STATUS_STARTED;
-		modem->helper->event(modem->helper->modem, event);
 	}
 	hayes->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(hayes->channel, NULL, &error))
