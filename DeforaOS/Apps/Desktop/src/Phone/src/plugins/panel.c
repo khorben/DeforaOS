@@ -419,7 +419,7 @@ static void _signal_level_set_image(Panel * panel, PanelSignal signal);
 
 static void _panel_set_signal_level(Panel * panel, gdouble level)
 {
-	if(level < 0.0)
+	if(level <= 0.0)
 		_signal_level_set_image(panel, PANEL_SIGNAL_00);
 	else if(level < 0.25)
 		_signal_level_set_image(panel, PANEL_SIGNAL_25);
