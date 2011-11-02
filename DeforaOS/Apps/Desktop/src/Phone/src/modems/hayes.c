@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
  * - implement new contacts
- * - verify that the error when the SIM PIN code is wrong is handled properly
  * - allow a trace log to be stored */
 
 
@@ -2431,23 +2430,29 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 	memset(&request, 0, sizeof(request));
 	switch((status = _on_request_generic(command, status, priv)))
 	{
+		case HCS_SUCCESS:
+			break;
 		case HCS_ERROR:
 			event->authentication.status
 				= MODEM_AUTHENTICATION_STATUS_ERROR;
-			break;
-		case HCS_SUCCESS:
-			break;
+			modem->helper->event(modem->helper->modem, event);
 		default:
 			return status;
 	}
 	/* XXX it should be bound to the request instead */
-	if(event->authentication.name != NULL)
-		modem->helper->event(modem->helper->modem, event);
-	if(status == HCS_SUCCESS)
+	if(event->authentication.name != NULL && (strcmp("SIM PIN",
+					event->authentication.name) == 0
+				|| strcmp("SIM PUK",
+					event->authentication.name) == 0))
 	{
 		/* verify that it really worked */
 		request.type = HAYES_REQUEST_SIM_PIN_VALID;
 		_hayes_request(modem, &request);
+	}
+	else
+	{
+		event->authentication.status = MODEM_AUTHENTICATION_STATUS_OK;
+		modem->helper->event(modem->helper->modem, event);
 	}
 	return status;
 }
@@ -2758,7 +2763,14 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 	ModemRequest request;
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, priv)) == HCS_ERROR)
+	{
+		event->authentication.status
+			= MODEM_AUTHENTICATION_STATUS_ERROR;
+		modem->helper->event(modem->helper->modem, event);
+		return status;
+	}
+	else if(status != HCS_SUCCESS)
 		return status;
 	modem->helper->event(modem->helper->modem, event);
 	/* return if not successful */
@@ -2814,7 +2826,10 @@ static void _on_trigger_call_error(ModemPlugin * modem, char const * answer)
 		: NULL;
 
 	if(command != NULL)
+	{
 		_hayes_command_set_status(command, HCS_ERROR);
+		_hayes_command_callback(command);
+	}
 	_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
 }
 
@@ -3011,7 +3026,10 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 	ModemRequest request;
 
 	if(command != NULL)
+	{
 		_hayes_command_set_status(command, HCS_ERROR);
+		_hayes_command_callback(command);
+	}
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	switch(u)
@@ -3053,8 +3071,9 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			_hayes_request(modem, &request);
 			break;
 		default: /* FIXME implement the rest */
+		case 3:  /* operation not allowed */
 		case 4:  /* operation not supported */
-		case 16: /* Incorrect SIM PUK */
+		case 16: /* Incorrect SIM PIN/PUK */
 		case 20: /* Memory full */
 			break;
 	}
@@ -3434,7 +3453,10 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 	HayesCommand * p;
 
 	if(command != NULL)
+	{
 		_hayes_command_set_status(command, HCS_ERROR);
+		_hayes_command_callback(command);
+	}
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	switch(u)
@@ -3832,9 +3854,10 @@ static void _on_trigger_csq(ModemPlugin * modem, char const * answer)
 		return;
 	if(u > 31)
 		event->registration.signal = 0.0 / 0.0;
+	else if(u <= 12)
+		event->registration.signal = 1.0;
 	else
-		/* FIXME check this */
-		event->registration.signal =  (32.0 - u) / 32.0;
+		event->registration.signal = (32.0 - u) / 20.0;
 	/* this is usually worth an event */
 	modem->helper->event(modem->helper->modem, event);
 }
