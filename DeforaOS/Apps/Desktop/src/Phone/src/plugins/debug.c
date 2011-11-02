@@ -29,7 +29,8 @@
 typedef struct _Debug
 {
 	GtkWidget * window;
-	GtkWidget * gsm;
+	GtkWidget * requests;
+	GtkWidget * triggers;
 	GtkListStore * events;
 	GtkWidget * view;
 } Debug;
@@ -51,8 +52,23 @@ typedef struct _DebugPhoneEvent
 static struct
 {
 	char const * name;
+	ModemRequestType request;
+} _debug_modem_requests[] =
+{
+	{ "Answer call",	MODEM_REQUEST_CALL_ANSWER	},
+	{ "Battery level",	MODEM_REQUEST_BATTERY_LEVEL	},
+	{ "List contacts",	MODEM_REQUEST_CONTACT_LIST	},
+	{ "List messages",	MODEM_REQUEST_MESSAGE_LIST	},
+	{ "Signal level",	MODEM_REQUEST_SIGNAL_LEVEL	},
+	{ "Terminate call",	MODEM_REQUEST_CALL_HANGUP	},
+	{ NULL,			0				}
+};
+
+static struct
+{
+	char const * name;
 	ModemEventType event;
-} _debug_gsm_commands[] =
+} _debug_modem_triggers[] =
 {
 	{ "Battery charge",	MODEM_EVENT_TYPE_BATTERY_LEVEL	},
 	{ "Call status",	MODEM_EVENT_TYPE_CALL		},
@@ -138,12 +154,14 @@ PhonePlugin plugin =
 /* functions */
 /* plug-in */
 /* debug_init */
-static gboolean _on_debug_closex(gpointer data);
-static void _on_debug_queue_execute(gpointer data);
+static gboolean _debug_on_closex(gpointer data);
+static void _debug_on_queue_request(gpointer data);
+static void _debug_on_queue_trigger(gpointer data);
 
 static int _debug_init(PhonePlugin * plugin)
 {
 	Debug * debug;
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkWidget * hbox;
@@ -154,6 +172,7 @@ static int _debug_init(PhonePlugin * plugin)
 	if((debug = object_new(sizeof(*debug))) == NULL)
 		return 1;
 	plugin->priv = debug;
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	debug->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(debug->window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -161,26 +180,47 @@ static int _debug_init(PhonePlugin * plugin)
 #endif
 	gtk_window_set_title(GTK_WINDOW(debug->window), plugin->name);
 	g_signal_connect_swapped(debug->window, "delete-event", G_CALLBACK(
-				_on_debug_closex), plugin);
+				_debug_on_closex), plugin);
 	/* vbox */
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* gsm queue */
+	/* modem requests */
 	hbox = gtk_hbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
-	debug->gsm = gtk_combo_box_new_text();
-	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
+	debug->requests = gtk_combo_box_new_text();
+	for(i = 0; _debug_modem_requests[i].name != NULL; i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->gsm), NULL,
-				_debug_gsm_commands[i].name);
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->requests),
+				NULL, _debug_modem_requests[i].name);
 #else
-		gtk_combo_box_append_text(GTK_COMBO_BOX(debug->gsm),
-				_debug_gsm_commands[i].name);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(debug->requests),
+				_debug_modem_requests[i].name);
 #endif
-	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->gsm), 0);
-	gtk_box_pack_start(GTK_BOX(hbox), debug->gsm, TRUE, TRUE, 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->requests), 0);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->requests, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-			G_CALLBACK(_on_debug_queue_execute), plugin);
+			G_CALLBACK(_debug_on_queue_request), plugin);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* modem triggers */
+	hbox = gtk_hbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
+	debug->triggers = gtk_combo_box_new_text();
+	for(i = 0; _debug_modem_triggers[i].name != NULL; i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->triggers),
+				NULL, _debug_modem_triggers[i].name);
+#else
+		gtk_combo_box_append_text(GTK_COMBO_BOX(debug->triggers),
+				_debug_modem_triggers[i].name);
+#endif
+	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->triggers), 0);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->triggers, TRUE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+			G_CALLBACK(_debug_on_queue_trigger), plugin);
+	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* events */
@@ -208,7 +248,7 @@ static int _debug_init(PhonePlugin * plugin)
 	return 0;
 }
 
-static gboolean _on_debug_closex(gpointer data)
+static gboolean _debug_on_closex(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Debug * debug = plugin->priv;
@@ -217,7 +257,28 @@ static gboolean _on_debug_closex(gpointer data)
 	return TRUE;
 }
 
-static void _on_debug_queue_execute(gpointer data)
+static void _debug_on_queue_request(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	PhonePluginHelper * helper = plugin->helper;
+	Debug * debug = plugin->priv;
+	gchar * text;
+	size_t i;
+	ModemRequest request;
+
+	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(
+						debug->requests))) == NULL)
+		return;
+	for(i = 0; _debug_modem_requests[i].name != NULL; i++)
+		if(strcmp(_debug_modem_requests[i].name, text) == 0)
+			break;
+	g_free(text);
+	memset(&request, 0, sizeof(request));
+	request.type = _debug_modem_requests[i].request;
+	helper->request(helper->phone, &request);
+}
+
+static void _debug_on_queue_trigger(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	PhonePluginHelper * helper = plugin->helper;
@@ -225,14 +286,14 @@ static void _on_debug_queue_execute(gpointer data)
 	gchar * text;
 	size_t i;
 
-	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(debug->gsm)))
-			== NULL)
+	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(
+						debug->triggers))) == NULL)
 		return;
-	for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
-		if(strcmp(_debug_gsm_commands[i].name, text) == 0)
+	for(i = 0; _debug_modem_triggers[i].name != NULL; i++)
+		if(strcmp(_debug_modem_triggers[i].name, text) == 0)
 			break;
 	g_free(text);
-	helper->trigger(helper->phone, _debug_gsm_commands[i].event);
+	helper->trigger(helper->phone, _debug_modem_triggers[i].event);
 }
 
 
