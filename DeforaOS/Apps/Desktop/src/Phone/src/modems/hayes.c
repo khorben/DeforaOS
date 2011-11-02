@@ -3713,8 +3713,14 @@ static void _on_trigger_cpbr(ModemPlugin * modem, char const * answer)
 	if(sscanf(answer, "%u,\"%31[^\"]\",%u,\"%31[^\"]\"",
 				&event->contact.id, number, &u, name) != 4)
 		return;
+	switch(u)
+	{
+		case 145:
+			memmove(&number[1], number, sizeof(number) - 1);
+			number[0] = '+';
+			break;
+	}
 	number[sizeof(number) - 1] = '\0';
-	/* FIXME the number may have to be modified */
 	free(hayes->contact_number);
 	hayes->contact_number = strdup(number);
 	event->contact.number = hayes->contact_number;
