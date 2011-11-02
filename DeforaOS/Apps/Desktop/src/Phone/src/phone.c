@@ -4006,10 +4006,12 @@ static void _modem_event_status(Phone * phone, ModemEvent * event)
 			phone_event_type(phone, PHONE_EVENT_TYPE_ONLINE);
 			break;
 		case MODEM_STATUS_OFFLINE:
+			_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, FALSE);
 			phone_event_type(phone, PHONE_EVENT_TYPE_OFFLINE);
 			break;
 		case MODEM_STATUS_UNAVAILABLE:
 		case MODEM_STATUS_UNKNOWN:
+			_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, FALSE);
 			phone_event_type(phone, PHONE_EVENT_TYPE_UNAVAILABLE);
 			break;
 #ifndef DEBUG
