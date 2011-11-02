@@ -2026,13 +2026,14 @@ static void _show_messages_window(Phone * phone)
 
 
 /* phone_show_plugins */
-static void _on_plugins_cancel(gpointer data);
-static void _on_plugins_activated(GtkTreeView * view, GtkTreePath * path,
+/* callbacks */
+static void _plugins_on_cancel(gpointer data);
+static void _plugins_on_activated(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
-static gboolean _on_plugins_closex(gpointer data);
-static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
+static gboolean _plugins_on_closex(gpointer data);
+static void _plugins_on_enabled_toggle(GtkCellRendererToggle * renderer,
 		char * path, gpointer data);
-static void _on_plugins_ok(gpointer data);
+static void _plugins_on_ok(gpointer data);
 
 void phone_show_plugins(Phone * phone, gboolean show)
 {
@@ -2052,8 +2053,8 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		gtk_window_set_icon_name(GTK_WINDOW(widget), "gnome-settings");
 #endif
 		gtk_window_set_title(GTK_WINDOW(widget), _("Plug-ins"));
-		g_signal_connect(widget, "delete-event", G_CALLBACK(
-					_on_plugins_closex), phone);
+		g_signal_connect_swapped(widget, "delete-event", G_CALLBACK(
+					_plugins_on_closex), phone);
 		vbox = gtk_vbox_new(FALSE, 4);
 		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
@@ -2066,10 +2067,10 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->pl_view),
 				FALSE);
 		g_signal_connect(phone->pl_view, "row-activated",
-				G_CALLBACK(_on_plugins_activated), phone);
+				G_CALLBACK(_plugins_on_activated), phone);
 		renderer = gtk_cell_renderer_toggle_new();
 		g_signal_connect(renderer, "toggled", G_CALLBACK(
-					_on_plugins_enabled_toggle), phone);
+					_plugins_on_enabled_toggle), phone);
 		column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
 				renderer, "active",
 				PHONE_PLUGINS_COLUMN_ENABLED, NULL);
@@ -2101,15 +2102,15 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		gtk_box_set_spacing(GTK_BOX(bbox), 4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(_on_plugins_cancel), phone);
+				G_CALLBACK(_plugins_on_cancel), phone);
 		gtk_container_add(GTK_CONTAINER(bbox), widget);
 		widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(_on_plugins_ok), phone);
+				G_CALLBACK(_plugins_on_ok), phone);
 		gtk_container_add(GTK_CONTAINER(bbox), widget);
 		gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->pl_window), vbox);
-		_on_plugins_cancel(phone);
+		_plugins_on_cancel(phone);
 		gtk_widget_show_all(vbox);
 	}
 	if(show)
@@ -2118,7 +2119,8 @@ void phone_show_plugins(Phone * phone, gboolean show)
 		gtk_widget_hide(phone->pl_window);
 }
 
-static void _on_plugins_cancel(gpointer data)
+/* callbacks */
+static void _plugins_on_cancel(gpointer data)
 {
 	Phone * phone = data;
 	DIR * dir;
@@ -2178,7 +2180,7 @@ static void _on_plugins_cancel(gpointer data)
 	closedir(dir);
 }
 
-static void _on_plugins_activated(GtkTreeView * view, GtkTreePath * path,
+static void _plugins_on_activated(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
 	Phone * phone = data;
@@ -2192,15 +2194,15 @@ static void _on_plugins_activated(GtkTreeView * view, GtkTreePath * path,
 			!active, -1);
 }
 
-static gboolean _on_plugins_closex(gpointer data)
+static gboolean _plugins_on_closex(gpointer data)
 {
 	Phone * phone = data;
 
-	_on_plugins_cancel(phone);
+	_plugins_on_cancel(phone);
 	return TRUE;
 }
 
-static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
+static void _plugins_on_enabled_toggle(GtkCellRendererToggle * renderer,
 		char * path, gpointer data)
 {
 	Phone * phone = data;
@@ -2212,7 +2214,7 @@ static void _on_plugins_enabled_toggle(GtkCellRendererToggle * renderer,
 			!gtk_cell_renderer_toggle_get_active(renderer), -1);
 }
 
-static void _on_plugins_ok(gpointer data)
+static void _plugins_on_ok(gpointer data)
 {
 	Phone * phone = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(phone->pl_store);
@@ -2250,7 +2252,7 @@ static void _on_plugins_ok(gpointer data)
 	if(_phone_config_set_type(phone, NULL, NULL, "plugins", value) == 0)
 		_phone_config_save(phone);
 	string_delete(value);
-	_on_plugins_cancel(phone);
+	_plugins_on_cancel(phone);
 }
 
 
@@ -2298,8 +2300,8 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->re_window),
 				_("Read message"));
-		g_signal_connect(phone->re_window, "delete-event",
-				G_CALLBACK(on_phone_closex), phone->re_window);
+		g_signal_connect(phone->re_window, "delete-event", G_CALLBACK(
+					on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -2390,8 +2392,8 @@ void phone_show_settings(Phone * phone, gboolean show)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->se_window),
 				_("Phone settings"));
-		g_signal_connect(phone->se_window, "delete-event",
-				G_CALLBACK(on_phone_closex), phone->se_window);
+		g_signal_connect(phone->se_window, "delete-event", G_CALLBACK(
+					on_phone_closex), NULL);
 		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -2591,9 +2593,10 @@ static void _status_on_response(gpointer data)
 /* phone_show_system */
 static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 		GtkSizeGroup * group);
-static void _on_system_cancel(gpointer data);
-static gboolean _on_system_closex(gpointer data);
-static void _on_system_ok(gpointer data);
+/* callbacks */
+static void _system_on_cancel(gpointer data);
+static gboolean _system_on_closex(gpointer data);
+static void _system_on_ok(gpointer data);
 
 void phone_show_system(Phone * phone, gboolean show)
 {
@@ -2627,7 +2630,7 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_window_set_title(GTK_WINDOW(phone->sy_window),
 			_("System preferences"));
 	g_signal_connect_swapped(G_OBJECT(phone->sy_window), "delete-event",
-			G_CALLBACK(_on_system_closex), phone);
+			G_CALLBACK(_system_on_closex), phone);
 	vbox = gtk_vbox_new(FALSE, 4);
 	config = modem_get_config(phone->modem);
 	for(i = 0; config != NULL && config[i].name != NULL; i++)
@@ -2642,16 +2645,16 @@ void phone_show_system(Phone * phone, gboolean show)
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_system_cancel), phone);
+				_system_on_cancel), phone);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_system_ok), phone);
+				_system_on_ok), phone);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(phone->sy_window), vbox);
 	gtk_widget_show_all(vbox);
-	_on_system_cancel(phone);
+	_system_on_cancel(phone);
 	gtk_window_present(GTK_WINDOW(phone->sy_window));
 }
 
@@ -2703,7 +2706,8 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 	return ret;
 }
 
-static void _on_system_cancel(gpointer data)
+/* callbacks */
+static void _system_on_cancel(gpointer data)
 {
 	Phone * phone = data;
 	ModemConfig * config;
@@ -2752,15 +2756,15 @@ static void _on_system_cancel(gpointer data)
 	}
 }
 
-static gboolean _on_system_closex(gpointer data)
+static gboolean _system_on_closex(gpointer data)
 {
 	Phone * phone = data;
 
-	_on_system_cancel(phone);
+	_system_on_cancel(phone);
 	return TRUE;
 }
 
-static void _on_system_ok(gpointer data)
+static void _system_on_ok(gpointer data)
 {
 	Phone * phone = data;
 	ModemConfig * config;
@@ -2852,8 +2856,8 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->wr_window),
 				_("Write message"));
-		g_signal_connect(phone->wr_window, "delete-event",
-				G_CALLBACK(on_phone_closex), phone->wr_window);
+		g_signal_connect(phone->wr_window, "delete-event", G_CALLBACK(
+					on_phone_closex), NULL);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* toolbar */
 		widget = gtk_toolbar_new();
@@ -3340,8 +3344,8 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	dialog = gtk_dialog_new_with_buttons(_("Operation in progress..."),
 			GTK_WINDOW(parent), flags, GTK_STOCK_CLOSE,
 			GTK_RESPONSE_CLOSE, NULL);
-	g_signal_connect(dialog, "delete-event", G_CALLBACK(
-				on_phone_closex), NULL);
+	g_signal_connect(dialog, "delete-event", G_CALLBACK(on_phone_closex),
+			NULL);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
