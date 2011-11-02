@@ -2781,15 +2781,17 @@ static void _system_on_ok(gpointer data)
 	size_t i;
 	GtkWidget * widget;
 	char const * p;
+	char const * plugin;
 
 	gtk_widget_hide(phone->sy_window);
 	config = modem_get_config(phone->modem);
+	if((plugin = config_get(phone->config, NULL, "modem")) == NULL)
+		plugin = "hayes";
 	for(i = 0; config != NULL && config[i].name != NULL; i++)
 	{
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
 						config[i].name)) == NULL)
 			continue;
-		/* FIXME "hayes" is still hard-coded */
 		switch(config[i].type)
 		{
 			case MCT_NONE: /* XXX should not happen */
@@ -2798,7 +2800,7 @@ static void _system_on_ok(gpointer data)
 				config[i].value = gtk_toggle_button_get_active(
 						GTK_TOGGLE_BUTTON(widget))
 					? (void*)1 : NULL;
-				_phone_config_set_type(phone, "modem", "hayes",
+				_phone_config_set_type(phone, "modem", plugin,
 						config[i].name, config[i].value
 						? "1" : "0");
 				break;
@@ -2807,20 +2809,20 @@ static void _system_on_ok(gpointer data)
 						GTK_FILE_CHOOSER(widget));
 				/* FIXME memory leak */
 				config[i].value = strdup(p);
-				_phone_config_set_type(phone, "modem", "hayes",
+				_phone_config_set_type(phone, "modem", plugin,
 						config[i].name, p);
 				break;
 			case MCT_STRING:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
 				/* FIXME memory leak */
 				config[i].value = strdup(p);
-				_phone_config_set_type(phone, "modem", "hayes",
+				_phone_config_set_type(phone, "modem", plugin,
 						config[i].name, p);
 				break;
 			case MCT_UINT32:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
 				config[i].value = (void*)strtoul(p, NULL, 10);
-				_phone_config_set_type(phone, "modem", "hayes",
+				_phone_config_set_type(phone, "modem", plugin,
 						config[i].name, p);
 				break;
 		}
