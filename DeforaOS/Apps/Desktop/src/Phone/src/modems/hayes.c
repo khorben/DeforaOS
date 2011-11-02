@@ -13,8 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
- * - implement new contacts
- * - allow a trace log to be stored */
+ * - implement new contacts */
 
 
 
@@ -66,6 +65,9 @@ typedef struct _Hayes
 	guint rd_ppp_source;
 	GIOChannel * wr_ppp_channel;
 	guint wr_ppp_source;
+
+	/* logging */
+	FILE * fp;
 
 	/* queue */
 	HayesMode mode;
@@ -362,9 +364,10 @@ typedef enum _HayesConfig
 {
 	HAYES_CONFIG_DEVICE = 0,
 	HAYES_CONFIG_BAUDRATE,
-	HAYES_CONFIG_HWFLOW
+	HAYES_CONFIG_HWFLOW,
+	HAYES_CONFIG_LOGFILE = 4
 } HayesConfig;
-#define HAYES_CONFIG_LAST HAYES_CONFIG_HWFLOW
+#define HAYES_CONFIG_LAST HAYES_CONFIG_LOGFILE
 #define HAYES_CONFIG_COUNT (HAYES_CONFIG_LAST + 1)
 
 static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
@@ -372,6 +375,8 @@ static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
 	{ "device",	"Device",		MCT_FILENAME,	NULL	      },
 	{ "baudrate",	"Baudrate",		MCT_UINT32,	(void *)115200},
 	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void *)1     },
+	{ "",		"Advanced",		MCT_NONE,	NULL	      },
+	{ "logfile",	"Log file",		MCT_FILENAME,	NULL	      },
 	{ NULL,		NULL,			MCT_NONE,	NULL	      }
 };
 
@@ -1148,19 +1153,16 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 	memset(&request, 0, sizeof(request));
 	switch(event)
 	{
+		case MODEM_EVENT_TYPE_BATTERY_LEVEL: /* use the existing data */
+		case MODEM_EVENT_TYPE_CALL:
+		case MODEM_EVENT_TYPE_CONNECTION:
+		case MODEM_EVENT_TYPE_STATUS:
+			e = &hayes->events[event];
+			modem->helper->event(modem->helper->modem, e);
+			break;
 		case MODEM_EVENT_TYPE_AUTHENTICATION:
 			request.type = HAYES_REQUEST_SIM_PIN_VALID;
 			return _hayes_request(modem, &request);
-		case MODEM_EVENT_TYPE_BATTERY_LEVEL:
-			e = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
-			modem->helper->event(modem->helper->modem, e);
-		case MODEM_EVENT_TYPE_CALL:
-			request.type = HAYES_REQUEST_PHONE_ACTIVE;
-			return _hayes_request(modem, &request);
-		case MODEM_EVENT_TYPE_CONNECTION:
-			e = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
-			modem->helper->event(modem->helper->modem, e);
-			break;
 		case MODEM_EVENT_TYPE_CONTACT:
 			request.type = MODEM_REQUEST_CONTACT_LIST;
 			return _hayes_request(modem, &request);
@@ -1185,10 +1187,6 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			}
 			else
 				modem->helper->event(modem->helper->modem, e);
-			break;
-		case MODEM_EVENT_TYPE_STATUS:
-			e = &hayes->events[MODEM_EVENT_TYPE_STATUS];
-			modem->helper->event(modem->helper->modem, e);
 			break;
 		case MODEM_EVENT_TYPE_CONTACT_DELETED: /* do not make sense */
 		case MODEM_EVENT_TYPE_ERROR:
@@ -1705,6 +1703,9 @@ static void _hayes_reset_stop(ModemPlugin * modem)
 	ModemEvent * event;
 
 	/* close everything opened */
+	if(hayes->fp != NULL)
+		fclose(hayes->fp);
+	hayes->fp = NULL;
 	_hayes_queue_flush(modem);
 	_reset_stop_channel(hayes->channel);
 	hayes->channel = NULL;
@@ -1967,6 +1968,7 @@ static gboolean _on_reset(gpointer data)
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 	GError * error = NULL;
 	int fd;
+	char const * logfile;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -1986,6 +1988,12 @@ static gboolean _on_reset(gpointer data)
 		return FALSE;
 	}
 	event->status.status = MODEM_STATUS_UNKNOWN;
+	/* logging */
+	logfile = modem->config[HAYES_CONFIG_LOGFILE].value;
+	if(logfile != NULL && (hayes->fp = fopen(logfile, "w")) == NULL)
+		modem->helper->error(NULL, strerror(errno), 1);
+	else if(hayes->fp != NULL)
+		setvbuf(hayes->fp, NULL, _IONBF, BUFSIZ);
 	hayes->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(hayes->channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
@@ -2237,10 +2245,15 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	hayes->rd_buf = p;
 	status = g_io_channel_read_chars(source,
 			&hayes->rd_buf[hayes->rd_buf_cnt], 256, &cnt, &error);
-#ifdef DEBUG
-	fputs("DEBUG: MODEM: ", stderr);
-	fwrite(&hayes->rd_buf[hayes->rd_buf_cnt], sizeof(*p), cnt, stderr);
-#endif
+	/* logging */
+	if(hayes->fp != NULL && (fputs("\nMODEM: ", hayes->fp) == EOF
+				|| fwrite(&hayes->rd_buf[hayes->rd_buf_cnt],
+					sizeof(*p), cnt, hayes->fp) < cnt))
+	{
+		helper->error(NULL, strerror(errno), 1);
+		fclose(hayes->fp);
+		hayes->fp = NULL;
+	}
 	hayes->rd_buf_cnt += cnt;
 	switch(status)
 	{
@@ -2324,6 +2337,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	ModemPlugin * modem = data;
+	ModemPluginHelper * helper = modem->helper;
 	Hayes * hayes = modem->priv;
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -2334,10 +2348,15 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		return FALSE; /* should not happen */
 	status = g_io_channel_write_chars(source, hayes->wr_buf,
 			hayes->wr_buf_cnt, &cnt, &error);
-#ifdef DEBUG
-	fputs("DEBUG: PHONE: ", stderr);
-	fwrite(hayes->wr_buf, sizeof(*p), cnt, stderr);
-#endif
+	/* logging */
+	if(hayes->fp != NULL && (fputs("\nPHONE: ", hayes->fp) == EOF
+				|| fwrite(hayes->wr_buf, sizeof(*p), cnt,
+					hayes->fp) < cnt))
+	{
+		modem->helper->error(NULL, strerror(errno), 1);
+		fclose(hayes->fp);
+		hayes->fp = NULL;
+	}
 	if(cnt != 0) /* some data may have been written anyway */
 	{
 		hayes->wr_buf_cnt -= cnt;
@@ -2352,8 +2371,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			modem->helper->error(modem->helper->modem,
-					error->message, 1);
+			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
@@ -2531,11 +2549,14 @@ static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
+	ModemRequest request;
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS
 			&& status != HCS_ERROR)
 		return status;
-	_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
+	memset(&request, 0, sizeof(request));
+	request.type = HAYES_REQUEST_PHONE_ACTIVE;
+	_hayes_request(modem, &request);
 	return status;
 }
 
@@ -2796,6 +2817,9 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	_hayes_request(modem, &request);
 	/* report new notifications */
 	request.type = HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE;
+	_hayes_request(modem, &request);
+	/* refresh the registration status */
+	request.type = HAYES_REQUEST_REGISTRATION;
 	_hayes_request(modem, &request);
 	/* refresh the current call status */
 	_hayes_trigger(modem, MODEM_EVENT_TYPE_CALL);
