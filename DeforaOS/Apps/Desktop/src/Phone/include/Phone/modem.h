@@ -122,7 +122,8 @@ typedef enum _ModemRegistrationStatus
 
 typedef enum _ModemStatus
 {
-	MODEM_STATUS_UNAVAILABLE = 0,
+	MODEM_STATUS_UNKNOWN = 0,
+	MODEM_STATUS_UNAVAILABLE,
 	MODEM_STATUS_OFFLINE,
 	MODEM_STATUS_ONLINE
 } ModemStatus;

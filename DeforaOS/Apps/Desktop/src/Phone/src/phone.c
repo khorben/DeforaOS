@@ -4005,6 +4005,7 @@ static void _modem_event_status(Phone * phone, ModemEvent * event)
 			phone_event_type(phone, PHONE_EVENT_TYPE_OFFLINE);
 			break;
 		case MODEM_STATUS_UNAVAILABLE:
+		case MODEM_STATUS_UNKNOWN:
 			phone_event_type(phone, PHONE_EVENT_TYPE_UNAVAILABLE);
 			break;
 #ifndef DEBUG
