@@ -168,7 +168,6 @@ typedef struct _HayesTriggerHandler
 enum
 {
 	HAYES_REQUEST_ALIVE = MODEM_REQUEST_COUNT,
-	HAYES_REQUEST_BATTERY_LEVEL,
 	HAYES_REQUEST_CALL_WAITING_UNSOLLICITED_DISABLE,
 	HAYES_REQUEST_CALL_WAITING_UNSOLLICITED_ENABLE,
 	HAYES_REQUEST_CONNECTED_LINE_DISABLE,
@@ -198,7 +197,6 @@ enum
 	HAYES_REQUEST_REGISTRATION,
 	HAYES_REQUEST_REGISTRATION_UNSOLLICITED_DISABLE,
 	HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,
-	HAYES_REQUEST_SIGNAL_LEVEL,
 	HAYES_REQUEST_SIM_PIN_VALID,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,
@@ -279,6 +277,7 @@ static HayesCommandStatus _hayes_command_callback(HayesCommand * command);
 /* callbacks */
 static gboolean _on_queue_timeout(gpointer data);
 static gboolean _on_reset(gpointer data);
+static gboolean _on_search_timeout(gpointer data);
 static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
@@ -453,8 +452,6 @@ static HayesRequestHandler _hayes_request_handlers[] =
 {
 	{ HAYES_REQUEST_ALIVE,				"AT",
 		_on_request_generic },
-	{ HAYES_REQUEST_BATTERY_LEVEL,			"AT+CBC",
-		_on_request_battery_level },
 	{ HAYES_REQUEST_CALL_WAITING_UNSOLLICITED_DISABLE,"AT+CCWA=1",
 		_on_request_generic },
 	{ HAYES_REQUEST_CALL_WAITING_UNSOLLICITED_ENABLE,"AT+CCWA=1",
@@ -500,11 +497,11 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ HAYES_REQUEST_OPERATOR,			"AT+COPS?",
 		_on_request_generic },
 	{ HAYES_REQUEST_OPERATOR_FORMAT_LONG,		"AT+COPS=3,0",
-		_on_request_generic },
+		_on_request_registration },
 	{ HAYES_REQUEST_OPERATOR_FORMAT_NUMERIC,	"AT+COPS=3,2",
-		_on_request_generic },
+		_on_request_registration },
 	{ HAYES_REQUEST_OPERATOR_FORMAT_SHORT,		"AT+COPS=3,1",
-		_on_request_generic },
+		_on_request_registration },
 	{ HAYES_REQUEST_PHONE_ACTIVE,			"AT+CPAS",
 		_on_request_call },
 	{ HAYES_REQUEST_REGISTRATION,			"AT+CREG?",
@@ -513,8 +510,6 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,"AT+CREG=2",
 		_on_request_registration },
-	{ HAYES_REQUEST_SIGNAL_LEVEL,			"AT+CSQ",
-		_on_request_generic },
 	{ HAYES_REQUEST_SIM_PIN_VALID,			"AT+CPIN?",
 		_on_request_sim_pin_valid },
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,"AT+CUSD=2",
@@ -533,6 +528,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_model },
 	{ MODEM_REQUEST_AUTHENTICATE,			NULL,
 		_on_request_authenticate },
+	{ MODEM_REQUEST_BATTERY_LEVEL,			"AT+CBC",
+		_on_request_battery_level },
 	{ MODEM_REQUEST_CALL,				NULL,
 		_on_request_call_outgoing },
 	{ MODEM_REQUEST_CALL_ANSWER,			"ATA",
@@ -557,6 +554,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_message_send },
 	{ MODEM_REQUEST_REGISTRATION,			NULL,
 		_on_request_registration },
+	{ MODEM_REQUEST_SIGNAL_LEVEL,			"AT+CSQ",
+		_on_request_generic },
 	{ MODEM_REQUEST_UNSUPPORTED,			NULL,
 		_on_request_unsupported }
 };
@@ -1155,8 +1154,8 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			request.type = HAYES_REQUEST_SIM_PIN_VALID;
 			return _hayes_request(modem, &request);
 		case MODEM_EVENT_TYPE_BATTERY_LEVEL:
-			request.type = HAYES_REQUEST_BATTERY_LEVEL;
-			return _hayes_request(modem, &request);
+			e = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
+			modem->helper->event(modem->helper->modem, e);
 		case MODEM_EVENT_TYPE_CALL:
 			request.type = HAYES_REQUEST_PHONE_ACTIVE;
 			return _hayes_request(modem, &request);
@@ -1179,8 +1178,8 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			ret |= _hayes_request(modem, &request);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
-			request.type = HAYES_REQUEST_REGISTRATION;
-			ret |= _hayes_request(modem, &request);
+			e = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
+			modem->helper->event(modem->helper->modem, e);
 			break;
 		case MODEM_EVENT_TYPE_STATUS:
 			e = &hayes->events[MODEM_EVENT_TYPE_STATUS];
@@ -2172,6 +2171,26 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 }
 
 
+/* on_search_timeout */
+static gboolean _on_search_timeout(gpointer data)
+{
+	ModemPlugin * modem = data;
+	Hayes * hayes = modem->priv;
+	ModemRequest request;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	hayes->source = 0;
+	memset(&request, 0, sizeof(request));
+	request.type = HAYES_REQUEST_REGISTRATION;
+	_hayes_request(modem, &request);
+	if(hayes->queue_timeout != NULL)
+		hayes->source = g_idle_add(_on_queue_timeout, modem);
+	return FALSE;
+}
+
+
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
@@ -2738,8 +2757,10 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	/* return if not successful */
 	if(event->authentication.status != MODEM_AUTHENTICATION_STATUS_OK)
 		return status;
-	/* apply default settings */
+	/* apply useful settings */
 	memset(&request, 0, sizeof(request));
+	request.type = HAYES_REQUEST_EXTENDED_ERRORS;
+	_hayes_request(modem, &request);
 	request.type = HAYES_REQUEST_EXTENDED_RING_REPORTS;
 	_hayes_request(modem, &request);
 	request.type = MODEM_REQUEST_CALL_PRESENTATION;
@@ -2748,9 +2769,6 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	request.type = HAYES_REQUEST_CALL_WAITING_UNSOLLICITED_ENABLE;
 	_hayes_request(modem, &request);
 	request.type = HAYES_REQUEST_CONNECTED_LINE_ENABLE;
-	_hayes_request(modem, &request);
-	memset(&request, 0, sizeof(request));
-	request.type = HAYES_REQUEST_OPERATOR_FORMAT_LONG;
 	_hayes_request(modem, &request);
 	request.type = HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE;
 	_hayes_request(modem, &request);
@@ -3010,6 +3028,9 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			break;
 		case 32: /* emergency calls only */
 			event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
+			free(hayes->registration_media);
+			hayes->registration_media = NULL;
+			event->registration.media = NULL;
 			free(hayes->registration_operator);
 			hayes->registration_operator = strdup("SOS");
 			event->registration._operator
@@ -3531,16 +3552,13 @@ static void _on_trigger_cops(ModemPlugin * modem, char const * answer)
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 	unsigned int u;
-	unsigned int v;
-	char buf[32];
+	unsigned int v = 0;
+	char buf[32] = "";
 	unsigned int w;
+	ModemRequest request;
 
-	if(sscanf(answer, "%u,%u,\"%31[^\"]\",%u", &u, &v, buf, &w) < 3)
-		return; /* FIXME is also valid with 1 result */
-	buf[sizeof(buf) - 1] = '\0';
-	free(hayes->registration_operator);
-	hayes->registration_operator = strdup(buf);
-	event->registration._operator = hayes->registration_operator;
+	if(sscanf(answer, "%u,%u,\"%31[^\"]\",%u", &u, &v, buf, &w) < 1)
+		return;
 	switch(u)
 	{
 		case 0:
@@ -3557,8 +3575,23 @@ static void _on_trigger_cops(ModemPlugin * modem, char const * answer)
 			u = event->registration.mode;
 			break;
 	}
-	/* this is usually worth an event */
-	modem->helper->event(modem->helper->modem, event);
+	event->registration.mode = u;
+	if(v != 0)
+	{
+		/* force alphanumeric format */
+		memset(&request, 0, sizeof(request));
+		request.type = HAYES_REQUEST_OPERATOR_FORMAT_LONG;
+		_hayes_request(modem, &request);
+	}
+	else
+	{
+		buf[sizeof(buf) - 1] = '\0';
+		free(hayes->registration_operator);
+		hayes->registration_operator = strdup(buf);
+		event->registration._operator = hayes->registration_operator;
+		/* this is usually worth an event */
+		modem->helper->event(modem->helper->modem, event);
+	}
 }
 
 
@@ -3728,15 +3761,30 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 	switch((event->registration.status = u[1]))
 	{
 		case MODEM_REGISTRATION_STATUS_REGISTERED:
+			/* refresh registration data */
 			memset(&request, 0, sizeof(request));
 			request.type = HAYES_REQUEST_GPRS_ATTACHED;
 			_hayes_request(modem, &request);
 			request.type = HAYES_REQUEST_OPERATOR;
 			_hayes_request(modem, &request);
-			request.type = HAYES_REQUEST_SIGNAL_LEVEL;
+			request.type = MODEM_REQUEST_SIGNAL_LEVEL;
 			_hayes_request(modem, &request);
 			break;
+#if 1 /* FIXME why is this not working when the delay is too low? */
+		case MODEM_REGISTRATION_STATUS_SEARCHING: /* XXX just in case */
+			if(hayes->source != 0)
+				g_source_remove(hayes->source);
+			hayes->source = g_timeout_add(5000, _on_search_timeout,
+					modem);
+			break;
+#endif
 		default:
+			free(hayes->registration_media);
+			hayes->registration_media = NULL;
+			event->registration.media = NULL;
+			free(hayes->registration_operator);
+			hayes->registration_operator = NULL;
+			event->registration._operator = NULL;
 			event->registration.signal = 0.0 / 0.0;
 			/* this is usually an unsollicited event */
 			modem->helper->event(modem->helper->modem, event);
@@ -3775,7 +3823,7 @@ static void _on_trigger_csq(ModemPlugin * modem, char const * answer)
 		event->registration.signal = 0.0 / 0.0;
 	else
 		/* FIXME check this */
-		event->registration.signal = (u / 32) + 0.0;
+		event->registration.signal =  (32.0 - u) / 32.0;
 	/* this is usually worth an event */
 	modem->helper->event(modem->helper->modem, event);
 }

@@ -180,10 +180,12 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 	switch((request.type = type))
 	{
 		/* no arguments */
+		case MODEM_REQUEST_BATTERY_LEVEL:
 		case MODEM_REQUEST_CALL_ANSWER:
 		case MODEM_REQUEST_CALL_HANGUP:
 		case MODEM_REQUEST_CONTACT_LIST:
 		case MODEM_REQUEST_MESSAGE_LIST:
+		case MODEM_REQUEST_SIGNAL_LEVEL:
 			break;
 		case MODEM_REQUEST_AUTHENTICATE:
 			request.authenticate.name = va_arg(ap,

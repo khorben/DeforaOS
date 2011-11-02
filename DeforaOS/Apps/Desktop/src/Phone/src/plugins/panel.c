@@ -237,9 +237,11 @@ static void _on_plug_embedded(gpointer data)
 static gboolean _on_battery_timeout(gpointer data)
 {
 	PhonePlugin * plugin = data;
+	ModemRequest request;
 
-	plugin->helper->trigger(plugin->helper->phone,
-			MODEM_EVENT_TYPE_BATTERY_LEVEL);
+	memset(&request, 0, sizeof(request));
+	request.type = MODEM_REQUEST_BATTERY_LEVEL;
+	plugin->helper->request(plugin->helper->phone, &request);
 	return TRUE;
 }
 
@@ -276,11 +278,15 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
 			_panel_set_status(panel, FALSE, FALSE);
 			break;
 		case PHONE_EVENT_TYPE_STARTED:
-			_panel_set_operator(panel, -1, "Registering...");
+			_panel_set_operator(panel, -1, "Connecting...");
 			_panel_set_signal_level(panel, 0.0 / 0.0);
 			_panel_set_status(panel, FALSE, FALSE);
 			break;
 		case PHONE_EVENT_TYPE_STARTING:
+			_panel_set_operator(panel, -1, "Starting...");
+			_panel_set_signal_level(panel, 0.0 / 0.0);
+			_panel_set_status(panel, FALSE, FALSE);
+			break;
 		case PHONE_EVENT_TYPE_STOPPED:
 			_panel_set_operator(panel, -1, "Disconnected");
 			_panel_set_signal_level(panel, 0.0 / 0.0);
@@ -395,7 +401,7 @@ static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
 			_operator = "Not searching";
 			break;
 		case MODEM_REGISTRATION_STATUS_SEARCHING:
-			_operator = "Registering...";
+			_operator = "Searching...";
 			break;
 		case MODEM_REGISTRATION_STATUS_UNKNOWN:
 			_operator = "Unknown";

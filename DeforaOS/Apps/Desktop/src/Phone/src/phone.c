@@ -138,10 +138,10 @@ typedef enum _PhoneTrack
 {
 	PHONE_TRACK_CODE_ENTERED = 0,
 	PHONE_TRACK_MESSAGE_DELETED,
-	PHONE_TRACK_MESSAGE_LIST,
-	PHONE_TRACK_MESSAGE_SENT
+	PHONE_TRACK_MESSAGE_SENT,
+	PHONE_TRACK_SIGNAL_LEVEL
 } PhoneTrack;
-#define PHONE_TRACK_LAST	PHONE_TRACK_MESSAGE_SENT
+#define PHONE_TRACK_LAST	PHONE_TRACK_SIGNAL_LEVEL
 #define PHONE_TRACK_COUNT	(PHONE_TRACK_LAST + 1)
 
 struct _Phone
@@ -895,10 +895,9 @@ int phone_event(Phone * phone, PhoneEvent * event)
 					MODEM_REQUEST_CONNECTIVITY, 1);
 			break;
 		case PHONE_EVENT_TYPE_ONLINE:
-			/* register to the network */
-			modem_request_type(phone->modem,
-					MODEM_REQUEST_REGISTRATION,
-					MODEM_REGISTRATION_MODE_AUTOMATIC);
+			/* authenticate if necessary */
+			modem_trigger(phone->modem,
+					MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case PHONE_EVENT_TYPE_STARTING:
 			if(ret == 0)
@@ -3865,6 +3864,9 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 				break;
 			snprintf(buf, sizeof(buf), _("%s is valid"), name);
 			_phone_info(phone, phone->en_window, buf, callback);
+			/* obtain the registration status */
+			modem_trigger(phone->modem,
+					MODEM_EVENT_TYPE_REGISTRATION);
 			break;
 		case MODEM_AUTHENTICATION_STATUS_REQUIRED:
 			if(event->authentication.method
@@ -3967,15 +3969,19 @@ static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
 
 static void _modem_event_registration(Phone * phone, ModemEvent * event)
 {
+	gboolean track = FALSE;
+	ModemRegistrationStatus status = event->registration.status;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() mode=%u\n", __func__,
+			event->registration.mode);
+#endif
 	switch(event->registration.mode)
 	{
 		case MODEM_REGISTRATION_MODE_AUTOMATIC:
-			if(event->registration.status
-					== MODEM_REGISTRATION_STATUS_REGISTERED
-					|| event->registration.status
-					== MODEM_REGISTRATION_STATUS_SEARCHING)
-				break;
-			/* XXX really fallback here? */
+			if(status == MODEM_REGISTRATION_STATUS_REGISTERED)
+				track = TRUE;
+			break;
 		case MODEM_REGISTRATION_MODE_DISABLED:
 			/* register to the network */
 			modem_request_type(phone->modem,
@@ -3985,6 +3991,7 @@ static void _modem_event_registration(Phone * phone, ModemEvent * event)
 		default:
 			break;
 	}
+	_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, track);
 }
 
 static void _modem_event_status(Phone * phone, ModemEvent * event)
@@ -4002,7 +4009,7 @@ static void _modem_event_status(Phone * phone, ModemEvent * event)
 			break;
 #ifndef DEBUG
 		default:
-			return;
+			break;
 #endif
 	}
 }
@@ -4028,12 +4035,11 @@ static gboolean _phone_timeout_track(gpointer data)
 		_phone_progress_pulse(phone->en_progress);
 	if(phone->tracks[PHONE_TRACK_MESSAGE_DELETED])
 		_phone_progress_pulse(phone->me_progress);
-	if(phone->tracks[PHONE_TRACK_MESSAGE_LIST])
-	{
-		_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, FALSE);
-		modem_request_type(phone->modem, MODEM_REQUEST_MESSAGE_LIST);
-	}
 	if(phone->tracks[PHONE_TRACK_MESSAGE_SENT])
 		_phone_progress_pulse(phone->wr_progress);
+	if(phone->tracks[PHONE_TRACK_SIGNAL_LEVEL]
+			&& modem_request_type(phone->modem,
+				MODEM_REQUEST_SIGNAL_LEVEL) != 0)
+		_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, FALSE);
 	return TRUE;
 }
