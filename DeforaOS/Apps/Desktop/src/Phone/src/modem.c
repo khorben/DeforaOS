@@ -233,6 +233,9 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 			request.message_send.length = va_arg(ap, size_t);
 			request.message_send.content = va_arg(ap, char const *);
 			break;
+		case MODEM_REQUEST_MUTE:
+			request.mute.enabled = va_arg(ap, unsigned int);
+			break;
 		case MODEM_REQUEST_REGISTRATION:
 			request.registration.mode = va_arg(ap,
 					ModemRegistrationMode);
@@ -241,6 +244,7 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 				request.registration._operator = va_arg(ap,
 						char const *);
 			break;
+		case MODEM_REQUEST_UNSUPPORTED:
 		default:
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s(%u) %s\n", __func__, type,
