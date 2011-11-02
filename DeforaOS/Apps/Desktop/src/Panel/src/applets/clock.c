@@ -32,7 +32,6 @@
 /* types */
 typedef struct _Clock
 {
-	PanelAppletHelper * helper;
 	char const * format;
 	GtkWidget * label;
 	guint timeout;
@@ -68,6 +67,7 @@ PanelApplet applet =
 /* clock_init */
 static GtkWidget * _clock_init(PanelApplet * applet)
 {
+	PanelAppletHelper * helper = applet->helper;
 	GtkWidget * ret;
 	Clock * clock;
 #ifdef EMBEDDED
@@ -77,10 +77,9 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	if((clock = malloc(sizeof(*clock))) == NULL)
 		return NULL;
 	applet->priv = clock;
-	clock->helper = applet->helper;
 	clock->label = gtk_label_new(" \n ");
-	if((clock->format = applet->helper->config_get(applet->helper->panel,
-					"clock", "format")) == NULL)
+	if((clock->format = helper->config_get(helper->panel, "clock",
+					"format")) == NULL)
 #ifdef EMBEDDED
 		clock->format = _("%H:%M");
 	ret = clock->label;
@@ -90,7 +89,7 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	pango_font_description_free(desc);
 #else
 	{
-		if(clock->helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
+		if(helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
 			clock->format = _("%H:%M:%S\n%d/%m/%Y");
 		else
 			clock->format = _("%H:%M");
@@ -100,8 +99,8 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	gtk_container_add(GTK_CONTAINER(ret), clock->label);
 #endif
 	gtk_label_set_justify(GTK_LABEL(clock->label), GTK_JUSTIFY_CENTER);
-	clock->timeout = g_timeout_add(1000, _on_timeout, clock);
-	_on_timeout(clock);
+	clock->timeout = g_timeout_add(1000, _on_timeout, applet);
+	_on_timeout(applet);
 	gtk_widget_show_all(ret);
 	return ret;
 }
@@ -121,18 +120,26 @@ static void _clock_destroy(PanelApplet * applet)
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
-	Clock * clock = data;
+	PanelApplet * applet = data;
+	PanelAppletHelper * helper = applet->helper;
+	Clock * clock = applet->priv;
 	struct timeval tv;
 	time_t t;
 	struct tm tm;
 	char buf[32];
 
 	if(gettimeofday(&tv, NULL) != 0)
-		return clock->helper->error(clock->helper->panel,
-				"gettimeofday", TRUE);
+		return helper->error(helper->panel, "gettimeofday", TRUE);
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
 	strftime(buf, sizeof(buf), clock->format, &tm);
 	gtk_label_set_text(GTK_LABEL(clock->label), buf);
+#ifndef EMBEDDED
+	if(helper->icon_size != GTK_ICON_SIZE_LARGE_TOOLBAR)
+	{
+		strftime(buf, sizeof(buf), _("%H:%M:%S\n%d/%m/%Y"), &tm);
+		gtk_widget_set_tooltip_text(clock->label, buf);
+	}
+#endif
 	return TRUE;
 }

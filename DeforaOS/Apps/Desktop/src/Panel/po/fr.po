@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-29 14:48+0200\n"
+"POT-Creation-Date: 2011-11-02 02:12+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -39,11 +39,11 @@ msgstr " (en charge)"
 msgid "Bluetooth is enabled"
 msgstr "Bluetooth actif"
 
-#: ../src/applets/clock.c:85 ../src/applets/clock.c:96
+#: ../src/applets/clock.c:84 ../src/applets/clock.c:95
 msgid "%H:%M"
 msgstr "%H:%M"
 
-#: ../src/applets/clock.c:94
+#: ../src/applets/clock.c:93 ../src/applets/clock.c:140
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
