@@ -2692,7 +2692,7 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
 					0);
 			widget = gtk_file_chooser_button_new(_("Open file..."),
-					GTK_FILE_CHOOSER_ACTION_OPEN);
+					GTK_FILE_CHOOSER_ACTION_SAVE);
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
 			break;
 		case MCT_UINT32:
@@ -2747,8 +2747,8 @@ static void _system_on_cancel(gpointer data)
 							widget), active);
 				break;
 			case MCT_FILENAME:
-				p = (config[i].value != NULL)
-					? config[i].value : "";
+				if((p = config[i].value) == NULL)
+					break;
 				gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
 							widget), p);
 				break;
