@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
  * - implement new contacts
- * - don't report SIM ready is not explicitly required? or in src/phone.c?
  * - verify that the error when the SIM PIN code is wrong is handled properly
  * - allow a trace log to be stored */
 
@@ -1179,7 +1178,14 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			e = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
-			modem->helper->event(modem->helper->modem, e);
+			if(e->registration.status
+					== MODEM_REGISTRATION_STATUS_UNKNOWN)
+			{
+				request.type = HAYES_REQUEST_REGISTRATION;
+				ret |= _hayes_request(modem, &request);
+			}
+			else
+				modem->helper->event(modem->helper->modem, e);
 			break;
 		case MODEM_EVENT_TYPE_STATUS:
 			e = &hayes->events[MODEM_EVENT_TYPE_STATUS];
@@ -1980,6 +1986,7 @@ static gboolean _on_reset(gpointer data)
 					modem);
 		return FALSE;
 	}
+	event->status.status = MODEM_STATUS_UNKNOWN;
 	hayes->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(hayes->channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
