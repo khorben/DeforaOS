@@ -40,21 +40,29 @@ typedef struct _Sofia
 
 typedef enum _SofiaConfig
 {
-	SOFIA_CONFIG_REGISTRAR = 0,
-	SOFIA_CONFIG_USERNAME,
-	SOFIA_CONFIG_PROXY
+	SOFIA_CONFIG_USERNAME = 0,
+	SOFIA_CONFIG_FULLNAME,
+	SOFIA_CONFIG_REGISTRAR_HOSTNAME = 3,
+	SOFIA_CONFIG_REGISTRAR_USERNAME,
+	SOFIA_CONFIG_REGISTRAR_PASSWORD,
+	SOFIA_CONFIG_PROXY_HOSTNAME = 7
 } SofiaConfig;
-#define SOFIA_CONFIG_LAST SOFIA_CONFIG_PROXY
+#define SOFIA_CONFIG_LAST SOFIA_CONFIG_PROXY_HOSTNAME
 #define SOFIA_CONFIG_COUNT (SOFIA_CONFIG_LAST + 1)
 
 
 /* variables */
 static ModemConfig _sofia_config[SOFIA_CONFIG_COUNT + 1] =
 {
-	{ "registrar",	"Registrar",	MCT_STRING,	NULL	},
-	{ "username",	"Username",	MCT_STRING,	NULL	},
-	{ "proxy",	"Proxy",	MCT_STRING,	NULL	},
-	{ NULL,		NULL,		MCT_NONE,	NULL	},
+	{ "username",		"Username",	MCT_STRING,	NULL	},
+	{ "fullname",		"Full name",	MCT_STRING,	NULL	},
+	{ "",			"Registrar",	MCT_NONE,	NULL	},
+	{ "registrar_hostname",	"Hostname",	MCT_STRING,	NULL	},
+	{ "registrar_username",	"Username",	MCT_STRING,	NULL	},
+	{ "registrar_password",	"Password",	MCT_STRING,	NULL	},
+	{ "",			"Proxy",	MCT_NONE,	NULL	},
+	{ "proxy_hostname",	"Hostname",	MCT_STRING,	NULL	},
+	{ NULL,			NULL,		MCT_NONE,	NULL	},
 };
 
 
@@ -134,10 +142,14 @@ static int _sofia_destroy(ModemPlugin * modem)
 /* sofia_start */
 static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 {
+	ModemPluginHelper * helper = modem->helper;
 	Sofia * sofia = modem->priv;
-	char const * registrar = modem->config[SOFIA_CONFIG_REGISTRAR].value;
-	char const * proxy = modem->config[SOFIA_CONFIG_PROXY].value;
 	char const * username = modem->config[SOFIA_CONFIG_USERNAME].value;
+	char const * fullname = modem->config[SOFIA_CONFIG_FULLNAME].value;
+	url_string_t us;
+	char const * s;
+	url_t * url;
+	sip_from_t * from;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -145,17 +157,35 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 	if(sofia->nua != NULL) /* already started */
 		return 0;
 	if((sofia->nua = nua_create(sofia->root, _sofia_callback, modem,
-					TAG_NULL())) == NULL)
+					TAG_END())) == NULL)
 		return -1;
-	nua_set_params(sofia->nua, NUTAG_REGISTRAR(registrar),
-			NUTAG_PROXY(proxy), TAG_NULL());
-	sofia->handle = nua_handle(sofia->nua, modem, TAG_NULL());
-	nua_register(sofia->handle, NUTAG_M_USERNAME(username), TAG_NULL());
+	/* registrar */
+	s = modem->config[SOFIA_CONFIG_REGISTRAR_HOSTNAME].value;
+	url = url_make(sofia->home, s);
+	nua_set_params(sofia->nua, NUTAG_REGISTRAR(url), TAG_END());
+	s = modem->config[SOFIA_CONFIG_REGISTRAR_USERNAME].value;
+	/* XXX url_make() doesn't prefix with the protocol */
+	snprintf(us.us_str, sizeof(us.us_str), "%s%s", "sip:", s);
+	url = url_make(sofia->home, us.us_str);
+	us.us_url[0] = *url;
+	from = sip_from_create(sofia->home, &us);
+	/* proxy */
+	s = modem->config[SOFIA_CONFIG_PROXY_HOSTNAME].value;
+	url = url_make(sofia->home, s);
+	nua_set_params(sofia->nua, NUTAG_PROXY(url), TAG_END());
+	if((sofia->handle = nua_handle(sofia->nua, modem, TAG_END())) == NULL)
+		return -helper->error(helper->modem,
+				"Cannot create operation handle", 1);
+	nua_register(sofia->handle, NUTAG_M_USERNAME(username),
+				NUTAG_M_DISPLAY(fullname), SIPTAG_FROM(from),
+				TAG_END());
 	return 0;
 }
 
 
 /* sofia_stop */
+static void _stop_handle(nua_handle_t ** handle);
+
 static int _sofia_stop(ModemPlugin * modem)
 {
 	Sofia * sofia = modem->priv;
@@ -163,9 +193,7 @@ static int _sofia_stop(ModemPlugin * modem)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(sofia->handle != NULL)
-		nua_handle_destroy(sofia->handle);
-	sofia->handle = NULL;
+	_stop_handle(&sofia->handle);
 	if(sofia->nua != NULL)
 	{
 		nua_shutdown(sofia->nua);
@@ -174,6 +202,14 @@ static int _sofia_stop(ModemPlugin * modem)
 	}
 	sofia->nua = NULL;
 	return 0;
+}
+
+static void _stop_handle(nua_handle_t ** handle)
+{
+	if(*handle == NULL)
+		return;
+	nua_handle_destroy(*handle);
+	*handle = NULL;
 }
 
 
@@ -201,37 +237,36 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 {
 	Sofia * sofia = modem->priv;
 	url_t * url;
-	struct { nua_handle_t * handle; } * op;
+	url_string_t us;
 	sip_to_t * to;
 
+	if(sofia->handle == NULL || nua_handle_has_active_call(sofia->handle))
+		/* FIXME report error, keep track, allow multiple */
+		return -1;
 	if((url = url_make(sofia->home, request->call.number)) == NULL)
 		return -1;
-	if((op = su_zalloc(sofia->home, sizeof(*op))) == NULL)
-		return -1; /* XXX free url? */
-	if((to = sip_to_create(NULL, url)) == NULL)
-		return -1; /* XXX free url and op? */
-	to->a_display = "Private"; /* XXX look it up */
-	if((op->handle = nua_handle(sofia->nua, op, SIPTAG_TO(to), TAG_END()))
-			== NULL)
-		return -modem->helper->error(modem->helper->modem,
-				"Cannot create operation handle", 1);
-	nua_invite(op->handle, /* other tags as needed ... */ TAG_END());
-	/* XXX free url and op? */
+	us.us_url[0] = *url;
+	if((to = sip_to_create(NULL, &us)) == NULL)
+		return -1; /* XXX free url */
+	to->a_display = request->call.number;
+	nua_invite(sofia->handle, SIPTAG_TO(to), TAG_END());
+	/* FIXME free url? more? */
 	return 0;
 }
 
 static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 {
 	Sofia * sofia = modem->priv;
-	struct { nua_handle_t * handle; } * op;
+	url_string_t us;
 
-	if((op = su_zalloc(sofia->home, sizeof(*op))) == NULL)
-		return -1; /* XXX free url? */
-	if((op->handle = nua_handle(sofia->nua, op, NUTAG_URL(
-						request->message_send.number),
-					TAG_END())) == NULL)
+	if(sofia->handle == NULL)
+		/* FIXME report error */
 		return -1;
-	nua_message(op->handle, SIPTAG_CONTENT_TYPE_STR("text/plain"),
+	snprintf(us.us_str, sizeof(us.us_str), "%s%s", "sip:",
+			request->message_send.number);
+	nua_message(sofia->handle,
+			NUTAG_URL(&us),
+			SIPTAG_CONTENT_TYPE_STR("text/plain"),
 			SIPTAG_PAYLOAD_STR(request->message_send.content),
 			TAG_END());
 	return 0;
@@ -265,13 +300,31 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			/* FIXME report event */
 			fprintf(stderr, "i_state %03d %s\n", status, phrase);
 			break;
+		case nua_i_terminated:
+			memset(&mevent, 0, sizeof(mevent));
+			mevent.type = MODEM_EVENT_TYPE_CALL;
+			/* FIXME also remember the other fields */
+			mevent.call.status = MODEM_CALL_STATUS_NONE;
+			modem->helper->event(modem->helper->modem, &mevent);
+			break;
 		case nua_r_invite:
+			memset(&mevent, 0, sizeof(mevent));
+			mevent.type = MODEM_EVENT_TYPE_CALL;
+			mevent.call.call_type = MODEM_CALL_TYPE_VOICE;
+			mevent.call.direction = MODEM_CALL_DIRECTION_OUTGOING;
 			if(status == 200)
+			{
+				mevent.call.status = MODEM_CALL_STATUS_RINGING;
 				nua_ack(nh, TAG_END());
+			}
 			else
+			{
+				mevent.call.status = MODEM_CALL_STATUS_NONE;
 				/* FIXME report error */
 				fprintf(stderr, "r_invite %03d %s\n", status,
 						phrase);
+			}
+			modem->helper->event(modem->helper->modem, &mevent);
 			break;
 		case nua_r_message:
 			/* FIXME report event */
@@ -285,7 +338,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			if(status == 200)
 				mevent.registration.status
 					= MODEM_REGISTRATION_STATUS_REGISTERED;
-			else if(status == 405)
+			else if(status == 401 || status == 405)
 				mevent.registration.status
 					= MODEM_REGISTRATION_STATUS_DENIED;
 			else if(status >= 400 && status <= 499)

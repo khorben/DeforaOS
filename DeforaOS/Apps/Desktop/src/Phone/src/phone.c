@@ -2600,10 +2600,11 @@ static void _system_on_ok(gpointer data);
 
 void phone_show_system(Phone * phone, gboolean show)
 {
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkWidget * bbox;
-	GtkSizeGroup * group;
+	GtkWidget * vbox2;
 	ModemConfig * config;
 	size_t i;
 
@@ -2633,13 +2634,21 @@ void phone_show_system(Phone * phone, gboolean show)
 			G_CALLBACK(_system_on_closex), phone);
 	vbox = gtk_vbox_new(FALSE, 4);
 	config = modem_get_config(phone->modem);
+	vbox2 = vbox;
 	for(i = 0; config != NULL && config[i].name != NULL; i++)
-	{
-		widget = _system_widget(phone, &config[i], group);
-		if(widget == NULL)
-			continue;
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-	}
+		if(config[i].type == MCT_NONE)
+		{
+			widget = gtk_frame_new(config[i].title);
+			gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE,
+					0);
+			vbox2 = gtk_vbox_new(FALSE, 4);
+			gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+			gtk_container_add(GTK_CONTAINER(widget), vbox2);
+		}
+		else if((widget = _system_widget(phone, &config[i], group))
+				!= NULL)
+			gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE,
+					0);
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
@@ -2667,7 +2676,7 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 
 	switch(config->type)
 	{
-		case MCT_NONE: /* XXX should not happen */
+		case MCT_NONE: /* should not happen */
 			break;
 		case MCT_BOOLEAN:
 			widget = gtk_check_button_new_with_label(config->title);
@@ -2686,8 +2695,9 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 					GTK_FILE_CHOOSER_ACTION_OPEN);
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
 			break;
-		case MCT_STRING:
 		case MCT_UINT32:
+			/* FIXME really implement */
+		case MCT_STRING:
 			ret = gtk_hbox_new(FALSE, 4);
 			label = string_new_append(config->title, ": ", NULL);
 			widget = gtk_label_new(label);
