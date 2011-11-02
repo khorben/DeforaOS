@@ -236,6 +236,10 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 		case MODEM_REQUEST_REGISTRATION:
 			request.registration.mode = va_arg(ap,
 					ModemRegistrationMode);
+			if(request.registration.mode
+					== MODEM_REGISTRATION_MODE_MANUAL)
+				request.registration._operator = va_arg(ap,
+						char const *);
 			break;
 		default:
 #ifdef DEBUG
