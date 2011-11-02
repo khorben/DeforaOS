@@ -259,7 +259,6 @@ static void * _hayes_command_get_data(HayesCommand * command);
 static char * _hayes_command_get_line(HayesCommand * command,
 		char const * prefix);
 #endif
-static HayesCommandStatus _hayes_command_get_status(HayesCommand * command);
 static unsigned int _hayes_command_get_timeout(HayesCommand * command);
 static void _hayes_command_set_callback(HayesCommand * command,
 		HayesCommandCallback callback, void * priv);
@@ -1459,8 +1458,7 @@ static int _parse_do(ModemPlugin * modem)
 		return -1;
 	if((status = _hayes_command_callback(command)) == HCS_ACTIVE)
 		_hayes_parse_trigger(modem, hayes->rd_buf, command);
-	if((status = _hayes_command_get_status(command)) == HCS_SUCCESS
-			|| status == HCS_ERROR)
+	else if(status == HCS_SUCCESS || status == HCS_ERROR)
 	{
 		_hayes_queue_pop(modem);
 		_hayes_queue_push(modem);
@@ -1639,6 +1637,7 @@ static int _hayes_queue_push(ModemPlugin * modem)
 	const char suffix[2] = "\r\n";
 	size_t size;
 	char * p;
+	guint timeout;
 
 	if(hayes->queue == NULL) /* nothing to send */
 		return 0;
@@ -1667,9 +1666,9 @@ static int _hayes_queue_push(ModemPlugin * modem)
 				_on_watch_can_write, modem);
 	if(hayes->timeout != 0)
 		g_source_remove(hayes->timeout);
-	if((hayes->timeout = _hayes_command_get_timeout(command)) != 0)
-		hayes->timeout = g_timeout_add(hayes->timeout, _on_timeout,
-				modem);
+	hayes->timeout = 0;
+	if((timeout = _hayes_command_get_timeout(command)) != 0)
+		hayes->timeout = g_timeout_add(timeout, _on_timeout, modem);
 	return 0;
 }
 
@@ -1840,13 +1839,6 @@ static char * _hayes_command_get_line(HayesCommand * command,
 	return NULL;
 }
 #endif
-
-
-/* hayes_command_get_status */
-static HayesCommandStatus _hayes_command_get_status(HayesCommand * command)
-{
-	return command->status;
-}
 
 
 /* hayes_command_get_timeout */
@@ -2163,7 +2155,7 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			/* a reply was obtained */
 			status = _on_request_generic(command, status, modem);
 			if(status != HCS_SUCCESS && status != HCS_ERROR)
-				return HCS_ACTIVE;
+				break;
 			_hayes_set_mode(modem, HAYES_MODE_COMMAND);
 			request.type = HAYES_REQUEST_LOCAL_ECHO_DISABLE;
 			_hayes_request(modem, &request);
@@ -2177,10 +2169,10 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			_hayes_request(modem, &request);
 			return HCS_SUCCESS;
 		case HCS_TIMEOUT:
-			/* try again */
-			_reset_settle(modem);
 			break;
 	}
+	/* try again */
+	_reset_settle(modem);
 	return HCS_ERROR; /* destroy and queue again */
 }
 
@@ -3509,6 +3501,7 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 				hayes->source = g_timeout_add(1000,
 						_on_queue_timeout, modem);
 			break;
+		case 321: /* invalid memory index */
 		default: /* FIXME implement the rest */
 			break;
 	}
