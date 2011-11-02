@@ -3063,6 +3063,8 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case 14: /* SIM busy */
+		case 100: /* unknown error */
+			/* repeat the command */
 			if(command == NULL)
 				break;
 			if((p = _hayes_command_new(command->attention)) == NULL)
@@ -3489,7 +3491,9 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 		case 316: /* SIM PUK required */
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
-		case 500: /* unknown error, repeat the command later */
+		case 314: /* SIM busy */
+		case 500: /* unknown error */
+			/* repeat the command */
 			/* FIXME duplicated from _on_trigger_cme_error() */
 			if(command == NULL)
 				break;
