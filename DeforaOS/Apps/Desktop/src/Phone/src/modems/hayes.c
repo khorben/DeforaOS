@@ -3020,6 +3020,8 @@ static void _on_trigger_cme_error(ModemPlugin * modem, char const * answer)
 				break;
 			_hayes_command_set_callback(p, command->callback,
 					command->priv);
+			_hayes_command_set_data(p, command->data);
+			_hayes_command_set_data(command, NULL);
 			hayes->queue_timeout = g_slist_append(
 					hayes->queue_timeout, p);
 			if(hayes->source == 0)
@@ -3434,7 +3436,7 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 		case 316: /* SIM PUK required */
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
-		case 500: /* unknown error */
+		case 500: /* unknown error, repeat the command later */
 			/* FIXME duplicated from _on_trigger_cme_error() */
 			if(command == NULL)
 				break;
@@ -3442,6 +3444,8 @@ static void _on_trigger_cms_error(ModemPlugin * modem, char const * answer)
 				break;
 			_hayes_command_set_callback(p, command->callback,
 					command->priv);
+			_hayes_command_set_data(p, command->data);
+			_hayes_command_set_data(command, NULL);
 			hayes->queue_timeout = g_slist_append(
 					hayes->queue_timeout, p);
 			if(hayes->source == 0)
