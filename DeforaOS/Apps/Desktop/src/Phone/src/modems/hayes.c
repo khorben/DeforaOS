@@ -276,7 +276,6 @@ static HayesCommandStatus _hayes_command_callback(HayesCommand * command);
 /* callbacks */
 static gboolean _on_queue_timeout(gpointer data);
 static gboolean _on_reset(gpointer data);
-static gboolean _on_search_timeout(gpointer data);
 static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
@@ -2177,26 +2176,6 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 }
 
 
-/* on_search_timeout */
-static gboolean _on_search_timeout(gpointer data)
-{
-	ModemPlugin * modem = data;
-	Hayes * hayes = modem->priv;
-	ModemRequest request;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	hayes->source = 0;
-	memset(&request, 0, sizeof(request));
-	request.type = HAYES_REQUEST_REGISTRATION;
-	_hayes_request(modem, &request);
-	if(hayes->queue_timeout != NULL)
-		hayes->source = g_idle_add(_on_queue_timeout, modem);
-	return FALSE;
-}
-
-
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
@@ -3830,14 +3809,6 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 			request.type = MODEM_REQUEST_SIGNAL_LEVEL;
 			_hayes_request(modem, &request);
 			break;
-#if 1 /* FIXME why is this not working when the delay is too low? */
-		case MODEM_REGISTRATION_STATUS_SEARCHING: /* XXX just in case */
-			if(hayes->source != 0)
-				g_source_remove(hayes->source);
-			hayes->source = g_timeout_add(5000, _on_search_timeout,
-					modem);
-			break;
-#endif
 		default:
 			free(hayes->registration_media);
 			hayes->registration_media = NULL;
@@ -3846,10 +3817,10 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 			hayes->registration_operator = NULL;
 			event->registration._operator = NULL;
 			event->registration.signal = 0.0 / 0.0;
-			/* this is usually an unsollicited event */
-			modem->helper->event(modem->helper->modem, event);
 			break;
 	}
+	/* this is usually an unsollicited event */
+	modem->helper->event(modem->helper->modem, event);
 }
 
 
