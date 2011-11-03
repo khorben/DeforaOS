@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* FIXME:
+ * - only track battery and signal status when online */
 
 
 
@@ -551,6 +553,7 @@ static gboolean _on_settings_closex(gpointer data)
 static void _on_settings_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
+	PhonePluginHelper * helper = plugin->helper;
 	Panel * panel = plugin->priv;
 	gboolean value;
 
@@ -573,13 +576,13 @@ static void _on_settings_ok(gpointer data)
 		panel->battery_timeout = 0;
 	}
 	gtk_widget_set_no_show_all(panel->battery_image, !value);
-	plugin->helper->config_set(plugin->helper->phone, "panel", "battery",
-			value ? "1" : "0");
+	helper->config_set(helper->phone, "panel", "battery", value
+			? "1" : "0");
 	/* truncate */
 	value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				panel->truncate));
 	gtk_label_set_ellipsize(GTK_LABEL(panel->operator), value
 			? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_NONE);
-	plugin->helper->config_set(plugin->helper->phone, "panel", "truncate",
-			value ? "1" : "0");
+	helper->config_set(helper->phone, "panel", "truncate", value
+			? "1" : "0");
 }
