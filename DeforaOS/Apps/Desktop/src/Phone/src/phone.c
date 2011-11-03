@@ -901,16 +901,12 @@ int phone_event(Phone * phone, PhoneEvent * event)
 					MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case PHONE_EVENT_TYPE_STARTING:
-			if(ret == 0)
-				ret = modem_start(phone->modem);
-			if(ret == 0)
+			if(ret == 0 && (ret = modem_start(phone->modem)) == 0)
 				phone_event_type(phone,
 						PHONE_EVENT_TYPE_STARTED);
 			break;
 		case PHONE_EVENT_TYPE_STOPPING:
-			if(ret == 0)
-				ret = modem_stop(phone->modem);
-			if(ret == 0)
+			if(ret == 0 && (ret = modem_stop(phone->modem)) == 0)
 				phone_event_type(phone,
 						PHONE_EVENT_TYPE_STOPPED);
 			break;
@@ -4054,9 +4050,10 @@ static gboolean _phone_timeout_track(gpointer data)
 		_phone_progress_pulse(phone->me_progress);
 	if(phone->tracks[PHONE_TRACK_MESSAGE_SENT])
 		_phone_progress_pulse(phone->wr_progress);
-	if(phone->tracks[PHONE_TRACK_SIGNAL_LEVEL]
-			&& modem_request_type(phone->modem,
-				MODEM_REQUEST_SIGNAL_LEVEL) != 0)
+	if(phone->tracks[PHONE_TRACK_SIGNAL_LEVEL])
+	{
+		modem_request_type(phone->modem, MODEM_REQUEST_SIGNAL_LEVEL);
 		_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, FALSE);
+	}
 	return TRUE;
 }
