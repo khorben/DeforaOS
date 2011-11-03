@@ -657,18 +657,6 @@ static int _hayes_destroy(ModemPlugin * modem)
 	Hayes * hayes = modem->priv;
 
 	_hayes_stop(modem);
-	string_delete(hayes->authentication_name);
-	string_delete(hayes->call_number);
-	string_delete(hayes->contact_name);
-	string_delete(hayes->contact_number);
-	string_delete(hayes->gprs_username);
-	string_delete(hayes->gprs_password);
-	string_delete(hayes->message_number);
-	string_delete(hayes->model_name);
-	string_delete(hayes->model_vendor);
-	string_delete(hayes->model_version);
-	string_delete(hayes->registration_media);
-	string_delete(hayes->registration_operator);
 	object_delete(hayes);
 	return 0;
 }
@@ -1728,11 +1716,13 @@ static void _hayes_reset_start(ModemPlugin * modem, unsigned int retry)
 
 /* hayes_reset_stop */
 static void _reset_stop_channel(GIOChannel * channel);
+static void _reset_stop_string(char ** string);
 
 static void _hayes_reset_stop(ModemPlugin * modem)
 {
 	Hayes * hayes = modem->priv;
 	ModemEvent * event;
+	size_t i;
 
 	/* close everything opened */
 	if(hayes->fp != NULL)
@@ -1754,15 +1744,6 @@ static void _hayes_reset_stop(ModemPlugin * modem)
 		event->connection.out = 0;
 		modem->helper->event(modem->helper->modem, event);
 	}
-	/* remove registration data */
-	free(hayes->registration_media);
-	hayes->registration_media = NULL;
-	event->registration.media = NULL;
-	free(hayes->registration_operator);
-	hayes->registration_operator = NULL;
-	event->registration._operator = NULL;
-	event->registration.signal = 0.0 / 0.0;
-	event->registration.roaming = 0;
 	/* reset battery information */
 	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
 	if(event->battery_level.status != MODEM_BATTERY_STATUS_UNKNOWN)
@@ -1772,7 +1753,23 @@ static void _hayes_reset_stop(ModemPlugin * modem)
 		event->battery_level.charging = 0;
 		modem->helper->event(modem->helper->modem, event);
 	}
-	/* FIXME some more? */
+	/* remove internal data */
+	_reset_stop_string(&hayes->authentication_name);
+	_reset_stop_string(&hayes->call_number);
+	_reset_stop_string(&hayes->contact_name);
+	_reset_stop_string(&hayes->contact_number);
+	_reset_stop_string(&hayes->gprs_username);
+	_reset_stop_string(&hayes->gprs_password);
+	_reset_stop_string(&hayes->message_number);
+	_reset_stop_string(&hayes->model_name);
+	_reset_stop_string(&hayes->model_vendor);
+	_reset_stop_string(&hayes->model_version);
+	_reset_stop_string(&hayes->registration_media);
+	_reset_stop_string(&hayes->registration_operator);
+	/* reset events */
+	memset(&hayes->events, 0, sizeof(hayes->events));
+	for(i = 0; i < sizeof(hayes->events) / sizeof(*hayes->events); i++)
+		hayes->events[i].type = i;
 }
 
 static void _reset_stop_channel(GIOChannel * channel)
@@ -1786,6 +1783,12 @@ static void _reset_stop_channel(GIOChannel * channel)
 		/* XXX report error */
 		g_error_free(error);
 	g_io_channel_unref(channel);
+}
+
+static void _reset_stop_string(char ** string)
+{
+	free(*string);
+	*string = NULL;
 }
 
 
