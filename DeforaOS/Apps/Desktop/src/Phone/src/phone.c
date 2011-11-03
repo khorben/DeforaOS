@@ -3881,9 +3881,6 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 				break;
 			snprintf(buf, sizeof(buf), _("%s is valid"), name);
 			_phone_info(phone, phone->en_window, buf, callback);
-			/* obtain the registration status */
-			modem_trigger(phone->modem,
-					MODEM_EVENT_TYPE_REGISTRATION);
 			break;
 		case MODEM_AUTHENTICATION_STATUS_REQUIRED:
 			if(event->authentication.method
