@@ -2174,6 +2174,9 @@ static gboolean _reset_settle(gpointer data)
 	ModemPlugin * modem = data;
 	HayesCommand * command;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((command = _hayes_command_new("ATZE0V1")) == NULL)
 	{
 		modem->helper->error(modem->helper->modem, error_get(), 1);
@@ -2199,19 +2202,15 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, status);
 #endif
-	if(hayes->timeout != 0)
-		g_source_remove(hayes->timeout);
-	hayes->timeout = 0;
+	status = _on_request_generic(command, status, priv);
 	switch(status)
 	{
 		case HCS_PENDING: /* ignore */
 		case HCS_QUEUED:
-			return status;
-		case HCS_ACTIVE:
-			/* a reply was obtained */
-			if((status = _on_request_generic(command, status, priv))
-					!= HCS_SUCCESS)
-				return status;
+			break;
+		case HCS_ACTIVE: /* give it another chance */
+			break;
+		case HCS_SUCCESS: /* we can initialize */
 			_hayes_set_mode(modem, HAYES_MODE_COMMAND);
 			_hayes_request_type(modem,
 					HAYES_REQUEST_LOCAL_ECHO_DISABLE);
@@ -2221,16 +2220,12 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			_hayes_request_type(modem,
 					HAYES_REQUEST_EXTENDED_ERRORS);
 			_hayes_request_type(modem, HAYES_REQUEST_FUNCTIONAL);
-			return HCS_SUCCESS;
-		case HCS_TIMEOUT:
-		case HCS_ERROR:
 			break;
-		case HCS_SUCCESS: /* should not happen */
-			status = HCS_ERROR;
+		case HCS_TIMEOUT: /* try again */
+		case HCS_ERROR:
+			_reset_settle(modem);
 			break;
 	}
-	/* try again */
-	_reset_settle(modem);
 	return status;
 }
 
@@ -2794,13 +2789,29 @@ static HayesCommandStatus _on_request_registration_automatic(
 	Hayes * hayes = modem->priv;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
-		return status;
-	event->registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
-	event->registration.status = MODEM_REGISTRATION_STATUS_SEARCHING;
-	modem->helper->event(modem->helper->modem, event);
-	/* force a registration status */
-	_hayes_request_type(modem, HAYES_REQUEST_REGISTRATION);
+	status = _on_request_generic(command, status, priv);
+	switch(status)
+	{
+		case HCS_ACTIVE:
+			event->registration.mode
+				= MODEM_REGISTRATION_MODE_AUTOMATIC;
+			event->registration.status
+				= MODEM_REGISTRATION_STATUS_SEARCHING;
+			modem->helper->event(modem->helper->modem, event);
+			break;
+		case HCS_ERROR:
+		case HCS_TIMEOUT:
+			event->registration.mode
+				= MODEM_REGISTRATION_MODE_UNKNOWN;
+			event->registration.status
+				= MODEM_REGISTRATION_STATUS_UNKNOWN;
+			modem->helper->event(modem->helper->modem, event);
+			break;
+		case HCS_SUCCESS:
+			/* force a registration status */
+			_hayes_request_type(modem, HAYES_REQUEST_REGISTRATION);
+			break;
+	}
 	return status;
 }
 
@@ -3947,7 +3958,6 @@ static void _on_trigger_cusd(ModemPlugin * modem, char const * answer)
 /* on_trigger_ext_error */
 static void _on_trigger_ext_error(ModemPlugin * modem, char const * answer)
 {
-	ModemPluginHelper * helper = modem->helper;
 	Hayes * hayes = modem->priv;
 	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
