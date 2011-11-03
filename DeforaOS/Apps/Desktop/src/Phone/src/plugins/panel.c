@@ -409,6 +409,8 @@ static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
 			_operator = "Unknown";
 			break;
 		case MODEM_REGISTRATION_STATUS_REGISTERED:
+			if(_operator == NULL)
+				_operator = "Registered";
 		default:
 			break;
 	}
