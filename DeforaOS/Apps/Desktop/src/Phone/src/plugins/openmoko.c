@@ -341,10 +341,8 @@ static void _openmoko_deepsleep(PhonePlugin * plugin)
 	if((p = helper->config_get(helper->phone, "openmoko", "deepsleep"))
 			!= NULL && strtoul(p, NULL, 10) != 0)
 		cmd = "AT%SLEEP=2"; /* prevent deep sleep */
+	/* XXX this may reset the hardware modem */
 	_openmoko_queue(plugin, cmd);
-	/* check if the hardware modem was reset */
-	plugin->helper->trigger(plugin->helper->phone,
-			MODEM_EVENT_TYPE_AUTHENTICATION);
 }
 
 
