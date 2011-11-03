@@ -157,6 +157,9 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_STARTED:
 			_openmoko_power(plugin, TRUE);
 			break;
+		case PHONE_EVENT_TYPE_ONLINE:
+			_openmoko_deepsleep(plugin);
+			break;
 		case PHONE_EVENT_TYPE_STOPPED:
 			_openmoko_power(plugin, FALSE);
 			break;
@@ -258,10 +261,6 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 			/* enable echo cancellation */
 			_openmoko_queue(plugin, "AT%N0187");
 			break;
-		case MODEM_EVENT_TYPE_STATUS:
-			if(event->status.status == MODEM_STATUS_ONLINE)
-				_openmoko_deepsleep(plugin);
-			break;
 		default:
 			break;
 	}
@@ -342,9 +341,10 @@ static void _openmoko_deepsleep(PhonePlugin * plugin)
 	if((p = helper->config_get(helper->phone, "openmoko", "deepsleep"))
 			!= NULL && strtoul(p, NULL, 10) != 0)
 		cmd = "AT%SLEEP=2"; /* prevent deep sleep */
-	/* XXX may reset the hardware modem */
 	_openmoko_queue(plugin, cmd);
-	_openmoko_queue(plugin, "AT+CPIN?");
+	/* check if the hardware modem was reset */
+	plugin->helper->trigger(plugin->helper->phone,
+			MODEM_EVENT_TYPE_AUTHENTICATION);
 }
 
 
