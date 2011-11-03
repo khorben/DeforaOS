@@ -13,6 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
+ * - implement priorities again
+ * - parse messages from within +CMGL already
  * - implement new contacts */
 
 
@@ -2792,6 +2794,9 @@ static HayesCommandStatus _on_request_registration_automatic(
 	status = _on_request_generic(command, status, priv);
 	switch(status)
 	{
+		case HCS_PENDING:
+		case HCS_QUEUED:
+			break;
 		case HCS_ACTIVE:
 			event->registration.mode
 				= MODEM_REGISTRATION_MODE_AUTOMATIC;
