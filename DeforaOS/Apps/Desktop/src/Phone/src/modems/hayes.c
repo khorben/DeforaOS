@@ -3819,7 +3819,8 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 		case 2:
 			if(u[0] != MODEM_REGISTRATION_MODE_MANUAL)
 				u[0] = MODEM_REGISTRATION_MODE_AUTOMATIC;
-			u[1] = MODEM_REGISTRATION_STATUS_SEARCHING;
+			u[1] = (res < 3) ? MODEM_REGISTRATION_STATUS_SEARCHING
+				: MODEM_REGISTRATION_STATUS_REGISTERED;
 			break;
 		case 3:
 			u[1] = MODEM_REGISTRATION_STATUS_DENIED;
