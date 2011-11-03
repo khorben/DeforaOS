@@ -18,6 +18,8 @@
 #ifndef LIBSYSTEM_STRING_H
 # define LIBSYSTEM_STRING_H
 
+# include <sys/types.h>
+
 
 /* String */
 /* types */
