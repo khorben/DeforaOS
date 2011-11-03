@@ -1,5 +1,5 @@
 PACKAGE	= Phone
-VERSION	= 0.3.5
+VERSION	= 0.3.6
 SUBDIRS	= data doc include po src tools
 RM	?= rm -f
 LN	?= ln -f
