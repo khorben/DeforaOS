@@ -364,6 +364,7 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cring(ModemPlugin * modem, char const * answer);
 static void _on_trigger_csq(ModemPlugin * modem, char const * answer);
 static void _on_trigger_cusd(ModemPlugin * modem, char const * answer);
+static void _on_trigger_ext_error(ModemPlugin * modem, char const * answer);
 
 /* helpers */
 static int _is_figure(int c);
@@ -604,6 +605,7 @@ static HayesTriggerHandler _hayes_trigger_handlers[] =
 	{ "+CRING",	_on_trigger_cring	},
 	{ "+CSQ",	_on_trigger_csq		},
 	{ "+CUSD",	_on_trigger_cusd	},
+	{ "+EXT ERROR",	_on_trigger_ext_error	},
 	{ "BUSY",	_on_trigger_call_error	},
 	{ "CONNECT",	_on_trigger_connect	},
 	{ "NO CARRIER",	_on_trigger_call_error	},
@@ -2795,6 +2797,8 @@ static HayesCommandStatus _on_request_registration_automatic(
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
 	event->registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
+	event->registration.status = MODEM_REGISTRATION_STATUS_SEARCHING;
+	modem->helper->event(modem->helper->modem, event);
 	/* force a registration status */
 	_hayes_request_type(modem, HAYES_REQUEST_REGISTRATION);
 	return status;
@@ -2981,6 +2985,8 @@ static void _on_trigger_cgatt(ModemPlugin * modem, char const * answer)
 	else
 		hayes->registration_media = NULL;
 	event->registration.media = hayes->registration_media;
+	/* this is usually worth an event */
+	modem->helper->event(modem->helper->modem, event);
 }
 
 
@@ -3672,18 +3678,23 @@ static void _on_trigger_cops(ModemPlugin * modem, char const * answer)
 			break;
 	}
 	event->registration.mode = u;
+	free(hayes->registration_operator);
+	hayes->registration_operator = NULL;
+	event->registration._operator = NULL;
 	if(v != 0)
 		/* force alphanumeric format */
 		_hayes_request_type(modem, HAYES_REQUEST_OPERATOR_FORMAT_LONG);
 	else
 	{
 		buf[sizeof(buf) - 1] = '\0';
-		free(hayes->registration_operator);
 		hayes->registration_operator = strdup(buf);
 		event->registration._operator = hayes->registration_operator;
-		/* this is usually worth an event */
-		modem->helper->event(modem->helper->modem, event);
 	}
+	/* refresh registration data */
+	_hayes_request_type(modem, MODEM_REQUEST_SIGNAL_LEVEL);
+	_hayes_request_type(modem, HAYES_REQUEST_GPRS_ATTACHED);
+	/* this is usually worth an event */
+	modem->helper->event(modem->helper->modem, event);
 }
 
 
@@ -3868,9 +3879,7 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 	{
 		case MODEM_REGISTRATION_STATUS_REGISTERED:
 			/* refresh registration data */
-			_hayes_request_type(modem, HAYES_REQUEST_GPRS_ATTACHED);
 			_hayes_request_type(modem, HAYES_REQUEST_OPERATOR);
-			_hayes_request_type(modem, MODEM_REQUEST_SIGNAL_LEVEL);
 			break;
 		default:
 			free(hayes->registration_media);
@@ -3880,10 +3889,10 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 			hayes->registration_operator = NULL;
 			event->registration._operator = NULL;
 			event->registration.signal = 0.0 / 0.0;
-			/* this is usually an unsollicited event */
-			modem->helper->event(modem->helper->modem, event);
 			break;
 	}
+	/* this is usually an unsollicited event */
+	modem->helper->event(modem->helper->modem, event);
 }
 
 
@@ -3932,6 +3941,29 @@ static void _on_trigger_cusd(ModemPlugin * modem, char const * answer)
 	/* FIXME really implement */
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
+}
+
+
+/* on_trigger_ext_error */
+static void _on_trigger_ext_error(ModemPlugin * modem, char const * answer)
+{
+	ModemPluginHelper * helper = modem->helper;
+	Hayes * hayes = modem->priv;
+	/* XXX ugly */
+	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
+		: NULL;
+	unsigned int u;
+
+	if(command != NULL)
+		_hayes_command_set_status(command, HCS_ERROR);
+	if(sscanf(answer, "%u", &u) != 1)
+		return;
+	switch(u)
+	{
+		case 0:
+		default: /* FIXME implement */
+			break;
+	}
 }
 
 
