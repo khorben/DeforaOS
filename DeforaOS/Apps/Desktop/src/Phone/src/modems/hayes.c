@@ -92,7 +92,9 @@ typedef struct _Hayes
 
 typedef enum _HayesCommandPriority
 {
-	HCP_NORMAL = 0,
+	HCP_LOWER = 0,
+	HCP_NORMAL,
+	HCP_HIGHER,
 	HCP_IMMEDIATE
 } HayesCommandPriority;
 
@@ -176,6 +178,7 @@ enum
 	HAYES_REQUEST_EXTENDED_ERRORS,
 	HAYES_REQUEST_EXTENDED_RING_REPORTS,
 	HAYES_REQUEST_FUNCTIONAL,
+	HAYES_REQUEST_FUNCTIONAL_DISABLE,
 	HAYES_REQUEST_FUNCTIONAL_ENABLE,
 	HAYES_REQUEST_FUNCTIONAL_ENABLE_RESET,
 	HAYES_REQUEST_GPRS_ATTACHED,
@@ -469,6 +472,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_FUNCTIONAL,			"AT+CFUN?",
 		_on_request_functional },
+	{ HAYES_REQUEST_FUNCTIONAL_DISABLE,		"AT+CFUN=0",
+		_on_request_generic },
 	{ HAYES_REQUEST_FUNCTIONAL_ENABLE,		"AT+CFUN=1",
 		_on_request_functional_enable },
 	{ HAYES_REQUEST_FUNCTIONAL_ENABLE_RESET,	"AT+CFUN=1,1",
@@ -663,7 +668,8 @@ static char * _request_attention_apn(char const * protocol, char const * apn);
 static char * _request_attention_call(ModemPlugin * modem,
 		ModemRequest * request);
 static char * _request_attention_call_hangup(ModemPlugin * modem);
-static char * _request_attention_connectivity(ModemPlugin * modem, int enabled);
+static char * _request_attention_connectivity(ModemPlugin * modem,
+		unsigned int enabled);
 static char * _request_attention_contact_delete(ModemPlugin * modem,
 		unsigned int id);
 static char * _request_attention_contact_list(ModemRequest * request);
@@ -889,9 +895,16 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 	return strdup("AT+CHUP");
 }
 
-static char * _request_attention_connectivity(ModemPlugin * modem, int enabled)
+static char * _request_attention_connectivity(ModemPlugin * modem,
+		unsigned int enabled)
 {
-	return strdup(enabled ? "AT+CFUN=1" : "AT+CFUN=0");
+	ModemRequest request;
+
+	memset(&request, 0, sizeof(request));
+	request.type = enabled ? HAYES_REQUEST_FUNCTIONAL_ENABLE
+		: HAYES_REQUEST_FUNCTIONAL_DISABLE;
+	_hayes_request(modem, &request);
+	return NULL;
 }
 
 static char * _request_attention_contact_delete(ModemPlugin * modem,
@@ -1457,7 +1470,8 @@ static int _parse_do(ModemPlugin * modem)
 		return -1;
 	if((status = _hayes_command_callback(command)) == HCS_ACTIVE)
 		_hayes_parse_trigger(modem, hayes->rd_buf, command);
-	else if(status == HCS_SUCCESS || status == HCS_ERROR)
+	else if(status == HCS_SUCCESS || status == HCS_ERROR
+			|| status == HCS_TIMEOUT)
 	{
 		_hayes_queue_pop(modem);
 		_hayes_queue_push(modem);
@@ -2639,7 +2653,9 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 {
 	char const * answer;
 
-	if(status != HCS_ACTIVE) /* XXX should not happen */
+	if(status == HCS_TIMEOUT)
+		return HCS_TIMEOUT;
+	else if(status != HCS_ACTIVE) /* XXX should not happen */
 		return HCS_ERROR;
 	if((answer = _hayes_command_get_answer(command)) == NULL)
 		return HCS_ERROR;
@@ -2663,7 +2679,7 @@ static HayesCommandStatus _on_request_message(HayesCommand * command,
 	HayesRequestMessageData * data;
 
 	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
-			|| status == HCS_ERROR)
+			|| status == HCS_ERROR || status == HCS_TIMEOUT)
 		if((data = _hayes_command_get_data(command)) != NULL)
 		{
 			free(data);
@@ -2695,7 +2711,7 @@ static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 	HayesRequestMessageData * data;
 
 	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
-			|| status == HCS_ERROR)
+			|| status == HCS_ERROR || status == HCS_TIMEOUT)
 		if((data = _hayes_command_get_data(command)) != NULL)
 		{
 			free(data);
@@ -2755,7 +2771,8 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 	ModemRequest request;
 
-	if((status = _on_request_generic(command, status, priv)) == HCS_ERROR)
+	if((status = _on_request_generic(command, status, priv)) == HCS_ERROR
+			|| status == HCS_TIMEOUT)
 	{
 		event->authentication.status
 			= MODEM_AUTHENTICATION_STATUS_ERROR;
@@ -3773,15 +3790,21 @@ static void _on_trigger_creg(ModemPlugin * modem, char const * answer)
 			u[1] = MODEM_REGISTRATION_STATUS_NOT_SEARCHING;
 			break;
 		case 1:
+			if(u[0] != MODEM_REGISTRATION_MODE_MANUAL)
+				u[0] = MODEM_REGISTRATION_MODE_AUTOMATIC;
 			u[1] = MODEM_REGISTRATION_STATUS_REGISTERED;
 			break;
 		case 2:
+			if(u[0] != MODEM_REGISTRATION_MODE_MANUAL)
+				u[0] = MODEM_REGISTRATION_MODE_AUTOMATIC;
 			u[1] = MODEM_REGISTRATION_STATUS_SEARCHING;
 			break;
 		case 3:
 			u[1] = MODEM_REGISTRATION_STATUS_DENIED;
 			break;
 		case 5:
+			if(u[0] != MODEM_REGISTRATION_MODE_MANUAL)
+				u[0] = MODEM_REGISTRATION_MODE_AUTOMATIC;
 			u[1] = MODEM_REGISTRATION_STATUS_REGISTERED;
 			event->registration.roaming = 1;
 			break;
