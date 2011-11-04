@@ -15,4 +15,5 @@
 ../src/plugins/dirtree.c
 ../src/plugins/preview.c
 ../src/plugins/properties.c
+../src/plugins/subversion.c
 ../src/plugins/volumes.c

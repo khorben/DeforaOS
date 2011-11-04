@@ -1,4 +1,4 @@
-TARGETS	= cvs.so dirtree.so preview.so properties.so volumes.so
+TARGETS	= cvs.so dirtree.so preview.so properties.so subversion.so volumes.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -46,6 +46,13 @@ properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 properties.so: $(properties_OBJS)
 	$(CCSHARED) -o properties.so $(properties_OBJS) $(properties_LDFLAGS)
 
+subversion_OBJS = subversion.o
+subversion_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+subversion_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+subversion.so: $(subversion_OBJS)
+	$(CCSHARED) -o subversion.so $(subversion_OBJS) $(subversion_LDFLAGS)
+
 volumes_OBJS = volumes.o
 volumes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 volumes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -65,11 +72,14 @@ preview.o: preview.c ../../include/Browser.h
 properties.o: properties.c ../../include/Browser.h ../properties.c
 	$(CC) $(properties_CFLAGS) -c properties.c
 
+subversion.o: subversion.c ../../include/Browser.h
+	$(CC) $(subversion_CFLAGS) -c subversion.c
+
 volumes.o: volumes.c ../../include/Browser.h
 	$(CC) $(volumes_CFLAGS) -c volumes.c
 
 clean:
-	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(preview_OBJS) $(properties_OBJS) $(volumes_OBJS)
+	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(preview_OBJS) $(properties_OBJS) $(subversion_OBJS) $(volumes_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -84,6 +94,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- properties.so $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
+	$(INSTALL) -m 0644 -- subversion.so $(DESTDIR)$(LIBDIR)/Browser/plugins/subversion.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- volumes.so $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
 
 uninstall:
@@ -91,6 +103,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/dirtree.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/preview.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/subversion.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/volumes.so
 
 .PHONY: all clean distclean install uninstall

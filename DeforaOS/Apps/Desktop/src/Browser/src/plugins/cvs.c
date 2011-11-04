@@ -132,6 +132,7 @@ BrowserPlugin plugin =
 
 /* private */
 /* functions */
+/* cvs_init */
 static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
 		char const * label, GCallback callback, gpointer data);
 static GtkWidget * _init_label(GtkSizeGroup * group, char const * label,
@@ -210,7 +211,7 @@ static GtkWidget * _cvs_init(BrowserPlugin * plugin)
 	gtk_widget_set_no_show_all(cvs->file, TRUE);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->file, FALSE, TRUE, 0);
 	/* additional actions */
-	cvs->add = _init_button(bgroup, GTK_STOCK_ADD, _("Add to CVS"),
+	cvs->add = _init_button(bgroup, GTK_STOCK_ADD, _("Add to repository"),
 			G_CALLBACK(_cvs_on_add), plugin);
 	gtk_box_pack_start(GTK_BOX(cvs->widget), cvs->add, FALSE, TRUE, 0);
 	cvs->make = _init_button(bgroup, GTK_STOCK_EXECUTE, _("Run make"),
@@ -268,6 +269,7 @@ static GtkWidget * _init_label(GtkSizeGroup * group, char const * label,
 }
 
 
+/* cvs_destroy */
 static void _cvs_destroy(BrowserPlugin * plugin)
 {
 	CVS * cvs = plugin->priv;

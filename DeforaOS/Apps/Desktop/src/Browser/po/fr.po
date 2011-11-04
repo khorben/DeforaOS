@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-04 16:31+0100\n"
+"POT-Creation-Date: 2011-11-04 17:28+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -812,68 +812,72 @@ msgstr "Impossible d'éditer le fichier"
 msgid "Usage: view file...\n"
 msgstr "Usage: view fichier...\n"
 
-#: ../src/plugins/cvs.c:124 ../src/plugins/cvs.c:519
+#: ../src/plugins/cvs.c:124 ../src/plugins/cvs.c:521
 msgid "CVS"
 msgstr "CVS"
 
-#: ../src/plugins/cvs.c:171
+#: ../src/plugins/cvs.c:172
 msgid "Root:"
 msgstr "Racine :"
 
-#: ../src/plugins/cvs.c:173
+#: ../src/plugins/cvs.c:174
 msgid "Repository:"
 msgstr "Dépôt :"
 
-#: ../src/plugins/cvs.c:175
+#: ../src/plugins/cvs.c:176
 msgid "Tag:"
 msgstr "Tag :"
 
-#: ../src/plugins/cvs.c:177 ../src/plugins/cvs.c:197
+#: ../src/plugins/cvs.c:178 ../src/plugins/cvs.c:198
+#: ../src/plugins/subversion.c:167 ../src/plugins/subversion.c:185
 msgid "Request diff"
 msgstr "Différences"
 
-#: ../src/plugins/cvs.c:180 ../src/plugins/cvs.c:200
+#: ../src/plugins/cvs.c:181 ../src/plugins/cvs.c:201
+#: ../src/plugins/subversion.c:170 ../src/plugins/subversion.c:188
 msgid "View log"
 msgstr "Journal"
 
-#: ../src/plugins/cvs.c:183 ../src/plugins/cvs.c:203
+#: ../src/plugins/cvs.c:184 ../src/plugins/cvs.c:204
+#: ../src/plugins/subversion.c:173 ../src/plugins/subversion.c:191
 msgid "Update"
 msgstr "Actualiser"
 
-#: ../src/plugins/cvs.c:186 ../src/plugins/cvs.c:206
+#: ../src/plugins/cvs.c:187 ../src/plugins/cvs.c:207
+#: ../src/plugins/subversion.c:176 ../src/plugins/subversion.c:194
 msgid "Commit"
 msgstr "Soumettre"
 
-#: ../src/plugins/cvs.c:195
+#: ../src/plugins/cvs.c:196
 msgid "Revision:"
 msgstr "Révision :"
 
-#: ../src/plugins/cvs.c:213
-msgid "Add to CVS"
-msgstr "Ajouter à CVS"
+#: ../src/plugins/cvs.c:214 ../src/plugins/subversion.c:201
+msgid "Add to repository"
+msgstr "Ajouter au dépôt"
 
-#: ../src/plugins/cvs.c:216
+#: ../src/plugins/cvs.c:217 ../src/plugins/subversion.c:204
 msgid "Run make"
 msgstr "Exécuter make"
 
-#: ../src/plugins/cvs.c:346 ../src/plugins/cvs.c:418
+#: ../src/plugins/cvs.c:348 ../src/plugins/cvs.c:420
 msgid "Not a CVS repository"
 msgstr "Pas un dépôt CVS"
 
-#: ../src/plugins/cvs.c:441
+#: ../src/plugins/cvs.c:443
 msgid "Not managed by CVS"
 msgstr "Pas maintenu par CVS"
 
-#: ../src/plugins/cvs.c:563
+#: ../src/plugins/cvs.c:565 ../src/plugins/subversion.c:431
 msgid "Running command..."
 msgstr "Exécution en cours..."
 
-#: ../src/plugins/cvs.c:810
+#: ../src/plugins/cvs.c:812 ../src/plugins/subversion.c:679
 #, c-format
 msgid "Command exited with error code %d"
 msgstr "La commande a terminé avec le code d'erreur %d"
 
-#: ../src/plugins/cvs.c:816
+#: ../src/plugins/cvs.c:818 ../src/plugins/subversion.c:685
 #, c-format
 msgid "Command exited with signal %d"
 msgstr "La commande a été terminée par le signal %d"
@@ -885,6 +889,14 @@ msgstr "Arborescence"
 #: ../src/plugins/preview.c:65
 msgid "Preview"
 msgstr "Prévisualisation"
+
+#: ../src/plugins/subversion.c:121 ../src/plugins/subversion.c:386
+msgid "Subversion"
+msgstr "Subversion"
+
+#: ../src/plugins/subversion.c:307
+msgid "Not a Subversion repository"
+msgstr "Pas un dépôt Subversion"
 
 #: ../src/plugins/volumes.c:76
 msgid "Volumes"
