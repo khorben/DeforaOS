@@ -63,6 +63,7 @@ enum
 enum _BrowserPluginColumn
 {
 	BPC_NAME = 0,
+	BPC_ICON,
 	BPC_NAME_DISPLAY,
 	BPC_PLUGIN,
 	BPC_BROWSERPLUGIN,
@@ -427,12 +428,17 @@ Browser * browser_new(char const * directory)
 	browser->pl_view = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER,
-			G_TYPE_POINTER);
+			GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_POINTER,
+			G_TYPE_POINTER, G_TYPE_POINTER);
 	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				browser->pl_store));
 	g_signal_connect_swapped(G_OBJECT(browser->pl_combo), "changed",
 			G_CALLBACK(_browser_on_plugin_combo_change), browser);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->pl_combo),
+			renderer, FALSE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->pl_combo),
+			renderer, "pixbuf", BPC_ICON, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->pl_combo),
 			renderer, TRUE);
@@ -885,6 +891,8 @@ int browser_load(Browser * browser, char const * plugin)
 	BrowserPlugin * bp;
 	GtkWidget * widget;
 	GtkTreeIter iter;
+	GtkIconTheme * theme;
+	GdkPixbuf * pixbuf = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
@@ -905,10 +913,17 @@ int browser_load(Browser * browser, char const * plugin)
 		return -browser_error(NULL, error_get(), 1);
 	}
 	gtk_widget_hide(widget);
+	theme = gtk_icon_theme_get_default();
+	if(bp->icon != NULL)
+		pixbuf = gtk_icon_theme_load_icon(theme, bp->icon, 24, 0, NULL);
+	if(pixbuf == NULL)
+		pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 24,
+				0, NULL);
 	gtk_list_store_append(browser->pl_store, &iter);
 	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, plugin,
-			BPC_NAME_DISPLAY, _(bp->name), BPC_PLUGIN, p,
-			BPC_BROWSERPLUGIN, bp, BPC_WIDGET, widget, -1);
+			BPC_ICON, pixbuf, BPC_NAME_DISPLAY, _(bp->name),
+			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
+			BPC_WIDGET, widget, -1);
 	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
 	if(gtk_widget_get_no_show_all(browser->pl_view) == TRUE)
 	{
