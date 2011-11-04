@@ -56,11 +56,11 @@ static ModemConfig _sofia_config[SOFIA_CONFIG_COUNT + 1] =
 {
 	{ "username",		"Username",	MCT_STRING,	NULL	},
 	{ "fullname",		"Full name",	MCT_STRING,	NULL	},
-	{ "",			"Registrar",	MCT_NONE,	NULL	},
+	{ NULL,			"Registrar",	MCT_SUBSECTION,	NULL	},
 	{ "registrar_hostname",	"Hostname",	MCT_STRING,	NULL	},
 	{ "registrar_username",	"Username",	MCT_STRING,	NULL	},
 	{ "registrar_password",	"Password",	MCT_STRING,	NULL	},
-	{ "",			"Proxy",	MCT_NONE,	NULL	},
+	{ NULL,			"Proxy",	MCT_SUBSECTION,	NULL	},
 	{ "proxy_hostname",	"Hostname",	MCT_STRING,	NULL	},
 	{ NULL,			NULL,		MCT_NONE,	NULL	},
 };

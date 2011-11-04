@@ -104,15 +104,14 @@ static void _new_config(Config * config, char const * name,
 		return;
 	if((section = string_new_append("modem_", name, NULL)) == NULL)
 		return; /* XXX report error */
-	for(i = 0; plugin->config[i].name != NULL; i++)
+	for(i = 0; plugin->config[i].type != MCT_NONE; i++)
 	{
-		if((p = config_get(config, section, plugin->config[i].name))
-				== NULL)
+		if((p = plugin->config[i].name) == NULL)
+			continue;
+		if((p = config_get(config, section, p)) == NULL)
 			continue;
 		switch(plugin->config[i].type)
 		{
-			case MCT_NONE: /* XXX should not happen */
-				break;
 			case MCT_BOOLEAN:
 				plugin->config[i].value = (strcmp(p, "1") == 0)
 					? (void*)1 : NULL;
@@ -125,6 +124,8 @@ static void _new_config(Config * config, char const * name,
 			case MCT_UINT32:
 				u = strtoul(p, NULL, 10);
 				plugin->config[i].value = (void*)u;
+				break;
+			default:
 				break;
 		}
 	}

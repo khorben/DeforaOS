@@ -389,7 +389,7 @@ static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
 	{ "device",	"Device",		MCT_FILENAME,	NULL	      },
 	{ "baudrate",	"Baudrate",		MCT_UINT32,	(void *)115200},
 	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void *)1     },
-	{ "",		"Advanced",		MCT_NONE,	NULL	      },
+	{ NULL,		"Advanced",		MCT_SUBSECTION,	NULL	      },
 	{ "logfile",	"Log file",		MCT_FILENAME,	NULL	      },
 	{ NULL,		NULL,			MCT_NONE,	NULL	      }
 };

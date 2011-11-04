@@ -132,10 +132,15 @@ typedef enum _ModemStatus
 typedef enum _ModemConfigType
 {
 	MCT_NONE = 0,
+	/* values */
 	MCT_BOOLEAN,
 	MCT_FILENAME,
 	MCT_STRING,
-	MCT_UINT32
+	MCT_UINT32,
+	/* layout */
+	MCT_SECTION,
+	MCT_SUBSECTION,
+	MCT_SEPARATOR
 } ModemConfigType;
 
 typedef struct _ModemConfig

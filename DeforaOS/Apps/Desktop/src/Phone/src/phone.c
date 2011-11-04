@@ -1,5 +1,6 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+static char _copyright[] =
+"Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
 /* This file is part of DeforaOS Desktop Phone */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -147,6 +148,7 @@ typedef enum _PhoneTrack
 
 struct _Phone
 {
+	char * name;
 	Modem * modem;
 	guint source;
 	Config * config;
@@ -268,9 +270,6 @@ static char const * _authors[] =
 	NULL
 };
 
-static char _copyright[] =
-"Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
-
 
 /* prototypes */
 static void _phone_about(Phone * phone);
@@ -354,7 +353,7 @@ static const struct
 	GtkTreeModelFilterVisibleFunc filter;
 } _phone_message_filters[5] =
 {
-	/* FIXME provide the icon ourselves */
+	/* FIXME provide every icon ourselves */
 	{ "stock_select-all",	N_("All"),	_phone_messages_filter_all    },
 	{ "phone-inbox",	N_("Inbox"),	_phone_messages_filter_inbox  },
 	{ "phone-sent",		N_("Sent"),	_phone_messages_filter_sent },
@@ -397,6 +396,7 @@ Phone * phone_new(char const * plugin, int retry)
 		if((p = config_get(phone->config, NULL, "retry")) != NULL)
 			retry = strtoul(p, NULL, 10);
 	}
+	phone->name = strdup(plugin);
 	phone->modem = modem_new(phone->config, plugin, retry);
 	phone->helper.config_foreach = _phone_config_foreach;
 	phone->helper.config_get = _phone_config_get;
@@ -556,6 +556,7 @@ void phone_delete(Phone * phone)
 	phone_event_type(phone, PHONE_EVENT_TYPE_STOPPING); /* ignore errors */
 	if(phone->modem != NULL)
 		modem_stop(phone->modem);
+	free(phone->name);
 	phone_unload_all(phone);
 	if(phone->config != NULL)
 		config_delete(phone->config);
@@ -2388,7 +2389,7 @@ void phone_show_settings(Phone * phone, gboolean show)
 				"stock_cell-phone");
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->se_window),
-				_("Phone settings"));
+				_("Telephony settings"));
 		g_signal_connect(phone->se_window, "delete-event", G_CALLBACK(
 					on_phone_closex), NULL);
 		/* view */
@@ -2632,8 +2633,8 @@ void phone_show_system(Phone * phone, gboolean show)
 	vbox = gtk_vbox_new(FALSE, 4);
 	config = modem_get_config(phone->modem);
 	vbox2 = vbox;
-	for(i = 0; config != NULL && config[i].name != NULL; i++)
-		if(config[i].type == MCT_NONE)
+	for(i = 0; config != NULL && config[i].type != MCT_NONE; i++)
+		if(config[i].type == MCT_SUBSECTION)
 		{
 			widget = gtk_frame_new(config[i].title);
 			gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE,
@@ -2673,8 +2674,6 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 
 	switch(config->type)
 	{
-		case MCT_NONE: /* should not happen */
-			break;
 		case MCT_BOOLEAN:
 			widget = gtk_check_button_new_with_label(config->title);
 			ret = widget;
@@ -2692,6 +2691,10 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 					GTK_FILE_CHOOSER_ACTION_SAVE);
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
 			break;
+		case MCT_SEPARATOR:
+			widget = gtk_hseparator_new();
+			ret = widget;
+			break;
 		case MCT_UINT32:
 			/* FIXME really implement */
 		case MCT_STRING:
@@ -2705,6 +2708,8 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 					0);
 			widget = gtk_entry_new();
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
+			break;
+		default:
 			break;
 	}
 	if(ret == NULL || widget == NULL)
@@ -2728,15 +2733,15 @@ static void _system_on_cancel(gpointer data)
 	gtk_widget_hide(phone->sy_window);
 	if((config = modem_get_config(phone->modem)) == NULL)
 		return;
-	for(i = 0; config[i].name != NULL; i++)
+	for(i = 0; config[i].type != MCT_NONE; i++)
 	{
+		if(config[i].name == NULL)
+			continue;
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
-					config[i].name)) == NULL)
+						config[i].name)) == NULL)
 			continue;
 		switch(config[i].type)
 		{
-			case MCT_NONE: /* XXX should not happen */
-				break;
 			case MCT_BOOLEAN:
 				p = config[i].value;
 				active = (p != NULL) ? TRUE : FALSE;
@@ -2759,6 +2764,8 @@ static void _system_on_cancel(gpointer data)
 				snprintf(buf, sizeof(buf), "%u", u);
 				gtk_entry_set_text(GTK_ENTRY(widget), buf);
 				break;
+			default:
+				break;
 		}
 	}
 }
@@ -2778,49 +2785,48 @@ static void _system_on_ok(gpointer data)
 	size_t i;
 	GtkWidget * widget;
 	char const * p;
-	char const * plugin;
 
 	gtk_widget_hide(phone->sy_window);
 	config = modem_get_config(phone->modem);
-	if((plugin = config_get(phone->config, NULL, "modem")) == NULL)
-		plugin = "hayes";
-	for(i = 0; config != NULL && config[i].name != NULL; i++)
+	for(i = 0; config != NULL && config[i].type != MCT_NONE; i++)
 	{
+		if(config[i].name == NULL)
+			continue;
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
 						config[i].name)) == NULL)
 			continue;
 		switch(config[i].type)
 		{
-			case MCT_NONE: /* XXX should not happen */
-				break;
 			case MCT_BOOLEAN:
 				config[i].value = gtk_toggle_button_get_active(
 						GTK_TOGGLE_BUTTON(widget))
 					? (void*)1 : NULL;
-				_phone_config_set_type(phone, "modem", plugin,
-						config[i].name, config[i].value
-						? "1" : "0");
+				_phone_config_set_type(phone, "modem",
+						phone->name, config[i].name,
+						config[i].value ? "1" : "0");
 				break;
 			case MCT_FILENAME:
 				p = gtk_file_chooser_get_filename(
 						GTK_FILE_CHOOSER(widget));
 				/* FIXME memory leak */
 				config[i].value = strdup(p);
-				_phone_config_set_type(phone, "modem", plugin,
-						config[i].name, p);
+				_phone_config_set_type(phone, "modem",
+						phone->name, config[i].name, p);
 				break;
 			case MCT_STRING:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
 				/* FIXME memory leak */
 				config[i].value = strdup(p);
-				_phone_config_set_type(phone, "modem", plugin,
-						config[i].name, p);
+				_phone_config_set_type(phone, "modem",
+						phone->name, config[i].name, p);
 				break;
 			case MCT_UINT32:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
-				config[i].value = (void*)strtoul(p, NULL, 10);
-				_phone_config_set_type(phone, "modem", plugin,
-						config[i].name, p);
+				config[i].value = (void *)strtoul(p, NULL, 10);
+				_phone_config_set_type(phone, "modem",
+						phone->name, config[i].name, p);
+				break;
+			default:
 				break;
 		}
 	}
