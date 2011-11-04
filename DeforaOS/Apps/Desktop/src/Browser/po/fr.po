@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-04 14:50+0100\n"
+"POT-Creation-Date: 2011-11-04 15:28+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -113,7 +113,7 @@ msgstr "_Vue"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/browser.c:184 ../src/desktop.c:637 ../src/desktop.c:658
+#: ../src/browser.c:184 ../src/desktop.c:642 ../src/desktop.c:663
 msgid "Back"
 msgstr "Retour"
 
@@ -129,7 +129,7 @@ msgstr "Suivant"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/browser.c:192 ../src/desktop.c:719
+#: ../src/browser.c:192 ../src/desktop.c:724
 msgid "Home"
 msgstr "Dossier personnel"
 
@@ -193,7 +193,7 @@ msgstr ""
 
 #: ../src/browser.c:746 ../src/browser.c:750 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1320 ../src/desktop.c:1325 ../src/move.c:452
+#: ../src/desktop.c:1325 ../src/desktop.c:1330 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:336 ../src/properties.c:340
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -212,7 +212,7 @@ msgstr "Fichiers exécutables"
 msgid "Shell scripts"
 msgstr "Scripts shell"
 
-#: ../src/browser.c:968 ../src/desktop.c:1717 ../src/view.c:436
+#: ../src/browser.c:968 ../src/desktop.c:1722 ../src/view.c:436
 msgid "All files"
 msgstr "Tous les fichiers"
 
@@ -346,7 +346,7 @@ msgstr "Modifier avec :"
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
-#: ../src/callbacks.c:116 ../src/desktop.c:425
+#: ../src/callbacks.c:116 ../src/desktop.c:430
 msgid "New folder"
 msgstr "Nouveau dossier"
 
@@ -377,7 +377,7 @@ msgstr "Lien symbolique..."
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:823 ../src/desktop.c:444
+#: ../src/callbacks.c:823 ../src/desktop.c:449
 msgid "New text file.txt"
 msgstr "Nouveau fichier texte.txt"
 
@@ -426,7 +426,7 @@ msgstr "Copie de fichier(s)"
 msgid "Copying: "
 msgstr "Copie de : "
 
-#: ../src/copy.c:152 ../src/desktop.c:1700
+#: ../src/copy.c:152 ../src/desktop.c:1705
 msgid "Filename: "
 msgstr "Nom de fichier : "
 
@@ -531,98 +531,98 @@ msgstr ""
 "  -R\tSupprimer récursivement\n"
 "  -r\tÉquivalent à -R\n"
 
-#: ../src/desktop.c:750
+#: ../src/desktop.c:755
 msgid "Applications"
 msgstr "Applications"
 
-#: ../src/desktop.c:1368
+#: ../src/desktop.c:1373
 msgid "Could not load preferences"
 msgstr "Impossible de charger les préférences"
 
-#: ../src/desktop.c:1655
+#: ../src/desktop.c:1660
 msgid "Desktop preferences"
 msgstr "Préférences du bureau"
 
-#: ../src/desktop.c:1692
+#: ../src/desktop.c:1697
 msgid "Default color: "
 msgstr "Couleur par défaut :"
 
-#: ../src/desktop.c:1704 ../src/desktop.c:1750
+#: ../src/desktop.c:1709 ../src/desktop.c:1755
 msgid "Background"
 msgstr "Arrière-plan"
 
-#: ../src/desktop.c:1707
+#: ../src/desktop.c:1712
 msgid "Picture files"
 msgstr "Images"
 
-#: ../src/desktop.c:1729
+#: ../src/desktop.c:1734
 msgid "Position: "
 msgstr "Position : "
 
-#: ../src/desktop.c:1735
+#: ../src/desktop.c:1740
 msgid "Centered"
 msgstr "Centré"
 
-#: ../src/desktop.c:1737
+#: ../src/desktop.c:1742
 msgid "Scaled"
 msgstr "Étiré"
 
-#: ../src/desktop.c:1739
+#: ../src/desktop.c:1744
 msgid "Scaled (keep ratio)"
 msgstr "Étiré (sans déformer)"
 
-#: ../src/desktop.c:1741
+#: ../src/desktop.c:1746
 msgid "Tiled"
 msgstr "Mosaïque"
 
-#: ../src/desktop.c:1746
+#: ../src/desktop.c:1751
 msgid "E_xtend background to all monitors"
 msgstr "Étendre l'arrière-plan à tous les moniteurs"
 
-#: ../src/desktop.c:1766
+#: ../src/desktop.c:1771
 msgid "Monitor: "
 msgstr "Moniteur : "
 
-#: ../src/desktop.c:1775
+#: ../src/desktop.c:1780
 msgid "Resolution: "
 msgstr "Résolution : "
 
-#: ../src/desktop.c:1786
+#: ../src/desktop.c:1791
 msgid "Size: "
 msgstr "Taille: "
 
-#: ../src/desktop.c:1810
+#: ../src/desktop.c:1815
 msgid "Monitors"
 msgstr "Moniteurs"
 
-#: ../src/desktop.c:1824
+#: ../src/desktop.c:1829
 msgid "Desktop font: "
 msgstr "Police du bureau : "
 
-#: ../src/desktop.c:1833
+#: ../src/desktop.c:1838
 msgid "Theme"
 msgstr "Thème"
 
-#: ../src/desktop.c:1869
+#: ../src/desktop.c:1874
 #, c-format
 msgid "%dx%d (at %d,%d)"
 msgstr "%dx%d (à %d,%d)"
 
-#: ../src/desktop.c:1872
+#: ../src/desktop.c:1877
 #, c-format
 msgid "%dx%d mm (%.0lfx%.0lf DPI)"
 msgstr "%dx%d mm (%.0lfx%.0lf DPI)"
 
-#: ../src/desktop.c:1892
+#: ../src/desktop.c:1897
 msgid "Whole screen"
 msgstr "Écran complet"
 
-#: ../src/desktop.c:1897
+#: ../src/desktop.c:1902
 #, c-format
 msgid "Monitor %d"
 msgstr "Moniteur %d"
 
-#: ../src/desktop.c:2051
+#: ../src/desktop.c:2056
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -643,10 +643,23 @@ msgstr ""
 "  -m\tMoniteur où afficher le bureau\n"
 
 #: ../src/desktopctl.c:44
+#, fuzzy
 msgid ""
 "Usage: desktopctl -S\n"
 "  -S\tDisplay or change settings\n"
+"  -a\tDisplay the applications registered\n"
+"  -c\tSort the applications registered by category\n"
+"  -f\tDisplay contents of the desktop folder\n"
+"  -h\tDisplay the homescreen\n"
 msgstr ""
+"Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m moniteur]\n"
+"  -H\tPlacer les icônes horizontalement\n"
+"  -V\tPlacer les icônes verticalement\n"
+"  -a\tAfficher les applications connues\n"
+"  -c\tTrier les applications connues par catégorie\n"
+"  -f\tAfficher le contenu du répertoire bureau (par défaut)\n"
+"  -h\tAfficher l'écran d'accueil\n"
+"  -m\tMoniteur où afficher le bureau\n"
 
 #: ../src/desktopicon.c:693 ../src/desktopicon.c:744
 msgid "_Rename..."

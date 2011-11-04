@@ -377,6 +377,7 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 		Desktop * desktop)
 {
 	DesktopMessage message;
+	DesktopLayout layout;
 
 	if(xevent->message_type != gdk_x11_get_xatom_by_name(
 				DESKTOP_CLIENT_MESSAGE))
@@ -384,8 +385,12 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 	message = xevent->data.b[0];
 	switch(message)
 	{
+		case DESKTOP_MESSAGE_SET_LAYOUT:
+			layout = xevent->data.b[1];
+			desktop_set_layout(desktop, layout);
+			break;
 		case DESKTOP_MESSAGE_SHOW:
-			if(xevent->data.b[1] == DESKTOP_MESSAGE_SHOW_SETTINGS)
+			if(xevent->data.b[1] == DESKTOP_SHOW_SETTINGS)
 				_on_popup_preferences(desktop); /* XXX */
 			break;
 	}
@@ -594,7 +599,7 @@ void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 		case DESKTOP_LAYOUT_HOMESCREEN:
 			_layout_homescreen(desktop);
 			break;
-		case DESKTOP_LAYOUT_NULL:
+		case DESKTOP_LAYOUT_NONE:
 			/* nothing to do */
 			break;
 	}
@@ -866,7 +871,7 @@ static int _current_loop(Desktop * desktop)
 		case DESKTOP_LAYOUT_FILES:
 			return _current_loop_files(desktop);
 		case DESKTOP_LAYOUT_HOMESCREEN:
-		case DESKTOP_LAYOUT_NULL:
+		case DESKTOP_LAYOUT_NONE:
 			break; /* nothing to do */
 	}
 	return -1;
@@ -2103,7 +2108,7 @@ int main(int argc, char * argv[])
 					return _usage();
 				break;
 			case 'n':
-				prefs.layout = DESKTOP_LAYOUT_NULL;
+				prefs.layout = DESKTOP_LAYOUT_NONE;
 				break;
 			default:
 				return _usage();

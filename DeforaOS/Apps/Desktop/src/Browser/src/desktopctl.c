@@ -42,7 +42,11 @@
 static int _usage(void)
 {
 	fputs(_("Usage: desktopctl -S\n"
-"  -S	Display or change settings\n"), stderr);
+"  -S	Display or change settings\n"
+"  -a	Display the applications registered\n"
+"  -c	Sort the applications registered by category\n"
+"  -f	Display contents of the desktop folder\n"
+"  -h	Display the homescreen\n"), stderr);
 	return 1;
 }
 
@@ -52,7 +56,7 @@ int main(int argc, char * argv[])
 {
 	int o;
 	int action = -1;
-	int show;
+	int what = 0;
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
 
@@ -60,14 +64,44 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "Sacfhn")) != -1)
 		switch(o)
 		{
+			case 'a':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_APPLICATIONS;
+				break;
+			case 'c':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_CATEGORIES;
+				break;
+			case 'f':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_FILES;
+				break;
+			case 'h':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_HOMESCREEN;
+				break;
+			case 'n':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_NONE;
+				break;
 			case 'S':
-				if(show != -1)
+				if(action != -1)
 					return _usage();
 				action = DESKTOP_MESSAGE_SHOW;
-				show = DESKTOP_MESSAGE_SHOW_SETTINGS;
+				what = DESKTOP_SHOW_SETTINGS;
 				break;
 			default:
 				return _usage();
@@ -81,7 +115,7 @@ int main(int argc, char * argv[])
 	client->message_type = gdk_atom_intern(DESKTOP_CLIENT_MESSAGE, FALSE);
 	client->data_format = 8;
 	client->data.b[0] = action;
-	client->data.b[1] = show;
+	client->data.b[1] = what;
 	client->data.b[2] = TRUE;
 	gdk_event_send_clientmessage_toall(&event);
 	return 0;

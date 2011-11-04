@@ -43,7 +43,7 @@ typedef enum _DesktopAlignment
 
 typedef enum _DesktopLayout
 {
-	DESKTOP_LAYOUT_NULL = 0,
+	DESKTOP_LAYOUT_NONE = 0,
 	DESKTOP_LAYOUT_APPLICATIONS,
 	DESKTOP_LAYOUT_CATEGORIES,
 	DESKTOP_LAYOUT_FILES,
@@ -52,12 +52,13 @@ typedef enum _DesktopLayout
 
 typedef enum _DesktopMessage
 {
-	DESKTOP_MESSAGE_SHOW = 0
+	DESKTOP_MESSAGE_SET_LAYOUT = 0,
+	DESKTOP_MESSAGE_SHOW
 } DesktopMessage;
 
-typedef enum _DesktopMessageShow
+typedef enum _DesktopShow
 {
-	DESKTOP_MESSAGE_SHOW_SETTINGS = 0
+	DESKTOP_SHOW_SETTINGS = 0
 } DesktopMessageShow;
 
 typedef struct _DesktopPrefs
