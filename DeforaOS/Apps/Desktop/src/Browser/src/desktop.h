@@ -52,7 +52,8 @@ typedef enum _DesktopLayout
 
 typedef enum _DesktopMessage
 {
-	DESKTOP_MESSAGE_SET_LAYOUT = 0,
+	DESKTOP_MESSAGE_SET_ALIGNMENT = 0,
+	DESKTOP_MESSAGE_SET_LAYOUT,
 	DESKTOP_MESSAGE_SHOW
 } DesktopMessage;
 
@@ -85,6 +86,7 @@ GdkPixbuf * desktop_get_folder(Desktop * desktop);
 Mime * desktop_get_mime(Desktop * desktop);
 GtkIconTheme * desktop_get_theme(Desktop * desktop);
 
+void desktop_set_alignment(Desktop * desktop, DesktopAlignment alignment);
 void desktop_set_layout(Desktop * desktop, DesktopLayout layout);
 
 /* useful */

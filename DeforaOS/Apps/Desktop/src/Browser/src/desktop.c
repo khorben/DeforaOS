@@ -152,9 +152,10 @@ static DesktopCategory _desktop_categories[] =
 	{ FALSE, "Settings;",	"Settings",	"gnome-settings"	},
 	{ FALSE, "System;",	"System",	"applications-system"	},
 	{ FALSE, "Utility;",	"Utilities",	"applications-utilities"},
-	{ FALSE, "Video;",	"Video",	"video"			},
-	{ FALSE, NULL,		NULL,		NULL,			}
+	{ FALSE, "Video;",	"Video",	"video"			}
 };
+static const int _desktop_categories_cnt = sizeof(_desktop_categories)
+	/ sizeof(*_desktop_categories);
 
 
 /* prototypes */
@@ -327,6 +328,9 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		}
 		return GDK_FILTER_CONTINUE;
 	}
+	/* ignore if not managing files */
+	if(desktop->prefs.layout != DESKTOP_LAYOUT_FILES)
+		return GDK_FILTER_CONTINUE;
 	desktop->menu = gtk_menu_new();
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
 	submenu = gtk_menu_new();
@@ -377,6 +381,7 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 		Desktop * desktop)
 {
 	DesktopMessage message;
+	DesktopAlignment alignment;
 	DesktopLayout layout;
 
 	if(xevent->message_type != gdk_x11_get_xatom_by_name(
@@ -385,6 +390,10 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 	message = xevent->data.b[0];
 	switch(message)
 	{
+		case DESKTOP_MESSAGE_SET_ALIGNMENT:
+			alignment = xevent->data.b[1];
+			desktop_set_alignment(desktop, alignment);
+			break;
 		case DESKTOP_MESSAGE_SET_LAYOUT:
 			layout = xevent->data.b[1];
 			desktop_set_layout(desktop, layout);
@@ -571,6 +580,62 @@ GtkIconTheme * desktop_get_theme(Desktop * desktop)
 }
 
 
+/* desktop_set_alignment */
+static void _alignment_horizontal(Desktop * desktop);
+static void _alignment_vertical(Desktop * desktop);
+
+void desktop_set_alignment(Desktop * desktop, DesktopAlignment alignment)
+{
+	switch(alignment)
+	{
+		case DESKTOP_ALIGNMENT_VERTICAL:
+			_alignment_vertical(desktop);
+			break;
+		case DESKTOP_ALIGNMENT_HORIZONTAL:
+			_alignment_horizontal(desktop);
+			break;
+	}
+}
+
+static void _alignment_horizontal(Desktop * desktop)
+{
+	size_t i;
+	int x = desktop->workarea.x;
+	int y = desktop->workarea.y;
+	int width = x + desktop->workarea.width;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(x + DESKTOPICON_MAX_WIDTH > width)
+		{
+			y += DESKTOPICON_MAX_HEIGHT;
+			x = desktop->workarea.x;
+		}
+		desktopicon_move(desktop->icon[i], x, y);
+		x += DESKTOPICON_MAX_WIDTH;
+	}
+}
+
+static void _alignment_vertical(Desktop * desktop)
+{
+	size_t i;
+	int x = desktop->workarea.x;
+	int y = desktop->workarea.y;
+	int height = desktop->workarea.y + desktop->workarea.height;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(y + DESKTOPICON_MAX_HEIGHT > height)
+		{
+			x += DESKTOPICON_MAX_WIDTH;
+			y = desktop->workarea.y;
+		}
+		desktopicon_move(desktop->icon[i], x, y);
+		y += DESKTOPICON_MAX_HEIGHT;
+	}
+}
+
+
 /* desktop_set_layout */
 static void _layout_delete(Desktop * desktop);
 static int _layout_applications(Desktop * desktop);
@@ -619,7 +684,7 @@ static void _layout_delete(Desktop * desktop)
 		desktopicon_set_immutable(desktop->icon[i], FALSE);
 		desktopicon_set_updated(desktop->icon[i], FALSE);
 	}
-	for(i = 0; _desktop_categories[i].name != NULL; i++)
+	for(i = 0; i < _desktop_categories_cnt; i++)
 		_desktop_categories[i].show = FALSE;
 }
 
@@ -1118,8 +1183,9 @@ static void _done_categories(Desktop * desktop)
 			_desktop_icon_add(desktop, icon);
 			continue;
 		}
-		for(i = 0; (dc = &_desktop_categories[i]) != NULL &&
-				dc->category != NULL
+		for(i = 0; i < _desktop_categories_cnt
+				&& (dc = &_desktop_categories[i]) != NULL
+				&& dc->category != NULL
 				&& string_find(q, dc->category) == NULL; i++);
 		if(dc->category == NULL)
 		{
@@ -1184,16 +1250,11 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 
 /* desktop_icons_align */
 static int _align_compare(const void * a, const void * b);
-static void _align_horizontally(Desktop * desktop);
-static void _align_vertically(Desktop * desktop);
 
 void desktop_icons_align(Desktop * desktop)
 {
 	qsort(desktop->icon, desktop->icon_cnt, sizeof(void*), _align_compare);
-	if(desktop->prefs.alignment == DESKTOP_ALIGNMENT_VERTICAL)
-		_align_vertically(desktop);
-	else
-		_align_horizontally(desktop);
+	desktop_set_alignment(desktop, desktop->prefs.alignment);
 }
 
 static int _align_compare(const void * a, const void * b)
@@ -1216,44 +1277,6 @@ static int _align_compare(const void * a, const void * b)
 	else if(!dira && dirb)
 		return 1;
 	return strcmp(desktopicon_get_name(icona), desktopicon_get_name(iconb));
-}
-
-static void _align_horizontally(Desktop * desktop)
-{
-	size_t i;
-	int x = desktop->workarea.x;
-	int y = desktop->workarea.y;
-	int width = x + desktop->workarea.width;
-
-	for(i = 0; i < desktop->icon_cnt; i++)
-	{
-		if(x + DESKTOPICON_MAX_WIDTH > width)
-		{
-			y += DESKTOPICON_MAX_HEIGHT;
-			x = desktop->workarea.x;
-		}
-		desktopicon_move(desktop->icon[i], x, y);
-		x += DESKTOPICON_MAX_WIDTH;
-	}
-}
-
-static void _align_vertically(Desktop * desktop)
-{
-	size_t i;
-	int x = desktop->workarea.x;
-	int y = desktop->workarea.y;
-	int height = desktop->workarea.y + desktop->workarea.height;
-
-	for(i = 0; i < desktop->icon_cnt; i++)
-	{
-		if(y + DESKTOPICON_MAX_HEIGHT > height)
-		{
-			x += DESKTOPICON_MAX_WIDTH;
-			y = desktop->workarea.y;
-		}
-		desktopicon_move(desktop->icon[i], x, y);
-		y += DESKTOPICON_MAX_HEIGHT;
-	}
 }
 
 

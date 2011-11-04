@@ -42,7 +42,9 @@
 static int _usage(void)
 {
 	fputs(_("Usage: desktopctl -S\n"
+"  -H	Place icons horizontally\n"
 "  -S	Display or change settings\n"
+"  -V	Place icons vertically\n"
 "  -a	Display the applications registered\n"
 "  -c	Sort the applications registered by category\n"
 "  -f	Display contents of the desktop folder\n"
@@ -64,9 +66,27 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "Sacfhn")) != -1)
+	while((o = getopt(argc, argv, "HSVacfhn")) != -1)
 		switch(o)
 		{
+			case 'H':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_ALIGNMENT;
+				what = DESKTOP_ALIGNMENT_HORIZONTAL;
+				break;
+			case 'S':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SHOW;
+				what = DESKTOP_SHOW_SETTINGS;
+				break;
+			case 'V':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_ALIGNMENT;
+				what = DESKTOP_ALIGNMENT_VERTICAL;
+				break;
 			case 'a':
 				if(action != -1)
 					return _usage();
@@ -96,12 +116,6 @@ int main(int argc, char * argv[])
 					return _usage();
 				action = DESKTOP_MESSAGE_SET_LAYOUT;
 				what = DESKTOP_LAYOUT_NONE;
-				break;
-			case 'S':
-				if(action != -1)
-					return _usage();
-				action = DESKTOP_MESSAGE_SHOW;
-				what = DESKTOP_SHOW_SETTINGS;
 				break;
 			default:
 				return _usage();
