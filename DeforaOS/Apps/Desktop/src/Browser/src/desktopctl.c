@@ -41,14 +41,15 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: desktopctl -S\n"
+	fputs(_("Usage: desktopctl [-H|-S|-V|-a|-c|-f|-h|-n]\n"
 "  -H	Place icons horizontally\n"
 "  -S	Display or change settings\n"
 "  -V	Place icons vertically\n"
 "  -a	Display the applications registered\n"
 "  -c	Sort the applications registered by category\n"
 "  -f	Display contents of the desktop folder\n"
-"  -h	Display the homescreen\n"), stderr);
+"  -h	Display the homescreen\n"
+"  -n	Do not display icons on the desktop\n"), stderr);
 	return 1;
 }
 

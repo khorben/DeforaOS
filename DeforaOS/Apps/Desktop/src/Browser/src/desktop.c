@@ -154,7 +154,7 @@ static DesktopCategory _desktop_categories[] =
 	{ FALSE, "Utility;",	"Utilities",	"applications-utilities"},
 	{ FALSE, "Video;",	"Video",	"video"			}
 };
-static const int _desktop_categories_cnt = sizeof(_desktop_categories)
+static const size_t _desktop_categories_cnt = sizeof(_desktop_categories)
 	/ sizeof(*_desktop_categories);
 
 
@@ -2083,7 +2083,8 @@ static int _usage(void)
 "  -c	Sort the applications registered by category\n"
 "  -f	Display contents of the desktop folder (default)\n"
 "  -h	Display the homescreen\n"
-"  -m	Monitor where to display the desktop\n"), stderr);
+"  -m	Monitor where to display the desktop\n"
+"  -n	Do not display icons on the desktop\n"), stderr);
 	return 1;
 }
 
