@@ -41,7 +41,7 @@ locker.o: locker.c locker.h ../include/Locker.h ../config.h
 main.o: main.c locker.h ../include/Locker.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(locker_CFLAGS) -c main.c
 
-lockerctl.o: lockerctl.c ../include/Locker.h
+lockerctl.o: lockerctl.c ../include/Locker.h ../config.h
 	$(CC) $(lockerctl_CFLAGS) -c lockerctl.c
 
 clean:

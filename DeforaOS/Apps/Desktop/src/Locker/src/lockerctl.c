@@ -18,9 +18,23 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <locale.h>
 #include <libintl.h>
 #include "Locker.h"
+#include "../config.h"
 #define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* usage */
@@ -46,6 +60,9 @@ int main(int argc, char * argv[])
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "Slsu")) != -1)
 		switch(o)
