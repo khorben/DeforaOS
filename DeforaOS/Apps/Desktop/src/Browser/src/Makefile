@@ -1,5 +1,5 @@
 SUBDIRS	= plugins
-TARGETS	= browser copy delete desktop desktop-settings move open properties view
+TARGETS	= browser copy delete desktop desktopctl move open properties view
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -48,12 +48,12 @@ desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 desktop: $(desktop_OBJS)
 	$(CC) -o desktop $(desktop_OBJS) $(desktop_LDFLAGS)
 
-desktop-settings_OBJS = settings.o
-desktop-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-desktop-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+desktopctl_OBJS = desktopctl.o
+desktopctl_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+desktopctl_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-desktop-settings: $(desktop-settings_OBJS)
-	$(CC) -o desktop-settings $(desktop-settings_OBJS) $(desktop-settings_LDFLAGS)
+desktopctl: $(desktopctl_OBJS)
+	$(CC) -o desktopctl $(desktopctl_OBJS) $(desktopctl_LDFLAGS)
 
 move_OBJS = move.o
 move_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -104,8 +104,8 @@ desktop.o: desktop.c desktopicon.h desktop.h common.c ../config.h
 desktopicon.o: desktopicon.c desktop.h desktopicon.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(desktop_CFLAGS) -c desktopicon.c
 
-settings.o: settings.c
-	$(CC) $(desktop-settings_CFLAGS) -c settings.c
+desktopctl.o: desktopctl.c desktop.h ../config.h
+	$(CC) $(desktopctl_CFLAGS) -c desktopctl.c
 
 move.o: move.c
 	$(CC) $(move_CFLAGS) -c move.c
@@ -121,11 +121,11 @@ view.o: view.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(desktop-settings_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
+	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(desktopctl_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(desktop-settings_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
+	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(desktopctl_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -139,7 +139,7 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- desktop $(DESTDIR)$(BINDIR)/desktop
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 -- desktop-settings $(DESTDIR)$(BINDIR)/desktop-settings
+	$(INSTALL) -m 0755 -- desktopctl $(DESTDIR)$(BINDIR)/desktopctl
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- move $(DESTDIR)$(BINDIR)/move
 	$(MKDIR) $(DESTDIR)$(BINDIR)
@@ -155,7 +155,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/copy
 	$(RM) -- $(DESTDIR)$(BINDIR)/delete
 	$(RM) -- $(DESTDIR)$(BINDIR)/desktop
-	$(RM) -- $(DESTDIR)$(BINDIR)/desktop-settings
+	$(RM) -- $(DESTDIR)$(BINDIR)/desktopctl
 	$(RM) -- $(DESTDIR)$(BINDIR)/move
 	$(RM) -- $(DESTDIR)$(BINDIR)/open
 	$(RM) -- $(DESTDIR)$(BINDIR)/properties

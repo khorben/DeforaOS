@@ -18,14 +18,31 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "desktop.h"
+#include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: desktop-settings\n", stderr);
+	fputs(_("Usage: desktopctl -S\n"
+"  -S	Display or change settings\n"), stderr);
 	return 1;
 }
 
@@ -34,24 +51,37 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	int action = -1;
+	int show;
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
 		{
+			case 'S':
+				if(show != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SHOW;
+				show = DESKTOP_MESSAGE_SHOW_SETTINGS;
+				break;
 			default:
 				return _usage();
 		}
+	if(action == -1 || optind != argc)
+		return _usage();
 	memset(&event, 0, sizeof(event));
 	client->type = GDK_CLIENT_EVENT;
 	client->window = NULL;
 	client->send_event = TRUE;
 	client->message_type = gdk_atom_intern(DESKTOP_CLIENT_MESSAGE, FALSE);
 	client->data_format = 8;
-	client->data.b[0] = DESKTOP_MESSAGE_SHOW;
-	client->data.b[1] = DESKTOP_MESSAGE_SHOW_SETTINGS;
+	client->data.b[0] = action;
+	client->data.b[1] = show;
 	client->data.b[2] = TRUE;
 	gdk_event_send_clientmessage_toall(&event);
 	return 0;

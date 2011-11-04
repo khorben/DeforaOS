@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-25 13:10+0200\n"
+"POT-Creation-Date: 2011-11-04 14:50+0100\n"
 "PO-Revision-Date: 2010-04-07 23:18+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -145,7 +145,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: ../src/browser.c:198 ../src/plugins/properties.c:49
+#: ../src/browser.c:198 ../src/plugins/properties.c:91
 msgid "Properties"
 msgstr ""
 
@@ -224,22 +224,27 @@ msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
 #: ../src/browser.c:1211 ../src/properties.c:543
+#: ../src/plugins/properties.c:496
 msgid "bytes"
 msgstr ""
 
 #: ../src/browser.c:1215 ../src/copy.c:590 ../src/properties.c:549
+#: ../src/plugins/properties.c:502
 msgid "kB"
 msgstr ""
 
 #: ../src/browser.c:1217 ../src/copy.c:615 ../src/properties.c:551
+#: ../src/plugins/properties.c:504
 msgid "MB"
 msgstr ""
 
 #: ../src/browser.c:1219 ../src/properties.c:553
+#: ../src/plugins/properties.c:506
 msgid "GB"
 msgstr ""
 
 #: ../src/browser.c:1223 ../src/properties.c:557
+#: ../src/plugins/properties.c:510
 msgid "TB"
 msgstr ""
 
@@ -607,6 +612,12 @@ msgid ""
 "  -m\tMonitor where to display the desktop\n"
 msgstr ""
 
+#: ../src/desktopctl.c:44
+msgid ""
+"Usage: desktopctl -S\n"
+"  -S\tDisplay or change settings\n"
+msgstr ""
+
 #: ../src/desktopicon.c:693 ../src/desktopicon.c:744
 msgid "_Rename..."
 msgstr ""
@@ -661,47 +672,49 @@ msgid ""
 "  -a\taction to call (default: \"open\")\n"
 msgstr ""
 
-#: ../src/properties.c:181
+#: ../src/properties.c:181 ../src/plugins/properties.c:180
 msgid "Size:"
 msgstr ""
 
 #: ../src/properties.c:187 ../src/properties.c:243
+#: ../src/plugins/properties.c:186 ../src/plugins/properties.c:242
 msgid "Owner:"
 msgstr ""
 
 #: ../src/properties.c:193 ../src/properties.c:246
+#: ../src/plugins/properties.c:192 ../src/plugins/properties.c:245
 msgid "Group:"
 msgstr ""
 
-#: ../src/properties.c:199
+#: ../src/properties.c:199 ../src/plugins/properties.c:198
 msgid "Accessed:"
 msgstr ""
 
-#: ../src/properties.c:205
+#: ../src/properties.c:205 ../src/plugins/properties.c:204
 msgid "Modified:"
 msgstr ""
 
-#: ../src/properties.c:211
+#: ../src/properties.c:211 ../src/plugins/properties.c:210
 msgid "Changed:"
 msgstr ""
 
-#: ../src/properties.c:218
+#: ../src/properties.c:218 ../src/plugins/properties.c:217
 msgid "Read:"
 msgstr ""
 
-#: ../src/properties.c:221
+#: ../src/properties.c:221 ../src/plugins/properties.c:220
 msgid "Write:"
 msgstr ""
 
-#: ../src/properties.c:224
+#: ../src/properties.c:224 ../src/plugins/properties.c:223
 msgid "Execute:"
 msgstr ""
 
-#: ../src/properties.c:249
+#: ../src/properties.c:249 ../src/plugins/properties.c:248
 msgid "Others:"
 msgstr ""
 
-#: ../src/properties.c:460
+#: ../src/properties.c:460 ../src/plugins/properties.c:413
 msgid "Unknown type"
 msgstr ""
 
@@ -745,7 +758,7 @@ msgstr ""
 msgid "Usage: view file...\n"
 msgstr ""
 
-#: ../src/plugins/cvs.c:124 ../src/plugins/cvs.c:520
+#: ../src/plugins/cvs.c:124 ../src/plugins/cvs.c:519
 msgid "CVS"
 msgstr "CVS"
 
@@ -789,24 +802,24 @@ msgstr ""
 msgid "Run make"
 msgstr ""
 
-#: ../src/plugins/cvs.c:347 ../src/plugins/cvs.c:419
+#: ../src/plugins/cvs.c:346 ../src/plugins/cvs.c:418
 msgid "Not a CVS repository"
 msgstr ""
 
-#: ../src/plugins/cvs.c:442
+#: ../src/plugins/cvs.c:441
 msgid "Not managed by CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:564
+#: ../src/plugins/cvs.c:563
 msgid "Running command..."
 msgstr ""
 
-#: ../src/plugins/cvs.c:811
+#: ../src/plugins/cvs.c:810
 #, c-format
 msgid "Command exited with error code %d"
 msgstr ""
 
-#: ../src/plugins/cvs.c:817
+#: ../src/plugins/cvs.c:816
 #, c-format
 msgid "Command exited with signal %d"
 msgstr ""

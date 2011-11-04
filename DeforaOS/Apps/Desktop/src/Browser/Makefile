@@ -50,7 +50,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/delete.c \
 		$(PACKAGE)-$(VERSION)/src/desktop.c \
 		$(PACKAGE)-$(VERSION)/src/desktopicon.c \
-		$(PACKAGE)-$(VERSION)/src/settings.c \
+		$(PACKAGE)-$(VERSION)/src/desktopctl.c \
 		$(PACKAGE)-$(VERSION)/src/move.c \
 		$(PACKAGE)-$(VERSION)/src/open.c \
 		$(PACKAGE)-$(VERSION)/src/properties.c \
