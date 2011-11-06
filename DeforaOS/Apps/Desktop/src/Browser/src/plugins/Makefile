@@ -69,7 +69,7 @@ dirtree.o: dirtree.c ../../include/Browser.h
 preview.o: preview.c ../../include/Browser.h
 	$(CC) $(preview_CFLAGS) -c preview.c
 
-properties.o: properties.c ../../include/Browser.h ../properties.c
+properties.o: properties.c ../../include/Browser.h
 	$(CC) $(properties_CFLAGS) -c properties.c
 
 subversion.o: subversion.c ../../include/Browser.h
