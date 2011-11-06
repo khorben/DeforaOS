@@ -134,12 +134,15 @@ static void _properties_refresh(BrowserPlugin * plugin, char const * path)
 
 /* properties */
 /* properties_new */
-static GtkWidget * _new_label_left(char const * text);
+static GtkWidget * _new_label_left(GtkSizeGroup * group, char const * text);
+static void _new_pack(GtkWidget * vbox, GtkWidget * label, GtkWidget * widget);
 
 static Properties * _properties_new(BrowserPlugin * plugin,
 		char const * filename, Mime * mime)
 {
 	Properties * properties;
+	GtkSizeGroup * group;
+	GtkSizeGroup * group2;
 	GtkWidget * vbox;
 	GtkWidget * table;
 	GtkWidget * hbox;
@@ -154,100 +157,83 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 	properties->theme = gtk_icon_theme_get_default();
 	properties->group = NULL;
 	properties->apply = NULL;
-	properties->view = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(properties->view),
-			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
-				properties->view), GTK_SHADOW_NONE);
-	vbox = gtk_vbox_new(FALSE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
-	table = gtk_table_new(12, 2, FALSE);
-	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
-	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
-	properties->image = gtk_image_new();
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->image, 0, 1, 0,
-			2);
-	properties->name = gtk_entry_new();
-	gtk_editable_set_editable(GTK_EDITABLE(properties->name), FALSE);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	/* view */
+	properties->view = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(properties->view), 4);
+	properties->image = gtk_image_new();
+	vbox = gtk_vbox_new(FALSE, 4);
+	properties->name = gtk_entry_new();
+	gtk_editable_set_editable(GTK_EDITABLE(properties->name), FALSE);
 	gtk_widget_modify_font(properties->name, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->name, 1, 2, 0,
-			1);
-	properties->type = _new_label_left(NULL);
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->type, 1, 2, 1,
-			2);
-	widget = gtk_label_new(_("Size:"));
+	properties->type = _new_label_left(NULL, NULL);
+	gtk_box_pack_start(GTK_BOX(vbox), properties->name, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), properties->type, FALSE, TRUE, 0);
+	_new_pack(properties->view, properties->image, vbox);
+	vbox = properties->view;
+	/* size */
+	widget = _new_label_left(group, _("Size:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
-	properties->size = _new_label_left("");
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->size, 1, 2, 2,
-			3);
-	widget = gtk_label_new(_("Owner:")); /* owner name */
+	properties->size = _new_label_left(group, "");
+	_new_pack(vbox, widget, properties->size);
+	/* owner */
+	widget = _new_label_left(group, _("Owner:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
-	properties->owner = _new_label_left("");
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->owner, 1, 2, 3,
-			4);
-	widget = gtk_label_new(_("Group:")); /* group name */
+	properties->owner = _new_label_left(NULL, "");
+	_new_pack(vbox, widget, properties->owner);
+	/* group */
+	widget = _new_label_left(group, _("Group:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 4, 5);
 	properties->group = gtk_combo_box_new_text();
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->group, 1, 2, 4,
-			5);
-	widget = gtk_label_new(_("Accessed:")); /* last access */
+	_new_pack(vbox, widget, properties->group);
+	/* last access */
+	widget = _new_label_left(group, _("Accessed:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 5, 6);
-	properties->atime = _new_label_left("");
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->atime, 1, 2, 5,
-			6);
-	widget = gtk_label_new(_("Modified:")); /* last modification */
+	properties->atime = _new_label_left(NULL, NULL);
+	_new_pack(vbox, widget, properties->atime);
+	/* last modification */
+	widget = _new_label_left(group, _("Modified:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 6, 7);
-	properties->mtime = _new_label_left("");
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->mtime, 1, 2, 6,
-			7);
-	widget = gtk_label_new(_("Changed:")); /* last change */
+	properties->mtime = _new_label_left(NULL, NULL);
+	_new_pack(vbox, widget, properties->mtime);
+	/* last change */
+	widget = _new_label_left(group, _("Changed:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 7, 8);
-	properties->ctime = _new_label_left("");
-	gtk_table_attach_defaults(GTK_TABLE(table), properties->ctime, 1, 2, 7,
-			8);
-	hbox = gtk_hbox_new(TRUE, 4);
-	widget = _new_label_left(_("Read:"));
+	properties->ctime = _new_label_left(NULL, NULL);
+	_new_pack(vbox, widget, properties->ctime);
+	/* permissions */
+	group2 = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	table = gtk_table_new(4, 4, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
+	widget = _new_label_left(group2, _("Read:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = _new_label_left(_("Write:"));
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 0, 1);
+	widget = _new_label_left(group2, _("Write:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = _new_label_left(_("Execute:"));
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 2, 3, 0, 1);
+	widget = _new_label_left(group2, _("Execute:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2, 8, 9);
-	hbox = gtk_hbox_new(TRUE, 4);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 3, 4, 0, 1);
 	for(i = 0; i < sizeof(properties->mode) / sizeof(*properties->mode);
 			i++)
 	{
-		if(hbox == NULL)
-			hbox = gtk_hbox_new(TRUE, 4);
 		properties->mode[i] = gtk_check_button_new_with_label("");
-		gtk_box_pack_end(GTK_BOX(hbox), properties->mode[i], TRUE,
-				TRUE, 0);
-		if((i % 3) != 2)
-			continue;
-		gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 2,
-				11 - (i / 3), 12 - (i / 3));
-		hbox = NULL;
+		gtk_table_attach_defaults(GTK_TABLE(table), properties->mode[i],
+				3 - (i % 3), 4 - (i % 3),
+				3 - (i / 3), 4 - (i / 3));
 	}
-	widget = gtk_label_new(_("Owner:"));
+	widget = _new_label_left(NULL, _("Owner:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
-	widget = gtk_label_new(_("Group:"));
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 1, 2);
+	widget = _new_label_left(NULL, _("Group:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
-	widget = gtk_label_new(_("Others:"));
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
+	widget = _new_label_left(group, _("Others:"));
 	gtk_widget_modify_font(widget, bold);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
 	pango_font_description_free(bold);
 	if(filename != NULL)
 		_properties_set_filename(plugin, filename);
@@ -264,20 +250,29 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 				_properties_on_apply), plugin);
 	gtk_box_pack_start(GTK_BOX(hbox), properties->apply, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
-				properties->view), vbox);
-	gtk_widget_set_size_request(properties->view, 200, 320);
 	gtk_widget_show_all(properties->view);
 	return properties;
 }
 
-static GtkWidget * _new_label_left(char const * text)
+static GtkWidget * _new_label_left(GtkSizeGroup * group, char const * text)
 {
 	GtkWidget * ret;
 
 	ret = gtk_label_new(text);
+	if(group != NULL)
+		gtk_size_group_add_widget(group, ret);
 	gtk_misc_set_alignment(GTK_MISC(ret), 0.0, 0.5);
 	return ret;
+}
+
+static void _new_pack(GtkWidget * vbox, GtkWidget * label, GtkWidget * widget)
+{
+	GtkWidget * hbox;
+
+	hbox = gtk_hbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 }
 
 
@@ -358,7 +353,7 @@ static void _refresh_name(GtkWidget * widget, char const * filename)
 {
 	gchar * gfilename;
 
-	gfilename = g_filename_display_basename(filename);
+	gfilename = g_filename_display_name(filename);
 	gtk_entry_set_text(GTK_ENTRY(widget), gfilename);
 	g_free(gfilename);
 }
