@@ -46,6 +46,7 @@ typedef struct _Preview
 
 
 /* prototypes */
+/* plug-in */
 static GtkWidget * _preview_init(BrowserPlugin * plugin);
 static void _preview_destroy(BrowserPlugin * plugin);
 static void _preview_refresh(BrowserPlugin * plugin, char const * path);
