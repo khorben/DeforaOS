@@ -164,6 +164,7 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 	properties->view = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(properties->view), 4);
 	properties->image = gtk_image_new();
+	gtk_size_group_add_widget(group, properties->image);
 	vbox = gtk_vbox_new(FALSE, 4);
 	properties->name = gtk_entry_new();
 	gtk_editable_set_editable(GTK_EDITABLE(properties->name), FALSE);
@@ -206,8 +207,8 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 	/* permissions */
 	group2 = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	table = gtk_table_new(4, 4, FALSE);
-	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
-	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 0);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 0);
 	widget = _new_label_left(group2, _("Read:"));
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 0, 1);
