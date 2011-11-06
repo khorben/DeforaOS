@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-06 15:21+0100\n"
+"POT-Creation-Date: 2011-11-06 15:25+0100\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -145,7 +145,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: ../src/browser.c:207 ../src/plugins/properties.c:91
+#: ../src/browser.c:207 ../src/plugins/properties.c:92
 msgid "Properties"
 msgstr "Eigenschaften"
 
@@ -223,23 +223,23 @@ msgstr ""
 msgid "%s%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1233 ../src/plugins/properties.c:492
+#: ../src/browser.c:1233 ../src/plugins/properties.c:493
 msgid "bytes"
 msgstr ""
 
-#: ../src/browser.c:1237 ../src/copy.c:590 ../src/plugins/properties.c:498
+#: ../src/browser.c:1237 ../src/copy.c:590 ../src/plugins/properties.c:499
 msgid "kB"
 msgstr ""
 
-#: ../src/browser.c:1239 ../src/copy.c:615 ../src/plugins/properties.c:500
+#: ../src/browser.c:1239 ../src/copy.c:615 ../src/plugins/properties.c:501
 msgid "MB"
 msgstr ""
 
-#: ../src/browser.c:1241 ../src/plugins/properties.c:502
+#: ../src/browser.c:1241 ../src/plugins/properties.c:503
 msgid "GB"
 msgstr ""
 
-#: ../src/browser.c:1245 ../src/plugins/properties.c:506
+#: ../src/browser.c:1245 ../src/plugins/properties.c:507
 msgid "TB"
 msgstr ""
 
@@ -793,47 +793,47 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: ../src/plugins/properties.c:178
+#: ../src/plugins/properties.c:179
 msgid "Size:"
 msgstr "Größe:"
 
-#: ../src/plugins/properties.c:183 ../src/plugins/properties.c:229
+#: ../src/plugins/properties.c:184 ../src/plugins/properties.c:230
 msgid "Owner:"
 msgstr ""
 
-#: ../src/plugins/properties.c:188 ../src/plugins/properties.c:232
+#: ../src/plugins/properties.c:189 ../src/plugins/properties.c:233
 msgid "Group:"
 msgstr "Gruppe:"
 
-#: ../src/plugins/properties.c:193
+#: ../src/plugins/properties.c:194
 msgid "Accessed:"
 msgstr ""
 
-#: ../src/plugins/properties.c:198
+#: ../src/plugins/properties.c:199
 msgid "Modified:"
 msgstr ""
 
-#: ../src/plugins/properties.c:203
+#: ../src/plugins/properties.c:204
 msgid "Changed:"
 msgstr ""
 
-#: ../src/plugins/properties.c:212
+#: ../src/plugins/properties.c:213
 msgid "Read:"
 msgstr ""
 
-#: ../src/plugins/properties.c:215
+#: ../src/plugins/properties.c:216
 msgid "Write:"
 msgstr ""
 
-#: ../src/plugins/properties.c:218
+#: ../src/plugins/properties.c:219
 msgid "Execute:"
 msgstr ""
 
-#: ../src/plugins/properties.c:235
+#: ../src/plugins/properties.c:236
 msgid "Others:"
 msgstr ""
 
-#: ../src/plugins/properties.c:409
+#: ../src/plugins/properties.c:410
 msgid "Unknown type"
 msgstr ""
 
