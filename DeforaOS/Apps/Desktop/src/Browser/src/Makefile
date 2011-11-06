@@ -83,7 +83,7 @@ view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(view_LDFLAGS)
 
-browser.o: browser.c callbacks.h browser.h ../config.h
+browser.o: browser.c callbacks.h common.c browser.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(browser_CFLAGS) -c browser.c
 
 callbacks.o: callbacks.c browser.h callbacks.h common.c
@@ -113,8 +113,8 @@ move.o: move.c
 open.o: open.c
 	$(CC) $(open_CFLAGS) -c open.c
 
-properties.o: properties.c
-	$(CC) -D WITH_MAIN $(properties_CFLAGS) -c properties.c
+properties.o: properties.c ../include/Browser.h browser.h common.c
+	$(CC) $(properties_CFLAGS) -c properties.c
 
 view.o: view.c
 	$(CC) $(view_CFLAGS) -c view.c

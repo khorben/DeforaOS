@@ -489,8 +489,8 @@ static void _default_do(Browser * browser, GtkTreePath * path)
 	gboolean is_dir;
 
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
-			&location, BR_COL_IS_DIRECTORY, &is_dir, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BC_PATH,
+			&location, BC_IS_DIRECTORY, &is_dir, -1);
 	if(is_dir)
 		browser_set_location(browser, location);
 	else if(browser->mime == NULL
@@ -527,8 +527,8 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
 	{
-		gtk_tree_model_get(model, &iter, BR_COL_IS_DIRECTORY, &isdir,
-				BR_COL_PATH, &path, -1);
+		gtk_tree_model_get(model, &iter, BC_IS_DIRECTORY, &isdir,
+				BC_PATH, &path, -1);
 		if(path != NULL && (len = strrchr(path, '/') - path) > 0
 				&& strcmp(&path[len + 1], arg2) != 0)
 			p = malloc(len + strlen(arg2) + 2);
@@ -546,8 +546,8 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		if(rename(path, (q != NULL) ? q : p) != 0)
 			browser_error(browser, strerror(errno), 1);
 		else
-			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
-					p, BR_COL_DISPLAY_NAME, arg2, -1);
+			gtk_list_store_set(browser->store, &iter, BC_PATH, p,
+					BC_DISPLAY_NAME, arg2, -1);
 		free(q);
 	}
 	else if(lstat(path, &st) == 0 && S_ISLNK(st.st_mode))
@@ -615,7 +615,7 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
 				path);
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &dest, -1);
+				BC_PATH, &dest, -1);
 	}
 	if(_common_drag_data_received(context, seldata, dest) != 0)
 		browser_error(browser, strerror(errno), 1);
@@ -728,11 +728,11 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 			gtk_tree_selection_select_iter(sel, &iter);
 		}
 	}
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
-			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
-			BR_COL_IS_EXECUTABLE, &ic.isexec,
-			BR_COL_IS_MOUNT_POINT, &ic.ismnt, BR_COL_MIME_TYPE,
-			&mimetype, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+			BC_PATH, &ic.path, BC_IS_DIRECTORY, &ic.isdir,
+			BC_IS_EXECUTABLE, &ic.isexec,
+			BC_IS_MOUNT_POINT, &ic.ismnt, BC_MIME_TYPE, &mimetype,
+			-1);
 	if(ic.isdir == TRUE)
 		_press_directory(widget, &ic);
 	else
@@ -1114,7 +1114,7 @@ static GList * _copy_selection(Browser * browser)
 					&iter, sel->data))
 			continue;
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
+				BC_PATH, &q, -1);
 		p = g_list_append(p, q);
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);

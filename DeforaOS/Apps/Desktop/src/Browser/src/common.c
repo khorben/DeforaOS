@@ -38,6 +38,18 @@ static int _common_exec(char const * program, char const * flags, GList * args);
 
 
 /* functions */
+#ifdef COMMON_CONFIG_FILENAME
+static String * _common_config_filename(char const * name)
+{
+	char const * homedir;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	return string_new_append(homedir, "/", name, NULL);
+}
+#endif
+
+
 #ifdef COMMON_DND
 /* common_drag_data_received */
 static int _common_drag_data_received(GdkDragContext * context,

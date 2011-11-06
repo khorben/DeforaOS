@@ -40,6 +40,11 @@ static char const _license[] =
 #define _(string) gettext(string)
 #define N_(string) (string)
 
+#define COMMON_CONFIG_FILENAME
+#include "common.c"
+
+
+/* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -47,8 +52,6 @@ static char const _license[] =
 # define LIBDIR		PREFIX "/lib"
 #endif
 
-
-/* constants */
 #define IDLE_LOOP_ICON_CNT	16	/* number of icons added in a loop */
 #define ICON_NAME		"system-file-manager"
 
@@ -218,7 +221,6 @@ static DIR * _browser_opendir(char const * pathname, struct stat * st);
 static void _browser_plugin_refresh(Browser * browser);
 static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st);
 
-static char * _config_get_filename(void);
 static int _config_load_boolean(Config * config, char const * variable,
 		gboolean * value);
 static int _config_load_string(Config * config, char const * variable,
@@ -598,10 +600,10 @@ static int _sort_func(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b,
 	gchar * name_b;
 	int ret = 0;
 
-	gtk_tree_model_get(model, a, BR_COL_IS_DIRECTORY, &is_dir_a,
-			BR_COL_DISPLAY_NAME, &name_a, -1);
-	gtk_tree_model_get(model, b, BR_COL_IS_DIRECTORY, &is_dir_b,
-			BR_COL_DISPLAY_NAME, &name_b, -1);
+	gtk_tree_model_get(model, a, BC_IS_DIRECTORY, &is_dir_a,
+			BC_DISPLAY_NAME, &name_a, -1);
+	gtk_tree_model_get(model, b, BC_IS_DIRECTORY, &is_dir_b,
+			BC_DISPLAY_NAME, &name_b, -1);
 	if(browser->prefs.sort_folders_first)
 	{
 		if(!is_dir_a && is_dir_b)
@@ -620,7 +622,7 @@ static GtkListStore * _create_store(Browser * browser)
 {
 	GtkListStore * store;
 
-	store = gtk_list_store_new(BR_COL_COUNT, G_TYPE_BOOLEAN, G_TYPE_STRING,
+	store = gtk_list_store_new(BC_COUNT, G_TYPE_BOOLEAN, G_TYPE_STRING,
 			G_TYPE_STRING, GDK_TYPE_PIXBUF,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF,
@@ -802,7 +804,7 @@ int browser_config_load(Browser * browser)
 
 	if(browser->config == NULL)
 		return 0; /* XXX ignore error */
-	if((filename = _config_get_filename()) == NULL)
+	if((filename = _common_config_filename(BROWSER_CONFIG_FILE)) == NULL)
 		return 1;
 	if(config_load(browser->config, filename) != 0)
 		browser_error(NULL, error_get(), 1);
@@ -846,7 +848,7 @@ int browser_config_save(Browser * browser)
 
 	if(browser->config == NULL)
 		return 0; /* XXX ignore error */
-	if((filename = _config_get_filename()) == NULL)
+	if((filename = _common_config_filename(BROWSER_CONFIG_FILE)) == NULL)
 		return 1;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	/* XXX deserves a rework (enum) */
@@ -1146,25 +1148,25 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	gtk_list_store_insert_after(browser->store, iter, NULL);
 	gtk_list_store_set(browser->store, iter,
 #endif
-			BR_COL_UPDATED, updated, BR_COL_PATH, path,
-			BR_COL_DISPLAY_NAME, display, BR_COL_INODE, inode,
-			BR_COL_IS_DIRECTORY, S_ISDIR(st->st_mode),
-			BR_COL_IS_EXECUTABLE, st->st_mode & S_IXUSR,
-			BR_COL_IS_MOUNT_POINT,
+			BC_UPDATED, updated, BC_PATH, path,
+			BC_DISPLAY_NAME, display, BC_INODE, inode,
+			BC_IS_DIRECTORY, S_ISDIR(st->st_mode),
+			BC_IS_EXECUTABLE, st->st_mode & S_IXUSR,
+			BC_IS_MOUNT_POINT,
 			(st->st_dev != browser->refresh_dev) ? TRUE : FALSE,
-			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
+			BC_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			BR_COL_PIXBUF_48, icon_48 != NULL ? icon_48
+			BC_PIXBUF_48, icon_48 != NULL ? icon_48
 			: browser->pb_file_48,
-			BR_COL_PIXBUF_96, icon_96 != NULL ? icon_96
+			BC_PIXBUF_96, icon_96 != NULL ? icon_96
 			: browser->pb_file_96,
 #endif
-			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
-			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
-			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
-			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
-			BR_COL_MIME_TYPE, type != NULL ? type : "", -1);
+			BC_SIZE, size, BC_DISPLAY_SIZE, dsize,
+			BC_OWNER, pw != NULL ? pw->pw_name : "",
+			BC_GROUP, gr != NULL ? gr->gr_name : "",
+			BC_DATE, lst->st_mtime, BC_DISPLAY_DATE, ddate,
+			BC_MIME_TYPE, type != NULL ? type : "", -1);
 }
 
 /* insert_all */
@@ -1364,14 +1366,14 @@ static gboolean _done_thumbnails(gpointer data)
 
 	for(i = 0; i < IDLE_LOOP_ICON_CNT; i++)
 	{
-		gtk_tree_model_get(model, iter, BR_COL_MIME_TYPE, &type,
-				BR_COL_PATH, &path, -1);
+		gtk_tree_model_get(model, iter, BC_MIME_TYPE, &type,
+				BC_PATH, &path, -1);
 		if(type != NULL && path != NULL
 				&& strncmp(type, "image/", 6) == 0
 				&& (icon = gdk_pixbuf_new_from_file_at_size(
 						path, 96, 96, NULL)) != NULL)
 			gtk_list_store_set(browser->store, iter,
-					BR_COL_PIXBUF_96, icon, -1);
+					BC_PIXBUF_96, icon, -1);
 		free(type);
 		free(path);
 		if(gtk_tree_model_iter_next(model, iter) != TRUE)
@@ -1462,7 +1464,7 @@ static int _current_loop(Browser * browser)
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
-		gtk_tree_model_get(model, &iter, BR_COL_INODE, &inode, -1);
+		gtk_tree_model_get(model, &iter, BC_INODE, &inode, -1);
 		if(inode == lst.st_ino)
 			break;
 	}
@@ -1502,23 +1504,23 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			, &icon_48, &icon_96
 #endif
 		   );
-	gtk_list_store_set(browser->store, iter, BR_COL_UPDATED, 1,
-			BR_COL_PATH, path, BR_COL_DISPLAY_NAME, display,
-			BR_COL_INODE, inode, BR_COL_IS_DIRECTORY,
-			S_ISDIR(st->st_mode), BR_COL_IS_EXECUTABLE,
-			st->st_mode & S_IXUSR, BR_COL_IS_MOUNT_POINT,
-			(st->st_dev != browser->refresh_dev) ? TRUE : FALSE,
-			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
+	gtk_list_store_set(browser->store, iter, BC_UPDATED, 1, BC_PATH, path,
+			BC_DISPLAY_NAME, display, BC_INODE, inode,
+			BC_IS_DIRECTORY, S_ISDIR(st->st_mode),
+			BC_IS_EXECUTABLE, st->st_mode & S_IXUSR,
+			BC_IS_MOUNT_POINT, (st->st_dev != browser->refresh_dev)
+			? TRUE : FALSE,
+			BC_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			BR_COL_PIXBUF_48, icon_48 != NULL ? icon_48
+			BC_PIXBUF_48, icon_48 != NULL ? icon_48
 			: browser->pb_file_48,
 #endif
-			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
-			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
-			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
-			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
-			BR_COL_MIME_TYPE, type != NULL ? type : "", -1);
+			BC_SIZE, size, BC_DISPLAY_SIZE, dsize,
+			BC_OWNER, (pw != NULL) ? pw->pw_name : "",
+			BC_GROUP, (gr != NULL) ? gr->gr_name : "",
+			BC_DATE, lst->st_mtime, BC_DISPLAY_DATE, ddate,
+			BC_MIME_TYPE, type != NULL ? type : "", -1);
 	/* FIXME refresh the plug-in if the icon is currently selected */
 }
 
@@ -1545,8 +1547,8 @@ static void _current_deleted(Browser * browser)
 	valid = gtk_tree_model_get_iter_first(model, &iter);
 	while(valid == TRUE)
 	{
-		gtk_tree_model_get(model, &iter, BR_COL_UPDATED, &updated, -1);
-		gtk_list_store_set(browser->store, &iter, BR_COL_UPDATED, FALSE,
+		gtk_tree_model_get(model, &iter, BC_UPDATED, &updated, -1);
+		gtk_list_store_set(browser->store, &iter, BC_UPDATED, FALSE,
 				-1);
 		if(updated == TRUE)
 			valid = gtk_tree_model_iter_next(model, &iter);
@@ -1750,27 +1752,24 @@ static void _view_details(Browser * browser)
 	}
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes("", renderer,
-		"pixbuf", BR_COL_PIXBUF_24, NULL);
+			"pixbuf", BC_PIXBUF_24, NULL);
 	gtk_tree_view_append_column(view, column);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, "ellipsize",
 			PANGO_ELLIPSIZE_END, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
-	_details_column_text(view, renderer, _("Filename"), BR_COL_DISPLAY_NAME,
-			BR_COL_DISPLAY_NAME);
+	_details_column_text(view, renderer, _("Filename"), BC_DISPLAY_NAME,
+			BC_DISPLAY_NAME);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "xalign", 1.0, NULL);
-	_details_column_text(view, renderer, _("Size"), BR_COL_DISPLAY_SIZE,
-			BR_COL_SIZE);
-	_details_column_text(view, NULL, _("Owner"), BR_COL_OWNER,
-			BR_COL_OWNER);
-	_details_column_text(view, NULL, _("Group"), BR_COL_GROUP,
-			BR_COL_GROUP);
-	_details_column_text(view, NULL, _("Date"), BR_COL_DISPLAY_DATE,
-			BR_COL_DATE);
-	_details_column_text(view, NULL, _("MIME type"), BR_COL_MIME_TYPE,
-			BR_COL_MIME_TYPE);
+	_details_column_text(view, renderer, _("Size"), BC_DISPLAY_SIZE,
+			BC_SIZE);
+	_details_column_text(view, NULL, _("Owner"), BC_OWNER, BC_OWNER);
+	_details_column_text(view, NULL, _("Group"), BC_GROUP, BC_GROUP);
+	_details_column_text(view, NULL, _("Date"), BC_DISPLAY_DATE, BC_DATE);
+	_details_column_text(view, NULL, _("MIME type"), BC_MIME_TYPE,
+			BC_MIME_TYPE);
 	gtk_tree_view_set_headers_visible(view, TRUE);
 	g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(
 				on_detail_default), browser);
@@ -1812,7 +1811,7 @@ static void _view_icons(Browser * browser)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "pixbuf", BR_COL_PIXBUF_48, NULL);
+			renderer, "pixbuf", BC_PIXBUF_48, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
@@ -1823,13 +1822,13 @@ static void _view_icons(Browser * browser)
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
+			renderer, "text", BC_DISPLAY_NAME, NULL);
 #else
 	_view_icon_view(browser);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_PIXBUF_48);
+			BC_PIXBUF_48);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_DISPLAY_NAME);
+			BC_DISPLAY_NAME);
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
 			BROWSER_ICON_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
@@ -1920,7 +1919,7 @@ static void _view_list(Browser * browser)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "pixbuf", BR_COL_PIXBUF_24, NULL);
+			renderer, "pixbuf", BC_PIXBUF_24, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
@@ -1929,13 +1928,13 @@ static void _view_list(Browser * browser)
 			"width-chars", 20, "wrap-mode", PANGO_WRAP_WORD_CHAR,
 			"xalign", 0.0, NULL);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
+			renderer, "text", BC_DISPLAY_NAME, NULL);
 #else
 	_view_icon_view(browser);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_PIXBUF_24);
+			BC_PIXBUF_24);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_DISPLAY_NAME);
+			BC_DISPLAY_NAME);
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
 			BROWSER_LIST_WRAP_WIDTH + 24);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
@@ -1960,7 +1959,7 @@ static void _view_thumbnails(Browser * browser)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "pixbuf", BR_COL_PIXBUF_96, NULL);
+			renderer, "pixbuf", BC_PIXBUF_96, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
@@ -1971,13 +1970,13 @@ static void _view_thumbnails(Browser * browser)
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
+			renderer, "text", BC_DISPLAY_NAME, NULL);
 #else
 	_view_icon_view(browser);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_PIXBUF_96);
+			BC_PIXBUF_96);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_DISPLAY_NAME);
+			BC_DISPLAY_NAME);
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
 			BROWSER_THUMBNAIL_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
@@ -2535,7 +2534,7 @@ static void _browser_plugin_refresh(Browser * browser)
 	if(sel != NULL && sel->data != NULL && sel->next == NULL
 			&& gtk_tree_model_get_iter(model, &iter, sel->data))
 	{
-		gtk_tree_model_get(model, &iter, BR_COL_PATH, &path, -1);
+		gtk_tree_model_get(model, &iter, BC_PATH, &path, -1);
 		_plugin_refresh_do(browser, (path != NULL) ? path
 				: browser->current->data);
 		g_free(path);
@@ -2697,17 +2696,6 @@ static void _browser_set_status(Browser * browser, char const * status)
 				browser->statusbar_id);
 	browser->statusbar_id = gtk_statusbar_push(sb,
 			gtk_statusbar_get_context_id(sb, ""), status);
-}
-
-
-/* config_get_filename */
-static char * _config_get_filename(void)
-{
-	char const * homedir;
-
-	if((homedir = getenv("HOME")) == NULL)
-		homedir = g_get_home_dir();
-	return string_new_append(homedir, "/", BROWSER_CONFIG_FILE, NULL);
 }
 
 
