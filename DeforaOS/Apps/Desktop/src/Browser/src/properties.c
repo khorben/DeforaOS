@@ -100,14 +100,17 @@ static int _properties(Mime * mime, int filec, char * const filev[])
 	int ret = 0;
 	int i;
 	Properties * properties;
+	char * p;
 
 	for(i = 0; i < filec; i++)
 	{
-		/* FIXME if relative path get the full path */
-		if((properties = _properties_new(mime, filev[i])) == NULL)
+		p = (filev[i][0] != '/') ? g_build_filename(g_get_current_dir(),
+				"/", filev[i], NULL) : g_strdup(filev[i]);
+		if((properties = _properties_new(mime, p)) == NULL)
 			ret |= 1;
 		else
 			_properties_cnt++;
+		g_free(p);
 	}
 	return ret;
 }
