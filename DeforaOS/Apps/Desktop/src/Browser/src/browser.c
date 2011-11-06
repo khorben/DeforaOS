@@ -14,6 +14,10 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* TODO:
+ * - re-implement MIME preferences
+ * - use the friendly-name for MIME types in the browser view
+ * - allow plug-ins to be re-ordered */
 
 
 
@@ -52,23 +56,24 @@ static char const _license[] =
 /* Browser */
 /* private */
 /* types */
-enum
+typedef enum _BrowserMimeColumn
 {
-	MI_COL_ICON,
-	MI_COL_NAME
-};
-#define MI_COL_LAST MI_COL_NAME
-#define MI_COL_COUNT (MI_COL_LAST + 1)
+	BMC_ICON,
+	BMC_NAME
+} BrowserMimeColumn;
+#define BMC_LAST BMC_NAME
+#define BMC_COUNT (BMC_LAST + 1)
 
-enum _BrowserPluginColumn
+typedef enum _BrowserPluginColumn
 {
 	BPC_NAME = 0,
+	BPC_ENABLED,
 	BPC_ICON,
 	BPC_NAME_DISPLAY,
 	BPC_PLUGIN,
 	BPC_BROWSERPLUGIN,
 	BPC_WIDGET
-};
+} BrowserPluginColumn;
 #define BPC_LAST BPC_WIDGET
 #define BPC_COUNT (BPC_LAST + 1)
 
@@ -428,8 +433,8 @@ Browser * browser_new(char const * directory)
 	browser->pl_view = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_POINTER,
-			G_TYPE_POINTER, G_TYPE_POINTER);
+			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING,
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
 	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				browser->pl_store));
 	g_signal_connect_swapped(G_OBJECT(browser->pl_combo), "changed",
@@ -892,7 +897,7 @@ int browser_load(Browser * browser, char const * plugin)
 	GtkWidget * widget;
 	GtkTreeIter iter;
 	GtkIconTheme * theme;
-	GdkPixbuf * pixbuf = NULL;
+	GdkPixbuf * icon = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
@@ -915,13 +920,13 @@ int browser_load(Browser * browser, char const * plugin)
 	gtk_widget_hide(widget);
 	theme = gtk_icon_theme_get_default();
 	if(bp->icon != NULL)
-		pixbuf = gtk_icon_theme_load_icon(theme, bp->icon, 24, 0, NULL);
-	if(pixbuf == NULL)
-		pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 24,
-				0, NULL);
+		icon = gtk_icon_theme_load_icon(theme, bp->icon, 24, 0, NULL);
+	if(icon == NULL)
+		icon = gtk_icon_theme_load_icon(theme, "gnome-settings", 24, 0,
+				NULL);
 	gtk_list_store_append(browser->pl_store, &iter);
 	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, plugin,
-			BPC_ICON, pixbuf, BPC_NAME_DISPLAY, _(bp->name),
+			BPC_ICON, icon, BPC_NAME_DISPLAY, _(bp->name),
 			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
 			BPC_WIDGET, widget, -1);
 	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
@@ -2074,24 +2079,23 @@ void browser_show_preferences(Browser * browser)
 			gtk_label_new_with_mnemonic(_("_Appearance")));
 	/* file associations tab */
 	hbox = gtk_hbox_new(FALSE, 4);
-	browser->pr_mime_store = gtk_list_store_new(MI_COL_COUNT,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	browser->pr_mime_store = gtk_list_store_new(BMC_COUNT, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING);
 	browser->pr_mime_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->pr_mime_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->pr_mime_view),
 			FALSE);
 	column = gtk_tree_view_column_new_with_attributes(NULL,
-			gtk_cell_renderer_pixbuf_new(), "pixbuf", MI_COL_ICON,
+			gtk_cell_renderer_pixbuf_new(), "pixbuf", BMC_ICON,
 			NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_mime_view),
 			column);
 	column = gtk_tree_view_column_new_with_attributes(_("Type"),
-			gtk_cell_renderer_text_new(), "text", MI_COL_NAME,
-			NULL);
+			gtk_cell_renderer_text_new(), "text", BMC_NAME, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_mime_view),
 			column);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
-				browser->pr_mime_store), MI_COL_NAME,
+				browser->pr_mime_store), BMC_NAME,
 			GTK_SORT_ASCENDING);
 	mime_foreach(browser->mime, _preferences_on_mime_foreach, browser);
 	widget = gtk_scrolled_window_new(NULL, NULL);
@@ -2108,8 +2112,9 @@ void browser_show_preferences(Browser * browser)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox,
 			gtk_label_new_with_mnemonic(_("_File associations")));
 	/* plug-ins tab */
-	browser->pr_plugin_store = gtk_list_store_new(4, G_TYPE_STRING,
-			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	browser->pr_plugin_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
+			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING,
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
 	browser->pr_plugin_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->pr_plugin_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(
@@ -2131,7 +2136,7 @@ void browser_show_preferences(Browser * browser)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->pr_plugin_view),
 			column);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
-				browser->pr_plugin_store), 3,
+				browser->pr_plugin_store), BPC_NAME_DISPLAY,
 			GTK_SORT_ASCENDING);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -2177,7 +2182,7 @@ static void _preferences_set_plugins(Browser * browser)
 	BrowserPlugin * bp;
 	GtkTreeIter iter;
 	gboolean enabled;
-	GdkPixbuf * pixbuf;
+	GdkPixbuf * icon;
 
 	gtk_list_store_clear(browser->pr_plugin_store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
@@ -2202,16 +2207,18 @@ static void _preferences_set_plugins(Browser * browser)
 			continue;
 		}
 		enabled = _browser_plugin_is_enabled(browser, de->d_name);
-		if(bp->icon == NULL)
-			pixbuf = gtk_icon_theme_load_icon(theme,
-					"gnome-settings", 24, 0, NULL);
-		else
-			pixbuf = gtk_icon_theme_load_icon(theme, bp->icon, 24,
+		icon = NULL;
+		if(bp->icon != NULL)
+			icon = gtk_icon_theme_load_icon(theme, bp->icon, 24,
 					0, NULL);
+		if(icon == NULL)
+			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
+					24, 0, NULL);
 		gtk_list_store_append(browser->pr_plugin_store, &iter);
 		gtk_list_store_set(browser->pr_plugin_store, &iter,
-				0, de->d_name, 1, enabled, 2, pixbuf,
-				3, _(bp->name), -1);
+				BPC_NAME, de->d_name, BPC_ENABLED, enabled,
+				BPC_ICON, icon, BPC_NAME_DISPLAY, _(bp->name),
+				-1);
 		plugin_delete(p);
 	}
 	closedir(dir);
@@ -2239,7 +2246,7 @@ static void _preferences_on_mime_edit(gpointer data)
 				browser->pr_mime_view));
 	if(gtk_tree_selection_get_selected(selection, &model, &iter) != TRUE)
 		return;
-	gtk_tree_model_get(model, &iter, MI_COL_NAME, &type, -1);
+	gtk_tree_model_get(model, &iter, BMC_NAME, &type, -1);
 	dialog = gtk_dialog_new_with_buttons(_("Edit file association"),
 			GTK_WINDOW(browser->pr_window), flags, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_APPLY,
@@ -2316,8 +2323,8 @@ static void _preferences_on_mime_foreach(void * data, char const * name,
 	GtkTreeIter iter;
 
 	gtk_list_store_append(browser->pr_mime_store, &iter);
-	gtk_list_store_set(browser->pr_mime_store, &iter, MI_COL_NAME, name,
-			MI_COL_ICON, icon_24, -1);
+	gtk_list_store_set(browser->pr_mime_store, &iter, BMC_NAME, name,
+			BMC_ICON, icon_24, -1);
 }
 
 static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
@@ -2328,7 +2335,7 @@ static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
 
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(
 				browser->pr_plugin_store), &iter, path);
-	gtk_list_store_set(browser->pr_plugin_store, &iter, 1,
+	gtk_list_store_set(browser->pr_plugin_store, &iter, BPC_ENABLED,
 			!gtk_cell_renderer_toggle_get_active(renderer), -1);
 }
 
