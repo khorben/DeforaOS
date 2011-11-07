@@ -139,6 +139,7 @@ void panel_window_show(PanelWindow * panel, gboolean show)
 	{
 		_panel_window_reset(panel);
 		gtk_widget_show(panel->window);
+		_panel_window_reset_strut(panel);
 	}
 	else
 		gtk_widget_hide(panel->window);
