@@ -67,18 +67,13 @@ GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
 static GdkFilterReturn _filter_message_power_management(Phone * phone,
 		PhoneMessagePowerManagement what)
 {
-	PhoneEvent event;
-
-	memset(&event, 0, sizeof(event));
 	switch(what)
 	{
 		case PHONE_MESSAGE_POWER_MANAGEMENT_RESUME:
-			event.type = PHONE_EVENT_TYPE_RESUME;
-			phone_event(phone, &event);
+			phone_event_type(phone, PHONE_EVENT_TYPE_RESUME);
 			break;
 		case PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND:
-			event.type = PHONE_EVENT_TYPE_SUSPEND;
-			phone_event(phone, &event);
+			phone_event_type(phone, PHONE_EVENT_TYPE_SUSPEND);
 			break;
 	}
 	return GDK_FILTER_CONTINUE;
@@ -212,6 +207,7 @@ void on_phone_code_clicked(GtkWidget * widget, gpointer data)
 	char const * character;
 
 	character = g_object_get_data(G_OBJECT(widget), "character");
+	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_code_append(phone, *character);
 }
 
@@ -221,6 +217,7 @@ void on_phone_code_enter(gpointer data)
 {
 	Phone * phone = data;
 
+	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_code_enter(phone);
 }
 
@@ -230,6 +227,7 @@ void on_phone_code_leave(gpointer data)
 {
 	Phone * phone = data;
 
+	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_show_code(phone, FALSE);
 }
 
@@ -294,10 +292,8 @@ void on_phone_contacts_write(gpointer data)
 void on_phone_dialer_call(gpointer data)
 {
 	Phone * phone = data;
-	PhoneEvent event;
 
-	event.type = PHONE_EVENT_TYPE_KEY_TONE;
-	phone_event(phone, &event);
+	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_dialer_call(phone, NULL);
 }
 
@@ -307,11 +303,9 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data)
 {
 	Phone * phone = data;
 	char const * character;
-	PhoneEvent event;
 
 	character = g_object_get_data(G_OBJECT(widget), "character");
-	event.type = PHONE_EVENT_TYPE_KEY_TONE;
-	phone_event(phone, &event);
+	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_dialer_append(phone, *character);
 }
 
@@ -320,10 +314,8 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data)
 void on_phone_dialer_hangup(gpointer data)
 {
 	Phone * phone = data;
-	PhoneEvent event;
 
-	event.type = PHONE_EVENT_TYPE_KEY_TONE;
-	phone_event(phone, &event);
+	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_dialer_hangup(phone);
 }
 
