@@ -30,7 +30,10 @@
 struct _PanelWindow
 {
 	PanelAppletHelper * helper;
+
+	PanelPosition position;
 	gint height;
+	GdkRectangle root;
 
 	GtkWidget * window;
 	GtkWidget * hbox;
@@ -38,10 +41,8 @@ struct _PanelWindow
 
 
 /* prototypes */
-static void _panel_window_reset(PanelWindow * panel, PanelPosition position,
-		GdkRectangle * rect);
-static void _panel_window_reset_strut(PanelWindow * panel,
-		PanelPosition position, GdkRectangle * rect);
+static void _panel_window_reset(PanelWindow * panel);
+static void _panel_window_reset_strut(PanelWindow * panel);
 
 
 /* public */
@@ -82,9 +83,9 @@ PanelWindow * panel_window_new(PanelPosition position,
 	panel->hbox = gtk_hbox_new(FALSE, 2);
 	gtk_container_add(GTK_CONTAINER(panel->window), panel->hbox);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
-	_panel_window_reset(panel, position, root);
-	gtk_widget_show_all(panel->window);
-	_panel_window_reset_strut(panel, position, root);
+	gtk_widget_show_all(panel->hbox);
+	panel_window_reset(panel, position, root);
+	panel_window_show(panel, TRUE);
 	return panel;
 }
 
@@ -124,8 +125,10 @@ void panel_window_append(PanelWindow * panel, GtkWidget * widget,
 void panel_window_reset(PanelWindow * panel, PanelPosition position,
 		GdkRectangle * root)
 {
-	_panel_window_reset(panel, position, root);
-	_panel_window_reset_strut(panel, position, root);
+	panel->position = position;
+	memcpy(&panel->root, root, sizeof(*root));
+	_panel_window_reset(panel);
+	_panel_window_reset_strut(panel);
 }
 
 
@@ -133,7 +136,10 @@ void panel_window_reset(PanelWindow * panel, PanelPosition position,
 void panel_window_show(PanelWindow * panel, gboolean show)
 {
 	if(show)
+	{
+		_panel_window_reset(panel);
 		gtk_widget_show(panel->window);
+	}
 	else
 		gtk_widget_hide(panel->window);
 }
@@ -142,22 +148,21 @@ void panel_window_show(PanelWindow * panel, gboolean show)
 /* private */
 /* functions */
 /* panel_window_reset */
-static void _panel_window_reset(PanelWindow * panel, PanelPosition position,
-		GdkRectangle * root)
+static void _panel_window_reset(PanelWindow * panel)
 {
-	gtk_window_resize(GTK_WINDOW(panel->window), root->width,
+	gtk_window_resize(GTK_WINDOW(panel->window), panel->root.width,
 			panel->height);
-	if(position == PANEL_POSITION_TOP)
-		gtk_window_move(GTK_WINDOW(panel->window), root->x, 0);
+	if(panel->position == PANEL_POSITION_TOP)
+		gtk_window_move(GTK_WINDOW(panel->window), panel->root.x, 0);
 	else
-		gtk_window_move(GTK_WINDOW(panel->window), root->x,
-				root->y + root->height - panel->height);
+		gtk_window_move(GTK_WINDOW(panel->window), panel->root.x,
+				panel->root.y + panel->root.height
+				- panel->height);
 }
 
 
 /* panel_window_reset_strut */
-static void _panel_window_reset_strut(PanelWindow * panel,
-		PanelPosition position, GdkRectangle * root)
+static void _panel_window_reset_strut(PanelWindow * panel)
 {
 	GdkWindow * window;
 	GdkAtom atom;
@@ -171,17 +176,17 @@ static void _panel_window_reset_strut(PanelWindow * panel,
 #endif
 	cardinal = gdk_atom_intern("CARDINAL", FALSE);
 	memset(strut, 0, sizeof(strut));
-	switch(position)
+	switch(panel->position)
 	{
 		case PANEL_POSITION_TOP:
 			strut[2] = panel->height;
-			strut[8] = root->x;
-			strut[9] = root->x + root->width;
+			strut[8] = panel->root.x;
+			strut[9] = panel->root.x + panel->root.width;
 			break;
 		case PANEL_POSITION_BOTTOM:
 			strut[3] = panel->height;
-			strut[10] = root->x;
-			strut[11] = root->x + root->width;
+			strut[10] = panel->root.x;
+			strut[11] = panel->root.x + panel->root.width;
 			break;
 	}
 	atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
