@@ -2620,9 +2620,11 @@ static HayesCommandStatus _on_request_functional_enable(HayesCommand * command,
 	switch((status = _on_request_generic(command, status, priv)))
 	{
 		case HCS_ERROR:
+#if 0 /* XXX ignore for now (may simply be missing the PIN code) */
 			/* force a reset */
 			_hayes_request_type(modem,
 					HAYES_REQUEST_FUNCTIONAL_ENABLE_RESET);
+#endif
 			break;
 		case HCS_SUCCESS:
 			_on_code_cfun(modem, "1"); /* XXX ugly workaround */
