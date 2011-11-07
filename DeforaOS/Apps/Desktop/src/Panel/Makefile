@@ -68,7 +68,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/panelctl.c \
 		$(PACKAGE)-$(VERSION)/src/run.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/panel.h \
 		$(PACKAGE)-$(VERSION)/src/window.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/applets/battery.c \

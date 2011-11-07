@@ -21,7 +21,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
-#include "common.h"
+#include "panel.h"
 #include "../config.h"
 #define _(string) gettext(string)
 
@@ -41,12 +41,12 @@
 /* panelctl */
 /* private */
 /* prototypes */
-static int _panelctl(PanelMessageShow show);
+static int _panelctl(PanelMessageShow what, gboolean show);
 static int _usage(void);
 
 
 /* functions */
-static int _panelctl(PanelMessageShow show)
+static int _panelctl(PanelMessageShow what, gboolean show)
 {
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
@@ -58,8 +58,8 @@ static int _panelctl(PanelMessageShow show)
 	client->message_type = gdk_atom_intern(PANEL_CLIENT_MESSAGE, FALSE);
 	client->data_format = 8;
 	client->data.b[0] = PANEL_MESSAGE_SHOW;
-	client->data.b[1] = show;
-	client->data.b[2] = TRUE;
+	client->data.b[1] = what;
+	client->data.b[2] = show;
 	gdk_event_send_clientmessage_toall(&event);
 	return 0;
 }
@@ -68,8 +68,12 @@ static int _panelctl(PanelMessageShow show)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: panelctl -S\n"
-"  -S	Display or change settings\n"), stderr);
+	fputs(_("Usage: panelctl [-B|-S|-T|-b|-t]\n"
+"  -B	Show the bottom panel\n"
+"  -S	Display or change settings\n"
+"  -T	Show the top panel\n"
+"  -b	Hide the bottom panel\n"
+"  -t	Hide the top panel\n"), stderr);
 	return 1;
 }
 
@@ -80,22 +84,40 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	int show = -1;
+	int what = -1;
+	gboolean show = TRUE;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "S")) != -1)
+	while((o = getopt(argc, argv, "BSTbt")) != -1)
 		switch(o)
 		{
+			case 'B':
+				what = PANEL_MESSAGE_SHOW_PANEL_BOTTOM;
+				show = TRUE;
+				break;
 			case 'S':
-				show = PANEL_MESSAGE_SHOW_SETTINGS;
+				what = PANEL_MESSAGE_SHOW_SETTINGS;
+				show = TRUE;
+				break;
+			case 'T':
+				what = PANEL_MESSAGE_SHOW_PANEL_TOP;
+				show = TRUE;
+				break;
+			case 'b':
+				what = PANEL_MESSAGE_SHOW_PANEL_BOTTOM;
+				show = FALSE;
+				break;
+			case 't':
+				what = PANEL_MESSAGE_SHOW_PANEL_TOP;
+				show = FALSE;
 				break;
 			default:
 				return _usage();
 		}
-	if(argc != optind || show < 0)
+	if(argc != optind || what < 0)
 		return _usage();
-	return (_panelctl(show) == 0) ? 0 : 2;
+	return (_panelctl(what, show) == 0) ? 0 : 2;
 }

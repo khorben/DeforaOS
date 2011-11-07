@@ -19,7 +19,6 @@
 #include <string.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
-#include "common.h"
 #include "window.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
@@ -127,6 +126,16 @@ void panel_window_reset(PanelWindow * panel, PanelPosition position,
 {
 	_panel_window_reset(panel, position, root);
 	_panel_window_reset_strut(panel, position, root);
+}
+
+
+/* panel_window_show */
+void panel_window_show(PanelWindow * panel, gboolean show)
+{
+	if(show)
+		gtk_widget_show(panel->window);
+	else
+		gtk_widget_hide(panel->window);
 }
 
 

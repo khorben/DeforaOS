@@ -37,7 +37,7 @@ static char const _license[] =
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include "window.h"
-#include "common.h"
+#include "panel.h"
 #include "../config.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
@@ -394,6 +394,8 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 		Panel * panel)
 {
 	PanelMessage message;
+	PanelMessageShow what;
+	gboolean show;
 
 	if(xevent->message_type != gdk_x11_get_xatom_by_name(
 				PANEL_CLIENT_MESSAGE))
@@ -402,8 +404,16 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 	switch(message)
 	{
 		case PANEL_MESSAGE_SHOW:
-			if(xevent->data.b[1] == PANEL_MESSAGE_SHOW_SETTINGS)
-				panel_show_preferences(panel, TRUE);
+			what = xevent->data.b[1];
+			show = xevent->data.b[2];
+			if(what == PANEL_MESSAGE_SHOW_PANEL_BOTTOM
+					&& panel->bottom != NULL)
+				panel_window_show(panel->bottom, show);
+			else if(what == PANEL_MESSAGE_SHOW_PANEL_TOP
+					&& panel->top != NULL)
+				panel_window_show(panel->top, show);
+			else if(what == PANEL_MESSAGE_SHOW_SETTINGS)
+				panel_show_preferences(panel, show);
 			break;
 	}
 	return GDK_FILTER_CONTINUE;

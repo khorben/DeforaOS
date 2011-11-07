@@ -31,7 +31,9 @@ typedef enum _PanelMessage
 
 typedef enum _PanelMessageShow
 {
-	PANEL_MESSAGE_SHOW_SETTINGS = 0
+	PANEL_MESSAGE_SHOW_PANEL_BOTTOM = 0,
+	PANEL_MESSAGE_SHOW_PANEL_TOP,
+	PANEL_MESSAGE_SHOW_SETTINGS
 } PanelMessageShow;
 
 typedef enum _PanelPosition

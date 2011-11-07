@@ -18,7 +18,7 @@
 #ifndef PANEL_WINDOW_H
 # define PANEL_WINDOW_H
 
-# include "common.h"
+# include "panel.h"
 
 
 /* PanelWindow */
@@ -39,5 +39,6 @@ void panel_window_append(PanelWindow * panel, GtkWidget * widget,
 		gboolean expand, gboolean fill);
 void panel_window_reset(PanelWindow * panel, PanelPosition position,
 		GdkRectangle * root);
+void panel_window_show(PanelWindow * panel, gboolean show);
 
 #endif /* !PANEL_WINDOW_H */

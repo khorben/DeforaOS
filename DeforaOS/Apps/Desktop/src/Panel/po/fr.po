@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-07 23:03+0100\n"
+"POT-Creation-Date: 2011-11-07 23:29+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:185 ../src/panel.c:454 ../src/panel.c:459
+#: ../src/applets/battery.c:185 ../src/panel.c:464 ../src/panel.c:469
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
@@ -108,8 +108,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:1318 ../src/panel.c:1325
-#: ../src/panel.c:1334
+#: ../src/applets/logout.c:69 ../src/panel.c:1328 ../src/panel.c:1335
+#: ../src/panel.c:1344
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -191,13 +191,13 @@ msgstr "Périphérique réseau USB connecté"
 
 #: ../src/main.c:46
 msgid ""
-"Usage: panel [-m monitor][-bBsStx]\n"
+"Usage: panel [-m monitor][-lsx]\n"
 "  -l\tUse icons the size of a large toolbar\n"
 "  -m\tMonitor to use (default: 0)\n"
 "  -s\tUse icons the size of a small toolbar\n"
 "  -x\tUse icons the size of menus\n"
 msgstr ""
-"Usage: panel [-m moniteur][-bBsStx]\n"
+"Usage: panel [-m moniteur][-lsx]\n"
 "  -l\tIcônes de la taille d'une grosse barre d'outils\n"
 "  -m\tMoniteur à utiliser (par défaut : 0)\n"
 "  -s\tIcônes de la taille d'une petite barre d'outils\n"
@@ -215,35 +215,35 @@ msgstr "Petite"
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:571
+#: ../src/panel.c:581
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:585
+#: ../src/panel.c:595
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:614
+#: ../src/panel.c:624
 msgid "Applets:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:689
+#: ../src/panel.c:699
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:695 ../src/panel.c:699 ../src/panel.c:730 ../src/panel.c:734
+#: ../src/panel.c:705 ../src/panel.c:709 ../src/panel.c:740 ../src/panel.c:744
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:724
+#: ../src/panel.c:734
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:1257
+#: ../src/panel.c:1267
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1304
+#: ../src/panel.c:1314
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -254,7 +254,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1420
+#: ../src/panel.c:1430
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -265,7 +265,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1425
+#: ../src/panel.c:1435
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -276,20 +276,29 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1439 ../src/panel.c:1446 ../src/panel.c:1455
+#: ../src/panel.c:1449 ../src/panel.c:1456 ../src/panel.c:1465
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1445
+#: ../src/panel.c:1455
 msgid "Restart"
 msgstr "Redémarrer"
 
 #: ../src/panelctl.c:71
 msgid ""
-"Usage: panelctl -S\n"
+"Usage: panelctl [-B|-S|-T|-b|-t]\n"
+"  -B\tShow the bottom panel\n"
 "  -S\tDisplay or change settings\n"
-msgstr "Usage: panelctl -S\n"
+"  -T\tShow the top panel\n"
+"  -b\tHide the bottom panel\n"
+"  -t\tHide the top panel\n"
+msgstr ""
+"Usage: panelctl [-B|-S|-T|-b|-t]\n"
+"  -B\tAfficher le panel du bas\n"
 "  -S\tAfficher ou modifier les préférences\n"
+"  -T\tAfficher le panel du haut\n"
+"  -b\tMasquer le panel du bas\n"
+"  -t\tMasquer le panel du haut\n"
 
 #: ../src/run.c:102 ../src/run.c:114
 msgid "Run program..."
@@ -323,6 +332,6 @@ msgstr "Permissions insuffisantes"
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
-#: ../src/window.c:63
+#: ../src/window.c:62
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"

@@ -26,7 +26,7 @@
 #include <gtk/gtk.h>
 #include <System.h>
 #include "Panel.h"
-#include "../src/common.h"
+#include "panel.h"
 #include "../config.h"
 
 

@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	?= cc
-CPPFLAGSF= -I ../include
+CPPFLAGSF= -I ../include -I ../src
 CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0`
 CFLAGS	= -Wall -g -O2
@@ -23,7 +23,7 @@ panel_test_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 panel_test: $(panel_test_OBJS)
 	$(CC) -o panel_test $(panel_test_OBJS) $(panel_test_LDFLAGS)
 
-test.o: test.c ../src/common.h ../config.h
+test.o: test.c ../src/panel.h ../config.h
 	$(CC) $(panel_test_CFLAGS) -c test.c
 
 clean:
