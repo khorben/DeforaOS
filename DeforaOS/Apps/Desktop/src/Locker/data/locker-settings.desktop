@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Screensaver settings
-Exec=lockerctl -p
+Exec=lockerctl -S
 Icon=preferences-desktop-screensaver
 Type=Application
 Categories=Settings;GTK;
