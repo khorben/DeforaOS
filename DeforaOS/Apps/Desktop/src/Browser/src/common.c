@@ -58,9 +58,9 @@ static int _common_drag_data_received(GdkDragContext * context,
 	int ret = 0;
 	size_t len;
 	size_t i;
-	GtkSelectionData * sd;
 	GList * selection = NULL;
 	char * p;
+	GdkDragAction action;
 #ifdef DEBUG
 	GList * s;
 #endif
@@ -74,30 +74,32 @@ static int _common_drag_data_received(GdkDragContext * context,
 		return 0;
 	len = seldata->length;
 #endif
-	for(i = 0; i < len; + 1)
+	for(i = 0; i < len; i += strlen(p) + 1)
 	{
 #if GTK_CHECK_VERSION(2, 14, 0)
-		sd = gtk_selection_data_get_data(seldata);
-		sd = &sd[i];
+		p = (char *)gtk_selection_data_get_data(seldata);
+		p = &p[i];
 #else
-		sd = &seldata->data[i];
+		p = &seldata->data[i];
 #endif
-		selection = g_list_append(selection, sd);
-		p = sd;
-		i += strlen(p);
+		selection = g_list_append(selection, p);
 	}
+#if GTK_CHECK_VERSION(2, 22, 0)
+	action = gdk_drag_context_get_suggested_action(context);
+#else
+	action = context->suggested_action;
+#endif
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
-			context->suggested_action == GDK_ACTION_COPY
+	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ", action == GDK_ACTION_COPY
 			? _("copying") : _("moving"), _(" to \""), dest,
 			"\":\n");
 	for(s = selection; s != NULL; s = s->next)
 		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
 #else
 	selection = g_list_append(selection, dest);
-	if(context->suggested_action == GDK_ACTION_COPY)
+	if(action == GDK_ACTION_COPY)
 		ret = _common_exec("copy", "-iR", selection);
-	else if(context->suggested_action == GDK_ACTION_MOVE)
+	else if(action == GDK_ACTION_MOVE)
 		ret = _common_exec("move", "-i", selection);
 #endif
 	g_list_free(selection);
