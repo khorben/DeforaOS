@@ -58,7 +58,9 @@ static int _common_drag_data_received(GdkDragContext * context,
 	int ret = 0;
 	size_t len;
 	size_t i;
+	GtkSelectionData * sd;
 	GList * selection = NULL;
+	char * p;
 #ifdef DEBUG
 	GList * s;
 #endif
@@ -72,8 +74,18 @@ static int _common_drag_data_received(GdkDragContext * context,
 		return 0;
 	len = seldata->length;
 #endif
-	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
-		selection = g_list_append(selection, &seldata->data[i]);
+	for(i = 0; i < len; + 1)
+	{
+#if GTK_CHECK_VERSION(2, 14, 0)
+		sd = gtk_selection_data_get_data(seldata);
+		sd = &sd[i];
+#else
+		sd = &seldata->data[i];
+#endif
+		selection = g_list_append(selection, sd);
+		p = sd;
+		i += strlen(p);
+	}
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
 			context->suggested_action == GDK_ACTION_COPY
