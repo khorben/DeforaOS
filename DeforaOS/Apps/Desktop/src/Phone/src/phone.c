@@ -2834,8 +2834,8 @@ static void _system_on_ok(gpointer data)
 	}
 	_phone_config_save(phone);
 	/* restart the phone */
-	phone_event_type(phone, PHONE_EVENT_TYPE_STOPPING); /* ignore errors */
-	modem_stop(phone->modem);
+	if(phone_event_type(phone, PHONE_EVENT_TYPE_STOPPING) != 0)
+		modem_stop(phone->modem); /* force modem to stop */
 	phone_event_type(phone, PHONE_EVENT_TYPE_STARTING);
 }
 
