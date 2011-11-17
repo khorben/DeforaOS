@@ -28,8 +28,8 @@ download: $(download_OBJS)
 	$(CC) -o download $(download_OBJS) $(download_LDFLAGS)
 
 surfer_OBJS = surfer.o ghtml.o callbacks.o main.o
-surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D WITH_WEBKIT $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem libDesktop webkit-1.0`
-surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop webkit-1.0`
+surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D WITH_WEBKIT $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop webkit-1.0`
+surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop webkit-1.0`
 
 surfer: $(surfer_OBJS)
 	$(CC) -o surfer $(surfer_OBJS) $(surfer_LDFLAGS)
