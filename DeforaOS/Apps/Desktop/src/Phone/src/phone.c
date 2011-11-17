@@ -907,7 +907,9 @@ int phone_event(Phone * phone, PhoneEvent * event)
 						PHONE_EVENT_TYPE_STARTED);
 			break;
 		case PHONE_EVENT_TYPE_STOPPING:
-			if(ret == 0 && (ret = modem_stop(phone->modem)) == 0)
+			if(ret == 0 && phone->modem != NULL
+					&& (ret = modem_stop(phone->modem))
+					== 0)
 				phone_event_type(phone,
 						PHONE_EVENT_TYPE_STOPPED);
 			break;
