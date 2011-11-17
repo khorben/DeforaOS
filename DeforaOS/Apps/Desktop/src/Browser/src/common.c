@@ -63,9 +63,15 @@ static int _common_drag_data_received(GdkDragContext * context,
 	GList * s;
 #endif
 
+#if GTK_CHECK_VERSION(2, 14, 0)
+	if(gtk_selection_data_get_length(seldata) <= 0
+			|| gtk_selection_data_get_data(seldata) == NULL)
+	len = gtk_selection_data_get_length(seldata);
+#else
 	if(seldata->length <= 0 || seldata->data == NULL)
 		return 0;
 	len = seldata->length;
+#endif
 	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
 		selection = g_list_append(selection, &seldata->data[i]);
 #ifdef DEBUG
@@ -172,8 +178,13 @@ static int _common_symlink(GtkWidget * window, char const * cur)
 	widget = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	gtk_widget_show_all(hbox);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(
+						dialog))), hbox, TRUE, TRUE, 4);
+#else
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), hbox, TRUE, TRUE,
 			4);
+#endif
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
 		to = gtk_entry_get_text(GTK_ENTRY(widget));
 	if(to != NULL && strlen(to) > 0 && symlink(to, path) != 0)
