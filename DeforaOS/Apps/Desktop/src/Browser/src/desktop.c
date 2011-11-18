@@ -1482,7 +1482,7 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 	/* obtain monitor information */
 	if(extend != TRUE)
 		n = gdk_screen_get_n_monitors(desktop->screen);
-	for(i = 0; i < n; i++)
+	for(i = 0; filename != NULL && i < n; i++)
 	{
 		if(extend != TRUE)
 			gdk_screen_get_monitor_geometry(desktop->screen, i,
@@ -2064,8 +2064,12 @@ static void _preferences_set(Desktop * desktop)
 			extend = strtol(p, NULL, 10) ? TRUE : FALSE;
 		config_delete(config);
 	}
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(desktop->pr_background),
-			filename);
+	if(filename != NULL)
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
+					desktop->pr_background), filename);
+	else
+		gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(
+					desktop->pr_background));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_background_how),
 			how);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
