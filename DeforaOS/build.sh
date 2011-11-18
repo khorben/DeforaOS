@@ -333,15 +333,15 @@ target_install()
 	[ -z "$PKG_CONFIG_LIBDIR" ] && PKG_CONFIG_LIBDIR="$D$P/lib/pkgconfig"
 	[ -z "$PKG_CONFIG_SYSROOT_DIR" ] && PKG_CONFIG_SYSROOT_DIR="$D"
 	export PKG_CONFIG_LIBDIR PKG_CONFIG_PATH PKG_CONFIG_SYSROOT_DIR
-	for i in $SUBDIRS; do
-		SUBDIRS="$i"
-		case "$i" in
+	for subdir in $SUBDIRS; do
+		SUBDIRS="$subdir"
+		case "$subdir" in
 			System/src/libApp)
-				SUBDIRS="System/src/libApp/src"
+				SUBDIRS="$subdir/src"
 				LDFLAGS="$L -lc"
 				target "install"		|| return 2
 				LDFLAGS="$L -lc $LIBGCC $D$P/lib/start.o"
-				SUBDIRS="System/src/libApp"
+				SUBDIRS="$subdir"
 				target "install"		|| return 2
 				;;
 			System/src/libc)
@@ -349,6 +349,8 @@ target_install()
 				target "install"		|| return 2
 				;;
 			System/src/libSystem)
+				SUBDIRS="$subdir/src $subdir/include \
+						$subdir/data"
 				LDFLAGS="$L -lc"
 				target "install"		|| return 2
 				;;
