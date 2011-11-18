@@ -81,7 +81,7 @@ static int _common_drag_data_received(GdkDragContext * context,
 		p = (char *)gtk_selection_data_get_data(seldata);
 		p = &p[i];
 #else
-		p = &seldata->data[i];
+		p = (char *)&seldata->data[i];
 #endif
 		selection = g_list_append(selection, p);
 	}
