@@ -36,13 +36,15 @@
 /* types */
 typedef struct _Cpufreq
 {
-	PanelAppletHelper * helper;
 	GtkWidget * hbox;
 	GtkWidget * label;
 	guint timeout;
 	int min;
 	int max;
 	int step;
+#ifdef __NetBSD__
+	char const * name;
+#endif
 } Cpufreq;
 
 
@@ -78,6 +80,7 @@ PanelApplet applet =
 static GtkWidget * _cpufreq_init(PanelApplet * applet)
 {
 #ifdef __NetBSD__
+	PanelAppletHelper * helper = applet->helper;
 	Cpufreq * cpufreq;
 	PangoFontDescription * desc;
 	GtkWidget * widget;
@@ -85,30 +88,34 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	size_t freqsize = sizeof(freq);
 	char const * p;
 
+	/* detect est or powernow */
 	if(sysctlbyname("machdep.est.frequency.available", &freq, &freqsize,
-				NULL, 0) != 0
-			&& sysctlbyname("machdep.powernow.frequency.available",
-				&freq, &freqsize, NULL, 0) != 0)
+				NULL, 0) == 0)
+		p = "machdep.est.frequency.current";
+	else if(sysctlbyname("machdep.powernow.frequency.available", &freq,
+				&freqsize, NULL, 0) == 0)
+		p = "machdep.powernow.frequency.current";
+	else
 	{
-		error_set("%s: %s", "cpufreq", strerror(errno));
+		error_set("%s: %s", "cpufreq", _("No support detected"));
 		return NULL;
 	}
 	if((cpufreq = malloc(sizeof(*cpufreq))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(helper->panel, "malloc", 0);
 		return NULL;
 	}
 	applet->priv = cpufreq;
-	cpufreq->helper = applet->helper;
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	cpufreq->hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_image_new_from_icon_name("gnome-monitor",
-			applet->helper->icon_size);
+			helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), widget, FALSE, TRUE, 0);
 	cpufreq->min = 0;
 	cpufreq->max = 0;
 	cpufreq->step = 1;
+	cpufreq->name = p;
 	cpufreq->max = atoi(freq);
 	cpufreq->min = (p = strrchr(freq, ' ')) != NULL ? atoi(p)
 		: cpufreq->max;
@@ -118,8 +125,8 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 			0);
 	widget = gtk_label_new(_("MHz"));
 	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), widget, FALSE, TRUE, 0);
-	cpufreq->timeout = g_timeout_add(1000, _on_timeout, cpufreq);
-	_on_timeout(cpufreq);
+	if(_on_timeout(applet) == TRUE)
+		cpufreq->timeout = g_timeout_add(1000, _on_timeout, applet);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(cpufreq->hbox);
 	return cpufreq->hbox;
@@ -145,22 +152,22 @@ static void _cpufreq_destroy(PanelApplet * applet)
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
-	Cpufreq * cpufreq = data;
-	const char name[] = "machdep.est.frequency.current";
+	PanelApplet * applet = data;
+	PanelAppletHelper * helper = applet->helper;
+	Cpufreq * cpufreq = applet->priv;
 	uint64_t freq;
 	size_t freqsize = sizeof(freq);
 	char buf[256];
 
-	if(sysctlbyname(name, &freq, &freqsize, NULL, 0) < 0
-			|| sysctlbyname(name, &freq, &freqsize, NULL, 0) < 0)
-		return cpufreq->helper->error(NULL, name, TRUE);
+	if(sysctlbyname(cpufreq->name, &freq, &freqsize, NULL, 0) < 0)
+		return helper->error(NULL, cpufreq->name, TRUE);
 	snprintf(buf, sizeof(buf), "%u", (unsigned int)freq);
 	gtk_label_set_text(GTK_LABEL(cpufreq->label), buf);
-#if GTK_CHECK_VERSION(2, 12, 0)
+# if GTK_CHECK_VERSION(2, 12, 0)
 	snprintf(buf, sizeof(buf), "%s%u%s", "CPU frequency: ",
 			(unsigned int)freq, " MHz");
 	gtk_widget_set_tooltip_text(cpufreq->hbox, buf);
-#endif
+# endif
 	return TRUE;
 }
 #endif
