@@ -68,6 +68,7 @@ static int _common_drag_data_received(GdkDragContext * context,
 #if GTK_CHECK_VERSION(2, 14, 0)
 	if(gtk_selection_data_get_length(seldata) <= 0
 			|| gtk_selection_data_get_data(seldata) == NULL)
+		return 0;
 	len = gtk_selection_data_get_length(seldata);
 #else
 	if(seldata->length <= 0 || seldata->data == NULL)
