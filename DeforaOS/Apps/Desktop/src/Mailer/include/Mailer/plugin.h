@@ -37,7 +37,7 @@ struct _MailerPlugin
 	MailerPluginHelper * helper;
 	char const * name;
 	char const * icon;
-	int (*init)(MailerPlugin * plugin);
+	GtkWidget * (*init)(MailerPlugin * plugin);
 	void (*destroy)(MailerPlugin * plugin);
 	void (*set_folder)(MailerPlugin * plugin, GtkListStore * store);
 	void * priv;

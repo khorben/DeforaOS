@@ -21,10 +21,8 @@
 # include <gtk/gtk.h>
 
 
-/* mailer windows */
+/* mailer window */
 gboolean on_closex(gpointer data);
-gboolean on_headers_closex(gpointer data);
-gboolean on_body_closex(gpointer data);
 
 /* file menu */
 void on_file_new_mail(gpointer data);
@@ -58,10 +56,17 @@ void on_preferences(gpointer data);
 void on_quit(gpointer data);
 void on_view_source(gpointer data);
 
+/* body view */
+gboolean on_body_closex(gpointer data);
+
 /* folder view */
 void on_folder_change(GtkTreeSelection * selection, gpointer data);
 
 /* header view */
 void on_header_change(GtkTreeSelection * selection, gpointer data);
+gboolean on_headers_closex(gpointer data);
+
+/* plug-ins */
+gboolean on_plugins_closex(gpointer data);
 
 #endif /* !MAILER_CALLBACKS_H */

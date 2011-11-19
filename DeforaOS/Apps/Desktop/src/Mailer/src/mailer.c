@@ -52,14 +52,17 @@
 /* Mailer */
 /* private */
 /* types */
-enum _MailerPluginColumn
+typedef enum _MailerPluginColumn
 {
 	MPC_NAME = 0,
+	MPC_ENABLED,
+	MPC_ICON,
 	MPC_NAME_DISPLAY,
 	MPC_PLUGIN,
 	MPC_MAILERPLUGIN,
-};
-#define MPC_LAST MPC_MAILERPLUGIN
+	MPC_WIDGET
+} MailerPluginColumn;
+#define MPC_LAST MPC_WIDGET
 #define MPC_COUNT (MPC_LAST + 1)
 
 struct _Mailer
@@ -98,11 +101,15 @@ struct _Mailer
 	GtkWidget * bo_view;
 	GtkWidget * statusbar;
 	gint statusbar_id;
+	/* plug-ins */
+	GtkWidget * pl_window;
+	GtkWidget * pl_view;
+	GtkListStore * pl_store;
+	GtkWidget * pl_combo;
+	GtkWidget * pl_box;
+	MailerPluginHelper pl_helper;
 	/* about */
 	GtkWidget * ab_window;
-	/* plug-ins */
-	GtkListStore * pl_store;
-	MailerPluginHelper pl_helper;
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_accounts;
@@ -280,27 +287,11 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name);
 static gboolean _mailer_confirm(Mailer * mailer, char const * message);
 static void _mailer_foreach_message_selected(Mailer * mailer,
 		MailerForeachMessageCallback callback);
+static void _mailer_plugin_refresh(Mailer * mailer);
 static void _mailer_update_status(Mailer * mailer);
 
-
-/* functions */
-static int _mailer_config_load_account(Mailer * mailer, char const * name)
-{
-	Account * account;
-	char const * type;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
-#endif
-	if((type = config_get(mailer->config, name, "type")) == NULL)
-		return -1;
-	if((account = account_new(mailer, type, name, mailer->fo_store))
-			== NULL)
-		return -mailer_error(mailer, error_get(), 1);
-	account_config_load(account, mailer->config);
-	mailer_account_add(mailer, account);
-	return 0;
-}
+/* callbacks */
+static void _mailer_on_plugin_combo_change(gpointer data);
 
 
 /* public */
@@ -312,7 +303,7 @@ static void _on_folders_changed(GtkTreeSelection * selection, gpointer data);
 static void _folders_changed_plugins(Mailer * mailer, GtkListStore * store);
 static GtkWidget * _new_headers_view(Mailer * mailer);
 static GtkWidget * _new_headers(Mailer * mailer);
-static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
+static GtkTreeViewColumn * _headers_view_column_icon(GtkTreeView * view,
 		char const * title, int id, int sortid);
 static GtkTreeViewColumn * _headers_view_column_text(GtkTreeView * view,
 		char const * title, int id, int sortid, int boldid);
@@ -329,8 +320,10 @@ Mailer * mailer_new(void)
 	GtkWidget * vbox2;
 #ifndef EMBEDDED
 	GtkWidget * hpaned;
+	GtkWidget * hpaned2;
 	GtkWidget * vpaned;
 #endif
+	GtkCellRenderer * renderer;
 	GtkWidget * widget;
 
 	if((mailer = object_new(sizeof(*mailer))) == NULL)
@@ -396,9 +389,6 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->fo_window), vbox);
 	gtk_widget_show_all(vbox);
-	/* plug-ins */
-	mailer->pl_store = gtk_list_store_new(MPC_COUNT, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER);
 	/* messages list */
 #ifndef EMBEDDED
 	mailer->he_window = mailer->fo_window;
@@ -462,9 +452,56 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
 #ifndef EMBEDDED
 	gtk_paned_add2(GTK_PANED(vpaned), vbox2);
-	gtk_paned_add2(GTK_PANED(hpaned), vpaned);
 #else
 	gtk_box_pack_start(GTK_BOX(vbox), vbox2, TRUE, TRUE, 0);
+#endif
+	/* plug-ins */
+#ifndef EMBEDDED
+	mailer->pl_window = mailer->fo_window;
+	mailer->pl_view = gtk_vbox_new(FALSE, 4);
+#else
+	group = gtk_accel_group_new();
+	mailer->pl_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(mailer->pl_window), group);
+	gtk_window_set_default_size(GTK_WINDOW(mailer->pl_window), 200, 300);
+# if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(mailer->pl_window), "mailer");
+# endif
+	gtk_window_set_title(GTK_WINDOW(mailer->pl_window), _("Plug-ins"));
+	g_signal_connect_swapped(G_OBJECT(mailer->pl_window), "delete-event",
+			G_CALLBACK(on_plugins_closex), mailer);
+	mailer->pl_view = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(mailer->pl_window), mailer->pl_view);
+#endif
+	mailer->pl_store = gtk_list_store_new(MPC_COUNT, G_TYPE_STRING,
+			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING,
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
+	mailer->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
+				mailer->pl_store));
+	g_signal_connect_swapped(G_OBJECT(mailer->pl_combo), "changed",
+			G_CALLBACK(_mailer_on_plugin_combo_change), mailer);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(mailer->pl_combo), renderer,
+			FALSE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(mailer->pl_combo),
+			renderer, "pixbuf", MPC_ICON, NULL);
+	renderer = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(mailer->pl_combo),
+			renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(mailer->pl_combo),
+			renderer, "text", MPC_NAME_DISPLAY, NULL);
+	gtk_box_pack_start(GTK_BOX(mailer->pl_view), mailer->pl_combo, FALSE,
+			TRUE, 0);
+	mailer->pl_box = gtk_vbox_new(FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(mailer->pl_view), mailer->pl_box, TRUE, TRUE,
+			0);
+	gtk_widget_set_no_show_all(mailer->pl_view, TRUE);
+	gtk_container_set_border_width(GTK_CONTAINER(mailer->pl_view), 4);
+#ifndef EMBEDDED
+	hpaned2 = gtk_hpaned_new();
+	gtk_paned_pack1(GTK_PANED(hpaned2), vpaned, TRUE, TRUE);
+	gtk_paned_pack2(GTK_PANED(hpaned2), mailer->pl_view, FALSE, TRUE);
+	gtk_paned_add2(GTK_PANED(hpaned), hpaned2);
 #endif
 	gtk_widget_show_all(vbox);
 	/* widgets */
@@ -473,6 +510,7 @@ Mailer * mailer_new(void)
 	/* show window */
 	gtk_widget_hide(mailer->hdr_vbox);
 	_mailer_update_status(mailer);
+	gtk_widget_show(mailer->pl_window);
 	gtk_widget_show(mailer->fo_window);
 	/* load configuration */
 	mailer->source = g_idle_add(_new_idle, mailer);
@@ -607,6 +645,7 @@ static void _folders_changed_plugins(Mailer * mailer, GtkListStore * store)
 	gboolean valid;
 	MailerPlugin * mp;
 
+	/* FIXME only refresh the active one */
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
@@ -625,7 +664,7 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
 	gtk_tree_view_set_rules_hint(treeview, TRUE);
-	_headers_view_column_pixbuf(treeview, "", MHC_ICON, MHC_READ);
+	_headers_view_column_icon(treeview, "", MHC_ICON, MHC_READ);
 	_headers_view_column_text(treeview, _("Subject"), MHC_SUBJECT,
 			MHC_SUBJECT, MHC_WEIGHT);
 	mailer->he_view_from = _headers_view_column_text(treeview, _("From"),
@@ -704,7 +743,7 @@ static void _on_headers_changed(GtkTreeSelection * selection, gpointer data)
 #endif
 }
 
-static GtkTreeViewColumn * _headers_view_column_pixbuf(GtkTreeView * view,
+static GtkTreeViewColumn * _headers_view_column_icon(GtkTreeView * view,
 		char const * title, int id, int sortid)
 {
 	GtkCellRenderer * renderer;
@@ -1163,7 +1202,10 @@ int mailer_load(Mailer * mailer, char const * plugin)
 {
 	Plugin * p;
 	MailerPlugin * mp;
+	GtkWidget * widget;
 	GtkTreeIter iter;
+	GtkIconTheme * theme;
+	GdkPixbuf * icon = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
@@ -1178,15 +1220,29 @@ int mailer_load(Mailer * mailer, char const * plugin)
 		return -mailer_error(NULL, error_get(), 1);
 	}
 	mp->helper = &mailer->pl_helper;
-	if(mp->init == NULL || mp->init(mp) != 0)
+	if(mp->init == NULL || (widget = mp->init(mp)) == NULL)
 	{
 		plugin_delete(p);
 		return -mailer_error(NULL, error_get(), 1);
 	}
+	theme = gtk_icon_theme_get_default();
+	if(mp->icon != NULL)
+		icon = gtk_icon_theme_load_icon(theme, mp->icon, 24, 0, NULL);
+	if(icon == NULL)
+		icon = gtk_icon_theme_load_icon(theme, "gnome-settings", 24, 0,
+				NULL);
 	gtk_list_store_append(mailer->pl_store, &iter);
 	gtk_list_store_set(mailer->pl_store, &iter, MPC_NAME, plugin,
-			MPC_NAME_DISPLAY, mp->name, MPC_PLUGIN, p,
-			MPC_MAILERPLUGIN, mp, -1);
+			MPC_ICON, icon, MPC_NAME_DISPLAY, mp->name,
+			MPC_PLUGIN, p, MPC_MAILERPLUGIN, mp, MPC_WIDGET, widget,
+			-1);
+	gtk_box_pack_start(GTK_BOX(mailer->pl_box), widget, TRUE, TRUE, 0);
+	if(gtk_widget_get_no_show_all(mailer->pl_view) == TRUE)
+	{
+		gtk_combo_box_set_active(GTK_COMBO_BOX(mailer->pl_combo), 0);
+		gtk_widget_set_no_show_all(mailer->pl_view, FALSE);
+		gtk_widget_show_all(mailer->pl_view);
+	}
 	return 0;
 }
 
@@ -1439,6 +1495,16 @@ void mailer_show_headers(Mailer * mailer, gboolean show)
 }
 
 
+/* mailer_show_plugins */
+void mailer_show_plugins(Mailer * mailer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_window_present(GTK_WINDOW(mailer->pl_window));
+	else
+		gtk_widget_hide(mailer->pl_window);
+}
+
+
 /* mailer_show_preferences */
 typedef enum _AccountColumn
 {
@@ -1685,7 +1751,7 @@ static void _preferences_set_plugins(Mailer * mailer)
 	MailerPlugin * mp;
 	GtkTreeIter iter;
 	gboolean enabled;
-	GdkPixbuf * pixbuf;
+	GdkPixbuf * icon;
 
 	gtk_list_store_clear(mailer->pr_plugins_store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
@@ -1710,16 +1776,17 @@ static void _preferences_set_plugins(Mailer * mailer)
 			continue;
 		}
 		enabled = _mailer_plugin_is_enabled(mailer, de->d_name);
-		if(mp->icon == NULL)
-			pixbuf = gtk_icon_theme_load_icon(theme,
-					"gnome-settings", 24, 0, NULL);
-		else
-			pixbuf = gtk_icon_theme_load_icon(theme, mp->icon, 24,
-					0, NULL);
+		icon = NULL;
+		if(mp->icon != NULL)
+			icon = gtk_icon_theme_load_icon(theme, mp->icon, 24, 0,
+					NULL);
+		if(icon == NULL)
+			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
+					24, 0, NULL);
 		gtk_list_store_append(mailer->pr_plugins_store, &iter);
 		gtk_list_store_set(mailer->pr_plugins_store, &iter,
-				0, de->d_name, 1, enabled, 2, pixbuf,
-				3, mp->name, -1);
+				0, de->d_name, 1, enabled, 2, icon, 3, mp->name,
+				-1);
 		plugin_delete(p);
 	}
 	closedir(dir);
@@ -2818,6 +2885,26 @@ static char const * _mailer_get_font(Mailer * mailer)
 
 
 /* useful */
+/* mailer_config_load_account */
+static int _mailer_config_load_account(Mailer * mailer, char const * name)
+{
+	Account * account;
+	char const * type;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
+#endif
+	if((type = config_get(mailer->config, name, "type")) == NULL)
+		return -1;
+	if((account = account_new(mailer, type, name, mailer->fo_store))
+			== NULL)
+		return -mailer_error(mailer, error_get(), 1);
+	account_config_load(account, mailer->config);
+	mailer_account_add(mailer, account);
+	return 0;
+}
+
+
 /* mailer_confirm */
 static gboolean _mailer_confirm(Mailer * mailer, char const * message)
 {
@@ -2870,6 +2957,28 @@ static void _mailer_foreach_message_selected(Mailer * mailer,
 }
 
 
+/* mailer_plugin_refresh */
+static void _mailer_plugin_refresh(Mailer * mailer)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
+	GtkTreeIter iter;
+	MailerPlugin * mp;
+	GtkListStore * store;
+
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(mailer->pl_combo), &iter)
+			!= TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, MPC_MAILERPLUGIN, &mp, -1);
+	if(mp->set_folder == NULL)
+		return;
+	if(mailer->folder_cur != NULL)
+		store = folder_get_messages(mailer->folder_cur);
+	else
+		store = NULL;
+	mp->set_folder(mp, store);
+}
+
+
 /* mailer_update_status */
 static void _mailer_update_status(Mailer * mailer)
 {
@@ -2890,4 +2999,31 @@ static void _mailer_update_status(Mailer * mailer)
 	else
 		snprintf(buf, sizeof(buf), "%s", _("Ready"));
 	mailer_set_status(mailer, buf);
+}
+
+
+/* callbacks */
+/* mailer_on_plugin_combo_change */
+static void _mailer_on_plugin_combo_change(gpointer data)
+{
+	Mailer * mailer = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	GtkWidget * widget;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(GTK_TREE_MODEL(mailer->pl_store), &iter,
+				MPC_WIDGET, &widget, -1);
+		gtk_widget_hide(widget);
+	}
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(mailer->pl_combo), &iter)
+			!= TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(mailer->pl_store), &iter, MPC_WIDGET,
+			&widget, -1);
+	gtk_widget_show(widget);
+	_mailer_plugin_refresh(mailer);
 }

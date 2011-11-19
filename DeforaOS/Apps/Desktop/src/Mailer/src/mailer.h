@@ -95,6 +95,7 @@ void mailer_paste(Mailer * mailer);
 void mailer_show_about(Mailer * mailer, gboolean show);
 void mailer_show_body(Mailer * mailer, gboolean show);
 void mailer_show_headers(Mailer * mailer, gboolean show);
+void mailer_show_plugins(Mailer * mailer, gboolean show);
 void mailer_show_preferences(Mailer * mailer, gboolean show);
 
 #endif /* !MAILER_SRC_MAILER_H */

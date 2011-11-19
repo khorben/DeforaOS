@@ -62,6 +62,16 @@ gboolean on_body_closex(gpointer data)
 }
 
 
+/* on_plugins_closex */
+gboolean on_plugins_closex(gpointer data)
+{
+	Mailer * mailer = data;
+
+	mailer_show_plugins(mailer, FALSE);
+	return TRUE;
+}
+
+
 /* file menu */
 void on_file_new_mail(gpointer data)
 {
