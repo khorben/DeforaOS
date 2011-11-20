@@ -19,6 +19,8 @@
 # define DESKTOP_MAILER_PLUGIN_H
 
 # include <gtk/gtk.h>
+# include "folder.h"
+# include "message.h"
 # include "mailer.h"
 
 
@@ -39,8 +41,14 @@ struct _MailerPlugin
 	char const * icon;
 	GtkWidget * (*init)(MailerPlugin * plugin);
 	void (*destroy)(MailerPlugin * plugin);
-	void (*set_folder)(MailerPlugin * plugin, GtkListStore * store);
+	void (*refresh)(MailerPlugin * plugin, Folder * folder,
+			Message * message);
 	void * priv;
 };
+
+
+/* functions */
+/* XXX should be in Mailer/folder.h */
+GtkListStore * folder_get_messages(Folder * folder);
 
 #endif /* !DESKTOP_MAILER_PLUGIN_H */

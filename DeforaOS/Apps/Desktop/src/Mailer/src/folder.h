@@ -19,7 +19,8 @@
 # define MAILER_SRC_FOLDER_H
 
 # include <gtk/gtk.h>
-# include "Mailer.h"
+# include "Mailer/plugin.h"
+# include "Mailer/folder.h"
 
 
 /* Folder */
@@ -35,7 +36,6 @@ void folder_delete(Folder * folder);
 AccountFolder * folder_get_data(Folder * folder);
 gboolean folder_get_iter(Folder * folder, GtkTreeIter * iter);
 char const * folder_get_name(Folder * folder);
-GtkListStore * folder_get_messages(Folder * folder);
 FolderType folder_get_type(Folder * folder);
 
 void folder_set_type(Folder * folder, FolderType type);
