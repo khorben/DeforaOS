@@ -1,8 +1,7 @@
-PREFIX	= /usr/local
-DESTDIR	=
 MKDIR	?= mkdir -p
 INSTALL	?= install
 RM	?= rm -f
+TARGETS	= VFS.h
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -12,13 +11,18 @@ INSTALL	?= install
 INCLUDEDIR= $(PREFIX)/include
 
 
-all:
+all: $(TARGETS)
+
+VFS.h: VFS.interface
+	./appbroker.sh -P "$(PREFIX)" -- "VFS.h"
 
 clean:
+	$(RM) -- $(VFS.h_OBJS)
 
 distclean: clean
+	$(RM) -- $(TARGETS)
 
-install:
+install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
 	$(INSTALL) -m 0644 -- VFS.h $(DESTDIR)$(INCLUDEDIR)/VFS.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/etc/AppInterface

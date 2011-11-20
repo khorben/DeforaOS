@@ -17,7 +17,8 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <VFS.h>
+#include <errno.h>
+#include "VFS.h"
 
 
 /* types */
@@ -72,7 +73,7 @@ static VFSError _vfs_error[] =
 	{ ENOTEMPTY,	VFS_ENOTEMPTY	},
 	{ ENOSYS,	VFS_ENOSYS	},
 	{ ENOTSUP,	VFS_ENOTSUP	},
-	{ EPROTO,	VFS_EPROTO	},
+	{ EPROTO,	VFS_EPROTO	}
 };
 static const size_t _vfs_error_cnt = sizeof(_vfs_error) / sizeof(*_vfs_error);
 

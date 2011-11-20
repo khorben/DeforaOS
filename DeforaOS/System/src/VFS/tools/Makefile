@@ -1,4 +1,4 @@
-TARGETS	= libVFS.a libVFS.so.0.0 libVFS.so.0 libVFS.so
+TARGETS	= libVFS.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -24,14 +24,8 @@ libVFS_OBJS = libvfs.o
 libVFS_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libVFS_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-libVFS.a: $(libVFS_OBJS)
-	$(AR) -rc libVFS.a $(libVFS_OBJS)
-	$(RANLIB) libVFS.a
-
-libVFS.so.0.0 libVFS.so.0 libVFS.so: $(libVFS_OBJS)
-	$(CCSHARED) -o libVFS.so.0.0 -Wl,-soname,libVFS.so.0 $(libVFS_OBJS) $(libVFS_LDFLAGS)
-	$(LN) -s -- libVFS.so.0.0 libVFS.so.0
-	$(LN) -s -- libVFS.so.0.0 libVFS.so
+libVFS.so: $(libVFS_OBJS)
+	$(CCSHARED) -o libVFS.so $(libVFS_OBJS) $(libVFS_LDFLAGS)
 
 libvfs.o: libvfs.c ../src/common.c ../include/VFS.h
 	$(CC) $(libVFS_CFLAGS) -c libvfs.c
@@ -43,7 +37,10 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(PREFIX)/lib/AppWrapper
+	$(INSTALL) -m 0644 -- libVFS.so $(DESTDIR)$(PREFIX)/lib/AppWrapper/libVFS.so
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/AppWrapper/libVFS.so
 
 .PHONY: all clean distclean install uninstall

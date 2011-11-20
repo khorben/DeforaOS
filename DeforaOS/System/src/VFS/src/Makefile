@@ -18,7 +18,7 @@ INSTALL	?= install
 all: $(TARGETS)
 
 ../include/VFS.h: ../include/VFS.interface
-	./appbroker.sh -P "$(PREFIX)" -- "../include/VFS.h"
+	../include/appbroker.sh -P "$(PREFIX)" -- "../include/VFS.h"
 
 VFS_OBJS = vfs.o main.o
 VFS_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
