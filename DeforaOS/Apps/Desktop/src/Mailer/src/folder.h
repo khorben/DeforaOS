@@ -35,7 +35,6 @@ void folder_delete(Folder * folder);
 /* accessors */
 AccountFolder * folder_get_data(Folder * folder);
 gboolean folder_get_iter(Folder * folder, GtkTreeIter * iter);
-char const * folder_get_name(Folder * folder);
 FolderType folder_get_type(Folder * folder);
 
 void folder_set_type(Folder * folder, FolderType type);

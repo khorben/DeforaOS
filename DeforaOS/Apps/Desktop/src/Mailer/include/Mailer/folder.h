@@ -36,4 +36,10 @@ typedef enum _FolderType
 # define FT_LAST FT_FOLDER
 # define FT_COUNT (FT_LAST + 1)
 
+
+/* public */
+/* functions */
+/* accessors */
+char const * folder_get_name(Folder * folder);
+
 #endif /* !DESKTOP_MAILER_FOLDER_H */

@@ -25,4 +25,9 @@ typedef struct _Message Message;
 
 typedef struct _AccountMessage AccountMessage;
 
+
+/* functions */
+/* accessors */
+char const * message_get_header(Message * message, char const * header);
+
 #endif /* !DESKTOP_MAILER_MESSAGE_H */

@@ -87,6 +87,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account/project.conf \
+		$(PACKAGE)-$(VERSION)/src/plugins/mailing-lists.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/search.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
