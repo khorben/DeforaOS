@@ -2,6 +2,14 @@
 service=VPN
 port=4246
 
+[constants]
+#protocols
+PROTOCOL_IP_TCP=0
+#errno
+EPERM=1
+EBADF=9
+EPROTO=96
+
 [call::close]
 ret=INT32
 arg1=INT32,fd

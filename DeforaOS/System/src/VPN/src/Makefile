@@ -1,4 +1,4 @@
-TARGETS	= ../data/VPN.h VPN
+TARGETS	= ../include/VPN.h VPN
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -17,8 +17,8 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-../data/VPN.h: ../data/VPN.interface
-	./appbroker.sh -P "$(PREFIX)" -- "../data/VPN.h"
+../include/VPN.h:
+	../include/appbroker.sh -P "$(PREFIX)" -- "../include/VPN.h"
 
 VPN_OBJS = vpn.o main.o
 VPN_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -27,14 +27,14 @@ VPN_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 VPN: $(VPN_OBJS)
 	$(CC) -o VPN $(VPN_OBJS) $(VPN_LDFLAGS)
 
-vpn.o: vpn.c ../data/VPN.h
+vpn.o: vpn.c ../include/VPN.h
 	$(CC) $(VPN_CFLAGS) -c vpn.c
 
 main.o: main.c
 	$(CC) $(VPN_CFLAGS) -c main.c
 
 clean:
-	$(RM) -- $(../data/VPN.h_OBJS) $(VPN_OBJS)
+	$(RM) -- $(../include/VPN.h_OBJS) $(VPN_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

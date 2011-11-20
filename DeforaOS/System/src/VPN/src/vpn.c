@@ -25,7 +25,6 @@
 #include <System.h>
 #include "VPN.h"
 #include "vpn.h"
-#include "../data/VPN.h"
 #include "../config.h"
 
 
@@ -38,6 +37,11 @@ typedef struct _VPNClient
 	int32_t * sockets;
 	size_t sockets_cnt;
 } VPNClient;
+
+typedef enum _VPNProtocol
+{
+	VP_IP_TCP = VPN_PROTOCOL_IP_TCP
+} VPNProtocol;
 
 
 /* variables */
@@ -111,7 +115,7 @@ int32_t VPN_connect(uint32_t protocol, String const * uri)
 
 	switch(vprotocol)
 	{
-		case VPN_PROTOCOL_IP_TCP:
+		case VP_IP_TCP:
 			sdomain = PF_INET;
 			stype = SOCK_STREAM;
 			sa_in.sin_family = AF_INET;
