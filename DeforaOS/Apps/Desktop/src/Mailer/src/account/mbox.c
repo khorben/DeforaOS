@@ -24,7 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <glib.h>
-#include "Mailer.h"
+#include "Mailer/account.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 

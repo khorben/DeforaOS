@@ -32,7 +32,7 @@
 #include <openssl/err.h>
 #include <glib.h>
 #include <System.h>
-#include "Mailer.h"
+#include "Mailer/account.h"
 
 
 /* POP3 */

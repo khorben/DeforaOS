@@ -34,7 +34,7 @@
 #include <openssl/x509.h>
 #include <glib.h>
 #include <System.h>
-#include "Mailer.h"
+#include "Mailer/account.h"
 
 
 /* IMAP4 */
