@@ -8,3 +8,4 @@ Description: DeforaOS Desktop Mailer plug-ins
 Version: VERSION
 Requires: libDesktop
 Cflags: -I${includedir}
+Libs: -Wl,-R${libdir} -L${libdir} -lMailer

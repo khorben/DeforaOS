@@ -62,14 +62,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
-		$(PACKAGE)-$(VERSION)/src/compose.c \
-		$(PACKAGE)-$(VERSION)/src/compose-main.c \
 		$(PACKAGE)-$(VERSION)/src/account.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
+		$(PACKAGE)-$(VERSION)/src/compose.c \
 		$(PACKAGE)-$(VERSION)/src/folder.c \
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
-		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/message.c \
+		$(PACKAGE)-$(VERSION)/src/compose-main.c \
+		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account.h \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
