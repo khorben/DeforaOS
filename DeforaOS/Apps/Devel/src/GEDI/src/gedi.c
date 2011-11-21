@@ -342,6 +342,7 @@ int gedi_project_open(GEDI * gedi, char const * filename)
 void gedi_project_open_dialog(GEDI * gedi)
 {
 	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	gchar * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new("Open project...",
@@ -349,6 +350,15 @@ void gedi_project_open_dialog(GEDI * gedi)
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "Project files");
+	gtk_file_filter_add_pattern(filter, "project.conf");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
