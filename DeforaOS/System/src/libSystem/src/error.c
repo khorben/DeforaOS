@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,16 +44,44 @@ static char const * _error_do(int * codeptr, char const * format, va_list args)
 /* public */
 /* accessors */
 /* error_get */
+static char const * _get_do(char const * null, ...);
+
 char const * error_get(void)
 {
-	return _error_do(NULL, NULL, NULL);
+	/* XXX workaround for portability */
+	return _get_do(NULL);
+}
+
+static char const * _get_do(char const * null, ...)
+{
+	char const * ret;
+	va_list args;
+
+	va_start(args, null);
+	ret = _error_do(NULL, NULL, args);
+	va_end(args);
+	return ret;
 }
 
 
 /* error_get_code */
+static char const * _get_code_do(int * code, ...);
+
 char const * error_get_code(int * code)
 {
-	return _error_do(code, NULL, NULL);
+	/* XXX workaround for portability */
+	return _get_code_do(code);
+}
+
+static char const * _get_code_do(int * code, ...)
+{
+	char const * ret;
+	va_list args;
+
+	va_start(args, code);
+	ret = _error_do(code, NULL, args);
+	va_end(args);
+	return ret;
 }
 
 
@@ -94,16 +122,27 @@ int error_set_print(char const * program, int code, char const * format, ...)
 
 /* useful */
 /* error_print */
+static int _print_do(char const * program, ...);
+
 int error_print(char const * program)
 {
-	int code = 0;
+	/* XXX workaround for portability */
+	return _print_do(program);
+}
 
+static int _print_do(char const * program, ...)
+{
+	int ret = 0;
+	va_list args;
+
+	va_start(args, program);
 	if(program != NULL)
 	{
 		fputs(program, stderr);
 		fputs(": ", stderr);
 	}
-	fputs(_error_do(&code, NULL, NULL), stderr);
+	fputs(_error_do(&ret, NULL, args), stderr);
 	fputc('\n', stderr);
-	return code;
+	va_end(args);
+	return ret;
 }
