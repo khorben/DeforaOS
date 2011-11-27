@@ -26,25 +26,43 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <Devel/Asm.h>
 
 
-/* functions */
 /* gdeasm */
-static void _gdeasm_open(char const * filename, GtkListStore * store);
+/* private */
+/* types */
+typedef struct _GDeasm
+{
+	/* widgets */
+	GtkTreeStore * store;
+} GDeasm;
+
+
+/* prototypes */
+static GDeasm * _gdeasm_new(char const * filename);
+static void _gdeasm_delete(GDeasm * gdeasm);
+
+static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
+
+
 /* callbacks */
 static gboolean _gdeasm_on_closex(void);
 static void _gdeasm_on_open(gpointer data);
-static void _gdeasm_callback(void * priv, ArchInstructionCall * call);
-static void _callback_dregister(char * buf, size_t size, ArchOperand * ao);
-static void _callback_dregister2(char * buf, size_t size, ArchOperand * ao);
-static void _callback_immediate(char * buf, size_t size, ArchOperand * ao);
 
-static int _gdeasm(char const * filename)
+static int _usage(void);
+
+
+/* functions */
+/* gdeasm_new */
+/* callbacks */
+/* parsing */
+static GDeasm * _gdeasm_new(char const * filename)
 {
-	GtkListStore * store;
+	GDeasm * gdeasm;
 	GtkWidget * window;
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
@@ -53,26 +71,29 @@ static int _gdeasm(char const * filename)
 	GtkWidget * treeview;
 	GtkTreeViewColumn * column;
 	char const * headers[] = { "Offset", "Instruction", "Operand",
-		"Operand", "Operand" };
+		"Operand", "Operand", "Operand", "Operand" };
 	size_t i;
 
-	store = gtk_list_store_new(5, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	if((gdeasm = malloc(sizeof(*gdeasm))) == NULL)
+		return NULL;
+	gdeasm->store = gtk_tree_store_new(7, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
-	g_signal_connect(window, "delete-event", G_CALLBACK(_gdeasm_on_closex),
-			NULL);
+	g_signal_connect_swapped(window, "delete-event", G_CALLBACK(
+				_gdeasm_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	toolbar = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
 	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-				_gdeasm_on_open), store);
+				_gdeasm_on_open), gdeasm);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gdeasm->store));
 	for(i = 0; i < sizeof(headers) / sizeof(*headers); i++)
 	{
 		column = gtk_tree_view_column_new_with_attributes(headers[i],
@@ -84,36 +105,100 @@ static int _gdeasm(char const * filename)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 	if(filename != NULL)
-		_gdeasm_open(filename, store);
-	gtk_main();
+		_gdeasm_open(gdeasm, filename, 0);
+	return gdeasm;
+}
+
+
+/* gdeasm_delete */
+static void _gdeasm_delete(GDeasm * gdeasm)
+{
+	free(gdeasm);
+}
+
+
+/* gdeasm_open */
+static int _open_code(GDeasm * gdeasm, AsmCode * af);
+static int _open_code_section(GDeasm * gdeasm, AsmCode * code,
+		AsmSection * section);
+static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
+		ArchInstructionCall * call);
+static void _open_parse_dregister(char * buf, size_t size, ArchOperand * ao);
+static void _open_parse_dregister2(char * buf, size_t size, ArchOperand * ao);
+static void _open_parse_immediate(char * buf, size_t size, ArchOperand * ao);
+
+static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
+{
+	int ret = -1;
+	Asm * a;
+	AsmCode * code;
+
+	if((a = asm_new(NULL, NULL)) == NULL)
+		return -1;
+	if((code = asm_open_deassemble(a, filename, raw)) != NULL)
+		ret = _open_code(gdeasm, code);
+	asm_close(a);
+	asm_delete(a);
+	return ret;
+}
+
+static int _open_code(GDeasm * gdeasm, AsmCode * code)
+{
+	int ret;
+	AsmSection * sections;
+	size_t sections_cnt;
+	size_t i;
+
+	asmcode_get_sections(code, &sections, &sections_cnt);
+	for(i = 0; i < sections_cnt; i++)
+		if((ret = _open_code_section(gdeasm, code, &sections[i])) != 0)
+			break;
+	return ret;
+}
+
+static int _open_code_section(GDeasm * gdeasm, AsmCode * code,
+		AsmSection * section)
+{
+	GtkTreeIter iter;
+	ArchInstructionCall * calls = NULL;
+	size_t calls_cnt = 0;
+	size_t i;
+
+	gtk_tree_store_append(gdeasm->store, &iter, NULL);
+	gtk_tree_store_set(gdeasm->store, &iter, 0, section->name, -1);
+	if(asmcode_decode_section(code, section, &calls, &calls_cnt) != 0)
+		return -1;
+	for(i = 0; i < calls_cnt; i++)
+		_open_instruction(gdeasm, &iter, &calls[i]);
+	free(calls);
 	return 0;
 }
 
-static void _gdeasm_callback(void * priv, ArchInstructionCall * call)
+static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
+		ArchInstructionCall * call)
 {
-	GtkListStore * store = priv;
 	GtkTreeIter iter;
 	char buf[32];
 	size_t i;
 	ArchOperand * ao;
 	char const * name;
 
-	gtk_list_store_append(store, &iter);
+	gtk_tree_store_append(gdeasm->store, &iter, parent);
 	snprintf(buf, sizeof(buf), "%08lx", call->base);
-	gtk_list_store_set(store, &iter, 0, buf, 1, call->name, -1);
+	gtk_tree_store_set(gdeasm->store, &iter, 0, buf, 1, call->name, -1);
 	for(i = 0; i < call->operands_cnt; i++)
 	{
 		ao = &call->operands[i];
 		switch(AO_GET_TYPE(ao->definition))
 		{
 			case AOT_DREGISTER:
-				_callback_dregister(buf, sizeof(buf), ao);
+				_open_parse_dregister(buf, sizeof(buf), ao);
 				break;
 			case AOT_DREGISTER2:
-				_callback_dregister2(buf, sizeof(buf), ao);
+				_open_parse_dregister2(buf, sizeof(buf), ao);
 				break;
 			case AOT_IMMEDIATE:
-				_callback_immediate(buf, sizeof(buf), ao);
+				_open_parse_immediate(buf, sizeof(buf), ao);
 				break;
 			case AOT_REGISTER:
 				name = call->operands[i].value._register.name;
@@ -123,11 +208,11 @@ static void _gdeasm_callback(void * priv, ArchInstructionCall * call)
 				buf[0] = '\0';
 				break;
 		}
-		gtk_list_store_set(store, &iter, i + 2, buf, -1);
+		gtk_tree_store_set(gdeasm->store, &iter, i + 2, buf, -1);
 	}
 }
 
-static void _callback_dregister(char * buf, size_t size, ArchOperand * ao)
+static void _open_parse_dregister(char * buf, size_t size, ArchOperand * ao)
 {
 	char const * name;
 
@@ -139,41 +224,32 @@ static void _callback_dregister(char * buf, size_t size, ArchOperand * ao)
 				(unsigned long)ao->value.dregister.offset);
 }
 
-static void _callback_dregister2(char * buf, size_t size, ArchOperand * ao)
+static void _open_parse_dregister2(char * buf, size_t size, ArchOperand * ao)
 {
 	snprintf(buf, size, "[%%%s + %%%s]", ao->value.dregister2.name,
 			ao->value.dregister2.name2);
 }
 
-static void _callback_immediate(char * buf, size_t size, ArchOperand * ao)
+static void _open_parse_immediate(char * buf, size_t size, ArchOperand * ao)
 {
 	snprintf(buf, size, "%s$0x%lx", ao->value.immediate.negative
 			? "-" : "", (unsigned long)ao->value.immediate.value);
 }
 
-static void _gdeasm_open(char const * filename, GtkListStore * store)
-{
-	Asm * a;
 
-	if((a = asm_new(NULL, NULL)) == NULL)
-		return;
-#if 0 /* FIXME requires patches to libasm */
-	asm_open_deassemble(a, filename, 0, _gdeasm_callback, store);
-#else
-	asm_open_deassemble(a, filename, 0);
-#endif
-	asm_close(a);
-}
-
+/* callbacks */
+/* gdeasm_on_closex */
 static gboolean _gdeasm_on_closex(void)
 {
 	gtk_main_quit();
 	return TRUE;
 }
 
+
+/* gdeasm_on_open */
 static void _gdeasm_on_open(gpointer data)
 {
-	GtkListStore * store = data;
+	GDeasm * gdeasm = data;
 	GtkWidget * widget;
 	char * filename = NULL;
 
@@ -187,8 +263,8 @@ static void _gdeasm_on_open(gpointer data)
 	gtk_widget_destroy(widget);
 	if(filename == NULL)
 		return;
-	gtk_list_store_clear(store);
-	_gdeasm_open(filename, store);
+	gtk_tree_store_clear(gdeasm->store);
+	_gdeasm_open(gdeasm, filename, 0);
 	g_free(filename);
 }
 
@@ -201,10 +277,13 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
 	int o;
+	GDeasm * gdeasm;
 
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
@@ -215,5 +294,9 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc && optind + 1 != argc)
 		return _usage();
-	return (_gdeasm(argv[optind]) == 0) ? 0 : 2;
+	if((gdeasm = _gdeasm_new(argv[optind])) == NULL)
+		return 2;
+	gtk_main();
+	_gdeasm_delete(gdeasm);
+	return 0;
 }
