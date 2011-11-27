@@ -31,45 +31,55 @@
 
 
 /* configure */
-/* variables */
+/* constants */
 const String * sHostArch[HA_COUNT] =
 {
-	"i386", "i486", "i586", "i686",
-	"amd64",
-	"sparc", "sparc64",
-	"sun4u",
-	"zaurus",
-	"unknown"
+	"amd64", "i386", "i486", "i586", "i686", "sparc", "sparc64", "unknown"
+};
+const EnumMap mHostArch[] =
+{
+	{ HA_AMD64,	"amd64"		},
+	{ HA_AMD64,	"x86_64"	},
+	{ HA_ARM,	"zaurus"	},
+	{ HA_I386,	"i386"		},
+	{ HA_I486,	"i486"		},
+	{ HA_I586,	"i586"		},
+	{ HA_I686,	"i686"		},
+	{ HA_SPARC,	"sparc"		},
+	{ HA_SPARC,	"sun4u"		},
+	{ HA_SPARC64,	"sparc64"	},
+	{ HA_UNKNOWN,	"unknown"	}
 };
 const String * sHostOS[HO_COUNT] =
 {
 	"DeforaOS",
 	"Linux",
-	"MacOSX",
+	"Darwin",
 	"FreeBSD", "NetBSD", "OpenBSD",
 	"SunOS",
 	"MINGW32_NT-5.0",
 	"unknown"
 };
-const struct HostKernel sHostKernel[] =
+const HostKernelMap mHostKernel[] =
 {
-	{ HO_GNU_LINUX,	"2.0"		},
-	{ HO_GNU_LINUX,	"2.2"		},
-	{ HO_GNU_LINUX,	"2.4"		},
-	{ HO_GNU_LINUX,	"2.6"		},
-	{ HO_MACOSX,	"10.5.0"	},
-	{ HO_NETBSD,	"2.0"		},
-	{ HO_NETBSD,	"3.0"		},
-	{ HO_NETBSD,	"4.0"		},
-	{ HO_NETBSD,	"5.0"		},
-	{ HO_NETBSD,	"5.1"		},
-	{ HO_OPENBSD,	"4.0"		},
-	{ HO_OPENBSD,	"4.1"		},
-	{ HO_SUNOS,	"5.7",		},
-	{ HO_SUNOS,	"5.8",		},
-	{ HO_SUNOS,	"5.9",		},
-	{ HO_SUNOS,	"5.10",		},
-	{ HO_UNKNOWN,	"unknown"	}
+	{ HO_GNU_LINUX,	"2.0",		NULL,		NULL	},
+	{ HO_GNU_LINUX,	"2.2",		NULL,		NULL	},
+	{ HO_GNU_LINUX,	"2.4",		NULL,		NULL	},
+	{ HO_GNU_LINUX,	"2.6",		NULL,		NULL	},
+	{ HO_MACOSX,	"10.5.0",	"MacOS X",	"10.6.5"},
+	{ HO_MACOSX,	"11.2.0",	"MacOS X",	"10.7.2"},
+	{ HO_NETBSD,	"2.0",		NULL,		NULL	},
+	{ HO_NETBSD,	"3.0",		NULL,		NULL	},
+	{ HO_NETBSD,	"4.0",		NULL,		NULL	},
+	{ HO_NETBSD,	"5.0",		NULL,		NULL	},
+	{ HO_NETBSD,	"5.1",		NULL,		NULL	},
+	{ HO_OPENBSD,	"4.0",		NULL,		NULL	},
+	{ HO_OPENBSD,	"4.1",		NULL,		NULL	},
+	{ HO_SUNOS,	"5.7",		NULL,		NULL	},
+	{ HO_SUNOS,	"5.8",		NULL,		NULL	},
+	{ HO_SUNOS,	"5.9",		NULL,		NULL	},
+	{ HO_SUNOS,	"5.10",		NULL,		NULL	},
+	{ HO_UNKNOWN,	"unknown",	NULL,		NULL	}
 };
 
 const String * sTargetType[TT_COUNT] = { "binary", "library", "libtool",
@@ -86,31 +96,16 @@ const struct ExtensionType _sExtensionType[] =
 };
 const struct ExtensionType * sExtensionType = _sExtensionType;
 
-String const * _source_extension(String const * source)
-{
-	size_t len;
 
-	for(len = string_length(source); len > 0; len--)
-		if(source[len - 1] == '.')
-			return &source[len];
-	return NULL;
-}
+/* prototypes */
+static void _prefs_init(Prefs * prefs);
 
-ObjectType _source_type(String const * source)
-{
-	String const * extension;
-	size_t i;
-
-	if((extension = _source_extension(source)) == NULL)
-		extension = source;
-	for(i = 0; sExtensionType[i].extension != NULL; i++)
-		if(string_compare(sExtensionType[i].extension, extension) == 0)
-			return sExtensionType[i].type;
-	return -1;
-}
+String const * _source_extension(String const * source);
+ObjectType _source_type(String const * source);
 
 
 /* functions */
+/* configure_error */
 int configure_error(char const * message, int ret)
 {
 	fputs(PACKAGE ": ", stderr);
@@ -119,9 +114,24 @@ int configure_error(char const * message, int ret)
 }
 
 
-int enum_string(int last, const String * strings[], String const * str)
+/* enum_map_find */
+unsigned int enum_map_find(unsigned int last, EnumMap const * map,
+		String const * str)
 {
-	int i;
+	unsigned int i;
+
+	for(i = 0; map[i].value != last; i++)
+		if(string_compare(map[i].string, str) == 0)
+			return map[i].value;
+	return last;
+}
+
+
+/* enum_string */
+unsigned int enum_string(unsigned int last, const String * strings[],
+		String const * str)
+{
+	unsigned int i;
 
 	for(i = 0; i < last; i++)
 		if(string_compare(strings[i], str) == 0)
@@ -130,9 +140,11 @@ int enum_string(int last, const String * strings[], String const * str)
 }
 
 
-int enum_string_short(int last, const String * strings[], String const * str)
+/* enum_string_short */
+unsigned int enum_string_short(unsigned int last, const String * strings[],
+		String const * str)
 {
-	int i;
+	unsigned int i;
 
 	for(i = 0; i < last; i++)
 		if(string_compare_length(strings[i], str,
@@ -142,10 +154,15 @@ int enum_string_short(int last, const String * strings[], String const * str)
 }
 
 
-/* Configure */
+/* configure */
 static void _configure_detect(Configure * configure);
+static HostKernel _detect_kernel(HostOS os, char const * release);
 static int _configure_load(Prefs * prefs, char const * directory,
 		configArray * ca);
+static int _load_subdirs(Prefs * prefs, char const * directory,
+		configArray * ca, String const * subdirs);
+static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
+		configArray * ca, char const * subdir);
 static int _configure_do(Configure * configure, configArray * ca);
 
 static int _configure(Prefs * prefs, char const * directory)
@@ -184,14 +201,12 @@ static int _configure(Prefs * prefs, char const * directory)
 	return ret;
 }
 
-
-/* private */
-/* configure_detect */
-static HostKernel _detect_kernel(HostOS os, char const * release);
-
 static void _configure_detect(Configure * configure)
 {
+	char const * os;
+	char const * version;
 #ifdef __WIN32__
+
 	configure->arch = HA_I386;
 	configure->os = HO_WIN32;
 	configure->kernel = HK_UNKNOWN;
@@ -206,17 +221,24 @@ static void _configure_detect(Configure * configure)
 		configure->kernel = HK_UNKNOWN;
 		return;
 	}
-	configure->arch = enum_string(HA_LAST, sHostArch, un.machine);
+	configure->arch = enum_map_find(HA_LAST, mHostArch, un.machine);
 	configure->os = enum_string(HO_LAST, sHostOS,
-			configure->prefs->os != NULL
+			(configure->prefs->os != NULL)
 			? configure->prefs->os : un.sysname);
 	configure->kernel = _detect_kernel(configure->os, un.release);
 #endif
 	if(configure->prefs->flags & PREFS_v)
-		printf("Detected system %s version %s on %s\n",
-				sHostOS[configure->os],
-				sHostKernel[configure->kernel].version,
+	{
+		os = (mHostKernel[configure->kernel].os_display != NULL)
+			? mHostKernel[configure->kernel].os_display
+			: sHostOS[configure->os];
+		version = (mHostKernel[configure->kernel].version_display
+				!= NULL)
+			? mHostKernel[configure->kernel].version_display
+			: mHostKernel[configure->kernel].version;
+		printf("Detected system %s version %s (%s)\n", os, version,
 				sHostArch[configure->arch]);
+	}
 }
 
 static HostKernel _detect_kernel(HostOS os, char const * release)
@@ -225,20 +247,17 @@ static HostKernel _detect_kernel(HostOS os, char const * release)
 
 	for(i = 0; i != HK_LAST; i++)
 	{
-		if(sHostKernel[i].os < os)
+		if(mHostKernel[i].os < os)
 			continue;
-		if(sHostKernel[i].os > os)
+		if(mHostKernel[i].os > os)
 			return HK_UNKNOWN;
-		if(strncmp(release, sHostKernel[i].version,
-					strlen(sHostKernel[i].version)) == 0)
+		if(strncmp(release, mHostKernel[i].version,
+					strlen(mHostKernel[i].version)) == 0)
 			return i;
 	}
 	return i;
 }
 
-
-static int _load_subdirs(Prefs * prefs, char const * directory,
-		configArray * ca, String const * subdirs);
 static int _configure_load(Prefs * prefs, String const * directory,
 		configArray * ca)
 {
@@ -272,8 +291,6 @@ static int _configure_load(Prefs * prefs, String const * directory,
 	return _load_subdirs(prefs, directory, ca, subdirs);
 }
 
-static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
-		configArray * ca, char const * subdir);
 static int _load_subdirs(Prefs * prefs, char const * directory,
 		configArray * ca, String const * subdirs)
 {
@@ -302,7 +319,6 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 	return ret;
 }
 
-
 static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 		configArray * ca, char const * subdir)
 	/* FIXME error checking */
@@ -317,7 +333,6 @@ static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 	string_delete(p);
 	return ret;
 }
-
 
 static int _configure_do(Configure * configure, configArray * ca)
 {
@@ -349,9 +364,64 @@ static int _configure_do(Configure * configure, configArray * ca)
 }
 
 
-/* usage */
-static void _prefs_init(Prefs * prefs);
+/* configure_get_config */
+String const * configure_get_config(Configure * configure,
+		String const * section, String const * variable)
+{
+	return config_get(configure->config, section, variable);
+}
 
+
+/* prefs_init */
+static void _prefs_init(Prefs * prefs)
+{
+	struct stat st;
+
+	memset(prefs, 0, sizeof(Prefs));
+	prefs->destdir = "";
+	if(stat("/usr", &st) == 0) /* FIXME see below */
+	{
+		prefs->bindir = "bin";
+		prefs->includedir = "include";
+		prefs->libdir = "lib";
+		prefs->prefix = "/usr/local";
+		return;
+	}
+	prefs->bindir = "Binaries";
+	prefs->includedir = "Includes";
+	prefs->libdir = "Libraries";
+	prefs->prefix = "/Apps"; /* FIXME detect System or Apps/x first */
+}
+
+
+/* source_extension */
+String const * _source_extension(String const * source)
+{
+	size_t len;
+
+	for(len = string_length(source); len > 0; len--)
+		if(source[len - 1] == '.')
+			return &source[len];
+	return NULL;
+}
+
+
+/* source_type */
+ObjectType _source_type(String const * source)
+{
+	String const * extension;
+	size_t i;
+
+	if((extension = _source_extension(source)) == NULL)
+		extension = source;
+	for(i = 0; sExtensionType[i].extension != NULL; i++)
+		if(string_compare(sExtensionType[i].extension, extension) == 0)
+			return sExtensionType[i].type;
+	return -1;
+}
+
+
+/* usage */
 static int _usage(void)
 {
 	Prefs prefs;
@@ -418,24 +488,4 @@ int main(int argc, char * argv[])
 	for(; optind < argc; optind++)
 		ret |= _configure(&prefs, argv[optind]);
 	return (ret == 0) ? 0 : 2;
-}
-
-static void _prefs_init(Prefs * prefs)
-{
-	struct stat st;
-
-	memset(prefs, 0, sizeof(Prefs));
-	prefs->destdir = "";
-	if(stat("/usr", &st) == 0) /* FIXME see below */
-	{
-		prefs->bindir = "bin";
-		prefs->includedir = "include";
-		prefs->libdir = "lib";
-		prefs->prefix = "/usr/local";
-		return;
-	}
-	prefs->bindir = "Binaries";
-	prefs->includedir = "Includes";
-	prefs->libdir = "Libraries";
-	prefs->prefix = "/Apps"; /* FIXME detect System or Apps/x first */
 }

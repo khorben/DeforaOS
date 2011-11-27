@@ -22,13 +22,18 @@
 
 
 /* types */
+typedef struct _EnumMap
+{
+	unsigned int value;
+	String const * string;
+} EnumMap;
+
 typedef enum _HostArch
 {
-	HA_I386 = 0, HA_I486, HA_I586, HA_I686,
-	HA_AMD64,
+	HA_AMD64 = 0,
+	HA_ARM,
+	HA_I386, HA_I486, HA_I586, HA_I686,
 	HA_SPARC, HA_SPARC64,
-	HA_SUN4U,
-	HA_ZAURUS,
 	HA_UNKNOWN
 } HostArch;
 # define HA_LAST	HA_UNKNOWN
@@ -52,7 +57,7 @@ extern const String * sHostOS[HO_COUNT];
 typedef enum _HostKernel
 {
 	HK_LINUX20 = 0, HK_LINUX22, HK_LINUX24, HK_LINUX26,
-	HK_MACOSX106,
+	HK_MACOSX106, HK_MACOSX113,
 	HK_NETBSD2, HK_NETBSD3, HK_NETBSD4, HK_NETBSD5, HK_NETBSD51,
 	HK_OPENBSD40, HK_OPENBSD41,
 	HK_SUNOS57, HK_SUNOS58, HK_SUNOS59, HK_SUNOS510,
@@ -60,12 +65,14 @@ typedef enum _HostKernel
 } HostKernel;
 # define HK_LAST	HK_UNKNOWN
 # define HK_COUNT	(HK_LAST + 1)
-struct HostKernel
+typedef struct _HostKernelMap
 {
 	HostOS os;
 	const char * version;
-};
-extern const struct HostKernel sHostKernel[HK_COUNT];
+	const char * os_display;
+	const char * version_display;
+} HostKernelMap;
+extern const HostKernelMap sHostKernel[HK_COUNT];
 
 typedef enum _TargetType
 {
@@ -91,8 +98,6 @@ struct ExtensionType
 	ObjectType type;
 };
 extern const struct ExtensionType * sExtensionType;
-String const * _source_extension(String const * source);
-ObjectType _source_type(String const * source);
 
 
 /* constants */
@@ -126,9 +131,22 @@ typedef struct _Configure
 
 
 /* functions */
+/* accessors */
+String const * configure_get_config(Configure * configure,
+		String const * section, String const * variable);
+
+/* useful */
 int configure_error(char const * message, int ret);
 
-int enum_string(int last, const String * strings[], String const * str);
-int enum_string_short(int last, const String * strings[], String const * str);
+/* generic */
+unsigned int enum_map_find(unsigned int last, EnumMap const * map,
+		String const * str);
+unsigned int enum_string(unsigned int last, const String * strings[],
+		String const * str);
+unsigned int enum_string_short(unsigned int last, const String * strings[],
+		String const * str);
+
+String const * _source_extension(String const * source);
+ObjectType _source_type(String const * source);
 
 #endif /* !CONFIGURE_CONFIGURE_H */
