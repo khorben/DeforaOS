@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - fix when EOF occurs on the output side */
+ * - report errors when relevant upon EOF when outputting */
 
 
 
@@ -50,6 +50,7 @@ typedef struct _Progress
 	struct timeval tv;		/* start time		*/
 	int fd;				/* read descriptor	*/
 	int eof;			/* end of file 		*/
+	int ret;
 	int fds[2];			/* for the pipe		*/
 	pid_t pid;			/* child's pid		*/
 	size_t cnt;			/* bytes written	*/
@@ -202,7 +203,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_main();
 	close(p.fd);
 	close(p.fds[1]);
-	return 0;
+	return p.ret;
 }
 
 static int _error_do(Progress * progress, char const * message,
@@ -227,6 +228,7 @@ static int _error_do(Progress * progress, char const * message,
 {
 	GtkWidget * dialog;
 
+	progress->ret = ret;
 	if(ret < 0)
 	{
 		fputs("progress: ", stderr);
@@ -365,7 +367,7 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 			p->bufsiz - p->buf_cnt, &read, &error);
 	if(status == G_IO_STATUS_ERROR)
 	{
-		_progress_error(p, p->prefs->filename, 0);
+		_progress_gerror(p, p->prefs->filename, error, 1);
 		g_io_channel_close(source);
 		gtk_main_quit();
 		return FALSE;
@@ -398,13 +400,14 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 				&error);
 	if(status == G_IO_STATUS_ERROR)
 	{
-		_progress_gerror(p, p->prefs->filename, error, 0);
+		_progress_gerror(p, p->prefs->filename, error, 1);
 		gtk_main_quit();
 		return FALSE;
 	}
 	else if(status == G_IO_STATUS_EOF)
 	{
 		p->eof = 1; /* reached end of output file */
+		_progress_error(p, p->prefs->filename, 1);
 		g_io_channel_close(source);
 	}
 	else if(p->buf_cnt == p->bufsiz)
@@ -566,5 +569,5 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 1)
 		return _usage();
-	return _progress(&prefs, &argv[optind]) == 0 ? 0 : 2;
+	return (_progress(&prefs, &argv[optind]) == 0) ? 0 : 2;
 }
