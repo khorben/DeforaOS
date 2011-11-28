@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <Devel/Asm.h>
 
@@ -37,13 +38,17 @@
 /* types */
 typedef struct _GDeasm
 {
+	char * arch;
+	char * format;
+
 	/* widgets */
 	GtkTreeStore * store;
 } GDeasm;
 
 
 /* prototypes */
-static GDeasm * _gdeasm_new(char const * filename);
+static GDeasm * _gdeasm_new(char const * arch, char const * format,
+		char const * filename);
 static void _gdeasm_delete(GDeasm * gdeasm);
 
 static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
@@ -60,7 +65,8 @@ static int _usage(void);
 /* gdeasm_new */
 /* callbacks */
 /* parsing */
-static GDeasm * _gdeasm_new(char const * filename)
+static GDeasm * _gdeasm_new(char const * arch, char const * format,
+		char const * filename)
 {
 	GDeasm * gdeasm;
 	GtkWidget * window;
@@ -76,6 +82,8 @@ static GDeasm * _gdeasm_new(char const * filename)
 
 	if((gdeasm = malloc(sizeof(*gdeasm))) == NULL)
 		return NULL;
+	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
+	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
 	gdeasm->store = gtk_tree_store_new(7, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING);
@@ -113,6 +121,8 @@ static GDeasm * _gdeasm_new(char const * filename)
 /* gdeasm_delete */
 static void _gdeasm_delete(GDeasm * gdeasm)
 {
+	free(gdeasm->arch);
+	free(gdeasm->format);
 	free(gdeasm);
 }
 
@@ -133,7 +143,7 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 	Asm * a;
 	AsmCode * code;
 
-	if((a = asm_new(NULL, NULL)) == NULL)
+	if((a = asm_new(gdeasm->arch, gdeasm->format)) == NULL)
 		return -1;
 	if((code = asm_open_deassemble(a, filename, raw)) != NULL)
 		ret = _open_code(gdeasm, code);
@@ -284,17 +294,25 @@ int main(int argc, char * argv[])
 {
 	int o;
 	GDeasm * gdeasm;
+	char const * arch = NULL;
+	char const * format = NULL;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "a:f:")) != -1)
 		switch(o)
 		{
+			case 'a':
+				arch = optarg;
+				break;
+			case 'f':
+				format = optarg;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc && optind + 1 != argc)
 		return _usage();
-	if((gdeasm = _gdeasm_new(argv[optind])) == NULL)
+	if((gdeasm = _gdeasm_new(arch, format, argv[optind])) == NULL)
 		return 2;
 	gtk_main();
 	_gdeasm_delete(gdeasm);
