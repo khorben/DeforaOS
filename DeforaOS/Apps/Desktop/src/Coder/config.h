@@ -1,4 +1,4 @@
-#define PACKAGE "GEDI"
+#define PACKAGE "Coder"
 #define VERSION "0.0.0"
 
 #ifndef PREFIX

@@ -1,4 +1,4 @@
-SUBDIRS	= libDesktop Accessories Browser Calendar Editor Framer Keyboard Locker Mailer Mixer Panel PDFViewer Phone Player Surfer Todo XMLEditor
+SUBDIRS	= libDesktop Accessories Browser Calendar Coder Editor Framer Keyboard Locker Mailer Mixer Panel PDFViewer Phone Player Surfer Todo XMLEditor
 
 
 all: subdirs

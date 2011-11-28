@@ -1,4 +1,4 @@
-PACKAGE	= GEDI
+PACKAGE	= Coder
 VERSION	= 0.0.0
 SUBDIRS	= src tools
 RM	?= rm -f

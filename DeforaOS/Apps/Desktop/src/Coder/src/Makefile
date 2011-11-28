@@ -1,4 +1,4 @@
-TARGETS	= gedi
+TARGETS	= coder
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -17,36 +17,36 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-gedi_OBJS = callbacks.o gedi.o main.o project.o
-gedi_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-gedi_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+coder_OBJS = callbacks.o gedi.o main.o project.o
+coder_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+coder_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-gedi: $(gedi_OBJS)
-	$(CC) -o gedi $(gedi_OBJS) $(gedi_LDFLAGS)
+coder: $(coder_OBJS)
+	$(CC) -o coder $(coder_OBJS) $(coder_LDFLAGS)
 
 callbacks.o: callbacks.c callbacks.h gedi.h project.h
-	$(CC) $(gedi_CFLAGS) -c callbacks.c
+	$(CC) $(coder_CFLAGS) -c callbacks.c
 
 gedi.o: gedi.c callbacks.h gedi.h project.h ../config.h
-	$(CC) -D PREFIX=\"$(PREFIX)\" $(gedi_CFLAGS) -c gedi.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(coder_CFLAGS) -c gedi.c
 
 main.o: main.c gedi.h
-	$(CC) $(gedi_CFLAGS) -c main.c
+	$(CC) $(coder_CFLAGS) -c main.c
 
 project.o: project.c project.h
-	$(CC) $(gedi_CFLAGS) -c project.c
+	$(CC) $(coder_CFLAGS) -c project.c
 
 clean:
-	$(RM) -- $(gedi_OBJS)
+	$(RM) -- $(coder_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 -- gedi $(DESTDIR)$(BINDIR)/gedi
+	$(INSTALL) -m 0755 -- coder $(DESTDIR)$(BINDIR)/coder
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(BINDIR)/gedi
+	$(RM) -- $(DESTDIR)$(BINDIR)/coder
 
 .PHONY: all clean distclean install uninstall
