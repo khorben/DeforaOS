@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-17 20:11-0500\n"
+"POT-Creation-Date: 2011-11-29 18:32-0500\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -112,8 +112,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:1328 ../src/panel.c:1335
-#: ../src/panel.c:1344
+#: ../src/applets/logout.c:69 ../src/panel.c:1329 ../src/panel.c:1336
+#: ../src/panel.c:1345
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -243,11 +243,11 @@ msgstr "Par défaut"
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:1267
+#: ../src/panel.c:1268
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1314
+#: ../src/panel.c:1315
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -258,7 +258,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1430
+#: ../src/panel.c:1431
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -269,7 +269,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1435
+#: ../src/panel.c:1436
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -280,11 +280,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1449 ../src/panel.c:1456 ../src/panel.c:1465
+#: ../src/panel.c:1450 ../src/panel.c:1457 ../src/panel.c:1466
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1455
+#: ../src/panel.c:1456
 msgid "Restart"
 msgstr "Redémarrer"
 

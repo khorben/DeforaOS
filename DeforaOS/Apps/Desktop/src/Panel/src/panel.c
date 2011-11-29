@@ -789,6 +789,7 @@ static GtkWidget * _preferences_window_general_view(GtkListStore * store)
 
 	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), FALSE);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	renderer = gtk_cell_renderer_pixbuf_new();
