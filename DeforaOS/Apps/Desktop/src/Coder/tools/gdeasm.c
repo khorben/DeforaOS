@@ -102,6 +102,7 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gdeasm->store));
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(treeview), FALSE);
 	for(i = 0; i < sizeof(headers) / sizeof(*headers); i++)
 	{
 		column = gtk_tree_view_column_new_with_attributes(headers[i],
