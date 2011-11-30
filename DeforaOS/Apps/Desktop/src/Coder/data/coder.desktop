@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Coder
+Comment=An Integrated Development Environment (IDE)
+Exec=coder
+Icon=applications-development
+Type=Application
+Categories=Development;IDE;GTK;
+StartupNotify=true
