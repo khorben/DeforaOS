@@ -22,6 +22,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE. */
+/* TODO:
+ * - complete the function list
+ * - also display strings (calls...) */
 
 
 
@@ -42,7 +45,8 @@ typedef struct _GDeasm
 	char * format;
 
 	/* widgets */
-	GtkTreeStore * store;
+	GtkTreeStore * func_store;
+	GtkTreeStore * asm_store;
 } GDeasm;
 
 
@@ -73,10 +77,12 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
+	GtkWidget * hpaned;
 	GtkWidget * scrolled;
 	GtkWidget * treeview;
 	GtkTreeViewColumn * column;
-	char const * headers[] = { "Offset", "Instruction", "Operand",
+	char const * headers1[] = { "Functions" };
+	char const * headers2[] = { "Offset", "Instruction", "Operand",
 		"Operand", "Operand", "Operand", "Operand" };
 	size_t i;
 
@@ -84,7 +90,8 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 		return NULL;
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
-	gdeasm->store = gtk_tree_store_new(7, G_TYPE_STRING, G_TYPE_STRING,
+	gdeasm->func_store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_UINT);
+	gdeasm->asm_store = gtk_tree_store_new(7, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -92,25 +99,49 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 	g_signal_connect_swapped(window, "delete-event", G_CALLBACK(
 				_gdeasm_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
+	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
 	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
 				_gdeasm_on_open), gdeasm);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+	/* view */
+	hpaned = gtk_hpaned_new();
+	/* functions */
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gdeasm->store));
+	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				gdeasm->func_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(treeview), FALSE);
-	for(i = 0; i < sizeof(headers) / sizeof(*headers); i++)
+	for(i = 0; i < sizeof(headers1) / sizeof(*headers1); i++)
 	{
-		column = gtk_tree_view_column_new_with_attributes(headers[i],
+		column = gtk_tree_view_column_new_with_attributes(headers1[i],
 				gtk_cell_renderer_text_new(), "text", i, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
-	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
+	gtk_paned_add1(GTK_PANED(hpaned), scrolled);
+	/* assembly */
+	scrolled = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				gdeasm->asm_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(treeview), FALSE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeview), TRUE);
+	for(i = 0; i < sizeof(headers2) / sizeof(*headers2); i++)
+	{
+		column = gtk_tree_view_column_new_with_attributes(headers2[i],
+				gtk_cell_renderer_text_new(), "text", i, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+	}
+	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
+	gtk_paned_add2(GTK_PANED(hpaned), scrolled);
+	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 	if(filename != NULL)
@@ -175,8 +206,8 @@ static int _open_code_section(GDeasm * gdeasm, AsmCode * code,
 	size_t calls_cnt = 0;
 	size_t i;
 
-	gtk_tree_store_append(gdeasm->store, &iter, NULL);
-	gtk_tree_store_set(gdeasm->store, &iter, 0, section->name, -1);
+	gtk_tree_store_append(gdeasm->asm_store, &iter, NULL);
+	gtk_tree_store_set(gdeasm->asm_store, &iter, 0, section->name, -1);
 	if(asmcode_decode_section(code, section, &calls, &calls_cnt) != 0)
 		return -1;
 	for(i = 0; i < calls_cnt; i++)
@@ -194,9 +225,9 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 	ArchOperand * ao;
 	char const * name;
 
-	gtk_tree_store_append(gdeasm->store, &iter, parent);
+	gtk_tree_store_append(gdeasm->asm_store, &iter, parent);
 	snprintf(buf, sizeof(buf), "%08lx", call->base);
-	gtk_tree_store_set(gdeasm->store, &iter, 0, buf, 1, call->name, -1);
+	gtk_tree_store_set(gdeasm->asm_store, &iter, 0, buf, 1, call->name, -1);
 	for(i = 0; i < call->operands_cnt; i++)
 	{
 		ao = &call->operands[i];
@@ -219,7 +250,7 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 				buf[0] = '\0';
 				break;
 		}
-		gtk_tree_store_set(gdeasm->store, &iter, i + 2, buf, -1);
+		gtk_tree_store_set(gdeasm->asm_store, &iter, i + 2, buf, -1);
 	}
 }
 
@@ -274,7 +305,8 @@ static void _gdeasm_on_open(gpointer data)
 	gtk_widget_destroy(widget);
 	if(filename == NULL)
 		return;
-	gtk_tree_store_clear(gdeasm->store);
+	gtk_tree_store_clear(gdeasm->func_store);
+	gtk_tree_store_clear(gdeasm->asm_store);
 	_gdeasm_open(gdeasm, filename, 0);
 	g_free(filename);
 }
@@ -283,7 +315,7 @@ static void _gdeasm_on_open(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: gdeasm filename\n", stderr);
+	fputs("Usage: gdeasm [-a arch][-f format] filename\n", stderr);
 	return 1;
 }
 
