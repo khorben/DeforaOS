@@ -154,7 +154,7 @@ GEDI * gedi_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(gedi->tb_window), ICON_NAME);
 #endif
-	gtk_window_set_title(GTK_WINDOW(gedi->tb_window), "GEDI");
+	gtk_window_set_title(GTK_WINDOW(gedi->tb_window), "Coder");
 	gtk_window_set_resizable(GTK_WINDOW(gedi->tb_window), FALSE);
 	g_signal_connect_swapped(G_OBJECT(gedi->tb_window), "delete-event",
 			G_CALLBACK(on_closex), gedi);
