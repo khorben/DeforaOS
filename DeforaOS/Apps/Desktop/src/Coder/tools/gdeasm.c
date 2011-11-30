@@ -289,6 +289,13 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 				break;
 			case AOT_IMMEDIATE:
 				_open_parse_immediate(buf, sizeof(buf), ao);
+				if(AO_GET_VALUE(ao->definition) == AOI_REFERS_STRING
+						|| AO_GET_VALUE(ao->definition)
+						== AOI_REFERS_FUNCTION)
+					gtk_tree_store_set(gdeasm->asm_store,
+							&iter, 7,
+							ao->value.immediate.name,
+							-1);
 				break;
 			case AOT_REGISTER:
 				name = call->operands[i].value._register.name;
