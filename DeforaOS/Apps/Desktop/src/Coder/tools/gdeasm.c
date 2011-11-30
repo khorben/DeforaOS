@@ -48,8 +48,9 @@ typedef struct _GDeasm
 	char * format;
 
 	/* widgets */
-	GtkTreeStore * func_store;
+	GtkListStore * func_store;
 	GtkTreeStore * asm_store;
+	GtkWidget * asm_view;
 } GDeasm;
 
 
@@ -65,6 +66,8 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
 static gboolean _gdeasm_on_closex(void);
 static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
 		gchar * arg1, gchar * arg2, gpointer data);
+static void _gdeasm_on_function_activated(GtkTreeView * view,
+		GtkTreePath * path, GtkTreeViewColumn * column, gpointer data);
 static void _gdeasm_on_open(gpointer data);
 
 static int _usage(void);
@@ -85,8 +88,8 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 	GtkWidget * treeview;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
-	char const * headers1[] = { "Functions" };
-	char const * headers2[] = { "Offset", "Instruction", "Operand",
+	char const * headers1[] = { "Functions", "Offset" };
+	char const * headers2[] = { "Address", "Instruction", "Operand",
 		"Operand", "Operand", "Operand", "Operand", "Comment" };
 	size_t i;
 
@@ -95,10 +98,12 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 	gdeasm->raw = raw;
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
-	gdeasm->func_store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_UINT);
-	gdeasm->asm_store = gtk_tree_store_new(8, G_TYPE_STRING, G_TYPE_STRING,
+	gdeasm->func_store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_UINT);
+	gdeasm->asm_store = gtk_tree_store_new(9, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_UINT);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
 	g_signal_connect_swapped(window, "delete-event", G_CALLBACK(
@@ -121,10 +126,15 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 				gdeasm->func_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), TRUE);
 	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(treeview), FALSE);
+	g_signal_connect(treeview, "row-activated", G_CALLBACK(
+				_gdeasm_on_function_activated), gdeasm);
 	for(i = 0; i < sizeof(headers1) / sizeof(*headers1); i++)
 	{
+		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(headers1[i],
-				gtk_cell_renderer_text_new(), "text", i, NULL);
+				renderer, "text", i, NULL);
+		if(i == 1)
+			g_object_set(renderer, "family", "Monospace", NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
@@ -135,6 +145,7 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				gdeasm->asm_store));
+	gdeasm->asm_view = treeview;
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(treeview), FALSE);
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeview), TRUE);
@@ -143,13 +154,18 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(headers2[i],
 				renderer, "text", i, NULL);
+		if(i == 0)
+			g_object_set(renderer, "family", "Monospace", NULL);
+		else if(i == 7) /* the last column is editable */
+		{
+			g_object_set(renderer, "editable", TRUE, "style",
+					PANGO_STYLE_ITALIC, NULL);
+			g_signal_connect(renderer, "edited", G_CALLBACK(
+						_gdeasm_on_comment_edited),
+					gdeasm);
+		}
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
-	/* XXX the last column is editable */
-	g_object_set(renderer, "editable", TRUE, "style", PANGO_STYLE_ITALIC,
-			NULL);
-	g_signal_connect(renderer, "edited", G_CALLBACK(
-				_gdeasm_on_comment_edited), gdeasm);
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
 	gtk_paned_add2(GTK_PANED(hpaned), scrolled);
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
@@ -174,6 +190,7 @@ static void _gdeasm_delete(GDeasm * gdeasm)
 static int _open_code(GDeasm * gdeasm, AsmCode * af);
 static int _open_code_section(GDeasm * gdeasm, AsmCode * code,
 		AsmSection * section);
+static void _open_functions(GDeasm * gdeasm, AsmFunction * af, size_t af_cnt);
 static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 		ArchInstructionCall * call);
 static void _open_parse_dregister(char * buf, size_t size, ArchOperand * ao);
@@ -185,11 +202,15 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 	int ret = -1;
 	Asm * a;
 	AsmCode * code;
+	AsmFunction * af;
+	size_t af_cnt;
 
 	if((a = asm_new(gdeasm->arch, gdeasm->format)) == NULL)
 		return -1;
 	if((code = asm_open_deassemble(a, filename, raw)) != NULL)
 		ret = _open_code(gdeasm, code);
+	asmcode_get_functions(code, &af, &af_cnt);
+	_open_functions(gdeasm, af, af_cnt);
 	asm_close(a);
 	asm_delete(a);
 	return ret;
@@ -218,13 +239,28 @@ static int _open_code_section(GDeasm * gdeasm, AsmCode * code,
 	size_t i;
 
 	gtk_tree_store_append(gdeasm->asm_store, &iter, NULL);
-	gtk_tree_store_set(gdeasm->asm_store, &iter, 0, section->name, -1);
+	gtk_tree_store_set(gdeasm->asm_store, &iter, 1, section->name, -1);
 	if(asmcode_decode_section(code, section, &calls, &calls_cnt) != 0)
 		return -1;
 	for(i = 0; i < calls_cnt; i++)
 		_open_instruction(gdeasm, &iter, &calls[i]);
 	free(calls);
 	return 0;
+}
+
+static void _open_functions(GDeasm * gdeasm, AsmFunction * af, size_t af_cnt)
+{
+	size_t i;
+	GtkTreeIter iter;
+	char buf[16];
+
+	for(i = 0; i < af_cnt; i++)
+	{
+		snprintf(buf, sizeof(buf), "%08lx", af[i].offset);
+		gtk_list_store_append(gdeasm->func_store, &iter);
+		gtk_list_store_set(gdeasm->func_store, &iter, 0, af[i].name,
+				1, buf, 2, af[i].offset, -1);
+	}
 }
 
 static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
@@ -238,7 +274,8 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 
 	gtk_tree_store_append(gdeasm->asm_store, &iter, parent);
 	snprintf(buf, sizeof(buf), "%08lx", call->base);
-	gtk_tree_store_set(gdeasm->asm_store, &iter, 0, buf, 1, call->name, -1);
+	gtk_tree_store_set(gdeasm->asm_store, &iter, 0, buf, 1, call->name,
+			8, call->offset, -1);
 	for(i = 0; i < call->operands_cnt; i++)
 	{
 		ao = &call->operands[i];
@@ -312,6 +349,44 @@ static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
 }
 
 
+/* gdeasm_on_function_activated */
+static void _gdeasm_on_function_activated(GtkTreeView * view,
+		GtkTreePath * path, GtkTreeViewColumn * column, gpointer data)
+{
+	GDeasm * gdeasm = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(gdeasm->func_store);
+	GtkTreeIter iter;
+	GtkTreeIter parent;
+	guint offset;
+	gboolean valid;
+	guint u;
+	GtkTreeSelection * treesel;
+
+	if(gtk_tree_model_get_iter(model, &iter, path) != TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, 2, &offset, -1);
+	model = GTK_TREE_MODEL(gdeasm->asm_store);
+	for(valid = gtk_tree_model_get_iter_first(model, &parent); valid;
+			valid = gtk_tree_model_iter_next(model, &parent))
+		for(valid = gtk_tree_model_iter_children(model, &iter, &parent);
+				valid;
+				valid = gtk_tree_model_iter_next(model, &iter))
+		{
+			gtk_tree_model_get(model, &iter, 8, &u, -1);
+			if(offset != u)
+				continue;
+			view = GTK_TREE_VIEW(gdeasm->asm_view);
+			treesel = gtk_tree_view_get_selection(view);
+			gtk_tree_selection_select_iter(treesel, &iter);
+			path = gtk_tree_model_get_path(model, &iter);
+			gtk_tree_view_scroll_to_cell(view, path, NULL, FALSE,
+					0.0, 0.0);
+			gtk_tree_path_free(path);
+			return;
+		}
+}
+
+
 /* gdeasm_on_open */
 static void _gdeasm_on_open(gpointer data)
 {
@@ -329,7 +404,7 @@ static void _gdeasm_on_open(gpointer data)
 	gtk_widget_destroy(widget);
 	if(filename == NULL)
 		return;
-	gtk_tree_store_clear(gdeasm->func_store);
+	gtk_list_store_clear(gdeasm->func_store);
 	gtk_tree_store_clear(gdeasm->asm_store);
 	_gdeasm_open(gdeasm, filename, gdeasm->raw);
 	g_free(filename);
