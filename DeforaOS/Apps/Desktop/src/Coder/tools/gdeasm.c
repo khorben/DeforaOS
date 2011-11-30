@@ -60,6 +60,8 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
 
 /* callbacks */
 static gboolean _gdeasm_on_closex(void);
+static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
+		gchar * arg1, gchar * arg2, gpointer data);
 static void _gdeasm_on_open(gpointer data);
 
 static int _usage(void);
@@ -67,8 +69,6 @@ static int _usage(void);
 
 /* functions */
 /* gdeasm_new */
-/* callbacks */
-/* parsing */
 static GDeasm * _gdeasm_new(char const * arch, char const * format,
 		char const * filename)
 {
@@ -80,10 +80,11 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 	GtkWidget * hpaned;
 	GtkWidget * scrolled;
 	GtkWidget * treeview;
+	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	char const * headers1[] = { "Functions" };
 	char const * headers2[] = { "Offset", "Instruction", "Operand",
-		"Operand", "Operand", "Operand", "Operand" };
+		"Operand", "Operand", "Operand", "Operand", "Comment" };
 	size_t i;
 
 	if((gdeasm = malloc(sizeof(*gdeasm))) == NULL)
@@ -91,9 +92,9 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
 	gdeasm->func_store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_UINT);
-	gdeasm->asm_store = gtk_tree_store_new(7, G_TYPE_STRING, G_TYPE_STRING,
+	gdeasm->asm_store = gtk_tree_store_new(8, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
 	g_signal_connect_swapped(window, "delete-event", G_CALLBACK(
@@ -135,10 +136,16 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeview), TRUE);
 	for(i = 0; i < sizeof(headers2) / sizeof(*headers2); i++)
 	{
+		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(headers2[i],
-				gtk_cell_renderer_text_new(), "text", i, NULL);
+				renderer, "text", i, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
+	/* XXX the last column is editable */
+	g_object_set(renderer, "editable", TRUE, "style", PANGO_STYLE_ITALIC,
+			NULL);
+	g_signal_connect(renderer, "edited", G_CALLBACK(
+				_gdeasm_on_comment_edited), gdeasm);
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
 	gtk_paned_add2(GTK_PANED(hpaned), scrolled);
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
@@ -285,6 +292,19 @@ static gboolean _gdeasm_on_closex(void)
 {
 	gtk_main_quit();
 	return TRUE;
+}
+
+
+/* gdeasm_on_comment_edited */
+static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
+		gchar * arg1, gchar * arg2, gpointer data)
+{
+	GDeasm * gdeasm = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(gdeasm->asm_store);
+	GtkTreeIter iter;
+
+	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
+		gtk_tree_store_set(gdeasm->asm_store, &iter, 7, arg2, -1);
 }
 
 
