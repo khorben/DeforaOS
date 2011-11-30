@@ -33,7 +33,10 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- gdeasm $(DESTDIR)$(BINDIR)/gdeasm
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(BINDIR)/gdeasm
 
 .PHONY: all clean distclean install uninstall

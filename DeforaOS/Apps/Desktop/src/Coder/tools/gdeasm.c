@@ -23,7 +23,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE. */
 /* TODO:
+ * - add a preferences structure
  * - complete the function list
+ * - add a check box to open in raw mode
  * - also display strings (calls...) */
 
 
@@ -41,6 +43,7 @@
 /* types */
 typedef struct _GDeasm
 {
+	int raw;
 	char * arch;
 	char * format;
 
@@ -51,7 +54,7 @@ typedef struct _GDeasm
 
 
 /* prototypes */
-static GDeasm * _gdeasm_new(char const * arch, char const * format,
+static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 		char const * filename);
 static void _gdeasm_delete(GDeasm * gdeasm);
 
@@ -69,7 +72,7 @@ static int _usage(void);
 
 /* functions */
 /* gdeasm_new */
-static GDeasm * _gdeasm_new(char const * arch, char const * format,
+static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 		char const * filename)
 {
 	GDeasm * gdeasm;
@@ -89,6 +92,7 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format,
 
 	if((gdeasm = malloc(sizeof(*gdeasm))) == NULL)
 		return NULL;
+	gdeasm->raw = raw;
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
 	gdeasm->func_store = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_UINT);
@@ -327,7 +331,7 @@ static void _gdeasm_on_open(gpointer data)
 		return;
 	gtk_tree_store_clear(gdeasm->func_store);
 	gtk_tree_store_clear(gdeasm->asm_store);
-	_gdeasm_open(gdeasm, filename, 0);
+	_gdeasm_open(gdeasm, filename, gdeasm->raw);
 	g_free(filename);
 }
 
@@ -335,7 +339,7 @@ static void _gdeasm_on_open(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: gdeasm [-a arch][-f format] filename\n", stderr);
+	fputs("Usage: gdeasm [-D][-a arch][-f format] filename\n", stderr);
 	return 1;
 }
 
@@ -347,13 +351,17 @@ int main(int argc, char * argv[])
 {
 	int o;
 	GDeasm * gdeasm;
+	int raw = 0;
 	char const * arch = NULL;
 	char const * format = NULL;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "a:f:")) != -1)
+	while((o = getopt(argc, argv, "Da:f:")) != -1)
 		switch(o)
 		{
+			case 'D':
+				raw = 1;
+				break;
 			case 'a':
 				arch = optarg;
 				break;
@@ -365,7 +373,7 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc && optind + 1 != argc)
 		return _usage();
-	if((gdeasm = _gdeasm_new(arch, format, argv[optind])) == NULL)
+	if((gdeasm = _gdeasm_new(raw, arch, format, argv[optind])) == NULL)
 		return 2;
 	gtk_main();
 	_gdeasm_delete(gdeasm);
