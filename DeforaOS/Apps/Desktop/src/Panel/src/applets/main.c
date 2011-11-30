@@ -179,10 +179,14 @@ static GtkWidget * _main_applications(Main * main)
 		q = config_get(config, section, "Name"); /* should not fail */
 		menuitem = _main_menuitem(q, config_get(config, section,
 					"Icon"));
-		q = config_get(config, section, "Exec"); /* should not fail */
-		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
-				G_CALLBACK(_applications_on_activate),
-				(gpointer)q);
+		if((q = config_get(config, section, "Comment")) != NULL)
+			gtk_widget_set_tooltip_text(menuitem, q);
+		if((q = config_get(config, section, "Exec")) != NULL)
+			g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+					G_CALLBACK(_applications_on_activate),
+					(gpointer)q);
+		else
+			gtk_widget_set_sensitive(menuitem, FALSE);
 		if((q = config_get(config, section, "Categories")) == NULL)
 		{
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -370,7 +374,6 @@ static gboolean _on_idle(gpointer data)
 	char * p;
 	Config * config = NULL;
 	String const * q;
-	String const * r;
 
 	if(main->apps != NULL)
 		return FALSE;
@@ -415,8 +418,7 @@ static gboolean _on_idle(gpointer data)
 			continue;
 		}
 		q = config_get(config, section, "Name");
-		r = config_get(config, section, "Exec");
-		if(q == NULL || r == NULL)
+		if(q == NULL)
 			continue;
 		main->apps = g_slist_insert_sorted(main->apps, config,
 				_idle_apps_compare);

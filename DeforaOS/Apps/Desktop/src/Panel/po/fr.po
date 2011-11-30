@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-29 18:32-0500\n"
+"POT-Creation-Date: 2011-11-30 00:36-0500\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -104,7 +104,7 @@ msgstr "Hauteur :"
 msgid "Keep ratio"
 msgstr "Respecter les proportions"
 
-#: ../src/applets/lock.c:76 ../src/applets/main.c:319
+#: ../src/applets/lock.c:76 ../src/applets/main.c:323
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
@@ -121,23 +121,23 @@ msgstr "Déconnexion"
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:301
+#: ../src/applets/main.c:305
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:307
+#: ../src/applets/main.c:311
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:325
+#: ../src/applets/main.c:329
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:332
+#: ../src/applets/main.c:336
 msgid "Suspend"
 msgstr "Suspendre"
 
-#: ../src/applets/main.c:337
+#: ../src/applets/main.c:341
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
