@@ -241,12 +241,14 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 	if((a = asm_new(gdeasm->arch, gdeasm->format)) == NULL)
 		return -1;
 	if((code = asm_open_deassemble(a, filename, raw)) != NULL)
+	{
 		ret = _open_code(gdeasm, code);
-	asmcode_get_functions(code, &af, &af_cnt);
-	_open_functions(gdeasm, af, af_cnt);
-	asmcode_get_strings(code, &as, &as_cnt);
-	_open_strings(gdeasm, as, as_cnt);
-	asm_close(a);
+		asmcode_get_functions(code, &af, &af_cnt);
+		_open_functions(gdeasm, af, af_cnt);
+		asmcode_get_strings(code, &as, &as_cnt);
+		_open_strings(gdeasm, as, as_cnt);
+		asm_close(a);
+	}
 	asm_delete(a);
 	return ret;
 }
