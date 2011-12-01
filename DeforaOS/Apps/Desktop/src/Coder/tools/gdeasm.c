@@ -25,8 +25,7 @@
 /* TODO:
  * - add a preferences structure
  * - complete the function list
- * - add a window automatically displaying integers in base 2, 8, 10 and 16
- * - add a check box to open in raw mode */
+ * - add a window automatically displaying integers in base 2, 8, 10 and 16 */
 
 
 
@@ -43,7 +42,6 @@
 /* types */
 typedef struct _GDeasm
 {
-	int raw;
 	char * arch;
 	char * format;
 
@@ -56,8 +54,7 @@ typedef struct _GDeasm
 
 
 /* prototypes */
-static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
-		char const * filename);
+static GDeasm * _gdeasm_new(char const * arch, char const * format);
 static void _gdeasm_delete(GDeasm * gdeasm);
 
 static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
@@ -76,8 +73,7 @@ static int _usage(void);
 
 /* functions */
 /* gdeasm_new */
-static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
-		char const * filename)
+static GDeasm * _gdeasm_new(char const * arch, char const * format)
 {
 	GDeasm * gdeasm;
 	GtkWidget * window;
@@ -98,7 +94,6 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 
 	if((gdeasm = malloc(sizeof(*gdeasm))) == NULL)
 		return NULL;
-	gdeasm->raw = raw;
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
 	gdeasm->func_store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING,
@@ -194,8 +189,6 @@ static GDeasm * _gdeasm_new(int raw, char const * arch, char const * format,
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
-	if(filename != NULL)
-		_gdeasm_open(gdeasm, filename, 0);
 	return gdeasm;
 }
 
@@ -440,23 +433,35 @@ static void _gdeasm_on_function_activated(GtkTreeView * view,
 static void _gdeasm_on_open(gpointer data)
 {
 	GDeasm * gdeasm = data;
+	GtkWidget * dialog;
+	GtkWidget * vbox;
 	GtkWidget * widget;
 	char * filename = NULL;
+	int raw;
 
-	widget = gtk_file_chooser_dialog_new("Open file...", NULL,
-			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_OPEN,
-			GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, NULL);
-	if(gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT)
+	dialog = gtk_file_chooser_dialog_new("Open file...", NULL,
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
+	widget = gtk_check_button_new_with_mnemonic("Open file in _raw mode");
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
-					widget));
-	gtk_widget_destroy(widget);
+					dialog));
+	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return;
+	raw = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	gtk_list_store_clear(gdeasm->func_store);
 	gtk_list_store_clear(gdeasm->str_store);
 	gtk_tree_store_clear(gdeasm->asm_store);
-	_gdeasm_open(gdeasm, filename, gdeasm->raw);
+	_gdeasm_open(gdeasm, filename, raw);
 	g_free(filename);
 }
 
@@ -498,8 +503,10 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc && optind + 1 != argc)
 		return _usage();
-	if((gdeasm = _gdeasm_new(raw, arch, format, argv[optind])) == NULL)
+	if((gdeasm = _gdeasm_new(arch, format)) == NULL)
 		return 2;
+	if(optind + 1 == argc)
+		_gdeasm_open(gdeasm, argv[optind], raw);
 	gtk_main();
 	_gdeasm_delete(gdeasm);
 	return 0;
