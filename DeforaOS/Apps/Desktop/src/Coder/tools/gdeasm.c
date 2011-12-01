@@ -40,6 +40,20 @@
 /* gdeasm */
 /* private */
 /* types */
+typedef enum _GDeasmFuncColumn
+{
+	GFC_NAME = 0, GFC_OFFSET_DISPLAY, GFC_OFFSET
+} GDeasmFuncColumn;
+#define GFC_LAST GFC_OFFSET
+#define GFC_COUNT (GFC_LAST + 1)
+
+typedef enum _GDeasmStrColumn
+{
+	GSC_STRING = 0
+} GDeasmStrColumn;
+#define GSC_LAST GSC_STRING
+#define GSC_COUNT (GSC_LAST + 1)
+
 typedef struct _GDeasm
 {
 	char * arch;
@@ -86,8 +100,8 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 	GtkWidget * treeview;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
-	char const * headers1[] = { "Functions", "Offset" };
-	char const * headers2[] = { "Strings" };
+	char const * headers1[GFC_COUNT - 1] = { "Functions", "Offset" };
+	char const * headers2[GSC_COUNT] = { "Strings" };
 	char const * headers3[] = { "Address", "Instruction", "Operand",
 		"Operand", "Operand", "Operand", "Operand", "Comment" };
 	size_t i;
@@ -96,9 +110,9 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 		return NULL;
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
-	gdeasm->func_store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_UINT);
-	gdeasm->str_store = gtk_list_store_new(1, G_TYPE_STRING);
+	gdeasm->func_store = gtk_list_store_new(GFC_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_UINT);
+	gdeasm->str_store = gtk_list_store_new(GSC_COUNT, G_TYPE_STRING);
 	gdeasm->asm_store = gtk_tree_store_new(9, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -279,8 +293,9 @@ static void _open_functions(GDeasm * gdeasm, AsmFunction * af, size_t af_cnt)
 	{
 		snprintf(buf, sizeof(buf), "%08lx", af[i].offset);
 		gtk_list_store_append(gdeasm->func_store, &iter);
-		gtk_list_store_set(gdeasm->func_store, &iter, 0, af[i].name,
-				1, buf, 2, af[i].offset, -1);
+		gtk_list_store_set(gdeasm->func_store, &iter,
+				GFC_NAME, af[i].name, GFC_OFFSET_DISPLAY, buf,
+				GFC_OFFSET, af[i].offset, -1);
 	}
 }
 
@@ -363,7 +378,8 @@ static void _open_strings(GDeasm * gdeasm, AsmString * as, size_t as_cnt)
 	for(i = 0; i < as_cnt; i++)
 	{
 		gtk_list_store_append(gdeasm->str_store, &iter);
-		gtk_list_store_set(gdeasm->str_store, &iter, 0, as[i].name, -1);
+		gtk_list_store_set(gdeasm->str_store, &iter,
+				GSC_STRING, as[i].name, -1);
 	}
 }
 
