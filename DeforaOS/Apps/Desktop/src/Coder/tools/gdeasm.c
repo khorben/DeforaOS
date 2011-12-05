@@ -555,13 +555,9 @@ static void _gdeasm_on_close(gpointer data)
 				"There are unsaved comments.\n"
 				"Are you sure you want to discard them?",
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-#if GTK_CHECK_VERSION(2, 12, 0)
-				GTK_STOCK_DISCARD, GTK_RESPONSE_ACCEPT,
-#else
-				"Discard", GTK_RESPONSE_ACCEPT,
-#endif
+				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 				NULL)
-			!= GTK_RESPONSE_ACCEPT)
+			!= GTK_RESPONSE_CLOSE)
 		return;
 	gtk_widget_hide(gdeasm->window);
 	gtk_main_quit();
