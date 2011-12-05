@@ -303,6 +303,7 @@ static void _on_run_execute(gpointer data)
 				&error) == FALSE)
 	{
 		_run_error(run, error->message, 1);
+		g_error_free(error);
 		return;
 	}
 	gtk_widget_hide(run->window);
