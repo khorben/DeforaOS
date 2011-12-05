@@ -43,6 +43,7 @@ void editor_about(Editor * editor);
 void editor_config_load(Editor * editor);
 void editor_config_save(Editor * editor);
 
+int editor_confirm(Editor * editor, char const * message, ...);
 int editor_error(Editor * editor, char const * message, int ret);
 
 gboolean editor_close(Editor * editor);

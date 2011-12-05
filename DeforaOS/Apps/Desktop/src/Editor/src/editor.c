@@ -14,6 +14,9 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
+/* TODO:
+ * - move the "find" dialog over the status bar (and in Surfer too, and use a
+ *   GtkCombo box with the history of what was searched for already) */
 
 
 
@@ -427,6 +430,34 @@ void editor_config_save(Editor * editor)
 }
 
 
+/* editor_confirm */
+int editor_confirm(Editor * editor, char const * message, ...)
+{
+	GtkWidget * dialog;
+	va_list ap;
+	char const * action;
+	int res;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_NONE,
+# if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+# endif
+			"%s", message);
+	va_start(ap, message);
+	while((action = va_arg(ap, char const *)) != NULL)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				action, va_arg(ap, int));
+	va_end(ap);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return res;
+}
+
+
 /* editor_error */
 int editor_error(Editor * editor, char const * message, int ret)
 {
@@ -452,7 +483,6 @@ int editor_error(Editor * editor, char const * message, int ret)
 /* editor_close */
 gboolean editor_close(Editor * editor)
 {
-	GtkWidget * dialog;
 	int res;
 
 #ifdef DEBUG
@@ -464,23 +494,11 @@ gboolean editor_close(Editor * editor)
 		gtk_main_quit();
 		return FALSE;
 	}
-	dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
-#if GTK_CHECK_VERSION(2, 6, 0)
-			_("Warning"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
-#endif
-			_("There are unsaved changes.\n"
-				"Discard or save them?"));
-	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_DISCARD,
-			GTK_RESPONSE_REJECT, GTK_STOCK_SAVE,
-			GTK_RESPONSE_ACCEPT, NULL);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
-	res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
+	res = editor_confirm(editor, _("There are unsaved changes.\n"
+				"Discard or save them?"),
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_DISCARD, GTK_RESPONSE_REJECT,
+			GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
 	if(res == GTK_RESPONSE_CANCEL)
 		return TRUE;
 	else if(res == GTK_RESPONSE_ACCEPT && editor_save(editor) != TRUE)
@@ -686,7 +704,6 @@ int editor_insert_file_dialog(Editor * editor)
 /* editor_open */
 void editor_open(Editor * editor, char const * filename)
 {
-	GtkWidget * dialog;
 	int res;
 	FILE * fp;
 	GtkTextBuffer * tbuf;
@@ -701,29 +718,19 @@ void editor_open(Editor * editor, char const * filename)
 	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
 						editor->view))) == TRUE)
 	{
-		dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
-				GTK_DIALOG_MODAL
-				| GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
-#if GTK_CHECK_VERSION(2, 6, 0)
-				_("Warning"));
-		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
-					dialog), "%s",
-#endif
-				_("There are unsaved changes.\n"
-				"Are you sure you want to discard them?"));
-		gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-				GTK_RESPONSE_CANCEL,
+		res = editor_confirm(editor, _("There are unsaved changes.\n"
+					"Discard or save them?"),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 #if GTK_CHECK_VERSION(2, 12, 0)
-				GTK_STOCK_DISCARD,
+				GTK_STOCK_DISCARD, GTK_RESPONSE_REJECT,
 #else
-				_("Discard"),
+				_("Discard"), GTK_RESPONSE_REJECT,
 #endif
-				GTK_RESPONSE_CLOSE, NULL);
-		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
-		res = gtk_dialog_run(GTK_DIALOG(dialog));
-		gtk_widget_destroy(dialog);
-		if(res != GTK_RESPONSE_CLOSE)
+				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				NULL);
+		if(res == GTK_RESPONSE_ACCEPT && editor_save(editor) != TRUE)
+			return;
+		else if(res != GTK_RESPONSE_CLOSE)
 			return;
 	}
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
@@ -734,6 +741,7 @@ void editor_open(Editor * editor, char const * filename)
 		gtk_text_buffer_set_modified(tbuf, FALSE);
 		return;
 	}
+	/* FIXME use a GIOChannel instead (with a modal GtkDialog) */
 	if((fp = fopen(filename, "r")) == NULL)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", filename, strerror(errno));
@@ -871,14 +879,14 @@ gboolean editor_save_as(Editor * editor, char const * filename)
 		dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
 				GTK_DIALOG_MODAL
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+				GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-				_("Warning"));
+				_("Question"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s",
 #endif
 				_("This file already exists. Overwrite?"));
-		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
+		gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 		if(ret == GTK_RESPONSE_NO)
