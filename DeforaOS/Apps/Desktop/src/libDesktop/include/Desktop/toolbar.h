@@ -33,7 +33,7 @@ typedef struct _DesktopToolbar
 
 
 /* functions */
-GtkWidget * desktop_toolbar_create(DesktopToolbar const * toolbar,
+GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar,
 		gpointer data, GtkAccelGroup * accel);
 
 #endif /* !LIBDESKTOP_TOOLBAR_H */

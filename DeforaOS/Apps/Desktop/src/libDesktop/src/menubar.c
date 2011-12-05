@@ -23,9 +23,9 @@
 
 /* Menubar */
 /* desktop_menubar_create */
-static GtkWidget * _menubar_create_menu(DesktopMenu * menu, gpointer data,
+static GtkWidget * _menubar_create_menu(DesktopMenu const * menu, gpointer data,
 		GtkAccelGroup * accel);
-static GtkWidget * _menubar_create_menu_from_image(DesktopMenu * menu);
+static GtkWidget * _menubar_create_menu_from_image(DesktopMenu const * menu);
 
 GtkWidget * desktop_menubar_create(DesktopMenubar const * menubar,
 		gpointer data, GtkAccelGroup * accel)
@@ -46,12 +46,12 @@ GtkWidget * desktop_menubar_create(DesktopMenubar const * menubar,
 	return ret;
 }
 
-static GtkWidget * _menubar_create_menu(DesktopMenu * menu, gpointer data,
+static GtkWidget * _menubar_create_menu(DesktopMenu const * menu, gpointer data,
 		GtkAccelGroup * accel)
 {
 	GtkWidget * ret;
 	size_t i;
-	DesktopMenu * p;
+	DesktopMenu const * p;
 	GtkWidget * menuitem;
 
 	ret = gtk_menu_new();
@@ -81,7 +81,7 @@ static GtkWidget * _menubar_create_menu(DesktopMenu * menu, gpointer data,
 	return ret;
 }
 
-static GtkWidget * _menubar_create_menu_from_image(DesktopMenu * menu)
+static GtkWidget * _menubar_create_menu_from_image(DesktopMenu const * menu)
 {
 	GtkWidget * ret;
 	GtkWidget * image;
