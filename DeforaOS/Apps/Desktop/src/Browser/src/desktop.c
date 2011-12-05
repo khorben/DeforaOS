@@ -12,8 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* FIXME
- * - let the user define the desktop folder
+/* TODO:
+ * - let the user define the desktop folder (possibly default to FDO's)
+ * - set the font for the icons instantly
  * - track multiple selection on delete/properties */
 
 
