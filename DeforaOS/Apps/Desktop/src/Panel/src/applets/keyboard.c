@@ -37,6 +37,7 @@
 /* types */
 typedef struct _Keyboard
 {
+	guint source;
 	GPid pid;
 
 	/* settings */
@@ -108,6 +109,7 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
 	applet->priv = keyboard;
+	keyboard->source = 0;
 	keyboard->pid = -1;
 	keyboard->width = -1;
 	keyboard->height = -1;
@@ -125,7 +127,7 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 			applet->helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(ret), image);
 	gtk_widget_show_all(ret);
-	g_idle_add(_init_idle, applet);
+	keyboard->source = g_idle_add(_init_idle, applet);
 	return ret;
 }
 
@@ -165,6 +167,7 @@ static gboolean _init_idle(gpointer data)
 	Keyboard * keyboard = applet->priv;
 	unsigned long xid;
 
+	keyboard->source = 0;
 	if(keyboard->window != NULL)
 		return FALSE;
 	if(_keyboard_spawn(applet, &xid) != 0)
@@ -193,8 +196,10 @@ static void _keyboard_destroy(PanelApplet * applet)
 {
 	Keyboard * keyboard = applet->priv;
 
+	if(keyboard->source > 0)
+		g_source_remove(keyboard->source);
 	if(keyboard->pid > 0)
-		g_spawn_close_pid(keyboard->pid); /* XXX may be dead already */
+		g_spawn_close_pid(keyboard->pid);
 	free(keyboard);
 }
 
@@ -382,23 +387,36 @@ static int _keyboard_spawn(PanelApplet * applet, unsigned long * xid)
 
 /* callbacks */
 /* keyboard_on_child */
+static gboolean _on_child_timeout(gpointer data);
+
 static void _keyboard_on_child(GPid pid, gint status, gpointer data)
+{
+	PanelApplet * applet = data;
+	Keyboard * keyboard = applet->priv;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u) %u\n", __func__, pid, keyboard->pid);
+#endif
+	if(keyboard->source != 0 || keyboard->pid != pid)
+		return;
+	if(WIFEXITED(status) || WIFSIGNALED(status))
+	{
+		g_spawn_close_pid(keyboard->pid);
+		keyboard->source = g_timeout_add(1000, _on_child_timeout,
+				applet);
+	}
+}
+
+static gboolean _on_child_timeout(gpointer data)
 {
 	PanelApplet * applet = data;
 	Keyboard * keyboard = applet->priv;
 	unsigned long xid;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%u) %u\n", __func__, pid, keyboard->pid);
-#endif
-	if(keyboard->pid != pid)
-		return;
-	if(WIFEXITED(status) || WIFSIGNALED(status))
-		if(_keyboard_spawn(applet, &xid) == 0)
-		{
-			gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
-			gtk_widget_show(keyboard->socket);
-		}
+	keyboard->source = 0;
+	if(_keyboard_spawn(applet, &xid) == 0)
+		gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
+	return FALSE;
 }
 
 

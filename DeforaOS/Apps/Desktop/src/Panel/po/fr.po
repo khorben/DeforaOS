@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-05 08:03-0500\n"
+"POT-Creation-Date: 2011-12-05 08:17-0500\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -84,23 +84,23 @@ msgstr "GPS actif"
 msgid "GSM is enabled"
 msgstr "GSM actif"
 
-#: ../src/applets/keyboard.c:119
+#: ../src/applets/keyboard.c:121
 msgid "Show keyboard"
 msgstr "Afficher le clavier"
 
-#: ../src/applets/keyboard.c:278 ../src/applets/lock.c:114 ../src/run.c:108
+#: ../src/applets/keyboard.c:283 ../src/applets/lock.c:114 ../src/run.c:108
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/applets/keyboard.c:289
+#: ../src/applets/keyboard.c:294
 msgid "Width:"
 msgstr "Largeur :"
 
-#: ../src/applets/keyboard.c:300
+#: ../src/applets/keyboard.c:305
 msgid "Height:"
 msgstr "Hauteur :"
 
-#: ../src/applets/keyboard.c:310
+#: ../src/applets/keyboard.c:315
 msgid "Keep ratio"
 msgstr "Respecter les proportions"
 
