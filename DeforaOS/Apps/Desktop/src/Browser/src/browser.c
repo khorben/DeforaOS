@@ -879,6 +879,13 @@ void browser_focus_location(Browser * browser)
 }
 
 
+/* browser_get_location */
+char const * browser_get_location(Browser * browser)
+{
+	return browser->current->data;
+}
+
+
 /* browser_go_home */
 void browser_go_home(Browser * browser)
 {

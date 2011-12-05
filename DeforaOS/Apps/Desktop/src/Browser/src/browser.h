@@ -178,6 +178,7 @@ Browser * browser_new_copy(Browser * browser);
 void browser_delete(Browser * browser);
 
 /* accessors */
+char const * browser_get_location(Browser * browser);
 void browser_set_location(Browser * browser, char const * path);
 void browser_set_view(Browser * browser, BrowserView view);
 
