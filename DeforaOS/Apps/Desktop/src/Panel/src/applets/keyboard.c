@@ -14,11 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - move and resize when the root window (or size) changes
- * - track if child process ever dies
  * - dlopen() keyboard's binary by default */
 
 
 
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
 #ifdef DEBUG
@@ -56,13 +56,19 @@ typedef struct _Keyboard
 
 
 /* prototypes */
+/* plug-in */
 static GtkWidget * _keyboard_init(PanelApplet * applet);
 static void _keyboard_destroy(PanelApplet * applet);
 static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 		gboolean reset);
 
+/* useful */
+static int _keyboard_spawn(PanelApplet * applet, unsigned long * xid);
+
 /* callbacks */
-static void _on_keyboard_toggled(GtkWidget * widget, gpointer data);
+static void _keyboard_on_child(GPid pid, gint status, gpointer data);
+static gboolean _keyboard_on_removed(void);
+static void _keyboard_on_toggled(GtkWidget * widget, gpointer data);
 
 
 /* constants */
@@ -91,8 +97,6 @@ PanelApplet applet =
 static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper);
 /* callbacks */
 static gboolean _init_idle(gpointer data);
-static int _idle_child(Keyboard * keyboard, PanelAppletHelper * helper,
-		unsigned long * xid);
 
 static GtkWidget * _keyboard_init(PanelApplet * applet)
 {
@@ -116,7 +120,7 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 #endif
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
-				_on_keyboard_toggled), applet);
+				_keyboard_on_toggled), applet);
 	image = gtk_image_new_from_icon_name("input-keyboard",
 			applet->helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(ret), image);
@@ -158,13 +162,12 @@ static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper)
 static gboolean _init_idle(gpointer data)
 {
 	PanelApplet * applet = data;
-	PanelAppletHelper * helper = applet->helper;
 	Keyboard * keyboard = applet->priv;
 	unsigned long xid;
 
 	if(keyboard->window != NULL)
 		return FALSE;
-	if(_idle_child(keyboard, helper, &xid) != 0)
+	if(_keyboard_spawn(applet, &xid) != 0)
 		return FALSE;
 	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
@@ -176,43 +179,12 @@ static gboolean _init_idle(gpointer data)
 	keyboard->socket = gtk_socket_new();
 	gtk_widget_set_size_request(keyboard->socket, keyboard->width,
 			keyboard->height);
+	g_signal_connect(keyboard->socket, "plug-removed", G_CALLBACK(
+				_keyboard_on_removed), NULL);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), keyboard->socket);
 	gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
 	gtk_widget_show(keyboard->socket);
 	return FALSE;
-}
-
-static int _idle_child(Keyboard * keyboard, PanelAppletHelper * helper,
-		unsigned long * xid)
-{
-	char * argv[] = { "sh", "-c", PANEL_KEYBOARD_COMMAND_DEFAULT, NULL };
-	char const * p;
-	char * q = NULL;
-	gboolean res;
-	gint out = -1;
-	GError * error = NULL;
-	char buf[32];
-	ssize_t size;
-
-	if((p = helper->config_get(helper->panel, "keyboard", "command"))
-			!= NULL && (q = strdup(p)) != NULL)
-		argv[2] = q;
-	res = g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH,
-			NULL, NULL, &keyboard->pid, NULL, &out, NULL, &error);
-	free(q);
-	if(res != TRUE)
-	{
-		helper->error(helper->panel, error->message, 1);
-		g_error_free(error);
-		return -1;
-	}
-	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
-		/* XXX not very explicit... */
-		return -helper->error(helper->panel, "read", 1);
-	buf[size] = '\0';
-	if(sscanf(buf, "%lu", xid) != 1)
-		return -1; /* XXX warn the user */
-	return 0;
 }
 
 
@@ -369,9 +341,76 @@ static void _settings_on_height_value_changed(gpointer data)
 }
 
 
+/* useful */
+/* keyboard_spawn */
+static int _keyboard_spawn(PanelApplet * applet, unsigned long * xid)
+{
+	PanelAppletHelper * helper = applet->helper;
+	Keyboard * keyboard = applet->priv;
+	char * argv[] = { "sh", "-c", PANEL_KEYBOARD_COMMAND_DEFAULT, NULL };
+	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
+	char const * p;
+	char * q = NULL;
+	gboolean res;
+	gint out = -1;
+	GError * error = NULL;
+	char buf[32];
+	ssize_t size;
+
+	if((p = helper->config_get(helper->panel, "keyboard", "command"))
+			!= NULL && (q = strdup(p)) != NULL)
+		argv[2] = q;
+	res = g_spawn_async_with_pipes(NULL, argv, NULL, flags, NULL, NULL,
+			&keyboard->pid, NULL, &out, NULL, &error);
+	free(q);
+	if(res != TRUE)
+	{
+		helper->error(helper->panel, error->message, 1);
+		g_error_free(error);
+		return -1;
+	}
+	g_child_watch_add(keyboard->pid, _keyboard_on_child, applet);
+	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
+		/* XXX not very explicit... */
+		return -helper->error(helper->panel, "read", 1);
+	buf[size] = '\0';
+	if(sscanf(buf, "%lu", xid) != 1)
+		return -1; /* XXX warn the user */
+	return 0;
+}
+
+
 /* callbacks */
-/* on_keyboard_toggled */
-static void _on_keyboard_toggled(GtkWidget * widget, gpointer data)
+/* keyboard_on_child */
+static void _keyboard_on_child(GPid pid, gint status, gpointer data)
+{
+	PanelApplet * applet = data;
+	Keyboard * keyboard = applet->priv;
+	unsigned long xid;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u) %u\n", __func__, pid, keyboard->pid);
+#endif
+	if(keyboard->pid != pid)
+		return;
+	if(WIFEXITED(status) || WIFSIGNALED(status))
+		if(_keyboard_spawn(applet, &xid) == 0)
+		{
+			gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
+			gtk_widget_show(keyboard->socket);
+		}
+}
+
+
+/* keyboard_on_removed */
+static gboolean _keyboard_on_removed(void)
+{
+	return TRUE;
+}
+
+
+/* keyboard_on_toggled */
+static void _keyboard_on_toggled(GtkWidget * widget, gpointer data)
 {
 	PanelApplet * applet = data;
 	PanelAppletHelper * helper = applet->helper;
