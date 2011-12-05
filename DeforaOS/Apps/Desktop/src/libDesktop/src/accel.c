@@ -20,7 +20,7 @@
 
 /* Accel */
 /* desktop_accel_create */
-void desktop_accel_create(DesktopAccel * accel, gpointer data,
+void desktop_accel_create(DesktopAccel const * accel, gpointer data,
 		GtkAccelGroup * group)
 {
 	size_t i;

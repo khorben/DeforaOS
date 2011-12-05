@@ -27,8 +27,8 @@ static GtkWidget * _menubar_create_menu(DesktopMenu * menu, gpointer data,
 		GtkAccelGroup * accel);
 static GtkWidget * _menubar_create_menu_from_image(DesktopMenu * menu);
 
-GtkWidget * desktop_menubar_create(DesktopMenubar * menubar, gpointer data,
-		GtkAccelGroup * accel)
+GtkWidget * desktop_menubar_create(DesktopMenubar const * menubar,
+		gpointer data, GtkAccelGroup * accel)
 {
 	GtkWidget * ret;
 	GtkWidget * menuitem;

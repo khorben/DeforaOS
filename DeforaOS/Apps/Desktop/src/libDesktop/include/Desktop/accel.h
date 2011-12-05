@@ -30,7 +30,7 @@ typedef struct _DesktopAccel
 
 
 /* functions */
-void desktop_accel_create(DesktopAccel * accel, gpointer data,
+void desktop_accel_create(DesktopAccel const * accel, gpointer data,
 		GtkAccelGroup * group);
 
 #endif /* !LIBDESKTOP_ACCEL_H */

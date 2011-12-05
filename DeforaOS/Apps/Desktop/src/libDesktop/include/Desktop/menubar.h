@@ -33,12 +33,12 @@ typedef struct _DesktopMenu
 typedef struct _DesktopMenubar
 {
 	const char * name;
-	DesktopMenu * menu;
+	const DesktopMenu * menu;
 } DesktopMenubar;
 
 
 /* functions */
-GtkWidget * desktop_menubar_create(DesktopMenubar * menubar, gpointer data,
-		GtkAccelGroup * accel);
+GtkWidget * desktop_menubar_create(DesktopMenubar const * menubar,
+		gpointer data, GtkAccelGroup * accel);
 
 #endif /* !LIBDESKTOP_MENUBAR_H */
