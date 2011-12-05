@@ -269,7 +269,8 @@ _bootstrap_system()
 {
 	RET=0
 	S="System/src/Init \
-		System/src/VFS"
+		System/src/VFS \
+		System/src/VPN"
 
 	#bootstrap libSystem, libApp and libParser
 	SUBDIRS="System/src/libSystem System/src/libApp System/src/libParser"
