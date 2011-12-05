@@ -113,7 +113,7 @@ static DesktopMenu _browser_menu_file[] =
 		0 },
 	{ N_("New _symbolic link..."), G_CALLBACK(on_file_new_symlink), NULL,
 		0, 0 },
-	{ N_("Open file..."), G_CALLBACK(on_file_open_file), NULL,
+	{ N_("_Open file..."), G_CALLBACK(on_file_open_file), NULL,
 		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES,
