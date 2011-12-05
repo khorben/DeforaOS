@@ -387,7 +387,7 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 
 static int _open_code(GDeasm * gdeasm, AsmCode * code)
 {
-	int ret;
+	int ret = 0;
 	AsmSection * sections;
 	size_t sections_cnt;
 	size_t i;
