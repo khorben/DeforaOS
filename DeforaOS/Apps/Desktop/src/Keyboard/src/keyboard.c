@@ -271,6 +271,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
+	GdkColor gray = { 0xb0b0b0b0, 0xb0b0, 0xb0b0, 0xb0b0 };
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -319,13 +320,17 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				"delete-event",
 				G_CALLBACK(on_keyboard_delete_event), keyboard);
 	}
+	gtk_widget_modify_bg(keyboard->window, GTK_STATE_NORMAL, &gray);
 	/* fonts */
 	if(prefs->font != NULL)
 		keyboard->font = pango_font_description_from_string(
 				prefs->font);
 	else
+	{
 		keyboard->font = pango_font_description_new();
-	pango_font_description_set_weight(keyboard->font, PANGO_WEIGHT_BOLD);
+		pango_font_description_set_weight(keyboard->font,
+				PANGO_WEIGHT_BOLD);
+	}
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	/* layouts */
@@ -436,6 +441,9 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 	GtkWidget * label;
 	GtkWidget * widget;
 	unsigned long l;
+	GdkColor black = { 0x00000000, 0x0000, 0x0000, 0x0000 };
+	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
+	GdkColor gray = { 0xd0d0d0d0, 0xd0d0, 0xd0d0, 0xd0d0 };
 
 	if((p = realloc(keyboard->layouts, sizeof(*p) * (keyboard->layouts_cnt
 						+ 1))) == NULL)
@@ -451,16 +459,22 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 				keys[i].keysym, keys[i].label);
 		if(key == NULL)
 			continue;
-		widget = keyboard_key_get_label_widget(key);
-		gtk_widget_modify_font(widget, keyboard->font);
+		keyboard_key_set_background(key, &gray);
+		keyboard_key_set_foreground(key, &black);
+		keyboard_key_set_font(key, keyboard->font);
 		for(; keys[i + 1].width == 0 && keys[i + 1].modifier != 0; i++)
+		{
+			keyboard_key_set_background(key, &white);
 			keyboard_key_set_modifier(key, keys[i + 1].modifier,
 					keys[i + 1].keysym, keys[i + 1].label);
+		}
 	}
 	l = (section + 1) % definitions_cnt;
 	label = gtk_label_new(definitions[l].label);
+	gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &black);
 	gtk_widget_modify_font(label, keyboard->font);
 	widget = gtk_button_new();
+	gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gray);
 	gtk_container_add(GTK_CONTAINER(widget), label);
 	g_object_set_data(G_OBJECT(widget), "layout", (void *)l);
 	g_signal_connect(widget, "clicked", G_CALLBACK(_layout_clicked),

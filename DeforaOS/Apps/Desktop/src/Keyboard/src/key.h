@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,9 @@ GtkWidget * keyboard_key_get_label_widget(KeyboardKey * key);
 GtkWidget * keyboard_key_get_widget(KeyboardKey * key);
 unsigned int keyboard_key_get_width(KeyboardKey * key);
 
+void keyboard_key_set_background(KeyboardKey * key, GdkColor * color);
+void keyboard_key_set_font(KeyboardKey * key, PangoFontDescription * font);
+void keyboard_key_set_foreground(KeyboardKey * key, GdkColor * color);
 int keyboard_key_set_modifier(KeyboardKey * key, unsigned int modifier,
 		unsigned int keysym, char const * label);
 
