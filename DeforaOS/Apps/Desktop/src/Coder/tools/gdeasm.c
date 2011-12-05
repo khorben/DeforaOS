@@ -1,27 +1,29 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
-/* Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the authors nor the names of the contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED BY ITS AUTHORS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE. */
+static char const _gdeasm_copyright[] =
+"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+static char const _gdeasm_license[] =
+"Redistribution and use in source and binary forms, with or without\n"
+"modification, are permitted provided that the following conditions\n"
+"are met:\n"
+"1. Redistributions of source code must retain the above copyright\n"
+"   notice, this list of conditions and the following disclaimer.\n"
+"2. Redistributions in binary form must reproduce the above copyright\n"
+"   notice, this list of conditions and the following disclaimer in the\n"
+"   documentation and/or other materials provided with the distribution.\n"
+"3. Neither the name of the authors nor the names of the contributors\n"
+"   may be used to endorse or promote products derived from this software\n"
+"   without specific prior written permission.\n"
+"THIS SOFTWARE IS PROVIDED BY ITS AUTHORS AND CONTRIBUTORS ``AS IS'' AND\n"
+"ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n"
+"IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE\n"
+"ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE\n"
+"FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\n"
+"DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS\n"
+"OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)\n"
+"HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT\n"
+"LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY\n"
+"OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF\n"
+"SUCH DAMAGE.";
 /* TODO:
  * - add a preferences structure
  * - complete the function list
@@ -30,16 +32,29 @@
 
 
 #include <unistd.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+#include <System.h>
 #include <Devel/Asm.h>
+#include <Desktop.h>
+#include "../config.h"
 
 
-/* gdeasm */
+/* GDeasm */
 /* private */
 /* types */
+typedef enum _GDeasmAsmColumn
+{
+	GAC_ADDRESS = 0, GAC_NAME, GAC_OPERAND1, GAC_OPERAND2, GAC_OPERAND3,
+	GAC_OPERAND4, GAC_OPERAND5, GAC_COMMENT, GAC_OFFSET
+} GDeasmAsmColumn;
+#define GAC_LAST GAC_OFFSET
+#define GAC_COUNT (GAC_LAST + 1)
+
 typedef enum _GDeasmFuncColumn
 {
 	GFC_NAME = 0, GFC_OFFSET_DISPLAY, GFC_OFFSET
@@ -59,7 +74,10 @@ typedef struct _GDeasm
 	char * arch;
 	char * format;
 
+	gboolean modified;
+
 	/* widgets */
+	GtkWidget * window;
 	GtkListStore * func_store;
 	GtkListStore * str_store;
 	GtkTreeStore * asm_store;
@@ -71,11 +89,15 @@ typedef struct _GDeasm
 static GDeasm * _gdeasm_new(char const * arch, char const * format);
 static void _gdeasm_delete(GDeasm * gdeasm);
 
+/* useful */
+static int _gdeasm_confirm(GDeasm * gdeasm, char const * message, ...);
+static int _gdeasm_error(GDeasm * gdeasm, char const * message, int ret);
 static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
 
-
 /* callbacks */
-static gboolean _gdeasm_on_closex(void);
+static void _gdeasm_on_about(gpointer data);
+static void _gdeasm_on_close(gpointer data);
+static gboolean _gdeasm_on_closex(gpointer data);
 static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
 		gchar * arg1, gchar * arg2, gpointer data);
 static void _gdeasm_on_function_activated(GtkTreeView * view,
@@ -85,13 +107,49 @@ static void _gdeasm_on_open(gpointer data);
 static int _usage(void);
 
 
+/* constants */
+static char const * _gdeasm_authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
+static DesktopMenu const _gdeasm_menu_file[] =
+{
+	{ "_Open...", G_CALLBACK(_gdeasm_on_open), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_KEY_O },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Close", G_CALLBACK(_gdeasm_on_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_KEY_W },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
+static DesktopMenu const _gdeasm_menu_help[] =
+{
+#if GTK_CHECK_VERSION(2, 6, 0)
+	{ "_About", G_CALLBACK(_gdeasm_on_about), GTK_STOCK_ABOUT, 0, 0 },
+#else
+	{ "_About", G_CALLBACK(_gdeasm_on_about), NULL, 0, 0 },
+#endif
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
+static DesktopMenubar const _gdeasm_menubar[] =
+{
+	{ "_File", _gdeasm_menu_file },
+	{ "_Help", _gdeasm_menu_help },
+	{ NULL, NULL },
+};
+
+
 /* functions */
 /* gdeasm_new */
 static GDeasm * _gdeasm_new(char const * arch, char const * format)
 {
 	GDeasm * gdeasm;
-	GtkWidget * window;
+	GtkAccelGroup * accel;
 	GtkWidget * vbox;
+	GtkWidget * menubar;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GtkWidget * hpaned;
@@ -110,18 +168,25 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 		return NULL;
 	gdeasm->arch = (arch != NULL) ? strdup(arch) : NULL;
 	gdeasm->format = (format != NULL) ? strdup(format) : NULL;
+	gdeasm->modified = FALSE;
+	/* widgets */
 	gdeasm->func_store = gtk_list_store_new(GFC_COUNT, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_UINT);
+			G_TYPE_STRING, G_TYPE_INT);
 	gdeasm->str_store = gtk_list_store_new(GSC_COUNT, G_TYPE_STRING);
-	gdeasm->asm_store = gtk_tree_store_new(9, G_TYPE_STRING, G_TYPE_STRING,
+	gdeasm->asm_store = gtk_tree_store_new(GAC_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_UINT);
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
-	g_signal_connect_swapped(window, "delete-event", G_CALLBACK(
-				_gdeasm_on_closex), NULL);
+			G_TYPE_STRING, G_TYPE_INT);
+	accel = gtk_accel_group_new();
+	gdeasm->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(gdeasm->window), accel);
+	gtk_window_set_default_size(GTK_WINDOW(gdeasm->window), 640, 480);
+	g_signal_connect_swapped(gdeasm->window, "delete-event", G_CALLBACK(
+				_gdeasm_on_closex), gdeasm);
 	vbox = gtk_vbox_new(FALSE, 0);
+	/* menubar */
+	menubar = desktop_menubar_create(_gdeasm_menubar, gdeasm, accel);
+	gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
@@ -201,8 +266,8 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
 	gtk_paned_add2(GTK_PANED(hpaned), scrolled);
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(window), vbox);
-	gtk_widget_show_all(window);
+	gtk_container_add(GTK_CONTAINER(gdeasm->window), vbox);
+	gtk_widget_show_all(gdeasm->window);
 	return gdeasm;
 }
 
@@ -213,6 +278,55 @@ static void _gdeasm_delete(GDeasm * gdeasm)
 	free(gdeasm->arch);
 	free(gdeasm->format);
 	free(gdeasm);
+}
+
+
+/* useful */
+/* gdeasm_confirm */
+static int _gdeasm_confirm(GDeasm * gdeasm, char const * message, ...)
+{
+	GtkWidget * dialog;
+	va_list ap;
+	char const * action;
+	int res;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(gdeasm->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_NONE,
+# if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Question");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+# endif
+			"%s", message);
+	va_start(ap, message);
+	while((action = va_arg(ap, char const *)) != NULL)
+		gtk_dialog_add_button(GTK_DIALOG(dialog),
+				action, va_arg(ap, int));
+	va_end(ap);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return res;
+}
+
+
+/* gdeasm_error */
+static int _gdeasm_error(GDeasm * gdeasm, char const * message, int ret)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(gdeasm->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE,
+# if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+# endif
+			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
@@ -238,10 +352,26 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 	AsmString * as;
 	size_t as_cnt;
 
+	if(gdeasm->modified != FALSE && _gdeasm_confirm(gdeasm,
+				"There are unsaved comments.\n"
+				"Are you sure you want to discard them?",
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(2, 12, 0)
+				GTK_STOCK_DISCARD, GTK_RESPONSE_ACCEPT,
+#else
+				"Discard", GTK_RESPONSE_ACCEPT,
+#endif
+				NULL)
+			!= GTK_RESPONSE_ACCEPT)
+		return 0;
 	if((a = asm_new(gdeasm->arch, gdeasm->format)) == NULL)
-		return -1;
+		return -_gdeasm_error(gdeasm, error_get(), 1);
 	if((code = asm_open_deassemble(a, filename, raw)) != NULL)
 	{
+		gtk_list_store_clear(gdeasm->func_store);
+		gtk_list_store_clear(gdeasm->str_store);
+		gtk_tree_store_clear(gdeasm->asm_store);
+		gdeasm->modified = FALSE;
 		ret = _open_code(gdeasm, code);
 		asmcode_get_functions(code, &af, &af_cnt);
 		_open_functions(gdeasm, af, af_cnt);
@@ -250,6 +380,8 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 		asm_close(a);
 	}
 	asm_delete(a);
+	if(ret != 0)
+		_gdeasm_error(gdeasm, error_get(), 1);
 	return ret;
 }
 
@@ -293,7 +425,10 @@ static void _open_functions(GDeasm * gdeasm, AsmFunction * af, size_t af_cnt)
 
 	for(i = 0; i < af_cnt; i++)
 	{
-		snprintf(buf, sizeof(buf), "%08lx", af[i].offset);
+		if(af[i].offset >= 0)
+			snprintf(buf, sizeof(buf), "%08lx", af[i].offset);
+		else
+			buf[0] = '\0';
 		gtk_list_store_append(gdeasm->func_store, &iter);
 		gtk_list_store_set(gdeasm->func_store, &iter,
 				GFC_NAME, af[i].name, GFC_OFFSET_DISPLAY, buf,
@@ -312,8 +447,8 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 
 	gtk_tree_store_append(gdeasm->asm_store, &iter, parent);
 	snprintf(buf, sizeof(buf), "%08lx", call->base);
-	gtk_tree_store_set(gdeasm->asm_store, &iter, 0, buf, 1, call->name,
-			8, call->offset, -1);
+	gtk_tree_store_set(gdeasm->asm_store, &iter, GAC_ADDRESS, buf,
+			GAC_NAME, call->name, GAC_OFFSET, call->offset, -1);
 	for(i = 0; i < call->operands_cnt; i++)
 	{
 		ao = &call->operands[i];
@@ -332,7 +467,7 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 						|| AO_GET_VALUE(ao->definition)
 						== AOI_REFERS_FUNCTION)
 					gtk_tree_store_set(gdeasm->asm_store,
-							&iter, 7,
+							&iter, GAC_COMMENT,
 							ao->value.immediate.name,
 							-1);
 				break;
@@ -344,7 +479,8 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 				buf[0] = '\0';
 				break;
 		}
-		gtk_tree_store_set(gdeasm->asm_store, &iter, i + 2, buf, -1);
+		gtk_tree_store_set(gdeasm->asm_store, &iter, GAC_OPERAND1 + i,
+				buf, -1);
 	}
 }
 
@@ -387,10 +523,57 @@ static void _open_strings(GDeasm * gdeasm, AsmString * as, size_t as_cnt)
 
 
 /* callbacks */
-/* gdeasm_on_closex */
-static gboolean _gdeasm_on_closex(void)
+/* gdeasm_on_about */
+static void _gdeasm_on_about(gpointer data)
 {
+	GDeasm * gdeasm = data;
+	GtkWidget * dialog;
+
+	dialog = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
+				gdeasm->window));
+	desktop_about_dialog_set_authors(dialog, _gdeasm_authors);
+	desktop_about_dialog_set_copyright(dialog, _gdeasm_copyright);
+	desktop_about_dialog_set_logo_icon_name(dialog,
+			"applications-development");
+	desktop_about_dialog_set_license(dialog, _gdeasm_license);
+	desktop_about_dialog_set_name(dialog, "GDeasm");
+	desktop_about_dialog_set_version(dialog, VERSION);
+	desktop_about_dialog_set_website(dialog,
+			"http://www.defora.org/");
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+}
+
+
+/* gdeasm_on_close */
+static void _gdeasm_on_close(gpointer data)
+{
+	GDeasm * gdeasm = data;
+
+	if(gdeasm->modified != FALSE && _gdeasm_confirm(gdeasm,
+				"There are unsaved comments.\n"
+				"Are you sure you want to discard them?",
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(2, 12, 0)
+				GTK_STOCK_DISCARD, GTK_RESPONSE_ACCEPT,
+#else
+				"Discard", GTK_RESPONSE_ACCEPT,
+#endif
+				NULL)
+			!= GTK_RESPONSE_ACCEPT)
+		return;
+	gtk_widget_hide(gdeasm->window);
 	gtk_main_quit();
+}
+
+
+/* gdeasm_on_closex */
+static gboolean _gdeasm_on_closex(gpointer data)
+{
+	GDeasm * gdeasm = data;
+
+	_gdeasm_on_close(gdeasm);
 	return TRUE;
 }
 
@@ -404,7 +587,10 @@ static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
 	GtkTreeIter iter;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
+	{
 		gtk_tree_store_set(gdeasm->asm_store, &iter, 7, arg2, -1);
+		gdeasm->modified = TRUE;
+	}
 }
 
 
@@ -416,14 +602,16 @@ static void _gdeasm_on_function_activated(GtkTreeView * view,
 	GtkTreeModel * model = GTK_TREE_MODEL(gdeasm->func_store);
 	GtkTreeIter iter;
 	GtkTreeIter parent;
-	guint offset;
+	gint offset;
 	gboolean valid;
-	guint u;
+	gint u;
 	GtkTreeSelection * treesel;
 
 	if(gtk_tree_model_get_iter(model, &iter, path) != TRUE)
 		return;
-	gtk_tree_model_get(model, &iter, 2, &offset, -1);
+	gtk_tree_model_get(model, &iter, GFC_OFFSET, &offset, -1);
+	if(offset < 0)
+		return;
 	model = GTK_TREE_MODEL(gdeasm->asm_store);
 	for(valid = gtk_tree_model_get_iter_first(model, &parent); valid;
 			valid = gtk_tree_model_iter_next(model, &parent))
@@ -454,6 +642,7 @@ static void _gdeasm_on_open(gpointer data)
 	GtkWidget * dialog;
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkFileFilter * filter;
 	char * filename = NULL;
 	int raw;
 
@@ -469,16 +658,28 @@ static void _gdeasm_on_open(gpointer data)
 	widget = gtk_check_button_new_with_mnemonic("Open file in _raw mode");
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
+	filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, "Executable files");
+        gtk_file_filter_add_mime_type(filter, "application/x-executable");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+        gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, "Objects");
+        gtk_file_filter_add_mime_type(filter, "application/x-object");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+	{
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
+		raw = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	}
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
 		return;
-	raw = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-	gtk_list_store_clear(gdeasm->func_store);
-	gtk_list_store_clear(gdeasm->str_store);
-	gtk_tree_store_clear(gdeasm->asm_store);
 	_gdeasm_open(gdeasm, filename, raw);
 	g_free(filename);
 }

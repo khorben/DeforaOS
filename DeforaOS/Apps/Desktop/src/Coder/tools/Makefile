@@ -5,9 +5,9 @@ BINDIR	= $(PREFIX)/bin
 CC	?= cc
 CPPFLAGSF?=
 CPPFLAGS?=
-CFLAGSF	= -W `pkg-config --cflags gtk+-2.0 asm`
+CFLAGSF	= -W `pkg-config --cflags libSystem libDesktop asm`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs gtk+-2.0 asm`
+LDFLAGSF= `pkg-config --libs libSystem libDesktop asm`
 RM	?= rm -f
 LN	?= ln -f
 MKDIR	?= mkdir -p
@@ -23,7 +23,7 @@ gdeasm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 gdeasm: $(gdeasm_OBJS)
 	$(CC) -o gdeasm $(gdeasm_OBJS) $(gdeasm_LDFLAGS)
 
-gdeasm.o: gdeasm.c
+gdeasm.o: gdeasm.c ../config.h
 	$(CC) $(gdeasm_CFLAGS) -c gdeasm.c
 
 clean:
