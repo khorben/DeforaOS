@@ -15,7 +15,7 @@
 /* TODO:
  * - move and resize when the root window (or size) changes
  * - track if child process ever dies
- * - write own keyboard implementation (dlopen keyboard's binary) */
+ * - dlopen() keyboard's binary by default */
 
 
 
