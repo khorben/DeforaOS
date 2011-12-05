@@ -333,6 +333,13 @@ gboolean desktopicon_get_updated(DesktopIcon * desktopicon)
 }
 
 
+/* desktopicon_set_background */
+void desktopicon_set_background(DesktopIcon * desktopicon, GdkColor * color)
+{
+	gtk_widget_modify_bg(desktopicon->event, GTK_STATE_NORMAL, color);
+}
+
+
 /* desktopicon_set_callback */
 void desktopicon_set_callback(DesktopIcon * desktopicon,
 		DesktopIconCallback callback, gpointer data)
@@ -368,6 +375,13 @@ void desktopicon_set_font(DesktopIcon * desktopicon,
 		PangoFontDescription * font)
 {
 	gtk_widget_modify_font(desktopicon->label, font);
+}
+
+
+/* desktopicon_set_foreground */
+void desktopicon_set_foreground(DesktopIcon * desktopicon, GdkColor * color)
+{
+	gtk_widget_modify_fg(desktopicon->label, GTK_STATE_NORMAL, color);
 }
 
 
