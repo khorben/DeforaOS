@@ -25,7 +25,7 @@ plug: $(plug_OBJS)
 
 xkey_OBJS = xkey.o
 xkey_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-xkey_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -l Xtst
+xkey_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lXtst
 
 xkey: $(xkey_OBJS)
 	$(CC) -o xkey $(xkey_OBJS) $(xkey_LDFLAGS)
