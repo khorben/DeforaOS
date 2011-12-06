@@ -137,6 +137,7 @@ static KeyboardKeyDefinition const _keyboard_layout_letters[] =
 	{ 3, 3, 0, XK_Control_L, "Ctrl" },
 	{ 3, 3, 0, XK_Alt_L, "Alt" },
 	{ 3, 5, 0, XK_space, " " },
+	{ 3, 0, XK_Shift_L, XK_space, " " },
 	{ 3, 3, 0, XK_Return, "\xe2\x86\xb2" },
 	{ 3, 3, 0, XK_BackSpace, "\xe2\x8c\xab" },
 	{ 0, 0, 0, 0, NULL }
@@ -159,6 +160,7 @@ static KeyboardKeyDefinition const _keyboard_layout_keypad[] =
 	{ 1, 4, 0, XK_KP_Left, "\xe2\x86\x90" },
 	{ 1, 0, XK_Num_Lock, XK_4, "4" },
 	{ 1, 4, 0, XK_5, "5" },
+	{ 1, 0, XK_Num_Lock, XK_5, "5" },
 	{ 1, 4, 0, XK_KP_Right, "\xe2\x86\x92" },
 	{ 1, 0, XK_Num_Lock, XK_6, "6" },
 	{ 1, 1, 0, 0, NULL },
@@ -236,6 +238,7 @@ static KeyboardKeyDefinition const _keyboard_layout_special[] =
 	{ 3, 3, 0, 0, NULL },
 	{ 3, 2, 0, XK_Shift_L, "\xe2\x87\xa7" },
 	{ 3, 3, 0, XK_space, " " },
+	{ 3, 0, XK_Shift_L, XK_space, " " },
 	{ 3, 2, 0, XK_comma, "," },
 	{ 3, 0, XK_Shift_L, XK_comma, "<" },
 	{ 3, 2, 0, XK_period, "." },
@@ -271,7 +274,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
-	GdkColor gray = { 0xb0b0b0b0, 0xb0b0, 0xb0b0, 0xb0b0 };
+	GdkColor gray = { 0x90909090, 0x9090, 0x9090, 0x9090 };
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -474,7 +477,7 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 	gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &black);
 	gtk_widget_modify_font(label, keyboard->font);
 	widget = gtk_button_new();
-	gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gray);
+	gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &white);
 	gtk_container_add(GTK_CONTAINER(widget), label);
 	g_object_set_data(G_OBJECT(widget), "layout", (void *)l);
 	g_signal_connect(widget, "clicked", G_CALLBACK(_layout_clicked),

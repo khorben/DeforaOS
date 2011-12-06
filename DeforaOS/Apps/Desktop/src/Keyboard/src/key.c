@@ -37,6 +37,7 @@ struct _KeyboardKey
 	GtkWidget * widget;
 	GtkWidget * label;
 	GtkWidget * popup;
+	GtkWidget * button;
 	KeyboardKeyModifier key;
 	KeyboardKeyModifier * modifiers;
 	size_t modifiers_cnt;
@@ -45,6 +46,8 @@ struct _KeyboardKey
 
 
 /* prototypes */
+static void _keyboard_key_create_popup(KeyboardKey * key);
+
 /* callbacks */
 static gboolean _on_keyboard_key_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data);
@@ -72,6 +75,7 @@ KeyboardKey * keyboard_key_new(unsigned int keysym, char const * label)
 	key->label = gtk_label_new(label);
 	gtk_container_add(GTK_CONTAINER(key->widget), key->label);
 	key->popup = NULL;
+	key->button = NULL;
 	key->key.modifier = 0;
 	key->key.keysym = keysym;
 	key->key.label = strdup(label);
@@ -125,21 +129,28 @@ GtkWidget * keyboard_key_get_widget(KeyboardKey * key)
 /* keyboard_key_set_background */
 void keyboard_key_set_background(KeyboardKey * key, GdkColor * color)
 {
+	_keyboard_key_create_popup(key);
 	gtk_widget_modify_bg(key->widget, GTK_STATE_NORMAL, color);
+	gtk_widget_modify_bg(key->popup, GTK_STATE_NORMAL, color);
+	gtk_widget_modify_bg(key->button, GTK_STATE_NORMAL, color);
 }
 
 
 /* keyboard_key_set_font */
 void keyboard_key_set_font(KeyboardKey * key, PangoFontDescription * font)
 {
+	_keyboard_key_create_popup(key);
 	gtk_widget_modify_font(key->label, font);
+	gtk_widget_modify_font(gtk_bin_get_child(GTK_BIN(key->button)), font);
 }
 
 
 /* keyboard_key_set_foreground */
 void keyboard_key_set_foreground(KeyboardKey * key, GdkColor * color)
 {
+	_keyboard_key_create_popup(key);
 	gtk_widget_modify_fg(key->label, GTK_STATE_NORMAL, color);
+	gtk_widget_modify_fg(key->button, GTK_STATE_NORMAL, color);
 }
 
 
@@ -175,6 +186,7 @@ int keyboard_key_set_modifier(KeyboardKey * key, unsigned int modifier,
 
 
 /* useful */
+/* keyboard_key_apply_modifier */
 void keyboard_key_apply_modifier(KeyboardKey * key, unsigned int modifier)
 {
 	char const * label = key->key.label;
@@ -195,32 +207,31 @@ void keyboard_key_apply_modifier(KeyboardKey * key, unsigned int modifier)
 
 /* private */
 /* functions */
+/* keyboard_key_create_popup */
+static void _keyboard_key_create_popup(KeyboardKey * key)
+{
+	if(key->popup != NULL)
+		return;
+	key->popup = gtk_window_new(GTK_WINDOW_POPUP);
+	key->button = gtk_button_new_with_label(gtk_label_get_text(GTK_LABEL(
+					key->label)));
+	gtk_button_set_alignment(GTK_BUTTON(key->button), 0.5, 0.1);
+	gtk_container_add(GTK_CONTAINER(key->popup), key->button);
+}
+
+
 /* callbacks */
 /* on_keyboard_key_button_press */
 static gboolean _on_keyboard_key_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data)
 {
 	KeyboardKey * key = data;
-	GtkWidget * label;
-	PangoContext * context;
 	gint width;
 	gint height;
 
 	gdk_drawable_get_size(event->window, &width, &height);
-	if(key->popup == NULL)
-	{
-		key->popup = gtk_window_new(GTK_WINDOW_POPUP);
-		widget = gtk_button_new();
-		label = gtk_label_new(gtk_label_get_text(GTK_LABEL(
-						key->label)));
-		context = gtk_widget_get_pango_context(key->label);
-		gtk_widget_modify_font(label,
-				pango_context_get_font_description(context));
-		gtk_container_add(GTK_CONTAINER(widget), label);
-		gtk_button_set_alignment(GTK_BUTTON(widget), 0.5, 0.1);
-		gtk_widget_set_size_request(key->popup, width + 8, height * 2);
-		gtk_container_add(GTK_CONTAINER(key->popup), widget);
-	}
+	_keyboard_key_create_popup(key);
+	gtk_widget_set_size_request(key->popup, width + 8, height * 2);
 	gtk_window_move(GTK_WINDOW(key->popup), event->x_root - event->x - 4,
 			event->y_root - event->y - height * 2);
 	gtk_widget_show_all(key->popup);
@@ -235,7 +246,6 @@ static gboolean _on_keyboard_key_button_release(GtkWidget * widget,
 	KeyboardKey * key = data;
 
 	if(key->popup != NULL)
-		gtk_widget_destroy(key->popup);
-	key->popup = NULL;
+		gtk_widget_hide(key->popup);
 	return FALSE;
 }
