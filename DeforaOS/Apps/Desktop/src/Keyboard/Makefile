@@ -1,5 +1,5 @@
 PACKAGE	= Keyboard
-VERSION	= 0.1.1
+VERSION	= 0.1.2
 SUBDIRS	= src tools
 RM	?= rm -f
 LN	?= ln -f
