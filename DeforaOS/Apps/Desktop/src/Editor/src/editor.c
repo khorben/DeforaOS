@@ -15,8 +15,8 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
 /* TODO:
- * - move the "find" dialog over the status bar (and in Surfer too, and use a
- *   GtkCombo box with the history of what was searched for already) */
+ * - consider using GtkSourceView also/instead
+ * - move the "find" dialog over the status bar (and in Surfer too) */
 
 
 
@@ -60,6 +60,7 @@ struct _Editor
 	GtkWidget * pr_wrap;
 	/* find */
 	GtkWidget * fi_dialog;
+	GtkListStore * fi_store;
 	GtkWidget * fi_text;
 	GtkWidget * fi_case;
 	GtkWidget * fi_wrap;
@@ -541,10 +542,13 @@ static void _on_find_response(GtkWidget * widget, gint response, gpointer data);
 
 void editor_find(Editor * editor, char const * text)
 {
+	GtkWidget * entry;
+
 	if(editor->fi_dialog == NULL)
 		_find_dialog(editor);
+	entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
 	if(text != NULL)
-		gtk_entry_set_text(GTK_ENTRY(editor->fi_text), text);
+		gtk_entry_set_text(GTK_ENTRY(entry), text);
 	gtk_window_present(GTK_WINDOW(editor->fi_dialog));
 }
 
@@ -567,9 +571,13 @@ static void _find_dialog(Editor * editor)
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Text:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	editor->fi_text = gtk_entry_new();
-	g_signal_connect(G_OBJECT(editor->fi_text), "activate", G_CALLBACK(
-				_on_find_activate), editor);
+	editor->fi_store = gtk_list_store_new(1, G_TYPE_STRING);
+	editor->fi_text = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(
+				editor->fi_store));
+	gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(editor->fi_text), 0);
+	widget = gtk_bin_get_child(GTK_BIN(editor->fi_text));
+	g_signal_connect(widget, "activate", G_CALLBACK(_on_find_activate),
+			editor);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_text, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	editor->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
@@ -585,12 +593,32 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 	char const * text;
+	GtkTreeModel * model = GTK_TREE_MODEL(editor->fi_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	char * p;
+	int res;
 	gboolean sensitive;
 	gboolean wrap;
 
 	if((text = gtk_entry_get_text(GTK_ENTRY(widget))) == NULL
 			|| strlen(text) == 0)
 		return;
+	/* only append the text currently searched if not already known */
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, -1);
+		res = strcmp(text, p);
+		free(p);
+		if(res == 0)
+			break;
+	}
+	if(valid == FALSE)
+	{
+		gtk_list_store_append(editor->fi_store, &iter);
+		gtk_list_store_set(editor->fi_store, &iter, 0, text, -1);
+	}
 	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				editor->fi_case));
 	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
@@ -603,6 +631,7 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
 {
 	Editor * editor = data;
+	GtkWidget * entry;
 
 	if(response != GTK_RESPONSE_ACCEPT)
 	{
@@ -611,7 +640,8 @@ static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
 			editor->fi_dialog = NULL;
 		return;
 	}
-	_on_find_activate(editor->fi_text, editor);
+	entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
+	_on_find_activate(entry, editor);
 }
 
 
