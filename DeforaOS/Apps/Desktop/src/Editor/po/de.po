@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-07 12:38+0100\n"
+"POT-Creation-Date: 2011-12-07 12:50+0100\n"
 "PO-Revision-Date: 2010-04-07 22:05+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -160,86 +160,86 @@ msgstr "Pierre Pronchery <khorben@defora.org>"
 msgid "Could not save configuration"
 msgstr ""
 
-#: ../src/editor.c:446 ../src/editor.c:455 ../src/editor.c:914
-#: ../src/editor.c:919
+#: ../src/editor.c:446 ../src/editor.c:455 ../src/editor.c:913
+#: ../src/editor.c:918
 msgid "Question"
 msgstr ""
 
-#: ../src/editor.c:471 ../src/editor.c:476
+#: ../src/editor.c:471 ../src/editor.c:475
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/editor.c:498 ../src/editor.c:751
+#: ../src/editor.c:497 ../src/editor.c:750
 msgid ""
 "There are unsaved changes.\n"
 "Discard or save them?"
 msgstr ""
 
-#: ../src/editor.c:561
+#: ../src/editor.c:560
 msgid "Find text"
 msgstr ""
 
-#: ../src/editor.c:572
+#: ../src/editor.c:571
 msgid "Text:"
 msgstr "Text:"
 
-#: ../src/editor.c:583
+#: ../src/editor.c:582
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/editor.c:585
+#: ../src/editor.c:584
 msgid "Wrap"
 msgstr ""
 
-#: ../src/editor.c:628
+#: ../src/editor.c:627
 msgid "Text not found"
 msgstr ""
 
-#: ../src/editor.c:709
+#: ../src/editor.c:708
 msgid "Insert file..."
 msgstr ""
 
-#: ../src/editor.c:715 ../src/editor.c:828
+#: ../src/editor.c:714 ../src/editor.c:827
 msgid "Text files"
 msgstr ""
 
-#: ../src/editor.c:719 ../src/editor.c:832
+#: ../src/editor.c:718 ../src/editor.c:831
 msgid "All files"
 msgstr ""
 
-#: ../src/editor.c:757
+#: ../src/editor.c:756
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:822
+#: ../src/editor.c:821
 msgid "Open file..."
 msgstr "Offnen..."
 
-#: ../src/editor.c:890
+#: ../src/editor.c:889
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:918
+#: ../src/editor.c:917
 msgid "This file already exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:927
+#: ../src/editor.c:926
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:942
+#: ../src/editor.c:941
 msgid "Save as..."
 msgstr ""
 
-#: ../src/editor.c:999
+#: ../src/editor.c:998
 msgid "Text editor preferences"
 msgstr "Text Editor Einstellungen"
 
-#: ../src/editor.c:1016
+#: ../src/editor.c:1015
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:1026
+#: ../src/editor.c:1025
 msgid "Wrap mode:"
 msgstr ""
 
