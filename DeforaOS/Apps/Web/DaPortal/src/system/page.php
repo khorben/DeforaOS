@@ -26,9 +26,12 @@ class PageElement
 
 
 	//essential
-	public function __construct($type)
+	public function __construct($type, $properties = FALSE)
 	{
 		$this->type = $type;
+		if(is_array($properties))
+			foreach($properties as $key => $value)
+				$this->setProperty($key, $value);
 	}
 
 
@@ -97,9 +100,9 @@ class PageElement
 class Page extends PageElement
 {
 	//essential
-	public function __construct()
+	public function __construct($properties = FALSE)
 	{
-		parent::__construct('page');
+		parent::__construct('page', $properties);
 	}
 }
 
