@@ -15,6 +15,7 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
 /* TODO:
+ * - use an infobar for errors
  * - consider using GtkSourceView also/instead
  * - move the "find" dialog over the status bar (and in Surfer too) */
 
@@ -62,6 +63,7 @@ struct _Editor
 	GtkWidget * fi_dialog;
 	GtkListStore * fi_store;
 	GtkWidget * fi_text;
+	GtkWidget * fi_entry;
 	GtkWidget * fi_case;
 	GtkWidget * fi_wrap;
 	/* about */
@@ -541,13 +543,10 @@ static void _on_find_response(GtkWidget * widget, gint response, gpointer data);
 
 void editor_find(Editor * editor, char const * text)
 {
-	GtkWidget * entry;
-
 	if(editor->fi_dialog == NULL)
 		_find_dialog(editor);
-	entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
 	if(text != NULL)
-		gtk_entry_set_text(GTK_ENTRY(entry), text);
+		gtk_entry_set_text(GTK_ENTRY(editor->fi_entry), text);
 	gtk_window_present(GTK_WINDOW(editor->fi_dialog));
 }
 
@@ -555,7 +554,7 @@ static void _find_dialog(Editor * editor)
 {
 	GtkWidget * vbox;
 	GtkWidget * hbox;
-	GtkWidget * widget;
+	GtkWidget * label;
 
 	editor->fi_dialog = gtk_dialog_new_with_buttons(_("Find text"),
 			GTK_WINDOW(editor->window),
@@ -568,15 +567,15 @@ static void _find_dialog(Editor * editor)
 	vbox = GTK_DIALOG(editor->fi_dialog)->vbox;
 #endif
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(_("Text:"));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	label = gtk_label_new(_("Text:"));
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	editor->fi_store = gtk_list_store_new(1, G_TYPE_STRING);
 	editor->fi_text = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(
 				editor->fi_store));
 	gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(editor->fi_text), 0);
-	widget = gtk_bin_get_child(GTK_BIN(editor->fi_text));
-	g_signal_connect(widget, "activate", G_CALLBACK(_on_find_activate),
-			editor);
+	editor->fi_entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
+	g_signal_connect(editor->fi_entry, "activate", G_CALLBACK(
+				_on_find_activate), editor);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_text, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	editor->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
@@ -630,7 +629,6 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
 {
 	Editor * editor = data;
-	GtkWidget * entry;
 
 	if(response != GTK_RESPONSE_ACCEPT)
 	{
@@ -639,8 +637,7 @@ static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
 			editor->fi_dialog = NULL;
 		return;
 	}
-	entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
-	_on_find_activate(entry, editor);
+	_on_find_activate(editor->fi_entry, editor);
 }
 
 
