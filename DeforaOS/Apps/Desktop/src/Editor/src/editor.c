@@ -16,8 +16,7 @@ static char const _license[] =
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
 /* TODO:
  * - use an infobar for errors
- * - consider using GtkSourceView also/instead
- * - move the "find" dialog over the status bar (and in Surfer too) */
+ * - consider using GtkSourceView also/instead */
 
 
 
@@ -204,6 +203,10 @@ static char * _editor_config_filename(void);
 static gboolean _editor_find(Editor * editor, char const * text,
 		gboolean sensitive, gboolean wrap);
 
+/* callbacks */
+static void _editor_on_find_clicked(gpointer data);
+static void _editor_on_find_hide(gpointer data);
+
 
 /* public */
 /* functions */
@@ -215,6 +218,7 @@ Editor * editor_new(void)
 	Editor * editor;
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
@@ -259,13 +263,44 @@ Editor * editor_new(void)
 	editor_set_wrap_mode(editor, editor_get_wrap_mode(editor));
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	/* find */
+	editor->fi_dialog = gtk_hbox_new(FALSE, 4);
+	hbox = editor->fi_dialog;
+	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
+	widget = gtk_label_new(_("Find:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	editor->fi_store = gtk_list_store_new(1, G_TYPE_STRING);
+	editor->fi_text = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(
+				editor->fi_store));
+	gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(editor->fi_text), 0);
+	editor->fi_entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
+	g_signal_connect_swapped(editor->fi_entry, "activate", G_CALLBACK(
+				_editor_on_find_clicked), editor);
+	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_text, FALSE, TRUE, 0);
+	editor->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
+	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_case, FALSE, TRUE, 0);
+	editor->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
+	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_wrap, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_FIND);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_editor_on_find_clicked), editor);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_editor_on_find_hide), editor);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_widget_show_all(hbox);
+	gtk_widget_hide(hbox);
+	gtk_widget_set_no_show_all(hbox, TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* statusbar */
 	editor->statusbar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), editor->statusbar, FALSE, TRUE, 0);
 	/* preferences */
 	editor->pr_window = NULL;
-	/* find */
-	editor->fi_dialog = NULL;
 	/* about */
 	editor->ab_window = NULL;
 	gtk_container_add(GTK_CONTAINER(editor->window), vbox);
@@ -537,107 +572,12 @@ void editor_cut(Editor * editor)
 
 
 /* editor_find */
-static void _find_dialog(Editor * editor);
-static void _on_find_activate(GtkWidget * widget, gpointer data);
-static void _on_find_response(GtkWidget * widget, gint response, gpointer data);
-
 void editor_find(Editor * editor, char const * text)
 {
-	if(editor->fi_dialog == NULL)
-		_find_dialog(editor);
+	gtk_widget_show(editor->fi_dialog);
 	if(text != NULL)
 		gtk_entry_set_text(GTK_ENTRY(editor->fi_entry), text);
-	gtk_window_present(GTK_WINDOW(editor->fi_dialog));
-}
-
-static void _find_dialog(Editor * editor)
-{
-	GtkWidget * vbox;
-	GtkWidget * hbox;
-	GtkWidget * label;
-
-	editor->fi_dialog = gtk_dialog_new_with_buttons(_("Find text"),
-			GTK_WINDOW(editor->window),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
-			GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
-#if GTK_CHECK_VERSION(2, 14, 0)
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(editor->fi_dialog));
-#else
-	vbox = GTK_DIALOG(editor->fi_dialog)->vbox;
-#endif
-	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Text:"));
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	editor->fi_store = gtk_list_store_new(1, G_TYPE_STRING);
-	editor->fi_text = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(
-				editor->fi_store));
-	gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(editor->fi_text), 0);
-	editor->fi_entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
-	g_signal_connect(editor->fi_entry, "activate", G_CALLBACK(
-				_on_find_activate), editor);
-	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_text, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	editor->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
-	gtk_box_pack_start(GTK_BOX(vbox), editor->fi_case, TRUE, TRUE, 4);
-	editor->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
-	gtk_box_pack_start(GTK_BOX(vbox), editor->fi_wrap, TRUE, TRUE, 4);
-	gtk_widget_show_all(vbox);
-	g_signal_connect(G_OBJECT(editor->fi_dialog), "response", G_CALLBACK(
-				_on_find_response), editor);
-}
-
-static void _on_find_activate(GtkWidget * widget, gpointer data)
-{
-	Editor * editor = data;
-	char const * text;
-	GtkTreeModel * model = GTK_TREE_MODEL(editor->fi_store);
-	GtkTreeIter iter;
-	gboolean valid;
-	char * p;
-	int res;
-	gboolean sensitive;
-	gboolean wrap;
-
-	if((text = gtk_entry_get_text(GTK_ENTRY(widget))) == NULL
-			|| strlen(text) == 0)
-		return;
-	/* only append the text currently searched if not already known */
-	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
-			valid = gtk_tree_model_iter_next(model, &iter))
-	{
-		gtk_tree_model_get(model, &iter, 0, &p, -1);
-		res = strcmp(text, p);
-		free(p);
-		if(res == 0)
-			break;
-	}
-	if(valid == FALSE)
-	{
-		gtk_list_store_append(editor->fi_store, &iter);
-		gtk_list_store_set(editor->fi_store, &iter, 0, text, -1);
-	}
-	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				editor->fi_case));
-	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-				editor->fi_wrap));
-	if(_editor_find(editor, text, sensitive, wrap) == TRUE)
-		return;
-	editor_error(editor, _("Text not found"), 0);
-}
-
-static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
-{
-	Editor * editor = data;
-
-	if(response != GTK_RESPONSE_ACCEPT)
-	{
-		gtk_widget_hide(widget);
-		if(response == GTK_RESPONSE_DELETE_EVENT)
-			editor->fi_dialog = NULL;
-		return;
-	}
-	_on_find_activate(editor->fi_entry, editor);
+	gtk_widget_grab_focus(editor->fi_entry);
 }
 
 
@@ -1189,4 +1129,55 @@ static gboolean _find_match(Editor * editor, GtkTextBuffer * buffer,
 	gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(editor->view), &start, 0.0,
 			FALSE, 0.0, 0.0);
 	return TRUE;
+}
+
+
+/* callbacks */
+/* editor_on_find_clicked */
+static void _editor_on_find_clicked(gpointer data)
+{
+	Editor * editor = data;
+	char const * text;
+	GtkTreeModel * model = GTK_TREE_MODEL(editor->fi_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	char * p;
+	int res;
+	gboolean sensitive;
+	gboolean wrap;
+
+	if((text = gtk_entry_get_text(GTK_ENTRY(editor->fi_entry))) == NULL
+			|| strlen(text) == 0)
+		return;
+	/* only append the text currently searched if not already known */
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, 0, &p, -1);
+		res = strcmp(text, p);
+		free(p);
+		if(res == 0)
+			break;
+	}
+	if(valid == FALSE)
+	{
+		gtk_list_store_append(editor->fi_store, &iter);
+		gtk_list_store_set(editor->fi_store, &iter, 0, text, -1);
+	}
+	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				editor->fi_case));
+	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				editor->fi_wrap));
+	if(_editor_find(editor, text, sensitive, wrap) == TRUE)
+		return;
+	editor_error(editor, _("Text not found"), 0);
+}
+
+
+/* editor_on_find_hide */
+static void _editor_on_find_hide(gpointer data)
+{
+	Editor * editor = data;
+
+	gtk_widget_hide(editor->fi_dialog);
 }
