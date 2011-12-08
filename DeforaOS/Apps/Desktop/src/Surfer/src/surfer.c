@@ -15,9 +15,16 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
- * - implement a default download directory (and "always ask")
- * - consider drawing the progress bar inside the location bar
- * - consider using GtkSourceView to display the page source */
+ * - implement "always ask" for the default download directory
+ * - draw the progress bar inside the location bar
+ * - provide access to SSL information in embedded mode
+ * - rework preferences handling:
+ *   * no longer cache settings outside of Config *
+ *   * use helpers to draw widgets and load/save/set preferences
+ * - support separate backends via plug-ins (with own preferences)
+ * - consider putting the location bar below the tabs
+ * - consider using GtkSourceView to display the page source
+ * - consider moving the find dialog above the status bar */
 
 
 
@@ -102,7 +109,7 @@ static DesktopAccel _surfer_accel[] =
 };
 
 #ifndef EMBEDDED
-static DesktopMenu _menu_file[] =
+static const DesktopMenu _menu_file[] =
 {
 	{ N_("_New tab"),	G_CALLBACK(on_file_new_tab), "tab-new",
 		GDK_CONTROL_MASK, GDK_KEY_T },
@@ -126,7 +133,7 @@ static DesktopMenu _menu_file[] =
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _menu_edit[] =
+static const DesktopMenu _menu_edit[] =
 {
 	{ N_("_Undo"),		G_CALLBACK(on_edit_undo), GTK_STOCK_UNDO,
 		GDK_CONTROL_MASK, GDK_KEY_Z },
@@ -157,7 +164,7 @@ static DesktopMenu _menu_edit[] =
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _menu_view[] =
+static const DesktopMenu _menu_view[] =
 {
 	{ N_("Zoom in"),	G_CALLBACK(on_view_zoom_in), "zoom-in",
 		GDK_CONTROL_MASK, GDK_KEY_plus },
@@ -183,7 +190,7 @@ static DesktopMenu _menu_view[] =
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _menu_help[] =
+static const DesktopMenu _menu_help[] =
 {
 	{ N_("_About"),		G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -194,7 +201,7 @@ static DesktopMenu _menu_help[] =
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
-static DesktopMenubar _surfer_menubar[] =
+static const DesktopMenubar _surfer_menubar[] =
 {
 	{ N_("_File"), _menu_file },
 	{ N_("_Edit"), _menu_edit },
