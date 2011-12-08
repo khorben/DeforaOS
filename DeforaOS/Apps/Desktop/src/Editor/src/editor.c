@@ -81,6 +81,7 @@ static char const * _authors[] =
 static DesktopAccel _editor_accel[] =
 {
 	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_w },
+	{ G_CALLBACK(on_find), GDK_CONTROL_MASK, GDK_KEY_f },
 	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_KEY_n },
 	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_o },
 	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_KEY_p },
@@ -178,6 +179,8 @@ static DesktopToolbar _editor_toolbar[] =
 	{ N_("Copy"), G_CALLBACK(on_copy), GTK_STOCK_COPY, 0, 0, NULL },
 	{ N_("Paste"), G_CALLBACK(on_paste), GTK_STOCK_PASTE, 0, 0, NULL },
 #ifdef EMBEDDED
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Find"), G_CALLBACK(on_find), GTK_STOCK_FIND, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
 		0, 0, NULL },

@@ -56,7 +56,7 @@ void on_edit_find(gpointer data)
 {
 	Editor * editor = data;
 
-	editor_find(editor, NULL);
+	on_find(editor);
 }
 
 
@@ -184,6 +184,15 @@ void on_cut(gpointer data)
 	Editor * editor = data;
 
 	editor_cut(editor);
+}
+
+
+/* on_find */
+void on_find(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_find(editor, NULL);
 }
 
 

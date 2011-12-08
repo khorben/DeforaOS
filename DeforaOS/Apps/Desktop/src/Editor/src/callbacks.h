@@ -42,6 +42,7 @@ void on_insert_file(gpointer data);
 void on_close(gpointer data);
 void on_copy(gpointer data);
 void on_cut(gpointer data);
+void on_find(gpointer data);
 void on_new(gpointer data);
 void on_open(gpointer data);
 void on_paste(gpointer data);
