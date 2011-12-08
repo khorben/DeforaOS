@@ -68,8 +68,7 @@ function _error($message, $visible = TRUE)
 	global $engine;
 
 	$engine->log('LOG_ERR', $message);
-	if($visible)
-		_debug_message('error', 'Error', $message, $visible);
+	_debug_message('error', 'Error', $message, $visible);
 }
 
 
@@ -78,8 +77,7 @@ function _info($message, $visible = FALSE)
 	global $engine;
 
 	$engine->log('LOG_WARN', $message);
-	if($visible)
-		_debug_message('info', 'Information', $message, $visible);
+	_debug_message('info', 'Information', $message, $visible);
 }
 
 
@@ -88,8 +86,7 @@ function _warning($message, $visible = FALSE)
 	global $engine;
 
 	$engine->log('LOG_WARN', $message);
-	if($visible)
-		_debug_message('warning', 'Warning', $message, $visible);
+	_debug_message('warning', 'Warning', $message, $visible);
 }
 
 ?>
