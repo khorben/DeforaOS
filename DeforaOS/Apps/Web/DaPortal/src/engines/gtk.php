@@ -221,7 +221,10 @@ class GtkEngine extends CliEngine
 				continue;
 			$expand = $c->getProperty('Gtk::expand');
 			$fill = $c->getProperty('Gtk::fill');
-			$vbox->pack_start($widget, $expand, $fill, 4);
+			if($c->getType() == 'statusbar')
+				$vbox->pack_end($widget, $expand, $fill, 4);
+			else
+				$vbox->pack_start($widget, $expand, $fill, 4);
 		}
 		$expand = $e->getProperty('Gtk::expand');
 		$fill = $e->getProperty('Gtk::fill');
@@ -281,8 +284,10 @@ class GtkEngine extends CliEngine
 				break;
 		}
 		$dialog = new GtkMessageDialog(null, 0, $type,
-				Gtk::BUTTONS_CLOSE, $message);
+				Gtk::BUTTONS_CLOSE, $title);
 		$dialog->set_title($title);
+		$dialog->set_markup("<b>$title</b>\n\n"
+				.str_replace("<", "&lt;", $message));
 		foreach($buttons as $b)
 			$dialog->add_button($b[0], $b[1]);
 		$res = $dialog->run();
