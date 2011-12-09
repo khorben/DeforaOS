@@ -62,6 +62,8 @@ class GtkEngine extends CliEngine
 				return $this->renderFrame($element);
 			case 'hbox':
 				return $this->renderHbox($element);
+			case 'iconview':
+				return $this->renderIconview($element);
 			case 'label':
 				return $this->renderLabel($element);
 			case 'link':
@@ -138,8 +140,37 @@ class GtkEngine extends CliEngine
 		{
 			if(($widget = $this->render($c)) === FALSE)
 				continue;
-			$ret->pack_start($widget, FALSE, TRUE, 0);
+			$expand = $c->getProperty('Gtk::expand', FALSE);
+			$fill = $c->getProperty('Gtk::fill', TRUE);
+			if($c->getType() == 'statusbar')
+				$ret->pack_end($widget, $expand, $fill, 4);
+			else
+				$ret->pack_start($widget, $expand, $fill, 4);
 		}
+		return $ret;
+	}
+
+	private function renderIconview($e)
+	{
+		$e->setProperty('Gtk::expand', TRUE);
+		$e->setProperty('Gtk::fill', TRUE);
+		$ret = new GtkScrolledWindow();
+		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+		$store = new GtkListStore(GdkPixbuf::gtype,
+				Gobject::TYPE_STRING);
+		$view = new GtkIconView;
+		$view->set_model($store);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if($c->getType() != 'row')
+				continue;
+			$iter = $store->append();
+			if(($icon = $c->getProperty('icon')) !== FALSE)
+				$store->set($iter, 0, $c->getProperty('icon'));
+			$store->set($iter, 1, $c->getProperty('label'));
+		}
+		$ret->add($view);
 		return $ret;
 	}
 
@@ -213,6 +244,7 @@ class GtkEngine extends CliEngine
 		$e->setProperty('Gtk::expand', TRUE);
 		$e->setProperty('Gtk::fill', TRUE);
 		$ret = new GtkScrolledWindow();
+		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
 			$columns = array('title');
@@ -254,7 +286,12 @@ class GtkEngine extends CliEngine
 		{
 			if(($widget = $this->render($c)) === FALSE)
 				continue;
-			$ret->pack_start($widget, FALSE, TRUE, 0);
+			$expand = $c->getProperty('Gtk::expand', FALSE);
+			$fill = $c->getProperty('Gtk::fill', TRUE);
+			if($c->getType() == 'statusbar')
+				$ret->pack_end($widget, $expand, $fill, 4);
+			else
+				$ret->pack_start($widget, $expand, $fill, 4);
 		}
 		return $ret;
 	}
@@ -265,25 +302,8 @@ class GtkEngine extends CliEngine
 		$window->set_title($e->getProperty('title'));
 		$window->connect_simple('delete-event', array($this,
 					'on_window_delete_event'), $window);
-		$vbox = new GtkVbox(FALSE, 0);
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if(($widget = $this->render($c)) === FALSE)
-				continue;
-			$expand = $c->getProperty('Gtk::expand');
-			$fill = $c->getProperty('Gtk::fill');
-			if($c->getType() == 'statusbar')
-				$vbox->pack_end($widget, $expand, $fill, 4);
-			else
-				$vbox->pack_start($widget, $expand, $fill, 4);
-		}
-		$expand = $e->getProperty('Gtk::expand');
-		$fill = $e->getProperty('Gtk::fill');
-		if(($text = $e->getProperty('text')) !== FALSE)
-			$vbox->pack_start(new GtkLabel($text), $expand, $fill,
-					4);
-		$window->add($vbox);
+		$box = $this->renderVbox($e);
+		$window->add($box);
 		$window->show_all();
 		$this->windows[] = $window;
 		return $window;
