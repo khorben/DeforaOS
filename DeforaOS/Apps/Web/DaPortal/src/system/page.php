@@ -49,10 +49,10 @@ class PageElement
 	}
 
 
-	public function getProperty($name)
+	public function getProperty($name, $default = FALSE)
 	{
 		if(!isset($this->properties[$name]))
-			return FALSE;
+			return $default;
 		return $this->properties[$name];
 	}
 
