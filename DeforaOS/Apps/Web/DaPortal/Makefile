@@ -1,6 +1,6 @@
 PACKAGE	= DaPortal
 VERSION	= 1.9.0
-SUBDIRS	= css data html icons js images install modules src system templates themes
+SUBDIRS	= css data doc html icons js images modules src system templates themes
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -41,6 +41,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/themes/Makefile \
 		$(PACKAGE)-$(VERSION)/data/themes/index.php \
 		$(PACKAGE)-$(VERSION)/data/themes/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/sql/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/sql/index.php \
+		$(PACKAGE)-$(VERSION)/doc/sql/mysql.sql \
+		$(PACKAGE)-$(VERSION)/doc/sql/postgresql.sql \
+		$(PACKAGE)-$(VERSION)/doc/sql/sqlite.sql \
+		$(PACKAGE)-$(VERSION)/doc/sql/project.conf \
 		$(PACKAGE)-$(VERSION)/html/Makefile \
 		$(PACKAGE)-$(VERSION)/html/404.html \
 		$(PACKAGE)-$(VERSION)/html/doctype.html \
@@ -246,12 +254,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/images/vim_small.png \
 		$(PACKAGE)-$(VERSION)/images/xhtml.png \
 		$(PACKAGE)-$(VERSION)/images/project.conf \
-		$(PACKAGE)-$(VERSION)/install/Makefile \
-		$(PACKAGE)-$(VERSION)/install/index.php \
-		$(PACKAGE)-$(VERSION)/install/mysql.sql \
-		$(PACKAGE)-$(VERSION)/install/postgresql.sql \
-		$(PACKAGE)-$(VERSION)/install/sqlite.sql \
-		$(PACKAGE)-$(VERSION)/install/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/index.php \
 		$(PACKAGE)-$(VERSION)/modules/project.conf \

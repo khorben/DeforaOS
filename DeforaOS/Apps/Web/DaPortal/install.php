@@ -43,14 +43,14 @@ function install_database($dbtype, $dbhost, $dbport, $dbname, $dbuser,
 {
 	global $connection;
 
-	$filename = 'install/'.$dbtype.'.sql';
+	$filename = 'doc/sql/'.$dbtype.'.sql';
 	//quirks
 	switch($dbtype)
 	{
 		case 'mysql': //no quirk necessary
 			break;
 		case 'pgsql':
-			$filename = 'install/postgresql.sql';
+			$filename = 'doc/sql/postgresql.sql';
 			break;
 		case 'sqlite':
 			//XXX security issue but the user is trusted (127.0.0.1)
