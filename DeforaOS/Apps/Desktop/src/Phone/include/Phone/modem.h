@@ -165,6 +165,7 @@ typedef enum _ModemEventType
 	MODEM_EVENT_TYPE_MESSAGE_DELETED,
 	MODEM_EVENT_TYPE_MESSAGE_SENT,
 	MODEM_EVENT_TYPE_MODEL,
+	MODEM_EVENT_TYPE_NOTIFICATION,
 	MODEM_EVENT_TYPE_REGISTRATION,
 	MODEM_EVENT_TYPE_STATUS
 } ModemEventType;
@@ -267,6 +268,13 @@ typedef union _ModemEvent
 		char const * name;
 		char const * version;
 	} model;
+
+	/* MODEM_EVENT_TYPE_NOTIFICATION */
+	struct
+	{
+		ModemEventType type;
+		char const * content;
+	} notification;
 
 	/* MODEM_EVENT_TYPE_REGISTRATION */
 	struct

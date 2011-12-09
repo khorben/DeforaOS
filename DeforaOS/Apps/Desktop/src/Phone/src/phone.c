@@ -974,6 +974,13 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 }
 
 
+/* phone_info */
+void phone_info(Phone * phone, char const * message)
+{
+	_phone_info(phone, NULL, message, NULL);
+}
+
+
 /* plugins */
 /* phone_load */
 int phone_load(Phone * phone, char const * plugin)

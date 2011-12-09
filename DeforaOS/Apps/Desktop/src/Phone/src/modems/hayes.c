@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
+ * - implement *#06# (obtain IMEI)
  * - implement priorities again
  * - parse messages from within +CMGL already
  * - test with a SIM card without a PIN code
@@ -671,6 +672,8 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request);
 static char * _request_attention_apn(char const * protocol, char const * apn);
 static char * _request_attention_call(ModemPlugin * modem,
 		ModemRequest * request);
+static char * _request_attention_call_ussd(ModemPlugin * modem,
+		ModemRequest * request);
 static char * _request_attention_call_hangup(ModemPlugin * modem);
 static char * _request_attention_connectivity(ModemPlugin * modem,
 		unsigned int enabled);
@@ -757,6 +760,8 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 {
 	unsigned int type = request->type;
 	char buf[32];
+	char const * p;
+	size_t len;
 
 	switch(type)
 	{
@@ -779,6 +784,11 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 						request->authenticate.password);
 			break;
 		case MODEM_REQUEST_CALL:
+			if((p = request->call.number) != NULL
+					&& (len = strlen(p)) > 2
+					&& p[0] == '*' && p[len - 1] == '#')
+				return _request_attention_call_ussd(modem,
+						request);
 			return _request_attention_call(modem, request);
 		case MODEM_REQUEST_CALL_HANGUP:
 			return _request_attention_call_hangup(modem);
@@ -864,10 +874,28 @@ static char * _request_attention_call(ModemPlugin * modem,
 	len = sizeof(cmd) + strlen(number) + sizeof(anonymous) + sizeof(voice);
 	if((ret = malloc(len)) == NULL)
 		return NULL;
-	snprintf(ret, len, "%s%s%s%s", "ATD", number,
+	snprintf(ret, len, "%s%s%s%s", cmd, number,
 			(request->call.anonymous) ? anonymous : "",
 			(request->call.call_type == MODEM_CALL_TYPE_VOICE)
 			? voice : "");
+	return ret;
+}
+
+static char * _request_attention_call_ussd(ModemPlugin * modem,
+		ModemRequest * request)
+{
+	char * ret;
+	Hayes * hayes = modem->priv;
+	char const * number = request->call.number;
+	const char cmd[] = "AT+CUSD=1,";
+	size_t len;
+
+	if(request->call.number == NULL || request->call.number[0] == '\0')
+		return NULL;
+	len = sizeof(cmd) + strlen(number) + 2;
+	if((ret = malloc(len)) == NULL)
+		return NULL;
+	snprintf(ret, len, "%s\"%s\"", cmd, number);
 	return ret;
 }
 
@@ -1196,6 +1224,7 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 			break;
 		case MODEM_EVENT_TYPE_CONTACT_DELETED: /* do not make sense */
 		case MODEM_EVENT_TYPE_ERROR:
+		case MODEM_EVENT_TYPE_NOTIFICATION:
 		case MODEM_EVENT_TYPE_MESSAGE_DELETED:
 		case MODEM_EVENT_TYPE_MESSAGE_SENT:
 			ret = -1;
@@ -3933,11 +3962,17 @@ static void _on_code_csq(ModemPlugin * modem, char const * answer)
 /* on_code_cusd */
 static void _on_code_cusd(ModemPlugin * modem, char const * answer)
 {
+	Hayes * hayes = modem->priv;
+	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_NOTIFICATION];
 	unsigned int u;
+	char buf[32];
 
 	/* FIXME really implement */
-	if(sscanf(answer, "%u", &u) != 1)
-		return;
+	if(sscanf(answer, "%u\"%31[^\"]\",%u", &u, buf, &u) >= 2)
+	{
+		event->notification.content = buf;
+		modem->helper->event(modem->helper->modem, event);
+	}
 }
 
 
