@@ -1,27 +1,125 @@
-A few notes about the current installation process:
+Installing DaPortal
+===================
+Warning: these notes are based on an early development version of DaPortal 2.
 
-* PHP magic quotes must be enabled for GET and POST (they should be checked at
-  run-time and "work-arounded" and necessary but this is not implemented)
-* "short_open_tags" is not necessary anymore
-* keep the source code in a separate directory
-* move the "css", "icons", "images", "js" and "themes" directory in the desired
-  web server directory
-* create symbolic links to the folders moved above
-* initialize your database with either "install/postgresql.sql",
-  "install/mysql.sql" or "install/sqlite.sql" as necessary
-* at this point you may wish to change the default login and password (table
-  "daportal_user" username and MD5 hash of the password)
-* edit "config.php" accordingly
-* create an "index.php" file there with the following content:
 
-<?php if(chdir('/path/to/daportal')) require('./engine.php'); ?>
+1. Requirements
+---------------
 
-At this point if everything went well you should be able to login as specified
-on the page "index.php?module=user", or otherwise with the default "admin"
-account with the password "password".
+DaPortal 2 is based on a modular architecture, and therefore able to adapt to a
+number of different environments. The common requirements are:
+- PHP 5.0 or later:
+  * http://www.php.net/
+  * optionally, the Suhosin patch and extension,
+    http://www.hardened-php.net/suhosin/
+- a SQL database backend; either:
+  * SQLite, http://www.sqlite.org/
+  * PostgreSQL, http://www.postgresql.org/
+  * or MySQL, http://www.mysql.org/
 
-To assist you in the debugging process don't forget to check your Apache error
-logs. You can also force debugging output in DaPortal itself in "config.php" by
-uncommenting the line:
+Then, depending on the desired user-interface:
+- a web server supporting PHP, like:
+  * Apache, http://httpd.apache.org/
+- the Gtk+ extension for PHP: http://gtk.php.net/
 
-//$debug = 1;
+Please make sure that your system supports the desired combination of
+components. Install and configure them accordingly before attempting to install
+DaPortal.
+
+Then, make sure that you have downloaded the latest stable version of DaPortal
+2. It can be found there:
+http://www.defora.org/os/project/download/12/DaPortal
+
+This guide will assume the resulting archive to be called "DaPortal.tar.gz". It
+will also assume that the current user will already have sufficient privileges
+to install DaPortal 2 to the desired directory; it is otherwise up to the reader
+to obtain and use these privileges when necessary.
+
+Alternatively, you may choose to follow the development of DaPortal 2, or any
+given branch from the Source Code Management system. Some instructions to do so
+can be found here:
+http://www.defora.org/os/project/download/12/DaPortal
+
+
+2. Deployment
+-------------
+
+2.1 Deployment as a web application
+-----------------------------------
+
+For increased security, DaPortal 2 is meant to be installed in a separate
+directory, outside of the web server's document root folder. On most systems,
+this might be:
+- /var/www/daportal for DaPortal 2
+- /var/www/htdocs for the web server's document root
+
+To uncompress DaPortal 2, one would typically enter the following commands:
+$ mkdir /var/www/daportal
+$ cd /var/www/daportal
+$ tar xzvf DaPortal.tar.gz
+$ mv DaPortal-*/* .
+$ rmdir DaPortal-*
+
+
+You can then move, copy or alias the contents of the "data" folder in the
+desired location of the web server's document root folder.
+
+Alternatively, on most web servers it should be fine (and reasonably secure) to
+serve DaPortal's own "data" folder as the actual document root. In this case,
+two files will be found in each directory, while actually being useless while
+running the application.
+
+
+3. Configuration
+----------------
+
+Depending on how it was invoked (from within PHP), DaPortal will try to
+automatically guess the backend engine to use. This can be configured in the
+"daportal.conf" file, situated in the root folder of DaPortal's own installation
+folder.
+
+
+3.1 Configuration as a web application
+--------------------------------------
+
+The HTTP engine should be installed and selected automatically. Otherwise (or
+for performance reasons) you can force the backend by modifying the "engine"
+section as follows:
+
+[engine]
+backend=http
+
+The top-level "theme" and "title" settings can be changed as well, and will
+respectively define the default CSS to use (among the "themes" folder), and the
+default title for the web pages and documents generated.
+
+
+3.2 Configuration of the database backend
+-----------------------------------------
+
+Similarly, the database backend to use must be specified in the "database"
+section, as follows:
+
+[database]
+backend=sqlite2
+
+Additional parameters may have to be specified; see the respective database
+sections and documentation for reference.
+
+Example: In the case of SQLite, a database file can be created in
+/var/www/sqlite, as follows:
+
+$ mkdir /var/www/sqlite
+$ touch /var/www/sqlite/daportal.db
+$ sqlite /var/www/sqlite/daportal.db
+.read /var/www/daportal/doc/sql/sqlite.sql
+.quit
+
+It can then be configured this way within "daportal.conf":
+
+[database::sqlite2]
+filename=/var/www/sqlite/daportal.db
+
+Warning: make sure that the web server has sufficient privileges to read and
+write to this database as required. In the case of SQLite, this often applies to
+the directory containing the database file itself (for locking).
