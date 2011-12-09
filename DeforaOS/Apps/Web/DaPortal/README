@@ -1,12 +1,42 @@
-DaPortal: Defora.org PHP/SQL web site
+Quick guide to DaPortal 2
+=========================
+
+About DaPortal 2
+----------------
+
+DaPortal 2 is a Content Management System (CMS) written in the PHP programming
+language. Although PHP is primarily oriented as a language and environment for
+web-based applications, it can also be used directly from the command line, or
+while building rich applications on the desktop. DaPortal also supports some of
+these additional possibilities.
+
+Likewise, DaPortal 2 does not depend on a specific database backend in
+particular. It will often require a SQL server though.
+
+The homepage of DaPortal 2 can be found here, together with downloadable release
+archives:
+http://www.defora.org/os/project/12/DaPortal
 
 
-
-INSTALLATION
-------------
+How to install
+--------------
 Please follow the instructions given in the "INSTALL" file.
 
 
-CONTACT
+Bug reports
+-----------
+DaPortal is using its own "project" module to track bug reports, feature
+requests and other improvements. It can be found here:
+http://www.defora.org/os/project/bug_list/12/DaPortal
+
+
+Contact
 -------
-Please mail <khorben@defora.org> for any problem or suggestion.
+DaPortal 2 can be discussed on DeforaOS' development mailing-list:
+mailto:minimalist@lists.defora.org?subject=subscribe+devel
+
+Archives for this mailing-list can be found there:
+http://lists.defora.org/
+
+Individual authors can also be contacted directly, according to the "AUTHORS"
+file.
