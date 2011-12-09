@@ -172,6 +172,7 @@ class HtmlTemplate extends Template
 			case 'title':
 				return $this->renderHeading($e, $level);
 			case 'treeview':
+			case 'iconview': /* XXX really implement */
 				return $this->renderTreeview($e, $level);
 			default:
 				return $this->renderInline($e, $level);
