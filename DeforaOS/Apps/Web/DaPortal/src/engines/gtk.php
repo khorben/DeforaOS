@@ -194,7 +194,10 @@ class GtkEngine extends CliEngine
 
 	private function renderStatusbar($e)
 	{
-		return new GtkStatusBar;
+		$ret = new GtkStatusBar;
+		$ret->push($ret->get_context_id('default'),
+				$e->getProperty('text'));
+		return $ret;
 	}
 
 	private function renderTitle($e)
