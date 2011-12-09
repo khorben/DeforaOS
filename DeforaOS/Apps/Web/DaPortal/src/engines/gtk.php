@@ -24,6 +24,7 @@ class GtkEngine extends CliEngine
 	private $windows = array();
 
 	private $fontTitle;
+	private $fontLink;
 
 
 	//methods
@@ -59,8 +60,12 @@ class GtkEngine extends CliEngine
 				return $this->renderForm($element);
 			case 'frame':
 				return $this->renderFrame($element);
+			case 'hbox':
+				return $this->renderHbox($element);
 			case 'label':
 				return $this->renderLabel($element);
+			case 'link':
+				return $this->renderLink($element);
 			case 'menubar':
 				return $this->renderMenubar($element);
 			case 'menuitem':
@@ -73,6 +78,8 @@ class GtkEngine extends CliEngine
 				return $this->renderTitle($element);
 			case 'treeview':
 				return $this->renderTreeview($element);
+			case 'vbox':
+				return $this->renderVbox($element);
 		}
 		return FALSE;
 	}
@@ -117,22 +124,50 @@ class GtkEngine extends CliEngine
 	{
 		$ret = new GtkFrame($e->getProperty('title'));
 		$ret->set_border_width(4);
-		$vbox = new GtkVbox(FALSE, 0);
-		$vbox->set_border_width(4);
+		$box = $this->renderHbox($e);
+		$ret->add($box);
+		return $ret;
+	}
+
+	private function renderHbox($e)
+	{
+		$ret = new GtkHbox(FALSE, 0);
+		$ret->set_border_width(4);
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
 			if(($widget = $this->render($c)) === FALSE)
 				continue;
-			$vbox->pack_start($widget, FALSE, TRUE, 0);
+			$ret->pack_start($widget, FALSE, TRUE, 0);
 		}
-		$ret->add($vbox);
 		return $ret;
 	}
 
 	private function renderLabel($e)
 	{
 		return new GtkLabel($e->getProperty('text'), FALSE);
+	}
+
+	private function renderLink($e)
+	{
+		//FIXME create helper function for stock buttons?
+		$ret = new GtkButton();
+		//FIXME use set_image() and set_label() instead if possible
+		$box = new GtkHbox(FALSE, 4);
+		$image = GtkImage::new_from_stock(Gtk::STOCK_CONNECT,
+				Gtk::ICON_SIZE_BUTTON);
+		$box->pack_start($image, FALSE, TRUE, 0);
+		$label = new GtkLabel($e->getProperty('text'));
+		$label->modify_font($this->fontLink);
+		//FIXME setting the color doesn't work
+		$label->modify_text(Gtk::STATE_NORMAL, new GdkColor(0, 1.0, 0));
+		$box->pack_start($label, TRUE, TRUE, 0);
+		$ret->add($box);
+		$ret->set_relief(Gtk::RELIEF_NONE);
+		$request = $e->getProperty('request');
+		$ret->connect_simple('clicked', array($this,
+					'on_button_clicked'), $request);
+		return $ret;
 	}
 
 	private function renderMenubar($e)
@@ -207,6 +242,20 @@ class GtkEngine extends CliEngine
 		return $ret;
 	}
 
+	private function renderVbox($e)
+	{
+		$ret = new GtkVbox(FALSE, 0);
+		$ret->set_border_width(4);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if(($widget = $this->render($c)) === FALSE)
+				continue;
+			$ret->pack_start($widget, FALSE, TRUE, 0);
+		}
+		return $ret;
+	}
+
 	private function renderWindow($e)
 	{
 		$window = new GtkWindow();
@@ -256,12 +305,14 @@ class GtkEngine extends CliEngine
 		//initialize fonts
 		$this->fontTitle = new PangoFontDescription;
 		$this->fontTitle->set_weight('PANGO_WEIGHT_BOLD');
+		$this->fontLink = new PangoFontDescription;
 	}
 
 
 	//GtkEngine::log
 	public function log($priority, $message)
 	{
+		/* FIXME implement a log console instead */
 		$buttons = array();
 		switch($priority)
 		{
@@ -305,6 +356,14 @@ class GtkEngine extends CliEngine
 
 
 	//callbacks
+	//GtkEngine::on_button_clicked
+	public function on_button_clicked($request)
+	{
+		if(($res = $request->process($this)) !== FALSE)
+			$this->render($res);
+	}
+
+
 	//GtkEngine::on_window_delete_event
 	public function on_window_delete_event($window)
 	{
