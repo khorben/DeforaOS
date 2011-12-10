@@ -1389,7 +1389,9 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 		compose_append_text(compose, p);
 		g_free(p);
 	}
+	compose_append_signature(compose);
 	compose_set_modified(compose, FALSE);
+	compose_scroll_to_offset(compose, 0);
 	free(date);
 	free(from);
 	free(subject);

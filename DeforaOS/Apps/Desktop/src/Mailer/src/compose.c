@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - set some headers as "hidden" and offer to show/hide them */
 
 
 
@@ -372,7 +374,12 @@ Compose * compose_new(Config * config)
 	gtk_container_add(GTK_CONTAINER(compose->window), vbox);
 	/* about dialog */
 	compose->ab_window = NULL;
+	/* signature */
+	compose_append_signature(compose);
+	compose_set_modified(compose, FALSE);
+	compose_scroll_to_offset(compose, 0);
 	/* display */
+	gtk_widget_grab_focus(compose->view);
 	gtk_widget_show_all(vbox);
 	gtk_widget_show(compose->window);
 	return compose;
@@ -380,32 +387,11 @@ Compose * compose_new(Config * config)
 
 static GtkWidget * _new_text_view(Compose * compose)
 {
-	const char signature[] = "/.signature";
-	const char prefix[] = "\n-- \n";
 	GtkWidget * textview;
-	char const * homedir;
-	char * filename;
-	gboolean res;
-	gchar * buf;
-	size_t cnt;
-	GtkTextBuffer * buffer;
 
 	textview = gtk_text_view_new();
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview),
 			GTK_WRAP_WORD_CHAR);
-	/* signature */
-	if((homedir = getenv("HOME")) == NULL)
-		homedir = g_get_home_dir();
-	if((filename = string_new_append(homedir, signature, NULL)) == NULL)
-		return textview;
-	res = g_file_get_contents(filename, &buf, &cnt, NULL);
-	string_delete(filename);
-	if(res != TRUE)
-		return textview;
-	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-	gtk_text_buffer_set_text(buffer, prefix, sizeof(prefix) - 1);
-	gtk_text_buffer_insert_at_cursor(buffer, buf, cnt);
-	gtk_text_buffer_set_modified(buffer, FALSE);
 	return textview;
 }
 
@@ -447,6 +433,7 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 /* compose_new_copy */
 Compose * compose_new_copy(Compose * compose)
 {
+	/* FIXME also copy the contents of the text buffer? */
 	return compose_new(compose->config);
 }
 
@@ -557,6 +544,30 @@ void compose_add_field(Compose * compose, char const * field,
 		gtk_list_store_set(compose->h_store, &iter, 0, field, -1);
 	if(value != NULL)
 		gtk_list_store_set(compose->h_store, &iter, 1, value, -1);
+}
+
+
+/* compose_append_signature */
+void compose_append_signature(Compose * compose)
+{
+	const char signature[] = "/.signature";
+	const char prefix[] = "\n-- \n";
+	char const * homedir;
+	char * filename;
+	gboolean res;
+	gchar * buf;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((filename = string_new_append(homedir, signature, NULL)) == NULL)
+		return;
+	res = g_file_get_contents(filename, &buf, NULL, NULL);
+	string_delete(filename);
+	if(res != TRUE)
+		return;
+	compose_append_text(compose, prefix);
+	compose_append_text(compose, buf);
+	g_free(buf);
 }
 
 
@@ -720,6 +731,19 @@ int compose_save_as_dialog(Compose * compose)
 {
 	/* FIXME implement */
 	return 0;
+}
+
+
+/* compose_scroll_to_offset */
+void compose_scroll_to_offset(Compose * compose, int offset)
+{
+	GtkTextBuffer * buffer;
+	GtkTextIter iter;
+
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	gtk_text_buffer_get_iter_at_offset(buffer, &iter, offset);
+	gtk_text_buffer_place_cursor(buffer, &iter);
+	gtk_text_view_place_cursor_onscreen(GTK_TEXT_VIEW(compose->view));
 }
 
 

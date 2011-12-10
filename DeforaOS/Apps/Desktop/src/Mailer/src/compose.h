@@ -45,6 +45,7 @@ void compose_set_text(Compose * compose, char const * text);
 void compose_add_field(Compose * compose, char const * field,
 		char const * value);
 
+void compose_append_signature(Compose * compose);
 void compose_append_text(Compose * compose, char const * text);
 
 void compose_attach_dialog(Compose * compose);
@@ -57,6 +58,8 @@ int compose_error(Compose * compose, char const * message, int ret);
 
 int compose_save(Compose * compose);
 int compose_save_as_dialog(Compose * compose);
+
+void compose_scroll_to_offset(Compose * compose, int offset);
 
 void compose_select_all(Compose * compose);
 
