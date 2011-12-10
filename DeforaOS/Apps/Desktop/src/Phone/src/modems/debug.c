@@ -38,6 +38,7 @@ typedef struct _Debug
 	GtkWidget * number;
 	GtkWidget * folder;
 	GtkWidget * message;
+	GtkWidget * notification;
 
 	/* events */
 	ModemEvent event_contact;
@@ -59,6 +60,7 @@ static void _debug_set_status(ModemPlugin * modem, char const * status);
 /* callbacks */
 static gboolean _debug_on_closex(gpointer data);
 static void _debug_on_message_send(gpointer data);
+static void _debug_on_notification(gpointer data);
 static void _debug_on_operator_set(gpointer data);
 
 
@@ -175,6 +177,23 @@ static int _debug_init(ModemPlugin * modem)
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_debug_on_message_send), modem);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* notification */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Notification: ");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	debug->notification = gtk_entry_new();
+	g_signal_connect_swapped(debug->notification, "activate", G_CALLBACK(
+				_debug_on_notification), modem);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->notification, TRUE, TRUE, 0);
+	widget = gtk_button_new_with_label("Send");
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"mail-send", GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_debug_on_notification), modem);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
 	gtk_widget_show_all(debug->window);
@@ -350,6 +369,22 @@ static void _debug_on_message_send(gpointer data)
 	debug->event_message.message.content = content;
 	modem->helper->event(modem->helper->modem, &debug->event_message);
 	g_free(content);
+}
+
+
+/* debug_on_notification */
+static void _debug_on_notification(gpointer data)
+{
+	ModemPlugin * modem = data;
+	Debug * debug = modem->priv;
+	ModemEvent event;
+	char const * p;
+
+	memset(&event, 0, sizeof(event));
+	p = gtk_entry_get_text(GTK_ENTRY(debug->notification));
+	event.type = MODEM_EVENT_TYPE_NOTIFICATION;
+	event.notification.content = p;
+	modem->helper->event(modem->helper->modem, &event);
 }
 
 

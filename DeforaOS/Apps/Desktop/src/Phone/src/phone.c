@@ -3857,6 +3857,9 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			_phone_info(phone, phone->wr_window, _("Message sent"),
 					NULL);
 			break;
+		case MODEM_EVENT_TYPE_NOTIFICATION:
+			phone_info(phone, event->notification.content);
+			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			_modem_event_registration(phone, event);
 			break;
