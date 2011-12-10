@@ -29,7 +29,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/x509.h>
 #include <glib.h>
@@ -139,7 +138,6 @@ typedef struct _IMAP4Command
 typedef struct _IMAP4
 {
 	int fd;
-	SSL_CTX * ssl_ctx;
 	SSL * ssl;
 	guint source;
 
@@ -251,8 +249,6 @@ static int _imap4_init(AccountPlugin * plugin)
 	memset(imap4, 0, sizeof(*imap4));
 	plugin->priv = imap4;
 	imap4->fd = -1;
-	SSL_load_error_strings();
-	SSL_library_init();
 	imap4->source = g_idle_add(_on_connect, plugin);
 	return 0;
 }
@@ -744,9 +740,6 @@ static void _imap4_reset(AccountPlugin * plugin)
 	free(imap4->queue);
 	imap4->queue = NULL;
 	imap4->queue_cnt = 0;
-	if(imap4->ssl_ctx != NULL)
-		SSL_CTX_free(imap4->ssl_ctx);
-	imap4->ssl_ctx = NULL;
 	if(imap4->fd >= 0)
 		close(imap4->fd);
 	imap4->fd = -1;
@@ -932,24 +925,6 @@ static gboolean _on_connect(gpointer data)
 	if((p = plugin->config[I4CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
-	/* setup SSL */
-	if(plugin->config[I4CV_SSL].value != NULL)
-	{
-		/* FIXME obtain the SSL context from Mailer itself */
-		if((imap4->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
-				|| SSL_CTX_set_cipher_list(imap4->ssl_ctx,
-					SSL_DEFAULT_CIPHER_LIST) != 1
-				|| SSL_CTX_load_verify_locations(imap4->ssl_ctx,
-					NULL, "/etc/openssl") != 1)
-		{
-			helper->error(NULL, ERR_error_string(ERR_get_error(),
-						buf), 1);
-			return _on_reset(plugin);
-		}
-#if 0 /* XXX nicer for the server (knows why we shutdown) but not for us */
-		SSL_CTX_set_verify(imap4->ssl_ctx, SSL_VERIFY_PEER, NULL);
-#endif
-	}
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -1034,6 +1009,7 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 	AccountPlugin * plugin = data;
 	AccountPluginHelper * helper = plugin->helper;
 	IMAP4 * imap4 = plugin->priv;
+	SSL_CTX * ssl_ctx;
 	char buf[128];
 
 	if(condition != G_IO_OUT || source != imap4->channel)
@@ -1043,9 +1019,12 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #endif
 	imap4->wr_source = 0;
 	/* setup SSL */
-	if(imap4->ssl_ctx != NULL)
+	if(plugin->config[I4CV_SSL].value != NULL)
 	{
-		if((imap4->ssl = SSL_new(imap4->ssl_ctx)) == NULL)
+		if((ssl_ctx = helper->get_ssl_context(helper->account)) == NULL)
+			/* FIXME report error */
+			return FALSE;
+		if((imap4->ssl = SSL_new(ssl_ctx)) == NULL)
 		{
 			helper->error(NULL, ERR_error_string(ERR_get_error(),
 						buf), 1);

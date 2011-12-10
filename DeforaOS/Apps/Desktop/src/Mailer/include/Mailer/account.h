@@ -18,6 +18,7 @@
 #ifndef DESKTOP_MAILER_ACCOUNT_H
 # define DESKTOP_MAILER_ACCOUNT_H
 
+# include <openssl/ssl.h>
 # include "folder.h"
 # include "message.h"
 
@@ -39,11 +40,13 @@ typedef struct _AccountIdentity
 typedef enum _AccountConfigType
 {
 	ACT_NONE = 0,
+	/* values */
 	ACT_STRING,
 	ACT_PASSWORD,
 	ACT_FILE,
 	ACT_UINT16,
 	ACT_BOOLEAN,
+	/* layout */
 	ACT_SEPARATOR
 } AccountConfigType;
 
@@ -60,6 +63,9 @@ typedef struct _AccountConfig
 typedef struct _AccountPluginHelper
 {
 	Account * account;
+	/* accessors */
+	SSL_CTX * (*get_ssl_context)(Account * account);
+	/* useful */
 	int (*error)(Account * account, char const * message, int ret);
 	void (*status)(Account * account, char const * format, ...);
 	/* authentication */

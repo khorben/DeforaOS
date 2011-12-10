@@ -28,7 +28,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <glib.h>
 #include <System.h>
@@ -107,7 +106,6 @@ typedef struct _POP3Command
 typedef struct _POP3
 {
 	int fd;
-	SSL_CTX * ssl_ctx;
 	SSL * ssl;
 	guint source;
 
@@ -209,8 +207,6 @@ static int _pop3_init(AccountPlugin * plugin)
 	memset(pop3, 0, sizeof(*pop3));
 	plugin->priv = pop3;
 	pop3->fd = -1;
-	SSL_load_error_strings();
-	SSL_library_init();
 	pop3->inbox.folder = plugin->helper->folder_new(plugin->helper->account,
 			&pop3->inbox, NULL, FT_INBOX, "Inbox");
 	pop3->trash.folder = plugin->helper->folder_new(plugin->helper->account,
@@ -495,8 +491,6 @@ static void _pop3_reset(AccountPlugin * plugin)
 	for(i = 0; i < pop3->queue_cnt; i++)
 		free(pop3->queue[i].buf);
 	free(pop3->queue);
-	if(pop3->ssl_ctx != NULL)
-		SSL_CTX_free(pop3->ssl_ctx);
 	if(pop3->fd >= 0)
 		close(pop3->fd);
 }
@@ -585,21 +579,6 @@ static gboolean _on_connect(gpointer data)
 	if((p = plugin->config[P3CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
-	/* setup SSL */
-	if(plugin->config[P3CV_SSL].value != NULL)
-		if((pop3->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
-				|| SSL_CTX_set_cipher_list(pop3->ssl_ctx,
-					SSL_DEFAULT_CIPHER_LIST) != 1
-				|| SSL_CTX_load_verify_locations(pop3->ssl_ctx,
-					NULL, "/etc/openssl") != 1)
-		{
-			helper->error(NULL, ERR_error_string(ERR_get_error(),
-						buf), 1);
-			return _on_reset(plugin);
-		}
-#if 0 /* XXX nicer for the server (knows why we shutdown) but not for us */
-	SSL_CTX_set_verify(pop3->ssl_ctx, SSL_VERIFY_PEER, NULL);
-#endif
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -685,6 +664,7 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 	AccountPlugin * plugin = data;
 	AccountPluginHelper * helper = plugin->helper;
 	POP3 * pop3 = plugin->priv;
+	SSL_CTX * ssl_ctx;
 	char buf[128];
 
 	if(condition != G_IO_OUT || source != pop3->channel)
@@ -694,9 +674,12 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #endif
 	pop3->wr_source = 0;
 	/* setup SSL */
-	if(pop3->ssl_ctx != NULL)
+	if(plugin->config[P3CV_SSL].value != NULL)
 	{
-		if((pop3->ssl = SSL_new(pop3->ssl_ctx)) == NULL)
+		if((ssl_ctx = helper->get_ssl_context(helper->account)) == NULL)
+			/* FIXME report error */
+			return FALSE;
+		if((pop3->ssl = SSL_new(ssl_ctx)) == NULL)
 		{
 			helper->error(NULL, ERR_error_string(ERR_get_error(),
 						buf), 1);

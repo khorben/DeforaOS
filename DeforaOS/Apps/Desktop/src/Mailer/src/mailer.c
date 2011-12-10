@@ -23,6 +23,8 @@
 #include <assert.h>
 #include <errno.h>
 #include <libintl.h>
+#include <openssl/err.h>
+#include <openssl/ssl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "Mailer/plugin.h"
@@ -80,6 +82,9 @@ struct _Mailer
 
 	/* configuration */
 	Config * config;
+
+	/* SSL */
+	SSL_CTX * ssl_ctx;
 
 	/* widgets */
 	/* folders */
@@ -326,6 +331,7 @@ Mailer * mailer_new(void)
 #endif
 	GtkCellRenderer * renderer;
 	GtkWidget * widget;
+	char buf[128];
 
 	if((mailer = object_new(sizeof(*mailer))) == NULL)
 	{
@@ -342,6 +348,24 @@ Mailer * mailer_new(void)
 	/* plug-ins */
 	mailer->pl_helper.mailer = mailer;
 	mailer->pl_helper.error = mailer_error;
+	/* ssl */
+	SSL_load_error_strings();
+	SSL_library_init();
+	if((mailer->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
+			|| SSL_CTX_set_cipher_list(mailer->ssl_ctx,
+				SSL_DEFAULT_CIPHER_LIST) != 1
+			|| SSL_CTX_load_verify_locations(mailer->ssl_ctx, NULL,
+				"/etc/openssl") != 1)
+	{
+		mailer_error(NULL, ERR_error_string(ERR_get_error(), buf), 1);
+		if(mailer->ssl_ctx != NULL)
+			SSL_CTX_free(mailer->ssl_ctx);
+		mailer->ssl_ctx = NULL;
+	}
+#if 0 /* XXX nicer for the server (knows why we shutdown) but not for us */
+	else
+		SSL_CTX_set_verify(mailer->ssl_ctx, SSL_VERIFY_PEER, NULL);
+#endif
 	/* widgets */
 	group = gtk_accel_group_new();
 	mailer->fo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -887,6 +911,8 @@ void mailer_delete(Mailer * mailer)
 	unsigned int i;
 
 	_delete_plugins(mailer);
+	if(mailer->ssl_ctx != NULL)
+		SSL_CTX_free(mailer->ssl_ctx);
 	if(mailer->source != 0)
 		g_source_remove(mailer->source);
 	for(i = 0; i < mailer->available_cnt; i++)
@@ -924,6 +950,13 @@ static void _delete_plugins(Mailer * mailer)
 char const * mailer_get_config(Mailer * mailer, char const * variable)
 {
 	return config_get(mailer->config, NULL, variable);
+}
+
+
+/* mailer_get_ssl_context */
+SSL_CTX * mailer_get_ssl_context(Mailer * mailer)
+{
+	return mailer->ssl_ctx;
 }
 
 

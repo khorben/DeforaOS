@@ -63,6 +63,7 @@ struct _Account
 /* prototypes */
 /* accessors */
 static gboolean _account_get_iter(Account * account, GtkTreeIter * iter);
+static SSL_CTX * _account_helper_get_ssl_context(Account * account);
 
 /* useful */
 static int _account_helper_error(Account * account, char const * message,
@@ -86,6 +87,7 @@ static int _account_helper_message_set_body(Message * message, char const * buf,
 static const AccountPluginHelper _account_plugin_helper =
 {
 	NULL,
+	_account_helper_get_ssl_context,
 	_account_helper_error,
 	_account_helper_status,
 	_account_helper_authenticate,
@@ -419,6 +421,13 @@ static gboolean _account_get_iter(Account * account, GtkTreeIter * iter)
 		return FALSE;
 	return gtk_tree_model_get_iter(GTK_TREE_MODEL(account->store), iter,
 			path);
+}
+
+
+/* account_helper_get_ssl_context */
+static SSL_CTX * _account_helper_get_ssl_context(Account * account)
+{
+	return mailer_get_ssl_context(account->mailer);
 }
 
 
