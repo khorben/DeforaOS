@@ -578,11 +578,16 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	}
 	if(*p == ' ') /* skip spaces */
 		for(p++; *p != '\0' && *p == ' '; p++);
-	if(*p == '\"' && sscanf(++p, "%63[^\"]", buf) == 1
-			&& (folder = _imap4_folder_get_folder(plugin, parent,
+	/* read the folder name */
+	buf[0] = '\0';
+	if(*p == '\"')
+		sscanf(++p, "%63[^\"]", buf);
+	else
+		sscanf(p, "%63s", buf);
+	buf[63] = '\0';
+	if(buf[0] != '\0' && (folder = _imap4_folder_get_folder(plugin, parent,
 					buf)) != NULL)
 	{
-		buf[63] = '\0';
 		/* FIXME escape the mailbox name (double quotes...) */
 		q = g_strdup_printf("%s \"%s\" (%s)", "STATUS", buf,
 				"MESSAGES RECENT UNSEEN");
