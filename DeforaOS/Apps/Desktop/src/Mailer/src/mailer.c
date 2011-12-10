@@ -148,7 +148,7 @@ static DesktopAccel _mailer_accel[] =
 
 
 #ifndef EMBEDDED
-static DesktopMenu _menu_file[] =
+static const DesktopMenu _menu_file[] =
 {
 	{ N_("_New mail"), G_CALLBACK(on_file_new_mail), "stock_mail-compose",
 		GDK_CONTROL_MASK, GDK_KEY_N },
@@ -165,7 +165,7 @@ static DesktopMenu _menu_file[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _menu_edit[] =
+static const DesktopMenu _menu_edit[] =
 {
 	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
 		GDK_KEY_X },
@@ -188,7 +188,7 @@ static DesktopMenu _menu_edit[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _menu_message[] =
+static const DesktopMenu _menu_message[] =
 {
 	{ N_("_Reply"), G_CALLBACK(on_message_reply), "stock_mail-reply", 0,
 		0 },
@@ -205,7 +205,7 @@ static DesktopMenu _menu_message[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _menu_help[] =
+static const DesktopMenu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
@@ -215,7 +215,7 @@ static DesktopMenu _menu_help[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenubar _mailer_menubar[] =
+static const DesktopMenubar _mailer_menubar[] =
 {
 	{ N_("_File"), _menu_file },
 	{ N_("_Edit"), _menu_edit },
