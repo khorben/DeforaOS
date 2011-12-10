@@ -601,6 +601,7 @@ static GtkWidget * _new_folders_view(Mailer * mailer)
 			G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_POINTER,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mailer->fo_store));
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(widget), FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
 			NULL, renderer, "pixbuf", MFC_ICON, NULL);
@@ -661,6 +662,7 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 
 	widget = gtk_tree_view_new();
 	treeview = GTK_TREE_VIEW(widget);
+	gtk_tree_view_set_reorderable(treeview, FALSE);
 	gtk_tree_view_set_rules_hint(treeview, TRUE);
 	_headers_view_column_icon(treeview, "", MHC_ICON, MHC_READ);
 	_headers_view_column_text(treeview, _("Subject"), MHC_SUBJECT,
@@ -1636,6 +1638,8 @@ static void _preferences_accounts(Mailer * mailer, GtkWidget * notebook)
 				store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_accounts),
 			TRUE);
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(mailer->pr_accounts),
+			FALSE);
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(mailer->pr_accounts), TRUE);
 	renderer = gtk_cell_renderer_toggle_new();
 	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
@@ -1734,6 +1738,7 @@ static void _preferences_plugins(Mailer * mailer, GtkWidget * notebook)
 				mailer->pr_plugins_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_plugins),
 			FALSE);
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(mailer->pr_plugins), FALSE);
 	renderer = gtk_cell_renderer_toggle_new();
 	g_signal_connect(renderer, "toggled", G_CALLBACK(
 				_preferences_on_plugin_toggled), mailer);
