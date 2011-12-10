@@ -372,10 +372,11 @@ Mailer * mailer_new(void)
 	gtk_window_add_accel_group(GTK_WINDOW(mailer->fo_window), group);
 #ifndef EMBEDDED
 	gtk_window_set_default_size(GTK_WINDOW(mailer->fo_window), 800, 600);
-	gtk_window_set_title(GTK_WINDOW(mailer->fo_window), _("Mailer"));
+	gtk_window_set_title(GTK_WINDOW(mailer->fo_window), _(PACKAGE));
 #else
 	gtk_window_set_default_size(GTK_WINDOW(mailer->fo_window), 200, 300);
-	gtk_window_set_title(GTK_WINDOW(mailer->fo_window), _("Folders"));
+	gtk_window_set_title(GTK_WINDOW(mailer->fo_window),
+			_(PACKAGE " - Folders"));
 #endif
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(mailer->fo_window), "mailer");
@@ -1567,7 +1568,11 @@ void mailer_show_preferences(Mailer * mailer, gboolean show)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+#ifndef EMBEDDED
 	gtk_window_set_default_size(GTK_WINDOW(mailer->pr_window), 400, 300);
+#else
+	gtk_window_set_default_size(GTK_WINDOW(mailer->pr_window), 200, 300);
+#endif
 	g_signal_connect_swapped(G_OBJECT(mailer->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), mailer);
 	g_signal_connect(G_OBJECT(mailer->pr_window), "response",

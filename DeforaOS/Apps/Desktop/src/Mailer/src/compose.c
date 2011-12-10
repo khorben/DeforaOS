@@ -243,7 +243,11 @@ Compose * compose_new(Config * config)
 	group = gtk_accel_group_new();
 	compose->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(compose->window), group);
+#ifndef EMBEDDED
 	gtk_window_set_default_size(GTK_WINDOW(compose->window), 512, 384);
+#else
+	gtk_window_set_default_size(GTK_WINDOW(compose->window), 200, 300);
+#endif
 	gtk_window_set_title(GTK_WINDOW(compose->window),
 			_(PACKAGE " - Compose"));
 #if GTK_CHECK_VERSION(2, 6, 0)
