@@ -895,6 +895,7 @@ static char * _request_attention_call_ussd(ModemPlugin * modem,
 	len = sizeof(cmd) + strlen(number) + 2;
 	if((ret = malloc(len)) == NULL)
 		return NULL;
+	/* XXX may also require setting dcs */
 	snprintf(ret, len, "%s\"%s\"", cmd, number);
 	return ret;
 }

@@ -2697,12 +2697,11 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
 					0);
 			widget = gtk_file_chooser_button_new(_("Open file..."),
-					GTK_FILE_CHOOSER_ACTION_SAVE);
+					GTK_FILE_CHOOSER_ACTION_OPEN);
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
 			break;
 		case MCT_SEPARATOR:
-			widget = gtk_hseparator_new();
-			ret = widget;
+			ret = gtk_hseparator_new();
 			break;
 		case MCT_UINT32:
 			/* FIXME really implement */
@@ -2722,7 +2721,7 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			break;
 	}
 	if(ret == NULL || widget == NULL)
-		return NULL;
+		return ret;
 	g_object_set_data(G_OBJECT(phone->sy_window), config->name, widget);
 	return ret;
 }
