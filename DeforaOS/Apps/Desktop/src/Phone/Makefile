@@ -102,6 +102,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/profiles.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/systray.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/ussd.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/16x16/Makefile \
