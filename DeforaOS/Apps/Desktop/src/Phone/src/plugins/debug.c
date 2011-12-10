@@ -49,7 +49,7 @@ typedef struct _DebugPhoneEvent
 
 
 /* variables */
-static struct
+static const struct
 {
 	char const * name;
 	ModemRequestType request;
