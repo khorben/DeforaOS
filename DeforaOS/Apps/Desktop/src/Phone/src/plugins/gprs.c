@@ -202,11 +202,12 @@ static int _gprs_event_modem(PhonePlugin * plugin, ModemEvent * event)
 /* gprs_settings */
 static GtkWidget * _settings_preferences(GPRS * gprs);
 static GtkWidget * _settings_status(PhonePlugin * plugin, GPRS * gprs);
-static void _on_settings_apply(gpointer data);
-static void _on_settings_cancel(gpointer data);
-static gboolean _on_settings_closex(gpointer data);
-static void _on_settings_connect(gpointer data);
-static void _on_settings_ok(gpointer data);
+/* callbacks */
+static void _settings_on_apply(gpointer data);
+static void _settings_on_cancel(gpointer data);
+static gboolean _settings_on_closex(gpointer data);
+static void _settings_on_connect(gpointer data);
+static void _settings_on_ok(gpointer data);
 
 static void _gprs_settings(PhonePlugin * plugin)
 {
@@ -229,7 +230,7 @@ static void _gprs_settings(PhonePlugin * plugin)
 #endif
 	gtk_window_set_title(GTK_WINDOW(gprs->window), "GPRS");
 	g_signal_connect_swapped(G_OBJECT(gprs->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+			G_CALLBACK(_settings_on_closex), plugin);
 	vbox = gtk_vbox_new(FALSE, 4);
 	gprs->notebook = gtk_notebook_new();
 	/* preferences */
@@ -247,15 +248,15 @@ static void _gprs_settings(PhonePlugin * plugin)
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_cancel), plugin);
+				_settings_on_cancel), plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_ok), plugin);
+				_settings_on_ok), plugin);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(gprs->window), vbox);
-	_on_settings_cancel(plugin);
+	_settings_on_cancel(plugin);
 	_gprs_on_timeout(plugin);
 	gtk_widget_show_all(gprs->window);
 }
@@ -340,12 +341,12 @@ static GtkWidget * _settings_status(PhonePlugin * plugin, GPRS * gprs)
 	/* connect */
 	gprs->connect = gtk_button_new_from_stock(GTK_STOCK_CONNECT);
 	g_signal_connect_swapped(G_OBJECT(gprs->connect), "clicked", G_CALLBACK(
-				_on_settings_connect), plugin);
+				_settings_on_connect), plugin);
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->connect, FALSE, TRUE, 0);
 	return vbox;
 }
 
-static void _on_settings_apply(gpointer data)
+static void _settings_on_apply(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	PhonePluginHelper * helper = plugin->helper;
@@ -371,7 +372,7 @@ static void _on_settings_apply(gpointer data)
 	gprs->active = FALSE;
 }
 
-static void _on_settings_cancel(gpointer data)
+static void _settings_on_cancel(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	PhonePluginHelper * helper = plugin->helper;
@@ -399,33 +400,33 @@ static void _on_settings_cancel(gpointer data)
 #endif
 }
 
-static gboolean _on_settings_closex(gpointer data)
+static gboolean _settings_on_closex(gpointer data)
 {
 	PhonePlugin * plugin = data;
 
-	_on_settings_cancel(plugin);
+	_settings_on_cancel(plugin);
 	return TRUE;
 }
 
-static void _on_settings_connect(gpointer data)
+static void _settings_on_connect(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	GPRS * gprs = plugin->priv;
 
-	_on_settings_apply(plugin);
+	_settings_on_apply(plugin);
 	if(gprs->connected)
 		_gprs_disconnect(plugin);
 	else
 		_gprs_connect(plugin);
 }
 
-static void _on_settings_ok(gpointer data)
+static void _settings_on_ok(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	GPRS * gprs = plugin->priv;
 
 	gtk_widget_hide(gprs->window);
-	_on_settings_apply(plugin);
+	_settings_on_apply(plugin);
 }
 
 
