@@ -1,5 +1,5 @@
 PACKAGE	= Mailer
-VERSION	= 0.1.2
+VERSION	= 0.1.3
 SUBDIRS	= data include po src
 RM	?= rm -f
 LN	?= ln -f
@@ -24,6 +24,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/Mailer.pc.in \
 		$(PACKAGE)-$(VERSION)/data/mailer.desktop \
+		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/mailer.png \
