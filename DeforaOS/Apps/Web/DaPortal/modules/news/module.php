@@ -58,6 +58,7 @@ class NewsModule extends Module
 		$args = $request->getParameters();
 		switch(($action = $request->getAction()))
 		{
+			case 'admin':
 			case 'disable':
 			case 'enable':
 			case 'headline':
