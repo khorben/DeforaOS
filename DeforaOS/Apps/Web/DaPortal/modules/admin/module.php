@@ -86,7 +86,7 @@ class AdminModule extends Module
 			case 'system':
 				return $this->system($args);
 			default:
-				return $this->fallback();
+				return $this->_default();
 		}
 		return FALSE;
 	}
@@ -210,8 +210,8 @@ protected function config_update($args)
 }
 
 
-//AdminModule::fallback
-protected function fallback()
+//AdminModule::_default
+protected function _default()
 {
 	global $user_id;
 
