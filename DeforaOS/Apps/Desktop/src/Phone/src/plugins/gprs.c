@@ -101,7 +101,7 @@ static int _gprs_init(PhonePlugin * plugin)
 #endif
 
 	if((gprs = object_new(sizeof(*gprs))) == NULL)
-		return 1;
+		return -1;
 	plugin->priv = gprs;
 	gprs->source = 0;
 	gprs->roaming = FALSE;
@@ -262,13 +262,13 @@ static void _gprs_settings(PhonePlugin * plugin)
 
 static GtkWidget * _settings_preferences(GPRS * gprs)
 {
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	GtkSizeGroup * group;
 
-	vbox = gtk_vbox_new(FALSE, 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	vbox = gtk_vbox_new(FALSE, 4);
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label(
 			"Force GPRS registration");
