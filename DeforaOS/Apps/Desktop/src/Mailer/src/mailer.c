@@ -1538,6 +1538,8 @@ static void _on_preferences_response(GtkWidget * widget, gint response,
 		gpointer data);
 static void _on_preferences_account_delete(gpointer data);
 static void _on_preferences_account_edit(gpointer data);
+static void _on_preferences_account_move_down(gpointer data);
+static void _on_preferences_account_move_up(gpointer data);
 static void _on_preferences_account_new(gpointer data);
 static void _on_preferences_account_toggle(GtkCellRendererToggle * renderer,
 		char * path, gpointer data);
@@ -1624,8 +1626,8 @@ static void _preferences_accounts(Mailer * mailer, GtkWidget * notebook)
 	for(i = 0; i < mailer->account_cnt; i++)
 	{
 		ac = mailer->account[i];
-		gtk_list_store_insert_with_values(store, &iter, -1,
-				AC_DATA, ac, AC_ACTIVE, TRUE,
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter, AC_DATA, ac, AC_ACTIVE, TRUE,
 				AC_ENABLED, account_get_enabled(ac),
 				AC_TITLE, account_get_title(ac),
 				AC_TYPE, account_get_type(ac), -1);
@@ -1652,10 +1654,12 @@ static void _preferences_accounts(Mailer * mailer, GtkWidget * notebook)
 	gtk_container_add(GTK_CONTAINER(widget), mailer->pr_accounts);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	vbox3 = gtk_vbox_new(FALSE, 4);
+	/* new account */
 	widget = gtk_button_new_from_stock(GTK_STOCK_NEW);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_account_new), mailer);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+	/* edit account */
 #if GTK_CHECK_VERSION(2, 6, 0)
 	widget = gtk_button_new_from_stock(GTK_STOCK_EDIT);
 #else
@@ -1664,9 +1668,20 @@ static void _preferences_accounts(Mailer * mailer, GtkWidget * notebook)
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_account_edit), mailer);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+	/* delete account */
 	widget = gtk_button_new_from_stock(GTK_STOCK_DELETE);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_account_delete), mailer);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+	/* move up */
+	widget = gtk_button_new_from_stock(GTK_STOCK_GO_UP);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_account_move_up), mailer);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+	/* move down */
+	widget = gtk_button_new_from_stock(GTK_STOCK_GO_DOWN);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_account_move_down), mailer);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox3, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 0);
@@ -2614,6 +2629,44 @@ static void _on_preferences_account_delete(gpointer data)
 	gtk_tree_path_free(path);
 	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 	/* FIXME non-interface code (flag account as deleted and on ok apply) */
+}
+
+static void _on_preferences_account_move_down(gpointer data)
+{
+	Mailer * mailer = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeIter iter2;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				mailer->pr_accounts));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	iter2 = iter;
+	if(!gtk_tree_model_iter_next(model, &iter))
+		return;
+	gtk_list_store_swap(GTK_LIST_STORE(model), &iter, &iter2);
+}
+
+static void _on_preferences_account_move_up(gpointer data)
+{
+	Mailer * mailer = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkTreeIter iter2;
+	GtkTreePath * path;
+	GtkTreeSelection * treesel;
+
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				mailer->pr_accounts));
+	if(!gtk_tree_selection_get_selected(treesel, &model, &iter))
+		return;
+	path = gtk_tree_model_get_path(model, &iter);
+	gtk_tree_path_prev(path);
+	gtk_tree_model_get_iter(model, &iter2, path);
+	gtk_tree_path_free(path);
+	gtk_list_store_swap(GTK_LIST_STORE(model), &iter, &iter2);
 }
 
 static void _on_preferences_cancel(gpointer data)
