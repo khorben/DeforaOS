@@ -60,6 +60,13 @@ static USSDCode _ussd_codes_za_mtn[] =
 	{ NULL,		NULL						}
 };
 
+/* Virgin Mobile, see */
+static USSDCode _ussd_codes_fr_virgin[] =
+{
+	{ "*144#",	"Balance enquiry"				},
+	{ NULL,		NULL						}
+};
+
 static const struct
 {
 	char const * name;
@@ -67,7 +74,10 @@ static const struct
 } _ussd_operators[] =
 {
 	{ "E-plus",	_ussd_codes_de_eplus				},
+	{ "Monacell",	_ussd_codes_fr_virgin				},
 	{ "MTN",	_ussd_codes_za_mtn				},
+	{ "NRJ",	_ussd_codes_fr_virgin				},
+	{ "Virgin",	_ussd_codes_fr_virgin				},
 	{ NULL,		NULL						}
 };
 
