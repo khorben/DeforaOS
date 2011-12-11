@@ -95,6 +95,10 @@ static char const * _authors[] =
 static void _locker_about(Locker * locker);
 static void _locker_action(Locker * locker, LockerAction action);
 static void _locker_activate(Locker * locker);
+static char const * _locker_auth_config_get(Locker * locker,
+		char const * section, char const * variable);
+static int _locker_auth_config_set(Locker * locker, char const * section,
+		char const * variable, char const * value);
 static int _locker_error(Locker * locker, char const * message, int ret);
 static void _locker_event(Locker * locker, LockerEvent event);
 static void _locker_lock(Locker * locker);
@@ -171,7 +175,6 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 		gtk_window_stick(GTK_WINDOW(locker->windows[i]));
 		gtk_widget_modify_bg(locker->windows[i], GTK_STATE_NORMAL,
 				&black);
-		gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
 		g_signal_connect_swapped(G_OBJECT(locker->windows[i]),
 				"delete-event", G_CALLBACK(_lock_on_closex),
 				NULL);
@@ -262,6 +265,8 @@ static void _new_helpers(Locker * locker)
 	locker->ahelper.locker = locker;
 	locker->ahelper.error = _locker_error;
 	locker->ahelper.action = _locker_action;
+	locker->ahelper.config_get = _locker_auth_config_get;
+	locker->ahelper.config_set = _locker_auth_config_set;
 	locker->phelper.locker = locker;
 	locker->phelper.error = _locker_error;
 	locker->phelper.about_dialog = _locker_about;
@@ -525,6 +530,36 @@ static void _locker_activate(Locker * locker)
 }
 
 
+/* locker_auth_config_get */
+static char const * _locker_auth_config_get(Locker * locker,
+		char const * section, char const * variable)
+{
+	char const * ret;
+	String * s;
+
+	if((s = string_new_append("auth::", section, NULL)) == NULL)
+		return NULL;
+	ret = config_get(locker->config, s, variable);
+	string_delete(s);
+	return ret;
+}
+
+
+/* locker_auth_config_set */
+static int _locker_auth_config_set(Locker * locker, char const * section,
+		char const * variable, char const * value)
+{
+	int ret;
+	String * s;
+
+	if((s = string_new_append("auth::", section, NULL)) == NULL)
+		return NULL;
+	ret = config_set(locker->config, s, variable, value);
+	string_delete(s);
+	return ret;
+}
+
+
 /* locker_error */
 static int _locker_error(Locker * locker, char const * message, int ret)
 {
@@ -577,6 +612,7 @@ static void _locker_lock(Locker * locker)
 	{
 		gtk_widget_show(locker->windows[i]);
 		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
+		gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
 	}
 	locker->auth->action(locker->auth, LOCKER_ACTION_LOCK);
 }

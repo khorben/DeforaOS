@@ -70,8 +70,8 @@ static GtkWidget * _password_init(LockerAuth * plugin)
 {
 	Password * password;
 	PangoFontDescription * font;
-	GdkColor white = { 0x0, 0xffff, 0xffff, 0xffff };
-	GdkColor red = { 0x0, 0xffff, 0x0000, 0x0000 };
+	const GdkColor white = { 0x0, 0xffff, 0xffff, 0xffff };
+	const GdkColor red = { 0x0, 0xffff, 0x0000, 0x0000 };
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
@@ -157,7 +157,8 @@ static void _password_on_password_activate(gpointer data)
 	LockerAuth * plugin = data;
 	LockerAuthHelper * helper = plugin->helper;
 	Password * password = plugin->priv;
-	gchar const * text;
+	char const * text;
+	char const * p;
 
 	if(password->source != 0)
 		g_source_remove(password->source);
@@ -165,8 +166,13 @@ static void _password_on_password_activate(gpointer data)
 	gtk_widget_set_sensitive(password->password, FALSE);
 	gtk_widget_set_sensitive(password->button, FALSE);
 	text = gtk_entry_get_text(GTK_ENTRY(password->password));
-	/* FIXME really check */
-	if(strcmp(text, "password") == 0)
+	if((p = helper->config_get(helper->locker, "password", "password"))
+			== NULL)
+	{
+		helper->error(helper->locker, _("No password was set"), 1);
+		return;
+	}
+	if(strcmp(text, p) == 0)
 	{
 		helper->action(helper->locker, LOCKER_ACTION_UNLOCK);
 		return;
