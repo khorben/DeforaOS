@@ -25,24 +25,6 @@
 
 
 /* Mailer */
-/* types */
-typedef enum _MailerFolderColumn
-{
-	MFC_ACCOUNT = 0, MFC_ENABLED, MFC_DELETE, MFC_FOLDER, MFC_ICON, MFC_NAME
-} MailerFolderColumn;
-# define MFC_LAST MFC_NAME
-# define MFC_COUNT (MFC_LAST + 1)
-
-typedef enum _MailerHeaderColumn
-{
-	MHC_ACCOUNT = 0, MHC_FOLDER, MHC_MESSAGE, MHC_ICON, MHC_SUBJECT,
-	MHC_FROM, MHC_FROM_EMAIL, MHC_TO, MHC_TO_EMAIL, MHC_DATE,
-	MHC_DATE_DISPLAY, MHC_READ, MHC_WEIGHT
-} MailerHeaderColumn;
-# define MHC_LAST MHC_WEIGHT
-# define MHC_COUNT (MHC_LAST + 1)
-
-
 /* constants */
 # define MAILER_CONFIG_FILE	".mailer"
 
