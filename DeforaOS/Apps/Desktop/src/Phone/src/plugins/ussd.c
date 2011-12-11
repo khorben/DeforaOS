@@ -60,7 +60,8 @@ static USSDCode _ussd_codes_za_mtn[] =
 	{ NULL,		NULL						}
 };
 
-/* Virgin Mobile, see */
+/* Virgin Mobile, see
+ * http://fr.wikipedia.org/wiki/Unstructured_Supplementary_Service_Data */
 static USSDCode _ussd_codes_fr_virgin[] =
 {
 	{ "*144#",	"Balance enquiry"				},
