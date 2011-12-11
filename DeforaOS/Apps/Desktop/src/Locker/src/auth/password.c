@@ -169,15 +169,18 @@ static void _password_on_password_activate(gpointer data)
 	if((p = helper->config_get(helper->locker, "password", "password"))
 			== NULL)
 	{
-		helper->error(helper->locker, _("No password was set"), 1);
+		gtk_entry_set_text(GTK_ENTRY(password->password), "");
+		helper->error(NULL, _("No password was set"), 1);
 		return;
 	}
 	if(strcmp(text, p) == 0)
 	{
+		gtk_entry_set_text(GTK_ENTRY(password->password), "");
 		helper->action(helper->locker, LOCKER_ACTION_UNLOCK);
 		return;
 	}
-	helper->error(helper->locker, _("Authentication failed"), 1);
+	gtk_entry_set_text(GTK_ENTRY(password->password), "");
+	helper->error(NULL, _("Authentication failed"), 1);
 	gtk_widget_show(password->wrong);
 	password->source = g_timeout_add(3000, _password_on_password_wrong,
 			plugin);
@@ -194,6 +197,8 @@ static gboolean _password_on_password_wrong(gpointer data)
 	gtk_widget_hide(password->wrong);
 	gtk_widget_set_sensitive(password->password, TRUE);
 	gtk_widget_set_sensitive(password->button, TRUE);
+	gtk_entry_set_text(GTK_ENTRY(password->password), "");
+	gtk_widget_grab_focus(password->password);
 	return FALSE;
 }
 

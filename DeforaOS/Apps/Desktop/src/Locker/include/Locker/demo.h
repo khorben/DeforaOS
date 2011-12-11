@@ -28,6 +28,10 @@ typedef struct _LockerDemoHelper
 {
 	Locker * locker;
 	int (*error)(Locker * locker, char const * message, int ret);
+	char const * (*config_get)(Locker * locker, char const * section,
+			char const * variable);
+	int (*config_set)(Locker * locker, char const * section,
+			char const * variable, char const * value);
 } LockerDemoHelper;
 
 typedef struct _LockerDemo LockerDemo;

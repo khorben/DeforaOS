@@ -49,10 +49,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
 		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/demos/xscreensaver.c \
+		$(PACKAGE)-$(VERSION)/src/demos/xterm.c \
 		$(PACKAGE)-$(VERSION)/src/demos/Makefile \
 		$(PACKAGE)-$(VERSION)/src/demos/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/debug.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/systray.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \

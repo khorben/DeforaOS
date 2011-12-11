@@ -99,15 +99,24 @@ static char const * _locker_auth_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_auth_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+static char const * _locker_demo_config_get(Locker * locker,
+		char const * section, char const * variable);
+static int _locker_demo_config_set(Locker * locker, char const * section,
+		char const * variable, char const * value);
 static int _locker_error(Locker * locker, char const * message, int ret);
 static void _locker_event(Locker * locker, LockerEvent event);
 static void _locker_lock(Locker * locker);
+static char const * _locker_plugin_config_get(Locker * locker,
+		char const * section, char const * variable);
+static int _locker_plugin_config_set(Locker * locker, char const * section,
+		char const * variable, char const * value);
 static void _locker_unlock(Locker * locker);
 
 /* callbacks */
 static gboolean _lock_on_closex(void);
 static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
+static gboolean _locker_on_map_event(gpointer data);
 static void _locker_on_realize(GtkWidget * widget, gpointer data);
 
 
@@ -172,6 +181,7 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 		gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x, rect.y);
 		gtk_window_resize(GTK_WINDOW(locker->windows[i]), rect.width,
 				rect.height);
+		gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
 		gtk_window_stick(GTK_WINDOW(locker->windows[i]));
 		gtk_widget_modify_bg(locker->windows[i], GTK_STATE_NORMAL,
 				&black);
@@ -181,6 +191,8 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 		g_signal_connect(locker->windows[i], "realize", G_CALLBACK(
 					_locker_on_realize), locker);
 	}
+	g_signal_connect_swapped(G_OBJECT(locker->windows[0]), "map-event",
+			G_CALLBACK(_locker_on_map_event), locker);
 	gtk_container_set_border_width(GTK_CONTAINER(locker->windows[0]), 4);
 	gtk_container_add(GTK_CONTAINER(locker->windows[0]), widget);
 	root = gdk_get_default_root_window();
@@ -231,7 +243,8 @@ static GtkWidget * _new_auth(Locker * locker, char const * plugin)
 	if((locker->auth = plugin_lookup(locker->aplugin, "plugin")) == NULL)
 		return NULL;
 	locker->auth->helper = &locker->ahelper;
-	if((widget = locker->auth->init(locker->auth)) == NULL)
+	if(locker->auth->init == NULL
+			|| (widget = locker->auth->init(locker->auth)) == NULL)
 	{
 		locker->auth = NULL;
 		return NULL;
@@ -250,7 +263,7 @@ static int _new_demo(Locker * locker, char const * demo)
 	if((locker->demo = plugin_lookup(locker->dplugin, "demo")) == NULL)
 		return -1;
 	locker->demo->helper = &locker->dhelper;
-	if(locker->demo->init(locker->demo) != 0)
+	if(locker->demo->init != NULL && locker->demo->init(locker->demo) != 0)
 	{
 		locker->demo = NULL;
 		return -1;
@@ -260,17 +273,24 @@ static int _new_demo(Locker * locker, char const * demo)
 
 static void _new_helpers(Locker * locker)
 {
-	locker->dhelper.locker = locker;
-	locker->dhelper.error = _locker_error;
+	/* authentication helper */
 	locker->ahelper.locker = locker;
 	locker->ahelper.error = _locker_error;
 	locker->ahelper.action = _locker_action;
 	locker->ahelper.config_get = _locker_auth_config_get;
 	locker->ahelper.config_set = _locker_auth_config_set;
+	/* demo helper */
+	locker->dhelper.locker = locker;
+	locker->dhelper.error = _locker_error;
+	locker->dhelper.config_get = _locker_demo_config_get;
+	locker->dhelper.config_set = _locker_demo_config_set;
+	/* plug-ins helper */
 	locker->phelper.locker = locker;
 	locker->phelper.error = _locker_error;
 	locker->phelper.about_dialog = _locker_about;
 	locker->phelper.action = _locker_action;
+	locker->phelper.config_get = _locker_plugin_config_get;
+	locker->phelper.config_set = _locker_plugin_config_set;
 }
 
 static int _new_plugins(Locker * locker)
@@ -319,7 +339,7 @@ static int _new_plugins_load(Locker * locker, char const * plugin)
 		return _locker_error(NULL, error_get(), 1);
 	}
 	p->plugin->helper = &locker->phelper;
-	if(p->plugin->init(p->plugin) != 0)
+	if(p->plugin->init != NULL && p->plugin->init(p->plugin) != 0)
 	{
 		plugin_delete(p->pplugin);
 		return _locker_error(NULL, error_get(), 1);
@@ -350,11 +370,11 @@ static int _new_xss(Locker * locker, size_t cnt)
 void locker_delete(Locker * locker)
 {
 	/* FIXME also destroy plug-ins */
-	if(locker->auth != NULL)
+	if(locker->auth != NULL && locker->auth->destroy != NULL)
 		locker->auth->destroy(locker->auth);
 	if(locker->aplugin != NULL)
 		plugin_delete(locker->aplugin);
-	if(locker->demo != NULL)
+	if(locker->demo != NULL && locker->demo->destroy != NULL)
 		locker->demo->destroy(locker->demo);
 	if(locker->dplugin != NULL)
 		plugin_delete(locker->dplugin);
@@ -553,7 +573,37 @@ static int _locker_auth_config_set(Locker * locker, char const * section,
 	String * s;
 
 	if((s = string_new_append("auth::", section, NULL)) == NULL)
+		return -1;
+	ret = config_set(locker->config, s, variable, value);
+	string_delete(s);
+	return ret;
+}
+
+
+/* locker_demo_config_get */
+static char const * _locker_demo_config_get(Locker * locker,
+		char const * section, char const * variable)
+{
+	char const * ret;
+	String * s;
+
+	if((s = string_new_append("demo::", section, NULL)) == NULL)
 		return NULL;
+	ret = config_get(locker->config, s, variable);
+	string_delete(s);
+	return ret;
+}
+
+
+/* locker_demo_config_set */
+static int _locker_demo_config_set(Locker * locker, char const * section,
+		char const * variable, char const * value)
+{
+	int ret;
+	String * s;
+
+	if((s = string_new_append("demo::", section, NULL)) == NULL)
+		return -1;
 	ret = config_set(locker->config, s, variable, value);
 	string_delete(s);
 	return ret;
@@ -612,9 +662,38 @@ static void _locker_lock(Locker * locker)
 	{
 		gtk_widget_show(locker->windows[i]);
 		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
-		gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
 	}
 	locker->auth->action(locker->auth, LOCKER_ACTION_LOCK);
+}
+
+
+/* locker_plugin_config_get */
+static char const * _locker_plugin_config_get(Locker * locker,
+		char const * section, char const * variable)
+{
+	char const * ret;
+	String * s;
+
+	if((s = string_new_append("plugin::", section, NULL)) == NULL)
+		return NULL;
+	ret = config_get(locker->config, s, variable);
+	string_delete(s);
+	return ret;
+}
+
+
+/* locker_plugin_config_set */
+static int _locker_plugin_config_set(Locker * locker, char const * section,
+		char const * variable, char const * value)
+{
+	int ret;
+	String * s;
+
+	if((s = string_new_append("plugin::", section, NULL)) == NULL)
+		return -1;
+	ret = config_set(locker->config, s, variable, value);
+	string_delete(s);
+	return ret;
 }
 
 
@@ -624,6 +703,9 @@ static void _locker_unlock(Locker * locker)
 	size_t i;
 
 	_locker_event(locker, LOCKER_EVENT_UNLOCKING);
+	/* ungrab keyboard and mouse */
+	gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+	gdk_pointer_ungrab(GDK_CURRENT_TIME);
 	if(locker->windows == NULL)
 		return;
 	for(i = 0; i < locker->windows_cnt; i++)
@@ -709,6 +791,37 @@ static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
 			break;
 	}
 	return GDK_FILTER_CONTINUE;
+}
+
+
+/* locker_on_map_event */
+static gboolean _locker_on_map_event(gpointer data)
+{
+	Locker * locker = data;
+	GdkWindow * window;
+	GdkGrabStatus status;
+
+	/* FIXME detect if this is the first window */
+	/* grab keyboard and mouse */
+	if((window = gtk_widget_get_window(locker->windows[0])) == NULL)
+		_locker_error(NULL, "Failed to grab input", 1);
+	else
+	{
+		if((status = gdk_keyboard_grab(window, TRUE, GDK_CURRENT_TIME))
+				!= GDK_GRAB_SUCCESS)
+			_locker_error(NULL, "Failed to grab keyboard", 1);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: keyboard grab status=%u\n", status);
+#endif
+		if((status = gdk_pointer_grab(window, TRUE, 0, window, NULL,
+						GDK_CURRENT_TIME))
+				!= GDK_GRAB_SUCCESS)
+			_locker_error(NULL, "Failed to grab mouse", 1);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: mouse grab status=%u\n", status);
+#endif
+	}
+	return FALSE;
 }
 
 

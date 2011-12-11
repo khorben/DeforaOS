@@ -26,16 +26,16 @@
 #endif
 
 
-/* XScreensaver */
+/* Image */
 /* private */
 /* types */
 
 
 /* prototypes */
 /* plug-in */
-static int _xscreensaver_init(LockerDemo * demo);
-static int _xscreensaver_add(LockerDemo * demo, unsigned int id);
-static void _xscreensaver_remove(LockerDemo * demo, unsigned int id);
+static int _xterm_init(LockerDemo * demo);
+static int _xterm_add(LockerDemo * demo, unsigned int id);
+static void _xterm_remove(LockerDemo * demo, unsigned int id);
 
 
 /* public */
@@ -44,11 +44,11 @@ static void _xscreensaver_remove(LockerDemo * demo, unsigned int id);
 LockerDemo demo =
 {
 	NULL,
-	"XScreensaver",
-	_xscreensaver_init,
+	"Image",
+	_xterm_init,
 	NULL,
-	_xscreensaver_add,
-	_xscreensaver_remove,
+	_xterm_add,
+	_xterm_remove,
 	NULL
 };
 
@@ -56,29 +56,32 @@ LockerDemo demo =
 /* private */
 /* functions */
 /* plug-in */
-/* xscreensaver_init */
-static int _xscreensaver_init(LockerDemo * demo)
+/* xterm_init */
+static int _xterm_init(LockerDemo * demo)
 {
 	demo->priv = NULL;
 	return 0;
 }
 
 
-/* xscreensaver_add */
-static int _xscreensaver_add(LockerDemo * demo, unsigned int id)
+/* xterm_add */
+static int _xterm_add(LockerDemo * demo, unsigned int id)
 {
 	int ret = 0;
 	LockerDemoHelper * helper = demo->helper;
 	GError * error = NULL;
-	char * argv[] = { NULL, "-window-id", NULL, NULL };
+	char const * argv[] = { NULL, "-into", NULL, "-e", NULL, NULL };
 	char buf[16];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u\n", __func__, id);
 #endif
-	if((argv[0] = helper->config_get(helper->locker, "xscreensaver",
-					"xscreensaver")) == NULL)
-		argv[0] = PREFIX "/libexec/xscreensaver/bsod";
+	if((argv[0] = helper->config_get(helper->locker, "xterm", "xterm"))
+			== NULL)
+		argv[0] = PREFIX "/bin/xterm";
+	if((argv[4] = helper->config_get(helper->locker, "xterm", "command"))
+			== NULL)
+		argv[4] = "top";
 	snprintf(buf, sizeof(buf), "%u", id);
 	argv[2] = buf;
 	if(g_spawn_async(NULL, argv, NULL, 0, NULL, NULL, NULL, &error) != TRUE)
@@ -90,8 +93,8 @@ static int _xscreensaver_add(LockerDemo * demo, unsigned int id)
 }
 
 
-/* xscreensaver_remove */
-static void _xscreensaver_remove(LockerDemo * demo, unsigned int id)
+/* xterm_remove */
+static void _xterm_remove(LockerDemo * demo, unsigned int id)
 {
 	/* FIXME implement */
 }
