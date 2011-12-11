@@ -75,6 +75,7 @@ PanelWindow * panel_window_new(PanelPosition position,
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_focus_on_map(GTK_WINDOW(panel->window), FALSE);
 #endif
+	gtk_window_set_keep_above(GTK_WINDOW(panel->window), FALSE);
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	gtk_window_stick(GTK_WINDOW(panel->window));

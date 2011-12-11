@@ -60,4 +60,20 @@ struct _PanelApplet
 	void * priv;
 };
 
+typedef enum _PanelMessage
+{
+	PANEL_MESSAGE_SHOW = 0
+} PanelMessage;
+
+typedef enum _PanelMessageShow
+{
+	PANEL_MESSAGE_SHOW_PANEL_BOTTOM = 0x1,
+	PANEL_MESSAGE_SHOW_PANEL_TOP = 0x2,
+	PANEL_MESSAGE_SHOW_SETTINGS = 0x4
+} PanelMessageShow;
+
+
+/* constants */
+# define PANEL_CLIENT_MESSAGE		"DEFORAOS_DESKTOP_PANEL_CLIENT"
+
 #endif /* !DESKTOP_PANEL_H */

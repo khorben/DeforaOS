@@ -49,7 +49,7 @@ window.o: window.c panel.h window.h
 main.o: main.c panel.h ../config.h
 	$(CC) $(panel_CFLAGS) -c main.c
 
-panelctl.o: panelctl.c ../config.h
+panelctl.o: panelctl.c ../include/Panel.h panel.h ../config.h
 	$(CC) $(panelctl_CFLAGS) -c panelctl.c
 
 run.o: run.c

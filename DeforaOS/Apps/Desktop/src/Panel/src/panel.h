@@ -24,18 +24,6 @@
 
 /* Panel */
 /* types */
-typedef enum _PanelMessage
-{
-	PANEL_MESSAGE_SHOW = 0
-} PanelMessage;
-
-typedef enum _PanelMessageShow
-{
-	PANEL_MESSAGE_SHOW_PANEL_BOTTOM = 0,
-	PANEL_MESSAGE_SHOW_PANEL_TOP,
-	PANEL_MESSAGE_SHOW_SETTINGS
-} PanelMessageShow;
-
 typedef enum _PanelPosition
 {
 	PANEL_POSITION_BOTTOM	= 0x1,
@@ -52,8 +40,6 @@ typedef struct _PanelPrefs
 
 /* constants */
 # define PANEL_BORDER_WIDTH		4
-
-# define PANEL_CLIENT_MESSAGE		"DEFORAOS_DESKTOP_PANEL_CLIENT"
 
 # define PANEL_CONFIG_FILE		".panel"
 

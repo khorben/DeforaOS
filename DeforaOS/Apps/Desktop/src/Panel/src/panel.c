@@ -406,13 +406,13 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 		case PANEL_MESSAGE_SHOW:
 			what = xevent->data.b[1];
 			show = xevent->data.b[2];
-			if(what == PANEL_MESSAGE_SHOW_PANEL_BOTTOM
+			if(what & PANEL_MESSAGE_SHOW_PANEL_BOTTOM
 					&& panel->bottom != NULL)
 				panel_window_show(panel->bottom, show);
-			else if(what == PANEL_MESSAGE_SHOW_PANEL_TOP
+			if(what & PANEL_MESSAGE_SHOW_PANEL_TOP
 					&& panel->top != NULL)
 				panel_window_show(panel->top, show);
-			else if(what == PANEL_MESSAGE_SHOW_SETTINGS)
+			if(what & PANEL_MESSAGE_SHOW_SETTINGS)
 				panel_show_preferences(panel, show);
 			break;
 	}
