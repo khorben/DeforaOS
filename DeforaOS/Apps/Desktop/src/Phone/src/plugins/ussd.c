@@ -266,7 +266,7 @@ static void _ussd_on_settings_send(gpointer data)
 #endif
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_CALL;
-	request.call.call_type = MODEM_CALL_TYPE_DATA;
+	request.call.call_type = MODEM_CALL_TYPE_VOICE;
 	request.call.number = codes[i].number;
 	helper->request(helper->phone, &request);
 }

@@ -784,7 +784,8 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 						request->authenticate.password);
 			break;
 		case MODEM_REQUEST_CALL:
-			if((p = request->call.number) != NULL
+			if(request->call.call_type == MODEM_CALL_TYPE_VOICE
+					&& (p = request->call.number) != NULL
 					&& (len = strlen(p)) > 2
 					&& p[0] == '*' && p[len - 1] == '#')
 				return _request_attention_call_ussd(modem,
