@@ -62,13 +62,16 @@ MailerPlugin plugin =
 static GtkWidget * _ml_init(MailerPlugin * plugin)
 {
 	MailingLists * ml;
+	PangoFontDescription * bold;
 
 	if((ml = malloc(sizeof(*ml))) == NULL)
 		return NULL;
 	plugin->priv = ml;
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	ml->vbox = gtk_vbox_new(FALSE, 4);
 	ml->folder = gtk_label_new("");
-	/* FIXME set a bold font */
+	gtk_widget_modify_font(ml->folder, bold);
 	gtk_misc_set_alignment(GTK_MISC(ml->folder), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(ml->vbox), ml->folder, FALSE, TRUE, 0);
 	ml->message = gtk_label_new("");
@@ -77,6 +80,7 @@ static GtkWidget * _ml_init(MailerPlugin * plugin)
 	ml->name = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(ml->name), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(ml->vbox), ml->name, FALSE, TRUE, 0);
+	pango_font_description_free(bold);
 	return ml->vbox;
 }
 
