@@ -18,6 +18,7 @@
 #ifndef DESKTOP_LOCKER_DEMO_H
 # define DESKTOP_LOCKER_DEMO_H
 
+# include <gtk/gtk.h>
 # include "locker.h"
 
 
@@ -42,8 +43,8 @@ struct _LockerDemo
 	char const * name;
 	int (*init)(LockerDemo * demo);
 	void (*destroy)(LockerDemo * demo);
-	int (*add)(LockerDemo * demo, unsigned int id);
-	void (*remove)(LockerDemo * demo, unsigned int id);
+	int (*add)(LockerDemo * demo, GtkWidget * window);
+	void (*remove)(LockerDemo * demo, GtkWidget * window);
 	void * priv;
 };
 

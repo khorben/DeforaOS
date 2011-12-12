@@ -17,7 +17,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <glib.h>
+#include <gdk/gdkx.h>
 #include "Locker/demo.h"
 #include "../../config.h"
 
@@ -34,8 +34,8 @@
 /* prototypes */
 /* plug-in */
 static int _xterm_init(LockerDemo * demo);
-static int _xterm_add(LockerDemo * demo, unsigned int id);
-static void _xterm_remove(LockerDemo * demo, unsigned int id);
+static int _xterm_add(LockerDemo * demo, GtkWidget * window);
+static void _xterm_remove(LockerDemo * demo, GtkWidget * window);
 
 
 /* public */
@@ -65,10 +65,11 @@ static int _xterm_init(LockerDemo * demo)
 
 
 /* xterm_add */
-static int _xterm_add(LockerDemo * demo, unsigned int id)
+static int _xterm_add(LockerDemo * demo, GtkWidget * window)
 {
 	int ret = 0;
 	LockerDemoHelper * helper = demo->helper;
+	unsigned int id = GDK_WINDOW_XWINDOW(window->window);
 	GError * error = NULL;
 	char const * argv[] = { NULL, "-into", NULL, "-e", NULL, NULL };
 	char buf[16];
@@ -94,7 +95,7 @@ static int _xterm_add(LockerDemo * demo, unsigned int id)
 
 
 /* xterm_remove */
-static void _xterm_remove(LockerDemo * demo, unsigned int id)
+static void _xterm_remove(LockerDemo * demo, GtkWidget * window)
 {
 	/* FIXME implement */
 }

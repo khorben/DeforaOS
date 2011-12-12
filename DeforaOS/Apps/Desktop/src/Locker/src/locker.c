@@ -152,7 +152,8 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 	screen = gdk_screen_get_default();
 	locker->display = gdk_screen_get_display(screen);
 	locker->screen = gdk_x11_get_default_screen();
-	cnt = gdk_screen_get_n_monitors(screen);
+	if((cnt = gdk_screen_get_n_monitors(screen)) < 1)
+		cnt = 1;
 	locker->windows = NULL;
 	locker->windows_cnt = cnt;
 	locker->dplugin = NULL;
@@ -191,9 +192,10 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 		g_signal_connect(locker->windows[i], "realize", G_CALLBACK(
 					_locker_on_realize), locker);
 	}
+	/* automatically grab keyboard and mouse */
 	g_signal_connect_swapped(G_OBJECT(locker->windows[0]), "map-event",
 			G_CALLBACK(_locker_on_map_event), locker);
-	gtk_container_set_border_width(GTK_CONTAINER(locker->windows[0]), 4);
+	/* pack the authentication widget */
 	gtk_container_add(GTK_CONTAINER(locker->windows[0]), widget);
 	root = gdk_get_default_root_window();
 	XScreenSaverSelectInput(GDK_DISPLAY_XDISPLAY(locker->display),
@@ -369,13 +371,22 @@ static int _new_xss(Locker * locker, size_t cnt)
 /* locker_delete */
 void locker_delete(Locker * locker)
 {
+	size_t i;
+
 	/* FIXME also destroy plug-ins */
 	if(locker->auth != NULL && locker->auth->destroy != NULL)
 		locker->auth->destroy(locker->auth);
 	if(locker->aplugin != NULL)
 		plugin_delete(locker->aplugin);
-	if(locker->demo != NULL && locker->demo->destroy != NULL)
-		locker->demo->destroy(locker->demo);
+	if(locker->demo != NULL)
+	{
+		if(locker->demo->remove != NULL)
+			for(i = 0; i < locker->windows_cnt; i++)
+				locker->demo->remove(locker->demo,
+						locker->windows[i]);
+		if(locker->demo->destroy != NULL)
+			locker->demo->destroy(locker->demo);
+	}
 	if(locker->dplugin != NULL)
 		plugin_delete(locker->dplugin);
 	if(locker->ab_window != NULL)
@@ -538,7 +549,6 @@ static void _locker_action(Locker * locker, LockerAction action)
 			_locker_unlock(locker);
 			break;
 	}
-	locker->auth->action(locker->auth, LOCKER_ACTION_ACTIVATE);
 }
 
 
@@ -546,7 +556,8 @@ static void _locker_action(Locker * locker, LockerAction action)
 static void _locker_activate(Locker * locker)
 {
 	_locker_event(locker, LOCKER_EVENT_ACTIVATING);
-	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
+	if(locker->auth->action(locker->auth, LOCKER_ACTION_ACTIVATE) == 0)
+		XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
 }
 
 
@@ -802,6 +813,7 @@ static gboolean _locker_on_map_event(gpointer data)
 	GdkGrabStatus status;
 
 	/* FIXME detect if this is the first window */
+	/* FIXME the mouse may already be grabbed (Panel's lock button...) */
 	/* grab keyboard and mouse */
 	if((window = gtk_widget_get_window(locker->windows[0])) == NULL)
 		_locker_error(NULL, "Failed to grab input", 1);
@@ -830,11 +842,6 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data)
 {
 	Locker * locker = data;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %lu\n", __func__, GDK_WINDOW_XWINDOW(
-				widget->window));
-#endif
 	if(locker->demo != NULL && locker->demo->add != NULL)
-		locker->demo->add(locker->demo, GDK_WINDOW_XWINDOW(
-					widget->window));
+		locker->demo->add(locker->demo, widget);
 }

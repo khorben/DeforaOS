@@ -42,7 +42,7 @@ typedef struct _Slider
 /* plug-in */
 static GtkWidget * _slider_init(LockerAuth * plugin);
 static void _slider_destroy(LockerAuth * plugin);
-static void _slider_action(LockerAuth * plugin, LockerAction action);
+static int _slider_action(LockerAuth * plugin, LockerAction action);
 
 /* callbacks */
 static void _slider_on_scale_value_changed(gpointer data);
@@ -119,7 +119,7 @@ static void _slider_destroy(LockerAuth * plugin)
 
 
 /* slider_action */
-static void _slider_action(LockerAuth * plugin, LockerAction action)
+static int _slider_action(LockerAuth * plugin, LockerAction action)
 {
 	Slider * slider = plugin->priv;
 
@@ -135,6 +135,7 @@ static void _slider_action(LockerAuth * plugin, LockerAction action)
 		default:
 			break;
 	}
+	return 0;
 }
 
 

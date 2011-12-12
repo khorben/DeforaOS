@@ -16,9 +16,12 @@
 
 
 #include <System.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <libintl.h>
 #include "Locker.h"
+#include "../../config.h"
 #define _(string) gettext(string)
 
 
@@ -41,7 +44,7 @@ typedef struct _Password
 /* plug-in */
 static GtkWidget * _password_init(LockerAuth * plugin);
 static void _password_destroy(LockerAuth * plugin);
-static void _password_action(LockerAuth * plugin, LockerAction action);
+static int _password_action(LockerAuth * plugin, LockerAction action);
 
 /* callbacks */
 static void _password_on_password_activate(gpointer data);
@@ -69,25 +72,45 @@ LockerAuth plugin =
 static GtkWidget * _password_init(LockerAuth * plugin)
 {
 	Password * password;
-	PangoFontDescription * font;
+	PangoFontDescription * bold;
 	const GdkColor white = { 0x0, 0xffff, 0xffff, 0xffff };
 	const GdkColor red = { 0x0, 0xffff, 0x0000, 0x0000 };
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	char buf[256];
 
 	if((password = object_new(sizeof(*password))) == NULL)
 		return NULL;
 	plugin->priv = password;
 	password->source = 0;
-	font = pango_font_description_new();
-	pango_font_description_set_weight(font, PANGO_WEIGHT_BOLD);
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	password->widget = gtk_vbox_new(FALSE, 4);
-	hbox = gtk_hbox_new(FALSE, 4);
-	/* label */
-	widget = gtk_label_new(_("Enter password: "));
-	gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.5);
+	/* centering */
+	widget = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(password->widget), widget, TRUE, TRUE, 0);
+	/* hostname */
+	if(gethostname(buf, sizeof(buf)) != 0)
+		snprintf(buf, sizeof(buf), "%s", "DeforaOS " PACKAGE);
+	else
+		buf[sizeof(buf) - 1] = '\0';
+	widget = gtk_label_new(buf);
 	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, &white);
-	gtk_widget_modify_font(widget, font);
+	gtk_widget_modify_font(widget, bold);
+	gtk_box_pack_start(GTK_BOX(password->widget), widget, FALSE, TRUE, 0);
+	/* screen */
+	snprintf(buf, sizeof(buf), "%s %s", _("This screen is locked by"),
+			getenv("USER")); /* XXX better source? */
+	widget = gtk_label_new(buf);
+	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, &white);
+	gtk_box_pack_start(GTK_BOX(password->widget), widget, FALSE, TRUE, 0);
+	/* prompt */
+	widget = gtk_label_new(_("Enter password: "));
+	gtk_widget_modify_fg(widget, GTK_STATE_NORMAL, &white);
+	gtk_box_pack_start(GTK_BOX(password->widget), widget, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	/* left padding (centering) */
+	widget = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	/* entry */
 	password->password = gtk_entry_new();
@@ -100,18 +123,23 @@ static GtkWidget * _password_init(LockerAuth * plugin)
 	g_signal_connect_swapped(password->button, "clicked", G_CALLBACK(
 				_password_on_password_activate), plugin);
 	gtk_box_pack_start(GTK_BOX(hbox), password->button, FALSE, TRUE, 0);
+	/* right padding (centering) */
 	widget = gtk_label_new(NULL);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(password->widget), hbox, FALSE, TRUE, 0);
-	gtk_widget_show_all(password->widget);
 	/* wrong */
 	password->wrong = gtk_label_new(_("Wrong password!"));
 	gtk_widget_modify_fg(password->wrong, GTK_STATE_NORMAL, &red);
-	gtk_widget_modify_font(password->wrong, font);
+	gtk_widget_modify_font(password->wrong, bold);
+	/* FIXME always show but display the current error instead */
+	gtk_widget_set_no_show_all(password->wrong, TRUE);
 	gtk_box_pack_start(GTK_BOX(password->widget), password->wrong, FALSE,
 			TRUE, 0);
-	pango_font_description_free(font);
+	/* centering */
+	widget = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(password->widget), widget, TRUE, TRUE, 0);
+	gtk_widget_show_all(password->widget);
+	pango_font_description_free(bold);
 	return password->widget;
 }
 
@@ -128,17 +156,27 @@ static void _password_destroy(LockerAuth * plugin)
 
 
 /* password_action */
-static void _password_action(LockerAuth * plugin, LockerAction action)
+static int _password_action(LockerAuth * plugin, LockerAction action)
 {
+	LockerAuthHelper * helper = plugin->helper;
 	Password * password = plugin->priv;
+	GtkWidget * entry = password->password;
+	char const * p;
 
 	switch(action)
 	{
 		case LOCKER_ACTION_LOCK:
-			gtk_widget_set_sensitive(password->password, TRUE);
+			if((p = helper->config_get(helper->locker, "password",
+							"password")) == NULL)
+			{
+				gtk_entry_set_text(GTK_ENTRY(entry), "");
+				return -helper->error(helper->locker,
+						_("No password was set"), 1);
+			}
+			gtk_widget_set_sensitive(entry, TRUE);
 			gtk_widget_set_sensitive(password->button, TRUE);
-			gtk_entry_set_text(GTK_ENTRY(password->password), "");
-			gtk_widget_grab_focus(password->password);
+			gtk_entry_set_text(GTK_ENTRY(entry), "");
+			gtk_widget_grab_focus(entry);
 			if(password->source != 0)
 				g_source_remove(password->source);
 			password->source = g_timeout_add(30000,
@@ -147,6 +185,7 @@ static void _password_action(LockerAuth * plugin, LockerAction action)
 		default:
 			break;
 	}
+	return 0;
 }
 
 

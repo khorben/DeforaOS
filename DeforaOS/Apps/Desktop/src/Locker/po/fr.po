@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-11 17:30+0100\n"
+"POT-Creation-Date: 2011-12-12 23:14+0100\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,31 +15,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:364
+#: ../src/locker.c:366
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:422
+#: ../src/locker.c:433
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:435
+#: ../src/locker.c:446
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:439
+#: ../src/locker.c:450
 msgid "Demos"
 msgstr ""
 
-#: ../src/locker.c:443
+#: ../src/locker.c:454
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:509
+#: ../src/locker.c:520
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:626 ../src/locker.c:630
+#: ../src/locker.c:637 ../src/locker.c:641
 msgid "Error"
 msgstr "Erreur"
 
@@ -63,18 +63,22 @@ msgid ""
 "  -s\tSuspend automatically when locked\n"
 msgstr ""
 
-#: ../src/auth/password.c:87
+#: ../src/auth/password.c:102
+msgid "This screen is locked by"
+msgstr "Cette session est vérouillée par"
+
+#: ../src/auth/password.c:108
 msgid "Enter password: "
 msgstr "Mot de passe : "
 
-#: ../src/auth/password.c:109
+#: ../src/auth/password.c:131
 msgid "Wrong password!"
 msgstr "Mot de passe erroné !"
 
-#: ../src/auth/password.c:173
+#: ../src/auth/password.c:174 ../src/auth/password.c:212
 msgid "No password was set"
 msgstr "Aucun mot de passe n'est configuré"
 
-#: ../src/auth/password.c:183
+#: ../src/auth/password.c:222
 msgid "Authentication failed"
 msgstr "Échec de l'authentification"

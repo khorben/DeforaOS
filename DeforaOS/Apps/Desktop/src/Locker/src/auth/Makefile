@@ -32,7 +32,7 @@ slider_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 slider.so: $(slider_OBJS)
 	$(CCSHARED) -o slider.so $(slider_OBJS) $(slider_LDFLAGS)
 
-password.o: password.c ../../include/Locker.h
+password.o: password.c ../../include/Locker.h ../../config.h
 	$(CC) $(password_CFLAGS) -c password.c
 
 slider.o: slider.c ../../include/Locker.h

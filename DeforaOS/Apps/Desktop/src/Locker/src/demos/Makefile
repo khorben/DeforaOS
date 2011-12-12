@@ -19,15 +19,15 @@ INSTALL	?= install
 all: $(TARGETS)
 
 xscreensaver_OBJS = xscreensaver.o
-xscreensaver_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0`
-xscreensaver_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0`
+xscreensaver_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+xscreensaver_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 xscreensaver.so: $(xscreensaver_OBJS)
 	$(CCSHARED) -o xscreensaver.so $(xscreensaver_OBJS) $(xscreensaver_LDFLAGS)
 
 xterm_OBJS = xterm.o
-xterm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0`
-xterm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0`
+xterm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
+xterm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 xterm.so: $(xterm_OBJS)
 	$(CCSHARED) -o xterm.so $(xterm_OBJS) $(xterm_LDFLAGS)

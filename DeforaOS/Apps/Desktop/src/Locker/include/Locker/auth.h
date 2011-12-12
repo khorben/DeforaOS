@@ -44,7 +44,7 @@ struct _LockerAuth
 	char const * name;
 	GtkWidget * (*init)(LockerAuth * plugin);
 	void (*destroy)(LockerAuth * plugin);
-	void (*action)(LockerAuth * plugin, LockerAction action);
+	int (*action)(LockerAuth * plugin, LockerAction action);
 	void * priv;
 };
 
