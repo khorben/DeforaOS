@@ -110,7 +110,7 @@ static char const * _authors[] =
 };
 
 #ifdef EMBEDDED
-static DesktopAccel _mixer_accel[] =
+static const DesktopAccel _mixer_accel[] =
 {
 	{ G_CALLBACK(on_file_properties), GDK_MOD1_MASK, GDK_KEY_Return },
 	{ G_CALLBACK(on_file_close), GDK_CONTROL_MASK, GDK_KEY_W },
@@ -129,7 +129,7 @@ static DesktopAccel _mixer_accel[] =
 #endif
 
 #ifndef EMBEDDED
-static DesktopMenu _mixer_menu_file[] =
+static const DesktopMenu _mixer_menu_file[] =
 {
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
 		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return },
@@ -138,7 +138,7 @@ static DesktopMenu _mixer_menu_file[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _mixer_menu_view[] =
+static const DesktopMenu _mixer_menu_view[] =
 {
 	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK,
 		GDK_KEY_A },
@@ -161,13 +161,13 @@ static DesktopMenu _mixer_menu_view[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _mixer_menu_help[] =
+static const DesktopMenu _mixer_menu_help[] =
 {
 	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenubar _mixer_menubar[] =
+static const DesktopMenubar _mixer_menubar[] =
 {
 	{ N_("_File"), _mixer_menu_file },
 	{ N_("_View"), _mixer_menu_view },

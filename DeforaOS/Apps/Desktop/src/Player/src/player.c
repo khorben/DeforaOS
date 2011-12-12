@@ -14,6 +14,8 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see <http://www.gnu.org/licenses/>.\n";
+/* TODO:
+ * - change the progress bar for a slider */
 
 
 
@@ -112,7 +114,7 @@ struct _Player
 /* constants */
 #define ICON_NAME "multimedia"
 
-static DesktopAccel _player_accel[] =
+static const DesktopAccel _player_accel[] =
 {
 	{ G_CALLBACK(on_fullscreen), GDK_CONTROL_MASK, GDK_KEY_F },
 #ifdef EMBEDDED
@@ -123,7 +125,7 @@ static DesktopAccel _player_accel[] =
 };
 
 #ifndef EMBEDDED
-static DesktopMenu _player_menu_file[] =
+static const DesktopMenu _player_menu_file[] =
 {
 	{ N_("_Open..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_CONTROL_MASK, GDK_KEY_O },
@@ -136,14 +138,14 @@ static DesktopMenu _player_menu_file[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _player_menu_edit[] =
+static const DesktopMenu _player_menu_edit[] =
 {
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _player_menu_view[] =
+static const DesktopMenu _player_menu_view[] =
 {
 	{ N_("_Playlist"), G_CALLBACK(on_view_playlist), NULL, GDK_CONTROL_MASK,
 		GDK_KEY_L },
@@ -157,7 +159,7 @@ static DesktopMenu _player_menu_view[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _player_menu_help[] =
+static const DesktopMenu _player_menu_help[] =
 {
 # if GTK_CHECK_VERSION(2, 6, 0)
 	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
@@ -167,7 +169,7 @@ static DesktopMenu _player_menu_help[] =
 	{ NULL, NULL, NULL, 0 ,0 }
 };
 
-static DesktopMenubar _player_menubar[] =
+static const DesktopMenubar _player_menubar[] =
 {
 	{ N_("_File"), _player_menu_file },
 	{ N_("_Edit"), _player_menu_edit },

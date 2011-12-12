@@ -66,7 +66,7 @@ enum { TD_COL_TASK, TD_COL_DONE, TD_COL_TITLE, TD_COL_START,
 #define TD_COL_LAST TD_COL_CATEGORY
 #define TD_NUM_COLS (TD_COL_LAST + 1)
 
-static struct
+static const struct
 {
 	int col;
 	char const * title;
@@ -83,7 +83,7 @@ static struct
 	{ 0, NULL, 0, NULL }
 };
 
-static struct
+static const struct
 {
 	unsigned int priority;
 	char const * title;
@@ -107,7 +107,7 @@ static char const * _authors[] =
 
 #ifndef EMBEDDED
 /* menubar */
-static DesktopMenu _file_menu[] =
+static const DesktopMenu _file_menu[] =
 {
 	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
 		GDK_KEY_N },
@@ -118,7 +118,7 @@ static DesktopMenu _file_menu[] =
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
-static DesktopMenu _edit_menu[] =
+static const DesktopMenu _edit_menu[] =
 {
 	{ N_("Select _all"), G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -134,7 +134,7 @@ static DesktopMenu _edit_menu[] =
 		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, NULL, NULL, 0, 0 }
 };
-static DesktopMenu _view_menu[] =
+static const DesktopMenu _view_menu[] =
 {
 	{ N_("_All tasks"), G_CALLBACK(on_view_all_tasks), NULL, 0, 0 },
 	{ N_("_Completed tasks"), G_CALLBACK(on_view_completed_tasks), NULL, 0,
@@ -143,7 +143,7 @@ static DesktopMenu _view_menu[] =
 		0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
-static DesktopMenu _help_menu[] =
+static const DesktopMenu _help_menu[] =
 {
 	{ N_("_About"), G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -153,7 +153,7 @@ static DesktopMenu _help_menu[] =
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
-static DesktopMenubar _menubar[] =
+static const DesktopMenubar _menubar[] =
 {
 	{ N_("_File"), _file_menu },
 	{ N_("_Edit"), _edit_menu },
