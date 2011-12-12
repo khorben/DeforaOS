@@ -78,7 +78,7 @@ static char const * _authors[] =
 };
 
 #ifdef EMBEDDED
-static DesktopAccel _editor_accel[] =
+static const DesktopAccel _editor_accel[] =
 {
 	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_w },
 	{ G_CALLBACK(on_find), GDK_CONTROL_MASK, GDK_KEY_f },
@@ -92,7 +92,7 @@ static DesktopAccel _editor_accel[] =
 #endif
 
 #ifndef EMBEDDED
-static DesktopMenu _editor_menu_file[] =
+static const DesktopMenu _editor_menu_file[] =
 {
 	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
 		GDK_KEY_N },
@@ -108,7 +108,7 @@ static DesktopMenu _editor_menu_file[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _editor_menu_edit[] =
+static const DesktopMenu _editor_menu_edit[] =
 {
 	/* FIXME implement undo and redo */
 	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK,
@@ -139,13 +139,13 @@ static DesktopMenu _editor_menu_edit[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _editor_menu_insert[] =
+static const DesktopMenu _editor_menu_insert[] =
 {
 	{ N_("_File..."), G_CALLBACK(on_insert_file), 0, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _editor_menu_help[] =
+static const DesktopMenu _editor_menu_help[] =
 {
 	{ N_("_About"), G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -156,7 +156,7 @@ static DesktopMenu _editor_menu_help[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenubar _editor_menubar[] =
+static const DesktopMenubar _editor_menubar[] =
 {
 	{ N_("_File"), _editor_menu_file },
 	{ N_("_Edit"), _editor_menu_edit },
