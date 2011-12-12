@@ -125,6 +125,7 @@ static void _ml_refresh(MailerPlugin * plugin, Folder * folder,
 		return;
 	}
 	/* XXX parse and beautify the list's name */
+	gtk_widget_hide(ml->message);
 	gtk_label_set_text(GTK_LABEL(ml->name), id);
 	gtk_widget_show(ml->name);
 }
