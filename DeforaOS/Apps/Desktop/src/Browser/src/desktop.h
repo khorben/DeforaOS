@@ -49,6 +49,8 @@ typedef enum _DesktopLayout
 	DESKTOP_LAYOUT_FILES,
 	DESKTOP_LAYOUT_HOMESCREEN
 } DesktopLayout;
+# define DESKTOP_LAYOUT_LAST DESKTOP_LAYOUT_HOMESCREEN
+# define DESKTOP_LAYOUT_COUNT (DESKTOP_LAYOUT_LAST + 1)
 
 typedef enum _DesktopMessage
 {
