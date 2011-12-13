@@ -2817,7 +2817,8 @@ static void _system_on_ok(gpointer data)
 				p = gtk_file_chooser_get_filename(
 						GTK_FILE_CHOOSER(widget));
 				/* FIXME memory leak */
-				config[i].value = strdup(p);
+				config[i].value = (p != NULL) ? strdup(p)
+					: NULL;
 				_phone_config_set_type(phone, "modem",
 						phone->name, config[i].name, p);
 				break;
