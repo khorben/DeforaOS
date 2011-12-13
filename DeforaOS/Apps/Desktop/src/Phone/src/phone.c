@@ -3884,7 +3884,11 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 	{
 		case MODEM_AUTHENTICATION_STATUS_ERROR:
 			phone_code_clear(phone);
-			snprintf(buf, sizeof(buf), _("Wrong %s"), name);
+			if(name != NULL)
+				snprintf(buf, sizeof(buf), _("Wrong %s"), name);
+			else
+				snprintf(buf, sizeof(buf), "%s",
+						_("Authentication failed"));
 			_phone_error(phone->en_window, buf, 0);
 			break;
 		case MODEM_AUTHENTICATION_STATUS_OK:
