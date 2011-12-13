@@ -29,7 +29,7 @@ msgstr "Authentification"
 
 #: ../src/locker.c:450
 msgid "Demos"
-msgstr ""
+msgstr "Démos"
 
 #: ../src/locker.c:454
 msgid "Plug-ins"
