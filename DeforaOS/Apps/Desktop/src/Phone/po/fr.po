@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-11 00:04+0100\n"
+"POT-Creation-Date: 2011-12-13 18:07+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: DeforaOS development (French) <devel-fr@lists.defora.org>\n"
@@ -226,7 +226,7 @@ msgstr "nouveaux messages"
 msgid "new message"
 msgstr "nouveau message"
 
-#: ../src/phone.c:2506 ../src/phone.c:3462 ../src/phone.c:3466
+#: ../src/phone.c:2506 ../src/phone.c:3463 ../src/phone.c:3467
 msgid "Information"
 msgstr "Information"
 
@@ -246,94 +246,98 @@ msgstr "_Lire"
 msgid "Open file..."
 msgstr "Ouvrir fichier..."
 
-#: ../src/phone.c:2881
+#: ../src/phone.c:2882
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:2887
+#: ../src/phone.c:2888
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/phone.c:2893
+#: ../src/phone.c:2894
 msgid "Attach"
 msgstr "Joindre"
 
-#: ../src/phone.c:3009
+#: ../src/phone.c:3010
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
-#: ../src/phone.c:3081
+#: ../src/phone.c:3082
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:3082
+#: ../src/phone.c:3083
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:3146
+#: ../src/phone.c:3147
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:3181
+#: ../src/phone.c:3182
 msgid "Outgoing"
 msgstr "Sortant"
 
-#: ../src/phone.c:3367
+#: ../src/phone.c:3368
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:3407 ../src/phone.c:3411
+#: ../src/phone.c:3408 ../src/phone.c:3412
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:3431 ../src/phone.c:3435
+#: ../src/phone.c:3432 ../src/phone.c:3436
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:3664
+#: ../src/phone.c:3665
 msgid "Name: "
 msgstr "Nom: "
 
-#: ../src/phone.c:3673
+#: ../src/phone.c:3674
 msgid "Number: "
 msgstr "Numéro: "
 
-#: ../src/phone.c:3689
+#: ../src/phone.c:3690
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:3691
+#: ../src/phone.c:3692
 msgid "Edit contact: "
 msgstr "Modifier contact: "
 
-#: ../src/phone.c:3718
+#: ../src/phone.c:3719
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:3723
+#: ../src/phone.c:3724
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:3857
+#: ../src/phone.c:3858
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:3886
+#: ../src/phone.c:3888
 #, c-format
 msgid "Wrong %s"
 msgstr "Mauvais %s"
 
-#: ../src/phone.c:3895
+#: ../src/phone.c:3891
+msgid "Authentication failed"
+msgstr "Échec lors de l'authentification"
+
+#: ../src/phone.c:3900
 #, c-format
 msgid "%s is valid"
 msgstr "%s valide"
 
-#: ../src/phone.c:3958
+#: ../src/phone.c:3963
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:3994
+#: ../src/phone.c:3999
 msgid "Message deleted"
 msgstr "Message effacé"
 
