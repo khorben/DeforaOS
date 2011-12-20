@@ -9,5 +9,5 @@
 		<tr><td class="field"><?php echo _html_safe(COMMON_NAME); ?> (CN):</td><td><?php echo _html_safe($ca['cn']); ?></td></tr>
 		<tr><td class="field"><?php echo _html_safe(EMAIL); ?>:</td><td><a href="mailto:<?php echo _html_safe($ca['email']); ?>"><?php echo _html_safe($ca['email']); ?></a></td></tr>
 	</table>
-	<div class="toolbar"><a href="<?php echo _html_link('pki', 'ca_import', $ca['id']); ?>"><button type="button"><?php echo _html_safe(IMPORT); ?></button></a> <a href="<?php echo _html_link('pki', 'ca_export', $ca['id']); ?>"><button type="button"><?php echo _html_safe(EXPORT); ?></button></a></div>
+	<div class="toolbar"><a href="<?php echo _html_link('pki', 'ca_import', $ca['id']); ?>"><button type="button" class="icon submit"><?php echo _html_safe(IMPORT); ?></button></a> <a href="<?php echo _html_link('pki', 'ca_export', $ca['id']); ?>"><button type="button" class="icon submit"><?php echo _html_safe(EXPORT); ?></button></a></div>
 </div>
