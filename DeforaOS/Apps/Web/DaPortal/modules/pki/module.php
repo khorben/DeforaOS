@@ -37,6 +37,7 @@ $text['EMAIL'] = 'e-mail';
 $text['EXPORT'] = 'Export';
 $text['KEY'] = 'Key';
 $text['IMPORT'] = 'Import';
+$text['INCLUDE_PRIVATE_KEY'] = 'Include private key';
 $text['LOCALITY'] = 'Locality';
 $text['NEW_CA'] = 'New CA';
 $text['NEW_CACLIENT_FOR'] = 'New client for';
@@ -47,6 +48,8 @@ $text['PARENT_CA'] = 'Parent CA';
 $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
 $text['PUBLIC_KEY_INFRASTRUCTURE'] = 'Public key infrastructure';
+$text['RENEW'] = 'Renew';
+$text['REVOKE'] = 'Revoke';
 $text['SECTION'] = 'Section';
 $text['SELF_SIGNED'] = 'Self-signed';
 $text['SETTINGS'] = 'Settings';
@@ -81,111 +84,140 @@ class PkiModule extends Module
 	//PkiModule::call
 	public function call(&$engine, $request)
 	{
+		global $user_id;
+
+		//FIXME this should be configurable
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'ca_export':
+			case 'ca_import':
+			case 'ca_insert':
+			case 'caclient_export':
+			case 'caclient_insert':
+			case 'caserver_export':
+			case 'caserver_insert':
+			case 'config_update':
+			case 'delete':
+			case 'disable':
+			case 'display':
+			case 'enable':
+			case 'renew':
+			case 'revoke':
+			case 'system':
+				return $this->$action($args);
+			default:
+				return $this->_default($args);
+		}
 		return FALSE;
 	}
-}
 
 
-//private
-//pki_ca_get
-//get a CA
-function _pki_ca_get($id)
-{
-	$parent = _sql_array('SELECT ca_id AS id, title'
-			.' FROM daportal_ca, daportal_content'
-			.' WHERE daportal_ca.ca_id'
-			.'=daportal_content.content_id'
-			." AND enabled='1' AND ca_id='$id'");
-	if(!is_array($parent) || count($parent) != 1)
-		return FALSE;
-	return $parent[0];
-}
-
-
-//pki_exec
-//helper function for exec()
-function _pki_exec($cmd, &$output)
-{
-	$ret = 1;
-	_info($cmd);
-	exec($cmd, $output, $ret);
-	return $ret;
-}
-
-
-//pki_insert_cleanup
-//cleanup a CA or client files when an error occurs
-function _pki_insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
-{
-	if(is_array($files))
-		foreach($files as $f)
-			@unlink($cadir.'/'.$f);
-	if(is_array($dirs))
-		foreach($dirs as $d)
-			@rmdir($cadir.'/'.$d);
-	@rmdir($cadir);
-}
-
-
-//pki_mkdir
-//variant of mkdir() with optional recursivity
-function _pki_mkdir($pathname, $mode = 0777, $recursive = FALSE)
-{
-	if(!$recursive)
-		return mkdir($pathname, $mode, $recursive);
-	$dir = '';
-	$dirs = explode('/', $pathname);
-	foreach($dirs as $d)
+	//private
+	//PkiModule::ca_get
+	//get a CA
+	private function _ca_get($id)
 	{
-		$dir.=$d.'/';
-		if(is_dir($dir))
-			continue;
-		if(mkdir($dir, $mode) != TRUE)
+		$parent = _sql_array('SELECT ca_id AS id, title'
+				.' FROM daportal_ca, daportal_content'
+				.' WHERE daportal_ca.ca_id'
+				.'=daportal_content.content_id'
+				." AND enabled='1' AND ca_id='$id'");
+		if(!is_array($parent) || count($parent) != 1)
 			return FALSE;
+		return $parent[0];
 	}
-	return TRUE;
-}
 
 
-//ssl_config
-//creates an openssl.cnf file for a new CA
-function _ssl_config($home, $cadir, $ca)
-{
-	if(($fp = fopen($cadir.'/openssl.cnf', 'w')) == FALSE)
-		return FALSE;
-	ob_start('_config_true');
-	include('./modules/pki/openssl.cnf.tpl');
-	fwrite($fp, ob_get_contents());
-	ob_end_clean();
-	if(fclose($fp) != TRUE)
-		return FALSE;
-	return TRUE;
-}
-
-function _config_true($void)
-{
-	return TRUE;
-}
+	//PkiModule::_exec
+	//helper function for exec()
+	private function _exec($cmd, &$output)
+	{
+		$ret = 1;
+		_info($cmd);
+		exec($cmd, $output, $ret);
+		return $ret;
+	}
 
 
-//subject_from_ca
-//returns the subject line for a given CA specification
-function _subject_from_ca($ca)
-{
-	//FIXME should escape slashes
-	return '/C='.escapeshellarg($ca['country'])
-		.'/ST='.escapeshellarg($ca['state'])
-		.'/L='.escapeshellarg($ca['locality'])
-		.'/O='.escapeshellarg($ca['organization'])
-		.'/OU='.escapeshellarg($ca['section'])
-		.'/CN='.escapeshellarg($ca['cn'])
-		.'/emailAddress='.escapeshellarg($ca['email']);
-}
+	//PkiModule::_insert_cleanup
+	//cleanup a CA or client files when an error occurs
+	private function _insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
+	{
+		if(is_array($files))
+			foreach($files as $f)
+				@unlink($cadir.'/'.$f);
+		if(is_array($dirs))
+			foreach($dirs as $d)
+				@rmdir($cadir.'/'.$d);
+		@rmdir($cadir);
+	}
 
 
-//public
-//pki_admin
-function pki_admin($args)
+	//PkiModule::_mkdir
+	//variant of mkdir() with optional recursivity
+	private function _mkdir($pathname, $mode = 0777, $recursive = FALSE)
+	{
+		if(!$recursive)
+			return mkdir($pathname, $mode, $recursive);
+		$dir = '';
+		$dirs = explode('/', $pathname);
+		foreach($dirs as $d)
+		{
+			$dir.=$d.'/';
+			if(is_dir($dir))
+				continue;
+			if(mkdir($dir, $mode) != TRUE)
+				return FALSE;
+		}
+		return TRUE;
+	}
+
+
+	//PkiModule::_ssl_config
+	//creates an openssl.cnf file for a new CA
+	private function _ssl_config($home, $cadir, $ca)
+	{
+		if(($fp = fopen($cadir.'/openssl.cnf', 'w')) == FALSE)
+			return FALSE;
+		ob_start(array($this, '_config_true'));
+		include('./modules/pki/openssl.cnf.tpl');
+		fwrite($fp, ob_get_contents());
+		ob_end_clean();
+		if(fclose($fp) != TRUE)
+			return FALSE;
+		return TRUE;
+	}
+
+	private function _config_true($void)
+	{
+		return TRUE;
+	}
+
+
+	//PkiModule::_subject_from_ca
+	//returns the subject line for a given CA specification
+	private function _subject_from_ca($ca)
+	{
+		//FIXME should escape slashes?
+		$ret = '';
+		$fields = array('country' => 'C', 'state' => 'ST',
+				'locality' => 'L', 'organization' => 'O',
+				'section' => 'OU', 'cn' => 'CN',
+				'email' => 'emailAddress');
+		foreach($fields as $k => $v)
+			if(isset($ca[$k]) && strlen($ca[$k]) > 0)
+				$ret .= '/'.$fields[$k].'='.$ca[$k];
+		return $ret;
+	}
+
+
+//PkiModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -253,182 +285,231 @@ function pki_admin($args)
 				'view' => 'details'));
 	//XXX rename and move this function
 	//server list
-	_display_ca_list_type(FALSE, 'caserver', CASERVER_LIST, '');
+	$this->_display_ca_list_type(FALSE, 'caserver', CASERVER_LIST, '');
 	//client list
-	_display_ca_list_type(FALSE, 'caclient', CACLIENT_LIST, '');
+	$this->_display_ca_list_type(FALSE, 'caclient', CACLIENT_LIST, '');
 }
 
 
-//ca_export
-function pki_ca_export($args)
-{
-	global $error;
+	//PkiModule::ca_export
+	protected function ca_export($args)
+	{
+		global $error;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	return _display_ca($args);
-}
-
-
-//ca_import
-function pki_ca_import($args)
-{
-	global $error;
-
-	if(isset($error) && strlen($error))
-		_error($error);
-	return _display_ca($args);
-}
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->_display_ca($args);
+	}
 
 
-//ca_insert
-function pki_ca_insert($args)
-{
-	global $error;
+	//PkiModule::ca_import
+	protected function ca_import($args)
+	{
+		global $error;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	$title = NEW_CA;
-	$ca = array();
-	$fields = array('title', 'country', 'state', 'locality', 'organization',
-			'section', 'cn', 'email');
-	foreach($fields as $f)
-		if(isset($args[$f]))
-			$ca[$f] = stripslashes($args[$f]);
-	$parent = _sql_array('SELECT ca_id AS id, title'
-			.' FROM daportal_ca, daportal_content'
-			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
-			." AND enabled='1'");
-	if(isset($args['parent']) && _pki_ca_get($args['parent']) != FALSE)
-		$parent_id = $args['parent'];
-	include('./modules/pki/ca_update.tpl');
-}
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->_display_ca($args);
+	}
 
 
-//caclient_export
-function pki_caclient_export($args)
-{
-	global $error;
+	//PkiModule::ca_insert
+	protected function ca_insert($args)
+	{
+		global $error;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	return _display_type($args, 'caclient');
-}
-
-
-//caclient_insert
-function pki_caclient_insert($args)
-{
-	global $error;
-
-	if(isset($error) && strlen($error))
-		_error($error);
-	if(!isset($args['parent']) || !($parent = _pki_ca_get($args['parent'])))
-		return _error(INVALID_ARGUMENT);
-	$title = NEW_CACLIENT_FOR.' '.$parent['title'];
-	$caclient = array();
-	$fields = array('title', 'country', 'state', 'locality', 'organization',
-			'section', 'cn', 'email');
-	foreach($fields as $f)
-		if(isset($args[$f]))
-			$caclient[$f] = stripslashes($args[$f]);
-	include('./modules/pki/caclient_update.tpl');
-}
+		if(isset($error) && strlen($error))
+			_error($error);
+		$title = NEW_CA;
+		$ca = array();
+		$fields = array('title', 'country', 'state', 'locality',
+				'organization', 'section', 'cn', 'email');
+		foreach($fields as $f)
+			if(isset($args[$f]))
+				$ca[$f] = stripslashes($args[$f]);
+		$parent = _sql_array('SELECT ca_id AS id, title'
+				.' FROM daportal_ca, daportal_content'
+				.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+				." AND enabled='1'");
+		if(isset($args['parent']) && $this->_ca_get($args['parent'])
+				!== FALSE)
+			$parent_id = $args['parent'];
+		include('./modules/pki/ca_update.tpl');
+	}
 
 
-//caserver_export
-function pki_caserver_export($args)
-{
-	global $error;
+	//PkiModule::caclient_export
+	protected function caclient_export($args)
+	{
+		global $error;
+		global $user_id;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	return _display_type($args, 'caserver');
-}
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
 
-
-//caserver_insert
-function pki_caserver_insert($args)
-{
-	global $error;
-
-	if(isset($error) && strlen($error))
-		_error($error);
-	if(!isset($args['parent']) || !($parent = _pki_ca_get($args['parent'])))
-		return _error(INVALID_ARGUMENT);
-	$title = NEW_CASERVER_FOR.' '.$parent['title'];
-	$caclient = array();
-	$fields = array('title', 'country', 'state', 'locality', 'organization',
-			'section', 'cn', 'email');
-	foreach($fields as $f)
-		if(isset($args[$f]))
-			$caserver[$f] = stripslashes($args[$f]);
-	include('./modules/pki/caserver_update.tpl');
-}
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->_display_type($args, 'caclient');
+	}
 
 
-//config_update
-function pki_config_update($args)
-{
-	global $error;
+	//PkiModule::caclient_insert
+	protected function caclient_insert($args)
+	{
+		global $error;
+		global $user_id;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	return pki_admin(array());
-}
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
 
-
-//default
-function pki_default($args)
-{
-	if(isset($args['id']))
-		return pki_display($args);
-	print('<h1 class="title pki">'._html_safe(PUBLIC_KEY_INFRASTRUCTURE)
-			."</h1>\n");
-	$enabled = " AND enabled='1'";
-	_display_ca_list_type(FALSE, 'ca', CA_LIST, $enabled);
-}
-
-
-//pki_delete
-function pki_delete($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	require_once('./system/content.php');
-	if(isset($args['id'])) //FIXME actually implement
-		_content_delete($args['id']);
-}
+		if(isset($error) && strlen($error))
+			_error($error);
+		if(!isset($args['parent']) || ($parent = $this->_ca_get($args['parent'])) === FALSE)
+			return _error(INVALID_ARGUMENT);
+		$title = NEW_CACLIENT_FOR.' '.$parent['title'];
+		$caclient = array();
+		$fields = array('title', 'country', 'state', 'locality',
+				'organization', 'section', 'cn', 'email');
+		foreach($fields as $f)
+			if(isset($args[$f]))
+				$caclient[$f] = stripslashes($args[$f]);
+		include('./modules/pki/caclient_update.tpl');
+	}
 
 
-//display
-function pki_display($args)
-{
-	if(!isset($args['id']))
-		return _error(INVALID_ARGUMENT);
-	if(_sql_single('SELECT ca_id FROM daportal_ca WHERE '
-				."ca_id='".$args['id']."'") == $args['id'])
-		return _display_ca($args);
-	$types = array('caclient', 'caserver');
-	foreach($types as $t)
-		if(_sql_single('SELECT '.$t.'_id FROM daportal_'.$t.' WHERE '
-					.$t."_id='".$args['id']."'")
-				== $args['id'])
-			return _display_type($args, $t);
-	return _error(INVALID_ARGUMENT);
-}
+	//PkiModule::caserver_export
+	protected function caserver_export($args)
+	{
+		global $error;
+		global $user_id;
 
-function _display_ca($args)
-{
-	global $user_id;
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
 
-	$enabled = " AND enabled='1'";
-	require_once('./system/user.php');
-	if(_user_admin($user_id))
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->_display_type($args, 'caserver');
+	}
+
+
+	//PkiModule::caserver_insert
+	protected function caserver_insert($args)
+	{
+		global $error;
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+
+		if(isset($error) && strlen($error))
+			_error($error);
+		if(!isset($args['parent']) || !($parent = $this->_ca_get($args['parent'])))
+			return _error(INVALID_ARGUMENT);
+		$title = NEW_CASERVER_FOR.' '.$parent['title'];
+		$caclient = array();
+		$fields = array('title', 'country', 'state', 'locality',
+				'organization', 'section', 'cn', 'email');
+		foreach($fields as $f)
+			if(isset($args[$f]))
+				$caserver[$f] = stripslashes($args[$f]);
+		include('./modules/pki/caserver_update.tpl');
+	}
+
+
+	//PkiModule::config_update
+	protected function config_update($args)
+	{
+		global $error;
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->admin(array());
+	}
+
+
+	//PkiModule::_default
+	protected function _default($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		if(isset($args['id']))
+			return $this->display($args);
+		print('<h1 class="title pki">'._html_safe(
+					PUBLIC_KEY_INFRASTRUCTURE)."</h1>\n");
+		//$enabled = " AND enabled='1'";
 		$enabled = '';
+		$this->_display_ca_list_type(FALSE, 'ca', CA_LIST, $enabled);
+	}
+
+
+	//PkiModule::delete
+	protected function delete($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		require_once('./system/content.php');
+		if(isset($args['id'])) //FIXME actually implement
+			_content_delete($args['id']);
+	}
+
+
+	//PkiModule::disable
+	protected function disable($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		require_once('./system/content.php');
+		if(isset($args['id']))
+			_content_disable($args['id']);
+	}
+
+
+	//PkiModule::display
+	protected function display($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		if(!isset($args['id']))
+			return _error(INVALID_ARGUMENT);
+		if(_sql_single('SELECT ca_id FROM daportal_ca WHERE '
+					."ca_id='".$args['id']."'")
+				== $args['id'])
+			return $this->_display_ca($args);
+		$types = array('caclient', 'caserver');
+		foreach($types as $t)
+			if(_sql_single('SELECT '.$t.'_id FROM daportal_'.$t
+						.' WHERE '
+						.$t."_id='".$args['id']."'")
+					== $args['id'])
+				return $this->_display_type($args, $t);
+		return _error(INVALID_ARGUMENT);
+	}
+
+private function _display_ca($args)
+{
+	//$enabled = " AND enabled='1'";
+	$enabled = '';
 	$ca = _sql_array('SELECT ca_id AS id, title, country, state, locality'
 			.', organization, section, cn, email, parent'
 			.' FROM daportal_ca, daportal_content'
@@ -438,18 +519,18 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
-	_display_ca_single($ca['parent'], PARENT_CA);
-	_display_ca_list_type($ca['id'], 'ca', CA_LIST, $enabled);
-	_display_ca_list_type($ca['id'], 'caserver', CASERVER_LIST, $enabled);
-	_display_ca_list_type($ca['id'], 'caclient', CACLIENT_LIST, $enabled);
+	$this->_display_ca_single($ca['parent'], PARENT_CA);
+	$this->_display_ca_list_type($ca['id'], 'ca', CA_LIST, $enabled);
+	$this->_display_ca_list_type($ca['id'], 'caserver', CASERVER_LIST, $enabled);
+	$this->_display_ca_list_type($ca['id'], 'caclient', CACLIENT_LIST, $enabled);
 }
 
-function _display_ca_list_type($id, $type, $title, $enabled)
+private function _display_ca_list_type($id, $type, $title, $enabled)
 {
 	print('<h2 class="title '.$type.'">'._html_safe($title)."</h2>\n");
 	$parent = $id ? " AND parent='".$id."'" : '';
 	$res = _sql_array('SELECT '.$type.'_id AS id, title, country, state'
-			.', locality, organization, section, cn, email'
+			.', locality, organization, section, cn, email, enabled'
 			.' FROM daportal_'.$type.', daportal_content'
 			.' WHERE daportal_'.$type.'.'.$type.'_id'
 			.'=daportal_content.content_id'.$enabled.$parent
@@ -459,6 +540,8 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 	$classes = array('country' => COUNTRY, 'state' => STATE,
 			'locality' => LOCALITY, 'organization' => ORGANIZATION,
 			'section' => SECTION, 'cn' => CN, 'email' => EMAIL);
+	if($enabled == '')
+		$classes = array_merge(array('enabled' => ENABLED), $classes);
 	$keys = array_keys($classes);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
@@ -470,6 +553,18 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 		$res[$i]['tag'] = $res[$i]['title'];
 		foreach($keys as $k)
 			$res[$i][$k] = _html_safe($res[$i][$k]);
+		if($enabled == '')
+		{
+			$res[$i]['apply_module'] = 'pki';
+			$res[$i]['apply_id'] = $res[$i]['id'];
+			$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE
+				? 'enabled' : 'disabled';
+			$res[$i]['enabled'] = '<img src="icons/16x16/'
+				.$res[$i]['enabled'].'.png" alt="'
+				.$res[$i]['enabled'].'" title="'
+				.($res[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED).'"/>';
+		}
 		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
 			.$res[$i]['email'].'</a>';
 	}
@@ -477,12 +572,33 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 	$toolbar[] = array('class' => 'new', 'link' => _module_link('pki',
 				$type.'_insert', FALSE, FALSE, isset($id)
 				? 'parent='.$id : ''));
-	_module('explorer', 'browse_trusted', array('entries' => $res,
-				'class' => $classes, 'toolbar' => $toolbar,
-				'view' => 'details'));
+	if($enabled == '')
+	{
+		$toolbar[] = array();
+		$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
+				'action' => 'disable');
+		$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
+				'action' => 'enable');
+		$toolbar[] = array();
+		$toolbar[] = array('title' => RENEW, 'class' => 'new', //XXX
+				'action' => 'renew', 'confirm' => 'renew');
+		$toolbar[] = array('title' => REVOKE, 'class' => 'delete', //XXX
+				'action' => 'revoke', 'confirm' => 'revoke');
+		$toolbar[] = array();
+		$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+				'action' => 'delete', 'confirm' => 'delete');
+	}
+	$args = array('entries' => $res, 'class' => $classes,
+			'toolbar' => $toolbar, 'view' => 'details');
+	if($enabled == '')
+	{
+		$args['module'] = 'pki';
+		$args['action'] = 'admin';
+	}
+	_module('explorer', 'browse_trusted', $args);
 }
 
-function _display_ca_single($id, $title)
+private function _display_ca_single($id, $title)
 {
 	if(!is_numeric($id))
 		return;
@@ -515,7 +631,7 @@ function _display_ca_single($id, $title)
 				'class' => $classes, 'view' => 'details'));
 }
 
-function _display_type($args, $type)
+private function _display_type($args, $type)
 {
 	global $user_id;
 
@@ -533,53 +649,169 @@ function _display_type($args, $type)
 		return _error(INVALID_ARGUMENT);
 	$$type = $res[0];
 	include('./modules/pki/'.$type.'_display.tpl');
-	_display_ca_single($res[0]['parent'], PARENT_CA);
+	$this->_display_ca_single($res[0]['parent'], PARENT_CA);
 }
 
 
-//system
-function pki_system($args)
+	//PkiModule::enable
+	protected function enable($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return _error(PERMISSION_DENIED);
+		require_once('./system/content.php');
+		if(isset($args['id']))
+			_content_enable($args['id']);
+	}
+
+
+//PkiModule::renew
+protected function renew($args)
 {
-	global $title, $error;
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	//FIXME only allow POST
+	$type = 'caserver'; //XXX fix this
+	if(!isset($args['id']) || !is_numeric($args['id']))
+		return INVALID_ARGUMENT;
+
+	//obtain certificate
+	//FIXME this is code duplication all over the place
+	$caclient = _sql_array('SELECT '.$type.'_id AS id, ccl.title AS title'
+			.', daportal_ca.ca_id AS ca_id, cca.title AS ca'
+			.' FROM daportal_'.$type.', daportal_content ccl'
+			.', daportal_ca, daportal_content cca'
+			.' WHERE daportal_'.$type.'.'.$type.'_id=ccl.content_id'
+			.' AND daportal_'.$type.'.parent=daportal_ca.ca_id'
+			.' AND daportal_ca.ca_id=cca.content_id'
+			.' AND '.$type."_id='".$args['id']."'");
+	if(!is_array($caclient) || count($caclient) != 1)
+		return INVALID_ARGUMENT;
+	$caclient = $caclient[0];
+
+	$this->revoke($args); //XXX check if it failed or is already revoked
+
+	//create signed certificate
+	if(($root = _config_get('pki', 'root')) == FALSE)
+		return 'Could not fetch the root directory';
+	$cadir = $root.'/'.$caclient['ca'];
+	$ext = ($type == 'caclient') ? 'usr_cert' : 'srv_cert';
+	$ecadir = escapeshellarg($cadir);
+	$out = $cadir.'/certs/'.$caclient['title'].'.crt';
+	$eout = escapeshellarg($out);
+	$csr = $cadir.'/newreqs/'.$caclient['title'].'.csr';
+	$ecsr = escapeshellarg($csr);
+	if($this->_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
+				.' -extensions '.$ext.' -policy policy_anything'
+				.' -out '.$eout.' -batch -infiles '.$ecsr,
+				$output) != 0)
+		return 'Could not renew certificate';
+}
+
+
+//PkiModule::revoke
+protected function revoke($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	//FIXME only allow POST
+	$type = 'caserver'; //XXX fix this
+	if(!isset($args['id']) || !is_numeric($args['id']))
+		return INVALID_ARGUMENT;
+
+	//obtain certificate
+	$caclient = _sql_array('SELECT '.$type.'_id AS id, ccl.title AS title'
+			.', daportal_ca.ca_id AS ca_id, cca.title AS ca'
+			.' FROM daportal_'.$type.', daportal_content ccl'
+			.', daportal_ca, daportal_content cca'
+			.' WHERE daportal_'.$type.'.'.$type.'_id=ccl.content_id'
+			.' AND daportal_'.$type.'.parent=daportal_ca.ca_id'
+			.' AND daportal_ca.ca_id=cca.content_id'
+			.' AND '.$type."_id='".$args['id']."'");
+	if(!is_array($caclient) || count($caclient) != 1)
+		return INVALID_ARGUMENT;
+	$caclient = $caclient[0];
+
+	//revoke certificate
+	if(($root = _config_get('pki', 'root')) == FALSE)
+		return 'Could not fetch the root directory';
+	$cadir = $root.'/'.$caclient['ca'];
+	$ecadir = escapeshellarg($cadir);
+	$out = $cadir.'/certs/'.$caclient['title'].'.crt';
+	$eout = escapeshellarg($out);
+	if($this->_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
+				.' -revoke '.$eout, $output) != 0)
+		return 'Could not revoke certificate';
+}
+
+
+//PkiModule::system
+protected function system($args)
+{
+	global $title, $error, $user_id;
 
 	$title.=' - '.PKI;
 	if(!isset($args['action']))
+		return;
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
 		return;
 	if($_SERVER['REQUEST_METHOD'] == 'GET')
 		switch($args['action'])
 		{
 			case 'ca_export':
-				$error = _system_ca_export($args);
+				$error = $this->_system_ca_export($args);
 				break;
 			case 'ca_import':
-				$error = _system_ca_export($args, 'inline');
+				$error = $this->_system_ca_export($args,
+						'inline');
 				break;
 		}
 	else if($_SERVER['REQUEST_METHOD'] == 'POST')
 		switch($args['action'])
 		{
 			case 'ca_insert':
-				$error = _system_ca_insert($args);
+				$error = $this->_system_ca_insert($args);
 				break;
 			case 'caclient_export':
-				$error = _system_export($args, 'caclient');
+				$error = $this->_system_export($args,
+						'caclient');
 				break;
 			case 'caclient_insert':
-				$error = _system_insert($args, 'caclient');
+				$error = $this->_system_insert($args,
+						'caclient');
+				break;
+			case 'caclient_renew':
+				$error = $this->_system_renew($args,
+						'caclient');
 				break;
 			case 'caserver_export':
-				$error = _system_export($args, 'caserver');
+				$error = $this->_system_export($args,
+						'caserver');
 				break;
 			case 'caserver_insert':
-				$error = _system_insert($args, 'caserver');
+				$error = $this->_system_insert($args,
+						'caserver');
+				break;
+			case 'caserver_renew':
+				$error = $this->_system_renew($args,
+						'caserver');
 				break;
 			case 'config_update':
-				$error = _system_config_update($args);
+				$error = $this->_system_config_update($args);
 				break;
 		}
-}
+	}
 
-function _system_ca_export($args, $disposition = 'attachment')
+private function _system_ca_export($args, $disposition = 'attachment')
 {
 	global $user_id;
 
@@ -599,7 +831,7 @@ function _system_ca_export($args, $disposition = 'attachment')
 	$cadir = $root.'/'.$name;
 	$ecadir = escapeshellarg($cadir);
 	$output = array();
-	if(_pki_exec('openssl x509 -in '.$ecadir.'/cacert.crt', $output) != 0)
+	if($this->_exec('openssl x509 -in '.$ecadir.'/cacert.crt', $output) != 0)
 		return 'Could not export certificate';
 	$crt = implode("\n", $output);
 	header('Content-Type: application/x-x509-ca-cert');
@@ -609,7 +841,7 @@ function _system_ca_export($args, $disposition = 'attachment')
 	exit(0);
 }
 
-function _system_ca_insert($args)
+private function _system_ca_insert($args)
 {
 	global $user_id;
 
@@ -631,7 +863,7 @@ function _system_ca_insert($args)
 	//validate parent
 	if(isset($args['parent']) && is_numeric($args['parent']))
 	{
-		if(($parent = _pki_ca_get($args['parent'])) == FALSE)
+		if(($parent = $this->_ca_get($args['parent'])) == FALSE)
 			return INVALID_ARGUMENT;
 		$pcadir = $root.'/'.$parent['title'];
 		if(!is_dir($pcadir))
@@ -646,31 +878,33 @@ function _system_ca_insert($args)
 	//create directories
 	$dirs = array('certs', 'crl', 'newcerts', 'newreqs', 'private');
 	foreach($dirs as $d)
-		if(_pki_mkdir($cadir.'/'.$d, 0700, TRUE) != TRUE)
+		if($this->_mkdir($cadir.'/'.$d, 0700, TRUE) != TRUE)
 		{
-			_pki_insert_cleanup($cadir, $dirs);
+			$this->_insert_cleanup($cadir, $dirs);
 			return 'Could not create directories';
 		}
 
 	//validate rest of input
 	$fields = array('title', 'country', 'state', 'locality', 'organization',
 			'section', 'cn', 'email');
+	$ca = array();
 	foreach($fields as $f)
 	{
 		if(!isset($args[$f]))
 			$args[$f] = '';
+		/* XXX will no longer be necessary */
 		$ca[$f] = stripslashes($args[$f]);
 	}
 
 	//create files
 	$files = array('index.txt', 'openssl.cnf', 'serial');
-	if(touch($cadir.'/index.txt') != TRUE
-			|| _ssl_config($root, $cadir, $ca) == FALSE
-			|| ($fp = fopen($cadir.'/serial', 'w')) == FALSE
-			|| fwrite($fp, "01\n") == FALSE
-			|| fclose($fp) == FALSE)
+	if(touch($cadir.'/index.txt') !== TRUE
+			|| $this->_ssl_config($root, $cadir, $ca) === FALSE
+			|| ($fp = fopen($cadir.'/serial', 'w')) === FALSE
+			|| fwrite($fp, "01\n") === FALSE
+			|| fclose($fp) === FALSE)
 	{
-		_pki_insert_cleanup($cadir, $dirs, $files);
+		$this->_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not create files';
 	}
 
@@ -678,16 +912,17 @@ function _system_ca_insert($args)
 	$files[] = 'private/cacert.key';
 	$files[] = isset($parent) ? 'cacert.csr' : 'cacert.crt';
 	$ecadir = escapeshellarg($cadir);
-	$subject = _subject_from_ca($ca);
+	$subject = $this->_subject_from_ca($ca);
 	$output = array();
 	$sslargs = isset($parent) ? ' -out '.$ecadir.'/cacert.csr'
 		: ' -x509 -out '.$ecadir.'/cacert.crt';
-	if(_pki_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes -new'
-				.$sslargs.' -days 3650'
+	if($this->_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes'
+				.' -new'.$sslargs.' -days 3650'
 				.' -keyout '.$ecadir.'/private/cacert.key'
-				.' -subj '.$subject, $output) != 0)
+				.' -subj '.escapeshellarg($subject), $output)
+			!= 0)
 	{
-		_pki_insert_cleanup($cadir, $dirs, $files);
+		$this->_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not create certificate';
 	}
 
@@ -696,23 +931,23 @@ function _system_ca_insert($args)
 	{
 		$files[] = 'cacert.crt';
 		$epcadir = escapeshellarg($pcadir);
-		if(_pki_exec('openssl ca -config '.$epcadir.'/openssl.cnf'
+		if($this->_exec('openssl ca -config '.$epcadir.'/openssl.cnf'
 					.' -extensions v3_ca'
 					.' -policy policy_anything'
 					.' -out '.$ecadir.'/cacert.crt -batch'
 					.' -infiles '.$ecadir.'/cacert.csr',
 					$output) != 0)
 		{
-			_pki_insert_cleanup($cadir, $dirs, $files);
+			$this->_insert_cleanup($cadir, $dirs, $files);
 			return 'Could not sign certificate';
 		}
 	}
 
 	//insert in database
 	require_once('./system/content.php');
-	if(($id = _content_insert($args['title'], '', 1)) == FALSE)
+	if(($id = _content_insert($args['title'], '', 1)) === FALSE)
 	{
-		_pki_insert_cleanup($cadir, $dirs, $files);
+		$this->_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert content';
 	}
 	$sql = 'INSERT INTO daportal_ca (ca_id';
@@ -726,10 +961,10 @@ function _system_ca_insert($args)
 		.", '".$args['state']."', '".$args['locality']."'"
 		.", '".$args['organization']."', '".$args['section']."'"
 		.", '".$args['cn']."', '".$args['email']."')";
-	if(_sql_query($sql) == FALSE)
+	if(_sql_query($sql) === FALSE)
 	{
 		_content_delete($id);
-		_pki_insert_cleanup($cadir, $dirs, $files);
+		$this->_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert CA';
 	}
 
@@ -738,7 +973,7 @@ function _system_ca_insert($args)
 	exit(0);
 }
 
-function _system_export($args, $type, $disposition = 'attachment')
+private function _system_export($args, $type, $disposition = 'attachment')
 {
 	global $user_id;
 
@@ -786,9 +1021,13 @@ function _system_export($args, $type, $disposition = 'attachment')
 	else
 	{
 		$ecadir = escapeshellarg($cadir);
-		$cmd = 'openssl pkcs12 -export -in '.$eout.' -inkey '.$ecrt
-			.' -passout pass:'.$ekey
-			.' -certfile '.$ecadir.'/cacert.crt';
+		$cmd = 'openssl pkcs12 -export -in '.$eout
+			.' -certfile '.$ecadir.'/cacert.crt'
+			.' -passout pass:'.$ekey;
+		if(isset($args['private'])) //FIXME check this works
+			$cmd.=' -inkey '.$ecrt;
+		else
+			$cmd.=' -nokeys';
 		if(($fp = popen($cmd, 'r')) == FALSE)
 			return 'Could not export certificate';
 		header('Content-Type: application/x-pkcs12');
@@ -800,7 +1039,7 @@ function _system_export($args, $type, $disposition = 'attachment')
 	exit(0);
 }
 
-function _system_insert($args, $type)
+private function _system_insert($args, $type)
 {
 	global $user_id;
 
@@ -823,7 +1062,7 @@ function _system_insert($args, $type)
 		return 'Could not fetch the root directory';
 
 	//get parent
-	if(($parent = _pki_ca_get($args['parent'])) == FALSE)
+	if(($parent = $this->_ca_get($args['parent'])) == FALSE)
 		return INVALID_ARGUMENT;
 	$cadir = $root.'/'.$parent['title'];
 	if(!is_dir($cadir))
@@ -855,42 +1094,43 @@ function _system_insert($args, $type)
 	$ecrt = escapeshellarg($crt);
 	$output = array();
 	$ext = ($type == 'caclient') ? 'usr_cert' : 'srv_cert';
-	if(_pki_exec('openssl req -config '.$ecadir.'/openssl.cnf'
+	if($this->_exec('openssl req -config '.$ecadir.'/openssl.cnf'
 				.' -nodes -new -x509'
 				.' -extensions '.$ext.' -days 365'
 				.' -keyout '.$ecrt.' -out '.$ecrt
-				.' -subj '._subject_from_ca($caclient),
+				.' -subj '.escapeshellarg(
+					$this->_subject_from_ca($caclient)),
 				$output) != 0)
 	{
-		_pki_insert_cleanup($cadir, FALSE, $files);
+		$this->_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate certificate';
 	}
 
 	//create signing request
 	$ecsr = escapeshellarg($csr);
-	if(_pki_exec('openssl x509 -x509toreq -in '.$ecrt.' -out '.$ecsr
+	if($this->_exec('openssl x509 -x509toreq -in '.$ecrt.' -out '.$ecsr
 				.' -signkey '.$ecrt, $output) != 0)
 	{
-		_pki_insert_cleanup($cadir, FALSE, $files);
+		$this->_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate signing request';
 	}
 
 	//create signed certificate
 	$eout = escapeshellarg($out);
-	if(_pki_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
+	if($this->_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
 				.' -extensions '.$ext.' -policy policy_anything'
 				.' -out '.$eout.' -batch -infiles '.$ecsr,
 				$output) != 0)
 	{
-		_pki_insert_cleanup($cadir, FALSE, $files);
+		$this->_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate signed certificate';
 	}
 
 	//insert in database
 	require_once('./system/content.php');
-	if(($id = _content_insert($args['title'], '', 1)) == FALSE)
+	if(($id = _content_insert($args['title'], '', 1)) === FALSE)
 	{
-		_pki_insert_cleanup($cadir, FALSE, $files);
+		$this->_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not insert content';
 	}
 	if(_sql_query('INSERT INTO daportal_'.$type.' ('.$type.'_id, parent'
@@ -899,10 +1139,11 @@ function _system_insert($args, $type)
 			.", '".$args['country']."', '".$args['state']."'"
 			.", '".$args['locality']."'"
 			.", '".$args['organization']."', '".$args['section']."'"
-			.", '".$args['cn']."', '".$args['email']."')") == FALSE)
+			.", '".$args['cn']."', '".$args['email']."')")
+			=== FALSE)
 	{
 		_content_delete($id);
-		_pki_insert_cleanup($cadir, $dirs, $files);
+		$this->_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert CA';
 	}
 
@@ -911,16 +1152,17 @@ function _system_insert($args, $type)
 	exit(0);
 }
 
-function _system_config_update($args)
-{
-	global $user_id;
+	private function _system_config_update($args)
+	{
+		global $user_id;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return PERMISSION_DENIED;
-	_config_update('pki', $args);
-	header('Location: '._module_link('pki', 'admin'));
-	exit(0);
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return PERMISSION_DENIED;
+		_config_update('pki', $args);
+		header('Location: '._module_link('pki', 'admin'));
+		exit(0);
+	}
 }
 
 ?>

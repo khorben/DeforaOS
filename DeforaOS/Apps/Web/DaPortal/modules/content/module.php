@@ -46,13 +46,24 @@ class ContentModule extends Module
 	//ContentModule::call
 	public function call(&$engine, $request)
 	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'delete':
+			case 'insert':
+			case 'system':
+			case 'update':
+				return $this->$action($args);
+			default:
+				return $this->_default($args);
+		}
 		return FALSE;
 	}
-}
 
 
-//content_admin
-function content_admin($args)
+//ContentModule::admin
+protected function admin($args)
 {
 	global $user_id;
 
@@ -120,30 +131,32 @@ function content_admin($args)
 }
 
 
-function content_default($args)
-{
-	global $user_id;
-
-	if(!isset($args['id']))
+	//ContentModule::_default
+	protected function _default($args)
 	{
-		return include('./modules/content/default.tpl');
+		global $user_id;
+
+		if(!isset($args['id']))
+		{
+			return include('./modules/content/default.tpl');
+		}
+		require_once('./system/user.php');
+		if(_user_admin($user_id))
+			$where = '';
+		else
+			$where = " AND daportal_content.enabled='1'";
+		$module = _sql_single('SELECT name FROM daportal_content'
+				.', daportal_module WHERE daportal_content'
+				.'.module_id=daportal_module.module_id'
+				.$where." AND content_id='".$args['id']."'");
+		if($module == FALSE)
+			return _error('Could not display content');
+		_module($module, FALSE, array('id' => $args['id']));
 	}
-	require_once('./system/user.php');
-	if(_user_admin($user_id))
-		$where = '';
-	else
-		$where = " AND daportal_content.enabled='1'";
-	$module = _sql_single('SELECT name FROM daportal_content'
-			.', daportal_module WHERE daportal_content'
-			.'.module_id=daportal_module.module_id'
-			.$where." AND content_id='".$args['id']."'");
-	if($module == FALSE)
-		return _error('Could not display content');
-	_module($module, FALSE, array('id' => $args['id']));
-}
 
 
-function content_delete($args)
+//ContentModule::delete
+protected function delete($args)
 {
 	global $user_id;
 
@@ -186,7 +199,8 @@ function content_enable($args)
 }
 
 
-function content_system($args)
+//ContentModule::system
+protected function system($args)
 {
 	global $title, $error;
 
@@ -194,10 +208,10 @@ function content_system($args)
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
 	if($args['action'] == 'update')
-		$error = _content_system_update($args);
+		$error = $this->_content_system_update($args);
 }
 
-function _content_system_update($args)
+private function _content_system_update($args)
 {
 	global $user_id;
 
@@ -216,7 +230,8 @@ function _content_system_update($args)
 }
 
 
-function content_update($args)
+//ContentModule::update
+protected function update($args)
 {
 	global $error, $user_id;
 
@@ -238,6 +253,7 @@ function content_update($args)
 			.' ORDER BY username ASC');
 	$title = CONTENT_UPDATE;
 	include('./modules/content/update.tpl');
+}
 }
 
 ?>
