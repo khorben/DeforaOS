@@ -62,10 +62,10 @@ function _content_insert($title, $content, $enabled = 0)
 
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
-	if(!_sql_query('INSERT INTO daportal_content (module_id, user_id'
+	if(_sql_query('INSERT INTO daportal_content (module_id, user_id'
 			.', title, content, enabled)'
 			." VALUES ('$module_id', '$user_id', '$title'"
-			.", '$content', '$enabled')"))
+			.", '$content', '$enabled')") === FALSE)
 		return FALSE;
 	return _sql_id('daportal_content', 'content_id');
 }
