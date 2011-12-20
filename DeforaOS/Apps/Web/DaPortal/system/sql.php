@@ -45,6 +45,15 @@ function _sql_enum($table, $field)
 }
 
 
+function _sql_id($table, $field)
+{
+	global $engine;
+
+	$db = $engine->getDatabase();
+	return $db->lastId($engine, $table, $field);
+}
+
+
 function _sql_offset($offset, $limit)
 {
 	global $engine;
