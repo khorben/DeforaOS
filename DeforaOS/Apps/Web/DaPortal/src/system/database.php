@@ -90,6 +90,7 @@ abstract class Database
 
 	//virtual
 	abstract public function enum(&$engine, $table, $field);
+	abstract public function lastId(&$engine, $table, $field);
 	abstract public function offset($limit, $offset = FALSE);
 	abstract public function query(&$engine, $query, $parameters = FALSE);
 

@@ -45,6 +45,16 @@ class Sqlite2Database extends Database
 	}
 
 
+	//Sqlite2Database::lastId
+	public function lastId(&$engine, $table, $field)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		/* FIXME return the real last ID for $table_$field */
+		return sqlite_last_insert_rowid($this->handle);
+	}
+
+
 	//Sqlite2Database::offset
 	public function offset($limit, $offset = FALSE)
 	{
