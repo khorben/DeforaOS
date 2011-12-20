@@ -31,7 +31,7 @@ function _query($query)
 
 	$query = stripslashes(str_replace("\'", "''", $query));
 	_info($query);
-	if(($res = sqlite_query($connection, $query)) == FALSE)
+	if(($res = sqlite_query($connection, $query)) === FALSE)
 		_error(sqlite_error_string(sqlite_last_error($connection)), 0);
 	return $res;
 }
@@ -39,9 +39,9 @@ function _query($query)
 
 function _sql_array($query)
 {
-	if(($res = _query($query)) == FALSE)
+	if(($res = _query($query)) === FALSE)
 		return FALSE;
-	for($array = array(); ($a = sqlite_fetch_array($res)) != FALSE;
+	for($array = array(); ($a = sqlite_fetch_array($res)) !== FALSE;
 			$array[] = $a);
 	return $array;
 }
@@ -49,9 +49,10 @@ function _sql_array($query)
 
 function _sql_enum($table, $field)
 {
-	if(($res = _query('SELECT name FROM '.$table.'_enum_'.$field)) == FALSE)
+	if(($res = _query('SELECT name FROM '.$table.'_enum_'.$field))
+			=== FALSE)
 		return FALSE;
-	for($array = array(); ($a = sqlite_fetch_array($res)) != FALSE;
+	for($array = array(); ($a = sqlite_fetch_array($res)) !== FALSE;
 			$array[] = $a['name']);
 	return $array;
 }
@@ -73,7 +74,7 @@ function _sql_offset($offset, $limit)
 
 function _sql_single($query)
 {
-	if(($res = _query($query)) == FALSE)
+	if(($res = _query($query)) === FALSE)
 		return FALSE;
 	return sqlite_fetch_single($res);
 }
@@ -82,7 +83,7 @@ function _sql_single($query)
 //main
 global $dbname;
 $error = '';
-if(($connection = sqlite_open($dbname, 0666, $error)) == FALSE)
+if(($connection = sqlite_open($dbname, 0666, $error)) === FALSE)
 	_error($error, 0);
 
 ?>
