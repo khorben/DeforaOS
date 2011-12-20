@@ -21,6 +21,7 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+		$(PACKAGE)-$(VERSION)/src/compare.c \
 		$(PACKAGE)-$(VERSION)/src/fontsel.c \
 		$(PACKAGE)-$(VERSION)/src/progress.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
