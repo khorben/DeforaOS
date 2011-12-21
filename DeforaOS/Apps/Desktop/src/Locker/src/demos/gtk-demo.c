@@ -258,16 +258,6 @@ static gboolean _gtk_demo_on_timeout(gpointer data)
 	double xmid, ymid;
 	double radius;
 
-	/* XXX remove this check once _gtk_demo_remove() is completed */
-	for(c = 0; c < gtkdemo->windows_cnt; c++)
-		if(gtkdemo->windows[c] != NULL)
-			break;
-	if(c == gtkdemo->windows_cnt)
-	{
-		gtkdemo->timeout = 0;
-		return FALSE;
-	}
-
 	for(c = 0; c < gtkdemo->windows_cnt; c++)
 	{
 		if((window = gtkdemo->windows[c]) == NULL)
