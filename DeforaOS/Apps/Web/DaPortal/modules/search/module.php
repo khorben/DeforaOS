@@ -66,178 +66,194 @@ class SearchModule extends Module
 	//SearchModule::call
 	public function call(&$engine, $request)
 	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'advanced':
+			case 'config_update':
+			case 'system':
+				return $this->$action($args);
+			default:
+				return $this->_default($args);
+		}
 		return FALSE;
 	}
-}
 
 
-//private
-//search_do
-function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
-		$module = FALSE, $advanced = FALSE)
-{
-	$query = html_entity_decode(stripslashes($q), ENT_QUOTES);
-	$q = explode(' ', $query);
-	if(_config_get('search', 'highlight') == TRUE)
+	//private
+	//search_do
+	private function _search_do($q, $intitle, $incontent, $spp, $page,
+			$user = FALSE, $module = FALSE, $advanced = FALSE)
 	{
-		$from = array();
-		$to = array();
-		foreach($q as $r)
+		$query = html_entity_decode(stripslashes($q), ENT_QUOTES);
+		$q = explode(' ', $query);
+		if(_config_get('search', 'highlight') == TRUE)
 		{
-			$s = _html_safe(strtolower($r));
-			$t = '<span class="highlight">'.$s.'</span>';
-			$from[] = $s;
-			$to[] = $t;
+			$from = array();
+			$to = array();
+			foreach($q as $r)
+			{
+				$s = _html_safe(strtolower($r));
+				$t = '<span class="highlight">'.$s.'</span>';
+				$from[] = $s;
+				$to[] = $t;
+			}
+		}
+		//escape SQL wildcards
+		$q = str_replace(array("'", '%', '_', '['), array("''", '\\\%',
+					'\\\_', '\\\['), $query);
+		$q = explode(' ', $q);
+		$sql = ' FROM daportal_content, daportal_module, daportal_user'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND daportal_content.enabled='1'"
+			." AND daportal_module.enabled='1'";
+		if($user !== FALSE)
+			$sql .= " AND daportal_user.username='$user'";
+		if($module !== FALSE)
+			$sql .= " AND daportal_module.name='$module'";
+		$sql .= " AND (0=1";
+		if($intitle)
+			$sql .= " OR (title LIKE '%"
+				.implode("%' AND title LIKE '%", $q)."%')";
+		if($incontent)
+			$sql .= " OR (content LIKE '%"
+				.implode("%' AND content LIKE '%", $q)."%')";
+		$sql .= ')';
+		if(($count = _sql_single('SELECT COUNT(*)'.$sql)) === FALSE)
+			return _error('Unable to search');
+		include('./modules/search/search_top.tpl');
+		$pages = ceil($count / $spp);
+		$page = min($page, $pages);
+		$res = ($count == 0) ? array() : _sql_array(
+				'SELECT content_id AS id'
+				.', timestamp, daportal_content.module_id'
+				.', name AS module'
+				.', daportal_content.user_id AS user_id'
+				.', title, content, username'.$sql
+				.' ORDER by timestamp DESC '
+				._sql_offset(($page - 1) * $spp, $spp));
+		if(!is_array($res))
+			return _error('Unable to search');
+		$i = 1 + (($page - 1) * $spp);
+		foreach($res as $q)
+		{
+			$q['date'] = _sql_date($q['timestamp']);
+			if(strlen($q['content']) > 400)
+				$q['content'] = substr($q['content'], 0, 400)
+					.'...';
+			include('./modules/search/search_entry.tpl');
+			$i++;
+		}
+		include('./modules/search/search_bottom.tpl');
+		//FIXME doesn't work for advanced search
+		_html_paging(_html_link('search',
+					$advanced ? 'advanced' : FALSE, FALSE,
+					FALSE, array('q' => _html_safe($query),
+						'page' => '')), $page, $pages);
+	}
+
+
+	//functions
+	//SearchModule::admin
+	protected function admin($args)
+	{
+		global $user_id;
+
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return FALSE;
+		print('<h1 class="title search">'
+				._html_safe(SEARCH_ADMINISTRATION)."</h1>\n");
+		if(($configs = _config_list('search')))
+		{
+			print('<h2 class="title settings">'._html_safe(SETTINGS)
+					."</h2>\n");
+			$module = 'search';
+			$action = 'config_update';
+			include('./system/config.tpl');
 		}
 	}
-	//escape SQL wildcards
-	$q = str_replace(array("'", '%', '_', '['), array("''", '\\\%', '\\\_',
-				'\\\['), $query);
-	$q = explode(' ', $q);
-	$sql = ' FROM daportal_content, daportal_module, daportal_user'
-		.' WHERE daportal_content.module_id=daportal_module.module_id'
-		.' AND daportal_content.user_id=daportal_user.user_id'
-		." AND daportal_content.enabled='1'"
-		." AND daportal_module.enabled='1'";
-	if($user !== FALSE)
-		$sql .= " AND daportal_user.username='$user'";
-	if($module !== FALSE)
-		$sql .= " AND daportal_module.name='$module'";
-	$sql .= " AND (0=1";
-	if($intitle)
-		$sql .= " OR (title LIKE '%".implode("%' AND title LIKE '%",
-						$q)."%')";
-	if($incontent)
-		$sql .= " OR (content LIKE '%".implode("%' AND content LIKE '%",
-					$q)."%')";
-	$sql .= ')';
-	if(($count = _sql_single('SELECT COUNT(*)'.$sql)) === FALSE)
-		return _error('Unable to search');
-	include('./modules/search/search_top.tpl');
-	$pages = ceil($count / $spp);
-	$page = min($page, $pages);
-	$res = ($count == 0) ? array() : _sql_array('SELECT content_id AS id'
-			.', timestamp, daportal_content.module_id'
-			.', name AS module, daportal_content.user_id AS user_id'
-			.', title, content, username'.$sql
-			.' ORDER by timestamp DESC '
-			._sql_offset(($page - 1) * $spp, $spp));
-	if(!is_array($res))
-		return _error('Unable to search');
-	$i = 1 + (($page - 1) * $spp);
-	foreach($res as $q)
+
+
+	//SearchModule::advanced
+	protected function advanced($args)
 	{
-		$q['date'] = _sql_date($q['timestamp']);
-		if(strlen($q['content']) > 400)
-			$q['content'] = substr($q['content'], 0, 400).'...';
-		include('./modules/search/search_entry.tpl');
-		$i++;
+		$modules = _module_list();
+		include('./modules/search/search_advanced.tpl');
+		if(!isset($args['q']) || strlen($args['q']) == 0)
+			return;
+		if(!isset($args['page']) || !is_numeric($args['page']))
+			$args['page'] = 1;
+		$args['intitle'] = (isset($args['intitle'])) ? 1 : 0;
+		$args['incontent'] = (isset($args['incontent'])) ? 1 : 0;
+		if($args['intitle'] == 0 && $args['incontent'] == 0)
+		{
+			$args['intitle'] = 1;
+			$args['incontent'] = 1;
+		}
+		$args['user'] = (isset($args['user']) && strlen($args['user']))
+			? $args['user'] : FALSE;
+		$args['inmodule'] = (isset($args['inmodule'])
+				&& strlen($args['inmodule']))
+			? $args['inmodule'] : FALSE;
+		return $this->_search_do($args['q'], $args['intitle'],
+				$args['incontent'], 10, $args['page'],
+				$args['user'], $args['inmodule'], TRUE);
 	}
-	include('./modules/search/search_bottom.tpl');
-	//FIXME doesn't work for advanced search
-	_html_paging(_html_link('search', $advanced ? 'advanced' : FALSE, FALSE,
-				FALSE, array('q' => _html_safe($query),
-					'page' => '')), $page, $pages);
-}
 
 
-//public
-//functions
-//search_admin
-function search_admin($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return FALSE;
-	print('<h1 class="title search">'._html_safe(SEARCH_ADMINISTRATION)
-			."</h1>\n");
-	if(($configs = _config_list('search')))
+	//SearchModule::config_update
+	protected function config_update($args)
 	{
-		print('<h2 class="title settings">'._html_safe(SETTINGS)
-				."</h2>\n");
-		$module = 'search';
-		$action = 'config_update';
-		include('./system/config.tpl');
+		global $error;
+
+		if(isset($error) && strlen($error))
+			_error($error);
+		return $this->admin(array());
 	}
-}
 
 
-//search_advanced
-function search_advanced($args)
-{
-	$modules = _module_list();
-	include('./modules/search/search_advanced.tpl');
-	if(!isset($args['q']) || strlen($args['q']) == 0)
-		return;
-	if(!isset($args['page']) || !is_numeric($args['page']))
-		$args['page'] = 1;
-	$args['intitle'] = (isset($args['intitle'])) ? 1 : 0;
-	$args['incontent'] = (isset($args['incontent'])) ? 1 : 0;
-	if($args['intitle'] == 0 && $args['incontent'] == 0)
+	//SearchModule::_default
+	protected function _default($args)
 	{
-		$args['intitle'] = 1;
-		$args['incontent'] = 1;
+		include('./modules/search/search.tpl');
+		if(!isset($args['q']) || strlen($args['q']) == 0)
+			return;
+		if(!isset($args['page']) || !is_numeric($args['page']))
+			$args['page'] = 1;
+		return $this->_search_do($args['q'], 1, 1, 10, $args['page']);
 	}
-	$args['user'] = (isset($args['user']) && strlen($args['user']))
-		? $args['user'] : FALSE;
-	$args['inmodule'] = (isset($args['inmodule'])
-			&& strlen($args['inmodule'])) ? $args['inmodule']
-		: FALSE;
-	return _search_do($args['q'], $args['intitle'], $args['incontent'], 10,
-			$args['page'], $args['user'], $args['inmodule'], TRUE);
-}
 
 
-//search_config_update
-function search_config_update($args)
-{
-	global $error;
+	//SearchModule::system
+	protected function system($args)
+	{
+		global $title, $error;
 
-	if(isset($error) && strlen($error))
-		_error($error);
-	return search_admin(array());
-}
+		$title.=' - '.SEARCH;
+		if(!isset($args['action']))
+			return;
+		if($_SERVER['REQUEST_METHOD'] == 'POST')
+			if($_POST['action'] == 'config_update')
+				$error = $this->_search_system_config($args);
+	}
 
+	private function _search_system_config($args)
+	{
+		global $user_id;
 
-//search_default
-function search_default($args)
-{
-	include('./modules/search/search.tpl');
-	if(!isset($args['q']) || strlen($args['q']) == 0)
-		return;
-	if(!isset($args['page']) || !is_numeric($args['page']))
-		$args['page'] = 1;
-	return _search_do($args['q'], 1, 1, 10, $args['page']);
-}
-
-
-//search_system
-function search_system($args)
-{
-	global $title, $error;
-
-	$title.=' - '.SEARCH;
-	if(!isset($args['action']))
-		return;
-	if($_SERVER['REQUEST_METHOD'] == 'POST')
-		if($_POST['action'] == 'config_update')
-			$error = _search_system_config($args);
-}
-
-function _search_system_config($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return PERMISSION_DENIED;
-	$args['search_highlight'] = isset($args['search_highlight']) ? TRUE
-		: FALSE;
-	_config_update('search', $args);
-	header('Location: '._module_link('search', 'admin'));
-	exit(0);
+		require_once('./system/user.php');
+		if(!_user_admin($user_id))
+			return PERMISSION_DENIED;
+		$args['search_highlight'] = isset($args['search_highlight'])
+			? TRUE : FALSE;
+		_config_update('search', $args);
+		header('Location: '._module_link('search', 'admin'));
+		exit(0);
+	}
 }
 
 ?>
