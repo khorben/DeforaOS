@@ -158,7 +158,6 @@ static void _gtk_demo_destroy(LockerDemo * demo)
 static int _gtk_demo_add(LockerDemo * demo, GtkWidget * window)
 {
 	int ret = 0;
-	LockerDemoHelper * helper = demo->helper;
 	GtkDemo * gtkdemo = demo->priv;
 	GtkWidget ** p;
 	GdkColor color = { 0xff000000, 0xffff, 0x0, 0x0 };
@@ -171,7 +170,6 @@ static int _gtk_demo_add(LockerDemo * demo, GtkWidget * window)
 	int h;
 	int i;
 	int j;
-	GError * error = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() window=%p\n", __func__, (void *)window);
@@ -243,7 +241,7 @@ static gboolean _gtk_demo_on_timeout(gpointer data)
 	LockerDemo * demo = data;
 	GtkDemo * gtkdemo = demo->priv;
 	size_t c;
-	GtkWidget * window;
+	GdkWindow * window;
 	GdkPixbuf * background = gtkdemo->images[GDI_BACKGROUND];
 	gint back_width;
 	gint back_height;
@@ -260,9 +258,14 @@ static gboolean _gtk_demo_on_timeout(gpointer data)
 
 	for(c = 0; c < gtkdemo->windows_cnt; c++)
 	{
-		if((window = gtkdemo->windows[c]) == NULL)
+		if(gtkdemo->windows[c] == NULL)
 			break;
-		gdk_window_get_geometry(gtk_widget_get_window(window), &rect.x,
+#if GTK_CHECK_VERSION(2, 14, 0)
+		window = gtk_widget_get_window(gtkdemo->windows[c]);
+#else
+		window = gtkdemo->windows[c]->window;
+#endif
+		gdk_window_get_geometry(window, &rect.x,
 				&rect.y, &rect.width, &rect.height, &depth);
 		frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8,
 				rect.width, rect.height);
@@ -331,13 +334,11 @@ static gboolean _gtk_demo_on_timeout(gpointer data)
 					 ? MAX (127, fabs (255 * sin (f * 2.0 * G_PI)))
 					 : MAX (127, fabs (255 * cos (f * 2.0 * G_PI)))));
 	}
-	pixmap = gdk_pixmap_new(gtk_widget_get_window(window), rect.width,
-			rect.width, -1);
+	pixmap = gdk_pixmap_new(window, rect.width, rect.width, -1);
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
 			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
-	gdk_window_set_back_pixmap(gtk_widget_get_window(window), pixmap,
-			FALSE);
-	gdk_window_clear(gtk_widget_get_window(window));
+	gdk_window_set_back_pixmap(window, pixmap, FALSE);
+	gdk_window_clear(window);
 	gdk_pixmap_unref(pixmap);
 	g_object_unref(frame);
 
