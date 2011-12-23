@@ -165,18 +165,16 @@ static gboolean _init_idle(gpointer data)
 {
 	PanelApplet * applet = data;
 	Keyboard * keyboard = applet->priv;
-	unsigned long xid;
 
 	keyboard->source = 0;
 	if(keyboard->window != NULL)
-		return FALSE;
-	if(_keyboard_spawn(applet, &xid) != 0)
 		return FALSE;
 	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
 #endif
+	/* XXX let this be configurable (resize applications automatically) */
 	gtk_window_set_type_hint(GTK_WINDOW(keyboard->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	keyboard->socket = gtk_socket_new();
@@ -185,7 +183,6 @@ static gboolean _init_idle(gpointer data)
 	g_signal_connect(keyboard->socket, "plug-removed", G_CALLBACK(
 				_keyboard_on_removed), NULL);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), keyboard->socket);
-	gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
 	gtk_widget_show(keyboard->socket);
 	return FALSE;
 }
@@ -219,7 +216,7 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 	Keyboard * keyboard = applet->priv;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void*)applet,
+	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void *)applet,
 			apply ? "TRUE" : "FALSE", reset ? "TRUE" : "FALSE");
 #endif
 	if(keyboard->pr_box == NULL)
@@ -436,6 +433,7 @@ static void _keyboard_on_toggled(GtkWidget * widget, gpointer data)
 	gint x = 0;
 	gint y = 0;
 	gboolean push_in;
+	unsigned long xid;
 
 	if(keyboard->window == NULL)
 		_init_idle(keyboard);
@@ -445,7 +443,14 @@ static void _keyboard_on_toggled(GtkWidget * widget, gpointer data)
 			&push_in);
 	gtk_window_move(GTK_WINDOW(keyboard->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+	{
+		if(keyboard->pid == -1)
+		{
+			_keyboard_spawn(applet, &xid);
+			gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
+		}
 		gtk_widget_show(keyboard->window);
+	}
 	else
 		gtk_widget_hide(keyboard->window);
 }
