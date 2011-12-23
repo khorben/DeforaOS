@@ -167,6 +167,9 @@ Panel * panel_new(PanelPrefs const * prefs)
 	Panel * panel;
 	GdkRectangle rect;
 	GtkIconSize iconsize;
+	char const * p;
+	gboolean focus;
+	gboolean above;
 
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
@@ -225,13 +228,27 @@ Panel * panel_new(PanelPrefs const * prefs)
 	/* root window */
 	panel->root = gdk_screen_get_root_window(panel->screen);
 	_panel_reset(panel, &rect);
-	panel->top = (config_get(panel->config, NULL, "top") != NULL)
-		? panel_window_new(PANEL_POSITION_TOP, &panel->top_helper,
-				&rect) : NULL;
-	panel->bottom = (config_get(panel->config, NULL, "bottom") != NULL
+	focus = ((p = config_get(panel->config, NULL, "accept_focus")) == NULL
+			|| strcmp(p, "1") == 0) ? TRUE : FALSE;
+	above = ((p = config_get(panel->config, NULL, "keep_above")) == NULL
+			|| strcmp(p, "1") == 0) ? TRUE : FALSE;
+	/* top panel */
+	if(config_get(panel->config, NULL, "top") != NULL)
+	{
+		panel->top = panel_window_new(PANEL_POSITION_TOP,
+				&panel->top_helper, &rect);
+		panel_window_set_accept_focus(panel->top, focus);
+		panel_window_set_keep_above(panel->top, above);
+	}
+	/* bottom panel */
+	if(config_get(panel->config, NULL, "bottom") != NULL
 			|| config_get(panel->config, NULL, "top") == NULL)
-		? panel_window_new(PANEL_POSITION_BOTTOM,
-				&panel->bottom_helper, &rect) : NULL;
+	{
+		panel->bottom = panel_window_new(PANEL_POSITION_BOTTOM,
+				&panel->bottom_helper, &rect);
+		panel_window_set_accept_focus(panel->bottom, focus);
+		panel_window_set_keep_above(panel->bottom, above);
+	}
 	/* manage root window events */
 	gdk_add_client_message_filter(gdk_atom_intern(PANEL_CLIENT_MESSAGE,
 				FALSE), _on_root_event, panel);

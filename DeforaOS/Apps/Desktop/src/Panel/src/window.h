@@ -33,6 +33,8 @@ void panel_window_delete(PanelWindow * panel);
 
 /* accessors */
 int panel_window_get_height(PanelWindow * panel);
+void panel_window_set_accept_focus(PanelWindow * panel, gboolean accept);
+void panel_window_set_keep_above(PanelWindow * panel, gboolean keep);
 
 /* useful */
 void panel_window_append(PanelWindow * panel, GtkWidget * widget,

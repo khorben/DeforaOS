@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-15 00:07+0100\n"
+"POT-Creation-Date: 2011-12-23 15:47+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:185 ../src/panel.c:464 ../src/panel.c:469
+#: ../src/applets/battery.c:185 ../src/panel.c:481 ../src/panel.c:486
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
@@ -88,19 +88,19 @@ msgstr "GSM actif"
 msgid "Show keyboard"
 msgstr "Afficher le clavier"
 
-#: ../src/applets/keyboard.c:283 ../src/applets/lock.c:114 ../src/run.c:108
+#: ../src/applets/keyboard.c:280 ../src/applets/lock.c:114 ../src/run.c:108
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/applets/keyboard.c:294
+#: ../src/applets/keyboard.c:291
 msgid "Width:"
 msgstr "Largeur :"
 
-#: ../src/applets/keyboard.c:305
+#: ../src/applets/keyboard.c:302
 msgid "Height:"
 msgstr "Hauteur :"
 
-#: ../src/applets/keyboard.c:315
+#: ../src/applets/keyboard.c:312
 msgid "Keep ratio"
 msgstr "Respecter les proportions"
 
@@ -112,8 +112,8 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr "Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:1329 ../src/panel.c:1336
-#: ../src/panel.c:1345
+#: ../src/applets/logout.c:69 ../src/panel.c:1346 ../src/panel.c:1353
+#: ../src/panel.c:1362
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -219,35 +219,35 @@ msgstr "Petite"
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:581
+#: ../src/panel.c:598
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:595
+#: ../src/panel.c:612
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:624
+#: ../src/panel.c:641
 msgid "Applets:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:699
+#: ../src/panel.c:716
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:705 ../src/panel.c:709 ../src/panel.c:740 ../src/panel.c:744
+#: ../src/panel.c:722 ../src/panel.c:726 ../src/panel.c:757 ../src/panel.c:761
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:734
+#: ../src/panel.c:751
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:1268
+#: ../src/panel.c:1285
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1315
+#: ../src/panel.c:1332
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -258,7 +258,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1431
+#: ../src/panel.c:1448
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -269,7 +269,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1436
+#: ../src/panel.c:1453
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -280,11 +280,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1450 ../src/panel.c:1457 ../src/panel.c:1466
+#: ../src/panel.c:1467 ../src/panel.c:1474 ../src/panel.c:1483
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1456
+#: ../src/panel.c:1473
 msgid "Restart"
 msgstr "Redémarrer"
 
@@ -336,6 +336,6 @@ msgstr "Permissions insuffisantes"
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
-#: ../src/window.c:63
+#: ../src/window.c:66
 msgid "Invalid panel size"
 msgstr "Taille invalide pour le panel"
