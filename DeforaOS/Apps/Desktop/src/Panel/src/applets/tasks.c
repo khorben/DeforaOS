@@ -290,6 +290,8 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	ret = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(ret),
 			GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(ret),
+			GTK_SHADOW_NONE);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(ret),
 			tasks->hbox);
 #else
