@@ -20,6 +20,7 @@
 #include <string.h>
 #include <locale.h>
 #include <libintl.h>
+#include <gtk/gtk.h>
 #include <Desktop.h>
 #include "Locker.h"
 #include "../config.h"
