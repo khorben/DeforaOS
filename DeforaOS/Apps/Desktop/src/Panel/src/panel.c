@@ -564,7 +564,8 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 static void _show_preferences_window(Panel * panel);
 static GtkWidget * _preferences_window_applets(Panel * panel);
 static GtkListStore * _preferences_window_applets_model(void);
-static GtkWidget * _preferences_window_applets_view(GtkListStore * store);
+static GtkWidget * _preferences_window_applets_view(GtkListStore * store,
+		gboolean reorderable);
 static void _preferences_window_applets_plugin_add(GtkListStore * store,
 		char const * name);
 static GtkWidget * _preferences_window_general(Panel * panel);
@@ -656,7 +657,8 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 	panel->pr_store = _preferences_window_applets_model();
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(panel->pr_store),
 			2, GTK_SORT_ASCENDING);
-	panel->pr_view = _preferences_window_applets_view(panel->pr_store);
+	panel->pr_view = _preferences_window_applets_view(panel->pr_store,
+			FALSE);
 	gtk_container_add(GTK_CONTAINER(widget), panel->pr_view);
 	gtk_container_add(GTK_CONTAINER(frame), widget);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -670,6 +672,7 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_preferences_on_top_add), panel);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+#ifndef EMBEDDED
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_UP, GTK_ICON_SIZE_BUTTON));
@@ -682,6 +685,7 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_preferences_on_top_down), panel);
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+#endif
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_DELETE, GTK_ICON_SIZE_BUTTON));
@@ -700,6 +704,7 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_preferences_on_bottom_remove), panel);
 	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+#ifndef EMBEDDED
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_BUTTON));
@@ -712,6 +717,7 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_preferences_on_bottom_up), panel);
 	gtk_box_pack_end(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+#endif
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
 				GTK_STOCK_GO_FORWARD, GTK_ICON_SIZE_BUTTON));
@@ -750,7 +756,7 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 			GTK_SHADOW_ETCHED_IN);
 	panel->pr_top_store = _preferences_window_applets_model();
 	panel->pr_top_view = _preferences_window_applets_view(
-			panel->pr_top_store);
+			panel->pr_top_store, TRUE);
 	gtk_container_add(GTK_CONTAINER(widget), panel->pr_top_view);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox3);
@@ -786,7 +792,7 @@ static GtkWidget * _preferences_window_applets(Panel * panel)
 			GTK_SHADOW_ETCHED_IN);
 	panel->pr_bottom_store = _preferences_window_applets_model();
 	panel->pr_bottom_view = _preferences_window_applets_view(
-			panel->pr_bottom_store);
+			panel->pr_bottom_store, TRUE);
 	gtk_container_add(GTK_CONTAINER(widget), panel->pr_bottom_view);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), vbox3);
@@ -805,7 +811,8 @@ static GtkListStore * _preferences_window_applets_model(void)
 	return store;
 }
 
-static GtkWidget * _preferences_window_applets_view(GtkListStore * store)
+static GtkWidget * _preferences_window_applets_view(GtkListStore * store,
+		gboolean reorderable)
 {
 	GtkWidget * view;
 	GtkTreeSelection * treesel;
@@ -814,7 +821,7 @@ static GtkWidget * _preferences_window_applets_view(GtkListStore * store)
 
 	view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
-	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), FALSE);
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), reorderable);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	renderer = gtk_cell_renderer_pixbuf_new();
