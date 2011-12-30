@@ -93,6 +93,7 @@ static void _gdeasm_delete(GDeasm * gdeasm);
 static int _gdeasm_confirm(GDeasm * gdeasm, char const * message, ...);
 static int _gdeasm_error(GDeasm * gdeasm, char const * message, int ret);
 static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
+static int _gdeasm_save_comments(GDeasm * gdeasm, char const * filename);
 
 /* callbacks */
 static void _gdeasm_on_about(gpointer data);
@@ -103,6 +104,7 @@ static void _gdeasm_on_comment_edited(GtkCellRendererText * renderer,
 static void _gdeasm_on_function_activated(GtkTreeView * view,
 		GtkTreePath * path, GtkTreeViewColumn * column, gpointer data);
 static void _gdeasm_on_open(gpointer data);
+static void _gdeasm_on_save_comments(gpointer data);
 
 static int _usage(void);
 
@@ -118,6 +120,9 @@ static DesktopMenu const _gdeasm_menu_file[] =
 {
 	{ "_Open...", G_CALLBACK(_gdeasm_on_open), GTK_STOCK_OPEN,
 		GDK_CONTROL_MASK, GDK_KEY_O },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Save comments as...", G_CALLBACK(_gdeasm_on_save_comments), NULL,
+		GDK_CONTROL_MASK, GDK_KEY_S },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Close", G_CALLBACK(_gdeasm_on_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
@@ -141,6 +146,17 @@ static DesktopMenubar const _gdeasm_menubar[] =
 	{ NULL, NULL },
 };
 
+/* toolbar */
+static DesktopToolbar _gdeasm_toolbar[] =
+{
+	{ "Open file", G_CALLBACK(_gdeasm_on_open), GTK_STOCK_OPEN, 0, 0,
+		NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Save comments", G_CALLBACK(_gdeasm_on_save_comments),
+		GTK_STOCK_SAVE_AS, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
+};
+
 
 /* functions */
 /* gdeasm_new */
@@ -151,7 +167,6 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 	GtkWidget * vbox;
 	GtkWidget * menubar;
 	GtkWidget * toolbar;
-	GtkToolItem * toolitem;
 	GtkWidget * hpaned;
 	GtkWidget * vpaned;
 	GtkWidget * scrolled;
@@ -188,11 +203,7 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 	menubar = desktop_menubar_create(_gdeasm_menubar, gdeasm, accel);
 	gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 	/* toolbar */
-	toolbar = gtk_toolbar_new();
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
-	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-				_gdeasm_on_open), gdeasm);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	toolbar = desktop_toolbar_create(_gdeasm_toolbar, gdeasm, accel);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* view */
 	hpaned = gtk_hpaned_new();
@@ -522,6 +533,54 @@ static void _open_strings(GDeasm * gdeasm, AsmString * as, size_t as_cnt)
 }
 
 
+/* gdeasm_save_comments */
+struct _save_comments_foreach_args
+{
+	int ret;
+	GDeasm * gdeasm;
+	Config * config;
+};
+static gboolean _save_comments_foreach(GtkTreeModel * model, GtkTreePath * path,
+		GtkTreeIter * iter, gpointer data);
+
+static int _gdeasm_save_comments(GDeasm * gdeasm, char const * filename)
+{
+	struct _save_comments_foreach_args args;
+
+	args.ret = 0;
+	args.gdeasm = gdeasm;
+	if((args.config = config_new()) == NULL)
+		return -_gdeasm_error(gdeasm, error_get(), 1);
+	gtk_tree_model_foreach(GTK_TREE_MODEL(gdeasm->asm_store),
+			_save_comments_foreach, &args);
+	if(args.ret == 0 && config_save(args.config, filename) != 0)
+		args.ret = -_gdeasm_error(gdeasm, error_get(), 1);
+	config_delete(args.config);
+	return args.ret;
+}
+
+static gboolean _save_comments_foreach(GtkTreeModel * model, GtkTreePath * path,
+		GtkTreeIter * iter, gpointer data)
+{
+	struct _save_comments_foreach_args * args = data;
+	int offset;
+	gchar * p;
+	char buf[16];
+
+	gtk_tree_model_get(model, iter, GAC_OFFSET, &offset, GAC_COMMENT, &p,
+			-1);
+	if(p != NULL && strlen(p) > 0)
+	{
+		snprintf(buf, sizeof(buf), "0x%x", offset);
+		if(config_set(args->config, "comments", buf, p) != 0)
+			args->ret = -_gdeasm_error(args->gdeasm, error_get(),
+					1);
+	}
+	g_free(p);
+	return (args->ret == 0) ? FALSE : TRUE;
+}
+
+
 /* callbacks */
 /* gdeasm_on_about */
 static void _gdeasm_on_about(gpointer data)
@@ -674,9 +733,39 @@ static void _gdeasm_on_open(gpointer data)
 		raw = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	}
 	gtk_widget_destroy(dialog);
-	if(filename == NULL)
-		return;
-	_gdeasm_open(gdeasm, filename, raw);
+	if(filename != NULL)
+		_gdeasm_open(gdeasm, filename, raw);
+	g_free(filename);
+}
+
+
+/* gdeasm_on_save_comments */
+static void _gdeasm_on_save_comments(gpointer data)
+{
+	GDeasm * gdeasm = data;
+	GtkWidget * dialog;
+	GtkFileFilter * filter;
+	char * filename = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Save comments as...", NULL,
+			GTK_FILE_CHOOSER_ACTION_SAVE,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, "GDeasm files");
+        gtk_file_filter_add_pattern(filter, "*.gdeasm");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+        gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_add_pattern(filter, "*");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename != NULL)
+		_gdeasm_save_comments(gdeasm, filename);
 	g_free(filename);
 }
 
