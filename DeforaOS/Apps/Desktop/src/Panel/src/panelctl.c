@@ -21,6 +21,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include <Desktop.h>
 #include "panel.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -48,19 +49,8 @@ static int _usage(void);
 /* functions */
 static int _panelctl(PanelMessageShow what, gboolean show)
 {
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
-
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PANEL_CLIENT_MESSAGE, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = PANEL_MESSAGE_SHOW;
-	client->data.b[1] = what;
-	client->data.b[2] = show;
-	gdk_event_send_clientmessage_toall(&event);
+	desktop_message_send(PANEL_CLIENT_MESSAGE, PANEL_MESSAGE_SHOW, what,
+			show);
 	return 0;
 }
 

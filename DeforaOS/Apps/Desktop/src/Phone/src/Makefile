@@ -6,8 +6,9 @@ BINDIR	= $(PREFIX)/bin
 CC	?= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS=
-CFLAGSF	= -W
+CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0 libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= `pkg-config --libs libSystem gtk+-2.0 libDesktop`
 RM	?= rm -f
 LN	?= ln -f
 MKDIR	?= mkdir -p
@@ -20,15 +21,15 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 phone_OBJS = callbacks.o main.o modem.o phone.o
-phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem libDesktop`
-phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem libDesktop`
+phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 phone: $(phone_OBJS)
 	$(CC) -o phone $(phone_OBJS) $(phone_LDFLAGS)
 
 phonectl_OBJS = phonectl.o
-phonectl_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
-phonectl_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
+phonectl_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phonectl_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 phonectl: $(phonectl_OBJS)
 	$(CC) -o phonectl $(phonectl_OBJS) $(phonectl_LDFLAGS)

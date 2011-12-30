@@ -27,8 +27,8 @@ panel: $(panel_OBJS)
 	$(CC) -o panel $(panel_OBJS) $(panel_LDFLAGS)
 
 panelctl_OBJS = panelctl.o
-panelctl_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
-panelctl_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
+panelctl_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+panelctl_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 panelctl: $(panelctl_OBJS)
 	$(CC) -o panelctl $(panelctl_OBJS) $(panelctl_LDFLAGS)

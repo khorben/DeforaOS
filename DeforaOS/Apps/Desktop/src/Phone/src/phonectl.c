@@ -21,6 +21,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include <Desktop.h>
 #include "phone.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -67,8 +68,6 @@ int main(int argc, char * argv[])
 	int o;
 	int type = PHONE_MESSAGE_SHOW;
 	int action = -1;
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -124,15 +123,6 @@ int main(int argc, char * argv[])
 		}
 	if(action < 0)
 		return _usage();
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PHONE_CLIENT_MESSAGE, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = type;
-	client->data.b[1] = action;
-	client->data.b[2] = TRUE;
-	gdk_event_send_clientmessage_toall(&event);
+	desktop_message_send(PHONE_CLIENT_MESSAGE, type, action, TRUE);
 	return 0;
 }
