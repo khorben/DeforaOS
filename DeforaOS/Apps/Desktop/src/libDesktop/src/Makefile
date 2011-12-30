@@ -19,7 +19,7 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-libDesktop_OBJS = about.o accel.o assistant.o menubar.o mime.o toolbar.o
+libDesktop_OBJS = about.o accel.o assistant.o menubar.o message.o mime.o toolbar.o
 libDesktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libDesktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -43,6 +43,9 @@ assistant.o: assistant.c
 
 menubar.o: menubar.c
 	$(CC) $(libDesktop_CFLAGS) -c menubar.c
+
+message.o: message.c
+	$(CC) $(libDesktop_CFLAGS) -c message.c
 
 mime.o: mime.c
 	$(CC) $(libDesktop_CFLAGS) -c mime.c

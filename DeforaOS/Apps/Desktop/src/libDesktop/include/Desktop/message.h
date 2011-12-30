@@ -15,19 +15,13 @@
 
 
 
-#ifndef LIBDESKTOP_DESKTOP_H
-# define LIBDESKTOP_DESKTOP_H
-
-# include <gtk/gtk.h>
+#ifndef LIBDESKTOP_MESSAGE_H
+# define LIBDESKTOP_MESSAGE_H
 
 
-# include "Desktop/about.h"
-# include "Desktop/accel.h"
-# include "Desktop/assistant.h"
-# include "Desktop/compat.h"
-# include "Desktop/menubar.h"
-# include "Desktop/message.h"
-# include "Desktop/mime.h"
-# include "Desktop/toolbar.h"
+/* Message */
+/* functions */
+int desktop_message_send(char const * destination, uint32_t value1,
+		uint32_t value2, uint32_t value3);
 
-#endif /* !LIBDESKTOP_DESKTOP_H */
+#endif /* !LIBDESKTOP_MESSAGE_H */

@@ -25,6 +25,8 @@ install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- menubar.h $(DESTDIR)$(PREFIX)/include/Desktop/menubar.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
+	$(INSTALL) -m 0644 -- message.h $(DESTDIR)$(PREFIX)/include/Desktop/message.h
+	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- mime.h $(DESTDIR)$(PREFIX)/include/Desktop/mime.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- toolbar.h $(DESTDIR)$(PREFIX)/include/Desktop/toolbar.h
@@ -35,6 +37,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/assistant.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/compat.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/menubar.h
+	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/message.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/mime.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/toolbar.h
 

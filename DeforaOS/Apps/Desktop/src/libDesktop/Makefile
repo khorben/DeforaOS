@@ -33,6 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Desktop/assistant.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/compat.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/menubar.h \
+		$(PACKAGE)-$(VERSION)/include/Desktop/message.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/mime.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/toolbar.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/Makefile \
@@ -41,6 +42,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/accel.c \
 		$(PACKAGE)-$(VERSION)/src/assistant.c \
 		$(PACKAGE)-$(VERSION)/src/menubar.c \
+		$(PACKAGE)-$(VERSION)/src/message.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
 		$(PACKAGE)-$(VERSION)/src/toolbar.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
