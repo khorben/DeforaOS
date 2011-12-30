@@ -6,9 +6,9 @@ BINDIR	= $(PREFIX)/bin
 CC	?= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS?=
-CFLAGSF	= -W `pkg-config --cflags libDesktop xscrnsaver`
+CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs libDesktop xscrnsaver`
+LDFLAGSF= `pkg-config --libs libDesktop`
 LDFLAGS	= 
 RM	?= rm -f
 LN	?= ln -f
@@ -22,8 +22,8 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 locker_OBJS = locker.o main.o
-locker_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-locker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+locker_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags xscrnsaver`
+locker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs xscrnsaver`
 
 locker: $(locker_OBJS)
 	$(CC) -o locker $(locker_OBJS) $(locker_LDFLAGS)

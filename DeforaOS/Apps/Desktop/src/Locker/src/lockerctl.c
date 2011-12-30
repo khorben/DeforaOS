@@ -20,6 +20,7 @@
 #include <string.h>
 #include <locale.h>
 #include <libintl.h>
+#include <Desktop.h>
 #include "Locker.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -57,8 +58,6 @@ int main(int argc, char * argv[])
 {
 	int o;
 	int action = -1;
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -92,15 +91,7 @@ int main(int argc, char * argv[])
 		}
 	if(action == -1 || optind != argc)
 		return _usage();
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(LOCKER_CLIENT_MESSAGE, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = LOCKER_MESSAGE_ACTION;
-	client->data.b[1] = action;
-	client->data.b[2] = TRUE;
-	gdk_event_send_clientmessage_toall(&event);
+	desktop_message_send(LOCKER_CLIENT_MESSAGE, LOCKER_MESSAGE_ACTION,
+			action, TRUE);
 	return 0;
 }
