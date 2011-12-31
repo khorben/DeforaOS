@@ -158,10 +158,11 @@ static GtkIconSize _new_size(Panel * panel, PanelPosition position);
 static gboolean _on_idle(gpointer data);
 static void _idle_load(Panel * panel, PanelPosition position,
 		char const * plugins);
+/* callbacks */
+static int _new_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
-static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
-		Panel * panel);
 static GdkFilterReturn _event_configure_notify(Panel * panel);
 
 Panel * panel_new(PanelPrefs const * prefs)
@@ -251,9 +252,9 @@ Panel * panel_new(PanelPrefs const * prefs)
 		panel_window_set_accept_focus(panel->bottom, focus);
 		panel_window_set_keep_above(panel->bottom, above);
 	}
+	/* messages */
+	desktop_message_register(PANEL_CLIENT_MESSAGE, _new_on_message, panel);
 	/* manage root window events */
-	gdk_add_client_message_filter(gdk_atom_intern(PANEL_CLIENT_MESSAGE,
-				FALSE), _on_root_event, panel);
 	gdk_window_set_events(panel->root, gdk_window_get_events(
 				panel->root) | GDK_PROPERTY_CHANGE_MASK);
 	gdk_window_add_filter(panel->root, _on_root_event, panel);
@@ -396,35 +397,19 @@ static void _idle_load(Panel * panel, PanelPosition position,
 	free(p);
 }
 
-static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
-		gpointer data)
+static int _new_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
 {
 	Panel * panel = data;
-	XEvent * xe = xevent;
-
-	if(xe->type == ClientMessage)
-		return _event_client_message(xevent, panel);
-	else if(xe->type == ConfigureNotify)
-		return _event_configure_notify(panel);
-	return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
-		Panel * panel)
-{
-	PanelMessage message;
+	PanelMessage message = value1;
 	PanelMessageShow what;
 	gboolean show;
 
-	if(xevent->message_type != gdk_x11_get_xatom_by_name(
-				PANEL_CLIENT_MESSAGE))
-		return GDK_FILTER_CONTINUE;
-	message = xevent->data.b[0];
 	switch(message)
 	{
 		case PANEL_MESSAGE_SHOW:
-			what = xevent->data.b[1];
-			show = xevent->data.b[2];
+			what = value2;
+			show = value3;
 			if(what & PANEL_MESSAGE_SHOW_PANEL_BOTTOM
 					&& panel->bottom != NULL)
 				panel_window_show(panel->bottom, show);
@@ -435,6 +420,17 @@ static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 				panel_show_preferences(panel, show);
 			break;
 	}
+	return 0;
+}
+
+static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data)
+{
+	Panel * panel = data;
+	XEvent * xe = xevent;
+
+	if(xe->type == ConfigureNotify)
+		return _event_configure_notify(panel);
 	return GDK_FILTER_CONTINUE;
 }
 
