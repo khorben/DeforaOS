@@ -18,6 +18,8 @@
 #ifndef LIBDESKTOP_MESSAGE_H
 # define LIBDESKTOP_MESSAGE_H
 
+# include <stdint.h>
+
 
 /* Message */
 /* types */
