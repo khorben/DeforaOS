@@ -20,7 +20,14 @@
 
 
 /* Message */
+/* types */
+typedef int (*DesktopMessageCallback)(void * data, uint32_t value1,
+		uint32_t value2, uint32_t value3);
+
+
 /* functions */
+int desktop_message_register(char const * destination,
+		DesktopMessageCallback callback, void * data);
 int desktop_message_send(char const * destination, uint32_t value1,
 		uint32_t value2, uint32_t value3);
 

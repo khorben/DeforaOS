@@ -15,11 +15,48 @@
 
 
 
+#include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <gdk/gdkx.h>
+#include <System.h>
 #include "Desktop.h"
 
 
 /* Message */
+/* private */
+/* types */
+typedef struct _MessageCallback
+{
+	DesktopMessageCallback callback;
+	void * data;
+} MessageCallback;
+
+
+/* prototypes */
+/* callbacks */
+static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
+		GdkEvent * event, gpointer data);
+
+
+/* public */
+/* functions */
+/* desktop_message_register */
+int desktop_message_register(char const * destination,
+		DesktopMessageCallback callback, void * data)
+{
+	MessageCallback * mc;
+
+	if((mc = malloc(sizeof(*mc))) == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	mc->callback = callback;
+	mc->data = data;
+	gdk_add_client_message_filter(gdk_atom_intern(destination, FALSE),
+			_desktop_message_on_callback, mc);
+	return 0;
+}
+
+
 /* desktop_message_send */
 int desktop_message_send(char const * destination, uint32_t value1,
 		uint32_t value2, uint32_t value3)
@@ -38,4 +75,30 @@ int desktop_message_send(char const * destination, uint32_t value1,
 	client->data.b[2] = value3;
 	gdk_event_send_clientmessage_toall(&event);
 	return 0;
+}
+
+
+/* private */
+/* callbacks */
+/* desktop_message_on_callback */
+static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
+		GdkEvent * event, gpointer data)
+{
+	MessageCallback * mc = data;
+	XEvent * xev = xevent;
+	XClientMessageEvent * xcme;
+	uint32_t value1;
+	uint32_t value2;
+	uint32_t value3;
+
+	if(xev->type != ClientMessage)
+		return GDK_FILTER_CONTINUE;
+	xcme = &xev->xclient;
+	value1 = xcme->data.b[0];
+	value2 = xcme->data.b[1];
+	value3 = xcme->data.b[2];
+	if(mc->callback(mc->data, value1, value2, value3) == 0)
+		return GDK_FILTER_CONTINUE;
+	free(mc);
+	return GDK_FILTER_REMOVE;
 }
