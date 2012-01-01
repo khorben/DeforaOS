@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2011 DeforaOS Project <contact@defora.org>";
+"Copyright (c) 2012 DeforaOS Project <contact@defora.org>";
 /* This file is part of DeforaOS Desktop Phone */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -342,6 +342,8 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin);
 static void _phone_modem_event(void * priv, ModemEvent * event);
 static void _phone_modem_event_authentication(GtkWidget * widget, gint response,
 		gpointer data);
+static int _phone_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 static gboolean _phone_timeout_track(gpointer data);
 
 
@@ -452,6 +454,8 @@ Phone * phone_new(char const * plugin, int retry)
 		phone_delete(phone);
 		return NULL;
 	}
+	desktop_message_register(PHONE_CLIENT_MESSAGE, _phone_on_message,
+			phone);
 	phone->source = g_idle_add(_new_idle, phone);
 	modem_set_callback(phone->modem, _phone_modem_event, phone);
 	return phone;
@@ -1781,11 +1785,6 @@ static void _show_dialer_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
 	g_signal_connect(phone->di_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
-#if !GTK_CHECK_VERSION(3, 0, 0)
-	gdk_display_add_client_message_filter(gdk_display_get_default(),
-			gdk_atom_intern(PHONE_CLIENT_MESSAGE, FALSE),
-			on_phone_filter, phone);
-#endif
 	vbox = gtk_vbox_new(FALSE, 4);
 	/* entry */
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -4058,6 +4057,74 @@ static void _phone_modem_event_authentication(GtkWidget * widget, gint response,
 
 	phone_show_code(phone, FALSE);
 	gtk_widget_destroy(widget);
+}
+
+
+/* phone_on_message */
+static int _message_power_management(Phone * phone,
+		PhoneMessagePowerManagement what);
+static int _message_show(Phone * phone, PhoneMessageShow what, gboolean show);
+
+static int _phone_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
+{
+	Phone * phone = data;
+	PhoneMessage message;
+
+	message = value1;
+	switch(message)
+	{
+		case PHONE_MESSAGE_POWER_MANAGEMENT:
+			return _message_power_management(phone, value2);
+		case PHONE_MESSAGE_SHOW:
+			return _message_show(phone, value2, value3);
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static int _message_power_management(Phone * phone,
+		PhoneMessagePowerManagement what)
+{
+	switch(what)
+	{
+		case PHONE_MESSAGE_POWER_MANAGEMENT_RESUME:
+			phone_event_type(phone, PHONE_EVENT_TYPE_RESUME);
+			break;
+		case PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND:
+			phone_event_type(phone, PHONE_EVENT_TYPE_SUSPEND);
+			break;
+	}
+	return 0;
+}
+
+static int _message_show(Phone * phone, PhoneMessageShow what, gboolean show)
+{
+	switch(what)
+	{
+		case PHONE_MESSAGE_SHOW_ABOUT:
+			phone_show_about(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_CONTACTS:
+			phone_show_contacts(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_DIALER:
+			phone_show_dialer(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_LOGS:
+			phone_show_logs(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_MESSAGES:
+			phone_show_messages(phone, show,
+					MODEM_MESSAGE_FOLDER_INBOX);
+			break;
+		case PHONE_MESSAGE_SHOW_SETTINGS:
+			phone_show_settings(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_WRITE:
+			phone_show_write(phone, show, NULL, NULL);
+			break;
+	}
+	return 0;
 }
 
 

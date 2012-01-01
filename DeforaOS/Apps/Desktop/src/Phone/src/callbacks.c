@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,85 +29,6 @@ gboolean on_phone_closex(gpointer data)
 
 	gtk_widget_hide(widget);
 	return TRUE;
-}
-
-
-/* on_phone_filter */
-static GdkFilterReturn _filter_message_power_management(Phone * phone,
-		PhoneMessagePowerManagement what);
-static GdkFilterReturn _filter_message_show(Phone * phone,
-		PhoneMessageShow what, gboolean show);
-
-GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
-		gpointer data)
-{
-	Phone * phone = data;
-	XEvent * xev = xevent;
-	XClientMessageEvent * xclient = &xev->xclient;
-	PhoneMessage message;
-
-	if(xev->type != ClientMessage)
-		return GDK_FILTER_CONTINUE;
-	if(xclient->message_type != gdk_x11_get_xatom_by_name(
-				PHONE_CLIENT_MESSAGE))
-		return GDK_FILTER_CONTINUE;
-	message = xclient->data.b[0];
-	switch(message)
-	{
-		case PHONE_MESSAGE_POWER_MANAGEMENT:
-			return _filter_message_power_management(phone,
-					xclient->data.b[1]);
-		case PHONE_MESSAGE_SHOW:
-			return _filter_message_show(phone, xclient->data.b[1],
-					xclient->data.b[2]);
-	}
-	return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn _filter_message_power_management(Phone * phone,
-		PhoneMessagePowerManagement what)
-{
-	switch(what)
-	{
-		case PHONE_MESSAGE_POWER_MANAGEMENT_RESUME:
-			phone_event_type(phone, PHONE_EVENT_TYPE_RESUME);
-			break;
-		case PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND:
-			phone_event_type(phone, PHONE_EVENT_TYPE_SUSPEND);
-			break;
-	}
-	return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn _filter_message_show(Phone * phone,
-		PhoneMessageShow what, gboolean show)
-{
-	switch(what)
-	{
-		case PHONE_MESSAGE_SHOW_ABOUT:
-			phone_show_about(phone, show);
-			break;
-		case PHONE_MESSAGE_SHOW_CONTACTS:
-			phone_show_contacts(phone, show);
-			break;
-		case PHONE_MESSAGE_SHOW_DIALER:
-			phone_show_dialer(phone, show);
-			break;
-		case PHONE_MESSAGE_SHOW_LOGS:
-			phone_show_logs(phone, show);
-			break;
-		case PHONE_MESSAGE_SHOW_MESSAGES:
-			phone_show_messages(phone, show,
-					MODEM_MESSAGE_FOLDER_INBOX);
-			break;
-		case PHONE_MESSAGE_SHOW_SETTINGS:
-			phone_show_settings(phone, show);
-			break;
-		case PHONE_MESSAGE_SHOW_WRITE:
-			phone_show_write(phone, show, NULL, NULL);
-			break;
-	}
-	return GDK_FILTER_CONTINUE;
 }
 
 
