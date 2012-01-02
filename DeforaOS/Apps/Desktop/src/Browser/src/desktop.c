@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,6 +189,8 @@ static void _desktop_show_preferences(Desktop * desktop);
 static gboolean _new_idle(gpointer data);
 static void _idle_background(Desktop * desktop, Config * config);
 static void _idle_icons(Desktop * desktop, Config * config);
+static int _on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
@@ -217,9 +219,8 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	if((desktop->home = getenv("HOME")) == NULL
 			&& (desktop->home = g_get_home_dir()) == NULL)
 		desktop->home = "/";
+	desktop_message_register(DESKTOP_CLIENT_MESSAGE, _on_message, desktop);
 	/* manage root window events */
-	gdk_add_client_message_filter(gdk_atom_intern(DESKTOP_CLIENT_MESSAGE,
-				FALSE), _on_root_event, desktop);
 	gdk_window_get_geometry(desktop->root, &desktop->window.x,
 			&desktop->window.y, &desktop->window.width,
 			&desktop->window.height, &depth);
@@ -308,9 +309,33 @@ static void _idle_icons(Desktop * desktop, Config * config)
 	}
 }
 
+static int _on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
+{
+	Desktop * desktop = data;
+	DesktopMessage message;
+	DesktopAlignment alignment;
+	DesktopLayout layout;
+
+	switch((message = value1))
+	{
+		case DESKTOP_MESSAGE_SET_ALIGNMENT:
+			alignment = value2;
+			desktop_set_alignment(desktop, alignment);
+			break;
+		case DESKTOP_MESSAGE_SET_LAYOUT:
+			layout = value2;
+			desktop_set_layout(desktop, layout);
+			break;
+		case DESKTOP_MESSAGE_SHOW:
+			if(value2 == DESKTOP_SHOW_SETTINGS)
+				_desktop_show_preferences(desktop);
+			break;
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
-		Desktop * desktop);
-static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
 		Desktop * desktop);
 static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
 		Desktop * desktop);
@@ -330,8 +355,6 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type == ButtonPress)
 		return _event_button_press(xevent, desktop);
-	else if(xev->type == ClientMessage)
-		return _event_client_message(xevent, desktop);
 	else if(xev->type == ConfigureNotify)
 		return _event_configure(xevent, desktop);
 	else if(xev->type == PropertyNotify)
@@ -404,35 +427,6 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_widget_show_all(desktop->menu);
 	gtk_menu_popup(GTK_MENU(desktop->menu), NULL, NULL, NULL, NULL, 3,
 			xbev->time);
-	return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn _event_client_message(XClientMessageEvent * xevent,
-		Desktop * desktop)
-{
-	DesktopMessage message;
-	DesktopAlignment alignment;
-	DesktopLayout layout;
-
-	if(xevent->message_type != gdk_x11_get_xatom_by_name(
-				DESKTOP_CLIENT_MESSAGE))
-		return GDK_FILTER_CONTINUE;
-	message = xevent->data.b[0];
-	switch(message)
-	{
-		case DESKTOP_MESSAGE_SET_ALIGNMENT:
-			alignment = xevent->data.b[1];
-			desktop_set_alignment(desktop, alignment);
-			break;
-		case DESKTOP_MESSAGE_SET_LAYOUT:
-			layout = xevent->data.b[1];
-			desktop_set_layout(desktop, layout);
-			break;
-		case DESKTOP_MESSAGE_SHOW:
-			if(xevent->data.b[1] == DESKTOP_SHOW_SETTINGS)
-				_on_popup_preferences(desktop); /* XXX */
-			break;
-	}
 	return GDK_FILTER_CONTINUE;
 }
 
