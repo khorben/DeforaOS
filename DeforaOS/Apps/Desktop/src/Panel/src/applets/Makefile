@@ -124,8 +124,8 @@ pager.so: $(pager_OBJS)
 	$(CCSHARED) -o pager.so $(pager_OBJS) $(pager_LDFLAGS)
 
 phone_OBJS = phone.o
-phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 phone.so: $(phone_OBJS)
 	$(CCSHARED) -o phone.so $(phone_OBJS) $(phone_LDFLAGS)

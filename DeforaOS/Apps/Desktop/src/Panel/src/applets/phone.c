@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 # include <gtk/gtkx.h>
 #endif
 #include <gdk/gdkx.h>
+#include <Desktop.h>
 #define _(string) gettext(string)
 #define N_(string) (string)
 
@@ -35,9 +36,11 @@
 /* prototypes */
 static GtkWidget * _phone_init(PanelApplet * applet);
 
+static void _phone_embed(GtkWidget * widget, GdkNativeWindow window);
+
 /* callbacks */
-static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
-		gpointer data);
+static int _on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 static void _on_plug_added(GtkWidget * widget);
 static gboolean _on_plug_removed(GtkWidget * widget);
 static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous);
@@ -78,25 +81,22 @@ static GtkWidget * _phone_init(PanelApplet * applet)
 }
 
 
-/* phone_do */
-static void _phone_do(GtkWidget * widget, GdkNativeWindow window)
+/* phone_embed */
+static void _phone_embed(GtkWidget * widget, GdkNativeWindow window)
 {
 	gtk_socket_add_id(GTK_SOCKET(widget), window);
 }
 
 
 /* callbacks */
-/* on_filter */
-static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
-		gpointer data)
+/* on_message */
+static int _on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
 {
 	GtkWidget * widget = data;
-	XEvent * xev = xevent;
 
-	if(xev->type != ClientMessage)
-		return GDK_FILTER_CONTINUE;
-	_phone_do(widget, xev->xclient.data.l[0]);
-	return GDK_FILTER_CONTINUE;
+	_phone_embed(widget, value1);
+	return 0;
 }
 
 
@@ -120,6 +120,5 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous)
 {
 	if(previous != NULL)
 		return;
-	gdk_add_client_message_filter(gdk_atom_intern(PHONE_EMBED_MESSAGE,
-				FALSE), _on_filter, widget);
+	desktop_message_register(PHONE_EMBED_MESSAGE, _on_message, widget);
 }
