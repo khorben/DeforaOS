@@ -18,7 +18,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+#if !GTK_CHECK_VERSION(3, 0, 0)
+# include <gdk/gdkx.h>
+#endif
 #include <System.h>
 #include "Desktop.h"
 
@@ -35,8 +38,10 @@ typedef struct _MessageCallback
 
 /* prototypes */
 /* callbacks */
+#if !GTK_CHECK_VERSION(3, 0, 0)
 static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
 		GdkEvent * event, gpointer data);
+#endif
 
 
 /* public */
@@ -45,6 +50,7 @@ static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
 int desktop_message_register(char const * destination,
 		DesktopMessageCallback callback, void * data)
 {
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	MessageCallback * mc;
 
 	if((mc = malloc(sizeof(*mc))) == NULL)
@@ -53,6 +59,7 @@ int desktop_message_register(char const * destination,
 	mc->data = data;
 	gdk_add_client_message_filter(gdk_atom_intern(destination, FALSE),
 			_desktop_message_on_callback, mc);
+#endif
 	return 0;
 }
 
@@ -61,6 +68,7 @@ int desktop_message_register(char const * destination,
 int desktop_message_send(char const * destination, uint32_t value1,
 		uint32_t value2, uint32_t value3)
 {
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
 
@@ -74,12 +82,14 @@ int desktop_message_send(char const * destination, uint32_t value1,
 	client->data.l[1] = value2;
 	client->data.l[2] = value3;
 	gdk_event_send_clientmessage_toall(&event);
+#endif
 	return 0;
 }
 
 
 /* private */
 /* callbacks */
+#if !GTK_CHECK_VERSION(3, 0, 0)
 /* desktop_message_on_callback */
 static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
 		GdkEvent * event, gpointer data)
@@ -102,3 +112,4 @@ static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
 	free(mc);
 	return GDK_FILTER_REMOVE;
 }
+#endif

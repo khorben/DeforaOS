@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1013,12 +1013,12 @@ static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
 
 	if(event->type != GDK_KEY_PRESS)
 		return FALSE;
-	if(event->keyval == GDK_uparrow)
+	if(event->keyval == GDK_KEY_uparrow)
 	{
 		desktop_unselect_all(desktopicon->desktop);
 		desktop_select_above(desktopicon->desktop, desktopicon);
 	}
-	else if(event->keyval == GDK_downarrow)
+	else if(event->keyval == GDK_KEY_downarrow)
 	{
 		desktop_unselect_all(desktopicon->desktop);
 		desktop_select_under(desktopicon->desktop, desktopicon);

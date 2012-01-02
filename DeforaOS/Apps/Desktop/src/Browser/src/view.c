@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "view is free software; you can redistribute it and/or modify it under the\n"
@@ -101,18 +101,18 @@ static DesktopMenu _view_menu_file[] =
 	{ N_("Open _with..."), G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _view_menu_file_edit[] =
 {
 	{ N_("_Edit"), G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT,
-		GDK_CONTROL_MASK, GDK_E },
+		GDK_CONTROL_MASK, GDK_KEY_E },
 	{ N_("Open _with..."), G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 

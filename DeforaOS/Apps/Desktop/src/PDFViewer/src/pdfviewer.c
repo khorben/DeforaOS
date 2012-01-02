@@ -1,7 +1,7 @@
 /* $Id$ */
 static char const _copyright[] =
 "Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net>\n"
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 static char const _license[] =
 "This program is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by the\n"
@@ -73,12 +73,12 @@ static char const * _authors[] =
 
 static DesktopAccel _pdfviewer_accel[] =
 {
-	{ G_CALLBACK(on_fullscreen), 0, GDK_F11 },
+	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
 #ifdef EMBEDDED
-	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_n },
-	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_o },
-	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_w },
-	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_p },
+	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_KEY_n },
+	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_o },
+	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_KEY_w },
+	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_KEY_p },
 #endif
 	{ NULL, 0, 0 }
 };
@@ -87,10 +87,10 @@ static DesktopAccel _pdfviewer_accel[] =
 static DesktopMenu _pdfviewer_menu_file[] =
 {
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
-		GDK_o },
+		GDK_KEY_o },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_w },
+		GDK_CONTROL_MASK, GDK_KEY_w },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -102,12 +102,12 @@ static DesktopMenu _pdfviewer_menu_edit[] =
 static DesktopMenu _pdfviewer_menu_view[] =
 {
 	{ "Zoom in", G_CALLBACK(on_view_zoom_in), "zoom-in",
-		GDK_CONTROL_MASK, GDK_plus },
+		GDK_CONTROL_MASK, GDK_KEY_plus },
 	{ "Zoom out", G_CALLBACK(on_view_zoom_out), "zoom-out",
-		GDK_CONTROL_MASK, GDK_minus },
+		GDK_CONTROL_MASK, GDK_KEY_minus },
 	{ "", NULL, NULL, 0, 0 },
 	{ "Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
-		0, GDK_F11 },
+		0, GDK_KEY_F11 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 

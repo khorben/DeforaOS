@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Devel GEDI */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -75,15 +75,15 @@ static char const * _authors[] =
 static DesktopMenu _gedi_menu_file[] =
 {
 	{ "_New file...", G_CALLBACK(on_file_new), GTK_STOCK_NEW,
-		GDK_CONTROL_MASK, GDK_N },
+		GDK_CONTROL_MASK, GDK_KEY_N },
 	{ "_Open file...", G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
-		GDK_CONTROL_MASK, GDK_O },
+		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL , NULL, 0, 0 },
 	{ "_Preferences...", G_CALLBACK(on_file_preferences),
-		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, GDK_CONTROL_MASK,
-		GDK_Q },
+		GDK_KEY_Q },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -93,12 +93,12 @@ static DesktopMenu _gedi_menu_projects[] = /* FIXME will certainly be dynamic */
 	{ "_Open project...", G_CALLBACK(on_project_open), GTK_STOCK_OPEN, 0,
 		0 },
 	{ "_Save project", G_CALLBACK(on_project_save), GTK_STOCK_SAVE,
-		GDK_CONTROL_MASK, GDK_S },
+		GDK_CONTROL_MASK, GDK_KEY_S },
 	{ "Save project _as...", G_CALLBACK(on_project_save_as),
 		GTK_STOCK_SAVE_AS, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Properties...", G_CALLBACK(on_project_properties),
-		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_Return },
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
