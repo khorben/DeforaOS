@@ -3,6 +3,9 @@
 
 
 
+BEGIN TRANSACTION;
+
+
 CREATE TABLE daportal_module (
 	module_id INTEGER PRIMARY KEY,
 	name VARCHAR(255) UNIQUE,
@@ -357,3 +360,6 @@ CREATE TABLE daportal_blog_content (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
+
+
+COMMIT;
