@@ -40,7 +40,7 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 static void _on_plug_added(GtkWidget * widget);
 static gboolean _on_plug_removed(GtkWidget * widget);
-static void _on_screen_changed(GtkWidget * widget);
+static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous);
 
 
 /* public */
@@ -116,8 +116,10 @@ static gboolean _on_plug_removed(GtkWidget * widget)
 
 
 /* on_screen_changed */
-static void _on_screen_changed(GtkWidget * widget)
+static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous)
 {
+	if(previous != NULL)
+		return;
 	gdk_add_client_message_filter(gdk_atom_intern(PHONE_EMBED_MESSAGE,
 				FALSE), _on_filter, widget);
 }
