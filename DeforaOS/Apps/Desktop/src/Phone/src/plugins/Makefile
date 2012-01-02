@@ -79,8 +79,8 @@ oss.so: $(oss_OBJS)
 	$(CCSHARED) -o oss.so $(oss_OBJS) $(oss_LDFLAGS)
 
 panel_OBJS = panel.o
-panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 panel.so: $(panel_OBJS)
 	$(CCSHARED) -o panel.so $(panel_OBJS) $(panel_LDFLAGS)

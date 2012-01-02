@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
- * - only track battery and signal status when online */
+ * - track battery and signal status only when online */
 
 
 
@@ -27,6 +27,7 @@
 #if GTK_CHECK_VERSION(3, 0, 0)
 # include <gtk/gtkx.h>
 #endif
+#include <Desktop.h>
 #include "Phone.h"
 
 
@@ -200,8 +201,6 @@ static gboolean _on_plug_delete_event(gpointer data)
 {
 	PhonePlugin * plugin = data;
 	Panel * panel = plugin->priv;
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -209,14 +208,8 @@ static gboolean _on_plug_delete_event(gpointer data)
 	if(panel->timeout == 0)
 		panel->timeout = g_timeout_add(5000, _on_plug_delete_event,
 				plugin);
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PHONE_EMBED_MESSAGE, FALSE);
-	client->data_format = 32;
-	client->data.l[0] = gtk_plug_get_id(GTK_PLUG(panel->plug));
-	gdk_event_send_clientmessage_toall(&event);
+	desktop_message_send(PHONE_EMBED_MESSAGE, gtk_plug_get_id(
+				GTK_PLUG(panel->plug)), 0, 0);
 	return TRUE;
 }
 
