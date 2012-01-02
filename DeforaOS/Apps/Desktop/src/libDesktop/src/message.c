@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,10 +69,10 @@ int desktop_message_send(char const * destination, uint32_t value1,
 	client->window = NULL;
 	client->send_event = TRUE;
 	client->message_type = gdk_atom_intern(destination, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = value1;
-	client->data.b[1] = value2;
-	client->data.b[2] = value3;
+	client->data_format = 32;
+	client->data.l[0] = value1;
+	client->data.l[1] = value2;
+	client->data.l[2] = value3;
 	gdk_event_send_clientmessage_toall(&event);
 	return 0;
 }
@@ -94,9 +94,9 @@ static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
 	if(xev->type != ClientMessage)
 		return GDK_FILTER_CONTINUE;
 	xcme = &xev->xclient;
-	value1 = xcme->data.b[0];
-	value2 = xcme->data.b[1];
-	value3 = xcme->data.b[2];
+	value1 = xcme->data.l[0];
+	value2 = xcme->data.l[1];
+	value3 = xcme->data.l[2];
 	if(mc->callback(mc->data, value1, value2, value3) == 0)
 		return GDK_FILTER_CONTINUE;
 	free(mc);
