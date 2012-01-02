@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Locker */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -117,6 +117,8 @@ static gboolean _lock_on_closex(void);
 static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 static gboolean _locker_on_map_event(gpointer data);
+static int _locker_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 static void _locker_on_realize(GtkWidget * widget, gpointer data);
 
 
@@ -202,9 +204,8 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 			GDK_WINDOW_XWINDOW(root), ScreenSaverNotifyMask);
 	gdk_x11_register_standard_event_type(locker->display, locker->event, 1);
 	gdk_window_add_filter(root, _locker_on_filter, locker);
-	gdk_display_add_client_message_filter(locker->display, gdk_atom_intern(
-				LOCKER_CLIENT_MESSAGE, FALSE),
-			_locker_on_filter, locker);
+	desktop_message_register(LOCKER_CLIENT_MESSAGE, _locker_on_message,
+			locker);
 	return locker;
 }
 
@@ -246,6 +247,7 @@ static GtkWidget * _new_auth(Locker * locker, char const * plugin)
 		return NULL;
 	locker->auth->helper = &locker->ahelper;
 	if(locker->auth->init == NULL
+			|| locker->auth->action == NULL
 			|| (widget = locker->auth->init(locker->auth)) == NULL)
 	{
 		locker->auth = NULL;
@@ -714,11 +716,11 @@ static void _locker_unlock(Locker * locker)
 	size_t i;
 
 	_locker_event(locker, LOCKER_EVENT_UNLOCKING);
+	if(locker->windows == NULL)
+		return;
 	/* ungrab keyboard and mouse */
 	gdk_keyboard_ungrab(GDK_CURRENT_TIME);
 	gdk_pointer_ungrab(GDK_CURRENT_TIME);
-	if(locker->windows == NULL)
-		return;
 	for(i = 0; i < locker->windows_cnt; i++)
 		gtk_widget_hide(locker->windows[i]);
 }
@@ -733,8 +735,6 @@ static gboolean _lock_on_closex(void)
 
 
 /* locker_on_filter */
-static GdkFilterReturn _filter_client_message(Locker * locker,
-		XClientMessageEvent * xclient);
 static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
 		XScreenSaverNotifyEvent * xssne);
 
@@ -748,42 +748,10 @@ static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 	fprintf(stderr, "DEBUG: %s() 0x%x 0x%x\n", __func__, xev->type,
 			event->type);
 #endif
-	if(xev->type == ClientMessage)
-		return _filter_client_message(locker, xevent);
-	else if(xev->type == locker->event)
+	if(xev->type == locker->event)
 		return _filter_xscreensaver_notify(locker, xevent);
 	else
 		return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn _filter_client_message(Locker * locker,
-		XClientMessageEvent * xclient)
-{
-	LockerAction action;
-	gboolean show;
-
-	if(xclient->message_type != gdk_x11_get_xatom_by_name(
-				LOCKER_CLIENT_MESSAGE)
-			|| xclient->data.b[0] != LOCKER_MESSAGE_ACTION)
-		return GDK_FILTER_CONTINUE;
-	action = xclient->data.b[1];
-	switch(action)
-	{
-		case LOCKER_ACTION_ACTIVATE:
-			_locker_activate(locker);
-			break;
-		case LOCKER_ACTION_LOCK:
-			_locker_lock(locker);
-			break;
-		case LOCKER_ACTION_SHOW_PREFERENCES:
-			show = xclient->data.b[1] ? TRUE : FALSE;
-			locker_show_preferences(locker, show);
-			break;
-		case LOCKER_ACTION_UNLOCK:
-			_locker_unlock(locker);
-			break;
-	}
-	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
@@ -815,7 +783,12 @@ static gboolean _locker_on_map_event(gpointer data)
 	/* FIXME detect if this is the first window */
 	/* FIXME the mouse may already be grabbed (Panel's lock button...) */
 	/* grab keyboard and mouse */
-	if((window = gtk_widget_get_window(locker->windows[0])) == NULL)
+#if GTK_CHECK_VERSION(2, 14, 0)
+	window = gtk_widget_get_window(locker->windows[0]);
+#else
+	window = locker->windows[0]->window;
+#endif
+	if(window == NULL)
 		_locker_error(NULL, "Failed to grab input", 1);
 	else
 	{
@@ -834,6 +807,36 @@ static gboolean _locker_on_map_event(gpointer data)
 #endif
 	}
 	return FALSE;
+}
+
+
+/* locker_on_message */
+static int _locker_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
+{
+	Locker * locker = data;
+	LockerAction action;
+	gboolean show;
+
+	if(value1 != LOCKER_MESSAGE_ACTION)
+		return 0;
+	switch((action = value2))
+	{
+		case LOCKER_ACTION_ACTIVATE:
+			_locker_activate(locker);
+			break;
+		case LOCKER_ACTION_LOCK:
+			_locker_lock(locker);
+			break;
+		case LOCKER_ACTION_SHOW_PREFERENCES:
+			show = value3 ? TRUE : FALSE;
+			locker_show_preferences(locker, show);
+			break;
+		case LOCKER_ACTION_UNLOCK:
+			_locker_unlock(locker);
+			break;
+	}
+	return 0;
 }
 
 
