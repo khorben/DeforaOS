@@ -1,5 +1,6 @@
 /* $Id$ */
-/* install/postgresql.sql */
+/* This file is part of DeforaOS Web DaPortal */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 
 
 
