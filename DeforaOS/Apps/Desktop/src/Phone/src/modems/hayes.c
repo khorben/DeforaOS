@@ -2077,7 +2077,7 @@ static gboolean _on_reset(gpointer data)
 	else if(hayes->fp != NULL)
 		setvbuf(hayes->fp, NULL, _IONBF, BUFSIZ);
 	hayes->channel = g_io_channel_unix_new(fd);
-	if((g_io_channel_set_encoding(hayes->channel, NULL, &error))
+	if(g_io_channel_set_encoding(hayes->channel, NULL, &error)
 			!= G_IO_STATUS_NORMAL)
 	{
 		modem->helper->error(modem->helper->modem, error->message, 1);

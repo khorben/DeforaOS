@@ -115,7 +115,7 @@ typedef struct _PhonePluginEntry
 
 typedef enum _PhonePluginsColumn
 {
-	PHONE_PLUGINS_COLUMN_PLUGIN,
+	PHONE_PLUGINS_COLUMN_PLUGIN = 0,
 	PHONE_PLUGINS_COLUMN_ENABLED,
 	PHONE_PLUGINS_COLUMN_FILENAME,
 	PHONE_PLUGINS_COLUMN_ICON,
@@ -128,7 +128,7 @@ typedef void (*PhoneSettingsCallback)(Phone * phone, gboolean show, ...);
 
 typedef enum _PhoneSettingsColumn
 {
-	PHONE_SETTINGS_COLUMN_CALLBACK,
+	PHONE_SETTINGS_COLUMN_CALLBACK = 0,
 	PHONE_SETTINGS_COLUMN_PLUGIN,
 	PHONE_SETTINGS_COLUMN_ICON,
 	PHONE_SETTINGS_COLUMN_NAME
@@ -2184,7 +2184,7 @@ static void _plugins_on_cancel(gpointer data)
 	Plugin * p;
 	PhonePlugin * pp;
 	size_t i;
-	GdkPixbuf * pixbuf;
+	GdkPixbuf * icon;
 
 	gtk_widget_hide(phone->pl_window);
 	gtk_list_store_clear(phone->pl_store);
@@ -2223,10 +2223,15 @@ static void _plugins_on_cancel(gpointer data)
 					phone->plugins[i].pp, -1);
 			break;
 		}
-		pixbuf = gtk_icon_theme_load_icon(theme, (pp->icon != NULL)
-				? pp->icon : "gnome-settings", 48, 0, NULL);
+		icon = NULL;
+		if(pp->icon != NULL)
+			icon = gtk_icon_theme_load_icon(theme, pp->icon, 48, 0,
+					NULL);
+		if(icon == NULL)
+			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
+					48, 0, NULL);
 		gtk_list_store_set(phone->pl_store, &iter,
-				PHONE_PLUGINS_COLUMN_ICON, pixbuf, -1);
+				PHONE_PLUGINS_COLUMN_ICON, icon, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
