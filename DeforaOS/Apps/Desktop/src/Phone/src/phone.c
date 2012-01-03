@@ -1814,7 +1814,19 @@ static void _show_dialer_window(Phone * phone)
 
 
 /* phone_show_logs */
+static void _show_logs_window(Phone * phone);
+
 void phone_show_logs(Phone * phone, gboolean show)
+{
+	if(phone->lo_window == NULL)
+		_show_logs_window(phone);
+	if(show)
+		gtk_window_present(GTK_WINDOW(phone->lo_window));
+	else
+		gtk_widget_hide(phone->lo_window);
+}
+
+static void _show_logs_window(Phone * phone)
 {
 	GtkWidget * vbox;
 	GtkWidget * widget;
@@ -1822,84 +1834,65 @@ void phone_show_logs(Phone * phone, gboolean show)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
-	if(phone->lo_window == NULL)
-	{
-		phone->lo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_window_set_default_size(GTK_WINDOW(phone->lo_window), 200,
-				300);
+	phone->lo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(phone->lo_window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
-		gtk_window_set_icon_name(GTK_WINDOW(phone->lo_window),
-				"logviewer");
+	gtk_window_set_icon_name(GTK_WINDOW(phone->lo_window), "logviewer");
 #endif
-		gtk_window_set_title(GTK_WINDOW(phone->lo_window),
-				_("Phone logs"));
-		g_signal_connect(phone->lo_window, "delete-event", G_CALLBACK(
-					on_phone_closex), NULL);
-		vbox = gtk_vbox_new(FALSE, 0);
-		/* toolbar */
-		widget = gtk_toolbar_new();
-		toolitem = gtk_tool_button_new(NULL, _("Call"));
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-				"call-start");
-		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
-				G_CALLBACK(on_phone_logs_call), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new(NULL, _("Message"));
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-				"stock_mail-compose");
-		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
-				G_CALLBACK(on_phone_logs_write), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_separator_tool_item_new();
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
-		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
-				G_CALLBACK(on_phone_logs_clear), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-		/* FIXME make it a notebook with different log categories */
-		/* view */
-		widget = gtk_scrolled_window_new(NULL, NULL);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-				GTK_SHADOW_ETCHED_IN);
-		phone->lo_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
-					phone->lo_store));
-		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(phone->lo_view),
-				TRUE);
-		g_signal_connect_swapped(G_OBJECT(phone->lo_view),
-				"row-activated", G_CALLBACK(
-					on_phone_logs_activated), phone);
-		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->lo_view),
-				TRUE);
-		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(
-				_("Direction"), renderer, "text",
-				PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
-				column);
-		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("To/From"),
-				renderer, "text",
-				PHONE_LOGS_COLUMN_NUMBER, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
-				column);
-		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("Date"),
-				renderer, "text",
-				PHONE_LOGS_COLUMN_DATE_DISPLAY, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view),
-				column);
-		gtk_container_add(GTK_CONTAINER(widget), phone->lo_view);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-		gtk_container_add(GTK_CONTAINER(phone->lo_window), vbox);
-		gtk_widget_show_all(vbox);
-	}
-	if(show)
-		gtk_window_present(GTK_WINDOW(phone->lo_window));
-	else
-		gtk_widget_hide(phone->lo_window);
+	gtk_window_set_title(GTK_WINDOW(phone->lo_window), _("Phone logs"));
+	g_signal_connect(phone->lo_window, "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* toolbar */
+	widget = gtk_toolbar_new();
+	toolitem = gtk_tool_button_new(NULL, _("Call"));
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem), "call-start");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				on_phone_logs_call), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new(NULL, _("Message"));
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+			"stock_mail-compose");
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				on_phone_logs_write), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				on_phone_logs_clear), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* FIXME make it a notebook with different log categories */
+	/* view */
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	phone->lo_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				phone->lo_store));
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(phone->lo_view), TRUE);
+	g_signal_connect_swapped(G_OBJECT(phone->lo_view), "row-activated",
+			G_CALLBACK(on_phone_logs_activated), phone);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->lo_view), TRUE);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("Direction"),
+			renderer, "text", PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY,
+			NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view), column);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("To/From"),
+			renderer, "text", PHONE_LOGS_COLUMN_NUMBER, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view), column);
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("Date"), renderer,
+			"text", PHONE_LOGS_COLUMN_DATE_DISPLAY, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(phone->lo_view), column);
+	gtk_container_add(GTK_CONTAINER(widget), phone->lo_view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(phone->lo_window), vbox);
+	gtk_widget_show_all(vbox);
 }
 
 
