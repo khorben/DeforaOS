@@ -75,10 +75,10 @@ static DesktopAccel _pdfviewer_accel[] =
 {
 	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
 #ifdef EMBEDDED
-	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_KEY_n },
-	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_o },
-	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_KEY_w },
-	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_KEY_p },
+	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_KEY_N },
+	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_O },
+	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_KEY_P },
 #endif
 	{ NULL, 0, 0 }
 };
@@ -87,10 +87,10 @@ static DesktopAccel _pdfviewer_accel[] =
 static DesktopMenu _pdfviewer_menu_file[] =
 {
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
-		GDK_KEY_o },
+		GDK_KEY_O },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_KEY_w },
+		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
