@@ -74,7 +74,7 @@ LockerPlugin plugin =
 {
 	NULL,
 	"Openmoko",
-	NULL,
+	"phone-openmoko", /* XXX provide the icon ourselves */
 	_openmoko_init,
 	_openmoko_destroy,
 	NULL,
