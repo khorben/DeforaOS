@@ -197,7 +197,9 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 Desktop * desktop_new(DesktopPrefs * prefs)
 {
 	Desktop * desktop;
+#if !GTK_CHECK_VERSION(2, 24, 0)
 	int depth;
+#endif
 
 	if((desktop = object_new(sizeof(*desktop))) == NULL)
 		return NULL;
