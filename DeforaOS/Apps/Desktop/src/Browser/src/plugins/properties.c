@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,7 +188,11 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 	/* group */
 	widget = _new_label_left(group, _("Group:"));
 	gtk_widget_modify_font(widget, bold);
+#if GTK_CHECK_VERSION(2, 24, 0)
+	properties->group = gtk_combo_box_text_new();
+#else
 	properties->group = gtk_combo_box_new_text();
+#endif
 	_new_pack(vbox, widget, properties->group);
 	/* last access */
 	widget = _new_label_left(group, _("Accessed:"));
@@ -242,7 +246,7 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, TRUE, 0);
 	hbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_START);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
+	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_properties_on_refresh), plugin);
@@ -467,7 +471,12 @@ static int _refresh_group(BrowserPlugin * plugin, gid_t gid, gboolean sensitive)
 	gtk_list_store_clear(store);
 	if((gr = getgrgid(getgid())) == NULL)
 		return -_properties_error(plugin, properties->filename, 1);
+#if GTK_CHECK_VERSION(2, 24, 0)
+	gtk_combo_box_text_insert_text(GTK_COMBO_BOX_TEXT(combo), i,
+			gr->gr_name);
+#else
 	gtk_combo_box_insert_text(GTK_COMBO_BOX(combo), i, gr->gr_name);
+#endif
 	active = i++;
 	if((pw = getpwuid(getuid())) == NULL)
 		return -_properties_error(plugin, properties->filename, 1);
@@ -478,8 +487,14 @@ static int _refresh_group(BrowserPlugin * plugin, gid_t gid, gboolean sensitive)
 			{
 				if(gid == gr->gr_gid)
 					active = i;
+#if GTK_CHECK_VERSION(2, 24, 0)
+				gtk_combo_box_text_insert_text(
+						GTK_COMBO_BOX_TEXT(combo),
+						i++, gr->gr_name);
+#else
 				gtk_combo_box_insert_text(GTK_COMBO_BOX(combo),
 						i++, gr->gr_name);
+#endif
 			}
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), active);
 	gtk_widget_set_sensitive(combo, sensitive);
@@ -544,7 +559,12 @@ static void _properties_on_apply(gpointer data)
 	size_t i;
 	mode_t mode = 0;
 
+#if GTK_CHECK_VERSION(2, 24, 0)
+	p = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
+				properties->group));
+#else
 	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(properties->group));
+#endif
 	if((gr = getgrnam(p)) == NULL)
 		_properties_error(plugin, p, 1);
 	else
