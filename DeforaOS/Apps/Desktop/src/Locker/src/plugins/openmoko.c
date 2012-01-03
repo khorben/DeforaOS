@@ -22,11 +22,17 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 # include <sys/param.h>
 # include <sys/sysctl.h>
+#elif defined(__linux__)
+# include <linux/input.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <stdint.h>
 #else
 # include <fcntl.h>
+# include <unistd.h>
 #endif
 #include "Locker.h"
 
@@ -37,7 +43,18 @@
 typedef struct _Openmoko
 {
 	GtkWidget * window;
+#if defined(__linux__)
+	GIOChannel * channel;
+	guint source;
+#endif
 } Openmoko;
+
+
+/* constants */
+#if defined(__linux__)
+# define AUX_BUTTON_KEYCODE	169
+# define POWER_BUTTON_KEYCODE	116
+#endif
 
 
 /* prototypes */
@@ -47,6 +64,13 @@ static void _openmoko_destroy(LockerPlugin * plugin);
 
 /* useful */
 static void _openmoko_show_dialog(LockerPlugin * plugin);
+
+/* callbacks */
+#if defined(__linux__)
+static gboolean _openmoko_on_reset(gpointer data);
+static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
+		GIOCondition condition, gpointer data);
+#endif
 
 
 /* public */
@@ -78,7 +102,13 @@ static int _openmoko_init(LockerPlugin * plugin)
 		return -1;
 	plugin->priv = openmoko;
 	openmoko->window = NULL;
-	/* FIXME register input events */
+#if defined(__linux__)
+	openmoko->channel = NULL;
+	openmoko->source = 0;
+	if(_openmoko_on_reset(plugin) == TRUE)
+		openmoko->source = g_timeout_add(1000, _openmoko_on_reset,
+				plugin);
+#endif
 	return 0;
 }
 
@@ -127,6 +157,7 @@ static void _openmoko_show_dialog(LockerPlugin * plugin)
 	vbox = GTK_DIALOG(openmoko->window)->vbox;
 #endif
 	/* lock screen */
+	/* FIXME the AUX button should be used for locking instead */
 	widget = gtk_button_new_with_label("Lock screen");
 	image = gtk_image_new_from_icon_name("gnome-lockscreen",
 			GTK_ICON_SIZE_BUTTON);
@@ -190,7 +221,7 @@ static void _dialog_on_shutdown(gpointer data)
 	int res;
 	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
 	char * shutdown[] = { "/sbin/shutdown", "shutdown",
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 		"-p",
 #else
 		"-h",
@@ -237,7 +268,7 @@ static void _dialog_on_suspend(gpointer data)
 {
 	LockerPlugin * plugin = data;
 	LockerPluginHelper * helper = plugin->helper;
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 	int sleep_state = 3;
 #else
 	int fd;
@@ -246,7 +277,7 @@ static void _dialog_on_suspend(gpointer data)
 	GError * error = NULL;
 #endif
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
 				sizeof(sleep_state)) != 0)
 	{
@@ -271,3 +302,112 @@ static void _dialog_on_suspend(gpointer data)
 	/* XXX may already be suspended */
 	helper->action(helper->locker, LOCKER_ACTION_LOCK);
 }
+
+
+/* callbacks */
+#if defined(__linux__)
+/* openmoko_on_reset */
+static gboolean _openmoko_on_reset(gpointer data)
+{
+	LockerPlugin * plugin = data;
+	Openmoko * openmoko = plugin->priv;
+	int fd;
+	GError * error = NULL;
+
+	/* FIXME open all of the relevent input event nodes */
+	if((fd = open("/dev/input/event0", O_RDONLY)) < 0)
+		return TRUE;
+	openmoko->channel = g_io_channel_unix_new(fd);
+	if(g_io_channel_set_encoding(openmoko->channel, NULL, &error)
+			!= G_IO_STATUS_NORMAL)
+	{
+		plugin->helper->error(plugin->helper->locker,
+				error->message, 1);
+		g_error_free(error);
+	}
+	g_io_channel_set_buffered(openmoko->channel, FALSE);
+	openmoko->source = g_io_add_watch(openmoko->channel, G_IO_IN,
+			_openmoko_on_watch_can_read, plugin);
+	return FALSE;
+}
+
+
+/* openmoko_on_watch_can_read */
+static gboolean _watch_can_read_event(LockerPlugin * plugin,
+		struct input_event * event);
+static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code);
+static gboolean _watch_can_read_reset(LockerPlugin * plugin);
+
+static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
+		GIOCondition condition, gpointer data)
+{
+	LockerPlugin * plugin = data;
+	LockerPluginHelper * helper = plugin->helper;
+	Openmoko * openmoko = plugin->priv;
+	struct input_event event;
+	gsize cnt = 0;
+	GError * error = NULL;
+	GIOStatus status;
+
+	if(condition != G_IO_IN || source != openmoko->channel)
+		return FALSE; /* should not happen */
+	status = g_io_channel_read_chars(source, (gchar *)&event, sizeof(event),
+			&cnt, &error);
+	switch(status)
+	{
+		case G_IO_STATUS_NORMAL:
+			break;
+		case G_IO_STATUS_ERROR:
+			helper->error(helper->locker, error->message, 1);
+			g_error_free(error);
+		case G_IO_STATUS_EOF:
+		default:
+			return _watch_can_read_reset(plugin);
+	}
+	/* FIXME avoid this by using a regular read() */
+	if(cnt != sizeof(event))
+		return _watch_can_read_reset(plugin);
+	return _watch_can_read_event(plugin, &event);
+}
+
+static gboolean _watch_can_read_event(LockerPlugin * plugin,
+		struct input_event * event)
+{
+	switch(event->type)
+	{
+		case EV_KEY:
+			_watch_can_read_event_key(plugin, event->code);
+			break;
+	}
+	return TRUE;
+}
+
+static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code)
+{
+	switch(code)
+	{
+		case AUX_BUTTON_KEYCODE:
+			/* FIXME implement */
+			break;
+		case POWER_BUTTON_KEYCODE:
+			_openmoko_show_dialog(plugin);
+			break;
+	}
+}
+
+static gboolean _watch_can_read_reset(LockerPlugin * plugin)
+{
+	LockerPluginHelper * helper = plugin->helper;
+	Openmoko * openmoko = plugin->priv;
+	GError * error = NULL;
+
+	if(g_io_channel_shutdown(openmoko->channel, TRUE, &error)
+			== G_IO_STATUS_ERROR)
+	{
+		helper->error(helper->locker, error->message, 1);
+		g_error_free(error);
+	}
+	openmoko->source = g_timeout_add(1000, _openmoko_on_reset, plugin);
+	return FALSE;
+}
+#endif
