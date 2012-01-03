@@ -50,13 +50,6 @@ typedef struct _Openmoko
 } Openmoko;
 
 
-/* constants */
-#if defined(__linux__)
-# define AUX_BUTTON_KEYCODE	169
-# define POWER_BUTTON_KEYCODE	116
-#endif
-
-
 /* prototypes */
 /* plug-in */
 static int _openmoko_init(LockerPlugin * plugin);
@@ -410,12 +403,12 @@ static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code,
 
 	switch(code)
 	{
-		case AUX_BUTTON_KEYCODE:
+		case KEY_PHONE:
 			if(value == 0) /* released */
 				helper->action(helper->locker,
 						LOCKER_ACTION_LOCK);
 			break;
-		case POWER_BUTTON_KEYCODE:
+		case KEY_POWER:
 			if(value == 0) /* released */
 				_openmoko_show_dialog(plugin);
 			break;
