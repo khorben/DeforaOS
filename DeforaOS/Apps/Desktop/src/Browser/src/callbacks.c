@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -573,22 +573,23 @@ void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * context,
 	Browser * browser = data;
 	GList * selection;
 	GList * s;
-	size_t len;
-	unsigned char * p;
+	size_t len = 0;
+	size_t l;
+	char * p = NULL;
+	char * q;
 
 	selection = _copy_selection(browser);
-	seldata->format = 8;
-	seldata->data = NULL;
-	seldata->length = 0;
 	for(s = selection; s != NULL; s = s->next)
 	{
-		len = strlen(s->data) + 1;
-		if((p = realloc(seldata->data, seldata->length + len)) == NULL)
+		l = strlen(s->data) + 1;
+		if((q = realloc(p, len + l)) == NULL)
 			continue; /* XXX report error */
-		seldata->data = p;
-		memcpy(&p[seldata->length], s->data, len);
-		seldata->length += len;
+		p = q;
+		memcpy(&p[len], s->data, l);
+		len += l;
 	}
+	gtk_selection_data_set_text(seldata, p, len);
+	free(p);
 	g_list_foreach(selection, (GFunc)free, NULL);
 	g_list_free(selection);
 }
