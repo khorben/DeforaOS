@@ -27,6 +27,7 @@
 # include <sys/sysctl.h>
 #elif defined(__linux__)
 # include <linux/input.h>
+# include <sys/ioctl.h>
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdint.h>
@@ -316,19 +317,26 @@ static void _dialog_on_suspend(gpointer data)
 static gboolean _openmoko_on_reset(gpointer data)
 {
 	LockerPlugin * plugin = data;
+	LockerPluginHelper * helper = plugin->helper;
 	Openmoko * openmoko = plugin->priv;
 	int fd;
+#ifdef DEBUG
+	char buf[256] = "Unknown";
+#endif
 	GError * error = NULL;
 
 	/* FIXME open all of the relevant input event nodes */
 	if((fd = open("/dev/input/event0", O_RDONLY)) < 0)
 		return TRUE;
+#ifdef DEBUG
+	if(ioctl(fd, EVIOCGNAME(sizeof(buf)), buf) == 0)
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, buf);
+#endif
 	openmoko->channel = g_io_channel_unix_new(fd);
 	if(g_io_channel_set_encoding(openmoko->channel, NULL, &error)
 			!= G_IO_STATUS_NORMAL)
 	{
-		plugin->helper->error(plugin->helper->locker,
-				error->message, 1);
+		helper->error(helper->locker, error->message, 1);
 		g_error_free(error);
 	}
 	g_io_channel_set_buffered(openmoko->channel, FALSE);
