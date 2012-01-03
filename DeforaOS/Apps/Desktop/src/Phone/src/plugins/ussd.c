@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,19 @@ static USSDCode _ussd_codes_fr_virgin[] =
 	{ NULL,		NULL						}
 };
 
+/* Vodafone India, see
+ * http://broadbandforum.in/vodafone-3g/66861-important-vodafone-sms-codes-ussd/
+ */
+static USSDCode _ussd_codes_in_vodafone[] =
+{
+	{ "*141#",	"Balance enquiry"				},
+	{ "*444#",	"Self-service portal"				},
+	{ "*225*6#",	"See unused GPRS data and expiry"		},
+	{ "*225*3#",	"See unused 3G data and expiry"			},
+	{ "*444*5#",	"Activate 30MB, 1 day, GPRS plan"		},
+	{ NULL,		NULL						}
+};
+
 static const struct
 {
 	char const * name;
@@ -79,6 +92,7 @@ static const struct
 	{ "MTN",	_ussd_codes_za_mtn				},
 	{ "NRJ",	_ussd_codes_fr_virgin				},
 	{ "Virgin",	_ussd_codes_fr_virgin				},
+	{ "Vodafone",	_ussd_codes_in_vodafone				},
 	{ NULL,		NULL						}
 };
 
