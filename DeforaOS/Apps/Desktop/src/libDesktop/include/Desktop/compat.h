@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@
 #  define GDK_KEY_asterisk	GDK_asterisk
 #  define GDK_KEY_Back		GDK_Back
 #  define GDK_KEY_Delete	GDK_Delete
+#  define GDK_KEY_downarrow	GDK_downarrow
 #  define GDK_KEY_Escape	GDK_Escape
 #  define GDK_KEY_F1		GDK_F1
 #  define GDK_KEY_F2		GDK_F2
@@ -83,6 +84,7 @@
 #  define GDK_KEY_Right		GDK_Right
 #  define GDK_KEY_slash		GDK_slash
 #  define GDK_KEY_Up		GDK_Up
+#  define GDK_KEY_uparrow	GDK_uparrow
 # endif
 
 #endif /* !LIBDESKTOP_COMPAT_H */
