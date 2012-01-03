@@ -171,7 +171,6 @@ static void _openmoko_show_dialog(LockerPlugin * plugin)
 	vbox = GTK_DIALOG(openmoko->window)->vbox;
 #endif
 	/* lock screen */
-	/* FIXME the AUX button should be used for locking instead */
 	widget = gtk_button_new_with_label("Lock screen");
 	image = gtk_image_new_from_icon_name("gnome-lockscreen",
 			GTK_ICON_SIZE_BUTTON);
@@ -398,10 +397,12 @@ static gboolean _watch_can_read_event(LockerPlugin * plugin,
 
 static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code)
 {
+	LockerPluginHelper * helper = plugin->helper;
+
 	switch(code)
 	{
 		case AUX_BUTTON_KEYCODE:
-			/* FIXME implement */
+			helper->action(helper->locker, LOCKER_ACTION_LOCK);
 			break;
 		case POWER_BUTTON_KEYCODE:
 			_openmoko_show_dialog(plugin);
