@@ -197,6 +197,7 @@ static GdkFilterReturn _on_root_event(GdkXEvent * xevent, GdkEvent * event,
 Desktop * desktop_new(DesktopPrefs * prefs)
 {
 	Desktop * desktop;
+	int depth;
 
 	if((desktop = object_new(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -220,10 +221,16 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 		desktop->home = "/";
 	desktop_message_register(DESKTOP_CLIENT_MESSAGE, _on_message, desktop);
 	/* manage root window events */
+#if GTK_CHECK_VERSION(2, 24, 0)
 	gdk_window_get_position(desktop->root, &desktop->window.x,
 			&desktop->window.y);
 	desktop->window.width = gdk_window_get_width(desktop->root);
 	desktop->window.height = gdk_window_get_height(desktop->root);
+#else
+	gdk_window_get_geometry(desktop->root, &desktop->window.x,
+			&desktop->window.y, &desktop->window.width,
+			&desktop->window.height, &depth);
+#endif
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
 				desktop->root) | GDK_BUTTON_PRESS_MASK
 			| GDK_PROPERTY_CHANGE_MASK);
