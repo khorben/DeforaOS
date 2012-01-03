@@ -17,7 +17,9 @@ static char const _license[] =
 
 
 
+#include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -75,10 +77,23 @@ struct _Locker
 
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkListStore * pr_plstore;
+	GtkWidget * pr_plview;
 
 	/* about */
 	GtkWidget * ab_window;
 };
+
+typedef enum _LockerPluginsColumn
+{
+	LOCKER_PLUGINS_COLUMN_PLUGIN = 0,
+	LOCKER_PLUGINS_COLUMN_ENABLED,
+	LOCKER_PLUGINS_COLUMN_FILENAME,
+	LOCKER_PLUGINS_COLUMN_ICON,
+	LOCKER_PLUGINS_COLUMN_NAME
+} LockerPluginsColumn;
+#define LOCKER_PLUGINS_COLUMN_LAST LOCKER_PLUGINS_COLUMN_NAME
+#define LOCKER_PLUGINS_COLUMN_COUNT (LOCKER_PLUGINS_COLUMN_LAST + 1)
 
 
 /* constants */
@@ -405,10 +420,13 @@ void locker_delete(Locker * locker)
 /* useful */
 /* locker_show_preferences */
 static void _preferences_window(Locker * locker);
+static GtkWidget * _preferences_window_plugins(Locker * locker);
 /* callbacks */
 static void _preferences_on_cancel(gpointer data);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_ok(gpointer data);
+static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data);
 
@@ -430,6 +448,7 @@ static void _preferences_window(Locker * locker)
 {
 	GtkWidget * vbox;
 	GtkWidget * notebook;
+	GtkWidget * widget;
 
 	locker->pr_window = gtk_dialog_new_with_buttons(
 			_("Screensaver preferences"), NULL, 0,
@@ -451,8 +470,8 @@ static void _preferences_window(Locker * locker)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
 			gtk_label_new(_("Demos")));
 	/* plug-ins */
-	/* FIXME implement */
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), gtk_vbox_new(FALSE, 0),
+	widget = _preferences_window_plugins(locker);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
 			gtk_label_new(_("Plug-ins")));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(locker->pr_window));
@@ -464,9 +483,110 @@ static void _preferences_window(Locker * locker)
 	gtk_widget_show_all(vbox);
 }
 
+static GtkWidget * _preferences_window_plugins(Locker * locker)
+{
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	locker->pr_plstore = gtk_list_store_new(LOCKER_PLUGINS_COLUMN_COUNT,
+			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
+				locker->pr_plstore),
+			LOCKER_PLUGINS_COLUMN_NAME, GTK_SORT_ASCENDING);
+	locker->pr_plview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				locker->pr_plstore));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(locker->pr_plview),
+			FALSE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(locker->pr_plview), TRUE);
+	/* enabled */
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(renderer, "toggled", G_CALLBACK(
+				_preferences_on_plugins_toggled), locker);
+	column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
+			renderer, "active", LOCKER_PLUGINS_COLUMN_ENABLED,
+			NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(locker->pr_plview), column);
+	/* icon */
+	renderer = gtk_cell_renderer_pixbuf_new();
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"pixbuf", LOCKER_PLUGINS_COLUMN_ICON, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(locker->pr_plview), column);
+	/* name */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
+			"text", LOCKER_PLUGINS_COLUMN_NAME, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(locker->pr_plview), column);
+	gtk_container_add(GTK_CONTAINER(widget), locker->pr_plview);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	return vbox;
+}
+
 static void _preferences_on_cancel(gpointer data)
 {
-	/* FIXME implement */
+	Locker * locker = data;
+	GtkIconTheme * theme;
+	DIR * dir;
+	struct dirent * de;
+	char const ext[] = ".so";
+	size_t len;
+	Plugin * p;
+	LockerPlugin * lp;
+	GtkTreeIter iter;
+	GdkPixbuf * icon;
+
+	gtk_widget_hide(locker->pr_window);
+	theme = gtk_icon_theme_get_default();
+	/* plug-ins */
+	gtk_list_store_clear(locker->pr_plstore);
+	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) != NULL)
+	{
+		while((de = readdir(dir)) != NULL)
+		{
+			if((len = strlen(de->d_name)) < sizeof(ext))
+				continue;
+			if(strcmp(&de->d_name[len - sizeof(ext) + 1], ext) != 0)
+				continue;
+			de->d_name[len - sizeof(ext) + 1] = '\0';
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+					de->d_name);
+#endif
+			if((p = plugin_new(LIBDIR, PACKAGE, "plugins",
+							de->d_name)) == NULL)
+				continue;
+			if((lp = plugin_lookup(p, "plugin")) == NULL)
+			{
+				plugin_delete(p);
+				continue;
+			}
+			gtk_list_store_append(locker->pr_plstore, &iter);
+			gtk_list_store_set(locker->pr_plstore, &iter,
+					LOCKER_PLUGINS_COLUMN_FILENAME,
+					de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
+					lp->name, -1);
+			/* FIXME check if it is already enabled */
+			icon = NULL;
+			if(lp->icon != NULL)
+				icon = gtk_icon_theme_load_icon(theme, lp->icon,
+						24, 0, NULL);
+			if(icon == NULL)
+				icon = gtk_icon_theme_load_icon(theme,
+						"gnome-settings", 24, 0, NULL);
+			gtk_list_store_set(locker->pr_plstore, &iter,
+					LOCKER_PLUGINS_COLUMN_ICON, icon, -1);
+			plugin_delete(p);
+		}
+		closedir(dir);
+	}
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -480,6 +600,19 @@ static gboolean _preferences_on_closex(gpointer data)
 static void _preferences_on_ok(gpointer data)
 {
 	/* FIXME implement */
+}
+
+static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data)
+{
+	Locker * locker = data;
+	GtkTreeIter iter;
+
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(locker->pr_plstore),
+			&iter, path);
+	gtk_list_store_set(locker->pr_plstore, &iter,
+			LOCKER_PLUGINS_COLUMN_ENABLED,
+			!gtk_cell_renderer_toggle_get_active(renderer), -1);
 }
 
 static void _preferences_on_response(GtkWidget * widget, gint response,
