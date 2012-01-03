@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,12 +117,26 @@ static int _openmoko_init(LockerPlugin * plugin)
 static void _openmoko_destroy(LockerPlugin * plugin)
 {
 	Openmoko * openmoko = plugin->priv;
+#if defined(__linux__)
+	LockerPluginHelper * helper = plugin->helper;
+	GError * error = NULL;
+#endif
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(openmoko->window != NULL)
 		gtk_widget_destroy(openmoko->window);
+#if defined(__linux__)
+	if(openmoko->source != 0)
+		g_source_remove(openmoko->source);
+	if(openmoko->channel != NULL && g_io_channel_shutdown(openmoko->channel,
+				TRUE, &error) == G_IO_STATUS_ERROR)
+	{
+		helper->error(helper->locker, error->message, 1);
+		g_error_free(error);
+	}
+#endif
 	object_delete(openmoko);
 }
 
@@ -314,7 +328,7 @@ static gboolean _openmoko_on_reset(gpointer data)
 	int fd;
 	GError * error = NULL;
 
-	/* FIXME open all of the relevent input event nodes */
+	/* FIXME open all of the relevant input event nodes */
 	if((fd = open("/dev/input/event0", O_RDONLY)) < 0)
 		return TRUE;
 	openmoko->channel = g_io_channel_unix_new(fd);
