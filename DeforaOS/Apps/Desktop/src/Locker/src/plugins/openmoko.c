@@ -348,7 +348,8 @@ static gboolean _openmoko_on_reset(gpointer data)
 /* openmoko_on_watch_can_read */
 static gboolean _watch_can_read_event(LockerPlugin * plugin,
 		struct input_event * event);
-static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code);
+static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code,
+		int32_t value);
 static gboolean _watch_can_read_reset(LockerPlugin * plugin);
 
 static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
@@ -389,23 +390,34 @@ static gboolean _watch_can_read_event(LockerPlugin * plugin,
 	switch(event->type)
 	{
 		case EV_KEY:
-			_watch_can_read_event_key(plugin, event->code);
+			_watch_can_read_event_key(plugin, event->code,
+					event->value);
 			break;
+#ifdef DEBUG
+		default:
+			fprintf(stderr, "DEBUG: %s() Unknown event type %u\n",
+					__func__, event->type);
+			break;
+#endif
 	}
 	return TRUE;
 }
 
-static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code)
+static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code,
+		int32_t value)
 {
 	LockerPluginHelper * helper = plugin->helper;
 
 	switch(code)
 	{
 		case AUX_BUTTON_KEYCODE:
-			helper->action(helper->locker, LOCKER_ACTION_LOCK);
+			if(value == 0) /* released */
+				helper->action(helper->locker,
+						LOCKER_ACTION_LOCK);
 			break;
 		case POWER_BUTTON_KEYCODE:
-			_openmoko_show_dialog(plugin);
+			if(value == 0) /* released */
+				_openmoko_show_dialog(plugin);
 			break;
 	}
 }
