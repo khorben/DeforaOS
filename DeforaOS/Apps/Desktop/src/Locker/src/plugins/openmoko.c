@@ -17,11 +17,7 @@
 
 
 
-#include <System.h>
-#include <gtk/gtk.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #if defined(__NetBSD__)
 # include <sys/param.h>
 # include <sys/sysctl.h>
@@ -31,10 +27,14 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdint.h>
+# include <string.h>
+# include <errno.h>
 #else
 # include <fcntl.h>
 # include <unistd.h>
 #endif
+#include <System.h>
+#include <gtk/gtk.h>
 #include "Locker.h"
 
 
@@ -127,7 +127,7 @@ static void _openmoko_destroy(LockerPlugin * plugin)
 	if(openmoko->channel != NULL && g_io_channel_shutdown(openmoko->channel,
 				TRUE, &error) == G_IO_STATUS_ERROR)
 	{
-		helper->error(helper->locker, error->message, 1);
+		helper->error(NULL, error->message, 1);
 		g_error_free(error);
 	}
 #endif
@@ -319,16 +319,23 @@ static gboolean _openmoko_on_reset(gpointer data)
 	LockerPlugin * plugin = data;
 	LockerPluginHelper * helper = plugin->helper;
 	Openmoko * openmoko = plugin->priv;
+	char const * device;
 	int fd;
-#ifdef DEBUG
-	char buf[256] = "Unknown";
-#endif
+	char buf[256];
 	GError * error = NULL;
 
 	/* FIXME open all of the relevant input event nodes */
-	if((fd = open("/dev/input/event0", O_RDONLY)) < 0)
+	if((device = helper->config_get(helper->locker, "openmoko", "device"))
+			== NULL)
+		device = "/dev/input/event0";
+	if((fd = open(device, O_RDONLY)) < 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", device, strerror(errno));
+		helper->error(NULL, buf, 1);
 		return TRUE;
+	}
 #ifdef DEBUG
+	snprintf(buf, sizeof(buf), "%s", "Unknown");
 	if(ioctl(fd, EVIOCGNAME(sizeof(buf)), buf) == 0)
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, buf);
 #endif
@@ -336,7 +343,7 @@ static gboolean _openmoko_on_reset(gpointer data)
 	if(g_io_channel_set_encoding(openmoko->channel, NULL, &error)
 			!= G_IO_STATUS_NORMAL)
 	{
-		helper->error(helper->locker, error->message, 1);
+		helper->error(NULL, error->message, 1);
 		g_error_free(error);
 	}
 	g_io_channel_set_buffered(openmoko->channel, FALSE);
@@ -373,7 +380,7 @@ static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			helper->error(helper->locker, error->message, 1);
+			helper->error(NULL, error->message, 1);
 			g_error_free(error);
 		case G_IO_STATUS_EOF:
 		default:
@@ -432,7 +439,7 @@ static gboolean _watch_can_read_reset(LockerPlugin * plugin)
 	if(g_io_channel_shutdown(openmoko->channel, TRUE, &error)
 			== G_IO_STATUS_ERROR)
 	{
-		helper->error(helper->locker, error->message, 1);
+		helper->error(NULL, error->message, 1);
 		g_error_free(error);
 	}
 	openmoko->source = g_timeout_add(1000, _openmoko_on_reset, plugin);
