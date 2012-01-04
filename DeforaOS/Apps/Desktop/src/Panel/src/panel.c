@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -32,6 +32,7 @@ static char const _license[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -152,7 +153,7 @@ static char * _config_get_filename(void);
 /* public */
 /* panel_new */
 static int _new_config(Panel * panel);
-static void _new_prefs(GdkScreen * screen, PanelPrefs * prefs,
+static void _new_prefs(Config * config, GdkScreen * screen, PanelPrefs * prefs,
 		PanelPrefs const * user);
 static GtkIconSize _new_size(Panel * panel, PanelPosition position);
 static gboolean _on_idle(gpointer data);
@@ -176,9 +177,9 @@ Panel * panel_new(PanelPrefs const * prefs)
 
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
-	_new_config(panel);
 	panel->screen = gdk_screen_get_default();
-	_new_prefs(panel->screen, &panel->prefs, prefs);
+	if(_new_config(panel) == 0)
+		_new_prefs(panel->config, panel->screen, &panel->prefs, prefs);
 	panel->top_helper.panel = panel;
 	panel->top_helper.config_get = _panel_helper_config_get;
 	panel->top_helper.config_set = _panel_helper_config_set;
@@ -276,12 +277,14 @@ static int _new_config(Panel * panel)
 	return 0;
 }
 
-static void _new_prefs(GdkScreen * screen, PanelPrefs * prefs,
+static void _new_prefs(Config * config, GdkScreen * screen, PanelPrefs * prefs,
 		PanelPrefs const * user)
 {
 	size_t i;
 	gint width;
 	gint height;
+	char const * p;
+	char * q;
 
 	for(i = 0; i < sizeof(_panel_sizes) / sizeof(*_panel_sizes); i++)
 	{
@@ -299,6 +302,12 @@ static void _new_prefs(GdkScreen * screen, PanelPrefs * prefs,
 	{
 		prefs->iconsize = PANEL_ICON_SIZE_DEFAULT;
 		prefs->monitor = -1;
+	}
+	if((p = config_get(config, NULL, "monitor")) != NULL)
+	{
+		prefs->monitor = strtol(p, &q, 0);
+		if(p[0] == '\0' || *q != '\0')
+			prefs->monitor = -1;
 	}
 #if GTK_CHECK_VERSION(2, 20, 0)
 	if(prefs->monitor == -1)
