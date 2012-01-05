@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Todo */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -98,11 +98,22 @@ static const struct
 };
 
 
-/* variables */
 static char const * _authors[] =
 {
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
+};
+
+/* accelerators */
+static const DesktopAccel _todo_accel[] =
+{
+#ifdef EMBEDDED
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(on_edit), GDK_CONTROL_MASK, GDK_KEY_E },
+	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_KEY_N },
+	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_KEY_P },
+#endif
+	{ NULL, 0, 0 }
 };
 
 #ifndef EMBEDDED
@@ -230,6 +241,7 @@ Todo * todo_new(void)
 	g_signal_connect_swapped(G_OBJECT(todo->window), "delete-event",
 			G_CALLBACK(on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
+	desktop_accel_create(_todo_accel, todo, group);
 #ifndef EMBEDDED
 	/* menubar */
 	widget = desktop_menubar_create(_menubar, todo, group);

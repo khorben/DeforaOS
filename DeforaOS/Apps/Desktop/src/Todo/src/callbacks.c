@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,13 @@
 
 
 /* callbacks */
+/* on_close */
+void on_close(gpointer data)
+{
+	on_closex();
+}
+
+
 /* on_closex */
 gboolean on_closex(void)
 {
@@ -32,7 +39,9 @@ gboolean on_closex(void)
 /* on_file_close */
 void on_file_close(gpointer data)
 {
-	on_closex();
+	Todo * todo = data;
+
+	on_close(todo);
 }
 
 
