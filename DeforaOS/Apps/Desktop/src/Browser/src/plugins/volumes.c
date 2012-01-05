@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,8 +48,9 @@ enum _VolumesPixbuf
 #define DP_LAST DP_REMOVABLE
 #define DP_COUNT (DP_LAST + 1)
 
-typedef struct _Volumes
+typedef struct _BrowserPlugin
 {
+	BrowserPluginHelper * helper;
 	guint source;
 	GtkWidget * window;
 	GtkListStore * store;
@@ -59,9 +60,10 @@ typedef struct _Volumes
 
 
 /* prototypes */
-static GtkWidget * _volumes_init(BrowserPlugin * plugin);
-static void _volumes_destroy(BrowserPlugin * plugin);
-static void _volumes_refresh(BrowserPlugin * plugin, char const * path);
+static Volumes * _volumes_init(BrowserPluginHelper * helper);
+static void _volumes_destroy(Volumes * volumes);
+static GtkWidget * _volumes_get_widget(Volumes * volumes);
+static void _volumes_refresh(Volumes * volumes, char const * path);
 
 /* callbacks */
 static gboolean _volumes_on_idle(gpointer data);
@@ -70,22 +72,22 @@ static void _volumes_on_selection_changed(gpointer data);
 
 /* public */
 /* variables */
-BrowserPlugin plugin =
+BrowserPluginDefinition plugin =
 {
-	NULL,
 	N_("Volumes"),
 	"drive-harddisk",
+	NULL,
 	_volumes_init,
 	_volumes_destroy,
-	_volumes_refresh,
-	NULL
+	_volumes_get_widget,
+	_volumes_refresh
 };
 
 
 /* private */
 /* functions */
 /* volumes_init */
-static GtkWidget * _volumes_init(BrowserPlugin * plugin)
+static Volumes * _volumes_init(BrowserPluginHelper * helper)
 {
 	Volumes * volumes;
 	GtkCellRenderer * renderer;
@@ -100,7 +102,7 @@ static GtkWidget * _volumes_init(BrowserPlugin * plugin)
 
 	if((volumes = object_new(sizeof(*volumes))) == NULL)
 		return NULL;
-	plugin->priv = volumes;
+	volumes->helper = helper;
 	volumes->window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(volumes->window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -119,7 +121,7 @@ static GtkWidget * _volumes_init(BrowserPlugin * plugin)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(volumes->view), column);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(volumes->view));
 	g_signal_connect_swapped(G_OBJECT(treesel), "changed", G_CALLBACK(
-				_volumes_on_selection_changed), plugin);
+				_volumes_on_selection_changed), volumes);
 	gtk_container_add(GTK_CONTAINER(volumes->window), volumes->view);
 	icontheme = gtk_icon_theme_get_default();
 	gtk_icon_size_lookup(GTK_ICON_SIZE_BUTTON, &width, &height);
@@ -128,19 +130,24 @@ static GtkWidget * _volumes_init(BrowserPlugin * plugin)
 				icons[i], width, GTK_ICON_LOOKUP_USE_BUILTIN,
 				NULL);
 	gtk_widget_show_all(volumes->window);
-	volumes->source = g_idle_add(_volumes_on_idle, plugin);
-	return volumes->window;
+	volumes->source = g_idle_add(_volumes_on_idle, volumes);
+	return volumes;
 }
 
 
 /* volumes_destroy */
-static void _volumes_destroy(BrowserPlugin * plugin)
+static void _volumes_destroy(Volumes * volumes)
 {
-	Volumes * volumes = plugin->priv;
-
 	if(volumes->source != 0)
 		g_source_remove(volumes->source);
 	object_delete(volumes);
+}
+
+
+/* volumes_get_widget */
+static GtkWidget * _volumes_get_widget(Volumes * volumes)
+{
+	return volumes->window;
 }
 
 
@@ -149,9 +156,8 @@ static void _refresh_add(Volumes * volumes, char const * name,
 		char const * device, char const * mountpoint,
 		char const * filesystem);
 
-static void _volumes_refresh(BrowserPlugin * plugin, char const * path)
+static void _volumes_refresh(Volumes * volumes, char const * path)
 {
-	Volumes * volumes = plugin->priv;
 #ifdef __NetBSD__
 	struct statvfs * mnt;
 	int res;
@@ -217,11 +223,10 @@ static void _refresh_add(Volumes * volumes, char const * name,
 /* volumes_on_idle */
 static gboolean _volumes_on_idle(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Volumes * volumes = plugin->priv;
+	Volumes * volumes = data;
 
 	volumes->source = 0;
-	_volumes_refresh(plugin, NULL);
+	_volumes_refresh(volumes, NULL);
 	return FALSE;
 }
 
@@ -229,8 +234,7 @@ static gboolean _volumes_on_idle(gpointer data)
 /* volumes_on_selection_changed */
 static void _volumes_on_selection_changed(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Volumes * volumes = plugin->priv;
+	Volumes * volumes = data;
 	GtkTreeSelection * treesel;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
@@ -240,6 +244,6 @@ static void _volumes_on_selection_changed(gpointer data)
 	if(gtk_tree_selection_get_selected(treesel, &model, &iter) != TRUE)
 		return;
 	gtk_tree_model_get(model, &iter, DC_MOUNTPOINT, &location, -1);
-	plugin->helper->set_location(plugin->helper->browser, location);
+	volumes->helper->set_location(volumes->helper->browser, location);
 	g_free(location);
 }

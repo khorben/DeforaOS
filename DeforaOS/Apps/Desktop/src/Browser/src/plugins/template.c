@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,60 +25,70 @@
 /* Template */
 /* private */
 /* types */
-typedef struct _Template
+typedef struct _BrowserPlugin
 {
+	BrowserPluginHelper * helper;
+
+	GtkWidget * widget;
+
 	/* FIXME implement */
 } Template;
 
 
 /* prototypes */
-static GtkWidget * _template_init(BrowserPlugin * plugin);
-static void _template_destroy(BrowserPlugin * plugin);
-static void _template_refresh(BrowserPlugin * plugin, char const * path);
+static Template * _template_init(BrowserPluginHelper * helper);
+static void _template_destroy(Template * template);
+static GtkWidget * _template_get_widget(Template * template);
+static void _template_refresh(Template * template, char const * path);
 
 
 /* public */
 /* variables */
-BrowserPlugin plugin =
+BrowserPluginDefinition plugin =
 {
-	NULL,
 	N_("Template"),
+	NULL,
 	NULL,
 	_template_init,
 	_template_destroy,
-	_template_refresh,
-	NULL
+	_template_get_widget,
+	_template_refresh
 };
 
 
 /* private */
 /* functions */
 /* template_init */
-static GtkWidget * _template_init(BrowserPlugin * plugin)
+static Template * _template_init(BrowserPluginHelper * helper)
 {
 	Template * template;
 
 	if((template = object_new(sizeof(*template))) == NULL)
 		return NULL;
-	plugin->priv = template;
+	template->helper = helper;
 	/* FIXME implement */
-	return gtk_label_new("Template");
+	template->widget = gtk_label_new("Template");
+	return template;
 }
 
 
 /* template_destroy */
-static void _template_destroy(BrowserPlugin * plugin)
+static void _template_destroy(Template * template)
 {
-	Template * template = plugin->priv;
-
+	/* FIXME implement */
 	object_delete(template);
 }
 
 
-/* template_refresh */
-static void _template_refresh(BrowserPlugin * plugin, char const * path)
+/* template_get_widget */
+static GtkWidget * _template_get_widget(Template * template)
 {
-	Template * template = plugin->priv;
+	return template->widget;
+}
 
+
+/* template_refresh */
+static void _template_refresh(Template * template, char const * path)
+{
 	/* FIXME implement */
 }

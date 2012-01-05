@@ -1,4 +1,4 @@
-TARGETS	= cvs.so dirtree.so preview.so properties.so subversion.so volumes.so
+TARGETS	= cvs.so dirtree.so preview.so properties.so subversion.so template.so volumes.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -53,6 +53,13 @@ subversion_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 subversion.so: $(subversion_OBJS)
 	$(CCSHARED) -o subversion.so $(subversion_OBJS) $(subversion_LDFLAGS)
 
+template_OBJS = template.o
+template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+template.so: $(template_OBJS)
+	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+
 volumes_OBJS = volumes.o
 volumes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 volumes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -75,11 +82,14 @@ properties.o: properties.c ../../include/Browser.h
 subversion.o: subversion.c ../../include/Browser.h
 	$(CC) $(subversion_CFLAGS) -c subversion.c
 
+template.o: template.c ../../include/Browser.h
+	$(CC) $(template_CFLAGS) -c template.c
+
 volumes.o: volumes.c ../../include/Browser.h
 	$(CC) $(volumes_CFLAGS) -c volumes.c
 
 clean:
-	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(preview_OBJS) $(properties_OBJS) $(subversion_OBJS) $(volumes_OBJS)
+	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(preview_OBJS) $(properties_OBJS) $(subversion_OBJS) $(template_OBJS) $(volumes_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

@@ -35,8 +35,10 @@
 /* Properties */
 /* private */
 /* types */
-typedef struct _Properties
+typedef struct _BrowserPlugin
 {
+	BrowserPluginHelper * helper;
+
 	Mime * mime;
 	char * filename;
 	uid_t uid;
@@ -61,23 +63,24 @@ typedef struct _Properties
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _properties_init(BrowserPlugin * plugin);
-static void _properties_destroy(BrowserPlugin * plugin);
-static void _properties_refresh(BrowserPlugin * plugin, char const * path);
+static Properties * _properties_init(BrowserPluginHelper * helper);
+static void _properties_destroy(Properties * properties);
+static void _properties_refresh(Properties * properties, char const * path);
 
 /* properties */
-static Properties * _properties_new(BrowserPlugin * plugin,
+static Properties * _properties_new(BrowserPluginHelper * helper,
 		char const * filename, Mime * mime);
 static void _properties_delete(Properties * properties);
 
 /* accessors */
-static int _properties_set_filename(BrowserPlugin * plugin,
+static GtkWidget * _properties_get_widget(Properties * properties);
+static int _properties_set_filename(Properties * properties,
 		char const * filename);
 
 /* useful */
-static int _properties_error(BrowserPlugin * plugin, char const * message,
+static int _properties_error(Properties * properties, char const * message,
 		int ret);
-static int _properties_do_refresh(BrowserPlugin * plugin);
+static int _properties_do_refresh(Properties * properties);
 
 /* callbacks */
 static void _properties_on_apply(gpointer data);
@@ -86,15 +89,15 @@ static void _properties_on_refresh(gpointer data);
 
 /* public */
 /* variables */
-BrowserPlugin plugin =
+BrowserPluginDefinition plugin =
 {
-	NULL,
 	N_("Properties"),
 	GTK_STOCK_PROPERTIES,
+	NULL,
 	_properties_init,
 	_properties_destroy,
-	_properties_refresh,
-	NULL
+	_properties_get_widget,
+	_properties_refresh
 };
 
 
@@ -102,34 +105,28 @@ BrowserPlugin plugin =
 /* functions */
 /* plug-in */
 /* properties_init */
-static GtkWidget * _properties_init(BrowserPlugin * plugin)
+static Properties * _properties_init(BrowserPluginHelper * helper)
 {
-	Properties * properties;
-	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
+	Mime * mime = helper->get_mime(helper->browser);
 
-	if((properties = _properties_new(plugin, NULL, mime)) == NULL)
-		return NULL;
-	plugin->priv = properties;
-	return properties->view;
+	return _properties_new(helper, NULL, mime);
 }
 
 
 /* properties_destroy */
-static void _properties_destroy(BrowserPlugin * plugin)
+static void _properties_destroy(Properties * properties)
 {
-	Properties * properties = plugin->priv;
-
 	_properties_delete(properties);
 }
 
 
 /* properties_refresh */
-static void _properties_refresh(BrowserPlugin * plugin, char const * path)
+static void _properties_refresh(Properties * properties, char const * path)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
 #endif
-	_properties_set_filename(plugin, path);
+	_properties_set_filename(properties, path);
 }
 
 
@@ -138,7 +135,7 @@ static void _properties_refresh(BrowserPlugin * plugin, char const * path)
 static GtkWidget * _new_label_left(GtkSizeGroup * group, char const * text);
 static void _new_pack(GtkWidget * vbox, GtkWidget * label, GtkWidget * widget);
 
-static Properties * _properties_new(BrowserPlugin * plugin,
+static Properties * _properties_new(BrowserPluginHelper * helper,
 		char const * filename, Mime * mime)
 {
 	Properties * properties;
@@ -153,6 +150,7 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 
 	if((properties = object_new(sizeof(*properties))) == NULL)
 		return NULL;
+	properties->helper = helper;
 	properties->mime = mime;
 	properties->filename = NULL;
 	properties->theme = gtk_icon_theme_get_default();
@@ -242,18 +240,18 @@ static Properties * _properties_new(BrowserPlugin * plugin,
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
 	pango_font_description_free(bold);
 	if(filename != NULL)
-		_properties_set_filename(plugin, filename);
+		_properties_set_filename(properties, filename);
 	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, TRUE, 0);
 	hbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_START);
 	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
-				_properties_on_refresh), plugin);
+				_properties_on_refresh), properties);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	properties->apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
 	g_signal_connect_swapped(properties->apply, "clicked", G_CALLBACK(
-				_properties_on_apply), plugin);
+				_properties_on_apply), properties);
 	gtk_box_pack_start(GTK_BOX(hbox), properties->apply, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(properties->view);
@@ -291,30 +289,36 @@ static void _properties_delete(Properties * properties)
 
 
 /* accessors */
+/* properties_get_widget */
+static GtkWidget * _properties_get_widget(Properties * properties)
+{
+	return properties->view;
+}
+
+
 /* properties_set_filename */
-static int _properties_set_filename(BrowserPlugin * plugin,
+static int _properties_set_filename(Properties * properties,
 		char const * filename)
 {
-	Properties * properties = plugin->priv;
 	char * p;
 
 	if((p = strdup(filename)) == NULL)
-		return -_properties_error(plugin, filename, 1);
+		return -_properties_error(properties, filename, 1);
 	free(properties->filename);
 	properties->filename = p;
-	return _properties_do_refresh(plugin);
+	return _properties_do_refresh(properties);
 }
 
 
 /* useful */
 /* properties_error */
-static int _properties_error(BrowserPlugin * plugin, char const * message,
+static int _properties_error(Properties * properties, char const * message,
 		int ret)
 {
 	char buf[256];
 
 	snprintf(buf, sizeof(buf), "%s: %s", message, strerror(errno));
-	return plugin->helper->error(plugin->helper->browser, buf, ret);
+	return properties->helper->error(properties->helper->browser, buf, ret);
 }
 
 
@@ -323,20 +327,20 @@ static void _refresh_name(GtkWidget * widget, char const * filename);
 static void _refresh_type(Properties * properties, struct stat * st);
 static void _refresh_mode(GtkWidget ** widget, mode_t mode, gboolean sensitive);
 static void _refresh_owner(Properties * properties, uid_t uid);
-static int _refresh_group(BrowserPlugin * plugin, gid_t gid,
+static int _refresh_group(Properties * properties, gid_t gid,
 		gboolean sensitive);
 static void _refresh_size(Properties * properties, size_t size);
 static void _refresh_time(GtkWidget * widget, time_t time);
 static void _refresh_apply(GtkWidget * widget, gboolean sensitive);
 
-static int _properties_do_refresh(BrowserPlugin * plugin)
+static int _properties_do_refresh(Properties * properties)
 {
-	Properties * properties = plugin->priv;
 	struct stat st;
 	gboolean writable;
 
 	if(lstat(properties->filename, &st) != 0)
-		return _properties_error(plugin, properties->filename, 0) + 1;
+		return _properties_error(properties, properties->filename, 0)
+			+ 1;
 	_refresh_name(properties->name, properties->filename);
 	_refresh_type(properties, &st);
 	properties->uid = st.st_uid;
@@ -346,7 +350,7 @@ static int _properties_do_refresh(BrowserPlugin * plugin)
 	_refresh_mode(&properties->mode[3], (st.st_mode & 0070) >> 3, writable);
 	_refresh_mode(&properties->mode[0], st.st_mode & 0007, writable);
 	_refresh_owner(properties, st.st_uid);
-	_refresh_group(plugin, st.st_gid, writable);
+	_refresh_group(properties, st.st_gid, writable);
 	_refresh_size(properties, st.st_size);
 	_refresh_time(properties->atime, st.st_atime);
 	_refresh_time(properties->mtime, st.st_mtime);
@@ -454,9 +458,9 @@ static void _refresh_owner(Properties * properties, uid_t uid)
 	gtk_label_set_text(GTK_LABEL(properties->owner), p);
 }
 
-static int _refresh_group(BrowserPlugin * plugin, gid_t gid, gboolean sensitive)
+static int _refresh_group(Properties * properties, gid_t gid,
+		gboolean sensitive)
 {
-	Properties * properties = plugin->priv;
 	GtkWidget * combo;
 	GtkListStore * store;
 	int i = 0;
@@ -470,7 +474,7 @@ static int _refresh_group(BrowserPlugin * plugin, gid_t gid, gboolean sensitive)
 	store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(combo)));
 	gtk_list_store_clear(store);
 	if((gr = getgrgid(getgid())) == NULL)
-		return -_properties_error(plugin, properties->filename, 1);
+		return -_properties_error(properties, properties->filename, 1);
 #if GTK_CHECK_VERSION(2, 24, 0)
 	gtk_combo_box_text_insert_text(GTK_COMBO_BOX_TEXT(combo), i,
 			gr->gr_name);
@@ -479,7 +483,7 @@ static int _refresh_group(BrowserPlugin * plugin, gid_t gid, gboolean sensitive)
 #endif
 	active = i++;
 	if((pw = getpwuid(getuid())) == NULL)
-		return -_properties_error(plugin, properties->filename, 1);
+		return -_properties_error(properties, properties->filename, 1);
 	setgrent();
 	for(gr = getgrent(); gr != NULL; gr = getgrent())
 		for(p = gr->gr_mem; p != NULL && *p != NULL; p++)
@@ -551,8 +555,7 @@ static void _refresh_apply(GtkWidget * widget, gboolean sensitive)
 /* properties_on_apply */
 static void _properties_on_apply(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Properties * properties = plugin->priv;
+	Properties * properties = data;
 	char * p;
 	struct group * gr;
 	gid_t gid = properties->gid;
@@ -566,7 +569,7 @@ static void _properties_on_apply(gpointer data)
 	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(properties->group));
 #endif
 	if((gr = getgrnam(p)) == NULL)
-		_properties_error(plugin, p, 1);
+		_properties_error(properties, p, 1);
 	else
 		gid = gr->gr_gid;
 	for(i = 0; i < 9; i++)
@@ -574,7 +577,7 @@ static void _properties_on_apply(gpointer data)
 					properties->mode[i])) << i;
 	if(chown(properties->filename, properties->uid, gid) != 0
 			|| chmod(properties->filename, mode) != 0)
-		_properties_error(plugin, properties->filename, 1);
+		_properties_error(properties, properties->filename, 1);
 }
 
 
@@ -582,7 +585,7 @@ static void _properties_on_apply(gpointer data)
 /* properties_on_refresh */
 static void _properties_on_refresh(gpointer data)
 {
-	BrowserPlugin * plugin = data;
+	Properties * properties = data;
 
-	_properties_do_refresh(plugin);
+	_properties_do_refresh(properties);
 }

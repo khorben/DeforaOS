@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,10 @@
 /* Dirtree */
 /* private */
 /* types */
-typedef struct _Dirtree
+typedef struct _BrowserPlugin
 {
+	BrowserPluginHelper * helper;
+	GtkWidget * widget;
 	guint source;
 	gboolean expanding;
 	GdkPixbuf * folder;
@@ -50,13 +52,13 @@ enum _DirtreeColumn
 
 
 /* prototypes */
-static GtkWidget * _dirtree_init(BrowserPlugin * plugin);
-static void _dirtree_destroy(BrowserPlugin * plugin);
-static void _dirtree_refresh(BrowserPlugin * plugin, char const * path);
+static Dirtree * _dirtree_init(BrowserPluginHelper * helper);
+static void _dirtree_destroy(Dirtree * dirtree);
+static GtkWidget * _dirtree_get_widget(Dirtree * dirtree);
+static void _dirtree_refresh(Dirtree * dirtree, char const * path);
 
-static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
-		GtkTreeIter * parent, char const * path, char const * basename,
-		gboolean recurse);
+static gboolean _dirtree_refresh_folder(Dirtree * dirtree, GtkTreeIter * parent,
+		char const * path, char const * basename, gboolean recurse);
 
 /* callbacks */
 static gboolean _dirtree_on_idle(gpointer data);
@@ -68,28 +70,26 @@ static void _dirtree_on_row_expanded(GtkTreeView * view, GtkTreeIter * iter,
 
 /* public */
 /* variables */
-BrowserPlugin plugin =
+BrowserPluginDefinition plugin =
 {
-	NULL,
 	N_("Directory tree"),
 	"stock_folder",
+	NULL,
 	_dirtree_init,
 	_dirtree_destroy,
-	_dirtree_refresh,
-	NULL
+	_dirtree_get_widget,
+	_dirtree_refresh
 };
 
 
 /* private */
 /* functions */
 /* dirtree_init */
-static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
+static Dirtree * _dirtree_init(BrowserPluginHelper * helper)
 {
 	Dirtree * dirtree;
-	BrowserPluginHelper * helper = plugin->helper;
 	GtkIconTheme * icontheme;
 	GError * error = NULL;
-	GtkWidget * widget;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 	GtkTreeSelection * treesel;
@@ -98,7 +98,7 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 
 	if((dirtree = object_new(sizeof(*dirtree))) == NULL)
 		return NULL;
-	plugin->priv = dirtree;
+	dirtree->helper = helper;
 	dirtree->source = 0;
 	dirtree->expanding = FALSE;
 	icontheme = gtk_icon_theme_get_default();
@@ -110,8 +110,8 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 		helper->error(helper->browser, error->message, 1);
 		g_error_free(error);
 	}
-	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+	dirtree->widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(dirtree->widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	/* backend store */
 	dirtree->store = gtk_tree_store_new(DC_COUNT, GDK_TYPE_PIXBUF,
@@ -144,23 +144,21 @@ static GtkWidget * _dirtree_init(BrowserPlugin * plugin)
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	/* signals */
 	g_signal_connect(dirtree->view, "row-activated", G_CALLBACK(
-				_dirtree_on_row_activated), plugin);
+				_dirtree_on_row_activated), dirtree);
 	g_signal_connect(dirtree->view, "row-expanded", G_CALLBACK(
-				_dirtree_on_row_expanded), plugin);
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(widget),
-			dirtree->view);
-	gtk_widget_show_all(widget);
+				_dirtree_on_row_expanded), dirtree);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
+				dirtree->widget), dirtree->view);
+	gtk_widget_show_all(dirtree->widget);
 	/* populate the root folder */
-	dirtree->source = g_idle_add(_dirtree_on_idle, plugin);
-	return widget;
+	dirtree->source = g_idle_add(_dirtree_on_idle, dirtree);
+	return dirtree;
 }
 
 
 /* dirtree_destroy */
-static void _dirtree_destroy(BrowserPlugin * plugin)
+static void _dirtree_destroy(Dirtree * dirtree)
 {
-	Dirtree * dirtree = plugin->priv;
-
 	if(dirtree->source != 0)
 		g_source_remove(dirtree->source);
 	g_object_unref(dirtree->folder);
@@ -168,10 +166,16 @@ static void _dirtree_destroy(BrowserPlugin * plugin)
 }
 
 
-/* dirtree_refresh */
-static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
+/* dirtree_get_widget */
+static GtkWidget * _dirtree_get_widget(Dirtree * dirtree)
 {
-	Dirtree * dirtree = plugin->priv;
+	return dirtree->widget;
+}
+
+
+/* dirtree_refresh */
+static void _dirtree_refresh(Dirtree * dirtree, char const * path)
+{
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
 	GtkTreeIter siter;
@@ -199,7 +203,7 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 		for(j = i + 1; p[j] != '\0' && p[j] != '/'; j++);
 		c = p[j];
 		p[j] = '\0';
-		valid = _dirtree_refresh_folder(plugin, &iter, (i == 0)
+		valid = _dirtree_refresh_folder(dirtree, &iter, (i == 0)
 				? "/" : p, &p[i + 1], TRUE);
 		p[i] = '/';
 		p[j] = c;
@@ -221,12 +225,10 @@ static void _dirtree_refresh(BrowserPlugin * plugin, char const * path)
 
 
 /* dirtree_refresh_folder */
-static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
-		GtkTreeIter * parent, char const * path, char const * basename,
-		gboolean recurse)
+static gboolean _dirtree_refresh_folder(Dirtree * dirtree, GtkTreeIter * parent,
+		char const * path, char const * basename, gboolean recurse)
 {
 	gboolean ret = FALSE;
-	Dirtree * dirtree = plugin->priv;
 	DIR * dir;
 	struct dirent * de;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
@@ -270,7 +272,7 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 				DC_NAME, (r != NULL) ? r : de->d_name,
 				DC_PATH, q, DC_UPDATED, TRUE, -1);
 		if(recurse)
-			_dirtree_refresh_folder(plugin, &iter, q, NULL,
+			_dirtree_refresh_folder(dirtree, &iter, q, NULL,
 					(basename != NULL) ? TRUE : FALSE);
 		g_free(r);
 		string_delete(q);
@@ -303,14 +305,13 @@ static gboolean _dirtree_refresh_folder(BrowserPlugin * plugin,
 /* dirtree_on_idle */
 static gboolean _dirtree_on_idle(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Dirtree * dirtree = plugin->priv;
+	Dirtree * dirtree = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
 
 	dirtree->source = 0;
 	gtk_tree_model_iter_children(model, &iter, NULL);
-	_dirtree_refresh_folder(plugin, &iter, "/", NULL, TRUE);
+	_dirtree_refresh_folder(dirtree, &iter, "/", NULL, TRUE);
 	return FALSE;
 }
 
@@ -319,8 +320,7 @@ static gboolean _dirtree_on_idle(gpointer data)
 static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Dirtree * dirtree = plugin->priv;
+	Dirtree * dirtree = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->sorted);
 	GtkTreeIter iter;
 	gchar * location;
@@ -328,7 +328,7 @@ static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
 	gtk_tree_view_expand_row(view, path, FALSE);
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, DC_PATH, &location, -1);
-	plugin->helper->set_location(plugin->helper->browser, location);
+	dirtree->helper->set_location(dirtree->helper->browser, location);
 	g_free(location);
 }
 
@@ -337,8 +337,7 @@ static void _dirtree_on_row_activated(GtkTreeView * view, GtkTreePath * path,
 static void _dirtree_on_row_expanded(GtkTreeView * view, GtkTreeIter * iter,
 		GtkTreePath * path, gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Dirtree * dirtree = plugin->priv;
+	Dirtree * dirtree = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter child;
 	gchar * p;
@@ -348,6 +347,6 @@ static void _dirtree_on_row_expanded(GtkTreeView * view, GtkTreeIter * iter,
 	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
 				dirtree->sorted), &child, iter);
 	gtk_tree_model_get(model, &child, DC_PATH, &p, -1);
-	_dirtree_refresh_folder(plugin, &child, p, NULL, TRUE);
+	_dirtree_refresh_folder(dirtree, &child, p, NULL, TRUE);
 	g_free(p);
 }

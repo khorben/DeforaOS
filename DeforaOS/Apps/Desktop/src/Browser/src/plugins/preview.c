@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,15 @@
 /* Preview */
 /* private */
 /* types */
-typedef struct _Preview
+typedef struct _BrowserPlugin
 {
+	BrowserPluginHelper * helper;
+
 	char * path;
 	guint source;
 
 	/* widgets */
+	GtkWidget * widget;
 	GtkWidget * name;
 	GtkWidget * open;
 	GtkWidget * edit;
@@ -47,9 +50,10 @@ typedef struct _Preview
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _preview_init(BrowserPlugin * plugin);
-static void _preview_destroy(BrowserPlugin * plugin);
-static void _preview_refresh(BrowserPlugin * plugin, char const * path);
+static Preview * _preview_init(BrowserPluginHelper * helper);
+static void _preview_destroy(Preview * preview);
+static GtkWidget * _preview_get_widget(Preview * preview);
+static void _preview_refresh(Preview * preview, char const * path);
 
 /* callbacks */
 static void _preview_on_edit(gpointer data);
@@ -60,22 +64,22 @@ static void _preview_on_open(gpointer data);
 
 /* public */
 /* variables */
-BrowserPlugin plugin =
+BrowserPluginDefinition plugin =
 {
-	NULL,
 	N_("Preview"),
+	NULL,
 	NULL,
 	_preview_init,
 	_preview_destroy,
-	_preview_refresh,
-	NULL
+	_preview_get_widget,
+	_preview_refresh
 };
 
 
 /* private */
 /* functions */
 /* preview_init */
-static GtkWidget * _preview_init(BrowserPlugin * plugin)
+static Preview * _preview_init(BrowserPluginHelper * helper)
 {
 	Preview * preview;
 	PangoFontDescription * font;
@@ -85,12 +89,13 @@ static GtkWidget * _preview_init(BrowserPlugin * plugin)
 
 	if((preview = object_new(sizeof(*preview))) == NULL)
 		return NULL;
-	plugin->priv = preview;
+	preview->helper = helper;
 	preview->path = NULL;
 	preview->source = 0;
 	/* widgets */
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox = gtk_vbox_new(FALSE, 4);
+	preview->widget = vbox;
 	/* name */
 	preview->name = gtk_label_new(NULL);
 	gtk_label_set_ellipsize(GTK_LABEL(preview->name),
@@ -106,14 +111,14 @@ static GtkWidget * _preview_init(BrowserPlugin * plugin)
 	preview->open = gtk_button_new_from_stock(GTK_STOCK_OPEN);
 	gtk_size_group_add_widget(group, preview->open);
 	g_signal_connect_swapped(preview->open, "clicked", G_CALLBACK(
-				_preview_on_open), plugin);
+				_preview_on_open), preview);
 	gtk_box_pack_start(GTK_BOX(widget), preview->open, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_hbox_new(FALSE, 4);
 	preview->edit = gtk_button_new_from_stock(GTK_STOCK_EDIT);
 	gtk_size_group_add_widget(group, preview->edit);
 	g_signal_connect_swapped(preview->edit, "clicked", G_CALLBACK(
-				_preview_on_edit), plugin);
+				_preview_on_edit), preview);
 	gtk_box_pack_start(GTK_BOX(widget), preview->edit, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* image */
@@ -140,15 +145,13 @@ static GtkWidget * _preview_init(BrowserPlugin * plugin)
 				preview->view_text), widget);
 	gtk_box_pack_start(GTK_BOX(vbox), preview->view_text, TRUE, TRUE, 0);
 	gtk_widget_show_all(vbox);
-	return vbox;
+	return preview;
 }
 
 
 /* preview_destroy */
-static void _preview_destroy(BrowserPlugin * plugin)
+static void _preview_destroy(Preview * preview)
 {
-	Preview * preview = plugin->priv;
-
 	if(preview->source != 0)
 		g_source_remove(preview->source);
 	free(preview->path);
@@ -156,16 +159,21 @@ static void _preview_destroy(BrowserPlugin * plugin)
 }
 
 
+/* preview_get_widget */
+static GtkWidget * _preview_get_widget(Preview * preview)
+{
+	return preview->widget;
+}
+
+
 /* preview_refresh */
 static void _refresh_mime(Preview * preview, Mime * mime, char const * type);
-static int _refresh_name(BrowserPlugin * plugin, Preview * preview,
-		char const * path);
+static int _refresh_name(Preview * preview, char const * path);
 static void _refresh_reset(Preview * preview);
 
-static void _preview_refresh(BrowserPlugin * plugin, char const * path)
+static void _preview_refresh(Preview * preview, char const * path)
 {
-	Preview * preview = plugin->priv;
-	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
+	Mime * mime = preview->helper->get_mime(preview->helper->browser);
 	char const image[] = "image/";
 	char const text[] = "text/";
 	char const * types[] = { "application/x-perl",
@@ -178,21 +186,21 @@ static void _preview_refresh(BrowserPlugin * plugin, char const * path)
 	_refresh_reset(preview);
 	if(path == NULL)
 		return;
-	if(_refresh_name(plugin, preview, path) != 0)
+	if(_refresh_name(preview, path) != 0)
 		return;
 	if((type = mime_type(mime, path)) == NULL)
 		return;
 	_refresh_mime(preview, mime, type);
 	if(strncmp(type, image, sizeof(image) - 1) == 0)
-		preview->source = g_idle_add(_preview_on_idle_image, plugin);
+		preview->source = g_idle_add(_preview_on_idle_image, preview);
 	else if(strncmp(type, text, sizeof(text) - 1) == 0)
-		preview->source = g_idle_add(_preview_on_idle_text, plugin);
+		preview->source = g_idle_add(_preview_on_idle_text, preview);
 	else
 		for(i = 0; i < sizeof(types) / sizeof(*types); i++)
 			if(strcmp(types[i], type) == 0)
 			{
 				preview->source = g_idle_add(
-						_preview_on_idle_text, plugin);
+						_preview_on_idle_text, preview);
 				break;
 			}
 }
@@ -205,10 +213,9 @@ static void _refresh_mime(Preview * preview, Mime * mime, char const * type)
 		gtk_widget_show(preview->edit);
 }
 
-static int _refresh_name(BrowserPlugin * plugin, Preview * preview,
-		char const * path)
+static int _refresh_name(Preview * preview, char const * path)
 {
-	BrowserPluginHelper * helper = plugin->helper;
+	BrowserPluginHelper * helper = preview->helper;
 	gchar * p;
 
 	free(preview->path);
@@ -236,9 +243,8 @@ static void _refresh_reset(Preview * preview)
 /* preview_on_edit */
 static void _preview_on_edit(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Preview * preview = plugin->priv;
-	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
+	Preview * preview = data;
+	Mime * mime = preview->helper->get_mime(preview->helper->browser);
 
 	if(preview->path != NULL)
 		mime_action(mime, "edit", preview->path);
@@ -248,9 +254,8 @@ static void _preview_on_edit(gpointer data)
 /* preview_on_idle_image */
 static gboolean _preview_on_idle_image(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	BrowserPluginHelper * helper = plugin->helper;
-	Preview * preview = plugin->priv;
+	Preview * preview = data;
+	BrowserPluginHelper * helper = preview->helper;
 	GdkPixbuf * pixbuf;
 	GError * error = NULL;
 
@@ -277,9 +282,8 @@ static gboolean _preview_on_idle_image(gpointer data)
 /* preview_on_idle_text */
 static gboolean _preview_on_idle_text(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	BrowserPluginHelper * helper = plugin->helper;
-	Preview * preview = plugin->priv;
+	Preview * preview = data;
+	BrowserPluginHelper * helper = preview->helper;
 	int fd;
 	char buf[256];
 	ssize_t s;
@@ -311,9 +315,8 @@ static gboolean _preview_on_idle_text(gpointer data)
 /* preview_on_open */
 static void _preview_on_open(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	Preview * preview = plugin->priv;
-	Mime * mime = plugin->helper->get_mime(plugin->helper->browser);
+	Preview * preview = data;
+	Mime * mime = preview->helper->get_mime(preview->helper->browser);
 
 	if(preview->path != NULL)
 		mime_action(mime, "open", preview->path);

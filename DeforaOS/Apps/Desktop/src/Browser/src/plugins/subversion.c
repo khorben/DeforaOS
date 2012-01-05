@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,10 @@
 /* types */
 typedef struct _SVNTask SVNTask;
 
-typedef struct _SVN
+typedef struct _BrowserPlugin
 {
+	BrowserPluginHelper * helper;
+
 	char * filename;
 
 	guint source;
@@ -60,7 +62,7 @@ typedef struct _SVN
 
 struct _SVNTask
 {
-	BrowserPlugin * plugin;
+	SVN * svn;
 
 	GPid pid;
 	guint source;
@@ -84,18 +86,20 @@ struct _SVNTask
 
 
 /* prototypes */
-static GtkWidget * _subversion_init(BrowserPlugin * plugin);
-static void _subversion_destroy(BrowserPlugin * plugin);
-static void _subversion_refresh(BrowserPlugin * plugin, char const * path);
+static SVN * _subversion_init(BrowserPluginHelper * helper);
+static void _subversion_destroy(SVN * svn);
+static GtkWidget * _subversion_get_widget(SVN * svn);
+static void _subversion_refresh(SVN * svn, char const * path);
 
-static int _subversion_add_task(BrowserPlugin * plugin, char const * title,
+static int _subversion_add_task(SVN * svn, char const * title,
 		char const * directory, char * argv[]);
 
 /* tasks */
 static void _subversion_task_delete(SVNTask * task);
 static void _subversion_task_set_status(SVNTask * task, char const * status);
 static void _subversion_task_close(SVNTask * task);
-static void _subversion_task_close_channel(SVNTask * task, GIOChannel * channel);
+static void _subversion_task_close_channel(SVNTask * task,
+		GIOChannel * channel);
 
 /* callbacks */
 static void _subversion_on_add(gpointer data);
@@ -115,15 +119,15 @@ static gboolean _subversion_task_on_io_can_read(GIOChannel * channel,
 /* public */
 /* variables */
 /* plug-in */
-BrowserPlugin plugin =
+BrowserPluginDefinition plugin =
 {
-	NULL,
 	N_("Subversion"),
 	"applications-development",
+	NULL,
 	_subversion_init,
 	_subversion_destroy,
-	_subversion_refresh,
-	NULL
+	_subversion_get_widget,
+	_subversion_refresh
 };
 
 
@@ -133,7 +137,7 @@ BrowserPlugin plugin =
 static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
 		char const * label, GCallback callback, gpointer data);
 
-static GtkWidget * _subversion_init(BrowserPlugin * plugin)
+static SVN * _subversion_init(BrowserPluginHelper * helper)
 {
 	SVN * svn;
 	PangoFontDescription * font;
@@ -143,7 +147,7 @@ static GtkWidget * _subversion_init(BrowserPlugin * plugin)
 
 	if((svn = object_new(sizeof(*svn))) == NULL)
 		return NULL;
-	plugin->priv = svn;
+	svn->helper = helper;
 	svn->filename = NULL;
 	svn->source = 0;
 	/* widgets */
@@ -165,16 +169,16 @@ static GtkWidget * _subversion_init(BrowserPlugin * plugin)
 	/* directory */
 	svn->directory = gtk_vbox_new(FALSE, 4);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
-			G_CALLBACK(_subversion_on_diff), plugin);
+			G_CALLBACK(_subversion_on_diff), svn);
 	gtk_box_pack_start(GTK_BOX(svn->directory), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
-			G_CALLBACK(_subversion_on_log), plugin);
+			G_CALLBACK(_subversion_on_log), svn);
 	gtk_box_pack_start(GTK_BOX(svn->directory), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
-			G_CALLBACK(_subversion_on_update), plugin);
+			G_CALLBACK(_subversion_on_update), svn);
 	gtk_box_pack_start(GTK_BOX(svn->directory), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_JUMP_TO, _("Commit"),
-			G_CALLBACK(_subversion_on_commit), plugin);
+			G_CALLBACK(_subversion_on_commit), svn);
 	gtk_box_pack_start(GTK_BOX(svn->directory), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(svn->directory);
 	gtk_widget_set_no_show_all(svn->directory, TRUE);
@@ -183,33 +187,33 @@ static GtkWidget * _subversion_init(BrowserPlugin * plugin)
 	/* file */
 	svn->file = gtk_vbox_new(FALSE, 4);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
-			G_CALLBACK(_subversion_on_diff), plugin);
+			G_CALLBACK(_subversion_on_diff), svn);
 	gtk_box_pack_start(GTK_BOX(svn->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
-			G_CALLBACK(_subversion_on_log), plugin);
+			G_CALLBACK(_subversion_on_log), svn);
 	gtk_box_pack_start(GTK_BOX(svn->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_REFRESH, _("Update"),
-			G_CALLBACK(_subversion_on_update), plugin);
+			G_CALLBACK(_subversion_on_update), svn);
 	gtk_box_pack_start(GTK_BOX(svn->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_JUMP_TO, _("Commit"),
-			G_CALLBACK(_subversion_on_commit), plugin);
+			G_CALLBACK(_subversion_on_commit), svn);
 	gtk_box_pack_start(GTK_BOX(svn->file), widget, FALSE, TRUE, 0);
 	gtk_widget_show_all(svn->file);
 	gtk_widget_set_no_show_all(svn->file, TRUE);
 	gtk_box_pack_start(GTK_BOX(svn->widget), svn->file, FALSE, TRUE, 0);
 	/* additional actions */
 	svn->add = _init_button(bgroup, GTK_STOCK_ADD, _("Add to repository"),
-			G_CALLBACK(_subversion_on_add), plugin);
+			G_CALLBACK(_subversion_on_add), svn);
 	gtk_box_pack_start(GTK_BOX(svn->widget), svn->add, FALSE, TRUE, 0);
 	svn->make = _init_button(bgroup, GTK_STOCK_EXECUTE, _("Run make"),
-			G_CALLBACK(_subversion_on_make), plugin);
+			G_CALLBACK(_subversion_on_make), svn);
 	gtk_box_pack_start(GTK_BOX(svn->widget), svn->make, FALSE, TRUE, 0);
 	gtk_widget_show_all(svn->widget);
 	pango_font_description_free(font);
 	/* tasks */
 	svn->tasks = NULL;
 	svn->tasks_cnt = 0;
-	return svn->widget;
+	return svn;
 }
 
 static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
@@ -240,9 +244,8 @@ static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
 
 
 /* subversion_destroy */
-static void _subversion_destroy(BrowserPlugin * plugin)
+static void _subversion_destroy(SVN * svn)
 {
-	SVN * svn = plugin->priv;
 	size_t i;
 
 	for(i = 0; i < svn->tasks_cnt; i++)
@@ -254,14 +257,20 @@ static void _subversion_destroy(BrowserPlugin * plugin)
 }
 
 
+/* subversion_get_widget */
+static GtkWidget * _subversion_get_widget(SVN * svn)
+{
+	return svn->widget;
+}
+
+
 /* subversion_refresh */
 static void _refresh_dir(SVN * svn);
 static void _refresh_make(SVN * svn, struct stat * st);
 static void _refresh_status(SVN * svn, char const * status);
 
-static void _subversion_refresh(BrowserPlugin * plugin, char const * path)
+static void _subversion_refresh(SVN * svn, char const * path)
 {
-	SVN * svn = plugin->priv;
 	struct stat st;
 	gchar * p;
 
@@ -344,11 +353,10 @@ static void _refresh_status(SVN * svn, char const * status)
 
 
 /* svn_add_task */
-static int _subversion_add_task(BrowserPlugin * plugin, char const * title,
+static int _subversion_add_task(SVN * svn, char const * title,
 		char const * directory, char * argv[])
 {
-	BrowserPluginHelper * helper = plugin->helper;
-	SVN * svn = plugin->priv;
+	BrowserPluginHelper * helper = svn->helper;
 	SVNTask ** p;
 	SVNTask * task;
 	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
@@ -364,7 +372,7 @@ static int _subversion_add_task(BrowserPlugin * plugin, char const * title,
 	svn->tasks = p;
 	if((task = object_new(sizeof(*task))) == NULL)
 		return -helper->error(helper->browser, error_get(), 1);
-	task->plugin = plugin;
+	task->svn = svn;
 	res = g_spawn_async_with_pipes(directory, argv, NULL, flags, NULL, NULL,
 			&task->pid, NULL, &task->o_fd, &task->e_fd, &error);
 	if(res != TRUE)
@@ -381,7 +389,7 @@ static int _subversion_add_task(BrowserPlugin * plugin, char const * title,
 	task->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(task->window), 600, 400);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(task->window), plugin->icon);
+	gtk_window_set_icon_name(GTK_WINDOW(task->window), plugin.icon);
 #endif
 	snprintf(buf, sizeof(buf), "%s - %s (%s)", _("Subversion"), title,
 			directory);
@@ -497,8 +505,7 @@ static gboolean _add_is_binary(char const * type);
 
 static void _subversion_on_add(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	SVN * svn = plugin->priv;
+	SVN * svn = data;
 	gchar * dirname;
 	gchar * basename;
 	char * argv[] = { "svn", "add", "--", NULL, NULL, NULL };
@@ -510,7 +517,7 @@ static void _subversion_on_add(gpointer data)
 	dirname = g_path_get_dirname(svn->filename);
 	basename = g_path_get_basename(svn->filename);
 	argv[3] = basename;
-	mime = plugin->helper->get_mime(plugin->helper->browser);
+	mime = svn->helper->get_mime(svn->helper->browser);
 	type = mime_type(mime, svn->filename);
 	if(_add_is_binary(type))
 	{
@@ -518,7 +525,7 @@ static void _subversion_on_add(gpointer data)
 		argv[3] = argv[2];
 		argv[2] = "-kb";
 	}
-	_subversion_add_task(plugin, "svn add", dirname, argv);
+	_subversion_add_task(svn, "svn add", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -546,8 +553,7 @@ static gboolean _add_is_binary(char const * type)
 /* svn_on_commit */
 static void _subversion_on_commit(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	SVN * svn = plugin->priv;
+	SVN * svn = data;
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
@@ -560,7 +566,7 @@ static void _subversion_on_commit(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(svn->filename);
 	argv[3] = basename;
-	_subversion_add_task(plugin, "svn commit", dirname, argv);
+	_subversion_add_task(svn, "svn commit", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -569,8 +575,7 @@ static void _subversion_on_commit(gpointer data)
 /* svn_on_diff */
 static void _subversion_on_diff(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	SVN * svn = plugin->priv;
+	SVN * svn = data;
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
@@ -583,7 +588,7 @@ static void _subversion_on_diff(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(svn->filename);
 	argv[3] = basename;
-	_subversion_add_task(plugin, "svn diff", dirname, argv);
+	_subversion_add_task(svn, "svn diff", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -592,8 +597,7 @@ static void _subversion_on_diff(gpointer data)
 /* svn_on_log */
 static void _subversion_on_log(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	SVN * svn = plugin->priv;
+	SVN * svn = data;
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
@@ -606,7 +610,7 @@ static void _subversion_on_log(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(svn->filename);
 	argv[3] = basename;
-	_subversion_add_task(plugin, "svn log", dirname, argv);
+	_subversion_add_task(svn, "svn log", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -615,8 +619,7 @@ static void _subversion_on_log(gpointer data)
 /* svn_on_make */
 static void _subversion_on_make(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	SVN * svn = plugin->priv;
+	SVN * svn = data;
 	struct stat st;
 	gchar * dirname;
 	char * argv[] = { "make", NULL };
@@ -625,7 +628,7 @@ static void _subversion_on_make(gpointer data)
 		return;
 	dirname = S_ISDIR(st.st_mode) ? g_strdup(svn->filename)
 		: g_path_get_dirname(svn->filename);
-	_subversion_add_task(plugin, "make", dirname, argv);
+	_subversion_add_task(svn, "make", dirname, argv);
 	g_free(dirname);
 }
 
@@ -633,8 +636,7 @@ static void _subversion_on_make(gpointer data)
 /* svn_on_update */
 static void _subversion_on_update(gpointer data)
 {
-	BrowserPlugin * plugin = data;
-	SVN * svn = plugin->priv;
+	SVN * svn = data;
 	struct stat st;
 	gchar * dirname;
 	gchar * basename;
@@ -647,7 +649,7 @@ static void _subversion_on_update(gpointer data)
 	basename = S_ISDIR(st.st_mode) ? NULL
 		: g_path_get_basename(svn->filename);
 	argv[3] = basename;
-	_subversion_add_task(plugin, "svn update", dirname, argv);
+	_subversion_add_task(svn, "svn update", dirname, argv);
 	g_free(basename);
 	g_free(dirname);
 }
@@ -695,8 +697,8 @@ static gboolean _subversion_task_on_io_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data)
 {
 	SVNTask * task = data;
-	BrowserPlugin * plugin = task->plugin;
-	BrowserPluginHelper * helper = plugin->helper;
+	SVN * svn = task->svn;
+	BrowserPluginHelper * helper = svn->helper;
 	char buf[256];
 	gsize cnt = 0;
 	GError * error = NULL;

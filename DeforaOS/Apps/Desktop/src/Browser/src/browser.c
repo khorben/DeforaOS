@@ -74,6 +74,7 @@ typedef enum _BrowserPluginColumn
 	BPC_ICON,
 	BPC_NAME_DISPLAY,
 	BPC_PLUGIN,
+	BPC_BROWSERPLUGINDEFINITION,
 	BPC_BROWSERPLUGIN,
 	BPC_WIDGET
 } BrowserPluginColumn;
@@ -436,7 +437,8 @@ Browser * browser_new(char const * directory)
 	gtk_container_set_border_width(GTK_CONTAINER(browser->pl_view), 4);
 	browser->pl_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
 			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING,
-			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
+			G_TYPE_POINTER);
 	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				browser->pl_store));
 	g_signal_connect_swapped(G_OBJECT(browser->pl_combo), "changed",
@@ -675,6 +677,7 @@ static void _delete_plugins(Browser * browser)
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
 	GtkTreeIter iter;
 	gboolean valid;
+	BrowserPluginDefinition * bpd;
 	BrowserPlugin * bp;
 	Plugin * plugin;
 
@@ -682,9 +685,10 @@ static void _delete_plugins(Browser * browser)
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, BPC_PLUGIN, &plugin,
+				BPC_BROWSERPLUGINDEFINITION, &bpd,
 				BPC_BROWSERPLUGIN, &bp, -1);
-		if(bp->destroy != NULL)
-			bp->destroy(bp);
+		if(bpd->destroy != NULL)
+			bpd->destroy(bp);
 		plugin_delete(plugin);
 	}
 }
@@ -902,6 +906,7 @@ void browser_go_home(Browser * browser)
 int browser_load(Browser * browser, char const * plugin)
 {
 	Plugin * p;
+	BrowserPluginDefinition * bpd;
 	BrowserPlugin * bp;
 	GtkWidget * widget;
 	GtkTreeIter iter;
@@ -915,29 +920,30 @@ int browser_load(Browser * browser, char const * plugin)
 		return 0;
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -browser_error(NULL, error_get(), 1);
-	if((bp = plugin_lookup(p, "plugin")) == NULL)
+	if((bpd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
 		return -browser_error(NULL, error_get(), 1);
 	}
-	bp->helper = &browser->pl_helper;
-	if(bp->init == NULL || (widget = bp->init(bp)) == NULL)
+	if(bpd->init == NULL || bpd->destroy == NULL || bpd->get_widget == NULL
+			|| (bp = bpd->init(&browser->pl_helper)) == NULL)
 	{
 		plugin_delete(p);
 		return -browser_error(NULL, error_get(), 1);
 	}
+	widget = bpd->get_widget(bp);
 	gtk_widget_hide(widget);
 	theme = gtk_icon_theme_get_default();
-	if(bp->icon != NULL)
-		icon = gtk_icon_theme_load_icon(theme, bp->icon, 24, 0, NULL);
+	if(bpd->icon != NULL)
+		icon = gtk_icon_theme_load_icon(theme, bpd->icon, 24, 0, NULL);
 	if(icon == NULL)
 		icon = gtk_icon_theme_load_icon(theme, "gnome-settings", 24, 0,
 				NULL);
 	gtk_list_store_append(browser->pl_store, &iter);
 	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, plugin,
-			BPC_ICON, icon, BPC_NAME_DISPLAY, _(bp->name),
-			BPC_PLUGIN, p, BPC_BROWSERPLUGIN, bp,
-			BPC_WIDGET, widget, -1);
+			BPC_ICON, icon, BPC_NAME_DISPLAY, _(bpd->name),
+			BPC_PLUGIN, p, BPC_BROWSERPLUGINDEFINITION, bpd,
+			BPC_BROWSERPLUGIN, bp, BPC_WIDGET, widget, -1);
 	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
 	if(gtk_widget_get_no_show_all(browser->pl_view) == TRUE)
 	{
@@ -2120,7 +2126,8 @@ void browser_show_preferences(Browser * browser)
 	/* plug-ins tab */
 	browser->pr_plugin_store = gtk_list_store_new(BPC_COUNT, G_TYPE_STRING,
 			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING,
-			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
+			G_TYPE_POINTER);
 	browser->pr_plugin_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->pr_plugin_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(
@@ -2185,7 +2192,7 @@ static void _preferences_set_plugins(Browser * browser)
 	char const ext[] = ".so";
 	size_t len;
 	Plugin * p;
-	BrowserPlugin * bp;
+	BrowserPluginDefinition * bpd;
 	GtkTreeIter iter;
 	gboolean enabled;
 	GdkPixbuf * icon;
@@ -2207,15 +2214,15 @@ static void _preferences_set_plugins(Browser * browser)
 		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
 				== NULL)
 			continue;
-		if((bp = plugin_lookup(p, "plugin")) == NULL)
+		if((bpd = plugin_lookup(p, "plugin")) == NULL)
 		{
 			plugin_delete(p);
 			continue;
 		}
 		enabled = _browser_plugin_is_enabled(browser, de->d_name);
 		icon = NULL;
-		if(bp->icon != NULL)
-			icon = gtk_icon_theme_load_icon(theme, bp->icon, 24,
+		if(bpd->icon != NULL)
+			icon = gtk_icon_theme_load_icon(theme, bpd->icon, 24,
 					0, NULL);
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
@@ -2223,7 +2230,7 @@ static void _preferences_set_plugins(Browser * browser)
 		gtk_list_store_append(browser->pr_plugin_store, &iter);
 		gtk_list_store_set(browser->pr_plugin_store, &iter,
 				BPC_NAME, de->d_name, BPC_ENABLED, enabled,
-				BPC_ICON, icon, BPC_NAME_DISPLAY, _(bp->name),
+				BPC_ICON, icon, BPC_NAME_DISPLAY, _(bpd->name),
 				-1);
 		plugin_delete(p);
 	}
@@ -2430,6 +2437,7 @@ int browser_unload(Browser * browser, char const * plugin)
 	gboolean valid;
 	gchar * p;
 	Plugin * pp;
+	BrowserPluginDefinition * bpd;
 	BrowserPlugin * bp;
 	GtkWidget * widget;
 	gboolean enabled = FALSE;
@@ -2438,6 +2446,7 @@ int browser_unload(Browser * browser, char const * plugin)
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, BPC_NAME, &p, BPC_PLUGIN, &pp,
+				BPC_BROWSERPLUGINDEFINITION, &bpd,
 				BPC_BROWSERPLUGIN, &bp, BPC_WIDGET, &widget,
 				-1);
 		enabled = (strcmp(p, plugin) == 0) ? TRUE : FALSE;
@@ -2449,8 +2458,8 @@ int browser_unload(Browser * browser, char const * plugin)
 		return 0;
 	gtk_list_store_remove(browser->pl_store, &iter);
 	gtk_container_remove(GTK_CONTAINER(browser->pl_box), widget);
-	if(bp->destroy != NULL)
-		bp->destroy(bp);
+	if(bpd->destroy != NULL)
+		bpd->destroy(bp);
 	plugin_delete(pp);
 	if(gtk_tree_model_iter_n_children(model, NULL) == 0)
 	{
@@ -2556,14 +2565,16 @@ static void _plugin_refresh_do(Browser * browser, char const * path)
 {
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->pl_store);
 	GtkTreeIter iter;
+	BrowserPluginDefinition * bpd;
 	BrowserPlugin * bp;
 
 	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
 				&iter) != TRUE)
 		return;
-	gtk_tree_model_get(model, &iter, BPC_BROWSERPLUGIN, &bp, -1);
-	if(bp->refresh != NULL)
-		bp->refresh(bp, path);
+	gtk_tree_model_get(model, &iter, BPC_BROWSERPLUGINDEFINITION, &bpd,
+			BPC_BROWSERPLUGIN, &bp, -1);
+	if(bpd->refresh != NULL)
+		bpd->refresh(bp, path);
 }
 
 

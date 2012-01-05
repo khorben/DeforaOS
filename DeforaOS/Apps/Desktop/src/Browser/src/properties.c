@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@
 #include "common.c"
 
 
-/* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -313,6 +312,7 @@ static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 static int _properties_load(Properties * properties, char const * name)
 {
 	Plugin * p;
+	BrowserPluginDefinition * bpd;
 	BrowserPlugin * bp;
 	GdkPixbuf * icon = NULL;
 	GtkWidget * hbox;
@@ -320,29 +320,30 @@ static int _properties_load(Properties * properties, char const * name)
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", name)) == NULL)
 		return -_properties_error(NULL, error_get(), 1);
-	if((bp = plugin_lookup(p, "plugin")) == NULL)
+	if((bpd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
 		return -_properties_error(NULL, error_get(), 1);
 	}
-	bp->helper = &properties->helper;
-	if(bp->init == NULL || (widget = bp->init(bp)) == NULL)
+	if(bpd->init == NULL || bpd->destroy == NULL || bpd->get_widget == NULL
+			|| (bp = bpd->init(&properties->helper)) == NULL)
 	{
 		plugin_delete(p);
 		return -_properties_error(NULL, error_get(), 1);
 	}
-	bp->refresh(bp, properties->filename);
+	widget = bpd->get_widget(bp);
+	bpd->refresh(bp, properties->filename);
 	/* label */
-	if(bp->icon != NULL)
-		icon = gtk_icon_theme_load_icon(properties->theme, bp->icon, 24,
-				0, NULL);
+	if(bpd->icon != NULL)
+		icon = gtk_icon_theme_load_icon(properties->theme, bpd->icon,
+				24, 0, NULL);
 	if(icon == NULL)
 		icon = gtk_icon_theme_load_icon(properties->theme,
 				"gnome-settings", 24, 0, NULL);
 	hbox = gtk_hbox_new(FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(hbox), gtk_image_new_from_pixbuf(icon),
 			FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_(bp->name)), TRUE,
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_(bpd->name)), TRUE,
 			TRUE, 0);
 	gtk_widget_show_all(hbox);
 	gtk_notebook_append_page(GTK_NOTEBOOK(properties->notebook), widget,

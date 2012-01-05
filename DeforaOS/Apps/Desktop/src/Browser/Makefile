@@ -67,6 +67,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/preview.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/properties.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/subversion.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/template.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/volumes.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
