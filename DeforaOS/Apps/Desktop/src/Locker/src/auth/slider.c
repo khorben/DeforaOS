@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,18 +31,21 @@
 /* Slider */
 /* private */
 /* types */
-typedef struct _Slider
+typedef struct _LockerAuth
 {
+	LockerAuthHelper * helper;
 	guint source;
+	GtkWidget * widget;
 	GtkWidget * scale;
 } Slider;
 
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _slider_init(LockerAuth * plugin);
-static void _slider_destroy(LockerAuth * plugin);
-static int _slider_action(LockerAuth * plugin, LockerAction action);
+static Slider * _slider_init(LockerAuthHelper * helper);
+static void _slider_destroy(Slider * slider);
+static GtkWidget * _slider_get_widget(Slider * slider);
+static int _slider_action(Slider * slider, LockerAction action);
 
 /* callbacks */
 static void _slider_on_scale_value_changed(gpointer data);
@@ -54,21 +57,22 @@ static gboolean _slider_on_timeout_suspend(gpointer data);
 /* public */
 /* variables */
 /* plug-in */
-LockerAuth plugin =
+LockerAuthDefinition plugin =
 {
-	NULL,
 	"Slider",
+	NULL,
+	NULL,
 	_slider_init,
 	_slider_destroy,
-	_slider_action,
-	NULL
+	_slider_get_widget,
+	_slider_action
 };
 
 
 /* private */
 /* functions */
 /* slider_init */
-static GtkWidget * _slider_init(LockerAuth * plugin)
+static Slider * _slider_init(LockerAuthHelper * helper)
 {
 	Slider * slider;
 	GtkWidget * vbox;
@@ -77,9 +81,10 @@ static GtkWidget * _slider_init(LockerAuth * plugin)
 
 	if((slider = object_new(sizeof(*slider))) == NULL)
 		return NULL;
-	plugin->priv = slider;
+	slider->helper = helper;
 	slider->source = 0;
 	vbox = gtk_vbox_new(FALSE, 4);
+	slider->widget = vbox;
 	hbox = gtk_hbox_new(FALSE, 4);
 	/* left image */
 	widget = gtk_image_new_from_icon_name("stock_lock",
@@ -93,7 +98,7 @@ static GtkWidget * _slider_init(LockerAuth * plugin)
 	gtk_scale_set_draw_value(GTK_SCALE(slider->scale), FALSE);
 	gtk_widget_set_size_request(slider->scale, 240, -1);
 	g_signal_connect_swapped(slider->scale, "value-changed", G_CALLBACK(
-				_slider_on_scale_value_changed), plugin);
+				_slider_on_scale_value_changed), slider);
 	gtk_box_pack_start(GTK_BOX(hbox), slider->scale, FALSE, TRUE, 0);
 	/* right image */
 	widget = gtk_image_new_from_icon_name("stock_lock-open",
@@ -103,26 +108,29 @@ static GtkWidget * _slider_init(LockerAuth * plugin)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
-	return vbox;
+	return slider;
 }
 
 
 /* slider_destroy */
-static void _slider_destroy(LockerAuth * plugin)
+static void _slider_destroy(Slider * slider)
 {
-	Slider * slider = plugin->priv;
-
 	if(slider->source != 0)
 		g_source_remove(slider->source);
 	object_delete(slider);
 }
 
 
-/* slider_action */
-static int _slider_action(LockerAuth * plugin, LockerAction action)
+/* slider_get_widget */
+static GtkWidget * _slider_get_widget(Slider * slider)
 {
-	Slider * slider = plugin->priv;
+	return slider->widget;
+}
 
+
+/* slider_action */
+static int _slider_action(Slider * slider, LockerAction action)
+{
 	switch(action)
 	{
 		case LOCKER_ACTION_LOCK:
@@ -130,7 +138,8 @@ static int _slider_action(LockerAuth * plugin, LockerAction action)
 			if(slider->source != 0)
 				g_source_remove(slider->source);
 			slider->source = g_timeout_add(10000,
-					_slider_on_timeout_suspend, plugin);
+					/* _slider_on_timeout_report */
+					_slider_on_timeout_suspend, slider);
 			break;
 		default:
 			break;
@@ -143,9 +152,8 @@ static int _slider_action(LockerAuth * plugin, LockerAction action)
 /* slider_on_scale_value_changed */
 static void _slider_on_scale_value_changed(gpointer data)
 {
-	LockerAuth * plugin = data;
-	LockerAuthHelper * helper = plugin->helper;
-	Slider * slider = plugin->priv;
+	Slider * slider = data;
+	LockerAuthHelper * helper = slider->helper;
 	gdouble value;
 
 	if(slider->source != 0)
@@ -156,21 +164,20 @@ static void _slider_on_scale_value_changed(gpointer data)
 		helper->action(helper->locker, LOCKER_ACTION_UNLOCK);
 	else if(value > 0.0)
 		slider->source = g_timeout_add(1000,
-				_slider_on_scale_value_changed_timeout, plugin);
+				_slider_on_scale_value_changed_timeout, slider);
 }
 
 
 /* slider_on_scale_value_changed_timeout */
 static gboolean _slider_on_scale_value_changed_timeout(gpointer data)
 {
-	LockerAuth * plugin = data;
-	Slider * slider = plugin->priv;
+	Slider * slider = data;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	gtk_range_set_value(GTK_RANGE(slider->scale), 0.0);
-	slider->source = g_timeout_add(3000, _slider_on_timeout, plugin);
+	slider->source = g_timeout_add(3000, _slider_on_timeout, slider);
 	return FALSE;
 }
 
@@ -178,9 +185,8 @@ static gboolean _slider_on_scale_value_changed_timeout(gpointer data)
 /* slider_on_timeout */
 static gboolean _slider_on_timeout(gpointer data)
 {
-	LockerAuth * plugin = data;
-	LockerAuthHelper * helper = plugin->helper;
-	Slider * slider = plugin->priv;
+	Slider * slider = data;
+	LockerAuthHelper * helper = slider->helper;
 
 	slider->source = 0;
 	helper->action(helper->locker, LOCKER_ACTION_ACTIVATE);
@@ -189,10 +195,11 @@ static gboolean _slider_on_timeout(gpointer data)
 
 
 /* slider_on_timeout_suspend */
+/* FIXME move this to the Openmoko plug-in (and do not suspend if charging) */
 static gboolean _slider_on_timeout_suspend(gpointer data)
 {
-	LockerAuth * plugin = data;
-	LockerAuthHelper * helper = plugin->helper;
+	Slider * slider = data;
+	LockerAuthHelper * helper = slider->helper;
 #ifdef __NetBSD__
 	int sleep_state = 3;
 #else

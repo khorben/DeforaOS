@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,11 +31,9 @@
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
-
 #ifndef DATADIR
 # define DATADIR	PREFIX "/share"
 #endif
-
 #ifndef DEMODIR
 # define DEMODIR	DATADIR "/gtk-2.0/demo"
 #endif
@@ -59,8 +57,9 @@ typedef enum _GtkDemoImage
 #define GDI_LAST GDI_GNU_KEYS
 #define GDI_COUNT (GDI_LAST + 1)
 
-typedef struct _GtkDemo
+typedef struct _LockerDemo
 {
+	LockerDemoHelper * helper;
 	GdkPixbuf * images[GDI_COUNT];
 	GtkWidget ** windows;
 	size_t windows_cnt;
@@ -70,7 +69,7 @@ typedef struct _GtkDemo
 
 
 /* constants */
-static const char * _gtk_demo_images[GDI_COUNT] =
+static const char * _gtkdemo_images[GDI_COUNT] =
 {
 	DEMODIR "/background.jpg",
 	DEMODIR "/apple-red.png",
@@ -86,47 +85,46 @@ static const char * _gtk_demo_images[GDI_COUNT] =
 
 /* prototypes */
 /* plug-in */
-static int _gtk_demo_init(LockerDemo * demo);
-static void _gtk_demo_destroy(LockerDemo * demo);
-static int _gtk_demo_add(LockerDemo * demo, GtkWidget * window);
-static void _gtk_demo_remove(LockerDemo * demo, GtkWidget * window);
+static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper);
+static void _gtkdemo_destroy(GtkDemo * gtkdemo);
+static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window);
+static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window);
 
 /* callbacks */
-static gboolean _gtk_demo_on_timeout(gpointer data);
+static gboolean _gtkdemo_on_timeout(gpointer data);
 
 
 /* public */
 /* variables */
 /* plug-in */
-LockerDemo demo =
+LockerDemoDefinition demo =
 {
-	NULL,
 	"Gtk-demo",
-	_gtk_demo_init,
-	_gtk_demo_destroy,
-	_gtk_demo_add,
-	_gtk_demo_remove,
-	NULL
+	NULL,
+	NULL,
+	_gtkdemo_init,
+	_gtkdemo_destroy,
+	_gtkdemo_add,
+	_gtkdemo_remove
 };
 
 
 /* private */
 /* functions */
 /* plug-in */
-/* gtk_demo_init */
-static int _gtk_demo_init(LockerDemo * demo)
+/* gtkdemo_init */
+static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper)
 {
-	LockerDemoHelper * helper = demo->helper;
 	GtkDemo * gtkdemo;
 	size_t i;
 	GError * error = NULL;
 
 	if((gtkdemo = object_new(sizeof(*gtkdemo))) == NULL)
-		return -1;
-	demo->priv = gtkdemo;
+		return NULL;
+	gtkdemo->helper = helper;
 	for(i = 0; i < GDI_COUNT; i++)
 		if((gtkdemo->images[i] = gdk_pixbuf_new_from_file(
-						_gtk_demo_images[i],
+						_gtkdemo_images[i],
 						&error)) == NULL)
 			helper->error(NULL, error->message, 1);
 	if(error != NULL)
@@ -135,14 +133,13 @@ static int _gtk_demo_init(LockerDemo * demo)
 	gtkdemo->windows_cnt = 0;
 	gtkdemo->timeout = 0;
 	gtkdemo->frame_num = 0;
-	return 0;
+	return gtkdemo;
 }
 
 
-/* gtk_demo_destroy */
-static void _gtk_demo_destroy(LockerDemo * demo)
+/* gtkdemo_destroy */
+static void _gtkdemo_destroy(GtkDemo * gtkdemo)
 {
-	GtkDemo * gtkdemo = demo->priv;
 	size_t i;
 
 	if(gtkdemo->timeout != 0)
@@ -154,11 +151,10 @@ static void _gtk_demo_destroy(LockerDemo * demo)
 }
 
 
-/* gtk_demo_add */
-static int _gtk_demo_add(LockerDemo * demo, GtkWidget * window)
+/* gtkdemo_add */
+static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 {
 	int ret = 0;
-	GtkDemo * gtkdemo = demo->priv;
 	GtkWidget ** p;
 	GdkColor color = { 0xff000000, 0xffff, 0x0, 0x0 };
 	GdkGC * gc;
@@ -203,16 +199,15 @@ static int _gtk_demo_add(LockerDemo * demo, GtkWidget * window)
 	gdk_pixmap_unref(pixmap);
 	gtkdemo->windows[gtkdemo->windows_cnt++] = window;
 	if(gtkdemo->timeout == 0)
-		gtkdemo->timeout = g_timeout_add(40, _gtk_demo_on_timeout,
-				demo);
+		gtkdemo->timeout = g_timeout_add(40, _gtkdemo_on_timeout,
+				gtkdemo);
 	return ret;
 }
 
 
-/* gtk_demo_remove */
-static void _gtk_demo_remove(LockerDemo * demo, GtkWidget * window)
+/* gtkdemo_remove */
+static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window)
 {
-	GtkDemo * gtkdemo = demo->priv;
 	size_t i;
 
 	for(i = 0; i < gtkdemo->windows_cnt; i++)
@@ -235,11 +230,10 @@ static void _gtk_demo_remove(LockerDemo * demo, GtkWidget * window)
 
 
 /* callbacks */
-/* gtk_demo_on_timeout */
-static gboolean _gtk_demo_on_timeout(gpointer data)
+/* gtkdemo_on_timeout */
+static gboolean _gtkdemo_on_timeout(gpointer data)
 {
-	LockerDemo * demo = data;
-	GtkDemo * gtkdemo = demo->priv;
+	GtkDemo * gtkdemo = data;
 	size_t c;
 	GdkWindow * window;
 	GdkPixbuf * background = gtkdemo->images[GDI_BACKGROUND];

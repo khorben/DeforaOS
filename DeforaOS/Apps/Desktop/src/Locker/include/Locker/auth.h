@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,14 +38,15 @@ typedef struct _LockerAuthHelper
 			char const * variable, char const * value);
 } LockerAuthHelper;
 
-struct _LockerAuth
+typedef const struct _LockerAuthDefinition
 {
-	LockerAuthHelper * helper;
 	char const * name;
-	GtkWidget * (*init)(LockerAuth * plugin);
+	char const * icon;
+	char const * description;
+	LockerAuth * (*init)(LockerAuthHelper * helper);
 	void (*destroy)(LockerAuth * plugin);
+	GtkWidget * (*get_widget)(LockerAuth * plugin);
 	int (*action)(LockerAuth * plugin, LockerAction action);
-	void * priv;
-};
+} LockerAuthDefinition;
 
 #endif /* !DESKTOP_LOCKER_AUTH_H */

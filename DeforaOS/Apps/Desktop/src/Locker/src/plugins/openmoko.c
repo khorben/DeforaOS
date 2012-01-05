@@ -41,8 +41,9 @@
 /* Openmoko */
 /* private */
 /* types */
-typedef struct _Openmoko
+typedef struct _LockerPlugin
 {
+	LockerPluginHelper * helper;
 	GtkWidget * window;
 #if defined(__linux__)
 	GIOChannel * channel;
@@ -53,11 +54,11 @@ typedef struct _Openmoko
 
 /* prototypes */
 /* plug-in */
-static int _openmoko_init(LockerPlugin * plugin);
-static void _openmoko_destroy(LockerPlugin * plugin);
+static Openmoko * _openmoko_init(LockerPluginHelper * helper);
+static void _openmoko_destroy(Openmoko * openmoko);
 
 /* useful */
-static void _openmoko_show_dialog(LockerPlugin * plugin);
+static void _openmoko_show_dialog(Openmoko * openmoko);
 
 /* callbacks */
 #if defined(__linux__)
@@ -70,14 +71,13 @@ static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
 /* public */
 /* variables */
 /* plug-in */
-LockerPlugin plugin =
+LockerPluginDefinition plugin =
 {
-	NULL,
 	"Openmoko",
 	"phone-openmoko", /* XXX provide the icon ourselves */
+	NULL,
 	_openmoko_init,
 	_openmoko_destroy,
-	NULL,
 	NULL
 };
 
@@ -85,7 +85,7 @@ LockerPlugin plugin =
 /* private */
 /* functions */
 /* openmoko_init */
-static int _openmoko_init(LockerPlugin * plugin)
+static Openmoko * _openmoko_init(LockerPluginHelper * helper)
 {
 	Openmoko * openmoko;
 
@@ -93,8 +93,8 @@ static int _openmoko_init(LockerPlugin * plugin)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((openmoko = object_new(sizeof(*openmoko))) == NULL)
-		return -1;
-	plugin->priv = openmoko;
+		return NULL;
+	openmoko->helper = helper;
 	openmoko->window = NULL;
 #if defined(__linux__)
 	openmoko->channel = NULL;
@@ -103,16 +103,15 @@ static int _openmoko_init(LockerPlugin * plugin)
 		openmoko->source = g_timeout_add(1000, _openmoko_on_reset,
 				plugin);
 #endif
-	return 0;
+	return openmoko;
 }
 
 
 /* openmoko_destroy */
-static void _openmoko_destroy(LockerPlugin * plugin)
+static void _openmoko_destroy(Openmoko * openmoko)
 {
-	Openmoko * openmoko = plugin->priv;
 #if defined(__linux__)
-	LockerPluginHelper * helper = plugin->helper;
+	LockerPluginHelper * helper = openmoko->helper;
 	GError * error = NULL;
 #endif
 
@@ -143,9 +142,8 @@ static void _dialog_on_suspend(gpointer data);
 static void _dialog_on_shutdown(gpointer data);
 enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
 
-static void _openmoko_show_dialog(LockerPlugin * plugin)
+static void _openmoko_show_dialog(Openmoko * openmoko)
 {
-	Openmoko * openmoko = plugin->priv;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkWidget * image;
@@ -158,7 +156,7 @@ static void _openmoko_show_dialog(LockerPlugin * plugin)
 	openmoko->window = gtk_dialog_new();
 	gtk_window_set_title(GTK_WINDOW(openmoko->window), "Power menu");
 	g_signal_connect_swapped(openmoko->window, "delete-event", G_CALLBACK(
-				_dialog_on_closex), plugin);
+				_dialog_on_closex), openmoko);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(openmoko->window));
 #else
@@ -170,7 +168,7 @@ static void _openmoko_show_dialog(LockerPlugin * plugin)
 			GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(widget), image);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(_dialog_on_lock),
-			plugin);
+			openmoko);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* suspend */
 	widget = gtk_button_new_with_label("Suspend");
@@ -178,22 +176,21 @@ static void _openmoko_show_dialog(LockerPlugin * plugin)
 			GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(widget), image);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
-				_dialog_on_suspend), plugin);
+				_dialog_on_suspend), openmoko);
 	/* shutdown */
 	widget = gtk_button_new_with_label("Shutdown");
 	image = gtk_image_new_from_icon_name("gnome-shutdown",
 			GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(widget), image);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
-				_dialog_on_shutdown), plugin);
+				_dialog_on_shutdown), openmoko);
 	/* FIXME implement */
 	gtk_widget_show(openmoko->window);
 }
 
 static gboolean _dialog_on_closex(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	Openmoko * openmoko = plugin->priv;
+	Openmoko * openmoko = data;
 
 	gtk_widget_hide(openmoko->window);
 	return TRUE;
@@ -201,8 +198,8 @@ static gboolean _dialog_on_closex(gpointer data)
 
 static void _dialog_on_lock(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	Openmoko * openmoko = data;
+	LockerPluginHelper * helper = openmoko->helper;
 
 	helper->action(helper->locker, LOCKER_ACTION_LOCK);
 }
@@ -210,8 +207,8 @@ static void _dialog_on_lock(gpointer data)
 /* FIXME code duplicated from Panel */
 static void _dialog_on_shutdown(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	Openmoko * openmoko = data;
+	LockerPluginHelper * helper = openmoko->helper;
 	GtkWidget * window;
 	GtkWidget * widget;
 #ifdef EMBEDDED
@@ -273,8 +270,8 @@ static void _dialog_on_shutdown(gpointer data)
 /* FIXME code duplicated from Panel */
 static void _dialog_on_suspend(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
+	Openmoko * openmoko = data;
+	LockerPluginHelper * helper = openmoko->helper;
 #if defined(__NetBSD__)
 	int sleep_state = 3;
 #else
@@ -354,9 +351,9 @@ static gboolean _openmoko_on_reset(gpointer data)
 
 
 /* openmoko_on_watch_can_read */
-static gboolean _watch_can_read_event(LockerPlugin * plugin,
+static gboolean _watch_can_read_event(Openmoko * openmoko,
 		struct input_event * event);
-static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code,
+static void _watch_can_read_event_key(Openmoko * openmoko, uint16_t code,
 		int32_t value);
 static gboolean _watch_can_read_reset(LockerPlugin * plugin);
 
@@ -389,16 +386,16 @@ static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
 	/* FIXME avoid this by using a regular read() */
 	if(cnt != sizeof(event))
 		return _watch_can_read_reset(plugin);
-	return _watch_can_read_event(plugin, &event);
+	return _watch_can_read_event(openmoko, &event);
 }
 
-static gboolean _watch_can_read_event(LockerPlugin * plugin,
+static gboolean _watch_can_read_event(Openmoko * openmoko,
 		struct input_event * event)
 {
 	switch(event->type)
 	{
 		case EV_KEY:
-			_watch_can_read_event_key(plugin, event->code,
+			_watch_can_read_event_key(openmoko, event->code,
 					event->value);
 			break;
 #ifdef DEBUG
@@ -411,10 +408,10 @@ static gboolean _watch_can_read_event(LockerPlugin * plugin,
 	return TRUE;
 }
 
-static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code,
+static void _watch_can_read_event_key(Openmoko * openmoko, uint16_t code,
 		int32_t value)
 {
-	LockerPluginHelper * helper = plugin->helper;
+	LockerPluginHelper * helper = openmoko->helper;
 
 	switch(code)
 	{
@@ -425,7 +422,7 @@ static void _watch_can_read_event_key(LockerPlugin * plugin, uint16_t code,
 			break;
 		case KEY_POWER:
 			if(value == 0) /* released */
-				_openmoko_show_dialog(plugin);
+				_openmoko_show_dialog(openmoko);
 			break;
 	}
 }

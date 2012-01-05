@@ -30,8 +30,10 @@
 /* Password */
 /* private */
 /* types */
-typedef struct _Password
+typedef struct _LockerAuth
 {
+	LockerAuthHelper * helper;
+
 	guint source;
 
 	/* widgets */
@@ -44,9 +46,10 @@ typedef struct _Password
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _password_init(LockerAuth * plugin);
-static void _password_destroy(LockerAuth * plugin);
-static int _password_action(LockerAuth * plugin, LockerAction action);
+static Password * _password_init(LockerAuthHelper * helper);
+static void _password_destroy(Password * password);
+static GtkWidget * _password_get_widget(Password * password);
+static int _password_action(Password * password, LockerAction action);
 
 /* callbacks */
 static void _password_on_password_activate(gpointer data);
@@ -57,21 +60,22 @@ static gboolean _password_on_timeout(gpointer data);
 /* public */
 /* variables */
 /* plug-in */
-LockerAuth plugin =
+LockerAuthDefinition plugin =
 {
-	NULL,
 	"Password",
+	NULL,
+	NULL,
 	_password_init,
 	_password_destroy,
+	_password_get_widget,
 	_password_action,
-	NULL
 };
 
 
 /* private */
 /* functions */
 /* password_init */
-static GtkWidget * _password_init(LockerAuth * plugin)
+static Password * _password_init(LockerAuthHelper * helper)
 {
 	Password * password;
 	PangoFontDescription * bold;
@@ -83,7 +87,7 @@ static GtkWidget * _password_init(LockerAuth * plugin)
 
 	if((password = object_new(sizeof(*password))) == NULL)
 		return NULL;
-	plugin->priv = password;
+	password->helper = helper;
 	password->source = 0;
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
@@ -118,12 +122,12 @@ static GtkWidget * _password_init(LockerAuth * plugin)
 	password->password = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(password->password), FALSE);
 	g_signal_connect_swapped(password->password, "activate", G_CALLBACK(
-				_password_on_password_activate), plugin);
+				_password_on_password_activate), password);
 	gtk_box_pack_start(GTK_BOX(hbox), password->password, FALSE, TRUE, 0);
 	/* button */
 	password->button = gtk_button_new_from_stock(GTK_STOCK_OK);
 	g_signal_connect_swapped(password->button, "clicked", G_CALLBACK(
-				_password_on_password_activate), plugin);
+				_password_on_password_activate), password);
 	gtk_box_pack_start(GTK_BOX(hbox), password->button, FALSE, TRUE, 0);
 	/* right padding (centering) */
 	widget = gtk_label_new(NULL);
@@ -142,26 +146,30 @@ static GtkWidget * _password_init(LockerAuth * plugin)
 	gtk_box_pack_start(GTK_BOX(password->widget), widget, TRUE, TRUE, 0);
 	gtk_widget_show_all(password->widget);
 	pango_font_description_free(bold);
-	return password->widget;
+	return password;
 }
 
 
 /* password_destroy */
-static void _password_destroy(LockerAuth * plugin)
+static void _password_destroy(Password * password)
 {
-	Password * password = plugin->priv;
-
 	if(password->source != 0)
 		g_source_remove(password->source);
 	object_delete(password);
 }
 
 
-/* password_action */
-static int _password_action(LockerAuth * plugin, LockerAction action)
+/* password_get_widget */
+static GtkWidget * _password_get_widget(Password * password)
 {
-	LockerAuthHelper * helper = plugin->helper;
-	Password * password = plugin->priv;
+	return password->widget;
+}
+
+
+/* password_action */
+static int _password_action(Password * password, LockerAction action)
+{
+	LockerAuthHelper * helper = password->helper;
 	GtkWidget * entry = password->password;
 	char const * p;
 
@@ -182,7 +190,7 @@ static int _password_action(LockerAuth * plugin, LockerAction action)
 			if(password->source != 0)
 				g_source_remove(password->source);
 			password->source = g_timeout_add(30000,
-					_password_on_timeout, plugin);
+					_password_on_timeout, password);
 			break;
 		case LOCKER_ACTION_UNLOCK:
 			if(password->source != 0)
@@ -200,9 +208,8 @@ static int _password_action(LockerAuth * plugin, LockerAction action)
 /* password_on_password_activate */
 static void _password_on_password_activate(gpointer data)
 {
-	LockerAuth * plugin = data;
-	LockerAuthHelper * helper = plugin->helper;
-	Password * password = plugin->priv;
+	Password * password = data;
+	LockerAuthHelper * helper = password->helper;
 	char const * text;
 	char const * p;
 
@@ -229,15 +236,14 @@ static void _password_on_password_activate(gpointer data)
 	helper->error(NULL, _("Authentication failed"), 1);
 	gtk_widget_show(password->wrong);
 	password->source = g_timeout_add(3000, _password_on_password_wrong,
-			plugin);
+			password);
 }
 
 
 /* password_on_password_wrong */
 static gboolean _password_on_password_wrong(gpointer data)
 {
-	LockerAuth * plugin = data;
-	Password * password = plugin->priv;
+	Password * password = data;
 
 	password->source = 0;
 	gtk_widget_hide(password->wrong);
@@ -252,9 +258,8 @@ static gboolean _password_on_password_wrong(gpointer data)
 /* password_on_timeout */
 static gboolean _password_on_timeout(gpointer data)
 {
-	LockerAuth * plugin = data;
-	LockerAuthHelper * helper = plugin->helper;
-	Password * password = plugin->priv;
+	Password * password = data;
+	LockerAuthHelper * helper = password->helper;
 
 	password->source = 0;
 	helper->action(helper->locker, LOCKER_ACTION_ACTIVATE);

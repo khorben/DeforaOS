@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-03 23:15+0100\n"
+"POT-Creation-Date: 2012-01-05 17:26+0100\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,39 +15,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:383
+#: ../src/locker.c:385
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:454
+#: ../src/locker.c:455
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:467
+#: ../src/locker.c:468
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:471
+#: ../src/locker.c:472
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:475
+#: ../src/locker.c:476
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:514
+#: ../src/locker.c:515
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:525
+#: ../src/locker.c:526
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:655
+#: ../src/locker.c:656
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:772 ../src/locker.c:776
+#: ../src/locker.c:774 ../src/locker.c:778
 msgid "Error"
 msgstr "Erreur"
 
@@ -71,22 +71,22 @@ msgid ""
 "  -s\tSuspend automatically when locked\n"
 msgstr ""
 
-#: ../src/auth/password.c:104
+#: ../src/auth/password.c:108
 msgid "This screen is locked by"
 msgstr "Cette session est vérouillée par"
 
-#: ../src/auth/password.c:110
+#: ../src/auth/password.c:114
 msgid "Enter password: "
 msgstr "Mot de passe : "
 
-#: ../src/auth/password.c:133
+#: ../src/auth/password.c:137
 msgid "Wrong password!"
 msgstr "Mot de passe erroné !"
 
-#: ../src/auth/password.c:176 ../src/auth/password.c:219
+#: ../src/auth/password.c:184 ../src/auth/password.c:226
 msgid "No password was set"
 msgstr "Aucun mot de passe n'est configuré"
 
-#: ../src/auth/password.c:229
+#: ../src/auth/password.c:236
 msgid "Authentication failed"
 msgstr "Échec de l'authentification"

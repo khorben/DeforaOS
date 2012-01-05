@@ -44,6 +44,7 @@ static char const _license[] =
 typedef struct _LockerPlugins
 {
 	Plugin * pplugin;
+	LockerPluginDefinition * definition;
 	LockerPlugin * plugin;
 } LockerPlugins;
 
@@ -62,11 +63,13 @@ struct _Locker
 
 	/* auth */
 	Plugin * aplugin;
+	LockerAuthDefinition * adefinition;
 	LockerAuth * auth;
 	LockerAuthHelper ahelper;
 
 	/* demo */
 	Plugin * dplugin;
+	LockerDemoDefinition * ddefinition;
 	LockerDemo * demo;
 	LockerDemoHelper dhelper;
 
@@ -245,8 +248,6 @@ static int _new_config(Locker * locker)
 
 static GtkWidget * _new_auth(Locker * locker, char const * plugin)
 {
-	GtkWidget * widget;
-
 	if(plugin == NULL)
 		plugin = config_get(locker->config, NULL, "auth");
 	if(plugin == NULL)
@@ -258,17 +259,17 @@ static GtkWidget * _new_auth(Locker * locker, char const * plugin)
 	if((locker->aplugin = plugin_new(LIBDIR, PACKAGE, "auth", plugin))
 			== NULL)
 		return NULL;
-	if((locker->auth = plugin_lookup(locker->aplugin, "plugin")) == NULL)
+	if((locker->adefinition = plugin_lookup(locker->aplugin, "plugin"))
+			== NULL)
 		return NULL;
-	locker->auth->helper = &locker->ahelper;
-	if(locker->auth->init == NULL
-			|| locker->auth->action == NULL
-			|| (widget = locker->auth->init(locker->auth)) == NULL)
-	{
-		locker->auth = NULL;
+	if(locker->adefinition->init == NULL
+			|| locker->adefinition->destroy == NULL
+			|| locker->adefinition->get_widget == NULL
+			|| locker->adefinition->action == NULL
+			|| (locker->auth = locker->adefinition->init(
+					&locker->ahelper)) == NULL)
 		return NULL;
-	}
-	return widget;
+	return locker->adefinition->get_widget(locker->auth);
 }
 
 static int _new_demo(Locker * locker, char const * demo)
@@ -279,14 +280,14 @@ static int _new_demo(Locker * locker, char const * demo)
 	if((locker->dplugin = plugin_new(LIBDIR, PACKAGE, "demos", demo))
 			== NULL)
 		return -1;
-	if((locker->demo = plugin_lookup(locker->dplugin, "demo")) == NULL)
+	if((locker->ddefinition = plugin_lookup(locker->dplugin, "demo"))
+			== NULL)
 		return -1;
-	locker->demo->helper = &locker->dhelper;
-	if(locker->demo->init != NULL && locker->demo->init(locker->demo) != 0)
-	{
-		locker->demo = NULL;
+	if(locker->ddefinition->init == NULL
+			|| locker->ddefinition->destroy == NULL
+			|| (locker->demo = locker->ddefinition->init(
+					&locker->dhelper)) == NULL)
 		return -1;
-	}
 	return 0;
 }
 
@@ -352,13 +353,14 @@ static int _new_plugins_load(Locker * locker, char const * plugin)
 	if((p->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
 			== NULL)
 		return _locker_error(NULL, error_get(), 1);
-	if((p->plugin = plugin_lookup(p->pplugin, "plugin")) == NULL)
+	if((p->definition = plugin_lookup(p->pplugin, "plugin")) == NULL)
 	{
 		plugin_delete(p->pplugin);
 		return _locker_error(NULL, error_get(), 1);
 	}
-	p->plugin->helper = &locker->phelper;
-	if(p->plugin->init != NULL && p->plugin->init(p->plugin) != 0)
+	if(p->definition->init == NULL || p->definition->destroy == NULL
+			|| (p->plugin = p->definition->init(&locker->phelper))
+			== NULL)
 	{
 		plugin_delete(p->pplugin);
 		return _locker_error(NULL, error_get(), 1);
@@ -391,18 +393,17 @@ void locker_delete(Locker * locker)
 	size_t i;
 
 	/* FIXME also destroy plug-ins */
-	if(locker->auth != NULL && locker->auth->destroy != NULL)
-		locker->auth->destroy(locker->auth);
+	if(locker->adefinition != NULL)
+		locker->adefinition->destroy(locker->auth);
 	if(locker->aplugin != NULL)
 		plugin_delete(locker->aplugin);
 	if(locker->demo != NULL)
 	{
-		if(locker->demo->remove != NULL)
+		if(locker->ddefinition->remove != NULL)
 			for(i = 0; i < locker->windows_cnt; i++)
-				locker->demo->remove(locker->demo,
+				locker->ddefinition->remove(locker->demo,
 						locker->windows[i]);
-		if(locker->demo->destroy != NULL)
-			locker->demo->destroy(locker->demo);
+		locker->ddefinition->destroy(locker->demo);
 	}
 	if(locker->dplugin != NULL)
 		plugin_delete(locker->dplugin);
@@ -539,7 +540,7 @@ static void _preferences_on_cancel(gpointer data)
 	char const ext[] = ".so";
 	size_t len;
 	Plugin * p;
-	LockerPlugin * lp;
+	LockerPluginDefinition * lpd;
 	GtkTreeIter iter;
 	GdkPixbuf * icon;
 
@@ -563,7 +564,7 @@ static void _preferences_on_cancel(gpointer data)
 			if((p = plugin_new(LIBDIR, PACKAGE, "plugins",
 							de->d_name)) == NULL)
 				continue;
-			if((lp = plugin_lookup(p, "plugin")) == NULL)
+			if((lpd = plugin_lookup(p, "plugin")) == NULL)
 			{
 				plugin_delete(p);
 				continue;
@@ -572,12 +573,12 @@ static void _preferences_on_cancel(gpointer data)
 			gtk_list_store_set(locker->pr_plstore, &iter,
 					LOCKER_PLUGINS_COLUMN_FILENAME,
 					de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
-					lp->name, -1);
+					lpd->name, -1);
 			/* FIXME check if it is already enabled */
 			icon = NULL;
-			if(lp->icon != NULL)
-				icon = gtk_icon_theme_load_icon(theme, lp->icon,
-						24, 0, NULL);
+			if(lpd->icon != NULL)
+				icon = gtk_icon_theme_load_icon(theme,
+						lpd->icon, 24, 0, NULL);
 			if(icon == NULL)
 				icon = gtk_icon_theme_load_icon(theme,
 						"gnome-settings", 24, 0, NULL);
@@ -691,7 +692,8 @@ static void _locker_action(Locker * locker, LockerAction action)
 static void _locker_activate(Locker * locker)
 {
 	_locker_event(locker, LOCKER_EVENT_ACTIVATING);
-	if(locker->auth->action(locker->auth, LOCKER_ACTION_ACTIVATE) == 0)
+	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_ACTIVATE)
+			== 0)
 		XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
 }
 
@@ -784,13 +786,15 @@ static int _locker_error(Locker * locker, char const * message, int ret)
 static void _locker_event(Locker * locker, LockerEvent event)
 {
 	size_t i;
+	LockerPluginDefinition * lpd;
 	LockerPlugin * lp;
 
 	for(i = 0; i < locker->plugins_cnt; i++)
 	{
+		lpd = locker->plugins[i].definition;
 		lp = locker->plugins[i].plugin;
-		if(lp->event != NULL)
-			lp->event(lp, event);
+		if(lpd->event != NULL)
+			lpd->event(lp, event);
 	}
 }
 
@@ -809,7 +813,7 @@ static void _locker_lock(Locker * locker)
 		gtk_widget_show(locker->windows[i]);
 		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
 	}
-	locker->auth->action(locker->auth, LOCKER_ACTION_LOCK);
+	locker->adefinition->action(locker->auth, LOCKER_ACTION_LOCK);
 }
 
 
@@ -978,6 +982,6 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data)
 {
 	Locker * locker = data;
 
-	if(locker->demo != NULL && locker->demo->add != NULL)
-		locker->demo->add(locker->demo, widget);
+	if(locker->ddefinition != NULL && locker->ddefinition->add != NULL)
+		locker->ddefinition->add(locker->demo, widget);
 }

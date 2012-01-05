@@ -5,8 +5,9 @@ LIBDIR	= $(PREFIX)/lib
 CC	?= cc
 CPPFLAGSF= -I ../../include
 CPPFLAGS=
-CFLAGSF	= -W `pkg-config --cflags x11`
+CFLAGSF	= -W `pkg-config --cflags x11 libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
+LDFLAGSF= -W `pkg-config --libs libSystem`
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -20,7 +21,7 @@ all: $(TARGETS)
 
 gtk-demo_OBJS = gtk-demo.o
 gtk-demo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
-gtk-demo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0`
+gtk-demo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
 
 gtk-demo.so: $(gtk-demo_OBJS)
 	$(CCSHARED) -o gtk-demo.so $(gtk-demo_OBJS) $(gtk-demo_LDFLAGS)

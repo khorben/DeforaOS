@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,37 +18,65 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#include <Desktop.h>
 #include <Desktop/Panel.h>
 #include "Locker.h"
 
 
 /* Panel */
 /* private */
+/* types */
+typedef struct _LockerPlugin
+{
+	LockerPluginHelper * helper;
+} PanelPlugin;
+
+
 /* prototypes */
 /* plug-in */
-static void _panel_event(LockerPlugin * plugin, LockerEvent event);
+static PanelPlugin * _panel_init(LockerPluginHelper * helper);
+static void _panel_destroy(PanelPlugin * panel);
+static void _panel_event(PanelPlugin * panel, LockerEvent event);
 
 
 /* public */
 /* variables */
-LockerPlugin plugin =
+LockerPluginDefinition plugin =
 {
-	NULL,
 	"Panel",
 	"gnome-monitor",
 	NULL,
-	NULL,
-	_panel_event,
-	NULL
+	_panel_init,
+	_panel_destroy,
+	_panel_event
 };
 
 
 /* private */
 /* functions */
+/* panel_init */
+static PanelPlugin * _panel_init(LockerPluginHelper * helper)
+{
+	PanelPlugin * panel;
+
+	if((panel = object_new(sizeof(*panel))) == NULL)
+		return NULL;
+	panel->helper = helper;
+	return panel;
+}
+
+
+/* panel_destroy */
+static void _panel_destroy(PanelPlugin * panel)
+{
+	object_delete(panel);
+}
+
+
 /* panel_event */
 static void _event_show(gboolean show);
 
-static void _panel_event(LockerPlugin * plugin, LockerEvent event)
+static void _panel_event(PanelPlugin * panel, LockerEvent event)
 {
 	switch(event)
 	{
@@ -64,18 +92,7 @@ static void _panel_event(LockerPlugin * plugin, LockerEvent event)
 
 static void _event_show(gboolean show)
 {
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
-
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(PANEL_CLIENT_MESSAGE, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = PANEL_MESSAGE_SHOW;
-	client->data.b[1] = PANEL_MESSAGE_SHOW_PANEL_BOTTOM
-		| PANEL_MESSAGE_SHOW_PANEL_TOP;
-	client->data.b[2] = show;
-	gdk_event_send_clientmessage_toall(&event);
+	desktop_message_send(PANEL_CLIENT_MESSAGE, PANEL_MESSAGE_SHOW,
+			PANEL_MESSAGE_SHOW_PANEL_BOTTOM
+			| PANEL_MESSAGE_SHOW_PANEL_TOP, show);
 }

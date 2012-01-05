@@ -22,47 +22,59 @@
 
 /* Debug */
 /* private */
+/* types */
+typedef struct _LockerPlugin
+{
+	LockerPluginHelper * helper;
+} Debug;
+
+
 /* prototypes */
 /* plug-in */
-static int _debug_init(LockerPlugin * plugin);
-static void _debug_destroy(LockerPlugin * plugin);
-static void _debug_event(LockerPlugin * plugin, LockerEvent event);
+static Debug * _debug_init(LockerPluginHelper * helper);
+static void _debug_destroy(Debug * debug);
+static void _debug_event(Debug * debug, LockerEvent event);
 
 
 /* public */
 /* variables */
 /* plug-in */
-LockerPlugin plugin =
+LockerPluginDefinition plugin =
 {
-	NULL,
 	"Debug",
 	"applications-development",
+	NULL,
 	_debug_init,
 	_debug_destroy,
-	_debug_event,
-	NULL
+	_debug_event
 };
 
 
 /* private */
 /* functions */
 /* debug_init */
-static int _debug_init(LockerPlugin * plugin)
+static Debug * _debug_init(LockerPluginHelper * helper)
 {
+	Debug * debug;
+
+	if((debug = object_new(sizeof(*debug))) == NULL)
+		return NULL;
+	debug->helper = helper;
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-	return 0;
+	return debug;
 }
 
 
 /* debug_destroy */
-static void _debug_destroy(LockerPlugin * plugin)
+static void _debug_destroy(Debug * debug)
 {
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	object_delete(debug);
 }
 
 
 /* debug_event */
-static void _debug_event(LockerPlugin * plugin, LockerEvent event)
+static void _debug_event(Debug * debug, LockerEvent event)
 {
 	switch(event)
 	{
