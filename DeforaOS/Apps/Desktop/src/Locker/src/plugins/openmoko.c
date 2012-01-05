@@ -99,9 +99,9 @@ static Openmoko * _openmoko_init(LockerPluginHelper * helper)
 #if defined(__linux__)
 	openmoko->channel = NULL;
 	openmoko->source = 0;
-	if(_openmoko_on_reset(plugin) == TRUE)
+	if(_openmoko_on_reset(openmoko) == TRUE)
 		openmoko->source = g_timeout_add(1000, _openmoko_on_reset,
-				plugin);
+				openmoko);
 #endif
 	return openmoko;
 }
@@ -313,9 +313,8 @@ static void _dialog_on_suspend(gpointer data)
 /* openmoko_on_reset */
 static gboolean _openmoko_on_reset(gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
-	Openmoko * openmoko = plugin->priv;
+	Openmoko * openmoko = data;
+	LockerPluginHelper * helper = openmoko->helper;
 	char const * device;
 	int fd;
 	char buf[256];
@@ -345,7 +344,7 @@ static gboolean _openmoko_on_reset(gpointer data)
 	}
 	g_io_channel_set_buffered(openmoko->channel, FALSE);
 	openmoko->source = g_io_add_watch(openmoko->channel, G_IO_IN,
-			_openmoko_on_watch_can_read, plugin);
+			_openmoko_on_watch_can_read, openmoko);
 	return FALSE;
 }
 
@@ -355,14 +354,13 @@ static gboolean _watch_can_read_event(Openmoko * openmoko,
 		struct input_event * event);
 static void _watch_can_read_event_key(Openmoko * openmoko, uint16_t code,
 		int32_t value);
-static gboolean _watch_can_read_reset(LockerPlugin * plugin);
+static gboolean _watch_can_read_reset(Openmoko * openmoko);
 
 static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	LockerPlugin * plugin = data;
-	LockerPluginHelper * helper = plugin->helper;
-	Openmoko * openmoko = plugin->priv;
+	Openmoko * openmoko = data;
+	LockerPluginHelper * helper = openmoko->helper;
 	struct input_event event;
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -381,11 +379,11 @@ static gboolean _openmoko_on_watch_can_read(GIOChannel * source,
 			g_error_free(error);
 		case G_IO_STATUS_EOF:
 		default:
-			return _watch_can_read_reset(plugin);
+			return _watch_can_read_reset(openmoko);
 	}
 	/* FIXME avoid this by using a regular read() */
 	if(cnt != sizeof(event))
-		return _watch_can_read_reset(plugin);
+		return _watch_can_read_reset(openmoko);
 	return _watch_can_read_event(openmoko, &event);
 }
 
@@ -427,10 +425,9 @@ static void _watch_can_read_event_key(Openmoko * openmoko, uint16_t code,
 	}
 }
 
-static gboolean _watch_can_read_reset(LockerPlugin * plugin)
+static gboolean _watch_can_read_reset(Openmoko * openmoko)
 {
-	LockerPluginHelper * helper = plugin->helper;
-	Openmoko * openmoko = plugin->priv;
+	LockerPluginHelper * helper = openmoko->helper;
 	GError * error = NULL;
 
 	if(g_io_channel_shutdown(openmoko->channel, TRUE, &error)
@@ -439,7 +436,7 @@ static gboolean _watch_can_read_reset(LockerPlugin * plugin)
 		helper->error(NULL, error->message, 1);
 		g_error_free(error);
 	}
-	openmoko->source = g_timeout_add(1000, _openmoko_on_reset, plugin);
+	openmoko->source = g_timeout_add(1000, _openmoko_on_reset, openmoko);
 	return FALSE;
 }
 #endif
