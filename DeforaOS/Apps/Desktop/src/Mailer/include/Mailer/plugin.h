@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,17 +34,17 @@ typedef struct _MailerPluginHelper
 
 typedef struct _MailerPlugin MailerPlugin;
 
-struct _MailerPlugin
+typedef const struct _MailerPluginDefinition
 {
-	MailerPluginHelper * helper;
 	char const * name;
 	char const * icon;
-	GtkWidget * (*init)(MailerPlugin * plugin);
+	char const * description;
+	MailerPlugin * (*init)(MailerPluginHelper * helper);
 	void (*destroy)(MailerPlugin * plugin);
+	GtkWidget * (*get_widget)(MailerPlugin * plugin);
 	void (*refresh)(MailerPlugin * plugin, Folder * folder,
 			Message * message);
-	void * priv;
-};
+} MailerPluginDefinition;
 
 
 /* functions */

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - properly show/hide plug-ins in the right pane */
 
 
 
@@ -61,6 +63,7 @@ typedef enum _MailerPluginColumn
 	MPC_ICON,
 	MPC_NAME_DISPLAY,
 	MPC_PLUGIN,
+	MPC_MAILERPLUGINDEFINITION,
 	MPC_MAILERPLUGIN,
 	MPC_WIDGET
 } MailerPluginColumn;
@@ -138,7 +141,7 @@ static const char * _title[3] =
 
 /* variables */
 #ifdef EMBEDDED
-static DesktopAccel _mailer_accel[] =
+static const DesktopAccel _mailer_accel[] =
 {
 	{ G_CALLBACK(on_quit),		GDK_CONTROL_MASK,	GDK_KEY_Q },
 	{ G_CALLBACK(on_view_source),	GDK_CONTROL_MASK,	GDK_KEY_U },
@@ -502,7 +505,8 @@ Mailer * mailer_new(void)
 #endif
 	mailer->pl_store = gtk_list_store_new(MPC_COUNT, G_TYPE_STRING,
 			G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING,
-			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER);
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
+			G_TYPE_POINTER);
 	mailer->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				mailer->pl_store));
 	g_signal_connect_swapped(G_OBJECT(mailer->pl_combo), "changed",
@@ -933,6 +937,7 @@ static void _delete_plugins(Mailer * mailer)
 	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
 	GtkTreeIter iter;
 	gboolean valid;
+	MailerPluginDefinition * mpd;
 	MailerPlugin * mp;
 	Plugin * plugin;
 
@@ -940,9 +945,10 @@ static void _delete_plugins(Mailer * mailer)
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, MPC_PLUGIN, &plugin,
+				MPC_MAILERPLUGINDEFINITION, &mpd,
 				MPC_MAILERPLUGIN, &mp, -1);
-		if(mp->destroy != NULL)
-			mp->destroy(mp);
+		if(mpd->destroy != NULL)
+			mpd->destroy(mp);
 		plugin_delete(plugin);
 	}
 }
@@ -1209,6 +1215,7 @@ void mailer_cut(Mailer * mailer)
 int mailer_load(Mailer * mailer, char const * plugin)
 {
 	Plugin * p;
+	MailerPluginDefinition * mpd;
 	MailerPlugin * mp;
 	GtkWidget * widget;
 	GtkTreeIter iter;
@@ -1222,28 +1229,32 @@ int mailer_load(Mailer * mailer, char const * plugin)
 		return 0;
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -mailer_error(NULL, error_get(), 1);
-	if((mp = plugin_lookup(p, "plugin")) == NULL)
+	if((mpd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
 		return -mailer_error(NULL, error_get(), 1);
 	}
-	mp->helper = &mailer->pl_helper;
-	if(mp->init == NULL || (widget = mp->init(mp)) == NULL)
+	if(mpd->init == NULL || mpd->destroy == NULL
+			|| (mp = mpd->init(&mailer->pl_helper)) == NULL)
 	{
 		plugin_delete(p);
 		return -mailer_error(NULL, error_get(), 1);
 	}
 	theme = gtk_icon_theme_get_default();
-	if(mp->icon != NULL)
-		icon = gtk_icon_theme_load_icon(theme, mp->icon, 24, 0, NULL);
+	if(mpd->icon != NULL)
+		icon = gtk_icon_theme_load_icon(theme, mpd->icon, 24, 0, NULL);
 	if(icon == NULL)
 		icon = gtk_icon_theme_load_icon(theme, "gnome-settings", 24, 0,
 				NULL);
+	widget = (mpd->get_widget != NULL) ? mpd->get_widget(mp) : NULL;
+	/* FIXME hide from the list of active plug-ins if there is no widget */
 	gtk_list_store_append(mailer->pl_store, &iter);
 	gtk_list_store_set(mailer->pl_store, &iter, MPC_NAME, plugin,
-			MPC_ICON, icon, MPC_NAME_DISPLAY, mp->name,
-			MPC_PLUGIN, p, MPC_MAILERPLUGIN, mp, MPC_WIDGET, widget,
-			-1);
+			MPC_ICON, icon, MPC_NAME_DISPLAY, mpd->name,
+			MPC_PLUGIN, p, MPC_MAILERPLUGINDEFINITION, mpd,
+			MPC_MAILERPLUGIN, mp, MPC_WIDGET, widget, -1);
+	if(widget == NULL)
+		return 0;
 	gtk_box_pack_start(GTK_BOX(mailer->pl_box), widget, TRUE, TRUE, 0);
 	if(gtk_widget_get_no_show_all(mailer->pl_view) == TRUE)
 	{
@@ -1780,7 +1791,7 @@ static void _preferences_set_plugins(Mailer * mailer)
 	char const ext[] = ".so";
 	size_t len;
 	Plugin * p;
-	MailerPlugin * mp;
+	MailerPluginDefinition * mpd;
 	GtkTreeIter iter;
 	gboolean enabled;
 	GdkPixbuf * icon;
@@ -1802,22 +1813,21 @@ static void _preferences_set_plugins(Mailer * mailer)
 		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
 				== NULL)
 			continue;
-		if((mp = plugin_lookup(p, "plugin")) == NULL)
+		if((mpd = plugin_lookup(p, "plugin")) == NULL)
 		{
 			plugin_delete(p);
 			continue;
 		}
 		enabled = _mailer_plugin_is_enabled(mailer, de->d_name);
-		icon = NULL;
-		if(mp->icon != NULL)
-			icon = gtk_icon_theme_load_icon(theme, mp->icon, 24, 0,
-					NULL);
+		icon = (mpd->icon != NULL) ? gtk_icon_theme_load_icon(theme,
+				mpd->icon, 24, 0, NULL) : NULL;
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					24, 0, NULL);
 		gtk_list_store_append(mailer->pr_plugins_store, &iter);
 		gtk_list_store_set(mailer->pr_plugins_store, &iter,
-				0, de->d_name, 1, enabled, 2, icon, 3, mp->name,
+				MPC_NAME, de->d_name, MPC_ENABLED, enabled,
+				MPC_ICON, icon, MPC_NAME_DISPLAY, mpd->name,
 				-1);
 		plugin_delete(p);
 	}
@@ -2835,6 +2845,7 @@ int mailer_unload(Mailer * mailer, char const * plugin)
 	gboolean valid;
 	gchar * p;
 	Plugin * pp;
+	MailerPluginDefinition * mpd;
 	MailerPlugin * mp;
 	gboolean enabled = FALSE;
 
@@ -2843,6 +2854,7 @@ int mailer_unload(Mailer * mailer, char const * plugin)
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, MPC_NAME, &p, MPC_PLUGIN, &pp,
+				MPC_MAILERPLUGINDEFINITION, &mpd,
 				MPC_MAILERPLUGIN, &mp, -1);
 		enabled = (strcmp(p, plugin) == 0) ? TRUE : FALSE;
 		g_free(p);
@@ -2852,8 +2864,8 @@ int mailer_unload(Mailer * mailer, char const * plugin)
 	if(enabled != TRUE)
 		return 0;
 	gtk_list_store_remove(mailer->pl_store, &iter);
-	if(mp->destroy != NULL)
-		mp->destroy(mp);
+	if(mpd->destroy != NULL)
+		mpd->destroy(mp);
 	plugin_delete(pp);
 	return 0;
 }
@@ -3032,15 +3044,17 @@ static void _mailer_refresh_plugin(Mailer * mailer)
 {
 	GtkTreeModel * model = GTK_TREE_MODEL(mailer->pl_store);
 	GtkTreeIter iter;
+	MailerPluginDefinition * mpd;
 	MailerPlugin * mp;
 
 	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(mailer->pl_combo), &iter)
 			!= TRUE)
 		return;
-	gtk_tree_model_get(model, &iter, MPC_MAILERPLUGIN, &mp, -1);
-	if(mp->refresh == NULL)
+	gtk_tree_model_get(model, &iter, MPC_MAILERPLUGINDEFINITION, &mpd,
+			MPC_MAILERPLUGIN, &mp, -1);
+	if(mpd->refresh == NULL)
 		return;
-	mp->refresh(mp, mailer->folder_cur, mailer->message_cur);
+	mpd->refresh(mp, mailer->folder_cur, mailer->message_cur);
 }
 
 

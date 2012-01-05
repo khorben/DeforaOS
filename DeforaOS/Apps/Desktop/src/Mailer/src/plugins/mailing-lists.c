@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,36 +22,42 @@
 /* Mailing-lists */
 /* private */
 /* types */
-typedef struct _MailingLists
+typedef struct _MailerPlugin MailingLists;
+
+struct _MailerPlugin
 {
+	MailerPluginHelper * helper;
+
+	/* widgets */
 	GtkWidget * vbox;
 	GtkWidget * folder;
 	GtkWidget * message;
 	GtkWidget * name;
-} MailingLists;
+};
 
 
 /* protected */
 /* prototypes */
 /* plug-in */
-static GtkWidget * _ml_init(MailerPlugin * plugin);
-static void _ml_destroy(MailerPlugin * plugin);
-static void _ml_refresh(MailerPlugin * plugin, Folder * folder,
+static MailerPlugin * _ml_init(MailerPluginHelper * helper);
+static void _ml_destroy(MailingLists * ml);
+static GtkWidget * _ml_get_widget(MailingLists * ml);
+static void _ml_refresh(MailingLists * ml, Folder * folder,
 		Message * message);
 
 
 /* public */
 /* variables */
 /* plug-in */
-MailerPlugin plugin =
+MailerPluginDefinition plugin =
 {
-	NULL,
 	"Mailing-lists",
 	NULL,
+	"Mailing-lists management",
 	_ml_init,
 	_ml_destroy,
-	_ml_refresh,
-	NULL
+	_ml_get_widget,
+	_ml_refresh
 };
 
 
@@ -59,14 +65,15 @@ MailerPlugin plugin =
 /* functions */
 /* plug-in */
 /* ml_init */
-static GtkWidget * _ml_init(MailerPlugin * plugin)
+static MailerPlugin * _ml_init(MailerPluginHelper * helper)
 {
 	MailingLists * ml;
 	PangoFontDescription * bold;
 
 	if((ml = malloc(sizeof(*ml))) == NULL)
 		return NULL;
-	plugin->priv = ml;
+	ml->helper = helper;
+	/* widgets */
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	ml->vbox = gtk_vbox_new(FALSE, 4);
@@ -81,24 +88,28 @@ static GtkWidget * _ml_init(MailerPlugin * plugin)
 	gtk_misc_set_alignment(GTK_MISC(ml->name), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(ml->vbox), ml->name, FALSE, TRUE, 0);
 	pango_font_description_free(bold);
-	return ml->vbox;
+	return ml;
 }
 
 
 /* ml_destroy */
-static void _ml_destroy(MailerPlugin * plugin)
+static void _ml_destroy(MailingLists * ml)
 {
-	MailingLists * ml = plugin->priv;
-
 	free(ml);
 }
 
 
+/* ml_get_widget */
+static GtkWidget * _ml_get_widget(MailingLists * ml)
+{
+	return ml->vbox;
+}
+
+
 /* ml_refresh */
-static void _ml_refresh(MailerPlugin * plugin, Folder * folder,
+static void _ml_refresh(MailingLists * ml, Folder * folder,
 		Message * message)
 {
-	MailingLists * ml = plugin->priv;
 	char const * id;
 
 	if(folder == NULL)

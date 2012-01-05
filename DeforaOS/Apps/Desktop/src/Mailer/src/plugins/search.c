@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@
 /* protected */
 /* variables */
 /* plug-in */
-MailerPlugin plugin =
+MailerPluginDefinition plugin =
 {
-	NULL,
 	"Search",
 	"search",
+	"Search inside messages",
 	NULL,
 	NULL,
 	NULL,
