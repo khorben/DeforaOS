@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-05 11:55+0100\n"
+"POT-Creation-Date: 2012-01-02 09:18+0100\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/browser.c:193 ../src/desktop.c:737 ../src/desktop.c:757
+#: ../src/browser.c:193 ../src/desktop.c:731 ../src/desktop.c:751
 msgid "Back"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#: ../src/browser.c:201 ../src/desktop.c:817
+#: ../src/browser.c:201 ../src/desktop.c:811
 msgid "Home"
 msgstr "Inicio"
 
@@ -170,7 +170,7 @@ msgid "Details"
 msgstr ""
 
 #: ../src/browser.c:354 ../src/browser.c:2055 ../src/browser.c:2063
-#: ../src/desktop.c:1836
+#: ../src/desktop.c:1830
 msgid "Icons"
 msgstr ""
 
@@ -192,7 +192,7 @@ msgstr ""
 
 #: ../src/browser.c:759 ../src/browser.c:763 ../src/copy.c:674
 #: ../src/copy.c:678 ../src/delete.c:421 ../src/delete.c:426
-#: ../src/desktop.c:1364 ../src/desktop.c:1369 ../src/move.c:452
+#: ../src/desktop.c:1358 ../src/desktop.c:1363 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:284 ../src/properties.c:288
 #: ../src/view.c:367 ../src/view.c:372
 msgid "Error"
@@ -215,7 +215,7 @@ msgstr ""
 msgid "Shell scripts"
 msgstr ""
 
-#: ../src/browser.c:997 ../src/desktop.c:1764 ../src/view.c:436
+#: ../src/browser.c:997 ../src/desktop.c:1758 ../src/view.c:436
 msgid "All files"
 msgstr ""
 
@@ -344,7 +344,7 @@ msgstr ""
 msgid "Refreshing folder..."
 msgstr ""
 
-#: ../src/callbacks.c:116 ../src/desktop.c:469
+#: ../src/callbacks.c:116 ../src/desktop.c:463
 msgid "New folder"
 msgstr ""
 
@@ -363,19 +363,19 @@ msgstr ""
 msgid "New"
 msgstr ""
 
-#: ../src/callbacks.c:773 ../src/callbacks.c:777 ../src/desktop.c:370
+#: ../src/callbacks.c:773 ../src/callbacks.c:777 ../src/desktop.c:393
 msgid "Folder"
 msgstr ""
 
-#: ../src/callbacks.c:784 ../src/desktop.c:378
+#: ../src/callbacks.c:784 ../src/desktop.c:401
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:788 ../src/desktop.c:382
+#: ../src/callbacks.c:788 ../src/desktop.c:405
 msgid "Text file"
 msgstr ""
 
-#: ../src/callbacks.c:823 ../src/desktop.c:488
+#: ../src/callbacks.c:823 ../src/desktop.c:482
 msgid "New text file.txt"
 msgstr ""
 
@@ -424,7 +424,7 @@ msgstr ""
 msgid "Copying: "
 msgstr ""
 
-#: ../src/copy.c:152 ../src/desktop.c:1747
+#: ../src/copy.c:152 ../src/desktop.c:1741
 msgid "Filename: "
 msgstr ""
 
@@ -509,102 +509,102 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:847
+#: ../src/desktop.c:841
 msgid "Applications"
 msgstr ""
 
-#: ../src/desktop.c:1412
+#: ../src/desktop.c:1406
 msgid "Could not load preferences"
 msgstr ""
 
-#: ../src/desktop.c:1702
+#: ../src/desktop.c:1696
 msgid "Desktop preferences"
 msgstr "Desktop preferencias"
 
-#: ../src/desktop.c:1739
+#: ../src/desktop.c:1733
 msgid "Default color: "
 msgstr ""
 
-#: ../src/desktop.c:1751 ../src/desktop.c:1797
+#: ../src/desktop.c:1745 ../src/desktop.c:1791
 msgid "Background"
 msgstr ""
 
-#: ../src/desktop.c:1754
+#: ../src/desktop.c:1748
 msgid "Picture files"
 msgstr ""
 
-#: ../src/desktop.c:1776
+#: ../src/desktop.c:1770
 msgid "Position: "
 msgstr ""
 
-#: ../src/desktop.c:1782
+#: ../src/desktop.c:1776
 msgid "Centered"
 msgstr ""
 
-#: ../src/desktop.c:1784
+#: ../src/desktop.c:1778
 msgid "Scaled"
 msgstr ""
 
-#: ../src/desktop.c:1786
+#: ../src/desktop.c:1780
 msgid "Scaled (keep ratio)"
 msgstr ""
 
-#: ../src/desktop.c:1788
+#: ../src/desktop.c:1782
 msgid "Tiled"
 msgstr ""
 
-#: ../src/desktop.c:1793
+#: ../src/desktop.c:1787
 msgid "E_xtend background to all monitors"
 msgstr ""
 
-#: ../src/desktop.c:1811
+#: ../src/desktop.c:1805
 msgid "Background color: "
 msgstr ""
 
-#: ../src/desktop.c:1819
+#: ../src/desktop.c:1813
 msgid "Foreground color: "
 msgstr ""
 
-#: ../src/desktop.c:1827
+#: ../src/desktop.c:1821
 msgid "Font: "
 msgstr ""
 
-#: ../src/desktop.c:1852
+#: ../src/desktop.c:1846
 msgid "Monitor: "
 msgstr ""
 
-#: ../src/desktop.c:1861
+#: ../src/desktop.c:1855
 msgid "Resolution: "
 msgstr ""
 
-#: ../src/desktop.c:1872
+#: ../src/desktop.c:1866
 msgid "Size: "
 msgstr ""
 
-#: ../src/desktop.c:1896
+#: ../src/desktop.c:1890
 msgid "Monitors"
 msgstr ""
 
-#: ../src/desktop.c:1932
+#: ../src/desktop.c:1926
 #, c-format
 msgid "%dx%d (at %d,%d)"
 msgstr ""
 
-#: ../src/desktop.c:1935
+#: ../src/desktop.c:1929
 #, c-format
 msgid "%dx%d mm (%.0lfx%.0lf DPI)"
 msgstr ""
 
-#: ../src/desktop.c:1955
+#: ../src/desktop.c:1949
 msgid "Whole screen"
 msgstr ""
 
-#: ../src/desktop.c:1960
+#: ../src/desktop.c:1954
 #, c-format
 msgid "Monitor %d"
 msgstr ""
 
-#: ../src/desktop.c:2140
+#: ../src/desktop.c:2134
 msgid ""
 "Usage: desktop [-H|-V][-a|-c|-f|-h|-n][-m monitor]\n"
 "  -H\tPlace icons horizontally\n"
@@ -724,72 +724,72 @@ msgstr ""
 msgid "Usage: view file...\n"
 msgstr ""
 
-#: ../src/plugins/cvs.c:124 ../src/plugins/cvs.c:521
+#: ../src/plugins/cvs.c:126 ../src/plugins/cvs.c:524
 msgid "CVS"
 msgstr "CVS"
 
-#: ../src/plugins/cvs.c:172
+#: ../src/plugins/cvs.c:174
 msgid "Root:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:174
+#: ../src/plugins/cvs.c:176
 msgid "Repository:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:176
+#: ../src/plugins/cvs.c:178
 msgid "Tag:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:178 ../src/plugins/cvs.c:198
+#: ../src/plugins/cvs.c:180 ../src/plugins/cvs.c:200
 #: ../src/plugins/subversion.c:167 ../src/plugins/subversion.c:185
 msgid "Request diff"
 msgstr ""
 
-#: ../src/plugins/cvs.c:181 ../src/plugins/cvs.c:201
+#: ../src/plugins/cvs.c:183 ../src/plugins/cvs.c:203
 #: ../src/plugins/subversion.c:170 ../src/plugins/subversion.c:188
 msgid "View log"
 msgstr ""
 
-#: ../src/plugins/cvs.c:184 ../src/plugins/cvs.c:204
+#: ../src/plugins/cvs.c:186 ../src/plugins/cvs.c:206
 #: ../src/plugins/subversion.c:173 ../src/plugins/subversion.c:191
 msgid "Update"
 msgstr ""
 
-#: ../src/plugins/cvs.c:187 ../src/plugins/cvs.c:207
+#: ../src/plugins/cvs.c:189 ../src/plugins/cvs.c:209
 #: ../src/plugins/subversion.c:176 ../src/plugins/subversion.c:194
 msgid "Commit"
 msgstr ""
 
-#: ../src/plugins/cvs.c:196
+#: ../src/plugins/cvs.c:198
 msgid "Revision:"
 msgstr ""
 
-#: ../src/plugins/cvs.c:214 ../src/plugins/subversion.c:201
+#: ../src/plugins/cvs.c:216 ../src/plugins/subversion.c:201
 msgid "Add to repository"
 msgstr ""
 
-#: ../src/plugins/cvs.c:217 ../src/plugins/subversion.c:204
+#: ../src/plugins/cvs.c:219 ../src/plugins/subversion.c:204
 msgid "Run make"
 msgstr ""
 
-#: ../src/plugins/cvs.c:348 ../src/plugins/cvs.c:420
+#: ../src/plugins/cvs.c:351 ../src/plugins/cvs.c:423
 msgid "Not a CVS repository"
 msgstr ""
 
-#: ../src/plugins/cvs.c:443
+#: ../src/plugins/cvs.c:446
 msgid "Not managed by CVS"
 msgstr ""
 
-#: ../src/plugins/cvs.c:565 ../src/plugins/subversion.c:431
+#: ../src/plugins/cvs.c:568 ../src/plugins/subversion.c:431
 msgid "Running command..."
 msgstr ""
 
-#: ../src/plugins/cvs.c:812 ../src/plugins/subversion.c:679
+#: ../src/plugins/cvs.c:815 ../src/plugins/subversion.c:679
 #, c-format
 msgid "Command exited with error code %d"
 msgstr ""
 
-#: ../src/plugins/cvs.c:818 ../src/plugins/subversion.c:685
+#: ../src/plugins/cvs.c:821 ../src/plugins/subversion.c:685
 #, c-format
 msgid "Command exited with signal %d"
 msgstr ""

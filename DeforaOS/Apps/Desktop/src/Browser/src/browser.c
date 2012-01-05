@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -88,7 +88,7 @@ static char const * _authors[] =
 	NULL
 };
 
-static DesktopAccel _browser_accel[] =
+static const DesktopAccel _browser_accel[] =
 {
 	{ G_CALLBACK(on_location), GDK_CONTROL_MASK, GDK_KEY_L },
 	{ G_CALLBACK(on_properties), GDK_MOD1_MASK, GDK_KEY_Return },
@@ -105,7 +105,7 @@ static DesktopAccel _browser_accel[] =
 };
 
 #ifndef EMBEDDED
-static DesktopMenu _browser_menu_file[] =
+static const DesktopMenu _browser_menu_file[] =
 {
 	{ N_("_New window"), G_CALLBACK(on_file_new_window), "window-new",
 		GDK_CONTROL_MASK, GDK_KEY_N },
@@ -124,7 +124,7 @@ static DesktopMenu _browser_menu_file[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _browser_menu_edit[] =
+static const DesktopMenu _browser_menu_edit[] =
 {
 	{ N_("_Cut"), G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
 		GDK_KEY_X },
@@ -149,7 +149,7 @@ static DesktopMenu _browser_menu_edit[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _browser_menu_view[] =
+static const DesktopMenu _browser_menu_view[] =
 {
 	{ N_("_Refresh"), G_CALLBACK(on_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_KEY_R },
@@ -167,7 +167,7 @@ static DesktopMenu _browser_menu_view[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenu _browser_menu_help[] =
+static const DesktopMenu _browser_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
@@ -177,7 +177,7 @@ static DesktopMenu _browser_menu_help[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
-static DesktopMenubar _browser_menubar[] =
+static const DesktopMenubar _browser_menubar[] =
 {
 	{ N_("_File"), _browser_menu_file },
 	{ N_("_Edit"), _browser_menu_edit },

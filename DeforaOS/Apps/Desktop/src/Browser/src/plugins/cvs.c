@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - support adding directories to the current repository */
 
 
 
@@ -298,6 +300,7 @@ static void _cvs_refresh(BrowserPlugin * plugin, char const * path)
 
 	if(cvs->source != 0)
 		g_source_remove(cvs->source);
+	/* FIXME crashing here: */
 	free(cvs->filename);
 	cvs->filename = NULL;
 	if(lstat(path, &st) != 0)
