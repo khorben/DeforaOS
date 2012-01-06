@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -154,7 +154,8 @@ typedef enum _HayesQuirk
 	HAYES_QUIRK_BATTERY_70			= 0x1,
 	HAYES_QUIRK_CPIN_QUOTES			= 0x2,
 	HAYES_QUIRK_CONNECTED_LINE_DISABLED	= 0x4,
-	HAYES_QUIRK_WANT_SMSC_IN_PDU		= 0x8
+	HAYES_QUIRK_WANT_SMSC_IN_PDU		= 0x8,
+	HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR	= 0x10
 } HayesQuirk;
 
 typedef struct _HayesRequestHandler
@@ -452,13 +453,16 @@ static const struct
 {
 	{ "\"Neo1973 Embedded GSM Modem\"",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED		},
+			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
+			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
 	{ "\"Neo1973 GTA01/GTA02 Embedded GSM Modem\"",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED		},
+			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
+			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
 	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED		},
+			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
+			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
 	{ "Nokia N900",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_BATTERY_70	},
 	{ NULL,			0					}
@@ -886,7 +890,6 @@ static char * _request_attention_call_ussd(ModemPlugin * modem,
 		ModemRequest * request)
 {
 	char * ret;
-	Hayes * hayes = modem->priv;
 	char const * number = request->call.number;
 	const char cmd[] = "AT+CUSD=1,";
 	size_t len;
@@ -3132,8 +3135,11 @@ static void _on_code_cme_error(ModemPlugin * modem, char const * answer)
 			_on_code_cpin(modem, "SIM PUK");
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
-		case 14: /* SIM busy */
 		case 100: /* unknown error */
+			if((hayes->quirks & HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR)
+					== 0)
+				break;
+		case 14: /* SIM busy */
 			/* repeat the command */
 			if(command == NULL)
 				break;
@@ -3560,8 +3566,11 @@ static void _on_code_cms_error(ModemPlugin * modem, char const * answer)
 			_on_code_cpin(modem, "SIM PUK");
 			_hayes_trigger(modem, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
-		case 314: /* SIM busy */
 		case 500: /* unknown error */
+			if((hayes->quirks & HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR)
+					== 0)
+				break;
+		case 314: /* SIM busy */
 			/* repeat the command */
 			/* FIXME duplicated from _on_code_cme_error() */
 			if(command == NULL)
