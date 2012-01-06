@@ -44,7 +44,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/sql/Makefile \
-		$(PACKAGE)-$(VERSION)/doc/sql/index.php \
 		$(PACKAGE)-$(VERSION)/doc/sql/mysql.sql \
 		$(PACKAGE)-$(VERSION)/doc/sql/postgresql.sql \
 		$(PACKAGE)-$(VERSION)/doc/sql/sqlite.sql \
@@ -474,6 +473,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
 		$(PACKAGE)-$(VERSION)/src/auth/http.php \
+		$(PACKAGE)-$(VERSION)/src/auth/session.php \
 		$(PACKAGE)-$(VERSION)/src/auth/unix.php \
 		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/database/Makefile \
@@ -485,6 +485,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/gtk.php \
 		$(PACKAGE)-$(VERSION)/src/engines/http.php \
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
+		$(PACKAGE)-$(VERSION)/src/formats/Makefile \
+		$(PACKAGE)-$(VERSION)/src/formats/atom.php \
+		$(PACKAGE)-$(VERSION)/src/formats/html5.php \
+		$(PACKAGE)-$(VERSION)/src/formats/pdf.php \
+		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/search/Makefile \
@@ -498,6 +503,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/system/config.php \
 		$(PACKAGE)-$(VERSION)/src/system/database.php \
 		$(PACKAGE)-$(VERSION)/src/system/engine.php \
+		$(PACKAGE)-$(VERSION)/src/system/format.php \
 		$(PACKAGE)-$(VERSION)/src/system/module.php \
 		$(PACKAGE)-$(VERSION)/src/system/page.php \
 		$(PACKAGE)-$(VERSION)/src/system/request.php \
