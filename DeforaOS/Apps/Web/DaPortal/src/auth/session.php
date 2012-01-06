@@ -47,6 +47,7 @@ class SessionAuth extends Auth
 		$cred->setUserId($uid, $res[0]['admin']);
 		$cred->setGroupId($gid);
 		parent::setCredentials($cred);
+		return TRUE;
 	}
 
 

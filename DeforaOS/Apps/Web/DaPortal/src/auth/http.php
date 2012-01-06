@@ -39,10 +39,10 @@ class HttpAuth extends Auth
 			//FIXME let the realm be configureable
 			header('WWW-Authenticate: Basic realm="DaPortal"');
 			header('HTTP/1.0 401 Unauthorized');
-			return FALSE;
+			return TRUE;
 		}
 		if(($db = $engine->getDatabase()) === FALSE)
-			return FALSE;
+			return TRUE;
 		$username = $_SERVER['PHP_AUTH_USER'];
 		$password = isset($_SERVER['PHP_AUTH_PW'])
 			? md5($_SERVER['PHP_AUTH_PW']) : '';
@@ -52,10 +52,11 @@ class HttpAuth extends Auth
 		$args = array('username' => $username, 'password' => $password);
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
-			return FALSE;
+			return TRUE;
 		$cred = $this->getCredentials();
 		$cred->setUserId($res[0]['user_id'], $res[0]['admin']);
 		parent::setCredentials($cred);
+		return TRUE;
 	}
 }
 
