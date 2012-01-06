@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,11 @@ abstract class Module
 		$args = array('name' => $this->name);
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
+		{
+			$engine->log('LOG_DEBUG', 'Module '.$this->name
+					.' is not enabled');
 			return FALSE;
+		}
 		return $res[0]['id'];
 	}
 
@@ -59,12 +63,15 @@ abstract class Module
 				return $engine->log('LOG_DEBUG',
 						'Invalid module '.$module);
 			$path = './modules/'.$module.'/module.php';
+			if(!is_readable($path))
+				return $engine->log('LOG_ERR',
+						'Unreadable module '.$module);
 			$res = include_once($path);
 			if($res === FALSE)
 				return $engine->log('LOG_DEBUG',
 						'Unknown module '.$module);
 			if(!class_exists($name))
-				return $engine->log('LOG_DEBUG',
+				return $engine->log('LOG_ERR',
 						'Undefined module '.$module);
 		}
 		$ret = new $name($module);
