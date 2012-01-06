@@ -1,4 +1,4 @@
-TARGETS	= plug xkey
+TARGETS	= plug snooper xkey
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -23,6 +23,13 @@ plug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 plug: $(plug_OBJS)
 	$(CC) -o plug $(plug_OBJS) $(plug_LDFLAGS)
 
+snooper_OBJS = snooper.o
+snooper_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+snooper_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+snooper: $(snooper_OBJS)
+	$(CC) -o snooper $(snooper_OBJS) $(snooper_LDFLAGS)
+
 xkey_OBJS = xkey.o
 xkey_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 xkey_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lXtst
@@ -33,11 +40,14 @@ xkey: $(xkey_OBJS)
 plug.o: plug.c
 	$(CC) $(plug_CFLAGS) -c plug.c
 
+snooper.o: snooper.c
+	$(CC) $(snooper_CFLAGS) -c snooper.c
+
 xkey.o: xkey.c
 	$(CC) $(xkey_CFLAGS) -c xkey.c
 
 clean:
-	$(RM) -- $(plug_OBJS) $(xkey_OBJS)
+	$(RM) -- $(plug_OBJS) $(snooper_OBJS) $(xkey_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
