@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -65,7 +65,10 @@ class AuthCredentials
 	//private
 	//properties
 	private $uid = 0;
+	private $username = FALSE;
 	private $gid = 0;
+	private $group = FALSE;
+	private $groups = array();
 	private $admin = FALSE;
 }
 
