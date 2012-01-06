@@ -54,14 +54,24 @@ INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1'
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1');
 
 
+CREATE TABLE daportal_group (
+	group_id INTEGER PRIMARY KEY,
+	groupname VARCHAR(255) UNIQUE,
+	enabled BOOLEAN DEFAULT FALSE
+);
+INSERT INTO daportal_group (group_id, groupname, enabled) VALUES ('0', 'nogroup', '1');
+
+
 CREATE TABLE daportal_user (
 	user_id INTEGER PRIMARY KEY,
 	username VARCHAR(255) UNIQUE,
+	group_id INTEGER DEFAULT 0,
 	password CHAR(32),
 	enabled BOOLEAN DEFAULT FALSE,
 	admin BOOLEAN DEFAULT FALSE,
 	fullname VARCHAR(255) DEFAULT FALSE,
-	email VARCHAR(255) NOT NULL
+	email VARCHAR(255) NOT NULL,
+	FOREIGN KEY (group_id) REFERENCES daportal_group (group_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
 INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('5', 'Allow users to register new accounts', 'bool', 'register', '0');
