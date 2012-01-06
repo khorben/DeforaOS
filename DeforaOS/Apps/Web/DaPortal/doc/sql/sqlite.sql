@@ -1,6 +1,6 @@
 /* $Id$ */
 /* This file is part of DeforaOS Web DaPortal */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 
 
 
@@ -28,7 +28,7 @@ CREATE TABLE daportal_config (
 	value_bool BOOLEAN DEFAULT NULL,
 	value_int INTEGER DEFAULT NULL,
 	value_string VARCHAR(255) DEFAULT NULL,
-	PRIMARY KEY (module_id, name),
+	UNIQUE (module_id, name),
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id)
 );
 CREATE TABLE daportal_config_enum_type (
