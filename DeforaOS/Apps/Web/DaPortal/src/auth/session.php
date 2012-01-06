@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -16,46 +16,47 @@
 
 
 
-//HttpAuth
+//SessionAuth
 require_once('./system/auth.php');
-class HttpAuth extends Auth
+class SessionAuth extends Auth
 {
 	//protected
 	//methods
-	//HttpAuth::match
+	//SessionAuth::match
 	protected function match(&$engine)
 	{
-		if(isset($_SERVER['PHP_AUTH_USER']))
-			return 100;
 		return 0;
 	}
 
 
-	//HttpAuth::attach
+	//SessionAuth::attach
 	protected function attach(&$engine)
 	{
-		if(!isset($_SERVER['PHP_AUTH_USER']))
-		{
-			//FIXME let the realm be configureable
-			header('WWW-Authenticate: Basic realm="DaPortal"');
-			header('HTTP/1.0 401 Unauthorized');
-			return FALSE;
-		}
+		session_start();
 		if(($db = $engine->getDatabase()) === FALSE)
-			return FALSE;
-		$username = $_SERVER['PHP_AUTH_USER'];
-		$password = isset($_SERVER['PHP_AUTH_PW'])
-			? md5($_SERVER['PHP_AUTH_PW']) : '';
-		$query = 'SELECT user_id, admin FROM daportal_user'
-			." WHERE enabled='1' AND username=:username"
-			." AND password=:password";
-		$args = array('username' => $username, 'password' => $password);
+			return TRUE;
+		$uid = (isset($_SESSION['auth']['uid']))
+			? $_SESSION['auth']['uid'] : 0;
+		$query = 'SELECT admin FROM daportal_user'
+			." WHERE enabled='1' AND user_id=:uid";
+		$args = array('uid' => $uid);
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
-			return FALSE;
+			return TRUE;
 		$cred = $this->getCredentials();
-		$cred->setUserId($res[0]['user_id'], $res[0]['admin']);
+		$cred->setUserId($uid, $res[0]['admin']);
+		$cred->setGroupId($gid);
 		parent::setCredentials($cred);
+	}
+
+
+	//private
+	//methods
+	protected function setCredentials($credentials)
+	{
+		$_SESSION['auth']['uid'] = $credentials->getUserId();
+		$_SESSION['auth']['gid'] = $credentials->getGroupId();
+		parent::setCredentials($credentials);
 	}
 }
 
