@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-05 19:24+0100\n"
+"POT-Creation-Date: 2012-01-07 01:19+0100\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -478,24 +478,24 @@ msgstr "Paramètres"
 msgid "An error occured while saving preferences"
 msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
-#: ../src/mailer.c:3000 ../src/mailer.c:3004
+#: ../src/mailer.c:3004 ../src/mailer.c:3008
 msgid "Question"
 msgstr "Question"
 
-#: ../src/mailer.c:3073
+#: ../src/mailer.c:3077
 #, c-format
 msgid "%s/%s: %d %s"
 msgstr "%s/%s: %d %s"
 
-#: ../src/mailer.c:3076
+#: ../src/mailer.c:3080
 msgid "messages"
 msgstr "messages"
 
-#: ../src/mailer.c:3076
+#: ../src/mailer.c:3080
 msgid "message"
 msgstr "message"
 
-#: ../src/mailer.c:3079
+#: ../src/mailer.c:3083
 msgid "Ready"
 msgstr "Prêt"
 

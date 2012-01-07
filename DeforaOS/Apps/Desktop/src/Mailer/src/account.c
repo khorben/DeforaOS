@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ struct _Account
 	GtkTreeStore * store;
 	GtkTreeRowReference * row;
 	Plugin * plugin;
+	AccountPluginDefinition * definition;
 	AccountPlugin * account;
 
 	int enabled;
@@ -115,9 +116,8 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: account_new(%p, \"%s\", \"%s\", %p)\n",
-			(void*)mailer, type, title, (void*)store);
+			(void *)mailer, type, title, (void *)store);
 #endif
-	/* FIXME copy the AccountConfig structure */
 	if(type == NULL)
 		return NULL;
 	if((account = object_new(sizeof(*account))) == NULL)
@@ -129,12 +129,16 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 		account->title = string_new(title);
 	account->store = store;
 	account->plugin = plugin_new(LIBDIR, PACKAGE, "account", type);
-	account->account = (account->plugin != NULL)
+	account->definition = (account->plugin != NULL)
 		? plugin_lookup(account->plugin, "account_plugin") : NULL;
 	if(account->type == NULL || account->plugin == NULL
-			|| account->account == NULL)
+			|| account->definition == NULL
+			|| account->definition->init == NULL
+			|| account->definition->destroy == NULL
+			|| account->definition->get_config == NULL)
 	{
 		account_delete(account);
+		error_set_code(1, "%s%s", "Invalid plug-in ", type);
 		return NULL;
 	}
 	if(store != NULL)
@@ -153,7 +157,6 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 	memcpy(&account->helper, &_account_plugin_helper,
 			sizeof(account->helper));
 	account->helper.account = account;
-	account->account->helper = &account->helper;
 	account->enabled = 1;
 	account->identity = NULL;
 	return account;
@@ -163,26 +166,13 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 /* account_delete */
 void account_delete(Account * account)
 {
-	AccountConfig * p;
-
 	if(account->row != NULL)
 		gtk_tree_row_reference_free(account->row);
-	if(account->plugin != NULL)
+	if(account->definition != NULL)
 	{
-		if(account->account->destroy != NULL)
-			account->account->destroy(account->account);
-		if(account->account->config != NULL)
-			for(p = account->account->config; p->name != NULL; p++)
-				switch(p->type)
-				{
-					case ACT_STRING:
-					case ACT_PASSWORD:
-					case ACT_FILE:
-						free(p->value);
-						break;
-					default:
-						break;
-				}
+		if(account->definition->destroy != NULL
+				&& account->account != NULL)
+			account->definition->destroy(account->account);
 	}
 	string_delete(account->title);
 	string_delete(account->type);
@@ -196,7 +186,7 @@ void account_delete(Account * account)
 /* account_get_config */
 AccountConfig * account_get_config(Account * account)
 {
-	return account->account->config;
+	return account->definition->get_config(account->account);
 }
 
 
@@ -217,7 +207,7 @@ GtkTreeStore * account_get_folders(Account * account)
 /* account_get_name */
 char const * account_get_name(Account * account)
 {
-	return account->account->name;
+	return account->definition->name;
 }
 
 
@@ -257,7 +247,7 @@ int account_set_title(Account * account, char const * title)
 /* account_config_load */
 int account_config_load(Account * account, Config * config)
 {
-	AccountConfig * p = account->account->config;
+	AccountConfig * p = account_get_config(account);
 	char const * value;
 	char * q;
 	long l;
@@ -303,7 +293,7 @@ int account_config_load(Account * account, Config * config)
 /* account_config_save */
 int account_config_save(Account * account, Config * config)
 {
-	AccountConfig * p = account->account->config;
+	AccountConfig * p = account_get_config(account);
 	uint16_t u16;
 	char buf[6];
 
@@ -354,9 +344,8 @@ int account_init(Account * account)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)account);
 #endif
-	if(account->account->init == NULL)
-		return 0;
-	return account->account->init(account->account);
+	return (account->account = account->definition->init(&account->helper))
+		!= NULL ? 0 : -1;
 }
 
 
@@ -376,9 +365,9 @@ GtkTextBuffer * account_select(Account * account, Folder * folder,
 		return NULL;
 	if(message != NULL && (am = message_get_data(message)) == NULL)
 		return NULL;
-	if(account->account->refresh != NULL
-			&& account->account->refresh(account->account, af, am)
-			!= 0)
+	if(account->definition->refresh != NULL
+			&& account->definition->refresh(account->account, af,
+				am) != 0)
 		return NULL;
 	return (message != NULL) ? message_get_body(message) : NULL;
 }
@@ -395,10 +384,10 @@ GtkTextBuffer * account_select_source(Account * account, Folder * folder,
 	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__,
 			folder_get_name(folder), (void*)message);
 #endif
-	if(account->account->get_source == NULL)
+	if(account->definition->get_source == NULL)
 		return NULL;
 	ret = gtk_text_buffer_new(NULL);
-	if((p = account->account->get_source(account->account,
+	if((p = account->definition->get_source(account->account,
 					folder_get_data(folder),
 					message_get_data(message))) != NULL)
 	{

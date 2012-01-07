@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,8 +135,12 @@ typedef struct _IMAP4Command
 	} data;
 } IMAP4Command;
 
-typedef struct _IMAP4
+typedef struct _AccountPlugin
 {
+	AccountPluginHelper * helper;
+
+	AccountConfig * config;
+
 	int fd;
 	SSL * ssl;
 	guint source;
@@ -159,7 +163,7 @@ typedef struct _IMAP4
 static char const _imap4_type[] = "IMAP4";
 static char const _imap4_name[] = "IMAP4 server";
 
-AccountConfig _imap4_config[I4CV_COUNT + 1] =
+AccountConfig const _imap4_config[I4CV_COUNT + 1] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
@@ -178,29 +182,30 @@ AccountConfig _imap4_config[I4CV_COUNT + 1] =
 
 /* prototypes */
 /* plug-in */
-static int _imap4_init(AccountPlugin * plugin);
-static int _imap4_destroy(AccountPlugin * plugin);
-static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
+static IMAP4 * _imap4_init(AccountPluginHelper * helper);
+static int _imap4_destroy(IMAP4 * imap4);
+static AccountConfig * _imap4_get_config(IMAP4 * imap4);
+static int _imap4_refresh(IMAP4 * imap4, AccountFolder * folder,
 		AccountMessage * message);
 
 /* useful */
-static IMAP4Command * _imap4_command(AccountPlugin * plugin,
-		IMAP4Context context, char const * command);
-static int _imap4_parse(AccountPlugin * plugin);
-static void _imap4_reset(AccountPlugin * plugin);
+static IMAP4Command * _imap4_command(IMAP4 * imap4, IMAP4Context context,
+		char const * command);
+static int _imap4_parse(IMAP4 * imap4);
+static void _imap4_reset(IMAP4 * imap4);
 
-static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
-		AccountFolder * parent, char const * name);
-static void _imap4_folder_delete(AccountPlugin * plugin,
+static AccountFolder * _imap4_folder_new(IMAP4 * imap4, AccountFolder * parent,
+		char const * name);
+static void _imap4_folder_delete(IMAP4 * imap4,
 		AccountFolder * folder);
-static AccountFolder * _imap4_folder_get_folder(AccountPlugin * plugin,
+static AccountFolder * _imap4_folder_get_folder(IMAP4 * imap4,
 		AccountFolder * folder, char const * name);
-static AccountMessage * _imap4_folder_get_message(AccountPlugin * plugin,
+static AccountMessage * _imap4_folder_get_message(IMAP4 * imap4,
 		AccountFolder * folder, unsigned int id);
 
-static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
+static AccountMessage * _imap4_message_new(IMAP4 * imap4,
 		AccountFolder * folder, unsigned int id);
-static void _imap4_message_delete(AccountPlugin * plugin,
+static void _imap4_message_delete(IMAP4 * imap4,
 		AccountMessage * message);
 
 /* callbacks */
@@ -223,58 +228,69 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 
 /* public */
 /* variables */
-AccountPlugin account_plugin =
+AccountPluginDefinition account_plugin =
 {
-	NULL,
 	_imap4_type,
 	_imap4_name,
+	NULL,
 	NULL,
 	_imap4_config,
 	_imap4_init,
 	_imap4_destroy,
+	_imap4_get_config,
 	NULL,
-	_imap4_refresh,
-	NULL
+	_imap4_refresh
 };
 
 
 /* private */
 /* imap4_init */
-static int _imap4_init(AccountPlugin * plugin)
+static IMAP4 * _imap4_init(AccountPluginHelper * helper)
 {
 	IMAP4 * imap4;
 
 	if((imap4 = malloc(sizeof(*imap4))) == NULL)
-		return -1;
+		return NULL;
 	memset(imap4, 0, sizeof(*imap4));
-	plugin->priv = imap4;
+	imap4->helper = helper;
+	if((imap4->config = malloc(sizeof(_imap4_config))) == NULL)
+	{
+		free(imap4);
+		return NULL;
+	}
+	memcpy(imap4->config, &_imap4_config, sizeof(_imap4_config));
 	imap4->fd = -1;
-	imap4->source = g_idle_add(_on_connect, plugin);
-	return 0;
+	imap4->source = g_idle_add(_on_connect, imap4);
+	return imap4;
 }
 
 
 /* imap4_destroy */
-static int _imap4_destroy(AccountPlugin * plugin)
+static int _imap4_destroy(IMAP4 * imap4)
 {
-	IMAP4 * imap4 = plugin->priv;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(imap4 == NULL) /* XXX _imap4_destroy() may be called uninitialized */
 		return 0;
-	_imap4_reset(plugin);
+	_imap4_reset(imap4);
 #if 0 /* XXX do not free() */
-	_imap4_folder_delete(plugin, &imap4->folders);
+	_imap4_folder_delete(imap4, &imap4->folders);
 #endif
 	free(imap4);
 	return 0;
 }
 
 
+/* imap4_get_config */
+static AccountConfig * _imap4_get_config(IMAP4 * imap4)
+{
+	return imap4->config;
+}
+
+
 /* imap4_refresh */
-static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
+static int _imap4_refresh(IMAP4 * imap4, AccountFolder * folder,
 		AccountMessage * message)
 {
 	IMAP4Command * cmd;
@@ -289,7 +305,7 @@ static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
 			|| (buf = malloc(++len)) == NULL)
 		return -1;
 	snprintf(buf, len, "EXAMINE \"%s\"", folder->name);
-	cmd = _imap4_command(plugin, I4C_SELECT, buf);
+	cmd = _imap4_command(imap4, I4C_SELECT, buf);
 	free(buf);
 	if(cmd == NULL)
 		return -1;
@@ -301,10 +317,9 @@ static int _imap4_refresh(AccountPlugin * plugin, AccountFolder * folder,
 
 /* useful */
 /* imap4_command */
-static IMAP4Command * _imap4_command(AccountPlugin * plugin,
-		IMAP4Context context, char const * command)
+static IMAP4Command * _imap4_command(IMAP4 * imap4, IMAP4Context context,
+		char const * command)
 {
-	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * p;
 	size_t len;
 
@@ -341,25 +356,24 @@ static IMAP4Command * _imap4_command(AccountPlugin * plugin,
 		}
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
 				(imap4->ssl != NULL) ? _on_watch_can_write_ssl
-				: _on_watch_can_write, plugin);
+				: _on_watch_can_write, imap4);
 	}
 	return p;
 }
 
 
 /* imap4_parse */
-static int _parse_context(AccountPlugin * plugin, char const * answer);
-static int _context_fetch(AccountPlugin * plugin, char const * answer);
-static int _context_init(AccountPlugin * plugin);
-static int _context_list(AccountPlugin * plugin, char const * answer);
-static int _context_login(AccountPlugin * plugin, char const * answer);
-static int _context_select(AccountPlugin * plugin);
-static int _context_status(AccountPlugin * plugin, char const * answer);
+static int _parse_context(IMAP4 * imap4, char const * answer);
+static int _context_fetch(IMAP4 * imap4, char const * answer);
+static int _context_init(IMAP4 * imap4);
+static int _context_list(IMAP4 * imap4, char const * answer);
+static int _context_login(IMAP4 * imap4, char const * answer);
+static int _context_select(IMAP4 * imap4);
+static int _context_status(IMAP4 * imap4, char const * answer);
 
-static int _imap4_parse(AccountPlugin * plugin)
+static int _imap4_parse(IMAP4 * imap4)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	AccountPluginHelper * helper = imap4->helper;
 	size_t i;
 	size_t j;
 	IMAP4Command * cmd;
@@ -399,7 +413,7 @@ static int _imap4_parse(AccountPlugin * plugin)
 							1);
 			}
 		}
-		if(_parse_context(plugin, &imap4->rd_buf[j]) != 0)
+		if(_parse_context(imap4, &imap4->rd_buf[j]) != 0)
 			cmd->status = I4CS_ERROR;
 	}
 	if(j != 0)
@@ -412,10 +426,9 @@ static int _imap4_parse(AccountPlugin * plugin)
 	return (imap4->queue[0].status != I4CS_ERROR) ? 0 : -1;
 }
 
-static int _parse_context(AccountPlugin * plugin, char const * answer)
+static int _parse_context(IMAP4 * imap4, char const * answer)
 {
 	int ret = -1;
-	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 
 #ifdef DEBUG
@@ -425,30 +438,29 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 	switch(cmd->context)
 	{
 		case I4C_FETCH:
-			return _context_fetch(plugin, answer);
+			return _context_fetch(imap4, answer);
 		case I4C_INIT:
-			return _context_init(plugin);
+			return _context_init(imap4);
 		case I4C_LIST:
-			return _context_list(plugin, answer);
+			return _context_list(imap4, answer);
 		case I4C_LOGIN:
-			return _context_login(plugin, answer);
+			return _context_login(imap4, answer);
 		case I4C_NOOP:
 			if(cmd->status != I4CS_PARSING)
 				return 0;
 			cmd->status = I4CS_OK;
 			return 0;
 		case I4C_SELECT:
-			return _context_select(plugin);
+			return _context_select(imap4);
 		case I4C_STATUS:
-			return _context_status(plugin, answer);
+			return _context_status(imap4, answer);
 	}
 	return ret;
 }
 
-static int _context_fetch(AccountPlugin * plugin, char const * answer)
+static int _context_fetch(IMAP4 * imap4, char const * answer)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	AccountPluginHelper * helper = imap4->helper;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder = cmd->data.fetch.folder;
 	AccountMessage * message = cmd->data.fetch.message;
@@ -491,7 +503,7 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 			answer = p;
 			if(strncmp(answer, " FETCH ", 7) != 0)
 				return 0;
-			if((message = _imap4_folder_get_message(plugin, folder,
+			if((message = _imap4_folder_get_message(imap4, folder,
 							id)) != NULL)
 			{
 				cmd->data.fetch.status = I4FS_HEADERS;
@@ -513,28 +525,26 @@ static int _context_fetch(AccountPlugin * plugin, char const * answer)
 	return -1;
 }
 
-static int _context_init(AccountPlugin * plugin)
+static int _context_init(IMAP4 * imap4)
 {
-	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	char const * p;
 	char const * q;
 	gchar * r;
 
 	cmd->status = I4CS_OK;
-	if((p = plugin->config[I4CV_USERNAME].value) == NULL || *p == '\0')
+	if((p = imap4->config[I4CV_USERNAME].value) == NULL || *p == '\0')
 		return -1;
-	if((q = plugin->config[I4CV_PASSWORD].value) == NULL || *q == '\0')
+	if((q = imap4->config[I4CV_PASSWORD].value) == NULL || *q == '\0')
 		return -1;
 	r = g_strdup_printf("%s %s %s", "LOGIN", p, q);
-	cmd = _imap4_command(plugin, I4C_LOGIN, r);
+	cmd = _imap4_command(imap4, I4C_LOGIN, r);
 	g_free(r);
 	return (cmd != NULL) ? 0 : -1;
 }
 
-static int _context_list(AccountPlugin * plugin, char const * answer)
+static int _context_list(IMAP4 * imap4, char const * answer)
 {
-	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder;
 	AccountFolder * parent = cmd->data.list.parent;
@@ -585,20 +595,20 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	else
 		sscanf(p, "%63s", buf);
 	buf[63] = '\0';
-	if(buf[0] != '\0' && (folder = _imap4_folder_get_folder(plugin, parent,
+	if(buf[0] != '\0' && (folder = _imap4_folder_get_folder(imap4, parent,
 					buf)) != NULL)
 	{
 		/* FIXME escape the mailbox name (double quotes...) */
 		q = g_strdup_printf("%s \"%s\" (%s)", "STATUS", buf,
 				"MESSAGES RECENT UNSEEN");
-		if((cmd = _imap4_command(plugin, I4C_STATUS, q)) != NULL)
+		if((cmd = _imap4_command(imap4, I4C_STATUS, q)) != NULL)
 			cmd->data.status.folder = folder;
 		g_free(q);
 		if(cmd != NULL && recurse == 1 && reference != '\0')
 		{
 			q = g_strdup_printf("%s \"\" \"%s%c%%\"", "LIST", buf,
 					reference);
-			if((cmd = _imap4_command(plugin, I4C_LIST, q)) != NULL)
+			if((cmd = _imap4_command(imap4, I4C_LIST, q)) != NULL)
 				cmd->data.list.parent = folder;
 			g_free(q);
 		}
@@ -606,12 +616,11 @@ static int _context_list(AccountPlugin * plugin, char const * answer)
 	return (cmd != NULL) ? 0 : -1;
 }
 
-static int _context_login(AccountPlugin * plugin, char const * answer)
+static int _context_login(IMAP4 * imap4, char const * answer)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	AccountPluginHelper * helper = imap4->helper;
 	IMAP4Command * cmd = &imap4->queue[0];
-	char const * prefix = plugin->config[I4CV_PREFIX].value;
+	char const * prefix = imap4->config[I4CV_PREFIX].value;
 	gchar * q;
 
 	if(cmd->status != I4CS_PARSING)
@@ -623,7 +632,7 @@ static int _context_login(AccountPlugin * plugin, char const * answer)
 	if((q = g_strdup_printf("%s \"\" \"%s%%\"", "LIST", (prefix != NULL)
 					? prefix : "")) == NULL)
 		return -1;
-	cmd = _imap4_command(plugin, I4C_LIST, q);
+	cmd = _imap4_command(imap4, I4C_LIST, q);
 	g_free(q);
 	if(cmd == NULL)
 		return -1;
@@ -631,9 +640,8 @@ static int _context_login(AccountPlugin * plugin, char const * answer)
 	return 0;
 }
 
-static int _context_select(AccountPlugin * plugin)
+static int _context_select(IMAP4 * imap4)
 {
-	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	AccountFolder * folder;
 	AccountMessage * message;
@@ -651,7 +659,7 @@ static int _context_select(AccountPlugin * plugin)
 	else
 		snprintf(buf, sizeof(buf), "%s %u %s", "FETCH", message->id,
 				"BODY.PEEK[]");
-	if((cmd = _imap4_command(plugin, I4C_FETCH, buf)) == NULL)
+	if((cmd = _imap4_command(imap4, I4C_FETCH, buf)) == NULL)
 		return -1;
 	cmd->data.fetch.folder = folder;
 	cmd->data.fetch.message = message;
@@ -660,9 +668,8 @@ static int _context_select(AccountPlugin * plugin)
 	return 0;
 }
 
-static int _context_status(AccountPlugin * plugin, char const * answer)
+static int _context_status(IMAP4 * imap4, char const * answer)
 {
-	IMAP4 * imap4 = plugin->priv;
 	IMAP4Command * cmd = &imap4->queue[0];
 	char const * p;
 	char const messages[] = "MESSAGES";
@@ -719,9 +726,8 @@ static int _context_status(AccountPlugin * plugin, char const * answer)
 
 
 /* imap4_reset */
-static void _imap4_reset(AccountPlugin * plugin)
+static void _imap4_reset(IMAP4 * imap4)
 {
-	IMAP4 * imap4 = plugin->priv;
 	size_t i;
 
 	if(imap4->rd_source != 0)
@@ -752,13 +758,12 @@ static void _imap4_reset(AccountPlugin * plugin)
 
 
 /* imap4_folder_new */
-static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
-		AccountFolder * parent, char const * name)
+static AccountFolder * _imap4_folder_new(IMAP4 * imap4, AccountFolder * parent,
+		char const * name)
 {
-	AccountPluginHelper * helper = plugin->helper;
+	AccountPluginHelper * helper = imap4->helper;
 	AccountFolder * folder;
 	AccountFolder ** p;
-	IMAP4 * imap4 = plugin->priv;
 	FolderType type = FT_FOLDER;
 	struct
 	{
@@ -801,7 +806,7 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 	folder->folders_cnt = 0;
 	if(folder->folder == NULL || folder->name == NULL)
 	{
-		_imap4_folder_delete(plugin, folder);
+		_imap4_folder_delete(imap4, folder);
 		return NULL;
 	}
 	parent->folders[parent->folders_cnt++] = folder;
@@ -810,25 +815,25 @@ static AccountFolder * _imap4_folder_new(AccountPlugin * plugin,
 
 
 /* imap4_folder_delete */
-static void _imap4_folder_delete(AccountPlugin * plugin, AccountFolder * folder)
+static void _imap4_folder_delete(IMAP4 * imap4, AccountFolder * folder)
 {
 	size_t i;
 
 	if(folder->folder != NULL)
-		plugin->helper->folder_delete(folder->folder);
+		imap4->helper->folder_delete(folder->folder);
 	free(folder->name);
 	for(i = 0; i < folder->messages_cnt; i++)
-		_imap4_message_delete(plugin, folder->messages[i]);
+		_imap4_message_delete(imap4, folder->messages[i]);
 	free(folder->messages);
 	for(i = 0; i < folder->folders_cnt; i++)
-		_imap4_folder_delete(plugin, folder->folders[i]);
+		_imap4_folder_delete(imap4, folder->folders[i]);
 	free(folder->folders);
 	object_delete(folder);
 }
 
 
 /* imap4_folder_get_folder */
-static AccountFolder * _imap4_folder_get_folder(AccountPlugin * plugin,
+static AccountFolder * _imap4_folder_get_folder(IMAP4 * imap4,
 		AccountFolder * folder, char const * name)
 {
 	size_t i;
@@ -840,12 +845,12 @@ static AccountFolder * _imap4_folder_get_folder(AccountPlugin * plugin,
 	for(i = 0; i < folder->folders_cnt; i++)
 		if(strcmp(folder->folders[i]->name, name) == 0)
 			return folder->folders[i];
-	return _imap4_folder_new(plugin, folder, name);
+	return _imap4_folder_new(imap4, folder, name);
 }
 
 
 /* imap4_folder_get_message */
-static AccountMessage * _imap4_folder_get_message(AccountPlugin * plugin,
+static AccountMessage * _imap4_folder_get_message(IMAP4 * imap4,
 		AccountFolder * folder, unsigned int id)
 {
 	size_t i;
@@ -856,15 +861,15 @@ static AccountMessage * _imap4_folder_get_message(AccountPlugin * plugin,
 	for(i = 0; i < folder->messages_cnt; i++)
 		if(folder->messages[i]->id == id)
 			return folder->messages[i];
-	return _imap4_message_new(plugin, folder, id);
+	return _imap4_message_new(imap4, folder, id);
 }
 
 
 /* imap4_message_new */
-static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
+static AccountMessage * _imap4_message_new(IMAP4 * imap4,
 		AccountFolder * folder, unsigned int id)
 {
-	AccountPluginHelper * helper = plugin->helper;
+	AccountPluginHelper * helper = imap4->helper;
 	AccountMessage * message;
 	AccountMessage ** p;
 
@@ -878,7 +883,7 @@ static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
 	if((message->message = helper->message_new(helper->account,
 					folder->folder, message)) == NULL)
 	{
-		_imap4_message_delete(plugin, message);
+		_imap4_message_delete(imap4, message);
 		return NULL;
 	}
 	folder->messages[folder->messages_cnt++] = message;
@@ -887,37 +892,35 @@ static AccountMessage * _imap4_message_new(AccountPlugin * plugin,
 
 
 /* imap4_message_delete */
-static void _imap4_message_delete(AccountPlugin * plugin,
+static void _imap4_message_delete(IMAP4 * imap4,
 		AccountMessage * message)
 {
 	if(message->message != NULL)
-		plugin->helper->message_delete(message->message);
+		imap4->helper->message_delete(message->message);
 	object_delete(message);
 }
 
 
 /* callbacks */
 /* on_idle */
-static int _connect_channel(AccountPlugin * plugin);
+static int _connect_channel(IMAP4 * imap4);
 
 static gboolean _on_connect(gpointer data)
 {
-	AccountPlugin * plugin = data;
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
+	AccountPluginHelper * helper = imap4->helper;
 	char const * hostname;
 	char const * p;
 	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
 	int res;
-	char buf[128];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	imap4->source = 0;
-	if((hostname = plugin->config[I4CV_HOSTNAME].value) == NULL)
+	if((hostname = imap4->config[I4CV_HOSTNAME].value) == NULL)
 	{
 		helper->error(NULL, "No hostname set", 1);
 		return FALSE;
@@ -925,15 +928,15 @@ static gboolean _on_connect(gpointer data)
 	if((he = gethostbyname(hostname)) == NULL)
 	{
 		helper->error(NULL, hstrerror(h_errno), 1);
-		return _on_reset(plugin);
+		return _on_reset(imap4);
 	}
-	if((p = plugin->config[I4CV_PORT].value) == NULL)
+	if((p = imap4->config[I4CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		return _on_reset(plugin);
+		return _on_reset(imap4);
 	}
 	if((res = fcntl(imap4->fd, F_GETFL)) >= 0
 			&& fcntl(imap4->fd, F_SETFL, res | O_NONBLOCK) == -1)
@@ -946,20 +949,19 @@ static gboolean _on_connect(gpointer data)
 			inet_ntoa(sa.sin_addr), port);
 	if((connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
-			|| _connect_channel(plugin) != 0)
+			|| _connect_channel(imap4) != 0)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		return _on_reset(plugin);
+		return _on_reset(imap4);
 	}
 	imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-			_on_watch_can_connect, plugin);
+			_on_watch_can_connect, imap4);
 	return FALSE;
 }
 
-static int _connect_channel(AccountPlugin * plugin)
+static int _connect_channel(IMAP4 * imap4)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	AccountPluginHelper * helper = imap4->helper;
 	GError * error = NULL;
 
 #ifdef DEBUG
@@ -986,10 +988,9 @@ static int _connect_channel(AccountPlugin * plugin)
 /* on_noop */
 static gboolean _on_noop(gpointer data)
 {
-	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
 
-	_imap4_command(plugin, I4C_NOOP, "NOOP");
+	_imap4_command(imap4, I4C_NOOP, "NOOP");
 	imap4->source = 0;
 	return FALSE;
 }
@@ -998,11 +999,10 @@ static gboolean _on_noop(gpointer data)
 /* on_reset */
 static gboolean _on_reset(gpointer data)
 {
-	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
 
-	_imap4_reset(plugin);
-	imap4->source = g_timeout_add(3000, _on_connect, plugin);
+	_imap4_reset(imap4);
+	imap4->source = g_timeout_add(3000, _on_connect, imap4);
 	return FALSE;
 }
 
@@ -1011,9 +1011,8 @@ static gboolean _on_reset(gpointer data)
 static gboolean _on_watch_can_connect(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
+	AccountPluginHelper * helper = imap4->helper;
 	SSL_CTX * ssl_ctx;
 	char buf[128];
 
@@ -1024,7 +1023,7 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #endif
 	imap4->wr_source = 0;
 	/* setup SSL */
-	if(plugin->config[I4CV_SSL].value != NULL)
+	if(imap4->config[I4CV_SSL].value != NULL)
 	{
 		if((ssl_ctx = helper->get_ssl_context(helper->account)) == NULL)
 			/* FIXME report error */
@@ -1040,25 +1039,24 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 		SSL_set_connect_state(imap4->ssl);
 		/* perform initial handshake */
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-				_on_watch_can_handshake, plugin);
+				_on_watch_can_handshake, imap4);
 		return FALSE;
 	}
 	/* wait for the server's banner */
 	imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-			_on_watch_can_read, plugin);
+			_on_watch_can_read, imap4);
 	return FALSE;
 }
 
 
 /* on_watch_can_handshake */
-static int _handshake_verify(AccountPlugin * plugin);
+static int _handshake_verify(IMAP4 * imap4);
 
 static gboolean _on_watch_can_handshake(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
+	AccountPluginHelper * helper = imap4->helper;
 	int res;
 	int err;
 	char buf[128];
@@ -1073,11 +1071,11 @@ static gboolean _on_watch_can_handshake(GIOChannel * source,
 	imap4->rd_source = 0;
 	if((res = SSL_do_handshake(imap4->ssl)) == 1)
 	{
-		if(_handshake_verify(plugin) != 0)
-			return _on_reset(plugin);
+		if(_handshake_verify(imap4) != 0)
+			return _on_reset(imap4);
 		/* wait for the server's banner */
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-				_on_watch_can_read_ssl, plugin);
+				_on_watch_can_read_ssl, imap4);
 		return FALSE;
 	}
 	err = SSL_get_error(imap4->ssl, res);
@@ -1085,26 +1083,25 @@ static gboolean _on_watch_can_handshake(GIOChannel * source,
 	if(res == 0)
 	{
 		helper->error(helper->account, buf, 1);
-		return _on_reset(plugin);
+		return _on_reset(imap4);
 	}
 	if(err == SSL_ERROR_WANT_WRITE)
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-				_on_watch_can_handshake, plugin);
+				_on_watch_can_handshake, imap4);
 	else if(err == SSL_ERROR_WANT_READ)
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-				_on_watch_can_handshake, plugin);
+				_on_watch_can_handshake, imap4);
 	else
 	{
 		helper->error(helper->account, buf, 1);
-		return _on_reset(plugin);
+		return _on_reset(imap4);
 	}
 	return FALSE;
 }
 
-static int _handshake_verify(AccountPlugin * plugin)
+static int _handshake_verify(IMAP4 * imap4)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	IMAP4 * imap4 = plugin->priv;
+	AccountPluginHelper * helper = imap4->helper;
 	X509 * x509;
 	char buf[256] = "";
 
@@ -1114,7 +1111,7 @@ static int _handshake_verify(AccountPlugin * plugin)
 	x509 = SSL_get_peer_certificate(imap4->ssl);
 	X509_NAME_get_text_by_NID(X509_get_subject_name(x509), NID_commonName,
 			buf, sizeof(buf));
-	if(strcasecmp(buf, plugin->config[I4CV_HOSTNAME].value) != 0)
+	if(strcasecmp(buf, imap4->config[I4CV_HOSTNAME].value) != 0)
 		return helper->confirm(helper->account, "The certificate could"
 				" not be matched.\nConnect anyway?");
 	return 0;
@@ -1125,8 +1122,7 @@ static int _handshake_verify(AccountPlugin * plugin)
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
-	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
 	char * p;
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -1150,15 +1146,15 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			plugin->helper->error(NULL, error->message, 1);
+			imap4->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
 		default:
-			imap4->rd_source = g_idle_add(_on_reset, plugin);
+			imap4->rd_source = g_idle_add(_on_reset, imap4);
 			return FALSE;
 	}
-	if(_imap4_parse(plugin) != 0)
+	if(_imap4_parse(imap4) != 0)
 	{
-		imap4->rd_source = g_idle_add(_on_reset, plugin);
+		imap4->rd_source = g_idle_add(_on_reset, imap4);
 		return FALSE;
 	}
 	if(imap4->queue_cnt == 0)
@@ -1177,10 +1173,10 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	}
 	imap4->rd_source = 0;
 	if(imap4->queue_cnt == 0)
-		imap4->source = g_timeout_add(30000, _on_noop, plugin);
+		imap4->source = g_timeout_add(30000, _on_noop, imap4);
 	else
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-				_on_watch_can_write, plugin);
+				_on_watch_can_write, imap4);
 	return FALSE;
 }
 
@@ -1189,8 +1185,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
 	char * p;
 	int cnt;
 	IMAP4Command * cmd;
@@ -1213,7 +1208,7 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 		{
 			imap4->rd_source = g_io_add_watch(imap4->channel,
 					G_IO_OUT, _on_watch_can_read_ssl,
-					plugin);
+					imap4);
 			return FALSE;
 		}
 		else if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
@@ -1221,12 +1216,12 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 		{
 			imap4->rd_source = g_io_add_watch(imap4->channel,
 					G_IO_IN, _on_watch_can_read_ssl,
-					plugin);
+					imap4);
 			return FALSE;
 		}
 		ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
-		plugin->helper->error(NULL, buf, 1);
-		imap4->rd_source = g_idle_add(_on_reset, plugin);
+		imap4->helper->error(NULL, buf, 1);
+		imap4->rd_source = g_idle_add(_on_reset, imap4);
 		return FALSE;
 	}
 #ifdef DEBUG
@@ -1234,9 +1229,9 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	fwrite(&imap4->rd_buf[imap4->rd_buf_cnt], sizeof(*p), cnt, stderr);
 #endif
 	imap4->rd_buf_cnt += cnt;
-	if(_imap4_parse(plugin) != 0)
+	if(_imap4_parse(imap4) != 0)
 	{
-		imap4->rd_source = g_idle_add(_on_reset, plugin);
+		imap4->rd_source = g_idle_add(_on_reset, imap4);
 		return FALSE;
 	}
 	if(imap4->queue_cnt == 0)
@@ -1255,10 +1250,10 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	}
 	imap4->rd_source = 0;
 	if(imap4->queue_cnt == 0)
-		imap4->source = g_timeout_add(30000, _on_noop, plugin);
+		imap4->source = g_timeout_add(30000, _on_noop, imap4);
 	else
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
-				_on_watch_can_write_ssl, plugin);
+				_on_watch_can_write_ssl, imap4);
 	return FALSE;
 }
 
@@ -1267,8 +1262,7 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
-	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
 	IMAP4Command * cmd = &imap4->queue[0];
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -1301,10 +1295,10 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			plugin->helper->error(NULL, error->message, 1);
+			imap4->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
 		default:
-			imap4->wr_source = g_idle_add(_on_reset, plugin);
+			imap4->wr_source = g_idle_add(_on_reset, imap4);
 			return FALSE;
 	}
 	if(cmd->buf_cnt > 0)
@@ -1313,7 +1307,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	imap4->wr_source = 0;
 	if(imap4->rd_source == 0)
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-				_on_watch_can_read, plugin);
+				_on_watch_can_read, imap4);
 	return FALSE;
 }
 
@@ -1322,8 +1316,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	IMAP4 * imap4 = plugin->priv;
+	IMAP4 * imap4 = data;
 	IMAP4Command * cmd = &imap4->queue[0];
 	int cnt;
 	char * p;
@@ -1342,7 +1335,7 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 		{
 			imap4->wr_source = g_io_add_watch(imap4->channel,
 					G_IO_IN, _on_watch_can_write_ssl,
-					plugin);
+					imap4);
 			return FALSE;
 		}
 		else if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
@@ -1350,12 +1343,12 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 		{
 			imap4->wr_source = g_io_add_watch(imap4->channel,
 					G_IO_OUT, _on_watch_can_write_ssl,
-					plugin);
+					imap4);
 			return FALSE;
 		}
 		ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
-		plugin->helper->error(NULL, buf, 1);
-		imap4->wr_source = g_idle_add(_on_reset, plugin);
+		imap4->helper->error(NULL, buf, 1);
+		imap4->wr_source = g_idle_add(_on_reset, imap4);
 		return FALSE;
 	}
 #ifdef DEBUG
@@ -1374,6 +1367,6 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 	imap4->wr_source = 0;
 	if(imap4->rd_source == 0)
 		imap4->rd_source = g_io_add_watch(imap4->channel, G_IO_IN,
-				_on_watch_can_read_ssl, plugin);
+				_on_watch_can_read_ssl, imap4);
 	return FALSE;
 }

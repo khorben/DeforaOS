@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,8 +103,12 @@ typedef struct _POP3Command
 	} data;
 } POP3Command;
 
-typedef struct _POP3
+typedef struct _AccountPlugin
 {
+	AccountPluginHelper * helper;
+
+	AccountConfig * config;
+
 	int fd;
 	SSL * ssl;
 	guint source;
@@ -142,22 +146,23 @@ static AccountConfig _pop3_config[P3CV_COUNT + 1] =
 
 /* prototypes */
 /* plug-in */
-static int _pop3_init(AccountPlugin * plugin);
-static int _pop3_destroy(AccountPlugin * plugin);
-static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
+static POP3 * _pop3_init(AccountPluginHelper * helper);
+static int _pop3_destroy(POP3 * pop3);
+static AccountConfig * _pop3_get_config(POP3 * pop3);
+static int _pop3_refresh(POP3 * pop3, AccountFolder * folder,
 		AccountMessage * message);
 
 /* useful */
-static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
+static POP3Command * _pop3_command(POP3 * pop3, POP3Context context,
 		char const * command);
-static int _pop3_parse(AccountPlugin * plugin);
-static void _pop3_reset(AccountPlugin * plugin);
+static int _pop3_parse(POP3 * pop3);
+static void _pop3_reset(POP3 * pop3);
 
-static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
+static AccountMessage * _pop3_message_get(POP3 * pop3,
 		AccountFolder * folder, unsigned int id);
-static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
+static AccountMessage * _pop3_message_new(POP3 * pop3,
 		AccountFolder * folder, unsigned int id);
-static void _pop3_message_delete(AccountPlugin * plugin,
+static void _pop3_message_delete(POP3 * pop3,
 		AccountMessage * message);
 
 /* callbacks */
@@ -180,61 +185,72 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 
 /* public */
 /* variables */
-AccountPlugin account_plugin =
+AccountPluginDefinition account_plugin =
 {
-	NULL,
 	_pop3_type,
 	_pop3_name,
+	NULL,
 	NULL,
 	_pop3_config,
 	_pop3_init,
 	_pop3_destroy,
+	_pop3_get_config,
 	NULL,
-	_pop3_refresh,
-	NULL
+	_pop3_refresh
 };
 
 
 /* private */
 /* functions */
 /* pop3_init */
-static int _pop3_init(AccountPlugin * plugin)
+static POP3 * _pop3_init(AccountPluginHelper * helper)
 {
 	POP3 * pop3;
 
 	if((pop3 = malloc(sizeof(*pop3))) == NULL)
-		return -1;
+		return NULL;
 	memset(pop3, 0, sizeof(*pop3));
-	plugin->priv = pop3;
+	pop3->helper = helper;
+	if((pop3->config = malloc(sizeof(_pop3_config))) == NULL)
+	{
+		free(pop3);
+		return NULL;
+	}
+	memcpy(pop3->config, &_pop3_config, sizeof(_pop3_config));
 	pop3->fd = -1;
-	pop3->inbox.folder = plugin->helper->folder_new(plugin->helper->account,
+	pop3->inbox.folder = pop3->helper->folder_new(pop3->helper->account,
 			&pop3->inbox, NULL, FT_INBOX, "Inbox");
-	pop3->trash.folder = plugin->helper->folder_new(plugin->helper->account,
+	pop3->trash.folder = pop3->helper->folder_new(pop3->helper->account,
 			&pop3->trash, NULL, FT_TRASH, "Trash");
-	pop3->source = g_idle_add(_on_connect, plugin);
-	return 0;
+	pop3->source = g_idle_add(_on_connect, pop3);
+	return pop3;
 }
 
 
 /* pop3_destroy */
-static int _pop3_destroy(AccountPlugin * plugin)
+static int _pop3_destroy(POP3 * pop3)
 {
-	POP3 * pop3 = plugin->priv;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 
 	if(pop3 == NULL) /* XXX _pop3_destroy() may be called uninitialized */
 		return 0;
-	_pop3_reset(plugin);
+	_pop3_reset(pop3);
 	free(pop3);
 	return 0;
 }
 
 
+/* pop3_get_config */
+static AccountConfig * _pop3_get_config(POP3 * pop3)
+{
+	return pop3->config;
+}
+
+
 /* pop3_refresh */
-static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
+static int _pop3_refresh(POP3 * pop3, AccountFolder * folder,
 		AccountMessage * message)
 {
 	char buf[32];
@@ -243,7 +259,7 @@ static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
 	if(message == NULL)
 		return 0;
 	snprintf(buf, sizeof(buf), "%s %u", "RETR", message->id);
-	if((cmd = _pop3_command(plugin, P3C_TRANSACTION_RETR, buf)) == NULL)
+	if((cmd = _pop3_command(pop3, P3C_TRANSACTION_RETR, buf)) == NULL)
 		return -1;
 	cmd->data.transaction_retr.id = message->id;
 	return 0;
@@ -252,10 +268,9 @@ static int _pop3_refresh(AccountPlugin * plugin, AccountFolder * folder,
 
 /* useful */
 /* pop3_command */
-static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
+static POP3Command * _pop3_command(POP3 * pop3, POP3Context context,
 		char const * command)
 {
-	POP3 * pop3 = plugin->priv;
 	POP3Command * p;
 	size_t len;
 
@@ -292,22 +307,21 @@ static POP3Command * _pop3_command(AccountPlugin * plugin, POP3Context context,
 		}
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
 				(pop3->ssl != NULL) ? _on_watch_can_write_ssl
-				: _on_watch_can_write, plugin);
+				: _on_watch_can_write, pop3);
 	}
 	return p;
 }
 
 
 /* pop3_parse */
-static int _parse_context(AccountPlugin * plugin, char const * answer);
-static int _parse_context_transaction_retr(AccountPlugin * plugin,
+static int _parse_context(POP3 * pop3, char const * answer);
+static int _parse_context_transaction_retr(POP3 * pop3,
 		char const * answer);
 
-static int _pop3_parse(AccountPlugin * plugin)
+static int _pop3_parse(POP3 * pop3)
 {
 	int ret = 0;
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	AccountPluginHelper * helper = pop3->helper;
 	size_t i;
 	size_t j;
 
@@ -334,7 +348,7 @@ static int _pop3_parse(AccountPlugin * plugin)
 		else if(pop3->queue[0].status == P3CS_SENT
 				&& strncmp("+OK", &pop3->rd_buf[j], 3) == 0)
 			pop3->queue[0].status = P3CS_PARSING;
-		if(_parse_context(plugin, &pop3->rd_buf[j]) != 0)
+		if(_parse_context(pop3, &pop3->rd_buf[j]) != 0)
 		{
 			pop3->queue[0].status = P3CS_ERROR;
 			ret = -1;
@@ -348,10 +362,9 @@ static int _pop3_parse(AccountPlugin * plugin)
 	return ret;
 }
 
-static int _parse_context(AccountPlugin * plugin, char const * answer)
+static int _parse_context(POP3 * pop3, char const * answer)
 {
 	int ret = -1;
-	POP3 * pop3 = plugin->priv;
 	POP3Command * cmd = &pop3->queue[0];
 	char const * p;
 	char * q;
@@ -368,27 +381,27 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 			if(cmd->status != P3CS_PARSING)
 				return 0;
 			cmd->status = P3CS_OK;
-			if((p = plugin->config[0].value) == NULL)
+			if((p = pop3->config[0].value) == NULL)
 				return -1;
 			q = g_strdup_printf("%s %s", "USER", p);
-			cmd = _pop3_command(plugin, P3C_AUTHORIZATION_USER, q);
+			cmd = _pop3_command(pop3, P3C_AUTHORIZATION_USER, q);
 			g_free(q);
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_USER:
 			if(cmd->status != P3CS_PARSING)
 				return 0;
 			cmd->status = P3CS_OK;
-			if((p = plugin->config[1].value) == NULL)
+			if((p = pop3->config[1].value) == NULL)
 				p = ""; /* assumes an empty password */
 			q = g_strdup_printf("%s %s", "PASS", p);
-			cmd = _pop3_command(plugin, P3C_AUTHORIZATION_PASS, q);
+			cmd = _pop3_command(pop3, P3C_AUTHORIZATION_PASS, q);
 			g_free(q);
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_AUTHORIZATION_PASS:
 			if(cmd->status != P3CS_PARSING)
 				return 0;
 			cmd->status = P3CS_OK;
-			return (_pop3_command(plugin, P3C_TRANSACTION_STAT,
+			return (_pop3_command(pop3, P3C_TRANSACTION_STAT,
 						"STAT") != NULL) ? 0 : -1;
 		case P3C_NOOP:
 			if(strncmp(answer, "+OK", 3) == 0)
@@ -408,30 +421,29 @@ static int _parse_context(AccountPlugin * plugin, char const * answer)
 				return -1;
 			/* FIXME may not be supported by the server */
 			q = g_strdup_printf("%s %u 0", "TOP", u);
-			cmd = _pop3_command(plugin, P3C_TRANSACTION_TOP, q);
+			cmd = _pop3_command(pop3, P3C_TRANSACTION_TOP, q);
 			free(q);
 			cmd->data.transaction_top.id = u;
 			return (cmd != NULL) ? 0 : -1;
 		case P3C_TRANSACTION_RETR:
 		case P3C_TRANSACTION_TOP: /* same as RETR without the body */
-			return _parse_context_transaction_retr(plugin, answer);
+			return _parse_context_transaction_retr(pop3, answer);
 		case P3C_TRANSACTION_STAT:
 			if(cmd->status != P3CS_PARSING)
 				return 0;
 			if(sscanf(answer, "+OK %u %u", &u, &v) != 2)
 				return -1;
 			cmd->status = P3CS_OK;
-			return (_pop3_command(plugin, P3C_TRANSACTION_LIST,
+			return (_pop3_command(pop3, P3C_TRANSACTION_LIST,
 						"LIST") != NULL) ? 0 : -1;
 	}
 	return ret;
 }
 
-static int _parse_context_transaction_retr(AccountPlugin * plugin,
+static int _parse_context_transaction_retr(POP3 * pop3,
 		char const * answer)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	AccountPluginHelper * helper = pop3->helper;
 	POP3Command * cmd = &pop3->queue[0];
 	AccountMessage * message;
 
@@ -441,7 +453,7 @@ static int _parse_context_transaction_retr(AccountPlugin * plugin,
 			&& strncmp(answer, "+OK", 3) == 0)
 	{
 		cmd->data.transaction_retr.body = FALSE;
-		message = _pop3_message_get(plugin, &pop3->inbox,
+		message = _pop3_message_get(pop3, &pop3->inbox,
 					cmd->data.transaction_retr.id);
 		cmd->data.transaction_retr.message = message;
 		return 0;
@@ -470,9 +482,8 @@ static int _parse_context_transaction_retr(AccountPlugin * plugin,
 
 
 /* pop3_reset */
-static void _pop3_reset(AccountPlugin * plugin)
+static void _pop3_reset(POP3 * pop3)
 {
-	POP3 * pop3 = plugin->priv;
 	size_t i;
 
 	if(pop3->rd_source != 0)
@@ -497,7 +508,7 @@ static void _pop3_reset(AccountPlugin * plugin)
 
 
 /* pop3_message_get */
-static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
+static AccountMessage * _pop3_message_get(POP3 * pop3,
 		AccountFolder * folder, unsigned int id)
 {
 	size_t i;
@@ -505,15 +516,15 @@ static AccountMessage * _pop3_message_get(AccountPlugin * plugin,
 	for(i = 0; i < folder->messages_cnt; i++)
 		if(folder->messages[i]->id == id)
 			return folder->messages[i];
-	return _pop3_message_new(plugin, folder, id);
+	return _pop3_message_new(pop3, folder, id);
 }
 
 
 /* pop3_message_new */
-static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
+static AccountMessage * _pop3_message_new(POP3 * pop3,
 		AccountFolder * folder, unsigned int id)
 {
-	AccountPluginHelper * helper = plugin->helper;
+	AccountPluginHelper * helper = pop3->helper;
 	AccountMessage * message;
 	AccountMessage ** p;
 
@@ -527,7 +538,7 @@ static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
 	if((message->message = helper->message_new(helper->account,
 					folder->folder, message)) == NULL)
 	{
-		_pop3_message_delete(plugin, message);
+		_pop3_message_delete(pop3, message);
 		return NULL;
 	}
 	folder->messages[folder->messages_cnt++] = message;
@@ -536,37 +547,35 @@ static AccountMessage * _pop3_message_new(AccountPlugin * plugin,
 
 
 /* pop3_message_delete */
-static void _pop3_message_delete(AccountPlugin * plugin,
+static void _pop3_message_delete(POP3 * pop3,
 		AccountMessage * message)
 {
 	if(message->message != NULL)
-		plugin->helper->message_delete(message->message);
+		pop3->helper->message_delete(message->message);
 	object_delete(message);
 }
 
 
 /* callbacks */
 /* on_idle */
-static int _connect_channel(AccountPlugin * plugin);
+static int _connect_channel(POP3 * pop3);
 
 static gboolean _on_connect(gpointer data)
 {
-	AccountPlugin * plugin = data;
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
+	AccountPluginHelper * helper = pop3->helper;
 	char const * hostname;
 	char const * p;
 	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
 	int res;
-	char buf[128];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	pop3->source = 0;
-	if((hostname = plugin->config[P3CV_HOSTNAME].value) == NULL)
+	if((hostname = pop3->config[P3CV_HOSTNAME].value) == NULL)
 	{
 		helper->error(NULL, "No hostname set", 1);
 		return FALSE;
@@ -574,15 +583,15 @@ static gboolean _on_connect(gpointer data)
 	if((he = gethostbyname(hostname)) == NULL)
 	{
 		helper->error(NULL, hstrerror(h_errno), 1);
-		return _on_reset(plugin);
+		return _on_reset(pop3);
 	}
-	if((p = plugin->config[P3CV_PORT].value) == NULL)
+	if((p = pop3->config[P3CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		return _on_reset(plugin);
+		return _on_reset(pop3);
 	}
 	if((res = fcntl(pop3->fd, F_GETFL)) >= 0
 			&& fcntl(pop3->fd, F_SETFL, res | O_NONBLOCK) == -1)
@@ -595,20 +604,19 @@ static gboolean _on_connect(gpointer data)
 			inet_ntoa(sa.sin_addr), port);
 	if((connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
-			|| _connect_channel(plugin) != 0)
+			|| _connect_channel(pop3) != 0)
 	{
 		helper->error(NULL, strerror(errno), 1);
-		return _on_reset(plugin);
+		return _on_reset(pop3);
 	}
 	pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-			_on_watch_can_connect, plugin);
+			_on_watch_can_connect, pop3);
 	return FALSE;
 }
 
-static int _connect_channel(AccountPlugin * plugin)
+static int _connect_channel(POP3 * pop3)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	AccountPluginHelper * helper = pop3->helper;
 	GError * error = NULL;
 
 #ifdef DEBUG
@@ -633,10 +641,9 @@ static int _connect_channel(AccountPlugin * plugin)
 /* on_noop */
 static gboolean _on_noop(gpointer data)
 {
-	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
 
-	_pop3_command(plugin, P3C_NOOP, "NOOP");
+	_pop3_command(pop3, P3C_NOOP, "NOOP");
 	pop3->source = 0;
 	return FALSE;
 }
@@ -645,14 +652,13 @@ static gboolean _on_noop(gpointer data)
 /* on_reset */
 static gboolean _on_reset(gpointer data)
 {
-	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_pop3_reset(plugin);
-	pop3->source = g_timeout_add(3000, _on_connect, plugin);
+	_pop3_reset(pop3);
+	pop3->source = g_timeout_add(3000, _on_connect, pop3);
 	return FALSE;
 }
 
@@ -661,9 +667,8 @@ static gboolean _on_reset(gpointer data)
 static gboolean _on_watch_can_connect(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
+	AccountPluginHelper * helper = pop3->helper;
 	SSL_CTX * ssl_ctx;
 	char buf[128];
 
@@ -674,7 +679,7 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #endif
 	pop3->wr_source = 0;
 	/* setup SSL */
-	if(plugin->config[P3CV_SSL].value != NULL)
+	if(pop3->config[P3CV_SSL].value != NULL)
 	{
 		if((ssl_ctx = helper->get_ssl_context(helper->account)) == NULL)
 			/* FIXME report error */
@@ -690,25 +695,24 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 		SSL_set_connect_state(pop3->ssl);
 		/* perform initial handshake */
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-				_on_watch_can_handshake, plugin);
+				_on_watch_can_handshake, pop3);
 		return FALSE;
 	}
 	/* wait for the server's banner */
 	pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-			_on_watch_can_read, plugin);
+			_on_watch_can_read, pop3);
 	return FALSE;
 }
 
 
 /* on_watch_can_handshake */
-static int _handshake_verify(AccountPlugin * plugin);
+static int _handshake_verify(POP3 * pop3);
 
 static gboolean _on_watch_can_handshake(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
+	AccountPluginHelper * helper = pop3->helper;
 	int res;
 	int err;
 	char buf[128];
@@ -723,11 +727,11 @@ static gboolean _on_watch_can_handshake(GIOChannel * source,
 	pop3->rd_source = 0;
 	if((res = SSL_do_handshake(pop3->ssl)) == 1)
 	{
-		if(_handshake_verify(plugin) != 0)
-			return _on_reset(plugin);
+		if(_handshake_verify(pop3) != 0)
+			return _on_reset(pop3);
 		/* wait for the server's banner */
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-				_on_watch_can_read_ssl, plugin);
+				_on_watch_can_read_ssl, pop3);
 		return FALSE;
 	}
 	err = SSL_get_error(pop3->ssl, res);
@@ -735,26 +739,25 @@ static gboolean _on_watch_can_handshake(GIOChannel * source,
 	if(res == 0)
 	{
 		helper->error(helper->account, buf, 1);
-		return _on_reset(plugin);
+		return _on_reset(pop3);
 	}
 	if(err == SSL_ERROR_WANT_WRITE)
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-				_on_watch_can_handshake, plugin);
+				_on_watch_can_handshake, pop3);
 	else if(err == SSL_ERROR_WANT_READ)
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-				_on_watch_can_handshake, plugin);
+				_on_watch_can_handshake, pop3);
 	else
 	{
 		helper->error(helper->account, buf, 1);
-		return _on_reset(plugin);
+		return _on_reset(pop3);
 	}
 	return FALSE;
 }
 
-static int _handshake_verify(AccountPlugin * plugin)
+static int _handshake_verify(POP3 * pop3)
 {
-	AccountPluginHelper * helper = plugin->helper;
-	POP3 * pop3 = plugin->priv;
+	AccountPluginHelper * helper = pop3->helper;
 	X509 * x509;
 	char buf[256] = "";
 
@@ -764,7 +767,7 @@ static int _handshake_verify(AccountPlugin * plugin)
 	x509 = SSL_get_peer_certificate(pop3->ssl);
 	X509_NAME_get_text_by_NID(X509_get_subject_name(x509), NID_commonName,
 			buf, sizeof(buf));
-	if(strcasecmp(buf, plugin->config[P3CV_HOSTNAME].value) != 0)
+	if(strcasecmp(buf, pop3->config[P3CV_HOSTNAME].value) != 0)
 		return helper->confirm(helper->account, "The certificate could"
 				" not be matched.\nConnect anyway?");
 	return 0;
@@ -775,8 +778,7 @@ static int _handshake_verify(AccountPlugin * plugin)
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
-	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
 	char * p;
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -800,15 +802,15 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			plugin->helper->error(NULL, error->message, 1);
+			pop3->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
 		default:
-			pop3->rd_source = g_idle_add(_on_reset, plugin);
+			pop3->rd_source = g_idle_add(_on_reset, pop3);
 			return FALSE;
 	}
-	if(_pop3_parse(plugin) != 0)
+	if(_pop3_parse(pop3) != 0)
 	{
-		pop3->rd_source = g_idle_add(_on_reset, plugin);
+		pop3->rd_source = g_idle_add(_on_reset, pop3);
 		return FALSE;
 	}
 	if(pop3->queue_cnt == 0)
@@ -827,10 +829,10 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	}
 	pop3->rd_source = 0;
 	if(pop3->queue_cnt == 0)
-		pop3->source = g_timeout_add(30000, _on_noop, plugin);
+		pop3->source = g_timeout_add(30000, _on_noop, pop3);
 	else
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-				_on_watch_can_write, plugin);
+				_on_watch_can_write, pop3);
 	return FALSE;
 }
 
@@ -839,8 +841,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
 	char * p;
 	int cnt;
 	POP3Command * cmd;
@@ -862,20 +863,19 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 				== SSL_ERROR_WANT_WRITE)
 		{
 			pop3->rd_source = g_io_add_watch(pop3->channel,
-					G_IO_OUT, _on_watch_can_read_ssl,
-					plugin);
+					G_IO_OUT, _on_watch_can_read_ssl, pop3);
 			return FALSE;
 		}
 		else if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
 				== SSL_ERROR_WANT_READ)
 		{
 			pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-					_on_watch_can_read_ssl, plugin);
+					_on_watch_can_read_ssl, pop3);
 			return FALSE;
 		}
 		ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
-		plugin->helper->error(NULL, buf, 1);
-		pop3->rd_source = g_idle_add(_on_reset, plugin);
+		pop3->helper->error(NULL, buf, 1);
+		pop3->rd_source = g_idle_add(_on_reset, pop3);
 		return FALSE;
 	}
 #ifdef DEBUG
@@ -883,9 +883,9 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	fwrite(&pop3->rd_buf[pop3->rd_buf_cnt], sizeof(*p), cnt, stderr);
 #endif
 	pop3->rd_buf_cnt += cnt;
-	if(_pop3_parse(plugin) != 0)
+	if(_pop3_parse(pop3) != 0)
 	{
-		pop3->rd_source = g_idle_add(_on_reset, plugin);
+		pop3->rd_source = g_idle_add(_on_reset, pop3);
 		return FALSE;
 	}
 	if(pop3->queue_cnt == 0)
@@ -904,10 +904,10 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	}
 	pop3->rd_source = 0;
 	if(pop3->queue_cnt == 0)
-		pop3->source = g_timeout_add(30000, _on_noop, plugin);
+		pop3->source = g_timeout_add(30000, _on_noop, pop3);
 	else
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
-				_on_watch_can_write_ssl, plugin);
+				_on_watch_can_write_ssl, pop3);
 	return FALSE;
 }
 
@@ -916,8 +916,7 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
-	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
 	POP3Command * cmd = &pop3->queue[0];
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -947,10 +946,10 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			plugin->helper->error(NULL, error->message, 1);
+			pop3->helper->error(NULL, error->message, 1);
 		case G_IO_STATUS_EOF:
 		default:
-			pop3->wr_source = g_idle_add(_on_reset, plugin);
+			pop3->wr_source = g_idle_add(_on_reset, pop3);
 			return FALSE;
 	}
 	if(cmd->buf_cnt > 0)
@@ -959,7 +958,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	pop3->wr_source = 0;
 	if(pop3->rd_source == 0)
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-				_on_watch_can_read, plugin);
+				_on_watch_can_read, pop3);
 	return FALSE;
 }
 
@@ -968,8 +967,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
-	AccountPlugin * plugin = data;
-	POP3 * pop3 = plugin->priv;
+	POP3 * pop3 = data;
 	POP3Command * cmd = &pop3->queue[0];
 	int cnt;
 	char * p;
@@ -986,7 +984,7 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 				== SSL_ERROR_WANT_READ)
 		{
 			pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_IN,
-					_on_watch_can_write_ssl, plugin);
+					_on_watch_can_write_ssl, pop3);
 			return FALSE;
 		}
 		else if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
@@ -994,12 +992,12 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 		{
 			pop3->wr_source = g_io_add_watch(pop3->channel,
 					G_IO_OUT, _on_watch_can_write_ssl,
-					plugin);
+					pop3);
 			return FALSE;
 		}
 		ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
-		plugin->helper->error(NULL, buf, 1);
-		pop3->wr_source = g_idle_add(_on_reset, plugin);
+		pop3->helper->error(NULL, buf, 1);
+		pop3->wr_source = g_idle_add(_on_reset, pop3);
 		return FALSE;
 	}
 #ifdef DEBUG
@@ -1018,6 +1016,6 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 	pop3->wr_source = 0;
 	if(pop3->rd_source == 0)
 		pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
-				_on_watch_can_read_ssl, plugin);
+				_on_watch_can_read_ssl, pop3);
 	return FALSE;
 }

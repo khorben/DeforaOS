@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,20 +86,20 @@ typedef struct _AccountPluginHelper
 
 typedef struct _AccountPlugin AccountPlugin;
 
-struct _AccountPlugin
+typedef const struct _AccountPluginDefinition
 {
-	AccountPluginHelper * helper;
 	char const * type;
 	char const * name;
 	char const * icon;
-	AccountConfig * config;
-	int (*init)(AccountPlugin * plugin);
+	char const * description;
+	AccountConfig const * config;
+	AccountPlugin * (*init)(AccountPluginHelper * helper);
 	int (*destroy)(AccountPlugin * plugin);
+	AccountConfig * (*get_config)(AccountPlugin * plugin);
 	char * (*get_source)(AccountPlugin * plugin, AccountFolder * folder,
 			AccountMessage * message);
 	int (*refresh)(AccountPlugin * plugin, AccountFolder * folder,
 			AccountMessage * message);
-	void * priv;
-};
+} AccountPluginDefinition;
 
 #endif /* !DESKTOP_MAILER_ACCOUNT_H */

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 static char const _rss_type[] = "RSS";
 static char const _rss_name[] = "RSS reader";
 
-static AccountConfig _rss_config[] =
+static AccountConfig const _rss_config[] =
 {
 	{ "uri",	"Address",		ACT_STRING,	NULL },
 	{ NULL,		NULL,			ACT_NONE,	NULL }
@@ -33,11 +33,11 @@ static AccountConfig _rss_config[] =
 /* functions */
 
 
-AccountPlugin account_plugin =
+AccountPluginDefinition account_plugin =
 {
-	NULL,
 	_rss_type,
 	_rss_name,
+	NULL,
 	NULL,
 	_rss_config,
 	NULL,

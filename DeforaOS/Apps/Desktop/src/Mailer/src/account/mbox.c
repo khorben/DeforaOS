@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,10 +43,12 @@ typedef enum _ParserContext
 	PC_GARBAGE	/* inside crap */
 } ParserContext;
 
-typedef struct _Mbox Mbox;
+typedef struct _AccountPlugin Mbox;
 
 struct _AccountMessage
 {
+	AccountPluginHelper * helper;
+
 	Message * message;
 
 	/* Mbox */
@@ -81,9 +83,11 @@ struct _AccountFolder
 	char * pixbuf;
 };
 
-struct _Mbox
+struct _AccountPlugin
 {
-	AccountPlugin * plugin;
+	AccountPluginHelper * helper;
+
+	AccountConfig * config;
 
 	AccountFolder folders[_FOLDER_CNT];
 
@@ -95,7 +99,7 @@ struct _Mbox
 /* constants */
 #define MBOX_REFRESH_TIMEOUT	5000
 
-static AccountConfig _mbox_config[] =
+static AccountConfig const _mbox_config[] =
 {
 	{ "mbox",	"Inbox file",		ACT_FILE,	NULL },
 	{ "spool",	"Spool file",		ACT_FILE,	NULL },
@@ -121,25 +125,26 @@ static const struct
 
 
 /* plug-in */
-static int _mbox_init(AccountPlugin * plugin);
-static int _mbox_destroy(AccountPlugin * plugin);
-static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
+static Mbox * _mbox_init(AccountPluginHelper * helper);
+static int _mbox_destroy(Mbox * mbox);
+static AccountConfig * _mbox_get_config(Mbox * mbox);
+static char * _mbox_get_source(Mbox * mbox, AccountFolder * folder,
 		AccountMessage * message);
-static int _mbox_refresh(AccountPlugin * plugin, AccountFolder * folder,
+static int _mbox_refresh(Mbox * mbox, AccountFolder * folder,
 		AccountMessage * message);
 
-AccountPlugin account_plugin =
+AccountPluginDefinition account_plugin =
 {
-	NULL,
 	"MBOX",
 	"Local folders",
+	NULL,
 	NULL,
 	_mbox_config,
 	_mbox_init,
 	_mbox_destroy,
+	_mbox_get_config,
 	_mbox_get_source,
-	_mbox_refresh,
-	NULL
+	_mbox_refresh
 };
 
 
@@ -153,7 +158,8 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 /* AccountMessage */
 /* private */
 /* prototypes */
-static AccountMessage * _message_new(Folder * folder, off_t offset);
+static AccountMessage * _message_new(AccountPluginHelper * helper,
+		Folder * folder, off_t offset);
 static void _message_delete(AccountMessage * message);
 
 static int _message_set_body(AccountMessage * message, off_t offset,
@@ -164,7 +170,7 @@ static int _message_set_header(AccountMessage * message, char const * header);
 /* Mbox */
 /* functions */
 /* mbox_init */
-static int _mbox_init(AccountPlugin * plugin)
+static Mbox * _mbox_init(AccountPluginHelper * helper)
 {
 	Mbox * mbox;
 	size_t i;
@@ -174,30 +180,34 @@ static int _mbox_init(AccountPlugin * plugin)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((mbox = calloc(1, sizeof(*mbox))) == NULL)
-		return -1;
-	plugin->priv = mbox;
-	mbox->plugin = plugin;
+		return NULL;
+	mbox->helper = helper;
 	mbox->timeout = MBOX_REFRESH_TIMEOUT;
+	if((mbox->config = malloc(sizeof(_mbox_config))) == NULL)
+	{
+		free(mbox);
+		return NULL;
+	}
+	memcpy(mbox->config, &_mbox_config, sizeof(_mbox_config));
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
 		af = &mbox->folders[i];
 		af->config = &_mbox_config[_mbox_folder_defaults[i].config];
 		if(af->config->value == NULL)
 			continue;
-		af->folder = plugin->helper->folder_new(plugin->helper->account,
-				af, NULL, _mbox_folder_defaults[i].type,
+		af->folder = helper->folder_new(helper->account, af, NULL,
+				_mbox_folder_defaults[i].type,
 				_mbox_folder_defaults[i].name);
 		af->mbox = mbox;
 		af->source = g_idle_add(_folder_idle, af);
 	}
-	return 0;
+	return mbox;
 }
 
 
 /* mbox_destroy */
-static int _mbox_destroy(AccountPlugin * plugin)
+static int _mbox_destroy(Mbox * mbox)
 {
-	Mbox * mbox = plugin->priv;
 	size_t i;
 	AccountFolder * mf;
 	size_t j;
@@ -221,8 +231,15 @@ static int _mbox_destroy(AccountPlugin * plugin)
 }
 
 
+/* mbox_get_config */
+static AccountConfig * _mbox_get_config(Mbox * mbox)
+{
+	return mbox->config;
+}
+
+
 /* mbox_get_source */
-static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
+static char * _mbox_get_source(Mbox * mbox, AccountFolder * folder,
 		AccountMessage * message)
 {
 	char * ret = NULL;
@@ -234,7 +251,7 @@ static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
 		return NULL;
 	if((fp = fopen(filename, "r")) == NULL)
 	{
-		plugin->helper->error(plugin->helper->account, filename, 1);
+		mbox->helper->error(mbox->helper->account, filename, 1);
 		return NULL;
 	}
 	len = message->body_offset - message->offset + message->body_length;
@@ -246,7 +263,7 @@ static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
 		free(ret);
 	if(fclose(fp) != 0)
 	{
-		plugin->helper->error(plugin->helper->account, filename, 1);
+		mbox->helper->error(mbox->helper->account, filename, 1);
 		free(ret);
 		ret = NULL;
 	}
@@ -255,7 +272,7 @@ static char * _mbox_get_source(AccountPlugin * plugin, AccountFolder * folder,
 
 
 /* mbox_refresh */
-static int _mbox_refresh(AccountPlugin * plugin, AccountFolder * folder,
+static int _mbox_refresh(Mbox * mbox, AccountFolder * folder,
 		AccountMessage * message)
 {
 	char const * filename = folder->config->value;
@@ -264,21 +281,21 @@ static int _mbox_refresh(AccountPlugin * plugin, AccountFolder * folder,
 	size_t size;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void*)folder,
-			(void*)message);
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, (void *)folder,
+			(void *)message);
 #endif
 	if(message == NULL)
 		return 0;
-	plugin->helper->message_set_body(message->message, NULL, 0, 0);
+	mbox->helper->message_set_body(message->message, NULL, 0, 0);
 	/* XXX we may still be reading the file... */
 	if((fp = fopen(filename, "r")) == NULL)
-		return -plugin->helper->error(NULL, strerror(errno), 1);
+		return -mbox->helper->error(NULL, strerror(errno), 1);
 	if(message->body_offset != 0 && message->body_length > 0
 			&& fseek(fp, message->body_offset, SEEK_SET) == 0
 			&& (buf = malloc(message->body_length)) != NULL)
 	{
 		if((size = fread(buf, 1, message->body_length, fp)) > 0)
-			plugin->helper->message_set_body(message->message, buf,
+			mbox->helper->message_set_body(message->message, buf,
 					size, 1);
 		free(buf);
 	}
@@ -290,7 +307,8 @@ static int _mbox_refresh(AccountPlugin * plugin, AccountFolder * folder,
 /* AccountMessage */
 /* functions */
 /* message_new */
-static AccountMessage * _message_new(Folder * folder, off_t offset)
+static AccountMessage * _message_new(AccountPluginHelper * helper,
+		Folder * folder, off_t offset)
 {
 	AccountMessage * message;
 
@@ -299,8 +317,9 @@ static AccountMessage * _message_new(Folder * folder, off_t offset)
 		/* FIXME catch error */
 		return NULL;
 	}
-	message->message = account_plugin.helper->message_new(
-			account_plugin.helper->account, folder, message);
+	message->helper = helper;
+	message->message = helper->message_new(helper->account, folder,
+			message);
 	message->offset = offset;
 	message->body_offset = 0;
 	message->body_length = 0;
@@ -316,7 +335,7 @@ static AccountMessage * _message_new(Folder * folder, off_t offset)
 /* message_delete */
 static void _message_delete(AccountMessage * message)
 {
-	account_plugin.helper->message_delete(message->message);
+	message->helper->message_delete(message->message);
 	free(message);
 }
 
@@ -338,8 +357,7 @@ static int _message_set_body(AccountMessage * message, off_t offset,
 /* message_set_header */
 static int _message_set_header(AccountMessage * message, char const * header)
 {
-	return account_plugin.helper->message_set_header(message->message,
-			header);
+	return message->helper->message_set_header(message->message, header);
 }
 
 
@@ -361,7 +379,7 @@ static gboolean _folder_idle(gpointer data)
 		return FALSE;
 	if(stat(filename, &st) != 0)
 	{
-		mbox->plugin->helper->error(NULL, strerror(errno), 1);
+		mbox->helper->error(NULL, strerror(errno), 1);
 		folder->source = g_timeout_add(mbox->timeout, _folder_idle,
 				folder);
 		return FALSE;
@@ -377,7 +395,7 @@ static gboolean _folder_idle(gpointer data)
 		if((folder->channel = g_io_channel_new_file(filename, "r",
 						&error)) == NULL)
 	{
-		mbox->plugin->helper->error(NULL, error->message, 1);
+		mbox->helper->error(NULL, error->message, 1);
 		folder->source = g_timeout_add(mbox->timeout, _folder_idle,
 				folder);
 		return FALSE;
@@ -424,7 +442,7 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 	switch(status)
 	{
 		case G_IO_STATUS_ERROR:
-			mbox->plugin->helper->error(NULL, error->message, 1);
+			mbox->helper->error(NULL, error->message, 1);
 			/* FIXME new timeout 1000 function after invalidating
 			 * mtime */
 			return FALSE;
@@ -596,7 +614,8 @@ static AccountMessage * _folder_message_add(AccountFolder * folder,
 		return NULL;
 	}
 	folder->messages = p;
-	if((message = _message_new(folder->folder, offset)) == NULL)
+	if((message = _message_new(folder->mbox->helper, folder->folder,
+					offset)) == NULL)
 	{
 		/* FIXME track error */
 		return NULL;

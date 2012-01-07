@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 static char const _nntp_type[] = "NNTP";
 static char const _nntp_name[] = "Newsgroups";
 
-static AccountConfig _nntp_config[] =
+static AccountConfig const _nntp_config[] =
 {
 	{ "username",	"Username",		ACT_STRING,	NULL	},
 	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
@@ -37,11 +37,11 @@ static AccountConfig _nntp_config[] =
 /* functions */
 
 
-AccountPlugin account_plugin =
+AccountPluginDefinition account_plugin =
 {
-	NULL,
 	_nntp_type,
 	_nntp_name,
+	NULL,
 	NULL,
 	_nntp_config,
 	NULL,
