@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-05 17:26+0100\n"
+"POT-Creation-Date: 2012-01-07 04:47+0100\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -71,22 +71,22 @@ msgid ""
 "  -s\tSuspend automatically when locked\n"
 msgstr ""
 
-#: ../src/auth/password.c:108
+#: ../src/auth/password.c:109
 msgid "This screen is locked by"
 msgstr "Cette session est vérouillée par"
 
-#: ../src/auth/password.c:114
+#: ../src/auth/password.c:115
 msgid "Enter password: "
 msgstr "Mot de passe : "
 
-#: ../src/auth/password.c:137
+#: ../src/auth/password.c:138
 msgid "Wrong password!"
 msgstr "Mot de passe erroné !"
 
-#: ../src/auth/password.c:184 ../src/auth/password.c:226
+#: ../src/auth/password.c:185 ../src/auth/password.c:227
 msgid "No password was set"
 msgstr "Aucun mot de passe n'est configuré"
 
-#: ../src/auth/password.c:236
+#: ../src/auth/password.c:237
 msgid "Authentication failed"
 msgstr "Échec de l'authentification"
