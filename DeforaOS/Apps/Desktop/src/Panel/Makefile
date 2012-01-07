@@ -1,5 +1,5 @@
 PACKAGE	= Panel
-VERSION	= 0.2.11
+VERSION	= 0.2.12
 SUBDIRS	= data include po src tools
 RM	?= rm -f
 LN	?= ln -f
