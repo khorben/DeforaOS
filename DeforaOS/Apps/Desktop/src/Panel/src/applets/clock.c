@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,9 @@
 /* Clock */
 /* private */
 /* types */
-typedef struct _Clock
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
 	char const * format;
 	GtkWidget * label;
 	guint timeout;
@@ -39,8 +40,8 @@ typedef struct _Clock
 
 
 /* prototypes */
-static GtkWidget * _clock_init(PanelApplet * applet);
-static void _clock_destroy(PanelApplet * applet);
+static Clock * _clock_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _clock_destroy(Clock * clock);
 
 /* callbacks */
 static gboolean _on_timeout(gpointer data);
@@ -48,35 +49,33 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Clock",
 	"stock_calendar",
+	NULL,
 	_clock_init,
 	_clock_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* clock_init */
-static GtkWidget * _clock_init(PanelApplet * applet)
+static Clock * _clock_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-	PanelAppletHelper * helper = applet->helper;
-	GtkWidget * ret;
 	Clock * clock;
+	GtkWidget * ret;
 #ifdef EMBEDDED
 	PangoFontDescription * desc;
 #endif
 
 	if((clock = malloc(sizeof(*clock))) == NULL)
 		return NULL;
-	applet->priv = clock;
+	clock->helper = helper;
 	clock->label = gtk_label_new(" \n ");
 	if((clock->format = helper->config_get(helper->panel, "clock",
 					"format")) == NULL)
@@ -99,18 +98,17 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	gtk_container_add(GTK_CONTAINER(ret), clock->label);
 #endif
 	gtk_label_set_justify(GTK_LABEL(clock->label), GTK_JUSTIFY_CENTER);
-	clock->timeout = g_timeout_add(1000, _on_timeout, applet);
-	_on_timeout(applet);
+	clock->timeout = g_timeout_add(1000, _on_timeout, clock);
+	_on_timeout(clock);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return clock;
 }
 
 
 /* clock_destroy */
-static void _clock_destroy(PanelApplet * applet)
+static void _clock_destroy(Clock * clock)
 {
-	Clock * clock = applet->priv;
-
 	g_source_remove(clock->timeout);
 	free(clock);
 }
@@ -120,9 +118,8 @@ static void _clock_destroy(PanelApplet * applet)
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
-	PanelApplet * applet = data;
-	PanelAppletHelper * helper = applet->helper;
-	Clock * clock = applet->priv;
+	Clock * clock = data;
+	PanelAppletHelper * helper = clock->helper;
 	struct timeval tv;
 	time_t t;
 	struct tm tm;

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,12 +29,20 @@
 
 /* Phone */
 /* private */
+/* types */
+typedef struct _PanelApplet
+{
+	PanelAppletHelper * helper;
+} Phone;
+
+
 /* constants */
 #define PHONE_EMBED_MESSAGE	"DEFORAOS_DESKTOP_PHONE_EMBED"
 
 
 /* prototypes */
-static GtkWidget * _phone_init(PanelApplet * applet);
+static Phone * _phone_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _phone_destroy(Phone * phone);
 
 static void _phone_embed(GtkWidget * widget, GdkNativeWindow window);
 
@@ -48,17 +56,16 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Phone",
 	"phone-dialer",
-	_phone_init,
 	NULL,
+	_phone_init,
+	_phone_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
@@ -66,10 +73,14 @@ PanelApplet applet =
 /* functions */
 /* Phone */
 /* phone_init */
-static GtkWidget * _phone_init(PanelApplet * applet)
+static Phone * _phone_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
+	Phone * phone;
 	GtkWidget * socket;
 
+	if((phone = malloc(sizeof(*phone))) == NULL)
+		return NULL;
+	phone->helper = helper;
 	socket = gtk_socket_new();
 	g_signal_connect(G_OBJECT(socket), "plug-added", G_CALLBACK(
 				_on_plug_added), NULL);
@@ -77,7 +88,15 @@ static GtkWidget * _phone_init(PanelApplet * applet)
 				_on_plug_removed), NULL);
 	g_signal_connect(G_OBJECT(socket), "screen-changed", G_CALLBACK(
 				_on_screen_changed), NULL);
-	return socket;
+	*widget = socket;
+	return phone;
+}
+
+
+/* phone_destroy */
+static void _phone_destroy(Phone * phone)
+{
+	free(phone);
 }
 
 

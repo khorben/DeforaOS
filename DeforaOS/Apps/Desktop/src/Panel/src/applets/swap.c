@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 /* Swap */
 /* private */
 /* types */
-typedef struct _Swap
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * scale;
@@ -41,8 +41,8 @@ typedef struct _Swap
 
 
 /* prototypes */
-static GtkWidget * _swap_init(PanelApplet * applet);
-static void _swap_destroy(PanelApplet * applet);
+static Swap * _swap_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _swap_destroy(Swap * swap);
 
 /* callbacks */
 #if defined(__linux__) || defined(__NetBSD__)
@@ -52,44 +52,42 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Swap",
 	"gnome-monitor",
+	NULL,
 	_swap_init,
 	_swap_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* swap_init */
-static GtkWidget * _swap_init(PanelApplet * applet)
+static Swap * _swap_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 #if defined(__linux__) || defined(__NetBSD__)
-	GtkWidget * ret;
 	Swap * swap;
+	GtkWidget * ret;
 	PangoFontDescription * desc;
-	GtkWidget * widget;
+	GtkWidget * label;
 
 	if((swap = malloc(sizeof(*swap))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(NULL, "malloc", 1);
 		return NULL;
 	}
-	applet->priv = swap;
-	swap->helper = applet->helper;
+	swap->helper = helper;
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	widget = gtk_label_new(_("Swap:"));
-	gtk_widget_modify_font(widget, desc);
-	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, FALSE, 0);
+	label = gtk_label_new(_("Swap:"));
+	gtk_widget_modify_font(label, desc);
+	gtk_box_pack_start(GTK_BOX(ret), label, FALSE, FALSE, 0);
 	swap->scale = gtk_vscale_new_with_range(0, 100, 1);
 	gtk_widget_set_sensitive(swap->scale, FALSE);
 	gtk_range_set_inverted(GTK_RANGE(swap->scale), TRUE);
@@ -99,19 +97,18 @@ static GtkWidget * _swap_init(PanelApplet * applet)
 	_on_timeout(swap);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return swap;
 #else
-	error_set("%s: %s", "swap", _("Unsupported platform"));
+	helper->error(NULL, _("swap: Unsupported platform"), 1);
 	return NULL;
 #endif
 }
 
 
 /* swap_destroy */
-static void _swap_destroy(PanelApplet * applet)
+static void _swap_destroy(Swap * swap)
 {
-	Swap * swap = applet->priv;
-
 	g_source_remove(swap->timeout);
 	free(swap);
 }

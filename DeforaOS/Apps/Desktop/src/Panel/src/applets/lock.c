@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,10 @@
 /* Lock */
 /* private */
 /* types */
-typedef struct _Lock
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
+
 	/* preferences */
 	GtkWidget * pr_box;
 	GtkWidget * pr_command;
@@ -33,10 +35,9 @@ typedef struct _Lock
 
 
 /* prototypes */
-static GtkWidget * _lock_init(PanelApplet * applet);
-static void _lock_destroy(PanelApplet * applet);
-static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
-		gboolean reset);
+static Lock * _lock_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _lock_destroy(Lock * lock);
+static GtkWidget * _lock_settings(Lock * lock, gboolean apply, gboolean reset);
 
 /* callbacks */
 static void _on_clicked(gpointer data);
@@ -44,58 +45,59 @@ static void _on_clicked(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Lock screen",
 	"gnome-lockscreen",
+	NULL,
 	_lock_init,
 	_lock_destroy,
 	_lock_settings,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* lock_init */
-static GtkWidget * _lock_init(PanelApplet * applet)
+static Lock * _lock_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
+	Lock * lock;
 	GtkWidget * ret;
 	GtkWidget * image;
 
-	applet->priv = NULL;
+	if((lock = malloc(sizeof(*lock))) == NULL)
+		return NULL;
+	lock->helper = helper;
+	lock->pr_box = NULL;
+	lock->pr_command = NULL;
 	ret = gtk_button_new();
 	image = gtk_image_new_from_icon_name("gnome-lockscreen",
-			applet->helper->icon_size);
+			helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(ret, _("Lock screen"));
 #endif
 	g_signal_connect_swapped(G_OBJECT(ret), "clicked", G_CALLBACK(
-				_on_clicked), applet->helper);
+				_on_clicked), helper);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return lock;
 }
 
 
 /* lock_destroy */
-static void _lock_destroy(PanelApplet * applet)
+static void _lock_destroy(Lock * lock)
 {
-	Lock * lock = applet->priv;
-
 	free(lock);
 }
 
 
 /* lock_settings */
-static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
-		gboolean reset)
+static GtkWidget * _lock_settings(Lock * lock, gboolean apply, gboolean reset)
 {
-	Lock * lock = applet->priv;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	char const * p;
@@ -104,9 +106,6 @@ static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
 	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void*)applet,
 			apply ? "TRUE" : "FALSE", reset ? "TRUE" : "FALSE");
 #endif
-	if(lock == NULL && (lock = calloc(1, sizeof(*lock))) == NULL)
-		return NULL;
-	applet->priv = lock;
 	if(lock->pr_box == NULL)
 	{
 		lock->pr_box = gtk_vbox_new(FALSE, 4);
@@ -122,16 +121,16 @@ static GtkWidget * _lock_settings(PanelApplet * applet, gboolean apply,
 	}
 	if(reset == TRUE)
 	{
-		if((p = applet->helper->config_get(applet->helper->panel,
-						"lock", "command")) == NULL)
+		if((p = lock->helper->config_get(lock->helper->panel, "lock",
+						"command")) == NULL)
 			p = "xset s activate";
 		gtk_entry_set_text(GTK_ENTRY(lock->pr_command), p);
 	}
 	if(apply == TRUE)
 	{
 		p = gtk_entry_get_text(GTK_ENTRY(lock->pr_command));
-		applet->helper->config_set(applet->helper->panel, "lock",
-				"command", p);
+		lock->helper->config_set(lock->helper->panel, "lock", "command",
+				p);
 	}
 	return lock->pr_box;
 }

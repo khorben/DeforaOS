@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,9 @@
 /* Cpufreq */
 /* private */
 /* types */
-typedef struct _Cpufreq
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
 	GtkWidget * hbox;
 	GtkWidget * label;
 	guint timeout;
@@ -49,8 +50,8 @@ typedef struct _Cpufreq
 
 
 /* prototypes */
-static GtkWidget * _cpufreq_init(PanelApplet * applet);
-static void _cpufreq_destroy(PanelApplet * applet);
+static Cpufreq * _cpufreq_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _cpufreq_destroy(Cpufreq * cpufreq);
 
 /* callbacks */
 #ifdef __NetBSD__
@@ -60,30 +61,29 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"CPU frequency",
 	"gnome-monitor",
+	NULL,
 	_cpufreq_init,
 	_cpufreq_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* cpufreq_init */
-static GtkWidget * _cpufreq_init(PanelApplet * applet)
+static Cpufreq * _cpufreq_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 #ifdef __NetBSD__
-	PanelAppletHelper * helper = applet->helper;
 	Cpufreq * cpufreq;
 	PangoFontDescription * desc;
-	GtkWidget * widget;
+	GtkWidget * image;
+	GtkWidget * label;
 	char freq[256];
 	size_t freqsize = sizeof(freq);
 	char const * p;
@@ -105,13 +105,13 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 		helper->error(helper->panel, "malloc", 0);
 		return NULL;
 	}
-	applet->priv = cpufreq;
+	cpufreq->helper = helper;
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	cpufreq->hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_image_new_from_icon_name("gnome-monitor",
+	image = gtk_image_new_from_icon_name("gnome-monitor",
 			helper->icon_size);
-	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), image, FALSE, TRUE, 0);
 	cpufreq->min = 0;
 	cpufreq->max = 0;
 	cpufreq->step = 1;
@@ -123,13 +123,14 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	gtk_widget_modify_font(cpufreq->label, desc);
 	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), cpufreq->label, FALSE, TRUE,
 			0);
-	widget = gtk_label_new(_("MHz"));
-	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), widget, FALSE, TRUE, 0);
-	if(_on_timeout(applet) == TRUE)
-		cpufreq->timeout = g_timeout_add(1000, _on_timeout, applet);
+	label = gtk_label_new(_("MHz"));
+	gtk_box_pack_start(GTK_BOX(cpufreq->hbox), label, FALSE, TRUE, 0);
+	if(_on_timeout(cpufreq) == TRUE)
+		cpufreq->timeout = g_timeout_add(1000, _on_timeout, cpufreq);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(cpufreq->hbox);
-	return cpufreq->hbox;
+	*widget = cpufreq->hbox;
+	return cpufreq;
 #else
 	error_set("%s: %s", "cpufreq", _("Unsupported platform"));
 	return NULL;
@@ -138,10 +139,8 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 
 
 /* cpufreq_destroy */
-static void _cpufreq_destroy(PanelApplet * applet)
+static void _cpufreq_destroy(Cpufreq * cpufreq)
 {
-	Cpufreq * cpufreq = applet->priv;
-
 	g_source_remove(cpufreq->timeout);
 	free(cpufreq);
 }
@@ -152,9 +151,8 @@ static void _cpufreq_destroy(PanelApplet * applet)
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
-	PanelApplet * applet = data;
-	PanelAppletHelper * helper = applet->helper;
-	Cpufreq * cpufreq = applet->priv;
+	Cpufreq * cpufreq = data;
+	PanelAppletHelper * helper = cpufreq->helper;
 	uint64_t freq;
 	size_t freqsize = sizeof(freq);
 	char buf[256];
@@ -164,8 +162,8 @@ static gboolean _on_timeout(gpointer data)
 	snprintf(buf, sizeof(buf), "%u", (unsigned int)freq);
 	gtk_label_set_text(GTK_LABEL(cpufreq->label), buf);
 # if GTK_CHECK_VERSION(2, 12, 0)
-	snprintf(buf, sizeof(buf), "%s%u%s", "CPU frequency: ",
-			(unsigned int)freq, " MHz");
+	snprintf(buf, sizeof(buf), "%s%u %s", _("CPU frequency: "),
+			(unsigned int)freq, _("MHz"));
 	gtk_widget_set_tooltip_text(cpufreq->hbox, buf);
 # endif
 	return TRUE;

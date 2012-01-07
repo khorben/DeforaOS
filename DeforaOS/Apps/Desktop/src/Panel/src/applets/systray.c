@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Pager Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,9 @@
 /* Systray */
 /* private */
 /* types */
-typedef struct _Systray
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
 	GtkWidget * hbox;
 	GtkWidget * owner;
 } Systray;
@@ -43,11 +44,8 @@ typedef struct _Systray
 
 
 /* prototypes */
-static GtkWidget * _systray_init(PanelApplet * applet);
-static void _systray_destroy(PanelApplet * applet);
-
-/* useful */
-static void _systray_do(Systray * systray);
+static Systray * _systray_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _systray_destroy(Systray * systray);
 
 /* callbacks */
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
@@ -58,62 +56,50 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"System tray",
 	"gnome-monitor",
+	NULL,
 	_systray_init,
 	_systray_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* systray_init */
-static GtkWidget * _systray_init(PanelApplet * applet)
+static Systray * _systray_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	Systray * systray;
 	gint height = 24;
 
 	if((systray = malloc(sizeof(*systray))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(NULL, "malloc", 1);
 		return NULL;
 	}
-	applet->priv = systray;
+	systray->helper = helper;
 	systray->hbox = gtk_hbox_new(FALSE, 0);
-	gtk_icon_size_lookup(applet->helper->icon_size, NULL, &height);
+	gtk_icon_size_lookup(helper->icon_size, NULL, &height);
 	gtk_widget_set_size_request(systray->hbox, -1, height);
 	systray->owner = gtk_invisible_new();
 	g_signal_connect(G_OBJECT(systray->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), systray);
 	gtk_widget_show(systray->hbox);
-	return systray->hbox;
+	*widget = systray->hbox;
+	return systray;
 }
 
 
 /* systray_destroy */
-static void _systray_destroy(PanelApplet * applet)
+static void _systray_destroy(Systray * systray)
 {
-	Systray * systray = applet->priv;
-
 	gtk_widget_destroy(systray->hbox);
 	free(systray);
-}
-
-
-/* useful */
-/* systray_do */
-static void _systray_do(Systray * systray)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
 }
 
 
@@ -197,5 +183,4 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	gtk_widget_add_events(systray->owner, GDK_PROPERTY_CHANGE_MASK
 			| GDK_STRUCTURE_MASK);
 	gdk_window_add_filter(systray->owner->window, _on_filter, systray);
-	_systray_do(systray);
 }

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 /* Cpu */
 /* private */
 /* types */
-typedef struct _Cpu
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * scale;
@@ -45,8 +45,8 @@ typedef struct _Cpu
 
 
 /* prototypes */
-static GtkWidget * _cpu_init(PanelApplet * applet);
-static void _cpu_destroy(PanelApplet * applet);
+static Cpu * _cpu_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _cpu_destroy(Cpu * cpu);
 
 /* callbacks */
 #ifdef __NetBSD__
@@ -56,44 +56,42 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"CPU",
 	"gnome-monitor",
+	NULL,
 	_cpu_init,
 	_cpu_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* cpu_init */
-static GtkWidget * _cpu_init(PanelApplet * applet)
+static Cpu * _cpu_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 #ifdef __NetBSD__
-	GtkWidget * ret;
 	Cpu * cpu;
+	GtkWidget * ret;
 	PangoFontDescription * desc;
-	GtkWidget * widget;
+	GtkWidget * label;
 
 	if((cpu = malloc(sizeof(*cpu))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(helper->panel, "malloc", 0);
 		return NULL;
 	}
-	applet->priv = cpu;
-	cpu->helper = applet->helper;
+	cpu->helper = helper;
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	widget = gtk_label_new(_("CPU:"));
-	gtk_widget_modify_font(widget, desc);
-	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, FALSE, 0);
+	label = gtk_label_new(_("CPU:"));
+	gtk_widget_modify_font(label, desc);
+	gtk_box_pack_start(GTK_BOX(ret), label, FALSE, FALSE, 0);
 	cpu->scale = gtk_vscale_new_with_range(0, 100, 1);
 	gtk_widget_set_sensitive(cpu->scale, FALSE);
 	gtk_range_set_inverted(GTK_RANGE(cpu->scale), TRUE);
@@ -105,7 +103,8 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 	_on_timeout(cpu);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return cpu;
 #else
 	error_set("%s: %s", "cpu", _("Unsupported platform"));
 	return NULL;
@@ -114,10 +113,8 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 
 
 /* cpu_destroy */
-static void _cpu_destroy(PanelApplet * applet)
+static void _cpu_destroy(Cpu * cpu)
 {
-	Cpu * cpu = applet->priv;
-
 	g_source_remove(cpu->timeout);
 	free(cpu);
 }

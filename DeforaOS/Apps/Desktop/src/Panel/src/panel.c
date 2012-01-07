@@ -524,8 +524,9 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 	PanelWindow * window;
 	PanelAppletHelper * helper;
 	Plugin * plugin;
+	PanelAppletDefinition * pad;
 	PanelApplet * pa;
-	GtkWidget * widget;
+	GtkWidget * widget = NULL;
 	GtkWidget * vbox;
 
 	if(position == PANEL_POSITION_BOTTOM && panel->bottom != NULL)
@@ -542,24 +543,26 @@ int panel_load(Panel * panel, PanelPosition position, char const * applet)
 		return -1;
 	if((plugin = plugin_new(LIBDIR, PACKAGE, "applets", applet)) == NULL)
 		return -1;
-	if((pa = plugin_lookup(plugin, "applet")) == NULL
-			|| (pa->helper = helper) == NULL
-			|| pa->init == NULL || (widget = pa->init(pa)) == NULL)
+	if((pad = plugin_lookup(plugin, "applet")) == NULL
+			|| pad->init == NULL || pad->destroy == NULL
+			|| (pa = pad->init(helper, &widget)) == NULL)
 	{
 		plugin_delete(plugin);
 		return -1;
 	}
-	panel_window_append(window, widget, pa->expand, pa->fill);
-	if(pa->settings != NULL
-			&& (widget = pa->settings(pa, FALSE, FALSE)) != NULL)
+	panel_window_append(window, widget, pad->expand, pad->fill);
+	if(pad->settings != NULL
+			&& (widget = pad->settings(pa, FALSE, FALSE)) != NULL)
 	{
 		vbox = gtk_vbox_new(FALSE, 4);
-		g_object_set_data(G_OBJECT(vbox), "applet", pa); /* XXX ugly */
+		/* XXX ugly */
+		g_object_set_data(G_OBJECT(vbox), "definition", pad);
+		g_object_set_data(G_OBJECT(vbox), "applet", pa);
 		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		gtk_widget_show(vbox);
 		gtk_notebook_append_page(GTK_NOTEBOOK(panel->pr_notebook),
-				vbox, gtk_label_new(pa->name));
+				vbox, gtk_label_new(pad->name));
 	}
 	return 0;
 }
@@ -844,26 +847,27 @@ static void _preferences_window_applets_plugin_add(GtkListStore * store,
 		char const * name)
 {
 	Plugin * p;
-	PanelApplet * pa;
+	PanelAppletDefinition * pad;
 	GtkTreeIter iter;
 	GtkIconTheme * theme;
-	GdkPixbuf * pixbuf;
+	GdkPixbuf * pixbuf = NULL;
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "applets", name)) == NULL)
 		return;
-	if((pa = plugin_lookup(p, "applet")) == NULL)
+	if((pad = plugin_lookup(p, "applet")) == NULL)
 	{
 		plugin_delete(p);
 		return;
 	}
 	theme = gtk_icon_theme_get_default();
-	pixbuf = (pa->icon != NULL) ? gtk_icon_theme_load_icon(theme, pa->icon,
-			24, 0, NULL) : NULL;
+	if(pad->icon != NULL)
+		pixbuf = gtk_icon_theme_load_icon(theme, pad->icon, 24, 0,
+				NULL);
 	if(pixbuf == NULL)
 		pixbuf = gtk_icon_theme_load_icon(theme, "gnome-settings", 24,
 				0, NULL);
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, 0, name, 1, pixbuf, 2, pa->name, -1);
+	gtk_list_store_set(store, &iter, 0, name, 1, pixbuf, 2, pad->name, -1);
 	plugin_delete(p);
 }
 
@@ -974,6 +978,7 @@ static void _preferences_on_cancel(gpointer data)
 	size_t i;
 	size_t cnt = sizeof(_panel_sizes) / sizeof(*_panel_sizes);
 	GtkWidget * widget;
+	PanelAppletDefinition * pad;
 	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
@@ -1013,10 +1018,12 @@ static void _preferences_on_cancel(gpointer data)
 	{
 		widget = gtk_notebook_get_nth_page(GTK_NOTEBOOK(
 					panel->pr_notebook), i);
-		if(widget == NULL || (pa = g_object_get_data(G_OBJECT(widget),
+		if(widget == NULL || (pad = g_object_get_data(G_OBJECT(widget),
+						"definition")) == NULL
+				|| (pa = g_object_get_data(G_OBJECT(widget),
 						"applet")) == NULL)
 			continue;
-		pa->settings(pa, FALSE, TRUE);
+		pad->settings(pa, FALSE, TRUE);
 	}
 }
 
@@ -1112,6 +1119,7 @@ static void _preferences_on_ok(gpointer data)
 	String * sep;
 	char * filename;
 	GtkWidget * widget;
+	PanelAppletDefinition * pad;
 	PanelApplet * pa;
 
 	gtk_widget_hide(panel->pr_window);
@@ -1166,10 +1174,12 @@ static void _preferences_on_ok(gpointer data)
 	{
 		widget = gtk_notebook_get_nth_page(GTK_NOTEBOOK(
 					panel->pr_notebook), i);
-		if(widget == NULL || (pa = g_object_get_data(G_OBJECT(widget),
+		if(widget == NULL || (pad = g_object_get_data(G_OBJECT(widget),
+						"definition")) == NULL
+				|| (pa = g_object_get_data(G_OBJECT(widget),
 						"applet")) == NULL)
 			continue;
-		pa->settings(pa, TRUE, FALSE);
+		pad->settings(pa, TRUE, FALSE);
 	}
 	if((filename = _config_get_filename()) != NULL)
 		config_save(panel->config, filename);
@@ -1271,6 +1281,7 @@ static gboolean _panel_can_suspend(void)
 	int sleep_state = -1;
 	size_t size = sizeof(sleep_state);
 
+	/* FIXME check that this works properly */
 	if(sysctlbyname("machdep.sleep_state", &sleep_state, &size, NULL, 0)
 			== 0 && sleep_state == 0
 			&& sysctlbyname("machdep.sleep_state", &sleep_state,

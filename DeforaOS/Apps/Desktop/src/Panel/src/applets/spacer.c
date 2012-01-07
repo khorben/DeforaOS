@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,49 +16,58 @@
 
 
 #include "Panel.h"
+#include <stdlib.h>
 
 
-/* spacer */
+/* Spacer */
 /* private */
+/* types */
+typedef struct _PanelApplet
+{
+	PanelAppletHelper * helper;
+} Spacer;
+
+
 /* prototypes */
 /* plug-in */
-static GtkWidget * _spacer_init(PanelApplet * applet);
-static void _spacer_destroy(PanelApplet * applet);
+static Spacer * _spacer_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _spacer_destroy(Spacer * spacer);
 
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Spacer",
+	NULL,
 	NULL,
 	_spacer_init,
 	_spacer_destroy,
 	NULL,
 	TRUE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
-static GtkWidget * _spacer_init(PanelApplet * applet)
+static Spacer * _spacer_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-	GtkWidget * widget;
+	Spacer * spacer;
+	GtkWidget * ret;
 
-	widget = gtk_label_new(NULL);
-	applet->priv = widget;
-	gtk_widget_show(widget);
-	return widget;
+	if((spacer = malloc(sizeof(*spacer))) == NULL)
+		return NULL;
+	spacer->helper = helper;
+	ret = gtk_label_new(NULL);
+	gtk_widget_show(ret);
+	*widget = ret;
+	return spacer;
 }
 
 
 /* spacer_destroy */
-static void _spacer_destroy(PanelApplet * applet)
+static void _spacer_destroy(Spacer * spacer)
 {
-	GtkWidget * widget = applet->priv;
-
-	gtk_widget_destroy(widget);
+	free(spacer);
 }

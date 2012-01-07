@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-04 01:22+0100\n"
+"POT-Creation-Date: 2012-01-07 03:49+0100\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -17,21 +17,21 @@ msgstr ""
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:169
+#: ../src/applets/battery.c:166
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:185 ../src/panel.c:488 ../src/panel.c:493
+#: ../src/applets/battery.c:182 ../src/panel.c:488 ../src/panel.c:493
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/applets/battery.c:191
+#: ../src/applets/battery.c:188
 #, c-format
 msgid "Battery level: %.0lf%%%s"
 msgstr "Batterie : %.0lf%%%s"
 
-#: ../src/applets/battery.c:192
+#: ../src/applets/battery.c:189
 msgid " (charging)"
 msgstr " (en charge)"
 
@@ -39,11 +39,11 @@ msgstr " (en charge)"
 msgid "Bluetooth is enabled"
 msgstr "Bluetooth actif"
 
-#: ../src/applets/clock.c:84 ../src/applets/clock.c:95
+#: ../src/applets/clock.c:83 ../src/applets/clock.c:94
 msgid "%H:%M"
 msgstr "%H:%M"
 
-#: ../src/applets/clock.c:93 ../src/applets/clock.c:140
+#: ../src/applets/clock.c:92 ../src/applets/clock.c:137
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
@@ -51,16 +51,15 @@ msgstr ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
 
-#: ../src/applets/close.c:95
+#: ../src/applets/close.c:93
 msgid "Close"
 msgstr "Fermer"
 
-#: ../src/applets/cpu.c:94
+#: ../src/applets/cpu.c:92
 msgid "CPU:"
-msgstr ""
+msgstr "CPU :"
 
-#: ../src/applets/cpu.c:110 ../src/applets/cpufreq.c:134
-#: ../src/applets/memory.c:104 ../src/applets/swap.c:104
+#: ../src/applets/cpu.c:109 ../src/applets/cpufreq.c:135
 msgid "Unsupported platform"
 msgstr "Plate-forme non supportée"
 
@@ -68,35 +67,39 @@ msgstr "Plate-forme non supportée"
 msgid "No support detected"
 msgstr "Aucun support détecté"
 
-#: ../src/applets/cpufreq.c:126
+#: ../src/applets/cpufreq.c:126 ../src/applets/cpufreq.c:166
 msgid "MHz"
 msgstr "MHz"
 
-#: ../src/applets/desktop.c:65
+#: ../src/applets/cpufreq.c:165
+msgid "CPU frequency: "
+msgstr "Fréquence CPU : "
+
+#: ../src/applets/desktop.c:69
 msgid "Show desktop"
 msgstr "Afficher le bureau"
 
-#: ../src/applets/gps.c:91
+#: ../src/applets/gps.c:89
 msgid "GPS is enabled"
 msgstr "GPS actif"
 
-#: ../src/applets/gsm.c:98
+#: ../src/applets/gsm.c:90
 msgid "GSM is enabled"
 msgstr "GSM actif"
 
-#: ../src/applets/keyboard.c:121
+#: ../src/applets/keyboard.c:123
 msgid "Show keyboard"
 msgstr "Afficher le clavier"
 
-#: ../src/applets/keyboard.c:280 ../src/applets/lock.c:114 ../src/run.c:108
+#: ../src/applets/keyboard.c:279 ../src/applets/lock.c:113 ../src/run.c:108
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/applets/keyboard.c:291
+#: ../src/applets/keyboard.c:290
 msgid "Width:"
 msgstr "Largeur :"
 
-#: ../src/applets/keyboard.c:302
+#: ../src/applets/keyboard.c:301
 msgid "Height:"
 msgstr "Hauteur :"
 
@@ -104,92 +107,100 @@ msgstr "Hauteur :"
 msgid "Keep ratio"
 msgstr "Respecter les proportions"
 
-#: ../src/applets/lock.c:76 ../src/applets/main.c:323
+#: ../src/applets/lock.c:81 ../src/applets/main.c:320
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
-#: ../src/applets/logout.c:60
-msgid "Logging out is disabled"
-msgstr "Se déconnecter est désactivé"
+#: ../src/applets/logout.c:71
+msgid "logout: Logging out is disabled"
+msgstr "logout: Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:69 ../src/panel.c:1407 ../src/panel.c:1414
-#: ../src/panel.c:1423
+#: ../src/applets/logout.c:79 ../src/panel.c:1418 ../src/panel.c:1425
+#: ../src/panel.c:1434
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:135
+#: ../src/applets/main.c:133
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:305
+#: ../src/applets/main.c:302
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:311
+#: ../src/applets/main.c:308
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:329
+#: ../src/applets/main.c:326
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:336
+#: ../src/applets/main.c:333
 msgid "Suspend"
 msgstr "Suspendre"
 
-#: ../src/applets/main.c:341
+#: ../src/applets/main.c:338
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
-#: ../src/applets/memory.c:90
+#: ../src/applets/memory.c:88
 msgid "RAM:"
 msgstr "Mémoire :"
 
-#: ../src/applets/swap.c:90
+#: ../src/applets/memory.c:103
+msgid "memory: Unsupported platform"
+msgstr "memory: Plate-forme non supportée"
+
+#: ../src/applets/swap.c:88
 msgid "Swap:"
 msgstr "Échange :"
 
-#: ../src/applets/tasks.c:460 ../src/applets/title.c:229
+#: ../src/applets/swap.c:103
+msgid "swap: Unsupported platform"
+msgstr "swap: Plate-forme non supportée"
+
+#: ../src/applets/tasks.c:458 ../src/applets/title.c:226
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/applets/tasks.c:733
+#: ../src/applets/tasks.c:731
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../src/applets/tasks.c:735
+#: ../src/applets/tasks.c:733
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: ../src/applets/tasks.c:737
+#: ../src/applets/tasks.c:735
 msgid "Minimize"
 msgstr "Réduire"
 
-#: ../src/applets/tasks.c:739
+#: ../src/applets/tasks.c:737
 msgid "Shade"
 msgstr "Masquer"
 
-#: ../src/applets/tasks.c:741
+#: ../src/applets/tasks.c:739
 msgid "Stick"
 msgstr "Attacher"
 
-#: ../src/applets/tasks.c:743
+#: ../src/applets/tasks.c:741
 msgid "Maximize horizontally"
 msgstr "Maximiser horizontalement"
 
-#: ../src/applets/tasks.c:745
+#: ../src/applets/tasks.c:743
 msgid "Maximize vertically"
 msgstr "Maximiser verticalement"
 
-#: ../src/applets/tasks.c:749
+#: ../src/applets/tasks.c:747
 msgid "Change desktop"
 msgstr "Déplacer vers le bureau"
 
-#: ../src/applets/tasks.c:786
+#: ../src/applets/tasks.c:784
 msgid "Maximize"
 msgstr "Maximiser"
 
-#: ../src/applets/usb.c:92
+#: ../src/applets/usb.c:90
 msgid "USB networking device connected"
 msgstr "Périphérique réseau USB connecté"
 
@@ -219,47 +230,47 @@ msgstr "Petite"
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:608
+#: ../src/panel.c:611
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:622
+#: ../src/panel.c:625
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:626
+#: ../src/panel.c:629
 msgid "Applets"
 msgstr "Greffons"
 
-#: ../src/panel.c:655
+#: ../src/panel.c:658
 msgid "Applets:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:735
+#: ../src/panel.c:738
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:741 ../src/panel.c:745 ../src/panel.c:776 ../src/panel.c:780
+#: ../src/panel.c:744 ../src/panel.c:748 ../src/panel.c:779 ../src/panel.c:783
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:770
+#: ../src/panel.c:773
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:876
+#: ../src/panel.c:880
 msgid "Accept focus"
 msgstr "Autoriser le focus"
 
-#: ../src/panel.c:880
+#: ../src/panel.c:884
 msgid "Keep above other windows"
 msgstr "Conserver au dessus des fenêtres"
 
-#: ../src/panel.c:1346
+#: ../src/panel.c:1357
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1393
+#: ../src/panel.c:1404
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -270,7 +281,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1509
+#: ../src/panel.c:1520
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -281,7 +292,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1514
+#: ../src/panel.c:1525
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -292,11 +303,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1528 ../src/panel.c:1535 ../src/panel.c:1544
+#: ../src/panel.c:1539 ../src/panel.c:1546 ../src/panel.c:1555
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1534
+#: ../src/panel.c:1545
 msgid "Restart"
 msgstr "Redémarrer"
 

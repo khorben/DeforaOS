@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 /* Title */
 /* private */
 /* types */
-typedef struct _Title
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * widget;
@@ -48,8 +48,8 @@ typedef struct _Title
 
 /* prototypes */
 /* title */
-static GtkWidget * _title_init(PanelApplet * applet);
-static void _title_destroy(PanelApplet * applet);
+static Title * _title_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _title_destroy(Title * title);
 
 /* accessors */
 static int _title_get_text_property(Title * title, Window window, Atom property,
@@ -67,32 +67,30 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Title",
+	NULL,
 	NULL,
 	_title_init,
 	_title_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* title_init */
-static GtkWidget * _title_init(PanelApplet * applet)
+static Title * _title_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	Title * title;
 	PangoFontDescription * bold;
 
 	if((title = malloc(sizeof(*title))) == NULL)
 		return NULL;
-	applet->priv = title;
-	title->helper = applet->helper;
+	title->helper = helper;
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	title->widget = gtk_label_new("");
@@ -107,15 +105,14 @@ static GtkWidget * _title_init(PanelApplet * applet)
 	title->atom_name = 0;
 	title->atom_visible_name = 0;
 	gtk_widget_show(title->widget);
-	return title->widget;
+	*widget = title->widget;
+	return title;
 }
 
 
 /* title_destroy */
-static void _title_destroy(PanelApplet * applet)
+static void _title_destroy(Title * title)
 {
-	Title * title = applet->priv;
-
 	free(title);
 }
 

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ typedef enum _TasksAtom
 #define TASKS_ATOM_COUNT (TASKS_ATOM_LAST + 1)
 #undef atom
 
-typedef struct _Tasks Tasks;
+typedef struct _PanelApplet Tasks;
 
 typedef struct _Task
 {
@@ -53,7 +53,7 @@ typedef struct _Task
 	gboolean delete;
 } Task;
 
-struct _Tasks
+struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	Task ** tasks;
@@ -95,8 +95,8 @@ static void _task_toggle_state2(Task * task, TasksAtom state1,
 		TasksAtom state2);
 
 /* tasks */
-static GtkWidget * _tasks_init(PanelApplet * applet);
-static void _tasks_destroy(PanelApplet * applet);
+static Tasks * _tasks_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _tasks_destroy(Tasks * tasks);
 
 /* accessors */
 static int _tasks_get_current_desktop(Tasks * tasks);
@@ -133,11 +133,11 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Tasks",
 	"application-x-executable",
+	NULL,
 	_tasks_init,
 	_tasks_destroy,
 	NULL,
@@ -146,8 +146,7 @@ PanelApplet applet =
 #else
 	FALSE,
 #endif
-	TRUE,
-	NULL
+	TRUE
 };
 
 
@@ -262,21 +261,20 @@ static void _task_toggle_state2(Task * task, TasksAtom state1,
 
 /* Tasks */
 /* tasks_init */
-static GtkWidget * _tasks_init(PanelApplet * applet)
+static Tasks * _tasks_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-	GtkWidget * ret;
 	Tasks * tasks;
+	GtkWidget * ret;
 
 	if((tasks = malloc(sizeof(*tasks))) == NULL)
 		return NULL;
-	applet->priv = tasks;
-	tasks->helper = applet->helper;
+	tasks->helper = helper;
 	tasks->tasks = NULL;
 	tasks->tasks_cnt = 0;
 	tasks->hbox = gtk_hbox_new(TRUE, 0);
 	g_signal_connect(G_OBJECT(tasks->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), tasks);
-	tasks->icon_size = applet->helper->icon_size;
+	tasks->icon_size = helper->icon_size;
 	tasks->icon_width = 48;
 	tasks->icon_height = 48;
 	gtk_icon_size_lookup(tasks->icon_size, &tasks->icon_width,
@@ -298,14 +296,14 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	ret = tasks->hbox;
 #endif
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return tasks;
 }
 
 
 /* tasks_destroy */
-static void _tasks_destroy(PanelApplet * applet)
+static void _tasks_destroy(Tasks * tasks)
 {
-	Tasks * tasks = applet->priv;
 	size_t i;
 
 	for(i = 0; i < tasks->tasks_cnt; i++)

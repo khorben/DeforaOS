@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 /* Memory */
 /* private */
 /* types */
-typedef struct _Memory
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * scale;
@@ -41,8 +41,8 @@ typedef struct _Memory
 
 
 /* prototypes */
-static GtkWidget * _memory_init(PanelApplet * applet);
-static void _memory_destroy(PanelApplet * applet);
+static Memory * _memory_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _memory_destroy(Memory * memory);
 
 /* callbacks */
 #if defined(__linux__) || defined(__NetBSD__)
@@ -52,44 +52,42 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Memory",
 	"gnome-monitor",
+	NULL,
 	_memory_init,
 	_memory_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* memory_init */
-static GtkWidget * _memory_init(PanelApplet * applet)
+static Memory * _memory_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 #if defined(__linux__) || defined(__NetBSD__)
-	GtkWidget * ret;
 	Memory * memory;
+	GtkWidget * ret;
 	PangoFontDescription * desc;
-	GtkWidget * widget;
+	GtkWidget * label;
 
 	if((memory = malloc(sizeof(*memory))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(NULL, "malloc", 1);
 		return NULL;
 	}
-	applet->priv = memory;
-	memory->helper = applet->helper;
+	memory->helper = helper;
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	widget = gtk_label_new(_("RAM:"));
-	gtk_widget_modify_font(widget, desc);
-	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, FALSE, 0);
+	label = gtk_label_new(_("RAM:"));
+	gtk_widget_modify_font(label, desc);
+	gtk_box_pack_start(GTK_BOX(ret), label, FALSE, FALSE, 0);
 	memory->scale = gtk_vscale_new_with_range(0, 100, 1);
 	gtk_widget_set_sensitive(memory->scale, FALSE);
 	gtk_range_set_inverted(GTK_RANGE(memory->scale), TRUE);
@@ -99,19 +97,18 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 	_on_timeout(memory);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return memory;
 #else
-	error_set("%s: %s", "memory", _("Unsupported platform"));
+	helper->error(NULL, _("memory: Unsupported platform"), 1);
 	return NULL;
 #endif
 }
 
 
 /* memory_destroy */
-static void _memory_destroy(PanelApplet * applet)
+static void _memory_destroy(Memory * memory)
 {
-	Memory * memory = applet->priv;
-
 	g_source_remove(memory->timeout);
 	free(memory);
 }

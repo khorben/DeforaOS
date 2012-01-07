@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,19 +46,18 @@ typedef struct _PanelAppletHelper
 	int (*suspend)(Panel * panel);
 } PanelAppletHelper;
 
-struct _PanelApplet
+typedef struct _PanelAppletDefinition
 {
-	PanelAppletHelper * helper;
 	char const * name;
 	char const * icon;
-	GtkWidget * (*init)(PanelApplet * applet);
+	char const * description;
+	PanelApplet * (*init)(PanelAppletHelper * helper, GtkWidget ** widget);
 	void (*destroy)(PanelApplet * applet);
 	GtkWidget * (*settings)(PanelApplet * applet, gboolean apply,
 			gboolean reset);
 	gboolean expand;
 	gboolean fill;
-	void * priv;
-};
+} PanelAppletDefinition;
 
 typedef enum _PanelMessage
 {

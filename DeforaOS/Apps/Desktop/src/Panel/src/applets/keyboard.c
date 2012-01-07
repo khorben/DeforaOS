@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,10 @@
 /* Keyboard */
 /* private */
 /* types */
-typedef struct _Keyboard
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
+
 	guint source;
 	GPid pid;
 
@@ -58,13 +60,14 @@ typedef struct _Keyboard
 
 /* prototypes */
 /* plug-in */
-static GtkWidget * _keyboard_init(PanelApplet * applet);
-static void _keyboard_destroy(PanelApplet * applet);
-static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
+static Keyboard * _keyboard_init(PanelAppletHelper * helper,
+		GtkWidget ** widget);
+static void _keyboard_destroy(Keyboard * keyboard);
+static GtkWidget * _keyboard_settings(Keyboard * keyboard, gboolean apply,
 		gboolean reset);
 
 /* useful */
-static int _keyboard_spawn(PanelApplet * applet, unsigned long * xid);
+static int _keyboard_spawn(Keyboard * keyboard, unsigned long * xid);
 
 /* callbacks */
 static void _keyboard_on_child(GPid pid, gint status, gpointer data);
@@ -78,17 +81,16 @@ static void _keyboard_on_toggled(GtkWidget * widget, gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Keyboard",
 	"input-keyboard",
+	NULL,
 	_keyboard_init,
 	_keyboard_destroy,
 	_keyboard_settings,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
@@ -99,16 +101,16 @@ static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper);
 /* callbacks */
 static gboolean _init_idle(gpointer data);
 
-static GtkWidget * _keyboard_init(PanelApplet * applet)
+static Keyboard * _keyboard_init(PanelAppletHelper * helper,
+		GtkWidget ** widget)
 {
-	PanelAppletHelper * helper = applet->helper;
 	Keyboard * keyboard;
 	GtkWidget * ret;
 	GtkWidget * image;
 
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
-	applet->priv = keyboard;
+	keyboard->helper = helper;
 	keyboard->source = 0;
 	keyboard->pid = -1;
 	keyboard->width = -1;
@@ -122,13 +124,14 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 #endif
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
-				_keyboard_on_toggled), applet);
+				_keyboard_on_toggled), keyboard);
 	image = gtk_image_new_from_icon_name("input-keyboard",
-			applet->helper->icon_size);
+			helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(ret), image);
 	gtk_widget_show_all(ret);
-	keyboard->source = g_idle_add(_init_idle, applet);
-	return ret;
+	keyboard->source = g_idle_add(_init_idle, keyboard);
+	*widget = ret;
+	return keyboard;
 }
 
 static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper)
@@ -163,8 +166,7 @@ static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper)
 /* callbacks */
 static gboolean _init_idle(gpointer data)
 {
-	PanelApplet * applet = data;
-	Keyboard * keyboard = applet->priv;
+	Keyboard * keyboard = data;
 
 	keyboard->source = 0;
 	if(keyboard->window != NULL)
@@ -189,10 +191,8 @@ static gboolean _init_idle(gpointer data)
 
 
 /* keyboard_destroy */
-static void _keyboard_destroy(PanelApplet * applet)
+static void _keyboard_destroy(Keyboard * keyboard)
 {
-	Keyboard * keyboard = applet->priv;
-
 	if(keyboard->source > 0)
 		g_source_remove(keyboard->source);
 	if(keyboard->pid > 0)
@@ -204,16 +204,15 @@ static void _keyboard_destroy(PanelApplet * applet)
 /* keyboard_settings */
 static void _settings_apply(Keyboard * keyboard, PanelAppletHelper * helper);
 static void _settings_reset(Keyboard * keyboard, PanelAppletHelper * helper);
-static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet);
+static GtkWidget * _settings_widget(Keyboard * keyboard);
 /* callbacks */
 static void _settings_on_width_value_changed(gpointer data);
 static void _settings_on_height_value_changed(gpointer data);
 
-static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
+static GtkWidget * _keyboard_settings(Keyboard * keyboard, gboolean apply,
 		gboolean reset)
 {
-	PanelAppletHelper * helper = applet->helper;
-	Keyboard * keyboard = applet->priv;
+	PanelAppletHelper * helper = keyboard->helper;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void *)applet,
@@ -221,7 +220,7 @@ static GtkWidget * _keyboard_settings(PanelApplet * applet, gboolean apply,
 #endif
 	if(keyboard->pr_box == NULL)
 	{
-		keyboard->pr_box = _settings_widget(keyboard, applet);
+		keyboard->pr_box = _settings_widget(keyboard);
 		reset = TRUE;
 	}
 	if(reset == TRUE)
@@ -265,7 +264,7 @@ static void _settings_reset(Keyboard * keyboard, PanelAppletHelper * helper)
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(keyboard->pr_height), value);
 }
 
-static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet)
+static GtkWidget * _settings_widget(Keyboard * keyboard)
 {
 	GtkSizeGroup * group;
 	GtkWidget * vbox;
@@ -294,7 +293,7 @@ static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet)
 	keyboard->pr_width = gtk_spin_button_new_with_range(1.0, 65535.0, 1.0);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(keyboard->pr_width), 0);
 	g_signal_connect_swapped(keyboard->pr_width, "value-changed",
-			G_CALLBACK(_settings_on_width_value_changed), applet);
+			G_CALLBACK(_settings_on_width_value_changed), keyboard);
 	gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_width, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* height */
@@ -305,7 +304,8 @@ static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet)
 	keyboard->pr_height = gtk_spin_button_new_with_range(1.0, 65535.0, 1.0);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(keyboard->pr_height), 0);
 	g_signal_connect_swapped(keyboard->pr_height, "value-changed",
-			G_CALLBACK(_settings_on_height_value_changed), applet);
+			G_CALLBACK(_settings_on_height_value_changed),
+			keyboard);
 	gtk_box_pack_start(GTK_BOX(hbox), keyboard->pr_height, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* ratio */
@@ -320,8 +320,7 @@ static GtkWidget * _settings_widget(Keyboard * keyboard, PanelApplet * applet)
 /* callbacks */
 static void _settings_on_width_value_changed(gpointer data)
 {
-	PanelApplet * applet = data;
-	Keyboard * keyboard = applet->priv;
+	Keyboard * keyboard = data;
 	gdouble value;
 
 	value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(keyboard->pr_width));
@@ -332,8 +331,7 @@ static void _settings_on_width_value_changed(gpointer data)
 
 static void _settings_on_height_value_changed(gpointer data)
 {
-	PanelApplet * applet = data;
-	Keyboard * keyboard = applet->priv;
+	Keyboard * keyboard = data;
 	gdouble value;
 
 	value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(keyboard->pr_height));
@@ -345,10 +343,9 @@ static void _settings_on_height_value_changed(gpointer data)
 
 /* useful */
 /* keyboard_spawn */
-static int _keyboard_spawn(PanelApplet * applet, unsigned long * xid)
+static int _keyboard_spawn(Keyboard * keyboard, unsigned long * xid)
 {
-	PanelAppletHelper * helper = applet->helper;
-	Keyboard * keyboard = applet->priv;
+	PanelAppletHelper * helper = keyboard->helper;
 	char * argv[] = { "sh", "-c", PANEL_KEYBOARD_COMMAND_DEFAULT, NULL };
 	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
 	char const * p;
@@ -371,7 +368,7 @@ static int _keyboard_spawn(PanelApplet * applet, unsigned long * xid)
 		g_error_free(error);
 		return -1;
 	}
-	g_child_watch_add(keyboard->pid, _keyboard_on_child, applet);
+	g_child_watch_add(keyboard->pid, _keyboard_on_child, keyboard);
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
 		/* XXX not very explicit... */
 		return -helper->error(helper->panel, "read", 1);
@@ -388,8 +385,7 @@ static gboolean _on_child_timeout(gpointer data);
 
 static void _keyboard_on_child(GPid pid, gint status, gpointer data)
 {
-	PanelApplet * applet = data;
-	Keyboard * keyboard = applet->priv;
+	Keyboard * keyboard = data;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u) %u\n", __func__, pid, keyboard->pid);
@@ -400,18 +396,17 @@ static void _keyboard_on_child(GPid pid, gint status, gpointer data)
 	{
 		g_spawn_close_pid(keyboard->pid);
 		keyboard->source = g_timeout_add(1000, _on_child_timeout,
-				applet);
+				keyboard);
 	}
 }
 
 static gboolean _on_child_timeout(gpointer data)
 {
-	PanelApplet * applet = data;
-	Keyboard * keyboard = applet->priv;
+	Keyboard * keyboard = data;
 	unsigned long xid;
 
 	keyboard->source = 0;
-	if(_keyboard_spawn(applet, &xid) == 0)
+	if(_keyboard_spawn(keyboard, &xid) == 0)
 		gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
 	return FALSE;
 }
@@ -427,9 +422,8 @@ static gboolean _keyboard_on_removed(void)
 /* keyboard_on_toggled */
 static void _keyboard_on_toggled(GtkWidget * widget, gpointer data)
 {
-	PanelApplet * applet = data;
-	PanelAppletHelper * helper = applet->helper;
-	Keyboard * keyboard = applet->priv;
+	Keyboard * keyboard = data;
+	PanelAppletHelper * helper = keyboard->helper;
 	gint x = 0;
 	gint y = 0;
 	gboolean push_in;
@@ -446,7 +440,7 @@ static void _keyboard_on_toggled(GtkWidget * widget, gpointer data)
 	{
 		if(keyboard->pid == -1)
 		{
-			_keyboard_spawn(applet, &xid);
+			_keyboard_spawn(keyboard, &xid);
 			gtk_socket_add_id(GTK_SOCKET(keyboard->socket), xid);
 		}
 		gtk_widget_show(keyboard->window);

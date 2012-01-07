@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,49 +16,60 @@
 
 
 #include "Panel.h"
+#include <stdlib.h>
 
 
-/* separator */
+/* Separator */
 /* private */
+/* types */
+typedef struct _PanelApplet
+{
+	PanelAppletHelper * helper;
+} Separator;
+
+
 /* prototypes */
 /* plug-in */
-static GtkWidget * _separator_init(PanelApplet * applet);
-static void _separator_destroy(PanelApplet * applet);
+static Separator * _separator_init(PanelAppletHelper * helper,
+		GtkWidget ** widget);
+static void _separator_destroy(Separator * separator);
 
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Separator",
+	NULL,
 	NULL,
 	_separator_init,
 	_separator_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
-static GtkWidget * _separator_init(PanelApplet * applet)
+static Separator * _separator_init(PanelAppletHelper * helper,
+		GtkWidget ** widget)
 {
-	GtkWidget * widget;
+	Separator * separator;
+	GtkWidget * ret;
 
-	widget = gtk_vseparator_new();
-	applet->priv = widget;
-	gtk_widget_show(widget);
-	return widget;
+	if((separator = malloc(sizeof(*separator))) == NULL)
+		return NULL;
+	separator->helper = helper;
+	ret = gtk_vseparator_new();
+	gtk_widget_show(ret);
+	*widget = ret;
+	return separator;
 }
 
 
 /* separator_destroy */
-static void _separator_destroy(PanelApplet * applet)
+static void _separator_destroy(Separator * separator)
 {
-	GtkWidget * widget = applet->priv;
-
-	gtk_widget_destroy(widget);
+	free(separator);
 }

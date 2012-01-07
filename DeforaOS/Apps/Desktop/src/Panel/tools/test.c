@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@ static int _test(char * applets[])
 	char * q;
 	void * dl;
 	PanelAppletHelper helper;
+	PanelAppletDefinition * pad;
 	PanelApplet * pa;
 
 	if((panel.config = config_new()) == NULL)
@@ -108,15 +109,16 @@ static int _test(char * applets[])
 					applets[i], dlerror());
 			continue;
 		}
-		if((pa = dlsym(dl, "applet")) == NULL)
+		if((pad = dlsym(dl, "applet")) == NULL)
 		{
 			dlclose(dl);
 			continue;
 		}
-		pa->helper = &helper;
-		if((widget = pa->init(pa)) != NULL)
-			gtk_box_pack_start(GTK_BOX(box), widget, pa->expand,
-					pa->fill, 0);
+		widget = NULL;
+		if((pa = pad->init(&helper, &widget)) != NULL
+				&& widget != NULL)
+			gtk_box_pack_start(GTK_BOX(box), widget, pad->expand,
+					pad->fill, 0);
 	}
 	free(p);
 	gtk_container_add(GTK_CONTAINER(panel.window), box);

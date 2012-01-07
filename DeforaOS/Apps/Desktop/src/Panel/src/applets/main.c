@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 /* Main */
 /* private */
 /* types */
-typedef struct _Main
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GSList * apps;
@@ -74,8 +74,8 @@ static const MainMenu _main_menus[] =
 
 
 /* prototypes */
-static GtkWidget * _main_init(PanelApplet * applet);
-static void _main_destroy(PanelApplet * applet);
+static Main * _main_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _main_destroy(Main * main);
 
 /* helpers */
 static GtkWidget * _main_applications(Main * main);
@@ -96,39 +96,37 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Main menu",
 	"gnome-main-menu",
+	NULL,
 	_main_init,
 	_main_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* main_init */
-static GtkWidget * _main_init(PanelApplet * applet)
+static Main * _main_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-	GtkWidget * ret;
 	Main * main;
+	GtkWidget * ret;
 	GtkWidget * image;
 
 	if((main = malloc(sizeof(*main))) == NULL)
 		return NULL;
-	main->helper = applet->helper;
+	main->helper = helper;
 	main->apps = NULL;
 	main->idle = g_idle_add(_on_idle, main);
 	main->refresh_mti = 0;
-	applet->priv = main;
 	ret = gtk_button_new();
 	image = gtk_image_new_from_icon_name("gnome-main-menu",
-			applet->helper->icon_size);
+			helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
@@ -137,15 +135,14 @@ static GtkWidget * _main_init(PanelApplet * applet)
 	g_signal_connect_swapped(G_OBJECT(ret), "clicked", G_CALLBACK(
 				_on_clicked), main);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return main;
 }
 
 
 /* main_destroy */
-static void _main_destroy(PanelApplet * applet)
+static void _main_destroy(Main * main)
 {
-	Main * main = applet->priv;
-
 	if(main->idle != 0)
 		g_source_remove(main->idle);
 	g_slist_foreach(main->apps, (GFunc)config_delete, NULL);

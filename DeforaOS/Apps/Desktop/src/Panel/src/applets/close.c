@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 /* Close */
 /* private */
 /* types */
-typedef struct _Close
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * widget;
@@ -47,8 +47,8 @@ typedef struct _Close
 
 /* prototypes */
 /* close */
-static GtkWidget * _close_init(PanelApplet * applet);
-static void _close_destroy(PanelApplet * applet);
+static Close * _close_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _close_destroy(Close * close);
 
 /* useful */
 static void _close_do(Close * close);
@@ -63,39 +63,36 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Close",
 	GTK_STOCK_CLOSE,
+	NULL,
 	_close_init,
 	_close_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* close_init */
-static GtkWidget * _close_init(PanelApplet * applet)
+static Close * _close_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	Close * close;
 	GtkWidget * image;
 
 	if((close = malloc(sizeof(*close))) == NULL)
 		return NULL;
-	applet->priv = close;
-	close->helper = applet->helper;
+	close->helper = helper;
 	close->widget = gtk_button_new();
 	gtk_button_set_relief(GTK_BUTTON(close->widget), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(close->widget, _("Close"));
 #endif
-	image = gtk_image_new_from_stock(GTK_STOCK_CLOSE,
-			applet->helper->icon_size);
+	image = gtk_image_new_from_stock(GTK_STOCK_CLOSE, helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(close->widget), image);
 	g_signal_connect_swapped(G_OBJECT(close->widget), "clicked", G_CALLBACK(
 				_on_close), close);
@@ -109,15 +106,14 @@ static GtkWidget * _close_init(PanelApplet * applet)
 	close->window = None;
 	close->panel = None;
 	gtk_widget_show(close->widget);
-	return close->widget;
+	*widget = close->widget;
+	return close;
 }
 
 
 /* close_destroy */
-static void _close_destroy(PanelApplet * applet)
+static void _close_destroy(Close * close)
 {
-	Close * close = applet->priv;
-
 	free(close);
 }
 

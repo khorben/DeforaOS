@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,13 @@
 
 /* Desktop */
 /* private */
+/* types */
+typedef struct _PanelApplet Desktop;
+
+
 /* prototypes */
-static GtkWidget * _desktop_init(PanelApplet * applet);
+static Desktop * _desktop_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _desktop_destroy(Desktop * desktop);
 
 /* callbacks */
 static void _on_clicked(GtkWidget * widget);
@@ -34,31 +39,30 @@ static void _on_clicked(GtkWidget * widget);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Desktop switch",
 	"panel-applet-desktop",
-	_desktop_init,
 	NULL,
+	_desktop_init,
+	_desktop_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* desktop_init */
-static GtkWidget * _desktop_init(PanelApplet * applet)
+static Desktop * _desktop_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	GtkWidget * ret;
 	GtkWidget * image;
 
 	ret = gtk_button_new();
 	image = gtk_image_new_from_icon_name("panel-applet-desktop",
-			applet->helper->icon_size);
+			helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
@@ -67,7 +71,14 @@ static GtkWidget * _desktop_init(PanelApplet * applet)
 	g_signal_connect(G_OBJECT(ret), "clicked", G_CALLBACK(_on_clicked),
 			NULL);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return (Desktop *)ret; /* XXX ugly workaround */
+}
+
+
+/* desktop_destroy */
+static void _desktop_destroy(Desktop * desktop)
+{
 }
 
 

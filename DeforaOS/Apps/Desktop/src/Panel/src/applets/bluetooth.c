@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@
 /* Bluetooth */
 /* private */
 /* types */
-typedef struct _Bluetooth
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * image;
@@ -51,8 +51,9 @@ typedef struct _Bluetooth
 
 
 /* prototypes */
-static GtkWidget * _bluetooth_init(PanelApplet * applet);
-static void _bluetooth_destroy(PanelApplet * applet);
+static Bluetooth * _bluetooth_init(PanelAppletHelper * helper,
+		GtkWidget ** widget);
+static void _bluetooth_destroy(Bluetooth * bluetooth);
 
 static gboolean _bluetooth_get(Bluetooth * bluetooth);
 static void _bluetooth_set(Bluetooth * bluetooth, gboolean on);
@@ -63,52 +64,50 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Bluetooth",
 	"panel-applet-bluetooth",
+	NULL,
 	_bluetooth_init,
 	_bluetooth_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* bluetooth_init */
-static GtkWidget * _bluetooth_init(PanelApplet * applet)
+static Bluetooth * _bluetooth_init(PanelAppletHelper * helper,
+		GtkWidget ** widget)
 {
 	Bluetooth * bluetooth;
 
 	if((bluetooth = malloc(sizeof(*bluetooth))) == NULL)
 		return NULL;
-	applet->priv = bluetooth;
-	bluetooth->helper = applet->helper;
+	bluetooth->helper = helper;
 	bluetooth->timeout = 0;
 #if defined(__NetBSD__) || defined(__linux__)
 	bluetooth->fd = -1;
 #endif
 	bluetooth->image = gtk_image_new_from_icon_name(
-			"panel-applet-bluetooth", applet->helper->icon_size);
+			"panel-applet-bluetooth", helper->icon_size);
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(bluetooth->image,
 			_("Bluetooth is enabled"));
 #endif
 	bluetooth->timeout = g_timeout_add(1000, _on_timeout, bluetooth);
 	_on_timeout(bluetooth);
-	return bluetooth->image;
+	*widget = bluetooth->image;
+	return bluetooth;
 }
 
 
 /* bluetooth_destroy */
-static void _bluetooth_destroy(PanelApplet * applet)
+static void _bluetooth_destroy(Bluetooth * bluetooth)
 {
-	Bluetooth * bluetooth = applet->priv;
-
 	if(bluetooth->timeout > 0)
 		g_source_remove(bluetooth->timeout);
 #if defined(__NetBSD__) || defined(__linux__)

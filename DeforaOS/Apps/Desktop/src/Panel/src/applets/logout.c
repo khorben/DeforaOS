@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 
 
 
+#include <stdlib.h>
 #include <libintl.h>
 #include <System.h>
 #include "Panel.h"
@@ -23,8 +24,16 @@
 
 /* Logout */
 /* private */
+/* types */
+typedef struct _PanelApplet
+{
+	PanelAppletHelper * helper;
+} Logout;
+
+
 /* prototypes */
-static GtkWidget * _logout_init(PanelApplet * applet);
+static Logout * _logout_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _logout_destroy(Logout * logout);
 
 /* callbacks */
 static void _on_clicked(gpointer data);
@@ -32,46 +41,55 @@ static void _on_clicked(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Logout",
 	"gnome-logout",
-	_logout_init,
 	NULL,
+	_logout_init,
+	_logout_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* logout_init */
-static GtkWidget * _logout_init(PanelApplet * applet)
+static Logout * _logout_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
+	Logout * logout;
 	GtkWidget * ret;
 	GtkWidget * image;
 
-	if(applet->helper->logout_dialog == NULL)
+	if((logout = malloc(sizeof(*logout))) == NULL)
+		return NULL;
+	logout->helper = helper;
+	if(helper->logout_dialog == NULL)
 	{
-		error_set_code(0, "%s: %s", "logout",
-				_("Logging out is disabled"));
+		helper->error(NULL, _("logout: Logging out is disabled"), 1);
 		return NULL;
 	}
 	ret = gtk_button_new();
-	image = gtk_image_new_from_icon_name("gnome-logout",
-			applet->helper->icon_size);
+	image = gtk_image_new_from_icon_name("gnome-logout", helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(ret, _("Logout"));
 #endif
 	g_signal_connect_swapped(G_OBJECT(ret), "clicked", G_CALLBACK(
-				_on_clicked), applet);
+				_on_clicked), logout);
 	gtk_widget_show_all(ret);
-	return ret;
+	*widget = ret;
+	return logout;
+}
+
+
+/* logout_destroy */
+static void _logout_destroy(Logout * logout)
+{
+	free(logout);
 }
 
 
@@ -79,7 +97,7 @@ static GtkWidget * _logout_init(PanelApplet * applet)
 /* on_clicked */
 static void _on_clicked(gpointer data)
 {
-	PanelApplet * applet = data;
+	Logout * logout = data;
 
-	applet->helper->logout_dialog(applet->helper->panel);
+	logout->helper->logout_dialog(logout->helper->panel);
 }

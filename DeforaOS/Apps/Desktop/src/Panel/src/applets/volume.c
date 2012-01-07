@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,32 +35,11 @@
 
 
 /* Volume */
-/* private */
-/* prototypes */
-static GtkWidget * _volume_init(PanelApplet * applet);
-static void _volume_destroy(PanelApplet * applet);
-
-
-/* public */
-/* variables */
-PanelApplet applet =
-{
-	NULL,
-	"Volume",
-	"stock_volume",
-	_volume_init,
-	_volume_destroy,
-	NULL,
-	FALSE,
-	TRUE,
-	NULL
-};
-
-
-/* private */
 /* types */
-typedef struct _Volume
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
+
 	char const * device;
 	char const * control;
 #if defined(AUDIO_MIXER_DEVINFO) /* audioio */
@@ -81,14 +60,35 @@ typedef struct _Volume
 } Volume;
 
 
+/* private */
 /* prototypes */
-static Volume * _volume_new(PanelApplet * applet);
-static void _volume_delete(PanelApplet * applet);
+static Volume * _volume_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _volume_destroy(Volume * volume);
 
-static gdouble _volume_get(PanelApplet * applet);
-static int _volume_set(PanelApplet * applet, gdouble value);
+
+/* public */
+/* variables */
+PanelAppletDefinition applet =
+{
+	"Volume",
+	"stock_volume",
+	NULL,
+	_volume_init,
+	_volume_destroy,
+	NULL,
+	FALSE,
+	TRUE
+};
+
+
+/* prototypes */
+static Volume * _volume_new(PanelAppletHelper * helper);
+static void _volume_delete(Volume * volume);
+
+static gdouble _volume_get(Volume * volume);
+static int _volume_set(Volume * volume, gdouble value);
 #ifdef AUDIO_MIXER_DEVINFO
-static int _volume_match(PanelApplet * applet, mixer_devinfo_t * md);
+static int _volume_match(Volume * volume, mixer_devinfo_t * md);
 #endif
 
 /* callbacks */
@@ -98,28 +98,28 @@ static gboolean _on_volume_timeout(gpointer data);
 
 /* functions */
 /* volume_init */
-static GtkWidget * _volume_init(PanelApplet * applet)
+static Volume * _volume_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 #if GTK_CHECK_VERSION(2, 12, 0)
 	Volume * volume;
 	gdouble value;
 
-	if((volume = _volume_new(applet)) == NULL)
+	if((volume = _volume_new(helper)) == NULL)
 		return NULL;
-	applet->priv = volume;
+	volume->helper = helper;
 	volume->widget = gtk_volume_button_new();
-	g_object_set(G_OBJECT(volume->widget), "size",
-			applet->helper->icon_size, NULL);
-	if((value = _volume_get(applet)) >= 0.0)
+	g_object_set(G_OBJECT(volume->widget), "size", helper->icon_size, NULL);
+	if((value = _volume_get(volume)) >= 0.0)
 	{
 		gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume->widget),
 				value);
-		_volume_set(applet, value);
+		_volume_set(volume, value);
 	}
-	g_signal_connect(G_OBJECT(volume->widget), "value-changed", G_CALLBACK(
-				_on_value_changed), applet);
+	g_signal_connect(volume->widget, "value-changed", G_CALLBACK(
+				_on_value_changed), volume);
 	gtk_widget_show(volume->widget);
-	return volume->widget;
+	*widget = volume->widget;
+	return volume;
 #else
 	return NULL;
 #endif
@@ -127,14 +127,14 @@ static GtkWidget * _volume_init(PanelApplet * applet)
 
 
 /* volume_destroy */
-static void _volume_destroy(PanelApplet * applet)
+static void _volume_destroy(Volume * volume)
 {
-	_volume_delete(applet);
+	_volume_delete(volume);
 }
 
 
 /* volume_new */
-static Volume * _volume_new(PanelApplet * applet)
+static Volume * _volume_new(PanelAppletHelper * helper)
 {
 	Volume * volume;
 #if defined(AUDIO_MIXER_DEVINFO)
@@ -148,13 +148,13 @@ static Volume * _volume_new(PanelApplet * applet)
 
 	if((volume = malloc(sizeof(*volume))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(helper->panel, "malloc", 1);
 		return NULL;
 	}
-	volume->device = applet->helper->config_get(applet->helper->panel,
-					"volume", "device");
-	volume->control = applet->helper->config_get(applet->helper->panel,
-			"volume", "control");
+	volume->helper = helper;
+	volume->device = helper->config_get(helper->panel, "volume", "device");
+	volume->control = helper->config_get(helper->panel, "volume",
+			"control");
 	volume->source = 0;
 #if defined(AUDIO_MIXER_DEVINFO)
 	if(volume->device == NULL)
@@ -163,7 +163,7 @@ static Volume * _volume_new(PanelApplet * applet)
 	volume->outputs = -1;
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
 	{
-		applet->helper->error(applet->helper->panel, volume->device, 0);
+		helper->error(helper->panel, volume->device, 0);
 		return volume;
 	}
 	for(i = 0; volume->outputs == -1 || volume->mix == -1; i++)
@@ -178,7 +178,7 @@ static Volume * _volume_new(PanelApplet * applet)
 		else if(strcmp(md.label.name, "mix") == 0)
 			volume->mix = i;
 	}
-	volume->source = g_timeout_add(500, _on_volume_timeout, applet);
+	volume->source = g_timeout_add(500, _on_volume_timeout, volume);
 #elif defined(SND_LIB_MAJOR)
 	if(volume->device == NULL)
 		volume->device = "hw:0";
@@ -202,37 +202,35 @@ static Volume * _volume_new(PanelApplet * applet)
 			&& snd_mixer_selem_get_playback_volume_range(
 				volume->mixer_elem, &min,
 			       	&volume->mixer_elem_max) == 0)
-		volume->source = g_timeout_add(500, _on_volume_timeout, applet);
+		volume->source = g_timeout_add(500, _on_volume_timeout, volume);
 	else
 		volume->mixer_elem = NULL;
 #else
 	if(volume->device == NULL)
 		volume->device = "/dev/mixer";
 	if((volume->fd = open(volume->device, O_RDWR)) < 0)
-		applet->helper->error(applet->helper->panel, volume->device, 0);
+		helper->error(helper->panel, volume->device, 0);
 	else
-		volume->source = g_timeout_add(500, _on_volume_timeout, applet);
+		volume->source = g_timeout_add(500, _on_volume_timeout, volume);
 #endif
 	return volume;
 }
 
 
 /* volume_delete */
-static void _volume_delete(PanelApplet * applet)
+static void _volume_delete(Volume * volume)
 {
-	Volume * volume = applet->priv;
-
 	if(volume->source != 0)
 		g_source_remove(volume->source);
 #if defined(AUDIO_MIXER_DEVINFO)
 	if(volume->fd >= 0 && close(volume->fd) != 0)
-		applet->helper->error(applet->helper->panel, volume->device, 0);
+		volume->helper->error(volume->helper->panel, volume->device, 1);
 #elif defined(SND_LIB_MAJOR)
 	if(volume->mixer != NULL)
 		snd_mixer_close(volume->mixer);
 #else /* XXX equivalent for now */
 	if(volume->fd >= 0 && close(volume->fd) != 0)
-		applet->helper->error(applet->helper->panel, volume->device, 0);
+		volume->helper->error(volume->helper->panel, volume->device, 1);
 #endif
 	free(volume);
 }
@@ -240,9 +238,9 @@ static void _volume_delete(PanelApplet * applet)
 
 /* accessors */
 /* volume_get */
-static gdouble _volume_get(PanelApplet * applet)
+static gdouble _volume_get(Volume * volume)
 {
-	Volume * volume = applet->priv;
+	PanelAppletHelper * helper = volume->helper;
 	gdouble ret = -1.0;
 #if defined(AUDIO_MIXER_DEVINFO)
 	mixer_devinfo_t md;
@@ -258,19 +256,18 @@ static gdouble _volume_get(PanelApplet * applet)
 		md.index = i;
 		if(ioctl(volume->fd, AUDIO_MIXER_DEVINFO, &md) < 0)
 		{
-			applet->helper->error(NULL, "AUDIO_MIXER_DEVINFO", 0);
+			helper->error(NULL, "AUDIO_MIXER_DEVINFO", 1);
 			close(volume->fd);
 			volume->fd = -1;
 			break;
 		}
-		if(_volume_match(applet, &md) != 1)
+		if(_volume_match(volume, &md) != 1)
 			continue;
 		mc.dev = i;
 		mc.type = AUDIO_MIXER_VALUE;
 		mc.un.value.num_channels = md.un.v.num_channels;
 		if(ioctl(volume->fd, AUDIO_MIXER_READ, &mc) < 0)
-			applet->helper->error(applet->helper->panel,
-					"AUDIO_MIXER_READ", 0);
+			helper->error(helper->panel, "AUDIO_MIXER_READ", 1);
 		else
 			ret = mc.un.value.level[0] / 255.0;
 		break;
@@ -292,7 +289,7 @@ static gdouble _volume_get(PanelApplet * applet)
 		return ret;
 	if(ioctl(volume->fd, MIXER_READ(SOUND_MIXER_VOLUME), &value) < 0)
 	{
-		applet->helper->error(NULL, "MIXER_READ", 0);
+		helper->error(NULL, "MIXER_READ", 1);
 		close(volume->fd);
 		volume->fd = -1;
 	}
@@ -307,10 +304,10 @@ static gdouble _volume_get(PanelApplet * applet)
 
 
 /* volume_set */
-int _volume_set(PanelApplet * applet, gdouble value)
+int _volume_set(Volume * volume, gdouble value)
 {
-	Volume * volume = applet->priv;
 	int ret = 0;
+	PanelAppletHelper * helper = volume->helper;
 #if defined(AUDIO_MIXER_DEVINFO)
 	mixer_devinfo_t md;
 	mixer_ctrl_t mc;
@@ -330,7 +327,7 @@ int _volume_set(PanelApplet * applet, gdouble value)
 		if(ioctl(volume->fd, AUDIO_MIXER_DEVINFO, &md) < 0)
 			break;
 		/* FIXME use volume->control */
-		if(_volume_match(applet, &md) != 1)
+		if(_volume_match(volume, &md) != 1)
 			continue;
 		mc.dev = i;
 		mc.type = AUDIO_MIXER_VALUE;
@@ -339,8 +336,8 @@ int _volume_set(PanelApplet * applet, gdouble value)
 		for(j = 1; j < mc.un.value.num_channels; j++) /* XXX overflow */
 			mc.un.value.level[j] = mc.un.value.level[0];
 		if(ioctl(volume->fd, AUDIO_MIXER_WRITE, &mc) < 0)
-			ret |= applet->helper->error(applet->helper->panel,
-					"AUDIO_MIXER_WRITE", 0);
+			ret |= helper->error(helper->panel, "AUDIO_MIXER_WRITE",
+					1);
 		break;
 	}
 #elif defined(SND_LIB_MAJOR)
@@ -359,8 +356,7 @@ int _volume_set(PanelApplet * applet, gdouble value)
 	fprintf(stderr, "DEBUG: %s(%lf) 0x%04x\n", __func__, value, v);
 # endif
 	if(ioctl(volume->fd, MIXER_WRITE(SOUND_MIXER_VOLUME), &v) < 0)
-		ret |= applet->helper->error(applet->helper->panel,
-				"MIXER_WRITE", 0);
+		ret |= helper->error(helper->panel, "MIXER_WRITE", 1);
 #endif
 	return ret;
 }
@@ -368,10 +364,8 @@ int _volume_set(PanelApplet * applet, gdouble value)
 
 #if defined(AUDIO_MIXER_DEVINFO)
 /* volume_match */
-static int _volume_match(PanelApplet * applet, mixer_devinfo_t * md)
+static int _volume_match(Volume * volume, mixer_devinfo_t * md)
 {
-	Volume * volume = applet->priv;
-
 	if(md->type != AUDIO_MIXER_VALUE)
 		return 0;
 	if(md->mixer_class == volume->mix /* mix.master */
@@ -392,20 +386,19 @@ static int _volume_match(PanelApplet * applet, mixer_devinfo_t * md)
 /* on_value_changed */
 static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
 {
-	PanelApplet * applet = data;
+	Volume * volume = data;
 
-	_volume_set(applet, value);
+	_volume_set(volume, value);
 }
 
 
 /* on_volume_timeout */
 static gboolean _on_volume_timeout(gpointer data)
 {
-	PanelApplet * applet = data;
-	Volume * volume = applet->priv;
+	Volume * volume = data;
 	gdouble value;
 
-	if((value = _volume_get(applet)) < 0.0)
+	if((value = _volume_get(volume)) < 0.0)
 	{
 		volume->source = 0;
 		return FALSE;

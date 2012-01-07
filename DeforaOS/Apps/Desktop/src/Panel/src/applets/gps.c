@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 /* GPS */
 /* private */
 /* types */
-typedef struct _GPS
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * image;
@@ -43,8 +43,8 @@ typedef struct _GPS
 
 
 /* prototypes */
-static GtkWidget * _gps_init(PanelApplet * applet);
-static void _gps_destroy(PanelApplet * applet);
+static GPS * _gps_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _gps_destroy(GPS * gps);
 
 static gboolean _gps_get(GPS * gps);
 static void _gps_set(GPS * gps, gboolean on);
@@ -55,52 +55,49 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"GPS",
 	"network-wireless",
+	NULL,
 	_gps_init,
 	_gps_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* gps_init */
-static GtkWidget * _gps_init(PanelApplet * applet)
+static GPS * _gps_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	GPS * gps;
 
 	if((gps = malloc(sizeof(*gps))) == NULL)
 		return NULL;
-	applet->priv = gps;
-	gps->helper = applet->helper;
+	gps->helper = helper;
 	gps->timeout = 0;
 #if defined(__linux__)
 	gps->fd = -1;
 #endif
 	/* XXX find a better image */
 	gps->image = gtk_image_new_from_icon_name("network-wireless",
-			applet->helper->icon_size);
+			helper->icon_size);
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(gps->image, _("GPS is enabled"));
 #endif
 	gps->timeout = g_timeout_add(1000, _on_timeout, gps);
 	_on_timeout(gps);
-	return gps->image;
+	*widget = gps->image;
+	return gps;
 }
 
 
 /* gps_destroy */
-static void _gps_destroy(PanelApplet * applet)
+static void _gps_destroy(GPS * gps)
 {
-	GPS * gps = applet->priv;
-
 	if(gps->timeout > 0)
 		g_source_remove(gps->timeout);
 #if defined(__linux__)

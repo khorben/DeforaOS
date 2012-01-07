@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Pager Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,10 @@ typedef enum _PagerAtom
 #define PAGER_ATOM_LAST PAGER_ATOM_UTF8_STRING
 #define PAGER_ATOM_COUNT (PAGER_ATOM_LAST + 1)
 
-typedef struct _Pager
+typedef struct _PanelApplet
 {
+	PanelAppletHelper * helper;
+
 	GtkWidget * hbox;
 
 	GtkWidget ** widgets;
@@ -60,8 +62,8 @@ static const char * _pager_atom[PAGER_ATOM_COUNT] =
 
 
 /* prototypes */
-static GtkWidget * _pager_init(PanelApplet * applet);
-static void _pager_destroy(PanelApplet * applet);
+static Pager * _pager_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _pager_destroy(Pager * pager);
 
 /* accessors */
 static int _pager_get_current_desktop(Pager * pager);
@@ -83,33 +85,32 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Pager",
+	NULL,
 	NULL,
 	_pager_init,
 	_pager_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* pager_init */
-static GtkWidget * _pager_init(PanelApplet * applet)
+static Pager * _pager_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	Pager * pager;
 
 	if((pager = malloc(sizeof(*pager))) == NULL)
 	{
-		applet->helper->error(applet->helper->panel, "malloc", 0);
+		helper->error(NULL, "malloc", 1);
 		return NULL;
 	}
-	applet->priv = pager;
+	pager->helper = helper;
 	pager->hbox = gtk_hbox_new(TRUE, 0);
 	g_signal_connect(G_OBJECT(pager->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), pager);
@@ -118,15 +119,14 @@ static GtkWidget * _pager_init(PanelApplet * applet)
 	pager->screen = NULL;
 	pager->display = NULL;
 	pager->root = NULL;
-	return pager->hbox;
+	*widget = pager->hbox;
+	return pager;
 }
 
 
 /* pager_destroy */
-static void _pager_destroy(PanelApplet * applet)
+static void _pager_destroy(Pager * pager)
 {
-	Pager * pager = applet->priv;
-
 	free(pager);
 }
 

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ typedef enum _BatteryLevel
 #define BATTERY_LEVEL_LAST	BATTERY_LEVEL_FULL
 #define BATTERY_LEVEL_COUNT	(BATTERY_LEVEL_LAST + 1)
 
-typedef struct _Battery
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	BatteryLevel level;
@@ -74,8 +74,8 @@ typedef struct _Battery
 
 
 /* prototypes */
-static GtkWidget * _battery_init(PanelApplet * applet);
-static void _battery_destroy(PanelApplet * applet);
+static Battery * _battery_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _battery_destroy(Battery * battery);
 
 static gdouble _battery_get(Battery * battery, gboolean * charging);
 static void _battery_set(Battery * battery, gdouble value, gboolean charging);
@@ -86,32 +86,30 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"Battery",
 	"battery",
+	NULL,
 	_battery_init,
 	_battery_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* battery_init */
-static GtkWidget * _battery_init(PanelApplet * applet)
+static Battery * _battery_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-	GtkWidget * hbox;
 	Battery * battery;
+	GtkWidget * hbox;
 
 	if((battery = malloc(sizeof(*battery))) == NULL)
 		return NULL;
-	applet->priv = battery;
-	battery->helper = applet->helper;
+	battery->helper = helper;
 	battery->level = -1;
 	battery->charging = -1;
 	battery->timeout = 0;
@@ -121,7 +119,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	hbox = gtk_hbox_new(FALSE, 4);
 	battery->hbox = hbox;
 	battery->image = gtk_image_new_from_icon_name("battery",
-			applet->helper->icon_size);
+			helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->image, FALSE, TRUE, 0);
 #ifndef EMBEDDED
 	battery->label = gtk_label_new(" ");
@@ -131,15 +129,14 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	battery->timeout = g_timeout_add(5000, _on_timeout, battery);
 	_on_timeout(battery);
 	gtk_widget_show(battery->image);
-	return hbox;
+	*widget = hbox;
+	return battery;
 }
 
 
 /* battery_destroy */
-static void _battery_destroy(PanelApplet * applet)
+static void _battery_destroy(Battery * battery)
 {
-	Battery * battery = applet->priv;
-
 	if(battery->timeout > 0)
 		g_source_remove(battery->timeout);
 #if defined(__NetBSD__) || defined(__linux__)

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 /* USB */
 /* private */
 /* types */
-typedef struct _USB
+typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 	GtkWidget * image;
@@ -46,8 +46,8 @@ typedef struct _USB
 
 
 /* prototypes */
-static GtkWidget * _usb_init(PanelApplet * applet);
-static void _usb_destroy(PanelApplet * applet);
+static USB * _usb_init(PanelAppletHelper * helper, GtkWidget ** widget);
+static void _usb_destroy(USB * usb);
 
 static gboolean _usb_get(USB * usb);
 static void _usb_set(USB * usb, gboolean on);
@@ -58,24 +58,23 @@ static gboolean _on_timeout(gpointer data);
 
 /* public */
 /* variables */
-PanelApplet applet =
+PanelAppletDefinition applet =
 {
-	NULL,
 	"USB",
 	"panel-applet-usb",
+	NULL,
 	_usb_init,
 	_usb_destroy,
 	NULL,
 	FALSE,
-	TRUE,
-	NULL
+	TRUE
 };
 
 
 /* private */
 /* functions */
 /* usb_init */
-static GtkWidget * _usb_init(PanelApplet * applet)
+static USB * _usb_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	USB * usb;
 #if GTK_CHECK_VERSION(2, 12, 0)
@@ -84,30 +83,28 @@ static GtkWidget * _usb_init(PanelApplet * applet)
 
 	if((usb = malloc(sizeof(*usb))) == NULL)
 		return NULL;
-	applet->priv = usb;
-	usb->helper = applet->helper;
+	usb->helper = helper;
 	usb->timeout = 0;
 #if defined(__NetBSD__) || defined(__linux__)
 	usb->fd = -1;
 	tooltip = _("USB networking device connected");
 #endif
 	usb->image = gtk_image_new_from_icon_name("panel-applet-usb",
-			applet->helper->icon_size);
+			helper->icon_size);
 #if GTK_CHECK_VERSION(2, 12, 0)
 	if(tooltip != NULL)
 		gtk_widget_set_tooltip_text(usb->image, tooltip);
 #endif
 	usb->timeout = g_timeout_add(1000, _on_timeout, usb);
 	_on_timeout(usb);
-	return usb->image;
+	*widget = usb->image;
+	return usb;
 }
 
 
 /* usb_destroy */
-static void _usb_destroy(PanelApplet * applet)
+static void _usb_destroy(USB * usb)
 {
-	USB * usb = applet->priv;
-
 	if(usb->timeout > 0)
 		g_source_remove(usb->timeout);
 #if defined(__NetBSD__) || defined(__linux__)
