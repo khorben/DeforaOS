@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,6 +120,7 @@ static Volumes * _volumes_init(BrowserPluginHelper * helper)
 			"text", DC_NAME, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(volumes->view), column);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(volumes->view));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_SINGLE);
 	g_signal_connect_swapped(G_OBJECT(treesel), "changed", G_CALLBACK(
 				_volumes_on_selection_changed), volumes);
 	gtk_container_add(GTK_CONTAINER(volumes->window), volumes->view);
@@ -164,6 +165,7 @@ static void _volumes_refresh(Volumes * volumes, char const * path)
 	int i;
 #endif
 
+	/* FIXME no longer clear the list every time */
 	gtk_list_store_clear(volumes->store);
 #ifdef __NetBSD__
 	if((res = getmntinfo(&mnt, ST_WAIT)) <= 0)
