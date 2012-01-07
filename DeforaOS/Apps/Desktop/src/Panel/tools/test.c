@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Panel */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
  * - implement all remaining helpers */
 
@@ -27,6 +29,7 @@
 #include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#include <Desktop.h>
 #include "Panel.h"
 #include "panel.h"
 #include "../config.h"
@@ -36,6 +39,12 @@
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
+
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
 
 
 /* private */
@@ -59,6 +68,7 @@ static int _usage(void);
 static char const * _helper_config_get(Panel * panel, char const * section,
 		char const * variable);
 static int _helper_error(Panel * panel, char const * message, int ret);
+static void _helper_about_dialog(Panel * panel);
 static void _helper_position_menu(Panel * panel, GtkMenu * menu, gint * x,
 		gint * y, gboolean * push_in);
 
@@ -95,6 +105,7 @@ static int _test(char * applets[])
 	helper.icon_size = GTK_ICON_SIZE_SMALL_TOOLBAR;
 	helper.config_get = _helper_config_get;
 	helper.error = _helper_error;
+	helper.about_dialog = _helper_about_dialog;
 	helper.position_menu = _helper_position_menu;
 	for(i = 0; applets[i] != NULL; i++)
 	{
@@ -142,6 +153,26 @@ static int _helper_error(Panel * panel, char const * message, int ret)
 	fputs("panel_test: ", stderr);
 	perror(message);
 	return ret;
+}
+
+static void _helper_about_dialog(Panel * panel)
+{
+	GtkWidget * dialog;
+
+	dialog = desktop_about_dialog_new();
+	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_copyright(dialog, _copyright);
+	desktop_about_dialog_set_logo_icon_name(dialog,
+			"panel-settings"); /* XXX */
+	desktop_about_dialog_set_license(dialog, _license);
+	desktop_about_dialog_set_program_name(dialog, "Panel test");
+	desktop_about_dialog_set_version(dialog, VERSION);
+	desktop_about_dialog_set_website(dialog,
+			"http://www.defora.org/");
+	gtk_window_set_position(GTK_WINDOW(dialog),
+			GTK_WIN_POS_CENTER_ALWAYS);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
 static void _helper_position_menu(Panel * panel, GtkMenu * menu, gint * x,
