@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -30,14 +30,17 @@ class HttpEngine extends Engine
 	//HttpEngine::getRequest
 	public function getRequest()
 	{
-		if(!isset($_REQUEST))
-			return FALSE;
+		$request = array();
 		$module = FALSE;
 		$action = FALSE;
 		$id = FALSE;
 		$title = FALSE;
 		$parameters = FALSE;
-		foreach($_REQUEST as $key => $value)
+		if($_SERVER['REQUEST_METHOD'] == 'GET')
+			$request = $_GET;
+		else if($_SERVER['REQUEST_METHOD'] == 'POST')
+			$request = $_POST;
+		foreach($request as $key => $value)
 		{
 			//FIXME disabled until all SQL queries are prepared
 			//if(get_magic_quotes_gpc() != 0)
