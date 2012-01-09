@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ class Request
 {
 	//public
 	//methods
+	//Request::Request
 	function __construct($engine, $module = FALSE, $action = FALSE,
 			$id = FALSE, $title = FALSE, $parameters = FALSE)
 	{
@@ -46,6 +47,7 @@ class Request
 
 
 	//useful
+	//Request::process
 	public function process(&$engine)
 	{
 		$engine->log('LOG_DEBUG', 'Processing request: module "'
@@ -61,24 +63,28 @@ class Request
 
 
 	//accessors
+	//Request::getAction
 	public function getAction()
 	{
 		return $this->action;
 	}
 
 
+	//Request::getId
 	public function getId()
 	{
 		return $this->id;
 	}
 
 
+	//Request::getModule
 	public function getModule()
 	{
 		return $this->module;
 	}
 
 
+	//Request::getParameter
 	public function getParameter($name)
 	{
 		if(!isset($this->parameters[$name]))
@@ -87,18 +93,21 @@ class Request
 	}
 
 
+	//Request::getParameters
 	public function getParameters()
 	{
 		return $this->parameters;
 	}
 
 
+	//Request::getTitle
 	public function getTitle()
 	{
 		return $this->title;
 	}
 
 
+	//Request::setModule
 	private function setModule(&$engine, $module)
 	{
 		if(($this->handle = Module::load($engine, $module)) === FALSE)
@@ -108,6 +117,7 @@ class Request
 	}
 
 
+	//Request::setAction
 	private function setAction(&$engine, $action)
 	{
 		if(strchr($action, '.') !== FALSE
@@ -122,6 +132,7 @@ class Request
 	}
 
 
+	//Request::setId
 	private function setId(&$engine, $id)
 	{
 		if(!is_numeric($id))
@@ -135,6 +146,7 @@ class Request
 	}
 
 
+	//Request::setParameters
 	private function setParameters(&$engine, $parameters)
 	{
 		if(!is_array($parameters))
@@ -143,6 +155,7 @@ class Request
 	}
 
 
+	//Request::setTitle
 	public function setTitle(&$engine, $title)
 	{
 		$this->title = $title;

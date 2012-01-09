@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ class PageElement
 
 
 	//essential
+	//PageElement::PageElement
 	public function __construct($type, $properties = FALSE)
 	{
 		$this->type = $type;
@@ -43,12 +44,14 @@ class PageElement
 	}
 
 
+	//PageElement::getProperties
 	public function getProperties()
 	{
 		return $this->properties;
 	}
 
 
+	//PageElement::getProperty
 	public function getProperty($name, $default = FALSE)
 	{
 		if(!isset($this->properties[$name]))
@@ -57,18 +60,21 @@ class PageElement
 	}
 
 
+	//PageElement::getType
 	public function getType()
 	{
 		return $this->type;
 	}
 
 
+	//PageElement::setProperty
 	public function setProperty($name, $value)
 	{
 		$this->properties[$name] = $value;
 	}
 
 
+	//PageElement::setContent
 	public function setContent($content)
 	{
 		$this->content = $content;
@@ -100,6 +106,7 @@ class PageElement
 class Page extends PageElement
 {
 	//essential
+	//Page::Page
 	public function __construct($properties = FALSE)
 	{
 		parent::__construct('page', $properties);

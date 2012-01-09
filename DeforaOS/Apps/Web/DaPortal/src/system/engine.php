@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -26,11 +26,6 @@ abstract class Engine
 	//virtual
 	//accessors
 	abstract public function getRequest();
-
-
-	//useful
-	abstract protected function match();
-	abstract protected function attach();
 
 	abstract public function render($content);
 
@@ -63,18 +58,21 @@ abstract class Engine
 	}
 
 
+	//Engine::getType
 	public function getType()
 	{
 		return $this->type;
 	}
 
 
+	//Engine::setDebug
 	public function setDebug($debug)
 	{
 		$this->debug = ($debug !== FALSE) ? TRUE : FALSE;
 	}
 
 
+	//Engine::setType
 	protected function setType($type)
 	{
 		$this->type = $type;
@@ -82,6 +80,7 @@ abstract class Engine
 
 
 	//useful
+	//Engine::log
 	public function log($priority, $message)
 	{
 		//FIXME use PHP's configured facility instead (error_log())
@@ -119,6 +118,7 @@ abstract class Engine
 	}
 
 
+	//Engine::process
 	public function process($request)
 	{
 		if($request === FALSE)
@@ -129,6 +129,7 @@ abstract class Engine
 
 	//static
 	//useful
+	//Engine::attachDefault
 	public static function attachDefault()
 	{
 		global $config;
@@ -145,6 +146,8 @@ abstract class Engine
 				return FALSE;
 			$name = ucfirst($name).'Engine';
 			$ret = new $name();
+			$ret->log('LOG_DEBUG', 'Attaching '.get_class($ret)
+					.' (default)');
 			$ret->attach();
 			return $ret;
 		}
@@ -179,6 +182,11 @@ abstract class Engine
 	//protected
 	//properties
 	protected static $debug = FALSE;
+
+	//methods
+	//useful
+	abstract protected function match();
+	abstract protected function attach();
 
 
 	//private

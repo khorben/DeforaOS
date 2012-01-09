@@ -100,7 +100,9 @@ abstract class Auth
 				return FALSE;
 			$name = ucfirst($name).'Auth';
 			$ret = new $name();
-			$ret->attach();
+			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
+					.' (default)');
+			$ret->attach($engine);
 			return $ret;
 		}
 		if(($dir = opendir('auth')) === FALSE)

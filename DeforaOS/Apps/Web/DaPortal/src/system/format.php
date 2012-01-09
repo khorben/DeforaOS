@@ -20,35 +20,44 @@
 abstract class Format
 {
 	//public
+	//methods
 	//static
-	public static function attachDefault(&$engine)
+	//Format::attachDefault
+	public static function attachDefault(&$engine, $type = FALSE)
 	{
 		global $config;
 		$ret = FALSE;
 		$priority = 0;
 
-		if(($name = $config->getVariable('format', 'backend'))
-				!== FALSE)
+		$name = FALSE;
+		if($type !== FALSE)
+			$name = $config->getVariable("format::$type",
+					'backend');
+		if($name === FALSE)
+			$name = $config->getVariable('format', 'backend');
+		if($name !== FALSE)
 		{
-			$res = require_once('./format/'.$name.'.php');
+			$res = require_once('./formats/'.$name.'.php');
 			if($res === FALSE)
 				return FALSE;
 			$name = ucfirst($name).'Format';
 			$ret = new $name();
-			$ret->attach();
+			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
+					.' (default)');
+			$ret->attach($engine, $type);
 			return $ret;
 		}
-		if(($dir = opendir('format')) === FALSE)
+		if(($dir = opendir('formats')) === FALSE)
 			return FALSE;
 		while(($de = readdir($dir)) !== FALSE)
 		{
 			if(substr($de, -4) != '.php')
 				continue;
-			require_once('./format/'.$de);
+			require_once('./formats/'.$de);
 			$name = substr($de, 0, strlen($de) - 4);
 			$name = ucfirst($name).'Format';
 			$format = new $name();
-			if(($p = $format->match($engine)) <= $priority)
+			if(($p = $format->match($engine, $type)) <= $priority)
 				continue;
 			$ret = $format;
 			$priority = $p;
@@ -58,7 +67,7 @@ abstract class Format
 		{
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' with priority '.$priority);
-			$ret->attach($engine);
+			$ret->attach($engine, $type);
 		}
 		return $ret;
 	}
@@ -67,10 +76,10 @@ abstract class Format
 	//protected
 	//methods
 	//virtual
-	abstract protected function match(&$engine);
-	abstract protected function attach(&$engine);
+	abstract protected function match(&$engine, $type);
+	abstract protected function attach(&$engine, $type);
 
-	//FIXME complete
+	abstract protected function render(&$engine, $page, $filename = FALSE);
 }
 
 ?>

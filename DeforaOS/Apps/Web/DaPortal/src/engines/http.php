@@ -69,12 +69,23 @@ class HttpEngine extends Engine
 	//HttpEngine::render
 	public function render($page)
 	{
-		if($page === FALSE)
-			return FALSE;
-		if(($template = Template::attachDefault($this)) === FALSE)
-			return FALSE;
-		header('Content-Type: '.$this->getType());
-		$template->render($this, $page);
+		$type = $this->getType();
+		header('Content-Type: '.$type); //XXX escape
+		switch($type)
+		{
+			case 'text/html':
+			default:
+				if(($template = Template::attachDefault($this))
+						=== FALSE)
+					return FALSE;
+				if(($page = $template->render($this, $page))
+						=== FALSE)
+					return FALSE;
+				require_once('./system/format.php');
+				$output = Format::attachDefault($this, $type);
+				$output->render($this);
+				break;
+		}
 	}
 
 

@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -53,6 +53,7 @@ class Config
 	//methods
 	//public
 	//essential
+	//Config::Config
 	public function __construct()
 	{
 		$this->sections[''] = new ConfigSection;
@@ -60,6 +61,7 @@ class Config
 
 
 	//accessors
+	//Config::getVariable
 	public function getVariable($section, $name)
 	{
 		if($section === FALSE)
@@ -70,6 +72,7 @@ class Config
 	}
 
 
+	//Config::setVariable
 	public function setVariable($section, $name, $value)
 	{
 		if($section === FALSE)
@@ -98,7 +101,7 @@ class Config
 						$matches) == 1)
 				$this->setVariable($section, $matches[1],
 						$matches[2]);
-			else if(preg_match("/^[ \t]*\[([a-zA-Z0-9-_: \t]+)\]"
+			else if(preg_match("/^[ \t]*\[([a-zA-Z0-9-_:\/ \t]+)\]"
 						."[ \t]*$/", $line, $matches)
 					== 1)
 				$section = $matches[1];

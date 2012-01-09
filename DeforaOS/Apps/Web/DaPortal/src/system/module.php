@@ -22,6 +22,7 @@ abstract class Module
 	//public
 	//methods
 	//essential
+	//Module::Module
 	public function __construct($name)
 	{
 		$this->name = $name;
@@ -29,6 +30,7 @@ abstract class Module
 
 
 	//accessors
+	//Module::getId
 	public function getId($engine)
 	{
 		if($this->id !== FALSE)
@@ -49,6 +51,7 @@ abstract class Module
 
 	//static
 	//useful
+	//Module::load
 	public static function load(&$engine, $module)
 	{
 		if($module === FALSE)

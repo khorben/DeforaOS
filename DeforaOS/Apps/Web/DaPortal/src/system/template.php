@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -20,12 +20,28 @@
 abstract class Template
 {
 	//public
+	//methods
 	//static
+	//Template::attachDefault
 	public static function attachDefault(&$engine)
 	{
+		global $config;
 		$ret = FALSE;
 		$priority = 0;
 
+		if(($name = $config->getVariable('template', 'backend'))
+				!== FALSE)
+		{
+			$res = require_once('./templates/'.$name.'.php');
+			if($res === FALSE)
+				return FALSE;
+			$name = ucfirst($name).'Template';
+			$ret = new $name();
+			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
+					.' (default)');
+			$ret->attach($engine);
+			return $ret;
+		}
 		if(($dir = opendir('templates')) === FALSE)
 			return FALSE;
 		while(($de = readdir($dir)) !== FALSE)
