@@ -48,7 +48,7 @@ class Html5Format extends Format
 
 		//FIXME ignore $filename for the moment
 		$this->engine = $engine;
-		print("<!DOCTYPE html>\n<html>\n\t<head>\n");
+		print("<!DOCTYPE html>\n<html>\n\t<head>");
 		$this->renderTitle($page);
 		$this->renderTheme($page);
 		if(($charset = $config->getVariable('defaults', 'charset'))
@@ -385,8 +385,9 @@ class Html5Format extends Format
 
 		if(($theme = $config->getVariable(FALSE, 'theme')) === FALSE)
 			return;
-		print("\t\t".'<link rel="stylesheet" href="themes/'
-				.$this->escapeAttribute($theme).'.css"/>'."\n");
+		$this->renderTabs(2);
+		print('<link rel="stylesheet" href="themes/'
+				.$this->escapeAttribute($theme).'.css"/>');
 	}
 
 	private function renderTitle($page)
@@ -396,7 +397,10 @@ class Html5Format extends Format
 		if(($title = $page->getProperty('title')) === FALSE)
 			$title = $config->getVariable(FALSE, 'title');
 		if($title !== FALSE)
-			print("\t\t<title>".$this->escape($title)."</title>\n");
+		{
+			$this->renderTabs(2);
+			print('<title>'.$this->escape($title).'</title>');
+		}
 	}
 
 	private function renderTreeview($e, $level)
