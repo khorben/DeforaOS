@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2007-2008,2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -170,7 +170,7 @@ class BrowserModule extends Module
 			return _error('Internal error');
 		if(($st = stat($root.'/'.$file)) == FALSE)
 			return _error('Could not open file');
-		if($st['mode'] & S_IFDIR == S_IFDIR)
+		if(($st['mode'] & S_IFDIR) == S_IFDIR)
 			return $this->_defaultDir($root, $file,
 					isset($args['sort'])
 					? $args['sort'] : FALSE);
@@ -186,7 +186,7 @@ class BrowserModule extends Module
 			if($f == '.' || $f == '..')
 				continue;
 			else
-				$file.='/'.$f;
+				$file .= '/'.$f;
 		return '/'.trim($file, '/');
 	}
 
