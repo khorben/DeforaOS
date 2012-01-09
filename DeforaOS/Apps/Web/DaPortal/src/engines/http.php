@@ -83,7 +83,7 @@ class HttpEngine extends Engine
 					return FALSE;
 				require_once('./system/format.php');
 				$output = Format::attachDefault($this, $type);
-				$output->render($this);
+				$output->render($this, $page);
 				break;
 		}
 	}

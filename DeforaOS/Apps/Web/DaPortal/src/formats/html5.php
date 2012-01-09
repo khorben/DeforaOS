@@ -42,7 +42,7 @@ class Html5Format extends Format
 
 
 	//Html5Format::render
-	protected function render($engine, $page, $filename = FALSE)
+	public function render(&$engine, $page, $filename = FALSE)
 	{
 		global $config;
 
@@ -52,9 +52,6 @@ class Html5Format extends Format
 		$this->renderTitle($page);
 		$this->renderTheme($page);
 		print("\t</head>\n\t<body>");
-		if(($top = $engine->process(new Request($engine, 'top')))
-				!== FALSE)
-			$this->renderElement($top);
 		$this->renderChildren($page, 1);
 		$this->renderTabs(1);
 		print("</body>\n</html>\n");
@@ -469,25 +466,6 @@ class Html5Format extends Format
 	private function escapeURI($text)
 	{
 		return urlencode($text);
-	}
-
-
-	//protected
-	protected function attach(&$backend)
-	{
-		return TRUE;
-	}
-
-
-	protected function match(&$backend)
-	{
-		switch($backend->getType())
-		{
-			case 'text/html':
-				return 100;
-			default:
-				return 0;
-		}
 	}
 
 

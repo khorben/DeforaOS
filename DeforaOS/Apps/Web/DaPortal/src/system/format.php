@@ -79,7 +79,7 @@ abstract class Format
 	abstract protected function match(&$engine, $type);
 	abstract protected function attach(&$engine, $type);
 
-	abstract protected function render(&$engine, $page, $filename = FALSE);
+	abstract public function render(&$engine, $page, $filename = FALSE);
 }
 
 ?>
