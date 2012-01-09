@@ -98,6 +98,7 @@ CREATE TABLE daportal_content (
 	title VARCHAR(255),
 	content TEXT,
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
+	public BOOLEAN NOT NULL DEFAULT FALSE,
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
