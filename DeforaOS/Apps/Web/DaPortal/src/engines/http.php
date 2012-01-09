@@ -30,6 +30,8 @@ class HttpEngine extends Engine
 	//HttpEngine::getRequest
 	public function getRequest()
 	{
+		global $config;
+
 		$request = array();
 		$module = FALSE;
 		$action = FALSE;
@@ -60,6 +62,14 @@ class HttpEngine extends Engine
 					break;
 			}
 		}
+		if($module === FALSE)
+		{
+			$module = $config->getVariable('defaults', 'module');
+			$action = $config->getVariable('defaults', 'action');
+			$id = $config->getVariable('defaults', 'id');
+			$title = FALSE;
+			$parameters = FALSE;
+		}
 		return new Request($this, $module, $action, $id, $title,
 				$parameters);
 	}
@@ -69,8 +79,13 @@ class HttpEngine extends Engine
 	//HttpEngine::render
 	public function render($page)
 	{
+		global $config;
+
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
+		if(($charset = $config->getVariable('defaults', 'charset'))
+			!== FALSE)
+			header('Content-Encoding: '.$charset); //XXX escape
 		switch($type)
 		{
 			case 'text/html':

@@ -51,6 +51,10 @@ class Html5Format extends Format
 		print("<!DOCTYPE html>\n<html>\n\t<head>\n");
 		$this->renderTitle($page);
 		$this->renderTheme($page);
+		if(($charset = $config->getVariable('defaults', 'charset'))
+				!== FALSE)
+			$this->renderMeta(2, 'Content-Type', 'text/html'
+					.'; charset='.$charset);
 		print("\t</head>\n\t<body>");
 		$this->renderChildren($page, 1);
 		$this->renderTabs(1);
@@ -348,6 +352,14 @@ class Html5Format extends Format
 		if(($text = $e->getProperty('text')) !== FALSE)
 			print($this->escape($text));
 		print('</div>');
+	}
+
+	private function renderMeta($level, $header, $value)
+	{
+		$this->renderTabs($level);
+		print('<meta http-equiv="'.$this->escapeAttribute($header).'"'
+				.' content="'.$this->escapeAttribute($value).'"'
+				."/>\n");
 	}
 
 	private function renderStatusbar($e, $level)
