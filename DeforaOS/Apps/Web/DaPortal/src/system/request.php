@@ -28,6 +28,16 @@ class Request
 	function __construct($engine, $module = FALSE, $action = FALSE,
 			$id = FALSE, $title = FALSE, $parameters = FALSE)
 	{
+		global $config;
+
+		if($module === FALSE)
+		{
+			$module = $config->getVariable('defaults', 'module');
+			$action = $config->getVariable('defaults', 'action');
+			$id = $config->getVariable('defaults', 'id');
+			$title = FALSE;
+			$parameters = FALSE;
+		}
 		if($module === FALSE
 				|| $this->setModule($engine, $module) === FALSE)
 			return;
@@ -107,6 +117,9 @@ class Request
 	}
 
 
+	//private
+	//methods
+	//accessors
 	//Request::setModule
 	private function setModule(&$engine, $module)
 	{

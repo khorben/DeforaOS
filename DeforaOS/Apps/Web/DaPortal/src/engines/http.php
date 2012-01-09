@@ -62,14 +62,6 @@ class HttpEngine extends Engine
 					break;
 			}
 		}
-		if($module === FALSE)
-		{
-			$module = $config->getVariable('defaults', 'module');
-			$action = $config->getVariable('defaults', 'action');
-			$id = $config->getVariable('defaults', 'id');
-			$title = FALSE;
-			$parameters = FALSE;
-		}
 		return new Request($this, $module, $action, $id, $title,
 				$parameters);
 	}
