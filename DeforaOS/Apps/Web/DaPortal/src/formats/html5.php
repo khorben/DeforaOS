@@ -350,7 +350,7 @@ class Html5Format extends Format
 		$this->renderTabs($level);
 		print('<div class="menuitem">');
 		if(($text = $e->getProperty('text')) !== FALSE)
-			print($this->escape($text));
+			$this->renderLink($e, $level);
 		print('</div>');
 	}
 
