@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 typedef struct _PhoneEngineering
 {
 	Config * config;
+	PhonePluginDefinition * plugind;
 	PhonePlugin * plugin;
 } PhoneEngineering;
 
@@ -109,10 +110,9 @@ int main(int argc, char * argv[])
 	p = &pe;
 	helper.phone = p;
 	helper.config_get = _helper_config_get;
-	plugin.helper = &helper;
-	_engineering_init(&plugin);
+	pe.plugin = _engineering_init(&helper);
 	gtk_main();
-	_engineering_destroy(&plugin);
+	_engineering_destroy(pe.plugin);
 	config_delete(pe.config);
 	return 0;
 }

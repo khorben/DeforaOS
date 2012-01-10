@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,9 @@
 /* Systray */
 /* private */
 /* types */
-typedef struct _Systray
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
 	GtkStatusIcon * icon;
 	GtkWidget * ab_window;
 } Systray;
@@ -37,8 +38,8 @@ typedef struct _Systray
 
 /* prototypes */
 /* plug-in */
-static int _systray_init(PhonePlugin * plugin);
-static void _systray_destroy(PhonePlugin * plugin);
+static Systray * _systray_init(PhonePluginHelper * helper);
+static void _systray_destroy(Systray * systray);
 
 /* callbacks */
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -50,14 +51,13 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"System tray",
 	"gnome-monitor",
+	NULL,
 	_systray_init,
 	_systray_destroy,
-	NULL,
 	NULL,
 	NULL
 };
@@ -66,7 +66,7 @@ PhonePlugin plugin =
 /* private */
 /* functions */
 /* systray_init */
-static int _systray_init(PhonePlugin * plugin)
+static Systray * _systray_init(PhonePluginHelper * helper)
 {
 	Systray * systray;
 
@@ -75,29 +75,27 @@ static int _systray_init(PhonePlugin * plugin)
 #endif
 #if GTK_CHECK_VERSION(2, 10, 0)
 	if((systray = object_new(sizeof(*systray))) == NULL)
-		return 1;
-	plugin->priv = systray;
+		return NULL;
+	systray->helper = helper;
 	systray->icon = gtk_status_icon_new_from_icon_name("phone-dialer");
-#if GTK_CHECK_VERSION(2, 16, 0)
+# if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_status_icon_set_tooltip_text(systray->icon, "Phone");
-#endif
+# endif
 	g_signal_connect_swapped(systray->icon, "activate", G_CALLBACK(
-				_systray_on_activate), plugin);
+				_systray_on_activate), systray);
 	g_signal_connect(systray->icon, "popup-menu", G_CALLBACK(
-				_systray_on_popup_menu), plugin);
+				_systray_on_popup_menu), systray);
 	systray->ab_window = NULL;
-	return 0;
+	return systray;
 #else
-	return 1;
+	return NULL;
 #endif
 }
 
 
 /* systray_destroy */
-static void _systray_destroy(PhonePlugin * plugin)
+static void _systray_destroy(Systray * systray)
 {
-	Systray * systray = plugin->priv;
-
 	g_object_unref(systray->icon);
 	object_delete(systray);
 }
@@ -108,9 +106,10 @@ static void _systray_destroy(PhonePlugin * plugin)
 /* systray_on_activate */
 static void _systray_on_activate(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->about_dialog(plugin->helper->phone);
+	helper->about_dialog(helper->phone);
 }
 
 
@@ -128,7 +127,7 @@ static void _popup_menu_on_quit(gpointer data);
 static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		guint time, gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 	GtkWidget * image;
@@ -174,7 +173,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
 				image);
 		g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
-					items[i].callback), plugin);
+					items[i].callback), systray);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	gtk_widget_show_all(menu);
@@ -183,67 +182,73 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 
 static void _popup_menu_on_show_contacts(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_CONTACTS);
 }
 
 static void _popup_menu_on_show_dialer(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_DIALER);
 }
 
 static void _popup_menu_on_show_logs(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_LOGS);
 }
 
 static void _popup_menu_on_show_messages(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_MESSAGES);
 }
 
 static void _popup_menu_on_show_settings(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_SETTINGS);
 }
 
 static void _popup_menu_on_show_write(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone, PHONE_MESSAGE_SHOW,
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
 			PHONE_MESSAGE_SHOW_WRITE);
 }
 
 static void _popup_menu_on_resume(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone,
-			PHONE_MESSAGE_POWER_MANAGEMENT,
+	helper->message(helper->phone, PHONE_MESSAGE_POWER_MANAGEMENT,
 			PHONE_MESSAGE_POWER_MANAGEMENT_RESUME);
 }
 
 static void _popup_menu_on_suspend(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
 
-	plugin->helper->message(plugin->helper->phone,
-			PHONE_MESSAGE_POWER_MANAGEMENT,
+	helper->message(helper->phone, PHONE_MESSAGE_POWER_MANAGEMENT,
 			PHONE_MESSAGE_POWER_MANAGEMENT_SUSPEND);
 }
 

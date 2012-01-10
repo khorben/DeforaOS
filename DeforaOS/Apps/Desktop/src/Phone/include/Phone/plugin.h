@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,16 +46,15 @@ typedef struct _PhonePluginHelper
 	int (*trigger)(Phone * phone, ModemEventType event);
 } PhonePluginHelper;
 
-struct _PhonePlugin
+typedef const struct _PhonePluginDefinition
 {
-	PhonePluginHelper * helper;
 	char const * name;
 	char const * icon;
-	int (*init)(PhonePlugin * plugin);
+	char const * description;
+	PhonePlugin * (*init)(PhonePluginHelper * helper);
 	void (*destroy)(PhonePlugin * plugin);
 	int (*event)(PhonePlugin * plugin, PhoneEvent * event);
 	void (*settings)(PhonePlugin * plugin);
-	void * priv;
-};
+} PhonePluginDefinition;
 
 #endif /* !DESKTOP_PHONE_PLUGIN_H */

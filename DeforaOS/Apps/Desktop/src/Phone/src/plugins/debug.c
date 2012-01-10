@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,9 @@
 /* Debug */
 /* private */
 /* types */
-typedef struct _Debug
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
 	GtkWidget * window;
 	GtkWidget * requests;
 	GtkWidget * triggers;
@@ -129,24 +130,23 @@ static DebugPhoneEvent _debug_phone_events[] =
 
 /* prototypes */
 /* plug-in */
-static int _debug_init(PhonePlugin * plugin);
-static void _debug_destroy(PhonePlugin * plugin);
-static int _debug_event(PhonePlugin * plugin, PhoneEvent * event);
-static void _debug_settings(PhonePlugin * plugin);
+static Debug * _debug_init(PhonePluginHelper * helper);
+static void _debug_destroy(Debug * debug);
+static int _debug_event(Debug * debug, PhoneEvent * event);
+static void _debug_settings(Debug * debug);
 
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Debugging",
 	"applications-development",
+	NULL,
 	_debug_init,
 	_debug_destroy,
 	_debug_event,
-	_debug_settings,
-	NULL
+	_debug_settings
 };
 
 
@@ -158,7 +158,7 @@ static gboolean _debug_on_closex(gpointer data);
 static void _debug_on_queue_request(gpointer data);
 static void _debug_on_queue_trigger(gpointer data);
 
-static int _debug_init(PhonePlugin * plugin)
+static Debug * _debug_init(PhonePluginHelper * helper)
 {
 	Debug * debug;
 	GtkSizeGroup * group;
@@ -170,17 +170,17 @@ static int _debug_init(PhonePlugin * plugin)
 	size_t i;
 
 	if((debug = object_new(sizeof(*debug))) == NULL)
-		return 1;
-	plugin->priv = debug;
+		return NULL;
+	debug->helper = helper;
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	debug->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(debug->window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(debug->window), plugin->icon);
+	gtk_window_set_icon_name(GTK_WINDOW(debug->window), plugin.icon);
 #endif
-	gtk_window_set_title(GTK_WINDOW(debug->window), plugin->name);
+	gtk_window_set_title(GTK_WINDOW(debug->window), plugin.name);
 	g_signal_connect_swapped(debug->window, "delete-event", G_CALLBACK(
-				_debug_on_closex), plugin);
+				_debug_on_closex), debug);
 	/* vbox */
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* modem requests */
@@ -198,8 +198,8 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->requests), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->requests, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-			G_CALLBACK(_debug_on_queue_request), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_debug_on_queue_request), debug);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
@@ -218,8 +218,8 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->triggers), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->triggers, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-			G_CALLBACK(_debug_on_queue_trigger), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_debug_on_queue_trigger), debug);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
@@ -245,13 +245,12 @@ static int _debug_init(PhonePlugin * plugin)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
 	gtk_widget_show_all(debug->window);
-	return 0;
+	return debug;
 }
 
 static gboolean _debug_on_closex(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Debug * debug = plugin->priv;
+	Debug * debug = data;
 
 	gtk_widget_hide(debug->window);
 	return TRUE;
@@ -259,9 +258,8 @@ static gboolean _debug_on_closex(gpointer data)
 
 static void _debug_on_queue_request(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	PhonePluginHelper * helper = plugin->helper;
-	Debug * debug = plugin->priv;
+	Debug * debug = data;
+	PhonePluginHelper * helper = debug->helper;
 	gchar * text;
 	size_t i;
 	ModemRequest request;
@@ -280,9 +278,8 @@ static void _debug_on_queue_request(gpointer data)
 
 static void _debug_on_queue_trigger(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	PhonePluginHelper * helper = plugin->helper;
-	Debug * debug = plugin->priv;
+	Debug * debug = data;
+	PhonePluginHelper * helper = debug->helper;
 	gchar * text;
 	size_t i;
 
@@ -298,19 +295,16 @@ static void _debug_on_queue_trigger(gpointer data)
 
 
 /* debug_destroy */
-static void _debug_destroy(PhonePlugin * plugin)
+static void _debug_destroy(Debug * debug)
 {
-	Debug * debug = plugin->priv;
-
 	gtk_widget_destroy(debug->window);
 	object_delete(debug);
 }
 
 
 /* debug_event */
-static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _debug_event(Debug * debug, PhoneEvent * event)
 {
-	Debug * debug = plugin->priv;
 	time_t date;
 	struct tm t;
 	char tbuf[32];
@@ -357,9 +351,7 @@ static int _debug_event(PhonePlugin * plugin, PhoneEvent * event)
 
 
 /* debug_settings */
-static void _debug_settings(PhonePlugin * plugin)
+static void _debug_settings(Debug * debug)
 {
-	Debug * debug = plugin->priv;
-
 	gtk_window_present(GTK_WINDOW(debug->window));
 }

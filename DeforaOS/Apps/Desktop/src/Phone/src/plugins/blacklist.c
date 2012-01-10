@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,9 @@
 /* Blacklist */
 /* private */
 /* types */
-typedef struct _Blacklist
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
 	GtkWidget * window;
 	GtkListStore * store;
 	GtkWidget * view;
@@ -35,24 +36,23 @@ typedef struct _Blacklist
 
 
 /* prototypes */
-static int _blacklist_init(PhonePlugin * plugin);
-static void _blacklist_destroy(PhonePlugin * plugin);
-static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event);
-static void _blacklist_settings(PhonePlugin * plugin);
+static Blacklist * _blacklist_init(PhonePluginHelper * helper);
+static void _blacklist_destroy(Blacklist * blacklist);
+static int _blacklist_event(Blacklist * blacklist, PhoneEvent * event);
+static void _blacklist_settings(Blacklist * blacklist);
 
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Blacklist",
 	"network-error",
+	NULL,
 	_blacklist_init,
 	_blacklist_destroy,
 	_blacklist_event,
-	_blacklist_settings,
-	NULL
+	_blacklist_settings
 };
 
 
@@ -62,18 +62,18 @@ PhonePlugin plugin =
 static void _init_foreach(char const * variable, char const * value,
 		void * priv);
 
-static int _blacklist_init(PhonePlugin * plugin)
+static Blacklist * _blacklist_init(PhonePluginHelper * helper)
 {
 	Blacklist * blacklist;
 
 	if((blacklist = object_new(sizeof(*blacklist))) == NULL)
-		return 1;
-	plugin->priv = blacklist;
+		return NULL;
+	blacklist->helper = helper;
 	blacklist->window = NULL;
 	blacklist->store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-	plugin->helper->config_foreach(plugin->helper->phone, "blacklist",
-			_init_foreach, blacklist);
-	return 0;
+	helper->config_foreach(helper->phone, "blacklist", _init_foreach,
+			blacklist);
+	return blacklist;
 }
 
 static void _init_foreach(char const * variable, char const * value,
@@ -88,10 +88,8 @@ static void _init_foreach(char const * variable, char const * value,
 
 
 /* blacklist_destroy */
-static void _blacklist_destroy(PhonePlugin * plugin)
+static void _blacklist_destroy(Blacklist * blacklist)
 {
-	Blacklist * blacklist = plugin->priv;
-
 	if(blacklist->window != NULL)
 		gtk_widget_destroy(blacklist->window);
 	object_delete(blacklist);
@@ -99,8 +97,9 @@ static void _blacklist_destroy(PhonePlugin * plugin)
 
 
 /* blacklist_event */
-static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _blacklist_event(Blacklist * blacklist, PhoneEvent * event)
 {
+	PhonePluginHelper * helper = blacklist->helper;
 	char const * number = NULL;
 	char const * reason;
 
@@ -117,11 +116,10 @@ static int _blacklist_event(PhonePlugin * plugin, PhoneEvent * event)
 	}
 	if(number == NULL)
 		return 0;
-	reason = plugin->helper->config_get(plugin->helper->phone, "blacklist",
-			number);
+	reason = helper->config_get(helper->phone, "blacklist", number);
 	if(reason == NULL)
 		return 0;
-	return plugin->helper->error(plugin->helper->phone, reason, 1);
+	return helper->error(helper->phone, reason, 1);
 }
 
 
@@ -134,9 +132,8 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 static void _on_settings_reason_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gchar * arg2, gpointer data);
 
-static void _blacklist_settings(PhonePlugin * plugin)
+static void _blacklist_settings(Blacklist * blacklist)
 {
-	Blacklist * blacklist = plugin->priv;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
@@ -155,18 +152,18 @@ static void _blacklist_settings(PhonePlugin * plugin)
 	gtk_window_set_icon_name(GTK_WINDOW(blacklist->window), "blacklist");
 #endif
 	gtk_window_set_title(GTK_WINDOW(blacklist->window), "Blacklisting");
-	g_signal_connect_swapped(G_OBJECT(blacklist->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+	g_signal_connect_swapped(blacklist->window, "delete-event", G_CALLBACK(
+				_on_settings_closex), blacklist);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_settings_new), plugin);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				_on_settings_new), blacklist);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_settings_delete), plugin);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				_on_settings_delete), blacklist);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
@@ -178,15 +175,15 @@ static void _blacklist_settings(PhonePlugin * plugin)
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(blacklist->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				_on_settings_number_edited), plugin);
+	g_signal_connect(renderer, "edited", G_CALLBACK(
+				_on_settings_number_edited), blacklist);
 	column = gtk_tree_view_column_new_with_attributes("Number",
 			renderer, "text", 0, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(blacklist->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				_on_settings_reason_edited), plugin);
+	g_signal_connect(renderer, "edited", G_CALLBACK(
+				_on_settings_reason_edited), blacklist);
 	column = gtk_tree_view_column_new_with_attributes("Reason",
 			renderer, "text", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(blacklist->view), column);
@@ -198,8 +195,7 @@ static void _blacklist_settings(PhonePlugin * plugin)
 
 static gboolean _on_settings_closex(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Blacklist * blacklist = plugin->priv;
+	Blacklist * blacklist = data;
 
 	gtk_widget_hide(blacklist->window);
 	return TRUE;
@@ -207,8 +203,8 @@ static gboolean _on_settings_closex(gpointer data)
 
 static void _on_settings_delete(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Blacklist * blacklist = plugin->priv;
+	Blacklist * blacklist = data;
+	PhonePluginHelper * helper = blacklist->helper;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	char * number = NULL;
@@ -222,16 +218,14 @@ static void _on_settings_delete(gpointer data)
 			-1);
 	if(number == NULL)
 		return;
-	plugin->helper->config_set(plugin->helper->phone, "blacklist", number,
-			NULL);
+	helper->config_set(helper->phone, "blacklist", number, NULL);
 	gtk_list_store_remove(blacklist->store, &iter);
 	g_free(number);
 }
 
 static void _on_settings_new(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Blacklist * blacklist = plugin->priv;
+	Blacklist * blacklist = data;
 	GtkTreeIter iter;
 
 	gtk_list_store_append(blacklist->store, &iter);
@@ -241,8 +235,8 @@ static void _on_settings_new(gpointer data)
 static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Blacklist * blacklist = plugin->priv;
+	Blacklist * blacklist = data;
+	PhonePluginHelper * helper = blacklist->helper;
 	GtkTreeModel * model = GTK_TREE_MODEL(blacklist->store);
 	GtkTreeIter iter;
 	char * number = NULL;
@@ -253,12 +247,10 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 	if(number == NULL)
 		return;
 	/* FIXME check that there are no duplicates */
-	reason = plugin->helper->config_get(plugin->helper->phone, "blacklist",
-			number);
-	if(plugin->helper->config_set(plugin->helper->phone, "blacklist", arg2,
-				reason) == 0
-			&& plugin->helper->config_set(plugin->helper->phone,
-				"blacklist", number, NULL) == 0)
+	reason = helper->config_get(helper->phone, "blacklist", number);
+	if(helper->config_set(helper->phone, "blacklist", arg2, reason) == 0
+			&& helper->config_set(helper->phone, "blacklist",
+				number, NULL) == 0)
 		gtk_list_store_set(blacklist->store, &iter, 0, arg2, -1);
 	g_free(number);
 }
@@ -266,8 +258,8 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 static void _on_settings_reason_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Blacklist * blacklist = plugin->priv;
+	Blacklist * blacklist = data;
+	PhonePluginHelper * helper = blacklist->helper;
 	GtkTreeModel * model = GTK_TREE_MODEL(blacklist->store);
 	GtkTreeIter iter;
 	char * number = NULL;
@@ -276,8 +268,7 @@ static void _on_settings_reason_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gtk_tree_model_get(model, &iter, 0, &number, -1);
 	if(number == NULL)
 		return;
-	if(plugin->helper->config_set(plugin->helper->phone, "blacklist",
-				number, arg2) == 0)
+	if(helper->config_set(helper->phone, "blacklist", number, arg2) == 0)
 		gtk_list_store_set(blacklist->store, &iter, 1, arg2, -1);
 	g_free(number);
 }

@@ -110,12 +110,14 @@ typedef enum _PhoneMessageColumn
 typedef struct _PhonePluginEntry
 {
 	Plugin * p;
+	PhonePluginDefinition * pd;
 	PhonePlugin * pp;
 } PhonePluginEntry;
 
 typedef enum _PhonePluginsColumn
 {
-	PHONE_PLUGINS_COLUMN_PLUGIN = 0,
+	PHONE_PLUGINS_COLUMN_PLUGIN_DEFINITION = 0,
+	PHONE_PLUGINS_COLUMN_PLUGIN,
 	PHONE_PLUGINS_COLUMN_ENABLED,
 	PHONE_PLUGINS_COLUMN_FILENAME,
 	PHONE_PLUGINS_COLUMN_ICON,
@@ -129,6 +131,7 @@ typedef void (*PhoneSettingsCallback)(Phone * phone, gboolean show, ...);
 typedef enum _PhoneSettingsColumn
 {
 	PHONE_SETTINGS_COLUMN_CALLBACK = 0,
+	PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION,
 	PHONE_SETTINGS_COLUMN_PLUGIN,
 	PHONE_SETTINGS_COLUMN_ICON,
 	PHONE_SETTINGS_COLUMN_NAME
@@ -464,12 +467,12 @@ Phone * phone_new(char const * plugin, int retry)
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(phone->me_store),
 			PHONE_MESSAGE_COLUMN_DATE, GTK_SORT_DESCENDING);
 	phone->pl_store = gtk_list_store_new(PHONE_PLUGINS_COLUMN_COUNT,
-			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	phone->re_index = -1;
 	phone->se_store = gtk_list_store_new(PHONE_SETTINGS_COLUMN_COUNT,
-			G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
-			G_TYPE_STRING);
+			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	/* check errors */
 	if(phone->modem == NULL)
 	{
@@ -531,6 +534,7 @@ static void _idle_settings(Phone * phone)
 	gtk_list_store_append(phone->se_store, &iter);
 	gtk_list_store_set(phone->se_store, &iter,
 			PHONE_SETTINGS_COLUMN_CALLBACK, phone_show_system,
+			PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, NULL,
 			PHONE_SETTINGS_COLUMN_PLUGIN, NULL,
 			PHONE_SETTINGS_COLUMN_NAME, _("System preferences"),
 			-1);
@@ -542,6 +546,7 @@ static void _idle_settings(Phone * phone)
 	gtk_list_store_append(phone->se_store, &iter);
 	gtk_list_store_set(phone->se_store, &iter,
 			PHONE_SETTINGS_COLUMN_CALLBACK, phone_show_plugins,
+			PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, NULL,
 			PHONE_SETTINGS_COLUMN_PLUGIN, NULL,
 			PHONE_SETTINGS_COLUMN_NAME, _("Plug-ins"), -1);
 	theme = gtk_icon_theme_get_default();
@@ -904,6 +909,7 @@ int phone_event(Phone * phone, PhoneEvent * event)
 {
 	int ret = 0;
 	size_t i;
+	PhonePluginDefinition * plugind;
 	PhonePlugin * plugin;
 
 #ifdef DEBUG
@@ -911,10 +917,11 @@ int phone_event(Phone * phone, PhoneEvent * event)
 #endif
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
+		plugind = phone->plugins[i].pd;
 		plugin = phone->plugins[i].pp;
-		if(plugin->event == NULL)
+		if(plugind->event == NULL)
 			continue;
-		ret |= plugin->event(plugin, event);
+		ret |= plugind->event(plugin, event);
 	}
 	switch(event->type)
 	{
@@ -1013,24 +1020,25 @@ void phone_info(Phone * phone, char const * message)
 int phone_load(Phone * phone, char const * plugin)
 {
 	Plugin * p;
+	PhonePluginDefinition * pd;
 	PhonePlugin * pp;
 	PhonePluginEntry * q;
 	GtkTreeIter iter;
 	GtkIconTheme * theme;
-	GdkPixbuf * pixbuf;
+	GdkPixbuf * icon = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
 #endif
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -phone_error(NULL, error_get(), 1);
-	if((pp = plugin_lookup(p, "plugin")) == NULL)
+	if((pd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
 		return -phone_error(NULL, error_get(), 1);
 	}
-	pp->helper = &phone->helper;
-	if(pp->init != NULL && pp->init(pp) != 0)
+	if(pd->init == NULL || pd->destroy == NULL
+			|| (pp = pd->init(&phone->helper)) == NULL)
 	{
 		plugin_delete(p);
 		return -phone_error(NULL, error_get(), 1);
@@ -1043,21 +1051,26 @@ int phone_load(Phone * phone, char const * plugin)
 	}
 	phone->plugins = q;
 	phone->plugins[phone->plugins_cnt].p = p;
+	phone->plugins[phone->plugins_cnt].pd = pd;
 	phone->plugins[phone->plugins_cnt++].pp = pp;
-	if(pp->name != NULL && pp->settings != NULL)
+	if(pd->name != NULL && pd->settings != NULL)
 	{
 		gtk_list_store_append(GTK_LIST_STORE(phone->se_store), &iter);
 		gtk_list_store_set(phone->se_store, &iter,
 				PHONE_SETTINGS_COLUMN_CALLBACK, NULL,
+				PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, pd,
 				PHONE_SETTINGS_COLUMN_PLUGIN, pp,
-				PHONE_SETTINGS_COLUMN_NAME, pp->name, -1);
+				PHONE_SETTINGS_COLUMN_NAME, pd->name, -1);
 		theme = gtk_icon_theme_get_default();
-		if(pp->icon == NULL)
-			pp->icon = "gnome-settings";
-		if((pixbuf = gtk_icon_theme_load_icon(theme, pp->icon, 48, 0,
-						NULL)) != NULL)
+		if(pd->icon != NULL)
+			icon = gtk_icon_theme_load_icon(theme, pd->icon, 48, 0,
+					NULL);
+		if(icon == NULL)
+			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
+					48, 0, NULL);
+		if(icon != NULL)
 			gtk_list_store_set(phone->se_store, &iter,
-					PHONE_SETTINGS_COLUMN_ICON, pixbuf, -1);
+					PHONE_SETTINGS_COLUMN_ICON, icon, -1);
 	}
 	return 0;
 }
@@ -1372,6 +1385,7 @@ void phone_settings_open_selected(Phone * phone)
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	PhoneSettingsCallback callback;
+	PhonePluginDefinition * plugind = NULL;
 	PhonePlugin * plugin = NULL;
 
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
@@ -1381,11 +1395,12 @@ void phone_settings_open_selected(Phone * phone)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->se_store), &iter,
 			PHONE_SETTINGS_COLUMN_CALLBACK, &callback,
+			PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, &plugind,
 			PHONE_SETTINGS_COLUMN_PLUGIN, &plugin, -1);
 	if(callback != NULL)
 		callback(phone, TRUE);
-	else if(plugin != NULL && plugin->settings != NULL)
-		plugin->settings(plugin);
+	else if(plugind != NULL && plugin != NULL && plugind->settings != NULL)
+		plugind->settings(plugin);
 }
 
 
@@ -2182,7 +2197,7 @@ static void _plugins_on_cancel(gpointer data)
 	size_t len;
 	GtkTreeIter iter;
 	Plugin * p;
-	PhonePlugin * pp;
+	PhonePluginDefinition * pd;
 	size_t i;
 	GdkPixbuf * icon;
 
@@ -2204,7 +2219,7 @@ static void _plugins_on_cancel(gpointer data)
 		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
 				== NULL)
 			continue;
-		if((pp = plugin_lookup(p, "plugin")) == NULL)
+		if((pd = plugin_lookup(p, "plugin")) == NULL)
 		{
 			plugin_delete(p);
 			continue;
@@ -2212,20 +2227,20 @@ static void _plugins_on_cancel(gpointer data)
 		gtk_list_store_append(phone->pl_store, &iter);
 		gtk_list_store_set(phone->pl_store, &iter,
 				PHONE_PLUGINS_COLUMN_FILENAME, de->d_name,
-				PHONE_PLUGINS_COLUMN_NAME, pp->name, -1);
+				PHONE_PLUGINS_COLUMN_NAME, pd->name, -1);
 		for(i = 0; i < phone->plugins_cnt; i++)
 		{
-			if(strcmp(phone->plugins[i].pp->name, pp->name) != 0)
+			if(strcmp(phone->plugins[i].pd->name, pd->name) != 0)
 				continue;
 			gtk_list_store_set(phone->pl_store, &iter,
 					PHONE_PLUGINS_COLUMN_ENABLED, TRUE,
-					PHONE_PLUGINS_COLUMN_PLUGIN,
-					phone->plugins[i].pp, -1);
+					PHONE_PLUGINS_COLUMN_PLUGIN_DEFINITION,
+					phone->plugins[i].pd, -1);
 			break;
 		}
 		icon = NULL;
-		if(pp->icon != NULL)
-			icon = gtk_icon_theme_load_icon(theme, pp->icon, 48, 0,
+		if(pd->icon != NULL)
+			icon = gtk_icon_theme_load_icon(theme, pd->icon, 48, 0,
 					NULL);
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
@@ -3854,6 +3869,7 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 	GtkTreeModel * model = GTK_TREE_MODEL(phone->se_store);
 	GtkTreeIter iter;
 	size_t i;
+	PhonePluginDefinition * pd;
 	PhonePlugin * pp;
 
 	if(plugin == NULL)
@@ -3861,8 +3877,9 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 	/* view */
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;)
 	{
-		gtk_tree_model_get(model, &iter, PHONE_SETTINGS_COLUMN_PLUGIN,
-				&pp, -1);
+		gtk_tree_model_get(model, &iter,
+				PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, &pd,
+				PHONE_SETTINGS_COLUMN_PLUGIN, &pp, -1);
 		if(pp == plugin)
 		{
 			gtk_list_store_remove(phone->se_store, &iter);
@@ -3876,12 +3893,12 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 	{
 		if(phone->plugins[i].pp != plugin)
 			continue;
+		pd = phone->plugins[i].pd;
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() plugin %lu\n", __func__,
 				(unsigned long)i);
 #endif
-		if(plugin->destroy != NULL)
-			plugin->destroy(plugin);
+		pd->destroy(plugin);
 		plugin_delete(phone->plugins[i].p);
 		memmove(&phone->plugins[i], &phone->plugins[i + 1],
 				sizeof(*phone->plugins)

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,26 @@
 
 
 #include <string.h>
+#include <System.h>
+#include <Desktop.h>
 #include <Desktop/Locker.h>
 #include "Phone.h"
 
 
 /* Locker */
 /* private */
+/* types */
+typedef struct _PhonePlugin
+{
+	PhonePluginHelper * helper;
+} LockerPhonePlugin;
+
+
 /* prototypes */
 /* plug-in */
-static int _locker_event(PhonePlugin * plugin, PhoneEvent * event);
+static LockerPhonePlugin * _locker_init(PhonePluginHelper * helper);
+static void _locker_destroy(LockerPhonePlugin * locker);
+static int _locker_event(LockerPhonePlugin * locker, PhoneEvent * event);
 
 /* useful */
 static int _locker_action(LockerAction action);
@@ -32,25 +43,43 @@ static int _locker_action(LockerAction action);
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Locker",
 	NULL,
 	NULL,
-	NULL,
+	_locker_init,
+	_locker_destroy,
 	_locker_event,
-	NULL,
 	NULL
 };
 
 
 /* private */
 /* functions */
+/* locker_init */
+static LockerPhonePlugin * _locker_init(PhonePluginHelper * helper)
+{
+	LockerPhonePlugin * locker;
+
+	if((locker = object_new(sizeof(*locker))) == NULL)
+		return NULL;
+	locker->helper = helper;
+	return locker;
+}
+
+
+/* locker_destroy */
+static void _locker_destroy(LockerPhonePlugin * locker)
+{
+	object_delete(locker);
+}
+
+
 /* locker_event */
 static int _event_modem(ModemEvent * event);
 
-static int _locker_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _locker_event(LockerPhonePlugin * locker, PhoneEvent * event)
 {
 	switch(event->type)
 	{
@@ -81,18 +110,7 @@ static int _event_modem(ModemEvent * event)
 /* locker_action */
 static int _locker_action(LockerAction action)
 {
-	GdkEvent event;
-	GdkEventClient * client = &event.client;
-
-	memset(&event, 0, sizeof(event));
-	client->type = GDK_CLIENT_EVENT;
-	client->window = NULL;
-	client->send_event = TRUE;
-	client->message_type = gdk_atom_intern(LOCKER_CLIENT_MESSAGE, FALSE);
-	client->data_format = 8;
-	client->data.b[0] = LOCKER_MESSAGE_ACTION;
-	client->data.b[1] = action;
-	client->data.b[2] = TRUE;
-	gdk_event_send_clientmessage_toall(&event);
+	desktop_message_send(LOCKER_CLIENT_MESSAGE, LOCKER_MESSAGE_ACTION,
+			action, TRUE);
 	return 0;
 }

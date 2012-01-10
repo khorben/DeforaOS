@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,9 @@
 /* USSD */
 /* private */
 /* types */
-typedef struct _GPRS
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * operators;
@@ -99,10 +100,10 @@ static const struct
 
 /* prototypes */
 /* plugins */
-static int _ussd_init(PhonePlugin * plugin);
-static void _ussd_destroy(PhonePlugin * plugin);
-static int _ussd_event(PhonePlugin * plugin, PhoneEvent * event);
-static void _ussd_settings(PhonePlugin * plugin);
+static USSD * _ussd_init(PhonePluginHelper * helper);
+static void _ussd_destroy(USSD * ussd);
+static int _ussd_event(USSD * ussd, PhoneEvent * event);
+static void _ussd_settings(USSD * ussd);
 
 /* callbacks */
 static void _ussd_on_operators_changed(gpointer data);
@@ -112,41 +113,38 @@ static void _ussd_on_settings_send(gpointer data);
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"USSD",
+	NULL,
 	NULL,
 	_ussd_init,
 	_ussd_destroy,
 	_ussd_event,
-	_ussd_settings,
-	NULL
+	_ussd_settings
 };
 
 
 /* private */
 /* functions */
 /* ussd_init */
-static int _ussd_init(PhonePlugin * plugin)
+static USSD * _ussd_init(PhonePluginHelper * helper)
 {
 	USSD * ussd;
 
 	if((ussd = object_new(sizeof(*ussd))) == NULL)
-		return -1;
-	plugin->priv = ussd;
+		return NULL;
+	ussd->helper = helper;
 	ussd->window = NULL;
 	ussd->operators = NULL;
 	ussd->codes = NULL;
-	return 0;
+	return ussd;
 }
 
 
 /* ussd_destroy */
-static void _ussd_destroy(PhonePlugin * plugin)
+static void _ussd_destroy(USSD * ussd)
 {
-	USSD * ussd = plugin->priv;
-
 	if(ussd->window != NULL)
 		gtk_widget_destroy(ussd->window);
 	object_delete(ussd);
@@ -154,27 +152,24 @@ static void _ussd_destroy(PhonePlugin * plugin)
 
 
 /* ussd_event */
-static int _ussd_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _ussd_event(USSD * ussd, PhoneEvent * event)
 {
 	return 0;
 }
 
 
 /* ussd_settings */
-static void _settings_window(PhonePlugin * plugin);
+static void _settings_window(USSD * ussd);
 
-static void _ussd_settings(PhonePlugin * plugin)
+static void _ussd_settings(USSD * ussd)
 {
-	USSD * ussd = plugin->priv;
-
 	if(ussd->window == NULL)
-		_settings_window(plugin);
+		_settings_window(ussd);
 	gtk_window_present(GTK_WINDOW(ussd->window));
 }
 
-static void _settings_window(PhonePlugin * plugin)
+static void _settings_window(USSD * ussd)
 {
-	USSD * ussd = plugin->priv;
 	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -226,7 +221,7 @@ static void _settings_window(PhonePlugin * plugin)
 	image = gtk_image_new_from_icon_name("mail-send", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(widget), image);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
-				_ussd_on_settings_send), plugin);
+				_ussd_on_settings_send), ussd);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* button box */
@@ -276,9 +271,8 @@ static void _ussd_on_settings_close(gpointer data)
 /* ussd_on_settings_send */
 static void _ussd_on_settings_send(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	PhonePluginHelper * helper = plugin->helper;
-	USSD * ussd = plugin->priv;
+	USSD * ussd = data;
+	PhonePluginHelper * helper = ussd->helper;
 	int i;
 	USSDCode * codes;
 	ModemRequest request;

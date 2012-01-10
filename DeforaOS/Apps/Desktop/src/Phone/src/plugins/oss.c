@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,8 +44,9 @@
 /* OSS */
 /* private */
 /* types */
-typedef struct _OSS
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
 	GtkWidget * window;
 	GtkWidget * mixer;
 	int fd;
@@ -53,50 +54,47 @@ typedef struct _OSS
 
 
 /* prototypes */
-static int _oss_init(PhonePlugin * plugin);
-static void _oss_destroy(PhonePlugin * plugin);
-static int _oss_event(PhonePlugin * plugin, PhoneEvent * event);
-static int _oss_open(PhonePlugin * plugin);
-static void _oss_settings(PhonePlugin * plugin);
+static OSS * _oss_init(PhonePluginHelper * helper);
+static void _oss_destroy(OSS * oss);
+static int _oss_event(OSS * oss, PhoneEvent * event);
+static int _oss_open(OSS * oss);
+static void _oss_settings(OSS * oss);
 
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"OSS audio",
 	"audio-x-generic",
+	NULL,
 	_oss_init,
 	_oss_destroy,
 	_oss_event,
-	_oss_settings,
-	NULL
+	_oss_settings
 };
 
 
 /* private */
 /* functions */
 /* oss_init */
-static int _oss_init(PhonePlugin * plugin)
+static OSS * _oss_init(PhonePluginHelper * helper)
 {
 	OSS * oss;
 
 	if((oss = object_new(sizeof(*oss))) == NULL)
-		return 1;
-	plugin->priv = oss;
+		return NULL;
+	oss->helper = helper;
 	oss->window = NULL;
 	oss->fd = -1;
-	_oss_open(plugin);
-	return 0;
+	_oss_open(oss);
+	return oss;
 }
 
 
 /* oss_destroy */
-static void _oss_destroy(PhonePlugin * plugin)
+static void _oss_destroy(OSS * oss)
 {
-	OSS * oss = plugin->priv;
-
 	if(oss->fd >= 0)
 		close(oss->fd);
 	if(oss->window != NULL)
@@ -106,30 +104,28 @@ static void _oss_destroy(PhonePlugin * plugin)
 
 
 /* oss_event */
-static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
-static int _event_volume_get(PhonePlugin * plugin, gdouble * level);
-static int _event_volume_set(PhonePlugin * plugin, gdouble level);
+static int _event_modem_event(OSS * oss, ModemEvent * event);
+static int _event_volume_get(OSS * oss, gdouble * level);
+static int _event_volume_set(OSS * oss, gdouble level);
 
-static int _oss_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _oss_event(OSS * oss, PhoneEvent * event)
 {
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			return _event_modem_event(plugin,
+			return _event_modem_event(oss,
 					event->modem_event.event);
 		case PHONE_EVENT_TYPE_VOLUME_GET:
-			return _event_volume_get(plugin,
-					&event->volume_get.level);
+			return _event_volume_get(oss, &event->volume_get.level);
 		case PHONE_EVENT_TYPE_VOLUME_SET:
-			return _event_volume_set(plugin,
-					event->volume_set.level);
+			return _event_volume_set(oss, event->volume_set.level);
 		default: /* not relevant */
 			break;
 	}
 	return 0;
 }
 
-static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
+static int _event_modem_event(OSS * oss, ModemEvent * event)
 {
 	ModemCallDirection direction;
 
@@ -152,10 +148,9 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 	return 0;
 }
 
-static int _event_volume_get(PhonePlugin * plugin, gdouble * level)
+static int _event_volume_get(OSS * oss, gdouble * level)
 {
 	int ret = 0;
-	OSS * oss = plugin->priv;
 	int v;
 	char buf[256];
 
@@ -165,17 +160,16 @@ static int _event_volume_get(PhonePlugin * plugin, gdouble * level)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", "MIXER_READ", strerror(
 					errno));
-		ret |= plugin->helper->error(plugin->helper->phone, buf, 0);
+		ret |= oss->helper->error(NULL, buf, 0);
 	}
 	*level = (((v & 0xff00) >> 8) + (v & 0xff)) / 2;
 	*level /= 100;
 	return ret;
 }
 
-static int _event_volume_set(PhonePlugin * plugin, gdouble level)
+static int _event_volume_set(OSS * oss, gdouble level)
 {
 	int ret = 0;
-	OSS * oss = plugin->priv;
 	int v = level * 100;
 	char buf[256];
 
@@ -186,28 +180,26 @@ static int _event_volume_set(PhonePlugin * plugin, gdouble level)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", "MIXER_WRITE", strerror(
 					errno));
-		ret |= plugin->helper->error(plugin->helper->phone, buf, 0);
+		ret |= oss->helper->error(NULL, buf, 0);
 	}
 	return ret;
 }
 
 
 /* oss_open */
-static int _oss_open(PhonePlugin * plugin)
+static int _oss_open(OSS * oss)
 {
-	OSS * oss = plugin->priv;
 	char const * p;
 	char buf[256];
 
 	if(oss->fd >= 0)
 		close(oss->fd);
-	if((p = plugin->helper->config_get(plugin->helper->phone, "oss",
-					"mixer")) == NULL)
+	if((p = oss->helper->config_get(NULL, "oss", "mixer")) == NULL)
 		p = "/dev/mixer";
 	if((oss->fd = open(p, O_RDWR)) < 0)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", p, strerror(errno));
-		return plugin->helper->error(plugin->helper->phone, buf, 1);
+		return oss->helper->error(NULL, buf, 1);
 	}
 	return 0;
 }
@@ -218,9 +210,8 @@ static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_ok(gpointer data);
 
-static void _oss_settings(PhonePlugin * plugin)
+static void _oss_settings(OSS * oss)
 {
-	OSS * oss = plugin->priv;
 	GtkWidget * vbox;
 	GtkWidget * bbox;
 	GtkWidget * widget;
@@ -237,8 +228,8 @@ static void _oss_settings(PhonePlugin * plugin)
 	gtk_window_set_icon_name(GTK_WINDOW(oss->window), "audio-x-generic");
 #endif
 	gtk_window_set_title(GTK_WINDOW(oss->window), "Sound preferences");
-	g_signal_connect_swapped(G_OBJECT(oss->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+	g_signal_connect_swapped(oss->window, "delete-event", G_CALLBACK(
+				_on_settings_closex), oss);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* device */
 	widget = gtk_label_new("Mixer device:");
@@ -253,27 +244,26 @@ static void _oss_settings(PhonePlugin * plugin)
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_cancel), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_on_settings_cancel), oss);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_ok), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(_on_settings_ok),
+			oss);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(oss->window), vbox);
-	_on_settings_cancel(plugin);
+	_on_settings_cancel(oss);
 	gtk_widget_show_all(oss->window);
 }
 
 static void _on_settings_cancel(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	OSS * oss = plugin->priv;
+	OSS * oss = data;
 	char const * p;
 
-	if((p = plugin->helper->config_get(plugin->helper->phone, "oss",
-					"mixer")) == NULL)
+	if((p = oss->helper->config_get(oss->helper->phone, "oss", "mixer"))
+			== NULL)
 		p = "/dev/mixer";
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(oss->mixer), p);
 	gtk_widget_hide(oss->window);
@@ -281,22 +271,20 @@ static void _on_settings_cancel(gpointer data)
 
 static gboolean _on_settings_closex(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	OSS * oss = data;
 
-	_on_settings_cancel(plugin);
+	_on_settings_cancel(oss);
 	return TRUE;
 }
 
 static void _on_settings_ok(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	OSS * oss = plugin->priv;
+	OSS * oss = data;
 	char const * p;
 
 	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(oss->mixer)))
 			!= NULL)
-		plugin->helper->config_set(plugin->helper->phone, "oss",
-				"mixer", p);
+		oss->helper->config_set(oss->helper->phone, "oss", "mixer", p);
 	gtk_widget_hide(oss->window);
-	_oss_open(plugin);
+	_oss_open(oss);
 }

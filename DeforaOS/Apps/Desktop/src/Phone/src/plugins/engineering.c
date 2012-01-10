@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ typedef enum _EngineeringServingCellInformation
 	ESCI_VOCODER
 } EngineeringServingCellInformation;
 
-typedef struct _Engineering
+typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
 	guint source;
@@ -158,8 +158,8 @@ static struct
 
 
 /* prototypes */
-static int _engineering_init(PhonePlugin * plugin);
-static void _engineering_destroy(PhonePlugin * plugin);
+static Engineering * _engineering_init(PhonePluginHelper * helper);
+static void _engineering_destroy(Engineering * engineering);
 
 static double _engineering_get_frequency(unsigned int arfcn);
 
@@ -168,20 +168,19 @@ static gboolean _on_engineering_closex(gpointer data);
 static void _on_engineering_play_toggled(gpointer data);
 static void _on_engineering_fullscreen_toggled(gpointer data);
 static gboolean _on_engineering_timeout(gpointer data);
-static int _on_engineering_trigger_em(PhonePlugin * plugin,
+static int _on_engineering_trigger_em(Engineering * engineering,
 		char const * result);
 
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Engineering",
+	NULL,
 	NULL,
 	_engineering_init,
 	_engineering_destroy,
-	NULL,
 	NULL,
 	NULL
 };
@@ -190,7 +189,7 @@ PhonePlugin plugin =
 /* private */
 /* functions */
 /* engineering_init */
-static int _engineering_init(PhonePlugin * plugin)
+static Engineering * _engineering_init(PhonePluginHelper * helper)
 {
 	Engineering * engineering;
 	GtkWidget * vbox;
@@ -202,10 +201,9 @@ static int _engineering_init(PhonePlugin * plugin)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
-	if((engineering = malloc(sizeof(*engineering))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
-	plugin->priv = engineering;
-	engineering->helper = plugin->helper;
+	if((engineering = object_new(sizeof(*engineering))) == NULL)
+		return NULL;
+	engineering->helper = helper;
 	engineering->source = 0;
 	engineering->enci = 0;
 	engineering->enci_cnt = 0;
@@ -219,7 +217,7 @@ static int _engineering_init(PhonePlugin * plugin)
 #endif
 	gtk_window_set_title(GTK_WINDOW(engineering->window),
 			"Engineering mode");
-	g_signal_connect_swapped(G_OBJECT(engineering->window), "delete-event",
+	g_signal_connect_swapped(engineering->window, "delete-event",
 			G_CALLBACK(_on_engineering_closex), engineering);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* toolbar */
@@ -231,9 +229,8 @@ static int _engineering_init(PhonePlugin * plugin)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), engineering->tb_play, -1);
 	engineering->tb_fullscreen = gtk_toggle_tool_button_new_from_stock(
 			GTK_STOCK_FULLSCREEN);
-	g_signal_connect_swapped(G_OBJECT(engineering->tb_fullscreen),
-			"toggled", G_CALLBACK(
-				_on_engineering_fullscreen_toggled),
+	g_signal_connect_swapped(engineering->tb_fullscreen, "toggled",
+			G_CALLBACK(_on_engineering_fullscreen_toggled),
 			engineering);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), engineering->tb_fullscreen,
 			-1);
@@ -318,22 +315,20 @@ static int _engineering_init(PhonePlugin * plugin)
 	gtk_widget_show_all(engineering->window);
 	/* trigger */
 #if 0 /* FIXME reimplement using an extension to the Hayes modem plug-in */
-	plugin->helper->register_trigger(plugin->helper->phone, plugin, "%EM",
+	helper->register_trigger(helper->phone, plugin, "%EM",
 			_on_engineering_trigger_em);
 #endif
-	return 0;
+	return engineering;
 }
 
 
 /* engineering_destroy */
-static void _engineering_destroy(PhonePlugin * plugin)
+static void _engineering_destroy(Engineering * engineering)
 {
-	Engineering * engineering = plugin->priv;
-
 	if(engineering->source != 0)
 		g_source_remove(engineering->source);
 	gtk_widget_destroy(engineering->window);
-	free(engineering);
+	object_delete(engineering);
 }
 
 
@@ -374,7 +369,6 @@ static gboolean _on_engineering_closex(gpointer data)
 	Engineering * engineering = data;
 
 	gtk_widget_hide(engineering->window);
-	/* FIXME unload the plugin */
 	return TRUE;
 }
 
@@ -466,9 +460,8 @@ static int _do_temp_offset(Engineering * engineering, unsigned int temp_offset);
 static int _do_rxlev_acc_min(Engineering * engineering,
 		unsigned int rxlev_acc_min);
 
-static int _on_engineering_trigger_em(PhonePlugin * plugin, char const * result)
+static int _on_engineering_trigger_em(Engineering * engineering, char const * result)
 {
-	Engineering * engineering = plugin->priv;
 	int res;
 	unsigned int p[20];
 	size_t i;

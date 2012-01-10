@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,8 +59,10 @@ typedef enum _PanelSignal
 #define PANEL_SIGNAL_LAST	PANEL_SIGNAL_100
 #define PANEL_SIGNAL_COUNT	(PANEL_SIGNAL_LAST + 1)
 
-typedef struct _Panel
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
+
 	guint timeout;
 	GtkWidget * plug;
 	GtkWidget * hbox;
@@ -84,10 +86,10 @@ typedef struct _Panel
 
 
 /* prototypes */
-static int _panel_init(PhonePlugin * plugin);
-static void _panel_destroy(PhonePlugin * plugin);
-static int _panel_event(PhonePlugin * plugin, PhoneEvent * event);
-static void _panel_settings(PhonePlugin * plugin);
+static Panel * _panel_init(PhonePluginHelper * helper);
+static void _panel_destroy(Panel * panel);
+static int _panel_event(Panel * panel, PhoneEvent * event);
+static void _panel_settings(Panel * panel);
 
 static void _panel_set_battery_level(Panel * panel, gdouble level,
 		gboolean charging);
@@ -99,16 +101,15 @@ static void _panel_set_status(Panel * panel, gboolean data, gboolean roaming);
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Panel",
 	"gnome-monitor",
+	NULL,
 	_panel_init,
 	_panel_destroy,
 	_panel_event,
-	_panel_settings,
-	NULL
+	_panel_settings
 };
 
 
@@ -119,7 +120,7 @@ static gboolean _on_plug_delete_event(gpointer data);
 static void _on_plug_embedded(gpointer data);
 static gboolean _on_battery_timeout(gpointer data);
 
-static int _panel_init(PhonePlugin * plugin)
+static Panel * _panel_init(PhonePluginHelper * helper)
 {
 	Panel * panel;
 	PangoFontDescription * bold;
@@ -129,16 +130,16 @@ static int _panel_init(PhonePlugin * plugin)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((panel = object_new(sizeof(*panel))) == NULL)
-		return 1;
-	plugin->priv = panel;
+		return NULL;
+	panel->helper = helper;
 	panel->timeout = 0;
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	panel->plug = gtk_plug_new(0);
-	g_signal_connect_swapped(G_OBJECT(panel->plug), "delete-event",
-			G_CALLBACK(_on_plug_delete_event), plugin);
-	g_signal_connect_swapped(G_OBJECT(panel->plug), "embedded", G_CALLBACK(
-				_on_plug_embedded), plugin);
+	g_signal_connect_swapped(panel->plug, "delete-event", G_CALLBACK(
+				_on_plug_delete_event), panel);
+	g_signal_connect_swapped(panel->plug, "embedded", G_CALLBACK(
+				_on_plug_embedded), panel);
 	panel->hbox = gtk_hbox_new(FALSE, 2);
 	/* battery */
 	panel->battery_timeout = 0;
@@ -146,13 +147,12 @@ static int _panel_init(PhonePlugin * plugin)
 	panel->battery_image = gtk_image_new();
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->battery_image, FALSE,
 			TRUE, 0);
-	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
-					"battery")) == NULL
+	if((p = helper->config_get(helper->phone, "panel", "battery")) == NULL
 			|| strtol(p, NULL, 10) == 0)
 		gtk_widget_set_no_show_all(panel->battery_image, TRUE);
-	else if(_on_battery_timeout(plugin) == TRUE)
+	else if(_on_battery_timeout(panel) == TRUE)
 		panel->battery_timeout = g_timeout_add(5000,
-				_on_battery_timeout, plugin);
+				_on_battery_timeout, panel);
 	/* signal */
 	panel->signal_level = -1;
 	panel->signal_image = gtk_image_new();
@@ -160,8 +160,7 @@ static int _panel_init(PhonePlugin * plugin)
 			TRUE, 0);
 	/* operator */
 	panel->operator = gtk_label_new(NULL);
-	if((p = plugin->helper->config_get(plugin->helper->phone, "panel",
-					"truncate")) != NULL
+	if((p = helper->config_get(helper->phone, "panel", "truncate")) != NULL
 			&& strtol(p, NULL, 10) != 0)
 		gtk_label_set_ellipsize(GTK_LABEL(panel->operator),
 				PANGO_ELLIPSIZE_END);
@@ -193,21 +192,20 @@ static int _panel_init(PhonePlugin * plugin)
 	/* preferences */
 	panel->window = NULL;
 	pango_font_description_free(bold);
-	_on_plug_delete_event(plugin);
-	return 0;
+	_on_plug_delete_event(panel);
+	return panel;
 }
 
 static gboolean _on_plug_delete_event(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Panel * panel = plugin->priv;
+	Panel * panel = data;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(panel->timeout == 0)
 		panel->timeout = g_timeout_add(5000, _on_plug_delete_event,
-				plugin);
+				panel);
 	desktop_message_send(PHONE_EMBED_MESSAGE, gtk_plug_get_id(
 				GTK_PLUG(panel->plug)), 0, 0);
 	return TRUE;
@@ -215,8 +213,8 @@ static gboolean _on_plug_delete_event(gpointer data)
 
 static void _on_plug_embedded(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Panel * panel = plugin->priv;
+	Panel * panel = data;
+	PhonePluginHelper * helper = panel->helper;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -225,27 +223,24 @@ static void _on_plug_embedded(gpointer data)
 		g_source_remove(panel->timeout);
 	panel->timeout = 0;
 	gtk_widget_show(panel->plug);
-	plugin->helper->trigger(plugin->helper->phone,
-			MODEM_EVENT_TYPE_REGISTRATION);
+	helper->trigger(helper->phone, MODEM_EVENT_TYPE_REGISTRATION);
 }
 
 static gboolean _on_battery_timeout(gpointer data)
 {
-	PhonePlugin * plugin = data;
+	Panel * panel = data;
 	ModemRequest request;
 
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_BATTERY_LEVEL;
-	plugin->helper->request(plugin->helper->phone, &request);
+	panel->helper->request(panel->helper->phone, &request);
 	return TRUE;
 }
 
 
 /* panel_destroy */
-static void _panel_destroy(PhonePlugin * plugin)
+static void _panel_destroy(Panel * panel)
 {
-	Panel * panel = plugin->priv;
-
 	if(panel->battery_timeout != 0)
 		g_source_remove(panel->battery_timeout);
 	if(panel->timeout != 0)
@@ -256,16 +251,14 @@ static void _panel_destroy(PhonePlugin * plugin)
 
 
 /* panel_event */
-static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
+static int _event_modem_event(Panel * panel, ModemEvent * event);
 
-static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _panel_event(Panel * panel, PhoneEvent * event)
 {
-	Panel * panel = plugin->priv;
-
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			return _event_modem_event(plugin,
+			return _event_modem_event(panel,
 					event->modem_event.event);
 		case PHONE_EVENT_TYPE_OFFLINE:
 			_panel_set_operator(panel, -1, "Offline");
@@ -298,9 +291,8 @@ static int _panel_event(PhonePlugin * plugin, PhoneEvent * event)
 	return 0;
 }
 
-static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
+static int _event_modem_event(Panel * panel, ModemEvent * event)
 {
-	Panel * panel = plugin->priv;
 	char const * media = "";
 	gboolean data;
 
@@ -337,7 +329,7 @@ static void _panel_set_battery_level(Panel * panel, gdouble level,
 		gboolean charging)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(plugin, %lf)\n", __func__, level);
+	fprintf(stderr, "DEBUG: %s(panel, %lf)\n", __func__, level);
 #endif
 	if(level < 0.0)
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN, charging);
@@ -470,9 +462,8 @@ static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_ok(gpointer data);
 
-static void _panel_settings(PhonePlugin * plugin)
+static void _panel_settings(Panel * panel)
 {
-	Panel * panel = plugin->priv;
 	GtkWidget * vbox;
 	GtkWidget * bbox;
 	GtkWidget * widget;
@@ -489,8 +480,8 @@ static void _panel_settings(PhonePlugin * plugin)
 	gtk_window_set_icon_name(GTK_WINDOW(panel->window), "gnome-settings");
 #endif
 	gtk_window_set_title(GTK_WINDOW(panel->window), "Panel preferences");
-	g_signal_connect_swapped(G_OBJECT(panel->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+	g_signal_connect_swapped(panel->window, "delete-event", G_CALLBACK(
+				_on_settings_closex), panel);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* check button */
 	panel->battery = gtk_check_button_new_with_label(
@@ -504,33 +495,31 @@ static void _panel_settings(PhonePlugin * plugin)
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_cancel), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_on_settings_cancel), panel);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_ok), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(_on_settings_ok),
+			panel);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(panel->window), vbox);
-	_on_settings_cancel(plugin);
+	_on_settings_cancel(panel);
 	gtk_widget_show_all(panel->window);
 }
 
 static void _on_settings_cancel(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Panel * panel = plugin->priv;
+	Panel * panel = data;
+	PhonePluginHelper * helper = panel->helper;
 	char const * p;
 	gboolean active;
 
-	active = ((p = plugin->helper->config_get(plugin->helper->phone,
-					"panel", "battery")) != NULL
-			&& strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
+	active = ((p = helper->config_get(helper->phone, "panel", "battery"))
+			!= NULL && strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->battery), active);
-	active = ((p = plugin->helper->config_get(plugin->helper->phone,
-					"panel", "truncate")) != NULL
-			&& strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
+	active = ((p = helper->config_get(helper->phone, "panel", "truncate"))
+			!= NULL && strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(panel->truncate),
 			active);
 	gtk_widget_hide(panel->window);
@@ -538,8 +527,7 @@ static void _on_settings_cancel(gpointer data)
 
 static gboolean _on_settings_closex(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Panel * panel = plugin->priv;
+	Panel * panel = data;
 
 	gtk_widget_hide(panel->window);
 	return TRUE;
@@ -547,9 +535,8 @@ static gboolean _on_settings_closex(gpointer data)
 
 static void _on_settings_ok(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	PhonePluginHelper * helper = plugin->helper;
-	Panel * panel = plugin->priv;
+	Panel * panel = data;
+	PhonePluginHelper * helper = panel->helper;
 	gboolean value;
 
 	gtk_widget_hide(panel->window);
@@ -559,8 +546,8 @@ static void _on_settings_ok(gpointer data)
 	{
 		if(panel->battery_timeout == 0)
 			panel->battery_timeout = g_timeout_add(5000,
-					_on_battery_timeout, plugin);
-		_on_battery_timeout(plugin);
+					_on_battery_timeout, panel);
+		_on_battery_timeout(panel);
 		gtk_widget_show(panel->battery_image);
 	}
 	else

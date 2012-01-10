@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,10 @@
 /* SMSCrypt */
 /* private */
 /* types */
-typedef struct _SMSCrypt
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
+
 	/* internal */
 	unsigned char buf[20];
 	size_t len;
@@ -41,43 +43,40 @@ typedef struct _SMSCrypt
 
 
 /* prototypes */
-static void _smscrypt_clear(PhonePlugin * plugin);
-static gboolean _smscrypt_confirm(PhonePlugin * plugin, char const * message);
-static int _smscrypt_init(PhonePlugin * plugin);
-static void _smscrypt_destroy(PhonePlugin * plugin);
-static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent * event);
-static int _smscrypt_secret(PhonePlugin * plugin, char const * number);
-static void _smscrypt_settings(PhonePlugin * plugin);
+static void _smscrypt_clear(SMSCrypt * smscrypt);
+static gboolean _smscrypt_confirm(SMSCrypt * smscrypt, char const * message);
+static SMSCrypt * _smscrypt_init(PhonePluginHelper * helper);
+static void _smscrypt_destroy(SMSCrypt * smscrypt);
+static int _smscrypt_event(SMSCrypt * smscrypt, PhoneEvent * event);
+static int _smscrypt_secret(SMSCrypt * smscrypt, char const * number);
+static void _smscrypt_settings(SMSCrypt * smscrypt);
 
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"SMS encryption",
 	"application-certificate",
+	NULL,
 	_smscrypt_init,
 	_smscrypt_destroy,
 	_smscrypt_event,
-	_smscrypt_settings,
-	NULL
+	_smscrypt_settings
 };
 
 
 /* private */
 /* functions */
 /* smscrypt_clear */
-static void _smscrypt_clear(PhonePlugin * plugin)
+static void _smscrypt_clear(SMSCrypt * smscrypt)
 {
-	SMSCrypt * smscrypt = plugin->priv;
-
 	memset(smscrypt->buf, 0, smscrypt->len);
 }
 
 
 /* smscrypt_confirm */
-static gboolean _smscrypt_confirm(PhonePlugin * plugin, char const * message)
+static gboolean _smscrypt_confirm(SMSCrypt * smscrypt, char const * message)
 {
 	GtkWidget * dialog;
 	int res;
@@ -102,22 +101,22 @@ static gboolean _smscrypt_confirm(PhonePlugin * plugin, char const * message)
 static void _init_foreach(char const * variable, char const * value,
 		void * priv);
 
-static int _smscrypt_init(PhonePlugin * plugin)
+static SMSCrypt * _smscrypt_init(PhonePluginHelper * helper)
 {
 	SMSCrypt * smscrypt;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((smscrypt = malloc(sizeof(*smscrypt))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
-	plugin->priv = smscrypt;
+	if((smscrypt = object_new(sizeof(*smscrypt))) == NULL)
+		return NULL;
+	smscrypt->helper = helper;
 	smscrypt->len = sizeof(smscrypt->buf);
 	smscrypt->window = NULL;
 	smscrypt->store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-	plugin->helper->config_foreach(plugin->helper->phone, "smscrypt",
-			_init_foreach, smscrypt);
-	return 0;
+	helper->config_foreach(helper->phone, "smscrypt", _init_foreach,
+			smscrypt);
+	return smscrypt;
 }
 
 static void _init_foreach(char const * variable, char const * value,
@@ -132,25 +131,23 @@ static void _init_foreach(char const * variable, char const * value,
 
 
 /* smscrypt_destroy */
-static void _smscrypt_destroy(PhonePlugin * plugin)
+static void _smscrypt_destroy(SMSCrypt * smscrypt)
 {
-	SMSCrypt * smscrypt = plugin->priv;
-
 	if(smscrypt->window != NULL)
 		gtk_widget_destroy(smscrypt->window);
-	free(smscrypt);
+	object_delete(smscrypt);
 }
 
 
 /* smscrypt_event */
-static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
+static int _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len);
-static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
+static int _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len);
 
-static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _smscrypt_event(SMSCrypt * smscrypt, PhoneEvent * event)
 {
 	int ret = 0;
 	char const * number;
@@ -186,11 +183,11 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent * event)
 	return ret;
 }
 
-static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
+static int _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len)
 {
-	SMSCrypt * smscrypt = plugin->priv;
+	PhonePluginHelper * helper = smscrypt->helper;
 	char const * error = "There is no known secret for this number."
 		" The message could not be decrypted.";
 	size_t i;
@@ -203,8 +200,8 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 #endif
 	if(*encoding != PHONE_ENCODING_DATA)
 		return 0; /* not for us */
-	if(_smscrypt_secret(plugin, number) != 0)
-		return plugin->helper->error(plugin->helper->phone, error, 1);
+	if(_smscrypt_secret(smscrypt, number) != 0)
+		return helper->error(helper->phone, error, 1);
 	for(i = 0; i < *len; i++)
 	{
 		buf[i] ^= smscrypt->buf[j];
@@ -217,15 +214,14 @@ static int _smscrypt_event_sms_receiving(PhonePlugin * plugin,
 		j = 0;
 	}
 	*encoding = PHONE_ENCODING_UTF8;
-	_smscrypt_clear(plugin);
+	_smscrypt_clear(smscrypt);
 	return 0;
 }
 
-static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
+static int _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
 		char const * number, PhoneEncoding * encoding, char * buf,
 		size_t * len)
 {
-	SMSCrypt * smscrypt = plugin->priv;
 	char const * confirm = "There is no secret defined for this number."
 		" The message will be sent unencrypted.\nContinue?";
 	size_t i;
@@ -238,8 +234,8 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 #endif
 	if(*encoding != PHONE_ENCODING_UTF8)
 		return 0; /* not for us */
-	if(_smscrypt_secret(plugin, number) != 0)
-		return (_smscrypt_confirm(plugin, confirm) == TRUE) ? 0 : 1;
+	if(_smscrypt_secret(smscrypt, number) != 0)
+		return (_smscrypt_confirm(smscrypt, confirm) == TRUE) ? 0 : 1;
 	*encoding = PHONE_ENCODING_DATA;
 	for(i = 0; i < *len; i++)
 	{
@@ -253,24 +249,23 @@ static int _smscrypt_event_sms_sending(PhonePlugin * plugin,
 		j = 0;
 	}
 	*encoding = PHONE_ENCODING_DATA;
-	_smscrypt_clear(plugin);
+	_smscrypt_clear(smscrypt);
 	return 0;
 }
 
 
 /* smscrypt_secret */
-static int _smscrypt_secret(PhonePlugin * plugin, char const * number)
+static int _smscrypt_secret(SMSCrypt * smscrypt, char const * number)
 {
-	SMSCrypt * smscrypt = plugin->priv;
+	PhonePluginHelper * helper = smscrypt->helper;
 	char const * secret = NULL;
 	SHA_CTX sha1;
 
 	if(number != NULL)
-		secret = plugin->helper->config_get(plugin->helper->phone,
-				"smscrypt", number);
+		secret = helper->config_get(helper->phone, "smscrypt", number);
 	if(secret == NULL)
-		secret = plugin->helper->config_get(plugin->helper->phone,
-				"smscrypt", "secret");
+		secret = helper->config_get(helper->phone, "smscrypt",
+				"secret");
 	if(secret == NULL)
 		return 1;
 	SHA1_Init(&sha1);
@@ -289,9 +284,8 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 static void _on_settings_secret_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gchar * arg2, gpointer data);
 
-static void _smscrypt_settings(PhonePlugin * plugin)
+static void _smscrypt_settings(SMSCrypt * smscrypt)
 {
-	SMSCrypt * smscrypt = plugin->priv;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
@@ -310,18 +304,18 @@ static void _smscrypt_settings(PhonePlugin * plugin)
 	gtk_window_set_icon_name(GTK_WINDOW(smscrypt->window), "smscrypt");
 #endif
 	gtk_window_set_title(GTK_WINDOW(smscrypt->window), "SMS encryption");
-	g_signal_connect_swapped(G_OBJECT(smscrypt->window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+	g_signal_connect_swapped(smscrypt->window, "delete-event", G_CALLBACK(
+				_on_settings_closex), smscrypt);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_settings_new), plugin);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				_on_settings_new), smscrypt);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				_on_settings_delete), plugin);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				_on_settings_delete), smscrypt);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
@@ -333,15 +327,15 @@ static void _smscrypt_settings(PhonePlugin * plugin)
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(smscrypt->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				_on_settings_number_edited), plugin);
+	g_signal_connect(renderer, "edited", G_CALLBACK(
+				_on_settings_number_edited), smscrypt);
 	column = gtk_tree_view_column_new_with_attributes("Number",
 			renderer, "text", 0, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(smscrypt->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				_on_settings_secret_edited), plugin);
+	g_signal_connect(renderer, "edited", G_CALLBACK(
+				_on_settings_secret_edited), smscrypt);
 	column = gtk_tree_view_column_new_with_attributes("Secret",
 			renderer, "text", 1, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(smscrypt->view), column);
@@ -353,8 +347,7 @@ static void _smscrypt_settings(PhonePlugin * plugin)
 
 static gboolean _on_settings_closex(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	SMSCrypt * smscrypt = plugin->priv;
+	SMSCrypt * smscrypt = data;
 
 	gtk_widget_hide(smscrypt->window);
 	return TRUE;
@@ -362,8 +355,8 @@ static gboolean _on_settings_closex(gpointer data)
 
 static void _on_settings_delete(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	SMSCrypt * smscrypt = plugin->priv;
+	SMSCrypt * smscrypt = data;
+	PhonePluginHelper * helper = smscrypt->helper;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	char * number = NULL;
@@ -377,16 +370,14 @@ static void _on_settings_delete(gpointer data)
 			-1);
 	if(number == NULL)
 		return;
-	plugin->helper->config_set(plugin->helper->phone, "smscrypt", number,
-			NULL);
+	helper->config_set(helper->phone, "smscrypt", number, NULL);
 	gtk_list_store_remove(smscrypt->store, &iter);
 	g_free(number);
 }
 
 static void _on_settings_new(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	SMSCrypt * smscrypt = plugin->priv;
+	SMSCrypt * smscrypt = data;
 	GtkTreeIter iter;
 
 	gtk_list_store_append(smscrypt->store, &iter);
@@ -396,8 +387,8 @@ static void _on_settings_new(gpointer data)
 static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
-	PhonePlugin * plugin = data;
-	SMSCrypt * smscrypt = plugin->priv;
+	SMSCrypt * smscrypt = data;
+	PhonePluginHelper * helper = smscrypt->helper;
 	GtkTreeModel * model = GTK_TREE_MODEL(smscrypt->store);
 	GtkTreeIter iter;
 	char * number = NULL;
@@ -408,12 +399,10 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 	if(number == NULL)
 		return;
 	/* FIXME check that there are no duplicates */
-	secret = plugin->helper->config_get(plugin->helper->phone, "smscrypt",
-			number);
-	if(plugin->helper->config_set(plugin->helper->phone, "smscrypt", arg2,
-				secret) == 0
-			&& plugin->helper->config_set(plugin->helper->phone,
-				"smscrypt", number, NULL) == 0)
+	secret = helper->config_get(helper->phone, "smscrypt", number);
+	if(helper->config_set(helper->phone, "smscrypt", arg2, secret) == 0
+			&& helper->config_set(helper->phone, "smscrypt", number,
+				NULL) == 0)
 		gtk_list_store_set(smscrypt->store, &iter, 0, arg2, -1);
 	g_free(number);
 }
@@ -421,8 +410,8 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 static void _on_settings_secret_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
-	PhonePlugin * plugin = data;
-	SMSCrypt * smscrypt = plugin->priv;
+	SMSCrypt * smscrypt = data;
+	PhonePluginHelper * helper = smscrypt->helper;
 	GtkTreeModel * model = GTK_TREE_MODEL(smscrypt->store);
 	GtkTreeIter iter;
 	char * number = NULL;
@@ -431,8 +420,7 @@ static void _on_settings_secret_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gtk_tree_model_get(model, &iter, 0, &number, -1);
 	if(number == NULL)
 		return;
-	if(plugin->helper->config_set(plugin->helper->phone, "smscrypt", number,
-				arg2) == 0)
+	if(helper->config_set(helper->phone, "smscrypt", number, arg2) == 0)
 		gtk_list_store_set(smscrypt->store, &iter, 1, arg2, -1);
 	g_free(number);
 }

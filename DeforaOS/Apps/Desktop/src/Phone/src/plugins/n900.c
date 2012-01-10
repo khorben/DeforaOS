@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,27 +32,56 @@
 
 
 /* N900 */
+/* types */
+typedef struct _PhonePlugin
+{
+	PhonePluginHelper * helper;
+} N900;
+
+
 /* prototypes */
 /* plug-in */
+static N900 * _n900_init(PhonePluginHelper * helper);
+static void _n900_destroy(N900 * n900);
 static int _n900_event(PhonePlugin * plugin, PhoneEvent * event);
 
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Nokia N900",
 	"phone-n900",
 	NULL,
-	NULL,
+	_n900_init,
+	_n900_destroy,
 	_n900_event,
-	NULL,
 	NULL
 };
 
 
 /* private */
+/* functions */
+/* plug-in */
+/* n900_init */
+static N900 * _n900_init(PhonePluginHelper * helper)
+{
+	N900 * n900;
+
+	if((n900 = object_new(sizeof(*n900))) == NULL)
+		return NULL;
+	n900->helper = helper;
+	return n900;
+}
+
+
+/* n900_destroy */
+static void _n900_destroy(N900 * n900)
+{
+	object_delete(n900);
+}
+
+
 /* n900_event */
 static int _event_power_on(PhonePlugin * plugin, gboolean power);
 

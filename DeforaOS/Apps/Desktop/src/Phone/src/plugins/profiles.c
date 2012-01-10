@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,8 +66,10 @@ typedef struct _ProfileDefinition
 	gboolean vibrate;
 } ProfileDefinition;
 
-typedef struct _Profiles
+typedef struct _PhonePlugin
 {
+	PhonePluginHelper * helper;
+
 	guint source;
 
 	/* profiles */
@@ -101,16 +103,16 @@ static ProfileDefinition _profiles_definitions[PROFILE_TYPE_COUNT] =
 
 /* prototypes */
 /* plug-in */
-static int _profiles_init(PhonePlugin * plugin);
-static void _profiles_destroy(PhonePlugin * plugin);
-static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event);
-static void _profiles_settings(PhonePlugin * plugin);
+static Profiles * _profiles_init(PhonePluginHelper * helper);
+static void _profiles_destroy(Profiles * profiles);
+static int _profiles_event(Profiles * profiles, PhoneEvent * event);
+static void _profiles_settings(Profiles * profiles);
 
 /* useful */
-static void _profiles_apply(PhonePlugin * plugin, ProfileType type);
-static void _profiles_play(PhonePlugin * plugin, char const * sound,
-		int vibrate);
-static void _profiles_switch(PhonePlugin * plugin, ProfileType type);
+static void _profiles_apply(Profiles * profiles, ProfileType type);
+static void _profiles_play(Profiles * profiles, char const * sound,
+		int vibrator);
+static void _profiles_switch(Profiles * profiles, ProfileType type);
 
 /* callbacks */
 static gboolean _profiles_on_vibrate(gpointer data);
@@ -118,23 +120,22 @@ static gboolean _profiles_on_vibrate(gpointer data);
 
 /* public */
 /* variables */
-PhonePlugin plugin =
+PhonePluginDefinition plugin =
 {
-	NULL,
 	"Profiles",
 	"system-config-users",
+	NULL,
 	_profiles_init,
 	_profiles_destroy,
 	_profiles_event,
-	_profiles_settings,
-	NULL
+	_profiles_settings
 };
 
 
 /* private */
 /* functions */
 /* profiles_init */
-static int _profiles_init(PhonePlugin * plugin)
+static Profiles * _profiles_init(PhonePluginHelper * helper)
 {
 	Profiles * profiles;
 	pa_mainloop_api * mapi = NULL;
@@ -145,15 +146,15 @@ static int _profiles_init(PhonePlugin * plugin)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((profiles = object_new(sizeof(*profiles))) == NULL)
-		return -1;
-	plugin->priv = profiles;
+		return NULL;
+	profiles->helper = helper;
 	profiles->source = 0;
 	profiles->profiles = _profiles_definitions;
 	profiles->profiles_cnt = sizeof(_profiles_definitions)
 		/ sizeof(*_profiles_definitions);
 	profiles->profiles_cur = 0;
-	if((p = plugin->helper->config_get(plugin->helper->phone, "profiles",
-					"default")) != NULL)
+	if((p = helper->config_get(helper->phone, "profiles", "default"))
+			!= NULL)
 		for(i = 0; i < profiles->profiles_cnt; i++)
 			if(strcmp(profiles->profiles[i].name, p) == 0)
 			{
@@ -167,29 +168,27 @@ static int _profiles_init(PhonePlugin * plugin)
 	profiles->pao = NULL;
 	if(profiles->pam == NULL)
 	{
-		_profiles_destroy(plugin);
-		return error_set_code(1, "%s",
-				"Could not initialize PulseAudio");
+		_profiles_destroy(profiles);
+		error_set_code(1, "%s", "Could not initialize PulseAudio");
+		return NULL;
 	}
 	mapi = pa_threaded_mainloop_get_api(profiles->pam);
 	/* XXX update the context name */
 	if((profiles->pac = pa_context_new(mapi, PACKAGE)) == NULL)
 	{
-		_profiles_destroy(plugin);
-		return error_set_code(1, "%s",
-				"Could not initialize PulseAudio");
+		_profiles_destroy(profiles);
+		error_set_code(1, "%s", "Could not initialize PulseAudio");
+		return NULL;
 	}
 	pa_context_connect(profiles->pac, NULL, 0, NULL);
 	pa_threaded_mainloop_start(profiles->pam);
-	return 0;
+	return profiles;
 }
 
 
 /* profiles_destroy */
-static void _profiles_destroy(PhonePlugin * plugin)
+static void _profiles_destroy(Profiles * profiles)
 {
-	Profiles * profiles = plugin->priv;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
@@ -207,26 +206,26 @@ static void _profiles_destroy(PhonePlugin * plugin)
 
 
 /* profiles_event */
-static int _event_key_tone(PhonePlugin * plugin);
-static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event);
-static int _event_starting(PhonePlugin * plugin);
-static int _event_stopping(PhonePlugin * plugin);
+static int _event_key_tone(Profiles * profiles);
+static int _event_modem_event(Profiles * profiles, ModemEvent * event);
+static int _event_starting(Profiles * profiles);
+static int _event_stopping(Profiles * profiles);
 
-static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
+static int _profiles_event(Profiles * profiles, PhoneEvent * event)
 {
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_KEY_TONE:
-			return _event_key_tone(plugin);
+			return _event_key_tone(profiles);
 		case PHONE_EVENT_TYPE_STARTING:
-			return _event_starting(plugin);
+			return _event_starting(profiles);
 		case PHONE_EVENT_TYPE_STOPPING:
-			return _event_stopping(plugin);
+			return _event_stopping(profiles);
 		case PHONE_EVENT_TYPE_MESSAGE_RECEIVED:
-			_profiles_play(plugin, "message", 2);
+			_profiles_play(profiles, "message", 2);
 			break;
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			return _event_modem_event(plugin,
+			return _event_modem_event(profiles,
 					event->modem_event.event);
 		default: /* not relevant */
 			break;
@@ -234,16 +233,16 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent * event)
 	return 0;
 }
 
-static int _event_key_tone(PhonePlugin * plugin)
+static int _event_key_tone(Profiles * profiles)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_profiles_play(plugin, "keytone", 1);
+	_profiles_play(profiles, "keytone", 1);
 	return 0;
 }
 
-static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
+static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 {
 	ModemCallDirection direction;
 	ModemCallStatus status;
@@ -257,10 +256,10 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 			status = event->call.status;
 			if(direction == MODEM_CALL_DIRECTION_INCOMING
 					&& status == MODEM_CALL_STATUS_RINGING)
-				_profiles_play(plugin, "ringtone", 10);
+				_profiles_play(profiles, "ringtone", 10);
 			else if(status == MODEM_CALL_STATUS_NONE
 					|| status == MODEM_CALL_STATUS_ACTIVE)
-				_profiles_play(plugin, NULL, 0);
+				_profiles_play(profiles, NULL, 0);
 			break;
 		default:
 			break;
@@ -268,10 +267,9 @@ static int _event_modem_event(PhonePlugin * plugin, ModemEvent * event)
 	return 0;
 }
 
-static int _event_starting(PhonePlugin * plugin)
+static int _event_starting(Profiles * profiles)
 {
-	PhonePluginHelper * helper = plugin->helper;
-	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = profiles->helper;
 	ProfileDefinition * definition = &profiles->profiles[
 		profiles->profiles_cur];
 
@@ -280,13 +278,12 @@ static int _event_starting(PhonePlugin * plugin)
 	if(helper->confirm(helper->phone, "You are currently offline.\n"
 				"Do you want to go online?") != 0)
 		return 1;
-	_profiles_apply(plugin, 0);
+	_profiles_apply(profiles, 0);
 	return 0;
 }
 
-static int _event_stopping(PhonePlugin * plugin)
+static int _event_stopping(Profiles * profiles)
 {
-	Profiles * profiles = plugin->priv;
 	ProfileDefinition * definition = &profiles->profiles[
 		profiles->profiles_cur];
 
@@ -301,9 +298,8 @@ static void _on_settings_cancel(gpointer data);
 static void _on_settings_changed(gpointer data);
 static void _on_settings_ok(gpointer data);
 
-static void _profiles_settings(PhonePlugin * plugin)
+static void _profiles_settings(Profiles * profiles)
 {
-	Profiles * profiles = plugin->priv;
 	GtkWidget * vbox;
 	GtkWidget * frame;
 	GtkWidget * bbox;
@@ -311,7 +307,7 @@ static void _profiles_settings(PhonePlugin * plugin)
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin->name);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, profiles->name);
 #endif
 	if(profiles->pr_window != NULL)
 	{
@@ -322,8 +318,8 @@ static void _profiles_settings(PhonePlugin * plugin)
 	gtk_container_set_border_width(GTK_CONTAINER(profiles->pr_window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(profiles->pr_window), 200, 300);
 	gtk_window_set_title(GTK_WINDOW(profiles->pr_window), "Profiles");
-	g_signal_connect_swapped(G_OBJECT(profiles->pr_window), "delete-event",
-			G_CALLBACK(_on_settings_closex), plugin);
+	g_signal_connect_swapped(profiles->pr_window, "delete-event",
+			G_CALLBACK(_on_settings_closex), profiles);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* combo */
 	profiles->pr_combo = gtk_combo_box_new_text();
@@ -331,7 +327,7 @@ static void _profiles_settings(PhonePlugin * plugin)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(profiles->pr_combo),
 				profiles->profiles[i].name);
 	g_signal_connect_swapped(profiles->pr_combo, "changed", G_CALLBACK(
-				_on_settings_changed), plugin);
+				_on_settings_changed), profiles);
 	gtk_box_pack_start(GTK_BOX(vbox), profiles->pr_combo, FALSE, TRUE, 0);
 	/* frame */
 	frame = gtk_frame_new("Overview");
@@ -360,24 +356,23 @@ static void _profiles_settings(PhonePlugin * plugin)
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_cancel), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_on_settings_cancel), profiles);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_settings_ok), plugin);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_on_settings_ok), profiles);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), bbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(profiles->pr_window), vbox);
 	gtk_widget_show_all(vbox);
-	_on_settings_cancel(plugin);
+	_on_settings_cancel(profiles);
 	gtk_window_present(GTK_WINDOW(profiles->pr_window));
 }
 
 static gboolean _on_settings_closex(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Profiles * profiles = plugin->priv;
+	Profiles * profiles = data;
 
 	_on_settings_cancel(profiles);
 	return TRUE;
@@ -385,8 +380,7 @@ static gboolean _on_settings_closex(gpointer data)
 
 static void _on_settings_cancel(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Profiles * profiles = plugin->priv;
+	Profiles * profiles = data;
 
 	gtk_widget_hide(profiles->pr_window);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->pr_combo),
@@ -395,8 +389,7 @@ static void _on_settings_cancel(gpointer data)
 
 static void _on_settings_changed(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Profiles * profiles = plugin->priv;
+	Profiles * profiles = data;
 	int i;
 	char buf[16];
 	double fraction;
@@ -426,21 +419,19 @@ static void _on_settings_changed(gpointer data)
 
 static void _on_settings_ok(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	Profiles * profiles = plugin->priv;
+	Profiles * profiles = data;
 	ProfileType type;
 
 	gtk_widget_hide(profiles->pr_window);
 	type = gtk_combo_box_get_active(GTK_COMBO_BOX(profiles->pr_combo));
-	_profiles_switch(plugin, type);
+	_profiles_switch(profiles, type);
 }
 
 
 /* profiles_apply */
-static void _profiles_apply(PhonePlugin * plugin, ProfileType type)
+static void _profiles_apply(Profiles * profiles, ProfileType type)
 {
-	PhonePluginHelper * helper = plugin->helper;
-	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = profiles->helper;
 
 	if(type > profiles->profiles_cnt)
 		/* XXX report error */
@@ -452,11 +443,10 @@ static void _profiles_apply(PhonePlugin * plugin, ProfileType type)
 
 
 /* profiles_play */
-static void _profiles_play(PhonePlugin * plugin, char const * sample,
+static void _profiles_play(Profiles * profiles, char const * sample,
 		int vibrator)
 {
-	PhonePluginHelper * helper = plugin->helper;
-	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = profiles->helper;
 	ProfileDefinition * definition = &profiles->profiles[
 		profiles->profiles_cur];
 	PhoneEvent event;
@@ -494,16 +484,15 @@ static void _profiles_play(PhonePlugin * plugin, char const * sample,
 		if(profiles->source != 0)
 			g_source_remove(profiles->source);
 		profiles->source = g_timeout_add(500, _profiles_on_vibrate,
-				plugin);
+				profiles);
 	}
 }
 
 
 /* profiles_switch */
-static void _profiles_switch(PhonePlugin * plugin, ProfileType type)
+static void _profiles_switch(Profiles * profiles, ProfileType type)
 {
-	PhonePluginHelper * helper = plugin->helper;
-	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = profiles->helper;
 	ProfileType current = profiles->profiles_cur;
 	PhoneEvent pevent;
 
@@ -512,7 +501,7 @@ static void _profiles_switch(PhonePlugin * plugin, ProfileType type)
 	if(type > profiles->profiles_cnt)
 		/* XXX report error */
 		return;
-	_profiles_apply(plugin, type);
+	_profiles_apply(profiles, type);
 	memset(&pevent, 0, sizeof(pevent));
 	if(profiles->profiles[current].online
 			&& !profiles->profiles[type].online)
@@ -535,9 +524,8 @@ static void _profiles_switch(PhonePlugin * plugin, ProfileType type)
 /* profiles_on_vibrate */
 static gboolean _profiles_on_vibrate(gpointer data)
 {
-	PhonePlugin * plugin = data;
-	PhonePluginHelper * helper = plugin->helper;
-	Profiles * profiles = plugin->priv;
+	Profiles * profiles = data;
+	PhonePluginHelper * helper = profiles->helper;
 	PhoneEvent event;
 
 	memset(&event, 0, sizeof(event));
