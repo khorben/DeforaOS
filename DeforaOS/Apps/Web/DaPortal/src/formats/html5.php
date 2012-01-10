@@ -44,21 +44,9 @@ class Html5Format extends Format
 	//Html5Format::render
 	public function render(&$engine, $page, $filename = FALSE)
 	{
-		global $config;
-
 		//FIXME ignore $filename for the moment
 		$this->engine = $engine;
-		print("<!DOCTYPE html>\n<html>\n\t<head>");
-		$this->renderTitle($page);
-		$this->renderTheme($page);
-		if(($charset = $config->getVariable('defaults', 'charset'))
-				!== FALSE)
-			$this->renderMeta(2, 'Content-Type', 'text/html'
-					.'; charset='.$charset);
-		print("\t</head>\n\t<body>");
-		$this->renderChildren($page, 1);
-		$this->renderTabs(1);
-		print("</body>\n</html>\n");
+		$this->renderElement($page);
 		$this->engine = FALSE;
 	}
 
@@ -189,7 +177,7 @@ class Html5Format extends Format
 			case 'menubar':
 				return $this->renderMenubar($e, $level);
 			case 'page':
-				return $this->renderBlock($e, $level);
+				return $this->renderPage($e, $level);
 			case 'row':
 				return $this->renderBlock($e, $level);
 			case 'statusbar':
@@ -360,6 +348,23 @@ class Html5Format extends Format
 		print('<meta http-equiv="'.$this->escapeAttribute($header).'"'
 				.' content="'.$this->escapeAttribute($value).'"'
 				."/>\n");
+	}
+
+	private function renderPage($e)
+	{
+		global $config;
+
+		print("<!DOCTYPE html>\n<html>\n\t<head>");
+		$this->renderTitle($e);
+		$this->renderTheme($e);
+		if(($charset = $config->getVariable('defaults', 'charset'))
+				!== FALSE)
+			$this->renderMeta(2, 'Content-Type', 'text/html'
+					.'; charset='.$charset);
+		print("\t</head>\n\t<body>");
+		$this->renderChildren($e, 1);
+		$this->renderTabs(1);
+		print("</body>\n</html>\n");
 	}
 
 	private function renderStatusbar($e, $level)

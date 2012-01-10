@@ -61,10 +61,9 @@ class Request
 	public function process(&$engine)
 	{
 		$engine->log('LOG_DEBUG', 'Processing request: module "'
-				.$this->module.'"'
-				.', action "'.$this->action.'"');
-		if($this->handle === FALSE
-				|| ($ret = $this->handle->call($engine, $this))
+				.$this->module.'", action "'.$this->action.'"');
+		if(($handle = Module::load($engine, $this->module)) === FALSE
+				|| ($ret = $handle->call($engine, $this))
 				=== NULL)
 			return $engine->log('LOG_ERR', 'Unable to process'
 					.' request');
@@ -123,8 +122,6 @@ class Request
 	//Request::setModule
 	private function setModule(&$engine, $module)
 	{
-		if(($this->handle = Module::load($engine, $module)) === FALSE)
-			return FALSE;
 		$this->module = $module;
 		return TRUE;
 	}
@@ -178,7 +175,6 @@ class Request
 
 	//private
 	//properties
-	private $handle = FALSE;
 	private $module = FALSE;
 	private $action = FALSE;
 	private $id = FALSE;

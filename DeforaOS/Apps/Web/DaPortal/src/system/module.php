@@ -23,7 +23,7 @@ abstract class Module
 	//methods
 	//essential
 	//Module::Module
-	public function __construct($name)
+	protected function __construct($name)
 	{
 		$this->name = $name;
 	}
@@ -40,11 +40,8 @@ abstract class Module
 		$args = array('name' => $this->name);
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
-		{
-			$engine->log('LOG_DEBUG', 'Module '.$this->name
-					.' is not enabled');
-			return FALSE;
-		}
+			return new ModuleError($engine, 'LOG_DEBUG',
+					'Module '.$this->name.' is not enabled');
 		return $res[0]['id'];
 	}
 
@@ -63,18 +60,18 @@ abstract class Module
 			if(strchr($module, '_') !== FALSE
 					|| strchr($module, '.') !== FALSE
 					|| strchr($module, '/') !== FALSE)
-				return $engine->log('LOG_DEBUG',
+				return new ModuleError($engine, 'LOG_DEBUG',
 						'Invalid module '.$module);
 			$path = './modules/'.$module.'/module.php';
 			if(!is_readable($path))
-				return $engine->log('LOG_ERR',
+				return new ModuleError($engine, 'LOG_ERR',
 						'Unreadable module '.$module);
 			$res = include_once($path);
 			if($res === FALSE)
-				return $engine->log('LOG_DEBUG',
+				return new ModuleError($engine, 'LOG_DEBUG',
 						'Unknown module '.$module);
 			if(!class_exists($name))
-				return $engine->log('LOG_ERR',
+				return new ModuleError($engine, 'LOG_ERR',
 						'Undefined module '.$module);
 		}
 		$ret = new $name($module);
@@ -99,3 +96,31 @@ FROM daportal_module
 WHERE daportal_module.enabled='1'
 AND name=:name";
 }
+
+
+//ModuleError
+class ModuleError extends Module
+{
+	//public
+	//methods
+	//ModuleError::ModuleError
+	public function __construct($engine, $level, $error)
+	{
+		parent::__construct(FALSE);
+		$this->page = $engine->log($level, $error);
+	}
+
+
+	//ModuleError::call
+	public function call(&$engine, $request)
+	{
+		return $this->page;
+	}
+
+
+	//private
+	//properties
+	private $page = FALSE;
+};
+
+?>
