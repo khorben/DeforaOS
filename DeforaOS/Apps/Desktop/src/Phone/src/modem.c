@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ static void _new_config(Config * config, char const * name,
 
 	if(plugin->config == NULL)
 		return;
-	if((section = string_new_append("modem_", name, NULL)) == NULL)
+	if((section = string_new_append("modem::", name, NULL)) == NULL)
 		return; /* XXX report error */
 	for(i = 0; plugin->config[i].type != MCT_NONE; i++)
 	{

@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2012 DeforaOS Project <contact@defora.org>";
+"Copyright (c) 2010-2012 DeforaOS Project <contact@defora.org>";
 /* This file is part of DeforaOS Desktop Phone */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -3268,7 +3268,7 @@ static char const * _phone_config_get(Phone * phone, char const * section,
 	char const * ret;
 	String * s;
 
-	if((s = string_new_append("plugin_", section, NULL)) == NULL)
+	if((s = string_new_append("plugin::", section, NULL)) == NULL)
 		return NULL;
 	ret = config_get(phone->config, s, variable);
 	string_delete(s);
@@ -3312,7 +3312,7 @@ static int _phone_config_set_type(Phone * phone, char const * type,
 	String * s = NULL;
 
 	if(type != NULL && (s = string_new_append(type, (section != NULL)
-					? "_" : NULL, section, NULL)) == NULL)
+					? "::" : NULL, section, NULL)) == NULL)
 		return -1;
 	ret = config_set(phone->config, s, variable, value);
 	string_delete(s);
