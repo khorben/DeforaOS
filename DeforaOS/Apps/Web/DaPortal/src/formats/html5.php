@@ -46,7 +46,14 @@ class Html5Format extends Format
 	{
 		//FIXME ignore $filename for the moment
 		$this->engine = $engine;
-		$this->renderElement($page);
+		if($page->getType() == 'page')
+			$this->renderElement($page);
+		else
+		{
+			$p = new Page();
+			$p->appendElement($page);
+			$this->renderElement($p);
+		}
 		$this->engine = FALSE;
 	}
 
@@ -146,7 +153,7 @@ class Html5Format extends Format
 		$this->renderTabs($level + 1);
 		print('<div class="message">'.$this->escape(
 					$e->getProperty('text')).'</div>');
-		$this->renderTabs($level + 1);
+		$this->renderTabs($level);
 		$this->renderChildren($e, $level);
 		print('</div>');
 	}
@@ -309,6 +316,8 @@ class Html5Format extends Format
 			}
 			print('"');
 		}
+		else if(($u = $e->getProperty('url')) !== FALSE)
+			print(' href="'.$this->escapeAttribute($u).'"');
 		print('>');
 		print($this->escape($e->getProperty('text')));
 		print("</a>");
