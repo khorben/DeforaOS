@@ -16,29 +16,28 @@
 
 
 
-//DesktopTemplate
+//BasicTemplate
 require_once('./system/template.php');
-class DesktopTemplate extends Template
+class BasicTemplate extends Template
 {
 	//protected
 	//methods
-	//DesktopTemplate::match
+	//BasicTemplate::match
 	protected function match(&$engine)
 	{
 		return 100;
 	}
 
 
-	//DesktopTemplate::attach
+	//BasicTemplate::attach
 	protected function attach(&$engine)
 	{
 	}
 
 
-	//DesktopTemplate::render
+	//BasicTemplate::render
 	public function render(&$engine, $page)
 	{
-		//FIXME implement
 		return $page;
 	}
 }

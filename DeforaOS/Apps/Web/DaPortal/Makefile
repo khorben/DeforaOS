@@ -485,11 +485,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/gtk.php \
 		$(PACKAGE)-$(VERSION)/src/engines/http.php \
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
-		$(PACKAGE)-$(VERSION)/src/formats/Makefile \
-		$(PACKAGE)-$(VERSION)/src/formats/atom.php \
-		$(PACKAGE)-$(VERSION)/src/formats/html5.php \
-		$(PACKAGE)-$(VERSION)/src/formats/pdf.php \
-		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/search/Makefile \
@@ -503,14 +498,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/system/config.php \
 		$(PACKAGE)-$(VERSION)/src/system/database.php \
 		$(PACKAGE)-$(VERSION)/src/system/engine.php \
-		$(PACKAGE)-$(VERSION)/src/system/format.php \
 		$(PACKAGE)-$(VERSION)/src/system/module.php \
 		$(PACKAGE)-$(VERSION)/src/system/page.php \
 		$(PACKAGE)-$(VERSION)/src/system/request.php \
 		$(PACKAGE)-$(VERSION)/src/system/template.php \
 		$(PACKAGE)-$(VERSION)/src/system/project.conf \
 		$(PACKAGE)-$(VERSION)/src/templates/Makefile \
-		$(PACKAGE)-$(VERSION)/src/templates/html.php \
+		$(PACKAGE)-$(VERSION)/src/templates/basic.php \
+		$(PACKAGE)-$(VERSION)/src/templates/desktop.php \
 		$(PACKAGE)-$(VERSION)/src/templates/project.conf \
 		$(PACKAGE)-$(VERSION)/system/Makefile \
 		$(PACKAGE)-$(VERSION)/system/config.php \
