@@ -16,8 +16,10 @@
 
 
 
-//AtomFormat
 require_once('./system/format.php');
+
+
+//AtomFormat
 class AtomFormat extends Format
 {
 	//FIXME implement

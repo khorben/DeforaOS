@@ -16,8 +16,10 @@
 
 
 
-//Html5Format
 require_once('./system/format.php');
+
+
+//Html5Format
 class Html5Format extends Format
 {
 	//protected

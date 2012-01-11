@@ -16,8 +16,10 @@
 
 
 
-//PdfFormat
 require_once('./system/format.php');
+
+
+//PdfFormat
 class PdfFormat extends Format
 {
 	//FIXME implement
