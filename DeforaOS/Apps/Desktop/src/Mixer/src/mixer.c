@@ -388,24 +388,27 @@ static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
 		{ "vol",	"audio-volume-high"	}
 	};
 	size_t i;
+	size_t len;
+	const int size = 16;
 
 	icontheme = gtk_icon_theme_get_default();
 	hbox = gtk_hbox_new(FALSE, 4);
 	for(i = 0; pixbuf == NULL && i < sizeof(icons) / sizeof(*icons); i++)
 		if(strncmp(icons[i].name, name, strlen(icons[i].name)) == 0)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					icons[i].icon, 16,
+					icons[i].icon, size,
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
 	if(pixbuf == NULL)
 	{
+		len = strlen(name);
 		/* more generic fallbacks */
 		if(strstr(name, "sel") != NULL)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"stock_line-in", 16,
+					"stock_line-in", size,
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-		else if(strstr(name, ".mute") != NULL)
+		else if(len > 5 && strcmp(&name[len - 5], ".mute") == 0)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
-					"audio-volume-muted", 16,
+					"audio-volume-muted", size,
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
 	}
 	if(pixbuf != NULL)
