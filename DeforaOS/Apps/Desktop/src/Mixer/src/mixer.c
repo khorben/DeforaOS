@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Mixer */
 static char _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -40,6 +40,11 @@ static char _license[] =
 #include "../config.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
+
+/* compatibility */
+#if !GTK_CHECK_VERSION(2, 12, 0)
+# define GTK_ICON_LOOKUP_GENERIC_FALLBACK 0
+#endif
 
 
 /* Mixer */
@@ -390,30 +395,18 @@ static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
 		if(strncmp(icons[i].name, name, strlen(icons[i].name)) == 0)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
 					icons[i].icon, 16,
-#if GTK_CHECK_VERSION(2, 12, 0)
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-#else
-					0, NULL);
-#endif
 	if(pixbuf == NULL)
 	{
 		/* more generic fallbacks */
 		if(strstr(name, "sel") != NULL)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
 					"stock_line-in", 16,
-#if GTK_CHECK_VERSION(2, 12, 0)
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-#else
-					0, NULL);
-#endif
 		else if(strstr(name, ".mute") != NULL)
 			pixbuf = gtk_icon_theme_load_icon(icontheme,
 					"audio-volume-muted", 16,
-#if GTK_CHECK_VERSION(2, 12, 0)
 					GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-#else
-					0, NULL);
-#endif
 	}
 	if(pixbuf != NULL)
 	{
