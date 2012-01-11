@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -519,7 +519,7 @@ protected function register($args)
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
 			&& isset($args['email']))
 	{
-		if(preg_match('^[a-z]{1,9}$', $args['username']) != 1)
+		if(preg_match('/^[a-z]{1,9}$/', $args['username']) != 1)
 			$message = 'Username must be lower-case and no longer'
 				.' than 9 characters';
 		else
