@@ -270,8 +270,11 @@ class Html5Format extends Format
 		$tag = 'h'.($level - 1);
 		$this->renderTabs($level);
 		print('<'.$tag.' class="'.$this->escapeAttribute($e->getType())
-				.'">'.$this->escape($e->getProperty('text'))
-				. "</$tag>");
+				.'">');
+		if(($text = $e->getProperty('text')) !== FALSE)
+			print($this->escape($e->getProperty('text')));
+		$this->renderChildren($e, $level);
+		print("</$tag>");
 	}
 
 	private function renderInline($e, $level)
