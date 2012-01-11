@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009,2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mixer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ void mixer_delete(Mixer * mixer);
 
 /* accessors */
 int mixer_set_enum(Mixer * mixer, GtkWidget * widget);
+int mixer_set_mute(Mixer * mixer, GtkWidget * widget);
 int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
 
 /* useful */

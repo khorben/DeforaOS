@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010,2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mixer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,12 +149,22 @@ void on_enum_toggled(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_mute_toggled */
+void on_mute_toggled(GtkWidget * widget, gpointer data)
+{
+	Mixer * mixer = data;
+
+	mixer_set_mute(mixer, widget);
+}
+
+
 /* on_set_toggled */
 void on_set_toggled(GtkWidget * widget, gpointer data)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	/* FIXME implement */
 }
 
 
