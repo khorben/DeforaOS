@@ -32,26 +32,19 @@ class Request
 
 		if($module === FALSE)
 		{
-			$module = $config->getVariable('defaults', 'module');
+			if(($module = $config->getVariable('defaults',
+							'module')) === FALSE)
+				return;
 			$action = $config->getVariable('defaults', 'action');
 			$id = $config->getVariable('defaults', 'id');
 			$title = FALSE;
 			$parameters = FALSE;
 		}
-		if($module === FALSE
-				|| $this->setModule($engine, $module) === FALSE)
-			return;
-		if($action !== FALSE
-				&& $this->setAction($engine, $action) === FALSE)
-			return;
-		if($id !== FALSE && $this->setId($engine, $id) === FALSE)
-			return;
-		if($title !== FALSE
-				&& $this->setTitle($engine, $title) === FALSE)
-			return;
-		if($parameters !== FALSE
-				&& $this->setParameters($engine, $parameters)
-				=== FALSE)
+		if($this->setModule($engine, $module) === FALSE
+				|| $this->setAction($engine, $action) === FALSE
+				|| $this->setId($engine, $id) === FALSE
+				|| $this->setTitle($engine, $title) === FALSE
+				|| $this->setParameters($engine, $parameters))
 			return;
 	}
 
@@ -122,6 +115,17 @@ class Request
 	//Request::setModule
 	private function setModule(&$engine, $module)
 	{
+		if($module === FALSE)
+		{
+			$this->module = $module;
+			return TRUE;
+		}
+		if(strchr($module, '.') !== FALSE
+				|| strchr($module, '/') !== FALSE)
+		{
+			$engine->log('LOG_DEBUG', 'Invalid module '.$module);
+			return $this->reset();
+		}
 		$this->module = $module;
 		return TRUE;
 	}
@@ -130,12 +134,16 @@ class Request
 	//Request::setAction
 	private function setAction(&$engine, $action)
 	{
+		if($action === FALSE)
+		{
+			$this->action = FALSE;
+			return TRUE;
+		}
 		if(strchr($action, '.') !== FALSE
 				|| strchr($action, '/') !== FALSE)
 		{
-			$engine->log('LOG_ERR', 'Invalid action '.$action);
-			$this->handle = FALSE;
-			return FALSE;
+			$engine->log('LOG_DEBUG', 'Invalid action '.$action);
+			return $this->reset();
 		}
 		$this->action = basename($action);
 		return TRUE;
@@ -145,11 +153,10 @@ class Request
 	//Request::setId
 	private function setId(&$engine, $id)
 	{
-		if(!is_numeric($id))
+		if($id !== FALSE && !is_numeric($id))
 		{
-			$engine->log('LOG_ERR', 'Invalid ID '.$id);
-			$this->handle = FALSE;
-			return FALSE;
+			$engine->log('LOG_DEBUG', 'Invalid ID '.$id);
+			return $this->reset();
 		}
 		$this->id = $id;
 		return TRUE;
@@ -159,17 +166,31 @@ class Request
 	//Request::setParameters
 	private function setParameters(&$engine, $parameters)
 	{
-		if(!is_array($parameters))
-			return FALSE;
+		if($parameters !== FALSE && !is_array($parameters))
+			return $this->reset();
 		$this->parameters = $parameters;
+		return TRUE;
 	}
 
 
 	//Request::setTitle
-	public function setTitle(&$engine, $title)
+	private function setTitle(&$engine, $title)
 	{
 		$this->title = $title;
 		return TRUE;
+	}
+
+
+	//useful
+	//Request::reset
+	private function reset()
+	{
+		$this->module = FALSE;
+		$this->action = FALSE;
+		$this->id = FALSE;
+		$this->title = FALSE;
+		$this->parameters = FALSE;
+		return FALSE;
 	}
 
 

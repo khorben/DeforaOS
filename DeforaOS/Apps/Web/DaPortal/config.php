@@ -6,7 +6,7 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: index.php'));
 
 
-$template = 'DaPortal';
+$template = 'intranet';
 $theme = 'DaPortal';
 $icontheme = 'gnome';
 //$debug = 1;		//force debugging on
@@ -15,7 +15,7 @@ $dbtype = 'pgsql';	//or 'mysql' or 'sqlite'
 $dbname = 'daportal';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
-$friendlylinks = 0;	//force "friendly links" generation
-//$friendlykicker = '';	//replaces "index.php" in "friendly links"
+$friendlylinks = 1;	//force "friendly links" generation
+$friendlykicker = 'intranet';	//replaces "index.php" in "friendly links"
 
 ?>

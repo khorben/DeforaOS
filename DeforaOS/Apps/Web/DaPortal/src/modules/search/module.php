@@ -73,13 +73,7 @@ class SearchModule extends Module
 		$treeview->setProperty('columns', array('title', 'username',
 					'date'));
 		for($i = 0; $i < $count; $i++)
-		{
-			$row = $treeview->append('row');
-			$row->setProperty('title', $res[$i]['title']);
-			$row->setProperty('username', $res[$i]['username']);
-			$row->setProperty('date', $res[$i]['date']);
-			$row->setProperty('preview', $res[$i]['content']);
-		}
+			$this->appendResult($engine, $treeview, $res[$i]);
 		return $page;
 	}
 
@@ -106,13 +100,7 @@ class SearchModule extends Module
 		$treeview->setProperty('columns', array('title', 'username',
 					'date'));
 		for($i = 0; $i < $count; $i++)
-		{
-			$row = $treeview->append('row');
-			$row->setProperty('title', $res[$i]['title']);
-			$row->setProperty('username', $res[$i]['username']);
-			$row->setProperty('date', $res[$i]['date']);
-			$row->setProperty('preview', $res[$i]['content']);
-		}
+			$this->appendResult($engine, $treeview, $res[$i]);
 		return $page;
 	}
 
@@ -129,6 +117,22 @@ AND daportal_user.enabled='1'";
 
 
 	//methods
+	//SearchModule::appendResult
+	private function appendResult(&$engine, &$treeview, &$res)
+	{
+		$row = $treeview->append('row');
+		$request = new Request($engine, $res['module'], FALSE,
+				$res['id'], $res['title']);
+		$link = new PageElement('link', array('text' => $res['title'],
+					'request' => $request));
+		$row->setProperty('title', $link);
+		$row->setProperty('username', $res['username']);
+		$row->setProperty('date', $res['date']);
+		$row->setProperty('preview', $res['content']);
+	}
+
+
+	//SearchModule::pageSearch
 	private function pageSearch(&$engine, $request, $advanced = FALSE)
 	{
 		$q = $request->getParameter('q');

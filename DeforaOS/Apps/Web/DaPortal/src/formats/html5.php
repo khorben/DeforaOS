@@ -319,6 +319,16 @@ class Html5Format extends Format
 				print($sep.'action='.$this->escapeURI($a));
 				$sep = $this->escapeAttribute('&');
 			}
+			if(($id = $r->getId()) !== FALSE)
+			{
+				print($sep.'id='.$this->escapeURI($id));
+				$sep = $this->escapeAttribute('&');
+			}
+			if(($t = $r->getTitle()) !== FALSE)
+			{
+				print($sep.'title='.$this->escapeURI($t));
+				$sep = $this->escapeAttribute('&');
+			}
 			print('"');
 		}
 		else if(($u = $e->getProperty('url')) !== FALSE)
@@ -476,8 +486,10 @@ class Html5Format extends Format
 				if(in_array($k, $columns))
 					print('detail ');
 				print($this->escapeAttribute($k).'">');
-				$this->renderChildren($c, $level);
-				print($this->escape($v));
+				if(is_string($v))
+					print($this->escape($v));
+				else
+					$this->renderElement($v);
 				print('</span>');
 			}
 			print('</div>');

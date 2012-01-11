@@ -1,1 +1,1 @@
-<?php if(chdir('../../src') === TRUE) require('./daportal.php'); ?>
+<?php if(chdir('../../daportal/src') === TRUE) require('./daportal.php'); ?>
