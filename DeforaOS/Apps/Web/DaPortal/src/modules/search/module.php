@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -92,9 +92,11 @@ class SearchModule extends Module
 				|| strlen($q) == 0)
 			return $page;
 		$count = 0;
-		$res = $this->query($engine, $q, $count,
-				$request->getParameter('intitle'),
-				$request->getParameter('incontent'));
+		$intitle = $request->getParameter('intitle');
+		$incontent = $request->getParameter('incontent');
+		if($intitle === FALSE && $incontent === FALSE)
+			$intitle = $incontent = TRUE;
+		$res = $this->query($engine, $q, $count, $intitle, $incontent);
 		$results = $page->append('vbox');
 		$results->setProperty('id', 'search_results');
 		$label = $results->append('label');
@@ -121,6 +123,7 @@ class SearchModule extends Module
 WHERE daportal_content.module_id=daportal_module.module_id
 AND daportal_content.user_id=daportal_user.user_id
 AND daportal_content.enabled='1'
+AND daportal_content.public='1'
 AND daportal_module.enabled='1'
 AND daportal_user.enabled='1'";
 

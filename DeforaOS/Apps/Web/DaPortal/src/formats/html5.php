@@ -207,7 +207,7 @@ class Html5Format extends Format
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
 			$l = new PageElement('label');
-			$l->setProperty('text', $text.': ');
+			$l->setProperty('text', $text);
 			$this->renderElement($l, $level);
 		}
 		$name = $e->getProperty('name');
