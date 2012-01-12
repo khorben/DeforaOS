@@ -421,9 +421,7 @@ static int _imap4_parse(IMAP4 * imap4)
 		imap4->rd_buf_cnt -= j;
 		memmove(imap4->rd_buf, &imap4->rd_buf[j], imap4->rd_buf_cnt);
 	}
-	if(imap4->queue == NULL)
-		return 0;
-	return (imap4->queue[0].status != I4CS_ERROR) ? 0 : -1;
+	return 0;
 }
 
 static int _parse_context(IMAP4 * imap4, char const * answer)
@@ -684,6 +682,11 @@ static int _context_status(IMAP4 * imap4, char const * answer)
 	if(strncmp("OK", p, 2) == 0)
 	{
 		cmd->status = I4CS_OK;
+		return 0;
+	}
+	else if(strncmp("NO", p, 2) == 0)
+	{
+		cmd->status = I4CS_ERROR;
 		return 0;
 	}
 	if(strncmp("STATUS ", p, 7) != 0)
