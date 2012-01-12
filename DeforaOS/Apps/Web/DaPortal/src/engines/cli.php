@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ class CliEngine extends Engine
 
 	public function getRequest()
 	{
-		if(($options = getopt('m:a:i:t:')) === FALSE)
+		if(($options = getopt('Dm:a:i:t:')) === FALSE)
 			return FALSE;
 		$module = FALSE;
 		$action = FALSE;
@@ -46,6 +46,9 @@ class CliEngine extends Engine
 		foreach($options as $key => $value)
 			switch($key)
 			{
+				case 'D':
+					$this->setDebug(TRUE);
+					break;
 				case 'm':
 					$module = $options['m'];
 					break;
