@@ -16,7 +16,6 @@ static char const _license[] =
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
  * - implement "always ask" for the default download directory
- * - draw the progress bar inside the location bar
  * - provide access to SSL information in embedded mode
  * - rework preferences handling:
  *   * no longer cache settings outside of Config *
@@ -410,9 +409,11 @@ Surfer * _new_do(char const * url)
 				on_security), surfer);
 	gtk_container_add(GTK_CONTAINER(widget), surfer->security);
 	gtk_box_pack_start(GTK_BOX(surfer->statusbox), widget, FALSE, TRUE, 0);
+#if !GTK_CHECK_VERSION(2, 16, 0)
 	surfer->progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(surfer->statusbox), surfer->progress, FALSE,
 			FALSE, 0);
+#endif
 	surfer->statusbar = gtk_statusbar_new();
 	surfer->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(surfer->statusbox), surfer->statusbar, TRUE,
@@ -579,9 +580,14 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
 	else
 		fraction = 0.0;
+#if GTK_CHECK_VERSION(2, 16, 0)
+	view = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
+	gtk_entry_set_progress_fraction(GTK_ENTRY(view), fraction);
+#else
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(surfer->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(surfer->progress),
 			fraction);
+#endif
 }
 
 
@@ -649,7 +655,6 @@ void surfer_set_status(Surfer * surfer, char const * status)
 {
 	GtkWidget * view;
 	GtkStatusbar * sb = GTK_STATUSBAR(surfer->statusbar);
-	GtkProgressBar * pb = GTK_PROGRESS_BAR(surfer->progress);
 
 	if((view = surfer_get_view(surfer)) == NULL)
 		return; /* consider the current tab only */
@@ -663,8 +668,7 @@ void surfer_set_status(Surfer * surfer, char const * status)
 	if(status == NULL)
 	{
 		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
-		gtk_progress_bar_set_text(pb, " ");
-		gtk_progress_bar_set_fraction(pb, 0.0);
+		surfer_set_progress(surfer, -1.0);
 #ifdef EMBEDDED
 		gtk_widget_hide(surfer->statusbox);
 	}

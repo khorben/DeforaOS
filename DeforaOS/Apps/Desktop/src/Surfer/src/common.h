@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,9 @@ struct _Surfer
 	GtkWidget * notebook;
 	GtkWidget * statusbox;
 	GtkWidget * security;
+#if !GTK_CHECK_VERSION(2, 16, 0)
 	GtkWidget * progress;
+#endif
 	GtkWidget * statusbar;
 	guint statusbar_id;
 
