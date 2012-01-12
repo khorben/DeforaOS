@@ -16,8 +16,10 @@
 
 
 
-//CliEngine
 require_once('./system/engine.php');
+
+
+//CliEngine
 class CliEngine extends Engine
 {
 	protected function match()
