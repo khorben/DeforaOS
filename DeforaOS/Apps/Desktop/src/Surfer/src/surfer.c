@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -661,9 +661,8 @@ void surfer_set_status(Surfer * surfer, char const * status)
 			gtk_statusbar_get_context_id(sb, ""), (status != NULL)
 			? status : _("Ready"));
 	if(status == NULL)
-		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
-	if(status == NULL)
 	{
+		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
 		gtk_progress_bar_set_text(pb, " ");
 		gtk_progress_bar_set_fraction(pb, 0.0);
 #ifdef EMBEDDED
