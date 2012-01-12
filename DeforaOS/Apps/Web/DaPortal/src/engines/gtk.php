@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,11 @@
 require_once('./engines/cli.php');
 class GtkEngine extends CliEngine
 {
+	//private
 	//properties
 	private $windows = array();
+	private $debug_window = FALSE;
+	private $debug_store;
 
 	private $fontTitle;
 	private $fontLink;
@@ -54,6 +57,8 @@ class GtkEngine extends CliEngine
 				return $this->renderButton($element);
 			case 'checkbox':
 				return $this->renderCheckbox($element);
+			case 'dialog':
+				return $this->renderDialog($element);
 			case 'entry':
 				return $this->renderEntry($element);
 			case 'form':
@@ -94,6 +99,38 @@ class GtkEngine extends CliEngine
 	private function renderCheckbox($e)
 	{
 		return new GtkCheckButton($e->getProperty('text'));
+	}
+
+	private function renderDialog($e)
+	{
+		switch(($title = $e->getProperty('title')))
+		{
+			case 'Error':
+				$type = Gtk::MESSAGE_ERROR;
+				break;
+			case 'Question':
+				$type = Gtk::MESSAGE_QUESTION;
+				break;
+			case 'Warning':
+				$type = Gtk::MESSAGE_WARNING;
+				break;
+			case FALSE:
+				$title = 'Dialog';
+			default:
+				$type = Gtk::MESSAGE_INFO;
+				break;
+		}
+		$dialog = new GtkMessageDialog(NULL, 0, $type,
+				Gtk::BUTTONS_OK, $title);
+		if(($text = $e->getProperty('text')) === FALSE)
+			$text = '';
+		$dialog->set_markup('<b>'.str_replace('<', '&lt;', $title)
+				."</b>\n\n".str_replace('<', '&lt;', $text));
+		$dialog->connect_simple('delete-event', array($this,
+					'on_window_delete_event'), $dialog);
+		$this->windows[] = $dialog;
+		$dialog->show();
+		return $dialog;
 	}
 
 	private function renderEntry($e)
@@ -158,7 +195,7 @@ class GtkEngine extends CliEngine
 		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 		$store = new GtkListStore(GdkPixbuf::gtype,
 				Gobject::TYPE_STRING);
-		$view = new GtkIconView;
+		$view = new GtkIconView();
 		$view->set_model($store);
 		$children = $e->getChildren();
 		foreach($children as $c)
@@ -303,6 +340,7 @@ class GtkEngine extends CliEngine
 		$window->connect_simple('delete-event', array($this,
 					'on_window_delete_event'), $window);
 		$box = $this->renderVbox($e);
+		$box->set_border_width(0);
 		$window->add($box);
 		$window->show_all();
 		$this->windows[] = $window;
@@ -335,46 +373,74 @@ class GtkEngine extends CliEngine
 	//GtkEngine::log
 	public function log($priority, $message)
 	{
-		/* FIXME implement a log console instead */
-		$buttons = array();
+		$icon = Gtk::STOCK_DIALOG_INFO;
+		$title = 'Information';
 		switch($priority)
 		{
-			case 'LOG_ERR':
-				$type = Gtk::MESSAGE_ERROR;
-				$title = 'Error';
-				if($message == 'Permission denied')
-					$buttons[] = array('Authenticate', -1);
-				break;
 			case 'LOG_DEBUG':
 				if(Engine::$debug !== TRUE)
-					return;
+					return FALSE;
+				break;
+			case 'LOG_ERR':
+				$icon = Gtk::STOCK_DIALOG_ERROR;
+				$title = 'Error';
+				break;
 			case 'LOG_WARNING':
-				$type = Gtk::MESSAGE_WARNING;
+				$icon = Gtk::STOCK_DIALOG_WARNING;
 				$title = 'Warning';
 				break;
-			default:
-				$type = Gtk::MESSAGE_INFO;
-				$title = 'Information';
-				break;
 		}
-		$dialog = new GtkMessageDialog(null, 0, $type,
-				Gtk::BUTTONS_CLOSE, $title);
-		$dialog->set_title($title);
-		$dialog->set_markup("<b>$title</b>\n\n"
-				.str_replace("<", "&lt;", $message));
-		foreach($buttons as $b)
-			$dialog->add_button($b[0], $b[1]);
-		$res = $dialog->run();
-		$dialog->destroy();
-		switch($res)
-		{
-			case -1:
-				$request = new Request($this, 'user', 'login');
-				$page = $this->process($request);
-				$this->render($page);
-				break;
-		}
-		return FALSE;
+		if(Engine::$debug === TRUE)
+			$this->_log_append($icon, $priority, $message);
+		if($priority == 'LOG_DEBUG')
+			return FALSE;
+		return new PageElement('dialog', array('title' => $title,
+					'text' => $message));
+	}
+
+	private function _log_append($icon, $priority, $message)
+	{
+		$theme = GtkIconTheme::get_default();
+		$pixbuf = $theme->load_icon($icon, 24, 0);
+		if($this->debug_window === FALSE)
+			$this->_log_create();
+		$iter = $this->debug_store->append();
+		$this->debug_store->set($iter, 0, $pixbuf, 1, $priority,
+				2, $message);
+		$this->debug_window->show_all();
+	}
+
+	private function _log_create()
+	{
+		$this->debug_window = new GtkWindow();
+		$this->debug_window->set_default_size(400, 200);
+		$this->debug_window->set_title('Debugging console');
+		$this->debug_window->connect_simple('delete-event',
+				array($this, '_log_on_delete_event'),
+				$this->debug_window);
+		$widget = new GtkScrolledWindow();
+		$widget->set_policy(Gtk::POLICY_AUTOMATIC,
+				Gtk::POLICY_AUTOMATIC);
+		$this->debug_store = new GtkListStore(GdkPixbuf::gtype,
+				Gobject::TYPE_STRING, Gobject::TYPE_STRING);
+		$view = new GtkTreeView($this->debug_store);
+		$column = new GtkTreeViewColumn('',
+				new GtkCellRendererPixbuf(), 'pixbuf', 0);
+		$view->append_column($column);
+		$column = new GtkTreeViewColumn('Priority',
+				new GtkCellRendererText(), 'text', 1);
+		$view->append_column($column);
+		$column = new GtkTreeViewColumn('Message',
+				new GtkCellRendererText(), 'text', 2);
+		$view->append_column($column);
+		$widget->add($view);
+		$this->debug_window->add($widget);
+	}
+
+	public function _log_on_delete_event($window)
+	{
+		$window->hide();
+		return TRUE;
 	}
 
 
