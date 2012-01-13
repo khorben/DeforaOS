@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,5 +41,7 @@ typedef enum _FolderType
 /* functions */
 /* accessors */
 char const * folder_get_name(Folder * folder);
+FolderType folder_get_type(Folder * folder);
+void folder_set_type(Folder * folder, FolderType type);
 
 #endif /* !DESKTOP_MAILER_FOLDER_H */
