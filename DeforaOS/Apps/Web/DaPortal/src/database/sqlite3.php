@@ -96,6 +96,8 @@ class Sqlite3Database extends Database
 	{
 		global $config;
 
+		if(!class_exists('SQLite3'))
+			return 0;
 		if($config->getVariable('database::sqlite3', 'filename')
 				!== FALSE)
 			return 1;
