@@ -16,8 +16,10 @@
 
 
 
-//Sqlite2Database
 require_once('./system/database.php');
+
+
+//Sqlite2Database
 class Sqlite2Database extends Database
 {
 	//Sqlite2Database::~Sqlite2Database
