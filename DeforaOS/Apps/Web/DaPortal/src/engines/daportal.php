@@ -42,15 +42,12 @@ class DaPortalEngine extends HttpEngine
 	public function getRequest()
 	{
 		$r = $this->_getRequest();
-		print_r($r);
 		//sanitize
-		$r = new Request($this, $this->sanitize($r->getModule()),
+		return new Request($this, $this->sanitize($r->getModule()),
 				$this->sanitize($r->getAction()),
 				$this->sanitize($r->getId()),
 				$this->sanitize($r->getTitle()),
 				$this->sanitize($r->getParameters()));
-		print_r($r);
-		return $r;
 	}
 
 
@@ -127,8 +124,7 @@ class DaPortalEngine extends HttpEngine
 		$keys = array('module', 'action', 'id', 'title');
 		foreach($keys as $k)
 			if(isset($parameters[$k]))
-				//FIXME call addslashes() if relevant
-				$$var[$k] = $parameters[$k];
+				$$var[$k] = addslashes($parameters[$k]);
 		return new Request($this, $module, $action, $id, $title,
 				$parameters);
 	}
@@ -144,7 +140,6 @@ class DaPortalEngine extends HttpEngine
 			$ret = array();
 			foreach($arg as $key => $value)
 				$ret[addslashes($key)] = addslashes($value);
-			var_dump($ret);
 			return $ret;
 		}
 		return addslashes($arg);
