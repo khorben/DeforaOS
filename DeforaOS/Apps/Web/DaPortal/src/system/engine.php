@@ -24,9 +24,14 @@ abstract class Engine
 {
 	//public
 	//virtual
+	//essential
+	abstract public function match();
+	abstract public function attach();
+
 	//accessors
 	abstract public function getRequest();
 
+	//useful
 	abstract public function render($content);
 
 
@@ -182,11 +187,6 @@ abstract class Engine
 	//protected
 	//properties
 	protected static $debug = FALSE;
-
-	//methods
-	//useful
-	abstract protected function match();
-	abstract protected function attach();
 
 
 	//private

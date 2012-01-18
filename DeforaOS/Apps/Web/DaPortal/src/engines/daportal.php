@@ -28,9 +28,46 @@ class DaPortalEngine extends HttpEngine
 {
 	//public
 	//methods
+	//essential
+	//DaPortalEngine::match
+	public function match()
+	{
+		//never instantiate automatically
+		return -1;
+	}
+
+
 	//accessors
 	//DaPortalEngine::getRequest
 	public function getRequest()
+	{
+		$r = $this->_getRequest();
+		print_r($r);
+		//sanitize
+		$r = new Request($this, $this->sanitize($r->getModule()),
+				$this->sanitize($r->getAction()),
+				$this->sanitize($r->getId()),
+				$this->sanitize($r->getTitle()),
+				$this->sanitize($r->getParameters()));
+		print_r($r);
+		return $r;
+	}
+
+
+	//DaPortalEngine::log
+	public function log($priority, $message)
+	{
+		global $debug;
+
+		if($debug)
+			parent::log($priority, $message);
+		return FALSE;
+	}
+
+
+	//private
+	//DaPortalEngine::_getRequest
+	private function _getRequest()
 	{
 		global $friendlylinks;
 
@@ -75,57 +112,42 @@ class DaPortalEngine extends HttpEngine
 		if($title !== FALSE)
 			$parameters['title'] = $title;
 		foreach($_REQUEST as $key => $value)
-		{
-			//FIXME prepare all SQL queries before uncommenting
-			//if(get_magic_quotes_gpc() != 0)
-			//	$value = stripslashes($value);
-			$parameters[$key] = $value;
-		}
+			if(get_magic_quotes_gpc())
+				$parameters[stripslashes($key)]
+					= stripslashes($values);
+			else
+				$parameters[$key] = $value;
 		if($_SERVER['REQUEST_METHOD'] == 'POST')
-		{
-			$_POST['module'] = $module;
-			$_POST['action'] = $action;
-			$_POST['id'] = $id;
-			$_POST['title'] = $title;
-		}
+			$var = '_POST';
 		else if($_SERVER['REQUEST_METHOD'] == 'GET')
-		{
-			$_GET['module'] = $module;
-			$_GET['action'] = $action;
-			$_GET['id'] = $id;
-			$_GET['title'] = $title;
-		}
+			$var = '_GET';
+		else
+			return new Request($this, $module, $action, $id, $title,
+					$parameters);
+		$keys = array('module', 'action', 'id', 'title');
+		foreach($keys as $k)
+			if(isset($parameters[$k]))
+				//FIXME call addslashes() if relevant
+				$$var[$k] = $parameters[$k];
 		return new Request($this, $module, $action, $id, $title,
 				$parameters);
 	}
 
 
-	//useful
-	//DaPortalEngine::attach
-	public function attach()
+	//DaPortalEngine::sanitize
+	private function sanitize($arg)
 	{
-		if(!get_magic_quotes_gpc())
-			exit(_error('Magic quotes must be enabled'));
-		parent::attach();
-	}
-
-
-	//DaPortalEngine::log
-	public function log($priority, $message)
-	{
-		global $debug;
-
-		if($debug)
-			parent::log($priority, $message);
-		return FALSE;
-	}
-
-
-	//DaPortalEngine::match
-	protected function match()
-	{
-		//never instantiate automatically
-		return -1;
+		if($arg === FALSE)
+			return FALSE;
+		if(is_array($arg))
+		{
+			$ret = array();
+			foreach($arg as $key => $value)
+				$ret[addslashes($key)] = addslashes($value);
+			var_dump($ret);
+			return $ret;
+		}
+		return addslashes($arg);
 	}
 }
 

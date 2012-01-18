@@ -35,7 +35,7 @@ class GtkEngine extends CliEngine
 	//methods
 	//essential
 	//GtkEngine::~GtkEngine
-	function __destruct()
+	public function __destruct()
 	{
 		if(count($this->windows) == 0)
 			return;
@@ -350,9 +350,8 @@ class GtkEngine extends CliEngine
 	}
 
 
-	//protected
 	//GtkEngine::match
-	protected function match()
+	public function match()
 	{
 		if(getenv('DISPLAY') === FALSE)
 			return 0;
@@ -363,7 +362,7 @@ class GtkEngine extends CliEngine
 
 
 	//GtkEngine::attach
-	protected function attach()
+	public function attach()
 	{
 		//initialize fonts
 		$this->fontTitle = new PangoFontDescription;

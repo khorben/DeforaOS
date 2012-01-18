@@ -44,7 +44,8 @@ class Request
 				|| $this->setAction($engine, $action) === FALSE
 				|| $this->setId($engine, $id) === FALSE
 				|| $this->setTitle($engine, $title) === FALSE
-				|| $this->setParameters($engine, $parameters))
+				|| $this->setParameters($engine, $parameters)
+				=== FALSE)
 			return;
 	}
 

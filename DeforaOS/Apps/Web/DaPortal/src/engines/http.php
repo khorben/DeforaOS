@@ -26,6 +26,66 @@ class HttpEngine extends Engine
 {
 	//public
 	//methods
+	//essential
+	//HttpEngine::match
+	public function match()
+	{
+		if(!isset($_SERVER['SERVER_PROTOCOL']))
+			return -1;
+		switch($_SERVER['SERVER_PROTOCOL'])
+		{
+			case 'HTTP/1.1':
+			case 'HTTP/1.0':
+				return 100;
+			default:
+				if(strncmp($_SERVER['SERVER_PROTOCOL'], 'HTTP/',
+							5) == 0)
+					return 0;
+				break;
+		}
+		return -1;
+	}
+
+
+	//HttpEngine::attach
+	public function attach()
+	{
+		$this->setType('text/html');
+		$uri = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+		if(isset($_SERVER['HTTP_HOST']))
+			$uri .= $_SERVER['HTTP_HOST'];
+		else if(isset($_SERVER['SERVER_NAME']))
+			$uri .= $_SERVER['SERVER_NAME'];
+		else
+			exit(-1);
+		$port = isset($_SERVER['SERVER_PORT'])
+			&& is_numeric($_SERVER['SERVER_PORT'])
+			? $_SERVER['SERVER_PORT']
+			: (isset($_SERVER['HTTPS']) ? 443 : 80);
+		if(isset($_SERVER['HTTPS']) && $port == 443)
+			$uri .= '/';
+		else if(!isset($_SERVER['HTTPS']) && $port == 80)
+			$uri .= '/';
+		else
+			$uri .= ':'.$port.'/';
+		if(!isset($_SERVER['SCRIPT_NAME']))
+			exit(-1);
+		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
+		$parent = $uri;
+		if(dirname($name) != '.')
+			$parent .= dirname($name);
+		$uri .= $name;
+		$this->log('LOG_DEBUG', 'URI is '.$uri);
+		if(!isset($_SERVER['SCRIPT_NAME'])
+				|| substr($_SERVER['SCRIPT_NAME'], -10)
+				!= '/index.php')
+		{
+			header('Location: '.$parent);
+			exit(0);
+		}
+	}
+
+
 	//accessors
 	//HttpEngine::getRequest
 	public function getRequest()
@@ -44,21 +104,21 @@ class HttpEngine extends Engine
 			$request = $_POST;
 		foreach($request as $key => $value)
 		{
-			//FIXME disabled until all SQL queries are prepared
-			//if(get_magic_quotes_gpc() != 0)
-			//	$value = stripslashes($value);
-			switch($key)
+			$k = get_magic_quotes_gpc() ? stripslashes($key) : $key;
+			$v = get_magic_quotes_gpc() ? stripslashes($value)
+				: $value;
+			switch($k)
 			{
 				case 'module':
 				case 'action':
 				case 'id':
 				case 'title':
-					$$key = $_REQUEST[$key];
+					$$k = $request[$key];
 					break;
 				default:
 					if($parameters === FALSE)
 						$parameters = array();
-					$parameters[$key] = $value;
+					$parameters[$k] = $v;
 					break;
 			}
 		}
@@ -96,6 +156,7 @@ class HttpEngine extends Engine
 	}
 
 
+	//HttpEngine::log
 	public function log($priority, $message)
 	{
 		parent::log($priority, $message);
@@ -114,65 +175,6 @@ class HttpEngine extends Engine
 				return($dialog);
 		}
 		return FALSE;
-	}
-
-
-	//protected
-	//methods
-	protected function match()
-	{
-		if(!isset($_SERVER['SERVER_PROTOCOL']))
-			return -1;
-		switch($_SERVER['SERVER_PROTOCOL'])
-		{
-			case 'HTTP/1.1':
-			case 'HTTP/1.0':
-				return 100;
-			default:
-				if(strncmp($_SERVER['SERVER_PROTOCOL'], 'HTTP/',
-							5) == 0)
-					return 0;
-				break;
-		}
-		return -1;
-	}
-
-
-	protected function attach()
-	{
-		$this->setType('text/html');
-		$uri = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
-		if(isset($_SERVER['HTTP_HOST']))
-			$uri .= $_SERVER['HTTP_HOST'];
-		else if(isset($_SERVER['SERVER_NAME']))
-			$uri .= $_SERVER['SERVER_NAME'];
-		else
-			exit(-1);
-		$port = isset($_SERVER['SERVER_PORT'])
-			&& is_numeric($_SERVER['SERVER_PORT'])
-			? $_SERVER['SERVER_PORT']
-			: (isset($_SERVER['HTTPS']) ? 443 : 80);
-		if(isset($_SERVER['HTTPS']) && $port == 443)
-			$uri .= '/';
-		else if(!isset($_SERVER['HTTPS']) && $port == 80)
-			$uri .= '/';
-		else
-			$uri .= ':'.$port.'/';
-		if(!isset($_SERVER['SCRIPT_NAME']))
-			exit(-1);
-		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
-		$parent = $uri;
-		if(dirname($name) != '.')
-			$parent .= dirname($name);
-		$uri .= $name;
-		$this->log('LOG_DEBUG', 'URI is '.$uri);
-		if(!isset($_SERVER['SCRIPT_NAME'])
-				|| substr($_SERVER['SCRIPT_NAME'], -10)
-				!= '/index.php')
-		{
-			header('Location: '.$parent);
-			exit(0);
-		}
 	}
 
 

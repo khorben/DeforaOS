@@ -22,14 +22,16 @@ require_once('./system/engine.php');
 //CliEngine
 class CliEngine extends Engine
 {
-	protected function match()
+	public function match()
 	{
 		return 1;
 	}
 
-	protected function attach()
+
+	public function attach()
 	{
 	}
+
 
 	public function render($page)
 	{
