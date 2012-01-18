@@ -13,6 +13,8 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//FIXME:
+//- prepare queries using SQLite3::prepare()
 
 
 
@@ -127,7 +129,7 @@ class Sqlite3Database extends Database
 	//Sqlite3Database::escape
 	protected function escape($string)
 	{
-		return SQLite3::escapeString($string);
+		return "'".SQLite3::escapeString($string)."'";
 	}
 
 

@@ -39,8 +39,9 @@ abstract class Database
 		foreach($parameters as $k => $v)
 		{
 			$from[] = ':'.$k;
-			$to[] = "'".$this->escape($v)."'";
+			$to[] = $this->escape($v);
 		}
+		//FIXME should really use preg_replace() with proper matching
 		return str_replace($from, $to, $query);
 	}
 

@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -13,28 +13,28 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//FIXME:
+//- prepare queries using PDO::prepare()
 
 
 
 require_once('./system/database.php');
 
 
-//Sqlite2Database
-class Sqlite2Database extends Database
+//PdoDatabase
+class PdoDatabase extends Database
 {
-	//Sqlite2Database::~Sqlite2Database
+	//PdoDatabase::~PdoDatabase
 	function __destruct()
 	{
-		if($this->handle === FALSE)
-			return;
-		sqlite_close($this->handle);
+		$this->handle = FALSE;
 	}
 
 
 	//public
 	//methods
 	//useful
-	//Sqlite2Database::enum
+	//PdoDatabase::enum
 	public function enum(&$engine, $table, $field)
 	{
 		$query = 'SELECT name FROM '.$table.'_enum_'.$field;
@@ -47,17 +47,17 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::lastId
+	//PdoDatabase::lastId
 	public function lastId(&$engine, $table, $field)
 	{
 		if($this->handle === FALSE)
 			return FALSE;
-		/* FIXME return the real last ID for $table_$field */
-		return sqlite_last_insert_rowid($this->handle);
+		/* FIXME some backends require a parameter here */
+		return $this->handle->lastInsertId();
 	}
 
 
-	//Sqlite2Database::offset
+	//PdoDatabase::offset
 	public function offset($limit, $offset = FALSE)
 	{
 		//XXX report errors
@@ -70,7 +70,7 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::query
+	//PdoDatabase::query
 	public function query(&$engine, $query, $parameters = FALSE)
 	{
 		if($this->handle === FALSE)
@@ -79,42 +79,41 @@ class Sqlite2Database extends Database
 			return FALSE;
 		$engine->log('LOG_DEBUG', $query);
 		$error = FALSE;
-		if(($ret = sqlite_query($this->handle, $query, SQLITE_BOTH,
-						$error)) === FALSE)
+		if(($ret = $this->handle->query($query)) === FALSE)
 		{
 			if($error !== FALSE)
 				$engine->log('LOG_DEBUG', $error);
 			return FALSE;
 		}
-		return sqlite_fetch_all($ret);
+		return $ret->fetchAll();
 	}
 
 
 	//protected
 	//methods
-	//Sqlite2Database::match
+	//PdoDatabase::match
 	protected function match(&$engine)
 	{
 		global $config;
 
-		if($config->getVariable('database::sqlite2', 'filename')
-				!== FALSE)
+		if(!class_exists('PDO'))
+			return 0;
+		if($config->getVariable('database::pdo', 'dsn') !== FALSE)
 			return 1;
 		return 0;
 	}
 
 
-	//Sqlite2Database::attach
+	//PdoDatabase::attach
 	protected function attach(&$engine)
 	{
 		global $config;
 
-		if(($filename = $config->getVariable('database::sqlite2',
-						'filename')) === FALSE)
-			return $engine->log('LOG_ERR',
-					'Database filename not defined');
-		if(($this->handle = sqlite_open($filename, 0666, $error))
+		if(($dsn = $config->getVariable('database::pdo', 'dsn'))
 				=== FALSE)
+			return $engine->log('LOG_ERR',
+					'Data Source Name (DSN) not defined');
+		if(($this->handle = new PDO($dsn)) === FALSE)
 			return $engine->log('LOG_ERR',
 					'Could not open database: '.$error);
 		//XXX for the DaPortal engine
@@ -124,10 +123,12 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::escape
+	//PdoDatabase::escape
 	protected function escape($string)
 	{
-		return "'".sqlite_escape_string($string)."'";
+		if($this->handle === FALSE)
+			return FALSE;
+		return $this->handle->quote($string);
 	}
 
 

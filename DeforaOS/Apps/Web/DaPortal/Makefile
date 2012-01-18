@@ -477,7 +477,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/auth/unix.php \
 		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/database/Makefile \
+		$(PACKAGE)-$(VERSION)/src/database/pdo.php \
 		$(PACKAGE)-$(VERSION)/src/database/sqlite2.php \
+		$(PACKAGE)-$(VERSION)/src/database/sqlite3.php \
 		$(PACKAGE)-$(VERSION)/src/database/project.conf \
 		$(PACKAGE)-$(VERSION)/src/engines/Makefile \
 		$(PACKAGE)-$(VERSION)/src/engines/cli.php \
