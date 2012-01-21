@@ -113,9 +113,13 @@ class PdoDatabase extends Database
 				=== FALSE)
 			return $engine->log('LOG_ERR',
 					'Data Source Name (DSN) not defined');
-		if(($this->handle = new PDO($dsn)) === FALSE)
+		try {
+			$this->handle = new PDO($dsn);
+		} catch(PDOException $e) {
 			return $engine->log('LOG_ERR',
-					'Could not open database: '.$error);
+					'Could not open database: '
+					.$e->getMessage());
+		}
 		//XXX for the DaPortal engine
 		define('SQL_TRUE', 1);
 		define('SQL_FALSE', 0);
