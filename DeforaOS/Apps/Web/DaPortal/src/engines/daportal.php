@@ -51,17 +51,6 @@ class DaPortalEngine extends HttpEngine
 	}
 
 
-	//DaPortalEngine::log
-	public function log($priority, $message)
-	{
-		global $debug;
-
-		if($debug)
-			parent::log($priority, $message);
-		return FALSE;
-	}
-
-
 	//private
 	//DaPortalEngine::_getRequest
 	private function _getRequest()

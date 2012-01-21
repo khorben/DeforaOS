@@ -89,37 +89,32 @@ abstract class Engine
 	//Engine::log
 	public function log($priority, $message)
 	{
-		//FIXME use PHP's configured facility instead (error_log())
-		$message = $_SERVER['SCRIPT_FILENAME'].": ".$message;
+		if(Engine::$debug !== TRUE)
+			return FALSE;
 		switch($priority)
 		{
 			case 'LOG_ALERT':
-				syslog(LOG_ALERT, $message);
-				break;
 			case 'LOG_CRIT':
-				syslog(LOG_CRIT, $message);
+			case 'LOG_EMERG':
+				$level = 'Alert';
 				break;
 			case 'LOG_DEBUG':
-				if(Engine::$debug !== TRUE)
-					return FALSE;
-				syslog(LOG_DEBUG, $message);
-				break;
-			case 'LOG_EMERG':
-				syslog(LOG_EMERG, $message);
+				$level = 'Debug';
 				break;
 			case 'LOG_ERR':
-				syslog(LOG_ERR, $message);
-				break;
-			case 'LOG_NOTICE':
-				syslog(LOG_NOTICE, $message);
+				$level = 'Error';
 				break;
 			case 'LOG_WARNING':
-				syslog(LOG_WARNING, $message);
+				$level = 'Warning';
 				break;
+			case 'LOG_INFO':
+			case 'LOG_NOTICE':
 			default:
-				syslog(LOG_INFO, $message);
+				$level = 'Info';
 				break;
 		}
+		$message = $_SERVER['SCRIPT_FILENAME'].": $level: $message";
+		error_log($message, 0);
 		return FALSE;
 	}
 

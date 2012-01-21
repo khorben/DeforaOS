@@ -136,7 +136,7 @@ class HttpEngine extends Engine
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
 		if(($charset = $config->getVariable('defaults', 'charset'))
-			!== FALSE)
+				!== FALSE)
 			header('Content-Encoding: '.$charset); //XXX escape
 		switch($type)
 		{
@@ -153,28 +153,6 @@ class HttpEngine extends Engine
 				$output->render($this, $page);
 				break;
 		}
-	}
-
-
-	//HttpEngine::log
-	public function log($priority, $message)
-	{
-		parent::log($priority, $message);
-		switch($priority)
-		{
-			case 'LOG_ERR':
-				$dialog = new PageElement('dialog');
-				$dialog->setProperty('title', 'Error');
-				$dialog->setProperty('text', $message);
-				if(strcmp($message, 'Permission denied') == 0)
-				{
-					$button = $dialog->append('button');
-					$button->setProperty('text',
-							'Authenticate');
-				}
-				return($dialog);
-		}
-		return FALSE;
 	}
 
 
