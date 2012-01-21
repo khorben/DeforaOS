@@ -134,7 +134,7 @@ abstract class Engine
 					: ''));
 		if(($handle = Module::load($this, $module)) === FALSE)
 			return FALSE;
-		return $handle->call($engine, $request);
+		return $handle->call($this, $request);
 	}
 
 
