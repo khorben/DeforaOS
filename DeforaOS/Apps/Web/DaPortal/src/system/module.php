@@ -31,18 +31,22 @@ abstract class Module
 
 	//accessors
 	//Module::getId
-	public function getId($engine)
+	public static function getId($engine, $module)
 	{
-		if($this->id !== FALSE)
-			return $this->id;
+		static $ids = array();
+
+		if(isset($ids[$module]))
+			return $ids[$module];
 		$db = $engine->getDatabase();
-		$query = $this->query_id;
-		$args = array('name' => $this->name);
+		$query = Module::$query_id;
+		$args = array('name' => $module);
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
-			return $engine->log('LOG_DEBUG', 'Module '.$this->name
-					.' is not enabled');
-		return $res[0]['id'];
+			$ids[$module] = $engine->log('LOG_DEBUG', 'Module '
+					.$module.' is not enabled');
+		else
+			$ids[$module] = $res[0]['id'];
+		return $ids[$module];
 	}
 
 
@@ -51,7 +55,8 @@ abstract class Module
 	//Module::load
 	public static function load(&$engine, $module)
 	{
-		if($module === FALSE)
+		if($module === FALSE
+				|| Module::getId($engine, $module) === FALSE)
 			return FALSE;
 		$name = ucfirst($module).'Module';
 		if(!class_exists($name))
@@ -75,8 +80,6 @@ abstract class Module
 						'Undefined module '.$module);
 		}
 		$ret = new $name($module);
-		if($ret->getId($engine) === FALSE)
-			return FALSE;
 		return $ret;
 	}
 
@@ -91,7 +94,7 @@ abstract class Module
 	private $name = FALSE;
 
 	//queries
-	private $query_id = "SELECT module_id AS id
+	static private $query_id = "SELECT module_id AS id
 FROM daportal_module
 WHERE daportal_module.enabled='1'
 AND name=:name";

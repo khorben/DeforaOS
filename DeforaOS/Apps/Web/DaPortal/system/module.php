@@ -104,9 +104,7 @@ function _module_id($name)
 	global $engine;
 
 	require_once('./src/system/module.php');
-	if(($module = Module::load($engine, $name)) === FALSE)
-		return FALSE;
-	return $module->getId($engine);
+	return Module::getId($engine, $name);
 }
 
 
