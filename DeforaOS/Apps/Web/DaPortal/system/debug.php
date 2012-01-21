@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -76,7 +76,7 @@ function _info($message, $visible = FALSE)
 {
 	global $engine;
 
-	$engine->log('LOG_WARN', $message);
+	$engine->log('LOG_INFO', $message);
 	_debug_message('info', 'Information', $message, $visible);
 }
 
@@ -85,7 +85,7 @@ function _warning($message, $visible = FALSE)
 {
 	global $engine;
 
-	$engine->log('LOG_WARN', $message);
+	$engine->log('LOG_WARNING', $message);
 	_debug_message('warning', 'Warning', $message, $visible);
 }
 
