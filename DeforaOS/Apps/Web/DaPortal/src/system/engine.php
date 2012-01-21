@@ -127,8 +127,17 @@ abstract class Engine
 	public function process($request)
 	{
 		if($request === FALSE)
+			return $this->log('LOG_ERR', 'Unable to process'
+					' invalid request');
+		if(($module = $request->getModule()) === FALSE)
+			return $this->log('LOG_ERR', 'Unable to process empty'
+					.' request');
+		$action = $request->getAction();
+		$engine->log('LOG_DEBUG', "Processing request: module $module"
+				.(($action !== FALSE) ? ", action $action" : '');
+		if(($handle = Module::call($this, $module)) === FALSE)
 			return FALSE;
-		return $request->process($this);
+		return $handle->call($engine, $this);
 	}
 
 

@@ -16,9 +16,6 @@
 
 
 
-require_once('./system/module.php');
-
-
 //Request
 class Request
 {
@@ -47,21 +44,6 @@ class Request
 				|| $this->setParameters($engine, $parameters)
 				=== FALSE)
 			return;
-	}
-
-
-	//useful
-	//Request::process
-	public function process(&$engine)
-	{
-		$engine->log('LOG_DEBUG', 'Processing request: module "'
-				.$this->module.'", action "'.$this->action.'"');
-		if(($handle = Module::load($engine, $this->module)) === FALSE
-				|| ($ret = $handle->call($engine, $this))
-				=== NULL)
-			return $engine->log('LOG_ERR', 'Unable to process'
-					.' request');
-		return $ret;
 	}
 
 
