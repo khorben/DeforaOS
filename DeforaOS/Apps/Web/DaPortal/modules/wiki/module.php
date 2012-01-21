@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -52,6 +52,7 @@ $text['PREVIEW'] = 'Preview';
 $text['RECENT_CHANGES'] = 'Recent changes';
 $text['REDO'] = 'Redo';
 $text['REVISIONS'] = 'Revisions';
+$text['SEARCH_THE_WIKI'] = 'Search the wiki';
 $text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
 $text['STRIKE'] = 'Strike';

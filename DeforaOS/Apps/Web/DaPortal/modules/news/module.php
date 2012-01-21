@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@ $text['COMMENT_S'] = 'comment(s)';
 $text['MODIFICATION_OF_NEWS'] = 'Modification of news';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS'] = 'News';
+$text['NEWS_ITEM'] = 'News';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_RE'] = 'Re';
 $text['NEWS_PREVIEW'] = 'News preview';
@@ -35,10 +36,19 @@ $text['NEWS_SUBMISSION'] = 'News submission';
 $text['REPLY_TO_NEWS'] = 'Reply to news';
 $text['SUBMIT_NEWS'] = 'Submit news';
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$text['COMMENT_S'] = 'Kommentar(e)';
+	$text['NEWS'] = 'Nachrichten';
+	$text['NEWS_ITEM'] = 'Nachricht';
+	$text['NEWS_ON'] = 'am';
+}
+else if($lang == 'fr')
 {
 	$text['COMMENT_S'] = 'commentaire(s)';
 	$text['MODIFICATION_OF_NEWS'] = 'Modification de la dépêche';
+	$text['NEWS'] = 'Actualités';
+	$text['NEWS_ITEM'] = 'Dépêche';
 	$text['NEWS_ADMINISTRATION'] = 'Administration des dépêches';
 	$text['NEWS_ON'] = 'le';
 	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
