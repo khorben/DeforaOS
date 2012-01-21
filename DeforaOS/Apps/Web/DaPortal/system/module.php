@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -103,6 +103,7 @@ function _module_id($name)
 {
 	global $engine;
 
+	require_once('./src/system/module.php');
 	if(($module = Module::load($engine, $name)) === FALSE)
 		return FALSE;
 	return $module->getId($engine);

@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/module.php');
 require_once('./system/request.php');
 
 
@@ -128,16 +129,17 @@ abstract class Engine
 	{
 		if($request === FALSE)
 			return $this->log('LOG_ERR', 'Unable to process'
-					' invalid request');
+					.' invalid request');
 		if(($module = $request->getModule()) === FALSE)
 			return $this->log('LOG_ERR', 'Unable to process empty'
 					.' request');
 		$action = $request->getAction();
-		$engine->log('LOG_DEBUG', "Processing request: module $module"
-				.(($action !== FALSE) ? ", action $action" : '');
-		if(($handle = Module::call($this, $module)) === FALSE)
+		$this->log('LOG_DEBUG', "Processing request: module $module"
+				.(($action !== FALSE) ? ", action $action"
+					: ''));
+		if(($handle = Module::load($this, $module)) === FALSE)
 			return FALSE;
-		return $handle->call($engine, $this);
+		return $handle->call($engine, $request);
 	}
 
 
