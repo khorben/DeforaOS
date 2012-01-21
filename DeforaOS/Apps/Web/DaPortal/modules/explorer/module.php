@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -51,10 +51,12 @@ class ExplorerModule extends Module
 	public function call(&$engine, $request)
 	{
 		$args = $request->getParameters();
-		switch($request->getAction())
+		switch(($action = $request->getAction()))
 		{
+			case 'apply':
 			case 'browse':
-				return $this->browse($args);
+			case 'system':
+				return $this->$action($args);
 			case 'browse_trusted':
 				return $this->browseTrusted($args);
 		}
