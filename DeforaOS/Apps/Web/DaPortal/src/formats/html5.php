@@ -302,8 +302,8 @@ class Html5Format extends Format
 		//FIXME really track the heading level
 		$tag = 'h'.($level - 1);
 		$this->renderTabs($level);
-		$this->tagOpen($tag, $e->getType(), FALSE, FALSE,
-				$e->getProperty('text'));
+		$this->tagOpen($tag, $e->getType(), $e->getProperty('id'),
+				FALSE, $e->getProperty('text'));
 		$this->renderChildren($e, $level);
 		$this->tagClose($tag);
 	}
@@ -465,16 +465,17 @@ class Html5Format extends Format
 	}
 
 
-	private function renderTitle($page)
+	private function renderTitle($e)
 	{
 		global $config;
 
-		if(($title = $page->getProperty('title')) === FALSE)
+		if(($title = $e->getProperty('title')) === FALSE)
 			$title = $config->getVariable(FALSE, 'title');
 		if($title !== FALSE)
 		{
 			$this->renderTabs(2);
-			$this->tag('title', FALSE, FALSE, FALSE, $title);
+			$this->tag('title', FALSE, $e->getProperty('id'), FALSE,
+					$title);
 		}
 	}
 
