@@ -45,6 +45,7 @@ class BasicTemplate extends Template
 	protected function getTitle($engine)
 	{
 		$title = new PageElement('title');
+		$title->setProperty('id', 'title');
 		$title->append('link', array('text' => $this->title,
 					'request' => new Request($engine)));
 		return $title;
