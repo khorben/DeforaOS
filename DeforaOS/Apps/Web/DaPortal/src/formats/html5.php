@@ -311,8 +311,11 @@ class Html5Format extends Format
 
 	private function renderInline($e, $level)
 	{
-		$this->tag('span', $e->getType(), FALSE, FALSE,
-				$e->getProperty('text'));
+		$text = $e->getProperty('text');
+		if($e->getType() !== FALSE)
+			$this->tag('span', $e->getType(), FALSE, FALSE, $text);
+		else if($text !== FALSE)
+			print($this->escape($text));
 	}
 
 
