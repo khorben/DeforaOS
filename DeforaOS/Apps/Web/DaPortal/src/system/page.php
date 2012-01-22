@@ -104,10 +104,7 @@ class PageElement
 	//PageElement::prepend
 	public function prepend($type, $properties = FALSE)
 	{
-		$element = new PageElement($type);
-		if(is_array($properties))
-			foreach($properties as $key => $value)
-				$element->setProperty($key, $value);
+		$element = new PageElement($type, $properties);
 		return $this->prependElement($element);
 	}
 
