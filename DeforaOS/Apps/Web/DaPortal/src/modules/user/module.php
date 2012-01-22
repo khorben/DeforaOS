@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -121,9 +121,9 @@ class UserModule extends Module
 	//properties
 	//queries
 	private $query_login = "SELECT user_id, username, admin
- FROM daportal_user
- WHERE username=:username AND password=:password
- AND enabled='1'";
+		FROM daportal_user
+		WHERE username=:username AND password=:password
+		AND enabled='1'";
 }
 
 ?>
