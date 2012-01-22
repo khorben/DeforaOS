@@ -24,9 +24,10 @@ class BasicTemplate extends Template
 {
 	//protected
 	//properties
-	protected $footer;
-	protected $homepage = '/';
-	protected $title;
+	protected $name = 'basic';
+	protected $footer = FALSE;
+	protected $homepage = FALSE;
+	protected $title = FALSE;
 
 
 	//methods
@@ -47,7 +48,7 @@ class BasicTemplate extends Template
 		$title = new PageElement('title');
 		$title->setProperty('id', 'title');
 		$title->append('link', array('text' => $this->title,
-					'request' => new Request($engine)));
+					'url' => $this->homepage));
 		return $title;
 	}
 
@@ -63,14 +64,19 @@ class BasicTemplate extends Template
 	//BasicTemplate::attach
 	protected function attach(&$engine)
 	{
-		$this->footer = $engine->getConfig('template::basic',
-				'footer');
-		if(($homepage = $engine->getConfig('template::basic', 'footer'))
-				!== FALSE)
-			$this->homepage = $homepage;
-		if(($this->title = $engine->getConfig('template::basic',
-						'title')) === FALSE)
-			$this->title = $engine->getConfig(FALSE, 'title');
+		global $config;
+
+		$section = 'template::'.$this->name;
+		if($this->footer === FALSE)
+			$this->footer = $config->getVariable($section,
+					'footer');
+		if($this->homepage === FALSE)
+			$this->homepage = $config->getVariable($section,
+					'footer');
+		if($this->title === FALSE)
+			$this->title = $config->getVariable($section, 'title');
+		if($this->title === FALSE)
+			$this->title = $config->getVariable(FALSE, 'title');
 	}
 
 
