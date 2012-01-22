@@ -285,39 +285,34 @@ class Html5Format extends Format
 	private function renderFrame($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<div class="frame">');
+		$this->tagOpen('div', 'frame');
 		if(($title = $e->getProperty('title')) !== FALSE)
 		{
 			$this->renderTabs($level + 1);
-			print('<div class="title">'.$this->escape($title)
-			.'</div>');
+			$this->tag('div', 'title', FALSE, FALSE, $title);
 		}
 		$this->renderChildren($e, $level);
 		$this->renderTabs($level);
-		print('</div>');
+		$this->tagClose('div');
 	}
 
 
 	private function renderHeading($e, $level)
 	{
+		//FIXME really track the heading level
 		$tag = 'h'.($level - 1);
 		$this->renderTabs($level);
-		print('<'.$tag.' class="'.$this->escapeAttribute($e->getType())
-				.'">');
-		if(($text = $e->getProperty('text')) !== FALSE)
-			print($this->escape($e->getProperty('text')));
+		$this->tagOpen($tag, $e->getType(), FALSE, FALSE,
+				$e->getProperty('text'));
 		$this->renderChildren($e, $level);
-		print("</$tag>");
+		$this->tagClose($tag);
 	}
 
 
 	private function renderInline($e, $level)
 	{
-		print('<span class="'.$this->escapeAttribute($e->getType())
-				.'">');
-		if(($text = $e->getProperty('text')) !== FALSE)
-			print($this->escape($text));
-		print("</span>");
+		$this->tag('span', $e->getType(), FALSE, FALSE,
+				$e->getProperty('text'));
 	}
 
 
@@ -325,6 +320,7 @@ class Html5Format extends Format
 	{
 		if(($for = $e->getProperty('for')) === FALSE)
 			return $this->renderInline($e, $level);
+		//this is for a form
 		print('<label class="label"'
 				.' for="'.$this->escapeAttribute($for).'">');
 		if(($text = $e->getProperty('text')) !== FALSE)
@@ -369,7 +365,7 @@ class Html5Format extends Format
 			print(' href="'.$this->escapeAttribute($u).'"');
 		print('>');
 		print($this->escape($e->getProperty('text')));
-		print("</a>");
+		$this->tagClose('a');
 	}
 
 
@@ -407,9 +403,8 @@ class Html5Format extends Format
 	private function renderMeta($level, $header, $value)
 	{
 		$this->renderTabs($level);
-		print('<meta http-equiv="'.$this->escapeAttribute($header).'"'
-				.' content="'.$this->escapeAttribute($value).'"'
-				.'/>');
+		$this->tag('meta', FALSE, FALSE, array('http-equiv' => $header,
+					'content' => $value));
 	}
 
 
@@ -465,8 +460,8 @@ class Html5Format extends Format
 		if(($theme = $config->getVariable(FALSE, 'theme')) === FALSE)
 			return;
 		$this->renderTabs(2);
-		print('<link rel="stylesheet" href="themes/'
-				.$this->escapeAttribute($theme).'.css"/>');
+		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
+					'href' => "themes/$theme.css"));
 	}
 
 
@@ -517,9 +512,8 @@ class Html5Format extends Format
 		$this->renderTabs($level + 1);
 		$this->tagOpen('div', 'header');
 		foreach($columns as $c)
-			print('<span class="detail '.$this->escapeAttribute($c)
-					.'">'.$this->escape(ucfirst($c))
-					.'</span>');
+			$this->tag('span', "detail $c", FALSE, FALSE,
+					ucfirst($c));
 		$this->tagClose('div');
 	}
 
@@ -587,7 +581,7 @@ class Html5Format extends Format
 
 
 	private function tagOpen($name, $class = FALSE, $id = FALSE,
-			$attributes = FALSE)
+			$attributes = FALSE, $content = FALSE)
 	{
 		//FIXME automatically output tabs
 		$tag = '<'.$this->escapeAttribute($name);
@@ -607,6 +601,8 @@ class Html5Format extends Format
 				.$this->escapeAttribute($v).'"';
 		$tag.='>';
 		print($tag);
+		if($content !== FALSE)
+			print($this->escape($content));
 	}
 
 
