@@ -46,8 +46,10 @@ class Html5Format extends Format
 	//Html5Format::render
 	public function render(&$engine, $page, $filename = FALSE)
 	{
+		$this->ids = array();
+		//FIXME also track tags are properly closed
+
 		//FIXME ignore $filename for the moment
-		$this->engine = $engine;
 		if($page->getType() == 'page')
 			$this->renderElement($page);
 		else
@@ -59,31 +61,56 @@ class Html5Format extends Format
 		$this->engine = FALSE;
 	}
 
+
+	//private
+	//methods
+	//escaping
+	private function escape($text)
+	{
+		return str_replace(array('<', '>'), array('&lt;', '&gt;'),
+				$text);
+	}
+
+
+	private function escapeAttribute($text)
+	{
+		return htmlspecialchars($text);
+	}
+
+
+	private function escapeURI($text)
+	{
+		return urlencode($text);
+	}
+
+
+	//rendering
 	private function renderBlock($e, $level, $tag = 'div')
 	{
 		$this->renderTabs($level);
-		print('<'.$tag.' class="'.$this->escapeAttribute($e->getType())
-				.'">'."\n");
+		$this->tagOpen($tag, $e->getType());
 		$this->renderChildren($e, $level);
 		$this->renderTabs($level);
-		print("</$tag>\n");
+		$this->tagClose($tag);
 	}
+
 
 	private function renderBox($e, $level, $type = 'vbox')
 	{
 		$this->renderTabs($level);
-		print('<div class="'.$this->escapeAttribute($type).'">');
+		$this->tagOpen('div', $type);
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
 			$this->renderTabs($level + 1);
-			print('<div class="pack">');
+			$this->tagOpen('div', 'pack');
 			$this->renderElement($c, $level + 2);
-			print('</div>');
+			$this->tagClose('div');
 		}
 		$this->renderTabs($level);
-		print("</div>\n");
+		$this->tagClose('div');
 	}
+
 
 	private function renderButton($e, $level)
 	{
@@ -103,22 +130,19 @@ class Html5Format extends Format
 				$type = 'button';
 				break;
 		}
-		print('<button type="'.$type.'"');
-		if($class !== FALSE)
-			print(' class="'.$this->escapeAttribute($class).'"');
-		print('>');
+		$this->tagOpen('button', $class, FALSE, array('type' => $type));
 		$this->renderChildren($e, $level);
 		print($this->escape($e->getProperty('text')));
-		print('</button>');
+		$this->tagClose('button');
 	}
+
 
 	private function renderCheckbox($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<div class="'.$this->escapeAttribute($e->getType())
-				.'">');
+		$this->tagOpen('div', $e->getType());
 		print('<input type="checkbox"');
-		if(($name = $e->getProperty('name')) != FALSE)
+		if(($name = $e->getProperty('name')) !== FALSE)
 		{
 			//FIXME the ID may not be unique
 			print(' id="'.$this->escapeAttribute($name).'"');
@@ -135,8 +159,9 @@ class Html5Format extends Format
 				$l->setProperty('for', $name);
 			$this->renderElement($l, $text);
 		}
-		print('</div>');
+		$this->tagClose('div');
 	}
+
 
 	private function renderChildren($e, $level)
 	{
@@ -145,20 +170,24 @@ class Html5Format extends Format
 			$this->renderElement($c, $level + 1);
 	}
 
+
 	private function renderDialog($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<div class="dialog">');
+		$this->tagOpen('div', 'dialog');
 		$this->renderTabs($level + 1);
-		print('<div class="title">'.$this->escape(
-					$e->getProperty('title')).'</div>');
+		$this->tagOpen('div', 'title');
+		print($this->escape($e->getProperty('title')));
+		$this->tagClose('div');
 		$this->renderTabs($level + 1);
-		print('<div class="message">'.$this->escape(
-					$e->getProperty('text')).'</div>');
+		$this->tagOpen('div', 'message');
+		print($this->escape($e->getProperty('text')));
+		$this->tagClose('div');
 		$this->renderTabs($level);
 		$this->renderChildren($e, $level);
-		print('</div>');
+		$this->tagClose('div');
 	}
+
 
 	private function renderElement($e, $level = 1)
 	{
@@ -201,11 +230,11 @@ class Html5Format extends Format
 		}
 	}
 
+
 	private function renderEntry($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<div class="'.$this->escapeAttribute($e->getType())
-				.'">');
+		$this->tagOpen('div', $e->getType());
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
 			$l = new PageElement('label');
@@ -220,14 +249,15 @@ class Html5Format extends Format
 				.' name="'.$this->escapeAttribute($name).'"'
 				.' value="'.$this->escapeAttribute($value).'"'
 				.'/>');
-		print('</div>');
+		$this->tagClose('div');
 	}
+
 
 	private function renderForm($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<form class="'.$this->escapeAttribute($e->getType()).'"'
-				.'>');
+		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
+				array('method' => 'get'));
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
 			$this->renderFormHidden($level + 1, 'module',
@@ -238,19 +268,19 @@ class Html5Format extends Format
 		}
 		$this->renderChildren($e, $level);
 		$this->renderTabs($level);
-		print("</form>");
+		$this->tagClose('form');
 	}
+
 
 	private function renderFormHidden($level, $name, $value = FALSE)
 	{
 		if($value === FALSE)
 			return;
 		$this->renderTabs($level);
-		print('<input type="hidden"'
-				.' name="'.$this->escapeAttribute($name).'"'
-				.' value="'.$this->escapeAttribute($value).'"'
-				.'/>');
+		$this->tag('input', FALSE, FALSE, array('type' => 'hidden',
+					'name' => $name, 'value' => $value));
 	}
+
 
 	private function renderFrame($e, $level)
 	{
@@ -267,6 +297,7 @@ class Html5Format extends Format
 		print('</div>');
 	}
 
+
 	private function renderHeading($e, $level)
 	{
 		$tag = 'h'.($level - 1);
@@ -279,6 +310,7 @@ class Html5Format extends Format
 		print("</$tag>");
 	}
 
+
 	private function renderInline($e, $level)
 	{
 		print('<span class="'.$this->escapeAttribute($e->getType())
@@ -288,6 +320,7 @@ class Html5Format extends Format
 		print("</span>");
 	}
 
+
 	private function renderLabel($e, $level)
 	{
 		if(($for = $e->getProperty('for')) === FALSE)
@@ -296,8 +329,9 @@ class Html5Format extends Format
 				.' for="'.$this->escapeAttribute($for).'">');
 		if(($text = $e->getProperty('text')) !== FALSE)
 			print($this->escape($text));
-		print("</label>");
+		$this->tagClose('label');
 	}
+
 
 	private function renderLink($e, $level)
 	{
@@ -338,6 +372,7 @@ class Html5Format extends Format
 		print("</a>");
 	}
 
+
 	private function renderMenu($e, $level)
 	{
 		//FIXME really implement
@@ -347,59 +382,73 @@ class Html5Format extends Format
 				$this->renderMenuitem($c, $level);
 	}
 
+
 	private function renderMenubar($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<div class="menubar">');
+		$this->tagOpen('div', 'menubar');
 		$this->renderMenu($e, $level + 1);
 		$this->renderTabs($level);
-		print('</div>');
+		$this->tagClose('div');
 	}
+
 
 	private function renderMenuitem($e, $level)
 	{
 		//FIXME really implement
 		$this->renderTabs($level);
-		print('<div class="menuitem">');
+		$this->tagOpen('div', 'menuitem');
 		if(($text = $e->getProperty('text')) !== FALSE)
 			$this->renderLink($e, $level);
-		print('</div>');
+		$this->tagClose('div');
 	}
+
 
 	private function renderMeta($level, $header, $value)
 	{
 		$this->renderTabs($level);
 		print('<meta http-equiv="'.$this->escapeAttribute($header).'"'
 				.' content="'.$this->escapeAttribute($value).'"'
-				."/>\n");
+				.'/>');
 	}
+
 
 	private function renderPage($e)
 	{
 		global $config;
 
-		print("<!DOCTYPE html>\n<html>\n\t<head>");
+		print("<!DOCTYPE html>\n");
+		$this->tagOpen('html');
+		$this->renderTabs(1);
+		$this->tagOpen('head');
 		$this->renderTitle($e);
 		$this->renderTheme($e);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			$this->renderMeta(2, 'Content-Type', 'text/html'
 					.'; charset='.$charset);
-		print("\t</head>\n\t<body>");
+		$this->renderTabs(1);
+		$this->tagClose('head');
+		$this->renderTabs(1);
+		$this->tagOpen('body');
 		$this->renderChildren($e, 1);
 		$this->renderTabs(1);
-		print("</body>\n</html>\n");
+		$this->tagClose('body');
+		$this->renderTabs(0);
+		$this->tagClose('html');
 	}
+
 
 	private function renderStatusbar($e, $level)
 	{
 		$this->renderTabs($level);
-		print('<div class="statusbar">');
+		$this->tagOpen('div', 'statusbar', $e->getProperty('id'));
 		if(($text = $e->getProperty('text')) !== FALSE)
 			print($this->escape($text));
 		$this->renderTabs($level);
-		print("</div>");
+		$this->tagClose('div');
 	}
+
 
 	private function renderTabs($level)
 	{
@@ -407,6 +456,7 @@ class Html5Format extends Format
 		for($i = 0; $i < $level; $i++)
 			print("\t");
 	}
+
 
 	private function renderTheme($page)
 	{
@@ -419,6 +469,7 @@ class Html5Format extends Format
 				.$this->escapeAttribute($theme).'.css"/>');
 	}
 
+
 	private function renderTitle($page)
 	{
 		global $config;
@@ -428,9 +479,10 @@ class Html5Format extends Format
 		if($title !== FALSE)
 		{
 			$this->renderTabs(2);
-			print('<title>'.$this->escape($title).'</title>');
+			$this->tag('title', FALSE, FALSE, FALSE, $title);
 		}
 	}
+
 
 	private function renderTreeview($e, $level)
 	{
@@ -448,7 +500,7 @@ class Html5Format extends Format
 				break;
 		}
 		$class = $e->getType()." $view";
-		print('<form class="'.$this->escapeAttribute($class).'">');
+		$this->tagOpen('form', $class, array('method' => 'post'));
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
 			$columns = array('title');
@@ -456,19 +508,21 @@ class Html5Format extends Format
 		//render rows
 		$this->renderTreeviewRows($e, $columns, $level);
 		$this->renderTabs($level);
-		print('</form>');
+		$this->tagClose('form');
 	}
+
 
 	private function renderTreeviewHeaders($columns, $level)
 	{
 		$this->renderTabs($level + 1);
-		print('<div class="header">');
+		$this->tagOpen('div', 'header');
 		foreach($columns as $c)
 			print('<span class="detail '.$this->escapeAttribute($c)
 					.'">'.$this->escape(ucfirst($c))
 					.'</span>');
-		print('</div>');
+		$this->tagClose('div');
 	}
+
 
 	private function renderTreeviewRows($e, $columns, $level)
 	{
@@ -478,7 +532,7 @@ class Html5Format extends Format
 			$this->renderTabs($level + 1);
 			if($c->getType() != 'row')
 				continue;
-			print('<div class="row">');
+			$this->tagOpen('div', 'row');
 			$properties = $c->getProperties();
 			foreach($properties as $k => $v)
 			{
@@ -490,34 +544,74 @@ class Html5Format extends Format
 					print($this->escape($v));
 				else
 					$this->renderElement($v);
-				print('</span>');
+				$this->tagClose('span');
 			}
-			print('</div>');
+			$this->tagClose('div');
 		}
 	}
 
 
-	private function escape($text)
+	//tagging
+	private function tag($name, $class = FALSE, $id = FALSE,
+			$attributes = FALSE, $content = FALSE)
 	{
-		return str_replace(array('<', '>'), array('&lt;', '&gt;'),
-				$text);
+		//FIXME automatically output tabs
+		$tag = '<'.$this->escapeAttribute($name);
+		if($class !== FALSE)
+			$tag.=' class="'.$this->escapeAttribute($class).'"';
+		if($id !== FALSE)
+		{
+			if(isset($ids[$id]))
+				$engine->log('LOG_DEBUG', 'HTML ID '.$id
+						.' is already defined');
+			$ids[$id] = TRUE;
+			$tag.=' id="'.$this->escapeAttribute($id).'"';
+		}
+		if(is_array($attributes))
+			foreach($attributes as $k => $v)
+				$tag.=' '.$this->escapeAttribute($k).'="'
+				.$this->escapeAttribute($v).'"';
+		if($content !== FALSE)
+			$tag.='>'.$this->escape($content)
+				.'</'.$this->escapeAttribute($name).'>';
+		else
+			$tag.='/>';
+		print($tag);
 	}
 
 
-	private function escapeAttribute($text)
+	private function tagClose($name)
 	{
-		return htmlspecialchars($text);
+		print('</'.$this->escapeAttribute($name).'>');
 	}
 
 
-	private function escapeURI($text)
+	private function tagOpen($name, $class = FALSE, $id = FALSE,
+			$attributes = FALSE)
 	{
-		return urlencode($text);
+		//FIXME automatically output tabs
+		$tag = '<'.$this->escapeAttribute($name);
+		if($class !== FALSE)
+			$tag.=' class="'.$this->escapeAttribute($class).'"';
+		if($id !== FALSE)
+		{
+			if(isset($ids[$id]))
+				$engine->log('LOG_DEBUG', 'HTML ID '.$id
+						.' is already defined');
+			$ids[$id] = TRUE;
+			$tag.=' id="'.$this->escapeAttribute($id).'"';
+		}
+		if(is_array($attributes))
+			foreach($attributes as $k => $v)
+				$tag.=' '.$this->escapeAttribute($k).'="'
+				.$this->escapeAttribute($v).'"';
+		$tag.='>';
+		print($tag);
 	}
 
 
-	//private
-	private $engine = FALSE;
+	//properties
+	private $ids;
 }
 
 ?>
