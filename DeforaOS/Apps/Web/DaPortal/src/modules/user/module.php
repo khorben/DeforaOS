@@ -69,11 +69,18 @@ class UserModule extends Module
 		//login successful
 		if($error === FALSE)
 		{
-			//FIXME this label does not work with Html5Format
-			$page->append('label', array('text', 'Redirection in progress, please wait...'));
-			$r = new Request($engine, 'user');
-			$page->append('link', array('text' => 'click here',
-						'request', $r));
+			$page->setProperty('refresh', 30);
+			$box = $page->append('vbox');
+			$text = 'Logging in progress, please wait...';
+			$box->append('label', array('text' => $text));
+			$r = new Request($engine);
+			$box = $box->append('hbox');
+			$text = 'If you are not redirected within 30 seconds,'
+				.' please ';
+			$box->append('label', array('text' => $text));
+			$box->append('link', array('text' => 'click here',
+						'request' => $r));
+			$box->append('label', array('text' => '.'));
 			return $page;
 		}
 		else if(is_string($error))
@@ -101,7 +108,7 @@ class UserModule extends Module
 		$db = $engine->getDatabase();
 
 		if($cred->getUserId() != 0)
-			return 'You are already logged in.';
+			return 'You are already logged in';
 		//FIXME first obtain the password and apply salt if necessary
 		$res = $db->query($engine, $this->query_login, array(
 					'username' => $username,
