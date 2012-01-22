@@ -16,12 +16,42 @@
 
 
 
-//BasicTemplate
 require_once('./system/template.php');
+
+
+//BasicTemplate
 class BasicTemplate extends Template
 {
 	//protected
+	//properties
+	protected $footer;
+	protected $homepage = '/';
+	protected $title;
+
+
 	//methods
+	//accessors
+	protected function getFooter($engine)
+	{
+		$footer = new PageElement('statusbar');
+		$footer->setProperty('id', 'footer');
+		if($this->footer !== FALSE)
+			$footer->setProperty('text', $this->footer);
+		return $footer;
+	}
+
+
+	//BasicTemplate::getTitle
+	protected function getTitle($engine)
+	{
+		$title = new PageElement('title');
+		$title->append('link', array('text' => $this->title,
+					'request' => new Request($engine)));
+		return $title;
+	}
+
+
+	//useful
 	//BasicTemplate::match
 	protected function match(&$engine)
 	{
@@ -32,12 +62,26 @@ class BasicTemplate extends Template
 	//BasicTemplate::attach
 	protected function attach(&$engine)
 	{
+		$this->footer = $engine->getConfig('template::basic',
+				'footer');
+		if(($homepage = $engine->getConfig('template::basic', 'footer'))
+				!== FALSE)
+			$this->homepage = $homepage;
+		if(($this->title = $engine->getConfig('template::basic',
+						'title')) === FALSE)
+			$this->title = $engine->getConfig(FALSE, 'title');
 	}
 
 
 	//BasicTemplate::render
 	public function render(&$engine, $page)
 	{
+		if($page === FALSE)
+			$page = new Page;
+		$page->prependElement($this->getMenu($engine));
+		$page->prependElement($this->getTitle($engine));
+		$page->setProperty('type', 'block');
+		$page->appendElement($this->getFooter($engine));
 		return $page;
 	}
 }

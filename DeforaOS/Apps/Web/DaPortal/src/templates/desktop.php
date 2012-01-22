@@ -16,8 +16,10 @@
 
 
 
-//DesktopTemplate
 require_once('./system/template.php');
+
+
+//DesktopTemplate
 class DesktopTemplate extends Template
 {
 	//protected
