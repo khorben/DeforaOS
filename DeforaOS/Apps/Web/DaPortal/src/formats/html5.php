@@ -173,12 +173,26 @@ class Html5Format extends Format
 
 	private function renderDialog($e, $level)
 	{
+		if(($type = $e->getProperty('type')) === FALSE)
+			$type = 'message';
+		if(($title = $e->getProperty('title')) === FALSE)
+			switch($type)
+			{
+				case 'error':
+				case 'question':
+				case 'warning':
+					$title = ucfirst($type);
+					break;
+				case 'info':
+				case 'message':
+					$title = 'Message';
+					break;
+			}
 		$this->renderTabs($level);
-		$this->tagOpen('div', 'dialog');
+		$this->tagOpen('div', 'dialog '.$type);
 		$this->renderTabs($level + 1);
-		$this->tagOpen('div', 'title');
-		print($this->escape($e->getProperty('title')));
-		$this->tagClose('div');
+		if($title !== FALSE)
+			$this->tag('div', 'title', FALSE, FALSE, $title);
 		$this->renderTabs($level + 1);
 		$this->tagOpen('div', 'message');
 		print($this->escape($e->getProperty('text')));
@@ -256,8 +270,10 @@ class Html5Format extends Format
 	private function renderForm($e, $level)
 	{
 		$this->renderTabs($level);
+		$method = $e->getProperty('idempotent') ? 'get' : 'post';
 		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
-				array('method' => 'get'));
+				array('action' => 'index.php',
+					'method' => $method));
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
 			$this->renderFormHidden($level + 1, 'module',
@@ -425,6 +441,9 @@ class Html5Format extends Format
 				!== FALSE)
 			$this->renderMeta(2, 'Content-Type', 'text/html'
 					.'; charset='.$charset);
+		if(($refresh = $e->getProperty('refresh')) !== FALSE
+				&& is_numeric($refresh))
+			$this->renderMeta(2, 'Refresh', $refresh);
 		$this->renderTabs(1);
 		$this->tagClose('head');
 		$this->renderTabs(1);
