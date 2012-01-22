@@ -20,6 +20,20 @@
 class AuthCredentials
 {
 	//public
+	//essential
+	public function __construct($uid = FALSE, $username = FALSE,
+			$gid = FALSE, $admin = FALSE)
+	{
+		if($uid === FALSE || !is_string($username) || !is_bool($admin))
+			return;
+		$this->setUserId($uid, $admin);
+		if($gid === FALSE)
+			return;
+		$this->setGroupId($gid);
+		$this->username = $username;
+	}
+
+
 	//accessors
 	public function getGroupId()
 	{
@@ -50,7 +64,7 @@ class AuthCredentials
 
 	public function setUserId($uid, $admin = FALSE)
 	{
-		if(!is_numeric($uid))
+		if(!is_numeric($uid) || !is_bool($admin))
 		{
 			$this->uid = 0;
 			$this->admin = FALSE;
@@ -78,11 +92,20 @@ abstract class Auth
 {
 	//public
 	//accessors
+	//Auth::getCredentials
 	public function getCredentials()
 	{
 		if($this->credentials === FALSE)
 			$this->credentials = new AuthCredentials;
 		return $this->credentials;
+	}
+
+
+	//Auth::setCredentials
+	public function setCredentials($credentials)
+	{
+		$this->credentials = $credentials;
+		return TRUE;
 	}
 
 
@@ -132,13 +155,6 @@ abstract class Auth
 
 
 	//protected
-	//methods
-	protected function setCredentials($credentials)
-	{
-		$this->credentials = $credentials;
-	}
-
-
 	//virtual
 	abstract protected function match(&$engine);
 	abstract protected function attach(&$engine);

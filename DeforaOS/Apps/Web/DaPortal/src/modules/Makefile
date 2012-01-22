@@ -1,4 +1,4 @@
-SUBDIRS	= search top
+SUBDIRS	= search top user
 
 
 all: subdirs

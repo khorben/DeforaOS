@@ -127,6 +127,13 @@ class HttpEngine extends Engine
 	}
 
 
+	//Engine::isIdempotent
+	public function isIdempotent()
+	{
+		return ($_SERVER['REQUEST_METHOD'] == 'POST') ? FALSE : TRUE;
+	}
+
+
 	//useful
 	//HttpEngine::render
 	public function render($page)

@@ -495,6 +495,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modules/top/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/top/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/top/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/user/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/user/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/user/project.conf \
 		$(PACKAGE)-$(VERSION)/src/system/Makefile \
 		$(PACKAGE)-$(VERSION)/src/system/auth.php \
 		$(PACKAGE)-$(VERSION)/src/system/config.php \

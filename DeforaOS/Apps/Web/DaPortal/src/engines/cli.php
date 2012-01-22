@@ -22,23 +22,10 @@ require_once('./system/engine.php');
 //CliEngine
 class CliEngine extends Engine
 {
-	public function match()
-	{
-		return 1;
-	}
-
-
-	public function attach()
-	{
-	}
-
-
-	public function render($page)
-	{
-		print_r($page);
-	}
-
-
+	//public
+	//methods
+	//accessors
+	//CliEngine::getRequest
 	public function getRequest()
 	{
 		if(($options = getopt('Dm:a:i:t:')) === FALSE)
@@ -69,6 +56,35 @@ class CliEngine extends Engine
 		//FIXME also allow parameters to be set
 		$ret = new Request($this, $module, $action, $id, $title);
 		return $ret;
+	}
+
+
+	//Engine::isIdempotent
+	public function isIdempotent()
+	{
+		return ($_SERVER['REQUEST_METHOD'] == 'POST') ? FALSE : TRUE;
+	}
+
+
+	//essential
+	//CliEngine::match
+	public function match()
+	{
+		return 1;
+	}
+
+
+	//CliEngine::attach
+	public function attach()
+	{
+	}
+
+
+	//useful
+	//CliEngine::render
+	public function render($page)
+	{
+		print_r($page);
 	}
 }
 

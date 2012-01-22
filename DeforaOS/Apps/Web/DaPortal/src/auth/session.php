@@ -51,9 +51,9 @@ class SessionAuth extends Auth
 	}
 
 
-	//private
+	//public
 	//methods
-	protected function setCredentials($credentials)
+	public function setCredentials($credentials)
 	{
 		$_SESSION['auth']['uid'] = $credentials->getUserId();
 		$_SESSION['auth']['gid'] = $credentials->getGroupId();

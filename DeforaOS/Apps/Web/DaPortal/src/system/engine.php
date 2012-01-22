@@ -38,7 +38,7 @@ abstract class Engine
 
 	//methods
 	//accessors
-	//Engine::getCredentials()
+	//Engine::getCredentials
 	public function getCredentials()
 	{
 		if($this->auth === FALSE)
@@ -52,7 +52,7 @@ abstract class Engine
 	}
 
 
-	//Engine::getDatabase()
+	//Engine::getDatabase
 	public function getDatabase()
 	{
 		if($this->database === FALSE)
@@ -68,6 +68,27 @@ abstract class Engine
 	public function getType()
 	{
 		return $this->type;
+	}
+
+
+	//Engine::isIdempotent
+	public function isIdempotent()
+	{
+		return TRUE;
+	}
+
+
+	//Engine::setCredentials
+	public function setCredentials($cred)
+	{
+		if($this->auth === FALSE)
+		{
+			require_once('./system/auth.php');
+			$this->auth = Auth::attachDefault($this);
+		}
+		if($this->auth === FALSE)
+			return FALSE;
+		return $this->auth->setCredentials($cred);
 	}
 
 
