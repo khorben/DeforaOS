@@ -56,10 +56,6 @@ div.hbox > div.pack:first-child {
 	padding-left:			0;
 }
 
-div.link, a {
-	text-decoration:		none;
-}
-
 div.menubar {
 	padding:			2px;
 }

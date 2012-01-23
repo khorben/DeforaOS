@@ -38,6 +38,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/js/index.php \
 		$(PACKAGE)-$(VERSION)/data/js/project.conf \
 		$(PACKAGE)-$(VERSION)/data/themes/DaPortal.css \
+		$(PACKAGE)-$(VERSION)/data/themes/DeforaOS.css \
 		$(PACKAGE)-$(VERSION)/data/themes/Makefile \
 		$(PACKAGE)-$(VERSION)/data/themes/index.php \
 		$(PACKAGE)-$(VERSION)/data/themes/project.conf \
