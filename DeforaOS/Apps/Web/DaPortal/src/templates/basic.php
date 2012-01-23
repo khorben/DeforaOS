@@ -42,6 +42,15 @@ class BasicTemplate extends Template
 	}
 
 
+	//BasicTemplate::getMenu
+	protected function getMenu($engine)
+	{
+		$menu = new PageElement('menubar');
+		//FIXME implement
+		return $menu;
+	}
+
+
 	//BasicTemplate::getTitle
 	protected function getTitle($engine)
 	{
