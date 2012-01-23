@@ -115,7 +115,7 @@ form.treeview.details {
 	display:			table;
 }
 
-form.treeview.details > div.row, form.treeview.details > div.header {
+form.treeview.details > div.header, form.treeview.details > div.row {
 	display:			table-row;
 }
 
@@ -132,11 +132,7 @@ form.treeview.icons > div.row {
 	width:				120px;
 }
 
-form.treeview.icons > div.row img {
-	display:			none;
-}
-
-form.treeview.icons > div.row img.icon {
+form.treeview.icons > div.row span.icon {
 	display:			block;
 	height:				48px;
 	margin-left:			auto;
