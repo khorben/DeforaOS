@@ -30,6 +30,7 @@ class UserModule extends Module
 		{
 			case 'display':
 			case 'login':
+			case 'logout':
 				return $this->$action($engine, $request);
 			default:
 				return $this->_default($engine, $request);
@@ -54,8 +55,23 @@ class UserModule extends Module
 	//UserModule::display
 	protected function display($engine, $request)
 	{
-		//FIXME implement
-		return new Page;
+		$cred = $engine->getCredentials();
+
+		$page = new Page;
+		if(($uid = $request->getId()) !== FALSE)
+			$title = 'User '.$uid;
+		else
+		{
+			$uid = $cred->getUserId();
+			$title = 'User homepage';
+		}
+		//FIXME verify the request's title if set
+		$page->append('title', array('text' => $title));
+		//FIXME really implement
+		$r = new Request($engine, 'user', 'logout');
+		$page->append('link', array('text' => 'Logout',
+					'request' => $r));
+		return $page;
 	}
 
 
@@ -124,6 +140,42 @@ class UserModule extends Module
 		if($engine->setCredentials($cred) !== TRUE)
 			return 'Invalid username or password';
 		return FALSE;
+	}
+
+
+	//UserModule::logout
+	protected function logout($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+
+		$page = new Page;
+		$page->append('title', array('text' => 'User logout'));
+		if($cred->getUserId() == 0)
+		{
+			$text = 'You were logged out successfully';
+			$page->append('dialog', array('type' => 'info',
+						'text' => $text));
+			$r = new Request($engine);
+			$page->append('link', array('request' => $r,
+						'text' => 'Back to the site'));
+			return $page;
+		}
+		//process logout
+		$r = new Request($engine, 'user', 'logout');
+		$page->setProperty('location', $engine->getUrl($r));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$text = 'Logging out, please wait...';
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = 'If you are not redirected within 30 seconds,'
+			.' please ';
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => 'click here',
+					'request' => $r));
+		$box->append('label', array('text' => '.'));
+		$engine->setCredentials(new AuthCredentials);
+		return $page;
 	}
 
 
