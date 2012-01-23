@@ -35,6 +35,17 @@ class Sqlite3Database extends Database
 
 	//public
 	//methods
+	//accessors
+	//Sqlite3Database::getLastId
+	public function getLastId(&$engine, $table, $field)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		//FIXME return the real last ID for $table_$field
+		return $this->handle->lastInsertRowID();
+	}
+
+
 	//useful
 	//Sqlite3Database::enum
 	public function enum(&$engine, $table, $field)
@@ -46,16 +57,6 @@ class Sqlite3Database extends Database
 		foreach($res as $r)
 			$ret[] = $r['name'];
 		return $ret;
-	}
-
-
-	//Sqlite3Database::lastId
-	public function lastId(&$engine, $table, $field)
-	{
-		if($this->handle === FALSE)
-			return FALSE;
-		/* FIXME return the real last ID for $table_$field */
-		return $this->handle->lastInsertRowID();
 	}
 
 

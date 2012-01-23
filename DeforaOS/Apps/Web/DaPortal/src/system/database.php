@@ -46,6 +46,27 @@ abstract class Database
 	}
 
 
+	//Database::transactionBegin
+	public function transactionBegin($engine)
+	{
+		return $this->query($engine, 'BEGIN');
+	}
+
+
+	//Database::transactionCommit
+	public function transactionCommit($engine)
+	{
+		return $this->query($engine, 'COMMIT');
+	}
+
+
+	//Database::transactionRollback
+	public function transactionRollback($engine)
+	{
+		return $this->query($engine, 'ROLLBACK');
+	}
+
+
 	//static
 	//Database::attachDefault
 	public static function attachDefault(&$engine)
@@ -94,8 +115,9 @@ abstract class Database
 
 
 	//virtual
+	abstract public function getLastId(&$engine, $table, $field);
+
 	abstract public function enum(&$engine, $table, $field);
-	abstract public function lastId(&$engine, $table, $field);
 	abstract public function offset($limit, $offset = FALSE);
 	abstract public function query(&$engine, $query, $parameters = FALSE);
 

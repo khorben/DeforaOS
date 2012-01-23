@@ -33,6 +33,17 @@ class PdoDatabase extends Database
 
 	//public
 	//methods
+	//accessors
+	//PdoDatabase::getLastId
+	public function getLastId(&$engine, $table, $field)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		//FIXME some backends require a parameter here
+		return $this->handle->lastInsertId();
+	}
+
+
 	//useful
 	//PdoDatabase::enum
 	public function enum(&$engine, $table, $field)
@@ -44,16 +55,6 @@ class PdoDatabase extends Database
 		foreach($res as $r)
 			$ret[] = $r['name'];
 		return $ret;
-	}
-
-
-	//PdoDatabase::lastId
-	public function lastId(&$engine, $table, $field)
-	{
-		if($this->handle === FALSE)
-			return FALSE;
-		/* FIXME some backends require a parameter here */
-		return $this->handle->lastInsertId();
 	}
 
 

@@ -29,10 +29,9 @@ class User
 		$res = $db->query($engine, User::$query_register,
 				array('username' => $username,
 					'email' => $email));
-		var_dump($res);
 		if($res === FALSE)
 			return FALSE;
-		return TRUE;
+		return $db->getLastId($engine, 'daportal_user', 'user_id');
 	}
 
 

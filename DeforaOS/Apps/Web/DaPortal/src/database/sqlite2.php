@@ -33,6 +33,17 @@ class Sqlite2Database extends Database
 
 	//public
 	//methods
+	//accessors
+	//Sqlite2Database::getLastId
+	public function getLastId(&$engine, $table, $field)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		//FIXME return the real last ID for $table_$field
+		return sqlite_last_insert_rowid($this->handle);
+	}
+
+
 	//useful
 	//Sqlite2Database::enum
 	public function enum(&$engine, $table, $field)
@@ -44,16 +55,6 @@ class Sqlite2Database extends Database
 		foreach($res as $r)
 			$ret[] = $r['name'];
 		return $ret;
-	}
-
-
-	//Sqlite2Database::lastId
-	public function lastId(&$engine, $table, $field)
-	{
-		if($this->handle === FALSE)
-			return FALSE;
-		/* FIXME return the real last ID for $table_$field */
-		return sqlite_last_insert_rowid($this->handle);
 	}
 
 
