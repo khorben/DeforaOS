@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -23,9 +23,16 @@ $config->load('../daportal.conf');
 
 require_once('./system/engine.php');
 if(($engine = Engine::attachDefault()) !== FALSE
-		&& ($request = $engine->getRequest()) !== FALSE
-		&& ($page = $engine->process($request)) !== FALSE)
+		&& ($request = $engine->getRequest()) !== FALSE)
+{
+	if(($page = $engine->process($request)) === FALSE)
+	{
+		$page = new Page;
+		$page->append('dialog', array('type' => 'error',
+					'text' => 'An error occured'));
+	}
 	$engine->render($page);
+}
 unset($engine);
 
 ?>

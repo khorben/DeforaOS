@@ -70,9 +70,14 @@ class UserModule extends Module
 		//FIXME verify the request's title if set
 		$page->append('title', array('text' => $title));
 		//FIXME really implement
+		$view = $page->append('iconview');
 		$r = new Request($engine, 'user', 'logout');
-		$page->append('link', array('text' => 'Logout',
+		$link = new PageElement('link', array('text' => 'Logout',
 					'request' => $r));
+		//FIXME use a stock icon instead
+		$icon = new PageElement('image', array('source'
+					=> 'icons/gnome/48x48/logout.png'));
+		$view->append('row', array('icon' => $icon, 'label' => $link));
 		return $page;
 	}
 

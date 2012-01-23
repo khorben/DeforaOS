@@ -78,6 +78,15 @@ class Html5Format extends Format
 	}
 
 
+	private function escapeText($text)
+	{
+		$from = array('<', '>', "\n");
+		$to = array('&lt;', '&gt;', '<br />');
+
+		return str_replace($from, $to, $text);
+	}
+
+
 	private function escapeURI($text)
 	{
 		return urlencode($text);
@@ -194,8 +203,8 @@ class Html5Format extends Format
 		if($title !== FALSE)
 			$this->tag('div', 'title', FALSE, FALSE, $title);
 		$this->renderTabs($level + 1);
-		$this->tagOpen('div', 'message');
-		print($this->escape($e->getProperty('text')));
+		$this->tagOpen('div', 'message', FALSE, FALSE,
+				$e->getProperty('text'));
 		$this->tagClose('div');
 		$this->renderTabs($level);
 		$this->renderChildren($e, $level);
@@ -222,6 +231,8 @@ class Html5Format extends Format
 			case 'hbox':
 			case 'vbox':
 				return $this->renderBox($e, $level, $type);
+			case 'image':
+				return $this->renderImage($e, $level);
 			case 'label':
 				return $this->renderLabel($e, $level);
 			case 'link':
@@ -333,13 +344,20 @@ class Html5Format extends Format
 	}
 
 
+	private function renderImage($e, $level)
+	{
+		$this->tag('img', FALSE, FALSE, array(
+					'src' => $e->getProperty('source')));
+	}
+
+
 	private function renderInline($e, $level)
 	{
 		$text = $e->getProperty('text');
 		if($e->getType() !== FALSE)
 			$this->tag('span', $e->getType(), FALSE, FALSE, $text);
 		else if($text !== FALSE)
-			print($this->escape($text));
+			print($this->escapeText($text));
 	}
 
 
@@ -391,6 +409,7 @@ class Html5Format extends Format
 		else if(($u = $e->getProperty('url')) !== FALSE)
 			print(' href="'.$this->escapeAttribute($u).'"');
 		print('>');
+		$this->renderChildren($e, $level);
 		print($this->escape($e->getProperty('text')));
 		$this->tagClose('a');
 	}
@@ -525,11 +544,15 @@ class Html5Format extends Format
 			case 'preview':
 				break;
 			default:
-				$view = 'details';
+				if($e->getType() == 'iconview')
+					$view = 'icons';
+				else
+					$view = 'details';
 				break;
 		}
-		$class = $e->getType()." $view";
-		$this->tagOpen('form', $class, array('method' => 'post'));
+		$class = "treeview $view";
+		$this->tagOpen('form', $class, FALSE,
+				array('method' => 'post'));
 		//FIXME protect against CSRF attacks
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
@@ -637,7 +660,7 @@ class Html5Format extends Format
 		$tag.='>';
 		print($tag);
 		if($content !== FALSE)
-			print($this->escape($content));
+			print($this->escapeText($content));
 	}
 
 
