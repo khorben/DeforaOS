@@ -13,6 +13,8 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//FIXME:
+//- only logout if not idempotent
 
 
 
@@ -83,10 +85,7 @@ class UserModule extends Module
 		$page = new Page;
 		$page->append('title', array('text' => 'User login'));
 		//process login
-		if($engine->isIdempotent($engine) === FALSE
-				&& ($u = $request->getParameter('username'))
-				&& ($p = $request->getParameter('password')))
-			$error = $this->_login($engine, $u, $p);
+		$error = $this->_login($engine, $request);
 		//login successful
 		if($error === FALSE)
 		{
@@ -124,10 +123,16 @@ class UserModule extends Module
 		return $page;
 	}
 
-	private function _login($engine, $username, $password)
+	private function _login($engine, $request)
 	{
 		$db = $engine->getDatabase();
 
+		if(($username = $request->getParameter('username')) === FALSE
+				|| ($password = $request->getParameter(
+						'password')) === FALSE)
+			return TRUE;
+		if($engine->isIdempotent($request) !== FALSE)
+			return 'The request expired or is invalid';
 		//FIXME first obtain the password and apply salt if necessary
 		$res = $db->query($engine, $this->query_login, array(
 					'username' => $username,

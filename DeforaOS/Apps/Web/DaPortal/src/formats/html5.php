@@ -274,21 +274,29 @@ class Html5Format extends Format
 		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
 				array('action' => 'index.php',
 					'method' => $method));
+		if($method === 'post' && @session_start())
+		{
+			//FIXME move this code into the Auth module
+			if(!isset($_SESSION['tokens']))
+				$_SESSION['tokens'] = array();
+			$token = sha1(uniqid(php_uname(), TRUE));
+			$_SESSION['tokens'][$token] = time() + 3600;
+			$this->_renderFormHidden($level + 1, '_token', $token);
+		}
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
-			$this->renderFormHidden($level + 1, 'module',
+			$this->_renderFormHidden($level + 1, 'module',
 					$r->getModule());
-			$this->renderFormHidden($level + 1, 'action',
+			$this->_renderFormHidden($level + 1, 'action',
 					$r->getAction());
-			$this->renderFormHidden($level + 1, 'id', $r->getId());
+			$this->_renderFormHidden($level + 1, 'id', $r->getId());
 		}
 		$this->renderChildren($e, $level);
 		$this->renderTabs($level);
 		$this->tagClose('form');
 	}
 
-
-	private function renderFormHidden($level, $name, $value = FALSE)
+	private function _renderFormHidden($level, $name, $value = FALSE)
 	{
 		if($value === FALSE)
 			return;
@@ -483,6 +491,7 @@ class Html5Format extends Format
 
 		if(($theme = $config->getVariable(FALSE, 'theme')) === FALSE)
 			return;
+		//FIXME emit a (debugging) warning if the theme is not readable?
 		$this->renderTabs(2);
 		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
 					'href' => "themes/$theme.css"));
@@ -521,6 +530,7 @@ class Html5Format extends Format
 		}
 		$class = $e->getType()." $view";
 		$this->tagOpen('form', $class, array('method' => 'post'));
+		//FIXME protect against CSRF attacks
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
 			$columns = array('title');

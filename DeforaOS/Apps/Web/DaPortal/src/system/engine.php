@@ -79,7 +79,7 @@ abstract class Engine
 
 
 	//Engine::isIdempotent
-	public function isIdempotent()
+	public function isIdempotent($request)
 	{
 		return TRUE;
 	}

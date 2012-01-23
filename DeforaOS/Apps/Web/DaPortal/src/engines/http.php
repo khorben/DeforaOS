@@ -145,9 +145,25 @@ class HttpEngine extends Engine
 
 
 	//HttpEngine::isIdempotent
-	public function isIdempotent()
+	public function isIdempotent($request)
 	{
-		return ($_SERVER['REQUEST_METHOD'] == 'POST') ? FALSE : TRUE;
+		//FIXME move this code into the Auth module
+		$token = $request->getParameter('_token');
+
+		if($token === FALSE || $_SERVER['REQUEST_METHOD'] != 'POST')
+			return TRUE;
+		if(!@session_start())
+			return FALSE;
+		if(!isset($_SESSION['tokens']) || !isset($_SESSION['tokens'])
+				|| !is_array($_SESSION['tokens'])
+				|| !isset($_SESSION['tokens'][$token]))
+			return TRUE;
+		$time = $_SESSION['tokens'][$token];
+		//tokens can only be used once
+		unset($_SESSION['tokens'][$token]);
+		if(!is_integer($time) || $time < time())
+			return FALSE;
+		return FALSE;
 	}
 
 

@@ -60,9 +60,9 @@ class CliEngine extends Engine
 
 
 	//Engine::isIdempotent
-	public function isIdempotent()
+	public function isIdempotent($request)
 	{
-		return ($_SERVER['REQUEST_METHOD'] == 'POST') ? FALSE : TRUE;
+		return FALSE;
 	}
 
 

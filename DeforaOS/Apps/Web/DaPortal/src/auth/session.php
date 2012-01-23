@@ -27,7 +27,7 @@ class SessionAuth extends Auth
 	//SessionAuth::match
 	protected function match(&$engine)
 	{
-		return session_start() ? 100 : 0;
+		return @session_start() ? 100 : 0;
 	}
 
 
