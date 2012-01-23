@@ -85,8 +85,6 @@ class UserModule extends Module
 	//UserModule::login
 	protected function login($engine, $request)
 	{
-		$error = TRUE;
-
 		$page = new Page;
 		$page->append('title', array('text' => 'User login'));
 		//process login
