@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/auth.php');
 require_once('./system/module.php');
 
 
@@ -43,6 +44,9 @@ class UserModule extends Module
 	{
 		if(($id = $request->getId()) !== FALSE)
 			return $this->display($engine, $request);
+		$cred = $engine->getCredentials();
+		if($cred->getUserId() != 0)
+			return $this->display($engine, new Request);
 		return $this->login($engine, $request);
 	}
 
@@ -51,6 +55,7 @@ class UserModule extends Module
 	protected function display($engine, $request)
 	{
 		//FIXME implement
+		return new Page;
 	}
 
 
@@ -69,11 +74,12 @@ class UserModule extends Module
 		//login successful
 		if($error === FALSE)
 		{
+			$r = new Request($engine);
+			$page->setProperty('location', $engine->getUrl($r));
 			$page->setProperty('refresh', 30);
 			$box = $page->append('vbox');
 			$text = 'Logging in progress, please wait...';
 			$box->append('label', array('text' => $text));
-			$r = new Request($engine);
 			$box = $box->append('hbox');
 			$text = 'If you are not redirected within 30 seconds,'
 				.' please ';
@@ -104,20 +110,17 @@ class UserModule extends Module
 
 	private function _login($engine, $username, $password)
 	{
-		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
 
-		if($cred->getUserId() != 0)
-			return 'You are already logged in';
 		//FIXME first obtain the password and apply salt if necessary
 		$res = $db->query($engine, $this->query_login, array(
 					'username' => $username,
 					'password' => md5($password)));
-		if(count($res) != 1)
+		if($res === FALSE || count($res) != 1)
 			return 'Invalid username or password';
 		$res = $res[0];
-		$cred = new AuthCredentials($res['user_id'], $res['group_id'],
-				$res['username'], $res['admin']);
+		$cred = new AuthCredentials($res['user_id'], $res['username'],
+				$res['group_id'], $res['admin'] == 1);
 		if($engine->setCredentials($cred) !== TRUE)
 			return 'Invalid username or password';
 		return FALSE;
@@ -127,7 +130,7 @@ class UserModule extends Module
 	//private
 	//properties
 	//queries
-	private $query_login = "SELECT user_id, username, admin
+	private $query_login = "SELECT user_id, group_id, username, admin
 		FROM daportal_user
 		WHERE username=:username AND password=:password
 		AND enabled='1'";

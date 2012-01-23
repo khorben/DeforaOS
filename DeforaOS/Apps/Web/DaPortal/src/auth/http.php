@@ -16,8 +16,10 @@
 
 
 
-//HttpAuth
 require_once('./system/auth.php');
+
+
+//HttpAuth
 class HttpAuth extends Auth
 {
 	//protected
@@ -25,19 +27,35 @@ class HttpAuth extends Auth
 	//HttpAuth::match
 	protected function match(&$engine)
 	{
+		if(!isset($_SERVER['SERVER_PROTOCOL']))
+			return 0;
+		switch($_SERVER['SERVER_PROTOCOL'])
+		{
+			case 'HTTP/1.1':
+			case 'HTTP/1.0':
+				break;
+			default:
+				return 0;
+		}
 		if(isset($_SERVER['PHP_AUTH_USER']))
 			return 100;
-		return 0;
+		return 1;
 	}
 
 
 	//HttpAuth::attach
 	protected function attach(&$engine)
 	{
+		global $config;
+
+		if(($realm = $config->getVariable('auth::basic', 'realm'))
+				=== FALSE)
+			$realm = 'DaPortal';
 		if(!isset($_SERVER['PHP_AUTH_USER']))
 		{
-			//FIXME let the realm be configureable
-			header('WWW-Authenticate: Basic realm="DaPortal"');
+			//FIXME only up getCredentials()?
+			header('WWW-Authenticate: Basic realm="'
+					.htmlentities($realm).'"');
 			header('HTTP/1.0 401 Unauthorized');
 			return TRUE;
 		}

@@ -144,7 +144,7 @@ abstract class Auth
 			$priority = $p;
 		}
 		closedir($dir);
-		if($ret != FALSE)
+		if($ret !== FALSE)
 		{
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' with priority '.$priority);

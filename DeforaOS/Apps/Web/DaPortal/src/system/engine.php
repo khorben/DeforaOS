@@ -48,7 +48,7 @@ abstract class Engine
 		}
 		if($this->auth === FALSE)
 			return new AuthCredentials;
-		return $this->auth->getCredentials();
+		return $this->auth->getCredentials($this);
 	}
 
 
@@ -68,6 +68,13 @@ abstract class Engine
 	public function getType()
 	{
 		return $this->type;
+	}
+
+
+	//Engine::getUrl
+	public function getUrl($request)
+	{
+		return FALSE;
 	}
 
 

@@ -441,6 +441,8 @@ class Html5Format extends Format
 				!== FALSE)
 			$this->renderMeta(2, 'Content-Type', 'text/html'
 					.'; charset='.$charset);
+		if(($location = $e->getProperty('location')) !== FALSE)
+			$this->renderMeta(2, 'Location', $location);
 		if(($refresh = $e->getProperty('refresh')) !== FALSE
 				&& is_numeric($refresh))
 			$this->renderMeta(2, 'Refresh', $refresh);

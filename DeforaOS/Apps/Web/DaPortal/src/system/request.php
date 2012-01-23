@@ -22,11 +22,14 @@ class Request
 	//public
 	//methods
 	//Request::Request
-	function __construct($engine, $module = FALSE, $action = FALSE,
+	function __construct($engine = FALSE, $module = FALSE, $action = FALSE,
 			$id = FALSE, $title = FALSE, $parameters = FALSE)
 	{
 		global $config;
 
+		if($engine === FALSE)
+			return;
+		//FIXME if $module === FALSE but $id !== FALSE then guess it?
 		if($module === FALSE)
 		{
 			if(($module = $config->getVariable('defaults',

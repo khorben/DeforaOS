@@ -51,31 +51,8 @@ class HttpEngine extends Engine
 	public function attach()
 	{
 		$this->setType('text/html');
-		$uri = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
-		if(isset($_SERVER['HTTP_HOST']))
-			$uri .= $_SERVER['HTTP_HOST'];
-		else if(isset($_SERVER['SERVER_NAME']))
-			$uri .= $_SERVER['SERVER_NAME'];
-		else
-			exit(-1);
-		$port = isset($_SERVER['SERVER_PORT'])
-			&& is_numeric($_SERVER['SERVER_PORT'])
-			? $_SERVER['SERVER_PORT']
-			: (isset($_SERVER['HTTPS']) ? 443 : 80);
-		if(isset($_SERVER['HTTPS']) && $port == 443)
-			$uri .= '/';
-		else if(!isset($_SERVER['HTTPS']) && $port == 80)
-			$uri .= '/';
-		else
-			$uri .= ':'.$port.'/';
-		if(!isset($_SERVER['SCRIPT_NAME']))
-			exit(-1);
-		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
-		$parent = $uri;
-		if(dirname($name) != '.')
-			$parent .= dirname($name);
-		$uri .= $name;
-		$this->log('LOG_DEBUG', 'URI is '.$uri);
+		$request = $this->getRequest();
+		$this->log('LOG_DEBUG', 'URL is '.$this->getUrl($request));
 		if(!isset($_SERVER['SCRIPT_NAME'])
 				|| substr($_SERVER['SCRIPT_NAME'], -10)
 				!= '/index.php')
@@ -127,7 +104,47 @@ class HttpEngine extends Engine
 	}
 
 
-	//Engine::isIdempotent
+	//HttpEngine::getUrl
+	public function getUrl($request)
+	{
+		if($request === FALSE)
+			return FALSE;
+		$url = $_SERVER['SERVER_NAME'];
+		if(isset($_SERVER['HTTPS']))
+		{
+			if($_SERVER['SERVER_PORT'] != 443)
+				$url .= ':'.$_SERVER['SERVER_PORT'];
+			$url = 'https://'.$url;
+		}
+		else if($_SERVER['SERVER_PORT'] != 80)
+			$url = 'http://'.$url.':'.$_SERVER['SERVER_PORT'];
+		else
+			$url = 'http://'.$url;
+		$url .= '/';
+		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
+		/* $parent = $uri;
+		if(($d = dirname($name)) != '.')
+			$parent .= $d; */
+		$url .= $name;
+		if(($module = $request->getModule()) !== FALSE)
+		{
+			$url .= '?module='.urlencode($module);
+			if(($action = $request->getAction()) !== FALSE)
+				$url .= '&action='.urlencode($action);
+			if(($id = $request->getId()) !== FALSE)
+				$url .= '&id='.urlencode($id);
+			if(($title = $request->getTitle()) !== FALSE)
+				$url .= '&id='.urlencode($title);
+			if(($args = $request->getParameters()) !== FALSE)
+				foreach($args as $key => $value)
+					$url .= '&'.urlencode($key)
+					.'='.urlencode($title);
+		}
+		return $url;
+	}
+
+
+	//HttpEngine::isIdempotent
 	public function isIdempotent()
 	{
 		return ($_SERVER['REQUEST_METHOD'] == 'POST') ? FALSE : TRUE;
@@ -145,6 +162,8 @@ class HttpEngine extends Engine
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			header('Content-Encoding: '.$charset); //XXX escape
+		if(($location = $page->getProperty('location')) !== FALSE)
+			header('Location: '.$location); //XXX escape
 		switch($type)
 		{
 			case 'text/html':

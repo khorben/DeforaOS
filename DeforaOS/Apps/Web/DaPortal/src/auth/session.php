@@ -16,8 +16,10 @@
 
 
 
-//SessionAuth
 require_once('./system/auth.php');
+
+
+//SessionAuth
 class SessionAuth extends Auth
 {
 	//protected
@@ -25,40 +27,58 @@ class SessionAuth extends Auth
 	//SessionAuth::match
 	protected function match(&$engine)
 	{
-		return 0;
+		return session_start() ? 100 : 0;
 	}
 
 
 	//SessionAuth::attach
 	protected function attach(&$engine)
 	{
-		session_start();
-		if(($db = $engine->getDatabase()) === FALSE)
-			return TRUE;
-		$uid = (isset($_SESSION['auth']['uid']))
-			? $_SESSION['auth']['uid'] : 0;
-		$query = 'SELECT admin FROM daportal_user'
-			." WHERE enabled='1' AND user_id=:uid";
-		$args = array('uid' => $uid);
-		if(($res = $db->query($engine, $query, $args)) === FALSE
-				|| count($res) != 1)
-			return TRUE;
-		$cred = $this->getCredentials();
-		$cred->setUserId($uid, $res[0]['admin']);
-		$cred->setGroupId($gid);
-		parent::setCredentials($cred);
-		return TRUE;
 	}
 
 
 	//public
-	//methods
+	//accessors
+	//SessionAuth::getCredentials
+	public function getCredentials(&$engine)
+	{
+		@session_start();
+		if(!isset($_SESSION['auth']['uid']))
+			return parent::getCredentials();
+		if($_SESSION['auth']['uid'] == 0)
+			return parent::getCredentials();
+		if(($db = $engine->getDatabase()) === FALSE)
+			return parent::getCredentials();
+		$uid = $_SESSION['auth']['uid'];
+		$args = array('uid' => $uid);
+		if(($res = $db->query($engine, $this->query_credentials,
+						$args)) === FALSE
+				|| count($res) != 1)
+			return parent::getCredentials();
+		$res = $res[0];
+		//FIXME check if $admin is set properly (eg not always)
+		$cred = new AuthCredentials($res['user_id'], $res['username'],
+				$res['group_id'], $res['admin'] == 1);
+		parent::setCredentials($cred);
+		return parent::getCredentials();
+	}
+
+
+	//SessionAuth::setCredentials
 	public function setCredentials($credentials)
 	{
+		@session_start();
 		$_SESSION['auth']['uid'] = $credentials->getUserId();
-		$_SESSION['auth']['gid'] = $credentials->getGroupId();
-		parent::setCredentials($credentials);
+		return parent::setCredentials($credentials);
 	}
+
+
+	//private
+	//properties
+	//queries
+	private $query_credentials = "SELECT user_id, group_id, username, admin
+		FROM daportal_user
+		WHERE user_id=:uid AND enabled='1'";
 }
 
 ?>
