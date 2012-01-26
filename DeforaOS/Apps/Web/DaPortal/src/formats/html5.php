@@ -210,8 +210,10 @@ class Html5Format extends Format
 		$this->renderTabs($level);
 		$this->tagOpen('div', 'dialog '.$type);
 		$this->renderTabs($level + 1);
-		if($title !== FALSE)
-			$this->tag('div', 'title', FALSE, FALSE, $title);
+		$box = new PageElement('hbox');
+		$box->append('image', array('stock' => $type));
+		$box->append('title', array('text' => $title));
+		$this->renderElement($box, $level + 1);
 		$this->renderTabs($level + 1);
 		$this->tagOpen('div', 'message', FALSE, FALSE,
 				$e->getProperty('text'));
@@ -568,6 +570,7 @@ class Html5Format extends Format
 	{
 		$this->renderTabs($level + 1);
 		$this->tagOpen('div', 'header');
+		$this->tag('span', 'detail', FALSE, FALSE, '');
 		foreach($columns as $c)
 			$this->tag('span', "detail $c", FALSE, FALSE,
 					ucfirst($c));
@@ -577,6 +580,8 @@ class Html5Format extends Format
 
 	private function renderTreeviewRows($e, $columns, $level)
 	{
+		$id = 1;
+
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
@@ -584,6 +589,10 @@ class Html5Format extends Format
 			if($c->getType() != 'row')
 				continue;
 			$this->tagOpen('div', 'row');
+			$this->tagOpen('span', 'detail');
+			$this->tag('input', FALSE, 'check_'.$id, array(
+						'type' => 'checkbox'));
+			$this->tagClose('span');
 			$properties = $c->getProperties();
 			foreach($properties as $k => $v)
 			{
@@ -592,12 +601,14 @@ class Html5Format extends Format
 					print('detail ');
 				print($this->escapeAttribute($k).'">');
 				if(is_string($v))
-					print($this->escape($v));
+					$this->tagOpen('label', FALSE, FALSE,
+							array('for' => 'check_'.$id), $v);
 				else
 					$this->renderElement($v);
 				$this->tagClose('span');
 			}
 			$this->tagClose('div');
+			$id++;
 		}
 	}
 
