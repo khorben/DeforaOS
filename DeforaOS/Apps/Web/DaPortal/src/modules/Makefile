@@ -1,4 +1,4 @@
-SUBDIRS	= search top user
+SUBDIRS	= content search top user wiki
 
 
 all: subdirs

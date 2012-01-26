@@ -504,6 +504,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/content/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/content/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/content/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/search/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/search/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/search/project.conf \
@@ -513,6 +516,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modules/user/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/user/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/user/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/wiki/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/wiki/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/wiki/project.conf \
 		$(PACKAGE)-$(VERSION)/src/system/Makefile \
 		$(PACKAGE)-$(VERSION)/src/system/auth.php \
 		$(PACKAGE)-$(VERSION)/src/system/config.php \
