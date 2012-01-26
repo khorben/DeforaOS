@@ -143,7 +143,8 @@ class ContentModule extends Module
 		$vbox = $page->append('vbox');
 		$vbox->append('title', array('text' => $content['title']));
 		$hbox = $vbox->append('hbox');
-		$hbox->append('image', array('stock' => 'content'));
+		$hbox->append('image', array('stock' => 'module '
+					.$content['module'].' content'));
 		$hbox->append('label', array('text' => $content['text']));
 		$vbox->append('button', array('stock' => 'read',
 					'text' => 'Read', 'request' => $r));
