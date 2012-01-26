@@ -37,6 +37,8 @@ abstract class Module
 
 		if(isset($ids[$module]))
 			return $ids[$module];
+		if($engine === FALSE)
+			return FALSE;
 		$db = $engine->getDatabase();
 		$query = Module::$query_id;
 		$args = array('name' => $module);
