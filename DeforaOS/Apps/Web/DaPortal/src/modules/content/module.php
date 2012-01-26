@@ -31,6 +31,8 @@ class ContentModule extends Module
 		{
 			case 'admin':
 				return $this->admin($engine);
+			case 'list':
+				return $this->_list($engine, $request);
 			case 'preview':
 				return $this->preview($engine,
 						$request->getId(),
@@ -66,6 +68,8 @@ class ContentModule extends Module
 			return $page;
 		}
 		$title = $this->module_name.' administration';
+		$page->setProperty('title', $title);
+		$element = $page->append('title');
 		$db = $engine->getDatabase();
 		$query = $this->query_list_admin;
 		if($this->module_id !== FALSE)
@@ -75,8 +79,6 @@ class ContentModule extends Module
 			//FIXME return a dialog instead
 			return $engine->log('LOG_ERR',
 					'Unable to list contents');
-		$page->setProperty('title', $title);
-		$element = $page->append('title');
 		$element->setProperty('text', $title);
 		$treeview = $page->append('treeview');
 		$treeview->setProperty('columns', array('title', 'enabled',
@@ -99,23 +101,61 @@ class ContentModule extends Module
 		if(($id = $request->getId()) !== FALSE)
 			return $this->_display($engine, $id,
 					$request->getTitle());
-		//FIXME output the default page
-		return new Page;
+		return $this->_list($engine, $request);
+	}
+
+
+	//ContentModule::list
+	protected function _list($engine, $request)
+	{
+		$page = new Page;
+		$page->append('title', array('text' => $this->module_name));
+		//FIXME really implement
+		$db = $engine->getDatabase();
+		$query = $this->query_list;
+		if($this->module_id !== FALSE)
+			$query .= " AND daportal_module.module_id='"
+				.$this->module_id."'";
+		if(($res = $db->query($engine, $query)) === FALSE)
+			//FIXME return a dialog instead
+			return $engine->log('LOG_ERR',
+					'Unable to list contents');
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+			$page->appendElement($this->preview($engine,
+						$res[$i]['id']));
+		return $page;
 	}
 
 
 	//ContentModule::preview
-	protected function preview($engine, $id, $title)
+	protected function preview($engine, $id, $title = FALSE)
 	{
-		//FIXME really implement
-		return $this->_display($engine, $id, $title);
+		$page = new Page;
+		if(($content = $this->_get($engine, $id, $title)) === FALSE)
+		{
+			$page->append('dialog', array('title' => 'error',
+						'text' => 'Could not fetch content'));
+			return $page;
+		}
+		$r = new Request($engine, $content['module'], FALSE,
+				$content['id']);
+		$page->setProperty('text', $content['title']);
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('text' => $content['title']));
+		$hbox = $vbox->append('hbox');
+		$hbox->append('image', array('stock' => 'content'));
+		$hbox->append('label', array('text' => $content['text']));
+		$vbox->append('button', array('stock' => 'read',
+					'text' => 'Read', 'request' => $r));
+		return $page;
 	}
 
 
 	//private
 	//properties
-	private $query_get = "SELECT name, daportal_user.username AS username,
-		title, content AS text
+	private $query_get = "SELECT daportal_module.name AS module,
+		daportal_user.username AS username,
+		daportal_content.content_id AS id, title, content AS text
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -123,6 +163,13 @@ class ContentModule extends Module
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND content_id=:id";
+	private $query_list = "SELECT content_id AS id
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
 	private $query_list_admin = "SELECT content_id AS id, timestamp AS date,
 		name AS module, daportal_user.user_id AS user_id, username,
 		title, daportal_content.enabled AS enabled
@@ -135,7 +182,7 @@ class ContentModule extends Module
 
 	//methods
 	//ContentModule::_display
-	private function _display($engine, $id, $title)
+	private function _display($engine, $id, $title = FALSE)
 	{
 		if($id === FALSE)
 			return $this->default();
@@ -151,7 +198,7 @@ class ContentModule extends Module
 
 
 	//ContentModule::_get
-	private function _get($engine, $id, $title)
+	private function _get($engine, $id, $title = FALSE)
 	{
 		if($id === FALSE)
 			return FALSE;
@@ -161,7 +208,7 @@ class ContentModule extends Module
 		if($title !== FALSE)
 		{
 			$query .= ' AND title LIKE :title';
-			$args = array('title' => str_replace('-', '_', $title));
+			$args['title'] = str_replace('-', '_', $title);
 		}
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
