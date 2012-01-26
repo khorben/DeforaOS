@@ -1,4 +1,4 @@
-SUBDIRS	= css icons js themes
+SUBDIRS	= Rodent gnome
 
 
 all: subdirs

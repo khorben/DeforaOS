@@ -16,6 +16,10 @@
 
 
 /* global */
+button {
+	margin:				2px;
+}
+
 div.buttonbox > button, div.buttonbox > a > button {
 	margin:				2px;
 	padding:			2px;
@@ -78,8 +82,32 @@ div.messagebox {
 	padding:			4px;
 }
 
+div.vbox {
+	clear:				both;
+}
+
+div.vbox:after {
+	clear:				left;
+	content:			"";
+	display:			block;
+}
+
+div.vbox > div.pack {
+	padding-bottom:			2px;
+	padding-top:			2px;
+	clear:				left;
+}
+
+div.vbox > div.pack:first-child {
+	padding-top:			0;
+}
+
 .title {
 	font-weight:			bold;
+}
+
+form div.checkbox input[type="checkbox"] {
+	vertical-align:			text-bottom;
 }
 
 form div.entry {
@@ -144,22 +172,6 @@ form.treeview.preview > div.rom span.detail.preview {
 	display:			block;
 }
 
-div.vbox {
-	clear:				both;
-}
-
-div.vbox:after {
-	clear:				left;
-	content:			"";
-	display:			block;
-}
-
-div.vbox > div.pack {
-	padding-bottom:			2px;
-	padding-top:			2px;
-	clear:				left;
-}
-
-div.vbox > div.pack:first-child {
-	padding-top:			0;
+img {
+	border-width:			0;
 }

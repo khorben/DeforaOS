@@ -32,8 +32,22 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/css/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/data/css/Makefile \
+		$(PACKAGE)-$(VERSION)/data/css/icons.css \
 		$(PACKAGE)-$(VERSION)/data/css/index.php \
 		$(PACKAGE)-$(VERSION)/data/css/project.conf \
+		$(PACKAGE)-$(VERSION)/data/icons/Makefile \
+		$(PACKAGE)-$(VERSION)/data/icons/Rodent.css \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome.css \
+		$(PACKAGE)-$(VERSION)/data/icons/index.php \
+		$(PACKAGE)-$(VERSION)/data/icons/project.conf \
+		$(PACKAGE)-$(VERSION)/data/icons/Rodent/Makefile \
+		$(PACKAGE)-$(VERSION)/data/icons/Rodent/index.php \
+		$(PACKAGE)-$(VERSION)/data/icons/Rodent/project.conf \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome/Makefile \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome/16x16.css \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome/48x48.css \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome/index.php \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome/project.conf \
 		$(PACKAGE)-$(VERSION)/data/js/Makefile \
 		$(PACKAGE)-$(VERSION)/data/js/index.php \
 		$(PACKAGE)-$(VERSION)/data/js/project.conf \
