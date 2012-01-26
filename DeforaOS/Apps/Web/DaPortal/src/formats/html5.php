@@ -47,6 +47,7 @@ class Html5Format extends Format
 	public function render(&$engine, $page, $filename = FALSE)
 	{
 		$this->ids = array();
+		$this->engine = $engine;
 		//FIXME also track tags are properly closed
 
 		//FIXME ignore $filename for the moment
@@ -123,9 +124,16 @@ class Html5Format extends Format
 
 	private function renderButton($e, $level)
 	{
-		$type = 'button';
-		$class = $e->getProperty('class');
-		switch($e->getProperty('type'))
+		if(($r = $e->getProperty('request')) !== FALSE)
+			$url = $this->engine->getUrl($r, FALSE);
+		else
+			$url = $e->getProperty('url');
+		if($url !== FALSE)
+			$this->tagOpen('a', FALSE, FALSE, array(
+						'href' => $url));
+		if(($class = $e->getProperty('stock')) !== FALSE)
+			$class = "stock16 $class";
+		switch(($type = $e->getProperty('type')))
 		{
 			case 'button':
 				break;
@@ -133,7 +141,7 @@ class Html5Format extends Format
 			case 'submit':
 				$type = $e->getProperty('type');
 				if($class === FALSE)
-					$class = $type;
+					$class = "stock16 $type";
 				break;
 			default:
 				$type = 'button';
@@ -143,6 +151,8 @@ class Html5Format extends Format
 		$this->renderChildren($e, $level);
 		print($this->escape($e->getProperty('text')));
 		$this->tagClose('button');
+		if($url !== FALSE)
+			$this->tagClose('a');
 	}
 
 
@@ -346,8 +356,22 @@ class Html5Format extends Format
 
 	private function renderImage($e, $level)
 	{
-		$this->tag('img', FALSE, FALSE, array(
-					'src' => $e->getProperty('source')));
+		$size = 48;
+		$class = FALSE;
+		$attributes = array('alt' => $e->getProperty('text'));
+
+		if(($title = $e->getProperty('title')) !== FALSE)
+			$attributes['title'] = $title;
+		if(($stock = $e->getProperty('stock')) !== FALSE)
+		{
+			if(($s = $e->getProperty('size')) !== FALSE
+					&& is_numeric($s))
+				$size = $s;
+			$class = "stock$size $stock";
+		}
+		else
+			$attributes['src'] = $e->getProperty('source');
+		$this->tag('img', $class, $e->getProperty('id'), $attributes);
 	}
 
 
@@ -376,39 +400,14 @@ class Html5Format extends Format
 
 	private function renderLink($e, $level)
 	{
-		print('<a');
+		$attributes = array();
 		if(($a = $e->getProperty('name')) !== FALSE)
-			print(' name="'.$this->escapeAttribute($a).'"');
+			$attributes['name'] = $a;
 		if(($r = $e->getProperty('request')) !== FALSE)
-		{
-			//FIXME properly output arguments
-			print(' href="index.php');
-			$sep = $this->escapeAttribute('?');
-			if(($m = $r->getModule()) !== FALSE)
-			{
-				print($sep.'module='.$this->escapeURI($m));
-				$sep = $this->escapeAttribute('&');
-			}
-			if(($a = $r->getAction()) !== FALSE)
-			{
-				print($sep.'action='.$this->escapeURI($a));
-				$sep = $this->escapeAttribute('&');
-			}
-			if(($id = $r->getId()) !== FALSE)
-			{
-				print($sep.'id='.$this->escapeURI($id));
-				$sep = $this->escapeAttribute('&');
-			}
-			if(($t = $r->getTitle()) !== FALSE)
-			{
-				print($sep.'title='.$this->escapeURI($t));
-				$sep = $this->escapeAttribute('&');
-			}
-			print('"');
-		}
+			$attributes['href'] = $this->engine->getUrl($r, FALSE);
 		else if(($u = $e->getProperty('url')) !== FALSE)
-			print(' href="'.$this->escapeAttribute($u).'"');
-		print('>');
+			$attributes['href'] = $u;
+		$this->tagOpen('a', FALSE, $e->getProperty('id'), $attributes);
 		$this->renderChildren($e, $level);
 		print($this->escape($e->getProperty('text')));
 		$this->tagClose('a');
@@ -666,6 +665,7 @@ class Html5Format extends Format
 
 	//properties
 	private $ids;
+	private $engine = FALSE;
 }
 
 ?>
