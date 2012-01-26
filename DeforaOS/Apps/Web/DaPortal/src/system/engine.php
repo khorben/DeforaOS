@@ -72,7 +72,7 @@ abstract class Engine
 
 
 	//Engine::getUrl
-	public function getUrl($request)
+	public function getUrl($request, $absolute = TRUE)
 	{
 		return FALSE;
 	}

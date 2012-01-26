@@ -105,27 +105,29 @@ class HttpEngine extends Engine
 
 
 	//HttpEngine::getUrl
-	public function getUrl($request)
+	public function getUrl($request, $absolute = TRUE)
 	{
 		if($request === FALSE)
 			return FALSE;
-		$url = $_SERVER['SERVER_NAME'];
-		if(isset($_SERVER['HTTPS']))
-		{
-			if($_SERVER['SERVER_PORT'] != 443)
-				$url .= ':'.$_SERVER['SERVER_PORT'];
-			$url = 'https://'.$url;
-		}
-		else if($_SERVER['SERVER_PORT'] != 80)
-			$url = 'http://'.$url.':'.$_SERVER['SERVER_PORT'];
-		else
-			$url = 'http://'.$url;
-		$url .= '/';
 		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
-		/* $parent = $uri;
-		if(($d = dirname($name)) != '.')
-			$parent .= $d; */
-		$url .= $name;
+		if($absolute)
+		{
+			$url = $_SERVER['SERVER_NAME'];
+			if(isset($_SERVER['HTTPS']))
+			{
+				if($_SERVER['SERVER_PORT'] != 443)
+					$url .= ':'.$_SERVER['SERVER_PORT'];
+				$url = 'https://'.$url;
+			}
+			else if($_SERVER['SERVER_PORT'] != 80)
+				$url = 'http://'.$url.':'
+					.$_SERVER['SERVER_PORT'];
+			else
+				$url = 'http://'.$url;
+			$url .= '/'.$name;
+		}
+		else
+			$url = basename($name);
 		if(($module = $request->getModule()) !== FALSE)
 		{
 			$url .= '?module='.urlencode($module);
