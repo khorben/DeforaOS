@@ -504,9 +504,15 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/article/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/article/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/article/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/content/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/content/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/content/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/news/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/news/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/news/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/search/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/search/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/search/project.conf \
