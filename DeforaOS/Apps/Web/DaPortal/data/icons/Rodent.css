@@ -26,6 +26,10 @@
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_cancel.png');
 }
 
+.stock16.error, .stock48.error {
+	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_dialog_error.png');
+}
+
 .stock16.logout, .stock48.logout {
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_logout.png');
 }

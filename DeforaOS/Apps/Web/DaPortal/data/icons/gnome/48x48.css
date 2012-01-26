@@ -19,6 +19,10 @@
 	background-image:		url('gnome-icon-theme/48x48/actions/gtk-cancel.png');
 }
 
+.stock48.error {
+	background-image:		url('gnome-icon-theme/48x48/status/dialog-error.png');
+}
+
 .stock48.logout {
 	background-image:		url('gnome-icon-theme/48x48/actions/gnome-logout.png');
 }
