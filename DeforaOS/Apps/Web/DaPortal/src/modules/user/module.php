@@ -119,6 +119,9 @@ class UserModule extends Module
 					'hidden' => TRUE,
 					'name' => 'password',
 					'text' => 'Password: '));
+		$form->append('button', array('text' => 'Cancel',
+					'stock' => 'cancel',
+					'request' => new Request($engine)));
 		$button = $form->append('button', array('type' => 'submit',
 					'text' => 'Login'));
 		return $page;
