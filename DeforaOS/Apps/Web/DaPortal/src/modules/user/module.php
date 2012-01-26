@@ -74,9 +74,7 @@ class UserModule extends Module
 		$r = new Request($engine, 'user', 'logout');
 		$link = new PageElement('link', array('text' => 'Logout',
 					'request' => $r));
-		//FIXME use a stock icon instead
-		$icon = new PageElement('image', array('source'
-					=> 'icons/gnome/48x48/logout.png'));
+		$icon = new PageElement('image', array('stock' => 'logout'));
 		$view->append('row', array('icon' => $icon, 'label' => $link));
 		return $page;
 	}
@@ -168,8 +166,23 @@ class UserModule extends Module
 						'text' => 'Back to the site'));
 			return $page;
 		}
-		//process logout
 		$r = new Request($engine, 'user', 'logout');
+		if($engine->isIdempotent($request))
+		{
+			$form = $page->append('form', array(
+						'request' => $r));
+			$vbox = $form->append('vbox');
+			$vbox->append('label', array('text' => 'Do you really want to logout?'));
+			$r = new Request($engine, 'user');
+			$form->append('button', array('text' => 'Cancel',
+						'stock' => 'cancel',
+						'request' => $r));
+			$form->append('button', array('text' => 'Logout',
+						'stock' => 'logout',
+						'type' => 'submit'));
+			return $page;
+		}
+		//process logout
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
