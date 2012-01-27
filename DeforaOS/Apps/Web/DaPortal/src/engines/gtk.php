@@ -95,7 +95,32 @@ class GtkEngine extends CliEngine
 
 	private function renderButton($e)
 	{
-		return new GtkButton($e->getProperty('text'));
+		switch(($stock = $e->getProperty('stock')))
+		{
+			case 'about':
+				$stock = Gtk::STOCK_ABOUT;
+				break;
+			case 'apply':
+				$stock = Gtk::STOCK_APPLY;
+				break;
+			case 'cancel':
+				$stock = Gtk::STOCK_CANCEL;
+				break;
+			case 'close':
+				$stock = Gtk::STOCK_CLOSE;
+				break;
+			default:
+				$stock = FALSE;
+				break;
+		}
+		if($stock !== FALSE)
+			$ret = new GtkButton::new_from_stock($stock);
+		else
+			$ret = new GtkButton($e->getProperty('text'));
+		if(($request = $e->getProperty('request')) !== FALSE)
+			$ret->connect_simple('clicked', array($this,
+						'on_button_clicked'), $request);
+		return $ret;
 	}
 
 	private function renderCheckbox($e)
