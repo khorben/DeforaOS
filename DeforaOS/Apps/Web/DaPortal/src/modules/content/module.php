@@ -121,7 +121,7 @@ class ContentModule extends Module
 			return $engine->log('LOG_ERR',
 					'Unable to list contents');
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-			$page->appendElement($this->preview($engine,
+			$page->appendElement($this->_preview($engine,
 						$res[$i]['id']));
 		return $page;
 	}
@@ -131,23 +131,7 @@ class ContentModule extends Module
 	protected function preview($engine, $id, $title = FALSE)
 	{
 		$page = new Page;
-		if(($content = $this->_get($engine, $id, $title)) === FALSE)
-		{
-			$page->append('dialog', array('title' => 'error',
-						'text' => 'Could not fetch content'));
-			return $page;
-		}
-		$r = new Request($engine, $content['module'], FALSE,
-				$content['id']);
-		$page->setProperty('text', $content['title']);
-		$vbox = $page->append('vbox');
-		$vbox->append('title', array('text' => $content['title']));
-		$hbox = $vbox->append('hbox');
-		$hbox->append('image', array('stock' => 'module '
-					.$content['module'].' content'));
-		$hbox->append('label', array('text' => $content['text']));
-		$vbox->append('button', array('stock' => 'read',
-					'text' => 'Read', 'request' => $r));
+		$page->appendElement($this->_preview($engine, $id, $title));
 		return $page;
 	}
 
@@ -215,6 +199,28 @@ class ContentModule extends Module
 				|| count($res) != 1)
 			return FALSE;
 		return $res[0];
+	}
+
+	
+	//ContentModule::_preview
+	private function _preview($engine, $id, $title = FALSE)
+	{
+		if(($content = $this->_get($engine, $id, $title)) === FALSE)
+			return new PageElement('dialog', array(
+						'title' => 'error',
+						'text' => 'Could not fetch content'));
+		$page = new PageElement('vbox');
+		$r = new Request($engine, $content['module'], FALSE,
+				$content['id']);
+		$page->setProperty('text', $content['title']);
+		$page->append('title', array('text' => $content['title']));
+		$hbox = $page->append('hbox');
+		$hbox->append('image', array('stock' => 'module '
+					.$content['module'].' content'));
+		$hbox->append('label', array('text' => $content['text']));
+		$page->append('button', array('stock' => 'read',
+					'text' => 'Read', 'request' => $r));
+		return $page;
 	}
 }
 
