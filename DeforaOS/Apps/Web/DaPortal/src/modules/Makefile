@@ -1,4 +1,4 @@
-SUBDIRS	= article content news search top user wiki
+SUBDIRS	= article blog content news search top user wiki
 
 
 all: subdirs

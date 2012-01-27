@@ -507,6 +507,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modules/article/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/article/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/article/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/blog/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/blog/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/blog/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/content/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/content/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/content/project.conf \
