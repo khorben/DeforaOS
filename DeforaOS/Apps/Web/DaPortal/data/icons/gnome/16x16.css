@@ -15,6 +15,18 @@
 
 
 
+.stock16.about {
+	background-image:		url('gnome-icon-theme/16x16/actions/gtk-about.png');
+}
+
+.stock16.add {
+	background-image:		url('gnome-icon-theme/16x16/actions/gtk-add.png');
+}
+
+.stock16.admin {
+	background-image:		url('gnome-icon-theme/16x16/actions/gtk-admin.png');
+}
+
 .stock16.cancel {
 	background-image:		url('gnome-icon-theme/16x16/actions/gtk-cancel.png');
 }
@@ -25,4 +37,8 @@
 
 .stock16.logout {
 	background-image:		url('gnome-icon-theme/16x16/actions/gnome-logout.png');
+}
+
+.stock16.user {
+	background-image:		url('gnome-icon-theme/16x16/apps/user-info.png');
 }
