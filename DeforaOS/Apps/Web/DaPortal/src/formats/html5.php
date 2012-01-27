@@ -282,10 +282,10 @@ class Html5Format extends Format
 		$value = $e->getProperty('value');
 		$type = ($e->getProperty('hidden') === TRUE) ? 'password'
 			: 'text';
-		print('<input type="'.$type.'"'
-				.' name="'.$this->escapeAttribute($name).'"'
-				.' value="'.$this->escapeAttribute($value).'"'
-				.'/>');
+		$this->tag('input', $e->getProperty('class'),
+				$e->getProperty('id'),
+				array('type' => $type,
+					'name' => $name, 'value' => $value));
 		$this->tagClose('div');
 	}
 
@@ -409,7 +409,7 @@ class Html5Format extends Format
 			$attributes['href'] = $u;
 		$this->tagOpen('a', FALSE, $e->getProperty('id'), $attributes);
 		$this->renderChildren($e, $level);
-		print($this->escape($e->getProperty('text')));
+		print($this->escapeText($e->getProperty('text')));
 		$this->tagClose('a');
 	}
 
@@ -487,11 +487,8 @@ class Html5Format extends Format
 	private function renderStatusbar($e, $level)
 	{
 		$this->renderTabs($level);
-		$this->tagOpen('div', 'statusbar', $e->getProperty('id'));
-		if(($text = $e->getProperty('text')) !== FALSE)
-			print($this->escape($text));
-		$this->renderTabs($level);
-		$this->tagClose('div');
+		$this->tag('div', 'statusbar', $e->getProperty('id'), FALSE,
+				$e->getProperty('text'));
 	}
 
 
