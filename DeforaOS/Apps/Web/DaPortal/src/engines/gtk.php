@@ -17,6 +17,8 @@
 
 
 require_once('./engines/cli.php');
+require_once('./system/page.php');
+require_once('./system/template.php');
 
 
 //GtkEngine
@@ -32,27 +34,108 @@ class GtkEngine extends CliEngine
 	private $fontLink;
 
 
+	//public
 	//methods
-	//essential
-	//GtkEngine::~GtkEngine
-	public function __destruct()
+	//useful
+	//GtkEngine::render
+	public function render($page)
 	{
-		if(count($this->windows) == 0)
-			return;
+		global $config;
+
+		if(($template = Template::attachDefault($this)) === FALSE)
+			return FALSE;
+		if(($page = $template->render($this, $page)) === FALSE)
+			return FALSE;
+		$this->renderElement($page);
 		//enter the main loop
 		Gtk::main();
 		foreach($this->windows as $w)
 			$w->destroy();
+		return FALSE;
 	}
 
-
-	//public
-	//useful
-	//GtkEngine::render
-	public function render($element)
+	private function renderButton($e)
 	{
-		$element->setProperty('Gtk::expand', FALSE);
-		$element->setProperty('Gtk::fill', TRUE);
+		//FIXME dedicate a helper function for this
+		switch(($stock = $e->getProperty('stock')))
+		{
+			case 'about':
+				$stock = Gtk::STOCK_ABOUT;
+				break;
+			case 'add':
+				$stock = Gtk::STOCK_ADD;
+				break;
+			case 'apply':
+				$stock = Gtk::STOCK_APPLY;
+				break;
+			case 'cancel':
+				$stock = Gtk::STOCK_CANCEL;
+				break;
+			case 'close':
+				$stock = Gtk::STOCK_CLOSE;
+				break;
+			default:
+				if($e->getProperty('type') == 'submit')
+					$stock = Gtk::STOCK_OK;
+				else
+					$stock = FALSE;
+				break;
+		}
+		if($stock !== FALSE)
+			$ret = GtkButton::new_from_stock($stock);
+		else
+			$ret = new GtkButton($e->getProperty('text'));
+		if(($request = $e->getProperty('request')) !== FALSE)
+			$ret->connect_simple('clicked', array($this,
+						'on_button_clicked'), $request);
+		return $ret;
+	}
+
+	private function renderCheckbox($e)
+	{
+		return new GtkCheckButton($e->getProperty('text'));
+	}
+
+	private function renderDialog($e)
+	{
+		if(($type = $e->getProperty('type')) === FALSE)
+			$type = 'error';
+		if(($title = $e->getProperty('title')) === FALSE)
+			$title = ucfirst($type);
+		switch($type)
+		{
+			case 'error':
+				$type = Gtk::MESSAGE_ERROR;
+				break;
+			case 'question':
+				$type = Gtk::MESSAGE_QUESTION;
+				break;
+			case 'warning':
+				$type = Gtk::MESSAGE_WARNING;
+				break;
+			default:
+				$type = Gtk::MESSAGE_INFO;
+				break;
+		}
+		$dialog = new GtkMessageDialog(NULL, 0, $type,
+				Gtk::BUTTONS_OK, $title);
+		//XXX why is this necessary?
+		$dialog->set_title($title);
+		if(($text = $e->getProperty('text')) === FALSE)
+			$text = '';
+		$dialog->set_markup('<b>'.str_replace('<', '&lt;', $title)
+				."</b>\n\n".str_replace('<', '&lt;', $text));
+		$dialog->connect_simple('delete-event', array($this,
+					'on_window_delete_event'), $dialog);
+		$dialog->connect_simple('response', array($this,
+					'on_window_delete_event'), $dialog);
+		$this->windows[] = $dialog;
+		$dialog->show();
+		return $dialog;
+	}
+
+	private function renderElement($element)
+	{
 		switch($element->getType())
 		{
 			case 'button':
@@ -93,73 +176,6 @@ class GtkEngine extends CliEngine
 		return FALSE;
 	}
 
-	private function renderButton($e)
-	{
-		switch(($stock = $e->getProperty('stock')))
-		{
-			case 'about':
-				$stock = Gtk::STOCK_ABOUT;
-				break;
-			case 'apply':
-				$stock = Gtk::STOCK_APPLY;
-				break;
-			case 'cancel':
-				$stock = Gtk::STOCK_CANCEL;
-				break;
-			case 'close':
-				$stock = Gtk::STOCK_CLOSE;
-				break;
-			default:
-				$stock = FALSE;
-				break;
-		}
-		if($stock !== FALSE)
-			$ret = new GtkButton::new_from_stock($stock);
-		else
-			$ret = new GtkButton($e->getProperty('text'));
-		if(($request = $e->getProperty('request')) !== FALSE)
-			$ret->connect_simple('clicked', array($this,
-						'on_button_clicked'), $request);
-		return $ret;
-	}
-
-	private function renderCheckbox($e)
-	{
-		return new GtkCheckButton($e->getProperty('text'));
-	}
-
-	private function renderDialog($e)
-	{
-		switch(($title = $e->getProperty('title')))
-		{
-			case 'Error':
-				$type = Gtk::MESSAGE_ERROR;
-				break;
-			case 'Question':
-				$type = Gtk::MESSAGE_QUESTION;
-				break;
-			case 'Warning':
-				$type = Gtk::MESSAGE_WARNING;
-				break;
-			case FALSE:
-				$title = 'Dialog';
-			default:
-				$type = Gtk::MESSAGE_INFO;
-				break;
-		}
-		$dialog = new GtkMessageDialog(NULL, 0, $type,
-				Gtk::BUTTONS_OK, $title);
-		if(($text = $e->getProperty('text')) === FALSE)
-			$text = '';
-		$dialog->set_markup('<b>'.str_replace('<', '&lt;', $title)
-				."</b>\n\n".str_replace('<', '&lt;', $text));
-		$dialog->connect_simple('delete-event', array($this,
-					'on_window_delete_event'), $dialog);
-		$this->windows[] = $dialog;
-		$dialog->show();
-		return $dialog;
-	}
-
 	private function renderEntry($e)
 	{
 		$ret = new GtkHbox(FALSE, 4);
@@ -179,7 +195,7 @@ class GtkEngine extends CliEngine
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if(($widget = $this->render($c)) === FALSE)
+			if(($widget = $this->renderElement($c)) === FALSE)
 				continue;
 			$ret->pack_start($widget, FALSE, TRUE, 0);
 		}
@@ -202,7 +218,7 @@ class GtkEngine extends CliEngine
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if(($widget = $this->render($c)) === FALSE)
+			if(($widget = $this->renderElement($c)) === FALSE)
 				continue;
 			$expand = $c->getProperty('Gtk::expand', FALSE);
 			$fill = $c->getProperty('Gtk::fill', TRUE);
@@ -210,6 +226,8 @@ class GtkEngine extends CliEngine
 				$ret->pack_end($widget, $expand, $fill, 4);
 			else
 				$ret->pack_start($widget, $expand, $fill, 4);
+			if($c->getType() == 'menubar')
+				$ret->reorder_child($widget, 0);
 		}
 		return $ret;
 	}
@@ -273,7 +291,7 @@ class GtkEngine extends CliEngine
 		{
 			if($c->getType() != 'menuitem')
 				continue;
-			if(($menuitem = $this->render($c)) === FALSE)
+			if(($menuitem = $this->renderMenuitem($c)) === FALSE)
 				continue;
 			$ret->append($menuitem);
 		}
@@ -282,8 +300,24 @@ class GtkEngine extends CliEngine
 
 	private function renderMenuitem($e)
 	{
-		$ret = new GtkMenuItem($e->getProperty('text'));
 		//FIXME implement images...
+		$ret = new GtkMenuItem($e->getProperty('text'));
+		if(($request = $e->getProperty('request')) !== FALSE)
+			$ret->connect_simple('activate', array($this,
+						'on_button_clicked'), $request);
+		if(($children = $e->getChildren($e)) !== FALSE
+				&& count($children))
+		{
+			$menu = new GtkMenu;
+			foreach($children as $c)
+			{
+				if($c->getType() != 'menuitem')
+					continue;
+				$menuitem = $this->renderMenuitem($c);
+				$menu->append($menuitem);
+			}
+			$ret->set_submenu($menu);
+		}
 		return $ret;
 	}
 
@@ -348,7 +382,7 @@ class GtkEngine extends CliEngine
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if(($widget = $this->render($c)) === FALSE)
+			if(($widget = $this->renderElement($c)) === FALSE)
 				continue;
 			$expand = $c->getProperty('Gtk::expand', FALSE);
 			$fill = $c->getProperty('Gtk::fill', TRUE);
@@ -356,6 +390,8 @@ class GtkEngine extends CliEngine
 				$ret->pack_end($widget, $expand, $fill, 4);
 			else
 				$ret->pack_start($widget, $expand, $fill, 4);
+			if($c->getType() == 'menubar')
+				$ret->reorder_child($widget, 0);
 		}
 		return $ret;
 	}
@@ -363,7 +399,8 @@ class GtkEngine extends CliEngine
 	private function renderWindow($e)
 	{
 		$window = new GtkWindow();
-		$window->set_title($e->getProperty('title'));
+		if(($title = $e->getProperty('title')) !== FALSE)
+			$window->set_title($title);
 		$window->connect_simple('delete-event', array($this,
 					'on_window_delete_event'), $window);
 		$box = $this->renderVbox($e);
@@ -474,8 +511,8 @@ class GtkEngine extends CliEngine
 	//GtkEngine::on_button_clicked
 	public function on_button_clicked($request)
 	{
-		if(($res = $request->process($this)) !== FALSE)
-			$this->render($res);
+		if(($res = $this->process($request)) !== FALSE)
+			$this->renderElement($res);
 	}
 
 
@@ -485,7 +522,7 @@ class GtkEngine extends CliEngine
 		if(($res = array_search($window, $this->windows)) !== FALSE)
 		{
 			unset($this->windows[$res]);
-			if(count($this->windows == 0))
+			if(count($this->windows) == 0)
 				Gtk::main_quit();
 		}
 	}
