@@ -176,6 +176,7 @@ class ContentModule extends Module
 		//FIXME display metadata and link to actual resource?
 		$page = new Page;
 		$page->setProperty('title', $content['title']);
+		$page->append('title', array('text' => $content['title']));
 		$element = $page->append('label');
 		$element->setProperty('text', $content['text']);
 		return $page;
