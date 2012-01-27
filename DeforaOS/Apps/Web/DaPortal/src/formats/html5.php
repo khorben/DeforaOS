@@ -391,7 +391,7 @@ class Html5Format extends Format
 	private function renderLabel($e, $level)
 	{
 		$attributes = array();
-		if(($for = $e->getProperty('for')) === FALSE)
+		if(($for = $e->getProperty('for')) !== FALSE)
 			$attributes['for'] = $for;
 		$this->tag('label', 'label', $e->getProperty('id'),
 				$attributes, $e->getProperty('text'));
@@ -632,7 +632,7 @@ class Html5Format extends Format
 				$tag.=' '.$this->escapeAttribute($k).'="'
 				.$this->escapeAttribute($v).'"';
 		if($content !== FALSE)
-			$tag.='>'.$this->escape($content)
+			$tag.='>'.$this->escapeText($content)
 				.'</'.$this->escapeAttribute($name).'>';
 		else
 			$tag.='/>';
