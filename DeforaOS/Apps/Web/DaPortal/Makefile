@@ -502,6 +502,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/gtk.php \
 		$(PACKAGE)-$(VERSION)/src/engines/http.php \
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
+		$(PACKAGE)-$(VERSION)/src/formats/Makefile \
+		$(PACKAGE)-$(VERSION)/src/formats/atom.php \
+		$(PACKAGE)-$(VERSION)/src/formats/html5.php \
+		$(PACKAGE)-$(VERSION)/src/formats/pdf.php \
+		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/article/Makefile \

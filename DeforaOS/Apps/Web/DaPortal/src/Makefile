@@ -1,4 +1,4 @@
-SUBDIRS	= auth database engines modules system templates
+SUBDIRS	= auth database engines formats modules system templates
 
 
 all: subdirs
