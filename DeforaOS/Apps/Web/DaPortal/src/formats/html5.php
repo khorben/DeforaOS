@@ -381,7 +381,8 @@ class Html5Format extends Format
 	{
 		$text = $e->getProperty('text');
 		if($e->getType() !== FALSE)
-			$this->tag('span', $e->getType(), FALSE, FALSE, $text);
+			$this->tag('span', $e->getType(), $e->getProperty('id'),
+					FALSE, $text);
 		else if($text !== FALSE)
 			print($this->escapeText($text));
 	}
@@ -389,14 +390,11 @@ class Html5Format extends Format
 
 	private function renderLabel($e, $level)
 	{
+		$attributes = array();
 		if(($for = $e->getProperty('for')) === FALSE)
-			return $this->renderInline($e, $level);
-		//this is for a form
-		print('<label class="label"'
-				.' for="'.$this->escapeAttribute($for).'">');
-		if(($text = $e->getProperty('text')) !== FALSE)
-			print($this->escape($text));
-		$this->tagClose('label');
+			$attributes['for'] = $for;
+		$this->tag('label', 'label', $e->getProperty('id'),
+				$attributes, $e->getProperty('text'));
 	}
 
 
