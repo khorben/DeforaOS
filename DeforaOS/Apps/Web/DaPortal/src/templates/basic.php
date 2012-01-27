@@ -46,7 +46,14 @@ class BasicTemplate extends Template
 	protected function getMenu($engine)
 	{
 		$menu = new PageElement('menubar');
-		//FIXME implement
+		//FIXME really implement
+		$modules = $menu->append('menuitem', array(
+					'text' => 'Modules'));
+		$modules->append('menuitem', array('text' => 'Blog'));
+		$user = $modules->append('menuitem', array('text' => 'User'));
+		$r = new Request($engine, 'user', 'login');
+		$user->append('menuitem', array('text' => 'Login',
+					'request' => $r));
 		return $menu;
 	}
 
@@ -54,8 +61,8 @@ class BasicTemplate extends Template
 	//BasicTemplate::getTitle
 	protected function getTitle($engine)
 	{
-		$title = new PageElement('title');
-		$title->setProperty('id', 'title');
+		$title = new PageElement('title', array('text' => $this->title,
+					'id' => 'title'));
 		$title->append('link', array('text' => $this->title,
 					'url' => $this->homepage));
 		return $title;
@@ -94,9 +101,11 @@ class BasicTemplate extends Template
 	{
 		if($page === FALSE)
 			$page = new Page;
+		if(($title = $page->getProperty('title')) === FALSE)
+			$title = $this->title;
+		$page->setProperty('title', $title);
 		$page->prependElement($this->getMenu($engine));
 		$page->prependElement($this->getTitle($engine));
-		$page->setProperty('type', 'block');
 		$page->appendElement($this->getFooter($engine));
 		return $page;
 	}
