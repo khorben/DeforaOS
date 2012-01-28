@@ -191,7 +191,7 @@ class GtkEngine extends CliEngine
 	private function renderForm($e)
 	{
 		//FIXME track the current request for submission
-		$ret = new GtkVbox(FALSE, 0);
+		$ret = new GtkVbox(FALSE, 4);
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
@@ -213,7 +213,7 @@ class GtkEngine extends CliEngine
 
 	private function renderHbox($e)
 	{
-		$ret = new GtkHbox(FALSE, 0);
+		$ret = new GtkHbox(FALSE, 4);
 		$ret->set_border_width(4);
 		$children = $e->getChildren();
 		foreach($children as $c)
@@ -223,9 +223,9 @@ class GtkEngine extends CliEngine
 			$expand = $c->getProperty('Gtk::expand', FALSE);
 			$fill = $c->getProperty('Gtk::fill', TRUE);
 			if($c->getType() == 'statusbar')
-				$ret->pack_end($widget, $expand, $fill, 4);
+				$ret->pack_end($widget, $expand, $fill, 0);
 			else
-				$ret->pack_start($widget, $expand, $fill, 4);
+				$ret->pack_start($widget, $expand, $fill, 0);
 			if($c->getType() == 'menubar')
 				$ret->reorder_child($widget, 0);
 		}
@@ -302,13 +302,23 @@ class GtkEngine extends CliEngine
 	{
 		//FIXME implement images...
 		$ret = new GtkMenuItem($e->getProperty('text'));
-		if(($request = $e->getProperty('request')) !== FALSE)
-			$ret->connect_simple('activate', array($this,
-						'on_button_clicked'), $request);
+		$request = $e->getProperty('request');
 		if(($children = $e->getChildren($e)) !== FALSE
 				&& count($children))
 		{
 			$menu = new GtkMenu;
+			if($request !== FALSE)
+			{
+				//XXX find a better label
+				$menuitem = new GtkMenuItem('This item');
+				$menuitem->connect_simple('activate',
+						array($this,
+							'on_button_clicked'),
+						$request);
+				$menu->append($menuitem);
+				$menuitem = new GtkSeparatorMenuItem;
+				$menu->append($menuitem);
+			}
 			foreach($children as $c)
 			{
 				if($c->getType() != 'menuitem')
@@ -318,6 +328,11 @@ class GtkEngine extends CliEngine
 			}
 			$ret->set_submenu($menu);
 		}
+		else if($request !== FALSE)
+			$ret->connect_simple('activate', array($this,
+						'on_button_clicked'), $request);
+		else
+			$ret->set_sensitive(FALSE);
 		return $ret;
 	}
 
@@ -377,7 +392,7 @@ class GtkEngine extends CliEngine
 
 	private function renderVbox($e)
 	{
-		$ret = new GtkVbox(FALSE, 0);
+		$ret = new GtkVbox(FALSE, 4);
 		$ret->set_border_width(4);
 		$children = $e->getChildren();
 		foreach($children as $c)
@@ -387,9 +402,9 @@ class GtkEngine extends CliEngine
 			$expand = $c->getProperty('Gtk::expand', FALSE);
 			$fill = $c->getProperty('Gtk::fill', TRUE);
 			if($c->getType() == 'statusbar')
-				$ret->pack_end($widget, $expand, $fill, 4);
+				$ret->pack_end($widget, $expand, $fill, 0);
 			else
-				$ret->pack_start($widget, $expand, $fill, 4);
+				$ret->pack_start($widget, $expand, $fill, 0);
 			if($c->getType() == 'menubar')
 				$ret->reorder_child($widget, 0);
 		}
