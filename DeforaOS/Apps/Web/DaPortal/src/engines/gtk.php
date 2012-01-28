@@ -102,6 +102,7 @@ class GtkEngine extends CliEngine
 			$type = 'error';
 		if(($title = $e->getProperty('title')) === FALSE)
 			$title = ucfirst($type);
+		$buttons = Gtk::BUTTONS_CLOSE;
 		switch($type)
 		{
 			case 'error':
@@ -109,16 +110,18 @@ class GtkEngine extends CliEngine
 				break;
 			case 'question':
 				$type = Gtk::MESSAGE_QUESTION;
+				$buttons = Gtk::BUTTONS_YES_NO;
 				break;
 			case 'warning':
 				$type = Gtk::MESSAGE_WARNING;
 				break;
 			default:
 				$type = Gtk::MESSAGE_INFO;
+				$buttons = Gtk::BUTTONS_OK;
 				break;
 		}
-		$dialog = new GtkMessageDialog(NULL, 0, $type,
-				Gtk::BUTTONS_OK, $title);
+		$dialog = new GtkMessageDialog(NULL, 0, $type, $buttons,
+				$title);
 		//XXX why is this necessary?
 		$dialog->set_title($title);
 		if(($text = $e->getProperty('text')) === FALSE)
@@ -178,7 +181,7 @@ class GtkEngine extends CliEngine
 
 	private function renderEntry($e)
 	{
-		$ret = new GtkHbox(FALSE, 4);
+		$ret = new GtkHbox(TRUE, 4);
 		if(($label = $e->getProperty('text')) !== FALSE)
 			$ret->pack_start(new GtkLabel($label), FALSE, TRUE, 0);
 		$entry = new GtkEntry($e->getProperty('value'));
@@ -192,6 +195,7 @@ class GtkEngine extends CliEngine
 	{
 		//FIXME track the current request for submission
 		$ret = new GtkVbox(FALSE, 4);
+		$ret->set_border_width(4);
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
@@ -540,6 +544,7 @@ class GtkEngine extends CliEngine
 			if(count($this->windows) == 0)
 				Gtk::main_quit();
 		}
+		//FIXME return a boolean?
 	}
 }
 
