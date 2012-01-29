@@ -49,11 +49,31 @@ class BasicTemplate extends Template
 		//FIXME really implement
 		$modules = $menu->append('menuitem', array(
 					'text' => 'Modules'));
-		$modules->append('menuitem', array('text' => 'Blog'));
-		$user = $modules->append('menuitem', array('text' => 'User'));
-		$r = new Request($engine, 'user', 'login');
-		$user->append('menuitem', array('text' => 'Login',
-					'request' => $r));
+		$array = array('blog', 'news', 'user' => array('login'));
+		foreach($array as $k => $v)
+		{
+			if(is_array($v))
+			{
+				$r = new Request($engine, $k);
+				$module = $modules->append('menuitem', array(
+							'text' => ucfirst($k),
+							'request' => $r));
+				foreach($v as $a)
+				{
+					$r = new Request($engine, $k, $a);
+					$module->append('menuitem', array(
+								'text' => ucfirst($a),
+								'request' => $r));
+				}
+			}
+			else
+			{
+				$r = new Request($engine, $v);
+				$modules->append('menuitem', array(
+							'text' => ucfirst($v),
+							'request' => $r));
+			}
+		}
 		return $menu;
 	}
 
@@ -100,6 +120,12 @@ class BasicTemplate extends Template
 	{
 		if($page === FALSE)
 			$page = new Page;
+		else if($page->getType() != 'page')
+		{
+			$p = new Page;
+			$p->appendElement($page);
+			$page = $p;
+		}
 		if(($title = $page->getProperty('title')) === FALSE)
 			$title = $this->title;
 		$page->setProperty('title', $title);
