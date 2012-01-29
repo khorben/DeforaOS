@@ -16,29 +16,41 @@
 
 
 .stock48.about {
-	background-image:		url('gnome-icon-theme/48x48/actions/gtk-about.png');
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-about.png');
 }
 
 .stock48.add {
-	background-image:		url('gnome-icon-theme/48x48/actions/gtk-add.png');
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-add.png');
 }
 
 .stock48.admin {
-	background-image:		url('gnome-icon-theme/48x48/actions/gtk-admin.png');
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-admin.png');
+}
+
+.stock48.back {
+	background-image:	url('gnome-icon-theme/48x48/actions/back.png');
 }
 
 .stock48.cancel {
-	background-image:		url('gnome-icon-theme/48x48/actions/gtk-cancel.png');
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-cancel.png');
 }
 
 .stock48.error {
-	background-image:		url('gnome-icon-theme/48x48/status/dialog-error.png');
+	background-image:	url('gnome-icon-theme/48x48/status/dialog-error.png');
+}
+
+.stock48.forward {
+	background-image:	url('gnome-icon-theme/48x48/actions/forward.png');
 }
 
 .stock48.logout {
-	background-image:		url('gnome-icon-theme/48x48/actions/gnome-logout.png');
+	background-image:	url('gnome-icon-theme/48x48/actions/gnome-logout.png');
+}
+
+.stock48.new {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-new.png');
 }
 
 .stock48.user {
-	background-image:		url('gnome-icon-theme/48x48/apps/user-info.png');
+	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
 }
