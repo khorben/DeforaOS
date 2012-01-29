@@ -56,32 +56,9 @@ class GtkEngine extends CliEngine
 
 	private function renderButton($e)
 	{
-		//FIXME dedicate a helper function for this
-		switch(($stock = $e->getProperty('stock')))
-		{
-			case 'about':
-				$stock = Gtk::STOCK_ABOUT;
-				break;
-			case 'add':
-				$stock = Gtk::STOCK_ADD;
-				break;
-			case 'apply':
-				$stock = Gtk::STOCK_APPLY;
-				break;
-			case 'cancel':
-				$stock = Gtk::STOCK_CANCEL;
-				break;
-			case 'close':
-				$stock = Gtk::STOCK_CLOSE;
-				break;
-			default:
-				if($e->getProperty('type') == 'submit')
-					$stock = Gtk::STOCK_OK;
-				else
-					$stock = FALSE;
-				break;
-		}
+		$stock = $this->_getStock($e->getProperty('stock'));
 		if($stock !== FALSE)
+			//XXX no longer ignore the original text
 			$ret = GtkButton::new_from_stock($stock);
 		else
 			$ret = new GtkButton($e->getProperty('text'));
@@ -181,9 +158,13 @@ class GtkEngine extends CliEngine
 
 	private function renderEntry($e)
 	{
-		$ret = new GtkHbox(TRUE, 4);
+		$ret = new GtkHbox(FALSE, 4);
 		if(($label = $e->getProperty('text')) !== FALSE)
-			$ret->pack_start(new GtkLabel($label), FALSE, TRUE, 0);
+		{
+			$label = new GtkLabel($label);
+			$label->set_alignment(0.0, 0.5);
+			$ret->pack_start($label);
+		}
 		$entry = new GtkEntry($e->getProperty('value'));
 		if($e->getProperty('hidden'))
 			$entry->set_visibility(FALSE);
@@ -262,7 +243,9 @@ class GtkEngine extends CliEngine
 
 	private function renderLabel($e)
 	{
-		return new GtkLabel($e->getProperty('text'), FALSE);
+		$ret = new GtkLabel($e->getProperty('text'), FALSE);
+		$ret->set_alignment(0.0, 0.5);
+		return $ret;
 	}
 
 	private function renderLink($e)
@@ -293,9 +276,9 @@ class GtkEngine extends CliEngine
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if($c->getType() != 'menuitem')
-				continue;
-			if(($menuitem = $this->renderMenuitem($c)) === FALSE)
+			if($c->getType() != 'menuitem'
+					|| ($menuitem = $this->renderMenuitem(
+							$c)) === FALSE)
 				continue;
 			$ret->append($menuitem);
 		}
@@ -545,6 +528,42 @@ class GtkEngine extends CliEngine
 				Gtk::main_quit();
 		}
 		//FIXME return a boolean?
+	}
+
+
+	//private
+	//methods
+	private function _getStock($stock, $fallback = FALSE)
+	{
+		switch($stock)
+		{
+			case 'about':
+				return Gtk::STOCK_ABOUT;
+			case 'add':
+				return Gtk::STOCK_ADD;
+			case 'apply':
+				return Gtk::STOCK_APPLY;
+			case 'cancel':
+				return Gtk::STOCK_CANCEL;
+			case 'close':
+				return Gtk::STOCK_CLOSE;
+			case 'connect':
+				return Gtk::STOCK_CONNECT;
+			case 'exit':
+			case 'logout':
+			case 'quit':
+				return Gtk::STOCK_QUIT;
+			case 'copy':
+				return Gtk::STOCK_COPY;
+			case 'cut':
+				return Gtk::STOCK_CUT;
+			case 'paste':
+				return Gtk::STOCK_PASTE;
+			default:
+				if($fallback !== FALSE)
+					return $fallback;
+				return FALSE;
+		}
 	}
 }
 
