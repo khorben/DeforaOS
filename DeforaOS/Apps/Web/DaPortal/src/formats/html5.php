@@ -51,11 +51,17 @@ class Html5Format extends Format
 		//FIXME also track tags are properly closed
 
 		//FIXME ignore $filename for the moment
+		if($page === FALSE)
+		{
+			$p = new Page();
+			$this->renderElement($p);
+		}
 		if($page->getType() == 'page')
 			$this->renderElement($page);
 		else
 		{
-			$p = new Page();
+			$title = $page->getProperties('title');
+			$p = new Page(array('title' => $title));
 			$p->appendElement($page);
 			$this->renderElement($p);
 		}
@@ -115,6 +121,8 @@ class Html5Format extends Format
 			$this->renderTabs($level + 1);
 			$this->tagOpen('div', 'pack');
 			$this->renderElement($c, $level + 2);
+			if(count($c->getChildren()) > 1)
+				$this->renderTabs($level + 1);
 			$this->tagClose('div');
 		}
 		$this->renderTabs($level);
@@ -313,6 +321,8 @@ class Html5Format extends Format
 			$this->_renderFormHidden($level + 1, 'action',
 					$r->getAction());
 			$this->_renderFormHidden($level + 1, 'id', $r->getId());
+			foreach($r->getParameters() as $k => $v)
+				$this->_renderFormHidden($level + 1, $k, $v);
 		}
 		$this->renderChildren($e, $level);
 		$this->renderTabs($level);
@@ -414,34 +424,49 @@ class Html5Format extends Format
 	}
 
 
-	private function renderMenu($e, $level)
+	private function renderMenu($e, $level, $class = FALSE)
 	{
 		//FIXME really implement
-		$children = $e->getChildren();
+		if(($children = $e->getChildren()) === FALSE
+				|| count($children) == 0)
+			return;
+		$this->tagOpen('ul', $class);
 		foreach($children as $c)
 			if($c->getType() == 'menuitem')
-				$this->renderMenuitem($c, $level);
+				$this->renderMenuitem($c, $level + 1);
+		$this->renderTabs($level);
+		$this->tagClose('ul');
 	}
 
 
 	private function renderMenubar($e, $level)
 	{
 		$this->renderTabs($level);
-		$this->tagOpen('div', 'menubar');
-		$this->renderMenu($e, $level + 1);
-		$this->renderTabs($level);
-		$this->tagClose('div');
+		$this->renderMenu($e, $level, 'menubar');
 	}
 
 
 	private function renderMenuitem($e, $level)
 	{
-		//FIXME really implement
 		$this->renderTabs($level);
-		$this->tagOpen('div', 'menuitem');
+		$this->tagOpen('li', 'menuitem');
 		if(($text = $e->getProperty('text')) !== FALSE)
-			$this->renderLink($e, $level);
-		$this->tagClose('div');
+		{
+			$attributes = array();
+			if(($a = $e->getProperty('name')) !== FALSE)
+				$attributes['name'] = $a;
+			if(($r = $e->getProperty('request')) !== FALSE)
+				$attributes['href'] = $this->engine->getUrl($r,
+						FALSE);
+			else if(($u = $e->getProperty('url')) !== FALSE)
+				$attributes['href'] = $u;
+			$this->tagOpen('a', FALSE, $e->getProperty('id'),
+					$attributes);
+			print($this->escapeText($text));
+			$this->tagClose('a');
+		}
+		$this->renderMenu($e, $level);
+		$this->tagClose('li');
 	}
 
 
@@ -547,8 +572,9 @@ class Html5Format extends Format
 				break;
 		}
 		$class = "treeview $view";
-		$this->tagOpen('form', $class, FALSE,
-				array('method' => 'post'));
+		$method = $e->getProperty('idempotent') ? 'get' : 'post';
+		$this->tagOpen('form', $class, FALSE, array(
+					'method' => $method));
 		//FIXME protect against CSRF attacks
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
