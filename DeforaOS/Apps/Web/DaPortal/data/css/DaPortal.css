@@ -114,7 +114,7 @@ form div.entry {
 	display:			table-row;
 }
 
-form div.entry span.label, form div.entry input {
+form div.entry label, form div.entry input {
 	display:			table-cell;
 }
 
