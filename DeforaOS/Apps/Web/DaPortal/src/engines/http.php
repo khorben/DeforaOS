@@ -140,7 +140,7 @@ class HttpEngine extends Engine
 			if(($args = $request->getParameters()) !== FALSE)
 				foreach($args as $key => $value)
 					$url .= '&'.urlencode($key)
-					.'='.urlencode($title);
+					.'='.urlencode($value);
 		}
 		return $url;
 	}
