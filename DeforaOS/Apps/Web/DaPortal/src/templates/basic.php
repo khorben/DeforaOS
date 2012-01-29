@@ -61,8 +61,7 @@ class BasicTemplate extends Template
 	//BasicTemplate::getTitle
 	protected function getTitle($engine)
 	{
-		$title = new PageElement('title', array('text' => $this->title,
-					'id' => 'title'));
+		$title = new PageElement('title', array('id' => 'title'));
 		$title->append('link', array('text' => $this->title,
 					'url' => $this->homepage));
 		return $title;
