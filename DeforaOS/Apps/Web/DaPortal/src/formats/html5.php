@@ -87,8 +87,8 @@ class Html5Format extends Format
 
 	private function escapeText($text)
 	{
-		$from = array('<', '>', "\n");
-		$to = array('&lt;', '&gt;', '<br />');
+		$from = array('<', '>', "\n", "\r");
+		$to = array('&lt;', '&gt;', "<br />\n", '');
 
 		return str_replace($from, $to, $text);
 	}
