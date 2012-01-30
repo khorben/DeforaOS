@@ -22,6 +22,10 @@
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock.png');
 }
 
+.stock16.add, .stock48.add {
+	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_add.png');
+}
+
 .stock16.back, .stock48.back {
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_go-back.png');
 }
@@ -48,4 +52,8 @@
 
 .stock16.news, .stock48.news {
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/misc/news.png');
+}
+
+.stock16.preferences, .stock48.preferences {
+	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_preferences.png');
 }
