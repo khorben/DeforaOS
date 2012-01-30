@@ -267,6 +267,8 @@ class Html5Format extends Format
 				return $this->renderStatusbar($e, $level);
 			case 'title':
 				return $this->renderHeading($e, $level);
+			case 'toolbar':
+				return $this->renderToolbar($e, $level);
 			case 'treeview':
 			case 'iconview': /* XXX really implement */
 				return $this->renderTreeview($e, $level);
@@ -553,6 +555,15 @@ class Html5Format extends Format
 	}
 
 
+	private function renderToolbar($e, $level)
+	{
+		$this->renderTabs($level);
+		$this->tagOpen('div', 'toolbar');
+		$this->renderChildren($e, $level + 1);
+		$this->tagClose('div', 'toolbar');
+	}
+
+
 	private function renderTreeview($e, $level)
 	{
 		$this->renderTabs($level);
@@ -575,13 +586,20 @@ class Html5Format extends Format
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
 		$this->tagOpen('form', $class, FALSE, array(
 					'method' => $method));
-		//FIXME protect against CSRF attacks
+		if(($children = $e->getChildren()) !== FALSE)
+			foreach($children as $c)
+				if($c->getType() == 'toolbar')
+					$this->renderToolbar($c, $level + 1);
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
 			$columns = array('title');
-		$this->renderTreeviewHeaders($columns, $level);
+		$this->renderTabs($level + 1);
+		$this->tagOpen('div', 'table');
+		$this->renderTreeviewHeaders($columns, $level + 1);
 		//render rows
-		$this->renderTreeviewRows($e, $columns, $level);
+		$this->renderTreeviewRows($e, $columns, $level + 1);
+		$this->renderTabs($level + 1);
+		$this->tagClose('div');
 		$this->renderTabs($level);
 		$this->tagClose('form');
 	}

@@ -124,43 +124,43 @@ form.treeview:after {
 	display:			block;
 }
 
-form.treeview > div.header {
+form.treeview > div.table > div.header {
 	display:			none;
 	font-weight:			bold;
 	text-align:			left;
 }
 
-form.treeview > div.row span.detail {
+form.treeview > div.table > div.row > span.detail {
 	display:			none;
 }
 
-form.treeview div.row > div.row {
+form.treeview > div.table > div.row > div.row {
 	padding:			2px;
 	padding-left:			16px;
 }
 
-form.treeview.details {
+form.treeview.details > div.table {
 	display:			table;
+	width:				100%;
 }
 
-form.treeview.details > div.header, form.treeview.details > div.row {
+form.treeview.details > div.table > div {
 	display:			table-row;
 }
 
-form.treeview.details > div.header > span.detail,
-form.treeview.details > div.row > span.detail {
+form.treeview.details > div.table > div > span.detail {
 	display:			table-cell;
 	padding-right:			2px;
 }
 
-form.treeview.icons > div.row {
+form.treeview.icons > div.table > div.row {
 	float:				left;
 	padding:			2px;
 	text-align:			center;
 	width:				120px;
 }
 
-form.treeview.icons > div.row span.icon {
+form.treeview.icons > div.table > div.row span.icon {
 	display:			block;
 	height:				48px;
 	margin-left:			auto;
@@ -168,7 +168,7 @@ form.treeview.icons > div.row span.icon {
 	width:				48px;
 }
 
-form.treeview.preview > div.rom span.detail.preview {
+form.treeview.preview > div.table > div.rom span.detail.preview {
 	display:			block;
 }
 
