@@ -7,6 +7,7 @@ CPPFLAGSF= -I ../include
 CPPFLAGS= -I $(PREFIX)/include -D WITH_SSL
 CFLAGSF	= -W -fPIC `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= `pkg-config --libs libSystem`
 LDFLAGS	= -lssl
 AR	?= ar
 RANLIB	?= ranlib
