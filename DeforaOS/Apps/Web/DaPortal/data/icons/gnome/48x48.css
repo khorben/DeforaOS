@@ -51,6 +51,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-new.png');
 }
 
+.stock48.preferences {
+	background-image:	url('gnome-icon-theme/48x48/categories/gtk-preferences.png');
+}
+
 .stock48.user {
 	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
 }

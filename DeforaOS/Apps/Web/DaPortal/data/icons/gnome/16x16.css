@@ -51,6 +51,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-new.png');
 }
 
+.stock16.preferences {
+	background-image:	url('gnome-icon-theme/16x16/categories/gtk-preferences.png');
+}
+
 .stock16.user {
 	background-image:	url('gnome-icon-theme/16x16/apps/user-info.png');
 }
