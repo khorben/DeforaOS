@@ -462,10 +462,13 @@ class Html5Format extends Format
 						FALSE);
 			else if(($u = $e->getProperty('url')) !== FALSE)
 				$attributes['href'] = $u;
-			$this->tagOpen('a', FALSE, $e->getProperty('id'),
-					$attributes);
+			if(count($attributes))
+				$this->tagOpen('a', FALSE,
+						$e->getProperty('id'),
+						$attributes);
 			print($this->escapeText($text));
-			$this->tagClose('a');
+			if(count($attributes))
+				$this->tagClose('a');
 		}
 		$this->renderMenu($e, $level);
 		$this->tagClose('li');
