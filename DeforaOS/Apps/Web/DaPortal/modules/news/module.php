@@ -103,8 +103,8 @@ private function _display($id, $title = NEWS)
 }
 
 
-//news_insert
-function _news_insert($news)
+//NewsModule::_insert
+private function _insert($news)
 {
 	global $user_id;
 
@@ -423,33 +423,33 @@ protected function rss($args)
 }
 
 
-//NewsModule::submit
-protected function submit($args)
-{
-	global $error, $user_id, $user_name;
+	//NewsModule::submit
+	protected function submit($args)
+		{
+		global $error, $user_id, $user_name;
 
-	if(isset($error) && strlen($error))
-		return _error($error);
-	if(isset($args['send']))
-	{
-		return include('./modules/news/news_posted.tpl');
+		if(isset($error) && strlen($error))
+			return _error($error);
+		if(isset($args['send']))
+		{
+			return include('./modules/news/news_posted.tpl');
+		}
+		$title = NEWS_SUBMISSION;
+		if(isset($args['preview']))
+		{
+			$long = 1;
+			$title = NEWS_PREVIEW;
+			$news = array('user_id' => $user_id,
+					'username' => $user_name,
+					'title' => stripslashes($args['title']),
+					'content' => stripslashes($args['content']),
+					'date' => strftime(DATE_FORMAT),
+					'preview' => 1);
+			include('./modules/news/news_display.tpl');
+			unset($title);
+		}
+		include('./modules/news/news_update.tpl');
 	}
-	$title = NEWS_SUBMISSION;
-	if(isset($args['preview']))
-	{
-		$long = 1;
-		$title = NEWS_PREVIEW;
-		$news = array('user_id' => $user_id,
-				'username' => $user_name,
-				'title' => stripslashes($args['title']),
-				'content' => stripslashes($args['content']),
-				'date' => strftime(DATE_FORMAT),
-				'preview' => 1);
-		include('./modules/news/news_display.tpl');
-		unset($title);
-	}
-	include('./modules/news/news_update.tpl');
-}
 
 
 //NewsModule::system
