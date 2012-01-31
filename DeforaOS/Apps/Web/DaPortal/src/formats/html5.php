@@ -136,9 +136,6 @@ class Html5Format extends Format
 			$url = $this->engine->getUrl($r, FALSE);
 		else
 			$url = $e->getProperty('url');
-		if($url !== FALSE)
-			$this->tagOpen('a', FALSE, FALSE, array(
-						'href' => $url));
 		if(($class = $e->getProperty('stock')) !== FALSE)
 			$class = "stock16 $class";
 		switch(($type = $e->getProperty('type')))
@@ -147,7 +144,7 @@ class Html5Format extends Format
 				break;
 			case 'reset':
 			case 'submit':
-				$type = $e->getProperty('type');
+				$url = FALSE;
 				if($class === FALSE)
 					$class = "stock16 $type";
 				break;
@@ -155,7 +152,15 @@ class Html5Format extends Format
 				$type = 'button';
 				break;
 		}
-		$this->tagOpen('button', $class, FALSE, array('type' => $type));
+		if($url !== FALSE)
+			$this->tagOpen('a', FALSE, FALSE, array(
+						'href' => $url));
+		$args = array('type' => $type);
+		if(($name = $e->getProperty('name')) !== FALSE)
+			$args['name'] = $name;
+		if(($value = $e->getProperty('value')) !== FALSE)
+			$args['value'] = $value;
+		$this->tagOpen('button', $class, FALSE, $args);
 		$this->renderChildren($e, $level);
 		print($this->escape($e->getProperty('text')));
 		$this->tagClose('button');
@@ -270,7 +275,7 @@ class Html5Format extends Format
 			case 'toolbar':
 				return $this->renderToolbar($e, $level);
 			case 'treeview':
-			case 'iconview': /* XXX really implement */
+			case 'iconview':
 				return $this->renderTreeview($e, $level);
 			default:
 				return $this->renderInline($e, $level);
@@ -579,16 +584,38 @@ class Html5Format extends Format
 			case 'preview':
 				break;
 			default:
-				if($e->getType() == 'iconview')
-					$view = 'icons';
-				else
-					$view = 'details';
+				$view = ($e->getType() == 'iconview') ? 'icons'
+					: 'details';
 				break;
 		}
 		$class = "treeview $view";
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
 		$this->tagOpen('form', $class, FALSE, array(
+					'action' => 'index.php',
 					'method' => $method));
+		if($method === 'post' && @session_start())
+		{
+			//FIXME move this code into the Auth module
+			if(!isset($_SESSION['tokens']))
+				$_SESSION['tokens'] = array();
+			$token = sha1(uniqid(php_uname(), TRUE));
+			$_SESSION['tokens'][$token] = time() + 3600;
+			$this->_renderTreeviewHidden($level + 1, '_token',
+					$token);
+		}
+		if(($r = $e->getProperty('request')) !== FALSE)
+		{
+			//FIXME copied from renderForm()
+			$this->_renderTreeviewHidden($level + 1, 'module',
+					$r->getModule());
+			$this->_renderTreeviewHidden($level + 1, 'action',
+					$r->getAction());
+			$this->_renderTreeviewHidden($level + 1, 'id',
+					$r->getId());
+			foreach($r->getParameters() as $k => $v)
+				$this->_renderTreeviewHidden($level + 1, $k,
+						$v);
+		}
 		if(($children = $e->getChildren()) !== FALSE)
 			foreach($children as $c)
 				if($c->getType() == 'toolbar')
@@ -598,17 +625,16 @@ class Html5Format extends Format
 			$columns = array('title');
 		$this->renderTabs($level + 1);
 		$this->tagOpen('div', 'table');
-		$this->renderTreeviewHeaders($columns, $level + 1);
+		$this->_renderTreeviewHeaders($columns, $level + 1);
 		//render rows
-		$this->renderTreeviewRows($e, $columns, $level + 1);
+		$this->_renderTreeviewRows($e, $columns, $level + 1);
 		$this->renderTabs($level + 1);
 		$this->tagClose('div');
 		$this->renderTabs($level);
 		$this->tagClose('form');
 	}
 
-
-	private function renderTreeviewHeaders($columns, $level)
+	private function _renderTreeviewHeaders($columns, $level)
 	{
 		$this->renderTabs($level + 1);
 		$this->tagOpen('div', 'header');
@@ -619,8 +645,17 @@ class Html5Format extends Format
 		$this->tagClose('div');
 	}
 
+	private function _renderTreeviewHidden($level, $name, $value = FALSE)
+	{
+		//FIXME copied from _renderFormHidden()
+		if($value === FALSE)
+			return;
+		$this->renderTabs($level);
+		$this->tag('input', FALSE, FALSE, array('type' => 'hidden',
+					'name' => $name, 'value' => $value));
+	}
 
-	private function renderTreeviewRows($e, $columns, $level)
+	private function _renderTreeviewRows($e, $columns, $level)
 	{
 		$id = 1;
 
@@ -632,19 +667,19 @@ class Html5Format extends Format
 				continue;
 			$this->tagOpen('div', 'row');
 			$this->tagOpen('span', 'detail');
-			$this->tag('input', FALSE, 'check_'.$id, array(
-						'type' => 'checkbox'));
+			$this->tag('input', FALSE, '_check_'.$id, array(
+						'type' => 'checkbox',
+						'name' => $c->getProperty('id')));
 			$this->tagClose('span');
 			$properties = $c->getProperties();
 			foreach($properties as $k => $v)
 			{
-				print('<span class="');
-				if(in_array($k, $columns))
-					print('detail ');
-				print($this->escapeAttribute($k).'">');
+				if(!in_array($k, $columns))
+					continue;
+				$this->tagOpen('span', "detail $k");
 				if(is_string($v))
 					$this->tagOpen('label', FALSE, FALSE,
-							array('for' => 'check_'.$id), $v);
+							array('for' => '_check_'.$id), $v);
 				else
 					$this->renderElement($v);
 				$this->tagClose('span');
