@@ -425,7 +425,7 @@ protected function rss($args)
 
 	//NewsModule::submit
 	protected function submit($args)
-		{
+	{
 		global $error, $user_id, $user_name;
 
 		if(isset($error) && strlen($error))
