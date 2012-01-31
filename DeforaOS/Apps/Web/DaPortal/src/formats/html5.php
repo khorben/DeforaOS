@@ -256,6 +256,9 @@ class Html5Format extends Format
 			case 'hbox':
 			case 'vbox':
 				return $this->renderBox($e, $level, $type);
+			case 'iconview':
+				$e->setProperty('view', 'icons');
+				return $this->renderTreeview($e, $level);
 			case 'image':
 				return $this->renderImage($e, $level);
 			case 'label':
@@ -275,7 +278,6 @@ class Html5Format extends Format
 			case 'toolbar':
 				return $this->renderToolbar($e, $level);
 			case 'treeview':
-			case 'iconview':
 				return $this->renderTreeview($e, $level);
 			default:
 				return $this->renderInline($e, $level);
@@ -574,22 +576,26 @@ class Html5Format extends Format
 
 	private function renderTreeview($e, $level)
 	{
-		$this->renderTabs($level);
 		switch(($view = $e->getProperty('view')))
 		{
 			case 'details':
-			case 'icons':
 			case 'list':
 			case 'thumbnails':
 			case 'preview':
 				break;
+			case 'icons':
+				if(($c = $e->getProperty('columns')) !== FALSE)
+					break;
+				$e->setProperty('columns', array('icon',
+							'label'));
+				break;
 			default:
-				$view = ($e->getType() == 'iconview') ? 'icons'
-					: 'details';
+				$view = 'details';
 				break;
 		}
 		$class = "treeview $view";
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
+		$this->renderTabs($level);
 		$this->tagOpen('form', $class, FALSE, array(
 					'action' => 'index.php',
 					'method' => $method));
