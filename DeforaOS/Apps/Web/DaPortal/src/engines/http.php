@@ -150,13 +150,19 @@ class HttpEngine extends Engine
 	public function isIdempotent($request)
 	{
 		//FIXME move this code into the Auth module
+		//FIXME set a flag to the request instead
 		$token = $request->getParameter('_token');
 
-		if($token === FALSE || $_SERVER['REQUEST_METHOD'] != 'POST')
+		$request->setParameter('token', FALSE);
+		if($token === FALSE)
 			return TRUE;
 		if(!@session_start())
+			//session management failed or is not available
 			return FALSE;
-		if(!isset($_SESSION['tokens']) || !isset($_SESSION['tokens'])
+		if($_SERVER['REQUEST_METHOD'] != 'POST')
+			//XXX assumes the HTTP protocol (fine in HttpEngine)
+			return TRUE;
+		if(!isset($_SESSION['tokens'])
 				|| !is_array($_SESSION['tokens'])
 				|| !isset($_SESSION['tokens'][$token]))
 			return TRUE;

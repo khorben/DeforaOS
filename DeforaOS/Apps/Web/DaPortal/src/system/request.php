@@ -97,7 +97,7 @@ class Request
 
 	//Request::setParameter
 	//XXX should be private but needed for isIdempotent()
-	public function setParameter(&$engine, $name, $value)
+	public function setParameter($name, $value)
 	{
 		if($value === FALSE)
 		{
