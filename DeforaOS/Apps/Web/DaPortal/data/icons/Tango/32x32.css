@@ -1,0 +1,64 @@
+/* $Id$ */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Web DaPortal */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+.stock32.about {
+	background-image:	url('Tango/32x32/actions/gtk-about.png');
+}
+
+.stock32.add {
+	background-image:	url('Tango/32x32/actions/gtk-add.png');
+}
+
+.stock32.admin {
+	background-image:	url('Tango/32x32/actions/gtk-admin.png');
+}
+
+.stock32.back {
+	background-image:	url('Tango/32x32/actions/back.png');
+}
+
+.stock32.cancel {
+	background-image:	url('Tango/32x32/actions/gtk-cancel.png');
+}
+
+.stock32.delete {
+	background-image:	url('Tango/32x32/actions/gtk-delete.png');
+}
+
+.stock32.error {
+	background-image:	url('Tango/32x32/status/dialog-error.png');
+}
+
+.stock32.forward {
+	background-image:	url('Tango/32x32/actions/forward.png');
+}
+
+.stock32.logout {
+	background-image:	url('Tango/32x32/actions/gnome-logout.png');
+}
+
+.stock32.new {
+	background-image:	url('Tango/32x32/actions/gtk-new.png');
+}
+
+.stock32.preferences {
+	background-image:	url('Tango/32x32/categories/gtk-preferences.png');
+}
+
+.stock32.user {
+	background-image:	url('Tango/32x32/apps/user-info.png');
+}

@@ -1,0 +1,64 @@
+/* $Id$ */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Web DaPortal */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+.stock48.about {
+	background-image:	url('Tango/scalable/actions/gtk-about.svg');
+}
+
+.stock48.add {
+	background-image:	url('Tango/scalable/actions/gtk-add.svg');
+}
+
+.stock48.admin {
+	background-image:	url('Tango/scalable/actions/gtk-admin.svg');
+}
+
+.stock48.back {
+	background-image:	url('Tango/scalable/actions/back.svg');
+}
+
+.stock48.cancel {
+	background-image:	url('Tango/scalable/actions/gtk-cancel.svg');
+}
+
+.stock48.delete {
+	background-image:	url('Tango/scalable/actions/gtk-delete.svg');
+}
+
+.stock48.error {
+	background-image:	url('Tango/scalable/status/dialog-error.svg');
+}
+
+.stock48.forward {
+	background-image:	url('Tango/scalable/actions/forward.svg');
+}
+
+.stock48.logout {
+	background-image:	url('Tango/scalable/actions/gnome-logout.svg');
+}
+
+.stock48.new {
+	background-image:	url('Tango/scalable/actions/gtk-new.svg');
+}
+
+.stock48.preferences {
+	background-image:	url('Tango/scalable/categories/gtk-preferences.svg');
+}
+
+.stock48.user {
+	background-image:	url('Tango/scalable/apps/user-info.svg');
+}

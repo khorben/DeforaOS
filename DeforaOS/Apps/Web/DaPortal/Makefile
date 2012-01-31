@@ -37,12 +37,19 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/css/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent.css \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango.css \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome.css \
 		$(PACKAGE)-$(VERSION)/data/icons/index.php \
 		$(PACKAGE)-$(VERSION)/data/icons/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent/index.php \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent/project.conf \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/Makefile \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/index.php \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/16x16.css \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/32x32.css \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/48x48.css \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/16x16.css \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/48x48.css \

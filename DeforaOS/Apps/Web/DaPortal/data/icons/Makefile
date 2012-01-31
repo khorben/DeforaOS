@@ -1,4 +1,4 @@
-SUBDIRS	= Rodent gnome
+SUBDIRS	= Rodent Tango gnome
 
 
 all: subdirs
