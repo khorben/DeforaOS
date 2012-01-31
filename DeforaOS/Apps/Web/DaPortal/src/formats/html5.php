@@ -680,7 +680,8 @@ class Html5Format extends Format
 			$properties = $c->getProperties();
 			foreach($properties as $k => $v)
 			{
-				if(!in_array($k, $columns))
+				if(!in_array($k, $columns)
+						&& !isset($columns[$k]))
 					continue;
 				$this->tagOpen('span', "detail $k");
 				if(is_string($v))
