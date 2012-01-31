@@ -168,7 +168,11 @@ form.treeview.icons > div.table > div.row span.icon {
 	width:				48px;
 }
 
-form.treeview.preview > div.table > div.rom span.detail.preview {
+form.treeview.icons > div.table > div.row span.label {
+	display:			block;
+}
+
+form.treeview.preview > div.table > div.row span.detail.preview {
 	display:			block;
 }
 
