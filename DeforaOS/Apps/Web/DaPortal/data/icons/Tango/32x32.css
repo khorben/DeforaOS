@@ -39,12 +39,24 @@
 	background-image:	url('Tango/32x32/actions/gtk-delete.png');
 }
 
+.stock32.disable {
+	background-image:	url('Tango/32x32/actions/gtk-cancel.png');
+}
+
+.stock32.enable {
+	background-image:	url('Tango/32x32/categories/applications-system.png');
+}
+
 .stock32.error {
-	background-image:	url('Tango/32x32/status/dialog-error.png');
+	background-image:	url('Tango/32x32/status/stock_dialog-error.png');
 }
 
 .stock32.forward {
 	background-image:	url('Tango/32x32/actions/forward.png');
+}
+
+.stock32.info {
+	background-image:	url('Tango/32x32/status/stock_dialog-info.png');
 }
 
 .stock32.logout {
@@ -57,6 +69,10 @@
 
 .stock32.preferences {
 	background-image:	url('Tango/32x32/categories/gtk-preferences.png');
+}
+
+.stock32.refresh {
+	background-image:	url('Tango/32x32/actions/gtk-refresh.png');
 }
 
 .stock32.user {

@@ -40,11 +40,15 @@
 }
 
 .stock48.error {
-	background-image:	url('gnome-icon-theme/48x48/status/dialog-error.png');
+	background-image:	url('gnome-icon-theme/48x48/status/stock_dialog-error.png');
 }
 
 .stock48.forward {
 	background-image:	url('gnome-icon-theme/48x48/actions/forward.png');
+}
+
+.stock48.info {
+	background-image:	url('gnome-icon-theme/48x48/status/stock_dialog-info.png');
 }
 
 .stock48.logout {
@@ -57,6 +61,10 @@
 
 .stock48.preferences {
 	background-image:	url('gnome-icon-theme/48x48/categories/gtk-preferences.png');
+}
+
+.stock48.refresh {
+	background-image:	url('gnome-icon-theme/48x48/actions/stock_refresh.png');
 }
 
 .stock48.user {
