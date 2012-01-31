@@ -95,6 +95,27 @@ class Request
 	}
 
 
+	//Request::setParameter
+	//XXX should be private but needed for isIdempotent()
+	public function setParameters(&$engine, $name, $value)
+	{
+		if($value === FALSE)
+		{
+			if(!is_array($this->parameters))
+				return;
+			if(isset($this->parameters[$name]))
+				unset($this->parameters[$name]);
+			if(count($this->parameters) == 0)
+				$this->parameters = FALSE;
+			return TRUE;
+		}
+		if(!is_array($this->parameters))
+			$this->parameters = array();
+		$this->parameters[$name] = $value;
+		return TRUE;
+	}
+
+
 	//private
 	//methods
 	//accessors
