@@ -35,7 +35,7 @@ will also assume that the current user will already have sufficient privileges
 to install DaPortal 2 to the desired directory; it is otherwise up to the reader
 to obtain and use these privileges when necessary.
 
-Alternatively, you may choose to follow the development of DaPortal 2, or any
+Alternatively, you may choose to track the development of DaPortal 2, or any
 given branch from the Source Code Management system. Some instructions to do so
 can be found here:
 http://www.defora.org/os/project/download/12/DaPortal
@@ -46,6 +46,9 @@ http://www.defora.org/os/project/download/12/DaPortal
 
 2.1 Deployment as a web application
 -----------------------------------
+
+Although primarily tested with the Apache HTTP server, DaPortal 2 should work on
+most web servers supporting PHP.
 
 For increased security, DaPortal 2 is meant to be installed in a separate
 directory, outside of the web server's document root folder. On most systems,
@@ -66,8 +69,17 @@ desired location of the web server's document root folder.
 
 Alternatively, on most web servers it should be fine (and reasonably secure) to
 serve DaPortal's own "data" folder as the actual document root. In this case,
-two files will be found in each directory, while actually being useless while
-running the application.
+two files will be found in each directory, while actually being useless when
+running the application (namely, "Makefile" and "project.conf").
+
+
+2.2 Deployment as a Gtk+ application
+------------------------------------
+
+DaPortal 2 can also be used as a Gtk+ application. This requires the
+installation and configuration of the "php-gtk" extension.
+
+TODO: more details, helper binary
 
 
 3. Configuration
@@ -92,6 +104,8 @@ backend=http
 The top-level "theme" and "title" settings can be changed as well, and will
 respectively define the default CSS to use (among the "themes" folder), and the
 default title for the web pages and documents generated.
+
+TODO: friendly links
 
 
 3.2 Configuration of the database backend
