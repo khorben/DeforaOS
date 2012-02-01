@@ -178,9 +178,11 @@ class ContentModule extends Module
 				.$this->module_id."'";
 		$query .= ' ORDER BY timestamp DESC LIMIT 10';
 		if(($res = $db->query($engine, $query)) === FALSE)
-			//FIXME return a dialog instead
-			return $engine->log('LOG_ERR',
-					'Unable to list contents');
+		{
+			$page->append('dialog', array('type' => 'error',
+						'text' => 'Unable to list contents'));
+			return $page;
+		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 			$page->appendElement($this->_preview($engine,
 						$res[$i]['id']));
