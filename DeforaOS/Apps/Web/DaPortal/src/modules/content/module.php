@@ -115,11 +115,28 @@ class ContentModule extends Module
 	//ContentModule::_default
 	protected function _default($engine, $request = FALSE)
 	{
+		$db = $engine->getDatabase();
+		$query = $this->query_list;
+
 		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
 			return $this->_display($engine, $id,
 					$request->getTitle());
-		//FIXME run _list() here and let it manage one's content instead
-		return $this->_list($engine, $request);
+		$page = new Page;
+		$page->append('title', array('text' => $this->module_name));
+		if($this->module_id !== FALSE)
+			$query .= " AND daportal_module.module_id='"
+				.$this->module_id."'";
+		$query .= ' ORDER BY timestamp DESC LIMIT 10';
+		if(($res = $db->query($engine, $query)) === FALSE)
+		{
+			$page->append('dialog', array('type' => 'error',
+						'text' => 'Unable to list contents'));
+			return $page;
+		}
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+			$page->appendElement($this->_preview($engine,
+						$res[$i]['id']));
+		return $page;
 	}
 
 
@@ -168,24 +185,56 @@ class ContentModule extends Module
 	//ContentModule::list
 	protected function _list($engine, $request = FALSE)
 	{
+		$cred = $engine->getCredentials();
+		$uid = ($request !== FALSE) ? $request->getId() : FALSE;
+
+		if($uid === FALSE)
+			$uid = $cred->getUserId();
 		$page = new Page;
-		$page->append('title', array('text' => $this->module_name));
-		//FIXME really implement
+		$title = $this->module_name.' by '.$uid; //XXX
+		$page->setProperty('title', $title);
+		$element = $page->append('title');
 		$db = $engine->getDatabase();
-		$query = $this->query_list;
+		$query = $this->query_list_user;
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
-		$query .= ' ORDER BY timestamp DESC LIMIT 10';
-		if(($res = $db->query($engine, $query)) === FALSE)
+		if(($res = $db->query($engine, $query, array(
+							'user_id' => $uid)))
+				=== FALSE)
+			//FIXME return a dialog instead
+			return $engine->log('LOG_ERR',
+					'Unable to list contents');
+		$element->setProperty('text', $title);
+		$r = new Request($engine, $this->name, 'list', $uid);
+		$treeview = $page->append('treeview', array('request' => $r));
+		$treeview->setProperty('columns', array('title', 'enabled',
+					'username', 'date'));
+		$toolbar = $treeview->append('toolbar');
+		$toolbar->append('button', array('stock' => 'refresh',
+					'text' => 'Refresh', 'request' => $r));
+		if($cred->getUserId() == $uid)
 		{
-			$page->append('dialog', array('type' => 'error',
-						'text' => 'Unable to list contents'));
-			return $page;
+			$toolbar->append('button', array('stock' => 'disable',
+						'text' => 'Disable',
+						'type' => 'submit',
+						'name' => 'action',
+						'value' => 'disable'));
+			$toolbar->append('button', array('stock' => 'enable',
+						'text' => 'Enable',
+						'type' => 'submit',
+						'name' => 'action',
+						'value' => 'enable'));
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-			$page->appendElement($this->_preview($engine,
-						$res[$i]['id']));
+		{
+			$row = $treeview->append('row');
+			$row->setProperty('id', 'content_id:'.$res[$i]['id']);
+			$row->setProperty('title', $res[$i]['title']);
+			$row->setProperty('enabled', $res[$i]['enabled']);
+			$row->setProperty('username', $res[$i]['username']);
+			$row->setProperty('date', $res[$i]['date']);
+		}
 		return $page;
 	}
 
@@ -243,6 +292,15 @@ class ContentModule extends Module
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+	private $query_list_user = "SELECT content_id AS id, timestamp AS date,
+		name AS module, daportal_user.user_id AS user_id, username,
+		title, daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND daportal_user.user_id=:user_id";
 
 
 	//methods
