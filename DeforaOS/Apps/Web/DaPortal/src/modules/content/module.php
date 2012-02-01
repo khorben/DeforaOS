@@ -53,49 +53,6 @@ class ContentModule extends Module
 
 
 	//methods
-	//ContentModule::_apply
-	protected function _apply($engine, $request, $query, $fallback,
-			$success, $failure)
-	{
-		$cred = $engine->getCredentials();
-		$db = $engine->getDatabase();
-
-		if(($uid = $cred->getUserId()) == 0)
-		{
-			//must be logged in
-			$page = $this->_default($engine);
-			$page->prepend('dialog', array('type' => 'error',
-						'text' => 'Must be logged in'));
-			return $page;
-		}
-		if($engine->isIdempotent($request))
-			//must be safe
-			return $this->$fallback($engine);
-		$type = 'info';
-		$message = $success;
-		$parameters = $request->getParameters();
-		print_r($parameters);
-		foreach($parameters as $k => $v)
-		{
-			$x = explode(':', $k);
-			if(count($x) != 2 || $x[0] != 'content_id'
-					|| !is_numeric($x[1]))
-				continue;
-			$res = $db->query($engine, $query, array(
-						'content_id' => $x[1],
-						'user_id' => $uid));
-			if($res !== FALSE)
-				continue;
-			$type = 'error';
-			$message = $failure;
-		}
-		$page = $this->$fallback($engine);
-		$page->prepend('dialog', array('type' => $type,
-					'text' => $message));
-		return $page;
-	}
-
-
 	//ContentModule::admin
 	protected function admin($engine, $request = FALSE)
 	{
@@ -127,7 +84,7 @@ class ContentModule extends Module
 			return $engine->log('LOG_ERR',
 					'Unable to list contents');
 		$element->setProperty('text', $title);
-		$r = new Request($engine, 'content', 'admin'); //XXX
+		$r = new Request($engine, $this->name, 'admin');
 		$treeview = $page->append('treeview', array('request' => $r));
 		$treeview->setProperty('columns', array('title', 'enabled',
 					'username', 'date'));
@@ -164,13 +121,23 @@ class ContentModule extends Module
 	}
 
 
+	//ContentModule::delete
+	protected function delete($engine, $request)
+	{
+		return $this->_apply($engine, $request, $this->query_delete,
+				'admin',
+				'Content could be deleted successfully',
+				'Some content could not be deleted');
+	}
+
+
 	//ContentModule::disable
 	protected function disable($engine, $request)
 	{
 		return $this->_apply($engine, $request, $this->query_disable,
 				'admin',
 				'Content could be disabled successfully',
-				'Some content could not be disabled ');
+				'Some content could not be disabled');
 	}
 
 
@@ -180,7 +147,7 @@ class ContentModule extends Module
 		return $this->_apply($engine, $request, $this->query_enable,
 				'admin',
 				'Content could be enabled successfully',
-				'Some content could not be enabled ');
+				'Some content could not be enabled');
 	}
 
 
@@ -218,6 +185,8 @@ class ContentModule extends Module
 
 	//private
 	//properties
+	private $query_delete = 'DELETE FROM daportal_content
+		WHERE content_id=:content_id AND user_id=:user_id';
 	private $query_disable = "UPDATE daportal_content
 		SET enabled='0'
 		WHERE content_id=:content_id AND user_id=:user_id";
@@ -252,6 +221,48 @@ class ContentModule extends Module
 
 
 	//methods
+	//ContentModule::_apply
+	private function _apply($engine, $request, $query, $fallback, $success,
+			$failure)
+	{
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		if(($uid = $cred->getUserId()) == 0)
+		{
+			//must be logged in
+			$page = $this->_default($engine);
+			$page->prepend('dialog', array('type' => 'error',
+						'text' => 'Must be logged in'));
+			return $page;
+		}
+		if($engine->isIdempotent($request))
+			//must be safe
+			return $this->$fallback($engine);
+		$type = 'info';
+		$message = $success;
+		$parameters = $request->getParameters();
+		foreach($parameters as $k => $v)
+		{
+			$x = explode(':', $k);
+			if(count($x) != 2 || $x[0] != 'content_id'
+					|| !is_numeric($x[1]))
+				continue;
+			$res = $db->query($engine, $query, array(
+						'content_id' => $x[1],
+						'user_id' => $uid));
+			if($res !== FALSE)
+				continue;
+			$type = 'error';
+			$message = $failure;
+		}
+		$page = $this->$fallback($engine);
+		$page->prepend('dialog', array('type' => $type,
+					'text' => $message));
+		return $page;
+	}
+
+
 	//ContentModule::_display
 	private function _display($engine, $id, $title = FALSE)
 	{
