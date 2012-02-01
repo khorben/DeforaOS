@@ -4,6 +4,9 @@
 
 
 
+BEGIN TRANSACTION;
+
+
 CREATE TABLE daportal_module (
 	module_id SERIAL PRIMARY KEY,
 	name VARCHAR(255) UNIQUE NOT NULL,
@@ -17,7 +20,6 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
 CREATE TABLE daportal_config (
-	module_id SERIAL PRIMARY KEY,
 	module_id INTEGER NOT NULL REFERENCES daportal_module (module_id) ON DELETE CASCADE,
 	title VARCHAR(255),
 	type VARCHAR(255) CHECK (type IN ('bool', 'int', 'string')) NOT NULL,
@@ -248,3 +250,6 @@ INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES 
 
 /* module: blog */
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
+
+
+COMMIT;
