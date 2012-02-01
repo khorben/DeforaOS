@@ -85,7 +85,8 @@ abstract class Database
 			$ret = new $name();
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' (default)');
-			$ret->attach($engine);
+			if($ret->attach($engine) === FALSE)
+				return FALSE;
 			return $ret;
 		}
 		if(($dir = opendir('database')) === FALSE)
@@ -108,7 +109,8 @@ abstract class Database
 		{
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' with priority '.$priority);
-			$ret->attach($engine);
+			if($ret->attach($engine) === FALSE)
+				return FALSE;
 		}
 		return $ret;
 	}
