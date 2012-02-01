@@ -685,11 +685,12 @@ class Html5Format extends Format
 						&& !isset($columns[$k]))
 					continue;
 				$this->tagOpen('span', "detail $k");
-				if(is_string($v))
-					$this->tagOpen('label', FALSE, FALSE,
-							array('for' => '_check_'.$id), $v);
-				else
+				if(is_object($v))
 					$this->renderElement($v);
+				else
+					$this->tag('label', FALSE, FALSE,
+							array('for' => '_check_'
+								.$id), $v);
 				$this->tagClose('span');
 			}
 			$this->tagClose('div');
