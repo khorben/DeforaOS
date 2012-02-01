@@ -618,9 +618,10 @@ class Html5Format extends Format
 					$r->getAction());
 			$this->_renderTreeviewHidden($level + 1, 'id',
 					$r->getId());
-			foreach($r->getParameters() as $k => $v)
-				$this->_renderTreeviewHidden($level + 1, $k,
-						$v);
+			if(($parameters = $r->getParameters()) !== FALSE)
+				foreach($r->getParameters() as $k => $v)
+					$this->_renderTreeviewHidden($level + 1,
+							$k, $v);
 		}
 		if(($children = $e->getChildren()) !== FALSE)
 			foreach($children as $c)
