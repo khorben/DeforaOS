@@ -50,7 +50,7 @@ function _sql_id($table, $field)
 	global $engine;
 
 	$db = $engine->getDatabase();
-	return $db->lastId($engine, $table, $field);
+	return $db->getLastId($engine, $table, $field);
 }
 
 
