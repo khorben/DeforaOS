@@ -90,11 +90,14 @@ abstract class Module
 	public abstract function call(&$engine, $request);
 
 
+	//protected
+	//properties
+	protected $id = FALSE;
+	protected $name = FALSE;
+
+
 	//private
 	//properties
-	private $id = FALSE;
-	private $name = FALSE;
-
 	//queries
 	static private $query_id = "SELECT module_id AS id
 FROM daportal_module
