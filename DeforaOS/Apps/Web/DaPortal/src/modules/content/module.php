@@ -176,7 +176,7 @@ class ContentModule extends Module
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
-		$query .= ' ORDER BY timestamp DESC';
+		$query .= ' ORDER BY timestamp DESC LIMIT 10';
 		if(($res = $db->query($engine, $query)) === FALSE)
 			//FIXME return a dialog instead
 			return $engine->log('LOG_ERR',
