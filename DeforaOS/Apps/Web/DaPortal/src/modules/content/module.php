@@ -335,8 +335,9 @@ class ContentModule extends Module
 		$page = new PageElement('vbox');
 		$r = new Request($engine, $content['module'], FALSE,
 				$content['id']);
-		$page->setProperty('text', $content['title']);
-		$page->append('title', array('text' => $content['title']));
+		$title = $page->append('title');
+		$title->append('link', array('request' => $r,
+					'text' => $content['title']));
 		$page->append('label', array('text' => $this->module_name
 					.' by '.$content['username']
 					.' on '.$content['date']));
