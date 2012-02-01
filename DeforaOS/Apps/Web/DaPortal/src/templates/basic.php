@@ -107,7 +107,7 @@ class BasicTemplate extends Template
 					'footer');
 		if($this->homepage === FALSE)
 			$this->homepage = $config->getVariable($section,
-					'footer');
+					'homepage');
 		if($this->title === FALSE)
 			$this->title = $config->getVariable($section, 'title');
 		if($this->title === FALSE)
