@@ -219,7 +219,8 @@ class ContentModule extends Module
 		WHERE content_id=:content_id AND user_id=:user_id";
 	private $query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
-		daportal_content.content_id AS id, title, content AS text
+		daportal_content.content_id AS id, title, content AS text,
+		timestamp AS date
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -329,13 +330,16 @@ class ContentModule extends Module
 	{
 		if(($content = $this->_get($engine, $id, $title)) === FALSE)
 			return new PageElement('dialog', array(
-						'title' => 'error',
+						'type' => 'error',
 						'text' => 'Could not fetch content'));
 		$page = new PageElement('vbox');
 		$r = new Request($engine, $content['module'], FALSE,
 				$content['id']);
 		$page->setProperty('text', $content['title']);
 		$page->append('title', array('text' => $content['title']));
+		$page->append('label', array('text' => $this->module_name
+					.' by '.$content['username']
+					.' on '.$content['date']));
 		$hbox = $page->append('hbox');
 		$hbox->append('image', array('stock' => 'module '
 					.$content['module'].' content'));
