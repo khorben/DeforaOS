@@ -69,7 +69,7 @@ class ContentModule extends Module
 						'type' => 'error',
 						'text' => 'Permission denied'));
 			$dialog->append('button', array('stock' => 'login',
-						'text' => 'Login',
+						'text' => _('Login'),
 						'request' => $r));
 			return $page;
 		}
@@ -84,7 +84,7 @@ class ContentModule extends Module
 		if(($res = $db->query($engine, $query)) === FALSE)
 			//FIXME return a dialog instead
 			return $engine->log('LOG_ERR',
-					'Unable to list contents');
+					_('Unable to list contents'));
 		$element->setProperty('text', $title);
 		$r = new Request($engine, $this->name, 'admin');
 		$treeview = $page->append('treeview', array('request' => $r));
@@ -92,13 +92,14 @@ class ContentModule extends Module
 					'username', 'date'));
 		$toolbar = $treeview->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
-					'text' => 'Refresh', 'request' => $r));
+					'text' => _('Refresh'),
+					'request' => $r));
 		$toolbar->append('button', array('stock' => 'disable',
-					'text' => 'Disable',
+					'text' => _('Disable'),
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'disable'));
 		$toolbar->append('button', array('stock' => 'enable',
-					'text' => 'Enable',
+					'text' => _('Enable'),
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'enable'));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -132,7 +133,7 @@ class ContentModule extends Module
 		if(($res = $db->query($engine, $query)) === FALSE)
 		{
 			$page->append('dialog', array('type' => 'error',
-						'text' => 'Unable to list contents'));
+						'text' => _('Unable to list contents')));
 			return $page;
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -151,8 +152,8 @@ class ContentModule extends Module
 		if($cred->isAdmin())
 			$query = $this->query_admin_delete;
 		return $this->_apply($engine, $request, $query, 'admin',
-				'Content could be deleted successfully',
-				'Some content could not be deleted');
+				_('Content could be deleted successfully'),
+				_('Some content could not be deleted'));
 	}
 
 
@@ -165,8 +166,8 @@ class ContentModule extends Module
 		if($cred->isAdmin())
 			$query = $this->query_admin_disable;
 		return $this->_apply($engine, $request, $query, 'admin',
-				'Content could be disabled successfully',
-				'Some content could not be disabled');
+				_('Content could be disabled successfully'),
+				_('Some content could not be disabled'));
 	}
 
 
@@ -179,8 +180,8 @@ class ContentModule extends Module
 		if($cred->isAdmin())
 			$query = $this->query_admin_enable;
 		return $this->_apply($engine, $request, $query, 'admin',
-				'Content could be enabled successfully',
-				'Some content could not be enabled');
+				_('Content could be enabled successfully'),
+				_('Some content could not be enabled'));
 	}
 
 
@@ -193,7 +194,7 @@ class ContentModule extends Module
 		if($uid === FALSE)
 			$uid = $cred->getUserId();
 		$page = new Page;
-		$title = $this->module_contents.' by '.$uid; //XXX
+		$title = $this->module_contents._(' by ').$uid; //XXX
 		$page->setProperty('title', $title);
 		$element = $page->append('title');
 		$db = $engine->getDatabase();
@@ -399,14 +400,14 @@ class ContentModule extends Module
 		$title->append('link', array('request' => $r,
 					'text' => $content['title']));
 		$page->append('label', array('text' => $this->module_content
-					.' by '.$content['username']
-					.' on '.$content['date']));
+					._(' by ').$content['username']
+					._(' on ').$content['date']));
 		$hbox = $page->append('hbox');
 		$hbox->append('image', array('stock' => 'module '
 					.$content['module'].' content'));
 		$hbox->append('label', array('text' => $content['text']));
 		$page->append('button', array('stock' => 'read',
-					'text' => 'Read', 'request' => $r));
+					'text' => _('Read'), 'request' => $r));
 		return $page;
 	}
 }

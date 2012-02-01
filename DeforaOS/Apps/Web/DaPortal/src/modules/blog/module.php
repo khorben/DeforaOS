@@ -30,9 +30,9 @@ class BlogModule extends ContentModule
 	{
 		parent::__construct($id, $name);
 		$this->module_id = $id;
-		$this->module_name = 'Blog';
-		$this->module_content = 'Blog post';
-		$this->module_contents = 'Blog posts';
+		$this->module_name = _('Blog');
+		$this->module_content = _('Blog post');
+		$this->module_contents = _('Blog posts');
 	}
 }
 

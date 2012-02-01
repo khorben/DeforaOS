@@ -1,6 +1,6 @@
 PACKAGE	= DaPortal
 VERSION	= 1.9.0
-SUBDIRS	= css data doc html icons js images modules src system templates themes
+SUBDIRS	= css data doc html icons js images modules po src system templates themes
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -490,6 +490,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/wiki/module.php \
 		$(PACKAGE)-$(VERSION)/modules/wiki/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/daportal.php \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
@@ -619,6 +624,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/config.php \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/daportal.conf \
 		$(PACKAGE)-$(VERSION)/engine.php \
 		$(PACKAGE)-$(VERSION)/index.php \

@@ -1,0 +1,6 @@
+../src/modules/article/module.php
+../src/modules/blog/module.php
+../src/modules/content/module.php
+../src/modules/news/module.php
+../src/modules/user/module.php
+../src/modules/wiki/module.php

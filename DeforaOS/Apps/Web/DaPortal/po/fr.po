@@ -1,0 +1,120 @@
+# $Id$
+# Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the DaPortal package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DaPortal 1.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-02-01 03:53+0100\n"
+"PO-Revision-Date: 2012-02-01 03:41+0100\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/modules/article/module.php:33 ../src/modules/article/module.php:34
+msgid "Article"
+msgstr "Article"
+
+#: ../src/modules/article/module.php:35
+msgid "Articles"
+msgstr "Articles"
+
+#: ../src/modules/blog/module.php:33
+msgid "Blog"
+msgstr "Blog"
+
+#: ../src/modules/blog/module.php:34
+msgid "Blog post"
+msgstr "Billet de blog"
+
+#: ../src/modules/blog/module.php:35
+msgid "Blog posts"
+msgstr "Billets de blog"
+
+#: ../src/modules/content/module.php:72 ../src/modules/user/module.php:124
+msgid "Login"
+msgstr ""
+
+#: ../src/modules/content/module.php:87 ../src/modules/content/module.php:136
+msgid "Unable to list contents"
+msgstr ""
+
+#: ../src/modules/content/module.php:95
+msgid "Refresh"
+msgstr ""
+
+#: ../src/modules/content/module.php:98
+msgid "Disable"
+msgstr "Désactiver"
+
+#: ../src/modules/content/module.php:102
+msgid "Enable"
+msgstr "Activer"
+
+#: ../src/modules/content/module.php:155
+msgid "Content could be deleted successfully"
+msgstr ""
+
+#: ../src/modules/content/module.php:156
+msgid "Some content could not be deleted"
+msgstr ""
+
+#: ../src/modules/content/module.php:169
+msgid "Content could be disabled successfully"
+msgstr ""
+
+#: ../src/modules/content/module.php:170
+msgid "Some content could not be disabled"
+msgstr ""
+
+#: ../src/modules/content/module.php:183
+msgid "Content could be enabled successfully"
+msgstr ""
+
+#: ../src/modules/content/module.php:184
+msgid "Some content could not be enabled"
+msgstr ""
+
+#: ../src/modules/content/module.php:197 ../src/modules/content/module.php:403
+msgid " by "
+msgstr " par "
+
+#: ../src/modules/content/module.php:404
+msgid " on "
+msgstr " le "
+
+#: ../src/modules/content/module.php:410
+msgid "Read"
+msgstr "Lire"
+
+#: ../src/modules/news/module.php:33
+msgid "News"
+msgstr "Dépêche"
+
+#: ../src/modules/news/module.php:34
+msgid "News item"
+msgstr "Dépêche"
+
+#: ../src/modules/news/module.php:35
+msgid "News items"
+msgstr "Dépêches"
+
+#: ../src/modules/user/module.php:120
+msgid "Cancel"
+msgstr "Annuler"
+
+#: ../src/modules/wiki/module.php:33
+msgid "Wiki"
+msgstr "Wiki"
+
+#: ../src/modules/wiki/module.php:34
+msgid "Wiki page"
+msgstr "Page wiki"
+
+#: ../src/modules/wiki/module.php:35
+msgid "Wiki pages"
+msgstr "Pages wiki"

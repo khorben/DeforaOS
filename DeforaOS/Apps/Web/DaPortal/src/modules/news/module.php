@@ -30,9 +30,9 @@ class NewsModule extends ContentModule
 	{
 		parent::__construct($id, $name);
 		$this->module_id = $id;
-		$this->module_name = 'News';
-		$this->module_content = 'News item';
-		$this->module_contents = 'News items';
+		$this->module_name = _('News');
+		$this->module_content = _('News item');
+		$this->module_contents = _('News items');
 	}
 }
 
