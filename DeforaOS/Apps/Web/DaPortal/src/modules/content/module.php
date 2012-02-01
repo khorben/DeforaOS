@@ -126,8 +126,12 @@ class ContentModule extends Module
 	//ContentModule::delete
 	protected function delete($engine, $request)
 	{
-		return $this->_apply($engine, $request, $this->query_delete,
-				'admin',
+		$query = $this->query_delete;
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			$query = $this->query_admin_delete;
+		return $this->_apply($engine, $request, $query, 'admin',
 				'Content could be deleted successfully',
 				'Some content could not be deleted');
 	}
@@ -136,8 +140,12 @@ class ContentModule extends Module
 	//ContentModule::disable
 	protected function disable($engine, $request)
 	{
-		return $this->_apply($engine, $request, $this->query_disable,
-				'admin',
+		$query = $this->query_disable;
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			$query = $this->query_admin_disable;
+		return $this->_apply($engine, $request, $query, 'admin',
 				'Content could be disabled successfully',
 				'Some content could not be disabled');
 	}
@@ -146,8 +154,12 @@ class ContentModule extends Module
 	//ContentModule::enable
 	protected function enable($engine, $request)
 	{
-		return $this->_apply($engine, $request, $this->query_enable,
-				'admin',
+		$query = $this->query_enable;
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			$query = $this->query_admin_enable;
+		return $this->_apply($engine, $request, $query, 'admin',
 				'Content could be enabled successfully',
 				'Some content could not be enabled');
 	}
@@ -187,6 +199,14 @@ class ContentModule extends Module
 
 	//private
 	//properties
+	private $query_admin_delete = 'DELETE FROM daportal_content
+		WHERE content_id=:content_id';
+	private $query_admin_disable = "UPDATE daportal_content
+		SET enabled='0'
+		WHERE content_id=:content_id";
+	private $query_admin_enable = "UPDATE daportal_content
+		SET enabled='1'
+		WHERE content_id=:content_id";
 	private $query_delete = 'DELETE FROM daportal_content
 		WHERE content_id=:content_id AND user_id=:user_id';
 	private $query_disable = "UPDATE daportal_content
