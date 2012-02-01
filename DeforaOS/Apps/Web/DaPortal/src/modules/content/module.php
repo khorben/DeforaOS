@@ -50,6 +50,8 @@ class ContentModule extends Module
 	//properties
 	protected $module_id = FALSE;
 	protected $module_name = 'Content';
+	protected $module_content = 'Content';
+	protected $module_contents = 'Content';
 
 
 	//methods
@@ -191,7 +193,7 @@ class ContentModule extends Module
 		if($uid === FALSE)
 			$uid = $cred->getUserId();
 		$page = new Page;
-		$title = $this->module_name.' by '.$uid; //XXX
+		$title = $this->module_contents.' by '.$uid; //XXX
 		$page->setProperty('title', $title);
 		$element = $page->append('title');
 		$db = $engine->getDatabase();
@@ -396,7 +398,7 @@ class ContentModule extends Module
 		$title = $page->append('title');
 		$title->append('link', array('request' => $r,
 					'text' => $content['title']));
-		$page->append('label', array('text' => $this->module_name
+		$page->append('label', array('text' => $this->module_content
 					.' by '.$content['username']
 					.' on '.$content['date']));
 		$hbox = $page->append('hbox');
