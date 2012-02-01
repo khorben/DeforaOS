@@ -89,6 +89,8 @@ class ContentModule extends Module
 		$treeview->setProperty('columns', array('title', 'enabled',
 					'username', 'date'));
 		$toolbar = $treeview->append('toolbar');
+		$toolbar->append('button', array('stock' => 'refresh',
+					'text' => 'Refresh', 'request' => $r));
 		$toolbar->append('button', array('stock' => 'disable',
 					'text' => 'Disable',
 					'type' => 'submit', 'name' => 'action',
