@@ -27,10 +27,13 @@ class ContentModule extends Module
 	//ContentModule::call
 	public function call(&$engine, $request)
 	{
-		switch($request->getAction())
+		switch(($action = $request->getAction()))
 		{
 			case 'admin':
-				return $this->admin($engine);
+			case 'delete':
+			case 'disable':
+			case 'enable':
+				return $this->$action($engine, $request);
 			case 'list':
 				return $this->_list($engine, $request);
 			case 'preview':
@@ -49,8 +52,52 @@ class ContentModule extends Module
 	protected $module_name = 'Content';
 
 
+	//methods
+	//ContentModule::_apply
+	protected function _apply($engine, $request, $query, $fallback,
+			$success, $failure)
+	{
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		if(($uid = $cred->getUserId()) == 0)
+		{
+			//must be logged in
+			$page = $this->_default($engine);
+			$page->prepend('dialog', array('type' => 'error',
+						'text' => 'Must be logged in'));
+			return $page;
+		}
+		if($engine->isIdempotent($request))
+			//must be safe
+			return $this->$fallback($engine);
+		$type = 'info';
+		$message = $success;
+		$parameters = $request->getParameters();
+		print_r($parameters);
+		foreach($parameters as $k => $v)
+		{
+			$x = explode(':', $k);
+			if(count($x) != 2 || $x[0] != 'content_id'
+					|| !is_numeric($x[1]))
+				continue;
+			$res = $db->query($engine, $query, array(
+						'content_id' => $x[1],
+						'user_id' => $uid));
+			if($res !== FALSE)
+				continue;
+			$type = 'error';
+			$message = $failure;
+		}
+		$page = $this->$fallback($engine);
+		$page->prepend('dialog', array('type' => $type,
+					'text' => $message));
+		return $page;
+	}
+
+
 	//ContentModule::admin
-	protected function admin($engine)
+	protected function admin($engine, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
 
@@ -80,12 +127,23 @@ class ContentModule extends Module
 			return $engine->log('LOG_ERR',
 					'Unable to list contents');
 		$element->setProperty('text', $title);
-		$treeview = $page->append('treeview');
+		$r = new Request($engine, 'content', 'admin'); //XXX
+		$treeview = $page->append('treeview', array('request' => $r));
 		$treeview->setProperty('columns', array('title', 'enabled',
 					'username', 'date'));
+		$toolbar = $treeview->append('toolbar');
+		$toolbar->append('button', array('stock' => 'disable',
+					'text' => 'Disable',
+					'type' => 'submit', 'name' => 'action',
+					'value' => 'disable'));
+		$toolbar->append('button', array('stock' => 'enable',
+					'text' => 'Enable',
+					'type' => 'submit', 'name' => 'action',
+					'value' => 'enable'));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
+			$row->setProperty('id', 'content_id:'.$res[$i]['id']);
 			$row->setProperty('title', $res[$i]['title']);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
@@ -96,17 +154,38 @@ class ContentModule extends Module
 
 
 	//ContentModule::_default
-	protected function _default($engine, $request)
+	protected function _default($engine, $request = FALSE)
 	{
-		if(($id = $request->getId()) !== FALSE)
+		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
 			return $this->_display($engine, $id,
 					$request->getTitle());
+		//FIXME run _list() here and let it manage one's content instead
 		return $this->_list($engine, $request);
 	}
 
 
+	//ContentModule::disable
+	protected function disable($engine, $request)
+	{
+		return $this->_apply($engine, $request, $this->query_disable,
+				'admin',
+				'Content could be disabled successfully',
+				'Some content could not be disabled ');
+	}
+
+
+	//ContentModule::enable
+	protected function enable($engine, $request)
+	{
+		return $this->_apply($engine, $request, $this->query_enable,
+				'admin',
+				'Content could be enabled successfully',
+				'Some content could not be enabled ');
+	}
+
+
 	//ContentModule::list
-	protected function _list($engine, $request)
+	protected function _list($engine, $request = FALSE)
 	{
 		$page = new Page;
 		$page->append('title', array('text' => $this->module_name));
@@ -139,6 +218,12 @@ class ContentModule extends Module
 
 	//private
 	//properties
+	private $query_disable = "UPDATE daportal_content
+		SET enabled='0'
+		WHERE content_id=:content_id AND user_id=:user_id";
+	private $query_enable = "UPDATE daportal_content
+		SET enabled='1'
+		WHERE content_id=:content_id AND user_id=:user_id";
 	private $query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content AS text
