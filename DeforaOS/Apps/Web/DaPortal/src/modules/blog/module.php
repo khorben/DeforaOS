@@ -26,10 +26,10 @@ class BlogModule extends ContentModule
 	//methods
 	//essential
 	//BlogModule::BlogModule
-	public function __construct($name)
+	public function __construct($id, $name)
 	{
-		parent::__construct($name);
-		$this->module_id = Module::getId(FALSE, 'blog');
+		parent::__construct($id, $name);
+		$this->module_id = $id;
 		$this->module_name = 'Blog';
 	}
 }

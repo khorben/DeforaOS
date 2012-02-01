@@ -26,10 +26,10 @@ class NewsModule extends ContentModule
 	//methods
 	//essential
 	//NewsModule::NewsModule
-	public function __construct($name)
+	public function __construct($id, $name)
 	{
-		parent::__construct($name);
-		$this->module_id = Module::getId(FALSE, 'news');
+		parent::__construct($id, $name);
+		$this->module_id = $id;
 		$this->module_name = 'News';
 	}
 }
