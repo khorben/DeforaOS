@@ -331,7 +331,7 @@ class Html5Format extends Format
 					$r->getAction());
 			$this->_renderFormHidden($level + 1, 'id', $r->getId());
 			if(($args = $r->getParameters()) !== FALSE)
-				foreach($r->getParameters() as $k => $v)
+				foreach($args as $k => $v)
 					$this->_renderFormHidden($level + 1, $k,
 							$v);
 		}
