@@ -43,14 +43,16 @@ class BasicTemplate extends Template
 
 
 	//BasicTemplate::getMenu
-	protected function getMenu($engine)
+	protected function getMenu($engine, $entries = FALSE)
 	{
 		$menu = new PageElement('menubar');
 		//FIXME really implement
 		$modules = $menu->append('menuitem', array(
 					'text' => 'Modules'));
-		$array = array('blog', 'news', 'user' => array('login'));
-		foreach($array as $k => $v)
+		if($entries === FALSE)
+			$entries = array('blog', 'news',
+				'user' => array('login'));
+		foreach($entries as $k => $v)
 		{
 			if(is_array($v))
 			{

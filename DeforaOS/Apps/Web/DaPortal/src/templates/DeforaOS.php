@@ -26,12 +26,12 @@ class DeforaOSTemplate extends BasicTemplate
 	//methods
 	//accessors
 	//DeforaOSTemplate::getMenu
-	protected function getMenu($engine, $actions = FALSE)
+	protected function getMenu($engine, $entries = FALSE)
 	{
-		if($actions === FALSE)
-			$actions = array('news', 'project', 'user' => 'login',
+		if($entries === FALSE)
+			$entries = array('news', 'project', 'user' => 'login',
 					'wiki');
-		return parent::getMenu($engine, $actions);
+		return parent::getMenu($engine, $entries);
 	}
 
 
