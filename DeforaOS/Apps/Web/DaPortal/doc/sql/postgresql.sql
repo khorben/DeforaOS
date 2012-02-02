@@ -20,6 +20,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
 CREATE TABLE daportal_config (
+	config_id SERIAL PRIMARY KEY,
 	module_id INTEGER NOT NULL REFERENCES daportal_module (module_id) ON DELETE CASCADE,
 	title VARCHAR(255),
 	type VARCHAR(255) CHECK (type IN ('bool', 'int', 'string')) NOT NULL,
@@ -47,10 +48,19 @@ INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1'
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1');
 
 
+CREATE TABLE daportal_group (
+	group_id SERIAL PRIMARY KEY,
+	groupname VARCHAR(255) UNIQUE,
+	enabled BOOLEAN DEFAULT FALSE
+);
+INSERT INTO daportal_group (group_id, groupname, enabled) VALUES ('0', 'nogroup', '1');
+
+
 CREATE TABLE daportal_user (
 	user_id SERIAL PRIMARY KEY,
 	username VARCHAR(255) UNIQUE,
-	"password" CHAR(32),
+	group_id INTEGER NOT NULL DEFAULT 0,
+	"password" VARCHAR(255),
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
 	admin BOOLEAN DEFAULT FALSE,
 	fullname VARCHAR(255) DEFAULT FALSE,
