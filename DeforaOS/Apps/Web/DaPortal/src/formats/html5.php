@@ -330,8 +330,10 @@ class Html5Format extends Format
 			$this->_renderFormHidden($level + 1, 'action',
 					$r->getAction());
 			$this->_renderFormHidden($level + 1, 'id', $r->getId());
-			foreach($r->getParameters() as $k => $v)
-				$this->_renderFormHidden($level + 1, $k, $v);
+			if(($args = $r->getParameters()) !== FALSE)
+				foreach($r->getParameters() as $k => $v)
+					$this->_renderFormHidden($level + 1, $k,
+							$v);
 		}
 		$this->renderChildren($e, $level);
 		$this->renderTabs($level);
