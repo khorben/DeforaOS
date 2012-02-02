@@ -65,8 +65,8 @@ INSERT INTO daportal_group (group_id, groupname, enabled) VALUES ('0', 'nogroup'
 CREATE TABLE daportal_user (
 	user_id INTEGER PRIMARY KEY,
 	username VARCHAR(255) UNIQUE,
-	group_id INTEGER DEFAULT 0,
-	password CHAR(32),
+	group_id INTEGER NOT NULL DEFAULT 0,
+	password VARCHAR(255),
 	enabled BOOLEAN DEFAULT FALSE,
 	admin BOOLEAN DEFAULT FALSE,
 	fullname VARCHAR(255) DEFAULT FALSE,
