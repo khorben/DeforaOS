@@ -277,6 +277,7 @@ class ContentModule extends Module
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND content_id=:id";
@@ -285,6 +286,7 @@ class ContentModule extends Module
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	private $query_list_admin = "SELECT content_id AS id, timestamp AS date,
@@ -301,6 +303,7 @@ class ContentModule extends Module
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND daportal_user.user_id=:user_id";
