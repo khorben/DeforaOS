@@ -561,6 +561,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/system/project.conf \
 		$(PACKAGE)-$(VERSION)/src/templates/Makefile \
 		$(PACKAGE)-$(VERSION)/src/templates/basic.php \
+		$(PACKAGE)-$(VERSION)/src/templates/DeforaOS.php \
 		$(PACKAGE)-$(VERSION)/src/templates/desktop.php \
 		$(PACKAGE)-$(VERSION)/src/templates/project.conf \
 		$(PACKAGE)-$(VERSION)/system/Makefile \
