@@ -29,7 +29,8 @@ class DeforaOSTemplate extends BasicTemplate
 	protected function getMenu($engine, $entries = FALSE)
 	{
 		if($entries === FALSE)
-			$entries = array('news', 'project', 'user' => 'login',
+			$entries = array('news', 'project',
+					'user' => array('login'),
 					'wiki');
 		return parent::getMenu($engine, $entries);
 	}
