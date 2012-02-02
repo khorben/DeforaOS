@@ -68,12 +68,11 @@ class SearchModule extends Module
 		$results->setProperty('id', 'search_results');
 		$label = $results->append('label');
 		$label->setProperty('text', $count.' result(s)');
-		$treeview = $results->append('treeview');
-		$treeview->setProperty('view', 'preview');
-		$treeview->setProperty('columns', array('title', 'username',
-					'date'));
+		$columns = array('title', 'username', 'date', 'preview');
+		$view = $page->append('treeview', array('view' => 'preview',
+					'columns' => $columns));
 		for($i = 0; $i < $count; $i++)
-			$this->appendResult($engine, $treeview, $res[$i]);
+			$this->appendResult($engine, $view, $res[$i]);
 		return $page;
 	}
 
@@ -95,12 +94,11 @@ class SearchModule extends Module
 		$results->setProperty('id', 'search_results');
 		$label = $results->append('label');
 		$label->setProperty('text', $count.' result(s)');
-		$treeview = $results->append('treeview');
-		$treeview->setProperty('view', 'preview');
-		$treeview->setProperty('columns', array('title', 'username',
-					'date'));
+		$columns = array('title', 'username', 'date', 'preview');
+		$view = $page->append('treeview', array('view' => 'preview',
+					'columns' => $columns));
 		for($i = 0; $i < $count; $i++)
-			$this->appendResult($engine, $treeview, $res[$i]);
+			$this->appendResult($engine, $view, $res[$i]);
 		return $page;
 	}
 
@@ -108,27 +106,25 @@ class SearchModule extends Module
 	//private
 	//properties
 	private $query = "FROM daportal_content, daportal_module, daportal_user
-WHERE daportal_content.module_id=daportal_module.module_id
-AND daportal_content.user_id=daportal_user.user_id
-AND daportal_content.enabled='1'
-AND daportal_content.public='1'
-AND daportal_module.enabled='1'
-AND daportal_user.enabled='1'";
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
 
 
 	//methods
 	//SearchModule::appendResult
-	private function appendResult(&$engine, &$treeview, &$res)
+	private function appendResult(&$engine, &$view, &$res)
 	{
-		$row = $treeview->append('row');
-		$request = new Request($engine, $res['module'], FALSE,
-				$res['id'], $res['title']);
-		$link = new PageElement('link', array('text' => $res['title'],
-					'request' => $request));
-		$row->setProperty('title', $link);
+		$row = $view->append('row');
+		$row->setProperty('title', $res['title']);
 		$row->setProperty('username', $res['username']);
 		$row->setProperty('date', $res['date']);
-		$row->setProperty('preview', $res['content']);
+		$r = new Request($engine, $res['module'], 'preview', $res['id'],
+				$res['title']);
+		$row->setProperty('preview', $engine->process($r));
 	}
 
 
@@ -217,8 +213,9 @@ AND daportal_user.enabled='1'";
 				$args['arg'.$i++] = "%$r%";
 			}
 		$query .= ')';
-		if(($res = $db->query($engine, 'SELECT COUNT (*) '.$query,
-					$args)) === FALSE)
+		$fields = 'SELECT COUNT (*)';
+		if(($res = $db->query($engine, $fields.' '.$query, $args))
+				=== FALSE)
 			return $engine->log('LOG_ERR', 'Unable to search');
 		$count = $res[0][0];
 		$fields = 'SELECT content_id AS id, timestamp AS date,
