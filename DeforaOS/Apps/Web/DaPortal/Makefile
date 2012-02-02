@@ -533,6 +533,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modules/news/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/news/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/news/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/project/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/project/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/project/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/search/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/search/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/search/project.conf \
