@@ -46,7 +46,7 @@ class DeforaOSTemplate extends BasicTemplate
 	//DeforaOSTemplate::attach
 	protected function attach(&$engine)
 	{
-		$this->name = 'deforaos';
+		$this->name = 'DeforaOS';
 		parent::attach($engine);
 	}
 }
