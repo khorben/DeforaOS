@@ -516,6 +516,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
 		$(PACKAGE)-$(VERSION)/src/formats/Makefile \
 		$(PACKAGE)-$(VERSION)/src/formats/atom.php \
+		$(PACKAGE)-$(VERSION)/src/formats/html.php \
 		$(PACKAGE)-$(VERSION)/src/formats/html5.php \
 		$(PACKAGE)-$(VERSION)/src/formats/pdf.php \
 		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
