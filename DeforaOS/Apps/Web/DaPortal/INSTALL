@@ -10,6 +10,7 @@ DaPortal 2 is based on a modular architecture, and therefore able to adapt to a
 number of different environments. The common requirements are:
 - PHP 5.0 or later:
   * http://www.php.net/
+  * the gettext extension for PHP
   * optionally, the Suhosin patch and extension,
     http://www.hardened-php.net/suhosin/
 - a SQL database backend; either:
