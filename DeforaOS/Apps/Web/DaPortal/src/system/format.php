@@ -73,13 +73,114 @@ abstract class Format
 	}
 
 
+	//virtual
+	abstract public function render(&$engine, $page, $filename = FALSE);
+
+
 	//protected
 	//methods
 	//virtual
 	abstract protected function match(&$engine, $type);
 	abstract protected function attach(&$engine, $type);
+}
 
-	abstract public function render(&$engine, $page, $filename = FALSE);
+
+//FormatElements
+abstract class FormatElements extends Format
+{
+	//public
+	//methods
+	//FormatElements::render
+	public function render(&$engine, $page, $filename = FALSE)
+	{
+		//FIXME ignore filename for the moment
+		if($page === FALSE)
+		{
+			$p = new Page();
+			$this->renderPage($p);
+		}
+		if($page->getType() == 'page')
+			$this->renderPage($page);
+		else
+		{
+			$title = $page->getProperties('title');
+			$p = new Page(array('title' => $title));
+			$p->appendElement($page);
+			$this->renderPage($p);
+		}
+	}
+
+
+	//protected
+	//methods
+	//useful
+	//FormatElements::renderElement
+	protected function renderElement($e, $level = 1)
+	{
+		switch(($type = $e->getType()))
+		{
+			case 'button':
+				return $this->renderButton($e, $level);
+			case 'checkbox':
+				return $this->renderCheckbox($e, $level);
+			case 'dialog':
+				return $this->renderDialog($e, $level);
+			case 'entry':
+				return $this->renderEntry($e, $level);
+			case 'form':
+				return $this->renderForm($e, $level);
+			case 'frame':
+				return $this->renderFrame($e, $level);
+			case 'hbox':
+				return $this->renderHbox($e, $level, $type);
+			case 'iconview':
+				return $this->renderIconview($e, $level);
+			case 'image':
+				return $this->renderImage($e, $level);
+			case 'label':
+				return $this->renderLabel($e, $level);
+			case 'link':
+				return $this->renderLink($e, $level);
+			case 'menubar':
+				return $this->renderMenubar($e, $level);
+			case 'page':
+				return $this->renderPage($e, $level);
+			case 'statusbar':
+				return $this->renderStatusbar($e, $level);
+			case 'title':
+				return $this->renderHeading($e, $level);
+			case 'toolbar':
+				return $this->renderToolbar($e, $level);
+			case 'treeview':
+				return $this->renderTreeview($e, $level);
+			case 'vbox':
+				return $this->renderVbox($e, $level, $type);
+			default:
+				return $this->renderLabel($e, $level);
+		}
+	}
+
+
+	//abstract
+	//useful
+	abstract protected function renderButton($e, $level);
+	abstract protected function renderCheckbox($e, $level);
+	abstract protected function renderDialog($e, $level);
+	abstract protected function renderEntry($e, $level);
+	abstract protected function renderForm($e, $level);
+	abstract protected function renderFrame($e, $level);
+	abstract protected function renderHbox($e, $level);
+	abstract protected function renderIconview($e, $level);
+	abstract protected function renderImage($e, $level);
+	abstract protected function renderLabel($e, $level);
+	abstract protected function renderLink($e, $level);
+	abstract protected function renderMenubar($e, $level);
+	abstract protected function renderPage($e, $level = 0);
+	abstract protected function renderStatusbar($e, $level);
+	abstract protected function renderHeading($e, $level);
+	abstract protected function renderToolbar($e, $level);
+	abstract protected function renderTreeview($e, $level);
+	abstract protected function renderVbox($e, $level);
 }
 
 ?>

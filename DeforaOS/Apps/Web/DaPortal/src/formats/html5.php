@@ -20,10 +20,11 @@ require_once('./system/format.php');
 
 
 //Html5Format
-class Html5Format extends Format
+class Html5Format extends FormatElements
 {
 	//protected
 	//methods
+	//essential
 	//Html5Format::match
 	protected function match(&$engine, $type)
 	{
@@ -43,6 +44,9 @@ class Html5Format extends Format
 	}
 
 
+	//public
+	//methods
+	//rendering
 	//Html5Format::render
 	public function render(&$engine, $page, $filename = FALSE)
 	{
@@ -50,58 +54,15 @@ class Html5Format extends Format
 		$this->engine = $engine;
 		//FIXME also track tags are properly closed
 
-		//FIXME ignore $filename for the moment
-		if($page === FALSE)
-		{
-			$p = new Page();
-			$this->renderElement($p);
-		}
-		if($page->getType() == 'page')
-			$this->renderElement($page);
-		else
-		{
-			$title = $page->getProperties('title');
-			$p = new Page(array('title' => $title));
-			$p->appendElement($page);
-			$this->renderElement($p);
-		}
+		parent::render($engine, $page, $filename);
 		$this->engine = FALSE;
 	}
 
 
-	//private
+	//protected
 	//methods
-	//escaping
-	private function escape($text)
-	{
-		return str_replace(array('<', '>'), array('&lt;', '&gt;'),
-				$text);
-	}
-
-
-	private function escapeAttribute($text)
-	{
-		return htmlspecialchars($text);
-	}
-
-
-	private function escapeText($text)
-	{
-		$from = array('<', '>', "\n", "\r");
-		$to = array('&lt;', '&gt;', "<br />\n", '');
-
-		return str_replace($from, $to, $text);
-	}
-
-
-	private function escapeURI($text)
-	{
-		return urlencode($text);
-	}
-
-
 	//rendering
-	private function renderBlock($e, $level, $tag = 'div')
+	protected function renderBlock($e, $level, $tag = 'div')
 	{
 		$this->renderTabs($level);
 		$this->tagOpen($tag, $e->getType());
@@ -111,7 +72,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderBox($e, $level, $type = 'vbox')
+	protected function renderBox($e, $level, $type = 'vbox')
 	{
 		$this->renderTabs($level);
 		$this->tagOpen('div', $type);
@@ -130,7 +91,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderButton($e, $level)
+	protected function renderButton($e, $level)
 	{
 		if(($r = $e->getProperty('request')) !== FALSE)
 			$url = $this->engine->getUrl($r, FALSE);
@@ -169,7 +130,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderCheckbox($e, $level)
+	protected function renderCheckbox($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->tagOpen('div', $e->getType());
@@ -195,7 +156,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderChildren($e, $level)
+	protected function renderChildren($e, $level)
 	{
 		$children = $e->getChildren();
 		foreach($children as $c)
@@ -203,7 +164,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderDialog($e, $level)
+	protected function renderDialog($e, $level)
 	{
 		if(($type = $e->getProperty('type')) === FALSE)
 			$type = 'message';
@@ -237,55 +198,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderElement($e, $level = 1)
-	{
-		switch(($type = $e->getType()))
-		{
-			case 'button':
-				return $this->renderButton($e, $level);
-			case 'checkbox':
-				return $this->renderCheckbox($e, $level);
-			case 'dialog':
-				return $this->renderDialog($e, $level);
-			case 'entry':
-				return $this->renderEntry($e, $level);
-			case 'form':
-				return $this->renderForm($e, $level);
-			case 'frame':
-				return $this->renderFrame($e, $level);
-			case 'hbox':
-			case 'vbox':
-				return $this->renderBox($e, $level, $type);
-			case 'iconview':
-				$e->setProperty('view', 'icons');
-				return $this->renderTreeview($e, $level);
-			case 'image':
-				return $this->renderImage($e, $level);
-			case 'label':
-				return $this->renderLabel($e, $level);
-			case 'link':
-				return $this->renderLink($e, $level);
-			case 'menubar':
-				return $this->renderMenubar($e, $level);
-			case 'page':
-				return $this->renderPage($e, $level);
-			case 'row':
-				return $this->renderBlock($e, $level);
-			case 'statusbar':
-				return $this->renderStatusbar($e, $level);
-			case 'title':
-				return $this->renderHeading($e, $level);
-			case 'toolbar':
-				return $this->renderToolbar($e, $level);
-			case 'treeview':
-				return $this->renderTreeview($e, $level);
-			default:
-				return $this->renderInline($e, $level);
-		}
-	}
-
-
-	private function renderEntry($e, $level)
+	protected function renderEntry($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->tagOpen('div', $e->getType());
@@ -307,7 +220,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderForm($e, $level)
+	protected function renderForm($e, $level)
 	{
 		$this->renderTabs($level);
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
@@ -350,7 +263,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderFrame($e, $level)
+	protected function renderFrame($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->tagOpen('div', 'frame');
@@ -365,7 +278,13 @@ class Html5Format extends Format
 	}
 
 
-	private function renderHeading($e, $level)
+	protected function renderHbox($e, $level)
+	{
+		$this->renderBox($e, $level, $e->getType());
+	}
+
+
+	protected function renderHeading($e, $level)
 	{
 		//FIXME really track the heading level
 		$tag = 'h'.($level - 1);
@@ -377,7 +296,14 @@ class Html5Format extends Format
 	}
 
 
-	private function renderImage($e, $level)
+	protected function renderIconview($e, $level)
+	{
+		$e->setProperty('view', 'icons');
+		$this->renderTreeview($e, $level);
+	}
+
+
+	protected function renderImage($e, $level)
 	{
 		$size = 48;
 		$class = FALSE;
@@ -398,7 +324,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderInline($e, $level)
+	protected function renderInline($e, $level)
 	{
 		$text = $e->getProperty('text');
 		if($e->getType() !== FALSE)
@@ -409,7 +335,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderLabel($e, $level)
+	protected function renderLabel($e, $level)
 	{
 		$attributes = array();
 		if(($for = $e->getProperty('for')) !== FALSE)
@@ -419,7 +345,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderLink($e, $level)
+	protected function renderLink($e, $level)
 	{
 		$attributes = array();
 		if(($a = $e->getProperty('name')) !== FALSE)
@@ -435,7 +361,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderMenu($e, $level, $class = FALSE)
+	protected function renderMenu($e, $level, $class = FALSE)
 	{
 		//FIXME really implement
 		if(($children = $e->getChildren()) === FALSE
@@ -450,14 +376,14 @@ class Html5Format extends Format
 	}
 
 
-	private function renderMenubar($e, $level)
+	protected function renderMenubar($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->renderMenu($e, $level, 'menubar');
 	}
 
 
-	private function renderMenuitem($e, $level)
+	protected function renderMenuitem($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->tagOpen('li', 'menuitem');
@@ -484,7 +410,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderMeta($level, $header, $value)
+	protected function renderMeta($level, $header, $value)
 	{
 		$this->renderTabs($level);
 		$this->tag('meta', FALSE, FALSE, array('http-equiv' => $header,
@@ -492,7 +418,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderPage($e)
+	protected function renderPage($e, $level = 0)
 	{
 		global $config;
 
@@ -523,7 +449,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderStatusbar($e, $level)
+	protected function renderStatusbar($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->tag('div', 'statusbar', $e->getProperty('id'), FALSE,
@@ -531,7 +457,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderTabs($level)
+	protected function renderTabs($level)
 	{
 		print("\n");
 		for($i = 0; $i < $level; $i++)
@@ -539,7 +465,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderTheme($page)
+	protected function renderTheme($page)
 	{
 		global $config;
 
@@ -552,7 +478,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderTitle($e)
+	protected function renderTitle($e)
 	{
 		global $config;
 
@@ -567,7 +493,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderToolbar($e, $level)
+	protected function renderToolbar($e, $level)
 	{
 		$this->renderTabs($level);
 		$this->tagOpen('div', 'toolbar');
@@ -576,7 +502,7 @@ class Html5Format extends Format
 	}
 
 
-	private function renderTreeview($e, $level)
+	protected function renderTreeview($e, $level)
 	{
 		switch(($view = $e->getProperty('view')))
 		{
@@ -698,6 +624,43 @@ class Html5Format extends Format
 			$this->tagClose('div');
 			$id++;
 		}
+	}
+
+
+	protected function renderVbox($e, $level)
+	{
+		$this->renderBox($e, $level, $e->getType());
+	}
+
+
+	//private
+	//methods
+	//escaping
+	private function escape($text)
+	{
+		return str_replace(array('<', '>'), array('&lt;', '&gt;'),
+				$text);
+	}
+
+
+	private function escapeAttribute($text)
+	{
+		return htmlspecialchars($text);
+	}
+
+
+	private function escapeText($text)
+	{
+		$from = array('<', '>', "\n", "\r");
+		$to = array('&lt;', '&gt;', "<br />\n", '');
+
+		return str_replace($from, $to, $text);
+	}
+
+
+	private function escapeURI($text)
+	{
+		return urlencode($text);
 	}
 
 
