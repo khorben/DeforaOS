@@ -24,6 +24,7 @@ class PlainFormat extends Format
 {
 	//protected
 	//properties
+	protected $engine = FALSE;
 	protected $separator = '';
 
 
@@ -56,7 +57,9 @@ class PlainFormat extends Format
 		//FIXME ignore filename for the moment
 		if($page === FALSE)
 			$page = new Page;
+		$this->engine = $engine;
 		$this->renderElement($page);
+		$this->engine = FALSE;
 	}
 
 
@@ -65,7 +68,8 @@ class PlainFormat extends Format
 	//rendering
 	protected function renderBlock($e, $underline = '-')
 	{
-		print("\n");
+		if($this->separator != '')
+			print("\n\n");
 		if(($title = $e->getProperty('title')) !== FALSE)
 		{
 			print("$title\n");
@@ -75,7 +79,7 @@ class PlainFormat extends Format
 		}
 		$this->separator = '';
 		$this->renderInline($e);
-		print("\n");
+		print("\n\n");
 	}
 
 
@@ -95,11 +99,14 @@ class PlainFormat extends Format
 			case 'dialog':
 			case 'frame':
 			case 'hbox':
+			case 'menubar':
 			case 'statusbar':
 			case 'vbox':
 				return $this->renderBlock($e);
 			case 'page':
 				return $this->renderBlock($e, '=');
+			case 'link':
+				return $this->renderLink($e);
 			case 'label':
 			default:
 				return $this->renderInline($e);
@@ -112,6 +119,26 @@ class PlainFormat extends Format
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
 			print($this->separator.$text);
+			$this->separator = ' ';
+		}
+		$this->renderChildren($e);
+	}
+
+
+	protected function renderLink($e)
+	{
+		if(($url = $e->getProperty('url')) === FALSE
+				&& ($r = $e->getProperty('request')) !== FALSE)
+			$url = $this->engine->getUrl($r);
+		if(($text = $e->getProperty('text')) !== FALSE
+				&& strlen($text) > 0)
+		{
+			print($this->separator.$text);
+			$this->separator = ' ';
+		}
+		if($url !== FALSE)
+		{
+			print($this->separator."($url)");
 			$this->separator = ' ';
 		}
 		$this->renderChildren($e);
