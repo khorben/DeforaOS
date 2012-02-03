@@ -14,8 +14,9 @@ number of different environments. The common requirements are:
   * optionally, the Suhosin patch and extension,
     http://www.hardened-php.net/suhosin/
 - a SQL database backend; either:
+  * PDO, now standard in PHP
   * SQLite, http://www.sqlite.org/
-  * PostgreSQL, http://www.postgresql.org/
+  * PostgreSQL, http://www.postgresql.org/ (via PDO at the moment)
   * or MySQL, http://www.mysql.org/
 
 Then, depending on the desired user-interface:
