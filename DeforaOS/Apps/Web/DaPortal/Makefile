@@ -519,6 +519,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/formats/html.php \
 		$(PACKAGE)-$(VERSION)/src/formats/html5.php \
 		$(PACKAGE)-$(VERSION)/src/formats/pdf.php \
+		$(PACKAGE)-$(VERSION)/src/formats/plain.php \
 		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
