@@ -83,6 +83,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/stock_refresh.png');
 }
 
+.stock48.remove {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-remove.png');
+}
+
 .stock48.reset {
 	background-image:	url('gnome-icon-theme/48x48/actions/revert.png');
 }

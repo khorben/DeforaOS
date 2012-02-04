@@ -79,6 +79,10 @@
 	background-image:	url('Tango/scalable/actions/gtk-refresh.svg');
 }
 
+.stock48.remove {
+	background-image:	url('Tango/scalable/actions/gtk-remove.svg');
+}
+
 .stock48.search {
 	background-image:	url('Tango/scalable/actions/stock_search.svg');
 }

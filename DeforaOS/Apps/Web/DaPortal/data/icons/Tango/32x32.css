@@ -79,6 +79,10 @@
 	background-image:	url('Tango/32x32/actions/gtk-refresh.png');
 }
 
+.stock32.remove {
+	background-image:	url('Tango/32x32/actions/gtk-remove.png');
+}
+
 .stock32.search {
 	background-image:	url('Tango/32x32/actions/stock_search.png');
 }

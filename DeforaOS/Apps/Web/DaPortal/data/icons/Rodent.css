@@ -90,8 +90,16 @@
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_ok.png');
 }
 
+.stock16.remove, .stock48.remove {
+	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_remove.png');
+}
+
 .stock16.reset, .stock48.reset {
 	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_reset.png');
+}
+
+.stock16.search, .stock48.search {
+	background-image:		url('Rodent/xfce4-icon-theme/48x48/stock/stock_search.png');
 }
 
 .stock16.submit, .stock48.submit {
