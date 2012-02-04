@@ -35,16 +35,20 @@
 	background-image:	url('Tango/scalable/actions/gtk-cancel.svg');
 }
 
+.stock48.connect {
+	background-image:	url('Tango/scalable/actions/go-jump.svg');
+}
+
 .stock48.delete {
 	background-image:	url('Tango/scalable/actions/gtk-delete.svg');
 }
 
 .stock48.disable {
-	background-image:	url('Tango/48x48/actions/gtk-cancel.png');
+	background-image:	url('Tango/scalable/actions/gtk-cancel.svg');
 }
 
 .stock48.enable {
-	background-image:	url('Tango/48x48/categories/applications-system.png');
+	background-image:	url('Tango/scalable/categories/applications-system.svg');
 }
 
 .stock48.error {
@@ -72,11 +76,11 @@
 }
 
 .stock48.refresh {
-	background-image:	url('Tango/48x48/actions/gtk-refresh.png');
+	background-image:	url('Tango/scalable/actions/gtk-refresh.svg');
 }
 
 .stock48.search {
-	background-image:	url('Tango/48x48/actions/stock_search.png');
+	background-image:	url('Tango/scalable/actions/stock_search.svg');
 }
 
 .stock48.user {

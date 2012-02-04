@@ -35,6 +35,10 @@
 	background-image:	url('Tango/32x32/actions/gtk-cancel.png');
 }
 
+.stock32.connect {
+	background-image:	url('Tango/32x32/actions/go-jump.png');
+}
+
 .stock32.delete {
 	background-image:	url('Tango/32x32/actions/gtk-delete.png');
 }

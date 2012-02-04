@@ -35,6 +35,10 @@
 	background-image:	url('Tango/16x16/actions/gtk-cancel.png');
 }
 
+.stock16.connect {
+	background-image:	url('Tango/16x16/actions/go-jump.png');
+}
+
 .stock16.delete {
 	background-image:	url('Tango/16x16/actions/gtk-delete.png');
 }
