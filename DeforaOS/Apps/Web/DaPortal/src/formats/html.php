@@ -291,9 +291,21 @@ class HtmlFormat extends FormatElements
 	protected function renderHeading($e)
 	{
 		//FIXME really track the heading level
-		$tag = 'h'.max(count($this->tags) - 1, 1);
+		$level = max(count($this->tags) - 1, 1);
+		$tag = "h$level";
+		if(($class = $e->getProperty('class')) === FALSE
+				&& ($class = $e->getProperty('stock'))
+				!== FALSE)
+			switch($level)
+			{
+				case 1: $class = "stock48 $class"; break;
+				case 2: $class = "stock32 $class"; break;
+				case 3: $class = "stock24 $class"; break;
+				case 4:
+				default:$class = "stock16 $class"; break;
+			}
 		$this->renderTabs();
-		$this->tagOpen($tag, $e->getType(), $e->getProperty('id'),
+		$this->tagOpen($tag, $class, $e->getProperty('id'),
 				FALSE, $e->getProperty('text'));
 		$this->renderChildren($e);
 		$this->tagClose($tag);
