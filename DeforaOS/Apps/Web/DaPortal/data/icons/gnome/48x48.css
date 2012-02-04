@@ -39,6 +39,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-cancel.png');
 }
 
+.stock48.connect {
+	background-image:	url('gnome-icon-theme/48x48/actions/go-jump.png');
+}
+
 .stock48.delete {
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-delete.png');
 }
