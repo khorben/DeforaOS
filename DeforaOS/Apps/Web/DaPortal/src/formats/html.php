@@ -102,7 +102,9 @@ class HtmlFormat extends FormatElements
 			$url = $this->engine->getUrl($r, FALSE);
 		else
 			$url = $e->getProperty('url');
-		if(($class = $e->getProperty('stock')) !== FALSE)
+		if(($class = $e->getProperty('class')) === FALSE
+				&& ($class = $e->getProperty('stock'))
+				!== FALSE)
 			$class = "stock16 $class";
 		switch(($type = $e->getProperty('type')))
 		{
