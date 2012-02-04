@@ -134,7 +134,7 @@ class SearchModule extends Module
 		$q = $request->getParameter('q');
 		$page = new Page;
 		$page->setProperty('title', _('Search'));
-		$title = $page->append('title');
+		$title = $page->append('title', array('stock' => 'search'));
 		$title->setProperty('text', $q ? _('Search results')
 				: _('Search'));
 		$form = $page->append('form');
