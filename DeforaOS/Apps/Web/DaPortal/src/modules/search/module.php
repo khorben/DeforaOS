@@ -49,7 +49,7 @@ class SearchModule extends Module
 
 		if(!$cred->isAdmin())
 			return $engine->log('LOG_ERR', 'Permission denied');
-		$title = 'Search administration';
+		$title = _('Search administration');
 		//FIXME implement settings
 		return FALSE;
 	}
@@ -133,22 +133,23 @@ class SearchModule extends Module
 	{
 		$q = $request->getParameter('q');
 		$page = new Page;
-		$page->setProperty('title', 'Search');
+		$page->setProperty('title', _('Search'));
 		$title = $page->append('title');
-		$title->setProperty('text', $q ? 'Search results' : 'Search');
+		$title->setProperty('text', $q ? _('Search results')
+				: _('Search'));
 		$form = $page->append('form');
 		$r = new Request($engine, 'search', $advanced ? 'advanced'
 				: FALSE);
 		$form->setProperty('request', $r);
 		$entry = $form->append('entry');
-		$entry->setProperty('text', 'Search query: ');
+		$entry->setProperty('text', _('Search query: '));
 		$entry->setProperty('name', 'q');
 		$entry->setProperty('value', $request->getParameter('q'));
 		if($advanced)
 		{
 			$hbox = $form->append('hbox');
 			$label = $hbox->append('label');
-			$label->setProperty('text', 'Search in: ');
+			$label->setProperty('text', _('Search in: '));
 			$checkbox = $hbox->append('checkbox');
 			$checkbox->setProperty('name', 'intitle');
 			$checkbox->setProperty('text', 'titles');
@@ -159,26 +160,26 @@ class SearchModule extends Module
 			$checkbox->setProperty('text', 'content');
 			$checkbox->setProperty('value',
 					$request->getParameter('incontent'));
-			$button = $form->append('button');
-			$button->setProperty('type', 'reset');
-			$button->setProperty('text', 'Reset');
+			$button = $form->append('button', array(
+						'type' => 'reset',
+						'text' => _('Reset')));
 		}
 		$button = $form->append('button', array('stock' => 'search',
 					'type' => 'submit',
-					'text' => 'Search'));
+					'text' => _('Search')));
 		$link = $page->append('link');
 		if($advanced)
 		{
-			$link->setProperty('class', 'advanced');
-			$link->setProperty('text', 'Simpler search...');
+			$link->setProperty('stock', 'remove');
+			$link->setProperty('text', _('Simpler search...'));
 			$link->setProperty('request', new Request($engine,
 						'search', FALSE, FALSE, FALSE,
 						$q ? array('q' => $q) : FALSE));
 		}
 		else
 		{
-			$link->setProperty('class', 'simple');
-			$link->setProperty('text', 'Advanced search...');
+			$link->setProperty('stock', 'add');
+			$link->setProperty('text', _('Advanced search...'));
 			$link->setProperty('request', new Request($engine,
 						'search', 'advanced', FALSE,
 						FALSE, $q ? array('q' => $q)
@@ -215,14 +216,14 @@ class SearchModule extends Module
 		$fields = 'SELECT COUNT (*)';
 		if(($res = $db->query($engine, $fields.' '.$query, $args))
 				=== FALSE)
-			return $engine->log('LOG_ERR', 'Unable to search');
+			return $engine->log('LOG_ERR', _('Unable to search'));
 		$count = $res[0][0];
 		$fields = 'SELECT content_id AS id, timestamp AS date,
 name AS module, daportal_content.user_id AS user_id, title, content, username';
 		$order = 'ORDER BY timestamp DESC';
 		if(($res = $db->query($engine, $fields.' '.$query.' '.$order,
 					$args)) === FALSE)
-			return $engine->log('LOG_ERR', 'Unable to search');
+			return $engine->log('LOG_ERR', _('Unable to search'));
 		return $res;
 	}
 }
