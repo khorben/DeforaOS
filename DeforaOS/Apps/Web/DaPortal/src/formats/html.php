@@ -666,7 +666,6 @@ class HtmlFormat extends FormatElements
 	private function tag($name, $class = FALSE, $id = FALSE,
 			$attributes = FALSE, $content = FALSE)
 	{
-		//FIXME automatically output tabs
 		$tag = '<'.$this->escapeAttribute($name);
 		if($class !== FALSE)
 			$tag.=' class="'.$this->escapeAttribute($class).'"';
