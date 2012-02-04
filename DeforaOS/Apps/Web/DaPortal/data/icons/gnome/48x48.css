@@ -31,12 +31,24 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/back.png');
 }
 
+.stock48.bold {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-bold.png');
+}
+
 .stock48.cancel {
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-cancel.png');
 }
 
 .stock48.delete {
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-delete.png');
+}
+
+.stock48.disable {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-cancel.png');
+}
+
+.stock48.enable {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-execute.png');
 }
 
 .stock48.error {
@@ -65,6 +77,14 @@
 
 .stock48.refresh {
 	background-image:	url('gnome-icon-theme/48x48/actions/stock_refresh.png');
+}
+
+.stock48.reset {
+	background-image:	url('gnome-icon-theme/48x48/actions/revert.png');
+}
+
+.stock48.search {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-find.png');
 }
 
 .stock48.user {

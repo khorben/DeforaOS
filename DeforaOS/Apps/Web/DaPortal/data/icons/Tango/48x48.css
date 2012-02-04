@@ -75,6 +75,10 @@
 	background-image:	url('Tango/48x48/actions/gtk-refresh.png');
 }
 
+.stock48.search {
+	background-image:	url('Tango/48x48/actions/stock_search.png');
+}
+
 .stock48.user {
 	background-image:	url('Tango/scalable/apps/user-info.svg');
 }
