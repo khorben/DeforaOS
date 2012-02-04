@@ -17,6 +17,7 @@
 
 
 require_once('./engines/cli.php');
+require_once('./system/format.php');
 require_once('./system/page.php');
 require_once('./system/template.php');
 
@@ -24,14 +25,9 @@ require_once('./system/template.php');
 //GtkEngine
 class GtkEngine extends CliEngine
 {
-	//private
+	//protected
 	//properties
-	private $windows = array();
-	private $debug_window = FALSE;
-	private $debug_store;
-
-	private $fontTitle;
-	private $fontLink;
+	private $format = FALSE;
 
 
 	//public
@@ -46,371 +42,7 @@ class GtkEngine extends CliEngine
 			return FALSE;
 		if(($page = $template->render($this, $page)) === FALSE)
 			return FALSE;
-		$this->renderElement($page);
-		//enter the main loop
-		Gtk::main();
-		foreach($this->windows as $w)
-			$w->destroy();
-		return FALSE;
-	}
-
-	private function renderButton($e)
-	{
-		$stock = $this->_getStock($e->getProperty('stock'));
-		if($stock !== FALSE)
-			//XXX no longer ignore the original text
-			$ret = GtkButton::new_from_stock($stock);
-		else
-			$ret = new GtkButton($e->getProperty('text'));
-		if(($request = $e->getProperty('request')) !== FALSE)
-			$ret->connect_simple('clicked', array($this,
-						'on_button_clicked'), $request);
-		return $ret;
-	}
-
-	private function renderCheckbox($e)
-	{
-		return new GtkCheckButton($e->getProperty('text'));
-	}
-
-	private function renderDialog($e)
-	{
-		if(($type = $e->getProperty('type')) === FALSE)
-			$type = 'error';
-		if(($title = $e->getProperty('title')) === FALSE)
-			$title = ucfirst($type);
-		$buttons = Gtk::BUTTONS_CLOSE;
-		switch($type)
-		{
-			case 'error':
-				$type = Gtk::MESSAGE_ERROR;
-				break;
-			case 'question':
-				$type = Gtk::MESSAGE_QUESTION;
-				$buttons = Gtk::BUTTONS_YES_NO;
-				break;
-			case 'warning':
-				$type = Gtk::MESSAGE_WARNING;
-				break;
-			default:
-				$type = Gtk::MESSAGE_INFO;
-				$buttons = Gtk::BUTTONS_OK;
-				break;
-		}
-		$dialog = new GtkMessageDialog(NULL, 0, $type, $buttons,
-				$title);
-		//XXX why is this necessary?
-		$dialog->set_title($title);
-		if(($text = $e->getProperty('text')) === FALSE)
-			$text = '';
-		$dialog->set_markup('<b>'.str_replace('<', '&lt;', $title)
-				."</b>\n\n".str_replace('<', '&lt;', $text));
-		$dialog->connect_simple('delete-event', array($this,
-					'on_window_delete_event'), $dialog);
-		$dialog->connect_simple('response', array($this,
-					'on_window_delete_event'), $dialog);
-		$this->windows[] = $dialog;
-		$dialog->show();
-		return $dialog;
-	}
-
-	private function renderElement($element)
-	{
-		switch($element->getType())
-		{
-			case 'button':
-				return $this->renderButton($element);
-			case 'checkbox':
-				return $this->renderCheckbox($element);
-			case 'dialog':
-				return $this->renderDialog($element);
-			case 'entry':
-				return $this->renderEntry($element);
-			case 'form':
-				return $this->renderForm($element);
-			case 'frame':
-				return $this->renderFrame($element);
-			case 'hbox':
-				return $this->renderHbox($element);
-			case 'iconview':
-				return $this->renderIconview($element);
-			case 'label':
-				return $this->renderLabel($element);
-			case 'link':
-				return $this->renderLink($element);
-			case 'menubar':
-				return $this->renderMenubar($element);
-			case 'menuitem':
-				return $this->renderMenuitem($element);
-			case 'page':
-				return $this->renderWindow($element);
-			case 'statusbar':
-				return $this->renderStatusbar($element);
-			case 'title':
-				return $this->renderTitle($element);
-			case 'treeview':
-				return $this->renderTreeview($element);
-			case 'vbox':
-				return $this->renderVbox($element);
-		}
-		return FALSE;
-	}
-
-	private function renderEntry($e)
-	{
-		$ret = new GtkHbox(FALSE, 4);
-		if(($label = $e->getProperty('text')) !== FALSE)
-		{
-			$label = new GtkLabel($label);
-			$label->set_alignment(0.0, 0.5);
-			$ret->pack_start($label);
-		}
-		$entry = new GtkEntry($e->getProperty('value'));
-		if($e->getProperty('hidden'))
-			$entry->set_visibility(FALSE);
-		$ret->pack_start($entry, TRUE, TRUE, 0);
-		return $ret;
-	}
-
-	private function renderForm($e)
-	{
-		//FIXME track the current request for submission
-		$ret = new GtkVbox(FALSE, 4);
-		$ret->set_border_width(4);
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if(($widget = $this->renderElement($c)) === FALSE)
-				continue;
-			$ret->pack_start($widget, FALSE, TRUE, 0);
-		}
-		return $ret;
-	}
-
-	private function renderFrame($e)
-	{
-		$ret = new GtkFrame($e->getProperty('title'));
-		$ret->set_border_width(4);
-		$box = $this->renderHbox($e);
-		$ret->add($box);
-		return $ret;
-	}
-
-	private function renderHbox($e)
-	{
-		$ret = new GtkHbox(FALSE, 4);
-		$ret->set_border_width(4);
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if(($widget = $this->renderElement($c)) === FALSE)
-				continue;
-			$expand = $c->getProperty('Gtk::expand', FALSE);
-			$fill = $c->getProperty('Gtk::fill', TRUE);
-			if($c->getType() == 'statusbar')
-				$ret->pack_end($widget, $expand, $fill, 0);
-			else
-				$ret->pack_start($widget, $expand, $fill, 0);
-			if($c->getType() == 'menubar')
-				$ret->reorder_child($widget, 0);
-		}
-		return $ret;
-	}
-
-	private function renderIconview($e)
-	{
-		$e->setProperty('Gtk::expand', TRUE);
-		$e->setProperty('Gtk::fill', TRUE);
-		$ret = new GtkScrolledWindow();
-		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-		$store = new GtkListStore(GdkPixbuf::gtype,
-				Gobject::TYPE_STRING);
-		$view = new GtkIconView();
-		$view->set_model($store);
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if($c->getType() != 'row')
-				continue;
-			$iter = $store->append();
-			if(($icon = $c->getProperty('icon')) !== FALSE)
-				$store->set($iter, 0, $c->getProperty('icon'));
-			$store->set($iter, 1, $c->getProperty('label'));
-		}
-		$ret->add($view);
-		return $ret;
-	}
-
-	private function renderLabel($e)
-	{
-		$ret = new GtkLabel($e->getProperty('text'), FALSE);
-		$ret->set_alignment(0.0, 0.5);
-		return $ret;
-	}
-
-	private function renderLink($e)
-	{
-		//FIXME create helper function for stock buttons?
-		$ret = new GtkButton();
-		//FIXME use set_image() and set_label() instead if possible
-		$box = new GtkHbox(FALSE, 4);
-		$image = GtkImage::new_from_stock(Gtk::STOCK_CONNECT,
-				Gtk::ICON_SIZE_BUTTON);
-		$box->pack_start($image, FALSE, TRUE, 0);
-		$label = new GtkLabel($e->getProperty('text'));
-		$label->modify_font($this->fontLink);
-		//FIXME setting the color doesn't work
-		$label->modify_text(Gtk::STATE_NORMAL, new GdkColor(0, 1.0, 0));
-		$box->pack_start($label, TRUE, TRUE, 0);
-		$ret->add($box);
-		$ret->set_relief(Gtk::RELIEF_NONE);
-		$request = $e->getProperty('request');
-		$ret->connect_simple('clicked', array($this,
-					'on_button_clicked'), $request);
-		return $ret;
-	}
-
-	private function renderMenubar($e)
-	{
-		$ret = new GtkMenuBar;
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if($c->getType() != 'menuitem'
-					|| ($menuitem = $this->renderMenuitem(
-							$c)) === FALSE)
-				continue;
-			$ret->append($menuitem);
-		}
-		return $ret;
-	}
-
-	private function renderMenuitem($e)
-	{
-		//FIXME implement images...
-		$ret = new GtkMenuItem($e->getProperty('text'));
-		$request = $e->getProperty('request');
-		if(($children = $e->getChildren($e)) !== FALSE
-				&& count($children))
-		{
-			$menu = new GtkMenu;
-			if($request !== FALSE)
-			{
-				//XXX find a better label
-				$menuitem = new GtkMenuItem('This item');
-				$menuitem->connect_simple('activate',
-						array($this,
-							'on_button_clicked'),
-						$request);
-				$menu->append($menuitem);
-				$menuitem = new GtkSeparatorMenuItem;
-				$menu->append($menuitem);
-			}
-			foreach($children as $c)
-			{
-				if($c->getType() != 'menuitem')
-					continue;
-				$menuitem = $this->renderMenuitem($c);
-				$menu->append($menuitem);
-			}
-			$ret->set_submenu($menu);
-		}
-		else if($request !== FALSE)
-			$ret->connect_simple('activate', array($this,
-						'on_button_clicked'), $request);
-		else
-			$ret->set_sensitive(FALSE);
-		return $ret;
-	}
-
-	private function renderStatusbar($e)
-	{
-		$ret = new GtkStatusBar;
-		$ret->push($ret->get_context_id('default'),
-				$e->getProperty('text'));
-		return $ret;
-	}
-
-	private function renderTitle($e)
-	{
-		$ret = new GtkLabel($e->getProperty('text'), FALSE);
-		$ret->set_alignment(0.0, 0.5);
-		$ret->modify_font($this->fontTitle);
-		return $ret;
-	}
-
-	private function renderTreeview($e)
-	{
-		$e->setProperty('Gtk::expand', TRUE);
-		$e->setProperty('Gtk::fill', TRUE);
-		$ret = new GtkScrolledWindow();
-		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-		$columns = $e->getProperty('columns');
-		if(!is_array($columns) || count($columns) == 0)
-			$columns = array('title');
-		//FIXME patch php-gtk to support dynamically-defined stores
-		$store = new GtkListStore(Gobject::TYPE_STRING,
-				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
-				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
-				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
-				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
-				Gobject::TYPE_STRING);
-		$view = new GtkTreeView($store);
-		for($i = 0, $cnt = count($columns); $i < $cnt; $i++)
-		{
-			$renderer = new GtkCellRendererText();
-			$column = new GtkTreeViewColumn(ucfirst($columns[$i]),
-					$renderer, 'text', $i);
-			$view->append_column($column);
-		}
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if($c->getType() != 'row')
-				continue;
-			$iter = $store->append();
-			for($i = 0, $cnt = count($columns); $i < $cnt; $i++)
-				$values[] = $store->set($iter, $i,
-						$c->getProperty($columns[$i]));
-		}
-		$ret->add($view);
-		return $ret;
-	}
-
-	private function renderVbox($e)
-	{
-		$ret = new GtkVbox(FALSE, 4);
-		$ret->set_border_width(4);
-		$children = $e->getChildren();
-		foreach($children as $c)
-		{
-			if(($widget = $this->renderElement($c)) === FALSE)
-				continue;
-			$expand = $c->getProperty('Gtk::expand', FALSE);
-			$fill = $c->getProperty('Gtk::fill', TRUE);
-			if($c->getType() == 'statusbar')
-				$ret->pack_end($widget, $expand, $fill, 0);
-			else
-				$ret->pack_start($widget, $expand, $fill, 0);
-			if($c->getType() == 'menubar')
-				$ret->reorder_child($widget, 0);
-		}
-		return $ret;
-	}
-
-	private function renderWindow($e)
-	{
-		$window = new GtkWindow();
-		if(($title = $e->getProperty('title')) !== FALSE)
-			$window->set_title($title);
-		$window->connect_simple('delete-event', array($this,
-					'on_window_delete_event'), $window);
-		$box = $this->renderVbox($e);
-		$box->set_border_width(0);
-		$window->add($box);
-		$window->show_all();
-		$this->windows[] = $window;
-		return $window;
+		$this->format->render($this, $page);
 	}
 
 
@@ -428,14 +60,71 @@ class GtkEngine extends CliEngine
 	//GtkEngine::attach
 	public function attach()
 	{
+		$this->format = new GtkFormat;
+		$this->format->attach($this);
+	}
+
+
+	//GtkEngine::log
+	public function log($priority, $message)
+	{
+		return $this->format->log($priority, $message);
+	}
+}
+
+
+class GtkFormat extends FormatElements
+{
+	//private
+	//properties
+	private $engine = FALSE;
+	private $windows = array();
+	private $debug_window = FALSE;
+	private $debug_store;
+
+	private $fontTitle;
+	private $fontLink;
+
+
+	//public
+	//methods
+	//essential
+	//GtkFormat::match
+	public function match(&$engine, $type = FALSE)
+	{
+		//never match by default
+		return 0;
+	}
+
+
+	//GtkFormat::attach
+	public function attach(&$engine, $type = FALSE)
+	{
 		//initialize fonts
+		$this->engine = $engine;
 		$this->fontTitle = new PangoFontDescription;
 		$this->fontTitle->set_weight('PANGO_WEIGHT_BOLD');
 		$this->fontLink = new PangoFontDescription;
 	}
 
 
-	//GtkEngine::log
+	//rendering
+	//GtkFormat::render
+	public function render(&$engine, $page, $filename = FALSE)
+	{
+		if($filename !== FALSE)
+			return $engine->log('LOG_ERR',
+					'Cannot render to a filename');
+		parent::render($engine, $page, $filename);
+		//enter the main loop
+		Gtk::main();
+		foreach($this->windows as $w)
+			$w->destroy();
+		return FALSE;
+	}
+
+
+	//logging
 	public function log($priority, $message)
 	{
 		$icon = Gtk::STOCK_DIALOG_INFO;
@@ -443,7 +132,7 @@ class GtkEngine extends CliEngine
 		switch($priority)
 		{
 			case 'LOG_DEBUG':
-				if(Engine::$debug !== TRUE)
+				if(!$this->engine->getDebug())
 					return FALSE;
 				break;
 			case 'LOG_ERR':
@@ -455,12 +144,11 @@ class GtkEngine extends CliEngine
 				$title = 'Warning';
 				break;
 		}
-		if(Engine::$debug === TRUE)
+		if($this->engine->getDebug())
 			$this->_log_append($icon, $priority, $message);
 		if($priority == 'LOG_DEBUG')
 			return FALSE;
-		return new PageElement('dialog', array('title' => $title,
-					'text' => $message));
+		return FALSE;
 	}
 
 	private function _log_append($icon, $priority, $message)
@@ -509,30 +197,342 @@ class GtkEngine extends CliEngine
 	}
 
 
-	//callbacks
-	//GtkEngine::on_button_clicked
-	public function on_button_clicked($request)
+	//protected
+	//methods
+	//rendering
+	protected function renderButton($e)
 	{
-		if(($res = $this->process($request)) !== FALSE)
-			$this->renderElement($res);
+		$stock = $this->_getStock($e->getProperty('stock'));
+		if($stock !== FALSE)
+			//XXX no longer ignore the original text
+			$ret = GtkButton::new_from_stock($stock);
+		else
+			$ret = new GtkButton($e->getProperty('text'));
+		if(($request = $e->getProperty('request')) !== FALSE)
+			$ret->connect_simple('clicked', array($this,
+						'on_button_clicked'), $request);
+		return $ret;
 	}
 
-
-	//GtkEngine::on_window_delete_event
-	public function on_window_delete_event($window)
+	protected function renderCheckbox($e)
 	{
-		if(($res = array_search($window, $this->windows)) !== FALSE)
+		return new GtkCheckButton($e->getProperty('text'));
+	}
+
+	protected function renderDialog($e)
+	{
+		if(($type = $e->getProperty('type')) === FALSE)
+			$type = 'error';
+		if(($title = $e->getProperty('title')) === FALSE)
+			$title = ucfirst($type);
+		$buttons = Gtk::BUTTONS_CLOSE;
+		switch($type)
 		{
-			unset($this->windows[$res]);
-			if(count($this->windows) == 0)
-				Gtk::main_quit();
+			case 'error':
+				$type = Gtk::MESSAGE_ERROR;
+				break;
+			case 'question':
+				$type = Gtk::MESSAGE_QUESTION;
+				$buttons = Gtk::BUTTONS_YES_NO;
+				break;
+			case 'warning':
+				$type = Gtk::MESSAGE_WARNING;
+				break;
+			default:
+				$type = Gtk::MESSAGE_INFO;
+				$buttons = Gtk::BUTTONS_OK;
+				break;
 		}
-		//FIXME return a boolean?
+		$dialog = new GtkMessageDialog(NULL, 0, $type, $buttons,
+				$title);
+		//XXX why is this necessary?
+		$dialog->set_title($title);
+		if(($text = $e->getProperty('text')) === FALSE)
+			$text = '';
+		$dialog->set_markup('<b>'.str_replace('<', '&lt;', $title)
+				."</b>\n\n".str_replace('<', '&lt;', $text));
+		$dialog->connect_simple('delete-event', array($this,
+					'on_window_delete_event'), $dialog);
+		$dialog->connect_simple('response', array($this,
+					'on_window_delete_event'), $dialog);
+		$this->windows[] = $dialog;
+		$dialog->show();
+		return $dialog;
+	}
+
+	protected function renderEntry($e)
+	{
+		$ret = new GtkHbox(FALSE, 4);
+		if(($label = $e->getProperty('text')) !== FALSE)
+		{
+			$label = new GtkLabel($label);
+			$label->set_alignment(0.0, 0.5);
+			$ret->pack_start($label);
+		}
+		$entry = new GtkEntry($e->getProperty('value'));
+		if($e->getProperty('hidden'))
+			$entry->set_visibility(FALSE);
+		$ret->pack_start($entry, TRUE, TRUE, 0);
+		return $ret;
+	}
+
+	protected function renderForm($e)
+	{
+		//FIXME track the current request for submission
+		$ret = new GtkVbox(FALSE, 4);
+		$ret->set_border_width(4);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if(($widget = $this->renderElement($c)) === FALSE)
+				continue;
+			$ret->pack_start($widget, FALSE, TRUE, 0);
+		}
+		return $ret;
+	}
+
+	protected function renderFrame($e)
+	{
+		$ret = new GtkFrame($e->getProperty('title'));
+		$ret->set_border_width(4);
+		$box = $this->renderHbox($e);
+		$ret->add($box);
+		return $ret;
+	}
+
+	protected function renderHbox($e)
+	{
+		$ret = new GtkHbox(FALSE, 4);
+		$ret->set_border_width(4);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if(($widget = $this->renderElement($c)) === FALSE)
+				continue;
+			$expand = $c->getProperty('Gtk::expand', FALSE);
+			$fill = $c->getProperty('Gtk::fill', TRUE);
+			if($c->getType() == 'statusbar')
+				$ret->pack_end($widget, $expand, $fill, 0);
+			else
+				$ret->pack_start($widget, $expand, $fill, 0);
+			if($c->getType() == 'menubar')
+				$ret->reorder_child($widget, 0);
+		}
+		return $ret;
+	}
+
+	protected function renderHeading($e)
+	{
+		$ret = new GtkLabel($e->getProperty('text'), FALSE);
+		$ret->set_alignment(0.0, 0.5);
+		$ret->modify_font($this->fontTitle);
+		return $ret;
+	}
+
+	protected function renderIconview($e)
+	{
+		$e->setProperty('Gtk::expand', TRUE);
+		$e->setProperty('Gtk::fill', TRUE);
+		$ret = new GtkScrolledWindow();
+		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+		$store = new GtkListStore(GdkPixbuf::gtype,
+				Gobject::TYPE_STRING);
+		$view = new GtkIconView();
+		$view->set_model($store);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if($c->getType() != 'row')
+				continue;
+			$iter = $store->append();
+			if(($icon = $c->getProperty('icon')) !== FALSE)
+				$store->set($iter, 0, $c->getProperty('icon'));
+			$store->set($iter, 1, $c->getProperty('label'));
+		}
+		$ret->add($view);
+		return $ret;
+	}
+
+	protected function renderImage($e)
+	{
+		//FIXME really implement
+		return new GtkImage;
+	}
+
+	protected function renderLabel($e)
+	{
+		$ret = new GtkLabel($e->getProperty('text'), FALSE);
+		$ret->set_alignment(0.0, 0.5);
+		return $ret;
+	}
+
+	protected function renderLink($e)
+	{
+		//FIXME create helper function for stock buttons?
+		$ret = new GtkButton();
+		//FIXME use set_image() and set_label() instead if possible
+		$box = new GtkHbox(FALSE, 4);
+		$image = GtkImage::new_from_stock(Gtk::STOCK_CONNECT,
+				Gtk::ICON_SIZE_BUTTON);
+		$box->pack_start($image, FALSE, TRUE, 0);
+		$label = new GtkLabel($e->getProperty('text'));
+		$label->modify_font($this->fontLink);
+		//FIXME setting the color doesn't work
+		$label->modify_text(Gtk::STATE_NORMAL, new GdkColor(0, 1.0, 0));
+		$box->pack_start($label, TRUE, TRUE, 0);
+		$ret->add($box);
+		$ret->set_relief(Gtk::RELIEF_NONE);
+		$request = $e->getProperty('request');
+		$ret->connect_simple('clicked', array($this,
+					'on_button_clicked'), $request);
+		return $ret;
+	}
+
+	protected function renderMenubar($e)
+	{
+		$ret = new GtkMenuBar;
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if($c->getType() != 'menuitem'
+					|| ($menuitem = $this->renderMenuitem(
+							$c)) === FALSE)
+				continue;
+			$ret->append($menuitem);
+		}
+		return $ret;
+	}
+
+	protected function renderMenuitem($e)
+	{
+		//FIXME implement images...
+		$ret = new GtkMenuItem($e->getProperty('text'));
+		$request = $e->getProperty('request');
+		if(($children = $e->getChildren($e)) !== FALSE
+				&& count($children))
+		{
+			$menu = new GtkMenu;
+			if($request !== FALSE)
+			{
+				//XXX find a better label
+				$menuitem = new GtkMenuItem('This item');
+				$menuitem->connect_simple('activate',
+						array($this,
+							'on_button_clicked'),
+						$request);
+				$menu->append($menuitem);
+				$menuitem = new GtkSeparatorMenuItem;
+				$menu->append($menuitem);
+			}
+			foreach($children as $c)
+			{
+				if($c->getType() != 'menuitem')
+					continue;
+				$menuitem = $this->renderMenuitem($c);
+				$menu->append($menuitem);
+			}
+			$ret->set_submenu($menu);
+		}
+		else if($request !== FALSE)
+			$ret->connect_simple('activate', array($this,
+						'on_button_clicked'), $request);
+		else
+			$ret->set_sensitive(FALSE);
+		return $ret;
+	}
+
+	protected function renderPage($e)
+	{
+		$window = new GtkWindow();
+		if(($title = $e->getProperty('title')) !== FALSE)
+			$window->set_title($title);
+		$window->connect_simple('delete-event', array($this,
+					'on_window_delete_event'), $window);
+		$box = $this->renderVbox($e);
+		$box->set_border_width(0);
+		$window->add($box);
+		$window->show_all();
+		$this->windows[] = $window;
+		return $window;
+	}
+
+	protected function renderStatusbar($e)
+	{
+		$ret = new GtkStatusBar;
+		$ret->push($ret->get_context_id('default'),
+				$e->getProperty('text'));
+		return $ret;
+	}
+
+	protected function renderToolbar($e)
+	{
+		//FIXME really implement
+		return new GtkToolbar;
+	}
+
+	protected function renderTreeview($e)
+	{
+		$e->setProperty('Gtk::expand', TRUE);
+		$e->setProperty('Gtk::fill', TRUE);
+		$ret = new GtkScrolledWindow();
+		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+		$columns = $e->getProperty('columns');
+		if(!is_array($columns) || count($columns) == 0)
+			$columns = array('title');
+		//FIXME patch php-gtk to support dynamically-defined stores
+		$store = new GtkListStore(Gobject::TYPE_STRING,
+				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
+				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
+				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
+				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
+				Gobject::TYPE_STRING);
+		$view = new GtkTreeView($store);
+		for($i = 0, $cnt = count($columns); $i < $cnt; $i++)
+		{
+			$renderer = new GtkCellRendererText();
+			$column = new GtkTreeViewColumn(ucfirst($columns[$i]),
+					$renderer, 'text', $i);
+			$view->append_column($column);
+		}
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if($c->getType() != 'row')
+				continue;
+			$iter = $store->append();
+			for($i = 0, $cnt = count($columns); $i < $cnt; $i++)
+				$values[] = $store->set($iter, $i,
+						$c->getProperty($columns[$i]));
+		}
+		$ret->add($view);
+		return $ret;
+	}
+
+	protected function renderVbox($e)
+	{
+		$ret = new GtkVbox(FALSE, 4);
+		$ret->set_border_width(4);
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			if(($widget = $this->renderElement($c)) === FALSE)
+				continue;
+			$expand = $c->getProperty('Gtk::expand', FALSE);
+			$fill = $c->getProperty('Gtk::fill', TRUE);
+			if($c->getType() == 'statusbar')
+				$ret->pack_end($widget, $expand, $fill, 0);
+			else
+				$ret->pack_start($widget, $expand, $fill, 0);
+			if($c->getType() == 'menubar')
+				$ret->reorder_child($widget, 0);
+		}
+		return $ret;
 	}
 
 
 	//private
 	//methods
+	//accessors
 	private function _getStock($stock, $fallback = FALSE)
 	{
 		switch($stock)
@@ -564,6 +564,28 @@ class GtkEngine extends CliEngine
 					return $fallback;
 				return FALSE;
 		}
+	}
+
+
+	//callbacks
+	//GtkEngine::on_button_clicked
+	public function on_button_clicked($request)
+	{
+		if(($res = $this->engine->process($request)) !== FALSE)
+			$this->renderElement($res);
+	}
+
+
+	//GtkEngine::on_window_delete_event
+	public function on_window_delete_event($window)
+	{
+		if(($res = array_search($window, $this->windows)) !== FALSE)
+		{
+			unset($this->windows[$res]);
+			if(count($this->windows) == 0)
+				Gtk::main_quit();
+		}
+		//FIXME return a boolean?
 	}
 }
 

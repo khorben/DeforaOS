@@ -85,7 +85,8 @@ abstract class Module
 				return $engine->log('LOG_ERR',
 						'Undefined module '.$module);
 		}
-		$ret = new $name($id, $module);
+		if(($ret = new $name($id, $module)) == NULL)
+			return FALSE;
 		return $ret;
 	}
 

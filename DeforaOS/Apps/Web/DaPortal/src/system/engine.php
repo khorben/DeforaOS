@@ -64,6 +64,13 @@ abstract class Engine
 	}
 
 
+	//Engine::getDebug
+	public function getDebug()
+	{
+		return Engine::$debug;
+	}
+
+
 	//Engine::getType
 	public function getType()
 	{
@@ -206,11 +213,11 @@ abstract class Engine
 			$priority = $p;
 		}
 		closedir($dir);
-		if($ret != FALSE)
+		if($ret !== FALSE)
 		{
+			$ret->attach();
 			$ret->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' with priority '.$priority);
-			$ret->attach();
 		}
 		return $ret;
 	}

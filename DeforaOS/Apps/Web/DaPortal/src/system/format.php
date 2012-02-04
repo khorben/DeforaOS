@@ -16,6 +16,9 @@
 
 
 
+require_once('./system/page.php');
+
+
 //Format
 abstract class Format
 {
@@ -80,8 +83,8 @@ abstract class Format
 	//protected
 	//methods
 	//virtual
-	abstract protected function match(&$engine, $type);
-	abstract protected function attach(&$engine, $type);
+	abstract protected function match(&$engine, $type = FALSE);
+	abstract protected function attach(&$engine, $type = FALSE);
 }
 
 
@@ -115,72 +118,72 @@ abstract class FormatElements extends Format
 	//methods
 	//useful
 	//FormatElements::renderElement
-	protected function renderElement($e, $level = 1)
+	protected function renderElement($e)
 	{
-		switch(($type = $e->getType()))
+		switch($e->getType())
 		{
 			case 'button':
-				return $this->renderButton($e, $level);
+				return $this->renderButton($e);
 			case 'checkbox':
-				return $this->renderCheckbox($e, $level);
+				return $this->renderCheckbox($e);
 			case 'dialog':
-				return $this->renderDialog($e, $level);
+				return $this->renderDialog($e);
 			case 'entry':
-				return $this->renderEntry($e, $level);
+				return $this->renderEntry($e);
 			case 'form':
-				return $this->renderForm($e, $level);
+				return $this->renderForm($e);
 			case 'frame':
-				return $this->renderFrame($e, $level);
+				return $this->renderFrame($e);
 			case 'hbox':
-				return $this->renderHbox($e, $level, $type);
+				return $this->renderHbox($e);
 			case 'iconview':
-				return $this->renderIconview($e, $level);
+				return $this->renderIconview($e);
 			case 'image':
-				return $this->renderImage($e, $level);
+				return $this->renderImage($e);
 			case 'label':
-				return $this->renderLabel($e, $level);
+				return $this->renderLabel($e);
 			case 'link':
-				return $this->renderLink($e, $level);
+				return $this->renderLink($e);
 			case 'menubar':
-				return $this->renderMenubar($e, $level);
+				return $this->renderMenubar($e);
 			case 'page':
-				return $this->renderPage($e, $level);
+				return $this->renderPage($e);
 			case 'statusbar':
-				return $this->renderStatusbar($e, $level);
+				return $this->renderStatusbar($e);
 			case 'title':
-				return $this->renderHeading($e, $level);
+				return $this->renderHeading($e);
 			case 'toolbar':
-				return $this->renderToolbar($e, $level);
+				return $this->renderToolbar($e);
 			case 'treeview':
-				return $this->renderTreeview($e, $level);
+				return $this->renderTreeview($e);
 			case 'vbox':
-				return $this->renderVbox($e, $level, $type);
+				return $this->renderVbox($e);
 			default:
-				return $this->renderLabel($e, $level);
+				return $this->renderLabel($e);
 		}
 	}
 
 
 	//abstract
 	//useful
-	abstract protected function renderButton($e, $level);
-	abstract protected function renderCheckbox($e, $level);
-	abstract protected function renderDialog($e, $level);
-	abstract protected function renderEntry($e, $level);
-	abstract protected function renderForm($e, $level);
-	abstract protected function renderFrame($e, $level);
-	abstract protected function renderHbox($e, $level);
-	abstract protected function renderIconview($e, $level);
-	abstract protected function renderImage($e, $level);
-	abstract protected function renderLabel($e, $level);
-	abstract protected function renderLink($e, $level);
-	abstract protected function renderMenubar($e, $level);
-	abstract protected function renderPage($e, $level = 0);
-	abstract protected function renderStatusbar($e, $level);
-	abstract protected function renderHeading($e, $level);
-	abstract protected function renderToolbar($e, $level);
-	abstract protected function renderTreeview($e, $level);
-	abstract protected function renderVbox($e, $level);
+	abstract protected function renderButton($e);
+	abstract protected function renderCheckbox($e);
+	abstract protected function renderDialog($e);
+	abstract protected function renderEntry($e);
+	abstract protected function renderForm($e);
+	abstract protected function renderFrame($e);
+	abstract protected function renderHbox($e);
+	abstract protected function renderIconview($e);
+	abstract protected function renderImage($e);
+	abstract protected function renderLabel($e);
+	abstract protected function renderLink($e);
+	abstract protected function renderMenubar($e);
+	abstract protected function renderPage($e);
+	abstract protected function renderStatusbar($e);
+	abstract protected function renderHeading($e);
+	abstract protected function renderToolbar($e);
+	abstract protected function renderTreeview($e);
+	abstract protected function renderVbox($e);
 }
 
 ?>

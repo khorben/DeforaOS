@@ -30,7 +30,7 @@ class HtmlFormat extends FormatElements
 	//methods
 	//essential
 	//HtmlFormat::match
-	protected function match(&$engine, $type)
+	protected function match(&$engine, $type = FALSE)
 	{
 		switch($type)
 		{
@@ -43,7 +43,7 @@ class HtmlFormat extends FormatElements
 
 
 	//HtmlFormat::attach
-	protected function attach(&$engine, $type)
+	protected function attach(&$engine, $type = FALSE)
 	{
 	}
 
@@ -55,6 +55,7 @@ class HtmlFormat extends FormatElements
 	public function render(&$engine, $page, $filename = FALSE)
 	{
 		$this->ids = array();
+		$this->tags = array();
 		$this->engine = $engine;
 		//FIXME also track tags are properly closed
 
@@ -66,36 +67,36 @@ class HtmlFormat extends FormatElements
 	//protected
 	//methods
 	//rendering
-	protected function renderBlock($e, $level, $tag = 'div')
+	protected function renderBlock($e, $tag = 'div')
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen($tag, $e->getType());
-		$this->renderChildren($e, $level);
-		$this->renderTabs($level);
+		$this->renderChildren($e);
+		$this->renderTabs();
 		$this->tagClose($tag);
 	}
 
 
-	protected function renderBox($e, $level, $type = 'vbox')
+	protected function renderBox($e, $type = 'vbox')
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('div', $type);
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			$this->renderTabs($level + 1);
+			$this->renderTabs();
 			$this->tagOpen('div', 'pack');
-			$this->renderElement($c, $level + 2);
+			$this->renderElement($c);
 			if(count($c->getChildren()) > 1)
-				$this->renderTabs($level + 1);
+				$this->renderTabs();
 			$this->tagClose('div');
 		}
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagClose('div');
 	}
 
 
-	protected function renderButton($e, $level)
+	protected function renderButton($e)
 	{
 		if(($r = $e->getProperty('request')) !== FALSE)
 			$url = $this->engine->getUrl($r, FALSE);
@@ -126,7 +127,7 @@ class HtmlFormat extends FormatElements
 		if(($value = $e->getProperty('value')) !== FALSE)
 			$args['value'] = $value;
 		$this->tagOpen('button', $class, FALSE, $args);
-		$this->renderChildren($e, $level);
+		$this->renderChildren($e);
 		print($this->escape($e->getProperty('text')));
 		$this->tagClose('button');
 		if($url !== FALSE)
@@ -134,9 +135,9 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderCheckbox($e, $level)
+	protected function renderCheckbox($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('div', $e->getType());
 		print('<input type="checkbox"');
 		if(($name = $e->getProperty('name')) !== FALSE)
@@ -160,15 +161,15 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderChildren($e, $level)
+	protected function renderChildren($e)
 	{
 		$children = $e->getChildren();
 		foreach($children as $c)
-			$this->renderElement($c, $level + 1);
+			$this->renderElement($c);
 	}
 
 
-	protected function renderDialog($e, $level)
+	protected function renderDialog($e)
 	{
 		if(($type = $e->getProperty('type')) === FALSE)
 			$type = 'message';
@@ -185,32 +186,32 @@ class HtmlFormat extends FormatElements
 					$title = 'Message';
 					break;
 			}
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('div', 'dialog '.$type);
-		$this->renderTabs($level + 1);
+		$this->renderTabs();
 		$box = new PageElement('hbox');
 		$box->append('image', array('stock' => $type));
 		$box->append('title', array('text' => $title));
-		$this->renderElement($box, $level + 1);
-		$this->renderTabs($level + 1);
+		$this->renderElement($box);
+		$this->renderTabs();
 		$this->tagOpen('div', 'message', FALSE, FALSE,
 				$e->getProperty('text'));
 		$this->tagClose('div');
-		$this->renderTabs($level);
-		$this->renderChildren($e, $level);
+		$this->renderTabs();
+		$this->renderChildren($e);
 		$this->tagClose('div');
 	}
 
 
-	protected function renderEntry($e, $level)
+	protected function renderEntry($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('div', $e->getType());
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
 			$l = new PageElement('label');
 			$l->setProperty('text', $text);
-			$this->renderElement($l, $level);
+			$this->renderElement($l);
 		}
 		$name = $e->getProperty('name');
 		$value = $e->getProperty('value');
@@ -224,9 +225,9 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderForm($e, $level)
+	protected function renderForm($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
 		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
 				array('action' => 'index.php',
@@ -238,76 +239,73 @@ class HtmlFormat extends FormatElements
 				$_SESSION['tokens'] = array();
 			$token = sha1(uniqid(php_uname(), TRUE));
 			$_SESSION['tokens'][$token] = time() + 3600;
-			$this->_renderFormHidden($level + 1, '_token', $token);
+			$this->_renderFormHidden('_token', $token);
 		}
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
-			$this->_renderFormHidden($level + 1, 'module',
-					$r->getModule());
-			$this->_renderFormHidden($level + 1, 'action',
-					$r->getAction());
-			$this->_renderFormHidden($level + 1, 'id', $r->getId());
+			$this->_renderFormHidden('module', $r->getModule());
+			$this->_renderFormHidden('action', $r->getAction());
+			$this->_renderFormHidden('id', $r->getId());
 			if(($args = $r->getParameters()) !== FALSE)
 				foreach($args as $k => $v)
-					$this->_renderFormHidden($level + 1, $k,
-							$v);
+					$this->_renderFormHidden($k, $v);
 		}
-		$this->renderChildren($e, $level);
-		$this->renderTabs($level);
+		$this->renderChildren($e);
+		$this->renderTabs();
 		$this->tagClose('form');
 	}
 
-	private function _renderFormHidden($level, $name, $value = FALSE)
+	private function _renderFormHidden($name, $value = FALSE)
 	{
 		if($value === FALSE)
 			return;
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tag('input', FALSE, FALSE, array('type' => 'hidden',
 					'name' => $name, 'value' => $value));
 	}
 
 
-	protected function renderFrame($e, $level)
+	protected function renderFrame($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('div', 'frame');
 		if(($title = $e->getProperty('title')) !== FALSE)
 		{
-			$this->renderTabs($level + 1);
+			$this->renderTabs();
 			$this->tag('div', 'title', FALSE, FALSE, $title);
 		}
-		$this->renderChildren($e, $level);
-		$this->renderTabs($level);
+		$this->renderChildren($e);
+		$this->renderTabs();
 		$this->tagClose('div');
 	}
 
 
-	protected function renderHbox($e, $level)
+	protected function renderHbox($e)
 	{
-		$this->renderBox($e, $level, $e->getType());
+		$this->renderBox($e, $e->getType());
 	}
 
 
-	protected function renderHeading($e, $level)
+	protected function renderHeading($e)
 	{
 		//FIXME really track the heading level
-		$tag = 'h'.($level - 1);
-		$this->renderTabs($level);
+		$tag = 'h'.max(count($this->tags) - 1, 1);
+		$this->renderTabs();
 		$this->tagOpen($tag, $e->getType(), $e->getProperty('id'),
 				FALSE, $e->getProperty('text'));
-		$this->renderChildren($e, $level);
+		$this->renderChildren($e);
 		$this->tagClose($tag);
 	}
 
 
-	protected function renderIconview($e, $level)
+	protected function renderIconview($e)
 	{
 		$e->setProperty('view', 'icons');
-		$this->renderTreeview($e, $level);
+		$this->renderTreeview($e);
 	}
 
 
-	protected function renderImage($e, $level)
+	protected function renderImage($e)
 	{
 		$size = 48;
 		$class = FALSE;
@@ -328,7 +326,7 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderInline($e, $level)
+	protected function renderInline($e)
 	{
 		$text = $e->getProperty('text');
 		if($e->getType() !== FALSE)
@@ -339,7 +337,7 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderLabel($e, $level)
+	protected function renderLabel($e)
 	{
 		$attributes = array();
 		if(($for = $e->getProperty('for')) !== FALSE)
@@ -349,7 +347,7 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderLink($e, $level)
+	protected function renderLink($e)
 	{
 		$attributes = array();
 		if(($a = $e->getProperty('name')) !== FALSE)
@@ -359,13 +357,13 @@ class HtmlFormat extends FormatElements
 		else if(($u = $e->getProperty('url')) !== FALSE)
 			$attributes['href'] = $u;
 		$this->tagOpen('a', FALSE, $e->getProperty('id'), $attributes);
-		$this->renderChildren($e, $level);
+		$this->renderChildren($e);
 		print($this->escapeText($e->getProperty('text')));
 		$this->tagClose('a');
 	}
 
 
-	protected function renderMenu($e, $level, $class = FALSE)
+	protected function renderMenu($e, $class = FALSE)
 	{
 		//FIXME really implement
 		if(($children = $e->getChildren()) === FALSE
@@ -374,22 +372,22 @@ class HtmlFormat extends FormatElements
 		$this->tagOpen('ul', $class);
 		foreach($children as $c)
 			if($c->getType() == 'menuitem')
-				$this->renderMenuitem($c, $level + 1);
-		$this->renderTabs($level);
+				$this->renderMenuitem($c);
+		$this->renderTabs(-1);
 		$this->tagClose('ul');
 	}
 
 
-	protected function renderMenubar($e, $level)
+	protected function renderMenubar($e)
 	{
-		$this->renderTabs($level);
-		$this->renderMenu($e, $level, 'menubar');
+		$this->renderTabs();
+		$this->renderMenu($e, 'menubar');
 	}
 
 
-	protected function renderMenuitem($e, $level)
+	protected function renderMenuitem($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('li', 'menuitem');
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
@@ -409,63 +407,63 @@ class HtmlFormat extends FormatElements
 			if(count($attributes))
 				$this->tagClose('a');
 		}
-		$this->renderMenu($e, $level);
+		$this->renderMenu($e);
 		$this->tagClose('li');
 	}
 
 
-	protected function renderMeta($level, $header, $value)
+	protected function renderMeta($header, $value)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tag('meta', FALSE, FALSE, array('http-equiv' => $header,
 					'content' => $value));
 	}
 
 
-	protected function renderPage($e, $level = 0)
+	protected function renderPage($e)
 	{
 		global $config;
 
 		if($this->doctype !== FALSE)
 			print($this->doctype);
 		$this->tagOpen('html');
-		$this->renderTabs(1);
+		$this->renderTabs();
 		$this->tagOpen('head');
 		$this->renderTitle($e);
 		$this->renderTheme($e);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
-			$this->renderMeta(2, 'Content-Type', 'text/html'
+			$this->renderMeta('Content-Type', 'text/html'
 					.'; charset='.$charset);
 		if(($location = $e->getProperty('location')) !== FALSE)
-			$this->renderMeta(2, 'Location', $location);
+			$this->renderMeta('Location', $location);
 		if(($refresh = $e->getProperty('refresh')) !== FALSE
 				&& is_numeric($refresh))
-			$this->renderMeta(2, 'Refresh', $refresh);
-		$this->renderTabs(1);
+			$this->renderMeta('Refresh', $refresh);
+		$this->renderTabs(-1);
 		$this->tagClose('head');
-		$this->renderTabs(1);
+		$this->renderTabs();
 		$this->tagOpen('body');
 		$this->renderChildren($e, 1);
-		$this->renderTabs(1);
+		$this->renderTabs(-1);
 		$this->tagClose('body');
-		$this->renderTabs(0);
+		$this->renderTabs(-1);
 		$this->tagClose('html');
 	}
 
 
-	protected function renderStatusbar($e, $level)
+	protected function renderStatusbar($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tag('div', 'statusbar', $e->getProperty('id'), FALSE,
 				$e->getProperty('text'));
 	}
 
 
-	protected function renderTabs($level)
+	protected function renderTabs($more = 0)
 	{
 		print("\n");
-		for($i = 0; $i < $level; $i++)
+		for($i = 0; $i < count($this->tags) + $more; $i++)
 			print("\t");
 	}
 
@@ -477,7 +475,7 @@ class HtmlFormat extends FormatElements
 		if(($theme = $config->getVariable(FALSE, 'theme')) === FALSE)
 			return;
 		//FIXME emit a (debugging) warning if the theme is not readable?
-		$this->renderTabs(2);
+		$this->renderTabs();
 		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
 					'href' => "themes/$theme.css"));
 	}
@@ -491,23 +489,23 @@ class HtmlFormat extends FormatElements
 			$title = $config->getVariable(FALSE, 'title');
 		if($title !== FALSE)
 		{
-			$this->renderTabs(2);
+			$this->renderTabs();
 			$this->tag('title', FALSE, $e->getProperty('id'), FALSE,
 					$title);
 		}
 	}
 
 
-	protected function renderToolbar($e, $level)
+	protected function renderToolbar($e)
 	{
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('div', 'toolbar');
-		$this->renderChildren($e, $level + 1);
+		$this->renderChildren($e);
 		$this->tagClose('div', 'toolbar');
 	}
 
 
-	protected function renderTreeview($e, $level)
+	protected function renderTreeview($e)
 	{
 		switch(($view = $e->getProperty('view')))
 		{
@@ -528,7 +526,7 @@ class HtmlFormat extends FormatElements
 		}
 		$class = "treeview $view";
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tagOpen('form', $class, FALSE, array(
 					'action' => 'index.php',
 					'method' => $method));
@@ -539,44 +537,39 @@ class HtmlFormat extends FormatElements
 				$_SESSION['tokens'] = array();
 			$token = sha1(uniqid(php_uname(), TRUE));
 			$_SESSION['tokens'][$token] = time() + 3600;
-			$this->_renderTreeviewHidden($level + 1, '_token',
-					$token);
+			$this->_renderTreeviewHidden('_token', $token);
 		}
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
 			//FIXME copied from renderForm()
-			$this->_renderTreeviewHidden($level + 1, 'module',
-					$r->getModule());
-			$this->_renderTreeviewHidden($level + 1, 'action',
-					$r->getAction());
-			$this->_renderTreeviewHidden($level + 1, 'id',
-					$r->getId());
+			$this->_renderTreeviewHidden('module', $r->getModule());
+			$this->_renderTreeviewHidden('action', $r->getAction());
+			$this->_renderTreeviewHidden('id', $r->getId());
 			if(($parameters = $r->getParameters()) !== FALSE)
 				foreach($r->getParameters() as $k => $v)
-					$this->_renderTreeviewHidden($level + 1,
-							$k, $v);
+					$this->_renderTreeviewHidden($k, $v);
 		}
 		if(($children = $e->getChildren()) !== FALSE)
 			foreach($children as $c)
 				if($c->getType() == 'toolbar')
-					$this->renderToolbar($c, $level + 1);
+					$this->renderToolbar($c);
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
 			$columns = array('title');
-		$this->renderTabs($level + 1);
+		$this->renderTabs();
 		$this->tagOpen('div', 'table');
-		$this->_renderTreeviewHeaders($columns, $level + 1);
+		$this->_renderTreeviewHeaders($columns);
 		//render rows
-		$this->_renderTreeviewRows($e, $columns, $level + 1);
-		$this->renderTabs($level + 1);
+		$this->_renderTreeviewRows($e, $columns);
+		$this->renderTabs(-1);
 		$this->tagClose('div');
-		$this->renderTabs($level);
+		$this->renderTabs(-1);
 		$this->tagClose('form');
 	}
 
-	private function _renderTreeviewHeaders($columns, $level)
+	private function _renderTreeviewHeaders($columns)
 	{
-		$this->renderTabs($level + 1);
+		$this->renderTabs();
 		$this->tagOpen('div', 'header');
 		$this->tag('span', 'detail', FALSE, FALSE, '');
 		foreach($columns as $c)
@@ -585,24 +578,24 @@ class HtmlFormat extends FormatElements
 		$this->tagClose('div');
 	}
 
-	private function _renderTreeviewHidden($level, $name, $value = FALSE)
+	private function _renderTreeviewHidden($name, $value = FALSE)
 	{
 		//FIXME copied from _renderFormHidden()
 		if($value === FALSE)
 			return;
-		$this->renderTabs($level);
+		$this->renderTabs();
 		$this->tag('input', FALSE, FALSE, array('type' => 'hidden',
 					'name' => $name, 'value' => $value));
 	}
 
-	private function _renderTreeviewRows($e, $columns, $level)
+	private function _renderTreeviewRows($e, $columns)
 	{
 		$id = 1;
 
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			$this->renderTabs($level + 1);
+			$this->renderTabs();
 			if($c->getType() != 'row')
 				continue;
 			$this->tagOpen('div', 'row');
@@ -632,9 +625,9 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderVbox($e, $level)
+	protected function renderVbox($e)
 	{
-		$this->renderBox($e, $level, $e->getType());
+		$this->renderBox($e, $e->getType());
 	}
 
 
@@ -701,12 +694,15 @@ class HtmlFormat extends FormatElements
 	private function tagClose($name)
 	{
 		print('</'.$this->escapeAttribute($name).'>');
+		if(array_pop($this->tags) != $name)
+			$this->engine->log('LOG_DEBUG', 'Invalid tag sequence');
 	}
 
 
 	private function tagOpen($name, $class = FALSE, $id = FALSE,
 			$attributes = FALSE, $content = FALSE)
 	{
+		array_push($this->tags, $name);
 		//FIXME automatically output tabs
 		$tag = '<'.$this->escapeAttribute($name);
 		if($class !== FALSE)
@@ -731,8 +727,9 @@ class HtmlFormat extends FormatElements
 
 
 	//properties
-	private $ids;
 	private $engine = FALSE;
+	private $ids;
+	private $tags;
 }
 
 ?>
