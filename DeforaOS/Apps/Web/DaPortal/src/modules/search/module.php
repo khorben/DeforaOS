@@ -163,10 +163,9 @@ class SearchModule extends Module
 			$button->setProperty('type', 'reset');
 			$button->setProperty('text', 'Reset');
 		}
-		$button = $form->append('button');
-		$button->setProperty('class', 'search');
-		$button->setProperty('type', 'submit');
-		$button->setProperty('text', 'Search');
+		$button = $form->append('button', array('stock' => 'search',
+					'type' => 'submit',
+					'text' => 'Search'));
 		$link = $page->append('link');
 		if($advanced)
 		{
