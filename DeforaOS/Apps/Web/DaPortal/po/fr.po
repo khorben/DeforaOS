@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-02 13:45+0100\n"
+"POT-Creation-Date: 2012-02-05 23:49+0100\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -35,7 +35,7 @@ msgstr "Billet de blog"
 msgid "Blog posts"
 msgstr "Billets de blog"
 
-#: ../src/modules/content/module.php:72 ../src/modules/user/module.php:124
+#: ../src/modules/content/module.php:72 ../src/modules/user/module.php:125
 msgid "Login"
 msgstr ""
 
@@ -45,7 +45,7 @@ msgstr ""
 
 #: ../src/modules/content/module.php:95
 msgid "Refresh"
-msgstr ""
+msgstr "Rafraîchir"
 
 #: ../src/modules/content/module.php:98
 msgid "Disable"
@@ -79,15 +79,15 @@ msgstr ""
 msgid "Some content could not be enabled"
 msgstr "Certains contenus n'ont pas pu être activés"
 
-#: ../src/modules/content/module.php:197 ../src/modules/content/module.php:403
+#: ../src/modules/content/module.php:197 ../src/modules/content/module.php:406
 msgid " by "
 msgstr " par "
 
-#: ../src/modules/content/module.php:404
+#: ../src/modules/content/module.php:407
 msgid " on "
 msgstr " le "
 
-#: ../src/modules/content/module.php:410
+#: ../src/modules/content/module.php:413
 msgid "Read"
 msgstr "Lire"
 
@@ -111,7 +111,48 @@ msgstr "Projet"
 msgid "Projects"
 msgstr "Projets"
 
-#: ../src/modules/user/module.php:120
+#: ../src/modules/search/module.php:52
+msgid "Search administration"
+msgstr "Administration de la recherche"
+
+#: ../src/modules/search/module.php:136 ../src/modules/search/module.php:139
+#: ../src/modules/search/module.php:169
+msgid "Search"
+msgstr "Recherche"
+
+#: ../src/modules/search/module.php:138
+msgid "Search results"
+msgstr "Résultats de la recherche"
+
+#: ../src/modules/search/module.php:145
+msgid "Search query: "
+msgstr ""
+
+#: ../src/modules/search/module.php:152
+msgid "Search in: "
+msgstr "Chercher parmi : "
+
+#: ../src/modules/search/module.php:165
+msgid "Reset"
+msgstr ""
+
+#: ../src/modules/search/module.php:174
+msgid "Simpler search..."
+msgstr "Recherche simplifiée..."
+
+#: ../src/modules/search/module.php:182
+msgid "Advanced search..."
+msgstr "Recherche avancée..."
+
+#: ../src/modules/search/module.php:219 ../src/modules/search/module.php:226
+msgid "Unable to search"
+msgstr ""
+
+#: ../src/modules/user/module.php:86
+msgid "User login"
+msgstr ""
+
+#: ../src/modules/user/module.php:121
 msgid "Cancel"
 msgstr "Annuler"
 
