@@ -1,5 +1,5 @@
-<?php  //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+<?php //$Id$
+//Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
