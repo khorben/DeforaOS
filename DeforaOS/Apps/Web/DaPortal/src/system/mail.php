@@ -24,16 +24,23 @@ class Mail
 	//static
 	//useful
 	//Mail::send
-	static public function send(&$engine, $from, $subject, $page,
+	static public function send(&$engine, $from, $to, $subject, $page,
 			$headers = array())
 	{
 		if($from === FALSE)
 			//FIXME try the configuration file as well
 			$from = $_SERVER['SERVER_ADMIN'];
 		$hdr = "From: $from\n";
+		//FIXME obtain the proper charset
+		$hdr .= "Content-type: text/plain; charset=UTF-8\r\n";
 		if(is_array($headers))
 			foreach($headers as $h)
 				$hdr .= "$h\n";
+		$format = Format::attachDefault($engine, 'text/plain');
+		ob_start();
+		$format->render($engine, $page);
+		$content = ob_get_contents();
+		ob_end_clean();
 		//FIXME check $from, $to and $subject for newline characters
 		if(mail($to, $subject, $content, $hdr) === FALSE)
 			$engine->log('LOG_ERR', 'Could not send e-mail');
