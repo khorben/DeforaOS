@@ -245,9 +245,7 @@ class ContentModule extends Module
 	//ContentModule::preview
 	protected function preview($engine, $id, $title = FALSE)
 	{
-		$page = new Page;
-		$page->appendElement($this->_preview($engine, $id, $title));
-		return $page;
+		return $this->_preview($engine, $id, $title);
 	}
 
 
