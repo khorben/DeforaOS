@@ -100,7 +100,7 @@ class DaPortalEngine extends HttpEngine
 		foreach($_REQUEST as $key => $value)
 			if(get_magic_quotes_gpc())
 				$parameters[stripslashes($key)]
-					= stripslashes($values);
+					= stripslashes($value);
 			else
 				$parameters[$key] = $value;
 		if($_SERVER['REQUEST_METHOD'] == 'POST')
