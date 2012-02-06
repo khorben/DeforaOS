@@ -71,8 +71,16 @@
 	background-image:	url('Tango/scalable/actions/gtk-new.svg');
 }
 
+.stock48.open {
+	background-image:	url('Tango/scalable/actions/gtk-open.svg');
+}
+
 .stock48.preferences {
 	background-image:	url('Tango/scalable/categories/gtk-preferences.svg');
+}
+
+.stock48.read {
+	background-image:	url('Tango/scalable/actions/gtk-open.svg');
 }
 
 .stock48.refresh {
