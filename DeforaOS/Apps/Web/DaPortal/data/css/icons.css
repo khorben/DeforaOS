@@ -59,25 +59,21 @@ h4.stock16 {
 img.stock16, img.stock24, img.stock32, img.stock48 {
 	background-position:		center center;
 	background-size:		contain;
-	display:			block;
+	margin-right:			4px;
 }
 
 img.stock16 {
-	height:				16px;
-	width:				16px;
+	padding:			8px;
 }
 
 img.stock24 {
-	height:				24px;
-	width:				24px;
+	padding:			12px;
 }
 
 img.stock32 {
-	height:				32px;
-	width:				32px;
+	padding:			16px;
 }
 
 img.stock48 {
-	height:				48px;
-	width:				48px;
+	padding:			24px;
 }
