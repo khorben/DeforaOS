@@ -52,8 +52,7 @@ div.hbox:after {
 
 div.hbox > div.pack {
 	float:				left;
-	padding-left:			2px;
-	padding-right:			2px;
+	padding-left:			4px;
 }
 
 div.hbox > div.pack:first-child {
@@ -93,8 +92,7 @@ div.vbox:after {
 }
 
 div.vbox > div.pack {
-	padding-bottom:			2px;
-	padding-top:			2px;
+	padding-top:			4px;
 	clear:				left;
 }
 
