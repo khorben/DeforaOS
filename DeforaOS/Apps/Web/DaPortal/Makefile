@@ -505,6 +505,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/database/Makefile \
 		$(PACKAGE)-$(VERSION)/src/database/pdo.php \
+		$(PACKAGE)-$(VERSION)/src/database/pgsql.php \
 		$(PACKAGE)-$(VERSION)/src/database/sqlite2.php \
 		$(PACKAGE)-$(VERSION)/src/database/sqlite3.php \
 		$(PACKAGE)-$(VERSION)/src/database/project.conf \
