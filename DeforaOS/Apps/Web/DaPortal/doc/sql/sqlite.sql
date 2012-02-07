@@ -81,7 +81,7 @@ INSERT INTO daportal_user (username, password, enabled, admin, fullname, email) 
 
 CREATE TABLE daportal_user_register (
 	user_id INTEGER,
-	key CHAR(32) UNIQUE NOT NULL,
+	token VARCHAR(255) UNIQUE NOT NULL,
 	timestamp TIMESTAMP DEFAULT NULL,
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
