@@ -1,3 +1,4 @@
+../src/system/user.php
 ../src/modules/article/module.php
 ../src/modules/blog/module.php
 ../src/modules/content/module.php
