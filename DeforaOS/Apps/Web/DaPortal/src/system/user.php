@@ -16,6 +16,9 @@
 
 
 
+require_once('./system/mail.php');
+
+
 //User
 class User
 {
@@ -65,12 +68,35 @@ class User
 
 	//static
 	//useful
+	//User::password_new
+	static public function password_new()
+	{
+		$string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+			.'0123456789';
+		$password = '';
+		for($i = 0; $i < 8; $i++)
+			$password .= $string[rand(0, strlen($string) - 1)];
+		return $password;
+	}
+
+
 	//User::register
 	static public function register(&$engine, $username, $email,
-			$enabled = FALSE)
+			$enabled = FALSE, &$error = FALSE)
 	{
 		$db = $engine->getDatabase();
+		$error = '';
 
+		//FIXME really validate username
+		if(!is_string($username) || strlen($username) == 0)
+			$error .= _("The username is not valid\n");
+		//FIXME really validate e-mail
+		if(strchr($email, '@') === FALSE)
+			$error .= _("The e-mail address is not valid\n");
+		//FIXME verify that the username and e-mail are both unique
+		if(strlen($error) > 0)
+			return FALSE;
+		$db->transactionBegin($engine);
 		$res = $db->query($engine, User::$query_register,
 				array('username' => $username,
 					'email' => $email,
@@ -78,10 +104,46 @@ class User
 		if($res === FALSE || ($uid = $db->getLastId($engine,
 						'daportal_user', 'user_id'))
 				=== FALSE)
+		{
+			$db->transactionRollback($engine);
+			$error = _('Could not register the user');
 			return FALSE;
+		}
 		$user = new User($uid);
 		if($user->getUserId() === FALSE)
+		{
+			$db->transactionRollback($engine);
+			$error = _('Could not register the user');
 			return FALSE;
+		}
+		if($enabled === FALSE)
+		{
+			$password = User::password_new();
+			$token = sha1(uniqid($password, TRUE));
+			if($user->setPassword($engine, $password) === FALSE
+				|| $db->query($engine,
+						User::$query_register_token,
+						array('user_id' => $uid,
+						'token' => $token)) === FALSE)
+			{
+				$db->transactionRollback($engine);
+				$error = _('Could not register the user');
+				return FALSE;
+			}
+			//FIXME the request should be given as argument
+			$r = new Request($engine, 'user', 'validate', $uid,
+					FALSE, array('token' => $token));
+			$subject = _('User registration'); //XXX add site title
+			$text = _("Thank you for registering on this site.\n");
+			$text .= _("\nYour password is: ").$password."\n";
+			$text .= _("\nPlease click on the following link to enable your account:\n");
+			$text .= $engine->getUrl($r)."\n";
+			$content = new PageElement('label', array(
+				'text' => $text));
+			Mail::send($engine, FALSE, $email, $subject, $content);
+		}
+		$db->transactionCommit($engine);
+		$error = FALSE;
 		return $user;
 	}
 
@@ -102,6 +164,9 @@ class User
 	static private $query_register = 'INSERT INTO daportal_user
 		(username, email, enabled)
 		VALUES (:username, :email, :enabled)';
+	static private $query_register_token = 'INSERT INTO daportal_user_register
+		(user_id, token)
+		VALUES (:user_id, :token)';
 }
 
 ?>

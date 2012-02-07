@@ -18,6 +18,7 @@
 
 require_once('./system/auth.php');
 require_once('./system/module.php');
+require_once('./system/user.php');
 
 
 //UserModule
@@ -31,6 +32,8 @@ class UserModule extends Module
 			case 'display':
 			case 'login':
 			case 'logout':
+			case 'register':
+			case 'validate':
 				return $this->$action($engine, $request);
 			default:
 				return $this->_default($engine, $request);
@@ -199,6 +202,88 @@ class UserModule extends Module
 		$box->append('label', array('text' => '.'));
 		$engine->setCredentials(new AuthCredentials);
 		return $page;
+	}
+
+
+	//UserModule::register
+	protected function register($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$error = TRUE;
+
+		if($cred->getUserId() != 0)
+			//already registered and logged in
+			return $this->display($engine, new Request);
+		//FIXME check that registration is allowed
+		//process registration
+		if(!$engine->isIdempotent($request))
+			$error = $this->_register_process($engine, $request);
+		//registration successful
+		if($error === FALSE)
+			return $this->_register_success($engine, $request);
+		return $this->_register_form($engine, $request, $error);
+	}
+
+	private function _register_form($engine, $request, $error)
+	{
+		$page = new Page(array('title' => _('User registration')));
+		$page->append('title', array('text' => _('User registration')));
+		if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		$r = new Request($engine, $this->name, 'register');
+		$form = $page->append('form', array('request' => $r));
+		$username = $request->getParameter('username');
+		$email = $request->getParameter('email');
+		$form->append('entry', array('text' => _('Username: '),
+			'name' => 'username', 'value' => $username));
+		$form->append('entry', array('text' => _('e-mail address: '),
+			'name' => 'email', 'value' => $email));
+		$form->append('button', array('stock' => 'cancel',
+			'text' => _('Cancel'),
+			'request' => new Request($engine, $this->name)));
+		$form->append('button', array('stock' => 'register',
+			'type' => 'submit', 'text' => _('Register')));
+		return $page;
+	}
+
+	private function _register_process($engine, $request)
+	{
+		$ret = '';
+
+		if(($username = $request->getParameter('username')) === FALSE)
+			$ret .= "A username is required\n";
+		if(($email = $request->getParameter('email')) === FALSE)
+			$ret .= "An e-mail address is required\n";
+		if(strlen($ret) > 0)
+			return $ret;
+		//register the user
+		$error = '';
+		if(($user = User::register($engine, $username, $email, FALSE,
+				$error)) === FALSE)
+			$ret .= $error;
+		return strlen($ret) ? $ret : FALSE;
+	}
+
+	private function _register_success($engine, $request)
+	{
+		$page = new Page(array('title' => _('User registration')));
+		$page->append('title', array('text' => _('User registration')));
+		$page->append('dialog', array('type' => 'info',
+				'text' => _("You should receive an e-mail shortly with your password, along with a confirmation key.\n
+Thank you for registering!")));
+		$page->append('link', array('stock' => 'back',
+			'text' => _('Back to the site'),
+			'request' => new Request($engine)));
+		return $page;
+	}
+
+
+	//UserModule::validate
+	protected function validate($engine, $request)
+	{
+		//FIXME really implement
+		return FALSE;
 	}
 
 
