@@ -536,8 +536,8 @@ class HtmlFormat extends FormatElements
 			case 'icons':
 				if(($c = $e->getProperty('columns')) !== FALSE)
 					break;
-				$e->setProperty('columns', array('icon',
-							'label'));
+				$c = array('icon', 'label');
+				$e->setProperty('columns', $c);
 				break;
 			default:
 				$view = 'details';
@@ -568,10 +568,7 @@ class HtmlFormat extends FormatElements
 				foreach($r->getParameters() as $k => $v)
 					$this->_renderTreeviewHidden($k, $v);
 		}
-		if(($children = $e->getChildren()) !== FALSE)
-			foreach($children as $c)
-				if($c->getType() == 'toolbar')
-					$this->renderToolbar($c);
+		$this->_renderTreeviewToolbar($e);
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
 			$columns = array('title');
@@ -611,7 +608,8 @@ class HtmlFormat extends FormatElements
 	{
 		$id = 1;
 
-		$children = $e->getChildren();
+		if(($children = $e->getChildren()) === FALSE)
+			return;
 		foreach($children as $c)
 		{
 			$this->renderTabs();
@@ -619,9 +617,10 @@ class HtmlFormat extends FormatElements
 				continue;
 			$this->tagOpen('div', 'row');
 			$this->tagOpen('span', 'detail');
+			$name = $c->getProperty('id');
 			$this->tag('input', FALSE, '_check_'.$id, array(
 						'type' => 'checkbox',
-						'name' => $c->getProperty('id')));
+						'name' => $name));
 			$this->tagClose('span');
 			$properties = $c->getProperties();
 			foreach($properties as $k => $v)
@@ -641,6 +640,15 @@ class HtmlFormat extends FormatElements
 			$this->tagClose('div');
 			$id++;
 		}
+	}
+
+	private function _renderTreeviewToolbar($e)
+	{
+		if(($children = $e->getChildren()) === FALSE)
+			return;
+		foreach($children as $c)
+			if($c->getType() == 'toolbar')
+				$this->renderToolbar($c);
 	}
 
 
