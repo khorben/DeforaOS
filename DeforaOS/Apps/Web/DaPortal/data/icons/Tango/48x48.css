@@ -24,7 +24,7 @@
 }
 
 .stock48.admin {
-	background-image:	url('Tango/scalable/actions/gtk-admin.svg');
+	background-image:	url('Tango/scalable/categories/gtk-preferences.svg');
 }
 
 .stock48.back {
@@ -59,8 +59,16 @@
 	background-image:	url('Tango/scalable/actions/forward.svg');
 }
 
+.stock48.home {
+	background-image:	url('Tango/scalable/actions/gtk-home.svg');
+}
+
 .stock48.info {
 	background-image:	url('Tango/scalable/status/stock_dialog-info.svg');
+}
+
+.stock48.login {
+	background-image:	url('Tango/scalable/apps/system-users.svg');
 }
 
 .stock48.logout {
@@ -87,6 +95,10 @@
 	background-image:	url('Tango/scalable/actions/gtk-refresh.svg');
 }
 
+.stock48.register {
+	background-image:	url('Tango/scalable/apps/system-users.svg');
+}
+
 .stock48.remove {
 	background-image:	url('Tango/scalable/actions/gtk-remove.svg');
 }
@@ -96,5 +108,5 @@
 }
 
 .stock48.user {
-	background-image:	url('Tango/scalable/apps/user-info.svg');
+	background-image:	url('Tango/scalable/apps/system-users.svg');
 }

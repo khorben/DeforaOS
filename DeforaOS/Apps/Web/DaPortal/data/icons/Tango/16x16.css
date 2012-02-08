@@ -24,7 +24,7 @@
 }
 
 .stock16.admin {
-	background-image:	url('Tango/16x16/actions/gtk-admin.png');
+	background-image:	url('Tango/16x16/categories/gtk-preferences.png');
 }
 
 .stock16.back {
@@ -59,8 +59,16 @@
 	background-image:	url('Tango/16x16/actions/forward.png');
 }
 
+.stock16.home {
+	background-image:	url('Tango/16x16/actions/gtk-home.png');
+}
+
 .stock16.info {
 	background-image:	url('Tango/16x16/status/stock_dialog-info.png');
+}
+
+.stock16.login {
+	background-image:	url('Tango/16x16/apps/system-users.png');
 }
 
 .stock16.logout {
@@ -87,6 +95,10 @@
 	background-image:	url('Tango/16x16/actions/gtk-refresh.png');
 }
 
+.stock16.register {
+	background-image:	url('Tango/16x16/apps/system-users.png');
+}
+
 .stock16.remove {
 	background-image:	url('Tango/16x16/actions/gtk-remove.png');
 }
@@ -96,5 +108,5 @@
 }
 
 .stock16.user {
-	background-image:	url('Tango/16x16/apps/user-info.png');
+	background-image:	url('Tango/16x16/apps/system-users.png');
 }
