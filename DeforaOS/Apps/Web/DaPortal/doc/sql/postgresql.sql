@@ -75,6 +75,7 @@ INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('a
 
 
 CREATE TABLE daportal_user_register (
+	user_register_id SERIAL PRIMARY KEY,
 	user_id INTEGER UNIQUE REFERENCES daportal_user (user_id) ON DELETE CASCADE,
 	token VARCHAR(255) UNIQUE NOT NULL,
 	"timestamp" TIMESTAMP NOT NULL DEFAULT now()

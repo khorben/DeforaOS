@@ -80,6 +80,7 @@ INSERT INTO daportal_user (user_id, username, password, enabled, fullname, email
 INSERT INTO daportal_user (username, password, enabled, admin, fullname, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'Administrator', 'username@domain.tld');
 
 CREATE TABLE daportal_user_register (
+	user_register_id INTEGER PRIMARY KEY,
 	user_id INTEGER,
 	token VARCHAR(255) UNIQUE NOT NULL,
 	timestamp TIMESTAMP DEFAULT NULL,
