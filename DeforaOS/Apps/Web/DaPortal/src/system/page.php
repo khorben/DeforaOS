@@ -67,6 +67,13 @@ class PageElement
 	}
 
 
+	//PageElement::setContent
+	public function setContent($content)
+	{
+		$this->content = $content;
+	}
+
+
 	//PageElement::setProperty
 	public function setProperty($name, $value)
 	{
@@ -74,10 +81,10 @@ class PageElement
 	}
 
 
-	//PageElement::setContent
-	public function setContent($content)
+	//PageElement::setType
+	public function setType($type)
 	{
-		$this->content = $content;
+		$this->type = $type;
 	}
 
 
