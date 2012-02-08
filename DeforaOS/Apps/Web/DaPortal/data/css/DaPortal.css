@@ -170,6 +170,20 @@ form.treeview.icons > div.table > div.row span.label {
 	display:			block;
 }
 
+form.treeview.list > div.table > div.row {
+	display:			block;
+}
+
+form.treeview.list > div.table > div.row span.icon,
+form.treeview.list > div.table > div.row span.label {
+	display:			inline;
+}
+
+form.treeview.list > div.table > div.row span.icon img.stock48 {
+	background-size:		16px 16px;
+	padding:			8px;
+}
+
 form.treeview.preview > div.table > div.row span.detail.preview {
 	display:			block;
 }
