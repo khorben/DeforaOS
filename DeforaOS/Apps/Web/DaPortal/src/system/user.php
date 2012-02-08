@@ -66,6 +66,18 @@ class User
 	}
 
 
+	//User::setEnabled
+	public function setEnabled(&$engine, $enabled)
+	{
+		$db = $engine->getDatabase();
+
+		$res = $db->query($engine, $this->query_set_enabled, array(
+					'user_id' => $this->user_id,
+					'enabled' => $enabled ? 1 : 0));
+		return ($res !== FALSE);
+	}
+
+
 	//static
 	//useful
 	//User::password_new
@@ -96,7 +108,11 @@ class User
 		//FIXME verify that the username and e-mail are both unique
 		if(strlen($error) > 0)
 			return FALSE;
-		$db->transactionBegin($engine);
+		if($db->transactionBegin($engine) === FALSE)
+		{
+			$error = _('Could not register the user');
+			return FALSE;
+		}
 		$res = $db->query($engine, User::$query_register,
 				array('username' => $username,
 					'email' => $email,
@@ -148,6 +164,67 @@ class User
 	}
 
 
+	//User::validate
+	static public function validate($engine, $uid, $token, &$error = FALSE)
+	{
+		$db = $engine->getDatabase();
+		$error = '';
+
+		if($uid === FALSE || !is_numeric($uid))
+			$error .= _("Unknown user ID\n");
+		if($token === FALSE)
+			$error .= _("The token must be specified\n");
+		if(strlen($error) > 0)
+			return FALSE;
+		$timestamp = 0; //FIXME really implement
+		if($db->query($engine, User::$query_register_cleanup, array(
+					'timestamp' => $timestamp)) === FALSE)
+		{
+			$error = _("Could not validate the user\n");
+			return FALSE;
+		}
+		$res = $db->query($engine, User::$query_register_validate,
+				array('user_id' => $uid, 'token' => $token));
+		if($res === FALSE || count($res) != 1)
+		{
+			$error = _('Could not validate the user');
+			return FALSE;
+		}
+		$res = $res[0];
+		if($db->transactionBegin($engine) === FALSE)
+		{
+			$error = _('Could not validate the user');
+			return FALSE;
+		}
+		$query = User::$query_register_delete;
+		if($db->query($engine, $query, array('user_register_id'
+				=> $res['user_register_id']))
+				=== FALSE)
+		{
+			$db->transactionRollback($engine);
+			$error = _('Could not validate the user');
+			return FALSE;
+		}
+		if($db->query($engine, User::$query_register_delete, array(
+				'user_register_id' => $res['user_register_id']))
+				=== FALSE)
+		{
+			$db->transactionRollback($engine);
+			$error = _('Could not validate the user');
+			return FALSE;
+		}
+		$user = new User($res['user_id']);
+		if($user->setEnabled($engine, TRUE) === FALSE
+				|| $db->transactionCommit($engine) === FALSE)
+		{
+			$db->transactionRollback($engine);
+			$error = _('Could not enable the user');
+			return FALSE;
+		}
+		return new User($res['user_id']);
+	}
+
+
 	//private
 	//properties
 	private $user_id = FALSE;
@@ -160,6 +237,9 @@ class User
 	private $query_set_password = 'UPDATE daportal_user
 		SET password=:password
 		WHERE user_id=:user_id';
+	private $query_set_enabled = "UPDATE daportal_user
+		SET enabled=:enabled
+		WHERE user_id=:user_id";
 	//static
 	static private $query_register = 'INSERT INTO daportal_user
 		(username, email, enabled)
@@ -167,6 +247,15 @@ class User
 	static private $query_register_token = 'INSERT INTO daportal_user_register
 		(user_id, token)
 		VALUES (:user_id, :token)';
+	static private $query_register_cleanup = 'DELETE FROM daportal_user_register
+		WHERE timestamp <= :timestamp';
+	static private $query_register_delete = 'DELETE FROM daportal_user_register
+		WHERE user_register_id=:user_register_id';
+	static private $query_register_validate = 'SELECT user_register_id,
+		daportal_user.user_id AS user_id, username
+		FROM daportal_user, daportal_user_register
+		WHERE daportal_user.user_id=daportal_user_register.user_id
+		AND token=:token';
 }
 
 ?>

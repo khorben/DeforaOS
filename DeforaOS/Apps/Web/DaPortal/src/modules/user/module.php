@@ -29,9 +29,12 @@ class UserModule extends Module
 	{
 		switch(($action = $request->getAction()))
 		{
+			case 'actions':
+			case 'admin':
 			case 'display':
 			case 'login':
 			case 'logout':
+			case 'menu':
 			case 'register':
 			case 'validate':
 				return $this->$action($engine, $request);
@@ -43,15 +46,106 @@ class UserModule extends Module
 
 	//protected
 	//methods
-	//UserModule::_default
-	protected function _default($engine, $request)
+	//UserModule::actions
+	protected function actions($engine, $request)
 	{
-		if(($id = $request->getId()) !== FALSE)
-			return $this->display($engine, $request);
 		$cred = $engine->getCredentials();
-		if($cred->getUserId() != 0)
-			return $this->display($engine, new Request);
-		return $this->login($engine, $request);
+
+		$ret = array();
+		if($cred->getUserId() == 0)
+		{
+			$r = new Request($engine, $this->name, 'login');
+			$icon = new PageElement('image', array(
+					'stock' => 'login'));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => _('Login')));
+			$ret[] = new PageElement('row', array('icon' => $icon,
+					'label' => $link));
+			$r = new Request($engine, $this->name, 'register');
+			$icon = new PageElement('image', array(
+					'stock' => 'register'));
+			$link = new PageElement('link', array(
+					'request' => $r,
+					'text' => _('Register')));
+			if($this->can_register())
+				$ret[] = new PageElement('row', array(
+						'icon' => $icon,
+						'label' => $link));
+		}
+		else
+		{
+			$r = new Request($engine, $this->name, 'admin');
+			$icon = new PageElement('image', array(
+					'stock' => 'admin'));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => _('Administration')));
+			if($cred->isAdmin())
+				$ret[] = new PageElement('row', array(
+						'icon' => $icon,
+						'label' => $link));
+			$r = new Request($engine, $this->name, 'display');
+			$icon = new PageElement('image', array(
+					'stock' => 'home'));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => _('Homepage')));
+			$ret[] = new PageElement('row', array('icon' => $icon,
+					'label' => $link));
+			$r = new Request($engine, $this->name, 'logout');
+			$icon = new PageElement('image', array(
+					'stock' => 'logout'));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => _('Logout')));
+			$ret[] = new PageElement('row', array('icon' => $icon,
+					'label' => $link));
+		}
+		return $ret;
+	}
+
+
+	//UserModule::admin
+	protected function admin($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+
+		if(!$cred->isAdmin())
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('Permission denied')));
+		$title = _('User administration');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('text' => $title));
+		//FIXME really implement
+		return $page;
+	}
+
+
+	//UserModule::can_register
+	protected function can_register()
+	{
+		global $config;
+
+		return $config->getVariable('module::user', 'register') == 1;
+	}
+
+
+	//UserModule::_default
+	protected function _default($engine, $request = FALSE)
+	{
+		$cred = $engine->getCredentials();
+
+		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
+			return $this->display($engine, $request);
+		//FIXME add content?
+		$title = ($cred->getUserId() != 0) ? _('User menu')
+			: _('Site menu');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('text' => $title));
+		$view = $page->append('iconview');
+		$actions = $this->actions($engine, $request);
+		if(is_array($actions))
+			foreach($actions as $a)
+				$view->appendElement($a);
+		return $page;
 	}
 
 
@@ -60,21 +154,22 @@ class UserModule extends Module
 	{
 		$cred = $engine->getCredentials();
 
-		$page = new Page;
 		if(($uid = $request->getId()) !== FALSE)
-			$title = 'User '.$uid;
+			$title = _('User').' '.$uid;
 		else
 		{
 			$uid = $cred->getUserId();
-			$title = 'User homepage';
+			$title = _('User homepage');
 		}
+		$page = new Page(array('title' => $title));
 		//FIXME verify the request's title if set
 		$page->append('title', array('text' => $title));
-		//FIXME really implement
+		//FIXME really implement:
+		//- request actions from all modules
 		$view = $page->append('iconview');
-		$r = new Request($engine, 'user', 'logout');
-		$link = new PageElement('link', array('text' => 'Logout',
-					'request' => $r));
+		$r = new Request($engine, $this->name, 'logout');
+		$link = new PageElement('link', array('text' => _('Logout'),
+				'request' => $r));
 		$icon = new PageElement('image', array('stock' => 'logout'));
 		$view->append('row', array('icon' => $icon, 'label' => $link));
 		return $page;
@@ -96,7 +191,7 @@ class UserModule extends Module
 			$page->setProperty('location', $engine->getUrl($r));
 			$page->setProperty('refresh', 30);
 			$box = $page->append('vbox');
-			$text = 'Logging in progress, please wait...';
+			$text = _('Logging in progress, please wait...');
 			$box->append('label', array('text' => $text));
 			$box = $box->append('hbox');
 			$text = 'If you are not redirected within 30 seconds,'
@@ -110,21 +205,22 @@ class UserModule extends Module
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 						'text' => $error));
-		$r = new Request($engine, 'user', 'login');
+		$r = new Request($engine, $this->name, 'login');
 		$form = $page->append('form', array('request' => $r));
 		$entry = $form->append('entry', array(
 					'name' => 'username',
-					'text' => 'Username: ',
+					'text' => _('Username: '),
 					'value' => $request->getParameter(
 						'username')));
 		$entry = $form->append('entry', array(
 					'hidden' => TRUE,
 					'name' => 'password',
-					'text' => 'Password: '));
+					'text' => _('Password: ')));
 		$form->append('button', array('text' => _('Cancel'),
 					'stock' => 'cancel',
 					'request' => new Request($engine)));
 		$button = $form->append('button', array('type' => 'submit',
+					'stock' => 'login',
 					'text' => _('Login')));
 		return $page;
 	}
@@ -138,18 +234,18 @@ class UserModule extends Module
 						'password')) === FALSE)
 			return TRUE;
 		if($engine->isIdempotent($request) !== FALSE)
-			return 'The request expired or is invalid';
+			return _('The request expired or is invalid');
 		//FIXME first obtain the password and apply salt if necessary
 		$res = $db->query($engine, $this->query_login, array(
 					'username' => $username,
 					'password' => md5($password)));
 		if($res === FALSE || count($res) != 1)
-			return 'Invalid username or password';
+			return _('Invalid username or password');
 		$res = $res[0];
 		$cred = new AuthCredentials($res['user_id'], $res['username'],
 				$res['group_id'], $res['admin'] == 1);
 		if($engine->setCredentials($cred) !== TRUE)
-			return 'Invalid username or password';
+			return _('Invalid username or password');
 		return FALSE;
 	}
 
@@ -160,29 +256,31 @@ class UserModule extends Module
 		$cred = $engine->getCredentials();
 
 		$page = new Page;
-		$page->append('title', array('text' => 'User logout'));
+		$page->append('title', array('text' => _('User logout')));
 		if($cred->getUserId() == 0)
 		{
-			$text = 'You were logged out successfully';
+			$text = _('You were logged out successfully');
 			$page->append('dialog', array('type' => 'info',
 						'text' => $text));
 			$r = new Request($engine);
-			$page->append('link', array('request' => $r,
-						'text' => 'Back to the site'));
+			$page->append('link', array('stock' => 'back',
+					'request' => $r,
+					'text' => _('Back to the site')));
 			return $page;
 		}
-		$r = new Request($engine, 'user', 'logout');
+		$r = new Request($engine, $this->name, 'logout');
 		if($engine->isIdempotent($request))
 		{
 			$form = $page->append('form', array(
 						'request' => $r));
 			$vbox = $form->append('vbox');
-			$vbox->append('label', array('text' => 'Do you really want to logout?'));
-			$r = new Request($engine, 'user');
-			$form->append('button', array('text' => 'Cancel',
+			$vbox->append('label', array(
+				'text' => _('Do you really want to logout?')));
+			$r = new Request($engine, $this->name);
+			$form->append('button', array('text' => _('Cancel'),
 						'stock' => 'cancel',
 						'request' => $r));
-			$form->append('button', array('text' => 'Logout',
+			$form->append('button', array('text' => _('Logout'),
 						'stock' => 'logout',
 						'type' => 'submit'));
 			return $page;
@@ -191,7 +289,7 @@ class UserModule extends Module
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
-		$text = 'Logging out, please wait...';
+		$text = _('Logging out, please wait...');
 		$box->append('label', array('text' => $text));
 		$box = $box->append('hbox');
 		$text = 'If you are not redirected within 30 seconds,'
@@ -205,6 +303,29 @@ class UserModule extends Module
 	}
 
 
+	//UserModule::menu
+	protected function menu($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+
+		//FIXME set links and icons
+		$menu = new PageElement('menuitem', array('text' => 'User'));
+		if($cred->getUserId() == 0)
+		{
+			$menu->append('menuitem', array('text' => 'Login'));
+			$menu->append('menuitem', array('text' => 'Register'));
+		}
+		else
+		{
+			if($cred->isAdmin())
+				$menu->append('menuitem', array(
+						'text' => 'Administration'));
+			$menu->append('menuitem', array('text' => 'Logout'));
+		}
+		return $menu;
+	}
+
+
 	//UserModule::register
 	protected function register($engine, $request)
 	{
@@ -214,9 +335,10 @@ class UserModule extends Module
 		if($cred->getUserId() != 0)
 			//already registered and logged in
 			return $this->display($engine, new Request);
-		//FIXME check that registration is allowed
 		//process registration
-		if(!$engine->isIdempotent($request))
+		if(!$this->can_register())
+			$error = _('Registering is not allowed');
+		else if(!$engine->isIdempotent($request))
 			$error = $this->_register_process($engine, $request);
 		//registration successful
 		if($error === FALSE)
@@ -252,9 +374,9 @@ class UserModule extends Module
 		$ret = '';
 
 		if(($username = $request->getParameter('username')) === FALSE)
-			$ret .= "A username is required\n";
+			$ret .= _("A username is required\n");
 		if(($email = $request->getParameter('email')) === FALSE)
-			$ret .= "An e-mail address is required\n";
+			$ret .= _("An e-mail address is required\n");
 		if(strlen($ret) > 0)
 			return $ret;
 		//register the user
@@ -282,8 +404,42 @@ Thank you for registering!")));
 	//UserModule::validate
 	protected function validate($engine, $request)
 	{
-		//FIXME really implement
-		return FALSE;
+		$cred = $engine->getCredentials();
+		$error = TRUE;
+		$uid = $request->getId();
+		$token = $request->getParameter('token');
+
+		if($cred->getUserId() != 0)
+			//already registered and logged in
+			return $this->display($engine, new Request);
+		$page = new Page(array('title' => _('Account confirmation')));
+		$page->append('title', array(
+				'text' => _('Account confirmation')));
+		if(!$this->can_register())
+		{
+			$page->append('dialog', array('type' => 'error',
+				'text' => _('Registering is not allowed')));
+			return $page;
+		}
+		$box = $page->append('vbox');
+		if(($user = User::validate($engine, $uid, $token, $error))
+				=== FALSE)
+			$box->append('dialog', array('type' => 'error',
+					'text' => $error));
+		else
+		{
+			$box->append('dialog', array('type' => 'info',
+					'title' => _('Congratulations!'),
+					'text' => _("Your account is now enabled.")));
+			$r = new Request($engine, $this->name);
+			$box->append('link', array('stock' => 'login',
+					'request' => $r,
+					'text' => _('Login')));
+		}
+		$r = new Request($engine);
+		$box->append('link', array('stock' => 'back', 'request' => $r,
+			'text' => _('Back to the site')));
+		return $page;
 	}
 
 
