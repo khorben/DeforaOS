@@ -16,6 +16,9 @@
 
 
 
+require_once('./system/format.php');
+
+
 //Mail
 class Mail
 {
