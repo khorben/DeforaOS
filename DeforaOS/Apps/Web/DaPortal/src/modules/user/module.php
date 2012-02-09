@@ -381,8 +381,8 @@ class UserModule extends Module
 			return $ret;
 		//register the user
 		$error = '';
-		if(($user = User::register($engine, $username, $email, FALSE,
-				$error)) === FALSE)
+		if(($user = User::register($engine, $username, FALSE, $email,
+					FALSE, $error)) === FALSE)
 			$ret .= $error;
 		return strlen($ret) ? $ret : FALSE;
 	}

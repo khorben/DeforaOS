@@ -93,7 +93,7 @@ class User
 
 
 	//User::register
-	static public function register(&$engine, $username, $email,
+	static public function register(&$engine, $username, $password, $email,
 			$enabled = FALSE, &$error = FALSE)
 	{
 		$db = $engine->getDatabase();
@@ -134,7 +134,8 @@ class User
 		}
 		if($enabled === FALSE)
 		{
-			$password = User::password_new();
+			if($password === FALSE)
+				$password = User::password_new();
 			$token = sha1(uniqid($password, TRUE));
 			if($user->setPassword($engine, $password) === FALSE
 				|| $db->query($engine,
@@ -151,6 +152,7 @@ class User
 					FALSE, array('token' => $token));
 			$subject = _('User registration'); //XXX add site title
 			$text = _("Thank you for registering on this site.\n");
+			//FIXME do not send the password if already known
 			$text .= _("\nYour password is: ").$password."\n";
 			$text .= _("\nPlease click on the following link to enable your account:\n");
 			$text .= $engine->getUrl($r)."\n";
@@ -176,7 +178,7 @@ class User
 			$error .= _("The token must be specified\n");
 		if(strlen($error) > 0)
 			return FALSE;
-		$timestamp = 0; //FIXME really implement
+		$timestamp = date('Y-m-d H:i:s', time() - 604800); //one week
 		if($db->query($engine, User::$query_register_cleanup, array(
 					'timestamp' => $timestamp)) === FALSE)
 		{
