@@ -37,9 +37,25 @@ class PdoDatabase extends Database
 	//PdoDatabase::getLastId
 	public function getLastId(&$engine, $table, $field)
 	{
+		global $config;
+
 		if($this->handle === FALSE)
 			return FALSE;
-		//FIXME some backends require a parameter here
+		//determine the underlying backend
+		if(($backend = $config->getVariable('database::pdo', 'dsn'))
+				!== FALSE)
+		{
+			$backend = explode(':', $backend);
+			if(is_array($backend))
+				$backend = $backend[0];
+		}
+		switch($backend)
+		{
+			case 'pgsql':
+				//PostgreSQL requires a sequence object
+				$seq = $table.'_'.$field.'_seq';
+				return $this->handle->lastInsertId($seq);
+		}
 		return $this->handle->lastInsertId();
 	}
 
