@@ -89,7 +89,8 @@ CREATE TABLE daportal_content (
 	user_id INTEGER REFERENCES daportal_user (user_id) ON DELETE RESTRICT,
 	title VARCHAR(255),
 	content TEXT,
-	enabled BOOLEAN NOT NULL DEFAULT FALSE
+	enabled BOOLEAN NOT NULL DEFAULT FALSE,
+	public BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE daportal_content_lang (
