@@ -556,6 +556,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/system/config.php \
 		$(PACKAGE)-$(VERSION)/src/system/database.php \
 		$(PACKAGE)-$(VERSION)/src/system/engine.php \
+		$(PACKAGE)-$(VERSION)/src/system/locale.php \
 		$(PACKAGE)-$(VERSION)/src/system/mail.php \
 		$(PACKAGE)-$(VERSION)/src/system/module.php \
 		$(PACKAGE)-$(VERSION)/src/system/page.php \
