@@ -17,6 +17,7 @@
 
 
 require_once('./system/engine.php');
+require_once('./system/locale.php');
 require_once('./system/page.php');
 require_once('./system/template.php');
 
@@ -50,9 +51,15 @@ class HttpEngine extends Engine
 	//HttpEngine::attach
 	public function attach()
 	{
+		Locale::init($this);
 		$this->setType('text/html');
-		$request = $this->getRequest();
-		$this->log('LOG_DEBUG', 'URL is '.$this->getUrl($request));
+		if($this->getDebug())
+		{
+			$request = $this->getRequest();
+			$url = $this->getUrl($request);
+			$this->log('LOG_DEBUG', 'URL is '.$url);
+		}
+		//FIXME this code is wrong (parent is not defined)
 		if(!isset($_SERVER['SCRIPT_NAME'])
 				|| substr($_SERVER['SCRIPT_NAME'], -10)
 				!= '/index.php')
@@ -181,6 +188,8 @@ class HttpEngine extends Engine
 	{
 		global $config;
 
+		if(!($page instanceof PageElement))
+			$page = new Page; //XXX set title?
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
 		if(($charset = $config->getVariable('defaults', 'charset'))
