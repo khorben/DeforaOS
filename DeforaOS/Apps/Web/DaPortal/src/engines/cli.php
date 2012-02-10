@@ -17,6 +17,7 @@
 
 
 require_once('./system/engine.php');
+require_once('./system/locale.php');
 
 
 //CliEngine
@@ -77,6 +78,7 @@ class CliEngine extends Engine
 	//CliEngine::attach
 	public function attach()
 	{
+		Locale::init($this);
 	}
 
 

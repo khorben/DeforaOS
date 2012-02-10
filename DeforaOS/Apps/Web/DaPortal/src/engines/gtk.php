@@ -60,6 +60,7 @@ class GtkEngine extends CliEngine
 	//GtkEngine::attach
 	public function attach()
 	{
+		parent::attach();
 		$this->format = new GtkFormat;
 		$this->format->attach($this);
 	}
