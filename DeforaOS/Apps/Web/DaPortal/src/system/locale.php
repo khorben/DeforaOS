@@ -43,7 +43,7 @@ class Locale
 			return;
 		if($locale !== FALSE && $charset !== FALSE)
 		{
-			strtoupper($charset);
+			$charset = strtoupper($charset);
 			$locales = array($locale.'.'.$charset, $locale);
 			putenv('LC_ALL='.$locale);
 		}
