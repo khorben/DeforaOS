@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-05 23:49+0100\n"
+"POT-Creation-Date: 2012-02-10 13:18+0100\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -14,6 +14,62 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/system/user.php:104
+msgid "The username is not valid\n"
+msgstr ""
+
+#: ../src/system/user.php:107
+msgid "The e-mail address is not valid\n"
+msgstr ""
+
+#: ../src/system/user.php:113 ../src/system/user.php:125
+#: ../src/system/user.php:132 ../src/system/user.php:147
+msgid "Could not register the user"
+msgstr ""
+
+#: ../src/system/user.php:153 ../src/modules/user/module.php:351
+#: ../src/modules/user/module.php:352 ../src/modules/user/module.php:392
+#: ../src/modules/user/module.php:393
+msgid "User registration"
+msgstr ""
+
+#: ../src/system/user.php:154
+msgid "Thank you for registering on this site.\n"
+msgstr ""
+
+#: ../src/system/user.php:156
+msgid ""
+"\n"
+"Your password is: "
+msgstr ""
+
+#: ../src/system/user.php:157
+msgid ""
+"\n"
+"Please click on the following link to enable your account:\n"
+msgstr ""
+
+#: ../src/system/user.php:176
+msgid "Unknown user ID\n"
+msgstr ""
+
+#: ../src/system/user.php:178
+msgid "The token must be specified\n"
+msgstr ""
+
+#: ../src/system/user.php:185
+msgid "Could not validate the user\n"
+msgstr ""
+
+#: ../src/system/user.php:192 ../src/system/user.php:198
+#: ../src/system/user.php:207 ../src/system/user.php:215
+msgid "Could not validate the user"
+msgstr ""
+
+#: ../src/system/user.php:223
+msgid "Could not enable the user"
+msgstr ""
 
 #: ../src/modules/article/module.php:33 ../src/modules/article/module.php:34
 msgid "Article"
@@ -35,9 +91,10 @@ msgstr "Billet de blog"
 msgid "Blog posts"
 msgstr "Billets de blog"
 
-#: ../src/modules/content/module.php:72 ../src/modules/user/module.php:125
+#: ../src/modules/content/module.php:72 ../src/modules/user/module.php:61
+#: ../src/modules/user/module.php:224 ../src/modules/user/module.php:437
 msgid "Login"
-msgstr ""
+msgstr "Connexion"
 
 #: ../src/modules/content/module.php:87 ../src/modules/content/module.php:136
 msgid "Unable to list contents"
@@ -79,15 +136,15 @@ msgstr ""
 msgid "Some content could not be enabled"
 msgstr "Certains contenus n'ont pas pu être activés"
 
-#: ../src/modules/content/module.php:197 ../src/modules/content/module.php:406
+#: ../src/modules/content/module.php:197 ../src/modules/content/module.php:404
 msgid " by "
 msgstr " par "
 
-#: ../src/modules/content/module.php:407
+#: ../src/modules/content/module.php:405
 msgid " on "
 msgstr " le "
 
-#: ../src/modules/content/module.php:413
+#: ../src/modules/content/module.php:411
 msgid "Read"
 msgstr "Lire"
 
@@ -148,13 +205,132 @@ msgstr "Recherche avancée..."
 msgid "Unable to search"
 msgstr ""
 
-#: ../src/modules/user/module.php:86
+#: ../src/modules/user/module.php:69 ../src/modules/user/module.php:368
+msgid "Register"
+msgstr "S'enregistrer"
+
+#: ../src/modules/user/module.php:81
+msgid "Administration"
+msgstr "Administration"
+
+#: ../src/modules/user/module.php:90
+msgid "Homepage"
+msgstr "Accueil"
+
+#: ../src/modules/user/module.php:97 ../src/modules/user/module.php:171
+#: ../src/modules/user/module.php:283
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: ../src/modules/user/module.php:113
+msgid "Permission denied"
+msgstr "Permission non accordée"
+
+#: ../src/modules/user/module.php:114
+msgid "User administration"
+msgstr "Administration des utilisateurs"
+
+#: ../src/modules/user/module.php:139
+msgid "User menu"
+msgstr "Menu utilisateur"
+
+#: ../src/modules/user/module.php:140
+msgid "Site menu"
+msgstr "Menu du site"
+
+#: ../src/modules/user/module.php:158
+msgid "User"
+msgstr "Utilisateur"
+
+#: ../src/modules/user/module.php:162
+msgid "User homepage"
+msgstr "Page d'accueil"
+
+#: ../src/modules/user/module.php:184
 msgid "User login"
+msgstr "Connexion"
+
+#: ../src/modules/user/module.php:194
+msgid "Logging in progress, please wait..."
 msgstr ""
 
-#: ../src/modules/user/module.php:121
+#: ../src/modules/user/module.php:212 ../src/modules/user/module.php:360
+msgid "Username: "
+msgstr "Utilisateur : "
+
+#: ../src/modules/user/module.php:218
+msgid "Password: "
+msgstr "Mot de passe : "
+
+#: ../src/modules/user/module.php:219 ../src/modules/user/module.php:280
+#: ../src/modules/user/module.php:365
 msgid "Cancel"
 msgstr "Annuler"
+
+#: ../src/modules/user/module.php:237
+msgid "The request expired or is invalid"
+msgstr ""
+
+#: ../src/modules/user/module.php:243 ../src/modules/user/module.php:248
+msgid "Invalid username or password"
+msgstr ""
+
+#: ../src/modules/user/module.php:259
+msgid "User logout"
+msgstr "Déconnexion"
+
+#: ../src/modules/user/module.php:262
+msgid "You were logged out successfully"
+msgstr ""
+
+#: ../src/modules/user/module.php:268 ../src/modules/user/module.php:398
+#: ../src/modules/user/module.php:441
+msgid "Back to the site"
+msgstr "Retour au site"
+
+#: ../src/modules/user/module.php:278
+msgid "Do you really want to logout?"
+msgstr "Voulez-vous vraiment vous déconnecter ?"
+
+#: ../src/modules/user/module.php:292
+msgid "Logging out, please wait..."
+msgstr ""
+
+#: ../src/modules/user/module.php:340 ../src/modules/user/module.php:421
+msgid "Registering is not allowed"
+msgstr ""
+
+#: ../src/modules/user/module.php:362
+msgid "e-mail address: "
+msgstr ""
+
+#: ../src/modules/user/module.php:377
+msgid "A username is required\n"
+msgstr ""
+
+#: ../src/modules/user/module.php:379
+msgid "An e-mail address is required\n"
+msgstr ""
+
+#: ../src/modules/user/module.php:395
+msgid ""
+"You should receive an e-mail shortly with your password, along with a "
+"confirmation key.\n"
+"\n"
+"Thank you for registering!"
+msgstr ""
+
+#: ../src/modules/user/module.php:415 ../src/modules/user/module.php:417
+msgid "Account confirmation"
+msgstr ""
+
+#: ../src/modules/user/module.php:432
+msgid "Congratulations!"
+msgstr ""
+
+#: ../src/modules/user/module.php:433
+msgid "Your account is now enabled."
+msgstr ""
 
 #: ../src/modules/wiki/module.php:33
 msgid "Wiki"
