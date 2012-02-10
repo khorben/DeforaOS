@@ -17,59 +17,63 @@ msgstr ""
 
 #: ../src/system/user.php:104
 msgid "The username is not valid\n"
-msgstr ""
+msgstr "Le nom d'utilisateur n'est pas valide\n"
 
 #: ../src/system/user.php:107
 msgid "The e-mail address is not valid\n"
-msgstr ""
+msgstr "L'adresse e-mail n'est pas valide\n"
 
 #: ../src/system/user.php:113 ../src/system/user.php:125
 #: ../src/system/user.php:132 ../src/system/user.php:147
 msgid "Could not register the user"
-msgstr ""
+msgstr "Impossible d'enregistrer l'utilisateur"
 
 #: ../src/system/user.php:153 ../src/modules/user/module.php:351
 #: ../src/modules/user/module.php:352 ../src/modules/user/module.php:392
 #: ../src/modules/user/module.php:393
 msgid "User registration"
-msgstr ""
+msgstr "Enregistrement"
 
 #: ../src/system/user.php:154
 msgid "Thank you for registering on this site.\n"
-msgstr ""
+msgstr "Merci pour votre demande d'enregistrement sur ce site.\n"
 
 #: ../src/system/user.php:156
 msgid ""
 "\n"
 "Your password is: "
 msgstr ""
+"\n"
+"Votre mot de passe est : "
 
 #: ../src/system/user.php:157
 msgid ""
 "\n"
 "Please click on the following link to enable your account:\n"
 msgstr ""
+"\n"
+"Veuillez cliquer sur le lien suivant afin d'activer votre compte :\n"
 
 #: ../src/system/user.php:176
 msgid "Unknown user ID\n"
-msgstr ""
+msgstr "ID d'utilisateur inconnu\n"
 
 #: ../src/system/user.php:178
 msgid "The token must be specified\n"
-msgstr ""
+msgstr "Le jeton d'authentification doit être spécifié\n"
 
 #: ../src/system/user.php:185
 msgid "Could not validate the user\n"
-msgstr ""
+msgstr "Impossible de valider l'utilisateur\n"
 
 #: ../src/system/user.php:192 ../src/system/user.php:198
 #: ../src/system/user.php:207 ../src/system/user.php:215
 msgid "Could not validate the user"
-msgstr ""
+msgstr "Impossible de valider l'utilisateur"
 
 #: ../src/system/user.php:223
 msgid "Could not enable the user"
-msgstr ""
+msgstr "Impossible d'activer l'utilisateur"
 
 #: ../src/modules/article/module.php:33 ../src/modules/article/module.php:34
 msgid "Article"
@@ -98,7 +102,7 @@ msgstr "Connexion"
 
 #: ../src/modules/content/module.php:87 ../src/modules/content/module.php:136
 msgid "Unable to list contents"
-msgstr ""
+msgstr "Impossible de lister les contenus"
 
 #: ../src/modules/content/module.php:95
 msgid "Refresh"
@@ -114,7 +118,7 @@ msgstr "Activer"
 
 #: ../src/modules/content/module.php:155
 msgid "Content could be deleted successfully"
-msgstr ""
+msgstr "Le(s) contenu(s) ont pu être effacé(s)"
 
 #: ../src/modules/content/module.php:156
 msgid "Some content could not be deleted"
@@ -122,7 +126,7 @@ msgstr "Certains contenus n'ont pas pu être supprimés"
 
 #: ../src/modules/content/module.php:169
 msgid "Content could be disabled successfully"
-msgstr ""
+msgstr "Le(s) contenu(s) ont pu être désactivé(s)"
 
 #: ../src/modules/content/module.php:170
 msgid "Some content could not be disabled"
@@ -130,7 +134,7 @@ msgstr "Certains contenus n'ont pas pu être désactivés"
 
 #: ../src/modules/content/module.php:183
 msgid "Content could be enabled successfully"
-msgstr ""
+msgstr "Le(s) contenu(s) ont pu être activé(s)"
 
 #: ../src/modules/content/module.php:184
 msgid "Some content could not be enabled"
@@ -183,7 +187,7 @@ msgstr "Résultats de la recherche"
 
 #: ../src/modules/search/module.php:145
 msgid "Search query: "
-msgstr ""
+msgstr "Recherche : "
 
 #: ../src/modules/search/module.php:152
 msgid "Search in: "
@@ -203,7 +207,7 @@ msgstr "Recherche avancée..."
 
 #: ../src/modules/search/module.php:219 ../src/modules/search/module.php:226
 msgid "Unable to search"
-msgstr ""
+msgstr "Impossible de procéder à la recherche"
 
 #: ../src/modules/user/module.php:69 ../src/modules/user/module.php:368
 msgid "Register"
@@ -252,7 +256,7 @@ msgstr "Connexion"
 
 #: ../src/modules/user/module.php:194
 msgid "Logging in progress, please wait..."
-msgstr ""
+msgstr "Connexion en cours, veuillez patienter..."
 
 #: ../src/modules/user/module.php:212 ../src/modules/user/module.php:360
 msgid "Username: "
@@ -269,11 +273,11 @@ msgstr "Annuler"
 
 #: ../src/modules/user/module.php:237
 msgid "The request expired or is invalid"
-msgstr ""
+msgstr "La requête a expiré ou est invalide"
 
 #: ../src/modules/user/module.php:243 ../src/modules/user/module.php:248
 msgid "Invalid username or password"
-msgstr ""
+msgstr "Nom d'utilisateur ou mot de passe invalide"
 
 #: ../src/modules/user/module.php:259
 msgid "User logout"
@@ -281,7 +285,7 @@ msgstr "Déconnexion"
 
 #: ../src/modules/user/module.php:262
 msgid "You were logged out successfully"
-msgstr ""
+msgstr "Vous avez été déconnecté(e)"
 
 #: ../src/modules/user/module.php:268 ../src/modules/user/module.php:398
 #: ../src/modules/user/module.php:441
@@ -294,23 +298,23 @@ msgstr "Voulez-vous vraiment vous déconnecter ?"
 
 #: ../src/modules/user/module.php:292
 msgid "Logging out, please wait..."
-msgstr ""
+msgstr "Déconnexion en cours, veuillez patienter..."
 
 #: ../src/modules/user/module.php:340 ../src/modules/user/module.php:421
 msgid "Registering is not allowed"
-msgstr ""
+msgstr "L'enregistrement n'est pas autorisé"
 
 #: ../src/modules/user/module.php:362
 msgid "e-mail address: "
-msgstr ""
+msgstr "Adresse e-mail : "
 
 #: ../src/modules/user/module.php:377
 msgid "A username is required\n"
-msgstr ""
+msgstr "Un nom d'utilisateur est requis\n"
 
 #: ../src/modules/user/module.php:379
 msgid "An e-mail address is required\n"
-msgstr ""
+msgstr "Une adresse e-mail valide est requise\n"
 
 #: ../src/modules/user/module.php:395
 msgid ""
@@ -319,18 +323,22 @@ msgid ""
 "\n"
 "Thank you for registering!"
 msgstr ""
+"Vous devriez recevoir un e-mail avec votre mot de passe sous peu, ainsi"
+"qu'une clé de confirmation pour votre compte.\n"
+"\n"
+"Merci pour votre demande d'enregistrement !"
 
 #: ../src/modules/user/module.php:415 ../src/modules/user/module.php:417
 msgid "Account confirmation"
-msgstr ""
+msgstr "Confirmer son compte"
 
 #: ../src/modules/user/module.php:432
 msgid "Congratulations!"
-msgstr ""
+msgstr "Félicitations !"
 
 #: ../src/modules/user/module.php:433
 msgid "Your account is now enabled."
-msgstr ""
+msgstr "Votre compte est maintenant activé."
 
 #: ../src/modules/wiki/module.php:33
 msgid "Wiki"
