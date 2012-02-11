@@ -38,6 +38,10 @@ a:hover {
 	text-decoration:		underline;
 }
 
+h1 {
+	text-align:			left;
+}
+
 h1 a:hover {
 	text-decoration:		none;
 }
@@ -133,7 +137,7 @@ div#content {
 }
 
 div#content h1:first-child {
-	background-color:		#0000ff;
+	background-color:		#00007f;
 	color:				#ffffff;
 	margin:				-4px;
 	margin-bottom:			4px;
