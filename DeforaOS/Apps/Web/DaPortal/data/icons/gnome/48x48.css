@@ -67,6 +67,10 @@
 	background-image:	url('gnome-icon-theme/48x48/status/stock_dialog-info.png');
 }
 
+.stock48.login {
+	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
+}
+
 .stock48.logout {
 	background-image:	url('gnome-icon-theme/48x48/actions/gnome-logout.png');
 }
@@ -81,6 +85,10 @@
 
 .stock48.refresh {
 	background-image:	url('gnome-icon-theme/48x48/actions/stock_refresh.png');
+}
+
+.stock48.register {
+	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
 }
 
 .stock48.remove {

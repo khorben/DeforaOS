@@ -1,0 +1,108 @@
+/* $Id$ */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Web DaPortal */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+.stock32.about {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-about.png');
+}
+
+.stock32.add {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-add.png');
+}
+
+.stock32.admin {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-admin.png');
+}
+
+.stock32.back {
+	background-image:	url('gnome-icon-theme/32x32/actions/back.png');
+}
+
+.stock32.bold {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-bold.png');
+}
+
+.stock32.cancel {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-cancel.png');
+}
+
+.stock32.connect {
+	background-image:	url('gnome-icon-theme/32x32/actions/go-jump.png');
+}
+
+.stock32.delete {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-delete.png');
+}
+
+.stock32.disable {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-cancel.png');
+}
+
+.stock32.enable {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-execute.png');
+}
+
+.stock32.error {
+	background-image:	url('gnome-icon-theme/32x32/status/stock_dialog-error.png');
+}
+
+.stock32.forward {
+	background-image:	url('gnome-icon-theme/32x32/actions/forward.png');
+}
+
+.stock32.info {
+	background-image:	url('gnome-icon-theme/32x32/status/stock_dialog-info.png');
+}
+
+.stock32.login {
+	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
+}
+
+.stock32.logout {
+	background-image:	url('gnome-icon-theme/32x32/actions/gnome-logout.png');
+}
+
+.stock32.new {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-new.png');
+}
+
+.stock32.preferences {
+	background-image:	url('gnome-icon-theme/32x32/categories/gtk-preferences.png');
+}
+
+.stock32.refresh {
+	background-image:	url('gnome-icon-theme/32x32/actions/stock_refresh.png');
+}
+
+.stock32.register {
+	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
+}
+
+.stock32.remove {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-remove.png');
+}
+
+.stock32.reset {
+	background-image:	url('gnome-icon-theme/32x32/actions/revert.png');
+}
+
+.stock32.search {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-find.png');
+}
+
+.stock32.user {
+	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
+}

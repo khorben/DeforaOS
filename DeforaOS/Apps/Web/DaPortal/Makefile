@@ -52,6 +52,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/16x16.css \
+		$(PACKAGE)-$(VERSION)/data/icons/gnome/32x32.css \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/48x48.css \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/index.php \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/project.conf \

@@ -67,6 +67,10 @@
 	background-image:	url('gnome-icon-theme/16x16/status/stock_dialog-info.png');
 }
 
+.stock16.login {
+	background-image:	url('gnome-icon-theme/16x16/apps/user-info.png');
+}
+
 .stock16.logout {
 	background-image:	url('gnome-icon-theme/16x16/actions/gnome-logout.png');
 }
@@ -81,6 +85,10 @@
 
 .stock16.refresh {
 	background-image:	url('gnome-icon-theme/16x16/actions/stock_refresh.png');
+}
+
+.stock16.register {
+	background-image:	url('gnome-icon-theme/16x16/apps/user-info.png');
 }
 
 .stock16.remove {
