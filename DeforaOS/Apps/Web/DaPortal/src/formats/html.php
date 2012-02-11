@@ -54,13 +54,65 @@ class HtmlFormat extends FormatElements
 	//HtmlFormat::render
 	public function render(&$engine, $page, $filename = FALSE)
 	{
+		global $config;
 		$this->ids = array();
 		$this->tags = array();
+		$this->titles = array();
 		$this->engine = $engine;
 		//FIXME also track tags are properly closed
 
+		if($this->doctype !== FALSE)
+			print($this->doctype);
+		$this->tagOpen('html');
+		$this->renderTabs();
+		$this->tagOpen('head');
+		$this->_render_title($page);
+		$this->_render_theme($page);
+		if(($charset = $config->getVariable('defaults', 'charset'))
+				!== FALSE)
+			$this->renderMeta('Content-Type', 'text/html'
+					.'; charset='.$charset);
+		if(($location = $page->getProperty('location')) !== FALSE)
+			$this->renderMeta('Location', $location);
+		if(($refresh = $page->getProperty('refresh')) !== FALSE
+				&& is_numeric($refresh))
+			$this->renderMeta('Refresh', $refresh);
+		$this->renderTabs(-1);
+		$this->tagClose('head');
+		$this->renderTabs();
+		$this->tagOpen('body');
 		parent::render($engine, $page, $filename);
+		$this->renderTabs(-1);
+		$this->tagClose('body');
+		$this->renderTabs(-1);
+		$this->tagClose('html');
 		$this->engine = FALSE;
+	}
+
+	private function _render_theme($page)
+	{
+		global $config;
+
+		if(($theme = $config->getVariable(FALSE, 'theme')) === FALSE)
+			return;
+		//FIXME emit a (debugging) warning if the theme is not readable?
+		$this->renderTabs();
+		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
+					'href' => "themes/$theme.css"));
+	}
+
+	private function _render_title($e)
+	{
+		global $config;
+
+		if(($title = $e->getProperty('title')) === FALSE)
+			$title = $config->getVariable(FALSE, 'title');
+		if($title !== FALSE)
+		{
+			$this->renderTabs();
+			$this->tag('title', FALSE, $e->getProperty('id'), FALSE,
+					$title);
+		}
 	}
 
 
@@ -80,7 +132,7 @@ class HtmlFormat extends FormatElements
 	protected function renderBox($e, $type = 'vbox')
 	{
 		$this->renderTabs();
-		$this->tagOpen('div', $type);
+		$this->tagOpen('div', $type, $e->getProperty('id'));
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
@@ -191,10 +243,9 @@ class HtmlFormat extends FormatElements
 		$this->renderTabs();
 		$this->tagOpen('div', 'dialog '.$type);
 		$this->renderTabs();
-		$box = new PageElement('hbox');
-		$box->append('image', array('stock' => $type));
-		$box->append('title', array('text' => $title));
-		$this->renderElement($box);
+		$title = new PageElement('title', array('stock' => $type,
+				'text' => $title));
+		$this->renderElement($title);
 		$this->renderTabs();
 		$this->tagOpen('div', 'message', FALSE, FALSE,
 				$e->getProperty('text'));
@@ -288,30 +339,6 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderHeading($e)
-	{
-		//FIXME really track the heading level
-		$level = max(count($this->tags) - 1, 1);
-		$tag = "h$level";
-		if(($class = $e->getProperty('class')) === FALSE
-				&& ($class = $e->getProperty('stock'))
-				!== FALSE)
-			switch($level)
-			{
-				case 1: $class = "stock48 $class"; break;
-				case 2: $class = "stock32 $class"; break;
-				case 3: $class = "stock24 $class"; break;
-				case 4:
-				default:$class = "stock16 $class"; break;
-			}
-		$this->renderTabs();
-		$this->tagOpen($tag, $class, $e->getProperty('id'),
-				FALSE, $e->getProperty('text'));
-		$this->renderChildren($e);
-		$this->tagClose($tag);
-	}
-
-
 	protected function renderIconview($e)
 	{
 		$e->setProperty('view', 'icons');
@@ -353,10 +380,14 @@ class HtmlFormat extends FormatElements
 
 	protected function renderLabel($e)
 	{
+		$tag = 'span';
 		$attributes = array();
 		if(($for = $e->getProperty('for')) !== FALSE)
+		{
+			$tag = 'label';
 			$attributes['for'] = $for;
-		$this->tag('label', 'label', $e->getProperty('id'),
+		}
+		$this->tag($tag, 'label', $e->getProperty('id'),
 				$attributes, $e->getProperty('text'));
 	}
 
@@ -441,33 +472,7 @@ class HtmlFormat extends FormatElements
 
 	protected function renderPage($e)
 	{
-		global $config;
-
-		if($this->doctype !== FALSE)
-			print($this->doctype);
-		$this->tagOpen('html');
-		$this->renderTabs();
-		$this->tagOpen('head');
-		$this->renderTitle($e);
-		$this->renderTheme($e);
-		if(($charset = $config->getVariable('defaults', 'charset'))
-				!== FALSE)
-			$this->renderMeta('Content-Type', 'text/html'
-					.'; charset='.$charset);
-		if(($location = $e->getProperty('location')) !== FALSE)
-			$this->renderMeta('Location', $location);
-		if(($refresh = $e->getProperty('refresh')) !== FALSE
-				&& is_numeric($refresh))
-			$this->renderMeta('Refresh', $refresh);
-		$this->renderTabs(-1);
-		$this->tagClose('head');
-		$this->renderTabs();
-		$this->tagOpen('body');
 		$this->renderChildren($e, 1);
-		$this->renderTabs(-1);
-		$this->tagClose('body');
-		$this->renderTabs(-1);
-		$this->tagClose('html');
 	}
 
 
@@ -487,31 +492,53 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	protected function renderTheme($page)
-	{
-		global $config;
-
-		if(($theme = $config->getVariable(FALSE, 'theme')) === FALSE)
-			return;
-		//FIXME emit a (debugging) warning if the theme is not readable?
-		$this->renderTabs();
-		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
-					'href' => "themes/$theme.css"));
-	}
-
-
 	protected function renderTitle($e)
 	{
-		global $config;
+		$hcnt = count($this->titles);
+		$tcnt = count($this->tags);
 
-		if(($title = $e->getProperty('title')) === FALSE)
-			$title = $config->getVariable(FALSE, 'title');
-		if($title !== FALSE)
+		/* XXX this algorithm is a bit ugly but seems to work */
+		if($hcnt == 0) /* no title set */
 		{
-			$this->renderTabs();
-			$this->tag('title', FALSE, $e->getProperty('id'), FALSE,
-					$title);
+			$cur = 1;
+			$this->titles[$cur - 1] = $tcnt;
 		}
+		else if($this->titles[$hcnt - 1] < $tcnt) /* deeper level */
+		{
+			$this->titles[$hcnt] = $tcnt;
+			$cur = $hcnt;
+		}
+		else if($this->titles[$hcnt - 1] == $tcnt) /* same level */
+			$cur = $hcnt - 1;
+		else
+		{
+			for(; $hcnt > 0; $hcnt = count($this->titles))
+			{
+				$h = $this->titles[$hcnt - 1];
+				if($h <= $tcnt)
+					break;
+				unset($this->titles[$hcnt - 1]);
+			}
+			$cur = $hcnt - 1;
+		}
+		$level = $cur;
+		$tag = "h$level";
+		if(($class = $e->getProperty('class')) === FALSE
+				&& ($class = $e->getProperty('stock'))
+				!== FALSE)
+			switch($level)
+			{
+				case 1: $class = "stock48 $class"; break;
+				case 2: $class = "stock32 $class"; break;
+				case 3: $class = "stock24 $class"; break;
+				case 4:
+				default:$class = "stock16 $class"; break;
+			}
+		$this->renderTabs();
+		$this->tagOpen($tag, $class, $e->getProperty('id'), FALSE,
+				$e->getProperty('text'));
+		$this->renderChildren($e);
+		$this->tagClose($tag);
 	}
 
 
@@ -756,6 +783,7 @@ class HtmlFormat extends FormatElements
 	private $engine = FALSE;
 	private $ids;
 	private $tags;
+	private $titles;
 }
 
 ?>

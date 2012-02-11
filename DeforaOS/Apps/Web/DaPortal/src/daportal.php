@@ -25,12 +25,7 @@ require_once('./system/engine.php');
 if(($engine = Engine::attachDefault()) !== FALSE
 		&& ($request = $engine->getRequest()) !== FALSE)
 {
-	if(($page = $engine->process($request)) === FALSE)
-	{
-		$page = new Page;
-		$page->append('dialog', array('type' => 'error',
-					'text' => 'An error occured'));
-	}
+	$page = $engine->process($request);
 	$engine->render($page);
 }
 unset($engine);

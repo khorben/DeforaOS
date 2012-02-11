@@ -24,9 +24,12 @@ class BasicTemplate extends Template
 {
 	//protected
 	//properties
+	protected $action = FALSE;
 	protected $name = 'basic';
 	protected $footer = FALSE;
 	protected $homepage = FALSE;
+	protected $id = FALSE;
+	protected $module = FALSE;
 	protected $title = FALSE;
 
 
@@ -104,12 +107,20 @@ class BasicTemplate extends Template
 		global $config;
 
 		$section = 'template::'.$this->name;
+		if($this->action === FALSE)
+			$this->action = $config->getVariable($section,
+					'action');
 		if($this->footer === FALSE)
 			$this->footer = $config->getVariable($section,
 					'footer');
 		if($this->homepage === FALSE)
 			$this->homepage = $config->getVariable($section,
 					'homepage');
+		if($this->id === FALSE)
+			$this->id = $config->getVariable($section, 'id');
+		if($this->module === FALSE)
+			$this->module = $config->getVariable($section,
+					'module');
 		if($this->title === FALSE)
 			$this->title = $config->getVariable($section, 'title');
 		if($this->title === FALSE)
@@ -120,21 +131,33 @@ class BasicTemplate extends Template
 	//BasicTemplate::render
 	public function render(&$engine, $page)
 	{
-		if($page === FALSE)
-			$page = new Page;
-		else if($page->getType() != 'page')
+		global $config;
+
+		$p = new Page;
+		$p->appendElement($this->getTitle($engine));
+		$main = $p->append('vbox', array('id' => 'main'));
+		$main->appendElement($this->getMenu($engine));
+		$content = $main->append('vbox', array('id' => 'content'));
+		if($page === FALSE && $this->module !== FALSE)
 		{
-			$p = new Page;
-			$p->appendElement($page);
-			$page = $p;
+			$request = new Request($engine, $this->module,
+					$this->action, $this->id);
+			$page = $engine->process($request);
 		}
-		if(($title = $page->getProperty('title')) === FALSE)
-			$title = $this->title;
-		$page->setProperty('title', $title);
-		$page->prependElement($this->getMenu($engine));
-		$page->prependElement($this->getTitle($engine));
-		$page->appendElement($this->getFooter($engine));
-		return $page;
+		if($page !== FALSE)
+		{
+			if(($title = $page->getProperty('title')) === FALSE)
+				$title = $this->title;
+			$content->appendElement($page);
+		}
+		else
+		{
+			$title = $config->getVariable(FALSE, 'title');
+			//FIXME append default content
+		}
+		$p->setProperty('title', $title);
+		$p->appendElement($this->getFooter($engine));
+		return $p;
 	}
 }
 

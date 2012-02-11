@@ -16,14 +16,28 @@
 
 
 /* global */
-button {
+button, input[type="checkbox"], input[type="password"], input[type="text"],
+label {
 	margin:				2px;
+	padding:			2px;
 }
 
 div.buttonbox > button, div.buttonbox > a > button {
 	margin:				2px;
 	padding:			2px;
 	width:				8em;
+}
+
+form div.checkbox input[type="checkbox"] {
+	vertical-align:			text-bottom;
+}
+
+form div.entry {
+	display:			table-row;
+}
+
+form div.entry span.label, form div.entry input {
+	display:			table-cell;
 }
 
 div.frame > span.title {
@@ -38,10 +52,6 @@ div.frame:after {
 	clear:				left;
 	content:			"";
 	display:			block;
-}
-
-div.hbox {
-	clear:				both;
 }
 
 div.hbox:after {
@@ -59,61 +69,16 @@ div.hbox > div.pack:first-child {
 	padding-left:			0;
 }
 
-div.menubar {
-	padding:			2px;
-}
-
-div.menubar:after {
-	clear:				both;
-}
-
-div.menubar div.menuitem {
-	float:				left;
-	text-align:			center;
-	width:				10ex;
-}
-
-div.menubar > div.menuitem > div.link, div.menubar > div.menuitem > a {
-	display:			block;
+img {
+	border-width:			0;
 }
 
 div.messagebox {
 	padding:			4px;
 }
 
-div.vbox {
-	clear:				both;
-}
-
-div.vbox:after {
-	clear:				left;
-	content:			"";
-	display:			block;
-}
-
-div.vbox > div.pack {
-	padding-top:			4px;
-	clear:				left;
-}
-
-div.vbox > div.pack:first-child {
-	padding-top:			0;
-}
-
 .title {
 	font-weight:			bold;
-}
-
-form div.checkbox input[type="checkbox"] {
-	vertical-align:			text-bottom;
-}
-
-form div.entry {
-	display:			table-row;
-}
-
-form div.entry label, form div.entry input {
-	display:			table-cell;
 }
 
 form.treeview:after {
@@ -188,6 +153,12 @@ form.treeview.preview > div.table > div.row span.detail.preview {
 	display:			block;
 }
 
-img {
-	border-width:			0;
+div.vbox > div.pack {
+	display:			block;
+	padding-top:			4px;
+	clear:				left;
+}
+
+div.vbox > div.pack:first-child {
+	padding-top:			0;
 }

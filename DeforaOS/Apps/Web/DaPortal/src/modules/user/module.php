@@ -113,7 +113,8 @@ class UserModule extends Module
 				'text' => _('Permission denied')));
 		$title = _('User administration');
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('text' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
 		//FIXME really implement
 		return $page;
 	}
@@ -139,7 +140,8 @@ class UserModule extends Module
 		$title = ($cred->getUserId() != 0) ? _('User menu')
 			: _('Site menu');
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('text' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
 		$view = $page->append('iconview');
 		$actions = $this->actions($engine, $request);
 		if(is_array($actions))
@@ -163,7 +165,8 @@ class UserModule extends Module
 		}
 		$page = new Page(array('title' => $title));
 		//FIXME verify the request's title if set
-		$page->append('title', array('text' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
 		//FIXME really implement:
 		//- request actions from all modules
 		$view = $page->append('iconview');
@@ -256,7 +259,8 @@ class UserModule extends Module
 		$cred = $engine->getCredentials();
 
 		$page = new Page;
-		$page->append('title', array('text' => _('User logout')));
+		$page->append('title', array('stock' => 'logout',
+				'text' => _('User logout')));
 		if($cred->getUserId() == 0)
 		{
 			$text = _('You were logged out successfully');
@@ -349,7 +353,8 @@ class UserModule extends Module
 	private function _register_form($engine, $request, $error)
 	{
 		$page = new Page(array('title' => _('User registration')));
-		$page->append('title', array('text' => _('User registration')));
+		$page->append('title', array('stock' => $this->name,
+				'text' => _('User registration')));
 		if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 				'text' => $error));
@@ -390,7 +395,8 @@ class UserModule extends Module
 	private function _register_success($engine, $request)
 	{
 		$page = new Page(array('title' => _('User registration')));
-		$page->append('title', array('text' => _('User registration')));
+		$page->append('title', array('stock' => $this->name,
+				'text' => _('User registration')));
 		$page->append('dialog', array('type' => 'info',
 				'text' => _("You should receive an e-mail shortly with your password, along with a confirmation key.\n
 Thank you for registering!")));
@@ -413,7 +419,7 @@ Thank you for registering!")));
 			//already registered and logged in
 			return $this->display($engine, new Request);
 		$page = new Page(array('title' => _('Account confirmation')));
-		$page->append('title', array(
+		$page->append('title', array('stock' => $this->name,
 				'text' => _('Account confirmation')));
 		if(!$this->can_register())
 		{

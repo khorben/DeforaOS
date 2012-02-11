@@ -322,14 +322,6 @@ class GtkFormat extends FormatElements
 		return $ret;
 	}
 
-	protected function renderHeading($e)
-	{
-		$ret = new GtkLabel($e->getProperty('text'), FALSE);
-		$ret->set_alignment(0.0, 0.5);
-		$ret->modify_font($this->fontTitle);
-		return $ret;
-	}
-
 	protected function renderIconview($e)
 	{
 		$e->setProperty('Gtk::expand', TRUE);
@@ -462,6 +454,14 @@ class GtkFormat extends FormatElements
 		$ret = new GtkStatusBar;
 		$ret->push($ret->get_context_id('default'),
 				$e->getProperty('text'));
+		return $ret;
+	}
+
+	protected function renderTitle($e)
+	{
+		$ret = new GtkLabel($e->getProperty('text'), FALSE);
+		$ret->set_alignment(0.0, 0.5);
+		$ret->modify_font($this->fontTitle);
 		return $ret;
 	}
 

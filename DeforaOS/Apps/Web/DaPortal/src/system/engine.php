@@ -159,8 +159,7 @@ abstract class Engine
 	{
 		if($request === FALSE
 				|| ($module = $request->getModule()) === FALSE)
-			return $this->log('LOG_ERR', 'Unable to process empty'
-					.' request');
+			return FALSE;
 		$action = $request->getAction();
 		$this->log('LOG_DEBUG', "Processing request: module $module"
 				.(($action !== FALSE) ? ", action $action"

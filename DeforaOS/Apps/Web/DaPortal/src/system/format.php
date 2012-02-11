@@ -151,7 +151,7 @@ abstract class FormatElements extends Format
 			case 'statusbar':
 				return $this->renderStatusbar($e);
 			case 'title':
-				return $this->renderHeading($e);
+				return $this->renderTitle($e);
 			case 'toolbar':
 				return $this->renderToolbar($e);
 			case 'treeview':
@@ -180,7 +180,7 @@ abstract class FormatElements extends Format
 	abstract protected function renderMenubar($e);
 	abstract protected function renderPage($e);
 	abstract protected function renderStatusbar($e);
-	abstract protected function renderHeading($e);
+	abstract protected function renderTitle($e);
 	abstract protected function renderToolbar($e);
 	abstract protected function renderTreeview($e);
 	abstract protected function renderVbox($e);

@@ -75,7 +75,8 @@ class ContentModule extends Module
 		}
 		$title = $this->module_name.' administration';
 		$page->setProperty('title', $title);
-		$element = $page->append('title');
+		$element = $page->append('title', array('stock' => 'admin',
+				'text' => $title));
 		$db = $engine->getDatabase();
 		$query = $this->query_list_admin;
 		if($this->module_id !== FALSE)
@@ -85,7 +86,6 @@ class ContentModule extends Module
 			//FIXME return a dialog instead
 			return $engine->log('LOG_ERR',
 					_('Unable to list contents'));
-		$element->setProperty('text', $title);
 		$r = new Request($engine, $this->name, 'admin');
 		$treeview = $page->append('treeview', array('request' => $r));
 		$treeview->setProperty('columns', array('title', 'enabled',
@@ -125,7 +125,8 @@ class ContentModule extends Module
 			return $this->_display($engine, $id,
 					$request->getTitle());
 		$page = new Page;
-		$page->append('title', array('text' => $this->module_name));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $this->module_name));
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
@@ -360,7 +361,8 @@ class ContentModule extends Module
 		//FIXME display metadata and link to actual resource?
 		$page = new Page;
 		$page->setProperty('title', $content['title']);
-		$page->append('title', array('text' => $content['title']));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $content['title']));
 		$element = $page->append('label');
 		$element->setProperty('text', $content['text']);
 		return $page;

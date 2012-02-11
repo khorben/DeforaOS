@@ -114,6 +114,7 @@ class HttpEngine extends Engine
 	//HttpEngine::getUrl
 	public function getUrl($request, $absolute = TRUE)
 	{
+		//FIXME do not include parameters for a POST request
 		if($request === FALSE)
 			return FALSE;
 		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
@@ -189,14 +190,16 @@ class HttpEngine extends Engine
 		global $config;
 
 		if(!($page instanceof PageElement))
-			$page = new Page; //XXX set title?
+			$page = FALSE;
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			header('Content-Encoding: '.$charset); //XXX escape
-		if(($location = $page->getProperty('location')) !== FALSE)
-			header('Location: '.$location); //XXX escape
+		if($page !== FALSE)
+			if(($location = $page->getProperty('location'))
+					!== FALSE)
+				header('Location: '.$location); //XXX escape
 		switch($type)
 		{
 			case 'text/html':
