@@ -151,7 +151,7 @@ div#content > div.pack > *:first-child {
 	margin-bottom:			4px;
 	margin-left:			-4px;
 	margin-right:			-4px;
-	margin-top:			-17px;
+	margin-top:			-18px;
 	padding-top:			16px;
 }
 
@@ -228,14 +228,14 @@ div.statusbar {
 
 
 /* larger screens */
-@media screen and (min-width: 94ex) {
+@media screen and (min-width: 96ex) {
 	body {
-		padding-right:		12ex;
+		padding-right:		16ex;
 	}
 
 	div#menu {
 		float:			right;
-		margin-right:		-14ex;
+		margin-right:		-16ex;
 		margin-top:		64px;
 		width:			12ex;
 	}
