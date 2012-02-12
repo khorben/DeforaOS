@@ -87,6 +87,11 @@ div#menu ul.menubar li a:hover {
 	text-decoration:		none;
 }
 
+div#menu ul.menubar li li li a {
+	border-width:			0;
+	padding-left:			1ex;
+}
+
 div#menu form div.entry input {
 	max-width:			11ex;
 }
@@ -190,6 +195,7 @@ div.statusbar {
 	-webkit-border-bottom-right-radius:16px;
 	border-bottom-left-radius:	16px;
 	border-bottom-right-radius:	16px;
+	margin-bottom:			4px;
 	padding:			16px;
 	text-align:			right;
 }
