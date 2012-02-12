@@ -24,7 +24,6 @@
 /* general definitions */
 * {
 	margin:				0;
-	font-family:			"Verdana", "DejaVu Sans", "Bitstream Vera Sans", sans-serif;
 	padding:			0;
 	text-align:			justify;
 }
@@ -38,12 +37,25 @@ a:hover {
 	text-decoration:		underline;
 }
 
+body {
+	font-family:			"Verdana", "DejaVu Sans", "Bitstream Vera Sans", sans-serif;
+	font-size:			0.85em;
+}
+
+button {
+	border-width:			1px;
+}
+
 h1, h2, h3, h4, h5, h6, .title {
 	text-align:			left;
 }
 
 h1 a:hover {
 	text-decoration:		none;
+}
+
+html {
+	font-size:			100%;
 }
 
 ol li, ul li {
