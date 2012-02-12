@@ -34,6 +34,8 @@ class SearchModule extends Module
 				return $this->admin($engine);
 			case 'advanced':
 				return $this->searchAdvanced($engine, $request);
+			case 'widget':
+				return $this->widget($engine, $request);
 			default:
 				return $this->search($engine, $request);
 		}
@@ -103,6 +105,24 @@ class SearchModule extends Module
 	}
 
 
+	//SearchModule::widget
+	protected function widget(&$engine, $request)
+	{
+		$form = new PageElement('form');
+		$r = new Request($engine, 'search');
+		$form->setProperty('request', $r);
+		$hbox = $form->append('hbox');
+		$entry = $hbox->append('entry');
+		$entry->setProperty('name', 'q');
+		$entry->setProperty('value', _('Search...'));
+		$button = $hbox->append('button', array('stock' => 'search',
+					'type' => 'submit',
+					'text' => _('Search'),
+					'autohide' => TRUE));
+		return $form;
+	}
+
+
 	//private
 	//properties
 	private $query = "FROM daportal_content, daportal_module, daportal_user
@@ -152,12 +172,12 @@ class SearchModule extends Module
 			$label->setProperty('text', _('Search in: '));
 			$checkbox = $hbox->append('checkbox');
 			$checkbox->setProperty('name', 'intitle');
-			$checkbox->setProperty('text', 'titles');
+			$checkbox->setProperty('text', _('titles'));
 			$checkbox->setProperty('value',
 					$request->getParameter('intitle'));
 			$checkbox = $hbox->append('checkbox');
 			$checkbox->setProperty('name', 'incontent');
-			$checkbox->setProperty('text', 'content');
+			$checkbox->setProperty('text', _('content'));
 			$checkbox->setProperty('value',
 					$request->getParameter('incontent'));
 			$button = $form->append('button', array(
