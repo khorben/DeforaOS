@@ -231,18 +231,22 @@ class HtmlFormat extends FormatElements
 			switch($type)
 			{
 				case 'error':
+					$title = _('Error');
+					break;
 				case 'question':
+					$title = _('Question');
+					break;
 				case 'warning':
-					$title = ucfirst($type);
+					$title = _('Warning');
+					break;
 					break;
 				case 'info':
 				case 'message':
-					$title = 'Message';
+					$title = _('Message');
 					break;
 			}
 		$this->renderTabs();
 		$this->tagOpen('div', 'dialog '.$type);
-		$this->renderTabs();
 		$title = new PageElement('title', array('stock' => $type,
 				'text' => $title));
 		$this->renderElement($title);
