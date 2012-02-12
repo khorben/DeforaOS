@@ -138,7 +138,7 @@ div#content {
 }
 
 div#content > div.pack {
-	padding:			4px;
+	padding:			16px;
 }
 
 div#content > div.pack > *:first-child {
@@ -149,9 +149,9 @@ div#content > div.pack > *:first-child {
 	border-top-left-radius:		16px;
 	border-top-right-radius:	16px;
 	margin-bottom:			4px;
-	margin-left:			-4px;
-	margin-right:			-4px;
-	margin-top:			-18px;
+	margin-left:			-16px;
+	margin-right:			-16px;
+	margin-top:			-32px;
 	padding-top:			16px;
 }
 
@@ -188,10 +188,10 @@ div.dialog {
 	background-color:		#000000;
 	color:				#ffffff;
 	margin-bottom:			4px;
-	margin-left:			-4px;
-	margin-right:			-4px;
+	margin-left:			-16px;
+	margin-right:			-16px;
 	margin-top:			-4px;
-	padding:			1ex;
+	padding:			16px;
 }
 
 
