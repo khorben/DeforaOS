@@ -105,34 +105,34 @@ h1#title {
 
 /* content */
 div#content {
+	background-color:		#ffffff;
+	color:				#000000;
 	margin-top:			16px;
 }
 
 div#content > div.pack {
-	background-color:		#ffffff;
-	color:				#000000;
 	padding:			4px;
 }
 
 div#content > div.pack > *:first-child {
-	background-color:		#000000;
+	background-color:		#ffffff;
 	-moz-border-radius-topleft:	16px;
 	-moz-border-radius-topright:	16px;
 	-webkit-border-top-left-radius:	16px;
 	-webkit-border-top-right-radius:16px;
 	border-top-left-radius:		16px;
 	border-top-right-radius:	16px;
-	color:				#ffffff;
+	color:				#000000;
 	margin-bottom:			4px;
+	margin-left:			-4px;
+	margin-right:			-4px;
+	margin-top:			-17px;
 	padding-top:			16px;
 }
 
 div#content > div.pack > h1:first-child {
 	background-color:		#00007f;
 	color:				#ffffff;
-	margin-left:			-4px;
-	margin-right:			-4px;
-	margin-top:			-20px;
 }
 
 div#content > div.pack > h1:first-child.stock48 {
