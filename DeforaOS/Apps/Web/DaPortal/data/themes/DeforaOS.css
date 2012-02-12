@@ -57,47 +57,89 @@ html {
 	color:				#ffffff;
 }
 
-body > h1:first-child {
-	color:				#a0a0a0;
-}
 
-
-/* main area */
-div#main {
-	margin-left:			auto;
-	margin-right:			auto;
-	width:				92ex;
-}
-
-
-/* menubar */
-ul.menubar {
-	background-color:		#a0a0a0;
-	color:				#000000;
-	float:				right;
-	margin-bottom:			4px;
-	margin-right:			-2ex;
-	margin-top:			16px;
+/* menu */
+div#menu a {
+	background-color:		#000000;
+	color:				#ffffff;
 	padding:			4px;
-	width:				12ex;
 }
 
-ul.menubar a {
-	color:				#000000;
-	border-top:			1px solid black;
+div#menu ul.menubar li {
+	list-style-type:		none;
+	margin:				0;
+	padding:			0;
+}
+
+div#menu ul.menubar li a {
+	border-top:			1px solid #303030;
 	display:			block;
 	font-weight:			bold;
-	padding:			4px;
 }
 
-ul.menubar a:hover {
-	background-color:		#d0d0d0;
+div#menu ul.menubar li a:hover {
+	background-color:		#303030;
 	text-decoration:		none;
 }
 
-ul.menubar li {
-	list-style-type:		none;
-	padding-left:			0;
+
+/* main */
+body {
+	margin-left:			auto;
+	margin-right:			auto;
+	max-width:			80ex;
+}
+
+
+/* title */
+h1#title {
+	padding:			16px;
+	text-align:			right;
+}
+
+
+/* content */
+div#content > div.pack > * {
+	background-color:		#ffffff;
+	color:				#000000;
+	padding:			4px;
+}
+
+div#content > div.pack > *:first-child {
+	-moz-border-radius-topleft:	16px;
+	-moz-border-radius-topright:	16px;
+	-webkit-border-top-left-radius:	16px;
+	-webkit-border-top-right-radius:16px;
+	border-top-left-radius:		16px;
+	border-top-right-radius:	16px;
+	padding-top:			16px;
+}
+
+div#content > div.pack > h1:first-child {
+	background-color:		#00007f;
+	color:				#ffffff;
+}
+
+div#content > div.pack > h1:first-child.stock48 {
+	background-position:		4px 16px;
+	min-height:			64px;
+	padding-left:			56px;
+}
+
+div#content > div.pack > h1:first-child.error {
+	background-color:		#ff0000;
+}
+
+div#content > div.pack > h1:first-child.project {
+	background-color:		#007f00;
+}
+
+div#content > div.pack > h1:first-child.user {
+	background-color:		#ff7f00;
+}
+
+div#content > div.pack > h1:first-child.wiki {
+	background-color:		#7f7fff;
 }
 
 
@@ -113,63 +155,49 @@ div.dialog {
 /* statusbar */
 div.statusbar {
 	background-color:		#ffffff;
+	color:				#000000;
 	-moz-border-radius-bottomleft:	16px;
 	-moz-border-radius-bottomright:	16px;
 	-webkit-border-bottom-left-radius:16px;
 	-webkit-border-bottom-right-radius:16px;
 	border-bottom-left-radius:	16px;
 	border-bottom-right-radius:	16px;
-	clear:				left;
-	color:				#000000;
-	margin-left:			auto;
-	margin-right:			auto;
-	padding:			4px;
-	width:				80ex;
+	padding:			16px;
+	text-align:			right;
 }
 
 
-/* content */
-div#content {
-	background-color:		#ffffff;
-	color:				#000000;
-	padding:			4px;
-	width:				80ex;
+/* small screens */
+@media screen and (max-width: 80ex) {
+	div#menu > div.pack > * {
+		display:		none;
+	}
+
+	div#menu ul.menubar, div#menu ul.menubar li {
+		display:		block;
+	}
+
+	div#menu ul.menubar li li li {
+		display:		none;
+	}
 }
 
-div#content h1:first-child {
-	background-color:		#00007f;
-	color:				#ffffff;
-	margin:				-4px;
-	margin-bottom:			4px;
-	padding:			4px;
-}
 
-div#content, div#content h1:first-child {
-	-moz-border-radius-topleft:	16px;
-	-moz-border-radius-topright:	16px;
-	-webkit-border-top-left-radius:	16px;
-	-webkit-border-top-right-radius:16px;
-	border-top-left-radius:		16px;
-	border-top-right-radius:	16px;
-}
+/* larger screens */
+@media screen and (min-width: 93ex) {
+	body {
+		padding-right:		12ex;
+	}
 
-div#content h1:first-child.stock48 {
-	background-position:		4px 4px;
-	padding-left:			56px;
-}
+	div#menu {
+		float:			right;
+		margin-right:		-13ex;
+		margin-top:		16px;
+		width:			12ex;
+	}
 
-div#content h1:first-child.error {
-	background-color:		#ff0000;
-}
-
-div#content h1:first-child.project {
-	background-color:		#007f00;
-}
-
-div#content h1:first-child.user {
-	background-color:		#ff7f00;
-}
-
-div#content h1:first-child.wiki {
-	background-color:		#7f7fff;
+	div#menu, div#menu a {
+		background-color:	#a0a0a0;
+		color:			#000000;
+	}
 }
