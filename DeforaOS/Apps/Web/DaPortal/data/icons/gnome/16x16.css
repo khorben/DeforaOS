@@ -79,8 +79,16 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-new.png');
 }
 
+.stock16.open {
+	background-image:	url('gnome-icon-theme/16x16/actions/gtk-open.png');
+}
+
 .stock16.preferences {
 	background-image:	url('gnome-icon-theme/16x16/categories/gtk-preferences.png');
+}
+
+.stock16.read {
+	background-image:	url('gnome-icon-theme/16x16/actions/gtk-open.png');
 }
 
 .stock16.refresh {

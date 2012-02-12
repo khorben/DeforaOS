@@ -79,8 +79,16 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-new.png');
 }
 
+.stock32.open {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-open.png');
+}
+
 .stock32.preferences {
 	background-image:	url('gnome-icon-theme/32x32/categories/gtk-preferences.png');
+}
+
+.stock32.read {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-open.png');
 }
 
 .stock32.refresh {
