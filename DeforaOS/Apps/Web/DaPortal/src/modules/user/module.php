@@ -239,6 +239,7 @@ class UserModule extends Module
 		$db = $engine->getDatabase();
 
 		if(($username = $request->getParameter('username')) === FALSE
+				|| strlen($username) == 0
 				|| ($password = $request->getParameter(
 						'password')) === FALSE)
 			return TRUE;
