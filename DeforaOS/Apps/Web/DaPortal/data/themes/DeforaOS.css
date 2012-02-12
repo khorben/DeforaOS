@@ -59,10 +59,15 @@ html {
 
 
 /* menu */
+div#menu {
+	padding:			4px;
+}
+
 div#menu a {
 	background-color:		#000000;
 	color:				#ffffff;
-	padding:			4px;
+	padding-bottom:			4px;
+	padding-top:			4px;
 }
 
 div#menu ul.menubar li {
@@ -99,25 +104,35 @@ h1#title {
 
 
 /* content */
-div#content > div.pack > * {
+div#content {
+	margin-top:			16px;
+}
+
+div#content > div.pack {
 	background-color:		#ffffff;
 	color:				#000000;
 	padding:			4px;
 }
 
 div#content > div.pack > *:first-child {
+	background-color:		#000000;
 	-moz-border-radius-topleft:	16px;
 	-moz-border-radius-topright:	16px;
 	-webkit-border-top-left-radius:	16px;
 	-webkit-border-top-right-radius:16px;
 	border-top-left-radius:		16px;
 	border-top-right-radius:	16px;
+	color:				#ffffff;
+	margin-bottom:			4px;
 	padding-top:			16px;
 }
 
 div#content > div.pack > h1:first-child {
 	background-color:		#00007f;
 	color:				#ffffff;
+	margin-left:			-4px;
+	margin-right:			-4px;
+	margin-top:			-20px;
 }
 
 div#content > div.pack > h1:first-child.stock48 {
@@ -147,7 +162,10 @@ div#content > div.pack > h1:first-child.wiki {
 div.dialog {
 	background-color:		#000000;
 	color:				#ffffff;
-	margin:				4px;
+	margin-bottom:			4px;
+	margin-left:			-4px;
+	margin-right:			-4px;
+	margin-top:			-4px;
 	padding:			4px;
 }
 
@@ -184,20 +202,24 @@ div.statusbar {
 
 
 /* larger screens */
-@media screen and (min-width: 93ex) {
+@media screen and (min-width: 94ex) {
 	body {
 		padding-right:		12ex;
 	}
 
 	div#menu {
 		float:			right;
-		margin-right:		-13ex;
-		margin-top:		16px;
+		margin-right:		-14ex;
+		margin-top:		64px;
 		width:			12ex;
 	}
 
 	div#menu, div#menu a {
 		background-color:	#a0a0a0;
 		color:			#000000;
+	}
+
+	div#menu a:hover {
+		color:			#ffffff;
 	}
 }
