@@ -36,6 +36,8 @@ class DeforaOSTemplate extends BasicTemplate
 		$vbox->appendElement(parent::getMenu($engine, $entries));
 		$request = new Request($engine, 'search', 'widget');
 		$vbox->appendElement($engine->process($request));
+		$request = new Request($engine, 'user', 'widget');
+		$vbox->appendElement($engine->process($request));
 		return $vbox;
 	}
 
