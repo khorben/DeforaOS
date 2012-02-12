@@ -18,14 +18,14 @@
 /* global */
 button, input[type="checkbox"], input[type="password"], input[type="text"],
 label {
-	margin:				2px;
-	padding:			2px;
+	margin:				0.5ex;
+	padding:			0.5ex;
 }
 
 div.buttonbox > button, div.buttonbox > a > button {
-	margin:				2px;
-	padding:			2px;
-	width:				8em;
+	margin:				0.5ex;
+	padding:			0.5ex;
+	width:				10ex;
 }
 
 form div.checkbox input[type="checkbox"] {
@@ -62,7 +62,7 @@ div.hbox:after {
 
 div.hbox > div.pack {
 	float:				left;
-	padding-left:			4px;
+	padding-left:			1ex;
 }
 
 div.hbox > div.pack:first-child {
@@ -74,7 +74,7 @@ img {
 }
 
 div.messagebox {
-	padding:			4px;
+	padding:			1ex;
 }
 
 .title {
@@ -98,8 +98,7 @@ form.treeview > div.table > div.row > span.detail {
 }
 
 form.treeview > div.table > div.row > div.row {
-	padding:			2px;
-	padding-left:			16px;
+	padding:			0.5ex 1ex 0.5ex 2ex;
 }
 
 form.treeview.details > div.table {
@@ -113,14 +112,14 @@ form.treeview.details > div.table > div {
 
 form.treeview.details > div.table > div > span.detail {
 	display:			table-cell;
-	padding-right:			2px;
+	padding-right:			0.5ex;
 }
 
 form.treeview.icons > div.table > div.row {
 	float:				left;
-	padding:			2px;
+	padding:			0.5ex;
 	text-align:			center;
-	width:				120px;
+	width:				12ex;
 }
 
 form.treeview.icons > div.table > div.row span.icon {
@@ -155,7 +154,7 @@ form.treeview.preview > div.table > div.row span.detail.preview {
 
 div.vbox > div.pack {
 	display:			block;
-	padding-top:			4px;
+	padding-top:			0.5ex;
 	clear:				left;
 }
 
