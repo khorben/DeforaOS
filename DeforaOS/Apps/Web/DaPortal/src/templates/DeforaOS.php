@@ -28,11 +28,25 @@ class DeforaOSTemplate extends BasicTemplate
 	//DeforaOSTemplate::getMenu
 	protected function getMenu($engine, $entries = FALSE)
 	{
+		$vbox = new PageElement('vbox', array('id' => 'menu'));
 		if($entries === FALSE)
 			$entries = array('news', 'project',
 					'user' => array('login'),
 					'wiki');
-		return parent::getMenu($engine, $entries);
+		$vbox->appendElement(parent::getMenu($engine, $entries));
+		$request = new Request($engine, 'search', 'embed');
+		$vbox->appendElement($engine->process($request));
+		return $vbox;
+	}
+
+
+	//DeforaOSTemplate::getTitle
+	protected function getTitle($engine)
+	{
+		$title = new PageElement('title', array('id' => 'title'));
+		$link = $title->append('link', array('url' => $this->homepage));
+		$link->append('image', array('source' => 'themes/DeforaOS.png'));
+		return $title;
 	}
 
 
