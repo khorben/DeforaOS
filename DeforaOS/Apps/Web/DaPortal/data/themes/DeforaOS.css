@@ -72,14 +72,14 @@ html {
 
 /* menu */
 div#menu {
-	padding:			4px;
+	padding:			1ex;
 }
 
 div#menu a {
 	background-color:		#000000;
 	color:				#ffffff;
-	padding-bottom:			4px;
-	padding-top:			4px;
+	padding-bottom:			0.5ex;
+	padding-top:			0.5ex;
 }
 
 div#menu ul.menubar li {
@@ -193,7 +193,7 @@ div.dialog {
 	margin-left:			-4px;
 	margin-right:			-4px;
 	margin-top:			-4px;
-	padding:			4px;
+	padding:			1ex;
 }
 
 
