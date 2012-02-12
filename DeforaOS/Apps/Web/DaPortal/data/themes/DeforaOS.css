@@ -87,6 +87,16 @@ div#menu ul.menubar li a:hover {
 	text-decoration:		none;
 }
 
+div#menu form div.entry input {
+	max-width:			11ex;
+}
+
+div#menu form div.entry span.label,
+div#menu form div.entry input[type="password"],
+div#menu form div.entry input[type="text"] {
+	display:			table-row;
+}
+
 
 /* main */
 body {

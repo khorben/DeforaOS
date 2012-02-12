@@ -24,7 +24,7 @@
 }
 
 .stock16.admin {
-	background-image:	url('gnome-icon-theme/16x16/actions/gtk-admin.png');
+	background-image:	url('gnome-icon-theme/16x16/categories/gtk-preferences.png');
 }
 
 .stock16.back {
@@ -63,6 +63,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/forward.png');
 }
 
+.stock16.home {
+	background-image:	url('gnome-icon-theme/16x16/actions/gtk-home.png');
+}
+
 .stock16.info {
 	background-image:	url('gnome-icon-theme/16x16/status/stock_dialog-info.png');
 }
@@ -77,6 +81,10 @@
 
 .stock16.new {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-new.png');
+}
+
+.stock16.news {
+	background-image:	url('gnome-icon-theme/16x16/apps/web-browser.png');
 }
 
 .stock16.open {

@@ -24,7 +24,7 @@
 }
 
 .stock32.admin {
-	background-image:	url('gnome-icon-theme/32x32/actions/gtk-admin.png');
+	background-image:	url('gnome-icon-theme/32x32/categories/gtk-preferences.png');
 }
 
 .stock32.back {
@@ -63,6 +63,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/forward.png');
 }
 
+.stock32.home {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-home.png');
+}
+
 .stock32.info {
 	background-image:	url('gnome-icon-theme/32x32/status/stock_dialog-info.png');
 }
@@ -77,6 +81,10 @@
 
 .stock32.new {
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-new.png');
+}
+
+.stock32.news {
+	background-image:	url('gnome-icon-theme/32x32/apps/web-browser.png');
 }
 
 .stock32.open {
