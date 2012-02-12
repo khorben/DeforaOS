@@ -37,6 +37,7 @@ class UserModule extends Module
 			case 'menu':
 			case 'register':
 			case 'validate':
+			case 'widget':
 				return $this->$action($engine, $request);
 			default:
 				return $this->_default($engine, $request);
@@ -85,9 +86,9 @@ class UserModule extends Module
 						'label' => $link));
 			$r = new Request($engine, $this->name, 'display');
 			$icon = new PageElement('image', array(
-					'stock' => 'home'));
+					'stock' => 'user'));
 			$link = new PageElement('link', array('request' => $r,
-					'text' => _('Homepage')));
+					'text' => _('My content')));
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'label' => $link));
 			$r = new Request($engine, $this->name, 'logout');
@@ -137,7 +138,7 @@ class UserModule extends Module
 		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
 			return $this->display($engine, $request);
 		//FIXME add content?
-		$title = ($cred->getUserId() != 0) ? _('User menu')
+		$title = ($cred->getUserId() != 0) ? _('User homepage')
 			: _('Site menu');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
@@ -156,20 +157,25 @@ class UserModule extends Module
 	{
 		$cred = $engine->getCredentials();
 
-		if(($uid = $request->getId()) !== FALSE)
-			$title = _('User').' '.$uid;
-		else
-		{
-			$uid = $cred->getUserId();
-			$title = _('User homepage');
-		}
-		$page = new Page(array('title' => $title));
-		//FIXME verify the request's title if set
-		$page->append('title', array('stock' => $this->name,
-				'text' => $title));
-		//FIXME really implement:
-		//- request actions from all modules
+		$page = new Page;
 		$view = $page->append('iconview');
+		if(($uid = $request->getId()) !== FALSE)
+			//FIXME verify the request's title if set
+			$title = _('Content from ').$uid;
+		else if(($uid = $cred->getUserId()) != 0)
+		{
+			$title = _('My content');
+			$r = new Request($engine, $this->name);
+			$page->append('link', array('stock' => 'back',
+					'request' => $r,
+					'text' => _('Back to my homepage')));
+		}
+		else
+			return $this->login($engine, new Request);
+		$page->setProperty('title', $title);
+		$page->prepend('title', array('stock' => $this->name,
+				'text' => $title));
+		//FIXME request content from all modules
 		$r = new Request($engine, $this->name, 'logout');
 		$link = new PageElement('link', array('text' => _('Logout'),
 				'request' => $r));
@@ -275,6 +281,7 @@ class UserModule extends Module
 		$r = new Request($engine, $this->name, 'logout');
 		if($engine->isIdempotent($request))
 		{
+			//FIXME make it a question dialog
 			$form = $page->append('form', array(
 						'request' => $r));
 			$vbox = $form->append('vbox');
@@ -446,6 +453,46 @@ Thank you for registering!")));
 		$box->append('link', array('stock' => 'back', 'request' => $r,
 			'text' => _('Back to the site')));
 		return $page;
+	}
+
+
+	//UserModule::widget
+	protected function widget($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+
+		if($cred->getUserId() == 0)
+		{
+			$r = new Request($engine, $this->name, 'login');
+			$form = new PageElement('form', array('request' => $r));
+			$entry = $form->append('entry', array(
+				'name' => 'username',
+				'text' => _('Username: '),
+				'value' => $request->getParameter(
+					'username')));
+			$entry = $form->append('entry', array(
+				'hidden' => TRUE,
+				'name' => 'password',
+				'text' => _('Password: ')));
+			$form->append('button', array('type' => 'submit',
+				'stock' => 'login',
+				'text' => _('Login')));
+			return $form;
+		}
+		$box = new PageElement('vbox');
+		$r = new Request($engine, $this->name);
+		$box->append('button', array('stock' => 'home',
+				'request' => $r,
+				'text' => _('Homepage')));
+		$r = new Request($engine, $this->name, 'display');
+		$box->append('button', array('stock' => 'user',
+				'request' => $r,
+				'text' => _('My content')));
+		$r = new Request($engine, $this->name, 'logout');
+		$box->append('button', array('stock' => 'logout',
+				'request' => $r,
+				'text' => _('Logout')));
+		return $box;
 	}
 
 
