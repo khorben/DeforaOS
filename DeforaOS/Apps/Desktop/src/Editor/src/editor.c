@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -699,7 +699,7 @@ void editor_open(Editor * editor, char const * filename)
 				NULL);
 		if(res == GTK_RESPONSE_ACCEPT && editor_save(editor) != TRUE)
 			return;
-		else if(res != GTK_RESPONSE_CLOSE)
+		else if(res != GTK_RESPONSE_REJECT)
 			return;
 	}
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
