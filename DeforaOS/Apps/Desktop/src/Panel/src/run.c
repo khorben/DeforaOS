@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -361,7 +361,7 @@ static void _execute_save_config(Run * run)
 	for(i = 0; i < 100; i++)
 	{
 		snprintf(buf, sizeof(buf), "%s%d", "command", i);
-		q = config_get(run->config, "", buf);
+		q = config_get(run->config, NULL, buf);
 		if(q == NULL || strcmp(p, q) != 0)
 			continue;
 		free(filename); /* the command is already known */
@@ -370,12 +370,13 @@ static void _execute_save_config(Run * run)
 	for(i = 0; i < 100; i++)
 	{
 		snprintf(buf, sizeof(buf), "%s%d", "command", i);
-		q = config_get(run->config, "", buf);
+		q = config_get(run->config, NULL, buf);
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() config_set(config, "", %s, %s)\n",
-				__func__, buf, p);
+		fprintf(stderr, "DEBUG: %s() config_set(config, %s, %s, %s)\n",
+				__func__, "\"\"", buf, p);
 #endif
-		config_set(run->config, "", buf, p);
+		/* FIXME this invalidates q and then p in the next iteration */
+		config_set(run->config, NULL, buf, p);
 		if((p = q) == NULL)
 			break;
 	}
