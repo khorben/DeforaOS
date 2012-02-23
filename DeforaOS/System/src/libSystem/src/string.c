@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,11 @@ String * string_new(String const * string)
 {
 	String * ret = NULL;
 
+	if(string == NULL)
+	{
+		error_set_code(1, "%s", strerror(EINVAL));
+		return NULL;
+	}
 	if(string_set(&ret, string) != 0)
 		return NULL;
 	return ret;
@@ -85,11 +90,12 @@ void string_delete(String * string)
 /* string_set */
 int string_set(String ** string, String const * string2)
 {
-	size_t len = string_length(string2) + 1;
+	size_t len = string_length(string2);
 
-	if(object_resize((Object**)string, len) != 0)
+	if(object_resize((Object**)string, len + 1) != 0)
 		return 1;
-	strcpy(*string, string2);
+	strncpy(*string, string2, len);
+	(*string)[len] = '\0';
 	return 0;
 }
 
@@ -100,8 +106,7 @@ size_t string_length(String const * string)
 {
 	size_t length;
 
-	for(length = 0; *string != '\0'; string++)
-		length++;
+	for(length = 0; string[length] != '\0'; length++);
 	return length;
 }
 

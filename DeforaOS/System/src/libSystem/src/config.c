@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,23 +68,25 @@ char const * config_get(Config * config, char const * section,
 
 	if(section == NULL)
 		section = "";
-	if((h = hash_get(config, section)) != NULL) /* found section */
+	if((h = hash_get(config, section)) == NULL)
 	{
-		if((value = hash_get(h, variable)) != NULL) /* found value */
-			return value;
+		/* the section does not exist */
 		if(section[0] == '\0')
-			error_set_code(1, "%s%s", variable, ": Not found in"
-					" default section");
+			error_set_code(1, "%s", "No default section");
 		else
-			error_set_code(1, "%s%s%s", variable, ": Not found in"
-					" section ", section);
+			error_set_code(1, "%s%s", section, ": No such section");
 		return NULL;
 	}
-	if(section[0] == '\0')
-		error_set_code(1, "%s", "default section: Not found");
-	else
-		error_set_code(1, "%s%s%s", "section ", section, ": Not found");
-	return NULL;
+	if((value = hash_get(h, variable)) == NULL)
+	{
+		/* the variable is not defined */
+		error_set_code(1, "%s%s%s%s%s", variable, ": Not defined in",
+				(section[0] == '\0') ? " default" : "",
+				" section",
+				(section[0] != '\0') ? section : "");
+		return NULL;
+	}
+	return value;
 }
 
 
@@ -94,8 +96,8 @@ int config_set(Config * config, char const * section, char const * variable,
 {
 	Hash * hash;
 	char * p;
-	char * q;
-	char * v = NULL;
+	char * oldvalue = NULL;
+	char * newvalue = NULL;
 
 	if(section == NULL)
 		section = "";
@@ -108,39 +110,30 @@ int config_set(Config * config, char const * section, char const * variable,
 		if((p = string_new(section)) == NULL
 				|| hash_set(config, p, hash) != 0)
 		{
-			free(p);
+			string_delete(p);
 			hash_delete(hash);
 			return 1;
 		}
 	}
 	else
 		/* to free the current value if already set */
-		v = hash_get(hash, variable);
+		oldvalue = hash_get(hash, variable);
 	if((p = string_new(variable)) == NULL)
 		return 1;
-	if(value == NULL)
-	{
-		if(hash_set(hash, p, NULL) == 0)
-		{
-			string_delete(v);
-			return 0;
-		}
-		string_delete(p);
-		return 1;
-	}
-	if((q = string_new(value)) == NULL)
+	if(value != NULL && (newvalue = string_new(value)) == NULL)
 	{
 		string_delete(p);
 		return 1;
 	}
-	if(hash_set(hash, p, q) == 0)
+	/* set the new value */
+	if(hash_set(hash, p, newvalue) != 0)
 	{
-		string_delete(v);
-		return 0;
+		string_delete(p);
+		string_delete(newvalue);
+		return 1;
 	}
-	string_delete(p);
-	string_delete(q);
-	return 1;
+	string_delete(oldvalue);
+	return 0;
 }
 
 

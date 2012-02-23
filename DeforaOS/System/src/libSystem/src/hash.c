@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,20 +157,21 @@ int hash_set(Hash * hash, void const * key, void * value)
 {
 	unsigned int h;
 	size_t i;
+	size_t cnt;
 	HashEntry he;
 	HashEntry * p;
 
 	h = (hash->func != NULL) ? hash->func(key) : 0;
-	for(i = array_count(hash->entries); i > 0; i--)
+	for(i = 0, cnt = array_count(hash->entries); i < cnt; i++)
 	{
-		if((p = array_get(hash->entries, i - 1)) == NULL)
+		if((p = array_get(hash->entries, i)) == NULL)
 			return 1;
 		if(p->hash != h)
 			continue;
 		if(hash->compare(p->key, key) != 0)
 			continue;
 		if(value == NULL)
-			return (array_remove_pos(hash->entries, i - 1) == 0)
+			return (array_remove_pos(hash->entries, i) == 0)
 				? 0 : 1;
 		return _hashentry_set_value(p, value);
 	}
