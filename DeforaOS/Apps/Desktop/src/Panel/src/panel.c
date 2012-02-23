@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -1451,7 +1451,13 @@ static void _logout_dialog_on_response(GtkWidget * widget, gint response)
 {
 	gtk_widget_hide(widget);
 	if(response == GTK_RESPONSE_ACCEPT)
+	{
 		gtk_main_quit();
+#ifndef DEBUG
+		/* XXX assumes the parent process is the session manager */
+		kill(getppid(), SIGHUP);
+#endif
+	}
 }
 #endif
 
