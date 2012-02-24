@@ -27,6 +27,7 @@
 #include "common/url.c"
 #include "../config.h"
 #define _(string) gettext(string)
+#define WITH_INSPECTOR (defined(DEBUG) && WEBKIT_CHECK_VERSION(1, 0, 3))
 
 
 /* private */
@@ -36,6 +37,9 @@ typedef struct _GHtml
 	Surfer * surfer;
 	GtkWidget * widget;
 	GtkWidget * view;
+#if WITH_INSPECTOR
+	GtkWidget * inspector;
+#endif
 	char * status;
 	gboolean ssl;
 } GHtml;
@@ -99,6 +103,9 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	ghtml->widget = widget;
 	ghtml->view = webkit_web_view_new();
+#if WITH_INSPECTOR
+	ghtml->inspector = NULL;
+#endif
 	g_object_set_data(G_OBJECT(widget), "ghtml", ghtml);
 	/* view */
 	g_signal_connect(G_OBJECT(ghtml->view), "console-message", G_CALLBACK(
@@ -178,8 +185,8 @@ static void _new_init(GHtml * ghtml)
 			return;
 		}
 #endif
-	surfer_warning(ghtml->surfer, "Could not load certificate bundle:\n"
-			"SSL certificates will not be verified.");
+	surfer_warning(ghtml->surfer, _("Could not load certificate bundle:\n"
+			"SSL certificates will not be verified."));
 }
 
 
@@ -454,6 +461,15 @@ gboolean ghtml_go_forward(GtkWidget * widget)
 
 
 /* ghtml_load_url */
+#if WITH_INSPECTOR
+static WebKitWebView * _load_inspector_inspect(WebKitWebInspector * inspector,
+		WebKitWebView * view, gpointer data);
+static gboolean _load_inspector_inspected_uri(WebKitWebInspector * inspector,
+		gpointer data);
+static gboolean _load_inspector_show(WebKitWebInspector * inspector,
+		gpointer data);
+#endif
+
 void ghtml_load_url(GtkWidget * widget, char const * url)
 {
 	GHtml * ghtml;
@@ -461,8 +477,12 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	char * q = NULL;
 	const char about[] = "<html>\n<head><title>About " PACKAGE "</title>"
 		"</head>\n<body>\n<center>\n<h1>" PACKAGE " " VERSION "</h1>\n"
-		"<p>Copyright (c) 2011 Pierre Pronchery &lt;khorben@"
+		"<p>Copyright (c) 2012 Pierre Pronchery &lt;khorben@"
 		"defora.org&gt;</p>\n</center>\n</body>\n</html>";
+#if WITH_INSPECTOR
+	WebKitWebSettings * settings;
+	WebKitWebInspector * inspector;
+#endif
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
@@ -481,12 +501,70 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 		webkit_web_view_open(WEBKIT_WEB_VIEW(ghtml->view), url);
 #endif
 	}
+#if WITH_INSPECTOR
+	if(ghtml->inspector == NULL)
+	{
+		settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(
+					ghtml->view));
+		g_object_set(settings, "enable-developer-extras", TRUE, NULL);
+		inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(
+					ghtml->view));
+		g_signal_connect(G_OBJECT(inspector), "inspect-web-view",
+				G_CALLBACK(_load_inspector_inspect), ghtml);
+		g_signal_connect(G_OBJECT(inspector), "show-window", G_CALLBACK(
+					_load_inspector_show), ghtml);
+		g_signal_connect(G_OBJECT(inspector), "notify::inspected-uri",
+				G_CALLBACK(_load_inspector_inspected_uri),
+				ghtml);
+	}
+#endif
 	g_free(p);
 	g_free(q);
 	surfer_set_progress(ghtml->surfer, 0.0);
 	surfer_set_security(ghtml->surfer, SS_NONE);
 	_ghtml_set_status(widget, _("Connecting..."));
 }
+
+#if WITH_INSPECTOR
+static WebKitWebView * _load_inspector_inspect(WebKitWebInspector * inspector,
+		WebKitWebView * view, gpointer data)
+{
+	GHtml * ghtml = data;
+
+	ghtml->inspector = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(ghtml->inspector), 800, 600);
+	gtk_window_set_title(GTK_WINDOW(ghtml->inspector),
+			_("WebKit Web Inspector"));
+	view = webkit_web_view_new();
+	/* FIXME implement more signals and really implement "web-view-ready" */
+	g_signal_connect_swapped(view, "web-view-ready", gtk_widget_show_all,
+			ghtml->inspector);
+	gtk_container_add(GTK_CONTAINER(ghtml->inspector), GTK_WIDGET(view));
+	return view;
+}
+
+static gboolean _load_inspector_show(WebKitWebInspector * inspector,
+		gpointer data)
+{
+	GHtml * ghtml = data;
+
+	gtk_window_present(GTK_WINDOW(ghtml->inspector));
+	return TRUE;
+}
+
+static gboolean _load_inspector_inspected_uri(WebKitWebInspector * inspector,
+		gpointer data)
+{
+	GHtml * ghtml = data;
+	char buf[256];
+	char const * url;
+
+	url = webkit_web_inspector_get_inspected_uri(inspector);
+	snprintf(buf, sizeof(buf), "%s%s%s", _("WebKit Web Inspector"),
+			(url != NULL) ? " - " : "", (url != NULL) ? url : "");
+	return FALSE;
+}
+#endif
 
 
 /* ghtml_paste */
