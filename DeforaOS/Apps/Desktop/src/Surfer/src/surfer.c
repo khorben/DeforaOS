@@ -15,6 +15,7 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
+ * - implement the favicon
  * - implement "always ask" for the default download directory
  * - provide access to SSL information in embedded mode
  * - rework preferences handling:
@@ -2031,7 +2032,7 @@ void surfer_warning(Surfer * surfer, char const * message)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s",
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_CLOSE, "%s",
 			_("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
