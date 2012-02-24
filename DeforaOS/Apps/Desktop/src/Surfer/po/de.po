@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-23 23:48-0500\n"
+"POT-Creation-Date: 2012-02-23 23:57-0500\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -36,8 +36,8 @@ msgid "Connected"
 msgstr ""
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:980
-#: ../src/ghtml-webkit.c:709 ../src/ghtml-webkit.c:850
-#: ../src/ghtml-webkit.c:862
+#: ../src/ghtml-webkit.c:724 ../src/ghtml-webkit.c:865
+#: ../src/ghtml-webkit.c:877
 msgid "Downloading..."
 msgstr ""
 
@@ -149,7 +149,7 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:707 ../src/ghtml-webkit.c:808 ../src/surfer.c:1051
+#: ../src/download.c:707 ../src/ghtml-webkit.c:823 ../src/surfer.c:1051
 msgid "Unknown error"
 msgstr ""
 
@@ -176,8 +176,8 @@ msgstr ""
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1092 ../src/ghtml-webkit.c:525
-#: ../src/ghtml-webkit.c:707
+#: ../src/ghtml-gtkhtml.c:1092 ../src/ghtml-webkit.c:527
+#: ../src/ghtml-webkit.c:722
 msgid "Connecting..."
 msgstr ""
 
@@ -195,7 +195,7 @@ msgid ""
 "SSL certificates will not be verified."
 msgstr ""
 
-#: ../src/ghtml-webkit.c:537 ../src/ghtml-webkit.c:563
+#: ../src/ghtml-webkit.c:539 ../src/ghtml-webkit.c:569
 msgid "WebKit Web Inspector"
 msgstr ""
 

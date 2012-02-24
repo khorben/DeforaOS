@@ -468,6 +468,8 @@ static gboolean _load_inspector_inspected_uri(WebKitWebInspector * inspector,
 		gpointer data);
 static gboolean _load_inspector_show(WebKitWebInspector * inspector,
 		gpointer data);
+/* callbacks */
+static gboolean _load_inspector_on_closex(gpointer data);
 #endif
 
 void ghtml_load_url(GtkWidget * widget, char const * url)
@@ -535,10 +537,14 @@ static WebKitWebView * _load_inspector_inspect(WebKitWebInspector * inspector,
 	gtk_window_set_default_size(GTK_WINDOW(ghtml->inspector), 800, 600);
 	gtk_window_set_title(GTK_WINDOW(ghtml->inspector),
 			_("WebKit Web Inspector"));
+	g_signal_connect_swapped(ghtml->inspector, "delete-event", G_CALLBACK(
+				_load_inspector_on_closex), ghtml);
 	view = webkit_web_view_new();
 	/* FIXME implement more signals and really implement "web-view-ready" */
-	g_signal_connect_swapped(view, "web-view-ready", gtk_widget_show_all,
-			ghtml->inspector);
+	g_signal_connect(view, "console-message", G_CALLBACK(
+				_on_console_message), ghtml->widget);
+	g_signal_connect_swapped(view, "web-view-ready", G_CALLBACK(
+				gtk_widget_show_all), ghtml->inspector);
 	gtk_container_add(GTK_CONTAINER(ghtml->inspector), GTK_WIDGET(view));
 	return view;
 }
@@ -563,6 +569,15 @@ static gboolean _load_inspector_inspected_uri(WebKitWebInspector * inspector,
 	snprintf(buf, sizeof(buf), "%s%s%s", _("WebKit Web Inspector"),
 			(url != NULL) ? " - " : "", (url != NULL) ? url : "");
 	return FALSE;
+}
+
+/* callbacks */
+static gboolean _load_inspector_on_closex(gpointer data)
+{
+	GHtml * ghtml = data;
+
+	gtk_widget_hide(ghtml->inspector);
+	return TRUE;
 }
 #endif
 
