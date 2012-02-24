@@ -394,7 +394,7 @@ static void _download_refresh(Download * download)
 	double fraction;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %u/%u\n", __func__,
+	fprintf(stderr, "DEBUG: %s() %lu/%lu\n", __func__,
 			download->data_received, download->content_length);
 #endif
 	/* XXX should check gettimeofday() return value explicitly */
