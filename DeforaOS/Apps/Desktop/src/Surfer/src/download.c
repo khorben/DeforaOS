@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -331,7 +331,7 @@ static int _download_error(Download * download, char const * message, int ret)
 		perror(message);
 		return -ret;
 	}
-	dialog = gtk_message_dialog_new(download != NULL
+	dialog = gtk_message_dialog_new((download != NULL)
 			? GTK_WINDOW(download->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE,
