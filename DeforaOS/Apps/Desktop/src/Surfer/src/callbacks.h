@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ void on_preferences(gpointer data);
 void on_refresh(gpointer data);
 void on_security(gpointer data);
 void on_stop(gpointer data);
+void on_zoom_changed(gpointer data, GtkWidget * widget);
 void on_zoom_in(gpointer data);
 void on_zoom_out(gpointer data);
 

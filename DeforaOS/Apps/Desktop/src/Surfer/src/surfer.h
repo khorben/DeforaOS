@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@ void surfer_set_security(Surfer * surfer, SurferSecurity security);
 void surfer_set_status(Surfer * surfer, char const * status);
 void surfer_set_title(Surfer * surfer, char const * title);
 void surfer_set_user_agent(Surfer * surfer, char const * user_agent);
+void surfer_set_zoom(Surfer * surfer, gdouble zoom);
 
 
 /* useful */

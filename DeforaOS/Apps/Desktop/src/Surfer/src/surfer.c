@@ -16,6 +16,7 @@ static char const _license[] =
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
  * - implement the favicon
+ * - support multiple profiles
  * - implement "always ask" for the default download directory
  * - provide access to SSL information in embedded mode
  * - rework preferences handling:
@@ -223,8 +224,8 @@ static DesktopToolbar _surfer_toolbar[] =
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Home"), G_CALLBACK(on_home), GTK_STOCK_HOME, GDK_MOD1_MASK,
 		GDK_KEY_Home, NULL },
-#ifdef EMBEDDED
 	{ "", NULL, NULL, 0, 0, NULL },
+#ifdef EMBEDDED
 	{ N_("Zoom in"), G_CALLBACK(on_zoom_in), "zoom-in", 0, 0, NULL },
 	{ N_("Zoom out"), G_CALLBACK(on_zoom_out), "zoom-out", 0, 0, NULL },
 	{ N_("Normal size"), G_CALLBACK(on_normal_size), "zoom-original", 0, 0,
@@ -320,8 +321,8 @@ Surfer * _new_do(char const * url)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "web-browser");
 #endif
 	gtk_window_set_title(GTK_WINDOW(surfer->window), _("Web surfer"));
-	g_signal_connect_swapped(G_OBJECT(surfer->window), "delete-event",
-			G_CALLBACK(on_closex), surfer);
+	g_signal_connect_swapped(surfer->window, "delete-event", G_CALLBACK(
+				on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
 	/* menubar */
@@ -341,20 +342,33 @@ Surfer * _new_do(char const * url)
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), FALSE);
+#ifndef EMBEDDED
+	/* toolbar: zoom value */
+	toolitem = gtk_tool_item_new();
+	surfer->tb_zoom = toolitem;
+	widget = gtk_spin_button_new_with_range(0.0, 400.0, 1.0);
+	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), 100.0);
+	g_signal_connect_swapped(widget, "value-changed", G_CALLBACK(
+				on_zoom_changed), surfer);
+	gtk_container_add(GTK_CONTAINER(toolitem), widget);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif
+	/* toolbar: fullscreen button */
 #if GTK_CHECK_VERSION(2, 8, 0)
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_FULLSCREEN);
 #else
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_ZOOM_FIT);
 #endif
 	surfer->tb_fullscreen = toolitem;
-	g_signal_connect_swapped(G_OBJECT(toolitem), "toggled", G_CALLBACK(
+	g_signal_connect_swapped(toolitem, "toggled", G_CALLBACK(
 				on_fullscreen), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #ifdef EMBEDDED
 	toolitem = gtk_separator_tool_item_new();
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
 				on_preferences), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif /* EMBEDDED */
@@ -378,7 +392,7 @@ Surfer * _new_do(char const * url)
 	surfer->lb_path = gtk_combo_box_entry_new_text();
 #endif
 	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
-	g_signal_connect_swapped(G_OBJECT(widget), "activate", G_CALLBACK(
+	g_signal_connect_swapped(widget, "activate", G_CALLBACK(
 				on_path_activate), surfer);
 	if(url != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), url);
@@ -386,7 +400,7 @@ Surfer * _new_do(char const * url)
 	gtk_container_add(GTK_CONTAINER(toolitem), surfer->lb_path);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_JUMP_TO);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
 				on_path_activate), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
@@ -395,8 +409,8 @@ Surfer * _new_do(char const * url)
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(surfer->notebook), TRUE);
 	gtk_notebook_set_show_border(GTK_NOTEBOOK(surfer->notebook), FALSE);
 	surfer_open_tab(surfer, NULL);
-	g_signal_connect_swapped(G_OBJECT(surfer->notebook), "switch-page",
-			G_CALLBACK(on_notebook_switch_page), surfer);
+	g_signal_connect_swapped(surfer->notebook, "switch-page", G_CALLBACK(
+				on_notebook_switch_page), surfer);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->notebook, TRUE, TRUE, 0);
 	/* statusbar */
 	surfer->statusbox = gtk_hbox_new(FALSE, 0);
@@ -406,8 +420,8 @@ Surfer * _new_do(char const * url)
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(widget, _("Security information"));
 #endif
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_security), surfer);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(on_security),
+			surfer);
 	gtk_container_add(GTK_CONTAINER(widget), surfer->security);
 	gtk_box_pack_start(GTK_BOX(surfer->statusbox), widget, FALSE, TRUE, 0);
 #if !GTK_CHECK_VERSION(2, 16, 0)
@@ -733,6 +747,25 @@ void surfer_set_user_agent(Surfer * surfer, char const * user_agent)
 }
 
 
+/* surfer_set_zoom */
+void surfer_set_zoom(Surfer * surfer, gdouble zoom)
+{
+	GtkWidget * view;
+	GtkWidget * widget;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	if(zoom < 0.0)
+	{
+		zoom = ghtml_get_zoom(view) * 100.0;
+		widget = gtk_bin_get_child(GTK_BIN(surfer->tb_zoom));
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
+	}
+	else
+		ghtml_set_zoom(view, zoom);
+}
+
+
 /* useful */
 /* surfer_about */
 static gboolean _about_on_closex(gpointer data);
@@ -758,8 +791,8 @@ void surfer_about(Surfer * surfer)
 	desktop_about_dialog_set_version(surfer->ab_dialog, VERSION);
 	desktop_about_dialog_set_website(surfer->ab_dialog,
 			"http://www.defora.org/");
-	g_signal_connect_swapped(G_OBJECT(surfer->ab_dialog), "delete-event",
-			G_CALLBACK(_about_on_closex), surfer);
+	g_signal_connect_swapped(surfer->ab_dialog, "delete-event", G_CALLBACK(
+				_about_on_closex), surfer);
 	gtk_widget_show(surfer->ab_dialog);
 }
 
@@ -1511,18 +1544,18 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	gtk_window_set_default_size(GTK_WINDOW(surfer->co_window), 400, 300);
 	gtk_window_set_title(GTK_WINDOW(surfer->co_window),
 			_("Javascript console"));
-	g_signal_connect_swapped(G_OBJECT(surfer->co_window), "delete-event",
-			G_CALLBACK(on_console_closex), surfer);
+	g_signal_connect_swapped(surfer->co_window, "delete-event", G_CALLBACK(
+				on_console_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Command:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	surfer->co_entry = gtk_entry_new();
-	g_signal_connect_swapped(G_OBJECT(surfer->co_entry), "activate",
-			G_CALLBACK(on_console_execute), surfer);
+	g_signal_connect_swapped(surfer->co_entry, "activate", G_CALLBACK(
+				on_console_execute), surfer);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->co_entry, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_console_execute), surfer);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
@@ -1555,11 +1588,11 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLEAR);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_console_clear), surfer);
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_console_close), surfer);
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
@@ -1679,10 +1712,10 @@ void surfer_view_preferences(Surfer * surfer)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-	g_signal_connect_swapped(G_OBJECT(surfer->pr_window), "delete-event",
-			G_CALLBACK(_preferences_on_closex), surfer);
-	g_signal_connect(G_OBJECT(surfer->pr_window), "response",
-			G_CALLBACK(_preferences_on_response), surfer);
+	g_signal_connect_swapped(surfer->pr_window, "delete-event", G_CALLBACK(
+				_preferences_on_closex), surfer);
+	g_signal_connect(surfer->pr_window, "response", G_CALLBACK(
+				_preferences_on_response), surfer);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(surfer->pr_window));
 #else
@@ -1773,7 +1806,7 @@ static GtkWidget * _preferences_network(Surfer * surfer)
 	widget = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(
 				widget), _("HTTP proxy:"));
 	surfer->pr_proxy_radio_http = widget;
-	g_signal_connect_swapped(G_OBJECT(widget), "toggled", G_CALLBACK(
+	g_signal_connect_swapped(widget, "toggled", G_CALLBACK(
 				_preferences_on_proxy_http_toggled), surfer);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* http proxy */
@@ -2050,6 +2083,7 @@ void surfer_zoom_in(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_zoom_in(view);
+	surfer_set_zoom(surfer, -1.0);
 }
 
 
@@ -2061,6 +2095,7 @@ void surfer_zoom_out(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_zoom_out(view);
+	surfer_set_zoom(surfer, -1.0);
 }
 
 
@@ -2072,6 +2107,7 @@ void surfer_zoom_reset(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_zoom_reset(view);
+	surfer_set_zoom(surfer, -1.0);
 }
 
 

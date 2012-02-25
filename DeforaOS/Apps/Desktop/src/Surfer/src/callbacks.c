@@ -457,6 +457,7 @@ void on_notebook_switch_page(gpointer data)
 {
 	Surfer * surfer = data;
 
+	/* FIXME race condition if surfer is free'd in the meantime */
 	g_idle_add(_switch_page_idle, surfer);
 }
 
@@ -465,6 +466,7 @@ static gboolean _switch_page_idle(gpointer data)
 	Surfer * surfer = data;
 	gint n;
 	GtkWidget * ghtml;
+	gdouble zoom;
 
 	if((n = gtk_notebook_get_current_page(GTK_NOTEBOOK(surfer->notebook)))
 			< 0)
@@ -479,6 +481,7 @@ static gboolean _switch_page_idle(gpointer data)
 	surfer_set_security(surfer, SS_NONE);
 	surfer_set_status(surfer, NULL);
 	surfer_set_title(surfer, NULL);
+	surfer_set_zoom(surfer, -1.0);
 	return FALSE;
 }
 
@@ -529,6 +532,17 @@ void on_stop(gpointer data)
 	Surfer * surfer = data;
 
 	surfer_stop(surfer);
+}
+
+
+/* on_zoom_changed */
+void on_zoom_changed(gpointer data, GtkWidget * widget)
+{
+	Surfer * surfer = data;
+	gdouble value;
+
+	value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / 100.0;
+	surfer_set_zoom(surfer, value);
 }
 
 

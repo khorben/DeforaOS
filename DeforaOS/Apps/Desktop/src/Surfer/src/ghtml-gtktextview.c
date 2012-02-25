@@ -433,6 +433,14 @@ char const * ghtml_get_title(GtkWidget * widget)
 }
 
 
+/* ghtml_get_zoom */
+gdouble ghtml_get_zoom(GtkWidget * ghtml)
+{
+	/* FIXME really implement */
+	return 1.0;
+}
+
+
 /* ghtml_set_enable_javascript */
 int ghtml_set_enable_javascript(GtkWidget * widget, gboolean enable)
 {
@@ -460,6 +468,13 @@ int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent)
 		return 0;
 	/* FIXME really implement */
 	return -error_set_code(1, "%s", strerror(ENOSYS));;
+}
+
+
+/* ghtml_set_zoom */
+void ghtml_set_zoom(GtkWidget * ghtml, gdouble zoom)
+{
+	/* FIXME implement */
 }
 
 

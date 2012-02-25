@@ -49,6 +49,7 @@ struct _Surfer
 	GtkToolItem * tb_forward;
 	GtkToolItem * tb_stop;
 	GtkToolItem * tb_refresh;
+	GtkToolItem * tb_zoom;
 	GtkToolItem * tb_fullscreen;
 	GtkWidget * locationbar;
 	GtkWidget * lb_path;

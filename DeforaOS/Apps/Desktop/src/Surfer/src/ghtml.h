@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,11 +38,13 @@ SurferSecurity ghtml_get_security(GtkWidget * ghtml);
 char const * ghtml_get_source(GtkWidget * ghtml);
 char const * ghtml_get_status(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
+gdouble ghtml_get_zoom(GtkWidget * ghtml);
 
 int ghtml_set_enable_javascript(GtkWidget * ghtml, gboolean enable);
 int ghtml_set_proxy(GtkWidget * ghtml, SurferProxyType type, char const * http,
 		unsigned int http_port);
 int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent);
+void ghtml_set_zoom(GtkWidget * ghtml, gdouble zoom);
 
 /* useful */
 gboolean ghtml_go_back(GtkWidget * ghtml);

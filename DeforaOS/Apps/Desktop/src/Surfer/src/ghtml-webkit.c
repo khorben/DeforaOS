@@ -332,6 +332,18 @@ char const * ghtml_get_title(GtkWidget * widget)
 }
 
 
+/* ghtml_get_zoom */
+gdouble ghtml_get_zoom(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	gdouble zoom;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	zoom = webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(ghtml->view));
+	return zoom;
+}
+
+
 /* ghtml_set_enable_javascript */
 int ghtml_set_enable_javascript(GtkWidget * widget, gboolean enable)
 {
@@ -390,6 +402,16 @@ int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent)
 		return 0;
 	return -error_set_code(1, "%s", strerror(ENOSYS));
 #endif
+}
+
+
+/* ghtml_set_zoom */
+void ghtml_set_zoom(GtkWidget * widget, gdouble zoom)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(ghtml->view), zoom);
 }
 
 
