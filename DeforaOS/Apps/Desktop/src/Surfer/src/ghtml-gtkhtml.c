@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -280,10 +280,12 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 
 /* ghtml_get_zoom */
-gdouble ghtml_get_zoom(GtkWidget * ghtml)
+gdouble ghtml_get_zoom(GtkWidget * widget)
 {
-	/* FIXME really implement */
-	return 1.0;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return html_view_get_magnification(HTML_VIEW(ghtml->html_view));
 }
 
 
@@ -318,9 +320,12 @@ int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent)
 
 
 /* ghtml_set_zoom */
-void ghtml_set_zoom(GtkWidget * ghtml, gdouble zoom)
+void ghtml_set_zoom(GtkWidget * widget, gdouble zoom)
 {
-	/* FIXME implement */
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	html_view_set_magnification(HTML_VIEW(ghtml->html_view), zoom);
 }
 
 

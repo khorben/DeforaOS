@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,6 +88,7 @@ typedef struct _GHtml
 	/* html widget */
 	GtkWidget * view;
 	GtkTextBuffer * tbuffer;
+	GtkTextTag * zoom;
 	GHtmlTag tags[GHTML_TAGS_COUNT];
 	GtkTextTag * tag;
 
@@ -172,7 +173,6 @@ static const GHtmlProperty _ghtml_properties_del[] =
 	{ NULL, NULL }
 };
 
-/* XXX should use "scale" but gdouble values are not accepted this way */
 static const GHtmlProperty _ghtml_properties_h1[] =
 {
 	{ "font", "Sans 16" },
@@ -315,6 +315,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	g_signal_connect(G_OBJECT(ghtml->view), "event-after", G_CALLBACK(
 				_on_view_event_after), ghtml);
 	ghtml->tbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
+	ghtml->zoom = gtk_text_buffer_create_tag(ghtml->tbuffer, NULL,
+			"scale", 1.0, NULL);
 	memcpy(ghtml->tags, _ghtml_tags, sizeof(_ghtml_tags));
 	ghtml->tag = NULL;
 	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(ghtml->view),
@@ -434,10 +436,14 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 
 /* ghtml_get_zoom */
-gdouble ghtml_get_zoom(GtkWidget * ghtml)
+gdouble ghtml_get_zoom(GtkWidget * widget)
 {
-	/* FIXME really implement */
-	return 1.0;
+	GHtml * ghtml;
+	gdouble zoom = 1.0;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	g_object_get(ghtml->zoom, "scale", &zoom, NULL);
+	return zoom;
 }
 
 
@@ -472,9 +478,17 @@ int ghtml_set_user_agent(GtkWidget * ghtml, char const * user_agent)
 
 
 /* ghtml_set_zoom */
-void ghtml_set_zoom(GtkWidget * ghtml, gdouble zoom)
+void ghtml_set_zoom(GtkWidget * widget, gdouble zoom)
 {
-	/* FIXME implement */
+	GHtml * ghtml;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	g_object_set(ghtml->zoom, "scale", zoom, NULL);
+	gtk_text_buffer_get_start_iter(ghtml->tbuffer, &start);
+	gtk_text_buffer_get_end_iter(ghtml->tbuffer, &end);
+	gtk_text_buffer_apply_tag(ghtml->tbuffer, ghtml->zoom, &start, &end);
 }
 
 
@@ -712,23 +726,29 @@ void ghtml_unselect_all(GtkWidget * widget)
 
 
 /* ghtml_zoom_in */
-void ghtml_zoom_in(GtkWidget * ghtml)
+void ghtml_zoom_in(GtkWidget * widget)
 {
-	/* FIXME implement */
+	gdouble zoom;
+
+	zoom = ghtml_get_zoom(widget);
+	ghtml_set_zoom(widget, zoom + 0.1);
 }
 
 
 /* ghtml_zoom_out */
-void ghtml_zoom_out(GtkWidget * ghtml)
+void ghtml_zoom_out(GtkWidget * widget)
 {
-	/* FIXME implement */
+	gdouble zoom;
+
+	zoom = ghtml_get_zoom(widget);
+	ghtml_set_zoom(widget, zoom - 0.1);
 }
 
 
 /* ghtml_zoom_reset */
-void ghtml_zoom_reset(GtkWidget * ghtml)
+void ghtml_zoom_reset(GtkWidget * widget)
 {
-	/* FIXME implement */
+	ghtml_set_zoom(widget, 1.0);
 }
 
 
