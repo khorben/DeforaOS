@@ -194,7 +194,8 @@ static int _oss_open(OSS * oss)
 
 	if(oss->fd >= 0)
 		close(oss->fd);
-	if((p = oss->helper->config_get(NULL, "oss", "mixer")) == NULL)
+	if((p = oss->helper->config_get(oss->helper->phone, "oss", "mixer"))
+			== NULL)
 		p = "/dev/mixer";
 	if((oss->fd = open(p, O_RDWR)) < 0)
 	{
