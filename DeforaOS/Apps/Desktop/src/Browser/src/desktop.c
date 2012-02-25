@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,8 @@ struct _DesktopCategory
 
 typedef enum _DesktopHows
 {
-	DESKTOP_HOW_CENTERED = 0,
+	DESKTOP_HOW_NONE = 0,
+	DESKTOP_HOW_CENTERED,
 	DESKTOP_HOW_SCALED,
 	DESKTOP_HOW_SCALED_RATIO,
 	DESKTOP_HOW_TILED
@@ -135,14 +136,6 @@ typedef enum _DesktopHows
 /* constants */
 #define DESKTOP			".desktop"
 #define DESKTOPRC		".desktoprc"
-
-static const char * _desktop_hows[DESKTOP_HOW_COUNT] =
-{
-	"centered",
-	"scaled",
-	"scaled_ratio",
-	"tiled"
-};
 
 static DesktopCategory _desktop_categories[] =
 {
@@ -161,6 +154,15 @@ static DesktopCategory _desktop_categories[] =
 };
 static const size_t _desktop_categories_cnt = sizeof(_desktop_categories)
 	/ sizeof(*_desktop_categories);
+
+static const char * _desktop_hows[DESKTOP_HOW_COUNT] =
+{
+	"none",
+	"centered",
+	"scaled",
+	"scaled_ratio",
+	"tiled"
+};
 
 
 /* prototypes */
@@ -257,7 +259,7 @@ static gboolean _new_idle(gpointer data)
 	_idle_background(desktop, config);
 	_idle_icons(desktop, config);
 	if(desktop->prefs.monitor < 0
-			&& (p = config_get(config, NULL, "monitor")) != NULL)
+			&& (p = config_get(config, "icons", "monitor")) != NULL)
 	{
 		desktop->prefs.monitor = strtol(p, &q, 10);
 		if(p[0] == '\0' || *q != '\0')
@@ -278,14 +280,14 @@ static void _idle_background(Desktop * desktop, Config * config)
 	size_t i;
 	char const * p;
 
-	if((p = config_get(config, NULL, "background_color")) != NULL)
+	if((p = config_get(config, "background", "color")) != NULL)
 		gdk_color_parse(p, &color);
-	filename = config_get(config, NULL, "background");
-	if((p = config_get(config, NULL, "background_how")) != NULL)
+	filename = config_get(config, "background", "wallpaper");
+	if((p = config_get(config, "background", "how")) != NULL)
 		for(i = 0; i < DESKTOP_HOW_COUNT; i++)
 			if(strcmp(_desktop_hows[i], p) == 0)
 				how = i;
-	if((p = config_get(config, NULL, "background_extend")) != NULL)
+	if((p = config_get(config, "background", "extend")) != NULL)
 		extend = strtol(p, NULL, 10) ? TRUE : FALSE;
 	_desktop_draw_background(desktop, &color, filename, how, extend);
 }
@@ -1493,6 +1495,8 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 	gint n = 1;
 	gint i;
 
+	if(how == DESKTOP_HOW_NONE)
+		return;
 	/* draw default color */
 	pixmap = gdk_pixmap_new(desktop->root, window.width, window.height, -1);
 	gc = gdk_gc_new(pixmap);
@@ -1508,6 +1512,8 @@ static void _desktop_draw_background(Desktop * desktop, GdkColor * color,
 					&window);
 		switch(how)
 		{
+			case DESKTOP_HOW_NONE:
+				break;
 			case DESKTOP_HOW_CENTERED:
 				_background_centered(&window, pixmap, filename,
 						&error);
@@ -1747,7 +1753,7 @@ static void _preferences_background(Desktop * desktop, GtkWidget * notebook)
 	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_color, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new(_("Filename: "));
+	label = gtk_label_new(_("Wallpaper: "));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
@@ -1782,6 +1788,8 @@ static void _preferences_background(Desktop * desktop, GtkWidget * notebook)
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 	desktop->pr_background_how = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
+			_("Do not draw"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Centered"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_background_how),
 			_("Scaled"));
@@ -1810,6 +1818,7 @@ static void _preferences_icons(Desktop * desktop, GtkWidget * notebook)
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* background color */
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background color: "));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -1818,6 +1827,7 @@ static void _preferences_icons(Desktop * desktop, GtkWidget * notebook)
 	desktop->pr_ibcolor = gtk_color_button_new();
 	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_ibcolor, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* foreground color */
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Foreground color: "));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -1826,6 +1836,7 @@ static void _preferences_icons(Desktop * desktop, GtkWidget * notebook)
 	desktop->pr_ifcolor = gtk_color_button_new();
 	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_ifcolor, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* font */
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Font: "));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -2005,18 +2016,18 @@ static void _on_preferences_apply(gpointer data)
 	/* background */
 	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background));
-	config_set(config, NULL, "background", p);
+	config_set(config, "background", "wallpaper", p);
 	g_free(p);
 	gtk_color_button_get_color(GTK_COLOR_BUTTON(desktop->pr_color), &color);
 	p = gdk_color_to_string(&color);
-	config_set(config, NULL, "background_color", p);
+	config_set(config, "background", "color", p);
 	g_free(p);
 	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_background_how));
 	if(i >= 0 && i < DESKTOP_HOW_COUNT)
-		config_set(config, NULL, "background_how", _desktop_hows[i]);
+		config_set(config, "background", "how", _desktop_hows[i]);
 	p = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				desktop->pr_background_extend)) ? "1" : "0";
-	config_set(config, NULL, "background_extend", p);
+	config_set(config, "background", "extend", p);
 	/* icons */
 	gtk_color_button_get_color(GTK_COLOR_BUTTON(desktop->pr_ibcolor),
 			&color);
@@ -2092,23 +2103,29 @@ static void _preferences_set(Desktop * desktop)
 	String const * p;
 	String const * filename = NULL;
 	GdkColor color = { 0, 0, 0, 0 };
-	int how = 0;
+	int how;
 	gboolean extend = FALSE;
 	size_t i;
 
 	if((config = _desktop_get_config(desktop)) != NULL)
 	{
 		/* background */
-		filename = config_get(config, NULL, "background");
-		if((p = config_get(config, NULL, "background_color")) != NULL
+		filename = config_get(config, "background", "wallpaper");
+		if((p = config_get(config, "background", "color")) != NULL
 				&& gdk_color_parse(p, &color) == TRUE)
 			gtk_color_button_set_color(GTK_COLOR_BUTTON(
 						desktop->pr_color), &color);
-		if((p = config_get(config, NULL, "background_how")) != NULL)
+		how = 0;
+		if((p = config_get(config, "background", "how")) != NULL)
 			for(i = 0; i < DESKTOP_HOW_COUNT; i++)
 				if(strcmp(_desktop_hows[i], p) == 0)
+				{
 					how = i;
-		if((p = config_get(config, NULL, "background_extend")) != NULL)
+					break;
+				}
+		gtk_combo_box_set_active(GTK_COMBO_BOX(
+					desktop->pr_background_how), how);
+		if((p = config_get(config, "background", "extend")) != NULL)
 			extend = strtol(p, NULL, 10) ? TRUE : FALSE;
 		/* icons */
 		if((p = config_get(config, "icons", "background")) != NULL
@@ -2130,8 +2147,6 @@ static void _preferences_set(Desktop * desktop)
 	else
 		gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(
 					desktop->pr_background));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_background_how),
-			how);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 				desktop->pr_background_extend), extend);
 }
