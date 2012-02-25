@@ -591,7 +591,7 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return; /* consider the current tab only */
 	fraction = ghtml_get_progress(view);
-	if(fraction >= 0.0 && fraction <= 1.0)
+	if(fraction >= 0.0 && fraction < 1.0)
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
 	else
 		fraction = 0.0;
