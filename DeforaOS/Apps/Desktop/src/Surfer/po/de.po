@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-24 22:51-0500\n"
+"POT-Creation-Date: 2012-02-25 18:06-0500\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -27,33 +27,33 @@ msgid ""
 "Do you really want to close every tab opened in this window?"
 msgstr ""
 
-#: ../src/common/conn.c:204 ../src/download.c:217 ../src/ghtml-gtkhtml.c:910
+#: ../src/common/conn.c:204 ../src/download.c:217 ../src/ghtml-gtkhtml.c:915
 msgid "Resolving..."
 msgstr ""
 
-#: ../src/common/conn.c:253 ../src/download.c:577 ../src/ghtml-gtkhtml.c:960
+#: ../src/common/conn.c:253 ../src/download.c:577 ../src/ghtml-gtkhtml.c:965
 msgid "Connected"
 msgstr ""
 
-#: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:995
+#: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:1000
 #: ../src/ghtml-webkit.c:746 ../src/ghtml-webkit.c:887
 #: ../src/ghtml-webkit.c:899
 msgid "Downloading..."
 msgstr ""
 
-#: ../src/common/conn.c:305 ../src/ghtml-gtkhtml.c:1041
+#: ../src/common/conn.c:305 ../src/ghtml-gtkhtml.c:1046
 msgid "Unsupported protocol"
 msgstr ""
 
-#: ../src/common/conn.c:309 ../src/ghtml-gtkhtml.c:1045
+#: ../src/common/conn.c:309 ../src/ghtml-gtkhtml.c:1050
 msgid "Unknown host"
 msgstr ""
 
-#: ../src/common/conn.c:314 ../src/ghtml-gtkhtml.c:1050
+#: ../src/common/conn.c:314 ../src/ghtml-gtkhtml.c:1055
 msgid "Unspecified error"
 msgstr ""
 
-#: ../src/common/conn.c:348 ../src/download.c:656 ../src/ghtml-gtkhtml.c:1146
+#: ../src/common/conn.c:348 ../src/download.c:656 ../src/ghtml-gtkhtml.c:1151
 msgid "Timeout"
 msgstr ""
 
@@ -160,32 +160,32 @@ msgid ""
 "  -U\tUser-agent string to send\n"
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:787
+#: ../src/ghtml-gtkhtml.c:792
 msgid "Unknown protocol"
 msgstr "Unbekannt Protokol"
 
-#: ../src/ghtml-gtkhtml.c:853
+#: ../src/ghtml-gtkhtml.c:858
 msgid "Reading file..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1065
+#: ../src/ghtml-gtkhtml.c:1070
 msgid "Redirecting..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1073
+#: ../src/ghtml-gtkhtml.c:1078
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1107 ../src/ghtml-webkit.c:549
+#: ../src/ghtml-gtkhtml.c:1112 ../src/ghtml-webkit.c:549
 #: ../src/ghtml-webkit.c:744
 msgid "Connecting..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1110
+#: ../src/ghtml-gtkhtml.c:1115
 msgid "Connecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1268
+#: ../src/ghtml-gtkhtml.c:1273
 msgid "Unsupported method"
 msgstr ""
 
