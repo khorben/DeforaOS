@@ -293,7 +293,7 @@ class ContentModule extends Module
 		$toolbar->append('button', array('stock' => 'refresh',
 				'text' => _('Refresh'),
 				'request' => $r));
-		if($cred->getUserId() == $uid)
+		if($uid === $cred->getUserId())
 		{
 			$toolbar->append('button', array('stock' => 'disable',
 						'text' => _('Disable'),
