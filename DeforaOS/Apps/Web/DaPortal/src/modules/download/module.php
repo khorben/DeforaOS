@@ -30,7 +30,7 @@ class DownloadModule extends ContentModule
 	{
 		parent::__construct($id, $name);
 		$this->module_id = $id;
-		$this->module_name = _('Download');
+		$this->module_name = _('Downloads');
 		//XXX check these
 		$this->module_content = _('Download');
 		$this->module_contents = _('Download');
