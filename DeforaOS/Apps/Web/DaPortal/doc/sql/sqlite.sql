@@ -91,6 +91,18 @@ BEGIN
 	UPDATE daportal_user_register SET timestamp = datetime('now') WHERE user_id = NEW.user_id;
 END;
 
+CREATE TABLE daportal_user_reset (
+	user_reset_id INTEGER PRIMARY KEY,
+	user_id INTEGER,
+	token VARCHAR(255) UNIQUE NOT NULL,
+	timestamp TIMESTAMP DEFAULT NULL,
+	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
+);
+CREATE TRIGGER daportal_user_reset_insert_timestamp AFTER INSERT ON daportal_user_reset
+BEGIN
+	UPDATE daportal_user_reset SET timestamp = datetime('now') WHERE user_id = NEW.user_id;
+END;
+
 CREATE TABLE daportal_content (
 	content_id INTEGER PRIMARY KEY,
 	timestamp TIMESTAMP DEFAULT NULL,

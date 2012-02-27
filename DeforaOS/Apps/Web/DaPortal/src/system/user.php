@@ -86,6 +86,7 @@ class User
 		$string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 			.'0123456789';
 		$password = '';
+
 		for($i = 0; $i < 8; $i++)
 			$password .= $string[rand(0, strlen($string) - 1)];
 		return $password;
@@ -166,8 +167,67 @@ class User
 	}
 
 
+	//User::reset
+	static public function reset(&$engine, $username, $email,
+			&$error = FALSE)
+	{
+		$db = $engine->getDatabase();
+		$error = '';
+
+		$timestamp = date('Y-m-d H:i:s', time() - 86400); //one day
+		/* verify the username and e-mail address */
+		$res = $db->query($engine, User::$query_reset_validate,
+			array('username' => $username,
+				'email' => $email));
+		if($res === FALSE || count($res) != 1)
+		{
+			$error = _('Could not reset the password');
+			return FALSE;
+		}
+		$res = $res[0];
+		$uid = $res['user_id'];
+		$token = sha1(uniqid($res['user_id'].$username.$email, TRUE));
+		$res = $db->query($engine, User::$query_reset_token,
+			array('user_id' => $uid, 'token' => $token));
+		if($res === FALSE)
+		{
+			$error = _('Could not reset the password');
+			return FALSE;
+		}
+		//FIXME the request should be given as argument
+		$r = new Request($engine, 'user', 'reset', $uid,
+			FALSE, array('token' => $token));
+		$subject = _('Password reset'); //XXX add site title
+		$text = _("Someone, hopefully you, has requested a password reset on your account.\n");
+		$text .= _("\nPlease click on the following link to reset your password:\n");
+		$text .= $engine->getUrl($r)."\n";
+		$content = new PageElement('label', array('text' => $text));
+		Mail::send($engine, FALSE, $email, $subject, $content);
+		return TRUE;
+	}
+
+
+	static function reset_password(&$engine, $user_id, $password, $token,
+			&$error = FALSE)
+	{
+		$db = $engine->getDatabase();
+		$error = '';
+
+		$timestamp = date('Y-m-d H:i:s', time() - 86400); //one day
+		if($db->query($engine, User::$query_reset_cleanup, array(
+					'timestamp' => $timestamp)) === FALSE)
+		{
+			$error = _('Could not reset the password');
+			return FALSE;
+		}
+		//FIXME really implement
+		$error = _('Not implemented');
+		return FALSE;
+	}
+
+
 	//User::validate
-	static public function validate($engine, $uid, $token, &$error = FALSE)
+	static public function validate(&$engine, $uid, $token, &$error = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$error = '';
@@ -200,7 +260,7 @@ class User
 		}
 		$query = User::$query_register_delete;
 		if($db->query($engine, $query, array('user_register_id'
-				=> $res['user_register_id']))
+					=> $res['user_register_id']))
 				=== FALSE)
 		{
 			$db->transactionRollback($engine);
@@ -258,6 +318,14 @@ class User
 		FROM daportal_user, daportal_user_register
 		WHERE daportal_user.user_id=daportal_user_register.user_id
 		AND token=:token';
+	static private $query_reset_cleanup = 'DELETE FROM daportal_user_reset
+		WHERE timestamp <= :timestamp';
+	static private $query_reset_token = 'INSERT INTO daportal_user_reset
+		(user_id, token)
+		VALUES (:user_id, :token)';
+	static private $query_reset_validate = "SELECT user_id
+		FROM daportal_user
+		WHERE enabled='1' AND username=:username AND email=:email";
 }
 
 ?>

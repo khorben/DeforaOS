@@ -36,6 +36,7 @@ class UserModule extends Module
 			case 'logout':
 			case 'menu':
 			case 'register':
+			case 'reset':
 			case 'validate':
 			case 'widget':
 				return $this->$action($engine, $request);
@@ -127,6 +128,15 @@ class UserModule extends Module
 		global $config;
 
 		return $config->getVariable('module::user', 'register') == 1;
+	}
+
+
+	//UserModule::can_reset
+	protected function can_reset()
+	{
+		global $config;
+
+		return $config->getVariable('module::user', 'reset') == 1;
 	}
 
 
@@ -324,15 +334,16 @@ class UserModule extends Module
 		$menu = new PageElement('menuitem', array('text' => 'User'));
 		if($cred->getUserId() == 0)
 		{
-			$menu->append('menuitem', array('text' => 'Login'));
-			$menu->append('menuitem', array('text' => 'Register'));
+			$menu->append('menuitem', array('text' => _('Login')));
+			$menu->append('menuitem', array(
+					'text' => _('Register')));
 		}
 		else
 		{
 			if($cred->isAdmin())
 				$menu->append('menuitem', array(
-						'text' => 'Administration'));
-			$menu->append('menuitem', array('text' => 'Logout'));
+						'text' => _('Administration')));
+			$menu->append('menuitem', array('text' => _('Logout')));
 		}
 		return $menu;
 	}
@@ -352,17 +363,18 @@ class UserModule extends Module
 			$error = _('Registering is not allowed');
 		else if(!$engine->isIdempotent($request))
 			$error = $this->_register_process($engine, $request);
-		//registration successful
 		if($error === FALSE)
+			//registration was successful
 			return $this->_register_success($engine, $request);
 		return $this->_register_form($engine, $request, $error);
 	}
 
 	private function _register_form($engine, $request, $error)
 	{
-		$page = new Page(array('title' => _('User registration')));
+		$title = _('User registration');
+		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
-				'text' => _('User registration')));
+				'text' => $title));
 		if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 				'text' => $error));
@@ -402,12 +414,91 @@ class UserModule extends Module
 
 	private function _register_success($engine, $request)
 	{
-		$page = new Page(array('title' => _('User registration')));
+		$title = _('User registration');
+		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
-				'text' => _('User registration')));
+				'text' => $title));
 		$page->append('dialog', array('type' => 'info',
 				'text' => _("You should receive an e-mail shortly with your password, along with a confirmation key.\n
 Thank you for registering!")));
+		$page->append('link', array('stock' => 'back',
+			'text' => _('Back to the site'),
+			'request' => new Request($engine)));
+		return $page;
+	}
+
+
+	//UserModule::reset
+	protected function reset($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$error = TRUE;
+
+		if($cred->getUserId() != 0)
+			//already registered and logged in
+			return $this->display($engine, new Request);
+		//process reset
+		if(!$this->can_reset())
+			$error = _('Password resets are not allowed');
+		else if(!$engine->isIdempotent($request))
+			$error = $this->_reset_process($engine, $request);
+		if($error === FALSE)
+			//reset was successful
+			return $this->_reset_success($engine, $request);
+		return $this->_reset_form($engine, $request, $error);
+	}
+
+	private function _reset_form($engine, $request, $error)
+	{
+		$title = _('Password reset');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		$r = new Request($engine, $this->name, 'reset');
+		$form = $page->append('form', array('request' => $r));
+		$username = $request->getParameter('username');
+		$email = $request->getParameter('email');
+		$form->append('entry', array('text' => _('Username: '),
+			'name' => 'username', 'value' => $username));
+		$form->append('entry', array('text' => _('e-mail address: '),
+			'name' => 'email', 'value' => $email));
+		$form->append('button', array('stock' => 'cancel',
+			'text' => _('Cancel'),
+			'request' => new Request($engine, $this->name)));
+		$form->append('button', array('stock' => 'reset',
+			'type' => 'submit', 'text' => _('Reset')));
+		return $page;
+	}
+
+	private function _reset_process($engine, $request)
+	{
+		$ret = '';
+
+		if(($username = $request->getParameter('username')) === FALSE)
+			$ret .= _("Your username is required\n");
+		if(($email = $request->getParameter('email')) === FALSE)
+			$ret .= _("Your e-mail address is required\n");
+		if(strlen($ret) > 0)
+			return $ret;
+		//send a reset token to the user
+		$error = '';
+		if(($user = User::reset($engine, $username, $email, $error))
+				=== FALSE)
+			$ret .= $error;
+		return strlen($ret) ? $ret : FALSE;
+	}
+
+	private function _reset_success($engine, $request)
+	{
+		$title = _('Password reset');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		$page->append('dialog', array('type' => 'info',
+				'text' => _("You should receive an e-mail shortly, with a link allowing you to reset your password.\n")));
 		$page->append('link', array('stock' => 'back',
 			'text' => _('Back to the site'),
 			'request' => new Request($engine)));
