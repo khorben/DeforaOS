@@ -55,7 +55,7 @@ msgstr ""
 
 #: ../src/system/user.php:164
 msgid "Please note that this link will expire in 7 days.\n"
-msgstr ""
+msgstr "Ce lien expirera dans 7 jours.\n"
 
 #: ../src/system/user.php:190 ../src/system/user.php:201
 #: ../src/system/user.php:224
@@ -72,6 +72,7 @@ msgstr "Changement de mot de passe"
 msgid ""
 "Someone, hopefully you, has requested a password reset on your account.\n"
 msgstr ""
+"Quelqu'un, probablement vous, a demandé de changer le mot de passe de votre compte.\n"
 
 #: ../src/system/user.php:210
 msgid ""
@@ -83,7 +84,7 @@ msgstr ""
 
 #: ../src/system/user.php:212
 msgid "Please note that this link will expire in 24 hours.\n"
-msgstr ""
+msgstr "Ce lien expirera dans 24 heures.\n"
 
 #: ../src/system/user.php:270
 msgid "Unknown user ID\n"
@@ -108,19 +109,19 @@ msgstr "Impossible d'activer l'utilisateur"
 
 #: ../src/formats/html.php:234
 msgid "Error"
-msgstr ""
+msgstr "Erreur"
 
 #: ../src/formats/html.php:237
 msgid "Question"
-msgstr ""
+msgstr "Question"
 
 #: ../src/formats/html.php:240
 msgid "Warning"
-msgstr ""
+msgstr "Avertissement"
 
 #: ../src/formats/html.php:245
 msgid "Message"
-msgstr ""
+msgstr "Message"
 
 #: ../src/modules/article/module.php:33 ../src/modules/article/module.php:34
 msgid "Article"
@@ -256,7 +257,7 @@ msgstr "titres"
 
 #: ../src/modules/search/module.php:180
 msgid "content"
-msgstr ""
+msgstr "contenus"
 
 #: ../src/modules/search/module.php:185 ../src/modules/user/module.php:500
 #: ../src/modules/user/module.php:575
@@ -287,7 +288,7 @@ msgstr "Administration"
 #: ../src/modules/user/module.php:107 ../src/modules/user/module.php:192
 #: ../src/modules/user/module.php:690
 msgid "My content"
-msgstr ""
+msgstr "Mes contenus"
 
 #: ../src/modules/user/module.php:114 ../src/modules/user/module.php:205
 #: ../src/modules/user/module.php:328 ../src/modules/user/module.php:369
@@ -313,7 +314,7 @@ msgstr "Menu du site"
 
 #: ../src/modules/user/module.php:189
 msgid "Content from "
-msgstr ""
+msgstr "Contenu par "
 
 #: ../src/modules/user/module.php:196
 msgid "Back to my homepage"
@@ -345,7 +346,7 @@ msgstr "Annuler"
 
 #: ../src/modules/user/module.php:265
 msgid "I forgot my password..."
-msgstr ""
+msgstr "Changer de mot de passe..."
 
 #: ../src/modules/user/module.php:280
 msgid "The request expired or is invalid"
