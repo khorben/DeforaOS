@@ -35,14 +35,44 @@ class ProjectModule extends ContentModule
 		$this->module_contents = _('Projects');
 		$this->content_list_count = 0;
 		$this->content_list_order = 'title ASC';
-		$this->query_list = $this->project_query_list;
+		$this->query_list = $this->project_query_list_projects;
+	}
+
+
+	//ProjectModule::call
+	public function call(&$engine, $request)
+	{
+		switch(($action = $request->getAction()))
+		{
+			case 'bug_list':
+				return $this->bugList($engine, $request);
+		}
+		return parent::call($engine, $request);
 	}
 
 
 	//protected
 	//properties
 	//queries
-	protected $project_query_list = "SELECT content_id AS id,
+	protected $project_query_list_bugs = "SELECT bug_id AS id,
+		bug.content_id AS content_id, bug.timestamp AS date,
+	       	daportal_user.user_id AS user_id, username, bug.title AS title,
+		bug.enabled AS enabled, state, type, priority,
+		project.title AS project
+		FROM daportal_content bug, daportal_module, daportal_user,
+		daportal_bug, daportal_content project, daportal_project
+		WHERE bug.module_id=daportal_module.module_id
+		AND bug.user_id=daportal_user.user_id
+		AND bug.content_id=daportal_bug.content_id
+		AND bug.enabled='1'
+		AND bug.public='1'
+		AND daportal_bug.project_id=daportal_project.project_id
+		AND project.content_id=daportal_project.project_id
+		AND project.enabled='1'
+		AND project.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
+	protected $project_query_list_projects = "SELECT content_id AS id,
 		timestamp AS date, name AS module,
 		daportal_user.user_id AS user_id, username, title,
 	       	daportal_content.enabled AS enabled
@@ -55,6 +85,44 @@ class ProjectModule extends ContentModule
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+
+
+	//methods
+	//ProjectModule::bugList
+	protected function bugList($engine, $request)
+	{
+		$db = $engine->getDatabase();
+		$title = _('Bug reports');
+
+		//FIXME really implement
+		if(($res = $db->query($engine, $this->project_query_list_bugs))
+			=== FALSE)
+			//FIXME return a dialog instead
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('Unable to list contents')));
+		$page = new Page;
+		$page->setProperty('title', $title);
+		$page->append('title', array('text' => $title));
+		$treeview = $page->append('treeview');
+		$treeview->setProperty('columns', array('title' => _('Title'),
+			'bug_id' => _('ID'), 'project' => _('Project'),
+			'date' => _('Date'), 'state' => _('State'),
+			'type' => _('Type'), 'priority' => _('Priority')));
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$row = $treeview->append('row');
+			$row->setProperty('bug_id', '#'.$res[$i]['id']);
+			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
+			$row->setProperty('title', $res[$i]['title']);
+			$row->setProperty('project', $res[$i]['project']);
+			$row->setProperty('date', $res[$i]['date']);
+			$row->setProperty('state', $res[$i]['state']);
+			$row->setProperty('type', $res[$i]['type']);
+			$row->setProperty('priority', $res[$i]['priority']);
+		}
+		return $page;
+	}
 }
 
 ?>
