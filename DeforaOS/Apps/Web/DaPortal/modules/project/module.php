@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -740,7 +740,7 @@ protected function bugList($args)
 	{
 		case 'name':	$order.='name DESC';	break;
 		case 'project':	$order.='project DESC';	break;
-		case 'date':	$order.='date DESC';break;
+		case 'date':	$order.='date DESC';	break;
 		case 'username':$order.='username DESC';break;
 		case 'state':	$order.='state DESC';	break;
 		case 'type':	$order.='type DESC';	break;
