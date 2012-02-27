@@ -97,17 +97,19 @@ class ContentModule extends Module
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
-	private $query_list_admin = "SELECT content_id AS id, timestamp AS date,
-		name AS module, daportal_user.user_id AS user_id, username,
+	protected $query_list_admin = "SELECT content_id AS id,
+		timestamp AS date, name AS module,
+		daportal_user.user_id AS user_id, username,
 		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
-	private $query_list_user = "SELECT content_id AS id, timestamp AS date,
-		name AS module, daportal_user.user_id AS user_id, username,
-		title, daportal_content.enabled AS enabled
+	protected $query_list_user = "SELECT content_id AS id,
+		timestamp AS date, name AS module,
+		daportal_user.user_id AS user_id, username, title,
+	       	daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -258,6 +260,7 @@ class ContentModule extends Module
 	protected function _list($engine, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
 		$uid = ($request !== FALSE) ? $request->getId() : FALSE;
 
 		$page = new Page;
@@ -266,7 +269,6 @@ class ContentModule extends Module
 			$title .= _(' by ').$uid; //XXX
 		$page->setProperty('title', $title);
 		$element = $page->append('title');
-		$db = $engine->getDatabase();
 		$query = ($uid !== FALSE) ? $this->query_list_user
 			: $this->query_list;
 		if($this->module_id !== FALSE)
@@ -281,20 +283,25 @@ class ContentModule extends Module
 		$element->setProperty('text', $title);
 		$r = new Request($engine, $this->name, 'list', $uid);
 		$treeview = $page->append('treeview', array('request' => $r));
-		$treeview->setProperty('columns', array('title', 'enabled',
-					'username', 'date'));
+		$columns = array('title' => _('Title'));
+		if($uid === $cred->getUserId())
+			$columns['enabled'] = _('Enabled');
+		$columns['username'] = _('Username');
+		$columns['date'] = _('Date');
+		$treeview->setProperty('columns', $columns);
 		$toolbar = $treeview->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
-					'text' => 'Refresh', 'request' => $r));
+				'text' => _('Refresh'),
+				'request' => $r));
 		if($cred->getUserId() == $uid)
 		{
 			$toolbar->append('button', array('stock' => 'disable',
-						'text' => 'Disable',
+						'text' => _('Disable'),
 						'type' => 'submit',
 						'name' => 'action',
 						'value' => 'disable'));
 			$toolbar->append('button', array('stock' => 'enable',
-						'text' => 'Enable',
+						'text' => _('Enable'),
 						'type' => 'submit',
 						'name' => 'action',
 						'value' => 'enable'));

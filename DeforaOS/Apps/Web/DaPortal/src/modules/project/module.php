@@ -36,6 +36,8 @@ class ProjectModule extends ContentModule
 		$this->content_list_count = 0;
 		$this->content_list_order = 'title ASC';
 		$this->query_list = $this->project_query_list_projects;
+		$this->query_list_user
+			= $this->project_query_list_projects_user;
 	}
 
 
@@ -85,6 +87,20 @@ class ProjectModule extends ContentModule
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+	protected $project_query_list_projects_user = "SELECT content_id AS id,
+		timestamp AS date, name AS module,
+		daportal_user.user_id AS user_id, username, title,
+	       	daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_project
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND daportal_user.user_id=:user_id";
 
 
 	//methods
@@ -96,7 +112,7 @@ class ProjectModule extends ContentModule
 
 		//FIXME really implement
 		if(($res = $db->query($engine, $this->project_query_list_bugs))
-			=== FALSE)
+				=== FALSE)
 			//FIXME return a dialog instead
 			return new PageElement('dialog', array(
 				'type' => 'error',
@@ -112,9 +128,9 @@ class ProjectModule extends ContentModule
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
+			$row->setProperty('title', $res[$i]['title']);
 			$row->setProperty('bug_id', '#'.$res[$i]['id']);
 			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
-			$row->setProperty('title', $res[$i]['title']);
 			$row->setProperty('project', $res[$i]['project']);
 			$row->setProperty('date', $res[$i]['date']);
 			$row->setProperty('state', $res[$i]['state']);
