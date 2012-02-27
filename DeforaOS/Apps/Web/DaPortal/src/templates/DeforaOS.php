@@ -30,7 +30,7 @@ class DeforaOSTemplate extends BasicTemplate
 	{
 		$vbox = new PageElement('vbox', array('id' => 'menu'));
 		if($entries === FALSE)
-			$entries = array('news', 'project',
+			$entries = array('news', 'download', 'project',
 					'user' => array('login'),
 					'wiki');
 		$vbox->appendElement(parent::getMenu($engine, $entries));
