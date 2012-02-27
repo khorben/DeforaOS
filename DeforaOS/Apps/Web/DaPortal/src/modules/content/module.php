@@ -148,9 +148,9 @@ class ContentModule extends Module
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
 		if(($res = $db->query($engine, $query)) === FALSE)
-			//FIXME return a dialog instead
-			return $engine->log('LOG_ERR',
-					_('Unable to list contents'));
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('Unable to list contents')));
 		$r = new Request($engine, $this->name, 'admin');
 		$treeview = $page->append('treeview', array('request' => $r));
 		$treeview->setProperty('columns', array('title', 'enabled',
@@ -275,9 +275,9 @@ class ContentModule extends Module
 		if(($res = $db->query($engine, $query, array(
 							'user_id' => $uid)))
 				=== FALSE)
-			//FIXME return a dialog instead
-			return $engine->log('LOG_ERR',
-					'Unable to list contents');
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('Unable to list contents')));
 		$element->setProperty('text', $title);
 		$r = new Request($engine, $this->name, 'list', $uid);
 		$treeview = $page->append('treeview', array('request' => $r));
@@ -333,7 +333,7 @@ class ContentModule extends Module
 			//must be logged in
 			$page = $this->_default($engine);
 			$page->prepend('dialog', array('type' => 'error',
-						'text' => 'Must be logged in'));
+						'text' => _('Must be logged in')));
 			return $page;
 		}
 		if($engine->isIdempotent($request))
