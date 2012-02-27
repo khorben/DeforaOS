@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-26 23:34-0500\n"
+"POT-Creation-Date: 2012-02-27 00:29-0500\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -144,70 +144,78 @@ msgstr "Billet de blog"
 msgid "Blog posts"
 msgstr "Billets de blog"
 
-#: ../src/modules/content/module.php:69 ../src/modules/user/module.php:130
+#: ../src/modules/content/module.php:130 ../src/modules/user/module.php:130
 msgid "Permission denied"
 msgstr "Permission non accordée"
 
-#: ../src/modules/content/module.php:76 ../src/modules/user/module.php:63
+#: ../src/modules/content/module.php:137 ../src/modules/user/module.php:63
 #: ../src/modules/user/module.php:259 ../src/modules/user/module.php:360
 #: ../src/modules/user/module.php:650 ../src/modules/user/module.php:679
 msgid "Login"
 msgstr "Se connecter"
 
-#: ../src/modules/content/module.php:92 ../src/modules/content/module.php:144
+#: ../src/modules/content/module.php:153 ../src/modules/content/module.php:205
+#: ../src/modules/content/module.php:280 ../src/modules/project/module.php:103
 msgid "Unable to list contents"
 msgstr "Impossible de lister les contenus"
 
-#: ../src/modules/content/module.php:99
+#: ../src/modules/content/module.php:160
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/modules/content/module.php:102
+#: ../src/modules/content/module.php:163
 msgid "Disable"
 msgstr "Désactiver"
 
-#: ../src/modules/content/module.php:106
+#: ../src/modules/content/module.php:167
 msgid "Enable"
 msgstr "Activer"
 
-#: ../src/modules/content/module.php:163
+#: ../src/modules/content/module.php:224
 msgid "Content could be deleted successfully"
 msgstr "Le(s) contenu(s) ont pu être effacé(s)"
 
-#: ../src/modules/content/module.php:164
+#: ../src/modules/content/module.php:225
 msgid "Some content could not be deleted"
 msgstr "Certains contenus n'ont pas pu être supprimés"
 
-#: ../src/modules/content/module.php:177
+#: ../src/modules/content/module.php:238
 msgid "Content could be disabled successfully"
 msgstr "Le(s) contenu(s) ont pu être désactivé(s)"
 
-#: ../src/modules/content/module.php:178
+#: ../src/modules/content/module.php:239
 msgid "Some content could not be disabled"
 msgstr "Certains contenus n'ont pas pu être désactivés"
 
-#: ../src/modules/content/module.php:191
+#: ../src/modules/content/module.php:252
 msgid "Content could be enabled successfully"
 msgstr "Le(s) contenu(s) ont pu être activé(s)"
 
-#: ../src/modules/content/module.php:192
+#: ../src/modules/content/module.php:253
 msgid "Some content could not be enabled"
 msgstr "Certains contenus n'ont pas pu être activés"
 
-#: ../src/modules/content/module.php:205 ../src/modules/content/module.php:413
+#: ../src/modules/content/module.php:266 ../src/modules/content/module.php:418
 msgid " by "
 msgstr " par "
 
-#: ../src/modules/content/module.php:414
+#: ../src/modules/content/module.php:336
+msgid "Must be logged in"
+msgstr ""
+
+#: ../src/modules/content/module.php:419
 msgid " on "
 msgstr " le "
 
-#: ../src/modules/content/module.php:420
+#: ../src/modules/content/module.php:425
 msgid "Read"
 msgstr "Lire"
 
-#: ../src/modules/download/module.php:33 ../src/modules/download/module.php:35
-#: ../src/modules/download/module.php:36
+#: ../src/modules/download/module.php:33
+msgid "Downloads"
+msgstr ""
+
+#: ../src/modules/download/module.php:35 ../src/modules/download/module.php:36
 msgid "Download"
 msgstr ""
 
@@ -223,13 +231,41 @@ msgstr "Dépêche"
 msgid "News items"
 msgstr "Dépêches"
 
-#: ../src/modules/project/module.php:33 ../src/modules/project/module.php:34
+#: ../src/modules/project/module.php:33 ../src/modules/project/module.php:35
+msgid "Projects"
+msgstr "Projets"
+
+#: ../src/modules/project/module.php:34 ../src/modules/project/module.php:109
 msgid "Project"
 msgstr "Projet"
 
-#: ../src/modules/project/module.php:35
-msgid "Projects"
-msgstr "Projets"
+#: ../src/modules/project/module.php:95
+msgid "Bug reports"
+msgstr "Rapports de bugs"
+
+#: ../src/modules/project/module.php:108
+msgid "Title"
+msgstr "Titre"
+
+#: ../src/modules/project/module.php:109
+msgid "ID"
+msgstr ""
+
+#: ../src/modules/project/module.php:110
+msgid "Date"
+msgstr "Date"
+
+#: ../src/modules/project/module.php:110
+msgid "State"
+msgstr "État"
+
+#: ../src/modules/project/module.php:111
+msgid "Type"
+msgstr "Type"
+
+#: ../src/modules/project/module.php:111
+msgid "Priority"
+msgstr "Priorité"
 
 #: ../src/modules/search/module.php:54
 msgid "Search administration"
