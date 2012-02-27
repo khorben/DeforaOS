@@ -26,6 +26,19 @@ class ContentModule extends Module
 {
 	//public
 	//methods
+	//essential
+	//ContentModule::ContentModule
+	public function __construct($id, $name)
+	{
+		parent::__construct($id, $name);
+		$this->module_name = _('Content');
+		$this->module_content = _('Content');
+		$this->module_content_submit = _('Submit content');
+		$this->module_contents = _('Content');
+	}
+
+
+	//useful
 	//ContentModule::call
 	public function call(&$engine, $request)
 	{
@@ -35,6 +48,7 @@ class ContentModule extends Module
 			case 'delete':
 			case 'disable':
 			case 'enable':
+			case 'submit':
 				return $this->$action($engine, $request);
 			case 'list':
 				return $this->_list($engine, $request);
@@ -53,6 +67,7 @@ class ContentModule extends Module
 	protected $module_id = FALSE;
 	protected $module_name = 'Content';
 	protected $module_content = 'Content';
+	protected $module_content_submit = 'Submit content';
 	protected $module_contents = 'Content';
 
 	protected $content_list_count = 10;
@@ -121,6 +136,22 @@ class ContentModule extends Module
 
 
 	//methods
+	//accessors
+	//ContentModule::canSubmit
+	protected function canSubmit($engine, $request = FALSE)
+	{
+		global $config;
+		$cred = $engine->getCredentials();
+
+		if($cred->getUserId() > 0)
+			return TRUE;
+		if($config->getValue('module::'.$this->name, 'anonymous'))
+			return TRUE;
+		return FALSE;
+	}
+
+
+	//useful
 	//ContentModule::admin
 	protected function admin($engine, $request = FALSE)
 	{
@@ -323,6 +354,22 @@ class ContentModule extends Module
 	protected function preview($engine, $id, $title = FALSE)
 	{
 		return $this->_preview($engine, $id, $title);
+	}
+
+
+	//ContentModule::submit
+	protected function submit($engine, $request = FALSE)
+	{
+		$title = $this->module_content_submit;
+		$error = _('Permission denied');
+
+		if(!$this->canSubmit($engine, $request, $error))
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		//FIXME really implement
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('text' => $title));
+		return $page;
 	}
 
 
