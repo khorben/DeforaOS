@@ -33,6 +33,8 @@ class ProjectModule extends ContentModule
 		$this->module_name = _('Project');
 		$this->module_content = _('Project');
 		$this->module_contents = _('Projects');
+		$this->content_list_count = 0;
+		$this->content_list_order = 'title ASC';
 	}
 }
 

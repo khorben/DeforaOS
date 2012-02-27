@@ -33,6 +33,8 @@ class ArticleModule extends ContentModule
 		$this->module_name = _('Article');
 		$this->module_content = _('Article');
 		$this->module_contents = _('Articles');
+		$this->content_list_count = 10;
+		$this->content_list_order = 'title ASC';
 	}
 }
 
