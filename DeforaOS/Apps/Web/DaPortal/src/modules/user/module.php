@@ -63,16 +63,31 @@ class UserModule extends Module
 					'text' => _('Login')));
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'label' => $link));
-			$r = new Request($engine, $this->name, 'register');
-			$icon = new PageElement('image', array(
-					'stock' => 'register'));
-			$link = new PageElement('link', array(
-					'request' => $r,
-					'text' => _('Register')));
-			if($this->can_register())
+			if($this->can_reset())
+			{
+				$r = new Request($engine, $this->name, 'reset');
+				$icon = new PageElement('image', array(
+						'stock' => 'reset'));
+				$link = new PageElement('link', array(
+						'request' => $r,
+						'text' => _('Password reset')));
 				$ret[] = new PageElement('row', array(
 						'icon' => $icon,
 						'label' => $link));
+			}
+			if($this->can_register())
+			{
+				$r = new Request($engine, $this->name,
+						'register');
+				$icon = new PageElement('image', array(
+						'stock' => 'register'));
+				$link = new PageElement('link', array(
+						'request' => $r,
+						'text' => _('Register')));
+				$ret[] = new PageElement('row', array(
+						'icon' => $icon,
+						'label' => $link));
+			}
 		}
 		else
 		{
@@ -237,10 +252,18 @@ class UserModule extends Module
 					'text' => _('Password: ')));
 		$form->append('button', array('text' => _('Cancel'),
 					'stock' => 'cancel',
-					'request' => new Request($engine)));
+					'request' => new Request($engine,
+						$this->name)));
 		$button = $form->append('button', array('type' => 'submit',
 					'stock' => 'login',
 					'text' => _('Login')));
+		if($this->can_reset())
+		{
+			$r = new Request($engine, $this->name, 'reset');
+			$page->append('link', array('request' => $r,
+					'stock' => 'reset',
+					'text' => _('I forgot my password...')));
+		}
 		return $page;
 	}
 
