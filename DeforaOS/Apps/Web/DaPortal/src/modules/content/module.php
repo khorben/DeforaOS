@@ -50,11 +50,11 @@ class ContentModule extends Module
 	//properties
 	protected $module_id = FALSE;
 	protected $module_name = 'Content';
-	protected $module_content = _('Content');
-	protected $module_contents = _('Content');
+	protected $module_content = 'Content';
+	protected $module_contents = 'Content';
 
 	protected $content_list_count = 10;
-	protected $content_list_order = 'timestamp';
+	protected $content_list_order = 'timestamp DESC';
 
 
 	//methods
@@ -137,7 +137,7 @@ class ContentModule extends Module
 		if(($limit = $this->content_list_count) > 0
 				&& is_integer($limit))
 		$order = $this->content_list_order;
-			$query .= ' ORDER BY '.$order.' DESC LIMIT '.$limit;
+			$query .= ' ORDER BY '.$order.' LIMIT '.$limit;
 		if(($res = $db->query($engine, $query)) === FALSE)
 		{
 			$page->append('dialog', array('type' => 'error',
