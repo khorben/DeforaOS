@@ -82,6 +82,14 @@ CREATE TABLE daportal_user_register (
 );
 
 
+CREATE TABLE daportal_user_reset (
+	user_reset_id SERIAL PRIMARY KEY,
+	user_id INTEGER UNIQUE REFERENCES daportal_user (user_id) ON DELETE CASCADE,
+	token VARCHAR(255) UNIQUE NOT NULL,
+	"timestamp" TIMESTAMP NOT NULL DEFAULT now()
+);
+
+
 CREATE TABLE daportal_content (
 	content_id SERIAL PRIMARY KEY,
 	timestamp TIMESTAMP NOT NULL DEFAULT now(),
