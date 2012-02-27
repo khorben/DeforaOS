@@ -567,8 +567,8 @@ Thank you for registering!")));
 			return $ret;
 		//reset the password
 		$error = '';
-		if(($user = User::reset_password($engine, $uid, $password,
-					$token, $error)) === FALSE)
+		if(User::reset_password($engine, $uid, $password, $token,
+					$error)) === FALSE)
 			$ret .= $error;
 		return strlen($ret) ? $ret : FALSE;
 	}
