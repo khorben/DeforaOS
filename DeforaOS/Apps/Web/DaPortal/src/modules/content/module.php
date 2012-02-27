@@ -134,10 +134,10 @@ class ContentModule extends Module
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
-		if(($limit = $this->content_list_count) > 0
-				&& is_integer($limit))
-		$order = $this->content_list_order;
-			$query .= ' ORDER BY '.$order.' LIMIT '.$limit;
+		if(is_string(($order = $this->content_list_order)))
+			$query .= ' ORDER BY '.$order;
+		if(($limit = $this->content_list_count) > 0 && is_int($limit))
+			$query .= ' LIMIT '.$limit;
 		if(($res = $db->query($engine, $query)) === FALSE)
 		{
 			$page->append('dialog', array('type' => 'error',
