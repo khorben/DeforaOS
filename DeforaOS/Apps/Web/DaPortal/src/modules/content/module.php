@@ -13,6 +13,8 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//TODO:
+//- implement paging
 
 
 
@@ -55,6 +57,65 @@ class ContentModule extends Module
 
 	protected $content_list_count = 10;
 	protected $content_list_order = 'timestamp DESC';
+
+	//queries
+	protected $query_admin_delete = 'DELETE FROM daportal_content
+		WHERE content_id=:content_id';
+	protected $query_admin_disable = "UPDATE daportal_content
+		SET enabled='0'
+		WHERE content_id=:content_id";
+	protected $query_admin_enable = "UPDATE daportal_content
+		SET enabled='1'
+		WHERE content_id=:content_id";
+	protected $query_delete = 'DELETE FROM daportal_content
+		WHERE content_id=:content_id AND user_id=:user_id';
+	protected $query_disable = "UPDATE daportal_content
+		SET enabled='0'
+		WHERE content_id=:content_id AND user_id=:user_id";
+	protected $query_enable = "UPDATE daportal_content
+		SET enabled='1'
+		WHERE content_id=:content_id AND user_id=:user_id";
+	protected $query_get = "SELECT daportal_module.name AS module,
+		daportal_user.username AS username,
+		daportal_content.content_id AS id, title, content AS text,
+		timestamp AS date
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND content_id=:id";
+	protected $query_list = "SELECT content_id AS id, timestamp AS date,
+		name AS module, daportal_user.user_id AS user_id, username,
+		title, daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
+	private $query_list_admin = "SELECT content_id AS id, timestamp AS date,
+		name AS module, daportal_user.user_id AS user_id, username,
+		title, daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
+	private $query_list_user = "SELECT content_id AS id, timestamp AS date,
+		name AS module, daportal_user.user_id AS user_id, username,
+		title, daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND daportal_user.user_id=:user_id";
 
 
 	//methods
@@ -199,14 +260,15 @@ class ContentModule extends Module
 		$cred = $engine->getCredentials();
 		$uid = ($request !== FALSE) ? $request->getId() : FALSE;
 
-		if($uid === FALSE)
-			$uid = $cred->getUserId();
 		$page = new Page;
-		$title = $this->module_contents._(' by ').$uid; //XXX
+		$title = $this->module_contents;
+		if($uid !== FALSE)
+			$title .= _(' by ').$uid; //XXX
 		$page->setProperty('title', $title);
 		$element = $page->append('title');
 		$db = $engine->getDatabase();
-		$query = $this->query_list_user;
+		$query = ($uid !== FALSE) ? $this->query_list_user
+			: $this->query_list;
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
@@ -258,63 +320,6 @@ class ContentModule extends Module
 
 
 	//private
-	//properties
-	private $query_admin_delete = 'DELETE FROM daportal_content
-		WHERE content_id=:content_id';
-	private $query_admin_disable = "UPDATE daportal_content
-		SET enabled='0'
-		WHERE content_id=:content_id";
-	private $query_admin_enable = "UPDATE daportal_content
-		SET enabled='1'
-		WHERE content_id=:content_id";
-	private $query_delete = 'DELETE FROM daportal_content
-		WHERE content_id=:content_id AND user_id=:user_id';
-	private $query_disable = "UPDATE daportal_content
-		SET enabled='0'
-		WHERE content_id=:content_id AND user_id=:user_id";
-	private $query_enable = "UPDATE daportal_content
-		SET enabled='1'
-		WHERE content_id=:content_id AND user_id=:user_id";
-	private $query_get = "SELECT daportal_module.name AS module,
-		daportal_user.username AS username,
-		daportal_content.content_id AS id, title, content AS text,
-		timestamp AS date
-		FROM daportal_content, daportal_module, daportal_user
-		WHERE daportal_content.module_id=daportal_module.module_id
-		AND daportal_content.user_id=daportal_user.user_id
-		AND daportal_content.enabled='1'
-		AND daportal_content.public='1'
-		AND daportal_module.enabled='1'
-		AND daportal_user.enabled='1'
-		AND content_id=:id";
-	private $query_list = "SELECT content_id AS id
-		FROM daportal_content, daportal_module, daportal_user
-		WHERE daportal_content.module_id=daportal_module.module_id
-		AND daportal_content.user_id=daportal_user.user_id
-		AND daportal_content.enabled='1'
-		AND daportal_content.public='1'
-		AND daportal_module.enabled='1'
-		AND daportal_user.enabled='1'";
-	private $query_list_admin = "SELECT content_id AS id, timestamp AS date,
-		name AS module, daportal_user.user_id AS user_id, username,
-		title, daportal_content.enabled AS enabled
-		FROM daportal_content, daportal_module, daportal_user
-		WHERE daportal_content.module_id=daportal_module.module_id
-		AND daportal_content.user_id=daportal_user.user_id
-		AND daportal_module.enabled='1'
-		AND daportal_user.enabled='1'";
-	private $query_list_user = "SELECT content_id AS id, timestamp AS date,
-		name AS module, daportal_user.user_id AS user_id, username,
-		title, daportal_content.enabled AS enabled
-		FROM daportal_content, daportal_module, daportal_user
-		WHERE daportal_content.module_id=daportal_module.module_id
-		AND daportal_content.user_id=daportal_user.user_id
-		AND daportal_content.public='1'
-		AND daportal_module.enabled='1'
-		AND daportal_user.enabled='1'
-		AND daportal_user.user_id=:user_id";
-
-
 	//methods
 	//ContentModule::_apply
 	private function _apply($engine, $request, $query, $fallback, $success,

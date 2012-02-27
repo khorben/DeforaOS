@@ -30,12 +30,31 @@ class ProjectModule extends ContentModule
 	{
 		parent::__construct($id, $name);
 		$this->module_id = $id;
-		$this->module_name = _('Project');
+		$this->module_name = _('Projects');
 		$this->module_content = _('Project');
 		$this->module_contents = _('Projects');
 		$this->content_list_count = 0;
 		$this->content_list_order = 'title ASC';
+		$this->query_list = $this->project_query_list;
 	}
+
+
+	//protected
+	//properties
+	//queries
+	protected $project_query_list = "SELECT content_id AS id,
+		timestamp AS date, name AS module,
+		daportal_user.user_id AS user_id, username, title,
+	       	daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_project
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
 }
 
 ?>
