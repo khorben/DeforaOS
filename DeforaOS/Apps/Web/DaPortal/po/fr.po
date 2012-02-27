@@ -66,7 +66,7 @@ msgstr "Impossible de changer le mot de passe"
 #: ../src/modules/user/module.php:481 ../src/modules/user/module.php:524
 #: ../src/modules/user/module.php:556 ../src/modules/user/module.php:601
 msgid "Password reset"
-msgstr "Changement de mot de passe"
+msgstr "Changer de mot de passe"
 
 #: ../src/system/user.php:209
 msgid ""
@@ -147,7 +147,7 @@ msgstr "Billets de blog"
 #: ../src/modules/user/module.php:259 ../src/modules/user/module.php:360
 #: ../src/modules/user/module.php:650 ../src/modules/user/module.php:679
 msgid "Login"
-msgstr "Connexion"
+msgstr "Se connecter"
 
 #: ../src/modules/content/module.php:88 ../src/modules/content/module.php:137
 msgid "Unable to list contents"
@@ -322,11 +322,11 @@ msgstr "Retour à ma page d'accueil"
 
 #: ../src/modules/user/module.php:218
 msgid "User login"
-msgstr "Connexion"
+msgstr "Authentification"
 
 #: ../src/modules/user/module.php:228
 msgid "Logging in progress, please wait..."
-msgstr "Connexion en cours, veuillez patienter..."
+msgstr "Authentification en cours, veuillez patienter..."
 
 #: ../src/modules/user/module.php:246 ../src/modules/user/module.php:408
 #: ../src/modules/user/module.php:492 ../src/modules/user/module.php:670
