@@ -135,8 +135,11 @@ class User
 		}
 		if($enabled === FALSE)
 		{
+			//let the user confirm registration
 			if($password === FALSE)
+				//generate a random password
 				$password = User::password_new();
+			//generate a token
 			$token = sha1(uniqid($password, TRUE));
 			if($user->setPassword($engine, $password) === FALSE
 				|| $db->query($engine,
@@ -148,6 +151,7 @@ class User
 				$error = _('Could not register the user');
 				return FALSE;
 			}
+			//send an e-mail for confirmation
 			//FIXME the request should be given as argument
 			$r = new Request($engine, 'user', 'validate', $uid,
 					FALSE, array('token' => $token));
@@ -163,8 +167,8 @@ class User
 			Mail::send($engine, FALSE, $email, $subject, $content);
 		}
 		$db->transactionCommit($engine);
-		$error = FALSE;
-		return $user;
+		$error = '';
+		return TRUE;
 	}
 
 
@@ -176,18 +180,20 @@ class User
 		$error = '';
 
 		$timestamp = date('Y-m-d H:i:s', time() - 86400); //one day
-		/* verify the username and e-mail address */
+		//verify the username and e-mail address
 		$res = $db->query($engine, User::$query_reset_validate,
 			array('username' => $username,
 				'email' => $email));
 		if($res === FALSE || count($res) != 1)
 		{
+			//XXX consider silently failing (to avoid bruteforcing)
 			$error = _('Could not reset the password');
 			return FALSE;
 		}
 		$res = $res[0];
 		$uid = $res['user_id'];
-		$token = sha1(uniqid($res['user_id'].$username.$email, TRUE));
+		//generate a token
+		$token = sha1(uniqid($uid.$username.$email, TRUE));
 		$res = $db->query($engine, User::$query_reset_token,
 			array('user_id' => $uid, 'token' => $token));
 		if($res === FALSE)
@@ -195,6 +201,7 @@ class User
 			$error = _('Could not reset the password');
 			return FALSE;
 		}
+		//send an e-mail with the token
 		//FIXME the request should be given as argument
 		$r = new Request($engine, 'user', 'reset', $uid,
 			FALSE, array('token' => $token));
@@ -210,21 +217,45 @@ class User
 
 
 	//User::reset_password
-	static function reset_password(&$engine, $user_id, $password, $token,
+	static function reset_password(&$engine, $uid, $password, $token,
 			&$error = FALSE)
 	{
 		$db = $engine->getDatabase();
-		$error = '';
+		$error = _('Could not reset the password');
 
+		if($db->transactionBegin($engine) === FALSE)
+			return FALSE;
 		$timestamp = date('Y-m-d H:i:s', time() - 86400); //one day
 		if($db->query($engine, User::$query_reset_cleanup, array(
 					'timestamp' => $timestamp)) === FALSE)
 		{
-			$error = _('Could not reset the password');
+			$db->transactionRollback($engine);
 			return FALSE;
 		}
-		//FIXME really implement
-		$error = _('Not implemented');
+		//lookup the token
+		$res = $db->query($engine, User::$query_reset_validate_token,
+				array('user_id' => $uid, 'token' => $token));
+		if($res === FALSE || count($res) != 1)
+		{
+			$db->transactionRollback($engine);
+			return FALSE;
+		}
+		$user = new User($uid);
+		if($user->setPassword($engine, $password) === FALSE)
+		{
+			$db->transactionRollback($engine);
+			return FALSE;
+		}
+		if($db->query($engine, User::$query_reset_delete, array(
+					'user_id' => $uid, 'token' => $token))
+				=== FALSE)
+		{
+			$db->transactionRollback($engine);
+			return FALSE;
+		}
+		if($db->transactionCommit($engine) === FALSE)
+			return FALSE;
+		$error = '';
 		return FALSE;
 	}
 
@@ -323,12 +354,20 @@ class User
 		AND token=:token';
 	static private $query_reset_cleanup = 'DELETE FROM daportal_user_reset
 		WHERE timestamp <= :timestamp';
+	static private $query_reset_delete = 'DELETE FROM daportal_user_reset
+		WHERE user_id=:user_id AND token=:token';
 	static private $query_reset_token = 'INSERT INTO daportal_user_reset
 		(user_id, token)
 		VALUES (:user_id, :token)';
 	static private $query_reset_validate = "SELECT user_id
 		FROM daportal_user
 		WHERE enabled='1' AND username=:username AND email=:email";
+	static private $query_reset_validate_token = "SELECT
+		daportal_user.user_id AS user_id, username
+		FROM daportal_user, daportal_user_reset
+		WHERE daportal_user.user_id=daportal_user_reset.user_id
+		AND enabled='1' AND daportal_user.user_id=:user_id
+		AND token=:token";
 }
 
 ?>

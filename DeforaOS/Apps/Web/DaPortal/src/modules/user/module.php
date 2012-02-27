@@ -560,12 +560,17 @@ Thank you for registering!")));
 		if(($password = $request->getParameter('password')) === FALSE)
 			$ret .= _('A new password is required');
 		else if(($password2 = $request->getParameter('password2'))
-				=== FALSE || $password !== $password2)
+					=== FALSE
+					|| $password !== $password2)
 			$ret .= _('The passwords did not match');
 		if(strlen($ret) > 0)
 			return $ret;
-		//FIXME really implement
-		return FALSE;
+		//reset the password
+		$error = '';
+		if(($user = User::reset_password($engine, $uid, $password,
+					$token, $error)) === FALSE)
+			$ret .= $error;
+		return strlen($ret) ? $ret : FALSE;
 	}
 
 	private function _reset_token_success($engine, $request)
