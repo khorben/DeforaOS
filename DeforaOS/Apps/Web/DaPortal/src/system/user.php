@@ -157,6 +157,7 @@ class User
 			$text .= _("\nYour password is: ").$password."\n";
 			$text .= _("\nPlease click on the following link to enable your account:\n");
 			$text .= $engine->getUrl($r)."\n";
+			$text .= _("Please note that this link will expire in 7 days.\n");
 			$content = new PageElement('label', array(
 				'text' => $text));
 			Mail::send($engine, FALSE, $email, $subject, $content);
@@ -201,12 +202,14 @@ class User
 		$text = _("Someone, hopefully you, has requested a password reset on your account.\n");
 		$text .= _("\nPlease click on the following link to reset your password:\n");
 		$text .= $engine->getUrl($r)."\n";
+		$text .= _("Please note that this link will expire in 24 hours.\n");
 		$content = new PageElement('label', array('text' => $text));
 		Mail::send($engine, FALSE, $email, $subject, $content);
 		return TRUE;
 	}
 
 
+	//User::reset_password
 	static function reset_password(&$engine, $user_id, $password, $token,
 			&$error = FALSE)
 	{

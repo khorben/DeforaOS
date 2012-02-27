@@ -437,6 +437,11 @@ Thank you for registering!")));
 		if($cred->getUserId() != 0)
 			//already registered and logged in
 			return $this->display($engine, new Request);
+		if(($uid = $request->getId('id')) !== FALSE
+				&& ($token = $request->getParameter('token'))
+				!== FALSE)
+			return $this->_reset_token($engine, $request, $uid,
+					$token);
 		//process reset
 		if(!$this->can_reset())
 			$error = _('Password resets are not allowed');
@@ -502,6 +507,81 @@ Thank you for registering!")));
 		$page->append('link', array('stock' => 'back',
 			'text' => _('Back to the site'),
 			'request' => new Request($engine)));
+		return $page;
+	}
+
+	private function _reset_token($engine, $request, $uid, $token)
+	{
+		$error = TRUE;
+
+		//process reset
+		if(!$this->can_reset())
+			$error = _('Password resets are not allowed');
+		else if(!$engine->isIdempotent($request))
+			$error = $this->_reset_token_process($engine, $request,
+					$uid, $token);
+		if($error === FALSE)
+			//reset was successful
+			return $this->_reset_token_success($engine, $request);
+		return $this->_reset_token_form($engine, $request, $uid, $token,
+				$error);
+	}
+
+	private function _reset_token_form($engine, $request, $uid, $token,
+			$error)
+	{
+		$title = _('Password reset');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		$r = new Request($engine, $this->name, 'reset', FALSE, FALSE,
+			array('id' => $uid, 'token' => $token));
+		$form = $page->append('form', array('request' => $r));
+		$token = $request->getParameter('token');
+		$form->append('entry', array('text' => _('Password: '),
+			'name' => 'password'));
+		$form->append('entry', array('text' => _('Repeat password: '),
+			'name' => 'password2'));
+		$form->append('button', array('stock' => 'cancel',
+			'text' => _('Cancel'),
+			'request' => new Request($engine, $this->name)));
+		$form->append('button', array('stock' => 'reset',
+			'type' => 'submit', 'text' => _('Reset')));
+		return $page;
+	}
+
+	private function _reset_token_process($engine, $request, $uid, $token)
+	{
+		$ret = '';
+
+		if(($password = $request->getParameter('password')) === FALSE)
+			$ret .= _('A new password is required');
+		else if(($password2 = $request->getParameter('password2'))
+				=== FALSE || $password !== $password2)
+			$ret .= _('The passwords did not match');
+		if(strlen($ret) > 0)
+			return $ret;
+		//FIXME really implement
+		return FALSE;
+	}
+
+	private function _reset_token_success($engine, $request)
+	{
+		$title = _('Password reset');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		$page->append('dialog', array('type' => 'info',
+				'text' => _("Your password was reset successfully.\n")));
+		$page->append('link', array('stock' => 'back',
+			'text' => _('Back to the site'),
+			'request' => new Request($engine)));
+		$page->append('link', array('stock' => 'login',
+			'text' => _('Proceed to login page'),
+			'request' => new Request($engine, $this->name)));
 		return $page;
 	}
 
