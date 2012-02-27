@@ -142,7 +142,13 @@ write to this database as required. In the case of SQLite, this often applies to
 the directory containing the database file itself (for locking).
 
 
-3.3 Additional configuration values
+3.3 Configuration of translations
+---------------------------------
+
+TODO: write this section
+
+
+3.4 Additional configuration values
 -----------------------------------
 
 The default configuration file also lists additional settings that may be
