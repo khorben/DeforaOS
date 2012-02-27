@@ -111,8 +111,9 @@ class ProjectModule extends ContentModule
 		$title = _('Bug reports');
 
 		//FIXME really implement
-		if(($res = $db->query($engine, $this->project_query_list_bugs))
-				=== FALSE)
+		$query = $this->project_query_list_bugs;
+		$query .= ' ORDER BY id DESC';
+		if(($res = $db->query($engine, $query)) === FALSE)
 			//FIXME return a dialog instead
 			return new PageElement('dialog', array(
 				'type' => 'error',
