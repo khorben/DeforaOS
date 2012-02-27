@@ -50,8 +50,11 @@ class ContentModule extends Module
 	//properties
 	protected $module_id = FALSE;
 	protected $module_name = 'Content';
-	protected $module_content = 'Content';
-	protected $module_contents = 'Content';
+	protected $module_content = _('Content');
+	protected $module_contents = _('Content');
+
+	protected $content_list_count = 10;
+	protected $content_list_order = 'timestamp';
 
 
 	//methods
@@ -63,11 +66,12 @@ class ContentModule extends Module
 		$page = new Page;
 		if(!$cred->isAdmin())
 		{
-			$engine->log('LOG_ERR', 'Permission denied');
+			$error = _('Permission denied');
+			$engine->log('LOG_ERR', $error);
 			$r = new Request($engine, 'user', 'login');
 			$dialog = $page->append('dialog', array(
 						'type' => 'error',
-						'text' => 'Permission denied'));
+						'text' => $error));
 			$dialog->append('button', array('stock' => 'login',
 						'text' => _('Login'),
 						'request' => $r));
@@ -130,7 +134,10 @@ class ContentModule extends Module
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
-		$query .= ' ORDER BY timestamp DESC LIMIT 10';
+		if(($limit = $this->content_list_count) > 0
+				&& is_integer($limit))
+		$order = $this->content_list_order;
+			$query .= ' ORDER BY '.$order.' DESC LIMIT '.$limit;
 		if(($res = $db->query($engine, $query)) === FALSE)
 		{
 			$page->append('dialog', array('type' => 'error',
