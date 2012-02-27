@@ -568,6 +568,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/system/template.php \
 		$(PACKAGE)-$(VERSION)/src/system/user.php \
 		$(PACKAGE)-$(VERSION)/src/system/project.conf \
+		$(PACKAGE)-$(VERSION)/src/system/locale/Makefile \
+		$(PACKAGE)-$(VERSION)/src/system/locale/gettext.php \
+		$(PACKAGE)-$(VERSION)/src/system/locale/project.conf \
 		$(PACKAGE)-$(VERSION)/src/templates/Makefile \
 		$(PACKAGE)-$(VERSION)/src/templates/basic.php \
 		$(PACKAGE)-$(VERSION)/src/templates/DeforaOS.php \

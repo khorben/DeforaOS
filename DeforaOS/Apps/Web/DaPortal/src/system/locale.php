@@ -39,8 +39,10 @@ class Locale
 			$locale = getenv('LC_ALL');
 		//initialize gettext
 		if(!function_exists('gettext'))
-			//FIXME define stub functions (or import a library)
+		{
+			require_once('./system/locale/gettext.php');
 			return;
+		}
 		if($locale !== FALSE && $charset !== FALSE)
 		{
 			$charset = strtoupper($charset);
