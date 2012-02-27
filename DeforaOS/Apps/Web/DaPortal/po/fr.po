@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-26 23:26-0500\n"
+"POT-Creation-Date: 2012-02-26 23:34-0500\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -143,10 +143,6 @@ msgstr "Billet de blog"
 #: ../src/modules/blog/module.php:35
 msgid "Blog posts"
 msgstr "Billets de blog"
-
-#: ../src/modules/content/module.php:53 ../src/modules/content/module.php:54
-msgid "Content"
-msgstr "Contenu"
 
 #: ../src/modules/content/module.php:69 ../src/modules/user/module.php:130
 msgid "Permission denied"
