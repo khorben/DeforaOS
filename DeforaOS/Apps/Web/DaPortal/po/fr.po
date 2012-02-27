@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-27 00:55-0500\n"
+"POT-Creation-Date: 2012-02-27 01:23-0500\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -144,86 +144,96 @@ msgstr "Billet de blog"
 msgid "Blog posts"
 msgstr "Billets de blog"
 
-#: ../src/modules/content/module.php:132 ../src/modules/user/module.php:130
+#: ../src/modules/content/module.php:34 ../src/modules/content/module.php:35
+#: ../src/modules/content/module.php:37
+msgid "Content"
+msgstr "Contenu"
+
+#: ../src/modules/content/module.php:36
+msgid "Submit content"
+msgstr "Soumettre un contenu"
+
+#: ../src/modules/content/module.php:163 ../src/modules/content/module.php:364
+#: ../src/modules/user/module.php:130
 msgid "Permission denied"
 msgstr "Permission non accordée"
 
-#: ../src/modules/content/module.php:139 ../src/modules/user/module.php:63
+#: ../src/modules/content/module.php:170 ../src/modules/user/module.php:63
 #: ../src/modules/user/module.php:259 ../src/modules/user/module.php:360
 #: ../src/modules/user/module.php:650 ../src/modules/user/module.php:679
 msgid "Login"
 msgstr "Se connecter"
 
-#: ../src/modules/content/module.php:155 ../src/modules/content/module.php:207
-#: ../src/modules/content/module.php:282 ../src/modules/project/module.php:119
+#: ../src/modules/content/module.php:186 ../src/modules/content/module.php:238
+#: ../src/modules/content/module.php:313 ../src/modules/project/module.php:120
 msgid "Unable to list contents"
 msgstr "Impossible de lister les contenus"
 
-#: ../src/modules/content/module.php:162 ../src/modules/content/module.php:294
+#: ../src/modules/content/module.php:193 ../src/modules/content/module.php:325
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/modules/content/module.php:165 ../src/modules/content/module.php:299
+#: ../src/modules/content/module.php:196 ../src/modules/content/module.php:330
 msgid "Disable"
 msgstr "Désactiver"
 
-#: ../src/modules/content/module.php:169 ../src/modules/content/module.php:304
+#: ../src/modules/content/module.php:200 ../src/modules/content/module.php:335
 msgid "Enable"
 msgstr "Activer"
 
-#: ../src/modules/content/module.php:226
+#: ../src/modules/content/module.php:257
 msgid "Content could be deleted successfully"
 msgstr "Le(s) contenu(s) ont pu être effacé(s)"
 
-#: ../src/modules/content/module.php:227
+#: ../src/modules/content/module.php:258
 msgid "Some content could not be deleted"
 msgstr "Certains contenus n'ont pas pu être supprimés"
 
-#: ../src/modules/content/module.php:240
+#: ../src/modules/content/module.php:271
 msgid "Content could be disabled successfully"
 msgstr "Le(s) contenu(s) ont pu être désactivé(s)"
 
-#: ../src/modules/content/module.php:241
+#: ../src/modules/content/module.php:272
 msgid "Some content could not be disabled"
 msgstr "Certains contenus n'ont pas pu être désactivés"
 
-#: ../src/modules/content/module.php:254
+#: ../src/modules/content/module.php:285
 msgid "Content could be enabled successfully"
 msgstr "Le(s) contenu(s) ont pu être activé(s)"
 
-#: ../src/modules/content/module.php:255
+#: ../src/modules/content/module.php:286
 msgid "Some content could not be enabled"
 msgstr "Certains contenus n'ont pas pu être activés"
 
-#: ../src/modules/content/module.php:269 ../src/modules/content/module.php:425
+#: ../src/modules/content/module.php:300 ../src/modules/content/module.php:472
 msgid " by "
 msgstr " par "
 
-#: ../src/modules/content/module.php:286 ../src/modules/project/module.php:124
+#: ../src/modules/content/module.php:317 ../src/modules/project/module.php:125
 msgid "Title"
 msgstr "Titre"
 
-#: ../src/modules/content/module.php:288
+#: ../src/modules/content/module.php:319
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/modules/content/module.php:289
+#: ../src/modules/content/module.php:320
 msgid "Username"
 msgstr "Utilisateur"
 
-#: ../src/modules/content/module.php:290 ../src/modules/project/module.php:126
+#: ../src/modules/content/module.php:321 ../src/modules/project/module.php:127
 msgid "Date"
 msgstr "Date"
 
-#: ../src/modules/content/module.php:343
+#: ../src/modules/content/module.php:390
 msgid "Must be logged in"
 msgstr ""
 
-#: ../src/modules/content/module.php:426
+#: ../src/modules/content/module.php:473
 msgid " on "
 msgstr " le "
 
-#: ../src/modules/content/module.php:432
+#: ../src/modules/content/module.php:479
 msgid "Read"
 msgstr "Lire"
 
@@ -251,7 +261,7 @@ msgstr "Dépêches"
 msgid "Projects"
 msgstr "Projets"
 
-#: ../src/modules/project/module.php:34 ../src/modules/project/module.php:125
+#: ../src/modules/project/module.php:34 ../src/modules/project/module.php:126
 msgid "Project"
 msgstr "Projet"
 
@@ -259,19 +269,19 @@ msgstr "Projet"
 msgid "Bug reports"
 msgstr "Rapports de bugs"
 
-#: ../src/modules/project/module.php:125
+#: ../src/modules/project/module.php:126
 msgid "ID"
 msgstr ""
 
-#: ../src/modules/project/module.php:126
+#: ../src/modules/project/module.php:127
 msgid "State"
 msgstr "État"
 
-#: ../src/modules/project/module.php:127
+#: ../src/modules/project/module.php:128
 msgid "Type"
 msgstr "Type"
 
-#: ../src/modules/project/module.php:127
+#: ../src/modules/project/module.php:128
 msgid "Priority"
 msgstr "Priorité"
 
