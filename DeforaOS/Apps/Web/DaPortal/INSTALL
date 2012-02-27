@@ -10,19 +10,20 @@ DaPortal 2 is based on a modular architecture, and therefore able to adapt to a
 number of different environments. The common requirements are:
 - PHP 5.0 or later:
   * http://www.php.net/
-  * the gettext extension for PHP
-  * optionally, the Suhosin patch and extension,
+  * the Suhosin patch and extension (recommended)
     http://www.hardened-php.net/suhosin/
+  * the gettext extension for PHP (optional)
 - a SQL database backend; either:
   * PDO, now standard in PHP
   * SQLite, http://www.sqlite.org/
   * PostgreSQL, http://www.postgresql.org/ (via PDO at the moment)
-  * or MySQL, http://www.mysql.org/
+  * or MySQL, http://www.mysql.org/ (with known issues)
 
 Then, depending on the desired user-interface:
 - a web server supporting PHP, like:
   * Apache, http://httpd.apache.org/
-- the Gtk+ extension for PHP: http://gtk.php.net/
+- or the Gtk+ extension for PHP: http://gtk.php.net/
+- or PHP compiled with support for command-line interaction
 
 Please make sure that your system supports the desired combination of
 components. Install and configure them accordingly before attempting to install
@@ -139,3 +140,11 @@ filename=/var/www/sqlite/daportal.db
 Warning: make sure that the web server has sufficient privileges to read and
 write to this database as required. In the case of SQLite, this often applies to
 the directory containing the database file itself (for locking).
+
+
+3.3 Additional configuration values
+-----------------------------------
+
+The default configuration file also lists additional settings that may be
+applied to specific components. Please refer to their respective source code for
+their signification while documentation is completed.
