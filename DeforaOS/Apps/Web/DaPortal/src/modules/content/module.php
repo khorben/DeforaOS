@@ -14,7 +14,7 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //TODO:
-//- implement paging
+//- complete paging
 
 
 
@@ -218,6 +218,7 @@ class ContentModule extends Module
 	{
 		$db = $engine->getDatabase();
 		$query = $this->query_list;
+		$p = ($request !== FALSE) ? $request->getParameter('page') : 0;
 
 		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
 			return $this->_display($engine, $id,
@@ -232,10 +233,13 @@ class ContentModule extends Module
 			$query .= ' ORDER BY '.$order;
 		if(($limit = $this->content_list_count) > 0 && is_int($limit))
 			$query .= ' LIMIT '.$limit;
+		if(is_numeric($p) && $p > 1)
+			$query .= ' OFFSET '.($limit * ($p - 1));
 		if(($res = $db->query($engine, $query)) === FALSE)
 		{
+			$error = _('Unable to list contents');
 			$page->append('dialog', array('type' => 'error',
-						'text' => _('Unable to list contents')));
+						'text' => $error));
 			return $page;
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
