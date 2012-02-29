@@ -47,8 +47,10 @@ class ContentModule extends Module
 			case 'admin':
 			case 'delete':
 			case 'disable':
+			case 'display':
 			case 'enable':
 			case 'submit':
+			case 'update':
 				return $this->$action($engine, $request);
 			case 'list':
 				return $this->_list($engine, $request);
@@ -119,6 +121,14 @@ class ContentModule extends Module
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
+	protected $query_list_count = "SELECT COUNT(*)
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	protected $query_list_user = "SELECT content_id AS id,
@@ -217,25 +227,30 @@ class ContentModule extends Module
 	protected function _default($engine, $request = FALSE)
 	{
 		$db = $engine->getDatabase();
-		$query = $this->query_list;
+		$query = '';
 		$p = ($request !== FALSE) ? $request->getParameter('page') : 0;
+		$pcnt = FALSE;
 
-		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
-			return $this->_display($engine, $id,
-					$request->getTitle());
+		if($request !== FALSE && $request->getId() !== FALSE)
+			return $this->display($engine, $request);
 		$page = new Page;
 		$page->append('title', array('stock' => $this->name,
 				'text' => $this->module_name));
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
+		//obtain the total number of records available
+		if(($res = $db->query($engine, $this->query_list_count.$query))
+				!== FALSE && count($res) == 1)
+			$pcnt = $res[0][0];
 		if(is_string(($order = $this->content_list_order)))
 			$query .= ' ORDER BY '.$order;
 		if(($limit = $this->content_list_count) > 0 && is_int($limit))
 			$query .= ' LIMIT '.$limit;
 		if(is_numeric($p) && $p > 1)
 			$query .= ' OFFSET '.($limit * ($p - 1));
-		if(($res = $db->query($engine, $query)) === FALSE)
+		if(($res = $db->query($engine, $this->query_list.$query))
+				=== FALSE)
 		{
 			$error = _('Unable to list contents');
 			$page->append('dialog', array('type' => 'error',
@@ -245,6 +260,11 @@ class ContentModule extends Module
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 			$page->appendElement($this->_preview($engine,
 						$res[$i]['id']));
+		//output paging information
+		if($pcnt !== FALSE && ($pcnt > $this->content_list_count))
+		{
+			//FIXME implement
+		}
 		return $page;
 	}
 
@@ -274,6 +294,21 @@ class ContentModule extends Module
 		return $this->_apply($engine, $request, $query, 'admin',
 				_('Content could be disabled successfully'),
 				_('Some content could not be disabled'));
+	}
+
+
+	//ContentModule::display
+	protected function display($engine, $request)
+	{
+		$error = _('Could not display content');
+
+		if(($id = $request->getId()) === FALSE)
+			return $this->_default($engine, $request);
+		if(($page = $this->_display($engine, $id, $request->getTitle()))
+				=== FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'error' => $error));
+		return $page;
 	}
 
 
@@ -345,7 +380,11 @@ class ContentModule extends Module
 		{
 			$row = $treeview->append('row');
 			$row->setProperty('id', 'content_id:'.$res[$i]['id']);
-			$row->setProperty('title', $res[$i]['title']);
+			$r = new Request($engine, $this->name, FALSE,
+				$res[$i]['id'], $res[$i]['title']);
+			$link = new PageElement('link', array('request' => $r,
+				'text' => $res[$i]['title']));
+			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
 			$row->setProperty('date', $res[$i]['date']);
@@ -373,6 +412,30 @@ class ContentModule extends Module
 		//FIXME really implement
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('text' => $title));
+		return $page;
+	}
+
+
+	//ContentModule::update
+	protected function update($engine, $request)
+	{
+		$error = _('Unable to fetch content');
+
+		if(($id = $request->getId()) === FALSE
+				|| ($project = $this->_get($engine, $id,
+					$request->getParameter('title')))
+				=== FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		$title = _('Update ').$project['title'];
+		//FIXME really implement
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('text' => $title));
+		$form = $page->append('form');
+		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+				$project['title']);
+		$form->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
 		return $page;
 	}
 
@@ -431,10 +494,10 @@ class ContentModule extends Module
 		//FIXME display metadata and link to actual resource?
 		$page = new Page;
 		$page->setProperty('title', $content['title']);
-		$page->append('title', array('stock' => $this->name,
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('stock' => $this->name,
 				'text' => $content['title']));
-		$element = $page->append('label');
-		$element->setProperty('text', $content['text']);
+		$vbox->append('label', array('text' => $content['text']));
 		return $page;
 	}
 
@@ -442,10 +505,11 @@ class ContentModule extends Module
 	//ContentModule::_get
 	private function _get($engine, $id, $title = FALSE)
 	{
-		if($id === FALSE)
-			return FALSE;
 		$db = $engine->getDatabase();
 		$query = $this->query_get;
+
+		if($id === FALSE)
+			return FALSE;
 		$args = array('id' => $id);
 		if($title !== FALSE)
 		{
@@ -458,14 +522,16 @@ class ContentModule extends Module
 		return $res[0];
 	}
 
-	
+
 	//ContentModule::_preview
 	private function _preview($engine, $id, $title = FALSE)
 	{
+		$error = _('Could not fetch content');
+
 		if(($content = $this->_get($engine, $id, $title)) === FALSE)
 			return new PageElement('dialog', array(
 						'type' => 'error',
-						'text' => 'Could not fetch content'));
+						'text' => $error));
 		$page = new PageElement('vbox');
 		$r = new Request($engine, $content['module'], FALSE,
 				$content['id']);
