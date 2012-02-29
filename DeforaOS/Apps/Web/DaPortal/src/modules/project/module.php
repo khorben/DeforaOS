@@ -17,6 +17,7 @@
 
 
 require_once('./modules/content/module.php');
+require_once('./system/user.php');
 
 
 //ProjectModule
@@ -48,6 +49,10 @@ class ProjectModule extends ContentModule
 		{
 			case 'bug_list':
 				return $this->bugList($engine, $request);
+			case 'download':
+			case 'timeline':
+				/* FIXME really implement */
+				return $this->display($engine, $request);
 		}
 		return parent::call($engine, $request);
 	}
@@ -60,6 +65,7 @@ class ProjectModule extends ContentModule
 		bug.content_id AS content_id, bug.timestamp AS date,
 	       	daportal_user.user_id AS user_id, username, bug.title AS title,
 		bug.enabled AS enabled, state, type, priority,
+		daportal_project.project_id AS project_id,
 		project.title AS project
 		FROM daportal_content bug, daportal_module, daportal_user,
 		daportal_bug, daportal_content project, daportal_project
@@ -101,6 +107,12 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND daportal_user.user_id=:user_id";
+	protected $project_query_project = "SELECT title, cvsroot, enabled
+		FROM daportal_content, daportal_project
+		WHERE daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND project_id=:project_id";
 
 
 	//methods
@@ -109,17 +121,44 @@ class ProjectModule extends ContentModule
 	{
 		$db = $engine->getDatabase();
 		$title = _('Bug reports');
-
-		//FIXME really implement
+		$error = _('Unable to list bugs');
+		$toolbar = FALSE;
 		$query = $this->project_query_list_bugs;
-		$query .= ' ORDER BY id DESC';
-		if(($res = $db->query($engine, $query)) === FALSE)
+
+		//XXX unlike ProjectModule::list() here getid() is the project
+		//determine the current project
+		if(($id = $request->getId()) !== FALSE && is_numeric($id)
+				&& ($project = $this->_getProject($engine, $id))
+				!== FALSE)
+		{
+			$title = _('Bug reports for ').$project['title'];
+			$toolbar = $this->_getToolbar($engine, $id);
+			$query .= ' AND daportal_project.project_id=:project_id';
+		}
+		//filter by user_id
+		if(($uid = $request->getParameter('user_id')) !== FALSE)
+		{
+			$title .= _(' by ').$uid; //XXX
+			$query .= ' AND bug.user_id=:user_id';
+		}
+		//sorting out
+		switch(($order = $request->getParameter('sort')))
+		{
+			case 'date':	$order = 'bug.timestamp DESC';	break;
+			case 'title':	$order = 'bug.title ASC';	break;
+			default:	$order = 'id DESC';		break;
+		}
+		$query .= ' ORDER BY '.$order;
+		//obtain the corresponding bug reports
+		if(($res = $db->query($engine, $query, array('user_id' => $uid,
+				'project_id' => $id))) === FALSE)
 			//FIXME return a dialog instead
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('Unable to list contents')));
-		$page = new Page;
-		$page->setProperty('title', $title);
+					'type' => 'error', 'error' => $error));
+		//build the page
+		$page = new Page(array('title' => $title));
+		if($toolbar !== FALSE)
+			$page->appendElement($toolbar);
 		$page->append('title', array('text' => $title));
 		$treeview = $page->append('treeview');
 		$treeview->setProperty('columns', array('title' => _('Title'),
@@ -139,6 +178,93 @@ class ProjectModule extends ContentModule
 			$row->setProperty('priority', $res[$i]['priority']);
 		}
 		return $page;
+	}
+
+
+	//ProjectModule::display
+	protected function display($engine, $request)
+	{
+		$error = _('Could not display project');
+
+		if(($id = $request->getId()) === FALSE)
+			return $this->_default($engine, $request);
+		if(($page = parent::display($engine, $request)) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'error' => $error));
+		if(($toolbar = $this->_getToolbar($engine, $id)) !== FALSE)
+			$page->prependElement($toolbar);
+		$r = new Request($engine, $this->name, 'list');
+		$page->append('link', array('request' => $r, 'stock' => 'back',
+				'text' => _('See more projects...')));
+		return $page;
+	}
+
+
+	//private
+	//methods
+	//ProjectModule::_getProject
+	private function _getProject($engine, $id)
+	{
+		$db = $engine->getDatabase($engine);
+		$query = $this->project_query_project;
+		if(($res = $db->query($engine, $query, array(
+					'project_id' => $id))) === FALSE
+				|| count($res) != 1)
+			return FALSE;
+		return $res[0];
+	}
+
+
+	//ProjectModule::_getToolbar
+	private function _getToolbar($engine, $id)
+	{
+		if(($project = $this->_getProject($engine, $id)) === FALSE)
+			return FALSE;
+		$toolbar = new PageElement('toolbar');
+		$r = new Request($engine, $this->name, FALSE, $id,
+				$project['title']);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'home', 'text' => _('Homepage')));
+		$r = new Request($engine, $this->name, 'browse', $id,
+				$project['title']);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'open', 'text' => _('Browse')));
+		$r = new Request($engine, $this->name, 'timeline', $id,
+				$project['title']);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'development',
+				'text' => _('Timeline')));
+		$r = new Request($engine, $this->name, 'bug_list', $id,
+				$project['title']);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'bug', 'text' => _('Bug reports')));
+		$r = new Request($engine, $this->name, 'download', $id,
+				$project['title']);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'download',
+				'text' => _('Download')));
+		if($this->_isManager($engine, $id))
+		{
+			$r = new Request($engine, $this->name, 'update', $id,
+					$project['title']);
+			$toolbar->append('button', array('request' => $r,
+					'stock' => 'admin',
+					'text' => _('Update')));
+		}
+		return $toolbar;
+	}
+
+
+	//ProjectModule::isManager
+	private function _isManager($engine, $id)
+	{
+		$cred = $engine->getCredentials();
+
+		$user = new User($engine, $cred->getUserId());
+		if($user->isAdmin())
+			return TRUE;
+		//FIXME implement
+		return FALSE;
 	}
 }
 
