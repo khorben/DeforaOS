@@ -35,6 +35,27 @@ class DownloadModule extends ContentModule
 		$this->module_content = _('Download');
 		$this->module_contents = _('Download');
 	}
+
+
+	//DownloadModule::call
+	public function call(&$engine, $request)
+	{
+		switch(($action = $request->getAction()))
+		{
+			case 'download':
+				return $this->download($engine, $request);
+		}
+		return parent::call($engine, $request);
+	}
+
+
+	//protected
+	//methods
+	protected function download($engine, $request)
+	{
+		//FIXME really implement
+		return $this->preview($engine, $request);
+	}
 }
 
 ?>
