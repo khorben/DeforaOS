@@ -344,6 +344,7 @@ class ContentModule extends Module
 		if($this->module_id !== FALSE)
 			$query .= " AND daportal_module.module_id='"
 				.$this->module_id."'";
+		$query .= ' ORDER BY title ASC';
 		if(($res = $db->query($engine, $query, array(
 							'user_id' => $uid)))
 				=== FALSE)
