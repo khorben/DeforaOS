@@ -31,6 +31,10 @@
 	background-image:	url('Tango/16x16/actions/back.png');
 }
 
+.stock16.bug {
+	background-image:	url('Tango/16x16/categories/applications-development.png');
+}
+
 .stock16.cancel {
 	background-image:	url('Tango/16x16/actions/gtk-cancel.png');
 }
@@ -43,8 +47,16 @@
 	background-image:	url('Tango/16x16/actions/gtk-delete.png');
 }
 
+.stock16.development {
+	background-image:	url('Tango/16x16/categories/applications-development.png');
+}
+
 .stock16.disable {
 	background-image:	url('Tango/16x16/actions/gtk-cancel.png');
+}
+
+.stock16.download {
+	background-image:	url('Tango/16x16/apps/web-browser.png');
 }
 
 .stock16.enable {

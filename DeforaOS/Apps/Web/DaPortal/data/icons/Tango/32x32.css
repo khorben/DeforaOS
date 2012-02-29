@@ -31,6 +31,10 @@
 	background-image:	url('Tango/32x32/actions/back.png');
 }
 
+.stock32.bug {
+	background-image:	url('Tango/32x32/categories/applications-development.png');
+}
+
 .stock32.cancel {
 	background-image:	url('Tango/32x32/actions/gtk-cancel.png');
 }
@@ -43,8 +47,16 @@
 	background-image:	url('Tango/32x32/actions/gtk-delete.png');
 }
 
+.stock32.development {
+	background-image:	url('Tango/32x32/categories/applications-development.png');
+}
+
 .stock32.disable {
 	background-image:	url('Tango/32x32/actions/gtk-cancel.png');
+}
+
+.stock32.download {
+	background-image:	url('Tango/32x32/apps/web-browser.png');
 }
 
 .stock32.enable {
