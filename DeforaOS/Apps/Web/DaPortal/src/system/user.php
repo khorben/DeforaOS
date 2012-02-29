@@ -25,10 +25,26 @@ class User
 	//public
 	//methods
 	//essential
-	public function __construct($uid, $username = FALSE)
+	public function __construct(&$engine, $uid, $username = FALSE)
 	{
-		//FIXME really implement
-		$this->user_id = $uid;
+		$db = $engine->getDatabase();
+		$query = $this->query_get_by_id;
+
+		$this->user_id = 0;
+		$this->username = _('Anonymous');
+		$this->group_id = 0;
+		$this->groupname = _('nogroup');
+		$this->admin = FALSE;
+		if(($res = $db->query($engine, $query, array(
+				'user_id' => $uid))) === FALSE
+				|| count($res) != 1
+				|| ($username !== FALSE
+					&& $res[0]['username'] != $username))
+			return;
+		$res = $res[0];
+		$this->user_id = $res['id'];
+		$this->username = $res['username'];
+		$this->admin = $res['admin'] ? TRUE : FALSE;
 	}
 
 
@@ -126,7 +142,7 @@ class User
 			$error = _('Could not register the user');
 			return FALSE;
 		}
-		$user = new User($uid);
+		$user = new User($engine, $uid);
 		if($user->getUserId() === FALSE)
 		{
 			$db->transactionRollback($engine);
@@ -240,7 +256,7 @@ class User
 			$db->transactionRollback($engine);
 			return FALSE;
 		}
-		$user = new User($uid);
+		$user = new User($engine, $uid);
 		if($user->setPassword($engine, $password) === FALSE)
 		{
 			$db->transactionRollback($engine);
@@ -309,7 +325,7 @@ class User
 			$error = _('Could not validate the user');
 			return FALSE;
 		}
-		$user = new User($res['user_id']);
+		$user = new User($engine, $res['user_id']);
 		if($user->setEnabled($engine, TRUE) === FALSE
 				|| $db->transactionCommit($engine) === FALSE)
 		{
@@ -317,7 +333,7 @@ class User
 			$error = _('Could not enable the user');
 			return FALSE;
 		}
-		return new User($res['user_id']);
+		return new User($engine, $res['user_id']);
 	}
 
 
@@ -330,6 +346,14 @@ class User
 	private $admin = FALSE;
 
 	//queries
+	private $query_get_by_id = "SELECT user_id AS id, username,
+		daportal_user.enabled AS enabled,
+		daportal_user.group_id AS group_id, groupname, admin
+		FROM daportal_user
+		LEFT JOIN daportal_group
+		ON daportal_user.group_id=daportal_group.group_id
+		WHERE daportal_group.enabled='1'
+		AND user_id=:user_id";
 	private $query_set_password = 'UPDATE daportal_user
 		SET password=:password
 		WHERE user_id=:user_id';
