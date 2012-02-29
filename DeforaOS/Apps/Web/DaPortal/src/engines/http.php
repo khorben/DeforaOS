@@ -144,7 +144,7 @@ class HttpEngine extends Engine
 			if(($id = $request->getId()) !== FALSE)
 				$url .= '&id='.urlencode($id);
 			if(($title = $request->getTitle()) !== FALSE)
-				$url .= '&id='.urlencode($title);
+				$url .= '&title='.urlencode($title);
 			if(($args = $request->getParameters()) !== FALSE)
 				foreach($args as $key => $value)
 					$url .= '&'.urlencode($key)
