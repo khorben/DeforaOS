@@ -35,6 +35,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-bold.png');
 }
 
+.stock16.bug {
+	background-image:	url('gnome-icon-theme/16x16/categories/applications-development.png');
+}
+
 .stock16.cancel {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-cancel.png');
 }
@@ -45,6 +49,10 @@
 
 .stock16.delete {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-delete.png');
+}
+
+.stock16.development {
+	background-image:	url('gnome-icon-theme/16x16/categories/applications-development.png');
 }
 
 .stock16.disable {
