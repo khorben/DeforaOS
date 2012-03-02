@@ -1,6 +1,6 @@
 Installing DaPortal
 ===================
-Warning: these notes are based on an early development version of DaPortal 2.
+Warning: these notes are based on a development version of DaPortal 2.
 
 
 1. Requirements
@@ -12,7 +12,7 @@ number of different environments. The common requirements are:
   * http://www.php.net/
   * the Suhosin patch and extension (recommended)
     http://www.hardened-php.net/suhosin/
-  * the gettext extension for PHP (optional)
+  * optionally, the gettext extension for PHP (if not builtin)
 - a SQL database backend; either:
   * PDO, now standard in PHP
   * SQLite, http://www.sqlite.org/
@@ -24,6 +24,7 @@ Then, depending on the desired user-interface:
   * Apache, http://httpd.apache.org/
 - or the Gtk+ extension for PHP: http://gtk.php.net/
 - or PHP compiled with support for command-line interaction
+- the POSIX extension for PHP (if not builtin)
 
 Please make sure that your system supports the desired combination of
 components. Install and configure them accordingly before attempting to install
