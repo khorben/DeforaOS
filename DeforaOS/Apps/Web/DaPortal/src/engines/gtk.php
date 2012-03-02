@@ -457,6 +457,13 @@ class GtkFormat extends FormatElements
 		return $ret;
 	}
 
+	protected function renderTextview($e)
+	{
+		$ret = new GtkTextView;
+		//FIXME really implement
+		return $ret;
+	}
+
 	protected function renderTitle($e)
 	{
 		$ret = new GtkLabel($e->getProperty('text'), FALSE);

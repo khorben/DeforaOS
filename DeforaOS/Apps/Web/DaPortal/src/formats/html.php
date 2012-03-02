@@ -496,6 +496,18 @@ class HtmlFormat extends FormatElements
 	}
 
 
+	protected function renderTextview($e)
+	{
+		if(($value = $e->getProperty('value')) === FALSE)
+			$value = '';
+		$args = array();
+		if(($name = $e->getProperty('name')) !== FALSE)
+			$args['name'] = $name;
+		$this->tag('textarea', $e->getProperty('class'),
+				$e->getProperty('id'), $args, $value);
+	}
+
+
 	protected function renderTitle($e)
 	{
 		$hcnt = count($this->titles);
@@ -654,6 +666,7 @@ class HtmlFormat extends FormatElements
 						'name' => $name));
 			$this->tagClose('span');
 			$properties = $c->getProperties();
+			//FIXME list in columns' order instead
 			foreach($properties as $k => $v)
 			{
 				if(!in_array($k, $columns)
