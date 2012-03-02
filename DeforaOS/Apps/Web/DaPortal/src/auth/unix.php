@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DeforaOS Web DaPortal
 //
 //This program is free software: you can redistribute it and/or modify
@@ -34,9 +34,7 @@ class UnixAuth extends Auth
 	{
 		if(($db = $engine->getDatabase()) === FALSE)
 			return TRUE;
-		$query = 'SELECT user_id, admin'
-			.' FROM daportal_user'
-			." WHERE enabled='1' AND username=:username";
+		$query = $this->query_user;
 		$uid = posix_getuid();
 		$pw = posix_getpwuid($uid);
 		$args = array('username' => $pw['name']);
@@ -48,6 +46,14 @@ class UnixAuth extends Auth
 		$this->setCredentials($engine, $cred);
 		return TRUE;
 	}
+
+
+	//private
+	//properties
+	//queries
+	private $query_user = "SELECT user_id, admin
+		FROM daportal_user
+		WHERE enabled='1' AND username=:username";
 }
 
 ?>
