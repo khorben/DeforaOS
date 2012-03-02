@@ -67,7 +67,7 @@ class DownloadModule extends ContentModule
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
-		AND mode & 01000 = 0";
+		AND mode & 512 = 0";
 
 
 	//methods
