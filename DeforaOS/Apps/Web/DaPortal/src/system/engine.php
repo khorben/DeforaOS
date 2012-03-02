@@ -102,7 +102,7 @@ abstract class Engine
 		}
 		if($this->auth === FALSE)
 			return FALSE;
-		return $this->auth->setCredentials($cred);
+		return $this->auth->setCredentials($this, $cred);
 	}
 
 

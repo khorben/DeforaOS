@@ -73,7 +73,7 @@ class HttpAuth extends Auth
 			return TRUE;
 		$cred = $this->getCredentials();
 		$cred->setUserId($res[0]['user_id'], $res[0]['admin']);
-		parent::setCredentials($cred);
+		parent::setCredentials($engine, $cred);
 		return TRUE;
 	}
 }

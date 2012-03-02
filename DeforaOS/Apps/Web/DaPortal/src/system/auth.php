@@ -102,7 +102,7 @@ abstract class Auth
 
 
 	//Auth::setCredentials
-	public function setCredentials($credentials)
+	public function setCredentials(&$engine, $credentials)
 	{
 		$this->credentials = $credentials;
 		return TRUE;

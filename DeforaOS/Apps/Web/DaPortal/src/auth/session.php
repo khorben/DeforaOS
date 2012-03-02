@@ -27,13 +27,33 @@ class SessionAuth extends Auth
 	//SessionAuth::match
 	protected function match(&$engine)
 	{
-		return @session_start() ? 100 : 0;
+		if(!isset($_SERVER['SCRIPT_NAME'])
+				|| !isset($_SERVER['HTTP_HOST']))
+			return 0;
+		if($this->match_score !== FALSE)
+			return $this->match_score;
+		@ini_set('session.use_only_cookies', 1);
+		@ini_set('session.use_trans_sid', 0);
+		$params = session_get_cookie_params();
+		//XXX probably not always as strict as it could be
+		$params['path'] = dirname($_SERVER['SCRIPT_NAME']);
+		$params['domain'] = $_SERVER['HTTP_HOST'];
+		if(isset($_SERVER['HTTPS']))
+			$params['secure'] = 1;
+	       	//XXX we may have to set it to 0 later
+		$params['httponly'] = 1;
+		session_set_cookie_params($params['lifetime'], $params['path'],
+				$params['domain'], $params['secure'],
+				$params['httponly']);
+		$this->match_score = @session_start() ? 100 : 0;
+		return $this->match_score;
 	}
 
 
 	//SessionAuth::attach
 	protected function attach(&$engine)
 	{
+		$this->match($engine);
 	}
 
 
@@ -59,22 +79,26 @@ class SessionAuth extends Auth
 		//FIXME check if $admin is set properly (eg not always)
 		$cred = new AuthCredentials($res['user_id'], $res['username'],
 				$res['group_id'], $res['admin'] == 1);
-		parent::setCredentials($cred);
+		parent::setCredentials($engine, $cred);
 		return parent::getCredentials();
 	}
 
 
 	//SessionAuth::setCredentials
-	public function setCredentials($credentials)
+	public function setCredentials(&$engine, $credentials)
 	{
-		@session_start();
+		if(session_regenerate_id(TRUE) !== TRUE)
+			$engine->log('LOG_WARNING',
+					'Could not regenerate the session');
 		$_SESSION['auth']['uid'] = $credentials->getUserId();
-		return parent::setCredentials($credentials);
+		return parent::setCredentials($engine, $credentials);
 	}
 
 
 	//private
 	//properties
+	private $match_score = FALSE;
+
 	//queries
 	private $query_credentials = "SELECT user_id, group_id, username, admin
 		FROM daportal_user
