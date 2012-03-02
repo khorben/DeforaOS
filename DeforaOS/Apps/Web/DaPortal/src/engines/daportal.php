@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -57,8 +57,7 @@ class DaPortalEngine extends HttpEngine
 	{
 		global $friendlylinks;
 
-		if($friendlylinks != 1
-				|| !isset($_SERVER['PATH_INFO']))
+		if($friendlylinks != 1 || !isset($_SERVER['PATH_INFO']))
 			return parent::getRequest();
 		if(($path = explode('/', $_SERVER['PATH_INFO'])) === FALSE
 				|| count($path) < 2)
