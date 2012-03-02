@@ -35,6 +35,8 @@ class ContentModule extends Module
 		$this->module_content = _('Content');
 		$this->module_content_submit = _('Submit content');
 		$this->module_contents = _('Content');
+		$this->content_list_title = _('Content list');
+		$this->content_open_text = _('Read');
 	}
 
 
@@ -74,6 +76,9 @@ class ContentModule extends Module
 
 	protected $content_list_count = 10;
 	protected $content_list_order = 'timestamp DESC';
+	protected $content_list_title = 'Content list';
+	protected $content_open_stock = 'read';
+	protected $content_open_text = 'Read';
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
@@ -94,8 +99,7 @@ class ContentModule extends Module
 		WHERE content_id=:content_id AND user_id=:user_id";
 	protected $query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
-		daportal_content.content_id AS id, title, content AS text,
-		timestamp AS date
+		daportal_content.content_id AS id, title, content, timestamp
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -103,8 +107,8 @@ class ContentModule extends Module
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
-		AND content_id=:id";
-	protected $query_list = "SELECT content_id AS id, timestamp AS date,
+		AND content_id=:content_id";
+	protected $query_list = "SELECT content_id AS id, timestamp,
 		name AS module, daportal_user.user_id AS user_id, username,
 		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
@@ -114,9 +118,8 @@ class ContentModule extends Module
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
-	protected $query_list_admin = "SELECT content_id AS id,
-		timestamp AS date, name AS module,
-		daportal_user.user_id AS user_id, username,
+	protected $query_list_admin = "SELECT content_id AS id, timestamp,
+		name AS module, daportal_user.user_id AS user_id, username,
 		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
@@ -131,10 +134,9 @@ class ContentModule extends Module
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
-	protected $query_list_user = "SELECT content_id AS id,
-		timestamp AS date, name AS module,
-		daportal_user.user_id AS user_id, username, title,
-	       	daportal_content.enabled AS enabled
+	protected $query_list_user = "SELECT content_id AS id, timestamp,
+		name AS module, daportal_user.user_id AS user_id, username,
+		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -158,6 +160,31 @@ class ContentModule extends Module
 		if($config->getValue('module::'.$this->name, 'anonymous'))
 			return TRUE;
 		return FALSE;
+	}
+
+
+	//ContentModule::_get
+	protected function _get($engine, $id, $title = FALSE)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->query_get;
+
+		if($id === FALSE)
+			return FALSE;
+		$args = array('content_id' => $id);
+		if($title !== FALSE)
+		{
+			$query .= ' AND title LIKE :title';
+			$args['title'] = str_replace('-', '_', $title);
+		}
+		if(($res = $db->query($engine, $query, $args)) === FALSE
+				|| count($res) != 1)
+			return FALSE;
+		$res = $res[0];
+		$res['date'] = substr($res['timestamp'], 0, 19);
+		$res['date'] = strtotime($res['date']);
+		$res['date'] = date(_('d/m/Y H:i'), $res['date']);
+		return $res;
 	}
 
 
@@ -196,8 +223,10 @@ class ContentModule extends Module
 				'text' => _('Unable to list contents')));
 		$r = new Request($engine, $this->name, 'admin');
 		$treeview = $page->append('treeview', array('request' => $r));
-		$treeview->setProperty('columns', array('title', 'enabled',
-					'username', 'date'));
+		$treeview->setProperty('columns', array('title' => _('Title'),
+				'enabled' => _('Enabled'),
+				'username' => _('Username'),
+				'date' => _('Date')));
 		$toolbar = $treeview->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
 					'text' => _('Refresh'),
@@ -217,8 +246,54 @@ class ContentModule extends Module
 			$row->setProperty('title', $res[$i]['title']);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
-			$row->setProperty('date', $res[$i]['date']);
+			$row->setProperty('date', $res[$i]['timestamp']); //XXX
 		}
+		$r = new Request($engine, $this->name);
+		$page->append('link', array('request' => $r, 'stock' => 'back',
+				'text' => _('Leave the administration page')));
+		return $page;
+	}
+
+
+	//ContentModule::_apply
+	protected function _apply($engine, $request, $query, $fallback,
+			$success, $failure)
+	{
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		if(($uid = $cred->getUserId()) == 0)
+		{
+			//must be logged in
+			$page = $this->_default($engine);
+			$error = _('Must be logged in');
+			$page->prepend('dialog', array('type' => 'error',
+						'text' => $error));
+			return $page;
+		}
+		if($engine->isIdempotent($request))
+			//must be safe
+			return $this->$fallback($engine);
+		$type = 'info';
+		$message = $success;
+		$parameters = $request->getParameters();
+		foreach($parameters as $k => $v)
+		{
+			$x = explode(':', $k);
+			if(count($x) != 2 || $x[0] != 'content_id'
+					|| !is_numeric($x[1]))
+				continue;
+			$res = $db->query($engine, $query, array(
+						'content_id' => $x[1],
+						'user_id' => $uid));
+			if($res !== FALSE)
+				continue;
+			$type = 'error';
+			$message = $failure;
+		}
+		$page = $this->$fallback($engine);
+		$page->prepend('dialog', array('type' => $type,
+					'text' => $message));
 		return $page;
 	}
 
@@ -258,7 +333,7 @@ class ContentModule extends Module
 			return $page;
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-			$page->appendElement($this->_preview($engine,
+			$page->appendElement($this->preview($engine,
 						$res[$i]['id']));
 		//output paging information
 		if($pcnt !== FALSE && ($pcnt > $this->content_list_count))
@@ -312,6 +387,24 @@ class ContentModule extends Module
 	}
 
 
+	//ContentModule::_display
+	protected function _display($engine, $id, $title = FALSE)
+	{
+		if($id === FALSE)
+			return $this->default();
+		if(($content = $this->_get($engine, $id, $title)) === FALSE)
+			return FALSE;
+		//FIXME display metadata and link to actual resource?
+		$page = new Page;
+		$page->setProperty('title', $content['title']);
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('stock' => $this->name,
+				'text' => $content['title']));
+		$vbox->append('label', array('text' => $content['content']));
+		return $page;
+	}
+
+
 	//ContentModule::enable
 	protected function enable($engine, $request)
 	{
@@ -334,7 +427,7 @@ class ContentModule extends Module
 		$uid = ($request !== FALSE) ? $request->getId() : FALSE;
 
 		$page = new Page;
-		$title = $this->module_contents;
+		$title = $this->content_list_title;
 		if($uid !== FALSE)
 			$title .= _(' by ').$uid; //XXX
 		$page->setProperty('title', $title);
@@ -388,8 +481,11 @@ class ContentModule extends Module
 			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
-			$row->setProperty('date', $res[$i]['date']);
+			$row->setProperty('date', $res[$i]['timestamp']); //XXX
 		}
+		$r = new Request($engine, $this->name);
+		$page->append('link', array('request' => $r, 'stock' => 'back',
+				'text' => _('Back')));
 		return $page;
 	}
 
@@ -397,7 +493,42 @@ class ContentModule extends Module
 	//ContentModule::preview
 	protected function preview($engine, $id, $title = FALSE)
 	{
-		return $this->_preview($engine, $id, $title);
+		$error = _('Could not fetch content');
+
+		if(($content = $this->_get($engine, $id, $title)) === FALSE)
+			return new PageElement('dialog', array(
+						'type' => 'error',
+						'text' => $error));
+		return $this->_preview($engine, $content);
+	}
+
+	protected function _preview($engine, $content, $preview = FALSE)
+	{
+		$page = new PageElement('vbox');
+		$r = new Request($engine, $content['module'], FALSE,
+			$content['id'], $content['title']);
+		$title = $page->append('title');
+		if($preview !== FALSE)
+		{
+			$title->setProperty('stock', 'preview');
+			$title->setProperty('text', $content['title']);
+		}
+		else
+			$title->append('link', array('request' => $r,
+					'text' => $content['title']));
+		$page->append('label', array('text' => $this->module_content
+					._(' by ').$content['username']
+					._(' on ').$content['date']));
+		$hbox = $page->append('hbox');
+		$hbox->append('image', array('stock' => 'module '
+					.$content['module'].' content'));
+		$hbox->append('label', array('text' => $content['content']));
+		if($preview === FALSE)
+			$page->append('button', array(
+					'stock' => $this->content_open_stock,
+					'text' => $this->content_open_text,
+					'request' => $r));
+		return $page;
 	}
 
 
@@ -423,131 +554,49 @@ class ContentModule extends Module
 		$error = _('Unable to fetch content');
 
 		if(($id = $request->getId()) === FALSE
-				|| ($project = $this->_get($engine, $id,
-					$request->getParameter('title')))
+				|| ($content = $this->_get($engine, $id))
 				=== FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
-		$title = _('Update ').$project['title'];
-		//FIXME really implement
+		$title = _('Update ').$content['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('text' => $title));
-		$form = $page->append('form');
+		if($request->getParameter('preview') !== FALSE)
+		{
+			$preview = array('id' => $id,
+				'module' => $this->name,
+				'username' => $content['username'],
+				'date' => $content['date'],
+				'title' => _('Preview: ').$request->getTitle(),
+				'content' => $request->getParameter('content'));
+			$page->appendElement($this->_preview($engine,
+					$preview, TRUE));
+		}
+		//FIXME really implement
+		$r = new Request($engine, $this->name, 'update', $id);
+		$form = $page->append('form', array('request' => $r));
+		$vbox = $form->append('vbox');
+		if(($value = $request->getTitle()) === FALSE)
+			$value = $content['title'];
+		$vbox->append('entry', array('name' => 'title',
+				'text' => _('Title: '), 'value' => $value));
+		$vbox->append('label', array('text' => _('Content: ')));
+		if(($value = $request->getParameter('content')) === FALSE)
+			$value = $content['content'];
+		$vbox->append('textview', array('name' => 'content',
+				'value' => $value));
+		$hbox = $vbox->append('hbox');
 		$r = new Request($engine, $this->name, FALSE, $request->getId(),
-				$project['title']);
-		$form->append('button', array('request' => $r,
+				$content['title']);
+		$hbox->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
-		return $page;
-	}
-
-
-	//private
-	//methods
-	//ContentModule::_apply
-	private function _apply($engine, $request, $query, $fallback, $success,
-			$failure)
-	{
-		$cred = $engine->getCredentials();
-		$db = $engine->getDatabase();
-
-		if(($uid = $cred->getUserId()) == 0)
-		{
-			//must be logged in
-			$page = $this->_default($engine);
-			$page->prepend('dialog', array('type' => 'error',
-						'text' => _('Must be logged in')));
-			return $page;
-		}
-		if($engine->isIdempotent($request))
-			//must be safe
-			return $this->$fallback($engine);
-		$type = 'info';
-		$message = $success;
-		$parameters = $request->getParameters();
-		foreach($parameters as $k => $v)
-		{
-			$x = explode(':', $k);
-			if(count($x) != 2 || $x[0] != 'content_id'
-					|| !is_numeric($x[1]))
-				continue;
-			$res = $db->query($engine, $query, array(
-						'content_id' => $x[1],
-						'user_id' => $uid));
-			if($res !== FALSE)
-				continue;
-			$type = 'error';
-			$message = $failure;
-		}
-		$page = $this->$fallback($engine);
-		$page->prepend('dialog', array('type' => $type,
-					'text' => $message));
-		return $page;
-	}
-
-
-	//ContentModule::_display
-	private function _display($engine, $id, $title = FALSE)
-	{
-		if($id === FALSE)
-			return $this->default();
-		if(($content = $this->_get($engine, $id, $title)) === FALSE)
-			return FALSE;
-		//FIXME display metadata and link to actual resource?
-		$page = new Page;
-		$page->setProperty('title', $content['title']);
-		$vbox = $page->append('vbox');
-		$vbox->append('title', array('stock' => $this->name,
-				'text' => $content['title']));
-		$vbox->append('label', array('text' => $content['text']));
-		return $page;
-	}
-
-
-	//ContentModule::_get
-	private function _get($engine, $id, $title = FALSE)
-	{
-		$db = $engine->getDatabase();
-		$query = $this->query_get;
-
-		if($id === FALSE)
-			return FALSE;
-		$args = array('id' => $id);
-		if($title !== FALSE)
-		{
-			$query .= ' AND title LIKE :title';
-			$args['title'] = str_replace('-', '_', $title);
-		}
-		if(($res = $db->query($engine, $query, $args)) === FALSE
-				|| count($res) != 1)
-			return FALSE;
-		return $res[0];
-	}
-
-
-	//ContentModule::_preview
-	private function _preview($engine, $id, $title = FALSE)
-	{
-		$error = _('Could not fetch content');
-
-		if(($content = $this->_get($engine, $id, $title)) === FALSE)
-			return new PageElement('dialog', array(
-						'type' => 'error',
-						'text' => $error));
-		$page = new PageElement('vbox');
-		$r = new Request($engine, $content['module'], FALSE,
-				$content['id']);
-		$title = $page->append('title');
-		$title->append('link', array('request' => $r,
-					'text' => $content['title']));
-		$page->append('label', array('text' => $this->module_content
-					._(' by ').$content['username']
-					._(' on ').$content['date']));
-		$hbox = $page->append('hbox');
-		$hbox->append('image', array('stock' => 'module '
-					.$content['module'].' content'));
-		$hbox->append('label', array('text' => $content['text']));
-		$page->append('button', array('stock' => 'read',
-					'text' => _('Read'), 'request' => $r));
+		$hbox->append('button', array('type' => 'reset',
+				'stock' => 'reset', 'text' => _('Reset')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'preview', 'name' => 'preview',
+				'text' => _('Preview')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'submit', 'text' => _('Submit')));
 		return $page;
 	}
 }
