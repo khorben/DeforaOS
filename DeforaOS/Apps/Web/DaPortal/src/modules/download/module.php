@@ -34,6 +34,8 @@ class DownloadModule extends ContentModule
 		//XXX check these
 		$this->module_content = _('Download');
 		$this->module_contents = _('Download');
+		//list only files by default
+		$this->query_list = $this->download_query_list_files;
 	}
 
 
@@ -50,6 +52,24 @@ class DownloadModule extends ContentModule
 
 
 	//protected
+	//properties
+	//queries
+	protected $download_query_list_files = "SELECT
+		daportal_content.content_id AS id,
+		timestamp, name AS module,
+		daportal_user.user_id AS user_id, username, title
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_download
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=daportal_download.content_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND mode & 01000 = 0";
+
+
 	//methods
 	protected function download($engine, $request)
 	{
