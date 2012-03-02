@@ -99,6 +99,10 @@
 	background-image:	url('Tango/32x32/categories/gtk-preferences.png');
 }
 
+.stock32.preview {
+	background-image:	url('Tango/32x32/actions/stock_search.png');
+}
+
 .stock32.read {
 	background-image:	url('Tango/32x32/actions/gtk-open.png');
 }

@@ -99,6 +99,10 @@
 	background-image:	url('Tango/scalable/categories/gtk-preferences.svg');
 }
 
+.stock48.preview {
+	background-image:	url('Tango/scalable/actions/stock_search.svg');
+}
+
 .stock48.read {
 	background-image:	url('Tango/scalable/actions/gtk-open.svg');
 }
