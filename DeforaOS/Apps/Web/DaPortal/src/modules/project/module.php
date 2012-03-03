@@ -85,7 +85,7 @@ class ProjectModule extends ContentModule
 		AND daportal_user.enabled='1'";
 	protected $project_query_list_projects = "SELECT content_id AS id,
 		timestamp, name AS module,
-		daportal_user.user_id AS user_id, username, title,
+		daportal_user.user_id AS user_id, username, title
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
