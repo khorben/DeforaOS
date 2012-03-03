@@ -309,7 +309,8 @@ class ProjectModule extends ContentModule
 			$row->setProperty('bug_id', $link);
 			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
 			$row->setProperty('project', $res[$i]['project']);
-			$row->setProperty('date', $res[$i]['date']);
+			$date = $this->_timestampToDate($res[$i]['timestamp']);
+			$row->setProperty('date', $date);
 			$row->setProperty('state', $res[$i]['state']);
 			$row->setProperty('type', $res[$i]['type']);
 			$row->setProperty('priority', $res[$i]['priority']);
