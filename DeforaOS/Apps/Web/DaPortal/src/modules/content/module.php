@@ -36,6 +36,7 @@ class ContentModule extends Module
 		$this->module_content_submit = _('Submit content');
 		$this->module_contents = _('Content');
 		$this->content_list_title = _('Content list');
+		$this->content_more_content = _('More content...');
 		$this->content_open_text = _('Read');
 	}
 
@@ -77,6 +78,7 @@ class ContentModule extends Module
 	protected $content_list_count = 10;
 	protected $content_list_order = 'timestamp DESC';
 	protected $content_list_title = 'Content list';
+	protected $content_more_content = 'More content...';
 	protected $content_open_stock = 'read';
 	protected $content_open_text = 'Read';
 
@@ -181,10 +183,21 @@ class ContentModule extends Module
 				|| count($res) != 1)
 			return FALSE;
 		$res = $res[0];
-		$res['date'] = substr($res['timestamp'], 0, 19);
-		$res['date'] = strtotime($res['date']);
-		$res['date'] = date(_('d/m/Y H:i'), $res['date']);
+		$res['date'] = $this->_timestampToDate($res['timestamp'],
+				_('d/m/Y H:i'));
 		return $res;
+	}
+
+
+	//convertors
+	//ContentModule::_timestampToDate
+	//FIXME move to the SQL module?
+	protected function _timestampToDate($timestamp, $format = 'd/m/Y H:i:s')
+	{
+		$date = substr($timestamp, 0, 19);
+		$date = strtotime($date);
+		$date = date($format, $date);
+		return $date;
 	}
 
 
@@ -246,7 +259,9 @@ class ContentModule extends Module
 			$row->setProperty('title', $res[$i]['title']);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
-			$row->setProperty('date', $res[$i]['timestamp']); //XXX
+			$date = $this->_timestampToDate(_('d/m/Y H:i'),
+					$res[$i]['timestamp']);
+			$row->setProperty('date', $date);
 		}
 		$r = new Request($engine, $this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
@@ -399,7 +414,11 @@ class ContentModule extends Module
 		$page->setProperty('title', $content['title']);
 		$page->append('title', array('stock' => $this->name,
 				'text' => $content['title']));
-		$page->append('label', array('text' => $content['content']));
+		$page->append('label', array('text' => $content['content']
+			."\n"));
+		$r = new Request($engine, $this->name);
+		$page->append('link', array('stock' => 'back', 'request' => $r,
+				'text' => $this->content_more_content));
 		return $page;
 	}
 
@@ -480,7 +499,9 @@ class ContentModule extends Module
 			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
-			$row->setProperty('date', $res[$i]['timestamp']); //XXX
+			$date = $this->_timestampToDate(_('d/m/Y H:i'),
+					$res[$i]['timestamp']);
+			$row->setProperty('date', $date);
 		}
 		$r = new Request($engine, $this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
