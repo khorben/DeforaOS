@@ -127,7 +127,7 @@ class ProjectModule extends ContentModule
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp,
 		bug_id, daportal_bug.project_id AS project_id, priority, cvsroot
-		FROM daportal_content, daportal_module, daportal_user
+		FROM daportal_module, daportal_user, daportal_content
 		LEFT JOIN daportal_project
 		ON daportal_content.content_id=daportal_project.project_id
 		LEFT JOIN daportal_bug
