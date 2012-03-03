@@ -34,6 +34,7 @@ class DownloadModule extends ContentModule
 		//XXX check these
 		$this->module_content = _('Download');
 		$this->module_contents = _('Download');
+		$this->content_open_text = _('Open');
 		//list only files by default
 		$this->query_list = $this->download_query_list_files;
 	}
