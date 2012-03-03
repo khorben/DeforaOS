@@ -181,7 +181,8 @@ class ProjectModule extends ContentModule
 	protected function _getFilter($engine, $request)
 	{
 		$r = new Request($engine, $this->name, 'bug_list');
-		$form = new PageElement('form', array('request' => $r));
+		$form = new PageElement('form', array('request' => $r,
+				'idempotent' => TRUE));
 		$hbox = $form->append('hbox');
 		$vbox1 = $hbox->append('vbox');
 		$vbox2 = $hbox->append('vbox');
@@ -197,6 +198,7 @@ class ProjectModule extends ContentModule
 				'type' => 'reset',
 				'text' => _('Reset')));
 		$bbox->append('button', array('stock' => 'submit',
+				'type' => 'submit',
 				'text' => _('Filter')));
 		return $form;
 	}
