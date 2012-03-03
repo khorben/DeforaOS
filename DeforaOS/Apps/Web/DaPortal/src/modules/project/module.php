@@ -177,6 +177,31 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::_getFilter
+	protected function _getFilter($engine, $request)
+	{
+		$r = new Request($engine, $this->name, 'bug_list');
+		$form = new PageElement('form', array('request' => $r));
+		$hbox = $form->append('hbox');
+		$vbox1 = $hbox->append('vbox');
+		$vbox2 = $hbox->append('vbox');
+		$vbox1->append('entry', array('name' => 'project',
+			'value' => $request->getParameter('project'),
+			'text' => _('Project: ')));
+		$vbox2->append('entry', array('name' => 'username',
+			'value' => $request->getParameter('username'),
+			'text' => _('Submitted by: ')));
+		//FIXME implement the rest
+		$bbox = $vbox2->append('hbox');
+		$bbox->append('button', array('stock' => 'reset',
+				'type' => 'reset',
+				'text' => _('Reset')));
+		$bbox->append('button', array('stock' => 'submit',
+				'text' => _('Filter')));
+		return $form;
+	}
+
+
 	//ProjectModule::_getProject
 	protected function _getProject($engine, $id)
 	{
@@ -268,6 +293,7 @@ class ProjectModule extends ContentModule
 			$toolbar = $this->_getToolbar($engine, $id);
 			$query .= ' AND daportal_project.project_id=:project_id';
 		}
+		$filter = $this->_getFilter($engine, $request);
 		//filter by user_id
 		if(($uid = $request->getParameter('user_id')) !== FALSE)
 		{
@@ -293,6 +319,8 @@ class ProjectModule extends ContentModule
 		$page->append('title', array('text' => $title));
 		if($toolbar !== FALSE)
 			$page->appendElement($toolbar);
+		if($filter !== FALSE)
+			$page->appendElement($filter);
 		$treeview = $page->append('treeview');
 		$treeview->setProperty('columns', array('title' => _('Title'),
 			'bug_id' => _('ID'), 'project' => _('Project'),
