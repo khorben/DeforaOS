@@ -290,9 +290,9 @@ class ProjectModule extends ContentModule
 					'type' => 'error', 'error' => $error));
 		//build the page
 		$page = new Page(array('title' => $title));
+		$page->append('title', array('text' => $title));
 		if($toolbar !== FALSE)
 			$page->appendElement($toolbar);
-		$page->append('title', array('text' => $title));
 		$treeview = $page->append('treeview');
 		$treeview->setProperty('columns', array('title' => _('Title'),
 			'bug_id' => _('ID'), 'project' => _('Project'),
@@ -316,21 +316,6 @@ class ProjectModule extends ContentModule
 		}
 		return $page;
 	}
-
-
-/*	//ProjectModule::display
-	protected function display($engine, $request)
-	{
-		$error = _('Could not display content');
-
-		if(($id = $request->getId()) === FALSE)
-			return $this->_default($engine, $request);
-		if(($page = $this->_display($engine, $id,
-				$request->getParameter('title'))) === FALSE)
-			return new PageElement('dialog', array(
-					'type' => 'error', 'error' => $error));
-		return $page;
-	} */
 
 
 	//ProjectModule::_display
@@ -364,13 +349,12 @@ class ProjectModule extends ContentModule
 		else
 			$project = $content;
 		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+			'text' => $title));
 		if(($toolbar = $this->_getToolbar($engine, $project['id']))
 				!== FALSE)
 			$page->appendElement($toolbar);
-		$vbox = $page->append('vbox');
-		$vbox->append('title', array('stock' => $this->name,
-			'text' => $title));
-		$vbox->append('label', array('text' => $content['content']));
+		$page->append('label', array('text' => $content['content']."\n"));
 		$page->appendElement($link);
 		return $page;
 	}
