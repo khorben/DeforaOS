@@ -81,6 +81,7 @@ class ContentModule extends Module
 	protected $content_more_content = 'More content...';
 	protected $content_open_stock = 'read';
 	protected $content_open_text = 'Read';
+	protected $content_preview_length = 150;
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
@@ -542,7 +543,12 @@ class ContentModule extends Module
 		$hbox = $page->append('hbox');
 		$hbox->append('image', array('stock' => 'module '
 					.$content['module'].' content'));
-		$hbox->append('label', array('text' => $content['content']));
+		$text = $content['content'];
+		if($this->content_preview_length > 0
+			&& strlen($text) > $this->content_preview_length)
+			$text = substr($text, 0,
+				$this->content_preview_length).'...';
+		$hbox->append('label', array('text' => $text));
 		if($preview === FALSE)
 			$page->append('button', array(
 					'stock' => $this->content_open_stock,
