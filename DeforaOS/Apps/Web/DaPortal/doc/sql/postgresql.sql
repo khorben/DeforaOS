@@ -63,7 +63,7 @@ CREATE TABLE daportal_user (
 	"password" VARCHAR(255),
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
 	admin BOOLEAN DEFAULT FALSE,
-	fullname VARCHAR(255) DEFAULT FALSE,
+	fullname VARCHAR(255) DEFAULT '',
 	email VARCHAR(255) NOT NULL
 );
 
