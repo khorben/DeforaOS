@@ -28,18 +28,20 @@ class User
 	public function __construct(&$engine, $uid, $username = FALSE)
 	{
 		$db = $engine->getDatabase();
-		$query = $this->query_get_by_id;
+		$query = $username ? $this->query_get_by_id_username
+			: $this->query_get_by_id;
 
 		$this->user_id = 0;
-		$this->username = _('Anonymous');
+		$this->username = 'anonymous';
 		$this->group_id = 0;
-		$this->groupname = _('nogroup');
+		$this->groupname = 'nogroup';
 		$this->admin = FALSE;
 		if(($res = $db->query($engine, $query, array(
-				'user_id' => $uid))) === FALSE
+					'user_id' => $uid,
+					'username' => $username))) === FALSE
 				|| count($res) != 1
 				|| ($username !== FALSE
-					&& $res[0]['username'] != $username))
+				&& $res[0]['username'] != $username))
 			return;
 		$res = $res[0];
 		$this->user_id = $res['id'];
@@ -53,6 +55,13 @@ class User
 	public function getUserId()
 	{
 		return $this->user_id;
+	}
+
+
+	//User::getUsername
+	public function getUsername()
+	{
+		return $this->username;
 	}
 
 
@@ -353,7 +362,18 @@ class User
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id
 		WHERE daportal_group.enabled='1'
+		AND daportal_user.enabled='1'
 		AND user_id=:user_id";
+	private $query_get_by_id_username = "SELECT user_id AS id, username,
+		daportal_user.enabled AS enabled,
+		daportal_user.group_id AS group_id, groupname, admin
+		FROM daportal_user
+		LEFT JOIN daportal_group
+		ON daportal_user.group_id=daportal_group.group_id
+		WHERE daportal_group.enabled='1'
+		AND daportal_user.enabled='1'
+		AND user_id=:user_id
+		AND username=:username";
 	private $query_set_password = 'UPDATE daportal_user
 		SET password=:password
 		WHERE user_id=:user_id';

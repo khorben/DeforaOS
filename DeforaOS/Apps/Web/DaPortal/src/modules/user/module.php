@@ -35,8 +35,10 @@ class UserModule extends Module
 			case 'login':
 			case 'logout':
 			case 'menu':
+			case 'profile':
 			case 'register':
 			case 'reset':
+			case 'update':
 			case 'validate':
 			case 'widget':
 				return $this->$action($engine, $request);
@@ -91,6 +93,7 @@ class UserModule extends Module
 		}
 		else
 		{
+			//administration
 			$r = new Request($engine, $this->name, 'admin');
 			$icon = new PageElement('image', array(
 					'stock' => 'admin'));
@@ -100,6 +103,7 @@ class UserModule extends Module
 				$ret[] = new PageElement('row', array(
 						'icon' => $icon,
 						'label' => $link));
+			//user's content
 			$r = new Request($engine, $this->name, 'display');
 			$icon = new PageElement('image', array(
 					'stock' => 'user'));
@@ -107,6 +111,15 @@ class UserModule extends Module
 					'text' => _('My content')));
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'label' => $link));
+			//user's profile
+			$r = new Request($engine, $this->name, 'profile');
+			$icon = new PageElement('image', array(
+					'stock' => 'user'));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => _('My profile')));
+			$ret[] = new PageElement('row', array('icon' => $icon,
+					'label' => $link));
+			//logout
 			$r = new Request($engine, $this->name, 'logout');
 			$icon = new PageElement('image', array(
 					'stock' => 'logout'));
@@ -181,9 +194,9 @@ class UserModule extends Module
 	protected function display($engine, $request)
 	{
 		$cred = $engine->getCredentials();
+		$link = FALSE;
 
 		$page = new Page;
-		$view = $page->append('iconview');
 		if(($uid = $request->getId()) !== FALSE)
 			//FIXME verify the request's title if set
 			$title = _('Content from ').$uid;
@@ -191,21 +204,19 @@ class UserModule extends Module
 		{
 			$title = _('My content');
 			$r = new Request($engine, $this->name);
-			$page->append('link', array('stock' => 'back',
+			$link = new PageElement('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my homepage')));
 		}
 		else
 			return $this->login($engine, new Request);
 		$page->setProperty('title', $title);
-		$page->prepend('title', array('stock' => $this->name,
+		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		$view = $page->append('iconview');
 		//FIXME request content from all modules
-		$r = new Request($engine, $this->name, 'logout');
-		$link = new PageElement('link', array('text' => _('Logout'),
-				'request' => $r));
-		$icon = new PageElement('image', array('stock' => 'logout'));
-		$view->append('row', array('icon' => $icon, 'label' => $link));
+		if($link !== FALSE)
+			$page->appendElement($link);
 		return $page;
 	}
 
@@ -614,6 +625,106 @@ Thank you for registering!")));
 	}
 
 
+	//UserModule::profile
+	protected function profile($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$id = $request->getId();
+
+		//determine whose profile to view
+		if($id === FALSE)
+			$id = $cred->getUserId();
+		$user = new User($engine, $id, $request->getTitle());
+		if(($id = $user->getUserId()) == 0)
+		{
+			//the anonymous user has no profile
+			$error = _('There is no profile for this user');
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		}
+		if($id === $cred->getUserId())
+			//viewing own profile
+			$id = FALSE;
+		//output the page
+		$title = $id ? _('Profile for ').$user->getUsername()
+			: _('My profile');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'user',
+				'text' => $title));
+		$vbox = $page->append('vbox');
+		//FIXME output the profile data
+		//link to profile update
+		$r = new Request($engine, $this->name, 'update',
+				$request->getId(), $request->getId()
+				? $user->getUsername() : FALSE);
+		$button = FALSE;
+		if($request->getId() !== FALSE && $cred->isAdmin())
+			$button = new PageElement('button', array(
+				'stock' => 'admin', 'request' => $r,
+				'text' => _('Update')));
+		else if($id === FALSE)
+			$button = new PageElement('button', array(
+				'stock' => 'user', 'request' => $r,
+				'text' => _('Update')));
+		if($button !== FALSE)
+			$vbox->appendElement($button);
+		if($id === FALSE)
+		{
+			$r = new Request($engine, $this->name);
+			$vbox->append('link', array('stock' => 'back',
+					'request' => $r,
+					'text' => _('Back to my homepage')));
+		}
+		return $page;
+	}
+
+
+	//UserModule::update
+	protected function update($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$id = $request->getId();
+
+		//determine whose profile to update
+		if($id === FALSE)
+			$id = $cred->getUserId();
+		$user = new User($engine, $id, $request->getTitle());
+		if(($id = $user->getUserId()) == 0)
+		{
+			//the anonymous user has no profile
+			$error = _('There is no profile for this user');
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		}
+		if($id === $cred->getUserId())
+			//viewing own profile
+			$id = FALSE;
+		if($id !== FALSE && !$cred->isAdmin())
+		{
+			$error = _('Permission denied');
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		}
+		//output the page
+		$title = $id ? _('Profile update for ').$user->getUsername()
+			: _('Profile update');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'user',
+				'text' => $title));
+		$vbox = $page->append('vbox');
+		//link to profile
+		$r = new Request($engine, $this->name, 'profile',
+				$request->getId(), $request->getId()
+				? $user->getUsername() : FALSE);
+		$button = new PageElement('button', array('stock' => 'cancel',
+			'request' => $r, 'text' => _('Cancel')));
+		if($button !== FALSE)
+			$vbox->appendElement($button);
+		//FIXME implement
+		return $page;
+	}
+
+
 	//UserModule::validate
 	protected function validate($engine, $request)
 	{
@@ -688,6 +799,10 @@ Thank you for registering!")));
 		$box->append('button', array('stock' => 'user',
 				'request' => $r,
 				'text' => _('My content')));
+		$r = new Request($engine, $this->name, 'update');
+		$box->append('button', array('stock' => 'user',
+				'request' => $r,
+				'text' => _('My profile')));
 		$r = new Request($engine, $this->name, 'logout');
 		$box->append('button', array('stock' => 'logout',
 				'request' => $r,
