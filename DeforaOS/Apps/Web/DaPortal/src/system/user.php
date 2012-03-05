@@ -36,6 +36,8 @@ class User
 		$this->group_id = 0;
 		$this->groupname = 'nogroup';
 		$this->admin = FALSE;
+		$this->email = FALSE;
+		$this->fullname = FALSE;
 		if(($res = $db->query($engine, $query, array(
 					'user_id' => $uid,
 					'username' => $username))) === FALSE
@@ -47,10 +49,26 @@ class User
 		$this->user_id = $res['id'];
 		$this->username = $res['username'];
 		$this->admin = $res['admin'] ? TRUE : FALSE;
+		$this->email = $res['email'];
+		$this->fullname = $res['fullname'];
 	}
 
 
 	//accessors
+	//User::getEmail
+	public function getEmail()
+	{
+		return $this->email;
+	}
+
+
+	//User::getFullname
+	public function getFullname()
+	{
+		return $this->fullname;
+	}
+
+
 	//User::getUserId
 	public function getUserId()
 	{
@@ -353,11 +371,14 @@ class User
 	private $group_id = FALSE;
 	private $enabled = FALSE;
 	private $admin = FALSE;
+	private $email = FALSE;
+	private $fullname = FALSE;
 
 	//queries
 	private $query_get_by_id = "SELECT user_id AS id, username,
 		daportal_user.enabled AS enabled,
-		daportal_user.group_id AS group_id, groupname, admin
+		daportal_user.group_id AS group_id, groupname, admin, email,
+		fullname
 		FROM daportal_user
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id
@@ -366,7 +387,8 @@ class User
 		AND user_id=:user_id";
 	private $query_get_by_id_username = "SELECT user_id AS id, username,
 		daportal_user.enabled AS enabled,
-		daportal_user.group_id AS group_id, groupname, admin
+		daportal_user.group_id AS group_id, groupname, admin, email,
+		fullname
 		FROM daportal_user
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id

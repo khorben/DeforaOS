@@ -657,7 +657,10 @@ Thank you for registering!")));
 		$page->append('title', array('stock' => 'user',
 				'text' => $title));
 		$vbox = $page->append('vbox');
-		//FIXME output the profile data
+		$vbox->append('label', array(
+			'text' => _('Fullname: ').$user->getFullname()));
+		$vbox->append('label', array(
+			'text' => _('e-mail: ').$user->getEmail()));
 		//link to profile update
 		$r = new Request($engine, $this->name, 'update',
 				$request->getId(), $request->getId()
@@ -689,6 +692,7 @@ Thank you for registering!")));
 	{
 		$cred = $engine->getCredentials();
 		$id = $request->getId();
+		$error = TRUE;
 
 		//determine whose profile to update
 		if($id === FALSE)
@@ -710,22 +714,88 @@ Thank you for registering!")));
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
 		}
+		//process update
+		if(!$engine->isIdempotent($request))
+			$error = $this->_update_process($engine, $request,
+					$user);
+		if($error === FALSE)
+			//update was successful
+			return $this->_update_success($engine, $request);
+		return $this->_update_form($engine, $request, $user, $id,
+			$error);
+	}
+
+	private function _update_form($engine, $request, $user, $id, $error)
+	{
 		//output the page
 		$title = $id ? _('Profile update for ').$user->getUsername()
 			: _('Profile update');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'user',
 				'text' => $title));
-		$vbox = $page->append('vbox');
-		//link to profile
+		if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		$r = new Request($engine, $this->name, 'update',
+			$request->getId(), $request->getId()
+				? $request->getTitle() : FALSE);
+		$form = $page->append('form', array('request' => $r));
+		//fields
+		$form->append('label', array('text' => _('Username: ')));
+		$form->append('label', array('text' => $user->getUsername()));
+		if(($fullname = $request->getParameter('fullname')) === FALSE)
+			$fullname = $user->getFullname();
+		$form->append('entry', array('text' => _('Full name: '),
+			'name' => 'fullname', 'value' => $fullname));
+		if(($email = $request->getParameter('email')) === FALSE)
+			$email = $user->getEmail();
+		$form->append('entry', array('text' => _('e-mail: '),
+			'name' => 'email', 'value' => $email));
+		//buttons
 		$r = new Request($engine, $this->name, 'profile',
 				$request->getId(), $request->getId()
 				? $user->getUsername() : FALSE);
-		$button = new PageElement('button', array('stock' => 'cancel',
+		$form->append('button', array('stock' => 'cancel',
 			'request' => $r, 'text' => _('Cancel')));
-		if($button !== FALSE)
-			$vbox->appendElement($button);
-		//FIXME implement
+		$form->append('button', array('stock' => 'update',
+			'type' => 'submit', 'text' => _('Update')));
+		return $page;
+	}
+
+	private function _update_process($engine, $request, $user)
+	{
+		$ret = '';
+		$db = $engine->getDatabase();
+
+		if(($fullname = $request->getParameter('fullname')) === FALSE)
+			$ret .= _("The full name is required\n");
+		if(($email = $request->getParameter('email')) === FALSE)
+			$ret .= _("The e-mail address is required\n");
+		if(strlen($ret) > 0)
+			return $ret;
+		//update the profile
+		$error = '';
+		if($db->query($engine, $this->query_update, array(
+				'user_id' => $user->getUserId(),
+				'fullname' => $fullname,
+				'email' => $email)) === FALSE)
+			$ret = _('Could not update the profile');
+		return strlen($ret) ? $ret : FALSE;
+	}
+
+	private function _update_success($engine, $request)
+	{
+		$title = _('Profile update');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+			'text' => $title));
+		$dialog = $page->append('dialog', array('type' => 'info',
+			'text' => _('Your profile was updated successfully')));
+		$r = new Request($engine, $this->name, 'profile',
+			$request->getId(), $request->getId()
+				? $request->getTitle() : FALSE);
+		$dialog->append('button', array('stock' => 'user',
+			'request' => $r, 'text' => _('My profile')));
 		return $page;
 	}
 
@@ -823,6 +893,9 @@ Thank you for registering!")));
 		FROM daportal_user
 		WHERE username=:username AND password=:password
 		AND enabled='1'";
+	private $query_update = 'UPDATE daportal_user
+		SET fullname=:fullname, email=:email
+		WHERE user_id=:user_id';
 }
 
 ?>
