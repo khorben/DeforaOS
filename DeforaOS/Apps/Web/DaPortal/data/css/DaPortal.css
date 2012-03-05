@@ -132,6 +132,7 @@ form.treeview.icons > div.table > div.row span.icon {
 
 form.treeview.icons > div.table > div.row span.label {
 	display:			block;
+	text-align:			center;
 }
 
 form.treeview.list > div.table > div.row {
