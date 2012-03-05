@@ -49,6 +49,10 @@ class UserModule extends Module
 
 
 	//protected
+	//properties
+	protected $module_name = 'User';
+
+
 	//methods
 	//UserModule::actions
 	protected function actions($engine, $request)
@@ -365,7 +369,8 @@ class UserModule extends Module
 		$cred = $engine->getCredentials();
 
 		//FIXME set links and icons
-		$menu = new PageElement('menuitem', array('text' => 'User'));
+		$menu = new PageElement('menuitem', array(
+				'text' => $this->module_name));
 		if($cred->getUserId() == 0)
 		{
 			$menu->append('menuitem', array('text' => _('Login')));
