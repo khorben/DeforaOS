@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix sh */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ static void _sh_handler(int signum)
 
 static void _handler_sigint(void)
 {
-	job_kill_status(SIGINT, JS_WAIT);
+	job_kill_status(SIGINT, JS_RUNNING);
 }
 
 
