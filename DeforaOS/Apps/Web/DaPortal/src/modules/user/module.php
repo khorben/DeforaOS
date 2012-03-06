@@ -54,6 +54,32 @@ class UserModule extends Module
 
 
 	//methods
+	//forms
+	protected function form_login($engine, $username, $cancel = TRUE)
+	{
+		$r = new Request($engine, $this->name, 'login');
+		$form = new PageElement('form', array('request' => $r));
+		$entry = $form->append('entry', array(
+					'name' => 'username',
+					'text' => _('Username: '),
+					'value' => $username));
+		$entry = $form->append('entry', array(
+					'hidden' => TRUE,
+					'name' => 'password',
+					'text' => _('Password: ')));
+		$r = new Request($engine, $this->name);
+		if($cancel)
+			$form->append('button', array('text' => _('Cancel'),
+						'stock' => 'cancel',
+						'request' => $r));
+		$button = $form->append('button', array('type' => 'submit',
+					'stock' => 'login',
+					'text' => _('Login')));
+		return $form;
+	}
+
+
+	//useful
 	//UserModule::actions
 	protected function actions($engine, $request)
 	{
@@ -243,10 +269,9 @@ class UserModule extends Module
 			$text = _('Logging in progress, please wait...');
 			$box->append('label', array('text' => $text));
 			$box = $box->append('hbox');
-			$text = 'If you are not redirected within 30 seconds,'
-				.' please ';
+			$text = _('If you are not redirected within 30 seconds, please ');
 			$box->append('label', array('text' => $text));
-			$box->append('link', array('text' => 'click here',
+			$box->append('link', array('text' => _('click here'),
 						'request' => $r));
 			$box->append('label', array('text' => '.'));
 			return $page;
@@ -254,24 +279,9 @@ class UserModule extends Module
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 						'text' => $error));
-		$r = new Request($engine, $this->name, 'login');
-		$form = $page->append('form', array('request' => $r));
-		$entry = $form->append('entry', array(
-					'name' => 'username',
-					'text' => _('Username: '),
-					'value' => $request->getParameter(
-						'username')));
-		$entry = $form->append('entry', array(
-					'hidden' => TRUE,
-					'name' => 'password',
-					'text' => _('Password: ')));
-		$form->append('button', array('text' => _('Cancel'),
-					'stock' => 'cancel',
-					'request' => new Request($engine,
-						$this->name)));
-		$button = $form->append('button', array('type' => 'submit',
-					'stock' => 'login',
-					'text' => _('Login')));
+		$form = $this->form_login($engine,
+				$request->getParameter('username'));
+		$page->appendElement($form);
 		if($this->can_reset())
 		{
 			$r = new Request($engine, $this->name, 'reset');
@@ -849,23 +859,9 @@ Thank you for registering!")));
 		$cred = $engine->getCredentials();
 
 		if($cred->getUserId() == 0)
-		{
-			$r = new Request($engine, $this->name, 'login');
-			$form = new PageElement('form', array('request' => $r));
-			$entry = $form->append('entry', array(
-				'name' => 'username',
-				'text' => _('Username: '),
-				'value' => $request->getParameter(
-					'username')));
-			$entry = $form->append('entry', array(
-				'hidden' => TRUE,
-				'name' => 'password',
-				'text' => _('Password: ')));
-			$form->append('button', array('type' => 'submit',
-				'stock' => 'login',
-				'text' => _('Login')));
-			return $form;
-		}
+			return $this->form_login($engine,
+					$request->getParameter('username'),
+					FALSE);
 		$box = new PageElement('vbox');
 		$r = new Request($engine, $this->name);
 		$box->append('button', array('stock' => 'home',
