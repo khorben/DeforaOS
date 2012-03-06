@@ -212,7 +212,10 @@ class UserModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 			'text' => $title));
-		if(($res = $db->query($engine, $this->query_admin)) === FALSE)
+		$query = $this->query_admin;
+		//FIXME implement sorting
+		$query .= ' ORDER BY username ASC';
+		if(($res = $db->query($engine, $query)) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error',
 				'text' => _('Could not list users')));
