@@ -445,8 +445,8 @@ class UserModule extends Module
 			return $ret;
 		//register the user
 		$error = '';
-		if(($user = User::register($engine, $username, FALSE, $email,
-					FALSE, $error)) === FALSE)
+		if(($user = User::register($engine, $this->name, $username,
+				FALSE, $email, FALSE, $error)) === FALSE)
 			$ret .= $error;
 		return strlen($ret) ? $ret : FALSE;
 	}
@@ -529,8 +529,8 @@ Thank you for registering!")));
 			return $ret;
 		//send a reset token to the user
 		$error = '';
-		if(($user = User::reset($engine, $username, $email, $error))
-				=== FALSE)
+		if(($user = User::reset($engine, $module, $username, $email,
+				$error)) === FALSE)
 			$ret .= $error;
 		return strlen($ret) ? $ret : FALSE;
 	}
@@ -785,6 +785,7 @@ Thank you for registering!")));
 
 	private function _update_success($engine, $request)
 	{
+		//FIXME also implement administrative updates
 		$title = _('Profile update');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,

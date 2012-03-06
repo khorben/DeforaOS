@@ -138,8 +138,8 @@ class User
 
 
 	//User::register
-	static public function register(&$engine, $username, $password, $email,
-			$enabled = FALSE, &$error = FALSE)
+	static public function register(&$engine, $module, $username, $password,
+		$email, $enabled = FALSE, &$error = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$error = '';
@@ -196,8 +196,7 @@ class User
 				return FALSE;
 			}
 			//send an e-mail for confirmation
-			//FIXME the request should be given as argument
-			$r = new Request($engine, 'user', 'validate', $uid,
+			$r = new Request($engine, $module, 'validate', $uid,
 					FALSE, array('token' => $token));
 			$subject = _('User registration'); //XXX add site title
 			$text = _("Thank you for registering on this site.\n");
@@ -217,7 +216,7 @@ class User
 
 
 	//User::reset
-	static public function reset(&$engine, $username, $email,
+	static public function reset(&$engine, $module, $username, $email,
 			&$error = FALSE)
 	{
 		$db = $engine->getDatabase();
@@ -246,8 +245,7 @@ class User
 			return FALSE;
 		}
 		//send an e-mail with the token
-		//FIXME the request should be given as argument
-		$r = new Request($engine, 'user', 'reset', $uid,
+		$r = new Request($engine, $module, 'reset', $uid,
 			FALSE, array('token' => $token));
 		$subject = _('Password reset'); //XXX add site title
 		$text = _("Someone, hopefully you, has requested a password reset on your account.\n");
