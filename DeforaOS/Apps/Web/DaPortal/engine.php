@@ -52,6 +52,7 @@ if(($db = $engine->getDatabase()) === FALSE)
 	print('Could not connect to the database');
 	exit(2);
 }
+$engine->getAuth();
 if(chdir('..') != TRUE)
 	exit(2);
 
@@ -59,7 +60,6 @@ if(chdir('..') != TRUE)
 require_once('./system/debug.php');
 if(isset($_COOKIE[session_name()]))
 {
-	session_start();
 	$vars = array_keys($_SESSION);
 	foreach($vars as $v)
 		$$v = $_SESSION[$v];
