@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix sh */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -168,6 +168,8 @@ static int parser_check_word(Parser * parser, char const * word)
 
 
 /* parser_exec */
+static int _exec_do(Parser * parser, unsigned int * pos, int skip, int * ret,
+		int * skiplocal);
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
 static int _exec_for(Parser * parser, unsigned int * pos, int skip);
 static int _exec_if(Parser * parser, unsigned int * pos, int skip);
@@ -181,65 +183,75 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 	int skiplocal = skip;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%u%s%s", "parser_exec(", *pos, ")",
-			skip ? " skip\n" : "\n");
+	fprintf(stderr, "%s%u%s%s", "parser_exec(", *pos, ")", skip ? " skip\n"
+			: "\n");
 #endif
 	while(*pos < parser->tokens_cnt)
-		switch(parser->tokens[*pos]->code)
-		{
-			case TC_OP_AND_IF:
-				skiplocal = skip || ret != 0;
-				(*pos)++;
-				break;
-			case TC_OP_OR_IF:
-				skiplocal = skip || ret == 0;
-				(*pos)++;
-				break;
-			case TC_ASSIGNMENT_WORD:
-			case TC_IO_NUMBER:
-			case TC_OP_DLESS:
-			case TC_OP_DGREAT:
-			case TC_OP_LESSAND:
-			case TC_OP_GREATAND:
-			case TC_OP_LESSGREAT:
-			case TC_OP_CLOBBER:
-			case TC_OP_LESS:
-			case TC_OP_GREAT:
-			case TC_WORD:
-				ret = _exec_cmd(parser, pos, skiplocal);
-				break;
-			case TC_RW_IF:
-				ret = _exec_if(parser, pos, skiplocal);
-				break;
-			case TC_RW_CASE:
-				ret = _exec_case(parser, pos, skiplocal);
-				break;
-			case TC_RW_WHILE:
-				ret = _exec_while(parser, pos, skiplocal);
-				break;
-			case TC_RW_UNTIL:
-				ret = _exec_until(parser, pos, skiplocal);
-				break;
-			case TC_RW_FOR:
-				ret = _exec_for(parser, pos, skiplocal);
-				break;
-			case TC_EOI:
-			case TC_NEWLINE:
-			case TC_OP_SEMICOLON:
-				if(skiplocal != skip)
-					skiplocal = 0;
-				(*pos)++;
-				break;
-			default:
-#ifdef DEBUG
-				fprintf(stderr, "%s%u%s%s", "parser_exec(",
-						*pos, ")",
-						skip ? " skip\n" : "\n");
-#endif
-				assert(0);
-				return ret;
-		}
+		ret = _exec_do(parser, pos, skip, &ret, &skiplocal);
 	return ret;
+}
+
+static int _exec_do(Parser * parser, unsigned int * pos, int skip, int * ret,
+		int * skiplocal)
+{
+	switch(parser->tokens[*pos]->code)
+	{
+		case TC_OP_AND_IF:
+			*skiplocal = (skip || *ret != 0);
+			(*pos)++;
+			break;
+		case TC_OP_OR_IF:
+			*skiplocal = (skip || *ret == 0);
+			(*pos)++;
+			break;
+		case TC_ASSIGNMENT_WORD:
+		case TC_IO_NUMBER:
+		case TC_OP_DLESS:
+		case TC_OP_DGREAT:
+		case TC_OP_LESSAND:
+		case TC_OP_GREATAND:
+		case TC_OP_LESSGREAT:
+		case TC_OP_CLOBBER:
+		case TC_OP_LESS:
+		case TC_OP_GREAT:
+		case TC_WORD:
+			*ret = _exec_cmd(parser, pos, *skiplocal);
+			break;
+		case TC_RW_IF:
+			*ret = _exec_if(parser, pos, *skiplocal);
+			break;
+		case TC_RW_CASE:
+			*ret = _exec_case(parser, pos, *skiplocal);
+			break;
+		case TC_RW_WHILE:
+			*ret = _exec_while(parser, pos, *skiplocal);
+			break;
+		case TC_RW_UNTIL:
+			*ret = _exec_until(parser, pos, *skiplocal);
+			break;
+		case TC_RW_FOR:
+			*ret = _exec_for(parser, pos, *skiplocal);
+			break;
+		case TC_EOI:
+		case TC_NEWLINE:
+		case TC_OP_SEMICOLON:
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() \";\"\n", __func__);
+#endif
+			if(*skiplocal != skip)
+				*skiplocal = 0;
+			(*pos)++;
+			break;
+		default:
+#ifdef DEBUG /* FIXME the assertion is reached: (3) 27 (do), (7) 28 (done) */
+			fprintf(stderr, "%s%u%s%u%s", "parser_exec(", *pos,
+					") ", parser->tokens[*pos]->code,
+					skip ? " skip\n" : "\n");
+#endif
+			assert(0);
+			break;
+	}
+	return *ret;
 }
 
 
@@ -436,6 +448,7 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 	unsigned int count = 0;
 	unsigned int i;
 	unsigned int p;
+	char const * string;
 
 	name = parser->tokens[++(*pos)];
 	(*pos)++;
@@ -446,8 +459,8 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 	p = ++(*pos);
 	for(i = 0; i < count; i++)
 	{
-		if(setenv(name->string, parser->tokens[p-2-count+i]->string, 1)
-				!= 0)
+		string = parser->tokens[p - 2 - count + i]->string;
+		if(setenv(name->string, string, 1) != 0)
 			skip = sh_error("setenv", 1);
 		*pos = p;
 		parser_exec(parser, pos, skip);
@@ -509,7 +522,8 @@ static int _exec_until(Parser * parser, unsigned int * pos, int skip)
 
 	for(test = ++(*pos);; *pos = test)
 	{
-		skip = parser_exec(parser, pos, skip) == 0 || skip;
+		skip = (parser_exec(parser, pos, skip) == 0) || skip;
+		assert(parser->tokens[*pos]->code == TC_RW_DO);
 		(*pos)++;
 		parser_exec(parser, pos, skip);
 		if(skip != 0)
@@ -522,16 +536,35 @@ static int _exec_until(Parser * parser, unsigned int * pos, int skip)
 
 static int _exec_while(Parser * parser, unsigned int * pos, int skip)
 {
-	unsigned int test;
+	unsigned int cond;
+	int res;
+	int s;
 
-	for(test = ++(*pos);; *pos = test)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	/* while */
+	assert(parser->tokens[*pos]->code == TC_RW_WHILE);
+	/* loop */
+	for(cond = ++(*pos);; *pos = cond)
 	{
-		skip = parser_exec(parser, pos, skip) != 0 || skip;
+		s = skip;
+		while(*pos < parser->tokens_cnt
+				&& parser->tokens[*pos]->code != TC_RW_DO)
+			s = (_exec_do(parser, pos, skip, &res, &s) != 0)
+				|| skip;
+		skip = s;
+		/* do */
+		assert(parser->tokens[*pos]->code == TC_RW_DO);
 		(*pos)++;
-		parser_exec(parser, pos, skip);
-		if(skip != 0)
+		while(*pos < parser->tokens_cnt
+				&& parser->tokens[*pos]->code != TC_RW_DONE)
+			_exec_do(parser, pos, skip, &res, &s);
+		if(s != 0)
+			/* the condition was false */
 			break;
 	}
+	/* done */
 	assert(parser->tokens[*pos]->code == TC_RW_DONE);
 	(*pos)++;
 	return skip;
