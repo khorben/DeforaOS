@@ -41,10 +41,6 @@ class DaPortalEngine extends HttpEngine
 	public function attach()
 	{
 		parent::attach();
-		//force SessionAuth
-		require_once('./auth/session.php');
-		$this->auth = new SessionAuth();
-		$this->auth->attach($this);
 	}
 
 
@@ -65,7 +61,6 @@ class DaPortalEngine extends HttpEngine
 	//DaPortalEngine::isIdempotent
 	public function isIdempotent($request)
 	{
-		//XXX bypass SessionAuth's check
 		return $request->isIdempotent($request);
 	}
 
