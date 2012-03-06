@@ -84,6 +84,27 @@ class SessionAuth extends Auth
 	}
 
 
+	//SessionAuth::isIdempotent
+	public function isIdempotent(&$engine, $request)
+	{
+		if($request->isIdempotent() == TRUE)
+			return TRUE;
+		//prevent CSRF attacks
+		$token = $request->getParameter('_token');
+		if($token === FALSE
+				|| !isset($_SESSION['tokens'])
+				|| !is_array($_SESSION['tokens']))
+			return TRUE;
+		//delete old tokens
+		foreach($_SESSION['tokens'] as $k => $v)
+			if($v < time())
+				unset($_SESSION['tokens'][$k]);
+		if(isset($_SESSION['tokens'][$token]))
+			return FALSE;
+		return TRUE;
+	}
+
+
 	//SessionAuth::setCredentials
 	public function setCredentials(&$engine, $credentials)
 	{

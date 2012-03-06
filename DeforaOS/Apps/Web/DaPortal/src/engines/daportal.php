@@ -37,6 +37,17 @@ class DaPortalEngine extends HttpEngine
 	}
 
 
+	//DaPortalEngine::attach
+	public function attach()
+	{
+		parent::attach();
+		//force SessionAuth
+		require_once('./src/auth/session.php');
+		$this->auth = new SessionAuth();
+		$this->auth->attach($this);
+	}
+
+
 	//accessors
 	//DaPortalEngine::getRequest
 	public function getRequest()
@@ -51,11 +62,20 @@ class DaPortalEngine extends HttpEngine
 	}
 
 
+	//DaPortalEngine::isIdempotent
+	public function isIdempotent($request)
+	{
+		//XXX bypass SessionAuth's check
+		return $request->isIdempotent($request);
+	}
+
+
 	//private
 	//DaPortalEngine::_getRequest
 	private function _getRequest()
 	{
 		global $friendlylinks;
+		$idempotent = TRUE;
 
 		if($friendlylinks != 1 || !isset($_SERVER['PATH_INFO']))
 			return parent::getRequest();
@@ -103,7 +123,10 @@ class DaPortalEngine extends HttpEngine
 			else
 				$parameters[$key] = $value;
 		if($_SERVER['REQUEST_METHOD'] == 'POST')
+		{
 			$var = '_POST';
+			$idempotent = FALSE;
+		}
 		else if($_SERVER['REQUEST_METHOD'] == 'GET')
 			$var = '_GET';
 		else
@@ -113,8 +136,10 @@ class DaPortalEngine extends HttpEngine
 		foreach($keys as $k)
 			if(isset($parameters[$k]))
 				$$var[$k] = addslashes($parameters[$k]);
-		return new Request($this, $module, $action, $id, $title,
+		$ret = new Request($this, $module, $action, $id, $title,
 				$parameters);
+		$ret->setIdempotent($idempotent);
+		return $ret;
 	}
 
 

@@ -16,6 +16,9 @@
 
 
 
+require_once('./system/request.php');
+
+
 //AuthCredentials
 class AuthCredentials
 {
@@ -101,6 +104,13 @@ abstract class Auth
 	}
 
 
+	//Auth::isIdempotent
+	public function isIdempotent(&$engine, $request)
+	{
+		return $request->isIdempotent();
+	}
+
+
 	//Auth::setCredentials
 	public function setCredentials(&$engine, $credentials)
 	{
@@ -155,14 +165,14 @@ abstract class Auth
 
 
 	//protected
+	//properties
+	protected $credentials = FALSE;
+
+
+	//methods
 	//virtual
 	abstract protected function match(&$engine);
 	abstract protected function attach(&$engine);
-
-
-	//private
-	//properties
-	protected $credentials = FALSE;
 }
 
 ?>

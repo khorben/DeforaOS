@@ -77,6 +77,7 @@ class HttpEngine extends Engine
 		global $config;
 
 		$request = array();
+		$idempotent = TRUE;
 		$module = FALSE;
 		$action = FALSE;
 		$id = FALSE;
@@ -85,7 +86,10 @@ class HttpEngine extends Engine
 		if($_SERVER['REQUEST_METHOD'] == 'GET')
 			$request = $_GET;
 		else if($_SERVER['REQUEST_METHOD'] == 'POST')
+		{
 			$request = $_POST;
+			$idempotent = FALSE;
+		}
 		foreach($request as $key => $value)
 		{
 			$k = get_magic_quotes_gpc() ? stripslashes($key) : $key;
@@ -106,8 +110,10 @@ class HttpEngine extends Engine
 					break;
 			}
 		}
-		return new Request($this, $module, $action, $id, $title,
+		$request = new Request($this, $module, $action, $id, $title,
 				$parameters);
+		$request->setIdempotent($idempotent);
+		return $request;
 	}
 
 
@@ -148,7 +154,9 @@ class HttpEngine extends Engine
 				$title = str_replace(' ', '-', $title);
 				$url .= '&title='.urlencode($title);
 			}
-			if(($args = $request->getParameters()) !== FALSE)
+			if($this->isIdempotent($request)
+					&& ($args = $request->getParameters())
+					!== FALSE)
 				foreach($args as $key => $value)
 					$url .= '&'.urlencode($key)
 					.'='.urlencode($value);
@@ -160,29 +168,9 @@ class HttpEngine extends Engine
 	//HttpEngine::isIdempotent
 	public function isIdempotent($request)
 	{
-		//FIXME move this code into the Auth module
-		//FIXME set a flag to the request instead
-		$token = $request->getParameter('_token');
+		$auth = $this->getAuth();
 
-		$request->setParameter('token', FALSE);
-		if($token === FALSE)
-			return TRUE;
-		if(!@session_start())
-			//session management failed or is not available
-			return FALSE;
-		if($_SERVER['REQUEST_METHOD'] != 'POST')
-			//XXX assumes the HTTP protocol (fine in HttpEngine)
-			return TRUE;
-		if(!isset($_SESSION['tokens'])
-				|| !is_array($_SESSION['tokens'])
-				|| !isset($_SESSION['tokens'][$token]))
-			return TRUE;
-		$time = $_SESSION['tokens'][$token];
-		//tokens can only be used once
-		unset($_SESSION['tokens'][$token]);
-		if(!is_integer($time) || $time < time())
-			return FALSE;
-		return FALSE;
+		return $auth->isIdempotent($this, $request);
 	}
 
 
@@ -192,32 +180,38 @@ class HttpEngine extends Engine
 	{
 		global $config;
 
-		if(!($page instanceof PageElement))
-			$page = FALSE;
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
-		if(($charset = $config->getVariable('defaults', 'charset'))
-				!== FALSE)
-			header('Content-Encoding: '.$charset); //XXX escape
-		if($page !== FALSE)
+		if($page instanceof PageElement)
+		{
+			if(($charset = $config->getVariable('defaults',
+					'charset')) !== FALSE)
+				//XXX escape
+				header('Content-Encoding: '.$charset);
 			if(($location = $page->getProperty('location'))
 					!== FALSE)
 				header('Location: '.$location); //XXX escape
-		switch($type)
-		{
-			case 'text/html':
-			default:
-				if(($template = Template::attachDefault($this))
-						=== FALSE)
-					return FALSE;
-				if(($page = $template->render($this, $page))
-						=== FALSE)
-					return FALSE;
-				require_once('./system/format.php');
-				$output = Format::attachDefault($this, $type);
-				$output->render($this, $page);
-				break;
+			switch($type)
+			{
+				case 'text/html':
+				default:
+					$template = Template::attachDefault(
+							$this);
+					if($template === FALSE)
+						return FALSE;
+					if(($page = $template->render($this,
+							$page)) === FALSE)
+						return FALSE;
+					require_once('./system/format.php');
+					$output = Format::attachDefault($this,
+							$type);
+					$output->render($this, $page);
+					break;
+			}
 		}
+		else
+			//FIXME find a better way for bigger files (callback?)
+			print($page);
 	}
 
 

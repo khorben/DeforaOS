@@ -38,15 +38,17 @@ abstract class Engine
 
 	//methods
 	//accessors
+	//Engine::getAuth
+	public function getAuth()
+	{
+		return ($this->_attachAuth() !== FALSE) ? $this->auth : FALSE;
+	}
+
+
 	//Engine::getCredentials
 	public function getCredentials()
 	{
-		if($this->auth === FALSE)
-		{
-			require_once('./system/auth.php');
-			$this->auth = Auth::attachDefault($this);
-		}
-		if($this->auth === FALSE)
+		if($this->_attachAuth() === FALSE)
 			return new AuthCredentials;
 		return $this->auth->getCredentials($this);
 	}
@@ -88,19 +90,14 @@ abstract class Engine
 	//Engine::isIdempotent
 	public function isIdempotent($request)
 	{
-		return TRUE;
+		return $request->isIdempotent($request);
 	}
 
 
 	//Engine::setCredentials
 	public function setCredentials($cred)
 	{
-		if($this->auth === FALSE)
-		{
-			require_once('./system/auth.php');
-			$this->auth = Auth::attachDefault($this);
-		}
-		if($this->auth === FALSE)
+		if($this->_attachAuth() === FALSE)
 			return FALSE;
 		return $this->auth->setCredentials($this, $cred);
 	}
@@ -232,6 +229,17 @@ abstract class Engine
 	private $type = FALSE;
 	private $auth = FALSE;
 	private $database = FALSE;
+
+
+	//methods
+	private function _attachAuth()
+	{
+		if($this->auth !== FALSE)
+			return TRUE;
+		require_once('./system/auth.php');
+		$this->auth = Auth::attachDefault($this);
+		return ($this->auth !== FALSE) ? TRUE : FALSE;
+	}
 }
 
 ?>

@@ -95,6 +95,20 @@ class Request
 	}
 
 
+	//Request::isIdempotent
+	public function isIdempotent()
+	{
+		return $this->idempotent;
+	}
+
+
+	//Request::setIdempotent
+	public function setIdempotent($idempotent)
+	{
+		$this->idempotent = $idempotent ? TRUE : FALSE;
+	}
+
+
 	//Request::setParameter
 	//XXX should be private but needed for isIdempotent()
 	public function setParameter($name, $value)
@@ -203,6 +217,7 @@ class Request
 
 	//private
 	//properties
+	private $idempotent = TRUE;
 	private $module = FALSE;
 	private $action = FALSE;
 	private $id = FALSE;

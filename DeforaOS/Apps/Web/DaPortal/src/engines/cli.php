@@ -56,14 +56,8 @@ class CliEngine extends Engine
 			}
 		//FIXME also allow parameters to be set
 		$ret = new Request($this, $module, $action, $id, $title);
+		$ret->setIdempotent($request, FALSE);
 		return $ret;
-	}
-
-
-	//Engine::isIdempotent
-	public function isIdempotent($request)
-	{
-		return FALSE;
 	}
 
 
