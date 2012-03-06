@@ -48,6 +48,7 @@ class User
 		$res = $res[0];
 		$this->user_id = $res['id'];
 		$this->username = $res['username'];
+		$this->enabled = $res['enabled'] ? TRUE : FALSE;
 		$this->admin = $res['admin'] ? TRUE : FALSE;
 		$this->email = $res['email'];
 		$this->fullname = $res['fullname'];
@@ -383,7 +384,6 @@ class User
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id
 		WHERE daportal_group.enabled='1'
-		AND daportal_user.enabled='1'
 		AND user_id=:user_id";
 	private $query_get_by_id_username = "SELECT user_id AS id, username,
 		daportal_user.enabled AS enabled,
@@ -393,7 +393,6 @@ class User
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id
 		WHERE daportal_group.enabled='1'
-		AND daportal_user.enabled='1'
 		AND user_id=:user_id
 		AND username=:username";
 	private $query_set_password = 'UPDATE daportal_user
