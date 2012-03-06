@@ -42,7 +42,7 @@ class DaPortalEngine extends HttpEngine
 	{
 		parent::attach();
 		//force SessionAuth
-		require_once('./src/auth/session.php');
+		require_once('./auth/session.php');
 		$this->auth = new SessionAuth();
 		$this->auth->attach($this);
 	}
