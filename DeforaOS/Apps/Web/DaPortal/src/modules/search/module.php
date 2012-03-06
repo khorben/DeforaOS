@@ -108,7 +108,7 @@ class SearchModule extends Module
 	//SearchModule::widget
 	protected function widget(&$engine, $request)
 	{
-		$form = new PageElement('form');
+		$form = new PageElement('form', array('idempotent' => TRUE));
 		$r = new Request($engine, 'search');
 		$form->setProperty('request', $r);
 		$hbox = $form->append('hbox');
