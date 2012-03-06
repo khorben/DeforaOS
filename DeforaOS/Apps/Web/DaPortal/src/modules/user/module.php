@@ -97,6 +97,24 @@ class UserModule extends Module
 	}
 
 
+	//UserModule::form_reset
+	protected function form_reset($engine, $username, $email)
+	{
+		$r = new Request($engine, $this->name, 'reset');
+		$form = new PageElement('form', array('request' => $r));
+		$form->append('entry', array('text' => _('Username: '),
+			'name' => 'username', 'value' => $username));
+		$form->append('entry', array('text' => _('e-mail address: '),
+			'name' => 'email', 'value' => $email));
+		$form->append('button', array('stock' => 'cancel',
+			'text' => _('Cancel'),
+			'request' => new Request($engine, $this->name)));
+		$form->append('button', array('stock' => 'reset',
+			'type' => 'submit', 'text' => _('Reset')));
+		return $form;
+	}
+
+
 	//useful
 	//UserModule::actions
 	protected function actions($engine, $request)
@@ -520,19 +538,10 @@ Thank you for registering!")));
 		if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 				'text' => $error));
-		$r = new Request($engine, $this->name, 'reset');
-		$form = $page->append('form', array('request' => $r));
 		$username = $request->getParameter('username');
 		$email = $request->getParameter('email');
-		$form->append('entry', array('text' => _('Username: '),
-			'name' => 'username', 'value' => $username));
-		$form->append('entry', array('text' => _('e-mail address: '),
-			'name' => 'email', 'value' => $email));
-		$form->append('button', array('stock' => 'cancel',
-			'text' => _('Cancel'),
-			'request' => new Request($engine, $this->name)));
-		$form->append('button', array('stock' => 'reset',
-			'type' => 'submit', 'text' => _('Reset')));
+		$form = $this->form_reset($engine, $username, $email);
+		$page->appendElement($form);
 		return $page;
 	}
 
