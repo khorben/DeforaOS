@@ -201,6 +201,7 @@ class UserModule extends Module
 	//UserModule::admin
 	protected function admin($engine, $request)
 	{
+		$db = $engine->getDatabase();
 		$cred = $engine->getCredentials();
 
 		if(!$cred->isAdmin())
@@ -210,8 +211,32 @@ class UserModule extends Module
 		$title = _('User administration');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
-				'text' => $title));
-		//FIXME really implement
+			'text' => $title));
+		if(($res = $db->query($engine, $this->query_admin)) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('Could not list users')));
+		$columns = array('username' => _('Username'),
+			'group' => _('Group'),
+			'enabled' => _('Enabled'),
+			'email' => _('e-mail'));
+		$view = $page->append('treeview', array('view' => 'details',
+			'columns' => $columns));
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$row = $view->append('row');
+			$row->setProperty('username', $res[$i]['username']);
+			$r = new Request($engine, $this->name, 'update',
+				$res[$i]['user_id'], $res[$i]['username']);
+			$link = new PageElement('link', array('request' => $r,
+				'text' => $res[$i]['username']));
+			if($res[$i]['user_id'] != 0)
+				$row->setProperty('username', $link);
+			$row->setProperty('group', $res[$i]['groupname']);
+			$row->setProperty('enabled', $res[$i]['enabled']
+				? 1 : 0);
+			$row->setProperty('email', $res[$i]['email']);
+		}
 		return $page;
 	}
 
@@ -904,6 +929,12 @@ Thank you for registering!")));
 	//private
 	//properties
 	//queries
+	private $query_admin = 'SELECT user_id, username, admin,
+		daportal_user.enabled AS enabled, email,
+		daportal_group.group_id AS group_id, groupname
+		FROM daportal_user
+		LEFT JOIN daportal_group
+		ON daportal_user.group_id=daportal_group.group_id';
 	private $query_login = "SELECT user_id, group_id, username, admin
 		FROM daportal_user
 		WHERE username=:username AND password=:password
