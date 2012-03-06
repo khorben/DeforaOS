@@ -211,7 +211,7 @@ class User
 		}
 		$db->transactionCommit($engine);
 		$error = '';
-		return TRUE;
+		return $user;
 	}
 
 
