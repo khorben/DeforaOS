@@ -52,6 +52,7 @@ class ContentModule extends Module
 			case 'disable':
 			case 'display':
 			case 'enable':
+			case 'headline':
 			case 'submit':
 			case 'update':
 				return $this->$action($engine, $request);
@@ -69,7 +70,6 @@ class ContentModule extends Module
 
 	//protected
 	//properties
-	protected $module_id = FALSE;
 	protected $module_name = 'Content';
 	protected $module_content = 'Content';
 	protected $module_content_submit = 'Submit content';
@@ -105,6 +105,7 @@ class ContentModule extends Module
 		daportal_content.content_id AS id, title, content, timestamp
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
@@ -116,6 +117,7 @@ class ContentModule extends Module
 		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
@@ -126,12 +128,14 @@ class ContentModule extends Module
 		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	protected $query_list_count = "SELECT COUNT(*)
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
@@ -142,6 +146,7 @@ class ContentModule extends Module
 		title, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
@@ -174,7 +179,7 @@ class ContentModule extends Module
 
 		if($id === FALSE)
 			return FALSE;
-		$args = array('content_id' => $id);
+		$args = array('module_id' => $this->id, 'content_id' => $id);
 		if($title !== FALSE)
 		{
 			$query .= ' AND title LIKE :title';
@@ -228,10 +233,8 @@ class ContentModule extends Module
 				'text' => $title));
 		$db = $engine->getDatabase();
 		$query = $this->query_list_admin;
-		if($this->module_id !== FALSE)
-			$query .= " AND daportal_module.module_id='"
-				.$this->module_id."'";
-		if(($res = $db->query($engine, $query)) === FALSE)
+		if(($res = $db->query($engine, $query, array(
+					'module_id' => $this->id))) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error',
 				'text' => _('Unable to list contents')));
@@ -257,7 +260,11 @@ class ContentModule extends Module
 		{
 			$row = $treeview->append('row');
 			$row->setProperty('id', 'content_id:'.$res[$i]['id']);
-			$row->setProperty('title', $res[$i]['title']);
+			$r = new Request($engine, $this->name, 'update',
+					$res[$i]['id'], $res[$i]['title']);
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $res[$i]['title']));
+			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
 			$date = $this->_timestampToDate(_('d/m/Y H:i'),
@@ -327,12 +334,10 @@ class ContentModule extends Module
 		$page = new Page;
 		$page->append('title', array('stock' => $this->name,
 				'text' => $this->module_name));
-		if($this->module_id !== FALSE)
-			$query .= " AND daportal_module.module_id='"
-				.$this->module_id."'";
 		//obtain the total number of records available
-		if(($res = $db->query($engine, $this->query_list_count.$query))
-				!== FALSE && count($res) == 1)
+		if(($res = $db->query($engine, $this->query_list_count.$query,
+				array('module_id' => $this->id))) !== FALSE
+				&& count($res) == 1)
 			$pcnt = $res[0][0];
 		if(is_string(($order = $this->content_list_order)))
 			$query .= ' ORDER BY '.$order;
@@ -340,8 +345,8 @@ class ContentModule extends Module
 			$query .= ' LIMIT '.$limit;
 		if(is_numeric($p) && $p > 1)
 			$query .= ' OFFSET '.($limit * ($p - 1));
-		if(($res = $db->query($engine, $this->query_list.$query))
-				=== FALSE)
+		if(($res = $db->query($engine, $this->query_list.$query,
+				array('module_id' => $this->id))) === FALSE)
 		{
 			$error = _('Unable to list contents');
 			$page->append('dialog', array('type' => 'error',
@@ -438,6 +443,34 @@ class ContentModule extends Module
 	}
 
 
+	//ContentModule::headline
+	protected function headline($engine, $request = FALSE)
+	{
+		$db = $engine->getDatabase();
+
+		$columns = array('title' => _('Title'));
+		$view = new PageElement('treeview', array('view' => 'details',
+				'columns' => $columns));
+		$query = $this->query_list;
+		$query .= ' ORDER BY timestamp DESC LIMIT 6'; //XXX define limit
+		if(($res = $db->query($engine, $query, array(
+					'module_id' => $this->id))) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('Unable to list contents')));
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$row = $view->append('row');
+			$r = new Request($engine, $this->name, FALSE,
+					$res[$i]['id'], $res[$i]['title']);
+			$link = new PageElement('link', array('request' => $r,
+				'text' => $res[$i]['title']));
+			$row->setProperty('title', $link);
+		}
+		return $view;
+	}
+
+
 	//ContentModule::list
 	protected function _list($engine, $request = FALSE)
 	{
@@ -453,12 +486,9 @@ class ContentModule extends Module
 		$element = $page->append('title');
 		$query = ($uid !== FALSE) ? $this->query_list_user
 			: $this->query_list;
-		if($this->module_id !== FALSE)
-			$query .= " AND daportal_module.module_id='"
-				.$this->module_id."'";
 		$query .= ' ORDER BY title ASC';
 		if(($res = $db->query($engine, $query, array(
-							'user_id' => $uid)))
+				'module_id' => $this->id, 'user_id' => $uid)))
 				=== FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error',
