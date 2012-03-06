@@ -85,21 +85,28 @@ class ContentModule extends Module
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
-		WHERE content_id=:content_id';
+		WHERE module_id=:module_id
+		AND content_id=:content_id';
 	protected $query_admin_disable = "UPDATE daportal_content
 		SET enabled='0'
-		WHERE content_id=:content_id";
+		WHERE module_id=:module_id
+		AND content_id=:content_id";
 	protected $query_admin_enable = "UPDATE daportal_content
 		SET enabled='1'
-		WHERE content_id=:content_id";
+		WHERE module_id=:module_id
+		AND content_id=:content_id";
 	protected $query_delete = 'DELETE FROM daportal_content
-		WHERE content_id=:content_id AND user_id=:user_id';
+		WHERE module_id=:module_id
+		AND content_id=:content_id
+		AND user_id=:user_id';
 	protected $query_disable = "UPDATE daportal_content
 		SET enabled='0'
-		WHERE content_id=:content_id AND user_id=:user_id";
+		WHERE module_id=:module_id
+		AND content_id=:content_id AND user_id=:user_id";
 	protected $query_enable = "UPDATE daportal_content
 		SET enabled='1'
-		WHERE content_id=:content_id AND user_id=:user_id";
+		WHERE module_id=:module_id
+		AND content_id=:content_id AND user_id=:user_id";
 	protected $query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp
@@ -307,6 +314,7 @@ class ContentModule extends Module
 					|| !is_numeric($x[1]))
 				continue;
 			$res = $db->query($engine, $query, array(
+						'module_id' => $this->id,
 						'content_id' => $x[1],
 						'user_id' => $uid));
 			if($res !== FALSE)
