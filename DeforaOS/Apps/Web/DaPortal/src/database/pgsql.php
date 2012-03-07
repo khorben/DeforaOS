@@ -52,8 +52,17 @@ class PgsqlDatabase extends Database
 	//PgsqlDatabase::enum
 	public function enum(&$engine, $table, $field)
 	{
-		//FIXME implement
-		return FALSE;
+		$query = $this->query_enum;
+		if(($res = $this->query($engine, $query, array(
+					'table' => $table,
+					'field' => $table.'_'.$field)))
+				=== FALSE)
+			return array();
+		$res = explode("'", $res[0]['constraint']);
+		$str = array();
+		for($i = 1, $cnt = count($res); $i < $cnt; $i+=2)
+			$str[] = $res[$i];
+		return $str;
 	}
 
 
@@ -82,14 +91,17 @@ class PgsqlDatabase extends Database
 			return FALSE;
 		$engine->log('LOG_DEBUG', $query);
 		$error = FALSE;
-		if(($ret = pg_query($this->handle, $query, SQLITE_BOTH,
-						$error)) === FALSE)
+		if(($res = pg_query($this->handle, $query)) === FALSE)
 		{
+			$error = pg_last_error($this->handle);
 			if($error !== FALSE)
 				$engine->log('LOG_DEBUG', $error);
 			return FALSE;
 		}
-		return pg_fetch_all($ret);
+		//FIXME use pg_fetchall() instead (breaks _sql_single() for now)
+		for($array = array(); ($a = pg_fetch_array($res)) != FALSE;
+				$array[] = $a);
+		return $array;
 	}
 
 
@@ -144,6 +156,13 @@ class PgsqlDatabase extends Database
 	//private
 	//properties
 	private $handle = FALSE;
+
+	//queries
+	private $query_enum = 'SELECT
+		pg_catalog.pg_get_constraintdef(r.oid) AS constraint
+		FROM pg_catalog.pg_class c, pg_catalog.pg_constraint r
+		WHERE c.oid=r.conrelid AND c.relname=:table
+		AND conname=:field';
 }
 
 ?>
