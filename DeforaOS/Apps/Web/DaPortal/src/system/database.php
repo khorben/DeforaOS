@@ -20,12 +20,22 @@
 abstract class Database
 {
 	//public
-	//properties
-	static public $true = '1';
-	static public $false = '0';
-
-
 	//methods
+	//accessors
+	//Database::isFalse
+	public function isFalse($value)
+	{
+		return $value == 0;
+	}
+
+
+	//Database::isTrue
+	public function isTrue($value)
+	{
+		return $value == 1;
+	}
+
+
 	//useful
 	//Database::prepare
 	public function prepare($query, $parameters = FALSE)
