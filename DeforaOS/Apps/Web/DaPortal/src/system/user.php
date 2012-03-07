@@ -48,8 +48,8 @@ class User
 		$res = $res[0];
 		$this->user_id = $res['id'];
 		$this->username = $res['username'];
-		$this->enabled = $res['enabled'] ? TRUE : FALSE;
-		$this->admin = $res['admin'] ? TRUE : FALSE;
+		$this->enabled = $db->isTrue($res['enabled']);
+		$this->admin = $db->isTrue($res['admin']);
 		$this->email = $res['email'];
 		$this->fullname = $res['fullname'];
 	}
