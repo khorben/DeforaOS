@@ -44,7 +44,21 @@ class PgsqlDatabase extends Database
 		if(($res = $this->query($engine, $query)) === FALSE
 				|| count($res) != 1)
 			return FALSE;
-		return $res[0];
+		return $res[0][0];
+	}
+
+
+	//PgsqlDatabase::isFalse
+	public function isFalse($value)
+	{
+		return $value == 'f';
+	}
+
+
+	//PgsqlDatabase::isTrue
+	public function isTrue($value)
+	{
+		return $value == 't';
 	}
 
 
