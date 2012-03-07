@@ -120,9 +120,6 @@ class Sqlite3Database extends Database
 		if(($this->handle = new SQLite3($filename)) == NULL)
 			return $engine->log('LOG_ERR',
 					'Could not open database');
-		//XXX for the DaPortal engine
-		define('SQL_TRUE', 1);
-		define('SQL_FALSE', 0);
 		return TRUE;
 	}
 

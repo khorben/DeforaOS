@@ -137,9 +137,6 @@ class PdoDatabase extends Database
 					'Could not open database: '
 					.$e->getMessage());
 		}
-		//XXX for the DaPortal engine
-		define('SQL_TRUE', 1);
-		define('SQL_FALSE', 0);
 		return TRUE;
 	}
 

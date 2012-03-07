@@ -139,9 +139,6 @@ class PgsqlDatabase extends Database
 		if(($this->handle = pg_connect($str)) === FALSE)
 			return $engine->log('LOG_ERR',
 					'Could not open database');
-		//XXX for the DaPortal engine
-		define('SQL_TRUE', 1);
-		define('SQL_FALSE', 0);
 		return TRUE;
 	}
 

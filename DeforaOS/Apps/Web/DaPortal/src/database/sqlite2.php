@@ -118,9 +118,6 @@ class Sqlite2Database extends Database
 				=== FALSE)
 			return $engine->log('LOG_ERR',
 					'Could not open database: '.$error);
-		//XXX for the DaPortal engine
-		define('SQL_TRUE', 1);
-		define('SQL_FALSE', 0);
 		return TRUE;
 	}
 
