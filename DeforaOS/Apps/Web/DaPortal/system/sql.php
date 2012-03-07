@@ -21,6 +21,9 @@
 if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
+define('SQL_TRUE', 1);
+define('SQL_FALSE', 0);
+
 
 function _sql_array($query)
 {
