@@ -87,6 +87,7 @@ struct _Mixer
 {
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * notebook;
 	GtkWidget * properties;
 	GtkWidget * about;
 
@@ -202,16 +203,16 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s);
 #endif
 static GtkWidget * _new_value(Mixer * mixer, int index);
 
-Mixer * mixer_new(char const * device, MixerOrientation orientation)
+Mixer * mixer_new(char const * device, MixerLayout layout)
 {
 	Mixer * mixer;
 	GtkAccelGroup * accel;
 	GtkSizeGroup * group;
-	GtkWidget * scrolled;
+	GtkWidget * scrolled = NULL;
 	GtkWidget * vbox;
 	GtkWidget * label;
 	GtkWidget * widget;
-	GtkWidget * hvbox;
+	GtkWidget * hvbox = NULL;
 	GtkWidget * hbox;
 	GtkWidget * control;
 	int i;
@@ -258,12 +259,6 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
 	g_signal_connect_swapped(G_OBJECT(mixer->window), "delete-event",
 			G_CALLBACK(on_closex), mixer);
-	scrolled = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
-			GTK_POLICY_AUTOMATIC, orientation == MO_VERTICAL
-			? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled),
-			GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
 	/* menubar */
@@ -273,11 +268,25 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	desktop_accel_create(_mixer_accel, mixer, accel);
 #endif
 	/* classes */
-	if(orientation == MO_VERTICAL)
-		hvbox = gtk_vbox_new(TRUE, 4);
+	mixer->notebook = NULL;
+	if(layout == ML_TABBED)
+		mixer->notebook = gtk_notebook_new();
 	else
-		hvbox = gtk_hbox_new(FALSE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(hvbox), 4);
+	{
+		scrolled = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+				GTK_POLICY_AUTOMATIC, (layout == ML_VERTICAL)
+				? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
+					scrolled), GTK_SHADOW_NONE);
+		if(layout == ML_VERTICAL)
+			hvbox = gtk_vbox_new(TRUE, 4);
+		else
+			hvbox = gtk_hbox_new(FALSE, 4);
+		gtk_container_set_border_width(GTK_CONTAINER(hvbox), 4);
+		gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
+					scrolled), hvbox);
+	}
 	for(i = 0;; i++)
 	{
 #ifdef AUDIO_MIXER_DEVINFO
@@ -304,8 +313,6 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		break;
 #endif
 	}
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled),
-			hvbox);
 	/* controls */
 	for(i = 0;; i++)
 	{
@@ -347,8 +354,16 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		{
 			mixer->mc[u].hbox = gtk_hbox_new(FALSE, 4);
 			hbox = mixer->mc[u].hbox;
-			gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE, TRUE,
-					0);
+			if(mixer->notebook != NULL)
+			{
+				/* FIXME nicer tab labels */
+				gtk_notebook_append_page(GTK_NOTEBOOK(
+							mixer->notebook), hbox,
+						NULL);
+			}
+			else if(hvbox != NULL)
+				gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE,
+						TRUE, 0);
 		}
 		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -387,7 +402,11 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
 	}
-	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
+	if(mixer->notebook != NULL)
+		gtk_box_pack_start(GTK_BOX(vbox), mixer->notebook, TRUE, TRUE,
+				0);
+	else
+		gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(mixer->window), vbox);
 	gtk_widget_show_all(vbox);
 #ifdef AUDIO_MIXER_DEVINFO
@@ -874,6 +893,9 @@ void mixer_show_class(Mixer * mixer, char const * name)
 #ifdef AUDIO_MIXER_DEVINFO
 	size_t u;
 
+	if(mixer->notebook != NULL)
+		/* FIXME really implement */
+		name = NULL;
 	for(u = 0; u < mixer->mc_cnt; u++)
 		if(mixer->mc[u].hbox == NULL)
 			continue;

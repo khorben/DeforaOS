@@ -23,13 +23,18 @@
 
 /* Mixer */
 /* types */
-typedef enum _MixerOrientation { MO_HORIZONTAL, MO_VERTICAL } MixerOrientation;
+typedef enum _MixerLayout
+{
+	ML_HORIZONTAL,
+	ML_TABBED,
+	ML_VERTICAL
+} MixerLayout;
 
 typedef struct _Mixer Mixer;
 
 
 /* functions */
-Mixer * mixer_new(char const * device, MixerOrientation orientation);
+Mixer * mixer_new(char const * device, MixerLayout layout);
 void mixer_delete(Mixer * mixer);
 
 /* accessors */
