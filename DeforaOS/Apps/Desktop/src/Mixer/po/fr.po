@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mixer 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-11 19:27+0100\n"
+"POT-Creation-Date: 2012-03-08 02:27-0600\n"
 "PO-Revision-Date: 2010-04-23 04:08+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -18,100 +18,102 @@ msgstr ""
 
 #: ../src/main.c:44
 msgid ""
-"Usage: mixer [-H|-V][-d device]\n"
+"Usage: mixer [-H|-T|-V][-d device]\n"
 "  -H\tShow the classes next to each other\n"
+"  -V\tShow the classes in separate tabs\n"
 "  -V\tShow the classes on top of each other\n"
 "  -d\tThe mixer device to use\n"
 msgstr ""
-"Usage: mixer [-H|-V][-d périphérique]\n"
+"Usage: mixer [-H|-T|-V][-d périphérique]\n"
 "  -H\tAffichage horizontal des catégories\n"
+"  -T\tAffichage en tabs des catégories\n"
 "  -V\tAffichage vertical des catégories\n"
 "  -d\tChoix du périphérique sonore\n"
 
-#: ../src/mixer.c:139
+#: ../src/mixer.c:140
 msgid "_Properties"
 msgstr "_Propriétés"
 
-#: ../src/mixer.c:141
+#: ../src/mixer.c:142
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/mixer.c:148
+#: ../src/mixer.c:149
 msgid "_All"
 msgstr "_Tous"
 
-#: ../src/mixer.c:151
+#: ../src/mixer.c:152
 msgid "_Outputs"
 msgstr "_Sorties"
 
-#: ../src/mixer.c:153
+#: ../src/mixer.c:154
 msgid "_Inputs"
 msgstr "_Entrées"
 
-#: ../src/mixer.c:155
+#: ../src/mixer.c:156
 msgid "_Record"
 msgstr "En_registrement"
 
-#: ../src/mixer.c:157
+#: ../src/mixer.c:158
 msgid "Mo_nitor"
 msgstr "Sui_vi"
 
-#: ../src/mixer.c:159
+#: ../src/mixer.c:160
 msgid "_Equalization"
 msgstr "É_galisation"
 
-#: ../src/mixer.c:161
+#: ../src/mixer.c:162
 msgid "Mi_x"
 msgstr "Mi_x"
 
-#: ../src/mixer.c:163
+#: ../src/mixer.c:164
 msgid "_Modem"
 msgstr "_Modem"
 
-#: ../src/mixer.c:171
+#: ../src/mixer.c:172
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/mixer.c:177
+#: ../src/mixer.c:178
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/mixer.c:178
+#: ../src/mixer.c:179
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/mixer.c:179
+#: ../src/mixer.c:180
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/mixer.c:516
+#: ../src/mixer.c:537
 msgid "Mute"
 msgstr "Muet"
 
-#: ../src/mixer.c:587
+#: ../src/mixer.c:608
 msgid "Bind"
 msgstr "Lier"
 
-#: ../src/mixer.c:748
+#: ../src/mixer.c:769
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/mixer.c:781
+#: ../src/mixer.c:802
 msgid "Mixer properties"
 msgstr "Propriétés du mixer"
 
-#: ../src/mixer.c:797
+#: ../src/mixer.c:818
 msgid "Name: "
 msgstr "Nom : "
 
-#: ../src/mixer.c:807
+#: ../src/mixer.c:828
 msgid "Version: "
 msgstr "Version : "
 
-#: ../src/mixer.c:817
+#: ../src/mixer.c:838
 msgid "Device: "
 msgstr "Carte : "
 
-#: ../src/mixer.c:906 ../src/mixer.c:911
+#: ../src/mixer.c:930 ../src/mixer.c:935
 msgid "Error"
 msgstr "Erreur"
