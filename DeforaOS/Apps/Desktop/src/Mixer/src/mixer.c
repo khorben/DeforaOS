@@ -356,10 +356,12 @@ Mixer * mixer_new(char const * device, MixerLayout layout)
 			hbox = mixer->mc[u].hbox;
 			if(mixer->notebook != NULL)
 			{
-				/* FIXME nicer tab labels */
+				label = _new_frame_label(NULL,
+						mixer->mc[u].label.name, NULL);
+				gtk_widget_show_all(label);
 				gtk_notebook_append_page(GTK_NOTEBOOK(
 							mixer->notebook), hbox,
-						NULL);
+						label);
 			}
 			else if(hvbox != NULL)
 				gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE,
