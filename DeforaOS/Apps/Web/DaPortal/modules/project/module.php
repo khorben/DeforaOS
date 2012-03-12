@@ -71,8 +71,14 @@ class ProjectModule extends Module
 				return $this->bugDisplay($args);
 			case 'bug_enable':
 				return $this->bugEnable($args);
+			case 'bug_insert':
+				return $this->bugInsert($args);
 			case 'bug_list':
 				return $this->bugList($args);
+			case 'bug_new':
+				return $this->bugNew($args);
+			case 'bug_reply':
+				return $this->bugReply($args);
 			case 'delete':
 				return $this->_delete($args);
 			case 'download_insert':
@@ -586,9 +592,9 @@ protected function bugInsert($args)
 	if(!isset($args['project_id']) || !is_numeric($args['project_id'])
 			|| !isset($args['type']) || !isset($args['priority']))
 		return _error(INVALID_ARGUMENT); //FIXME return to form
-	$this->_toolbar($args['project_id']);
 	if(isset($args['preview']))
 	{
+		$this->_toolbar($args['project_id']);
 		$bug = array();
 		if(($bug['project'] = $this->_getName($args['project_id']))
 				== FALSE)
@@ -666,7 +672,7 @@ protected function bugInsert($args)
 		_mail('Administration Team', $to, $title, $content);
 	}
 	if($enable)
-		return project_bug_display(array('id' => $id,
+		return $this->bugDisplay(array('id' => $id,
 					'bug_id' => $bugid));
 	include('./modules/project/bug_posted.tpl');
 }
@@ -923,7 +929,7 @@ protected function bugReply($args)
 		$reply = array('title' => 'Re: '.$bug['title']);
 		return include('./modules/project/bug_reply_update.tpl');
 	}
-	project_bug_reply_insert($args);
+	$this->bugReplyInsert($args);
 }
 
 
@@ -1006,7 +1012,7 @@ protected function bugReplyInsert($args)
 		_sql_query('UPDATE daportal_bug SET'
 				." bug_id='".$args['bug_id']."'".$update
 				." WHERE bug_id='".$args['bug_id']."'");
-	project_bug_display(array('id' => $args['id'],
+	$this->bugDisplay(array('id' => $args['id'],
 				'bug_id' => $args['bug_id']));
 	//send mail
 	$ba = _sql_array('SELECT username, email' //bug author
@@ -1139,7 +1145,7 @@ protected function bugReplyUpdate($args)
 			."'" : 'NULL');
 	_sql_query('UPDATE daportal_bug_reply SET'.$sql
 			." WHERE bug_reply_id='".$args['id']."'");
-	project_bug_display(array('id' => $content_id, 'bug_id' => $bug_id));
+	$this->bugDisplay(array('id' => $content_id, 'bug_id' => $bug_id));
 }
 
 
@@ -1171,7 +1177,7 @@ protected function bugUpdate($args)
 			.", type='".$args['type']."'"
 			.", priority='".$args['priority']."'".$assigned
 			." WHERE content_id='$id' AND  bug_id='$bug_id'");
-	project_bug_display(array('id' => $id, 'bug_id' => $bug_id));
+	$this->bugDisplay(array('id' => $id, 'bug_id' => $bug_id));
 }
 
 
@@ -1194,7 +1200,7 @@ protected function _default($args)
 		$id = $args['id'];
 		if(_sql_single('SELECT content_id FROM daportal_bug WHERE'
 					." content_id='$id'") == $id)
-			return project_bug_display($args);
+			return $this->bugDisplay($args);
 		return $this->display($args);
 	}
 	if(isset($args['user_id']))
