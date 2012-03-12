@@ -59,6 +59,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-cancel.png');
 }
 
+.stock16.download {
+	background-image:	url('gnome-icon-theme/16x16/apps/web-browser.png');
+}
+
 .stock16.enable {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-execute.png');
 }

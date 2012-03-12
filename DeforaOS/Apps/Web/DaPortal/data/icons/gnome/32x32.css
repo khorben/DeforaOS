@@ -59,6 +59,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-cancel.png');
 }
 
+.stock32.download {
+	background-image:	url('gnome-icon-theme/32x32/apps/web-browser.png');
+}
+
 .stock32.enable {
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-execute.png');
 }
