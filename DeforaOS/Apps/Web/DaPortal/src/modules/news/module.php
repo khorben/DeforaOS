@@ -33,6 +33,7 @@ class NewsModule extends ContentModule
 		$this->module_name = _('News');
 		$this->module_content = _('News item');
 		$this->module_contents = _('News items');
+		$this->content_more_content = _('More news...');
 	}
 }
 
