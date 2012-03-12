@@ -182,6 +182,8 @@ class HttpEngine extends Engine
 
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
+		if($page === FALSE)
+			$page = new Page;
 		if($page instanceof PageElement)
 		{
 			if(($charset = $config->getVariable('defaults',
