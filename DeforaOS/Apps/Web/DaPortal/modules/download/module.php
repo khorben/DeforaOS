@@ -75,6 +75,7 @@ class DownloadModule extends Module
 		{
 			case 'admin':
 			case 'download':
+			case 'file_insert':
 			case 'system':
 				return $this->$action($args);
 			default:
@@ -513,7 +514,8 @@ class DownloadModule extends Module
 	}
 
 
-	function download_file_insert($args)
+	//DownloadModule::file_insert
+	function file_insert($args)
 	{
 		global $user_id;
 
