@@ -309,7 +309,15 @@ Mixer * mixer_new(char const * device, MixerLayout layout)
 		p->hbox = NULL;
 #else
 		hbox = gtk_hbox_new(FALSE, 4);
-		gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE, TRUE, 0);
+		if(mixer->notebook != NULL)
+		{
+			label = _new_frame_label(NULL, _("All"), NULL);
+			gtk_widget_show_all(label);
+			gtk_notebook_append_page(GTK_NOTEBOOK(mixer->notebook),
+					hbox, label);
+		}
+		else
+			gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE, TRUE, 0);
 		break;
 #endif
 	}
