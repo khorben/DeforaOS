@@ -87,11 +87,10 @@ class SessionAuth extends Auth
 	//SessionAuth::isIdempotent
 	public function isIdempotent(&$engine, $request)
 	{
-		if($request->isIdempotent() == TRUE)
+		if($request->isIdempotent() === TRUE)
 			return TRUE;
 		//prevent CSRF attacks
-		$token = $request->getParameter('_token');
-		if($token === FALSE
+		if(($token = $request->getParameter('_token')) === FALSE
 				|| !isset($_SESSION['tokens'])
 				|| !is_array($_SESSION['tokens']))
 			return TRUE;
@@ -101,8 +100,10 @@ class SessionAuth extends Auth
 				unset($_SESSION['tokens'][$k]);
 		if(isset($_SESSION['tokens'][$token]))
 		{
+			//the request is not idempotent
 			$request->setIdempotent(FALSE);
-			unset($_SESSION['tokens'][$token]);
+			//FIXME uncommenting this is better but breaks for now
+			//unset($_SESSION['tokens'][$token]);
 			return FALSE;
 		}
 		return TRUE;
