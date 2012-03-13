@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-13 02:21-0600\n"
+"POT-Creation-Date: 2012-03-13 02:29-0600\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -816,18 +816,22 @@ msgstr "Félicitations !"
 msgid "Your account is now enabled."
 msgstr "Votre compte est maintenant activé."
 
-#: ../src/modules/wiki/module.php:33 ../src/modules/wiki/module.php:38
+#: ../src/modules/wiki/module.php:33 ../src/modules/wiki/module.php:39
 msgid "Wiki"
 msgstr "Wiki"
 
 #: ../src/modules/wiki/module.php:34
+msgid "Page by"
+msgstr "Page par"
+
+#: ../src/modules/wiki/module.php:35
 msgid "Wiki page"
 msgstr "Page wiki"
 
-#: ../src/modules/wiki/module.php:35 ../src/modules/wiki/module.php:36
+#: ../src/modules/wiki/module.php:36 ../src/modules/wiki/module.php:37
 msgid "Wiki pages"
 msgstr "Pages wiki"
 
-#: ../src/modules/wiki/module.php:37
+#: ../src/modules/wiki/module.php:38
 msgid "New wiki page"
 msgstr "Nouvelle page wiki"
