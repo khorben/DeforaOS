@@ -32,7 +32,7 @@ form div.checkbox input[type="checkbox"] {
 	vertical-align:			text-bottom;
 }
 
-form div.entry {
+form div.entry, form div.textview {
 	display:			table-row;
 }
 

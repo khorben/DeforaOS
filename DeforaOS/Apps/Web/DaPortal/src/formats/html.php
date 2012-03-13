@@ -524,6 +524,14 @@ class HtmlFormat extends FormatElements
 
 	protected function renderTextview($e)
 	{
+		$this->renderTabs();
+		$this->tagOpen('div', $e->getType());
+		if(($text = $e->getProperty('text')) !== FALSE)
+		{
+			$l = new PageElement('label');
+			$l->setProperty('text', $text);
+			$this->renderElement($l);
+		}
 		if(($value = $e->getProperty('value')) === FALSE)
 			$value = '';
 		$args = array();
@@ -531,6 +539,7 @@ class HtmlFormat extends FormatElements
 			$args['name'] = $name;
 		$this->tag('textarea', $e->getProperty('class'),
 				$e->getProperty('id'), $args, $value);
+		$this->tagClose('div');
 	}
 
 
