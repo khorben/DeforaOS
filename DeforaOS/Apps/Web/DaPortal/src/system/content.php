@@ -22,6 +22,13 @@ class Content
 	//public
 	//methods
 	//accessors
+	//Content::getContent
+	public function getContent()
+	{
+		return $this->content;
+	}
+
+
 	//Content::getId
 	public function getId()
 	{
@@ -38,6 +45,30 @@ class Content
 
 	//static
 	//useful
+	//Content::get
+	static public function get($engine, $module_id, $id, $title = FALSE)
+	{
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		$query = Content::$query_get;
+		$args = array('module_id' => $module_id, 'content_id' => $id,
+				'user_id' => $cred->getUserId());
+		if(is_string($title))
+		{
+			$query .= ' AND title LIKE :title';
+			$args['title'] = str_replace('-', '_', $title);
+		}
+		if(($res = $db->query($engine, $query, $args)) === FALSE
+				|| count($res) != 1)
+			return FALSE;
+		$res = $res[0];
+		return new Content($res['id'], $res['module_id'],
+			$res['title'], $res['content'], $res['enabled'],
+			$res['public']);
+	}
+
+
 	//Content::insert
 	static public function insert($engine, $module_id, $title = FALSE,
 			$content = FALSE, $public = FALSE, $enabled = TRUE)
@@ -77,6 +108,18 @@ class Content
 	private $public = FALSE;
 
 	//queries
+	static private $query_get = "SELECT daportal_module.name AS module,
+		daportal_user.username AS username,
+		daportal_content.content_id AS id, title, content, timestamp
+		FROM daportal_content, daportal_module, daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND (daportal_content.public='1' OR daportal_content.user_id=:user_id)
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND content_id=:content_id";
 	static private $query_insert = 'INSERT INTO daportal_content
 		(module_id, user_id, title, content, enabled, public)
 		VALUES (:module_id, :user_id, :title, :content, :enabled,
