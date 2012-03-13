@@ -138,11 +138,12 @@ class ProjectModule extends ContentModule
 		LEFT JOIN daportal_bug
 		ON daportal_content.content_id=daportal_bug.content_id
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
-		AND daportal_content.public='1'
+		AND (daportal_content.public='1' OR daportal_content.user_id=:user_id)
 		AND daportal_content.content_id=:content_id";
 
 
@@ -151,10 +152,13 @@ class ProjectModule extends ContentModule
 	//ProjectModule::_get
 	protected function _get($engine, $id, $title = FALSE)
 	{
+		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
 		$query = $this->project_query_get;
 
 		if(($res = $db->query($engine, $query, array(
+					'module_id' => $this->id,
+					'user_id' => $cred->getUserId(),
 					'content_id' => $id))) === FALSE
 				|| count($res) != 1)
 			return FALSE;
