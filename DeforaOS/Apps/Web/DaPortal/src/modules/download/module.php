@@ -39,7 +39,6 @@ class DownloadModule extends ContentModule
 			$r->setParameter('parent', $parent);
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('filechooser', array('name' => 'files[]'));
-		$form->append('filechooser', array('name' => 'files[]'));
 		$r = new Request($engine, $this->name, FALSE, $parent);
 		$form->append('button', array('text' => _('Cancel'),
 				'stock' => 'cancel', 'request' => $r));
@@ -62,6 +61,8 @@ class DownloadModule extends ContentModule
 		$this->content_open_text = _('Open');
 		//list only files by default
 		$this->query_list = $this->download_query_list_files;
+		$this->query_list_count
+			= $this->download_query_list_files_count;
 	}
 
 
@@ -89,6 +90,7 @@ class DownloadModule extends ContentModule
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_download
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.content_id=daportal_download.content_id
 		AND daportal_content.enabled='1'
@@ -96,6 +98,21 @@ class DownloadModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND mode & 512 = 0";
+	protected $download_query_list_files_count = "SELECT COUNT(*)
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_download
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=daportal_download.content_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND mode & 512 = 0";
+	protected $download_query_file_insert = 'INSERT INTO daportal_download
+		(content_id, parent, mode) VALUES (:content_id, :parent,
+			:mode)';
 
 
 	//methods
@@ -122,25 +139,12 @@ class DownloadModule extends ContentModule
 		$page->append('title', array('stock' => 'upload',
 			'text' => $title));
 		//process the upload
-		$error = $this->_fileInsert($engine, $request);
+		$parent = $request->getParameter('parent');
+		$error = $this->_fileInsert($engine, $request, $parent);
 		//upload successful
 		if($error === FALSE)
-		{
-			//FIXME really link to the parent directory
-			$r = new Request($engine, $this->name);
-			$page->setProperty('location', $engine->getUrl($r));
-			$page->setProperty('refresh', 30);
-			$box = $page->append('vbox');
-			$text = _('Upload in progress, please wait...');
-			$box->append('label', array('text' => $text));
-			$box = $box->append('hbox');
-			$text = _('If you are not redirected within 30 seconds, please ');
-			$box->append('label', array('text' => $text));
-			$box->append('link', array('text' => _('click here'),
-					'request' => $r));
-			$box->append('label', array('text' => '.'));
-			return $page;
-		}
+			return $this->_fileInsertSuccess($engine, $request,
+					$page, $parent);
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
@@ -149,31 +153,40 @@ class DownloadModule extends ContentModule
 		return $page;
 	}
 
-	private function _fileInsert($engine, $request)
+	private function _fileInsert($engine, $request, $parent)
 	{
+		global $config;
 		$db = $engine->getDatabase();
 
-		//FIXME really lookup
-		$root = '/tmp';
+		//verify the request
 		if(!isset($_FILES['files']))
 			return TRUE;
-		if($engine->isIdempotent($request) !== FALSE)
+		if($engine->isIdempotent($request))
+		{
+			var_dump($request);
 			return _('The request expired or is invalid');
-		$parent = $request->getParameter('parent');
-		if($parent !== FALSE && !is_numeric($parent))
+		}
+		if($parent === FALSE)
+			$parent = NULL;
+		else if(!is_numeric($parent))
 			return _('Invalid argument');
-		var_dump($_FILES);
+		//obtain the root repository
+		if(($root = $config->getVariable('module::'.$this->name,
+					'root')) === FALSE)
+			$root = '/tmp';
+		//check known errors
 		foreach($_FILES['files']['error'] as $k => $v)
 			if($v != UPLOAD_ERR_OK)
 				return _('An error occurred');
-		if($db->transactionBegin($engine) === FALSE)
-			return _('Internal server error');
+		//store each file uploaded
 		foreach($_FILES['files']['error'] as $k => $v)
 		{
+			if($db->transactionBegin($engine) === FALSE)
+				return _('Internal server error');
 			$name = $_FILES['files']['name'][$k];
 			//FIXME check for filename unicity
 			$content = Content::insert($engine, $this->id, $name,
-					FALSE, TRUE, FALSE);
+					FALSE, TRUE, TRUE);
 			if($content === FALSE)
 			{
 				$db->transactionRollback();
@@ -181,20 +194,49 @@ class DownloadModule extends ContentModule
 			}
 			$id = $content->getId();
 			$tmp = $_FILES['files']['tmp_name'][$k];
-			if(move_uploaded_file($tmp, $root.'/'.$id) !== TRUE)
+			$query = $this->download_query_file_insert;
+			if($db->query($engine, $query, array(
+						'content_id' => $id,
+						'parent' => $parent,
+						'mode' => 420)) === FALSE)
 			{
 				$db->transactionRollback();
 				return _('Internal server error');
 			}
+			//store the file
+			$id = $db->getLastId($engine, 'daportal_download',
+					'download_id');
+			$dst = $root.'/'.$id;
+			if(move_uploaded_file($tmp, $dst) !== TRUE)
+			{
+				$db->transactionRollback();
+				return _('Internal server error');
+			}
+			if($db->transactionCommit($engine) === FALSE)
+			{
+				if(file_exists($dst))
+					unlink($dst);
+				return _('Internal server error');
+			}
 		}
-		//FIXME really implement
-		{
-			$db->transactionRollback();
-			return _('Not fully implemented');
-		}
-		if($db->transactionCommit($engine) === FALSE)
-			return _('Internal server error');
 		return FALSE;
+	}
+
+	private function _fileInsertSuccess($engine, $request, $page, $parent)
+	{
+		$r = new Request($engine, $this->name, FALSE, $parent);
+		$page->setProperty('location', $engine->getUrl($r));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$text = _('Upload in progress, please wait...');
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+			'request' => $r));
+		$box->append('label', array('text' => '.'));
+		return $page;
 	}
 }
 
