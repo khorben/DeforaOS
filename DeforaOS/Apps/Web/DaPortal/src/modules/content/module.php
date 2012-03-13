@@ -32,12 +32,16 @@ class ContentModule extends Module
 	{
 		parent::__construct($id, $name);
 		$this->module_name = _('Content');
-		$this->module_content = _('Content');
-		$this->module_content_submit = _('Submit content');
-		$this->module_contents = _('Content');
+		//translations
+		$this->content_by = _('Content by');
+		$this->content_item = _('Content');
+		$this->content_items = _('Content');
 		$this->content_list_title = _('Content list');
+		$this->content_list_title_by = _('Content by');
 		$this->content_more_content = _('More content...');
 		$this->content_open_text = _('Read');
+		$this->content_submit = _('Submit content');
+		$this->content_title = _('Content');
 	}
 
 
@@ -71,17 +75,20 @@ class ContentModule extends Module
 	//protected
 	//properties
 	protected $module_name = 'Content';
-	protected $module_content = 'Content';
-	protected $module_content_submit = 'Submit content';
-	protected $module_contents = 'Content';
 
+	protected $content_by = 'Content by';
+	protected $content_item = 'Content';
+	protected $content_items = 'Content';
 	protected $content_list_count = 10;
 	protected $content_list_order = 'timestamp DESC';
 	protected $content_list_title = 'Content list';
+	protected $content_list_title_by = 'Content by';
 	protected $content_more_content = 'More content...';
 	protected $content_open_stock = 'read';
 	protected $content_open_text = 'Read';
 	protected $content_preview_length = 150;
+	protected $content_submit = 'Submit content';
+	protected $content_title = 'Content';
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
@@ -323,6 +330,7 @@ class ContentModule extends Module
 			$message = $failure;
 		}
 		$page = $this->$fallback($engine);
+		//FIXME place this under the title
 		$page->prepend('dialog', array('type' => $type,
 					'text' => $message));
 		return $page;
@@ -341,7 +349,7 @@ class ContentModule extends Module
 			return $this->display($engine, $request);
 		$page = new Page;
 		$page->append('title', array('stock' => $this->name,
-				'text' => $this->module_name));
+				'text' => $this->content_title));
 		//obtain the total number of records available
 		if(($res = $db->query($engine, $this->query_list_count.$query,
 				array('module_id' => $this->id))) !== FALSE
@@ -489,7 +497,7 @@ class ContentModule extends Module
 		$page = new Page;
 		$title = $this->content_list_title;
 		if($uid !== FALSE)
-			$title .= _(' by ').$uid; //XXX
+			$title = $this->content_list_title_by.' '.$uid; //XXX
 		$page->setProperty('title', $title);
 		$element = $page->append('title');
 		$query = ($uid !== FALSE) ? $this->query_list_user
@@ -575,8 +583,8 @@ class ContentModule extends Module
 		else
 			$title->append('link', array('request' => $r,
 					'text' => $content['title']));
-		$page->append('label', array('text' => $this->module_content
-					._(' by ').$content['username']
+		$page->append('label', array('text' => $this->content_by.' '
+					.$content['username']
 					._(' on ').$content['date']));
 		$hbox = $page->append('hbox');
 		$hbox->append('image', array('stock' => 'module '
@@ -599,7 +607,7 @@ class ContentModule extends Module
 	//ContentModule::submit
 	protected function submit($engine, $request = FALSE)
 	{
-		$title = $this->module_content_submit;
+		$title = $this->content_submit;
 		$error = _('Permission denied');
 
 		if(!$this->canSubmit($engine, $request, $error))
