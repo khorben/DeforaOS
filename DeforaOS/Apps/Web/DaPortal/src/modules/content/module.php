@@ -42,6 +42,8 @@ class ContentModule extends Module
 		$this->content_more_content = _('More content...');
 		$this->content_open_text = _('Read');
 		$this->content_submit = _('Submit content');
+		$this->content_submit_progress
+			= _('Submission in progress, please wait...');
 		$this->content_title = _('Content');
 	}
 
@@ -89,6 +91,8 @@ class ContentModule extends Module
 	protected $content_open_text = 'Read';
 	protected $content_preview_length = 150;
 	protected $content_submit = 'Submit content';
+	protected $content_submit_progress
+		= 'Submission in progress, please wait...';
 	protected $content_title = 'Content';
 
 	//queries
@@ -201,7 +205,6 @@ class ContentModule extends Module
 		$db = $engine->getDatabase();
 		$query = $this->query_get;
 
-		//FIXME use the Content class
 		if($id === FALSE)
 			return FALSE;
 		$args = array('module_id' => $this->id, 'content_id' => $id,
@@ -314,6 +317,7 @@ class ContentModule extends Module
 					'text' => _('Delete'),
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'delete'));
+		//FIXME add controls for publication
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
@@ -684,6 +688,7 @@ class ContentModule extends Module
 			return TRUE;
 		if($engine->isIdempotent($request) !== FALSE)
 			return _('The request expired or is invalid');
+		//store the content uploaded
 		$title = $request->getTitle();
 		$content = $request->getParameter('content');
 		$public = $request->getParameter('public') ? TRUE : FALSE;
@@ -701,7 +706,7 @@ class ContentModule extends Module
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
-		$text = _('Submission in progress, please wait...');
+		$text = $this->content_submit_progress;
 		$box->append('label', array('text' => $text));
 		$box = $box->append('hbox');
 		$text = _('If you are not redirected within 30 seconds, please ');
