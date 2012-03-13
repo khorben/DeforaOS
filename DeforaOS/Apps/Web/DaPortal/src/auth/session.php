@@ -100,7 +100,11 @@ class SessionAuth extends Auth
 			if($v < time())
 				unset($_SESSION['tokens'][$k]);
 		if(isset($_SESSION['tokens'][$token]))
+		{
+			$request->setIdempotent(FALSE);
+			unset($_SESSION['tokens'][$token]);
 			return FALSE;
+		}
 		return TRUE;
 	}
 
