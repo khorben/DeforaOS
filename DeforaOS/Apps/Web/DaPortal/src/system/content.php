@@ -20,14 +20,24 @@
 class Content
 {
 	//public
+	//methods
 	//accessors
-	//getId
+	//Content::getId
 	public function getId()
 	{
 		return $this->id;
 	}
 
 
+	//Content::getTitle
+	public function getTitle()
+	{
+		return $this->title;
+	}
+
+
+	//static
+	//useful
 	//Content::insert
 	static public function insert($engine, $module_id, $title = FALSE,
 			$content = FALSE, $public = FALSE, $enabled = TRUE)
@@ -51,8 +61,8 @@ class Content
 				=== FALSE)
 			return FALSE;
 		$id = $db->getLastId($engine, 'daportal_content', 'content_id');
-		$content = new Content();
-		$content->id = $id;
+		$content = new Content($id, $module_id, $title, $content,
+			$enabled, $public);
 		return $content;
 	}
 
@@ -71,6 +81,21 @@ class Content
 		(module_id, user_id, title, content, enabled, public)
 		VALUES (:module_id, :user_id, :title, :content, :enabled,
 			:public)';
+
+
+	//methods
+	//essential
+	//Content::Content
+	private function __construct($id, $module_id, $title, $content,
+		$enabled, $public)
+	{
+		$this->id = $id;
+		$this->module_id = $module_id;
+		$this->title = $title;
+		$this->content = $content;
+		$this->enabled = $enabled;
+		$this->public = $public;
+	}
 
 }
 

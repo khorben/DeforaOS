@@ -13,10 +13,11 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//FIXME:
+//- implement file deletion
 
 
 
-require_once('./system/content.php');
 require_once('./modules/content/module.php');
 
 
@@ -98,15 +99,27 @@ class DownloadModule extends ContentModule
 
 
 	//methods
+	//accessors
+	protected function canSubmit($engine, $request = FALSE, $error)
+	{
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			return TRUE;
+		$error = _('Permission denied');
+		return FALSE;
+	}
+
+
 	//forms
-	//DownloadModule::form_file_insert
-	protected function form_file_insert($engine, $request)
+	//DownloadModule::formSubmit
+	protected function formSubmit($engine, $request)
 	{
 		$parent = $request->getParameter('parent');
 
 		if(!is_numeric($parent))
 			$parent = FALSE;
-		$r = new Request($engine, $this->name, 'file_insert');
+		$r = new Request($engine, $this->name, 'submit');
 		if($parent !== FALSE)
 			//FIXME also tell where the upload is for
 			$r->setParameter('parent', $parent);
@@ -134,33 +147,10 @@ class DownloadModule extends ContentModule
 	//DownloadModule::submit
 	protected function submit($engine, $request)
 	{
-		$title = $this->content_submit;
-		$credentials = $engine->getCredentials();
-
-		//check permissions
-		if(!$credentials->isAdmin())
-			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('Permission denied')));
-		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => 'upload',
-			'text' => $title));
-		//process the upload
-		$parent = $request->getParameter('parent');
-		$error = $this->_submit($engine, $request, $parent);
-		//upload successful
-		if($error === FALSE)
-			return $this->_submitSuccess($engine, $request,
-					$page, $parent);
-		else if(is_string($error))
-			$page->append('dialog', array('type' => 'error',
-					'text' => $error));
-		$form = $this->form_file_insert($engine, $request);
-		$page->appendElement($form);
-		return $page;
+		return parent::submit($engine, $request);
 	}
 
-	private function _submit($engine, $request, $parent)
+	protected function _submitProcess($engine, $request, $parent)
 	{
 		global $config;
 		$db = $engine->getDatabase();
@@ -169,10 +159,7 @@ class DownloadModule extends ContentModule
 		if(!isset($_FILES['files']))
 			return TRUE;
 		if($engine->isIdempotent($request))
-		{
-			var_dump($request);
 			return _('The request expired or is invalid');
-		}
 		if($parent === FALSE)
 			$parent = NULL;
 		else if(!is_numeric($parent))
@@ -229,7 +216,7 @@ class DownloadModule extends ContentModule
 		return FALSE;
 	}
 
-	private function _submitSuccess($engine, $request, $page, $parent)
+	protected function _submitSuccess($engine, $request, $page, $parent)
 	{
 		$r = new Request($engine, $this->name, FALSE, $parent);
 		$page->setProperty('location', $engine->getUrl($r));

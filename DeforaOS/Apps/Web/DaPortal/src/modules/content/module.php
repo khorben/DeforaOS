@@ -18,6 +18,7 @@
 
 
 
+require_once('./system/content.php');
 require_once('./system/module.php');
 
 
@@ -122,7 +123,7 @@ class ContentModule extends Module
 		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
-		AND daportal_content.public='1'
+		AND (daportal_content.public='1' OR daportal_content.user_id=:user_id)
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND content_id=:content_id";
@@ -171,8 +172,15 @@ class ContentModule extends Module
 
 	//methods
 	//accessors
+	//ContentModule::canPreview
+	protected function canPreview($engine, $request = FALSE)
+	{
+		return TRUE;
+	}
+
+
 	//ContentModule::canSubmit
-	protected function canSubmit($engine, $request = FALSE)
+	protected function canSubmit($engine, $request = FALSE, &$error = FALSE)
 	{
 		global $config;
 		$cred = $engine->getCredentials();
@@ -181,6 +189,7 @@ class ContentModule extends Module
 			return TRUE;
 		if($config->getValue('module::'.$this->name, 'anonymous'))
 			return TRUE;
+		$error = _('Permission denied');
 		return FALSE;
 	}
 
@@ -188,12 +197,15 @@ class ContentModule extends Module
 	//ContentModule::_get
 	protected function _get($engine, $id, $title = FALSE)
 	{
+		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
 		$query = $this->query_get;
 
+		//FIXME use the Content class
 		if($id === FALSE)
 			return FALSE;
-		$args = array('module_id' => $this->id, 'content_id' => $id);
+		$args = array('module_id' => $this->id, 'content_id' => $id,
+				'user_id' => $cred->getUserId());
 		if($title !== FALSE)
 		{
 			$query .= ' AND title LIKE :title';
@@ -221,7 +233,35 @@ class ContentModule extends Module
 	}
 
 
-	//useful
+	//forms
+	//ContentModule::formSubmit
+	protected function formSubmit($engine, $request)
+	{
+		$r = new Request($engine, $this->name, 'submit');
+		$form = new PageElement('form', array('request' => $r));
+		$vbox = $form->append('vbox');
+		$vbox->append('entry', array('name' => 'title',
+				'text' => _('Title: '),
+				'value' => $request->getTitle()));
+		$vbox->append('textview', array('name' => 'content',
+				'text' => _('Content: '),
+				'value' => $request->getParameter('content')));
+		$r = new Request($engine, $this->name);
+		$form->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		if($this->canPreview($engine, $request))
+			$form->append('button', array('type' => 'submit',
+					'stock' => 'preview',
+					'name' => 'preview',
+					'text' => _('Preview')));
+		$form->append('button', array('type' => 'submit',
+				'stock' => 'submit', 'name' => 'submit',
+			       	'text' => _('Submit')));
+		return $form;
+	}
+
+
+	//actions
 	//ContentModule::admin
 	protected function admin($engine, $request = FALSE)
 	{
@@ -270,6 +310,10 @@ class ContentModule extends Module
 					'text' => _('Enable'),
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'enable'));
+		$toolbar->append('button', array('stock' => 'delete',
+					'text' => _('Delete'),
+					'type' => 'submit', 'name' => 'action',
+					'value' => 'delete'));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
@@ -611,12 +655,60 @@ class ContentModule extends Module
 		$title = $this->content_submit;
 		$error = _('Permission denied');
 
+		//check permissions
 		if(!$this->canSubmit($engine, $request, $error))
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
-		//FIXME really implement
+		//create the page
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('text' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		//process the content
+		$content = FALSE;
+		if(($error = $this->_submitProcess($engine, $request, $content))
+				=== FALSE)
+			return $this->_submitSuccess($engine, $request, $page,
+					$content);
+		else if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		$form = $this->formSubmit($engine, $request);
+		$page->appendElement($form);
+		return $page;
+	}
+
+	protected function _submitProcess($engine, $request, &$content)
+	{
+		//verify the request
+		if($request->getParameter('submit') === FALSE)
+			return TRUE;
+		if($engine->isIdempotent($request) !== FALSE)
+			return _('The request expired or is invalid');
+		$title = $request->getTitle();
+		$content = $request->getParameter('content');
+		$public = $request->getParameter('public') ? TRUE : FALSE;
+		$content = Content::insert($engine, $this->id, $title, $content,
+			FALSE, TRUE);
+		if($content === FALSE)
+			return _('Internal server error');
+		return FALSE;
+	}
+
+	protected function _submitSuccess($engine, $request, $page, $content)
+	{
+		$r = new Request($engine, $this->name, FALSE, $content->getId(),
+				$content->getTitle());
+		$page->setProperty('location', $engine->getUrl($r));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$text = _('Submission in progress, please wait...');
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+			'request' => $r));
+		$box->append('label', array('text' => '.'));
 		return $page;
 	}
 
