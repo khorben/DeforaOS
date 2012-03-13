@@ -282,13 +282,39 @@ class HtmlFormat extends FormatElements
 	}
 
 
+	protected function renderFileChooser($e)
+	{
+		$this->renderTabs();
+		$this->tagOpen('div', $e->getType());
+		if(($text = $e->getProperty('text')) !== FALSE)
+		{
+			$l = new PageElement('label');
+			$l->setProperty('text', $text);
+			$this->renderElement($l);
+		}
+		$name = $e->getProperty('name');
+		$type = 'file';
+		$this->tag('input', $e->getProperty('class'),
+				$e->getProperty('id'),
+				array('type' => $type, 'name' => $name));
+		$this->tagClose('div');
+	}
+
+
 	protected function renderForm($e)
 	{
 		$this->renderTabs();
 		$method = $e->getProperty('idempotent') ? 'get' : 'post';
+		$args = array('action' => 'index.php', 'method' => $method);
+		//XXX look for any file upload field
+		foreach($e->getChildren() as $c)
+			if($c->getType() == 'filechooser')
+			{
+				$args['enctype'] = 'multipart/form-data';
+				break;
+			}
 		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
-				array('action' => 'index.php',
-					'method' => $method));
+				$args);
 		if($method === 'post' && @session_start())
 		{
 			//FIXME move this code into the Auth module

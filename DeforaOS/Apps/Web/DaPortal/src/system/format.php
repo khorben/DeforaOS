@@ -130,6 +130,8 @@ abstract class FormatElements extends Format
 				return $this->renderDialog($e);
 			case 'entry':
 				return $this->renderEntry($e);
+			case 'filechooser':
+				return $this->renderFileChooser($e);
 			case 'form':
 				return $this->renderForm($e);
 			case 'frame':
@@ -172,6 +174,7 @@ abstract class FormatElements extends Format
 	abstract protected function renderCheckbox($e);
 	abstract protected function renderDialog($e);
 	abstract protected function renderEntry($e);
+	abstract protected function renderFileChooser($e);
 	abstract protected function renderForm($e);
 	abstract protected function renderFrame($e);
 	abstract protected function renderHbox($e);

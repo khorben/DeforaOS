@@ -277,6 +277,13 @@ class GtkFormat extends FormatElements
 		return $ret;
 	}
 
+	protected function renderFileChooser($e)
+	{
+		$ret = new GtkFileChooser();
+		//FIXME really implement
+		return $ret;
+	}
+
 	protected function renderForm($e)
 	{
 		//FIXME track the current request for submission
