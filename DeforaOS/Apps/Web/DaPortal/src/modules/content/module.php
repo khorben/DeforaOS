@@ -499,7 +499,8 @@ class ContentModule extends Module
 		if($uid !== FALSE)
 			$title = $this->content_list_title_by.' '.$uid; //XXX
 		$page->setProperty('title', $title);
-		$element = $page->append('title');
+		$element = $page->append('title', array(
+				'stock' => $this->name));
 		$query = ($uid !== FALSE) ? $this->query_list_user
 			: $this->query_list;
 		$query .= ' ORDER BY title ASC';

@@ -32,12 +32,16 @@ class ProjectModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Projects');
-		$this->module_content = _('Project');
-		$this->module_contents = _('Projects');
+		$this->content_by = _('Project by');
+		$this->content_item = _('Project');
+		$this->content_items = _('Projects');
 		$this->content_list_count = 0;
 		$this->content_list_order = 'title ASC';
 		$this->content_list_title = _('Project list');
+		$this->content_list_title_by = _('Projects by');
 		$this->content_open_text = _('Open');
+		$this->content_submit = _('New project');
+		$this->content_title = _('Projects');
 		//list only projects by default
 		$this->query_list = $this->project_query_list_projects;
 		$this->query_list_user
@@ -84,6 +88,7 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	protected $project_query_list_projects = "SELECT content_id AS id,
+		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
 		daportal_user.user_id AS user_id, username, title
 		FROM daportal_content, daportal_module, daportal_user,
@@ -96,9 +101,9 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	protected $project_query_list_projects_user = "SELECT content_id AS id,
+		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
 		daportal_user.user_id AS user_id, username, title,
-	       	daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id

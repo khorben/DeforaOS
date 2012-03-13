@@ -31,8 +31,13 @@ class BlogModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Blog');
-		$this->module_content = _('Blog post');
-		$this->module_contents = _('Blog posts');
+		$this->content_by = _('Post by');
+		$this->content_item = _('Blog post');
+		$this->content_items = _('Blog posts');
+		$this->content_list_title = _('Latest posts');
+		$this->content_list_title_by = _('Posts by');
+		$this->content_submit = _('New post');
+		$this->content_title = _('Planet');
 	}
 }
 

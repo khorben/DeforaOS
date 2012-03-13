@@ -31,8 +31,11 @@ class WikiModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Wiki');
-		$this->module_content = _('Wiki page');
-		$this->module_contents = _('Wiki pages');
+		$this->content_item = _('Wiki page');
+		$this->content_items = _('Wiki pages');
+		$this->content_list_title = _('Wiki pages');
+		$this->content_submit = _('New wiki page');
+		$this->content_title = _('Wiki');
 	}
 }
 

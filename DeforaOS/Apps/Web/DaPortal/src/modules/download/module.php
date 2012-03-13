@@ -66,6 +66,7 @@ class DownloadModule extends ContentModule
 	//queries
 	protected $download_query_list_files = "SELECT
 		daportal_content.content_id AS id,
+		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
 		daportal_user.user_id AS user_id, username, title
 		FROM daportal_content, daportal_module, daportal_user,

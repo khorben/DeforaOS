@@ -31,10 +31,14 @@ class ArticleModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Article');
-		$this->module_content = _('Article');
-		$this->module_contents = _('Articles');
+		$this->content_by = _('Article by');
+		$this->content_item = _('Article');
+		$this->content_items = _('Articles');
+		$this->content_list_title = _('Article list');
+		$this->content_list_title_by = _('Articles by');
 		$this->content_list_count = 10;
 		$this->content_list_order = 'title ASC';
+		$this->content_title = _('Articles');
 	}
 }
 
