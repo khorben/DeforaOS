@@ -30,7 +30,7 @@ class Content
 
 	//Content::insert
 	static public function insert($engine, $module_id, $title = FALSE,
-			$content = FALSE, $enabled = FALSE, $public = FALSE)
+			$content = FALSE, $public = FALSE, $enabled = TRUE)
 	{
 		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
