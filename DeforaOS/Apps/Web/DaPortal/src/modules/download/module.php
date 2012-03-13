@@ -189,7 +189,12 @@ class DownloadModule extends ContentModule
 		$root = $this->getRoot();
 		//output the file details
 		$filename = $root.'/'.$content['download_id'];
-		$stat = stat($filename);
+		$error = _('Could not obtain details for this file');
+		if(($stat = stat($filename)) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		$this->_displayField($page, _('Name'), $content['title']);
+		$this->_displayField($page, _('Owner'), $content['username']);
 		$this->_displayField($page, _('Permissions'),
 			sprintf('%04o', $content['mode']));
 		$this->_displayField($page, _('Creation time'),
