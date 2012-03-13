@@ -39,7 +39,11 @@ class DownloadModule extends ContentModule
 		$this->content_open_text = _('Open');
 		$this->content_more_content = _('Back to directory listing...');
 		$this->content_submit = _('File upload');
+		$this->content_submit_progress
+			= _('Upload in progress, please wait...');
 		$this->content_title = _('Latest downloads');
+		//queries
+		$this->query_get = $this->download_query_get;
 		//list only files by default
 		$this->query_list = $this->download_query_list_files;
 		$this->query_list_count
@@ -65,6 +69,28 @@ class DownloadModule extends ContentModule
 	//protected
 	//properties
 	//queries
+	protected $download_query_get = "SELECT daportal_module.name AS module,
+		daportal_user.username AS username,
+		daportal_content.content_id AS id, title,
+		daportal_content.content AS content,
+		timestamp, download.download_id AS download_id,
+		parent.content_id AS parent_id, download.mode AS mode
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_download download
+		LEFT JOIN daportal_download parent
+		ON download.parent=parent.download_id
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=download.content_id
+		AND daportal_content.enabled='1'
+		AND (daportal_content.public='1' OR daportal_content.user_id=:user_id)
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		AND daportal_content.content_id=:content_id";
+	protected $download_query_file_insert = 'INSERT INTO daportal_download
+		(content_id, parent, mode) VALUES (:content_id, :parent,
+			:mode)';
 	protected $download_query_list_files = "SELECT
 		daportal_content.content_id AS id,
 		daportal_content.enabled AS enabled,
@@ -93,13 +119,11 @@ class DownloadModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND mode & 512 = 0";
-	protected $download_query_file_insert = 'INSERT INTO daportal_download
-		(content_id, parent, mode) VALUES (:content_id, :parent,
-			:mode)';
 
 
 	//methods
 	//accessors
+	//DownloadModule::canSubmit
 	protected function canSubmit($engine, $request = FALSE, $error)
 	{
 		$cred = $engine->getCredentials();
@@ -108,6 +132,18 @@ class DownloadModule extends ContentModule
 			return TRUE;
 		$error = _('Permission denied');
 		return FALSE;
+	}
+
+
+	//DownloadModule::getRoot
+	protected function getRoot()
+	{
+		global $config;
+
+		if(($root = $config->getVariable('module::'.$this->name,
+				'root')) === FALSE)
+			$root = '/tmp';
+		return $root;
 	}
 
 
@@ -136,11 +172,83 @@ class DownloadModule extends ContentModule
 
 
 	//actions
+	//DownloadModule::display
+	protected function display($engine, $content)
+	{
+		return parent::display($engine, $content);
+	}
+
+	protected function _display($engine, $content)
+	{
+		$title = $this->content_item._(': ').$content['title'];
+
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		//obtain the root repository
+		$root = $this->getRoot();
+		//output the file details
+		$filename = $root.'/'.$content['download_id'];
+		$stat = stat($filename);
+		$this->_displayField($page, _('Permissions'),
+			sprintf('%04o', $content['mode']));
+		$this->_displayField($page, _('Creation time'),
+			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
+		$this->_displayField($page, _('Modification time'),
+			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
+		$this->_displayField($page, _('Access time'),
+			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
+		$this->_displayField($page, _('Size'), $stat['size']);
+		//link to the download
+		$vbox = $page->append('vbox');
+		$r = new Request($engine, $this->name, 'download',
+				$content['id'], $content['title']);
+		$vbox->append('button', array('request' => $r,
+				'stock' => $this->name,
+				'text' => _('Download')));
+		//link to the folder
+		//FIXME does not seem to work
+		if(!is_numeric($content['parent_id']))
+			$content['parent_id'] = FALSE;
+		$r = new Request($engine, $this->name, FALSE,
+				$content['parent_id']);
+		$vbox->append('link', array('request' => $r,
+				'stock' => 'back',
+				'text' => _('Back')));
+		return $page;
+	}
+
+	protected function _displayField($page, $label, $field)
+	{
+		$hbox = $page->append('hbox');
+		$hbox->append('label', array('text' => $label._(': ')));
+		$hbox->append('label', array('text' => $field));
+	}
+
+
 	//DownloadModule::download
 	protected function download($engine, $request)
 	{
-		//FIXME really implement
-		return $this->preview($engine, $request);
+		global $config;
+		$error = _('Could not fetch content');
+
+		if(($id = $request->getId()) === FALSE)
+			return $this->_default($engine);
+		if(($content = $this->_get($engine, $id, $request->getTitle()))
+				=== FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error',
+					'text' => $error));
+		//obtain the root repository
+		$root = $this->getRoot();
+		//output the file
+		$filename = $root.'/'.$content['download_id'];
+		//FIXME really implement (headers...)
+		if(readfile($filename) !== FALSE)
+			exit(0);
+		$error = _('Could not read file');
+		return new PageElement('dialog', array('type' => 'error',
+				'text' => $error));
 	}
 
 
@@ -165,9 +273,7 @@ class DownloadModule extends ContentModule
 		else if(!is_numeric($parent))
 			return _('Invalid argument');
 		//obtain the root repository
-		if(($root = $config->getVariable('module::'.$this->name,
-					'root')) === FALSE)
-			$root = '/tmp';
+		$root = $this->getRoot();
 		//check known errors
 		foreach($_FILES['files']['error'] as $k => $v)
 			if($v != UPLOAD_ERR_OK)
@@ -222,7 +328,7 @@ class DownloadModule extends ContentModule
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
-		$text = _('Upload in progress, please wait...');
+		$text = $this->content_submit_progress;
 		$box->append('label', array('text' => $text));
 		$box = $box->append('hbox');
 		$text = _('If you are not redirected within 30 seconds, please ');
