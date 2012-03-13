@@ -93,8 +93,9 @@ class HttpEngine extends Engine
 		foreach($request as $key => $value)
 		{
 			$k = get_magic_quotes_gpc() ? stripslashes($key) : $key;
-			$v = get_magic_quotes_gpc() ? stripslashes($value)
-				: $value;
+			//FIXME is this sufficient when not a string? (uploads)
+			$v = (is_string($value) && get_magic_quotes_gpc())
+				? stripslashes($value) : $value;
 			switch($k)
 			{
 				case 'module':
