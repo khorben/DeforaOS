@@ -23,31 +23,6 @@ require_once('./modules/content/module.php');
 //DownloadModule
 class DownloadModule extends ContentModule
 {
-	//public
-	//methods
-	//forms
-	//DownloadModule::form_file_insert
-	protected function form_file_insert($engine, $request)
-	{
-		$parent = $request->getParameter('parent');
-
-		if(!is_numeric($parent))
-			$parent = FALSE;
-		$r = new Request($engine, $this->name, 'file_insert');
-		if($parent !== FALSE)
-			//FIXME also tell where the upload is for
-			$r->setParameter('parent', $parent);
-		$form = new PageElement('form', array('request' => $r));
-		$form->append('filechooser', array('name' => 'files[]'));
-		$r = new Request($engine, $this->name, FALSE, $parent);
-		$form->append('button', array('text' => _('Cancel'),
-				'stock' => 'cancel', 'request' => $r));
-		$form->append('button', array('type' => 'submit',
-				'stock' => 'upload', 'text' => _('Upload')));
-		return $form;
-	}
-
-
 	//essential
 	//DownloadModule::DownloadModule
 	public function __construct($id, $name)
@@ -55,10 +30,15 @@ class DownloadModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Downloads');
-		//XXX check these
-		$this->module_content = _('Download');
-		$this->module_contents = _('Download');
+		//translations
+		$this->content_by = _('Download by');
+		$this->content_item = _('Download');
+		$this->content_items = _('Downloads');
+		$this->content_list_title = _('Directory listing');
 		$this->content_open_text = _('Open');
+		$this->content_more_content = _('Back to directory listing...');
+		$this->content_submit = _('File upload');
+		$this->content_title = _('Latest downloads');
 		//list only files by default
 		$this->query_list = $this->download_query_list_files;
 		$this->query_list_count
@@ -74,7 +54,8 @@ class DownloadModule extends ContentModule
 			case 'download':
 				return $this->download($engine, $request);
 			case 'file_insert':
-				return $this->fileInsert($engine, $request);
+			case 'submit':
+				return $this->submit($engine, $request);
 		}
 		return parent::call($engine, $request);
 	}
@@ -116,6 +97,31 @@ class DownloadModule extends ContentModule
 
 
 	//methods
+	//forms
+	//DownloadModule::form_file_insert
+	protected function form_file_insert($engine, $request)
+	{
+		$parent = $request->getParameter('parent');
+
+		if(!is_numeric($parent))
+			$parent = FALSE;
+		$r = new Request($engine, $this->name, 'file_insert');
+		if($parent !== FALSE)
+			//FIXME also tell where the upload is for
+			$r->setParameter('parent', $parent);
+		$form = new PageElement('form', array('request' => $r));
+		$form->append('filechooser', array('text' => _('File: '),
+				'name' => 'files[]'));
+		$r = new Request($engine, $this->name, FALSE, $parent);
+		$form->append('button', array('text' => _('Cancel'),
+				'stock' => 'cancel', 'request' => $r));
+		$form->append('button', array('type' => 'submit',
+				'stock' => 'upload', 'text' => _('Upload')));
+		return $form;
+	}
+
+
+	//actions
 	//DownloadModule::download
 	protected function download($engine, $request)
 	{
@@ -124,10 +130,10 @@ class DownloadModule extends ContentModule
 	}
 
 
-	//DownloadModule::fileInsert
-	protected function fileInsert($engine, $request)
+	//DownloadModule::submit
+	protected function submit($engine, $request)
 	{
-		$title = _('File upload');
+		$title = $this->content_submit;
 		$credentials = $engine->getCredentials();
 
 		//check permissions
@@ -140,10 +146,10 @@ class DownloadModule extends ContentModule
 			'text' => $title));
 		//process the upload
 		$parent = $request->getParameter('parent');
-		$error = $this->_fileInsert($engine, $request, $parent);
+		$error = $this->_submit($engine, $request, $parent);
 		//upload successful
 		if($error === FALSE)
-			return $this->_fileInsertSuccess($engine, $request,
+			return $this->_submitSuccess($engine, $request,
 					$page, $parent);
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
@@ -153,7 +159,7 @@ class DownloadModule extends ContentModule
 		return $page;
 	}
 
-	private function _fileInsert($engine, $request, $parent)
+	private function _submit($engine, $request, $parent)
 	{
 		global $config;
 		$db = $engine->getDatabase();
@@ -222,7 +228,7 @@ class DownloadModule extends ContentModule
 		return FALSE;
 	}
 
-	private function _fileInsertSuccess($engine, $request, $page, $parent)
+	private function _submitSuccess($engine, $request, $page, $parent)
 	{
 		$r = new Request($engine, $this->name, FALSE, $parent);
 		$page->setProperty('location', $engine->getUrl($r));
