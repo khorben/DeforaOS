@@ -32,6 +32,7 @@ class Content
 	static public function insert($engine, $module_id, $title = FALSE,
 			$content = FALSE, $enabled = FALSE, $public = FALSE)
 	{
+		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
 
 		$query = Content::$query_insert;
@@ -44,6 +45,7 @@ class Content
 				|| !is_bool($enabled) || !is_bool($public))
 			return FALSE;
 		if($db->query($engine, $query, array('module_id' => $module_id,
+				'user_id' => $cred->getUserId(),
 				'title' => $title, 'content' => $content,
 				'enabled' => $enabled, 'public' => $public))
 				=== FALSE)
@@ -66,8 +68,9 @@ class Content
 
 	//queries
 	static private $query_insert = 'INSERT INTO daportal_content
-		(module_id, title, content, enabled, public)
-		VALUES (:module_id, :title, :content, :enabled, :public)';
+		(module_id, user_id, title, content, enabled, public)
+		VALUES (:module_id, :user_id, :title, :content, :enabled,
+			:public)';
 
 }
 
