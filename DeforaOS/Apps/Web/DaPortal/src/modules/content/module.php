@@ -130,7 +130,7 @@ class ContentModule extends Module
 		AND (daportal_content.public='1' OR daportal_content.user_id=:user_id)
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
-		AND content_id=:content_id";
+		AND daportal_content.content_id=:content_id";
 	protected $query_list = "SELECT content_id AS id, timestamp,
 		name AS module, daportal_user.user_id AS user_id, username,
 		title, daportal_content.enabled AS enabled
@@ -464,21 +464,17 @@ class ContentModule extends Module
 
 		if(($id = $request->getId()) === FALSE)
 			return $this->_default($engine, $request);
-		if(($page = $this->_display($engine, $id, $request->getTitle()))
+		if(($content = $this->_get($engine, $id, $request->getTitle()))
 				=== FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'error' => $error));
-		return $page;
+		return $this->_display($engine, $content);
 	}
 
 
 	//ContentModule::_display
-	protected function _display($engine, $id, $title = FALSE)
+	protected function _display($engine, $content)
 	{
-		if($id === FALSE)
-			return $this->default();
-		if(($content = $this->_get($engine, $id, $title)) === FALSE)
-			return FALSE;
 		//FIXME display metadata and link to actual resource?
 		$page = new Page;
 		$page->setProperty('title', $content['title']);
@@ -620,6 +616,7 @@ class ContentModule extends Module
 
 	protected function _preview($engine, $content, $preview = FALSE)
 	{
+		//XXX the $preview argument is not intuitive
 		$page = new PageElement('vbox');
 		$r = new Request($engine, $content['module'], FALSE,
 			$content['id'], $content['title']);
