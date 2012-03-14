@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-13 17:47-0600\n"
+"POT-Creation-Date: 2012-03-13 19:15-0600\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -207,7 +207,7 @@ msgstr "Soumission en cours, veuillez patienter..."
 
 #: ../src/modules/content/module.php:196 ../src/modules/content/module.php:276
 #: ../src/modules/content/module.php:657
-#: ../src/modules/download/module.php:133 ../src/modules/user/module.php:210
+#: ../src/modules/download/module.php:134 ../src/modules/user/module.php:210
 #: ../src/modules/user/module.php:771
 msgid "Permission denied"
 msgstr "Permission non accordée"
@@ -226,7 +226,7 @@ msgid "Content: "
 msgstr "Contenu : "
 
 #: ../src/modules/content/module.php:254 ../src/modules/content/module.php:759
-#: ../src/modules/download/module.php:166 ../src/modules/user/module.php:72
+#: ../src/modules/download/module.php:178 ../src/modules/user/module.php:72
 #: ../src/modules/user/module.php:92 ../src/modules/user/module.php:110
 #: ../src/modules/user/module.php:416 ../src/modules/user/module.php:646
 #: ../src/modules/user/module.php:817
@@ -325,12 +325,12 @@ msgid "Some content could not be enabled"
 msgstr "Certains contenus n'ont pas pu être activés"
 
 #: ../src/modules/content/module.php:600
-#: ../src/modules/download/module.php:217
+#: ../src/modules/download/module.php:256
 msgid "Back"
 msgstr "Retour"
 
 #: ../src/modules/content/module.php:608
-#: ../src/modules/download/module.php:233
+#: ../src/modules/download/module.php:272
 msgid "Could not fetch content"
 msgstr "Impossible d'obtenir le contenu"
 
@@ -339,26 +339,26 @@ msgid " on "
 msgstr " le "
 
 #: ../src/modules/content/module.php:687
-#: ../src/modules/download/module.php:270 ../src/modules/user/module.php:371
+#: ../src/modules/download/module.php:313 ../src/modules/user/module.php:371
 msgid "The request expired or is invalid"
 msgstr "La requête a expiré ou est invalide"
 
 #: ../src/modules/content/module.php:695
-#: ../src/modules/download/module.php:285
-#: ../src/modules/download/module.php:293
-#: ../src/modules/download/module.php:304
-#: ../src/modules/download/module.php:313
-#: ../src/modules/download/module.php:319
+#: ../src/modules/download/module.php:328
+#: ../src/modules/download/module.php:336
+#: ../src/modules/download/module.php:347
+#: ../src/modules/download/module.php:356
+#: ../src/modules/download/module.php:362
 msgid "Internal server error"
 msgstr ""
 
 #: ../src/modules/content/module.php:709
-#: ../src/modules/download/module.php:334 ../src/modules/user/module.php:338
+#: ../src/modules/download/module.php:377 ../src/modules/user/module.php:338
 msgid "If you are not redirected within 30 seconds, please "
 msgstr "Si vous n'êtes pas redirigé(e) d'ici 30 secondes, veuillez "
 
 #: ../src/modules/content/module.php:711
-#: ../src/modules/download/module.php:336 ../src/modules/user/module.php:340
+#: ../src/modules/download/module.php:379 ../src/modules/user/module.php:340
 msgid "click here"
 msgstr "cliquer ici"
 
@@ -380,88 +380,110 @@ msgstr "Prévisualisation : "
 msgid "Reset"
 msgstr ""
 
-#: ../src/modules/download/module.php:33 ../src/modules/download/module.php:37
+#: ../src/modules/download/module.php:34 ../src/modules/download/module.php:38
 msgid "Downloads"
 msgstr "Téléchargements"
 
-#: ../src/modules/download/module.php:35
+#: ../src/modules/download/module.php:36
 msgid "Download by"
 msgstr "Fichier de"
 
-#: ../src/modules/download/module.php:36
-#: ../src/modules/download/module.php:208
+#: ../src/modules/download/module.php:37
+#: ../src/modules/download/module.php:247
 #: ../src/modules/project/module.php:261
 msgid "Download"
 msgstr "Télécharger"
 
-#: ../src/modules/download/module.php:38
+#: ../src/modules/download/module.php:39
 msgid "Directory listing"
 msgstr "Contenu du répertoire"
 
-#: ../src/modules/download/module.php:39 ../src/modules/project/module.php:42
+#: ../src/modules/download/module.php:40 ../src/modules/project/module.php:42
 msgid "Open"
 msgstr "Ouvrir"
 
-#: ../src/modules/download/module.php:40
+#: ../src/modules/download/module.php:41
 msgid "Back to directory listing..."
 msgstr ""
 
-#: ../src/modules/download/module.php:41
+#: ../src/modules/download/module.php:42
 msgid "File upload"
 msgstr ""
 
-#: ../src/modules/download/module.php:43
+#: ../src/modules/download/module.php:44
 msgid "Upload in progress, please wait..."
 msgstr "Envoi en cours, veuillez patienter..."
 
-#: ../src/modules/download/module.php:44
+#: ../src/modules/download/module.php:45
 msgid "Latest downloads"
 msgstr "Derniers téléchargements"
 
-#: ../src/modules/download/module.php:163
+#: ../src/modules/download/module.php:175
 msgid "File: "
 msgstr "Fichier : "
 
-#: ../src/modules/download/module.php:169
+#: ../src/modules/download/module.php:181
 msgid "Upload"
 msgstr ""
 
-#: ../src/modules/download/module.php:183
-#: ../src/modules/download/module.php:224
+#: ../src/modules/download/module.php:202
+#: ../src/modules/download/module.php:214
+#: ../src/modules/download/module.php:263
 msgid ": "
 msgstr " : "
 
-#: ../src/modules/download/module.php:193
+#: ../src/modules/download/module.php:223
+msgid "Could not obtain details for this file"
+msgstr "Impossible d'obtenir les informations sur ce fichier"
+
+#: ../src/modules/download/module.php:227
+msgid "Name"
+msgstr "Nom"
+
+#: ../src/modules/download/module.php:228
+#: ../src/modules/project/module.php:339
+msgid "Type"
+msgstr "Type"
+
+#: ../src/modules/download/module.php:230
+msgid "Owner"
+msgstr ""
+
+#: ../src/modules/download/module.php:231
 msgid "Permissions"
 msgstr "Permissions"
 
-#: ../src/modules/download/module.php:195
+#: ../src/modules/download/module.php:233
 msgid "Creation time"
 msgstr "Date de création"
 
-#: ../src/modules/download/module.php:197
+#: ../src/modules/download/module.php:235
 msgid "Modification time"
 msgstr "Dernière modification"
 
-#: ../src/modules/download/module.php:199
+#: ../src/modules/download/module.php:237
 msgid "Access time"
 msgstr "Dernier accès"
 
-#: ../src/modules/download/module.php:201
+#: ../src/modules/download/module.php:239
 msgid "Size"
 msgstr "Taille"
 
-#: ../src/modules/download/module.php:249
+#: ../src/modules/download/module.php:240
+msgid "Comment"
+msgstr "Commenter"
+
+#: ../src/modules/download/module.php:288
 msgid "Could not read file"
 msgstr "Impossible de lire le fichier"
 
-#: ../src/modules/download/module.php:274
+#: ../src/modules/download/module.php:317
 msgid "Invalid argument"
-msgstr ""
+msgstr "Argument invalide"
 
-#: ../src/modules/download/module.php:280
+#: ../src/modules/download/module.php:323
 msgid "An error occurred"
-msgstr ""
+msgstr "Une erreur est survenue"
 
 #: ../src/modules/news/module.php:33 ../src/modules/news/module.php:40
 msgid "News"
@@ -516,7 +538,7 @@ msgstr "Projets de"
 msgid "New project"
 msgstr "Nouveau projet"
 
-#: ../src/modules/project/module.php:200 ../src/modules/project/module.php:369
+#: ../src/modules/project/module.php:200 ../src/modules/project/module.php:365
 msgid "Project: "
 msgstr "Projet : "
 
@@ -570,23 +592,19 @@ msgid "State"
 msgstr "État"
 
 #: ../src/modules/project/module.php:339
-msgid "Type"
-msgstr "Type"
-
-#: ../src/modules/project/module.php:339
 msgid "Priority"
 msgstr "Priorité"
 
-#: ../src/modules/project/module.php:373
+#: ../src/modules/project/module.php:369
 msgid "More projects..."
 msgstr "Plus de projets..."
 
-#: ../src/modules/project/module.php:380
+#: ../src/modules/project/module.php:376
 #, php-format
 msgid "Bug report #%u/%s: %s"
 msgstr "Rapport de bug #%u/%s: %s"
 
-#: ../src/modules/project/module.php:387
+#: ../src/modules/project/module.php:383
 msgid "Other bug reports..."
 msgstr "Autres rapports de bugs..."
 
