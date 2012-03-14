@@ -327,7 +327,8 @@ class ProjectModule extends ContentModule
 					'type' => 'error', 'error' => $error));
 		//build the page
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('text' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
 		if($toolbar !== FALSE)
 			$page->appendElement($toolbar);
 		if($filter !== FALSE)
