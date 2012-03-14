@@ -304,8 +304,7 @@ class HtmlFormat extends FormatElements
 	protected function renderForm($e)
 	{
 		$this->renderTabs();
-		$method = $e->getProperty('idempotent') ? 'get' : 'post';
-		$args = array('action' => 'index.php', 'method' => $method);
+		$args = array('action' => 'index.php');
 		//XXX look for any file upload field
 		foreach($e->getChildren() as $c)
 			if($c->getType() == 'filechooser')
@@ -313,6 +312,8 @@ class HtmlFormat extends FormatElements
 				$args['enctype'] = 'multipart/form-data';
 				break;
 			}
+		$method = $e->getProperty('idempotent') ? 'get' : 'post';
+		$args['method'] = $method;
 		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
 				$args);
 		if($method === 'post' && @session_start())
