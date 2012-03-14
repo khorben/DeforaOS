@@ -539,7 +539,7 @@ gboolean editor_close(Editor * editor)
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_DISCARD, GTK_RESPONSE_REJECT,
 			GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-	if(res == GTK_RESPONSE_CANCEL)
+	if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_DELETE_EVENT)
 		return TRUE;
 	else if(res == GTK_RESPONSE_ACCEPT && editor_save(editor) != TRUE)
 		return TRUE;
