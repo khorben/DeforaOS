@@ -195,8 +195,8 @@ class ProjectModule extends ContentModule
 		$hbox = $form->append('hbox');
 		$vbox1 = $hbox->append('vbox');
 		$vbox2 = $hbox->append('vbox');
-		$vbox1->append('entry', array('name' => 'title',
-			'value' => $request->getTitle(),
+		$vbox1->append('entry', array('name' => 'project',
+			'value' => $request->getParameter('project'),
 			'text' => _('Project: ')));
 		$vbox2->append('entry', array('name' => 'username',
 			'value' => $request->getParameter('username'),
