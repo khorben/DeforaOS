@@ -84,12 +84,27 @@ class SessionAuth extends Auth
 	}
 
 
-	//SessionAuth::isIdempotent
-	public function isIdempotent(&$engine, $request)
+	//SessionAuth::setCredentials
+	public function setCredentials(&$engine, $credentials)
 	{
-		if($request->isIdempotent() === TRUE)
-			return TRUE;
+		if(session_regenerate_id(TRUE) !== TRUE)
+			$engine->log('LOG_WARNING',
+					'Could not regenerate the session');
+		$_SESSION['auth']['uid'] = $credentials->getUserId();
+		return parent::setCredentials($engine, $credentials);
+	}
+
+
+	//SessionAuth::setIdempotent
+	public function setIdempotent(&$engine, $request, $idempotent)
+	{
+		if($idempotent === TRUE)
+		{
+			$request->setIdempotent(TRUE);
+			return;
+		}
 		//prevent CSRF attacks
+		$idempotent = TRUE;
 		if(($token = $request->getParameter('_token')) === FALSE
 				|| !isset($_SESSION['tokens'])
 				|| !is_array($_SESSION['tokens']))
@@ -101,23 +116,10 @@ class SessionAuth extends Auth
 		if(isset($_SESSION['tokens'][$token]))
 		{
 			//the request is not idempotent
-			$request->setIdempotent(FALSE);
-			//FIXME uncommenting this is better but breaks for now
-			//unset($_SESSION['tokens'][$token]);
-			return FALSE;
+			unset($_SESSION['tokens'][$token]);
+			$idempotent = FALSE;
 		}
-		return TRUE;
-	}
-
-
-	//SessionAuth::setCredentials
-	public function setCredentials(&$engine, $credentials)
-	{
-		if(session_regenerate_id(TRUE) !== TRUE)
-			$engine->log('LOG_WARNING',
-					'Could not regenerate the session');
-		$_SESSION['auth']['uid'] = $credentials->getUserId();
-		return parent::setCredentials($engine, $credentials);
+		$request->setIdempotent($idempotent);
 	}
 
 

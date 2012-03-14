@@ -87,13 +87,6 @@ abstract class Engine
 	}
 
 
-	//Engine::isIdempotent
-	public function isIdempotent($request)
-	{
-		return $request->isIdempotent($request);
-	}
-
-
 	//Engine::setCredentials
 	public function setCredentials($cred)
 	{

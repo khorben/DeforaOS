@@ -58,13 +58,6 @@ class DaPortalEngine extends HttpEngine
 	}
 
 
-	//DaPortalEngine::isIdempotent
-	public function isIdempotent($request)
-	{
-		return $request->isIdempotent($request);
-	}
-
-
 	//private
 	//DaPortalEngine::_getRequest
 	private function _getRequest()

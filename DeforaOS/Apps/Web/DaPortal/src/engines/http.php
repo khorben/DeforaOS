@@ -90,6 +90,7 @@ class HttpEngine extends Engine
 			$request = $_POST;
 			$idempotent = FALSE;
 		}
+		//collect the parameters
 		foreach($request as $key => $value)
 		{
 			$k = get_magic_quotes_gpc() ? stripslashes($key) : $key;
@@ -113,7 +114,8 @@ class HttpEngine extends Engine
 		}
 		$request = new Request($this, $module, $action, $id, $title,
 				$parameters);
-		$request->setIdempotent($idempotent);
+		$auth = $this->getAuth();
+		$auth->setIdempotent($this, $request, $idempotent);
 		return $request;
 	}
 
@@ -155,7 +157,7 @@ class HttpEngine extends Engine
 				$title = str_replace(' ', '-', $title);
 				$url .= '&title='.urlencode($title);
 			}
-			if($this->isIdempotent($request)
+			if($request->isIdempotent()
 					&& ($args = $request->getParameters())
 					!== FALSE)
 				foreach($args as $key => $value)
@@ -166,8 +168,8 @@ class HttpEngine extends Engine
 	}
 
 
-	//HttpEngine::isIdempotent
-	public function isIdempotent($request)
+	//HttpEngine::_isIdempotent
+	private function _isIdempotent($request)
 	{
 		$auth = $this->getAuth();
 
@@ -223,6 +225,7 @@ class HttpEngine extends Engine
 	{
 		$disposition = (strncmp('image/', $type, 6) == 0)
 			? 'inline' : 'attachment';
+		//FIXME also set the filename
 		header('Content-Disposition: '.$disposition);
 		if(($st = fstat($fp)) !== FALSE)
 			header('Content-Length: '.$st['size']);

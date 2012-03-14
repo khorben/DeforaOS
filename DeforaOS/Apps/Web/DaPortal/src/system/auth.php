@@ -104,10 +104,10 @@ abstract class Auth
 	}
 
 
-	//Auth::isIdempotent
-	public function isIdempotent(&$engine, $request)
+	//Auth::setIdempotent
+	public function setIdempotent(&$engine, $request, $idempotent)
 	{
-		return $request->isIdempotent();
+		$request->setIdempotent($idempotent);
 	}
 
 
