@@ -282,7 +282,7 @@ class DownloadModule extends ContentModule
 		$root = $this->getRoot($engine);
 		//output the file
 		$filename = $root.'/'.$content['download_id'];
-		$mime = Mime::get($content['title']);
+		$mime = Mime::get($engine, $content['title']);
 		if(($fp = fopen($filename, 'rb')) === FALSE)
 		{
 			$error = _('Could not read file');
