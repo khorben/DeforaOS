@@ -318,6 +318,7 @@ class UserModule extends Module
 	//UserModule::login
 	protected function login($engine, $request)
 	{
+		$cred = $engine->getCredentials();
 		$title = _('User login');
 
 		$page = new Page(array('title' => $title));
@@ -345,6 +346,9 @@ class UserModule extends Module
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 						'text' => $error));
+		else if($cred->getUserId() != 0)
+			$page->append('dialog', array('type' => 'info',
+						'text' => 'You are already logged in'));
 		$form = $this->form_login($engine,
 				$request->getParameter('username'));
 		$page->appendElement($form);
