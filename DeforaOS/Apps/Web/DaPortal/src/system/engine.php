@@ -121,8 +121,6 @@ abstract class Engine
 	//Engine::log
 	public function log($priority, $message)
 	{
-		if(Engine::$debug !== TRUE)
-			return FALSE;
 		switch($priority)
 		{
 			case 'LOG_ALERT':
@@ -131,6 +129,8 @@ abstract class Engine
 				$level = 'Alert';
 				break;
 			case 'LOG_DEBUG':
+				if(Engine::$debug !== TRUE)
+					return FALSE;
 				$level = 'Debug';
 				break;
 			case 'LOG_ERR':
@@ -142,6 +142,8 @@ abstract class Engine
 			case 'LOG_INFO':
 			case 'LOG_NOTICE':
 			default:
+				if(Engine::$debug !== TRUE)
+					return FALSE;
 				$level = 'Info';
 				break;
 		}
