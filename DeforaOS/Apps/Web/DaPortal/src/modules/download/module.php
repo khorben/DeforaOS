@@ -178,7 +178,8 @@ class DownloadModule extends ContentModule
 		$form->append('button', array('text' => _('Cancel'),
 				'stock' => 'cancel', 'request' => $r));
 		$form->append('button', array('type' => 'submit',
-				'stock' => 'upload', 'text' => _('Upload')));
+				'stock' => 'upload', 'name' => 'submit',
+				'text' => _('Upload')));
 		return $form;
 	}
 
@@ -309,7 +310,7 @@ class DownloadModule extends ContentModule
 		//verify the request
 		if(!isset($_FILES['files']))
 			return TRUE;
-		if($request->isIdempotent())
+		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
 		if($parent === FALSE)
 			$parent = NULL;
