@@ -395,7 +395,7 @@ class ContentModule extends Module
 
 		if($request !== FALSE && $request->getId() !== FALSE)
 			return $this->display($engine, $request);
-		$page = new Page;
+		$page = new Page(array('title' => $this->content_title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $this->content_title));
 		//obtain the total number of records available
@@ -476,8 +476,7 @@ class ContentModule extends Module
 	protected function _display($engine, $content)
 	{
 		//FIXME display metadata and link to actual resource?
-		$page = new Page;
-		$page->setProperty('title', $content['title']);
+		$page = new Page(array('title' => $content['title']));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $content['title']));
 		$page->append('label', array('text' => $content['content']
@@ -538,11 +537,10 @@ class ContentModule extends Module
 		$db = $engine->getDatabase();
 		$uid = ($request !== FALSE) ? $request->getId() : FALSE;
 
-		$page = new Page;
 		$title = $this->content_list_title;
 		if($uid !== FALSE)
 			$title = $this->content_list_title_by.' '.$uid; //XXX
-		$page->setProperty('title', $title);
+		$page = new Page(array('title' => $title));
 		$element = $page->append('title', array(
 				'stock' => $this->name));
 		$query = ($uid !== FALSE) ? $this->query_list_user
