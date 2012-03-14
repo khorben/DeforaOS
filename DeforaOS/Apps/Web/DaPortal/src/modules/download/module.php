@@ -309,7 +309,7 @@ class DownloadModule extends ContentModule
 		//verify the request
 		if(!isset($_FILES['files']))
 			return TRUE;
-		if($engine->isIdempotent($request))
+		if($request->isIdempotent())
 			return _('The request expired or is invalid');
 		if($parent === FALSE)
 			$parent = NULL;

@@ -356,7 +356,7 @@ class ContentModule extends Module
 						'text' => $error));
 			return $page;
 		}
-		if($engine->isIdempotent($request))
+		if($request->isIdempotent())
 			//must be safe
 			return $this->$fallback($engine);
 		$type = 'info';
@@ -683,7 +683,7 @@ class ContentModule extends Module
 		//verify the request
 		if($request->getParameter('submit') === FALSE)
 			return TRUE;
-		if($engine->isIdempotent($request) !== FALSE)
+		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
 		//store the content uploaded
 		$title = $request->getTitle();

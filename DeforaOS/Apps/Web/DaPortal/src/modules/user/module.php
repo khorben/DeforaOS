@@ -367,7 +367,7 @@ class UserModule extends Module
 				|| ($password = $request->getParameter(
 						'password')) === FALSE)
 			return TRUE;
-		if($engine->isIdempotent($request) !== FALSE)
+		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
 		//FIXME first obtain the password and apply salt if necessary
 		$res = $db->query($engine, $this->query_login, array(
@@ -404,7 +404,7 @@ class UserModule extends Module
 			return $page;
 		}
 		$r = new Request($engine, $this->name, 'logout');
-		if($engine->isIdempotent($request))
+		if($request->isIdempotent())
 		{
 			//FIXME make it a question dialog
 			$form = $page->append('form', array(
@@ -476,7 +476,7 @@ class UserModule extends Module
 		//process registration
 		if(!$this->can_register())
 			$error = _('Registering is not allowed');
-		else if(!$engine->isIdempotent($request))
+		else if(!$request->isIdempotent())
 			$error = $this->_register_process($engine, $request);
 		if($error === FALSE)
 			//registration was successful
@@ -551,7 +551,7 @@ Thank you for registering!")));
 		//process reset
 		if(!$this->can_reset())
 			$error = _('Password resets are not allowed');
-		else if(!$engine->isIdempotent($request))
+		else if(!$request->isIdempotent())
 			$error = $this->_reset_process($engine, $request);
 		if($error === FALSE)
 			//reset was successful
@@ -614,7 +614,7 @@ Thank you for registering!")));
 		//process reset
 		if(!$this->can_reset())
 			$error = _('Password resets are not allowed');
-		else if(!$engine->isIdempotent($request))
+		else if(!$request->isIdempotent())
 			$error = $this->_reset_token_process($engine, $request,
 					$uid, $token);
 		if($error === FALSE)
@@ -773,7 +773,7 @@ Thank you for registering!")));
 				'type' => 'error', 'text' => $error));
 		}
 		//process update
-		if(!$engine->isIdempotent($request))
+		if(!$request->isIdempotent())
 			$error = $this->_update_process($engine, $request,
 					$user);
 		if($error === FALSE)
