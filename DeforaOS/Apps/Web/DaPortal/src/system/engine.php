@@ -111,7 +111,7 @@ abstract class Engine
 
 
 	//Engine::setType
-	protected function setType($type)
+	public function setType($type)
 	{
 		$this->type = $type;
 	}
