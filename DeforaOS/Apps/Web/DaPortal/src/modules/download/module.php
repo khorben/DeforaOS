@@ -136,14 +136,25 @@ class DownloadModule extends ContentModule
 
 
 	//DownloadModule::getRoot
-	protected function getRoot()
+	protected function getRoot($engine)
 	{
 		global $config;
 
 		if(($root = $config->getVariable('module::'.$this->name,
 				'root')) === FALSE)
+		{
+			$engine->log('LOG_WARNING',
+				'The download repository is not configured');
 			$root = '/tmp';
+		}
 		return $root;
+	}
+
+
+	//DownloadModule::isDirectory
+	protected function isDirectory($content)
+	{
+		return ($content['mode'] & 01000) ? TRUE : FALSE;
 	}
 
 
@@ -180,13 +191,32 @@ class DownloadModule extends ContentModule
 
 	protected function _display($engine, $content)
 	{
+		if($this->isDirectory($content))
+			return $this->_displayDirectory($engine, $content);
+		return $this->_displayFile($engine, $content);
+	}
+
+	protected function _displayDirectory($engine, $content, $page)
+	{
+		$title = $this->content_list_title._(': ').$content['title'];
+
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		$view = $page->append('treeview');
+		//FIXME implement
+		return $page;
+	}
+
+	protected function _displayFile($engine, $content, $page)
+	{
 		$title = $this->content_item._(': ').$content['title'];
 
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		//obtain the root repository
-		$root = $this->getRoot();
+		$root = $this->getRoot($engine);
 		//output the file details
 		$filename = $root.'/'.$content['download_id'];
 		$error = _('Could not obtain details for this file');
@@ -204,6 +234,7 @@ class DownloadModule extends ContentModule
 		$this->_displayField($page, _('Access time'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
 		$this->_displayField($page, _('Size'), $stat['size']);
+		$this->_displayField($page, _('Comment'), $content['content']);
 		//link to the download
 		$vbox = $page->append('vbox');
 		$r = new Request($engine, $this->name, 'download',
@@ -245,7 +276,7 @@ class DownloadModule extends ContentModule
 					'type' => 'error',
 					'text' => $error));
 		//obtain the root repository
-		$root = $this->getRoot();
+		$root = $this->getRoot($engine);
 		//output the file
 		$filename = $root.'/'.$content['download_id'];
 		//FIXME really implement (headers...)
@@ -278,7 +309,7 @@ class DownloadModule extends ContentModule
 		else if(!is_numeric($parent))
 			return _('Invalid argument');
 		//obtain the root repository
-		$root = $this->getRoot();
+		$root = $this->getRoot($engine);
 		//check known errors
 		foreach($_FILES['files']['error'] as $k => $v)
 			if($v != UPLOAD_ERR_OK)
