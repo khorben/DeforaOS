@@ -179,42 +179,54 @@ class HttpEngine extends Engine
 	//HttpEngine::render
 	public function render($page)
 	{
-		global $config;
-
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
 		if($page === FALSE)
 			$page = new Page;
 		if($page instanceof PageElement)
+			return $this->renderPage($page, $type);
+		else if(is_resource($page)
+				&& get_resource_type($page) == 'stream')
+			return $this->renderStream($page, $type);
+	}
+
+	private function renderPage($page, $type)
+	{
+		global $config;
+
+		if(($charset = $config->getVariable('defaults', 'charset'))
+				!== FALSE)
+			//XXX escape
+			header('Content-Encoding: '.$charset);
+		if(($location = $page->getProperty('location')) !== FALSE)
+			header('Location: '.$location); //XXX escape
+		switch($type)
 		{
-			if(($charset = $config->getVariable('defaults',
-					'charset')) !== FALSE)
-				//XXX escape
-				header('Content-Encoding: '.$charset);
-			if(($location = $page->getProperty('location'))
-					!== FALSE)
-				header('Location: '.$location); //XXX escape
-			switch($type)
-			{
-				case 'text/html':
-				default:
-					$template = Template::attachDefault(
-							$this);
-					if($template === FALSE)
-						return FALSE;
-					if(($page = $template->render($this,
-							$page)) === FALSE)
-						return FALSE;
-					require_once('./system/format.php');
-					$output = Format::attachDefault($this,
-							$type);
-					$output->render($this, $page);
-					break;
-			}
+			case 'text/html':
+			default:
+				$template = Template::attachDefault(
+					$this);
+				if($template === FALSE)
+					return FALSE;
+				if(($page = $template->render($this,
+					$page)) === FALSE)
+					return FALSE;
+				require_once('./system/format.php');
+				$output = Format::attachDefault($this,
+					$type);
+				$output->render($this, $page);
+				break;
 		}
-		else
-			//FIXME find a better way for bigger files (callback?)
-			print($page);
+	}
+
+	private function renderStream($fp, $type)
+	{
+		$disposition = (strncmp('image/', $type, 6) == 0)
+			? 'inline' : 'attachment';
+		header('Content-Disposition: '.$disposition);
+		if(($st = fstat($fp)) !== FALSE)
+			header('Content-Length: '.$st['size']);
+		fpassthru($fp);
 	}
 
 
