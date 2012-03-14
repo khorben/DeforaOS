@@ -224,6 +224,8 @@ class DownloadModule extends ContentModule
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
 		$this->_displayField($page, _('Name'), $content['title']);
+		$this->_displayField($page, _('Type'), mime_content_type(
+				$content['title'])); //XXX deprecated
 		$this->_displayField($page, _('Owner'), $content['username']);
 		$this->_displayField($page, _('Permissions'),
 			sprintf('%04o', $content['mode']));
@@ -279,7 +281,7 @@ class DownloadModule extends ContentModule
 		$root = $this->getRoot($engine);
 		//output the file
 		$filename = $root.'/'.$content['download_id'];
-		//FIXME really implement (headers...)
+		$mime = mime_content_type($content['title']); //XXX deprecated
 		if(($fp = fopen($filename, 'rb')) === FALSE)
 		{
 			$error = _('Could not read file');
@@ -287,6 +289,7 @@ class DownloadModule extends ContentModule
 				'type' => 'error',
 				'text' => $error));
 		}
+		$engine->setType($mime);
 		return $fp;
 	}
 
