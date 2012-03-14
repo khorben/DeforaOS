@@ -196,7 +196,7 @@ class DownloadModule extends ContentModule
 		return $this->_displayFile($engine, $content);
 	}
 
-	protected function _displayDirectory($engine, $content, $page)
+	protected function _displayDirectory($engine, $content)
 	{
 		$title = $this->content_list_title._(': ').$content['title'];
 
@@ -208,7 +208,7 @@ class DownloadModule extends ContentModule
 		return $page;
 	}
 
-	protected function _displayFile($engine, $content, $page)
+	protected function _displayFile($engine, $content)
 	{
 		$title = $this->content_item._(': ').$content['title'];
 
@@ -280,11 +280,14 @@ class DownloadModule extends ContentModule
 		//output the file
 		$filename = $root.'/'.$content['download_id'];
 		//FIXME really implement (headers...)
-		if(readfile($filename) !== FALSE)
-			exit(0);
-		$error = _('Could not read file');
-		return new PageElement('dialog', array('type' => 'error',
+		if(($fp = fopen($filename, 'rb')) === FALSE)
+		{
+			$error = _('Could not read file');
+			return new PageElement('dialog', array(
+				'type' => 'error',
 				'text' => $error));
+		}
+		return $fp;
 	}
 
 
