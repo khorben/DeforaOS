@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -17,33 +17,14 @@
 
 
 
+require_once('./src/system/mime.php');
+
+
 function _mime_from_ext($filename)
 {
-	static $types = FALSE;
+	global $engine;
 
-	if(!is_array($types))
-	{
-		$types = array();
-		if(($globs = _config_get('admin', 'globs')) == FALSE)
-		{
-			_error('MIME globs file is not defined', 0);
-			return 'default';
-		}
-		if(($globs = file_get_contents($globs)) == FALSE)
-		{
-			_error('Could not read MIME globs file', 0);
-			return 'default';
-		}
-		$globs = explode("\n", $globs);
-		array_shift($globs);
-		array_shift($globs);
-		foreach($globs as $l)
-			$types[] = explode(':', $l);
-	}
-	foreach($types as $g)
-		if(isset($g[1]) && fnmatch($g[1], $filename))
-			return $g[0];
-	return 'default';
+	return Mime::get($engine, $filename, 'default');
 }
 
 ?>
