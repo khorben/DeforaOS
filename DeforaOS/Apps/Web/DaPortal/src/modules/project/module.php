@@ -359,12 +359,8 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::_display
-	protected function _display($engine, $id, $title = FALSE)
+	protected function _display($engine, $content)
 	{
-		if($id === FALSE)
-			return $this->default();
-		if(($content = $this->_get($engine, $id, $title)) === FALSE)
-			return FALSE;
 		//for projects
 		$title = _('Project: ').$content['title'];
 		$r = new Request($engine, $this->name, 'list');
