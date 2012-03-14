@@ -14,10 +14,11 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //FIXME:
-//- implement file deletion
+//- properly implement file deletion
 
 
 
+require_once('./system/mime.php');
 require_once('./modules/content/module.php');
 
 
@@ -224,8 +225,8 @@ class DownloadModule extends ContentModule
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
 		$this->_displayField($page, _('Name'), $content['title']);
-		$this->_displayField($page, _('Type'), mime_content_type(
-				$content['title'])); //XXX deprecated
+		$this->_displayField($page, _('Type'), Mime::get($engine,
+				$content['title']));
 		$this->_displayField($page, _('Owner'), $content['username']);
 		$this->_displayField($page, _('Permissions'),
 			sprintf('%04o', $content['mode']));
@@ -281,7 +282,7 @@ class DownloadModule extends ContentModule
 		$root = $this->getRoot($engine);
 		//output the file
 		$filename = $root.'/'.$content['download_id'];
-		$mime = mime_content_type($content['title']); //XXX deprecated
+		$mime = Mime::get($content['title']);
 		if(($fp = fopen($filename, 'rb')) === FALSE)
 		{
 			$error = _('Could not read file');
