@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS System libSystem
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -19,4 +19,4 @@ FAILED=
 ./string		|| FAILED="$FAILED string"
 [ -z "$FAILED" ]	&& exit 0
 echo "Failed tests:$FAILED" 1>&2
-return 2
+exit 2
