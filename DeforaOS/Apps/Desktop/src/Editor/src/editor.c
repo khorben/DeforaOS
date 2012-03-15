@@ -273,9 +273,14 @@ Editor * editor_new(void)
 	widget = gtk_label_new(_("Find:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	editor->fi_store = gtk_list_store_new(1, G_TYPE_STRING);
+#if GTK_CHECK_VERSION(2, 24, 0)
 	editor->fi_text = gtk_combo_box_new_with_model_and_entry(GTK_TREE_MODEL(
 				editor->fi_store));
 	gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(editor->fi_text), 0);
+#else
+	/* XXX the combo box is useless here */
+	editor->fi_text = gtk_combo_box_new_with_entry();
+#endif
 	editor->fi_entry = gtk_bin_get_child(GTK_BIN(editor->fi_text));
 	g_signal_connect_swapped(editor->fi_entry, "activate", G_CALLBACK(
 				_editor_on_find_clicked), editor);
