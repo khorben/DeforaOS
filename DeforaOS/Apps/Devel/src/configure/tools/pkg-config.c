@@ -1,5 +1,6 @@
 /* $Id$ */
 /* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Baptiste Daroussin <bapt@FreeBSD.org> */
 /* This file is part of DeforaOS Devel configure */
 /* Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,6 +26,7 @@
  * SUCH DAMAGE. */
 
 
+#include <sys/param.h>
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -38,24 +40,35 @@
 # define PREFIX		"/usr/local"
 #endif
 
+#define PKG_CFLAGS		(1 << 0)
+#define PKG_CFLAGS_ONLY_I	(1 << 1)
+#define PKG_CFLAGS_ONLY_OTHERS	(1 << 2)
+#define PKG_LIBS		(1 << 3)
+#define PKG_LIBS_ONLY_L		(1 << 4)
+#define PKG_LIBS_ONLY_l		(1 << 5)
+#define PKG_LIBS_ONLY_OTHERS	(1 << 6)
+#define PKG_DESCRIPTION		(1 << 7)
+#define PKG_URL			(1 << 8)
+#define PKG_STATIC		(1 << 9)
+#define PKG_VERSION		(1 << 10)
+#define PKG_EXISTS		(1 << 11)
+#define PKG_MODVERSION		(1 << 12)
+#define PKG_PRINT_REQUIRES	(1 << 13)
+#define PKG_PRINT_REQUIRES_PRIV	(1 << 14)
 
 /* pkg-config without glib without pkg-config without glib without pkg-config */
 /* private */
 /* types */
-typedef struct _PkgConfigPrefs
-{
-	int cflags;
-	int cflags_only_I;
-	int cflags_only_other;
-	int exists;
-	int libs;
-	int libs_only_L;
-	int libs_only_l;
-	int libs_only_other;
-	int modversion;
-	int _static;
-	int version;
-} PkgConfigPrefs;
+typedef struct _ListData {
+	void *data;
+	void (*freefn)(void *free);
+} ListData;
+
+typedef struct _PkgList {
+	size_t cap;
+	size_t len;
+	ListData **data;
+} PkgList;
 
 typedef struct _PkgConfigVariable
 {
@@ -63,23 +76,56 @@ typedef struct _PkgConfigVariable
 	char * value;
 } PkgConfigVariable;
 
+typedef enum {
+	GT,
+	LT,
+	GE,
+	LE,
+	EQ
+} operator;
+
+typedef struct _Pkg
+{
+	char *pkgname;
+	char *name;
+	char *version;
+	char *description;
+	char *url;
+	PkgList *cflags;
+	PkgList *cflags_private;
+	PkgList *libs;
+	PkgList *libs_private;
+	PkgList *requires;
+	PkgList *requires_private;
+	PkgList *variables;
+} Pkg;
+
+typedef struct _PkgRequires
+{
+	char *name;
+	char *version;
+	operator op;
+	Pkg *pkg;
+} PkgRequires;
+
 typedef struct _PkgConfig
 {
-	PkgConfigPrefs prefs;
-
 	/* variables */
-	char const * libdir;
-	char const * path;
+	unsigned int flags;
 
-	/* parsing */
-	PkgConfigVariable * variables;
-	size_t variables_cnt;
+	PkgList *pc_dirs;
+	PkgList *pkgs;
 } PkgConfig;
 
-
 /* prototypes */
-static int _pkgconfig(PkgConfigPrefs * prefs, int pkgc, char * pkgv[]);
+static int _pkgconfig(PkgConfig * pc, int pkgc, char * pkgv[]);
 static int _pkgconfig_error(int ret, char const * format, ...);
+
+/* lists */
+static PkgList * _pkglist_new(PkgList **list);
+static void _pkglist_delete(PkgList *list);
+static void * _pkglist_get(PkgList *list, size_t i);
+static void _pkglist_append(PkgList *list, void *data, void (*freefn)(void *));
 
 /* string */
 static char * _string_new(char const * string);
@@ -94,120 +140,572 @@ static int _usage(int brief);
 
 /* functions */
 /* pkgconfig */
-static FILE * _pkgconfig_open(char const * path, char const * pkg);
-static int _pkgconfig_parse(PkgConfig * pc, FILE * fp);
-static int _pkgconfig_parse_directive(PkgConfig * pc, char const * directive,
+static Pkg* _pkg_new(Pkg **pkg, char const * pkgname);
+static void _pkgconfig_variable_delete(PkgConfigVariable *p);
+static FILE * _pkgconfig_open(PkgConfig * pc, char const * pkg);
+static int _pkgconfig_parse(PkgConfig * p, FILE * fp);
+static int _pkgconfig_parse_directive(PkgConfig * pc, Pkg * p, char const * directive,
 		char const * value);
-static int _pkgconfig_parse_requires(PkgConfig * pc, char const * requires);
-static char * _pkgconfig_parse_substitute(PkgConfig * pc, char const * value);
-static int _pkgconfig_parse_variable(PkgConfig * pc, char const * name,
+static char * _pkgconfig_parse_substitute(PkgList * v, char const * value);
+static int _pkgconfig_parse_variable(PkgConfig * pc, Pkg * p, char const * name,
 		char const * value);
+static int _pkgconfig_parse_name(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_description(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_version(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_cflags(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_cflags_private(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_libs(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_libs_private(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_requires(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_requires_private(PkgConfig *pc, Pkg *p, char *data);
+static int _pkgconfig_parse_requires_generic(PkgConfig *pc, Pkg *p, char *data, PkgList *lst);
 
-static int _pkgconfig(PkgConfigPrefs * prefs, int pkgc, char * pkgv[])
+struct keys {
+	const char *key;
+	int (*parse)(PkgConfig *, Pkg *, char *);
+} keys [] = {
+	{ "Name", _pkgconfig_parse_name  },
+	{ "Description", _pkgconfig_parse_description },
+	{ "Version", _pkgconfig_parse_version },
+	{ "Cflags", _pkgconfig_parse_cflags },
+	{ "Cflags.private", _pkgconfig_parse_cflags_private },
+	{ "Libs", _pkgconfig_parse_libs },
+	{ "Libs.private", _pkgconfig_parse_libs_private },
+	{ "Requires", _pkgconfig_parse_requires },
+	{ "Requires.private", _pkgconfig_parse_requires_private },
+	{ NULL, NULL },
+};
+
+static PkgRequires * _pkgrequires_new(PkgRequires **p, char *name)
+{
+	if (*p != NULL)
+		return *p;
+
+	if ((*p = malloc(sizeof(PkgRequires))) == NULL) {
+		_pkgconfig_error(1, "%s", strerror(errno));
+		return NULL;
+	}
+
+	(*p)->name = strdup(name);
+	(*p)->op = EQ;
+	(*p)->version = NULL;
+	(*p)->pkg = NULL;
+
+	return *p;
+}
+
+static void _pkgrequires_delete(void *p1)
+{
+	PkgRequires *p = (PkgRequires *)p1;
+
+	if (p == NULL)
+		return;
+
+	if (p->name != NULL)
+		free(p->name);
+
+	if (p->version != NULL)
+		free(p->version);
+}
+
+static Pkg * _pkg_new(Pkg **pkg, char const * pkgname)
+{
+	if (*pkg != NULL)
+		return *pkg;
+
+	if ((*pkg = malloc(sizeof(Pkg))) == NULL) {
+		_pkgconfig_error(1, "%s", strerror(errno));
+		return NULL;
+	}
+
+	(*pkg)->name = NULL;
+	(*pkg)->version = NULL;
+	(*pkg)->description = NULL;
+	(*pkg)->url = NULL;
+	(*pkg)->pkgname = strdup(pkgname);
+	(*pkg)->cflags = NULL;
+	(*pkg)->cflags_private = NULL;
+	(*pkg)->libs = NULL;
+	(*pkg)->libs_private = NULL;
+	(*pkg)->variables = NULL;
+	(*pkg)->requires = NULL;
+	(*pkg)->requires_private = NULL;
+
+	return *pkg;
+}
+
+static void _pkg_delete(void *pkg)
+{
+	Pkg *p = (Pkg *)pkg;
+
+	if (p->pkgname != NULL)
+		free(p->pkgname);
+	if (p->name != NULL)
+		free(p->name);
+	if (p->version != NULL)
+		free(p->version);
+	if (p->description != NULL)
+		free(p->description);
+	if (p->url != NULL)
+		free(p->url);
+
+	_pkglist_delete(p->cflags);
+	_pkglist_delete(p->cflags_private);
+	_pkglist_delete(p->libs);
+	_pkglist_delete(p->libs_private);
+	_pkglist_delete(p->variables);
+	_pkglist_delete(p->requires);
+	_pkglist_delete(p->requires_private);
+}
+
+static PkgConfigVariable *_pkgconfig_variable_new(PkgConfigVariable **p)
+{
+	if (*p != NULL)
+		return *p;
+
+	if ((*p = malloc(sizeof(PkgConfigVariable))) == NULL)
+	{
+		_pkgconfig_error(1, "%s", strerror(errno));
+		return NULL;
+	}
+
+	(*p)->name = NULL;
+	(*p)->value = NULL;
+
+	return *p;
+}
+
+static void _pkgconfig_variable_delete(PkgConfigVariable *p)
+{
+	free(p->name);
+	free(p->value);
+	free(p);
+}
+static int _pkgconfig_parse_name(__unused PkgConfig *pc, Pkg *p, char *data)
 {
 	int ret = 0;
-	PkgConfig pc;
+
+	if (p->name != NULL)
+		free(p->name);
+
+	p->name = strdup(data);
+
+	return ret;
+}
+
+static int _pkgconfig_parse_description(PkgConfig *pc, Pkg *p, char *data)
+{
+	int ret = 0;
+
+	if ((pc->flags & PKG_DESCRIPTION) == 0)
+		return ret;
+
+	if (p->description != NULL)
+		free(p->description);
+
+	p->description = strdup(data);
+
+	return ret;
+}
+
+static int _pkgconfig_parse_version(PkgConfig *pc, Pkg *p, char *data)
+{
+	int ret = 0;
+
+	if ((pc->flags & PKG_MODVERSION) == 0)
+		return ret;
+
+	if (p->version != NULL)
+		free(p->version);
+
+	p->version = strdup(data);
+
+	return ret;
+}
+
+static int split_chr(char *str, char sep)
+{
+	char *next;
+	char *buf = str;
+	int nbel = 0;
+
+	while ((next = strchr(buf, sep)) != NULL) {
+		nbel++;
+		buf = next;
+		buf[0] = '\0';
+		buf++;
+	}
+
+	return nbel;
+}
+
+static void _pkgconfig_add_to_list(PkgList *lst, char *data)
+{
+	size_t k;
+	/* do not append something already appended */
+	for (k = 0; k < lst->len; k++)
+		if (strcmp((char *)_pkglist_get(lst, k), data) == 0)
+			break;
+	if (k == lst->len)
+		_pkglist_append(lst, strdup(data), free);
+}
+
+static int _pkgconfig_parse_generic(PkgList *lst, char *data, unsigned int flags, unsigned int type)
+{
+	int ret = 0;
+	int i;
+	int nbel = 0;
+	size_t next;
+	char *walk;
+
+	nbel = split_chr(data, ' ');
+
+	next = strlen(data);
+	walk = data;
+	for (i = 0; i <= nbel; i++) {
+		if (next != 0) {
+			if (type == PKG_CFLAGS) {
+				if (flags & PKG_CFLAGS_ONLY_I) {
+					if (strncmp(walk, "-I", 2) == 0)
+						_pkgconfig_add_to_list(lst, walk);
+				} else if ((flags & PKG_CFLAGS_ONLY_OTHERS) == PKG_CFLAGS_ONLY_OTHERS) {
+					if (strncmp(walk, "-I", 2) != 0)
+						_pkgconfig_add_to_list(lst, walk);
+				} else {
+					_pkgconfig_add_to_list(lst, walk);
+				}
+			}
+
+			if (type == PKG_LIBS) {
+				if (flags & PKG_LIBS_ONLY_l) {
+					if (strncmp(walk, "-l", 2) == 0)
+						_pkgconfig_add_to_list(lst, walk);
+				} else if (flags & PKG_LIBS_ONLY_L) {
+					if (strncmp(walk, "-L", 2) == 0)
+						_pkgconfig_add_to_list(lst, walk);
+				} else if (flags & PKG_LIBS_ONLY_OTHERS) {
+					if (strncmp(walk, "-L", 2) != 0 && strncmp(walk, "-l", 2) != 0)
+						_pkgconfig_add_to_list(lst, walk);
+				} else {
+					_pkgconfig_add_to_list(lst, walk);
+				}
+			}
+		}
+		if (i != nbel) {
+			walk += next + 1;
+			next = strlen(walk);
+		}
+	}
+	
+	return ret;
+}
+
+static int _pkgconfig_parse_cflags(PkgConfig *pc, Pkg *p, char *data)
+{
+	if ((pc->flags & (PKG_CFLAGS|PKG_CFLAGS_ONLY_I|PKG_CFLAGS_ONLY_OTHERS)) == 0)
+		return 0;
+
+	_pkglist_new(&p->cflags);
+	return _pkgconfig_parse_generic(p->cflags, data, pc->flags, PKG_CFLAGS);
+}
+
+static int _pkgconfig_parse_cflags_private(PkgConfig *pc, Pkg *p, char *data)
+{
+	if ((pc->flags & (PKG_CFLAGS|PKG_CFLAGS_ONLY_I|PKG_CFLAGS_ONLY_OTHERS)) == 0)
+		return 0;
+
+	_pkglist_new(&p->cflags_private);
+	return _pkgconfig_parse_generic(p->cflags_private, data, pc->flags, PKG_CFLAGS);
+}
+
+static int _pkgconfig_parse_libs(PkgConfig *pc, Pkg *p, char *data)
+{
+	if ((pc->flags & (PKG_LIBS|PKG_LIBS_ONLY_L|PKG_LIBS_ONLY_l|PKG_LIBS_ONLY_OTHERS)) == 0)
+		return 0;
+
+	_pkglist_new(&p->libs);
+	return _pkgconfig_parse_generic(p->libs, data, pc->flags, PKG_LIBS);
+}
+
+static int _pkgconfig_parse_libs_private(PkgConfig *pc, Pkg *p, char *data)
+{
+	if ((pc->flags & (PKG_LIBS|PKG_LIBS_ONLY_L|PKG_LIBS_ONLY_l|PKG_LIBS_ONLY_OTHERS)) == 0)
+		return 0;
+
+	_pkglist_new(&p->libs_private);
+	return _pkgconfig_parse_generic(p->libs_private, data, pc->flags, PKG_LIBS);
+}
+
+static int _pkgconfig_parse_requires_private(PkgConfig *pc ,Pkg *p, char *data)
+{
+	if (pc->flags & PKG_MODVERSION)
+		return 0;
+
+	_pkglist_new(&p->requires_private);
+	return _pkgconfig_parse_requires_generic(pc, p, data, p->requires_private);
+}
+
+static int _pkgconfig_parse_requires(PkgConfig *pc, Pkg *p, char *data)
+{
+	if (pc->flags & PKG_MODVERSION)
+		return 0;
+
+	_pkglist_new(&p->requires);
+	return _pkgconfig_parse_requires_generic(pc, p, data, p->requires);
+}
+
+static void * _pkglist_lookup(PkgList *list, void *data, int (*compar)(const char *, const char *))
+{
+	size_t i;
+
+	for (i = 0; i < list->len; i++)
+		if (compar(_pkglist_get(list, i), data) == 0)
+			return _pkglist_get(list, i);
+
+	return NULL;
+}
+
+static void printout(PkgList *list, char * toprint)
+{
+	if (_pkglist_lookup(list, toprint, strcmp) != NULL)
+		return;
+
+	printf("%s ", toprint);
+	_pkglist_append(list, toprint, NULL);
+}
+
+static int _pkgconfig(PkgConfig * pc, int pkgc, char * pkgv[])
+{
+	int ret = 0;
+	PkgList *printed = NULL;
+	char out = '\0';
+
 	char const format[] = "Package %s was not found in the pkg-config"
 		" search path.\n"
 		"Perhaps you should add the directory containing `%s.pc'\n"
 		"to the PKG_CONFIG_PATH environment variable\n"
 		"No package '%s' found\n";
-	char const * p;
+	char const * libdir, * libpath;
 	int i;
+	size_t j, k;
 	FILE * fp;
+	Pkg *p;
 
-	memset(&pc, 0, sizeof(pc));
 	/* default values */
-	pc.libdir = "/usr/lib/pkgconfig"
-		":/usr/libdata/pkgconfig"
-		":" PREFIX "/libdata/pkgconfig"
-		":" PREFIX "/lib/pkgconfig"
-		":" PREFIX "/share/pkgconfig";
-	/* preferences */
-	memcpy(&pc.prefs, prefs, sizeof(pc.prefs));
+	_pkglist_append(pc->pc_dirs, "/usr/lib/pkgconfig", NULL);
+	_pkglist_append(pc->pc_dirs, "/usr/libdata/pkgconfig", NULL);
+	_pkglist_append(pc->pc_dirs, PREFIX"/libdata/pkgconfig", NULL);
+	_pkglist_append(pc->pc_dirs, PREFIX"/lib/pkgconfig", NULL);
+	_pkglist_append(pc->pc_dirs, PREFIX"/share/pkgconfig", NULL);
+
 	/* environment variables */
-	if((p = getenv("PKG_CONFIG_LIBDIR")) != NULL)
-		pc.libdir = p;
-	if((p = getenv("PKG_CONFIG_PATH")) != NULL)
-		pc.path = p;
+	libdir = getenv("PKG_CONFIG_LIBDIR");
+	libpath = getenv("PKG_CONFIG_PATH");
+	_pkglist_new(&printed);
+
+	/* TODO parse libpath and libdir */
+	if (libpath != NULL) {
+		_pkglist_delete(pc->pc_dirs);
+	} else if (libdir != NULL) {
+		_pkglist_delete(pc->pc_dirs);
+	}
 	/* packages */
 	for(i = 0; i < pkgc; i++)
 	{
-		if((fp = _pkgconfig_open(pc.libdir, pkgv[i])) == NULL)
-			fp = _pkgconfig_open(pc.path, pkgv[i]);
-		if(fp == NULL)		
-		{
-			fprintf(stderr, format, pkgv[i], pkgv[i], pkgv[i]);
-			ret |= 1;
+		/* Do not try to load already loaded pkgs */
+		for (j = 0; j < pc->pkgs->len; j++)
+			if (strcmp(((Pkg *) _pkglist_get(pc->pkgs, j))->pkgname, pkgv[i]) == 0)
+				break;
+
+		if (j < pc->pkgs->len)
 			continue;
+
+		if ((fp = _pkgconfig_open(pc, pkgv[i])) != NULL)
+		{
+			if ((pc->flags & PKG_EXISTS) == 0)
+				ret |= _pkgconfig_parse(pc, fp);
+			fclose(fp);
+		} else {
+			if ((pc->flags & PKG_EXISTS) == 0)
+				return _pkgconfig_error(1, format, pkgv[i], pkgv[i], pkgv[i]);
+			else
+				return 1;
 		}
-		ret |= _pkgconfig_parse(&pc, fp);
-		fclose(fp);
 	}
-	if(!prefs->exists)
-	{
-		if(prefs->libs && prefs->_static)
-			/* FIXME do not output -Wl,R -Wl,-rpath ... */
-			fputs(" -static", stdout);
-		putchar('\n');
+	if (pc->flags & PKG_MODVERSION) {
+		for (j = 0; j < pc->pkgs->len; j++) {
+			p = (Pkg*)_pkglist_get(pc->pkgs, j);
+			printf("%s\n",p->version);
+		}
+		_pkglist_delete(printed);
+		return 0;
 	}
+	if (pc->flags & (PKG_PRINT_REQUIRES|PKG_PRINT_REQUIRES_PRIV)) {
+		for (j = 0; j < pc->pkgs->len; j++) {
+			p = (Pkg *)_pkglist_get(pc->pkgs, j);
+			if (pc->flags & PKG_PRINT_REQUIRES && p->requires != NULL)
+				for (k = 0; k < p->requires->len; k++)
+					printf("%s\n", ((PkgRequires *)_pkglist_get(p->requires, k))->name);
+			if (pc->flags & PKG_PRINT_REQUIRES_PRIV && p->requires_private != NULL)
+				for (k = 0; k < p->requires_private->len; k++)
+					printf("%s\n", ((PkgRequires *)_pkglist_get(p->requires_private, k))->name);
+		}
+		_pkglist_delete(printed);
+		return 0;
+	}
+	if (pc->flags & (PKG_CFLAGS|PKG_CFLAGS_ONLY_OTHERS|PKG_CFLAGS_ONLY_I)) {
+		for (j = 0; j < pc->pkgs->len; j++) {
+			p = (Pkg*)_pkglist_get(pc->pkgs, j);
+			if (p->cflags == NULL)
+				continue;
+			for (k = 0; k < p->cflags->len; k++) {
+				printout(printed, (char *)_pkglist_get(p->cflags, k));
+				out='\n';
+			}
+		}
+	}
+	if (pc->flags & (PKG_LIBS|PKG_LIBS_ONLY_L|PKG_LIBS_ONLY_l|PKG_LIBS_ONLY_OTHERS)) {
+		for (j = 0; j < pc->pkgs->len; j++) {
+			p = (Pkg *)_pkglist_get(pc->pkgs, j);
+			if (p->libs == NULL)
+				continue;
+			for (k = 0; k < p->libs->len; k++) {
+				printout(printed, (char *)_pkglist_get(p->libs, k));
+				out='\n';
+			}
+			if (pc->flags & PKG_STATIC && p->libs_private != NULL) {
+				for (k = 0; k < p->libs_private->len; k++) {
+					printout(printed, (char *)_pkglist_get(p->libs_private, k));
+					out='\n';
+				}
+			}
+		}
+	}
+	printf("%c", out);
+	_pkglist_delete(printed);
 	return ret;
 }
 
-static FILE * _pkgconfig_open(char const * path, char const * pkg)
+/* see http://fedoraproject.org/wiki/Tools/RPM/VersionComparison */ 
+static int version_cmp(char const *v1, char const *v2)
+{
+	const char *ver1, *ver2;
+	int v1t = 0;
+	int v2t = 0;
+	int ret = 0;
+
+	if (strcmp(v1, v2) == 0)
+		return 0;
+
+	/* start as the first alpha numeric value */
+	while (*v1 != '\0' && *v2 != '\0') {
+		v1t = 0;
+		v2t = 0;
+		while (*v1 != '\0' && !isalnum(*v1))
+			v1++;
+		while (*v2 != '\0' && !isalnum(*v2))
+			v2++;
+
+		if (v1 == '\0' && v2 == '\0')
+			return 0;
+
+		if (v1 == '\0')
+			return -1;
+
+		if (v2 == '\0')
+			return 1;
+
+		ver1 = v1;
+		ver2 = v2;
+
+		if (isdigit(*ver1)) {
+			v1t = 1;
+			while (*v1 != '\0' && isdigit(*v1))
+				v1++;
+		} else {
+			v1t = 2;
+			while (*v1 != '\0' && isalpha(*v1))
+				v1++;
+		}
+
+		if (isdigit(*ver2)) {
+			v2t = 1;
+			while (*v2 != '\0' && isdigit(*v2))
+				v2++;
+		} else {
+			v2t = 2;
+			while (*v2 != '\0' && isalpha(*v2))
+				v2++;
+
+		}
+		/* v1 is alpha and v2 is num then v2 GT v1) */
+		if (v1t < v2t)
+			return -1;
+
+		/* v1 is num and v2 is alpha then v1 GT v2) */
+		if (v2t > v1t)
+			return 1;
+
+		if (v1t == 1) {
+			ret = strtol(ver1, NULL, 10) - strtol(ver2, NULL, 10);
+			if (ret != 0)
+				return ret;
+		} else {
+			while (*ver1 != *v1 && *ver2 != *v2) {
+				if (*ver1 == *ver2) {
+					ver1++;
+					ver2++;
+					continue;
+				}
+				break;
+			}
+			if (*ver1 == *v1 && *ver2 != *v2)
+				return -1;
+			if (*ver1 != *v1 && *ver2 == *v2)
+				return 1;
+			if (*ver1 > *ver2)
+				return 1;
+			if (*ver1 < *ver2)
+				return -1;
+		}
+		v1++;
+		v2++;
+	}
+	return 0;
+}
+
+static FILE * _pkgconfig_open(PkgConfig *pc, char const * pkg)
 {
 	FILE * fp;
 	size_t i;
-	char * p;
-	char * q;
-	char c;
+	char path[MAXPATHLEN];
+	Pkg *p = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, path, pkg);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pkg);
 #endif
-	if(path == NULL)
-		return NULL;
-	if((p = _string_new(path)) == NULL)
-		return NULL;
-	for(i = 0;; i++)
+	for (i = 0; i < pc->pc_dirs->len; i++)
 	{
-		if(p[i] != '\0' && p[i] != ':')
-			continue;
-		c = p[i];
-		p[i] = '\0';
-		if((q = _string_new_append(p, "/", pkg, ".pc", NULL))
-				== NULL)
-			return NULL;
-		fp = fopen(q, "r");
-		_string_delete(q);
-		if(fp != NULL)
-		{
-			_string_delete(p);
+		snprintf(path, MAXPATHLEN, "%s/%s.pc", (char *)_pkglist_get(pc->pc_dirs, i), pkg);
+		if ((fp = fopen(path, "r")) != NULL) {
+			p = _pkg_new(&p, pkg);
+			_pkglist_append(pc->pkgs, p, _pkg_delete);
 			return fp;
 		}
-		if(c == '\0')
-			break;
-		p += i + 1;
-		i = 0;
 	}
-	_string_delete(p);
 	return NULL;
 }
 
 static int _pkgconfig_parse(PkgConfig * pc, FILE * fp)
 {
-	PkgConfigVariable * v;
-	size_t v_cnt;
+	Pkg *p;
 	char * line;
 	size_t len = 256;
 	size_t i;
 	int c;
 
-	/* FIXME ugly hack */
-	v = pc->variables;
-	v_cnt = pc->variables_cnt;
-	pc->variables = NULL;
-	pc->variables_cnt = 0;
+	p = _pkglist_get(pc->pkgs, pc->pkgs->len - 1);
+
 	if((line = malloc(len)) == NULL)
 		return -1;
 	while(fgets(line, len, fp) != NULL)
@@ -227,14 +725,18 @@ static int _pkgconfig_parse(PkgConfig * pc, FILE * fp)
 		{
 			line[i] = '\0';
 			for(i += 1; (c = line[i]) != '\0' && isspace(c); i++);
-			if(_pkgconfig_parse_variable(pc, line, &line[i]) != 0)
+			if (line[i] == '\0')
+				continue;
+			if(_pkgconfig_parse_variable(pc, p, line, &line[i]) != 0)
 				return -1;
 		}
 		else if(line[i] == ':')
 		{
 			line[i] = '\0';
 			for(i += 1; (c = line[i]) != '\0' && isspace(c); i++);
-			if(_pkgconfig_parse_directive(pc, line, &line[i]) != 0)
+			if (line[i] == '\0')
+				continue;
+			if(_pkgconfig_parse_directive(pc, p, line, &line[i]) != 0)
 				return -1;
 		}
 #ifdef DEBUG
@@ -243,124 +745,132 @@ static int _pkgconfig_parse(PkgConfig * pc, FILE * fp)
 #endif
 	}
 	free(line);
-	pc->variables = v;
-	pc->variables_cnt = v_cnt;
 	return 0;
 }
 
-static int _pkgconfig_parse_directive(PkgConfig * pc, char const * directive,
+static int _pkgconfig_parse_directive(PkgConfig * pc, Pkg *pkg, char const * directive,
 		char const * value)
 {
 	int ret = 0;
 	char * p;
-	char * walk;
+	int i = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, directive,
 			value);
 #endif
-	if((p = _pkgconfig_parse_substitute(pc, value)) == NULL)
+	if((p = _pkgconfig_parse_substitute(pkg->variables, value)) == NULL)
 		return -1;
-	if(strcmp(directive, "Requires") == 0)
-		ret = _pkgconfig_parse_requires(pc, p);
-	else if(pc->prefs.exists)
-		ret = 0;
-	/* FIXME parse and store arguments for later instead */
-	else if(strcmp(directive, "Version") == 0 && pc->prefs.modversion)
-		printf("%s\n", p);
-	else if(strcmp(directive, "Cflags") == 0 && pc->prefs.cflags) {
-		if(pc->prefs.cflags_only_I) {
-			while((walk = strrchr(p, ' ')) != NULL) {
-				if (walk[1] == '-' && walk[2] == 'I')
-					printf(" %s", walk);
-				walk[0] = '\0';
-			}
-		} else if(pc->prefs.cflags_only_other) {
-			while((walk = strrchr(p, ' ')) != NULL) {
-				if (walk[1] == '-' && walk[2] != 'I')
-					printf(" %s", walk);
-				walk[0] = '\0';
-			}
-		} else
-			printf(" %s", p);
-	} else if(strcmp(directive, "Libs") == 0 && pc->prefs.libs) {
-		if(pc->prefs.libs_only_l) {
-			while((walk = strrchr(p, ' ')) != NULL) {
-				if (walk[1] == '-' && walk[2] == 'l')
-					printf(" %s", walk);
-				walk[0] = '\0';
-			}
-		} else if(pc->prefs.libs_only_L) {
-			while((walk = strrchr(p, ' ')) != NULL) {
-				if (walk[1] == '-' && walk[2] == 'L')
-					printf(" %s", walk);
-				walk[0] = '\0';
-			}
-		} else if(pc->prefs.libs_only_other) {
-			while((walk = strrchr(p, ' ')) != NULL) {
-				if (walk[1] == '-' && ( walk[2] != 'L' 
-							&& walk[2] != 'l'))
-					printf(" %s", walk);
-				walk[0] = '\0';
-			}
-		} else
-			printf(" %s", p);
+
+	for (i = 0; keys[i].key != NULL; i++) {
+		if (strcmp(directive, keys[i].key) == 0) {
+			keys[i].parse(pc, pkg, p);
+		}
 	}
-	/* FIXME implement the rest */
-#ifdef DEBUG
-	else
-		fprintf(stderr, "DEBUG: %s() \"%s\", \"%s\"\n", __func__,
-				directive, value);
-#endif
 	free(p);
 	return ret;
 }
 
-static int _pkgconfig_parse_requires(PkgConfig * pc, char const * requires)
+static int _pkgconfig_parse_requires_generic(PkgConfig *pc, Pkg * pkg, char * requires, PkgList *lst)
 {
 	int ret = 0;
+	int i;
+	size_t j;
 	char * p;
-	size_t i;
-	int c;
+	Pkg *reqp;
 	FILE * fp;
+	int expect_version = 0;
+	operator op;
+	int nbel;
+	char *walk;
+	size_t next;
+	PkgRequires *req = NULL;
+
+	if (pc->flags & PKG_MODVERSION)
+		return 0;
+
+	if (pc->flags & (PKG_LIBS|PKG_LIBS_ONLY_L|PKG_LIBS_ONLY_l|PKG_LIBS_ONLY_L) && (pc->flags & PKG_STATIC) == 0)
+		return 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, requires);
 #endif
-	if((p = _pkgconfig_parse_substitute(pc, requires)) == NULL)
+
+	if((p = _pkgconfig_parse_substitute(pkg->variables, requires)) == NULL)
 		return -1;
-	for(i = 0;; i++)
-	{
-		if((c = p[i]) != '\0' && !isspace(c) && c != ',')
+
+	nbel = split_chr(p, ' ');
+	nbel += split_chr(p, '\t');
+	nbel += split_chr(p, ',');
+
+	next = strlen(p);
+	walk = p;
+	for (i = 0; i <= nbel; i++) {
+		if (next == 0) {
+			walk += next + 1;
+			next = strlen(walk);
 			continue;
-		p[i] = '\0';
-		/* FIXME code duplication */
-		fp = _pkgconfig_open(pc->libdir, p);
-		if(fp == NULL)
-			fp = _pkgconfig_open(pc->path, p);
-		if(fp != NULL)
-		{
-			ret |= _pkgconfig_parse(pc, fp);
-			fclose(fp);
 		}
-		else
-			ret |= _pkgconfig_error(1, "%s: %s", p, strerror(
-						errno));
-		if(c == '\0')
-			break;
-		for(i++; (c = p[i]) != '\0' && isspace(c); i++);
-		if(c == '\0')
-			break;
-		p += i;
-		i = 0;
+
+		if (walk[0] == '>') {
+			if (req == NULL)
+				return -_pkgconfig_error(1, "malformed entry");
+			op = GT;
+			if (walk[0] == '=')
+				op = GE;
+			expect_version = 1;
+		} else if (walk[0] == '<') {
+			if (req == NULL)
+				return -_pkgconfig_error(1, "malformed entry");
+			op = LT;
+			if (walk[0] == '=')
+				op = LE;
+			expect_version = 1;
+		} else if (walk[0] == '=') {
+			if (req == NULL)
+				return -_pkgconfig_error(1, "malformed entry");
+			op = EQ;
+			expect_version = 1;
+		} else {
+			if (!expect_version) {
+				req = NULL;
+				_pkgrequires_new(&req, walk);
+				for (j = 0; j < pc->pkgs->len; j++) {
+					reqp = (Pkg*)_pkglist_get(pc->pkgs, j);
+					if (strcmp(reqp->pkgname, walk) == 0) {
+						req->pkg = reqp;
+						break;
+					}
+				}
+				_pkglist_append(lst, req, _pkgrequires_delete);
+				if (req->pkg == NULL) {
+					if ((fp = _pkgconfig_open(pc, req->name)) != NULL) {
+						if ((pc->flags & (PKG_PRINT_REQUIRES|PKG_PRINT_REQUIRES_PRIV)) == 0) {
+							ret |= _pkgconfig_parse(pc, fp);
+							reqp = (Pkg *)_pkglist_get(pc->pkgs, pc->pkgs->len -1);
+							req->pkg = reqp;
+						}
+						fclose(fp);
+					} else {
+						ret |= _pkgconfig_error(1, "%s: %s", req->name, strerror(errno));
+					}
+				}
+			} else {
+				req->version = strdup(walk);
+				expect_version = 0;
+			}
+		}
+		walk += next + 1;
+		next = strlen(walk);
 	}
 	_string_delete(p);
 	return ret;
 }
 
-static char * _pkgconfig_parse_substitute(PkgConfig * pc, char const * value)
+static char * _pkgconfig_parse_substitute(PkgList * vars, char const * value)
 {
 	char * ret = NULL;
+	PkgConfigVariable *var = NULL;
 	size_t i;
 	size_t j;
 	size_t k;
@@ -385,25 +895,27 @@ static char * _pkgconfig_parse_substitute(PkgConfig * pc, char const * value)
 			free(ret);
 			return NULL;
 		}
-		for(k = 0; k < pc->variables_cnt; k++)
-			if(strncmp(pc->variables[k].name, &value[i + 2],
+		for(k = 0; k < vars->len; k++) {
+			var = (PkgConfigVariable *)_pkglist_get(vars, k);
+			if(strncmp(var->name, &value[i + 2],
 						j - i - 2) == 0)
 				break;
-		if(k == pc->variables_cnt)
+			var = NULL;
+		}
+		if(var == NULL)
 		{
 			/* FIXME report error */
 			free(ret);
 			return NULL;
 		}
-		if(_string_append(&ret, pc->variables[k].value) != 0)
+		if(_string_append(&ret, var->value) != 0)
 		{
 			/* FIXME report error */
 			free(ret);
 			return NULL;
 		}
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s => %s\n", pc->variables[k].name,
-				pc->variables[k].value);
+		fprintf(stderr, "DEBUG: %s => %s\n", var->name, var->value);
 #endif
 		i = j;
 	}
@@ -413,40 +925,46 @@ static char * _pkgconfig_parse_substitute(PkgConfig * pc, char const * value)
 	return ret;
 }
 
-static int _pkgconfig_parse_variable(PkgConfig * pc, char const * name,
+static int _pkgconfig_parse_variable(__unused PkgConfig * pc, Pkg *pkg, char const * name,
 		char const * value)
 {
-	PkgConfigVariable * p;
+	PkgConfigVariable * p = NULL;
 	char * q;
 	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, name, value);
 #endif
-	if((q = _pkgconfig_parse_substitute(pc, value)) == NULL)
+
+	if((q = _pkgconfig_parse_substitute(pkg->variables, value)) == NULL)
 		return -1;
+
+	_pkglist_new(&pkg->variables);
+
 	/* check if the variable already exists */
-	for(i = 0; i < pc->variables_cnt; i++)
-		if(strcmp(pc->variables[i].name, name) == 0)
+	for(i = 0; i < pkg->variables->len; i++)
+	{
+		p = (PkgConfigVariable *)_pkglist_get(pkg->variables, i);
+		if(strcmp(p->name, name) == 0)
 		{
-			free(pc->variables[i].value);
-			pc->variables[i].value = q;
+			free(p->value);
+			p->value = q;
 			return 0;
 		}
+	}
+
 	/* allocate a new variable */
-	if((p = realloc(pc->variables, sizeof(*p) * (pc->variables_cnt + 1)))
-			== NULL)
-		return -_pkgconfig_error(1, "%s", strerror(errno));
-	pc->variables = p;
-	p = &pc->variables[i];
-	p->value = q;
+	p = NULL;
+	p = _pkgconfig_variable_new(&p);
+
 	if((p->name = strdup(name)) == NULL)
 	{
-		free(p->name);
-		free(p->value);
+		_pkgconfig_variable_delete(p);
 		return -_pkgconfig_error(1, "%s", strerror(errno));
 	}
-	pc->variables_cnt++;
+	p->value = q;
+	/* TODO cleanup function */
+	_pkglist_append(pkg->variables, p, NULL);
 	return 0;
 }
 
@@ -540,6 +1058,65 @@ static int _string_append_length(char ** string, char const * append,
 	return 0;
 }
 
+/* lists */
+static PkgList * _pkglist_new(PkgList ** pkglist)
+{
+	if (*pkglist != NULL)
+		return *pkglist;
+
+	*pkglist = malloc(sizeof(PkgList));
+	(*pkglist)->len = 0;
+	(*pkglist)->cap = 0;
+	(*pkglist)->data = NULL;
+
+	return *pkglist;
+}
+
+static void * _pkglist_get(PkgList *pkglist, size_t i)
+{
+	if (i >= pkglist->len)
+		return NULL;
+
+	return pkglist->data[i]->data;
+}
+
+static void _pkglist_delete(PkgList *pkglist)
+{
+	size_t i;
+
+	if (pkglist == NULL)
+		return;
+
+	for (i = 0; i < pkglist->len; i++) {
+		if (pkglist->data[i]->freefn != NULL)
+			pkglist->data[i]->freefn(_pkglist_get(pkglist,i));
+	}
+
+	free(pkglist);
+}
+
+static void  _pkglist_append(PkgList *pkglist, void *data, void (*freefn)(void *))
+{
+	ListData *ldata;
+	if (pkglist->cap <= pkglist->len) {
+		pkglist->cap |= 1;
+		pkglist->cap *= 2;
+		if ((pkglist->data = reallocf(pkglist->data, pkglist->cap * sizeof (ListData))) == NULL) {
+			_pkgconfig_error(1, "%s", strerror(errno));
+			return;
+		}
+	}
+	if ((ldata = malloc(sizeof(ListData))) == NULL)
+	{
+		_pkgconfig_error(1, "%s", strerror(errno));
+		return;
+	}
+
+	ldata->data = data;
+	ldata->freefn = freefn;
+	pkglist->data[pkglist->len++] = ldata;
+}
+
 
 /* usage */
 static int _usage(int brief)
@@ -549,16 +1126,18 @@ static int _usage(int brief)
 				stderr);
 	else
 		fputs("Usage: pkg-config [OPTIONS...] [PACKAGES...]\n"
-"  --cflags		Output all pre-processor and compiler flags\n"
-"  --cflags-only-I	Output -I flags\n"
-"  --cflags-only-other	Output non -I flags\n"
-"  --libs		Output all linker flags\n"
-"  --libs_only_L	Ouput -L flags\n"
-"  --libs_only_l	Ouput -l flags\n"
-"  --libs_only_other	other libs (e.g. -pthread)\n"
-"  --static		Output linker flags for static linking\n"
-"  --version		Output version of pkg-config\n"
-"  --modversion		Output version for package\n"
+"  --cflags			Output all pre-processor and compiler flags\n"
+"  --cflags-only-I		Output -I flags\n"
+"  --cflags-only-other		Output non -I flags\n"
+"  --libs			Output all linker flags\n"
+"  --libs_only_L		Ouput -L flags\n"
+"  --libs_only_l		Ouput -l flags\n"
+"  --libs_only_other		other libs (e.g. -pthread)\n"
+"  --modversion			Output version for package\n"
+"  --print-requires		Output the requires packages\n"
+"  --print-requires_private	Output the requires private packages\n"
+"  --static			Output linker flags for static linking\n"
+"  --version			Output version of pkg-config\n"
 "\n"
 "Help options:\n"
 "  -?, --help		Show this help message\n"
@@ -568,44 +1147,51 @@ static int _usage(int brief)
 
 
 /* main */
-static int _main_option(PkgConfigPrefs * prefs, char const * option);
-static int _main_option_cflags(PkgConfigPrefs * prefs);
-static int _main_option_cflags_only_I(PkgConfigPrefs * prefs);
-static int _main_option_cflags_only_other(PkgConfigPrefs * prefs);
-static int _main_option_exists(PkgConfigPrefs * prefs);
-static int _main_option_libs(PkgConfigPrefs * prefs);
-static int _main_option_libs_only_l(PkgConfigPrefs * prefs);
-static int _main_option_libs_only_L(PkgConfigPrefs * prefs);
-static int _main_option_libs_only_other(PkgConfigPrefs * prefs);
-static int _main_option_static(PkgConfigPrefs * prefs);
-static int _main_option_usage(PkgConfigPrefs * prefs);
-static int _main_option_version(PkgConfigPrefs * prefs);
-static int _main_option_modversion(PkgConfigPrefs * prefs);
+static int _main_option(PkgConfig * pc, char const * option);
+static int _main_option_cflags(PkgConfig * pc);
+static int _main_option_cflags_only_I(PkgConfig * pc);
+static int _main_option_cflags_only_other(PkgConfig * pc);
+static int _main_option_exists(PkgConfig * pc);
+static int _main_option_libs(PkgConfig * pc);
+static int _main_option_libs_only_l(PkgConfig * pc);
+static int _main_option_libs_only_L(PkgConfig * pc);
+static int _main_option_libs_only_other(PkgConfig * pc);
+static int _main_option_static(PkgConfig * pc);
+static int _main_option_usage(PkgConfig * pc);
+static int _main_option_version(PkgConfig * pc);
+static int _main_option_modversion(PkgConfig * pc);
+static int _main_option_print_requires(PkgConfig * pc);
+static int _main_option_print_requires_private(PkgConfig * pc);
 static struct
 {
 	char const * option;
-	int (*callback)(PkgConfigPrefs * prefs);
+	int (*callback)(PkgConfig * pc);
 } _main_options[] = {
-	{ "cflags",		_main_option_cflags		},
-	{ "cflags-only-I",	_main_option_cflags_only_I	},
-	{ "cflags-only-other",	_main_option_cflags_only_other	},
-	{ "exists",		_main_option_exists		},
-	{ "libs",		_main_option_libs		},
-	{ "libs-only-l",	_main_option_libs_only_l	},
-	{ "libs-only-L",	_main_option_libs_only_L	},
-	{ "libs-only-other",	_main_option_libs_only_other	},
-	{ "modversion",		_main_option_modversion		},
-	{ "static",		_main_option_static		},
-	{ "usage",		_main_option_usage		},
-	{ "version",		_main_option_version		}
+	{ "cflags",			_main_option_cflags			},
+	{ "cflags-only-I",		_main_option_cflags_only_I		},
+	{ "cflags-only-other",		_main_option_cflags_only_other		},
+	{ "exists",			_main_option_exists			},
+	{ "libs",			_main_option_libs			},
+	{ "libs-only-l",		_main_option_libs_only_l		},
+	{ "libs-only-L",		_main_option_libs_only_L		},
+	{ "libs-only-other",		_main_option_libs_only_other		},
+	{ "modversion",			_main_option_modversion			},
+	{ "print-requires",		_main_option_print_requires		},
+	{ "print-requires-private",	_main_option_print_requires_private	},
+	{ "static",			_main_option_static			},
+	{ "usage",			_main_option_usage			},
+	{ "version",			_main_option_version			}
 };
 
 int main(int argc, char * argv[])
 {
-	PkgConfigPrefs prefs;
+	PkgConfig pc;
 	int optind;
 
-	memset(&prefs, 0, sizeof(prefs));
+	memset(&pc, 0, sizeof(pc));
+	_pkglist_new(&pc.pkgs);
+	_pkglist_new(&pc.pc_dirs);
+	pc.flags = '\0';
 	/* getopt() is too complicated for GNU */
 	/* FIXME stupid GNU accepts options even after actual arguments */
 	/* -- khorben: no want fix it cause this meant as troll */
@@ -620,9 +1206,10 @@ int main(int argc, char * argv[])
 			optind++;
 			break;
 		}
-		if(_main_option(&prefs, argv[optind]) != 0)
+		if(_main_option(&pc, argv[optind]) != 0)
 			return 1;
 	}
+
 	/* check if any package was specified */
 	if(optind == argc)
 	{
@@ -630,87 +1217,99 @@ int main(int argc, char * argv[])
 				stderr);
 		return 1;
 	}
-	return _pkgconfig(&prefs, argc - optind, &argv[optind]);
+	return _pkgconfig(&pc, argc - optind, &argv[optind]);
 }
 
-static int _main_option(PkgConfigPrefs * prefs, char const * option)
+static int _main_option(PkgConfig * pc, char const * option)
 {
 	size_t i;
 
 	for(i = 0; i < sizeof(_main_options) / sizeof(*_main_options); i++)
 		if(strcmp(_main_options[i].option, &option[2]) == 0)
-			return _main_options[i].callback(prefs);
+			return _main_options[i].callback(pc);
 	fprintf(stderr, "%s: Unknown option\n", option);
 	return 1;
 }
 
-static int _main_option_cflags(PkgConfigPrefs * prefs)
+static int _main_option_cflags(PkgConfig * pc)
 {
-	prefs->cflags = 1;
+	pc->flags |= PKG_CFLAGS;
 	return 0;
 }
 
-static int _main_option_cflags_only_I(PkgConfigPrefs * prefs)
+static int _main_option_cflags_only_I(PkgConfig * pc)
 {
-	prefs->cflags_only_other = 1;
+	pc->flags |= PKG_CFLAGS_ONLY_I;
 	return 0;
 }
 
-static int _main_option_cflags_only_other(PkgConfigPrefs * prefs)
+static int _main_option_cflags_only_other(PkgConfig * pc)
 {
-	prefs->cflags_only_other = 1;
+	pc->flags |= PKG_CFLAGS_ONLY_OTHERS;
 	return 0;
 }
 
-static int _main_option_exists(PkgConfigPrefs * prefs)
+static int _main_option_exists(PkgConfig * pc)
 {
-	prefs->exists = 1;
+	pc->flags |= PKG_EXISTS;
 	return 0;
 }
 
-static int _main_option_libs(PkgConfigPrefs * prefs)
+static int _main_option_libs(PkgConfig * pc)
 {
-	prefs->libs = 1;
+	pc->flags |= PKG_LIBS;
 	return 0;
 }
 
-static int _main_option_libs_only_L(PkgConfigPrefs * prefs)
+static int _main_option_libs_only_L(PkgConfig * pc)
 {
-	prefs->libs_only_L = 1;
+	pc->flags |= PKG_LIBS_ONLY_L;
 	return 0;
 }
 
-static int _main_option_libs_only_l(PkgConfigPrefs * prefs)
+static int _main_option_libs_only_l(PkgConfig * pc)
 {
-	prefs->libs_only_l = 1;
+	pc->flags |= PKG_LIBS_ONLY_l;
 	return 0;
 }
 
-static int _main_option_libs_only_other(PkgConfigPrefs * prefs)
+static int _main_option_libs_only_other(PkgConfig * pc)
 {
-	prefs->libs_only_other = 1;
+	pc->flags |= PKG_LIBS_ONLY_OTHERS;
 	return 0;
 }
 
-static int _main_option_static(PkgConfigPrefs * prefs)
+static int _main_option_modversion(PkgConfig * pc)
 {
-	prefs->_static = 1;
+	pc->flags |= PKG_MODVERSION;
 	return 0;
 }
 
-static int _main_option_usage(PkgConfigPrefs * prefs)
+static int _main_option_print_requires(PkgConfig * pc)
+{
+	pc->flags |= PKG_PRINT_REQUIRES;
+	return 0;
+}
+
+static int _main_option_print_requires_private(PkgConfig * pc)
+{
+	pc->flags |= PKG_PRINT_REQUIRES_PRIV;
+	return 0;
+}
+
+static int _main_option_static(PkgConfig * pc)
+{
+	pc->flags |= PKG_STATIC;
+	return 0;
+}
+
+static int _main_option_usage(__unused PkgConfig * pc)
 {
 	return _usage(1);
 }
 
-static int _main_option_version(PkgConfigPrefs * prefs)
+static int _main_option_version(__unused PkgConfig * pc)
 {
-	prefs->version = 1;
-	return 0;
-}
-
-static int _main_option_modversion(PkgConfigPrefs * prefs)
-{
-	prefs->modversion = 1;
-	return 0;
+	puts("0.26");
+	exit(0);
 }
