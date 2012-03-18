@@ -16,7 +16,7 @@ number of different environments. The common requirements are:
 - a SQL database backend; either:
   * PDO, now standard in PHP
   * SQLite, http://www.sqlite.org/
-  * PostgreSQL, http://www.postgresql.org/ (via PDO at the moment)
+  * PostgreSQL, http://www.postgresql.org/
   * or MySQL, http://www.mysql.org/ (with known issues)
 
 Then, depending on the desired user-interface:
