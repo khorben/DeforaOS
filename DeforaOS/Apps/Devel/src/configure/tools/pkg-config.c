@@ -1101,7 +1101,7 @@ static void  _pkglist_append(PkgList *pkglist, void *data, void (*freefn)(void *
 	if (pkglist->cap <= pkglist->len) {
 		pkglist->cap |= 1;
 		pkglist->cap *= 2;
-		if ((pkglist->data = reallocf(pkglist->data, pkglist->cap * sizeof (ListData))) == NULL) {
+		if ((pkglist->data = realloc(pkglist->data, pkglist->cap * sizeof (ListData))) == NULL) {
 			_pkgconfig_error(1, "%s", strerror(errno));
 			return;
 		}
