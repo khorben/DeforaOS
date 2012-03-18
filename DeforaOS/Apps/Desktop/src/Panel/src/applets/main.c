@@ -88,6 +88,7 @@ static void _on_clicked(gpointer data);
 static gboolean _on_idle(gpointer data);
 static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
+static void _on_rotate(gpointer data);
 static void _on_run(gpointer data);
 static void _on_shutdown(gpointer data);
 static void _on_suspend(gpointer data);
@@ -315,12 +316,19 @@ static void _on_clicked(gpointer data)
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_about), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* lock screen */
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = _main_menuitem(_("Lock screen"), "gnome-lockscreen");
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_lock), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* rotate screen */
+	menuitem = _main_menuitem(_("Rotate"), NULL);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+			G_CALLBACK(_on_rotate), data);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* logout */
 	if(main->helper->logout_dialog != NULL)
 	{
 		menuitem = _main_menuitem(_("Logout..."), "gnome-logout");
@@ -328,6 +336,7 @@ static void _on_clicked(gpointer data)
 				G_CALLBACK(_on_logout), data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
+	/* suspend */
 	if(main->helper->suspend != NULL)
 	{
 		menuitem = _main_menuitem(_("Suspend"), "gtk-media-pause");
@@ -335,6 +344,7 @@ static void _on_clicked(gpointer data)
 				G_CALLBACK(_on_suspend), data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
+	/* shutdown */
 	menuitem = _main_menuitem(_("Shutdown..."), "gnome-shutdown");
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_shutdown), data);
@@ -460,6 +470,15 @@ static void _on_logout(gpointer data)
 	Main * main = data;
 
 	main->helper->logout_dialog(main->helper->panel);
+}
+
+
+/* on_rotate */
+static void _on_rotate(gpointer data)
+{
+	Main * main = data;
+
+	main->helper->rotate_screen(main->helper->panel);
 }
 
 

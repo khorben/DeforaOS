@@ -37,6 +37,8 @@ static char const _license[] =
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <X11/X.h>
+#include <X11/extensions/Xrandr.h>
 #include "window.h"
 #include "panel.h"
 #include "../config.h"
@@ -144,6 +146,7 @@ static void _panel_helper_position_menu_bottom(Panel * panel, GtkMenu * menu,
 static void _panel_helper_position_menu_top(Panel * panel, GtkMenu * menu,
 		gint * x, gint * y, gboolean * push_in);
 static void _panel_helper_preferences_dialog(Panel * panel);
+static void _panel_helper_rotate_screen(Panel * panel);
 static void _panel_helper_shutdown_dialog(Panel * panel);
 static int _panel_helper_suspend(Panel * panel);
 
@@ -194,6 +197,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 #endif
 	panel->top_helper.position_menu = _panel_helper_position_menu_top;
 	panel->top_helper.preferences_dialog = _panel_helper_preferences_dialog;
+	panel->top_helper.rotate_screen = _panel_helper_rotate_screen;
 	panel->top_helper.shutdown_dialog = _panel_helper_shutdown_dialog;
 	panel->top_helper.suspend = (_panel_can_suspend())
 		? _panel_helper_suspend : NULL;
@@ -1510,6 +1514,24 @@ static void _panel_helper_position_menu_top(Panel * panel, GtkMenu * menu,
 static void _panel_helper_preferences_dialog(Panel * panel)
 {
 	panel_show_preferences(panel, TRUE);
+}
+
+
+/* panel_helper_rotate_screen */
+static void _panel_helper_rotate_screen(Panel * panel)
+{
+	GdkDisplay * display;
+	XRRScreenConfiguration * sc;
+	Rotation r;
+	SizeID size;
+
+	display = gdk_screen_get_display(panel->screen);
+	sc = XRRGetScreenInfo(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(panel->root));
+	size = XRRConfigCurrentConfiguration(sc, &r);
+	r = (r == RR_Rotate_0) ? RR_Rotate_90 : RR_Rotate_0;
+	XRRSetScreenConfig(GDK_DISPLAY_XDISPLAY(display), sc,
+			GDK_WINDOW_XWINDOW(panel->root), size, r, CurrentTime);
 }
 
 
