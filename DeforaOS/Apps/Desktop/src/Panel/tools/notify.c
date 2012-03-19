@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <System.h>
@@ -32,19 +33,22 @@
 #ifdef PACKAGE
 # undef PACKAGE
 #endif
-#define PACKAGE "panel-test"
+#define PACKAGE "panel-notify"
 #include "helper.c"
 
 
 /* private */
 /* prototypes */
-static int _test(GtkIconSize iconsize, char * applets[]);
+static int _notify(GtkIconSize iconsize, int timeout, char * applets[]);
+/* callbacks */
+static gboolean _notify_on_timeout(gpointer data);
+
 static int _usage(void);
 
 
 /* functions */
-/* test */
-static int _test(GtkIconSize iconsize, char * applets[])
+/* notify */
+static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 {
 	Panel panel;
 	char * filename;
@@ -62,15 +66,20 @@ static int _test(GtkIconSize iconsize, char * applets[])
 	PanelApplet * pa;
 
 	if((panel.config = config_new()) == NULL)
-		return error_print(PACKAGE);
+		return error_print("panel-notify");
 	if((filename = _config_get_filename()) != NULL
 			&& config_load(panel.config, filename) != 0)
-		error_print(PACKAGE);
+		error_print("panel-notify");
 	free(filename);
 	panel.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(panel.window), 4);
+	gtk_window_set_accept_focus(GTK_WINDOW(panel.window), FALSE);
+	gtk_window_set_decorated(GTK_WINDOW(panel.window), FALSE);
+	gtk_window_set_position(GTK_WINDOW(panel.window),
+			GTK_WIN_POS_CENTER_ALWAYS);
 	g_signal_connect(G_OBJECT(panel.window), "delete-event", G_CALLBACK(
 				gtk_main_quit), NULL);
-	gtk_window_set_title(GTK_WINDOW(panel.window), "Applet tester");
+	gtk_window_set_title(GTK_WINDOW(panel.window), "Applet notifier");
 	box = gtk_hbox_new(FALSE, 4);
 	_helper_init(&helper, &panel, iconsize);
 	for(i = 0; applets[i] != NULL; i++)
@@ -82,7 +91,7 @@ static int _test(GtkIconSize iconsize, char * applets[])
 		snprintf(p, len, "%s%s%s", path, applets[i], so);
 		if((dl = dlopen(p, RTLD_LAZY)) == NULL)
 		{
-			fprintf(stderr, "%s: %s: %s\n", "panel-test",
+			fprintf(stderr, "%s: %s: %s\n", "panel-notify",
 					applets[i], dlerror());
 			continue;
 		}
@@ -101,16 +110,31 @@ static int _test(GtkIconSize iconsize, char * applets[])
 	gtk_container_add(GTK_CONTAINER(panel.window), box);
 	gtk_widget_show_all(panel.window);
 	panel.timeout = 0;
+	if(timeout > 0)
+		panel.timeout = g_timeout_add(timeout * 1000,
+				_notify_on_timeout, &panel);
 	gtk_main();
 	return 0;
+}
+
+
+/* callbacks */
+/* notify_on_timeout */
+static gboolean _notify_on_timeout(gpointer data)
+{
+	Panel * panel = data;
+
+	panel->timeout = 0;
+	gtk_main_quit();
+	return FALSE;
 }
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel-test [-sx] applet...\n"
-"       panel-test -l\n"
+	fputs("Usage: panel-notify [-sx][-t timeout] applet...\n"
+"       panel-notify -l\n"
 "  -l	Lists the plug-ins available\n", stderr);
 	return 1;
 }
@@ -122,16 +146,24 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	GtkIconSize iconsize = GTK_ICON_SIZE_LARGE_TOOLBAR;
+	int timeout = 3;
 	int o;
+	char * p;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "lsx")) != -1)
+	while((o = getopt(argc, argv, "lst:x")) != -1)
 		switch(o)
 		{
 			case 'l':
 				return _applet_list();
 			case 's':
 				iconsize = GTK_ICON_SIZE_SMALL_TOOLBAR;
+				break;
+			case 't':
+				timeout = strtoul(optarg, &p, 0);
+				if(optarg[0] == '\0' || *p != '\0'
+						|| timeout < 0)
+					return _usage();
 				break;
 			case 'x':
 				iconsize = GTK_ICON_SIZE_MENU;
@@ -141,6 +173,6 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	_test(iconsize, &argv[optind]);
+	_notify(iconsize, timeout, &argv[optind]);
 	return 0;
 }

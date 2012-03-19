@@ -101,8 +101,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/Makefile \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.atoms \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/notify.c \
 		$(PACKAGE)-$(VERSION)/tools/test.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/helper.c \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
