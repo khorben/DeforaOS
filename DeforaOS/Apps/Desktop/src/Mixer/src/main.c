@@ -43,7 +43,7 @@ static int _usage(void)
 {
 	fputs(_("Usage: mixer [-H|-T|-V][-d device][-x]\n"
 "  -H	Show the classes next to each other\n"
-"  -V	Show the classes in separate tabs\n"
+"  -T	Show the classes in separate tabs\n"
 "  -V	Show the classes on top of each other\n"
 "  -d	The mixer device to use\n"
 "  -x	Enable embedded mode\n"), stderr);
