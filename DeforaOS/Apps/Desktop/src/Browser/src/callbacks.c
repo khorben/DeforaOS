@@ -829,8 +829,8 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_from_stock(
-			GTK_STOCK_PROPERTIES, NULL);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES,
+			NULL);
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_properties), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
