@@ -12,6 +12,7 @@
 ../src/applets/logout.c
 ../src/applets/main.c
 ../src/applets/memory.c
+../src/applets/rotate.c
 ../src/applets/swap.c
 ../src/applets/tasks.c
 ../src/applets/title.c
