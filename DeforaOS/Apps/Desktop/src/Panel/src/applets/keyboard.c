@@ -125,8 +125,7 @@ static Keyboard * _keyboard_init(PanelAppletHelper * helper,
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
 				_keyboard_on_toggled), keyboard);
-	image = gtk_image_new_from_icon_name("input-keyboard",
-			helper->icon_size);
+	image = gtk_image_new_from_icon_name(applet.icon, helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(ret), image);
 	gtk_widget_show_all(ret);
 	keyboard->source = g_idle_add(_init_idle, keyboard);
@@ -215,7 +214,7 @@ static GtkWidget * _keyboard_settings(Keyboard * keyboard, gboolean apply,
 	PanelAppletHelper * helper = keyboard->helper;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void *)applet,
+	fprintf(stderr, "DEBUG: %s(%p, %s, %s)\n", __func__, (void *)keyboard,
 			apply ? "TRUE" : "FALSE", reset ? "TRUE" : "FALSE");
 #endif
 	if(keyboard->pr_box == NULL)
