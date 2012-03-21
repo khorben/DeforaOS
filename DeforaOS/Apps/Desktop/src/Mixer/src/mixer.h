@@ -40,6 +40,7 @@ void mixer_delete(Mixer * mixer);
 /* accessors */
 int mixer_set_enum(Mixer * mixer, GtkWidget * widget);
 int mixer_set_mute(Mixer * mixer, GtkWidget * widget);
+int mixer_set_set(Mixer * mixer, GtkWidget * widget);
 int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
 
 /* useful */

@@ -170,10 +170,12 @@ void on_mute_toggled(GtkWidget * widget, gpointer data)
 /* on_set_toggled */
 void on_set_toggled(GtkWidget * widget, gpointer data)
 {
+	Mixer * mixer = data;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME implement */
+	mixer_set_set(mixer, widget);
 }
 
 

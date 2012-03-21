@@ -791,6 +791,35 @@ int mixer_set_mute(Mixer * mixer, GtkWidget * widget)
 }
 
 
+/* mixer_set_set */
+int mixer_set_set(Mixer * mixer, GtkWidget * widget)
+{
+#ifdef AUDIO_MIXER_DEVINFO
+	mixer_ctrl_t * p;
+	int * q;
+
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void *)mixer,
+			mixer->fd);
+# endif
+	p = g_object_get_data(G_OBJECT(widget), "ctrl");
+	q = g_object_get_data(G_OBJECT(widget), "ord");
+	if(p == NULL || q == NULL)
+		return 1;
+	p->un.ord = *q;
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void *)mixer,
+			mixer->fd, p->un.ord);
+# endif
+	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) != 0)
+		return -_mixer_error(mixer, "AUDIO_MIXER_WRITE", 1);
+#else
+	/* FIXME implement */
+#endif
+	return 0;
+}
+
+
 /* mixer_set_value */
 int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 {
@@ -1051,11 +1080,28 @@ static int _mixer_get_control(Mixer * mixer, int index, MixerControl * control)
 		case AUDIO_MIXER_ENUM:
 			control->un.ord = p.un.ord;
 # ifdef DEBUG
-			printf("%d", p->un.ord);
+			for(i = 0; i < md.un.e.num_mem; i++)
+			{
+				if(md.un.e.member[i].ord != p.un.ord)
+					continue;
+				printf("%s%s", sep,
+						md.un.e.member[i].label.name);
+				break;
+			}
 # endif
 			break;
 		case AUDIO_MIXER_SET:
 			control->un.mask = p.un.mask;
+# ifdef DEBUG
+			for(i = 0; i < md.un.s.num_mem; i++)
+			{
+				if((p.un.mask & (1 << i)) == 0)
+					continue;
+				printf("%s%s", sep,
+						md.un.s.member[i].label.name);
+				sep = ",";
+			}
+# endif
 			break;
 		case AUDIO_MIXER_VALUE:
 			control->un.level.channels_cnt
