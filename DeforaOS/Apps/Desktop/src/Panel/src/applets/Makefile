@@ -1,4 +1,4 @@
-TARGETS	= battery.so bluetooth.so clock.so close.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so pager.so phone.so separator.so spacer.so swap.so systray.so tasks.so title.so usb.so volume.so wpa_supplicant.so
+TARGETS	= battery.so bluetooth.so clock.so close.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so pager.so phone.so rotate.so separator.so spacer.so swap.so systray.so tasks.so title.so usb.so volume.so wpa_supplicant.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -130,6 +130,13 @@ phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 phone.so: $(phone_OBJS)
 	$(CCSHARED) -o phone.so $(phone_OBJS) $(phone_LDFLAGS)
 
+rotate_OBJS = rotate.o
+rotate_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+rotate_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+rotate.so: $(rotate_OBJS)
+	$(CCSHARED) -o rotate.so $(rotate_OBJS) $(rotate_LDFLAGS)
+
 separator_OBJS = separator.o
 separator_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 separator_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -241,6 +248,9 @@ pager.o: pager.c ../../include/Panel.h
 phone.o: phone.c ../../include/Panel.h
 	$(CC) $(phone_CFLAGS) -c phone.c
 
+rotate.o: rotate.c ../../include/Panel.h
+	$(CC) $(rotate_CFLAGS) -c rotate.c
+
 separator.o: separator.c ../../include/Panel.h
 	$(CC) $(separator_CFLAGS) -c separator.c
 
@@ -269,7 +279,7 @@ wpa_supplicant.o: wpa_supplicant.c ../../include/Panel.h
 	$(CC) $(wpa_supplicant_CFLAGS) -c wpa_supplicant.c
 
 clean:
-	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(close_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(separator_OBJS) $(spacer_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(title_OBJS) $(usb_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
+	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(close_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(rotate_OBJS) $(separator_OBJS) $(spacer_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(title_OBJS) $(usb_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -308,6 +318,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- phone.so $(DESTDIR)$(LIBDIR)/Panel/applets/phone.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 -- rotate.so $(DESTDIR)$(LIBDIR)/Panel/applets/rotate.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- separator.so $(DESTDIR)$(LIBDIR)/Panel/applets/separator.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- spacer.so $(DESTDIR)$(LIBDIR)/Panel/applets/spacer.so
@@ -343,6 +355,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/phone.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/rotate.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/separator.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/spacer.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
