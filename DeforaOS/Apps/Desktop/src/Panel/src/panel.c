@@ -38,7 +38,7 @@ static char const _license[] =
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <X11/X.h>
-#include <X11/extensions/Xrandr.h>
+#include <Desktop/Browser.h>
 #include "window.h"
 #include "panel.h"
 #include "../config.h"
@@ -1520,18 +1520,8 @@ static void _panel_helper_preferences_dialog(Panel * panel)
 /* panel_helper_rotate_screen */
 static void _panel_helper_rotate_screen(Panel * panel)
 {
-	GdkDisplay * display;
-	XRRScreenConfiguration * sc;
-	Rotation r;
-	SizeID size;
-
-	display = gdk_screen_get_display(panel->screen);
-	sc = XRRGetScreenInfo(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(panel->root));
-	size = XRRConfigCurrentConfiguration(sc, &r);
-	r = (r == RR_Rotate_0) ? RR_Rotate_90 : RR_Rotate_0;
-	XRRSetScreenConfig(GDK_DISPLAY_XDISPLAY(display), sc,
-			GDK_WINDOW_XWINDOW(panel->root), size, r, CurrentTime);
+	desktop_message_send(DESKTOP_CLIENT_MESSAGE, DESKTOP_MESSAGE_SET_LAYOUT,
+			DESKTOP_LAYOUT_TOGGLE, 0);
 }
 
 
