@@ -106,6 +106,7 @@ gboolean on_open_file(gpointer data)
 
 
 /* file menu */
+/* on_file_new_window */
 void on_file_new_window(gpointer data)
 {
 	on_new_window(data);
