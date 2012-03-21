@@ -30,6 +30,7 @@ static char _license[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -228,6 +229,8 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 	MixerClass * p;
 	size_t u;
 	GtkWidget * vbox2;
+	char * name;
+	int c;
 #else
 	int value;
 	char const * labels[] = SOUND_DEVICE_LABELS;
@@ -400,8 +403,12 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 			hbox = mixer->mc[u].hbox;
 			if(mixer->notebook != NULL)
 			{
+				if((name = strdup(mixer->mc[u].label.name))
+						!= NULL)
+					name[0] = toupper((c = name[0]));
 				label = _new_frame_label(NULL,
-						mixer->mc[u].label.name, NULL);
+						mixer->mc[u].label.name, name);
+				free(name);
 				gtk_widget_show_all(label);
 				scrolled = gtk_scrolled_window_new(NULL, NULL);
 				gtk_scrolled_window_set_policy(
