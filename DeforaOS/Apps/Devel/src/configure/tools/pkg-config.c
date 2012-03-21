@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* Copyright (c) 2012 Baptiste Daroussin <bapt@FreeBSD.org> */
 /* This file is part of DeforaOS Devel configure */
 /* Redistribution and use in source and binary forms, with or without
@@ -593,6 +593,7 @@ static int version_cmp(char const *v1, char const *v2)
 	int v1t = 0;
 	int v2t = 0;
 	int ret = 0;
+	int c;
 
 	if (strcmp(v1, v2) == 0)
 		return 0;
@@ -601,9 +602,9 @@ static int version_cmp(char const *v1, char const *v2)
 	while (*v1 != '\0' && *v2 != '\0') {
 		v1t = 0;
 		v2t = 0;
-		while (*v1 != '\0' && !isalnum(*v1))
+		while(*v1 != '\0' && !isalnum((c = *v1)))
 			v1++;
-		while (*v2 != '\0' && !isalnum(*v2))
+		while(*v2 != '\0' && !isalnum((c = *v2)))
 			v2++;
 
 		if (v1 == '\0' && v2 == '\0')
@@ -618,23 +619,23 @@ static int version_cmp(char const *v1, char const *v2)
 		ver1 = v1;
 		ver2 = v2;
 
-		if (isdigit(*ver1)) {
+		if (isdigit((c = *ver1))) {
 			v1t = 1;
-			while (*v1 != '\0' && isdigit(*v1))
+			while(*v1 != '\0' && isdigit((c = *v1)))
 				v1++;
 		} else {
 			v1t = 2;
-			while (*v1 != '\0' && isalpha(*v1))
+			while(*v1 != '\0' && isalpha((c = *v1)))
 				v1++;
 		}
 
-		if (isdigit(*ver2)) {
+		if (isdigit((c = *ver2))) {
 			v2t = 1;
-			while (*v2 != '\0' && isdigit(*v2))
+			while(*v2 != '\0' && isdigit((c = *v2)))
 				v2++;
 		} else {
 			v2t = 2;
-			while (*v2 != '\0' && isalpha(*v2))
+			while(*v2 != '\0' && isalpha((c = *v2)))
 				v2++;
 
 		}
