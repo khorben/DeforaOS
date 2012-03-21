@@ -307,7 +307,6 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 			hvbox = gtk_vbox_new(TRUE, 4);
 		else
 			hvbox = gtk_hbox_new(FALSE, 4);
-		gtk_container_set_border_width(GTK_CONTAINER(hvbox), 4);
 		gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
 					scrolled), hvbox);
 	}
@@ -401,6 +400,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		{
 			mixer->mc[u].hbox = gtk_hbox_new(FALSE, 4);
 			hbox = mixer->mc[u].hbox;
+			gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 			if(mixer->notebook != NULL)
 			{
 				if((name = strdup(mixer->mc[u].label.name))
