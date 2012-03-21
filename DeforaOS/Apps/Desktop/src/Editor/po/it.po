@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-24 23:00-0500\n"
+"POT-Creation-Date: 2012-03-21 02:54+0100\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -153,94 +153,94 @@ msgstr ""
 msgid "Find:"
 msgstr ""
 
-#: ../src/editor.c:283
+#: ../src/editor.c:289
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/editor.c:285
+#: ../src/editor.c:291
 msgid "Wrap"
 msgstr ""
 
-#: ../src/editor.c:319
+#: ../src/editor.c:325
 msgid "Text editor - "
 msgstr ""
 
-#: ../src/editor.c:320
+#: ../src/editor.c:326
 msgid "(Untitled)"
 msgstr ""
 
-#: ../src/editor.c:433
+#: ../src/editor.c:439
 msgid "translator-credits"
 msgstr ""
 
-#: ../src/editor.c:469
+#: ../src/editor.c:475
 msgid "Could not save configuration"
 msgstr ""
 
-#: ../src/editor.c:486 ../src/editor.c:495 ../src/editor.c:853
-#: ../src/editor.c:858
+#: ../src/editor.c:492 ../src/editor.c:501 ../src/editor.c:859
+#: ../src/editor.c:864
 msgid "Question"
 msgstr ""
 
-#: ../src/editor.c:511 ../src/editor.c:515
+#: ../src/editor.c:517 ../src/editor.c:521
 msgid "Error"
 msgstr ""
 
-#: ../src/editor.c:537 ../src/editor.c:690
+#: ../src/editor.c:543 ../src/editor.c:696
 msgid ""
 "There are unsaved changes.\n"
 "Discard or save them?"
 msgstr ""
 
-#: ../src/editor.c:648
+#: ../src/editor.c:654
 msgid "Insert file..."
 msgstr ""
 
-#: ../src/editor.c:654 ../src/editor.c:767
+#: ../src/editor.c:660 ../src/editor.c:773
 msgid "Text files"
 msgstr ""
 
-#: ../src/editor.c:658 ../src/editor.c:771
+#: ../src/editor.c:664 ../src/editor.c:777
 msgid "All files"
 msgstr ""
 
-#: ../src/editor.c:696
+#: ../src/editor.c:702
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:761
+#: ../src/editor.c:767
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:829
+#: ../src/editor.c:835
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:857
+#: ../src/editor.c:863
 msgid "This file already exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:866
+#: ../src/editor.c:872
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:881
+#: ../src/editor.c:887
 msgid "Save as..."
 msgstr ""
 
-#: ../src/editor.c:938
+#: ../src/editor.c:944
 msgid "Text editor preferences"
 msgstr ""
 
-#: ../src/editor.c:955
+#: ../src/editor.c:961
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:965
+#: ../src/editor.c:971
 msgid "Wrap mode:"
 msgstr ""
 
-#: ../src/editor.c:1176
+#: ../src/editor.c:1182
 msgid "Text not found"
 msgstr ""
 

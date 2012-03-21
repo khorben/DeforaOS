@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-24 23:00-0500\n"
+"POT-Creation-Date: 2012-03-21 02:54+0100\n"
 "PO-Revision-Date: 2010-04-11 12:32+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -152,42 +152,42 @@ msgstr "mots puis caractères"
 msgid "Find:"
 msgstr "Chercher :"
 
-#: ../src/editor.c:283
+#: ../src/editor.c:289
 msgid "Case-sensitive"
 msgstr "Sensible à la casse"
 
-#: ../src/editor.c:285
+#: ../src/editor.c:291
 msgid "Wrap"
 msgstr "Boucler"
 
-#: ../src/editor.c:319
+#: ../src/editor.c:325
 msgid "Text editor - "
 msgstr "Éditeur de texte - "
 
-#: ../src/editor.c:320
+#: ../src/editor.c:326
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/editor.c:433
+#: ../src/editor.c:439
 msgid "translator-credits"
 msgstr ""
 "Calimero <calimeroteknik@free.fr>\n"
 "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/editor.c:469
+#: ../src/editor.c:475
 msgid "Could not save configuration"
 msgstr "Erreur lors de la sauvegarde de la configuration"
 
-#: ../src/editor.c:486 ../src/editor.c:495 ../src/editor.c:853
-#: ../src/editor.c:858
+#: ../src/editor.c:492 ../src/editor.c:501 ../src/editor.c:859
+#: ../src/editor.c:864
 msgid "Question"
 msgstr "Question"
 
-#: ../src/editor.c:511 ../src/editor.c:515
+#: ../src/editor.c:517 ../src/editor.c:521
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/editor.c:537 ../src/editor.c:690
+#: ../src/editor.c:543 ../src/editor.c:696
 msgid ""
 "There are unsaved changes.\n"
 "Discard or save them?"
@@ -195,55 +195,55 @@ msgstr ""
 "Il y a des changements non enregistrés.\n"
 "Abandonner ou enregistrer ?"
 
-#: ../src/editor.c:648
+#: ../src/editor.c:654
 msgid "Insert file..."
 msgstr "Insérer un fichier..."
 
-#: ../src/editor.c:654 ../src/editor.c:767
+#: ../src/editor.c:660 ../src/editor.c:773
 msgid "Text files"
 msgstr "Fichiers texte"
 
-#: ../src/editor.c:658 ../src/editor.c:771
+#: ../src/editor.c:664 ../src/editor.c:777
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: ../src/editor.c:696
+#: ../src/editor.c:702
 msgid "Discard"
 msgstr "Annuler"
 
-#: ../src/editor.c:761
+#: ../src/editor.c:767
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/editor.c:829
+#: ../src/editor.c:835
 msgid "Partial write"
 msgstr "Écriture partielle"
 
-#: ../src/editor.c:857
+#: ../src/editor.c:863
 msgid "This file already exists. Overwrite?"
 msgstr "Le fichier existe déjà. L'écraser ?"
 
-#: ../src/editor.c:866
+#: ../src/editor.c:872
 msgid "Allocation error"
 msgstr "Erreur d'allocation"
 
-#: ../src/editor.c:881
+#: ../src/editor.c:887
 msgid "Save as..."
 msgstr "Enregistrer sous..."
 
-#: ../src/editor.c:938
+#: ../src/editor.c:944
 msgid "Text editor preferences"
 msgstr "Préférences de l'éditeur de texte"
 
-#: ../src/editor.c:955
+#: ../src/editor.c:961
 msgid "Font:"
 msgstr "Police :"
 
-#: ../src/editor.c:965
+#: ../src/editor.c:971
 msgid "Wrap mode:"
 msgstr "Retour à la ligne :"
 
-#: ../src/editor.c:1176
+#: ../src/editor.c:1182
 msgid "Text not found"
 msgstr "Texte non trouvé"
 
