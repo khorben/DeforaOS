@@ -56,6 +56,7 @@ typedef struct _MixerClass
 	int mixer_class;
 	audio_mixer_name_t label;
 	GtkWidget * hbox;
+	int page;
 } MixerClass;
 #endif
 
@@ -327,6 +328,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		p->mixer_class = md.mixer_class;
 		memcpy(&p->label, &md.label, sizeof(md.label));
 		p->hbox = NULL;
+		p->page = -1;
 #else
 		hbox = gtk_hbox_new(FALSE, 4);
 		if(mixer->notebook != NULL)
@@ -412,8 +414,8 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 				gtk_scrolled_window_add_with_viewport(
 						GTK_SCROLLED_WINDOW(scrolled),
 						hbox);
-				gtk_notebook_append_page(GTK_NOTEBOOK(
-							mixer->notebook),
+				mixer->mc[u].page = gtk_notebook_append_page(
+						GTK_NOTEBOOK(mixer->notebook),
 						scrolled, label);
 			}
 			else if(hvbox != NULL)
@@ -945,9 +947,20 @@ void mixer_show_class(Mixer * mixer, char const * name)
 #ifdef AUDIO_MIXER_DEVINFO
 	size_t u;
 
-	if(mixer->notebook != NULL)
-		/* FIXME really implement */
-		name = NULL;
+	if(mixer->notebook != NULL && name != NULL)
+	{
+		for(u = 0; u < mixer->mc_cnt; u++)
+		{
+			if(mixer->mc[u].hbox == NULL)
+				continue;
+			if(strcmp(mixer->mc[u].label.name, name) != 0)
+				continue;
+			gtk_notebook_set_current_page(GTK_NOTEBOOK(
+						mixer->notebook),
+					mixer->mc[u].page);
+		}
+		return;
+	}
 	for(u = 0; u < mixer->mc_cnt; u++)
 		if(mixer->mc[u].hbox == NULL)
 			continue;
