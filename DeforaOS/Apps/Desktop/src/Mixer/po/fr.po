@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mixer 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-21 16:04+0100\n"
+"POT-Creation-Date: 2012-03-21 16:11+0100\n"
 "PO-Revision-Date: 2010-04-23 04:08+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -92,34 +92,34 @@ msgstr "_Aide"
 msgid "All"
 msgstr "Tous"
 
-#: ../src/mixer.c:602
+#: ../src/mixer.c:606
 msgid "Mute"
 msgstr "Muet"
 
-#: ../src/mixer.c:673
+#: ../src/mixer.c:677
 msgid "Bind"
 msgstr "Lier"
 
-#: ../src/mixer.c:835
+#: ../src/mixer.c:839
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/mixer.c:868
+#: ../src/mixer.c:872
 msgid "Mixer properties"
 msgstr "Propriétés du mixer"
 
-#: ../src/mixer.c:884
+#: ../src/mixer.c:888
 msgid "Name: "
 msgstr "Nom : "
 
-#: ../src/mixer.c:894
+#: ../src/mixer.c:898
 msgid "Version: "
 msgstr "Version : "
 
-#: ../src/mixer.c:904
+#: ../src/mixer.c:908
 msgid "Device: "
 msgstr "Carte : "
 
-#: ../src/mixer.c:976 ../src/mixer.c:981
+#: ../src/mixer.c:980 ../src/mixer.c:985
 msgid "Error"
 msgstr "Erreur"

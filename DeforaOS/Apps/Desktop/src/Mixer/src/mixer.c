@@ -494,10 +494,14 @@ static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
 		char const * name;
 		char const * icon;
 	} icons[] = {
+		{ "beep",	"audio-volume-high"	},
 		{ "cd",		"media-cdrom"		},
+		{ "input",	"stock_line-in"		},
 		{ "line",	"stock_line-in"		},
 		{ "master",	"audio-volume-high"	},
 		{ "mic",	"audio-input-microphone"},
+		{ "monitor",	"gtk-media-record"	},
+		{ "output",	"audio-volume-high"	},
 		{ "pcm",	"audio-volume-high"	},
 		{ "rec",	"gtk-media-record"	},
 		{ "source",	"stock_line-in"		},
