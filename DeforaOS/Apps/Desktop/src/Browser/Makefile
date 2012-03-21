@@ -35,6 +35,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Browser.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Browser/desktop.h \
+		$(PACKAGE)-$(VERSION)/include/Browser/Makefile \
+		$(PACKAGE)-$(VERSION)/include/Browser/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \

@@ -34,7 +34,9 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xrandr.h>
 #include <System.h>
+#include "Browser/desktop.h"
 #include "desktop.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -98,6 +100,8 @@ struct _Desktop
 	GtkWidget * pr_background;
 	GtkWidget * pr_background_how;
 	GtkWidget * pr_background_extend;
+	GtkWidget * pr_ilayout;
+	GtkWidget * pr_imonitor;
 	GtkWidget * pr_ibcolor;
 	GtkWidget * pr_ifcolor;
 	GtkWidget * pr_ifont;
@@ -164,6 +168,20 @@ static const char * _desktop_hows[DESKTOP_HOW_COUNT] =
 	"tiled"
 };
 
+static const char * _desktop_icons_config[DESKTOP_ICONS_COUNT] =
+{
+	"none", "applications", "categories", "files", "homescreen"
+};
+
+static const char * _desktop_icons[DESKTOP_ICONS_COUNT] =
+{
+	N_("Do not draw icons"),
+	N_("Applications"),
+	N_("Categories"),
+	N_("Desktop contents"),
+	N_("Home screen")
+};
+
 
 /* prototypes */
 static int _desktop_error(Desktop * desktop, char const * message,
@@ -209,7 +227,7 @@ Desktop * desktop_new(DesktopPrefs * prefs)
 	/* set default foreground to white */
 	memset(&desktop->foreground, 0xff, sizeof(desktop->foreground));
 	desktop->prefs.alignment = DESKTOP_ALIGNMENT_VERTICAL;
-	desktop->prefs.layout = DESKTOP_LAYOUT_FILES;
+	desktop->prefs.icons = DESKTOP_ICONS_FILES;
 	desktop->prefs.monitor = -1;
 	if(prefs != NULL)
 		memcpy(&desktop->prefs, prefs, sizeof(*prefs));
@@ -248,8 +266,6 @@ static gboolean _new_idle(gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
-	char const * p;
-	char * q;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -258,16 +274,9 @@ static gboolean _new_idle(gpointer data)
 		return FALSE;
 	_idle_background(desktop, config);
 	_idle_icons(desktop, config);
-	if(desktop->prefs.monitor < 0
-			&& (p = config_get(config, "icons", "monitor")) != NULL)
-	{
-		desktop->prefs.monitor = strtol(p, &q, 10);
-		if(p[0] == '\0' || *q != '\0')
-			desktop->prefs.monitor = -1;
-	}
 	config_delete(config);
 	_desktop_get_workarea(desktop);
-	desktop_set_layout(desktop, desktop->prefs.layout);
+	desktop_set_icons(desktop, desktop->prefs.icons);
 	return FALSE;
 }
 
@@ -296,8 +305,10 @@ static void _idle_icons(Desktop * desktop, Config * config)
 {
 	GdkColor color;
 	char const * p;
+	char * q;
 	size_t i;
 
+	/* icons colors */
 	if((p = config_get(config, "icons", "background")) != NULL)
 	{
 		gdk_color_parse(p, &color);
@@ -308,6 +319,7 @@ static void _idle_icons(Desktop * desktop, Config * config)
 		gdk_color_parse(p, &color);
 		desktop->foreground = color;
 	}
+	/* icons font */
 	if((p = config_get(config, "icons", "font")) != NULL)
 		desktop->font = pango_font_description_from_string(p);
 	for(i = 0; i < desktop->icon_cnt; i++)
@@ -318,6 +330,34 @@ static void _idle_icons(Desktop * desktop, Config * config)
 		desktopicon_set_foreground(desktop->icon[i],
 				&desktop->foreground);
 	}
+	/* icons monitor */
+	if(desktop->prefs.monitor < 0
+			&& (p = config_get(config, "icons", "monitor")) != NULL)
+	{
+		desktop->prefs.monitor = strtol(p, &q, 10);
+		if(p[0] == '\0' || *q != '\0')
+			desktop->prefs.monitor = -1;
+	}
+	/* icons layout */
+	if(desktop->prefs.icons < 0
+			&& (p = config_get(config, "icons", "layout")) != NULL)
+	{
+		for(i = 0; i < DESKTOP_ICONS_COUNT; i++)
+			if(strcmp(_desktop_icons_config[i], p) == 0)
+			{
+				desktop->prefs.icons = i;
+				break;
+			}
+	}
+	if(desktop->prefs.icons < 0
+			|| desktop->prefs.icons >= DESKTOP_ICONS_COUNT)
+		desktop->prefs.icons = DESKTOP_ICONS_FILES;
+	/* icons alignment */
+	if(desktop->prefs.alignment < 0)
+		desktop->prefs.alignment = (desktop->prefs.icons
+				== DESKTOP_ICONS_FILES)
+			? DESKTOP_ALIGNMENT_VERTICAL
+			: DESKTOP_ALIGNMENT_HORIZONTAL;
 }
 
 static int _on_message(void * data, uint32_t value1, uint32_t value2,
@@ -326,6 +366,7 @@ static int _on_message(void * data, uint32_t value1, uint32_t value2,
 	Desktop * desktop = data;
 	DesktopMessage message;
 	DesktopAlignment alignment;
+	DesktopIcons icons;
 	DesktopLayout layout;
 
 	switch((message = value1))
@@ -333,6 +374,10 @@ static int _on_message(void * data, uint32_t value1, uint32_t value2,
 		case DESKTOP_MESSAGE_SET_ALIGNMENT:
 			alignment = value2;
 			desktop_set_alignment(desktop, alignment);
+			break;
+		case DESKTOP_MESSAGE_SET_ICONS:
+			icons = value2;
+			desktop_set_icons(desktop, icons);
 			break;
 		case DESKTOP_MESSAGE_SET_LAYOUT:
 			layout = value2;
@@ -393,7 +438,7 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		return GDK_FILTER_CONTINUE;
 	}
 	/* ignore if not managing files */
-	if(desktop->prefs.layout != DESKTOP_LAYOUT_FILES)
+	if(desktop->prefs.icons != DESKTOP_ICONS_FILES)
 		return GDK_FILTER_CONTINUE;
 	desktop->menu = gtk_menu_new();
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
@@ -671,42 +716,42 @@ static void _alignment_vertical(Desktop * desktop)
 }
 
 
-/* desktop_set_layout */
-static void _layout_delete(Desktop * desktop);
-static int _layout_applications(Desktop * desktop);
-static int _layout_categories(Desktop * desktop);
-static int _layout_files(Desktop * desktop);
-static void _layout_files_add_home(Desktop * desktop);
-static int _layout_homescreen(Desktop * desktop);
-static void _layout_set_categories(Desktop * desktop, gpointer data);
-static void _layout_set_homescreen(Desktop * desktop, gpointer data);
+/* desktop_set_icons */
+static void _icons_delete(Desktop * desktop);
+static int _icons_applications(Desktop * desktop);
+static int _icons_categories(Desktop * desktop);
+static int _icons_files(Desktop * desktop);
+static void _icons_files_add_home(Desktop * desktop);
+static int _icons_homescreen(Desktop * desktop);
+static void _icons_set_categories(Desktop * desktop, gpointer data);
+static void _icons_set_homescreen(Desktop * desktop, gpointer data);
 
-void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
+void desktop_set_icons(Desktop * desktop, DesktopIcons icons)
 {
-	_layout_delete(desktop);
-	desktop->prefs.layout = layout;
-	switch(layout)
+	_icons_delete(desktop);
+	desktop->prefs.icons = icons;
+	switch(icons)
 	{
-		case DESKTOP_LAYOUT_APPLICATIONS:
-			_layout_applications(desktop);
+		case DESKTOP_ICONS_APPLICATIONS:
+			_icons_applications(desktop);
 			break;
-		case DESKTOP_LAYOUT_CATEGORIES:
-			_layout_categories(desktop);
+		case DESKTOP_ICONS_CATEGORIES:
+			_icons_categories(desktop);
 			break;
-		case DESKTOP_LAYOUT_FILES:
-			_layout_files(desktop);
+		case DESKTOP_ICONS_FILES:
+			_icons_files(desktop);
 			break;
-		case DESKTOP_LAYOUT_HOMESCREEN:
-			_layout_homescreen(desktop);
+		case DESKTOP_ICONS_HOMESCREEN:
+			_icons_homescreen(desktop);
 			break;
-		case DESKTOP_LAYOUT_NONE:
+		case DESKTOP_ICONS_NONE:
 			/* nothing to do */
 			break;
 	}
 	desktop_refresh(desktop);
 }
 
-static void _layout_delete(Desktop * desktop)
+static void _icons_delete(Desktop * desktop)
 {
 	size_t i;
 
@@ -723,7 +768,7 @@ static void _layout_delete(Desktop * desktop)
 		_desktop_categories[i].show = FALSE;
 }
 
-static int _layout_applications(Desktop * desktop)
+static int _icons_applications(Desktop * desktop)
 {
 	const char path[] = DATADIR "/applications";
 	struct stat st;
@@ -737,10 +782,11 @@ static int _layout_applications(Desktop * desktop)
 	if(stat(desktop->path, &st) == 0)
 		if(!S_ISDIR(st.st_mode))
 			return desktop_error(NULL, strerror(ENOTDIR), 1);
+	/* FIXME list all applications otherwise? */
 	if(desktop->category != NULL)
 	{
 		desktopicon = desktopicon_new(desktop, _("Back"), NULL);
-		desktopicon_set_callback(desktopicon, _layout_set_categories,
+		desktopicon_set_callback(desktopicon, _icons_set_categories,
 				NULL);
 		desktopicon_set_immutable(desktopicon, TRUE);
 		icon = gtk_icon_theme_load_icon(desktop->theme, "back",
@@ -752,15 +798,15 @@ static int _layout_applications(Desktop * desktop)
 	return 0;
 }
 
-static int _layout_categories(Desktop * desktop)
+static int _icons_categories(Desktop * desktop)
 {
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
 
 	desktop->category = NULL;
-	_layout_applications(desktop); /* XXX hack */
+	_icons_applications(desktop); /* XXX hack */
 	desktopicon = desktopicon_new(desktop, _("Back"), NULL);
-	desktopicon_set_callback(desktopicon, _layout_set_homescreen, NULL);
+	desktopicon_set_callback(desktopicon, _icons_set_homescreen, NULL);
 	desktopicon_set_first(desktopicon, TRUE);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "back",
@@ -771,7 +817,7 @@ static int _layout_categories(Desktop * desktop)
 	return 0;
 }
 
-static int _layout_files(Desktop * desktop)
+static int _icons_files(Desktop * desktop)
 {
 	const char path[] = "/" DESKTOP;
 	const char * file[] = { "gnome-fs-regular",
@@ -798,7 +844,7 @@ static int _layout_files(Desktop * desktop)
 			desktop->folder = gtk_icon_theme_load_icon(
 					desktop->theme, *p,
 					DESKTOPICON_ICON_SIZE, 0, NULL);
-	_layout_files_add_home(desktop);
+	_icons_files_add_home(desktop);
 	desktop->path_cnt = strlen(desktop->home) + 1 + sizeof(path);
 	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
 		return desktop_error(NULL, strerror(ENOTDIR), 1);
@@ -814,7 +860,7 @@ static int _layout_files(Desktop * desktop)
 	return 0;
 }
 
-static void _layout_files_add_home(Desktop * desktop)
+static void _icons_files_add_home(Desktop * desktop)
 {
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
@@ -834,7 +880,7 @@ static void _layout_files_add_home(Desktop * desktop)
 		desktopicon_set_icon(desktopicon, icon);
 }
 
-static int _layout_homescreen(Desktop * desktop)
+static int _icons_homescreen(Desktop * desktop)
 {
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
@@ -852,7 +898,7 @@ static int _layout_homescreen(Desktop * desktop)
 	if((desktopicon = desktopicon_new(desktop, _("Applications"), NULL))
 			== NULL)
 		return desktop_error(NULL, error_get(), 1);
-	desktopicon_set_callback(desktopicon, _layout_set_categories, NULL);
+	desktopicon_set_callback(desktopicon, _icons_set_categories, NULL);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-applications",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -869,20 +915,53 @@ static int _layout_homescreen(Desktop * desktop)
 	return 0;
 }
 
-static void _layout_set_categories(Desktop * desktop, gpointer data)
+static void _icons_set_categories(Desktop * desktop, gpointer data)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	desktop_set_layout(desktop, DESKTOP_LAYOUT_CATEGORIES);
+	desktop_set_icons(desktop, DESKTOP_ICONS_CATEGORIES);
 }
 
-static void _layout_set_homescreen(Desktop * desktop, gpointer data)
+static void _icons_set_homescreen(Desktop * desktop, gpointer data)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	desktop_set_layout(desktop, DESKTOP_LAYOUT_HOMESCREEN);
+	desktop_set_icons(desktop, DESKTOP_ICONS_HOMESCREEN);
+}
+
+
+/* desktop_set_layout */
+void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
+{
+	XRRScreenConfiguration * sc;
+	Rotation r;
+	SizeID size;
+
+	sc = XRRGetScreenInfo(GDK_DISPLAY_XDISPLAY(desktop->display),
+			GDK_WINDOW_XWINDOW(desktop->root));
+	size = XRRConfigCurrentConfiguration(sc, &r);
+	switch(layout)
+	{
+		case DESKTOP_LAYOUT_NORMAL:
+		case DESKTOP_LAYOUT_LANDSCAPE:
+			r = RR_Rotate_0;
+			break;
+		case DESKTOP_LAYOUT_PORTRAIT:
+			r = RR_Rotate_90;
+			break;
+		case DESKTOP_LAYOUT_ROTATE:
+			r <<= 1;
+			r = (r > 16) ? 1 : r;
+			break;
+		case DESKTOP_LAYOUT_TOGGLE:
+			r = (r != RR_Rotate_0) ? RR_Rotate_0 : RR_Rotate_90;
+			break;
+	}
+	XRRSetScreenConfig(GDK_DISPLAY_XDISPLAY(desktop->display), sc,
+			GDK_WINDOW_XWINDOW(desktop->root), size, r,
+			CurrentTime);
 }
 
 
@@ -955,16 +1034,16 @@ void desktop_refresh(Desktop * desktop)
 
 static int _current_loop(Desktop * desktop)
 {
-	switch(desktop->prefs.layout)
+	switch(desktop->prefs.icons)
 	{
-		case DESKTOP_LAYOUT_APPLICATIONS:
+		case DESKTOP_ICONS_APPLICATIONS:
 			return _current_loop_applications(desktop);
-		case DESKTOP_LAYOUT_CATEGORIES:
+		case DESKTOP_ICONS_CATEGORIES:
 			return _current_loop_categories(desktop);
-		case DESKTOP_LAYOUT_FILES:
+		case DESKTOP_ICONS_FILES:
 			return _current_loop_files(desktop);
-		case DESKTOP_LAYOUT_HOMESCREEN:
-		case DESKTOP_LAYOUT_NONE:
+		case DESKTOP_ICONS_HOMESCREEN:
+		case DESKTOP_ICONS_NONE:
 			break; /* nothing to do */
 	}
 	return -1;
@@ -1162,9 +1241,9 @@ static gboolean _current_done(Desktop * desktop)
 {
 	size_t i = 0;
 
-	switch(desktop->prefs.layout)
+	switch(desktop->prefs.icons)
 	{
-		case DESKTOP_LAYOUT_CATEGORIES:
+		case DESKTOP_ICONS_CATEGORIES:
 			_done_categories(desktop);
 			break;
 		default:
@@ -1233,7 +1312,7 @@ static void _done_categories_open(Desktop * desktop, gpointer data)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, dc->name);
 #endif
 	desktop->category = dc;
-	desktop_set_layout(desktop, DESKTOP_LAYOUT_APPLICATIONS);
+	desktop_set_icons(desktop, DESKTOP_ICONS_APPLICATIONS);
 }
 
 static gboolean _done_timeout(gpointer data)
@@ -1444,6 +1523,7 @@ static int _desktop_get_workarea(Desktop * desktop)
 				desktop->workarea.width,
 				desktop->workarea.height);
 #endif
+		desktop_icons_align(desktop);
 		return 0;
 	}
 	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
@@ -1727,6 +1807,7 @@ static void _desktop_show_preferences(Desktop * desktop)
 	_preferences_background(desktop, notebook);
 	_preferences_icons(desktop, notebook);
 	_preferences_monitors(desktop, notebook);
+	_on_preferences_monitors_refresh(desktop);
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	/* container */
 	_preferences_set(desktop);
@@ -1814,10 +1895,33 @@ static void _preferences_icons(Desktop * desktop, GtkWidget * notebook)
 	GtkWidget * vbox2;
 	GtkWidget * hbox;
 	GtkWidget * label;
+	size_t i;
 
 	vbox2 = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* icons */
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Layout: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_ilayout = gtk_combo_box_new_text();
+	for(i = 0; i < sizeof(_desktop_icons) / sizeof(*_desktop_icons);
+			i++)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_ilayout),
+				_(_desktop_icons[i]));
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_ilayout, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* monitor */
+	hbox = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new(_("Monitor: "));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	desktop->pr_imonitor = gtk_combo_box_new_text();
+	gtk_box_pack_start(GTK_BOX(hbox), desktop->pr_imonitor, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* background color */
 	hbox = gtk_hbox_new(FALSE, 0);
 	label = gtk_label_new(_("Background color: "));
@@ -1905,7 +2009,6 @@ static void _preferences_monitors(Desktop * desktop, GtkWidget * notebook)
 	/* updates */
 	g_signal_connect_swapped(desktop->pr_monitors, "changed", G_CALLBACK(
 				_on_preferences_monitors_changed), desktop);
-	_on_preferences_monitors_refresh(desktop);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
 				_("Monitors")));
 }
@@ -1955,7 +2058,9 @@ static void _on_preferences_monitors_changed(gpointer data)
 static void _on_preferences_monitors_refresh(gpointer data)
 {
 	Desktop * desktop = data;
-	GtkTreeModel * model;
+	GtkTreeModel * model1;
+	GtkTreeModel * model2;
+	gint active;
 #if GTK_CHECK_VERSION(2, 14, 0)
 	gint n;
 	gint i;
@@ -1963,8 +2068,13 @@ static void _on_preferences_monitors_refresh(gpointer data)
 	char buf[32];
 #endif
 
-	model = gtk_combo_box_get_model(GTK_COMBO_BOX(desktop->pr_monitors));
-	gtk_list_store_clear(GTK_LIST_STORE(model));
+	active = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_imonitor));
+	model1 = gtk_combo_box_get_model(GTK_COMBO_BOX(desktop->pr_imonitor));
+	model2 = gtk_combo_box_get_model(GTK_COMBO_BOX(desktop->pr_monitors));
+	gtk_list_store_clear(GTK_LIST_STORE(model1));
+	gtk_list_store_clear(GTK_LIST_STORE(model2));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_imonitor),
+			_("Default monitor"));
 	gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
 			_("Whole screen"));
 #if GTK_CHECK_VERSION(2, 14, 0)
@@ -1973,11 +2083,14 @@ static void _on_preferences_monitors_refresh(gpointer data)
 	{
 		snprintf(buf, sizeof(buf), _("Monitor %d"), i);
 		name = gdk_screen_get_monitor_plug_name(desktop->screen, i);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_imonitor),
+				(name != NULL) ? name : buf);
 		gtk_combo_box_append_text(GTK_COMBO_BOX(desktop->pr_monitors),
 				(name != NULL) ? name : buf);
 		g_free(name);
 	}
 #endif
+	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_imonitor), active);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_monitors), 0);
 }
 
@@ -2008,6 +2121,7 @@ static void _on_preferences_apply(gpointer data)
 	char * p;
 	char const * q;
 	int i;
+	char buf[12];
 
 	/* XXX not very efficient */
 	g_idle_add(_new_idle, desktop);
@@ -2029,6 +2143,10 @@ static void _on_preferences_apply(gpointer data)
 				desktop->pr_background_extend)) ? "1" : "0";
 	config_set(config, "background", "extend", p);
 	/* icons */
+	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_ilayout));
+	if(i >= 0 && i < DESKTOP_ICONS_COUNT)
+		config_set(config, "icons", "layout", _desktop_icons_config[i]);
+	desktop->prefs.icons = i; /* applied by _new_idle() */
 	gtk_color_button_get_color(GTK_COLOR_BUTTON(desktop->pr_ibcolor),
 			&color);
 	p = gdk_color_to_string(&color);
@@ -2041,6 +2159,10 @@ static void _on_preferences_apply(gpointer data)
 	g_free(p);
 	q = gtk_font_button_get_font_name(GTK_FONT_BUTTON(desktop->pr_ifont));
 	config_set(config, "icons", "font", q);
+	i = gtk_combo_box_get_active(GTK_COMBO_BOX(desktop->pr_imonitor));
+	snprintf(buf, sizeof(buf), "%d", i - 1);
+	config_set(config, "icons", "monitor", buf);
+	desktop->prefs.monitor = i - 1;
 	/* XXX code duplication */
 	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
 	{
@@ -2101,12 +2223,19 @@ static void _preferences_set(Desktop * desktop)
 {
 	Config * config;
 	String const * p;
+	String * q;
 	String const * filename = NULL;
 	GdkColor color = { 0, 0, 0, 0 };
 	int how;
 	gboolean extend = FALSE;
 	size_t i;
+	int j;
 
+	/* FIXME:
+	 * - cache the current configuration within the Desktop class
+	 * - apply the configuration values to the widgets
+	 * - no longer prepend an empty line in configuration files when there
+	 *   are no values in the default section */
 	if((config = _desktop_get_config(desktop)) != NULL)
 	{
 		/* background */
@@ -2128,6 +2257,16 @@ static void _preferences_set(Desktop * desktop)
 		if((p = config_get(config, "background", "extend")) != NULL)
 			extend = strtol(p, NULL, 10) ? TRUE : FALSE;
 		/* icons */
+		how = DESKTOP_ICONS_FILES;
+		if((p = config_get(config, "icons", "layout")) != NULL)
+			for(i = 0; i < DESKTOP_ICONS_COUNT; i++)
+				if(strcmp(_desktop_icons_config[i], p) == 0)
+				{
+					how = i;
+					break;
+				}
+		gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_ilayout),
+				how);
 		if((p = config_get(config, "icons", "background")) != NULL
 				&& gdk_color_parse(p, &color) == TRUE)
 			gtk_color_button_set_color(GTK_COLOR_BUTTON(
@@ -2139,7 +2278,24 @@ static void _preferences_set(Desktop * desktop)
 		if((p = config_get(config, "icons", "font")) != NULL)
 			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
 						desktop->pr_ifont), p);
+		if((p = config_get(config, "icons", "monitor")) != NULL)
+		{
+			j = strtol(p, &q, 10);
+			if(p[0] == '\0' || *q != '\0' || j < 0)
+				j = -1;
+			gtk_combo_box_set_active(GTK_COMBO_BOX(
+						desktop->pr_imonitor), j + 1);
+		}
 		config_delete(config);
+	}
+	else
+	{
+		gtk_combo_box_set_active(GTK_COMBO_BOX(
+					desktop->pr_background_how), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_ilayout),
+				DESKTOP_ICONS_FILES);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_imonitor),
+				0);
 	}
 	if(filename != NULL)
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
@@ -2174,36 +2330,35 @@ int main(int argc, char * argv[])
 	int o;
 	Desktop * desktop;
 	DesktopPrefs prefs;
-	int alignment = -1;
 	char * p;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
-	memset(&prefs, 0, sizeof(prefs));
-	prefs.layout = DESKTOP_LAYOUT_FILES;
+	prefs.alignment = -1;
+	prefs.icons = -1;
 	prefs.monitor = -1;
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "HVacfhm:n")) != -1)
 		switch(o)
 		{
 			case 'H':
-				alignment = DESKTOP_ALIGNMENT_HORIZONTAL;
+				prefs.alignment = DESKTOP_ALIGNMENT_HORIZONTAL;
 				break;
 			case 'V':
-				alignment = DESKTOP_ALIGNMENT_VERTICAL;
+				prefs.alignment = DESKTOP_ALIGNMENT_VERTICAL;
 				break;
 			case 'a':
-				prefs.layout = DESKTOP_LAYOUT_APPLICATIONS;
+				prefs.icons = DESKTOP_ICONS_APPLICATIONS;
 				break;
 			case 'c':
-				prefs.layout = DESKTOP_LAYOUT_CATEGORIES;
+				prefs.icons = DESKTOP_ICONS_CATEGORIES;
 				break;
 			case 'f':
-				prefs.layout = DESKTOP_LAYOUT_FILES;
+				prefs.icons = DESKTOP_ICONS_FILES;
 				break;
 			case 'h':
-				prefs.layout = DESKTOP_LAYOUT_HOMESCREEN;
+				prefs.icons = DESKTOP_ICONS_HOMESCREEN;
 				break;
 			case 'm':
 				prefs.monitor = strtol(optarg, &p, 0);
@@ -2211,18 +2366,13 @@ int main(int argc, char * argv[])
 					return _usage();
 				break;
 			case 'n':
-				prefs.layout = DESKTOP_LAYOUT_NONE;
+				prefs.icons = DESKTOP_ICONS_NONE;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind < argc)
 		return _usage();
-	if(alignment < 0)
-		alignment = (prefs.layout == DESKTOP_LAYOUT_FILES)
-			? DESKTOP_ALIGNMENT_VERTICAL
-			: DESKTOP_ALIGNMENT_HORIZONTAL;
-	prefs.alignment = alignment;
 	if((desktop = desktop_new(&prefs)) == NULL)
 	{
 		gtk_main();

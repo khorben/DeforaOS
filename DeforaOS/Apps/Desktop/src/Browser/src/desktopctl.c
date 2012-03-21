@@ -22,7 +22,7 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <Desktop.h>
-#include "desktop.h"
+#include "Browser/desktop.h"
 #include "../config.h"
 #define _(string) gettext(string)
 
@@ -42,9 +42,13 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: desktopctl [-H|-S|-V|-a|-c|-f|-h|-n]\n"
+	fputs(_("Usage: desktopctl [-H|-L|-P|-R|-S|-T|-V|-a|-c|-f|-h|-n]\n"
 "  -H	Place icons horizontally\n"
+"  -L	Rotate screen to landscape mode\n"
+"  -P	Rotate screen to portrait mode\n"
+"  -R	Rotate screen\n"
 "  -S	Display or change settings\n"
+"  -T	Toggle screen rotation\n"
 "  -V	Place icons vertically\n"
 "  -a	Display the applications registered\n"
 "  -c	Sort the applications registered by category\n"
@@ -66,7 +70,7 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "HSVacfhn")) != -1)
+	while((o = getopt(argc, argv, "HLPRSVacfhn")) != -1)
 		switch(o)
 		{
 			case 'H':
@@ -75,11 +79,35 @@ int main(int argc, char * argv[])
 				action = DESKTOP_MESSAGE_SET_ALIGNMENT;
 				what = DESKTOP_ALIGNMENT_HORIZONTAL;
 				break;
+			case 'L':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_LANDSCAPE;
+				break;
+			case 'P':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_PORTRAIT;
+				break;
+			case 'R':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_ROTATE;
+				break;
 			case 'S':
 				if(action != -1)
 					return _usage();
 				action = DESKTOP_MESSAGE_SHOW;
 				what = DESKTOP_SHOW_SETTINGS;
+				break;
+			case 'T':
+				if(action != -1)
+					return _usage();
+				action = DESKTOP_MESSAGE_SET_LAYOUT;
+				what = DESKTOP_LAYOUT_TOGGLE;
 				break;
 			case 'V':
 				if(action != -1)
@@ -90,32 +118,32 @@ int main(int argc, char * argv[])
 			case 'a':
 				if(action != -1)
 					return _usage();
-				action = DESKTOP_MESSAGE_SET_LAYOUT;
-				what = DESKTOP_LAYOUT_APPLICATIONS;
+				action = DESKTOP_MESSAGE_SET_ICONS;
+				what = DESKTOP_ICONS_APPLICATIONS;
 				break;
 			case 'c':
 				if(action != -1)
 					return _usage();
-				action = DESKTOP_MESSAGE_SET_LAYOUT;
-				what = DESKTOP_LAYOUT_CATEGORIES;
+				action = DESKTOP_MESSAGE_SET_ICONS;
+				what = DESKTOP_ICONS_CATEGORIES;
 				break;
 			case 'f':
 				if(action != -1)
 					return _usage();
-				action = DESKTOP_MESSAGE_SET_LAYOUT;
-				what = DESKTOP_LAYOUT_FILES;
+				action = DESKTOP_MESSAGE_SET_ICONS;
+				what = DESKTOP_ICONS_FILES;
 				break;
 			case 'h':
 				if(action != -1)
 					return _usage();
-				action = DESKTOP_MESSAGE_SET_LAYOUT;
-				what = DESKTOP_LAYOUT_HOMESCREEN;
+				action = DESKTOP_MESSAGE_SET_ICONS;
+				what = DESKTOP_ICONS_HOMESCREEN;
 				break;
 			case 'n':
 				if(action != -1)
 					return _usage();
-				action = DESKTOP_MESSAGE_SET_LAYOUT;
-				what = DESKTOP_LAYOUT_NONE;
+				action = DESKTOP_MESSAGE_SET_ICONS;
+				what = DESKTOP_ICONS_NONE;
 				break;
 			default:
 				return _usage();

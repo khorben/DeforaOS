@@ -42,8 +42,8 @@ delete: $(delete_OBJS)
 	$(CC) -o delete $(delete_OBJS) $(delete_LDFLAGS)
 
 desktop_OBJS = desktop.o desktopicon.o
-desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags xrandr`
+desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs xrandr`
 
 desktop: $(desktop_OBJS)
 	$(CC) -o desktop $(desktop_OBJS) $(desktop_LDFLAGS)

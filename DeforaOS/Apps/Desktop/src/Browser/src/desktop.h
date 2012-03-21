@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 # include <gtk/gtk.h>
 # include <Desktop.h>
+# include "Desktop.h"
 # include "desktopicon.h"
 
 
@@ -35,45 +36,12 @@ typedef struct _DesktopIcon DesktopIcon;
 typedef struct _Desktop Desktop;
 # endif
 
-typedef enum _DesktopAlignment
-{
-	DESKTOP_ALIGNMENT_VERTICAL = 0,
-	DESKTOP_ALIGNMENT_HORIZONTAL
-} DesktopAlignment;
-
-typedef enum _DesktopLayout
-{
-	DESKTOP_LAYOUT_NONE = 0,
-	DESKTOP_LAYOUT_APPLICATIONS,
-	DESKTOP_LAYOUT_CATEGORIES,
-	DESKTOP_LAYOUT_FILES,
-	DESKTOP_LAYOUT_HOMESCREEN
-} DesktopLayout;
-# define DESKTOP_LAYOUT_LAST DESKTOP_LAYOUT_HOMESCREEN
-# define DESKTOP_LAYOUT_COUNT (DESKTOP_LAYOUT_LAST + 1)
-
-typedef enum _DesktopMessage
-{
-	DESKTOP_MESSAGE_SET_ALIGNMENT = 0,
-	DESKTOP_MESSAGE_SET_LAYOUT,
-	DESKTOP_MESSAGE_SHOW
-} DesktopMessage;
-
-typedef enum _DesktopShow
-{
-	DESKTOP_SHOW_SETTINGS = 0
-} DesktopMessageShow;
-
 typedef struct _DesktopPrefs
 {
-	DesktopAlignment alignment;
-	DesktopLayout layout;
+	int alignment;
+	int icons;
 	int monitor;
 } DesktopPrefs;
-
-
-/* constants */
-# define DESKTOP_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_DESKTOP_CLIENT"
 
 
 /* functions */
@@ -89,6 +57,7 @@ Mime * desktop_get_mime(Desktop * desktop);
 GtkIconTheme * desktop_get_theme(Desktop * desktop);
 
 void desktop_set_alignment(Desktop * desktop, DesktopAlignment alignment);
+void desktop_set_icons(Desktop * desktop, DesktopIcons icons);
 void desktop_set_layout(Desktop * desktop, DesktopLayout layout);
 
 /* useful */

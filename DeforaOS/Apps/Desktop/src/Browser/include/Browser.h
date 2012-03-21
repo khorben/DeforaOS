@@ -20,6 +20,7 @@
 
 # include <gtk/gtk.h>
 # include <Desktop.h>
+# include "Browser/desktop.h"
 
 
 /* Browser */

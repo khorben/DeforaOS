@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
+#include "Browser/desktop.h"
 #include "desktopicon.h"
 #include "../config.h"
 #define _(string) gettext(string)
@@ -434,6 +435,9 @@ void desktopicon_set_updated(DesktopIcon * desktopicon, gboolean updated)
 /* desktopicon_move */
 void desktopicon_move(DesktopIcon * desktopicon, int x, int y)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %d)\n", __func__, x, y);
+#endif
 	gtk_window_move(GTK_WINDOW(desktopicon->window), x, y);
 }
 
