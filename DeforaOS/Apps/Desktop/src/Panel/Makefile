@@ -87,6 +87,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/logout.c \
 		$(PACKAGE)-$(VERSION)/src/applets/main.c \
 		$(PACKAGE)-$(VERSION)/src/applets/memory.c \
+		$(PACKAGE)-$(VERSION)/src/applets/mixer.c \
 		$(PACKAGE)-$(VERSION)/src/applets/pager.c \
 		$(PACKAGE)-$(VERSION)/src/applets/phone.c \
 		$(PACKAGE)-$(VERSION)/src/applets/rotate.c \
