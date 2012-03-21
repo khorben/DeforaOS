@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _gdeasm_copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>";
 static char const _gdeasm_license[] =
 "Redistribution and use in source and binary forms, with or without\n"
 "modification, are permitted provided that the following conditions\n"
@@ -25,6 +25,7 @@ static char const _gdeasm_license[] =
 "OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF\n"
 "SUCH DAMAGE.";
 /* TODO:
+ * - load comments as well
  * - add a preferences structure
  * - complete the function list
  * - add a window automatically displaying integers in base 2, 8, 10 and 16 */
@@ -94,6 +95,7 @@ static int _gdeasm_confirm(GDeasm * gdeasm, char const * message, ...);
 static int _gdeasm_error(GDeasm * gdeasm, char const * message, int ret);
 static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw);
 static int _gdeasm_save_comments(GDeasm * gdeasm, char const * filename);
+static int _gdeasm_save_comments_dialog(GDeasm * gdeasm);
 
 /* callbacks */
 static void _gdeasm_on_about(gpointer data);
@@ -356,6 +358,7 @@ static void _open_strings(GDeasm * gdeasm, AsmString * as, size_t as_cnt);
 static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 {
 	int ret = -1;
+	int res;
 	Asm * a;
 	AsmCode * code;
 	AsmFunction * af;
@@ -363,18 +366,25 @@ static int _gdeasm_open(GDeasm * gdeasm, char const * filename, int raw)
 	AsmString * as;
 	size_t as_cnt;
 
-	if(gdeasm->modified != FALSE && _gdeasm_confirm(gdeasm,
-				"There are unsaved comments.\n"
-				"Are you sure you want to discard them?",
+	if(gdeasm->modified != FALSE)
+	{
+		res = _gdeasm_confirm(gdeasm, "There are unsaved comments.\n"
+				"Discard or save them?",
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 #if GTK_CHECK_VERSION(2, 12, 0)
-				GTK_STOCK_DISCARD, GTK_RESPONSE_ACCEPT,
+				GTK_STOCK_DISCARD, GTK_RESPONSE_REJECT,
 #else
-				"Discard", GTK_RESPONSE_ACCEPT,
+				"Discard", GTK_RESPONSE_REJECT,
 #endif
-				NULL)
-			!= GTK_RESPONSE_ACCEPT)
-		return 0;
+				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+		if(res == GTK_RESPONSE_ACCEPT)
+		{
+			if(_gdeasm_save_comments_dialog(gdeasm) != 0)
+				return 0;
+		}
+		else if(res != GTK_RESPONSE_REJECT)
+			return 0;
+	}
 	if((a = asm_new(gdeasm->arch, gdeasm->format)) == NULL)
 		return -_gdeasm_error(gdeasm, error_get(), 1);
 	if((code = asm_open_deassemble(a, filename, raw)) != NULL)
@@ -553,8 +563,13 @@ static int _gdeasm_save_comments(GDeasm * gdeasm, char const * filename)
 		return -_gdeasm_error(gdeasm, error_get(), 1);
 	gtk_tree_model_foreach(GTK_TREE_MODEL(gdeasm->asm_store),
 			_save_comments_foreach, &args);
-	if(args.ret == 0 && config_save(args.config, filename) != 0)
-		args.ret = -_gdeasm_error(gdeasm, error_get(), 1);
+	if(args.ret == 0)
+	{
+		if(config_save(args.config, filename) == 0)
+			gdeasm->modified = FALSE;
+		else
+			args.ret = -_gdeasm_error(gdeasm, error_get(), 1);
+	}
 	config_delete(args.config);
 	return args.ret;
 }
@@ -578,6 +593,38 @@ static gboolean _save_comments_foreach(GtkTreeModel * model, GtkTreePath * path,
 	}
 	g_free(p);
 	return (args->ret == 0) ? FALSE : TRUE;
+}
+
+
+/* gdeasm_save_comments_dialog */
+static int _gdeasm_save_comments_dialog(GDeasm * gdeasm)
+{
+	int ret = -1;
+	GtkWidget * dialog;
+	GtkFileFilter * filter;
+	char * filename = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Save comments as...", NULL,
+			GTK_FILE_CHOOSER_ACTION_SAVE,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, "GDeasm files");
+        gtk_file_filter_add_pattern(filter, "*.gdeasm");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+        gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_add_pattern(filter, "*");
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename != NULL)
+		ret = _gdeasm_save_comments(gdeasm, filename);
+	g_free(filename);
+	return ret;
 }
 
 
@@ -609,15 +656,24 @@ static void _gdeasm_on_about(gpointer data)
 static void _gdeasm_on_close(gpointer data)
 {
 	GDeasm * gdeasm = data;
+	int res;
 
-	if(gdeasm->modified != FALSE && _gdeasm_confirm(gdeasm,
-				"There are unsaved comments.\n"
-				"Are you sure you want to discard them?",
+	if(gdeasm->modified != FALSE)
+	{
+		res = _gdeasm_confirm(gdeasm, "There are unsaved comments.\n"
+				"Discard or save them?",
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+				GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
 				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
-				NULL)
-			!= GTK_RESPONSE_CLOSE)
-		return;
+				NULL);
+		if(res == GTK_RESPONSE_ACCEPT)
+		{
+			if(_gdeasm_save_comments_dialog(gdeasm) != 0)
+				return;
+		}
+		else if(res != GTK_RESPONSE_CLOSE)
+			return;
+	}
 	gtk_widget_hide(gdeasm->window);
 	gtk_main_quit();
 }
@@ -743,30 +799,8 @@ static void _gdeasm_on_open(gpointer data)
 static void _gdeasm_on_save_comments(gpointer data)
 {
 	GDeasm * gdeasm = data;
-	GtkWidget * dialog;
-	GtkFileFilter * filter;
-	char * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Save comments as...", NULL,
-			GTK_FILE_CHOOSER_ACTION_SAVE,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-	filter = gtk_file_filter_new();
-        gtk_file_filter_set_name(filter, "GDeasm files");
-        gtk_file_filter_add_pattern(filter, "*.gdeasm");
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-        gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "All files");
-	gtk_file_filter_add_pattern(filter, "*");
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
-					dialog));
-	gtk_widget_destroy(dialog);
-	if(filename != NULL)
-		_gdeasm_save_comments(gdeasm, filename);
-	g_free(filename);
+	_gdeasm_save_comments_dialog(gdeasm);
 }
 
 
