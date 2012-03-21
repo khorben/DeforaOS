@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009,2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mixer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ typedef struct _Mixer Mixer;
 
 
 /* functions */
-Mixer * mixer_new(char const * device, MixerLayout layout);
+Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded);
 void mixer_delete(Mixer * mixer);
 
 /* accessors */
@@ -46,7 +46,7 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
 void mixer_about(Mixer * mixer);
 void mixer_properties(Mixer * mixer);
 
-void mixer_show(Mixer * mixer, int view);
+void mixer_show(Mixer * mixer);
 void mixer_show_all(Mixer * mixer);
 void mixer_show_class(Mixer * mixer, char const * name);
 

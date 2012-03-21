@@ -41,11 +41,12 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: mixer [-H|-T|-V][-d device]\n"
+	fputs(_("Usage: mixer [-H|-T|-V][-d device][-x]\n"
 "  -H	Show the classes next to each other\n"
 "  -V	Show the classes in separate tabs\n"
 "  -V	Show the classes on top of each other\n"
-"  -d	The mixer device to use\n"), stderr);
+"  -d	The mixer device to use\n"
+"  -x	Enable embedded mode\n"), stderr);
 	return 1;
 }
 
@@ -56,12 +57,13 @@ int main(int argc, char * argv[])
 	int o;
 	char const * device = NULL;
 	MixerLayout ml = ML_TABBED;
+	gboolean embedded = FALSE;
 	Mixer * mixer;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
-	while((o = getopt(argc, argv, "HTVd:")) != -1)
+	while((o = getopt(argc, argv, "HTVd:x")) != -1)
 		switch(o)
 		{
 			case 'H':
@@ -76,13 +78,16 @@ int main(int argc, char * argv[])
 			case 'd':
 				device = optarg;
 				break;
+			case 'x':
+				embedded = TRUE;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
 	gtk_init(&argc, &argv);
-	if((mixer = mixer_new(device, ml)) == NULL)
+	if((mixer = mixer_new(device, ml, embedded)) == NULL)
 		return 2;
 	gtk_main();
 	mixer_delete(mixer);

@@ -185,9 +185,12 @@ static const DesktopMenubar _mixer_menubar[] =
 
 /* prototypes */
 static int _mixer_error(Mixer * mixer, char const * message, int ret);
+/* accessors */
 static int _mixer_get_control(Mixer * mixer, int index, MixerControl * control);
 static int _mixer_get_properties(Mixer * mixer, MixerProperties * properties);
 static int _mixer_set_control(Mixer * mixer, int index, MixerControl * control);
+/* useful */
+static void _mixer_show_view(Mixer * mixer, int view);
 
 
 /* public */
@@ -203,7 +206,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s);
 #endif
 static GtkWidget * _new_value(Mixer * mixer, int index);
 
-Mixer * mixer_new(char const * device, MixerLayout layout)
+Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 {
 	Mixer * mixer;
 	GtkAccelGroup * accel;
@@ -250,20 +253,34 @@ Mixer * mixer_new(char const * device, MixerLayout layout)
 	}
 	/* widgets */
 	accel = gtk_accel_group_new();
-	mixer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_add_accel_group(GTK_WINDOW(mixer->window), accel);
-	gtk_window_set_default_size(GTK_WINDOW(mixer->window), 800, 200);
+	if(embedded)
+	{
+		mixer->window = gtk_plug_new(0);
+		g_signal_connect_swapped(mixer->window, "embedded", G_CALLBACK(
+					on_embedded), mixer);
+	}
+	else
+	{
+		mixer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_add_accel_group(GTK_WINDOW(mixer->window), accel);
+		gtk_window_set_default_size(GTK_WINDOW(mixer->window), 800,
+				200);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(mixer->window), "stock_volume");
+		gtk_window_set_icon_name(GTK_WINDOW(mixer->window),
+				"stock_volume");
 #endif
-	gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
-	g_signal_connect_swapped(G_OBJECT(mixer->window), "delete-event",
+		gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
+		g_signal_connect_swapped(mixer->window, "delete-event",
 			G_CALLBACK(on_closex), mixer);
+	}
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
 	/* menubar */
-	widget = desktop_menubar_create(_mixer_menubar, mixer, accel);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	if(embedded == FALSE)
+	{
+		widget = desktop_menubar_create(_mixer_menubar, mixer, accel);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	}
 #else
 	desktop_accel_create(_mixer_accel, mixer, accel);
 #endif
@@ -422,7 +439,10 @@ Mixer * mixer_new(char const * device, MixerLayout layout)
 #ifdef AUDIO_MIXER_DEVINFO
 	mixer_show_class(mixer, AudioCoutputs);
 #endif
-	gtk_widget_show(mixer->window);
+	if(embedded)
+		printf("%u\n", gtk_plug_get_id(GTK_PLUG(mixer->window)));
+	else
+		gtk_widget_show(mixer->window);
 	return mixer;
 }
 
@@ -864,36 +884,16 @@ static gboolean _properties_on_closex(GtkWidget * widget)
 
 
 /* mixer_show */
-void mixer_show(Mixer * mixer, int view)
+void mixer_show(Mixer * mixer)
 {
-#ifdef AUDIO_MIXER_DEVINFO
-	size_t u;
-
-	if(view < 0)
-	{
-		for(u = 0; u < mixer->mc_cnt; u++)
-			if(mixer->mc[u].hbox != NULL)
-				gtk_widget_show(mixer->mc[u].hbox);
-		return;
-	}
-	u = view;
-	if(u >= mixer->mc_cnt)
-		return;
-	for(u = 0; u < mixer->mc_cnt; u++)
-		if(mixer->mc[u].hbox == NULL)
-			continue;
-		else if(u == (size_t)view)
-			gtk_widget_show(mixer->mc[u].hbox);
-		else
-			gtk_widget_hide(mixer->mc[u].hbox);
-#endif
+	gtk_widget_show(mixer->window);
 }
 
 
 /* mixer_show_all */
 void mixer_show_all(Mixer * mixer)
 {
-	mixer_show(mixer, -1);
+	_mixer_show_view(mixer, -1);
 }
 
 
@@ -954,6 +954,7 @@ static int _error_text(char const * message, int ret)
 }
 
 
+/* accessors */
 /* mixer_get_control */
 static int _mixer_get_control(Mixer * mixer, int index, MixerControl * control)
 {
@@ -1081,4 +1082,32 @@ static int _mixer_set_control(Mixer * mixer, int index, MixerControl * control)
 		return -_mixer_error(mixer, "MIXER_WRITE", 1);
 #endif
 	return 0;
+}
+
+
+/* useful */
+/* mixer_show_view */
+static void _mixer_show_view(Mixer * mixer, int view)
+{
+#ifdef AUDIO_MIXER_DEVINFO
+	size_t u;
+
+	if(view < 0)
+	{
+		for(u = 0; u < mixer->mc_cnt; u++)
+			if(mixer->mc[u].hbox != NULL)
+				gtk_widget_show(mixer->mc[u].hbox);
+		return;
+	}
+	u = view;
+	if(u >= mixer->mc_cnt)
+		return;
+	for(u = 0; u < mixer->mc_cnt; u++)
+		if(mixer->mc[u].hbox == NULL)
+			continue;
+		else if(u == (size_t)view)
+			gtk_widget_show(mixer->mc[u].hbox);
+		else
+			gtk_widget_hide(mixer->mc[u].hbox);
+#endif
 }
