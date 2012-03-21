@@ -440,7 +440,10 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 	mixer_show_class(mixer, AudioCoutputs);
 #endif
 	if(embedded)
+	{
 		printf("%u\n", gtk_plug_get_id(GTK_PLUG(mixer->window)));
+		fclose(stdout);
+	}
 	else
 		gtk_widget_show(mixer->window);
 	return mixer;
