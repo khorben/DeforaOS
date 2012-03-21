@@ -743,19 +743,19 @@ int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
 	mixer_ctrl_t * p;
 	int * q;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void*)mixer,
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void *)mixer,
 			mixer->fd);
-#endif
+# endif
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
 	q = g_object_get_data(G_OBJECT(widget), "ord");
 	if(p == NULL || q == NULL)
 		return 1;
 	p->un.ord = *q;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void*)mixer,
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void *)mixer,
 			mixer->fd, p->un.ord);
-#endif
+# endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) != 0)
 		return -_mixer_error(mixer, "AUDIO_MIXER_WRITE", 1);
 #else
@@ -771,17 +771,17 @@ int mixer_set_mute(Mixer * mixer, GtkWidget * widget)
 #ifdef AUDIO_MIXER_DEVINFO
 	mixer_ctrl_t * p;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void*)mixer,
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void *)mixer,
 			mixer->fd);
-#endif
+# endif
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
 	p->un.ord = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))
 		? 1 : 0; /* XXX assumes 0 is "off" */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void*)mixer,
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void *)mixer,
 			mixer->fd, p->un.ord);
-#endif
+# endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) != 0)
 		return -_mixer_error(mixer, "AUDIO_MIXER_WRITE", 1);
 #else
@@ -801,7 +801,7 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	GSList * q;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %lf) fd=%d\n", __func__, (void*)mixer,
+	fprintf(stderr, "DEBUG: %s(%p, %lf) fd=%d\n", __func__, (void *)mixer,
 			value, mixer->fd);
 #endif
 	b = g_object_get_data(G_OBJECT(widget), "bind");
