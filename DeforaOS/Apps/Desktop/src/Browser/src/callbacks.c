@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ static void _paste_selection(Browser * browser);
 /* functions */
 /* callbacks */
 /* window */
+/* on_closex */
 gboolean on_closex(gpointer data)
 {
 	Browser * browser = data;
@@ -84,7 +85,7 @@ gboolean on_location(gpointer data)
 }
 
 
-/* on_new */
+/* on_new_window */
 gboolean on_new_window(gpointer data)
 {
 	Browser * browser = data;
@@ -111,6 +112,7 @@ void on_file_new_window(gpointer data)
 }
 
 
+/* on_file_new_folder */
 void on_file_new_folder(gpointer data)
 {
 	char const * newfolder = _("New folder");
@@ -132,6 +134,7 @@ void on_file_new_folder(gpointer data)
 }
 
 
+/* on_file_new_symlink */
 void on_file_new_symlink(gpointer data)
 {
 	Browser * browser = data;
@@ -142,12 +145,14 @@ void on_file_new_symlink(gpointer data)
 }
 
 
+/* on_file_close */
 void on_file_close(gpointer data)
 {
 	on_closex(data);
 }
 
 
+/* on_file_open_file */
 void on_file_open_file(gpointer data)
 {
 	on_open_file(data);
@@ -246,6 +251,7 @@ void on_edit_unselect_all(gpointer data)
 
 
 /* view menu */
+/* on_view_home */
 void on_view_home(gpointer data)
 {
 	on_home(data);
@@ -301,6 +307,7 @@ void on_help_about(gpointer data)
 
 
 /* toolbar */
+/* on_back */
 void on_back(gpointer data)
 {
 	Browser * browser = data;
@@ -356,6 +363,7 @@ void on_cut(gpointer data)
 }
 
 
+/* on_forward */
 void on_forward(gpointer data)
 {
 	Browser * browser = data;
@@ -372,6 +380,7 @@ void on_forward(gpointer data)
 }
 
 
+/* on_home */
 void on_home(gpointer data)
 {
 	Browser * browser = data;
@@ -397,6 +406,7 @@ void on_paste(gpointer data)
 
 
 /* properties */
+/* on_properties */
 void on_properties(gpointer data)
 {
 	Browser * browser = data;
@@ -411,6 +421,7 @@ void on_properties(gpointer data)
 }
 
 
+/* on_refresh */
 void on_refresh(gpointer data)
 {
 	Browser * browser = data;
@@ -419,6 +430,7 @@ void on_refresh(gpointer data)
 }
 
 
+/* on_updir */
 void on_updir(gpointer data)
 {
 	Browser * browser = data;
@@ -431,6 +443,7 @@ void on_updir(gpointer data)
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
+/* on_view_as */
 void on_view_as(gpointer data)
 {
 	Browser * browser = data;
@@ -457,6 +470,7 @@ void on_view_as(gpointer data)
 
 
 /* address bar */
+/* on_path_activate */
 void on_path_activate(gpointer data)
 {
 	Browser * browser = data;
@@ -470,6 +484,7 @@ void on_path_activate(gpointer data)
 
 
 /* view */
+/* on_detail_default */
 static void _default_do(Browser * browser, GtkTreePath * path);
 
 void on_detail_default(GtkTreeView * view, GtkTreePath * path,
@@ -501,6 +516,7 @@ static void _default_do(Browser * browser, GtkTreePath * path)
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
+/* on_icon_default */
 void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data)
 {
 	Browser * browser = data;
@@ -512,6 +528,7 @@ void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data)
 #endif
 
 
+/* on_filename_edited */
 void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
@@ -542,6 +559,7 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	sprintf(&p[len], "/%s", arg2);
 	if(isdir && lstat(p, &st) == -1 && errno == ENOENT) /* XXX TOCTOU */
 	{
+		/* FIXME this conversion does not seem to work */
 		q = g_filename_from_utf8(p, -1, NULL, NULL, NULL);
 		if(rename(path, (q != NULL) ? q : p) != 0)
 			browser_error(browser, strerror(errno), 1);
@@ -648,7 +666,6 @@ typedef struct _IconCallback
 	char * path;
 } IconCallback;
 
-/* sub-functions */
 static gboolean _press_context(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu, IconCallback * ic);
 static void _press_directory(GtkWidget * menu, IconCallback * ic);
