@@ -584,7 +584,7 @@ static GtkWidget * _new_enum(Mixer * mixer, int dev,
 		if((q = malloc(sizeof(*q))) != NULL)
 		{
 			*q = e->member[i].ord;
-			g_object_set_data(G_OBJECT(widget), "ord", mc);
+			g_object_set_data(G_OBJECT(widget), "ord", q);
 		}
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_enum_toggled), mixer);
@@ -631,6 +631,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 	GtkWidget * vbox;
 	int i;
 	GtkWidget * widget;
+	int * q;
 
 	if(s->num_mem <= 0 || (mc = malloc(sizeof(*mc))) == NULL)
 		return NULL;
@@ -648,6 +649,11 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
 					TRUE);
 		g_object_set_data(G_OBJECT(widget), "ctrl", mc);
+		if((q = malloc(sizeof(*q))) != NULL)
+		{
+			*q = s->member[i].mask;
+			g_object_set_data(G_OBJECT(widget), "mask", q);
+		}
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_set_toggled), mixer);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -794,6 +800,7 @@ int mixer_set_mute(Mixer * mixer, GtkWidget * widget)
 /* mixer_set_set */
 int mixer_set_set(Mixer * mixer, GtkWidget * widget)
 {
+	gboolean active;
 #ifdef AUDIO_MIXER_DEVINFO
 	mixer_ctrl_t * p;
 	int * q;
@@ -802,18 +809,23 @@ int mixer_set_set(Mixer * mixer, GtkWidget * widget)
 	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void *)mixer,
 			mixer->fd);
 # endif
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
-	q = g_object_get_data(G_OBJECT(widget), "ord");
+	q = g_object_get_data(G_OBJECT(widget), "mask");
 	if(p == NULL || q == NULL)
 		return 1;
-	p->un.ord = *q;
+	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
+		return -_mixer_error(mixer, "AUDIO_MIXER_READ", 1);
+	p->un.mask = (active) ? (p->un.mask | *q)
+		: (p->un.mask - (p->un.mask & *q));
 # ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void *)mixer,
-			mixer->fd, p->un.ord);
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d mask=%d\n", __func__,
+			(void *)mixer, mixer->fd, p->un.mask);
 # endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) != 0)
 		return -_mixer_error(mixer, "AUDIO_MIXER_WRITE", 1);
 #else
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	/* FIXME implement */
 #endif
 	return 0;
