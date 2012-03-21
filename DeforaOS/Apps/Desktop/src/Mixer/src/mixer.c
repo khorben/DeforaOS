@@ -322,7 +322,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		if((p = realloc(mixer->mc, sizeof(*mixer->mc)
 						* (mixer->mc_cnt + 1))) == NULL)
 		{
-			/* FIXME report error */
+			_mixer_error(NULL, "realloc", 1);
 			mixer_delete(mixer);
 			return NULL;
 		}
