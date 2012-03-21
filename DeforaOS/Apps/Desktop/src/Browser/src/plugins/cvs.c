@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,6 +106,7 @@ static void _cvs_task_close_channel(CVSTask * task, GIOChannel * channel);
 
 /* callbacks */
 static void _cvs_on_add(gpointer data);
+static void _cvs_on_annotate(gpointer data);
 static void _cvs_on_commit(gpointer data);
 static void _cvs_on_diff(gpointer data);
 static void _cvs_on_log(gpointer data);
@@ -183,6 +184,9 @@ static CVS * _cvs_init(BrowserPluginHelper * helper)
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
 			G_CALLBACK(_cvs_on_diff), cvs);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Annotate"),
+			G_CALLBACK(_cvs_on_annotate), cvs);
+	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
 			G_CALLBACK(_cvs_on_log), cvs);
 	gtk_box_pack_start(GTK_BOX(cvs->directory), widget, FALSE, TRUE, 0);
@@ -202,6 +206,9 @@ static CVS * _cvs_init(BrowserPluginHelper * helper)
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
 			G_CALLBACK(_cvs_on_diff), cvs);
+	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Annotate"),
+			G_CALLBACK(_cvs_on_annotate), cvs);
 	gtk_box_pack_start(GTK_BOX(cvs->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
 			G_CALLBACK(_cvs_on_log), cvs);
@@ -683,6 +690,28 @@ static gboolean _add_is_binary(char const * type)
 		if(strcmp(types[i], type) == 0)
 			return FALSE;
 	return TRUE;
+}
+
+
+/* cvs_on_annotate */
+static void _cvs_on_annotate(gpointer data)
+{
+	CVS * cvs = data;
+	struct stat st;
+	gchar * dirname;
+	gchar * basename;
+	char * argv[] = { "cvs", "annotate", "--", NULL, NULL };
+
+	if(cvs->filename == NULL || lstat(cvs->filename, &st) != 0)
+		return;
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(cvs->filename)
+		: g_path_get_dirname(cvs->filename);
+	basename = S_ISDIR(st.st_mode) ? NULL
+		: g_path_get_basename(cvs->filename);
+	argv[3] = basename;
+	_cvs_add_task(cvs, "cvs annotate", dirname, argv);
+	g_free(basename);
+	g_free(dirname);
 }
 
 
