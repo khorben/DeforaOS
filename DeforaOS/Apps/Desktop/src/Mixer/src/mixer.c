@@ -204,19 +204,21 @@ static GtkWidget * _new_mute(Mixer * mixer, int dev,
 		struct audio_mixer_enum * e);
 static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s);
 #endif
-static GtkWidget * _new_value(Mixer * mixer, int index);
+static GtkWidget * _new_value(Mixer * mixer, int index, GtkWidget ** bbox);
 
 Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 {
 	Mixer * mixer;
 	GtkAccelGroup * accel;
-	GtkSizeGroup * group;
+	GtkSizeGroup * hgroup;
+	GtkSizeGroup * vgroup;
 	GtkWidget * scrolled = NULL;
 	GtkWidget * vbox;
 	GtkWidget * label;
 	GtkWidget * widget;
 	GtkWidget * hvbox = NULL;
 	GtkWidget * hbox;
+	GtkWidget * bbox;
 	GtkWidget * control;
 	int i;
 #ifdef AUDIO_MIXER_DEVINFO
@@ -244,7 +246,8 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 	mixer->mc = NULL;
 	mixer->mc_cnt = 0;
 #endif
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hgroup = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	vgroup = gtk_size_group_new(GTK_SIZE_GROUP_VERTICAL);
 	if(mixer->device == NULL || mixer->fd < 0)
 	{
 		_mixer_error(NULL, device, 0);
@@ -264,7 +267,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		mixer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_add_accel_group(GTK_WINDOW(mixer->window), accel);
 		gtk_window_set_default_size(GTK_WINDOW(mixer->window), 800,
-				200);
+				300);
 #if GTK_CHECK_VERSION(2, 6, 0)
 		gtk_window_set_icon_name(GTK_WINDOW(mixer->window),
 				"stock_volume");
@@ -330,8 +333,16 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		{
 			label = _new_frame_label(NULL, _("All"), NULL);
 			gtk_widget_show_all(label);
+			scrolled = gtk_scrolled_window_new(NULL, NULL);
+			gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(
+						scrolled),
+					GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+			gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
+						scrolled), GTK_SHADOW_NONE);
+			gtk_scrolled_window_add_with_viewport(
+					GTK_SCROLLED_WINDOW(scrolled), hbox);
 			gtk_notebook_append_page(GTK_NOTEBOOK(mixer->notebook),
-					hbox, label);
+					scrolled, label);
 		}
 		else
 			gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE, TRUE, 0);
@@ -353,6 +364,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		if(u == mixer->mc_cnt)
 			continue;
 		hbox = mixer->mc[u].hbox;
+		bbox = NULL;
 		control = NULL;
 		switch(md.type)
 		{
@@ -363,7 +375,11 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 				control = _new_set(mixer, i, &md.un.s);
 				break;
 			case AUDIO_MIXER_VALUE:
-				control = _new_value(mixer, i);
+				bbox = gtk_vbutton_box_new();
+				gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox),
+						GTK_BUTTONBOX_START);
+				gtk_size_group_add_widget(vgroup, bbox);
+				control = _new_value(mixer, i, &bbox);
 				break;
 		}
 		if(control == NULL)
@@ -373,6 +389,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		gtk_box_pack_start(GTK_BOX(vbox2), control, TRUE, TRUE, 0);
 		label = _new_frame_label(NULL, md.label.name, NULL);
 		widget = gtk_frame_new(NULL);
+		gtk_size_group_add_widget(hgroup, widget);
 		gtk_frame_set_label_widget(GTK_FRAME(widget), label);
 		gtk_container_add(GTK_CONTAINER(widget), vbox2);
 		if(hbox == NULL)
@@ -384,17 +401,29 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 				label = _new_frame_label(NULL,
 						mixer->mc[u].label.name, NULL);
 				gtk_widget_show_all(label);
+				scrolled = gtk_scrolled_window_new(NULL, NULL);
+				gtk_scrolled_window_set_policy(
+						GTK_SCROLLED_WINDOW(scrolled),
+						GTK_POLICY_AUTOMATIC,
+						GTK_POLICY_NEVER);
+				gtk_scrolled_window_set_shadow_type(
+						GTK_SCROLLED_WINDOW(scrolled),
+						GTK_SHADOW_NONE);
+				gtk_scrolled_window_add_with_viewport(
+						GTK_SCROLLED_WINDOW(scrolled),
+						hbox);
 				gtk_notebook_append_page(GTK_NOTEBOOK(
-							mixer->notebook), hbox,
-						label);
+							mixer->notebook),
+						scrolled, label);
 			}
 			else if(hvbox != NULL)
 				gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE,
 						TRUE, 0);
 		}
-		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		/* add a mute button if relevant */
+		if(bbox == NULL)
+			continue;
 		md2.index = md.index + 1;
 		if(ioctl(mixer->fd, AUDIO_MIXER_DEVINFO, &md2) < 0)
 			break;
@@ -413,17 +442,22 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 			continue;
 		if((widget = _new_mute(mixer, i + 1, &md2.un.e)) == NULL)
 			continue;
-		gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(bbox), widget);
 		i++;
 #else
 		if(i == SOUND_MIXER_NONE)
 			break;
 		if(ioctl(mixer->fd, MIXER_READ(i), &value) != 0)
 			continue;
-		control = _new_value(mixer, i);
+		bbox = gtk_vbutton_box_new();
+		gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox),
+				GTK_BUTTONBOX_START);
+		gtk_size_group_add_widget(vgroup, bbox);
+		control = _new_value(mixer, i, &bbox);
 		gtk_container_set_border_width(GTK_CONTAINER(control), 4);
 		label = _new_frame_label(NULL, names[i], labels[i]);
 		widget = gtk_frame_new(NULL);
+		gtk_size_group_add_widget(hgroup, widget);
 		gtk_frame_set_label_widget(GTK_FRAME(widget), label);
 		gtk_container_add(GTK_CONTAINER(widget), control);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -609,7 +643,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 }
 #endif
 
-static GtkWidget * _new_value(Mixer * mixer, int index)
+static GtkWidget * _new_value(Mixer * mixer, int index, GtkWidget ** bbox)
 {
 	GtkWidget * align;
 	GtkWidget * vbox;
@@ -669,7 +703,8 @@ static GtkWidget * _new_value(Mixer * mixer, int index)
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), align, TRUE, TRUE, 0);
 	g_object_set_data(G_OBJECT(bind), "list", list);
-	gtk_box_pack_start(GTK_BOX(vbox), bind, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(*bbox), bind);
+	gtk_box_pack_start(GTK_BOX(vbox), *bbox, FALSE, TRUE, 0);
 	return vbox;
 }
 
