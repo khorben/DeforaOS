@@ -88,7 +88,9 @@ static void _on_clicked(gpointer data);
 static gboolean _on_idle(gpointer data);
 static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
+#ifdef EMBEDDED
 static void _on_rotate(gpointer data);
+#endif
 static void _on_run(gpointer data);
 static void _on_shutdown(gpointer data);
 static void _on_suspend(gpointer data);
@@ -323,11 +325,13 @@ static void _on_clicked(gpointer data)
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_lock), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+#ifdef EMBEDDED
 	/* rotate screen */
-	menuitem = _main_menuitem(_("Rotate"), NULL);
+	menuitem = _main_menuitem(_("Rotate"), GTK_STOCK_REFRESH); /* XXX */
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 			G_CALLBACK(_on_rotate), data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+#endif
 	/* logout */
 	if(main->helper->logout_dialog != NULL)
 	{
@@ -473,6 +477,7 @@ static void _on_logout(gpointer data)
 }
 
 
+#ifdef EMBEDDED
 /* on_rotate */
 static void _on_rotate(gpointer data)
 {
@@ -480,6 +485,7 @@ static void _on_rotate(gpointer data)
 
 	main->helper->rotate_screen(main->helper->panel);
 }
+#endif
 
 
 /* on_run */
