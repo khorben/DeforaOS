@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -211,6 +211,10 @@ static DesktopToolbar _browser_toolbar[] =
 };
 
 
+/* variables */
+unsigned int browser_cnt = 0;
+
+
 /* prototypes */
 /* accessors */
 static gboolean _browser_plugin_is_enabled(Browser * browser,
@@ -229,13 +233,6 @@ static int _config_load_string(Config * config, char const * variable,
 static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value);
 
-
-/* protected */
-/* variables */
-unsigned int browser_cnt = 0;
-
-
-/* functions */
 /* callbacks */
 static void _browser_on_plugin_combo_change(gpointer data);
 static void _browser_on_selection_changed(gpointer data);
