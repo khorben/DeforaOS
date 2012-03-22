@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,79 @@
 #include <stdio.h>
 
 
+/* kill */
+/* private */
+/* constants */
+struct
+{
+	int signal;
+	char const * name;
+}
+_kill_names[] =
+{
+#define signal(a) { a, "" # a }
+#ifdef SIGABRT
+	signal(SIGABRT),
+#endif
+#ifdef SIGALRM
+	signal(SIGALRM),
+#endif
+#ifdef SIGBUS
+	signal(SIGBUS),
+#endif
+#ifdef SIGCHLD
+	signal(SIGCHLD),
+#endif
+#ifdef SIGCONT
+	signal(SIGCONT),
+#endif
+#ifdef SIGFPE
+	signal(SIGFPE),
+#endif
+#ifdef SIGHUP
+	signal(SIGHUP),
+#endif
+#ifdef SIGKILL
+	signal(SIGKILL),
+#endif
+#ifdef SIGILL
+	signal(SIGILL),
+#endif
+#ifdef SIGINT
+	signal(SIGINT),
+#endif
+#ifdef SIGQUIT
+	signal(SIGQUIT),
+#endif
+#ifdef SIGSEGV
+	signal(SIGSEGV),
+#endif
+#ifdef SIGSTOP
+	signal(SIGSTOP),
+#endif
+#ifdef SIGTERM
+	signal(SIGTERM),
+#endif
+#ifdef SIGTRAP
+	signal(SIGTRAP),
+#endif
+#ifdef SIGUSR1
+	signal(SIGUSR1),
+#endif
+#ifdef SIGUSR2
+	signal(SIGUSR2),
+#endif
+	{ 0, NULL }
+#undef signal
+};
+
+
+/* prototypes */
+static int _kill(int sig, int argc, char * argv[]);
+static int _kill_list(int argc, char * argv[]);
+
+
+/* functions */
 /* kill */
 static int _kill(int sig, int argc, char * argv[])
 {
@@ -50,6 +123,17 @@ static int _kill(int sig, int argc, char * argv[])
 }
 
 
+/* kill_list */
+static int _kill_list(int argc, char * argv[])
+{
+	size_t i;
+
+	for(i = 0; _kill_names[i].name != NULL; i++)
+		printf("%s\n", _kill_names[i].name);
+	return 0;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -66,6 +150,7 @@ int main(int argc, char * argv[])
 {
 	int sig = SIGTERM;
 	int o;
+	int list = 0;
 	char * p;
 
 	while((o = getopt(argc, argv, "ls:")) != -1)
@@ -73,9 +158,8 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'l':
-				fprintf(stderr, "%s%c%s", "kill: -", o,
-						": Not yet implemented\n");
-				return _usage();
+				list = 1;
+				break;
 			case 's':
 				/* FIXME signal_name expected, NaN... */
 				sig = strtol(optarg, &p, 10);
@@ -85,6 +169,12 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
+	}
+	if(list == 1)
+	{
+		if(argc - optind > 1)
+			return _usage();
+		return _kill_list(argc - optind, &argv[optind]);
 	}
 	if(optind == argc)
 		return _usage();
