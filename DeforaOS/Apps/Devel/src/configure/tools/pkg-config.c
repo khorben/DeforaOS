@@ -26,8 +26,8 @@
  * SUCH DAMAGE. */
 
 
-#include <sys/param.h>
 
+#include <sys/param.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,6 +36,9 @@
 #include <errno.h>
 #include "../config.h"
 
+#ifndef __unused
+# define __unused
+#endif
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -55,6 +58,7 @@
 #define PKG_MODVERSION		(1 << 12)
 #define PKG_PRINT_REQUIRES	(1 << 13)
 #define PKG_PRINT_REQUIRES_PRIV	(1 << 14)
+
 
 /* pkg-config without glib without pkg-config without glib without pkg-config */
 /* private */
@@ -117,6 +121,7 @@ typedef struct _PkgConfig
 	PkgList *pkgs;
 } PkgConfig;
 
+
 /* prototypes */
 static int _pkgconfig(PkgConfig * pc, int pkgc, char * pkgv[]);
 static int _pkgconfig_error(int ret, char const * format, ...);
@@ -140,7 +145,7 @@ static int _usage(int brief);
 
 /* functions */
 /* pkgconfig */
-static Pkg* _pkg_new(Pkg **pkg, char const * pkgname);
+static Pkg * _pkg_new(Pkg **pkg, char const * pkgname);
 static void _pkgconfig_variable_delete(PkgConfigVariable *p);
 static FILE * _pkgconfig_open(PkgConfig * pc, char const * pkg);
 static int _pkgconfig_parse(PkgConfig * p, FILE * fp);
