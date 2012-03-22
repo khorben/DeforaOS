@@ -1,6 +1,6 @@
 #!/bin/sh
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS Unix utils
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -19,12 +19,13 @@
 #variables
 CC="../../../../Devel/src/c99/src/c99"
 DOT="dot -Tpng:cairo:gd"
+RM="rm -f"
 VIEW="view"
 
 
 #functions
 #main
-rm -f ../src/*.o.png
+$RM ../src/*.o.png
 (cd '../src' && make -k CC="$CC" CPPFLAGS="-M graph -D__ELF__ -D__i386__" CFLAGS= distclean all)
 for i in ../src/*.o; do
 	$DOT -o "$i.png" "$i"
