@@ -20,6 +20,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <strings.h>
+#include <errno.h>
 
 
 /* kill */
@@ -93,6 +96,9 @@ _kill_names[] =
 static int _kill(int sig, int argc, char * argv[]);
 static int _kill_list(int argc, char * argv[]);
 
+static int _error(char const * message, int ret);
+static int _usage(void);
+
 
 /* functions */
 /* kill */
@@ -110,14 +116,11 @@ static int _kill(int sig, int argc, char * argv[])
 		{
 			fprintf(stderr, "%s%s%s", "kill: ", argv[i],
 					": Invalid process number\n");
+			ret |= 1;
 			continue;
 		}
 		if(kill(pid, sig) != 0)
-		{
-			fputs("kill: ", stderr);
-			perror("kill");
-			ret |= 1;
-		}
+			ret |= _error(strerror(errno), 1);
 	}
 	return ret;
 }
@@ -131,6 +134,14 @@ static int _kill_list(int argc, char * argv[])
 	for(i = 0; _kill_names[i].name != NULL; i++)
 		printf("%s\n", _kill_names[i].name);
 	return 0;
+}
+
+
+/* error */
+static int _error(char const * message, int ret)
+{
+	fprintf(stderr, "%s: %s\n", "kill", message);
+	return ret;
 }
 
 
@@ -151,7 +162,6 @@ int main(int argc, char * argv[])
 	int sig = SIGTERM;
 	int o;
 	int list = 0;
-	char * p;
 
 	while((o = getopt(argc, argv, "ls:")) != -1)
 	{
@@ -161,10 +171,20 @@ int main(int argc, char * argv[])
 				list = 1;
 				break;
 			case 's':
-				/* FIXME signal_name expected, NaN... */
-				sig = strtol(optarg, &p, 10);
-				if(*optarg == '\0' || *p != '\0')
-					return _usage();
+				if(strcmp(optarg, "0") == 0)
+				{
+					sig = 0;
+					break;
+				}
+				for(o = 0; _kill_names[o].name != NULL; o++)
+					if(strcasecmp(&_kill_names[o].name[3],
+								optarg) == 0)
+					{
+						sig = _kill_names[o].signal;
+						break;
+					}
+				if(_kill_names[o].name == NULL)
+					return _error("Unknown signal", 2);
 				break;
 			default:
 				return _usage();
