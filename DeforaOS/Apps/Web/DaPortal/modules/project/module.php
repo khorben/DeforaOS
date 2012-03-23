@@ -622,7 +622,7 @@ protected function bugInsert($args)
 	if(_user_admin($user_id) || $this->_isMember($args['project_id']))
 		$enable = 1;
 	if(($id = _content_insert($args['title'], $args['content'], $enable))
-			== FALSE)
+			=== FALSE)
 		return _error('Unable to insert bug content');
 	if(_sql_query('INSERT INTO daportal_bug (content_id, project_id'
 			.', state, type, priority) VALUES'
@@ -955,11 +955,11 @@ protected function bugReplyInsert($args)
 					.'=daportal_content.content_id'.$enabled
 					.' AND daportal_content.content_id='
 					."'$content_id' AND bug_id='$bug_id'"))
-			== FALSE)
+			=== FALSE)
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], $args['content'], 1))
-			== FALSE)
+			=== FALSE)
 		return _error('Could not insert bug reply');
 	$fields = '';
 	$values = '';
@@ -1006,7 +1006,8 @@ protected function bugReplyInsert($args)
 	}
 	if(_sql_query('INSERT INTO daportal_bug_reply'
 			.' (content_id, bug_id'.$fields.') VALUES '
-			." ('$id', '".$args['bug_id']."'".$values.')') == FALSE)
+			." ('$id', '".$args['bug_id']."'".$values.')')
+			=== FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(strlen($update)) //should not fail
 		_sql_query('UPDATE daportal_bug SET'
