@@ -214,7 +214,7 @@ class DownloadModule extends Module
 
 		if(isset($error) && strlen($error))
 			_error($error);
-		return download_admin(array());
+		return $this->admin(array());
 	}
 
 
@@ -435,7 +435,7 @@ class DownloadModule extends Module
 			_content_delete($id);
 			return _error('Unable to create directory');
 		}
-		download_default(array('id' => $id));
+		$this->_default(array('id' => $id));
 	}
 
 
@@ -491,8 +491,8 @@ class DownloadModule extends Module
 					: '*/*';
 					      header('Content-Range: bytes '
 					      .$offset.'-'.$range);
-					      }
-					      }
+			}
+		}
 		while(($buf = @fread($fp, 8192)) != FALSE)
 			print($buf);
 		fclose($fp);
