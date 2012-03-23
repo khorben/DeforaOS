@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -14,9 +14,9 @@
 //You should have received a copy of the GNU General Public License
 //along with DaPortal; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//FIXME license
-//FIXME hide attic option
-//FIXME clarify anonymous bug replies etc
+//FIXME:
+//- hide attic option
+//- clarify anonymous bug replies etc
 
 
 
@@ -471,7 +471,7 @@ protected function bugDelete($args)
 		return _error(INVALID_ARGUMENT);
 	$id = $args['id'];
 	if(($bugid = _sql_single('SELECT bug_id FROM daportal_bug'
-					." WHERE content_id='$id'")) == FALSE)
+					." WHERE content_id='$id'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	_sql_single('DELETE FROM daportal_bug_reply WHERE bug_id='."'$bugid'");
 	_sql_single('DELETE FROM daportal_bug WHERE content_id='."'$id'");
@@ -490,7 +490,7 @@ protected function bugDisable($args)
 		return _error(INVALID_ARGUMENT);
 	$id = $args['id'];
 	if(($bugid = _sql_single('SELECT bug_id FROM daportal_bug'
-					." WHERE content_id='$id'")) == FALSE)
+					." WHERE content_id='$id'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	_content_disable($id);
@@ -573,7 +573,7 @@ protected function bugEnable($args)
 		return _error(INVALID_ARGUMENT);
 	$id = $args['id'];
 	if(($bugid = _sql_single('SELECT bug_id FROM daportal_bug'
-					." WHERE content_id='$id'")) == FALSE)
+					." WHERE content_id='$id'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	_content_enable($id);
@@ -628,7 +628,7 @@ protected function bugInsert($args)
 			.', state, type, priority) VALUES'
 			." ('$id'".", '".$args['project_id']."'"
 			.", 'New'".", '".$args['type']."'"
-			.", '".$args['priority']."'".")") == FALSE)
+			.", '".$args['priority']."'".")") === FALSE)
 	{
 		_content_delete($id);
 		return _error('Unable to insert bug');
@@ -1116,16 +1116,16 @@ protected function bugReplyUpdate($args)
 	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
-			." WHERE bug_reply_id='".$args['id']."'")) == FALSE)
+			." WHERE bug_reply_id='".$args['id']."'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(($bug_id = _sql_single('SELECT bug_id FROM daportal_bug_reply'
-			." WHERE bug_reply_id='".$args['id']."'")) == FALSE)
+			." WHERE bug_reply_id='".$args['id']."'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(($content_id = _sql_single('SELECT content_id FROM daportal_bug'
-			." WHERE bug_id='$bug_id'")) == FALSE)
+			." WHERE bug_id='$bug_id'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
-			." WHERE bug_id='$bug_id'")) == FALSE)
+			." WHERE bug_id='$bug_id'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	//XXX use _content_update()
 	_sql_query('UPDATE daportal_content SET title='."'".$args['title']."'"
@@ -1160,7 +1160,7 @@ protected function bugUpdate($args)
 	$id = $args['id'];
 	$bug_id = $args['bug_id'];
 	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
-					." WHERE bug_id='$bug_id'")) == FALSE)
+					." WHERE bug_id='$bug_id'")) === FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(_sql_single('SELECT content_id FROM daportal_bug'
 				." WHERE content_id='$id'"
@@ -1223,7 +1223,7 @@ protected function _delete($args)
 	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
-			." WHERE project_id='".$args['id']."'")) == FALSE)
+			." WHERE project_id='".$args['id']."'")) === FALSE)
 		return _error(INVALID_PROJECT);
 	_sql_query('DELETE FROM daportal_project WHERE project_id='."'$id'");
 	require_once('./system/content.php');
@@ -1240,7 +1240,7 @@ protected function disable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
-			." WHERE project_id='".$args['id']."'")) == FALSE)
+			." WHERE project_id='".$args['id']."'")) === FALSE)
 		return _error(INVALID_PROJECT);
 	require_once('./system/content.php');
 	_content_disable($id);
@@ -1516,7 +1516,7 @@ protected function enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
-			." WHERE project_id='".$args['id']."'")) == FALSE)
+			." WHERE project_id='".$args['id']."'")) === FALSE)
 		return _error(INVALID_PROJECT);
 	require_once('./system/content.php');
 	_content_enable($id);
@@ -1534,12 +1534,12 @@ protected function insert($args)
 	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
+	if(($id = _content_insert($args['title'], $args['content'])) === FALSE)
 		return _error('Unable to insert project content');
 	if(_sql_query('INSERT INTO daportal_project (project_id, synopsis'
 					.', cvsroot) VALUES ('."'$id'"
 					.", '".$args['synopsis']."'"
-					.", '".$args['cvsroot']."')") == FALSE)
+					.", '".$args['cvsroot']."')") === FALSE)
 	{
 		_content_delete($id);
 		return _error('Unable to insert project');
@@ -1835,7 +1835,7 @@ private function _system_download_insert($args, $category = 'release')
 			.'=daportal_content.content_id'
 			." AND title='$p' AND parent$parent";
 		$download_id = _sql_single($sql);
-		if($download_id == FALSE)
+		if($download_id === FALSE)
 			return 'Path not found';
 		$parent = "='$download_id'";
 		_info("Path \"$p\" found");
@@ -1846,10 +1846,10 @@ private function _system_download_insert($args, $category = 'release')
 	/* FIXME currently requires to be an admin */
 	_module('download', 'file_insert', array('parent' => $download_id));
 	/* FIXME assumes it was successful + race condition? */
-	if(($id = _sql_id('daportal_download', 'download_id')) == FALSE)
+	if(($id = _sql_id('daportal_download', 'download_id')) === FALSE)
 		return 'Internal server error';
 	if(($content_id = _sql_single('SELECT content_id FROM daportal_download'
-			." WHERE download_id='$id'")) == FALSE)
+			." WHERE download_id='$id'")) === FALSE)
 		return 'Internal server error';
 	/* insert into categories */
 	/* FIXME this code belongs to the category module */
