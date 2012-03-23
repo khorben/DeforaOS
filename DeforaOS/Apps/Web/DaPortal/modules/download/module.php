@@ -426,7 +426,7 @@ class DownloadModule extends Module
 		$parent = $parent != FALSE ? "'$parent'" : 'NULL';
 		//FIXME not twice the same filename in a directory
 		require_once('./system/content.php');
-		if(!($id = _content_insert($args['title'], '', 1)))
+		if(($id = _content_insert($args['title'], '', 1)) === FALSE)
 			return _error('Unable to create directory');
 		if(!_sql_query('INSERT INTO daportal_download'
 					.' (content_id, parent, mode) VALUES'
@@ -533,10 +533,12 @@ class DownloadModule extends Module
 			: 'NULL';
 		//FIXME not twice the same filename in a directory
 		require_once('./system/content.php');
-		if(!($content_id = _content_insert($title, $comment, 1)))
+		if(($content_id = _content_insert($title, $comment, 1))
+				=== FALSE)
 			return _error('Unable to upload file');
-		if(!_sql_query('INSERT INTO daportal_download (content_id, parent)'
-			." VALUES ('$content_id', $parent)"))
+		if(_sql_query('INSERT INTO daportal_download'
+			.' (content_id, parent)'
+			." VALUES ('$content_id', $parent)") === FALSE)
 		{
 			_content_delete($content_id);
 			return _error('Unable to upload file');
@@ -545,7 +547,7 @@ class DownloadModule extends Module
 		if(!rename($_FILES['file']['tmp_name'], $root.'/'.$id))
 		{
 			_sql_query('DELETE FROM daportal_download'
-			." WHERE download_id='$id'");
+				." WHERE download_id='$id'");
 			_content_delete($content_id);
 			return _error('Unable to rename file');
 		}
@@ -639,7 +641,7 @@ class DownloadModule extends Module
 			return INVALID_ARGUMENT;
 		require_once('./system/content.php');
 		if(_content_update($args['id'], $args['file'], $args['comment'])
-				== FALSE)
+				=== FALSE)
 			return 'Unable to modify file';
 		header('Location: '._module_link('download', FALSE,
 					$args['id']));
