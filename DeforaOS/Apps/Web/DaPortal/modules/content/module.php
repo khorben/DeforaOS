@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -149,7 +149,7 @@ protected function admin($args)
 				.', daportal_module WHERE daportal_content'
 				.'.module_id=daportal_module.module_id'
 				.$where." AND content_id='".$args['id']."'");
-		if($module == FALSE)
+		if($module === FALSE)
 			return _error('Could not display content');
 		_module($module, FALSE, array('id' => $args['id']));
 	}
@@ -164,7 +164,7 @@ protected function delete($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(_sql_query('DELETE FROM daportal_content WHERE'
-			." content_id='".$args['id']."'") == FALSE)
+			." content_id='".$args['id']."'") === FALSE)
 		_error('Unable to delete content');
 }
 
@@ -177,7 +177,7 @@ function content_disable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	if(_content_disable($args['id']) == FALSE)
+	if(_content_disable($args['id']) === FALSE)
 		_error('Unable to update content');
 	if(isset($args['show']))
 		content_default(array('id' => $args['id']));
@@ -192,7 +192,7 @@ function content_enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	if(_content_enable($args['id']) == FALSE)
+	if(_content_enable($args['id']) === FALSE)
 		_error('Unable to update content');
 	if(isset($args['show']))
 		content_default(array('id' => $args['id']));
@@ -224,7 +224,7 @@ private function _content_system_update($args)
 			.", user_id='".$args['user_id']."'"
 			.", content='".$args['content']."'"
 			.", enabled='".$args['enabled']."'"
-			." WHERE content_id='".$args['id']."'") == FALSE)
+			." WHERE content_id='".$args['id']."'") === FALSE)
 		return 'Unable to update content';
 	header('Location: '._module_link('content', 'admin'));
 }
