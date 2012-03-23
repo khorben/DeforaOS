@@ -70,6 +70,13 @@ class User
 	}
 
 
+	//User::getGroupId
+	public function getGroupId()
+	{
+		return $this->group_id;
+	}
+
+
 	//User::getUserId
 	public function getUserId()
 	{

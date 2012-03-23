@@ -17,6 +17,7 @@
 
 
 require_once('./system/auth.php');
+require_once('./system/user.php');
 
 
 //SessionAuth
@@ -67,18 +68,13 @@ class SessionAuth extends Auth
 			return parent::getCredentials();
 		if($_SESSION['auth']['uid'] == 0)
 			return parent::getCredentials();
-		if(($db = $engine->getDatabase()) === FALSE)
+		$user = new User($engine, $_SESSION['auth']['uid']);
+		if(!$user->isEnabled())
 			return parent::getCredentials();
-		$uid = $_SESSION['auth']['uid'];
-		$args = array('uid' => $uid);
-		if(($res = $db->query($engine, $this->query_credentials,
-						$args)) === FALSE
-				|| count($res) != 1)
-			return parent::getCredentials();
-		$res = $res[0];
-		//FIXME check if $admin is set properly (eg not always)
-		$cred = new AuthCredentials($res['user_id'], $res['username'],
-				$res['group_id'], $res['admin'] == 1);
+		$cred = new AuthCredentials($user->getUserId(),
+				$user->getUsername(),
+				$user->getGroupId(),
+				$user->isAdmin());
 		parent::setCredentials($engine, $cred);
 		return parent::getCredentials();
 	}
@@ -126,11 +122,6 @@ class SessionAuth extends Auth
 	//private
 	//properties
 	private $match_score = FALSE;
-
-	//queries
-	private $query_credentials = "SELECT user_id, group_id, username, admin
-		FROM daportal_user
-		WHERE user_id=:uid AND enabled='1'";
 }
 
 ?>
