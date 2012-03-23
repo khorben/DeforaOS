@@ -1,5 +1,5 @@
 <a name="edit"></a>
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="<?php echo $comment['module']; ?>"/>
 	<input type="hidden" name="action" value="reply"/>
 	<input type="hidden" name="id" value="<?php echo _html_safe($comment['id']); ?>"/>
