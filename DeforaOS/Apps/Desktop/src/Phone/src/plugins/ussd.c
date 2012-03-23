@@ -194,10 +194,17 @@ static void _settings_window(USSD * ussd)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	ussd->operators = gtk_combo_box_text_new();
+	for(i = 0; _ussd_operators[i].name != NULL; i++)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ussd->operators),
+				NULL, _ussd_operators[i].name);
+#else
 	ussd->operators = gtk_combo_box_new_text();
 	for(i = 0; _ussd_operators[i].name != NULL; i++)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(ussd->operators),
 				_ussd_operators[i].name);
+#endif
 	g_signal_connect_swapped(ussd->operators, "changed", G_CALLBACK(
 				_ussd_on_operators_changed), ussd);
 	gtk_box_pack_start(GTK_BOX(hbox), ussd->operators, TRUE, TRUE, 0);
@@ -208,7 +215,11 @@ static void _settings_window(USSD * ussd)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	ussd->codes = gtk_combo_box_text_new();
+#else
 	ussd->codes = gtk_combo_box_new_text();
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), ussd->codes, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* send */
@@ -253,8 +264,13 @@ static void _ussd_on_operators_changed(gpointer data)
 	i = gtk_combo_box_get_active(GTK_COMBO_BOX(ussd->operators));
 	codes = _ussd_operators[i].codes;
 	for(i = 0; codes[i].name != NULL; i++)
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ussd->codes),
+				NULL, codes[i].name);
+#else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(ussd->codes),
 				codes[i].name);
+#endif
 	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->codes), 0);
 }
 

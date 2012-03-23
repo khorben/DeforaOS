@@ -153,12 +153,26 @@ static int _debug_init(ModemPlugin * modem)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	debug->folder = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+			"Unknown");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+			"Inbox");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+			"Sent");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+			"Drafts");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+			"Trash");
+#else
 	debug->folder = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Unknown");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Inbox");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Sent");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Drafts");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Trash");
+#endif
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->folder), 1);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->folder, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);

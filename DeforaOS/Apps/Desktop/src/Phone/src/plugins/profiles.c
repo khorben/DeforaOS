@@ -322,10 +322,18 @@ static void _profiles_settings(Profiles * profiles)
 			G_CALLBACK(_on_settings_closex), profiles);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* combo */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	profiles->pr_combo = gtk_combo_box_text_new();
+	for(i = 0; i < profiles->profiles_cnt; i++)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
+					profiles->pr_combo), NULL,
+				profiles->profiles[i].name);
+#else
 	profiles->pr_combo = gtk_combo_box_new_text();
 	for(i = 0; i < profiles->profiles_cnt; i++)
 		gtk_combo_box_append_text(GTK_COMBO_BOX(profiles->pr_combo),
 				profiles->profiles[i].name);
+#endif
 	g_signal_connect_swapped(profiles->pr_combo, "changed", G_CALLBACK(
 				_on_settings_changed), profiles);
 	gtk_box_pack_start(GTK_BOX(vbox), profiles->pr_combo, FALSE, TRUE, 0);
