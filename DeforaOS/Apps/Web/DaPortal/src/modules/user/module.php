@@ -591,7 +591,7 @@ Thank you for registering!")));
 			return $ret;
 		//send a reset token to the user
 		$error = '';
-		if(($user = User::reset($engine, $module, $username, $email,
+		if(($user = User::reset($engine, $this->name, $username, $email,
 				$error)) === FALSE)
 			$ret .= $error;
 		return strlen($ret) ? $ret : FALSE;
