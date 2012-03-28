@@ -80,6 +80,13 @@ class SessionAuth extends Auth
 	}
 
 
+	//SessionAuth::getVariable
+	public function getVariable(&$engine, $variable)
+	{
+		return $_SESSION[$variable];
+	}
+
+
 	//SessionAuth::setCredentials
 	public function setCredentials(&$engine, $credentials)
 	{
@@ -116,6 +123,14 @@ class SessionAuth extends Auth
 			$idempotent = FALSE;
 		}
 		$request->setIdempotent($idempotent);
+	}
+
+
+	//SessionAuth::setVariable
+	public function setVariable(&$engine, $variable, $value)
+	{
+		$_SESSION[$variable] = $value;
+		return TRUE;
 	}
 
 

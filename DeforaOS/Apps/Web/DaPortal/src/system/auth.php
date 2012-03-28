@@ -38,24 +38,28 @@ class AuthCredentials
 
 
 	//accessors
+	//AuthCredentials::getGroupId
 	public function getGroupId()
 	{
 		return $this->gid;
 	}
 
 
+	//AuthCredentials::getUserId
 	public function getUserId()
 	{
 		return $this->uid;
 	}
 
 
+	//AuthCredentials::isAdmin
 	public function isAdmin()
 	{
 		return $this->admin;
 	}
 
 
+	//AuthCredentials::setGroupId
 	public function setGroupId($gid)
 	{
 		if(!is_numeric($gid))
@@ -65,6 +69,7 @@ class AuthCredentials
 	}
 
 
+	//AuthCredentials::setUserId
 	public function setUserId($uid, $admin = FALSE)
 	{
 		if(!is_numeric($uid) || !is_bool($admin))
@@ -104,6 +109,14 @@ abstract class Auth
 	}
 
 
+	//Auth::getVariable
+	public function getVariable($variable)
+	{
+		//FIXME implement (through the database?)
+		return FALSE;
+	}
+
+
 	//Auth::setIdempotent
 	public function setIdempotent(&$engine, $request, $idempotent)
 	{
@@ -119,7 +132,16 @@ abstract class Auth
 	}
 
 
+	//Auth::setVariable
+	public function setVariable(&$engine, $variable, $value)
+	{
+		//FIXME implement (through the database?)
+		return FALSE;
+	}
+
+
 	//static
+	//Auth::attachDefault
 	public static function attachDefault(&$engine)
 	{
 		global $config;
