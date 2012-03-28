@@ -83,7 +83,9 @@ class SessionAuth extends Auth
 	//SessionAuth::getVariable
 	public function getVariable(&$engine, $variable)
 	{
-		return $_SESSION[$variable];
+		if(isset($_SESSION[$variable]))
+			return $_SESSION[$variable];
+		return FALSE;
 	}
 
 
