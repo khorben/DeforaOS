@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-14 10:33-0600\n"
+"POT-Creation-Date: 2012-03-28 18:02+0100\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,29 +15,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/system/user.php:149
+#: ../src/system/user.php:156
 msgid "The username is not valid\n"
 msgstr "Le nom d'utilisateur n'est pas valide\n"
 
-#: ../src/system/user.php:152
+#: ../src/system/user.php:159
 msgid "The e-mail address is not valid\n"
 msgstr "L'adresse e-mail n'est pas valide\n"
 
-#: ../src/system/user.php:158 ../src/system/user.php:170
-#: ../src/system/user.php:177 ../src/system/user.php:195
+#: ../src/system/user.php:165 ../src/system/user.php:177
+#: ../src/system/user.php:184 ../src/system/user.php:202
 msgid "Could not register the user"
 msgstr "Impossible d'enregistrer l'utilisateur"
 
-#: ../src/system/user.php:201 ../src/modules/user/module.php:493
+#: ../src/system/user.php:208 ../src/modules/user/module.php:493
 #: ../src/modules/user/module.php:527
 msgid "User registration"
 msgstr "Enregistrement"
 
-#: ../src/system/user.php:202
+#: ../src/system/user.php:209
 msgid "Thank you for registering on this site.\n"
 msgstr "Merci pour votre demande d'enregistrement sur ce site.\n"
 
-#: ../src/system/user.php:204
+#: ../src/system/user.php:211
 msgid ""
 "\n"
 "Your password is: "
@@ -45,7 +45,7 @@ msgstr ""
 "\n"
 "Votre mot de passe est : "
 
-#: ../src/system/user.php:205
+#: ../src/system/user.php:212
 msgid ""
 "\n"
 "Please click on the following link to enable your account:\n"
@@ -53,29 +53,29 @@ msgstr ""
 "\n"
 "Veuillez cliquer sur le lien suivant afin d'activer votre compte :\n"
 
-#: ../src/system/user.php:207
+#: ../src/system/user.php:214
 msgid "Please note that this link will expire in 7 days.\n"
 msgstr "Ce lien expirera dans 7 jours.\n"
 
-#: ../src/system/user.php:233 ../src/system/user.php:244
-#: ../src/system/user.php:266
+#: ../src/system/user.php:240 ../src/system/user.php:251
+#: ../src/system/user.php:273
 msgid "Could not reset the password"
 msgstr "Impossible de changer le mot de passe"
 
-#: ../src/system/user.php:250 ../src/modules/user/module.php:141
+#: ../src/system/user.php:257 ../src/modules/user/module.php:141
 #: ../src/modules/user/module.php:568 ../src/modules/user/module.php:602
 #: ../src/modules/user/module.php:634 ../src/modules/user/module.php:679
 msgid "Password reset"
 msgstr "Changer de mot de passe"
 
-#: ../src/system/user.php:251
+#: ../src/system/user.php:258
 msgid ""
 "Someone, hopefully you, has requested a password reset on your account.\n"
 msgstr ""
 "Quelqu'un, probablement vous, a demandé de changer le mot de passe de votre "
 "compte.\n"
 
-#: ../src/system/user.php:252
+#: ../src/system/user.php:259
 msgid ""
 "\n"
 "Please click on the following link to reset your password:\n"
@@ -83,28 +83,28 @@ msgstr ""
 "\n"
 "Veuillez cliquer sur le lien suivant afin de changer votre mot de passe :\n"
 
-#: ../src/system/user.php:254
+#: ../src/system/user.php:261
 msgid "Please note that this link will expire in 24 hours.\n"
 msgstr "Ce lien expirera dans 24 heures.\n"
 
-#: ../src/system/user.php:312
+#: ../src/system/user.php:319
 msgid "Unknown user ID\n"
 msgstr "ID d'utilisateur inconnu\n"
 
-#: ../src/system/user.php:314
+#: ../src/system/user.php:321
 msgid "The token must be specified\n"
 msgstr "Le jeton d'authentification doit être spécifié\n"
 
-#: ../src/system/user.php:321
+#: ../src/system/user.php:328
 msgid "Could not validate the user\n"
 msgstr "Impossible de valider l'utilisateur\n"
 
-#: ../src/system/user.php:328 ../src/system/user.php:334
-#: ../src/system/user.php:343 ../src/system/user.php:351
+#: ../src/system/user.php:335 ../src/system/user.php:341
+#: ../src/system/user.php:350 ../src/system/user.php:358
 msgid "Could not validate the user"
 msgstr "Impossible de valider l'utilisateur"
 
-#: ../src/system/user.php:359
+#: ../src/system/user.php:366
 msgid "Could not enable the user"
 msgstr "Impossible d'activer l'utilisateur"
 
@@ -404,7 +404,7 @@ msgstr "Ouvrir"
 
 #: ../src/modules/download/module.php:41
 msgid "Back to directory listing..."
-msgstr ""
+msgstr "Retour à la liste des fichiers..."
 
 #: ../src/modules/download/module.php:42
 msgid "File upload"
