@@ -30,19 +30,26 @@ class Mail
 	static public function send(&$engine, $from, $to, $subject, $page,
 			$headers = array())
 	{
+		global $config;
+
 		if($from === FALSE)
 			//FIXME try the configuration file as well
 			$from = $_SERVER['SERVER_ADMIN'];
 		$hdr = "From: $from\n";
-		//FIXME obtain the proper charset
-		$hdr .= "Content-type: text/plain; charset=UTF-8\r\n";
+		if(($charset = $config->getVariable('defaults', 'charset'))
+				=== FALSE)
+			$charset = 'utf-8';
+		$charset = strtoupper($charset);
+		//XXX escape $charset
+		$hdr .= "Content-type: text/plain; charset=$charset\r\n";
 		if(is_array($headers))
 			foreach($headers as $h)
 				$hdr .= "$h\n";
 		$format = Format::attachDefault($engine, 'text/plain');
 		ob_start();
 		$format->render($engine, $page);
-		$content = ob_get_contents();
+		//XXX set an argument to the Format renderer instead?
+		$content = wordwrap(ob_get_contents(), 72);
 		ob_end_clean();
 		//FIXME check $from, $to and $subject for newline characters
 		if(mail($to, $subject, $content, $hdr) === FALSE)
