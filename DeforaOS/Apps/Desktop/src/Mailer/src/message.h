@@ -34,7 +34,6 @@ void message_delete(Message * message);
 /* accessors */
 GtkTextBuffer * message_get_body(Message * message);
 AccountMessage * message_get_data(Message * message);
-char const * message_get_header(Message * message, char const * header);
 gboolean message_get_iter(Message * message, GtkTreeIter * iter);
 GtkListStore * message_get_store(Message * message);
 
