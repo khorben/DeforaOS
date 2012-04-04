@@ -93,17 +93,22 @@ class SessionAuth extends Auth
 	//SessionAuth::setCredentials
 	public function setCredentials(&$engine, $credentials)
 	{
-		//avoid session-fixation attacks
-		if(session_regenerate_id(TRUE) !== TRUE)
-			$engine->log('LOG_WARNING',
-					'Could not regenerate the session');
-		else
+		global $config;
+
+		if($config->getVariable('auth::session', 'regenerate') == 1)
 		{
-			//close the current session
-			session_write_close();
-			session_destroy();
-			//start a new session
-			session_start();
+			//avoid session-fixation attacks
+			$message = 'Could not regenerate the session';
+			if(session_regenerate_id(TRUE) !== TRUE)
+				$engine->log('LOG_WARNING', $message);
+			else
+			{
+				//close the current session
+				session_write_close();
+				session_destroy();
+				//start a new session
+				session_start();
+			}
 		}
 		$this->setVariable($engine, 'SessionAuth::uid',
 				$credentials->getUserId());
