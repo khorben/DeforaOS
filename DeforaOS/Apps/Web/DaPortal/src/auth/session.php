@@ -31,6 +31,7 @@ class SessionAuth extends Auth
 		if(!isset($_SERVER['SCRIPT_NAME'])
 				|| !isset($_SERVER['HTTP_HOST']))
 			return 0;
+		//return the result cached if called twice
 		if($this->match_score !== FALSE)
 			return $this->match_score;
 		@ini_set('session.use_only_cookies', 1);
@@ -54,6 +55,7 @@ class SessionAuth extends Auth
 	//SessionAuth::attach
 	protected function attach(&$engine)
 	{
+		//attaching depends on the code in match()
 		$this->match($engine);
 	}
 
@@ -63,12 +65,11 @@ class SessionAuth extends Auth
 	//SessionAuth::getCredentials
 	public function getCredentials(&$engine)
 	{
-		@session_start();
-		if(!isset($_SESSION['auth']['uid']))
+		if(($uid = $this->getVariable($engine, 'SessionAuth::uid'))
+					=== FALSE
+				|| $uid == 0)
 			return parent::getCredentials();
-		if($_SESSION['auth']['uid'] == 0)
-			return parent::getCredentials();
-		$user = new User($engine, $_SESSION['auth']['uid']);
+		$user = new User($engine, $uid);
 		if(!$user->isEnabled())
 			return parent::getCredentials();
 		$cred = new AuthCredentials($user->getUserId(),
@@ -95,7 +96,8 @@ class SessionAuth extends Auth
 		if(session_regenerate_id(TRUE) !== TRUE)
 			$engine->log('LOG_WARNING',
 					'Could not regenerate the session');
-		$_SESSION['auth']['uid'] = $credentials->getUserId();
+		$this->setVariable($engine, 'SessionAuth::uid',
+				$credentials->getUserId());
 		return parent::setCredentials($engine, $credentials);
 	}
 
