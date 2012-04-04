@@ -31,6 +31,8 @@ class UserModule extends Module
 		{
 			case 'actions':
 			case 'admin':
+			case 'disable':
+			case 'enable':
 			case 'display':
 			case 'login':
 			case 'logout':
@@ -199,47 +201,105 @@ class UserModule extends Module
 
 
 	//UserModule::admin
-	protected function admin($engine, $request)
+	protected function admin($engine, $request = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$cred = $engine->getCredentials();
 
 		if(!$cred->isAdmin())
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('Permission denied')));
+					'type' => 'error',
+					'text' => _('Permission denied')));
 		$title = _('User administration');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
-			'text' => $title));
+				'text' => $title));
 		$query = $this->query_admin;
 		//FIXME implement sorting
 		$query .= ' ORDER BY username ASC';
 		if(($res = $db->query($engine, $query)) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('Could not list users')));
+					'type' => 'error',
+					'text' => _('Could not list users')));
 		$columns = array('username' => _('Username'),
-			'group' => _('Group'),
-			'enabled' => _('Enabled'),
-			'email' => _('e-mail'));
-		$view = $page->append('treeview', array('view' => 'details',
-			'columns' => $columns));
+				'group' => _('Group'),
+				'enabled' => _('Enabled'),
+				'email' => _('e-mail'));
+		$r = new Request($engine, $this->name, 'admin');
+		$view = $page->append('treeview', array('request' => $r,
+				'view' => 'details', 'columns' => $columns));
+		$toolbar = $view->append('toolbar');
+		$toolbar->append('button', array('stock' => 'refresh',
+				'text' => _('Refresh'),
+				'request' => $r));
+		$toolbar->append('button', array('stock' => 'disable',
+				'text' => _('Disable'),
+				'type' => 'submit', 'name' => 'action',
+				'value' => 'disable'));
+		$toolbar->append('button', array('stock' => 'enable',
+				'text' => _('Enable'),
+				'type' => 'submit', 'name' => 'action',
+				'value' => 'enable'));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
+			$row->setProperty('id', 'user_id:'.$res[$i]['id']);
 			$row->setProperty('username', $res[$i]['username']);
 			$r = new Request($engine, $this->name, 'update',
-				$res[$i]['user_id'], $res[$i]['username']);
+				$res[$i]['id'], $res[$i]['username']);
 			$link = new PageElement('link', array('request' => $r,
 				'text' => $res[$i]['username']));
-			if($res[$i]['user_id'] != 0)
+			if($res[$i]['id'] != 0)
 				$row->setProperty('username', $link);
 			$row->setProperty('group', $res[$i]['groupname']);
 			$row->setProperty('enabled', $res[$i]['enabled']
 				? 1 : 0);
 			$row->setProperty('email', $res[$i]['email']);
 		}
+		return $page;
+	}
+
+
+	//UserModule::_apply
+	protected function _apply($engine, $request, $query, $fallback,
+			$success, $failure)
+	{
+		//XXX copied from ContentModule
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		if(!$cred->isAdmin())
+		{
+			//must be admin
+			$page = $this->_default($engine);
+			$error = _('Permission denied');
+			$page->prepend('dialog', array('type' => 'error',
+					'text' => $error));
+			return $page;
+		}
+		if($request->isIdempotent())
+			//must be safe
+			return $this->$fallback($engine);
+		$type = 'info';
+		$message = $success;
+		$parameters = $request->getParameters();
+		foreach($parameters as $k => $v)
+		{
+			$x = explode(':', $k);
+			if(count($x) != 2 || $x[0] != 'user_id'
+					|| !is_numeric($x[1]))
+				continue;
+			$res = $db->query($engine, $query, array(
+					'user_id' => $x[1]));
+			if($res !== FALSE)
+				continue;
+			$type = 'error';
+			$message = $failure;
+		}
+		$page = $this->$fallback($engine);
+		//FIXME place this under the title
+		$page->prepend('dialog', array('type' => $type,
+				'text' => $message));
 		return $page;
 	}
 
@@ -284,6 +344,18 @@ class UserModule extends Module
 	}
 
 
+	//UserModule::disable
+	protected function disable($engine, $request)
+	{
+		$query = $this->query_disable;
+		$cred = $engine->getCredentials();
+
+		return $this->_apply($engine, $request, $query, 'admin',
+			_('User(s) could be disabled successfully'),
+			_('Some user(s) could not be disabled'));
+	}
+
+
 	//UserModule::display
 	protected function display($engine, $request)
 	{
@@ -312,6 +384,18 @@ class UserModule extends Module
 		if($link !== FALSE)
 			$page->appendElement($link);
 		return $page;
+	}
+
+
+	//UserModule::enable
+	protected function enable($engine, $request)
+	{
+		$query = $this->query_enable;
+		$cred = $engine->getCredentials();
+
+		return $this->_apply($engine, $request, $query, 'admin',
+			_('User(s) could be enabled successfully'),
+			_('Some user(s) could not be enabled'));
 	}
 
 
@@ -939,12 +1023,18 @@ Thank you for registering!")));
 	//private
 	//properties
 	//queries
-	private $query_admin = 'SELECT user_id, username, admin,
+	private $query_admin = 'SELECT user_id AS id, username, admin,
 		daportal_user.enabled AS enabled, email,
 		daportal_group.group_id AS group_id, groupname
 		FROM daportal_user
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id';
+	private $query_disable = "UPDATE daportal_user
+		SET enabled='0'
+		WHERE user_id=:user_id";
+	private $query_enable = "UPDATE daportal_user
+		SET enabled='1'
+		WHERE user_id=:user_id";
 	private $query_login = "SELECT user_id, group_id, username, admin
 		FROM daportal_user
 		WHERE username=:username AND password=:password
