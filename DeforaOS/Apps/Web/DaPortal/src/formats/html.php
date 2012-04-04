@@ -608,6 +608,8 @@ class HtmlFormat extends FormatElements
 
 	protected function renderTreeview($e)
 	{
+		$auth = $this->engine->getAuth();
+
 		switch(($view = $e->getProperty('view')))
 		{
 			case 'details':
@@ -631,13 +633,14 @@ class HtmlFormat extends FormatElements
 		$this->tagOpen('form', $class, FALSE, array(
 					'action' => 'index.php',
 					'method' => $method));
-		if($method === 'post' && @session_start())
+		if($method === 'post')
 		{
-			//FIXME move this code into the Auth module
-			if(!isset($_SESSION['tokens']))
-				$_SESSION['tokens'] = array();
 			$token = sha1(uniqid(php_uname(), TRUE));
-			$_SESSION['tokens'][$token] = time() + 3600;
+			if(($tokens = $auth->getVariable($this->engine,
+						'tokens')) === FALSE)
+				$tokens = array();
+			$tokens[$token] = time() + 3600;
+			$auth->setVariable($this->engine, 'tokens', $tokens);
 			$this->_renderTreeviewHidden('_token', $token);
 		}
 		if(($r = $e->getProperty('request')) !== FALSE)
