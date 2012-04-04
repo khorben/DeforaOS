@@ -76,6 +76,9 @@ class HttpEngine extends Engine
 	{
 		global $config;
 
+		//XXX hack to avoid testing twice for idempotence
+		if($this->request !== FALSE)
+			return $this->request;
 		$request = array();
 		$idempotent = TRUE;
 		$module = FALSE;
@@ -112,11 +115,11 @@ class HttpEngine extends Engine
 					break;
 			}
 		}
-		$request = new Request($this, $module, $action, $id, $title,
-				$parameters);
+		$this->request = new Request($this, $module, $action, $id,
+				$title, $parameters);
 		$auth = $this->getAuth();
-		$auth->setIdempotent($this, $request, $idempotent);
-		return $request;
+		$auth->setIdempotent($this, $this->request, $idempotent);
+		return $this->request;
 	}
 
 
@@ -237,9 +240,9 @@ class HttpEngine extends Engine
 	}
 
 
-	//private
+	//protected
 	//properties
-	private $uri;
+	protected $request = FALSE;
 }
 
 ?>
