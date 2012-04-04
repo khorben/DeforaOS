@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ void message_delete(Message * message);
 /* accessors */
 GtkTextBuffer * message_get_body(Message * message);
 AccountMessage * message_get_data(Message * message);
+char const * message_get_header(Message * message, char const * header);
 gboolean message_get_iter(Message * message, GtkTreeIter * iter);
 GtkListStore * message_get_store(Message * message);
 
