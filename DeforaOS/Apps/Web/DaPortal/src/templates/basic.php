@@ -48,13 +48,16 @@ class BasicTemplate extends Template
 	//BasicTemplate::getMenu
 	protected function getMenu($engine, $entries = FALSE)
 	{
+		$cred = $engine->getCredentials();
+
 		$menu = new PageElement('menubar');
 		//FIXME really implement
 		$modules = $menu->append('menuitem', array(
 					'text' => _('Menu')));
 		if($entries === FALSE)
 			$entries = array('blog', 'news',
-				'user' => array('login'));
+				'user' => array($cred->getUserId() ? 'logout'
+						: 'login'));
 		foreach($entries as $k => $v)
 		{
 			if(is_array($v))

@@ -28,11 +28,14 @@ class DeforaOSTemplate extends BasicTemplate
 	//DeforaOSTemplate::getMenu
 	protected function getMenu($engine, $entries = FALSE)
 	{
+		$cred = $engine->getCredentials();
+
 		$vbox = new PageElement('vbox', array('id' => 'menu'));
 		if($entries === FALSE)
 			$entries = array('news', 'download', 'project',
-					'user' => array('login'),
-					'wiki');
+				'user' => array($cred->getUserId()
+					? 'logout' : 'login'),
+				'wiki');
 		$vbox->appendElement(parent::getMenu($engine, $entries));
 		$request = new Request($engine, 'search', 'widget');
 		$vbox->appendElement($engine->process($request));
