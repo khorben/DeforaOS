@@ -303,6 +303,8 @@ class HtmlFormat extends FormatElements
 
 	protected function renderForm($e)
 	{
+		$auth = $this->engine->getAuth();
+
 		$this->renderTabs();
 		$args = array('action' => 'index.php');
 		//XXX look for any file upload field
@@ -316,13 +318,14 @@ class HtmlFormat extends FormatElements
 		$args['method'] = $method;
 		$this->tagOpen('form', $e->getType(), $e->getProperty('id'),
 				$args);
-		if($method === 'post' && @session_start())
+		if($method === 'post')
 		{
-			//FIXME move this code into the Auth module
-			if(!isset($_SESSION['tokens']))
-				$_SESSION['tokens'] = array();
 			$token = sha1(uniqid(php_uname(), TRUE));
-			$_SESSION['tokens'][$token] = time() + 3600;
+			if(($tokens = $auth->getVariable($this->engine,
+						'tokens')) === FALSE)
+				$tokens = array();
+			$tokens[$token] = time() + 3600;
+			$auth->setVariable($this->engine, 'tokens', $tokens);
 			$this->_renderFormHidden('_token', $token);
 		}
 		if(($r = $e->getProperty('request')) !== FALSE)
