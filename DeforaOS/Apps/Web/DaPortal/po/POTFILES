@@ -9,3 +9,4 @@
 ../src/modules/search/module.php
 ../src/modules/user/module.php
 ../src/modules/wiki/module.php
+../src/templates/basic.php

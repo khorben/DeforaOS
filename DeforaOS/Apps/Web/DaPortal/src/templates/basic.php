@@ -51,7 +51,7 @@ class BasicTemplate extends Template
 		$menu = new PageElement('menubar');
 		//FIXME really implement
 		$modules = $menu->append('menuitem', array(
-					'text' => 'Modules'));
+					'text' => _('Menu')));
 		if($entries === FALSE)
 			$entries = array('blog', 'news',
 				'user' => array('login'));
