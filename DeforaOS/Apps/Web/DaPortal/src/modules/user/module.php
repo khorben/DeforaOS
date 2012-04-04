@@ -910,6 +910,7 @@ Thank you for registering!")));
 	{
 		$cred = $engine->getCredentials();
 
+		$request = $engine->getRequest();
 		if($cred->getUserId() == 0)
 			return $this->form_login($engine,
 					$request->getParameter('username'),
