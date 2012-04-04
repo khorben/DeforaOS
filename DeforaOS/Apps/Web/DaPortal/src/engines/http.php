@@ -184,8 +184,8 @@ class HttpEngine extends Engine
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
 		if($page === FALSE)
-			$page = new Page;
-		if($page instanceof PageElement)
+			return $this->renderPage($page, $type);
+		else if($page instanceof PageElement)
 			return $this->renderPage($page, $type);
 		else if(is_resource($page)
 				&& get_resource_type($page) == 'stream')
@@ -200,8 +200,12 @@ class HttpEngine extends Engine
 				!== FALSE)
 			//XXX escape
 			header('Content-Encoding: '.$charset);
-		if(($location = $page->getProperty('location')) !== FALSE)
+		if($page !== FALSE)
+		{
+			if(($location = $page->getProperty('location'))
+					!== FALSE)
 			header('Location: '.$location); //XXX escape
+		}
 		switch($type)
 		{
 			case 'text/html':
