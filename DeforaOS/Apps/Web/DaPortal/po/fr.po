@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-28 18:02+0100\n"
+"POT-Creation-Date: 2012-04-04 11:05+0200\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -550,7 +550,7 @@ msgstr "Envoyé par : "
 msgid "Filter"
 msgstr "Filtrer"
 
-#: ../src/modules/project/module.php:243 ../src/modules/user/module.php:921
+#: ../src/modules/project/module.php:243 ../src/modules/user/module.php:922
 msgid "Homepage"
 msgstr "Accueil"
 
@@ -676,17 +676,17 @@ msgid "Administration"
 msgstr "Administration"
 
 #: ../src/modules/user/module.php:177 ../src/modules/user/module.php:299
-#: ../src/modules/user/module.php:925
+#: ../src/modules/user/module.php:926
 msgid "My content"
 msgstr "Mes contenus"
 
 #: ../src/modules/user/module.php:185 ../src/modules/user/module.php:717
-#: ../src/modules/user/module.php:861 ../src/modules/user/module.php:929
+#: ../src/modules/user/module.php:861 ../src/modules/user/module.php:930
 msgid "My profile"
 msgstr "Mon profil"
 
 #: ../src/modules/user/module.php:193 ../src/modules/user/module.php:423
-#: ../src/modules/user/module.php:465 ../src/modules/user/module.php:933
+#: ../src/modules/user/module.php:465 ../src/modules/user/module.php:934
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -899,3 +899,7 @@ msgstr "Pages wiki"
 #: ../src/modules/wiki/module.php:38
 msgid "New wiki page"
 msgstr "Nouvelle page wiki"
+
+#: ../src/templates/basic.php:54
+msgid "Menu"
+msgstr "Menu"
