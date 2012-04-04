@@ -345,9 +345,14 @@ class GtkFormat extends FormatElements
 			if($c->getType() != 'row')
 				continue;
 			$iter = $store->append();
-			if(($icon = $c->getProperty('icon')) !== FALSE)
-				$store->set($iter, 0, $c->getProperty('icon'));
-			$store->set($iter, 1, $c->getProperty('label'));
+			if(($icon = $c->getProperty('icon')) !== FALSE
+					//FIXME extract the image otherwise
+					&& is_string($icon))
+				$store->set($iter, 0, $icon);
+			if(($label = $c->getProperty('label')) !== FALSE
+					//FIXME extract the label otherwise
+					&& is_string($label))
+				$store->set($iter, 1, $label);
 		}
 		$ret->add($view);
 		return $ret;
