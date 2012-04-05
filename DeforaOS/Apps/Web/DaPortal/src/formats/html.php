@@ -158,34 +158,37 @@ class HtmlFormat extends FormatElements
 				&& ($class = $e->getProperty('stock'))
 				!== FALSE)
 			$class = "stock16 $class";
+		$tag = 'a';
+		$args = array();
 		switch(($type = $e->getProperty('type')))
 		{
-			case 'button':
-				break;
 			case 'reset':
 			case 'submit':
+				$tag = 'input';
 				$url = FALSE;
 				if($class === FALSE)
 					$class = "stock16 $type";
+				$args['type'] = $type;
+				if(($name = $e->getProperty('name')) !== FALSE)
+					$args['name'] = $name;
+				if(($value = $e->getProperty('text')) !== FALSE)
+					$args['value'] = $value;
+				$this->tag($tag, $class, $e->getProperty('id'),
+						$args);
 				break;
+			case 'button':
 			default:
 				$type = 'button';
+				if($class !== FALSE)
+					$class = "button $class";
+				$args['href'] = $url;
+				$this->tagOpen($tag, $class,
+						$e->getProperty('id'), $args);
+				$this->renderChildren($e);
+				print($this->escape($e->getProperty('text')));
+				$this->tagClose($tag);
 				break;
 		}
-		if($url !== FALSE)
-			$this->tagOpen('a', FALSE, FALSE, array(
-						'href' => $url));
-		$args = array('type' => $type);
-		if(($name = $e->getProperty('name')) !== FALSE)
-			$args['name'] = $name;
-		if(($value = $e->getProperty('value')) !== FALSE)
-			$args['value'] = $value;
-		$this->tagOpen('button', $class, FALSE, $args);
-		$this->renderChildren($e);
-		print($this->escape($e->getProperty('text')));
-		$this->tagClose('button');
-		if($url !== FALSE)
-			$this->tagClose('a');
 	}
 
 
