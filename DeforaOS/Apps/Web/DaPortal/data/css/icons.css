@@ -20,11 +20,13 @@
 	background-repeat:		no-repeat;
 }
 
-button.stock16 {
+a.button.stock16, button.stock16 {
 	background-origin:		padding-box;
 	background-position:		2px center;
 	background-size:		auto 16px;
+	border-width:			1px;
 	min-height:			20px;
+	padding:			2px;
 	padding-left:			20px;
 }
 

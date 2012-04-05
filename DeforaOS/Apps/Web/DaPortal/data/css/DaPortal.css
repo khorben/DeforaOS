@@ -16,13 +16,13 @@
 
 
 /* global */
-button, input[type="checkbox"], input[type="password"], input[type="text"],
+a.button, input[type="checkbox"], input[type="password"], input[type="text"],
 label {
 	margin:				0.5ex;
 	padding:			0.5ex;
 }
 
-div.buttonbox > button, div.buttonbox > a > button {
+div.buttonbox > a.button, div.buttonbox > a > a.button {
 	margin:				0.5ex;
 	padding:			0.5ex;
 	width:				10ex;
