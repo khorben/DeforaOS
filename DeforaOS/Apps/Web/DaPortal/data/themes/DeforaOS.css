@@ -21,13 +21,33 @@
 @import url("../icons/gnome.css");
 
 
-/* general definitions */
+/* global defaults */
 * {
 	margin:				0;
 	padding:			0;
 	text-align:			justify;
 }
 
+
+/* fonts */
+a, button, input {
+	font-size:			100%;
+}
+
+a, body, button, input {
+	font-family:			"Verdana", "DejaVu Sans", "Bitstream Vera Sans", sans-serif;
+}
+
+body {
+	font-size:			0.85em;
+}
+
+html {
+	font-size:			100%;
+}
+
+
+/* generic elements */
 a {
 	color:				#7f7f7f;
 	text-decoration:		none;
@@ -39,11 +59,6 @@ a:hover {
 
 a.button:hover {
 	text-decoration:		none;
-}
-
-body, a, button, input {
-	font-family:			"Verdana", "DejaVu Sans", "Bitstream Vera Sans", sans-serif;
-	font-size:			0.85em;
 }
 
 a.button, button, input[type="button"], input[type="reset"],
@@ -59,10 +74,6 @@ h1, h2, h3, h4, h5, h6, .title {
 
 h1 a:hover {
 	text-decoration:		none;
-}
-
-html {
-	font-size:			100%;
 }
 
 ol li, ul li {
