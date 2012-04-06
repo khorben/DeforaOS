@@ -95,6 +95,11 @@ class DownloadModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND daportal_content.content_id=:content_id";
+	protected $download_query_get_download_id = "SELECT download_id
+		FROM daportal_download, daportal_content
+		WHERE daportal_download.content_id=daportal_content.content_id
+		AND daportal_content.enabled='1'
+		AND daportal_download.content_id=:content_id";
 	protected $download_query_file_insert = 'INSERT INTO daportal_download
 		(content_id, parent, mode) VALUES (:content_id, :parent,
 			:mode)';
@@ -154,6 +159,20 @@ class DownloadModule extends ContentModule
 			return TRUE;
 		$error = _('Permission denied');
 		return FALSE;
+	}
+
+
+	//DownloadModule::getDownloadId
+	protected function getDownloadId($engine, $content_id)
+	{
+		$db = $engine->getDatabase();
+
+		$query = $this->download_query_get_download_id;
+		if(($res = $db->query($engine, $query, array(
+					'content_id' => $content_id))) === FALSE
+				|| count($res) != 1)
+			return FALSE;
+		return $res[0]['download_id'];
 	}
 
 
@@ -241,10 +260,16 @@ class DownloadModule extends ContentModule
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		$query = $this->download_query_list;
-		if($content['id'] === FALSE)
+		$parent_id = (is_numeric($content['id']))
+			? $this->getDownloadId($engine, $content['id'])
+			: FALSE;
+		if($parent_id !== FALSE)
+			$query .= ' AND daportal_download.parent=:parent_id';
+		else
 			$query .= ' AND daportal_download.parent IS NULL';
 		if(($res = $db->query($engine, $query, array(
-					'module_id' => $this->id))) === FALSE)
+					'module_id' => $this->id,
+					'parent_id' => $parent_id))) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error',
 					'text' => _('Unable to list files')));
