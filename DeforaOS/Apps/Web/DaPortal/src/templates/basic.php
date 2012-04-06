@@ -35,6 +35,17 @@ class BasicTemplate extends Template
 
 	//methods
 	//accessors
+	//BasicTemplate::getDefault
+	protected function getDefault()
+	{
+		global $config;
+
+		$title = $config->getVariable(FALSE, 'title');
+		$res = new PageElement('title', array('text' => $title));
+		return $res;
+	}
+
+
 	protected function getFooter($engine)
 	{
 		$footer = new PageElement('statusbar');
@@ -134,7 +145,7 @@ class BasicTemplate extends Template
 	//BasicTemplate::render
 	public function render(&$engine, $page)
 	{
-		global $config;
+		$title = $this->title;
 
 		$p = new Page;
 		$p->appendElement($this->getTitle($engine));
@@ -149,15 +160,12 @@ class BasicTemplate extends Template
 		}
 		if($page !== FALSE)
 		{
-			if(($title = $page->getProperty('title')) === FALSE)
-				$title = $this->title;
+			if(($t = $page->getProperty('title')) !== FALSE)
+				$title = $t;
 			$content->appendElement($page);
 		}
-		else
-		{
-			$title = $config->getVariable(FALSE, 'title');
-			//FIXME append default content
-		}
+		else if(($element = $this->getDefault()) !== FALSE)
+			$content->appendElement($element);
 		$p->setProperty('title', $title);
 		$p->appendElement($this->getFooter($engine));
 		return $p;
