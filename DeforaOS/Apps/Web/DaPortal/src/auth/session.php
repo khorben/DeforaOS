@@ -105,7 +105,6 @@ class SessionAuth extends Auth
 			{
 				//close the current session
 				session_write_close();
-				session_destroy();
 				//start a new session
 				session_start();
 			}
