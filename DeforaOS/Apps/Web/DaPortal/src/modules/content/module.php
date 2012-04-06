@@ -211,7 +211,7 @@ class ContentModule extends Module
 				'user_id' => $cred->getUserId());
 		if($title !== FALSE)
 		{
-			$query .= ' AND title LIKE :title';
+			$query .= ' AND daportal_content.title LIKE :title';
 			$args['title'] = str_replace('-', '_', $title);
 		}
 		if(($res = $db->query($engine, $query, $args)) === FALSE
