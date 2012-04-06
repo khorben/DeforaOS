@@ -72,14 +72,20 @@ class DownloadModule extends ContentModule
 	//queries
 	protected $download_query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
-		daportal_content.content_id AS id, title,
+		daportal_content.content_id AS id,
+		daportal_content.title AS title,
 		daportal_content.content AS content,
-		timestamp, download.download_id AS download_id,
-		parent.content_id AS parent_id, download.mode AS mode
+		daportal_content.timestamp AS timestamp,
+		download.download_id AS download_id,
+		parent_download.content_id AS parent_id,
+		parent_content.title AS parent_title,
+		download.mode AS mode
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_download download
-		LEFT JOIN daportal_download parent
-		ON download.parent=parent.download_id
+		LEFT JOIN daportal_download parent_download
+		ON download.parent=parent_download.download_id
+		LEFT JOIN daportal_content parent_content
+		ON parent_download.content_id=parent_content.content_id
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -92,6 +98,21 @@ class DownloadModule extends ContentModule
 	protected $download_query_file_insert = 'INSERT INTO daportal_download
 		(content_id, parent, mode) VALUES (:content_id, :parent,
 			:mode)';
+	protected $download_query_list = "SELECT
+		daportal_content.content_id AS id,
+		daportal_content.enabled AS enabled,
+		daportal_content.timestamp AS timestamp,
+		daportal_user.user_id AS user_id, username, title
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_download
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=daportal_download.content_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
 	protected $download_query_list_files = "SELECT
 		daportal_content.content_id AS id,
 		daportal_content.enabled AS enabled,
@@ -185,6 +206,19 @@ class DownloadModule extends ContentModule
 
 
 	//actions
+	//DownloadModule::_default
+	protected function _default($engine, $request = FALSE)
+	{
+		if($request === FALSE || ($id = $request->getId()) === FALSE)
+		{
+			$content = array('id' => FALSE,
+				'title' => 'Root directory');
+			return $this->_displayDirectory($engine, $content);
+		}
+		return $this->display($engine, $request);
+	}
+
+
 	//DownloadModule::display
 	protected function display($engine, $content)
 	{
@@ -200,13 +234,31 @@ class DownloadModule extends ContentModule
 
 	protected function _displayDirectory($engine, $content)
 	{
+		$db = $engine->getDatabase();
 		$title = $this->content_list_title._(': ').$content['title'];
 
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		$query = $this->download_query_list;
+		if($content['id'] === FALSE)
+			$query .= ' AND daportal_download.parent IS NULL';
+		if(($res = $db->query($engine, $query, array(
+					'module_id' => $this->id))) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error',
+					'text' => _('Unable to list files')));
 		$view = $page->append('treeview');
-		//FIXME implement
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$row = $view->append('row');
+			$row->setProperty('id', $res[$i]['id']);
+			$r = new Request($engine, $this->name, FALSE,
+				$res[$i]['id'], $res[$i]['title']);
+			$link = new PageElement('link', array('request' => $r,
+				'text' => $res[$i]['title']));
+			$row->setProperty('title', $link);
+		}
 		return $page;
 	}
 
@@ -217,6 +269,16 @@ class DownloadModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		//toolbar
+		$toolbar = $page->append('toolbar');
+		$parent_id = is_numeric($content['parent_id'])
+			? $content['parent_id'] : FALSE;
+		$parent_title = is_string($content['parent_title'])
+			? $content['parent_title'] : FALSE;
+		$request = new Request($engine, $this->name, FALSE, $parent_id,
+				$parent_title);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => 'updir', 'text' => _('Browse')));
 		//obtain the root repository
 		$root = $this->getRoot($engine);
 		//output the file details
@@ -225,7 +287,11 @@ class DownloadModule extends ContentModule
 		if(($stat = stat($filename)) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
-		$this->_displayField($page, _('Name'), $content['title']);
+		$request = new Request($engine, $this->name, 'download',
+				$content['id'], $content['title']);
+		$this->_displayField($page, _('Name'), new PageElement('link',
+					array('request' => $request,
+						'text' => $content['title'])));
 		$this->_displayField($page, _('Type'), Mime::get($engine,
 				$content['title']));
 		$this->_displayField($page, _('Owner'), $content['username']);
@@ -262,7 +328,10 @@ class DownloadModule extends ContentModule
 	{
 		$hbox = $page->append('hbox');
 		$hbox->append('label', array('text' => $label._(': ')));
-		$hbox->append('label', array('text' => $field));
+		if($field instanceof PageElement)
+			$hbox->appendElement($field);
+		else
+			$hbox->append('label', array('text' => $field));
 	}
 
 
