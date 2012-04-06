@@ -35,6 +35,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-bold.png');
 }
 
+.stock48.browse {
+	background-image:	url('gnome-icon-theme/48x48/places/folder.png');
+}
+
 .stock48.bug {
 	background-image:	url('gnome-icon-theme/48x48/categories/applications-development.png');
 }
@@ -60,7 +64,7 @@
 }
 
 .stock48.download {
-	background-image:	url('gnome-icon-theme/48x48/apps/web-browser.png');
+	background-image:	url('gnome-icon-theme/48x48/places/folder-download.png');
 }
 
 .stock48.enable {
