@@ -297,6 +297,7 @@ class DownloadModule extends ContentModule
 				'text' => $title));
 		//toolbar
 		$toolbar = $page->append('toolbar');
+		//link to the folder
 		$parent_id = is_numeric($content['parent_id'])
 			? $content['parent_id'] : FALSE;
 		$parent_title = is_string($content['parent_title'])
@@ -305,6 +306,12 @@ class DownloadModule extends ContentModule
 				$parent_title);
 		$toolbar->append('button', array('request' => $request,
 				'stock' => 'updir', 'text' => _('Browse')));
+		//link to the download
+		$request = new Request($engine, $this->name, 'download',
+				$content['id'], $content['title']);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => $this->name,
+				'text' => _('Download')));
 		//obtain the root repository
 		$root = $this->getRoot($engine);
 		//output the file details
@@ -331,22 +338,6 @@ class DownloadModule extends ContentModule
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
 		$this->_displayField($page, _('Size'), $stat['size']);
 		$this->_displayField($page, _('Comment'), $content['content']);
-		//link to the download
-		$vbox = $page->append('vbox');
-		$r = new Request($engine, $this->name, 'download',
-				$content['id'], $content['title']);
-		$vbox->append('button', array('request' => $r,
-				'stock' => $this->name,
-				'text' => _('Download')));
-		//link to the folder
-		//FIXME does not seem to work
-		if(!is_numeric($content['parent_id']))
-			$content['parent_id'] = FALSE;
-		$r = new Request($engine, $this->name, FALSE,
-				$content['parent_id']);
-		$vbox->append('link', array('request' => $r,
-				'stock' => 'back',
-				'text' => _('Back')));
 		return $page;
 	}
 
