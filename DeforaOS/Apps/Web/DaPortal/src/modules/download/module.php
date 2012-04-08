@@ -267,6 +267,7 @@ class DownloadModule extends ContentModule
 			$query .= ' AND daportal_download.parent=:parent_id';
 		else
 			$query .= ' AND daportal_download.parent IS NULL';
+		$query .= ' ORDER BY title ASC';
 		if(($res = $db->query($engine, $query, array(
 					'module_id' => $this->id,
 					'parent_id' => $parent_id))) === FALSE)
