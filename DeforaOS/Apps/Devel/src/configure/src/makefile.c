@@ -530,9 +530,17 @@ static void _targets_ldflags(Configure * configure, FILE * fp)
 	String const * p;
 
 	if((p = config_get(configure->config, "", "ldflags_force")) != NULL)
-		_makefile_output_variable(fp, "LDFLAGSF", p, 1);
+	{
+		fputs("LDFLAGSF=", fp);
+		_binary_ldflags(configure, fp, p);
+		fputc('\n', fp);
+	}
 	if((p = config_get(configure->config, "", "ldflags")) != NULL)
-		_makefile_output_variable(fp, "LDFLAGS", p, 1);
+	{
+		fputs("LDFLAGS\t=", fp);
+		_binary_ldflags(configure, fp, p);
+		fputc('\n', fp);
+	}
 }
 
 static void _binary_ldflags(Configure * configure, FILE * fp,
