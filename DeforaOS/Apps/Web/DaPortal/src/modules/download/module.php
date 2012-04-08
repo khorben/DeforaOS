@@ -71,7 +71,10 @@ class DownloadModule extends ContentModule
 	//properties
 	//queries
 	protected $download_query_get = "SELECT daportal_module.name AS module,
+		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
+		daportal_group.group_id AS group_id,
+		daportal_group.groupname AS groupname,
 		daportal_content.content_id AS id,
 		daportal_content.title AS title,
 		daportal_content.content AS content,
@@ -81,7 +84,7 @@ class DownloadModule extends ContentModule
 		parent_content.title AS parent_title,
 		download.mode AS mode
 		FROM daportal_content, daportal_module, daportal_user,
-		daportal_download download
+		daportal_group, daportal_download download
 		LEFT JOIN daportal_download parent_download
 		ON download.parent=parent_download.download_id
 		LEFT JOIN daportal_content parent_content
@@ -89,6 +92,7 @@ class DownloadModule extends ContentModule
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.group_id=daportal_group.group_id
 		AND daportal_content.content_id=download.content_id
 		AND daportal_content.enabled='1'
 		AND (daportal_content.public='1' OR daportal_content.user_id=:user_id)
@@ -107,12 +111,14 @@ class DownloadModule extends ContentModule
 		daportal_content.content_id AS id,
 		daportal_content.enabled AS enabled,
 		daportal_content.timestamp AS timestamp,
-		daportal_user.user_id AS user_id, username, title
+		daportal_user.user_id AS user_id, username,
+		daportal_group.group_id AS group_id, groupname, title, mode
 		FROM daportal_content, daportal_module, daportal_user,
-		daportal_download
+		daportal_group, daportal_download
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.group_id=daportal_group.group_id
 		AND daportal_content.content_id=daportal_download.content_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
@@ -239,9 +245,9 @@ class DownloadModule extends ContentModule
 
 
 	//DownloadModule::display
-	protected function display($engine, $content)
+	protected function display($engine, $request)
 	{
-		return parent::display($engine, $content);
+		return parent::display($engine, $request);
 	}
 
 	protected function _display($engine, $content)
@@ -274,7 +280,25 @@ class DownloadModule extends ContentModule
 			return new PageElement('dialog', array(
 					'type' => 'error',
 					'text' => _('Unable to list files')));
-		$view = $page->append('treeview');
+		//toolbar
+		$toolbar = $page->append('toolbar');
+		//link to the parent folder
+		$parent_id = isset($content['parent_id'])
+			&& is_numeric($content['parent_id'])
+			? $content['parent_id'] : FALSE;
+		$parent_title = isset($content['parent_title'])
+			&& is_string($content['parent_title'])
+			? $content['parent_title'] : FALSE;
+		$request = new Request($engine, $this->name, FALSE, $parent_id,
+				$parent_title);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => 'updir',
+				'text' => _('Up one directory')));
+		//view
+		$columns = array('filename' => _('Filename'),
+			'owner' => _('Owner'), 'group' => _('Group'),
+			'date' => _('Date'), 'permissions' => _('Permissions'));
+		$view = $page->append('treeview', array('columns' => $columns));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
@@ -283,7 +307,15 @@ class DownloadModule extends ContentModule
 				$res[$i]['id'], $res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
 				'text' => $res[$i]['title']));
-			$row->setProperty('title', $link);
+			$row->setProperty('filename', $link);
+			$row->setProperty('owner', $res[$i]['username']);
+			$row->setProperty('group', $res[$i]['groupname']);
+			$row->setProperty('date', $this->_timestampToDate(
+					$res[$i]['timestamp'],
+						_('d/m/Y H:i:s')));
+			//XXX output in a more readable mode
+			$row->setProperty('permissions',
+					sprintf('0%o', $res[$i]['mode']));
 		}
 		return $page;
 	}
@@ -320,14 +352,17 @@ class DownloadModule extends ContentModule
 		if(($stat = stat($filename)) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
-		$request = new Request($engine, $this->name, 'download',
-				$content['id'], $content['title']);
 		$this->_displayField($page, _('Name'), new PageElement('link',
 					array('request' => $request,
 						'text' => $content['title'])));
 		$this->_displayField($page, _('Type'), Mime::get($engine,
 				$content['title']));
-		$this->_displayField($page, _('Owner'), $content['username']);
+		$request = new Request($engine, 'user', FALSE,
+				$content['user_id'], $content['username']);
+		$this->_displayField($page, _('Owner'), new PageElement('link',
+					array('request' => $request,
+					'text' => $content['username'])));
+		$this->_displayField($page, _('Group'), $content['groupname']);
 		$this->_displayField($page, _('Permissions'),
 			sprintf('%04o', $content['mode']));
 		$this->_displayField($page, _('Creation time'),

@@ -135,6 +135,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-find.png');
 }
 
+.stock48.updir {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-go-up.png');
+}
+
 .stock48.user {
 	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
 }
