@@ -315,7 +315,7 @@ class DownloadModule extends ContentModule
 						_('d/m/Y H:i:s')));
 			//XXX output in a more readable mode
 			$row->setProperty('permissions',
-					sprintf('0%o', $res[$i]['mode']));
+					sprintf('%04o', $res[$i]['mode']));
 		}
 		return $page;
 	}
