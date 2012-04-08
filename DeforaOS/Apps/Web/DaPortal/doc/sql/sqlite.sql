@@ -108,12 +108,14 @@ CREATE TABLE daportal_content (
 	timestamp TIMESTAMP DEFAULT NULL,
 	module_id INTEGER,
 	user_id INTEGER,
+	group_id INTEGER DEFAULT '0',
 	title VARCHAR(255),
 	content TEXT,
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
 	public BOOLEAN NOT NULL DEFAULT FALSE,
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
-	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
+	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id),
+	FOREIGN KEY (group_id) REFERENCES daportal_group (group_id)
 );
 CREATE TRIGGER daportal_content_insert_timestamp AFTER INSERT ON daportal_content
 BEGIN
@@ -289,7 +291,7 @@ CREATE TABLE daportal_download (
 	download_id INTEGER PRIMARY KEY,
 	content_id INTEGER NOT NULL,
 	parent INTEGER,
-	mode SMALLINT DEFAULT '0420',
+	mode SMALLINT DEFAULT '420',
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (parent) REFERENCES daportal_download (download_id)
 );

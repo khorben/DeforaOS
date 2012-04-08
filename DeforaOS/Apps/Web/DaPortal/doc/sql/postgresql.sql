@@ -95,6 +95,7 @@ CREATE TABLE daportal_content (
 	timestamp TIMESTAMP NOT NULL DEFAULT now(),
 	module_id INTEGER REFERENCES daportal_module (module_id) ON DELETE RESTRICT,
 	user_id INTEGER REFERENCES daportal_user (user_id) ON DELETE RESTRICT,
+	group_id INTEGER REFERENCES daportal_group (group_id) DEFAULT '0' ON DELETE RESTRICT,
 	title VARCHAR(255),
 	content TEXT,
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
@@ -209,7 +210,7 @@ CREATE TABLE daportal_download (
 	download_id SERIAL PRIMARY KEY,
 	content_id INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE RESTRICT, -- not UNIQUE allows hard links
 	parent INTEGER REFERENCES daportal_download (download_id) ON DELETE RESTRICT,
-	mode SMALLINT DEFAULT '0420'
+	mode SMALLINT DEFAULT '420'
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
