@@ -34,6 +34,7 @@ class ContentModule extends Module
 		parent::__construct($id, $name);
 		$this->module_name = _('Content');
 		//translations
+		$this->content_admin = _('Content administration');
 		$this->content_by = _('Content by');
 		$this->content_item = _('Content');
 		$this->content_items = _('Content');
@@ -54,6 +55,7 @@ class ContentModule extends Module
 	{
 		switch(($action = $request->getAction()))
 		{
+			case 'actions':
 			case 'admin':
 			case 'delete':
 			case 'disable':
@@ -79,6 +81,7 @@ class ContentModule extends Module
 	//properties
 	protected $module_name = 'Content';
 
+	protected $content_admin = 'Content administration';
 	protected $content_by = 'Content by';
 	protected $content_item = 'Content';
 	protected $content_items = 'Content';
@@ -265,6 +268,24 @@ class ContentModule extends Module
 
 
 	//actions
+	//ContentModule::actions
+	protected function actions($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+
+		if(!$cred->isAdmin())
+			return FALSE;
+		$ret = array();
+		$icon = new PageElement('image', array('stock' => 'admin'));
+		$r = new Request($engine, $this->name, 'admin');
+		$link = new PageElement('link', array('request' => $r,
+				'text' => _('Administration')));
+		$ret[] = new PageElement('row', array('icon' => $icon,
+				'label' => $link));
+		return $ret;
+	}
+
+
 	//ContentModule::admin
 	protected function admin($engine, $request = FALSE)
 	{
@@ -284,7 +305,7 @@ class ContentModule extends Module
 						'request' => $r));
 			return $page;
 		}
-		$title = $this->module_name.' administration';
+		$title = $this->content_admin;
 		$page->setProperty('title', $title);
 		$element = $page->append('title', array('stock' => 'admin',
 				'text' => $title));
@@ -333,9 +354,13 @@ class ContentModule extends Module
 					$res[$i]['timestamp']);
 			$row->setProperty('date', $date);
 		}
+		$vbox = $page->append('vbox');
 		$r = new Request($engine, $this->name);
-		$page->append('link', array('request' => $r, 'stock' => 'back',
-				'text' => _('Leave the administration page')));
+		$vbox->append('link', array('request' => $r, 'stock' => 'back',
+				'text' => _('Back to this module')));
+		$r = new Request($engine, 'admin');
+		$vbox->append('link', array('request' => $r, 'stock' => 'admin',
+				'text' => _('Back to the administration')));
 		return $page;
 	}
 
