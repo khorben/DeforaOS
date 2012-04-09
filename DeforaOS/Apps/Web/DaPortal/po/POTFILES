@@ -1,5 +1,6 @@
 ../src/system/user.php
 ../src/formats/html.php
+../src/modules/admin/module.php
 ../src/modules/article/module.php
 ../src/modules/blog/module.php
 ../src/modules/content/module.php
