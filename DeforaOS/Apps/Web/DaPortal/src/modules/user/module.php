@@ -124,6 +124,9 @@ class UserModule extends Module
 		$cred = $engine->getCredentials();
 
 		$ret = array();
+		if($request->getParameter('admin'))
+			return $this->_actions_admin($engine, $cred,
+					$this->name, $ret);
 		if($cred->getUserId() == 0)
 		{
 			$r = new Request($engine, $this->name, 'login');
@@ -161,16 +164,7 @@ class UserModule extends Module
 		}
 		else
 		{
-			//administration
-			$r = new Request($engine, $this->name, 'admin');
-			$icon = new PageElement('image', array(
-					'stock' => 'admin'));
-			$link = new PageElement('link', array('request' => $r,
-					'text' => _('Administration')));
-			if($cred->isAdmin())
-				$ret[] = new PageElement('row', array(
-						'icon' => $icon,
-						'label' => $link));
+			$this->_actions_admin($engine, $cred, 'admin', $ret);
 			//user's content
 			$r = new Request($engine, $this->name, 'display');
 			$icon = new PageElement('image', array(
@@ -196,6 +190,21 @@ class UserModule extends Module
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'label' => $link));
 		}
+		return $ret;
+	}
+
+	private function _actions_admin($engine, $cred, $module, &$ret)
+	{
+		if(!$cred->isAdmin())
+			return $ret;
+		//administration
+		$r = new Request($engine, $module, ($module == 'admin') ? FALSE
+				: 'admin');
+		$icon = new PageElement('image', array('stock' => 'admin'));
+		$link = new PageElement('link', array('request' => $r,
+				'text' => _('Administration')));
+		$ret[] = new PageElement('row', array('icon' => $icon,
+				'label' => $link));
 		return $ret;
 	}
 
@@ -330,7 +339,7 @@ class UserModule extends Module
 		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
 			return $this->display($engine, $request);
 		//FIXME add content?
-		$title = ($cred->getUserId() != 0) ? _('User homepage')
+		$title = ($cred->getUserId() != 0) ? _('My account')
 			: _('Site menu');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
@@ -409,24 +418,10 @@ class UserModule extends Module
 		$page->append('title', array('stock' => 'login',
 				'text' => $title));
 		//process login
-		$error = $this->_login($engine, $request);
+		$error = $this->_login_process($engine, $request);
 		//login successful
 		if($error === FALSE)
-		{
-			$r = new Request($engine);
-			$page->setProperty('location', $engine->getUrl($r));
-			$page->setProperty('refresh', 30);
-			$box = $page->append('vbox');
-			$text = _('Logging in progress, please wait...');
-			$box->append('label', array('text' => $text));
-			$box = $box->append('hbox');
-			$text = _('If you are not redirected within 30 seconds, please ');
-			$box->append('label', array('text' => $text));
-			$box->append('link', array('text' => _('click here'),
-						'request' => $r));
-			$box->append('label', array('text' => '.'));
-			return $page;
-		}
+			return $this->_login_success($engine, $request, $page);
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 						'text' => $error));
@@ -446,7 +441,7 @@ class UserModule extends Module
 		return $page;
 	}
 
-	private function _login($engine, $request)
+	protected function _login_process($engine, $request)
 	{
 		$db = $engine->getDatabase();
 
@@ -469,6 +464,23 @@ class UserModule extends Module
 		if($engine->setCredentials($cred) !== TRUE)
 			return _('Invalid username or password');
 		return FALSE;
+	}
+
+	protected function _login_success($engine, $request, $page)
+	{
+		$r = new Request($engine);
+		$page->setProperty('location', $engine->getUrl($r));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$text = _('Logging in progress, please wait...');
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+			'request' => $r));
+		$box->append('label', array('text' => '.'));
+		return $page;
 	}
 
 
@@ -1003,7 +1015,7 @@ Thank you for registering!")));
 		$r = new Request($engine, $this->name);
 		$box->append('button', array('stock' => 'home',
 				'request' => $r,
-				'text' => _('Homepage')));
+				'text' => _('My account')));
 		$r = new Request($engine, $this->name, 'display');
 		$box->append('button', array('stock' => 'user',
 				'request' => $r,
