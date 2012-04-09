@@ -169,7 +169,7 @@ class HtmlFormat extends FormatElements
 				if($class === FALSE)
 					$class = "stock16 $type";
 				$args['type'] = $type;
-				if(($name = $e->getProperty('name')) !== FALSE)
+				if(($name = $e->getProperty('value')) !== FALSE)
 					$args['name'] = $name;
 				if(($value = $e->getProperty('text')) !== FALSE)
 					$args['value'] = $value;
