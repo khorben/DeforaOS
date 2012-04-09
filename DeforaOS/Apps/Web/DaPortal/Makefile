@@ -525,6 +525,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/admin/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/admin/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/admin/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/article/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/article/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/article/project.conf \
