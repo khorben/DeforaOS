@@ -32,6 +32,7 @@ class ProjectModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Projects');
+		$this->content_admin = _('Projects administration');
 		$this->content_by = _('Project by');
 		$this->content_item = _('Project');
 		$this->content_items = _('Projects');

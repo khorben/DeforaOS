@@ -33,6 +33,7 @@ class DownloadModule extends ContentModule
 		$this->module_id = $id;
 		$this->module_name = _('Downloads');
 		//translations
+		$this->content_admin = _('Downloads administration');
 		$this->content_by = _('Download by');
 		$this->content_item = _('Download');
 		$this->content_items = _('Downloads');
