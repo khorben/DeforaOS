@@ -31,6 +31,7 @@ class ArticleModule extends ContentModule
 		parent::__construct($id, $name);
 		$this->module_id = $id;
 		$this->module_name = _('Article');
+		$this->content_admin = _('Articles administration');
 		$this->content_by = _('Article by');
 		$this->content_item = _('Article');
 		$this->content_items = _('Articles');
