@@ -142,3 +142,7 @@
 .stock32.user {
 	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
 }
+
+.stock32.wiki {
+	background-image:	url('gnome-icon-theme/32x32/apps/help-browser.png');
+}

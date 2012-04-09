@@ -142,3 +142,7 @@
 .stock48.user {
 	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
 }
+
+.stock48.wiki {
+	background-image:	url('gnome-icon-theme/48x48/apps/help-browser.png');
+}

@@ -142,3 +142,7 @@
 .stock16.user {
 	background-image:	url('gnome-icon-theme/16x16/apps/user-info.png');
 }
+
+.stock16.wiki {
+	background-image:	url('gnome-icon-theme/16x16/apps/help-browser.png');
+}
