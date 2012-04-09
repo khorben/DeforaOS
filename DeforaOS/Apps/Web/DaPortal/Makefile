@@ -38,6 +38,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/icons/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango.css \
+		$(PACKAGE)-$(VERSION)/data/icons/generic.css \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome.css \
 		$(PACKAGE)-$(VERSION)/data/icons/index.php \
 		$(PACKAGE)-$(VERSION)/data/icons/project.conf \
@@ -50,6 +51,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/32x32.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/48x48.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/project.conf \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/Makefile \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/16x16.css \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/project.conf \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/16x16/gtk-cancel.png \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/16x16/gtk-no.png \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/16x16/gtk-ok.png \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/16x16/gtk-yes.png \
+		$(PACKAGE)-$(VERSION)/data/icons/generic/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/16x16.css \
 		$(PACKAGE)-$(VERSION)/data/icons/gnome/32x32.css \

@@ -15,9 +15,4 @@
 
 
 
-@import url('../css/icons.css');
-@import url('generic.css');
-@import url('gnome/16x16.css');
-@import url('gnome/24x24.css');
-@import url('gnome/32x32.css');
-@import url('gnome/48x48.css');
+@import url('generic/16x16.css');

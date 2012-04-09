@@ -1,4 +1,4 @@
-SUBDIRS	= Rodent Tango generic gnome
+SUBDIRS	= 16x16
 
 
 all: subdirs

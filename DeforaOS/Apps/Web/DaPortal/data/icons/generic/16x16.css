@@ -15,9 +15,18 @@
 
 
 
-@import url('../css/icons.css');
-@import url('generic.css');
-@import url('gnome/16x16.css');
-@import url('gnome/24x24.css');
-@import url('gnome/32x32.css');
-@import url('gnome/48x48.css');
+.stock16.cancel {
+	background-image:	url('16x16/gtk-cancel.png');
+}
+
+.stock16.no {
+	background-image:	url('16x16/gtk-no.png');
+}
+
+.stock16.ok {
+	background-image:	url('16x16/gtk-ok.png');
+}
+
+.stock16.yes {
+	background-image:	url('16x16/gtk-yes.png');
+}
