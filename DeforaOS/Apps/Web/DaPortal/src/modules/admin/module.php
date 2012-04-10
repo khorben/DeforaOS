@@ -94,8 +94,7 @@ class AdminModule extends Module
 		{
 			$row = $view->append('row');
 			//FIXME really implement
-			$r = new Request($engine, $res[$i]['name'], 'actions',
-					FALSE, FALSE, array('admin' => TRUE));
+			$r = new Request($engine, $res[$i]['name'], 'admin');
 			$text = ucfirst($res[$i]['name']);
 			$link = new PageElement('link', array('request' => $r,
 				'stock' => $res[$i]['name'],
