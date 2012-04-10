@@ -121,7 +121,7 @@ class AdminModule extends Module
 					'type' => 'error',
 					'text' => 'Could not list modules'));
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => 'admin',
+		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		$vbox = $page->append('vbox');
 		$vbox->append('title'); //XXX to reduce the next level of titles
