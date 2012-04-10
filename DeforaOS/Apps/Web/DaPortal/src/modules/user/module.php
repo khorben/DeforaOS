@@ -279,6 +279,13 @@ class UserModule extends Module
 					'text' => $res[$i]['email']));
 			$row->setProperty('email', $link);
 		}
+		$vbox = $page->append('vbox');
+		$r = new Request($engine, $this->name);
+		$vbox->append('link', array('request' => $r, 'stock' => 'back',
+			'text' => _('Back to my account')));
+		$r = new Request($engine, 'admin');
+		$vbox->append('link', array('request' => $r, 'stock' => 'admin',
+			'text' => _('Back to the administration')));
 		return $page;
 	}
 
