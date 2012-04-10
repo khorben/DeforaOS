@@ -223,7 +223,7 @@ class ContentModule extends Module
 			return FALSE;
 		$res = $res[0];
 		$res['date'] = $this->_timestampToDate($res['timestamp'],
-				_('d/m/Y H:i'));
+				_('d/m/Y H:i:s'));
 		return $res;
 	}
 
@@ -362,7 +362,12 @@ class ContentModule extends Module
 			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $database->isTrue(
 					$res[$i]['enabled']) ? $yes : $no);
-			$row->setProperty('username', $res[$i]['username']);
+			$r = new Request($engine, 'user', FALSE,
+					$res[$i]['user_id'],
+					$res[$i]['username']);
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $res[$i]['username']));
+			$row->setProperty('username', $link);
 			$date = $this->_timestampToDate(_('d/m/Y H:i:s'),
 					$res[$i]['timestamp']);
 			$row->setProperty('date', $date);
