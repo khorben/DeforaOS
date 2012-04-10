@@ -31,6 +31,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/back.png');
 }
 
+.stock48.blog {
+	background-image:	url('gnome-icon-theme/48x48/mimetypes/stock_calendar.png');
+}
+
 .stock48.bold {
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-bold.png');
 }

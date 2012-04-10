@@ -31,6 +31,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/back.png');
 }
 
+.stock32.blog {
+	background-image:	url('gnome-icon-theme/32x32/mimetypes/stock_calendar.png');
+}
+
 .stock32.bold {
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-bold.png');
 }
