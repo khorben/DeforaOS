@@ -291,7 +291,15 @@ class ContentModule extends Module
 	protected function admin($engine, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
+		$database = $engine->getDatabase();
+		$actions = array('delete', 'disable', 'enable');
 
+		//perform actions if necessary
+		if($request !== FALSE)
+			foreach($actions as $a)
+				if($request->getParameter($a) !== FALSE)
+					return $this->$a($engine, $request);
+		//administrative page
 		$page = new Page;
 		if(!$cred->isAdmin())
 		{
@@ -310,9 +318,8 @@ class ContentModule extends Module
 		$page->setProperty('title', $title);
 		$element = $page->append('title', array('stock' => 'admin',
 				'text' => $title));
-		$db = $engine->getDatabase();
 		$query = $this->query_list_admin;
-		if(($res = $db->query($engine, $query, array(
+		if(($res = $database->query($engine, $query, array(
 					'module_id' => $this->id))) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error',
@@ -339,6 +346,10 @@ class ContentModule extends Module
 					'text' => _('Delete'),
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'delete'));
+		$no = new PageElement('image', array('stock' => 'no',
+				'size' => 16));
+		$yes = new PageElement('image', array('stock' => 'yes',
+				'size' => 16));
 		//FIXME add controls for publication
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
@@ -349,9 +360,10 @@ class ContentModule extends Module
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $res[$i]['title']));
 			$row->setProperty('title', $link);
-			$row->setProperty('enabled', $res[$i]['enabled']);
+			$row->setProperty('enabled', $database->isTrue(
+					$res[$i]['enabled']) ? $yes : $no);
 			$row->setProperty('username', $res[$i]['username']);
-			$date = $this->_timestampToDate(_('d/m/Y H:i'),
+			$date = $this->_timestampToDate(_('d/m/Y H:i:s'),
 					$res[$i]['timestamp']);
 			$row->setProperty('date', $date);
 		}
