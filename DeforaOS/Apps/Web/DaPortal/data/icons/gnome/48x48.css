@@ -39,6 +39,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-bold.png');
 }
 
+.stock48.bookmark {
+	background-image:	url('gnome-icon-theme/48x48/places/user-bookmarks.png');
+}
+
 .stock48.browse {
 	background-image:	url('gnome-icon-theme/48x48/places/folder.png');
 }
