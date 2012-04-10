@@ -60,7 +60,7 @@ class AdminModule extends Module
 	//AdminModule::actions
 	protected function actions($engine, $request)
 	{
-		$r = new Request($engine, 'admin', 'admin');
+		$r = new Request($engine, $this->name, 'admin');
 		$icon = new PageElement('image', array('stock' => 'admin'));
 		$link = new PageElement('link', array('request' => $r,
 				'text' => _('Modules')));
@@ -86,7 +86,7 @@ class AdminModule extends Module
 			'text' => $title));
 		$view = $page->append('treeview');
 		$toolbar = $view->append('toolbar');
-		$r = new Request($engine, 'admin', 'admin');
+		$r = new Request($engine, $this->name, 'admin');
 		$toolbar->append('button', array('request' => $r,
 		       	'stock' => 'refresh',
 			'text' => _('Refresh')));
@@ -102,7 +102,7 @@ class AdminModule extends Module
 				'text' => $text));
 			$row->setProperty('title', $link);
 		}
-		$r = new Request($engine, 'admin');
+		$r = new Request($engine, $this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
 				'text' => _('Back to the administration')));
 		return $page;
