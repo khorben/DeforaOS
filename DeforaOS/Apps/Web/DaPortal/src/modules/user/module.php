@@ -214,11 +214,18 @@ class UserModule extends Module
 	{
 		$db = $engine->getDatabase();
 		$cred = $engine->getCredentials();
+		$actions = array('delete', 'disable', 'enable');
 
 		if(!$cred->isAdmin())
 			return new PageElement('dialog', array(
 					'type' => 'error',
 					'text' => _('Permission denied')));
+		//perform actions if necessary
+		if($request !== FALSE)
+			foreach($actions as $a)
+				if($request->getParameter($a) !== FALSE)
+					return $this->$a($engine, $request);
+		//list users
 		$title = _('User administration');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
@@ -249,6 +256,10 @@ class UserModule extends Module
 				'text' => _('Enable'),
 				'type' => 'submit', 'name' => 'action',
 				'value' => 'enable'));
+		$no = new PageElement('image', array('stock' => 'no',
+				'size' => 16));
+		$yes = new PageElement('image', array('stock' => 'yes',
+				'size' => 16));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
@@ -261,9 +272,12 @@ class UserModule extends Module
 			if($res[$i]['id'] != 0)
 				$row->setProperty('username', $link);
 			$row->setProperty('group', $res[$i]['groupname']);
-			$row->setProperty('enabled', $res[$i]['enabled']
-				? 1 : 0);
-			$row->setProperty('email', $res[$i]['email']);
+			$row->setProperty('enabled', $db->isTrue(
+					$res[$i]['enabled']) ? $yes : $no);
+			$link = new PageElement('link', array(
+					'url' => 'mailto:'.$res[$i]['email'],
+					'text' => $res[$i]['email']));
+			$row->setProperty('email', $link);
 		}
 		return $page;
 	}
