@@ -84,22 +84,32 @@ class AdminModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'admin',
 			'text' => $title));
-		$view = $page->append('treeview');
-		$toolbar = $view->append('toolbar');
 		$r = new Request($engine, $this->name, 'admin');
+		$columns = array('module' => _('Module'),
+				'enabled' => _('Enabled'));
+		$view = $page->append('treeview', array('request' => $r,
+				'columns' => $columns));
+		$toolbar = $view->append('toolbar');
 		$toolbar->append('button', array('request' => $r,
 		       	'stock' => 'refresh',
 			'text' => _('Refresh')));
+		$no = new PageElement('image', array('stock' => 'no',
+			'size' => 16));
+		$yes = new PageElement('image', array('stock' => 'yes',
+			'size' => 16));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
-			//FIXME really implement
+			$row->setProperty('id', 'module_id:'
+					.$res[$i]['module_id']);
 			$r = new Request($engine, $res[$i]['name'], 'admin');
 			$text = ucfirst($res[$i]['name']);
 			$link = new PageElement('link', array('request' => $r,
 				'stock' => $res[$i]['name'],
 				'text' => $text));
-			$row->setProperty('title', $link);
+			$row->setProperty('module', $link);
+			$row->setProperty('enabled', $database->isTrue(
+					$res[$i]['enabled']) ? $yes : $no);
 		}
 		$r = new Request($engine, $this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
