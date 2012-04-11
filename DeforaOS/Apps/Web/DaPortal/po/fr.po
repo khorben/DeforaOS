@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-10 01:07+0200\n"
+"POT-Creation-Date: 2012-04-11 02:35+0200\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -28,8 +28,8 @@ msgstr "L'adresse e-mail n'est pas valide\n"
 msgid "Could not register the user"
 msgstr "Impossible d'enregistrer l'utilisateur"
 
-#: ../src/system/user.php:208 ../src/modules/user/module.php:589
-#: ../src/modules/user/module.php:623
+#: ../src/system/user.php:208 ../src/modules/user/module.php:610
+#: ../src/modules/user/module.php:644
 msgid "User registration"
 msgstr "Enregistrement"
 
@@ -63,8 +63,8 @@ msgid "Could not reset the password"
 msgstr "Impossible de changer le mot de passe"
 
 #: ../src/system/user.php:257 ../src/modules/user/module.php:146
-#: ../src/modules/user/module.php:664 ../src/modules/user/module.php:698
-#: ../src/modules/user/module.php:730 ../src/modules/user/module.php:775
+#: ../src/modules/user/module.php:685 ../src/modules/user/module.php:719
+#: ../src/modules/user/module.php:751 ../src/modules/user/module.php:796
 msgid "Password reset"
 msgstr "Changer de mot de passe"
 
@@ -124,32 +124,42 @@ msgstr "Avertissement"
 msgid "Message"
 msgstr "Message"
 
-#: ../src/modules/admin/module.php:36 ../src/modules/content/module.php:199
-#: ../src/modules/content/module.php:297 ../src/modules/content/module.php:680
-#: ../src/modules/download/module.php:167 ../src/modules/user/module.php:221
-#: ../src/modules/user/module.php:284 ../src/modules/user/module.php:871
+#: ../src/modules/admin/module.php:36 ../src/modules/content/module.php:200
+#: ../src/modules/content/module.php:306 ../src/modules/content/module.php:698
+#: ../src/modules/download/module.php:167 ../src/modules/user/module.php:222
+#: ../src/modules/user/module.php:305 ../src/modules/user/module.php:892
 msgid "Permission denied"
 msgstr "Permission non accordée"
 
 #: ../src/modules/admin/module.php:66
 msgid "Modules"
-msgstr ""
+msgstr "Modules"
 
 #: ../src/modules/admin/module.php:76
 msgid "Modules administration"
 msgstr "Administration des modules"
 
-#: ../src/modules/admin/module.php:92 ../src/modules/content/module.php:327
-#: ../src/modules/content/module.php:591 ../src/modules/user/module.php:242
+#: ../src/modules/admin/module.php:88
+msgid "Module"
+msgstr "Module"
+
+#: ../src/modules/admin/module.php:89 ../src/modules/content/module.php:330
+#: ../src/modules/content/module.php:603 ../src/modules/user/module.php:242
+msgid "Enabled"
+msgstr "Activé"
+
+#: ../src/modules/admin/module.php:95 ../src/modules/content/module.php:335
+#: ../src/modules/content/module.php:609 ../src/modules/user/module.php:249
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: ../src/modules/admin/module.php:107 ../src/modules/content/module.php:363
+#: ../src/modules/admin/module.php:116 ../src/modules/content/module.php:381
+#: ../src/modules/user/module.php:288
 msgid "Back to the administration"
 msgstr "Retour à l'administration"
 
-#: ../src/modules/admin/module.php:115 ../src/modules/content/module.php:282
-#: ../src/modules/user/module.php:205 ../src/modules/user/module.php:560
+#: ../src/modules/admin/module.php:124 ../src/modules/content/module.php:283
+#: ../src/modules/user/module.php:205 ../src/modules/user/module.php:581
 msgid "Administration"
 msgstr "Administration"
 
@@ -246,136 +256,135 @@ msgstr "Soumettre un contenu"
 msgid "Submission in progress, please wait..."
 msgstr "Soumission en cours, veuillez patienter..."
 
-#: ../src/modules/content/module.php:225 ../src/modules/content/module.php:353
-#: ../src/modules/content/module.php:617 ../src/modules/project/module.php:169
-msgid "d/m/Y H:i"
-msgstr "d/m/Y H:i"
+#: ../src/modules/content/module.php:226 ../src/modules/content/module.php:371
+#: ../src/modules/download/module.php:316
+msgid "d/m/Y H:i:s"
+msgstr "d/m/Y H:i:s"
 
-#: ../src/modules/content/module.php:250 ../src/modules/content/module.php:772
+#: ../src/modules/content/module.php:251 ../src/modules/content/module.php:790
 msgid "Title: "
 msgstr "Titre : "
 
-#: ../src/modules/content/module.php:253 ../src/modules/content/module.php:773
+#: ../src/modules/content/module.php:254 ../src/modules/content/module.php:791
 msgid "Content: "
 msgstr "Contenu : "
 
-#: ../src/modules/content/module.php:257 ../src/modules/content/module.php:782
+#: ../src/modules/content/module.php:258 ../src/modules/content/module.php:800
 #: ../src/modules/download/module.php:225 ../src/modules/user/module.php:74
 #: ../src/modules/user/module.php:94 ../src/modules/user/module.php:112
-#: ../src/modules/user/module.php:516 ../src/modules/user/module.php:746
-#: ../src/modules/user/module.php:917
+#: ../src/modules/user/module.php:537 ../src/modules/user/module.php:767
+#: ../src/modules/user/module.php:938
 msgid "Cancel"
 msgstr "Annuler"
 
-#: ../src/modules/content/module.php:262 ../src/modules/content/module.php:787
+#: ../src/modules/content/module.php:263 ../src/modules/content/module.php:805
 msgid "Preview"
 msgstr "Prévisualiser"
 
-#: ../src/modules/content/module.php:265 ../src/modules/content/module.php:789
+#: ../src/modules/content/module.php:266 ../src/modules/content/module.php:807
 msgid "Submit"
 msgstr "Envoyer"
 
-#: ../src/modules/content/module.php:304 ../src/modules/user/module.php:79
-#: ../src/modules/user/module.php:136 ../src/modules/user/module.php:552
-#: ../src/modules/user/module.php:995
+#: ../src/modules/content/module.php:313 ../src/modules/user/module.php:79
+#: ../src/modules/user/module.php:136 ../src/modules/user/module.php:573
+#: ../src/modules/user/module.php:1016
 msgid "Login"
 msgstr "Se connecter"
 
-#: ../src/modules/content/module.php:318 ../src/modules/content/module.php:440
-#: ../src/modules/content/module.php:544 ../src/modules/content/module.php:579
+#: ../src/modules/content/module.php:326 ../src/modules/content/module.php:458
+#: ../src/modules/content/module.php:562 ../src/modules/content/module.php:597
 msgid "Unable to list contents"
 msgstr "Impossible de lister les contenus"
 
-#: ../src/modules/content/module.php:321 ../src/modules/content/module.php:535
-#: ../src/modules/content/module.php:583 ../src/modules/project/module.php:338
+#: ../src/modules/content/module.php:329 ../src/modules/content/module.php:553
+#: ../src/modules/content/module.php:601 ../src/modules/project/module.php:338
 msgid "Title"
 msgstr "Titre"
 
-#: ../src/modules/content/module.php:322 ../src/modules/content/module.php:585
-#: ../src/modules/user/module.php:235
-msgid "Enabled"
-msgstr "Activé"
-
-#: ../src/modules/content/module.php:323 ../src/modules/content/module.php:586
-#: ../src/modules/user/module.php:233
+#: ../src/modules/content/module.php:331 ../src/modules/content/module.php:604
+#: ../src/modules/user/module.php:240
 msgid "Username"
 msgstr "Utilisateur"
 
-#: ../src/modules/content/module.php:324 ../src/modules/content/module.php:587
+#: ../src/modules/content/module.php:332 ../src/modules/content/module.php:605
 #: ../src/modules/download/module.php:301
 #: ../src/modules/project/module.php:340
 msgid "Date"
 msgstr "Date"
 
-#: ../src/modules/content/module.php:330 ../src/modules/content/module.php:596
-#: ../src/modules/user/module.php:245
+#: ../src/modules/content/module.php:338 ../src/modules/content/module.php:614
+#: ../src/modules/user/module.php:252
 msgid "Disable"
 msgstr "Désactiver"
 
-#: ../src/modules/content/module.php:334 ../src/modules/content/module.php:601
-#: ../src/modules/user/module.php:249
+#: ../src/modules/content/module.php:342 ../src/modules/content/module.php:619
+#: ../src/modules/user/module.php:256
 msgid "Enable"
 msgstr "Activer"
 
-#: ../src/modules/content/module.php:338
+#: ../src/modules/content/module.php:346
 msgid "Delete"
 msgstr "Effacer"
 
-#: ../src/modules/content/module.php:360
+#: ../src/modules/content/module.php:378
 msgid "Back to this module"
 msgstr "Retour à ce module"
 
-#: ../src/modules/content/module.php:379
+#: ../src/modules/content/module.php:397
 msgid "Must be logged in"
 msgstr "Vous devez être connecté(e)"
 
-#: ../src/modules/content/module.php:466
+#: ../src/modules/content/module.php:484
 msgid "Content could be deleted successfully"
 msgstr "Le(s) contenu(s) ont pu être effacé(s)"
 
-#: ../src/modules/content/module.php:467
+#: ../src/modules/content/module.php:485
 msgid "Some content could not be deleted"
 msgstr "Certains contenus n'ont pas pu être supprimés"
 
-#: ../src/modules/content/module.php:480
+#: ../src/modules/content/module.php:498
 msgid "Content could be disabled successfully"
 msgstr "Le(s) contenu(s) ont pu être désactivé(s)"
 
-#: ../src/modules/content/module.php:481
+#: ../src/modules/content/module.php:499
 msgid "Some content could not be disabled"
 msgstr "Certains contenus n'ont pas pu être désactivés"
 
-#: ../src/modules/content/module.php:488
+#: ../src/modules/content/module.php:506
 msgid "Could not display content"
 msgstr "Impossible d'afficher le contenu"
 
-#: ../src/modules/content/module.php:525
+#: ../src/modules/content/module.php:543
 msgid "Content could be enabled successfully"
 msgstr "Le(s) contenu(s) ont pu être activé(s)"
 
-#: ../src/modules/content/module.php:526
+#: ../src/modules/content/module.php:544
 msgid "Some content could not be enabled"
 msgstr "Certains contenus n'ont pas pu être activés"
 
-#: ../src/modules/content/module.php:623
+#: ../src/modules/content/module.php:635 ../src/modules/project/module.php:169
+msgid "d/m/Y H:i"
+msgstr "d/m/Y H:i"
+
+#: ../src/modules/content/module.php:641
 msgid "Back"
 msgstr "Retour"
 
-#: ../src/modules/content/module.php:631
+#: ../src/modules/content/module.php:649
 #: ../src/modules/download/module.php:395
 msgid "Could not fetch content"
 msgstr "Impossible d'obtenir le contenu"
 
-#: ../src/modules/content/module.php:657
+#: ../src/modules/content/module.php:675
 msgid " on "
 msgstr " le "
 
-#: ../src/modules/content/module.php:710
-#: ../src/modules/download/module.php:436 ../src/modules/user/module.php:454
+#: ../src/modules/content/module.php:728
+#: ../src/modules/download/module.php:436 ../src/modules/user/module.php:475
 msgid "The request expired or is invalid"
 msgstr "La requête a expiré ou est invalide"
 
-#: ../src/modules/content/module.php:718
+#: ../src/modules/content/module.php:736
 #: ../src/modules/download/module.php:451
 #: ../src/modules/download/module.php:459
 #: ../src/modules/download/module.php:470
@@ -384,31 +393,31 @@ msgstr "La requête a expiré ou est invalide"
 msgid "Internal server error"
 msgstr "Erreur interne du serveur"
 
-#: ../src/modules/content/module.php:732
-#: ../src/modules/download/module.php:500 ../src/modules/user/module.php:478
+#: ../src/modules/content/module.php:750
+#: ../src/modules/download/module.php:500 ../src/modules/user/module.php:499
 msgid "If you are not redirected within 30 seconds, please "
 msgstr "Si vous n'êtes pas redirigé(e) d'ici 30 secondes, veuillez "
 
-#: ../src/modules/content/module.php:734
-#: ../src/modules/download/module.php:502 ../src/modules/user/module.php:480
+#: ../src/modules/content/module.php:752
+#: ../src/modules/download/module.php:502 ../src/modules/user/module.php:501
 msgid "click here"
 msgstr "cliquer ici"
 
-#: ../src/modules/content/module.php:744
+#: ../src/modules/content/module.php:762
 msgid "Unable to fetch content"
 msgstr "Impossible d'obtenir le contenu"
 
-#: ../src/modules/content/module.php:751
+#: ../src/modules/content/module.php:769
 msgid "Update "
 msgstr "Modifier"
 
-#: ../src/modules/content/module.php:760
+#: ../src/modules/content/module.php:778
 msgid "Preview: "
 msgstr "Prévisualisation : "
 
-#: ../src/modules/content/module.php:784 ../src/modules/project/module.php:209
+#: ../src/modules/content/module.php:802 ../src/modules/project/module.php:209
 #: ../src/modules/search/module.php:185 ../src/modules/user/module.php:115
-#: ../src/modules/user/module.php:749
+#: ../src/modules/user/module.php:770
 msgid "Reset"
 msgstr ""
 
@@ -486,7 +495,7 @@ msgid "Owner"
 msgstr "Propriétaire"
 
 #: ../src/modules/download/module.php:300
-#: ../src/modules/download/module.php:366 ../src/modules/user/module.php:234
+#: ../src/modules/download/module.php:366 ../src/modules/user/module.php:241
 msgid "Group"
 msgstr "Groupe"
 
@@ -494,10 +503,6 @@ msgstr "Groupe"
 #: ../src/modules/download/module.php:367
 msgid "Permissions"
 msgstr "Permissions"
-
-#: ../src/modules/download/module.php:316
-msgid "d/m/Y H:i:s"
-msgstr "d/m/Y H:i:s"
 
 #: ../src/modules/download/module.php:341
 #: ../src/modules/project/module.php:248
@@ -634,8 +639,8 @@ msgstr "Déroulement"
 msgid "Bug reports"
 msgstr "Rapports de bugs"
 
-#: ../src/modules/project/module.php:269 ../src/modules/user/module.php:830
-#: ../src/modules/user/module.php:834 ../src/modules/user/module.php:919
+#: ../src/modules/project/module.php:269 ../src/modules/user/module.php:851
+#: ../src/modules/user/module.php:855 ../src/modules/user/module.php:940
 msgid "Update"
 msgstr "Modifier"
 
@@ -722,11 +727,11 @@ msgid "Unable to search"
 msgstr "Impossible de procéder à la recherche"
 
 #: ../src/modules/user/module.php:66 ../src/modules/user/module.php:89
-#: ../src/modules/user/module.php:107 ../src/modules/user/module.php:902
+#: ../src/modules/user/module.php:107 ../src/modules/user/module.php:923
 msgid "Username: "
 msgstr "Utilisateur : "
 
-#: ../src/modules/user/module.php:71 ../src/modules/user/module.php:741
+#: ../src/modules/user/module.php:71 ../src/modules/user/module.php:762
 msgid "Password: "
 msgstr "Mot de passe : "
 
@@ -735,120 +740,124 @@ msgid "e-mail address: "
 msgstr "Adresse e-mail : "
 
 #: ../src/modules/user/module.php:97 ../src/modules/user/module.php:159
-#: ../src/modules/user/module.php:554
+#: ../src/modules/user/module.php:575
 msgid "Register"
 msgstr "S'enregistrer"
 
-#: ../src/modules/user/module.php:173 ../src/modules/user/module.php:380
-#: ../src/modules/user/module.php:1022
+#: ../src/modules/user/module.php:173 ../src/modules/user/module.php:401
+#: ../src/modules/user/module.php:1043
 msgid "My content"
 msgstr "Mes contenus"
 
-#: ../src/modules/user/module.php:181 ../src/modules/user/module.php:813
-#: ../src/modules/user/module.php:957 ../src/modules/user/module.php:1026
+#: ../src/modules/user/module.php:181 ../src/modules/user/module.php:834
+#: ../src/modules/user/module.php:978 ../src/modules/user/module.php:1047
 msgid "My profile"
 msgstr "Mon profil"
 
-#: ../src/modules/user/module.php:189 ../src/modules/user/module.php:519
-#: ../src/modules/user/module.php:561 ../src/modules/user/module.php:1030
+#: ../src/modules/user/module.php:189 ../src/modules/user/module.php:540
+#: ../src/modules/user/module.php:582 ../src/modules/user/module.php:1051
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/modules/user/module.php:222
+#: ../src/modules/user/module.php:229
 msgid "User administration"
 msgstr "Administration des utilisateurs"
 
-#: ../src/modules/user/module.php:232
+#: ../src/modules/user/module.php:239
 msgid "Could not list users"
 msgstr "Impossible de lister les utilisateurs"
 
-#: ../src/modules/user/module.php:236
+#: ../src/modules/user/module.php:243
 msgid "e-mail"
 msgstr "e-mail"
 
-#: ../src/modules/user/module.php:342 ../src/modules/user/module.php:1018
+#: ../src/modules/user/module.php:285
+msgid "Back to my account"
+msgstr "Retour à mon compte"
+
+#: ../src/modules/user/module.php:363 ../src/modules/user/module.php:1039
 msgid "My account"
 msgstr "Mon compte"
 
-#: ../src/modules/user/module.php:343
+#: ../src/modules/user/module.php:364
 msgid "Site menu"
 msgstr "Menu du site"
 
-#: ../src/modules/user/module.php:363
+#: ../src/modules/user/module.php:384
 msgid "User(s) could be disabled successfully"
 msgstr "Le(s) utilisateur(s) ont pu être désactivé(s)"
 
-#: ../src/modules/user/module.php:364
+#: ../src/modules/user/module.php:385
 msgid "Some user(s) could not be disabled"
 msgstr "Certains utilisateurs n'ont pas pu être désactivés"
 
-#: ../src/modules/user/module.php:377
+#: ../src/modules/user/module.php:398
 msgid "Content from "
 msgstr "Contenu par "
 
-#: ../src/modules/user/module.php:384 ../src/modules/user/module.php:842
+#: ../src/modules/user/module.php:405 ../src/modules/user/module.php:863
 msgid "Back to my homepage"
 msgstr "Retour à ma page d'accueil"
 
-#: ../src/modules/user/module.php:406
+#: ../src/modules/user/module.php:427
 msgid "User(s) could be enabled successfully"
 msgstr "Le(s) utilisateur(s) ont pu être activé(s)"
 
-#: ../src/modules/user/module.php:407
+#: ../src/modules/user/module.php:428
 msgid "Some user(s) could not be enabled"
 msgstr "Certains utilisateurs n'ont pas pu être activés"
 
-#: ../src/modules/user/module.php:415
+#: ../src/modules/user/module.php:436
 msgid "User login"
 msgstr "Authentification"
 
-#: ../src/modules/user/module.php:439
+#: ../src/modules/user/module.php:460
 msgid "I forgot my password..."
 msgstr "Changer de mot de passe..."
 
-#: ../src/modules/user/module.php:460 ../src/modules/user/module.php:465
+#: ../src/modules/user/module.php:481 ../src/modules/user/module.php:486
 msgid "Invalid username or password"
 msgstr "Nom d'utilisateur ou mot de passe invalide"
 
-#: ../src/modules/user/module.php:475
+#: ../src/modules/user/module.php:496
 msgid "Logging in progress, please wait..."
 msgstr "Authentification en cours, veuillez patienter..."
 
-#: ../src/modules/user/module.php:494
+#: ../src/modules/user/module.php:515
 msgid "User logout"
 msgstr "Déconnexion"
 
-#: ../src/modules/user/module.php:497
+#: ../src/modules/user/module.php:518
 msgid "You were logged out successfully"
 msgstr "Vous avez été déconnecté(e)"
 
-#: ../src/modules/user/module.php:503 ../src/modules/user/module.php:631
-#: ../src/modules/user/module.php:705 ../src/modules/user/module.php:782
-#: ../src/modules/user/module.php:999
+#: ../src/modules/user/module.php:524 ../src/modules/user/module.php:652
+#: ../src/modules/user/module.php:726 ../src/modules/user/module.php:803
+#: ../src/modules/user/module.php:1020
 msgid "Back to the site"
 msgstr "Retour au site"
 
-#: ../src/modules/user/module.php:514
+#: ../src/modules/user/module.php:535
 msgid "Do you really want to logout?"
 msgstr "Voulez-vous vraiment vous déconnecter ?"
 
-#: ../src/modules/user/module.php:528
+#: ../src/modules/user/module.php:549
 msgid "Logging out, please wait..."
 msgstr "Déconnexion en cours, veuillez patienter..."
 
-#: ../src/modules/user/module.php:578 ../src/modules/user/module.php:979
+#: ../src/modules/user/module.php:599 ../src/modules/user/module.php:1000
 msgid "Registering is not allowed"
 msgstr "L'enregistrement n'est pas autorisé"
 
-#: ../src/modules/user/module.php:608
+#: ../src/modules/user/module.php:629
 msgid "A username is required\n"
 msgstr "Un nom d'utilisateur est requis\n"
 
-#: ../src/modules/user/module.php:610
+#: ../src/modules/user/module.php:631
 msgid "An e-mail address is required\n"
 msgstr "Une adresse e-mail valide est requise\n"
 
-#: ../src/modules/user/module.php:628
+#: ../src/modules/user/module.php:649
 msgid ""
 "You should receive an e-mail shortly with your password, along with a "
 "confirmation key.\n"
@@ -860,19 +869,19 @@ msgstr ""
 "\n"
 "Merci pour votre demande d'enregistrement !"
 
-#: ../src/modules/user/module.php:653 ../src/modules/user/module.php:716
+#: ../src/modules/user/module.php:674 ../src/modules/user/module.php:737
 msgid "Password resets are not allowed"
 msgstr "Changer de mot de passe n'est pas autorisé"
 
-#: ../src/modules/user/module.php:683
+#: ../src/modules/user/module.php:704
 msgid "Your username is required\n"
 msgstr "Votre nom d'utilisateur est requis\n"
 
-#: ../src/modules/user/module.php:685
+#: ../src/modules/user/module.php:706
 msgid "Your e-mail address is required\n"
 msgstr "Votre adresse e-mail est requise\n"
 
-#: ../src/modules/user/module.php:703
+#: ../src/modules/user/module.php:724
 msgid ""
 "You should receive an e-mail shortly, with a link allowing you to reset your "
 "password.\n"
@@ -880,79 +889,79 @@ msgstr ""
 "Vous devriez recevoir un e-mail sous peu, avec un lien vous permettant "
 "dechanger votre mot de passe.\n"
 
-#: ../src/modules/user/module.php:743
+#: ../src/modules/user/module.php:764
 msgid "Repeat password: "
 msgstr "Répéter le mot de passe : "
 
-#: ../src/modules/user/module.php:758
+#: ../src/modules/user/module.php:779
 msgid "A new password is required"
 msgstr "Un mot de passe doit être spécifié"
 
-#: ../src/modules/user/module.php:762
+#: ../src/modules/user/module.php:783
 msgid "The passwords did not match"
 msgstr "Les mots de passe ne correspondent pas"
 
-#: ../src/modules/user/module.php:780
+#: ../src/modules/user/module.php:801
 msgid "Your password was reset successfully.\n"
 msgstr "Votre mot de passe a été changé avec succès.\n"
 
-#: ../src/modules/user/module.php:785
+#: ../src/modules/user/module.php:806
 msgid "Proceed to login page"
 msgstr "Se connecter"
 
-#: ../src/modules/user/module.php:804 ../src/modules/user/module.php:862
+#: ../src/modules/user/module.php:825 ../src/modules/user/module.php:883
 msgid "There is no profile for this user"
 msgstr "Il n'y a pas de profil pour cet utilisateur"
 
-#: ../src/modules/user/module.php:812
+#: ../src/modules/user/module.php:833
 msgid "Profile for "
 msgstr "Profil de "
 
-#: ../src/modules/user/module.php:819
+#: ../src/modules/user/module.php:840
 msgid "Fullname: "
 msgstr "Nom complet : "
 
-#: ../src/modules/user/module.php:821 ../src/modules/user/module.php:910
+#: ../src/modules/user/module.php:842 ../src/modules/user/module.php:931
 msgid "e-mail: "
 msgstr "Adresse e-mail : "
 
-#: ../src/modules/user/module.php:889
+#: ../src/modules/user/module.php:910
 msgid "Profile update for "
 msgstr "Mise à jour de profil pour "
 
-#: ../src/modules/user/module.php:890 ../src/modules/user/module.php:947
+#: ../src/modules/user/module.php:911 ../src/modules/user/module.php:968
 msgid "Profile update"
 msgstr "Mise à jour de profil"
 
-#: ../src/modules/user/module.php:906
+#: ../src/modules/user/module.php:927
 msgid "Full name: "
 msgstr "Nom complet : "
 
-#: ../src/modules/user/module.php:929
+#: ../src/modules/user/module.php:950
 msgid "The full name is required\n"
 msgstr "Le nom complet est requis\n"
 
-#: ../src/modules/user/module.php:931
+#: ../src/modules/user/module.php:952
 msgid "The e-mail address is required\n"
 msgstr "Une adresse e-mail valide est requise\n"
 
-#: ../src/modules/user/module.php:940
+#: ../src/modules/user/module.php:961
 msgid "Could not update the profile"
 msgstr "Impossible de mettre à jour le profil"
 
-#: ../src/modules/user/module.php:952
+#: ../src/modules/user/module.php:973
 msgid "Your profile was updated successfully"
 msgstr "Votre profil a été mis à jour avec succès."
 
-#: ../src/modules/user/module.php:973 ../src/modules/user/module.php:975
+#: ../src/modules/user/module.php:994 ../src/modules/user/module.php:996
 msgid "Account confirmation"
 msgstr "Confirmer son compte"
 
-#: ../src/modules/user/module.php:990
+#: ../src/modules/user/module.php:1011
 msgid "Congratulations!"
 msgstr "Félicitations !"
 
-#: ../src/modules/user/module.php:991
+#: ../src/modules/user/module.php:1012
 msgid "Your account is now enabled."
 msgstr "Votre compte est maintenant activé."
 
