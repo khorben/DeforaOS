@@ -51,9 +51,9 @@ static char const _gdeasm_license[] =
 typedef enum _GDeasmAsmColumn
 {
 	GAC_ADDRESS = 0, GAC_NAME, GAC_OPERAND1, GAC_OPERAND2, GAC_OPERAND3,
-	GAC_OPERAND4, GAC_OPERAND5, GAC_COMMENT, GAC_OFFSET
+	GAC_OPERAND4, GAC_OPERAND5, GAC_COMMENT, GAC_OFFSET, GAC_BASE
 } GDeasmAsmColumn;
-#define GAC_LAST GAC_OFFSET
+#define GAC_LAST GAC_BASE
 #define GAC_COUNT (GAC_LAST + 1)
 
 typedef enum _GDeasmFuncColumn
@@ -193,7 +193,7 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 	gdeasm->asm_store = gtk_tree_store_new(GAC_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_INT);
+			G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 	accel = gtk_accel_group_new();
 	gdeasm->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(gdeasm->window), accel);
@@ -227,6 +227,7 @@ static GDeasm * _gdeasm_new(char const * arch, char const * format)
 				renderer, "text", i, NULL);
 		if(i == 1)
 			g_object_set(renderer, "family", "Monospace", NULL);
+		gtk_tree_view_column_set_sort_column_id(column, i);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	}
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
@@ -469,7 +470,8 @@ static void _open_instruction(GDeasm * gdeasm, GtkTreeIter * parent,
 	gtk_tree_store_append(gdeasm->asm_store, &iter, parent);
 	snprintf(buf, sizeof(buf), "%08lx", call->base);
 	gtk_tree_store_set(gdeasm->asm_store, &iter, GAC_ADDRESS, buf,
-			GAC_NAME, call->name, GAC_OFFSET, call->offset, -1);
+			GAC_NAME, call->name, GAC_OFFSET, call->offset,
+			GAC_BASE, call->base, -1);
 	for(i = 0; i < call->operands_cnt; i++)
 	{
 		ao = &call->operands[i];
@@ -730,7 +732,11 @@ static void _gdeasm_on_function_activated(GtkTreeView * view,
 				valid;
 				valid = gtk_tree_model_iter_next(model, &iter))
 		{
-			gtk_tree_model_get(model, &iter, 8, &u, -1);
+			gtk_tree_model_get(model, &iter, GAC_BASE, &u, -1);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() %x, %x\n", __func__,
+					offset, u);
+#endif
 			if(offset != u)
 				continue;
 			view = GTK_TREE_VIEW(gdeasm->asm_view);
