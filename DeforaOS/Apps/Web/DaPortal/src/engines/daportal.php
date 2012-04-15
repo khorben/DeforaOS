@@ -21,9 +21,7 @@ require_once('./engines/http.php');
 
 
 //DaPortalEngine
-//XXX the mixed-case name makes it impossible to instantiate automatically!
-//    this is however intentional, as this engine is only useful during the
-//    migration period to the newer framework.
+//XXX this engine is only useful while migrating to the newer framework.
 class DaPortalEngine extends HttpEngine
 {
 	//public
