@@ -143,6 +143,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-find.png');
 }
 
+.stock16.submit {
+	background-image:	url('gnome-icon-theme/16x16/actions/document-send.png');
+}
+
 .stock16.updir {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-go-up.png');
 }
