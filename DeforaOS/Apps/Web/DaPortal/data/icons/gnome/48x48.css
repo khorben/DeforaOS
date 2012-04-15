@@ -83,6 +83,22 @@
 	background-image:	url('gnome-icon-theme/48x48/status/stock_dialog-error.png');
 }
 
+.stock48.file {
+	background-image:	url('gnome-icon-theme/48x48/mimetypes/gtk-file.png');
+}
+
+.stock48.file-new {
+	background-image:	url('gnome-icon-theme/48x48/actions/filenew.png');
+}
+
+.stock48.folder {
+	background-image:	url('gnome-icon-theme/48x48/places/folder.png');
+}
+
+.stock48.folder-new {
+	background-image:	url('gnome-icon-theme/48x48/actions/folder-new.png');
+}
+
 .stock48.forward {
 	background-image:	url('gnome-icon-theme/48x48/actions/forward.png');
 }
