@@ -409,7 +409,7 @@ msgstr "Impossible d'obtenir le contenu"
 
 #: ../src/modules/content/module.php:769
 msgid "Update "
-msgstr "Modifier"
+msgstr "Modifier "
 
 #: ../src/modules/content/module.php:778
 msgid "Preview: "
