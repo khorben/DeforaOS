@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -212,7 +212,7 @@ static gboolean _slider_on_timeout_suspend(gpointer data)
 #ifdef __NetBSD__
 	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
 				sizeof(sleep_state)) != 0)
-		helper->error(helper->locker, strerror(errno), 1);
+		helper->error(NULL, strerror(errno), 1);
 #else
 	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
 	{
@@ -222,7 +222,7 @@ static gboolean _slider_on_timeout_suspend(gpointer data)
 	else if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
 				NULL, NULL, NULL, &error) != TRUE)
 	{
-		helper->error(helper->locker, error->message, 1);
+		helper->error(NULL, error->message, 1);
 		g_error_free(error);
 	}
 #endif
