@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,14 +42,21 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: lockerctl -S\n"
-"       lockerctl -l\n"
-"       lockerctl -s\n"
-"       lockerctl -u\n"
+#ifdef EMBEDDED
+	fputs(_("Usage: lockerctl [-S|-l|-s|-u|-z]\n"
 "  -S	Display or change settings\n"
 "  -l	Lock the screen\n"
 "  -s	Enable the screen saver\n"
-"  -u	Unlock the screen\n"), stderr);
+"  -u	Unlock the screen\n"
+"  -z	Suspend the device\n"), stderr);
+#else
+	fputs(_("Usage: lockerctl [-S|-l|-s|-u|-z]\n"
+"  -S	Display or change settings\n"
+"  -l	Lock the screen\n"
+"  -s	Enable the screen saver\n"
+"  -u	Unlock the screen\n"
+"  -z	Suspend the computer\n"), stderr);
+#endif
 	return 1;
 }
 
@@ -64,7 +71,7 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "Slsu")) != -1)
+	while((o = getopt(argc, argv, "Slsuz")) != -1)
 		switch(o)
 		{
 			case 'S':
@@ -86,6 +93,11 @@ int main(int argc, char * argv[])
 				if(action != -1)
 					return _usage();
 				action = LOCKER_ACTION_UNLOCK;
+				break;
+			case 'z':
+				if(action != -1)
+					return _usage();
+				action = LOCKER_ACTION_SUSPEND;
 				break;
 			default:
 				return _usage();

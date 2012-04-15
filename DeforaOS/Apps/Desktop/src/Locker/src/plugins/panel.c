@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,6 +82,7 @@ static void _panel_event(PanelPlugin * panel, LockerEvent event)
 	{
 		case LOCKER_EVENT_ACTIVATING:
 		case LOCKER_EVENT_LOCKING:
+		case LOCKER_EVENT_SUSPENDING:
 			_event_show(FALSE);
 			break;
 		case LOCKER_EVENT_UNLOCKING:

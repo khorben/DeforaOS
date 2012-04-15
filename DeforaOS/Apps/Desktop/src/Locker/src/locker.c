@@ -128,6 +128,7 @@ static char const * _locker_plugin_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_plugin_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+static void _locker_suspend(Locker * locker);
 static void _locker_unlock(Locker * locker);
 
 /* callbacks */
@@ -681,6 +682,9 @@ static void _locker_action(Locker * locker, LockerAction action)
 		case LOCKER_ACTION_SHOW_PREFERENCES:
 			locker_show_preferences(locker, TRUE);
 			return;
+		case LOCKER_ACTION_SUSPEND:
+			_locker_suspend(locker);
+			break;
 		case LOCKER_ACTION_UNLOCK:
 			_locker_unlock(locker);
 			break;
@@ -847,6 +851,16 @@ static int _locker_plugin_config_set(Locker * locker, char const * section,
 }
 
 
+/* locker_suspend */
+static void _locker_suspend(Locker * locker)
+{
+	/* FIXME only activate and suspend if no plug-in prevented the latter */
+	/* automatically activate the screen when suspending */
+	_locker_activate(locker);
+	_locker_event(locker, LOCKER_EVENT_SUSPENDING);
+}
+
+
 /* locker_unlock */
 static void _locker_unlock(Locker * locker)
 {
@@ -959,18 +973,12 @@ static int _locker_on_message(void * data, uint32_t value1, uint32_t value2,
 		return 0;
 	switch((action = value2))
 	{
-		case LOCKER_ACTION_ACTIVATE:
-			_locker_activate(locker);
-			break;
-		case LOCKER_ACTION_LOCK:
-			_locker_lock(locker);
-			break;
 		case LOCKER_ACTION_SHOW_PREFERENCES:
 			show = value3 ? TRUE : FALSE;
 			locker_show_preferences(locker, show);
 			break;
-		case LOCKER_ACTION_UNLOCK:
-			_locker_unlock(locker);
+		default:
+			_locker_action(locker, action);
 			break;
 	}
 	return 0;

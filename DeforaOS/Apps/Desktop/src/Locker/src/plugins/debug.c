@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,6 +83,9 @@ static void _debug_event(Debug * debug, LockerEvent event)
 			return;
 		case LOCKER_EVENT_LOCKING:
 			fprintf(stderr, "DEBUG: %s() LOCKING\n", __func__);
+			return;
+		case LOCKER_EVENT_SUSPENDING:
+			fprintf(stderr, "DEBUG: %s() SUSPENDING\n", __func__);
 			return;
 		case LOCKER_EVENT_UNLOCKING:
 			fprintf(stderr, "DEBUG: %s() UNLOCKING\n", __func__);
