@@ -659,7 +659,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/daportal.conf \
 		$(PACKAGE)-$(VERSION)/engine.php \
 		$(PACKAGE)-$(VERSION)/index.php \
-		$(PACKAGE)-$(VERSION)/install.php \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
