@@ -281,13 +281,13 @@ class DownloadModule extends ContentModule
 
 	protected function _displayDirectory($engine, $content)
 	{
-		$db = $engine->getDatabase();
 		$title = $this->content_list_title._(': ').$content['title'];
+		$db = $engine->getDatabase();
+		$query = $this->download_query_list;
 
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		$query = $this->download_query_list;
 		$parent_id = (is_numeric($content['id']))
 			? $this->getDownloadId($engine, $content['id'])
 			: FALSE;
@@ -329,16 +329,25 @@ class DownloadModule extends ContentModule
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$stock = $this->isDirectory($res[$i])
-				? 'folder' : 'file';
+					? 'folder' : 'file';
 			$row = $view->append('row');
 			$row->setProperty('id', $res[$i]['id']);
 			$r = new Request($engine, $this->name, FALSE,
-				$res[$i]['id'], $res[$i]['title']);
+					$res[$i]['id'], $res[$i]['title']);
 			$link = new PageElement('link', array('stock' => $stock,
 					'request' => $r,
 					'text' => $res[$i]['title']));
 			$row->setProperty('filename', $link);
-			$row->setProperty('owner', $res[$i]['username']);
+			$user_id = $res[$i]['user_id'];
+			$username = $res[$i]['username'];
+			if(is_numeric($user_id) && $user_id != 0)
+			{
+				$r = new Request($engine, 'user', FALSE,
+					$user_id, $username);
+				$username = new PageElement('link', array(
+					'request' => $r, 'text' => $username));
+			}
+			$row->setProperty('owner', $username);
 			$row->setProperty('group', $res[$i]['groupname']);
 			$row->setProperty('date', $this->_timestampToDate(
 					$res[$i]['timestamp'],
