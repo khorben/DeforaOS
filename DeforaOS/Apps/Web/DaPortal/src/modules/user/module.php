@@ -244,6 +244,7 @@ class UserModule extends Module
 		$r = new Request($engine, $this->name, 'admin');
 		$view = $page->append('treeview', array('request' => $r,
 				'view' => 'details', 'columns' => $columns));
+		//toolbar
 		$toolbar = $view->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
 				'text' => _('Refresh'),
@@ -378,7 +379,6 @@ class UserModule extends Module
 	protected function disable($engine, $request)
 	{
 		$query = $this->query_disable;
-		$cred = $engine->getCredentials();
 
 		return $this->_apply($engine, $request, $query, 'admin',
 			_('User(s) could be disabled successfully'),
@@ -421,7 +421,6 @@ class UserModule extends Module
 	protected function enable($engine, $request)
 	{
 		$query = $this->query_enable;
-		$cred = $engine->getCredentials();
 
 		return $this->_apply($engine, $request, $query, 'admin',
 			_('User(s) could be enabled successfully'),
