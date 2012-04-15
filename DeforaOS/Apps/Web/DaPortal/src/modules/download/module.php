@@ -302,12 +302,15 @@ class DownloadModule extends ContentModule
 		$view = $page->append('treeview', array('columns' => $columns));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
+			$stock = $this->isDirectory($res[$i])
+				? 'folder' : 'file';
 			$row = $view->append('row');
 			$row->setProperty('id', $res[$i]['id']);
 			$r = new Request($engine, $this->name, FALSE,
 				$res[$i]['id'], $res[$i]['title']);
-			$link = new PageElement('link', array('request' => $r,
-				'text' => $res[$i]['title']));
+			$link = new PageElement('link', array('stock' => $stock,
+					'request' => $r,
+					'text' => $res[$i]['title']));
 			$row->setProperty('filename', $link);
 			$row->setProperty('owner', $res[$i]['username']);
 			$row->setProperty('group', $res[$i]['groupname']);
