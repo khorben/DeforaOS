@@ -60,6 +60,8 @@ class DownloadModule extends ContentModule
 		{
 			case 'download':
 				return $this->download($engine, $request);
+			case 'folder_new':
+				return $this->folder_new($engine, $request);
 			case 'file_insert':
 			case 'submit':
 				return $this->submit($engine, $request);
@@ -295,6 +297,11 @@ class DownloadModule extends ContentModule
 		$toolbar->append('button', array('request' => $request,
 				'stock' => 'updir',
 				'text' => _('Up one directory')));
+		$request = new Request($engine, $this->name, 'folder_new',
+				$parent_id, $parent_title);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => 'folder-new',
+				'text' => _('New directory')));
 		//view
 		$columns = array('filename' => _('Filename'),
 			'owner' => _('Owner'), 'group' => _('Group'),
@@ -418,6 +425,35 @@ class DownloadModule extends ContentModule
 		}
 		$engine->setType($mime);
 		return $fp;
+	}
+
+
+	//DownloadModule::folder_new
+	protected function folder_new($engine, $request)
+	{
+		$title = _('New folder');
+
+		//FIXME process the input if any
+		if($request->getId() === FALSE)
+			$title = _('New root folder');
+		else if(($t = $request->getTitle()) !== FALSE)
+			$title = sprintf(_('New folder in "%s"'), $t);
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'folder-new',
+				'text' => $title));
+		$r = new Request($engine, $this->name, 'folder_new',
+				$request->getId(), $request->getTitle());
+		$form = $page->append('form', array('request' => $r));
+		$name = $form->append('entry', array('text' => _('Name: '),
+				'name' => 'name',
+				'value' => $request->getParameter('name')));
+		$r = new Request($engine, $this->name, FALSE,
+				$request->getId(), $request->getTitle());
+		$form->append('button', array('stock' => 'cancel',
+				'request' => $r, 'text' => _('Cancel')));
+		$form->append('button', array('stock' => 'folder-new',
+				'type' => 'submit', 'text' => _('Create')));
+		return $page;
 	}
 
 
