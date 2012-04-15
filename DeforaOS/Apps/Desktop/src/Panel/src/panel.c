@@ -71,6 +71,7 @@ struct _Panel
 	GdkWindow * root;
 	gint root_width;		/* width of the root window	*/
 	gint root_height;		/* height of the root window	*/
+	gint source;
 
 	/* preferences */
 	GtkWidget * pr_window;
@@ -240,6 +241,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 			|| strcmp(p, "1") == 0) ? TRUE : FALSE;
 	above = ((p = config_get(panel->config, NULL, "keep_above")) == NULL
 			|| strcmp(p, "1") == 0) ? TRUE : FALSE;
+	panel->source = 0;
 	/* top panel */
 	if(config_get(panel->config, NULL, "top") != NULL)
 	{
@@ -264,7 +266,7 @@ Panel * panel_new(PanelPrefs const * prefs)
 				panel->root) | GDK_PROPERTY_CHANGE_MASK);
 	gdk_window_add_filter(panel->root, _on_root_event, panel);
 	/* load plug-ins when idle */
-	g_idle_add(_on_idle, panel);
+	panel->source = g_idle_add(_on_idle, panel);
 	return panel;
 }
 
@@ -463,6 +465,8 @@ static GdkFilterReturn _event_configure_notify(Panel * panel)
 /* panel_delete */
 void panel_delete(Panel * panel)
 {
+	if(panel->source != 0)
+		g_source_remove(panel->source);
 	/* FIXME destroy plugins as well */
 	if(panel->top != NULL)
 		panel_window_delete(panel->top);
@@ -1379,22 +1383,31 @@ static gboolean _about_on_closex(gpointer data)
 
 
 /* panel_helper_lock */
+static gboolean _lock_on_idle(gpointer data);
+
 static int _panel_helper_lock(Panel * panel)
 {
+	panel->source = g_idle_add(_lock_on_idle, panel);
+	return 0;
+}
+
+static gboolean _lock_on_idle(gpointer data)
+{
 	/* FIXME default to calling XActivateScreenSaver() */
+	Panel * panel = data;
 	char const * command = "xset s activate";
 	char const * p;
 	GError * error = NULL;
 
+	panel->source = 0;
 	if((p = config_get(panel->config, "lock", "command")) != NULL)
 		command = p;
 	if(g_spawn_command_line_async(command, &error) != TRUE)
 	{
 		panel_error(panel, error->message, 1);
 		g_error_free(error);
-		return -1;
 	}
-	return 0;
+	return FALSE;
 }
 
 
