@@ -97,7 +97,7 @@ class Config
 		}
 		for($i = 1; ($line = fgets($fp)) !== FALSE; $i++)
 		{
-			if(preg_match("/^([a-zA-Z0-9-_ \t]+)=(.*)$/", $line,
+			if(preg_match("/^([a-zA-Z0-9-_: \t]+)=(.*)$/", $line,
 						$matches) == 1)
 				$this->setVariable($section, $matches[1],
 						$matches[2]);
