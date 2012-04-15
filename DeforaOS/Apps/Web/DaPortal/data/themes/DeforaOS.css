@@ -254,6 +254,12 @@ div.toolbar input[type="submit"] {
 }
 
 
+/* treeviews */
+form.treeview div.header span.detail {
+	text-align:			left;
+}
+
+
 /* small screens */
 @media screen and (max-width: 80ex) {
 	div#menu > div.pack > * {
