@@ -185,6 +185,25 @@ class DownloadModule extends ContentModule
 	}
 
 
+	//DownloadModule::getPermissionsString
+	protected function getPermissionsString($mode)
+	{
+		$str = '----------';
+		if(($mode & 512) == 512)
+			$str[0] = 'd';
+		$str[1] = $mode & 0400 ? 'r' : '-';
+		$str[2] = $mode & 0200 ? 'w' : '-';
+		$str[3] = $mode & 0100 ? 'x' : '-';
+		$str[4] = $mode & 040 ? 'r' : '-';
+		$str[5] = $mode & 020 ? 'w' : '-';
+		$str[6] = $mode & 010 ? 'x' : '-';
+		$str[7] = $mode & 04 ? 'r' : '-';
+		$str[8] = $mode & 02 ? 'w' : '-';
+		$str[9] = $mode & 01 ? 'x' : '-';
+		return $str;
+	}
+
+
 	//DownloadModule::getRoot
 	protected function getRoot($engine)
 	{
@@ -324,9 +343,8 @@ class DownloadModule extends ContentModule
 			$row->setProperty('date', $this->_timestampToDate(
 					$res[$i]['timestamp'],
 						_('d/m/Y H:i:s')));
-			//XXX output in a more readable mode
 			$row->setProperty('permissions',
-					sprintf('%04o', $res[$i]['mode']));
+				$this->getPermissionsString($res[$i]['mode']));
 		}
 		return $page;
 	}
@@ -375,7 +393,7 @@ class DownloadModule extends ContentModule
 					'text' => $content['username'])));
 		$this->_displayField($page, _('Group'), $content['groupname']);
 		$this->_displayField($page, _('Permissions'),
-			sprintf('%04o', $content['mode']));
+			$this->getPermissionsString($content['mode']));
 		$this->_displayField($page, _('Creation time'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
 		$this->_displayField($page, _('Modification time'),
