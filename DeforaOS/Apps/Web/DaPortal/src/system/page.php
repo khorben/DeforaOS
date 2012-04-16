@@ -92,17 +92,13 @@ class PageElement
 	//PageElement::append
 	public function append($type, $properties = FALSE)
 	{
-		$element = new PageElement($type);
+		if($type instanceof PageElement)
+			$element = $type;
+		else
+			$element = new PageElement($type);
 		if(is_array($properties))
 			foreach($properties as $key => $value)
 				$element->setProperty($key, $value);
-		return $this->appendElement($element);
-	}
-
-
-	//PageElement::appendElement
-	public function appendElement($element)
-	{
 		$this->children[] = $element;
 		return $element;
 	}
@@ -111,14 +107,13 @@ class PageElement
 	//PageElement::prepend
 	public function prepend($type, $properties = FALSE)
 	{
-		$element = new PageElement($type, $properties);
-		return $this->prependElement($element);
-	}
-
-
-	//PageElement::prependElement
-	public function prependElement($element)
-	{
+		if($type instanceof PageElement)
+			$element = $type;
+		else
+			$element = new PageElement($type, $properties);
+		if(is_array($properties))
+			foreach($properties as $key => $value)
+				$element->setProperty($key, $value);
 		$this->children = array_merge(array($element), $this->children);
 		return $element;
 	}
