@@ -83,6 +83,7 @@ class ContentModule extends Module
 
 	protected $content_admin = 'Content administration';
 	protected $content_by = 'Content by';
+	protected $content_headline_count = 6;
 	protected $content_item = 'Content';
 	protected $content_items = 'Content';
 	protected $content_list_count = 10;
@@ -294,6 +295,19 @@ class ContentModule extends Module
 		$database = $engine->getDatabase();
 		$actions = array('delete', 'disable', 'enable');
 
+		//check credentials
+		if(!$cred->isAdmin())
+		{
+			$error = _('Permission denied');
+			$r = new Request($engine, 'user', 'login');
+			$dialog = new PageElement('dialog', array(
+						'type' => 'error',
+						'text' => $error));
+			$dialog->append('button', array('stock' => 'login',
+						'text' => _('Login'),
+						'request' => $r));
+			return $dialog;
+		}
 		//perform actions if necessary
 		if($request !== FALSE)
 			foreach($actions as $a)
@@ -301,19 +315,6 @@ class ContentModule extends Module
 					return $this->$a($engine, $request);
 		//administrative page
 		$page = new Page;
-		if(!$cred->isAdmin())
-		{
-			$error = _('Permission denied');
-			$engine->log('LOG_ERR', $error);
-			$r = new Request($engine, 'user', 'login');
-			$dialog = $page->append('dialog', array(
-						'type' => 'error',
-						'text' => $error));
-			$dialog->append('button', array('stock' => 'login',
-						'text' => _('Login'),
-						'request' => $r));
-			return $page;
-		}
 		$title = $this->content_admin;
 		$page->setProperty('title', $title);
 		$element = $page->append('title', array('stock' => 'admin',
@@ -347,9 +348,9 @@ class ContentModule extends Module
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'delete'));
 		$no = new PageElement('image', array('stock' => 'no',
-				'size' => 16));
+				'size' => 16, 'title' => _('Disabled')));
 		$yes = new PageElement('image', array('stock' => 'yes',
-				'size' => 16));
+				'size' => 16, 'title' => _('Enabled')));
 		//FIXME add controls for publication
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
@@ -461,8 +462,7 @@ class ContentModule extends Module
 			return $page;
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-			$page->appendElement($this->preview($engine,
-						$res[$i]['id']));
+			$page->append($this->preview($engine, $res[$i]['id']));
 		//output paging information
 		if($pcnt !== FALSE && ($pcnt > $this->content_list_count))
 		{
@@ -554,7 +554,9 @@ class ContentModule extends Module
 		$view = new PageElement('treeview', array('view' => 'details',
 				'columns' => $columns));
 		$query = $this->query_list;
-		$query .= ' ORDER BY timestamp DESC LIMIT 6'; //XXX define limit
+		$count = (is_integer($this->content_headline_count))
+			? $this->content_headline_count : 6;
+		$query .= ' ORDER BY timestamp DESC LIMIT '.$count;
 		if(($res = $db->query($engine, $query, array(
 					'module_id' => $this->id))) === FALSE)
 			return new PageElement('dialog', array(
@@ -632,7 +634,7 @@ class ContentModule extends Module
 			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $res[$i]['enabled']);
 			$row->setProperty('username', $res[$i]['username']);
-			$date = $this->_timestampToDate(_('d/m/Y H:i'),
+			$date = $this->_timestampToDate(_('d/m/Y H:i:s'),
 					$res[$i]['timestamp']);
 			$row->setProperty('date', $date);
 		}
@@ -715,7 +717,7 @@ class ContentModule extends Module
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		$form = $this->formSubmit($engine, $request);
-		$page->appendElement($form);
+		$page->append($form);
 		return $page;
 	}
 
@@ -768,17 +770,16 @@ class ContentModule extends Module
 				'type' => 'error', 'text' => $error));
 		$title = _('Update ').$content['title'];
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('text' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
 		if($request->getParameter('preview') !== FALSE)
 		{
-			$preview = array('id' => $id,
-				'module' => $this->name,
+			$preview = array('id' => $id, 'module' => $this->name,
 				'username' => $content['username'],
 				'date' => $content['date'],
 				'title' => _('Preview: ').$request->getTitle(),
 				'content' => $request->getParameter('content'));
-			$page->appendElement($this->_preview($engine,
-					$preview, TRUE));
+			$page->append($this->_preview($engine, $preview, TRUE));
 		}
 		//FIXME really implement
 		$r = new Request($engine, $this->name, 'update', $id);
@@ -801,8 +802,8 @@ class ContentModule extends Module
 		$hbox->append('button', array('type' => 'reset',
 				'stock' => 'reset', 'text' => _('Reset')));
 		$hbox->append('button', array('type' => 'submit',
-				'stock' => 'preview', 'name' => 'preview',
-				'text' => _('Preview')));
+				'stock' => 'preview', 'name' => 'action',
+				'value' => 'preview', 'text' => _('Preview')));
 		$hbox->append('button', array('type' => 'submit',
 				'stock' => 'submit', 'text' => _('Submit')));
 		return $page;
