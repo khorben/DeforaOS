@@ -36,7 +36,7 @@ typedef struct _LockerPlugin
 /* plug-in */
 static PanelPlugin * _panel_init(LockerPluginHelper * helper);
 static void _panel_destroy(PanelPlugin * panel);
-static void _panel_event(PanelPlugin * panel, LockerEvent event);
+static int _panel_event(PanelPlugin * panel, LockerEvent event);
 
 
 /* public */
@@ -76,7 +76,7 @@ static void _panel_destroy(PanelPlugin * panel)
 /* panel_event */
 static void _event_show(gboolean show);
 
-static void _panel_event(PanelPlugin * panel, LockerEvent event)
+static int _panel_event(PanelPlugin * panel, LockerEvent event)
 {
 	switch(event)
 	{
@@ -89,6 +89,7 @@ static void _panel_event(PanelPlugin * panel, LockerEvent event)
 			_event_show(TRUE);
 			break;
 	}
+	return 0;
 }
 
 static void _event_show(gboolean show)

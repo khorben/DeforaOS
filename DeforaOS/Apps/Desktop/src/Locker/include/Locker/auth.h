@@ -31,7 +31,7 @@ typedef struct _LockerAuthHelper
 {
 	Locker * locker;
 	int (*error)(Locker * locker, char const * message, int ret);
-	void (*action)(Locker * locker, LockerAction action);
+	int (*action)(Locker * locker, LockerAction action);
 	char const * (*config_get)(Locker * locker, char const * section,
 			char const * variable);
 	int (*config_set)(Locker * locker, char const * section,

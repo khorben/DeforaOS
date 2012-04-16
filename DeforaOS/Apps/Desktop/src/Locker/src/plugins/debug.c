@@ -33,7 +33,7 @@ typedef struct _LockerPlugin
 /* plug-in */
 static Debug * _debug_init(LockerPluginHelper * helper);
 static void _debug_destroy(Debug * debug);
-static void _debug_event(Debug * debug, LockerEvent event);
+static int _debug_event(Debug * debug, LockerEvent event);
 
 
 /* public */
@@ -74,22 +74,28 @@ static void _debug_destroy(Debug * debug)
 
 
 /* debug_event */
-static void _debug_event(Debug * debug, LockerEvent event)
+static int _debug_event(Debug * debug, LockerEvent event)
 {
 	switch(event)
 	{
 		case LOCKER_EVENT_ACTIVATING:
 			fprintf(stderr, "DEBUG: %s() ACTIVATING\n", __func__);
-			return;
+			break;
 		case LOCKER_EVENT_LOCKING:
 			fprintf(stderr, "DEBUG: %s() LOCKING\n", __func__);
-			return;
+			break;
 		case LOCKER_EVENT_SUSPENDING:
 			fprintf(stderr, "DEBUG: %s() SUSPENDING\n", __func__);
-			return;
+			break;
 		case LOCKER_EVENT_UNLOCKING:
 			fprintf(stderr, "DEBUG: %s() UNLOCKING\n", __func__);
-			return;
+			break;
+#ifdef DEBUG
+		default:
+			fprintf(stderr, "DEBUG: %s() Unknown event (%u)\n",
+					__func__, event);
+			break;
+#endif
 	}
-	fprintf(stderr, "DEBUG: %s() Unknown event (%u)\n", __func__, event);
+	return 0;
 }

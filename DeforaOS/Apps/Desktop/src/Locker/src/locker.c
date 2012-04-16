@@ -55,6 +55,7 @@ struct _Locker
 	Config * config;
 
 	/* internal */
+	int locked;
 	GdkDisplay * display;
 	int screen;
 	int event;
@@ -110,26 +111,38 @@ static char const * _authors[] =
 
 
 /* prototypes */
+/* accessors */
+static int _locker_is_locked(Locker * locker);
+
+/* useful */
 static void _locker_about(Locker * locker);
-static void _locker_action(Locker * locker, LockerAction action);
-static void _locker_activate(Locker * locker);
+static int _locker_action(Locker * locker, LockerAction action);
+static int _locker_activate(Locker * locker);
+
+/* auth */
 static char const * _locker_auth_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_auth_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+
+/* demo */
 static char const * _locker_demo_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_demo_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+
 static int _locker_error(Locker * locker, char const * message, int ret);
-static void _locker_event(Locker * locker, LockerEvent event);
-static void _locker_lock(Locker * locker);
+static int _locker_event(Locker * locker, LockerEvent event);
+static int _locker_lock(Locker * locker);
+
+/* plug-ins */
 static char const * _locker_plugin_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_plugin_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
-static void _locker_suspend(Locker * locker);
-static void _locker_unlock(Locker * locker);
+
+static int _locker_suspend(Locker * locker);
+static int _locker_unlock(Locker * locker);
 
 /* callbacks */
 static gboolean _lock_on_closex(void);
@@ -170,6 +183,7 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 	}
 	_new_helpers(locker);
 	locker->suspend = (suspend != 0) ? 1 : 0;
+	locker->locked = 0;
 	screen = gdk_screen_get_default();
 	locker->display = gdk_screen_get_display(screen);
 	locker->screen = gdk_x11_get_default_screen();
@@ -630,6 +644,14 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 
 /* private */
 /* functions */
+/* accessors */
+/* locker_is_locked */
+static int _locker_is_locked(Locker * locker)
+{
+	return locker->locked;
+}
+
+
 /* useful */
 /* locker_about */
 static gboolean _about_on_closex(gpointer data);
@@ -669,36 +691,43 @@ static gboolean _about_on_closex(gpointer data)
 
 
 /* locker_action */
-static void _locker_action(Locker * locker, LockerAction action)
+static int _locker_action(Locker * locker, LockerAction action)
 {
+	int ret = -1;
+
 	switch(action)
 	{
 		case LOCKER_ACTION_ACTIVATE:
-			_locker_activate(locker);
+			ret = _locker_activate(locker);
 			break;
 		case LOCKER_ACTION_LOCK:
-			_locker_lock(locker);
+			ret = _locker_lock(locker);
 			break;
 		case LOCKER_ACTION_SHOW_PREFERENCES:
 			locker_show_preferences(locker, TRUE);
-			return;
+			ret = 0;
+			break;
 		case LOCKER_ACTION_SUSPEND:
-			_locker_suspend(locker);
+			ret = _locker_suspend(locker);
 			break;
 		case LOCKER_ACTION_UNLOCK:
-			_locker_unlock(locker);
+			ret = _locker_unlock(locker);
 			break;
 	}
+	return ret;
 }
 
 
 /* locker_activate */
-static void _locker_activate(Locker * locker)
+static int _locker_activate(Locker * locker)
 {
-	_locker_event(locker, LOCKER_EVENT_ACTIVATING);
+	if(_locker_event(locker, LOCKER_EVENT_ACTIVATING) != 0)
+		return -1;
 	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_ACTIVATE)
-			== 0)
-		XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
+			!= 0)
+		return -1;
+	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
+	return 0;
 }
 
 
@@ -767,7 +796,7 @@ static int _locker_error(Locker * locker, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
-	if(locker == NULL)
+	if(locker == NULL || _locker_is_locked(locker))
 	{
 		fprintf(stderr, "%s: %s\n", "locker", message);
 		return ret;
@@ -787,8 +816,9 @@ static int _locker_error(Locker * locker, char const * message, int ret)
 
 
 /* locker_event */
-static void _locker_event(Locker * locker, LockerEvent event)
+static int _locker_event(Locker * locker, LockerEvent event)
 {
+	int ret = 0;
 	size_t i;
 	LockerPluginDefinition * lpd;
 	LockerPlugin * lp;
@@ -798,26 +828,29 @@ static void _locker_event(Locker * locker, LockerEvent event)
 		lpd = locker->plugins[i].definition;
 		lp = locker->plugins[i].plugin;
 		if(lpd->event != NULL)
-			lpd->event(lp, event);
+			ret |= lpd->event(lp, event);
 	}
+	return (ret == 0) ? 0 : -1;
 }
 
 
 /* locker_lock */
-static void _locker_lock(Locker * locker)
+static int _locker_lock(Locker * locker)
 {
 	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_locker_event(locker, LOCKER_EVENT_LOCKING);
+	if(_locker_event(locker, LOCKER_EVENT_LOCKING) != 0)
+		return -1;
+	locker->locked = 1;
 	for(i = 0; i < locker->windows_cnt; i++)
 	{
 		gtk_widget_show(locker->windows[i]);
 		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
 	}
-	locker->adefinition->action(locker->auth, LOCKER_ACTION_LOCK);
+	return locker->adefinition->action(locker->auth, LOCKER_ACTION_LOCK);
 }
 
 
@@ -852,28 +885,31 @@ static int _locker_plugin_config_set(Locker * locker, char const * section,
 
 
 /* locker_suspend */
-static void _locker_suspend(Locker * locker)
+static int _locker_suspend(Locker * locker)
 {
-	/* FIXME only activate and suspend if no plug-in prevented the latter */
 	/* automatically activate the screen when suspending */
-	_locker_activate(locker);
-	_locker_event(locker, LOCKER_EVENT_SUSPENDING);
+	if(_locker_activate(locker) != 0)
+		return -1;
+	return _locker_event(locker, LOCKER_EVENT_SUSPENDING);
 }
 
 
 /* locker_unlock */
-static void _locker_unlock(Locker * locker)
+static int _locker_unlock(Locker * locker)
 {
 	size_t i;
 
-	_locker_event(locker, LOCKER_EVENT_UNLOCKING);
+	if(_locker_event(locker, LOCKER_EVENT_UNLOCKING) != 0)
+		return -1;
+	locker->locked = 0;
 	if(locker->windows == NULL)
-		return;
+		return 0;
 	/* ungrab keyboard and mouse */
 	gdk_keyboard_ungrab(GDK_CURRENT_TIME);
 	gdk_pointer_ungrab(GDK_CURRENT_TIME);
 	for(i = 0; i < locker->windows_cnt; i++)
 		gtk_widget_hide(locker->windows[i]);
+	return 0;
 }
 
 

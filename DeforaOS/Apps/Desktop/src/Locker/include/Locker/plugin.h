@@ -33,7 +33,7 @@ typedef struct _LockerPluginHelper
 	Locker * locker;
 	int (*error)(Locker * locker, char const * message, int ret);
 	void (*about_dialog)(Locker * locker);
-	void (*action)(Locker * locker, LockerAction action);
+	int (*action)(Locker * locker, LockerAction action);
 	char const * (*config_get)(Locker * locker, char const * section,
 			char const * variable);
 	int (*config_set)(Locker * locker, char const * section,
@@ -47,7 +47,7 @@ struct _LockerPluginDefinition
 	char const * description;
 	LockerPlugin * (*init)(LockerPluginHelper * helper);
 	void (*destroy)(LockerPlugin * plugin);
-	void (*event)(LockerPlugin * plugin, LockerEvent event);
+	int (*event)(LockerPlugin * plugin, LockerEvent event);
 };
 
 #endif /* !DESKTOP_LOCKER_PLUGIN_H */
