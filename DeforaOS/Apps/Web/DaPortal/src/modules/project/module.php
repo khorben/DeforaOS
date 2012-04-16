@@ -45,6 +45,8 @@ class ProjectModule extends ContentModule
 		$this->content_title = _('Projects');
 		//list only projects by default
 		$this->query_list = $this->project_query_list_projects;
+		$this->query_list_admin
+			= $this->project_query_list_admin_projects;
 		$this->query_list_user
 			= $this->project_query_list_projects_user;
 	}
@@ -57,8 +59,10 @@ class ProjectModule extends ContentModule
 		{
 			case 'bug_list':
 				return $this->bugList($engine, $request);
-			case 'download':
+			case 'browse':
 			case 'timeline':
+				return $this->$action($engine, $request);
+			case 'download':
 				/* FIXME really implement */
 				return $this->display($engine, $request);
 		}
@@ -69,6 +73,17 @@ class ProjectModule extends ContentModule
 	//protected
 	//properties
 	//queries
+	protected $project_query_list_admin_projects = "SELECT content_id AS id,
+		daportal_content.enabled AS enabled,
+		timestamp, name AS module,
+		daportal_user.user_id AS user_id, username, title
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_project
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.content_id=daportal_project.project_id
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
 	protected $project_query_list_bugs = "SELECT bug_id,
 		bug.content_id AS id, bug.timestamp AS timestamp,
 	       	daportal_user.user_id AS user_id, username, bug.title AS title,
@@ -242,15 +257,19 @@ class ProjectModule extends ContentModule
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'home', 'text' => _('Homepage')));
-		$r = new Request($engine, $this->name, 'browse', $id,
-				$project['title']);
-		$toolbar->append('button', array('request' => $r,
-				'stock' => 'open', 'text' => _('Browse')));
-		$r = new Request($engine, $this->name, 'timeline', $id,
-				$project['title']);
-		$toolbar->append('button', array('request' => $r,
-				'stock' => 'development',
-				'text' => _('Timeline')));
+		if(strlen($project['cvsroot']) > 0)
+		{
+			$r = new Request($engine, $this->name, 'browse', $id,
+					$project['title']);
+			$toolbar->append('button', array('request' => $r,
+					'stock' => 'open',
+					'text' => _('Browse')));
+			$r = new Request($engine, $this->name, 'timeline', $id,
+					$project['title']);
+			$toolbar->append('button', array('request' => $r,
+					'stock' => 'development',
+					'text' => _('Timeline')));
+		}
 		$r = new Request($engine, $this->name, 'bug_list', $id,
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
@@ -285,7 +304,31 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//useful
+	//actions
+	//ProjectModule::browse
+	protected function browse($engine, $request)
+	{
+		if(($id = $request->getId()) === FALSE)
+			//FIXME show the global repository instead?
+			return $this->_default($engine);
+		//XXX may fail
+		$project = $this->_getProject($engine, $id);
+		$title = _('Project: ').$project['title'];
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'project',
+				'text' => $title));
+		$toolbar = $this->_getToolbar($engine, $id);
+		$page->append($toolbar);
+		if(($scm = $this->attachScm($engine)) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('An error occurred')));
+		$browse = $scm->browse($engine, $project, $request);
+		$page->append($browse);
+		return $page;
+	}
+
+
 	//ProjectModule::bugList
 	protected function bugList($engine, $request)
 	{
@@ -295,7 +338,7 @@ class ProjectModule extends ContentModule
 		$toolbar = FALSE;
 		$query = $this->project_query_list_bugs;
 
-		//XXX unlike ProjectModule::list() here getid() is the project
+		//XXX unlike ProjectModule::list() here getId() is the project
 		//determine the current project
 		if(($id = $request->getId()) !== FALSE && is_numeric($id)
 				&& ($project = $this->_getProject($engine, $id))
@@ -331,9 +374,9 @@ class ProjectModule extends ContentModule
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		if($toolbar !== FALSE)
-			$page->appendElement($toolbar);
+			$page->append($toolbar);
 		if($filter !== FALSE)
-			$page->appendElement($filter);
+			$page->append($filter);
 		$treeview = $page->append('treeview');
 		$treeview->setProperty('columns', array('title' => _('Title'),
 			'bug_id' => _('ID'), 'project' => _('Project'),
@@ -391,11 +434,70 @@ class ProjectModule extends ContentModule
 			'text' => $title));
 		if(($toolbar = $this->_getToolbar($engine, $project['id']))
 				!== FALSE)
-			$page->appendElement($toolbar);
-		$page->append('label', array('text' => $content['content']."\n"));
-		$page->appendElement($link);
+			$page->append($toolbar);
+		$text = $content['content']."\n";
+		$page->append('label', array('text' => $text));
+		$page->append($link);
 		return $page;
 	}
+
+
+	//ProjectModule::timeline
+	protected function timeline($engine, $request)
+	{
+		if(($id = $request->getId()) === FALSE)
+			//FIXME show the global timeline instead?
+			return $this->_default($engine);
+		//XXX may fail
+		$project = $this->_getProject($engine, $id);
+		$title = _('Project: ').$project['title'];
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'project',
+				'text' => $title));
+		$toolbar = $this->_getToolbar($engine, $id);
+		$page->append($toolbar);
+		if(($scm = $this->attachScm($engine)) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => _('An error occurred')));
+		$timeline = $scm->timeline($engine, $project, $request);
+		$page->append($timeline);
+		return $page;
+	}
+
+
+	//useful
+	//ProjectModule::attachScm
+	protected function attachScm(&$engine)
+	{
+		global $config; //XXX attach modules per-project instead?
+
+		if(($name = $config->getVariable('module::'.$this->name,
+				'scm::backend')) === FALSE)
+			$name = 'cvs';
+		$filename = './modules/'.$this->name.'/scm/'.$name.'.php';
+		$res = require_once($filename);
+		if($res === FALSE)
+			return FALSE;
+		$name = ucfirst($name).'ScmProject';
+		$ret = new $name();
+		$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret));
+		$ret->attach($engine);
+		return $ret;
+	}
+}
+
+
+//ProjectScm
+abstract class ProjectScm
+{
+	//methods
+	//virtual
+	abstract public function attach($engine);
+
+	//actions
+	abstract public function browse($engine, $project, $request);
+	abstract public function timeline($engine, $project, $request);
 }
 
 ?>
