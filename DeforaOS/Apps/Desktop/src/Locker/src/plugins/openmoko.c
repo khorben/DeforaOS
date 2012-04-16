@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,9 @@ static Openmoko * _openmoko_init(LockerPluginHelper * helper);
 static void _openmoko_destroy(Openmoko * openmoko);
 
 /* useful */
+#if defined(__linux__)
 static void _openmoko_show_dialog(Openmoko * openmoko);
+#endif
 
 /* callbacks */
 #if defined(__linux__)
@@ -135,6 +137,7 @@ static void _openmoko_destroy(Openmoko * openmoko)
 
 
 /* useful */
+#if defined(__linux__)
 /* openmoko_show_dialog */
 static gboolean _dialog_on_closex(gpointer data);
 static void _dialog_on_lock(gpointer data);
@@ -306,6 +309,7 @@ static void _dialog_on_suspend(gpointer data)
 	/* XXX may already be suspended */
 	helper->action(helper->locker, LOCKER_ACTION_LOCK);
 }
+#endif
 
 
 /* callbacks */
