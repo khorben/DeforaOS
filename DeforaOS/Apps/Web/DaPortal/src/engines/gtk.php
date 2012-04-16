@@ -315,7 +315,8 @@ class GtkFormat extends FormatElements
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if(($widget = $this->renderElement($c)) === FALSE)
+			if(($widget = $this->renderElement($c)) === FALSE
+					|| $widget instanceof GtkWindow)
 				continue;
 			$expand = $c->getProperty('Gtk::expand', FALSE);
 			$fill = $c->getProperty('Gtk::fill', TRUE);
@@ -345,14 +346,21 @@ class GtkFormat extends FormatElements
 			if($c->getType() != 'row')
 				continue;
 			$iter = $store->append();
-			if(($icon = $c->getProperty('icon')) !== FALSE
-					//FIXME extract the image otherwise
-					&& is_string($icon))
-				$store->set($iter, 0, $icon);
-			if(($label = $c->getProperty('label')) !== FALSE
-					//FIXME extract the label otherwise
-					&& is_string($label))
-				$store->set($iter, 1, $label);
+			if(($icon = $c->getProperty('icon')) !== FALSE)
+			{
+				//FIXME the columns are all strings for now
+				if(is_string($icon))
+					$store->set($iter, 0, $icon);
+			}
+			if(($label = $c->getProperty('label')) !== FALSE)
+			{
+				if($label instanceof GtkButton)
+					$label = $label->get_label();
+				if($label instanceof GtkLabel)
+					$label = $label->get_text();
+				if(is_string($label))
+					$store->set($iter, 1, $label);
+			}
 		}
 		$ret->add($view);
 		return $ret;
@@ -535,7 +543,8 @@ class GtkFormat extends FormatElements
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if(($widget = $this->renderElement($c)) === FALSE)
+			if(($widget = $this->renderElement($c)) === FALSE
+					|| $widget instanceof GtkWindow)
 				continue;
 			$expand = $c->getProperty('Gtk::expand', FALSE);
 			$fill = $c->getProperty('Gtk::fill', TRUE);
