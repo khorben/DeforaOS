@@ -202,6 +202,7 @@ div#content > div.pack > h1:first-child.project {
 	background-color:		#007f00;
 }
 
+div#content > div.pack > h1:first-child.logout,
 div#content > div.pack > h1:first-child.user {
 	background-color:		#ff7f00;
 }
