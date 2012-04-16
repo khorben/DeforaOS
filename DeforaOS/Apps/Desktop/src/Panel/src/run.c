@@ -389,6 +389,7 @@ static gboolean _execute_timeout(gpointer data)
 {
 	Run * run = data;
 
+	run->source = 0;
 	_execute_save_config(run);
 	gtk_main_quit();
 	return FALSE;
