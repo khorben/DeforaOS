@@ -148,9 +148,9 @@ class BasicTemplate extends Template
 		$title = $this->title;
 
 		$p = new Page;
-		$p->appendElement($this->getTitle($engine));
+		$p->append($this->getTitle($engine));
 		$main = $p->append('vbox', array('id' => 'main'));
-		$main->appendElement($this->getMenu($engine));
+		$main->append($this->getMenu($engine));
 		$content = $main->append('vbox', array('id' => 'content'));
 		if($page === FALSE && $this->module !== FALSE)
 		{
@@ -162,12 +162,12 @@ class BasicTemplate extends Template
 		{
 			if(($t = $page->getProperty('title')) !== FALSE)
 				$title = $t;
-			$content->appendElement($page);
+			$content->append($page);
 		}
 		else if(($element = $this->getDefault()) !== FALSE)
-			$content->appendElement($element);
+			$content->append($element);
 		$p->setProperty('title', $title);
-		$p->appendElement($this->getFooter($engine));
+		$p->append($this->getFooter($engine));
 		return $p;
 	}
 }

@@ -258,9 +258,9 @@ class UserModule extends Module
 				'type' => 'submit', 'name' => 'action',
 				'value' => 'enable'));
 		$no = new PageElement('image', array('stock' => 'no',
-				'size' => 16));
+				'size' => 16, 'title' => _('Disabled')));
 		$yes = new PageElement('image', array('stock' => 'yes',
-				'size' => 16));
+				'size' => 16, 'title' => _('Enabled')));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
@@ -370,7 +370,7 @@ class UserModule extends Module
 		$actions = $this->actions($engine, $request);
 		if(is_array($actions))
 			foreach($actions as $a)
-				$view->appendElement($a);
+				$view->append($a);
 		return $page;
 	}
 
@@ -412,7 +412,7 @@ class UserModule extends Module
 		$view = $page->append('iconview');
 		//FIXME request content from all modules
 		if($link !== FALSE)
-			$page->appendElement($link);
+			$page->append($link);
 		return $page;
 	}
 
@@ -450,7 +450,7 @@ class UserModule extends Module
 						'text' => 'You are already logged in'));
 		$form = $this->form_login($engine,
 				$request->getParameter('username'));
-		$page->appendElement($form);
+		$page->append($form);
 		if($this->can_reset())
 		{
 			$r = new Request($engine, $this->name, 'reset');
@@ -616,7 +616,7 @@ class UserModule extends Module
 		$username = $request->getParameter('username');
 		$email = $request->getParameter('email');
 		$form = $this->form_register($engine, $username, $email);
-		$page->appendElement($form);
+		$page->append($form);
 		return $page;
 	}
 
@@ -691,7 +691,7 @@ Thank you for registering!")));
 		$username = $request->getParameter('username');
 		$email = $request->getParameter('email');
 		$form = $this->form_reset($engine, $username, $email);
-		$page->appendElement($form);
+		$page->append($form);
 		return $page;
 	}
 
@@ -853,7 +853,7 @@ Thank you for registering!")));
 				'stock' => 'user', 'request' => $r,
 				'text' => _('Update')));
 		if($button !== FALSE)
-			$vbox->appendElement($button);
+			$vbox->append($button);
 		if($id === FALSE)
 		{
 			$r = new Request($engine, $this->name);

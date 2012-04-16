@@ -36,11 +36,11 @@ class DeforaOSTemplate extends BasicTemplate
 				'user' => array($cred->getUserId()
 					? 'logout' : 'login'),
 				'wiki');
-		$vbox->appendElement(parent::getMenu($engine, $entries));
+		$vbox->append(parent::getMenu($engine, $entries));
 		$request = new Request($engine, 'search', 'widget');
-		$vbox->appendElement($engine->process($request));
+		$vbox->append($engine->process($request));
 		$request = new Request($engine, 'user', 'widget');
-		$vbox->appendElement($engine->process($request));
+		$vbox->append($engine->process($request));
 		return $vbox;
 	}
 

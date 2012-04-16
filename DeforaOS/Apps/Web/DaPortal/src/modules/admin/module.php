@@ -103,9 +103,9 @@ class AdminModule extends Module
 				'type' => 'submit', 'name' => 'action',
 				'value' => 'enable'));
 		$no = new PageElement('image', array('stock' => 'no',
-			'size' => 16));
+			'size' => 16, 'title' => _('Disabled')));
 		$yes = new PageElement('image', array('stock' => 'yes',
-			'size' => 16));
+			'size' => 16, 'title' => _('Enabled')));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
@@ -158,7 +158,7 @@ class AdminModule extends Module
 					'text' => $text));
 			$view = $vbox->append('iconview');
 			foreach($rows as $r)
-				$view->appendElement($r);
+				$view->append($r);
 		}
 		return $page;
 	}

@@ -419,7 +419,7 @@ class DownloadModule extends ContentModule
 		$hbox = $page->append('hbox');
 		$hbox->append('label', array('text' => $label._(': ')));
 		if($field instanceof PageElement)
-			$hbox->appendElement($field);
+			$hbox->append($field);
 		else
 			$hbox->append('label', array('text' => $field));
 	}
