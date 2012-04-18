@@ -1002,6 +1002,7 @@ static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
 	{
 		case ScreenSaverOff:
 			_locker_action_deactivate(locker, 0);
+			_locker_action_enable(locker);
 			break;
 		case ScreenSaverOn:
 			if(locker->enabled)
