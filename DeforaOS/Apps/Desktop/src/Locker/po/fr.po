@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-16 15:26+0200\n"
+"POT-Creation-Date: 2012-04-19 01:03+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,58 +15,62 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:400
+#: ../src/locker.c:406
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:470
+#: ../src/locker.c:476
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:483
+#: ../src/locker.c:489
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:487
+#: ../src/locker.c:493
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:491
+#: ../src/locker.c:497
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:530
+#: ../src/locker.c:536
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:541
+#: ../src/locker.c:547
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:679
+#: ../src/locker.c:685
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:807 ../src/locker.c:811
+#: ../src/locker.c:907 ../src/locker.c:911
 msgid "Error"
 msgstr "Erreur"
 
 #: ../src/lockerctl.c:46
 msgid ""
-"Usage: lockerctl [-S|-l|-s|-u|-z]\n"
+"Usage: lockerctl [-D|-E|-S|-l|-s|-u|-z]\n"
+"  -D\tTemporarily disable the screensaver\n"
+"  -E\tEnable the screensaver again\n"
 "  -S\tDisplay or change settings\n"
 "  -l\tLock the screen\n"
-"  -s\tEnable the screen saver\n"
+"  -s\tActivate the screen saver\n"
 "  -u\tUnlock the screen\n"
 "  -z\tSuspend the device\n"
 msgstr ""
 
-#: ../src/lockerctl.c:53
+#: ../src/lockerctl.c:55
 msgid ""
-"Usage: lockerctl [-S|-l|-s|-u|-z]\n"
+"Usage: lockerctl [-D|-E|-S|-l|-s|-u|-z]\n"
+"  -D\tTemporarily disable the screensaver\n"
+"  -E\tEnable the screensaver again\n"
 "  -S\tDisplay or change settings\n"
 "  -l\tLock the screen\n"
-"  -s\tEnable the screen saver\n"
+"  -s\tActivate the screen saver\n"
 "  -u\tUnlock the screen\n"
 "  -z\tSuspend the computer\n"
 msgstr ""
@@ -78,6 +82,10 @@ msgid ""
 "  -p\tAuthentication plug-in to load\n"
 "  -s\tSuspend automatically when locked\n"
 msgstr ""
+"Usage: locker [-d demo][-p greffon][-s]\n"
+"  -d\tGreffon d'animation à charger\n"
+"  -p\tGreffon d'authentification à charger\n"
+"  -s\tSuspendre automatiquement lors du verrouillage\n"
 
 #: ../src/auth/password.c:109
 msgid "This screen is locked by"
