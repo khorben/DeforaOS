@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - re-implement recursive copies */
 
 
 
@@ -214,11 +216,13 @@ static void _copy_refresh(Copy * copy)
 
 static void _copy_on_closex(void)
 {
+	/* FIXME does not work anymore */
 	gtk_main_quit();
 }
 
 static void _copy_on_cancel(void)
 {
+	/* FIXME does not work anymore */
 	gtk_main_quit();
 }
 
@@ -260,7 +264,7 @@ static gboolean _copy_idle_first(gpointer data)
 }
 
 /* copy_single
- * XXX TOCTOU all over the place (*stat) but seem impossible to avoid */
+ * XXX TOCTOU all over the place (*stat) but seems impossible to avoid */
 static int _single_dir(Copy * copy, char const * src, char const * dst);
 static int _single_fifo(Copy * copy, char const * dst);
 static int _single_symlink(Copy * copy, char const * src, char const * dst);
@@ -294,7 +298,7 @@ static int _copy_single(Copy * copy, char const * src, char const * dst)
 	{
 		if(st.st_dev == st2.st_dev && st.st_ino == st2.st_ino)
 		{
-			fprintf(stderr, "%s: %s: \"%s\"%s\n", "cp", dst, src,
+			fprintf(stderr, "%s: %s: \"%s\"%s\n", "copy", dst, src,
 					" is identical (not copied)");
 			return 0;
 		}
