@@ -1590,8 +1590,9 @@ static char * _location_real_path(char const * path);
 static int _location_directory(Browser * browser, char const * path, DIR * dir,
 		struct stat * st);
 
-void browser_set_location(Browser * browser, char const * path)
+int browser_set_location(Browser * browser, char const * path)
 {
+	int ret = 0;
 	char * realpath = NULL;
 	DIR * dir;
 	struct stat st;
@@ -1600,7 +1601,7 @@ void browser_set_location(Browser * browser, char const * path)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
 #endif
 	if((realpath = _location_real_path(path)) == NULL)
-		return;
+		return -1;
 	/* XXX check browser_cnt to disallow filenames at startup */
 	if(browser_cnt && g_file_test(realpath, G_FILE_TEST_IS_REGULAR))
 	{
@@ -1618,8 +1619,9 @@ void browser_set_location(Browser * browser, char const * path)
 	}
 	else
 		/* XXX errno may not be set */
-		browser_error(browser, strerror(errno), 1);
+		ret = -browser_error(browser, strerror(errno), 1);
 	free(realpath);
+	return ret;
 }
 
 static char * _location_real_path(char const * path)
@@ -1631,7 +1633,10 @@ static char * _location_real_path(char const * path)
 	if(path == NULL)
 		return NULL;
 	if(path[0] == '/')
-		p = strdup(path);
+	{
+		if((p = strdup(path)) == NULL)
+			return NULL;
+	}
 	else
 	{
 		cur = g_get_current_dir();
@@ -1640,7 +1645,13 @@ static char * _location_real_path(char const * path)
 	}
 	/* trim slashes in the end */
 	for(i = strlen(p); i > 1 && p[--i] == '/'; p[i] = '\0');
-	/* FIXME replace "/./" and "/"+ by "/" */
+	/* replace "/./" by "/" */
+	for(i = strlen(p); (cur = strstr(p, "/./")) != NULL; i = strlen(p))
+		memmove(cur, &cur[2], (p + i) - (cur + 1));
+	/* replace "//" by "/" */
+	for(i = strlen(p); (cur = strstr(p, "//")) != NULL; i = strlen(p))
+		memmove(cur, &cur[1], (p + i) - (cur));
+	/* FIXME remove "/.$" */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") => \"%s\"\n", __func__, path, p);
 #endif

@@ -80,7 +80,7 @@ static void _properties_delete(Properties * properties);
 
 /* accessors */
 static Mime * _properties_get_mime(Properties * properties);
-static void _properties_set_location(Properties * properties,
+static int _properties_set_location(Properties * properties,
 		char const * filename);
 
 /* useful */
@@ -177,11 +177,15 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 			G_CALLBACK(_properties_on_close), properties);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_widget_show_all(bbox);
-	/* FIXME check errors */
-	_new_load(properties);
-	if(filename != NULL)
-		_properties_set_location(properties, filename);
-	gtk_widget_show(properties->window);
+	if(_new_load(properties) != 0)
+		_properties_error(properties, error_get(), -1);
+	else if(filename != NULL)
+	{
+		if(_properties_set_location(properties, filename) != 0)
+			_properties_error(properties, error_get(), -1);
+		else
+			gtk_widget_show(properties->window);
+	}
 	return properties;
 }
 
@@ -255,18 +259,16 @@ static Mime * _properties_get_mime(Properties * properties)
 
 
 /* properties_set_location */
-static void _properties_set_location(Properties * properties,
+static int _properties_set_location(Properties * properties,
 		char const * filename)
 {
 	char * p;
 
 	if((p = strdup(filename)) == NULL)
-	{
-		_properties_error(properties, filename, 1);
-		return;
-	}
+		return -error_set_code(1, "%s: %s", filename, strerror(errno));
 	free(properties->filename);
 	properties->filename = p;
+	return 0;
 }
 
 
@@ -323,17 +325,17 @@ static int _properties_load(Properties * properties, char const * name)
 	GtkWidget * widget;
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", name)) == NULL)
-		return -_properties_error(properties, error_get(), 1);
+		return -1;
 	if((bpd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
-		return -_properties_error(properties, error_get(), 1);
+		return -1;
 	}
 	if(bpd->init == NULL || bpd->destroy == NULL || bpd->get_widget == NULL
 			|| (bp = bpd->init(&properties->helper)) == NULL)
 	{
 		plugin_delete(p);
-		return -_properties_error(properties, error_get(), 1);
+		return -1;
 	}
 	widget = bpd->get_widget(bp);
 	bpd->refresh(bp, properties->filename);

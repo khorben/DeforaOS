@@ -35,7 +35,7 @@ typedef struct _BrowserPluginHelper
 	Browser * browser;
 	int (*error)(Browser * browser, char const * message, int ret);
 	Mime * (*get_mime)(Browser * browser);
-	void (*set_location)(Browser * browser, char const * path);
+	int (*set_location)(Browser * browser, char const * path);
 } BrowserPluginHelper;
 
 typedef const struct _BrowserPluginDefinition
