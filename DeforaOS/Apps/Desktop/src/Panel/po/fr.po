@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-07 03:49+0100\n"
+"POT-Creation-Date: 2012-04-19 15:32+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:182 ../src/panel.c:488 ../src/panel.c:493
+#: ../src/applets/battery.c:182 ../src/panel.c:497 ../src/panel.c:502
 #: ../src/run.c:214 ../src/run.c:220
 msgid "Error"
 msgstr "Erreur"
@@ -91,23 +91,24 @@ msgstr "GSM actif"
 msgid "Show keyboard"
 msgstr "Afficher le clavier"
 
-#: ../src/applets/keyboard.c:279 ../src/applets/lock.c:113 ../src/run.c:108
+#: ../src/applets/keyboard.c:278 ../src/applets/lock.c:113
+#: ../src/applets/mixer.c:279 ../src/run.c:108
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/applets/keyboard.c:290
+#: ../src/applets/keyboard.c:289 ../src/applets/mixer.c:290
 msgid "Width:"
 msgstr "Largeur :"
 
-#: ../src/applets/keyboard.c:301
+#: ../src/applets/keyboard.c:300 ../src/applets/mixer.c:301
 msgid "Height:"
 msgstr "Hauteur :"
 
-#: ../src/applets/keyboard.c:312
+#: ../src/applets/keyboard.c:311 ../src/applets/mixer.c:312
 msgid "Keep ratio"
 msgstr "Respecter les proportions"
 
-#: ../src/applets/lock.c:81 ../src/applets/main.c:320
+#: ../src/applets/lock.c:81 ../src/applets/main.c:324
 msgid "Lock screen"
 msgstr "Verrouiller l'écran"
 
@@ -115,32 +116,36 @@ msgstr "Verrouiller l'écran"
 msgid "logout: Logging out is disabled"
 msgstr "logout: Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:79 ../src/panel.c:1418 ../src/panel.c:1425
-#: ../src/panel.c:1434
+#: ../src/applets/logout.c:79 ../src/panel.c:1436 ../src/panel.c:1443
+#: ../src/panel.c:1452
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: ../src/applets/main.c:133
+#: ../src/applets/main.c:136
 msgid "Main menu"
 msgstr "Menu principal"
 
-#: ../src/applets/main.c:302
+#: ../src/applets/main.c:305
 msgid "Applications"
 msgstr "Programmes"
 
-#: ../src/applets/main.c:308
+#: ../src/applets/main.c:311
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:326
+#: ../src/applets/main.c:330
+msgid "Rotate"
+msgstr "Réorienter"
+
+#: ../src/applets/main.c:338
 msgid "Logout..."
 msgstr "Déconnecter..."
 
-#: ../src/applets/main.c:333
+#: ../src/applets/main.c:346
 msgid "Suspend"
 msgstr "Suspendre"
 
-#: ../src/applets/main.c:338
+#: ../src/applets/main.c:352
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
@@ -151,6 +156,14 @@ msgstr "Mémoire :"
 #: ../src/applets/memory.c:103
 msgid "memory: Unsupported platform"
 msgstr "memory: Plate-forme non supportée"
+
+#: ../src/applets/mixer.c:124
+msgid "Show mixer"
+msgstr "Afficher le mixer"
+
+#: ../src/applets/rotate.c:72
+msgid "Rotate the screen"
+msgstr "Réorienter l'écran"
 
 #: ../src/applets/swap.c:88
 msgid "Swap:"
@@ -218,59 +231,59 @@ msgstr ""
 "  -s\tIcônes de la taille d'une petite barre d'outils\n"
 "  -x\tIcônes de la taille de menus\n"
 
-#: ../src/panel.c:114
+#: ../src/panel.c:118
 msgid "Large"
 msgstr "Grande"
 
-#: ../src/panel.c:116
+#: ../src/panel.c:120
 msgid "Small"
 msgstr "Petite"
 
-#: ../src/panel.c:118
+#: ../src/panel.c:122
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:611
+#: ../src/panel.c:620
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:625
+#: ../src/panel.c:634
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:629
+#: ../src/panel.c:638
 msgid "Applets"
 msgstr "Greffons"
 
-#: ../src/panel.c:658
+#: ../src/panel.c:667
 msgid "Applets:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:738
+#: ../src/panel.c:747
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:744 ../src/panel.c:748 ../src/panel.c:779 ../src/panel.c:783
+#: ../src/panel.c:753 ../src/panel.c:757 ../src/panel.c:788 ../src/panel.c:792
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:773
+#: ../src/panel.c:782
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:880
+#: ../src/panel.c:889
 msgid "Accept focus"
 msgstr "Autoriser le focus"
 
-#: ../src/panel.c:884
+#: ../src/panel.c:893
 msgid "Keep above other windows"
 msgstr "Conserver au dessus des fenêtres"
 
-#: ../src/panel.c:1357
+#: ../src/panel.c:1366
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1404
+#: ../src/panel.c:1422
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -281,7 +294,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1520
+#: ../src/panel.c:1552
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -292,7 +305,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1525
+#: ../src/panel.c:1557
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -303,11 +316,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1539 ../src/panel.c:1546 ../src/panel.c:1555
+#: ../src/panel.c:1571 ../src/panel.c:1578 ../src/panel.c:1587
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1545
+#: ../src/panel.c:1577
 msgid "Restart"
 msgstr "Redémarrer"
 
@@ -355,7 +368,7 @@ msgstr "Commande non trouvée"
 msgid "Permission denied"
 msgstr "Permissions insuffisantes"
 
-#: ../src/run.c:416
+#: ../src/run.c:417
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
