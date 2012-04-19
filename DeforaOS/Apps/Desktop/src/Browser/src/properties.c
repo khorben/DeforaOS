@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,6 +88,10 @@ static int _properties_error(Properties * properties, char const * message,
 		int ret);
 static int _properties_load(Properties * properties, char const * name);
 
+/* helpers */
+static int _properties_helper_set_location(Properties * properties,
+		char const * filename);
+
 /* callbacks */
 static void _properties_on_close(gpointer data);
 static gboolean _properties_on_closex(gpointer data);
@@ -139,7 +143,7 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 	properties->helper.browser = properties;
 	properties->helper.error = _properties_error;
 	properties->helper.get_mime = _properties_get_mime;
-	properties->helper.set_location = _properties_set_location;
+	properties->helper.set_location = _properties_helper_set_location;
 	properties->window = NULL;
 	if(properties->filename == NULL)
 	{
@@ -358,6 +362,18 @@ static int _properties_load(Properties * properties, char const * name)
 	if(strcmp(name, "properties") == 0)
 		gtk_notebook_set_current_page(GTK_NOTEBOOK(
 					properties->notebook), -1);
+	return 0;
+}
+
+
+/* helpers */
+static int _properties_helper_set_location(Properties * properties,
+		char const * filename)
+{
+	int res;
+
+	if((res = _properties_set_location(properties, filename)) != 0)
+		return -_properties_error(properties, error_get(), 1);
 	return 0;
 }
 
