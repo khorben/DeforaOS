@@ -154,7 +154,7 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 	g_free(p);
 	gtk_window_set_default_size(GTK_WINDOW(properties->window), 300, 400);
 	gtk_window_set_title(GTK_WINDOW(properties->window), buf);
-	g_signal_connect_swapped(G_OBJECT(properties->window), "delete-event",
+	g_signal_connect_swapped(properties->window, "delete-event",
 			G_CALLBACK(_properties_on_closex), properties);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(properties->window));
@@ -173,8 +173,8 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 	bbox = GTK_DIALOG(properties->window)->action_area;
 #endif
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_properties_on_close), properties);
+	g_signal_connect_swapped(widget, "clicked",
+			G_CALLBACK(_properties_on_close), properties);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_widget_show_all(bbox);
 	/* FIXME check errors */
@@ -293,9 +293,8 @@ static int _properties_error(Properties * properties, char const * message,
 	if(properties != NULL && properties->window != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 					properties->window));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				_error_response), (ret != 0)
-			? &_properties_cnt : NULL);
+	g_signal_connect(dialog, "response", G_CALLBACK(_error_response),
+			(ret < 0) ? &_properties_cnt : NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }
