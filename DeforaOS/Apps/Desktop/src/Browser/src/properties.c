@@ -187,12 +187,12 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 
 static int _new_load(Properties * properties)
 {
-	int ret = 0;
 	Config * config;
 	char const * plugins = NULL;
 	char * p;
 	char * q;
 	size_t i;
+	int cnt = 0;
 
 	p = _common_config_filename(BROWSER_CONFIG_FILE);
 	if((config = config_new()) != NULL && config_load(config, p) == 0
@@ -207,13 +207,15 @@ static int _new_load(Properties * properties)
 		{
 			if(q[i] == '\0')
 			{
-				ret |= _properties_load(properties, q);
+				if(_properties_load(properties, q) == 0)
+					cnt++;
 				break;
 			}
 			if(q[i++] != ',')
 				continue;
 			q[i - 1] = '\0';
-			ret |= _properties_load(properties, q);
+			if(_properties_load(properties, q) == 0)
+				cnt++;
 			q += i;
 			i = 0;
 		}
@@ -221,12 +223,15 @@ static int _new_load(Properties * properties)
 	}
 	else
 	{
-		ret |= _properties_load(properties, "properties");
-		ret |= _properties_load(properties, "preview");
+		if(_properties_load(properties, "properties") == 0)
+			cnt++;
+		if(_properties_load(properties, "preview") == 0)
+			cnt++;
 	}
 	if(config != NULL)
 		config_delete(config);
-	return ret;
+	/* consider ourselves successful if at least one plug-in was loaded */
+	return (cnt > 0) ? 0 : -1;
 }
 
 
@@ -257,7 +262,7 @@ static void _properties_set_location(Properties * properties,
 
 	if((p = strdup(filename)) == NULL)
 	{
-		_properties_error(NULL, filename, 1);
+		_properties_error(properties, filename, 1);
 		return;
 	}
 	free(properties->filename);
@@ -319,17 +324,17 @@ static int _properties_load(Properties * properties, char const * name)
 	GtkWidget * widget;
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", name)) == NULL)
-		return -_properties_error(NULL, error_get(), 1);
+		return -_properties_error(properties, error_get(), 1);
 	if((bpd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
-		return -_properties_error(NULL, error_get(), 1);
+		return -_properties_error(properties, error_get(), 1);
 	}
 	if(bpd->init == NULL || bpd->destroy == NULL || bpd->get_widget == NULL
 			|| (bp = bpd->init(&properties->helper)) == NULL)
 	{
 		plugin_delete(p);
-		return -_properties_error(NULL, error_get(), 1);
+		return -_properties_error(properties, error_get(), 1);
 	}
 	widget = bpd->get_widget(bp);
 	bpd->refresh(bp, properties->filename);
