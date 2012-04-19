@@ -14,6 +14,7 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
+ * - add a "read-only" and "extended" flag for applets
  * - get rid of the code duplication in the preferences callbacks */
 
 
