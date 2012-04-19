@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -336,6 +336,7 @@ static void _refresh_apply(GtkWidget * widget, gboolean sensitive);
 static int _properties_do_refresh(Properties * properties)
 {
 	struct stat st;
+	char * parent;
 	gboolean writable;
 
 	if(lstat(properties->filename, &st) != 0)
@@ -345,7 +346,8 @@ static int _properties_do_refresh(Properties * properties)
 	_refresh_type(properties, &st);
 	properties->uid = st.st_uid;
 	properties->gid = st.st_gid;
-	writable = (access(properties->filename, W_OK) == 0) ? TRUE : FALSE;
+	parent = dirname(properties->filename);
+	writable = (access(parent, W_OK) == 0) ? TRUE : FALSE;
 	_refresh_mode(&properties->mode[6], (st.st_mode & 0700) >> 6, writable);
 	_refresh_mode(&properties->mode[3], (st.st_mode & 0070) >> 3, writable);
 	_refresh_mode(&properties->mode[0], st.st_mode & 0007, writable);
