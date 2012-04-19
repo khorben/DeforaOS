@@ -368,6 +368,7 @@ static int _keyboard_spawn(Keyboard * keyboard, unsigned long * xid)
 		return -1;
 	}
 	g_child_watch_add(keyboard->pid, _keyboard_on_child, keyboard);
+	/* FIXME no longer use blocking I/O */
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
 		/* XXX not very explicit... */
 		return -helper->error(helper->panel, "read", 1);

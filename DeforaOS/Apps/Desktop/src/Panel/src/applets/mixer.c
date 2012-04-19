@@ -369,6 +369,7 @@ static int _mixer_spawn(Mixer * mixer, unsigned long * xid)
 		return -1;
 	}
 	g_child_watch_add(mixer->pid, _mixer_on_child, mixer);
+	/* FIXME no longer use blocking I/O */
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
 		/* XXX not very explicit... */
 		return -helper->error(helper->panel, "read", 1);
