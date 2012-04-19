@@ -1643,15 +1643,18 @@ static char * _location_real_path(char const * path)
 		p = g_build_filename(cur, path, NULL);
 		g_free(cur);
 	}
-	/* trim slashes in the end */
-	for(i = strlen(p); i > 1 && p[--i] == '/'; p[i] = '\0');
 	/* replace "/./" by "/" */
 	for(i = strlen(p); (cur = strstr(p, "/./")) != NULL; i = strlen(p))
 		memmove(cur, &cur[2], (p + i) - (cur + 1));
 	/* replace "//" by "/" */
 	for(i = strlen(p); (cur = strstr(p, "//")) != NULL; i = strlen(p))
 		memmove(cur, &cur[1], (p + i) - (cur));
-	/* FIXME remove "/.$" */
+	/* remove single dots at the end of the address */
+	i = strlen(p);
+	if(i >= 2 && strcmp(&p[i - 2], "/.") == 0)
+		p[i - 1] = '\0';
+	/* trim slashes in the end */
+	for(i = strlen(p); i > 1 && p[--i] == '/'; p[i] = '\0');
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") => \"%s\"\n", __func__, path, p);
 #endif
