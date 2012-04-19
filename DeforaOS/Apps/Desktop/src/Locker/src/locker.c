@@ -17,6 +17,12 @@ static char const _license[] =
 
 
 
+#if defined(__NetBSD__)
+# include <sys/param.h>
+# include <sys/sysctl.h>
+#elif defined(__linux__)
+# include <fcntl.h>
+#endif
 #include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -805,10 +811,44 @@ static int _locker_action_lock(Locker * locker)
 /* locker_action_suspend */
 static int _locker_action_suspend(Locker * locker)
 {
-	/* automatically activate the screen when suspending */
-	if(_locker_action_activate(locker) != 0)
+#if defined(__NetBSD__)
+	int sleep_state = 3;
+#else
+	int fd;
+	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
+		NULL };
+	GError * error = NULL;
+#endif
+
+	if(_locker_event(locker, LOCKER_EVENT_SUSPENDING) != 0)
 		return -1;
-	return _locker_event(locker, LOCKER_EVENT_SUSPENDING);
+	/* automatically lock the screen when suspending */
+	if(_locker_action_lock(locker) != 0)
+		return -1;
+	/* suspend immediately */
+#if defined(__NetBSD__)
+	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
+				sizeof(sleep_state)) != 0)
+	{
+		_locker_error(locker, strerror(errno), 1);
+		return -1;
+	}
+#else /* XXX this assumes Linux with sysfs or APM configured */
+	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
+	{
+		write(fd, "mem\n", 4);
+		close(fd);
+		return 0;
+	}
+	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
+				NULL, NULL, &error) != TRUE)
+	{
+		_locker_error(locker, error->message, 1);
+		g_error_free(error);
+		return -1;
+	}
+#endif
+	return 0;
 }
 
 

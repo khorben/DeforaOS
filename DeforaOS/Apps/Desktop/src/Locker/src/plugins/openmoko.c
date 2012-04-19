@@ -12,16 +12,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - detect when charging (using apm_read()?) */
 
 
 
-#include <stdio.h>
-#if defined(__NetBSD__)
-# include <sys/param.h>
-# include <sys/sysctl.h>
-#elif defined(__linux__)
+#if defined(__linux__)
 # include <linux/input.h>
 # include <sys/ioctl.h>
 # include <fcntl.h>
@@ -29,10 +23,8 @@
 # include <stdint.h>
 # include <string.h>
 # include <errno.h>
-#else
-# include <fcntl.h>
-# include <unistd.h>
 #endif
+#include <stdio.h>
 #include <System.h>
 #include <gtk/gtk.h>
 #include "Locker.h"
@@ -56,6 +48,7 @@ typedef struct _LockerPlugin
 /* plug-in */
 static Openmoko * _openmoko_init(LockerPluginHelper * helper);
 static void _openmoko_destroy(Openmoko * openmoko);
+static int _openmoko_event(Openmoko * openmoko, LockerEvent event);
 
 /* useful */
 #if defined(__linux__)
@@ -80,7 +73,7 @@ LockerPluginDefinition plugin =
 	NULL,
 	_openmoko_init,
 	_openmoko_destroy,
-	NULL
+	_openmoko_event
 };
 
 
@@ -133,6 +126,58 @@ static void _openmoko_destroy(Openmoko * openmoko)
 	}
 #endif
 	object_delete(openmoko);
+}
+
+
+/* openmoko_event */
+static int _event_suspending(Openmoko * openmoko);
+
+static int _openmoko_event(Openmoko * openmoko, LockerEvent event)
+{
+	switch(event)
+	{
+		case LOCKER_EVENT_SUSPENDING:
+			return _event_suspending(openmoko);
+		default:
+			break;
+	}
+	return 0;
+}
+
+static int _event_suspending(Openmoko * openmoko)
+{
+#if defined(__linux__)
+	LockerPluginHelper * helper = openmoko->helper;
+	int fd;
+	const char apm[] = "/proc/apm";
+	char buf[80];
+	ssize_t buf_cnt;
+	double d;
+	unsigned int u;
+	unsigned int charging = 0;
+	int i;
+
+	if((fd = open(apm, O_RDONLY)) < 0)
+	{
+		error_set("%s: %s", apm, strerror(errno));
+		helper->error(NULL, error_get(), 1);
+		return 0;
+	}
+	errno = ENODATA;
+	if((buf_cnt = read(fd, buf, sizeof(buf))) <= 0)
+	{
+		error_set("%s: %s", apm, strerror(errno));
+		close(fd);
+		return 0.0 / 0.0;
+	}
+	buf[--buf_cnt] = '\0';
+	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, &u, &charging,
+				&u, &u, &i, &i) != 8)
+		error_set("%s: %s", apm, strerror(errno));
+	close(fd);
+	return (charging != 0) ? -1 : 0;
+#endif
+	return 0;
 }
 
 
@@ -275,39 +320,8 @@ static void _dialog_on_suspend(gpointer data)
 {
 	Openmoko * openmoko = data;
 	LockerPluginHelper * helper = openmoko->helper;
-#if defined(__NetBSD__)
-	int sleep_state = 3;
-#else
-	int fd;
-	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
-		NULL };
-	GError * error = NULL;
-#endif
 
-#if defined(__NetBSD__)
-	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
-				sizeof(sleep_state)) != 0)
-	{
-		helper->error(helper->locker, "sysctl", 1);
-		return;
-	}
-#else
-	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
-	{
-		write(fd, "mem\n", 4);
-		close(fd);
-		return;
-	}
-	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
-				NULL, NULL, &error) != TRUE)
-	{
-		helper->error(helper->locker, error->message, 1);
-		g_error_free(error);
-		return;
-	}
-#endif
-	/* XXX may already be suspended */
-	helper->action(helper->locker, LOCKER_ACTION_LOCK);
+	helper->action(helper->locker, LOCKER_ACTION_SUSPEND);
 }
 #endif
 

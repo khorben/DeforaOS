@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-19 01:03+0200\n"
+"POT-Creation-Date: 2012-04-19 01:52+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,39 +15,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:406
+#: ../src/locker.c:412
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:476
+#: ../src/locker.c:482
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:489
+#: ../src/locker.c:495
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:493
+#: ../src/locker.c:499
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:497
+#: ../src/locker.c:503
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:536
+#: ../src/locker.c:542
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:547
+#: ../src/locker.c:553
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:685
+#: ../src/locker.c:691
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:907 ../src/locker.c:911
+#: ../src/locker.c:947 ../src/locker.c:951
 msgid "Error"
 msgstr "Erreur"
 
