@@ -448,10 +448,10 @@ void on_updir(gpointer data)
 void on_view_as(gpointer data)
 {
 	Browser * browser = data;
+	BrowserView view;
 
-	if(browser->iconview == NULL)
-		browser_set_view(browser, BV_ICONS);
-	else switch(browser->iconview_as)
+	view = browser_get_view(browser);
+	switch(view)
 	{
 		case BV_DETAILS:
 			browser_set_view(browser, BV_ICONS);

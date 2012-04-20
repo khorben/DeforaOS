@@ -887,6 +887,15 @@ char const * browser_get_location(Browser * browser)
 }
 
 
+/* browser_get_view */
+BrowserView browser_get_view(Browser * browser)
+{
+	if(browser->detailview != NULL)
+		return BV_DETAILS;
+	return browser->iconview_as;
+}
+
+
 /* browser_go_home */
 void browser_go_home(Browser * browser)
 {
@@ -1709,6 +1718,9 @@ static void _view_thumbnails(Browser * browser);
 
 void browser_set_view(Browser * browser, BrowserView view)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, view);
+#endif
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->iconview_as = view;
 	switch(view)
@@ -1876,6 +1888,9 @@ static void _view_icon_view(Browser * browser)
 	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
 #endif
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(browser->iconview != NULL)
 	{
 #if GTK_CHECK_VERSION(2, 8, 0)
