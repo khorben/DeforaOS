@@ -140,7 +140,7 @@ struct _Browser
 	GtkWidget * detailview;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GtkWidget * iconview;
-	BrowserView iconview_as;
+	BrowserView view;
 #endif
 	GtkListStore * store;
 	GtkWidget * statusbar;

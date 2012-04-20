@@ -472,8 +472,8 @@ Browser * browser_new(char const * directory)
 	browser->detailview = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->iconview = NULL;
-	browser->iconview_as = browser->prefs.default_view;
-	browser_set_view(browser, browser->iconview_as);
+	browser->view = browser->prefs.default_view;
+	browser_set_view(browser, browser->view);
 	if(browser->iconview != NULL)
 		gtk_widget_grab_focus(browser->iconview);
 #else
@@ -890,9 +890,7 @@ char const * browser_get_location(Browser * browser)
 /* browser_get_view */
 BrowserView browser_get_view(Browser * browser)
 {
-	if(browser->detailview != NULL)
-		return BV_DETAILS;
-	return browser->iconview_as;
+	return browser->view;
 }
 
 
@@ -1722,7 +1720,6 @@ void browser_set_view(Browser * browser, BrowserView view)
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, view);
 #endif
 #if GTK_CHECK_VERSION(2, 6, 0)
-	browser->iconview_as = view;
 	switch(view)
 	{
 		case BV_DETAILS:
@@ -1741,6 +1738,7 @@ void browser_set_view(Browser * browser, BrowserView view)
 #else
 	_view_details(browser);
 #endif
+	browser->view = view;
 }
 
 static void _view_details(Browser * browser)
@@ -1754,19 +1752,30 @@ static void _view_details(Browser * browser)
 	GList * p;
 #endif
 
-	if(browser->detailview != NULL)
-		return;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %u\n", __func__, browser->view);
+#endif
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser->view != BV_DETAILS)
 	{
 		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
 					browser->iconview));
-		gtk_widget_destroy(browser->iconview);
-		browser->iconview = NULL;
+		if(browser->iconview != NULL)
+			gtk_container_remove(GTK_CONTAINER(browser->scrolled),
+					browser->iconview);
+		if(browser->detailview != NULL)
+			gtk_container_add(GTK_CONTAINER(browser->scrolled),
+					browser->detailview);
 	}
 #endif
+	if(browser->detailview != NULL)
+	{
+		gtk_widget_show(browser->detailview);
+		return;
+	}
 	browser->detailview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
+	g_object_ref(browser->detailview);
 	view = GTK_TREE_VIEW(browser->detailview);
 	gtk_tree_view_set_rules_hint(view, browser->prefs.alternate_rows);
 	if((treesel = gtk_tree_view_get_selection(view)) != NULL)
@@ -1875,7 +1884,6 @@ static void _view_icons(Browser * browser)
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 #endif
-	gtk_widget_show(browser->iconview);
 }
 
 static void _view_icon_view(Browser * browser)
@@ -1889,27 +1897,33 @@ static void _view_icon_view(Browser * browser)
 #endif
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() %u\n", __func__, browser->view);
 #endif
-	if(browser->iconview != NULL)
-	{
-#if GTK_CHECK_VERSION(2, 8, 0)
-		gtk_cell_layout_clear(GTK_CELL_LAYOUT(browser->iconview));
-#endif
-		return;
-	}
-	if(browser->detailview != NULL)
+	if(browser->view == BV_DETAILS)
 	{
 		if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 							browser->detailview)))
 				!= NULL)
 			sel = gtk_tree_selection_get_selected_rows(treesel,
 					NULL);
-		gtk_widget_destroy(browser->detailview);
-		browser->detailview = NULL;
+		if(browser->detailview != NULL)
+			gtk_container_remove(GTK_CONTAINER(browser->scrolled),
+					browser->detailview);
+		if(browser->iconview != NULL)
+			gtk_container_add(GTK_CONTAINER(browser->scrolled),
+					browser->iconview);
+	}
+	if(browser->iconview != NULL)
+	{
+#if GTK_CHECK_VERSION(2, 8, 0)
+		gtk_cell_layout_clear(GTK_CELL_LAYOUT(browser->iconview));
+#endif
+		gtk_widget_show(browser->iconview);
+		return;
 	}
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
+	g_object_ref(browser->iconview);
 	/* this needs to be done now */
 	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
 			GTK_SELECTION_MULTIPLE);
@@ -1945,6 +1959,7 @@ static void _view_icon_view(Browser * browser)
 			G_CALLBACK(on_view_drag_data_received), browser);
 #endif
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
+	gtk_widget_show(browser->iconview);
 }
 
 static void _view_list(Browser * browser)
@@ -1984,7 +1999,6 @@ static void _view_list(Browser * browser)
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_HORIZONTAL);
 #endif
-	gtk_widget_show(browser->iconview);
 }
 
 static void _view_thumbnails(Browser * browser)
@@ -2026,7 +2040,6 @@ static void _view_thumbnails(Browser * browser)
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 #endif
-	gtk_widget_show(browser->iconview);
 }
 #endif
 
