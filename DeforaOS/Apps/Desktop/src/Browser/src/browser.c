@@ -663,6 +663,12 @@ void browser_delete(Browser * browser)
 	g_list_free(browser->history);
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);
+	if(browser->detailview != NULL)
+		g_object_unref(browser->detailview);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		g_object_unref(browser->iconview);
+#endif
 	g_object_unref(browser->store);
 	gtk_widget_destroy(browser->window);
 	free(browser);
