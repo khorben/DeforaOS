@@ -339,33 +339,33 @@ Browser * browser_new(char const * directory)
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward), FALSE);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	toolitem = gtk_menu_tool_button_new(NULL, _("View as..."));
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				on_view_as), browser);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(on_view_as),
+			browser);
 	menu = gtk_menu_new();
 	menuitem = gtk_image_menu_item_new_with_label(_("Details"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
 			gtk_image_new_from_icon_name("browser-view-details",
 				GTK_ICON_SIZE_MENU));
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_view_details), browser);
+	g_signal_connect_swapped(menuitem, "activate",
+			G_CALLBACK(on_view_details), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_with_label(_("Icons"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
 			gtk_image_new_from_icon_name("browser-view-icons",
 				GTK_ICON_SIZE_MENU));
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_view_icons), browser);
+	g_signal_connect_swapped(menuitem, "activate",
+			G_CALLBACK(on_view_icons), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_with_label(_("List"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
 			gtk_image_new_from_icon_name("browser-view-list",
 				GTK_ICON_SIZE_MENU));
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_view_list), browser);
+	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(on_view_list),
+			browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_menu_item_new_with_label(_("Thumbnails"));
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_view_thumbnails), browser);
+	g_signal_connect_swapped(menuitem, "activate",
+			G_CALLBACK(on_view_thumbnails), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
 	gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolitem), menu);
@@ -373,8 +373,8 @@ Browser * browser_new(char const * directory)
 #endif
 #ifdef EMBEDDED
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				on_edit_preferences), browser);
+	g_signal_connect_swapped(toolitem, "clicked",
+			G_CALLBACK(on_edit_preferences), browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
@@ -397,15 +397,15 @@ Browser * browser_new(char const * directory)
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
 	if(directory != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), directory);
-	g_signal_connect_swapped(G_OBJECT(widget), "activate", G_CALLBACK(
-				on_path_activate), browser);
+	g_signal_connect_swapped(widget, "activate",
+			G_CALLBACK(on_path_activate), browser);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), browser->tb_path);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_JUMP_TO);
-	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				on_path_activate), browser);
+	g_signal_connect_swapped(toolitem, "clicked",
+			G_CALLBACK(on_path_activate), browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 #if GTK_CHECK_VERSION(2, 18, 0)
@@ -438,7 +438,7 @@ Browser * browser_new(char const * directory)
 			G_TYPE_POINTER);
 	browser->pl_combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				browser->pl_store));
-	g_signal_connect_swapped(G_OBJECT(browser->pl_combo), "changed",
+	g_signal_connect_swapped(browser->pl_combo, "changed",
 			G_CALLBACK(_browser_on_plugin_combo_change), browser);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->pl_combo),
@@ -716,7 +716,7 @@ void browser_about(Browser * browser)
 	desktop_about_dialog_set_version(browser->ab_window, VERSION);
 	desktop_about_dialog_set_website(browser->ab_window,
 			"http://www.defora.org/");
-	g_signal_connect_swapped(G_OBJECT(browser->ab_window), "delete-event",
+	g_signal_connect_swapped(browser->ab_window, "delete-event",
 			G_CALLBACK(_about_on_closex), browser);
 	gtk_widget_show(browser->ab_window);
 }
@@ -764,12 +764,12 @@ int browser_error(Browser * browser, char const * message, int ret)
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
 	{
-		g_signal_connect_swapped(G_OBJECT(dialog), "response",
+		g_signal_connect_swapped(dialog, "response",
 				G_CALLBACK(_error_response), browser);
 		ret = -ret;
 	}
 	else
-		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+		g_signal_connect(dialog, "response", G_CALLBACK(
 					gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
 #endif
@@ -1782,7 +1782,7 @@ static void _view_details(Browser * browser)
 			g_list_free(sel);
 		}
 #endif
-		g_signal_connect_swapped(G_OBJECT(treesel), "changed",
+		g_signal_connect_swapped(treesel, "changed",
 				G_CALLBACK(_browser_on_selection_changed),
 				browser);
 	}
@@ -1793,8 +1793,8 @@ static void _view_details(Browser * browser)
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, "ellipsize",
 			PANGO_ELLIPSIZE_END, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				on_filename_edited), browser);
+	g_signal_connect(renderer, "edited", G_CALLBACK(on_filename_edited),
+			browser);
 	_details_column_text(view, renderer, _("Filename"), BC_DISPLAY_NAME,
 			BC_DISPLAY_NAME);
 	renderer = gtk_cell_renderer_text_new();
@@ -1807,10 +1807,10 @@ static void _view_details(Browser * browser)
 	_details_column_text(view, NULL, _("MIME type"), BC_MIME_TYPE,
 			BC_MIME_TYPE);
 	gtk_tree_view_set_headers_visible(view, TRUE);
-	g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(
-				on_detail_default), browser);
-	g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(
-				on_view_press), browser);
+	g_signal_connect(view, "row-activated", G_CALLBACK(on_detail_default),
+			browser);
+	g_signal_connect(view, "button-press-event", G_CALLBACK(on_view_press),
+			browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled),
 			browser->detailview);
 	gtk_widget_show(browser->detailview);
@@ -1855,8 +1855,8 @@ static void _view_icons(Browser * browser)
 			"ellipsize", PANGO_ELLIPSIZE_END,
 			"width-chars", 16, "wrap-mode", PANGO_WRAP_WORD_CHAR,
 			"xalign", 0.5, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				on_filename_edited), browser);
+	g_signal_connect(renderer, "edited", G_CALLBACK(on_filename_edited),
+			browser);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BC_DISPLAY_NAME, NULL);
 #else
@@ -1910,11 +1910,11 @@ static void _view_icon_view(Browser * browser)
 	}
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
+	/* this needs to be done now */
 	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
-			GTK_SELECTION_MULTIPLE); /* needs to be done now */
-	g_signal_connect_swapped(G_OBJECT(browser->iconview),
-			"selection-changed", G_CALLBACK(
-				_browser_on_selection_changed), browser);
+			GTK_SELECTION_MULTIPLE);
+	g_signal_connect_swapped(browser->iconview, "selection-changed",
+			G_CALLBACK(_browser_on_selection_changed), browser);
 	if(sel != NULL)
 	{
 		for(p = sel; p != NULL; p = p->next)
@@ -1932,16 +1932,16 @@ static void _view_icon_view(Browser * browser)
 			targets, targets_cnt,
 			GDK_ACTION_COPY | GDK_ACTION_MOVE);
 #endif
-	g_signal_connect(G_OBJECT(browser->iconview), "item-activated",
+	g_signal_connect(browser->iconview, "item-activated",
 			G_CALLBACK(on_icon_default), browser);
-	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
+	g_signal_connect(browser->iconview, "button-press-event",
 			G_CALLBACK(on_view_press), browser);
-	g_signal_connect(G_OBJECT(browser->iconview), "popup-menu",
+	g_signal_connect(browser->iconview, "popup-menu",
 			G_CALLBACK(on_view_popup), browser);
 #if GTK_CHECK_VERSION(2, 8, 0)
-	g_signal_connect(G_OBJECT(browser->iconview), "drag-data-get",
+	g_signal_connect(browser->iconview, "drag-data-get",
 			G_CALLBACK(on_view_drag_data_get), browser);
-	g_signal_connect(G_OBJECT(browser->iconview), "drag-data-received",
+	g_signal_connect(browser->iconview, "drag-data-received",
 			G_CALLBACK(on_view_drag_data_received), browser);
 #endif
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
@@ -2006,8 +2006,8 @@ static void _view_thumbnails(Browser * browser)
 			"ellipsize", PANGO_ELLIPSIZE_END,
 			"width-chars", 22, "wrap-mode", PANGO_WRAP_WORD_CHAR,
 			"xalign", 0.5, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				on_filename_edited), browser);
+	g_signal_connect(renderer, "edited", G_CALLBACK(on_filename_edited),
+			browser);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BC_DISPLAY_NAME, NULL);
 #else
@@ -2066,9 +2066,9 @@ void browser_show_preferences(Browser * browser)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-	g_signal_connect_swapped(G_OBJECT(browser->pr_window), "delete-event",
+	g_signal_connect_swapped(browser->pr_window, "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
-	g_signal_connect(G_OBJECT(browser->pr_window), "response",
+	g_signal_connect(browser->pr_window, "response",
 			G_CALLBACK(_preferences_on_response), browser);
 	/* notebook */
 	notebook = gtk_notebook_new();
@@ -2143,8 +2143,8 @@ void browser_show_preferences(Browser * browser)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	vbox = gtk_vbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EDIT);
-	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_mime_edit), browser);
+	g_signal_connect_swapped(widget, "clicked",
+			G_CALLBACK(_preferences_on_mime_edit), browser);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox,
