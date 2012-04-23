@@ -1,6 +1,6 @@
 PACKAGE	= makepasswd
 VERSION	= 0.5.0
-SUBDIRS	= src
+SUBDIRS	= doc src
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -21,6 +21,10 @@ dist:
 	$(RM) -r -- $(PACKAGE)-$(VERSION)
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/db2man.sh \
+		$(PACKAGE)-$(VERSION)/doc/makepasswd.1.xml \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/src/makepasswd.c \
 		$(PACKAGE)-$(VERSION)/src/md5c.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
@@ -29,6 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 

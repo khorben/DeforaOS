@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY username  "khorben">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
+	<!ENTITY title     "makepasswd User Manual">
+	<!ENTITY ucpackage "MAKEPASSWD">
+	<!ENTITY package   "makepasswd">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this
+				document under the terms of the GNU General Public License,
+				Version 3 as published by the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&ucpackage;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&package;</refname>
+		<refpurpose>generate (pseudo-)random passwords and hashes</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>&package;</command>
+			<arg choice="plain"><option>-c <replaceable>string</replaceable></option></arg>
+			<arg choice="plain"><option>-e <replaceable>algorithm</replaceable></option></arg>
+			<arg choice="plain"><option>-i <replaceable>iterations</replaceable></option></arg>
+			<arg choice="plain"><option>-l <replaceable>length</replaceable></option></arg>
+			<arg choice="plain"><option>-M <replaceable>maximum length</replaceable></option></arg>
+			<arg choice="plain"><option>-m <replaceable>minimum length</replaceable></option></arg>
+			<arg choice="plain"><option>-n <replaceable>count</replaceable></option></arg>
+			<arg choice="plain"><option>-p <replaceable>password</replaceable></option></arg>
+			<arg choice="plain"><option>-s <replaceable>salt</replaceable></option></arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&package;</command>
+			<arg choice="plain"><option>-E</option></arg>
+			<arg choice="plain"><option>-c <replaceable>string</replaceable></option></arg>
+			<arg choice="plain"><option>-e <replaceable>algorithm</replaceable></option></arg>
+			<arg choice="plain"><option>-i <replaceable>iterations</replaceable></option></arg>
+			<arg choice="plain"><option>-l <replaceable>length</replaceable></option></arg>
+			<arg choice="plain"><option>-M <replaceable>maximum length</replaceable></option></arg>
+			<arg choice="plain"><option>-m <replaceable>minimum length</replaceable></option></arg>
+			<arg choice="plain"><option>-n <replaceable>count</replaceable></option></arg>
+			<arg choice="plain"><option>-s <replaceable>salt</replaceable></option></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+	<refsect1 id="description">
+		<title>DESCRIPTION</title>
+		<para><command>&package;</command> is a program that generates pseudo-random
+			passwords of a desired length and, if so desired, along with their
+			corresponding hashes for a given encryption algorithm.</para>
+	</refsect1>
+	<refsect1 id="options">
+		<title>OPTIONS</title>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-E</option></term>
+				<listitem>
+					<para>In this operation mode, <command>&package;</command>
+						enumerates through all possible values for a password,
+						given the list of characters allowed and the length
+						specified.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-c <replaceable>string</replaceable></option></term>
+				<listitem>
+					<para>Sets the string of characters allowed within passwords, when
+						generating them randomly.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-e</option></term>
+				<listitem>
+					<para>Apply a specific hashing algorithm to the password
+						generated. The list of passwords currently supported
+						is:<itemizedlist>
+							<listitem><para>base64 (always supported)</para></listitem>
+							<listitem><para>blowfish (Blowfish)</para></listitem>
+							<listitem><para>des (single DES)</para></listitem>
+							<listitem><para>md5 (MD5, always supported)</para></listitem>
+							<listitem><para>sha1 (SHA-1)</para></listitem>
+							<listitem><para>sha256 (SHA-256)</para></listitem>
+							<listitem><para>shmd5 (shadow MD5)</para></listitem>
+							<listitem><para>none (always supported)</para></listitem>
+					</itemizedlist></para>
+					<para>For the algorithms not explicitly mentioned as always supported,
+						their availability depends on the implementation of the
+						<citerefentry> <refentrytitle>crypt</refentrytitle>
+							<manvolnum>3</manvolnum> </citerefentry> library on the system
+						where <command>&package;</command> was compiled.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-i</option></term>
+				<listitem>
+					<para>Force a number of iterations to be performed when hashing
+						passwords, for algorithms effectively supporting it. It otherwise
+						defaults to a random value, in a range considered reasonable for the
+						hashing algorithm selected.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-i</option></term>
+				<listitem>
+					<para>Force a number of iterations to be performed when hashing
+						passwords, for algorithms effectively supporting it. It otherwise
+						defaults to a random value, in a range considered reasonable for the
+						hashing algorithm selected.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-l</option></term>
+				<listitem>
+					<para>Force the passwords generated to be of a fixed length.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-M</option></term>
+				<listitem>
+					<para>Maximum length for the passwords generated.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-m</option></term>
+				<listitem>
+					<para>Minimum length for the passwords generated.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-n</option></term>
+				<listitem>
+					<para>Total number of passwords to generate. When not set, it defaults
+					to only one, except in enumeration mode where it processes the
+					complete range of possibilities until exhaustion.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-p</option></term>
+				<listitem>
+					<para>Force a given value for the password generated. This is useful
+						when generating hashes for pre-determined passwords.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-s</option></term>
+				<listitem>
+					<para>Force a given value when salting the resulting password hash.
+						This is only useful when selecting a hashing algorithm that
+						effectively uses hashes.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>BUGS</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/117/makepasswd"/>.</para>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>SEE ALSO</title>
+		<para><citerefentry>
+				<refentrytitle>login</refentrytitle>
+				<manvolnum>1</manvolnum>
+				</citerefentry>, <citerefentry>
+				<refentrytitle>passwd</refentrytitle>
+				<manvolnum>1</manvolnum>
+		</citerefentry></para>
+		<para>The programs are documented fully by <citetitle>The Rise and
+				Fall of a Fooish Bar</citetitle> available via the <citerefentry>
+				<refentrytitle>info</refentrytitle>
+				<manvolnum>1</manvolnum>
+		</citerefentry> system.</para>
+	</refsect1>
+</refentry>
