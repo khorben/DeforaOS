@@ -32,9 +32,9 @@ INSTALL="install -m 0644"
 MKDIR="mkdir -p"
 RM="rm -f"
 XSL="$PREFIX/share/xsl/docbook/manpages/docbook.xsl"
-[ ! -f "$XSL" ] && XSL="/usr/share/xsl/docbook/manpages/docbook.xsl"
 [ ! -f "$XSL" ] && XSL="/usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl"
 [ ! -f "$XSL" ] && XSL="/usr/pkg/share/xsl/docbook/manpages/docbook.xsl"
+[ ! -f "$XSL" ] && XSL="/usr/share/xsl/docbook/manpages/docbook.xsl"
 XSLTPROC="xsltproc"
 
 
@@ -85,8 +85,8 @@ fi
 
 [ -z "$DATADIR" ] && DATADIR="$PREFIX/share"
 [ -z "$MANDIR" ] && MANDIR="$DATADIR/man"
-[ -f "$PREFIX/share/xsl/docbook/manpages/docbook.xsl" ] &&
-XSL="$PREFIX/share/xsl/docbook/manpages/docbook.xsl"
+[ -f "$PREFIX/share/xsl/docbook/manpages/docbook.xsl" ] \
+		&& XSL="$PREFIX/share/xsl/docbook/manpages/docbook.xsl"
 
 while [ $# -gt 0 ]; do
 	target="$1"
@@ -109,7 +109,6 @@ while [ $# -gt 0 ]; do
 	fi
 
 	#install
-	echo "section: $section"
 	if [ "$install" -eq 1 ]; then
 		$DEBUG $MKDIR "$MANDIR/man$section"		|| exit 2
 		$DEBUG $INSTALL "$target" "$MANDIR/man$section/$target" \
