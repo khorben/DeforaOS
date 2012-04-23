@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - this is a full rewrite, needs review for regressions */
+ * - with "-E" default to the password set via "-p" for the first iteration */
 
 
 
@@ -691,7 +691,8 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: makepasswd [-cEeilMmnps]\n"
+	fputs("Usage: makepasswd [-ceilMmnps]\n"
+"Usage: makepasswd -E [-ceilMmns]\n"
 "  -c	String of allowed characters (A-Za-z0-9`~!@#$%^&*()-_=+)\n"
 "  -E	Enumerate all possible values\n"
 "  -e	Encryption algorithm (none,base64,blowfish,des,md5,sha1,sha256,shmd5)\n"
