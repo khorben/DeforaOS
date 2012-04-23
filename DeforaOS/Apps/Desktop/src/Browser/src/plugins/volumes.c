@@ -103,6 +103,7 @@ static Volumes * _volumes_init(BrowserPluginHelper * helper)
 	if((volumes = object_new(sizeof(*volumes))) == NULL)
 		return NULL;
 	volumes->helper = helper;
+	volumes->source = 0;
 	volumes->window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(volumes->window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -131,8 +132,6 @@ static Volumes * _volumes_init(BrowserPluginHelper * helper)
 				icons[i], width, GTK_ICON_LOOKUP_USE_BUILTIN,
 				NULL);
 	gtk_widget_show_all(volumes->window);
-	_volumes_on_timeout(volumes);
-	volumes->source = g_timeout_add(5000, _volumes_on_timeout, volumes);
 	return volumes;
 }
 
@@ -166,6 +165,16 @@ static void _volumes_refresh(Volumes * volumes, char const * path)
 	int i;
 #endif
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
+#endif
+	if(path == NULL)
+	{
+		if(volumes->source != 0)
+			g_source_remove(volumes->source);
+		volumes->source = 0;
+		return;
+	}
 	/* FIXME no longer clear the list every time */
 	gtk_list_store_clear(volumes->store);
 #ifdef __NetBSD__
@@ -177,6 +186,9 @@ static void _volumes_refresh(Volumes * volumes, char const * path)
 #else
 	_refresh_add(volumes, NULL, NULL, "/", NULL);
 #endif
+	if(volumes->source == 0)
+		volumes->source = g_timeout_add(1000, _volumes_on_timeout,
+				volumes);
 }
 
 static void _refresh_add(Volumes * volumes, char const * name,
@@ -228,9 +240,11 @@ static gboolean _volumes_on_timeout(gpointer data)
 {
 	Volumes * volumes = data;
 
-	volumes->source = 0;
-	_volumes_refresh(volumes, NULL);
-	return FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	_volumes_refresh(volumes, "/"); /* XXX */
+	return TRUE;
 }
 
 
