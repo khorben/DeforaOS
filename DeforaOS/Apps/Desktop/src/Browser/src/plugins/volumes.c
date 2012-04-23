@@ -66,7 +66,7 @@ static GtkWidget * _volumes_get_widget(Volumes * volumes);
 static void _volumes_refresh(Volumes * volumes, char const * path);
 
 /* callbacks */
-static gboolean _volumes_on_idle(gpointer data);
+static gboolean _volumes_on_timeout(gpointer data);
 static void _volumes_on_selection_changed(gpointer data);
 
 
@@ -131,7 +131,8 @@ static Volumes * _volumes_init(BrowserPluginHelper * helper)
 				icons[i], width, GTK_ICON_LOOKUP_USE_BUILTIN,
 				NULL);
 	gtk_widget_show_all(volumes->window);
-	volumes->source = g_idle_add(_volumes_on_idle, volumes);
+	_volumes_on_timeout(volumes);
+	volumes->source = g_timeout_add(5000, _volumes_on_timeout, volumes);
 	return volumes;
 }
 
@@ -222,8 +223,8 @@ static void _refresh_add(Volumes * volumes, char const * name,
 
 
 /* callbacks */
-/* volumes_on_idle */
-static gboolean _volumes_on_idle(gpointer data)
+/* volumes_on_timeout */
+static gboolean _volumes_on_timeout(gpointer data)
 {
 	Volumes * volumes = data;
 
