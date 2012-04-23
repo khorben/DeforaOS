@@ -126,6 +126,8 @@ static void _properties_refresh(Properties * properties, char const * path)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
 #endif
+	if(path == NULL)
+		return;
 	_properties_set_filename(properties, path);
 }
 
