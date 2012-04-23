@@ -1,5 +1,5 @@
 PACKAGE	= Browser
-VERSION	= 0.4.5
+VERSION	= 0.4.6
 SUBDIRS	= data include po src tools
 RM	?= rm -f
 LN	?= ln -f
