@@ -750,6 +750,8 @@ int main(int argc, char * argv[])
 			case 'm':
 				if((prefs.min = _parse_unsigned(optarg)) <= 0)
 					return _usage();
+				if(prefs.max < prefs.min)
+					prefs.max = prefs.min;
 				break;
 			case 'n':
 				if((prefs.count = _parse_unsigned(optarg)) <= 0)
