@@ -58,7 +58,7 @@ GtkIconTheme * desktop_get_theme(Desktop * desktop);
 
 void desktop_set_alignment(Desktop * desktop, DesktopAlignment alignment);
 void desktop_set_icons(Desktop * desktop, DesktopIcons icons);
-void desktop_set_layout(Desktop * desktop, DesktopLayout layout);
+int desktop_set_layout(Desktop * desktop, DesktopLayout layout);
 
 /* useful */
 int desktop_error(Desktop * desktop, char const * message, int ret);

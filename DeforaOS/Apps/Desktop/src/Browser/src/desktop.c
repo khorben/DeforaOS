@@ -933,7 +933,7 @@ static void _icons_set_homescreen(Desktop * desktop, gpointer data)
 
 
 /* desktop_set_layout */
-void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
+int desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 {
 	XRRScreenConfiguration * sc;
 	Rotation r;
@@ -959,9 +959,11 @@ void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 			r = (r != RR_Rotate_0) ? RR_Rotate_0 : RR_Rotate_90;
 			break;
 	}
+	gdk_error_trap_push();
 	XRRSetScreenConfig(GDK_DISPLAY_XDISPLAY(desktop->display), sc,
 			GDK_WINDOW_XWINDOW(desktop->root), size, r,
 			CurrentTime);
+	return gdk_error_trap_pop();
 }
 
 
