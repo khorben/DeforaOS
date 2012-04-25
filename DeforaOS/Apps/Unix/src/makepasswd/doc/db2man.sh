@@ -31,11 +31,8 @@ DEBUG="_debug"
 INSTALL="install -m 0644"
 MKDIR="mkdir -p"
 RM="rm -f"
-XSL="$PREFIX/share/xsl/docbook/manpages/docbook.xsl"
-[ ! -f "$XSL" ] && XSL="/usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl"
-[ ! -f "$XSL" ] && XSL="/usr/pkg/share/xsl/docbook/manpages/docbook.xsl"
-[ ! -f "$XSL" ] && XSL="/usr/share/xsl/docbook/manpages/docbook.xsl"
-XSLTPROC="xsltproc"
+XSL="http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl"
+XSLTPROC="xsltproc --nonet"
 
 
 #functions
@@ -85,8 +82,6 @@ fi
 
 [ -z "$DATADIR" ] && DATADIR="$PREFIX/share"
 [ -z "$MANDIR" ] && MANDIR="$DATADIR/man"
-[ -f "$PREFIX/share/xsl/docbook/manpages/docbook.xsl" ] \
-		&& XSL="$PREFIX/share/xsl/docbook/manpages/docbook.xsl"
 
 while [ $# -gt 0 ]; do
 	target="$1"
@@ -101,10 +96,10 @@ while [ $# -gt 0 ]; do
 	fi
 
 	#create
-	$XSLTPROC "$XSL" "$source"
+	$DEBUG $XSLTPROC -o "$target" "$XSL" "$source"
 	#XXX ignore errors
 	if [ $? -ne 0 ]; then
-		echo "Could not create the manual page for $target"
+		echo "$0: $target: Could not create manual page" 1>&2
 		install=0
 	fi
 
