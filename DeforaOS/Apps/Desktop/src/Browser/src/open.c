@@ -85,6 +85,7 @@ int main(int argc, char * argv[])
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
+	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "a:m:")) != -1)
 		switch(o)
 		{
