@@ -24,6 +24,14 @@
 					<email>&email;</email>
 				</address>
 			</author>
+			<author>
+				<firstname>Gabor Z.</firstname>
+				<surname>papp</surname>
+				<contrib>Testing.</contrib>
+				<address>
+					<email>gzp@papp.hu</email>
+				</address>
+			</author>
 		</authorgroup>
 		<copyright>
 			<year>2012</year>
@@ -194,10 +202,5 @@
 				<refentrytitle>passwd</refentrytitle>
 				<manvolnum>1</manvolnum>
 		</citerefentry></para>
-		<para>The programs are documented fully by <citetitle>The Rise and
-				Fall of a Fooish Bar</citetitle> available via the <citerefentry>
-				<refentrytitle>info</refentrytitle>
-				<manvolnum>1</manvolnum>
-		</citerefentry> system.</para>
 	</refsect1>
 </refentry>
