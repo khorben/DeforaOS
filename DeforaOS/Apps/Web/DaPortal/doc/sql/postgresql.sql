@@ -95,7 +95,7 @@ CREATE TABLE daportal_content (
 	timestamp TIMESTAMP NOT NULL DEFAULT now(),
 	module_id INTEGER REFERENCES daportal_module (module_id) ON DELETE RESTRICT,
 	user_id INTEGER REFERENCES daportal_user (user_id) ON DELETE RESTRICT,
-	group_id INTEGER REFERENCES daportal_group (group_id) DEFAULT '0' ON DELETE RESTRICT,
+	group_id INTEGER DEFAULT 0 REFERENCES daportal_group (group_id) ON DELETE RESTRICT,
 	title VARCHAR(255),
 	content TEXT,
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
