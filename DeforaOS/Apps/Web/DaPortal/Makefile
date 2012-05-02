@@ -48,6 +48,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/index.php \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/16x16.css \
+		$(PACKAGE)-$(VERSION)/data/icons/Tango/24x24.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/32x32.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/48x48.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/project.conf \
