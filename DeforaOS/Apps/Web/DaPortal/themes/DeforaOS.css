@@ -127,10 +127,11 @@ form.explorer .selected {
 	background-image:		url("DeforaOS-logo.png");
 	background-position:		top right;
 	background-repeat:		no-repeat;
-	height:				51px;
+	height:				83px;
 	margin-bottom:			16px;
 	margin-right:			30px;
 	margin-top:			16px;
+	min-width:			369px;
 }
 
 /* menu */
