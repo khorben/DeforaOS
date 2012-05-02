@@ -15,10 +15,15 @@
 
 
 
-#ifndef DESKTOP_MAILER_TRANSPORT_H
-# define DESKTOP_MAILER_TRANSPORT_H
+#ifndef DESKTOP_MAILER_HELPER_H
+# define DESKTOP_MAILER_HELPER_H
 
 
-/* FIXME implement */
+/* public */
+/* functions */
+char * mailer_helper_get_email(char const * header);
+char * mailer_helper_get_name(char const * header);
 
-#endif /* DESKTOP_MAILER_TRANSPORT_H */
+int mailer_helper_is_email(char const * email);
+
+#endif /* DESKTOP_MAILER_HELPER_H */

@@ -53,6 +53,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Mailer/account.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/folder.h \
+		$(PACKAGE)-$(VERSION)/include/Mailer/helper.c \
 		$(PACKAGE)-$(VERSION)/include/Mailer/mailer.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/message.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/plugin.h \
@@ -68,6 +69,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/compose.c \
 		$(PACKAGE)-$(VERSION)/src/folder.c \
+		$(PACKAGE)-$(VERSION)/src/helper.c \
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
 		$(PACKAGE)-$(VERSION)/src/message.c \
 		$(PACKAGE)-$(VERSION)/src/compose-main.c \

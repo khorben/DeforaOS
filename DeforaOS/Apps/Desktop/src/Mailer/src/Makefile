@@ -8,7 +8,7 @@ CPPFLAGSF= -I ../include
 CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGS	=
+LDFLAGS	= 
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -24,7 +24,7 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-libMailer_OBJS = account.o callbacks.o compose.o folder.o mailer.o message.o
+libMailer_OBJS = account.o callbacks.o compose.o folder.o helper.o mailer.o message.o
 libMailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 libMailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop` -lssl
 
@@ -62,6 +62,9 @@ compose.o: compose.c callbacks.h mailer.h compose.h ../config.h
 
 folder.o: folder.c mailer.h folder.h
 	$(CC) $(libMailer_CFLAGS) -c folder.c
+
+helper.o: helper.c ../include/Mailer/helper.h
+	$(CC) $(libMailer_CFLAGS) -c helper.c
 
 mailer.o: mailer.c account.h callbacks.h compose.h mailer.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(libMailer_CFLAGS) -c mailer.c
