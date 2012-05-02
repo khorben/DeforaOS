@@ -143,8 +143,16 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-open.png');
 }
 
+.stock24.pki {
+	background-image:	url('gnome-icon-theme/24x24/mimetypes/application-certificate.png');
+}
+
 .stock24.preferences {
 	background-image:	url('gnome-icon-theme/24x24/categories/gtk-preferences.png');
+}
+
+.stock24.probe {
+	background-image:	url('gnome-icon-theme/24x24/apps/utilities-system-monitor.png');
 }
 
 .stock24.read {
