@@ -191,6 +191,10 @@
 	background-image:	url('gnome-icon-theme/24x24/apps/user-info.png');
 }
 
+.stock24.warning {
+	background-image:	url('gnome-icon-theme/24x24/status/dialog-warning.png');
+}
+
 .stock24.webmail {
 	background-image:	url('gnome-icon-theme/24x24/actions/mail-send.png');
 }

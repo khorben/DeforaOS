@@ -191,6 +191,10 @@
 	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
 }
 
+.stock32.warning {
+	background-image:	url('gnome-icon-theme/32x32/status/dialog-warning.png');
+}
+
 .stock32.webmail {
 	background-image:	url('gnome-icon-theme/32x32/actions/mail-send.png');
 }
