@@ -88,7 +88,7 @@
 }
 
 .stock16.info {
-	background-image:	url('Tango/16x16/status/dialog-info.png');
+	background-image:	url('Tango/16x16/status/dialog-information.png');
 }
 
 .stock16.login {
@@ -121,6 +121,10 @@
 
 .stock16.preview {
 	background-image:	url('Tango/16x16/actions/stock_search.png');
+}
+
+.stock16.probe {
+	background-image:	url('Tango/16x16/apps/utilities-system-monitor.png');
 }
 
 .stock16.read {

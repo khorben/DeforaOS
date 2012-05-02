@@ -88,7 +88,7 @@
 }
 
 .stock24.info {
-	background-image:	url('Tango/24x24/status/dialog-info.png');
+	background-image:	url('Tango/24x24/status/dialog-information.png');
 }
 
 .stock24.login {
@@ -121,6 +121,10 @@
 
 .stock24.preview {
 	background-image:	url('Tango/24x24/actions/stock_search.png');
+}
+
+.stock24.probe {
+	background-image:	url('Tango/24x24/apps/utilities-system-monitor.png');
 }
 
 .stock24.read {
