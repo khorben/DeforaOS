@@ -76,7 +76,7 @@
 }
 
 .stock16.error {
-	background-image:	url('Tango/16x16/status/stock_dialog-error.png');
+	background-image:	url('Tango/16x16/status/dialog-error.png');
 }
 
 .stock16.forward {
@@ -88,7 +88,7 @@
 }
 
 .stock16.info {
-	background-image:	url('Tango/16x16/status/stock_dialog-info.png');
+	background-image:	url('Tango/16x16/status/dialog-info.png');
 }
 
 .stock16.login {
@@ -145,6 +145,10 @@
 
 .stock16.user {
 	background-image:	url('Tango/16x16/apps/system-users.png');
+}
+
+.stock16.warning {
+	background-image:	url('Tango/16x16/status/dialog-warning.png');
 }
 
 .stock16.webmail {

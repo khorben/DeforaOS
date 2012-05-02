@@ -76,7 +76,7 @@
 }
 
 .stock32.error {
-	background-image:	url('Tango/32x32/status/stock_dialog-error.png');
+	background-image:	url('Tango/32x32/status/dialog-error.png');
 }
 
 .stock32.forward {
@@ -88,7 +88,7 @@
 }
 
 .stock32.info {
-	background-image:	url('Tango/32x32/status/stock_dialog-info.png');
+	background-image:	url('Tango/32x32/status/dialog-info.png');
 }
 
 .stock32.login {
@@ -145,6 +145,10 @@
 
 .stock32.user {
 	background-image:	url('Tango/32x32/apps/system-users.png');
+}
+
+.stock32.warning {
+	background-image:	url('Tango/32x32/status/dialog-warning.png');
 }
 
 .stock32.webmail {

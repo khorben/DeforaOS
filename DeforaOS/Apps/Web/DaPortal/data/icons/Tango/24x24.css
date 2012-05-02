@@ -76,7 +76,7 @@
 }
 
 .stock24.error {
-	background-image:	url('Tango/24x24/status/stock_dialog-error.png');
+	background-image:	url('Tango/24x24/status/dialog-error.png');
 }
 
 .stock24.forward {
@@ -88,7 +88,7 @@
 }
 
 .stock24.info {
-	background-image:	url('Tango/24x24/status/stock_dialog-info.png');
+	background-image:	url('Tango/24x24/status/dialog-info.png');
 }
 
 .stock24.login {
@@ -145,6 +145,10 @@
 
 .stock24.user {
 	background-image:	url('Tango/24x24/apps/system-users.png');
+}
+
+.stock24.warning {
+	background-image:	url('Tango/24x24/status/dialog-warning.png');
 }
 
 .stock24.webmail {
