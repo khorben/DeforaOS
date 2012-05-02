@@ -18,8 +18,8 @@ install:
 	$(INSTALL) -m 0644 -- account.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/account.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
 	$(INSTALL) -m 0644 -- folder.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/folder.h
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 -- helper.c $(DESTDIR)$(INCLUDEDIR)/helper.c
+	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
+	$(INSTALL) -m 0644 -- helper.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/helper.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
 	$(INSTALL) -m 0644 -- mailer.h $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/mailer.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Mailer
@@ -32,7 +32,7 @@ install:
 uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/account.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/folder.h
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/helper.c
+	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/helper.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/mailer.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/message.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Mailer/plugin.h

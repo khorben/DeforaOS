@@ -53,7 +53,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Mailer/account.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/folder.h \
-		$(PACKAGE)-$(VERSION)/include/Mailer/helper.c \
+		$(PACKAGE)-$(VERSION)/include/Mailer/helper.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/mailer.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/message.h \
 		$(PACKAGE)-$(VERSION)/include/Mailer/plugin.h \
