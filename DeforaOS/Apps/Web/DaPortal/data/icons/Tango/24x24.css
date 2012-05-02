@@ -31,6 +31,14 @@
 	background-image:	url('Tango/24x24/actions/back.png');
 }
 
+.stock24.bookmark {
+	background-image:	url('Tango/24x24/actions/bookmark-new.png');
+}
+
+.stock24.browser {
+	background-image:	url('Tango/24x24/apps/file-manager.png');
+}
+
 .stock24.bug {
 	background-image:	url('Tango/24x24/categories/applications-development.png');
 }
@@ -57,6 +65,10 @@
 
 .stock24.download {
 	background-image:	url('Tango/24x24/apps/web-browser.png');
+}
+
+.stock24.email {
+	background-image:	url('Tango/24x24/actions/mail-message-new.png');
 }
 
 .stock24.enable {
@@ -91,8 +103,16 @@
 	background-image:	url('Tango/24x24/actions/gtk-new.png');
 }
 
+.stock24.news {
+	background-image:	url('Tango/24x24/apps/internet-news-reader.png');
+}
+
 .stock24.open {
 	background-image:	url('Tango/24x24/actions/gtk-open.png');
+}
+
+.stock24.pki {
+	background-image:	url('Tango/24x24/mimetypes/application-certificate.png');
 }
 
 .stock24.preferences {
@@ -125,4 +145,12 @@
 
 .stock24.user {
 	background-image:	url('Tango/24x24/apps/system-users.png');
+}
+
+.stock24.webmail {
+	background-image:	url('Tango/24x24/apps/email.png');
+}
+
+.stock24.wiki {
+	background-image:	url('Tango/24x24/apps/help-browser.png');
 }
