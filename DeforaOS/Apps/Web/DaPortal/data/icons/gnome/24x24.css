@@ -47,12 +47,20 @@
 	background-image:	url('gnome-icon-theme/24x24/places/folder.png');
 }
 
+.stock24.browser {
+	background-image:	url('gnome-icon-theme/24x24/apps/file-manager.png');
+}
+
 .stock24.bug {
 	background-image:	url('gnome-icon-theme/24x24/categories/applications-development.png');
 }
 
 .stock24.cancel {
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-cancel.png');
+}
+
+.stock24.comment {
+	background-image:	url('gnome-icon-theme/24x24/actions/mail-reply-all.png');
 }
 
 .stock24.connect {
@@ -73,6 +81,10 @@
 
 .stock24.download {
 	background-image:	url('gnome-icon-theme/24x24/places/folder-download.png');
+}
+
+.stock24.email {
+	background-image:	url('gnome-icon-theme/24x24/actions/mail-send.png');
 }
 
 .stock24.enable {
@@ -169,6 +181,10 @@
 
 .stock24.user {
 	background-image:	url('gnome-icon-theme/24x24/apps/user-info.png');
+}
+
+.stock24.webmail {
+	background-image:	url('gnome-icon-theme/24x24/actions/mail-send.png');
 }
 
 .stock24.wiki {

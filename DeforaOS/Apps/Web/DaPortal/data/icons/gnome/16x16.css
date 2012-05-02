@@ -47,12 +47,20 @@
 	background-image:	url('gnome-icon-theme/16x16/places/folder.png');
 }
 
+.stock16.browser {
+	background-image:	url('gnome-icon-theme/16x16/apps/file-manager.png');
+}
+
 .stock16.bug {
 	background-image:	url('gnome-icon-theme/16x16/categories/applications-development.png');
 }
 
 .stock16.cancel {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-cancel.png');
+}
+
+.stock16.comment {
+	background-image:	url('gnome-icon-theme/16x16/actions/mail-reply-all.png');
 }
 
 .stock16.connect {
@@ -73,6 +81,10 @@
 
 .stock16.download {
 	background-image:	url('gnome-icon-theme/16x16/places/folder-download.png');
+}
+
+.stock16.email {
+	background-image:	url('gnome-icon-theme/16x16/actions/mail-send.png');
 }
 
 .stock16.enable {
@@ -169,6 +181,10 @@
 
 .stock16.user {
 	background-image:	url('gnome-icon-theme/16x16/apps/user-info.png');
+}
+
+.stock16.webmail {
+	background-image:	url('gnome-icon-theme/16x16/actions/mail-send.png');
 }
 
 .stock16.wiki {
