@@ -27,6 +27,10 @@
 	background-image:	url('gnome-icon-theme/16x16/categories/gtk-preferences.png');
 }
 
+.stock16.article {
+	background-image:	url('gnome-icon-theme/16x16/mimetypes/html.png');
+}
+
 .stock16.back {
 	background-image:	url('gnome-icon-theme/16x16/actions/back.png');
 }
