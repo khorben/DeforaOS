@@ -98,7 +98,8 @@ class HtmlFormat extends FormatElements
 		//FIXME emit a (debugging) warning if the theme is not readable?
 		$this->renderTabs();
 		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
-					'href' => "themes/$theme.css"));
+					'href' => "themes/$theme.css",
+					'title' => $theme));
 	}
 
 	private function _render_title($e)
