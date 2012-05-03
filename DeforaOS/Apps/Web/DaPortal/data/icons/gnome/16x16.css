@@ -47,6 +47,10 @@
 	background-image:	url('gnome-icon-theme/16x16/places/user-bookmarks.png');
 }
 
+.stock16.bottom {
+	background-image:	url('gnome-icon-theme/16x16/actions/bottom.png');
+}
+
 .stock16.browse {
 	background-image:	url('gnome-icon-theme/16x16/places/folder.png');
 }
@@ -189,6 +193,10 @@
 
 .stock16.submit {
 	background-image:	url('gnome-icon-theme/16x16/actions/document-send.png');
+}
+
+.stock16.top {
+	background-image:	url('gnome-icon-theme/16x16/actions/top.png');
 }
 
 .stock16.updir {

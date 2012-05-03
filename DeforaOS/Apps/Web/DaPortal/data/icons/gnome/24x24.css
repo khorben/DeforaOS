@@ -47,6 +47,10 @@
 	background-image:	url('gnome-icon-theme/24x24/places/user-bookmarks.png');
 }
 
+.stock24.bottom {
+	background-image:	url('gnome-icon-theme/24x24/actions/bottom.png');
+}
+
 .stock24.browse {
 	background-image:	url('gnome-icon-theme/24x24/places/folder.png');
 }
@@ -189,6 +193,10 @@
 
 .stock24.submit {
 	background-image:	url('gnome-icon-theme/24x24/actions/document-send.png');
+}
+
+.stock24.top {
+	background-image:	url('gnome-icon-theme/24x24/actions/top.png');
 }
 
 .stock24.updir {
