@@ -185,9 +185,12 @@ h1#title {
 
 /* content */
 div#content {
+	margin-top:			16px;
+}
+
+div#content, div#content table {
 	background-color:		#ffffff;
 	color:				#000000;
-	margin-top:			16px;
 }
 
 div#content > div.pack {
