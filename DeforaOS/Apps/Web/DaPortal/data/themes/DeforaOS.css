@@ -125,14 +125,13 @@ div#top a:hover {
 
 /* menu */
 div#menu {
-	padding:			1ex;
+	padding:			0.5ex;
 }
 
 div#menu a {
 	background-color:		#000000;
 	color:				#ffffff;
-	padding-bottom:			0.5ex;
-	padding-top:			0.5ex;
+	padding:			0.5ex;
 }
 
 div#menu ul.menubar li {
@@ -154,7 +153,8 @@ div#menu ul.menubar li a:hover {
 
 div#menu ul.menubar li li li a {
 	border-width:			0;
-	padding-left:			1ex;
+	font-size:			80%;
+	padding-left:			2ex;
 }
 
 div#menu form div.entry input {
