@@ -71,6 +71,10 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/go-jump.png');
 }
 
+.stock24.content {
+	background-image:	url('gnome-icon-theme/24x24/apps/text-editor.png');
+}
+
 .stock24.delete {
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-delete.png');
 }

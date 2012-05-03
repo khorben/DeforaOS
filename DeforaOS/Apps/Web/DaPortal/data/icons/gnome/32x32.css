@@ -71,6 +71,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/go-jump.png');
 }
 
+.stock32.content {
+	background-image:	url('gnome-icon-theme/32x32/apps/text-editor.png');
+}
+
 .stock32.delete {
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-delete.png');
 }
