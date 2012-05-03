@@ -17,6 +17,7 @@
 
 /* stock icons */
 .stock16, .stock24, .stock32, .stock48 {
+	background-position:		0 0;
 	background-repeat:		no-repeat;
 }
 
@@ -30,25 +31,21 @@ a.button.stock16, button.stock16, input.stock16 {
 }
 
 h1.stock48 {
-	background-position:		0 0;
 	padding-left:			52px;
 	min-height:			48px;
 }
 
 h2.stock32 {
-	background-position:		0 0;
 	padding-left:			36px;
 	min-height:			32px;
 }
 
 h3.stock24 {
-	background-position:		0 0;
 	padding-left:			28px;
 	min-height:			24px;
 }
 
 h4.stock16 {
-	background-position:		0 0;
 	padding-left:			20px;
 	min-height:			16px;
 }
