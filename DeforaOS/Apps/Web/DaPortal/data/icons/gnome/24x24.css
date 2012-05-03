@@ -199,6 +199,10 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/top.png');
 }
 
+.stock24.translate {
+	background-image:	url('gnome-icon-theme/24x24/apps/config-language.png');
+}
+
 .stock24.updir {
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-go-up.png');
 }

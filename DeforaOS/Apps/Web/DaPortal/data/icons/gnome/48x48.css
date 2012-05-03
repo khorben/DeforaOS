@@ -199,6 +199,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/top.png');
 }
 
+.stock48.translate {
+	background-image:	url('gnome-icon-theme/48x48/apps/config-language.png');
+}
+
 .stock48.updir {
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-go-up.png');
 }
