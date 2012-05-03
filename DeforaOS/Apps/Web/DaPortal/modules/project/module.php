@@ -1941,7 +1941,8 @@ protected function update($args)
 	$sql.=" WHERE project_id='".$args['id']."'";
 	require_once('./system/content.php');
 	//FIXME check if it is a project
-	if(!_content_update($args['id'], $args['title'], $args['content']))
+	if(_content_update($args['id'], $args['title'], $args['content'])
+			=== FALSE)
 		return _error('Could not update project');
 	_sql_query($sql);
 	$this->display(array('id' => $args['id']));
