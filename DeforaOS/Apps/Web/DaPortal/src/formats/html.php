@@ -100,6 +100,29 @@ class HtmlFormat extends FormatElements
 		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
 					'href' => "themes/$theme.css",
 					'title' => $theme));
+		if(($theme = $config->getVariable('format::backend::html',
+					'alternate_themes')) != 1)
+			return;
+		$this->_render_theme_alternate($page, $theme);
+	}
+
+	private function _render_theme_alternate($page, $theme)
+	{
+		if(($dir = opendir(dirname($_SERVER['SCRIPT_FILENAME'])
+				.'/themes')) === FALSE)
+			return;
+		while(($de = readdir($dir)) !== FALSE)
+		{
+			if(substr($de, -4, 4) != '.css'
+					|| $de == "$theme.css")
+				continue;
+			$this->renderTabs();
+			$this->tag('link', FALSE, FALSE, array(
+					'rel' => 'alternate stylesheet',
+					'href' => "themes/$de",
+					'title' => substr($de, 0, -4)));
+		}
+		closedir($dir);
 	}
 
 	private function _render_title($e)
