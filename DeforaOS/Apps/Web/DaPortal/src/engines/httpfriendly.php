@@ -76,12 +76,20 @@ class HttpFriendlyEngine extends HttpEngine
 	//HttpFriendlyEngine::getUrl
 	public function getUrl($request, $absolute = TRUE)
 	{
+		global $config;
+
 		//FIXME do not include parameters for a POST request
 		if($request === FALSE)
 			return FALSE;
-		$name = ltrim($_SERVER['SCRIPT_NAME'], '/');
+		$name = $_SERVER['SCRIPT_NAME'];
+		//use the kicker instead if defined
+		if(($kicker = $config->getVariable('engine::httpfriendly',
+				'kicker')) !== FALSE)
+			$name = dirname($name).'/'.$kicker;
+		$name = ltrim($name, '/');
 		if($absolute)
 		{
+			//return the complete address
 			$url = $_SERVER['SERVER_NAME'];
 			if(isset($_SERVER['HTTPS']))
 			{
@@ -97,6 +105,7 @@ class HttpFriendlyEngine extends HttpEngine
 			$url .= '/'.$name;
 		}
 		else
+			//return a relative address
 			$url = basename($name);
 		if(($module = $request->getModule()) !== FALSE)
 		{
@@ -110,6 +119,7 @@ class HttpFriendlyEngine extends HttpEngine
 				$title = str_replace(' ', '-', $title);
 				$url .= '/'.urlencode($title);
 			}
+			//handle arguments
 			if($request->isIdempotent()
 					&& ($args = $request->getParameters())
 					!== FALSE)
