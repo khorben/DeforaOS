@@ -100,7 +100,7 @@ class HtmlFormat extends FormatElements
 		$this->tag('link', FALSE, FALSE, array('rel' => 'stylesheet',
 					'href' => "themes/$theme.css",
 					'title' => $theme));
-		if(($theme = $config->getVariable('format::backend::html',
+		if(($theme = $config->getVariable('format::html',
 					'alternate_themes')) != 1)
 			return;
 		$this->_render_theme_alternate($page, $theme);
