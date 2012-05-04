@@ -67,8 +67,8 @@ class HtmlFormat extends FormatElements
 		$this->renderTabs();
 		$this->tagOpen('head');
 		$this->_render_title($page);
-		$this->_render_theme($page);
 		$this->_render_base($page);
+		$this->_render_theme($page);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			$this->renderMeta('Content-Type', 'text/html'
