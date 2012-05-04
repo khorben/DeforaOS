@@ -30,8 +30,7 @@ class HttpFriendlyEngine extends HttpEngine
 	{
 		if(($score = parent::match()) != 100)
 			return $score;
-		//FIXME change this to + 1 once functional
-		return $score - 1;
+		return $score + 1;
 	}
 
 
