@@ -68,6 +68,7 @@ class HtmlFormat extends FormatElements
 		$this->tagOpen('head');
 		$this->_render_title($page);
 		$this->_render_theme($page);
+		$this->_render_base($page);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			$this->renderMeta('Content-Type', 'text/html'
@@ -87,6 +88,14 @@ class HtmlFormat extends FormatElements
 		$this->renderTabs(-1);
 		$this->tagClose('html');
 		$this->engine = FALSE;
+	}
+
+	private function _render_base($page)
+	{
+		$request = new Request($this->engine);
+		$url = dirname($this->engine->getUrl($request, TRUE)).'/'; //XXX
+		$this->renderTabs();
+		$this->tag('base', FALSE, FALSE, array('href' => $url));
 	}
 
 	private function _render_theme($page)
