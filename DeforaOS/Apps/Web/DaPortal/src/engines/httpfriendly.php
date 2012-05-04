@@ -36,6 +36,44 @@ class HttpFriendlyEngine extends HttpEngine
 
 
 	//accessors
+	//HttpFriendlyEngine::getRequest
+	public function getRequest()
+	{
+		if(!isset($_SERVER['PATH_INFO']))
+			return parent::getRequest();
+		$path = explode('/', $_SERVER['PATH_INFO']);
+		if(!is_array($path) || count($path) < 2)
+			return parent::getRequest();
+		array_shift($path);
+		$module = array_shift($path);
+		$action = FALSE;
+		$id = FALSE;
+		$title = FALSE;
+		$args = FALSE;
+		if(count($path) > 0)
+		{
+			$id = array_shift($path);
+			if(!is_numeric($id))
+			{
+				$action = $id;
+				$id = FALSE;
+				if(count($path) > 0)
+				{
+					$id = array_shift($path);
+					if(!is_numeric($id))
+						return parent::getRequest();
+				}
+			}
+		}
+		if(count($path) > 0)
+			$title = array_shift($path);
+		if(count($path) != 0)
+			return parent::getRequest();
+		//FIXME implement arguments
+		return new Request($this, $module, $action, $id, $title);
+	}
+
+
 	//HttpFriendlyEngine::getUrl
 	public function getUrl($request, $absolute = TRUE)
 	{
