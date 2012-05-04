@@ -22,8 +22,8 @@ dist:
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
-		$(PACKAGE)-$(VERSION)/doc/db2man.sh \
-		$(PACKAGE)-$(VERSION)/doc/makepasswd.1.xml \
+		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/makepasswd.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/src/makepasswd.c \
 		$(PACKAGE)-$(VERSION)/src/md5c.c \

@@ -31,7 +31,6 @@ DEBUG="_debug"
 INSTALL="install -m 0644"
 MKDIR="mkdir -p"
 RM="rm -f"
-XSL="http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl"
 XSLTPROC="xsltproc --nonet"
 
 
@@ -47,7 +46,7 @@ _debug()
 #usage
 _usage()
 {
-	echo "Usage: mkman.sh [-i|-u][-P prefix] target" 1>&2
+	echo "Usage: docbook.sh [-i|-u][-P prefix] target" 1>&2
 	return 1
 }
 
@@ -85,13 +84,30 @@ fi
 
 while [ $# -gt 0 ]; do
 	target="$1"
-	section="${target##*.}"
-	source="$target.xml"
+	source="${target%.*}.xml"
 	shift
+
+	#determine the type
+	ext="${target##*.}"
+	ext="${ext#.}"
+	case "$ext" in
+		html)
+			XSL="http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl"
+			instdir="$DATADIR/doc/$ext/${target%%.*}"
+			;;
+		1|2|3|4|5|6|7|8|9)
+			XSL="http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl"
+			instdir="$MANDIR/man$ext"
+			;;
+		*)
+			echo "$0: $target: Unknown type" 1>&2
+			exit 2
+			;;
+	esac
 
 	#uninstall
 	if [ "$uninstall" -eq 1 ]; then
-		$DEBUG $RM "$MANDIR/man$section/$target"	|| exit 2
+		$DEBUG $RM "$instdir/$target"			|| exit 2
 		continue
 	fi
 
@@ -99,14 +115,13 @@ while [ $# -gt 0 ]; do
 	$DEBUG $XSLTPROC -o "$target" "$XSL" "$source"
 	#XXX ignore errors
 	if [ $? -ne 0 ]; then
-		echo "$0: $target: Could not create manual page" 1>&2
+		echo "$0: $target: Could not create page" 1>&2
 		install=0
 	fi
 
 	#install
 	if [ "$install" -eq 1 ]; then
-		$DEBUG $MKDIR "$MANDIR/man$section"		|| exit 2
-		$DEBUG $INSTALL "$target" "$MANDIR/man$section/$target" \
-								|| exit 2
+		$DEBUG $MKDIR "$instdir"			|| exit 2
+		$DEBUG $INSTALL "$target" "$instdir/$target"	|| exit 2
 	fi
 done
