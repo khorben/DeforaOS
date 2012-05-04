@@ -89,7 +89,7 @@ class HttpFriendlyEngine extends HttpEngine
 		$name = ltrim($name, '/');
 		if($absolute)
 		{
-			//return the complete address
+			//prepare the complete address
 			$url = $_SERVER['SERVER_NAME'];
 			if(isset($_SERVER['HTTPS']))
 			{
@@ -105,32 +105,33 @@ class HttpFriendlyEngine extends HttpEngine
 			$url .= '/'.$name;
 		}
 		else
-			//return a relative address
+			//prepare a relative address
 			$url = basename($name);
-		if(($module = $request->getModule()) !== FALSE)
+		//return if already complete
+		if(($module = $request->getModule()) === FALSE)
+			return $url;
+		//handle the main parameters
+		$url .= '/'.urlencode($module);
+		if(($action = $request->getAction()) !== FALSE)
+			$url .= '/'.urlencode($action);
+		if(($id = $request->getId()) !== FALSE)
+			$url .= '/'.urlencode($id);
+		if(($title = $request->getTitle()) !== FALSE)
 		{
-			$url .= '/'.urlencode($module);
-			if(($action = $request->getAction()) !== FALSE)
-				$url .= '/'.urlencode($action);
-			if(($id = $request->getId()) !== FALSE)
-				$url .= '/'.urlencode($id);
-			if(($title = $request->getTitle()) !== FALSE)
+			$title = str_replace(' ', '-', $title);
+			$url .= '/'.urlencode($title);
+		}
+		//handle arguments
+		if($request->isIdempotent()
+				&& ($args = $request->getParameters())
+				!== FALSE)
+		{
+			$sep = '?';
+			foreach($args as $key => $value)
 			{
-				$title = str_replace(' ', '-', $title);
-				$url .= '/'.urlencode($title);
-			}
-			//handle arguments
-			if($request->isIdempotent()
-					&& ($args = $request->getParameters())
-					!== FALSE)
-			{
-				$sep = '?';
-				foreach($args as $key => $value)
-				{
-					$url .= $sep.urlencode($key)
-						.'='.urlencode($value);
-					$sep = '&';
-				}
+				$url .= $sep.urlencode($key)
+					.'='.urlencode($value);
+				$sep = '&';
 			}
 		}
 		return $url;
