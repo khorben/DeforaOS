@@ -526,6 +526,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/engines/daportal.php \
 		$(PACKAGE)-$(VERSION)/src/engines/gtk.php \
 		$(PACKAGE)-$(VERSION)/src/engines/http.php \
+		$(PACKAGE)-$(VERSION)/src/engines/httpfriendly.php \
 		$(PACKAGE)-$(VERSION)/src/engines/project.conf \
 		$(PACKAGE)-$(VERSION)/src/formats/Makefile \
 		$(PACKAGE)-$(VERSION)/src/formats/atom.php \
