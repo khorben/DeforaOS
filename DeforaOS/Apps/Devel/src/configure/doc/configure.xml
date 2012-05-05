@@ -1,58 +1,74 @@
 <?xml version="1.0" encoding="iso-8859-15"?>
 <!-- $Id$ -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+				<!ENTITY firstname "Pierre">
+				<!ENTITY surname   "Pronchery">
+				<!ENTITY email     "khorben@defora.org">
+				<!ENTITY title     "configure documentation">
+]>
 <article>
-	<artheader>
-		<title>configure documentation</title>
-		<author><firstname>Pierre</firstname><surname>Pronchery</surname></author>
-	</artheader>
+	<info>
+		<title>&title;</title>
+		<author>
+						<firstname>&firstname;</firstname>
+						<surname>&surname;</surname>
+						<contrib>Code and documentation.</contrib>
+						<address>
+								<email>&email;</email>
+						</address>
+		</author>
+	</info>
 	<para>
 		These are the documentation notes for configure. The configure project is a
 		Makefiles generator. It uses project description files to provide simple
-		Makefiles. It is intended to keep generated code as simple as possible.
+		Makefiles. It is intended to keep generated code as simple and portable as
+		possible.
 	</para>
 	<section>
 		<title>Overview</title>
 		<section>
 			<title>What is configure</title>
 			<para>
-				configure generates Makefiles needed in an entire project. Instead of trying
-				every little trick to let it work in a number of potential uses, it sticks to
-				the simplest possible code generation. Consequently, it will mostly be useful
-				for projects running on UNIX platforms first.
+							configure generates Makefiles needed in an entire project. Instead
+							of trying every little trick to let it work in a number of
+							potential uses, it sticks to the simplest possible code
+							generation.
 			</para>
 		</section>
 		<section>
 			<title>Who should use configure</title>
 			<para>
 				Some software developers could gain using configure. However, due to its
-				intentional simplicity, it may not be appropriate to use along with code
-				compilation on some non-portable platforms.
+				intentional simplicity, it may also be limiting in some cases; this can
+				be expected when building large projects in particular.
 			</para>
 			<para>
-				Of course an advanced user, trying to modify a given project Makefile on his
-				platform, inside a project using configure may have to use configure too.
+				Advanced users willing to modify the build process of projects using
+				configure may have to learn about configure as well.
 			</para>
 		</section>
 		<section>
 			<title>Who should not use configure</title>
 			<para>
-				configure will certainly not be appropriate alone for cross-plaform projects,
-				and maybe not for big projects. However one should be able to keep its
-				configuration files inside a project without creating any trouble for potential
-				other Makefile files generators.
+				configure was primarily designed for projects using the C or C++
+				languages. Although possibly extended through the help of shell scripts,
+				configure may not be appropriate for other languages or complex build
+				processes.
 			</para>
 		</section>
 		<section>
 			<title>Why use configure</title>
 			<para>
-				configure has been created to be efficient at writing simple and compliant
-				Makefiles for small to big software development projects. It should be useful:
+				configure was created to be efficient at writing simple and compliant
+				Makefiles for software development projects of all sizes. It should be
+				useful:
 				<itemizedlist>
 					<listitem><para>for people learning software development using Makefiles;</para></listitem>
-					<listitem><para>for developers of some small to big projects;</para></listitem>
-					<listitem><para>for developers concerned by the readability and efficiency of their Makefiles.</para></listitem>
+					<listitem><para>for developers of C/C++ software projects;</para></listitem>
+					<listitem><para>for developers concerned by the readability,
+													efficiency, portability or maintenance of their
+													Makefiles.</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
@@ -64,7 +80,7 @@
 			<para>
 				The configure utility may be invoked from the command line this way:
 				<computeroutput>
-					$ configure [-nv][directory]
+					$ configure [-nvS][options...][directory...]
 				</computeroutput>
 			</para>
 			<para>
@@ -75,8 +91,11 @@
 				The "-v" option gives information about the progress of the operation.
 			</para>
 			<para>
-				It then processes the current directory, or one given at the command line,
-				according to the project configuration files.
+				The "-S" option warns about potential security risks.
+			</para>
+			<para>
+				It then processes the current directory, or the ones given at the
+				command line, according to the project configuration files encountered.
 			</para>
 		</section>
 		<section>
@@ -93,32 +112,53 @@
 				hash sign "#".
 			</para>
 			<para>
-				The significant variables are the following:
+				The most significant variables are the following:
 				<itemizedlist>
 					<listitem><para>in the default section (has an empty name, eg "[]" in the file)
-							* subdirs: subdirectories to look for too
-							* cflags_force: CFLAGS to force globally
-							* cflags: optional global CFLAGS
-							* ldflags_force: LDFLAGS to force globally
-							* ldflags: optional global LDFLAGS
-							* targets: targets to handle in the Makefile
-							* dist: additional files to include in a source archive
-							- in sections named like the target they define:
-							* type (mandatory): type of the target (eg "binary", "library", "object", ...)
-							* cflags: additional CFLAGS for this target
-							* ldflags: additional LDFLAGS for this target
-							* sources: source files to compile</para></listitem>
+						<itemizedlist>
+							<listitem><para>subdirs: subdirectories to look for
+															too</para></listitem>
+								<listitem><para>cppflags_force: CPPFLAGS to force globally</para></listitem>
+								<listitem><para>cppflags: optional global CPPFLAGS</para></listitem>
+								<listitem><para>cflags_force: CFLAGS to force globally</para></listitem>
+								<listitem><para>cflags: optional global CFLAGS</para></listitem>
+								<listitem><para>ldflags_force: LDFLAGS to force globally</para></listitem>
+								<listitem><para>ldflags: optional global LDFLAGS</para></listitem>
+								<listitem><para>targets: targets to handle in the Makefile</para></listitem>
+								<listitem><para>dist: additional files to include in a source archive</para></listitem>
+							</itemizedlist></para></listitem>
+							<listitem><para>in sections named like the target they define:
+								<itemizedlist>
+									<listitem><para>type (mandatory): type of the target (eg "binary", "library", "object", ...)</para></listitem>
+									<listitem><para>cppflags: additional CPPFLAGS for this target</para></listitem>
+									<listitem><para>cflags: additional CFLAGS for this target</para></listitem>
+									<listitem><para>ldflags: additional LDFLAGS for this target</para></listitem>
+									<listitem><para>sources: source files to compile</para></listitem>
+									<listitem><para>depends: a list of files (or other targets) that
+																	this target depends on</para></listitem>
+									<listitem><para>install: the destination path for installation</para></listitem>
+								</itemizedlist>
+							</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
 		<section>
-			<title>Targets definitions</title>
+			<title>Target definitions</title>
 			<para>
 				The following target types are currently supported:
 				<itemizedlist>
 					<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
-					<listitem><para>"library": produces a static and a shared version of the target, linked from every object file produced with their source files, and respectively appending ".a" and ".so" extensions to the target name.</para></listitem>
+					<listitem><para>"library": produces a static and a shared version of
+													the target, linked from every object file produced
+													with their source files, and respectively appending
+													".a" and ".so" extensions to the target name; the
+													shared object are also assigned a version number.</para></listitem>
 					<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
+					<listitem><para>"plugin": produces a shared version of the target,
+													linked from every object file produced with their
+													source files, and appending the ".so" extension to the target name.</para></listitem>
+					<listitem><para>"script": runs the given script, expecting the target
+													file to be generated from the sources defined.</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
@@ -140,18 +180,11 @@
 	<section>
 		<title>Getting further</title>
 		<section>
-			<title>Current caveats</title>
-			<itemizedlist>
-				<listitem><para>configure is not user-proof when necessary development files are not available (relies on appropriate third-party programs error messages, eg "project-config" or "pkgconfig")</para></listitem>
-			</itemizedlist>
-		</section>
-		<section>
-			<title>Planned improvements</title>
-			<itemizedlist>
-				<listitem><para>run-time system detection or selection;</para></listitem>
-				<listitem><para>generation of the Makefiles altered acordingly;</para></listitem>
-				<listitem><para>tweakable installation path.</para></listitem>
-			</itemizedlist>
+			<title>Additional resources</title>
+			<para>
+				More information can be found on the project page at <ulink
+								url="http://www.defora.org/os/project/16/configure"/>.
+			</para>
 		</section>
 	</section>
 </article>
