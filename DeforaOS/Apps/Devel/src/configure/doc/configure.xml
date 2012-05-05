@@ -2,21 +2,21 @@
 <!-- $Id$ -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-				<!ENTITY firstname "Pierre">
-				<!ENTITY surname   "Pronchery">
-				<!ENTITY email     "khorben@defora.org">
-				<!ENTITY title     "configure documentation">
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY title     "configure documentation">
 ]>
 <article>
 	<info>
 		<title>&title;</title>
 		<author>
-						<firstname>&firstname;</firstname>
-						<surname>&surname;</surname>
-						<contrib>Code and documentation.</contrib>
-						<address>
-								<email>&email;</email>
-						</address>
+			<firstname>&firstname;</firstname>
+			<surname>&surname;</surname>
+			<contrib>Code and documentation.</contrib>
+			<address>
+				<email>&email;</email>
+			</address>
 		</author>
 	</info>
 	<para>
@@ -30,10 +30,10 @@
 		<section>
 			<title>What is configure</title>
 			<para>
-							configure generates Makefiles needed in an entire project. Instead
-							of trying every little trick to let it work in a number of
-							potential uses, it sticks to the simplest possible code
-							generation.
+				configure generates Makefiles needed in an entire project. Instead
+				of trying every little trick to let it work in a number of
+				potential uses, it sticks to the simplest possible code
+				generation.
 			</para>
 		</section>
 		<section>
@@ -67,8 +67,8 @@
 					<listitem><para>for people learning software development using Makefiles;</para></listitem>
 					<listitem><para>for developers of C/C++ software projects;</para></listitem>
 					<listitem><para>for developers concerned by the readability,
-													efficiency, portability or maintenance of their
-													Makefiles.</para></listitem>
+							efficiency, portability or maintenance of their
+							Makefiles.</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
@@ -115,9 +115,9 @@
 				The most significant variables are the following:
 				<itemizedlist>
 					<listitem><para>in the default section (has an empty name, eg "[]" in the file)
-						<itemizedlist>
-							<listitem><para>subdirs: subdirectories to look for
-															too</para></listitem>
+							<itemizedlist>
+								<listitem><para>subdirs: subdirectories to look for
+										too</para></listitem>
 								<listitem><para>cppflags_force: CPPFLAGS to force globally</para></listitem>
 								<listitem><para>cppflags: optional global CPPFLAGS</para></listitem>
 								<listitem><para>cflags_force: CFLAGS to force globally</para></listitem>
@@ -126,19 +126,19 @@
 								<listitem><para>ldflags: optional global LDFLAGS</para></listitem>
 								<listitem><para>targets: targets to handle in the Makefile</para></listitem>
 								<listitem><para>dist: additional files to include in a source archive</para></listitem>
-							</itemizedlist></para></listitem>
-							<listitem><para>in sections named like the target they define:
-								<itemizedlist>
-									<listitem><para>type (mandatory): type of the target (eg "binary", "library", "object", ...)</para></listitem>
-									<listitem><para>cppflags: additional CPPFLAGS for this target</para></listitem>
-									<listitem><para>cflags: additional CFLAGS for this target</para></listitem>
-									<listitem><para>ldflags: additional LDFLAGS for this target</para></listitem>
-									<listitem><para>sources: source files to compile</para></listitem>
-									<listitem><para>depends: a list of files (or other targets) that
-																	this target depends on</para></listitem>
-									<listitem><para>install: the destination path for installation</para></listitem>
-								</itemizedlist>
-							</para></listitem>
+					</itemizedlist></para></listitem>
+					<listitem><para>in sections named like the target they define:
+							<itemizedlist>
+								<listitem><para>type (mandatory): type of the target (eg "binary", "library", "object", ...)</para></listitem>
+								<listitem><para>cppflags: additional CPPFLAGS for this target</para></listitem>
+								<listitem><para>cflags: additional CFLAGS for this target</para></listitem>
+								<listitem><para>ldflags: additional LDFLAGS for this target</para></listitem>
+								<listitem><para>sources: source files to compile</para></listitem>
+								<listitem><para>depends: a list of files (or other targets) that
+										this target depends on</para></listitem>
+								<listitem><para>install: the destination path for installation</para></listitem>
+							</itemizedlist>
+					</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
@@ -149,16 +149,16 @@
 				<itemizedlist>
 					<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
 					<listitem><para>"library": produces a static and a shared version of
-													the target, linked from every object file produced
-													with their source files, and respectively appending
-													".a" and ".so" extensions to the target name; the
-													shared object are also assigned a version number.</para></listitem>
+							the target, linked from every object file produced
+							with their source files, and respectively appending
+							".a" and ".so" extensions to the target name; the
+							shared object are also assigned a version number.</para></listitem>
 					<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
 					<listitem><para>"plugin": produces a shared version of the target,
-													linked from every object file produced with their
-													source files, and appending the ".so" extension to the target name.</para></listitem>
+							linked from every object file produced with their
+							source files, and appending the ".so" extension to the target name.</para></listitem>
 					<listitem><para>"script": runs the given script, expecting the target
-													file to be generated from the sources defined.</para></listitem>
+							file to be generated from the sources defined.</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
@@ -183,7 +183,7 @@
 			<title>Additional resources</title>
 			<para>
 				More information can be found on the project page at <ulink
-								url="http://www.defora.org/os/project/16/configure"/>.
+					url="http://www.defora.org/os/project/16/configure"/>.
 			</para>
 		</section>
 	</section>
