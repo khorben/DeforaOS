@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -428,7 +428,7 @@ static int _usage(void)
 
 	_prefs_init(&prefs);
 	fprintf(stderr, "%s%s%s%s%s%s%s%s%s",
-"Usage: configure [-nv][options...][directory...]\n"
+"Usage: configure [-nvS][options...][directory...]\n"
 "  -n	Do not actually write Makefiles\n"
 "  -v	Verbose mode\n"
 "  -b	Binary files directory (default: \"", prefs.bindir, "\")\n"
@@ -437,7 +437,7 @@ static int _usage(void)
 "  -l	Library files directory (default: \"", prefs.libdir, "\")\n"
 "  -O	Force Operating System (default: auto-detected)\n"
 "  -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n"
-"  -S	Warn about security risks\n");
+"  -S	Warn about potential security risks\n");
 	return 1;
 }
 
