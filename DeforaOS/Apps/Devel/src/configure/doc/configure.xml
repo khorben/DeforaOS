@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="iso-8859-15"?>
+<!-- $Id$ -->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+	<artheader>
+		<title>configure documentation</title>
+		<author><firstname>Pierre</firstname><surname>Pronchery</surname></author>
+	</artheader>
+	<para>
+		These are the documentation notes for configure. The configure project is a
+		Makefiles generator. It uses project description files to provide simple
+		Makefiles. It is intended to keep generated code as simple as possible.
+	</para>
+	<section>
+		<title>Overview</title>
+		<section>
+			<title>What is configure</title>
+			<para>
+				configure generates Makefiles needed in an entire project. Instead of trying
+				every little trick to let it work in a number of potential uses, it sticks to
+				the simplest possible code generation. Consequently, it will mostly be useful
+				for projects running on UNIX platforms first.
+			</para>
+		</section>
+		<section>
+			<title>Who should use configure</title>
+			<para>
+				Some software developers could gain using configure. However, due to its
+				intentional simplicity, it may not be appropriate to use along with code
+				compilation on some non-portable platforms.
+			</para>
+			<para>
+				Of course an advanced user, trying to modify a given project Makefile on his
+				platform, inside a project using configure may have to use configure too.
+			</para>
+		</section>
+		<section>
+			<title>Who should not use configure</title>
+			<para>
+				configure will certainly not be appropriate alone for cross-plaform projects,
+				and maybe not for big projects. However one should be able to keep its
+				configuration files inside a project without creating any trouble for potential
+				other Makefile files generators.
+			</para>
+		</section>
+		<section>
+			<title>Why use configure</title>
+			<para>
+				configure has been created to be efficient at writing simple and compliant
+				Makefiles for small to big software development projects. It should be useful:
+				<itemizedlist>
+					<listitem><para>for people learning software development using Makefiles;</para></listitem>
+					<listitem><para>for developers of some small to big projects;</para></listitem>
+					<listitem><para>for developers concerned by the readability and efficiency of their Makefiles.</para></listitem>
+				</itemizedlist>
+			</para>
+		</section>
+	</section>
+	<section>
+		<title>Using configure</title>
+		<section>
+			<title>configure usage</title>
+			<para>
+				The configure utility may be invoked from the command line this way:
+				<computeroutput>
+					$ configure [-nv][directory]
+				</computeroutput>
+			</para>
+			<para>
+				The "-n" option just parses the project definition files, without actually
+				re-generating the Makefiles.
+			</para>
+			<para>
+				The "-v" option gives information about the progress of the operation.
+			</para>
+			<para>
+				It then processes the current directory, or one given at the command line,
+				according to the project configuration files.
+			</para>
+		</section>
+		<section>
+			<title>Project configuration</title>
+			<para>
+				This file should be found in every project directory. It must be named
+				"project.conf". It is organized in sections, and string variables. Section names
+				are written on their own line, between brackets (eg "[section]"). Variables are
+				given on their own line too, like this:
+				<computeroutput>
+					variable=value
+				</computeroutput>
+				Configuration files may be commented, comment lines being prepended with a
+				hash sign "#".
+			</para>
+			<para>
+				The significant variables are the following:
+				<itemizedlist>
+					<listitem><para>in the default section (has an empty name, eg "[]" in the file)
+							* subdirs: subdirectories to look for too
+							* cflags_force: CFLAGS to force globally
+							* cflags: optional global CFLAGS
+							* ldflags_force: LDFLAGS to force globally
+							* ldflags: optional global LDFLAGS
+							* targets: targets to handle in the Makefile
+							* dist: additional files to include in a source archive
+							- in sections named like the target they define:
+							* type (mandatory): type of the target (eg "binary", "library", "object", ...)
+							* cflags: additional CFLAGS for this target
+							* ldflags: additional LDFLAGS for this target
+							* sources: source files to compile</para></listitem>
+				</itemizedlist>
+			</para>
+		</section>
+		<section>
+			<title>Targets definitions</title>
+			<para>
+				The following target types are currently supported:
+				<itemizedlist>
+					<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
+					<listitem><para>"library": produces a static and a shared version of the target, linked from every object file produced with their source files, and respectively appending ".a" and ".so" extensions to the target name.</para></listitem>
+					<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
+				</itemizedlist>
+			</para>
+		</section>
+		<section>
+			<title>Migrating to configure</title>
+			<para>
+				You may first create all necessary "project.conf" files with the subdirectories
+				definitions. Then for every binary or library built, specify the adequate target
+				along with its section.
+			</para>
+			<para>
+				When migrating from automake/autoconf, the existing subdirectories are defined
+				in the "Makefile.am" files, in the "SUBDIRS" variable. The binary targets are
+				defined in the same file, as the "bin_PROGRAMS" variable, each declined to
+				"program_SOURCES" for their respective source files.
+			</para>
+		</section>
+	</section>
+	<section>
+		<title>Getting further</title>
+		<section>
+			<title>Current caveats</title>
+			<itemizedlist>
+				<listitem><para>configure is not user-proof when necessary development files are not available (relies on appropriate third-party programs error messages, eg "project-config" or "pkgconfig")</para></listitem>
+			</itemizedlist>
+		</section>
+		<section>
+			<title>Planned improvements</title>
+			<itemizedlist>
+				<listitem><para>run-time system detection or selection;</para></listitem>
+				<listitem><para>generation of the Makefiles altered acordingly;</para></listitem>
+				<listitem><para>tweakable installation path.</para></listitem>
+			</itemizedlist>
+		</section>
+	</section>
+</article>
