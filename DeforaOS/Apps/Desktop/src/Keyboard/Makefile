@@ -30,6 +30,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/keyboard.c \
 		$(PACKAGE)-$(VERSION)/src/layout.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/keyboardctl.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
@@ -44,6 +45,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
