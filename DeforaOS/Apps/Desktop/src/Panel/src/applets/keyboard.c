@@ -28,6 +28,8 @@
 #include <errno.h>
 #include <libintl.h>
 #include <gdk/gdkx.h>
+#include <Desktop.h>
+#include <Desktop/Keyboard.h>
 #include "Panel.h"
 #define _(string) gettext(string)
 
@@ -48,6 +50,7 @@ typedef struct _PanelApplet
 
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * button;
 	GtkWidget * socket;
 	/* preferences */
 	GtkWidget * pr_box;
@@ -100,12 +103,13 @@ PanelAppletDefinition applet =
 static void _init_size(Keyboard * keyboard, PanelAppletHelper * helper);
 /* callbacks */
 static gboolean _init_idle(gpointer data);
+static int _keyboard_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 
 static Keyboard * _keyboard_init(PanelAppletHelper * helper,
 		GtkWidget ** widget)
 {
 	Keyboard * keyboard;
-	GtkWidget * ret;
 	GtkWidget * image;
 
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
@@ -118,18 +122,21 @@ static Keyboard * _keyboard_init(PanelAppletHelper * helper,
 	keyboard->window = NULL;
 	keyboard->pr_box = NULL;
 	_init_size(keyboard, helper);
-	ret = gtk_toggle_button_new();
+	keyboard->button = gtk_toggle_button_new();
 #if GTK_CHECK_VERSION(2, 12, 0)
-	gtk_widget_set_tooltip_text(ret, _("Show keyboard"));
+	gtk_widget_set_tooltip_text(keyboard->button, _("Show keyboard"));
 #endif
-	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
-	g_signal_connect(G_OBJECT(ret), "toggled", G_CALLBACK(
+	gtk_button_set_relief(GTK_BUTTON(keyboard->button), GTK_RELIEF_NONE);
+	g_signal_connect(G_OBJECT(keyboard->button), "toggled", G_CALLBACK(
 				_keyboard_on_toggled), keyboard);
 	image = gtk_image_new_from_icon_name(applet.icon, helper->icon_size);
-	gtk_container_add(GTK_CONTAINER(ret), image);
-	gtk_widget_show_all(ret);
+	gtk_container_add(GTK_CONTAINER(keyboard->button), image);
+	/* FIXME de-register on destroy */
+	desktop_message_register(KEYBOARD_CLIENT_MESSAGE, _keyboard_on_message,
+			keyboard);
+	gtk_widget_show_all(keyboard->button);
 	keyboard->source = g_idle_add(_init_idle, keyboard);
-	*widget = ret;
+	*widget = keyboard->button;
 	return keyboard;
 }
 
@@ -186,6 +193,30 @@ static gboolean _init_idle(gpointer data)
 	gtk_container_add(GTK_CONTAINER(keyboard->window), keyboard->socket);
 	gtk_widget_show(keyboard->socket);
 	return FALSE;
+}
+
+/* keyboard_on_message */
+static int _keyboard_on_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
+{
+	Keyboard * keyboard = data;
+	KeyboardMessage message = value1;
+	gboolean active;
+
+	switch(message)
+	{
+		case KEYBOARD_MESSAGE_SET_VISIBLE:
+			active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+						keyboard->button));
+			if((active && value2 == 0) || (!active && value2 != 0))
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+							keyboard->button),
+						!active);
+			break;
+		default:
+			break;
+	}
+	return 0;
 }
 
 
