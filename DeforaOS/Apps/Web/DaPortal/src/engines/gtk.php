@@ -407,9 +407,33 @@ class GtkFormat extends FormatElements
 		$children = $e->getChildren();
 		foreach($children as $c)
 		{
-			if($c->getType() != 'menuitem'
-					|| ($menuitem = $this->renderMenuitem(
-							$c)) === FALSE)
+			if($c->getType() != 'menuitem')
+				continue;
+			if(($ch = $c->getChildren()) === FALSE
+					|| count($ch) == 0)
+			{
+				//create a sub-menu with a single entry
+				$text = $c->getProperty('text');
+				$menuitem = new GtkMenuItem($text);
+				if(($request = $c->getProperty('request'))
+						=== FALSE)
+					$menuitem->set_sensitive(FALSE);
+				else
+				{
+					$menu = new GtkMenu;
+					$menuitem->set_submenu($menu);
+					$m = new GtkMenuItem('This item');
+					$m->connect_simple('activate', array(
+							$this,
+							'on_button_clicked'),
+						$request);
+					$menu->append($m);
+				}
+			}
+			else
+				//create a complete sub-menu
+				$menuitem = $this->renderMenuitem($c);
+			if($menuitem === FALSE)
 				continue;
 			$ret->append($menuitem);
 		}
@@ -421,7 +445,7 @@ class GtkFormat extends FormatElements
 		//FIXME implement images...
 		$ret = new GtkMenuItem($e->getProperty('text'));
 		$request = $e->getProperty('request');
-		if(($children = $e->getChildren($e)) !== FALSE
+		if(($children = $e->getChildren()) !== FALSE
 				&& count($children))
 		{
 			$menu = new GtkMenu;
