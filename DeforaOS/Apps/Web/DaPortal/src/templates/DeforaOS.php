@@ -32,15 +32,14 @@ class DeforaOSTemplate extends BasicTemplate
 
 		$vbox = new PageElement('vbox', array('id' => 'menu'));
 		if($entries === FALSE)
-			$entries = array('news', 'download', 'project',
-				'user' => array($cred->getUserId()
-					? 'logout' : 'login'),
-				'wiki');
+			$entries = $this->getEntries($engine);
 		$vbox->append(parent::getMenu($engine, $entries));
-		$request = new Request($engine, 'search', 'widget');
-		$vbox->append($engine->process($request));
-		$request = new Request($engine, 'user', 'widget');
-		$vbox->append($engine->process($request));
+		if(($request = new Request($engine, 'search', 'widget'))
+				!== FALSE)
+			$vbox->append($engine->process($request));
+		if(($request = new Request($engine, 'user', 'widget'))
+				!== FALSE)
+			$vbox->append($engine->process($request));
 		return $vbox;
 	}
 

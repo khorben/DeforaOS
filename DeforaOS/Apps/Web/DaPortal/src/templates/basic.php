@@ -32,6 +32,10 @@ class BasicTemplate extends Template
 	protected $module = FALSE;
 	protected $title = FALSE;
 
+	//queries
+	protected $query_modules = "SELECT name FROM daportal_module
+		WHERE enabled='1' ORDER BY name ASC";
+
 
 	//methods
 	//accessors
@@ -46,6 +50,35 @@ class BasicTemplate extends Template
 	}
 
 
+	//BasicTemplate::getEntries
+	protected function getEntries($engine)
+	{
+		if(($modules = $this->getModules($engine)) === FALSE)
+			return FALSE;
+		$ret = array();
+		foreach($modules as $name)
+		{
+			if(($module = Module::load($engine, $name)) === FALSE)
+				continue;
+			$title = $module->getTitle($engine);
+			$request = new Request($engine, $name, 'actions');
+			if(($actions = $module->call($engine, $request))
+					=== FALSE)
+				continue;
+			$ret[$name] = array('name' => $name, 'title' => $title,
+				'actions' => $actions);
+		}
+		usort($ret, array($this, '_getEntriesSort'));
+		return $ret;
+	}
+
+	private function _getEntriesSort(array $a, array $b)
+	{
+		return strcmp($a['title'], $b['title']);
+	}
+
+
+	//BasicTemplate::getFooter
 	protected function getFooter($engine)
 	{
 		$footer = new PageElement('statusbar');
@@ -62,38 +95,66 @@ class BasicTemplate extends Template
 		$cred = $engine->getCredentials();
 
 		$menu = new PageElement('menubar');
-		//FIXME really implement
-		$modules = $menu->append('menuitem', array(
-					'text' => _('Menu')));
 		if($entries === FALSE)
-			$entries = array('blog', 'news',
-				'user' => array($cred->getUserId() ? 'logout'
-						: 'login'));
-		foreach($entries as $k => $v)
+			$entries = $this->getEntries($engine);
+		foreach($entries as $e)
 		{
-			if(is_array($v))
+			if(!is_array($e))
+				continue;
+			$r = new Request($engine, $e['name']);
+			$menuitem = $menu->append('menuitem', array(
+					'text' => $e['title'],
+					'request' => $r));
+			if(($actions = $e['actions']) === FALSE)
+				continue;
+			foreach($actions as $a)
 			{
-				$r = new Request($engine, $k);
-				$module = $modules->append('menuitem', array(
-							'text' => ucfirst($k),
-							'request' => $r));
-				foreach($v as $a)
+				if(!($a instanceof PageElement))
 				{
-					$r = new Request($engine, $k, $a);
-					$module->append('menuitem', array(
-								'text' => ucfirst($a),
-								'request' => $r));
+					$menuitem->append('separator');
+					continue;
 				}
-			}
-			else
-			{
-				$r = new Request($engine, $v);
-				$modules->append('menuitem', array(
-							'text' => ucfirst($v),
-							'request' => $r));
+				if(($label = $a->getProperty('label'))
+						=== FALSE)
+					continue;
+				$stock = FALSE;
+				$text = FALSE;
+				$request = FALSE;
+				if(($icon = $a->getProperty('icon')) !== FALSE
+						&& $icon instanceof PageElement)
+					$stock = $icon->getProperty('stock');
+				if($label instanceof PageElement)
+				{
+					$request = $label->getProperty(
+						'request');
+					$text = $label->getProperty('text');
+				}
+				else if(is_string($label))
+					$text = $label;
+				if($text === FALSE)
+					continue;
+				$menuitem->append('menuitem', array(
+					'request' => $request,
+					'stock' => $stock,
+					'text' => $text));
 			}
 		}
 		return $menu;
+	}
+
+
+	//BasicTemplate::getModules
+	protected function getModules($engine)
+	{
+		$database = $engine->getDatabase();
+		$query = $this->query_modules;
+
+		if(($modules = $database->query($engine, $query)) === FALSE)
+			return FALSE;
+		$ret = array();
+		foreach($modules as $m)
+			$ret[] = $m['name'];
+		return $ret;
 	}
 
 
