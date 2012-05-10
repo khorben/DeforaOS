@@ -141,12 +141,14 @@ class UserModule extends Module
 					$this->name, $ret);
 		if($cred->getUserId() == 0)
 		{
+			//not logged in yet
 			$r = new Request($engine, $this->name, 'login');
 			$icon = new PageElement('image', array(
 					'stock' => 'login'));
 			$link = new PageElement('link', array('request' => $r,
 					'text' => _('Login')));
 			$ret[] = new PageElement('row', array('icon' => $icon,
+					'important' => TRUE,
 					'label' => $link));
 			if($this->can_reset())
 			{
@@ -176,6 +178,7 @@ class UserModule extends Module
 		}
 		else
 		{
+			//already logged in
 			$this->_actions_admin($engine, $cred, 'admin', $ret);
 			//user's content
 			$r = new Request($engine, $this->name, 'display');
@@ -200,6 +203,7 @@ class UserModule extends Module
 			$link = new PageElement('link', array('request' => $r,
 					'text' => _('Logout')));
 			$ret[] = new PageElement('row', array('icon' => $icon,
+					'important' => TRUE,
 					'label' => $link));
 		}
 		return $ret;
