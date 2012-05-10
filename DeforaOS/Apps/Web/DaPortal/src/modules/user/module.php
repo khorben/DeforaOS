@@ -24,6 +24,18 @@ require_once('./system/user.php');
 //UserModule
 class UserModule extends Module
 {
+	//public
+	//methods
+	//essential
+	//UserModule::UserModule
+	public function __construct($id, $name, $title = FALSE)
+	{
+		$title = ($title === FALSE) ? _('Users') : $title;
+		parent::__construct($id, $name, $title);
+	}
+
+
+	//useful
 	//UserModule::call
 	public function call(&$engine, $request)
 	{
@@ -44,9 +56,10 @@ class UserModule extends Module
 			case 'validate':
 			case 'widget':
 				return $this->$action($engine, $request);
-			default:
+			case FALSE:
 				return $this->_default($engine, $request);
 		}
+		return FALSE;
 	}
 
 
@@ -556,31 +569,6 @@ class UserModule extends Module
 		$box->append('label', array('text' => '.'));
 		$engine->setCredentials(new AuthCredentials);
 		return $page;
-	}
-
-
-	//UserModule::menu
-	protected function menu($engine, $request)
-	{
-		$cred = $engine->getCredentials();
-
-		//FIXME set links and icons
-		$menu = new PageElement('menuitem', array(
-				'text' => $this->module_name));
-		if($cred->getUserId() == 0)
-		{
-			$menu->append('menuitem', array('text' => _('Login')));
-			$menu->append('menuitem', array(
-					'text' => _('Register')));
-		}
-		else
-		{
-			if($cred->isAdmin())
-				$menu->append('menuitem', array(
-						'text' => _('Administration')));
-			$menu->append('menuitem', array('text' => _('Logout')));
-		}
-		return $menu;
 	}
 
 
