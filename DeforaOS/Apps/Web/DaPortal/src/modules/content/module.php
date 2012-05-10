@@ -276,16 +276,6 @@ class ContentModule extends Module
 		$cred = $engine->getCredentials();
 
 		$ret = array();
-		if($this->canSubmit($engine))
-		{
-			$icon = new PageElement('image', array(
-				'stock' => 'new'));
-			$r = new Request($engine, $this->name, 'submit');
-			$link = new PageElement('link', array('request' => $r,
-				'text' => $this->content_submit));
-			$ret[] = new PageElement('row', array('icon' => $icon,
-				'label' => $link));
-		}
 		if($cred->isAdmin())
 		{
 			$ret[] = array();
@@ -294,6 +284,16 @@ class ContentModule extends Module
 			$r = new Request($engine, $this->name, 'admin');
 			$link = new PageElement('link', array('request' => $r,
 				'text' => _('Administration')));
+			$ret[] = new PageElement('row', array('icon' => $icon,
+				'label' => $link));
+		}
+		if($this->canSubmit($engine))
+		{
+			$icon = new PageElement('image', array(
+				'stock' => 'new'));
+			$r = new Request($engine, $this->name, 'submit');
+			$link = new PageElement('link', array('request' => $r,
+				'text' => $this->content_submit));
 			$ret[] = new PageElement('row', array('icon' => $icon,
 				'label' => $link));
 		}
