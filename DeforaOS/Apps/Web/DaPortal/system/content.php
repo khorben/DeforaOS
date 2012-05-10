@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2005-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -56,16 +56,16 @@ function _content_enable($id)
 }
 
 
-function _content_insert($title, $content, $enabled = 0)
+function _content_insert($title, $content, $enabled = 0, $public = 1)
 {
 	global $module_id, $user_id;
 
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
 	if(_sql_query('INSERT INTO daportal_content (module_id, user_id'
-			.', title, content, enabled)'
+			.', title, content, enabled, public)'
 			." VALUES ('$module_id', '$user_id', '$title'"
-			.", '$content', '$enabled')") === FALSE)
+			.", '$content', '$enabled', '$public')") === FALSE)
 		return FALSE;
 	return _sql_id('daportal_content', 'content_id');
 }
