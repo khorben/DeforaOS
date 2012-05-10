@@ -25,25 +25,39 @@ class AdminModule extends Module
 	//public
 	//methods
 	//essential
+	//AdminModule::AdminModule
+	public function __construct($id, $name, $title = FALSE)
+	{
+		$title = ($title === FALSE) ? _('Administration') : $title;
+		parent::__construct($id, $name, $title);
+	}
+
+
+	//useful
 	//AdminModule::call
 	public function call(&$engine, $request)
 	{
 		$cred = $engine->getCredentials();
 
 		if(!$cred->isAdmin())
+		{
+			if($request->getAction() == 'actions')
+				return FALSE;
 			return new PageElement('dialog', array(
 					'type' => 'error',
 					'text' => _('Permission denied')));
-		switch(($action = $request->getAction($request)))
+		}
+		switch(($action = $request->getAction()))
 		{
 			case 'actions':
 			case 'admin':
 			case 'disable':
 			case 'enable':
 				return $this->$action($engine, $request);
-			default:
+			case FALSE:
 				return $this->_default($engine, $request);
 		}
+		return FALSE;
 	}
 
 
