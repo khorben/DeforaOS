@@ -27,11 +27,10 @@ class DownloadModule extends ContentModule
 {
 	//essential
 	//DownloadModule::DownloadModule
-	public function __construct($id, $name)
+	public function __construct($id, $name, $title = FALSE)
 	{
-		parent::__construct($id, $name);
-		$this->module_id = $id;
-		$this->module_name = _('Downloads');
+		$title = ($title === FALSE) ? _('Downloads') : $title;
+		parent::__construct($id, $name, $title);
 		//translations
 		$this->content_admin = _('Downloads administration');
 		$this->content_by = _('Download by');
@@ -160,7 +159,7 @@ class DownloadModule extends ContentModule
 	//methods
 	//accessors
 	//DownloadModule::canSubmit
-	protected function canSubmit($engine, $request = FALSE, $error)
+	protected function canSubmit($engine, $request = FALSE, &$error = FALSE)
 	{
 		$cred = $engine->getCredentials();
 

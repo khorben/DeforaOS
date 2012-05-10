@@ -27,11 +27,10 @@ class ProjectModule extends ContentModule
 	//methods
 	//essential
 	//ProjectModule::ProjectModule
-	public function __construct($id, $name)
+	public function __construct($id, $name, $title = FALSE)
 	{
-		parent::__construct($id, $name);
-		$this->module_id = $id;
-		$this->module_name = _('Projects');
+		$title = ($title === FALSE) ? _('Projects') : $title;
+		parent::__construct($id, $name, $title);
 		$this->content_admin = _('Projects administration');
 		$this->content_by = _('Project by');
 		$this->content_item = _('Project');
@@ -181,6 +180,7 @@ class ProjectModule extends ContentModule
 		$res = $res[0];
 		$res['date'] = substr($res['timestamp'], 0, 19);
 		$res['date'] = strtotime($res['date']);
+		//FIXME use strftime() instead
 		$res['date'] = date(_('d/m/Y H:i'), $res['date']);
 		if(!is_numeric($res['bug_id']))
 			$res['project_id'] = $res['id'];

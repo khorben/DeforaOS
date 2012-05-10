@@ -26,11 +26,10 @@ class WikiModule extends ContentModule
 	//methods
 	//essential
 	//WikiModule::WikiModule
-	public function __construct($id, $name)
+	public function __construct($id, $name, $title = FALSE)
 	{
+		$title = ($title === FALSE) ? _('Wiki') : $title;
 		parent::__construct($id, $name);
-		$this->module_id = $id;
-		$this->module_name = _('Wiki');
 		$this->content_admin = _('Wiki administration');
 		$this->content_by = _('Page by');
 		$this->content_item = _('Wiki page');

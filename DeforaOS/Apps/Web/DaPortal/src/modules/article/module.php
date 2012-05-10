@@ -26,11 +26,10 @@ class ArticleModule extends ContentModule
 	//methods
 	//essential
 	//ArticleModule::ArticleModule
-	public function __construct($id, $name)
+	public function __construct($id, $name, $title = FALSE)
 	{
-		parent::__construct($id, $name);
-		$this->module_id = $id;
-		$this->module_name = _('Article');
+		$title = ($title === FALSE) ? _('Articles') : $title;
+		parent::__construct($id, $name, $title);
 		$this->content_admin = _('Articles administration');
 		$this->content_by = _('Article by');
 		$this->content_item = _('Article');

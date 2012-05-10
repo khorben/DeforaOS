@@ -26,11 +26,10 @@ class BlogModule extends ContentModule
 	//methods
 	//essential
 	//BlogModule::BlogModule
-	public function __construct($id, $name)
+	public function __construct($id, $name, $title = FALSE)
 	{
-		parent::__construct($id, $name);
-		$this->module_id = $id;
-		$this->module_name = _('Blog');
+		$title = ($title === FALSE) ? _('Blog') : $title;
+		parent::__construct($id, $name, $title);
 		$this->content_administration = _('Blogs administration');
 		$this->content_by = _('Post by');
 		$this->content_item = _('Blog post');

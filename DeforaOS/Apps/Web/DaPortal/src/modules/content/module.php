@@ -14,6 +14,7 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //TODO:
+//- let users preview, save and publish their contents
 //- complete paging
 
 
@@ -29,10 +30,9 @@ class ContentModule extends Module
 	//methods
 	//essential
 	//ContentModule::ContentModule
-	public function __construct($id, $name)
+	public function __construct($id, $name, $title = FALSE)
 	{
-		parent::__construct($id, $name);
-		$this->module_name = _('Content');
+		parent::__construct($id, $name, $title);
 		//translations
 		$this->content_admin = _('Content administration');
 		$this->content_by = _('Content by');
@@ -71,16 +71,15 @@ class ContentModule extends Module
 				return $this->preview($engine,
 						$request->getId(),
 						$request->getTitle());
-			default:
+			case FALSE:
 				return $this->_default($engine, $request);
 		}
+		return FALSE;
 	}
 
 
 	//protected
 	//properties
-	protected $module_name = 'Content';
-
 	protected $content_admin = 'Content administration';
 	protected $content_by = 'Content by';
 	protected $content_headline_count = 6;
@@ -196,7 +195,7 @@ class ContentModule extends Module
 
 		if($cred->getUserId() > 0)
 			return TRUE;
-		if($config->getValue('module::'.$this->name, 'anonymous'))
+		if($config->getVariable('module::'.$this->name, 'anonymous'))
 			return TRUE;
 		$error = _('Permission denied');
 		return FALSE;
@@ -236,6 +235,7 @@ class ContentModule extends Module
 	{
 		$date = substr($timestamp, 0, 19);
 		$date = strtotime($date);
+		//FIXME use strftime() instead
 		$date = date($format, $date);
 		return $date;
 	}
@@ -275,15 +275,28 @@ class ContentModule extends Module
 	{
 		$cred = $engine->getCredentials();
 
-		if(!$cred->isAdmin())
-			return FALSE;
 		$ret = array();
-		$icon = new PageElement('image', array('stock' => 'admin'));
-		$r = new Request($engine, $this->name, 'admin');
-		$link = new PageElement('link', array('request' => $r,
-				'text' => _('Administration')));
-		$ret[] = new PageElement('row', array('icon' => $icon,
+		if($this->canSubmit($engine))
+		{
+			$icon = new PageElement('image', array(
+				'stock' => 'new'));
+			$r = new Request($engine, $this->name, 'submit');
+			$link = new PageElement('link', array('request' => $r,
+				'text' => $this->content_submit));
+			$ret[] = new PageElement('row', array('icon' => $icon,
 				'label' => $link));
+		}
+		if($cred->isAdmin())
+		{
+			$ret[] = array();
+			$icon = new PageElement('image', array(
+				'stock' => 'admin'));
+			$r = new Request($engine, $this->name, 'admin');
+			$link = new PageElement('link', array('request' => $r,
+				'text' => _('Administration')));
+			$ret[] = new PageElement('row', array('icon' => $icon,
+				'label' => $link));
+		}
 		return $ret;
 	}
 
