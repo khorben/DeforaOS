@@ -32,9 +32,10 @@ class TopModule extends Module
 		{
 			case 'admin':
 				return $this->admin($engine, $request);
-			default:
+			case FALSE:
 				return $this->_default($engine);
 		}
+		return FALSE;
 	}
 
 
