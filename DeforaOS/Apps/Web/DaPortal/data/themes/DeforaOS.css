@@ -141,7 +141,7 @@ div#menu ul.menubar li {
 }
 
 div#menu ul.menubar li a {
-	border-top:			1px solid #303030;
+	border-bottom:			1px solid #303030;
 	display:			block;
 	font-weight:			bold;
 }
@@ -151,7 +151,7 @@ div#menu ul.menubar li a:hover {
 	text-decoration:		none;
 }
 
-div#menu ul.menubar li li li a {
+div#menu ul.menubar li li a {
 	border-width:			0;
 	font-size:			80%;
 	padding-left:			2ex;
@@ -172,7 +172,6 @@ div#menu form div.entry input[type="text"] {
 body {
 	margin-left:			auto;
 	margin-right:			auto;
-	max-width:			80ex;
 }
 
 
@@ -299,7 +298,7 @@ form.treeview div.header span.detail {
 		display:		block;
 	}
 
-	div#menu ul.menubar li li li {
+	div#menu ul.menubar li li {
 		display:		none;
 	}
 }
@@ -308,6 +307,7 @@ form.treeview div.header span.detail {
 /* larger screens */
 @media screen and (min-width: 96ex) {
 	body {
+		max-width:		80ex;
 		padding-right:		16ex;
 	}
 
