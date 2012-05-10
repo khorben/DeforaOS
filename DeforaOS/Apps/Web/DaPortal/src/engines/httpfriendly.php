@@ -43,7 +43,9 @@ class HttpFriendlyEngine extends HttpEngine
 		$path = explode('/', $_SERVER['PATH_INFO']);
 		if(!is_array($path) || count($path) < 2)
 			return parent::getRequest();
+		//the first element is empty
 		array_shift($path);
+		//the second element is the module name
 		$module = array_shift($path);
 		$action = FALSE;
 		$id = FALSE;
@@ -51,15 +53,18 @@ class HttpFriendlyEngine extends HttpEngine
 		$args = FALSE;
 		if(count($path) > 0)
 		{
+			//the third element is the action (or the ID directly)
 			$id = array_shift($path);
 			if(!is_numeric($id))
 			{
+				//there is an action before the ID
 				$action = $id;
 				$id = FALSE;
 				if(count($path) > 0)
 				{
 					$id = array_shift($path);
 					if(!is_numeric($id))
+						//XXX this is really a 404
 						return parent::getRequest();
 				}
 			}
@@ -67,9 +72,26 @@ class HttpFriendlyEngine extends HttpEngine
 		if(count($path) > 0)
 			$title = array_shift($path);
 		if(count($path) != 0)
+			//XXX this is really a 404
 			return parent::getRequest();
-		//FIXME implement arguments
-		return new Request($this, $module, $action, $id, $title);
+		//arguments
+		//XXX is there a function to do this directly?
+		$query = explode('&', $_SERVER['QUERY_STRING']);
+		foreach($query as $q)
+		{
+			if($args === FALSE)
+				$args = array();
+			$q = explode('=', $q);
+			if(count($q) != 2)
+				continue;
+			$q[0] = urldecode($q[0]);
+			$q[1] = urldecode($q[1]);
+			if($title === FALSE && $q[0] == 'title')
+				$title = $q[1];
+			else
+				$args[$q[0]] = $q[1];
+		}
+		return new Request($this, $module, $action, $id, $title, $args);
 	}
 
 
