@@ -125,6 +125,7 @@ div#top a:hover {
 
 /* menu */
 div#menu {
+	margin-bottom:			1ex;
 	padding:			0.5ex;
 }
 
@@ -132,6 +133,7 @@ div#menu a {
 	background-color:		#000000;
 	color:				#ffffff;
 	padding:			0.5ex;
+	text-align:			left;
 }
 
 div#menu ul.menubar li {
@@ -314,8 +316,8 @@ form.treeview div.header span.detail {
 	div#menu {
 		float:			right;
 		margin-right:		-16ex;
-		margin-top:		64px;
-		width:			12ex;
+		margin-top:		48px;
+		width:			14ex;
 	}
 
 	div#menu, div#menu a {
