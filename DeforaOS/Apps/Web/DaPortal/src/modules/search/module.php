@@ -36,9 +36,10 @@ class SearchModule extends Module
 				return $this->searchAdvanced($engine, $request);
 			case 'widget':
 				return $this->widget($engine, $request);
-			default:
+			case FALSE:
 				return $this->search($engine, $request);
 		}
+		return FALSE;
 	}
 
 
