@@ -155,8 +155,13 @@ div#menu ul.menubar li a:hover {
 
 div#menu ul.menubar li li a {
 	border-width:			0;
+	display:			none;
 	font-size:			80%;
 	padding-left:			2ex;
+}
+
+div#menu ul.menubar li li a.important {
+	display:			block;
 }
 
 div#menu form div.entry input {
