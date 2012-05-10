@@ -594,6 +594,8 @@ class GtkFormat extends FormatElements
 				return Gtk::STOCK_ABOUT;
 			case 'add':
 				return Gtk::STOCK_ADD;
+			case 'admin':
+				return Gtk::STOCK_PREFERENCES;
 			case 'apply':
 				return Gtk::STOCK_APPLY;
 			case 'cancel':
@@ -612,6 +614,8 @@ class GtkFormat extends FormatElements
 				return Gtk::STOCK_CUT;
 			case 'paste':
 				return Gtk::STOCK_PASTE;
+			case 'search':
+				return Gtk::STOCK_FIND;
 			default:
 				if($fallback !== FALSE)
 					return $fallback;
