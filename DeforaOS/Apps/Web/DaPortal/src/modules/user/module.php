@@ -48,7 +48,6 @@ class UserModule extends Module
 			case 'display':
 			case 'login':
 			case 'logout':
-			case 'menu':
 			case 'profile':
 			case 'register':
 			case 'reset':
