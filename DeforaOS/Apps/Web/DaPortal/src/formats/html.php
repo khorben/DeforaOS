@@ -511,16 +511,20 @@ class HtmlFormat extends FormatElements
 		$this->tagOpen('li', 'menuitem');
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
+			$class = $e->getProperty('class');
 			$attributes = array();
 			if(($a = $e->getProperty('name')) !== FALSE)
 				$attributes['name'] = $a;
+			if($e->getProperty('important') !== FALSE)
+				$class = is_string($class) ? $class.' important'
+					: 'important';
 			if(($r = $e->getProperty('request')) !== FALSE)
 				$attributes['href'] = $this->engine->getUrl($r,
 						FALSE);
 			else if(($u = $e->getProperty('url')) !== FALSE)
 				$attributes['href'] = $u;
 			if(count($attributes))
-				$this->tagOpen('a', FALSE,
+				$this->tagOpen('a', $class,
 						$e->getProperty('id'),
 						$attributes);
 			print($this->escapeText($text));
@@ -572,13 +576,16 @@ class HtmlFormat extends FormatElements
 			$l->setProperty('text', $text);
 			$this->renderElement($l);
 		}
-		if(($value = $e->getProperty('value')) === FALSE)
-			$value = '';
+		$value = $e->getProperty('value');
 		$args = array();
 		if(($name = $e->getProperty('name')) !== FALSE)
 			$args['name'] = $name;
-		$this->tag('textarea', $e->getProperty('class'),
-				$e->getProperty('id'), $args, $value);
+		//text has to be escaped without any tags
+		$this->tagOpen('textarea', $e->getProperty('class'),
+				$e->getProperty('id'), $args);
+		if($value !== FALSE)
+			print($this->escape($value));
+		$this->tagClose('textarea');
 		$this->tagClose('div');
 	}
 
