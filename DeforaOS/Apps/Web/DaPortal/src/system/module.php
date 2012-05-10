@@ -23,10 +23,11 @@ abstract class Module
 	//methods
 	//essential
 	//Module::Module
-	protected function __construct($id, $name)
+	protected function __construct($id, $name, $title = FALSE)
 	{
 		$this->id = $id;
 		$this->name = $name;
+		$this->title = ($title !== FALSE) ? $title : ucfirst($name);
 	}
 
 
@@ -53,6 +54,20 @@ abstract class Module
 		else
 			$ids[$module] = $res[0]['id'];
 		return $ids[$module];
+	}
+
+
+	//Module::getName
+	public function getName($engine)
+	{
+		return $this->name;
+	}
+
+
+	//Module::getTitle
+	public function getTitle($engine)
+	{
+		return $this->title;
 	}
 
 
@@ -99,6 +114,7 @@ abstract class Module
 	//properties
 	protected $id = FALSE;
 	protected $name = FALSE;
+	protected $title = FALSE;
 
 
 	//private
