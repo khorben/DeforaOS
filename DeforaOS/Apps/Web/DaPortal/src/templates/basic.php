@@ -117,9 +117,10 @@ class BasicTemplate extends Template
 				if(($label = $a->getProperty('label'))
 						=== FALSE)
 					continue;
+				$important = $a->getProperty('important');
+				$request = FALSE;
 				$stock = FALSE;
 				$text = FALSE;
-				$request = FALSE;
 				if(($icon = $a->getProperty('icon')) !== FALSE
 						&& $icon instanceof PageElement)
 					$stock = $icon->getProperty('stock');
@@ -134,6 +135,7 @@ class BasicTemplate extends Template
 				if($text === FALSE)
 					continue;
 				$menuitem->append('menuitem', array(
+					'important' => $important,
 					'request' => $request,
 					'stock' => $stock,
 					'text' => $text));
