@@ -30,6 +30,7 @@ class ArticleModule extends ContentModule
 	{
 		$title = ($title === FALSE) ? _('Articles') : $title;
 		parent::__construct($id, $name, $title);
+		//translations
 		$this->content_admin = _('Articles administration');
 		$this->content_by = _('Article by');
 		$this->content_item = _('Article');
@@ -38,6 +39,7 @@ class ArticleModule extends ContentModule
 		$this->content_list_title_by = _('Articles by');
 		$this->content_list_count = 10;
 		$this->content_list_order = 'title ASC';
+		$this->content_more_content = _('More articles...');
 		$this->content_title = _('Articles');
 	}
 }
