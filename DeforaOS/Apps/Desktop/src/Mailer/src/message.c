@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -203,7 +203,9 @@ int message_set_header(Message * message, char const * header)
 	if(header == NULL)
 		return -1;
 	for(i = 0; header[i] != '\0' && header[i] != ':'; i++);
+	/* FIXME white-space is optional */
 	if(header[i] == '\0' || header[i + 1] != ' ')
+		/* XXX unstructured headers are not supported */
 		return -1;
 	if((p = malloc(i + 1)) == NULL)
 		return -1;

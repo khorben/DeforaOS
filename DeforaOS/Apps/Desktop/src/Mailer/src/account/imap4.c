@@ -384,16 +384,20 @@ static int _imap4_parse(IMAP4 * imap4)
 #endif
 	for(i = 0, j = 0;; j = ++i)
 	{
+		/* look for carriage return sequences */
 		for(; i < imap4->rd_buf_cnt; i++)
 			if(imap4->rd_buf[i] == '\r' && i + 1 < imap4->rd_buf_cnt
 					&& imap4->rd_buf[++i] == '\n')
 				break;
+		/* if no carriage return was found wait for more input */
 		if(i == imap4->rd_buf_cnt)
 			break;
+		/* if no command was sent read more lines */
 		if(imap4->queue_cnt == 0)
 			continue;
 		imap4->rd_buf[i - 1] = '\0';
 		cmd = &imap4->queue[0];
+		/* if we have just sent a command match the answer */
 		if(cmd->status == I4CS_SENT)
 		{
 			snprintf(buf, sizeof(buf), "a%04x ", cmd->id);
