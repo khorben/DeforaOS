@@ -36,6 +36,9 @@
 /* types */
 struct _Keyboard
 {
+	/* preferences */
+	int embedded;
+
 	KeyboardLayout ** layouts;
 	size_t layouts_cnt;
 
@@ -286,6 +289,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 #endif
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
+	keyboard->embedded = prefs->embedded;
 	keyboard->layouts = NULL;
 	keyboard->layouts_cnt = 0;
 	screen = gdk_screen_get_default();
@@ -447,7 +451,7 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 				keyboard->x, keyboard->y);
 #endif
 	}
-	else
+	else if(keyboard->embedded == 0)
 		gtk_widget_hide(keyboard->window);
 }
 
