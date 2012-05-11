@@ -19,6 +19,7 @@
 # define KEYBOARD_KEYBOARD_H
 
 # include <gtk/gtk.h>
+# include "Keyboard.h"
 # include "key.h"
 
 
@@ -41,6 +42,7 @@ void keyboard_delete(Keyboard * keyboard);
 /* accessors */
 /* XXX be more explicit */
 void keyboard_set_layout(Keyboard * keyboard, unsigned int which);
+void keyboard_set_page(Keyboard * keyboard, KeyboardPage page);
 
 /* useful */
 void keyboard_show(Keyboard * keyboard, gboolean show);

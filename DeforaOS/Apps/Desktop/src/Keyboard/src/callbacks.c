@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,26 @@ void on_keyboard_embedded(gpointer data)
 	Keyboard * keyboard = data;
 
 	keyboard_show(keyboard, TRUE);
+}
+
+
+/* on_keyboard_message */
+int on_keyboard_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3)
+{
+	Keyboard * keyboard = data;
+	KeyboardMessage message = value1;
+
+	switch(message)
+	{
+		case KEYBOARD_MESSAGE_SET_PAGE:
+			keyboard_set_page(keyboard, value2);
+			break;
+		case KEYBOARD_MESSAGE_SET_VISIBLE:
+			keyboard_show(keyboard, (value2 != 0) ? TRUE : FALSE);
+			break;
+	}
+	return 0;
 }
 
 

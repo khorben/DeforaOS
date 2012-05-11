@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
+#include <Desktop.h>
 #define XK_LATIN1
 #define XK_MISCELLANY
 #include <X11/Xlib.h>
@@ -362,6 +363,9 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	}
 	keyboard_set_layout(keyboard, KLS_LETTERS);
 	pango_font_description_free(bold);
+	/* messages */
+	desktop_message_register(KEYBOARD_CLIENT_MESSAGE, on_keyboard_message,
+			keyboard);
 	return keyboard;
 }
 
@@ -379,16 +383,6 @@ void keyboard_delete(Keyboard * keyboard)
 
 
 /* accessors */
-/* keyboard_set_modifier */
-void keyboard_set_modifier(Keyboard * keyboard, unsigned int modifier)
-{
-	size_t i;
-
-	for(i = 0; i < keyboard->layouts_cnt; i++)
-		keyboard_layout_apply_modifier(keyboard->layouts[i], modifier);
-}
-
-
 /* keyboard_set_layout */
 void keyboard_set_layout(Keyboard * keyboard, unsigned int which)
 {
@@ -403,6 +397,32 @@ void keyboard_set_layout(Keyboard * keyboard, unsigned int which)
 			gtk_widget_show_all(widget);
 		else
 			gtk_widget_hide(widget);
+}
+
+
+/* keyboard_set_modifier */
+void keyboard_set_modifier(Keyboard * keyboard, unsigned int modifier)
+{
+	size_t i;
+
+	for(i = 0; i < keyboard->layouts_cnt; i++)
+		keyboard_layout_apply_modifier(keyboard->layouts[i], modifier);
+}
+
+
+/* keyboard_set_page */
+void keyboard_set_page(Keyboard * keyboard, KeyboardPage page)
+{
+	/* FIXME really implement */
+	switch(page)
+	{
+		case KEYBOARD_PAGE_DEFAULT:
+			keyboard_set_layout(keyboard, 0);
+			break;
+		case KEYBOARD_PAGE_KEYPAD:
+			keyboard_set_layout(keyboard, 1);
+			break;
+	}
 }
 
 

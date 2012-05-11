@@ -5,8 +5,9 @@ BINDIR	= $(PREFIX)/bin
 CC	?= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS?=
-CFLAGSF	= -W
+CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -pedantic
+LDFLAGSF= `pkg-config --libs libDesktop`
 RM	?= rm -f
 LN	?= ln -f
 MKDIR	?= mkdir -p
@@ -16,8 +17,8 @@ INSTALL	?= install
 all: $(TARGETS)
 
 keyboard_OBJS = callbacks.o common.o key.o keyboard.o layout.o main.o
-keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
-keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0` -lXtst
+keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lXtst
 
 keyboard: $(keyboard_OBJS)
 	$(CC) -o keyboard $(keyboard_OBJS) $(keyboard_LDFLAGS)
@@ -59,8 +60,11 @@ distclean: clean
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- keyboard $(DESTDIR)$(BINDIR)/keyboard
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- keyboardctl $(DESTDIR)$(BINDIR)/keyboardctl
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(BINDIR)/keyboard
+	$(RM) -- $(DESTDIR)$(BINDIR)/keyboardctl
 
 .PHONY: all clean distclean install uninstall

@@ -19,12 +19,15 @@
 # define KEYBOARD_CALLBACKS_H
 
 # include <gtk/gtk.h>
+# include <Desktop.h>
 
 
 /* public */
 /* functions */
 gboolean on_keyboard_delete_event(gpointer data);
 void on_keyboard_embedded(gpointer data);
+int on_keyboard_message(void * data, uint32_t value1, uint32_t value2,
+		uint32_t value3);
 
 void on_keyboard_set_layout_keypad(gpointer data);
 void on_keyboard_set_layout_letters(gpointer data);
