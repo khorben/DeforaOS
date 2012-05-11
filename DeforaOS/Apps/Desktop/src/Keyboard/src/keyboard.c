@@ -37,7 +37,7 @@
 struct _Keyboard
 {
 	/* preferences */
-	int embedded;
+	KeyboardMode mode;
 
 	KeyboardLayout ** layouts;
 	size_t layouts_cnt;
@@ -275,6 +275,12 @@ static GtkWidget * _keyboard_add_layout(Keyboard * keyboard,
 /* public */
 /* functions */
 /* keyboard_new */
+static void _new_mode(Keyboard * keyboard, KeyboardMode mode);
+static void _new_mode_docked(Keyboard * keyboard);
+static void _new_mode_embedded(Keyboard * keyboard);
+static void _new_mode_popup(Keyboard * keyboard);
+static void _new_mode_windowed(Keyboard * keyboard);
+
 Keyboard * keyboard_new(KeyboardPrefs * prefs)
 {
 	Keyboard * keyboard;
@@ -289,7 +295,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 #endif
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
-	keyboard->embedded = prefs->embedded;
+	keyboard->mode = prefs->mode;
 	keyboard->layouts = NULL;
 	keyboard->layouts_cnt = 0;
 	screen = gdk_screen_get_default();
@@ -300,38 +306,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	else
 		gdk_screen_get_monitor_geometry(screen, 0, &keyboard->geometry);
 	/* window */
-	if(prefs->embedded != 0)
-	{
-		keyboard->window = gtk_plug_new(0);
-		keyboard->width = 0;
-		keyboard->height = 0;
-		keyboard->x = 0;
-		keyboard->y = 0;
-		g_signal_connect_swapped(G_OBJECT(keyboard->window), "embedded",
-				G_CALLBACK(on_keyboard_embedded), keyboard);
-	}
-	else
-	{
-		keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
-		gtk_container_set_border_width(GTK_CONTAINER(keyboard->window),
-				4);
-		gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window),
-				FALSE);
-		gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window),
-				FALSE);
-		keyboard->width = keyboard->geometry.width;
-		keyboard->height = (keyboard->geometry.width / 11) * 3;
-		keyboard->x = keyboard->geometry.x;
-		keyboard->y = keyboard->geometry.y + keyboard->geometry.height
-			- keyboard->height;
-		gtk_window_move(GTK_WINDOW(keyboard->window), keyboard->x,
-				keyboard->y);
-		gtk_widget_set_size_request(keyboard->window, keyboard->width,
-				keyboard->height);
-		g_signal_connect_swapped(G_OBJECT(keyboard->window),
-				"delete-event",
-				G_CALLBACK(on_keyboard_delete_event), keyboard);
-	}
+	_new_mode(keyboard, prefs->mode);
 	gtk_widget_modify_bg(keyboard->window, GTK_STATE_NORMAL, &gray);
 	/* fonts */
 	if(prefs->font != NULL)
@@ -358,7 +333,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 					KLS_COUNT, KLS_SPECIAL)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
-	if(prefs->embedded == 0)
+	if(prefs->mode != KEYBOARD_MODE_EMBEDDED)
 		gtk_widget_show(keyboard->window);
 	else
 	{
@@ -371,6 +346,96 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	desktop_message_register(KEYBOARD_CLIENT_MESSAGE, on_keyboard_message,
 			keyboard);
 	return keyboard;
+}
+
+static void _new_mode(Keyboard * keyboard, KeyboardMode mode)
+{
+	switch(mode)
+	{
+		case KEYBOARD_MODE_DOCKED:
+			_new_mode_docked(keyboard);
+			break;
+		case KEYBOARD_MODE_EMBEDDED:
+			_new_mode_embedded(keyboard);
+			break;
+		case KEYBOARD_MODE_POPUP:
+			_new_mode_popup(keyboard);
+			break;
+		case KEYBOARD_MODE_WINDOWED:
+			_new_mode_windowed(keyboard);
+			break;
+	}
+}
+
+static void _new_mode_docked(Keyboard * keyboard)
+{
+	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(keyboard->window), 4);
+	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
+#endif
+	gtk_window_set_type_hint(GTK_WINDOW(keyboard->window),
+			GDK_WINDOW_TYPE_HINT_DOCK);
+	gtk_window_stick(GTK_WINDOW(keyboard->window));
+	keyboard->width = keyboard->geometry.width;
+	keyboard->height = (keyboard->geometry.width / 11) * 3;
+	keyboard->x = keyboard->geometry.x;
+	keyboard->y = keyboard->geometry.y + keyboard->geometry.height
+		- keyboard->height;
+	gtk_widget_set_size_request(keyboard->window, keyboard->width,
+			keyboard->height);
+	gtk_window_move(GTK_WINDOW(keyboard->window), keyboard->x, keyboard->y);
+	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
+			G_CALLBACK(on_keyboard_delete_event), keyboard);
+}
+
+static void _new_mode_embedded(Keyboard * keyboard)
+{
+	keyboard->window = gtk_plug_new(0);
+	keyboard->width = 0;
+	keyboard->height = 0;
+	keyboard->x = 0;
+	keyboard->y = 0;
+	g_signal_connect_swapped(G_OBJECT(keyboard->window), "embedded",
+			G_CALLBACK(on_keyboard_embedded), keyboard);
+}
+
+static void _new_mode_popup(Keyboard * keyboard)
+{
+	keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
+	gtk_container_set_border_width(GTK_CONTAINER(keyboard->window), 4);
+	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
+	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
+	keyboard->width = keyboard->geometry.width;
+	keyboard->height = (keyboard->geometry.width / 11) * 3;
+	keyboard->x = keyboard->geometry.x;
+	keyboard->y = keyboard->geometry.y + keyboard->geometry.height
+		- keyboard->height;
+	gtk_window_move(GTK_WINDOW(keyboard->window), keyboard->x, keyboard->y);
+	gtk_widget_set_size_request(keyboard->window, keyboard->width,
+			keyboard->height);
+	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
+			G_CALLBACK(on_keyboard_delete_event), keyboard);
+}
+
+static void _new_mode_windowed(Keyboard * keyboard)
+{
+	keyboard->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	keyboard->width = 0;
+	keyboard->height = 0;
+	keyboard->x = 0;
+	keyboard->y = 0;
+	gtk_container_set_border_width(GTK_CONTAINER(keyboard->window), 4);
+	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
+	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(keyboard->window),
+			"input-keyboard");
+#endif
+	gtk_window_set_title(GTK_WINDOW(keyboard->window), "Keyboard");
+	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
+			G_CALLBACK(on_keyboard_delete_event), keyboard);
 }
 
 
@@ -451,7 +516,7 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 				keyboard->x, keyboard->y);
 #endif
 	}
-	else if(keyboard->embedded == 0)
+	else if(keyboard->mode != KEYBOARD_MODE_EMBEDDED)
 		gtk_widget_hide(keyboard->window);
 }
 

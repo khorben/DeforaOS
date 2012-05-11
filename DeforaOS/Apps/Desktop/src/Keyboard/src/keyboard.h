@@ -27,11 +27,19 @@
 /* types */
 typedef struct _Keyboard Keyboard;
 
+typedef enum _KeyboardMode
+{
+	KEYBOARD_MODE_WINDOWED = 0,
+	KEYBOARD_MODE_DOCKED,
+	KEYBOARD_MODE_EMBEDDED,
+	KEYBOARD_MODE_POPUP
+} KeyboardMode;
+
 typedef struct _KeyboardPrefs
 {
 	int monitor;
 	char const * font;
-	int embedded;
+	KeyboardMode mode;
 } KeyboardPrefs;
 
 

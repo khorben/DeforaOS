@@ -28,7 +28,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: keyboard [-f font][-m monitor][-x]\n", stderr);
+	fputs("Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n", stderr);
 	return 1;
 }
 
@@ -45,9 +45,12 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "f:m:x")) != -1)
+	while((o = getopt(argc, argv, "df:m:pwx")) != -1)
 		switch(o)
 		{
+			case 'd':
+				prefs.mode = KEYBOARD_MODE_DOCKED;
+				break;
 			case 'f':
 				prefs.font = optarg;
 				break;
@@ -56,8 +59,14 @@ int main(int argc, char * argv[])
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
 				break;
+			case 'p':
+				prefs.mode = KEYBOARD_MODE_POPUP;
+				break;
+			case 'w':
+				prefs.mode = KEYBOARD_MODE_WINDOWED;
+				break;
 			case 'x':
-				prefs.embedded = 1;
+				prefs.mode = KEYBOARD_MODE_EMBEDDED;
 				break;
 			default:
 				return _usage();
