@@ -119,7 +119,10 @@ Account * account_new(Mailer * mailer, char const * type, char const * title,
 			(void *)mailer, type, title, (void *)store);
 #endif
 	if(type == NULL)
+	{
+		error_set_code(1, "%s", strerror(EINVAL));
 		return NULL;
+	}
 	if((account = object_new(sizeof(*account))) == NULL)
 		return NULL;
 	memset(account, 0, sizeof(*account));
@@ -186,6 +189,8 @@ void account_delete(Account * account)
 /* account_get_config */
 AccountConfig * account_get_config(Account * account)
 {
+	if(account->account == NULL)
+		return account->definition->config;
 	return account->definition->get_config(account->account);
 }
 
