@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Virtual keyboard
+Comment=An on-screen keyboard
+Exec=keyboard
+Icon=input-keyboard
+Type=Application
+Categories=Accessibility;Utility;GTK;
+StartupNotify=true
