@@ -1246,7 +1246,9 @@ int mailer_load(Mailer * mailer, char const * plugin)
 	if(icon == NULL)
 		icon = gtk_icon_theme_load_icon(theme, "gnome-settings", 24, 0,
 				NULL);
-	widget = (mpd->get_widget != NULL) ? mpd->get_widget(mp) : NULL;
+	widget = NULL;
+	if(mpd->get_widget != NULL && (widget = mpd->get_widget(mp)) != NULL)
+		gtk_widget_hide(widget);
 	/* FIXME hide from the list of active plug-ins if there is no widget */
 	gtk_list_store_append(mailer->pl_store, &iter);
 	gtk_list_store_set(mailer->pl_store, &iter, MPC_NAME, plugin,
@@ -1924,6 +1926,7 @@ static void _on_preferences_account_new(gpointer data)
 	gtk_assistant_set_page_complete(assistant, page, FALSE);
 	/* plug-in preferences */
 	page = gtk_vbox_new(FALSE, 0);
+	g_object_ref(page); /* XXX currently leaks memory */
 	ad->settings = page;
 	gtk_widget_show(page);
 	gtk_assistant_append_page(assistant, page);
@@ -1996,7 +1999,6 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 	gtk_window_set_title(GTK_WINDOW(widget), _(_title[i]));
 	if(i == 1)
 	{
-		/* XXX something is wrong with gtk_container_remove */
 		gtk_container_remove(GTK_CONTAINER(page), ad->settings);
 		if(old == 0)
 		{
