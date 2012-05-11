@@ -82,7 +82,7 @@ char const * config_get(Config * config, char const * section,
 		/* the variable is not defined */
 		error_set_code(1, "%s%s%s%s%s", variable, ": Not defined in",
 				(section[0] == '\0') ? " default" : "",
-				" section",
+				" section ",
 				(section[0] != '\0') ? section : "");
 		return NULL;
 	}
