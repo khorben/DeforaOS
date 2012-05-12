@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -191,9 +192,12 @@ static int _imap4_refresh(IMAP4 * imap4, AccountFolder * folder,
 /* useful */
 static IMAP4Command * _imap4_command(IMAP4 * imap4, IMAP4Context context,
 		char const * command);
+static int _imap4_lookup(IMAP4 * imap4, char const * hostname, uint16_t port,
+		struct sockaddr_in * sa);
 static int _imap4_parse(IMAP4 * imap4);
 static void _imap4_reset(IMAP4 * imap4);
 
+/* folders */
 static AccountFolder * _imap4_folder_new(IMAP4 * imap4, AccountFolder * parent,
 		char const * name);
 static void _imap4_folder_delete(IMAP4 * imap4,
@@ -203,6 +207,7 @@ static AccountFolder * _imap4_folder_get_folder(IMAP4 * imap4,
 static AccountMessage * _imap4_folder_get_message(IMAP4 * imap4,
 		AccountFolder * folder, unsigned int id);
 
+/* messages */
 static AccountMessage * _imap4_message_new(IMAP4 * imap4,
 		AccountFolder * folder, unsigned int id);
 static void _imap4_message_delete(IMAP4 * imap4,
@@ -359,6 +364,24 @@ static IMAP4Command * _imap4_command(IMAP4 * imap4, IMAP4Context context,
 				: _on_watch_can_write, imap4);
 	}
 	return p;
+}
+
+
+/* imap4_lookup */
+static int _imap4_lookup(IMAP4 * imap4, char const * hostname, uint16_t port,
+		struct sockaddr_in * sa)
+{
+	struct hostent * he;
+
+	if(hostname == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	if((he = gethostbyname(hostname)) == NULL)
+		return -error_set_code(1, "%s", hstrerror(h_errno));
+	memset(sa, 0, sizeof(*sa));
+	sa->sin_family = AF_INET;
+	sa->sin_port = htons(port);
+	sa->sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
+	return 0;
 }
 
 
@@ -737,6 +760,9 @@ static void _imap4_reset(IMAP4 * imap4)
 {
 	size_t i;
 
+	if(imap4->ssl != NULL)
+		SSL_free(imap4->ssl);
+	imap4->ssl = NULL;
 	if(imap4->rd_source != 0)
 		g_source_remove(imap4->rd_source);
 	imap4->rd_source = 0;
@@ -918,8 +944,7 @@ static gboolean _on_connect(gpointer data)
 	AccountPluginHelper * helper = imap4->helper;
 	char const * hostname;
 	char const * p;
-	struct hostent * he;
-	unsigned short port;
+	uint16_t port;
 	struct sockaddr_in sa;
 	int res;
 
@@ -927,19 +952,22 @@ static gboolean _on_connect(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	imap4->source = 0;
+	/* get the hostname and port */
 	if((hostname = imap4->config[I4CV_HOSTNAME].value) == NULL)
 	{
 		helper->error(NULL, "No hostname set", 1);
 		return FALSE;
 	}
-	if((he = gethostbyname(hostname)) == NULL)
-	{
-		helper->error(NULL, hstrerror(h_errno), 1);
-		return _on_reset(imap4);
-	}
 	if((p = imap4->config[I4CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
+	/* lookup the address */
+	if(_imap4_lookup(imap4, hostname, port, &sa) != 0)
+	{
+		helper->error(NULL, error_get(), 1);
+		return FALSE;
+	}
+	/* create the socket */
 	if((imap4->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -949,9 +977,7 @@ static gboolean _on_connect(gpointer data)
 			&& fcntl(imap4->fd, F_SETFL, res | O_NONBLOCK) == -1)
 		/* ignore this error */
 		helper->error(NULL, strerror(errno), 1);
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port);
-	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
+	/* connect to the remote host */
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
 	if((connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
@@ -1008,6 +1034,9 @@ static gboolean _on_reset(gpointer data)
 {
 	IMAP4 * imap4 = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	_imap4_reset(imap4);
 	imap4->source = g_timeout_add(3000, _on_connect, imap4);
 	return FALSE;
@@ -1020,6 +1049,9 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 {
 	IMAP4 * imap4 = data;
 	AccountPluginHelper * helper = imap4->helper;
+	char const * hostname = imap4->config[I4CV_HOSTNAME].value;
+	uint16_t port = (unsigned long)imap4->config[I4CV_PORT].value;
+	struct sockaddr_in sa;
 	SSL_CTX * ssl_ctx;
 	char buf[128];
 
@@ -1028,6 +1060,10 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() connected\n", __func__);
 #endif
+	/* XXX remember the address instead */
+	if(_imap4_lookup(imap4, hostname, port, &sa) == 0)
+		helper->status(helper->account, "Connected to %s (%s:%u)",
+				hostname, inet_ntoa(sa.sin_addr), port);
 	imap4->wr_source = 0;
 	/* setup SSL */
 	if(imap4->config[I4CV_SSL].value != NULL)
@@ -1042,7 +1078,13 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 			return FALSE;
 		}
 		if(SSL_set_fd(imap4->ssl, imap4->fd) != 1)
-			; /* FIXME handle error */
+		{
+			helper->error(NULL, ERR_error_string(ERR_get_error(),
+						buf), 1);
+			SSL_free(imap4->ssl);
+			imap4->ssl = NULL;
+			return FALSE;
+		}
 		SSL_set_connect_state(imap4->ssl);
 		/* perform initial handshake */
 		imap4->wr_source = g_io_add_watch(imap4->channel, G_IO_OUT,
@@ -1202,7 +1244,7 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(source != imap4->channel)
+	if(condition != G_IO_IN || source != imap4->channel)
 		return FALSE; /* should not happen */
 	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
@@ -1332,8 +1374,8 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(source != imap4->channel || imap4->queue_cnt == 0
-			|| cmd->buf_cnt == 0)
+	if(condition != G_IO_OUT || source != imap4->channel
+			|| imap4->queue_cnt == 0 || cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
 	if((cnt = SSL_write(imap4->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
 	{

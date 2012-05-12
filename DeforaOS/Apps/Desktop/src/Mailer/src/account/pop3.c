@@ -155,6 +155,8 @@ static int _pop3_refresh(POP3 * pop3, AccountFolder * folder,
 /* useful */
 static POP3Command * _pop3_command(POP3 * pop3, POP3Context context,
 		char const * command);
+static int _pop3_lookup(POP3 * pop3, char const * hostname, unsigned short port,
+		struct sockaddr_in * sa);
 static int _pop3_parse(POP3 * pop3);
 static void _pop3_reset(POP3 * pop3);
 
@@ -310,6 +312,24 @@ static POP3Command * _pop3_command(POP3 * pop3, POP3Context context,
 				: _on_watch_can_write, pop3);
 	}
 	return p;
+}
+
+
+/* pop3_lookup */
+static int _pop3_lookup(POP3 * pop3, char const * hostname, unsigned short port,
+		struct sockaddr_in * sa)
+{
+	struct hostent * he;
+
+	if(hostname == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	if((he = gethostbyname(hostname)) == NULL)
+		return -error_set_code(1, "%s", hstrerror(h_errno));
+	memset(sa, 0, sizeof(*sa));
+	sa->sin_family = AF_INET;
+	sa->sin_port = htons(port);
+	sa->sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
+	return 0;
 }
 
 
@@ -486,6 +506,9 @@ static void _pop3_reset(POP3 * pop3)
 {
 	size_t i;
 
+	if(pop3->ssl != NULL)
+		SSL_free(pop3->ssl);
+	pop3->ssl = NULL;
 	if(pop3->rd_source != 0)
 		g_source_remove(pop3->rd_source);
 	free(pop3->rd_buf);
@@ -566,7 +589,6 @@ static gboolean _on_connect(gpointer data)
 	AccountPluginHelper * helper = pop3->helper;
 	char const * hostname;
 	char const * p;
-	struct hostent * he;
 	unsigned short port;
 	struct sockaddr_in sa;
 	int res;
@@ -575,19 +597,21 @@ static gboolean _on_connect(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	pop3->source = 0;
+	/* get the hostname and port */
 	if((hostname = pop3->config[P3CV_HOSTNAME].value) == NULL)
 	{
 		helper->error(NULL, "No hostname set", 1);
 		return FALSE;
 	}
-	if((he = gethostbyname(hostname)) == NULL)
-	{
-		helper->error(NULL, hstrerror(h_errno), 1);
-		return _on_reset(pop3);
-	}
 	if((p = pop3->config[P3CV_PORT].value) == NULL)
 		return FALSE;
 	port = (unsigned long)p;
+	/* lookup the address */
+	if(_pop3_lookup(pop3, hostname, port, &sa) != 0)
+	{
+		helper->error(NULL, error_get(), 1);
+		return FALSE;
+	}
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -597,9 +621,7 @@ static gboolean _on_connect(gpointer data)
 			&& fcntl(pop3->fd, F_SETFL, res | O_NONBLOCK) == -1)
 		/* ignore this error */
 		helper->error(NULL, strerror(errno), 1);
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port);
-	sa.sin_addr.s_addr = *((uint32_t*)he->h_addr_list[0]);
+	/* connect to the remote host */
 	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
 	if((connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
@@ -669,6 +691,9 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 {
 	POP3 * pop3 = data;
 	AccountPluginHelper * helper = pop3->helper;
+	char const * hostname = pop3->config[P3CV_HOSTNAME].value;
+	unsigned short port = (unsigned long)pop3->config[P3CV_PORT].value;
+	struct sockaddr_in sa;
 	SSL_CTX * ssl_ctx;
 	char buf[128];
 
@@ -677,6 +702,10 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() connected\n", __func__);
 #endif
+	/* XXX remember the address instead */
+	if(_pop3_lookup(pop3, hostname, port, &sa) == 0)
+		helper->status(helper->account, "Connected to %s (%s:%u)",
+				hostname, inet_ntoa(sa.sin_addr), port);
 	pop3->wr_source = 0;
 	/* setup SSL */
 	if(pop3->config[P3CV_SSL].value != NULL)
@@ -691,7 +720,13 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 			return FALSE;
 		}
 		if(SSL_set_fd(pop3->ssl, pop3->fd) != 1)
-			; /* FIXME handle error */
+		{
+			helper->error(NULL, ERR_error_string(ERR_get_error(),
+						buf), 1);
+			SSL_free(pop3->ssl);
+			pop3->ssl = NULL;
+			return FALSE;
+		}
 		SSL_set_connect_state(pop3->ssl);
 		/* perform initial handshake */
 		pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_OUT,
@@ -851,7 +886,7 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(source != pop3->channel)
+	if(condition != G_IO_IN || source != pop3->channel)
 		return FALSE; /* should not happen */
 	if((p = realloc(pop3->rd_buf, pop3->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
@@ -923,6 +958,9 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 	char * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(condition != G_IO_OUT || source != pop3->channel
 			|| pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
@@ -976,7 +1014,8 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(source != pop3->channel || pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
+	if(condition != G_IO_OUT || source != pop3->channel
+			|| pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
 	if((cnt = SSL_write(pop3->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
 	{
