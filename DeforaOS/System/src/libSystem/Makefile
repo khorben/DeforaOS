@@ -64,6 +64,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/test/string.c \
 		$(PACKAGE)-$(VERSION)/test/Makefile \
+		$(PACKAGE)-$(VERSION)/test/test.sh \
 		$(PACKAGE)-$(VERSION)/test/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
