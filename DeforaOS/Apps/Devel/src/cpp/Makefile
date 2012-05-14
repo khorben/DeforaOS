@@ -1,6 +1,6 @@
 PACKAGE	= cpp
 VERSION	= 0.0.1
-SUBDIRS	= data include src
+SUBDIRS	= data doc include src
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -25,6 +25,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/cpp.pc.in \
 		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/GRAMMAR \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/cpp-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/cpp.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
