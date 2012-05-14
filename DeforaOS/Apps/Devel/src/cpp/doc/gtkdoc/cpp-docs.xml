@@ -19,10 +19,7 @@
 
   <chapter>
     <title>&title;</title>
-    <xi:include href="xml/common.xml"/>
-    <xi:include href="xml/config.xml"/>
     <xi:include href="xml/cpp.xml"/>
-    <xi:include href="xml/parser.xml"/>
 
   </chapter>
   <index id="api-index-full">
