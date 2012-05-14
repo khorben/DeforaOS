@@ -1,0 +1,134 @@
+<!-- ##### SECTION Title ##### -->
+Hash
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT Hash ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION HashCompare ##### -->
+<para>
+
+</para>
+
+@value1: 
+@value2: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION HashForeach ##### -->
+<para>
+
+</para>
+
+@key: 
+@value: 
+@data: 
+
+
+<!-- ##### FUNCTION hash_compare_string ##### -->
+<para>
+
+</para>
+
+@value1: 
+@value2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION hash_count ##### -->
+<para>
+
+</para>
+
+@hash: 
+@Returns: 
+
+
+<!-- ##### FUNCTION hash_delete ##### -->
+<para>
+
+</para>
+
+@h: 
+
+
+<!-- ##### FUNCTION hash_foreach ##### -->
+<para>
+
+</para>
+
+@hash: 
+@func: 
+@data: 
+
+
+<!-- ##### FUNCTION hash_func_string ##### -->
+<para>
+
+</para>
+
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION hash_get ##### -->
+<para>
+
+</para>
+
+@h: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION hash_new ##### -->
+<para>
+
+</para>
+
+@func: 
+@compare: 
+@Returns: 
+
+
+<!-- ##### FUNCTION hash_reset ##### -->
+<para>
+
+</para>
+
+@hash: 
+@Returns: 
+
+
+<!-- ##### FUNCTION hash_set ##### -->
+<para>
+
+</para>
+
+@h: 
+@key: 
+@value: 
+@Returns: 
+
+

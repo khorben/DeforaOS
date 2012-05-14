@@ -1,0 +1,147 @@
+<!-- ##### SECTION Title ##### -->
+Event
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT Event ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION EventIOFunc ##### -->
+<para>
+
+</para>
+
+@fd: 
+@data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION EventTimeoutFunc ##### -->
+<para>
+
+</para>
+
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_delete ##### -->
+<para>
+
+</para>
+
+@event: 
+
+
+<!-- ##### FUNCTION event_loop ##### -->
+<para>
+
+</para>
+
+@event: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_loop_quit ##### -->
+<para>
+
+</para>
+
+@event: 
+
+
+<!-- ##### FUNCTION event_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_register_io_read ##### -->
+<para>
+
+</para>
+
+@event: 
+@fd: 
+@func: 
+@userdata: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_register_io_write ##### -->
+<para>
+
+</para>
+
+@event: 
+@fd: 
+@func: 
+@userdata: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_register_timeout ##### -->
+<para>
+
+</para>
+
+@event: 
+@timeout: 
+@func: 
+@userdata: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_unregister_io_read ##### -->
+<para>
+
+</para>
+
+@event: 
+@fd: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_unregister_io_write ##### -->
+<para>
+
+</para>
+
+@event: 
+@fd: 
+@Returns: 
+
+
+<!-- ##### FUNCTION event_unregister_timeout ##### -->
+<para>
+
+</para>
+
+@event: 
+@func: 
+@Returns: 
+
+

@@ -1,0 +1,137 @@
+<!-- ##### SECTION Title ##### -->
+Config
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF Config ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION ConfigForeachCallback ##### -->
+<para>
+
+</para>
+
+@section: 
+@priv: 
+
+
+<!-- ##### USER_FUNCTION ConfigForeachSectionCallback ##### -->
+<para>
+
+</para>
+
+@variable: 
+@value: 
+@priv: 
+
+
+<!-- ##### FUNCTION config_delete ##### -->
+<para>
+
+</para>
+
+@config: 
+
+
+<!-- ##### FUNCTION config_foreach ##### -->
+<para>
+
+</para>
+
+@config: 
+@callback: 
+@priv: 
+
+
+<!-- ##### FUNCTION config_foreach_section ##### -->
+<para>
+
+</para>
+
+@config: 
+@section: 
+@callback: 
+@priv: 
+
+
+<!-- ##### FUNCTION config_get ##### -->
+<para>
+
+</para>
+
+@config: 
+@section: 
+@variable: 
+@Returns: 
+
+
+<!-- ##### FUNCTION config_load ##### -->
+<para>
+
+</para>
+
+@config: 
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION config_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION config_reset ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION config_save ##### -->
+<para>
+
+</para>
+
+@config: 
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION config_set ##### -->
+<para>
+
+</para>
+
+@config: 
+@section: 
+@variable: 
+@value: 
+@Returns: 
+
+

@@ -1,0 +1,81 @@
+<!-- ##### SECTION Title ##### -->
+Error
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION error_get ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION error_get_code ##### -->
+<para>
+
+</para>
+
+@code: 
+@Returns: 
+
+
+<!-- ##### FUNCTION error_print ##### -->
+<para>
+
+</para>
+
+@program: 
+@Returns: 
+
+
+<!-- ##### FUNCTION error_set ##### -->
+<para>
+
+</para>
+
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION error_set_code ##### -->
+<para>
+
+</para>
+
+@code: 
+@format: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION error_set_print ##### -->
+<para>
+
+</para>
+
+@program: 
+@code: 
+@format: 
+@...: 
+@Returns: 
+
+

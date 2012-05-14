@@ -31,6 +31,22 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/libSystem-docs.xml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/System.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/array.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/buffer.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/config.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/error.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/event.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/file.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/hash.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/libSystem-unused.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/object.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/parser.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/plugin.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/string.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/token.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \

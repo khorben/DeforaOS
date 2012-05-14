@@ -1,0 +1,76 @@
+<!-- ##### SECTION Title ##### -->
+File
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT File ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF FileMode ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION file_delete ##### -->
+<para>
+
+</para>
+
+@file: 
+
+
+<!-- ##### FUNCTION file_new ##### -->
+<para>
+
+</para>
+
+@path: 
+@mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION file_read ##### -->
+<para>
+
+</para>
+
+@file: 
+@buf: 
+@size: 
+@count: 
+@Returns: 
+
+
+<!-- ##### FUNCTION file_write ##### -->
+<para>
+
+</para>
+
+@file: 
+@buf: 
+@size: 
+@count: 
+@Returns: 
+
+

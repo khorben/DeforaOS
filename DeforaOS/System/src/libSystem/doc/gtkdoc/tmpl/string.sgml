@@ -1,0 +1,173 @@
+<!-- ##### SECTION Title ##### -->
+String
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF String ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION string_append ##### -->
+<para>
+
+</para>
+
+@string: 
+@append: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_clear ##### -->
+<para>
+
+</para>
+
+@string: 
+
+
+<!-- ##### FUNCTION string_compare ##### -->
+<para>
+
+</para>
+
+@string: 
+@string2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_compare_length ##### -->
+<para>
+
+</para>
+
+@string: 
+@string2: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_cut ##### -->
+<para>
+
+</para>
+
+@string: 
+@length: 
+
+
+<!-- ##### FUNCTION string_delete ##### -->
+<para>
+
+</para>
+
+@string: 
+
+
+<!-- ##### FUNCTION string_explode ##### -->
+<para>
+
+</para>
+
+@string: 
+@separator: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_find ##### -->
+<para>
+
+</para>
+
+@string: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_index ##### -->
+<para>
+
+</para>
+
+@string: 
+@key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_length ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_new ##### -->
+<para>
+
+</para>
+
+@string: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_new_append ##### -->
+<para>
+
+</para>
+
+@string: 
+@...: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_new_length ##### -->
+<para>
+
+</para>
+
+@string: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_replace ##### -->
+<para>
+
+</para>
+
+@string: 
+@what: 
+@by: 
+@Returns: 
+
+
+<!-- ##### FUNCTION string_set ##### -->
+<para>
+
+</para>
+
+@string: 
+@string2: 
+@Returns: 
+
+

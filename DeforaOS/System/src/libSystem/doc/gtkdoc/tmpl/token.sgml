@@ -1,0 +1,175 @@
+<!-- ##### SECTION Title ##### -->
+Token
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO TC_NULL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT Token ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF TokenCode ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF TokenSet ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION token_delete ##### -->
+<para>
+
+</para>
+
+@token: 
+
+
+<!-- ##### FUNCTION token_get_code ##### -->
+<para>
+
+</para>
+
+@token: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_get_col ##### -->
+<para>
+
+</para>
+
+@token: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_get_data ##### -->
+<para>
+
+</para>
+
+@token: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_get_filename ##### -->
+<para>
+
+</para>
+
+@token: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_get_line ##### -->
+<para>
+
+</para>
+
+@token: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_get_string ##### -->
+<para>
+
+</para>
+
+@token: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_in_set ##### -->
+<para>
+
+</para>
+
+@token: 
+@set: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_set_code ##### -->
+<para>
+
+</para>
+
+@token: 
+@code: 
+
+
+<!-- ##### FUNCTION token_set_col ##### -->
+<para>
+
+</para>
+
+@token: 
+@col: 
+
+
+<!-- ##### FUNCTION token_set_data ##### -->
+<para>
+
+</para>
+
+@token: 
+@data: 
+
+
+<!-- ##### FUNCTION token_set_filename ##### -->
+<para>
+
+</para>
+
+@token: 
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION token_set_line ##### -->
+<para>
+
+</para>
+
+@token: 
+@line: 
+
+
+<!-- ##### FUNCTION token_set_string ##### -->
+<para>
+
+</para>
+
+@token: 
+@string: 
+@Returns: 
+
+

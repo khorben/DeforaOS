@@ -1,0 +1,67 @@
+<!-- ##### SECTION Title ##### -->
+Plugin
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF Plugin ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION plugin_delete ##### -->
+<para>
+
+</para>
+
+@plugin: 
+
+
+<!-- ##### FUNCTION plugin_lookup ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@symbol: 
+@Returns: 
+
+
+<!-- ##### FUNCTION plugin_new ##### -->
+<para>
+
+</para>
+
+@libdir: 
+@package: 
+@type: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION plugin_new_self ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

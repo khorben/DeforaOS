@@ -1,0 +1,134 @@
+<!-- ##### SECTION Title ##### -->
+Array
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO ARRAY ##### -->
+<para>
+
+</para>
+
+@type: 
+@name: 
+
+
+<!-- ##### STRUCT Array ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION ArrayForeach ##### -->
+<para>
+
+</para>
+
+@value: 
+@data: 
+
+
+<!-- ##### FUNCTION array_append ##### -->
+<para>
+
+</para>
+
+@array: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION array_count ##### -->
+<para>
+
+</para>
+
+@array: 
+@Returns: 
+
+
+<!-- ##### FUNCTION array_delete ##### -->
+<para>
+
+</para>
+
+@array: 
+
+
+<!-- ##### FUNCTION array_foreach ##### -->
+<para>
+
+</para>
+
+@array: 
+@func: 
+@data: 
+
+
+<!-- ##### FUNCTION array_get ##### -->
+<para>
+
+</para>
+
+@array: 
+@pos: 
+@Returns: 
+
+
+<!-- ##### FUNCTION array_get_copy ##### -->
+<para>
+
+</para>
+
+@array: 
+@pos: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION array_new ##### -->
+<para>
+
+</para>
+
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION array_remove_pos ##### -->
+<para>
+
+</para>
+
+@array: 
+@pos: 
+@Returns: 
+
+
+<!-- ##### FUNCTION array_set ##### -->
+<para>
+
+</para>
+
+@array: 
+@pos: 
+@value: 
+@Returns: 
+
+

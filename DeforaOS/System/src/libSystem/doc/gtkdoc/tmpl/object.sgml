@@ -1,0 +1,55 @@
+<!-- ##### SECTION Title ##### -->
+Object
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### TYPEDEF Object ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION object_delete ##### -->
+<para>
+
+</para>
+
+@object: 
+
+
+<!-- ##### FUNCTION object_new ##### -->
+<para>
+
+</para>
+
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION object_resize ##### -->
+<para>
+
+</para>
+
+@object: 
+@size: 
+@Returns: 
+
+
