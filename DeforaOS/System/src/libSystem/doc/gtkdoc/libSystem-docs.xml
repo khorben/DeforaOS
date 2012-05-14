@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+  <!ENTITY server "www.defora.org/doc/html">
+  <!ENTITY title "DeforaOS libSystem">
+  <!ENTITY version "0.1.6">
+]>
+<book id="index">
+  <bookinfo>
+    <title>libSystem Reference Manual</title>
+    <releaseinfo>
+      for libSystem &version;.
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="http://&server;/libSystem/index.html">http://&server;/libSystem/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+
+  <chapter>
+    <title>&title;</title>
+    <xi:include href="xml/array.xml"/>
+    <xi:include href="xml/buffer.xml"/>
+    <xi:include href="xml/config.xml"/>
+    <xi:include href="xml/error.xml"/>
+    <xi:include href="xml/event.xml"/>
+    <xi:include href="xml/file.xml"/>
+    <xi:include href="xml/hash.xml"/>
+    <xi:include href="xml/object.xml"/>
+    <xi:include href="xml/parser.xml"/>
+    <xi:include href="xml/plugin.xml"/>
+    <xi:include href="xml/string.xml"/>
+    <xi:include href="xml/token.xml"/>
+
+  </chapter>
+  <index id="api-index-full">
+    <title>API Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="deprecated-api-index" role="deprecated">
+    <title>Index of deprecated API</title>
+    <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+</book>

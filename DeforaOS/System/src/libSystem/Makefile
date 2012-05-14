@@ -1,6 +1,6 @@
 PACKAGE	= libSystem
 VERSION	= 0.1.6
-SUBDIRS	= data include src test
+SUBDIRS	= data doc include src test
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -25,6 +25,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/libSystem.pc.in \
 		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/GRAMMAR \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/libSystem-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
