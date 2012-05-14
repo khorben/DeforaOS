@@ -1,6 +1,6 @@
 PACKAGE	= libParser
 VERSION	= 0.0.0
-SUBDIRS	= data include/System src tools
+SUBDIRS	= data doc include/System src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -25,6 +25,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/libParser.pc.in \
 		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/libParser-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System/Parser.h \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
