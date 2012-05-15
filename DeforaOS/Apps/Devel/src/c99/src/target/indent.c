@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "c99/target.h"
+#include "C99/target.h"
 #include "../common.h"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))

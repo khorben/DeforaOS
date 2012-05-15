@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "c99/target.h"
+#include "C99/target.h"
 
 
 /* graph */
@@ -89,7 +89,7 @@ static int _graph_exit(void)
 		ret |= error_set_code(1, "%s: %s", _filename, strerror(errno));
 	free(_filename);
 	free(_function);
-	return 0;
+	return ret;
 }
 
 
@@ -103,7 +103,7 @@ static int _graph_function_begin(char const * name)
 #endif
 	free(_function);
 	if((_function = strdup(name)) == NULL)
-		ret = error_set_code(1, "%s", strerror(errno));
+		ret |= error_set_code(1, "%s", strerror(errno));
 	return ret;
 }
 

@@ -1,4 +1,4 @@
-SUBDIRS	= c99
+SUBDIRS	= C99
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -22,10 +22,10 @@ distclean:
 install:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 -- c99.h $(DESTDIR)$(INCLUDEDIR)/c99.h
+	$(INSTALL) -m 0644 -- C99.h $(DESTDIR)$(INCLUDEDIR)/C99.h
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/c99.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/C99.h
 
 .PHONY: all subdirs clean distclean install uninstall

@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "c99/target.h"
+#include "C99/target.h"
 #ifdef DEBUG
 # include "../../config.h"
 #endif

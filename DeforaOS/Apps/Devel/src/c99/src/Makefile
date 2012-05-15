@@ -28,19 +28,19 @@ c99_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 c99: $(c99_OBJS)
 	$(CC) -o c99 $(c99_OBJS) $(c99_LDFLAGS)
 
-c99.o: c99.c common.h code.h parser.h ../include/c99.h
+c99.o: c99.c common.h code.h parser.h ../include/C99.h
 	$(CC) $(c99_CFLAGS) -c c99.c
 
-code.o: code.c ../include/c99/target.h code.h ../config.h
+code.o: code.c ../include/C99/target.h code.h ../config.h
 	$(CC) $(c99_CFLAGS) -c code.c
 
-main.o: main.c ../include/c99.h ../config.h
+main.o: main.c ../include/C99.h ../config.h
 	$(CC) $(c99_CFLAGS) -c main.c
 
-parser.o: parser.c common.h code.h tokenset.h scanner.h ../include/c99.h ../config.h
+parser.o: parser.c common.h code.h tokenset.h scanner.h ../include/C99.h ../config.h
 	$(CC) $(c99_CFLAGS) -c parser.c
 
-scanner.o: scanner.c ../include/c99.h ../config.h
+scanner.o: scanner.c ../include/C99.h ../config.h
 	$(CC) $(c99_CFLAGS) -c scanner.c
 
 tokenset.o: tokenset.c common.h code.h tokenset.h

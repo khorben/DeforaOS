@@ -40,13 +40,13 @@ indent_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 indent.so: $(indent_OBJS)
 	$(CCSHARED) -o indent.so $(indent_OBJS) $(indent_LDFLAGS)
 
-asm.o: asm.c ../../include/c99/target.h ../../config.h
+asm.o: asm.c ../../include/C99/target.h ../../config.h
 	$(CC) $(asm_CFLAGS) -c asm.c
 
-graph.o: graph.c ../../include/c99/target.h
+graph.o: graph.c ../../include/C99/target.h
 	$(CC) $(graph_CFLAGS) -c graph.c
 
-indent.o: indent.c ../../include/c99/target.h
+indent.o: indent.c ../../include/C99/target.h
 	$(CC) $(indent_CFLAGS) -c indent.c
 
 clean:
@@ -56,16 +56,16 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 -- asm.so $(DESTDIR)$(LIBDIR)/c99/target/asm.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 -- graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 -- indent.so $(DESTDIR)$(LIBDIR)/c99/target/indent.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/C99/target
+	$(INSTALL) -m 0644 -- asm.so $(DESTDIR)$(LIBDIR)/C99/target/asm.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/C99/target
+	$(INSTALL) -m 0644 -- graph.so $(DESTDIR)$(LIBDIR)/C99/target/graph.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/C99/target
+	$(INSTALL) -m 0644 -- indent.so $(DESTDIR)$(LIBDIR)/C99/target/indent.so
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/asm.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/graph.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/indent.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/C99/target/asm.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/C99/target/graph.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/C99/target/indent.so
 
 .PHONY: all clean distclean install uninstall
