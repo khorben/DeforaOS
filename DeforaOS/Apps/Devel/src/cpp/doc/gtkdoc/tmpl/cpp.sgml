@@ -1,0 +1,226 @@
+<!-- ##### SECTION Title ##### -->
+Cpp
+
+<!-- ##### SECTION Short_Description ##### -->
+DeforaOS Development code pre-processor
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO CPP_CODE_COUNT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO CPP_CODE_LAST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO CPP_CODE_META_FIRST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO CPP_CODE_META_LAST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT Cpp ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM CppCode ##### -->
+<para>
+
+</para>
+
+@CPP_CODE_NULL: 
+@CPP_CODE_COMMA: ","
+@CPP_CODE_DQUOTE: """
+@CPP_CODE_META_DATA: "<emphasis>meta-data</emphasis>"
+@CPP_CODE_META_DEFINE: "#define"
+@CPP_CODE_META_ELIF: "#elif"
+@CPP_CODE_META_ELSE: "#else"
+@CPP_CODE_META_ENDIF: "#endif"
+@CPP_CODE_META_ERROR: "#error"
+@CPP_CODE_META_IF: "#if"
+@CPP_CODE_META_IFDEF: "#ifdef"
+@CPP_CODE_META_IFNDEF: "#ifndef"
+@CPP_CODE_META_INCLUDE: "#include"
+@CPP_CODE_META_PRAGMA: "#pragma"
+@CPP_CODE_META_UNDEF: "#undef"
+@CPP_CODE_META_WARNING: "#warning"
+@CPP_CODE_OPERATOR_AEQUALS: "&amp;="
+@CPP_CODE_OPERATOR_AMPERSAND: "&amp;"
+@CPP_CODE_OPERATOR_BAR: "|"
+@CPP_CODE_OPERATOR_BEQUALS: "|="
+@CPP_CODE_OPERATOR_COLON: ":"
+@CPP_CODE_OPERATOR_DAMPERSAND: "&amp;&amp;"
+@CPP_CODE_OPERATOR_DBAR: "||"
+@CPP_CODE_OPERATOR_DEQUALS: "=="
+@CPP_CODE_OPERATOR_DGEQUALS: "&gt;&gt;="
+@CPP_CODE_OPERATOR_DGREATER: "&gt;&gt;"
+@CPP_CODE_OPERATOR_DHASH: "##"
+@CPP_CODE_OPERATOR_DIVEQUALS: "/="
+@CPP_CODE_OPERATOR_DIVIDE: "/"
+@CPP_CODE_OPERATOR_DLEQUALS: "&lt;&lt;="
+@CPP_CODE_OPERATOR_DLESS: "&lt;&lt;"
+@CPP_CODE_OPERATOR_DMINUS: "--"
+@CPP_CODE_OPERATOR_DOT: "."
+@CPP_CODE_OPERATOR_DOTDOTDOT: "..."
+@CPP_CODE_OPERATOR_DPLUS: "++"
+@CPP_CODE_OPERATOR_EQUALS: "="
+@CPP_CODE_OPERATOR_GEQUALS: "&gt;="
+@CPP_CODE_OPERATOR_GREATER: "&gt;"
+@CPP_CODE_OPERATOR_HASH: "#"
+@CPP_CODE_OPERATOR_LBRACE: "{"
+@CPP_CODE_OPERATOR_LBRACKET: "["
+@CPP_CODE_OPERATOR_LEQUALS: "&lt;="
+@CPP_CODE_OPERATOR_LESS: "&lt;"
+@CPP_CODE_OPERATOR_LPAREN: "("
+@CPP_CODE_OPERATOR_MEQUALS: "-="
+@CPP_CODE_OPERATOR_MGREATER: 
+@CPP_CODE_OPERATOR_MINUS: "-"
+@CPP_CODE_OPERATOR_MODEQUALS: 
+@CPP_CODE_OPERATOR_MODULO: "%"
+@CPP_CODE_OPERATOR_NEQUALS: "!="
+@CPP_CODE_OPERATOR_NOT: "!"
+@CPP_CODE_OPERATOR_PEQUALS: "+="
+@CPP_CODE_OPERATOR_PLUS: "+"
+@CPP_CODE_OPERATOR_QUESTION: 
+@CPP_CODE_OPERATOR_RBRACE: "}"
+@CPP_CODE_OPERATOR_RBRACKET: "]"
+@CPP_CODE_OPERATOR_RPAREN: ")"
+@CPP_CODE_OPERATOR_SEMICOLON: ";"
+@CPP_CODE_OPERATOR_TEQUALS: "~="
+@CPP_CODE_OPERATOR_TILDE: "~"
+@CPP_CODE_OPERATOR_TIMES: "*"
+@CPP_CODE_OPERATOR_XEQUALS: "^="
+@CPP_CODE_OPERATOR_XOR: "^"
+@CPP_CODE_SQUOTE: "'"
+@CPP_CODE_WHITESPACE: " "
+@CPP_CODE_NEWLINE: "\n"
+@CPP_CODE_COMMENT: "/* ... */"
+@CPP_CODE_WORD: "<emphasis>word</emphasis>"
+@CPP_CODE_UNKNOWN: "<emphasis>unknown token</emphasis>"
+
+<!-- ##### ENUM CppFilter ##### -->
+<para>
+
+</para>
+
+@CPP_FILTER_NONE: 
+@CPP_FILTER_TRIGRAPH: 
+@CPP_FILTER_WHITESPACE: 
+@CPP_FILTER_COMMENT: 
+
+<!-- ##### ENUM CppOption ##### -->
+<para>
+
+</para>
+
+@CPP_OPTION_NONE: 
+@CPP_OPTION_IGNORE_META: 
+
+<!-- ##### FUNCTION cpp_define_add ##### -->
+<para>
+
+</para>
+
+@cpp: 
+@name: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cpp_define_get ##### -->
+<para>
+
+</para>
+
+@cpp: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cpp_define_remove ##### -->
+<para>
+
+</para>
+
+@cpp: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cpp_delete ##### -->
+<para>
+
+</para>
+
+@cpp: 
+
+
+<!-- ##### FUNCTION cpp_get_filename ##### -->
+<para>
+
+</para>
+
+@cpp: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cpp_new ##### -->
+<para>
+
+</para>
+
+@prefs: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cpp_path_add ##### -->
+<para>
+
+</para>
+
+@cpp: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cpp_scan ##### -->
+<para>
+
+</para>
+
+@cpp: 
+@token: 
+@Returns: 
+
+

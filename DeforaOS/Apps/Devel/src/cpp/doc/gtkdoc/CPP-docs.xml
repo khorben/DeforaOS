@@ -4,16 +4,16 @@
 [
   <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
   <!ENTITY server "www.defora.org/doc/html">
-  <!ENTITY title "DeforaOS cpp">
+  <!ENTITY title "DeforaOS CPP">
   <!ENTITY version "0.0.1">
 ]>
 <book id="index">
   <bookinfo>
-    <title>cpp Reference Manual</title>
+    <title>CPP Reference Manual</title>
     <releaseinfo>
-      for cpp &version;.
+      for CPP &version;.
       The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://&server;/cpp/index.html">http://&server;/cpp/</ulink>.
+      <ulink role="online-location" url="http://&server;/CPP/index.html">http://&server;/CPP/</ulink>.
     </releaseinfo>
   </bookinfo>
 

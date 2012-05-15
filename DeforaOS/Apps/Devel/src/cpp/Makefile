@@ -1,4 +1,4 @@
-PACKAGE	= cpp
+PACKAGE	= CPP
 VERSION	= 0.0.1
 SUBDIRS	= data doc include src
 RM	?= rm -f
@@ -29,8 +29,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
-		$(PACKAGE)-$(VERSION)/doc/gtkdoc/cpp-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/CPP-docs.xml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/CPP-unused.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/cpp.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/project.conf \
 		$(PACKAGE)-$(VERSION)/include/cpp.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \

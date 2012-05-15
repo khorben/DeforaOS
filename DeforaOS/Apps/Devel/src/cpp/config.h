@@ -1,4 +1,4 @@
-#define PACKAGE "cpp"
+#define PACKAGE "CPP"
 #define VERSION "0.0.1"
 
 #ifndef PREFIX
