@@ -2308,7 +2308,9 @@ static void _plugins_on_ok(gpointer data)
 				PHONE_PLUGINS_COLUMN_FILENAME, &name, -1);
 		if(enabled)
 		{
+			/* only load plug-ins that are not already loaded */
 			if(plugin == NULL)
+				/* FIXME this shouldn't always be reached */
 				phone_load(phone, name);
 			res |= string_append(&value, sep);
 			res |= string_append(&value, name);
