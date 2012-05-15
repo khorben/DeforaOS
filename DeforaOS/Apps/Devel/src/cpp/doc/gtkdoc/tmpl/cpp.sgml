@@ -59,10 +59,10 @@ DeforaOS Development code pre-processor
 
 </para>
 
-@CPP_CODE_NULL: 
+@CPP_CODE_NULL: <emphasis>empty or invalid token</emphasis>
 @CPP_CODE_COMMA: ","
 @CPP_CODE_DQUOTE: """
-@CPP_CODE_META_DATA: "<emphasis>meta-data</emphasis>"
+@CPP_CODE_META_DATA: <emphasis>meta-data</emphasis>
 @CPP_CODE_META_DEFINE: "#define"
 @CPP_CODE_META_ELIF: "#elif"
 @CPP_CODE_META_ELSE: "#else"
@@ -104,15 +104,15 @@ DeforaOS Development code pre-processor
 @CPP_CODE_OPERATOR_LESS: "&lt;"
 @CPP_CODE_OPERATOR_LPAREN: "("
 @CPP_CODE_OPERATOR_MEQUALS: "-="
-@CPP_CODE_OPERATOR_MGREATER: 
+@CPP_CODE_OPERATOR_MGREATER: "-&gt;"
 @CPP_CODE_OPERATOR_MINUS: "-"
-@CPP_CODE_OPERATOR_MODEQUALS: 
+@CPP_CODE_OPERATOR_MODEQUALS: "%="
 @CPP_CODE_OPERATOR_MODULO: "%"
 @CPP_CODE_OPERATOR_NEQUALS: "!="
 @CPP_CODE_OPERATOR_NOT: "!"
 @CPP_CODE_OPERATOR_PEQUALS: "+="
 @CPP_CODE_OPERATOR_PLUS: "+"
-@CPP_CODE_OPERATOR_QUESTION: 
+@CPP_CODE_OPERATOR_QUESTION: "?"
 @CPP_CODE_OPERATOR_RBRACE: "}"
 @CPP_CODE_OPERATOR_RBRACKET: "]"
 @CPP_CODE_OPERATOR_RPAREN: ")"
@@ -126,8 +126,8 @@ DeforaOS Development code pre-processor
 @CPP_CODE_WHITESPACE: " "
 @CPP_CODE_NEWLINE: "\n"
 @CPP_CODE_COMMENT: "/* ... */"
-@CPP_CODE_WORD: "<emphasis>word</emphasis>"
-@CPP_CODE_UNKNOWN: "<emphasis>unknown token</emphasis>"
+@CPP_CODE_WORD: <emphasis>word</emphasis>
+@CPP_CODE_UNKNOWN: <emphasis>unknown token</emphasis>
 
 <!-- ##### ENUM CppFilter ##### -->
 <para>
