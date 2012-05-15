@@ -4,16 +4,16 @@
 [
   <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
   <!ENTITY server "www.defora.org/doc/html">
-  <!ENTITY title "DeforaOS c99">
+  <!ENTITY title "DeforaOS C99">
   <!ENTITY version "0.0.0">
 ]>
 <book id="index">
   <bookinfo>
-    <title>c99 Reference Manual</title>
+    <title>C99 Reference Manual</title>
     <releaseinfo>
-      for c99 &version;.
+      for C99 &version;.
       The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://&server;/c99/index.html">http://&server;/c99/</ulink>.
+      <ulink role="online-location" url="http://&server;/C99/index.html">http://&server;/C99/</ulink>.
     </releaseinfo>
   </bookinfo>
 

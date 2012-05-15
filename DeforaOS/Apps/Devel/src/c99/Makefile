@@ -26,7 +26,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
-		$(PACKAGE)-$(VERSION)/doc/gtkdoc/c99-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/C99-docs.xml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/c99-unused.sgml \
