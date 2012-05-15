@@ -1,4 +1,4 @@
-PACKAGE="c99"
+PACKAGE="C99"
 VERSION="0.0.0"
 
 PREFIX="/usr/local"

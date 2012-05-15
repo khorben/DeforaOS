@@ -1,4 +1,4 @@
-PACKAGE	= c99
+PACKAGE	= C99
 VERSION	= 0.0.0
 SUBDIRS	= doc include src
 RM	?= rm -f
