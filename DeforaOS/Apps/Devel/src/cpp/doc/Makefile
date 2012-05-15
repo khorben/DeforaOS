@@ -16,7 +16,7 @@ subdirs:
 gtkdoc/CPP.types:
 	./gtkdoc.sh -P "$(PREFIX)" -- "gtkdoc/CPP.types"
 
-gtkdoc/tmpl.stamp: gtkdoc/CPP.types
+gtkdoc/tmpl.stamp: gtkdoc/CPP.types gtkdoc/tmpl/cpp.sgml
 	./gtkdoc.sh -P "$(PREFIX)" -- "gtkdoc/tmpl.stamp"
 
 gtkdoc/sgml.stamp: gtkdoc/tmpl.stamp
