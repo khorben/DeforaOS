@@ -27,7 +27,7 @@
 #include "common.h"
 #include "tokenset.h"
 #include "scanner.h"
-#include "c99.h"
+#include "parser.h"
 #include "../config.h"
 
 #ifdef DEBUG

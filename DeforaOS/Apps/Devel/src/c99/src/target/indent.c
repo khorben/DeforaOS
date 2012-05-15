@@ -48,7 +48,7 @@ static int _indent_function_end(void);
 
 /* public */
 /* variables */
-TargetPlugin target_plugin =
+C99TargetPlugin target_plugin =
 {
 	NULL,				/* helper */
 	NULL,				/* options */

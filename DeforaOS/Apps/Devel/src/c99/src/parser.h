@@ -18,7 +18,7 @@
 #ifndef C99_PARSER_H
 # define C99_PARSER_H
 
-# include "c99.h"
+# include "C99/c99.h"
 
 
 /* protected */

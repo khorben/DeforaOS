@@ -18,7 +18,7 @@
 #ifndef _C99_CODE_H
 # define _C99_CODE_H
 
-# include "c99.h"
+# include "C99/c99.h"
 
 
 /* Code */

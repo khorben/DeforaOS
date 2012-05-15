@@ -23,7 +23,7 @@
 #include "common.h"
 #include "code.h"
 #include "parser.h"
-#include "c99.h"
+#include "C99/c99.h"
 
 
 /* private */

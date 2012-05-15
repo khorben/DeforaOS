@@ -14,10 +14,13 @@ clean:
 distclean: clean
 
 install:
-	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/c99
-	$(INSTALL) -m 0644 -- target.h $(DESTDIR)$(INCLUDEDIR)/c99/target.h
+	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/C99
+	$(INSTALL) -m 0644 -- c99.h $(DESTDIR)$(INCLUDEDIR)/C99/c99.h
+	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/C99
+	$(INSTALL) -m 0644 -- target.h $(DESTDIR)$(INCLUDEDIR)/C99/target.h
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/c99/target.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/C99/c99.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/C99/target.h
 
 .PHONY: all clean distclean install uninstall

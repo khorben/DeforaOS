@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel c99 */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,17 @@
 
 
 
-#ifndef _C99_TARGET_TARGET_H
-# define _C99_TARGET_TARGET_H
+#ifndef DEVEL_C99_TARGET_H
+# define DEVEL_C99_TARGET_H
 
+# include <cpp.h>
 # include "c99.h"
 
 
-/* Target */
+/* C99Target */
 /* public */
 /* types */
-typedef struct _TargetPlugin
+typedef struct _C99TargetPlugin
 {
 	C99Helper * helper;
 	C99Option * options;
@@ -36,6 +37,6 @@ typedef struct _TargetPlugin
 	int (*function_call)(char const * name);
 	int (*function_end)(void);
 	int (*label_set)(char const * name);
-} TargetPlugin;
+} C99TargetPlugin;
 
-#endif /* !_C99_TARGET_TARGET_H */
+#endif /* !DEVEL_C99_TARGET_H */

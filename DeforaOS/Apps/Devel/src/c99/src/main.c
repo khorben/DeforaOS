@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "c99.h"
+#include "C99/c99.h"
 #include "../config.h"
 
 

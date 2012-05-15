@@ -85,7 +85,7 @@ static int _asm_section(char const * name);
 
 /* public */
 /* variables */
-TargetPlugin target_plugin =
+C99TargetPlugin target_plugin =
 {
 	NULL,
 	_asm_options,

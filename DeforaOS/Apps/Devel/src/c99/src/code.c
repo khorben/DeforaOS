@@ -98,7 +98,7 @@ struct _Code
 	/* target */
 	C99Helper * helper;
 	Plugin * plugin;
-	TargetPlugin * target;
+	C99TargetPlugin * target;
 	/* types */
 	CodeType * types;
 	size_t types_cnt;

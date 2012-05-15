@@ -18,7 +18,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "common.h"
-#include "c99.h"
+#include "scanner.h"
 #include "../config.h"
 
 
