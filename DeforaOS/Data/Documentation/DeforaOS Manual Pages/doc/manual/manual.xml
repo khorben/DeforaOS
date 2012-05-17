@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!-- $Id$ -->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY configure1 "../../../../../Apps/Devel/src/configure/doc/configure.xml">
+<!ENTITY makepasswd1 "../../../../../Apps/Unix/src/makepasswd/doc/makepasswd.xml">
+<!ENTITY projectconf5 "../../../../../Apps/Devel/src/configure/doc/project.conf.xml">
+]>
+<book><?dbhtml filename="manual.html"?>
+	<title>DeforaOS Manual Pages</title>
+	<chapter>
+		<title>For users</title>
+		<section>
+			<title>Unix utilities</title>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&makepasswd1;"/>
+		</section>
+	</chapter>
+	<chapter>
+		<title>For developers</title>
+		<section>
+			<title>configure build system</title>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&configure1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&projectconf5;"/>
+		</section>
+	</chapter>
+</book>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
