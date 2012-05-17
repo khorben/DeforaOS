@@ -1,27 +1,62 @@
 <?xml version="1.0" encoding="iso-8859-15"?>
 <!-- $Id$ -->
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 	<!ENTITY firstname "Pierre">
 	<!ENTITY surname   "Pronchery">
 	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
 	<!ENTITY package   "configure">
 	<!ENTITY name      "configure">
 	<!ENTITY title     "configure documentation">
 	<!ENTITY purpose   "Generates and maintain software build systems">
 ]>
-<article>
-	<info>
+<refentry>
+	<refentryinfo>
 		<title>&title;</title>
-		<author>
-			<firstname>&firstname;</firstname>
-			<surname>&surname;</surname>
-			<contrib>Code and documentation.</contrib>
-			<address>
-				<email>&email;</email>
-			</address>
-		</author>
-	</info>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this
+				document under the terms of the GNU General Public License,
+				Version 3 as published by the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg><option>-n</option></arg>
+			<arg><option>-v</option></arg>
+			<arg><option>-S</option></arg>
+			<arg rep="repeat"><option>options</option></arg>
+			<arg rep="repeat">directory</arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+	<refsect1 id="description">
+		<title>Description</title>
 	<para>
 		These are the documentation notes for &package;. The &package; project
 		generates and maintain software build systems, suitable for use with the most
@@ -29,9 +64,10 @@
 		to provide simple Makefiles. It is intended to keep the code generated as
 		simple and portable as possible.
 	</para>
-	<section>
+</refsect1>
+	<refsect1>
 		<title>Overview</title>
-		<section>
+		<refsect2>
 			<title>What is &package;</title>
 			<para>
 				&package; generates Makefiles needed in an entire project. Instead
@@ -46,8 +82,8 @@
 				and processes such as translations, documentation generation, dynamic
 				bindings...
 			</para>
-		</section>
-		<section>
+		</refsect2>
+		<refsect2>
 			<title>Who should use &package;</title>
 			<para>
 				Some software developers could gain using &package;. However, due to its
@@ -58,8 +94,8 @@
 				Advanced users willing to modify the build process of projects using
 				&package; may have to learn about &package; as well.
 			</para>
-		</section>
-		<section>
+		</refsect2>
+		<refsect2>
 			<title>Who should not use &package;</title>
 			<para>
 				&package; was primarily designed for projects using the C or C++
@@ -67,8 +103,8 @@
 				&package; may not be appropriate for other languages or complex build
 				processes.
 			</para>
-		</section>
-		<section>
+		</refsect2>
+		<refsect2>
 			<title>Why use &package;</title>
 			<para>
 				&package; was created to be efficient at writing simple and compliant
@@ -83,11 +119,11 @@
 							portability or maintenance of their Makefiles.</para></listitem>
 				</itemizedlist>
 			</para>
-		</section>
-	</section>
-	<section>
+		</refsect2>
+	</refsect1>
+	<refsect1>
 		<title>Using &package;</title>
-		<section>
+		<refsect2>
 			<title>&name; usage</title>
 			<para>
 				The &name; utility may be invoked from the command line this way:
@@ -114,8 +150,8 @@
 				It then processes the current directory, or the ones given at the
 				command line, according to the project configuration files encountered.
 			</para>
-		</section>
-		<section>
+		</refsect2>
+		<refsect2>
 			<title>Migrating to &package;</title>
 			<para>
 				You may first create all necessary "project.conf" files with the
@@ -128,17 +164,21 @@
 				targets are defined in the same file, as the "bin_PROGRAMS" variable, each
 				declined to "program_SOURCES" for their respective source files.
 			</para>
-		</section>
-	</section>
-	<section>
-		<title>Getting further</title>
-		<section>
+		</refsect2>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>See also</title>
+		<para><citerefentry>
+				<refentrytitle>project.conf</refentrytitle>
+				<manvolnum>5</manvolnum>
+		</citerefentry></para>
+		<refsect2>
 			<title>Additional resources</title>
 			<para>
 				More information can be found on the project page at <ulink
 					url="http://www.defora.org/os/project/16/configure"/>.
 			</para>
-		</section>
-	</section>
-</article>
+		</refsect2>
+	</refsect1>
+</refentry>
 <!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
