@@ -93,6 +93,7 @@ while [ $# -gt 0 ]; do
 	case "$ext" in
 		html)
 			XSL="http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl"
+			[ -f "${target%.*}.xsl" ] && XSL="${target%.*}.xsl"
 			instdir="$DATADIR/doc/$ext/$PACKAGE"
 			;;
 		1|2|3|4|5|6|7|8|9)
