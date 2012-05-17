@@ -107,7 +107,7 @@ while [ $# -gt 0 ]; do
 
 	#uninstall
 	if [ "$uninstall" -eq 1 ]; then
-		$DEBUG $RM "$instdir/$target"			|| exit 2
+		$DEBUG $RM -- "$instdir/$target"		|| exit 2
 		continue
 	fi
 
@@ -121,7 +121,7 @@ while [ $# -gt 0 ]; do
 
 	#install
 	if [ "$install" -eq 1 ]; then
-		$DEBUG $MKDIR "$instdir"			|| exit 2
-		$DEBUG $INSTALL "$target" "$instdir/$target"	|| exit 2
+		$DEBUG $MKDIR -- "$instdir"			|| exit 2
+		$DEBUG $INSTALL -- "$target" "$instdir/$target"	|| exit 2
 	fi
 done
