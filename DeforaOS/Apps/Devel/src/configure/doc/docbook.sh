@@ -116,7 +116,8 @@ while [ $# -gt 0 ]; do
 	#XXX ignore errors
 	if [ $? -ne 0 ]; then
 		echo "$0: $target: Could not create page" 1>&2
-		install=0
+		$RM -- "$target"
+		break
 	fi
 
 	#install
