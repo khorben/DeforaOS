@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="iso-8859-15"?>
+<!-- $Id$ -->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY username  "khorben">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "5">
+	<!ENTITY title     "configure Developer Manual">
+	<!ENTITY package   "configure">
+	<!ENTITY name      "project.conf">
+	<!ENTITY purpose   "Project definition files for configure">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this document
+				under the terms of the GNU General Public License, Version 3 as published by
+				the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsect1 id="description">
+		<title>Project configuration</title>
+		<para>
+			A project definition file should be found in every project directory managed
+			by &package;. These files must be named <filename>&name;</filename>.
+		</para>
+		<refsect2>
+			<title>File format</title>
+			<para>
+				A definition file is organized in sections, each containing a number of
+				variables. Section names are written on their own line, between brackets (eg
+				"[section]"). Variables are given on their own line too, like this:
+				<blockquote>
+					<computeroutput>
+						variable=value
+					</computeroutput>
+				</blockquote>
+				Configuration files may be commented, comment lines being prepended with a
+				hash sign "#".
+			</para>
+			<para>
+				Variable can be defined directly without specifying a particular section
+				first; they belong then to the default section, which is simply considered
+				to have an empty name.
+			</para>
+		</refsect2>
+		<refsect2>
+			<title>Important variables</title>
+			<para>
+				The most significant variables recognized are mentioned below.
+			</para>
+			<para>
+				In the default section:
+				<itemizedlist>
+					<listitem><para>subdirs: subdirectories to look for too</para></listitem>
+					<listitem><para>cppflags_force: CPPFLAGS to force
+							globally</para></listitem>
+					<listitem><para>cppflags: optional global CPPFLAGS</para></listitem>
+					<listitem><para>cflags_force: CFLAGS to force globally</para></listitem>
+					<listitem><para>cflags: optional global CFLAGS</para></listitem>
+					<listitem><para>ldflags_force: LDFLAGS to force globally</para></listitem>
+					<listitem><para>ldflags: optional global LDFLAGS</para></listitem>
+					<listitem><para>targets: targets to handle in the
+							Makefile</para></listitem>
+					<listitem><para>dist: additional files to include in a source
+							archive</para></listitem>
+				</itemizedlist>
+			</para>
+			<para>In subsequent sections, respectively named after the target
+				they define:
+				<itemizedlist>
+					<listitem><para>type (mandatory): type of the target (eg "binary",
+							"library", "object", ...)</para></listitem>
+					<listitem><para>cppflags: additional CPPFLAGS for this
+							target</para></listitem>
+					<listitem><para>cflags: additional CFLAGS for this
+							target</para></listitem>
+					<listitem><para>ldflags: additional LDFLAGS for this
+							target</para></listitem>
+					<listitem><para>sources: source files to compile</para></listitem>
+					<listitem><para>depends: a list of files (or other targets) that this
+							target depends on</para></listitem>
+					<listitem><para>install: the destination path for
+							installation</para></listitem>
+				</itemizedlist>
+			</para>
+		</refsect2>
+	</refsect1>
+	<refsect1 id="targets">
+		<title>Target definitions</title>
+		<refsect2>
+			<title>Target types</title>
+			<para>
+				The following target types are currently supported:
+				<itemizedlist>
+					<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
+					<listitem><para>"library": produces a static and a shared version of
+							the target, linked from every object file produced
+							with their source files, and respectively appending
+							".a" and ".so" extensions to the target name; the
+							shared object are also assigned a version number.</para></listitem>
+					<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
+					<listitem><para>"plugin": produces a shared version of the target,
+							linked from every object file produced with their
+							source files, and appending the ".so" extension to the target name.</para></listitem>
+					<listitem><para>"script": runs the given script, expecting the target
+							file to be generated from the sources defined.</para></listitem>
+				</itemizedlist>
+			</para>
+		</refsect2>
+		<refsect2 id="targets_scripts">
+			<title>Script targets</title>
+			<para>
+				Scripts have to be provided by the software project itself, as
+				configure does not provide any pre-installed set of standard
+				scripts. A few sample scripts are, however, distributed along with
+				the source code of the configure project, and introduced here.
+			</para>
+			<para>
+				These scripts are primarily meant to allow further integration of
+				the build process, as defined by the Makefiles generated, with the
+				requirements of a software project beyond that of compiling code.
+				configure is already known to have been successfully integrated this
+				way with:
+				<itemizedlist>
+					<listitem><para>AppBroker: integration with the DeforaOS distributed
+							computing framework (see appbroker.sh)</para></listitem>
+					<listitem><para><ulink url="http://www.docbook.org/">DocBook</ulink>:
+							markup language for technical documentation, based on either SGML or XML
+							(see docbook.sh)</para></listitem>
+					<listitem><para><ulink
+								url="http://www.gnu.org/software/gettext/">Gettext</ulink>:
+							internationalization (i18n) and localization (l10n) framework, notably
+							allowing software to be easily translated to other languages (see
+							gettext.sh)</para></listitem>
+					<listitem><para><ulink url="http://www.gtk.org/gtk-doc/">Gtk-doc</ulink>:
+							generates API documentation from comments within software projects, in
+							the format expected by the <ulink
+								url="http://live.gnome.org/devhelp">DevHelp API browser</ulink> (see
+							gtkdoc.sh)</para></listitem>
+					<listitem><para><ulink
+								url="http://pkgconfig.freedesktop.org/">pkg-config</ulink>: unified
+							interface to define compilation and linking rules to installed software
+							(see pkgconfig.sh)</para></listitem>
+				</itemizedlist>
+			</para>
+			<refsect3>
+				<title>Writing scripts</title>
+				<para>
+					It is naturally possible to write scripts for integration with configure.
+					<!-- FIXME complete this section -->
+				</para>
+			</refsect3>
+		</refsect2>
+	</refsect1>
+</refentry>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

@@ -29,6 +29,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/configure.xml \
+		$(PACKAGE)-$(VERSION)/doc/project.conf.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/scripts/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/scripts/appbroker.sh \
