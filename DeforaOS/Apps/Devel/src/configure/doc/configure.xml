@@ -20,10 +20,11 @@
 		</author>
 	</info>
 	<para>
-		These are the documentation notes for configure. The configure project is a
-		Makefiles generator. It uses project description files to provide simple
-		Makefiles. It is intended to keep generated code as simple and portable as
-		possible.
+		These are the documentation notes for configure. The configure project
+		generates and maintain software build systems, suitable for use with the most
+		common implementations of the make command. It uses project description files
+		to provide simple Makefiles. It is intended to keep the code generated as
+		simple and portable as possible.
 	</para>
 	<section>
 		<title>Overview</title>
@@ -34,6 +35,13 @@
 				of trying every little trick to let it work in a number of
 				potential uses, it sticks to the simplest possible code
 				generation.
+			</para>
+			<para>
+				Although primarily dedicated to the generation of build systems through
+				Makefiles, primarily to compile source code in the C/C++ and assembly
+				languages, configure can be extended for integration with external software
+				and processes such as translations, documentation generation, dynamic
+				bindings...
 			</para>
 		</section>
 		<section>
@@ -64,11 +72,12 @@
 				Makefiles for software development projects of all sizes. It should be
 				useful:
 				<itemizedlist>
-					<listitem><para>for people learning software development using Makefiles;</para></listitem>
-					<listitem><para>for developers of C/C++ software projects;</para></listitem>
-					<listitem><para>for developers concerned by the readability,
-							efficiency, portability or maintenance of their
-							Makefiles.</para></listitem>
+					<listitem><para>for people learning software development using
+							Makefiles;</para></listitem>
+					<listitem><para>for developers of C/C++ software
+							projects;</para></listitem>
+					<listitem><para>for developers concerned by the readability, efficiency,
+							portability or maintenance of their Makefiles.</para></listitem>
 				</itemizedlist>
 			</para>
 		</section>
@@ -79,9 +88,14 @@
 			<title>configure usage</title>
 			<para>
 				The configure utility may be invoked from the command line this way:
-				<computeroutput>
-					$ configure [-nvS][options...][directory...]
-				</computeroutput>
+				<cmdsynopsis>
+					<command>configure</command>
+					<arg>-n</arg>
+					<arg>-v</arg>
+					<arg>-S</arg>
+					<arg rep="repeat">options</arg>
+					<arg rep="repeat">directory</arg>
+			</cmdsynopsis>
 			</para>
 			<para>
 				The "-n" option just parses the project definition files, without actually
@@ -144,36 +158,77 @@
 		</section>
 		<section>
 			<title>Target definitions</title>
-			<para>
-				The following target types are currently supported:
-				<itemizedlist>
-					<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
-					<listitem><para>"library": produces a static and a shared version of
-							the target, linked from every object file produced
-							with their source files, and respectively appending
-							".a" and ".so" extensions to the target name; the
-							shared object are also assigned a version number.</para></listitem>
-					<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
-					<listitem><para>"plugin": produces a shared version of the target,
-							linked from every object file produced with their
-							source files, and appending the ".so" extension to the target name.</para></listitem>
-					<listitem><para>"script": runs the given script, expecting the target
-							file to be generated from the sources defined.</para></listitem>
-				</itemizedlist>
-			</para>
+			<section>
+				<title>Target types</title>
+				<para>
+					The following target types are currently supported:
+					<itemizedlist>
+						<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
+						<listitem><para>"library": produces a static and a shared version of
+								the target, linked from every object file produced
+								with their source files, and respectively appending
+								".a" and ".so" extensions to the target name; the
+								shared object are also assigned a version number.</para></listitem>
+						<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
+						<listitem><para>"plugin": produces a shared version of the target,
+								linked from every object file produced with their
+								source files, and appending the ".so" extension to the target name.</para></listitem>
+						<listitem><para>"script": runs the given script, expecting the target
+								file to be generated from the sources defined.</para></listitem>
+					</itemizedlist>
+				</para>
+				<section>
+					<title>Script targets</title>
+					<para>
+						Scripts have to be provided by the software project itself, as
+						configure does not provide any pre-installed set of standard
+						scripts. A few sample scripts are, however, distributed along with
+						the source code of the configure project, and introduced here.
+					</para>
+					<para>
+						These scripts are primarily meant to allow further integration of
+						the build process, as defined by the Makefiles generated, with the
+						requirements of a software project beyond that of compiling code.
+						configure is already known to have been successfully integrated this
+						way with:
+						<itemizedlist>
+							<listitem><para>AppBroker: integration with the DeforaOS distributed
+									computing framework (see appbroker.sh)</para></listitem>
+							<listitem><para>DocBook: markup language for technical documentation,
+									based on either SGML or XML (see docbook.sh)</para></listitem>
+							<listitem><para>Gettext: internationalization (i18n) and localization
+									(l10n) framework, notably allowing software to be easily translated to
+									other languages (see gettext.sh)</para></listitem>
+							<listitem><para>Gtk-doc: generates API documentation from comments within
+									software projects, in the format expected by the <ulink
+										url="http://live.gnome.org/devhelp">DevHelp API browser</ulink> (see
+									gtkdoc.sh)</para></listitem>
+							<listitem><para>pkg-config: unified interface to define compilation and
+									linking rules to installed software (see pkgconfig.sh)</para></listitem>
+						</itemizedlist>
+					</para>
+				</section>
+				<section>
+					<title>Writing scripts</title>
+					<para>
+						It is naturally possible to write scripts for integration with configure.
+						<!-- FIXME complete this section -->
+					</para>
+				</section>
+			</section>
 		</section>
 		<section>
 			<title>Migrating to configure</title>
 			<para>
-				You may first create all necessary "project.conf" files with the subdirectories
-				definitions. Then for every binary or library built, specify the adequate target
-				along with its section.
+				You may first create all necessary "project.conf" files with the
+				subdirectories definitions. Then for every binary or library built, specify
+				the adequate target along with its section.
 			</para>
 			<para>
-				When migrating from automake/autoconf, the existing subdirectories are defined
-				in the "Makefile.am" files, in the "SUBDIRS" variable. The binary targets are
-				defined in the same file, as the "bin_PROGRAMS" variable, each declined to
-				"program_SOURCES" for their respective source files.
+				When migrating from automake/autoconf, the existing subdirectories are
+				defined in the "Makefile.am" files, in the "SUBDIRS" variable. The binary
+				targets are defined in the same file, as the "bin_PROGRAMS" variable, each
+				declined to "program_SOURCES" for their respective source files.
 			</para>
 		</section>
 	</section>
@@ -188,3 +243,4 @@
 		</section>
 	</section>
 </article>
+<!-- vim: set ts=1 sw=1 sts=1: -->
