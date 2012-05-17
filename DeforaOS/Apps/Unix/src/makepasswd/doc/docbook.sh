@@ -107,7 +107,7 @@ while [ $# -gt 0 ]; do
 
 	#uninstall
 	if [ "$uninstall" -eq 1 ]; then
-		$DEBUG $RM "$instdir/$target"			|| exit 2
+		$DEBUG $RM -- "$instdir/$target"		|| exit 2
 		continue
 	fi
 
@@ -116,12 +116,13 @@ while [ $# -gt 0 ]; do
 	#XXX ignore errors
 	if [ $? -ne 0 ]; then
 		echo "$0: $target: Could not create page" 1>&2
-		install=0
+		$RM -- "$target"
+		break
 	fi
 
 	#install
 	if [ "$install" -eq 1 ]; then
-		$DEBUG $MKDIR "$instdir"			|| exit 2
-		$DEBUG $INSTALL "$target" "$instdir/$target"	|| exit 2
+		$DEBUG $MKDIR -- "$instdir"			|| exit 2
+		$DEBUG $INSTALL -- "$target" "$instdir/$target"	|| exit 2
 	fi
 done
