@@ -8,8 +8,9 @@
 	<!ENTITY email     "khorben@defora.org">
 	<!ENTITY section   "1">
 	<!ENTITY title     "makepasswd User Manual">
-	<!ENTITY ucpackage "MAKEPASSWD">
 	<!ENTITY package   "makepasswd">
+	<!ENTITY name      "makepasswd">
+	<!ENTITY purpose   "Generates (pseudo-)random passwords and hashes">
 ]>
 <refentry>
 	<refentryinfo>
@@ -46,16 +47,16 @@
 		</legalnotice>
 	</refentryinfo>
 	<refmeta>
-		<refentrytitle>&ucpackage;</refentrytitle>
+		<refentrytitle>&name;</refentrytitle>
 		<manvolnum>&section;</manvolnum>
 	</refmeta>
 	<refnamediv>
-		<refname>&package;</refname>
-		<refpurpose>generate (pseudo-)random passwords and hashes</refpurpose>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
 	</refnamediv>
 	<refsynopsisdiv>
 		<cmdsynopsis>
-			<command>&package;</command>
+			<command>&name;</command>
 			<arg choice="plain"><option>-c <replaceable>string</replaceable></option></arg>
 			<arg choice="plain"><option>-e <replaceable>algorithm</replaceable></option></arg>
 			<arg choice="plain"><option>-i <replaceable>iterations</replaceable></option></arg>
@@ -67,7 +68,7 @@
 			<arg choice="plain"><option>-s <replaceable>salt</replaceable></option></arg>
 		</cmdsynopsis>
 		<cmdsynopsis>
-			<command>&package;</command>
+			<command>&name;</command>
 			<arg choice="plain"><option>-E</option></arg>
 			<arg choice="plain"><option>-c <replaceable>string</replaceable></option></arg>
 			<arg choice="plain"><option>-e <replaceable>algorithm</replaceable></option></arg>
@@ -80,19 +81,19 @@
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
-		<title>DESCRIPTION</title>
-		<para><command>&package;</command> is a program that generates pseudo-random
+		<title>Description</title>
+		<para><command>&name;</command> is a program that generates pseudo-random
 			passwords of a desired length and, if so desired, along with their
 			corresponding hashes for a given encryption algorithm.</para>
 	</refsect1>
 	<refsect1 id="options">
-		<title>OPTIONS</title>
+		<title>Options</title>
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
 				<term><option>-E</option></term>
 				<listitem>
-					<para>In this operation mode, <command>&package;</command>
+					<para>In this operation mode, <command>&name;</command>
 						enumerates through all possible values for a password,
 						given the list of characters allowed and the length
 						specified.</para>
@@ -124,7 +125,7 @@
 						their availability depends on the implementation of the
 						<citerefentry> <refentrytitle>crypt</refentrytitle>
 							<manvolnum>3</manvolnum> </citerefentry> library on the system
-						where <command>&package;</command> was compiled.</para>
+						where <command>&name;</command> was compiled.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
@@ -189,12 +190,12 @@
 		</variablelist>
 	</refsect1>
 	<refsect1 id="bugs">
-		<title>BUGS</title>
+		<title>Bugs</title>
 		<para>Issues can be listed and reported at <ulink
 				url="http://www.defora.org/os/project/bug_list/117/makepasswd"/>.</para>
 	</refsect1>
 	<refsect1 id="see_also">
-		<title>SEE ALSO</title>
+		<title>See also</title>
 		<para><citerefentry>
 				<refentrytitle>login</refentrytitle>
 				<manvolnum>1</manvolnum>
