@@ -1,28 +1,38 @@
 16/07/2006 - 0.0.4
 ------------------
-* added .PHONY pseudo-rule
-* filters out some essential libraries as required on the platform
-* supports basic config.{h,sh} automatic generation
-* added C++ support
+
+  * added .PHONY pseudo-rule
+  * filters out some essential libraries as required on the platform
+  * supports basic config.{h,sh} automatic generation
+  * added C++ support
+
  -- Pierre Pronchery <khorben@defora.org>
+
 
 27/01/2006 - 0.0.3
 ------------------
-* separate file for Makefile output
-* operating system, architecture and kernel detection
-* appends "-D_GNU_SOURCE" to CFLAGS for GNU/Linux Makefiles with -ansi
+
+  * separate file for Makefile output
+  * operating system, architecture and kernel detection
+  * appends "-D_GNU_SOURCE" to CFLAGS for GNU/Linux Makefiles with -ansi
+
  -- Pierre Pronchery <khorben@defora.org>
+
 
 25/10/2005 - 0.0.2
 ------------------
-* full rewrite
-* migrated to libSystem in place of libutils
-* supports source archive generation
-* supports installation and uninstallation
-* documentation update
+  * full rewrite
+  * migrated to libSystem in place of libutils
+  * supports source archive generation
+  * supports installation and uninstallation
+  * documentation update
+
  -- Pierre Pronchery <khorben@defora.org>
+
 
 26/11/2004 - 0.0.1
 ------------------
-* initial release
+
+  * initial release
+
  -- Pierre Pronchery <khorben@defora.org>
