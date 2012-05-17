@@ -89,11 +89,11 @@ while [ $# -gt 0 ]; do
 
 	#determine the type
 	ext="${target##*.}"
-	ext="${ext#.}"
+	ext="${ext##.}"
 	case "$ext" in
 		html)
 			XSL="http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl"
-			instdir="$DATADIR/doc/$ext/${target%%.*}"
+			instdir="$DATADIR/doc/$ext/$PACKAGE"
 			;;
 		1|2|3|4|5|6|7|8|9)
 			XSL="http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl"
