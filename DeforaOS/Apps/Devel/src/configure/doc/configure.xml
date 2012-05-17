@@ -5,7 +5,10 @@
 	<!ENTITY firstname "Pierre">
 	<!ENTITY surname   "Pronchery">
 	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY package   "configure">
+	<!ENTITY name      "configure">
 	<!ENTITY title     "configure documentation">
+	<!ENTITY purpose   "Generates and maintain software build systems">
 ]>
 <article>
 	<info>
@@ -20,7 +23,7 @@
 		</author>
 	</info>
 	<para>
-		These are the documentation notes for configure. The configure project
+		These are the documentation notes for &package;. The &package; project
 		generates and maintain software build systems, suitable for use with the most
 		common implementations of the make command. It uses project description files
 		to provide simple Makefiles. It is intended to keep the code generated as
@@ -29,9 +32,9 @@
 	<section>
 		<title>Overview</title>
 		<section>
-			<title>What is configure</title>
+			<title>What is &package;</title>
 			<para>
-				configure generates Makefiles needed in an entire project. Instead
+				&package; generates Makefiles needed in an entire project. Instead
 				of trying every little trick to let it work in a number of
 				potential uses, it sticks to the simplest possible code
 				generation.
@@ -39,36 +42,36 @@
 			<para>
 				Although primarily dedicated to the generation of build systems through
 				Makefiles, primarily to compile source code in the C/C++ and assembly
-				languages, configure can be extended for integration with external software
+				languages, &package; can be extended for integration with external software
 				and processes such as translations, documentation generation, dynamic
 				bindings...
 			</para>
 		</section>
 		<section>
-			<title>Who should use configure</title>
+			<title>Who should use &package;</title>
 			<para>
-				Some software developers could gain using configure. However, due to its
+				Some software developers could gain using &package;. However, due to its
 				intentional simplicity, it may also be limiting in some cases; this can
 				be expected when building large projects in particular.
 			</para>
 			<para>
 				Advanced users willing to modify the build process of projects using
-				configure may have to learn about configure as well.
+				&package; may have to learn about &package; as well.
 			</para>
 		</section>
 		<section>
-			<title>Who should not use configure</title>
+			<title>Who should not use &package;</title>
 			<para>
-				configure was primarily designed for projects using the C or C++
+				&package; was primarily designed for projects using the C or C++
 				languages. Although possibly extended through the help of shell scripts,
-				configure may not be appropriate for other languages or complex build
+				&package; may not be appropriate for other languages or complex build
 				processes.
 			</para>
 		</section>
 		<section>
-			<title>Why use configure</title>
+			<title>Why use &package;</title>
 			<para>
-				configure was created to be efficient at writing simple and compliant
+				&package; was created to be efficient at writing simple and compliant
 				Makefiles for software development projects of all sizes. It should be
 				useful:
 				<itemizedlist>
@@ -83,13 +86,13 @@
 		</section>
 	</section>
 	<section>
-		<title>Using configure</title>
+		<title>Using &package;</title>
 		<section>
-			<title>configure usage</title>
+			<title>&name; usage</title>
 			<para>
-				The configure utility may be invoked from the command line this way:
+				The &name; utility may be invoked from the command line this way:
 				<cmdsynopsis>
-					<command>configure</command>
+					<command>&name;</command>
 					<arg>-n</arg>
 					<arg>-v</arg>
 					<arg>-S</arg>
@@ -113,112 +116,7 @@
 			</para>
 		</section>
 		<section>
-			<title>Project configuration</title>
-			<para>
-				This file should be found in every project directory. It must be named
-				"project.conf". It is organized in sections, and string variables. Section names
-				are written on their own line, between brackets (eg "[section]"). Variables are
-				given on their own line too, like this:
-				<computeroutput>
-					variable=value
-				</computeroutput>
-				Configuration files may be commented, comment lines being prepended with a
-				hash sign "#".
-			</para>
-			<para>
-				The most significant variables are the following:
-				<itemizedlist>
-					<listitem><para>in the default section (has an empty name, eg "[]" in the file)
-							<itemizedlist>
-								<listitem><para>subdirs: subdirectories to look for
-										too</para></listitem>
-								<listitem><para>cppflags_force: CPPFLAGS to force globally</para></listitem>
-								<listitem><para>cppflags: optional global CPPFLAGS</para></listitem>
-								<listitem><para>cflags_force: CFLAGS to force globally</para></listitem>
-								<listitem><para>cflags: optional global CFLAGS</para></listitem>
-								<listitem><para>ldflags_force: LDFLAGS to force globally</para></listitem>
-								<listitem><para>ldflags: optional global LDFLAGS</para></listitem>
-								<listitem><para>targets: targets to handle in the Makefile</para></listitem>
-								<listitem><para>dist: additional files to include in a source archive</para></listitem>
-					</itemizedlist></para></listitem>
-					<listitem><para>in sections named like the target they define:
-							<itemizedlist>
-								<listitem><para>type (mandatory): type of the target (eg "binary", "library", "object", ...)</para></listitem>
-								<listitem><para>cppflags: additional CPPFLAGS for this target</para></listitem>
-								<listitem><para>cflags: additional CFLAGS for this target</para></listitem>
-								<listitem><para>ldflags: additional LDFLAGS for this target</para></listitem>
-								<listitem><para>sources: source files to compile</para></listitem>
-								<listitem><para>depends: a list of files (or other targets) that
-										this target depends on</para></listitem>
-								<listitem><para>install: the destination path for installation</para></listitem>
-							</itemizedlist>
-					</para></listitem>
-				</itemizedlist>
-			</para>
-		</section>
-		<section>
-			<title>Target definitions</title>
-			<section>
-				<title>Target types</title>
-				<para>
-					The following target types are currently supported:
-					<itemizedlist>
-						<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
-						<listitem><para>"library": produces a static and a shared version of
-								the target, linked from every object file produced
-								with their source files, and respectively appending
-								".a" and ".so" extensions to the target name; the
-								shared object are also assigned a version number.</para></listitem>
-						<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
-						<listitem><para>"plugin": produces a shared version of the target,
-								linked from every object file produced with their
-								source files, and appending the ".so" extension to the target name.</para></listitem>
-						<listitem><para>"script": runs the given script, expecting the target
-								file to be generated from the sources defined.</para></listitem>
-					</itemizedlist>
-				</para>
-				<section>
-					<title>Script targets</title>
-					<para>
-						Scripts have to be provided by the software project itself, as
-						configure does not provide any pre-installed set of standard
-						scripts. A few sample scripts are, however, distributed along with
-						the source code of the configure project, and introduced here.
-					</para>
-					<para>
-						These scripts are primarily meant to allow further integration of
-						the build process, as defined by the Makefiles generated, with the
-						requirements of a software project beyond that of compiling code.
-						configure is already known to have been successfully integrated this
-						way with:
-						<itemizedlist>
-							<listitem><para>AppBroker: integration with the DeforaOS distributed
-									computing framework (see appbroker.sh)</para></listitem>
-							<listitem><para>DocBook: markup language for technical documentation,
-									based on either SGML or XML (see docbook.sh)</para></listitem>
-							<listitem><para>Gettext: internationalization (i18n) and localization
-									(l10n) framework, notably allowing software to be easily translated to
-									other languages (see gettext.sh)</para></listitem>
-							<listitem><para>Gtk-doc: generates API documentation from comments within
-									software projects, in the format expected by the <ulink
-										url="http://live.gnome.org/devhelp">DevHelp API browser</ulink> (see
-									gtkdoc.sh)</para></listitem>
-							<listitem><para>pkg-config: unified interface to define compilation and
-									linking rules to installed software (see pkgconfig.sh)</para></listitem>
-						</itemizedlist>
-					</para>
-				</section>
-				<section>
-					<title>Writing scripts</title>
-					<para>
-						It is naturally possible to write scripts for integration with configure.
-						<!-- FIXME complete this section -->
-					</para>
-				</section>
-			</section>
-		</section>
-		<section>
-			<title>Migrating to configure</title>
+			<title>Migrating to &package;</title>
 			<para>
 				You may first create all necessary "project.conf" files with the
 				subdirectories definitions. Then for every binary or library built, specify
