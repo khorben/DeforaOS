@@ -31,7 +31,7 @@ DEBUG="_debug"
 INSTALL="install -m 0644"
 MKDIR="mkdir -p"
 RM="rm -f"
-XSLTPROC="xsltproc --nonet"
+XSLTPROC="xsltproc --nonet --xinclude"
 
 
 #functions
