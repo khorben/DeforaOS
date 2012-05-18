@@ -143,6 +143,13 @@ class ProjectModule extends ContentModule
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND project_id=:content_id";
+	protected $project_query_project_by_name = "SELECT project_id AS id,
+		title, content, cvsroot, enabled
+		FROM daportal_content, daportal_project
+		WHERE daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_content.title=:title";
 	protected $project_query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp,
@@ -243,6 +250,20 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::_getProjectByName
+	protected function _getProjectByName($engine, $name)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_project_by_name;
+
+		if(($res = $db->query($engine, $query, array(
+					'title' => $name))) === FALSE
+				|| count($res) != 1)
+			return FALSE;
+		return $res[0];
+	}
+
+
 	//ProjectModule::_getToolbar
 	protected function _getToolbar($engine, $id)
 	{
@@ -334,15 +355,27 @@ class ProjectModule extends ContentModule
 	{
 		$db = $engine->getDatabase();
 		$title = _('Bug reports');
-		$error = _('Unable to list bugs');
+		$error = FALSE;
 		$toolbar = FALSE;
 		$query = $this->project_query_list_bugs;
+		$project = FALSE;
 
 		//XXX unlike ProjectModule::list() here getId() is the project
 		//determine the current project
-		if(($id = $request->getId()) !== FALSE && is_numeric($id)
+		if(($id = $request->getId()) !== FALSE
 				&& ($project = $this->_getProject($engine, $id))
-				!== FALSE)
+				=== FALSE)
+			$error = _('Unknown project');
+		else if(($name = $request->getParameter('project')) !== FALSE
+				&& strlen($name))
+		{
+			if(($project = $this->_getProjectByName($engine,
+					$name)) !== FALSE)
+				$id = $project['id'];
+			else
+				$error = _('Unknown project');
+		}
+		if($project !== FALSE)
 		{
 			$title = _('Bug reports for ').$project['title'];
 			$toolbar = $this->_getToolbar($engine, $id);
@@ -366,15 +399,21 @@ class ProjectModule extends ContentModule
 		//obtain the corresponding bug reports
 		if(($res = $db->query($engine, $query, array('user_id' => $uid,
 				'project_id' => $id))) === FALSE)
+		{
+			$error = _('Unable to list bugs');
 			//FIXME return a dialog instead
 			return new PageElement('dialog', array(
-					'type' => 'error', 'error' => $error));
+					'type' => 'error', 'text' => $error));
+		}
 		//build the page
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		if($toolbar !== FALSE)
 			$page->append($toolbar);
+		if($error !== FALSE)
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
 		if($filter !== FALSE)
 			$page->append($filter);
 		$treeview = $page->append('treeview');
