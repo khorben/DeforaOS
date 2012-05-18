@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libApp */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -362,8 +362,13 @@ static int _new_connect(AppClient * appclient, char const * app)
 		if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 				|| SSL_set_fd(appclient->ssl, appclient->fd)
 				!= 1)
+		{
+			if(appclient->ssl != NULL)
+				SSL_free(appclient->ssl);
+			appclient->ssl = NULL;
 			return error_set_code(1, "%s", ERR_error_string(
 						ERR_get_error(), NULL));
+		}
 		appclient->error = _callback_error_ssl;
 		appclient->read = _callback_read_ssl;
 		appclient->write = _callback_write_ssl;
