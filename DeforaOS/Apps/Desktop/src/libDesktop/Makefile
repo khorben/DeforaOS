@@ -1,6 +1,6 @@
 PACKAGE	= libDesktop
 VERSION	= 0.0.6
-SUBDIRS	= data include src
+SUBDIRS	= data doc include src
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -25,6 +25,25 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/libDesktop.pc.in \
 		$(PACKAGE)-$(VERSION)/data/pkgconfig.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/GRAMMAR \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/libDesktop-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Desktop.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/about.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/accel.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/assistant.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/compat.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/libDesktop-unused.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/menubar.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/message.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/mime.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/toolbar.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Desktop.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \

@@ -1,0 +1,130 @@
+<!-- ##### SECTION Title ##### -->
+DesktopAboutDialog
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION desktop_about_dialog_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_artists ##### -->
+<para>
+
+</para>
+
+@about: 
+@artists: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_authors ##### -->
+<para>
+
+</para>
+
+@about: 
+@authors: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_comments ##### -->
+<para>
+
+</para>
+
+@about: 
+@comments: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_copyright ##### -->
+<para>
+
+</para>
+
+@about: 
+@copyright: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_license ##### -->
+<para>
+
+</para>
+
+@about: 
+@license: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_logo_icon_name ##### -->
+<para>
+
+</para>
+
+@about: 
+@icon: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_name ##### -->
+<para>
+
+</para>
+
+@about: 
+@name: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_program_name ##### -->
+<para>
+
+</para>
+
+@about: 
+@name: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_translator_credits ##### -->
+<para>
+
+</para>
+
+@about: 
+@translator: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_version ##### -->
+<para>
+
+</para>
+
+@about: 
+@version: 
+
+
+<!-- ##### FUNCTION desktop_about_dialog_set_website ##### -->
+<para>
+
+</para>
+
+@about: 
+@website: 
+
+

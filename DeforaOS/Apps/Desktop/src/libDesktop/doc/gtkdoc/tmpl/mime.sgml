@@ -1,0 +1,151 @@
+<!-- ##### SECTION Title ##### -->
+Mime
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT Mime ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION MimeForeachCallback ##### -->
+<para>
+
+</para>
+
+@data: 
+@name: 
+@icon_24: 
+@icon_48: 
+@icon_96: 
+
+
+<!-- ##### FUNCTION mime_action ##### -->
+<para>
+
+</para>
+
+@mime: 
+@action: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mime_action_type ##### -->
+<para>
+
+</para>
+
+@mime: 
+@action: 
+@path: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mime_delete ##### -->
+<para>
+
+</para>
+
+@mime: 
+
+
+<!-- ##### FUNCTION mime_foreach ##### -->
+<para>
+
+</para>
+
+@mime: 
+@callback: 
+@data: 
+
+
+<!-- ##### FUNCTION mime_get_handler ##### -->
+<para>
+
+</para>
+
+@mime: 
+@type: 
+@action: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mime_icons ##### -->
+<para>
+
+</para>
+
+@mime: 
+@type: 
+@...: 
+
+
+<!-- ##### FUNCTION mime_new ##### -->
+<para>
+
+</para>
+
+@theme: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mime_save ##### -->
+<para>
+
+</para>
+
+@mime: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mime_set_handler ##### -->
+<para>
+
+</para>
+
+@mime: 
+@type: 
+@action: 
+@handler: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mime_set_theme ##### -->
+<para>
+
+</para>
+
+@mime: 
+@theme: 
+
+
+<!-- ##### FUNCTION mime_type ##### -->
+<para>
+
+</para>
+
+@mime: 
+@path: 
+@Returns: 
+
+

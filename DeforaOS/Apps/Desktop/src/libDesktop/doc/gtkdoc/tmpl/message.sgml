@@ -1,0 +1,57 @@
+<!-- ##### SECTION Title ##### -->
+DesktopMessage
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### USER_FUNCTION DesktopMessageCallback ##### -->
+<para>
+
+</para>
+
+@data: 
+@value1: 
+@value2: 
+@value3: 
+@Returns: 
+
+
+<!-- ##### FUNCTION desktop_message_register ##### -->
+<para>
+
+</para>
+
+@destination: 
+@callback: 
+@data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION desktop_message_send ##### -->
+<para>
+
+</para>
+
+@destination: 
+@value1: 
+@value2: 
+@value3: 
+@Returns: 
+
+

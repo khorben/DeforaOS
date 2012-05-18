@@ -1,0 +1,33 @@
+<!-- ##### SECTION Title ##### -->
+DesktopToolbar
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### FUNCTION desktop_toolbar_create ##### -->
+<para>
+
+</para>
+
+@toolbar: 
+@data: 
+@accel: 
+@Returns: 
+
+
