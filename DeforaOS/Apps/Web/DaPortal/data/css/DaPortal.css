@@ -102,22 +102,30 @@ form.treeview > div.table > div.row > span.detail {
 	display:			none;
 }
 
-form.treeview > div.table > div.row > div.row {
-	padding:			0.5ex 1ex 0.5ex 2ex;
-}
-
 form.treeview.details > div.table {
 	display:			table;
 	width:				100%;
 }
 
-form.treeview.details > div.table > div {
+form.treeview.details > div.table > div.header,
+form.treeview.details > div.table > div.row {
 	display:			table-row;
 }
 
-form.treeview.details > div.table > div > span.detail {
+form.treeview.details > div.table > div.header > span.detail,
+form.treeview.details > div.table > div.row > span.detail {
 	display:			table-cell;
 	padding-right:			0.5ex;
+}
+
+form.treeview.details > div.table > div.row.level > span.detail {
+	font-size:			95%;
+	padding-left:			2ex;
+}
+
+form.treeview.details > div.table > div.row.level2 > span.detail {
+	font-size:			90%;
+	padding-left:			4ex;
 }
 
 form.treeview.icons > div.table > div.row {
