@@ -736,14 +736,23 @@ class HtmlFormat extends FormatElements
 	{
 		$id = 1;
 
+		$this->_renderTreeviewRowsDo($e, $columns, $id);
+	}
+
+	private function _renderTreeviewRowsDo($e, $columns, &$id, $level = 0)
+	{
+		$class = 'row';
+
 		if(($children = $e->getChildren()) === FALSE)
 			return;
+		if($level > 0)
+			$class.=' level level'.$level;
 		foreach($children as $c)
 		{
 			$this->renderTabs();
 			if($c->getType() != 'row')
 				continue;
-			$this->tagOpen('div', 'row');
+			$this->tagOpen('div', $class);
 			$this->tagOpen('span', 'detail');
 			$name = $c->getProperty('id');
 			$this->tag('input', FALSE, '_check_'.$id, array(
@@ -768,6 +777,8 @@ class HtmlFormat extends FormatElements
 			}
 			$this->tagClose('div');
 			$id++;
+			$this->_renderTreeviewRowsDo($c, $columns, $id,
+					$level + 1);
 		}
 	}
 
