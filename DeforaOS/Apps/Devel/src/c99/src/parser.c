@@ -1972,10 +1972,10 @@ static int _parse_E(C99 * c99)
 
 	while((ret = cpp_scan(c99->cpp, &token)) == 0 && token != NULL)
 	{
-		if((code = token_get_code(token)) == CPP_CODE_META_ERROR
-				|| code == CPP_CODE_META_WARNING)
+		if((code = token_get_code(token)) == C99_CODE_META_ERROR
+				|| code == C99_CODE_META_WARNING)
 			fprintf(stderr, "%s%s%s%s%u%s%s\n",
-					code == CPP_CODE_META_ERROR
+					code == C99_CODE_META_ERROR
 					? "Error" : "Warning", " in ",
 					token_get_filename(token), ":",
 					token_get_line(token), ": ",
