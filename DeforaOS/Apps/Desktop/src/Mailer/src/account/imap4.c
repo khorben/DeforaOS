@@ -538,6 +538,7 @@ static int _context_fetch(IMAP4 * imap4, char const * answer)
 		case I4FS_HEADERS:
 			if(strcmp(answer, "") == 0)
 			{
+				/* beginning of the body */
 				cmd->data.fetch.status = I4FS_BODY;
 				helper->message_set_body(message->message, NULL,
 						0, 0);
@@ -1110,12 +1111,12 @@ static gboolean _on_watch_can_handshake(GIOChannel * source,
 	int err;
 	char buf[128];
 
-	if((condition != G_IO_IN && condition != G_IO_OUT)
-			|| source != imap4->channel || imap4->ssl == NULL)
-		return FALSE; /* should not happen */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if((condition != G_IO_IN && condition != G_IO_OUT)
+			|| source != imap4->channel || imap4->ssl == NULL)
+		return FALSE; /* should not happen */
 	imap4->wr_source = 0;
 	imap4->rd_source = 0;
 	if((res = SSL_do_handshake(imap4->ssl)) == 1)
@@ -1178,6 +1179,9 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 	IMAP4Command * cmd;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(condition != G_IO_IN || source != imap4->channel)
 		return FALSE; /* should not happen */
 	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + 256)) == NULL)
