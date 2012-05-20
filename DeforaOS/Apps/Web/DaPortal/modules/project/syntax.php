@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -19,12 +19,15 @@
 if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: ../../index.php'));
 
+
+
 function _file_csrc($line)
 {
 	static $comment = 0;
 
 	if(strlen($line) == 0)
 		return $line;
+	$line = str_replace('@', '&#40;', $line);
 	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
 			'<span class="string">\1</span>', $line);
 	$line = preg_replace("/('(\\\\?.|[^'])')/",
@@ -40,6 +43,9 @@ function _file_csrc($line)
 				.'|until|while'
 				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="keyword">\2</span>\3', $line);
+	$line = preg_replace('/(^|[^a-zA-Z0-9_])(__func__' /* XXX */
+				.')($|[^a-zA-Z0-9_])/',
+			'\1<span class="string">\2</span>\3', $line);
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
 				.'char|DIR|double|enum|FILE|float|int'
 				.'|int8_t|int16_t|int32_t|int64_t'
@@ -59,7 +65,8 @@ function _file_csrc($line)
 	if($comment != 0 && strstr($line, '*/'))
 	{
 		$p = strpos($line, '*/');
-		$line = substr($line, 0, $p+2).'</span>'.substr($line, $p+2);
+		$line = substr($line, 0, $p + 2).'</span>'.substr($line,
+				$p + 2);
 		$comment = 0;
 	}
 	return $line;
@@ -67,6 +74,9 @@ function _file_csrc($line)
 
 function _file_makefile($line)
 {
+	if(strlen($line) == 0)
+		return $line;
+	$line = str_replace('@', '&#40;', $line);
 	$line = preg_replace('/\s(#.*$)/',
 			'<span class="comment">\1</span>', $line);
 	$line = preg_replace('/^([a-zA-Z]+)(\s*=)/',
@@ -82,6 +92,9 @@ function _file_php($line)
 {
 	static $comment = 0;
 
+	if(strlen($line) == 0)
+		return $line;
+	$line = str_replace('@', '&#40;', $line);
 	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
 			'<span class="string">\1</span>', $line);
 	$line = preg_replace("/('(.|[^']*)')/",
@@ -109,7 +122,8 @@ function _file_php($line)
 	if($comment != 0 && strstr($line, '*/'))
 	{
 		$p = strpos($line, '*/');
-		$line = substr($line, 0, $p+2).'</span>'.substr($line, $p+2);
+		$line = substr($line, 0, $p + 2).'</span>'
+			.substr($line, $p + 2);
 		$comment = 0;
 	}
 	return $line;
