@@ -264,21 +264,25 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	switch($mime)
 	{
 		case 'application/x-php':
-			while(!feof($fp))
-				print(_file_php(_html_safe(fgets($fp, 8192))));
+			while(!feof($fp)
+					&& ($line = fgets($fp, 8192)) !== FALSE)
+				print(_file_php(_html_safe($line)));
 			break;
 		case 'text/x-chdr':
 		case 'text/x-csrc':
-			while(!feof($fp))
-				print(_file_csrc(_html_safe(fgets($fp, 8192))));
+			while(!feof($fp)
+					&& ($line = fgets($fp, 8192)) !== FALSE)
+				print(_file_csrc(_html_safe($line)));
 			break;
 		case 'text/x-makefile':
-			while(!feof($fp))
-				print(_file_makefile(_html_safe(fgets($fp, 8192))));
+			while(!feof($fp)
+					&& ($line = fgets($fp, 8192)) !== FALSE)
+				print(_file_makefile(_html_safe($line)));
 			break;
 		default:
-			while(!feof($fp))
-				print(_html_safe(fgets($fp, 8192)));
+			while(!feof($fp)
+					&& ($line = fgets($fp, 8192)) !== FALSE)
+				print(_html_safe($line));
 			break;
 	}
 	print('</pre>'."\n");
