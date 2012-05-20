@@ -21,5 +21,5 @@ static char const * _authors[] =
 	NULL
 };
 
-static char const _comments[] =
+static char const * _comments =
 N_("e-mail client for the DeforaOS desktop");
