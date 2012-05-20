@@ -30,7 +30,7 @@ keyboardctl_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 keyboardctl: $(keyboardctl_OBJS)
 	$(CC) -o keyboardctl $(keyboardctl_OBJS) $(keyboardctl_LDFLAGS)
 
-callbacks.o: callbacks.c
+callbacks.o: callbacks.c callbacks.h
 	$(CC) $(keyboard_CFLAGS) -c callbacks.c
 
 common.o: common.c
@@ -39,7 +39,7 @@ common.o: common.c
 key.o: key.c key.h
 	$(CC) $(keyboard_CFLAGS) -c key.c
 
-keyboard.o: keyboard.c callbacks.h keyboard.h
+keyboard.o: keyboard.c callbacks.h keyboard.h ../config.h
 	$(CC) $(keyboard_CFLAGS) -c keyboard.c
 
 layout.o: layout.c layout.h

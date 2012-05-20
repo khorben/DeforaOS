@@ -1,18 +1,21 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Keyboard */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
+ * - display "likely" keys (after modifiers) as well
  * - see if XKB could be used to define the keyboard */
 
 
@@ -21,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #define XK_LATIN1
 #define XK_MISCELLANY
@@ -29,6 +33,7 @@
 #include "callbacks.h"
 #include "layout.h"
 #include "keyboard.h"
+#include "../config.h"
 
 
 /* Keyboard */
@@ -44,6 +49,7 @@ struct _Keyboard
 
 	PangoFontDescription * font;
 	GtkWidget * window;
+	GtkWidget * ab_window;
 	GdkRectangle geometry;
 	int width;
 	int height;
@@ -74,6 +80,38 @@ typedef struct _KeyboardLayoutDefinition
 	char const * label;
 	KeyboardKeyDefinition const * keys;
 } KeyboardLayoutDefinition;
+
+
+/* constants */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
+static const DesktopMenu _keyboard_menu_file[] =
+{
+	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_KEY_W },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
+static const DesktopMenu _keyboard_menu_help[] =
+{
+#if GTK_CHECK_VERSION(2, 6, 0)
+	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+#else
+	{ "_About", G_CALLBACK(on_help_about), NULL, 0, 0 },
+#endif
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
+static const DesktopMenubar _keyboard_menubar[] =
+{
+	{ "_File", _keyboard_menu_file },
+	{ "_Help", _keyboard_menu_help },
+	{ NULL, NULL }
+};
 
 
 /* variables */
@@ -284,6 +322,7 @@ static void _new_mode_windowed(Keyboard * keyboard);
 Keyboard * keyboard_new(KeyboardPrefs * prefs)
 {
 	Keyboard * keyboard;
+	GtkAccelGroup * group;
 	GdkScreen * screen;
 	GtkWidget * vbox;
 	GtkWidget * widget;
@@ -305,9 +344,10 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				&keyboard->geometry);
 	else
 		gdk_screen_get_monitor_geometry(screen, 0, &keyboard->geometry);
-	/* window */
+	/* windows */
 	_new_mode(keyboard, prefs->mode);
 	gtk_widget_modify_bg(keyboard->window, GTK_STATE_NORMAL, &gray);
+	keyboard->ab_window = NULL;
 	/* fonts */
 	if(prefs->font != NULL)
 		keyboard->font = pango_font_description_from_string(
@@ -320,9 +360,18 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	}
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	vbox = gtk_vbox_new(FALSE, 4);
+	/* menubar */
+	if(prefs->mode == KEYBOARD_MODE_WINDOWED)
+	{
+		group = gtk_accel_group_new();
+		gtk_window_add_accel_group(GTK_WINDOW(keyboard->window), group);
+		widget = desktop_menubar_create(_keyboard_menubar, keyboard,
+				group);
+		gtk_widget_show_all(widget);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, FALSE, 0);
+	}
 	/* layouts */
-	vbox = gtk_vbox_new(TRUE, 4);
-	gtk_widget_show(vbox);
 	if((widget = _keyboard_add_layout(keyboard, _keyboard_layout,
 					KLS_COUNT, KLS_LETTERS)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -333,6 +382,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 					KLS_COUNT, KLS_SPECIAL)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
+	gtk_widget_show(vbox);
 	if(prefs->mode != KEYBOARD_MODE_EMBEDDED)
 		gtk_widget_show(keyboard->window);
 	else
@@ -426,7 +476,6 @@ static void _new_mode_windowed(Keyboard * keyboard)
 	keyboard->height = 0;
 	keyboard->x = 0;
 	keyboard->y = 0;
-	gtk_container_set_border_width(GTK_CONTAINER(keyboard->window), 4);
 	gtk_window_set_accept_focus(GTK_WINDOW(keyboard->window), FALSE);
 	gtk_window_set_focus_on_map(GTK_WINDOW(keyboard->window), FALSE);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -518,6 +567,46 @@ void keyboard_show(Keyboard * keyboard, gboolean show)
 	}
 	else if(keyboard->mode != KEYBOARD_MODE_EMBEDDED)
 		gtk_widget_hide(keyboard->window);
+}
+
+
+/* keyboard_show_about */
+/* callbacks */
+static gboolean _about_on_closex(gpointer data);
+
+void keyboard_show_about(Keyboard * keyboard)
+{
+	if(keyboard->ab_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(keyboard->ab_window));
+		return;
+	}
+	keyboard->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(keyboard->ab_window),
+			GTK_WINDOW(keyboard->window));
+	desktop_about_dialog_set_authors(keyboard->ab_window, _authors);
+	desktop_about_dialog_set_comments(keyboard->ab_window,
+			"Virtual keyboard for the DeforaOS desktop");
+	desktop_about_dialog_set_copyright(keyboard->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(keyboard->ab_window,
+			"input-keyboard");
+	desktop_about_dialog_set_license(keyboard->ab_window, _license);
+	desktop_about_dialog_set_name(keyboard->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(keyboard->ab_window, VERSION);
+	desktop_about_dialog_set_website(keyboard->ab_window,
+			"http://www.defora.org/");
+	g_signal_connect_swapped(keyboard->ab_window, "delete-event",
+			G_CALLBACK(_about_on_closex), keyboard);
+	gtk_widget_show(keyboard->ab_window);
+}
+
+/* callbacks */
+static gboolean _about_on_closex(gpointer data)
+{
+	Keyboard * keyboard = data;
+
+	gtk_widget_hide(keyboard->ab_window);
+	return TRUE;
 }
 
 

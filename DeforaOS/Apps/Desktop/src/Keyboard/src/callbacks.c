@@ -87,3 +87,23 @@ void on_keyboard_set_layout_special(gpointer data)
 
 	keyboard_set_layout(keyboard, 2); /* XXX hard-coded */
 }
+
+
+/* menus */
+/* on_file_close */
+void on_file_close(gpointer data)
+{
+	Keyboard * keyboard = data;
+
+	keyboard_show(keyboard, FALSE);
+	gtk_main_quit();
+}
+
+
+/* on_help_about */
+void on_help_about(gpointer data)
+{
+	Keyboard * keyboard = data;
+
+	keyboard_show_about(keyboard);
+}

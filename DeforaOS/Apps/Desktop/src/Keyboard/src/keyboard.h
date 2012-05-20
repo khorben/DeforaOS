@@ -54,6 +54,7 @@ void keyboard_set_page(Keyboard * keyboard, KeyboardPage page);
 
 /* useful */
 void keyboard_show(Keyboard * keyboard, gboolean show);
+void keyboard_show_about(Keyboard * keyboard);
 
 void keyboard_key_show(Keyboard * keyboard, KeyboardKey * key, gboolean show,
 		GdkEventButton * event);
