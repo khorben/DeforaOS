@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - set some headers as "hidden" and offer to show/hide them */
 
 
 
@@ -84,6 +82,15 @@ typedef enum _ComposeAttachmentColumn
 } ComposeAttachmentColumn;
 #define CAC_LAST CAC_ICON
 #define CAC_COUNT (CAC_LAST + 1)
+
+typedef enum _ComposeHeaderColumn
+{
+	CHC_HEADER = 0,
+	CHC_VALUE,
+	CHC_VISIBLE
+} ComposeHeaderColumn;
+#define CHC_LAST CHC_VISIBLE
+#define CHC_COUNT (CHC_LAST + 1)
 
 
 /* constants */
@@ -289,7 +296,8 @@ Compose * compose_new(Config * config)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	compose->h_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	compose->h_store = gtk_list_store_new(CHC_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_BOOLEAN);
 	compose->h_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				compose->h_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(compose->h_view),
@@ -323,7 +331,8 @@ Compose * compose_new(Config * config)
 #endif
 	gtk_tree_view_append_column(GTK_TREE_VIEW(compose->h_view), column);
 	gtk_list_store_append(compose->h_store, &iter);
-	gtk_list_store_set(compose->h_store, &iter, 0, "To:", -1);
+	gtk_list_store_set(compose->h_store, &iter, CHC_HEADER, "To:",
+			CHC_VISIBLE, TRUE, -1);
 	gtk_container_add(GTK_CONTAINER(widget), compose->h_view);
 	gtk_paned_add1(GTK_PANED(vpaned), widget);
 	/* paned */
@@ -412,7 +421,9 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 	if(!last && (text == NULL || strlen(text) == 0 ))
 		gtk_list_store_remove(compose->h_store, &iter);
 	else
-		gtk_list_store_set(compose->h_store, &iter, 0, text, -1);
+		/* XXX automatically add a column if necessary */
+		gtk_list_store_set(compose->h_store, &iter, CHC_HEADER, text,
+				-1);
 }
 
 static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
@@ -429,7 +440,8 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 	if(!last && (text == NULL || strlen(text) == 0))
 		gtk_list_store_remove(compose->h_store, &iter);
 	else
-		gtk_list_store_set(compose->h_store, &iter, 1, text, -1);
+		gtk_list_store_set(compose->h_store, &iter, CHC_VALUE, text,
+				-1);
 }
 
 
@@ -451,20 +463,32 @@ void compose_delete(Compose * compose)
 
 
 /* accessors */
-/* compose_set_field */
-void compose_set_field(Compose * compose, char const * field,
-		char const * value)
+/* compose_set_header */
+void compose_set_header(Compose * compose, char const * field,
+		char const * value, gboolean visible)
 {
+	struct
+	{
+		char const * field;
+		void (*callback)(Compose * compose, char const * value);
+	} fc[] = {
+		{ "From:",	compose_set_from	},
+		{ "Subject:",	compose_set_subject	},
+		{ NULL,		NULL			}
+	};
+	size_t i;
 	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
 	GtkTreeIter iter;
 	gboolean valid;
 	gchar * p;
 
-	if(strcmp(field, "From:") == 0)
-	{
-		compose_set_from(compose, value);
-		return;
-	}
+	/* some headers are handled specifically */
+	for(i = 0; fc[i].field != NULL; i++)
+		if(strcmp(field, fc[i].field) == 0)
+		{
+			fc[i].callback(compose, value);
+			return;
+		}
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
@@ -472,12 +496,15 @@ void compose_set_field(Compose * compose, char const * field,
 		if(p != NULL && strcmp(p, field) == 0)
 		{
 			g_free(p);
-			gtk_list_store_set(compose->h_store, &iter, 1, value,
+			gtk_list_store_set(compose->h_store, &iter,
+					CHC_VALUE, value, CHC_VISIBLE, visible,
 					-1);
 			return;
 		}
 		g_free(p);
 	}
+	/* the header was not set yet */
+	/* FIXME implement the visible parameter */
 	compose_add_field(compose, field, value);
 }
 
@@ -544,9 +571,11 @@ void compose_add_field(Compose * compose, char const * field,
 
 	gtk_list_store_append(compose->h_store, &iter);
 	if(field != NULL)
-		gtk_list_store_set(compose->h_store, &iter, 0, field, -1);
+		gtk_list_store_set(compose->h_store, &iter, CHC_HEADER, field,
+				-1);
 	if(value != NULL)
-		gtk_list_store_set(compose->h_store, &iter, 1, value, -1);
+		gtk_list_store_set(compose->h_store, &iter, CHC_VALUE, value,
+				-1);
 }
 
 

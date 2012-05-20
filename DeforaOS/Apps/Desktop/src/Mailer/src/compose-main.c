@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,15 @@
 #endif
 
 
+/* prototypes */
+static Compose * _compose(Config * config, char const * subject,
+		int toc, char * tov[]);
+
+
 /* functions */
 /* compose */
-static Compose * _compose(Config * config, int toc, char * tov[])
+static Compose * _compose(Config * config, char const * subject,
+		int toc, char * tov[])
 {
 	Compose * compose;
 	int i;
@@ -50,8 +56,14 @@ static Compose * _compose(Config * config, int toc, char * tov[])
 	if((compose = compose_new(config)) == NULL)
 		return NULL;
 	compose_set_standalone(compose, TRUE);
-	for(i = 0; i < toc; i++)
+	/* recipients */
+	if(toc > 0)
+		compose_set_header(compose, "To:", tov[0], TRUE);
+	for(i = 1; i < toc; i++)
 		compose_add_field(compose, "To:", tov[i]);
+	/* subject */
+	if(subject != NULL)
+		compose_set_subject(compose, subject);
 	return compose;
 }
 
@@ -80,7 +92,7 @@ static Config * _compose_config(void)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: compose address...\n"), stderr);
+	fputs(_("Usage: compose [-s subject] address...\n"), stderr);
 	return 1;
 }
 
@@ -90,20 +102,25 @@ int main(int argc, char * argv[])
 {
 	Config * config;
 	Compose * compose;
+	char const * subject = NULL;
 	int o;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "s:")) != -1)
 		switch(o)
 		{
+			case 's':
+				subject = optarg;
+				break;
 			default:
 				return _usage();
 		}
 	config = _compose_config();
-	if((compose = _compose(config, argc - optind, &argv[optind])) != NULL)
+	if((compose = _compose(config, subject, argc - optind, &argv[optind]))
+			!= NULL)
 	{
 		gtk_main();
 		compose_delete(compose);

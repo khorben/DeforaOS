@@ -1104,7 +1104,8 @@ void mailer_compose(Mailer * mailer)
 	organization = config_get(mailer->config, title,
 			"identity_organization");
 	if(organization != NULL && organization[0] != '\0')
-		compose_set_field(compose, "Organization:", organization);
+		compose_set_header(compose, "Organization:", organization,
+				TRUE);
 }
 
 
@@ -1366,7 +1367,7 @@ static void _reply_selected(Mailer * mailer, GtkTreeModel * model,
 			MHC_TO_EMAIL, &to, -1);
 	/* from */
 	if(from != NULL)
-		compose_set_field(compose, "To:", from);
+		compose_set_header(compose, "To:", from, TRUE);
 	/* to */
 	if(to != NULL)
 		compose_set_from(compose, to);

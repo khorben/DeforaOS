@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@ Compose * compose_new_copy(Compose * compose);
 void compose_delete(Compose * compose);
 
 /* accessors */
-void compose_set_field(Compose * compose, char const * field,
-		char const * value);
 void compose_set_font(Compose * compose, char const * font);
 void compose_set_from(Compose * compose, char const * from);
+void compose_set_header(Compose * compose, char const * header,
+		char const * value, gboolean visible);
 void compose_set_modified(Compose * compose, gboolean modified);
 void compose_set_standalone(Compose * compose, gboolean standalone);
 void compose_set_subject(Compose * compose, char const * subject);
