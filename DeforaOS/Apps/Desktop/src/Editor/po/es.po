@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-21 02:54+0100\n"
+"POT-Creation-Date: 2012-05-20 13:42+0200\n"
 "PO-Revision-Date: 2010-04-07 22:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -18,47 +18,47 @@ msgstr ""
 
 #: ../src/editor.c:97
 msgid "_New"
-msgstr ""
+msgstr "_Nuevo"
 
 #: ../src/editor.c:99
 msgid "_Open"
-msgstr ""
+msgstr "_Abrir"
 
 #: ../src/editor.c:102
 msgid "_Save"
-msgstr ""
+msgstr "_Guardar"
 
 #: ../src/editor.c:104
 msgid "_Save as..."
-msgstr ""
+msgstr "Guardar co_mo..."
 
 #: ../src/editor.c:107
 msgid "_Close"
-msgstr ""
+msgstr "_Cerrar"
 
 #: ../src/editor.c:114
 msgid "_Undo"
-msgstr ""
+msgstr "_Deshacer"
 
 #: ../src/editor.c:116
 msgid "_Redo"
-msgstr ""
+msgstr "_Rehacer"
 
 #: ../src/editor.c:118
 msgid "_Cut"
-msgstr ""
+msgstr "Cor_tar"
 
 #: ../src/editor.c:120
 msgid "_Copy"
-msgstr ""
+msgstr "_Copiar"
 
 #: ../src/editor.c:122
 msgid "_Paste"
-msgstr ""
+msgstr "_Pegar"
 
 #: ../src/editor.c:125
 msgid "Select _all"
-msgstr ""
+msgstr "Seleccionar _todo"
 
 #: ../src/editor.c:132
 msgid "_Unselect all"
@@ -66,11 +66,11 @@ msgstr ""
 
 #: ../src/editor.c:134
 msgid "_Find"
-msgstr ""
+msgstr "_Buscar"
 
 #: ../src/editor.c:137
 msgid "_Preferences"
-msgstr "_Preferencias"
+msgstr "Prefere_ncias"
 
 #: ../src/editor.c:144
 msgid "_File..."
@@ -78,7 +78,7 @@ msgstr ""
 
 #: ../src/editor.c:150
 msgid "_About"
-msgstr ""
+msgstr "Acerca _de"
 
 #: ../src/editor.c:161
 msgid "_File"
@@ -98,39 +98,39 @@ msgstr ""
 
 #: ../src/editor.c:171
 msgid "New"
-msgstr ""
+msgstr "Nuevo"
 
 #: ../src/editor.c:172
 msgid "Open"
-msgstr ""
+msgstr "Abrir"
 
 #: ../src/editor.c:174
 msgid "Save"
-msgstr ""
+msgstr "Guardar"
 
 #: ../src/editor.c:175
 msgid "Save as"
-msgstr ""
+msgstr "Guardar como"
 
 #: ../src/editor.c:178
 msgid "Cut"
-msgstr ""
+msgstr "Cortar"
 
 #: ../src/editor.c:179
 msgid "Copy"
-msgstr ""
+msgstr "Copiar"
 
 #: ../src/editor.c:180
 msgid "Paste"
-msgstr ""
+msgstr "Pegar"
 
 #: ../src/editor.c:183
 msgid "Find"
-msgstr ""
+msgstr "Buscar"
 
 #: ../src/editor.c:185
 msgid "Preferences"
-msgstr ""
+msgstr "Preferencias"
 
 #: ../src/editor.c:197
 msgid "none"
@@ -150,7 +150,7 @@ msgstr ""
 
 #: ../src/editor.c:273
 msgid "Find:"
-msgstr ""
+msgstr "Buscar:"
 
 #: ../src/editor.c:289
 msgid "Case-sensitive"
@@ -168,78 +168,82 @@ msgstr ""
 msgid "(Untitled)"
 msgstr ""
 
-#: ../src/editor.c:439
+#: ../src/editor.c:434
+msgid "Text editor for the DeforaOS desktop"
+msgstr ""
+
+#: ../src/editor.c:441
 msgid "translator-credits"
 msgstr ""
 
-#: ../src/editor.c:475
+#: ../src/editor.c:477
 msgid "Could not save configuration"
 msgstr ""
 
-#: ../src/editor.c:492 ../src/editor.c:501 ../src/editor.c:859
-#: ../src/editor.c:864
+#: ../src/editor.c:494 ../src/editor.c:503 ../src/editor.c:861
+#: ../src/editor.c:866
 msgid "Question"
 msgstr ""
 
-#: ../src/editor.c:517 ../src/editor.c:521
+#: ../src/editor.c:519 ../src/editor.c:523
 msgid "Error"
 msgstr ""
 
-#: ../src/editor.c:543 ../src/editor.c:696
+#: ../src/editor.c:545 ../src/editor.c:698
 msgid ""
 "There are unsaved changes.\n"
 "Discard or save them?"
 msgstr ""
 
-#: ../src/editor.c:654
+#: ../src/editor.c:656
 msgid "Insert file..."
 msgstr ""
 
-#: ../src/editor.c:660 ../src/editor.c:773
+#: ../src/editor.c:662 ../src/editor.c:775
 msgid "Text files"
 msgstr ""
 
-#: ../src/editor.c:664 ../src/editor.c:777
+#: ../src/editor.c:666 ../src/editor.c:779
 msgid "All files"
 msgstr ""
 
-#: ../src/editor.c:702
+#: ../src/editor.c:704
 msgid "Discard"
-msgstr ""
+msgstr "Descartar"
 
-#: ../src/editor.c:767
+#: ../src/editor.c:769
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:835
+#: ../src/editor.c:837
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:863
+#: ../src/editor.c:865
 msgid "This file already exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:872
+#: ../src/editor.c:874
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:887
+#: ../src/editor.c:889
 msgid "Save as..."
-msgstr ""
+msgstr "Guardar como..."
 
-#: ../src/editor.c:944
+#: ../src/editor.c:946
 msgid "Text editor preferences"
 msgstr ""
 
-#: ../src/editor.c:961
+#: ../src/editor.c:963
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:971
+#: ../src/editor.c:973
 msgid "Wrap mode:"
 msgstr ""
 
-#: ../src/editor.c:1182
+#: ../src/editor.c:1184
 msgid "Text not found"
 msgstr ""
 
