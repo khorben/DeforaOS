@@ -1358,7 +1358,7 @@ static void _panel_helper_about_dialog(Panel * panel)
 	panel->ab_window = desktop_about_dialog_new();
 	desktop_about_dialog_set_authors(panel->ab_window, _authors);
 	desktop_about_dialog_set_comments(panel->ab_window,
-			_("DeforaOS Desktop Panel"));
+			_("Panel for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(panel->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(panel->ab_window,
 			"panel-settings"); /* XXX */

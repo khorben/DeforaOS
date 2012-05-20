@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop XMLEditor */
 static char const _license[] =
 "This program is free software; you can redistribute it and/or modify\n"
@@ -14,6 +14,8 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see <http://www.gnu.org/licenses/>.\n";
+/* TODO:
+ * - only allow legitimate columns to be modified */
 
 
 
@@ -278,6 +280,8 @@ void xmleditor_about(XMLEditor * xmleditor)
 	g_signal_connect(G_OBJECT(xmleditor->ab_window), "delete-event",
 			G_CALLBACK(_about_on_closex), NULL);
 	desktop_about_dialog_set_authors(xmleditor->ab_window, _authors);
+	desktop_about_dialog_set_comments(xmleditor->ab_window,
+			_("XML editor for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(xmleditor->ab_window, _copyright);
 	desktop_about_dialog_set_license(xmleditor->ab_window, _license);
 	desktop_about_dialog_set_logo_icon_name(xmleditor->ab_window,

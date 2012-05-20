@@ -276,7 +276,7 @@ void pdfviewer_about(PDFviewer * pdfviewer)
 			G_CALLBACK(_about_on_closex), NULL);
 	desktop_about_dialog_set_authors(pdfviewer->ab_window, _authors);
 	desktop_about_dialog_set_comments(pdfviewer->ab_window,
-			"DeforaOS Desktop PDF Viewer");
+			"PDF viewer for the DeforaOS desktop");
 	desktop_about_dialog_set_copyright(pdfviewer->ab_window, _copyright);
 	desktop_about_dialog_set_license(pdfviewer->ab_window, _license);
 	desktop_about_dialog_set_logo_icon_name(pdfviewer->ab_window,

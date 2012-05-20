@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Todo */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -432,6 +432,8 @@ void todo_about(Todo * todo)
 	gtk_window_set_transient_for(GTK_WINDOW(todo->about),
 			GTK_WINDOW(todo->window));
 	desktop_about_dialog_set_authors(todo->about, _authors);
+	desktop_about_dialog_set_comments(todo->about,
+			_("TODO-list manager for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(todo->about, _copyright);
 	desktop_about_dialog_set_logo_icon_name(todo->about, "todo");
 	desktop_about_dialog_set_license(todo->about, _license);

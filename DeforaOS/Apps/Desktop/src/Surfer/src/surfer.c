@@ -781,6 +781,8 @@ void surfer_about(Surfer * surfer)
 	gtk_window_set_transient_for(GTK_WINDOW(surfer->ab_dialog),
 			GTK_WINDOW(surfer->window));
 	desktop_about_dialog_set_authors(surfer->ab_dialog, _authors);
+	desktop_about_dialog_set_comments(surfer->ab_dialog,
+			_("Web browser for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(surfer->ab_dialog, _copyright);
 	desktop_about_dialog_set_logo_icon_name(surfer->ab_dialog,
 			"web-browser");
