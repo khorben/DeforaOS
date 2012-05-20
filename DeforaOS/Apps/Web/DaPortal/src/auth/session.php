@@ -68,16 +68,16 @@ class SessionAuth extends Auth
 		if(($uid = $this->getVariable($engine, 'SessionAuth::uid'))
 					=== FALSE
 				|| $uid == 0)
-			return parent::getCredentials();
+			return parent::getCredentials($engine);
 		$user = new User($engine, $uid);
 		if(!$user->isEnabled())
-			return parent::getCredentials();
+			return parent::getCredentials($engine);
 		$cred = new AuthCredentials($user->getUserId(),
 				$user->getUsername(),
 				$user->getGroupId(),
 				$user->isAdmin());
 		parent::setCredentials($engine, $cred);
-		return parent::getCredentials();
+		return parent::getCredentials($engine);
 	}
 
 

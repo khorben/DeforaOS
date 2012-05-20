@@ -101,7 +101,7 @@ abstract class Auth
 	//public
 	//accessors
 	//Auth::getCredentials
-	public function getCredentials()
+	public function getCredentials(&$engine)
 	{
 		if($this->credentials === FALSE)
 			$this->credentials = new AuthCredentials;
@@ -110,7 +110,7 @@ abstract class Auth
 
 
 	//Auth::getVariable
-	public function getVariable($variable)
+	public function getVariable(&$engine, $variable)
 	{
 		//FIXME implement (through the database?)
 		return FALSE;
