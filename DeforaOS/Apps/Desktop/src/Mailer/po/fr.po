@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mailer 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-20 13:23+0200\n"
+"POT-Creation-Date: 2012-05-20 19:21+0200\n"
 "PO-Revision-Date: 2010-10-02 23:25+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,169 +20,145 @@ msgstr ""
 msgid "e-mail client for the DeforaOS desktop"
 msgstr "Client e-mail pour l'environnement DeforaOS"
 
-#: ../src/compose.c:112
+#: ../src/compose.c:124
 msgid "_New message"
 msgstr "_Nouveau message"
 
-#: ../src/compose.c:115
+#: ../src/compose.c:127
 msgid "_Save"
 msgstr "_Enregistrer"
 
-#: ../src/compose.c:117
+#: ../src/compose.c:129
 msgid "Save _as..."
 msgstr "Enregistrer _sous..."
 
-#: ../src/compose.c:121 ../src/mailer.c:162
+#: ../src/compose.c:133 ../src/mailer.c:162
 msgid "_Print"
 msgstr "_Imprimer"
 
-#: ../src/compose.c:122 ../src/mailer.c:163
+#: ../src/compose.c:134 ../src/mailer.c:163
 msgid "Print pre_view"
 msgstr "_Aperçu avant impression"
 
-#: ../src/compose.c:125
+#: ../src/compose.c:137
 msgid "S_end"
 msgstr "En_voyer"
 
-#: ../src/compose.c:128
+#: ../src/compose.c:140
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/compose.c:135
+#: ../src/compose.c:147
 msgid "_Undo"
 msgstr "_Annuler"
 
-#: ../src/compose.c:136
+#: ../src/compose.c:148
 msgid "_Redo"
 msgstr "_Refaire"
 
-#: ../src/compose.c:138 ../src/mailer.c:173
+#: ../src/compose.c:150 ../src/mailer.c:173
 msgid "_Cut"
 msgstr "Co_uper"
 
-#: ../src/compose.c:140
+#: ../src/compose.c:152
 msgid "_Copy"
 msgstr "_Copier"
 
-#: ../src/compose.c:142 ../src/mailer.c:177
+#: ../src/compose.c:154 ../src/mailer.c:177
 msgid "_Paste"
 msgstr "C_oller"
 
-#: ../src/compose.c:145
+#: ../src/compose.c:157
 msgid "_Select all"
 msgstr "Sélectionner _tout"
 
-#: ../src/compose.c:152 ../src/mailer.c:187
+#: ../src/compose.c:164 ../src/mailer.c:187
 msgid "_Unselect all"
 msgstr "Tout _désélectionner"
 
-#: ../src/compose.c:159
+#: ../src/compose.c:171
 msgid "Add field"
 msgstr "Ajouter un champ"
 
-#: ../src/compose.c:167 ../src/compose.c:169 ../src/mailer.c:214
+#: ../src/compose.c:179 ../src/compose.c:181 ../src/mailer.c:214
 #: ../src/mailer.c:216
 msgid "_About"
 msgstr "_A propos"
 
-#: ../src/compose.c:176 ../src/mailer.c:223
+#: ../src/compose.c:188 ../src/mailer.c:223
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/compose.c:177 ../src/mailer.c:224
+#: ../src/compose.c:189 ../src/mailer.c:224
 msgid "_Edit"
 msgstr "_Edition"
 
-#: ../src/compose.c:178
+#: ../src/compose.c:190
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/compose.c:179 ../src/mailer.c:226
+#: ../src/compose.c:191 ../src/mailer.c:226
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/compose.c:186
+#: ../src/compose.c:198
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/compose.c:189
+#: ../src/compose.c:201
 msgid "Save"
 msgstr "Enregistrer"
 
-#: ../src/compose.c:191
+#: ../src/compose.c:203
 msgid "Cut"
 msgstr "Couper"
 
-#: ../src/compose.c:192
+#: ../src/compose.c:204
 msgid "Copy"
 msgstr "Copier"
 
-#: ../src/compose.c:193
+#: ../src/compose.c:205
 msgid "Paste"
 msgstr "Coller"
 
-#: ../src/compose.c:195
+#: ../src/compose.c:207
 msgid "Attach"
 msgstr "Joindre"
 
-#: ../src/compose.c:224
-msgid "To:"
-msgstr "À:"
-
-#: ../src/compose.c:224
-msgid "Cc:"
-msgstr "Cc:"
-
-#: ../src/compose.c:224
-msgid "Bcc:"
-msgstr "Ccc"
-
-#: ../src/compose.c:224
-msgid "Reply-To:"
-msgstr "Répondre à:"
-
-#: ../src/compose.c:225
-msgid "Newsgroup:"
-msgstr ""
-
-#: ../src/compose.c:225
-msgid "Followup-To:"
-msgstr "Suivre sur:"
-
-#: ../src/compose.c:251
+#: ../src/compose.c:263
 msgid "Compose"
 msgstr "Composer"
 
-#: ../src/compose.c:269
+#: ../src/compose.c:281
 msgid "From: "
 msgstr "De: "
 
-#: ../src/compose.c:333
+#: ../src/compose.c:355
 msgid "Subject: "
 msgstr "Sujet: "
 
-#: ../src/compose.c:600
+#: ../src/compose.c:644
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
-#: ../src/compose.c:688 ../src/compose.c:692 ../src/mailer.c:1003
+#: ../src/compose.c:732 ../src/compose.c:736 ../src/mailer.c:1003
 #: ../src/mailer.c:1007
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/compose.c:820
+#: ../src/compose.c:864
 msgid "Sending mail..."
 msgstr "Envoi du message..."
 
-#: ../src/compose.c:827
+#: ../src/compose.c:871
 msgid "Progress: "
 msgstr "Progression : "
 
-#: ../src/compose.c:1092 ../src/compose.c:1101
+#: ../src/compose.c:1151 ../src/compose.c:1160
 msgid "Warning"
 msgstr "Attention"
 
-#: ../src/compose.c:1095
+#: ../src/compose.c:1154
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
@@ -190,9 +166,9 @@ msgstr ""
 "Certains changements n'ont pas été enregistrés.\n"
 "Voulez-vous vraiment fermer la fenêtre?"
 
-#: ../src/compose-main.c:83
-msgid "Usage: compose address...\n"
-msgstr "Usage: compose adresse...\n"
+#: ../src/compose-main.c:95
+msgid "Usage: compose [-s subject] address...\n"
+msgstr "Usage: compose [-s sujet] adresse...\n"
 
 #: ../src/folder.c:202
 msgid "Inbox"
@@ -314,7 +290,7 @@ msgstr "Liste des messages"
 msgid "Message"
 msgstr "Message"
 
-#: ../src/mailer.c:500 ../src/mailer.c:1776
+#: ../src/mailer.c:500 ../src/mailer.c:1777
 msgid "Plug-ins"
 msgstr "Greffons"
 
@@ -354,7 +330,7 @@ msgstr " À: "
 msgid " Date: "
 msgstr " Date: "
 
-#: ../src/mailer.c:1135
+#: ../src/mailer.c:1136
 msgid ""
 "The messages selected will be deleted.\n"
 "Continue?"
@@ -362,144 +338,144 @@ msgstr ""
 "Les messages sélectionnés vont être effacés.\n"
 "Continuer?"
 
-#: ../src/mailer.c:1300
+#: ../src/mailer.c:1301
 msgid "Mailer - View source"
 msgstr "Mailer - Source"
 
-#: ../src/mailer.c:1375
+#: ../src/mailer.c:1376
 msgid "Re: "
 msgstr "Re: "
 
-#: ../src/mailer.c:1488
+#: ../src/mailer.c:1489
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/mailer.c:1585
+#: ../src/mailer.c:1586
 msgid "Mailer preferences"
 msgstr "Préférences de Mailer"
 
-#: ../src/mailer.c:1662 ../src/mailer.c:1759
+#: ../src/mailer.c:1663 ../src/mailer.c:1760
 msgid "Enabled"
 msgstr "Actif"
 
-#: ../src/mailer.c:1666 ../src/mailer.c:1765
+#: ../src/mailer.c:1667 ../src/mailer.c:1766
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/mailer.c:1670
+#: ../src/mailer.c:1671
 msgid "Type"
 msgstr "Type"
 
-#: ../src/mailer.c:1707
+#: ../src/mailer.c:1708
 msgid "Accounts"
 msgstr "Comptes"
 
-#: ../src/mailer.c:1722
+#: ../src/mailer.c:1723
 msgid "Messages font:"
 msgstr "Police des messages:"
 
-#: ../src/mailer.c:1732
+#: ../src/mailer.c:1733
 msgid "Display"
 msgstr "Affichage"
 
-#: ../src/mailer.c:1899
+#: ../src/mailer.c:1900
 msgid "No account plug-in available"
 msgstr "Aucun greffon de compte disponible"
 
-#: ../src/mailer.c:2054 ../src/mailer.c:2342
+#: ../src/mailer.c:2055 ../src/mailer.c:2343
 msgid "Account name"
 msgstr "Nom du compte"
 
-#: ../src/mailer.c:2061
+#: ../src/mailer.c:2062
 msgid "Your name"
 msgstr "Votre nom"
 
-#: ../src/mailer.c:2068
+#: ../src/mailer.c:2069
 msgid "e-mail address"
 msgstr "Adresse e-mail"
 
-#: ../src/mailer.c:2075
+#: ../src/mailer.c:2076
 msgid "Type of account"
 msgstr "Type de compte"
 
-#: ../src/mailer.c:2231
+#: ../src/mailer.c:2232
 msgid "Choose file"
 msgstr "Choisir un fichier"
 
-#: ../src/mailer.c:2413
+#: ../src/mailer.c:2414
 msgid "hidden"
 msgstr "masqué"
 
-#: ../src/mailer.c:2447
+#: ../src/mailer.c:2448
 msgid "Yes"
 msgstr "Oui"
 
-#: ../src/mailer.c:2447
+#: ../src/mailer.c:2448
 msgid "No"
 msgstr "Non"
 
-#: ../src/mailer.c:2475
+#: ../src/mailer.c:2476
 msgid "Account type "
 msgstr "Type de compte "
 
-#: ../src/mailer.c:2476
+#: ../src/mailer.c:2477
 msgid " active\n"
 msgstr " actif\n"
 
-#: ../src/mailer.c:2538
+#: ../src/mailer.c:2539
 msgid "Edit account: "
 msgstr "Modification du compte: "
 
-#: ../src/mailer.c:2560
+#: ../src/mailer.c:2561
 msgid "Account name:"
 msgstr "Nom du compte :"
 
-#: ../src/mailer.c:2569
+#: ../src/mailer.c:2570
 msgid "Identity:"
 msgstr "Identité :"
 
-#: ../src/mailer.c:2574
+#: ../src/mailer.c:2575
 msgid "Name:"
 msgstr "Nom :"
 
-#: ../src/mailer.c:2585
+#: ../src/mailer.c:2586
 msgid "Address:"
 msgstr "Adresse :"
 
-#: ../src/mailer.c:2596
+#: ../src/mailer.c:2597
 msgid "Organization:"
 msgstr "Organisation :"
 
-#: ../src/mailer.c:2609
+#: ../src/mailer.c:2610
 msgid "Account"
 msgstr "Compte"
 
-#: ../src/mailer.c:2614
+#: ../src/mailer.c:2615
 msgid "Settings"
 msgstr "Paramètres"
 
-#: ../src/mailer.c:2707
+#: ../src/mailer.c:2708
 msgid "An error occured while saving preferences"
 msgstr "Une erreur est survenue pendant la sauvegarde des préférences"
 
-#: ../src/mailer.c:3007 ../src/mailer.c:3011
+#: ../src/mailer.c:3008 ../src/mailer.c:3012
 msgid "Question"
 msgstr "Question"
 
-#: ../src/mailer.c:3080
+#: ../src/mailer.c:3081
 #, c-format
 msgid "%s/%s: %d %s"
 msgstr "%s/%s: %d %s"
 
-#: ../src/mailer.c:3083
+#: ../src/mailer.c:3084
 msgid "messages"
 msgstr "messages"
 
-#: ../src/mailer.c:3083
+#: ../src/mailer.c:3084
 msgid "message"
 msgstr "message"
 
-#: ../src/mailer.c:3086
+#: ../src/mailer.c:3087
 msgid "Ready"
 msgstr "Prêt"
 
