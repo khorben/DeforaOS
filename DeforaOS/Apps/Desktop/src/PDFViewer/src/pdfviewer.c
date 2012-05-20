@@ -1,7 +1,7 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net>\n"
-"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010-2011 Sébastien Bocahu <zecrazytux@zecrazytux.net>\n"
+"Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>";
 static char const _license[] =
 "This program is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by the\n"
@@ -275,6 +275,8 @@ void pdfviewer_about(PDFviewer * pdfviewer)
 	g_signal_connect(G_OBJECT(pdfviewer->ab_window), "delete-event",
 			G_CALLBACK(_about_on_closex), NULL);
 	desktop_about_dialog_set_authors(pdfviewer->ab_window, _authors);
+	desktop_about_dialog_set_comments(pdfviewer->ab_window,
+			"DeforaOS Desktop PDF Viewer");
 	desktop_about_dialog_set_copyright(pdfviewer->ab_window, _copyright);
 	desktop_about_dialog_set_license(pdfviewer->ab_window, _license);
 	desktop_about_dialog_set_logo_icon_name(pdfviewer->ab_window,

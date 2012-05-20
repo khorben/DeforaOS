@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Player */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -551,6 +551,8 @@ void player_about(Player * player)
 	gtk_window_set_transient_for(GTK_WINDOW(player->ab_window), GTK_WINDOW(
 				player->window));
 	desktop_about_dialog_set_authors(player->ab_window, _authors);
+	desktop_about_dialog_set_comments(player->ab_window,
+			_("Media player for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(player->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(player->ab_window, ICON_NAME);
 	desktop_about_dialog_set_license(player->ab_window, _license);
