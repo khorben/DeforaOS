@@ -1,6 +1,6 @@
 PACKAGE	= Keyboard
 VERSION	= 0.2.0
-SUBDIRS	= data include src tools
+SUBDIRS	= data include po src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -27,6 +27,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Keyboard.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/key.c \
@@ -49,6 +54,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 

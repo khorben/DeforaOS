@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "keyboard.h"
+#include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* private */
@@ -28,7 +44,8 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n", stderr);
+	fputs(_("Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n"),
+			stderr);
 	return 1;
 }
 
@@ -43,6 +60,9 @@ int main(int argc, char * argv[])
 	KeyboardPrefs prefs;
 	char * p;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "df:m:pwx")) != -1)

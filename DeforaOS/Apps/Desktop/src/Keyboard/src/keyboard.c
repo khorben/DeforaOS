@@ -23,6 +23,7 @@ static char const _license[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
@@ -34,6 +35,8 @@ static char const _license[] =
 #include "layout.h"
 #include "keyboard.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Keyboard */
@@ -91,7 +94,7 @@ static char const * _authors[] =
 
 static const DesktopMenu _keyboard_menu_file[] =
 {
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
@@ -99,17 +102,17 @@ static const DesktopMenu _keyboard_menu_file[] =
 static const DesktopMenu _keyboard_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
 #endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static const DesktopMenubar _keyboard_menubar[] =
 {
-	{ "_File", _keyboard_menu_file },
-	{ "_Help", _keyboard_menu_help },
+	{ N_("_File"), _keyboard_menu_file },
+	{ N_("_Help"), _keyboard_menu_help },
 	{ NULL, NULL }
 };
 
@@ -482,7 +485,7 @@ static void _new_mode_windowed(Keyboard * keyboard)
 	gtk_window_set_icon_name(GTK_WINDOW(keyboard->window),
 			"input-keyboard");
 #endif
-	gtk_window_set_title(GTK_WINDOW(keyboard->window), "Keyboard");
+	gtk_window_set_title(GTK_WINDOW(keyboard->window), _("Keyboard"));
 	g_signal_connect_swapped(G_OBJECT(keyboard->window), "delete-event",
 			G_CALLBACK(on_keyboard_delete_event), keyboard);
 }
@@ -586,7 +589,7 @@ void keyboard_show_about(Keyboard * keyboard)
 			GTK_WINDOW(keyboard->window));
 	desktop_about_dialog_set_authors(keyboard->ab_window, _authors);
 	desktop_about_dialog_set_comments(keyboard->ab_window,
-			"Virtual keyboard for the DeforaOS desktop");
+			_("Virtual keyboard for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(keyboard->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(keyboard->ab_window,
 			"input-keyboard");

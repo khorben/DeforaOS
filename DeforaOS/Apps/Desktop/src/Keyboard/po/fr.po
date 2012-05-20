@@ -1,0 +1,45 @@
+# $Id$
+# Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Keyboard package.
+# Pierre Pronchery <khorben@defora.org>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Keyboard 0.2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-05-20 14:38+0200\n"
+"PO-Revision-Date: 2012-05-20 14:32+0200\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/keyboard.c:97
+msgid "_Close"
+msgstr "_Fermer"
+
+#: ../src/keyboard.c:105 ../src/keyboard.c:107
+msgid "_About"
+msgstr "À propos"
+
+#: ../src/keyboard.c:114
+msgid "_File"
+msgstr "_Fichier"
+
+#: ../src/keyboard.c:115
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/keyboard.c:488
+msgid "Keyboard"
+msgstr "Clavier"
+
+#: ../src/keyboard.c:592
+msgid "Virtual keyboard for the DeforaOS desktop"
+msgstr "Clavier virtuel pour l'environnement DeforaOS"
+
+#: ../src/main.c:46
+msgid "Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n"
+msgstr "Usage: keyboard [-d|-p|-w|-x][-f police][-m moniteur]\n"
