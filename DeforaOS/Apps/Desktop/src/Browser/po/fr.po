@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-23 14:56+0200\n"
+"POT-Creation-Date: 2012-05-20 14:01+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -157,7 +157,7 @@ msgstr "Erreur lors du chargement des icônes"
 msgid "Error while loading configuration"
 msgstr "Erreur lors du chargement de la configuration"
 
-#: ../src/browser.c:322 ../src/browser.c:2668
+#: ../src/browser.c:322 ../src/browser.c:2670
 msgid "File browser"
 msgstr "Gestionnaire de fichiers"
 
@@ -165,20 +165,20 @@ msgstr "Gestionnaire de fichiers"
 msgid "View as..."
 msgstr "Vue..."
 
-#: ../src/browser.c:345 ../src/browser.c:2105 ../src/browser.c:2113
+#: ../src/browser.c:345 ../src/browser.c:2107 ../src/browser.c:2115
 msgid "Details"
 msgstr "Détails"
 
-#: ../src/browser.c:352 ../src/browser.c:2106 ../src/browser.c:2114
+#: ../src/browser.c:352 ../src/browser.c:2108 ../src/browser.c:2116
 #: ../src/desktop.c:1956
 msgid "Icons"
 msgstr "Icônes"
 
-#: ../src/browser.c:359 ../src/browser.c:2107 ../src/browser.c:2115
+#: ../src/browser.c:359 ../src/browser.c:2109 ../src/browser.c:2117
 msgid "List"
 msgstr "Liste"
 
-#: ../src/browser.c:366 ../src/browser.c:2109 ../src/browser.c:2116
+#: ../src/browser.c:366 ../src/browser.c:2111 ../src/browser.c:2118
 msgid "Thumbnails"
 msgstr "Vignettes"
 
@@ -186,13 +186,17 @@ msgstr "Vignettes"
 msgid " Location: "
 msgstr " Chemin : "
 
-#: ../src/browser.c:721
+#: ../src/browser.c:716
+msgid "File manager for the DeforaOS desktop"
+msgstr "Gestionnaire de fichiers pour l'environnement DeforaOS"
+
+#: ../src/browser.c:723
 msgid "translator-credits"
 msgstr ""
 "Calimero <calimeroteknik@free.fr>\n"
 "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/browser.c:766 ../src/browser.c:770 ../src/copy.c:678
+#: ../src/browser.c:768 ../src/browser.c:772 ../src/copy.c:678
 #: ../src/copy.c:682 ../src/delete.c:421 ../src/delete.c:426
 #: ../src/desktop.c:1450 ../src/desktop.c:1455 ../src/move.c:452
 #: ../src/move.c:456 ../src/properties.c:294 ../src/properties.c:298
@@ -200,149 +204,149 @@ msgstr ""
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/browser.c:975
+#: ../src/browser.c:977
 msgid "Open file..."
 msgstr "Ouvrir..."
 
-#: ../src/browser.c:998 ../src/desktopicon.c:878 ../src/view.c:145
+#: ../src/browser.c:1000 ../src/desktopicon.c:878 ../src/view.c:145
 #: ../src/view.c:421
 msgid "Open with..."
 msgstr "Ouvrir avec..."
 
-#: ../src/browser.c:1004 ../src/view.c:427
+#: ../src/browser.c:1006 ../src/view.c:427
 msgid "Executable files"
 msgstr "Fichiers exécutables"
 
-#: ../src/browser.c:1009 ../src/view.c:432
+#: ../src/browser.c:1011 ../src/view.c:432
 msgid "Shell scripts"
 msgstr "Scripts shell"
 
-#: ../src/browser.c:1013 ../src/desktop.c:1856 ../src/view.c:436
+#: ../src/browser.c:1015 ../src/desktop.c:1856 ../src/view.c:436
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: ../src/browser.c:1103 ../src/browser.c:1478
+#: ../src/browser.c:1105 ../src/browser.c:1480
 msgid "Refreshing folder: "
 msgstr "Actualisation du dossier : "
 
-#: ../src/browser.c:1124
+#: ../src/browser.c:1126
 #, c-format
 msgid "%s%u file%c (%u hidden)"
 msgstr "%s%u fichier%c (%u cachés)"
 
-#: ../src/browser.c:1256 ../src/plugins/properties.c:516
+#: ../src/browser.c:1258 ../src/plugins/properties.c:516
 msgid "bytes"
 msgstr "octets"
 
-#: ../src/browser.c:1260 ../src/copy.c:594 ../src/plugins/properties.c:522
+#: ../src/browser.c:1262 ../src/copy.c:594 ../src/plugins/properties.c:522
 msgid "kB"
 msgstr "Kio"
 
-#: ../src/browser.c:1262 ../src/copy.c:619 ../src/plugins/properties.c:524
+#: ../src/browser.c:1264 ../src/copy.c:619 ../src/plugins/properties.c:524
 msgid "MB"
 msgstr "Mio"
 
-#: ../src/browser.c:1264 ../src/plugins/properties.c:526
+#: ../src/browser.c:1266 ../src/plugins/properties.c:526
 msgid "GB"
 msgstr "Gio"
 
-#: ../src/browser.c:1268 ../src/plugins/properties.c:530
+#: ../src/browser.c:1270 ../src/plugins/properties.c:530
 msgid "TB"
 msgstr "Tio"
 
-#: ../src/browser.c:1813
+#: ../src/browser.c:1815
 msgid "Filename"
 msgstr "Nom de fichier"
 
-#: ../src/browser.c:1817
+#: ../src/browser.c:1819
 msgid "Size"
 msgstr "Taille"
 
-#: ../src/browser.c:1819
+#: ../src/browser.c:1821
 msgid "Owner"
 msgstr "Propriétaire"
 
-#: ../src/browser.c:1820
+#: ../src/browser.c:1822
 msgid "Group"
 msgstr "Groupe"
 
-#: ../src/browser.c:1821
+#: ../src/browser.c:1823
 msgid "Date"
 msgstr "Date"
 
-#: ../src/browser.c:1822
+#: ../src/browser.c:1824
 msgid "MIME type"
 msgstr "Type MIME"
 
-#: ../src/browser.c:2083
+#: ../src/browser.c:2085
 msgid "File browser preferences"
 msgstr "Gestionnaire de fichiers - Préférences"
 
-#: ../src/browser.c:2099
+#: ../src/browser.c:2101
 msgid "Default view:"
 msgstr "Vue par défaut:"
 
-#: ../src/browser.c:2123
+#: ../src/browser.c:2125
 msgid "_Alternate row colors in detailed view"
 msgstr "_Alterner les couleurs dans la vue détaillée"
 
-#: ../src/browser.c:2127
+#: ../src/browser.c:2129
 msgid "_Confirm before deletion"
 msgstr "_Confirmer l'effacement"
 
-#: ../src/browser.c:2130
+#: ../src/browser.c:2132
 msgid "Sort _folders first"
 msgstr "_Dossiers affichés en premier"
 
-#: ../src/browser.c:2133
+#: ../src/browser.c:2135
 msgid "Show _hidden files"
 msgstr "Afficher les fichiers cac_hés"
 
-#: ../src/browser.c:2136
+#: ../src/browser.c:2138
 msgid "_Appearance"
 msgstr "_Apparence"
 
-#: ../src/browser.c:2150
+#: ../src/browser.c:2152
 msgid "Type"
 msgstr "Type"
 
-#: ../src/browser.c:2170
+#: ../src/browser.c:2172
 msgid "_File associations"
 msgstr "_Types de fichiers"
 
-#: ../src/browser.c:2183
+#: ../src/browser.c:2185
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/browser.c:2191
+#: ../src/browser.c:2193
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/browser.c:2204
+#: ../src/browser.c:2206
 msgid "_Plug-ins"
 msgstr "_Greffons"
 
-#: ../src/browser.c:2308
+#: ../src/browser.c:2310
 msgid "Edit file association"
 msgstr "Modifier les associations de type"
 
-#: ../src/browser.c:2321
+#: ../src/browser.c:2323
 msgid "Type:"
 msgstr "Type :"
 
-#: ../src/browser.c:2330
+#: ../src/browser.c:2332
 msgid "Open with:"
 msgstr "Ouvrir avec :"
 
-#: ../src/browser.c:2341
+#: ../src/browser.c:2343
 msgid "View with:"
 msgstr "Visualiser avec :"
 
-#: ../src/browser.c:2352
+#: ../src/browser.c:2354
 msgid "Edit with:"
 msgstr "Modifier avec :"
 
-#: ../src/browser.c:2649
+#: ../src/browser.c:2651
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
@@ -533,7 +537,7 @@ msgstr ""
 
 #: ../src/desktop.c:178
 msgid "Do not draw icons"
-msgstr ""
+msgstr "Ne pas afficher d'icônes"
 
 #: ../src/desktop.c:179 ../src/desktop.c:898
 msgid "Applications"
@@ -541,7 +545,7 @@ msgstr "Applications"
 
 #: ../src/desktop.c:180
 msgid "Categories"
-msgstr ""
+msgstr "Catégories"
 
 #: ../src/desktop.c:181
 msgid "Desktop contents"
@@ -565,7 +569,7 @@ msgstr "Couleur par défaut :"
 
 #: ../src/desktop.c:1839
 msgid "Wallpaper: "
-msgstr ""
+msgstr "Papier peint : "
 
 #: ../src/desktop.c:1843 ../src/desktop.c:1891
 msgid "Background"
@@ -581,7 +585,7 @@ msgstr "Position : "
 
 #: ../src/desktop.c:1874
 msgid "Do not draw"
-msgstr ""
+msgstr "Ne pas afficher"
 
 #: ../src/desktop.c:1876
 msgid "Centered"
@@ -605,7 +609,7 @@ msgstr "Étendre l'arrière-plan à tous les moniteurs"
 
 #: ../src/desktop.c:1907
 msgid "Layout: "
-msgstr ""
+msgstr "Format : "
 
 #: ../src/desktop.c:1920 ../src/desktop.c:1972
 msgid "Monitor: "
@@ -613,11 +617,11 @@ msgstr "Moniteur : "
 
 #: ../src/desktop.c:1929
 msgid "Background color: "
-msgstr ""
+msgstr "Couleur de fond : "
 
 #: ../src/desktop.c:1938
 msgid "Foreground color: "
-msgstr ""
+msgstr "Couleur du texte : "
 
 #: ../src/desktop.c:1947
 msgid "Font: "
@@ -629,7 +633,7 @@ msgstr "Résolution : "
 
 #: ../src/desktop.c:1992
 msgid "Size: "
-msgstr "Taille: "
+msgstr "Taille : "
 
 #: ../src/desktop.c:2015
 msgid "Monitors"
@@ -835,7 +839,7 @@ msgstr "Différences"
 
 #: ../src/plugins/cvs.c:187 ../src/plugins/cvs.c:210
 msgid "Annotate"
-msgstr ""
+msgstr "Annotations"
 
 #: ../src/plugins/cvs.c:190 ../src/plugins/cvs.c:213
 #: ../src/plugins/subversion.c:174 ../src/plugins/subversion.c:192
