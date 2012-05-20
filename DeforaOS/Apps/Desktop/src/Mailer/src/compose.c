@@ -58,6 +58,7 @@ struct _Compose
 	/* headers */
 	GtkWidget * from;
 	GtkListStore * h_store;
+	GtkTreeModel * h_store_filter;
 	GtkListStore * h_headers;
 	GtkWidget * h_view;
 	GtkWidget * subject;
@@ -102,6 +103,8 @@ static void _compose_delete(Compose * compose);
 
 /* accessors */
 static char const * _compose_get_font(Compose * compose);
+static gboolean _compose_get_iter(Compose * compose, GtkTreeIter * iter,
+		gchar * path);
 
 /* useful */
 static gboolean _compose_close(Compose * compose);
@@ -109,6 +112,8 @@ static gboolean _compose_close(Compose * compose);
 /* callbacks */
 static void _compose_on_about(gpointer data);
 static gboolean _compose_on_closex(gpointer data);
+static gboolean _compose_on_headers_filter(GtkTreeModel * model,
+		GtkTreeIter * iter, gpointer data);
 static void _compose_on_view_add_field(gpointer data);
 
 
@@ -228,8 +233,8 @@ Compose * compose_new(Config * config)
 	GtkTreeViewColumn * column;
 	GtkTreeIter iter;
 	char const * headers[] = {
-		N_("To:"), N_("Cc:"), N_("Bcc:"), N_("Reply-To:"),
-		N_("Newsgroup:"), N_("Followup-To:") };
+		"To:", "Cc:", "Bcc:", "Reply-To:", "Newsgroup:",
+		"Followup-To:" };
 	size_t i;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
@@ -298,8 +303,13 @@ Compose * compose_new(Config * config)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	compose->h_store = gtk_list_store_new(CHC_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_BOOLEAN);
+	compose->h_store_filter = gtk_tree_model_filter_new(GTK_TREE_MODEL(
+				compose->h_store), NULL);
+	gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(
+				compose->h_store_filter),
+			_compose_on_headers_filter, compose, NULL);
 	compose->h_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
-				compose->h_store));
+				compose->h_store_filter));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(compose->h_view),
 			FALSE);
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(compose->h_view), TRUE);
@@ -309,7 +319,7 @@ Compose * compose_new(Config * config)
 	{
 		gtk_list_store_append(compose->h_headers, &iter);
 		gtk_list_store_set(compose->h_headers, &iter, 0, headers[i], 1,
-				_(headers[i]), -1);
+				headers[i], -1);
 	}
 	renderer = gtk_cell_renderer_combo_new();
 	g_object_set(renderer, "editable", TRUE, "model", compose->h_headers,
@@ -317,7 +327,7 @@ Compose * compose_new(Config * config)
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				_on_header_field_edited), compose);
 	column = gtk_tree_view_column_new_with_attributes("", renderer, "text",
-			0, NULL);
+			CHC_HEADER, NULL);
 	gtk_tree_view_column_set_min_width(column, 80);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(compose->h_view), column);
 	renderer = gtk_cell_renderer_text_new();
@@ -325,14 +335,17 @@ Compose * compose_new(Config * config)
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				_on_header_edited), compose);
 	column = gtk_tree_view_column_new_with_attributes("", renderer, "text",
-			1, NULL);
+			CHC_VALUE, NULL);
 #if GTK_CHECK_VERSION(2, 4, 0)
 	gtk_tree_view_column_set_expand(column, TRUE);
 #endif
 	gtk_tree_view_append_column(GTK_TREE_VIEW(compose->h_view), column);
-	gtk_list_store_append(compose->h_store, &iter);
-	gtk_list_store_set(compose->h_store, &iter, CHC_HEADER, "To:",
-			CHC_VISIBLE, TRUE, -1);
+	/* default to 8-bits transfers with UTF-8 encoding */
+	compose_set_header(compose, "Content-Transfer-Encoding:", "8bit",
+			FALSE);
+	compose_set_header(compose, "Content-Type:",
+			"text/plain; charset=UTF-8", FALSE);
+	compose_add_field(compose, "To:", NULL);
 	gtk_container_add(GTK_CONTAINER(widget), compose->h_view);
 	gtk_paned_add1(GTK_PANED(vpaned), widget);
 	/* paned */
@@ -416,7 +429,7 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 	gboolean last;
 
 	last = (gtk_tree_model_iter_n_children(model, NULL) > 1) ? FALSE : TRUE;
-	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
+	if(_compose_get_iter(compose, &iter, path) != TRUE)
 		return;
 	if(!last && (text == NULL || strlen(text) == 0 ))
 		gtk_list_store_remove(compose->h_store, &iter);
@@ -435,7 +448,7 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 	gboolean last;
 
 	last = (gtk_tree_model_iter_n_children(model, NULL) > 1) ? FALSE : TRUE;
-	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
+	if(_compose_get_iter(compose, &iter, path) != TRUE)
 		return;
 	if(!last && (text == NULL || strlen(text) == 0))
 		gtk_list_store_remove(compose->h_store, &iter);
@@ -464,12 +477,12 @@ void compose_delete(Compose * compose)
 
 /* accessors */
 /* compose_set_header */
-void compose_set_header(Compose * compose, char const * field,
+void compose_set_header(Compose * compose, char const * header,
 		char const * value, gboolean visible)
 {
 	struct
 	{
-		char const * field;
+		char const * header;
 		void (*callback)(Compose * compose, char const * value);
 	} fc[] = {
 		{ "From:",	compose_set_from	},
@@ -483,8 +496,8 @@ void compose_set_header(Compose * compose, char const * field,
 	gchar * p;
 
 	/* some headers are handled specifically */
-	for(i = 0; fc[i].field != NULL; i++)
-		if(strcmp(field, fc[i].field) == 0)
+	for(i = 0; fc[i].header != NULL; i++)
+		if(strcmp(header, fc[i].header) == 0)
 		{
 			fc[i].callback(compose, value);
 			return;
@@ -493,7 +506,7 @@ void compose_set_header(Compose * compose, char const * field,
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, 0, &p, -1);
-		if(p != NULL && strcmp(p, field) == 0)
+		if(p != NULL && strcmp(p, header) == 0)
 		{
 			g_free(p);
 			gtk_list_store_set(compose->h_store, &iter,
@@ -503,9 +516,10 @@ void compose_set_header(Compose * compose, char const * field,
 		}
 		g_free(p);
 	}
-	/* the header was not set yet */
-	/* FIXME implement the visible parameter */
-	compose_add_field(compose, field, value);
+	/* append the header to the list */
+	gtk_list_store_append(compose->h_store, &iter);
+	gtk_list_store_set(compose->h_store, &iter, CHC_HEADER, header,
+			CHC_VALUE, value, CHC_VISIBLE, visible, -1);
 }
 
 
@@ -570,6 +584,7 @@ void compose_add_field(Compose * compose, char const * field,
 	GtkTreeIter iter;
 
 	gtk_list_store_append(compose->h_store, &iter);
+	gtk_list_store_set(compose->h_store, &iter, CHC_VISIBLE, TRUE, -1);
 	if(field != NULL)
 		gtk_list_store_set(compose->h_store, &iter, CHC_HEADER, field,
 				-1);
@@ -1104,6 +1119,21 @@ static char const * _compose_get_font(Compose * compose)
 }
 
 
+/* compose_get_iter */
+static gboolean _compose_get_iter(Compose * compose, GtkTreeIter * iter,
+		gchar * path)
+{
+	GtkTreeIter p;
+
+	if(gtk_tree_model_get_iter_from_string(compose->h_store_filter, &p,
+				path) != TRUE)
+		return FALSE;
+	gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(
+				compose->h_store_filter), iter, &p);
+	return TRUE;
+}
+
+
 /* useful */
 /* compose_close */
 static gboolean _compose_close(Compose * compose)
@@ -1154,6 +1184,17 @@ static gboolean _compose_on_closex(gpointer data)
 	if(_compose_close(compose) == TRUE)
 		_compose_delete(compose);
 	return TRUE;
+}
+
+
+/* compose_on_headers_filter */
+static gboolean _compose_on_headers_filter(GtkTreeModel * model,
+		GtkTreeIter * iter, gpointer data)
+{
+	gboolean visible = TRUE;
+
+	gtk_tree_model_get(model, iter, CHC_VISIBLE, &visible, -1);
+	return visible;
 }
 
 
