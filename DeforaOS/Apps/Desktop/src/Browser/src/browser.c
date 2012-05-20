@@ -712,6 +712,8 @@ void browser_about(Browser * browser)
 	gtk_window_set_transient_for(GTK_WINDOW(browser->ab_window), GTK_WINDOW(
 				browser->window));
 	desktop_about_dialog_set_authors(browser->ab_window, _authors);
+	desktop_about_dialog_set_comments(browser->ab_window,
+			_("File manager for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(browser->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(browser->ab_window,
 			"system-file-manager");
