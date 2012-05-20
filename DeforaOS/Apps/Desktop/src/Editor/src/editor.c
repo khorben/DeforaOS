@@ -430,6 +430,8 @@ void editor_about(Editor * editor)
 	gtk_window_set_transient_for(GTK_WINDOW(editor->ab_window),
 			GTK_WINDOW(editor->window));
 	desktop_about_dialog_set_authors(editor->ab_window, _authors);
+	desktop_about_dialog_set_comments(editor->ab_window,
+			_("Text editor for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(editor->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(editor->ab_window,
 			"text-editor");
