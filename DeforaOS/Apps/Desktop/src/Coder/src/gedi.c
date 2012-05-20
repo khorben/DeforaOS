@@ -1,7 +1,7 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
-/* This file is part of DeforaOS Devel GEDI */
+"Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>";
+/* This file is part of DeforaOS Desktop Coder */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
@@ -14,6 +14,8 @@ static char const _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see <http://www.gnu.org/licenses/>.";
+/* TODO:
+ * - rename to "Coder" */
 
 
 
@@ -253,6 +255,9 @@ void gedi_about(GEDI * gedi)
 	gtk_window_set_transient_for(GTK_WINDOW(gedi->ab_window), GTK_WINDOW(
 				gedi->tb_window));
 	desktop_about_dialog_set_authors(gedi->ab_window, _authors);
+	desktop_about_dialog_set_comments(gedi->ab_window,
+			"Integrated Development Environment for the DeforaOS"
+			" desktop");
 	desktop_about_dialog_set_copyright(gedi->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(gedi->ab_window, ICON_NAME);
 	desktop_about_dialog_set_license(gedi->ab_window, _license);

@@ -14,6 +14,8 @@ static char _license[] =
 "\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* FIXME:
+ * - on NetBSD sometimes the "mute" control is before the corresponding knob */
 
 
 
@@ -881,6 +883,8 @@ void mixer_about(Mixer * mixer)
 	g_signal_connect(G_OBJECT(mixer->about), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
 	desktop_about_dialog_set_authors(mixer->about, _authors);
+	desktop_about_dialog_set_comments(mixer->about,
+			_("Volume mixer for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(mixer->about, _copyright);
 	desktop_about_dialog_set_license(mixer->about, _license);
 	desktop_about_dialog_set_logo_icon_name(mixer->about, "stock_volume");
