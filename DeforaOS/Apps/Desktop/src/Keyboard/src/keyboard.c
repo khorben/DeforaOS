@@ -364,6 +364,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	vbox = gtk_vbox_new(FALSE, 4);
+	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	/* menubar */
 	if(prefs->mode == KEYBOARD_MODE_WINDOWED)
 	{
@@ -373,6 +374,12 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 				group);
 		gtk_widget_show_all(widget);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, FALSE, 0);
+		/* XXX border hack */
+		widget = gtk_vbox_new(FALSE, 4);
+		gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_widget_show(vbox);
+		vbox = widget;
 	}
 	/* layouts */
 	if((widget = _keyboard_add_layout(keyboard, _keyboard_layout,
@@ -384,7 +391,6 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	if((widget = _keyboard_add_layout(keyboard, _keyboard_layout,
 					KLS_COUNT, KLS_SPECIAL)) != NULL)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(keyboard->window), vbox);
 	gtk_widget_show(vbox);
 	if(prefs->mode != KEYBOARD_MODE_EMBEDDED)
 		gtk_widget_show(keyboard->window);
