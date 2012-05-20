@@ -1,0 +1,44 @@
+<!-- ##### SECTION Title ##### -->
+Message
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT AccountMessage ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT Message ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION message_get_header ##### -->
+<para>
+
+</para>
+
+@message: 
+@header: 
+@Returns: 
+
+

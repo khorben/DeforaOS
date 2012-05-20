@@ -1,0 +1,86 @@
+<!-- ##### SECTION Title ##### -->
+Folder
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT AccountFolder ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO FT_COUNT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO FT_LAST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT Folder ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM FolderType ##### -->
+<para>
+
+</para>
+
+@FT_INBOX: 
+@FT_DRAFTS: 
+@FT_SENT: 
+@FT_TRASH: 
+@FT_FOLDER: 
+
+<!-- ##### FUNCTION folder_get_name ##### -->
+<para>
+
+</para>
+
+@folder: 
+@Returns: 
+
+
+<!-- ##### FUNCTION folder_get_type ##### -->
+<para>
+
+</para>
+
+@folder: 
+@Returns: 
+
+
+<!-- ##### FUNCTION folder_set_type ##### -->
+<para>
+
+</para>
+
+@folder: 
+@type: 
+
+

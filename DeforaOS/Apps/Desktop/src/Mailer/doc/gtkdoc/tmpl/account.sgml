@@ -1,0 +1,208 @@
+<!-- ##### SECTION Title ##### -->
+Account
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT Account ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM AccountConfigType ##### -->
+<para>
+
+</para>
+
+@ACT_NONE: 
+@ACT_STRING: 
+@ACT_PASSWORD: 
+@ACT_FILE: 
+@ACT_UINT16: 
+@ACT_BOOLEAN: 
+@ACT_SEPARATOR: 
+
+<!-- ##### STRUCT AccountPlugin ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION authenticate ##### -->
+<para>
+
+</para>
+
+@account: 
+@message: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION confirm ##### -->
+<para>
+
+</para>
+
+@account: 
+@message: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION destroy ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION error ##### -->
+<para>
+
+</para>
+
+@account: 
+@message: 
+@ret: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION folder_delete ##### -->
+<para>
+
+</para>
+
+@folder: 
+
+
+<!-- ##### USER_FUNCTION folder_new ##### -->
+<para>
+
+</para>
+
+@account: 
+@folder: 
+@parent: 
+@type: 
+@name: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION get_config ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION get_source ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@folder: 
+@message: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION get_ssl_context ##### -->
+<para>
+
+</para>
+
+@account: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION init ##### -->
+<para>
+
+</para>
+
+@helper: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION message_delete ##### -->
+<para>
+
+</para>
+
+@message: 
+
+
+<!-- ##### USER_FUNCTION message_new ##### -->
+<para>
+
+</para>
+
+@account: 
+@folder: 
+@message: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION message_set_body ##### -->
+<para>
+
+</para>
+
+@message: 
+@buf: 
+@cnt: 
+@append: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION message_set_header ##### -->
+<para>
+
+</para>
+
+@message: 
+@header: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION refresh ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@folder: 
+@message: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION status ##### -->
+<para>
+
+</para>
+
+@account: 
+@format: 
+@...: 
+
+

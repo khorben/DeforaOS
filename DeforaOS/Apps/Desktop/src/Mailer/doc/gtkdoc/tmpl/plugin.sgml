@@ -1,0 +1,86 @@
+<!-- ##### SECTION Title ##### -->
+MailerPlugin
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT MailerPlugin ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION destroy ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION error ##### -->
+<para>
+
+</para>
+
+@account: 
+@message: 
+@ret: 
+@Returns: 
+
+
+<!-- ##### FUNCTION folder_get_messages ##### -->
+<para>
+
+</para>
+
+@folder: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION get_widget ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION init ##### -->
+<para>
+
+</para>
+
+@helper: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION refresh ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@folder: 
+@message: 
+@Returns: 
+
+

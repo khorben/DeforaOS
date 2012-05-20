@@ -1,6 +1,6 @@
 PACKAGE	= Mailer
 VERSION	= 0.1.4
-SUBDIRS	= data include po src
+SUBDIRS	= data doc include po src
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -48,6 +48,16 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/48x48/mailer-outbox.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/mailer-sent.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/GRAMMAR \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Mailer-docs.xml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/Mailer.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Mailer.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
