@@ -278,7 +278,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 		gtk_window_set_icon_name(GTK_WINDOW(mixer->window),
 				"stock_volume");
 #endif
-		gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
+		gtk_window_set_title(GTK_WINDOW(mixer->window), _("Mixer"));
 		g_signal_connect_swapped(mixer->window, "delete-event",
 			G_CALLBACK(on_closex), mixer);
 	}
