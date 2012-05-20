@@ -1418,6 +1418,8 @@ void phone_show_about(Phone * phone, gboolean show)
 	}
 	phone->ab_window = desktop_about_dialog_new();
 	desktop_about_dialog_set_authors(phone->ab_window, _authors);
+	desktop_about_dialog_set_comments(phone->ab_window,
+			_("Telephony application for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(phone->ab_window, _copyright);
 	desktop_about_dialog_set_license(phone->ab_window, _license);
 	desktop_about_dialog_set_logo_icon_name(phone->ab_window,
