@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,9 +36,9 @@
 #include "callbacks.h"
 #include "mailer.h"
 #include "../config.h"
-#include "common.c"
 #define _(string) gettext(string)
 #define N_(string) (string)
+#include "common.c"
 
 
 /* constants */
@@ -1480,6 +1480,7 @@ void mailer_show_about(Mailer * mailer, gboolean show)
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_comments(dialog, _comments);
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_license(dialog, _license);
 	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");

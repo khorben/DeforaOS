@@ -1,3 +1,4 @@
+../src/common.c
 ../src/compose.c
 ../src/compose-main.c
 ../src/folder.c

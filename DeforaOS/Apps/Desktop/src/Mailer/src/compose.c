@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@
 #include "mailer.h"
 #include "compose.h"
 #include "../config.h"
-#include "common.c"
 #define _(string) gettext(string)
 #define N_(string) (string)
+#include "common.c"
 
 
 /* Compose */
@@ -248,8 +248,7 @@ Compose * compose_new(Config * config)
 #else
 	gtk_window_set_default_size(GTK_WINDOW(compose->window), 200, 300);
 #endif
-	gtk_window_set_title(GTK_WINDOW(compose->window),
-			_(PACKAGE " - Compose"));
+	gtk_window_set_title(GTK_WINDOW(compose->window), _("Compose"));
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(compose->window), "mailer");
 #endif
@@ -1018,6 +1017,7 @@ void compose_show_about(Compose * compose, gboolean show)
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_comments(dialog, _(_comments));
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_logo_icon_name(dialog, "mailer");
 	desktop_about_dialog_set_license(dialog, _license);
