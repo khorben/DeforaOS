@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -208,15 +208,59 @@ void keyboard_key_apply_modifier(KeyboardKey * key, unsigned int modifier)
 /* private */
 /* functions */
 /* keyboard_key_create_popup */
+/* callbacks */
+static void _create_popup_on_realize(gpointer data);
+
 static void _keyboard_key_create_popup(KeyboardKey * key)
 {
 	if(key->popup != NULL)
 		return;
 	key->popup = gtk_window_new(GTK_WINDOW_POPUP);
+	g_signal_connect(key->popup, "realize", G_CALLBACK(
+				_create_popup_on_realize), NULL);
 	key->button = gtk_button_new_with_label(gtk_label_get_text(GTK_LABEL(
 					key->label)));
 	gtk_button_set_alignment(GTK_BUTTON(key->button), 0.5, 0.1);
 	gtk_container_add(GTK_CONTAINER(key->popup), key->button);
+}
+
+/* callbacks */
+static void _create_popup_on_realize(gpointer data)
+{
+	GtkWidget * window = data;
+	int width;
+	int height;
+	GdkBitmap * mask;
+	GdkGC * gc;
+	GdkColor black = { 0, 0, 0, 0 };
+	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
+
+	/* XXX potential invalid assumption as to how the button is drawn */
+	gtk_window_get_size(GTK_WINDOW(window), &width, &height);
+	mask = gdk_pixmap_new(NULL, width, height, 1);
+	gc = gdk_gc_new(mask);
+	gdk_gc_set_foreground(gc, &white);
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, height);
+	gdk_gc_set_foreground(gc, &black);
+	/* left column */
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, 1, height);
+	/* top row */
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, 1);
+	/* right column */
+	gdk_draw_rectangle(mask, gc, TRUE, width - 1, 0, 1, height);
+	/* bottom row */
+	gdk_draw_rectangle(mask, gc, TRUE, 0, height - 1, width, 1);
+	/* top left corner */
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, 2, 2);
+	/* top right corner */
+	gdk_draw_rectangle(mask, gc, TRUE, width - 2, 0, 2, 2);
+	/* bottom left corner */
+	gdk_draw_rectangle(mask, gc, TRUE, 0, height - 2, 2, 2);
+	/* bottom right corner */
+	gdk_draw_rectangle(mask, gc, TRUE, width - 2, height - 2, 2, 2);
+	gtk_widget_shape_combine_mask(window, mask, 0, 0);
+	g_object_unref(gc);
+	g_object_unref(mask);
 }
 
 
