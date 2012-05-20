@@ -684,6 +684,8 @@ static void _locker_about(Locker * locker)
 	desktop_about_dialog_set_name(dialog, PACKAGE);
 	desktop_about_dialog_set_version(dialog, VERSION);
 	desktop_about_dialog_set_authors(dialog, _authors);
+	desktop_about_dialog_set_comments(dialog,
+			_("Screensaver for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(dialog, _copyright);
 	desktop_about_dialog_set_logo_icon_name(dialog, "gnome-lockscreen");
 	desktop_about_dialog_set_license(dialog, _license);
