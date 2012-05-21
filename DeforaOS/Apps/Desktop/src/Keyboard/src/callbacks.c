@@ -118,6 +118,7 @@ void on_view_hide(gpointer data)
 }
 
 
+#if GTK_CHECK_VERSION(2, 10, 0)
 /* systray */
 /* on_systray_activate */
 void on_systray_activate(gpointer data)
@@ -135,7 +136,6 @@ void on_systray_activate(gpointer data)
 void on_systray_popup_menu(GtkStatusIcon * icon, guint button, guint time,
 		gpointer data)
 {
-	Keyboard * keyboard = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 
@@ -147,3 +147,4 @@ void on_systray_popup_menu(GtkStatusIcon * icon, guint button, guint time,
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
 }
+#endif

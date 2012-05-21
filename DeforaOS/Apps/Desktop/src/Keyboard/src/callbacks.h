@@ -39,8 +39,10 @@ void on_help_about(gpointer data);
 void on_view_hide(gpointer data);
 
 /* systray */
+# if GTK_CHECK_VERSION(2, 10, 0)
 void on_systray_activate(gpointer data);
 void on_systray_popup_menu(GtkStatusIcon * icon, guint button, guint time,
 		gpointer data);
+# endif
 
 #endif /* !KEYBOARD_CALLBACKS_H */
