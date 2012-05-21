@@ -52,6 +52,9 @@ struct _Keyboard
 
 	PangoFontDescription * font;
 	GtkWidget * window;
+#if GTK_CHECK_VERSION(2, 10, 0)
+	GtkStatusIcon * icon;
+#endif
 	GtkWidget * ab_window;
 	GdkRectangle geometry;
 	int width;
@@ -358,6 +361,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	/* windows */
 	_new_mode(keyboard, prefs->mode);
 	gtk_widget_modify_bg(keyboard->window, GTK_STATE_NORMAL, &gray);
+	keyboard->icon = NULL;
 	keyboard->ab_window = NULL;
 	/* fonts */
 	if(prefs->font != NULL)
@@ -401,9 +405,24 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_widget_show(vbox);
 	if(prefs->mode != KEYBOARD_MODE_EMBEDDED)
+	{
+#if GTK_CHECK_VERSION(2, 10, 0)
+		/* create the systray icon */
+		keyboard->icon = gtk_status_icon_new_from_icon_name(
+				"input-keyboard");
+# if GTK_CHECK_VERSION(2, 16, 0)
+		gtk_status_icon_set_tooltip_text(keyboard->icon,
+				_("Virtual keyboard"));
+# endif
+		g_signal_connect_swapped(keyboard->icon, "activate", G_CALLBACK(
+					on_systray_activate), keyboard);
+#endif
+		/* show the window */
 		gtk_widget_show(keyboard->window);
+	}
 	else
 	{
+		/* print the window ID and force a flush */
 		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
 		fclose(stdout);
 	}

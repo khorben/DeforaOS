@@ -38,4 +38,7 @@ void on_file_close(gpointer data);
 void on_help_about(gpointer data);
 void on_view_hide(gpointer data);
 
+/* systray */
+void on_systray_activate(gpointer data);
+
 #endif /* !KEYBOARD_CALLBACKS_H */

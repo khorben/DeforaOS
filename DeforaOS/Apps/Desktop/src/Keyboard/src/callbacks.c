@@ -116,3 +116,13 @@ void on_view_hide(gpointer data)
 
 	keyboard_show(keyboard, FALSE);
 }
+
+
+/* systray */
+/* on_systray_activate */
+void on_systray_activate(gpointer data)
+{
+	Keyboard * keyboard = data;
+
+	keyboard_show(keyboard, TRUE);
+}
