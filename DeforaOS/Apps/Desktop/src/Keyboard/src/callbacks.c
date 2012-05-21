@@ -123,6 +123,9 @@ void on_view_hide(gpointer data)
 void on_systray_activate(gpointer data)
 {
 	Keyboard * keyboard = data;
+	gboolean visible;
 
-	keyboard_show(keyboard, TRUE);
+	/* toggle visibility */
+	visible = keyboard_is_visible(keyboard);
+	keyboard_show(keyboard, visible ? FALSE : TRUE);
 }

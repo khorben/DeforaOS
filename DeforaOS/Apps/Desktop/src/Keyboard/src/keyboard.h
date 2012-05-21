@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Keyboard */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,8 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs);
 void keyboard_delete(Keyboard * keyboard);
 
 /* accessors */
+gboolean keyboard_is_visible(Keyboard * keyboard);
+
 /* XXX be more explicit */
 void keyboard_set_layout(Keyboard * keyboard, unsigned int which);
 void keyboard_set_page(Keyboard * keyboard, KeyboardPage page);

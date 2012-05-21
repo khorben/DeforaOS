@@ -537,6 +537,13 @@ void keyboard_delete(Keyboard * keyboard)
 
 
 /* accessors */
+/* keyboard_is_visible */
+gboolean keyboard_is_visible(Keyboard * keyboard)
+{
+	return gtk_widget_get_visible(keyboard->window);
+}
+
+
 /* keyboard_set_layout */
 void keyboard_set_layout(Keyboard * keyboard, unsigned int which)
 {
