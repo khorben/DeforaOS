@@ -44,13 +44,14 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n"
+	fputs(_("Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor][-n]\n"
 "  -d	Start in docked mode\n"
 "  -p	Start as a popup window\n"
 "  -w	Start in windowed mode\n"
 "  -x	Start in embedded mode\n"
 "  -f	Set the font used for the keys\n"
-"  -m	Place on a particular monitor (in docked or popup mode)\n"), stderr);
+"  -m	Place on a particular monitor (in docked or popup mode)\n"
+"  -n	Start without showing up directly (if not embedded)\n"), stderr);
 	return 1;
 }
 
@@ -70,7 +71,7 @@ int main(int argc, char * argv[])
 	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "df:m:pwx")) != -1)
+	while((o = getopt(argc, argv, "df:m:npwx")) != -1)
 		switch(o)
 		{
 			case 'd':
@@ -83,6 +84,9 @@ int main(int argc, char * argv[])
 				prefs.monitor = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
+				break;
+			case 'n':
+				prefs.wait = 1;
 				break;
 			case 'p':
 				prefs.mode = KEYBOARD_MODE_POPUP;

@@ -416,9 +416,12 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 # endif
 		g_signal_connect_swapped(keyboard->icon, "activate", G_CALLBACK(
 					on_systray_activate), keyboard);
+		g_signal_connect(keyboard->icon, "popup-menu", G_CALLBACK(
+					on_systray_popup_menu), keyboard);
 #endif
 		/* show the window */
-		gtk_widget_show(keyboard->window);
+		if(prefs->wait == 0)
+			gtk_widget_show(keyboard->window);
 	}
 	else
 	{

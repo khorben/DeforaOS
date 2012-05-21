@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Keyboard 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-22 01:30+0200\n"
+"POT-Creation-Date: 2012-05-22 01:54+0200\n"
 "PO-Revision-Date: 2012-05-20 14:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -44,11 +44,11 @@ msgstr "_Aide"
 msgid "Virtual keyboard"
 msgstr "Clavier virtuel"
 
-#: ../src/keyboard.c:521
+#: ../src/keyboard.c:524
 msgid "Keyboard"
 msgstr "Clavier"
 
-#: ../src/keyboard.c:625
+#: ../src/keyboard.c:635
 msgid "Virtual keyboard for the DeforaOS desktop"
 msgstr "Clavier virtuel pour l'environnement DeforaOS"
 
@@ -64,18 +64,20 @@ msgstr ""
 
 #: ../src/main.c:47
 msgid ""
-"Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n"
+"Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor][-n]\n"
 "  -d\tStart in docked mode\n"
 "  -p\tStart as a popup window\n"
 "  -w\tStart in windowed mode\n"
 "  -x\tStart in embedded mode\n"
 "  -f\tSet the font used for the keys\n"
 "  -m\tPlace on a particular monitor (in docked or popup mode)\n"
+"  -n\tStart without showing up directly (if not embedded)\n"
 msgstr ""
-"Usage: keyboard [-d|-p|-w|-x][-f police][-m moniteur]\n"
+"Usage: keyboard [-d|-p|-w|-x][-f police][-m moniteur][-n]\n"
 "  -d\tDémarrer comme un dock\n"
 "  -p\tDémarrer comme une fenêtre popup\n"
 "  -w\tDémarrer comme une fenêtre\n"
 "  -x\tDémarrer en mode embarqué\n"
 "  -f\tSpécifier la police utilisée pour les touches\n"
 "  -m\tDémarrer sur un moniteur particulier (en mode dock ou popup)\n"
+"  -n\tNe pas afficher directement au démarrage (sauf mode embarqué)\n"

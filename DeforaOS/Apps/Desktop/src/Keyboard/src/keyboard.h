@@ -40,6 +40,7 @@ typedef struct _KeyboardPrefs
 	int monitor;
 	char const * font;
 	KeyboardMode mode;
+	int wait;
 } KeyboardPrefs;
 
 
