@@ -40,5 +40,7 @@ void on_view_hide(gpointer data);
 
 /* systray */
 void on_systray_activate(gpointer data);
+void on_systray_popup_menu(GtkStatusIcon * icon, guint button, guint time,
+		gpointer data);
 
 #endif /* !KEYBOARD_CALLBACKS_H */

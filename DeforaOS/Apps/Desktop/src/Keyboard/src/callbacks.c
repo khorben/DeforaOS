@@ -129,3 +129,21 @@ void on_systray_activate(gpointer data)
 	visible = keyboard_is_visible(keyboard);
 	keyboard_show(keyboard, visible ? FALSE : TRUE);
 }
+
+
+/* on_systray_popup_menu */
+void on_systray_popup_menu(GtkStatusIcon * icon, guint button, guint time,
+		gpointer data)
+{
+	Keyboard * keyboard = data;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+
+	menu = gtk_menu_new();
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+	g_signal_connect(menuitem, "activate", G_CALLBACK(gtk_main_quit),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
