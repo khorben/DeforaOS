@@ -107,3 +107,12 @@ void on_help_about(gpointer data)
 
 	keyboard_show_about(keyboard);
 }
+
+
+/* on_view_hide */
+void on_view_hide(gpointer data)
+{
+	Keyboard * keyboard = data;
+
+	keyboard_show(keyboard, FALSE);
+}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Keyboard 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-20 14:38+0200\n"
+"POT-Creation-Date: 2012-05-22 00:56+0200\n"
 "PO-Revision-Date: 2012-05-20 14:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -20,26 +20,34 @@ msgstr ""
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/keyboard.c:105 ../src/keyboard.c:107
+#: ../src/keyboard.c:104
+msgid "_Hide"
+msgstr "Masquer"
+
+#: ../src/keyboard.c:112 ../src/keyboard.c:114
 msgid "_About"
 msgstr "À propos"
 
-#: ../src/keyboard.c:114
+#: ../src/keyboard.c:121
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/keyboard.c:115
+#: ../src/keyboard.c:122
+msgid "_View"
+msgstr "_Vue"
+
+#: ../src/keyboard.c:123
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/keyboard.c:488
+#: ../src/keyboard.c:502
 msgid "Keyboard"
 msgstr "Clavier"
 
-#: ../src/keyboard.c:592
+#: ../src/keyboard.c:606
 msgid "Virtual keyboard for the DeforaOS desktop"
 msgstr "Clavier virtuel pour l'environnement DeforaOS"
 
-#: ../src/main.c:46
+#: ../src/main.c:47
 msgid "Usage: keyboard [-d|-p|-w|-x][-f font][-m monitor]\n"
 msgstr "Usage: keyboard [-d|-p|-w|-x][-f police][-m moniteur]\n"

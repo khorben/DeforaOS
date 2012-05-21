@@ -36,5 +36,6 @@ void on_keyboard_set_layout_special(gpointer data);
 /* menus */
 void on_file_close(gpointer data);
 void on_help_about(gpointer data);
+void on_view_hide(gpointer data);
 
 #endif /* !KEYBOARD_CALLBACKS_H */

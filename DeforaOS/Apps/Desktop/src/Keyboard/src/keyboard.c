@@ -99,6 +99,13 @@ static const DesktopMenu _keyboard_menu_file[] =
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
+static const DesktopMenu _keyboard_menu_view[] =
+{
+	{ N_("_Hide"), G_CALLBACK(on_view_hide), NULL, GDK_CONTROL_MASK,
+		GDK_KEY_H },
+	{ NULL, NULL, NULL, 0, 0 }
+};
+
 static const DesktopMenu _keyboard_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -112,6 +119,7 @@ static const DesktopMenu _keyboard_menu_help[] =
 static const DesktopMenubar _keyboard_menubar[] =
 {
 	{ N_("_File"), _keyboard_menu_file },
+	{ N_("_View"), _keyboard_menu_view },
 	{ N_("_Help"), _keyboard_menu_help },
 	{ NULL, NULL }
 };
