@@ -155,6 +155,7 @@ static int _helper(int section, char const * name)
 	ghtml_load_url(helper->view, buf);
 	gtk_box_pack_start(GTK_BOX(vbox), helper->view, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(helper->window), vbox);
+	gtk_widget_grab_focus(helper->view);
 	gtk_widget_show_all(helper->window);
 	gtk_main();
 	/* delete everything */
