@@ -1,6 +1,6 @@
 PACKAGE	= Surfer
 VERSION	= 0.2.5
-SUBDIRS	= data po src
+SUBDIRS	= data po src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -59,6 +59,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common/history.c \
 		$(PACKAGE)-$(VERSION)/src/common/url.c \
 		$(PACKAGE)-$(VERSION)/src/common/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/helper.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
