@@ -319,7 +319,7 @@ Browser * browser_new(char const * directory)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(browser->window), ICON_NAME);
 #endif
-	gtk_window_set_title(GTK_WINDOW(browser->window), _("File browser"));
+	gtk_window_set_title(GTK_WINDOW(browser->window), _("File manager"));
 	g_signal_connect_swapped(browser->window, "delete-event", G_CALLBACK(
 				on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -2081,8 +2081,7 @@ void browser_show_preferences(Browser * browser)
 		gtk_window_present(GTK_WINDOW(browser->pr_window));
 		return;
 	}
-	browser->pr_window = gtk_dialog_new_with_buttons(
-			_("File browser preferences"),
+	browser->pr_window = gtk_dialog_new_with_buttons(_("Preferences"),
 			GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -2667,7 +2666,7 @@ static void _refresh_title(Browser * browser)
 	char * p;
 
 	p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL, NULL);
-	snprintf(buf, sizeof(buf), "%s%s%s", _("File browser"), " - ",
+	snprintf(buf, sizeof(buf), "%s%s%s", _("File manager"), " - ",
 			(p != NULL) ? p : (char *)browser->current->data);
 	free(p);
 	gtk_window_set_title(GTK_WINDOW(browser->window), buf);

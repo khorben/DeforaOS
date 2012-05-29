@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=File browser
-Comment=A file browser able to display thumbnails
+Name=File manager
+Comment=File manager and image viewer
 Exec=browser
 Icon=system-file-manager
 Type=Application
