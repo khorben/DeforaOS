@@ -26,6 +26,7 @@ DesktopHelp
 </para>
 
 @package: 
+@command: 
 @Returns: 0 on success
 
 
