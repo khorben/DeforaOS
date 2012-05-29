@@ -1,17 +1,17 @@
 <!-- ##### SECTION Title ##### -->
-Cpp
+CPP
 
 <!-- ##### SECTION Short_Description ##### -->
-DeforaOS Development code pre-processor
+DeforaOS Development Code Pre-Processor
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-
+DeforaOS code pre-processing library.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-
+DeforaOS Development Assembler (Asm), DeforaOS Development C99 C compiler (C99)
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
