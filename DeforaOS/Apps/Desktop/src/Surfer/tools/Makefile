@@ -33,7 +33,10 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- helper $(DESTDIR)$(BINDIR)/helper
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(BINDIR)/helper
 
 .PHONY: all clean distclean install uninstall
