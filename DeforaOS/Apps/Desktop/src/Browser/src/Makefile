@@ -86,7 +86,7 @@ view: $(view_OBJS)
 browser.o: browser.c callbacks.h common.c browser.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(browser_CFLAGS) -c browser.c
 
-callbacks.o: callbacks.c browser.h callbacks.h common.c
+callbacks.o: callbacks.c browser.h callbacks.h common.c ../config.h
 	$(CC) $(browser_CFLAGS) -c callbacks.c
 
 main.o: main.c browser.h

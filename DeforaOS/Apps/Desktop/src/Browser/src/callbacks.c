@@ -35,8 +35,10 @@
 #include <libintl.h>
 #include "callbacks.h"
 #include "browser.h"
+#include "../config.h"
 #define _(string) gettext(string)
 
+/* constants */
 #define PROGNAME "browser"
 #define COMMON_DND
 #define COMMON_EXEC
@@ -304,6 +306,13 @@ void on_help_about(gpointer data)
 	Browser * browser = data;
 
 	browser_about(browser);
+}
+
+
+/* on_help_contents */
+void on_help_contents(gpointer data)
+{
+	desktop_help_contents(PACKAGE);
 }
 
 
