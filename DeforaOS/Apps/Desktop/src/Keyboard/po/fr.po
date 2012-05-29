@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Keyboard 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-22 01:54+0200\n"
+"POT-Creation-Date: 2012-05-29 20:35+0200\n"
 "PO-Revision-Date: 2012-05-20 14:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -17,8 +17,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../src/keyboard.c:100
-msgid "_Close"
-msgstr "_Fermer"
+msgid "_Quit"
+msgstr "_Quitter"
 
 #: ../src/keyboard.c:107
 msgid "_Hide"
