@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 
 
 
@@ -47,11 +49,18 @@ struct _Surfer
 	GtkWidget * window;
 	GtkWidget * menubar;
 	GtkWidget * view;
+	GtkWidget * ab_window;
 };
 
 
 /* prototypes */
-static int _helper(int section, char const * name);
+static int _helper(char const * page);
+static int _helper_contents(char const * package);
+static int _helper_man(int section, char const * page);
+static int _helper_devel(char const * package);
+
+static int _usage(void);
+
 /* callbacks */
 static gboolean _helper_on_closex(void);
 static void _helper_on_file_close(void);
@@ -61,6 +70,12 @@ static void _helper_on_view_fullscreen(gpointer data);
 
 
 /* constants */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
 static const DesktopMenu _menu_file[] =
 {
 	{ "Close", G_CALLBACK(_helper_on_file_close), GTK_STOCK_CLOSE,
@@ -97,14 +112,13 @@ static const DesktopMenubar _helper_menubar[] =
 
 /* functions */
 /* helper */
-static int _helper(int section, char const * name)
+static int _helper(char const * page)
 {
 	Helper * helper;
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkToolItem * toolitem;
 	GtkWidget * widget;
-	char buf[256];
 
 	if((helper = object_new(sizeof(*helper))) == NULL)
 		return -1;
@@ -116,8 +130,7 @@ static int _helper(int section, char const * name)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(helper->window), "help-browser");
 #endif
-	snprintf(buf, sizeof(buf), "%s - %s", "Helper", name);
-	gtk_window_set_title(GTK_WINDOW(helper->window), buf);
+	gtk_window_set_title(GTK_WINDOW(helper->window), "Helper");
 	g_signal_connect_swapped(helper->window, "delete-event", G_CALLBACK(
 				_helper_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -139,28 +152,57 @@ static int _helper(int section, char const * name)
 	/* view */
 	helper->view = ghtml_new(helper);
 	ghtml_set_enable_javascript(helper->view, FALSE);
-	if(section > 0 && section < 10)
-		/* read a manual page */
-		snprintf(buf, sizeof(buf), "%s%d%s%s%s",
-				"file://" DATADIR "/man/html", section, "/",
-				name, ".html");
-	else
-		/* read a package document */
-		snprintf(buf, sizeof(buf), "%s%s%s%s%s",
-				"file://" DATADIR "/doc/html/", name, "/", name,
-				".html");
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, buf);
 #endif
-	ghtml_load_url(helper->view, buf);
+	ghtml_load_url(helper->view, page);
 	gtk_box_pack_start(GTK_BOX(vbox), helper->view, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(helper->window), vbox);
 	gtk_widget_grab_focus(helper->view);
 	gtk_widget_show_all(helper->window);
+	helper->ab_window = NULL;
 	gtk_main();
 	/* delete everything */
 	object_delete(helper);
 	return 0;
+}
+
+
+/* helper_contents */
+static int _helper_contents(char const * package)
+{
+	char buf[256];
+
+	/* read a package documentation */
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s", "file://" DATADIR "/doc/html/",
+			package, "/", package, ".html");
+	return _helper(buf);
+}
+
+
+/* helper_devel */
+static int _helper_devel(char const * package)
+{
+	char buf[256];
+
+	/* read a package API documentation */
+	snprintf(buf, sizeof(buf), "%s%s%s", "file://" DATADIR "/gtk-doc/html/",
+			package, "/index.html");
+	return _helper(buf);
+}
+
+
+/* helper_man */
+static int _helper_man(int section, char const * page)
+{
+	char buf[256];
+
+	if(section > 0 && section < 10)
+		return _usage();
+	/* read a manual page */
+	snprintf(buf, sizeof(buf), "%s%d%s%s%s", "file://" DATADIR "/man/html",
+			section, "/", page, ".html");
+	return _helper(buf);
 }
 
 
@@ -200,9 +242,40 @@ static void _helper_on_fullscreen(gpointer data)
 
 
 /* helper_on_help_about */
+static gboolean _about_on_closex(gpointer data);
+
 static void _helper_on_help_about(gpointer data)
 {
-	/* FIXME implement */
+	Helper * helper = data;
+
+	if(helper->ab_window != NULL)
+	{
+		gtk_window_present(GTK_WINDOW(helper->ab_window));
+		return;
+	}
+	helper->ab_window = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(helper->ab_window), GTK_WINDOW(
+				helper->window));
+	desktop_about_dialog_set_authors(helper->ab_window, _authors);
+	desktop_about_dialog_set_comments(helper->ab_window,
+			"Online help for the DeforaOS desktop");
+	desktop_about_dialog_set_copyright(helper->ab_window, _copyright);
+	desktop_about_dialog_set_logo_icon_name(helper->ab_window,
+			"help-browser");
+	desktop_about_dialog_set_license(helper->ab_window, _license);
+	desktop_about_dialog_set_name(helper->ab_window, PACKAGE);
+	desktop_about_dialog_set_version(helper->ab_window, VERSION);
+	g_signal_connect_swapped(G_OBJECT(helper->ab_window), "delete-event",
+			G_CALLBACK(_about_on_closex), helper);
+	gtk_widget_show(helper->ab_window);
+}
+
+static gboolean _about_on_closex(gpointer data)
+{
+	Helper * helper = data;
+
+	gtk_widget_hide(helper->ab_window);
+	return TRUE;
 }
 
 
@@ -218,7 +291,7 @@ static void _helper_on_view_fullscreen(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: helper package\n"
+	fputs("Usage: helper [-c|-d] package\n"
 "       helper -s section page\n"
 "  -s	Section of the manual page\n", stderr);
 	return 1;
@@ -481,13 +554,22 @@ void surfer_warning(Surfer * surfer, char const * message)
 int main(int argc, char * argv[])
 {
 	int o;
+	int devel = 0;
 	int section = -1;
 	char * p;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "s:")) != -1)
+	while((o = getopt(argc, argv, "cds:")) != -1)
 		switch(o)
 		{
+			case 'c':
+				section = -1;
+				devel = 0;
+				break;
+			case 'd':
+				section = -1;
+				devel = 1;
+				break;
 			case 's':
 				section = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0'
@@ -499,5 +581,9 @@ int main(int argc, char * argv[])
 		}
 	if(optind + 1 != argc)
 		return _usage();
-	return (_helper(section, argv[optind]) == 0) ? 0 : 2;
+	if(section > 0)
+		return (_helper_man(section, argv[optind]) == 0) ? 0 : 2;
+	else if(devel != 0)
+		return (_helper_devel(argv[optind]) == 0) ? 0 : 2;
+	return (_helper_contents(argv[optind]) == 0) ? 0 : 2;
 }
