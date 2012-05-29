@@ -244,7 +244,11 @@ static int _helper_open_dialog(Helper * helper)
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
 	hbox = gtk_hbox_new(FALSE, 4);
 	label = gtk_label_new("Package: ");
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 0);
