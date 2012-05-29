@@ -22,12 +22,16 @@ static char const _license[] =
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "ghtml.h"
 #include <System.h>
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) string
 
 /* constants */
 #ifndef PREFIX
@@ -35,6 +39,9 @@ static char const _license[] =
 #endif
 #ifndef DATADIR
 # define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
 #endif
 
 
@@ -83,24 +90,24 @@ static char const * _authors[] =
 
 static const DesktopMenu _menu_file[] =
 {
-	{ "Open...", G_CALLBACK(_helper_on_file_open), GTK_STOCK_OPEN,
+	{ N_("_Open..."), G_CALLBACK(_helper_on_file_open), GTK_STOCK_OPEN,
 		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL, NULL, 0, 0 },
-	{ "Close", G_CALLBACK(_helper_on_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"), G_CALLBACK(_helper_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static const DesktopMenu _menu_view[] =
 {
-	{ "Fullscreen", G_CALLBACK(_helper_on_view_fullscreen),
+	{ N_("_Fullscreen"), G_CALLBACK(_helper_on_view_fullscreen),
 		GTK_STOCK_FULLSCREEN, 0, GDK_KEY_F11 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static const DesktopMenu _menu_help[] =
 {
-	{ "About", G_CALLBACK(_helper_on_help_about),
+	{ N_("_About"), G_CALLBACK(_helper_on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
 #else
@@ -111,9 +118,9 @@ static const DesktopMenu _menu_help[] =
 
 static const DesktopMenubar _helper_menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_View", _menu_view },
-	{ "_Help", _menu_help },
+	{ N_("_File"), _menu_file },
+	{ N_("_View"), _menu_view },
+	{ N_("_Help"), _menu_help },
 	{ NULL, NULL }
 };
 
@@ -138,7 +145,7 @@ static Helper * _helper_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(helper->window), "help-browser");
 #endif
-	gtk_window_set_title(GTK_WINDOW(helper->window), "Helper");
+	gtk_window_set_title(GTK_WINDOW(helper->window), _("Help browser"));
 	g_signal_connect_swapped(helper->window, "delete-event", G_CALLBACK(
 				_helper_on_closex), helper);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -226,7 +233,7 @@ static int _helper_open_dialog(Helper * helper)
 	GtkWidget * entry;
 	char * page = NULL;
 
-	dialog = gtk_dialog_new_with_buttons("Open page...",
+	dialog = gtk_dialog_new_with_buttons(_("Open page..."),
 			GTK_WINDOW(helper->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -332,7 +339,7 @@ static void _helper_on_help_about(gpointer data)
 				helper->window));
 	desktop_about_dialog_set_authors(helper->ab_window, _authors);
 	desktop_about_dialog_set_comments(helper->ab_window,
-			"Online help for the DeforaOS desktop");
+			_("Online help for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(helper->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(helper->ab_window,
 			"help-browser");
@@ -365,9 +372,9 @@ static void _helper_on_view_fullscreen(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: helper [-c|-d] package\n"
+	fputs(_("Usage: helper [-c|-d] package\n"
 "       helper -s section page\n"
-"  -s	Section of the manual page\n", stderr);
+"  -s	Section of the manual page to read from\n"), stderr);
 	return 1;
 }
 
@@ -455,8 +462,9 @@ void surfer_set_title(Surfer * surfer, char const * title)
 	Helper * helper = surfer;
 	char buf[256];
 
-	snprintf(buf, sizeof(buf), "%s%s%s", "Helper", (title != NULL)
-			? " - " : "", (title != NULL) ? title : "");
+	snprintf(buf, sizeof(buf), "%s%s%s", _("Help browser"),
+			(title != NULL) ? " - " : "",
+			(title != NULL) ? title : "");
 	gtk_window_set_title(GTK_WINDOW(helper->window), buf);
 }
 
@@ -475,11 +483,11 @@ int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Question");
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res == GTK_RESPONSE_YES)
@@ -520,11 +528,11 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Error");
+			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
-			"%s", (message != NULL) ? message : "Unknown error");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+			"%s", (message != NULL) ? message : _("Unknown error"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -547,11 +555,11 @@ int surfer_prompt(Surfer * surfer, char const * message,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Question");
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -633,6 +641,9 @@ int main(int argc, char * argv[])
 	char * p;
 	Helper * helper;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "cds:")) != -1)
 		switch(o)

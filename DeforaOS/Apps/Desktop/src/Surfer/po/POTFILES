@@ -5,3 +5,4 @@
 ../src/ghtml-webkit.c
 ../src/main.c
 ../src/surfer.c
+../tools/helper.c

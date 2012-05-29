@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-28 00:13+0200\n"
+"POT-Creation-Date: 2012-05-30 00:18+0200\n"
 "PO-Revision-Date: 2010-04-11 12:06+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -18,6 +18,8 @@ msgstr ""
 
 #: ../src/callbacks.c:43 ../src/callbacks.c:53 ../src/surfer.c:926
 #: ../src/surfer.c:929 ../src/surfer.c:1398 ../src/surfer.c:1402
+#: ../tools/helper.c:486 ../tools/helper.c:490 ../tools/helper.c:558
+#: ../tools/helper.c:562
 msgid "Question"
 msgstr ""
 
@@ -94,7 +96,8 @@ msgid "Close window when the download is complete"
 msgstr ""
 
 #: ../src/download.c:339 ../src/download.c:344 ../src/download.c:733
-#: ../src/surfer.c:1083 ../src/surfer.c:1087
+#: ../src/surfer.c:1083 ../src/surfer.c:1087 ../tools/helper.c:531
+#: ../tools/helper.c:535
 msgid "Error"
 msgstr ""
 
@@ -150,6 +153,7 @@ msgid "Code "
 msgstr ""
 
 #: ../src/download.c:707 ../src/ghtml-webkit.c:845 ../src/surfer.c:1086
+#: ../tools/helper.c:534
 msgid "Unknown error"
 msgstr ""
 
@@ -211,7 +215,7 @@ msgstr ""
 msgid "_New window"
 msgstr ""
 
-#: ../src/surfer.c:119
+#: ../src/surfer.c:119 ../tools/helper.c:93
 msgid "_Open..."
 msgstr ""
 
@@ -231,7 +235,7 @@ msgstr ""
 msgid "Close _tab"
 msgstr ""
 
-#: ../src/surfer.c:132
+#: ../src/surfer.c:132 ../tools/helper.c:96
 msgid "_Close"
 msgstr ""
 
@@ -283,7 +287,7 @@ msgstr ""
 msgid "Normal size"
 msgstr ""
 
-#: ../src/surfer.c:177
+#: ../src/surfer.c:177 ../tools/helper.c:103
 msgid "_Fullscreen"
 msgstr ""
 
@@ -307,11 +311,11 @@ msgstr ""
 msgid "Page so_urce"
 msgstr ""
 
-#: ../src/surfer.c:196
+#: ../src/surfer.c:196 ../tools/helper.c:110
 msgid "_About"
 msgstr ""
 
-#: ../src/surfer.c:207
+#: ../src/surfer.c:207 ../tools/helper.c:121
 msgid "_File"
 msgstr ""
 
@@ -319,11 +323,11 @@ msgstr ""
 msgid "_Edit"
 msgstr ""
 
-#: ../src/surfer.c:209
+#: ../src/surfer.c:209 ../tools/helper.c:122
 msgid "_View"
 msgstr ""
 
-#: ../src/surfer.c:210
+#: ../src/surfer.c:210 ../tools/helper.c:123
 msgid "_Help"
 msgstr ""
 
@@ -542,4 +546,23 @@ msgstr ""
 
 #: ../src/surfer.c:2136
 msgid "This file already exists. Overwrite?"
+msgstr ""
+
+#: ../tools/helper.c:148 ../tools/helper.c:465
+msgid "Help browser"
+msgstr ""
+
+#: ../tools/helper.c:236
+msgid "Open page..."
+msgstr ""
+
+#: ../tools/helper.c:342
+msgid "Online help for the DeforaOS desktop"
+msgstr ""
+
+#: ../tools/helper.c:375
+msgid ""
+"Usage: helper [-c|-d] package\n"
+"       helper -s section page\n"
+"  -s\tSection of the manual page to read from\n"
 msgstr ""
