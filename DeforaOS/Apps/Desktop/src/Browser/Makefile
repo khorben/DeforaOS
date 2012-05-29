@@ -1,6 +1,6 @@
 PACKAGE	= Browser
 VERSION	= 0.4.6
-SUBDIRS	= data include po src tools
+SUBDIRS	= data doc include po src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -32,6 +32,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-icons.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/browser-view-list.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/browser.xml \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Browser.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
