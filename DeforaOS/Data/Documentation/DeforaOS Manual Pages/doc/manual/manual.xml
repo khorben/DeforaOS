@@ -2,6 +2,7 @@
 <!-- $Id$ -->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY browser1 "../../../../../Apps/Desktop/src/Browser/doc/browser.xml">
 <!ENTITY configure1 "../../../../../Apps/Devel/src/configure/doc/configure.xml">
 <!ENTITY makepasswd1 "../../../../../Apps/Unix/src/makepasswd/doc/makepasswd.xml">
 <!ENTITY projectconf5 "../../../../../Apps/Devel/src/configure/doc/project.conf.xml">
@@ -10,6 +11,10 @@
 	<title>DeforaOS Manual Pages</title>
 	<chapter>
 		<title>For users</title>
+		<section>
+			<title>Desktop environment</title>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&browser1;"/>
+		</section>
 		<section>
 			<title>Unix utilities</title>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&makepasswd1;"/>
