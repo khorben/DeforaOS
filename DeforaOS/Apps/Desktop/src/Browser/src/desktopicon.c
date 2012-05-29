@@ -809,7 +809,10 @@ static void _on_icon_open(gpointer data)
 	argv[3] = desktopicon->path;
 	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
 			!= TRUE)
+	{
 		desktop_error(desktopicon->desktop, argv[0], 1); /* XXX */
+		g_error_free(error);
+	}
 }
 
 static void _on_icon_edit(gpointer data)
