@@ -38,6 +38,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/accel.sgml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/assistant.sgml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/compat.sgml \
+		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/help.sgml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/libDesktop-unused.sgml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/menubar.sgml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/tmpl/message.sgml \

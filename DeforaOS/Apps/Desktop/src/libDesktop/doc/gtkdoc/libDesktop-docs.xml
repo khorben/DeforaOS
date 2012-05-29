@@ -22,6 +22,7 @@
     <xi:include href="xml/about.xml"/>
     <xi:include href="xml/accel.xml"/>
     <xi:include href="xml/compat.xml"/>
+    <xi:include href="xml/help.xml"/>
     <xi:include href="xml/menubar.xml"/>
     <xi:include href="xml/message.xml"/>
     <xi:include href="xml/mime.xml"/>
