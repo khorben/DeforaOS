@@ -65,7 +65,8 @@ static Helper * _helper_new(void);
 void _helper_delete(Helper * helper);
 
 static int _helper_open(Helper * helper, char const * url);
-static int _helper_open_contents(Helper * helper, char const * package);
+static int _helper_open_contents(Helper * helper, char const * package,
+		char const * command);
 static int _helper_open_dialog(Helper * helper);
 static int _helper_open_man(Helper * helper, int section, char const * page);
 static int _helper_open_devel(Helper * helper, char const * package);
@@ -199,13 +200,18 @@ static int _helper_open(Helper * helper, char const * url)
 
 
 /* helper_open_contents */
-static int _helper_open_contents(Helper * helper, char const * package)
+static int _helper_open_contents(Helper * helper, char const * package,
+		char const * command)
 {
 	char buf[256];
 
+	if(package == NULL)
+		return -1;
+	if(command == NULL)
+		command = "index";
 	/* read a package documentation */
 	snprintf(buf, sizeof(buf), "%s%s%s%s%s", "file://" DATADIR "/doc/html/",
-			package, "/", package, ".html");
+			package, "/", command, ".html");
 	return _helper_open(helper, buf);
 }
 
@@ -240,7 +246,7 @@ static int _helper_open_dialog(Helper * helper)
 			GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	hbox = gtk_hbox_new(FALSE, 4);
-	label = gtk_label_new("Page: ");
+	label = gtk_label_new("Package: ");
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 0);
 	entry = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
@@ -252,7 +258,7 @@ static int _helper_open_dialog(Helper * helper)
 	if(page == NULL || strlen(page) == 0)
 		ret = -1;
 	else
-		ret = _helper_open_contents(helper, page);
+		ret = _helper_open_contents(helper, page, NULL);
 	free(page);
 	return ret;
 }
@@ -372,7 +378,8 @@ static void _helper_on_view_fullscreen(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: helper [-c|-d] package\n"
+	fputs(_("Usage: helper [-c][-p package] command\n"
+"       helper -d package\n"
 "       helper -s section page\n"
 "  -s	Section of the manual page to read from\n"), stderr);
 	return 1;
@@ -637,6 +644,7 @@ int main(int argc, char * argv[])
 {
 	int o;
 	int devel = 0;
+	char const * package = NULL;
 	int section = -1;
 	char * p;
 	Helper * helper;
@@ -645,7 +653,7 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "cds:")) != -1)
+	while((o = getopt(argc, argv, "cdp:s:")) != -1)
 		switch(o)
 		{
 			case 'c':
@@ -655,6 +663,9 @@ int main(int argc, char * argv[])
 			case 'd':
 				section = -1;
 				devel = 1;
+				break;
+			case 'p':
+				package = optarg;
 				break;
 			case 's':
 				section = strtol(optarg, &p, 10);
@@ -674,7 +685,8 @@ int main(int argc, char * argv[])
 	else if(argv[optind] != NULL && devel != 0)
 		_helper_open_devel(helper, argv[optind]);
 	else if(argv[optind] != NULL)
-		_helper_open_contents(helper, argv[optind]);
+		_helper_open_contents(helper, (package != NULL) ? package
+				: argv[optind], argv[optind]);
 	else
 		_helper_open_dialog(helper);
 	gtk_main();
