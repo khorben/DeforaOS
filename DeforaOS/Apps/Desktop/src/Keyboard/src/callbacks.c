@@ -28,7 +28,6 @@ gboolean on_keyboard_delete_event(gpointer data)
 	Keyboard * keyboard = data;
 
 	keyboard_show(keyboard, FALSE);
-	gtk_main_quit();
 	return TRUE;
 }
 
@@ -90,8 +89,8 @@ void on_keyboard_set_layout_special(gpointer data)
 
 
 /* menus */
-/* on_file_close */
-void on_file_close(gpointer data)
+/* on_file_quit */
+void on_file_quit(gpointer data)
 {
 	Keyboard * keyboard = data;
 

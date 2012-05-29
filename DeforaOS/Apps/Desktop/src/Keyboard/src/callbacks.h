@@ -34,7 +34,7 @@ void on_keyboard_set_layout_letters(gpointer data);
 void on_keyboard_set_layout_special(gpointer data);
 
 /* menus */
-void on_file_close(gpointer data);
+void on_file_quit(gpointer data);
 void on_help_about(gpointer data);
 void on_view_hide(gpointer data);
 

@@ -97,8 +97,8 @@ static char const * _authors[] =
 
 static const DesktopMenu _keyboard_menu_file[] =
 {
-	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_KEY_W },
+	{ N_("_Quit"), G_CALLBACK(on_file_quit), GTK_STOCK_QUIT,
+		GDK_CONTROL_MASK, GDK_KEY_Q },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
