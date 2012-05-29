@@ -25,22 +25,32 @@
 
 /* Help */
 /* desktop_help_contents */
-int desktop_help_contents(char const * package)
+int desktop_help_contents(char const * package, char const * command)
 {
-	char * argv[] = { "helper", "helper", "--", NULL, NULL };
+	char * argv[] = { "helper", "helper", "-p", NULL, "--", NULL, NULL };
 	GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_FILE_AND_ARGV_ZERO;
 	GError * error = NULL;
 
-	if((argv[3] = strdup(package)) == NULL)
-		return -error_set_code(1, "%s", strerror(errno));
-	if(g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error)
-			!= TRUE)
+	if(package == NULL)
+		return -1;
+	if(command == NULL)
+		command = "index";
+	argv[3] = strdup(package);
+	argv[5] = strdup(command);
+	if(argv[3] == NULL || argv[5] == NULL)
 	{
-		free(argv[2]);
+		free(argv[3]);
+		free(argv[5]);
+		return -error_set_code(1, "%s", strerror(errno));
+	}
+	g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error);
+	free(argv[3]);
+	free(argv[5]);
+	if(error != NULL)
+	{
 		error_set_code(1, "%s", error->message);
 		g_error_free(error);
 		return -1;
 	}
-	free(argv[3]);
 	return 0;
 }

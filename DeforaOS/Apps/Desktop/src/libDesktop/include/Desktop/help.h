@@ -20,6 +20,6 @@
 
 
 /* Help */
-int desktop_help_contents(char const * package);
+int desktop_help_contents(char const * package, char const * command);
 
 #endif /* !LIBDESKTOP_DESKTOP_HELP_H */
