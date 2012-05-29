@@ -54,16 +54,21 @@ struct _Surfer
 
 
 /* prototypes */
-static int _helper(char const * page);
-static int _helper_contents(char const * package);
-static int _helper_man(int section, char const * page);
-static int _helper_devel(char const * package);
+static Helper * _helper_new(void);
+void _helper_delete(Helper * helper);
+
+static int _helper_open(Helper * helper, char const * url);
+static int _helper_open_contents(Helper * helper, char const * package);
+static int _helper_open_dialog(Helper * helper);
+static int _helper_open_man(Helper * helper, int section, char const * page);
+static int _helper_open_devel(Helper * helper, char const * package);
 
 static int _usage(void);
 
 /* callbacks */
-static gboolean _helper_on_closex(void);
-static void _helper_on_file_close(void);
+static gboolean _helper_on_closex(gpointer data);
+static void _helper_on_file_close(gpointer data);
+static void _helper_on_file_open(gpointer data);
 static void _helper_on_fullscreen(gpointer data);
 static void _helper_on_help_about(gpointer data);
 static void _helper_on_view_fullscreen(gpointer data);
@@ -78,6 +83,9 @@ static char const * _authors[] =
 
 static const DesktopMenu _menu_file[] =
 {
+	{ "Open...", G_CALLBACK(_helper_on_file_open), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_KEY_O },
+	{ "", NULL, NULL, 0, 0 },
 	{ "Close", G_CALLBACK(_helper_on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
 	{ NULL, NULL, NULL, 0, 0 }
@@ -103,16 +111,16 @@ static const DesktopMenu _menu_help[] =
 
 static const DesktopMenubar _helper_menubar[] =
 {
-	{ "File", _menu_file },
-	{ "View", _menu_view },
-	{ "Help", _menu_help },
+	{ "_File", _menu_file },
+	{ "_View", _menu_view },
+	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
 
 
 /* functions */
 /* helper */
-static int _helper(char const * page)
+static Helper * _helper_new(void)
 {
 	Helper * helper;
 	GtkAccelGroup * group;
@@ -121,7 +129,7 @@ static int _helper(char const * page)
 	GtkWidget * widget;
 
 	if((helper = object_new(sizeof(*helper))) == NULL)
-		return -1;
+		return NULL;
 	/* window */
 	group = gtk_accel_group_new();
 	helper->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -132,7 +140,7 @@ static int _helper(char const * page)
 #endif
 	gtk_window_set_title(GTK_WINDOW(helper->window), "Helper");
 	g_signal_connect_swapped(helper->window, "delete-event", G_CALLBACK(
-				_helper_on_closex), NULL);
+				_helper_on_closex), helper);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	helper->menubar = desktop_menubar_create(_helper_menubar, helper,
@@ -155,70 +163,136 @@ static int _helper(char const * page)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, buf);
 #endif
-	ghtml_load_url(helper->view, page);
 	gtk_box_pack_start(GTK_BOX(vbox), helper->view, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(helper->window), vbox);
 	gtk_widget_grab_focus(helper->view);
 	gtk_widget_show_all(helper->window);
 	helper->ab_window = NULL;
-	gtk_main();
-	/* delete everything */
+	return helper;
+}
+
+
+/* helper_delete */
+void _helper_delete(Helper * helper)
+{
+	gtk_widget_destroy(helper->window);
 	object_delete(helper);
+}
+
+
+/* useful */
+/* helper_open */
+static int _helper_open(Helper * helper, char const * url)
+{
+	if(url == NULL)
+		return _helper_open_dialog(helper);
+	ghtml_load_url(helper->view, url);
 	return 0;
 }
 
 
-/* helper_contents */
-static int _helper_contents(char const * package)
+/* helper_open_contents */
+static int _helper_open_contents(Helper * helper, char const * package)
 {
 	char buf[256];
 
 	/* read a package documentation */
 	snprintf(buf, sizeof(buf), "%s%s%s%s%s", "file://" DATADIR "/doc/html/",
 			package, "/", package, ".html");
-	return _helper(buf);
+	return _helper_open(helper, buf);
 }
 
 
-/* helper_devel */
-static int _helper_devel(char const * package)
+/* helper_open_devel */
+static int _helper_open_devel(Helper * helper, char const * package)
 {
 	char buf[256];
 
 	/* read a package API documentation */
 	snprintf(buf, sizeof(buf), "%s%s%s", "file://" DATADIR "/gtk-doc/html/",
 			package, "/index.html");
-	return _helper(buf);
+	return _helper_open(helper, buf);
 }
 
 
-/* helper_man */
-static int _helper_man(int section, char const * page)
+/* helper_open_dialog */
+static int _helper_open_dialog(Helper * helper)
+{
+	int ret;
+	GtkWidget * dialog;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * label;
+	GtkWidget * entry;
+	char * page = NULL;
+
+	dialog = gtk_dialog_new_with_buttons("Open page...",
+			GTK_WINDOW(helper->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	hbox = gtk_hbox_new(FALSE, 4);
+	label = gtk_label_new("Page: ");
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 0);
+	entry = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+		page = strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+	gtk_widget_destroy(dialog);
+	if(page == NULL || strlen(page) == 0)
+		ret = -1;
+	else
+		ret = _helper_open_contents(helper, page);
+	free(page);
+	return ret;
+}
+
+
+/* helper_open_man */
+static int _helper_open_man(Helper * helper, int section, char const * page)
 {
 	char buf[256];
 
-	if(section > 0 && section < 10)
-		return _usage();
+	if(section <= 0 || section >= 10)
+		return -1;
 	/* read a manual page */
 	snprintf(buf, sizeof(buf), "%s%d%s%s%s", "file://" DATADIR "/man/html",
 			section, "/", page, ".html");
-	return _helper(buf);
+	return _helper_open(helper, buf);
 }
 
 
 /* callbacks */
 /* helper_on_closex */
-static gboolean _helper_on_closex(void)
+static gboolean _helper_on_closex(gpointer data)
 {
+	Helper * helper = data;
+
+	gtk_widget_hide(helper->window);
 	gtk_main_quit();
-	return FALSE;
+	return TRUE;
 }
 
 
 /* helper_on_file_close */
-static void _helper_on_file_close(void)
+static void _helper_on_file_close(gpointer data)
 {
+	Helper * helper = data;
+
+	gtk_widget_hide(helper->window);
 	gtk_main_quit();
+}
+
+
+/* helper_on_file_open */
+static void _helper_on_file_open(gpointer data)
+{
+	Helper * helper = data;
+
+	_helper_open_dialog(helper);
 }
 
 
@@ -557,6 +631,7 @@ int main(int argc, char * argv[])
 	int devel = 0;
 	int section = -1;
 	char * p;
+	Helper * helper;
 
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "cds:")) != -1)
@@ -579,11 +654,19 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind + 1 != argc)
+	if(optind != argc && (optind + 1) != argc)
 		return _usage();
+	if((helper = _helper_new()) == NULL)
+		return 2;
 	if(section > 0)
-		return (_helper_man(section, argv[optind]) == 0) ? 0 : 2;
-	else if(devel != 0)
-		return (_helper_devel(argv[optind]) == 0) ? 0 : 2;
-	return (_helper_contents(argv[optind]) == 0) ? 0 : 2;
+		_helper_open_man(helper, section, argv[optind]);
+	else if(argv[optind] != NULL && devel != 0)
+		_helper_open_devel(helper, argv[optind]);
+	else if(argv[optind] != NULL)
+		_helper_open_contents(helper, argv[optind]);
+	else
+		_helper_open_dialog(helper);
+	gtk_main();
+	_helper_delete(helper);
+	return 0;
 }
