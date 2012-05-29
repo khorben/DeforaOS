@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBDESKTOP_MESSAGE_H
-# define LIBDESKTOP_MESSAGE_H
+#ifndef LIBDESKTOP_DESKTOP_MESSAGE_H
+# define LIBDESKTOP_DESKTOP_MESSAGE_H
 
 # include <stdint.h>
 
@@ -33,4 +33,4 @@ int desktop_message_register(char const * destination,
 int desktop_message_send(char const * destination, uint32_t value1,
 		uint32_t value2, uint32_t value3);
 
-#endif /* !LIBDESKTOP_MESSAGE_H */
+#endif /* !LIBDESKTOP_DESKTOP_MESSAGE_H */

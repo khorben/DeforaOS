@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,10 @@
 
 
 
-#ifndef LIBDESKTOP_ASSISTANT_H
-# define LIBDESKTOP_ASSISTANT_H
+#ifndef LIBDESKTOP_DESKTOP_ASSISTANT_H
+# define LIBDESKTOP_DESKTOP_ASSISTANT_H
 
 
 /* Assistant */
 
-#endif /* !LIBDESKTOP_ASSISTANT_H */
+#endif /* !LIBDESKTOP_DESKTOP_ASSISTANT_H */

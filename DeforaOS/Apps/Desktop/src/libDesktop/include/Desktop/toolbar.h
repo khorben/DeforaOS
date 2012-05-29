@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBDESKTOP_TOOLBAR_H
-# define LIBDESKTOP_TOOLBAR_H
+#ifndef LIBDESKTOP_DESKTOP_TOOLBAR_H
+# define LIBDESKTOP_DESKTOP_TOOLBAR_H
 
 
 /* Toolbar */
@@ -36,4 +36,4 @@ typedef struct _DesktopToolbar
 GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar,
 		gpointer data, GtkAccelGroup * accel);
 
-#endif /* !LIBDESKTOP_TOOLBAR_H */
+#endif /* !LIBDESKTOP_DESKTOP_TOOLBAR_H */

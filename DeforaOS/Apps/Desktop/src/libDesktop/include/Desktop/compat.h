@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBDESKTOP_COMPAT_H
-# define LIBDESKTOP_COMPAT_H
+#ifndef LIBDESKTOP_DESKTOP_COMPAT_H
+# define LIBDESKTOP_DESKTOP_COMPAT_H
 
 
 /* Compatibility */
@@ -87,4 +87,4 @@
 #  define GDK_KEY_uparrow	GDK_uparrow
 # endif
 
-#endif /* !LIBDESKTOP_COMPAT_H */
+#endif /* !LIBDESKTOP_DESKTOP_COMPAT_H */

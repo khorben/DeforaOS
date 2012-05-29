@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBDESKTOP_MENUBAR_H
-# define LIBDESKTOP_MENUBAR_H
+#ifndef LIBDESKTOP_DESKTOP_MENUBAR_H
+# define LIBDESKTOP_DESKTOP_MENUBAR_H
 
 
 /* Menubar */
@@ -41,4 +41,4 @@ typedef struct _DesktopMenubar
 GtkWidget * desktop_menubar_create(DesktopMenubar const * menubar,
 		gpointer data, GtkAccelGroup * accel);
 
-#endif /* !LIBDESKTOP_MENUBAR_H */
+#endif /* !LIBDESKTOP_DESKTOP_MENUBAR_H */

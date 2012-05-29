@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBDESKTOP_ACCEL_H
-# define LIBDESKTOP_ACCEL_H
+#ifndef LIBDESKTOP_DESKTOP_ACCEL_H
+# define LIBDESKTOP_DESKTOP_ACCEL_H
 
 
 /* Accel */
@@ -33,4 +33,4 @@ typedef struct _DesktopAccel
 void desktop_accel_create(DesktopAccel const * accel, gpointer data,
 		GtkAccelGroup * group);
 
-#endif /* !LIBDESKTOP_ACCEL_H */
+#endif /* !LIBDESKTOP_DESKTOP_ACCEL_H */

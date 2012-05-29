@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
 
 
-#ifndef DESKTOP_DESKTOP_MIME_H
-# define DESKTOP_DESKTOP_MIME_H
+#ifndef LIBDESKTOP_DESKTOP_MIME_H
+# define LIBDESKTOP_DESKTOP_MIME_H
 
 # include <gtk/gtk.h>
 
@@ -53,4 +53,4 @@ void mime_icons(Mime * mime, char const * type, ...);
 
 int mime_save(Mime * mime);
 
-#endif /* !DESKTOP_DESKTOP_MIME_H */
+#endif /* !LIBDESKTOP_DESKTOP_MIME_H */
