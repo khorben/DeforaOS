@@ -385,7 +385,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 		widget = desktop_menubar_create(_keyboard_menubar, keyboard,
 				group);
 		gtk_widget_show_all(widget);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 		/* XXX border hack */
 		widget = gtk_vbox_new(FALSE, 4);
 		gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
