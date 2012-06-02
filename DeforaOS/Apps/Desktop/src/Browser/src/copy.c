@@ -81,7 +81,7 @@ typedef struct _Copy
 
 	/* widgets */
 	GtkWidget * window;
-	GtkWidget * label;
+	GtkWidget * filename;
 	GtkWidget * progress;
 	GtkWidget * flabel;
 	GtkWidget * fspeed;
@@ -142,10 +142,10 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	copy.label = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(copy.label), 0, 0);
-	gtk_size_group_add_widget(right, copy.label);
-	gtk_box_pack_start(GTK_BOX(hbox), copy.label, TRUE, TRUE, 0);
+	copy.filename = gtk_entry_new();
+	gtk_editable_set_editable(GTK_EDITABLE(copy.filename), FALSE);
+	gtk_size_group_add_widget(right, copy.filename);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.filename, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* progress bar */
 	copy.progress = gtk_progress_bar_new();
@@ -217,7 +217,7 @@ static void _copy_refresh(Copy * copy)
 
 	if((p = g_filename_to_utf8(filename, -1, NULL, NULL, NULL)) != NULL)
 		filename = p;
-	gtk_label_set_text(GTK_LABEL(copy->label), filename);
+	gtk_entry_set_text(GTK_ENTRY(copy->filename), filename);
 	free(p);
 	snprintf(buf, sizeof(buf), _("File %u of %u"), copy->cur + 1,
 			copy->filec - 1);
