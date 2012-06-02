@@ -450,11 +450,11 @@ static void _download_refresh(Download * download)
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), buf);
 }
 
-static void _refresh_unit(guint64 total, double * fraction, char const ** unit,
+static void _refresh_unit(guint64 size, double * fraction, char const ** unit,
 		double * current)
 {
 	/* bytes */
-	*fraction = total;
+	*fraction = size;
 	*unit = _("bytes");
 	if(*fraction < 1024)
 		return;
