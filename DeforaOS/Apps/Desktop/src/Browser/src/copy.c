@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <libgen.h>
 #include <errno.h>
 #include <locale.h>
@@ -84,6 +85,7 @@ typedef struct _Copy
 	GtkWidget * progress;
 	GtkWidget * flabel;
 	GtkWidget * fspeed;
+	GtkWidget * fremaining;
 	GtkWidget * fprogress;
 	int fpulse;			/* tells when to pulse */
 } Copy;
@@ -174,6 +176,18 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_misc_set_alignment(GTK_MISC(copy.fspeed), 0, 0);
 	gtk_size_group_add_widget(right, copy.fspeed);
 	gtk_box_pack_start(GTK_BOX(hbox), copy.fspeed, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* file copy remaining */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(_("Remaining: "));
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	copy.fremaining = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(copy.fremaining), 0, 0);
+	gtk_size_group_add_widget(right, copy.fremaining);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.fremaining, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* file progress bar */
 	copy.fprogress = gtk_progress_bar_new();
@@ -270,6 +284,7 @@ static int _single_fifo(Copy * copy, char const * dst);
 static int _single_symlink(Copy * copy, char const * src, char const * dst);
 static int _single_regular(Copy * copy, char const * src, char const * dst);
 static int _single_p(Copy * copy, char const * dst, struct stat const * st);
+static void _single_remaining(Copy * copy, guint64 rate);
 static gboolean _single_timeout(gpointer data);
 static void _single_unit(guint64 size, double * fraction, char const ** unit,
 		double * current);
@@ -587,11 +602,39 @@ static int _single_p(Copy * copy, char const * dst, struct stat const * st)
 	return 0;
 }
 
+static void _single_remaining(Copy * copy, guint64 rate)
+{
+	char buf[32];
+	guint64 remaining;
+	struct tm tm;
+
+	if(rate == 0)
+		return;
+	remaining = (copy->size - copy->cnt) / rate;
+	memset(&tm, 0, sizeof(tm));
+	tm.tm_sec = remaining;
+	/* minutes */
+	if(tm.tm_sec > 60)
+	{
+		tm.tm_min = tm.tm_sec / 60;
+		tm.tm_sec = tm.tm_sec - (tm.tm_min * 60);
+	}
+	/* hours */
+	if(tm.tm_min > 60)
+	{
+		tm.tm_hour = tm.tm_min / 60;
+		tm.tm_min = tm.tm_min - (tm.tm_hour * 60);
+	}
+	strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+	gtk_label_set_text(GTK_LABEL(copy->fremaining), buf);
+}
+
 static gboolean _single_timeout(gpointer data)
 {
 	Copy * copy = data;
 	struct timeval tv;
 	char buf[32];
+	guint64 rate;
 	double rate_fraction;
 	char const * rate_unit;
 	double total_fraction;
@@ -617,9 +660,8 @@ static gboolean _single_timeout(gpointer data)
 		tv.tv_sec--;
 		tv.tv_usec += 1000000;
 	}
-	_single_unit((copy->cnt * 1024)
-			/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000)),
-			&rate_fraction, &rate_unit, NULL);
+	rate = (copy->cnt * 1024) / ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+	_single_unit(rate, &rate_fraction, &rate_unit, NULL);
 	current_fraction = copy->cnt;
 	_single_unit(copy->size, &total_fraction, &total_unit,
 			&current_fraction);
@@ -627,6 +669,7 @@ static gboolean _single_timeout(gpointer data)
 			current_fraction, total_fraction, total_unit,
 			rate_fraction, rate_unit);
 	gtk_label_set_text(GTK_LABEL(copy->fspeed), buf);
+	_single_remaining(copy, rate);
 	return TRUE;
 }
 
