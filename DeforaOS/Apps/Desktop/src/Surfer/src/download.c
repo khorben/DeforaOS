@@ -409,7 +409,7 @@ static void _download_refresh(Download * download)
 			tv.tv_sec--;
 			tv.tv_usec += 1000000;
 		}
-		_refresh_unit(download->data_received * 1024
+		_refresh_unit((download->data_received * 1024)
 				/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000)),
 				&rate_fraction, &rate_unit, NULL);
 	}
