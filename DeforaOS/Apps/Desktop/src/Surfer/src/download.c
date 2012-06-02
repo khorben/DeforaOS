@@ -15,8 +15,7 @@
 /* TODO:
  * - let the checkbox to close window be a global option
  * - also use the proxy settings
- * - use the "Last modified" header (if available?) to futimes() the file
- * - with WebKit files of unknown length are considered as 100% all the time */
+ * - use the "Last modified" header (if available?) to futimes() the file */
 
 
 
@@ -80,8 +79,7 @@ struct _Download
 	GtkWidget * address;
 	GtkWidget * filename;
 	GtkWidget * status;
-	GtkWidget * done;
-	GtkWidget * speed;
+	GtkWidget * received;
 	GtkWidget * progress;
 	GtkWidget * check;
 	GtkWidget * browse;
@@ -215,10 +213,8 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 			download->prefs.output);
 	_download_label(vbox, bold, left, _("Status: "), &download->status,
 			_("Resolving..."));
-	_download_label(vbox, bold, left, _("Done: "), &download->done,
+	_download_label(vbox, bold, left, _("Received: "), &download->received,
 			_("0.0 kB"));
-	_download_label(vbox, bold, left, _("Speed: "), &download->speed,
-			_("0.0 kB/s"));
 	/* progress bar */
 	download->progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), download->progress, TRUE, TRUE, 4);
@@ -387,11 +383,13 @@ static int _download_set_proxy(Download * download, char const * http,
 /* download_refresh */
 static void _download_refresh(Download * download)
 {
-	char buf[256]; /* FIXME convert to UTF-8 */
+	char buf[256];
 	struct timeval tv;
-	double rate;
-	char const * unit = N_("kB");
-	double fraction;
+	double current_fraction;
+	double rate_fraction = 0.0;
+	char const * rate_unit = N_("kB");
+	double total_fraction;
+	char const * total_unit = N_("kB");
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %lu/%lu\n", __func__,
@@ -407,26 +405,28 @@ static void _download_refresh(Download * download)
 			tv.tv_sec--;
 			tv.tv_usec += 1000000;
 		}
-		rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-		if((rate = download->data_received / rate) > 1024)
+		rate_fraction = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+		rate_fraction = download->data_received / rate_fraction;
+		if(rate_fraction > 1024)
 		{
-			rate /= 1024;
-			unit = N_("MB");
+			rate_fraction /= 1024;
+			rate_unit = N_("MB");
 		}
-		snprintf(buf, sizeof(buf), _("%.1f %s/s"), rate, _(unit));
-		gtk_label_set_text(GTK_LABEL(download->speed), buf);
 	}
-	unit = N_("kB");
 	if(download->content_length == 0)
 	{
-		if((rate = download->data_received / 1024) > 1024)
+		/* the total size is not known */
+		if((total_fraction = download->data_received / 1024) > 1024)
 		{
-			rate /= 1024;
-			unit = N_("MB");
+			total_fraction /= 1024;
+			total_unit = N_("MB");
 		}
-		snprintf(buf, sizeof(buf), _("%.1f %s"), rate, _(unit));
-		gtk_label_set_text(GTK_LABEL(download->done), buf);
+		snprintf(buf, sizeof(buf), _("%.1f %s (%.1f %s)"),
+				total_fraction, _(total_unit), rate_fraction,
+				_(rate_unit));
+		gtk_label_set_text(GTK_LABEL(download->received), buf);
 		snprintf(buf, sizeof(buf), " ");
+		/* pulse the progress bar if any data was received */
 		if(download->pulse != 0)
 		{
 			gtk_progress_bar_pulse(GTK_PROGRESS_BAR(
@@ -436,21 +436,23 @@ static void _download_refresh(Download * download)
 	}
 	else
 	{
-		rate = download->data_received / 1024;
-		if((fraction = download->content_length / 1024) > 1024)
+		/* the total size is known */
+		current_fraction = download->data_received / 1024;
+		if((total_fraction = download->content_length / 1024) > 1024)
 		{
-			rate /= 1024;
-			fraction /= 1024;
-			unit = N_("MB");
+			current_fraction /= 1024;
+			total_fraction /= 1024;
+			total_unit = N_("MB");
 		}
-		snprintf(buf, sizeof(buf), _("%.1f of %.1f %s"), rate,
-				fraction, _(unit));
-		gtk_label_set_text(GTK_LABEL(download->done), buf);
-		fraction = download->data_received;
-		fraction /= download->content_length;
-		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
+		snprintf(buf, sizeof(buf), _("%.1f of %.1f %s (%.1f %s/s)"),
+				current_fraction, total_fraction, _(total_unit),
+				rate_fraction, _(rate_unit));
+		gtk_label_set_text(GTK_LABEL(download->received), buf);
+		total_fraction = download->data_received;
+		total_fraction /= download->content_length;
+		snprintf(buf, sizeof(buf), "%.1f%%", total_fraction * 100);
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
-					download->progress), fraction);
+					download->progress), total_fraction);
 	}
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), buf);
 }
@@ -723,6 +725,7 @@ static gboolean _download_on_timeout(gpointer data)
 	Download * d = data;
 #ifdef WITH_WEBKIT
 	WebKitDownloadStatus status;
+	guint64 received = d->data_received;
 
 	/* FIXME not very efficient */
 	status = webkit_download_get_status(d->conn);
@@ -758,6 +761,12 @@ static gboolean _download_on_timeout(gpointer data)
 					d->conn);
 			d->content_length = webkit_download_get_total_size(
 					d->conn);
+			if(d->content_length == d->data_received)
+			{
+				d->pulse = (d->data_received > received)
+					? 1 : 0;
+				d->content_length = 0;
+			}
 			break;
 		default: /* XXX anything else to handle here? */
 			break;
