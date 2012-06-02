@@ -271,7 +271,8 @@ static int _single_symlink(Copy * copy, char const * src, char const * dst);
 static int _single_regular(Copy * copy, char const * src, char const * dst);
 static int _single_p(Copy * copy, char const * dst, struct stat const * st);
 static gboolean _single_timeout(gpointer data);
-static void _single_unit(guint64 size, double * fraction, char const ** unit);
+static void _single_unit(guint64 size, double * fraction, char const ** unit,
+		double * current);
 
 static int _copy_single(Copy * copy, char const * src, char const * dst)
 {
@@ -595,6 +596,7 @@ static gboolean _single_timeout(gpointer data)
 	char const * rate_unit;
 	double total_fraction;
 	char const * total_unit;
+	double current_fraction;
 
 	if(copy->fpulse == 1)
 	{
@@ -617,15 +619,19 @@ static gboolean _single_timeout(gpointer data)
 	}
 	_single_unit((copy->cnt * 1024)
 			/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000)),
-			&rate_fraction, &rate_unit);
-	_single_unit(copy->cnt, &total_fraction, &total_unit);
-	snprintf(buf, sizeof(buf), "%.1f %s (%.1f %s/s)", total_fraction,
-			total_unit, rate_fraction, rate_unit);
+			&rate_fraction, &rate_unit, NULL);
+	current_fraction = copy->cnt;
+	_single_unit(copy->size, &total_fraction, &total_unit,
+			&current_fraction);
+	snprintf(buf, sizeof(buf), _("%.1f of %.1f %s (%.1f %s/s)"),
+			current_fraction, total_fraction, total_unit,
+			rate_fraction, rate_unit);
 	gtk_label_set_text(GTK_LABEL(copy->fspeed), buf);
 	return TRUE;
 }
 
-static void _single_unit(guint64 size, double * fraction, char const ** unit)
+static void _single_unit(guint64 size, double * fraction, char const ** unit,
+		double * current)
 {
 	/* bytes */
 	*fraction = size;
@@ -634,16 +640,22 @@ static void _single_unit(guint64 size, double * fraction, char const ** unit)
 		return;
 	/* kilobytes */
 	*fraction /= 1024;
+	if(current)
+		*current /= 1024;
 	*unit = _("kB");
 	if(*fraction < 1024)
 		return;
 	/* megabytes */
 	*fraction /= 1024;
+	if(current)
+		*current /= 1024;
 	*unit = _("MB");
 	if(*fraction < 1024)
 		return;
 	/* gigabytes */
 	*fraction /= 1024;
+	if(current)
+		*current /= 1024;
 	*unit = _("GB");
 }
 
