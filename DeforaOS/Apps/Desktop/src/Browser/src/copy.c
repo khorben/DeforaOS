@@ -165,7 +165,7 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* file copy speed */
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new(_("Speed: "));
+	widget = gtk_label_new(_("Copied: "));
 	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
@@ -271,6 +271,7 @@ static int _single_symlink(Copy * copy, char const * src, char const * dst);
 static int _single_regular(Copy * copy, char const * src, char const * dst);
 static int _single_p(Copy * copy, char const * dst, struct stat const * st);
 static gboolean _single_timeout(gpointer data);
+static void _single_unit(guint64 size, double * fraction, char const ** unit);
 
 static int _copy_single(Copy * copy, char const * src, char const * dst)
 {
@@ -589,9 +590,11 @@ static gboolean _single_timeout(gpointer data)
 {
 	Copy * copy = data;
 	struct timeval tv;
-	double rate;
 	char buf[32];
-	char const * unit = _("kB");
+	double rate_fraction;
+	char const * rate_unit;
+	double total_fraction;
+	char const * total_unit;
 
 	if(copy->fpulse == 1)
 	{
@@ -600,7 +603,7 @@ static gboolean _single_timeout(gpointer data)
 	}
 	if(copy->cnt == 0)
 	{
-		gtk_label_set_text(GTK_LABEL(copy->fspeed), _("0.0 kB/s"));
+		gtk_label_set_text(GTK_LABEL(copy->fspeed), _("0 bytes"));
 		return TRUE;
 	}
 	if(gettimeofday(&tv, NULL) != 0)
@@ -612,15 +615,36 @@ static gboolean _single_timeout(gpointer data)
 		tv.tv_sec--;
 		tv.tv_usec += 1000000;
 	}
-	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	if((rate = copy->cnt / rate) > 1024)
-	{
-		rate /= 1024;
-		unit = _("MB");
-	}
-	snprintf(buf, sizeof(buf), "%.1f %s/s", rate, unit);
+	_single_unit((copy->cnt * 1024)
+			/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000)),
+			&rate_fraction, &rate_unit);
+	_single_unit(copy->cnt, &total_fraction, &total_unit);
+	snprintf(buf, sizeof(buf), "%.1f %s (%.1f %s/s)", total_fraction,
+			total_unit, rate_fraction, rate_unit);
 	gtk_label_set_text(GTK_LABEL(copy->fspeed), buf);
 	return TRUE;
+}
+
+static void _single_unit(guint64 size, double * fraction, char const ** unit)
+{
+	/* bytes */
+	*fraction = size;
+	*unit = _("bytes");
+	if(*fraction < 1024)
+		return;
+	/* kilobytes */
+	*fraction /= 1024;
+	*unit = _("kB");
+	if(*fraction < 1024)
+		return;
+	/* megabytes */
+	*fraction /= 1024;
+	*unit = _("MB");
+	if(*fraction < 1024)
+		return;
+	/* gigabytes */
+	*fraction /= 1024;
+	*unit = _("GB");
 }
 
 static int _copy_multiple(Copy * copy, char const * src, char const * dst);
