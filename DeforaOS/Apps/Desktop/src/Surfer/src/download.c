@@ -192,6 +192,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	gtk_window_set_icon_name(GTK_WINDOW(download->window),
 			"stock_download");
 #endif
+	gtk_window_set_resizable(GTK_WINDOW(download->window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(download->window), buf);
 	g_signal_connect_swapped(G_OBJECT(download->window), "delete-event",
 			G_CALLBACK(_download_on_closex), download);
