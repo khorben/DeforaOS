@@ -80,6 +80,7 @@ struct _Download
 	GtkWidget * filename;
 	GtkWidget * status;
 	GtkWidget * received;
+	GtkWidget * remaining;
 	GtkWidget * progress;
 	GtkWidget * check;
 	GtkWidget * browse;
@@ -216,6 +217,8 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 			_("Resolving..."));
 	_download_label(vbox, bold, left, _("Received: "), &download->received,
 			_("0.0 kB"));
+	_download_label(vbox, bold, left, _("Remaining: "),
+			&download->remaining, _("Unknown"));
 	/* progress bar */
 	download->progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), download->progress, TRUE, TRUE, 4);
@@ -384,12 +387,14 @@ static int _download_set_proxy(Download * download, char const * http,
 /* download_refresh */
 static void _refresh_unit(guint64 total, double * fraction, char const ** unit,
 		double * current);
+static void _refresh_remaining(Download * download, guint64 rate);
 
 static void _download_refresh(Download * download)
 {
 	char buf[256];
 	struct timeval tv;
 	double current_fraction;
+	guint64 rate = 0;
 	double rate_fraction = 0.0;
 	char const * rate_unit = N_("kB");
 	double total_fraction;
@@ -409,9 +414,9 @@ static void _download_refresh(Download * download)
 			tv.tv_sec--;
 			tv.tv_usec += 1000000;
 		}
-		_refresh_unit((download->data_received * 1024)
-				/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000)),
-				&rate_fraction, &rate_unit, NULL);
+		rate = (download->data_received * 1024)
+			/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+		_refresh_unit(rate, &rate_fraction, &rate_unit, NULL);
 	}
 	if(download->content_length == 0)
 	{
@@ -446,8 +451,36 @@ static void _download_refresh(Download * download)
 		snprintf(buf, sizeof(buf), "%.1f%%", total_fraction * 100);
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
 					download->progress), total_fraction);
+		_refresh_remaining(download, rate);
 	}
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), buf);
+}
+
+static void _refresh_remaining(Download * download, guint64 rate)
+{
+	char buf[32];
+	guint64 remaining;
+	struct tm tm;
+
+	if(rate == 0)
+		return;
+	remaining = (download->content_length - download->data_received) / rate;
+	memset(&tm, 0, sizeof(tm));
+	tm.tm_sec = remaining;
+	/* minutes */
+	if(tm.tm_sec > 60)
+	{
+		tm.tm_min = tm.tm_sec / 60;
+		tm.tm_sec = tm.tm_sec - (tm.tm_min * 60);
+	}
+	/* hours */
+	if(tm.tm_min > 60)
+	{
+		tm.tm_hour = tm.tm_min / 60;
+		tm.tm_min = tm.tm_min - (tm.tm_hour * 60);
+	}
+	strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+	gtk_label_set_text(GTK_LABEL(download->remaining), buf);
 }
 
 static void _refresh_unit(guint64 size, double * fraction, char const ** unit,
