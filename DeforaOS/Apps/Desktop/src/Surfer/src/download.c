@@ -209,6 +209,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	gtk_editable_set_editable(GTK_EDITABLE(download->address), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), download->address, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* labels */
 	_download_label(vbox, bold, left, _("File: "), &download->filename,
 			download->prefs.output);
 	_download_label(vbox, bold, left, _("Status: "), &download->status,
@@ -381,6 +382,9 @@ static int _download_set_proxy(Download * download, char const * http,
 
 
 /* download_refresh */
+static void _refresh_unit(guint64 total, double * fraction, char const ** unit,
+		double * current);
+
 static void _download_refresh(Download * download)
 {
 	char buf[256];
@@ -405,25 +409,18 @@ static void _download_refresh(Download * download)
 			tv.tv_sec--;
 			tv.tv_usec += 1000000;
 		}
-		rate_fraction = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-		rate_fraction = download->data_received / rate_fraction;
-		if(rate_fraction > 1024)
-		{
-			rate_fraction /= 1024;
-			rate_unit = N_("MB");
-		}
+		_refresh_unit(download->data_received * 1024
+				/ ((tv.tv_sec * 1000) + (tv.tv_usec / 1000)),
+				&rate_fraction, &rate_unit, NULL);
 	}
 	if(download->content_length == 0)
 	{
 		/* the total size is not known */
-		if((total_fraction = download->data_received / 1024) > 1024)
-		{
-			total_fraction /= 1024;
-			total_unit = N_("MB");
-		}
-		snprintf(buf, sizeof(buf), _("%.1f %s (%.1f %s)"),
-				total_fraction, _(total_unit), rate_fraction,
-				_(rate_unit));
+		_refresh_unit(download->data_received, &total_fraction,
+				&total_unit, NULL);
+		snprintf(buf, sizeof(buf), _("%.1f %s (%.1f %s/s)"),
+				total_fraction, total_unit, rate_fraction,
+				rate_unit);
 		gtk_label_set_text(GTK_LABEL(download->received), buf);
 		snprintf(buf, sizeof(buf), " ");
 		/* pulse the progress bar if any data was received */
@@ -437,13 +434,9 @@ static void _download_refresh(Download * download)
 	else
 	{
 		/* the total size is known */
-		current_fraction = download->data_received / 1024;
-		if((total_fraction = download->content_length / 1024) > 1024)
-		{
-			current_fraction /= 1024;
-			total_fraction /= 1024;
-			total_unit = N_("MB");
-		}
+		current_fraction = download->data_received;
+		_refresh_unit(download->content_length, &total_fraction,
+				&total_unit, &current_fraction);
 		snprintf(buf, sizeof(buf), _("%.1f of %.1f %s (%.1f %s/s)"),
 				current_fraction, total_fraction, _(total_unit),
 				rate_fraction, _(rate_unit));
@@ -455,6 +448,28 @@ static void _download_refresh(Download * download)
 					download->progress), total_fraction);
 	}
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), buf);
+}
+
+static void _refresh_unit(guint64 total, double * fraction, char const ** unit,
+		double * current)
+{
+	/* bytes */
+	*fraction = total;
+	*unit = _("bytes");
+	if(*fraction < 1024)
+		return;
+	/* kilobytes */
+	*fraction /= 1024;
+	if(current != NULL)
+		*current /= 1024;
+	*unit = _("kB");
+	if(*fraction < 1024)
+		return;
+	/* megabytes */
+	*fraction /= 1024;
+	if(current != NULL)
+		*current /= 1024;
+	*unit = _("MB");
 }
 
 
