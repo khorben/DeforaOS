@@ -6,7 +6,7 @@
 	<!ENTITY surname   "Pronchery">
 	<!ENTITY email     "khorben@defora.org">
 	<!ENTITY section   "1">
-	<!ENTITY package   "configure">
+	<!ENTITY package   "DeforaOS configure">
 	<!ENTITY name      "configure">
 	<!ENTITY title     "configure documentation">
 	<!ENTITY purpose   "Generates and maintain software build systems">
@@ -48,23 +48,53 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg><option>-n</option></arg>
-			<arg><option>-v</option></arg>
-			<arg><option>-S</option></arg>
-			<arg rep="repeat"><option>options</option></arg>
-			<arg rep="repeat">directory</arg>
+			<arg choice="opt"><option>-n</option></arg>
+			<arg choice="opt"><option>-v</option></arg>
+			<arg choice="opt"><option>-S</option></arg>
+			<arg choice="opt" rep="repeat"><option>options</option></arg>
+			<arg rep="repeat"><replaceable>directory</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-	<para>
-		These are the documentation notes for &package;. The &package; project
-		generates and maintain software build systems, suitable for use with the most
-		common implementations of the make command. It uses project description files
-		to provide simple Makefiles. It is intended to keep the code generated as
-		simple and portable as possible.
-	</para>
-</refsect1>
+		<para>
+			These are the documentation notes for &package;. The &package; project
+			generates and maintain software build systems, suitable for use with the most
+			common implementations of the make command. It uses project description files
+			to provide simple Makefiles. It is intended to keep the code generated as
+			simple and portable as possible.
+		</para>
+		<para>
+			It processes the current directory, or the ones given at the command line,
+			according to the project configuration files encountered.
+		</para>
+	</refsect1>
+	<refsect1 id="options">
+		<title>Options</title>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-n</option></term>
+				<listitem>
+					<para>This option just parses the project definition files, without
+						actually re-generating the Makefiles.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-v</option></term>
+				<listitem>
+					<para>This option gives information about the progress of the
+						operation.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-S</option></term>
+				<listitem>
+					<para>This option warns about potential security risks.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
 	<refsect1>
 		<title>Overview</title>
 		<refsect2>
@@ -120,37 +150,6 @@
 				</itemizedlist>
 			</para>
 		</refsect2>
-	</refsect1>
-	<refsect1>
-		<title>Using &package;</title>
-		<refsect2>
-			<title>&name; usage</title>
-			<para>
-				The &name; utility may be invoked from the command line this way:
-				<cmdsynopsis>
-					<command>&name;</command>
-					<arg>-n</arg>
-					<arg>-v</arg>
-					<arg>-S</arg>
-					<arg rep="repeat">options</arg>
-					<arg rep="repeat">directory</arg>
-			</cmdsynopsis>
-			</para>
-			<para>
-				The "-n" option just parses the project definition files, without actually
-				re-generating the Makefiles.
-			</para>
-			<para>
-				The "-v" option gives information about the progress of the operation.
-			</para>
-			<para>
-				The "-S" option warns about potential security risks.
-			</para>
-			<para>
-				It then processes the current directory, or the ones given at the
-				command line, according to the project configuration files encountered.
-			</para>
-		</refsect2>
 		<refsect2>
 			<title>Migrating to &package;</title>
 			<para>
@@ -165,6 +164,11 @@
 				declined to "program_SOURCES" for their respective source files.
 			</para>
 		</refsect2>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>Bugs</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/16/configure"/>.</para>
 	</refsect1>
 	<refsect1 id="see_also">
 		<title>See also</title>

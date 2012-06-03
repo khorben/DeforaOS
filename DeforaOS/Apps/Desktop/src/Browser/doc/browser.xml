@@ -8,7 +8,7 @@
 	<!ENTITY email     "khorben@defora.org">
 	<!ENTITY section   "1">
 	<!ENTITY title     "Browser User Manual">
-	<!ENTITY package   "Browser">
+	<!ENTITY package   "DeforaOS Browser">
 	<!ENTITY name      "browser">
 	<!ENTITY purpose   "File manager and image viewer">
 ]>
@@ -49,6 +49,7 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
+			<arg rep="repeat"><replaceable>directory</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">

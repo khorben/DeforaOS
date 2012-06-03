@@ -8,7 +8,7 @@
 	<!ENTITY email     "khorben@defora.org">
 	<!ENTITY section   "1">
 	<!ENTITY title     "makepasswd User Manual">
-	<!ENTITY package   "makepasswd">
+	<!ENTITY package   "DeforaOS makepasswd">
 	<!ENTITY name      "makepasswd">
 	<!ENTITY purpose   "Generates (pseudo-)random passwords and hashes">
 ]>
@@ -57,27 +57,27 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="plain"><option>-c <replaceable>string</replaceable></option></arg>
-			<arg choice="plain"><option>-e <replaceable>algorithm</replaceable></option></arg>
-			<arg choice="plain"><option>-i <replaceable>iterations</replaceable></option></arg>
-			<arg choice="plain"><option>-l <replaceable>length</replaceable></option></arg>
-			<arg choice="plain"><option>-M <replaceable>maximum length</replaceable></option></arg>
-			<arg choice="plain"><option>-m <replaceable>minimum length</replaceable></option></arg>
-			<arg choice="plain"><option>-n <replaceable>count</replaceable></option></arg>
-			<arg choice="plain"><option>-p <replaceable>password</replaceable></option></arg>
-			<arg choice="plain"><option>-s <replaceable>salt</replaceable></option></arg>
+			<arg choice="opt"><option>-c <replaceable>string</replaceable></option></arg>
+			<arg choice="opt"><option>-e <replaceable>algorithm</replaceable></option></arg>
+			<arg choice="opt"><option>-i <replaceable>iterations</replaceable></option></arg>
+			<arg choice="opt"><option>-l <replaceable>length</replaceable></option></arg>
+			<arg choice="opt"><option>-M <replaceable>maximum length</replaceable></option></arg>
+			<arg choice="opt"><option>-m <replaceable>minimum length</replaceable></option></arg>
+			<arg choice="opt"><option>-n <replaceable>count</replaceable></option></arg>
+			<arg choice="opt"><option>-p <replaceable>password</replaceable></option></arg>
+			<arg choice="opt"><option>-s <replaceable>salt</replaceable></option></arg>
 		</cmdsynopsis>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="plain"><option>-E</option></arg>
-			<arg choice="plain"><option>-c <replaceable>string</replaceable></option></arg>
-			<arg choice="plain"><option>-e <replaceable>algorithm</replaceable></option></arg>
-			<arg choice="plain"><option>-i <replaceable>iterations</replaceable></option></arg>
-			<arg choice="plain"><option>-l <replaceable>length</replaceable></option></arg>
-			<arg choice="plain"><option>-M <replaceable>maximum length</replaceable></option></arg>
-			<arg choice="plain"><option>-m <replaceable>minimum length</replaceable></option></arg>
-			<arg choice="plain"><option>-n <replaceable>count</replaceable></option></arg>
-			<arg choice="plain"><option>-s <replaceable>salt</replaceable></option></arg>
+			<arg choice="opt"><option>-E</option></arg>
+			<arg choice="opt"><option>-c <replaceable>string</replaceable></option></arg>
+			<arg choice="opt"><option>-e <replaceable>algorithm</replaceable></option></arg>
+			<arg choice="opt"><option>-i <replaceable>iterations</replaceable></option></arg>
+			<arg choice="opt"><option>-l <replaceable>length</replaceable></option></arg>
+			<arg choice="opt"><option>-M <replaceable>maximum length</replaceable></option></arg>
+			<arg choice="opt"><option>-m <replaceable>minimum length</replaceable></option></arg>
+			<arg choice="opt"><option>-n <replaceable>count</replaceable></option></arg>
+			<arg choice="opt"><option>-s <replaceable>salt</replaceable></option></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
