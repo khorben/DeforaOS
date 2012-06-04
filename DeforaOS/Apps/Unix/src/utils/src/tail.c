@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <errno.h>
 
 
 /* tail */
@@ -73,7 +74,8 @@ static int _tail_do_bytes(Prefs * prefs, FILE * fp, char const * filename)
 
 	if(fseek(fp, c > 0 ? c - 1 : c, c > 0 ? SEEK_SET : SEEK_END) != 0)
 	{
-		fputs("tail: Not implemented yet\n", stderr);
+		/* FIXME implement */
+		fprintf(stderr, "tail: %s\n", strerror(ENOSYS));
 		return 1;
 	}
 	while((i = fread(buf, 1, sizeof(buf), fp)) > 0)
