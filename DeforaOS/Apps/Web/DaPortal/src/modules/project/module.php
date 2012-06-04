@@ -265,8 +265,11 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::_getToolbar
-	protected function _getToolbar($engine, $id)
+	protected function _getToolbar($engine, $request)
 	{
+		$id = $request->getId();
+
+		//FIXME better integrate with the parent function
 		if(($bug = $this->_getBug($engine, $id)) !== FALSE)
 			$id = $bug['project_id'];
 		if($id === FALSE)
@@ -338,7 +341,7 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
 				'text' => $title));
-		$toolbar = $this->_getToolbar($engine, $id);
+		$toolbar = $this->_getToolbar($engine, $request);
 		$page->append($toolbar);
 		if(($scm = $this->attachScm($engine)) === FALSE)
 			return new PageElement('dialog', array(
@@ -378,7 +381,7 @@ class ProjectModule extends ContentModule
 		if($project !== FALSE)
 		{
 			$title = _('Bug reports for ').$project['title'];
-			$toolbar = $this->_getToolbar($engine, $id);
+			$toolbar = $this->_getToolbar($engine, $request);
 			$query .= ' AND daportal_project.project_id=:project_id';
 		}
 		$filter = $this->_getFilter($engine, $request);
@@ -443,7 +446,7 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::_display
-	protected function _display($engine, $content)
+	protected function _display($engine, $page, $content)
 	{
 		//for projects
 		$title = _('Project: ').$content['title'];
@@ -471,9 +474,11 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 			'text' => $title));
-		if(($toolbar = $this->_getToolbar($engine, $project['id']))
-				!== FALSE)
+		//toolbar
+		$r = new Request($engine, $this->name, $project['id']);
+		if(($toolbar = $this->_getToolbar($engine, $request)) !== FALSE)
 			$page->append($toolbar);
+		//content
 		$text = $content['content']."\n";
 		$page->append('label', array('text' => $text));
 		$page->append($link);
@@ -493,7 +498,7 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
 				'text' => $title));
-		$toolbar = $this->_getToolbar($engine, $id);
+		$toolbar = $this->_getToolbar($engine, $request);
 		$page->append($toolbar);
 		if(($scm = $this->attachScm($engine)) === FALSE)
 			return new PageElement('dialog', array(

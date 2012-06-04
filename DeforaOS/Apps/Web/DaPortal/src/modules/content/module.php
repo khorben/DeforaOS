@@ -14,7 +14,7 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //TODO:
-//- let users preview, save and publish their contents
+//- let users save and publish their contents themselves
 //- complete paging
 
 
@@ -42,6 +42,7 @@ class ContentModule extends Module
 		$this->content_list_title_by = _('Content by');
 		$this->content_more_content = _('More content...');
 		$this->content_open_text = _('Read');
+		$this->content_publish = _('Publish');
 		$this->content_submit = _('Submit content');
 		$this->content_submit_progress
 			= _('Submission in progress, please wait...');
@@ -93,6 +94,7 @@ class ContentModule extends Module
 	protected $content_open_stock = 'read';
 	protected $content_open_text = 'Read';
 	protected $content_preview_length = 150;
+	protected $content_publish = 'Publish';
 	protected $content_submit = 'Submit content';
 	protected $content_submit_progress
 		= 'Submission in progress, please wait...';
@@ -124,7 +126,8 @@ class ContentModule extends Module
 		AND content_id=:content_id AND user_id=:user_id";
 	protected $query_get = "SELECT daportal_module.name AS module,
 		daportal_user.username AS username,
-		daportal_content.content_id AS id, title, content, timestamp
+		daportal_content.content_id AS id, title, content, timestamp,
+		daportal_content.enabled AS enabled, public
 		FROM daportal_content, daportal_module, daportal_user
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.module_id=:module_id
@@ -228,6 +231,45 @@ class ContentModule extends Module
 	}
 
 
+	//ContentModule::getToolbar
+	protected function _getToolbar($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+
+		$toolbar = new PageElement('toolbar');
+		if($cred->isAdmin($engine))
+		{
+			$r = new Request($engine, $this->name, 'admin');
+			$toolbar->append('button', array('request' => $r,
+				'stock' => 'admin',
+				'text' => _('Administration')));
+		}
+		if($this->canSubmit($engine))
+		{
+			$r = new Request($engine, $this->name, 'submit');
+			$toolbar->append('button', array('request' => $r,
+				'stock' => 'new',
+				'text' => $this->content_submit));
+		}
+		if(($id = $request->getId()) !== FALSE
+			&& ($content = $this->_get($engine, $id,
+			       	$request->getTitle())) !== FALSE)
+		{
+			//FIXME add "update" and "publish" buttons
+			if($content['public'] == FALSE)
+			{
+				$r = new Request($engine, $this->name,
+					'publish');
+				$toolbar->append('button', array(
+					'request' => $r,
+					'stock' => 'publish',
+					'text' => $this->content_publish));
+			}
+		}
+		return $toolbar;
+	}
+
+
 	//convertors
 	//ContentModule::_timestampToDate
 	//FIXME move to the SQL module?
@@ -260,11 +302,12 @@ class ContentModule extends Module
 		if($this->canPreview($engine, $request))
 			$form->append('button', array('type' => 'submit',
 					'stock' => 'preview',
-					'name' => 'preview',
+					'name' => 'action',
+					'value' => 'preview',
 					'text' => _('Preview')));
 		$form->append('button', array('type' => 'submit',
-				'stock' => 'submit', 'name' => 'submit',
-			       	'text' => _('Submit')));
+				'stock' => 'submit', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Submit')));
 		return $form;
 	}
 
@@ -524,22 +567,37 @@ class ContentModule extends Module
 				=== FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'error' => $error));
-		return $this->_display($engine, $content);
+		//page
+		$page = new Page(array('title' => $content['title']));
+		//title
+		$title = new PageElement('title', array('stock' => $this->name,
+			'text' => $content['title']));
+		$page->append($title);
+		//toolbar
+		$toolbar = $this->_getToolbar($engine, $request);
+		$page->append($toolbar);
+		//content
+		$content = new PageElement('label', array(
+			'text' => $content['content']."\n"));
+		$page->append($content);
+		//bottom
+		$r = new Request($engine, $this->name);
+		$page->append('link', array('stock' => 'back', 'request' => $r,
+				'text' => $this->content_more_content));
+		return $page;
 	}
 
 
 	//ContentModule::_display
-	protected function _display($engine, $content)
+	protected function _display($engine, $page, $content)
 	{
+		$title = new PageElement('title', array('stock' => $this->name,
+			'text' => $content['title']));
+		$page->append($title);
+		$content = new PageElement('label', array(
+			'text' => $content['content']."\n"));
+		$page->append($content);
 		//FIXME display metadata and link to actual resource?
-		$page = new Page(array('title' => $content['title']));
-		$page->append('title', array('stock' => $this->name,
-				'text' => $content['title']));
-		$page->append('label', array('text' => $content['content']
-			."\n"));
-		$r = new Request($engine, $this->name);
-		$page->append('link', array('stock' => 'back', 'request' => $r,
-				'text' => $this->content_more_content));
 		return $page;
 	}
 
@@ -720,6 +778,9 @@ class ContentModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		//toolbar
+		$toolbar = $this->_getToolbar($engine, $request);
+		$page->append($toolbar);
 		//process the content
 		$content = FALSE;
 		if(($error = $this->_submitProcess($engine, $request, $content))
@@ -729,6 +790,14 @@ class ContentModule extends Module
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
+		//preview
+		if($request->getParameter('preview') !== FALSE)
+		{
+			$content = array('title' => _('Preview: ')
+					.$request->getTitle(),
+				'content' => $request->getParameter('content'));
+			$this->_display($engine, $page, $content);
+		}
 		$form = $this->formSubmit($engine, $request);
 		$page->append($form);
 		return $page;
@@ -818,7 +887,8 @@ class ContentModule extends Module
 				'stock' => 'preview', 'name' => 'action',
 				'value' => 'preview', 'text' => _('Preview')));
 		$hbox->append('button', array('type' => 'submit',
-				'stock' => 'submit', 'text' => _('Submit')));
+				'stock' => 'submit', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Submit')));
 		return $page;
 	}
 }
