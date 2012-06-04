@@ -1,4 +1,4 @@
-TARGETS	= browser.1 browser.html
+TARGETS	= browser.1 browser.html desktop.1 desktop.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -15,8 +15,14 @@ browser.1: browser.xml
 browser.html: browser.xml
 	./docbook.sh -P "$(PREFIX)" -- "browser.html"
 
+desktop.1: desktop.xml
+	./docbook.sh -P "$(PREFIX)" -- "desktop.1"
+
+desktop.html: desktop.xml
+	./docbook.sh -P "$(PREFIX)" -- "desktop.html"
+
 clean:
-	$(RM) -- $(browser.1_OBJS) $(browser.html_OBJS)
+	$(RM) -- $(browser.1_OBJS) $(browser.html_OBJS) $(desktop.1_OBJS) $(desktop.html_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -24,9 +30,13 @@ distclean: clean
 install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "browser.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "browser.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktop.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktop.html"
 
 uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "browser.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "browser.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktop.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktop.html"
 
 .PHONY: all clean distclean install uninstall
