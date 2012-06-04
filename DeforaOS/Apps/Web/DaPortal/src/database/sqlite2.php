@@ -125,6 +125,8 @@ class Sqlite2Database extends Database
 	//Sqlite2Database::escape
 	protected function escape($string)
 	{
+		if(is_bool($string))
+			return $string ? '1' : '0';
 		return "'".sqlite_escape_string($string)."'";
 	}
 
