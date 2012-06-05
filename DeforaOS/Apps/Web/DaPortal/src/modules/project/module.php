@@ -498,7 +498,11 @@ class ProjectModule extends ContentModule
 				'text' => $title));
 		$toolbar = $this->_getToolbar($engine, $request);
 		$page->append($toolbar);
-		$page->append('treeview');
+		//treeview
+		$columns = array('filename' => _('Filename'),
+			'owner' => _('Owner'), 'group' => _('Group'),
+			'date' => _('Date'), 'permissions' => _('Permissions'));
+		$view = $page->append('treeview', array('columns' => $columns));
 		//FIXME really implement
 		return $page;
 	}
