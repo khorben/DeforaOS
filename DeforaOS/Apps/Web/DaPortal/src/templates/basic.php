@@ -97,6 +97,8 @@ class BasicTemplate extends Template
 		$menu = new PageElement('menubar');
 		if($entries === FALSE)
 			$entries = $this->getEntries($engine);
+		if($entries === FALSE)
+			return $menu;
 		foreach($entries as $e)
 		{
 			if(!is_array($e))
