@@ -59,11 +59,9 @@ class ProjectModule extends ContentModule
 			case 'bug_list':
 				return $this->bugList($engine, $request);
 			case 'browse':
+			case 'download':
 			case 'timeline':
 				return $this->$action($engine, $request);
-			case 'download':
-				/* FIXME really implement */
-				return $this->display($engine, $request);
 		}
 		return parent::call($engine, $request);
 	}
@@ -482,6 +480,26 @@ class ProjectModule extends ContentModule
 		$text = $content['content']."\n";
 		$page->append('label', array('text' => $text));
 		$page->append($link);
+		return $page;
+	}
+
+
+	//ProjectModule::download
+	protected function download($engine, $request)
+	{
+		if(($id = $request->getId()) === FALSE)
+			//FIXME show the global repository instead?
+			return $this->_default($engine);
+		//XXX may fail
+		$project = $this->_getProject($engine, $id);
+		$title = _('Project: ').$project['title'];
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'project',
+				'text' => $title));
+		$toolbar = $this->_getToolbar($engine, $request);
+		$page->append($toolbar);
+		$page->append('treeview');
+		//FIXME really implement
 		return $page;
 	}
 
