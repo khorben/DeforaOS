@@ -864,7 +864,7 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
-	prefs |= PREFS_i | PREFS_H;
+	prefs = PREFS_i;
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
 		switch(o)
@@ -902,6 +902,8 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 2)
 		return _usage();
+	if((prefs & (PREFS_H | PREFS_L | PREFS_P)) == 0)
+		prefs |= (prefs & PREFS_R) ? PREFS_P : PREFS_H;
 	_copy(&prefs, argc - optind, &argv[optind]);
 	gtk_main();
 	return 0;
