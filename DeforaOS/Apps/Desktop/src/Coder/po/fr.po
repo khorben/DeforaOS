@@ -1,0 +1,241 @@
+# $Id$
+# Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Coder package.
+# Pierre Pronchery <khorben@defora.org>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Coder 0.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-06-06 22:55+0200\n"
+"PO-Revision-Date: 2012-06-06 22:28+0200\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/gedi.c:84
+msgid "_New file..."
+msgstr "_Nouveau fichier..."
+
+#: ../src/gedi.c:86
+msgid "_Open file..."
+msgstr "_Ouvrir fichier..."
+
+#: ../src/gedi.c:89
+msgid "_Preferences..."
+msgstr "_Préférences..."
+
+#: ../src/gedi.c:92
+msgid "_Exit"
+msgstr "_Quitter"
+
+#: ../src/gedi.c:99
+msgid "_New project..."
+msgstr "_Nouveau projet..."
+
+#: ../src/gedi.c:101
+msgid "_Open project..."
+msgstr "_Ouvrir projet..."
+
+#: ../src/gedi.c:103
+msgid "_Save project"
+msgstr "_Enregistrer le projet"
+
+#: ../src/gedi.c:105
+msgid "Save project _as..."
+msgstr "Enregistrer le projet _sous..."
+
+#: ../src/gedi.c:108
+msgid "_Properties..."
+msgstr "_Propriétés..."
+
+#: ../src/gedi.c:115 ../tools/gdeasm.c:165 ../tools/gdeasm.c:167
+msgid "_About"
+msgstr "À _propos"
+
+#: ../src/gedi.c:121 ../tools/gdeasm.c:174
+msgid "_File"
+msgstr "_Fichier"
+
+#: ../src/gedi.c:122
+msgid "_Projects"
+msgstr "_Projets"
+
+#: ../src/gedi.c:123 ../tools/gdeasm.c:175
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/gedi.c:130
+msgid "Exit"
+msgstr "Quitter"
+
+#: ../src/gedi.c:165
+msgid "Coder"
+msgstr "Coder"
+
+#: ../src/gedi.c:180
+msgid "Files"
+msgstr "Fichiers"
+
+#: ../src/gedi.c:265
+msgid "Integrated Development Environment for the DeforaOS desktop"
+msgstr "Interface Intégrée de Développement pour l'environnement DeforaOS"
+
+#: ../src/gedi.c:295 ../src/gedi.c:299 ../tools/gdeasm.c:373
+#: ../tools/gdeasm.c:377
+msgid "Error"
+msgstr "Erreur"
+
+#: ../src/gedi.c:359
+msgid "Open project..."
+msgstr "Ouvrir projet..."
+
+#: ../src/gedi.c:365
+msgid "Project files"
+msgstr "Fichiers du projet"
+
+#: ../src/gedi.c:370 ../tools/gdeasm.c:449 ../tools/gdeasm.c:736
+#: ../tools/gdeasm.c:915
+msgid "All files"
+msgstr "Tous les fichiers"
+
+#: ../src/gedi.c:447
+msgid "Save project as..."
+msgstr "Enregistrer le projet sous..."
+
+#: ../src/gedi.c:493
+msgid "Preferences"
+msgstr "Préférences"
+
+#: ../src/gedi.c:502
+msgid "Editor:"
+msgstr "Éditeur : "
+
+#: ../src/gedi.c:509
+msgid "Run in a _terminal"
+msgstr "Ouvrir dans un _terminal"
+
+#: ../src/gedi.c:513
+msgid "Editor"
+msgstr "Éditeur"
+
+#: ../src/gedi.c:518
+msgid "Plug-ins"
+msgstr "Greffons"
+
+#: ../src/gedi.c:593
+msgid "No project opened"
+msgstr "Aucun projet n'est ouvert"
+
+#: ../src/main.c:42
+msgid "Usage: gedi\n"
+msgstr "Usage: gedi\n"
+
+#: ../tools/gdeasm.c:149
+msgid "_Open..."
+msgstr "_Ouvrir..."
+
+#: ../tools/gdeasm.c:152
+msgid "_Load comments..."
+msgstr "_Charger des commentaires..."
+
+#: ../tools/gdeasm.c:154
+msgid "_Save comments as..."
+msgstr "Enregistrer les commentaires _sous..."
+
+#: ../tools/gdeasm.c:157
+msgid "_Close"
+msgstr "_Fermer"
+
+#: ../tools/gdeasm.c:182
+msgid "Open file"
+msgstr "Ouvrir fichier"
+
+#: ../tools/gdeasm.c:185
+msgid "Load comments"
+msgstr "Charger des commentaires"
+
+#: ../tools/gdeasm.c:187
+msgid "Save comments"
+msgstr "Enregistrer les commentaires"
+
+#: ../tools/gdeasm.c:208
+msgid "Functions"
+msgstr "Fonctions"
+
+#: ../tools/gdeasm.c:209
+msgid "Offset"
+msgstr "Position"
+
+#: ../tools/gdeasm.c:210
+msgid "Strings"
+msgstr "Chaînes"
+
+#: ../tools/gdeasm.c:211
+msgid "Address"
+msgstr "Adresse"
+
+#: ../tools/gdeasm.c:211
+msgid "Instruction"
+msgstr "Instruction"
+
+#: ../tools/gdeasm.c:212 ../tools/gdeasm.c:213
+msgid "Operand"
+msgstr "Opérande"
+
+#: ../tools/gdeasm.c:213
+msgid "Comment"
+msgstr "Commentaire"
+
+#: ../tools/gdeasm.c:237 ../tools/gdeasm.c:765
+msgid "GDeasm"
+msgstr "GDeasm"
+
+#: ../tools/gdeasm.c:348 ../tools/gdeasm.c:357
+msgid "Question"
+msgstr "Question"
+
+#: ../tools/gdeasm.c:439
+msgid "Load comments..."
+msgstr "Charger des commentaires..."
+
+#: ../tools/gdeasm.c:444 ../tools/gdeasm.c:731
+msgid "GDeasm files"
+msgstr "Fichiers GDeasm"
+
+#: ../tools/gdeasm.c:489 ../tools/gdeasm.c:782
+msgid ""
+"There are unsaved comments.\n"
+"Discard or save them?"
+msgstr ""
+
+#: ../tools/gdeasm.c:495
+msgid "Discard"
+msgstr ""
+
+#: ../tools/gdeasm.c:726
+msgid "Save comments as..."
+msgstr "Enregistrer les commentaires sous..."
+
+#: ../tools/gdeasm.c:892
+msgid "Open file..."
+msgstr "Ouvrir fichier..."
+
+#: ../tools/gdeasm.c:902
+msgid "Open file in _raw mode"
+msgstr ""
+
+#: ../tools/gdeasm.c:906
+msgid "Executable files"
+msgstr "Fichiers exécutables"
+
+#: ../tools/gdeasm.c:911
+msgid "Objects"
+msgstr "Objets"
+
+#: ../tools/gdeasm.c:943
+msgid "Usage: gdeasm [-C comments][-D][-a arch][-f format] filename\n"
+msgstr "Usage: gdeasm [-C commentaires][-D][-a arch][-f format] fichier\n"

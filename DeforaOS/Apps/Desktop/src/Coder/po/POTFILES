@@ -1,0 +1,3 @@
+../src/gedi.c
+../src/main.c
+../tools/gdeasm.c

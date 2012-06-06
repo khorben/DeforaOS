@@ -15,18 +15,23 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
- * - rename to "Coder" */
+ * - rename to "Coder"
+ * - add a "backend" type of plug-ins (asm, hexedit, make, project, UWff...)
+ * - add a "plug-in" type of plug-ins (time tracker, ...) */
 
 
 
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "gedi.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -76,52 +81,53 @@ static char const * _authors[] =
 /* menubar */
 static DesktopMenu _gedi_menu_file[] =
 {
-	{ "_New file...", G_CALLBACK(on_file_new), GTK_STOCK_NEW,
+	{ N_("_New file..."), G_CALLBACK(on_file_new), GTK_STOCK_NEW,
 		GDK_CONTROL_MASK, GDK_KEY_N },
-	{ "_Open file...", G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+	{ N_("_Open file..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_CONTROL_MASK, GDK_KEY_O },
 	{ "", NULL , NULL, 0, 0 },
-	{ "_Preferences...", G_CALLBACK(on_file_preferences),
+	{ N_("_Preferences..."), G_CALLBACK(on_file_preferences),
 		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_KEY_P },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, GDK_CONTROL_MASK,
-		GDK_KEY_Q },
+	{ N_("_Exit"), G_CALLBACK(on_file_exit), GTK_STOCK_QUIT,
+		GDK_CONTROL_MASK, GDK_KEY_Q },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _gedi_menu_projects[] = /* FIXME will certainly be dynamic */
 {
-	{ "_New project...", G_CALLBACK(on_project_new), GTK_STOCK_NEW, 0, 0 },
-	{ "_Open project...", G_CALLBACK(on_project_open), GTK_STOCK_OPEN, 0,
+	{ N_("_New project..."), G_CALLBACK(on_project_new), GTK_STOCK_NEW, 0,
 		0 },
-	{ "_Save project", G_CALLBACK(on_project_save), GTK_STOCK_SAVE,
+	{ N_("_Open project..."), G_CALLBACK(on_project_open), GTK_STOCK_OPEN,
+		0, 0 },
+	{ N_("_Save project"), G_CALLBACK(on_project_save), GTK_STOCK_SAVE,
 		GDK_CONTROL_MASK, GDK_KEY_S },
-	{ "Save project _as...", G_CALLBACK(on_project_save_as),
+	{ N_("Save project _as..."), G_CALLBACK(on_project_save_as),
 		GTK_STOCK_SAVE_AS, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
-	{ "_Properties...", G_CALLBACK(on_project_properties),
+	{ N_("_Properties..."), G_CALLBACK(on_project_properties),
 		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _gedi_menu_help[] =
 {
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _gedi_menubar[] =
 {
-	{ "_File",	_gedi_menu_file },
-	{ "_Projects",	_gedi_menu_projects },
-	{ "_Help",	_gedi_menu_help },
-	{ NULL,		NULL }
+	{ N_("_File"),		_gedi_menu_file },
+	{ N_("_Projects"),	_gedi_menu_projects },
+	{ N_("_Help"),		_gedi_menu_help },
+	{ NULL,			NULL }
 };
 
 /* toolbar */
 static DesktopToolbar _gedi_toolbar[] =
 {
-	{ "Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, 0, 0, NULL },
+	{ N_("Exit"), G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
@@ -156,7 +162,7 @@ GEDI * gedi_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(gedi->tb_window), ICON_NAME);
 #endif
-	gtk_window_set_title(GTK_WINDOW(gedi->tb_window), "Coder");
+	gtk_window_set_title(GTK_WINDOW(gedi->tb_window), _("Coder"));
 	gtk_window_set_resizable(GTK_WINDOW(gedi->tb_window), FALSE);
 	g_signal_connect_swapped(G_OBJECT(gedi->tb_window), "delete-event",
 			G_CALLBACK(on_closex), gedi);
@@ -171,7 +177,7 @@ GEDI * gedi_new(void)
 	/* files */
 	gedi->fi_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(gedi->fi_window), 150, 200);
-	gtk_window_set_title(GTK_WINDOW(gedi->fi_window), "Files");
+	gtk_window_set_title(GTK_WINDOW(gedi->fi_window), _("Files"));
 	hbox = gtk_hbox_new(FALSE, 0);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 2);
@@ -256,8 +262,8 @@ void gedi_about(GEDI * gedi)
 				gedi->tb_window));
 	desktop_about_dialog_set_authors(gedi->ab_window, _authors);
 	desktop_about_dialog_set_comments(gedi->ab_window,
-			"Integrated Development Environment for the DeforaOS"
-			" desktop");
+			_("Integrated Development Environment for the DeforaOS"
+			" desktop"));
 	desktop_about_dialog_set_copyright(gedi->ab_window, _copyright);
 	desktop_about_dialog_set_logo_icon_name(gedi->ab_window, ICON_NAME);
 	desktop_about_dialog_set_license(gedi->ab_window, _license);
@@ -286,11 +292,11 @@ int gedi_error(GEDI * gedi, char const * message, int ret)
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Error");
+			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -350,18 +356,18 @@ void gedi_project_open_dialog(GEDI * gedi)
 	GtkFileFilter * filter;
 	gchar * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Open project...",
+	dialog = gtk_file_chooser_dialog_new(_("Open project..."),
 			GTK_WINDOW(gedi->tb_window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "Project files");
+	gtk_file_filter_set_name(filter, _("Project files"));
 	gtk_file_filter_add_pattern(filter, "project.conf");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "All files");
+	gtk_file_filter_set_name(filter, _("All files"));
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
@@ -438,7 +444,7 @@ int gedi_project_save_dialog(GEDI * gedi)
 
 	if((project = _gedi_get_current_project(gedi)) == NULL)
 		return -1;
-	dialog = gtk_file_chooser_dialog_new("Save project as...", NULL,
+	dialog = gtk_file_chooser_dialog_new(_("Save project as..."), NULL,
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
@@ -484,7 +490,7 @@ static void _show_preferences_window(GEDI * gedi)
 
 	gedi->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL); /* XXX dialog */
 	gtk_container_set_border_width(GTK_CONTAINER(gedi->pr_window), 4);
-	gtk_window_set_title(GTK_WINDOW(gedi->pr_window), "Preferences");
+	gtk_window_set_title(GTK_WINDOW(gedi->pr_window), _("Preferences"));
 	g_signal_connect_swapped(G_OBJECT(gedi->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), gedi);
 	vbox = gtk_vbox_new(FALSE, 4);
@@ -493,23 +499,23 @@ static void _show_preferences_window(GEDI * gedi)
 	nb_vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(nb_vbox), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Editor:"), FALSE, TRUE,
-			0);
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("Editor:")), FALSE,
+			TRUE, 0);
 	gedi->pr_editor_command = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), gedi->pr_editor_command, TRUE, TRUE,
 			0);
 	gtk_box_pack_start(GTK_BOX(nb_vbox), hbox, FALSE, TRUE, 0);
 	gedi->pr_editor_terminal = gtk_check_button_new_with_mnemonic(
-			"Run in a _terminal");
+			_("Run in a _terminal"));
 	gtk_box_pack_start(GTK_BOX(nb_vbox), gedi->pr_editor_terminal, FALSE,
 			TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
-				"Editor"));
+				_("Editor")));
 	/* notebook page plug-ins */
 	nb_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(nb_vbox), 4);
 	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
-				"Plug-ins"));
+				_("Plug-ins")));
 	gtk_box_pack_start(GTK_BOX(vbox), nb, TRUE, TRUE, 0);
 	/* buttons */
 	hbox = gtk_hbox_new(TRUE, 4);
@@ -584,7 +590,7 @@ static Project * _gedi_get_current_project(GEDI * gedi)
 	if(gedi->cur == NULL)
 	{
 		/* FIXME should not happen (disable callback action) */
-		gedi_error(gedi, "No project opened", 1);
+		gedi_error(gedi, _("No project opened"), 1);
 		return NULL;
 	}
 	return gedi->cur;
