@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -313,7 +313,7 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs prefs = CP_PREFS_i | CP_PREFS_H;
+	Prefs prefs = CP_PREFS_i;
 	int o;
 
 	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
@@ -351,5 +351,7 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 2)
 		return _usage();
+	if((prefs & (CP_PREFS_H | CP_PREFS_L | CP_PREFS_P)) == 0)
+		prefs |= (prefs & CP_PREFS_R) ? CP_PREFS_P : CP_PREFS_H;
 	return (_cp(&prefs, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }
