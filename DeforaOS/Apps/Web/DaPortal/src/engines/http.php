@@ -76,6 +76,16 @@ class HttpEngine extends Engine
 	{
 		global $config;
 
+		if(($private = $config->getVariable('engine::http', 'private'))
+				== 1)
+			return $this->_getRequestPrivate();
+		return $this->_getRequestDo();
+	}
+
+	protected function _getRequestDo()
+	{
+		global $config;
+
 		//XXX hack to avoid testing twice for idempotence
 		if($this->request !== FALSE)
 			return $this->request;
@@ -120,6 +130,27 @@ class HttpEngine extends Engine
 		$auth = $this->getAuth();
 		$auth->setIdempotent($this, $this->request, $idempotent);
 		return $this->request;
+	}
+
+	protected function _getRequestPrivate()
+	{
+		global $config;
+		$cred = $this->getCredentials();
+		$module = 'user';
+		$action = 'login';
+
+		if(($m = $config->getVariable('engine::http',
+				'private::module')) !== FALSE)
+			$module = $m;
+		if(($a = $config->getVariable('engine::http',
+		       		'private::action')) !== FALSE)
+			$action = $a;
+		$request = $this->_getRequestDo();
+		if($cred->getUserId() == 0)
+			if($request->getModule() != $module
+					|| $request->getAction() != $action)
+				return new Request($this, $module, $action);
+		return $request;
 	}
 
 

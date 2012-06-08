@@ -38,11 +38,16 @@ class HttpFriendlyEngine extends HttpEngine
 	//HttpFriendlyEngine::getRequest
 	public function getRequest()
 	{
+		return parent::getRequest();
+	}
+
+	protected function _getRequestDo()
+	{
 		if(!isset($_SERVER['PATH_INFO']))
-			return parent::getRequest();
+			return parent::_getRequestDo();
 		$path = explode('/', $_SERVER['PATH_INFO']);
 		if(!is_array($path) || count($path) < 2)
-			return parent::getRequest();
+			return parent::_getRequestDo();
 		//the first element is empty
 		array_shift($path);
 		//the second element is the module name
@@ -65,7 +70,7 @@ class HttpFriendlyEngine extends HttpEngine
 					$id = array_shift($path);
 					if(!is_numeric($id))
 						//XXX this is really a 404
-						return parent::getRequest();
+						return parent::_getRequestDo();
 				}
 			}
 		}
@@ -73,7 +78,7 @@ class HttpFriendlyEngine extends HttpEngine
 			$title = array_shift($path);
 		if(count($path) != 0)
 			//XXX this is really a 404
-			return parent::getRequest();
+			return parent::_getRequestDo();
 		//arguments
 		//XXX is there a function to do this directly?
 		$query = explode('&', $_SERVER['QUERY_STRING']);
