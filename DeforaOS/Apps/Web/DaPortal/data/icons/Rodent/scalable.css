@@ -1,0 +1,152 @@
+/* $Id$ */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Web DaPortal */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+.stock16 {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock.svg');
+}
+
+.stock16.add {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_add.svg');
+}
+
+.stock16.admin {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_preferences.svg');
+}
+
+.stock16.back {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_go-back.svg');
+}
+
+.stock16.bookmark {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_epiphany-bookmark-page.svg');
+}
+
+.stock16.cancel {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_cancel.svg');
+}
+
+.stock16.connect {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_connect.svg');
+}
+
+.stock16.delete {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_delete.svg');
+}
+
+.stock16.disable {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_no.svg');
+}
+
+.stock16.download {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_download.svg');
+}
+
+.stock16.edit {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_edit.svg');
+}
+
+.stock16.enable {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_yes.svg');
+}
+
+.stock16.error {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_error.svg');
+}
+
+.stock16.forward {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_go-forward.svg');
+}
+
+.stock16.home {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_home.svg');
+}
+
+.stock16.info {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_info.svg');
+}
+
+.stock16.login {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_authentication.svg');
+}
+
+.stock16.logout {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_logout.svg');
+}
+
+.stock16.new {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_new.svg');
+}
+
+.stock16.news {
+	background-image:		url('xfce4-icon-theme/scalable/misc/news.svg');
+}
+
+.stock16.no {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_no.svg');
+}
+
+.stock16.open {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_open.svg');
+}
+
+.stock16.preferences {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_preferences.svg');
+}
+
+.stock16.preview {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_print-preview.svg');
+}
+
+.stock16.refresh {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_refresh.svg');
+}
+
+.stock16.register {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_ok.svg');
+}
+
+.stock16.remove {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_remove.svg');
+}
+
+.stock16.reset {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_reset.svg');
+}
+
+.stock16.search {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_search.svg');
+}
+
+.stock16.submit {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_ok.svg');
+}
+
+.stock16.translate {
+	background-image:		url('xfce4-icon-theme/scalable/mimetypes/text-x-gettext-translation.svg');
+}
+
+.stock16.user {
+	background-image:		url('xfce4-icon-theme/scalable/filesystems/user-home.svg');
+}
+
+.stock16.warning {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_warning.svg');
+}
+
+.stock16.yes {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_yes.svg');
+}

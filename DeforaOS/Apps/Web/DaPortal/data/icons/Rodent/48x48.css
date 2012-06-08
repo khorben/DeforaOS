@@ -1,0 +1,152 @@
+/* $Id$ */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Web DaPortal */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+.stock48 {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock.png');
+}
+
+.stock48.add {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_add.png');
+}
+
+.stock48.admin {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_preferences.png');
+}
+
+.stock48.back {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_go-back.png');
+}
+
+.stock48.bookmark {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_epiphany-bookmark-page.png');
+}
+
+.stock48.cancel {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_cancel.png');
+}
+
+.stock48.connect {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_connect.png');
+}
+
+.stock48.delete {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_delete.png');
+}
+
+.stock48.disable {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_no.png');
+}
+
+.stock48.download {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_download.png');
+}
+
+.stock48.edit {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_edit.png');
+}
+
+.stock48.enable {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_yes.png');
+}
+
+.stock48.error {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_dialog_error.png');
+}
+
+.stock48.forward {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_go-forward.png');
+}
+
+.stock48.home {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_home.png');
+}
+
+.stock48.info {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_dialog_info.png');
+}
+
+.stock48.login {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_dialog_authentication.png');
+}
+
+.stock48.logout {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_logout.png');
+}
+
+.stock48.new {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_new.png');
+}
+
+.stock48.news {
+	background-image:		url('xfce4-icon-theme/48x48/misc/news.png');
+}
+
+.stock48.no {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_no.png');
+}
+
+.stock48.open {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_open.png');
+}
+
+.stock48.preferences {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_preferences.png');
+}
+
+.stock48.preview {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_print-preview.png');
+}
+
+.stock48.refresh {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_refresh.png');
+}
+
+.stock48.register {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_ok.png');
+}
+
+.stock48.remove {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_remove.png');
+}
+
+.stock48.reset {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_reset.png');
+}
+
+.stock48.search {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_search.png');
+}
+
+.stock48.submit {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_ok.png');
+}
+
+.stock48.translate {
+	background-image:		url('xfce4-icon-theme/48x48/mimetypes/text-x-gettext-translation.png');
+}
+
+.stock48.user {
+	background-image:		url('xfce4-icon-theme/48x48/filesystems/user-home.png');
+}
+
+.stock48.warning {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_dialog_warning.png');
+}
+
+.stock48.yes {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_yes.png');
+}
