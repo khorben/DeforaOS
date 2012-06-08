@@ -834,7 +834,7 @@ class ContentModule extends Module
 		$text = _('If you are not redirected within 30 seconds, please ');
 		$box->append('label', array('text' => $text));
 		$box->append('link', array('text' => _('click here'),
-			'request' => $r));
+				'request' => $r));
 		$box->append('label', array('text' => '.'));
 		return $page;
 	}
