@@ -32,7 +32,12 @@ class CVSScmProject
 			return new PageElement('dialog', array(
 				'type' => 'error',
 				'text' => _('No CVS repository defined')));
-		$view = new PageElement('treeview');
+		$columns = array('title' => _('Title'), 'date' => _('Date'),
+				'action' => _('Action'),
+				'revision' => _('Revision'),
+				'username' => _('Author'));
+		$view = new PageElement('treeview', array(
+				'columns' => $columns));
 		//FIXME implement
 		return $view;
 	}
