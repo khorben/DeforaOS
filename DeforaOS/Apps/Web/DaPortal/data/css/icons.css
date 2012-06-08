@@ -21,6 +21,22 @@
 	background-repeat:		no-repeat;
 }
 
+.stock16 {
+	background-size:		16px 16px;
+}
+
+.stock24 {
+	background-size:		24px 24px;
+}
+
+.stock32 {
+	background-size:		32px 32px;
+}
+
+.stock48 {
+	background-size:		48px 48px;
+}
+
 a.button.stock16, button.stock16, input.stock16 {
 	background-origin:		padding-box;
 	background-position:		2px center;
@@ -56,21 +72,17 @@ img.stock16, img.stock24, img.stock32, img.stock48 {
 }
 
 img.stock16 {
-	background-size:		16px 16px;
 	padding:			8px;
 }
 
 img.stock24 {
-	background-size:		24px 24px;
 	padding:			12px;
 }
 
 img.stock32 {
-	background-size:		32px 32px;
 	padding:			16px;
 }
 
 img.stock48 {
-	background-size:		48px 48px;
 	padding:			24px;
 }
