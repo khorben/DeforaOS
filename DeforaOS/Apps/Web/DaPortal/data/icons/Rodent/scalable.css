@@ -15,138 +15,138 @@
 
 
 
-.stock16 {
+.stock16, .stock24, .stock32 {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock.svg');
 }
 
-.stock16.add {
+.stock16.add, .stock24.add, .stock32.add {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_add.svg');
 }
 
-.stock16.admin {
+.stock16.admin, .stock24.admin, .stock32.admin {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_preferences.svg');
 }
 
-.stock16.back {
+.stock16.back, .stock24.back, .stock32.back {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_go-back.svg');
 }
 
-.stock16.bookmark {
+.stock16.bookmark, .stock24.bookmark, .stock32.bookmark {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_epiphany-bookmark-page.svg');
 }
 
-.stock16.cancel {
+.stock16.cancel, .stock24.cancel, .stock32.cancel {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_cancel.svg');
 }
 
-.stock16.connect {
+.stock16.connect, .stock24.connect, .stock32.connect {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_connect.svg');
 }
 
-.stock16.delete {
+.stock16.delete, .stock24.delete, .stock32.delete {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_delete.svg');
 }
 
-.stock16.disable {
+.stock16.disable, .stock24.disable, .stock32.disable {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_no.svg');
 }
 
-.stock16.download {
+.stock16.download, .stock24.download, .stock32.download {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_download.svg');
 }
 
-.stock16.edit {
+.stock16.edit, .stock24.edit, .stock32.edit {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_edit.svg');
 }
 
-.stock16.enable {
+.stock16.enable, .stock24.enable, .stock32.enable {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_yes.svg');
 }
 
-.stock16.error {
+.stock16.error, .stock24.error, .stock32.error {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_error.svg');
 }
 
-.stock16.forward {
+.stock16.forward, .stock24.forward, .stock32.forward {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_go-forward.svg');
 }
 
-.stock16.home {
+.stock16.home, .stock24.home, .stock32.home {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_home.svg');
 }
 
-.stock16.info {
+.stock16.info, .stock24.info, .stock32.info {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_info.svg');
 }
 
-.stock16.login {
+.stock16.login, .stock24.login, .stock32.login {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_authentication.svg');
 }
 
-.stock16.logout {
+.stock16.logout, .stock24.logout, .stock32.logout {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_logout.svg');
 }
 
-.stock16.new {
+.stock16.new, .stock24.new, .stock32.new {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_new.svg');
 }
 
-.stock16.news {
+.stock16.news, .stock24.news, .stock32.news {
 	background-image:		url('xfce4-icon-theme/scalable/misc/news.svg');
 }
 
-.stock16.no {
+.stock16.no, .stock24.no, .stock32.no {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_no.svg');
 }
 
-.stock16.open {
+.stock16.open, .stock24.open, .stock32.open {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_open.svg');
 }
 
-.stock16.preferences {
+.stock16.preferences, .stock24.preferences, .stock32.preferences {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_preferences.svg');
 }
 
-.stock16.preview {
+.stock16.preview, .stock24.preview, .stock32.preview {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_print-preview.svg');
 }
 
-.stock16.refresh {
+.stock16.refresh, .stock24.refresh, .stock32.refresh {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_refresh.svg');
 }
 
-.stock16.register {
+.stock16.register, .stock24.register, .stock32.register {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_ok.svg');
 }
 
-.stock16.remove {
+.stock16.remove, .stock24.remove, .stock32.remove {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_remove.svg');
 }
 
-.stock16.reset {
+.stock16.reset, .stock24.reset, .stock32.reset {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_reset.svg');
 }
 
-.stock16.search {
+.stock16.search, .stock24.search, .stock32.search {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_search.svg');
 }
 
-.stock16.submit {
+.stock16.submit, .stock24.submit, .stock32.submit {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_ok.svg');
 }
 
-.stock16.translate {
+.stock16.translate, .stock24.translate, .stock32.translate {
 	background-image:		url('xfce4-icon-theme/scalable/mimetypes/text-x-gettext-translation.svg');
 }
 
-.stock16.user {
+.stock16.user, .stock24.user, .stock32.user {
 	background-image:		url('xfce4-icon-theme/scalable/filesystems/user-home.svg');
 }
 
-.stock16.warning {
+.stock16.warning, .stock24.warning, .stock32.warning {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_warning.svg');
 }
 
-.stock16.yes {
+.stock16.yes, .stock24.yes, .stock32.yes {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_yes.svg');
 }
