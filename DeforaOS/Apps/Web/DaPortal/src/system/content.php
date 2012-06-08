@@ -109,6 +109,7 @@ class Content
 
 	//queries
 	static private $query_get = "SELECT daportal_module.name AS module,
+		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp
 		FROM daportal_content, daportal_module, daportal_user

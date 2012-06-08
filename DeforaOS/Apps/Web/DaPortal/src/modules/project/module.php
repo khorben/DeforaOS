@@ -39,6 +39,7 @@ class ProjectModule extends ContentModule
 		$this->content_list_order = 'title ASC';
 		$this->content_list_title = _('Project list');
 		$this->content_list_title_by = _('Projects by');
+		$this->content_open_stock = 'open';
 		$this->content_open_text = _('Open');
 		$this->content_submit = _('New project');
 		$this->content_title = _('Projects');
@@ -128,16 +129,22 @@ class ProjectModule extends ContentModule
 		AND daportal_user.enabled='1'
 		AND daportal_user.user_id=:user_id";
 	protected $project_query_bug = "SELECT title, content,
+		daportal_user.user_id AS user_id,
+		daportal_user.username AS username,
 		project_id
-		FROM daportal_content, daportal_bug
+		FROM daportal_content, daportal_bug, daportal_user
 		WHERE daportal_content.content_id=daportal_bug.content_id
+		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND daportal_content.content_id=:content_id";
 	protected $project_query_project = "SELECT project_id AS id, title,
+		daportal_user.user_id AS user_id,
+		daportal_user.username AS username,
 		content, cvsroot, enabled
-		FROM daportal_content, daportal_project
+		FROM daportal_content, daportal_project, daportal_user
 		WHERE daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND project_id=:content_id";
@@ -149,6 +156,7 @@ class ProjectModule extends ContentModule
 		AND daportal_content.public='1'
 		AND daportal_content.title=:title";
 	protected $project_query_get = "SELECT daportal_module.name AS module,
+		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp,
 		bug_id, daportal_bug.project_id AS project_id, priority, cvsroot
@@ -425,11 +433,13 @@ class ProjectModule extends ContentModule
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
-			$row->setProperty('title', $res[$i]['title']);
 			$r = new Request($engine, $this->name, FALSE,
 					$res[$i]['id'], $res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
-				'text' => '#'.$res[$i]['bug_id']));
+					'text' => $res[$i]['title'],
+					'title' => $res[$i]['title']));
+			$row->setProperty('title', $link);
+			$link->setProperty('text', '#'.$res[$i]['bug_id']);
 			$row->setProperty('bug_id', $link);
 			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
 			$row->setProperty('project', $res[$i]['project']);
