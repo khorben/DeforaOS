@@ -125,6 +125,7 @@ class ContentModule extends Module
 		WHERE module_id=:module_id
 		AND content_id=:content_id AND user_id=:user_id";
 	protected $query_get = "SELECT daportal_module.name AS module,
+		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp,
 		daportal_content.enabled AS enabled, public
@@ -743,9 +744,14 @@ class ContentModule extends Module
 		else
 			$title->append('link', array('request' => $r,
 					'text' => $content['title']));
-		$page->append('label', array('text' => $this->content_by.' '
-					.$content['username']
-					._(' on ').$content['date']));
+		$label = $page->append('label', array(
+				'text' => $this->content_by.' '));
+		$request = new Request($engine, 'user', FALSE,
+				$content['user_id'], $content['username']);
+		$label->append('link', array('request' => $request,
+				'text' => $content['username']));
+		$label->append('label', array(
+				'text' => _(' on ').$content['date']));
 		$hbox = $page->append('hbox');
 		$hbox->append('image', array('stock' => 'module '
 					.$content['module'].' content'));
