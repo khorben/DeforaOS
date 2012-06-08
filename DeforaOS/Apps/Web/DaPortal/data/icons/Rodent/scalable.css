@@ -27,6 +27,10 @@
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_preferences.svg');
 }
 
+.stock16.article, .stock24.article, .stock32.article {
+	background-image:		url('xfce4-icon-theme/scalable/mimetypes/text-html.svg');
+}
+
 .stock16.back, .stock24.back, .stock32.back {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_go-back.svg');
 }
@@ -35,12 +39,20 @@
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_epiphany-bookmark-page.svg');
 }
 
+.stock16.browser, .stock24.browser, .stock32.browser {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_folder.svg');
+}
+
 .stock16.cancel, .stock24.cancel, .stock32.cancel {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_cancel.svg');
 }
 
 .stock16.connect, .stock24.connect, .stock32.connect {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_connect.svg');
+}
+
+.stock16.content, .stock24.content, .stock32.content {
+	background-image:		url('xfce4-icon-theme/scalable/mimetypes/text.svg');
 }
 
 .stock16.delete, .stock24.delete, .stock32.delete {

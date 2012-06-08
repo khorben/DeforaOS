@@ -27,6 +27,10 @@
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_preferences.png');
 }
 
+.stock48.article {
+	background-image:		url('xfce4-icon-theme/48x48/mimetypes/text-html.png');
+}
+
 .stock48.back {
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_go-back.png');
 }
@@ -35,12 +39,20 @@
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_epiphany-bookmark-page.png');
 }
 
+.stock48.browser {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_folder.png');
+}
+
 .stock48.cancel {
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_cancel.png');
 }
 
 .stock48.connect {
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_connect.png');
+}
+
+.stock48.content {
+	background-image:		url('xfce4-icon-theme/48x48/mimetypes/text.png');
 }
 
 .stock48.delete {
