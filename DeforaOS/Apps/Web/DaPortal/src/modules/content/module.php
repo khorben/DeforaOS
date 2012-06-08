@@ -47,6 +47,7 @@ class ContentModule extends Module
 		$this->content_submit_progress
 			= _('Submission in progress, please wait...');
 		$this->content_title = _('Content');
+		$this->content_update = _('Update');
 	}
 
 
@@ -99,6 +100,7 @@ class ContentModule extends Module
 	protected $content_submit_progress
 		= 'Submission in progress, please wait...';
 	protected $content_title = 'Content';
+	protected $content_update = 'Update';
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
@@ -191,8 +193,28 @@ class ContentModule extends Module
 	}
 
 
+	//ContentModule::canPublish
+	protected function canPublish($engine, $id, &$error = FALSE)
+	{
+		global $config;
+		$cred = $engine->getCredentials();
+
+		$error = _('Permission denied');
+		if($cred->getUserId() == 0)
+			return FALSE;
+		if($cred->isAdmin())
+			return TRUE;
+		$content = Content::get($engine, $this->id, $id);
+		if($id !== $content['id'])
+			return FALSE;
+		$moderate = $config->getVariable('module::'.$this->name,
+				'moderate');
+		return ($moderate === FALSE || $moderate == 0) ? TRUE : FALSE;
+	}
+
+
 	//ContentModule::canSubmit
-	protected function canSubmit($engine, $request = FALSE, &$error = FALSE)
+	protected function canSubmit($engine, &$error = FALSE)
 	{
 		global $config;
 		$cred = $engine->getCredentials();
@@ -201,6 +223,19 @@ class ContentModule extends Module
 			return TRUE;
 		if($config->getVariable('module::'.$this->name, 'anonymous'))
 			return TRUE;
+		$error = _('Permission denied');
+		return FALSE;
+	}
+
+
+	//ContentModule::canUpdate
+	protected function canUpdate($engine, &$error = FALSE)
+	{
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			return TRUE;
+		//FIXME really implement
 		$error = _('Permission denied');
 		return FALSE;
 	}
@@ -256,15 +291,25 @@ class ContentModule extends Module
 			&& ($content = $this->_get($engine, $id,
 			       	$request->getTitle())) !== FALSE)
 		{
-			//FIXME add "update" and "publish" buttons
-			if($content['public'] == FALSE)
+			if($content['public'] == FALSE
+					&& $this->canPublish($engine))
 			{
 				$r = new Request($engine, $this->name,
-					'publish');
+					'publish'); //XXX
 				$toolbar->append('button', array(
 					'request' => $r,
 					'stock' => 'publish',
 					'text' => $this->content_publish));
+			}
+			if($this->canUpdate($engine, $id))
+			{
+				$r = new Request($engine, $this->name,
+						'update', $content['id'],
+						$content['title']);
+				$toolbar->append('button', array(
+					'request' => $r,
+					'stock' => 'update',
+					'text' => $this->content_update));
 			}
 		}
 		return $toolbar;
@@ -777,7 +822,7 @@ class ContentModule extends Module
 		$error = _('Permission denied');
 
 		//check permissions
-		if(!$this->canSubmit($engine, $request, $error))
+		if(!$this->canSubmit($engine, $error))
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		//create the page

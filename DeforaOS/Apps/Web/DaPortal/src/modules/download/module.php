@@ -159,7 +159,7 @@ class DownloadModule extends ContentModule
 	//methods
 	//accessors
 	//DownloadModule::canSubmit
-	protected function canSubmit($engine, $request = FALSE, &$error = FALSE)
+	protected function canSubmit($engine, &$error = FALSE)
 	{
 		$cred = $engine->getCredentials();
 
