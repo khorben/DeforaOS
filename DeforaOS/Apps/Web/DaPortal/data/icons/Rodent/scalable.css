@@ -123,6 +123,10 @@
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_print-preview.svg');
 }
 
+.stock16.read, .stock24.read, .stock32.read {
+	background-image:		url('xfce4-icon-theme/scalable/mimetypes/text-x-readme.svg');
+}
+
 .stock16.refresh, .stock24.refresh, .stock32.refresh {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_refresh.svg');
 }
