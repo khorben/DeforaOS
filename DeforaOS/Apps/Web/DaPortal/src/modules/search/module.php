@@ -30,6 +30,8 @@ class SearchModule extends Module
 	{
 		switch($request->getAction())
 		{
+			case 'actions':
+				return $this->actions($engine, $request);
 			case 'admin':
 				return $this->admin($engine);
 			case 'advanced':
@@ -45,6 +47,20 @@ class SearchModule extends Module
 
 	//protected
 	//methods
+	//SearchModule::actions
+	protected function actions($engine, $request)
+	{
+		$ret = array();
+		$icon = new PageElement('image', array('stock' => 'add'));
+		$r = new Request($engine, $this->name, 'advanced');
+		$link = new PageElement('link', array('request' => $r,
+				'text' => _('Advanced search')));
+		$ret[] = new PageElement('row', array('icon' => $icon,
+				'label' => $link));
+		return $ret;
+	}
+
+
 	//SearchModule::admin
 	protected function admin(&$engine)
 	{
