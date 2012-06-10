@@ -112,6 +112,13 @@ while [ $# -gt 0 ]; do
 		continue
 	fi
 
+	#install
+	if [ "$install" -eq 1 ]; then
+		$DEBUG $MKDIR -- "$instdir"			|| exit 2
+		$DEBUG $INSTALL -- "$target" "$instdir/$target"	|| exit 2
+		continue
+	fi
+
 	#create
 	$DEBUG $XSLTPROC -o "$target" "$XSL" "$source"
 	#XXX ignore errors
@@ -119,11 +126,5 @@ while [ $# -gt 0 ]; do
 		echo "$0: $target: Could not create page" 1>&2
 		$RM -- "$target"
 		break
-	fi
-
-	#install
-	if [ "$install" -eq 1 ]; then
-		$DEBUG $MKDIR -- "$instdir"			|| exit 2
-		$DEBUG $INSTALL -- "$target" "$instdir/$target"	|| exit 2
 	fi
 done

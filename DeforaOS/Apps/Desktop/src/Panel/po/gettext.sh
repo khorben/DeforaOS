@@ -1,7 +1,6 @@
 #!/bin/sh
 #$Id$
-#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
-#All rights reserved.
+#Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org>
 #
 #Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
@@ -135,6 +134,15 @@ while [ $# -gt 0 ]; do
 		continue
 	fi
 
+	#install
+	if [ "$install" -eq 1 ]; then
+		$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"	|| exit 2
+		$DEBUG $INSTALL "$target" \
+			"$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
+								|| exit 2
+		continue
+	fi
+
 	#create
 	case "$target" in
 		*.mo)
@@ -150,12 +158,4 @@ while [ $# -gt 0 ]; do
 			exit 2
 			;;
 	esac
-
-	#install
-	if [ "$install" -eq 1 ]; then
-		$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"	|| exit 2
-		$DEBUG $INSTALL "$target" \
-			"$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
-								|| exit 2
-	fi
 done
