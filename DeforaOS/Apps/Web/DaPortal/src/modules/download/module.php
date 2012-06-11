@@ -32,17 +32,18 @@ class DownloadModule extends ContentModule
 		$title = ($title === FALSE) ? _('Downloads') : $title;
 		parent::__construct($id, $name, $title);
 		//translations
-		$this->content_admin = _('Downloads administration');
-		$this->content_by = _('Download by');
-		$this->content_item = _('Download');
-		$this->content_items = _('Downloads');
-		$this->content_list_title = _('Directory listing');
-		$this->content_open_text = _('Open');
-		$this->content_more_content = _('Back to directory listing...');
-		$this->content_submit = _('File upload');
-		$this->content_submit_progress
+		$this->text_content_admin = _('Downloads administration');
+		$this->text_content_by = _('Download by');
+		$this->text_content_item = _('Download');
+		$this->text_content_items = _('Downloads');
+		$this->text_content_list_title = _('Directory listing');
+		$this->text_content_open_text = _('Open');
+		$this->text_content_more_content
+			= _('Back to directory listing...');
+		$this->text_content_submit = _('File upload');
+		$this->text_content_submit_progress
 			= _('Upload in progress, please wait...');
-		$this->content_title = _('Latest downloads');
+		$this->text_content_title = _('Latest downloads');
 		//queries
 		$this->query_get = $this->download_query_get;
 		//list only files by default
@@ -55,15 +56,18 @@ class DownloadModule extends ContentModule
 	//DownloadModule::call
 	public function call(&$engine, $request)
 	{
-		switch(($action = $request->getAction()))
+		if(($action = $request->getAction()) === FALSE)
+			$action = 'default';
+		switch($action)
 		{
 			case 'download':
-				return $this->download($engine, $request);
-			case 'folder_new':
-				return $this->folder_new($engine, $request);
-			case 'file_insert':
 			case 'submit':
-				return $this->submit($engine, $request);
+				$action = 'call'.ucfirst($action);
+				return $this->$action($engine, $request);
+			case 'folder_new':
+				return $this->callFolderNew($engine, $request);
+			case 'file_insert':
+				return $this->callSubmit($engine, $request);
 		}
 		return parent::call($engine, $request);
 	}
@@ -72,6 +76,10 @@ class DownloadModule extends ContentModule
 	//protected
 	//properties
 	//queries
+	protected $download_query_directory_insert =
+		'INSERT INTO daportal_download
+		(content_id, parent, mode) VALUES (:content_id, :parent,
+			512)';
 	protected $download_query_get = "SELECT daportal_module.name AS module,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
@@ -219,6 +227,65 @@ class DownloadModule extends ContentModule
 	}
 
 
+	//DownloadModule::getToolbar
+	protected function getToolbar($engine, $content = FALSE)
+	{
+		if($this->isDirectory($content))
+			return $this->getToolbarDirectory($engine, $content);
+		else if($content !== FALSE)
+			return $this->getToolbarFile($engine, $content);
+		return new PageElement('toolbar');
+	}
+
+
+	//DownloadModule::getToolbarDirectory
+	protected function getToolbarDirectory($engine, $content)
+	{
+		$toolbar = new PageElement('toolbar');
+		//link to the parent folder
+		$parent_id = isset($content['parent_id'])
+			&& is_numeric($content['parent_id'])
+			? $content['parent_id'] : FALSE;
+		$parent_title = isset($content['parent_title'])
+			&& is_string($content['parent_title'])
+			? $content['parent_title'] : FALSE;
+		$request = new Request($engine, $this->name, FALSE, $parent_id,
+				$parent_title);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => 'updir',
+				'text' => _('Up one directory')));
+		$request = new Request($engine, $this->name, 'folder_new',
+				$parent_id, $parent_title);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => 'folder-new',
+				'text' => _('New directory')));
+		return $toolbar;
+	}
+
+
+	//DownloadModule::getToolbarFile
+	protected function getToolbarFile($engine, $content)
+	{
+		$toolbar = new PageElement('toolbar');
+		//link to the folder
+		$parent_id = is_numeric($content['parent_id'])
+			? $content['parent_id'] : FALSE;
+		$parent_title = is_string($content['parent_title'])
+			? $content['parent_title'] : FALSE;
+		$request = new Request($engine, $this->name, FALSE, $parent_id,
+			$parent_title);
+		$toolbar->append('button', array('request' => $request,
+			'stock' => 'updir', 'text' => _('Browse')));
+		//link to the download
+		$request = new Request($engine, $this->name, 'download',
+			$content['id'], $content['title']);
+		$toolbar->append('button', array('request' => $request,
+			'stock' => $this->name,
+			'text' => _('Download')));
+		return $toolbar;
+	}
+
+
 	//DownloadModule::isDirectory
 	protected function isDirectory($content)
 	{
@@ -251,187 +318,32 @@ class DownloadModule extends ContentModule
 	}
 
 
-	//actions
-	//DownloadModule::_default
-	protected function _default($engine, $request = FALSE)
+	//calls
+	//DownloadModule::callDefault
+	protected function callDefault($engine, $request = FALSE)
 	{
 		if($request === FALSE || ($id = $request->getId()) === FALSE)
 		{
 			$content = array('id' => FALSE,
-				'title' => 'Root directory');
-			return $this->_displayDirectory($engine, $content);
+				'title' => _('Root directory'),
+				'mode' => 512, 'parent' => NULL,
+				'user_id' => 1, 'group_id' => 0,
+				'content' => '');
+			$page = new Page(array('title' => $content['title']));
+			return $this->helperDisplay($engine, $page, $content);
 		}
-		return $this->display($engine, $request);
+		return $this->callDisplay($engine, $request);
 	}
 
 
-	//DownloadModule::display
-	protected function display($engine, $request)
-	{
-		return parent::display($engine, $request);
-	}
-
-	protected function _display($engine, $content)
-	{
-		if($this->isDirectory($content))
-			return $this->_displayDirectory($engine, $content);
-		return $this->_displayFile($engine, $content);
-	}
-
-	protected function _displayDirectory($engine, $content)
-	{
-		$title = $this->content_list_title._(': ').$content['title'];
-		$db = $engine->getDatabase();
-		$query = $this->download_query_list;
-
-		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => $this->name,
-				'text' => $title));
-		$parent_id = (is_numeric($content['id']))
-			? $this->getDownloadId($engine, $content['id'])
-			: FALSE;
-		if($parent_id !== FALSE)
-			$query .= ' AND daportal_download.parent=:parent_id';
-		else
-			$query .= ' AND daportal_download.parent IS NULL';
-		$query .= ' ORDER BY title ASC';
-		if(($res = $db->query($engine, $query, array(
-					'module_id' => $this->id,
-					'parent_id' => $parent_id))) === FALSE)
-			return new PageElement('dialog', array(
-					'type' => 'error',
-					'text' => _('Unable to list files')));
-		//toolbar
-		$toolbar = $page->append('toolbar');
-		//link to the parent folder
-		$parent_id = isset($content['parent_id'])
-			&& is_numeric($content['parent_id'])
-			? $content['parent_id'] : FALSE;
-		$parent_title = isset($content['parent_title'])
-			&& is_string($content['parent_title'])
-			? $content['parent_title'] : FALSE;
-		$request = new Request($engine, $this->name, FALSE, $parent_id,
-				$parent_title);
-		$toolbar->append('button', array('request' => $request,
-				'stock' => 'updir',
-				'text' => _('Up one directory')));
-		$request = new Request($engine, $this->name, 'folder_new',
-				$parent_id, $parent_title);
-		$toolbar->append('button', array('request' => $request,
-				'stock' => 'folder-new',
-				'text' => _('New directory')));
-		//view
-		$columns = array('filename' => _('Filename'),
-			'owner' => _('Owner'), 'group' => _('Group'),
-			'date' => _('Date'), 'permissions' => _('Permissions'));
-		$view = $page->append('treeview', array('columns' => $columns));
-		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-		{
-			$stock = $this->isDirectory($res[$i])
-					? 'folder' : 'file';
-			$row = $view->append('row');
-			$row->setProperty('id', $res[$i]['id']);
-			$r = new Request($engine, $this->name, FALSE,
-					$res[$i]['id'], $res[$i]['title']);
-			$link = new PageElement('link', array('stock' => $stock,
-					'request' => $r,
-					'text' => $res[$i]['title']));
-			$row->setProperty('filename', $link);
-			$user_id = $res[$i]['user_id'];
-			$username = $res[$i]['username'];
-			if(is_numeric($user_id) && $user_id != 0)
-			{
-				$r = new Request($engine, 'user', FALSE,
-					$user_id, $username);
-				$username = new PageElement('link', array(
-					'request' => $r, 'text' => $username));
-			}
-			$row->setProperty('owner', $username);
-			$row->setProperty('group', $res[$i]['groupname']);
-			$row->setProperty('date', $this->_timestampToDate(
-					$res[$i]['timestamp'],
-						_('d/m/Y H:i:s')));
-			$row->setProperty('permissions',
-				$this->getPermissionsString($res[$i]['mode']));
-		}
-		return $page;
-	}
-
-	protected function _displayFile($engine, $content)
-	{
-		$title = $this->content_item._(': ').$content['title'];
-
-		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => $this->name,
-				'text' => $title));
-		//toolbar
-		$toolbar = $page->append('toolbar');
-		//link to the folder
-		$parent_id = is_numeric($content['parent_id'])
-			? $content['parent_id'] : FALSE;
-		$parent_title = is_string($content['parent_title'])
-			? $content['parent_title'] : FALSE;
-		$request = new Request($engine, $this->name, FALSE, $parent_id,
-				$parent_title);
-		$toolbar->append('button', array('request' => $request,
-				'stock' => 'updir', 'text' => _('Browse')));
-		//link to the download
-		$request = new Request($engine, $this->name, 'download',
-				$content['id'], $content['title']);
-		$toolbar->append('button', array('request' => $request,
-				'stock' => $this->name,
-				'text' => _('Download')));
-		//obtain the root repository
-		$root = $this->getRoot($engine);
-		//output the file details
-		$filename = $root.'/'.$content['download_id'];
-		$error = _('Could not obtain details for this file');
-		if(($stat = stat($filename)) === FALSE)
-			return new PageElement('dialog', array(
-				'type' => 'error', 'text' => $error));
-		$this->_displayField($page, _('Name'), new PageElement('link',
-					array('request' => $request,
-						'text' => $content['title'])));
-		$this->_displayField($page, _('Type'), Mime::get($engine,
-				$content['title']));
-		$request = new Request($engine, 'user', FALSE,
-				$content['user_id'], $content['username']);
-		$this->_displayField($page, _('Owner'), new PageElement('link',
-					array('request' => $request,
-					'text' => $content['username'])));
-		$this->_displayField($page, _('Group'), $content['groupname']);
-		$this->_displayField($page, _('Permissions'),
-			$this->getPermissionsString($content['mode']));
-		$this->_displayField($page, _('Creation time'),
-			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
-		$this->_displayField($page, _('Modification time'),
-			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
-		$this->_displayField($page, _('Access time'),
-			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
-		$this->_displayField($page, _('Size'), $stat['size']);
-		$this->_displayField($page, _('Comment'), $content['content']);
-		return $page;
-	}
-
-	protected function _displayField($page, $label, $field)
-	{
-		$hbox = $page->append('hbox');
-		$hbox->append('label', array('text' => $label._(': ')));
-		if($field instanceof PageElement)
-			$hbox->append($field);
-		else
-			$hbox->append('label', array('text' => $field));
-	}
-
-
-	//DownloadModule::download
-	protected function download($engine, $request)
+	//DownloadModule::callDownload
+	protected function callDownload($engine, $request)
 	{
 		global $config;
 		$error = _('Could not fetch content');
 
 		if(($id = $request->getId()) === FALSE)
-			return $this->_default($engine);
+			return $this->callDefault($engine);
 		if(($content = $this->_get($engine, $id, $request->getTitle()))
 				=== FALSE)
 			return new PageElement('dialog', array(
@@ -454,8 +366,8 @@ class DownloadModule extends ContentModule
 	}
 
 
-	//DownloadModule::folder_new
-	protected function folder_new($engine, $request)
+	//DownloadModule::callFolderNew
+	protected function callFolderNew($engine, $request)
 	{
 		$title = _('New folder');
 
@@ -467,7 +379,7 @@ class DownloadModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'folder-new',
 				'text' => $title));
-		$r = new Request($engine, $this->name, 'folder_new',
+		$r = new Request($engine, $this->name, 'submit',
 				$request->getId(), $request->getTitle());
 		$form = $page->append('form', array('request' => $r));
 		$name = $form->append('entry', array('text' => _('Name: '),
@@ -477,34 +389,76 @@ class DownloadModule extends ContentModule
 				$request->getId(), $request->getTitle());
 		$form->append('button', array('stock' => 'cancel',
 				'request' => $r, 'text' => _('Cancel')));
-		$form->append('button', array('stock' => 'folder-new',
-				'type' => 'submit', 'text' => _('Create')));
+		$form->append('button', array('type' => 'submit',
+				'stock' => 'folder-new', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Create')));
 		return $page;
 	}
 
 
-	//DownloadModule::submit
-	protected function submit($engine, $request)
+	//DownloadModule::callSubmit
+	protected function callSubmit($engine, $request)
 	{
-		return parent::submit($engine, $request);
+		return parent::callSubmit($engine, $request);
 	}
 
 	protected function _submitProcess($engine, $request, $parent)
 	{
-		global $config;
-		$db = $engine->getDatabase();
-
 		//verify the request
-		if(!isset($_FILES['files']))
-			return TRUE;
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
+		//obtain the root repository
+		$root = $this->getRoot($engine);
+		if(isset($_FILES['files']))
+			return $this->_submitProcessFiles($engine, $request,
+					$parent, $root);
+		return $this->_submitProcessDirectory($engine, $request,
+				$parent, $root);
+	}
+
+	protected function _submitProcessDirectory($engine, $request, $parent,
+			$root)
+	{
+		global $config;
+		$db = $engine->getDatabase();
+		$query = $this->download_query_directory_insert;
+
 		if($parent === FALSE)
 			$parent = NULL;
 		else if(!is_numeric($parent))
 			return _('Invalid argument');
-		//obtain the root repository
-		$root = $this->getRoot($engine);
+		//create the directory
+		if($db->transactionBegin($engine) === FALSE)
+			return _('Internal server error');
+		$title = $request->getTitle();
+		$content = Content::insert($engine, $this->id, $title, FALSE,
+				FALSE, TRUE);
+		if($content === FALSE)
+		{
+			$db->transactionRollback($engine);
+			return _('Internal server error');
+		}
+		if($db->query($engine, $query, array('content_id' => $id,
+				'parent' => $parent)) === FALSE)
+		{
+			$db->transactionRollback($engine);
+			return _('Internal server error');
+		}
+		if($db->transactionCommit($engine) === FALSE)
+			return _('Internal server error');
+		return FALSE;
+	}
+
+	protected function _submitProcessFiles($engine, $request, $parent,
+			$root)
+	{
+		global $config;
+		$db = $engine->getDatabase();
+
+		if($parent === FALSE)
+			$parent = NULL;
+		else if(!is_numeric($parent))
+			return _('Invalid argument');
 		//check known errors
 		foreach($_FILES['files']['error'] as $k => $v)
 			if($v != UPLOAD_ERR_OK)
@@ -559,7 +513,7 @@ class DownloadModule extends ContentModule
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
-		$text = $this->content_submit_progress;
+		$text = $this->text_content_submit_progress;
 		$box->append('label', array('text' => $text));
 		$box = $box->append('hbox');
 		$text = _('If you are not redirected within 30 seconds, please ');
@@ -568,6 +522,143 @@ class DownloadModule extends ContentModule
 			'request' => $r));
 		$box->append('label', array('text' => '.'));
 		return $page;
+	}
+
+
+	//helpers
+	//DownloadModule::helperDisplay
+	protected function helperDisplay($engine, $page, $content)
+	{
+		if($this->isDirectory($content))
+			return $this->helperDisplayDirectory($engine, $page,
+					$content);
+		return $this->helperDisplayFile($engine, $page, $content);
+	}
+
+
+	//DownloadModule::helperDisplayDirectory
+	protected function helperDisplayDirectory($engine, $page, $content)
+	{
+		$title = $this->text_content_list_title._(': ')
+			.$content['title'];
+		$db = $engine->getDatabase();
+		$query = $this->download_query_list;
+
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		$parent_id = (is_numeric($content['id']))
+			? $this->getDownloadId($engine, $content['id'])
+			: FALSE;
+		if($parent_id !== FALSE)
+			$query .= ' AND daportal_download.parent=:parent_id';
+		else
+			$query .= ' AND daportal_download.parent IS NULL';
+		$query .= ' ORDER BY title ASC';
+		if(($res = $db->query($engine, $query, array(
+					'module_id' => $this->id,
+					'parent_id' => $parent_id))) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error',
+					'text' => _('Unable to list files')));
+		//toolbar
+		$toolbar = $this->getToolbar($engine, $content);
+		$page->append($toolbar);
+		//view
+		$columns = array('filename' => _('Filename'),
+			'owner' => _('Owner'), 'group' => _('Group'),
+			'date' => _('Date'), 'permissions' => _('Permissions'));
+		$view = $page->append('treeview', array('columns' => $columns));
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$stock = $this->isDirectory($res[$i])
+					? 'folder' : 'file';
+			$row = $view->append('row');
+			$row->setProperty('id', $res[$i]['id']);
+			$r = new Request($engine, $this->name, FALSE,
+					$res[$i]['id'], $res[$i]['title']);
+			$link = new PageElement('link', array('stock' => $stock,
+					'request' => $r,
+					'text' => $res[$i]['title']));
+			$row->setProperty('filename', $link);
+			$user_id = $res[$i]['user_id'];
+			$username = $res[$i]['username'];
+			if(is_numeric($user_id) && $user_id != 0)
+			{
+				$r = new Request($engine, 'user', FALSE,
+					$user_id, $username);
+				$username = new PageElement('link', array(
+					'request' => $r, 'text' => $username));
+			}
+			$row->setProperty('owner', $username);
+			$row->setProperty('group', $res[$i]['groupname']);
+			$row->setProperty('date', $this->_timestampToDate(
+					$res[$i]['timestamp'],
+						_('d/m/Y H:i:s')));
+			$row->setProperty('permissions',
+				$this->getPermissionsString($res[$i]['mode']));
+		}
+		return $page;
+	}
+
+
+	//DownloadModule::helperDisplayFile
+	protected function helperDisplayFile($engine, $page, $content)
+	{
+		$title = $this->text_content_item._(': ').$content['title'];
+
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		//toolbar
+		$toolbar = $this->getToolbar($engine, $content);
+		$page->append($toolbar);
+		//obtain the root repository
+		$root = $this->getRoot($engine);
+		//output the file details
+		$filename = $root.'/'.$content['download_id'];
+		$error = _('Could not obtain details for this file');
+		if(($stat = stat($filename)) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		$this->helperDisplayField($page, _('Name'),
+			new PageElement('link',
+			array('request' => $request,
+			'text' => $content['title'])));
+		$this->helperDisplayField($page, _('Type'), Mime::get($engine,
+			$content['title']));
+		$request = new Request($engine, 'user', FALSE,
+			$content['user_id'], $content['username']);
+		$this->helperDisplayField($page, _('Owner'),
+			new PageElement('link',
+			array('request' => $request,
+			'text' => $content['username'])));
+		$this->helperDisplayField($page, _('Group'),
+			$content['groupname']);
+		$this->helperDisplayField($page, _('Permissions'),
+			$this->getPermissionsString($content['mode']));
+		$this->helperDisplayField($page, _('Creation time'),
+			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
+		$this->helperDisplayField($page, _('Modification time'),
+			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
+		$this->helperDisplayField($page, _('Access time'),
+			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
+		$this->helperDisplayField($page, _('Size'), $stat['size']);
+		$this->helperDisplayField($page, _('Comment'),
+				$content['content']);
+		return $page;
+	}
+
+
+	//DownloadModule::helperDisplayField
+	protected function helperDisplayField($page, $label, $field)
+	{
+		$hbox = $page->append('hbox');
+		$hbox->append('label', array('text' => $label._(': ')));
+		if($field instanceof PageElement)
+			$hbox->append($field);
+		else
+			$hbox->append('label', array('text' => $field));
 	}
 }
 
