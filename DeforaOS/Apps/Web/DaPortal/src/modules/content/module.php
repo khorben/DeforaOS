@@ -38,6 +38,7 @@ class ContentModule extends Module
 		$this->text_content_by = _('Content by');
 		$this->text_content_item = _('Content');
 		$this->text_content_items = _('Content');
+		$this->text_content_link = _('Permalink');
 		$this->text_content_list_title = _('Content list');
 		$this->text_content_list_title_by = _('Content by');
 		$this->text_content_more_content = _('More content...');
@@ -89,6 +90,7 @@ class ContentModule extends Module
 	protected $text_content_by = 'Content by';
 	protected $text_content_item = 'Content';
 	protected $text_content_items = 'Content';
+	protected $text_content_link = 'Permalink';
 	protected $text_content_list_title = 'Content list';
 	protected $text_content_list_title_by = 'Content by';
 	protected $text_content_more_content = 'More content...';
@@ -518,7 +520,10 @@ class ContentModule extends Module
 			return $page;
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-			$page->append($this->preview($engine, $res[$i]['id']));
+		{
+			$content = $this->_get($engine, $res[$i]['id']);
+			$this->helperPreview($engine, $page, $content);
+		}
 		//output paging information
 		if($pcnt !== FALSE && ($pcnt > $this->content_list_count))
 		{
@@ -561,37 +566,15 @@ class ContentModule extends Module
 	{
 		$error = _('Could not display content');
 
+		//obtain the content
 		if(($id = $request->getId()) === FALSE)
 			return $this->_default($engine, $request);
 		if(($content = $this->_get($engine, $id, $request->getTitle()))
 				=== FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'error' => $error));
-		//page
 		$page = new Page(array('title' => $content['title']));
-		//toolbar
-		$toolbar = $this->_getToolbar($engine, $request);
-		$this->_display($engine, $page, $toolbar, $content);
-		//bottom
-		$r = new Request($engine, $this->name);
-		$page->append('link', array('stock' => 'back', 'request' => $r,
-				'text' => $this->text_content_more_content));
-		return $page;
-	}
-
-
-	//ContentModule::_display
-	protected function _display($engine, $page, $toolbar, $content)
-	{
-		$title = new PageElement('title', array('stock' => $this->name,
-			'text' => $content['title']));
-		$page->append($title);
-		if($toolbar !== FALSE)
-			$page->append($toolbar);
-		$content = new PageElement('label', array(
-			'text' => $content['content']."\n"));
-		$page->append($content);
-		//FIXME display metadata and link to actual resource?
+		$this->helperDisplay($engine, $page, $content);
 		return $page;
 	}
 
@@ -714,27 +697,16 @@ class ContentModule extends Module
 	//ContentModule::callPreview
 	protected function callPreview($engine, $request)
 	{
-		$error = _('Could not fetch content');
+		$error = _('Could not preview content');
 
 		//obtain the content
 		if(($content = $this->_get($engine, $request->getId(),
 				$request->getTitle())) === FALSE)
 			return new PageElement('dialog', array(
-						'type' => 'error',
-						'text' => $error));
-		$preview = new PageElement('vbox');
-		//link
-		$r = new Request($engine, $content['module'], FALSE,
-				$content['id'], $content['title']);
-		//title
-		$this->helperPreviewTitle($engine, $preview, $r, $content);
-		//meta-data
-		$this->helperPreviewMetadata($engine, $preview, $r, $content);
-		//text
-		$this->helperPreviewText($engine, $preview, $r, $content);
-		//buttons
-		$this->helperPreviewButtons($engine, $preview, $r, $content);
-		return $preview;
+					'type' => 'error', 'text' => $error));
+		$page = new Page(array('title' => $content['title']));
+		$this->helperPreview($engine, $page, $content);
+		return $page;
 	}
 
 
@@ -910,6 +882,107 @@ class ContentModule extends Module
 		$page->prepend('dialog', array('type' => $type,
 					'text' => $message));
 		return $page;
+	}
+
+
+	//ContentModule::helperDisplay
+	protected function helperDisplay($engine, $page, $content)
+	{
+		//link
+		$request = new Request($engine, $content['module'], FALSE,
+				$content['id'], $content['title']);
+		//title
+		$this->helperDisplayTitle($engine, $page, $request, $content);
+		//toolbar
+		//FIXME pages should render as vbox by default
+		$vbox = $page->append('vbox');
+		$this->helperDisplayToolbar($engine, $vbox, $request, $content);
+		//meta-data
+		$this->helperDisplayMetadata($engine, $vbox, $request,
+				$content);
+		//text
+		$this->helperDisplayText($engine, $vbox, $request, $content);
+		//buttons
+		$this->helperDisplayButtons($engine, $vbox, $request, $content);
+		return $page;
+	}
+
+
+	//ContentModule::helperDisplayButtons
+	protected function helperDisplayButtons($engine, $page, $request,
+			$content)
+	{
+		$hbox = $page->append('hbox');
+		$r = new Request($engine, $this->name);
+		$hbox->append('link', array('stock' => 'back', 'request' => $r,
+				'text' => $this->text_content_more_content));
+		$hbox->append('link', array('stock' => 'link',
+				'request' => $request,
+				'text' => $this->text_content_link));
+	}
+
+
+	//ContentModule::helperDisplayMetadata
+	protected function helperDisplayMetadata($engine, $page, $request,
+			$content)
+	{
+		$r = new Request($engine, 'user', FALSE,
+				$content['user_id'], $content['username']);
+		$link = new PageElement('link', array('request' => $r,
+				'text' => $content['username']));
+		$meta = $page->append('label', array(
+				'text' => $this->text_content_by.' '));
+		$meta->append($link);
+		$meta = $meta->append('label', array(
+				'text' => ' '.$this->text_content_on.' '
+				.$content['date']));
+	}
+
+
+	//ContentModule::helperDisplayText
+	protected function helperDisplayText($engine, $page, $request,
+			$content)
+	{
+		$text = $content['content'];
+		$page->append('label', array('text' => $text));
+	}
+
+
+	//ContentModule::helperDisplayTitle
+	protected function helperDisplayTitle($engine, $page, $request,
+			$content)
+	{
+		$title = $page->append('title', array('stock' => $this->name,
+				'text' => $content['title']));
+	}
+
+
+	//ContentModule::helperDisplayToolbar
+	protected function helperDisplayToolbar($engine, $page, $request,
+			$content)
+	{
+		$toolbar = $this->_getToolbar($engine, $request);
+		$page->append($toolbar);
+	}
+
+
+	//ContentModule::helperPreview
+	protected function helperPreview($engine, $preview, $content)
+	{
+		$request = new Request($engine, $this->name, FALSE,
+				$content['id'], $content['title']);
+		//title
+		$this->helperPreviewTitle($engine, $preview, $request,
+				$content);
+		//meta-data
+		//FIXME pages should render as vbox by default
+		$vbox = $preview->append('vbox');
+		$this->helperPreviewMetadata($engine, $vbox, $request,
+				$content);
+		//text
+		$this->helperPreviewText($engine, $vbox, $request, $content);
+		//buttons
+		$this->helperPreviewButtons($engine, $vbox, $request, $content);
 	}
 
 
