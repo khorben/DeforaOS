@@ -271,7 +271,7 @@ class ContentModule extends Module
 
 
 	//ContentModule::getToolbar
-	protected function _getToolbar($engine, $id = FALSE, $title = FALSE)
+	protected function getToolbar($engine, $content = FALSE)
 	{
 		$cred = $engine->getCredentials();
 
@@ -417,7 +417,10 @@ class ContentModule extends Module
 		if($request !== FALSE)
 			foreach($actions as $a)
 				if($request->getParameter($a) !== FALSE)
+				{
+					$a = 'call'.ucfirst($a);
 					return $this->$a($engine, $request);
+				}
 		//administrative page
 		$page = new Page;
 		$title = $this->text_content_admin;
@@ -543,7 +546,7 @@ class ContentModule extends Module
 
 		if($cred->isAdmin())
 			$query = $this->query_admin_delete;
-		return $this->_apply($engine, $request, $query, 'admin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 				_('Content could be deleted successfully'),
 				_('Some content could not be deleted'));
 	}
@@ -557,7 +560,7 @@ class ContentModule extends Module
 
 		if($cred->isAdmin())
 			$query = $this->query_admin_disable;
-		return $this->_apply($engine, $request, $query, 'admin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 				_('Content could be disabled successfully'),
 				_('Some content could not be disabled'));
 	}
@@ -589,7 +592,7 @@ class ContentModule extends Module
 
 		if($cred->isAdmin())
 			$query = $this->query_admin_enable;
-		return $this->_apply($engine, $request, $query, 'admin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 				_('Content could be enabled successfully'),
 				_('Some content could not be enabled'));
 	}
@@ -719,7 +722,7 @@ class ContentModule extends Module
 		$error = _('Permission denied');
 
 		//check permissions
-		if(!$this->canSubmit($engine, $error))
+		if($this->canSubmit($engine, $error) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		//create the page
@@ -727,7 +730,7 @@ class ContentModule extends Module
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		//toolbar
-		$toolbar = $this->_getToolbar($engine, $request);
+		$toolbar = $this->getToolbar($engine);
 		$page->append($toolbar);
 		//process the content
 		$content = FALSE;
@@ -858,6 +861,7 @@ class ContentModule extends Module
 						'text' => $error));
 			return $page;
 		}
+		$fallback = 'call'.ucfirst($fallback);
 		if($request->isIdempotent())
 			//must be safe
 			return $this->$fallback($engine);
@@ -963,7 +967,7 @@ class ContentModule extends Module
 	protected function helperDisplayToolbar($engine, $page, $request,
 			$content)
 	{
-		$toolbar = $this->_getToolbar($engine, $request);
+		$toolbar = $this->getToolbar($engine, $content);
 		$page->append($toolbar);
 	}
 
