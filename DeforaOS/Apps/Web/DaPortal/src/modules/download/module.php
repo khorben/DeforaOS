@@ -40,7 +40,7 @@ class DownloadModule extends ContentModule
 		$this->text_content_open_text = _('Open');
 		$this->text_content_more_content
 			= _('Back to directory listing...');
-		$this->text_content_submit = _('File upload');
+		$this->text_content_submit = _('Upload file');
 		$this->text_content_submit_progress
 			= _('Upload in progress, please wait...');
 		$this->text_content_title = _('Latest downloads');
@@ -262,6 +262,13 @@ class DownloadModule extends ContentModule
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
 					'text' => _('New directory')));
+		//upload file
+		$request = new Request($engine, $this->name, 'submit',
+				$content['id'], $content['title']);
+		if($this->canSubmit($engine))
+			$toolbar->append('button', array('request' => $request,
+					'stock' => 'save',
+					'text' => _('Upload file')));
 		return $toolbar;
 	}
 
@@ -300,14 +307,8 @@ class DownloadModule extends ContentModule
 	//DownloadModule::formSubmit
 	protected function formSubmit($engine, $request)
 	{
-		$parent = $request->getParameter('parent');
-
-		if(!is_numeric($parent))
-			$parent = FALSE;
-		$r = new Request($engine, $this->name, 'submit');
-		if($parent !== FALSE)
-			//FIXME also tell where the upload is for
-			$r->setParameter('parent', $parent);
+		$r = new Request($engine, $this->name, 'submit',
+				$request->getId(), $request->getTitle());
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('filechooser', array('text' => _('File: '),
 				'name' => 'files[]'));
@@ -315,8 +316,8 @@ class DownloadModule extends ContentModule
 		$form->append('button', array('text' => _('Cancel'),
 				'stock' => 'cancel', 'request' => $r));
 		$form->append('button', array('type' => 'submit',
-				'stock' => 'upload', 'name' => 'submit',
-				'text' => _('Upload')));
+				'stock' => 'upload', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Upload')));
 		return $form;
 	}
 
@@ -440,6 +441,7 @@ class DownloadModule extends ContentModule
 			return TRUE;
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
+		//obtain the parent
 		if(($parent = $content) === FALSE)
 			$parent = NULL;
 		else
@@ -450,7 +452,7 @@ class DownloadModule extends ContentModule
 		$name = $request->getParameter('name');
 		//FIXME check for filename unicity
 		$content = Content::insert($engine, $this->id, $name, FALSE,
-				FALSE, TRUE);
+				TRUE, TRUE);
 		if($content === FALSE)
 		{
 			$db->transactionRollback($engine);
@@ -490,26 +492,64 @@ class DownloadModule extends ContentModule
 	//DownloadModule::callSubmit
 	protected function callSubmit($engine, $request)
 	{
-		return parent::callSubmit($engine, $request);
+		$title = $this->text_content_submit;
+		$error = _('Permission denied');
+
+		//FIXME find a way to re-use code from callSubmit()
+		//check permissions
+		if($this->canSubmit($engine, $error) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		//create the page
+		if(($parent = $this->_get($engine, $request->getId(),
+				$request->getTitle())) !== FALSE)
+			$title = sprintf(_('%s in "%s"'),
+					$this->text_content_submit,
+					$parent['title']);
+		else
+			$title = _('Upload file in root folder');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'save',
+				'text' => $title));
+		//toolbar
+		$toolbar = $this->getToolbar($engine, $parent);
+		$page->append($toolbar);
+		//process the content
+		$content = $this->_get($engine, $request->getId(),
+				$request->getTitle());
+		if(($error = $this->_submitProcess($engine, $request,
+				$content)) === FALSE)
+			return $this->_submitSuccess($engine, $request,
+					$page, $content);
+		else if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		$form = $this->formSubmit($engine, $request);
+		$page->append($form);
+		return $page;
 	}
 
-	protected function _submitProcess($engine, $request, &$parent)
+	protected function _submitProcess($engine, $request, &$content)
 	{
 		global $config;
 		$db = $engine->getDatabase();
+		$query = $this->download_query_file_insert;
 
 		//verify the request
+		if($request->getParameter('submit') === FALSE)
+			return TRUE;
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
+		//obtain the parent
+		if(($parent = $content) === FALSE)
+			$parent = NULL;
+		else
+			$parent = $parent['download_id'];
 		//obtain the root repository
 		$root = $this->getRoot($engine);
+		//check known errors
 		if(!isset($_FILES['files']))
 			return TRUE;
-		if($parent === FALSE)
-			$parent = NULL;
-		else if(!is_numeric($parent))
-			return _('Invalid argument');
-		//check known errors
 		foreach($_FILES['files']['error'] as $k => $v)
 			if($v != UPLOAD_ERR_OK)
 				return _('An error occurred');
@@ -529,7 +569,6 @@ class DownloadModule extends ContentModule
 			}
 			$id = $content->getId();
 			$tmp = $_FILES['files']['tmp_name'][$k];
-			$query = $this->download_query_file_insert;
 			if($db->query($engine, $query, array(
 						'content_id' => $id,
 						'parent' => $parent,
@@ -557,9 +596,10 @@ class DownloadModule extends ContentModule
 		return FALSE;
 	}
 
-	protected function _submitSuccess($engine, $request, $page, $parent)
+	protected function _submitSuccess($engine, $request, $page, $content)
 	{
-		$r = new Request($engine, $this->name, FALSE, $parent);
+		$r = new Request($engine, $this->name, FALSE, $content->getId(),
+				$content->getTitle());
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
@@ -655,9 +695,11 @@ class DownloadModule extends ContentModule
 	{
 		$title = $this->text_content_item._(': ').$content['title'];
 
-		$page = new Page(array('title' => $title));
+		$page->setProperty('title', $title);
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		$request = new Request($engine, $this->name, FALSE,
+				$content['id'], $content['title']);
 		//toolbar
 		$toolbar = $this->getToolbar($engine, $content);
 		$page->append($toolbar);
@@ -691,7 +733,8 @@ class DownloadModule extends ContentModule
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
 		$this->helperDisplayField($page, _('Access time'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
-		$this->helperDisplayField($page, _('Size'), $stat['size']);
+		$this->helperDisplayField($page, _('Size'), $stat['size']
+			.' '._('bytes'));
 		$this->helperDisplayField($page, _('Comment'),
 				$content['content']);
 		return $page;
