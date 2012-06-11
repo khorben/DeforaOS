@@ -34,20 +34,21 @@ class ContentModule extends Module
 	{
 		parent::__construct($id, $name, $title);
 		//translations
-		$this->content_admin = _('Content administration');
-		$this->content_by = _('Content by');
-		$this->content_item = _('Content');
-		$this->content_items = _('Content');
-		$this->content_list_title = _('Content list');
-		$this->content_list_title_by = _('Content by');
-		$this->content_more_content = _('More content...');
-		$this->content_open_text = _('Read');
-		$this->content_publish = _('Publish');
-		$this->content_submit = _('Submit content');
-		$this->content_submit_progress
+		$this->text_content_admin = _('Content administration');
+		$this->text_content_by = _('Content by');
+		$this->text_content_item = _('Content');
+		$this->text_content_items = _('Content');
+		$this->text_content_list_title = _('Content list');
+		$this->text_content_list_title_by = _('Content by');
+		$this->text_content_more_content = _('More content...');
+		$this->text_content_on = _('on');
+		$this->text_content_open = _('Read');
+		$this->text_content_publish = _('Publish');
+		$this->text_content_submit = _('Submit content');
+		$this->text_content_submit_progress
 			= _('Submission in progress, please wait...');
-		$this->content_title = _('Content');
-		$this->content_update = _('Update');
+		$this->text_content_title = _('Content');
+		$this->text_content_update = _('Update');
 	}
 
 
@@ -55,26 +56,23 @@ class ContentModule extends Module
 	//ContentModule::call
 	public function call(&$engine, $request)
 	{
-		switch(($action = $request->getAction()))
+		if(($action = $request->getAction()) === FALSE)
+			$action = 'default';
+		switch($action)
 		{
-			case 'actions':
 			case 'admin':
+			case 'default':
 			case 'delete':
 			case 'disable':
 			case 'display':
 			case 'enable':
 			case 'headline':
+			case 'list':
+			case 'preview':
 			case 'submit':
 			case 'update':
+				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
-			case 'list':
-				return $this->_list($engine, $request);
-			case 'preview':
-				return $this->preview($engine,
-						$request->getId(),
-						$request->getTitle());
-			case FALSE:
-				return $this->_default($engine, $request);
 		}
 		return FALSE;
 	}
@@ -82,25 +80,26 @@ class ContentModule extends Module
 
 	//protected
 	//properties
-	protected $content_admin = 'Content administration';
-	protected $content_by = 'Content by';
 	protected $content_headline_count = 6;
-	protected $content_item = 'Content';
-	protected $content_items = 'Content';
 	protected $content_list_count = 10;
 	protected $content_list_order = 'timestamp DESC';
-	protected $content_list_title = 'Content list';
-	protected $content_list_title_by = 'Content by';
-	protected $content_more_content = 'More content...';
 	protected $content_open_stock = 'read';
-	protected $content_open_text = 'Read';
 	protected $content_preview_length = 150;
-	protected $content_publish = 'Publish';
-	protected $content_submit = 'Submit content';
-	protected $content_submit_progress
+	protected $text_content_admin = 'Content administration';
+	protected $text_content_by = 'Content by';
+	protected $text_content_item = 'Content';
+	protected $text_content_items = 'Content';
+	protected $text_content_list_title = 'Content list';
+	protected $text_content_list_title_by = 'Content by';
+	protected $text_content_more_content = 'More content...';
+	protected $text_content_on = 'on';
+	protected $text_content_open = 'Read';
+	protected $text_content_publish = 'Publish';
+	protected $text_content_submit = 'Submit content';
+	protected $text_content_submit_progress
 		= 'Submission in progress, please wait...';
-	protected $content_title = 'Content';
-	protected $content_update = 'Update';
+	protected $text_content_title = 'Content';
+	protected $text_content_update = 'Update';
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
@@ -268,7 +267,7 @@ class ContentModule extends Module
 
 
 	//ContentModule::getToolbar
-	protected function _getToolbar($engine, $request)
+	protected function _getToolbar($engine, $id = FALSE, $title = FALSE)
 	{
 		$cred = $engine->getCredentials();
 
@@ -285,21 +284,20 @@ class ContentModule extends Module
 			$r = new Request($engine, $this->name, 'submit');
 			$toolbar->append('button', array('request' => $r,
 				'stock' => 'new',
-				'text' => $this->content_submit));
+				'text' => $this->text_content_submit));
 		}
-		if(($id = $request->getId()) !== FALSE
-			&& ($content = $this->_get($engine, $id,
-			       	$request->getTitle())) !== FALSE)
+		if($id !== FALSE && ($content = $this->_get($engine, $id,
+				$title)) !== FALSE)
 		{
 			if($content['public'] == FALSE
 					&& $this->canPublish($engine))
 			{
 				$r = new Request($engine, $this->name,
-					'publish'); //XXX
+					'publish', $id, $content['title']);
 				$toolbar->append('button', array(
 					'request' => $r,
 					'stock' => 'publish',
-					'text' => $this->content_publish));
+					'text' => $this->text_content_publish));
 			}
 			if($this->canUpdate($engine, $id))
 			{
@@ -309,7 +307,7 @@ class ContentModule extends Module
 				$toolbar->append('button', array(
 					'request' => $r,
 					'stock' => 'update',
-					'text' => $this->content_update));
+					'text' => $this->text_content_update));
 			}
 		}
 		return $toolbar;
@@ -382,7 +380,7 @@ class ContentModule extends Module
 				'stock' => 'new'));
 			$r = new Request($engine, $this->name, 'submit');
 			$link = new PageElement('link', array('request' => $r,
-				'text' => $this->content_submit));
+				'text' => $this->text_content_submit));
 			$ret[] = new PageElement('row', array('icon' => $icon,
 				'label' => $link));
 		}
@@ -390,8 +388,9 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::admin
-	protected function admin($engine, $request = FALSE)
+	//calls
+	//ContentModule::callAdmin
+	protected function callAdmin($engine, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
 		$database = $engine->getDatabase();
@@ -417,7 +416,7 @@ class ContentModule extends Module
 					return $this->$a($engine, $request);
 		//administrative page
 		$page = new Page;
-		$title = $this->content_admin;
+		$title = $this->text_content_admin;
 		$page->setProperty('title', $title);
 		$element = $page->append('title', array('stock' => 'admin',
 				'text' => $title));
@@ -486,53 +485,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::_apply
-	protected function _apply($engine, $request, $query, $fallback,
-			$success, $failure)
-	{
-		$cred = $engine->getCredentials();
-		$db = $engine->getDatabase();
-
-		if(($uid = $cred->getUserId()) == 0)
-		{
-			//must be logged in
-			$page = $this->_default($engine);
-			$error = _('Must be logged in');
-			$page->prepend('dialog', array('type' => 'error',
-						'text' => $error));
-			return $page;
-		}
-		if($request->isIdempotent())
-			//must be safe
-			return $this->$fallback($engine);
-		$type = 'info';
-		$message = $success;
-		$parameters = $request->getParameters();
-		foreach($parameters as $k => $v)
-		{
-			$x = explode(':', $k);
-			if(count($x) != 2 || $x[0] != 'content_id'
-					|| !is_numeric($x[1]))
-				continue;
-			$res = $db->query($engine, $query, array(
-						'module_id' => $this->id,
-						'content_id' => $x[1],
-						'user_id' => $uid));
-			if($res !== FALSE)
-				continue;
-			$type = 'error';
-			$message = $failure;
-		}
-		$page = $this->$fallback($engine);
-		//FIXME place this under the title
-		$page->prepend('dialog', array('type' => $type,
-					'text' => $message));
-		return $page;
-	}
-
-
-	//ContentModule::_default
-	protected function _default($engine, $request = FALSE)
+	//ContentModule::callDefault
+	protected function callDefault($engine, $request = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$query = '';
@@ -540,10 +494,10 @@ class ContentModule extends Module
 		$pcnt = FALSE;
 
 		if($request !== FALSE && $request->getId() !== FALSE)
-			return $this->display($engine, $request);
-		$page = new Page(array('title' => $this->content_title));
+			return $this->actionDisplay($engine, $request);
+		$page = new Page(array('title' => $this->text_content_title));
 		$page->append('title', array('stock' => $this->name,
-				'text' => $this->content_title));
+				'text' => $this->text_content_title));
 		//obtain the total number of records available
 		if(($res = $db->query($engine, $this->query_list_count.$query,
 				array('module_id' => $this->id))) !== FALSE
@@ -574,8 +528,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::delete
-	protected function delete($engine, $request)
+	//ContentModule::callDelete
+	protected function callDelete($engine, $request)
 	{
 		$query = $this->query_delete;
 		$cred = $engine->getCredentials();
@@ -588,8 +542,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::disable
-	protected function disable($engine, $request)
+	//ContentModule::callDisable
+	protected function callDisable($engine, $request)
 	{
 		$query = $this->query_disable;
 		$cred = $engine->getCredentials();
@@ -602,8 +556,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::display
-	protected function display($engine, $request)
+	//ContentModule::callDisplay
+	protected function callDisplay($engine, $request)
 	{
 		$error = _('Could not display content');
 
@@ -615,31 +569,25 @@ class ContentModule extends Module
 					'type' => 'error', 'error' => $error));
 		//page
 		$page = new Page(array('title' => $content['title']));
-		//title
-		$title = new PageElement('title', array('stock' => $this->name,
-			'text' => $content['title']));
-		$page->append($title);
 		//toolbar
 		$toolbar = $this->_getToolbar($engine, $request);
-		$page->append($toolbar);
-		//content
-		$content = new PageElement('label', array(
-			'text' => $content['content']."\n"));
-		$page->append($content);
+		$this->_display($engine, $page, $toolbar, $content);
 		//bottom
 		$r = new Request($engine, $this->name);
 		$page->append('link', array('stock' => 'back', 'request' => $r,
-				'text' => $this->content_more_content));
+				'text' => $this->text_content_more_content));
 		return $page;
 	}
 
 
 	//ContentModule::_display
-	protected function _display($engine, $page, $content)
+	protected function _display($engine, $page, $toolbar, $content)
 	{
 		$title = new PageElement('title', array('stock' => $this->name,
 			'text' => $content['title']));
 		$page->append($title);
+		if($toolbar !== FALSE)
+			$page->append($toolbar);
 		$content = new PageElement('label', array(
 			'text' => $content['content']."\n"));
 		$page->append($content);
@@ -648,8 +596,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::enable
-	protected function enable($engine, $request)
+	//ContentModule::callEnable
+	protected function callEnable($engine, $request)
 	{
 		$query = $this->query_enable;
 		$cred = $engine->getCredentials();
@@ -662,8 +610,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::headline
-	protected function headline($engine, $request = FALSE)
+	//ContentModule::callHeadline
+	protected function callHeadline($engine, $request = FALSE)
 	{
 		$db = $engine->getDatabase();
 
@@ -692,16 +640,17 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::list
-	protected function _list($engine, $request = FALSE)
+	//ContentModule::callList
+	protected function callList($engine, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
 		$uid = ($request !== FALSE) ? $request->getId() : FALSE;
 
-		$title = $this->content_list_title;
+		$title = $this->text_content_list_title;
 		if($uid !== FALSE)
-			$title = $this->content_list_title_by.' '.$uid; //XXX
+			//XXX get the proper title
+			$title = $this->text_content_list_title_by.' '.$uid;
 		$page = new Page(array('title' => $title));
 		$element = $page->append('title', array(
 				'stock' => $this->name));
@@ -762,63 +711,37 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::preview
-	protected function preview($engine, $id, $title = FALSE)
+	//ContentModule::callPreview
+	protected function callPreview($engine, $request)
 	{
 		$error = _('Could not fetch content');
 
-		if(($content = $this->_get($engine, $id, $title)) === FALSE)
+		//obtain the content
+		if(($content = $this->_get($engine, $request->getId(),
+				$request->getTitle())) === FALSE)
 			return new PageElement('dialog', array(
 						'type' => 'error',
 						'text' => $error));
-		return $this->_preview($engine, $content);
-	}
-
-	protected function _preview($engine, $content, $preview = FALSE)
-	{
-		//XXX the $preview argument is not intuitive
-		$page = new PageElement('vbox');
+		$preview = new PageElement('vbox');
+		//link
 		$r = new Request($engine, $content['module'], FALSE,
-			$content['id'], $content['title']);
-		$title = $page->append('title');
-		if($preview !== FALSE)
-		{
-			$title->setProperty('stock', 'preview');
-			$title->setProperty('text', $content['title']);
-		}
-		else
-			$title->append('link', array('request' => $r,
-					'text' => $content['title']));
-		$label = $page->append('label', array(
-				'text' => $this->content_by.' '));
-		$request = new Request($engine, 'user', FALSE,
-				$content['user_id'], $content['username']);
-		$label->append('link', array('request' => $request,
-				'text' => $content['username']));
-		$label->append('label', array(
-				'text' => _(' on ').$content['date']));
-		$hbox = $page->append('hbox');
-		$hbox->append('image', array('stock' => 'module '
-					.$content['module'].' content'));
-		$text = $content['content'];
-		if($this->content_preview_length > 0
-			&& strlen($text) > $this->content_preview_length)
-			$text = substr($text, 0,
-				$this->content_preview_length).'...';
-		$hbox->append('label', array('text' => $text));
-		if($preview === FALSE)
-			$page->append('button', array(
-					'stock' => $this->content_open_stock,
-					'text' => $this->content_open_text,
-					'request' => $r));
-		return $page;
+				$content['id'], $content['title']);
+		//title
+		$this->helperPreviewTitle($engine, $preview, $r, $content);
+		//meta-data
+		$this->helperPreviewMetadata($engine, $preview, $r, $content);
+		//text
+		$this->helperPreviewText($engine, $preview, $r, $content);
+		//buttons
+		$this->helperPreviewButtons($engine, $preview, $r, $content);
+		return $preview;
 	}
 
 
-	//ContentModule::submit
-	protected function submit($engine, $request = FALSE)
+	//ContentModule::callSubmit
+	protected function callSubmit($engine, $request = FALSE)
 	{
-		$title = $this->content_submit;
+		$title = $this->text_content_submit;
 		$error = _('Permission denied');
 
 		//check permissions
@@ -847,7 +770,7 @@ class ContentModule extends Module
 			$content = array('title' => _('Preview: ')
 					.$request->getTitle(),
 				'content' => $request->getParameter('content'));
-			$this->_display($engine, $page, $content);
+			$this->_display($engine, $page, $toolbar, $content);
 		}
 		$form = $this->formSubmit($engine, $request);
 		$page->append($form);
@@ -879,7 +802,7 @@ class ContentModule extends Module
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
-		$text = $this->content_submit_progress;
+		$text = $this->text_content_submit_progress;
 		$box->append('label', array('text' => $text));
 		$box = $box->append('hbox');
 		$text = _('If you are not redirected within 30 seconds, please ');
@@ -891,8 +814,8 @@ class ContentModule extends Module
 	}
 
 
-	//ContentModule::update
-	protected function update($engine, $request)
+	//ContentModule::callUpdate
+	protected function callUpdate($engine, $request)
 	{
 		$error = _('Unable to fetch content');
 
@@ -941,6 +864,105 @@ class ContentModule extends Module
 				'stock' => 'submit', 'name' => 'action',
 				'value' => 'submit', 'text' => _('Submit')));
 		return $page;
+	}
+
+
+	//helpers
+	//ContentModule::helperApply
+	protected function helperApply($engine, $request, $query, $fallback,
+			$success, $failure)
+	{
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		if(($uid = $cred->getUserId()) == 0)
+		{
+			//must be logged in
+			$page = $this->_default($engine);
+			$error = _('Must be logged in');
+			$page->prepend('dialog', array('type' => 'error',
+						'text' => $error));
+			return $page;
+		}
+		if($request->isIdempotent())
+			//must be safe
+			return $this->$fallback($engine);
+		$type = 'info';
+		$message = $success;
+		$parameters = $request->getParameters();
+		foreach($parameters as $k => $v)
+		{
+			$x = explode(':', $k);
+			if(count($x) != 2 || $x[0] != 'content_id'
+					|| !is_numeric($x[1]))
+				continue;
+			$res = $db->query($engine, $query, array(
+						'module_id' => $this->id,
+						'content_id' => $x[1],
+						'user_id' => $uid));
+			if($res !== FALSE)
+				continue;
+			$type = 'error';
+			$message = $failure;
+		}
+		$page = $this->$fallback($engine);
+		//FIXME place this under the title
+		$page->prepend('dialog', array('type' => $type,
+					'text' => $message));
+		return $page;
+	}
+
+
+	//ContentModule::helperPreviewButtons
+	protected function helperPreviewButtons($engine, $preview, $request,
+			$content)
+	{
+		$preview->append('button', array('request' => $request,
+				'stock' => $this->content_open_stock,
+				'text' => $this->text_content_open));
+	}
+
+
+	//ContentModule::helperPreviewMetadata
+	protected function helperPreviewMetadata($engine, $preview, $request,
+			$content)
+	{
+		$r = new Request($engine, 'user', FALSE,
+				$content['user_id'], $content['username']);
+		$link = new PageElement('link', array('request' => $r,
+				'text' => $content['username']));
+		$meta = $preview->append('label', array(
+				'text' => $this->text_content_by.' '));
+		$meta->append($link);
+		$meta = $meta->append('label', array(
+				'text' => ' '.$this->text_content_on.' '
+				.$content['date']));
+	}
+
+
+	//ContentModule::helperPreviewText
+	protected function helperPreviewText($engine, $preview, $request,
+			$content)
+	{
+		$text = $content['content'];
+		if($this->content_preview_length > 0
+				&& strlen($text)
+				> $this->content_preview_length)
+			//abbreviate text as required
+			$text = substr($text, 0,
+				$this->content_preview_length).'...';
+		$preview->append('label', array('text' => $text));
+	}
+
+
+	//ContentModule::helperPreviewTitle
+	protected function helperPreviewTitle($engine, $preview, $request,
+			$content)
+	{
+		$link = new PageElement('link', array('request' => $request,
+				'text' => $content['title']));
+		$title = $preview->append('title');
+		$title->append($link);
 	}
 }
 

@@ -28,25 +28,37 @@ class SearchModule extends Module
 	//SearchModule::call
 	public function call(&$engine, $request)
 	{
-		switch($request->getAction())
+		if(($action = $request->getAction()) === FALSE)
+			$action = 'default';
+		switch($action)
 		{
 			case 'actions':
 				return $this->actions($engine, $request);
 			case 'admin':
-				return $this->admin($engine);
 			case 'advanced':
-				return $this->searchAdvanced($engine, $request);
+			case 'default':
 			case 'widget':
-				return $this->widget($engine, $request);
-			case FALSE:
-				return $this->search($engine, $request);
+				$action = 'call'.ucfirst($action);
+				return $this->$action($engine, $request);
 		}
 		return FALSE;
 	}
 
 
 	//protected
+	//properties
+	protected $query = "FROM daportal_content, daportal_module,
+		daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'";
+
+
 	//methods
+	//useful
 	//SearchModule::actions
 	protected function actions($engine, $request)
 	{
@@ -61,8 +73,9 @@ class SearchModule extends Module
 	}
 
 
-	//SearchModule::admin
-	protected function admin(&$engine)
+	//calls
+	//SearchModule::callAdmin
+	protected function callAdmin(&$engine)
 	{
 		$cred = $engine->getCredentials();
 
@@ -74,8 +87,8 @@ class SearchModule extends Module
 	}
 
 
-	//SearchModule::search
-	protected function search(&$engine, $request)
+	//SearchModule::callDefault
+	protected function callDefault(&$engine, $request)
 	{
 		$page = $this->pageSearch($engine, $request);
 		if(($q = $request->getParameter('q')) === FALSE
@@ -96,8 +109,8 @@ class SearchModule extends Module
 	}
 
 
-	//SearchModule::searchAdvanced
-	protected function searchAdvanced(&$engine, $request)
+	//SearchModule::callAdvanced
+	protected function callAdvanced(&$engine, $request)
 	{
 		$page = $this->pageSearch($engine, $request, TRUE);
 		if(($q = $request->getParameter('q')) === FALSE
@@ -122,8 +135,8 @@ class SearchModule extends Module
 	}
 
 
-	//SearchModule::widget
-	protected function widget(&$engine, $request)
+	//SearchModule::callWidget
+	protected function callWidget(&$engine, $request)
 	{
 		$form = new PageElement('form', array('idempotent' => TRUE));
 		$r = new Request($engine, 'search');
@@ -141,16 +154,6 @@ class SearchModule extends Module
 
 
 	//private
-	//properties
-	private $query = "FROM daportal_content, daportal_module, daportal_user
-		WHERE daportal_content.module_id=daportal_module.module_id
-		AND daportal_content.user_id=daportal_user.user_id
-		AND daportal_content.enabled='1'
-		AND daportal_content.public='1'
-		AND daportal_module.enabled='1'
-		AND daportal_user.enabled='1'";
-
-
 	//methods
 	//SearchModule::appendResult
 	private function appendResult(&$engine, &$view, &$res)
