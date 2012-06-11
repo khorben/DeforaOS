@@ -19,8 +19,8 @@
 require_once('./system/format.php');
 
 
-//HtmlFormat
-class HtmlFormat extends FormatElements
+//HTMLFormat
+class HTMLFormat extends FormatElements
 {
 	//protected
 	//properties
@@ -29,7 +29,7 @@ class HtmlFormat extends FormatElements
 
 	//methods
 	//essential
-	//HtmlFormat::match
+	//HTMLFormat::match
 	protected function match(&$engine, $type = FALSE)
 	{
 		switch($type)
@@ -42,7 +42,7 @@ class HtmlFormat extends FormatElements
 	}
 
 
-	//HtmlFormat::attach
+	//HTMLFormat::attach
 	protected function attach(&$engine, $type = FALSE)
 	{
 	}
@@ -51,7 +51,7 @@ class HtmlFormat extends FormatElements
 	//public
 	//methods
 	//rendering
-	//HtmlFormat::render
+	//HTMLFormat::render
 	public function render(&$engine, $page, $filename = FALSE)
 	{
 		global $config;

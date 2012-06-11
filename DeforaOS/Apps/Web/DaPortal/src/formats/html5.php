@@ -19,13 +19,13 @@
 require_once('./formats/html.php');
 
 
-//Html5Format
-class Html5Format extends HtmlFormat
+//HTML5Format
+class HTML5Format extends HTMLFormat
 {
 	//protected
 	//methods
 	//essential
-	//Html5Format::match
+	//HTML5Format::match
 	protected function match(&$engine, $type = FALSE)
 	{
 		switch($type)
@@ -38,7 +38,7 @@ class Html5Format extends HtmlFormat
 	}
 
 
-	//Html5Format::attach
+	//HTML5Format::attach
 	protected function attach(&$engine, $type = FALSE)
 	{
 		$this->doctype = "<!DOCTYPE html>\n";
