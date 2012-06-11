@@ -494,7 +494,7 @@ class ContentModule extends Module
 		$pcnt = FALSE;
 
 		if($request !== FALSE && $request->getId() !== FALSE)
-			return $this->actionDisplay($engine, $request);
+			return $this->callDisplay($engine, $request);
 		$page = new Page(array('title' => $this->text_content_title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $this->text_content_title));
