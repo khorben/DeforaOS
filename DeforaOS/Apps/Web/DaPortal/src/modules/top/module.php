@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -28,12 +28,14 @@ class TopModule extends Module
 	//TopModule::call
 	function call(&$engine, $request)
 	{
-		switch($request->getAction())
+		if(($action = $request->getAction()) === FALSE)
+			$action = 'default';
+		switch($action)
 		{
 			case 'admin':
-				return $this->admin($engine, $request);
 			case FALSE:
-				return $this->_default($engine);
+				$action = 'call'.ucfirst($action);
+				return $this->$action($engine, $request);
 		}
 		return FALSE;
 	}
@@ -41,21 +43,22 @@ class TopModule extends Module
 
 	//protected
 	//methods
-	//TopModule::admin
+	//calls
+	//TopModule::callAdmin
 	protected function admin(&$engine, $request)
 	{
 		$cred = $engine->getCredentials();
 
 		if(!$cred->isAdmin())
 			return $engine->log('LOG_ERR', 'Permission denied');
-		$title = 'Top links administration';
+		$title = _('Top links administration');
 		//FIXME implement
 		return FALSE;
 	}
 
 
-	//TopModule::_default
-	private function _default(&$engine)
+	//TopModule::callDefault
+	private function callDefault(&$engine, $request = FALSE)
 	{
 		//FIXME implement
 		return FALSE;
