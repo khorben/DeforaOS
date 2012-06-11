@@ -61,6 +61,8 @@ class ContentModule extends Module
 			$action = 'default';
 		switch($action)
 		{
+			case 'actions':
+				return $this->actions($engine, $request);
 			case 'admin':
 			case 'default':
 			case 'delete':
