@@ -257,7 +257,7 @@ class DownloadModule extends ContentModule
 				'text' => _('Up one directory')));
 		//new directory
 		$request = new Request($engine, $this->name, 'folder_new',
-				$parent_id, $parent_title);
+				$content['id'], $content['title']);
 		if($this->canSubmit($engine))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
@@ -321,13 +321,34 @@ class DownloadModule extends ContentModule
 	}
 
 
+	//DownloadModule::formSubmitDirectory
+	protected function formSubmitDirectory($engine, $request)
+	{
+		$r = new Request($engine, $this->name, 'folder_new',
+				$request->getId(), $request->getTitle());
+		$form = new PageElement('form', array('request' => $r));
+		$name = $form->append('entry', array('text' => _('Name: '),
+				'name' => 'name',
+				'value' => $request->getParameter('name')));
+		$r = new Request($engine, $this->name, FALSE,
+				$request->getId(), $request->getTitle());
+		$form->append('button', array('stock' => 'cancel',
+				'request' => $r, 'text' => _('Cancel')));
+		$form->append('button', array('type' => 'submit',
+				'stock' => 'folder-new', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Create')));
+		return $form;
+	}
+
+
 	//calls
 	//DownloadModule::callDefault
 	protected function callDefault($engine, $request = FALSE)
 	{
 		if($request === FALSE || ($id = $request->getId()) === FALSE)
 		{
-			$content = array('id' => FALSE,
+			//display the (virtual) root folder
+			$content = array('id' => FALSE, 'download_id' => NULL,
 				'title' => _('Root directory'),
 				'mode' => 512, 'parent' => NULL,
 				'user_id' => 1, 'group_id' => 0,
@@ -373,75 +394,70 @@ class DownloadModule extends ContentModule
 	protected function callFolderNew($engine, $request)
 	{
 		$title = _('New folder');
+		$error = _('Permission denied');
 
-		//FIXME process the input if any
-		if($request->getId() === FALSE)
+		//FIXME find a way to re-use code from callSubmit()
+		//check permissions
+		if($this->canSubmit($engine, $error) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		//create the page
+		if(($parent = $this->_get($engine, $request->getId(),
+				$request->getTitle())) !== FALSE)
+			$title = sprintf(_('New folder in "%s"'),
+					$parent['title']);
+		else
 			$title = _('New root folder');
-		else if(($t = $request->getTitle()) !== FALSE)
-			$title = sprintf(_('New folder in "%s"'), $t);
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'folder-new',
 				'text' => $title));
-		$r = new Request($engine, $this->name, 'submit',
-				$request->getId(), $request->getTitle());
-		$form = $page->append('form', array('request' => $r));
-		$name = $form->append('entry', array('text' => _('Name: '),
-				'name' => 'name',
-				'value' => $request->getParameter('name')));
-		$r = new Request($engine, $this->name, FALSE,
-				$request->getId(), $request->getTitle());
-		$form->append('button', array('stock' => 'cancel',
-				'request' => $r, 'text' => _('Cancel')));
-		$form->append('button', array('type' => 'submit',
-				'stock' => 'folder-new', 'name' => 'action',
-				'value' => 'submit', 'text' => _('Create')));
+		//toolbar
+		$toolbar = $this->getToolbar($engine, $parent);
+		$page->append($toolbar);
+		//process the content
+		$content = $this->_get($engine, $request->getId(),
+				$request->getTitle());
+		if(($error = $this->_FolderNewProcess($engine, $request,
+				$content)) === FALSE)
+			return $this->_FolderNewSuccess($engine, $request,
+					$page, $content);
+		else if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		$form = $this->formSubmitDirectory($engine, $request);
+		$page->append($form);
 		return $page;
 	}
 
-
-	//DownloadModule::callSubmit
-	protected function callSubmit($engine, $request)
-	{
-		return parent::callSubmit($engine, $request);
-	}
-
-	protected function _submitProcess($engine, $request, $parent)
-	{
-		//verify the request
-		if($request->isIdempotent() !== FALSE)
-			return _('The request expired or is invalid');
-		//obtain the root repository
-		$root = $this->getRoot($engine);
-		if(isset($_FILES['files']))
-			return $this->_submitProcessFiles($engine, $request,
-					$parent, $root);
-		return $this->_submitProcessDirectory($engine, $request,
-				$parent, $root);
-	}
-
-	protected function _submitProcessDirectory($engine, $request, $parent,
-			$root)
+	protected function _FolderNewProcess($engine, $request, &$content)
 	{
 		global $config;
 		$db = $engine->getDatabase();
 		$query = $this->download_query_directory_insert;
 
-		if($parent === FALSE)
+		//verify the request
+		if($request->getParameter('submit') === FALSE)
+			return TRUE;
+		if($request->isIdempotent() !== FALSE)
+			return _('The request expired or is invalid');
+		if(($parent = $content) === FALSE)
 			$parent = NULL;
-		else if(!is_numeric($parent))
-			return _('Invalid argument');
+		else
+			$parent = $parent['download_id'];
 		//create the directory
 		if($db->transactionBegin($engine) === FALSE)
 			return _('Internal server error');
-		$title = $request->getTitle();
-		$content = Content::insert($engine, $this->id, $title, FALSE,
+		$name = $request->getParameter('name');
+		//FIXME check for filename unicity
+		$content = Content::insert($engine, $this->id, $name, FALSE,
 				FALSE, TRUE);
 		if($content === FALSE)
 		{
 			$db->transactionRollback($engine);
 			return _('Internal server error');
 		}
-		if($db->query($engine, $query, array('content_id' => $id,
+		if($db->query($engine, $query, array(
+				'content_id' => $content->getId(),
 				'parent' => $parent)) === FALSE)
 		{
 			$db->transactionRollback($engine);
@@ -452,12 +468,43 @@ class DownloadModule extends ContentModule
 		return FALSE;
 	}
 
-	protected function _submitProcessFiles($engine, $request, $parent,
-			$root)
+	protected function _FolderNewSuccess($engine, $request, $page, $content)
+	{
+		$r = new Request($engine, $this->name, FALSE, $content->getId(),
+				$content->getTitle());
+		$page->setProperty('location', $engine->getUrl($r));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$text = $this->text_content_submit_progress;
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+			'request' => $r));
+		$box->append('label', array('text' => '.'));
+		return $page;
+	}
+
+
+	//DownloadModule::callSubmit
+	protected function callSubmit($engine, $request)
+	{
+		return parent::callSubmit($engine, $request);
+	}
+
+	protected function _submitProcess($engine, $request, &$parent)
 	{
 		global $config;
 		$db = $engine->getDatabase();
 
+		//verify the request
+		if($request->isIdempotent() !== FALSE)
+			return _('The request expired or is invalid');
+		//obtain the root repository
+		$root = $this->getRoot($engine);
+		if(!isset($_FILES['files']))
+			return TRUE;
 		if($parent === FALSE)
 			$parent = NULL;
 		else if(!is_numeric($parent))
@@ -547,13 +594,11 @@ class DownloadModule extends ContentModule
 		$db = $engine->getDatabase();
 		$query = $this->download_query_list;
 
-		$page = new Page(array('title' => $title));
+		$page->setProperty('title', $title);
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		$parent_id = (is_numeric($content['id']))
-			? $this->getDownloadId($engine, $content['id'])
-			: FALSE;
-		if($parent_id !== FALSE)
+		$parent_id = $content['download_id'];
+		if($parent_id !== FALSE && $parent_id !== NULL)
 			$query .= ' AND daportal_download.parent=:parent_id';
 		else
 			$query .= ' AND daportal_download.parent IS NULL';
