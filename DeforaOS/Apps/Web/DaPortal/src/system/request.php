@@ -197,7 +197,8 @@ class Request
 	//Request::setTitle
 	private function setTitle(&$engine, $title)
 	{
-		$this->title = $title;
+		if($this->id !== FALSE)
+			$this->title = $title;
 		return TRUE;
 	}
 
