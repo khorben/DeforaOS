@@ -56,9 +56,7 @@ class DownloadModule extends ContentModule
 	//DownloadModule::call
 	public function call(&$engine, $request)
 	{
-		if(($action = $request->getAction()) === FALSE)
-			$action = 'default';
-		switch($action)
+		switch(($action = $request->getAction()))
 		{
 			case 'download':
 			case 'submit':
