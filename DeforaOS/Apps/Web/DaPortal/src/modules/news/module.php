@@ -30,14 +30,15 @@ class NewsModule extends ContentModule
 	{
 		$title = ($title === FALSE) ? _('News') : FALSE;
 		parent::__construct($id, $name, $title);
-		$this->content_admin = _('News administration');
-		$this->content_by = _('News by');
-		$this->content_item = _('News item');
-		$this->content_items = _('News items');
-		$this->content_list_title = _('News list');
-		$this->content_more_content = _('More news...');
-		$this->content_submit = _('Submit news...');
-		$this->content_title = _('News');
+		//translations
+		$this->text_content_admin = _('News administration');
+		$this->text_content_by = _('News by');
+		$this->text_content_item = _('News item');
+		$this->text_content_items = _('News items');
+		$this->text_content_list_title = _('News list');
+		$this->text_content_more_content = _('More news...');
+		$this->text_content_submit = _('Submit news...');
+		$this->text_content_title = _('News');
 	}
 }
 

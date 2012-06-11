@@ -30,14 +30,14 @@ class BlogModule extends ContentModule
 	{
 		$title = ($title === FALSE) ? _('Blog') : $title;
 		parent::__construct($id, $name, $title);
-		$this->content_administration = _('Blogs administration');
-		$this->content_by = _('Post by');
-		$this->content_item = _('Blog post');
-		$this->content_items = _('Blog posts');
-		$this->content_list_title = _('Latest posts');
-		$this->content_list_title_by = _('Posts by');
-		$this->content_submit = _('New post');
-		$this->content_title = _('Planet');
+		$this->text_content_administration = _('Blogs administration');
+		$this->text_content_by = _('Post by');
+		$this->text_content_item = _('Blog post');
+		$this->text_content_items = _('Blog posts');
+		$this->text_content_list_title = _('Latest posts');
+		$this->text_content_list_title_by = _('Posts by');
+		$this->text_content_submit = _('New post');
+		$this->text_content_title = _('Planet');
 	}
 }
 
