@@ -187,6 +187,10 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/revert.png');
 }
 
+.stock24.save {
+	background-image:	url('gnome-icon-theme/24x24/actions/gtk-save.png');
+}
+
 .stock24.search {
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-find.png');
 }

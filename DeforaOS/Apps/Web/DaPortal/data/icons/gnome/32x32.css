@@ -187,6 +187,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/revert.png');
 }
 
+.stock32.save {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-save.png');
+}
+
 .stock32.search {
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-find.png');
 }

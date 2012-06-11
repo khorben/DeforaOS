@@ -187,6 +187,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/revert.png');
 }
 
+.stock16.save {
+	background-image:	url('gnome-icon-theme/16x16/actions/gtk-save.png');
+}
+
 .stock16.search {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-find.png');
 }
