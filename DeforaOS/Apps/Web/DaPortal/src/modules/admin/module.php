@@ -47,22 +47,41 @@ class AdminModule extends Module
 					'type' => 'error',
 					'text' => _('Permission denied')));
 		}
-		switch(($action = $request->getAction()))
+		if(($action = $request->getAction()) === FALSE)
+			$action = 'default';
+		switch($action)
 		{
 			case 'actions':
+				return $this->$action($engine, $request);
 			case 'admin':
+			case 'default':
 			case 'disable':
 			case 'enable':
+				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
-			case FALSE:
-				return $this->_default($engine, $request);
 		}
 		return FALSE;
 	}
 
 
 	//protected
+	//properties
+	//queries
+	protected $query_admin = "SELECT name FROM daportal_module
+		WHERE enabled='1' ORDER BY name ASC";
+	protected $query_admin_modules = "SELECT module_id, name, enabled
+		FROM daportal_module
+		ORDER BY name ASC";
+	protected $query_disable = "UPDATE daportal_module
+		SET enabled='0'
+		WHERE module_id=:module_id";
+	protected $query_enable = "UPDATE daportal_module
+		SET enabled='1'
+		WHERE module_id=:module_id";
+
+
 	//methods
+	//useful
 	//actions
 	//AdminModule::actions
 	protected function actions($engine, $request)
@@ -77,8 +96,9 @@ class AdminModule extends Module
 	}
 
 
-	//AdminModule::admin
-	protected function admin($engine, $request = FALSE)
+	//calls
+	//AdminModule::callAdmin
+	protected function callAdmin($engine, $request = FALSE)
 	{
 		$title = _('Modules administration');
 		$query = $this->query_admin_modules;
@@ -89,7 +109,10 @@ class AdminModule extends Module
 		if($request !== FALSE)
 			foreach($actions as $a)
 				if($request->getParameter($a) !== FALSE)
+				{
+					$a = 'call'.ucfirst($a);
 					return $this->$a($engine, $request);
+				}
 		//list modules
 		if(($res = $database->query($engine, $query)) === FALSE)
 			return new PageElement('dialog', array(
@@ -141,8 +164,8 @@ class AdminModule extends Module
 	}
 
 
-	//AdminModule::_default
-	protected function _default($engine, $request)
+	//AdminModule::callDefault
+	protected function callDefault($engine, $request)
 	{
 		$title = _('Administration');
 		$query = $this->query_admin;
@@ -178,31 +201,33 @@ class AdminModule extends Module
 	}
 
 
-	//AdminModule::disable
-	protected function disable($engine, $request)
+	//AdminModule::callDisable
+	protected function callDisable($engine, $request)
 	{
 		$query = $this->query_disable;
 
-		return $this->_apply($engine, $request, $query, 'admin',
-			_('Module(s) could be disabled successfully'),
-			_('Some module(s) could not be disabled'));
+		return $this->helperApply($engine, $request, $query,
+				'callAdmin',
+				_('Module(s) could be disabled successfully'),
+				_('Some module(s) could not be disabled'));
 	}
 
 
-	//AdminModule::enable
-	protected function enable($engine, $request)
+	//AdminModule::callEnable
+	protected function callEnable($engine, $request)
 	{
 		$query = $this->query_enable;
 
-		return $this->_apply($engine, $request, $query, 'admin',
-			_('Module(s) could be enabled successfully'),
-			_('Some module(s) could not be enabled'));
+		return $this->helperApply($engine, $request, $query,
+				'callAdmin',
+				_('Module(s) could be enabled successfully'),
+				_('Some module(s) could not be enabled'));
 	}
 
 
 	//helpers
-	//AdminModule::apply
-	protected function _apply($engine, $request, $query, $fallback,
+	//AdminModule::helperApply
+	protected function helperApply($engine, $request, $query, $fallback,
 			$success, $failure)
 	{
 		//XXX copied from ContentModule
@@ -212,7 +237,7 @@ class AdminModule extends Module
 		if(!$cred->isAdmin())
 		{
 			//must be admin
-			$page = $this->_default($engine);
+			$page = $this->callDefault($engine);
 			$error = _('Permission denied');
 			$page->prepend('dialog', array('type' => 'error',
 				'text' => $error));
@@ -243,21 +268,6 @@ class AdminModule extends Module
 				'text' => $message));
 		return $page;
 	}
-
-
-	//private
-	//queries
-	private $query_admin = "SELECT name FROM daportal_module
-		WHERE enabled='1' ORDER BY name ASC";
-	private $query_admin_modules = "SELECT module_id, name, enabled
-		FROM daportal_module
-		ORDER BY name ASC";
-	private $query_disable = "UPDATE daportal_module
-		SET enabled='0'
-		WHERE module_id=:module_id";
-	private $query_enable = "UPDATE daportal_module
-		SET enabled='1'
-		WHERE module_id=:module_id";
 }
 
 ?>
