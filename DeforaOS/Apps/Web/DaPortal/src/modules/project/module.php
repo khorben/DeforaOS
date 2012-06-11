@@ -31,18 +31,21 @@ class ProjectModule extends ContentModule
 	{
 		$title = ($title === FALSE) ? _('Projects') : $title;
 		parent::__construct($id, $name, $title);
-		$this->content_admin = _('Projects administration');
-		$this->content_by = _('Project by');
-		$this->content_item = _('Project');
-		$this->content_items = _('Projects');
+		//settings
 		$this->content_list_count = 0;
 		$this->content_list_order = 'title ASC';
-		$this->content_list_title = _('Project list');
-		$this->content_list_title_by = _('Projects by');
 		$this->content_open_stock = 'open';
-		$this->content_open_text = _('Open');
-		$this->content_submit = _('New project');
-		$this->content_title = _('Projects');
+		//translations
+		$this->text_content_admin = _('Projects administration');
+		$this->text_content_by = _('Project by');
+		$this->text_content_item = _('Project');
+		$this->text_content_items = _('Projects');
+		$this->text_content_list_title = _('Project list');
+		$this->text_content_list_title_by = _('Projects by');
+		$this->text_content_more_content = _('More projects...');
+		$this->text_content_open_text = _('Open');
+		$this->text_content_submit = _('New project');
+		$this->text_content_title = _('Projects');
 		//list only projects by default
 		$this->query_list = $this->project_query_list_projects;
 		$this->query_list_admin
@@ -58,10 +61,11 @@ class ProjectModule extends ContentModule
 		switch(($action = $request->getAction()))
 		{
 			case 'bug_list':
-				return $this->bugList($engine, $request);
+				return $this->callBugList($engine, $request);
 			case 'browse':
 			case 'download':
 			case 'timeline':
+				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
 		}
 		return parent::call($engine, $request);
@@ -141,7 +145,7 @@ class ProjectModule extends ContentModule
 	protected $project_query_project = "SELECT project_id AS id, title,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
-		content, cvsroot, enabled
+		content, cvsroot, daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_project, daportal_user
 		WHERE daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -224,6 +228,7 @@ class ProjectModule extends ContentModule
 		$hbox = $form->append('hbox');
 		$vbox1 = $hbox->append('vbox');
 		$vbox2 = $hbox->append('vbox');
+		//FIXME fetch the project name in additional cases
 		$vbox1->append('entry', array('name' => 'project',
 			'value' => $request->getParameter('project'),
 			'text' => _('Project: ')));
@@ -270,12 +275,11 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::_getToolbar
-	protected function _getToolbar($engine, $request)
+	//ProjectModule::getToolbar
+	protected function getToolbar($engine, $content = FALSE)
 	{
-		$id = $request->getId();
+		$id = (isset($content['id'])) ? $content['id'] : FALSE;
 
-		//FIXME better integrate with the parent function
 		if(($bug = $this->_getBug($engine, $id)) !== FALSE)
 			$id = $bug['project_id'];
 		if($id === FALSE)
@@ -334,9 +338,9 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//actions
-	//ProjectModule::browse
-	protected function browse($engine, $request)
+	//calls
+	//ProjectModule::callBrowse
+	protected function callBrowse($engine, $request)
 	{
 		if(($id = $request->getId()) === FALSE)
 			//FIXME show the global repository instead?
@@ -347,7 +351,7 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
 				'text' => $title));
-		$toolbar = $this->_getToolbar($engine, $request);
+		$toolbar = $this->getToolbar($engine, $project);
 		$page->append($toolbar);
 		if(($scm = $this->attachScm($engine)) === FALSE)
 			return new PageElement('dialog', array(
@@ -359,8 +363,8 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::bugList
-	protected function bugList($engine, $request)
+	//ProjectModule::callBugList
+	protected function callBugList($engine, $request)
 	{
 		$db = $engine->getDatabase();
 		$title = _('Bug reports');
@@ -387,7 +391,7 @@ class ProjectModule extends ContentModule
 		if($project !== FALSE)
 		{
 			$title = _('Bug reports for ').$project['title'];
-			$toolbar = $this->_getToolbar($engine, $request);
+			$toolbar = $this->getToolbar($engine, $project);
 			$query .= ' AND daportal_project.project_id=:project_id';
 		}
 		$filter = $this->_getFilter($engine, $request);
@@ -453,49 +457,8 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::_display
-	protected function _display($engine, $page, $content)
-	{
-		//for projects
-		$title = _('Project: ').$content['title'];
-		$r = new Request($engine, $this->name, 'list');
-		$link = new PageElement('link', array('request' => $r,
-				'stock' => 'back',
-				'text' => _('More projects...')));
-		if(is_numeric($content['bug_id']))
-		{
-			//for bug reports
-			//XXX may fail
-			$project = $this->_getProject($engine,
-					$content['project_id']);
-			$title = sprintf(_("Bug report #%u/%s: %s"),
-					$content['bug_id'], $project['title'],
-					$content['title']);
-			$r = new Request($engine, $this->name, 'bug_list',
-					$project['id'], $project['title']);
-			$link = new PageElement('link', array('request' => $r,
-					'stock' => 'back',
-					'text' => _('Other bug reports...')));
-		}
-		else
-			$project = $content;
-		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => $this->name,
-			'text' => $title));
-		//toolbar
-		$r = new Request($engine, $this->name, $project['id']);
-		if(($toolbar = $this->_getToolbar($engine, $request)) !== FALSE)
-			$page->append($toolbar);
-		//content
-		$text = $content['content']."\n";
-		$page->append('label', array('text' => $text));
-		$page->append($link);
-		return $page;
-	}
-
-
-	//ProjectModule::download
-	protected function download($engine, $request)
+	//ProjectModule::callDownload
+	protected function callDownload($engine, $request)
 	{
 		if(($id = $request->getId()) === FALSE)
 			//FIXME show the global repository instead?
@@ -506,7 +469,7 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
 				'text' => $title));
-		$toolbar = $this->_getToolbar($engine, $request);
+		$toolbar = $this->getToolbar($engine, $project);
 		$page->append($toolbar);
 		//treeview
 		$columns = array('filename' => _('Filename'),
@@ -518,8 +481,8 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::timeline
-	protected function timeline($engine, $request)
+	//ProjectModule::callTimeline
+	protected function callTimeline($engine, $request)
 	{
 		if(($id = $request->getId()) === FALSE)
 			//FIXME show the global timeline instead?
@@ -530,7 +493,7 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
 				'text' => $title));
-		$toolbar = $this->_getToolbar($engine, $request);
+		$toolbar = $this->getToolbar($engine, $project);
 		$page->append($toolbar);
 		if(($scm = $this->attachScm($engine)) === FALSE)
 			return new PageElement('dialog', array(
@@ -539,6 +502,32 @@ class ProjectModule extends ContentModule
 		$timeline = $scm->timeline($engine, $project, $request);
 		$page->append($timeline);
 		return $page;
+	}
+
+
+	//helpers
+	//ProjectModule::helperDisplay
+	protected function helperDisplay($engine, $page, $content)
+	{
+		//FIXME (re-) implement bugs
+		return $this->helperDisplayProject($engine, $page, $content);
+	}
+
+
+	protected function helperDisplayProject($engine, $page, $content)
+	{
+		$request = new Request($engine, $content['module'], FALSE,
+				$content['id'], $content['title']);
+		//title
+		$this->helperDisplayTitle($engine, $page, $request, $content);
+		//toolbar
+		//FIXME pages should render as vbox by default
+		$vbox = $page->append('vbox');
+		$this->helperDisplayToolbar($engine, $vbox, $request, $content);
+		//content
+		$this->helperDisplayText($engine, $vbox, $request, $content);
+		//buttons
+		$this->helperDisplayButtons($engine, $vbox, $request, $content);
 	}
 
 
