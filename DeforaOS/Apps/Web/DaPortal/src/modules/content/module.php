@@ -958,6 +958,7 @@ class ContentModule extends Module
 	protected function helperDisplayTitle($engine, $page, $request,
 			$content)
 	{
+		$page->setProperty('title', $content['title']);
 		$title = $page->append('title', array('stock' => $this->name,
 				'text' => $content['title']));
 	}
