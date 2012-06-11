@@ -206,8 +206,7 @@ class AdminModule extends Module
 	{
 		$query = $this->query_disable;
 
-		return $this->helperApply($engine, $request, $query,
-				'callAdmin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 				_('Module(s) could be disabled successfully'),
 				_('Some module(s) could not be disabled'));
 	}
@@ -218,8 +217,7 @@ class AdminModule extends Module
 	{
 		$query = $this->query_enable;
 
-		return $this->helperApply($engine, $request, $query,
-				'callAdmin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 				_('Module(s) could be enabled successfully'),
 				_('Some module(s) could not be enabled'));
 	}
@@ -243,6 +241,7 @@ class AdminModule extends Module
 				'text' => $error));
 			return $page;
 		}
+		$fallback = 'call'.ucfirst($fallback);
 		if($request->isIdempotent())
 			//must be safe
 			return $this->$fallback($engine);
