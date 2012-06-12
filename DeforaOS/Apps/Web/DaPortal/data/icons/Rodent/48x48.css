@@ -143,6 +143,10 @@
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_reset.png');
 }
 
+.stock48.save {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_save.png');
+}
+
 .stock48.search {
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_search.png');
 }
@@ -153,6 +157,10 @@
 
 .stock48.translate {
 	background-image:		url('xfce4-icon-theme/48x48/mimetypes/text-x-gettext-translation.png');
+}
+
+.stock48.upload {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_jump-to.png');
 }
 
 .stock48.user {
