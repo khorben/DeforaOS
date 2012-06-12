@@ -449,32 +449,11 @@ abstract class ContentModule extends Module
 					'text' => _('Delete'),
 					'type' => 'submit', 'name' => 'action',
 					'value' => 'delete'));
-		$no = new PageElement('image', array('stock' => 'no',
-				'size' => 16, 'title' => _('Disabled')));
-		$yes = new PageElement('image', array('stock' => 'yes',
-				'size' => 16, 'title' => _('Enabled')));
 		//FIXME add controls for publication
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
-			$row->setProperty('id', 'content_id:'.$res[$i]['id']);
-			$r = new Request($engine, $this->name, 'update',
-					$res[$i]['id'], $res[$i]['title']);
-			$link = new PageElement('link', array('request' => $r,
-					'stock' => $this->name,
-					'text' => $res[$i]['title']));
-			$row->setProperty('title', $link);
-			$row->setProperty('enabled', $database->isTrue(
-					$res[$i]['enabled']) ? $yes : $no);
-			$r = new Request($engine, 'user', FALSE,
-					$res[$i]['user_id'],
-					$res[$i]['username']);
-			$link = new PageElement('link', array('request' => $r,
-					'text' => $res[$i]['username']));
-			$row->setProperty('username', $link);
-			$date = $this->_timestampToDate(_('d/m/Y H:i:s'),
-					$res[$i]['timestamp']);
-			$row->setProperty('date', $date);
+			$this->helperAdminRow($engine, $row, $res[$i]);
 		}
 		$vbox = $page->append('vbox');
 		$r = new Request($engine, $this->name);
@@ -848,6 +827,35 @@ abstract class ContentModule extends Module
 			'text' => $text));
 		return new PageElement('row', array('icon' => $icon,
 			'label' => $link));
+	}
+
+
+	//ContentModule::helperAdminRow
+	protected function helperAdminRow($engine, $row, $res)
+	{
+		$db = $engine->getDatabase();
+		$no = new PageElement('image', array('stock' => 'no',
+				'size' => 16, 'title' => _('Disabled')));
+		$yes = new PageElement('image', array('stock' => 'yes',
+				'size' => 16, 'title' => _('Enabled')));
+
+		$row->setProperty('id', 'content_id:'.$res['id']);
+		$r = new Request($engine, $this->name, 'update',
+				$res['id'], $res['title']);
+		$link = new PageElement('link', array('request' => $r,
+				'stock' => $this->name,
+				'text' => $res['title']));
+		$row->setProperty('title', $link);
+		$row->setProperty('enabled', $db->isTrue($res['enabled'])
+				? $yes : $no);
+		$r = new Request($engine, 'user', FALSE,
+				$res['user_id'], $res['username']);
+		$link = new PageElement('link', array('request' => $r,
+				'text' => $res['username']));
+		$row->setProperty('username', $link);
+		$date = $this->_timestampToDate(_('d/m/Y H:i:s'),
+				$res['timestamp']);
+		$row->setProperty('date', $date);
 	}
 
 
