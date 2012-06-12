@@ -146,6 +146,8 @@ class PdoDatabase extends Database
 	{
 		if($this->handle === FALSE)
 			return FALSE;
+		if(is_bool($string))
+			return $string ? "'1'" : "'0'";
 		return $this->handle->quote($string);
 	}
 
