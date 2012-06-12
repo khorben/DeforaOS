@@ -48,6 +48,7 @@ class DownloadModule extends ContentModule
 		$this->query_get = $this->download_query_get;
 		//list only files by default
 		$this->query_list = $this->download_query_list_files;
+		$this->query_list_admin = $this->download_query_list_admin;
 		$this->query_list_count
 			= $this->download_query_list_files_count;
 	}
@@ -129,6 +130,23 @@ class DownloadModule extends ContentModule
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+	protected $download_query_list_admin = "SELECT
+		daportal_content.content_id AS id,
+		daportal_content.enabled AS enabled,
+		daportal_content.timestamp AS timestamp,
+		daportal_user.user_id AS user_id, username,
+		daportal_group.group_id AS group_id, groupname, title, mode
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_group, daportal_download
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.group_id=daportal_group.group_id
+		AND daportal_content.content_id=daportal_download.content_id
+		AND daportal_content.enabled='1'
+		AND daportal_module.enabled='1'
+		AND daportal_user.enabled='1'
+		ORDER BY timestamp DESC";
 	protected $download_query_list_files = "SELECT
 		daportal_content.content_id AS id,
 		daportal_content.enabled AS enabled,
@@ -604,6 +622,18 @@ class DownloadModule extends ContentModule
 
 
 	//helpers
+	//DownloadModule::helperAdminRow
+	protected function helperAdminRow($engine, $row, $res)
+	{
+		parent::helperAdminRow($engine, $row, $res);
+		$link = $row->getProperty('title');
+		if($this->isDirectory($res))
+			$link->setProperty('stock', 'folder');
+		else
+			$link->setProperty('stock', 'file');
+	}
+
+
 	//DownloadModule::helperDisplay
 	protected function helperDisplay($engine, $page, $content = FALSE)
 	{

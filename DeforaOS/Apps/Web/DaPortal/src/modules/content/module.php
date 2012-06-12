@@ -156,11 +156,14 @@ abstract class ContentModule extends Module
 		AND daportal_user.enabled='1'";
 	protected $query_list_admin = "SELECT content_id AS id, timestamp,
 		name AS module, daportal_user.user_id AS user_id, username,
+		daportal_group.group_id AS group_id, groupname,
 		title, daportal_content.enabled AS enabled
-		FROM daportal_content, daportal_module, daportal_user
+		FROM daportal_content, daportal_module, daportal_user,
+		daportal_group
 		WHERE daportal_content.module_id=daportal_module.module_id
 		AND daportal_content.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.group_id=daportal_group.group_id
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		ORDER BY timestamp DESC";
