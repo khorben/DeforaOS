@@ -764,11 +764,12 @@ abstract class ContentModule extends Module
 		if($request->getParameter('preview') !== FALSE)
 		{
 			$preview = array('id' => $id, 'module' => $this->name,
+				'user_id' => $content['user_id'],
 				'username' => $content['username'],
 				'date' => $content['date'],
 				'title' => _('Preview: ').$request->getTitle(),
 				'content' => $request->getParameter('content'));
-			$page->append($this->_preview($engine, $preview, TRUE));
+			$this->helperPreview($engine, $page, $preview);
 		}
 		//FIXME really implement
 		$r = new Request($engine, $this->name, 'update', $id);
