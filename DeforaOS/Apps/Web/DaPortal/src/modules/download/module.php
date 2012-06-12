@@ -87,6 +87,8 @@ class DownloadModule extends ContentModule
 		daportal_content.title AS title,
 		daportal_content.content AS content,
 		daportal_content.timestamp AS timestamp,
+		daportal_content.enabled AS enabled,
+		daportal_content.public AS public,
 		download.download_id AS download_id,
 		parent_download.content_id AS parent_id,
 		parent_content.title AS parent_title,
@@ -107,11 +109,6 @@ class DownloadModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND daportal_content.content_id=:content_id";
-	protected $download_query_get_download_id = "SELECT download_id
-		FROM daportal_download, daportal_content
-		WHERE daportal_download.content_id=daportal_content.content_id
-		AND daportal_content.enabled='1'
-		AND daportal_download.content_id=:content_id";
 	protected $download_query_file_insert = 'INSERT INTO daportal_download
 		(content_id, parent, mode) VALUES (:content_id, :parent,
 			:mode)';
@@ -173,20 +170,6 @@ class DownloadModule extends ContentModule
 			return TRUE;
 		$error = _('Permission denied');
 		return FALSE;
-	}
-
-
-	//DownloadModule::getDownloadId
-	protected function getDownloadId($engine, $content_id)
-	{
-		$db = $engine->getDatabase();
-
-		$query = $this->download_query_get_download_id;
-		if(($res = $db->query($engine, $query, array(
-					'content_id' => $content_id))) === FALSE
-				|| count($res) != 1)
-			return FALSE;
-		return $res[0]['download_id'];
 	}
 
 
@@ -615,8 +598,10 @@ class DownloadModule extends ContentModule
 
 	//helpers
 	//DownloadModule::helperDisplay
-	protected function helperDisplay($engine, $page, $content)
+	protected function helperDisplay($engine, $page, $content = FALSE)
 	{
+		if(content === FALSE)
+			return;
 		if($this->isDirectory($content))
 			return $this->helperDisplayDirectory($engine, $page,
 					$content);

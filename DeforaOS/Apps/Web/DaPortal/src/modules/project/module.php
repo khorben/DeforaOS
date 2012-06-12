@@ -515,9 +515,11 @@ class ProjectModule extends ContentModule
 
 	//helpers
 	//ProjectModule::helperDisplay
-	protected function helperDisplay($engine, $page, $content)
+	protected function helperDisplay($engine, $page, $content = FALSE)
 	{
-		//FIXME (re-) implement bugs
+		if($content === FALSE)
+			return;
+		//FIXME (re-) implement bug reports
 		return $this->helperDisplayProject($engine, $page, $content);
 	}
 

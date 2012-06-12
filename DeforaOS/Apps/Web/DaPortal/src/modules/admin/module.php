@@ -181,7 +181,6 @@ class AdminModule extends Module
 		$vbox = $page->append('vbox');
 		$vbox->append('title'); //XXX to reduce the next level of titles
 		$vbox = $vbox->append('vbox');
-		//FIXME output one iconview per module instead
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$r = new Request($engine, $res[$i]['name'], 'actions',

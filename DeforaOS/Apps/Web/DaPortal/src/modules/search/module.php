@@ -62,13 +62,17 @@ class SearchModule extends Module
 	//SearchModule::actions
 	protected function actions($engine, $request)
 	{
+		if($request->getParameter('admin') !== FALSE)
+			return FALSE;
 		$ret = array();
-		$icon = new PageElement('image', array('stock' => 'add'));
+		//advanced search
 		$r = new Request($engine, $this->name, 'advanced');
-		$link = new PageElement('link', array('request' => $r,
-				'text' => _('Advanced search')));
-		$ret[] = new PageElement('row', array('icon' => $icon,
-				'label' => $link));
+		$ret[] = $this->helperAction($engine, 'add', $r,
+				_('Advanced search'));
+		//search
+		$r = new Request($engine, $this->name);
+		$ret[] = $this->helperAction($engine, 'search', $r,
+				_('Search'));
 		return $ret;
 	}
 
@@ -150,6 +154,18 @@ class SearchModule extends Module
 					'text' => _('Search'),
 					'autohide' => TRUE));
 		return $form;
+	}
+
+
+	//helpers
+	//SearchModule::helperAction
+	protected function helperAction($engine, $stock, $request, $text)
+	{
+		$icon = new PageElement('image', array('stock' => $stock));
+		$link = new PageElement('link', array('request' => $request,
+				'text' => $text));
+		return new PageElement('row', array('icon' => $icon,
+				'label' => $link));
 	}
 
 
