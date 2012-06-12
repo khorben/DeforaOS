@@ -135,6 +135,10 @@
 	background-image:	url('gnome-icon-theme/32x32/status/stock_dialog-info.png');
 }
 
+.stock32.link {
+	background-image:	url('gnome-icon-theme/32x32/categories/stock_internet.png');
+}
+
 .stock32.login {
 	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
 }
