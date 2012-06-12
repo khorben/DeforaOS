@@ -179,7 +179,8 @@ class UserModule extends Module
 		else
 		{
 			//already logged in
-			$this->_actions_admin($engine, $cred, 'admin', $ret);
+			$this->_actions_admin($engine, $cred, $this->name,
+					$ret);
 			//user's content
 			$r = new Request($engine, $this->name, 'display');
 			$icon = new PageElement('image', array(
