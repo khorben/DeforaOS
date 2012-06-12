@@ -461,6 +461,7 @@ abstract class ContentModule extends Module
 			$r = new Request($engine, $this->name, 'update',
 					$res[$i]['id'], $res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
+					'stock' => $this->name,
 					'text' => $res[$i]['title']));
 			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $database->isTrue(
