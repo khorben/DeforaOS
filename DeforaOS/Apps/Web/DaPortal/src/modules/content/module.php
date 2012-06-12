@@ -197,7 +197,7 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::canPublish
-	protected function canPublish($engine, $id, &$error = FALSE)
+	protected function canPublish($engine, $content, &$error = FALSE)
 	{
 		global $config;
 		$cred = $engine->getCredentials();
@@ -207,9 +207,6 @@ abstract class ContentModule extends Module
 			return FALSE;
 		if($cred->isAdmin())
 			return TRUE;
-		$content = Content::get($engine, $this->id, $id);
-		if($id !== $content['id'])
-			return FALSE;
 		$moderate = $config->getVariable('module::'.$this->name,
 				'moderate');
 		return ($moderate === FALSE || $moderate == 0) ? TRUE : FALSE;
@@ -232,7 +229,7 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::canUpdate
-	protected function canUpdate($engine, &$error = FALSE)
+	protected function canUpdate($engine, $content = FALSE, &$error = FALSE)
 	{
 		$cred = $engine->getCredentials();
 
@@ -293,8 +290,7 @@ abstract class ContentModule extends Module
 		if($content !== FALSE)
 		{
 			if($content['public'] == FALSE
-					&& $this->canPublish($engine,
-						$content['id']))
+					&& $this->canPublish($engine, $content))
 			{
 				$r = new Request($engine, $this->name,
 					'publish', $content['id'],
@@ -304,7 +300,7 @@ abstract class ContentModule extends Module
 					'stock' => 'publish',
 					'text' => $this->text_content_publish));
 			}
-			if($this->canUpdate($engine, $content['id']))
+			if($this->canUpdate($engine, $content))
 			{
 				$r = new Request($engine, $this->name,
 						'update', $content['id'],

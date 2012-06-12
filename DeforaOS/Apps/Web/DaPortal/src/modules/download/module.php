@@ -243,6 +243,13 @@ class DownloadModule extends ContentModule
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
 					'text' => _('New directory')));
+		//update
+		$request = new Request($engine, $this->name, 'update',
+				$content['id'], $content['title']);
+		if($this->canUpdate($engine, $content))
+			$toolbar->append('button', array('request' => $request,
+					'stock' => 'update',
+					'text' => _('Update')));
 		//upload file
 		$request = new Request($engine, $this->name, 'submit',
 				$content['id'], $content['title']);
@@ -600,7 +607,7 @@ class DownloadModule extends ContentModule
 	//DownloadModule::helperDisplay
 	protected function helperDisplay($engine, $page, $content = FALSE)
 	{
-		if(content === FALSE)
+		if($content === FALSE)
 			return;
 		if($this->isDirectory($content))
 			return $this->helperDisplayDirectory($engine, $page,
