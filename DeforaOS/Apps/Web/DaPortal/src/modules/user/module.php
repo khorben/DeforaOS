@@ -39,10 +39,14 @@ class UserModule extends Module
 	//UserModule::call
 	public function call(&$engine, $request)
 	{
-		switch(($action = $request->getAction()))
+		if(($action = $request->getAction()) === FALSE)
+			$action = 'default';
+		switch($action)
 		{
 			case 'actions':
+				return $this->$action($engine, $request);
 			case 'admin':
+			case 'default':
 			case 'disable':
 			case 'enable':
 			case 'display':
@@ -54,9 +58,8 @@ class UserModule extends Module
 			case 'update':
 			case 'validate':
 			case 'widget':
+				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
-			case FALSE:
-				return $this->_default($engine, $request);
 		}
 		return FALSE;
 	}
@@ -226,8 +229,9 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::admin
-	protected function admin($engine, $request = FALSE)
+	//calls
+	//UserModule::callAdmin
+	protected function callAdmin($engine, $request = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$cred = $engine->getCredentials();
@@ -241,7 +245,10 @@ class UserModule extends Module
 		if($request !== FALSE)
 			foreach($actions as $a)
 				if($request->getParameter($a) !== FALSE)
+				{
+					$a = 'call'.ucfirst($a);
 					return $this->$a($engine, $request);
+				}
 		//list users
 		$title = _('User administration');
 		$page = new Page(array('title' => $title));
@@ -319,12 +326,13 @@ class UserModule extends Module
 		if(!$cred->isAdmin())
 		{
 			//must be admin
-			$page = $this->_default($engine);
+			$page = $this->callDefault($engine);
 			$error = _('Permission denied');
 			$page->prepend('dialog', array('type' => 'error',
 					'text' => $error));
 			return $page;
 		}
+		$fallback = 'call'.ucfirst($fallback);
 		if($request->isIdempotent())
 			//must be safe
 			return $this->$fallback($engine);
@@ -370,13 +378,13 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::_default
-	protected function _default($engine, $request = FALSE)
+	//UserModule::callDefault
+	protected function callDefault($engine, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
 
 		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
-			return $this->display($engine, $request);
+			return $this->callDisplay($engine, $request);
 		//FIXME add content?
 		$title = ($cred->getUserId() != 0) ? _('My account')
 			: _('Site menu');
@@ -392,8 +400,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::disable
-	protected function disable($engine, $request)
+	//UserModule::callDisable
+	protected function callDisable($engine, $request)
 	{
 		$query = $this->query_disable;
 
@@ -403,8 +411,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::display
-	protected function display($engine, $request)
+	//UserModule::callDisplay
+	protected function callDisplay($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$link = FALSE;
@@ -434,8 +442,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::enable
-	protected function enable($engine, $request)
+	//UserModule::callEnable
+	protected function callEnable($engine, $request)
 	{
 		$query = $this->query_enable;
 
@@ -445,8 +453,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::login
-	protected function login($engine, $request)
+	//UserModule::callLogin
+	protected function callLogin($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$title = _('User login');
@@ -521,8 +529,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::logout
-	protected function logout($engine, $request)
+	//UserModule::callLogout
+	protected function callLogout($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 
@@ -576,15 +584,72 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::register
-	protected function register($engine, $request)
+	//UserModule::callProfile
+	protected function callProfile($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$id = $request->getId();
+
+		//determine whose profile to view
+		if($id === FALSE)
+			$id = $cred->getUserId();
+		$user = new User($engine, $id, $request->getTitle());
+		if(($id = $user->getUserId()) == 0)
+		{
+			//the anonymous user has no profile
+			$error = _('There is no profile for this user');
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		}
+		if($id === $cred->getUserId())
+			//viewing own profile
+			$id = FALSE;
+		//output the page
+		$title = $id ? _('Profile for ').$user->getUsername()
+			: _('My profile');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'user',
+				'text' => $title));
+		$vbox = $page->append('vbox');
+		$vbox->append('label', array(
+			'text' => _('Fullname: ').$user->getFullname()));
+		$vbox->append('label', array(
+			'text' => _('e-mail: ').$user->getEmail()));
+		//link to profile update
+		$r = new Request($engine, $this->name, 'update',
+				$request->getId(), $request->getId()
+				? $user->getUsername() : FALSE);
+		$button = FALSE;
+		if($request->getId() !== FALSE && $cred->isAdmin())
+			$button = new PageElement('button', array(
+				'stock' => 'admin', 'request' => $r,
+				'text' => _('Update')));
+		else if($id === FALSE)
+			$button = new PageElement('button', array(
+				'stock' => 'user', 'request' => $r,
+				'text' => _('Update')));
+		if($button !== FALSE)
+			$vbox->append($button);
+		if($id === FALSE)
+		{
+			$r = new Request($engine, $this->name);
+			$vbox->append('link', array('stock' => 'back',
+					'request' => $r,
+					'text' => _('Back to my homepage')));
+		}
+		return $page;
+	}
+
+
+	//UserModule::callRegister
+	protected function callRegister($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$error = TRUE;
 
 		if($cred->getUserId() != 0)
 			//already registered and logged in
-			return $this->display($engine, new Request);
+			return $this->callDisplay($engine, new Request);
 		//process registration
 		if(!$this->can_register())
 			$error = _('Registering is not allowed');
@@ -646,15 +711,15 @@ Thank you for registering!")));
 	}
 
 
-	//UserModule::reset
-	protected function reset($engine, $request)
+	//UserModule::callReset
+	protected function callReset($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$error = TRUE;
 
 		if($cred->getUserId() != 0)
 			//already registered and logged in
-			return $this->display($engine, new Request);
+			return $this->callDisplay($engine, new Request);
 		if(($uid = $request->getId('id')) !== FALSE
 				&& ($token = $request->getParameter('token'))
 				!== FALSE)
@@ -800,65 +865,8 @@ Thank you for registering!")));
 	}
 
 
-	//UserModule::profile
-	protected function profile($engine, $request)
-	{
-		$cred = $engine->getCredentials();
-		$id = $request->getId();
-
-		//determine whose profile to view
-		if($id === FALSE)
-			$id = $cred->getUserId();
-		$user = new User($engine, $id, $request->getTitle());
-		if(($id = $user->getUserId()) == 0)
-		{
-			//the anonymous user has no profile
-			$error = _('There is no profile for this user');
-			return new PageElement('dialog', array(
-				'type' => 'error', 'text' => $error));
-		}
-		if($id === $cred->getUserId())
-			//viewing own profile
-			$id = FALSE;
-		//output the page
-		$title = $id ? _('Profile for ').$user->getUsername()
-			: _('My profile');
-		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => 'user',
-				'text' => $title));
-		$vbox = $page->append('vbox');
-		$vbox->append('label', array(
-			'text' => _('Fullname: ').$user->getFullname()));
-		$vbox->append('label', array(
-			'text' => _('e-mail: ').$user->getEmail()));
-		//link to profile update
-		$r = new Request($engine, $this->name, 'update',
-				$request->getId(), $request->getId()
-				? $user->getUsername() : FALSE);
-		$button = FALSE;
-		if($request->getId() !== FALSE && $cred->isAdmin())
-			$button = new PageElement('button', array(
-				'stock' => 'admin', 'request' => $r,
-				'text' => _('Update')));
-		else if($id === FALSE)
-			$button = new PageElement('button', array(
-				'stock' => 'user', 'request' => $r,
-				'text' => _('Update')));
-		if($button !== FALSE)
-			$vbox->append($button);
-		if($id === FALSE)
-		{
-			$r = new Request($engine, $this->name);
-			$vbox->append('link', array('stock' => 'back',
-					'request' => $r,
-					'text' => _('Back to my homepage')));
-		}
-		return $page;
-	}
-
-
-	//UserModule::update
-	protected function update($engine, $request)
+	//UserModule::callUpdate
+	protected function callUpdate($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$id = $request->getId();
@@ -971,8 +979,8 @@ Thank you for registering!")));
 	}
 
 
-	//UserModule::validate
-	protected function validate($engine, $request)
+	//UserModule::userValidate
+	protected function userValidate($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$error = TRUE;
@@ -981,7 +989,7 @@ Thank you for registering!")));
 
 		if($cred->getUserId() != 0)
 			//already registered and logged in
-			return $this->display($engine, new Request);
+			return $this->callDisplay($engine, new Request);
 		$page = new Page(array('title' => _('Account confirmation')));
 		$page->append('title', array('stock' => $this->name,
 				'text' => _('Account confirmation')));
@@ -1013,8 +1021,8 @@ Thank you for registering!")));
 	}
 
 
-	//UserModule::widget
-	protected function widget($engine, $request)
+	//UserModule::callWidget
+	protected function callWidget($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 
