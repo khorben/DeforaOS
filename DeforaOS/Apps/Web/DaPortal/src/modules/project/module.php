@@ -448,7 +448,13 @@ class ProjectModule extends ContentModule
 					'title' => $res[$i]['title']));
 			$row->setProperty('bug_id', $link);
 			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
-			$row->setProperty('project', $res[$i]['project']);
+			$r = new Request($engine, $this->name, FALSE,
+					$res[$i]['project_id'],
+					$res[$i]['project']);
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $res[$i]['project'],
+					'title' => $res[$i]['project']));
+			$row->setProperty('project', $link);
 			$date = $this->_timestampToDate($res[$i]['timestamp']);
 			$row->setProperty('date', $date);
 			$row->setProperty('state', $res[$i]['state']);
