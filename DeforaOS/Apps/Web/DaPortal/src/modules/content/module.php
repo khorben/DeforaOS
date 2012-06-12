@@ -433,35 +433,17 @@ abstract class ContentModule extends Module
 				'enabled' => _('Enabled'),
 				'username' => _('Username'),
 				'date' => _('Date')));
-		$toolbar = $treeview->append('toolbar');
-		$toolbar->append('button', array('stock' => 'refresh',
-					'text' => _('Refresh'),
-					'request' => $r));
-		$toolbar->append('button', array('stock' => 'disable',
-					'text' => _('Disable'),
-					'type' => 'submit', 'name' => 'action',
-					'value' => 'disable'));
-		$toolbar->append('button', array('stock' => 'enable',
-					'text' => _('Enable'),
-					'type' => 'submit', 'name' => 'action',
-					'value' => 'enable'));
-		$toolbar->append('button', array('stock' => 'delete',
-					'text' => _('Delete'),
-					'type' => 'submit', 'name' => 'action',
-					'value' => 'delete'));
-		//FIXME add controls for publication
+		//toolbar
+		$this->helperAdminToolbar($engine, $treeview, $request);
+		//rows
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
 			$this->helperAdminRow($engine, $row, $res[$i]);
 		}
+		//buttons
 		$vbox = $page->append('vbox');
-		$r = new Request($engine, $this->name);
-		$vbox->append('link', array('request' => $r, 'stock' => 'back',
-				'text' => _('Back to this module')));
-		$r = new Request($engine, 'admin');
-		$vbox->append('link', array('request' => $r, 'stock' => 'admin',
-				'text' => _('Back to the administration')));
+		$this->helperAdminButtons($engine, $vbox, $request);
 		return $page;
 	}
 
@@ -830,6 +812,18 @@ abstract class ContentModule extends Module
 	}
 
 
+	//ContentModule::helperAdminButtons
+	protected function helperAdminButtons($engine, $page, $request)
+	{
+		$r = new Request($engine, $this->name);
+		$page->append('link', array('request' => $r, 'stock' => 'back',
+				'text' => _('Back to this module')));
+		$r = new Request($engine, 'admin');
+		$page->append('link', array('request' => $r, 'stock' => 'admin',
+				'text' => _('Back to the administration')));
+	}
+
+
 	//ContentModule::helperAdminRow
 	protected function helperAdminRow($engine, $row, $res)
 	{
@@ -856,6 +850,30 @@ abstract class ContentModule extends Module
 		$date = $this->_timestampToDate(_('d/m/Y H:i:s'),
 				$res['timestamp']);
 		$row->setProperty('date', $date);
+	}
+
+
+	//ContentModule::helperAdminToolbar
+	protected function helperAdminToolbar($engine, $page, $request)
+	{
+		//FIXME add controls for publication
+		$r = new Request($engine, $this->name, 'admin');
+		$toolbar = $page->append('toolbar');
+		$toolbar->append('button', array('stock' => 'refresh',
+					'text' => _('Refresh'),
+					'request' => $r));
+		$toolbar->append('button', array('stock' => 'disable',
+					'text' => _('Disable'),
+					'type' => 'submit', 'name' => 'action',
+					'value' => 'disable'));
+		$toolbar->append('button', array('stock' => 'enable',
+					'text' => _('Enable'),
+					'type' => 'submit', 'name' => 'action',
+					'value' => 'enable'));
+		$toolbar->append('button', array('stock' => 'delete',
+					'text' => _('Delete'),
+					'type' => 'submit', 'name' => 'action',
+					'value' => 'delete'));
 	}
 
 
