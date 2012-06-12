@@ -69,10 +69,6 @@ class SearchModule extends Module
 		$r = new Request($engine, $this->name, 'advanced');
 		$ret[] = $this->helperAction($engine, 'add', $r,
 				_('Advanced search'));
-		//search
-		$r = new Request($engine, $this->name);
-		$ret[] = $this->helperAction($engine, 'search', $r,
-				_('Search'));
 		return $ret;
 	}
 
