@@ -24,7 +24,7 @@ require_once('./system/module.php');
 
 
 //ContentModule
-class ContentModule extends Module
+abstract class ContentModule extends Module
 {
 	//public
 	//methods
@@ -290,20 +290,21 @@ class ContentModule extends Module
 				'stock' => 'new',
 				'text' => $this->text_content_submit));
 		}
-		if($id !== FALSE && ($content = $this->_get($engine, $id,
-				$title)) !== FALSE)
+		if($content !== FALSE)
 		{
 			if($content['public'] == FALSE
-					&& $this->canPublish($engine))
+					&& $this->canPublish($engine,
+						$content['id']))
 			{
 				$r = new Request($engine, $this->name,
-					'publish', $id, $content['title']);
+					'publish', $content['id'],
+					$content['title']);
 				$toolbar->append('button', array(
 					'request' => $r,
 					'stock' => 'publish',
 					'text' => $this->text_content_publish));
 			}
-			if($this->canUpdate($engine, $id))
+			if($this->canUpdate($engine, $content['id']))
 			{
 				$r = new Request($engine, $this->name,
 						'update', $content['id'],
@@ -369,24 +370,17 @@ class ContentModule extends Module
 		$ret = array();
 		if($cred->isAdmin())
 		{
-			$ret[] = array();
-			$icon = new PageElement('image', array(
-				'stock' => 'admin'));
 			$r = new Request($engine, $this->name, 'admin');
-			$link = new PageElement('link', array('request' => $r,
-				'text' => _('Administration')));
-			$ret[] = new PageElement('row', array('icon' => $icon,
-				'label' => $link));
+			$ret[] = $this->helperAction($engine, 'admin', $r,
+				$this->text_content_admin);
 		}
+		if($request->getParameter('admin') !== FALSE)
+			return $ret;
 		if($this->canSubmit($engine))
 		{
-			$icon = new PageElement('image', array(
-				'stock' => 'new'));
 			$r = new Request($engine, $this->name, 'submit');
-			$link = new PageElement('link', array('request' => $r,
-				'text' => $this->text_content_submit));
-			$ret[] = new PageElement('row', array('icon' => $icon,
-				'label' => $link));
+			$ret[] = $this->helperAction($engine, 'new', $r,
+				$this->text_content_submit);
 		}
 		return $ret;
 	}
@@ -845,6 +839,17 @@ class ContentModule extends Module
 
 
 	//helpers
+	//ContentModule::helperAction
+	protected function helperAction($engine, $stock, $request, $text)
+	{
+		$icon = new PageElement('image', array('stock' => $stock));
+		$link = new PageElement('link', array('request' => $request,
+			'text' => $text));
+		return new PageElement('row', array('icon' => $icon,
+			'label' => $link));
+	}
+
+
 	//ContentModule::helperApply
 	protected function helperApply($engine, $request, $query, $fallback,
 			$success, $failure)
@@ -892,8 +897,10 @@ class ContentModule extends Module
 
 
 	//ContentModule::helperDisplay
-	protected function helperDisplay($engine, $page, $content)
+	protected function helperDisplay($engine, $page, $content = FALSE)
 	{
+		if($content === FALSE)
+			return;
 		//link
 		$request = new Request($engine, $content['module'], FALSE,
 				$content['id'], $content['title']);
@@ -974,8 +981,10 @@ class ContentModule extends Module
 
 
 	//ContentModule::helperPreview
-	protected function helperPreview($engine, $preview, $content)
+	protected function helperPreview($engine, $preview, $content = FALSE)
 	{
+		if($content === FALSE)
+			return;
 		$request = new Request($engine, $this->name, FALSE,
 				$content['id'], $content['title']);
 		//title
