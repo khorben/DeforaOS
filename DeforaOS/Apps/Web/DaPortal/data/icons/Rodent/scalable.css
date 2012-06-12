@@ -91,6 +91,10 @@
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_info.svg');
 }
 
+.stock16.link, .stock24.link, .stock32.link {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_internet.svg');
+}
+
 .stock16.login, .stock24.login, .stock32.login {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_authentication.svg');
 }
@@ -152,7 +156,7 @@
 }
 
 .stock16.submit, .stock24.submit, .stock32.submit {
-	background-image:		url('xfce4-icon-theme/scalable/stock/stock_ok.svg');
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_jump-to.svg');
 }
 
 .stock16.translate, .stock24.translate, .stock32.translate {

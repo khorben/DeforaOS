@@ -91,6 +91,10 @@
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_dialog_info.png');
 }
 
+.stock48.link {
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_internet.png');
+}
+
 .stock48.login {
 	background-image:		url('xfce4-icon-theme/48x48/stock/stock_dialog_authentication.png');
 }
@@ -152,7 +156,7 @@
 }
 
 .stock48.submit {
-	background-image:		url('xfce4-icon-theme/48x48/stock/stock_ok.png');
+	background-image:		url('xfce4-icon-theme/48x48/stock/stock_jump-to.png');
 }
 
 .stock48.translate {
