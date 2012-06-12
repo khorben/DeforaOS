@@ -444,8 +444,8 @@ class ProjectModule extends ContentModule
 					'title' => $res[$i]['title']));
 			$row->setProperty('title', $link);
 			$link = new PageElement('link', array('request' => $r,
-					'text' => $res[$i]['title'],
-					'title' => '#'.$res[$i]['bug_id']));
+					'text' => '#'.$res[$i]['bug_id'],
+					'title' => $res[$i]['title']));
 			$row->setProperty('bug_id', $link);
 			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
 			$row->setProperty('project', $res[$i]['project']);
