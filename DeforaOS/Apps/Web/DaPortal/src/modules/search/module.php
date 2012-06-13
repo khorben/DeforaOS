@@ -64,6 +64,8 @@ class SearchModule extends Module
 	{
 		if($request->getParameter('admin') !== FALSE)
 			return FALSE;
+		if($request->getParameter('user') !== FALSE)
+			return FALSE;
 		$ret = array();
 		//advanced search
 		$r = new Request($engine, $this->name, 'advanced');

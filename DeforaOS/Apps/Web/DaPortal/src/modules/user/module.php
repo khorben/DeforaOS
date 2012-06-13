@@ -138,6 +138,8 @@ class UserModule extends Module
 	{
 		$cred = $engine->getCredentials();
 
+		if($request->getParameter('user') !== FALSE)
+			return FALSE;
 		$ret = array();
 		if($request->getParameter('admin'))
 			return $this->_actions_admin($engine, $cred,
@@ -414,28 +416,58 @@ class UserModule extends Module
 	//UserModule::callDisplay
 	protected function callDisplay($engine, $request)
 	{
+		$database = $engine->getDatabase();
+		$query = $this->query_content;
 		$cred = $engine->getCredentials();
 		$link = FALSE;
 
+		//obtain the list of modules
+		if(($res = $database->query($engine, $query)) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error',
+				'text' => 'Could not list modules'));
 		$page = new Page;
 		if(($uid = $request->getId()) !== FALSE)
-			//FIXME verify the request's title if set
-			$title = _('Content from ').$uid;
+		{
+			$user = new User($engine, $uid, $request->getTitle());
+			$uid = $user->getUserId();
+			$title = _('Content from ').$user['name'];
+		}
 		else if(($uid = $cred->getUserId()) != 0)
 		{
+			$user = new User($engine, $uid);
+			$uid = $user->getUserId('id');
 			$title = _('My content');
 			$r = new Request($engine, $this->name);
 			$link = new PageElement('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my homepage')));
 		}
-		else
-			return $this->login($engine, new Request);
+		if($uid == 0)
+			return $this->callLogin($engine, new Request);
+		//title
 		$page->setProperty('title', $title);
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		$view = $page->append('iconview');
-		//FIXME request content from all modules
+		$vbox = $page->append('vbox');
+		$vbox->append('title'); //XXX to reduce the next level of titles
+		$vbox = $vbox->append('vbox');
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$r = new Request($engine, $res[$i]['name'], 'actions',
+				FALSE, FALSE, array('user' => $user));
+			$rows = $engine->process($r);
+			if(!is_array($rows) || count($rows) == 0)
+				continue;
+			$text = ucfirst($res[$i]['name']);
+			$vbox->append('title', array(
+				'stock' => $res[$i]['name'],
+				'text' => $text));
+			$view = $vbox->append('iconview');
+			foreach($rows as $r)
+				$view->append($r);
+		}
+		//buttons
 		if($link !== FALSE)
 			$page->append($link);
 		return $page;
@@ -1061,6 +1093,8 @@ Thank you for registering!")));
 		FROM daportal_user
 		LEFT JOIN daportal_group
 		ON daportal_user.group_id=daportal_group.group_id';
+	private $query_content = "SELECT name FROM daportal_module
+		WHERE enabled='1' ORDER BY name ASC";
 	private $query_disable = "UPDATE daportal_user
 		SET enabled='0'
 		WHERE user_id=:user_id";

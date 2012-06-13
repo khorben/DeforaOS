@@ -86,6 +86,8 @@ class AdminModule extends Module
 	//AdminModule::actions
 	protected function actions($engine, $request)
 	{
+		if($request->getParameter('user') !== FALSE)
+			return FALSE;
 		$r = new Request($engine, $this->name, 'admin');
 		$icon = new PageElement('image', array('stock' => 'admin'));
 		$link = new PageElement('link', array('request' => $r,
@@ -168,14 +170,16 @@ class AdminModule extends Module
 	protected function callDefault($engine, $request)
 	{
 		$title = _('Administration');
-		$query = $this->query_admin;
 		$database = $engine->getDatabase();
+		$query = $this->query_admin;
 
+		//obtain the list of modules
 		if(($res = $database->query($engine, $query)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error',
 					'text' => 'Could not list modules'));
 		$page = new Page(array('title' => $title));
+		//title
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		$vbox = $page->append('vbox');

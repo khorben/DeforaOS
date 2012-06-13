@@ -366,6 +366,9 @@ abstract class ContentModule extends Module
 	{
 		$cred = $engine->getCredentials();
 
+		if(($user = $request->getParameter('user')) !== FALSE)
+			return $this->helperActionsUser($engine, $request,
+					$user);
 		$ret = array();
 		if($cred->isAdmin())
 		{
@@ -809,6 +812,19 @@ abstract class ContentModule extends Module
 			'text' => $text));
 		return new PageElement('row', array('icon' => $icon,
 			'label' => $link));
+	}
+
+
+	//ContentModule::helperActionsUser
+	protected function helperActionsUser($engine, $request, $user)
+	{
+		$ret = array();
+		$request = new Request($engine, $this->name, 'list', FALSE,
+				FALSE, array('user' => $user->getUsername()));
+		$ret[] = $this->helperAction($engine, $this->name, $request,
+				$this->text_content_by
+				.' '.$user->getUsername());
+		return $ret;
 	}
 
 
