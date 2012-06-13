@@ -431,7 +431,7 @@ class UserModule extends Module
 		{
 			$user = new User($engine, $uid, $request->getTitle());
 			$uid = $user->getUserId();
-			$title = _('Content from ').$user['name'];
+			$title = _('Content from ').$user->getUsername();
 		}
 		else if(($uid = $cred->getUserId()) != 0)
 		{
