@@ -822,7 +822,7 @@ abstract class ContentModule extends Module
 		$request = new Request($engine, $this->name, 'list', FALSE,
 				FALSE, array('user' => $user->getUsername()));
 		$ret[] = $this->helperAction($engine, $this->name, $request,
-				$this->text_content_by
+				$this->text_content_list_title_by
 				.' '.$user->getUsername());
 		return $ret;
 	}

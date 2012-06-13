@@ -37,6 +37,7 @@ class DownloadModule extends ContentModule
 		$this->text_content_item = _('Download');
 		$this->text_content_items = _('Downloads');
 		$this->text_content_list_title = _('Directory listing');
+		$this->text_content_list_title_by = _('File uploads from');
 		$this->text_content_open_text = _('Open');
 		$this->text_content_more_content
 			= _('Back to directory listing...');
