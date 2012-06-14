@@ -55,6 +55,7 @@ class HttpFriendlyEngine extends HttpEngine
 		$action = FALSE;
 		$id = FALSE;
 		$title = FALSE;
+		$extension = FALSE;
 		$args = FALSE;
 		if(count($path) > 0)
 		{
@@ -74,9 +75,13 @@ class HttpFriendlyEngine extends HttpEngine
 				}
 			}
 		}
-		if(count($path) > 0)
+		if(count($path) == 1)
+		{
 			$title = array_shift($path);
-		if(count($path) != 0)
+			//obtain the extension
+			$this->_getRequestExtension($title, $extension);
+		}
+		else if(count($path) != 0)
 			//XXX this is really a 404
 			return parent::_getRequestDo();
 		//arguments
@@ -96,7 +101,35 @@ class HttpFriendlyEngine extends HttpEngine
 			else
 				$args[$q[0]] = $q[1];
 		}
+		//analyze the extension
+		$this->_getRequestType($extension);
 		return new Request($this, $module, $action, $id, $title, $args);
+	}
+
+	protected function _getRequestExtension(&$variable, &$extension)
+	{
+		if($variable === FALSE)
+			return;
+		if(($pos = strpos($variable, '.')) === FALSE)
+			return;
+		$extension = substr($variable, $pos + 1);
+		$variable = substr($variable, 0, $pos);
+	}
+
+	protected function _getRequestType($extension)
+	{
+		switch($extension)
+		{
+			case 'htm':
+			case 'html':
+				$this->setType('text/html');
+				break;
+			case 'rss':
+				$this->setType('application/rss+xml');
+				break;
+			default:
+				break;
+		}
 	}
 
 
@@ -145,7 +178,7 @@ class HttpFriendlyEngine extends HttpEngine
 			$url .= '/'.urlencode($id);
 		if(($title = $request->getTitle()) !== FALSE)
 		{
-			$title = str_replace(' ', '-', $title);
+			$title = str_replace(array(' ', '.'), '-', $title);
 			$url .= '/'.urlencode($title);
 		}
 		//handle arguments
