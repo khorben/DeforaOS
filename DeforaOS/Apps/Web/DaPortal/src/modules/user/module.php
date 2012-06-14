@@ -155,7 +155,7 @@ class UserModule extends Module
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'important' => TRUE,
 					'label' => $link));
-			if($this->can_reset())
+			if($this->canReset())
 			{
 				$r = new Request($engine, $this->name, 'reset');
 				$icon = new PageElement('image', array(
@@ -167,7 +167,7 @@ class UserModule extends Module
 						'icon' => $icon,
 						'label' => $link));
 			}
-			if($this->can_register())
+			if($this->canRegister())
 			{
 				$r = new Request($engine, $this->name,
 						'register');
@@ -317,53 +317,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::_apply
-	protected function _apply($engine, $request, $query, $fallback,
-			$success, $failure)
-	{
-		//XXX copied from ContentModule
-		$cred = $engine->getCredentials();
-		$db = $engine->getDatabase();
-
-		if(!$cred->isAdmin())
-		{
-			//must be admin
-			$page = $this->callDefault($engine);
-			$error = _('Permission denied');
-			$page->prepend('dialog', array('type' => 'error',
-					'text' => $error));
-			return $page;
-		}
-		$fallback = 'call'.ucfirst($fallback);
-		if($request->isIdempotent())
-			//must be safe
-			return $this->$fallback($engine);
-		$type = 'info';
-		$message = $success;
-		$parameters = $request->getParameters();
-		foreach($parameters as $k => $v)
-		{
-			$x = explode(':', $k);
-			if(count($x) != 2 || $x[0] != 'user_id'
-					|| !is_numeric($x[1]))
-				continue;
-			$res = $db->query($engine, $query, array(
-					'user_id' => $x[1]));
-			if($res !== FALSE)
-				continue;
-			$type = 'error';
-			$message = $failure;
-		}
-		$page = $this->$fallback($engine);
-		//FIXME place this under the title
-		$page->prepend('dialog', array('type' => $type,
-				'text' => $message));
-		return $page;
-	}
-
-
-	//UserModule::can_register
-	protected function can_register()
+	//UserModule::canRegister
+	protected function canRegister()
 	{
 		global $config;
 
@@ -371,8 +326,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::can_reset
-	protected function can_reset()
+	//UserModule::canReset
+	protected function canReset()
 	{
 		global $config;
 
@@ -407,7 +362,7 @@ class UserModule extends Module
 	{
 		$query = $this->query_disable;
 
-		return $this->_apply($engine, $request, $query, 'admin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 			_('User(s) could be disabled successfully'),
 			_('Some user(s) could not be disabled'));
 	}
@@ -479,7 +434,7 @@ class UserModule extends Module
 	{
 		$query = $this->query_enable;
 
-		return $this->_apply($engine, $request, $query, 'admin',
+		return $this->helperApply($engine, $request, $query, 'admin',
 			_('User(s) could be enabled successfully'),
 			_('Some user(s) could not be enabled'));
 	}
@@ -508,7 +463,7 @@ class UserModule extends Module
 		$form = $this->form_login($engine,
 				$request->getParameter('username'));
 		$page->append($form);
-		if($this->can_reset())
+		if($this->canReset())
 		{
 			$r = new Request($engine, $this->name, 'reset');
 			$page->append('link', array('request' => $r,
@@ -683,7 +638,7 @@ class UserModule extends Module
 			//already registered and logged in
 			return $this->callDisplay($engine, new Request);
 		//process registration
-		if(!$this->can_register())
+		if(!$this->canRegister())
 			$error = _('Registering is not allowed');
 		else if(!$request->isIdempotent())
 			$error = $this->_register_process($engine, $request);
@@ -758,7 +713,7 @@ Thank you for registering!")));
 			return $this->_reset_token($engine, $request, $uid,
 					$token);
 		//process reset
-		if(!$this->can_reset())
+		if(!$this->canReset())
 			$error = _('Password resets are not allowed');
 		else if(!$request->isIdempotent())
 			$error = $this->_reset_process($engine, $request);
@@ -821,7 +776,7 @@ Thank you for registering!")));
 		$error = TRUE;
 
 		//process reset
-		if(!$this->can_reset())
+		if(!$this->canReset())
 			$error = _('Password resets are not allowed');
 		else if(!$request->isIdempotent())
 			$error = $this->_reset_token_process($engine, $request,
@@ -1025,7 +980,7 @@ Thank you for registering!")));
 		$page = new Page(array('title' => _('Account confirmation')));
 		$page->append('title', array('stock' => $this->name,
 				'text' => _('Account confirmation')));
-		if(!$this->can_register())
+		if(!$this->canRegister())
 		{
 			$page->append('dialog', array('type' => 'error',
 				'text' => _('Registering is not allowed')));
@@ -1081,6 +1036,52 @@ Thank you for registering!")));
 				'request' => $r,
 				'text' => _('Logout')));
 		return $box;
+	}
+
+
+	//helpers
+	//UserModule::helperApply
+	protected function helperApply($engine, $request, $query, $fallback,
+			$success, $failure)
+	{
+		//XXX copied from ContentModule
+		$cred = $engine->getCredentials();
+		$db = $engine->getDatabase();
+
+		if(!$cred->isAdmin())
+		{
+			//must be admin
+			$page = $this->callDefault($engine);
+			$error = _('Permission denied');
+			$page->prepend('dialog', array('type' => 'error',
+					'text' => $error));
+			return $page;
+		}
+		$fallback = 'call'.ucfirst($fallback);
+		if($request->isIdempotent())
+			//must be safe
+			return $this->$fallback($engine);
+		$type = 'info';
+		$message = $success;
+		$parameters = $request->getParameters();
+		foreach($parameters as $k => $v)
+		{
+			$x = explode(':', $k);
+			if(count($x) != 2 || $x[0] != 'user_id'
+					|| !is_numeric($x[1]))
+				continue;
+			$res = $db->query($engine, $query, array(
+					'user_id' => $x[1]));
+			if($res !== FALSE)
+				continue;
+			$type = 'error';
+			$message = $failure;
+		}
+		$page = $this->$fallback($engine);
+		//FIXME place this under the title
+		$page->prepend('dialog', array('type' => $type,
+				'text' => $message));
+		return $page;
 	}
 
 
