@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org>
+#This file is part of DeforaOS Unix scripts
 
 
 
