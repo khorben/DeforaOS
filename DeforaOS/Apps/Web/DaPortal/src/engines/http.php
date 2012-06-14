@@ -17,6 +17,7 @@
 
 
 require_once('./system/engine.php');
+require_once('./system/format.php');
 require_once('./system/locale.php');
 require_once('./system/page.php');
 require_once('./system/template.php');
@@ -242,6 +243,8 @@ class HttpEngine extends Engine
 		}
 		switch($type)
 		{
+			case 'application/rss+xml':
+				break;
 			case 'text/html':
 			default:
 				$template = Template::attachDefault(
@@ -251,12 +254,10 @@ class HttpEngine extends Engine
 				if(($page = $template->render($this,
 					$page)) === FALSE)
 					return FALSE;
-				require_once('./system/format.php');
-				$output = Format::attachDefault($this,
-					$type);
-				$output->render($this, $page);
 				break;
 		}
+		$output = Format::attachDefault($this, $type);
+		$output->render($this, $page);
 	}
 
 	private function renderStream($fp, $type)
