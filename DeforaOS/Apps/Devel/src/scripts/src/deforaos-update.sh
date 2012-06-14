@@ -9,7 +9,7 @@
 [ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
 #private
 DATE=`date '+%Y%m%d'`
-DESTDIR="/var/www/htdocs/download/snapshots"
+DESTDIR="/var/www"
 EMAIL="devel@lists.defora.org"
 MODULE="DeforaOS"
 SRC="$HOME/$MODULE"
@@ -18,6 +18,7 @@ SRC="$HOME/$MODULE"
 CVS="cvs -q"
 LN="ln -f"
 MAIL="mail"
+MAKE="make"
 RM="rm -f"
 TAR="tar"
 TOUCH="touch"
@@ -40,8 +41,17 @@ deforaos_update()
 	#update tree
 	echo ""
 	echo "Updating CVS module $MODULE:"
-	cd "$SRC" || exit 1
-	$CVS update -dPA
+	(cd "$SRC" && $CVS update -dPA)				|| return 2
+
+	#document tree
+	echo ""
+	echo "Documenting CVS module $MODULE:"
+	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
+		[ -x "$path/docbook.sh" ] || continue
+		for i in $path/*.xml; do
+			(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/")
+		done
+	done
 
 	#make archive
 	echo ""
@@ -49,7 +59,7 @@ deforaos_update()
 	for i in *; do
 		echo "DeforaOS-$DATE/$i"
 	done | ($LN -s . "DeforaOS-$DATE" \
-			&& xargs $TAR -czf "$DESTDIR/DeforaOS-daily.tar.gz")
+			&& xargs $TAR -czf "$DESTDIR/htdocs/download/snapshots/DeforaOS-daily.tar.gz")
 	$RM "DeforaOS-$DATE"
 	echo "http://www.defora.org/download/snapshots/DeforaOS-daily.tar.gz"
 }
