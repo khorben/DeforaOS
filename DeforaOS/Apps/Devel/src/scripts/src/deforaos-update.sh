@@ -5,11 +5,14 @@
 
 
 
+#environment
+umask 022
 #variables
 [ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
 #private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
+DEVNULL="/dev/null"
 EMAIL="devel@lists.defora.org"
 MODULE="DeforaOS"
 SRC="$HOME/$MODULE"
@@ -32,7 +35,9 @@ deforaos_update()
 {
 	#configure cvs if necessary
 	$MKDIR "$HOME"						|| exit 2
-	([ ! -f "$HOME/.cvspass" ] && $TOUCH "$HOME/.cvspass")	|| exit 2
+	if [ ! -f "$HOME/.cvspass" ]; then
+		$TOUCH "$HOME/.cvspass"				|| exit 2
+	fi
 
 	#checkout tree if necessary
 	if [ ! -d "$SRC" ]; then
@@ -52,7 +57,7 @@ deforaos_update()
 	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
 		[ -x "$path/docbook.sh" ] || continue
 		for i in $path/*.xml; do
-			(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/")
+			(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/") 2> "$DEVNULL"
 		done
 	done
 

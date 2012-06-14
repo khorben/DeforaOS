@@ -5,6 +5,8 @@
 
 
 
+#environment
+umask 022
 #variables
 [ -z "$ARCH" ] && ARCH=`uname -m`
 case "$ARCH" in
@@ -59,7 +61,9 @@ deforaos_build()
 {
 	#configure cvs if necessary
 	$MKDIR "$HOME"						|| exit 2
-	[ ! -f "$HOME/.cvspass" ] && $TOUCH "$HOME/.cvspass"
+	if [ ! -f "$HOME/.cvspass" ]; then
+		$TOUCH "$HOME/.cvspass"				|| exit 2
+	fi
 
 	#checkout tree
 	$RM -r "$SRC"
