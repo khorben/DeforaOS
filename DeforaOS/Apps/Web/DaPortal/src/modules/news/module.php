@@ -40,6 +40,29 @@ class NewsModule extends ContentModule
 		$this->text_content_submit = _('Submit news...');
 		$this->text_content_title = _('News');
 	}
+
+
+	//useful
+	//NewsModule::call
+	public function call(&$engine, $request)
+	{
+		switch($request->getAction())
+		{
+			case 'rss':
+				//for backward compatibility
+				return $this->callRss($engine, $request);
+		}
+		return parent::call($engine, $request);
+	}
+
+
+	//calls
+	//NewsModule::callRss
+	protected function callRss($engine, $request)
+	{
+		$engine->setType('application/rss+xml');
+		return $this->callHeadline($engine, $request);
+	}
 }
 
 ?>
