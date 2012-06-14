@@ -6,7 +6,7 @@
 
 
 #variables
-[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/Data/CVS"
+[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
 #private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www/htdocs/download/snapshots"

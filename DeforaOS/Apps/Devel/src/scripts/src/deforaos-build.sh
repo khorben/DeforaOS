@@ -15,7 +15,7 @@ case "$ARCH" in
 		ARCH="amd64"
 		;;
 esac
-[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/Data/CVS"
+[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
 [ -z "$OS" ] && OS=`uname -s`
 #private
 DATE=`date '+%Y%m%d'`
