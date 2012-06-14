@@ -55,7 +55,7 @@ deforaos_update()
 	echo ""
 	echo "Documenting CVS module $MODULE:"
 	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
-		[ -x "$path/docbook.sh" ] || continue
+		[ -x "$path/gtkdoc.sh" ] || continue
 		for i in $path/*.xml; do
 			(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/") 2> "$DEVNULL"
 		done
