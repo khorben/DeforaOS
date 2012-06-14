@@ -38,6 +38,7 @@ MAIL="mail"
 MAKE="make"
 MKDIR="mkdir -p"
 RM="rm -f"
+TOUCH="touch"
 
 export CVSROOT
 
@@ -58,7 +59,7 @@ deforaos_build()
 {
 	#configure cvs if necessary
 	$MKDIR "$HOME"						|| exit 2
-	[ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
+	[ ! -f "$HOME/.cvspass" ] && $TOUCH "$HOME/.cvspass"
 
 	#checkout tree
 	$RM -r "$SRC"
