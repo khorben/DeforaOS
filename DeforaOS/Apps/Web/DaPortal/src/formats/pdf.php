@@ -22,7 +22,35 @@ require_once('./system/format.php');
 //PdfFormat
 class PdfFormat extends Format
 {
-	//FIXME implement
+	//methods
+	//essential
+	//PdfFormat::match
+	protected function match(&$engine, $type = FALSE)
+	{
+		switch($type)
+		{
+			case 'application/pdf':
+				return 100;
+			default:
+				return 0;
+		}
+	}
+
+
+	//PdfFormat::attach
+	protected function attach(&$engine, $type = FALSE)
+	{
+	}
+
+
+	//public
+	//methods
+	//rendering
+	//PdfFormat::render
+	public function render(&$engine, $page, $filename = FALSE)
+	{
+		//FIXME implement
+	}
 }
 
 ?>
