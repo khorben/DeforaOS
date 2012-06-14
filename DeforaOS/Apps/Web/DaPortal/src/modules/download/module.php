@@ -262,13 +262,6 @@ class DownloadModule extends ContentModule
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
 					'text' => _('New directory')));
-		//update
-		$request = new Request($engine, $this->name, 'update',
-				$content['id'], $content['title']);
-		if($this->canUpdate($engine, $content))
-			$toolbar->append('button', array('request' => $request,
-					'stock' => 'update',
-					'text' => _('Update')));
 		//upload file
 		$request = new Request($engine, $this->name, 'submit',
 				$content['id'], $content['title']);
@@ -276,6 +269,13 @@ class DownloadModule extends ContentModule
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'save',
 					'text' => _('Upload file')));
+		//update
+		$request = new Request($engine, $this->name, 'update',
+				$content['id'], $content['title']);
+		if($this->canUpdate($engine, $content))
+			$toolbar->append('button', array('request' => $request,
+					'stock' => 'update',
+					'text' => _('Update')));
 		return $toolbar;
 	}
 
@@ -319,7 +319,8 @@ class DownloadModule extends ContentModule
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('filechooser', array('text' => _('File: '),
 				'name' => 'files[]'));
-		$r = new Request($engine, $this->name, FALSE, $parent);
+		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+				$request->getTitle());
 		$form->append('button', array('text' => _('Cancel'),
 				'stock' => 'cancel', 'request' => $r));
 		$form->append('button', array('type' => 'submit',
