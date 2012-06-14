@@ -133,9 +133,8 @@ class PdoDatabase extends Database
 		try {
 			$this->handle = new PDO($dsn);
 		} catch(PDOException $e) {
-			return $engine->log('LOG_ERR',
-					'Could not open database: '
-					.$e->getMessage());
+			$message = 'Could not open database: '.$e->getMessage();
+			return $engine->log('LOG_ERR', $message);
 		}
 		return TRUE;
 	}
