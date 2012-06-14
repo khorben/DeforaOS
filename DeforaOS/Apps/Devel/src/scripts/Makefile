@@ -35,6 +35,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/targets/NetBSD-sparc \
 		$(PACKAGE)-$(VERSION)/targets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
