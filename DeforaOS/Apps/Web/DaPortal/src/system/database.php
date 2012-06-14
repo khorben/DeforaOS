@@ -37,6 +37,23 @@ abstract class Database
 
 
 	//useful
+	//Database::formatDate
+	public function formatDate(&$engine, $date, $outformat = FALSE,
+			$informat = FALSE)
+	{
+		if($informat === FALSE)
+			$informat = '%Y-%m-%d %H:%M:%S';
+		if(($tm = strptime($date, $informat)) === FALSE)
+			return $date; //XXX better suggestions welcome
+		$timestamp = mktime($tm['tm_hour'], $tm['tm_min'],
+			$tm['tm_sec'], $tm['tm_mon'] + 1, $tm['tm_mday'],
+			$tm['tm_year'] + 1900);
+		if($outformat === FALSE)
+			$outformat = '%d/%m/%Y %H:%M:%S';
+		return strftime($outformat, $timestamp);
+	}
+
+
 	//Database::prepare
 	public function prepare($query, $parameters = FALSE)
 	{
