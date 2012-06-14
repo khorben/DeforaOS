@@ -252,9 +252,10 @@ class DownloadModule extends ContentModule
 		//parent directory
 		$request = new Request($engine, $this->name, FALSE, $parent_id,
 				$parent_title);
-		$toolbar->append('button', array('request' => $request,
-				'stock' => 'updir',
-				'text' => _('Up one directory')));
+		if($content['id'] !== FALSE)
+			$toolbar->append('button', array('request' => $request,
+					'stock' => 'updir',
+					'text' => _('Up one directory')));
 		//new directory
 		$request = new Request($engine, $this->name, 'folder_new',
 				$content['id'], $content['title']);
