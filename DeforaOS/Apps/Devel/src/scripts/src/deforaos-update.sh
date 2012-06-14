@@ -19,6 +19,8 @@ CVS="cvs -q"
 LN="ln -f"
 MAIL="mail"
 RM="rm -f"
+TAR="tar"
+TOUCH="touch"
 
 
 #functions
@@ -26,7 +28,7 @@ RM="rm -f"
 deforaos_update()
 {
 	#configure cvs if necessary
-	[ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
+	[ ! -f "$HOME/.cvspass" ] && $TOUCH "$HOME/.cvspass"
 
 	#checkout tree if necessary
 	if [ ! -d "$SRC" ]; then
@@ -47,7 +49,7 @@ deforaos_update()
 	for i in *; do
 		echo "DeforaOS-$DATE/$i"
 	done | ($LN -s . "DeforaOS-$DATE" \
-			&& xargs tar -czf "$DESTDIR/DeforaOS-daily.tar.gz")
+			&& xargs $TAR -czf "$DESTDIR/DeforaOS-daily.tar.gz")
 	$RM "DeforaOS-$DATE"
 	echo "http://www.defora.org/download/snapshots/DeforaOS-daily.tar.gz"
 }
