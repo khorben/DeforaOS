@@ -16,9 +16,11 @@ SRC="$HOME/$MODULE"
 
 #executables
 CVS="cvs -q"
+FIND="find"
 LN="ln -f"
 MAIL="mail"
 MAKE="make"
+MKDIR="mkdir -p"
 RM="rm -f"
 TAR="tar"
 TOUCH="touch"
@@ -29,19 +31,20 @@ TOUCH="touch"
 deforaos_update()
 {
 	#configure cvs if necessary
-	[ ! -f "$HOME/.cvspass" ] && $TOUCH "$HOME/.cvspass"
+	$MKDIR "$HOME"						|| exit 2
+	([ ! -f "$HOME/.cvspass" ] && $TOUCH "$HOME/.cvspass")	|| exit 2
 
 	#checkout tree if necessary
 	if [ ! -d "$SRC" ]; then
 		echo ""
 		echo "Checking out CVS module $MODULE:"
-		$CVS "-d$CVSROOT" co "$MODULE" || exit 1
+		(cd "$HOME" && $CVS "-d$CVSROOT" co "$MODULE")	|| exit 2
 	fi
 
 	#update tree
 	echo ""
 	echo "Updating CVS module $MODULE:"
-	(cd "$SRC" && $CVS update -dPA)				|| return 2
+	(cd "$SRC" && $CVS update -dPA)				|| exit 2
 
 	#document tree
 	echo ""
