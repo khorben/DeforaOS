@@ -57,6 +57,7 @@ error()
 deforaos_build()
 {
 	#configure cvs if necessary
+	$MKDIR "$HOME"						|| exit 2
 	[ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
 
 	#checkout tree
