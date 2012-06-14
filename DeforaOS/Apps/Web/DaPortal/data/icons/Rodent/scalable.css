@@ -40,7 +40,7 @@
 }
 
 .stock16.browser, .stock24.browser, .stock32.browser {
-	background-image:		url('xfce4-icon-theme/scalable/stock/stock_folder.svg');
+	background-image:		url('xfce4-icon-theme/scalable/filesystems/open_folder.svg');
 }
 
 .stock16.cancel, .stock24.cancel, .stock32.cancel {
@@ -77,6 +77,14 @@
 
 .stock16.error, .stock24.error, .stock32.error {
 	background-image:		url('xfce4-icon-theme/scalable/stock/stock_dialog_error.svg');
+}
+
+.stock16.folder, .stock24.folder, .stock32.folder {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_folder.svg');
+}
+
+.stock16.folder-new, .stock24.folder-new, .stock32.folder-new {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_new.svg');
 }
 
 .stock16.forward, .stock24.forward, .stock32.forward {
@@ -161,6 +169,10 @@
 
 .stock16.translate, .stock24.translate, .stock32.translate {
 	background-image:		url('xfce4-icon-theme/scalable/mimetypes/text-x-gettext-translation.svg');
+}
+
+.stock16.update, .stock24.update, .stock32.update {
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_ok.svg');
 }
 
 .stock16.upload, .stock24.upload, .stock32.upload {
