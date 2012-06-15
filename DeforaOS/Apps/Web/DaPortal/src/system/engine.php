@@ -147,7 +147,7 @@ abstract class Engine
 
 
 	//Engine::process
-	public function process($request)
+	public function process($request, $internal = 0)
 	{
 		if($request === FALSE
 				|| ($module = $request->getModule()) === FALSE)
@@ -158,7 +158,7 @@ abstract class Engine
 					: ''));
 		if(($handle = Module::load($this, $module)) === FALSE)
 			return FALSE;
-		return $handle->call($this, $request);
+		return $handle->call($this, $request, $internal);
 	}
 
 
