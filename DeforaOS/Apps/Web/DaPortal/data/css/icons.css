@@ -37,12 +37,13 @@
 	background-size:		48px 48px;
 }
 
-a.button.stock16, button.stock16, input.stock16 {
+a.button.stock16, button.stock16, input[type="button"].stock16,
+input[type="reset"].stock16, input[type="submit"].stock16 {
 	background-origin:		padding-box;
 	background-position:		2px center;
 	background-size:		auto 16px;
 	border-width:			1px;
-	min-height:			20px;
+	min-height:			16px;
 	padding-left:			20px;
 }
 
