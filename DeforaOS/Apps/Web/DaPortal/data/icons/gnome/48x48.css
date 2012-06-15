@@ -167,6 +167,10 @@
 	background-image:	url('gnome-icon-theme/48x48/categories/gtk-preferences.png');
 }
 
+.stock48.preview {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-print-preview.png');
+}
+
 .stock48.probe {
 	background-image:	url('gnome-icon-theme/48x48/apps/utilities-system-monitor.png');
 }

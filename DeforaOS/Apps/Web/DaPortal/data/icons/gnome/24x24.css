@@ -167,6 +167,10 @@
 	background-image:	url('gnome-icon-theme/24x24/categories/gtk-preferences.png');
 }
 
+.stock24.preview {
+	background-image:	url('gnome-icon-theme/24x24/actions/gtk-print-preview.png');
+}
+
 .stock24.probe {
 	background-image:	url('gnome-icon-theme/24x24/apps/utilities-system-monitor.png');
 }
