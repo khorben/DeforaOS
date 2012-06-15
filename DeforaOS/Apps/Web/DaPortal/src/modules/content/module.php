@@ -330,8 +330,8 @@ abstract class ContentModule extends Module
 
 
 	//convertors
-	//ContentModule::_timestampToDate
-	protected function _timestampToDate($timestamp = FALSE,
+	//ContentModule::timestampToDate
+	protected function timestampToDate($timestamp = FALSE,
 			$format = '%d/%m/%Y %H:%M:%S')
 	{
 		if($timestamp === FALSE)
@@ -770,9 +770,10 @@ abstract class ContentModule extends Module
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		//preview
+		$vbox = $page->append('vbox');
 		unset($content['id']);
 		$content['title'] = _('Preview: ').$content['title'];
-		$this->helperPreview($engine, $page, $content);
+		$this->helperPreview($engine, $vbox, $content);
 		//form
 		$r = new Request($engine, $this->name, 'publish',
 				$request->getId(), $request->getTitle());
@@ -863,7 +864,7 @@ abstract class ContentModule extends Module
 					.$request->getTitle(),
 				'user_id' => $user->getUserId(),
 				'username' => $user->getUsername(),
-				'date' => $this->_timestampToDate(),
+				'date' => $this->timestampToDate(),
 				'content' => $request->getParameter('content'));
 			$this->helperPreview($engine, $page, $content);
 		}
@@ -925,13 +926,14 @@ abstract class ContentModule extends Module
 				'text' => $title));
 		if($request->getParameter('preview') !== FALSE)
 		{
-			$preview = array('id' => $id, 'module' => $this->name,
+			$vbox = $page->append('vbox');
+			$preview = array('module' => $this->name,
 				'user_id' => $content['user_id'],
 				'username' => $content['username'],
 				'date' => $content['date'],
 				'title' => _('Preview: ').$request->getTitle(),
 				'content' => $request->getParameter('content'));
-			$this->helperPreview($engine, $page, $preview);
+			$this->helperPreview($engine, $vbox, $preview);
 		}
 		//FIXME really implement
 		$r = new Request($engine, $this->name, 'update', $id);
@@ -1290,6 +1292,12 @@ abstract class ContentModule extends Module
 	protected function helperPreviewTitle($engine, $preview, $request,
 			$content)
 	{
+		if($request === FALSE)
+		{
+			$preview->append('title', array(
+					'text' => $content['title']));
+			return;
+		}
 		$link = new PageElement('link', array('request' => $request,
 				'text' => $content['title']));
 		$title = $preview->append('title');
