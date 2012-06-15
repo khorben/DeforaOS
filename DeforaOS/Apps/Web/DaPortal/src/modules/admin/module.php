@@ -35,7 +35,7 @@ class AdminModule extends Module
 
 	//useful
 	//AdminModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		$cred = $engine->getCredentials();
 

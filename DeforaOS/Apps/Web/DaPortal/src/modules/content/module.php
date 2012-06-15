@@ -56,7 +56,7 @@ abstract class ContentModule extends Module
 
 	//useful
 	//ContentModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		if(($action = $request->getAction()) === FALSE)
 			$action = 'default';

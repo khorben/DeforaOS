@@ -107,7 +107,7 @@ abstract class Module
 
 
 	//virtual
-	public abstract function call(&$engine, $request);
+	public abstract function call(&$engine, $request, $internal = 0);
 
 
 	//protected

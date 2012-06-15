@@ -37,7 +37,7 @@ class UserModule extends Module
 
 	//useful
 	//UserModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		if(($action = $request->getAction()) === FALSE)
 			$action = 'default';

@@ -26,7 +26,7 @@ class SearchModule extends Module
 	//public
 	//methods
 	//SearchModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		if(($action = $request->getAction()) === FALSE)
 			$action = 'default';

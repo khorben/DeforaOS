@@ -56,7 +56,7 @@ class DownloadModule extends ContentModule
 
 
 	//DownloadModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		switch(($action = $request->getAction()))
 		{

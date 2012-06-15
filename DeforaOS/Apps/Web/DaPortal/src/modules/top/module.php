@@ -26,7 +26,7 @@ class TopModule extends Module
 	//public
 	//methods
 	//TopModule::call
-	function call(&$engine, $request)
+	function call(&$engine, $request, $internal = 0)
 	{
 		if(($action = $request->getAction()) === FALSE)
 			$action = 'default';

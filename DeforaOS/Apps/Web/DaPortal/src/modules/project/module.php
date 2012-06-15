@@ -56,7 +56,7 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		switch(($action = $request->getAction()))
 		{
@@ -68,7 +68,7 @@ class ProjectModule extends ContentModule
 				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
 		}
-		return parent::call($engine, $request);
+		return parent::call($engine, $request, $internal);
 	}
 
 
