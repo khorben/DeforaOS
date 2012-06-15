@@ -646,10 +646,16 @@ abstract class ContentModule extends Module
 		$columns['username'] = _('Username');
 		$columns['date'] = _('Date');
 		$treeview->setProperty('columns', $columns);
+		//toolbar
 		$toolbar = $treeview->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
 				'text' => _('Refresh'),
 				'request' => $r));
+		$r = new Request($engine, $this->name, 'submit');
+		if($this->canSubmit($engine))
+			$toolbar->append('button', array('stock' => 'new',
+					'request' => $r,
+					'text' => $this->text_content_submit));
 		if($uid === $cred->getUserId())
 		{
 			$toolbar->append('button', array('stock' => 'disable',
@@ -663,6 +669,7 @@ abstract class ContentModule extends Module
 						'name' => 'action',
 						'value' => 'enable'));
 		}
+		//rows
 		$no = new PageElement('image', array('stock' => 'no',
 			'size' => 16, 'title' => _('Disabled')));
 		$yes = new PageElement('image', array('stock' => 'yes',
@@ -686,11 +693,15 @@ abstract class ContentModule extends Module
 			$link = new PageElement('link', array('request' => $r,
 				'text' => $res[$i]['username']));
 			$row->setProperty('username', $link);
-			//FIXME call $db->formatDate() instead
-			$date = $this->_timestampToDate($res[$i]['timestamp']);
+			$date = $db->formatDate($engine, $res[$i]['timestamp']);
 			$row->setProperty('date', $date);
 		}
-		$r = new Request($engine, $this->name);
+		//buttons
+		$r = ($uid !== FALSE)
+			? new Request($engine, 'user', 'display',
+					$user->getUserId(),
+					$user->getUsername())
+			: new Request($engine, $this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
 				'text' => _('Back')));
 		return $page;
