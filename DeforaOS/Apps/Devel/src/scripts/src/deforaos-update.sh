@@ -56,7 +56,7 @@ deforaos_update()
 	echo "Documenting CVS module $MODULE:"
 	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
 		[ -x "$path/gtkdoc.sh" ] || continue
-		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/") 2> "$DEVNULL"
+		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/" > "$DEVNULL" 2> "$DEVNULL")
 	done
 
 	#make archive
