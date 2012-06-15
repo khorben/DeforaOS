@@ -175,6 +175,10 @@
 	background-image:	url('gnome-icon-theme/16x16/apps/utilities-system-monitor.png');
 }
 
+.stock16.project {
+	background-image:	url('gnome-icon-theme/16x16/categories/applications-development.png');
+}
+
 .stock16.read {
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-open.png');
 }

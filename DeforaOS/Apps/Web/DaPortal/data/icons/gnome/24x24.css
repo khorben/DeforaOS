@@ -175,6 +175,10 @@
 	background-image:	url('gnome-icon-theme/24x24/apps/utilities-system-monitor.png');
 }
 
+.stock24.project {
+	background-image:	url('gnome-icon-theme/24x24/categories/applications-development.png');
+}
+
 .stock24.read {
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-open.png');
 }
