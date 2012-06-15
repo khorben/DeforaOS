@@ -544,7 +544,7 @@ abstract class ContentModule extends Module
 		if(($content = $this->_get($engine, $id, $request->getTitle()))
 				=== FALSE)
 			return new PageElement('dialog', array(
-					'type' => 'error', 'error' => $error));
+					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $content['title']));
 		$this->helperDisplay($engine, $page, $content);
 		return $page;
