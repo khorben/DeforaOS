@@ -58,7 +58,14 @@ class DownloadModule extends ContentModule
 	//DownloadModule::call
 	public function call(&$engine, $request, $internal = 0)
 	{
-		switch(($action = $request->getAction()))
+		$action = $request->getAction();
+		if($internal)
+			switch($action)
+			{
+				case 'getRoot':
+					return $this->getRoot($engine);
+			}
+		switch($action)
 		{
 			case 'download':
 			case 'submit':
@@ -134,6 +141,7 @@ class DownloadModule extends ContentModule
 	protected $download_query_list_admin = "SELECT
 		daportal_content.content_id AS id,
 		daportal_content.enabled AS enabled,
+		daportal_content.public AS public,
 		daportal_content.timestamp AS timestamp,
 		daportal_user.user_id AS user_id, username,
 		daportal_group.group_id AS group_id, groupname, title, mode
@@ -234,7 +242,13 @@ class DownloadModule extends ContentModule
 			return $this->getToolbarDirectory($engine, $content);
 		else if($content !== FALSE)
 			return $this->getToolbarFile($engine, $content);
-		return new PageElement('toolbar');
+		//upload or directory creation in the root folder
+		//XXX remove this toolbar and make it a dialog?
+		$toolbar = new PageElement('toolbar');
+		$request = new Request($engine, $this->name, FALSE);
+		$toolbar->append('button', array('request' => $request,
+			'stock' => 'back', 'text' => _('Back')));
+		return $toolbar;
 	}
 
 
@@ -258,20 +272,22 @@ class DownloadModule extends ContentModule
 					'text' => _('Up one directory')));
 		//refresh
 		$request = new Request($engine, $this->name, FALSE,
-				$content['id'], $content['id'] !== FALSE
+				$content['id'], ($content['id'] !== FALSE)
 				? $content['title'] : FALSE);
 		$toolbar->append('button', array('request' => $request,
 				'stock' => 'refresh', 'text' => _('Refresh')));
 		//new directory
 		$request = new Request($engine, $this->name, 'folder_new',
-				$content['id'], $content['title']);
+				$content['id'], ($content['id'] !== FALSE)
+				? $content['title'] : FALSE);
 		if($this->canSubmit($engine))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
 					'text' => _('New directory')));
 		//upload file
 		$request = new Request($engine, $this->name, 'submit',
-				$content['id'], $content['title']);
+				$content['id'], ($content['id'] !== FALSE)
+				? $content['title'] : FALSE);
 		if($this->canSubmit($engine))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'save',
@@ -548,7 +564,6 @@ class DownloadModule extends ContentModule
 	{
 		global $config;
 		$db = $engine->getDatabase();
-		$query = $this->download_query_file_insert;
 
 		//verify the request
 		if($request->getParameter('submit') === FALSE)
@@ -573,33 +588,11 @@ class DownloadModule extends ContentModule
 		{
 			if($db->transactionBegin($engine) === FALSE)
 				return _('Internal server error');
-			$name = $_FILES['files']['name'][$k];
-			//FIXME check for filename unicity
-			$content = Content::insert($engine, $this->id, $name,
-					FALSE, TRUE, TRUE);
-			if($content === FALSE)
+			if(($error = $this->_submitProcessFile($engine, $root,
+					$parent, $k, $content)) !== FALSE)
 			{
-				$db->transactionRollback();
-				return _('Internal server error');
-			}
-			$id = $content->getId();
-			$tmp = $_FILES['files']['tmp_name'][$k];
-			if($db->query($engine, $query, array(
-						'content_id' => $id,
-						'parent' => $parent,
-						'mode' => 420)) === FALSE)
-			{
-				$db->transactionRollback();
-				return _('Internal server error');
-			}
-			//store the file
-			$id = $db->getLastId($engine, 'daportal_download',
-					'download_id');
-			$dst = $root.'/'.$id;
-			if(move_uploaded_file($tmp, $dst) !== TRUE)
-			{
-				$db->transactionRollback();
-				return _('Internal server error');
+				$db->transactionRollback($engine);
+				return $error;
 			}
 			if($db->transactionCommit($engine) === FALSE)
 			{
@@ -608,6 +601,34 @@ class DownloadModule extends ContentModule
 				return _('Internal server error');
 			}
 		}
+		return FALSE;
+	}
+
+	protected function _submitProcessFile($engine, $root, $parent, $k,
+			&$content)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->download_query_file_insert;
+
+		$name = $_FILES['files']['name'][$k];
+		//FIXME check for filename unicity
+		$content = Content::insert($engine, $this->id, $name,
+			FALSE, TRUE, TRUE);
+		if($content === FALSE)
+			return _('Internal server error');
+		$id = $content->getId();
+		$tmp = $_FILES['files']['tmp_name'][$k];
+		if($db->query($engine, $query, array('content_id' => $id,
+				'parent' => $parent,
+				'mode' => 420)) === FALSE)
+			return _('Internal server error');
+		//store the file
+		if(($id = $db->getLastId($engine, 'daportal_download',
+				'download_id')) === FALSE)
+			return _('Internal server error');
+		$dst = $root.'/'.$id;
+		if(move_uploaded_file($tmp, $dst) !== TRUE)
+			return _('Internal server error');
 		return FALSE;
 	}
 
@@ -709,9 +730,8 @@ class DownloadModule extends ContentModule
 			}
 			$row->setProperty('owner', $username);
 			$row->setProperty('group', $res[$i]['groupname']);
-			$row->setProperty('date', $this->_timestampToDate(
-					$res[$i]['timestamp'],
-						_('d/m/Y H:i:s')));
+			$row->setProperty('date', $this->timestampToDate(
+					$res[$i]['timestamp']));
 			$row->setProperty('permissions',
 				$this->getPermissionsString($res[$i]['mode']));
 		}
@@ -740,6 +760,8 @@ class DownloadModule extends ContentModule
 		if(($stat = stat($filename)) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
+		$request = new Request($engine, $this->name, 'download',
+				$content['id'], $content['title']);
 		$this->helperDisplayField($page, _('Name'),
 			new PageElement('link',
 			array('request' => $request,
