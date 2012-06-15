@@ -455,7 +455,7 @@ class ProjectModule extends ContentModule
 					'text' => $res[$i]['project'],
 					'title' => $res[$i]['project']));
 			$row->setProperty('project', $link);
-			$date = $this->_timestampToDate($res[$i]['timestamp']);
+			$date = $this->timestampToDate($res[$i]['timestamp']);
 			$row->setProperty('date', $date);
 			$row->setProperty('state', $res[$i]['state']);
 			$row->setProperty('type', $res[$i]['type']);
