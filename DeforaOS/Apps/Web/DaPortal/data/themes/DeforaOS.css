@@ -201,7 +201,7 @@ div#content, div#content table {
 }
 
 div#content > div.pack {
-	padding:			1px;
+	padding:			16px;
 }
 
 div#content > div.pack > *:first-child {
