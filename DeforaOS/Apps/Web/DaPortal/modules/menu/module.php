@@ -29,7 +29,7 @@ class MenuModule extends Module
 	//methods
 	//useful
 	//MenuModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		return $this->_default();
 	}

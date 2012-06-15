@@ -55,7 +55,7 @@ class BookmarkModule extends Module
 	//methods
 	//useful
 	//BookmarkModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		return FALSE;
 	}

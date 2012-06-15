@@ -43,7 +43,7 @@ class ProbeModule extends Module
 	//methods
 	//useful
 	//ProbeModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		return FALSE;
 	}

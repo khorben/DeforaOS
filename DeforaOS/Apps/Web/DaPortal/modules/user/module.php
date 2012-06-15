@@ -72,7 +72,7 @@ class UserModule extends Module
 	//methods
 	//useful
 	//UserModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		$args = $request->getParameters();
 		switch(($action = $request->getAction()))

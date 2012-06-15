@@ -82,7 +82,7 @@ class PkiModule extends Module
 	//methods
 	//useful
 	//PkiModule::call
-	public function call(&$engine, $request)
+	public function call(&$engine, $request, $internal = 0)
 	{
 		global $user_id;
 
