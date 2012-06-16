@@ -170,6 +170,8 @@ class HttpFriendlyEngine extends HttpEngine
 			$url .= '/'.$id;
 		if(($title = $request->getTitle()) !== FALSE)
 		{
+			if($action === FALSE && $id === FALSE)
+				$url .= '/default';
 			$title = str_replace(array(' ', '.'), '-', $title);
 			$url .= '/'.$title;
 		}
