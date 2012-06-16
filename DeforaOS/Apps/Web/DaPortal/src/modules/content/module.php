@@ -51,6 +51,8 @@ abstract class ContentModule extends Module
 			= _('Submission in progress, please wait...');
 		$this->text_content_title = _('Content');
 		$this->text_content_update = _('Update');
+		$this->text_content_update_progress
+			= _('Update in progress, please wait...');
 	}
 
 
@@ -108,6 +110,8 @@ abstract class ContentModule extends Module
 		= 'Submission in progress, please wait...';
 	protected $text_content_title = 'Content';
 	protected $text_content_update = 'Update';
+	protected $text_content_update_progress
+			= 'Update in progress, please wait...';
 
 	//queries
 	protected $query_admin_delete = 'DELETE FROM daportal_content
@@ -366,6 +370,39 @@ abstract class ContentModule extends Module
 		$form->append('button', array('type' => 'submit',
 				'stock' => 'submit', 'name' => 'action',
 				'value' => 'submit', 'text' => _('Submit')));
+		return $form;
+	}
+
+
+	//ContentModule::formUpdate
+	protected function formUpdate($engine, $request, $content)
+	{
+		$r = new Request($engine, $this->name, 'update',
+				$content['id']);
+		$form = new PageElement('form', array('request' => $r));
+		$vbox = $form->append('vbox');
+		if(($value = $request->getTitle()) === FALSE)
+			$value = $content['title'];
+		$vbox->append('entry', array('name' => 'title',
+				'text' => _('Title: '), 'value' => $value));
+		$vbox->append('label', array('text' => _('Content: ')));
+		if(($value = $request->getParameter('content')) === FALSE)
+			$value = $content['content'];
+		$vbox->append('textview', array('name' => 'content',
+				'value' => $value));
+		$hbox = $vbox->append('hbox');
+		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+				$content['title']);
+		$hbox->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		$hbox->append('button', array('type' => 'reset',
+				'stock' => 'reset', 'text' => _('Reset')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'preview', 'name' => 'action',
+				'value' => 'preview', 'text' => _('Preview')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'update', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Update')));
 		return $form;
 	}
 
@@ -848,7 +885,7 @@ abstract class ContentModule extends Module
 		//toolbar
 		$toolbar = $this->getToolbar($engine);
 		$page->append($toolbar);
-		//process the content
+		//process the request
 		$content = FALSE;
 		if(($error = $this->_submitProcess($engine, $request, $content))
 				=== FALSE)
@@ -885,7 +922,7 @@ abstract class ContentModule extends Module
 		$content = $request->getParameter('content');
 		$public = $request->getParameter('public') ? TRUE : FALSE;
 		$content = Content::insert($engine, $this->id, $title, $content,
-			FALSE, TRUE);
+				FALSE, TRUE);
 		if($content === FALSE)
 			return _('Internal server error');
 		return FALSE;
@@ -915,15 +952,32 @@ abstract class ContentModule extends Module
 	{
 		$error = _('Unable to fetch content');
 
-		if(($id = $request->getId()) === FALSE
-				|| ($content = $this->_get($engine, $id))
+		//obtain the content
+		if(($content = $this->_get($engine, $request->getId()))
 				=== FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error', 'text' => $error));
+					'type' => 'error', 'text' => $error));
+		//check permissions
+		if($this->canUpdate($engine, $content, $error) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		//create the page
 		$title = _('Update ').$content['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		//toolbar
+		$toolbar = $this->getToolbar($engine);
+		$page->append($toolbar);
+		//process the request
+		if(($error = $this->_updateProcess($engine, $request, $content))
+				=== FALSE)
+			return $this->_updateSuccess($engine, $request, $page,
+					$content);
+		else if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		//preview
 		if($request->getParameter('preview') !== FALSE)
 		{
 			$vbox = $page->append('vbox');
@@ -935,32 +989,43 @@ abstract class ContentModule extends Module
 				'content' => $request->getParameter('content'));
 			$this->helperPreview($engine, $vbox, $preview);
 		}
-		//FIXME really implement
-		$r = new Request($engine, $this->name, 'update', $id);
-		$form = $page->append('form', array('request' => $r));
-		$vbox = $form->append('vbox');
-		if(($value = $request->getTitle()) === FALSE)
-			$value = $content['title'];
-		$vbox->append('entry', array('name' => 'title',
-				'text' => _('Title: '), 'value' => $value));
-		$vbox->append('label', array('text' => _('Content: ')));
-		if(($value = $request->getParameter('content')) === FALSE)
-			$value = $content['content'];
-		$vbox->append('textview', array('name' => 'content',
-				'value' => $value));
-		$hbox = $vbox->append('hbox');
-		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+		$form = $this->formUpdate($engine, $request, $content);
+		$page->append($form);
+		return $page;
+	}
+
+	protected function _updateProcess($engine, $request, $content)
+	{
+		//verify the request
+		if($request->getParameter('submit') === FALSE)
+			return TRUE;
+		if($request->isIdempotent() !== FALSE)
+			return _('The request expired or is invalid');
+		//update the content
+		$title = $request->getTitle();
+		$text = $request->getParameter('content');
+		if(Content::update($engine, $content['id'], $title, $text)
+				=== FALSE)
+			return _('Internal server error');
+		return FALSE;
+	}
+
+	protected function _updateSuccess($engine, $request, $page, $content)
+	{
+		//FIXME write a redirection helper instead
+		$r = new Request($engine, $this->name, FALSE, $content['id'],
 				$content['title']);
-		$hbox->append('button', array('request' => $r,
-				'stock' => 'cancel', 'text' => _('Cancel')));
-		$hbox->append('button', array('type' => 'reset',
-				'stock' => 'reset', 'text' => _('Reset')));
-		$hbox->append('button', array('type' => 'submit',
-				'stock' => 'preview', 'name' => 'action',
-				'value' => 'preview', 'text' => _('Preview')));
-		$hbox->append('button', array('type' => 'submit',
-				'stock' => 'submit', 'name' => 'action',
-				'value' => 'submit', 'text' => _('Submit')));
+		$page->setProperty('location', $engine->getUrl($r));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$text = $this->text_content_update_progress;
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+				'request' => $r));
+		$box->append('label', array('text' => '.'));
 		return $page;
 	}
 
@@ -971,9 +1036,9 @@ abstract class ContentModule extends Module
 	{
 		$icon = new PageElement('image', array('stock' => $stock));
 		$link = new PageElement('link', array('request' => $request,
-			'text' => $text));
+				'text' => $text));
 		return new PageElement('row', array('icon' => $icon,
-			'label' => $link));
+				'label' => $link));
 	}
 
 
@@ -984,7 +1049,7 @@ abstract class ContentModule extends Module
 
 		$r = new Request($engine, $this->name, 'admin');
 		$ret[] = $this->helperAction($engine, 'admin', $r,
-			$this->text_content_admin);
+				$this->text_content_admin);
 		return $ret;
 	}
 
@@ -996,7 +1061,7 @@ abstract class ContentModule extends Module
 
 		$r = new Request($engine, $this->name, 'submit');
 		$ret[] = $this->helperAction($engine, 'new', $r,
-			$this->text_content_submit);
+				$this->text_content_submit);
 		return $ret;
 	}
 

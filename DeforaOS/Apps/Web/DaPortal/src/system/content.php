@@ -75,8 +75,8 @@ class Content
 	{
 		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
-
 		$query = Content::$query_insert;
+
 		if(!is_numeric($module_id))
 			//XXX make a stricter check
 			return FALSE;
@@ -95,6 +95,27 @@ class Content
 		$content = new Content($id, $module_id, $title, $content,
 			$enabled, $public);
 		return $content;
+	}
+
+
+	//Content::update
+	static public function update($engine, $content_id, $title, $content)
+	{
+		$db = $engine->getDatabase();
+		$query = Content::$query_update;
+
+		var_dump($content_id);
+		var_dump($title);
+		var_dump($content);
+		if(!is_numeric($content_id))
+			return FALSE;
+		if(!is_string($title) || !is_string($content))
+			return FALSE;
+		if($db->query($engine, $query, array(
+				'content_id' => $content_id, 'title' => $title,
+				'content' => $content)) === FALSE)
+			return FALSE;
+		return TRUE;
 	}
 
 
@@ -125,6 +146,9 @@ class Content
 		(module_id, user_id, title, content, enabled, public)
 		VALUES (:module_id, :user_id, :title, :content, :enabled,
 			:public)';
+	static private $query_update = 'UPDATE daportal_content
+		SET title=:title, content=:content
+		WHERE content_id=:content_id';
 
 
 	//methods
