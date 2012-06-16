@@ -223,12 +223,12 @@ class DownloadModule extends ContentModule
 	protected function getRoot($engine)
 	{
 		global $config;
+		$error = 'The download repository is not configured';
 
 		if(($root = $config->getVariable('module::'.$this->name,
 				'root')) === FALSE)
 		{
-			$engine->log('LOG_WARNING',
-				'The download repository is not configured');
+			$engine->log('LOG_WARNING', $error);
 			$root = '/tmp';
 		}
 		return $root;
