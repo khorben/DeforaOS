@@ -3,6 +3,7 @@
 ../src/modules/admin/module.php
 ../src/modules/article/module.php
 ../src/modules/blog/module.php
+../src/modules/browser/module.php
 ../src/modules/content/module.php
 ../src/modules/download/module.php
 ../src/modules/news/module.php
