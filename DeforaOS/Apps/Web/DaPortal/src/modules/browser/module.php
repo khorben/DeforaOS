@@ -113,7 +113,8 @@ class BrowserModule extends Module
 		if(($st = lstat($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
-		if($st['mode'] & 040000 == 040000)
+		if(($st['mode'] & BrowserModule::$S_IFDIR)
+				== BrowserModule::$S_IFDIR)
 			$this->helperDisplayDirectory($engine, $page, $root,
 					$path);
 		else
@@ -174,6 +175,11 @@ class BrowserModule extends Module
 			return '/';
 		return $path;
 	}
+
+
+	//private
+	//properties
+	static private $S_IFDIR = 040000;
 }
 
 ?>
