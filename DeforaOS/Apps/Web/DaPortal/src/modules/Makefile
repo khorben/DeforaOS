@@ -1,4 +1,4 @@
-SUBDIRS	= admin article blog content download news project search top user wiki
+SUBDIRS	= admin article blog browser content download news project search top user wiki
 
 
 all: subdirs

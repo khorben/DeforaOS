@@ -43,7 +43,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/icons/index.php \
 		$(PACKAGE)-$(VERSION)/data/icons/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent/Makefile \
+		$(PACKAGE)-$(VERSION)/data/icons/Rodent/48x48.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent/index.php \
+		$(PACKAGE)-$(VERSION)/data/icons/Rodent/scalable.css \
 		$(PACKAGE)-$(VERSION)/data/icons/Rodent/project.conf \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/Makefile \
 		$(PACKAGE)-$(VERSION)/data/icons/Tango/index.php \
@@ -546,6 +548,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modules/blog/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/blog/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/blog/project.conf \
+		$(PACKAGE)-$(VERSION)/src/modules/browser/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modules/browser/module.php \
+		$(PACKAGE)-$(VERSION)/src/modules/browser/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/content/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/content/module.php \
 		$(PACKAGE)-$(VERSION)/src/modules/content/project.conf \
