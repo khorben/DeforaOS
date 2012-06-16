@@ -302,7 +302,8 @@ class HTMLFormat extends FormatElements
 		$this->tagOpen('div', $e->getType());
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
-			$l = new PageElement('label');
+			$l = new PageElement('label', array(
+					'class' => $e->getProperty('class')));
 			$l->setProperty('text', $text);
 			$this->renderElement($l);
 		}
