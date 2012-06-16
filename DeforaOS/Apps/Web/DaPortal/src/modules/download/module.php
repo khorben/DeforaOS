@@ -76,7 +76,7 @@ class DownloadModule extends ContentModule
 			case 'file_insert':
 				return $this->callSubmit($engine, $request);
 		}
-		return parent::call($engine, $request);
+		return parent::call($engine, $request, $internal);
 	}
 
 
