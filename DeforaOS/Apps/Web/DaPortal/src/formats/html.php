@@ -805,8 +805,8 @@ class HTMLFormat extends FormatElements
 	//escaping
 	private function escape($text)
 	{
-		return str_replace(array('<', '>'), array('&lt;', '&gt;'),
-				$text);
+		return str_replace(array('<', '>', '&'), array('&lt;', '&gt;',
+				'&amp;'), $text);
 	}
 
 
@@ -818,8 +818,8 @@ class HTMLFormat extends FormatElements
 
 	private function escapeText($text)
 	{
-		$from = array('<', '>', "\n", "\r");
-		$to = array('&lt;', '&gt;', "<br />\n", '');
+		$from = array('<', '>', '&', "\n", "\r");
+		$to = array('&lt;', '&gt;', '&amp;', "<br />\n", '');
 
 		return str_replace($from, $to, $text);
 	}
