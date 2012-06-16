@@ -45,6 +45,19 @@ class BrowserModule extends Module
 	//protected
 	//methods
 	//accessors
+	//BrowserModule::getGroup
+	protected function getGroup($gid)
+	{
+		static $cache = array();
+
+		if(isset($cache[$gid]))
+			return $cache[$gid];
+		$cache[$gid] = (($gr = posix_getgrgid($gid)) !== FALSE)
+			? $gr['name'] : $gid;
+		return $cache[$gid];
+	}
+
+
 	//BrowserModule::getRoot
 	protected function getRoot($engine)
 	{
@@ -69,16 +82,30 @@ class BrowserModule extends Module
 		if(($parent = dirname($path)) != $path)
 		{
 			$r = new Request($engine, $this->name, FALSE, FALSE,
-					$dirname);
+					ltrim($parent, '/'));
 			//XXX change the label to "Browse" for files
 			$toolbar->append('button', array('request' => $r,
 					'stock' => 'updir',
 					'text' => _('Parent directory')));
 		}
-		$r = new Request($engine, $this->name, FALSE, FALSE, $path);
+		$r = new Request($engine, $this->name, FALSE, FALSE,
+				ltrim($path, '/'));
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'refresh', 'text' => _('Refresh')));
 		return $toolbar;
+	}
+
+
+	//BrowserModule::getUser
+	protected function getUser($uid)
+	{
+		static $cache = array();
+
+		if(isset($cache[$uid]))
+			return $cache[$uid];
+		$cache[$uid] = (($pw = posix_getpwuid($uid)) !== FALSE)
+			? $pw['name'] : $uid;
+		return $cache[$uid];
 	}
 
 
@@ -154,7 +181,9 @@ class BrowserModule extends Module
 		if(($dir = @opendir($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 				'text' => $error));
-		$view = $page->append('treeview');
+		$columns = array('title' => _('Title'), 'user' => _('User'),
+				'group' => _('Group'));
+		$view = $page->append('treeview', array('columns' => $columns));
 		while(($de = readdir($dir)) !== FALSE)
 		{
 			//skip "." and ".."
@@ -168,6 +197,8 @@ class BrowserModule extends Module
 			$link = new PageElement('link', array(
 					'request' => $r, 'text' => $de));
 			$row->setProperty('title', $link);
+			$row->setProperty('user', $this->getUser($st['uid']));
+			$row->setProperty('group', $this->getGroup($st['gid']));
 		}
 	}
 
@@ -186,6 +217,21 @@ class BrowserModule extends Module
 		$link = new PageElement('link', array('request' => $r,
 				'text' => basename($path)));
 		$col2->append($link);
+		//size
+		$col1->append('label', array('class' => 'bold',
+				'text' => _('Size: ')));
+		$col2->append('label', array('text' => $st['size'].' '
+				._('bytes')));
+		//user
+		$col1->append('label', array('class' => 'bold',
+				'text' => _('User: ')));
+		$col2->append('label', array(
+				'text' => $this->getUser($st['uid'])));
+		//group
+		$col1->append('label', array('class' => 'bold',
+				'text' => _('Group: ')));
+		$col2->append('label', array(
+				'text' => $this->getGroup($st['gid'])));
 	}
 
 
