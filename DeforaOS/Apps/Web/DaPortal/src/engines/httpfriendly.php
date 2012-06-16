@@ -163,11 +163,11 @@ class HttpFriendlyEngine extends HttpEngine
 		if(($module = $request->getModule()) === FALSE)
 			return $url;
 		//handle the main parameters
-		$url .= '/'.urlencode($module);
+		$url .= '/'.$module;
 		if(($action = $request->getAction()) !== FALSE)
-			$url .= '/'.urlencode($action);
+			$url .= '/'.$action;
 		if(($id = $request->getId()) !== FALSE)
-			$url .= '/'.urlencode($id);
+			$url .= '/'.$id;
 		if(($title = $request->getTitle()) !== FALSE)
 		{
 			$title = str_replace(array(' ', '.'), '-', $title);
