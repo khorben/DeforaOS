@@ -267,7 +267,12 @@ class HttpEngine extends Engine
 		//FIXME also set the filename
 		header('Content-Disposition: '.$disposition);
 		if(($st = fstat($fp)) !== FALSE)
+		{
 			header('Content-Length: '.$st['size']);
+			$lastm = strftime('%a, %d %b %Y %H:%M:%S',
+					$st['mtime']);
+			header('Last-Modified: '.$lastm);
+		}
 		//XXX fpassthru() would be better but allocates too much memory
 		while(!feof($fp))
 			if(($buf = fread($fp, 65536)) !== FALSE)
