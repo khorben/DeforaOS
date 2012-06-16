@@ -135,7 +135,7 @@ class ProjectModule extends ContentModule
 	protected $project_query_bug = "SELECT title, content,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
-		project_id
+		project_id, state, type, priority, assigned
 		FROM daportal_content, daportal_bug, daportal_user
 		WHERE daportal_content.content_id=daportal_bug.content_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -163,7 +163,8 @@ class ProjectModule extends ContentModule
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp,
-		bug_id, daportal_bug.project_id AS project_id, priority, cvsroot
+		bug_id, daportal_bug.project_id AS project_id, state, type,
+		priority, cvsroot
 		FROM daportal_module, daportal_user, daportal_content
 		LEFT JOIN daportal_project
 		ON daportal_content.content_id=daportal_project.project_id
@@ -526,10 +527,12 @@ class ProjectModule extends ContentModule
 	//ProjectModule::helperDisplayBug
 	protected function helperDisplayBug($engine, $page, $content)
 	{
+		$project = $this->_get($engine, $content['project_id']);
+
 		$request = new Request($engine, $content['module'], FALSE,
 				$content['id'], $content['title']);
-		$title = sprintf(_('Bug #%u: %s'), $content['bug_id'],
-				$content['title']);
+		$title = sprintf(_('#%u/%s: %s'), $content['bug_id'],
+				$project['title'], $content['title']);
 		$content['title'] = $title;
 		//title
 		$this->helperDisplayTitle($engine, $page, $request, $content);
@@ -537,10 +540,50 @@ class ProjectModule extends ContentModule
 		//FIXME pages should render as vbox by default
 		$vbox = $page->append('vbox');
 		$this->helperDisplayToolbar($engine, $vbox, $request, $content);
+		$this->helperDisplayBugMetadata($engine, $vbox, $request,
+				$content, $project);
 		//content
 		$this->helperDisplayText($engine, $vbox, $request, $content);
 		//buttons
 		$this->helperDisplayButtons($engine, $vbox, $request, $content);
+	}
+
+
+	//ProjectModule::helperDisplayBugMetadata
+	protected function helperDisplayBugMetadata($engine, $page, $request,
+			$bug, $project)
+	{
+		$r = new Request($engine, $this->name, FALSE, $project['id'],
+				$project['title']);
+		$u = new Request($engine, $this->name, 'list', $bug['user_id'],
+				$bug['username']);
+
+		$page = $page->append('hbox');
+		$col1 = $page->append('vbox');
+		$col2 = $page->append('vbox');
+		//project
+		$label = $col1->append('label', array('request' => $r,
+				'text' => _('Project: ')));
+		$label->append('link', array('text' => $project['title']));
+		//submitter
+		$label = $col2->append('label', array(
+				'text' => _('Submitter: ')));
+		$label->append('link', array('request' => $u,
+				'text' => $bug['username']));
+		//date
+		$label = $col1->append('label', array('text' => _('Date: ')));
+		//XXX should span across both columns instead
+		$label = $col2->append('label', array('text' => $bug['date']));
+		//state
+		$label = $col1->append('label', array('text' => _('State: ')));
+		$label->append('label', array('text' => $bug['state']));
+		//type
+		$label = $col2->append('label', array('text' => _('Type: ')));
+		$label->append('label', array('text' => $bug['type']));
+		//priority
+		$label = $col1->append('label', array(
+				'text' => _('Priority: ')));
+		$label->append('label', array('text' => $bug['priority']));
 	}
 
 
