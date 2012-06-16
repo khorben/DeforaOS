@@ -64,36 +64,86 @@ class BrowserModule extends Module
 	//calls
 	protected function callDefault($engine, $request)
 	{
-		$root = $this->getRoot($engine);
-
 		//verify request
-		if(($folder = $request->getTitle()) === FALSE)
-			$folder = '/';
-		else
-			$folder = '/'.ltrim($folder, '/');
-		$folder = $this->helperSanitizePath($folder);
-		$title = _('Browser: ').$folder;
+		if(($path = $request->getTitle()) === FALSE)
+			$path = '/';
+		$path = $this->helperSanitizePath($path);
+		$title = _('Browser: ').$path;
 		$page = new Page(array('title' => $title));
 		//title
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		//view
-		$view = $page->append('treeview');
-		if(($dir = opendir($root.'/'.$folder)) !== FALSE)
-			while(($de = readdir($dir)) !== FALSE)
-			{
-				if($de == '.' || $de == '..')
-					continue;
-				$row = $view->append('row');
-				$row->setProperty('title', $de);
-			}
+		$this->helperDisplay($engine, $page, $path);
 		return $page;
 	}
 
 
 	//helpers
+	//BrowserModule::helperDisplay
+	protected function helperDisplay($engine, $page, $path)
+	{
+		$root = $this->getRoot($engine);
+		$error = _('Could not open the requested file or directory');
+
+		if(($st = lstat($root.'/'.$path)) === FALSE)
+			return $page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		if($st['mode'] & 040000 == 040000)
+			$this->helperDisplayDirectory($engine, $page, $root,
+					$path);
+		else
+			$this->helperDisplayFile($engine, $page, $root, $path);
+	}
+
+
+	//BrowserModule::helperDisplayDirectory
+	protected function helperDisplayDirectory($engine, $page, $root, $path)
+	{
+		$error = _('Could not open the directory');
+
+		if(($dir = @opendir($root.'/'.$path)) === FALSE)
+			return $page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		$view = $page->append('treeview');
+		while(($de = readdir($dir)) !== FALSE)
+		{
+			//skip "." and ".."
+			if($de == '.' || $de == '..')
+				continue;
+			$fullpath = $root.'/'.$path.'/'.$de;
+			$st = lstat($fullpath);
+			$row = $view->append('row');
+			$r = new Request($engine, $this->name, FALSE,
+					FALSE, ltrim($path.'/'.$de, '/'));
+			$link = new PageElement('link', array(
+					'request' => $r, 'text' => $de));
+			$row->setProperty('title', $link);
+		}
+	}
+
+
+	//BrowserModule::helperDisplayFile
+	protected function helperDisplayFile($engine, $page, $root, $path, $st)
+	{
+		$hbox = $page->append('hbox');
+		$col1 = $hbox->append('vbox');
+		$col2 = $hbox->append('vbox');
+		//filename
+		$col1->append('label', array('class' => 'bold',
+				'text' => _('Filename: ')));
+		$r = new Request($engine, $this->name, 'download', FALSE,
+				$path);
+		$link = new PageElement('link', array('request' => $r,
+				'text' => basename($path)));
+		$col2->append($link);
+	}
+
+
+	//BrowserModule::helperSanitizePath
 	protected function helperSanitizePath($path)
 	{
+		$path = '/'.ltrim($path, '/');
 		$path = str_replace('/./', '/', $path);
 		//FIXME really implement '..'
 		if(strpos($path, '/../') !== FALSE)
