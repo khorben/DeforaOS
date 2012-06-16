@@ -562,26 +562,30 @@ class ProjectModule extends ContentModule
 		$col1 = $page->append('vbox');
 		$col2 = $page->append('vbox');
 		//project
-		$label = $col1->append('label', array('request' => $r,
+		$label = $col1->append('label', array('class' => 'bold',
 				'text' => _('Project: ')));
-		$label->append('link', array('text' => $project['title']));
+		$label->append('link', array('class' => 'bold', 'request' => $r,
+				'text' => $project['title']));
 		//submitter
-		$label = $col2->append('label', array(
+		$label = $col2->append('label', array('class' => 'bold',
 				'text' => _('Submitter: ')));
 		$label->append('link', array('request' => $u,
 				'text' => $bug['username']));
 		//date
-		$label = $col1->append('label', array('text' => _('Date: ')));
+		$label = $col1->append('label', array('class' => 'bold',
+				'text' => _('Date: ')));
 		//XXX should span across both columns instead
 		$label = $col2->append('label', array('text' => $bug['date']));
 		//state
-		$label = $col1->append('label', array('text' => _('State: ')));
+		$label = $col1->append('label', array('class' => 'bold',
+				'text' => _('State: ')));
 		$label->append('label', array('text' => $bug['state']));
 		//type
-		$label = $col2->append('label', array('text' => _('Type: ')));
+		$label = $col2->append('label', array('class' => 'bold',
+				'text' => _('Type: ')));
 		$label->append('label', array('text' => $bug['type']));
 		//priority
-		$label = $col1->append('label', array(
+		$label = $col1->append('label', array('class' => 'bold',
 				'text' => _('Priority: ')));
 		$label->append('label', array('text' => $bug['priority']));
 	}
