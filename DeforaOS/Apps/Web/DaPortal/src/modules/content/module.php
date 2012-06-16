@@ -46,6 +46,8 @@ abstract class ContentModule extends Module
 		$this->text_content_on = _('on');
 		$this->text_content_open = _('Read');
 		$this->text_content_post = _('Publish');
+		$this->text_content_publish_progress
+			= _('Publication in progress, please wait...');
 		$this->text_content_submit = _('Submit content');
 		$this->text_content_submit_progress
 			= _('Submission in progress, please wait...');
@@ -105,6 +107,8 @@ abstract class ContentModule extends Module
 	protected $text_content_on = 'on';
 	protected $text_content_open = 'Read';
 	protected $text_content_post = 'Publish';
+	protected $text_content_publish_progress
+		= 'Publication in progress, please wait...';
 	protected $text_content_submit = 'Submit content';
 	protected $text_content_submit_progress
 		= 'Submission in progress, please wait...';
@@ -848,20 +852,10 @@ abstract class ContentModule extends Module
 
 	protected function _publishSuccess($engine, $request, $page, $content)
 	{
-		//FIXME re-use _submitSuccess() instead (fix $content)
 		$r = new Request($engine, $this->name, FALSE, $content['id'],
 				$content['title']);
-		$page->setProperty('location', $engine->getUrl($r));
-		$page->setProperty('refresh', 30);
-		$box = $page->append('vbox');
-		$text = $this->text_content_submit_progress;
-		$box->append('label', array('text' => $text));
-		$box = $box->append('hbox');
-		$text = _('If you are not redirected within 30 seconds, please ');
-		$box->append('label', array('text' => $text));
-		$box->append('link', array('text' => _('click here'),
-				'request' => $r));
-		$box->append('label', array('text' => '.'));
+		$this->helperRedirect($engine, $r, $page,
+				$this->text_content_publish_progress);
 		return $page;
 	}
 
@@ -932,17 +926,8 @@ abstract class ContentModule extends Module
 	{
 		$r = new Request($engine, $this->name, FALSE, $content->getId(),
 				$content->getTitle());
-		$page->setProperty('location', $engine->getUrl($r));
-		$page->setProperty('refresh', 30);
-		$box = $page->append('vbox');
-		$text = $this->text_content_submit_progress;
-		$box->append('label', array('text' => $text));
-		$box = $box->append('hbox');
-		$text = _('If you are not redirected within 30 seconds, please ');
-		$box->append('label', array('text' => $text));
-		$box->append('link', array('text' => _('click here'),
-				'request' => $r));
-		$box->append('label', array('text' => '.'));
+		$this->helperRedirect($engine, $r, $page,
+				$this->text_content_submit_progress);
 		return $page;
 	}
 
@@ -967,7 +952,7 @@ abstract class ContentModule extends Module
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		//toolbar
-		$toolbar = $this->getToolbar($engine);
+		$toolbar = $this->getToolbar($engine, $content);
 		$page->append($toolbar);
 		//process the request
 		if(($error = $this->_updateProcess($engine, $request, $content))
@@ -1012,20 +997,10 @@ abstract class ContentModule extends Module
 
 	protected function _updateSuccess($engine, $request, $page, $content)
 	{
-		//FIXME write a redirection helper instead
 		$r = new Request($engine, $this->name, FALSE, $content['id'],
 				$content['title']);
-		$page->setProperty('location', $engine->getUrl($r));
-		$page->setProperty('refresh', 30);
-		$box = $page->append('vbox');
-		$text = $this->text_content_update_progress;
-		$box->append('label', array('text' => $text));
-		$box = $box->append('hbox');
-		$text = _('If you are not redirected within 30 seconds, please ');
-		$box->append('label', array('text' => $text));
-		$box->append('link', array('text' => _('click here'),
-				'request' => $r));
-		$box->append('label', array('text' => '.'));
+		$this->helperRedirect($engine, $r, $page,
+				$this->text_content_update_progress);
 		return $page;
 	}
 
@@ -1367,6 +1342,26 @@ abstract class ContentModule extends Module
 				'text' => $content['title']));
 		$title = $preview->append('title');
 		$title->append($link);
+	}
+
+
+	//ContentModule::helperRedirect
+	protected function helperRedirect($engine, $request, $page,
+			$text = FALSE)
+	{
+		if($text === FALSE)
+			$text = _('Redirection in progress, please wait...');
+		$page->setProperty('location', $engine->getUrl($request));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+				'request' => $request));
+		$box->append('label', array('text' => '.'));
+		return $page;
 	}
 }
 
