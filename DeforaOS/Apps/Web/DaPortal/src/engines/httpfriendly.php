@@ -66,24 +66,16 @@ class HttpFriendlyEngine extends HttpEngine
 				//there is an action before the ID
 				$action = $id;
 				$id = FALSE;
-				if(count($path) > 0)
-				{
+				if(count($path) > 0 && is_numeric($path[0]))
 					$id = array_shift($path);
-					if(!is_numeric($id))
-						//XXX this is really a 404
-						return parent::_getRequestDo();
-				}
 			}
 		}
-		if(count($path) == 1)
+		if(count($path) > 0)
 		{
-			$title = array_shift($path);
+			$title = implode('/', $path);
 			//obtain the extension
 			$this->_getRequestExtension($title, $extension);
 		}
-		else if(count($path) != 0)
-			//XXX this is really a 404
-			return parent::_getRequestDo();
 		//arguments
 		//XXX is there a function to do this directly?
 		$query = explode('&', $_SERVER['QUERY_STRING']);
