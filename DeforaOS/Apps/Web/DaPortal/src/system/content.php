@@ -104,9 +104,6 @@ class Content
 		$db = $engine->getDatabase();
 		$query = Content::$query_update;
 
-		var_dump($content_id);
-		var_dump($title);
-		var_dump($content);
 		if(!is_numeric($content_id))
 			return FALSE;
 		if(!is_string($title) || !is_string($content))
