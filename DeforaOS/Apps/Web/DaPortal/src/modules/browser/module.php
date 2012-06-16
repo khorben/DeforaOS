@@ -33,6 +33,7 @@ class BrowserModule extends Module
 		switch($action)
 		{
 			case 'default':
+			case 'download':
 				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
 			default:
@@ -62,9 +63,10 @@ class BrowserModule extends Module
 
 	//useful
 	//calls
+	//BrowserModule::callDefault
 	protected function callDefault($engine, $request)
 	{
-		//verify request
+		//obtain the path requested
 		if(($path = $request->getTitle()) === FALSE)
 			$path = '/';
 		$path = $this->helperSanitizePath($path);
@@ -79,12 +81,34 @@ class BrowserModule extends Module
 	}
 
 
+	//BrowserModule::callDownload
+	protected function callDownload($engine, $request)
+	{
+		$root = $this->getRoot($engine);
+		$error = _('Could not download the file requested');
+
+		//obtain the path requested
+		if(($path = $request->getTitle()) === FALSE)
+			$path = '/';
+		$path = $this->helperSanitizePath($path);
+		$title = _('Browser: ').$path;
+		if(($fp = fopen($root.'/'.$path, 'rb')) !== FALSE)
+			return $fp;
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		$page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		return $page;
+	}
+
+
 	//helpers
 	//BrowserModule::helperDisplay
 	protected function helperDisplay($engine, $page, $path)
 	{
 		$root = $this->getRoot($engine);
-		$error = _('Could not open the requested file or directory');
+		$error = _('Could not open the file or directory requested');
 
 		if(($st = lstat($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
@@ -100,7 +124,7 @@ class BrowserModule extends Module
 	//BrowserModule::helperDisplayDirectory
 	protected function helperDisplayDirectory($engine, $page, $root, $path)
 	{
-		$error = _('Could not open the directory');
+		$error = _('Could not open the directory requested');
 
 		if(($dir = @opendir($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
