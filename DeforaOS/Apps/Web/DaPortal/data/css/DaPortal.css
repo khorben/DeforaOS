@@ -15,7 +15,22 @@
 
 
 
-/* global */
+/* classes */
+.bold {
+	font-weight:			bold;
+}
+
+.italic {
+	font-style:			italic;
+}
+
+.underline {
+	text-decoration:		underline;
+}
+
+
+/* widgets */
+/* button */
 a.button, button, input[type="button"], input[type="reset"],
 input[type="submit"] {
 	margin:				0.5ex;
@@ -27,16 +42,19 @@ input[type="password"], input[type="text"], label {
 	padding:			0.5ex;
 }
 
+/* buttonbox */
 div.buttonbox > a.button, div.buttonbox > button,
 div.buttonbox > input[type="button"], div.buttonbox > input[type="reset"],
 div.buttonbox > input[type="submit"] {
 	width:				10ex;
 }
 
+/* checkbox */
 form div.checkbox input[type="checkbox"] {
 	vertical-align:			text-bottom;
 }
 
+/* entry */
 form div.entry, form div.textview {
 	display:			table-row;
 }
@@ -45,6 +63,7 @@ form div.entry span.label, form div.entry input {
 	display:			table-cell;
 }
 
+/* frame */
 div.frame > span.title {
 	float:				left;
 }
@@ -59,6 +78,7 @@ div.frame:after {
 	display:			block;
 }
 
+/* hbox */
 div.hbox:after {
 	clear:				left;
 	content:			"";
@@ -74,6 +94,7 @@ div.hbox > div.pack:first-child {
 	padding-left:			0;
 }
 
+/* image */
 img {
 	border-width:			0;
 }
@@ -82,10 +103,12 @@ div.messagebox {
 	padding:			1ex;
 }
 
+/* title */
 .title {
 	font-weight:			bold;
 }
 
+/* treeview */
 form.treeview:after {
 	clear:				left;
 	content:			"";
