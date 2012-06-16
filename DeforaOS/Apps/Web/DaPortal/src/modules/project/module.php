@@ -203,8 +203,8 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::_getBug
-	protected function _getBug($engine, $id)
+	//ProjectModule::getBug
+	protected function getBug($engine, $id)
 	{
 		$db = $engine->getDatabase();
 		$query = $this->project_query_bug;
@@ -245,8 +245,8 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::_getProject
-	protected function _getProject($engine, $id)
+	//ProjectModule::getProject
+	protected function getProject($engine, $id)
 	{
 		$db = $engine->getDatabase();
 		$query = $this->project_query_project;
@@ -278,11 +278,11 @@ class ProjectModule extends ContentModule
 	{
 		$id = (isset($content['id'])) ? $content['id'] : FALSE;
 
-		if(($bug = $this->_getBug($engine, $id)) !== FALSE)
+		if(($bug = $this->getBug($engine, $id)) !== FALSE)
 			$id = $bug['project_id'];
 		if($id === FALSE)
 			return FALSE;
-		if(($project = $this->_getProject($engine, $id)) === FALSE)
+		if(($project = $this->getProject($engine, $id)) === FALSE)
 			return FALSE;
 		$toolbar = new PageElement('toolbar');
 		$r = new Request($engine, $this->name, FALSE, $id,
@@ -344,7 +344,7 @@ class ProjectModule extends ContentModule
 			//FIXME show the global repository instead?
 			return $this->_default($engine);
 		//XXX may fail
-		$project = $this->_getProject($engine, $id);
+		$project = $this->getProject($engine, $id);
 		$title = _('Project: ').$project['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
@@ -374,7 +374,7 @@ class ProjectModule extends ContentModule
 		//XXX unlike ProjectModule::list() here getId() is the project
 		//determine the current project
 		if(($id = $request->getId()) !== FALSE
-				&& ($project = $this->_getProject($engine, $id))
+				&& ($project = $this->getProject($engine, $id))
 				=== FALSE)
 			$error = _('Unknown project');
 		else if(($name = $request->getParameter('project')) !== FALSE
@@ -470,7 +470,7 @@ class ProjectModule extends ContentModule
 			//FIXME show the global repository instead?
 			return $this->_default($engine);
 		//XXX may fail
-		$project = $this->_getProject($engine, $id);
+		$project = $this->getProject($engine, $id);
 		$title = _('Project: ').$project['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
@@ -494,7 +494,7 @@ class ProjectModule extends ContentModule
 			//FIXME show the global timeline instead?
 			return $this->_default($engine);
 		//XXX may fail
-		$project = $this->_getProject($engine, $id);
+		$project = $this->getProject($engine, $id);
 		$title = _('Project: ').$project['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
