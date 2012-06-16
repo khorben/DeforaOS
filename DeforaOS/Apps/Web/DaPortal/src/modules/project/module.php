@@ -217,8 +217,8 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::_getFilter
-	protected function _getFilter($engine, $request)
+	//ProjectModule::getFilter
+	protected function getFilter($engine, $request)
 	{
 		$r = new Request($engine, $this->name, 'bug_list');
 		$form = new PageElement('form', array('request' => $r,
@@ -392,7 +392,7 @@ class ProjectModule extends ContentModule
 			$toolbar = $this->getToolbar($engine, $project);
 			$query .= ' AND daportal_project.project_id=:project_id';
 		}
-		$filter = $this->_getFilter($engine, $request);
+		$filter = $this->getFilter($engine, $request);
 		//filter by user_id
 		if(($uid = $request->getParameter('user_id')) !== FALSE)
 		{
