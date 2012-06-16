@@ -268,7 +268,11 @@ class HttpEngine extends Engine
 		header('Content-Disposition: '.$disposition);
 		if(($st = fstat($fp)) !== FALSE)
 			header('Content-Length: '.$st['size']);
-		fpassthru($fp);
+		//XXX fpassthru() would be better but allocates too much memory
+		while(!feof($fp))
+			if(($buf = fread($fp, 65536)) !== FALSE)
+				print($buf);
+		fclose($fp);
 	}
 
 
