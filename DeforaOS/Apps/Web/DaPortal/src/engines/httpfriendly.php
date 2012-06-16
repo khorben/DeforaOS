@@ -171,7 +171,7 @@ class HttpFriendlyEngine extends HttpEngine
 		if(($title = $request->getTitle()) !== FALSE)
 		{
 			$title = str_replace(array(' ', '.'), '-', $title);
-			$url .= '/'.urlencode($title);
+			$url .= '/'.$title;
 		}
 		//handle arguments
 		if($request->isIdempotent()
