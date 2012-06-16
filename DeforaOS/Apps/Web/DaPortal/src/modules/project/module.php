@@ -195,10 +195,7 @@ class ProjectModule extends ContentModule
 				|| count($res) != 1)
 			return FALSE;
 		$res = $res[0];
-		$res['date'] = substr($res['timestamp'], 0, 19);
-		$res['date'] = strtotime($res['date']);
-		//FIXME use strftime() instead
-		$res['date'] = date(_('d/m/Y H:i'), $res['date']);
+		$res['date'] = $db->formatDate($engine, $res['timestamp']);
 		if(!is_numeric($res['bug_id']))
 			$res['project_id'] = $res['id'];
 		return $res;
