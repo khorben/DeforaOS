@@ -164,7 +164,7 @@ class ProjectModule extends ContentModule
 		daportal_user.username AS username,
 		daportal_content.content_id AS id, title, content, timestamp,
 		bug_id, daportal_bug.project_id AS project_id, state, type,
-		priority, cvsroot
+		priority, assigned, cvsroot
 		FROM daportal_module, daportal_user, daportal_content
 		LEFT JOIN daportal_project
 		ON daportal_content.content_id=daportal_project.project_id
@@ -557,37 +557,55 @@ class ProjectModule extends ContentModule
 				$project['title']);
 		$u = new Request($engine, $this->name, 'list', $bug['user_id'],
 				$bug['username']);
+		$user = is_numeric($bug['assigned'])
+			? new User($engine, $bug['assigned']) : FALSE;
+		$a = ($user !== FALSE)
+			? new Request($engine, $this->name, 'list',
+				$user->getUserId(), $user->getUsername())
+			: FALSE;
 
 		$page = $page->append('hbox');
 		$col1 = $page->append('vbox');
 		$col2 = $page->append('vbox');
+		$col3 = $page->append('vbox');
+		$col4 = $page->append('vbox');
 		//project
-		$label = $col1->append('label', array('class' => 'bold',
+		$col1->append('label', array('class' => 'bold',
 				'text' => _('Project: ')));
-		$label->append('link', array('class' => 'bold', 'request' => $r,
+		$col2->append('link', array('class' => 'bold', 'request' => $r,
 				'text' => $project['title']));
 		//submitter
-		$label = $col2->append('label', array('class' => 'bold',
+		$col3->append('label', array('class' => 'bold',
 				'text' => _('Submitter: ')));
-		$label->append('link', array('request' => $u,
+		$col4->append('link', array('request' => $u,
 				'text' => $bug['username']));
 		//date
-		$label = $col1->append('label', array('class' => 'bold',
+		$col1->append('label', array('class' => 'bold',
 				'text' => _('Date: ')));
-		//XXX should span across both columns instead
-		$label = $col2->append('label', array('text' => $bug['date']));
+		//XXX should span across columns instead
+		$col2->append('label', array('text' => $bug['date']));
+		$col3->append('label', array('text' => ' '));
+		$col4->append('label', array('text' => ' '));
 		//state
-		$label = $col1->append('label', array('class' => 'bold',
+		$col1->append('label', array('class' => 'bold',
 				'text' => _('State: ')));
-		$label->append('label', array('text' => $bug['state']));
+		$col2->append('label', array('text' => $bug['state']));
 		//type
-		$label = $col2->append('label', array('class' => 'bold',
+		$col3->append('label', array('class' => 'bold',
 				'text' => _('Type: ')));
-		$label->append('label', array('text' => $bug['type']));
+		$col4->append('label', array('text' => $bug['type']));
 		//priority
-		$label = $col1->append('label', array('class' => 'bold',
+		$col1->append('label', array('class' => 'bold',
 				'text' => _('Priority: ')));
-		$label->append('label', array('text' => $bug['priority']));
+		$col2->append('label', array('text' => $bug['priority']));
+		//assigned
+		$col3->append('label', array('class' => 'bold',
+				'text' => _('Assigned to: ')));
+		if($a !== FALSE)
+			$col4->append('link', array('request' => $a,
+				'text' => $user->getUsername()));
+		else
+			$col4->append('label', array('text' => ' '));
 	}
 
 
