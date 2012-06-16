@@ -516,11 +516,35 @@ class ProjectModule extends ContentModule
 	{
 		if($content === FALSE)
 			return;
-		//FIXME (re-) implement bug reports
+		if(isset($content['bug_id']))
+			return $this->helperDisplayBug($engine, $page,
+					$content);
 		return $this->helperDisplayProject($engine, $page, $content);
 	}
 
 
+	//ProjectModule::helperDisplayBug
+	protected function helperDisplayBug($engine, $page, $content)
+	{
+		$request = new Request($engine, $content['module'], FALSE,
+				$content['id'], $content['title']);
+		$title = sprintf(_('Bug #%u: %s'), $content['bug_id'],
+				$content['title']);
+		$content['title'] = $title;
+		//title
+		$this->helperDisplayTitle($engine, $page, $request, $content);
+		//toolbar
+		//FIXME pages should render as vbox by default
+		$vbox = $page->append('vbox');
+		$this->helperDisplayToolbar($engine, $vbox, $request, $content);
+		//content
+		$this->helperDisplayText($engine, $vbox, $request, $content);
+		//buttons
+		$this->helperDisplayButtons($engine, $vbox, $request, $content);
+	}
+
+
+	//ProjectModule::helperDisplayProject
 	protected function helperDisplayProject($engine, $page, $content)
 	{
 		$request = new Request($engine, $content['module'], FALSE,
