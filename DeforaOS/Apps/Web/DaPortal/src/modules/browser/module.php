@@ -61,6 +61,27 @@ class BrowserModule extends Module
 	}
 
 
+	//BrowserModule::getToolbar
+	protected function getToolbar($engine, $path)
+	{
+
+		$toolbar = new PageElement('toolbar');
+		if(($parent = dirname($path)) != $path)
+		{
+			$r = new Request($engine, $this->name, FALSE, FALSE,
+					$dirname);
+			//XXX change the label to "Browse" for files
+			$toolbar->append('button', array('request' => $r,
+					'stock' => 'updir',
+					'text' => _('Parent directory')));
+		}
+		$r = new Request($engine, $this->name, FALSE, FALSE, $path);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'refresh', 'text' => _('Refresh')));
+		return $toolbar;
+	}
+
+
 	//useful
 	//calls
 	//BrowserModule::callDefault
@@ -110,6 +131,8 @@ class BrowserModule extends Module
 		$root = $this->getRoot($engine);
 		$error = _('Could not open the file or directory requested');
 
+		$toolbar = $this->getToolbar($engine, $path);
+		$page->append($toolbar);
 		if(($st = lstat($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
@@ -118,7 +141,8 @@ class BrowserModule extends Module
 			$this->helperDisplayDirectory($engine, $page, $root,
 					$path);
 		else
-			$this->helperDisplayFile($engine, $page, $root, $path);
+			$this->helperDisplayFile($engine, $page, $root, $path,
+					$st);
 	}
 
 
