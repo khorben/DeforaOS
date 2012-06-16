@@ -451,13 +451,17 @@ class HTMLFormat extends FormatElements
 	protected function renderLabel($e)
 	{
 		$tag = 'span';
+		$class = 'label';
 		$attributes = array();
+
+		if(($c = $e->getProperty('class')) !== FALSE)
+			$class = 'label '.$c;
 		if(($for = $e->getProperty('for')) !== FALSE)
 		{
 			$tag = 'label';
 			$attributes['for'] = $for;
 		}
-		$this->tagOpen($tag, 'label', $e->getProperty('id'),
+		$this->tagOpen($tag, $class, $e->getProperty('id'),
 			$attributes, $e->getProperty('text'));
 		$this->renderChildren($e);
 		$this->tagClose($tag);
