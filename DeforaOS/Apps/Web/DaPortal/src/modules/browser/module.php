@@ -160,7 +160,8 @@ class BrowserModule extends Module
 
 		$toolbar = $this->getToolbar($engine, $path);
 		$page->append($toolbar);
-		if(($st = lstat($root.'/'.$path)) === FALSE)
+		//FIXME let stat() vs lstat() be configurable
+		if(($st = stat($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		if(($st['mode'] & BrowserModule::$S_IFDIR)
