@@ -340,11 +340,9 @@ class ProjectModule extends ContentModule
 	//ProjectModule::callBrowse
 	protected function callBrowse($engine, $request)
 	{
-		if(($id = $request->getId()) === FALSE)
-			//FIXME show the global repository instead?
-			return $this->_default($engine);
-		//XXX may fail
-		$project = $this->getProject($engine, $id);
+		if(($project = $this->getProject($engine, $request->getId(),
+				$request->getTitle())) === FALSE)
+			return $this->callDefault($engine);
 		$title = _('Project: ').$project['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
@@ -466,11 +464,9 @@ class ProjectModule extends ContentModule
 	//ProjectModule::callDownload
 	protected function callDownload($engine, $request)
 	{
-		if(($id = $request->getId()) === FALSE)
-			//FIXME show the global repository instead?
-			return $this->_default($engine);
-		//XXX may fail
-		$project = $this->getProject($engine, $id);
+		if(($project = $this->getProject($engine, $request->getId(),
+				$request->getTitle())) === FALSE)
+			return $this->callDefault($engine);
 		$title = _('Project: ').$project['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
@@ -490,11 +486,9 @@ class ProjectModule extends ContentModule
 	//ProjectModule::callTimeline
 	protected function callTimeline($engine, $request)
 	{
-		if(($id = $request->getId()) === FALSE)
-			//FIXME show the global timeline instead?
-			return $this->_default($engine);
-		//XXX may fail
-		$project = $this->getProject($engine, $id);
+		if(($project = $this->getProject($engine, $request->getId(),
+				$request->getTitle())) === FALSE)
+			return $this->callDefault($engine);
 		$title = _('Project: ').$project['title'];
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'project',
@@ -503,8 +497,8 @@ class ProjectModule extends ContentModule
 		$page->append($toolbar);
 		if(($scm = $this->attachScm($engine)) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('An error occurred')));
+					'type' => 'error',
+					'text' => _('An error occurred')));
 		$timeline = $scm->timeline($engine, $project, $request);
 		$page->append($timeline);
 		return $page;
