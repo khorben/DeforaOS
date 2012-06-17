@@ -62,7 +62,11 @@ class ProjectModule extends ContentModule
 		{
 			case 'bug_list':
 				return $this->callBugList($engine, $request);
+			case 'bug_reply':
+				return $this->callBugReply($engine, $request);
 			case 'browse':
+			case 'bugList':
+			case 'bugReply':
 			case 'download':
 			case 'timeline':
 				$action = 'call'.ucfirst($action);
@@ -132,9 +136,9 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND daportal_user.user_id=:user_id";
-	protected $project_query_bug = "SELECT title, content,
-		daportal_user.user_id AS user_id,
-		daportal_user.username AS username,
+	protected $project_query_bug = "SELECT daportal_bug.content_id AS id,
+		title, content, daportal_user.user_id AS user_id,
+		daportal_user.username AS username, bug_id,
 		project_id, state, type, priority, assigned
 		FROM daportal_content, daportal_bug, daportal_user
 		WHERE daportal_content.content_id=daportal_bug.content_id
@@ -461,6 +465,42 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::callBugReply
+	protected function callBugReply($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$user = new User($engine, $cred->getUserId());
+
+		if(($bug = $this->getBug($engine, $request->getId(),
+				$request->getTitle())) === FALSE)
+			return $this->callDefault($engine);
+		$project = $this->getProject($engine, $bug['project_id']);
+		$title = sprintf(_('Reply to #%u/%s: %s'), $bug['bug_id'],
+				$project['title'], $bug['title']);
+		$page = new Page(array('title' => $title));
+		//title
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		//preview
+		if($request->getParameter('preview') !== FALSE)
+		{
+			$title = $request->getTitle();
+			$content = $request->getParameter('content');
+			$reply = array('title' => _('Preview: ').$title,
+					'user_id' => $user->getUserId(),
+					'username' => $user->getUsername(),
+					'date' => $this->timestampToDate(),
+					'content' => $content);
+			//FIXME really preview a bug reply instead
+			$this->helperPreview($engine, $page, $reply);
+		}
+		//form
+		$form = $this->formBugReply($engine, $request, $bug, $project);
+		$page->append($form);
+		return $page;
+	}
+
+
 	//ProjectModule::callDownload
 	protected function callDownload($engine, $request)
 	{
@@ -505,6 +545,34 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//forms
+	//ProjectModule::formBugReply
+	protected function formBugReply($engine, $request, $bug, $project)
+	{
+		$r = new Request($engine, $this->name, 'bugReply',
+				$request->getId(), $request->getTitle());
+		$form = new PageElement('form', array('request' => $r));
+		$vbox = $form->append('vbox');
+		$vbox->append('entry', array('text' => _('Title: '),
+				'name' => 'title',
+				'value' => $request->getTitle()));
+		$vbox->append('textview', array('text' => _('Content: '),
+				'name' => 'content',
+				'value' => $request->getParameter('content')));
+		//FIXME really implement
+		$r = new Request($engine, $this->name, FALSE, $bug['id'],
+				$bug['title']);
+		$box = $vbox->append('buttonbox');
+		$box->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		$box->append('button', array('type' => 'submit',
+				'stock' => 'preview', 'name' => 'action',
+				'value' => 'preview', 'text' => _('Preview')));
+		//FIXME add missing buttons
+		return $form;
+	}
+
+
 	//helpers
 	//ProjectModule::helperDisplay
 	protected function helperDisplay($engine, $page, $content = FALSE)
@@ -525,11 +593,11 @@ class ProjectModule extends ContentModule
 
 		$request = new Request($engine, $content['module'], FALSE,
 				$content['id'], $content['title']);
-		$title = sprintf(_('#%u/%s: %s'), $content['bug_id'],
-				$project['title'], $content['title']);
-		$content['title'] = $title;
+		$c = $content;
+		$c['title'] = $title = sprintf(_('#%u/%s: %s'),
+				$c['bug_id'], $project['title'], $c['title']);
 		//title
-		$this->helperDisplayTitle($engine, $page, $request, $content);
+		$this->helperDisplayTitle($engine, $page, $request, $c);
 		//toolbar
 		//FIXME pages should render as vbox by default
 		$vbox = $page->append('vbox');
@@ -539,6 +607,10 @@ class ProjectModule extends ContentModule
 		//content
 		$this->helperDisplayText($engine, $vbox, $request, $content);
 		//buttons
+		$r = new Request($engine, $this->name, 'bugReply',
+				$content['id'], $content['title']);
+		$vbox->append('button', array('request' => $r,
+				'stock' => 'reply', 'text' => _('Reply')));
 		$this->helperDisplayButtons($engine, $vbox, $request, $content);
 	}
 
