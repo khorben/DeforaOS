@@ -231,6 +231,14 @@ div#content > div.pack > h1:first-child.stock48 {
 	padding-left:			60px;
 }
 
+div#content > div.pack > h1:first-child.browser {
+	background-color:		#7f7f7f;
+}
+
+div#content > div.pack > h1:first-child.download {
+	background-color:		#ff7f00;
+}
+
 div#content > div.pack > h1:first-child.error {
 	background-color:		#ff0000;
 }
