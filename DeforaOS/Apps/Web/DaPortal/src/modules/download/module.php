@@ -307,7 +307,7 @@ class DownloadModule extends ContentModule
 	protected function getToolbarFile($engine, $content)
 	{
 		$toolbar = new PageElement('toolbar');
-		//link to the folder
+		//back to the parent folder
 		$parent_id = is_numeric($content['parent_id'])
 			? $content['parent_id'] : FALSE;
 		$parent_title = is_string($content['parent_title'])
@@ -316,6 +316,11 @@ class DownloadModule extends ContentModule
 			$parent_title);
 		$toolbar->append('button', array('request' => $request,
 			'stock' => 'updir', 'text' => _('Browse')));
+		//refresh
+		$request = new Request($engine, $this->name, FALSE,
+				$content['id'], $content['title']);
+		$toolbar->append('button', array('request' => $request,
+				'stock' => 'refresh', 'text' => _('Refresh')));
 		//link to the download
 		$request = new Request($engine, $this->name, 'download',
 			$content['id'], $content['title']);
