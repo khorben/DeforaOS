@@ -789,11 +789,11 @@ class DownloadModule extends ContentModule
 		$this->helperDisplayField($col1, $col2, _('Size:'),
 				$stat['size'].' '._('bytes'));
 		$this->helperDisplayField($col1, $col2, _('Creation time:'),
-			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
+			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['ctime']));
 		$this->helperDisplayField($col1, $col2, _('Modification time:'),
-			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
+			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['mtime']));
 		$this->helperDisplayField($col1, $col2, _('Access time:'),
-			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
+			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['atime']));
 		$this->helperDisplayField($col1, $col2, _('Comment:'),
 				$content['content']);
 		return $page;
