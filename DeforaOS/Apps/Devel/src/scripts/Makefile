@@ -23,6 +23,7 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/deforaos-build.sh \
+		$(PACKAGE)-$(VERSION)/src/deforaos-document.sh \
 		$(PACKAGE)-$(VERSION)/src/deforaos-update.sh \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/targets/Makefile \
