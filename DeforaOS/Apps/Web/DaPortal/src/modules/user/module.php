@@ -377,6 +377,9 @@ class UserModule extends Module
 			foreach($rows as $r)
 				$view->append($r);
 		}
+		$r = new Request($engine);
+		$page->append('link', array('stock' => 'back', 'request' => $r,
+				'text' => _('Back to the site')));
 		return $page;
 	}
 
