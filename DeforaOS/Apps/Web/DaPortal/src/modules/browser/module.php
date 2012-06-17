@@ -268,7 +268,7 @@ class BrowserModule extends Module
 		$col2->append($link);
 		//type
 		$this->_displayFileField($col1, $col2, _('Type:'),
-				Mime::get($engine, basename($path)));
+				Mime::getType($engine, basename($path)));
 		//user
 		$this->_displayFileField($col1, $col2, _('User:'),
 				$this->getUser($st['uid']));

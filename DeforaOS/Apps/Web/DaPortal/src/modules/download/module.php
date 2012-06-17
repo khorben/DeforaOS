@@ -414,7 +414,7 @@ class DownloadModule extends ContentModule
 		$root = $this->getRoot($engine);
 		//output the file
 		$filename = $root.'/'.$content['download_id'];
-		$mime = Mime::get($engine, $content['title']);
+		$mime = Mime::getType($engine, $content['title']);
 		if(($fp = fopen($filename, 'rb')) === FALSE)
 		{
 			$error = _('Could not read file');
@@ -775,7 +775,7 @@ class DownloadModule extends ContentModule
 						request' => $request,
 						'text' => $content['title'])));
 		$this->helperDisplayField($col1, $col2, _('Type:'),
-				Mime::get($engine, $content['title']));
+				Mime::getType($engine, $content['title']));
 		$request = new Request($engine, 'user', FALSE,
 			$content['user_id'], $content['username']);
 		$this->helperDisplayField($col1, $col2, _('Owner:'),

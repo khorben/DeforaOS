@@ -22,7 +22,7 @@ class Mime
 	//public
 	//methods
 	//static
-	static public function get(&$engine, $filename,
+	static public function getType(&$engine, $filename,
 			$default = 'application/octet-stream')
 	{
 		if(Mime::init($engine) === FALSE)
