@@ -137,7 +137,7 @@ class ProjectModule extends ContentModule
 		AND daportal_user.enabled='1'
 		AND daportal_user.user_id=:user_id";
 	protected $project_query_bug = "SELECT daportal_bug.content_id AS id,
-		title, content, daportal_user.user_id AS user_id,
+		title, content, timestamp, daportal_user.user_id AS user_id,
 		daportal_user.username AS username, bug_id,
 		project_id, state, type, priority, assigned
 		FROM daportal_content, daportal_bug, daportal_user
@@ -217,7 +217,9 @@ class ProjectModule extends ContentModule
 					'content_id' => $id))) === FALSE
 				|| count($res) != 1)
 			return FALSE;
-		return $res[0];
+		$res = $res[0];
+		$res['date'] = $db->formatDate($engine, $res['timestamp']);
+		return $res;
 	}
 
 
@@ -481,10 +483,17 @@ class ProjectModule extends ContentModule
 		//title
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		//toolbar
+		$toolbar = $this->getToolbar($engine, $project);
+		$page->append($toolbar);
+		//FIXME process the request
+		//bug
+		$vbox = $page->append('vbox'); //XXX for the title level
+		$this->helperPreview($engine, $vbox, $bug);
 		//preview
 		if($request->getParameter('preview') !== FALSE)
 		{
-			$title = $request->getTitle();
+			$title = $request->getParameter('reply_title');
 			$content = $request->getParameter('content');
 			$reply = array('title' => _('Preview: ').$title,
 					'user_id' => $user->getUserId(),
@@ -492,11 +501,11 @@ class ProjectModule extends ContentModule
 					'date' => $this->timestampToDate(),
 					'content' => $content);
 			//FIXME really preview a bug reply instead
-			$this->helperPreview($engine, $page, $reply);
+			$this->helperPreview($engine, $vbox, $reply);
 		}
 		//form
 		$form = $this->formBugReply($engine, $request, $bug, $project);
-		$page->append($form);
+		$vbox->append($form);
 		return $page;
 	}
 
@@ -553,9 +562,10 @@ class ProjectModule extends ContentModule
 				$request->getId(), $request->getTitle());
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
+		$title = $request->getParameter('reply_title');
 		$vbox->append('entry', array('text' => _('Title: '),
-				'name' => 'title',
-				'value' => $request->getTitle()));
+				'name' => 'reply_title',
+				'value' => $title));
 		$vbox->append('textview', array('text' => _('Content: '),
 				'name' => 'content',
 				'value' => $request->getParameter('content')));
