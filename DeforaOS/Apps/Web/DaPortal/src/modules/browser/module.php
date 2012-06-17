@@ -45,6 +45,13 @@ class BrowserModule extends Module
 	//protected
 	//methods
 	//accessors
+	//BrowserModule::getDate
+	protected function getDate($time)
+	{
+		return strftime('%Y/%m/%d %H:%M:%S', $time);
+	}
+
+
 	//BrowserModule::getGroup
 	protected function getGroup($gid)
 	{
@@ -71,6 +78,21 @@ class BrowserModule extends Module
 			$root = '/tmp';
 		}
 		return $root;
+	}
+
+
+	//BrowserModule::getSize
+	protected function getSize($size)
+	{
+		if($size < 1024)
+			return $size.' '._('bytes');
+		if(($size = round($size / 1024)) < 1024)
+			return $size.' '._('kB');
+		if(($size = round($size / 1024)) < 1024)
+			return $size.' '._('MB');
+		if(($size = round($size / 1024)) < 1024)
+			return $size.' '._('GB');
+		return $size.' '._('TB');
 	}
 
 
@@ -183,7 +205,8 @@ class BrowserModule extends Module
 			return $page->append('dialog', array('type' => 'error',
 				'text' => $error));
 		$columns = array('title' => _('Title'), 'user' => _('User'),
-				'group' => _('Group'));
+				'group' => _('Group'), 'size' => _('Size'),
+				'date' => _('Date'));
 		$view = $page->append('treeview', array('columns' => $columns));
 		while(($de = readdir($dir)) !== FALSE)
 		{
@@ -200,6 +223,8 @@ class BrowserModule extends Module
 			$row->setProperty('title', $link);
 			$row->setProperty('user', $this->getUser($st['uid']));
 			$row->setProperty('group', $this->getGroup($st['gid']));
+			$row->setProperty('size', $this->getSize($st['size']));
+			$row->setProperty('date', $this->getDate($st['mtime']));
 		}
 	}
 
@@ -218,21 +243,31 @@ class BrowserModule extends Module
 		$link = new PageElement('link', array('request' => $r,
 				'text' => basename($path)));
 		$col2->append($link);
-		//size
-		$col1->append('label', array('class' => 'bold',
-				'text' => _('Size: ')));
-		$col2->append('label', array('text' => $st['size'].' '
-				._('bytes')));
 		//user
-		$col1->append('label', array('class' => 'bold',
-				'text' => _('User: ')));
-		$col2->append('label', array(
-				'text' => $this->getUser($st['uid'])));
+		$this->_displayFileField($col1, $col2, _('User: '),
+				$this->getUser($st['uid']));
 		//group
+		$this->_displayFileField($col1, $col2, _('Group: '),
+				$this->getGroup($st['gid']));
+		//size
+		$this->_displayFileField($col1, $col2, _('Size: '),
+				$this->getSize($st['size']));
+		//creation time
+		$this->_displayFileField($col1, $col2, _('Created on: '),
+				$this->getDate($st['ctime']));
+		//modification time
+		$this->_displayFileField($col1, $col2, _('Last modified: '),
+				$this->getDate($st['mtime']));
+		//access time
+		$this->_displayFileField($col1, $col2, _('Last access: '),
+				$this->getDate($st['atime']));
+	}
+
+	private function _displayFileField($col1, $col2, $field, $value)
+	{
 		$col1->append('label', array('class' => 'bold',
-				'text' => _('Group: ')));
-		$col2->append('label', array(
-				'text' => $this->getGroup($st['gid'])));
+				'text' => $field));
+		$col2->append('label', array('text' => $value));
 	}
 
 
