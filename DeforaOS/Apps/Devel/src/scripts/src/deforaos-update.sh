@@ -12,14 +12,12 @@ umask 022
 #private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
-DEVNULL="/dev/null"
 EMAIL="devel@lists.defora.org"
 MODULE="DeforaOS"
 SRC="$HOME/$MODULE"
 
 #executables
 CVS="cvs -q"
-FIND="find"
 LN="ln -f"
 MAIL="mail"
 MAKE="make"
@@ -50,14 +48,6 @@ deforaos_update()
 	echo ""
 	echo "Updating CVS module $MODULE:"
 	(cd "$SRC" && $CVS update -dPA)				|| exit 2
-
-	#document tree
-	echo ""
-	echo "Documenting CVS module $MODULE:"
-	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
-		[ -x "$path/gtkdoc.sh" ] || continue
-		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/" > "$DEVNULL" 2> "$DEVNULL")
-	done
 
 	#make archive
 	echo ""
