@@ -260,42 +260,42 @@ class BrowserModule extends Module
 		$col2 = $hbox->append('vbox');
 		//filename
 		$col1->append('label', array('class' => 'bold',
-				'text' => _('Filename: ')));
+				'text' => _('Filename:')));
 		$r = new Request($engine, $this->name, 'download', FALSE,
 				$path);
 		$link = new PageElement('link', array('request' => $r,
 				'text' => basename($path)));
 		$col2->append($link);
 		//type
-		$this->_displayFileField($col1, $col2, _('Type: '),
+		$this->_displayFileField($col1, $col2, _('Type:'),
 				Mime::get($engine, basename($path)));
 		//user
-		$this->_displayFileField($col1, $col2, _('User: '),
+		$this->_displayFileField($col1, $col2, _('User:'),
 				$this->getUser($st['uid']));
 		//group
-		$this->_displayFileField($col1, $col2, _('Group: '),
+		$this->_displayFileField($col1, $col2, _('Group:'),
 				$this->getGroup($st['gid']));
 		//permissions
-		$this->_displayFileField($col1, $col2, _('Permissions: '),
+		$this->_displayFileField($col1, $col2, _('Permissions:'),
 				$this->getPermissions($st['mode']));
 		//size
-		$this->_displayFileField($col1, $col2, _('Size: '),
+		$this->_displayFileField($col1, $col2, _('Size:'),
 				$this->getSize($st['size']));
 		//creation time
-		$this->_displayFileField($col1, $col2, _('Created on: '),
+		$this->_displayFileField($col1, $col2, _('Created on:'),
 				$this->getDate($st['ctime']));
 		//modification time
-		$this->_displayFileField($col1, $col2, _('Last modified: '),
+		$this->_displayFileField($col1, $col2, _('Last modified:'),
 				$this->getDate($st['mtime']));
 		//access time
-		$this->_displayFileField($col1, $col2, _('Last access: '),
+		$this->_displayFileField($col1, $col2, _('Last access:'),
 				$this->getDate($st['atime']));
 	}
 
 	private function _displayFileField($col1, $col2, $field, $value)
 	{
 		$col1->append('label', array('class' => 'bold',
-				'text' => $field));
+				'text' => $field.' '));
 		$col2->append('label', array('text' => $value));
 	}
 

@@ -788,11 +788,11 @@ class DownloadModule extends ContentModule
 			$this->getPermissionsString($content['mode']));
 		$this->helperDisplayField($col1, $col2, _('Size:'),
 				$stat['size'].' '._('bytes'));
-		$this->helperDisplayField($col1, $col2, _('Creation time:'),
+		$this->helperDisplayField($col1, $col2, _('Created on:'),
 			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['ctime']));
-		$this->helperDisplayField($col1, $col2, _('Modification time:'),
+		$this->helperDisplayField($col1, $col2, _('Last modified:'),
 			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['mtime']));
-		$this->helperDisplayField($col1, $col2, _('Access time:'),
+		$this->helperDisplayField($col1, $col2, _('Last access:'),
 			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['atime']));
 		$this->helperDisplayField($col1, $col2, _('Comment:'),
 				$content['content']);
