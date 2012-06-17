@@ -65,6 +65,25 @@ class BrowserModule extends Module
 	}
 
 
+	//BrowserModule::getPermissions
+	protected function getPermissions($mode)
+	{
+		$str = '----------';
+		if(($mode & BrowserModule::$S_IFDIR) == BrowserModule::$S_IFDIR)
+			$str[0] = 'd';
+		$str[1] = $mode & 0400 ? 'r' : '-';
+		$str[2] = $mode & 0200 ? 'w' : '-';
+		$str[3] = $mode & 0100 ? 'x' : '-';
+		$str[4] = $mode & 040 ? 'r' : '-';
+		$str[5] = $mode & 020 ? 'w' : '-';
+		$str[6] = $mode & 010 ? 'x' : '-';
+		$str[7] = $mode & 04 ? 'r' : '-';
+		$str[8] = $mode & 02 ? 'w' : '-';
+		$str[9] = $mode & 01 ? 'x' : '-';
+		return $str;
+	}
+
+
 	//BrowserModule::getRoot
 	protected function getRoot($engine)
 	{
@@ -206,7 +225,8 @@ class BrowserModule extends Module
 				'text' => $error));
 		$columns = array('title' => _('Title'), 'user' => _('User'),
 				'group' => _('Group'), 'size' => _('Size'),
-				'date' => _('Date'));
+				'date' => _('Date'),
+				'mode' => _('Permissions'));
 		$view = $page->append('treeview', array('columns' => $columns));
 		while(($de = readdir($dir)) !== FALSE)
 		{
@@ -225,6 +245,8 @@ class BrowserModule extends Module
 			$row->setProperty('group', $this->getGroup($st['gid']));
 			$row->setProperty('size', $this->getSize($st['size']));
 			$row->setProperty('date', $this->getDate($st['mtime']));
+			$row->setProperty('mode', $this->getPermissions(
+					$st['mode']));
 		}
 	}
 
@@ -249,6 +271,9 @@ class BrowserModule extends Module
 		//group
 		$this->_displayFileField($col1, $col2, _('Group: '),
 				$this->getGroup($st['gid']));
+		//permissions
+		$this->_displayFileField($col1, $col2, _('Permissions: '),
+				$this->getPermissions($st['mode']));
 		//size
 		$this->_displayFileField($col1, $col2, _('Size: '),
 				$this->getSize($st['size']));
