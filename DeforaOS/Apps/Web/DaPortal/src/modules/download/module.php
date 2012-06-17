@@ -778,14 +778,14 @@ class DownloadModule extends ContentModule
 			$content['groupname']);
 		$this->helperDisplayField($page, _('Permissions'),
 			$this->getPermissionsString($content['mode']));
+		$this->helperDisplayField($page, _('Size'), $stat['size']
+			.' '._('bytes'));
 		$this->helperDisplayField($page, _('Creation time'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
 		$this->helperDisplayField($page, _('Modification time'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
 		$this->helperDisplayField($page, _('Access time'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
-		$this->helperDisplayField($page, _('Size'), $stat['size']
-			.' '._('bytes'));
 		$this->helperDisplayField($page, _('Comment'),
 				$content['content']);
 		return $page;
