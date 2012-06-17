@@ -184,8 +184,9 @@ class UserModule extends Module
 		else
 		{
 			//already logged in
-			$this->_actions_admin($engine, $cred, $this->name,
-					$ret);
+			if($request->getParameter('admin') != 0)
+				$this->_actions_admin($engine, $cred,
+						$this->name, $ret);
 			//user's content
 			$r = new Request($engine, $this->name, 'display');
 			$icon = new PageElement('image', array(
@@ -224,7 +225,7 @@ class UserModule extends Module
 				: 'admin');
 		$icon = new PageElement('image', array('stock' => 'admin'));
 		$link = new PageElement('link', array('request' => $r,
-				'text' => _('Administration')));
+				'text' => _('Users administration')));
 		$ret[] = new PageElement('row', array('icon' => $icon,
 				'label' => $link));
 		return $ret;
@@ -338,6 +339,8 @@ class UserModule extends Module
 	//UserModule::callDefault
 	protected function callDefault($engine, $request = FALSE)
 	{
+		$db = $engine->getDatabase();
+		$query = $this->query_content;
 		$cred = $engine->getCredentials();
 
 		if($request !== FALSE && ($id = $request->getId()) !== FALSE)
@@ -348,11 +351,32 @@ class UserModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		$view = $page->append('iconview');
-		$actions = $this->actions($engine, $request);
-		if(is_array($actions))
-			foreach($actions as $a)
-				$view->append($a);
+		//obtain the list of modules
+		if(($res = $db->query($engine, $query)) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error',
+					'text' => 'Could not list modules'));
+		$vbox = $page->append('vbox');
+		$vbox->append('title'); //XXX to reduce the next level of titles
+		$vbox = $vbox->append('vbox');
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$r = new Request($engine, $res[$i]['name'], 'actions',
+					FALSE, FALSE, array('admin' => 0));
+			$rows = $engine->process($r);
+			if(!is_array($rows) || count($rows) == 0)
+				continue;
+			$r = new Request($engine, $res[$i]['name']);
+			$text = ucfirst($res[$i]['name']);
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $text));
+			$title = $vbox->append('title', array(
+					'stock' => $res[$i]['name']));
+			$title->append($link);
+			$view = $vbox->append('iconview');
+			foreach($rows as $r)
+				$view->append($r);
+		}
 		return $page;
 	}
 
@@ -379,8 +403,8 @@ class UserModule extends Module
 		//obtain the list of modules
 		if(($res = $database->query($engine, $query)) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => 'Could not list modules'));
+					'type' => 'error',
+					'text' => 'Could not list modules'));
 		$page = new Page;
 		if(($uid = $request->getId()) !== FALSE)
 		{
@@ -410,14 +434,14 @@ class UserModule extends Module
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$r = new Request($engine, $res[$i]['name'], 'actions',
-				FALSE, FALSE, array('user' => $user));
+					FALSE, FALSE, array('user' => $user));
 			$rows = $engine->process($r);
 			if(!is_array($rows) || count($rows) == 0)
 				continue;
 			$text = ucfirst($res[$i]['name']);
 			$vbox->append('title', array(
-				'stock' => $res[$i]['name'],
-				'text' => $text));
+					'stock' => $res[$i]['name'],
+					'text' => $text));
 			$view = $vbox->append('iconview');
 			foreach($rows as $r)
 				$view->append($r);

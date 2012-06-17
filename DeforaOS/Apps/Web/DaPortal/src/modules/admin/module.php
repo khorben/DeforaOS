@@ -193,9 +193,12 @@ class AdminModule extends Module
 			if(!is_array($rows) || count($rows) == 0)
 				continue;
 			$text = ucfirst($res[$i]['name']);
-			$vbox->append('title', array(
-					'stock' => $res[$i]['name'],
+			$r = new Request($engine, $res[$i]['name']);
+			$link = new PageElement('link', array('request' => $r,
 					'text' => $text));
+			$title = $vbox->append('title', array(
+				'stock' => $res[$i]['name']));
+			$title->append($link);
 			$view = $vbox->append('iconview');
 			foreach($rows as $r)
 				$view->append($r);
