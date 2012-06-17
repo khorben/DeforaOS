@@ -291,12 +291,21 @@ div.toolbar {
 	margin-bottom:			0.5ex;
 	margin-left:			-16px;
 	margin-right:			-16px;
-	padding:			0.5ex;
+	margin-top:			-4px;
+	min-height:			2em;
+	padding:			0.2ex;
+	padding-top:			1ex;
 }
 
 div.toolbar a.button, div.toolbar button, div.toolbar input[type="reset"],
 div.toolbar input[type="submit"] {
-	border-width:			0;
+	border-color:			#a0a0a0;
+	border-width:			1;
+}
+
+div.toolbar a.button:hover, div.toolbar input[type="submit"]:hover {
+	background-color:		#b0b0b0;
+	border-color:			#c0c0c0;
 }
 
 
