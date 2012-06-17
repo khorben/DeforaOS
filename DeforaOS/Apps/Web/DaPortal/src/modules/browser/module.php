@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/mime.php');
 require_once('./system/module.php');
 
 
@@ -265,6 +266,9 @@ class BrowserModule extends Module
 		$link = new PageElement('link', array('request' => $r,
 				'text' => basename($path)));
 		$col2->append($link);
+		//type
+		$this->_displayFileField($col1, $col2, _('Type: '),
+				Mime::get($engine, basename($path)));
 		//user
 		$this->_displayFileField($col1, $col2, _('User: '),
 				$this->getUser($st['uid']));
