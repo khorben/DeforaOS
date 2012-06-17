@@ -760,47 +760,50 @@ class DownloadModule extends ContentModule
 		if(($stat = stat($filename)) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
+		$hbox = $page->append('hbox');
+		$col1 = $hbox->append('vbox');
+		$col2 = $hbox->append('vbox');
 		$request = new Request($engine, $this->name, 'download',
 				$content['id'], $content['title']);
-		$this->helperDisplayField($page, _('Name'),
-			new PageElement('link',
-			array('request' => $request,
-			'text' => $content['title'])));
-		$this->helperDisplayField($page, _('Type'), Mime::get($engine,
-			$content['title']));
+		$this->helperDisplayField($col1, $col2, _('Name:'),
+					new PageElement('link', array('
+						request' => $request,
+						'text' => $content['title'])));
+		$this->helperDisplayField($col1, $col2, _('Type:'),
+				Mime::get($engine, $content['title']));
 		$request = new Request($engine, 'user', FALSE,
 			$content['user_id'], $content['username']);
-		$this->helperDisplayField($page, _('Owner'),
+		$this->helperDisplayField($col1, $col2, _('Owner:'),
 			new PageElement('link',
 			array('request' => $request,
 			'text' => $content['username'])));
-		$this->helperDisplayField($page, _('Group'),
+		$this->helperDisplayField($col1, $col2, _('Group:'),
 			$content['groupname']);
-		$this->helperDisplayField($page, _('Permissions'),
+		$this->helperDisplayField($col1, $col2, _('Permissions:'),
 			$this->getPermissionsString($content['mode']));
-		$this->helperDisplayField($page, _('Size'), $stat['size']
-			.' '._('bytes'));
-		$this->helperDisplayField($page, _('Creation time'),
+		$this->helperDisplayField($col1, $col2, _('Size:'),
+				$stat['size'].' '._('bytes'));
+		$this->helperDisplayField($col1, $col2, _('Creation time:'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['ctime']));
-		$this->helperDisplayField($page, _('Modification time'),
+		$this->helperDisplayField($col1, $col2, _('Modification time:'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['mtime']));
-		$this->helperDisplayField($page, _('Access time'),
+		$this->helperDisplayField($col1, $col2, _('Access time:'),
 			strftime('%A, %B %e %Y, %H:%M:%S', $stat['atime']));
-		$this->helperDisplayField($page, _('Comment'),
+		$this->helperDisplayField($col1, $col2, _('Comment:'),
 				$content['content']);
 		return $page;
 	}
 
 
 	//DownloadModule::helperDisplayField
-	protected function helperDisplayField($page, $label, $field)
+	protected function helperDisplayField($col1, $col2, $field, $value)
 	{
-		$hbox = $page->append('hbox');
-		$hbox->append('label', array('text' => $label._(': ')));
-		if($field instanceof PageElement)
-			$hbox->append($field);
+		$col1->append('label', array('class' => 'bold',
+				'text' => $field.' '));
+		if($value instanceof PageElement)
+			$col2->append($value);
 		else
-			$hbox->append('label', array('text' => $field));
+			$col2->append('label', array('text' => $value));
 	}
 }
 
