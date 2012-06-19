@@ -530,7 +530,8 @@ class GtkFormat extends FormatElements
 		$ret->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 		$columns = $e->getProperty('columns');
 		if(!is_array($columns) || count($columns) == 0)
-			$columns = array('title');
+			$columns = array('title' => _('Title'));
+		$keys = array_keys($columns);
 		//FIXME patch php-gtk to support dynamically-defined stores
 		$store = new GtkListStore(Gobject::TYPE_STRING,
 				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
@@ -539,10 +540,10 @@ class GtkFormat extends FormatElements
 				Gobject::TYPE_STRING, Gobject::TYPE_STRING,
 				Gobject::TYPE_STRING);
 		$view = new GtkTreeView($store);
-		for($i = 0, $cnt = count($columns); $i < $cnt; $i++)
+		for($i = 0, $cnt = count($keys); $i < $cnt; $i++)
 		{
 			$renderer = new GtkCellRendererText();
-			$column = new GtkTreeViewColumn(ucfirst($columns[$i]),
+			$column = new GtkTreeViewColumn($columns[$keys[$i]],
 					$renderer, 'text', $i);
 			$view->append_column($column);
 		}
@@ -552,9 +553,15 @@ class GtkFormat extends FormatElements
 			if($c->getType() != 'row')
 				continue;
 			$iter = $store->append();
-			for($i = 0, $cnt = count($columns); $i < $cnt; $i++)
-				$values[] = $store->set($iter, $i,
-						$c->getProperty($columns[$i]));
+			for($i = 0, $cnt = count($keys); $i < $cnt; $i++)
+			{
+				$str = $c->getProperty($keys[$i]);
+				if($str instanceof PageElement)
+					$str = $str->getProperty('text');
+				if(is_bool($str))
+					$str = $str ? 'TRUE' : 'FALSE';
+				$store->set($iter, $i, $str);
+			}
 		}
 		$ret->add($view);
 		return $ret;
