@@ -24,7 +24,7 @@ function _mime_from_ext($filename)
 {
 	global $engine;
 
-	return Mime::get($engine, $filename, 'default');
+	return Mime::getType($engine, $filename, 'default');
 }
 
 ?>
