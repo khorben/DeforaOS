@@ -42,7 +42,7 @@ class UnixAuth extends Auth
 				|| count($res) != 1)
 			return TRUE;
 		$res = $res[0];
-		$cred = $this->getCredentials();
+		$cred = $this->getCredentials($engine);
 		$cred->setUserId($res['user_id'], $db->isTrue($res['admin']));
 		$this->setCredentials($engine, $cred);
 		return TRUE;
