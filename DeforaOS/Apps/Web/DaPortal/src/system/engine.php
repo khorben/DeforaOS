@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/auth.php');
 require_once('./system/module.php');
 require_once('./system/request.php');
 

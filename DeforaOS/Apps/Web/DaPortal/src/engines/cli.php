@@ -18,6 +18,7 @@
 
 require_once('./system/engine.php');
 require_once('./system/locale.php');
+require_once('./system/page.php');
 
 
 //CliEngine

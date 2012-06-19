@@ -17,6 +17,7 @@
 
 
 require_once('./system/mail.php');
+require_once('./system/page.php');
 
 
 //User
