@@ -1854,6 +1854,7 @@ static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
 
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _view_icon_view(Browser * browser);
+static void _view_icon_selection(Browser * browser, GList * sel);
 
 static void _view_icons(Browser * browser)
 {
@@ -1900,7 +1901,6 @@ static void _view_icon_view(Browser * browser)
 {
 	GtkTreeSelection * treesel;
 	GList * sel = NULL;
-	GList * p;
 #if GTK_CHECK_VERSION(2, 8, 0)
 	GtkTargetEntry targets[] = { { "deforaos_browser_dnd", 0, 0 } };
 	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
@@ -1928,6 +1928,7 @@ static void _view_icon_view(Browser * browser)
 #if GTK_CHECK_VERSION(2, 8, 0)
 		gtk_cell_layout_clear(GTK_CELL_LAYOUT(browser->iconview));
 #endif
+		_view_icon_selection(browser, sel);
 		gtk_widget_show(browser->iconview);
 		return;
 	}
@@ -1939,15 +1940,7 @@ static void _view_icon_view(Browser * browser)
 			GTK_SELECTION_MULTIPLE);
 	g_signal_connect_swapped(browser->iconview, "selection-changed",
 			G_CALLBACK(_browser_on_selection_changed), browser);
-	if(sel != NULL)
-	{
-		for(p = sel; p != NULL; p = p->next)
-			gtk_icon_view_select_path(GTK_ICON_VIEW(
-						browser->iconview), p->data);
-		g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
-		g_list_free(sel);
-
-	}
+	_view_icon_selection(browser, sel);
 #if GTK_CHECK_VERSION(2, 8, 0)
 	gtk_icon_view_enable_model_drag_source(GTK_ICON_VIEW(browser->iconview),
 			GDK_BUTTON1_MASK, targets, targets_cnt,
@@ -1970,6 +1963,20 @@ static void _view_icon_view(Browser * browser)
 #endif
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
 	gtk_widget_show(browser->iconview);
+}
+
+static void _view_icon_selection(Browser * browser, GList * sel)
+{
+	GList * p;
+
+	if(sel == NULL)
+		return;
+	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
+	for(p = sel; p != NULL; p = p->next)
+		gtk_icon_view_select_path(GTK_ICON_VIEW(browser->iconview),
+				p->data);
+	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(sel);
 }
 
 static void _view_list(Browser * browser)
