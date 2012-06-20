@@ -10,7 +10,7 @@
 	<!ENTITY title     "Browser User Manual">
 	<!ENTITY package   "DeforaOS Browser">
 	<!ENTITY name      "desktop">
-	<!ENTITY purpose   "File manager and image viewer">
+	<!ENTITY purpose   "Desktop manager">
 ]>
 <refentry>
 	<refentryinfo>
