@@ -49,18 +49,20 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt"><option>-H</option>
-				| <option>-L</option>
-				| <option>-P</option>
-				| <option>-R</option>
-				| <option>-S</option>
-				| <option>-T</option>
-				| <option>-V</option>
-				| <option>-a</option>
-				| <option>-c</option>
-				| <option>-f</option>
-				| <option>-h</option>
-				| <option>-n</option></arg>
+			<group choice="plain">
+				<arg choice="plain">-H</arg>
+				<arg choice="plain">-L</arg>
+				<arg choice="plain">-P</arg>
+				<arg choice="plain">-R</arg>
+				<arg choice="plain">-S</arg>
+				<arg choice="plain">-T</arg>
+				<arg choice="plain">-V</arg>
+				<arg choice="plain">-a</arg>
+				<arg choice="plain">-c</arg>
+				<arg choice="plain">-f</arg>
+				<arg choice="plain">-h</arg>
+				<arg choice="plain">-n</arg>
+			</group>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
