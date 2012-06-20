@@ -162,6 +162,10 @@
 			<citerefentry>
 				<refentrytitle>desktop</refentrytitle>
 				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>properties</refentrytitle>
+				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>
 	</refsect1>
