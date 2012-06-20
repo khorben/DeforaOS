@@ -4,8 +4,11 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY browser1 "../../../../../Apps/Desktop/src/Browser/doc/browser.xml">
 <!ENTITY configure1 "../../../../../Apps/Devel/src/configure/doc/configure.xml">
+<!ENTITY desktop1 "../../../../../Apps/Desktop/src/Browser/doc/desktop.xml">
+<!ENTITY desktopctl1 "../../../../../Apps/Desktop/src/Browser/doc/desktopctl.xml">
 <!ENTITY makepasswd1 "../../../../../Apps/Unix/src/makepasswd/doc/makepasswd.xml">
 <!ENTITY projectconf5 "../../../../../Apps/Devel/src/configure/doc/project.conf.xml">
+<!ENTITY properties1 "../../../../../Apps/Desktop/src/Browser/doc/properties.xml">
 ]>
 <book><?dbhtml filename="manual.html"?>
 	<title>DeforaOS Manual Pages</title>
@@ -14,6 +17,9 @@
 		<section>
 			<title>Desktop environment</title>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&browser1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&desktop1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&desktopctl1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&properties1;"/>
 		</section>
 		<section>
 			<title>Unix utilities</title>
