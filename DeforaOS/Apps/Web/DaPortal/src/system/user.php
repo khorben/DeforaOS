@@ -106,18 +106,6 @@ class User
 	}
 
 
-	//User::setPassword
-	public function setPassword(&$engine, $password)
-	{
-		$db = $engine->getDatabase();
-
-		$res = $db->query($engine, $this->query_set_password, array(
-					'user_id' => $this->user_id,
-					'password' => md5($password)));
-		return ($res !== FALSE);
-	}
-
-
 	//User::setEnabled
 	public function setEnabled(&$engine, $enabled)
 	{
@@ -126,6 +114,18 @@ class User
 		$res = $db->query($engine, $this->query_set_enabled, array(
 					'user_id' => $this->user_id,
 					'enabled' => $enabled ? 1 : 0));
+		return ($res !== FALSE);
+	}
+
+
+	//User::setPassword
+	public function setPassword(&$engine, $password)
+	{
+		$db = $engine->getDatabase();
+
+		$res = $db->query($engine, $this->query_set_password, array(
+					'user_id' => $this->user_id,
+					'password' => md5($password)));
 		return ($res !== FALSE);
 	}
 
