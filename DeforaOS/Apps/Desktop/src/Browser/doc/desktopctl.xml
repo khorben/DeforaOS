@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY username  "khorben">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
+	<!ENTITY title     "Browser User Manual">
+	<!ENTITY package   "DeforaOS Browser">
+	<!ENTITY name      "desktopctl">
+	<!ENTITY purpose   "Control interface for the desktop manager">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this
+				document under the terms of the GNU General Public License,
+				Version 3 as published by the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="opt"><option>-H</option>
+				| <option>-L</option>
+				| <option>-P</option>
+				| <option>-R</option>
+				| <option>-S</option>
+				| <option>-T</option>
+				| <option>-V</option>
+				| <option>-a</option>
+				| <option>-c</option>
+				| <option>-f</option>
+				| <option>-h</option>
+				| <option>-n</option></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+	<refsect1 id="description">
+		<title>Description</title>
+		<para><command>&name;</command> is a control interface for the desktop
+			manager. It can trigger events and modify the behavior of the desktop manager
+			with a command line interface, while running.</para>
+	</refsect1>
+	<refsect1 id="options">
+		<title>Options</title>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-H</option></term>
+				<listitem>
+					<para>Place icons horizontally.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-L</option></term>
+				<listitem>
+					<para>Rotate screen to landscape mode.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-P</option></term>
+				<listitem>
+					<para>Rotate screen to portrait mode.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-R</option></term>
+				<listitem>
+					<para>Rotate screen.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-S</option></term>
+				<listitem>
+					<para>Display or change settings.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-T</option></term>
+				<listitem>
+					<para>Toggle screen rotation.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-V</option></term>
+				<listitem>
+					<para>Place icons vertically.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-a</option></term>
+				<listitem>
+					<para>Display the applications registered.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-c</option></term>
+				<listitem>
+					<para>Sort the applications registered by category.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-f</option></term>
+				<listitem>
+					<para>Display contents of the desktop folder.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-h</option></term>
+				<listitem>
+					<para>Display the homescreen.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-n</option></term>
+				<listitem>
+					<para>Do not display icons on the desktop.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>Bugs</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/230/Browser"/>.</para>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>See also</title>
+		<para>
+			<citerefentry>
+				<refentrytitle>browser</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>desktop</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>
+		</para>
+	</refsect1>
+</refentry>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

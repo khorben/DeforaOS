@@ -36,6 +36,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/browser.xml \
 		$(PACKAGE)-$(VERSION)/doc/desktop.xml \
+		$(PACKAGE)-$(VERSION)/doc/desktopctl.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Browser.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
