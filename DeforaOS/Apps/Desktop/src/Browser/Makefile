@@ -37,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/browser.xml \
 		$(PACKAGE)-$(VERSION)/doc/desktop.xml \
 		$(PACKAGE)-$(VERSION)/doc/desktopctl.xml \
+		$(PACKAGE)-$(VERSION)/doc/open.xml \
 		$(PACKAGE)-$(VERSION)/doc/properties.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Browser.h \
