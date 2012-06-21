@@ -713,7 +713,7 @@ class ProjectModule extends ContentModule
 				'scm::backend')) === FALSE)
 			$name = 'cvs';
 		$filename = './modules/'.$this->name.'/scm/'.$name.'.php';
-		$res = require_once($filename);
+		$res = include_once($filename);
 		if($res === FALSE)
 			return FALSE;
 		$name = ucfirst($name).'ScmProject';
