@@ -30,13 +30,29 @@ class CVSScmProject
 	//CVSScmProject::browse
 	public function browse($engine, $project, $request)
 	{
-		if(strlen($project['cvsroot']) == 0)
+		global $config;
+		$cvsroot = $config->getVariable('module::project',
+			'scm::backend::cvs::cvsroot'); //XXX
+		$repository = $config->getVariable('module::project',
+			'scm::backend::cvs::repository'); //XXX
+
+		if($cvsroot === FALSE || strlen($project['cvsroot']) == 0)
 			return new PageElement('dialog', array(
 				'type' => 'error',
 				'text' => _('No CVS repository defined')));
-		$view = new PageElement('treeview');
+		$vbox = new PageElement('vbox');
+		if($repository !== FALSE)
+		{
+			$vbox->append('title', array(
+					'text' => _('Repository')));
+			$vbox->append('label', array('text' => _('The source code can be obtained as follows: ')));
+			$text = '$ cvs -d:pserver:'.$repository.' co '.$project['cvsroot'];
+			$vbox->append('label', array('text' => $text));
+		}
+		$vbox->append('title', array('text' => _('Browse source')));
+		$view = $vbox->append('treeview');
 		//FIXME implement
-		return $view;
+		return $vbox;
 	}
 
 
