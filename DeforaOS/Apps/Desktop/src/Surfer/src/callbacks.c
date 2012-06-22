@@ -313,8 +313,8 @@ void on_help_contents(gpointer data)
 	char buf[256];
 	Surfer * s;
 
-	snprintf(buf, sizeof(buf), "%s%s%s%s%s%s", "file://" DATADIR,
-			"/doc/html/", PACKAGE, "/", PACKAGE, ".html");
+	snprintf(buf, sizeof(buf), "%s",
+			"file://" DATADIR "/doc/html/" PACKAGE "/surfer.html");
 	s = surfer_new(buf);
 }
 #endif /* !EMBEDDED */
