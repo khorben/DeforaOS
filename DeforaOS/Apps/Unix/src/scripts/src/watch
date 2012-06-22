@@ -1,6 +1,6 @@
-#! /bin/sh
+#!/bin/sh
 # $Id$
-# Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+# Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org>
 # This file is part of DeforaOS Unix scripts
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -16,7 +16,13 @@
 
 
 
-# usage
+#variables
+DELAY=2
+SLEEP="/bin/sleep"
+
+
+#functions
+#usage
 if [ $# -eq 0 -o "$1" = "-h" -o $# -eq 1 -a "$1" = "--" ]; then
 	echo "Usage: watch command..." 2>&1
 	exit 1
@@ -24,11 +30,13 @@ fi
 [ "$1" = "--" ] && shift 1
 
 
-# main
+#main
 while true; do
 	clear
 	date
 	echo
+	echo "Every $DELAY seconds: $@"
+	echo
 	"$@"
-	sleep 2
+	$SLEEP "$DELAY"
 done
