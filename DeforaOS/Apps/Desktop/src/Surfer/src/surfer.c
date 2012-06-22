@@ -193,6 +193,8 @@ static const DesktopMenu _menu_view[] =
 
 static const DesktopMenu _menu_help[] =
 {
+	{ N_("_Contents"),	G_CALLBACK(on_help_contents), "help-contents",
+		0, GDK_KEY_F1 },
 	{ N_("_About"),		G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
