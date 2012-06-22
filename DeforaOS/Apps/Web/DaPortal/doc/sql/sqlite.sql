@@ -168,6 +168,7 @@ CREATE TABLE daportal_project_user (
 	project_user_id INTEGER PRIMARY KEY,
 	project_id INTEGER NOT NULL,
 	user_id INTEGER NOT NULL,
+	admin BOOLEAN NOT NULL DEFAULT FALSE,
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );

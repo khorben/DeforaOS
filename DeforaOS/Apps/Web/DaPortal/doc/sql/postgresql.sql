@@ -1,6 +1,6 @@
 /* $Id$ */
 /* This file is part of DeforaOS Web DaPortal */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 
 
 
@@ -146,7 +146,8 @@ CREATE TABLE daportal_project (
 CREATE TABLE daportal_project_user (
 	project_user_id SERIAL PRIMARY KEY,
 	project_id INTEGER NOT NULL REFERENCES daportal_project (project_id) ON DELETE CASCADE,
-	user_id INTEGER NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE
+	user_id INTEGER NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE,
+	admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 CREATE TABLE daportal_bug (
 	bug_id SERIAL PRIMARY KEY,
