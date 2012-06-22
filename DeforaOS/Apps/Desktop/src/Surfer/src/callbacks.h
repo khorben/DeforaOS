@@ -59,6 +59,7 @@ void on_view_javascript_console(gpointer data);
 
 /* help menu */
 void on_help_about(gpointer data);
+void on_help_contents(gpointer data);
 #endif /* !EMBEDDED */
 
 /* toolbar */
