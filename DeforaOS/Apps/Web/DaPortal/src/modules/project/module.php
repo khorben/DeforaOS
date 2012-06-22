@@ -726,13 +726,20 @@ class ProjectModule extends ContentModule
 		$yes = new PageElement('image', array('stock' => 'yes',
 			'size' => 16, 'title' => _('Enabled')));
 		//project owner
-		$view->append('row', array('title' => 'khorben',
-				'admin' => $yes));
+		$r = new Request($engine, 'user', FALSE, 1, 'khorben'); //XXX
+		$link = new PageElement('link', array('request' => $r,
+				'stock' => 'user',
+				'text' => 'khorben')); //XXX
+		$view->append('row', array('title' => $link, 'admin' => $yes));
 		//project members
 		foreach($res as $r)
 		{
 			$row = $view->append('row');
-			$row->setProperty('title', $r['username']);
+			$r = new Request($engine, 'user', FALSE, $r['user_id'],
+					$r['username']);
+			$link = new PageElement('link', array('request' => $r,
+				'stock' => 'user', 'text' => $r['username']));
+			$row->setProperty('title', $link);
 			$row->setProperty('admin', $db->isTrue($r['admin'])
 					? $yes : $no);
 		}
