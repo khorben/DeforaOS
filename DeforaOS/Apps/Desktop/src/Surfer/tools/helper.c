@@ -262,6 +262,8 @@ static int _helper_open_devel(Helper * helper, char const * package)
 
 
 /* helper_open_dialog */
+static void _open_dialog_activated(gpointer data);
+
 static int _helper_open_dialog(Helper * helper)
 {
 	int ret;
@@ -286,6 +288,8 @@ static int _helper_open_dialog(Helper * helper)
 	label = gtk_label_new("Package: ");
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 0);
 	entry = gtk_entry_new();
+	g_signal_connect_swapped(entry, "activate", G_CALLBACK(
+				_open_dialog_activated), dialog);
 	gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_widget_show_all(vbox);
@@ -298,6 +302,13 @@ static int _helper_open_dialog(Helper * helper)
 		ret = _helper_open_contents(helper, page, NULL);
 	free(page);
 	return ret;
+}
+
+static void _open_dialog_activated(gpointer data)
+{
+	GtkWidget * dialog = data;
+
+	gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 }
 
 
