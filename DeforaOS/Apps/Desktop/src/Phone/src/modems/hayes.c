@@ -2158,7 +2158,6 @@ static int _reset_configure(ModemPlugin * modem, char const * device, int fd)
 static unsigned int _reset_configure_baudrate(ModemPlugin * modem,
 		unsigned int baudrate)
 {
-
 	switch(baudrate)
 	{
 		case 1200:
