@@ -924,9 +924,11 @@ int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
-			_("Question"));
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1982,7 +1984,7 @@ void surfer_view_security(Surfer * surfer)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
-#if GTK_CHECK_VERSION(2, 8, 0)
+#if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Security information"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
@@ -2075,9 +2077,11 @@ void surfer_warning(Surfer * surfer, char const * message)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_CLOSE, "%s",
-			_("Warning"));
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -2135,13 +2139,12 @@ static gboolean _surfer_filename_confirm(Surfer * surfer,
 		return TRUE;
 	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			_("Warning"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
-				dialog), "%s",
+			"%s", _("Warning"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
-			_("This file already exists. Overwrite?"));
+			"%s", _("This file already exists. Overwrite?"));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
