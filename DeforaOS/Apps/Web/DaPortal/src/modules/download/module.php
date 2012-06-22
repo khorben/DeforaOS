@@ -526,7 +526,7 @@ class DownloadModule extends ContentModule
 
 
 	//DownloadModule::callSubmit
-	protected function callSubmit($engine, $request)
+	protected function callSubmit($engine, $request = FALSE)
 	{
 		$title = $this->text_content_submit;
 		$error = _('Permission denied');
