@@ -712,6 +712,7 @@ class ProjectModule extends ContentModule
 	{
 		$db = $engine->getDatabase();
 		$query = $this->project_query_members;
+		$user = new User($engine, $content['user_id']);
 
 		if(($res = $db->query($engine, $query, array(
 				'project_id' => $content['id']))) === FALSE)
@@ -726,10 +727,11 @@ class ProjectModule extends ContentModule
 		$yes = new PageElement('image', array('stock' => 'yes',
 			'size' => 16, 'title' => _('Enabled')));
 		//project owner
-		$r = new Request($engine, 'user', FALSE, 1, 'khorben'); //XXX
+		$r = new Request($engine, 'user', FALSE, $user->getUserId(),
+				$user->getUsername());
 		$link = new PageElement('link', array('request' => $r,
 				'stock' => 'user',
-				'text' => 'khorben')); //XXX
+				'text' => $user->getUsername()));
 		$view->append('row', array('title' => $link, 'admin' => $yes));
 		//project members
 		foreach($res as $r)
