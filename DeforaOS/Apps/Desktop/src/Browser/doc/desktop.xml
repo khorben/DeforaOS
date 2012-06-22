@@ -137,6 +137,10 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
+				<refentrytitle>open</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
 				<refentrytitle>properties</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>

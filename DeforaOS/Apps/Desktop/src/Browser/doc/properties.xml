@@ -87,6 +87,10 @@
 			<citerefentry>
 				<refentrytitle>desktopctl</refentrytitle>
 				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>open</refentrytitle>
+				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>
 	</refsect1>
