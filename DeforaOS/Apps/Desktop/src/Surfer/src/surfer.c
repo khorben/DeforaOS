@@ -1544,6 +1544,9 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	}
 	surfer->co_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(surfer->co_window), 400, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(surfer->co_window), "web-browser");
+#endif
 	gtk_window_set_title(GTK_WINDOW(surfer->co_window),
 			_("Javascript console"));
 	g_signal_connect_swapped(surfer->co_window, "delete-event", G_CALLBACK(
@@ -2020,6 +2023,9 @@ void surfer_view_source(Surfer * surfer)
 	if((source = ghtml_get_source(widget)) == NULL)
 		return; /* FIXME download to a temporary file and open */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(window), "web-browser");
+#endif
 	group = gtk_accel_group_new();
 	cc = g_cclosure_new_swap(G_CALLBACK(_on_source_close), window, NULL);
 	gtk_accel_group_connect(group, GDK_KEY_W, GDK_CONTROL_MASK,
