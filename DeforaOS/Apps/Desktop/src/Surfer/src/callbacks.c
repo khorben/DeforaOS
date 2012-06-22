@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <libintl.h>
+#include <Desktop.h>
 #include "surfer.h"
 #include "ghtml.h"
 #include "callbacks.h"
