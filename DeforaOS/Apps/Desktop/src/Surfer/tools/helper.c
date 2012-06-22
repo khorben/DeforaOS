@@ -75,20 +75,32 @@ static int _usage(void);
 
 /* callbacks */
 static gboolean _helper_on_closex(gpointer data);
+#ifndef EMBEDDED
 static void _helper_on_file_close(gpointer data);
 static void _helper_on_file_open(gpointer data);
+#endif
 static void _helper_on_fullscreen(gpointer data);
+#ifndef EMBEDDED
 static void _helper_on_help_about(gpointer data);
+#endif
+#ifdef EMBEDDED
+static void _helper_on_open(gpointer data);
+#endif
+#ifndef EMBEDDED
 static void _helper_on_view_fullscreen(gpointer data);
+#endif
 
 
 /* constants */
+#ifndef EMBEDDED
 static char const * _authors[] =
 {
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
+#endif
 
+#ifndef EMBEDDED
 static const DesktopMenu _menu_file[] =
 {
 	{ N_("_Open..."), G_CALLBACK(_helper_on_file_open), GTK_STOCK_OPEN,
@@ -109,11 +121,11 @@ static const DesktopMenu _menu_view[] =
 static const DesktopMenu _menu_help[] =
 {
 	{ N_("_About"), G_CALLBACK(_helper_on_help_about),
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
-#else
+# else
 		NULL, 0, 0 },
-#endif
+# endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -124,6 +136,7 @@ static const DesktopMenubar _helper_menubar[] =
 	{ N_("_Help"), _menu_help },
 	{ NULL, NULL }
 };
+#endif
 
 
 /* functions */
@@ -150,12 +163,20 @@ static Helper * _helper_new(void)
 	g_signal_connect_swapped(helper->window, "delete-event", G_CALLBACK(
 				_helper_on_closex), helper);
 	vbox = gtk_vbox_new(FALSE, 0);
+#ifndef EMBEDDED
 	/* menubar */
 	helper->menubar = desktop_menubar_create(_helper_menubar, helper,
 			group);
 	gtk_box_pack_start(GTK_BOX(vbox), helper->menubar, FALSE, TRUE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
+#ifdef EMBEDDED
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				_helper_on_open), helper);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+#endif
 #if GTK_CHECK_VERSION(2, 8, 0)
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_FULLSCREEN);
 #else
@@ -294,6 +315,7 @@ static gboolean _helper_on_closex(gpointer data)
 }
 
 
+#ifndef EMBEDDED
 /* helper_on_file_close */
 static void _helper_on_file_close(gpointer data)
 {
@@ -311,6 +333,7 @@ static void _helper_on_file_open(gpointer data)
 
 	_helper_open_dialog(helper);
 }
+#endif
 
 
 /* helper_on_fullscreen */
@@ -332,6 +355,7 @@ static void _helper_on_fullscreen(gpointer data)
 }
 
 
+#ifndef EMBEDDED
 /* helper_on_help_about */
 static gboolean _about_on_closex(gpointer data);
 
@@ -368,8 +392,21 @@ static gboolean _about_on_closex(gpointer data)
 	gtk_widget_hide(helper->ab_window);
 	return TRUE;
 }
+#endif
 
 
+#ifdef EMBEDDED
+/* helper_on_open */
+static void _helper_on_open(gpointer data)
+{
+	Helper * helper = data;
+
+	_helper_open_dialog(helper);
+}
+#endif
+
+
+#ifndef EMBEDDED
 /* helper_on_view_fullscreen */
 static void _helper_on_view_fullscreen(gpointer data)
 {
@@ -377,6 +414,7 @@ static void _helper_on_view_fullscreen(gpointer data)
 
 	_helper_on_fullscreen(helper);
 }
+#endif
 
 
 /* usage */
