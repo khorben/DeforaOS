@@ -74,6 +74,7 @@ static int _helper_open_devel(Helper * helper, char const * package);
 static int _usage(void);
 
 /* callbacks */
+static gboolean _helper_on_close(gpointer data);
 static gboolean _helper_on_closex(gpointer data);
 #ifndef EMBEDDED
 static void _helper_on_file_close(gpointer data);
@@ -97,6 +98,15 @@ static char const * _authors[] =
 {
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
+};
+#endif
+
+#ifdef EMBEDDED
+static const DesktopAccel _helper_accel[] =
+{
+	{ G_CALLBACK(_helper_on_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(_helper_on_open), GDK_CONTROL_MASK, GDK_KEY_O },
+	{ NULL, 0, 0 }
 };
 #endif
 
@@ -168,6 +178,8 @@ static Helper * _helper_new(void)
 	helper->menubar = desktop_menubar_create(_helper_menubar, helper,
 			group);
 	gtk_box_pack_start(GTK_BOX(vbox), helper->menubar, FALSE, TRUE, 0);
+#else
+	desktop_accel_create(_helper_accel, helper, group);
 #endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
@@ -304,13 +316,22 @@ static int _helper_open_man(Helper * helper, int section, char const * page)
 
 
 /* callbacks */
-/* helper_on_closex */
-static gboolean _helper_on_closex(gpointer data)
+/* helper_on_close */
+static gboolean _helper_on_close(gpointer data)
 {
 	Helper * helper = data;
 
 	gtk_widget_hide(helper->window);
 	gtk_main_quit();
+}
+
+
+/* helper_on_closex */
+static gboolean _helper_on_closex(gpointer data)
+{
+	Helper * helper = data;
+
+	_helper_on_close(helper);
 	return TRUE;
 }
 
