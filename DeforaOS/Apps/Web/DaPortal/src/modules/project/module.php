@@ -79,6 +79,16 @@ class ProjectModule extends ContentModule
 	//protected
 	//properties
 	//queries
+	protected $project_query_bug = "SELECT daportal_bug.content_id AS id,
+		title, content, timestamp, daportal_user.user_id AS user_id,
+		daportal_user.username AS username, bug_id,
+		project_id, state, type, priority, assigned
+		FROM daportal_content, daportal_bug, daportal_user
+		WHERE daportal_content.content_id=daportal_bug.content_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND daportal_content.content_id=:content_id";
 	protected $project_query_list_admin_projects = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
@@ -136,16 +146,14 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'
 		AND daportal_user.user_id=:user_id";
-	protected $project_query_bug = "SELECT daportal_bug.content_id AS id,
-		title, content, timestamp, daportal_user.user_id AS user_id,
-		daportal_user.username AS username, bug_id,
-		project_id, state, type, priority, assigned
-		FROM daportal_content, daportal_bug, daportal_user
-		WHERE daportal_content.content_id=daportal_bug.content_id
-		AND daportal_content.user_id=daportal_user.user_id
-		AND daportal_content.enabled='1'
-		AND daportal_content.public='1'
-		AND daportal_content.content_id=:content_id";
+	protected $project_query_members = "SELECT
+		daportal_user.user_id AS user_id, username,
+		daportal_project_user.admin AS admin
+		FROM daportal_project_user, daportal_user
+		WHERE daportal_project_user.user_id=daportal_user.user_id
+		AND project_id=:project_id
+		AND daportal_user.enabled='1'
+		ORDER BY username DESC";
 	protected $project_query_project = "SELECT project_id AS id, title,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
@@ -685,6 +693,52 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::helperDisplayDescription
+	protected function helperDisplayDescription($engine, $page, $request,
+			$content)
+	{
+		if(!is_array($content) || !isset($content['content'])
+				|| strlen($content['content']) == 0)
+			return;
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('text' => _('Description')));
+		$vbox->append('label', array('text' => $content['content']));
+	}
+
+
+	//ProjectModule::helperDisplayMembers
+	protected function helperDisplayMembers($engine, $page, $request,
+			$content)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_members;
+
+		if(($res = $db->query($engine, $query, array(
+				'project_id' => $content['id']))) === FALSE)
+			return;
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('text' => _('Members')));
+		$columns = array('title' => _('Name'),
+				'admin' => _('Administrator'));
+		$view = $vbox->append('treeview', array('columns' => $columns));
+		$no = new PageElement('image', array('stock' => 'no',
+			'size' => 16, 'title' => _('Disabled')));
+		$yes = new PageElement('image', array('stock' => 'yes',
+			'size' => 16, 'title' => _('Enabled')));
+		//project owner
+		$view->append('row', array('title' => 'khorben',
+				'admin' => $yes));
+		//project members
+		foreach($res as $r)
+		{
+			$row = $view->append('row');
+			$row->setProperty('title', $r['username']);
+			$row->setProperty('admin', $db->isTrue($r['admin'])
+					? $yes : $no);
+		}
+	}
+
+
 	//ProjectModule::helperDisplayProject
 	protected function helperDisplayProject($engine, $page, $content)
 	{
@@ -697,7 +751,10 @@ class ProjectModule extends ContentModule
 		$vbox = $page->append('vbox');
 		$this->helperDisplayToolbar($engine, $vbox, $request, $content);
 		//content
-		$this->helperDisplayText($engine, $vbox, $request, $content);
+		$this->helperDisplayDescription($engine, $vbox, $request,
+				$content);
+		//members
+		$this->helperDisplayMembers($engine, $vbox, $request, $content);
 		//buttons
 		$this->helperDisplayButtons($engine, $vbox, $request, $content);
 	}
