@@ -27,15 +27,8 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
-#ifndef PREFIX
-# define PREFIX		"/usr/local"
-#endif
-
-#ifndef DATADIR
-# define DATADIR	PREFIX "/share"
-#endif
+#define PROGNAME "surfer"
 
 
 /* window */
@@ -309,13 +302,7 @@ void on_help_about(gpointer data)
 /* on_help_contents */
 void on_help_contents(gpointer data)
 {
-	Surfer * surfer = data;
-	char buf[256];
-	Surfer * s;
-
-	snprintf(buf, sizeof(buf), "%s",
-			"file://" DATADIR "/doc/html/" PACKAGE "/surfer.html");
-	s = surfer_new(buf);
+	desktop_help_contents(PACKAGE, PROGNAME);
 }
 #endif /* !EMBEDDED */
 
