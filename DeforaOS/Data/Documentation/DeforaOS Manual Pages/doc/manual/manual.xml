@@ -10,6 +10,7 @@
 <!ENTITY open1 "../../../../../Apps/Desktop/src/Browser/doc/open.xml">
 <!ENTITY projectconf5 "../../../../../Apps/Devel/src/configure/doc/project.conf.xml">
 <!ENTITY properties1 "../../../../../Apps/Desktop/src/Browser/doc/properties.xml">
+<!ENTITY surfer1 "../../../../../Apps/Desktop/src/Surfer/doc/surfer.xml">
 ]>
 <book><?dbhtml filename="manual.html"?>
 	<title>DeforaOS Manual Pages</title>
@@ -22,6 +23,7 @@
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&desktopctl1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&open1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&properties1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&surfer1;"/>
 		</section>
 		<section>
 			<title>Unix utilities</title>
