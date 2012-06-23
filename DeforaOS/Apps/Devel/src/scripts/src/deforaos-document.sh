@@ -34,10 +34,11 @@ SRC="$ROOT/$MODULE"
 #executables
 CVS="cvs -q"
 FIND="find"
+INSTALL="install -m 0644"
 LN="ln -f"
 MAIL="mail"
 MAKE="make"
-MKDIR="mkdir -p"
+MKDIR="mkdir -m 0755 -p"
 RM="rm -f"
 TAR="tar"
 TOUCH="touch"
@@ -68,6 +69,17 @@ deforaos_document()
 	#document tree
 	echo ""
 	echo "Documenting CVS module $MODULE:"
+
+	#manual pages
+	echo " * manual pages"
+	(cd "$SRC/Data/Documentation/DeforaOS Manual Pages" &&
+		$MAKE &&
+		$MKDIR -p "$DESTDIR/htdocs/doc/manual" &&
+		$FIND doc/manual -name "*.html" -exec \
+		$INSTALL {} "$DESTDIR/htdocs/{}" \;)
+
+	#gtkdoc
+	echo " * API documentation"
 	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
 		[ -x "$path/gtkdoc.sh" ] || continue
 		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/" > "$DEVNULL" 2> "$DEVNULL")
