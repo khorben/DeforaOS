@@ -749,6 +749,7 @@ class HTMLFormat extends FormatElements
 	private function _renderTreeviewRowsDo($e, $columns, &$id, $level = 0)
 	{
 		$class = 'row';
+		$request = $e->getProperty('request');
 
 		if(($children = $e->getChildren()) === FALSE)
 			return;
@@ -761,10 +762,13 @@ class HTMLFormat extends FormatElements
 				continue;
 			$this->tagOpen('div', $class);
 			$this->tagOpen('span', 'detail');
-			$name = $c->getProperty('id');
-			$this->tag('input', FALSE, '_check_'.$id, array(
-						'type' => 'checkbox',
-						'name' => $name));
+			if($request !== FALSE)
+			{
+				$name = $c->getProperty('id');
+				$this->tag('input', FALSE, '_check_'.$id, array(
+							'type' => 'checkbox',
+							'name' => $name));
+			}
 			$this->tagClose('span');
 			$properties = $c->getProperties();
 			//FIXME list in columns' order instead
