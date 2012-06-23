@@ -49,7 +49,7 @@ CONFIGURE="Apps/Devel/src/configure/src/configure -O DeforaOS"
 CVS="cvs -q"
 MAIL="mail"
 MAKE="make"
-MKDIR="mkdir -p"
+MKDIR="mkdir -m 0755 -p"
 RM="rm -f"
 TOUCH="touch"
 
