@@ -6,6 +6,7 @@
 <!ENTITY configure1 "../../../../../Apps/Devel/src/configure/doc/configure.xml">
 <!ENTITY desktop1 "../../../../../Apps/Desktop/src/Browser/doc/desktop.xml">
 <!ENTITY desktopctl1 "../../../../../Apps/Desktop/src/Browser/doc/desktopctl.xml">
+<!ENTITY download1 "../../../../../Apps/Desktop/src/Surfer/doc/download.xml">
 <!ENTITY makepasswd1 "../../../../../Apps/Unix/src/makepasswd/doc/makepasswd.xml">
 <!ENTITY open1 "../../../../../Apps/Desktop/src/Browser/doc/open.xml">
 <!ENTITY projectconf5 "../../../../../Apps/Devel/src/configure/doc/project.conf.xml">
@@ -21,6 +22,7 @@
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&browser1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&desktop1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&desktopctl1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&download1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&open1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&properties1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&surfer1;"/>
