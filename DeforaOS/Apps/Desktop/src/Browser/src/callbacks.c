@@ -708,6 +708,9 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	GtkWidget * menuitem;
 	char * mimetype = NULL;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %d\n", __func__, event->button);
+#endif
 	if(event->type != GDK_BUTTON_PRESS
 			|| (event->button != 3 && event->button != 0))
 		return FALSE;
@@ -716,7 +719,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	g_signal_connect(G_OBJECT(widget), "deactivate", G_CALLBACK(
 				gtk_widget_destroy), NULL); */
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 		path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(
 					browser->iconview), (int)event->x,
 				(int)event->y);
@@ -734,7 +737,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 	{
 		if(gtk_icon_view_path_is_selected(GTK_ICON_VIEW(
 						browser->iconview), path)
@@ -1003,7 +1006,7 @@ static gboolean _press_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu)
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 		gtk_menu_attach_to_widget(GTK_MENU(menu), browser->iconview,
 				NULL);
 	else
@@ -1126,7 +1129,7 @@ static GList * _copy_selection(Browser * browser)
 	char * q;
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
 					browser->iconview));
 	else
