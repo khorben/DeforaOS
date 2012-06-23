@@ -224,9 +224,9 @@ class BrowserModule extends Module
 		if(($dir = @opendir($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 				'text' => $error));
-		$columns = array('title' => _('Title'), 'user' => _('User'),
-				'group' => _('Group'), 'size' => _('Size'),
-				'date' => _('Date'),
+		$columns = array('icon' => '', 'title' => _('Title'),
+				'user' => _('User'), 'group' => _('Group'),
+				'size' => _('Size'), 'date' => _('Date'),
 				'mode' => _('Permissions'));
 		$view = $page->append('treeview', array('columns' => $columns));
 		while(($de = readdir($dir)) !== FALSE)
@@ -237,6 +237,14 @@ class BrowserModule extends Module
 			$fullpath = $root.'/'.$path.'/'.$de;
 			$st = lstat($fullpath);
 			$row = $view->append('row');
+			if($st['mode'] & BrowserModule::$S_IFDIR)
+				$icon = 'icons/gnome/gnome-icon-theme/16x16'
+					.'/places/folder.png';
+			else
+				$icon = Mime::getIcon($engine, $de, 16);
+			$icon = new PageElement('image', array(
+					'source' => $icon));
+			$row->setProperty('icon', $icon);
 			$r = new Request($engine, $this->name, FALSE,
 					FALSE, ltrim($path.'/'.$de, '/'));
 			$link = new PageElement('link', array(
