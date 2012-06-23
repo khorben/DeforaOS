@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DaPortal 1.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-06-22 01:28+0200\n"
+"POT-Creation-Date: 2012-06-24 01:55+0200\n"
 "PO-Revision-Date: 2012-02-01 03:41+0100\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -155,7 +155,8 @@ msgstr "Module"
 #: ../src/modules/admin/module.php:128 ../src/modules/admin/module.php:147
 #: ../src/modules/content/module.php:484 ../src/modules/content/module.php:686
 #: ../src/modules/content/module.php:717
-#: ../src/modules/content/module.php:1079 ../src/modules/user/module.php:269
+#: ../src/modules/content/module.php:1079
+#: ../src/modules/project/module.php:728 ../src/modules/user/module.php:269
 #: ../src/modules/user/module.php:290
 msgid "Enabled"
 msgstr "Activé"
@@ -179,7 +180,8 @@ msgid "Enable"
 msgstr "Activer"
 
 #: ../src/modules/admin/module.php:145 ../src/modules/content/module.php:715
-#: ../src/modules/content/module.php:1077 ../src/modules/user/module.php:288
+#: ../src/modules/content/module.php:1077
+#: ../src/modules/project/module.php:726 ../src/modules/user/module.php:288
 msgid "Disabled"
 msgstr "Désactivé"
 
@@ -317,76 +319,76 @@ msgstr "Impossible d'ouvrir le dossier demandé"
 
 #: ../src/modules/browser/module.php:227 ../src/modules/content/module.php:483
 #: ../src/modules/content/module.php:617 ../src/modules/content/module.php:684
-#: ../src/modules/project/module.php:435
+#: ../src/modules/project/module.php:443
 msgid "Title"
 msgstr "Titre"
 
-#: ../src/modules/browser/module.php:227
+#: ../src/modules/browser/module.php:228
 msgid "User"
 msgstr "Utilisateur"
 
 #: ../src/modules/browser/module.php:228
 #: ../src/modules/download/module.php:712
-#: ../src/modules/project/module.php:527 ../src/modules/user/module.php:268
+#: ../src/modules/project/module.php:535 ../src/modules/user/module.php:268
 msgid "Group"
 msgstr "Groupe"
 
-#: ../src/modules/browser/module.php:228
+#: ../src/modules/browser/module.php:229
 msgid "Size"
 msgstr "Taille"
 
 #: ../src/modules/browser/module.php:229 ../src/modules/content/module.php:487
 #: ../src/modules/content/module.php:688
 #: ../src/modules/download/module.php:713
-#: ../src/modules/project/module.php:437 ../src/modules/project/module.php:528
+#: ../src/modules/project/module.php:445 ../src/modules/project/module.php:536
 msgid "Date"
 msgstr "Date"
 
 #: ../src/modules/browser/module.php:230
 #: ../src/modules/download/module.php:713
-#: ../src/modules/project/module.php:528
+#: ../src/modules/project/module.php:536
 msgid "Permissions"
 msgstr "Permissions"
 
-#: ../src/modules/browser/module.php:263
+#: ../src/modules/browser/module.php:271
 msgid "Filename:"
 msgstr "Nom du fichier :"
 
-#: ../src/modules/browser/module.php:270
+#: ../src/modules/browser/module.php:278
 #: ../src/modules/download/module.php:777
 msgid "Type:"
 msgstr "Type :"
 
-#: ../src/modules/browser/module.php:273
+#: ../src/modules/browser/module.php:281
 msgid "User:"
 msgstr "Utilisateur :"
 
-#: ../src/modules/browser/module.php:276
+#: ../src/modules/browser/module.php:284
 #: ../src/modules/download/module.php:785
 msgid "Group:"
 msgstr "Groupe :"
 
-#: ../src/modules/browser/module.php:279
+#: ../src/modules/browser/module.php:287
 #: ../src/modules/download/module.php:787
 msgid "Permissions:"
 msgstr "Permissions :"
 
-#: ../src/modules/browser/module.php:282
+#: ../src/modules/browser/module.php:290
 #: ../src/modules/download/module.php:789
 msgid "Size:"
 msgstr "Taille :"
 
-#: ../src/modules/browser/module.php:285
+#: ../src/modules/browser/module.php:293
 #: ../src/modules/download/module.php:791
 msgid "Created on:"
 msgstr "Créé le :"
 
-#: ../src/modules/browser/module.php:288
+#: ../src/modules/browser/module.php:296
 #: ../src/modules/download/module.php:793
 msgid "Last modified:"
 msgstr "Modifié le :"
 
-#: ../src/modules/browser/module.php:291
+#: ../src/modules/browser/module.php:299
 #: ../src/modules/download/module.php:795
 msgid "Last access:"
 msgstr "Accédé le :"
@@ -446,7 +448,7 @@ msgstr "Soumission en cours, veuillez patienter..."
 
 #: ../src/modules/content/module.php:55 ../src/modules/content/module.php:409
 #: ../src/modules/download/module.php:301
-#: ../src/modules/project/module.php:326 ../src/modules/user/module.php:640
+#: ../src/modules/project/module.php:334 ../src/modules/user/module.php:640
 #: ../src/modules/user/module.php:644 ../src/modules/user/module.php:953
 msgid "Update"
 msgstr "Modifier"
@@ -456,12 +458,12 @@ msgid "Update in progress, please wait..."
 msgstr "Mise à jour en cours, veuillez patienter..."
 
 #: ../src/modules/content/module.php:360 ../src/modules/content/module.php:391
-#: ../src/modules/project/module.php:566
+#: ../src/modules/project/module.php:574
 msgid "Title: "
 msgstr "Titre : "
 
 #: ../src/modules/content/module.php:363 ../src/modules/content/module.php:392
-#: ../src/modules/project/module.php:569
+#: ../src/modules/project/module.php:577
 msgid "Content: "
 msgstr "Contenu : "
 
@@ -469,7 +471,7 @@ msgstr "Contenu : "
 #: ../src/modules/content/module.php:826
 #: ../src/modules/download/module.php:352
 #: ../src/modules/download/module.php:373
-#: ../src/modules/project/module.php:577 ../src/modules/user/module.php:89
+#: ../src/modules/project/module.php:585 ../src/modules/user/module.php:89
 #: ../src/modules/user/module.php:109 ../src/modules/user/module.php:127
 #: ../src/modules/user/module.php:575 ../src/modules/user/module.php:837
 #: ../src/modules/user/module.php:951
@@ -477,7 +479,7 @@ msgid "Cancel"
 msgstr "Annuler"
 
 #: ../src/modules/content/module.php:373 ../src/modules/content/module.php:406
-#: ../src/modules/project/module.php:580
+#: ../src/modules/project/module.php:588
 msgid "Preview"
 msgstr "Prévisualiser"
 
@@ -485,7 +487,7 @@ msgstr "Prévisualiser"
 msgid "Submit"
 msgstr "Envoyer"
 
-#: ../src/modules/content/module.php:403 ../src/modules/project/module.php:246
+#: ../src/modules/content/module.php:403 ../src/modules/project/module.php:254
 #: ../src/modules/search/module.php:219 ../src/modules/user/module.php:130
 #: ../src/modules/user/module.php:840
 msgid "Reset"
@@ -556,7 +558,7 @@ msgid "Could not preview content"
 msgstr "Impossible d'apercevoir le contenu"
 
 #: ../src/modules/content/module.php:816 ../src/modules/content/module.php:894
-#: ../src/modules/content/module.php:973 ../src/modules/project/module.php:498
+#: ../src/modules/content/module.php:973 ../src/modules/project/module.php:506
 msgid "Preview: "
 msgstr "Prévisualisation : "
 
@@ -640,7 +642,7 @@ msgstr "Fichier de"
 
 #: ../src/modules/download/module.php:37
 #: ../src/modules/download/module.php:329
-#: ../src/modules/project/module.php:319
+#: ../src/modules/project/module.php:327
 msgid "Download"
 msgstr "Télécharger"
 
@@ -678,7 +680,7 @@ msgid "New directory"
 msgstr "Nouveau dossier"
 
 #: ../src/modules/download/module.php:318
-#: ../src/modules/project/module.php:304
+#: ../src/modules/project/module.php:312
 msgid "Browse"
 msgstr "Parcourir"
 
@@ -733,7 +735,7 @@ msgid "Upload file in root folder"
 msgstr "Envoyer un fichier à la racine"
 
 #: ../src/modules/download/module.php:590
-#: ../src/modules/project/module.php:361 ../src/modules/project/module.php:550
+#: ../src/modules/project/module.php:369 ../src/modules/project/module.php:558
 msgid "An error occurred"
 msgstr "Une erreur est survenue"
 
@@ -747,12 +749,12 @@ msgid "Unable to list files"
 msgstr "Impossible de lister les fichiers"
 
 #: ../src/modules/download/module.php:711
-#: ../src/modules/project/module.php:526
+#: ../src/modules/project/module.php:534
 msgid "Filename"
 msgstr "Nom du fichier"
 
 #: ../src/modules/download/module.php:712
-#: ../src/modules/project/module.php:527
+#: ../src/modules/project/module.php:535
 msgid "Owner"
 msgstr "Propriétaire"
 
@@ -823,7 +825,7 @@ msgstr "Administration des projets"
 msgid "Project by"
 msgstr "Projet de"
 
-#: ../src/modules/project/module.php:41 ../src/modules/project/module.php:436
+#: ../src/modules/project/module.php:41 ../src/modules/project/module.php:444
 msgid "Project"
 msgstr "Projet"
 
@@ -843,101 +845,117 @@ msgstr "Plus de projets..."
 msgid "New project"
 msgstr "Nouveau projet"
 
-#: ../src/modules/project/module.php:238 ../src/modules/project/module.php:352
-#: ../src/modules/project/module.php:519 ../src/modules/project/module.php:541
-#: ../src/modules/project/module.php:650
+#: ../src/modules/project/module.php:246 ../src/modules/project/module.php:360
+#: ../src/modules/project/module.php:527 ../src/modules/project/module.php:549
+#: ../src/modules/project/module.php:658
 msgid "Project: "
 msgstr "Projet : "
 
-#: ../src/modules/project/module.php:241
+#: ../src/modules/project/module.php:249
 msgid "Submitted by: "
 msgstr "Envoyé par : "
 
-#: ../src/modules/project/module.php:249
+#: ../src/modules/project/module.php:257
 msgid "Filter"
 msgstr "Filtrer"
 
-#: ../src/modules/project/module.php:297
+#: ../src/modules/project/module.php:305
 msgid "Homepage"
 msgstr "Accueil"
 
-#: ../src/modules/project/module.php:309
+#: ../src/modules/project/module.php:317
 msgid "Timeline"
 msgstr "Déroulement"
 
-#: ../src/modules/project/module.php:314 ../src/modules/project/module.php:372
+#: ../src/modules/project/module.php:322 ../src/modules/project/module.php:380
 msgid "Bug reports"
 msgstr "Rapports de bugs"
 
-#: ../src/modules/project/module.php:383 ../src/modules/project/module.php:391
+#: ../src/modules/project/module.php:391 ../src/modules/project/module.php:399
 msgid "Unknown project"
 msgstr "Projet inconnu"
 
-#: ../src/modules/project/module.php:395
+#: ../src/modules/project/module.php:403
 msgid "Bug reports for "
 msgstr "Rapports de bugs pour "
 
-#: ../src/modules/project/module.php:403
+#: ../src/modules/project/module.php:411
 msgid " by "
 msgstr " par "
 
-#: ../src/modules/project/module.php:418
+#: ../src/modules/project/module.php:426
 msgid "Unable to list bugs"
 msgstr "Impossible de lister les bugs"
 
-#: ../src/modules/project/module.php:436
+#: ../src/modules/project/module.php:444
 msgid "ID"
 msgstr "ID"
 
-#: ../src/modules/project/module.php:437
+#: ../src/modules/project/module.php:445
 msgid "State"
 msgstr "État"
 
-#: ../src/modules/project/module.php:438
+#: ../src/modules/project/module.php:446
 msgid "Type"
 msgstr "Type"
 
-#: ../src/modules/project/module.php:438
+#: ../src/modules/project/module.php:446
 msgid "Priority"
 msgstr "Priorité"
 
-#: ../src/modules/project/module.php:480
+#: ../src/modules/project/module.php:488
 #, php-format
 msgid "Reply to #%u/%s: %s"
 msgstr "Réponse à #%u/%s: %s"
 
-#: ../src/modules/project/module.php:607
+#: ../src/modules/project/module.php:615
 #, php-format
 msgid "#%u/%s: %s"
 msgstr "#%u/%s: %s"
 
-#: ../src/modules/project/module.php:623
+#: ../src/modules/project/module.php:631
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/modules/project/module.php:655
+#: ../src/modules/project/module.php:663
 msgid "Submitter: "
 msgstr "Envoyé par : "
 
-#: ../src/modules/project/module.php:660
+#: ../src/modules/project/module.php:668
 msgid "Date: "
 msgstr "Date :"
 
-#: ../src/modules/project/module.php:667
+#: ../src/modules/project/module.php:675
 msgid "State: "
 msgstr "État : "
 
-#: ../src/modules/project/module.php:671
+#: ../src/modules/project/module.php:679
 msgid "Type: "
 msgstr "Type : "
 
-#: ../src/modules/project/module.php:675
+#: ../src/modules/project/module.php:683
 msgid "Priority: "
 msgstr "Priorité : "
 
-#: ../src/modules/project/module.php:679
+#: ../src/modules/project/module.php:687
 msgid "Assigned to: "
 msgstr "Assigné à : "
+
+#: ../src/modules/project/module.php:704
+msgid "Description"
+msgstr "Description"
+
+#: ../src/modules/project/module.php:721
+msgid "Members"
+msgstr "Membres"
+
+#: ../src/modules/project/module.php:722
+msgid "Name"
+msgstr "Nom"
+
+#: ../src/modules/project/module.php:723
+msgid "Administrator"
+msgstr "Administrateur"
 
 #: ../src/modules/search/module.php:73
 msgid "Advanced search"
