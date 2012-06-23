@@ -22,11 +22,32 @@ class Mime
 	//public
 	//methods
 	//static
+	//Mime::getIcon
+	static public function getIcon(&$engine, $filename, $size = 48)
+	{
+		$default = 'mimetypes/gtk-file.png';
+
+		if(Mime::init($engine) === FALSE)
+			return $default;
+		if(($type = Mime::getType($engine, $filename, FALSE)) === FALSE)
+			return FALSE;
+		//substitutions
+		//FIXME there are many more substitutions to apply
+		$icon = str_replace('application/', 'application-', $type);
+		//FIXME no longer hardcode the icon theme
+		$icon = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
+			.'/mimetypes/gnome-mime-'.$icon.'.png';
+		return $icon;
+	}
+
+
+	//Mime::getType
 	static public function getType(&$engine, $filename,
 			$default = 'application/octet-stream')
 	{
 		if(Mime::init($engine) === FALSE)
 			return $default;
+		//FIXME use lstat() if the filename is absolute or relative
 		foreach(Mime::$types as $g)
 			if(isset($g[1]) && fnmatch($g[1], $filename))
 				return $g[0];
@@ -41,6 +62,7 @@ class Mime
 
 
 	//methods
+	//Mime::init
 	static private function init(&$engine)
 	{
 		global $config;
