@@ -1591,7 +1591,7 @@ void browser_select_all(Browser * browser)
 	GtkTreeSelection * sel;
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 	{
 		gtk_icon_view_select_all(GTK_ICON_VIEW(browser->iconview));
 		return;
@@ -2533,7 +2533,7 @@ void browser_unselect_all(Browser * browser)
 	GtkTreeSelection * sel;
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 	{
 		gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
 		return;
@@ -2589,7 +2589,7 @@ static void _browser_plugin_refresh(Browser * browser)
 	gchar * path = NULL;
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
+	if(browser_get_view(browser) != BV_DETAILS)
 		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
 					browser->iconview));
 	else
