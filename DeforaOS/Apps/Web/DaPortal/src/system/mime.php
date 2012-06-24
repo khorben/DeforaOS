@@ -28,14 +28,16 @@ class Mime
 		//FIXME no longer hardcode the icon theme
 		$default = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
 			.'/mimetypes/gtk-file.png';
+		$from = array('application/', 'text/', 'video/');
+		$to = array('application-', 'text-', 'video-');
 
 		if(Mime::init($engine) === FALSE)
 			return $default;
 		if(($type = Mime::getType($engine, $filename, FALSE)) === FALSE)
 			return $default;
 		//substitutions
-		//FIXME there are many more substitutions to apply
-		$icon = str_replace('application/', 'application-', $type);
+		//FIXME the substitution may not exist (check and add fallbacks)
+		$icon = str_replace($from, $to, $type);
 		$icon = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
 			.'/mimetypes/gnome-mime-'.$icon.'.png';
 		return $icon;
