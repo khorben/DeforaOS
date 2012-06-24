@@ -708,20 +708,27 @@ class DownloadModule extends ContentModule
 		$toolbar = $this->getToolbar($engine, $content);
 		$page->append($toolbar);
 		//view
-		$columns = array('filename' => _('Filename'),
+		$columns = array('icon' => '', 'filename' => _('Filename'),
 			'owner' => _('Owner'), 'group' => _('Group'),
 			'date' => _('Date'), 'permissions' => _('Permissions'));
 		$view = $page->append('treeview', array('columns' => $columns));
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$stock = $this->isDirectory($res[$i])
-					? 'folder' : 'file';
 			$row = $view->append('row');
 			$row->setProperty('id', $res[$i]['id']);
+			if($this->isDirectory($res[$i]))
+				//FIXME hardcoded
+				$icon = 'icons/gnome/gnome-icon-theme/16x16'
+					.'/places/folder.png';
+			else
+				$icon = Mime::getIcon($engine,
+						$res[$i]['title'], 16);
+			$icon = new PageElement('image', array(
+					'source' => $icon));
+			$row->setProperty('icon', $icon);
 			$r = new Request($engine, $this->name, FALSE,
 					$res[$i]['id'], $res[$i]['title']);
-			$link = new PageElement('link', array('stock' => $stock,
-					'request' => $r,
+			$link = new PageElement('link', array('request' => $r,
 					'text' => $res[$i]['title']));
 			$row->setProperty('filename', $link);
 			$user_id = $res[$i]['user_id'];
