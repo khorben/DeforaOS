@@ -25,16 +25,17 @@ class Mime
 	//Mime::getIcon
 	static public function getIcon(&$engine, $filename, $size = 48)
 	{
-		$default = 'mimetypes/gtk-file.png';
+		//FIXME no longer hardcode the icon theme
+		$default = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
+			.'/mimetypes/gtk-file.png';
 
 		if(Mime::init($engine) === FALSE)
 			return $default;
 		if(($type = Mime::getType($engine, $filename, FALSE)) === FALSE)
-			return FALSE;
+			return $default;
 		//substitutions
 		//FIXME there are many more substitutions to apply
 		$icon = str_replace('application/', 'application-', $type);
-		//FIXME no longer hardcode the icon theme
 		$icon = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
 			.'/mimetypes/gnome-mime-'.$icon.'.png';
 		return $icon;
