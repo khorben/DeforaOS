@@ -238,6 +238,7 @@ class BrowserModule extends Module
 			$st = lstat($fullpath);
 			$row = $view->append('row');
 			if($st['mode'] & BrowserModule::$S_IFDIR)
+				//FIXME hardcoded
 				$icon = 'icons/gnome/gnome-icon-theme/16x16'
 					.'/places/folder.png';
 			else
