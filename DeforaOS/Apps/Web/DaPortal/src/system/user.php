@@ -132,6 +132,26 @@ class User
 
 	//static
 	//useful
+	//User::lookup
+	static public function lookup($engine, $username)
+	{
+		$db = $engine->getDatabase();
+		$query = User::$query_get_by_username;
+		static $cache = array();
+
+		if(isset($cache[$username]))
+			return $cache[$username];
+		if(($res = $db->query($engine, $query, array(
+				'username' => $username))) === FALSE
+				|| count($res) != 1)
+			return FALSE;
+		$res = $res[0];
+		$cache[$username] = new User($engine, $res[0]['user_id'],
+				$username);
+		return $cache[$username];
+	}
+
+
 	//User::password_new
 	static public function password_new()
 	{
@@ -400,6 +420,15 @@ class User
 		ON daportal_user.group_id=daportal_group.group_id
 		WHERE daportal_group.enabled='1'
 		AND user_id=:user_id
+		AND username=:username";
+	static private $query_get_by_username = "SELECT user_id AS id, username,
+		daportal_user.enabled AS enabled,
+		daportal_user.group_id AS group_id, groupname, admin, email,
+		fullname
+		FROM daportal_user
+		LEFT JOIN daportal_group
+		ON daportal_user.group_id=daportal_group.group_id
+		WHERE daportal_group.enabled='1'
 		AND username=:username";
 	private $query_set_password = 'UPDATE daportal_user
 		SET password=:password
