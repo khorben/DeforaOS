@@ -59,17 +59,83 @@ class CVSScmProject
 	//CVSScmProject::timeline
 	public function timeline($engine, $project, $request)
 	{
+		global $config;
+		$cvsroot = $config->getVariable('module::project',
+			'scm::backend::cvs::cvsroot'); //XXX
+		$error = _('No CVS repository defined');
+
+		//check the cvsroot
+		if($cvsroot === FALSE || strlen($project['cvsroot']) == 0)
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
 		if(strlen($project['cvsroot']) == 0)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('No CVS repository defined')));
-		$columns = array('title' => _('Title'), 'date' => _('Date'),
-				'action' => _('Action'),
+				'type' => 'error', 'text' => $error));
+		//history
+		$error = _('Could not open the project history');
+		if(($fp = fopen($cvsroot.'/CVSROOT/history', 'r')) === FALSE)
+			return new PageElement('dialog', array(
+				'type' => 'error', 'text' => $error));
+		//view
+		$columns = array('icon' => '', 'title' => _('Title'),
+				'date' => _('Date'), 'action' => _('Action'),
 				'revision' => _('Revision'),
 				'username' => _('Author'));
 		$view = new PageElement('treeview', array(
 				'columns' => $columns));
-		//FIXME implement
+		//rows
+		$len = strlen($project['cvsroot']);
+		while(($line = fgets($fp)) !== FALSE)
+		{
+			$fields = explode('|', $line);
+			if(strlen($fields[4]) == 0)
+				continue;
+			if(strncmp($fields[3], $project['cvsroot'], $len) != 0)
+				continue;
+			$event = FALSE;
+			switch($fields[0][0])
+			{
+				case 'A':
+					$event = 'Add';
+					$icon = 'add';
+					break;
+				case 'F':
+					$event = 'Release';
+					$icon = FALSE;
+					break;
+				case 'M':
+					$event = 'Modify';
+					$icon = 'edit';
+					break;
+				case 'R':
+					$event = 'Remove';
+					$icon = 'remove';
+					break;
+			}
+			if($event === FALSE)
+				continue;
+			$row = $view->prepend('row');
+			//icon
+			$icon = new PageElement('image', array(
+					'stock' => $icon, 'size' => 16));
+			$row->setProperty('icon', $icon);
+			//title
+			$title = substr($fields[3], $len ? $len + 1 : $len).'/'
+				.$fields[5];
+			$title = ltrim($title, '/');
+			$title = rtrim($title, "\n");
+			$row->setProperty('title', $title);
+			//date
+			$date = substr($fields[0], 1, 9);
+			$date = base_convert($date, 16, 10);
+			$date = strftime(_('%d/%m/%Y %H:%M:%S'), $date);
+			$row->setProperty('date', $date);
+			$row->setProperty('action', $event);
+			$row->setProperty('revision', $fields[4]);
+			$row->setProperty('username', $fields[1]);
+		}
+		//cleanup
+		fclose($fp);
 		return $view;
 	}
 }
