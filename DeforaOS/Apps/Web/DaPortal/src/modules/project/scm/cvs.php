@@ -81,7 +81,9 @@ class CVSScmProject
 				'date' => _('Date'), 'action' => _('Action'),
 				'revision' => _('Revision'),
 				'username' => _('Author'));
-		$view = new PageElement('treeview', array(
+		$vbox = new PageElement('vbox');
+		$vbox->append('title', array('text' => _('Timeline')));
+		$view = $vbox->append('treeview', array(
 				'columns' => $columns));
 		//rows
 		$len = strlen($project['cvsroot']);
@@ -132,11 +134,23 @@ class CVSScmProject
 			$row->setProperty('date', $date);
 			$row->setProperty('action', $event);
 			$row->setProperty('revision', $fields[4]);
-			$row->setProperty('username', $fields[1]);
+			//username
+			$username = $fields[1];
+			if(($user = User::lookup($engine, $username)) !== FALSE)
+			{
+				$r = new Request($engine, 'user', FALSE,
+						$user->getUserId(),
+						$user->getUsername());
+				$username = new PageElement('link', array(
+						'request' => $r,
+						'stock' => 'user',
+						'text' => $username));
+			}
+			$row->setProperty('username', $username);
 		}
 		//cleanup
 		fclose($fp);
-		return $view;
+		return $vbox;
 	}
 }
 
