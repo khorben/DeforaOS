@@ -95,6 +95,10 @@
 	background-image:	url('gnome-icon-theme/16x16/places/folder-download.png');
 }
 
+.stock16.edit {
+	background-image:	url('gnome-icon-theme/16x16/apps/text-editor.png');
+}
+
 .stock16.email {
 	background-image:	url('gnome-icon-theme/16x16/actions/mail-send.png');
 }

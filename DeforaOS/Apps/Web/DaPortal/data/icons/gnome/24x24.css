@@ -95,6 +95,10 @@
 	background-image:	url('gnome-icon-theme/24x24/places/folder-download.png');
 }
 
+.stock24.edit {
+	background-image:	url('gnome-icon-theme/24x24/apps/text-editor.png');
+}
+
 .stock24.email {
 	background-image:	url('gnome-icon-theme/24x24/actions/mail-send.png');
 }
