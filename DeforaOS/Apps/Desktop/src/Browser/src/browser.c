@@ -1390,17 +1390,26 @@ static gboolean _done_thumbnails(gpointer data)
 	char * type;
 	char * path;
 	GdkPixbuf * icon;
+	GError * error = NULL;
 
 	for(i = 0; i < IDLE_LOOP_ICON_CNT; i++)
 	{
 		gtk_tree_model_get(model, iter, BC_MIME_TYPE, &type,
 				BC_PATH, &path, -1);
 		if(type != NULL && path != NULL
-				&& strncmp(type, "image/", 6) == 0
-				&& (icon = gdk_pixbuf_new_from_file_at_size(
-						path, 96, 96, NULL)) != NULL)
-			gtk_list_store_set(browser->store, iter,
-					BC_PIXBUF_96, icon, -1);
+				&& strncmp(type, "image/", 6) == 0)
+		{
+			if((icon = gdk_pixbuf_new_from_file_at_size(path, 96,
+							96, &error)) == NULL)
+			{
+				browser_error(NULL, error->message, 1);
+				g_error_free(error);
+				error = NULL;
+			}
+			else
+				gtk_list_store_set(browser->store, iter,
+						BC_PIXBUF_96, icon, -1);
+		}
 		free(type);
 		free(path);
 		if(gtk_tree_model_iter_next(model, iter) != TRUE)
