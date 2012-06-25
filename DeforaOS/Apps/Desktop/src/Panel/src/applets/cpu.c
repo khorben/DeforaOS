@@ -20,7 +20,10 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
+# if defined(__FreeBSD__)
+#  include <sys/resource.h>
+# endif
 # include <sys/sysctl.h>
 #endif
 #include <libintl.h>
@@ -37,7 +40,7 @@ typedef struct _PanelApplet
 	PanelAppletHelper * helper;
 	GtkWidget * scale;
 	guint timeout;
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 	int used;
 	int total;
 #endif
@@ -49,7 +52,7 @@ static Cpu * _cpu_init(PanelAppletHelper * helper, GtkWidget ** widget);
 static void _cpu_destroy(Cpu * cpu);
 
 /* callbacks */
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data);
 #endif
 
@@ -74,7 +77,7 @@ PanelAppletDefinition applet =
 /* cpu_init */
 static Cpu * _cpu_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 	Cpu * cpu;
 	GtkWidget * ret;
 	PangoFontDescription * desc;
@@ -122,18 +125,26 @@ static void _cpu_destroy(Cpu * cpu)
 
 /* callbacks */
 /* on_timeout */
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data)
 {
 	Cpu * cpu = data;
+# if defined(__FreeBSD__)
+	char const name[] = "kern.cp_time";
+# elif defined(__NetBSD__)
 	int mib[] = { CTL_KERN, KERN_CP_TIME };
+# endif
 	uint64_t cpu_time[CPUSTATES];
 	size_t size = sizeof(cpu_time);
 	int used;
 	int total;
 	gdouble value;
 
+# if defined(__FreeBSD__)
+	if(sysctlbyname(name, &cpu_time, &size, NULL, 0) < 0)
+# elif defined(__NetBSD__)
 	if(sysctl(mib, 2, &cpu_time, &size, NULL, 0) < 0)
+# endif
 		return cpu->helper->error(cpu->helper->panel, "sysctl", TRUE);
 	used = cpu_time[CP_USER] + cpu_time[CP_SYS] + cpu_time[CP_NICE]
 		+ cpu_time[CP_INTR];
