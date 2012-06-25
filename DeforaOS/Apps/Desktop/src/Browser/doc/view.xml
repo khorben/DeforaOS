@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Browser User Manual">
 	<!ENTITY package   "DeforaOS Browser">
-	<!ENTITY name      "browser">
-	<!ENTITY purpose   "File manager and image viewer">
+	<!ENTITY name      "view">
+	<!ENTITY purpose   "Generic document viewer">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,18 +49,18 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg rep="repeat"><replaceable>directory</replaceable></arg>
+			<arg choice="plain" rep="repeat"><replaceable>file</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a program that lists and manages
-			files.</para>
+		<para><command>&name;</command> displays a simple preview of documents when it
+			can.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>A list of directories to browse can be provided directly on the command
-		line.</para>
+		<para>A list of documents to visualize must be provided directly on the
+			command line.</para>
 	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
@@ -71,11 +71,7 @@
 		<title>See also</title>
 		<para>
 			<citerefentry>
-				<refentrytitle>copy</refentrytitle>
-				<manvolnum>1</manvolnum>
-			</citerefentry>,
-			<citerefentry>
-				<refentrytitle>delete</refentrytitle>
+				<refentrytitle>browser</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
@@ -87,22 +83,14 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
-				<refentrytitle>move</refentrytitle>
-				<manvolnum>1</manvolnum>
-			</citerefentry>,
-			<citerefentry>
 				<refentrytitle>open</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>properties</refentrytitle>
 				<manvolnum>1</manvolnum>
-			</citerefentry>,
-			<citerefentry>
-				<refentrytitle>view</refentrytitle>
-				<manvolnum>1</manvolnum>
 			</citerefentry>
-	</para>
+		</para>
 	</refsect1>
 </refentry>
 <!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

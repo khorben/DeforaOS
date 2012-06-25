@@ -102,6 +102,10 @@
 			<citerefentry>
 				<refentrytitle>properties</refentrytitle>
 				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>view</refentrytitle>
+				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>
 	</refsect1>

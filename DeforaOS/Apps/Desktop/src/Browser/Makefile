@@ -39,6 +39,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/desktopctl.xml \
 		$(PACKAGE)-$(VERSION)/doc/open.xml \
 		$(PACKAGE)-$(VERSION)/doc/properties.xml \
+		$(PACKAGE)-$(VERSION)/doc/view.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Browser.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
