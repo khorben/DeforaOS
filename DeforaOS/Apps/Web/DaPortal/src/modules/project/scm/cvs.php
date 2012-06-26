@@ -16,6 +16,9 @@
 
 
 
+require_once('./system/mime.php');
+
+
 //CVSScmProject
 class CVSScmProject
 {
@@ -51,7 +54,10 @@ class CVSScmProject
 		$vbox->append('title', array('text' => _('Browse source')));
 		//view
 		$columns = array('icon' => '', 'title' => _('Filename'),
-				'date' => _('Date'));
+				'date' => _('Date'),
+				'revision' => _('Revision'),
+				'username' => _('Author'),
+				'content' => _('Description'));
 		$view = $vbox->append('treeview', array('columns' => $columns));
 		$folders = array();
 		$files = array();
@@ -71,13 +77,11 @@ class CVSScmProject
 		}
 		ksort($folders);
 		ksort($files);
-		//XXX code duplication
 		foreach($folders as $de => $st)
 		{
-			$icon = 'folder';
 			$row = $view->append('row');
 			$icon = new PageElement('image', array('size' => 16,
-					'stock' => $icon));
+					'stock' => 'folder'));
 			$row->setProperty('icon', $icon);
 			//title
 			$r = new Request($engine, $request->getModule(),
@@ -93,10 +97,10 @@ class CVSScmProject
 		}
 		foreach($files as $de => $st)
 		{
-			$icon = 'file';
 			$row = $view->append('row');
-			$icon = new PageElement('image', array('size' => 16,
-					'stock' => $icon));
+			$icon = Mime::getIcon($engine, $de, 16);
+			$icon = new PageElement('image', array(
+					'source' => $icon));
 			$row->setProperty('icon', $icon);
 			//title
 			$r = new Request($engine, $request->getModule(),
@@ -106,9 +110,15 @@ class CVSScmProject
 			$link = new PageElement('link', array('request' => $r,
 					'text' => substr($de, 0, -2)));
 			$row->setProperty('title', $link);
+			//revision
+			//FIXME implement
 			//date
 			$date = strftime(_('%Y/%m/%d %H:%M:%S'), $st['mtime']);
 			$row->setProperty('date', $date);
+			//author
+			//FIXME implement
+			//message
+			//FIXME implement
 		}
 		closedir($dir);
 		return $vbox;
