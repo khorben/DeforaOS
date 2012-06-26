@@ -71,10 +71,10 @@ class HTML
 		HTML::$content .= "<$tag";
 		$a = HTML::$whitelist[$tag];
 		foreach($attributes as $k => $v)
-			if(!isset($a[$k]))
+			if(!isset($a[strtolower($k)]))
 				continue;
 			else
-				HTML::$content .= " $k=\"$v\"";
+				HTML::$content .= ' '.strtolower($k)."=\"$v\"";
 		HTML::$content .= ">";
 	}
 
@@ -128,7 +128,7 @@ class HTML
 		}
 		$a = HTML::$whitelist[$tag];
 		foreach($attributes as $k => $v)
-			if(!isset($a[$k]))
+			if(!isset($a[strtolower($k)]))
 			{
 				HTML::$valid = FALSE;
 				return;
