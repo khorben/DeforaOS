@@ -1,6 +1,6 @@
 PACKAGE	= Panel
 VERSION	= 0.2.13
-SUBDIRS	= data include po src tools
+SUBDIRS	= data doc include po src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -56,6 +56,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/scalable/Makefile \
 		$(PACKAGE)-$(VERSION)/data/scalable/panel-applet-bluetooth.svg \
 		$(PACKAGE)-$(VERSION)/data/scalable/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/panel.xml \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Panel.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \

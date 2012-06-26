@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY username  "khorben">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
+	<!ENTITY title     "Panel User Manual">
+	<!ENTITY package   "DeforaOS Panel">
+	<!ENTITY name      "panel">
+	<!ENTITY purpose   "Desktop panel">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this
+				document under the terms of the GNU General Public License,
+				Version 3 as published by the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="opt"><option>-m</option>
+				<replaceable>monitor</replaceable></arg>
+			<arg choice="opt"><option>-l</option></arg>
+			<arg choice="opt"><option>-s</option></arg>
+			<arg choice="opt"><option>-x</option></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+	<refsect1 id="description">
+		<title>Description</title>
+		<para><command>&name;</command> is a desktop panel. It can be positioned at
+			the top and/or bottom of any monitor available.</para>
+	</refsect1>
+	<refsect1 id="options">
+		<title>Options</title>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-l</option></term>
+				<listitem>
+					<para>Use icons the size of a large toolbar.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-m</option></term>
+				<listitem>
+					<para>Monitor where to display the panel.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-s</option></term>
+				<listitem>
+					<para>Use icons the size of a small toolbar.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-x</option></term>
+				<listitem>
+					<para>Use icons the size of menus.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>Bugs</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/3262/Panel"/>.</para>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>See also</title>
+		<para>
+			<citerefentry>
+				<refentrytitle>panelctl</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>
+		</para>
+	</refsect1>
+</refentry>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
