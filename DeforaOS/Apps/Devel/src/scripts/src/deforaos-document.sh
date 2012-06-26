@@ -27,7 +27,7 @@ DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
 DEVNULL="/dev/null"
 EMAIL="webmaster@defora.org"
-ROOT=`mktemp -d -p "$HOME/temp" "temp.XXXXXX"`
+ROOT=`mktemp -d -p "$HOME" "temp.XXXXXX"`
 MODULE="DeforaOS"
 SRC="$ROOT/$MODULE"
 
@@ -91,5 +91,5 @@ deforaos_document()
 
 
 #main
-[ -z "$ROOT" ] && exit 2
+[ -n "$ROOT" ] || exit 2
 deforaos_document 2>&1 | $MAIL -s "Daily CVS documentation: $DATE" "$EMAIL"
