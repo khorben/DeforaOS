@@ -50,7 +50,7 @@ class CVSScmProject
 					'type' => 'error', 'text' => $error));
 		$vbox->append('title', array('text' => _('Browse source')));
 		//view
-		$columns = array('icon' => '', 'title' => _('Title'),
+		$columns = array('icon' => '', 'title' => _('Filename'),
 				'date' => _('Date'));
 		$view = $vbox->append('treeview', array('columns' => $columns));
 		$folders = array();
@@ -153,7 +153,7 @@ class CVSScmProject
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
 		//view
-		$columns = array('icon' => '', 'title' => _('Title'),
+		$columns = array('icon' => '', 'title' => _('Filename'),
 				'date' => _('Date'), 'action' => _('Action'),
 				'revision' => _('Revision'),
 				'username' => _('Author'));
