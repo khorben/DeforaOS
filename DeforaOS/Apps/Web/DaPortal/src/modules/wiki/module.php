@@ -28,6 +28,9 @@ class WikiModule extends ContentModule
 	//WikiModule::WikiModule
 	public function __construct($id, $name, $title = FALSE)
 	{
+		global $config;
+
+		$this->root = $config->getVariable('module::wiki', 'root');
 		$title = ($title === FALSE) ? _('Wiki') : $title;
 		parent::__construct($id, $name);
 		$this->text_content_admin = _('Wiki administration');
@@ -39,6 +42,38 @@ class WikiModule extends ContentModule
 		$this->text_content_submit = _('New wiki page');
 		$this->text_content_title = _('Wiki');
 	}
+
+
+	//WikiModule::helperDisplayText
+	protected function helperDisplayText($engine, $page, $request, $content)
+	{
+		$error = _('Could not display page');
+
+		if($this->root === FALSE
+				|| strpos($content['title'], '/') !== FALSE)
+		{
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+			return;
+		}
+		//obtain the page
+		$cmd = 'co -p -q '.escapeshellarg(
+				$this->root.'/'.$content['title']);
+		exec($cmd, $rcs, $res);
+		if($res != 0)
+		{
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+			return;
+		}
+		$rcs = implode("\n", $rcs);
+		$page->append('htmlview', array('text' => $rcs));
+	}
+
+
+	//private
+	//properties
+	private $root = FALSE;
 }
 
 ?>
