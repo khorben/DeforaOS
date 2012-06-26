@@ -71,21 +71,20 @@ class HTML
 		HTML::$content .= "<$tag";
 		$a = HTML::$whitelist[$tag];
 		foreach($attributes as $k => $v)
-			if(!isset($a[strtolower($k)]))
+		{
+			$attr = strtolower($k);
+			if(!isset($a[$attr]))
 				continue;
-			else
-				HTML::$content .= ' '.strtolower($k)."=\"$v\"";
+			HTML::$content .= " $attr=\"$v\"";
+		}
 		HTML::$content .= ">";
 	}
 
 	protected function _filterElementEnd($parser, $name)
 	{
 		$tag = strtolower($name);
-		if(!isset(HTML::$whitelist[$tag]))
-		{
-			HTML::$valid = FALSE;
+		if(!isset(HTML::$whitelist[$tag]) || $tag == 'br')
 			return;
-		}
 		HTML::$content .= "</$tag>";
 	}
 
