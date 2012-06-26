@@ -162,6 +162,8 @@ class HTML
 			'ol' => array(),
 			'span' => array(),
 			'p' => array(),
+			'pre' => array(),
+			'tt' => array(),
 			'u' => array(),
 			'ul' => array());
 }
