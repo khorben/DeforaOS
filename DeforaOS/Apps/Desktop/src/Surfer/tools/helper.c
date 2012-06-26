@@ -56,6 +56,7 @@ struct _Surfer
 	GtkWidget * window;
 	GtkWidget * menubar;
 	GtkWidget * view;
+	GtkToolItem * tb_fullscreen;
 	GtkWidget * ab_window;
 };
 
@@ -74,7 +75,7 @@ static int _helper_open_devel(Helper * helper, char const * package);
 static int _usage(void);
 
 /* callbacks */
-static gboolean _helper_on_close(gpointer data);
+static void _helper_on_close(gpointer data);
 static gboolean _helper_on_closex(gpointer data);
 #ifndef EMBEDDED
 static void _helper_on_file_close(gpointer data);
@@ -160,7 +161,6 @@ static Helper * _helper_new(void)
 	Helper * helper;
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
-	GtkToolItem * toolitem;
 	GtkWidget * widget;
 
 	if((helper = object_new(sizeof(*helper))) == NULL)
@@ -194,13 +194,15 @@ static Helper * _helper_new(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 #endif
 #if GTK_CHECK_VERSION(2, 8, 0)
-	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_FULLSCREEN);
+	helper->tb_fullscreen = gtk_toggle_tool_button_new_from_stock(
+			GTK_STOCK_FULLSCREEN);
 #else
-	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_ZOOM_FIT);
+	helper->tb_fullscreen = gtk_toggle_tool_button_new_from_stock(
+			GTK_STOCK_ZOOM_FIT);
 #endif
-	g_signal_connect_swapped(toolitem, "toggled", G_CALLBACK(
+	g_signal_connect_swapped(helper->tb_fullscreen, "toggled", G_CALLBACK(
 				_helper_on_fullscreen), helper);
-	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), helper->tb_fullscreen, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	helper->view = ghtml_new(helper);
@@ -332,7 +334,7 @@ static int _helper_open_man(Helper * helper, int section, char const * page)
 
 /* callbacks */
 /* helper_on_close */
-static gboolean _helper_on_close(gpointer data)
+static void _helper_on_close(gpointer data)
 {
 	Helper * helper = data;
 
@@ -494,6 +496,8 @@ void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen)
 {
 	Helper * helper = surfer;
 
+	gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+				helper->tb_fullscreen), fullscreen);
 	if(fullscreen)
 	{
 		gtk_widget_hide(helper->menubar);
