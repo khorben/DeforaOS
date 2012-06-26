@@ -75,7 +75,7 @@ class HTML
 			$attr = strtolower($k);
 			if(!isset($a[$attr]))
 				continue;
-			HTML::$content .= " $attr=\"$v\"";
+			HTML::$content .= " $attr=\"".htmlspecialchars($v)."\"";
 		}
 		HTML::$content .= ">";
 	}
