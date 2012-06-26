@@ -82,7 +82,7 @@ deforaos_document()
 	echo " * API documentation"
 	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
 		[ -x "$path/gtkdoc.sh" ] || continue
-		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/" > "$DEVNULL" 2> "$DEVNULL")
+		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/" > "$DEVNULL")
 	done
 
 	#erase temporary data
