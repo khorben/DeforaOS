@@ -20,7 +20,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 # include <sys/param.h>
 # include <sys/sched.h>
 # include <sys/sysctl.h>
@@ -43,7 +43,7 @@ typedef struct _PanelApplet
 	int min;
 	int max;
 	int step;
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 	char const * name;
 #endif
 } Cpufreq;
@@ -54,7 +54,7 @@ static Cpufreq * _cpufreq_init(PanelAppletHelper * helper, GtkWidget ** widget);
 static void _cpufreq_destroy(Cpufreq * cpufreq);
 
 /* callbacks */
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data);
 #endif
 
@@ -79,7 +79,7 @@ PanelAppletDefinition applet =
 /* cpufreq_init */
 static Cpufreq * _cpufreq_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 	Cpufreq * cpufreq;
 	PangoFontDescription * desc;
 	GtkWidget * image;
@@ -88,9 +88,11 @@ static Cpufreq * _cpufreq_init(PanelAppletHelper * helper, GtkWidget ** widget)
 	size_t freqsize = sizeof(freq);
 	char const * p;
 
-	/* detect est or powernow */
-	if(sysctlbyname("machdep.est.frequency.available", &freq, &freqsize,
-				NULL, 0) == 0)
+	/* detect the correct sysctl */
+	if(sysctlbyname("hw.clockrate", &freq, &freqsize, NULL, 0) == 0)
+		p = "hw.clockrate";
+	else if(sysctlbyname("machdep.est.frequency.available", &freq,
+				&freqsize, NULL, 0) == 0)
 		p = "machdep.est.frequency.current";
 	else if(sysctlbyname("machdep.powernow.frequency.available", &freq,
 				&freqsize, NULL, 0) == 0)
@@ -147,7 +149,7 @@ static void _cpufreq_destroy(Cpufreq * cpufreq)
 
 
 /* callbacks */
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
