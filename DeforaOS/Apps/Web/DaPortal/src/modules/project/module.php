@@ -43,7 +43,7 @@ class ProjectModule extends ContentModule
 		$this->text_content_list_title = _('Project list');
 		$this->text_content_list_title_by = _('Projects by');
 		$this->text_content_more_content = _('More projects...');
-		$this->text_content_open_text = _('Open');
+		$this->text_content_open = _('Open');
 		$this->text_content_submit = _('New project');
 		$this->text_content_title = _('Projects');
 		//list only projects by default
