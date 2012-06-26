@@ -72,7 +72,7 @@ class HTML
 		foreach($attributes as $k => $v)
 		{
 			$attr = strtolower($k);
-			if(!isset($a[$attr]))
+			if(!in_array($attr, $a))
 				continue;
 			HTML::$content .= " $attr=\"".htmlspecialchars($v)."\"";
 		}
@@ -126,7 +126,7 @@ class HTML
 		}
 		$a = HTML::$whitelist[$tag];
 		foreach($attributes as $k => $v)
-			if(!isset($a[strtolower($k)]))
+			if(!in_array(strtolower($k), $a))
 			{
 				HTML::$valid = FALSE;
 				return;
