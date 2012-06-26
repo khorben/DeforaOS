@@ -75,6 +75,8 @@ class CVSScmProject
 			if(($st['mode'] & CVSScmProject::$S_IFDIR)
 					== CVSScmProject::$S_IFDIR)
 				$folders[$de] = $st;
+			else if(substr($de, -2) != ',v')
+				continue;
 			else
 				$files[$de] = $st;
 		}
@@ -113,7 +115,7 @@ class CVSScmProject
 					$request->getId(), $request->getTitle(),
 					array('file' => $de));
 			$link = new PageElement('link', array('request' => $r,
-					'text' => $de));
+					'text' => substr($de, 0, -2)));
 			$row->setProperty('title', $link);
 			//date
 			$date = strftime(_('%Y/%m/%d %H:%M:%S'), $st['mtime']);
