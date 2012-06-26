@@ -26,20 +26,19 @@ class HTML
 	//HTML::filter
 	static public function filter($engine, $content)
 	{
+		$start = array('HTML', '_filterElementStart');
+		$end = array('HTML', '_filterElementEnd');
+		$filter = array('HTML', '_filterCharacterData');
 		$from = array('<br>', '<hr>');
 		$to = array('<br/>', '<hr/>');
 
 		$parser = xml_parser_create();
-		if(xml_set_element_handler($parser,
-					array('HTML', '_filterElementStart'),
-					array('HTML', '_filterElementEnd'))
-				!== TRUE)
+		if(xml_set_element_handler($parser, $start, $end) !== TRUE)
 		{
 			xml_parser_free($parser);
 			return ''; //XXX report error
 		}
-		xml_set_character_data_handler($parser, array('HTML',
-				'_filterCharacterData'));
+		xml_set_character_data_handler($parser, $filter);
 		HTML::$content = '';
 		//give it more chances to validate
 		$content = str_ireplace($from, $to, $content);
