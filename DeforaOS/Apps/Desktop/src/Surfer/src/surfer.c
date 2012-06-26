@@ -174,8 +174,13 @@ static const DesktopMenu _menu_view[] =
 	{ N_("Normal size"),	G_CALLBACK(on_view_normal_size),
 		"zoom-original", GDK_CONTROL_MASK, GDK_KEY_0 },
 	{ "",			NULL, NULL, 0, 0 },
+#if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen),
 		GTK_STOCK_FULLSCREEN, 0, GDK_KEY_F11 },
+#else
+	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen), NULL, 0,
+		GDK_KEY_F11 },
+#endif
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_KEY_R },

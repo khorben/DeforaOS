@@ -123,8 +123,13 @@ static const DesktopMenu _menu_file[] =
 
 static const DesktopMenu _menu_view[] =
 {
+#if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"), G_CALLBACK(_helper_on_view_fullscreen),
 		GTK_STOCK_FULLSCREEN, 0, GDK_KEY_F11 },
+#else
+	{ N_("_Fullscreen"), G_CALLBACK(_helper_on_view_fullscreen), NULL, 0,
+		GDK_KEY_F11 },
+#endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 

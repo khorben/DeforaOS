@@ -101,13 +101,17 @@ static DesktopMenu _pdfviewer_menu_edit[] =
 
 static DesktopMenu _pdfviewer_menu_view[] =
 {
-	{ "Zoom in", G_CALLBACK(on_view_zoom_in), "zoom-in",
+	{ "Zoom _in", G_CALLBACK(on_view_zoom_in), "zoom-in",
 		GDK_CONTROL_MASK, GDK_KEY_plus },
-	{ "Zoom out", G_CALLBACK(on_view_zoom_out), "zoom-out",
+	{ "Zoom _out", G_CALLBACK(on_view_zoom_out), "zoom-out",
 		GDK_CONTROL_MASK, GDK_KEY_minus },
 	{ "", NULL, NULL, 0, 0 },
-	{ "Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
+#if GTK_CHECK_VERSION(2, 8, 0)
+	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
 		0, GDK_KEY_F11 },
+#else
+	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), NULL, 0, GDK_KEY_F11 },
+#endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
