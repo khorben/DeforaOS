@@ -56,12 +56,13 @@ class HTML
 		return HTML::$content;
 	}
 
-	protected function _filterCharacterData($parser, $data)
+	static protected function _filterCharacterData($parser, $data)
 	{
 		HTML::$content .= $data;
 	}
 
-	protected function _filterElementStart($parser, $name, $attributes)
+	static protected function _filterElementStart($parser, $name,
+			$attributes)
 	{
 		//XXX report errors
 		$tag = strtolower($name);
@@ -79,7 +80,7 @@ class HTML
 		HTML::$content .= ">";
 	}
 
-	protected function _filterElementEnd($parser, $name)
+	static protected function _filterElementEnd($parser, $name)
 	{
 		$tag = strtolower($name);
 		if(!isset(HTML::$whitelist[$tag]) || $tag == 'br')
