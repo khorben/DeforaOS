@@ -149,11 +149,11 @@ static const DesktopMenu _menu_edit[] =
 		GDK_CONTROL_MASK, GDK_KEY_V },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("Select _all"),	G_CALLBACK(on_edit_select_all),
-#if GTK_CHECK_VERSION(2, 10, 0)
+# if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
-#else
+# else
 		NULL,
-#endif
+# endif
 		GDK_CONTROL_MASK, GDK_KEY_A },
 	{ N_("_Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
 	{ "",			NULL, NULL, 0, 0 },
@@ -174,13 +174,13 @@ static const DesktopMenu _menu_view[] =
 	{ N_("Normal size"),	G_CALLBACK(on_view_normal_size),
 		"zoom-original", GDK_CONTROL_MASK, GDK_KEY_0 },
 	{ "",			NULL, NULL, 0, 0 },
-#if GTK_CHECK_VERSION(2, 8, 0)
 	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen),
-		GTK_STOCK_FULLSCREEN, 0, GDK_KEY_F11 },
-#else
-	{ N_("_Fullscreen"),	G_CALLBACK(on_view_fullscreen), NULL, 0,
-		GDK_KEY_F11 },
-#endif
+# if GTK_CHECK_VERSION(2, 8, 0)
+		GTK_STOCK_FULLSCREEN,
+# else
+		NULL,
+# endif
+		0, GDK_KEY_F11 },
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_KEY_R },
@@ -201,11 +201,11 @@ static const DesktopMenu _menu_help[] =
 	{ N_("_Contents"),	G_CALLBACK(on_help_contents), "help-contents",
 		0, GDK_KEY_F1 },
 	{ N_("_About"),		G_CALLBACK(on_help_about),
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
-#else
+# else
 		NULL, 0, 0 },
-#endif
+# endif
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
