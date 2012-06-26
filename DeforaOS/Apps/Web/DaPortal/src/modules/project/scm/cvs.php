@@ -46,12 +46,13 @@ class CVSScmProject
 		//repository
 		if($this->repository !== FALSE)
 		{
-			$vbox->append('title', array(
-					'text' => _('Repository')));
+			$title = _('Repository');
+			$vbox->append('title', array('text' => $title));
 			$vbox->append('label', array('text' => _('The source code can be obtained as follows: ')));
 			$text = '$ cvs -d:pserver:'.$this->repository.' co '
 				.$project['cvsroot'];
-			$vbox->append('label', array('text' => $text));
+			$vbox->append('label', array('text' => $text,
+					'class' => 'preformatted'));
 		}
 		//browse
 		$path = $this->cvsroot.'/'.$project['cvsroot'];
