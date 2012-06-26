@@ -36,11 +36,14 @@ class CVSScmProject
 	//CVSScmProject::browse
 	public function browse($engine, $project, $request)
 	{
+		$error = _('Could not open the CVS repository');
+
 		if($this->cvsroot === FALSE || strlen($project['cvsroot']) == 0)
 			return new PageElement('dialog', array(
 				'type' => 'error',
 				'text' => _('No CVS repository defined')));
 		$vbox = new PageElement('vbox');
+		//repository
 		if($this->repository !== FALSE)
 		{
 			$vbox->append('title', array(
@@ -50,9 +53,40 @@ class CVSScmProject
 				.$project['cvsroot'];
 			$vbox->append('label', array('text' => $text));
 		}
+		//browse
+		$path = $this->cvsroot.'/'.$project['cvsroot'];
+		if(($dir = opendir($path)) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
 		$vbox->append('title', array('text' => _('Browse source')));
-		$view = $vbox->append('treeview');
-		//FIXME implement
+		//view
+		$columns = array('icon' => '', 'title' => _('Title'));
+		$view = $vbox->append('treeview', array('columns' => $columns));
+		while(($de = readdir($dir)) !== FALSE)
+		{
+			if($de == '.' || $de == '..')
+				continue;
+			if(($st = lstat($path.'/'.$de)) === FALSE)
+				continue;
+			$row = $view->append('row');
+			if(($st['mode'] & CVSScmProject::$S_IFDIR)
+					== CVSScmProject::$S_IFDIR)
+				$icon = 'folder';
+			else
+				$icon = 'file';
+			$icon = new PageElement('image', array('size' => 16,
+					'stock' => $icon));
+			$row->setProperty('icon', $icon);
+			//title
+			$r = new Request($engine, $request->getModule(),
+					$request->getAction(),
+					$request->getId(), $request->getTitle(),
+					array('file' => $de));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $de));
+			$row->setProperty('title', $link);
+		}
+		closedir($dir);
 		return $vbox;
 	}
 
@@ -155,6 +189,7 @@ class CVSScmProject
 
 	//private
 	//properties
+	static private $S_IFDIR = 040000;
 	private $cvsroot = FALSE;
 	private $repository = FALSE;
 }
