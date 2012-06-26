@@ -530,11 +530,18 @@ class ProjectModule extends ContentModule
 				'text' => $title));
 		$toolbar = $this->getToolbar($engine, $project);
 		$page->append($toolbar);
-		//treeview
+		//source code
+		if(($scm = $this->attachScm($engine)) !== FALSE
+				&& ($download = $scm->download($engine,
+				$project, $request)) !== FALSE)
+			$page->append($download);
+		//releases
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('text' => _('Releases')));
 		$columns = array('filename' => _('Filename'),
 			'owner' => _('Owner'), 'group' => _('Group'),
 			'date' => _('Date'), 'permissions' => _('Permissions'));
-		$view = $page->append('treeview', array('columns' => $columns));
+		$view = $vbox->append('treeview', array('columns' => $columns));
 		//FIXME really implement
 		return $page;
 	}
@@ -812,6 +819,7 @@ abstract class ProjectScm
 
 	//actions
 	abstract public function browse($engine, $project, $request);
+	abstract public function download($engine, $project, $request);
 	abstract public function timeline($engine, $project, $request);
 }
 

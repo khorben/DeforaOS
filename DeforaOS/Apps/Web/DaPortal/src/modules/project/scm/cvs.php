@@ -43,17 +43,6 @@ class CVSScmProject
 				'type' => 'error',
 				'text' => _('No CVS repository defined')));
 		$vbox = new PageElement('vbox');
-		//repository
-		if($this->repository !== FALSE)
-		{
-			$title = _('Repository');
-			$vbox->append('title', array('text' => $title));
-			$vbox->append('label', array('text' => _('The source code can be obtained as follows: ')));
-			$text = '$ cvs -d:pserver:'.$this->repository.' co '
-				.$project['cvsroot'];
-			$vbox->append('label', array('text' => $text,
-					'class' => 'preformatted'));
-		}
 		//browse
 		$path = $this->cvsroot.'/'.$project['cvsroot'];
 		if(($dir = opendir($path)) === FALSE)
@@ -122,6 +111,25 @@ class CVSScmProject
 			$row->setProperty('date', $date);
 		}
 		closedir($dir);
+		return $vbox;
+	}
+
+
+	//CVSScmProject::download
+	public function download($engine, $project, $request)
+	{
+		$title = _('Repository');
+		$repository = 'pserver:'.$this->repository;
+
+		//repository
+		if($this->repository === FALSE)
+			return FALSE;
+		$vbox = new PageElement('vbox');
+		$vbox->append('title', array('text' => $title));
+		$vbox->append('label', array('text' => _('The source code can be obtained as follows: ')));
+		$text = '$ cvs -d:'.$repository.' co '.$project['cvsroot'];
+		$vbox->append('label', array('text' => $text,
+				'class' => 'preformatted'));
 		return $vbox;
 	}
 
