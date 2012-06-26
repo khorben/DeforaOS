@@ -17,6 +17,7 @@
 
 
 require_once('./system/format.php');
+require_once('./system/html.php');
 
 
 //HTMLFormat
@@ -407,6 +408,15 @@ class HTMLFormat extends FormatElements
 	protected function renderHbox($e)
 	{
 		$this->renderBox($e, $e->getType());
+	}
+
+
+	protected function renderHtmlview($e)
+	{
+		if(($text = $e->getProperty('text')) === FALSE
+				|| !is_string($text))
+			return;
+		print(HTML::filter($this->engine, $text));
 	}
 
 

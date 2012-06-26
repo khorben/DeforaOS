@@ -330,6 +330,12 @@ class GtkFormat extends FormatElements
 		return $ret;
 	}
 
+	protected function renderHtmlview($e)
+	{
+		//FIXME really implement
+		$this->renderLabel($e);
+	}
+
 	protected function renderIconview($e)
 	{
 		$e->setProperty('Gtk::expand', TRUE);

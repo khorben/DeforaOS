@@ -138,6 +138,8 @@ abstract class FormatElements extends Format
 				return $this->renderFrame($e);
 			case 'hbox':
 				return $this->renderHbox($e);
+			case 'htmlview':
+				return $this->renderHtmlview($e);
 			case 'iconview':
 				return $this->renderIconview($e);
 			case 'image':
@@ -178,6 +180,7 @@ abstract class FormatElements extends Format
 	abstract protected function renderForm($e);
 	abstract protected function renderFrame($e);
 	abstract protected function renderHbox($e);
+	abstract protected function renderHtmlview($e);
 	abstract protected function renderIconview($e);
 	abstract protected function renderImage($e);
 	abstract protected function renderLabel($e);
