@@ -23,6 +23,12 @@ class CVSScmProject
 	//CVSScmProject::attach
 	public function attach(&$engine)
 	{
+		global $config;
+
+		$this->cvsroot = $config->getVariable('module::project',
+			'scm::backend::cvs::cvsroot'); //XXX
+		$this->repository = $config->getVariable('module::project',
+			'scm::backend::cvs::repository'); //XXX
 	}
 
 
@@ -30,23 +36,18 @@ class CVSScmProject
 	//CVSScmProject::browse
 	public function browse($engine, $project, $request)
 	{
-		global $config;
-		$cvsroot = $config->getVariable('module::project',
-			'scm::backend::cvs::cvsroot'); //XXX
-		$repository = $config->getVariable('module::project',
-			'scm::backend::cvs::repository'); //XXX
-
-		if($cvsroot === FALSE || strlen($project['cvsroot']) == 0)
+		if($this->cvsroot === FALSE || strlen($project['cvsroot']) == 0)
 			return new PageElement('dialog', array(
 				'type' => 'error',
 				'text' => _('No CVS repository defined')));
 		$vbox = new PageElement('vbox');
-		if($repository !== FALSE)
+		if($this->repository !== FALSE)
 		{
 			$vbox->append('title', array(
 					'text' => _('Repository')));
 			$vbox->append('label', array('text' => _('The source code can be obtained as follows: ')));
-			$text = '$ cvs -d:pserver:'.$repository.' co '.$project['cvsroot'];
+			$text = '$ cvs -d:pserver:'.$this->repository.' co '
+				.$project['cvsroot'];
 			$vbox->append('label', array('text' => $text));
 		}
 		$vbox->append('title', array('text' => _('Browse source')));
@@ -59,13 +60,10 @@ class CVSScmProject
 	//CVSScmProject::timeline
 	public function timeline($engine, $project, $request)
 	{
-		global $config;
-		$cvsroot = $config->getVariable('module::project',
-			'scm::backend::cvs::cvsroot'); //XXX
 		$error = _('No CVS repository defined');
 
 		//check the cvsroot
-		if($cvsroot === FALSE || strlen($project['cvsroot']) == 0)
+		if($this->cvsroot === FALSE || strlen($project['cvsroot']) == 0)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
 		if(strlen($project['cvsroot']) == 0)
@@ -73,7 +71,8 @@ class CVSScmProject
 				'type' => 'error', 'text' => $error));
 		//history
 		$error = _('Could not open the project history');
-		if(($fp = fopen($cvsroot.'/CVSROOT/history', 'r')) === FALSE)
+		$filename = $this->cvsroot.'/CVSROOT/history';
+		if(($fp = fopen($filename, 'r')) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
 		//view
@@ -152,6 +151,12 @@ class CVSScmProject
 		fclose($fp);
 		return $vbox;
 	}
+
+
+	//private
+	//properties
+	private $cvsroot = FALSE;
+	private $repository = FALSE;
 }
 
 ?>
