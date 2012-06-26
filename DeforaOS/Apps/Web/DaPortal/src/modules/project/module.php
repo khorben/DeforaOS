@@ -769,6 +769,18 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::helperDisplayTitle
+	protected function helperDisplayTitle($engine, $page, $request,
+			$content)
+	{
+		$title = _('Project: '.$content['title']);
+
+		$page->setProperty('title', $title);
+		$title = $page->append('title', array('stock' => $this->name,
+			'text' => $title));
+	}
+
+
 	//useful
 	//ProjectModule::attachScm
 	protected function attachScm(&$engine)
