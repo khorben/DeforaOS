@@ -60,20 +60,30 @@ class CVSScmProject
 					'type' => 'error', 'text' => $error));
 		$vbox->append('title', array('text' => _('Browse source')));
 		//view
-		$columns = array('icon' => '', 'title' => _('Title'));
+		$columns = array('icon' => '', 'title' => _('Title'),
+				'date' => _('Date'));
 		$view = $vbox->append('treeview', array('columns' => $columns));
+		$folders = array();
+		$files = array();
 		while(($de = readdir($dir)) !== FALSE)
 		{
 			if($de == '.' || $de == '..')
 				continue;
 			if(($st = lstat($path.'/'.$de)) === FALSE)
 				continue;
-			$row = $view->append('row');
 			if(($st['mode'] & CVSScmProject::$S_IFDIR)
 					== CVSScmProject::$S_IFDIR)
-				$icon = 'folder';
+				$folders[$de] = $st;
 			else
-				$icon = 'file';
+				$files[$de] = $st;
+		}
+		ksort($folders);
+		ksort($files);
+		//XXX code duplication
+		foreach($folders as $de => $st)
+		{
+			$icon = 'folder';
+			$row = $view->append('row');
 			$icon = new PageElement('image', array('size' => 16,
 					'stock' => $icon));
 			$row->setProperty('icon', $icon);
@@ -85,6 +95,28 @@ class CVSScmProject
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $de));
 			$row->setProperty('title', $link);
+			//date
+			$date = strftime(_('%Y/%m/%d %H:%M:%S'), $st['mtime']);
+			$row->setProperty('date', $date);
+		}
+		foreach($files as $de => $st)
+		{
+			$icon = 'file';
+			$row = $view->append('row');
+			$icon = new PageElement('image', array('size' => 16,
+					'stock' => $icon));
+			$row->setProperty('icon', $icon);
+			//title
+			$r = new Request($engine, $request->getModule(),
+					$request->getAction(),
+					$request->getId(), $request->getTitle(),
+					array('file' => $de));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $de));
+			$row->setProperty('title', $link);
+			//date
+			$date = strftime(_('%Y/%m/%d %H:%M:%S'), $st['mtime']);
+			$row->setProperty('date', $date);
 		}
 		closedir($dir);
 		return $vbox;
