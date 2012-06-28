@@ -212,6 +212,18 @@ abstract class ContentModule extends Module
 
 	//methods
 	//accessors
+	//ContentModule::canAdmin
+	protected function canAdmin($engine, $content = FALSE, &$error = FALSE)
+	{
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			return TRUE;
+		$error = _('Permission denied');
+		return FALSE;
+	}
+
+
 	//ContentModule::canPreview
 	protected function canPreview($engine, $request = FALSE)
 	{
@@ -441,15 +453,14 @@ abstract class ContentModule extends Module
 	//ContentModule::callAdmin
 	protected function callAdmin($engine, $request = FALSE)
 	{
-		$cred = $engine->getCredentials();
 		$database = $engine->getDatabase();
 		$query = $this->query_list_admin;
 		$actions = array('delete', 'disable', 'enable', 'post');
+		$error = FALSE;
 
 		//check credentials
-		if(!$cred->isAdmin())
+		if(!$this->canAdmin($engine, FALSE, $error))
 		{
-			$error = _('Permission denied');
 			$r = new Request($engine, 'user', 'login');
 			$dialog = new PageElement('dialog', array(
 						'type' => 'error',
