@@ -900,16 +900,19 @@ abstract class ContentModule extends Module
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		//preview
-		if($request->getParameter('preview') !== FALSE)
+		if($request !== FALSE
+				&& $request->getParameter('preview') !== FALSE)
 		{
+			$content = $request->getParameter('content');
 			$content = array('title' => _('Preview: ')
-					.$request->getTitle(),
-				'user_id' => $user->getUserId(),
-				'username' => $user->getUsername(),
-				'date' => $this->timestampToDate(),
-				'content' => $request->getParameter('content'));
+						.$request->getTitle(),
+					'user_id' => $user->getUserId(),
+					'username' => $user->getUsername(),
+					'date' => $this->timestampToDate(),
+					'content' => $content);
 			$this->helperPreview($engine, $page, $content);
 		}
+		//form
 		$form = $this->formSubmit($engine, $request);
 		$page->append($form);
 		return $page;
@@ -918,7 +921,8 @@ abstract class ContentModule extends Module
 	protected function _submitProcess($engine, $request, &$content)
 	{
 		//verify the request
-		if($request->getParameter('submit') === FALSE)
+		if($request === FALSE
+				|| $request->getParameter('submit') === FALSE)
 			return TRUE;
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
