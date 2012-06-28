@@ -144,7 +144,7 @@ class HTML
 	static protected $content;
 	static protected $valid;
 	static protected $whitelist = array(
-			'a' => array('href', 'name', 'title'),
+			'a' => array('href', 'name', 'rel', 'title'),
 			'acronym' => array('class'),
 			'b' => array('class'),
 			'big' => array('class'),
