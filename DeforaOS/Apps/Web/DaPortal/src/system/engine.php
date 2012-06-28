@@ -148,13 +148,15 @@ abstract class Engine
 
 
 	//Engine::process
-	public function process($request, $internal = 0)
+	public function process($request, $internal = FALSE)
 	{
 		if($request === FALSE
 				|| ($module = $request->getModule()) === FALSE)
 			return FALSE;
 		$action = $request->getAction();
-		$this->log('LOG_DEBUG', "Processing request: module $module"
+		$this->log('LOG_DEBUG', 'Processing'
+				.($internal ? ' internal' : '')
+				." request: module $module"
 				.(($action !== FALSE) ? ", action $action"
 					: ''));
 		if(($handle = Module::load($this, $module)) === FALSE)
