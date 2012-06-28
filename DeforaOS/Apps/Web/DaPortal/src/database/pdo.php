@@ -90,11 +90,14 @@ class PdoDatabase extends Database
 	//PdoDatabase::query
 	public function query(&$engine, $query, $parameters = FALSE)
 	{
+		global $config;
+
 		if($this->handle === FALSE)
 			return FALSE;
 		if(($query = $this->prepare($query, $parameters)) === FALSE)
 			return FALSE;
-		$engine->log('LOG_DEBUG', $query);
+		if($config->getVariable('database', 'debug'))
+			$engine->log('LOG_DEBUG', $query);
 		$error = FALSE;
 		if(($ret = $this->handle->query($query)) === FALSE)
 		{
