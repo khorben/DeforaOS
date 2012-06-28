@@ -183,10 +183,16 @@
 	</refsect1>
 	<refsect1 id="see_also">
 		<title>See also</title>
-		<para><citerefentry>
+		<para>
+			<citerefentry>
 				<refentrytitle>configure</refentrytitle>
 				<manvolnum>1</manvolnum>
-		</citerefentry></para>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>make</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>
+		</para>
 	</refsect1>
 </refentry>
 <!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

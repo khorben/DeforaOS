@@ -58,11 +58,10 @@
 	<refsect1 id="description">
 		<title>Description</title>
 		<para>
-			These are the documentation notes for &package;. The &package; project
-			generates and maintain software build systems, suitable for use with the most
-			common implementations of the make command. It uses project description files
-			to provide simple Makefiles. It is intended to keep the code generated as
-			simple and portable as possible.
+			&name; generates and maintain software build systems, suitable for use with
+			the most common implementations of the make command. It uses project
+			description files to provide simple Makefiles. It is intended to keep the
+			code generated as simple and portable as possible.
 		</para>
 		<para>
 			It processes the current directory, or the ones given at the command line,
@@ -172,10 +171,16 @@
 	</refsect1>
 	<refsect1 id="see_also">
 		<title>See also</title>
-		<para><citerefentry>
+		<para>
+			<citerefentry>
+				<refentrytitle>make</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
 				<refentrytitle>project.conf</refentrytitle>
 				<manvolnum>5</manvolnum>
-		</citerefentry></para>
+			</citerefentry>
+		</para>
 		<refsect2>
 			<title>Additional resources</title>
 			<para>
