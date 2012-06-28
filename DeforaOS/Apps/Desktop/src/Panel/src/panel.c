@@ -1608,7 +1608,7 @@ static void _shutdown_dialog_on_response(GtkWidget * widget, gint response,
 	Panel * panel = data;
 	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
 	char * shutdown[] = { "/sbin/shutdown", "shutdown",
-#ifdef __NetBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 		"-p",
 #else
 		"-h",
