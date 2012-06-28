@@ -84,7 +84,8 @@ class BasicTemplate extends Template
 		$footer = new PageElement('statusbar');
 		$footer->setProperty('id', 'footer');
 		if($this->footer !== FALSE)
-			$footer->setProperty('text', $this->footer);
+			$footer->append('htmlview', array(
+					'text' => $this->footer));
 		return $footer;
 	}
 
