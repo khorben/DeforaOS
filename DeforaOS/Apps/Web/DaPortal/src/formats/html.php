@@ -570,8 +570,10 @@ class HTMLFormat extends FormatElements
 	protected function renderStatusbar($e)
 	{
 		$this->renderTabs();
-		$this->tag('div', 'statusbar', $e->getProperty('id'), FALSE,
+		$this->tagOpen('div', 'statusbar', $e->getProperty('id'), FALSE,
 				$e->getProperty('text'));
+		$this->renderChildren($e, 1);
+		$this->tagClose('div');
 	}
 
 
@@ -837,8 +839,8 @@ class HTMLFormat extends FormatElements
 
 	private function escapeText($text)
 	{
-		$from = array('<', '>', '&', "\n", "\r");
-		$to = array('&lt;', '&gt;', '&amp;', "<br />\n", '');
+		$from = array('&', '<', '>', "\n", "\r");
+		$to = array('&amp;', '&lt;', '&gt;', "<br />\n", '');
 
 		return str_replace($from, $to, $text);
 	}
