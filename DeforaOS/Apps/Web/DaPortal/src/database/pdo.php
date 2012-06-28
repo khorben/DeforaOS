@@ -109,6 +109,43 @@ class PdoDatabase extends Database
 	}
 
 
+	//PdoDatabase::transactionBegin
+	public function transactionBegin($engine)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		if($this->transaction++ == 0)
+			return $this->handle->beginTransaction();
+		return TRUE;
+	}
+
+
+	//PdoDatabase::transactionCommit
+	public function transactionCommit($engine)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		if($this->transaction == 0)
+			return FALSE;
+		if($this->transaction-- == 1)
+			return $this->handle->commit();
+		return TRUE;
+	}
+
+
+	//PdoDatabase::transactionRollback
+	public function transactionRollback($engine)
+	{
+		if($this->handle === FALSE)
+			return FALSE;
+		if($this->transaction == 0)
+			return FALSE;
+		if($this->transaction-- == 1)
+			return $this->handle->rollback();
+		return TRUE;
+	}
+
+
 	//protected
 	//methods
 	//PdoDatabase::match
@@ -157,6 +194,7 @@ class PdoDatabase extends Database
 	//private
 	//properties
 	private $handle = FALSE;
+	private $transaction = 0;
 }
 
 ?>
