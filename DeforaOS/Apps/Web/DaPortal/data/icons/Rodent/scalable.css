@@ -16,7 +16,7 @@
 
 
 .stock16, .stock24, .stock32 {
-	background-image:		url('xfce4-icon-theme/scalable/stock/stock.svg');
+	background-image:		url('xfce4-icon-theme/scalable/stock/stock_missing-image.svg');
 }
 
 .stock16.add, .stock24.add, .stock32.add {
