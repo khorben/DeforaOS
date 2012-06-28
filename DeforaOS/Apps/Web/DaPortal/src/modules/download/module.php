@@ -64,6 +64,16 @@ class DownloadModule extends ContentModule
 			{
 				case 'getRoot':
 					return $this->getRoot($engine);
+				case 'submit':
+					//XXX saves files in the root folder
+					$content = FALSE;
+					$error = $this->_submitProcess($engine,
+							$request, $content);
+					if($error === FALSE)
+						return $content;
+					return FALSE;
+				default:
+					return FALSE;
 			}
 		switch($action)
 		{
