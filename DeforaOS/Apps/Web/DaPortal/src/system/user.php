@@ -146,8 +146,7 @@ class User
 				|| count($res) != 1)
 			return FALSE;
 		$res = $res[0];
-		$cache[$username] = new User($engine, $res[0]['user_id'],
-				$username);
+		$cache[$username] = new User($engine, $res[0]['id'], $username);
 		return $cache[$username];
 	}
 
