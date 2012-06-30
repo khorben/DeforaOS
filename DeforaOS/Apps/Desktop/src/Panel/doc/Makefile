@@ -1,4 +1,4 @@
-TARGETS	= panel.1 panel.html
+TARGETS	= panel.1 panel.html panelctl.1 panelctl.html panel-notify.1 panel-notify.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -15,8 +15,20 @@ panel.1: panel.xml
 panel.html: panel.xml
 	./docbook.sh -P "$(PREFIX)" -- "panel.html"
 
+panelctl.1: panelctl.xml
+	./docbook.sh -P "$(PREFIX)" -- "panelctl.1"
+
+panelctl.html: panelctl.xml
+	./docbook.sh -P "$(PREFIX)" -- "panelctl.html"
+
+panel-notify.1: panel-notify.xml
+	./docbook.sh -P "$(PREFIX)" -- "panel-notify.1"
+
+panel-notify.html: panel-notify.xml
+	./docbook.sh -P "$(PREFIX)" -- "panel-notify.html"
+
 clean:
-	$(RM) -- $(panel.1_OBJS) $(panel.html_OBJS)
+	$(RM) -- $(panel.1_OBJS) $(panel.html_OBJS) $(panelctl.1_OBJS) $(panelctl.html_OBJS) $(panel-notify.1_OBJS) $(panel-notify.html_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -24,9 +36,17 @@ distclean: clean
 install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panelctl.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panelctl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel-notify.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel-notify.html"
 
 uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panelctl.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panelctl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel-notify.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel-notify.html"
 
 .PHONY: all clean distclean install uninstall

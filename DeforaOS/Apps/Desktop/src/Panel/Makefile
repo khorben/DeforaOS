@@ -59,6 +59,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/panel.xml \
+		$(PACKAGE)-$(VERSION)/doc/panelctl.xml \
+		$(PACKAGE)-$(VERSION)/doc/panel-notify.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Panel.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \

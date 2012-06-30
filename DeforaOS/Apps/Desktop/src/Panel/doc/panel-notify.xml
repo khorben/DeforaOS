@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Panel User Manual">
 	<!ENTITY package   "DeforaOS Panel">
-	<!ENTITY name      "panel">
-	<!ENTITY purpose   "Desktop panel">
+	<!ENTITY name      "panel-notify">
+	<!ENTITY purpose   "Notifier for the desktop">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,34 +49,30 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt"><option>-m</option>
-				<replaceable>monitor</replaceable></arg>
-			<arg choice="opt"><option>-l</option></arg>
-			<arg choice="opt"><option>-s</option></arg>
-			<arg choice="opt"><option>-x</option></arg>
+			<arg choice="opt">-s</arg>
+			<arg choice="opt">-x</arg>
+			<arg choice="opt">-t <replaceable>timeout</replaceable></arg>
+			<arg choice="plain" rep="repeat"><replaceable>applet</replaceable></arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="plain">-l</arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a desktop panel. It can be positioned at
-			the top and/or bottom of any monitor available.</para>
+		<para><command>&name;</command> is a desktop notification program for the
+			desktop. It can popup a window, centered on the screen, containing different
+			applets of the panel. It can be set to disappear automatically after a
+			specific amount of time. It is particularly useful when implementing hotkeys
+			(system status...).</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
+		<para>&name; expects an arbitrary number of panel applets to be specified as
+			arguments on the command line.</para>
 		<para>The following options are available:</para>
 		<variablelist>
-			<varlistentry>
-				<term><option>-l</option></term>
-				<listitem>
-					<para>Use icons the size of a large toolbar.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-m</option></term>
-				<listitem>
-					<para>Monitor where to display the panel.</para>
-				</listitem>
-			</varlistentry>
 			<varlistentry>
 				<term><option>-s</option></term>
 				<listitem>
@@ -87,6 +83,19 @@
 				<term><option>-x</option></term>
 				<listitem>
 					<para>Use icons the size of menus.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-t</option></term>
+				<listitem>
+					<para>Time to wait before disappearing (in seconds; 0 means
+						unlimited).</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-l</option></term>
+				<listitem>
+					<para>Lists the plug-ins available.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
@@ -100,11 +109,11 @@
 		<title>See also</title>
 		<para>
 			<citerefentry>
-				<refentrytitle>panelctl</refentrytitle>
+				<refentrytitle>panel</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
-				<refentrytitle>panel-notify</refentrytitle>
+				<refentrytitle>panelctl</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>

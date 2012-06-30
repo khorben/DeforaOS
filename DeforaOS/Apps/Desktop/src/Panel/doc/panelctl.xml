@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Panel User Manual">
 	<!ENTITY package   "DeforaOS Panel">
-	<!ENTITY name      "panel">
-	<!ENTITY purpose   "Desktop panel">
+	<!ENTITY name      "panelctl">
+	<!ENTITY purpose   "Control interface for the desktop panel">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,44 +49,53 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt"><option>-m</option>
-				<replaceable>monitor</replaceable></arg>
-			<arg choice="opt"><option>-l</option></arg>
-			<arg choice="opt"><option>-s</option></arg>
-			<arg choice="opt"><option>-x</option></arg>
+			<group choice="plain">
+				<arg choice="plain">-B</arg>
+				<arg choice="plain">-S</arg>
+				<arg choice="plain">-T</arg>
+				<arg choice="plain">-b</arg>
+				<arg choice="plain">-t</arg>
+			</group>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a desktop panel. It can be positioned at
-			the top and/or bottom of any monitor available.</para>
+		<para><command>&name;</command> is a control interface for the desktop panel.
+			It can hide and show different elements of the panel individually, including
+			the preferences window.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
-				<term><option>-l</option></term>
+				<term><option>-B</option></term>
 				<listitem>
-					<para>Use icons the size of a large toolbar.</para>
+					<para>Show the bottom panel.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-m</option></term>
+				<term><option>-S</option></term>
 				<listitem>
-					<para>Monitor where to display the panel.</para>
+					<para>Display the preferences window.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-s</option></term>
+				<term><option>-T</option></term>
 				<listitem>
-					<para>Use icons the size of a small toolbar.</para>
+					<para>Show the top panel.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-x</option></term>
+				<term><option>-b</option></term>
 				<listitem>
-					<para>Use icons the size of menus.</para>
+					<para>Hide the bottom panel.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-t</option></term>
+				<listitem>
+					<para>Hide the top panel.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
@@ -100,7 +109,7 @@
 		<title>See also</title>
 		<para>
 			<citerefentry>
-				<refentrytitle>panelctl</refentrytitle>
+				<refentrytitle>panel</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
