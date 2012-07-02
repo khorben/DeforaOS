@@ -477,10 +477,10 @@ class UserModule extends Module
 		$page->append('title', array('stock' => 'login',
 				'text' => $title));
 		//process login
-		$error = $this->_login_process($engine, $request);
+		$error = $this->_loginProcess($engine, $request);
 		//login successful
 		if($error === FALSE)
-			return $this->_login_success($engine, $request, $page);
+			return $this->_loginSuccess($engine, $request, $page);
 		else if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 						'text' => $error));
@@ -500,9 +500,10 @@ class UserModule extends Module
 		return $page;
 	}
 
-	protected function _login_process($engine, $request)
+	protected function _loginProcess($engine, $request)
 	{
 		$db = $engine->getDatabase();
+		$query = $this->query_login;
 
 		if(($username = $request->getParameter('username')) === FALSE
 				|| strlen($username) == 0
@@ -511,21 +512,47 @@ class UserModule extends Module
 			return TRUE;
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
-		//FIXME first obtain the password and apply salt if necessary
-		$res = $db->query($engine, $this->query_login, array(
-					'username' => $username,
-					'password' => md5($password)));
+		//obtain the password hash
+		$res = $db->query($engine, $query, array(
+					'username' => $username));
 		if($res === FALSE || count($res) != 1)
 			return _('Invalid username or password');
 		$res = $res[0];
+		if($res['password'][0] == '$')
+		{
+			//the password is salted
+			$a = explode('$', $res['password']);
+			$cipher = $a[1];
+			$salt = $a[2];
+			$error = _('An error occurred while authenticating');
+			switch($cipher)
+			{
+				case '1':
+				case '5':
+				case '6':
+					$hash = crypt($password,
+							'$'.$cipher.'$'.$salt);
+					break;
+				default:
+					return $error;
+			}
+		}
+		else
+			//the password is not salted (plain MD5)
+			$hash = md5($password);
+		if($res['password'] != $hash)
+			return _('Invalid username or password');
+		//the password is correct
+		$engine->log('LOG_DEBUG', $res);
 		$cred = new AuthCredentials($res['user_id'], $res['username'],
 				$res['group_id'], $res['admin'] == 1);
 		if($engine->setCredentials($cred) !== TRUE)
 			return _('Invalid username or password');
+		$engine->log('LOG_DEBUG', $cred);
 		return FALSE;
 	}
 
-	protected function _login_success($engine, $request, $page)
+	protected function _loginSuccess($engine, $request, $page)
 	{
 		$r = new Request($engine);
 		$page->setProperty('location', $engine->getUrl($r));
@@ -1129,10 +1156,10 @@ Thank you for registering!")));
 	private $query_enable = "UPDATE daportal_user
 		SET enabled='1'
 		WHERE user_id=:user_id";
-	private $query_login = "SELECT user_id, group_id, username, admin
+	private $query_login = "SELECT user_id, group_id, username, admin,
+		password
 		FROM daportal_user
-		WHERE username=:username AND password=:password
-		AND enabled='1'";
+		WHERE username=:username AND enabled='1'";
 	private $query_update = 'UPDATE daportal_user
 		SET fullname=:fullname, email=:email
 		WHERE user_id=:user_id';
