@@ -72,7 +72,7 @@ class UserModule extends Module
 
 	//methods
 	//forms
-	protected function form_login($engine, $username, $cancel = TRUE)
+	protected function formLogin($engine, $username, $cancel = TRUE)
 	{
 		$r = new Request($engine, $this->name, 'login');
 		$form = new PageElement('form', array('request' => $r));
@@ -487,7 +487,7 @@ class UserModule extends Module
 		else if($cred->getUserId() != 0)
 			$page->append('dialog', array('type' => 'info',
 						'text' => 'You are already logged in'));
-		$form = $this->form_login($engine,
+		$form = $this->formLogin($engine,
 				$request->getParameter('username'));
 		$page->append($form);
 		if($this->canReset())
@@ -1069,7 +1069,7 @@ Thank you for registering!")));
 
 		$request = $engine->getRequest();
 		if($cred->getUserId() == 0)
-			return $this->form_login($engine,
+			return $this->formLogin($engine,
 					$request->getParameter('username'),
 					FALSE);
 		$box = new PageElement('vbox');
