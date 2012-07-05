@@ -423,7 +423,7 @@ class UserModule extends Module
 			$r = new Request($engine, $this->name);
 			$link = new PageElement('link', array('stock' => 'back',
 					'request' => $r,
-					'text' => _('Back to my homepage')));
+					'text' => _('Back to my account')));
 		}
 		if($uid == 0)
 			return $this->callLogin($engine, new Request);
@@ -680,7 +680,7 @@ class UserModule extends Module
 			$r = new Request($engine, $this->name);
 			$page->append('link', array('stock' => 'back',
 					'request' => $r,
-					'text' => _('Back to my homepage')));
+					'text' => _('Back to my account')));
 		}
 		return $page;
 	}
