@@ -1169,10 +1169,6 @@ Thank you for registering!")));
 	private $query_enable = "UPDATE daportal_user
 		SET enabled='1'
 		WHERE user_id=:user_id";
-	private $query_login = "SELECT user_id, group_id, username, admin,
-		password
-		FROM daportal_user
-		WHERE username=:username AND enabled='1'";
 	private $query_update = 'UPDATE daportal_user
 		SET fullname=:fullname, email=:email
 		WHERE user_id=:user_id';
