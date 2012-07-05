@@ -964,16 +964,30 @@ Thank you for registering!")));
 				? $request->getTitle() : FALSE);
 		$form = $page->append('form', array('request' => $r));
 		//fields
+		//username (cannot be changed)
 		$form->append('label', array('text' => _('Username: ')));
 		$form->append('label', array('text' => $user->getUsername()));
+		//full name
 		if(($fullname = $request->getParameter('fullname')) === FALSE)
 			$fullname = $user->getFullname();
 		$form->append('entry', array('text' => _('Full name: '),
 			'name' => 'fullname', 'value' => $fullname));
+		//e-mail address
 		if(($email = $request->getParameter('email')) === FALSE)
 			$email = $user->getEmail();
 		$form->append('entry', array('text' => _('e-mail: '),
 			'name' => 'email', 'value' => $email));
+		//password
+		$form->append('label', array('text' => _('Optionally: ')));
+		if($id === FALSE)
+			$form->append('entry', array(
+				'text' => _('Current password: '),
+				'name' => 'password', 'hidden' => TRUE));
+		$form->append('entry', array('text' => _('New password: '),
+			'name' => 'password1', 'hidden' => TRUE));
+		$form->append('entry', array(
+			'text' => _('Repeat new password: '),
+			'name' => 'password2', 'hidden' => TRUE));
 		//buttons
 		$r = new Request($engine, $this->name, 'profile',
 				$request->getId(), $request->getId()
@@ -1002,8 +1016,21 @@ Thank you for registering!")));
 				'user_id' => $user->getUserId(),
 				'fullname' => $fullname,
 				'email' => $email)) === FALSE)
-			$ret = _('Could not update the profile');
-		return strlen($ret) ? $ret : FALSE;
+			return _('Could not update the profile');
+		//update the password if requested
+		if(($password1 = $request->getParameter('password1')) === FALSE
+				|| strlen($password1) == 0
+				|| ($password2 = $request->getParameter(
+					'password2')) === FALSE
+				|| strlen($password2) == 0)
+			return FALSE;
+		//FIXME check the current password (if not an admin)
+		//verify that the new password matches
+		if($password1 != $password2)
+			return _('The new password does not match');
+		if(!$user->setPassword($engine, $password1))
+			return _('Could not set the new password');
+		return FALSE;
 	}
 
 	private function _update_success($engine, $request)
