@@ -523,15 +523,15 @@ class UserModule extends Module
 			//the password is salted
 			$a = explode('$', $res['password']);
 			$cipher = $a[1];
-			$salt = $a[2];
 			$error = _('An error occurred while authenticating');
 			switch($cipher)
 			{
 				case '1':
+				case '2a':
 				case '5':
 				case '6':
 					$hash = crypt($password,
-							'$'.$cipher.'$'.$salt);
+							$res['password']);
 					break;
 				default:
 					return $error;
