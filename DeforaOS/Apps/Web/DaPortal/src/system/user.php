@@ -123,9 +123,11 @@ class User
 	{
 		$db = $engine->getDatabase();
 
+	       	//XXX seems to default to sh-md5 (should be configurable)
+		$hash = crypt($password);
 		$res = $db->query($engine, $this->query_set_password, array(
 					'user_id' => $this->user_id,
-					'password' => md5($password)));
+					'password' => $hash));
 		return ($res !== FALSE);
 	}
 
