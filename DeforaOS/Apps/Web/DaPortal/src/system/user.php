@@ -26,7 +26,8 @@ class User
 	//public
 	//methods
 	//essential
-	public function __construct(&$engine, $uid, $username = FALSE)
+	//User::User
+	public function __construct($engine, $uid, $username = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$query = $username ? $this->query_get_by_id_username
@@ -107,7 +108,7 @@ class User
 
 
 	//User::setEnabled
-	public function setEnabled(&$engine, $enabled)
+	public function setEnabled($engine, $enabled)
 	{
 		$db = $engine->getDatabase();
 
@@ -119,7 +120,7 @@ class User
 
 
 	//User::setPassword
-	public function setPassword(&$engine, $password)
+	public function setPassword($engine, $password)
 	{
 		$db = $engine->getDatabase();
 
@@ -167,7 +168,7 @@ class User
 
 
 	//User::register
-	static public function register(&$engine, $module, $username, $password,
+	static public function register($engine, $module, $username, $password,
 		$email, $enabled = FALSE, &$error = FALSE)
 	{
 		$db = $engine->getDatabase();
@@ -245,7 +246,7 @@ class User
 
 
 	//User::reset
-	static public function reset(&$engine, $module, $username, $email,
+	static public function reset($engine, $module, $username, $email,
 			&$error = FALSE)
 	{
 		$db = $engine->getDatabase();
@@ -288,7 +289,7 @@ class User
 
 
 	//User::reset_password
-	static function reset_password(&$engine, $uid, $password, $token,
+	static function reset_password($engine, $uid, $password, $token,
 			&$error = FALSE)
 	{
 		$db = $engine->getDatabase();
@@ -332,7 +333,7 @@ class User
 
 
 	//User::validate
-	static public function validate(&$engine, $uid, $token, &$error = FALSE)
+	static public function validate($engine, $uid, $token, &$error = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$error = '';
