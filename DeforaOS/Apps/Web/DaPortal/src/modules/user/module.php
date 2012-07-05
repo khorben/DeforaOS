@@ -919,6 +919,8 @@ Thank you for registering!")));
 
 	private function _update_form($engine, $request, $user, $id, $error)
 	{
+		$cred = $engine->getCredentials();
+
 		//output the page
 		$title = $id ? _('Profile update for ').$user->getUsername()
 			: _('Profile update');
@@ -948,7 +950,7 @@ Thank you for registering!")));
 			'name' => 'email', 'value' => $email));
 		//password
 		$form->append('label', array('text' => _('Optionally: ')));
-		if($id === FALSE)
+		if($id === FALSE && !$cred->isAdmin())
 			$form->append('entry', array(
 				'text' => _('Current password: '),
 				'name' => 'password', 'hidden' => TRUE));
