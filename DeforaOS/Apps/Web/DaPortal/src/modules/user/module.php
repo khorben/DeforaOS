@@ -651,7 +651,8 @@ class UserModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'user',
 				'text' => $title));
-		$hbox = $page->append('hbox');
+		$vbox = $page->append('vbox');
+		$hbox = $vbox->append('hbox');
 		$col1 = $hbox->append('vbox');
 		$col2 = $hbox->append('vbox');
 		$col1->append('label', array('class' => 'bold',
@@ -674,11 +675,11 @@ class UserModule extends Module
 				'stock' => 'user', 'request' => $r,
 				'text' => _('Update')));
 		if($button !== FALSE)
-			$page->append($button);
+			$vbox->append($button);
 		if($id === FALSE)
 		{
 			$r = new Request($engine, $this->name);
-			$page->append('link', array('stock' => 'back',
+			$vbox->append('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my account')));
 		}
