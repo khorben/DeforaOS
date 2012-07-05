@@ -164,9 +164,13 @@ class User
 			}
 		}
 		else
+		{
 			//the password is not salted (plain MD5)
-			//FIXME hash it and save it again
 			$hash = md5($password);
+			//if it matches, hash it and save it again
+			if($res['password'] == $hash)
+				$this->setPassword($engine, $password);
+		}
 		if($res['password'] != $hash)
 			return FALSE;
 		//the password is correct
