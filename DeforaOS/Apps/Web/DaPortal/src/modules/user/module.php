@@ -1002,7 +1002,8 @@ Thank you for registering!")));
 					=== FALSE
 					|| strlen($password) == 0)
 				return $error;
-			//FIXME verify that the existing password is correct
+			if($user->authenticate($engine, $password) === FALSE)
+				return $error;
 		}
 		//verify that the new password matches
 		if($password1 != $password2)
