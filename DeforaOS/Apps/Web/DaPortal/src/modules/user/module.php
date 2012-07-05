@@ -503,7 +503,6 @@ class UserModule extends Module
 	protected function _loginProcess($engine, $request)
 	{
 		$db = $engine->getDatabase();
-		$query = $this->query_login;
 
 		if(($username = $request->getParameter('username')) === FALSE
 				|| strlen($username) == 0
@@ -512,43 +511,12 @@ class UserModule extends Module
 			return TRUE;
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
-		//obtain the password hash
-		$res = $db->query($engine, $query, array(
-					'username' => $username));
-		if($res === FALSE || count($res) != 1)
+		if(($user = User::lookup($engine, $username)) === FALSE
+				|| ($cred = $user->authenticate($engine,
+					$password)) === FALSE)
 			return _('Invalid username or password');
-		$res = $res[0];
-		if($res['password'][0] == '$')
-		{
-			//the password is salted
-			$a = explode('$', $res['password']);
-			$cipher = $a[1];
-			$error = _('An error occurred while authenticating');
-			switch($cipher)
-			{
-				case '1':
-				case '2a':
-				case '5':
-				case '6':
-					$hash = crypt($password,
-							$res['password']);
-					break;
-				default:
-					return $error;
-			}
-		}
-		else
-			//the password is not salted (plain MD5)
-			$hash = md5($password);
-		if($res['password'] != $hash)
-			return _('Invalid username or password');
-		//the password is correct
-		$engine->log('LOG_DEBUG', $res);
-		$cred = new AuthCredentials($res['user_id'], $res['username'],
-				$res['group_id'], $res['admin'] == 1);
 		if($engine->setCredentials($cred) !== TRUE)
-			return _('Invalid username or password');
-		$engine->log('LOG_DEBUG', $cred);
+			return _('An error occurred while authenticating');
 		return FALSE;
 	}
 

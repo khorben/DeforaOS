@@ -133,6 +133,48 @@ class User
 	}
 
 
+	//useful
+	public function authenticate($engine, $password)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->query_authenticate;
+
+		//obtain the password hash
+		$res = $db->query($engine, $query, array(
+					'username' => $this->username));
+		if($res === FALSE || count($res) != 1)
+			return FALSE;
+		$res = $res[0];
+		if($res['password'][0] == '$')
+		{
+			//the password is salted
+			$a = explode('$', $res['password']);
+			$cipher = $a[1];
+			switch($cipher)
+			{
+				case '1':
+				case '2a':
+				case '5':
+				case '6':
+					$hash = crypt($password,
+							$res['password']);
+					break;
+				default:
+					return FALSE;
+			}
+		}
+		else
+			//the password is not salted (plain MD5)
+			//FIXME hash it and save it again
+			$hash = md5($password);
+		if($res['password'] != $hash)
+			return FALSE;
+		//the password is correct
+		return new AuthCredentials($res['user_id'], $res['username'],
+				$res['group_id'], $db->isTrue($res['admin']));
+	}
+
+
 	//static
 	//useful
 	//User::lookup
@@ -404,6 +446,10 @@ class User
 	private $fullname = FALSE;
 
 	//queries
+	private $query_authenticate = "SELECT user_id, group_id, username,
+		admin, password
+		FROM daportal_user
+		WHERE username=:username AND enabled='1'";
 	private $query_get_by_id = "SELECT user_id AS id, username,
 		daportal_user.enabled AS enabled,
 		daportal_user.group_id AS group_id, groupname, admin, email,
