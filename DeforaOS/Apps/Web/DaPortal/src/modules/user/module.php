@@ -1003,6 +1003,7 @@ Thank you for registering!")));
 	{
 		$ret = '';
 		$db = $engine->getDatabase();
+		$cred = $engine->getCredentials();
 
 		if(($fullname = $request->getParameter('fullname')) === FALSE)
 			$ret .= _("The full name is required\n");
@@ -1024,7 +1025,16 @@ Thank you for registering!")));
 					'password2')) === FALSE
 				|| strlen($password2) == 0)
 			return FALSE;
-		//FIXME check the current password (if not an admin)
+		//check the current password (if not an admin)
+		if(!$cred->isAdmin())
+		{
+			$error = _('The current password must be specified');
+			if(($password = $request->getParameter('password'))
+					=== FALSE
+					|| strlen($password) == 0)
+				return $error;
+			//FIXME verify that the existing password is correct
+		}
 		//verify that the new password matches
 		if($password1 != $password2)
 			return _('The new password does not match');
