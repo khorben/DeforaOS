@@ -52,7 +52,7 @@ INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', 1);
 CREATE TABLE daportal_user (
 	user_id int(11) NOT NULL auto_increment,
 	username varchar(255) NOT NULL,
-	password varchar(32) NOT NULL,
+	password varchar(255) NOT NULL,
 	enabled tinyint(4) NOT NULL default '0',
 	admin tinyint(4) NOT NULL default '0',
 	fullname varchar(255) default '',
