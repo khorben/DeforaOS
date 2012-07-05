@@ -908,11 +908,11 @@ Thank you for registering!")));
 		}
 		//process update
 		if(!$request->isIdempotent())
-			$error = $this->_update_process($engine, $request,
+			$error = $this->_updateProcess($engine, $request,
 					$user);
 		if($error === FALSE)
 			//update was successful
-			return $this->_update_success($engine, $request);
+			return $this->_updateSuccess($engine, $request);
 		return $this->_update_form($engine, $request, $user, $id,
 			$error);
 	}
@@ -968,7 +968,7 @@ Thank you for registering!")));
 		return $page;
 	}
 
-	private function _update_process($engine, $request, $user)
+	private function _updateProcess($engine, $request, $user)
 	{
 		$ret = '';
 		$db = $engine->getDatabase();
@@ -1012,7 +1012,7 @@ Thank you for registering!")));
 		return FALSE;
 	}
 
-	private function _update_success($engine, $request)
+	private function _updateSuccess($engine, $request)
 	{
 		//FIXME also implement administrative updates
 		$title = _('Profile update');
