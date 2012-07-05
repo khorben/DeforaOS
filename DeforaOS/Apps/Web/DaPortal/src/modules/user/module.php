@@ -651,11 +651,15 @@ class UserModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'user',
 				'text' => $title));
-		$vbox = $page->append('vbox');
-		$vbox->append('label', array(
-			'text' => _('Fullname: ').$user->getFullname()));
-		$vbox->append('label', array(
-			'text' => _('e-mail: ').$user->getEmail()));
+		$hbox = $page->append('hbox');
+		$col1 = $hbox->append('vbox');
+		$col2 = $hbox->append('vbox');
+		$col1->append('label', array('class' => 'bold',
+				'text' => _('Fullname: ')));
+		$col2->append('label', array('text' => $user->getFullname()));
+		$col1->append('label', array('class' => 'bold',
+				'text' => _('e-mail: ')));
+		$col2->append('label', array('text' => $user->getEmail()));
 		//link to profile update
 		$r = new Request($engine, $this->name, 'update',
 				$request->getId(), $request->getId()
@@ -670,11 +674,11 @@ class UserModule extends Module
 				'stock' => 'user', 'request' => $r,
 				'text' => _('Update')));
 		if($button !== FALSE)
-			$vbox->append($button);
+			$page->append($button);
 		if($id === FALSE)
 		{
 			$r = new Request($engine, $this->name);
-			$vbox->append('link', array('stock' => 'back',
+			$page->append('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my homepage')));
 		}
