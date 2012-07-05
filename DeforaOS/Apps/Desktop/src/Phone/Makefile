@@ -88,7 +88,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modems/sofia.c \
 		$(PACKAGE)-$(VERSION)/src/modems/hayes.h \
 		$(PACKAGE)-$(VERSION)/src/modems/Makefile \
-		$(PACKAGE)-$(VERSION)/src/modems/purple.c \
+		$(PACKAGE)-$(VERSION)/src/modems/osmocom.c \
 		$(PACKAGE)-$(VERSION)/src/modems/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/blacklist.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/debug.c \
