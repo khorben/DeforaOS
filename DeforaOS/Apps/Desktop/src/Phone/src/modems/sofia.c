@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,10 @@
 /* Sofia */
 /* private */
 /* types */
-typedef struct _Sofia
+typedef struct _ModemPlugin
 {
+	ModemPluginHelper * helper;
+
 	su_home_t home[1];
 	su_root_t * root;
 	guint source;
@@ -38,37 +40,25 @@ typedef struct _Sofia
 	nua_handle_t * handle;
 } Sofia;
 
-typedef enum _SofiaConfig
-{
-	SOFIA_CONFIG_USERNAME = 0,
-	SOFIA_CONFIG_FULLNAME,
-	SOFIA_CONFIG_REGISTRAR_HOSTNAME = 3,
-	SOFIA_CONFIG_REGISTRAR_USERNAME,
-	SOFIA_CONFIG_REGISTRAR_PASSWORD,
-	SOFIA_CONFIG_PROXY_HOSTNAME = 7
-} SofiaConfig;
-#define SOFIA_CONFIG_LAST SOFIA_CONFIG_PROXY_HOSTNAME
-#define SOFIA_CONFIG_COUNT (SOFIA_CONFIG_LAST + 1)
-
 
 /* variables */
-static ModemConfig _sofia_config[SOFIA_CONFIG_COUNT + 1] =
+static ModemConfig _sofia_config[] =
 {
-	{ "username",		"Username",	MCT_STRING,	NULL	},
-	{ "fullname",		"Full name",	MCT_STRING,	NULL	},
-	{ NULL,			"Registrar",	MCT_SUBSECTION,	NULL	},
-	{ "registrar_hostname",	"Hostname",	MCT_STRING,	NULL	},
-	{ "registrar_username",	"Username",	MCT_STRING,	NULL	},
-	{ "registrar_password",	"Password",	MCT_STRING,	NULL	},
-	{ NULL,			"Proxy",	MCT_SUBSECTION,	NULL	},
-	{ "proxy_hostname",	"Hostname",	MCT_STRING,	NULL	},
-	{ NULL,			NULL,		MCT_NONE,	NULL	},
+	{ "username",		"Username",	MCT_STRING	},
+	{ "fullname",		"Full name",	MCT_STRING	},
+	{ NULL,			"Registrar",	MCT_SUBSECTION	},
+	{ "registrar_hostname",	"Hostname",	MCT_STRING	},
+	{ "registrar_username",	"Username",	MCT_STRING	},
+	{ "registrar_password",	"Password",	MCT_STRING	},
+	{ NULL,			"Proxy",	MCT_SUBSECTION	},
+	{ "proxy_hostname",	"Hostname",	MCT_STRING	},
+	{ NULL,			NULL,		MCT_NONE	},
 };
 
 
 /* prototypes */
-static int _sofia_init(ModemPlugin * modem);
-static int _sofia_destroy(ModemPlugin * modem);
+static ModemPlugin * _sofia_init(ModemPluginHelper * helper);
+static void _sofia_destroy(ModemPlugin * modem);
 static int _sofia_start(ModemPlugin * modem, unsigned int retry);
 static int _sofia_stop(ModemPlugin * modem);
 static int _sofia_request(ModemPlugin * modem, ModemRequest * request);
@@ -81,7 +71,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 
 /* public */
 /* variables */
-ModemPlugin plugin =
+ModemPluginDefinition plugin =
 {
 	NULL,
 	"Sofia",
@@ -92,7 +82,6 @@ ModemPlugin plugin =
 	_sofia_start,
 	_sofia_stop,
 	_sofia_request,
-	NULL,
 	NULL
 };
 
@@ -100,32 +89,32 @@ ModemPlugin plugin =
 /* private */
 /* functions */
 /* sofia_init */
-static int _sofia_init(ModemPlugin * modem)
+static ModemPlugin * _sofia_init(ModemPluginHelper * helper)
 {
 	Sofia * sofia;
 	GSource * gsource;
 
 	if((sofia = object_new(sizeof(*sofia))) == NULL)
-		return -1;
+		return NULL;
 	memset(sofia, 0, sizeof(*sofia));
-	modem->priv = sofia;
+	sofia->helper = helper;
 	su_init();
 	su_home_init(sofia->home);
 	if((sofia->root = su_glib_root_create(NULL)) == NULL)
 	{
-		_sofia_destroy(modem);
-		return -1;
+		_sofia_destroy(sofia);
+		return NULL;
 	}
 	gsource = su_glib_root_gsource(sofia->root);
 	sofia->source = g_source_attach(gsource, g_main_context_default());
-	return 0;
+	return sofia;
 }
 
 
 /* sofia_destroy */
-static int _sofia_destroy(ModemPlugin * modem)
+static void _sofia_destroy(ModemPlugin * modem)
 {
-	Sofia * sofia = modem->priv;
+	Sofia * sofia = modem;
 
 	_sofia_stop(modem);
 	if(sofia->source != 0)
@@ -135,17 +124,16 @@ static int _sofia_destroy(ModemPlugin * modem)
 	su_home_deinit(sofia->home);
 	su_deinit();
 	object_delete(sofia);
-	return 0;
 }
 
 
 /* sofia_start */
 static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 {
-	ModemPluginHelper * helper = modem->helper;
-	Sofia * sofia = modem->priv;
-	char const * username = modem->config[SOFIA_CONFIG_USERNAME].value;
-	char const * fullname = modem->config[SOFIA_CONFIG_FULLNAME].value;
+	Sofia * sofia = modem;
+	ModemPluginHelper * helper = sofia->helper;
+	char const * username;
+	char const * fullname;
 	url_string_t us;
 	char const * s;
 	url_t * url;
@@ -159,18 +147,21 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 	if((sofia->nua = nua_create(sofia->root, _sofia_callback, modem,
 					TAG_END())) == NULL)
 		return -1;
+	/* username */
+	username = helper->config_get(helper->modem, "username");
+	fullname = helper->config_get(helper->modem, "fullname");
 	/* registrar */
-	s = modem->config[SOFIA_CONFIG_REGISTRAR_HOSTNAME].value;
+	s = helper->config_get(helper->modem, "registrar_hostname");
 	url = url_make(sofia->home, s);
 	nua_set_params(sofia->nua, NUTAG_REGISTRAR(url), TAG_END());
-	s = modem->config[SOFIA_CONFIG_REGISTRAR_USERNAME].value;
+	s = helper->config_get(helper->modem, "registrar_username");
 	/* XXX url_make() doesn't prefix with the protocol */
 	snprintf(us.us_str, sizeof(us.us_str), "%s%s", "sip:", s);
 	url = url_make(sofia->home, us.us_str);
 	us.us_url[0] = *url;
 	from = sip_from_create(sofia->home, &us);
 	/* proxy */
-	s = modem->config[SOFIA_CONFIG_PROXY_HOSTNAME].value;
+	s = helper->config_get(helper->modem, "proxy_hostname");
 	url = url_make(sofia->home, s);
 	nua_set_params(sofia->nua, NUTAG_PROXY(url), TAG_END());
 	if((sofia->handle = nua_handle(sofia->nua, modem, TAG_END())) == NULL)
@@ -188,7 +179,7 @@ static void _stop_handle(nua_handle_t ** handle);
 
 static int _sofia_stop(ModemPlugin * modem)
 {
-	Sofia * sofia = modem->priv;
+	Sofia * sofia = modem;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -235,7 +226,7 @@ static int _sofia_request(ModemPlugin * modem, ModemRequest * request)
 
 static int _request_call(ModemPlugin * modem, ModemRequest * request)
 {
-	Sofia * sofia = modem->priv;
+	Sofia * sofia = modem;
 	url_t * url;
 	url_string_t us;
 	sip_to_t * to;
@@ -256,7 +247,7 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 
 static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 {
-	Sofia * sofia = modem->priv;
+	Sofia * sofia = modem;
 	url_string_t us;
 
 	if(sofia->handle == NULL)
@@ -280,7 +271,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 		nua_hmagic_t * hmagic, sip_t const * sip, tagi_t tags[])
 {
 	ModemPlugin * modem = magic;
-	Sofia * sofia = modem->priv;
+	Sofia * sofia = modem;
 	ModemEvent mevent;
 
 #ifdef DEBUG

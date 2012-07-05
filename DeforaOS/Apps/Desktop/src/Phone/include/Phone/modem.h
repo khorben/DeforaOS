@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -148,7 +148,6 @@ typedef struct _ModemConfig
 	char const * name;
 	char const * title;
 	ModemConfigType type;
-	void * value;
 } ModemConfig;
 
 /* ModemEvent */
@@ -438,25 +437,29 @@ typedef union _ModemRequest
 typedef struct _ModemPluginHelper
 {
 	Modem * modem;
+	char const * (*config_get)(Modem * modem, char const * variable);
+	int (*config_set)(Modem * modem, char const * variable,
+			char const * value);
 	int (*error)(Modem * modem, char const * message, int ret);
 	void (*event)(Modem * modem, ModemEvent * event);
 } ModemPluginHelper;
 
 typedef struct _ModemPlugin ModemPlugin;
 
-struct _ModemPlugin
+typedef const struct _ModemPluginDefinition ModemPluginDefinition;
+
+struct _ModemPluginDefinition
 {
 	ModemPluginHelper * helper;
 	char const * name;
 	char const * icon;
 	ModemConfig * config;
-	int (*init)(ModemPlugin * plugin);
-	int (*destroy)(ModemPlugin * plugin);
+	ModemPlugin * (*init)(ModemPluginHelper * helper);
+	void (*destroy)(ModemPlugin * plugin);
 	int (*start)(ModemPlugin * plugin, unsigned int retry);
 	int (*stop)(ModemPlugin * plugin);
 	int (*request)(ModemPlugin * plugin, ModemRequest * request);
 	int (*trigger)(ModemPlugin * plugin, ModemEventType event);
-	void * priv;
 };
 
 #endif /* !DESKTOP_PHONE_MODEM_H */

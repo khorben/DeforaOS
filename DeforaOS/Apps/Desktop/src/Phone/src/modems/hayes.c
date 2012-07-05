@@ -51,8 +51,10 @@ typedef enum _HayesMode
 	HAYES_MODE_DATA
 } HayesMode;
 
-typedef struct _Hayes
+typedef struct _ModemPlugin
 {
+	ModemPluginHelper * helper;
+
 	unsigned int retry;
 	unsigned int quirks;
 
@@ -221,8 +223,8 @@ enum
 
 /* prototypes */
 /* plug-in */
-static int _hayes_init(ModemPlugin * modem);
-static int _hayes_destroy(ModemPlugin * modem);
+static ModemPlugin * _hayes_init(ModemPluginHelper * helper);
+static void _hayes_destroy(ModemPlugin * modem);
 static int _hayes_start(ModemPlugin * modem, unsigned int retry);
 static int _hayes_stop(ModemPlugin * modem);
 static int _hayes_request(ModemPlugin * modem, ModemRequest * request);
@@ -374,24 +376,14 @@ static int _is_number(char const * number);
 
 
 /* variables */
-typedef enum _HayesConfig
+static ModemConfig _hayes_config[] =
 {
-	HAYES_CONFIG_DEVICE = 0,
-	HAYES_CONFIG_BAUDRATE,
-	HAYES_CONFIG_HWFLOW,
-	HAYES_CONFIG_LOGFILE = 4
-} HayesConfig;
-#define HAYES_CONFIG_LAST HAYES_CONFIG_LOGFILE
-#define HAYES_CONFIG_COUNT (HAYES_CONFIG_LAST + 1)
-
-static ModemConfig _hayes_config[HAYES_CONFIG_COUNT + 1] =
-{
-	{ "device",	"Device",		MCT_FILENAME,	NULL	      },
-	{ "baudrate",	"Baudrate",		MCT_UINT32,	(void *)115200},
-	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN,	(void *)1     },
-	{ NULL,		"Advanced",		MCT_SUBSECTION,	NULL	      },
-	{ "logfile",	"Log file",		MCT_FILENAME,	NULL	      },
-	{ NULL,		NULL,			MCT_NONE,	NULL	      }
+	{ "device",	"Device",		MCT_FILENAME	},
+	{ "baudrate",	"Baudrate",		MCT_UINT32	},
+	{ "hwflow",	"Hardware flow control",MCT_BOOLEAN	},
+	{ NULL,		"Advanced",		MCT_SUBSECTION	},
+	{ "logfile",	"Log file",		MCT_FILENAME	},
+	{ NULL,		NULL,			MCT_NONE	},
 };
 
 static struct
@@ -621,7 +613,7 @@ static HayesCodeHandler _hayes_code_handlers[] =
 
 /* public */
 /* variables */
-ModemPlugin plugin =
+ModemPluginDefinition plugin =
 {
 	NULL,
 	"Hayes",
@@ -632,40 +624,38 @@ ModemPlugin plugin =
 	_hayes_start,
 	_hayes_stop,
 	_hayes_request,
-	_hayes_trigger,
-	NULL
+	_hayes_trigger
 };
 
 
 /* private */
 /* plug-in */
 /* functions */
-static int _hayes_init(ModemPlugin * modem)
+static ModemPlugin * _hayes_init(ModemPluginHelper * helper)
 {
 	Hayes * hayes;
 	size_t i;
 
 	if((hayes = object_new(sizeof(*hayes))) == NULL)
-		return -1;
+		return NULL;
 	memset(hayes, 0, sizeof(*hayes));
-	modem->priv = hayes;
+	hayes->helper = helper;
 	hayes->mode = HAYES_MODE_INIT;
 	for(i = 0; i < sizeof(hayes->events) / sizeof(*hayes->events); i++)
 		hayes->events[i].type = i;
 	hayes->events[MODEM_EVENT_TYPE_REGISTRATION].registration.signal
 		= 0.0 / 0.0;
-	return 0;
+	return hayes;
 }
 
 
 /* hayes_destroy */
-static int _hayes_destroy(ModemPlugin * modem)
+static void _hayes_destroy(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 
 	_hayes_stop(modem);
 	object_delete(hayes);
-	return 0;
 }
 
 
@@ -709,7 +699,7 @@ static int _hayes_request(ModemPlugin * modem, ModemRequest * request)
 
 static int _request_do(ModemPlugin * modem, ModemRequest * request, void * data)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command;
 	unsigned int type = request->type;
 	size_t i;
@@ -732,7 +722,7 @@ static int _request_do(ModemPlugin * modem, ModemRequest * request, void * data)
 			break;
 	if(i == count)
 #ifdef DEBUG
-		return -modem->helper->error(modem->helper->modem,
+		return -hayes->helper->error(hayes->helper->modem,
 				"Unable to handle request", 1);
 #else
 		return -1;
@@ -853,7 +843,7 @@ static char * _request_attention_call(ModemPlugin * modem,
 		ModemRequest * request)
 {
 	char * ret;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	char const * number = request->call.number;
 	ModemEvent * event;
 	const char cmd[] = "ATD";
@@ -906,7 +896,7 @@ static char * _request_attention_call_ussd(ModemPlugin * modem,
 
 static char * _request_attention_call_hangup(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 
 	/* FIXME check that this works on all phones, including:
@@ -919,7 +909,7 @@ static char * _request_attention_call_hangup(ModemPlugin * modem)
 		event->connection.connected = 0;
 		event->connection.in = 0;
 		event->connection.out = 0;
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 		_hayes_set_mode(modem, HAYES_MODE_INIT);
 		return NULL;
 	}
@@ -943,7 +933,7 @@ static char * _request_attention_connectivity(ModemPlugin * modem,
 static char * _request_attention_contact_delete(ModemPlugin * modem,
 		unsigned int id)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	char const cmd[] = "AT+CPBW=";
 	char buf[32];
 
@@ -968,7 +958,7 @@ static char * _request_attention_contact_list(ModemRequest * request)
 static char * _request_attention_gprs(ModemPlugin * modem,
 		char const * username, char const * password)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 
 	free(hayes->gprs_username);
 	hayes->gprs_username = (username != NULL) ? strdup(username) : NULL;
@@ -990,7 +980,7 @@ static char * _request_attention_message(ModemPlugin * modem, unsigned int id)
 static char * _request_attention_message_delete(ModemPlugin * modem,
 		unsigned int id)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	char const cmd[] = "AT+CMGD=";
 	char buf[32];
 
@@ -1053,7 +1043,7 @@ static char * _request_attention_message_send(ModemPlugin * modem,
 		char const * number, ModemMessageEncoding encoding,
 		size_t length, char const * content)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	char * ret;
 	char const cmd[] = "AT+CMGS=";
 	char * pdu;
@@ -1113,7 +1103,7 @@ static char * _request_attention_sim_pin(ModemPlugin * modem,
 		char const * password)
 {
 	char * ret;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	const char cmd[] = "AT+CPIN=";
 	size_t len;
 	char const * format;
@@ -1133,7 +1123,7 @@ static char * _request_attention_sim_puk(ModemPlugin * modem,
 		char const * password)
 {
 	char * ret;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	const char cmd[] = "AT+CPIN=";
 	size_t len;
 	char const * format;
@@ -1188,7 +1178,7 @@ static int _hayes_stop(ModemPlugin * modem)
 static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 {
 	int ret = 0;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * e;
 
 #ifdef DEBUG
@@ -1201,7 +1191,7 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 		case MODEM_EVENT_TYPE_CONNECTION:
 		case MODEM_EVENT_TYPE_STATUS:
 			e = &hayes->events[event];
-			modem->helper->event(modem->helper->modem, e);
+			hayes->helper->event(hayes->helper->modem, e);
 			break;
 		case MODEM_EVENT_TYPE_AUTHENTICATION:
 			return _hayes_request_type(modem,
@@ -1225,7 +1215,7 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 				ret |= _hayes_request_type(modem,
 						HAYES_REQUEST_REGISTRATION);
 			else
-				modem->helper->event(modem->helper->modem, e);
+				hayes->helper->event(hayes->helper->modem, e);
 			break;
 		case MODEM_EVENT_TYPE_CONTACT_DELETED: /* do not make sense */
 		case MODEM_EVENT_TYPE_ERROR:
@@ -1242,7 +1232,7 @@ static int _hayes_trigger(ModemPlugin * modem, ModemEventType event)
 /* accessors */
 static void _hayes_set_mode(ModemPlugin * modem, HayesMode mode)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event;
 
 	if(hayes->mode == mode)
@@ -1279,7 +1269,7 @@ static void _hayes_set_mode(ModemPlugin * modem, HayesMode mode)
 			free(hayes->registration_media);
 			hayes->registration_media = strdup("GPRS");
 			event->registration.media = hayes->registration_media;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 			break;
 	}
 	hayes->mode = mode;
@@ -1295,7 +1285,7 @@ static char * _hayes_message_to_pdu(ModemPlugin * modem, char const * number,
 		ModemMessageEncoding encoding, size_t length,
 		char const * content)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	char * ret;
 	char * addr;
 	char * data;
@@ -1452,7 +1442,7 @@ static int _parse_do(ModemPlugin * modem);
 
 static int _hayes_parse(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	int ret = 0;
 	size_t i = 0;
 	char * p;
@@ -1478,16 +1468,12 @@ static int _hayes_parse(ModemPlugin * modem)
 			hayes->rd_buf = NULL; /* ...except when it's not one */
 		i = 0;
 	}
-#if 0
-	if(hayes->mode == HAYES_MODE_PDU)
-		return _parse_pdu(modem);
-#endif
 	return ret;
 }
 
 static int _parse_do(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	char const * line = hayes->rd_buf;
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
@@ -1568,7 +1554,7 @@ static int _hayes_parse_trigger(ModemPlugin * modem, char const * answer,
 /* hayes_queue_command */
 static int _hayes_queue_command(ModemPlugin * modem, HayesCommand * command)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	GSList * queue;
 
 	switch(hayes->mode)
@@ -1604,7 +1590,7 @@ static int _hayes_queue_command_full(ModemPlugin * modem,
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, attention);
 #endif
 	if((command = _hayes_command_new(attention)) == NULL)
-		return -modem->helper->error(modem->helper->modem, error_get(),
+		return -hayes->helper->error(hayes->helper->modem, error_get(),
 				1);
 	_hayes_command_set_callback(command, callback, modem);
 	if(_hayes_queue_command(modem, command) != 0)
@@ -1620,7 +1606,7 @@ static int _hayes_queue_command_full(ModemPlugin * modem,
 /* hayes_queue_flush */
 static void _hayes_queue_flush(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 
 	g_slist_foreach(hayes->queue_timeout, (GFunc)_hayes_command_delete,
 			NULL);
@@ -1659,7 +1645,7 @@ static void _hayes_queue_flush(ModemPlugin * modem)
 /* hayes_queue_pop */
 static int _hayes_queue_pop(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command;
 
 #ifdef DEBUG
@@ -1680,7 +1666,7 @@ static int _hayes_queue_pop(ModemPlugin * modem)
 /* hayes_queue_push */
 static int _hayes_queue_push(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command;
 	char const * prefix = "";
 	char const * attention;
@@ -1708,7 +1694,7 @@ static int _hayes_queue_push(ModemPlugin * modem)
 #endif
 	size = strlen(prefix) + strlen(attention) + sizeof(suffix);
 	if((p = realloc(hayes->wr_buf, hayes->wr_buf_cnt + size)) == NULL)
-		return -modem->helper->error(modem->helper->modem, strerror(
+		return -hayes->helper->error(hayes->helper->modem, strerror(
 					errno), 1);
 	hayes->wr_buf = p;
 	snprintf(&hayes->wr_buf[hayes->wr_buf_cnt], size, "%s%s%s", prefix,
@@ -1729,7 +1715,7 @@ static int _hayes_queue_push(ModemPlugin * modem)
 /* hayes_reset */
 static void _hayes_reset(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 
 	_hayes_reset_stop(modem);
 	_hayes_reset_start(modem, hayes->retry);
@@ -1750,7 +1736,7 @@ static int _hayes_request_type(ModemPlugin * modem, ModemRequestType type)
 /* hayes_reset_start */
 static void _hayes_reset_start(ModemPlugin * modem, unsigned int retry)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 
 	hayes->retry = retry;
 	hayes->source = g_idle_add(_on_reset, modem);
@@ -1763,7 +1749,7 @@ static void _reset_stop_string(char ** string);
 
 static void _hayes_reset_stop(ModemPlugin * modem)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event;
 	size_t i;
 
@@ -1785,7 +1771,7 @@ static void _hayes_reset_stop(ModemPlugin * modem)
 		event->connection.connected = 0;
 		event->connection.in = 0;
 		event->connection.out = 0;
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 	}
 	/* reset battery information */
 	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
@@ -1794,7 +1780,7 @@ static void _hayes_reset_stop(ModemPlugin * modem)
 		event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
 		event->battery_level.level = 0.0 / 0.0;
 		event->battery_level.charging = 0;
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 	}
 	/* remove internal data */
 	_reset_stop_string(&hayes->authentication_name);
@@ -2019,7 +2005,7 @@ static HayesCommandStatus _hayes_command_callback(HayesCommand * command)
 static gboolean _on_queue_timeout(gpointer data)
 {
 	ModemPlugin * modem = data;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command;
 
 	hayes->source = 0;
@@ -2049,7 +2035,8 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 static gboolean _on_reset(gpointer data)
 {
 	ModemPlugin * modem = data;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 	GError * error = NULL;
 	int fd;
@@ -2064,9 +2051,9 @@ static gboolean _on_reset(gpointer data)
 		if(event->status.status != MODEM_STATUS_UNAVAILABLE)
 		{
 			event->status.status = MODEM_STATUS_UNAVAILABLE;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 		}
-		modem->helper->error(NULL, error_get(), 1);
+		hayes->helper->error(NULL, error_get(), 1);
 		if(hayes->retry > 0)
 			hayes->source = g_timeout_add(hayes->retry, _on_reset,
 					modem);
@@ -2074,16 +2061,16 @@ static gboolean _on_reset(gpointer data)
 	}
 	event->status.status = MODEM_STATUS_UNKNOWN;
 	/* logging */
-	logfile = modem->config[HAYES_CONFIG_LOGFILE].value;
+	logfile = helper->config_get(helper->modem, "logfile");
 	if(logfile != NULL && (hayes->fp = fopen(logfile, "w")) == NULL)
-		modem->helper->error(NULL, strerror(errno), 1);
+		hayes->helper->error(NULL, strerror(errno), 1);
 	else if(hayes->fp != NULL)
 		setvbuf(hayes->fp, NULL, _IONBF, BUFSIZ);
 	hayes->channel = g_io_channel_unix_new(fd);
 	if(g_io_channel_set_encoding(hayes->channel, NULL, &error)
 			!= G_IO_STATUS_NORMAL)
 	{
-		modem->helper->error(modem->helper->modem, error->message, 1);
+		hayes->helper->error(hayes->helper->modem, error->message, 1);
 		g_error_free(error);
 	}
 	g_io_channel_set_buffered(hayes->channel, FALSE);
@@ -2095,10 +2082,12 @@ static gboolean _on_reset(gpointer data)
 
 static int _reset_open(ModemPlugin * modem)
 {
-	char const * device = modem->config[HAYES_CONFIG_DEVICE].value;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
+	char const * device;
 	int fd;
 
-	if(device == NULL)
+	if((device = helper->config_get(helper->modem, "device")) == NULL)
 		device = "/dev/modem";
 	if((fd = open(device, O_RDWR | O_NONBLOCK)) < 0)
 		return -error_set_code(1, "%s: %s", device, strerror(errno));
@@ -2112,15 +2101,24 @@ static int _reset_open(ModemPlugin * modem)
 
 static int _reset_configure(ModemPlugin * modem, char const * device, int fd)
 {
-	unsigned int baudrate = (unsigned long)modem->config[
-		HAYES_CONFIG_BAUDRATE].value;
-	unsigned int hwflow = (modem->config[HAYES_CONFIG_HWFLOW].value
-			!= NULL) ? 1 : 0;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
+	unsigned int baudrate;
+	unsigned int hwflow;
 	struct stat st;
 	int fl;
 	struct termios term;
+	char const * p;
 
+	/* baud rate */
+	if((p = helper->config_get(helper->modem, "baudrate")) == 0
+			|| strtoul(p, NULL, 10) == 0)
+		baudrate = 115200;
 	baudrate = _reset_configure_baudrate(modem, baudrate);
+	/* hardware flow */
+	if((p = helper->config_get(helper->modem, "hwflow")) == 0
+			|| strtoul(p, NULL, 10) == 0)
+		hwflow = 1;
 	if(flock(fd, LOCK_EX | LOCK_NB) != 0)
 		return 1;
 	fl = fcntl(fd, F_GETFL, 0);
@@ -2158,6 +2156,8 @@ static int _reset_configure(ModemPlugin * modem, char const * device, int fd)
 static unsigned int _reset_configure_baudrate(ModemPlugin * modem,
 		unsigned int baudrate)
 {
+	Hayes * hayes = modem;
+
 	switch(baudrate)
 	{
 		case 1200:
@@ -2197,7 +2197,7 @@ static unsigned int _reset_configure_baudrate(ModemPlugin * modem,
 		default:
 			error_set("%u%s", baudrate,
 					"Unsupported baudrate (using 115200)");
-			modem->helper->error(NULL, error_get(), 1);
+			hayes->helper->error(NULL, error_get(), 1);
 			return B115200;
 	}
 }
@@ -2205,6 +2205,7 @@ static unsigned int _reset_configure_baudrate(ModemPlugin * modem,
 static gboolean _reset_settle(gpointer data)
 {
 	ModemPlugin * modem = data;
+	Hayes * hayes = modem;
 	HayesCommand * command;
 
 #ifdef DEBUG
@@ -2212,7 +2213,7 @@ static gboolean _reset_settle(gpointer data)
 #endif
 	if((command = _hayes_command_new("ATZE0V1")) == NULL)
 	{
-		modem->helper->error(modem->helper->modem, error_get(), 1);
+		hayes->helper->error(hayes->helper->modem, error_get(), 1);
 		return FALSE;
 	}
 	_hayes_command_set_callback(command, _on_reset_callback, modem);
@@ -2220,7 +2221,7 @@ static gboolean _reset_settle(gpointer data)
 	_hayes_command_set_timeout(command, 500);
 	if(_hayes_queue_command(modem, command) != 0)
 	{
-		modem->helper->error(modem->helper->modem, error_get(), 1);
+		hayes->helper->error(hayes->helper->modem, error_get(), 1);
 		_hayes_command_delete(command);
 	}
 	return FALSE;
@@ -2266,7 +2267,7 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 static gboolean _on_timeout(gpointer data)
 {
 	ModemPlugin * modem = data;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command;
 
 #ifdef DEBUG
@@ -2287,8 +2288,8 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	ModemPlugin * modem = data;
-	ModemPluginHelper * helper = modem->helper;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
@@ -2349,8 +2350,8 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	ModemPlugin * modem = data;
-	ModemPluginHelper * helper = modem->helper;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -2393,8 +2394,8 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	ModemPlugin * modem = data;
-	ModemPluginHelper * helper = modem->helper;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
@@ -2409,7 +2410,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 				|| fwrite(hayes->wr_buf, sizeof(*p), cnt,
 					hayes->fp) < cnt))
 	{
-		modem->helper->error(NULL, strerror(errno), 1);
+		hayes->helper->error(NULL, strerror(errno), 1);
 		fclose(hayes->fp);
 		hayes->fp = NULL;
 	}
@@ -2448,8 +2449,8 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		GIOCondition condition, gpointer data)
 {
 	ModemPlugin * modem = data;
-	ModemPluginHelper * helper = modem->helper;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 	gsize cnt = 0;
 	GError * error = NULL;
@@ -2497,7 +2498,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 
 	switch((status = _on_request_generic(command, status, priv)))
@@ -2507,7 +2508,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		case HCS_ERROR:
 			event->authentication.status
 				= MODEM_AUTHENTICATION_STATUS_ERROR;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 		default:
 			return status;
 	}
@@ -2521,7 +2522,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 	else
 	{
 		event->authentication.status = MODEM_AUTHENTICATION_STATUS_OK;
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 	}
 	return status;
 }
@@ -2532,12 +2533,12 @@ static HayesCommandStatus _on_request_battery_level(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2547,12 +2548,12 @@ static HayesCommandStatus _on_request_call(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2562,7 +2563,7 @@ static HayesCommandStatus _on_request_call_incoming(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS
@@ -2571,7 +2572,7 @@ static HayesCommandStatus _on_request_call_incoming(HayesCommand * command,
 	event->call.direction = MODEM_CALL_DIRECTION_INCOMING;
 	event->call.status = (status == HCS_SUCCESS)
 		? MODEM_CALL_STATUS_ACTIVE : MODEM_CALL_STATUS_NONE;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2581,7 +2582,7 @@ static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS
@@ -2590,7 +2591,7 @@ static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
 	event->call.direction = MODEM_CALL_DIRECTION_OUTGOING;
 	event->call.status = (status == HCS_SUCCESS)
 		? MODEM_CALL_STATUS_ACTIVE : MODEM_CALL_STATUS_NONE;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2614,12 +2615,12 @@ static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONTACT_DELETED];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2741,12 +2742,12 @@ static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MESSAGE_DELETED];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2773,12 +2774,12 @@ static HayesCommandStatus _on_request_model(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MODEL];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
 		return status;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	return status;
 }
 
@@ -2802,7 +2803,7 @@ static HayesCommandStatus _on_request_registration_automatic(
 		HayesCommand * command, HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 
 	status = _on_request_generic(command, status, priv);
@@ -2816,7 +2817,7 @@ static HayesCommandStatus _on_request_registration_automatic(
 				= MODEM_REGISTRATION_MODE_AUTOMATIC;
 			event->registration.status
 				= MODEM_REGISTRATION_STATUS_SEARCHING;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 			break;
 		case HCS_ERROR:
 		case HCS_TIMEOUT:
@@ -2824,7 +2825,7 @@ static HayesCommandStatus _on_request_registration_automatic(
 				= MODEM_REGISTRATION_MODE_UNKNOWN;
 			event->registration.status
 				= MODEM_REGISTRATION_STATUS_UNKNOWN;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 			break;
 		case HCS_SUCCESS:
 			/* force a registration status */
@@ -2840,7 +2841,7 @@ static HayesCommandStatus _on_request_registration_disabled(
 		HayesCommand * command, HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 
 	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
@@ -2857,7 +2858,7 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	ModemPlugin * modem = priv;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 	ModemRequest request;
 
@@ -2869,12 +2870,12 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 	{
 		event->authentication.status
 			= MODEM_AUTHENTICATION_STATUS_ERROR;
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 		return status;
 	}
 	else if(status != HCS_SUCCESS)
 		return status;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	/* return if not successful */
 	if(event->authentication.status != MODEM_AUTHENTICATION_STATUS_OK)
 		return status;
@@ -2918,7 +2919,7 @@ static HayesCommandStatus _on_request_unsupported(HayesCommand * command,
 /* on_code_call_error */
 static void _on_code_call_error(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
 
@@ -2931,7 +2932,7 @@ static void _on_code_call_error(ModemPlugin * modem, char const * answer)
 /* on_code_cbc */
 static void _on_code_cbc(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
 	int res;
 	unsigned int u;
@@ -2975,7 +2976,7 @@ static void _on_code_cbc(ModemPlugin * modem, char const * answer)
 /* on_code_cfun */
 static void _on_code_cfun(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 	unsigned int u;
 
@@ -2987,14 +2988,14 @@ static void _on_code_cfun(ModemPlugin * modem, char const * answer)
 			/* report being online */
 			event = &hayes->events[MODEM_EVENT_TYPE_STATUS];
 			event->status.status = MODEM_STATUS_ONLINE;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 			break;
 		case 4: /* antennas disabled */
 		case 0: /* telephony disabled */
 		default:
 			/* FIXME this is maybe not the right event type */
 			event->status.status = MODEM_STATUS_OFFLINE;
-			modem->helper->event(modem->helper->modem, event);
+			hayes->helper->event(hayes->helper->modem, event);
 			break;
 	}
 }
@@ -3003,7 +3004,7 @@ static void _on_code_cfun(ModemPlugin * modem, char const * answer)
 /* on_code_cgatt */
 static void _on_code_cgatt(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 	unsigned int u;
 
@@ -3016,14 +3017,14 @@ static void _on_code_cgatt(ModemPlugin * modem, char const * answer)
 		hayes->registration_media = NULL;
 	event->registration.media = hayes->registration_media;
 	/* this is usually worth an event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cgmi */
 static void _on_code_cgmi(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MODEL];
 	char * p;
 
@@ -3038,7 +3039,7 @@ static void _on_code_cgmi(ModemPlugin * modem, char const * answer)
 /* on_code_cgmm */
 static void _on_code_cgmm(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MODEL];
 	char * p;
 	size_t i;
@@ -3066,7 +3067,7 @@ static void _on_code_cgmm(ModemPlugin * modem, char const * answer)
 static void _on_code_cgmr(ModemPlugin * modem, char const * answer)
 	/* FIXME the output may be multi-line */
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MODEL];
 	char * p;
 
@@ -3081,7 +3082,7 @@ static void _on_code_cgmr(ModemPlugin * modem, char const * answer)
 /* on_code_clip */
 static void _on_code_clip(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 	char buf[32];
 	unsigned int u;
@@ -3104,15 +3105,15 @@ static void _on_code_clip(ModemPlugin * modem, char const * answer)
 			break;
 	}
 	/* this is always an unsollicited event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cme_error */
 static void _on_code_cme_error(ModemPlugin * modem, char const * answer)
 {
-	ModemPluginHelper * helper = modem->helper;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
@@ -3182,7 +3183,7 @@ static void _on_code_cme_error(ModemPlugin * modem, char const * answer)
 /* on_code_cmgl */
 static void _on_code_cmgl(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
@@ -3232,7 +3233,7 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 
 static void _on_code_cmgr(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
@@ -3280,7 +3281,7 @@ static void _on_code_cmgr(ModemPlugin * modem, char const * answer)
 		event->message.encoding = MODEM_MESSAGE_ENCODING_UTF8;
 		event->message.content = answer;
 		event->message.length = strlen(answer);
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 		return;
 	}
 	if((p = _cmgr_pdu_parse(answer, &event->message.date, number,
@@ -3295,7 +3296,7 @@ static void _on_code_cmgr(ModemPlugin * modem, char const * answer)
 	event->message.status = data->status;
 	event->message.number = number; /* XXX */
 	event->message.content = p;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 	free(p);
 }
 
@@ -3531,21 +3532,21 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 /* on_code_cmgs */
 static void _on_code_cmgs(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_MESSAGE_SENT];
 	unsigned int u;
 
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	event->message_sent.id = u;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cms_error */
 static void _on_code_cms_error(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
 	unsigned int u;
@@ -3614,7 +3615,7 @@ static void _on_code_cmti(ModemPlugin * modem, char const * answer)
 /* on_code_connect */
 static void _on_code_connect(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;
@@ -3635,7 +3636,7 @@ static void _on_code_connect(ModemPlugin * modem, char const * answer)
 	if(g_spawn_async_with_pipes(NULL, argv, NULL, flags, NULL, NULL, NULL,
 				&wfd, &rfd, NULL, &error) == FALSE)
 	{
-		modem->helper->error(NULL, error->message, 1);
+		hayes->helper->error(NULL, error->message, 1);
 		g_error_free(error);
 		_hayes_reset(modem);
 		return;
@@ -3652,14 +3653,14 @@ static void _on_code_connect(ModemPlugin * modem, char const * answer)
 	event->connection.connected = 1;
 	event->connection.in = 0;
 	event->connection.out = 0;
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_colp */
 static void _on_code_colp(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 	char buf[32];
 	unsigned int u;
@@ -3688,7 +3689,7 @@ static void _on_code_colp(ModemPlugin * modem, char const * answer)
 /* on_code_cops */
 static void _on_code_cops(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 	unsigned int u;
 	unsigned int v = 0;
@@ -3730,15 +3731,15 @@ static void _on_code_cops(ModemPlugin * modem, char const * answer)
 	_hayes_request_type(modem, MODEM_REQUEST_SIGNAL_LEVEL);
 	_hayes_request_type(modem, HAYES_REQUEST_GPRS_ATTACHED);
 	/* this is usually worth an event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cpas */
 static void _on_code_cpas(ModemPlugin * modem, char const * answer)
 {
-	ModemPluginHelper * helper = modem->helper;
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
+	ModemPluginHelper * helper = hayes->helper;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 	unsigned int u;
 
@@ -3775,7 +3776,7 @@ static void _on_code_cpas(ModemPlugin * modem, char const * answer)
 /* on_code_cpbr */
 static void _on_code_cpbr(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemRequest request;
 	HayesRequestContactList list;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CONTACT];
@@ -3801,6 +3802,8 @@ static void _on_code_cpbr(ModemPlugin * modem, char const * answer)
 	switch(u)
 	{
 		case 145:
+			/* FIXME could it be in some cases that the "+" is
+			 * already there? (huawei) */
 			memmove(&number[1], number, sizeof(number) - 1);
 			number[0] = '+';
 			break;
@@ -3823,14 +3826,14 @@ static void _on_code_cpbr(ModemPlugin * modem, char const * answer)
 	event->contact.name = hayes->contact_name;
 	event->contact.status = MODEM_CONTACT_STATUS_OFFLINE;
 	/* send event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cpin */
 static void _on_code_cpin(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 	char * p;
 
@@ -3857,7 +3860,7 @@ static void _on_code_cpin(ModemPlugin * modem, char const * answer)
 /* on_code_creg */
 static void _on_code_creg(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 	int res;
 	unsigned int u[4] = { 0, 0, 0, 0 };
@@ -3928,14 +3931,14 @@ static void _on_code_creg(ModemPlugin * modem, char const * answer)
 			break;
 	}
 	/* this is usually an unsollicited event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cring */
 static void _on_code_cring(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_CALL];
 
 	if(strcmp(answer, "VOICE") == 0)
@@ -3944,14 +3947,14 @@ static void _on_code_cring(ModemPlugin * modem, char const * answer)
 	event->call.direction = MODEM_CALL_DIRECTION_INCOMING;
 	event->call.number = "";
 	/* this is always an unsollicited event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_csq */
 static void _on_code_csq(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_REGISTRATION];
 	unsigned int u;
 	unsigned int v;
@@ -3965,14 +3968,14 @@ static void _on_code_csq(ModemPlugin * modem, char const * answer)
 	else
 		event->registration.signal = (32.0 - u) / 20.0;
 	/* this is usually worth an event */
-	modem->helper->event(modem->helper->modem, event);
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
 /* on_code_cusd */
 static void _on_code_cusd(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	ModemEvent * event = &hayes->events[MODEM_EVENT_TYPE_NOTIFICATION];
 	unsigned int u;
 	char buf[32];
@@ -3981,7 +3984,7 @@ static void _on_code_cusd(ModemPlugin * modem, char const * answer)
 	if(sscanf(answer, "%u\"%31[^\"]\",%u", &u, buf, &u) >= 2)
 	{
 		event->notification.content = buf;
-		modem->helper->event(modem->helper->modem, event);
+		hayes->helper->event(hayes->helper->modem, event);
 	}
 }
 
@@ -3989,7 +3992,7 @@ static void _on_code_cusd(ModemPlugin * modem, char const * answer)
 /* on_code_ext_error */
 static void _on_code_ext_error(ModemPlugin * modem, char const * answer)
 {
-	Hayes * hayes = modem->priv;
+	Hayes * hayes = modem;
 	/* XXX ugly */
 	HayesCommand * command = (hayes->queue != NULL) ? hayes->queue->data
 		: NULL;

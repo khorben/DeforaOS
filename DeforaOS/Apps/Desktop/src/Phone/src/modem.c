@@ -39,8 +39,11 @@
 /* types */
 struct _Modem
 {
+	String * name;
+	Config * config;
 	Plugin * plugin;
 	ModemPluginHelper helper;
+	ModemPluginDefinition * definition;
 	ModemPlugin * modem;
 	ModemEventCallback callback;
 	unsigned int retry;
@@ -51,85 +54,53 @@ struct _Modem
 
 /* prototypes */
 static void _modem_event_callback(Modem * modem, ModemEvent * event);
-static int _modem_error(Modem * modem, char const * message, int ret);
+
+/* helpers */
+static char const * _modem_helper_config_get(Modem * modem,
+		char const * variable);
+static int _modem_helper_config_set(Modem * modem, char const * variable,
+		char const * value);
+static int _modem_helper_error(Modem * modem, char const * message, int ret);
 
 
 /* public */
 /* functions */
 /* modem_new */
-static void _new_config(Config * config, char const * name,
-		ModemPlugin * plugin);
-
 Modem * modem_new(Config * config, char const * name, unsigned int retry)
 {
 	Modem * modem;
 
 	if((modem = object_new(sizeof(*modem))) == NULL)
 		return NULL;
+	modem->name = string_new(name);
 	modem->modem = NULL;
+	modem->config = config;
 	modem->retry = retry;
 	modem->active = 0;
 	modem->callback = NULL;
 	modem->priv = NULL;
-	if((modem->plugin = plugin_new(LIBDIR, PACKAGE, "modem", name))
-			== NULL || (modem->modem = plugin_lookup(modem->plugin,
-					"plugin")) == NULL)
+	if((modem->plugin = plugin_new(LIBDIR, PACKAGE, "modem", name)) != NULL)
+		modem->definition = plugin_lookup(modem->plugin, "plugin");
+	/* check errors */
+	if(modem->name == NULL || modem->plugin == NULL)
 	{
 		modem_delete(modem);
 		return NULL;
 	}
 	modem->helper.modem = modem;
+	modem->helper.config_get = _modem_helper_config_get;
+	modem->helper.config_set = _modem_helper_config_set;
 	modem->helper.event = _modem_event_callback;
-	modem->helper.error = _modem_error;
-	modem->modem->helper = &modem->helper;
-	_new_config(config, name, modem->modem);
-	if(modem->modem->init != NULL && modem->modem->init(modem->modem) != 0)
+	modem->helper.error = _modem_helper_error;
+	if(modem->definition->init == NULL
+			|| (modem->modem = modem->definition->init(
+					&modem->helper)) == NULL)
 	{
 		modem->modem = NULL;
 		modem_delete(modem);
 		return NULL;
 	}
 	return modem;
-}
-
-static void _new_config(Config * config, char const * name,
-		ModemPlugin * plugin)
-{
-	size_t i;
-	String * section;
-	char const * p;
-	unsigned long u;
-
-	if(plugin->config == NULL)
-		return;
-	if((section = string_new_append("modem::", name, NULL)) == NULL)
-		return; /* XXX report error */
-	for(i = 0; plugin->config[i].type != MCT_NONE; i++)
-	{
-		if((p = plugin->config[i].name) == NULL)
-			continue;
-		if((p = config_get(config, section, p)) == NULL)
-			continue;
-		switch(plugin->config[i].type)
-		{
-			case MCT_BOOLEAN:
-				plugin->config[i].value = (strcmp(p, "1") == 0)
-					? (void*)1 : NULL;
-				break;
-			case MCT_FILENAME: /* FIXME really implement */
-			case MCT_STRING:
-				/* FIXME should copy the string */
-				plugin->config[i].value = (void*)p;
-				break;
-			case MCT_UINT32:
-				u = strtoul(p, NULL, 10);
-				plugin->config[i].value = (void*)u;
-				break;
-			default:
-				break;
-		}
-	}
-	string_delete(section);
 }
 
 
@@ -140,6 +111,7 @@ void modem_delete(Modem * modem)
 		modem_stop(modem);
 	if(modem->plugin != NULL)
 		plugin_delete(modem->plugin);
+	string_delete(modem->name);
 	object_delete(modem);
 }
 
@@ -148,7 +120,14 @@ void modem_delete(Modem * modem)
 /* modem_get_config */
 ModemConfig * modem_get_config(Modem * modem)
 {
-	return modem->modem->config;
+	return modem->definition->config;
+}
+
+
+/* modem_get_name */
+char const * modem_get_name(Modem * modem)
+{
+	return modem->name;
 }
 
 
@@ -164,9 +143,9 @@ void modem_set_callback(Modem * modem, ModemEventCallback callback, void * priv)
 /* modem_request */
 int modem_request(Modem * modem, ModemRequest * request)
 {
-	if(modem->modem->request == NULL)
+	if(modem->definition->request == NULL)
 		return -1;
-	return modem->modem->request(modem->modem, request);
+	return modem->definition->request(modem->modem, request);
 }
 
 
@@ -266,8 +245,8 @@ int modem_start(Modem * modem)
 
 	if(modem->active != 0)
 		return 0;
-	if(modem->modem->start != NULL)
-		ret = modem->modem->start(modem->modem, modem->retry);
+	if(modem->definition->start != NULL)
+		ret = modem->definition->start(modem->modem, modem->retry);
 	if(ret == 0)
 		modem->active = 1;
 	return ret;
@@ -281,8 +260,8 @@ int modem_stop(Modem * modem)
 
 	if(modem->active == 0)
 		return 0;
-	if(modem->modem->stop != NULL)
-		ret = modem->modem->stop(modem->modem);
+	if(modem->definition->stop != NULL)
+		ret = modem->definition->stop(modem->modem);
 	if(ret == 0)
 		modem->active = 0;
 	return ret;
@@ -294,9 +273,9 @@ int modem_trigger(Modem * modem, ModemEventType event)
 {
 	if(modem->active == 0)
 		return -1; /* XXX report error */
-	if(modem->modem->trigger == NULL)
+	if(modem->definition->trigger == NULL)
 		return -1;
-	return modem->modem->trigger(modem->modem, event);
+	return modem->definition->trigger(modem->modem, event);
 }
 
 
@@ -311,8 +290,39 @@ static void _modem_event_callback(Modem * modem, ModemEvent * event)
 }
 
 
-/* modem_error */
-static int _modem_error(Modem * modem, char const * message, int ret)
+/* helpers */
+/* modem_helper_config_get */
+static char const * _modem_helper_config_get(Modem * modem,
+		char const * variable)
+{
+	char const * ret;
+	String * s;
+
+	if((s = string_new_append("modem::", modem->name, NULL)) == NULL)
+		return NULL;
+	ret = config_get(modem->config, s, variable);
+	string_delete(s);
+	return ret;
+}
+
+
+/* modem_helper_config_set */
+static int _modem_helper_config_set(Modem * modem, char const * variable,
+		char const * value)
+{
+	int ret;
+	String * s;
+
+	if((s = string_new_append("modem::", modem->name, NULL)) == NULL)
+		return -1;
+	ret = config_set(modem->config, s, variable, value);
+	string_delete(s);
+	return ret;
+}
+
+
+/* modem_helper_error */
+static int _modem_helper_error(Modem * modem, char const * message, int ret)
 {
 	ModemEvent event;
 

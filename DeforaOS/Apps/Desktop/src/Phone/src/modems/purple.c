@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,31 +36,26 @@
 /* Purple */
 /* private */
 /* types */
-typedef struct _Purple
+typedef struct _ModemPlugin
 {
+	ModemPluginHelper * helper;
+
 	PurpleCoreUiOps ops_ui;
 	PurpleEventLoopUiOps ops_glib;
 } Purple;
 
-typedef enum _PurpleConfig
-{
-	PURPLE_CONFIG_USERNAME = 0
-} PurpleConfig;
-#define PURPLE_CONFIG_LAST PURPLE_CONFIG_USERNAME
-#define PURPLE_CONFIG_COUNT (PURPLE_CONFIG_LAST + 1)
-
 
 /* variables */
-static ModemConfig _purple_config[PURPLE_CONFIG_COUNT + 1] =
+static ModemConfig _purple_config[] =
 {
-	{ "username",		"Username",	MCT_STRING,	NULL	},
-	{ NULL,			NULL,		MCT_NONE,	NULL	},
+	{ "username",		"Username",	MCT_STRING	},
+	{ NULL,			NULL,		MCT_NONE	}
 };
 
 
 /* prototypes */
-static int _purple_init(ModemPlugin * modem);
-static int _purple_destroy(ModemPlugin * modem);
+static ModemPlugin * _purple_init(ModemPluginHelper * helper);
+static void _purple_destroy(ModemPlugin * modem);
 static int _purple_start(ModemPlugin * modem, unsigned int retry);
 static int _purple_stop(ModemPlugin * modem);
 static int _purple_request(ModemPlugin * modem, ModemRequest * request);
@@ -72,7 +67,7 @@ static void _purple_on_ui_prefs_init(void);
 
 /* public */
 /* variables */
-ModemPlugin plugin =
+ModemPluginDefinition plugin =
 {
 	NULL,
 	"Purple",
@@ -83,7 +78,6 @@ ModemPlugin plugin =
 	_purple_start,
 	_purple_stop,
 	_purple_request,
-	NULL,
 	NULL
 };
 
@@ -91,16 +85,16 @@ ModemPlugin plugin =
 /* private */
 /* functions */
 /* purple_init */
-static int _purple_init(ModemPlugin * modem)
+static ModemPlugin * _purple_init(ModemPluginHelper * helper)
 {
 	Purple * purple;
 	char const * homedir;
 	char * p;
 
 	if((purple = object_new(sizeof(*purple))) == NULL)
-		return -1;
+		return NULL;
 	memset(purple, 0, sizeof(*purple));
-	modem->priv = purple;
+	purple->helper = helper;
 	purple->ops_ui.ui_prefs_init = _purple_on_ui_prefs_init;
 	purple->ops_ui.ui_init = _purple_on_ui_init;
 	if((homedir = getenv("HOME")) == NULL)
@@ -117,34 +111,32 @@ static int _purple_init(ModemPlugin * modem)
 	purple_plugins_add_search_path(LIBDIR);
 	if(purple_core_init("phone") == 0)
 	{
-		_purple_destroy(modem);
-		return -1;
+		_purple_destroy(purple);
+		return NULL;
 	}
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();
 	purple_prefs_load();
 	purple_plugins_load_saved("/phone/plugins/loaded");
 	purple_pounces_load();
-	return 0;
+	return purple;
 }
 
 
 /* purple_destroy */
-static int _purple_destroy(ModemPlugin * modem)
+static void _purple_destroy(ModemPlugin * modem)
 {
-	Purple * purple = modem->priv;
+	Purple * purple = modem;
 
 	_purple_stop(modem);
 	object_delete(purple);
-	return 0;
 }
 
 
 /* purple_start */
 static int _purple_start(ModemPlugin * modem, unsigned int retry)
 {
-	ModemPluginHelper * helper = modem->helper;
-	Purple * purple = modem->priv;
+	Purple * purple = modem;
 	PurplePlugin * plugin;
 	PurplePluginInfo * info;
 	GList * list;
@@ -165,7 +157,7 @@ static int _purple_start(ModemPlugin * modem, unsigned int retry)
 /* purple_stop */
 static int _purple_stop(ModemPlugin * modem)
 {
-	Purple * purple = modem->priv;
+	Purple * purple = modem;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -196,7 +188,7 @@ static int _purple_request(ModemPlugin * modem, ModemRequest * request)
 
 static int _request_call(ModemPlugin * modem, ModemRequest * request)
 {
-	Purple * purple = modem->priv;
+	Purple * purple = modem;
 
 	/* FIXME implement */
 	return -1;
@@ -204,7 +196,7 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 
 static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 {
-	Purple * purple = modem->priv;
+	Purple * purple = modem;
 
 	return -1;
 }

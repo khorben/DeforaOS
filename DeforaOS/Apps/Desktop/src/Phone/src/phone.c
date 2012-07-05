@@ -2799,7 +2799,9 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 static void _system_on_cancel(gpointer data)
 {
 	Phone * phone = data;
+	char const * name;
 	ModemConfig * config;
+	String * section;
 	size_t i;
 	GtkWidget * widget;
 	char const * p;
@@ -2808,7 +2810,10 @@ static void _system_on_cancel(gpointer data)
 	char buf[16];
 
 	gtk_widget_hide(phone->sy_window);
+	name = modem_get_name(phone->modem);
 	if((config = modem_get_config(phone->modem)) == NULL)
+		return;
+	if((section = string_new_append("modem::", name, NULL)) == NULL)
 		return;
 	for(i = 0; config[i].type != MCT_NONE; i++)
 	{
@@ -2817,34 +2822,41 @@ static void _system_on_cancel(gpointer data)
 		if((widget = g_object_get_data(G_OBJECT(phone->sy_window),
 						config[i].name)) == NULL)
 			continue;
+		p = config_get(phone->config, section, config[i].name);
 		switch(config[i].type)
 		{
 			case MCT_BOOLEAN:
-				p = config[i].value;
-				active = (p != NULL) ? TRUE : FALSE;
+				active = (p != NULL
+						&& strtoul(p, NULL, 10) != 0)
+					? TRUE : FALSE;
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
 							widget), active);
 				break;
 			case MCT_FILENAME:
-				if((p = config[i].value) == NULL)
+				if(p == NULL)
 					break;
 				gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
 							widget), p);
 				break;
 			case MCT_STRING:
-				p = (config[i].value != NULL)
-					? config[i].value : "";
-				gtk_entry_set_text(GTK_ENTRY(widget), p);
+				gtk_entry_set_text(GTK_ENTRY(widget),
+						(p != NULL) ? p : "");
 				break;
-			case MCT_UINT32: /* FIXME really implement */
-				u = (unsigned long)config[i].value;
+			case MCT_UINT32:
+				/* XXX may fail, wrong default value */
+				u = (p != NULL) ? strtoul(p, NULL, 10) : 0;
 				snprintf(buf, sizeof(buf), "%u", u);
 				gtk_entry_set_text(GTK_ENTRY(widget), buf);
 				break;
-			default:
+			case MCT_NONE:
+			case MCT_SECTION:
+			case MCT_SEPARATOR:
+			case MCT_SUBSECTION:
+				/* ignore these */
 				break;
 		}
 	}
+	string_delete(section);
 }
 
 static gboolean _system_on_closex(gpointer data)
@@ -2862,6 +2874,7 @@ static void _system_on_ok(gpointer data)
 	size_t i;
 	GtkWidget * widget;
 	char const * p;
+	gboolean active;
 
 	gtk_widget_hide(phone->sy_window);
 	config = modem_get_config(phone->modem);
@@ -2875,32 +2888,25 @@ static void _system_on_ok(gpointer data)
 		switch(config[i].type)
 		{
 			case MCT_BOOLEAN:
-				config[i].value = gtk_toggle_button_get_active(
-						GTK_TOGGLE_BUTTON(widget))
-					? (void*)1 : NULL;
+				active = gtk_toggle_button_get_active(
+						GTK_TOGGLE_BUTTON(widget));
 				_phone_config_set_type(phone, "modem",
 						phone->name, config[i].name,
-						config[i].value ? "1" : "0");
+						active ? "1" : "0");
 				break;
 			case MCT_FILENAME:
 				p = gtk_file_chooser_get_filename(
 						GTK_FILE_CHOOSER(widget));
-				/* FIXME memory leak */
-				config[i].value = (p != NULL) ? strdup(p)
-					: NULL;
 				_phone_config_set_type(phone, "modem",
 						phone->name, config[i].name, p);
 				break;
 			case MCT_STRING:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
-				/* FIXME memory leak */
-				config[i].value = strdup(p);
 				_phone_config_set_type(phone, "modem",
 						phone->name, config[i].name, p);
 				break;
 			case MCT_UINT32:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
-				config[i].value = (void *)strtoul(p, NULL, 10);
 				_phone_config_set_type(phone, "modem",
 						phone->name, config[i].name, p);
 				break;

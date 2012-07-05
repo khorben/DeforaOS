@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ void modem_delete(Modem * modem);
 
 /* accessors */
 ModemConfig * modem_get_config(Modem * modem);
+char const * modem_get_name(Modem * modem);
 void modem_set_callback(Modem * modem, ModemEventCallback callback,
 		void * priv);
 
