@@ -1065,7 +1065,9 @@ static int _target_library(Configure * configure, FILE * fp,
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s", "\t$(CCSHARED) -o ", soname, ".0");
-	fprintf(fp, "%s%s", " -Wl,-soname,", soname);
+	/* soname is not available on MacOS X */
+	if(configure->os != HO_MACOSX)
+		fprintf(fp, "%s%s", " -Wl,-soname,", soname);
 	fprintf(fp, "%s%s%s%s%s", " $(", target, "_OBJS) $(", target,
 			"_LDFLAGS)");
 	if(q != NULL)
