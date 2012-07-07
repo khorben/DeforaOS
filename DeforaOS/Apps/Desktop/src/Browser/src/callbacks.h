@@ -82,8 +82,8 @@ void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 #if GTK_CHECK_VERSION(2, 6, 0)
 void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data);
 #endif
-void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
-		gchar * arg2, gpointer data);
+void on_filename_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * filename, gpointer data);
 #if GTK_CHECK_VERSION(2, 8, 0)
 void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * dc,
 		GtkSelectionData * seldata, guint info, guint time,

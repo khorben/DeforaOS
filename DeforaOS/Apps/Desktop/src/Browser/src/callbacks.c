@@ -25,7 +25,6 @@
 #  define unmount unmount
 # endif
 #endif
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -539,54 +538,67 @@ void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data)
 
 
 /* on_filename_edited */
-void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
-		gchar * arg2, gpointer data)
+void on_filename_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * filename, gpointer data)
 {
 	Browser * browser = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
 	GtkTreeIter iter;
 	int isdir = 0;
-	char * path = NULL;
+	char * to;
 	ssize_t len;
-	char * p = NULL;
 	char * q;
-	struct stat st;
+	char * f = filename;
+	GError * error = NULL;
 
-	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\") \"%s\"\n", __func__, path,
+			filename);
+#endif
+	if(gtk_tree_model_get_iter_from_string(model, &iter, path) != TRUE)
+		return; /* XXX report error */
+	path = NULL;
+	gtk_tree_model_get(model, &iter, BC_IS_DIRECTORY, &isdir, BC_PATH,
+			&path, -1);
+	if(path == NULL)
+		return; /* XXX report error */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, path);
+#endif
+	if((q = strrchr(path, '/')) == NULL)
 	{
-		gtk_tree_model_get(model, &iter, BC_IS_DIRECTORY, &isdir,
-				BC_PATH, &path, -1);
-		if(path != NULL && (len = strrchr(path, '/') - path) > 0
-				&& strcmp(&path[len + 1], arg2) != 0)
-			p = malloc(len + strlen(arg2) + 2);
+		free(path);
+		return; /* XXX report error */
 	}
-	if(p == NULL)
+	len = q - path;
+	/* obtain the real new filename */
+	if((q = g_filename_from_utf8(filename, -1, NULL, NULL, &error)) == NULL)
 	{
+		browser_error(NULL, error->message, 1);
+		g_error_free(error);
+	}
+	else
+		f = q;
+	/* generate the complete new path */
+	if((to = malloc(len + strlen(f) + 2)) == NULL)
+	{
+		browser_error(NULL, strerror(errno), 1);
 		free(path);
 		return;
 	}
-	strncpy(p, path, len);
-	sprintf(&p[len], "/%s", arg2);
-	if(isdir && lstat(p, &st) == -1 && errno == ENOENT) /* XXX TOCTOU */
-	{
-		/* FIXME this conversion does not seem to work */
-		q = g_filename_from_utf8(p, -1, NULL, NULL, NULL);
-		if(rename(path, (q != NULL) ? q : p) != 0)
-			browser_error(browser, strerror(errno), 1);
-		else
-			gtk_list_store_set(browser->store, &iter, BC_PATH, p,
-					BC_DISPLAY_NAME, arg2, -1);
-		free(q);
-	}
-	else if(lstat(path, &st) == 0 && S_ISLNK(st.st_mode))
-	{
-		if(rename(path, p) != 0)
-			browser_error(browser, strerror(errno), 1);
-	}
-	/* FIXME implement workaround for FAT */
-	else if(link(path, p) != 0 || unlink(path) != 0)
+	strncpy(to, path, len);
+	sprintf(&to[len], "/%s", f);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, to);
+#endif
+	/* rename */
+	if(rename(path, to) != 0)
 		browser_error(browser, strerror(errno), 1);
-	free(p);
+	else if(strchr(filename, '/') == NULL)
+		gtk_list_store_set(browser->store, &iter, BC_PATH, to,
+				BC_DISPLAY_NAME, filename, -1);
+	free(to);
+	free(q);
 	free(path);
 }
 
