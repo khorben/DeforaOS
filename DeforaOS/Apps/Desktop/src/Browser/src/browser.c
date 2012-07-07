@@ -1217,9 +1217,15 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 		)
 {
 	char const * p;
+	GError * error = NULL;
 
-	if((p = g_filename_to_utf8(*display, -1, NULL, NULL, NULL)) != NULL)
-		*display = p; /* XXX should display be free'd? */
+	if((p = g_filename_to_utf8(*display, -1, NULL, NULL, &error)) == NULL)
+	{
+		browser_error(NULL, error->message, 1);
+		g_error_free(error);
+	}
+	else
+		*display = p; /* XXX memory leak */
 	*inode = lst->st_ino;
 	*size = lst->st_size;
 	*dsize = _insert_size(lst->st_size);
@@ -2680,12 +2686,19 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st)
 
 static void _refresh_title(Browser * browser)
 {
-	char buf[256];
+	char const * title = browser->current->data;
 	char * p;
+	GError * error = NULL;
+	char buf[256];
 
-	p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL, NULL);
-	snprintf(buf, sizeof(buf), "%s%s%s", _("File manager"), " - ",
-			(p != NULL) ? p : (char *)browser->current->data);
+	if((p = g_filename_to_utf8(title, -1, NULL, NULL, &error)) == NULL)
+	{
+		browser_error(NULL, error->message, 1);
+		g_error_free(error);
+	}
+	else
+		title = p;
+	snprintf(buf, sizeof(buf), "%s%s%s", _("File manager"), " - ", title);
 	free(p);
 	gtk_window_set_title(GTK_WINDOW(browser->window), buf);
 }
@@ -2694,13 +2707,19 @@ static void _refresh_path(Browser * browser)
 {
 	static unsigned int cnt = 0;
 	GtkWidget * widget;
-	unsigned int i;
 	char * p;
+	GError * error = NULL;
+	unsigned int i;
 	char * q;
 
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
-	p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL, NULL);
-	gtk_entry_set_text(GTK_ENTRY(widget), p != NULL ? p
+	if((p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL,
+					&error)) == NULL)
+	{
+		browser_error(NULL, error->message, 1);
+		g_error_free(error);
+	}
+	gtk_entry_set_text(GTK_ENTRY(widget), (p != NULL) ? p
 			: browser->current->data);
 	free(p);
 	for(i = 0; i < cnt; i++)
