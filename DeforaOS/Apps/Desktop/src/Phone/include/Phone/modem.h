@@ -143,7 +143,7 @@ typedef enum _ModemConfigType
 	MCT_SEPARATOR
 } ModemConfigType;
 
-typedef struct _ModemConfig
+typedef const struct _ModemConfig
 {
 	char const * name;
 	char const * title;
@@ -450,7 +450,6 @@ typedef const struct _ModemPluginDefinition ModemPluginDefinition;
 
 struct _ModemPluginDefinition
 {
-	ModemPluginHelper * helper;
 	char const * name;
 	char const * icon;
 	ModemConfig * config;

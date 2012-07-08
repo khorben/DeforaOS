@@ -73,7 +73,6 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 /* variables */
 ModemPluginDefinition plugin =
 {
-	NULL,
 	"Sofia",
 	NULL,
 	_sofia_config,

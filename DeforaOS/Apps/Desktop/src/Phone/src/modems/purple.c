@@ -69,7 +69,6 @@ static void _purple_on_ui_prefs_init(void);
 /* variables */
 ModemPluginDefinition plugin =
 {
-	NULL,
 	"Purple",
 	NULL,
 	_purple_config,

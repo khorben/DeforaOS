@@ -193,7 +193,6 @@ static int _osmocom_on_serial_read(struct osmo_fd * fd, unsigned int flags);
 /* variables */
 ModemPluginDefinition plugin =
 {
-	NULL,
 	"Osmocom",
 	NULL,
 	_osmocom_config,
