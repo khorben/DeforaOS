@@ -58,13 +58,9 @@ deforaos_document()
 	if [ ! -d "$SRC" ]; then
 		echo ""
 		echo "Checking out CVS module $MODULE:"
-		(cd "$ROOT" && $CVS "-d$CVSROOT" co "$MODULE")	|| exit 2
+		(cd "$ROOT" && $CVS "-d$CVSROOT" co "$MODULE") 2> "$DEVNULL"
+		> "$DEVNULL"					|| exit 2
 	fi
-
-	#update tree
-	echo ""
-	echo "Updating CVS module $MODULE:"
-	(cd "$SRC" && $CVS update -dPA)				|| exit 2
 
 	#document tree
 	echo ""
