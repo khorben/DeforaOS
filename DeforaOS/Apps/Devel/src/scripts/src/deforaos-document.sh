@@ -58,8 +58,8 @@ deforaos_document()
 	if [ ! -d "$SRC" ]; then
 		echo ""
 		echo "Checking out CVS module $MODULE:"
-		(cd "$ROOT" && $CVS "-d$CVSROOT" co "$MODULE") 2> "$DEVNULL"
-		> "$DEVNULL"					|| exit 2
+		(cd "$ROOT" && $CVS "-d$CVSROOT" co "$MODULE") > "$DEVNULL" \
+								|| exit 2
 	fi
 
 	#document tree
