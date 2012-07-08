@@ -50,7 +50,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/GRAMMAR \
+		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc.sh \
+		$(PACKAGE)-$(VERSION)/doc/mailer.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Mailer-docs.xml \
