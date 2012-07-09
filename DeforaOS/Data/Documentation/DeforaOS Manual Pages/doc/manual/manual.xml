@@ -52,8 +52,9 @@
 		</section>
 	</chapter>
 	<chapter>
+		<title>For webmasters</title>
 		<section>
-			<title>For webmasters</title>
+			<title>DaPortal Content Management System</title>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&daportalconf5;"/>
 		</section>
 	</chapter>
