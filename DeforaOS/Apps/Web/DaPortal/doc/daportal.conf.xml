@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY username  "khorben">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "5">
+	<!ENTITY title     "DaPortal Administrator Manual">
+	<!ENTITY package   "DaPortal">
+	<!ENTITY name      "daportal.conf">
+	<!ENTITY purpose   "Configuration file for DaPortal">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DaPortal project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this document
+				under the terms of the GNU General Public License, Version 3 as published by
+				the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsect1 id="description">
+		<title>DaPortal configuration</title>
+		<para>The &name; file should be found within the root folder of an
+			installation of the DaPortal project. A sample file should already be
+			available when extracting DaPortal.</para>
+		<refsect2>
+			<title>File format</title>
+			<para>The &name; file is organized in sections, each containing a number of
+				variables. Section names are written on their own line, between brackets (eg
+				"[section]"). Variables are given on their own lines too, like this:
+				<blockquote>
+					<computeroutput>
+						variable=value
+					</computeroutput>
+				</blockquote>
+				The &name; file may be commented, comment lines being prepended with a hash
+				sign "#".
+			</para>
+			<para>
+				Variables can be defined directly without specifying a particular section
+				first; they belong then to the default section, which is simply considered
+				to have an empty name.
+			</para>
+		</refsect2>
+		<refsect2>
+			<title>Important variables</title>
+			<para>
+				The &name; file typically starts with the following variables:
+				<itemizedlist>
+					<listitem><para>debug: whether to log debugging information (each engine
+							may have its own implementation for logging)</para></listitem>
+					<listitem><para>prefix: the PREFIX directory where the required system
+							files are installed, like translations (defaults to
+							"/usr/local")</para></listitem>
+					<listitem><para>theme: the default theme (defaults to
+							"DaPortal")</para></listitem>
+					<listitem><para>title: the default title (defaults to
+							"DaPortal")</para></listitem>
+				</itemizedlist>
+			</para>
+		</refsect2>
+		<refsect2>
+			<title>Important sections</title>
+			<para>A number of sections are essential for proper configuration of
+				&package;. They are summarized here:
+				<itemizedlist>
+					<listitem><para>defaults: a few important additional values can be set
+							within this section.</para></listitem>
+					<listitem><para>engine: the default engine backend can be set within this
+							section (default: auto-detected)</para></listitem>
+					<listitem><para>auth: the default authentication backend can be set within
+					this section (default: determined by the engine)</para></listitem>
+					<listitem><para>database: the database backend can be forced within this
+							section (default: SQLite 3)</para></listitem>
+					<listitem><para>format: the default file format to use when converting
+							pages for delivery to the user (default: determined by the engine)</para></listitem>
+					<listitem><para>template: the default templating engine to use when
+							generating pages (default: basic).</para></listitem>
+				</itemizedlist>
+			</para>
+		</refsect2>
+	</refsect1>
+</refentry>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
