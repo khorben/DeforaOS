@@ -17,8 +17,10 @@
 
 
 require_once('./system/engine.php');
+require_once('./system/format.php');
 require_once('./system/locale.php');
 require_once('./system/page.php');
+require_once('./system/template.php');
 
 
 //CliEngine
@@ -26,12 +28,20 @@ class CliEngine extends Engine
 {
 	//public
 	//methods
+	//essential
+	public function __construct()
+	{
+		$this->setType('text/plain');
+	}
+
+
 	//accessors
 	//CliEngine::getRequest
 	public function getRequest()
 	{
-		if(($options = getopt('Dm:a:i:t:')) === FALSE)
+		if(($options = getopt('DM:fm:a:i:t:')) === FALSE)
 			return FALSE;
+		$idempotent = TRUE;
 		$module = FALSE;
 		$action = FALSE;
 		$id = FALSE;
@@ -41,6 +51,12 @@ class CliEngine extends Engine
 			{
 				case 'D':
 					$this->setDebug(TRUE);
+					break;
+				case 'M':
+					$this->setType($options['M']);
+					break;
+				case 'f':
+					$idempotent = FALSE;
 					break;
 				case 'm':
 					$module = $options['m'];
@@ -57,7 +73,7 @@ class CliEngine extends Engine
 			}
 		//FIXME also allow parameters to be set
 		$ret = new Request($this, $module, $action, $id, $title);
-		$ret->setIdempotent(FALSE);
+		$ret->setIdempotent($idempotent);
 		return $ret;
 	}
 
@@ -81,7 +97,15 @@ class CliEngine extends Engine
 	//CliEngine::render
 	public function render($page)
 	{
-		print_r($page);
+		$template = Template::attachDefault($this);
+		if($template !== FALSE)
+			$page = $template->render($this, $page);
+		if(($output = Format::attachDefault($this, $this->getType()))
+					=== FALSE)
+			fprintf(STDERR, "%s\n", "daportal: Could not determine"
+					." the proper output format");
+		else
+			$output->render($this, $page);
 	}
 }
 
