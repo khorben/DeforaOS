@@ -29,7 +29,7 @@ PREFIX="/usr/local"
 . "../config.sh"
 DEBUG="_debug"
 INSTALL="install -m 0644"
-MKDIR="mkdir -p"
+MKDIR="mkdir -m 0755 -p"
 RM="rm -f"
 XSLTPROC="xsltproc --nonet --xinclude"
 
