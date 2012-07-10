@@ -1,6 +1,6 @@
 PACKAGE	= DaPortal
 VERSION	= 1.9.0
-SUBDIRS	= css data doc html icons js images modules po src system templates themes
+SUBDIRS	= css data doc html icons js images modules po src system templates themes tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -661,6 +661,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/themes/papadam-bg.png \
 		$(PACKAGE)-$(VERSION)/themes/papadmin.css \
 		$(PACKAGE)-$(VERSION)/themes/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/daportal.in \
+		$(PACKAGE)-$(VERSION)/tools/subst.sh \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
 		$(PACKAGE)-$(VERSION)/COPYING \

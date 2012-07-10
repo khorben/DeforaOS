@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="iso-8859-15"?>
+<!-- $Id$ -->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
+	"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
+	<!ENTITY package   "DaPortal">
+	<!ENTITY name      "daportal">
+	<!ENTITY title     "DaPortal Administrator Manual">
+	<!ENTITY purpose   "Invoke DaPortal requests from the command line">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this document
+				under the terms of the GNU General Public License, Version 3 as published by
+				the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>1</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="opt"><option>-D</option></arg>
+			<arg choice="opt"><option>-M</option> <replaceable>MIME type</replaceable></arg>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-m</option> <replaceable>module</replaceable></arg>
+			<arg choice="opt"><option>-a</option> <replaceable>action</replaceable></arg>
+			<arg choice="opt"><option>-i</option> <replaceable>ID</replaceable></arg>
+			<arg choice="opt"><option>-t</option> <replaceable>title</replaceable></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+	<refsect1 id="description">
+		<title>Description</title>
+		<para>The &name; command line utility can locate a local installation of the
+			&package; Content Management System, and issue requests directly. A single
+			request can be issued per invocation of the &name; command.</para>
+		<para>By default, it ensures that requests do not affect the state of the
+			local installation (idempotence). Updates can however be allowed with a
+			special argument.</para>
+	</refsect1>
+	<refsect1 id="options">
+		<title>Options</title>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-D</option></term>
+				<listitem>
+					<para>Force debugging on.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-M</option></term>
+				<listitem>
+					<para>Sets a MIME type for the output format (default:
+						<quote>text/plain</quote>).</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-f</option></term>
+				<listitem>
+					<para>Forces requests to not be idempotent.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-m</option></term>
+				<listitem>
+					<para>Sets the module to be invoked (default: depends on the configuration).</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-a</option></term>
+				<listitem>
+					<para>Sets the action to be called.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-i</option></term>
+				<listitem>
+					<para>Sets the request's ID.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-t</option></term>
+				<listitem>
+					<para>Sets the request's title.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	<refsect1 id="files">
+		<title>Files</title>
+		<para>
+			<variablelist>
+				<varlistentry>
+					<term><filename>$PREFIX/etc/daportal.conf</filename></term>
+					<listitem><para>Can override some values for the &name;
+							script.</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term><filename>$DAPORTALDIR/daportal.conf</filename></term>
+					<listitem><para>The configuration file for DaPortal.</para></listitem>
+				</varlistentry>
+			</variablelist>
+		</para>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>Bugs</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/12/DaPortal"/>.</para>
+		<para>Importantly, the &name; command (and therefore, this manual page)
+			assumes the engine configured or selected by &package; to be
+			<quote>CliEngine</quote>, or inheriting from <quote>CliEngine</quote>.
+			&package; may however be configured or extended with additional engines,
+			which may expect different arguments, function differently, have differing
+			output (such as <quote>GtkEngine</quote>) or may not even work at all from
+			the command line interface.</para>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>See also</title>
+		<para>
+			<citerefentry>
+				<refentrytitle>daportal.conf</refentrytitle>
+				<manvolnum>5</manvolnum>
+			</citerefentry>
+		</para>
+	</refsect1>
+</refentry>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

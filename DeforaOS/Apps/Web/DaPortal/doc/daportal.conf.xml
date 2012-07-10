@@ -1,15 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-15"?>
 <!-- $Id$ -->
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 	<!ENTITY firstname "Pierre">
 	<!ENTITY surname   "Pronchery">
-	<!ENTITY username  "khorben">
 	<!ENTITY email     "khorben@defora.org">
 	<!ENTITY section   "5">
-	<!ENTITY title     "DaPortal Administrator Manual">
 	<!ENTITY package   "DaPortal">
 	<!ENTITY name      "daportal.conf">
+	<!ENTITY title     "DaPortal Administrator Manual">
 	<!ENTITY purpose   "Configuration file for DaPortal">
 ]>
 <refentry>
@@ -48,41 +47,41 @@
 	</refnamediv>
 	<refsect1 id="description">
 		<title>DaPortal configuration</title>
-		<para>The &name; file should be found within the root folder of an
-			installation of the DaPortal project. A sample file should already be
-			available when extracting DaPortal.</para>
+		<para>The <filename>&name;</filename> file should be found within the root
+			folder of an installation of the DaPortal project. A sample file should
+			already be available when extracting DaPortal.</para>
 		<refsect2>
 			<title>File format</title>
-			<para>The &name; file is organized in sections, each containing a number of
-				variables. Section names are written on their own line, between brackets (eg
-				"[section]"). Variables are given on their own lines too, like this:
+			<para>The <filename>&name;</filename> file is organized in sections, each
+				containing a number of variables. Section names are written on their own
+				line, between brackets (eg "[section]"). Variables are given on their own
+				lines too, like this:
 				<blockquote>
 					<computeroutput>
 						variable=value
 					</computeroutput>
 				</blockquote>
 				The &name; file may be commented, comment lines being prepended with a hash
-				sign "#".
-			</para>
-			<para>
-				Variables can be defined directly without specifying a particular section
-				first; they belong then to the default section, which is simply considered
-				to have an empty name.
-			</para>
+				sign "#".</para>
+			<para>Variables can be defined directly without specifying a particular
+				section first; they belong then to the default section, which is simply
+				considered to have an empty name.</para>
 		</refsect2>
 		<refsect2>
 			<title>Important variables</title>
 			<para>
 				The &name; file typically starts with the following variables:
 				<itemizedlist>
-					<listitem><para>debug: whether to log debugging information (each engine
-							may have its own implementation for logging)</para></listitem>
-					<listitem><para>prefix: the PREFIX directory where the required system
-							files are installed, like translations (defaults to
-							"/usr/local")</para></listitem>
-					<listitem><para>theme: the default theme (defaults to
+					<listitem><para><varname>debug</varname>: whether to log debugging
+							information (each engine may have its own implementation for
+							logging)</para></listitem>
+					<listitem><para><varname>prefix</varname>: the <varname>PREFIX</varname>
+							directory where the required system files are installed, like
+							translations (defaults to
+							<filename>/usr/local</filename>)</para></listitem>
+					<listitem><para><varname>theme</varname>: the default theme (defaults to
 							"DaPortal")</para></listitem>
-					<listitem><para>title: the default title (defaults to
+					<listitem><para><varname>title</varname>: the default title (defaults to
 							"DaPortal")</para></listitem>
 				</itemizedlist>
 			</para>
@@ -90,23 +89,184 @@
 		<refsect2>
 			<title>Important sections</title>
 			<para>A number of sections are essential for proper configuration of
-				&package;. They are summarized here:
+				&package;. Most map to a specific subsystem of &package;, as summarized
+				here:
 				<itemizedlist>
 					<listitem><para>defaults: a few important additional values can be set
 							within this section.</para></listitem>
-					<listitem><para>engine: the default engine backend can be set within this
-							section (default: auto-detected)</para></listitem>
-					<listitem><para>auth: the default authentication backend can be set within
-					this section (default: determined by the engine)</para></listitem>
+					<listitem><para>engine: the default engine can be set within this section,
+							through the <varname>backend</varname> variable (default:
+							auto-detected)</para></listitem>
+					<listitem><para>auth: the default authentication subsystem can be set
+							within this section, through the <varname>backend</varname> variable
+							(default: determined by the engine)</para></listitem>
 					<listitem><para>database: the database backend can be forced within this
-							section (default: SQLite 3)</para></listitem>
+							section, through the <varname>backend</varname> variable as well
+							(default: SQLite 3)</para></listitem>
 					<listitem><para>format: the default file format to use when converting
-							pages for delivery to the user (default: determined by the engine)</para></listitem>
+							pages for delivery to the user; specific backends can be forced for any
+							given MIME type, and variables can be set per backend (defaults:
+							specific to each engine and format backend)</para></listitem>
 					<listitem><para>template: the default templating engine to use when
-							generating pages (default: basic).</para></listitem>
+							generating pages, through the <varname>backend</varname> variable
+							(default: basic, when not overriden by the engine).</para></listitem>
 				</itemizedlist>
-			</para>
+				The list of variables available for each of these sections is specific to
+				each; they are typically listed within the default configuration
+				file.</para>
 		</refsect2>
+		<refsect2>
+			<title>Other sections</title>
+			<para>The other sections typically match a particular module or subsystem,
+				with the name composed of two parts:
+				<itemizedlist>
+					<listitem><para>the type of subsystem (eg "database", "engine", "format",
+							"module", "template"...) followed by two colons "::";</para></listitem>
+					<listitem><para>the name of the subsystem affected.</para></listitem>
+				</itemizedlist>
+				Again, the list of variables available for each of these sections is found
+				within the default configuration file.</para>
+		</refsect2>
+	</refsect1>
+	<refsect1 id="subsystems">
+		<title>Subsystems</title>
+		<refsect2>
+			<title>Auth</title>
+			<para>This subsystem is responsible for proper authentication of the final
+				user. Different authentication mechanisms are necessary or relevant
+				depending on the current environment, and therefore provided by this
+				subsystem. User-specific storage should also be provided by this subsystem,
+				as it may be required by some other subsystems or modules for proper
+				operation.</para>
+		</refsect2>
+		<refsect2>
+			<title>Database</title>
+			<para>The database subsystem is in charge of interacting with the actual
+				database backend to be used. It must handle SQL prepared statements, and
+				should implement transactions as well.</para>
+			<refsect2>
+				<title>Engine</title>
+				<para>This subsystem is the most essential of all. It is in charge of
+					defining the incoming requests, loading the respective subsystems
+					necessary, processing the requests and determining how to render them to
+					the final user.</para>
+			</refsect2>
+		</refsect2>
+		<refsect2>
+			<title>Format</title>
+			<para>The format subsystem converts input in the &package;'s internal
+				widget-based representation to the desired output format, which can range
+				from a native application window to document formats, as well as plain
+				text.</para>
+			<para>The actual format backend to be used is usually determined by the
+				engine, according to the MIME type expected; the <filename>&name;</filename>
+				configuration file can be used to map these associations (as illustrated in
+				<xref linkend="sample_file"/>).</para>
+		</refsect2>
+		<refsect2>
+			<title>Template</title>
+			<para>The templating subsystem is optional, and may be loaded to enrich the
+				content returned by specific requests, or determine whether and how the
+				results of additional requests should be rendered as well.</para>
+		</refsect2>
+		<refsect2>
+			<title>Translation</title>
+			<para>The user interface of &package; can optionally be translated,
+				regardless of the rendering engine being used. Its implementation defaults
+				to the GNU Gettext API (as provided by PHP). A stub implementation is
+				provided otherwise.</para>
+		</refsect2>
+	</refsect1>
+	<refsect1 id="modules">
+		<title>Modules</title>
+		<refsect2>
+			<title>Admin</title>
+			<para>The "admin" module is reserved to site administrators, and manages
+				which modules are to be enabled.</para>
+		</refsect2>
+		<refsect2>
+			<title>Content</title>
+			<para>The "content" module is an abstract class, dedicated to content
+				management. It is, in turn, inherited by more specialized modules (such as
+				"news", "blog", "wiki"...) which format and authorize access to content
+				according to their respective requirements.</para>
+		</refsect2>
+		<refsect2>
+			<title>Search</title>
+			<para>The "search" module is a generic module to look for content globally on
+			the site.</para>
+		</refsect2>
+		<refsect2>
+			<title>User</title>
+			<para>The "user" module can be used whenever the authentication backend
+				itself is not sufficient to identify the user properly. It is also useful to
+				access and update account information, or list content of specific
+				users.</para>
+		</refsect2>
+	</refsect1>
+	<refsect1 id="sample_file">
+		<title>Sample file</title>
+		<para>
+			A sample configuration file is provided here.
+		</para>
+		<programlisting><![CDATA[
+debug=1
+theme=DaPortal
+title=DaPortal
+
+[defaults]
+charset=utf-8
+
+[engine]
+#backend=cli
+backend=http
+
+[database]
+backend=pgsql
+debug=0
+
+[database::pgsql]
+#username=
+#password=
+#database=
+#hostname=
+#port=
+#timeout=
+#service=
+
+[format]
+backend=html5
+
+[format::html5]
+alternate_themes=1
+
+[format::text/html]
+backend=html5
+
+[format::text/plain]
+#backend=plain
+backend=html5
+
+[template]
+backend=basic
+
+[template::basic]
+footer=All rights reserved
+]]></programlisting>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>Bugs</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/12/DaPortal"/>.</para>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>See also</title>
+		<para>
+			<citerefentry>
+				<refentrytitle>daportal</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>
+		</para>
 	</refsect1>
 </refentry>
 <!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

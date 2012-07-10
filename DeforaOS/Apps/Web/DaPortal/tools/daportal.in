@@ -1,0 +1,69 @@
+#!/bin/sh
+#$Id$
+#Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
+#This file is part of DaPortal
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, version 3 of the License.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+#variables
+#executables
+DAPORTALPHP="daportal.php"
+PHP="php"
+
+PREFIX=@PREFIX@
+ETCDIR="$PREFIX/etc"
+WEBROOT="/var/www/htdocs"
+DAPORTALDIR="$WEBROOT/../daportal"
+
+
+#functions
+#private
+#error
+_error() {
+	echo "daportal: $@" 1>&2
+	return 2
+}
+
+
+#warning
+_warning() {
+	echo "daportal: $@" 1>&2
+}
+
+
+#public
+#main
+#load the configuration
+configured=0
+#FIXME the name (and format) of this configuration file might be confusing
+if [ -f "$ETCDIR/daportal.conf" ]; then
+	. "$ETCDIR/daportal.conf" && configured=1
+fi
+[ $configured -ne 1 ] && _warning "Could not load the configuration file"
+
+#locate the installation directory
+if [ ! -d "$DAPORTALDIR" ]; then
+	_error "Could not locate the DaPortal directory"
+	exit $?
+fi
+
+#change to the installation directory
+cd "$DAPORTALDIR/src"
+if [ $? -ne 0 ]; then
+	_error "Could not change to the DaPortal directory"
+	exit $?
+fi
+
+#run DaPortal
+$PHP $DAPORTALPHP $@
