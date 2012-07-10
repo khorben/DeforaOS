@@ -95,6 +95,7 @@ while [ $# -gt 0 ]; do
 	#uninstall
 	if [ "$uninstall" -eq 1 ]; then
 		for i in gtkdoc/html/*.*; do
+			[ -f "$i" ] || continue
 			file="${i##*/}"
 			$DEBUG $RM "$instdir/$MODULE/$file"	|| exit 2
 		done
@@ -151,6 +152,7 @@ while [ $# -gt 0 ]; do
 	if [ "$install" -eq 1 ]; then
 		$DEBUG $MKDIR "$instdir/$MODULE"		|| exit 2
 		for i in gtkdoc/html/*.*; do
+			[ -f "$i" ] || continue
 			file="${i##*/}"
 			$DEBUG $INSTALL "$i" "$instdir/$MODULE/$file" \
 								|| exit 2
