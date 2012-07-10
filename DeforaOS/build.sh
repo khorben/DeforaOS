@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -44,11 +44,12 @@ CC=
 CHOWN="chown"
 CONFIGURE=
 DD="dd bs=1024"
+DEBUG="debug"
 INSTALL="install"
 LD=
 LN="ln -f"
 MAKE="make"
-MKDIR="mkdir -p"
+MKDIR="mkdir -m 0755 -p"
 MKNOD="mknod"
 MV="mv -f"
 RMDIR="rmdir -p"
@@ -89,6 +90,14 @@ check()
 }
 
 
+#debug
+debug()
+{
+	echo $@ 1>&2
+	$@
+}
+
+
 #error
 error()
 {
@@ -114,7 +123,7 @@ target()
 	while [ $# -ge 1 ]; do
 		for i in $SUBDIRS; do
 			if [ -n "$CONFIGURE" ]; then
-				$CONFIGURE "$i"			|| return 2
+				$DEBUG $CONFIGURE "$i"		|| return 2
 			fi
 			(cd "$i" && eval $_MAKE "$1")		|| return 2
 		done
@@ -183,7 +192,7 @@ _bootstrap_configure()
 
 	[ $# -eq 1 -a "$1" = "install" ] && TARGETS="install"
 	target $TARGETS						|| return 2
-	./Apps/Devel/src/configure/src/configure -v -p "$PREFIX" \
+	$DEBUG ./Apps/Devel/src/configure/src/configure -v -p "$PREFIX" \
 			"System/src" "Apps"			|| return 2
 	CPPFLAGS="$C"
 	CFLAGSF="$CF"
