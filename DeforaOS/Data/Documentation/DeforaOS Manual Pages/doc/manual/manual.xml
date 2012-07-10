@@ -4,6 +4,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY browser1 "../../../../../Apps/Desktop/src/Browser/doc/browser.xml">
 <!ENTITY configure1 "../../../../../Apps/Devel/src/configure/doc/configure.xml">
+<!ENTITY daportal1 "../../../../../Apps/Web/DaPortal/doc/daportal.xml">
 <!ENTITY daportalconf5 "../../../../../Apps/Web/DaPortal/doc/daportal.conf.xml">
 <!ENTITY desktop1 "../../../../../Apps/Desktop/src/Browser/doc/desktop.xml">
 <!ENTITY desktopctl1 "../../../../../Apps/Desktop/src/Browser/doc/desktopctl.xml">
@@ -55,6 +56,7 @@
 		<title>For webmasters</title>
 		<section>
 			<title>DaPortal Content Management System</title>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&daportal1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&daportalconf5;"/>
 		</section>
 	</chapter>
