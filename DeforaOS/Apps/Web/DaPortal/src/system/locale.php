@@ -40,6 +40,9 @@ class Locale
 		//initialize gettext
 		if(!function_exists('gettext'))
 		{
+			$message = 'Gettext must be installed and enabled'
+				.' for translations';
+			$engine->log('LOG_WARNING', $message);
 			require_once('./system/locale/gettext.php');
 			return;
 		}
