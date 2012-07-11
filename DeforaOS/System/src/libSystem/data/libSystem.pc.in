@@ -1,10 +1,10 @@
-prefix=PREFIX
+prefix=@PREFIX@
 includedir=${prefix}/include
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 
 Name: libSystem
 Description: DeforaOS System essential library
-Version: VERSION
+Version: @VERSION@
 Cflags: -I${includedir}
 Libs: -L${libdir} -Wl,-rpath-link,${libdir} -Wl,-rpath,${libdir} -lSystem

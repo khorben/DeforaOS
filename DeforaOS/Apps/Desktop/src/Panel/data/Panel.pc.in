@@ -1,10 +1,10 @@
-prefix=PREFIX
+prefix=@PREFIX@
 includedir=${prefix}/include
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 
 Name: Panel
 Description: DeforaOS Desktop Panel plug-ins
-Version: VERSION
+Version: @VERSION@
 Requires: gtk+-2.0
 Cflags: -I${includedir}
