@@ -622,6 +622,8 @@ static void _show_preferences_window(Panel * panel)
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	gtk_window_set_default_size(GTK_WINDOW(panel->pr_window), 400, 300);
+	gtk_window_set_position(GTK_WINDOW(panel->pr_window),
+			GTK_WIN_POS_CENTER_ALWAYS);
 	g_signal_connect_swapped(panel->pr_window, "delete-event", G_CALLBACK(
 				_preferences_on_closex), panel);
 	g_signal_connect(panel->pr_window, "response", G_CALLBACK(
