@@ -124,11 +124,13 @@ static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper)
 	gtkdemo->helper = helper;
 	for(i = 0; i < GDI_COUNT; i++)
 		if((gtkdemo->images[i] = gdk_pixbuf_new_from_file(
-						_gtkdemo_images[i],
-						&error)) == NULL)
+						_gtkdemo_images[i], &error))
+				== NULL)
+		{
 			helper->error(NULL, error->message, 1);
-	if(error != NULL)
-		g_error_free(error);
+			g_error_free(error);
+			error = NULL;
+		}
 	gtkdemo->windows = NULL;
 	gtkdemo->windows_cnt = 0;
 	gtkdemo->timeout = 0;
