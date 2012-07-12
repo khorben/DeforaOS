@@ -77,9 +77,9 @@ static Systray * _systray_init(LockerPluginHelper * helper)
 	systray->helper = helper;
 	systray->icon = gtk_status_icon_new_from_icon_name(
 			"preferences-desktop-screensaver");
-#if GTK_CHECK_VERSION(2, 16, 0)
+# if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_status_icon_set_tooltip_text(systray->icon, "Screensaver");
-#endif
+# endif
 	g_signal_connect_swapped(systray->icon, "activate", G_CALLBACK(
 				_systray_on_activate), systray);
 	g_signal_connect(systray->icon, "popup-menu", G_CALLBACK(
