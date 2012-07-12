@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-20 14:50+0200\n"
+"POT-Creation-Date: 2012-07-13 00:30+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,43 +15,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:412
+#: ../src/locker.c:415
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:482
+#: ../src/locker.c:485
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:495
+#: ../src/locker.c:500
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:499
+#: ../src/locker.c:504
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:503
+#: ../src/locker.c:508
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:542
+#: ../src/locker.c:547
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:553
+#: ../src/locker.c:558
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:688
+#: ../src/locker.c:693
 msgid "Screensaver for the DeforaOS desktop"
 msgstr "Économiseur d'écran pour l'environnement DeforaOS"
 
-#: ../src/locker.c:693
+#: ../src/locker.c:698
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:949 ../src/locker.c:953
+#: ../src/locker.c:1017 ../src/locker.c:1021
 msgid "Error"
 msgstr "Erreur"
 
@@ -103,10 +103,10 @@ msgstr "Mot de passe : "
 msgid "Wrong password!"
 msgstr "Mot de passe erroné !"
 
-#: ../src/auth/password.c:185 ../src/auth/password.c:227
+#: ../src/auth/password.c:191 ../src/auth/password.c:236
 msgid "No password was set"
 msgstr "Aucun mot de passe n'est configuré"
 
-#: ../src/auth/password.c:237
+#: ../src/auth/password.c:246
 msgid "Authentication failed"
 msgstr "Échec de l'authentification"
