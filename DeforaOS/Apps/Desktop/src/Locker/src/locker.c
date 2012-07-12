@@ -851,11 +851,20 @@ static int _locker_action_start(Locker * locker)
 /* locker_action_stop */
 static int _locker_action_stop(Locker * locker)
 {
+	GdkWindow * window;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(locker->ddefinition->stop != NULL)
 		locker->ddefinition->stop(locker->demo);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	if(locker->windows[0] != NULL)
+	{
+		window = gtk_widget_get_window(locker->windows[0]);
+		gdk_window_clear(window);
+	}
+#endif
 	return 0;
 }
 
