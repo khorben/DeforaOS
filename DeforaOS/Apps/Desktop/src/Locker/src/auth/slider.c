@@ -35,6 +35,8 @@ typedef struct _LockerAuth
 {
 	LockerAuthHelper * helper;
 	guint source;
+
+	/* widgets */
 	GtkWidget * widget;
 	GtkWidget * scale;
 } Slider;
@@ -133,13 +135,22 @@ static int _slider_action(Slider * slider, LockerAction action)
 {
 	switch(action)
 	{
+		case LOCKER_ACTION_DEACTIVATE:
+			gtk_widget_grab_focus(slider->scale);
+			gtk_widget_show(slider->widget);
+			break;
 		case LOCKER_ACTION_LOCK:
+			gtk_widget_hide(slider->widget);
 			gtk_range_set_value(GTK_RANGE(slider->scale), 0.0);
 			if(slider->source != 0)
 				g_source_remove(slider->source);
 			slider->source = g_timeout_add(10000,
 					/* _slider_on_timeout_report */
 					_slider_on_timeout_suspend, slider);
+			break;
+		case LOCKER_ACTION_START:
+		case LOCKER_ACTION_UNLOCK:
+			gtk_widget_hide(slider->widget);
 			break;
 		default:
 			break;
