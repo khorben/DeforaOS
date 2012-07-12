@@ -146,6 +146,7 @@ static Password * _password_init(LockerAuthHelper * helper)
 	widget = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(password->widget), widget, TRUE, TRUE, 0);
 	gtk_widget_show_all(password->widget);
+	gtk_widget_hide(password->widget);
 	pango_font_description_free(bold);
 	return password;
 }
@@ -176,7 +177,12 @@ static int _password_action(Password * password, LockerAction action)
 
 	switch(action)
 	{
+		case LOCKER_ACTION_DEACTIVATE:
+			gtk_widget_grab_focus(entry);
+			gtk_widget_show(password->widget);
+			break;
 		case LOCKER_ACTION_LOCK:
+			gtk_widget_hide(password->widget);
 			if((p = helper->config_get(helper->locker, "password",
 							"password")) == NULL)
 			{
@@ -187,13 +193,16 @@ static int _password_action(Password * password, LockerAction action)
 			gtk_widget_set_sensitive(entry, TRUE);
 			gtk_widget_set_sensitive(password->button, TRUE);
 			gtk_entry_set_text(GTK_ENTRY(entry), "");
-			gtk_widget_grab_focus(entry);
 			if(password->source != 0)
 				g_source_remove(password->source);
 			password->source = g_timeout_add(30000,
 					_password_on_timeout, password);
 			break;
+		case LOCKER_ACTION_START:
+			gtk_widget_hide(password->widget);
+			break;
 		case LOCKER_ACTION_UNLOCK:
+			gtk_widget_hide(password->widget);
 			if(password->source != 0)
 				g_source_remove(password->source);
 			password->source = 0;
@@ -235,6 +244,7 @@ static void _password_on_password_activate(gpointer data)
 	}
 	gtk_entry_set_text(GTK_ENTRY(password->password), "");
 	helper->error(NULL, _("Authentication failed"), 1);
+	gtk_widget_grab_focus(password->password);
 	gtk_widget_show(password->wrong);
 	password->source = g_timeout_add(3000, _password_on_password_wrong,
 			password);
@@ -251,7 +261,8 @@ static gboolean _password_on_password_wrong(gpointer data)
 	gtk_widget_set_sensitive(password->password, TRUE);
 	gtk_widget_set_sensitive(password->button, TRUE);
 	gtk_entry_set_text(GTK_ENTRY(password->password), "");
-	gtk_widget_grab_focus(password->password);
+	gtk_widget_hide(password->widget);
+	password->helper->action(password->helper->locker, LOCKER_ACTION_START);
 	return FALSE;
 }
 
@@ -262,6 +273,7 @@ static gboolean _password_on_timeout(gpointer data)
 	Password * password = data;
 	LockerAuthHelper * helper = password->helper;
 
+	gtk_widget_hide(password->widget);
 	password->source = 0;
 	helper->action(helper->locker, LOCKER_ACTION_ACTIVATE);
 	return FALSE;

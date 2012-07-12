@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,8 @@ typedef const struct _LockerDemoDefinition
 	void (*destroy)(LockerDemo * demo);
 	int (*add)(LockerDemo * demo, GtkWidget * window);
 	void (*remove)(LockerDemo * demo, GtkWidget * window);
+	void (*start)(LockerDemo * demo);
+	void (*stop)(LockerDemo * demo);
 } LockerDemoDefinition;
 
 #endif /* !DESKTOP_LOCKER_DEMO_H */

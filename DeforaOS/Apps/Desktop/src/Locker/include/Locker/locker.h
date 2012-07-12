@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@ typedef enum _LockerAction
 	LOCKER_ACTION_ENABLE,
 	LOCKER_ACTION_LOCK,
 	LOCKER_ACTION_SHOW_PREFERENCES,
+	LOCKER_ACTION_START,
+	LOCKER_ACTION_STOP,
 	LOCKER_ACTION_SUSPEND,
 	LOCKER_ACTION_UNLOCK
 } LockerAction;

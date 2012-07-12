@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,8 @@ static void _xscreensaver_destroy(XScreensaver * xscreensaver);
 static int _xscreensaver_add(XScreensaver * xscreensaver, GtkWidget * window);
 static void _xscreensaver_remove(XScreensaver * xscreensaver,
 		GtkWidget * window);
+static void _xscreensaver_start(XScreensaver * xscreensaver);
+static void _xscreensaver_stop(XScreensaver * xscreensaver);
 
 
 /* public */
@@ -60,7 +62,9 @@ LockerDemoDefinition demo =
 	_xscreensaver_init,
 	_xscreensaver_destroy,
 	_xscreensaver_add,
-	_xscreensaver_remove
+	_xscreensaver_remove,
+	_xscreensaver_start,
+	_xscreensaver_stop
 };
 
 
@@ -121,6 +125,20 @@ static int _xscreensaver_add(XScreensaver * xscreensaver, GtkWidget * window)
 /* xscreensaver_remove */
 static void _xscreensaver_remove(XScreensaver * xscreensaver,
 		GtkWidget * window)
+{
+	/* FIXME implement */
+}
+
+
+/* xscreensaver_start */
+static void _xscreensaver_start(XScreensaver * xscreensaver)
+{
+	/* FIXME implement */
+}
+
+
+/* xscreensaver_stop */
+static void _xscreensaver_stop(XScreensaver * xscreensaver)
 {
 	/* FIXME implement */
 }

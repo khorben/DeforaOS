@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ static XTerm * _xterm_init(LockerDemoHelper * helper);
 static void _xterm_destroy(XTerm * xterm);
 static int _xterm_add(XTerm * xterm, GtkWidget * window);
 static void _xterm_remove(XTerm * xterm, GtkWidget * window);
+static void _xterm_start(XTerm * xterm);
+static void _xterm_stop(XTerm * xterm);
 
 
 /* public */
@@ -124,6 +126,20 @@ static int _xterm_add(XTerm * xterm, GtkWidget * window)
 
 /* xterm_remove */
 static void _xterm_remove(XTerm * xterm, GtkWidget * window)
+{
+	/* FIXME implement */
+}
+
+
+/* xterm_start */
+static void _xterm_start(XTerm * xterm)
+{
+	/* FIXME implement */
+}
+
+
+/* xterm_stop */
+static void _xterm_stop(XTerm * xterm)
 {
 	/* FIXME implement */
 }

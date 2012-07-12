@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,8 @@ static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper);
 static void _gtkdemo_destroy(GtkDemo * gtkdemo);
 static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window);
 static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window);
+static void _gtkdemo_start(GtkDemo * gtkdemo);
+static void _gtkdemo_stop(GtkDemo * gtkdemo);
 
 /* callbacks */
 static gboolean _gtkdemo_on_timeout(gpointer data);
@@ -105,7 +107,9 @@ LockerDemoDefinition demo =
 	_gtkdemo_init,
 	_gtkdemo_destroy,
 	_gtkdemo_add,
-	_gtkdemo_remove
+	_gtkdemo_remove,
+	_gtkdemo_start,
+	_gtkdemo_stop
 };
 
 
@@ -200,9 +204,6 @@ static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 	gdk_window_clear(gtk_widget_get_window(window));
 	gdk_pixmap_unref(pixmap);
 	gtkdemo->windows[gtkdemo->windows_cnt++] = window;
-	if(gtkdemo->timeout == 0)
-		gtkdemo->timeout = g_timeout_add(40, _gtkdemo_on_timeout,
-				gtkdemo);
 	return ret;
 }
 
@@ -215,19 +216,35 @@ static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window)
 	for(i = 0; i < gtkdemo->windows_cnt; i++)
 		if(gtkdemo->windows[i] == window)
 			gtkdemo->windows[i] = NULL;
-	/* FIXME reorganize the table, free memory */
-	/* de-register timeout if necessary */
-	if(gtkdemo->timeout != 0)
+	/* FIXME reorganize the table and free memory */
+	for(i = 0; i < gtkdemo->windows_cnt; i++)
+		if(gtkdemo->windows[i] != NULL)
+			break;
+	if(i == gtkdemo->windows_cnt)
 	{
-		for(i = 0; i < gtkdemo->windows_cnt; i++)
-			if(gtkdemo->windows[i] != NULL)
-				break;
-		if(i == gtkdemo->windows_cnt)
-		{
-			g_source_remove(gtkdemo->timeout);
-			gtkdemo->timeout = 0;
-		}
+		/* there are no windows left */
+		_gtkdemo_stop(gtkdemo);
+		free(gtkdemo->windows);
+		gtkdemo->windows_cnt = 0;
 	}
+}
+
+
+/* gtkdemo_start */
+static void _gtkdemo_start(GtkDemo * gtkdemo)
+{
+	if(gtkdemo->timeout == 0)
+		gtkdemo->timeout = g_timeout_add(40, _gtkdemo_on_timeout,
+				gtkdemo);
+}
+
+
+/* gtkdemo_stop */
+static void _gtkdemo_stop(GtkDemo * gtkdemo)
+{
+	if(gtkdemo->timeout != 0)
+		g_source_remove(gtkdemo->timeout);
+	gtkdemo->timeout = 0;
 }
 
 

@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Locker */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -63,6 +63,7 @@ struct _Locker
 	/* internal */
 	int enabled;
 	int locked;
+
 	GdkDisplay * display;
 	int screen;
 	int event;
@@ -126,11 +127,13 @@ static void _locker_about(Locker * locker);
 
 /* actions */
 static int _locker_action(Locker * locker, LockerAction action);
-static int _locker_action_activate(Locker * locker);
+static int _locker_action_activate(Locker * locker, int force);
 static int _locker_action_deactivate(Locker * locker, int reset);
 static int _locker_action_disable(Locker * locker);
 static int _locker_action_enable(Locker * locker);
-static int _locker_action_lock(Locker * locker);
+static int _locker_action_lock(Locker * locker, int force);
+static int _locker_action_start(Locker * locker);
+static int _locker_action_stop(Locker * locker);
 static int _locker_action_suspend(Locker * locker);
 static int _locker_action_unlock(Locker * locker);
 
@@ -718,7 +721,7 @@ static int _locker_action(Locker * locker, LockerAction action)
 	switch(action)
 	{
 		case LOCKER_ACTION_ACTIVATE:
-			ret = _locker_action_activate(locker);
+			ret = _locker_action_activate(locker, 1);
 			break;
 		case LOCKER_ACTION_DEACTIVATE:
 			ret = _locker_action_deactivate(locker, 1);
@@ -730,11 +733,17 @@ static int _locker_action(Locker * locker, LockerAction action)
 			ret = _locker_action_enable(locker);
 			break;
 		case LOCKER_ACTION_LOCK:
-			ret = _locker_action_lock(locker);
+			ret = _locker_action_lock(locker, 1);
 			break;
 		case LOCKER_ACTION_SHOW_PREFERENCES:
 			locker_show_preferences(locker, TRUE);
 			ret = 0;
+			break;
+		case LOCKER_ACTION_START:
+			ret = _locker_action_start(locker);
+			break;
+		case LOCKER_ACTION_STOP:
+			ret = _locker_action_stop(locker);
 			break;
 		case LOCKER_ACTION_SUSPEND:
 			ret = _locker_action_suspend(locker);
@@ -748,14 +757,24 @@ static int _locker_action(Locker * locker, LockerAction action)
 
 
 /* locker_action_activate */
-static int _locker_action_activate(Locker * locker)
+static int _locker_action_activate(Locker * locker, int force)
 {
-	if(_locker_event(locker, LOCKER_EVENT_ACTIVATING) != 0)
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(force == 0 && _locker_event(locker, LOCKER_EVENT_ACTIVATING) != 0)
 		return -1;
 	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_ACTIVATE)
 			!= 0)
 		return -1;
-	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
+	for(i = 0; i < locker->windows_cnt; i++)
+	{
+		gtk_widget_show(locker->windows[i]);
+		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
+	}
+	_locker_action_start(locker);
 	return 0;
 }
 
@@ -763,11 +782,15 @@ static int _locker_action_activate(Locker * locker)
 /* locker_action_deactivate */
 static int _locker_action_deactivate(Locker * locker, int reset)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(_locker_event(locker, LOCKER_EVENT_DEACTIVATING) != 0)
 		return -1;
 	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_DEACTIVATE)
 			!= 0)
 		return -1;
+	_locker_action_stop(locker);
 	if(reset != 0)
 		XResetScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
 	return 0;
@@ -777,6 +800,9 @@ static int _locker_action_deactivate(Locker * locker, int reset)
 /* locker_action_disable */
 static int _locker_action_disable(Locker * locker)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(locker->locked)
 		return 0;
 	locker->enabled = 0;
@@ -787,28 +813,50 @@ static int _locker_action_disable(Locker * locker)
 /* locker_action_enable */
 static int _locker_action_enable(Locker * locker)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	locker->enabled = 1;
 	return 0;
 }
 
 
 /* locker_action_lock */
-static int _locker_action_lock(Locker * locker)
+static int _locker_action_lock(Locker * locker, int force)
 {
-	size_t i;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(_locker_event(locker, LOCKER_EVENT_LOCKING) != 0)
+	if(force == 0 && _locker_event(locker, LOCKER_EVENT_LOCKING) != 0)
 		return -1;
 	locker->locked = 1;
-	for(i = 0; i < locker->windows_cnt; i++)
-	{
-		gtk_widget_show(locker->windows[i]);
-		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
-	}
+	_locker_action_activate(locker, 1);
 	return locker->adefinition->action(locker->auth, LOCKER_ACTION_LOCK);
+}
+
+
+/* locker_action_start */
+static int _locker_action_start(Locker * locker)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
+	if(locker->ddefinition->start != NULL)
+		locker->ddefinition->start(locker->demo);
+	return 0;
+}
+
+
+/* locker_action_stop */
+static int _locker_action_stop(Locker * locker)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(locker->ddefinition->stop != NULL)
+		locker->ddefinition->stop(locker->demo);
+	return 0;
 }
 
 
@@ -824,10 +872,13 @@ static int _locker_action_suspend(Locker * locker)
 	GError * error = NULL;
 #endif
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(_locker_event(locker, LOCKER_EVENT_SUSPENDING) != 0)
 		return -1;
 	/* automatically lock the screen when suspending */
-	if(_locker_action_lock(locker) != 0)
+	if(_locker_action_lock(locker, 1) != 0)
 		return -1;
 	/* suspend immediately */
 #if defined(__NetBSD__)
@@ -861,12 +912,18 @@ static int _locker_action_unlock(Locker * locker)
 {
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(_locker_event(locker, LOCKER_EVENT_UNLOCKING) != 0)
 		return -1;
+	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_UNLOCK) != 0)
+		return -1;
 	locker->locked = 0;
+	_locker_action_deactivate(locker, 1);
+	/* ungrab keyboard and mouse */
 	if(locker->windows == NULL)
 		return 0;
-	/* ungrab keyboard and mouse */
 	gdk_keyboard_ungrab(GDK_CURRENT_TIME);
 	gdk_pointer_ungrab(GDK_CURRENT_TIME);
 	for(i = 0; i < locker->windows_cnt; i++)
@@ -967,6 +1024,9 @@ static int _locker_event(Locker * locker, LockerEvent event)
 	LockerPluginDefinition * lpd;
 	LockerPlugin * lp;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event);
+#endif
 	for(i = 0; i < locker->plugins_cnt; i++)
 	{
 		lpd = locker->plugins[i].definition;
@@ -1045,12 +1105,12 @@ static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
 	switch(xssne->state)
 	{
 		case ScreenSaverOff:
-			_locker_action_deactivate(locker, 0);
 			_locker_action_enable(locker);
+			_locker_action_deactivate(locker, 0);
 			break;
 		case ScreenSaverOn:
-			if(locker->enabled)
-				_locker_action_lock(locker);
+			if(locker->enabled && locker->locked == 0)
+				_locker_action_lock(locker, 0);
 			break;
 		case ScreenSaverDisabled:
 			_locker_action_disable(locker);
@@ -1105,6 +1165,10 @@ static int _locker_on_message(void * data, uint32_t value1, uint32_t value2,
 	LockerAction action;
 	gboolean show;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, %u, %u)\n", __func__, value1, value2,
+			value3);
+#endif
 	if(value1 != LOCKER_MESSAGE_ACTION)
 		return 0;
 	switch((action = value2))
