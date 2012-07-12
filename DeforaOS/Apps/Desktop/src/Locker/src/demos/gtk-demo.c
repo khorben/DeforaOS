@@ -191,8 +191,8 @@ static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 	gdk_gc_set_rgb_fg_color(gc, &color);
 	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, rect.width, rect.height);
 	/* draw background */
-	for(j = 0; j < rect.height; j += h)
-		for(i = 0; i < rect.width; i += w)
+	for(j = 0; h > 0 && j < rect.height; j += h)
+		for(i = 0; w > 0 && i < rect.width; i += w)
 			gdk_draw_pixbuf(pixmap, NULL, background, 0, 0,
 					i, j, w, h, GDK_RGB_DITHER_NONE, 0, 0);
 	gdk_window_set_back_pixmap(gtk_widget_get_window(window), pixmap,
@@ -270,10 +270,14 @@ static gboolean _gtkdemo_on_timeout(gpointer data)
 				(void *)frame);
 #endif
 
-		back_width = gdk_pixbuf_get_width(background);
-		back_height = gdk_pixbuf_get_height(background);
-		for(j = 0; j < rect.height; j += back_height)
-			for(i = 0; i < rect.width; i += back_width)
+		back_width = (background != NULL)
+			? gdk_pixbuf_get_width(background) : 0;
+		back_height = (background != NULL)
+			? gdk_pixbuf_get_height(background) : 0;
+		for(j = 0; back_height > 0 && j < rect.height;
+				j += back_height)
+			for(i = 0; back_width > 0 && i < rect.width;
+					i += back_width)
 				gdk_pixbuf_copy_area(background, 0, 0,
 						MIN(back_width, rect.width - i),
 						MIN(back_height,
@@ -297,6 +301,9 @@ static gboolean _gtkdemo_on_timeout(gpointer data)
 			double r;
 			GdkRectangle r1, r2, dest;
 			double k;
+
+			if(gtkdemo->images[i] == NULL)
+				continue;
 
 			ang = 2.0 * G_PI * (double) (i - 1) / (GDI_COUNT - 1)
 				- f * 2.0 * G_PI;
