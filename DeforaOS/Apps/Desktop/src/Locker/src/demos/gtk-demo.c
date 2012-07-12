@@ -184,8 +184,8 @@ static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 #endif
 	pixmap = gdk_pixmap_new(gtk_widget_get_window(window), rect.width,
 			rect.width, -1);
-	w = gdk_pixbuf_get_width(background);
-	h = gdk_pixbuf_get_height(background);
+	w = (background != NULL) ? gdk_pixbuf_get_width(background) : 0;
+	h = (background != NULL) ? gdk_pixbuf_get_height(background) : 0;
 	/* draw default color */
 	gc = gdk_gc_new(pixmap);
 	gdk_gc_set_rgb_fg_color(gc, &color);
@@ -270,73 +270,75 @@ static gboolean _gtkdemo_on_timeout(gpointer data)
 				(void *)frame);
 #endif
 
-	back_width = gdk_pixbuf_get_width(background);
-	back_height = gdk_pixbuf_get_height(background);
-	for(j = 0; j < rect.height; j += back_height)
-		for(i = 0; i < rect.width; i += back_width)
-			gdk_pixbuf_copy_area(background, 0, 0,
-					MIN(back_width, rect.width - i),
-					MIN(back_height, rect.height - j),
-					frame, i, j);
+		back_width = gdk_pixbuf_get_width(background);
+		back_height = gdk_pixbuf_get_height(background);
+		for(j = 0; j < rect.height; j += back_height)
+			for(i = 0; i < rect.width; i += back_width)
+				gdk_pixbuf_copy_area(background, 0, 0,
+						MIN(back_width, rect.width - i),
+						MIN(back_height,
+							rect.height - j),
+						frame, i, j);
 
-	f = (double) (gtkdemo->frame_num % CYCLE_LEN) / CYCLE_LEN;
+		f = (double) (gtkdemo->frame_num % CYCLE_LEN) / CYCLE_LEN;
 
-	back_width = rect.width;
-	back_height = rect.height;
-	xmid = back_width / 2.0;
-	ymid = back_height / 2.0;
+		back_width = rect.width;
+		back_height = rect.height;
+		xmid = back_width / 2.0;
+		ymid = back_height / 2.0;
 
-	radius = MIN(xmid, ymid) / 2.0;
+		radius = MIN(xmid, ymid) / 2.0;
 
-	for(i = 1; i < GDI_COUNT; i++)
-	{
-		double ang;
-		int xpos, ypos;
-		int iw, ih;
-		double r;
-		GdkRectangle r1, r2, dest;
-		double k;
+		for(i = 1; i < GDI_COUNT; i++)
+		{
+			double ang;
+			int xpos, ypos;
+			int iw, ih;
+			double r;
+			GdkRectangle r1, r2, dest;
+			double k;
 
-		ang = 2.0 * G_PI * (double) (i - 1) / (GDI_COUNT - 1) - f * 2.0
-			* G_PI;
+			ang = 2.0 * G_PI * (double) (i - 1) / (GDI_COUNT - 1)
+				- f * 2.0 * G_PI;
 
-		iw = gdk_pixbuf_get_width(gtkdemo->images[i]);
-		ih = gdk_pixbuf_get_height(gtkdemo->images[i]);
+			iw = gdk_pixbuf_get_width(gtkdemo->images[i]);
+			ih = gdk_pixbuf_get_height(gtkdemo->images[i]);
 
-		r = radius + (radius / 3.0) * sin (f * 2.0 * G_PI);
+			r = radius + (radius / 3.0) * sin (f * 2.0 * G_PI);
 
-		xpos = floor (xmid + r * cos (ang) - iw / 2.0 + 0.5);
-		ypos = floor (ymid + r * sin (ang) - ih / 2.0 + 0.5);
+			xpos = floor (xmid + r * cos (ang) - iw / 2.0 + 0.5);
+			ypos = floor (ymid + r * sin (ang) - ih / 2.0 + 0.5);
 
-		k = (i & 1) ? sin (f * 2.0 * G_PI) : cos (f * 2.0 * G_PI);
-		k = 2.0 * k * k;
-		k = MAX (0.25, k);
+			k = (i & 1) ? sin (f * 2.0 * G_PI)
+				: cos (f * 2.0 * G_PI);
+			k = 2.0 * k * k;
+			k = MAX (0.25, k);
 
-		r1.x = xpos;
-		r1.y = ypos;
-		r1.width = iw * k;
-		r1.height = ih * k;
+			r1.x = xpos;
+			r1.y = ypos;
+			r1.width = iw * k;
+			r1.height = ih * k;
 
-		r2.x = 0;
-		r2.y = 0;
-		r2.width = back_width;
-		r2.height = back_height;
+			r2.x = 0;
+			r2.y = 0;
+			r2.width = back_width;
+			r2.height = back_height;
 
-		if(gdk_rectangle_intersect(&r1, &r2, &dest))
-			gdk_pixbuf_composite(gtkdemo->images[i], frame, dest.x,
-					dest.y, dest.width, dest.height, xpos,
-					ypos, k, k, GDK_INTERP_NEAREST,
-					((i & 1)
-					 ? MAX (127, fabs (255 * sin (f * 2.0 * G_PI)))
-					 : MAX (127, fabs (255 * cos (f * 2.0 * G_PI)))));
-	}
-	pixmap = gdk_pixmap_new(window, rect.width, rect.width, -1);
-	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
-			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
-	gdk_window_set_back_pixmap(window, pixmap, FALSE);
-	gdk_window_clear(window);
-	gdk_pixmap_unref(pixmap);
-	g_object_unref(frame);
+			if(gdk_rectangle_intersect(&r1, &r2, &dest))
+				gdk_pixbuf_composite(gtkdemo->images[i], frame,
+						dest.x, dest.y, dest.width,
+						dest.height, xpos, ypos, k, k,
+						GDK_INTERP_NEAREST, ((i & 1)
+							? MAX (127, fabs (255 * sin (f * 2.0 * G_PI)))
+							: MAX (127, fabs (255 * cos (f * 2.0 * G_PI)))));
+		}
+		pixmap = gdk_pixmap_new(window, rect.width, rect.width, -1);
+		gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
+				rect.height, GDK_RGB_DITHER_NONE, 0, 0);
+		gdk_window_set_back_pixmap(window, pixmap, FALSE);
+		gdk_window_clear(window);
+		gdk_pixmap_unref(pixmap);
+		g_object_unref(frame);
 
 	}
 	gtkdemo->frame_num++;
