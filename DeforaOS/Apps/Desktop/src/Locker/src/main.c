@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Locker */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
 	int o;
 	int suspend = 0;
 	char const * demo = NULL;
-	char const * plugin = NULL;
+	char const * auth = NULL;
 	Locker * locker;
 
 	setlocale(LC_ALL, "");
@@ -72,14 +72,14 @@ int main(int argc, char * argv[])
 				suspend = 1;
 				break;
 			case 'p':
-				plugin = optarg;
+				auth = optarg;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	if((locker = locker_new(suspend, demo, plugin)) == NULL)
+	if((locker = locker_new(suspend, demo, auth)) == NULL)
 		return 2;
 	gtk_main();
 	locker_delete(locker);
