@@ -204,7 +204,7 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 	locker->screen = gdk_x11_get_default_screen();
 	if((cnt = gdk_screen_get_n_monitors(screen)) < 1)
 		cnt = 1;
-	locker->windows = NULL;
+	locker->windows = malloc(sizeof(*locker->windows) * cnt);
 	locker->windows_cnt = cnt;
 	locker->dplugin = NULL;
 	locker->demo = NULL;
@@ -408,11 +408,9 @@ static int _new_xss(Locker * locker, size_t cnt)
 				&locker->event, &error) == 0
 			|| XScreenSaverRegister(GDK_DISPLAY_XDISPLAY(
 					locker->display), locker->screen,
-				getpid(), XA_INTEGER) == 0
-			|| (locker->windows = malloc(sizeof(*locker->windows)
-					* cnt)) == NULL)
-		return -error_set_code(1, "%s", _(
-					"Could not register as screensaver"));
+				getpid(), XA_INTEGER) == 0)
+		return -error_set_code(1, "%s",
+				_("Could not register as screensaver"));
 	return 0;
 }
 
