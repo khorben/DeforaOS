@@ -447,6 +447,11 @@ void locker_delete(Locker * locker)
 	}
 	if(locker->dplugin != NULL)
 		plugin_delete(locker->dplugin);
+	/* destroy the windows */
+	for(i = 0; i < locker->windows_cnt; i++)
+		if(locker->windows[i] != NULL)
+			gtk_widget_destroy(locker->windows[i]);
+	free(locker->windows);
 	if(locker->ab_window != NULL)
 		gtk_widget_destroy(locker->ab_window);
 	free(locker->windows);
