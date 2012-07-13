@@ -421,12 +421,22 @@ static int _new_xss(Locker * locker, size_t cnt)
 void locker_delete(Locker * locker)
 {
 	size_t i;
+	LockerPlugins * p;
 
-	/* FIXME also destroy plug-ins */
+	/* destroy the generic plug-ins */
+	for(i = 0; i < locker->plugins_cnt; i++)
+	{
+		p = &locker->plugins[i];
+		p->definition->destroy(p->plugin);
+		plugin_delete(p->pplugin);
+	}
+	free(locker->plugins);
+	/* destroy the authentication plug-in */
 	if(locker->adefinition != NULL)
 		locker->adefinition->destroy(locker->auth);
 	if(locker->aplugin != NULL)
 		plugin_delete(locker->aplugin);
+	/* destroy the demo plug-in */
 	if(locker->demo != NULL)
 	{
 		if(locker->ddefinition->remove != NULL)
