@@ -8,7 +8,7 @@ CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libParser libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs libParser libDesktop`
-LDFLAGS	=
+LDFLAGS	= 
 RM	?= rm -f
 LN	?= ln -f
 MKDIR	?= mkdir -p
@@ -30,7 +30,7 @@ callbacks.o: callbacks.c callbacks.h xmleditor.h
 xmleditor.o: xmleditor.c callbacks.h xmleditor.h ../config.h
 	$(CC) $(xmleditor_CFLAGS) -c xmleditor.c
 
-main.o: main.c
+main.o: main.c xmleditor.h ../config.h
 	$(CC) $(xmleditor_CFLAGS) -c main.c
 
 clean:
