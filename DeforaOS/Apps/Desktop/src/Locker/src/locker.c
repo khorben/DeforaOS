@@ -90,7 +90,9 @@ struct _Locker
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkListStore * pr_astore;
+	GtkWidget * pr_acombo;
 	GtkListStore * pr_dstore;
+	GtkWidget * pr_dcombo;
 	GtkListStore * pr_plstore;
 	GtkWidget * pr_plview;
 
@@ -475,8 +477,8 @@ static GtkWidget * _preferences_window_demo(Locker * locker);
 static GtkWidget * _preferences_window_plugins(Locker * locker);
 /* callbacks */
 static void _preferences_on_cancel(gpointer data);
-static void _cancel_auth(GtkListStore * store);
-static void _cancel_demo(GtkListStore * store);
+static void _cancel_auth(Locker * locker, GtkListStore * store);
+static void _cancel_demo(Locker * locker, GtkListStore * store);
 static void _cancel_plugins(GtkListStore * store);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_ok(gpointer data);
@@ -555,8 +557,9 @@ static GtkWidget * _preferences_window_auth(Locker * locker)
 	locker->pr_astore = gtk_list_store_new(LOCKER_PLUGINS_COLUMN_COUNT,
 			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
-	widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
+	locker->pr_acombo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				locker->pr_astore));
+	widget = locker->pr_acombo;
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, FALSE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer,
@@ -585,8 +588,9 @@ static GtkWidget * _preferences_window_demo(Locker * locker)
 	locker->pr_dstore = gtk_list_store_new(LOCKER_PLUGINS_COLUMN_COUNT,
 			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
 			GDK_TYPE_PIXBUF, G_TYPE_STRING);
-	widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
+	locker->pr_dcombo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				locker->pr_dstore));
+	widget = locker->pr_dcombo;
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, FALSE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer,
@@ -653,14 +657,14 @@ static void _preferences_on_cancel(gpointer data)
 
 	gtk_widget_hide(locker->pr_window);
 	/* authentication */
-	_cancel_auth(locker->pr_astore);
+	_cancel_auth(locker, locker->pr_astore);
 	/* demos */
-	_cancel_demo(locker->pr_dstore);
+	_cancel_demo(locker, locker->pr_dstore);
 	/* plug-ins */
 	_cancel_plugins(locker->pr_plstore);
 }
 
-static void _cancel_auth(GtkListStore * store)
+static void _cancel_auth(Locker * locker, GtkListStore * store)
 {
 	GtkIconTheme * theme;
 	GtkTreeIter iter;
@@ -699,7 +703,13 @@ static void _cancel_auth(GtkListStore * store)
 		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
 				de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
 				lad->name, -1);
-		/* FIXME check if it is already enabled */
+		/* select if currently active */
+		if(locker->adefinition != NULL
+				/* XXX check on de->d_name instead */
+				&& strcmp(locker->adefinition->name, lad->name)
+				== 0)
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(
+						locker->pr_acombo), &iter);
 		icon = NULL;
 		if(lad->icon != NULL)
 			icon = gtk_icon_theme_load_icon(theme, lad->icon, 24, 0,
@@ -714,7 +724,7 @@ static void _cancel_auth(GtkListStore * store)
 	closedir(dir);
 }
 
-static void _cancel_demo(GtkListStore * store)
+static void _cancel_demo(Locker * locker, GtkListStore * store)
 {
 	GtkIconTheme * theme;
 	GtkTreeIter iter;
@@ -753,7 +763,13 @@ static void _cancel_demo(GtkListStore * store)
 		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
 				de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
 				ldd->name, -1);
-		/* FIXME check if it is already enabled */
+		/* select if currently active */
+		if(locker->ddefinition != NULL
+				/* XXX check on de->d_name instead */
+				&& strcmp(locker->ddefinition->name, ldd->name)
+				== 0)
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(
+						locker->pr_dcombo), &iter);
 		icon = NULL;
 		if(ldd->icon != NULL)
 			icon = gtk_icon_theme_load_icon(theme, ldd->icon, 24, 0,
