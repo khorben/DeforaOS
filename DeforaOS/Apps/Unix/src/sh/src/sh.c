@@ -119,21 +119,25 @@ char ** sh_export(void)
 
 
 /* sh_handler */
-static void _handler_sigint(void);
+static void _handler_signal(int signum);
 
 static void _sh_handler(int signum)
 {
 	switch(signum)
 	{
 		case SIGINT:
-			_handler_sigint();
+			_handler_signal(SIGINT);
+			break;
+		case SIGTSTP:
+			/* FIXME is this enough? */
+			_handler_signal(SIGSTOP);
 			break;
 	}
 }
 
-static void _handler_sigint(void)
+static void _handler_signal(int signum)
 {
-	job_kill_status(SIGINT, JS_RUNNING);
+	job_kill_status(signum, JS_RUNNING);
 }
 
 
@@ -157,6 +161,8 @@ int main(int argc, char * argv[])
 	if(prefs & PREFS_c && optind == argc)
 		return _usage();
 	if(signal(SIGINT, _sh_handler) == SIG_ERR)
+		sh_error("signal", 0); /* ignore error */
+	if(signal(SIGTSTP, _sh_handler) == SIG_ERR)
 		sh_error("signal", 0); /* ignore error */
 	return _sh(&prefs, argc - optind, &argv[optind]);
 }
