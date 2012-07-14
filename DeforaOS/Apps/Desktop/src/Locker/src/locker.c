@@ -730,6 +730,9 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 
 	theme = gtk_icon_theme_get_default();
 	gtk_list_store_clear(store);
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
+			NULL, LOCKER_PLUGINS_COLUMN_NAME, _("Disabled"), -1);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/demos")) == NULL)
 		return;
 	while((de = readdir(dir)) != NULL)
@@ -1077,7 +1080,7 @@ static int _locker_action_start(Locker * locker)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	XActivateScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
-	if(locker->ddefinition->start != NULL)
+	if(locker->ddefinition != NULL && locker->ddefinition->start != NULL)
 		locker->ddefinition->start(locker->demo);
 	return 0;
 }
@@ -1091,7 +1094,7 @@ static int _locker_action_stop(Locker * locker)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(locker->ddefinition->stop != NULL)
+	if(locker->ddefinition != NULL && locker->ddefinition->stop != NULL)
 		locker->ddefinition->stop(locker->demo);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	if(locker->windows[0] != NULL)
