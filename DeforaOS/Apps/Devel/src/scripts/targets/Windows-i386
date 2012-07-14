@@ -1,0 +1,7 @@
+#$Id$
+#Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>
+
+
+
+#variables
+[ -z "$BOOTSTRAP_LDFLAGS"] && BOOTSTRAP_LDFLAGS="-lws2_32"
