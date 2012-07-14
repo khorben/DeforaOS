@@ -97,6 +97,12 @@ static XScreensaver * _xscreensaver_init(LockerDemoHelper * helper)
 /* xscreensaver_destroy */
 static void _xscreensaver_destroy(XScreensaver * xscreensaver)
 {
+	size_t i;
+
+	/* kill the remaining children */
+	for(i = 0; i < xscreensaver->windows_cnt; i++)
+		if(xscreensaver->windows[i].pid > 0)
+			kill(xscreensaver->windows[i].pid, SIGTERM);
 	free(xscreensaver->windows);
 	object_delete(xscreensaver);
 }
@@ -165,7 +171,19 @@ static XScreensaverWindow * _add_allocate(XScreensaver * xscreensaver)
 static void _xscreensaver_remove(XScreensaver * xscreensaver,
 		GtkWidget * window)
 {
-	/* FIXME implement */
+	size_t i;
+	XScreensaverWindow * w;
+
+	for(i = 0; i < xscreensaver->windows_cnt; i++)
+		if(xscreensaver->windows[i].window == window)
+		{
+			w = &xscreensaver->windows[i];
+			w->window = NULL;
+			kill(w->pid, SIGTERM);
+			w->pid = -1;
+			return;
+		}
+	/* FIXME free some memory */
 }
 
 
