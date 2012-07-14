@@ -54,7 +54,7 @@ static void _xscreensaver_stop(XScreensaver * xscreensaver);
 /* public */
 /* variables */
 /* plug-in */
-LockerDemoDefinition demo =
+LockerDemoDefinition plugin =
 {
 	"XScreensaver",
 	NULL,

@@ -99,7 +99,7 @@ static gboolean _gtkdemo_on_timeout(gpointer data);
 /* public */
 /* variables */
 /* plug-in */
-LockerDemoDefinition demo =
+LockerDemoDefinition plugin =
 {
 	"Gtk-demo",
 	NULL,

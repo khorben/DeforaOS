@@ -51,7 +51,7 @@ static void _xterm_stop(XTerm * xterm);
 /* public */
 /* variables */
 /* plug-in */
-LockerDemoDefinition demo =
+LockerDemoDefinition plugin =
 {
 	"XTerm",
 	NULL,
