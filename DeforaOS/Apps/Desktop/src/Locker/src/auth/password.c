@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - store the password hashed */
 
 
 
@@ -221,6 +219,7 @@ static void _password_on_password_activate(gpointer data)
 	LockerAuthHelper * helper = password->helper;
 	char const * text;
 	char const * p;
+	char const * q;
 
 	if(password->source != 0)
 		g_source_remove(password->source);
@@ -235,6 +234,9 @@ static void _password_on_password_activate(gpointer data)
 		helper->error(NULL, _("No password was set"), 1);
 		return;
 	}
+	/* check if the password is hashed */
+	if(p[0] == '$' && (q = crypt(text, p)) != NULL)
+		text = q;
 	if(strcmp(text, p) == 0)
 	{
 		gtk_entry_set_text(GTK_ENTRY(password->password), "");

@@ -20,7 +20,7 @@ all: $(TARGETS)
 
 password_OBJS = password.o
 password_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-password_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+password_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -l crypt
 
 password.so: $(password_OBJS)
 	$(CCSHARED) -o password.so $(password_OBJS) $(password_LDFLAGS)
