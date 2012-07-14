@@ -147,6 +147,10 @@ static char const * _locker_auth_config_get(Locker * locker,
 static int _locker_auth_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
 
+/* configuration */
+static int _locker_config_load(Locker * locker);
+static int _locker_config_save(Locker * locker);
+
 /* demos */
 static char const * _locker_demo_config_get(Locker * locker,
 		char const * section, char const * variable);
@@ -267,21 +271,9 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 
 static int _new_config(Locker * locker)
 {
-	char const * homedir;
-	char * filename;
-
 	if((locker->config = config_new()) == NULL)
 		return -1;
-	if((homedir = getenv("HOME")) == NULL)
-		homedir = g_get_home_dir();
-	if((filename = malloc(strlen(homedir) + sizeof(LOCKER_CONFIG_FILE) + 1))
-			== NULL)
-		return -1;
-	sprintf(filename, "%s/%s", homedir, LOCKER_CONFIG_FILE);
-	if(config_load(locker->config, filename) != 0)
-		_locker_error(NULL, error_get(), 1);
-	free(filename);
-	return 0;
+	return _locker_config_load(locker);
 }
 
 static GtkWidget * _new_auth(Locker * locker, char const * plugin)
@@ -848,7 +840,34 @@ static gboolean _preferences_on_closex(gpointer data)
 
 static void _preferences_on_ok(gpointer data)
 {
-	/* FIXME implement */
+	Locker * locker = data;
+	GtkTreeIter iter;
+	gchar * p;
+
+	/* authentication */
+	p = NULL;
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_acombo),
+				&iter))
+		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_astore), &iter,
+				LOCKER_PLUGINS_COLUMN_FILENAME, &p, -1);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() auth=\"%s\"\n", __func__, p);
+#endif
+	config_set(locker->config, NULL, "auth", p);
+	g_free(p);
+	/* demos */
+	p = NULL;
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_dcombo),
+				&iter))
+		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_dstore), &iter,
+				LOCKER_PLUGINS_COLUMN_FILENAME, &p, -1);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() demo=\"%s\"\n", __func__, p);
+#endif
+	config_set(locker->config, NULL, "demo", p);
+	g_free(p);
+	/* FIXME implement plug-ins */
+	_locker_config_save(locker);
 }
 
 static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
@@ -1183,6 +1202,48 @@ static int _locker_auth_config_set(Locker * locker, char const * section,
 		return -1;
 	ret = config_set(locker->config, s, variable, value);
 	string_delete(s);
+	if(ret == 0)
+		ret = _locker_config_save(locker);
+	return ret;
+}
+
+
+/* locker_config_load */
+static int _locker_config_load(Locker * locker)
+{
+	int ret;
+	char const * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((filename = malloc(strlen(homedir) + sizeof(LOCKER_CONFIG_FILE) + 1))
+			== NULL)
+		return -1;
+	sprintf(filename, "%s/%s", homedir, LOCKER_CONFIG_FILE);
+	if((ret = config_load(locker->config, filename)) != 0)
+		_locker_error(NULL, error_get(), 1);
+	free(filename);
+	return ret;
+}
+
+
+/* locker_config_save */
+static int _locker_config_save(Locker * locker)
+{
+	int ret;
+	char const * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((filename = malloc(strlen(homedir) + sizeof(LOCKER_CONFIG_FILE) + 1))
+			== NULL)
+		return -1;
+	sprintf(filename, "%s/%s", homedir, LOCKER_CONFIG_FILE);
+	if((ret = config_save(locker->config, filename)) != 0)
+		_locker_error(NULL, error_get(), 1);
+	free(filename);
 	return ret;
 }
 
@@ -1213,6 +1274,8 @@ static int _locker_demo_config_set(Locker * locker, char const * section,
 		return -1;
 	ret = config_set(locker->config, s, variable, value);
 	string_delete(s);
+	if(ret == 0)
+		ret = _locker_config_save(locker);
 	return ret;
 }
 
@@ -1289,6 +1352,8 @@ static int _locker_plugin_config_set(Locker * locker, char const * section,
 		return -1;
 	ret = config_set(locker->config, s, variable, value);
 	string_delete(s);
+	if(ret == 0)
+		ret = _locker_config_save(locker);
 	return ret;
 }
 
