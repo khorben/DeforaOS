@@ -139,7 +139,7 @@ static int _xscreensaver_add(XScreensaver * xscreensaver, GtkWidget * window)
 	if(g_spawn_async(NULL, argv, NULL, 0, NULL, NULL, &w->pid, &error)
 			!= TRUE)
 	{
-		ret = helper->error(NULL, error->message, 1);
+		ret = -helper->error(NULL, error->message, 1);
 		g_error_free(error);
 	}
 	w->window = window;
