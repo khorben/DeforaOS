@@ -18,6 +18,7 @@
 #include <assert.h>
 #ifdef __WIN32__
 # include <Winsock2.h>
+typedef int suseconds_t; /* XXX */
 #else
 # include <sys/select.h>
 #endif
