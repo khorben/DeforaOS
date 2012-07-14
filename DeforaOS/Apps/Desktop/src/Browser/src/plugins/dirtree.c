@@ -261,7 +261,7 @@ static gboolean _dirtree_refresh_folder(Dirtree * dirtree, GtkTreeIter * parent,
 		else if(de->d_name[0] == '.')
 			continue;
 		/* XXX d_type is not portable */
-		else if(de->d_type != DT_DIR && de->d_type != DT_LNK)
+		else if(de->d_type != DT_DIR)
 			continue;
 		q = string_new_append(path, "/", de->d_name, NULL);
 		/* FIXME check if the node already exists */
