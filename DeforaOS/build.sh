@@ -17,6 +17,9 @@
 
 
 #variables
+BOOTSTRAP_CFLAGS=
+BOOTSTRAP_CPPFLAGS=
+BOOTSTRAP_LDFLAGS=
 CFLAGS=
 CFLAGSF=
 CPATH=
@@ -144,9 +147,9 @@ target_all()
 target_bootstrap()
 {
 	#reset parameters
-	CPPFLAGS=
-	CFLAGS=
-	LDFLAGS=
+	CPPFLAGS="$BOOTSTRAP_CPPFLAGS"
+	CFLAGS="$BOOTSTRAP_CFLAGS"
+	LDFLAGS="$BOOTSTRAP_LDFLAGS"
 	CONFIGURE=
 	DESTDIR=
 	#build libSystem and configure
@@ -439,6 +442,11 @@ if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 			;;
 		x86_64)
 			MACHINE="amd64"
+			;;
+	esac
+	case "$SYSTEM" in
+		MINGW32_NT-5.?)
+			MACHINE="Windows"
 			;;
 	esac
 	TARGET="$SYSTEM-$MACHINE"
