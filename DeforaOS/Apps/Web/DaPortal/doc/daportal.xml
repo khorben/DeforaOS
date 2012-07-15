@@ -73,7 +73,7 @@
 			<varlistentry>
 				<term><option>-D</option></term>
 				<listitem>
-					<para>Force debugging on.</para>
+					<para>Enables debugging mode.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
@@ -86,13 +86,13 @@
 			<varlistentry>
 				<term><option>-f</option></term>
 				<listitem>
-					<para>Forces requests to not be idempotent.</para>
+					<para>Allows requests to not be idempotent.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term><option>-m</option></term>
 				<listitem>
-					<para>Sets the module to be invoked (default: depends on the configuration).</para>
+					<para>Sets the module to be invoked.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
@@ -114,6 +114,28 @@
 				</listitem>
 			</varlistentry>
 		</variablelist>
+	</refsect1>
+	<refsect1 id="requests">
+		<title>Requests</title>
+		<para>&package; requests are messages sent to the processing engine selected,
+			which dispatches it in turn to the right module. Requests are composed of:
+			<itemizedlist>
+				<listitem><para>a module name</para></listitem>
+				<listitem><para>an action (optional)</para></listitem>
+				<listitem><para>an ID (optional)</para></listitem>
+				<listitem><para>a title (optional): it must often match the ID's title in
+						database</para></listitem>
+				<listitem><para>an additional list of parameters
+						(optional)</para></listitem>
+			</itemizedlist>
+			Unspecified parameters may be set automatically, depending on the engine
+			running and the configuration.</para>
+		<para>By default, requests are considered idempotent: the state of the
+			database remains the same before and after the request, triggering equivalent
+			results when the request is repeated. Other operations are considered
+			privileged, and require a special flag to work.</para>
+		<para>Requests are also sent and received internally by &package;; they are
+			however denied from external tools like <command>&name;</command>.</para>
 	</refsect1>
 	<refsect1 id="files">
 		<title>Files</title>
@@ -142,6 +164,8 @@
 			which may expect different arguments, function differently, have differing
 			output (such as <quote>GtkEngine</quote>) or may not even work at all from
 			the command line interface.</para>
+		<para>It is currently impossible to set parameters to the request to be
+			sent.</para>
 	</refsect1>
 	<refsect1 id="see_also">
 		<title>See also</title>
