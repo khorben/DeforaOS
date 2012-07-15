@@ -150,7 +150,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 		if($rcs[$i++] == '----------------------------')
 			break;
 	$revisions = array();
-	for($count = count($rcs); $i < $count - 2; $i + =3)
+	for($count = count($rcs); $i < $count - 2; $i += 3)
 	{
 		$name = _html_safe(substr($rcs[$i], 9));
 		$date = _html_safe(substr($rcs[$i+1], 6, 19));
