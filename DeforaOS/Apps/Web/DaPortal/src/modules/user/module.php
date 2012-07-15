@@ -267,6 +267,7 @@ class UserModule extends Module
 		$columns = array('username' => _('Username'),
 				'group' => _('Group'),
 				'enabled' => _('Enabled'),
+				'admin' => _('Administrator'),
 				'email' => _('e-mail'));
 		$r = new Request($engine, $this->name, 'admin');
 		$view = $page->append('treeview', array('request' => $r,
@@ -302,6 +303,8 @@ class UserModule extends Module
 			$row->setProperty('group', $res[$i]['groupname']);
 			$row->setProperty('enabled', $db->isTrue(
 					$res[$i]['enabled']) ? $yes : $no);
+			$row->setProperty('admin', $db->isTrue(
+					$res[$i]['admin']) ? $yes : $no);
 			$link = new PageElement('link', array(
 					'url' => 'mailto:'.$res[$i]['email'],
 					'text' => $res[$i]['email']));
