@@ -167,11 +167,12 @@ class CVSScmProject
 		for($i = 0, $cnt = count($rcs); $i < $cnt;)
 			if($rcs[$i++] == '----------------------------')
 				break;
-		for(; $i < $cnt; $i += 3)
+		for(; $i < $cnt - 2; $i += 3)
 		{
 			$row = $view->append('row');
 			$row->setProperty('title', substr($rcs[$i], 9));
 			$row->setProperty('date', substr($rcs[$i + 1], 6, 19));
+			//username
 			$username = substr($rcs[$i + 1], 36);
 			$username = substr($username, 0, strspn($username,
 					'abcdefghijklmnopqrstuvwxyz'
@@ -180,21 +181,22 @@ class CVSScmProject
 			$row->setProperty('username', $username);
 			for(; strncmp($rcs[$i + 2], 'branches: ', 10) == 0;
 					$i++);
-			$row->setProperty('message', $rcs[$i + 2]);
-			//skip to the next revision
+			//message
 			$dashes = '----------------------------';
 			$longdashes =
 '=============================================================================';
+			$message = $rcs[$i + 2];
 			if($message == $dashes || $message == $longdashes)
 				$message = '';
 			else
 			{
 				$msg = '';
 				for($i++; $i < $cnt && $rcs[$i + 2] != $dashes
-					&& $rcs[i + 2] != $longdashes; $i++)
+					&& $rcs[$i + 2] != $longdashes; $i++)
 					$msg = '...';
 				$message .= $msg;
 			}
+			$row->setProperty('message', $message);
 		}
 		return $vbox;
 	}
