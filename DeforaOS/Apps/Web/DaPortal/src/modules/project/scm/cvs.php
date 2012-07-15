@@ -48,6 +48,13 @@ class CVSScmProject
 		$vbox = new PageElement('vbox');
 		//browse
 		$path = $this->cvsroot.'/'.$project['cvsroot'];
+		if(($file = $request->getParameter('file')) !== FALSE)
+		{
+			$file = $this->helperSanitizePath($file);
+			$path .= "/$file";
+		}
+		else
+			$file = '/';
 		if(($dir = opendir($path)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
@@ -84,10 +91,11 @@ class CVSScmProject
 					'stock' => 'folder'));
 			$row->setProperty('icon', $icon);
 			//title
+			$f = ltrim($file.'/'.$de, '/');
 			$r = new Request($engine, $request->getModule(),
 					$request->getAction(),
 					$request->getId(), $request->getTitle(),
-					array('file' => $de));
+					array('file' => $f));
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $de));
 			$row->setProperty('title', $link);
@@ -237,6 +245,21 @@ class CVSScmProject
 		//cleanup
 		fclose($fp);
 		return $vbox;
+	}
+
+
+	//protected
+	//methods
+	//helpers
+	//CVSScmProject::helperSanitizePath
+	protected function helperSanitizePath($path)
+	{
+		$path = '/'.ltrim($path, '/');
+		$path = str_replace('/./', '/', $path);
+		//FIXME really implement '..'
+		if(strcmp($path, '/..') == 0 || strpos($path, '/../') !== FALSE)
+			return '/';
+		return $path;
 	}
 
 
