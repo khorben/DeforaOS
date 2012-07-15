@@ -138,8 +138,8 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);
 	$path = str_replace('$', '\$', $path);
-	_info('rlog "'.$path.'"', 0);
-	exec('rlog "'.$path.'"', $rcs);
+	_info('rlog '.$path, 0);
+	exec('rlog '.escapeshellarg($path), $rcs);
 	require_once('./system/html.php');
 	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe(dirname($filename)).'/'
