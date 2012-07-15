@@ -173,7 +173,8 @@ abstract class ContentModule extends Module
 	protected $query_list_admin = "SELECT content_id AS id, timestamp,
 		name AS module, daportal_user.user_id AS user_id, username,
 		daportal_group.group_id AS group_id, groupname,
-		title, daportal_content.enabled AS enabled, public
+		title, daportal_content.enabled AS enabled,
+		daportal_content.public AS public
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_group
 		WHERE daportal_content.module_id=daportal_module.module_id

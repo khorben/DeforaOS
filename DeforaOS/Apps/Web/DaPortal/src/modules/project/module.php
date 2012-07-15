@@ -91,6 +91,7 @@ class ProjectModule extends ContentModule
 		AND daportal_content.content_id=:content_id";
 	protected $project_query_list_admin_projects = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
+		daportal_content.public AS public,
 		timestamp, name AS module,
 		daportal_user.user_id AS user_id, username, title
 		FROM daportal_content, daportal_module, daportal_user,
