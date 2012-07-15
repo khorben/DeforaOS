@@ -59,9 +59,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	}
 	foreach($files as $f)
 	{
-		unset($rcs); //FIXME use escapeshellcmd()?
-		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
-		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
+		unset($rcs);
+		_info('rlog '.$path.'/'.$f).'"', 0);
+		exec('rlog '.escapeshellarg($path.'/'.$f), $rcs);
 		if(count($rcs) == 0)
 			return _error('Could not list files');
 		for($i = 0, $count = count($rcs); $i < $count; $i++)
@@ -222,8 +222,8 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);
 	$path = str_replace('$', '\$', $path);
-	_info('rlog -h "'.$path.'"', 0);
-	exec('rlog -h "'.$path.'"', $rcs);
+	_info('rlog -h '.$path, 0);
+	exec('rlog -h '.escapeshellarg($path), $rcs);
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		_info($i.': '.$rcs[$i], 0);
 	if(!$download)
