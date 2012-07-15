@@ -167,7 +167,7 @@ class CVSScmProject
 		for($i = 0, $cnt = count($rcs); $i < $cnt;)
 			if($rcs[$i++] == '----------------------------')
 				break;
-		for(; $i < $cnt; $i++)
+		for(; $i < $cnt; $i += 3)
 		{
 			$row = $view->append('row');
 			$row->setProperty('title', substr($rcs[$i], 9));
@@ -181,8 +181,20 @@ class CVSScmProject
 			for(; strncmp($rcs[$i + 2], 'branches: ', 10) == 0;
 					$i++);
 			$row->setProperty('message', $rcs[$i + 2]);
-			//FIXME really implement
-			break;
+			//skip to the next revision
+			$dashes = '----------------------------';
+			$longdashes =
+'=============================================================================';
+			if($message == $dashes || $message == $longdashes)
+				$message = '';
+			else
+			{
+				$msg = '';
+				for($i++; $i < $cnt && $rcs[$i + 2] != $dashes
+					&& $rcs[i + 2] != $longdashes; $i++)
+					$msg = '...';
+				$message .= $msg;
+			}
 		}
 		return $vbox;
 	}
