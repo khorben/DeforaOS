@@ -150,11 +150,41 @@ class CVSScmProject
 
 	private function _browseFile($engine, $request, $vbox, $path, $file)
 	{
-		$error = _('Could not open file');
+		$error = _('Could not list revisions');
 
-		//FIXME really implement
-		return new PageElement('dialog', array('type' => 'error',
-				'text' => $error));
+		//obtain the revisions
+		$cmd = 'rlog '.escapeshellarg($path);
+		exec($cmd, $rcs, $res);
+		if($res != 0 || count($rcs) == 0)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		//view
+		$vbox->append('title', array('text' => _('Revisions')));
+		$columns = array('title' => _('Revision'), 'date' => _('Date'),
+				'username' => _('Author'),
+				'message' => _('Message'));
+		$view = $vbox->append('treeview', array('columns' => $columns));
+		for($i = 0, $cnt = count($rcs); $i < $cnt;)
+			if($rcs[$i++] == '----------------------------')
+				break;
+		for(; $i < $cnt; $i++)
+		{
+			$row = $view->append('row');
+			$row->setProperty('title', substr($rcs[$i], 9));
+			$row->setProperty('date', substr($rcs[$i + 1], 6, 19));
+			$username = substr($rcs[$i + 1], 36);
+			$username = substr($username, 0, strspn($username,
+					'abcdefghijklmnopqrstuvwxyz'
+					.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+					.'0123456789'));
+			$row->setProperty('username', $username);
+			for(; strncmp($rcs[$i + 2], 'branches: ', 10) == 0;
+					$i++);
+			$row->setProperty('message', $rcs[$i + 2]);
+			//FIXME really implement
+			break;
+		}
+		return $vbox;
 	}
 
 
