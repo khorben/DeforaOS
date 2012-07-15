@@ -60,7 +60,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	foreach($files as $f)
 	{
 		unset($rcs);
-		_info('rlog '.$path.'/'.$f).'"', 0);
+		_info('rlog '.$path.'/'.$f, 0);
 		exec('rlog '.escapeshellarg($path.'/'.$f), $rcs);
 		if(count($rcs) == 0)
 			return _error('Could not list files');
@@ -150,7 +150,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 		if($rcs[$i++] == '----------------------------')
 			break;
 	$revisions = array();
-	for($count = count($rcs); $i < $count; $i+=3)
+	for($count = count($rcs); $i < $count - 2; $i + =3)
 	{
 		$name = _html_safe(substr($rcs[$i], 9));
 		$date = _html_safe(substr($rcs[$i+1], 6, 19));
