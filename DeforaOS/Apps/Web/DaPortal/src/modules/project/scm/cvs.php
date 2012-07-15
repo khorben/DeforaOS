@@ -39,12 +39,11 @@ class CVSScmProject
 	//CVSScmProject::browse
 	public function browse($engine, $project, $request)
 	{
-		$error = _('Could not open the CVS repository');
+		$error = _('No CVS repository defined');
 
 		if($this->cvsroot === FALSE || strlen($project['cvsroot']) == 0)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('No CVS repository defined')));
+				'type' => 'error', 'text' => $error));
 		$vbox = new PageElement('vbox');
 		//browse
 		$path = $this->cvsroot.'/'.$project['cvsroot'];
@@ -55,10 +54,26 @@ class CVSScmProject
 		}
 		else
 			$file = '/';
+		$error = _('No such file or directory');
+		if(($st = lstat($path)) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		if(($st['mode'] & CVSScmProject::$S_IFDIR)
+				=== CVSScmProject::$S_IFDIR)
+			return $this->_browseDir($engine, $request, $vbox,
+					$path, $file);
+		return $this->_browseFile($engine, $request, $vbox, $path,
+				$file);
+	}
+
+	private function _browseDir($engine, $request, $vbox, $path, $file)
+	{
+		$error = _('Could not open directory');
+
+		$vbox->append('title', array('text' => _('Browse source')));
 		if(($dir = opendir($path)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
-		$vbox->append('title', array('text' => _('Browse source')));
 		//view
 		$columns = array('icon' => '', 'title' => _('Filename'),
 				'date' => _('Date'),
@@ -111,10 +126,11 @@ class CVSScmProject
 					'source' => $icon));
 			$row->setProperty('icon', $icon);
 			//title
+			$f = ltrim($file.'/'.$de, '/');
 			$r = new Request($engine, $request->getModule(),
 					$request->getAction(),
 					$request->getId(), $request->getTitle(),
-					array('file' => $de));
+					array('file' => $f));
 			$link = new PageElement('link', array('request' => $r,
 					'text' => substr($de, 0, -2)));
 			$row->setProperty('title', $link);
@@ -130,6 +146,15 @@ class CVSScmProject
 		}
 		closedir($dir);
 		return $vbox;
+	}
+
+	private function _browseFile($engine, $request, $vbox, $path, $file)
+	{
+		$error = _('Could not open file');
+
+		//FIXME really implement
+		return new PageElement('dialog', array('type' => 'error',
+				'text' => $error));
 	}
 
 
