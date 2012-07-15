@@ -315,7 +315,7 @@ class BrowserModule extends Module
 		$path = '/'.ltrim($path, '/');
 		$path = str_replace('/./', '/', $path);
 		//FIXME really implement '..'
-		if(strpos($path, '/../') !== FALSE)
+		if(strcmp($path, '/..') == 0 || strpos($path, '/../') !== FALSE)
 			return '/';
 		return $path;
 	}
