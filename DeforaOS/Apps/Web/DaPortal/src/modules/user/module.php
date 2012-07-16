@@ -737,7 +737,7 @@ Thank you for registering!")));
 		if($cred->getUserId() != 0)
 			//already registered and logged in
 			return $this->callDisplay($engine, new Request);
-		if(($uid = $request->getId('id')) !== FALSE
+		if(($uid = $request->getId()) !== FALSE
 				&& ($token = $request->getParameter('token'))
 				!== FALSE)
 			return $this->_reset_token($engine, $request, $uid,
