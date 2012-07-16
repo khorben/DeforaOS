@@ -711,6 +711,7 @@ class HTMLFormat extends FormatElements
 			$this->_renderTreeviewHidden('module', $r->getModule());
 			$this->_renderTreeviewHidden('action', $r->getAction());
 			$this->_renderTreeviewHidden('id', $r->getId());
+			$this->_renderTreeviewHidden('title', $r->getTitle());
 			if(($parameters = $r->getParameters()) !== FALSE)
 				foreach($r->getParameters() as $k => $v)
 					$this->_renderTreeviewHidden($k, $v);
@@ -727,7 +728,25 @@ class HTMLFormat extends FormatElements
 		$this->renderTabs(-1);
 		$this->tagClose('div');
 		$this->renderTabs(-1);
+		//render the (optional) controls
+		$this->_renderTreeviewControls($e);
 		$this->tagClose('form');
+	}
+
+	private function _renderTreeviewControls($e)
+	{
+		if(($children = $e->getChildren()) === FALSE)
+			return;
+		foreach($children as $c)
+			switch($c->getType())
+			{
+				case 'row':
+				case 'toolbar':
+					break;
+				default:
+					$this->renderElement($c);
+					break;
+			}
 	}
 
 	private function _renderTreeviewHeaders($columns)
