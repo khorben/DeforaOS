@@ -63,6 +63,9 @@ class CVSScmProject
 				=== CVSScmProject::$S_IFDIR)
 			return $this->_browseDir($engine, $request, $vbox,
 					$path, $file);
+		if(($revision = $request->getParameter('revision')) !== FALSE)
+			return $this->_browseFileRevision($engine, $request,
+					$vbox, $path, $file, $revision);
 		return $this->_browseFile($engine, $request, $vbox, $path,
 				$file);
 	}
@@ -171,7 +174,14 @@ class CVSScmProject
 		for(; $i < $cnt - 2; $i += 3)
 		{
 			$row = $view->append('row');
-			$row->setProperty('title', substr($rcs[$i], 9));
+			$revision = substr($rcs[$i], 9);
+			$r = new Request($engine, 'project', 'browse',
+					$request->getId(), $request->getTitle(),
+					array('file' => $file,
+						'revision' => $revision));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $revision));
+			$row->setProperty('title', $link);
 			$row->setProperty('date', substr($rcs[$i + 1], 6, 19));
 			//username
 			$username = substr($rcs[$i + 1], 36);
@@ -205,6 +215,51 @@ class CVSScmProject
 			}
 			$row->setProperty('message', $message);
 		}
+		return $vbox;
+	}
+
+	private function _browseFileRevision($engine, $request, $vbox, $path,
+			$file, $revision)
+	{
+		$error = 'Internal server error';
+
+		$cmd = 'co -p'.escapeshellarg($revision).' '.$path;
+		if(($fp = popen($cmd, 'r')) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		$label = $vbox->append('label');
+		//link back
+		$r = new Request($engine, 'project', 'browse',
+				$request->getId(), $request->getTitle(),
+				array('file' => $file));
+		$label->append('link', array('request' => $r, 'stock' => 'back',
+					'text' => 'Back to the revision list'));
+		//link to the download
+		$label->append('label', array('text' => ' '));
+		$r = new Request($engine, 'project', 'browse',
+				$request->getId(), $request->getTitle(),
+				array('file' => $file, 'revision' => $revision,
+					'download' => 1));
+		$label->append('link', array('request' => $r,
+					'stock' => 'download',
+					'text' => 'Download file'));
+		//link to this page
+		$label->append('label', array('text' => ' '));
+		$r = new Request($engine, 'project', 'browse',
+				$request->getId(), $request->getTitle(), array(
+					'file' => $file,
+					'revision' => $revision));
+		$label->append('link', array('request' => $r,
+					'stock' => 'link',
+					'text' => 'Permalink'));
+		while(($line = fgets($fp)) !== FALSE)
+		{
+			$line = rtrim($line, "\r\n");
+			$vbox->append('label', array(
+					'class' => 'preformatted',
+					'text' => $line));
+		}
+		fclose($fp);
 		return $vbox;
 	}
 
