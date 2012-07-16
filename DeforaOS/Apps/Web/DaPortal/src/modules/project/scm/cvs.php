@@ -17,6 +17,7 @@
 
 
 require_once('./system/mime.php');
+require_once('./system/user.php');
 
 
 //CVSScmProject
@@ -178,7 +179,13 @@ class CVSScmProject
 					'abcdefghijklmnopqrstuvwxyz'
 					.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 					.'0123456789'));
-			$row->setProperty('username', $username);
+			$user = User::lookup($engine, $username);
+			$r = new Request($engine, 'project', 'list',
+					$user->getUserId(), $username);
+			$link = new PageElement('link', array('request' => $r,
+					'stock' => 'user',
+					'text' => $username));
+			$row->setProperty('username', $link);
 			for(; strncmp($rcs[$i + 2], 'branches: ', 10) == 0;
 					$i++);
 			//message
