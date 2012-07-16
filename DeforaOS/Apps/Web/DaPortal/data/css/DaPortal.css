@@ -26,6 +26,7 @@
 
 .preformatted {
 	font-family:			monospace;
+	white-space:			pre-wrap;
 }
 
 .underline {
