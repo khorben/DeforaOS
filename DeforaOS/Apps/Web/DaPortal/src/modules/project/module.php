@@ -366,9 +366,12 @@ class ProjectModule extends ContentModule
 		$page->append($toolbar);
 		if(($scm = $this->attachScm($engine)) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('An error occurred')));
+					'type' => 'error',
+					'text' => _('An error occurred')));
 		$browse = $scm->browse($engine, $project, $request);
+		if(is_resource($browse))
+			//FIXME set the proper filename
+			return $browse;
 		$page->append($browse);
 		return $page;
 	}

@@ -227,6 +227,8 @@ class CVSScmProject
 		if(($fp = popen($cmd, 'r')) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
+		if($request->getParameter('download') !== FALSE)
+			return $fp;
 		$label = $vbox->append('label');
 		//link back
 		$r = new Request($engine, 'project', 'browse',
