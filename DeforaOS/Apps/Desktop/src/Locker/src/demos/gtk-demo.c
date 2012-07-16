@@ -233,7 +233,10 @@ static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window)
 /* gtkdemo_start */
 static void _gtkdemo_start(GtkDemo * gtkdemo)
 {
-	if(gtkdemo->timeout == 0)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(gtkdemo->timeout == 0 && _gtkdemo_on_timeout(gtkdemo) == TRUE)
 		gtkdemo->timeout = g_timeout_add(40, _gtkdemo_on_timeout,
 				gtkdemo);
 }
@@ -242,6 +245,9 @@ static void _gtkdemo_start(GtkDemo * gtkdemo)
 /* gtkdemo_stop */
 static void _gtkdemo_stop(GtkDemo * gtkdemo)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(gtkdemo->timeout != 0)
 		g_source_remove(gtkdemo->timeout);
 	gtkdemo->timeout = 0;
