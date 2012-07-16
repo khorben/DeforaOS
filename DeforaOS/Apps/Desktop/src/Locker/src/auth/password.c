@@ -272,10 +272,11 @@ static gboolean _password_on_password_wrong(gpointer data)
 static gboolean _password_on_timeout(gpointer data)
 {
 	Password * password = data;
-	LockerAuthHelper * helper = password->helper;
 
-	gtk_widget_hide(password->widget);
-	password->source = 0;
-	helper->action(helper->locker, LOCKER_ACTION_ACTIVATE);
+	gtk_entry_set_text(GTK_ENTRY(password->password), _("Timed out"));
+	gtk_widget_set_sensitive(password->password, FALSE);
+	gtk_widget_set_sensitive(password->button, FALSE);
+	password->source = g_timeout_add(3000, _password_on_password_wrong,
+			password);
 	return FALSE;
 }
