@@ -67,7 +67,7 @@ abstract class ContentModule extends Module
 		switch($action)
 		{
 			case 'actions':
-				return $this->actions($engine, $request);
+				return $this->$action($engine, $request);
 			case 'admin':
 			case 'default':
 			case 'delete':

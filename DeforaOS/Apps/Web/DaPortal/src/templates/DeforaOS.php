@@ -30,15 +30,21 @@ class DeforaOSTemplate extends BasicTemplate
 	{
 		$cred = $engine->getCredentials();
 
-		$vbox = new PageElement('vbox', array('id' => 'menu'));
+		//obtain the parent menu
 		if($entries === FALSE)
 			$entries = $this->getEntries($engine);
-		$vbox->append(parent::getMenu($engine, $entries));
+		if(($menu = parent::getMenu($engine, $entries)) === FALSE)
+			return FALSE;
+		$vbox = new PageElement('vbox', array('id' => 'menu'));
+		$vbox->append($menu);
+		//add some widgets
 		if(($request = new Request($engine, 'search', 'widget'))
 				!== FALSE)
+			//search widget
 			$vbox->append($engine->process($request));
 		if(($request = new Request($engine, 'user', 'widget'))
 				!== FALSE)
+			//user widget
 			$vbox->append($engine->process($request));
 		return $vbox;
 	}
