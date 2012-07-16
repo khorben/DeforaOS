@@ -232,8 +232,9 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 				._html_safe(substr($rcs[2], 14))
 				.' '.$revision.'</h1>'."\n");
 	$basename = substr($rcs[2], 14);
-	$fp = popen('co -p'.$revision.' "'.$path.'"', 'r');
-	_info('co -p'.$revision.' "'.$path.'"', 0);
+	$cmd = 'co -p'.escapeshellarg($revision).' '.escapeshellarg($path);
+	$fp = popen($cmd, 'r');
+	_info($cmd, 0);
 	require_once('./system/mime.php');
 	if(($mime = _mime_from_ext($basename)) == 'default')
 		$mime = 'text/plain';
