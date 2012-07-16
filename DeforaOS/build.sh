@@ -446,7 +446,7 @@ if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 	esac
 	case "$SYSTEM" in
 		MINGW32_NT-5.?)
-			MACHINE="Windows"
+			SYSTEM="Windows"
 			;;
 	esac
 	TARGET="$SYSTEM-$MACHINE"
