@@ -1002,7 +1002,7 @@ static int _locker_action_activate(Locker * locker, int force)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(force == 0 && _locker_event(locker, LOCKER_EVENT_ACTIVATING) != 0)
+	if(_locker_event(locker, LOCKER_EVENT_ACTIVATING) != 0 && force == 0)
 		return -1;
 	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_ACTIVATE)
 			!= 0)
@@ -1013,6 +1013,7 @@ static int _locker_action_activate(Locker * locker, int force)
 		gtk_window_fullscreen(GTK_WINDOW(locker->windows[i]));
 	}
 	_locker_action_start(locker);
+	_locker_event(locker, LOCKER_EVENT_ACTIVATED);
 	return 0;
 }
 
@@ -1029,6 +1030,7 @@ static int _locker_action_deactivate(Locker * locker, int reset)
 			!= 0)
 		return -1;
 	_locker_action_stop(locker);
+	_locker_event(locker, LOCKER_EVENT_DEACTIVATED);
 	if(reset != 0)
 		XResetScreenSaver(GDK_DISPLAY_XDISPLAY(locker->display));
 	return 0;
@@ -1062,6 +1064,8 @@ static int _locker_action_enable(Locker * locker)
 /* locker_action_lock */
 static int _locker_action_lock(Locker * locker, int force)
 {
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
@@ -1069,7 +1073,9 @@ static int _locker_action_lock(Locker * locker, int force)
 		return -1;
 	locker->locked = 1;
 	_locker_action_activate(locker, 1);
-	return locker->adefinition->action(locker->auth, LOCKER_ACTION_LOCK);
+	ret = locker->adefinition->action(locker->auth, LOCKER_ACTION_LOCK);
+	_locker_event(locker, LOCKER_EVENT_LOCKED);
+	return ret;
 }
 
 
@@ -1166,6 +1172,7 @@ static int _locker_action_unlock(Locker * locker)
 		return -1;
 	if(locker->adefinition->action(locker->auth, LOCKER_ACTION_UNLOCK) != 0)
 		return -1;
+	_locker_event(locker, LOCKER_EVENT_UNLOCKED);
 	locker->locked = 0;
 	_locker_action_deactivate(locker, 1);
 	/* ungrab keyboard and mouse */

@@ -78,17 +78,29 @@ static int _debug_event(Debug * debug, LockerEvent event)
 {
 	switch(event)
 	{
+		case LOCKER_EVENT_ACTIVATED:
+			fprintf(stderr, "DEBUG: %s() ACTIVATED\n", __func__);
+			break;
 		case LOCKER_EVENT_ACTIVATING:
 			fprintf(stderr, "DEBUG: %s() ACTIVATING\n", __func__);
 			break;
+		case LOCKER_EVENT_DEACTIVATED:
+			fprintf(stderr, "DEBUG: %s() DEACTIVATED\n", __func__);
+			break;
 		case LOCKER_EVENT_DEACTIVATING:
 			fprintf(stderr, "DEBUG: %s() DEACTIVATING\n", __func__);
+			break;
+		case LOCKER_EVENT_LOCKED:
+			fprintf(stderr, "DEBUG: %s() LOCKED\n", __func__);
 			break;
 		case LOCKER_EVENT_LOCKING:
 			fprintf(stderr, "DEBUG: %s() LOCKING\n", __func__);
 			break;
 		case LOCKER_EVENT_SUSPENDING:
 			fprintf(stderr, "DEBUG: %s() SUSPENDING\n", __func__);
+			break;
+		case LOCKER_EVENT_UNLOCKED:
+			fprintf(stderr, "DEBUG: %s() UNLOCKED\n", __func__);
 			break;
 		case LOCKER_EVENT_UNLOCKING:
 			fprintf(stderr, "DEBUG: %s() UNLOCKING\n", __func__);
