@@ -62,6 +62,10 @@ class DownloadModule extends ContentModule
 		if($internal)
 			switch($action)
 			{
+				case 'get':
+					return $this->_get($engine,
+							$request->getId(),
+							$request->getTitle());
 				case 'getRoot':
 					return $this->getRoot($engine);
 				case 'submit':
