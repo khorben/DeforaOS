@@ -47,8 +47,6 @@ class UserModule extends Module
 				return $this->$action($engine, $request);
 			case 'admin':
 			case 'default':
-			case 'disable':
-			case 'enable':
 			case 'display':
 			case 'login':
 			case 'logout':
@@ -285,6 +283,10 @@ class UserModule extends Module
 				'text' => _('Enable'),
 				'type' => 'submit', 'name' => 'action',
 				'value' => 'enable'));
+		$toolbar->append('button', array('stock' => 'delete',
+				'text' => _('Delete'),
+				'type' => 'submit', 'name' => 'action',
+				'value' => 'delete'));
 		$no = new PageElement('image', array('stock' => 'no',
 				'size' => 16, 'title' => _('Disabled')));
 		$yes = new PageElement('image', array('stock' => 'yes',
@@ -384,6 +386,17 @@ class UserModule extends Module
 		$page->append('link', array('stock' => 'back', 'request' => $r,
 				'text' => _('Back to the site')));
 		return $page;
+	}
+
+
+	//UserModule::callDelete
+	protected function callDelete($engine, $request)
+	{
+		$query = $this->query_delete;
+
+		return $this->helperApply($engine, $request, $query, 'admin',
+			_('User(s) could be deleted successfully'),
+			_('Some user(s) could not be deleted'));
 	}
 
 
@@ -1166,6 +1179,8 @@ Thank you for registering!")));
 		ON daportal_user.group_id=daportal_group.group_id';
 	private $query_content = "SELECT name FROM daportal_module
 		WHERE enabled='1' ORDER BY name ASC";
+	private $query_delete = "DELETE FROM daportal_user
+		WHERE user_id=:user_id";
 	private $query_disable = "UPDATE daportal_user
 		SET enabled='0'
 		WHERE user_id=:user_id";
