@@ -55,7 +55,8 @@ class DeforaOSTemplate extends BasicTemplate
 	{
 		$title = new PageElement('title', array('id' => 'title'));
 		$link = $title->append('link', array('url' => $this->homepage));
-		$link->append('image', array('source' => 'themes/DeforaOS.png'));
+		$link->append('image', array(
+			'source' => 'themes/DeforaOS.png'));
 		return $title;
 	}
 
