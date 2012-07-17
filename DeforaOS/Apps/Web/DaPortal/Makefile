@@ -80,6 +80,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/daportal.conf.xml \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/install.xml \
+		$(PACKAGE)-$(VERSION)/doc/install.xsl \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/sql/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/sql/mysql.sql \

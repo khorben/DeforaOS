@@ -12,7 +12,7 @@
 	<!ENTITY purpose   "Invoke DaPortal requests from the command line">
 ]>
 <refentry>
-	<refentryinfo>
+	<info>
 		<title>&title;</title>
 		<productname>&package;</productname>
 		<authorgroup>
@@ -20,9 +20,7 @@
 				<firstname>&firstname;</firstname>
 				<surname>&surname;</surname>
 				<contrib>Code and documentation.</contrib>
-				<address>
-					<email>&email;</email>
-				</address>
+				<address><email>&email;</email></address>
 			</author>
 		</authorgroup>
 		<copyright>
@@ -36,7 +34,7 @@
 				under the terms of the GNU General Public License, Version 3 as published by
 				the Free Software Foundation.</para>
 		</legalnotice>
-	</refentryinfo>
+	</info>
 	<refmeta>
 		<refentrytitle>&name;</refentrytitle>
 		<manvolnum>1</manvolnum>
@@ -164,7 +162,7 @@
 			which may expect different arguments, function differently, have differing
 			output (such as <quote>GtkEngine</quote>) or may not even work at all from
 			the command line interface.</para>
-		<para>It is currently impossible to set parameters to the request to be
+		<para>It is currently impossible to set additional parameters to the request
 			sent.</para>
 	</refsect1>
 	<refsect1 id="see_also">

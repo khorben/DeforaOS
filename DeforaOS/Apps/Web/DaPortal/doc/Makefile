@@ -1,5 +1,5 @@
 SUBDIRS	= sql
-TARGETS	= daportal.1 daportal.html daportal.conf.5 daportal.conf.html
+TARGETS	= daportal.1 daportal.html daportal.conf.5 daportal.conf.html install.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -25,13 +25,16 @@ daportal.conf.5: daportal.conf.xml
 daportal.conf.html: daportal.conf.xml
 	./docbook.sh -P "$(PREFIX)" -- "daportal.conf.html"
 
+install.html: install.xml install.xsl
+	./docbook.sh -P "$(PREFIX)" -- "install.html"
+
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(daportal.1_OBJS) $(daportal.html_OBJS) $(daportal.conf.5_OBJS) $(daportal.conf.html_OBJS)
+	$(RM) -- $(daportal.1_OBJS) $(daportal.html_OBJS) $(daportal.conf.5_OBJS) $(daportal.conf.html_OBJS) $(install.html_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(daportal.1_OBJS) $(daportal.html_OBJS) $(daportal.conf.5_OBJS) $(daportal.conf.html_OBJS)
+	$(RM) -- $(daportal.1_OBJS) $(daportal.html_OBJS) $(daportal.conf.5_OBJS) $(daportal.conf.html_OBJS) $(install.html_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -40,6 +43,7 @@ install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "daportal.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "daportal.conf.5"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "daportal.conf.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "install.html"
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
@@ -47,5 +51,6 @@ uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "daportal.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "daportal.conf.5"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "daportal.conf.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "install.html"
 
 .PHONY: all subdirs clean distclean install uninstall
