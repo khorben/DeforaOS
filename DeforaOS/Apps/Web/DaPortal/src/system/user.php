@@ -30,8 +30,7 @@ class User
 	public function __construct($engine, $uid, $username = FALSE)
 	{
 		$db = $engine->getDatabase();
-		$query = $username ? $this->query_get_by_id_username
-			: $this->query_get_by_id;
+		$query = $this->query_get_by_id;
 
 		$this->user_id = 0;
 		$this->username = 'anonymous';
@@ -40,12 +39,16 @@ class User
 		$this->admin = FALSE;
 		$this->email = FALSE;
 		$this->fullname = FALSE;
+		if($username !== FALSE)
+		{
+			//XXX workaround for friendly titles
+			$query = $this->query_get_by_id_username;
+			$username = str_replace('-', '_', $username);
+		}
 		if(($res = $db->query($engine, $query, array(
 					'user_id' => $uid,
 					'username' => $username))) === FALSE
-				|| count($res) != 1
-				|| ($username !== FALSE
-				&& $res[0]['username'] != $username))
+				|| count($res) != 1)
 			return;
 		$res = $res[0];
 		$this->user_id = $res['id'];
@@ -477,7 +480,7 @@ class User
 		ON daportal_user.group_id=daportal_group.group_id
 		WHERE daportal_group.enabled='1'
 		AND user_id=:user_id
-		AND username=:username";
+		AND username LIKE :username";
 	static private $query_get_by_username = "SELECT user_id AS id, username,
 		daportal_user.enabled AS enabled,
 		daportal_user.group_id AS group_id, groupname, admin, email,
