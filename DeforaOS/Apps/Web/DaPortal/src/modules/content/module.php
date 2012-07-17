@@ -70,13 +70,9 @@ abstract class ContentModule extends Module
 				return $this->$action($engine, $request);
 			case 'admin':
 			case 'default':
-			case 'delete':
-			case 'disable':
 			case 'display':
-			case 'enable':
 			case 'headline':
 			case 'list':
-			case 'post':
 			case 'preview':
 			case 'publish':
 			case 'submit':
