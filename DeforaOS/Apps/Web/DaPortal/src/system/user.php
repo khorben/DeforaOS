@@ -298,7 +298,8 @@ class User
 		$db = $engine->getDatabase();
 		$error = '';
 
-		$timestamp = date('Y-m-d H:i:s', time() - 86400); //one day
+		$timestamp = strftime(User::$timestamp_format,
+				time() - 86400); //one day
 		//verify the username and e-mail address
 		$res = $db->query($engine, User::$query_reset_validate,
 			array('username' => $username,
@@ -343,7 +344,8 @@ class User
 
 		if($db->transactionBegin($engine) === FALSE)
 			return FALSE;
-		$timestamp = date('Y-m-d H:i:s', time() - 86400); //one day
+		$timestamp = strftime(User::$timestamp_format,
+				time() - 86400); //one day
 		if($db->query($engine, User::$query_reset_cleanup, array(
 					'timestamp' => $timestamp)) === FALSE)
 		{
@@ -390,7 +392,8 @@ class User
 			$error .= _("The token must be specified\n");
 		if(strlen($error) > 0)
 			return FALSE;
-		$timestamp = date('Y-m-d H:i:s', time() - 604800); //one week
+		$timestamp = strftime(User::$timestamp_format,
+				time() - 604800); //one week
 		if($db->query($engine, User::$query_register_cleanup, array(
 					'timestamp' => $timestamp)) === FALSE)
 		{
@@ -448,6 +451,8 @@ class User
 	private $admin = FALSE;
 	private $email = FALSE;
 	private $fullname = FALSE;
+
+	private $timestamp_format = '%Y-%m-%d %H:%M:%S';
 
 	//queries
 	private $query_authenticate = "SELECT user_id, group_id, username,
