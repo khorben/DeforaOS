@@ -206,36 +206,12 @@ static gboolean _slider_on_timeout(gpointer data)
 
 
 /* slider_on_timeout_suspend */
-/* FIXME move this to the Openmoko plug-in (and do not suspend if charging) */
 static gboolean _slider_on_timeout_suspend(gpointer data)
 {
 	Slider * slider = data;
 	LockerAuthHelper * helper = slider->helper;
-#ifdef __NetBSD__
-	int sleep_state = 3;
-#else
-	int fd;
-	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
-		NULL };
-	GError * error = NULL;
-#endif
 
-#ifdef __NetBSD__
-	if(sysctlbyname("machdep.sleep_state", NULL, NULL, &sleep_state,
-				sizeof(sleep_state)) != 0)
-		helper->error(NULL, strerror(errno), 1);
-#else
-	if((fd = open("/sys/power/state", O_WRONLY)) >= 0)
-	{
-		write(fd, "mem\n", 4);
-		close(fd);
-	}
-	else if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
-				NULL, NULL, NULL, &error) != TRUE)
-	{
-		helper->error(NULL, error->message, 1);
-		g_error_free(error);
-	}
-#endif
+	slider->source = 0;
+	helper->action(helper->locker, LOCKER_ACTION_SUSPEND);
 	return FALSE;
 }
