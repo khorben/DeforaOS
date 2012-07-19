@@ -57,6 +57,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/systray.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/template.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \

@@ -1,4 +1,4 @@
-TARGETS	= debug.so openmoko.so panel.so systray.so
+TARGETS	= debug.so openmoko.so panel.so systray.so template.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -46,6 +46,13 @@ systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 systray.so: $(systray_OBJS)
 	$(CCSHARED) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
 
+template_OBJS = template.o
+template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+template.so: $(template_OBJS)
+	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+
 debug.o: debug.c ../../include/Locker.h
 	$(CC) $(debug_CFLAGS) -c debug.c
 
@@ -58,8 +65,11 @@ panel.o: panel.c ../../include/Locker.h
 systray.o: systray.c ../../include/Locker.h
 	$(CC) $(systray_CFLAGS) -c systray.c
 
+template.o: template.c ../../include/Locker.h
+	$(CC) $(template_CFLAGS) -c template.c
+
 clean:
-	$(RM) -- $(debug_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(systray_OBJS)
+	$(RM) -- $(debug_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(systray_OBJS) $(template_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -73,11 +83,14 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- systray.so $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
+	$(INSTALL) -m 0644 -- template.so $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
 
 .PHONY: all clean distclean install uninstall
