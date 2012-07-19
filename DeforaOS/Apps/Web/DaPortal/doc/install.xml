@@ -13,270 +13,364 @@
 ]>
 <article>
 	<info>
-	<title>Installing &package;</title>
-	<productname>&package;</productname>
-	<authorgroup>
-		<author>
-			<personname><firstname>&firstname;</firstname><surname>&surname;</surname></personname>
-			<contrib>Code and documentation.</contrib>
-			<address><email>&email;</email></address>
-		</author>
-	</authorgroup>
-	<copyright>
-		<year>2012</year>
-		<holder>&firstname; &surname; &lt;&email;&gt;</holder>
-	</copyright>
-	<legalnotice>
-		<para>This guide was written for the DeforaOS project (and may be used by
-			others).</para>
-		<para>Permission is granted to copy, distribute and/or modify this document
-			under the terms of the GNU General Public License, Version 3 as published by
-			the Free Software Foundation.</para>
-	</legalnotice>
-	<publisher><publishername>The DeforaOS Project</publishername></publisher>
-</info>
-<warning>
-	<title>Warning: work in progress</title>
-	<para>These notes are based on a development version of &package; 2.</para>
-</warning>
-<section>
-	<title>Requirements</title>
-	<para>&package; 2 is based on a modular architecture, and therefore able to
-		adapt to a number of different environments. The common requirements are:
-		<itemizedlist>
-			<listitem><para>PHP 5.0 or later:<itemizedlist>
-						<listitem><para><ulink
-									url="http://www.php.net/">http://www.php.net/</ulink></para></listitem>
-						<listitem><para>the Suhosin patch and extension (recommended), <ulink
-									url="http://www.hardened-php.net/suhosin/">http://www.hardened-php.net/suhosin/</ulink></para></listitem>
-						<listitem><para>optionally, the gettext extension for PHP (if not
-								builtin)</para></listitem>
-			</itemizedlist></para></listitem>
-				<listitem><para>a SQL database backend; either:<itemizedlist>
-							<listitem><para>PDO, now standard in PHP;</para></listitem>
-							<listitem><para>SQLite, <ulink
-										url="http://www.sqlite.org/">http://www.sqlite.org/</ulink></para></listitem>
-							<listitem><para>PostgreSQL, <ulink
-										url="http://www.postgresql.org/">http://www.postgresql.org/</ulink></para></listitem>
-							<listitem><para>or MySQL, <ulink
-										url="http://www.mysql.org/">http://www.mysql.org/</ulink> (with known
-									issues)</para></listitem>
-						</itemizedlist>
-					</para></listitem>
+		<title>Installing &package;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<personname><firstname>&firstname;</firstname><surname>&surname;</surname></personname>
+				<contrib>Code and documentation.</contrib>
+				<address><email>&email;</email></address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This guide was written for the DeforaOS project (and may be used by
+				others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this document
+				under the terms of the GNU General Public License, Version 3 as published by
+				the Free Software Foundation.</para>
+		</legalnotice>
+		<publisher><publishername>The DeforaOS Project</publishername></publisher>
+	</info>
+	<warning>
+		<title>Warning: work in progress</title>
+		<para>These notes are based on a development version of &package; 2.</para>
+	</warning>
+	<section>
+		<title>Introduction notes</title>
+		<section>
+			<title>Where to find &package;</title>
+			<para>First, make sure that you have downloaded the latest stable version of
+				&package; 2. It can be found there: <ulink
+					url="http://www.defora.org/os/project/download/12/DaPortal">http://www.defora.org/os/project/download/12/DaPortal</ulink>.
+				This guide will assume the resulting archive to be called
+				<filename>DaPortal.tar.gz</filename>.</para>
+			<para>Alternatively, you may choose to track the development of &package;
+				2, or any given branch from the Source Code Management system. Some
+				instructions to do so can be found here: <ulink
+					url="http://www.defora.org/os/project/download/12/DaPortal">http://www.defora.org/os/project/download/12/DaPortal</ulink>.</para>
+		</section>
+		<section>
+			<title>Common requirements</title>
+			<para>&package; 2 is a Content Management System (CMS) written in the PHP
+				programming language. It is based on a modular architecture, and therefore
+				able to adapt to a number of different environments. It therefore requires a
+				working installation of PHP, version 5.0 or later. PHP can be found at
+				<ulink url="http://www.php.net/">http://www.php.net/</ulink>.</para>
+			<para>On many platforms the default installation of PHP does not include (or
+				enable) all of the builtin extensions, some of which are required or
+				recommended for &package; to function properly:
+				<itemizedlist>
+					<listitem><para>the gettext extension (optional)</para></listitem>
+					<listitem><para>the POSIX extension (for the <varname>browser</varname>
+							module)</para></listitem>
+					<listitem><para>the corresponding SQL database extension (see <xref
+								linkend="introduction-database"/>)</para></listitem>
 				</itemizedlist>
 			</para>
-			<para>Then, depending on the desired user-interface:<itemizedlist>
-					<listitem><para>a web server supporting PHP, like:<itemizedlist>
-								<listitem><para>Apache, <ulink
-											url="http://httpd.apache.org/">http://httpd.apache.org/</ulink></para></listitem>
-					</itemizedlist></para></listitem>
-					<listitem><para>or the Gtk+ extension for PHP: <ulink
-								url="http://gtk.php.net/">http://gtk.php.net/</ulink></para></listitem>
-							<listitem><para>or PHP compiled with support for command-line
-									interaction;</para></listitem>
-							<listitem><para>the POSIX extension for PHP (if not
-									builtin)</para></listitem>
-						</itemizedlist>
-					</para>
-					<para>The following optional components will likely improve the behavior of
-						&package;:<itemizedlist>
-							<listitem><para>the GNU Gettext extension for PHP (if not
-									builtin)</para></listitem>
-							<listitem><para>the shared-mime-info package from the freedesktop
-									project;</para></listitem>
-							<listitem><para>either one of the GNOME, Tango or XFCE4 icon
-									themes.</para></listitem>
-					</itemizedlist></para>
-					<para>Please make sure that your system supports the desired combination of
-						components. Install and configure them accordingly before attempting to
-						install &package;.</para>
-					<para>Then, make sure that you have downloaded the latest stable version of
-						&package; 2. It can be found there: <ulink
-							url="http://www.defora.org/os/project/download/12/DaPortal">http://www.defora.org/os/project/download/12/DaPortal</ulink>.</para>
-					<para>This guide will assume the resulting archive to be called
-						<filename>DaPortal.tar.gz</filename>. It will also assume that the current
-						user will already have sufficient privileges to install &package; 2 to the
-						desired directory; it is otherwise up to the reader to obtain and use
-						these privileges when necessary.</para>
-					<para>Alternatively, you may choose to track the development of &package;
-						2, or any given branch from the Source Code Management system. Some
-						instructions to do so can be found here: <ulink
-							url="http://www.defora.org/os/project/download/12/DaPortal">http://www.defora.org/os/project/download/12/DaPortal</ulink>.</para>
-				</section>
-				<section>
-					<title>Deployment</title>
-					<section>
-						<title>Deployment as a web application</title>
-						<para>Although primarily tested with the Apache HTTP server, &package; 2
-							should work on most web servers supporting PHP.</para>
-						<para>For increased security, &package; 2 is meant to be installed in a
-							separate directory, outside of the web server's document root folder. On
-							most systems, this might be:<itemizedlist>
-								<listitem><para><filename>/var/www/daportal</filename> for &package;
-										2;</para></listitem>
-								<listitem><para><filename>/var/www/htdocs</filename> for the web
-										server's document root.</para></listitem>
-							</itemizedlist></para>
-							<para>To uncompress &package; 2, one would typically enter the following
-								commands:</para>
-							<programlisting>$ mkdir /var/www/daportal
+			<para>The following components are optional, and will likely improve the
+				behavior of &package;:<itemizedlist>
+					<listitem><para>the shared-mime-info package from the freedesktop
+							project;</para></listitem>
+					<listitem><para>either one of the GNOME, Tango or XFCE4 icon
+							themes.</para></listitem>
+			</itemizedlist></para>
+		</section>
+		<section id="introduction-database">
+			<title>Database backend</title>
+			<para>&package; expects a database backend to be available to store and
+				handle the data to be managed. A number of different backends are supported
+				by &package;:
+				<itemizedlist>
+					<listitem><para>PDO, now standard in PHP;</para></listitem>
+					<listitem><para>SQLite 2 and 3, <ulink
+								url="http://www.sqlite.org/">http://www.sqlite.org/</ulink></para></listitem>
+					<listitem><para>PostgreSQL, <ulink
+								url="http://www.postgresql.org/">http://www.postgresql.org/</ulink></para></listitem>
+					<listitem><para>MySQL, <ulink
+								url="http://www.mysql.org/">http://www.mysql.org/</ulink> (through
+							PDO only, with known issues)</para></listitem>
+				</itemizedlist>
+			</para>
+			<para>The actual choice is left to the administrator of the system. The
+				corresponding PHP extension should be installed and enabled as
+				well.</para>
+		</section>
+		<section>
+			<title>Hardening</title>
+			<para>The &package; installation is only as secure as its surrounding
+				environment is; be sure to comply with best practices and the corresponding
+				hardening guidelines for the system hosting &package;.</para>
+			<para>In particular, it is recommended to install and enable both the Suhosin
+				patch and extension for PHP; please refer to <ulink
+					url="http://www.hardened-php.net/suhosin/">http://www.hardened-php.net/suhosin/</ulink>
+				for more information.</para>
+		</section>
+	</section>
+	<section>
+		<title>Deployment as a web application</title>
+		<section>
+			<title>Additional requirements</title>
+			<para>A web server supporting PHP is required for &package; to be deployed as
+				a web application. &package; was most tested with Apache (versions 1.3
+				through 2.2), which is therefore the most recommended implementation. It can
+				be found at <ulink
+					url="http://httpd.apache.org/">http://httpd.apache.org/</ulink>.</para>
+			<para>PHP's session extension is also required for session-based
+				authentication to be functional.</para>
+		</section>
+		<section>
+			<title>Installation</title>
+			<para>For increased security, &package; 2 is meant to be installed in a
+				separate directory, outside of the web server's document root folder. On
+				most systems, this might be:<itemizedlist>
+					<listitem><para><filename>/var/www/daportal</filename> for &package;
+							2;</para></listitem>
+					<listitem><para><filename>/var/www/htdocs</filename> for the web
+							server's document root.</para></listitem>
+			</itemizedlist>This guide will assume these locations to be used in the
+			following instructions.</para>
+		<para>Uncompress &package; 2 to the destination folder:</para>
+			<programlisting>$ mkdir -p /var/www/daportal
 $ cd /var/www/daportal
 $ tar xzvf DaPortal.tar.gz
 $ mv DaPortal-*/* .
 $ rmdir DaPortal-*</programlisting>
-<para>You can then move, copy or alias the contents of the
-	<filename>data</filename> folder in the desired location of the web server's
-	document root folder. For Apache, this might be as following in <xref
-		linkend="example-apache"/>.</para>
-<example id="example-apache">
-	<title>Data directory aliasing in Apache</title>
-	<programlisting>Alias /css/ "/var/www/daportal/data/css/"
+			<para>You should then move, copy or alias the contents of &package;'s
+				<filename>data</filename> sub-directory in the web server's own document
+				root folder. In the case of Apache, this might be done in the main
+				configuration file, as shown in <xref linkend="example-apache"/>.</para>
+			<example id="example-apache">
+				<title>Data directory aliasing in Apache</title>
+				<programlisting>Alias /css/ "/var/www/daportal/data/css/"
 Alias /icons/ "/var/www/daportal/data/icons/"
 Alias /js/ "/var/www/daportal/data/js/"
 Alias /themes/ "/var/www/daportal/data/themes/"</programlisting>
-</example>
-<para>Likewise, you may have to copy and modify the default index file,
-	<filename>index.php</filename>, from the <filename>data</filename> directory to
-	the document root. An example of such a file is found in <xref
-		linkend="example-index.php"/>:</para>
-<example id="example-index.php">
-	<title>index.php in the document root</title>
-	<programlisting>&lt;?php if(chdir('/var/www/daportal/src')) require('./daportal.php'); ?&gt;</programlisting>
-</example>
-<para>Alternatively, on most web servers it should be fine to serve &package;'s
-	own <filename>data</filename> folder as the actual document root.</para>
-</section>
-<section>
-	<title id="deployment-cli">Deployment as a command-line application</title>
-	<para>&package; provides a dedicated command-line utility, <ulink
-			url="daportal.html"><command>daportal</command></ulink>, to issue requests to
-		the system directly.</para>
-	<para>It can be installed to the system as follows:</para>
-	<programlisting>$ cd /var/www/daportal/tools
-$ make PREFIX="/usr/local" install</programlisting>
-<para>Specifying the <varname>PREFIX</varname> value is optional, and defaults
-	to <filename>/usr/local</filename>.</para>
-<para>It may be necessary to help the <command>daportal</command> script to
-	locate the folder where &package; is installed; if available, the configuration
-	file <filename>$PREFIX/etc/daportal.conf</filename> will automatically be read.
-	An example for this file is provided in <xref
-		linkend="example-etc/daportal.conf"/> below:</para>
-<example id="example-etc/daportal.conf">
-	<title>Example of configuration file in $PREFIX/etc/daportal.conf</title>
-	<programlisting>DAPORTALDIR=/var/www/daportal</programlisting>
-</example>
-</section>
-<section>
-	<title>Deployment as a Gtk+ application</title>
-	<para>&package; 2 can also be used as a Gtk+ application. This requires the
-		installation and configuration of the "php-gtk" extension. The
-		instructions found in <xref linkend="deployment-cli"/> otherwise apply.</para>
-</section>
-</section>
-<section>
-	<title>Configuration</title>
-	<para>Depending on how it was invoked (from within PHP), &package; will try to
-		automatically guess the backend engine to use. This can otherwise be enforced
-		in the <ulink
-			url="daportal.conf.html"><filename>daportal.conf</filename></ulink> file,
-		located in the root folder of &package;'s own installation folder.</para>
-<section>
-	<title>Configuration as a web application</title>
-	<para>The HTTP engine should be installed and selected automatically. Otherwise
-		(or for performance reasons) you can force the backend by modifying the
-		<varname>engine</varname> section as follows:</para>
-	<programlisting>[engine]
+			</example>
+			<para>Likewise, you may have to copy and modify the default index file,
+				<filename>index.php</filename>, from the <filename>data</filename> directory
+				to the document root. An example of such a file is found in <xref
+					linkend="example-index.php"/>:</para>
+			<example id="example-index.php">
+				<title>index.php in the document root</title>
+				<programlisting>&lt;?php if(chdir('/var/www/daportal/src')) require('./daportal.php'); ?&gt;</programlisting>
+			</example>
+			<para>Be sure to set <filename>index.php</filename> as a valid index file in
+				the web server's configuration (directive <varname>DirectoryIndex</varname>
+				for Apache).</para>
+			<para>Alternatively, on most web servers it should be fine to serve
+				&package;'s own <filename>data</filename> folder as the actual document
+				root (minding the <filename>index.php</filename> file).</para>
+		</section>
+		<section>
+			<title>Configuration</title>
+			<para>&package; has a single configuration file,
+				<filename>daportal.conf</filename>, located within its own root folder. It
+				is meant to be edited manually, and consists of a series of variable
+				assignments (eg <varname>variable_name=the value</varname>), sorted within a
+				number of sections (which names are surrounded by brackets, "[" and "]").
+				Comment lines are allowed as well, and begin with the "#"
+				character.</para>
+			<para>&package;'s HTTP engine should be selected automatically when PHP runs
+				in the context of a web server. Otherwise (or for performance reasons) it is
+				possible to enforce the appropriate engine by modifying the
+				<varname>engine</varname> section of <filename>daportal.conf</filename> as
+				follows:</para>
+			<programlisting>[engine]
 backend=http</programlisting>
-	<para>The top-level <varname>theme</varname> and <varname>title</varname>
-		settings can be changed as well, and will respectively define the default CSS
-		to use (among the <filename>themes</filename> folder), and the default title
-		for the web pages and documents generated.</para>
-	<para>Alternatively, &package;'s HTTPFriendly engine can be selected. It can
-		generate and handle HTTP links and requests that will typically be more
-		readable, while also allowing better indexing of the different pages (eg for
-		SEO, Search Engine Optimization). If available, it will normally take
-		precedence over the default HTTP engine. It requires additional parameters to
-		be fully enabled, illustrated here:</para>
-	<programlisting>[engine]
+			<para>The top-level <varname>theme</varname> and <varname>title</varname>
+				settings can be changed as well, and will respectively define the default
+				CSS to use (among the <filename>themes</filename> folder), and the default
+				title for the web pages and documents generated.</para>
+			<formalpara>
+				<title>Friendly links</title>
+					<para>Alternatively, &package;'s HTTPFriendly engine can be selected. It
+						can generate and handle HTTP links and requests that will typically be
+						more readable, while also allowing better indexing of the different pages
+						(eg for SEO, Search Engine Optimization). If available, it will normally
+						take precedence over the default HTTP engine. It requires an additional
+						parameter to be fully enabled, <varname>kicker</varname>, which designates
+						an extra script to handle requests. The required configuration is
+						illustrated here:</para>
+				</formalpara>
+			<programlisting>[engine]
 backend=httpfriendly
 
 [engine::httpfriendly]
 kicker=somename</programlisting>
-	<para>There are additional requirements for this configuration to work
-		properly:<itemizedlist>
-			<listitem><para>an additional handler needs to be placed in the document
-					root;</para></listitem>
-			<listitem><para>the web server needs to recognize this handler, and pass
-					incoming requests through it.</para></listitem>
-	</itemizedlist></para>
-	<para>An example of such a handler is provided in <xref
-			linkend="example-friendly-handler"/>; in this case, it should be named
-		<filename>somename.php</filename> and placed in the document root:</para>
-	<example id="example-friendly-handler">
-		<title>Handler for friendly links</title>
-		<programlisting>&lt;?php
+			<para>This configuration requires the following to work
+				properly:<itemizedlist>
+					<listitem><para>a handler called <filename>somename.php</filename>, placed
+							along with the <filename>index.php</filename> file;</para></listitem>
+					<listitem><para>the web server must recognize this handler, and pass the
+							incoming requests through it.</para></listitem>
+			</itemizedlist></para>
+			<para>An example of such a handler is provided in <xref
+					linkend="example-friendly-handler"/>; in this case, it should be named
+				<filename>somename.php</filename> and placed in the document root:</para>
+			<example id="example-friendly-handler">
+				<title>Handler for friendly links</title>
+				<programlisting>&lt;?php
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 if(chdir('/var/www/daportal/src')) require('./daportal.php');
 ?></programlisting>
-</example>
-<para>In the case of Apache, the following modification to the configuration for
-	the document root may be necessary:</para>
-<programlisting>&lt;Directory "/var/www/htdocs"&gt;
+			</example>
+			<para>In the case of Apache, the following modification to the configuration
+				for the document root may be necessary:</para>
+			<programlisting>&lt;Directory "/var/www/htdocs"&gt;
 	Options MultiViews
 	MultiviewsMatch Handlers
 &lt;/Directory&gt;
-</programlisting>
-</section>
-<section>
-	<title>Configuration of the database backend</title>
-	<para>Similarly, the database backend to use must be specified in the
-		<varname>database</varname> section, as follows:</para>
-	<programlisting>[database]
-backend=sqlite2</programlisting>
-	<para>Additional parameters may have to be specified; see the respective
-		database sections and documentation for reference.</para>
-	<para>Example: In the case of SQLite 2, a database file can be created in
-		<filename>/var/www/sqlite</filename>, as follows:</para>
-	<programlisting>$ mkdir /var/www/sqlite
+			</programlisting>
+		</section>
+		<section id="web-database">
+			<title>Database integration</title>
+			<para>The installation and configuration of the database engine itself will
+				not be discussed here, as it is specific to each implementation. Its
+				integration with &package; is however detailed here, taking SQLite 2 as an
+				example.</para>
+			<para>The database backend to use must be specified in the
+				<varname>database</varname> section of <filename>daportal.conf</filename>,
+				as follows:</para>
+			<programlisting>[database]
+backend=sqlite2
+
+[database::sqlite2]
+filename=/var/www/sqlite/daportal.db</programlisting>
+			<para>Additional parameters may have to be specified; see the respective
+				database sections and documentation for reference. As shown here, in the
+				case of SQLite 2 only <varname>filename</varname> is required in the
+				<varname>[database::sqlite2]</varname> section, and points where the
+				database file is found.</para>
+			<para>Such a database file can be created in
+				<filename>/var/www/sqlite</filename>, as follows:</para>
+			<programlisting>$ mkdir -p /var/www/sqlite
 $ touch /var/www/sqlite/daportal.db
 $ sqlite /var/www/sqlite/daportal.db
 sqlite&gt; .read /var/www/daportal/doc/sql/sqlite.sql
 sqlite&gt; .quit</programlisting>
-<para>It can then be configured this way within
-	<filename>daportal.conf</filename>:</para>
-<programlisting>[database::sqlite2]
-filename=/var/www/sqlite/daportal.db</programlisting>
-<warning>
-	<title>Warning: privileges for the SQLite database folder</title>
-	<para>Make sure that the web server has sufficient privileges to read and write
-		to this database as required. In the case of SQLite, this often applies to the
-		directory containing the database file itself (eg for locking).</para>
-</warning>
+			<warning>
+				<title>Warning: privileges for the SQLite database folder</title>
+				<para>Make sure that the web server has sufficient privileges to read and
+					write to this database as required. In the case of SQLite, this often
+					applies to the directory containing the database file itself (eg for
+					locking).</para>
+			</warning>
+			<para>With this last step done, &package; should now be ready to serve HTTP
+				requests. If necessary, the authentication mechanisms in place can be
+				modified; this is detailed in <xref linkend="web-authentication"/>.</para>
+		</section>
+		<section id="web-authentication">
+			<title>Authentication</title>
+			<para>There are at least two ways available for &package; to authenticate
+				users, when running as a web application:<itemizedlist>
+					<listitem><para><varname>http</varname>: performs HTTP basic
+							authentication;</para></listitem>
+					<listitem><para><varname>session</varname>: uses PHP's own session-handling
+							mechanism.</para></listitem>
+			</itemizedlist></para>
+			<para>The latter, <varname>session</varname>, is the most recommended and
+				most tested authentication mechanisms of both. It should be selected by
+				default by the engine when available. In any case, either can be enforced
+				in the <filename>daportal.conf</filename> configuration file:</para>
+			<programlisting>[auth]
+#backend=http
+backend=session</programlisting>
+		</section>
+	</section>
+	<section>
+		<title id="deployment-cli">Deployment as a command-line application</title>
+		<section>
+			<title>Additional requirements</title>
+		<para>&package; provides a dedicated command-line utility, <ulink
+				url="daportal.html"><command>daportal</command></ulink>, to issue requests
+			to the system directly. For this to work properly, PHP must be installed with
+			support for command-line applications (CLI).</para>
+		<para>For the default authentication mechanism to work correctly in
+			command-line mode, PHP's POSIX extension is required as well.</para>
+	</section>
+	<section>
+		<title>Installation</title>
+		<para>The <command>&name;</command> command can be installed to the system as
+			follows:</para>
+		<programlisting>$ cd /var/www/daportal/tools
+$ make PREFIX="/usr/local" install</programlisting>
+		<para>Specifying the <varname>PREFIX</varname> value is optional, and defaults
+			to <filename>/usr/local</filename>.</para>
+	</section>
+	<section>
+		<title>Configuration</title>
+		<para>It may be necessary to help the <command>daportal</command> script to
+			locate the folder where &package; is installed; if available, the
+			configuration file <filename>$PREFIX/etc/daportal.conf</filename> will be
+			automatically read.</para>
+		<para>An example for this file is provided in <xref
+				linkend="example-etc/daportal.conf"/> below:</para>
+		<example id="example-etc/daportal.conf">
+			<title>Example of configuration file in $PREFIX/etc/daportal.conf</title>
+			<programlisting>DAPORTALDIR=/var/www/daportal</programlisting>
+		</example>
+	</section>
+	<section>
+		<title>Database integration</title>
+		<para>Just like when installed as a web application, &package; needs a
+			database backend to be configured when used as a command-line application.
+			The instructions found in <xref linkend="web-database"/> apply here as
+			well.</para>
+	</section>
+	<section>
+		<title>Authentication</title>
+		<para>Unlike the HTTP engine, the default authentication backend in use when
+			running &package; on the command-line is <varname>unix</varname>. It maps
+			usernames on the system to those found in &package;'s database, which may
+			therefore have to be edited manually beforehand.</para>
+	</section>
 </section>
-<section>
-	<title>Configuration of translations</title>
-	<para>The user interface for &package; supports multiple languages through the
-		GNU Gettext PHP extension. For this to work, the locale database for &package;
-		must be installed; this can be done as follows:</para>
-	<programlisting>$ cd /var/www/daportal/po
-$ make install</programlisting>
-	<para>By default, &package; uses translation files from the current locale (if
-		available). It can otherwise be forced in <filename>daportal.conf</filename>,
-		as shown in <xref linkend="example-locale"/>:</para>
-<example id="example-locale">
-	<title>Locale settings in daportal.conf</title>
-	<programlisting>[defaults]
+	<section>
+		<title>Deployment as a Gtk+ application</title>
+		<section>
+			<title>Additional requirements</title>
+			<para>&package; 2 can also be used as a Gtk+ application. All of the
+				requirements, installation, configuration and integration notes for
+				&package; as a command-line application found in <xref
+					linkend="deployment-cli"/> therefore apply here.</para>
+			<para>Additionally, the Gtk+ extension for PHP is required; it can be found
+				at <ulink url="http://gtk.php.net/">http://gtk.php.net/</ulink>.</para>
+		</section>
+	</section>
+	<section>
+		<title>Additional configuration</title>
+		<section>
+			<title>Translations</title>
+			<para>The user interface for &package; supports multiple languages through
+				the GNU Gettext PHP extension. For this to work, the locale database for
+				&package; must be installed; this can be done as follows:</para>
+			<programlisting>$ cd /var/www/daportal/po
+$ make PREFIX="/usr/local" install</programlisting>
+			<para>The value of <varname>PREFIX</varname> can be changed; in this case,
+				the <varname>prefix</varname> variable in <filename>daportal.conf</filename>
+			must be adjusted as well.</para>
+			<para>By default, &package; uses translation files from the current locale
+				(if available). It can otherwise be forced in
+				<filename>daportal.conf</filename>, as shown in <xref
+					linkend="example-locale"/>:</para>
+			<example id="example-locale">
+				<title>Locale settings in daportal.conf</title>
+				<programlisting>[defaults]
 #for French
 locale=fr_FR</programlisting>
-</example>
-</section>
-<section>
-	<title>Additional configuration values</title>
-	<para>The default configuration file also lists additional settings that may be
-		applied to specific components. Please refer to <ulink
-			url="daportal.conf.html">its documentation</ulink> for more
-		information.</para>
-</section>
-</section>
+			</example>
+		</section>
+		<section>
+			<title>Additional configuration values</title>
+			<para>The default configuration file also lists additional settings that may
+				be applied to specific components. Please refer to <ulink
+					url="daportal.conf.html">its documentation</ulink> for more
+				information.</para>
+		</section>
+	</section>
 </article>
 <!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
