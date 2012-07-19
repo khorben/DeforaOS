@@ -49,7 +49,7 @@ TOUCH="touch"
 deforaos_document()
 {
 	#configure cvs if necessary
-	$MKDIR "$HOME"						|| exit 2
+	$MKDIR -- "$HOME"					|| exit 2
 	if [ ! -f "$HOME/.cvspass" ]; then
 		$TOUCH "$HOME/.cvspass"				|| exit 2
 	fi
@@ -67,18 +67,21 @@ deforaos_document()
 	echo "Documenting CVS module $MODULE:"
 
 	#manual pages
+	echo ""
 	echo " * manual pages"
 	(cd "$SRC/Data/Documentation/DeforaOS Manual Pages" &&
 		$MAKE &&
-		$MKDIR -p "$DESTDIR/htdocs/doc/manual" &&
+		$MKDIR -- "$DESTDIR/htdocs/doc/manual" &&
 		$FIND doc/manual -name "*.html" -exec \
-		$INSTALL {} "$DESTDIR/htdocs/{}" \;)
+		$INSTALL -- {} "$DESTDIR/htdocs/{}" \;)
 
-	#gtkdoc
-	echo " * API documentation"
+	#generic documentation
+	echo ""
+	echo " * generic documentation"
 	$FIND "$SRC/System" "$SRC/Apps" -name "doc" | while read path; do
-		[ -x "$path/gtkdoc.sh" ] || continue
-		(cd "$path" && $MAKE install DESTDIR="$DESTDIR" PREFIX="/" > "$DEVNULL")
+		[ -x "$path/docbook.sh" -o -x "$path/gtkdoc.sh" ] || continue
+		(cd "$path" && $MAKE DESTDIR="$DESTDIR" PREFIX="/" \
+				install > "$DEVNULL")
 	done
 
 	#erase temporary data
