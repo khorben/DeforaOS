@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-13 00:30+0200\n"
+"POT-Creation-Date: 2012-07-19 22:52+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,43 +15,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:415
+#: ../src/locker.c:413
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:485
+#: ../src/locker.c:503
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:500
+#: ../src/locker.c:518
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:504
+#: ../src/locker.c:522
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:508
+#: ../src/locker.c:526
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:547
+#: ../src/locker.c:547 ../src/locker.c:578
+msgid "Plug-in: "
+msgstr "Greffon : "
+
+#: ../src/locker.c:627
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:558
+#: ../src/locker.c:638
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:693
+#: ../src/locker.c:735
+msgid "Disabled"
+msgstr "Désactivé"
+
+#: ../src/locker.c:931
 msgid "Screensaver for the DeforaOS desktop"
 msgstr "Économiseur d'écran pour l'environnement DeforaOS"
 
-#: ../src/locker.c:698
+#: ../src/locker.c:936
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:1017 ../src/locker.c:1021
+#: ../src/locker.c:1306 ../src/locker.c:1310
 msgid "Error"
 msgstr "Erreur"
 
@@ -91,22 +99,26 @@ msgstr ""
 "  -p\tGreffon d'authentification à charger\n"
 "  -s\tSuspendre automatiquement lors du verrouillage\n"
 
-#: ../src/auth/password.c:109
+#: ../src/auth/password.c:106
 msgid "This screen is locked by"
 msgstr "Cette session est vérouillée par"
 
-#: ../src/auth/password.c:115
+#: ../src/auth/password.c:112
 msgid "Enter password: "
 msgstr "Mot de passe : "
 
-#: ../src/auth/password.c:138
+#: ../src/auth/password.c:135
 msgid "Wrong password!"
 msgstr "Mot de passe erroné !"
 
-#: ../src/auth/password.c:191 ../src/auth/password.c:236
+#: ../src/auth/password.c:188 ../src/auth/password.c:234
 msgid "No password was set"
 msgstr "Aucun mot de passe n'est configuré"
 
-#: ../src/auth/password.c:246
+#: ../src/auth/password.c:247
 msgid "Authentication failed"
 msgstr "Échec de l'authentification"
+
+#: ../src/auth/password.c:276
+msgid "Timed out"
+msgstr "Temps écoulé"
