@@ -365,6 +365,17 @@ locale=fr_FR</programlisting>
 			</example>
 		</section>
 		<section>
+			<title>Modules and users</title>
+			<para>Once the system functional, the modules enabled as well as user
+				management can be performed directly through the administration interface,
+				once logged as an administrative user.</para>
+			<para>The default credentials for a new installation are
+				<varname>admin</varname> for the username, and <varname>password</varname>
+				as the default password. It is strongly recommended to change the name for
+				this user, as well as its password before using &package; in
+				production.</para>
+		</section>
+		<section>
 			<title>Additional configuration values</title>
 			<para>The default configuration file also lists additional settings that may
 				be applied to specific components. Please refer to <ulink
