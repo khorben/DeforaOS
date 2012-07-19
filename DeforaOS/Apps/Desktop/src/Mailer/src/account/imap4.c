@@ -943,11 +943,13 @@ static gboolean _on_connect(gpointer data)
 {
 	IMAP4 * imap4 = data;
 	AccountPluginHelper * helper = imap4->helper;
+	AccountEvent event;
 	char const * hostname;
 	char const * p;
 	uint16_t port;
 	struct sockaddr_in sa;
 	int res;
+	char buf[128];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -956,7 +958,7 @@ static gboolean _on_connect(gpointer data)
 	/* get the hostname and port */
 	if((hostname = imap4->config[I4CV_HOSTNAME].value) == NULL)
 	{
-		helper->error(NULL, "No hostname set", 1);
+		helper->error(helper->account, "No hostname set", 1);
 		return FALSE;
 	}
 	if((p = imap4->config[I4CV_PORT].value) == NULL)
@@ -978,9 +980,15 @@ static gboolean _on_connect(gpointer data)
 			&& fcntl(imap4->fd, F_SETFL, res | O_NONBLOCK) == -1)
 		/* ignore this error */
 		helper->error(NULL, strerror(errno), 1);
-	/* connect to the remote host */
-	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
+	/* report the current status */
+	memset(&event, 0, sizeof(event));
+	event.status.type = AET_STATUS;
+	event.status.status = AS_CONNECTING;
+	snprintf(buf, sizeof(buf), "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
+	event.status.message = buf;
+	helper->event(helper->account, &event);
+	/* connect to the remote host */
 	if((connect(imap4->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
 			|| _connect_channel(imap4) != 0)
@@ -1050,6 +1058,7 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 {
 	IMAP4 * imap4 = data;
 	AccountPluginHelper * helper = imap4->helper;
+	AccountEvent event;
 	char const * hostname = imap4->config[I4CV_HOSTNAME].value;
 	uint16_t port = (unsigned long)imap4->config[I4CV_PORT].value;
 	struct sockaddr_in sa;
@@ -1063,8 +1072,16 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #endif
 	/* XXX remember the address instead */
 	if(_imap4_lookup(imap4, hostname, port, &sa) == 0)
-		helper->status(helper->account, "Connected to %s (%s:%u)",
+	{
+		/* report the current status */
+		memset(&event, 0, sizeof(event));
+		event.status.type = AET_STATUS;
+		event.status.status = AS_CONNECTED;
+		snprintf(buf, sizeof(buf), "Connected to %s (%s:%u)",
 				hostname, inet_ntoa(sa.sin_addr), port);
+		event.status.message = buf;
+		helper->event(helper->account, &event);
+	}
 	imap4->wr_source = 0;
 	/* setup SSL */
 	if(imap4->config[I4CV_SSL].value != NULL)

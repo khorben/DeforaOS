@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -155,7 +156,7 @@ static int _pop3_refresh(POP3 * pop3, AccountFolder * folder,
 /* useful */
 static POP3Command * _pop3_command(POP3 * pop3, POP3Context context,
 		char const * command);
-static int _pop3_lookup(POP3 * pop3, char const * hostname, unsigned short port,
+static int _pop3_lookup(POP3 * pop3, char const * hostname, uint16_t port,
 		struct sockaddr_in * sa);
 static int _pop3_parse(POP3 * pop3);
 static void _pop3_reset(POP3 * pop3);
@@ -316,7 +317,7 @@ static POP3Command * _pop3_command(POP3 * pop3, POP3Context context,
 
 
 /* pop3_lookup */
-static int _pop3_lookup(POP3 * pop3, char const * hostname, unsigned short port,
+static int _pop3_lookup(POP3 * pop3, char const * hostname, uint16_t port,
 		struct sockaddr_in * sa)
 {
 	struct hostent * he;
@@ -587,11 +588,13 @@ static gboolean _on_connect(gpointer data)
 {
 	POP3 * pop3 = data;
 	AccountPluginHelper * helper = pop3->helper;
+	AccountEvent event;
 	char const * hostname;
 	char const * p;
-	unsigned short port;
+	uint16_t port;
 	struct sockaddr_in sa;
 	int res;
+	char buf[128];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -612,6 +615,7 @@ static gboolean _on_connect(gpointer data)
 		helper->error(NULL, error_get(), 1);
 		return FALSE;
 	}
+	/* create the socket */
 	if((pop3->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -621,9 +625,15 @@ static gboolean _on_connect(gpointer data)
 			&& fcntl(pop3->fd, F_SETFL, res | O_NONBLOCK) == -1)
 		/* ignore this error */
 		helper->error(NULL, strerror(errno), 1);
-	/* connect to the remote host */
-	helper->status(helper->account, "Connecting to %s (%s:%u)", hostname,
+	/* report the current status */
+	memset(&event, 0, sizeof(event));
+	event.status.type = AET_STATUS;
+	event.status.status = AS_CONNECTING;
+	snprintf(buf, sizeof(buf), "Connecting to %s (%s:%u)", hostname,
 			inet_ntoa(sa.sin_addr), port);
+	event.status.message = buf;
+	helper->event(helper->account, &event);
+	/* connect to the remote host */
 	if((connect(pop3->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 				&& errno != EINPROGRESS)
 			|| _connect_channel(pop3) != 0)
@@ -691,8 +701,9 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 {
 	POP3 * pop3 = data;
 	AccountPluginHelper * helper = pop3->helper;
+	AccountEvent event;
 	char const * hostname = pop3->config[P3CV_HOSTNAME].value;
-	unsigned short port = (unsigned long)pop3->config[P3CV_PORT].value;
+	uint16_t port = (unsigned long)pop3->config[P3CV_PORT].value;
 	struct sockaddr_in sa;
 	SSL_CTX * ssl_ctx;
 	char buf[128];
@@ -704,8 +715,16 @@ static gboolean _on_watch_can_connect(GIOChannel * source,
 #endif
 	/* XXX remember the address instead */
 	if(_pop3_lookup(pop3, hostname, port, &sa) == 0)
-		helper->status(helper->account, "Connected to %s (%s:%u)",
+	{
+		/* report the current status */
+		memset(&event, 0, sizeof(event));
+		event.status.type = AET_STATUS;
+		event.status.status = AS_CONNECTED;
+		snprintf(buf, sizeof(buf), "Connected to %s (%s:%u)",
 				hostname, inet_ntoa(sa.sin_addr), port);
+		event.status.message = buf;
+		helper->event(helper->account, &event);
+	}
 	pop3->wr_source = 0;
 	/* setup SSL */
 	if(pop3->config[P3CV_SSL].value != NULL)

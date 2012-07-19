@@ -59,6 +59,45 @@ typedef struct _AccountConfig
 } AccountConfig;
 
 
+/* AccountStatus */
+typedef enum _AccountStatus
+{
+	AS_CONNECTING = 0,
+	AS_CONNECTED,
+	AS_DISCONNECTED,
+	AS_AUTHENTICATED,
+	AS_READY
+} AccountStatus;
+
+
+/* AccountEvent */
+typedef enum _AccountEventType
+{
+	AET_ERROR = 0,
+	AET_STATUS
+} AccountEventType;
+
+typedef union _AccountEvent
+{
+	AccountEventType type;
+
+	/* AET_ERROR */
+	struct
+	{
+		AccountEventType type;
+		char const * message;
+	} error;
+
+	/* AET_STATUS */
+	struct
+	{
+		AccountEventType type;
+		AccountStatus status;
+		char const * message;
+	} status;
+} AccountEvent;
+
+
 /* AccountPlugin */
 typedef struct _AccountPluginHelper
 {
@@ -67,7 +106,7 @@ typedef struct _AccountPluginHelper
 	SSL_CTX * (*get_ssl_context)(Account * account);
 	/* useful */
 	int (*error)(Account * account, char const * message, int ret);
-	void (*status)(Account * account, char const * format, ...);
+	void (*event)(Account * account, AccountEvent * event);
 	/* authentication */
 	char * (*authenticate)(Account * account, char const * message);
 	int (*confirm)(Account * account, char const * message);

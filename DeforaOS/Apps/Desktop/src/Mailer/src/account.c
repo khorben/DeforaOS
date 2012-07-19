@@ -69,7 +69,7 @@ static SSL_CTX * _account_helper_get_ssl_context(Account * account);
 /* useful */
 static int _account_helper_error(Account * account, char const * message,
 		int ret);
-static void _account_helper_status(Account * account, char const * format, ...);
+static void _account_helper_event(Account * account, AccountEvent * event);
 static char * _account_helper_authenticate(Account * account,
 		char const * message);
 static int _account_helper_confirm(Account * account, char const * message);
@@ -90,7 +90,7 @@ static const AccountPluginHelper _account_plugin_helper =
 	NULL,
 	_account_helper_get_ssl_context,
 	_account_helper_error,
-	_account_helper_status,
+	_account_helper_event,
 	_account_helper_authenticate,
 	_account_helper_confirm,
 	_account_helper_folder_new,
@@ -187,7 +187,7 @@ void account_delete(Account * account)
 
 /* accessors */
 /* account_get_config */
-AccountConfig * account_get_config(Account * account)
+AccountConfig const * account_get_config(Account * account)
 {
 	if(account->account == NULL)
 		return account->definition->config;
@@ -436,28 +436,20 @@ static int _account_helper_error(Account * account, char const * message,
 }
 
 
-/* account_helper_status */
-static void _account_helper_status(Account * account, char const * format, ...)
+/* account_helper_event */
+static void _account_helper_event(Account * account, AccountEvent * event)
 {
-	va_list ap;
-	int res;
-	size_t size;
-	char * p = NULL;
+	Mailer * mailer = account->mailer;
 
-	va_start(ap, format);
-	res = vsprintf(NULL, format, ap);
-	va_end(ap);
-	if(res >= 0)
+	switch(event->type)
 	{
-		va_start(ap, format);
-		size = res;
-		if((p = malloc(++size)) != NULL)
-			vsnprintf(p, size, format, ap);
-		va_end(ap);
+		case AET_ERROR:
+			mailer_error(mailer, event->error.message, 1);
+			break;
+		case AET_STATUS:
+			mailer_set_status(mailer, event->status.message);
+			break;
 	}
-	if(p != NULL)
-		mailer_set_status(account->mailer, p);
-	free(p);
 }
 
 

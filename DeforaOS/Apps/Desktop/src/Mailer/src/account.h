@@ -35,7 +35,7 @@ void account_delete(Account * account);
 int account_get_enabled(Account * account);
 void account_set_enabled(Account * account, int enabled);
 
-AccountConfig * account_get_config(Account * account);
+AccountConfig const * account_get_config(Account * account);
 char const * account_get_name(Account * account);
 char const * account_get_title(Account * account);
 char const * account_get_type(Account * account);

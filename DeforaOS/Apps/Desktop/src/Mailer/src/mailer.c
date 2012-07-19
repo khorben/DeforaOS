@@ -92,6 +92,10 @@ struct _Mailer
 	/* widgets */
 	/* folders */
 	GtkWidget * fo_window;
+#if GTK_CHECK_VERSION(2, 18, 0)
+	GtkWidget * fo_infobar;
+	GtkWidget * fo_infobar_label;
+#endif
 	GtkTreeStore * fo_store;
 	GtkWidget * fo_view;
 	/* headers */
@@ -397,6 +401,25 @@ Mailer * mailer_new(void)
 	/* toolbar */
 	widget = desktop_toolbar_create(_mailer_fo_toolbar, mailer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(2, 18, 0)
+	/* infobar */
+	mailer->fo_infobar = gtk_info_bar_new_with_buttons(GTK_STOCK_CLOSE,
+			GTK_RESPONSE_CLOSE, NULL);
+	gtk_info_bar_set_message_type(GTK_INFO_BAR(mailer->fo_infobar),
+			GTK_MESSAGE_ERROR);
+	g_signal_connect(mailer->fo_infobar, "close", G_CALLBACK(
+				gtk_widget_hide), NULL);
+	g_signal_connect(mailer->fo_infobar, "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
+	widget = gtk_info_bar_get_content_area(GTK_INFO_BAR(
+				mailer->fo_infobar));
+	mailer->fo_infobar_label = gtk_label_new(NULL);
+	gtk_widget_show(mailer->fo_infobar_label);
+	gtk_box_pack_start(GTK_BOX(widget), mailer->fo_infobar_label, TRUE,
+			TRUE, 0);
+	gtk_widget_set_no_show_all(mailer->fo_infobar, TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), mailer->fo_infobar, FALSE, TRUE, 0);
+#endif
 	/* folders */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -457,9 +480,9 @@ Mailer * mailer_new(void)
 	mailer->bo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(mailer->bo_window), group);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->bo_window), 200, 300);
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(mailer->bo_window), "mailer");
-#endif
+# endif
 	gtk_window_set_title(GTK_WINDOW(mailer->bo_window), _("Message"));
 	g_signal_connect_swapped(G_OBJECT(mailer->bo_window), "delete-event",
 			G_CALLBACK(on_body_closex), mailer);
@@ -992,17 +1015,25 @@ void mailer_set_status(Mailer * mailer, char const * status)
 /* mailer_error */
 int mailer_error(Mailer * mailer, char const * message, int ret)
 {
+#if !GTK_CHECK_VERSION(2, 18, 0)
 	GtkWidget * dialog;
+#endif
 
 	if(mailer == NULL)
 		return error_set_print("mailer", ret, "%s", message);
+#if GTK_CHECK_VERSION(2, 18, 0)
+	/* info bar */
+	gtk_label_set_text(GTK_LABEL(mailer->fo_infobar_label), message);
+	gtk_widget_show(mailer->fo_infobar);
+#else
+	/* dialog window */
 	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->fo_window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-#endif
+# endif
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
@@ -1010,6 +1041,7 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
+#endif
 	return ret;
 }
 
@@ -2058,6 +2090,8 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 				_on_account_name_changed), ad);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	/* default identity */
+	/* FIXME seems to not be remembered */
 	hbox = gtk_hbox_new(FALSE, 4);
 	_account_add_label(hbox, NULL, group, _("Your name"));
 	widget = gtk_entry_new();
