@@ -53,7 +53,6 @@ static int _slider_action(Slider * slider, LockerAction action);
 static void _slider_on_scale_value_changed(gpointer data);
 static gboolean _slider_on_scale_value_changed_timeout(gpointer data);
 static gboolean _slider_on_timeout(gpointer data);
-static gboolean _slider_on_timeout_suspend(gpointer data);
 
 
 /* public */
@@ -144,9 +143,7 @@ static int _slider_action(Slider * slider, LockerAction action)
 			gtk_range_set_value(GTK_RANGE(slider->scale), 0.0);
 			if(slider->source != 0)
 				g_source_remove(slider->source);
-			slider->source = g_timeout_add(10000,
-					/* _slider_on_timeout_report */
-					_slider_on_timeout_suspend, slider);
+			slider->source = 0;
 			break;
 		case LOCKER_ACTION_START:
 		case LOCKER_ACTION_UNLOCK:
@@ -201,17 +198,5 @@ static gboolean _slider_on_timeout(gpointer data)
 
 	slider->source = 0;
 	helper->action(helper->locker, LOCKER_ACTION_ACTIVATE);
-	return FALSE;
-}
-
-
-/* slider_on_timeout_suspend */
-static gboolean _slider_on_timeout_suspend(gpointer data)
-{
-	Slider * slider = data;
-	LockerAuthHelper * helper = slider->helper;
-
-	slider->source = 0;
-	helper->action(helper->locker, LOCKER_ACTION_SUSPEND);
 	return FALSE;
 }
