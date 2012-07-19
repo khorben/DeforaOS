@@ -321,6 +321,7 @@ static void _dialog_on_suspend(gpointer data)
 	Openmoko * openmoko = data;
 	LockerPluginHelper * helper = openmoko->helper;
 
+	/* FIXME this will be ignored if the Openmoko is charging */
 	helper->action(helper->locker, LOCKER_ACTION_SUSPEND);
 }
 #endif
