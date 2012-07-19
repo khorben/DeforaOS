@@ -1,4 +1,4 @@
-TARGETS	= debug.so openmoko.so panel.so systray.so template.so
+TARGETS	= debug.so openmoko.so panel.so suspend.so systray.so template.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -39,6 +39,13 @@ panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 panel.so: $(panel_OBJS)
 	$(CCSHARED) -o panel.so $(panel_OBJS) $(panel_LDFLAGS)
 
+suspend_OBJS = suspend.o
+suspend_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+suspend_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+suspend.so: $(suspend_OBJS)
+	$(CCSHARED) -o suspend.so $(suspend_OBJS) $(suspend_LDFLAGS)
+
 systray_OBJS = systray.o
 systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -62,6 +69,9 @@ openmoko.o: openmoko.c ../../include/Locker.h
 panel.o: panel.c ../../include/Locker.h
 	$(CC) $(panel_CFLAGS) -c panel.c
 
+suspend.o: suspend.c ../../include/Locker.h
+	$(CC) $(suspend_CFLAGS) -c suspend.c
+
 systray.o: systray.c ../../include/Locker.h
 	$(CC) $(systray_CFLAGS) -c systray.c
 
@@ -69,7 +79,7 @@ template.o: template.c ../../include/Locker.h
 	$(CC) $(template_CFLAGS) -c template.c
 
 clean:
-	$(RM) -- $(debug_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(systray_OBJS) $(template_OBJS)
+	$(RM) -- $(debug_OBJS) $(openmoko_OBJS) $(panel_OBJS) $(suspend_OBJS) $(systray_OBJS) $(template_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -82,6 +92,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
+	$(INSTALL) -m 0644 -- suspend.so $(DESTDIR)$(LIBDIR)/Locker/plugins/suspend.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- systray.so $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- template.so $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
@@ -90,6 +102,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/suspend.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
 
