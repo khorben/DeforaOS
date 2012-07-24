@@ -1107,6 +1107,7 @@ static int _locker_action_stop(Locker * locker)
 	{
 		window = gtk_widget_get_window(locker->windows[0]);
 		gdk_window_clear(window);
+		gdk_window_invalidate_rect(window, NULL, TRUE);
 	}
 #endif
 	return 0;
