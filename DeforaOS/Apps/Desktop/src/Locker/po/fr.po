@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-19 22:52+0200\n"
+"POT-Creation-Date: 2012-07-27 00:00+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -59,7 +59,7 @@ msgstr "Économiseur d'écran pour l'environnement DeforaOS"
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:1306 ../src/locker.c:1310
+#: ../src/locker.c:1319 ../src/locker.c:1323
 msgid "Error"
 msgstr "Erreur"
 
