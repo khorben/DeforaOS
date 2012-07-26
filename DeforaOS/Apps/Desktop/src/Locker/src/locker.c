@@ -20,7 +20,7 @@ static char const _license[] =
 #if defined(__NetBSD__)
 # include <sys/param.h>
 # include <sys/sysctl.h>
-#elif defined(__linux__)
+#elif !defined(__FreeBSD__)
 # include <fcntl.h>
 #endif
 #include <sys/types.h>
@@ -1119,6 +1119,10 @@ static int _locker_action_suspend(Locker * locker)
 {
 #if defined(__NetBSD__)
 	int sleep_state = 3;
+#elif defined(__FreeBSD__)
+	char * suspend[] = { PREFIX "/bin/sudo", "sudo", "/usr/sbin/zzz",
+		NULL };
+	GError * error = NULL;
 #else
 	int fd;
 	char * suspend[] = { "/usr/bin/sudo", "sudo", "/usr/bin/apm", "-s",
@@ -1140,6 +1144,14 @@ static int _locker_action_suspend(Locker * locker)
 				sizeof(sleep_state)) != 0)
 	{
 		_locker_error(locker, strerror(errno), 1);
+		return -1;
+	}
+#elif defined(__FreeBSD__)
+	if(g_spawn_async(NULL, suspend, NULL, G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
+				NULL, NULL, &error) != TRUE)
+	{
+		_locker_error(locker, error->message, 1);
+		g_error_free(error);
 		return -1;
 	}
 #else /* XXX this assumes Linux with sysfs or APM configured */
