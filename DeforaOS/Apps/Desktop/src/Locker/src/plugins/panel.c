@@ -80,13 +80,14 @@ static int _panel_event(PanelPlugin * panel, LockerEvent event)
 {
 	switch(event)
 	{
-		case LOCKER_EVENT_ACTIVATING:
-		case LOCKER_EVENT_LOCKING:
-		case LOCKER_EVENT_SUSPENDING:
+		case LOCKER_EVENT_ACTIVATED:
+		case LOCKER_EVENT_LOCKED:
 			_event_show(FALSE);
 			break;
-		case LOCKER_EVENT_UNLOCKING:
+		case LOCKER_EVENT_UNLOCKED:
 			_event_show(TRUE);
+			break;
+		default:
 			break;
 	}
 	return 0;
