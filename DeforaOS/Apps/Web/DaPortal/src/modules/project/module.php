@@ -522,6 +522,15 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::callDefault
+	protected function callDefault($engine, $request = FALSE)
+	{
+		if($request !== FALSE && $request->getId() !== FALSE)
+			return $this->callDisplay($engine, $request);
+		return $this->callList($engine, $request);
+	}
+
+
 	//ProjectModule::callDownload
 	protected function callDownload($engine, $request)
 	{
@@ -789,6 +798,12 @@ class ProjectModule extends ContentModule
 		$page->setProperty('title', $title);
 		$title = $page->append('title', array('stock' => $this->name,
 			'text' => $title));
+	}
+
+
+	//ProjectModule::helperListButtons
+	protected function helperListButtons($engine, $page, $request)
+	{
 	}
 
 
