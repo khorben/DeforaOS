@@ -704,8 +704,7 @@ abstract class ContentModule extends Module
 				.$user->getUsername();
 		//title
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => $this->name,
-				'text' => $title));
+		$this->helperListTitle($engine, $page, $request);
 		//query
 		$query = ($uid !== FALSE) ? $this->query_list_user
 			: $this->query_list;
@@ -727,28 +726,7 @@ abstract class ContentModule extends Module
 		$columns['date'] = _('Date');
 		$treeview->setProperty('columns', $columns);
 		//toolbar
-		$toolbar = $treeview->append('toolbar');
-		$toolbar->append('button', array('stock' => 'refresh',
-				'text' => _('Refresh'),
-				'request' => $r));
-		$r = new Request($engine, $this->name, 'submit');
-		if($this->canSubmit($engine))
-			$toolbar->append('button', array('stock' => 'new',
-					'request' => $r,
-					'text' => $this->text_content_submit));
-		if($uid === $cred->getUserId())
-		{
-			$toolbar->append('button', array('stock' => 'disable',
-						'text' => _('Disable'),
-						'type' => 'submit',
-						'name' => 'action',
-						'value' => 'disable'));
-			$toolbar->append('button', array('stock' => 'enable',
-						'text' => _('Enable'),
-						'type' => 'submit',
-						'name' => 'action',
-						'value' => 'enable'));
-		}
+		$this->helperListToolbar($engine, $treeview, $request);
 		//rows
 		$no = new PageElement('image', array('stock' => 'no',
 			'size' => 16, 'title' => _('Disabled')));
@@ -1321,6 +1299,52 @@ abstract class ContentModule extends Module
 			: new Request($engine, $this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
 				'text' => _('Back')));
+	}
+
+
+	//ContentModule::helperListTitle
+	protected function helperListTitle($engine, $page, $request)
+	{
+		$title = $page->getProperty('title');
+
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+	}
+
+
+	//ContentModule::helperListToolbar
+	protected function helperListToolbar($engine, $page, $request)
+	{
+		$cred = $engine->getCredentials();
+		$user = new User($engine, $request->getId(),
+				$request->getTitle());
+
+		if(($uid = $user->getUserId()) == 0)
+			$uid = FALSE;
+		$r = new Request($engine, $this->name, 'list', $uid,
+				$uid ? $user->getUsername() : FALSE);
+		$toolbar = $page->append('toolbar');
+		$toolbar->append('button', array('stock' => 'refresh',
+				'text' => _('Refresh'),
+				'request' => $r));
+		$r = new Request($engine, $this->name, 'submit');
+		if($this->canSubmit($engine))
+			$toolbar->append('button', array('stock' => 'new',
+					'request' => $r,
+					'text' => $this->text_content_submit));
+		if($uid === $cred->getUserId())
+		{
+			$toolbar->append('button', array('stock' => 'disable',
+						'text' => _('Disable'),
+						'type' => 'submit',
+						'name' => 'action',
+						'value' => 'disable'));
+			$toolbar->append('button', array('stock' => 'enable',
+						'text' => _('Enable'),
+						'type' => 'submit',
+						'name' => 'action',
+						'value' => 'enable'));
+		}
 	}
 
 
