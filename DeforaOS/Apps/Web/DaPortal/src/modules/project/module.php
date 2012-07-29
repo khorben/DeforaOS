@@ -813,6 +813,7 @@ class ProjectModule extends ContentModule
 		//XXX assumes $page is the treeview
 		if(($columns = $page->getProperty('columns')) !== FALSE)
 		{
+			$columns['username'] = _('Manager');
 			$columns['synopsis'] = _('Description');
 			$page->setProperty('columns', $columns);
 		}
