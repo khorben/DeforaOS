@@ -98,12 +98,34 @@ class HTML
 
 		$ret = '<div class="prewrapped">';
 		$lines = explode("\n", $content);
+		$list = 0;
 		foreach($lines as $l)
 		{
 			$l = htmlspecialchars($l, ENT_NOQUOTES);
 			$l = preg_replace($from, $to, $l);
-			if($l[0] == ' ' && $l[1] != '*')
-				$l = '<span class="preformatted">'.$l.'</span>';
+			if($l[0] == ' ')
+			{
+				if($l[1] == '*')
+				{
+					//list
+					$l = '<li>'.substr($l, 3).'</li>';
+					if($list == 0)
+					{
+						$list = 1;
+						$l = '<ul>'.$l;
+					}
+				}
+				else
+					//preformatted content
+					$l = '<span class="preformatted">'
+						.substr($l, 1).'</span>';
+			}
+			else if($list)
+			{
+				//close the list if necessary
+				$l = '</ul>'.$l;
+				$list = 0;
+			}
 			$ret .= $l.'<br />';
 		}
 		$ret .= '</div>';
