@@ -23,8 +23,8 @@ function _config_get($module, $name)
 		return FALSE;
 	$res = _sql_array('SELECT type, value_bool, value_int, value_string'
 			.' FROM daportal_config'
-			.' WHERE daportal_config.module_id='."'$module_id'"
-			.' AND daportal_config.name='."'$name'");
+			." WHERE daportal_config.module_id='$module_id'"
+			." AND daportal_config.name='$name'");
 	if(!is_array($res) || count($res) != 1)
 		return FALSE;
 	$res = $res[0];
