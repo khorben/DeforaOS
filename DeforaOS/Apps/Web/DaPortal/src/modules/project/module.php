@@ -861,10 +861,8 @@ class ProjectModule extends ContentModule
 		parent::helperPreviewMetadata($engine, $preview, $request,
 				$content);
 		if(isset($content['synopsis']))
-		{
 			$preview->append('label', array('class' => 'bold',
 					'text' => $content['synopsis']));
-		}
 	}
 
 
