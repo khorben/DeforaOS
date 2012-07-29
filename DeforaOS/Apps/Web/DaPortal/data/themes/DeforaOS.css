@@ -87,8 +87,14 @@ h1 a:hover {
 	text-decoration:		none;
 }
 
-ol li, ul li {
+ol, ul {
+	margin-left:			1ex;
 	padding-left:			1ex;
+}
+
+ol li, ul li {
+	margin-left:			0.2ex;
+	padding-left:			0.2ex;
 }
 
 
@@ -135,6 +141,11 @@ div#menu a {
 	color:				#ffffff;
 	display:			block;
 	text-align:			left;
+}
+
+div#menu ul {
+	margin-left:			0;
+	padding-left:			0;
 }
 
 div#menu ul.menubar li {
