@@ -612,6 +612,37 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::formSubmit
+	protected function formSubmit($engine, $request, $content)
+	{
+		$r = new Request($engine, $this->name, 'submit');
+		$form = new PageElement('form', array('request' => $r));
+		$vbox = $form->append('vbox');
+		$vbox->append('entry', array('name' => 'title',
+				'text' => _('Name: '),
+				'value' => $request->getTitle()));
+		$vbox->append('entry', array('name' => 'synopsis',
+				'text' => _('Synopsis: '),
+				'value' => $request->getParameter('synopsis')));
+		$vbox->append('textview', array('name' => 'content',
+				'text' => _('Description: '),
+				'value' => $request->getParameter('content')));
+		$r = new Request($engine, $this->name);
+		$form->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		if($this->canPreview($engine, $request))
+			$form->append('button', array('type' => 'submit',
+					'stock' => 'preview',
+					'name' => 'action',
+					'value' => 'preview',
+					'text' => _('Preview')));
+		$form->append('button', array('type' => 'submit',
+				'stock' => 'new', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Create')));
+		return $form;
+	}
+
+
 	//helpers
 	//ProjectModule::helperDisplay
 	protected function helperDisplay($engine, $page, $content = FALSE)
