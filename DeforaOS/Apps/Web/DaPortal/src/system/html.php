@@ -50,6 +50,7 @@ class HTML
 			case 'iso-8859-15':
 				//do not rely on input charset detection
 				$content = utf8_encode($content);
+				break;
 		}
 		$content = '<root>'.$content.'</root>';
 		if(($ret = xml_parse($parser, $content, TRUE)) != 1)
@@ -166,6 +167,7 @@ class HTML
 			case 'iso-8859-15':
 				//do not rely on input charset detection
 				$content = utf8_encode($content);
+				break;
 		}
 		if(($ret = xml_parse($parser, $content, TRUE)) != 1)
 		{
