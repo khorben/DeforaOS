@@ -926,7 +926,7 @@ abstract class ContentModule extends Module
 		$title = $request->getTitle();
 		$content = $request->getParameter('content');
 		$public = $request->getParameter('public') ? TRUE : FALSE;
-		$content = Content::insert($engine, $this->id, $title, $c,
+		$content = Content::insert($engine, $this->id, $title, $content,
 				$public, TRUE);
 		if($content === FALSE)
 			return _('Internal server error');
