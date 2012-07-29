@@ -521,6 +521,7 @@ abstract class ContentModule extends Module
 		$page = new Page(array('title' => $this->text_content_title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $this->text_content_title));
+		$vbox = $page->append('vbox');
 		//obtain the total number of records available
 		if(($res = $db->query($engine, $this->query_list_count.$query,
 				array('module_id' => $this->id))) !== FALSE
@@ -536,14 +537,14 @@ abstract class ContentModule extends Module
 				array('module_id' => $this->id))) === FALSE)
 		{
 			$error = _('Unable to list contents');
-			$page->append('dialog', array('type' => 'error',
+			$vbox->append('dialog', array('type' => 'error',
 						'text' => $error));
 			return $page;
 		}
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$content = $this->_get($engine, $res[$i]['id']);
-			$this->helperPreview($engine, $page, $content);
+			$this->helperPreview($engine, $vbox, $content);
 		}
 		//output paging information
 		if($pcnt !== FALSE && ($pcnt > $this->content_list_count))
@@ -1206,7 +1207,7 @@ abstract class ContentModule extends Module
 	protected function helperDisplay($engine, $page, $content = FALSE)
 	{
 		if($content === FALSE)
-			return;
+			return FALSE;
 		//link
 		$request = new Request($engine, $content['module'], FALSE,
 				$content['id'], $content['title']);
