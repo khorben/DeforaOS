@@ -332,7 +332,7 @@ form.treeview div.header span.detail {
 
 
 /* larger screens */
-@media screen and (min-width: 96ex) {
+@media screen and (min-width: 80ex) {
 	html {
 		background-attachment:	fixed;
 		background-image:	url('DeforaOS-background.png');
@@ -341,7 +341,7 @@ form.treeview div.header span.detail {
 	}
 
 	body {
-		max-width:		80ex;
+		max-width:		96ex;
 		padding-right:		16ex;
 	}
 
