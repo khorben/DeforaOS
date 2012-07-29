@@ -716,7 +716,9 @@ abstract class ContentModule extends Module
 					'type' => 'error',
 					'text' => $error));
 		//view
-		$r = new Request($engine, $this->name, 'list', $uid,
+		$r = FALSE;
+		if($uid === $cred->getUserId())
+			$r = new Request($engine, $this->name, 'list', $uid,
 				$uid ? $user->getUsername() : FALSE);
 		$treeview = $page->append('treeview', array('request' => $r));
 		$columns = array('title' => _('Title'));
@@ -754,6 +756,10 @@ abstract class ContentModule extends Module
 			$row->setProperty('username', $link);
 			$date = $db->formatDate($engine, $res[$i]['timestamp']);
 			$row->setProperty('date', $date);
+			//XXX hack for ProjectModule
+			if(isset($res[$i]['synopsis']))
+				$row->setProperty('synopsis',
+						$res[$i]['synopsis']);
 		}
 		//buttons
 		$this->helperListButtons($engine, $page, $request);
