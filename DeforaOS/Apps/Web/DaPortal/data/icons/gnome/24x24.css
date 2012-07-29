@@ -131,6 +131,10 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/forward.png');
 }
 
+.stock24.help {
+	background-image:	url('gnome-icon-theme/24x24/apps/help-browser.png');
+}
+
 .stock24.home {
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-home.png');
 }

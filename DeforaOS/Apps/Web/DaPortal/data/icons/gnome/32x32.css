@@ -131,6 +131,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/forward.png');
 }
 
+.stock32.help {
+	background-image:	url('gnome-icon-theme/32x32/apps/help-browser.png');
+}
+
 .stock32.home {
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-home.png');
 }

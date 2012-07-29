@@ -131,6 +131,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/forward.png');
 }
 
+.stock48.help {
+	background-image:	url('gnome-icon-theme/48x48/apps/help-browser.png');
+}
+
 .stock48.home {
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-home.png');
 }
