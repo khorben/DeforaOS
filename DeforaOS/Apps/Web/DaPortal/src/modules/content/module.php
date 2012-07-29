@@ -551,13 +551,15 @@ abstract class ContentModule extends Module
 				&& ($pcnt > $this->content_list_count))
 		{
 			$sep = '';
+			if(($pcur = $request->getParameter('page')) === FALSE)
+				$pcur = 1;
 			for($i = 1; ($i * $this->content_list_count) < $pcnt;
 				$i++, $sep = ' | ')
 			{
 				if(strlen($sep))
 					$page->append('label', array(
 							'text' => $sep));
-				if($request->getParameter('page') == $i)
+				if($i == $pcur)
 				{
 					$page->append('label', array(
 							'text' => $i));
