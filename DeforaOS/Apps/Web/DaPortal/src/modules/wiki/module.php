@@ -48,6 +48,23 @@ class WikiModule extends ContentModule
 
 	//protected
 	//methods
+	//accessors
+	//WikiModule::canUpdate
+	protected function canUpdate($engine, $content = FALSE, &$error = FALSE)
+	{
+		global $config;
+		$cred = $engine->getCredentials();
+
+		if($cred->getUserId() > 0)
+			return TRUE;
+		//anonymous users may be allowed to edit the wiki
+		if($config->getVariable('module::'.$this->name, 'anonymous'))
+			return TRUE;
+		$error = _('Permission denied');
+		return FALSE;
+	}
+
+
 	//calls
 	//WikiModule::callDefault
 	protected function callDefault($engine, $request = FALSE)
@@ -86,6 +103,15 @@ class WikiModule extends ContentModule
 		//recent changes
 		$vbox->append($this->callHeadline($engine, FALSE));
 		return $page;
+	}
+
+
+	//forms
+	//WikiModule::formUpdate
+	protected function formUpdate($engine, $request, $content)
+	{
+		//FIXME implement the rich-text editor
+		return parent::formUpdate($engine, $request, $content);
 	}
 
 
