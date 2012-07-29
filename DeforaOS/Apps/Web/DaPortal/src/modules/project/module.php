@@ -299,10 +299,10 @@ class ProjectModule extends ContentModule
 	{
 		$id = (isset($content['id'])) ? $content['id'] : FALSE;
 
-		if(($bug = $this->getBug($engine, $id)) !== FALSE)
-			$id = $bug['project_id'];
 		if($id === FALSE)
 			return FALSE;
+		if(($bug = $this->getBug($engine, $id)) !== FALSE)
+			$id = $bug['project_id'];
 		if(($project = $this->getProject($engine, $id)) === FALSE)
 			return FALSE;
 		$toolbar = new PageElement('toolbar');
@@ -651,7 +651,8 @@ class ProjectModule extends ContentModule
 	//ProjectModule::formSubmit
 	protected function formSubmit($engine, $request, $content)
 	{
-		$r = new Request($engine, $this->name, 'submit');
+		$r = new Request($engine, $this->name, 'submit', FALSE, FALSE,
+				array('public' => 1));
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
 		$vbox->append('entry', array('name' => 'title',
