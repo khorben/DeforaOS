@@ -622,7 +622,8 @@ abstract class ContentModule extends Module
 		$title = $this->text_content_headline_title;
 
 		//view
-		$columns = array('title' => _('Title'));
+		$columns = array('title' => _('Title'), 'date' => _('Date'),
+				'username' => _('Author'));
 		$view = new PageElement('treeview', array('view' => 'details',
 				'title' => $title, 'columns' => $columns));
 		//obtain contents
@@ -644,7 +645,15 @@ abstract class ContentModule extends Module
 				'text' => $res[$i]['title']));
 			$row->setProperty('title', $link);
 			$row->setProperty('timestamp', $res[$i]['timestamp']);
-			$row->setProperty('username', $res[$i]['username']);
+			$row->setProperty('date', $db->formatDate($engine,
+					$res[$i]['timestamp']));
+			$r = new Request($engine, 'user', FALSE,
+					$res[$i]['user_id'],
+					$res[$i]['username']);
+			$link = new PageElement('link', array('request' => $r,
+					'stock' => 'user',
+					'text' => $res[$i]['username']));
+			$row->setProperty('username', $link);
 			//XXX write a helper for this
 			$content = $res[$i]['content'];
 			if(($len = $this->content_preview_length) > 0
