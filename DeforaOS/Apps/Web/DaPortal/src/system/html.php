@@ -92,9 +92,19 @@ class HTML
 	//HTML::format
 	static public function format($engine, $content)
 	{
-		//FIXME really implement
-		return '<div style="white-space: pre-wrap">'
-			.htmlspecialchars($content, ENT_NOQUOTES).'</div>';
+		$from = '/((ftp:\/\/|http:\/\/|https:\/\/|mailto:)([-+a-zA-Z0-9.:\/_%?!=,;~#@]|&amp;)+)/';
+		$to = '<a href="\1">\1</a>';
+
+		$ret = '<div class="prewrapped">';
+		$lines = explode("\n", $content);
+		foreach($lines as $l)
+		{
+			$l = htmlspecialchars($l, ENT_NOQUOTES);
+			$l = preg_replace($from, $to, $l);
+			$ret .= $l.'<br />';
+		}
+		$ret .= '</div>';
+		return $ret;
 	}
 
 
