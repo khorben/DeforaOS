@@ -52,10 +52,12 @@ class Content
 		$query = Content::$query_delete;
 
 		if(!is_numeric($module_id) || !is_numeric($content_id))
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Invalid content to delete');
 		if($db->query($engine, $query, array('module_id' => $module_id,
 				'content_id' => $content_id)) === FALSE)
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Could not delete content');
 		return TRUE;
 	}
 
@@ -76,7 +78,8 @@ class Content
 		}
 		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Could not fetch content');
 		$res = $res[0];
 		return new Content($res['id'], $res['module_id'],
 			$res['title'], $res['content'], $res['enabled'],
@@ -94,18 +97,21 @@ class Content
 
 		if(!is_numeric($module_id))
 			//XXX make a stricter check
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Invalid module for content to insert');
 		if($content === FALSE)
 			$content = '';
 		if(!is_string($title) || !is_string($content)
 				|| !is_bool($enabled) || !is_bool($public))
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Invalid content to insert');
 		if($db->query($engine, $query, array('module_id' => $module_id,
 				'user_id' => $cred->getUserId(),
 				'title' => $title, 'content' => $content,
 				'enabled' => $enabled, 'public' => $public))
 				=== FALSE)
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Could not insert content');
 		$id = $db->getLastId($engine, 'daportal_content', 'content_id');
 		$content = new Content($id, $module_id, $title, $content,
 			$enabled, $public);
@@ -119,14 +125,15 @@ class Content
 		$db = $engine->getDatabase();
 		$query = Content::$query_update;
 
-		if(!is_numeric($content_id))
-			return FALSE;
-		if(!is_string($title) || !is_string($content))
-			return FALSE;
+		if(!is_numeric($content_id) || !is_string($title)
+				|| !is_string($content))
+			return $engine->log('LOG_ERR',
+					'Invalid content to update');
 		if($db->query($engine, $query, array(
 				'content_id' => $content_id, 'title' => $title,
 				'content' => $content)) === FALSE)
-			return FALSE;
+			return $engine->log('LOG_ERR',
+					'Could not update content');
 		return TRUE;
 	}
 
