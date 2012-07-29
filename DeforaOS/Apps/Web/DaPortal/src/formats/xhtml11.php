@@ -53,7 +53,18 @@ class XHTML11Format extends HTMLFormat
 		$this->doctype = "<?xml version=\"$version\""
 			." encoding=\"$encoding\"?>\n";
 		$this->doctype .= "<!DOCTYPE html PUBLIC $dtd>\n";
+		//for escaping
+		if(!defined('ENT_XHTML'))
+			define('ENT_XHTML', 0);
 		parent::attach($engine, $type);
+	}
+
+
+	//escaping
+	//XHTML11Format::escapeAttribute
+	protected function escapeAttribute($text)
+	{
+		return htmlspecialchars($text, ENT_QUOTES | ENT_XHTML);
 	}
 }
 

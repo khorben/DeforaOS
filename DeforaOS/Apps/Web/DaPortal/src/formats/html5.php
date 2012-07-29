@@ -42,7 +42,18 @@ class HTML5Format extends HTMLFormat
 	protected function attach(&$engine, $type = FALSE)
 	{
 		$this->doctype = "<!DOCTYPE html>\n";
+		//for escaping
+		if(!defined('ENT_HTML5'))
+			define('ENT_HTML5', 0);
 		parent::attach($engine, $type);
+	}
+
+
+	//escaping
+	//HTML5Format::escapeAttribute
+	protected function escapeAttribute($text)
+	{
+		return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
 	}
 }
 

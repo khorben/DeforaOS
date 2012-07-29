@@ -46,11 +46,47 @@ class HTMLFormat extends FormatElements
 	//HTMLFormat::attach
 	protected function attach(&$engine, $type = FALSE)
 	{
+		//for escaping
+		if(!defined('ENT_HTML401'))
+			define('ENT_HTML401', 0);
 	}
 
 
 	//public
 	//methods
+	//escaping
+	//HTMLFormat::escape
+	protected function escape($text)
+	{
+		return str_replace(array('<', '>', '&'), array('&lt;', '&gt;',
+				'&amp;'), $text);
+	}
+
+
+	//HTMLFormat::escapeAttribute
+	protected function escapeAttribute($text)
+	{
+		return htmlspecialchars($text, ENT_QUOTES | ENT_HTML401);
+	}
+
+
+	//HTMLFormat::escapeText
+	protected function escapeText($text)
+	{
+		$from = array('&', '<', '>', "\n", "\r");
+		$to = array('&amp;', '&lt;', '&gt;', "<br />\n", '');
+
+		return str_replace($from, $to, $text);
+	}
+
+
+	//HTMLFormat::escapeURI
+	protected function escapeURI($text)
+	{
+		return urlencode($text);
+	}
+
+
 	//rendering
 	//HTMLFormat::render
 	public function render(&$engine, $page, $filename = FALSE)
@@ -842,35 +878,6 @@ class HTMLFormat extends FormatElements
 
 	//private
 	//methods
-	//escaping
-	private function escape($text)
-	{
-		return str_replace(array('<', '>', '&'), array('&lt;', '&gt;',
-				'&amp;'), $text);
-	}
-
-
-	private function escapeAttribute($text)
-	{
-		return htmlspecialchars($text);
-	}
-
-
-	private function escapeText($text)
-	{
-		$from = array('&', '<', '>', "\n", "\r");
-		$to = array('&amp;', '&lt;', '&gt;', "<br />\n", '');
-
-		return str_replace($from, $to, $text);
-	}
-
-
-	private function escapeURI($text)
-	{
-		return urlencode($text);
-	}
-
-
 	//tagging
 	private function tag($name, $class = FALSE, $id = FALSE,
 			$attributes = FALSE, $content = FALSE)
