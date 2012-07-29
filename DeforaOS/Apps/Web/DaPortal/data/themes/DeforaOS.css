@@ -333,13 +333,16 @@ form.treeview div.header span.detail {
 
 /* larger screens */
 @media screen and (min-width: 96ex) {
+	html {
+		background-attachment:	fixed;
+		background-image:	url('DeforaOS-background.png');
+		background-repeat:	no-repeat;
+		background-position:	70% 90%;
+	}
+
 	body {
 		max-width:		80ex;
 		padding-right:		16ex;
-	}
-
-	div#content {
-		margin-top:		4ex;
 	}
 
 	div#content, div.statusbar {
@@ -360,12 +363,5 @@ form.treeview div.header span.detail {
 
 	div#menu a:hover {
 		color:			#ffffff;
-	}
-
-	h1#title {
-		margin-left:		auto;
-		margin-right:		auto;
-		position:		fixed;
-		top:			2ex;
 	}
 }
