@@ -88,6 +88,85 @@ class WikiModule extends ContentModule
 
 
 	//helpers
+	//WikiModule::helperDisplay
+	protected function helperDisplay($engine, $page, $content = FALSE)
+	{
+		if(($page = parent::helperDisplay($engine, $page, $content))
+				=== FALSE)
+			return FALSE;
+		//link
+		$request = new Request($engine, $content['module'], FALSE,
+				$content['id'], $content['title']);
+		$this->helperDisplayRevisions($engine, $page, $request,
+				$content);
+		return $page;
+	}
+
+
+	//WikiModule::helperDisplayRevisions
+	protected function helperDisplayRevisions($engine, $page, $request,
+			$content)
+	{
+		$error = _('Could not list revisions');
+
+		if($this->root === FALSE
+				|| strpos($content['title'], '/') !== FALSE)
+			return $page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		//obtain the revision list
+		$cmd = 'rlog '.escapeshellarg(
+				$this->root.'/'.$content['title']);
+		exec($cmd, $rcs, $res);
+		if($res != 0)
+			return $page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		for($i = 0, $cnt = count($rcs); $i < $cnt;)
+			if($rcs[$i++] == '----------------------------')
+				break;
+		$columns = array('title' => _('Name'), 'date' => _('Date'),
+				'username' => _('Author'),
+				'message' => _('Message'));
+		$vbox = $page->append('vbox');
+		$vbox->append('title', array('text' => 'Revisions',
+				'stock' => $this->name));
+		$view = $vbox->append('treeview', array('columns' => $columns));
+		$lsp = '======================================================';
+		$ssp = '----------------------------';
+		for(; $i < $cnt - 2; $i += 3)
+		{
+			$row = $view->append('row');
+			//name
+			$name = substr($rcs[$i], 9);
+			$row->setProperty('title', $name);
+			//date
+			$date = substr($rcs[$i + 1], 6, 19);
+			$row->setProperty('date', $date);
+			//username
+			$username = substr($rcs[$i + 1], 36);
+			$username = substr($username, 0, strspn($username,
+					'abcdefghijklmnopqrstuvwxyz'
+					.'ABCDEFGHIJKLMNOPQRSTUV'
+					.'WXYZ0123456789'));
+			$row->setProperty('username', $username);
+			//message
+			$message = $rcs[$i + 2];
+			if($message == $ssp || strncmp($message, $lsp,
+					strlen($lsp)) == 0)
+				$message = '';
+			else
+			{
+				$apnd = '';
+				for($i++; $i < $cnt && $rcs[$i + 2] != $ssp
+					&& strncmp($rcs[$i + 2], $lsp,
+						strlen($lsp)) != 0; $i++)
+						$apnd = '...';
+				$message .= $apnd;
+			}
+			$row->setProperty('message', $message);
+		}
+	}
+
+
 	//WikiModule::helperDisplayText
 	protected function helperDisplayText($engine, $page, $request, $content)
 	{
@@ -95,21 +174,15 @@ class WikiModule extends ContentModule
 
 		if($this->root === FALSE
 				|| strpos($content['title'], '/') !== FALSE)
-		{
-			$page->append('dialog', array('type' => 'error',
+			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
-			return;
-		}
 		//obtain the page
 		$cmd = 'co -p -q '.escapeshellarg(
 				$this->root.'/'.$content['title']);
 		exec($cmd, $rcs, $res);
 		if($res != 0)
-		{
-			$page->append('dialog', array('type' => 'error',
+			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
-			return;
-		}
 		$rcs = implode("\n", $rcs);
 		$page->append('htmlview', array('text' => $rcs));
 	}
