@@ -300,7 +300,7 @@ div.toolbar {
 div.toolbar a.button, div.toolbar button, div.toolbar input[type="reset"],
 div.toolbar input[type="submit"] {
 	border-color:			#a0a0a0;
-	border-width:			1;
+	border-width:			1px;
 }
 
 div.toolbar a.button:hover, div.toolbar input[type="submit"]:hover {
