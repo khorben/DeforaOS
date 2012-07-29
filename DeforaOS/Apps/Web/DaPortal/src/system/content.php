@@ -45,6 +45,21 @@ class Content
 
 	//static
 	//useful
+	//Content::delete
+	static public function delete($engine, $module_id, $content_id)
+	{
+		$db = $engine->getDatabase();
+		$query = Content::$query_delete;
+
+		if(!is_numeric($module_id) || !is_numeric($content_id))
+			return FALSE;
+		if($db->query($engine, $query, array('module_id' => $module_id,
+				'content_id' => $content_id)) === FALSE)
+			return FALSE;
+		return TRUE;
+	}
+
+
 	//Content::get
 	static public function get($engine, $module_id, $id, $title = FALSE)
 	{
@@ -126,6 +141,8 @@ class Content
 	private $public = FALSE;
 
 	//queries
+	static private $query_delete = 'DELETE FROM daportal_content
+		WHERE module_id=:module_id AND content_id=:content_id';
 	static private $query_get = "SELECT daportal_module.name AS module,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
