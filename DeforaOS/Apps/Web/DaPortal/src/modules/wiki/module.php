@@ -102,6 +102,11 @@ class WikiModule extends ContentModule
 				'stock' => 'help'));
 		//recent changes
 		$vbox->append($this->callHeadline($engine, FALSE));
+		//page list
+		$r = new Request($engine, $this->name, 'list');
+		$vbox->append('link', array('request' => $r,
+				'stock' => $this->name,
+				'text' => _('List all pages')));
 		return $page;
 	}
 
