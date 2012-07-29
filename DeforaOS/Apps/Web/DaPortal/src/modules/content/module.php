@@ -547,9 +547,28 @@ abstract class ContentModule extends Module
 			$this->helperPreview($engine, $vbox, $content);
 		}
 		//output paging information
-		if($pcnt !== FALSE && ($pcnt > $this->content_list_count))
+		if($pcnt !== FALSE && $this->content_list_count > 0
+				&& ($pcnt > $this->content_list_count))
 		{
-			//FIXME implement
+			$sep = '';
+			for($i = 1; ($i * $this->content_list_count) < $pcnt;
+				$i++, $sep = ' | ')
+			{
+				if(strlen($sep))
+					$page->append('label', array(
+							'text' => $sep));
+				if($request->getParameter('page') == $i)
+				{
+					$page->append('label', array(
+							'text' => $i));
+					continue;
+				}
+				$r = new Request($engine, $this->name, FALSE,
+						FALSE, FALSE, array(
+							'page' => $i));
+				$page->append('link', array('request' => $r,
+						'text' => $i));
+			}
 		}
 		return $page;
 	}
