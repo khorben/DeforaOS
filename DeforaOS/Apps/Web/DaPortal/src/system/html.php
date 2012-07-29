@@ -32,7 +32,7 @@ class HTML
 		$from = array('<br>', '<hr>');
 		$to = array('<br/>', '<hr/>');
 
-		$parser = xml_parser_create();
+		$parser = HTML::xmlParser();
 		if(xml_set_element_handler($parser, $start, $end) !== TRUE)
 		{
 			xml_parser_free($parser);
@@ -136,7 +136,7 @@ class HTML
 	//HTML::validate
 	static public function validate($engine, $content)
 	{
-		$parser = xml_parser_create();
+		$parser = HTML::xmlParser();
 		if(xml_set_element_handler($parser,
 					array('HTML', '_validateElementStart'),
 					array('HTML', '_validateElementEnd'))
@@ -220,6 +220,21 @@ class HTML
 			'tt' => array('class'),
 			'u' => array('class'),
 			'ul' => array('class'));
+
+
+	//methods
+	//helpers
+	//HTML::
+	static protected function xmlParser($charset = FALSE)
+	{
+		global $config;
+
+		if($charset !== FALSE
+				|| ($charset = $config->getVariable(FALSE,
+						'charset')) !== FALSE)
+			return xml_parser_create($charset);
+		return xml_parser_create('');
+	}
 }
 
 ?>
