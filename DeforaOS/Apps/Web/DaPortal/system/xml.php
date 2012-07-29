@@ -62,7 +62,7 @@ function _xml_text_update_data($parser, $data)
 	global $xml_content;
 
 	_warning($data, 0);
-	$xml_content.=$data;
+	$xml_content .= htmlspecialchars($data, ENT_NOQUOTES);
 }
 
 
