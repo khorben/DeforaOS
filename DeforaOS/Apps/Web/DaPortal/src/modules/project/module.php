@@ -124,7 +124,8 @@ class ProjectModule extends ContentModule
 	protected $project_query_list_projects = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
-		daportal_user.user_id AS user_id, username, title, synopsis
+		daportal_user.user_id AS user_id, username, title, synopsis,
+		cvsroot
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
@@ -137,7 +138,8 @@ class ProjectModule extends ContentModule
 	protected $project_query_list_projects_user = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
-		daportal_user.user_id AS user_id, username, title, synopsis
+		daportal_user.user_id AS user_id, username, title, synopsis,
+		cvsroot
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
@@ -173,6 +175,9 @@ class ProjectModule extends ContentModule
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND daportal_content.title=:title";
+	protected $project_query_project_insert = 'INSERT INTO daportal_project
+		(project_id, synopsis, cvsroot)
+		VALUES (:project_id, :synopsis, :cvsroot)';
 	protected $project_query_get = "SELECT daportal_module.name AS module,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
@@ -561,6 +566,37 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::callSubmit
+	protected function callSubmit($engine, $request = FALSE)
+	{
+		return parent::callSubmit($engine, $request);
+	}
+
+	protected function _submitProcess($engine, $request, &$content)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_project_insert;
+
+		if(($ret = parent::_submitProcess($engine, $request, $content))
+				=== TRUE || is_string($ret))
+			return $ret;
+		if(($synopsis = $request->getParameter('synopsis')) === FALSE)
+			$synopsis = '';
+		if(($cvsroot = $request->getParameter('cvsroot')) === FALSE)
+			$cvsroot = '';
+		if($db->query($engine, $query, array(
+				'project_id' => $content->getId(),
+				'synopsis' => $synopsis,
+				'cvsroot' => $cvsroot)) === FALSE)
+		{
+			//XXX use a transaction instead
+			Content::delete($engine, $this->id, $content->getId());
+			return _('Could not insert project');
+		}
+		return $ret;
+	}
+
+
 	//ProjectModule::callTimeline
 	protected function callTimeline($engine, $request)
 	{
@@ -627,6 +663,9 @@ class ProjectModule extends ContentModule
 		$vbox->append('textview', array('name' => 'content',
 				'text' => _('Description: '),
 				'value' => $request->getParameter('content')));
+		$vbox->append('entry', array('name' => 'cvsroot',
+				'text' => _('CVS root: '),
+				'value' => $request->getParameter('cvsroot')));
 		$r = new Request($engine, $this->name);
 		$form->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
@@ -866,6 +905,25 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::helperPreviewText
+	protected function helperPreviewText($engine, $preview, $request,
+			$content = FALSE)
+	{
+		parent::helperPreviewText($engine, $preview, $request,
+				$content);
+		if($content === FALSE)
+			return;
+		if(isset($content['cvsroot']))
+		{
+			$hbox = $preview->append('hbox');
+			$hbox->append('label', array('class' => 'bold',
+					'text' => _('CVS root: ')));
+			$hbox->append('label', array(
+					'text' => $content['cvsroot']));
+		}
+	}
+
+
 	//ProjectModule::helperSubmitPreview
 	protected function helperSubmitPreview($engine, $page, $request,
 			$content)
@@ -878,12 +936,14 @@ class ProjectModule extends ContentModule
 			return;
 		$synopsis = $request->getParameter('synopsis');
 		$content = $request->getParameter('content');
+		$cvsroot = $request->getParameter('cvsroot');
 		$content = array('title' => _('Preview: ').$request->getTitle(),
 				'user_id' => $user->getUserId(),
 				'username' => $user->getUsername(),
 				'date' => $this->timestampToDate(),
 				'synopsis' => $synopsis,
-				'content' => $content);
+				'content' => $content,
+				'cvsroot' => $cvsroot);
 		$this->helperPreview($engine, $page, $content);
 	}
 
