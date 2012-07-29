@@ -338,6 +338,14 @@ form.treeview div.header span.detail {
 		padding-right:		16ex;
 	}
 
+	div#content {
+		margin-top:		4ex;
+	}
+
+	div#content, div.statusbar {
+		opacity:		0.9;
+	}
+
 	div#menu {
 		float:			right;
 		margin-right:		-16ex;
@@ -352,5 +360,12 @@ form.treeview div.header span.detail {
 
 	div#menu a:hover {
 		color:			#ffffff;
+	}
+
+	h1#title {
+		margin-left:		auto;
+		margin-right:		auto;
+		position:		fixed;
+		top:			2ex;
 	}
 }
