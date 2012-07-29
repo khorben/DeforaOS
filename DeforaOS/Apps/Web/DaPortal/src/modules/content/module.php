@@ -924,12 +924,13 @@ abstract class ContentModule extends Module
 			return _('The request expired or is invalid');
 		//store the content uploaded
 		$title = $request->getTitle();
-		$content = $request->getParameter('content');
+		$c = $request->getParameter('content');
 		$public = $request->getParameter('public') ? TRUE : FALSE;
-		$content = Content::insert($engine, $this->id, $title, $content,
-				FALSE, TRUE);
-		if($content === FALSE)
+		$c = Content::insert($engine, $this->id, $title, $c, $public,
+				TRUE);
+		if($c === FALSE)
 			return _('Internal server error');
+		$content = $c;
 		return FALSE;
 	}
 
