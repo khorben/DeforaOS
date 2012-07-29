@@ -89,6 +89,15 @@ class HTML
 	}
 
 
+	//HTML::format
+	static public function format($engine, $content)
+	{
+		//FIXME really implement
+		return '<div style="white-space: pre-wrap">'
+			.htmlspecialchars($content, ENT_NOQUOTES).'</div>';
+	}
+
+
 	//HTML::validate
 	static public function validate($engine, $content)
 	{
