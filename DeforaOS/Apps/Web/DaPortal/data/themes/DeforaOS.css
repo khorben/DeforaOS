@@ -375,4 +375,8 @@ form.treeview div.header span.detail {
 	div#menu a:hover {
 		color:			#ffffff;
 	}
+
+	h1#title {
+		text-align:			left;
+	}
 }
