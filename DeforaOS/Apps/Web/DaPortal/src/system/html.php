@@ -67,7 +67,7 @@ class HTML
 
 	static protected function _filterCharacterData($parser, $data)
 	{
-		HTML::$content .= $data;
+		HTML::$content .= htmlspecialchars($data, ENT_NOQUOTES);
 	}
 
 	static protected function _filterElementStart($parser, $name,
