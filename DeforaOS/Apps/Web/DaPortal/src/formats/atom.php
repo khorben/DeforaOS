@@ -40,6 +40,9 @@ class AtomFormat extends Format
 	//AtomFormat::attach
 	protected function attach(&$engine, $type = FALSE)
 	{
+		//for escaping
+		if(!defined('ENT_XML1'))
+			define('ENT_XML1', 0);
 	}
 
 
@@ -146,7 +149,7 @@ class AtomFormat extends Format
 	//escapeAttribute
 	private function escapeAttribute($text)
 	{
-		return htmlspecialchars($text);
+		return htmlspecialchars($text, ENT_COMPAT | ENT_XML1);
 	}
 }
 
