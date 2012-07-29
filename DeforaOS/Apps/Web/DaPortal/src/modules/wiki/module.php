@@ -44,6 +44,50 @@ class WikiModule extends ContentModule
 	}
 
 
+	//protected
+	//methods
+	//calls
+	//WikiModule::callDefault
+	protected function callDefault($engine, $request = FALSE)
+	{
+		$title = $this->text_content_title;
+
+		if($request !== FALSE && $request->getId() !== FALSE)
+			return $this->callDisplay($engine, $request);
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('text' => $title,
+				'stock' => $this->name));
+		$vbox = $page->append('vbox');
+		//search
+		$vbox->append('title', array('text' => _('Search the wiki'),
+				'stock' => 'search'));
+		$r = new Request($engine, 'search', 'advanced', FALSE, FALSE,
+				array('inmodule' => $this->name, //XXX
+				'intitle' => 1));
+		$form = $vbox->append('form', array('request' => $r));
+		$hbox = $form->append('hbox');
+		$hbox->append('entry', array('name' => 'q',
+				'text' => _('Look for a page: ')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'search', 'text' => _('Search')));
+		$r = new Request($engine, 'search', 'advanced', FALSE, FALSE,
+				array('inmodule' => $this->name, //XXX
+				'incontent' => 1));
+		$form = $vbox->append('form', array('request' => $r));
+		$hbox = $form->append('hbox');
+		$hbox->append('entry', array('name' => 'q',
+				'text' => _('Look inside pages: ')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'search', 'text' => _('Search')));
+		$vbox->append('title', array('text' => _('Recent changes'),
+				'stock' => 'help'));
+		//recent changes
+		$vbox->append($this->callHeadline($engine, FALSE));
+		return $page;
+	}
+
+
+	//helpers
 	//WikiModule::helperDisplayText
 	protected function helperDisplayText($engine, $page, $request, $content)
 	{
