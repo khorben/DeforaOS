@@ -854,6 +854,42 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::helperPreviewMetadata
+	protected function helperPreviewMetadata($engine, $preview, $request,
+			$content = FALSE)
+	{
+		parent::helperPreviewMetadata($engine, $preview, $request,
+				$content);
+		if(isset($content['synopsis']))
+		{
+			$preview->append('label', array('class' => 'bold',
+					'text' => $content['synopsis']));
+		}
+	}
+
+
+	//ProjectModule::helperSubmitPreview
+	protected function helperSubmitPreview($engine, $page, $request,
+			$content)
+	{
+		$cred = $engine->getCredentials();
+		$user = new User($engine, $cred->getUserId());
+
+		if($request === FALSE
+				|| $request->getParameter('preview') === FALSE)
+			return;
+		$synopsis = $request->getParameter('synopsis');
+		$content = $request->getParameter('content');
+		$content = array('title' => _('Preview: ').$request->getTitle(),
+				'user_id' => $user->getUserId(),
+				'username' => $user->getUsername(),
+				'date' => $this->timestampToDate(),
+				'synopsis' => $synopsis,
+				'content' => $content);
+		$this->helperPreview($engine, $page, $content);
+	}
+
+
 	//useful
 	//ProjectModule::attachScm
 	protected function attachScm(&$engine)

@@ -907,20 +907,9 @@ abstract class ContentModule extends Module
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		//preview
-		if($request !== FALSE
-				&& $request->getParameter('preview') !== FALSE)
-		{
-			$content = $request->getParameter('content');
-			$content = array('title' => _('Preview: ')
-						.$request->getTitle(),
-					'user_id' => $user->getUserId(),
-					'username' => $user->getUsername(),
-					'date' => $this->timestampToDate(),
-					'content' => $content);
-			$this->helperPreview($engine, $page, $content);
-		}
+		$this->helperSubmitPreview($engine, $page, $request, $content);
 		//form
-		$form = $this->formSubmit($engine, $request);
+		$form = $this->formSubmit($engine, $request, $content);
 		$page->append($form);
 		return $page;
 	}
@@ -1454,6 +1443,26 @@ abstract class ContentModule extends Module
 				'request' => $request));
 		$box->append('label', array('text' => '.'));
 		return $page;
+	}
+
+
+	//ContentModule::helperSubmitPreview
+	protected function helperSubmitPreview($engine, $page, $request,
+			$content)
+	{
+		$cred = $engine->getCredentials();
+		$user = new User($engine, $cred->getUserId());
+
+		if($request === FALSE
+				|| $request->getParameter('preview') === FALSE)
+			return;
+		$content = $request->getParameter('content');
+		$content = array('title' => _('Preview: ').$request->getTitle(),
+				'user_id' => $user->getUserId(),
+				'username' => $user->getUsername(),
+				'date' => $this->timestampToDate(),
+				'content' => $content);
+		$this->helperPreview($engine, $page, $content);
 	}
 }
 
