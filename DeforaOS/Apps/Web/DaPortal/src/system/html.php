@@ -114,9 +114,10 @@ class HTML
 		{
 			$l = htmlspecialchars($l, ENT_COMPAT);
 			$l = preg_replace($from, $to, $l);
-			if($l[0] == ' ')
+			if(strlen($l) > 0 && $l[0] == ' ')
 			{
-				if($l[1] == '*' && $l[2] == ' ')
+				if(strlen($l) > 2 && $l[1] == '*'
+						&& $l[2] == ' ')
 				{
 					//list
 					$l = '<li>'.substr($l, 3).'</li>';
