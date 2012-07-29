@@ -42,6 +42,15 @@ class HTML
 		HTML::$content = '';
 		//give it more chances to validate
 		$content = str_ireplace($from, $to, $content);
+		switch(HTML::$charset)
+		{
+			case 'ISO-8859-1':
+			case 'iso-8859-1':
+			case 'ISO-8859-15':
+			case 'iso-8859-15':
+				//do not rely on input charset detection
+				$content = utf8_encode($content);
+		}
 		$content = '<root>'.$content.'</root>';
 		if(($ret = xml_parse($parser, $content, TRUE)) != 1)
 		{
@@ -53,15 +62,6 @@ class HTML
 			$engine->log('LOG_DEBUG', $error);
 		}
 		xml_parser_free($parser);
-		switch(HTML::$charset)
-		{
-			case 'ISO-8859-1':
-			case 'iso-8859-1':
-			case 'ISO-8859-15':
-			case 'iso-8859-15':
-				//it seems safe to assume we always have UTF-8
-				return utf8_decode(HTML::$content);
-		}
 		return HTML::$content;
 	}
 
@@ -157,6 +157,15 @@ class HTML
 			return FALSE;
 		}
 		HTML::$valid = TRUE;
+		switch(HTML::$charset)
+		{
+			case 'ISO-8859-1':
+			case 'iso-8859-1':
+			case 'ISO-8859-15':
+			case 'iso-8859-15':
+				//do not rely on input charset detection
+				$content = utf8_encode($content);
+		}
 		if(($ret = xml_parse($parser, $content, TRUE)) != 1)
 		{
 			$error = xml_error_string(xml_get_error_code($parser))
