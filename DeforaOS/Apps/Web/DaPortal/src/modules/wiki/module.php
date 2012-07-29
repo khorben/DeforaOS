@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/user.php');
 require_once('./modules/content/module.php');
 
 
@@ -148,6 +149,16 @@ class WikiModule extends ContentModule
 					'abcdefghijklmnopqrstuvwxyz'
 					.'ABCDEFGHIJKLMNOPQRSTUV'
 					.'WXYZ0123456789'));
+			if(($user = User::lookup($engine, $username)) !== FALSE)
+			{
+				$r = new Request($engine, 'user', FALSE,
+						$user->getUserId(),
+						$user->getUsername());
+				$username = new PageElement('link', array(
+						'request' => $r,
+						'stock' => 'user',
+						'text' => $username));
+			}
 			$row->setProperty('username', $username);
 			//message
 			$message = $rcs[$i + 2];
