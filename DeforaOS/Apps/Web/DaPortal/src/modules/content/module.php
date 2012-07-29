@@ -778,13 +778,7 @@ abstract class ContentModule extends Module
 			$row->setProperty('date', $date);
 		}
 		//buttons
-		$r = ($uid !== FALSE)
-			? new Request($engine, 'user', 'display',
-					$user->getUserId(),
-					$user->getUsername())
-			: new Request($engine, $this->name);
-		$page->append('link', array('request' => $r, 'stock' => 'back',
-				'text' => _('Back')));
+		$this->helperListButtons($engine, $page, $request);
 		return $page;
 	}
 
@@ -1309,6 +1303,24 @@ abstract class ContentModule extends Module
 	{
 		$toolbar = $this->getToolbar($engine, $content);
 		$page->append($toolbar);
+	}
+
+
+	//ContentModule::helperListButtons
+	protected function helperListButtons($engine, $page, $request)
+	{
+		$user = new User($engine, $request->getId(),
+				$request->getTitle());
+
+		if(($uid = $user->getUserId()) == 0)
+			$uid = FALSE;
+		$r = ($uid !== FALSE)
+			? new Request($engine, 'user', 'display',
+					$user->getUserId(),
+					$user->getUsername())
+			: new Request($engine, $this->name);
+		$page->append('link', array('request' => $r, 'stock' => 'back',
+				'text' => _('Back')));
 	}
 
 
