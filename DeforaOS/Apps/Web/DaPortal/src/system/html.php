@@ -53,6 +53,15 @@ class HTML
 			$engine->log('LOG_DEBUG', $error);
 		}
 		xml_parser_free($parser);
+		switch(HTML::$charset)
+		{
+			case 'ISO-8859-1':
+			case 'iso-8859-1':
+			case 'ISO-8859-15':
+			case 'iso-8859-15':
+				//it seems safe to assume we always have UTF-8
+				return utf8_decode(HTML::$content);
+		}
 		return HTML::$content;
 	}
 
@@ -75,7 +84,9 @@ class HTML
 			$attr = strtolower($k);
 			if(!in_array($attr, $a))
 				continue;
-			HTML::$content .= " $attr=\"".htmlspecialchars($v)."\"";
+			HTML::$content .= '" '.$attr.'="'
+				.htmlspecialchars($v, ENT_COMPAT | ENT_HTML401,
+						HTML::$charset).'"';
 		}
 		HTML::$content .= ">";
 	}
@@ -185,6 +196,7 @@ class HTML
 
 	//protected
 	//properties
+	static protected $charset = FALSE;
 	static protected $content;
 	static protected $valid;
 	static protected $whitelist = array(
@@ -224,15 +236,34 @@ class HTML
 
 	//methods
 	//helpers
-	//HTML::
+	//HTML::xmlParser
 	static protected function xmlParser($charset = FALSE)
 	{
 		global $config;
 
-		if($charset !== FALSE
-				|| ($charset = $config->getVariable(FALSE,
-						'charset')) !== FALSE)
-			return xml_parser_create($charset);
+		//for escaping
+		if(!defined('ENT_HTML401'))
+			define('ENT_HTML401', 0);
+		//for encoding
+		if(HTML::$charset === FALSE)
+			HTML::$charset = $config->getVariable('defaults',
+					'charset');
+		if($charset === FALSE)
+			$charset = HTML::$charset;
+		switch($charset)
+		{
+			case 'ascii':
+			case 'ASCII':
+				return xml_parser_create('US-ASCII');
+			case 'ISO-8859-1':
+			case 'iso-8859-1':
+			case 'ISO-8859-15':
+			case 'iso-8859-15':
+				return xml_parser_create('ISO-8859-1');
+			case 'utf-8':
+			case 'UTF-8':
+				return xml_parser_create('UTF-8');
+		}
 		return xml_parser_create('');
 	}
 }
