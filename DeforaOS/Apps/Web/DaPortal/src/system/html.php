@@ -84,7 +84,7 @@ class HTML
 			$attr = strtolower($k);
 			if(!in_array($attr, $a))
 				continue;
-			HTML::$content .= '" '.$attr.'="'
+			HTML::$content .= ' '.$attr.'="'
 				.htmlspecialchars($v, ENT_COMPAT | ENT_HTML401,
 						HTML::$charset).'"';
 		}
@@ -116,7 +116,7 @@ class HTML
 			$l = preg_replace($from, $to, $l);
 			if($l[0] == ' ')
 			{
-				if($l[1] == '*')
+				if($l[1] == '*' && $l[2] == ' ')
 				{
 					//list
 					$l = '<li>'.substr($l, 3).'</li>';
