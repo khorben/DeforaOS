@@ -29,6 +29,10 @@
 	white-space:			pre-wrap;
 }
 
+.prewrapped {
+	white-space:			pre-wrap;
+}
+
 .underline {
 	text-decoration:		underline;
 }
