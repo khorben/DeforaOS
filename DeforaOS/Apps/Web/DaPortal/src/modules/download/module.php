@@ -792,8 +792,8 @@ class DownloadModule extends ContentModule
 		$request = new Request($engine, $this->name, 'download',
 				$content['id'], $content['title']);
 		$this->helperDisplayField($col1, $col2, _('Name:'),
-					new PageElement('link', array('
-						request' => $request,
+					new PageElement('link', array(
+						'request' => $request,
 						'text' => $content['title'])));
 		$this->helperDisplayField($col1, $col2, _('Type:'),
 				Mime::getType($engine, $content['title']));
