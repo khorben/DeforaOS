@@ -16,8 +16,9 @@
 
 
 
-require_once('./modules/content/module.php');
+require_once('./system/html.php');
 require_once('./system/user.php');
+require_once('./modules/content/module.php');
 
 
 //ProjectModule
@@ -722,7 +723,8 @@ class ProjectModule extends ContentModule
 			return;
 		$vbox = $page->append('vbox');
 		$vbox->append('title', array('text' => _('Description')));
-		$vbox->append('label', array('text' => $content['content']));
+		$html = HTML::format($engine, $content['content']);
+		$vbox->append('htmlview', array('text' => $html));
 	}
 
 
