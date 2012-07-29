@@ -227,7 +227,7 @@ class BasicTemplate extends Template
 		if($page !== FALSE)
 		{
 			if(($t = $page->getProperty('title')) !== FALSE)
-				$title = $t;
+				$title = $this->title.': '.$t;
 			$content->append($page);
 		}
 		else if(($element = $this->getDefault()) !== FALSE)
