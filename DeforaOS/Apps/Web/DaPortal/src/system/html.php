@@ -93,6 +93,7 @@ class HTML
 	static public function format($engine, $content)
 	{
 		$from = '/((ftp:\/\/|http:\/\/|https:\/\/|mailto:)([-+a-zA-Z0-9.:\/_%?!=,;~#@]|&amp;)+)/';
+		//FIXME obfuscate e-mail addresses
 		$to = '<a href="\1">\1</a>';
 
 		$ret = '<div class="prewrapped">';
@@ -101,6 +102,8 @@ class HTML
 		{
 			$l = htmlspecialchars($l, ENT_NOQUOTES);
 			$l = preg_replace($from, $to, $l);
+			if($l[0] == ' ' && $l[1] != '*')
+				$l = '<span class="preformatted">'.$l.'</span>';
 			$ret .= $l.'<br />';
 		}
 		$ret .= '</div>';
