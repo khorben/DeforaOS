@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/html.php');
 require_once('./modules/content/module.php');
 
 
@@ -42,6 +43,19 @@ class ArticleModule extends ContentModule
 		$this->text_content_list_title_by = _('Articles by');
 		$this->text_content_more_content = _('More articles...');
 		$this->text_content_title = _('Articles');
+	}
+
+
+	//protected
+	//methods
+	//helpers
+	//NewsModule::helperDisplayText
+	protected function helperDisplayText($engine, $page, $request, $content)
+	{
+		$text = $content['content'];
+
+		$text = HTML::format($engine, $text);
+		$page->append('htmlview', array('text' => $text));
 	}
 }
 
