@@ -55,7 +55,7 @@ class HttpAuth extends Auth
 		{
 			//FIXME only up getCredentials()?
 			header('WWW-Authenticate: Basic realm="'
-					.htmlentities($realm).'"');
+					.htmlspecialchars($realm).'"');
 			header('HTTP/1.0 401 Unauthorized');
 			return TRUE;
 		}
