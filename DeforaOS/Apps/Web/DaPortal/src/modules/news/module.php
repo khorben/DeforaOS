@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/html.php');
 require_once('./modules/content/module.php');
 
 
@@ -63,6 +64,17 @@ class NewsModule extends ContentModule
 	{
 		$engine->setType('application/rss+xml');
 		return $this->callHeadline($engine, $request);
+	}
+
+
+	//helpers
+	//NewsModule::helperDisplayText
+	protected function helperDisplayText($engine, $page, $request, $content)
+	{
+		$text = $content['content'];
+
+		$text = HTML::format($engine, $text);
+		$page->append('htmlview', array('text' => $text));
 	}
 }
 
