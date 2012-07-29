@@ -123,7 +123,7 @@ class ProjectModule extends ContentModule
 	protected $project_query_list_projects = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
-		daportal_user.user_id AS user_id, username, title
+		daportal_user.user_id AS user_id, username, title, synopsis
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
@@ -136,7 +136,7 @@ class ProjectModule extends ContentModule
 	protected $project_query_list_projects_user = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
-		daportal_user.user_id AS user_id, username, title
+		daportal_user.user_id AS user_id, username, title, synopsis
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
@@ -804,6 +804,19 @@ class ProjectModule extends ContentModule
 	//ProjectModule::helperListButtons
 	protected function helperListButtons($engine, $page, $request)
 	{
+	}
+
+
+	//ProjectModule::helperListToolbar
+	protected function helperListToolbar($engine, $page, $request)
+	{
+		//XXX assumes $page is the treeview
+		if(($columns = $page->getProperty('columns')) !== FALSE)
+		{
+			$columns['synopsis'] = _('Description');
+			$page->setProperty('columns', $columns);
+		}
+		return parent::helperListToolbar($engine, $page, $request);
 	}
 
 
