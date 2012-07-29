@@ -106,6 +106,7 @@ class HTMLFormat extends FormatElements
 		$this->_render_title($page);
 		$this->_render_base($page);
 		$this->_render_theme($page);
+		$this->_render_favicon($page);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			$this->renderMeta('Content-Type', 'text/html'
@@ -133,6 +134,19 @@ class HTMLFormat extends FormatElements
 		$url = dirname($this->engine->getUrl($request, TRUE)).'/'; //XXX
 		$this->renderTabs();
 		$this->tag('base', FALSE, FALSE, array('href' => $url));
+	}
+
+	private function _render_favicon($page)
+	{
+		global $config;
+
+		if(($favicon = $config->getVariable('format::html', 'favicon'))
+				=== FALSE)
+			return;
+		//FIXME emit a (debugging) warning if the icon is not readable?
+		$this->renderTabs();
+		$this->tag('link', FALSE, FALSE, array('rel' => 'shortcut icon',
+					'href' => $favicon));
 	}
 
 	private function _render_theme($page)
