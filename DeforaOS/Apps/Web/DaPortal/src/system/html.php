@@ -112,7 +112,7 @@ class HTML
 		$list = 0;
 		foreach($lines as $l)
 		{
-			$l = htmlspecialchars($l, ENT_NOQUOTES);
+			$l = htmlspecialchars($l, ENT_COMPAT);
 			$l = preg_replace($from, $to, $l);
 			if($l[0] == ' ')
 			{
