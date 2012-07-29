@@ -163,6 +163,8 @@ class PgsqlDatabase extends Database
 	//PgsqlDatabase::escape
 	protected function escape($string)
 	{
+		if(is_bool($string))
+			$string = $string ? '1' : '0';
 		return "'".pg_escape_string($this->handle, $string)."'";
 	}
 
