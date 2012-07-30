@@ -107,16 +107,28 @@ class PdoDatabase extends Database
 		if($config->getVariable('database', 'debug'))
 			$engine->log('LOG_DEBUG', $query);
 		if(($stmt = $this->prepare($query)) === FALSE)
+		{
+			$error = $this->handle->errorInfo();
+			$error[] = '';
+			$error[] = 'Unknown error';
 			return $engine->log('LOG_ERR',
-					'Could not prepare statement');
+				'Could not prepare statement: '
+				.$error[0].': '.$error[2]);
+		}
 		if($parameters === FALSE)
 			$parameters = array();
 		$args = array();
 		foreach($parameters as $k => $v)
 			$args[':'.$k] = $v;
 		if($stmt->execute($args) !== TRUE)
+		{
+			$error = $stmt->errorInfo();
+			$error[] = '';
+			$error[] = 'Unknown error';
 			return $engine->log('LOG_ERR',
-					'Could not execute query');
+					'Could not execute query: '
+					.$error[0].': '.$error[2]);
+		}
 		return $stmt->fetchAll();
 	}
 
