@@ -616,6 +616,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 static void _variables_library(Configure * configure, FILE * fp, char * done)
 {
 	String const * libdir;
+	String const * ccshared = "$(CC) -shared";
 	String const * p;
 
 	if(!done[TT_LIBRARY] && !done[TT_SCRIPT])
@@ -647,7 +648,12 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 	else
 		_makefile_output_variable(fp, "RANLIB", p, 1);
 	if((p = config_get(configure->config, "", "ld")) == NULL)
-		_makefile_output_variable(fp, "CCSHARED", "$(CC) -shared", 0);
+	{
+		if(configure->os == HO_WIN32)
+			ccshared = "$(CC) -shared -Wl,-no-undefined"
+				" -Wl,--enable-runtime-pseudo-reloc";
+		_makefile_output_variable(fp, "CCSHARED", ccshared, 0);
+	}
 	else
 		_makefile_output_variable(fp, "CCSHARED", p, 1);
 }
