@@ -1057,7 +1057,11 @@ static void _cancel_applets(Panel * panel)
 {
 	DIR * dir;
 	struct dirent * de;
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
 	char const ext[] = ".so";
+#endif
 	size_t len;
 	char * q;
 	char const * r;
