@@ -706,15 +706,17 @@ class DownloadModule extends ContentModule
 		$page->setProperty('title', $title);
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		$args = array('module_id' => $this->id);
 		$parent_id = $content['download_id'];
 		if($parent_id !== FALSE && $parent_id !== NULL)
+		{
 			$query .= ' AND daportal_download.parent=:parent_id';
+			$args['parent_id'] = $parent_id;
+		}
 		else
 			$query .= ' AND daportal_download.parent IS NULL';
 		$query .= ' ORDER BY title ASC';
-		if(($res = $db->query($engine, $query, array(
-					'module_id' => $this->id,
-					'parent_id' => $parent_id))) === FALSE)
+		if(($res = $db->query($engine, $query, $args)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error',
 					'text' => _('Unable to list files')));
