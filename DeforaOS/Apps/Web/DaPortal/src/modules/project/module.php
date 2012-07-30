@@ -112,6 +112,7 @@ class ProjectModule extends ContentModule
 		FROM daportal_content bug, daportal_module, daportal_user,
 		daportal_bug, daportal_content project, daportal_project
 		WHERE bug.module_id=daportal_module.module_id
+		AND daportal_module.module_id=:module_id
 		AND bug.user_id=daportal_user.user_id
 		AND bug.content_id=daportal_bug.content_id
 		AND bug.enabled='1'
@@ -145,6 +146,7 @@ class ProjectModule extends ContentModule
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_module.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.enabled='1'
@@ -411,11 +413,13 @@ class ProjectModule extends ContentModule
 			else
 				$error = _('Unknown project');
 		}
+		$args = array('module_id' => $this->id);
 		if($project !== FALSE)
 		{
 			$title = _('Bug reports for ').$project['title'];
 			$toolbar = $this->getToolbar($engine, $project);
 			$query .= ' AND daportal_project.project_id=:project_id';
+			$args['project_id'] = $id;
 		}
 		$filter = $this->getFilter($engine, $request);
 		//filter by user_id
@@ -423,6 +427,7 @@ class ProjectModule extends ContentModule
 		{
 			$title .= _(' by ').$uid; //XXX
 			$query .= ' AND bug.user_id=:user_id';
+			$args['user_id'] = $uid;
 		}
 		//sorting out
 		switch(($order = $request->getParameter('sort')))
@@ -433,14 +438,11 @@ class ProjectModule extends ContentModule
 		}
 		$query .= ' ORDER BY '.$order;
 		//obtain the corresponding bug reports
-		if(($res = $db->query($engine, $query, array('user_id' => $uid,
-				'project_id' => $id))) === FALSE)
-		{
-			$error = _('Unable to list bugs');
+		$error = _('Unable to list bugs');
+		if(($res = $db->query($engine, $query, $args)) === FALSE)
 			//FIXME return a dialog instead
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
-		}
 		//build the page
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
