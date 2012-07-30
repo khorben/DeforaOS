@@ -94,7 +94,7 @@ class ProjectModule extends ContentModule
 		daportal_content.enabled AS enabled,
 		daportal_content.public AS public,
 		timestamp, name AS module,
-		daportal_user.user_id AS user_id, username, title
+		daportal_user.user_id AS user_id, username, title, synopsis
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
@@ -160,8 +160,8 @@ class ProjectModule extends ContentModule
 		ORDER BY username DESC";
 	protected $project_query_project = "SELECT project_id AS id, title,
 		daportal_user.user_id AS user_id,
-		daportal_user.username AS username,
-		content, cvsroot, daportal_content.enabled AS enabled
+		daportal_user.username AS username, content, synopsis, cvsroot,
+		daportal_content.enabled AS enabled
 		FROM daportal_content, daportal_project, daportal_user
 		WHERE daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.user_id=daportal_user.user_id
@@ -169,7 +169,7 @@ class ProjectModule extends ContentModule
 		AND daportal_content.public='1'
 		AND project_id=:content_id";
 	protected $project_query_project_by_name = "SELECT project_id AS id,
-		title, content, cvsroot, enabled
+		title, content, synopsis, cvsroot, enabled
 		FROM daportal_content, daportal_project
 		WHERE daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.enabled='1'
@@ -181,9 +181,10 @@ class ProjectModule extends ContentModule
 	protected $project_query_get = "SELECT daportal_module.name AS module,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
-		daportal_content.content_id AS id, title, content, timestamp,
-		bug_id, daportal_bug.project_id AS project_id, state, type,
-		priority, assigned, cvsroot
+		daportal_content.content_id AS id, title, content, synopsis,
+		cvsroot, timestamp, bug_id,
+		daportal_bug.project_id AS project_id, state, type, priority,
+		assigned
 		FROM daportal_module, daportal_user, daportal_content
 		LEFT JOIN daportal_project
 		ON daportal_content.content_id=daportal_project.project_id
@@ -789,10 +790,16 @@ class ProjectModule extends ContentModule
 	protected function helperDisplayDescription($engine, $page, $request,
 			$content)
 	{
-		if(!is_array($content) || !isset($content['content'])
-				|| strlen($content['content']) == 0)
+		if(!is_array($content))
 			return;
 		$vbox = $page->append('vbox');
+		if(isset($content['synopsis'])
+				&& strlen($content['synopsis']) > 0)
+			$vbox->append('label', array('class' => 'bold',
+					'text' => $content['synopsis']));
+		if(!isset($content['content'])
+				|| strlen($content['content']) == 0)
+			return;
 		$vbox->append('title', array('text' => _('Description')));
 		$html = HTML::format($engine, $content['content']);
 		$vbox->append('htmlview', array('text' => $html));
