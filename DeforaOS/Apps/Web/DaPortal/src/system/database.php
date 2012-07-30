@@ -38,7 +38,7 @@ abstract class Database
 
 	//useful
 	//Database::formatDate
-	public function formatDate(&$engine, $date, $outformat = FALSE,
+	public function formatDate($engine, $date, $outformat = FALSE,
 			$informat = FALSE)
 	{
 		if($informat === FALSE)
@@ -51,25 +51,6 @@ abstract class Database
 		if($outformat === FALSE)
 			$outformat = '%d/%m/%Y %H:%M:%S';
 		return strftime($outformat, $timestamp);
-	}
-
-
-	//Database::prepare
-	public function prepare($query, $parameters = FALSE)
-	{
-		if($parameters === FALSE)
-			$parameters = array();
-		if(!is_array($parameters))
-			return FALSE;
-		$from = array();
-		$to = array();
-		foreach($parameters as $k => $v)
-		{
-			$from[] = ':'.$k;
-			$to[] = ($v !== NULL) ? $this->escape($v) : 'NULL';
-		}
-		//FIXME should really use preg_replace() with proper matching
-		return str_replace($from, $to, $query);
 	}
 
 
@@ -96,7 +77,7 @@ abstract class Database
 
 	//static
 	//Database::attachDefault
-	public static function attachDefault(&$engine)
+	public static function attachDefault($engine)
 	{
 		global $config;
 		$ret = FALSE;
@@ -144,19 +125,40 @@ abstract class Database
 
 
 	//virtual
-	abstract public function getLastId(&$engine, $table, $field);
+	abstract public function getLastId($engine, $table, $field);
 
-	abstract public function enum(&$engine, $table, $field);
+	abstract public function enum($engine, $table, $field);
 	abstract public function offset($limit, $offset = FALSE);
-	abstract public function query(&$engine, $query, $parameters = FALSE);
+	abstract public function query($engine, $query, $parameters = FALSE);
 
 
 	//protected
+	//methods
 	//virtual
-	abstract protected function match(&$engine);
-	abstract protected function attach(&$engine);
+	abstract protected function match($engine);
+	abstract protected function attach($engine);
 
 	abstract protected function escape($string);
+
+
+	//useful
+	//Database::prepare
+	protected function prepare($query, $parameters = FALSE)
+	{
+		if($parameters === FALSE)
+			$parameters = array();
+		if(!is_array($parameters))
+			return FALSE;
+		$from = array();
+		$to = array();
+		foreach($parameters as $k => $v)
+		{
+			$from[] = ':'.$k;
+			$to[] = ($v !== NULL) ? $this->escape($v) : 'NULL';
+		}
+		//FIXME should really use preg_replace() with proper matching
+		return str_replace($from, $to, $query);
+	}
 }
 
 ?>

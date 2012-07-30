@@ -35,7 +35,7 @@ class PgsqlDatabase extends Database
 	//methods
 	//accessors
 	//PgsqlDatabase::getLastId
-	public function getLastId(&$engine, $table, $field)
+	public function getLastId($engine, $table, $field)
 	{
 		if($this->handle === FALSE)
 			return FALSE;
@@ -64,7 +64,7 @@ class PgsqlDatabase extends Database
 
 	//useful
 	//PgsqlDatabase::enum
-	public function enum(&$engine, $table, $field)
+	public function enum($engine, $table, $field)
 	{
 		$query = $this->query_enum;
 		if(($res = $this->query($engine, $query, array(
@@ -97,7 +97,7 @@ class PgsqlDatabase extends Database
 
 
 	//PgsqlDatabase::query
-	public function query(&$engine, $query, $parameters = FALSE)
+	public function query($engine, $query, $parameters = FALSE)
 	{
 		global $config;
 
@@ -125,7 +125,7 @@ class PgsqlDatabase extends Database
 	//protected
 	//methods
 	//PgsqlDatabase::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		global $config;
 
@@ -135,7 +135,7 @@ class PgsqlDatabase extends Database
 
 
 	//PgsqlDatabase::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		global $config;
 		$str = '';

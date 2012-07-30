@@ -33,7 +33,7 @@ class PdoDatabase extends Database
 	//methods
 	//accessors
 	//PdoDatabase::getLastId
-	public function getLastId(&$engine, $table, $field)
+	public function getLastId($engine, $table, $field)
 	{
 		global $config;
 
@@ -60,7 +60,7 @@ class PdoDatabase extends Database
 
 	//useful
 	//PdoDatabase::enum
-	public function enum(&$engine, $table, $field)
+	public function enum($engine, $table, $field)
 	{
 		$query = 'SELECT name FROM '.$table.'_enum_'.$field;
 		if(($res = $this->query($engine, $query)) === FALSE)
@@ -98,7 +98,7 @@ class PdoDatabase extends Database
 
 
 	//PdoDatabase::query
-	public function query(&$engine, $query, $parameters = FALSE)
+	public function query($engine, $query, $parameters = FALSE)
 	{
 		global $config;
 
@@ -161,7 +161,7 @@ class PdoDatabase extends Database
 	//protected
 	//methods
 	//PdoDatabase::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		global $config;
 
@@ -174,7 +174,7 @@ class PdoDatabase extends Database
 
 
 	//PdoDatabase::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		global $config;
 
