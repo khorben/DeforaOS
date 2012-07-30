@@ -2195,7 +2195,11 @@ static void _plugins_on_cancel(gpointer data)
 	DIR * dir;
 	struct dirent * de;
 	GtkIconTheme * theme;
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
 	char const ext[] = ".so";
+#endif
 	size_t len;
 	GtkTreeIter iter;
 	Plugin * p;
