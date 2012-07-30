@@ -1173,7 +1173,7 @@ abstract class ContentModule extends Module
 				$request->getAction(), $request->getId(),
 				$request->getTitle());
 		if(($type = $request->getParameter('type')) !== FALSE)
-				$r->setParameter('type', $type);
+			$r->setParameter('type', $type);
 		//verify the request
 		if($request->isIdempotent())
 			return $this->$fallback($engine, $r);
