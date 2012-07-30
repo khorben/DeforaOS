@@ -39,15 +39,15 @@ class User
 		$this->admin = FALSE;
 		$this->email = FALSE;
 		$this->fullname = FALSE;
+		$args = array('user_id' => $uid);
 		if($username !== FALSE)
 		{
 			//XXX workaround for friendly titles
 			$query = $this->query_get_by_id_username;
 			$username = str_replace('-', '_', $username);
+			$args['username'] = $username;
 		}
-		if(($res = $db->query($engine, $query, array(
-					'user_id' => $uid,
-					'username' => $username))) === FALSE
+		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
 			return;
 		$res = $res[0];
