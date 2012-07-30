@@ -1167,10 +1167,16 @@ abstract class ContentModule extends Module
 						'text' => $error));
 			return $page;
 		}
+		//prepare the fallback request
 		$fallback = 'call'.ucfirst($fallback);
+		$r = new Request($engine, $request->getModule(),
+				$request->getAction(), $request->getId(),
+				$request->getTitle());
+		if(($type = $request->getParameter('type')) !== FALSE)
+				$r->setParameter('type', $type);
+		//verify the request
 		if($request->isIdempotent())
-			//must be safe
-			return $this->$fallback($engine);
+			return $this->$fallback($engine, $r);
 		$type = 'info';
 		$message = $success;
 		$parameters = $request->getParameters();
@@ -1189,7 +1195,7 @@ abstract class ContentModule extends Module
 			$type = 'error';
 			$message = $failure;
 		}
-		$page = $this->$fallback($engine);
+		$page = $this->$fallback($engine, $r);
 		//FIXME place this under the title
 		$page->prepend('dialog', array('type' => $type,
 					'text' => $message));
