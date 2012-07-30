@@ -98,6 +98,7 @@ class ProjectModule extends ContentModule
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_module.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.content_id=daportal_project.project_id
 		AND daportal_module.enabled='1'
@@ -129,6 +130,7 @@ class ProjectModule extends ContentModule
 		FROM daportal_content, daportal_module, daportal_user,
 		daportal_project
 		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_module.module_id=:module_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.enabled='1'
