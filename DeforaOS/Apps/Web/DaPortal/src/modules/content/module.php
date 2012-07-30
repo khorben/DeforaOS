@@ -487,6 +487,9 @@ abstract class ContentModule extends Module
 				'type' => 'error',
 				'text' => _('Unable to list contents')));
 		$r = new Request($engine, $this->name, 'admin');
+		if($request !== FALSE && ($type = $request->getParameter(
+					'type')) !== FALSE)
+			$r->setParameter('type', $type);
 		$treeview = $page->append('treeview', array('request' => $r));
 		$treeview->setProperty('columns', array('title' => _('Title'),
 				'enabled' => _('Enabled'),
@@ -1114,6 +1117,8 @@ abstract class ContentModule extends Module
 	protected function helperAdminToolbar($engine, $page, $request)
 	{
 		$r = new Request($engine, $this->name, 'admin');
+		if(($type = $request->getParameter('type')) !== FALSE)
+			$r->setParameter('type', $type);
 		$toolbar = $page->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
 					'text' => _('Refresh'),
