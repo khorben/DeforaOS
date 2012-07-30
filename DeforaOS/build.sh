@@ -214,7 +214,7 @@ _bootstrap_desktop()
 		return $RET
 	fi
 	#build all desktop applications
-	SUBDIRS="Apps/Desktop/src Apps/Devel/src/GEDI"
+	SUBDIRS="Apps/Desktop/src"
 	target "clean all"					|| return 2
 }
 
