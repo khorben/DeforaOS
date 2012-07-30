@@ -909,7 +909,7 @@ abstract class ContentModule extends Module
 		//preview
 		$this->helperSubmitPreview($engine, $page, $request, $content);
 		//form
-		$form = $this->formSubmit($engine, $request, $content);
+		$form = $this->formSubmit($engine, $request);
 		$page->append($form);
 		return $page;
 	}
