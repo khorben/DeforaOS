@@ -13,8 +13,6 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//FIXME:
-//- prepare queries using PDO::prepare()
 
 
 
@@ -87,6 +85,18 @@ class PdoDatabase extends Database
 	}
 
 
+	//PdoDatabase::prepare
+	public function prepare($query, $parameters = FALSE)
+	{
+		static $statements = array();
+
+		if(isset($statements[$query]))
+			return $statements[$query];
+		$statements[$query] = $this->handle->prepare($query);
+		return $statements[$query];
+	}
+
+
 	//PdoDatabase::query
 	public function query(&$engine, $query, $parameters = FALSE)
 	{
@@ -94,18 +104,20 @@ class PdoDatabase extends Database
 
 		if($this->handle === FALSE)
 			return FALSE;
-		if(($query = $this->prepare($query, $parameters)) === FALSE)
-			return FALSE;
 		if($config->getVariable('database', 'debug'))
 			$engine->log('LOG_DEBUG', $query);
-		$error = FALSE;
-		if(($ret = $this->handle->query($query)) === FALSE)
-		{
-			if($error !== FALSE)
-				$engine->log('LOG_DEBUG', $error);
-			return FALSE;
-		}
-		return $ret->fetchAll();
+		if(($stmt = $this->prepare($query)) === FALSE)
+			return $engine->log('LOG_ERR',
+					'Could not prepare statement');
+		if($parameters === FALSE)
+			$parameters = array();
+		$args = array();
+		foreach($parameters as $k => $v)
+			$args[':'.$k] = $v;
+		if($stmt->execute($args) !== TRUE)
+			return $engine->log('LOG_ERR',
+					'Could not execute query');
+		return $stmt->fetchAll();
 	}
 
 
