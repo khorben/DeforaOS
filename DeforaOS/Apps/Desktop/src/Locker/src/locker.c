@@ -49,6 +49,7 @@ static char const _license[] =
 /* types */
 typedef struct _LockerPlugins
 {
+	char * name;
 	Plugin * pplugin;
 	LockerPluginDefinition * definition;
 	LockerPlugin * plugin;
@@ -102,14 +103,14 @@ struct _Locker
 
 typedef enum _LockerPluginsColumn
 {
-	LOCKER_PLUGINS_COLUMN_PLUGIN = 0,
-	LOCKER_PLUGINS_COLUMN_ENABLED,
-	LOCKER_PLUGINS_COLUMN_FILENAME,
-	LOCKER_PLUGINS_COLUMN_ICON,
-	LOCKER_PLUGINS_COLUMN_NAME
+	LPC_PLUGIN = 0,
+	LPC_ENABLED,
+	LPC_FILENAME,
+	LPC_ICON,
+	LPC_NAME
 } LockerPluginsColumn;
-#define LOCKER_PLUGINS_COLUMN_LAST LOCKER_PLUGINS_COLUMN_NAME
-#define LOCKER_PLUGINS_COLUMN_COUNT (LOCKER_PLUGINS_COLUMN_LAST + 1)
+#define LPC_LAST LPC_NAME
+#define LPC_COUNT (LPC_LAST + 1)
 
 
 /* constants */
@@ -125,6 +126,7 @@ static char const * _authors[] =
 /* prototypes */
 /* accessors */
 static int _locker_is_locked(Locker * locker);
+static gboolean _locker_plugin_is_enabled(Locker * locker, char const * plugin);
 
 /* useful */
 static void _locker_about(Locker * locker);
@@ -388,10 +390,12 @@ static int _new_plugins_load(Locker * locker, char const * plugin)
 		plugin_delete(p->pplugin);
 		return _locker_error(NULL, error_get(), 1);
 	}
+	p->name = strdup(plugin);
 	if(p->definition->init == NULL || p->definition->destroy == NULL
 			|| (p->plugin = p->definition->init(&locker->phelper))
 			== NULL)
 	{
+		free(p->name);
 		plugin_delete(p->pplugin);
 		return _locker_error(NULL, error_get(), 1);
 	}
@@ -427,6 +431,7 @@ void locker_delete(Locker * locker)
 		p = &locker->plugins[i];
 		p->definition->destroy(p->plugin);
 		plugin_delete(p->pplugin);
+		free(p->name);
 	}
 	free(locker->plugins);
 	/* destroy the authentication plug-in */
@@ -471,7 +476,7 @@ static GtkWidget * _preferences_window_plugins(Locker * locker);
 static void _preferences_on_cancel(gpointer data);
 static void _cancel_auth(Locker * locker, GtkListStore * store);
 static void _cancel_demo(Locker * locker, GtkListStore * store);
-static void _cancel_plugins(GtkListStore * store);
+static void _cancel_plugins(Locker * locker, GtkListStore * store);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_ok(gpointer data);
 static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
@@ -546,20 +551,20 @@ static GtkWidget * _preferences_window_auth(Locker * locker)
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Plug-in: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	locker->pr_astore = gtk_list_store_new(LOCKER_PLUGINS_COLUMN_COUNT,
-			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	locker->pr_astore = gtk_list_store_new(LPC_COUNT, G_TYPE_POINTER,
+			G_TYPE_BOOLEAN, G_TYPE_STRING, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING);
 	locker->pr_acombo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				locker->pr_astore));
 	widget = locker->pr_acombo;
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, FALSE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer,
-			"pixbuf", LOCKER_PLUGINS_COLUMN_ICON, NULL);
+			"pixbuf", LPC_ICON, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer,
-			"text", LOCKER_PLUGINS_COLUMN_NAME, NULL);
+			"text", LPC_NAME, NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	return vbox;
@@ -577,20 +582,20 @@ static GtkWidget * _preferences_window_demo(Locker * locker)
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Plug-in: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	locker->pr_dstore = gtk_list_store_new(LOCKER_PLUGINS_COLUMN_COUNT,
-			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	locker->pr_dstore = gtk_list_store_new(LPC_COUNT, G_TYPE_POINTER,
+			G_TYPE_BOOLEAN, G_TYPE_STRING, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING);
 	locker->pr_dcombo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(
 				locker->pr_dstore));
 	widget = locker->pr_dcombo;
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, FALSE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer,
-			"pixbuf", LOCKER_PLUGINS_COLUMN_ICON, NULL);
+			"pixbuf", LPC_ICON, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer,
-			"text", LOCKER_PLUGINS_COLUMN_NAME, NULL);
+			"text", LPC_NAME, NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	return vbox;
@@ -609,12 +614,12 @@ static GtkWidget * _preferences_window_plugins(Locker * locker)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	locker->pr_plstore = gtk_list_store_new(LOCKER_PLUGINS_COLUMN_COUNT,
-			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	locker->pr_plstore = gtk_list_store_new(LPC_COUNT, G_TYPE_POINTER,
+			G_TYPE_BOOLEAN, G_TYPE_STRING, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
-				locker->pr_plstore),
-			LOCKER_PLUGINS_COLUMN_NAME, GTK_SORT_ASCENDING);
+				locker->pr_plstore), LPC_NAME,
+			GTK_SORT_ASCENDING);
 	locker->pr_plview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				locker->pr_plstore));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(locker->pr_plview),
@@ -625,18 +630,17 @@ static GtkWidget * _preferences_window_plugins(Locker * locker)
 	g_signal_connect(renderer, "toggled", G_CALLBACK(
 				_preferences_on_plugins_toggled), locker);
 	column = gtk_tree_view_column_new_with_attributes(_("Enabled"),
-			renderer, "active", LOCKER_PLUGINS_COLUMN_ENABLED,
-			NULL);
+			renderer, "active", LPC_ENABLED, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(locker->pr_plview), column);
 	/* icon */
 	renderer = gtk_cell_renderer_pixbuf_new();
 	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-			"pixbuf", LOCKER_PLUGINS_COLUMN_ICON, NULL);
+			"pixbuf", LPC_ICON, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(locker->pr_plview), column);
 	/* name */
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
-			"text", LOCKER_PLUGINS_COLUMN_NAME, NULL);
+			"text", LPC_NAME, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(locker->pr_plview), column);
 	gtk_container_add(GTK_CONTAINER(widget), locker->pr_plview);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -653,7 +657,7 @@ static void _preferences_on_cancel(gpointer data)
 	/* demos */
 	_cancel_demo(locker, locker->pr_dstore);
 	/* plug-ins */
-	_cancel_plugins(locker->pr_plstore);
+	_cancel_plugins(locker, locker->pr_plstore);
 }
 
 static void _cancel_auth(Locker * locker, GtkListStore * store)
@@ -692,9 +696,8 @@ static void _cancel_auth(Locker * locker, GtkListStore * store)
 			continue;
 		}
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
-				de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
-				lad->name, -1);
+		gtk_list_store_set(store, &iter, LPC_FILENAME, de->d_name,
+				LPC_NAME, lad->name, -1);
 		/* select if currently active */
 		if(locker->adefinition != NULL
 				/* XXX check on de->d_name instead */
@@ -709,8 +712,7 @@ static void _cancel_auth(Locker * locker, GtkListStore * store)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					24, 0, NULL);
-		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_ICON,
-				icon, -1);
+		gtk_list_store_set(store, &iter, LPC_ICON, icon, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
@@ -731,8 +733,8 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 	theme = gtk_icon_theme_get_default();
 	gtk_list_store_clear(store);
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
-			NULL, LOCKER_PLUGINS_COLUMN_NAME, _("Disabled"), -1);
+	gtk_list_store_set(store, &iter, LPC_FILENAME, NULL,
+			LPC_NAME, _("Disabled"), -1);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/demos")) == NULL)
 		return;
 	while((de = readdir(dir)) != NULL)
@@ -755,9 +757,8 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 			continue;
 		}
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
-				de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
-				ldd->name, -1);
+		gtk_list_store_set(store, &iter, LPC_FILENAME, de->d_name,
+				LPC_NAME, ldd->name, -1);
 		/* select if currently active */
 		if(locker->ddefinition != NULL
 				/* XXX check on de->d_name instead */
@@ -772,29 +773,33 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					24, 0, NULL);
-		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_ICON,
-				icon, -1);
+		gtk_list_store_set(store, &iter, LPC_ICON, icon, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
 }
 
-static void _cancel_plugins(GtkListStore * store)
+static void _cancel_plugins(Locker * locker, GtkListStore * store)
 {
 	GtkIconTheme * theme;
 	GtkTreeIter iter;
+	gboolean enabled;
 	GdkPixbuf * icon;
 	DIR * dir;
 	struct dirent * de;
 	size_t len;
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
 	char const ext[] = ".so";
+#endif
 	Plugin * p;
 	LockerPluginDefinition * lpd;
 
-	theme = gtk_icon_theme_get_default();
 	gtk_list_store_clear(store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/plugins")) == NULL)
 		return;
+	theme = gtk_icon_theme_get_default();
 	while((de = readdir(dir)) != NULL)
 	{
 		if((len = strlen(de->d_name)) < sizeof(ext))
@@ -803,8 +808,7 @@ static void _cancel_plugins(GtkListStore * store)
 			continue;
 		de->d_name[len - sizeof(ext) + 1] = '\0';
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-				de->d_name);
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, de->d_name);
 #endif
 		if((p = plugin_new(LIBDIR, PACKAGE, "plugins", de->d_name))
 				== NULL)
@@ -814,11 +818,7 @@ static void _cancel_plugins(GtkListStore * store)
 			plugin_delete(p);
 			continue;
 		}
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_FILENAME,
-				de->d_name, LOCKER_PLUGINS_COLUMN_NAME,
-				lpd->name, -1);
-		/* FIXME check if it is already enabled */
+		enabled = _locker_plugin_is_enabled(locker, de->d_name);
 		icon = NULL;
 		if(lpd->icon != NULL)
 			icon = gtk_icon_theme_load_icon(theme, lpd->icon, 24, 0,
@@ -826,8 +826,10 @@ static void _cancel_plugins(GtkListStore * store)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					24, 0, NULL);
-		gtk_list_store_set(store, &iter, LOCKER_PLUGINS_COLUMN_ICON,
-				icon, -1);
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter, LPC_FILENAME, de->d_name,
+				LPC_NAME, lpd->name, LPC_ENABLED, enabled,
+				LPC_ICON, icon, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
@@ -852,7 +854,7 @@ static void _preferences_on_ok(gpointer data)
 	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_acombo),
 				&iter))
 		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_astore), &iter,
-				LOCKER_PLUGINS_COLUMN_FILENAME, &p, -1);
+				LPC_FILENAME, &p, -1);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() auth=\"%s\"\n", __func__, p);
 #endif
@@ -863,7 +865,7 @@ static void _preferences_on_ok(gpointer data)
 	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_dcombo),
 				&iter))
 		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_dstore), &iter,
-				LOCKER_PLUGINS_COLUMN_FILENAME, &p, -1);
+				LPC_FILENAME, &p, -1);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() demo=\"%s\"\n", __func__, p);
 #endif
@@ -881,8 +883,7 @@ static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
 
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(locker->pr_plstore),
 			&iter, path);
-	gtk_list_store_set(locker->pr_plstore, &iter,
-			LOCKER_PLUGINS_COLUMN_ENABLED,
+	gtk_list_store_set(locker->pr_plstore, &iter, LPC_ENABLED,
 			!gtk_cell_renderer_toggle_get_active(renderer), -1);
 }
 
@@ -904,6 +905,18 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 static int _locker_is_locked(Locker * locker)
 {
 	return locker->locked;
+}
+
+
+/* locker_plugin_is_enabled */
+static gboolean _locker_plugin_is_enabled(Locker * locker, char const * plugin)
+{
+	size_t i;
+
+	for(i = 0; i < locker->plugins_cnt; i++)
+		if(strcmp(locker->plugins[i].name, plugin) == 0)
+			return TRUE;
+	return FALSE;
 }
 
 
