@@ -481,11 +481,11 @@ abstract class ContentModule extends Module
 		$page->setProperty('title', $title);
 		$element = $page->append('title', array('stock' => 'admin',
 				'text' => $title));
-		if(($res = $database->query($engine, $query, array(
-					'module_id' => $this->id))) === FALSE)
+		$args = array('module_id' => $this->id);
+		$error = _('Unable to list contents');
+		if(($res = $database->query($engine, $query, $args)) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('Unable to list contents')));
+				'type' => 'error', 'text' => $error));
 		$r = new Request($engine, $this->name, 'admin');
 		if($request !== FALSE && ($type = $request->getParameter(
 					'type')) !== FALSE)
@@ -655,11 +655,11 @@ abstract class ContentModule extends Module
 		$count = (is_integer($this->content_headline_count))
 			? $this->content_headline_count : 6;
 		$query .= ' ORDER BY timestamp DESC LIMIT '.$count;
+		$error = _('Unable to list contents');
 		if(($res = $db->query($engine, $query, array(
 					'module_id' => $this->id))) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error',
-				'text' => _('Unable to list contents')));
+				'type' => 'error', 'text' => $error));
 		//rows
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
@@ -709,15 +709,17 @@ abstract class ContentModule extends Module
 		$page = new Page(array('title' => $title));
 		$this->helperListTitle($engine, $page, $request);
 		//query
-		$query = ($uid !== FALSE) ? $this->query_list_user
-			: $this->query_list;
+		$query = $this->query_list;
+		$args = array('module_id' => $this->id);
+		if($uid !== FALSE)
+		{
+			$query = $this->query_list_user;
+			$args['user_id'] = $uid;
+		}
 		$query .= ' ORDER BY title ASC';
-		if(($res = $db->query($engine, $query, array(
-				'module_id' => $this->id, 'user_id' => $uid)))
-				=== FALSE)
+		if(($res = $db->query($engine, $query, $args)) === FALSE)
 			return new PageElement('dialog', array(
-					'type' => 'error',
-					'text' => $error));
+					'type' => 'error', 'text' => $error));
 		//view
 		$r = FALSE;
 		if($uid === $cred->getUserId())
