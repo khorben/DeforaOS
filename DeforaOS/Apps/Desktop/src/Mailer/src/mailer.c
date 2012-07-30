@@ -578,6 +578,11 @@ static int _new_accounts(Mailer * mailer)
 	DIR * dir;
 	struct dirent * de;
 	size_t len;
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
+	char const ext[] = ".so";
+#endif
 	Account ** p;
 
 	mailer->available = NULL;
@@ -592,8 +597,9 @@ static int _new_accounts(Mailer * mailer)
 	}
 	for(de = readdir(dir); de != NULL; de = readdir(dir))
 	{
-		if((len = strlen(de->d_name)) < 4
-				|| strcmp(".so", &de->d_name[len - 3]) != 0)
+		if((len = strlen(de->d_name)) < sizeof(ext)
+				|| strcmp(ext, &de->d_name[
+					len - sizeof(ext) + 1]) != 0)
 			continue;
 		de->d_name[len - 3] = '\0';
 		if((p = realloc(mailer->available, (mailer->available_cnt + 1)
@@ -1824,7 +1830,11 @@ static void _preferences_set_plugins(Mailer * mailer)
 	DIR * dir;
 	struct dirent * de;
 	GtkIconTheme * theme;
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
 	char const ext[] = ".so";
+#endif
 	size_t len;
 	Plugin * p;
 	MailerPluginDefinition * mpd;
