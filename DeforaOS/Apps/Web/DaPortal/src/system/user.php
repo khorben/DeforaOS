@@ -148,7 +148,7 @@ class User
 		if($res === FALSE || count($res) != 1)
 			return FALSE;
 		$res = $res[0];
-		if($res['password'][0] == '$')
+		if(strlen($res['password']) > 0 && $res['password'][0] == '$')
 		{
 			//the password is salted
 			$a = explode('$', $res['password']);
@@ -166,7 +166,7 @@ class User
 					return FALSE;
 			}
 		}
-		else
+		else if(strlen($res['password']) == 32)
 		{
 			//the password is not salted (plain MD5)
 			$hash = md5($password);
@@ -174,6 +174,8 @@ class User
 			if($res['password'] == $hash)
 				$this->setPassword($engine, $password);
 		}
+		else
+			return FALSE;
 		if($res['password'] != $hash)
 			return FALSE;
 		//the password is correct
@@ -184,6 +186,52 @@ class User
 
 	//static
 	//useful
+	//User::insert
+	static public function insert($engine, $username, $fullname, $password,
+		$email, $enabled = FALSE, $admin = FALSE, &$error = FALSE)
+	{
+		//FIXME code duplication with User::register()
+		$db = $engine->getDatabase();
+		$error = '';
+
+		//FIXME really validate username
+		if(!is_string($username) || strlen($username) == 0)
+			$error .= _("The username is not valid\n");
+		//FIXME really validate e-mail
+		if(strchr($email, '@') === FALSE)
+			$error .= _("The e-mail address is not valid\n");
+		//FIXME verify that the username and e-mail are both unique
+		if(strlen($error) > 0)
+			return FALSE;
+		if($password === FALSE || strlen($password) == 0)
+			$password = '';
+		else
+			$password = crypt($password);
+		$res = $db->query($engine, User::$query_insert,
+				array('username' => $username,
+					'fullname' => $fullname,
+					'password' => $password,
+					'email' => $email,
+					'enabled' => $enabled ? 1 : 0,
+					'admin' => $admin ? 1 : 0));
+		if($res === FALSE || ($uid = $db->getLastId($engine,
+						'daportal_user', 'user_id'))
+				=== FALSE)
+		{
+			$error = _('Could not insert the user');
+			return FALSE;
+		}
+		$user = new User($engine, $uid);
+		if($user->getUserId() === FALSE)
+		{
+			$error = _('Could not insert the user');
+			return FALSE;
+		}
+		$error = '';
+		return $user;
+	}
+
+
 	//User::lookup
 	static public function lookup($engine, $username)
 	{
@@ -497,6 +545,10 @@ class User
 		SET enabled=:enabled
 		WHERE user_id=:user_id";
 	//static
+	static private $query_insert = 'INSERT INTO daportal_user
+		(username, fullname, password, email, enabled, admin)
+		VALUES (:username, :fullname, :password, :email, :enabled,
+		:admin)';
 	static private $query_register = 'INSERT INTO daportal_user
 		(username, email, enabled)
 		VALUES (:username, :email, :enabled)';

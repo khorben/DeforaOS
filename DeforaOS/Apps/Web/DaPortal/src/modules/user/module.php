@@ -177,6 +177,9 @@ class UserModule extends Module
 		$vbox->append('entry', array('name' => 'fullname',
 				'text' => _('Full name: '),
 				'value' => $request->getParameter('fullname')));
+		$vbox->append('entry', array('name' => 'password',
+				'hidden' => TRUE,
+				'text' => _('Password: '), 'value' => ''));
 		$vbox->append('entry', array('name' => 'email',
 				'text' => _('e-mail: '),
 				'value' => $request->getParameter('email')));
@@ -190,7 +193,8 @@ class UserModule extends Module
 				'value' => $request->getParameter('admin')
 					? TRUE : FALSE,
 				'text' => _('Administrator')));
-		$r = new Request($engine, $this->name);
+		//buttons
+		$r = new Request($engine, $this->name, 'admin');
 		$form->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
 		$form->append('button', array('type' => 'submit',
@@ -966,10 +970,50 @@ Thank you for registering!")));
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		//FIXME really implement
+		//process the request
+		$user = FALSE;
+		if(($error = $this->_submitProcess($engine, $request, $user))
+				=== FALSE)
+			return $this->_submitSuccess($engine, $request, $page,
+					$user);
+		else if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
 		//form
 		$form = $this->formSubmit($engine, $request);
 		$page->append($form);
+		return $page;
+	}
+
+	protected function _submitProcess($engine, $request, &$user)
+	{
+		//verify the request
+		if($request === FALSE
+				|| $request->getParameter('submit') === FALSE)
+			return TRUE;
+		if($request->isIdempotent() !== FALSE)
+			return _('The request expired or is invalid');
+		if(($username = $request->getParameter('username')) === FALSE)
+			return _('Invalid arguments');
+		$enabled = $request->getParameter('enabled') ? TRUE : FALSE;
+		$admin = $request->getParameter('admin') ? TRUE : FALSE;
+		//create the user
+		$error = FALSE;
+		$user = User::insert($engine, $username,
+				$request->getParameter('fullname'),
+				$request->getParameter('password'),
+				$request->getParameter('email'),
+				$enabled, $admin, $error);
+		if($user === FALSE)
+			return $error;
+		return FALSE;
+	}
+
+	protected function _submitSuccess($engine, $request, $page, $user)
+	{
+		$r = new Request($engine, $this->name, FALSE,
+				$user->getUserId(), $user->getUsername());
+		$this->helperRedirect($engine, $r, $page);
 		return $page;
 	}
 
@@ -1243,6 +1287,26 @@ Thank you for registering!")));
 		//FIXME place this under the title
 		$page->prepend('dialog', array('type' => $type,
 				'text' => $message));
+		return $page;
+	}
+
+
+	//UserModule::helperRedirect
+	protected function helperRedirect($engine, $request, $page,
+			$text = FALSE)
+	{
+		if($text === FALSE)
+			$text = _('Redirection in progress, please wait...');
+		$page->setProperty('location', $engine->getUrl($request));
+		$page->setProperty('refresh', 30);
+		$box = $page->append('vbox');
+		$box->append('label', array('text' => $text));
+		$box = $box->append('hbox');
+		$text = _('If you are not redirected within 30 seconds, please ');
+		$box->append('label', array('text' => $text));
+		$box->append('link', array('text' => _('click here'),
+				'request' => $request));
+		$box->append('label', array('text' => '.'));
 		return $page;
 	}
 
