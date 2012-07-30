@@ -53,6 +53,7 @@ class UserModule extends Module
 			case 'profile':
 			case 'register':
 			case 'reset':
+			case 'submit':
 			case 'update':
 			case 'validate':
 			case 'widget':
@@ -69,7 +70,41 @@ class UserModule extends Module
 
 
 	//methods
+	//accessors
+	//UserModule::canRegister
+	protected function canRegister()
+	{
+		global $config;
+
+		return $config->getVariable('module::user', 'register') == 1;
+	}
+
+
+	//UserModule::canReset
+	protected function canReset()
+	{
+		global $config;
+
+		return $config->getVariable('module::user', 'reset') == 1;
+	}
+
+
+	//UserModule::canSubmit
+	protected function canSubmit($engine, &$error)
+	{
+		$cred = $engine->getCredentials();
+
+		if(!$cred->isAdmin())
+		{
+			$error = _('Permission denied');
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+
 	//forms
+	//UserModule::formLogin
 	protected function formLogin($engine, $username, $cancel = TRUE)
 	{
 		$r = new Request($engine, $this->name, 'login');
@@ -94,8 +129,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::form_register
-	protected function form_register($engine, $username, $email)
+	//UserModule::formRegister
+	protected function formRegister($engine, $username, $email)
 	{
 		$r = new Request($engine, $this->name, 'register');
 		$form = new PageElement('form', array('request' => $r));
@@ -112,8 +147,8 @@ class UserModule extends Module
 	}
 
 
-	//UserModule::form_reset
-	protected function form_reset($engine, $username, $email)
+	//UserModule::formReset
+	protected function formReset($engine, $username, $email)
 	{
 		$r = new Request($engine, $this->name, 'reset');
 		$form = new PageElement('form', array('request' => $r));
@@ -126,6 +161,41 @@ class UserModule extends Module
 			'request' => new Request($engine, $this->name)));
 		$form->append('button', array('stock' => 'reset',
 			'type' => 'submit', 'text' => _('Reset')));
+		return $form;
+	}
+
+
+	//UserModule::formSubmit
+	protected function formSubmit($engine, $request)
+	{
+		$r = new Request($engine, $this->name, 'submit');
+		$form = new PageElement('form', array('request' => $r));
+		$vbox = $form->append('vbox');
+		$vbox->append('entry', array('name' => 'username',
+				'text' => _('Username: '),
+				'value' => $request->getParameter('username')));
+		$vbox->append('entry', array('name' => 'fullname',
+				'text' => _('Full name: '),
+				'value' => $request->getParameter('fullname')));
+		$vbox->append('entry', array('name' => 'email',
+				'text' => _('e-mail: '),
+				'value' => $request->getParameter('email')));
+		//enabled
+		$vbox->append('checkbox', array('name' => 'enabled',
+				'value' => $request->getParameter('enabled')
+					? TRUE : FALSE,
+				'text' => _('Enabled')));
+		//administrator
+		$vbox->append('checkbox', array('name' => 'admin',
+				'value' => $request->getParameter('admin')
+					? TRUE : FALSE,
+				'text' => _('Administrator')));
+		$r = new Request($engine, $this->name);
+		$form->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		$form->append('button', array('type' => 'submit',
+				'stock' => 'new', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Create')));
 		return $form;
 	}
 
@@ -272,6 +342,10 @@ class UserModule extends Module
 				'view' => 'details', 'columns' => $columns));
 		//toolbar
 		$toolbar = $view->append('toolbar');
+		$toolbar->append('button', array('stock' => 'new',
+				'text' => _('New user'),
+				'request' => new Request($engine, $this->name,
+					'submit')));
 		$toolbar->append('button', array('stock' => 'refresh',
 				'text' => _('Refresh'),
 				'request' => $r));
@@ -320,24 +394,6 @@ class UserModule extends Module
 		$vbox->append('link', array('request' => $r, 'stock' => 'admin',
 			'text' => _('Back to the administration')));
 		return $page;
-	}
-
-
-	//UserModule::canRegister
-	protected function canRegister()
-	{
-		global $config;
-
-		return $config->getVariable('module::user', 'register') == 1;
-	}
-
-
-	//UserModule::canReset
-	protected function canReset()
-	{
-		global $config;
-
-		return $config->getVariable('module::user', 'reset') == 1;
 	}
 
 
@@ -702,7 +758,7 @@ class UserModule extends Module
 				'text' => $error));
 		$username = $request->getParameter('username');
 		$email = $request->getParameter('email');
-		$form = $this->form_register($engine, $username, $email);
+		$form = $this->formRegister($engine, $username, $email);
 		$page->append($form);
 		return $page;
 	}
@@ -777,7 +833,7 @@ Thank you for registering!")));
 				'text' => $error));
 		$username = $request->getParameter('username');
 		$email = $request->getParameter('email');
-		$form = $this->form_reset($engine, $username, $email);
+		$form = $this->formReset($engine, $username, $email);
 		$page->append($form);
 		return $page;
 	}
@@ -891,6 +947,29 @@ Thank you for registering!")));
 		$page->append('link', array('stock' => 'login',
 			'text' => _('Proceed to login page'),
 			'request' => new Request($engine, $this->name)));
+		return $page;
+	}
+
+
+	//UserModule::callSubmit
+	protected function callSubmit($engine, $request = FALSE)
+	{
+		$cred = $engine->getCredentials();
+		$title = _('New user');
+		$error = _('Permission denied');
+
+		//check permissions
+		if($this->canSubmit($engine, $error) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		//create the page
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		//FIXME really implement
+		//form
+		$form = $this->formSubmit($engine, $request);
+		$page->append($form);
 		return $page;
 	}
 
