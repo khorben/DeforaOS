@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -241,6 +241,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 	int ret = 0;
 	String const * p;
 	String * prints;
+	String const * soext;
 	String * q;
 	size_t i;
 	char c;
@@ -252,6 +253,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 		return 0;
 	if((prints = string_new(p)) == NULL)
 		return 1;
+	soext = configure_get_soext(configure);
 	q = prints;
 	fputs("TARGETS\t=", fp);
 	for(i = 0;; i++)
@@ -280,7 +282,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 					fprintf(fp, " %s%s", prints, ".la");
 					break;
 				case TT_PLUGIN:
-					fprintf(fp, " %s%s", prints, ".so");
+					fprintf(fp, " %s%s", prints, soext);
 					break;
 			}
 		if(c == '\0')
@@ -296,17 +298,19 @@ static int _variables_targets(Configure * configure, FILE * fp)
 static int _variables_targets_library(Configure * configure, FILE * fp,
 		char const * target)
 {
+	String const * soext;
 	String * soname;
 	String const * p;
 
+	soext = configure_get_soext(configure);
 	if((p = config_get(configure->config, target, "soname")) != NULL)
 		soname = string_new(p);
 	else
-		soname = string_new_append(target, ".so.0", NULL);
+		soname = string_new_append(target, soext, ".0", NULL);
 	if(soname == NULL)
 		return 1;
 	fprintf(fp, " %s%s%s%s%s%s%s%s", target, ".a ", soname, ".0 ", soname,
-			" ", target, ".so");
+			" ", target, soext);
 	string_delete(soname);
 	return 0;
 }
@@ -1035,6 +1039,7 @@ static void _flags_cxx(Configure * configure, FILE * fp, String const * target)
 static int _target_library(Configure * configure, FILE * fp,
 		String const * target)
 {
+	String const * soext;
 	String const * p;
 	String * q;
 	String * soname;
@@ -1045,13 +1050,14 @@ static int _target_library(Configure * configure, FILE * fp,
 		return 0;
 	if(_target_flags(configure, fp, target) != 0)
 		return 1;
+	soext = configure_get_soext(configure);
 	fprintf(fp, "\n%s%s%s%s", target, ".a: $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s%s", "\t$(AR) -rc ", target, ".a $(", target,
 			"_OBJS)");
-	if((q = malloc(strlen(target) + 4)) != NULL) /* for ".so" later */
+	if((q = malloc(strlen(target) + strlen(soext) + 3)) != NULL)
 	{
 		sprintf(q, "%s.a", target);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
@@ -1062,11 +1068,11 @@ static int _target_library(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "soname")) != NULL)
 		soname = string_new(p);
 	else
-		soname = string_new_append(target, ".so.0", NULL);
+		soname = string_new_append(target, soext, ".0", NULL);
 	if(soname == NULL)
 		return 1;
-	fprintf(fp, "\n%s%s%s%s%s%s%s%s", soname, ".0 ", soname, " ", target,
-			".so: $(", target, "_OBJS)");
+	fprintf(fp, "\n%s%s%s%s%s%s%s%s%s", soname, ".0 ", soname, " ", target,
+			soext, ": $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
@@ -1078,7 +1084,7 @@ static int _target_library(Configure * configure, FILE * fp,
 			"_LDFLAGS)");
 	if(q != NULL)
 	{
-		sprintf(q, "%s.so", target);
+		sprintf(q, "%s%s", target, soext);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
 			_binary_ldflags(configure, fp, p);
 		free(q);
@@ -1086,8 +1092,8 @@ static int _target_library(Configure * configure, FILE * fp,
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s%s", "\t$(LN) -s -- ", soname, ".0 ", soname,
 			"\n");
-	fprintf(fp, "%s%s%s%s%s", "\t$(LN) -s -- ", soname, ".0 ", target,
-			".so\n");
+	fprintf(fp, "%s%s%s%s%s%s", "\t$(LN) -s -- ", soname, ".0 ", target,
+			soext, "\n");
 	string_delete(soname);
 	return 0;
 }
@@ -1176,6 +1182,7 @@ static int _target_object(Configure * configure, FILE * fp,
 static int _target_plugin(Configure * configure, FILE * fp,
 		String const * target)
 {
+	String const * soext;
 	String const * p;
 	String * q;
 
@@ -1185,15 +1192,16 @@ static int _target_plugin(Configure * configure, FILE * fp,
 		return 0;
 	if(_target_flags(configure, fp, target) != 0)
 		return 1;
-	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)");
+	soext = configure_get_soext(configure);
+	fprintf(fp, "\n%s%s%s%s%s", target, soext, ": $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s%s%s%s%s", "\t$(CCSHARED) -o ", target, ".so $(",
-			target, "_OBJS) $(", target, "_LDFLAGS)");
+	fprintf(fp, "%s%s%s%s%s%s%s%s", "\t$(CCSHARED) -o ", target, soext,
+			" $(", target, "_OBJS) $(", target, "_LDFLAGS)");
 	if((q = malloc(strlen(target) + 4)) != NULL)
 	{
-		sprintf(q, "%s.so", target);
+		sprintf(q, "%s%s", target, soext);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
 			_binary_ldflags(configure, fp, p);
 		free(q);
@@ -1653,7 +1661,8 @@ static int _write_install(Configure * configure, FILE * fp)
 	return ret;
 }
 
-static int _install_target(Config * config, FILE * fp, String const * target);
+static int _install_target(Configure * configure, FILE * fp,
+		String const * target);
 static int _install_targets(Configure * configure, FILE * fp)
 {
 	int ret = 0;
@@ -1674,7 +1683,7 @@ static int _install_targets(Configure * configure, FILE * fp)
 			continue;
 		c = targets[i];
 		targets[i] = '\0';
-		ret |= _install_target(configure->config, fp, targets);
+		ret |= _install_target(configure, fp, targets);
 		if(c == '\0')
 			break;
 		targets += i + 1;
@@ -1684,45 +1693,46 @@ static int _install_targets(Configure * configure, FILE * fp)
 	return ret;
 }
 
-static void _install_target_binary(Config * config, FILE * fp,
+static void _install_target_binary(Configure * configure, FILE * fp,
 		String const * target);
-static int _install_target_library(Config * config, FILE * fp,
+static int _install_target_library(Configure * configure, FILE * fp,
 		String const * target);
-static void _install_target_libtool(Config * config, FILE * fp,
+static void _install_target_libtool(Configure * configure, FILE * fp,
 		String const * target);
-static void _install_target_object(Config * config, FILE * fp,
+static void _install_target_object(Configure * configure, FILE * fp,
 		String const * target);
-static void _install_target_plugin(Config * config, FILE * fp,
+static void _install_target_plugin(Configure * configure, FILE * fp,
 		String const * target);
-static void _install_target_script(Config * config, FILE * fp,
+static void _install_target_script(Configure * configure, FILE * fp,
 		String const * target);
-static int _install_target(Config * config, FILE * fp, String const * target)
+static int _install_target(Configure * configure, FILE * fp,
+		String const * target)
 {
 	int ret = 0;
 	String const * type;
 	TargetType tt;
 
-	if((type = config_get(config, target, "type")) == NULL)
+	if((type = config_get(configure->config, target, "type")) == NULL)
 		return 1;
 	switch((tt = enum_string(TT_LAST, sTargetType, type)))
 	{
 		case TT_BINARY:
-			_install_target_binary(config, fp, target);
+			_install_target_binary(configure, fp, target);
 			break;
 		case TT_LIBRARY:
-			ret = _install_target_library(config, fp, target);
+			ret = _install_target_library(configure, fp, target);
 			break;
 		case TT_LIBTOOL:
-			_install_target_libtool(config, fp, target);
+			_install_target_libtool(configure, fp, target);
 			break;
 		case TT_OBJECT:
-			_install_target_object(config, fp, target);
+			_install_target_object(configure, fp, target);
 			break;
 		case TT_PLUGIN:
-			_install_target_plugin(config, fp, target);
+			_install_target_plugin(configure, fp, target);
 			break;
 		case TT_SCRIPT:
-			_install_target_script(config, fp, target);
+			_install_target_script(configure, fp, target);
 			break;
 		case TT_UNKNOWN:
 			break;
@@ -1730,52 +1740,54 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 	return ret;
 }
 
-static void _install_target_binary(Config * config, FILE * fp,
+static void _install_target_binary(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * path;
 
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0755 -- ", target,
 			" $(DESTDIR)", path, target);
 }
 
-static int _install_target_library(Config * config, FILE * fp,
+static int _install_target_library(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * path;
+	String const * soext;
 	String const * p;
 	String * soname;
 
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return 0;
+	soext = configure_get_soext(configure);
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 -- ", target,
 			".a $(DESTDIR)", path, target, ".a\n");
-	if((p = config_get(config, target, "soname")) != NULL)
+	if((p = config_get(configure->config, target, "soname")) != NULL)
 		soname = string_new(p);
 	else
-		soname = string_new_append(target, ".so.0", NULL);
+		soname = string_new_append(target, soext, ".0", NULL);
 	if(soname == NULL)
 		return 1;
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 -- ", soname,
 			".0 $(DESTDIR)", path, soname, ".0\n");
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s -- ", soname,
 			".0 $(DESTDIR)", path, soname, "\n");
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s -- ", soname,
-			".0 $(DESTDIR)", path, target, ".so\n");
+	fprintf(fp, "%s%s%s%s/%s%s%s", "\t$(LN) -s -- ", soname,
+			".0 $(DESTDIR)", path, target, soext, "\n");
 	string_delete(soname);
 	return 0;
 }
 
-static void _install_target_libtool(Config * config, FILE * fp,
+static void _install_target_libtool(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * path;
 
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LIBTOOL) --mode=install $(INSTALL)"
@@ -1784,39 +1796,41 @@ static void _install_target_libtool(Config * config, FILE * fp,
 	fprintf(fp, "%s/%s\n", "\t$(LIBTOOL) --mode=finish $(DESTDIR)", path);
 }
 
-static void _install_target_object(Config * config, FILE * fp,
+static void _install_target_object(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * path;
 
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 -- ", target,
 			" $(DESTDIR)", path, target);
 }
 
-static void _install_target_plugin(Config * config, FILE * fp,
+static void _install_target_plugin(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * path;
+	String const * soext;
 
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return;
+	soext = configure_get_soext(configure);
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 -- ", target,
-			".so $(DESTDIR)", path, target, ".so\n");
+	fprintf(fp, "%s%s%s%s%s/%s%s%s", "\t$(INSTALL) -m 0644 -- ", target,
+			soext, " $(DESTDIR)", path, target, soext, "\n");
 }
 
-static void _install_target_script(Config * config, FILE * fp,
+static void _install_target_script(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * path;
 	String const * script;
 
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return;
-	if((script = config_get(config, target, "script")) == NULL)
+	if((script = config_get(configure->config, target, "script")) == NULL)
 		return;
 	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -P \"$(DESTDIR)$(PREFIX)",
 			*path ? "/" : "", *path ? path : "", "\" -i -- \"",
@@ -1937,7 +1951,8 @@ static int _dist_check(Configure * configure, char const * target,
 	return 0;
 }
 
-static int _uninstall_target(Config * config, FILE * fp, String const * target);
+static int _uninstall_target(Configure * configure, FILE * fp,
+		String const * target);
 static int _uninstall_include(Config * config, FILE * fp,
 		String const * include);
 static int _uninstall_dist(Config * config, FILE * fp, String const * dist);
@@ -1969,7 +1984,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 				continue;
 			c = targets[i];
 			targets[i] = '\0';
-			ret = _uninstall_target(configure->config, fp, targets);
+			ret = _uninstall_target(configure, fp, targets);
 			if(c == '\0')
 				break;
 			targets += i + 1;
@@ -2019,21 +2034,24 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 	return ret;
 }
 
-static void _uninstall_target_library(Config * config, FILE * fp,
+static void _uninstall_target_library(Configure * configure, FILE * fp,
 		String const * target, String const * path);
-static void _uninstall_target_script(Config * config, FILE * fp,
+static void _uninstall_target_script(Configure * configure, FILE * fp,
 		String const * target, String const * path);
-static int _uninstall_target(Config * config, FILE * fp, String const * target)
+static int _uninstall_target(Configure * configure, FILE * fp,
+		String const * target)
 {
 	String const * type;
 	String const * path;
+	String const * soext;
 	TargetType tt;
 	const String * rm_destdir = "$(RM) -- $(DESTDIR)";
 
-	if((type = config_get(config, target, "type")) == NULL)
+	if((type = config_get(configure->config, target, "type")) == NULL)
 		return 1;
-	if((path = config_get(config, target, "install")) == NULL)
+	if((path = config_get(configure->config, target, "install")) == NULL)
 		return 0;
+	soext = configure_get_soext(configure);
 	tt = enum_string(TT_LAST, sTargetType, type);
 	switch(tt)
 	{
@@ -2041,7 +2059,7 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 			fprintf(fp, "\t%s%s/%s\n", rm_destdir, path, target);
 			break;
 		case TT_LIBRARY:
-			_uninstall_target_library(config, fp, target, path);
+			_uninstall_target_library(configure, fp, target, path);
 			break;
 		case TT_LIBTOOL:
 			fprintf(fp, "\t%s%s%s/%s%s", "$(LIBTOOL)"
@@ -2053,10 +2071,10 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 			break;
 		case TT_PLUGIN:
 			fprintf(fp, "\t%s%s/%s%s\n", rm_destdir, path, target,
-					".so");
+					soext);
 			break;
 		case TT_SCRIPT:
-			_uninstall_target_script(config, fp, target, path);
+			_uninstall_target_script(configure, fp, target, path);
 			break;
 		case TT_UNKNOWN:
 			break;
@@ -2064,33 +2082,35 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 	return 0;
 }
 
-static void _uninstall_target_library(Config * config, FILE * fp,
+static void _uninstall_target_library(Configure * configure, FILE * fp,
 		String const * target, String const * path)
 {
+	String const * soext;
 	String const * soname;
-	const String * format = "\t%s%s/%s%s";
+	const String * format = "\t%s%s/%s%s%s";
 	const String * rm_destdir = "$(RM) -- $(DESTDIR)";
 
-	fprintf(fp, format, rm_destdir, path, target, ".a\n");
-	if((soname = config_get(config, target, "soname")) == NULL)
+	soext = configure_get_soext(configure);
+	fprintf(fp, format, rm_destdir, path, target, ".a\n", "");
+	if((soname = config_get(configure->config, target, "soname")) == NULL)
 	{
-		fprintf(fp, format, rm_destdir, path, target, ".so.0.0\n");
-		fprintf(fp, format, rm_destdir, path, target, ".so.0\n");
+		fprintf(fp, format, rm_destdir, path, target, soext, ".0.0\n");
+		fprintf(fp, format, rm_destdir, path, target, soext, ".0\n");
 	}
 	else
 	{
-		fprintf(fp, format, rm_destdir, path, soname, ".0\n");
-		fprintf(fp, format, rm_destdir, path, soname, "\n");
+		fprintf(fp, format, rm_destdir, path, soname, ".0\n", "");
+		fprintf(fp, format, rm_destdir, path, soname, "\n", "");
 	}
-	fprintf(fp, format, rm_destdir, path, target, ".so\n");
+	fprintf(fp, format, rm_destdir, path, target, soext, "\n");
 }
 
-static void _uninstall_target_script(Config * config, FILE * fp,
+static void _uninstall_target_script(Configure * configure, FILE * fp,
 		String const * target, String const * path)
 {
 	String const * script;
 
-	if((script = config_get(config, target, "script")) == NULL)
+	if((script = config_get(configure->config, target, "script")) == NULL)
 		return;
 	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -P \"$(DESTDIR)$(PREFIX)",
 			*path ? "/" : "", *path ? path : "", "\" -u -- \"",

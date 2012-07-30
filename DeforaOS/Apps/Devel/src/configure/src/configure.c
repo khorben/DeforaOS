@@ -372,6 +372,17 @@ String const * configure_get_config(Configure * configure,
 }
 
 
+/* configure_get_soext */
+String const * configure_get_soext(Configure * configure)
+{
+	if(configure->os == HO_MACOSX)
+		return ".dylib";
+	else if(configure->os == HO_WIN32)
+		return ".dll";
+	return ".so";
+}
+
+
 /* prefs_init */
 static void _prefs_init(Prefs * prefs)
 {
