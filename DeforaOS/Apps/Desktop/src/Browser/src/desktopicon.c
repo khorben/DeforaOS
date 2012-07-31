@@ -26,7 +26,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
-#include "Browser/desktop.h"
+#include "../include/Browser/desktop.h"
 #include "desktopicon.h"
 #include "../config.h"
 #define _(string) gettext(string)

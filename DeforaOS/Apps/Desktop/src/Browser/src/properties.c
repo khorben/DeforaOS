@@ -26,7 +26,6 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <System.h>
-#include "Browser.h"
 #define _Browser _BrowserHidden /* XXX */
 #include "browser.h"
 #undef _Browser

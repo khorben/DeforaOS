@@ -20,7 +20,7 @@
 
 # include <gtk/gtk.h>
 # include <Desktop.h>
-# include "Desktop.h"
+# include "../include/Desktop.h"
 # include "desktopicon.h"
 
 

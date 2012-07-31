@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <Desktop.h>
-#include "Browser/desktop.h"
+#include "../include/Browser/desktop.h"
 #include "../config.h"
 #define _(string) gettext(string)
 

@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - let the user define the desktop folder (possibly default to FDO's)
+ * - let the default font color for icons be white
  * - set the font for the icons instantly
  * - track multiple selection on delete/properties */
 
@@ -36,7 +37,7 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/Xrandr.h>
 #include <System.h>
-#include "Browser/desktop.h"
+#include "../include/Browser/desktop.h"
 #include "desktop.h"
 #include "../config.h"
 #define _(string) gettext(string)
