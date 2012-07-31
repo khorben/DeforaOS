@@ -62,8 +62,8 @@ cpufreq.so: $(cpufreq_OBJS)
 	$(CCSHARED) -o cpufreq.so $(cpufreq_OBJS) $(cpufreq_LDFLAGS)
 
 desktop_OBJS = desktop.o
-desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags x11`
+desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11`
 
 desktop.so: $(desktop_OBJS)
 	$(CCSHARED) -o desktop.so $(desktop_OBJS) $(desktop_LDFLAGS)
