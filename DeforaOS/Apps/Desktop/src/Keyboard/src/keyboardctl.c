@@ -22,7 +22,7 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <Desktop.h>
-#include "Keyboard.h"
+#include "../include/Keyboard.h"
 #include "../config.h"
 #define _(string) gettext(string)
 

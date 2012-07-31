@@ -19,7 +19,7 @@
 # define KEYBOARD_KEYBOARD_H
 
 # include <gtk/gtk.h>
-# include "Keyboard.h"
+# include "../include/Keyboard.h"
 # include "key.h"
 
 
