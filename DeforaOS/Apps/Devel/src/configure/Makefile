@@ -67,12 +67,15 @@ install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/configure
 	$(INSTALL) -m 0644 -- CHANGES $(DESTDIR)$(PREFIX)/share/doc/configure/CHANGES
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/configure
+	$(INSTALL) -m 0644 -- INSTALL $(DESTDIR)$(PREFIX)/share/doc/configure/INSTALL
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/configure
 	$(INSTALL) -m 0644 -- README $(DESTDIR)$(PREFIX)/share/doc/configure/README
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/BUGS
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/CHANGES
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/INSTALL
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/README
 
 .PHONY: all subdirs clean distclean dist install uninstall
