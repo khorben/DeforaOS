@@ -164,6 +164,17 @@
 			</para>
 		</refsect2>
 	</refsect1>
+	<refsect1 id="files">
+		<title>Files</title>
+		<para>
+			<variablelist>
+				<varlistentry>
+					<term><filename>project.conf</filename></term>
+					<listitem><para>Project definition files.</para></listitem>
+				</varlistentry>
+			</variablelist>
+		</para>
+	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
 		<para>Issues can be listed and reported at <ulink
@@ -183,10 +194,8 @@
 		</para>
 		<refsect2>
 			<title>Additional resources</title>
-			<para>
-				More information can be found on the project page at <ulink
-					url="http://www.defora.org/os/project/16/configure"/>.
-			</para>
+			<para>More information can be found on the project page at <ulink
+					url="http://www.defora.org/os/project/16/configure"/>.</para>
 		</refsect2>
 	</refsect1>
 </refentry>
