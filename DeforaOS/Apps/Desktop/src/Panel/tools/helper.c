@@ -75,6 +75,11 @@ static int _applet_list(void)
 	struct dirent * de;
 	size_t len;
 	char const * sep = "";
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
+	char const ext[] = ".so";
+#endif
 
 	puts("Applets available:");
 	if((dir = opendir(path)) == NULL)
@@ -82,7 +87,8 @@ static int _applet_list(void)
 	while((de = readdir(dir)) != NULL)
 	{
 		len = strlen(de->d_name);
-		if(len < 4 || strcmp(&de->d_name[len - 3], ".so") != 0)
+		if(len < sizeof(ext) || strcmp(&de->d_name[
+					len - sizeof(ext) + 1], ext) != 0)
 			continue;
 		de->d_name[len - 3] = '\0';
 		printf("%s%s", sep, de->d_name);

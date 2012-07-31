@@ -53,7 +53,11 @@ static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 	Panel panel;
 	char * filename;
 	char const path[] = PREFIX "/lib/Panel/applets/";
-	char const so[] = ".so";
+#ifdef __APPLE__
+	char const ext[] = ".dylib";
+#else
+	char const ext[] = ".so";
+#endif
 	GtkWidget * box;
 	GtkWidget * widget;
 	size_t i;
@@ -84,11 +88,11 @@ static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 	_helper_init(&helper, &panel, iconsize);
 	for(i = 0; applets[i] != NULL; i++)
 	{
-		len = sizeof(path) + strlen(applets[i]) + sizeof(so);
+		len = sizeof(path) + strlen(applets[i]) + sizeof(ext);
 		if((q = realloc(p, len)) == NULL)
 			break;
 		p = q;
-		snprintf(p, len, "%s%s%s", path, applets[i], so);
+		snprintf(p, len, "%s%s%s", path, applets[i], ext);
 		if((dl = dlopen(p, RTLD_LAZY)) == NULL)
 		{
 			fprintf(stderr, "%s: %s: %s\n", "panel-notify",
