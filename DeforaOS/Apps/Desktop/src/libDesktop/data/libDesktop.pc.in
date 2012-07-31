@@ -8,4 +8,4 @@ Description: DeforaOS Desktop helper library
 Version: @VERSION@
 Requires: libSystem gtk+-2.0
 Cflags: -I${includedir}
-Libs: -Wl,-R${libdir} -L${libdir} -lDesktop
+Libs: -Wl,-rpath-link,${libdir} -Wl,-rpath,${libdir} -L${libdir} -lDesktop
