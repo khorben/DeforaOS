@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,9 @@
 /* Plugin */
 /* private */
 /* constants */
-#ifdef __WIN32__
+#if defined(__APPLE__)
+# define PLUGIN_EXTENSION	".dylib"
+#elif defined(__WIN32__)
 # define PLUGIN_EXTENSION	".dll"
 #else
 # define PLUGIN_EXTENSION	".so"
@@ -67,16 +69,17 @@ Plugin * plugin_new(char const * libdir, char const * package,
 	Plugin * plugin;
 	size_t len;
 	char * filename;
+	char const ext[] = PLUGIN_EXTENSION;
 
 	len = strlen(libdir) + 1 + strlen(package) + 1 + strlen(type) + 1
-		+ strlen(name) + strlen(PLUGIN_EXTENSION) + 1;
+		+ strlen(name) + sizeof(ext);
 	if((filename = malloc(len)) == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
 		return NULL;
 	}
 	snprintf(filename, len, "%s/%s/%s/%s%s", libdir, package, type, name,
-			PLUGIN_EXTENSION);
+			ext);
 	plugin = _plugin_open(filename);
 	free(filename);
 	return plugin;
