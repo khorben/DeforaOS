@@ -181,8 +181,8 @@ tasks.so: $(tasks_OBJS)
 	$(CCSHARED) -o tasks.so $(tasks_OBJS) $(tasks_LDFLAGS)
 
 title_OBJS = title.o
-title_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-title_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+title_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags x11`
+title_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11`
 
 title.so: $(title_OBJS)
 	$(CCSHARED) -o title.so $(title_OBJS) $(title_LDFLAGS)
