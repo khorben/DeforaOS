@@ -41,8 +41,8 @@ clock.so: $(clock_OBJS)
 	$(CCSHARED) -o clock.so $(clock_OBJS) $(clock_LDFLAGS)
 
 close_OBJS = close.o
-close_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-close_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+close_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags x11`
+close_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11`
 
 close.so: $(close_OBJS)
 	$(CCSHARED) -o close.so $(close_OBJS) $(close_LDFLAGS)
