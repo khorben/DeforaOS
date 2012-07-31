@@ -125,8 +125,8 @@ mixer.so: $(mixer_OBJS)
 	$(CCSHARED) -o mixer.so $(mixer_OBJS) $(mixer_LDFLAGS)
 
 pager_OBJS = pager.o
-pager_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-pager_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+pager_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags x11`
+pager_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11`
 
 pager.so: $(pager_OBJS)
 	$(CCSHARED) -o pager.so $(pager_OBJS) $(pager_LDFLAGS)
@@ -174,8 +174,8 @@ systray.so: $(systray_OBJS)
 	$(CCSHARED) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
 
 tasks_OBJS = tasks.o
-tasks_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+tasks_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags x11`
+tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11`
 
 tasks.so: $(tasks_OBJS)
 	$(CCSHARED) -o tasks.so $(tasks_OBJS) $(tasks_LDFLAGS)
