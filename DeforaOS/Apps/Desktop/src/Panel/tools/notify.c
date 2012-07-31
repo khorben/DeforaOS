@@ -27,8 +27,7 @@
 #include <gtk/gtk.h>
 #include <System.h>
 #include <Desktop.h>
-#include "Panel.h"
-#include "panel.h"
+#include "../src/panel.h"
 #include "../config.h"
 #ifdef PACKAGE
 # undef PACKAGE
