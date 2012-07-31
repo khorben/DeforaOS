@@ -22,7 +22,7 @@
 #endif
 #include <string.h>
 #include <System.h>
-#include "Phone/phone.h"
+#include "../include/Phone/phone.h"
 #include "modem.h"
 #include "../config.h"
 

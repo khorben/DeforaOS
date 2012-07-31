@@ -32,9 +32,9 @@ static char const _license[] =
 #include <gtk/gtk.h>
 #include <System.h>
 #include <Desktop.h>
-#include "Phone.h"
 #include "modem.h"
 #include "callbacks.h"
+#include "../include/Phone.h"
 #include "phone.h"
 #include "../config.h"
 #define _(string) gettext(string)
