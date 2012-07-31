@@ -18,7 +18,7 @@ all: $(TARGETS)
 
 keyboard_OBJS = callbacks.o common.o key.o keyboard.o layout.o main.o
 keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lXtst
+keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11` -lXtst
 
 keyboard: $(keyboard_OBJS)
 	$(CC) -o keyboard $(keyboard_OBJS) $(keyboard_LDFLAGS)

@@ -32,7 +32,7 @@ snooper: $(snooper_OBJS)
 
 xkey_OBJS = xkey.o
 xkey_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-xkey_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lXtst
+xkey_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11` -lXtst
 
 xkey: $(xkey_OBJS)
 	$(CC) -o xkey $(xkey_OBJS) $(xkey_LDFLAGS)
