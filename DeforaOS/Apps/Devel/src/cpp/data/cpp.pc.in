@@ -8,4 +8,4 @@ Description: DeforaOS Development code pre-processor
 Version: @VERSION@
 Requires: libSystem
 Cflags: -I${includedir}
-Libs: -Wl,-R${libdir} -L${libdir} -lcpp
+Libs: -L${libdir} @RPATH@ -lcpp

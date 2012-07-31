@@ -8,4 +8,4 @@ Description: DeforaOS System parsing library
 Version: @VERSION@
 Requires: libSystem
 Cflags: -I${includedir}
-Libs: -Wl,-R${libdir} -L${libdir} -lParser
+Libs: -L${libdir} @RPATH@ -lParser
