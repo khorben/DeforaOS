@@ -394,28 +394,12 @@ abstract class ContentModule extends Module
 				$content['id']);
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
-		if(($value = $request->getTitle()) === FALSE)
-			$value = $content['title'];
-		$vbox->append('entry', array('name' => 'title',
-				'text' => _('Title: '), 'value' => $value));
-		$vbox->append('label', array('text' => _('Content: ')));
-		if(($value = $request->getParameter('content')) === FALSE)
-			$value = $content['content'];
-		$vbox->append('textview', array('name' => 'content',
-				'value' => $value));
-		$hbox = $vbox->append('hbox');
-		$r = new Request($engine, $this->name, FALSE, $request->getId(),
-				$content['title']);
-		$hbox->append('button', array('request' => $r,
-				'stock' => 'cancel', 'text' => _('Cancel')));
-		$hbox->append('button', array('type' => 'reset',
-				'stock' => 'reset', 'text' => _('Reset')));
-		$hbox->append('button', array('type' => 'submit',
-				'stock' => 'preview', 'name' => 'action',
-				'value' => 'preview', 'text' => _('Preview')));
-		$hbox->append('button', array('type' => 'submit',
-				'stock' => 'update', 'name' => 'action',
-				'value' => 'submit', 'text' => _('Update')));
+		//title
+		$this->helperUpdateTitle($engine, $request, $vbox, $content);
+		//content
+		$this->helperUpdateContent($engine, $request, $vbox, $content);
+		//buttons
+		$this->helperUpdateButtons($engine, $request, $vbox, $content);
 		return $form;
 	}
 
@@ -1476,6 +1460,48 @@ abstract class ContentModule extends Module
 				'date' => $this->timestampToDate(),
 				'content' => $content);
 		$this->helperPreview($engine, $page, $content);
+	}
+
+
+	//ContentModule::helperUpdateContent
+	protected function helperUpdateContent($engine, $request, $page,
+			$content)
+	{
+		$page->append('label', array('text' => _('Content: ')));
+		if(($value = $request->getParameter('content')) === FALSE)
+			$value = $content['content'];
+		$page->append('textview', array('name' => 'content',
+				'value' => $value));
+	}
+
+
+	//ContentModule::helperUpdateTitle
+	protected function helperUpdateTitle($engine, $request, $page, $content)
+	{
+		if(($value = $request->getTitle()) === FALSE)
+			$value = $content['title'];
+		$page->append('entry', array('name' => 'title',
+				'text' => _('Title: '), 'value' => $value));
+	}
+
+
+	//ContentModule::helperUpdateButtons
+	protected function helperUpdateButtons($engine, $request, $page,
+			$content)
+	{
+		$hbox = $page->append('hbox');
+		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+				$content['title']);
+		$hbox->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		$hbox->append('button', array('type' => 'reset',
+				'stock' => 'reset', 'text' => _('Reset')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'preview', 'name' => 'action',
+				'value' => 'preview', 'text' => _('Preview')));
+		$hbox->append('button', array('type' => 'submit',
+				'stock' => 'update', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Update')));
 	}
 }
 
