@@ -5,9 +5,9 @@ LIBDIR	= $(PREFIX)/lib
 CC	?= cc
 CPPFLAGSF= -I ../../include
 CPPFLAGS=
-CFLAGSF	= -W `pkg-config --cflags x11 libSystem`
+CFLAGSF	= -W `pkg-config --cflags libSystem x11 gtk+-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
-LDFLAGSF= -W `pkg-config --libs libSystem`
+LDFLAGSF= -W `pkg-config --libs libSystem x11 gtk+-2.0`
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -20,22 +20,22 @@ INSTALL	?= install
 all: $(TARGETS)
 
 gtk-demo_OBJS = gtk-demo.o
-gtk-demo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
-gtk-demo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
+gtk-demo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+gtk-demo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 gtk-demo.so: $(gtk-demo_OBJS)
 	$(CCSHARED) -o gtk-demo.so $(gtk-demo_OBJS) $(gtk-demo_LDFLAGS)
 
 xscreensaver_OBJS = xscreensaver.o
-xscreensaver_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
-xscreensaver_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
+xscreensaver_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+xscreensaver_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 xscreensaver.so: $(xscreensaver_OBJS)
 	$(CCSHARED) -o xscreensaver.so $(xscreensaver_OBJS) $(xscreensaver_LDFLAGS)
 
 xterm_OBJS = xterm.o
-xterm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0`
-xterm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0`
+xterm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+xterm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 xterm.so: $(xterm_OBJS)
 	$(CCSHARED) -o xterm.so $(xterm_OBJS) $(xterm_LDFLAGS)
