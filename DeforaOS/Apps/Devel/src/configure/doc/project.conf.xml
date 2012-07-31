@@ -67,7 +67,7 @@
 				hash sign "#".
 			</para>
 			<para>
-				Variable can be defined directly without specifying a particular section
+				Variables can be defined directly without specifying a particular section
 				first; they belong then to the default section, which is simply considered
 				to have an empty name.
 			</para>
@@ -121,16 +121,17 @@
 			<para>
 				The following target types are currently supported:
 				<itemizedlist>
-					<listitem><para>"binary": produces binary files, linked from every object file produced with their source files.</para></listitem>
-					<listitem><para>"library": produces a static and a shared version of
-							the target, linked from every object file produced
-							with their source files, and respectively appending
-							".a" and ".so" extensions to the target name; the
-							shared object are also assigned a version number.</para></listitem>
-					<listitem><para>"object": produces a binary object file from the given source.</para></listitem>
-					<listitem><para>"plugin": produces a shared version of the target,
-							linked from every object file produced with their
-							source files, and appending the ".so" extension to the target name.</para></listitem>
+					<listitem><para>"binary": produces binary files, linked from every object
+							file produced with their source files.</para></listitem>
+					<listitem><para>"library": produces a static and a shared version of the
+							target, linked from every object file produced with their source files,
+							and respectively appending ".a" and ".so" extensions to the target name;
+							the shared object are also assigned a version number.</para></listitem>
+					<listitem><para>"object": produces a binary object file from the given
+							source.</para></listitem>
+					<listitem><para>"plugin": produces a shared version of the target, linked
+							from every object file produced with their source files, and appending
+							the ".so" extension to the target name.</para></listitem>
 					<listitem><para>"script": runs the given script, expecting the target
 							file to be generated from the sources defined.</para></listitem>
 				</itemizedlist>
