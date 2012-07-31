@@ -21,7 +21,7 @@ all: $(TARGETS)
 
 debug_OBJS = debug.o
 debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 libSystem`
-debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 libSystem`
 
 debug.so: $(debug_OBJS)
 	$(CCSHARED) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
