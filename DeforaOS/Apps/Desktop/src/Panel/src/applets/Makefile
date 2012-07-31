@@ -7,6 +7,7 @@ CPPFLAGSF= -I ../../include
 CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libSystem gtk+-2.0` -fPIC
 CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= `pkg-config --libs libSystem gtk+-2.0`
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -82,8 +83,8 @@ gsm.so: $(gsm_OBJS)
 	$(CCSHARED) -o gsm.so $(gsm_OBJS) $(gsm_LDFLAGS)
 
 keyboard_OBJS = keyboard.o
-keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+keyboard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+keyboard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 keyboard.so: $(keyboard_OBJS)
 	$(CCSHARED) -o keyboard.so $(keyboard_OBJS) $(keyboard_LDFLAGS)
