@@ -45,7 +45,7 @@ abstract class Database
 			$informat = '%Y-%m-%d %H:%M:%S';
 		if(($tm = strptime($date, $informat)) === FALSE)
 			return $date; //XXX better suggestions welcome
-		$timestamp = mktime($tm['tm_hour'], $tm['tm_min'],
+		$timestamp = gmmktime($tm['tm_hour'], $tm['tm_min'],
 			$tm['tm_sec'], $tm['tm_mon'] + 1, $tm['tm_mday'],
 			$tm['tm_year'] + 1900);
 		if($outformat === FALSE)
