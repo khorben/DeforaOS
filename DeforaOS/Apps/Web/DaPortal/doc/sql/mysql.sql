@@ -173,3 +173,7 @@ INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('
 
 /* module: blog */
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
+
+
+/* module: browser */
+INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');

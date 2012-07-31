@@ -274,4 +274,8 @@ INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES 
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
 
 
+/* module: browser */
+INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
+
+
 COMMIT;

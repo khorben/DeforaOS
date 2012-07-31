@@ -390,4 +390,8 @@ CREATE TABLE daportal_blog_content (
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
 
 
+/* module: browser */
+INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
+
+
 COMMIT;
