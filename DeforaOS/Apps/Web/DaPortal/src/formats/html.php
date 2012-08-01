@@ -461,6 +461,19 @@ class HTMLFormat extends FormatElements
 	}
 
 
+	protected function renderHtmledit($e)
+	{
+		if(($text = $e->getProperty('text')) === FALSE
+				|| !is_string($text))
+			$text = '';
+		//FIXME start the editor with some javascript code
+		$this->renderTabs();
+		$this->tagOpen('iframe', 'hidden', FALSE, array(
+				'width' => '450px', 'height' => '250px'));
+		$this->tagClose('iframe');
+	}
+
+
 	protected function renderHtmlview($e)
 	{
 		if(($text = $e->getProperty('text')) === FALSE
@@ -516,6 +529,7 @@ class HTMLFormat extends FormatElements
 		$attributes = array();
 
 		if(($c = $e->getProperty('class')) !== FALSE)
+			//FIXME apply to the respective parent and children
 			$class = 'label '.$c;
 		if(($for = $e->getProperty('for')) !== FALSE)
 		{
