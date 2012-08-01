@@ -29,7 +29,7 @@
 #include <openssl/ssl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
-#include "Mailer/plugin.h"
+#include "../include/Mailer/plugin.h"
 #include "folder.h"
 #include "message.h"
 #include "compose.h"

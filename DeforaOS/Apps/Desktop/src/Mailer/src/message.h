@@ -19,7 +19,7 @@
 # define MAILER_SRC_MESSAGE_H
 
 # include <gtk/gtk.h>
-# include "Mailer.h"
+# include "../include/Mailer.h"
 
 
 /* Message */

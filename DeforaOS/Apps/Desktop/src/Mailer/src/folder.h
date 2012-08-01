@@ -19,8 +19,8 @@
 # define MAILER_SRC_FOLDER_H
 
 # include <gtk/gtk.h>
-# include "Mailer/plugin.h"
-# include "Mailer/folder.h"
+# include "../include/Mailer/plugin.h"
+# include "../include/Mailer/folder.h"
 
 
 /* Folder */

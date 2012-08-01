@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "Mailer/helper.h"
+#include "../include/Mailer/helper.h"
 
 
 /* public */
