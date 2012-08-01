@@ -111,15 +111,6 @@ class WikiModule extends ContentModule
 	}
 
 
-	//forms
-	//WikiModule::formUpdate
-	protected function formUpdate($engine, $request, $content)
-	{
-		//FIXME implement the rich-text editor
-		return parent::formUpdate($engine, $request, $content);
-	}
-
-
 	//helpers
 	//WikiModule::helperDisplay
 	protected function helperDisplay($engine, $page, $content = FALSE)
@@ -228,6 +219,22 @@ class WikiModule extends ContentModule
 					'text' => $error));
 		$rcs = implode("\n", $rcs);
 		$page->append('htmlview', array('text' => $rcs));
+	}
+
+
+	//WikiModule::helperUpdateContent
+	protected function helperUpdateContent($engine, $request, $page,
+			$content)
+	{
+		$page->append('label', array('text' => _('Content: ')));
+		if(($value = $request->getParameter('content')) === FALSE)
+			$value = $content['content'];
+		$page->append('htmledit', array('name' => 'content',
+				'value' => $value));
+		$message = $request->getParameter('message');
+		$page->append('entry', array('name' => 'message',
+				'text' => _('Log message: '),
+				'value' => $message));
 	}
 
 
