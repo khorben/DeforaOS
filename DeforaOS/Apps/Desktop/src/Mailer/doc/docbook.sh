@@ -38,8 +38,8 @@ XSLTPROC="xsltproc --nonet --xinclude"
 #debug
 _debug()
 {
-	echo $@
-	$@
+	echo "$@" 1>&2
+	"$@"
 }
 
 

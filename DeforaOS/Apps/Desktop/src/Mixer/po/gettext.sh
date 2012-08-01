@@ -43,8 +43,8 @@ XGETTEXT="xgettext --force-po"
 #debug
 _debug()
 {
-	echo $@
-	$@
+	echo "$@" 1>&2
+	"$@"
 }
 
 
