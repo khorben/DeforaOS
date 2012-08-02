@@ -1,4 +1,4 @@
-TARGETS	= gtk-demo.so xscreensaver.so xterm.so
+TARGETS	= gtk-demo.so template.so xscreensaver.so xterm.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -26,6 +26,13 @@ gtk-demo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 gtk-demo.so: $(gtk-demo_OBJS)
 	$(CCSHARED) -o gtk-demo.so $(gtk-demo_OBJS) $(gtk-demo_LDFLAGS)
 
+template_OBJS = template.o
+template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+template.so: $(template_OBJS)
+	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+
 xscreensaver_OBJS = xscreensaver.o
 xscreensaver_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 xscreensaver_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -43,6 +50,9 @@ xterm.so: $(xterm_OBJS)
 gtk-demo.o: gtk-demo.c
 	$(CC) $(gtk-demo_CFLAGS) -c gtk-demo.c
 
+template.o: template.c
+	$(CC) $(template_CFLAGS) -c template.c
+
 xscreensaver.o: xscreensaver.c ../../include/Locker.h ../../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(xscreensaver_CFLAGS) -c xscreensaver.c
 
@@ -50,7 +60,7 @@ xterm.o: xterm.c ../../include/Locker.h ../../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(xterm_CFLAGS) -c xterm.c
 
 clean:
-	$(RM) -- $(gtk-demo_OBJS) $(xscreensaver_OBJS) $(xterm_OBJS)
+	$(RM) -- $(gtk-demo_OBJS) $(template_OBJS) $(xscreensaver_OBJS) $(xterm_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
