@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - re-factor and re-indent adequately
- * - no longer obfuscate the authentication widgets
  * - improve performance */
 
 
