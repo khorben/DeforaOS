@@ -160,17 +160,15 @@ static void _gtkdemo_destroy(GtkDemo * gtkdemo)
 static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 {
 	int ret = 0;
+	GdkWindow * w;
 	GtkWidget ** p;
 	GdkColor color = { 0xff000000, 0xffff, 0x0, 0x0 };
-	GdkGC * gc;
 	GdkPixmap * pixmap;
 	GdkPixbuf * background = gtkdemo->images[GDI_BACKGROUND];
 	GdkRectangle rect;
 	int depth;
-	int w;
-	int h;
-	int i;
-	int j;
+	int width;
+	int height;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() window=%p\n", __func__, (void *)window);
@@ -179,29 +177,27 @@ static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 						+ 1))) == NULL)
 		return -1;
 	gtkdemo->windows = p;
-	gdk_window_get_geometry(gtk_widget_get_window(window), &rect.x, &rect.y,
-			&rect.width, &rect.height, &depth);
+	w = gtk_widget_get_window(window);
+	gdk_window_get_geometry(w, &rect.x, &rect.y, &rect.width, &rect.height,
+			&depth);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() (%dx%d), (%dx%d)@%dbpp\n", __func__,
 			rect.x, rect.y, rect.width, rect.height, depth);
 #endif
-	pixmap = gdk_pixmap_new(gtk_widget_get_window(window), rect.width,
-			rect.width, -1);
-	w = (background != NULL) ? gdk_pixbuf_get_width(background) : 0;
-	h = (background != NULL) ? gdk_pixbuf_get_height(background) : 0;
-	/* draw default color */
-	gc = gdk_gc_new(pixmap);
-	gdk_gc_set_rgb_fg_color(gc, &color);
-	gdk_draw_rectangle(pixmap, gc, TRUE, 0, 0, rect.width, rect.height);
+	/* set the default color */
+	gdk_window_set_background(w, &color);
 	/* draw background */
-	for(j = 0; h > 0 && j < rect.height; j += h)
-		for(i = 0; w > 0 && i < rect.width; i += w)
-			gdk_draw_pixbuf(pixmap, NULL, background, 0, 0,
-					i, j, w, h, GDK_RGB_DITHER_NONE, 0, 0);
-	gdk_window_set_back_pixmap(gtk_widget_get_window(window), pixmap,
-			FALSE);
-	gdk_window_clear(gtk_widget_get_window(window));
-	gdk_pixmap_unref(pixmap);
+	width = (background != NULL) ? gdk_pixbuf_get_width(background) : 0;
+	height = (background != NULL) ? gdk_pixbuf_get_height(background) : 0;
+	if(width > 0 && height > 0)
+	{
+		pixmap = gdk_pixmap_new(w, width, height, -1);
+		gdk_draw_pixbuf(pixmap, NULL, background, 0, 0, 0, 0, width,
+				height, GDK_RGB_DITHER_NONE, 0, 0);
+		gdk_window_set_back_pixmap(w, pixmap, FALSE);
+		gdk_pixmap_unref(pixmap);
+	}
+	gdk_window_clear(w);
 	gtkdemo->windows[gtkdemo->windows_cnt++] = window;
 	return ret;
 }
@@ -215,7 +211,7 @@ static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window)
 	for(i = 0; i < gtkdemo->windows_cnt; i++)
 		if(gtkdemo->windows[i] == window)
 			gtkdemo->windows[i] = NULL;
-	/* FIXME reorganize the table and free memory */
+	/* FIXME reorganize the array and free memory */
 	for(i = 0; i < gtkdemo->windows_cnt; i++)
 		if(gtkdemo->windows[i] != NULL)
 			break;
@@ -224,6 +220,7 @@ static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window)
 		/* there are no windows left */
 		_gtkdemo_stop(gtkdemo);
 		free(gtkdemo->windows);
+		gtkdemo->windows = NULL;
 		gtkdemo->windows_cnt = 0;
 	}
 }
