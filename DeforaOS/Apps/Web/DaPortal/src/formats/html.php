@@ -52,8 +52,7 @@ class HTMLFormat extends FormatElements
 	}
 
 
-	//public
-	//methods
+	//useful
 	//escaping
 	//HTMLFormat::escape
 	protected function escape($text)
@@ -66,7 +65,7 @@ class HTMLFormat extends FormatElements
 	//HTMLFormat::escapeAttribute
 	protected function escapeAttribute($text)
 	{
-		return htmlspecialchars($text, ENT_QUOTES | ENT_HTML401);
+		return htmlspecialchars($text, ENT_COMPAT | ENT_HTML401);
 	}
 
 
@@ -463,13 +462,24 @@ class HTMLFormat extends FormatElements
 
 	protected function renderHtmledit($e)
 	{
-		if(($text = $e->getProperty('text')) === FALSE
+		$id = uniqid();
+
+		if(($text = $e->getProperty('value')) === FALSE
 				|| !is_string($text))
 			$text = '';
-		//FIXME start the editor with some javascript code
+		$text = HTML::filter($this->engine, $text);
+		$this->renderTabs();
+		$this->tagOpen('script', FALSE, FALSE, array(
+				'type' => 'text/javascript',
+				'src' => 'js/editor.js'));
+		$this->tagClose('script');
+		$this->renderTabs();
+		$this->tag('textarea', FALSE, $id, array(
+				'name' => $e->getProperty('name')), $text);
 		$this->renderTabs();
 		$this->tagOpen('iframe', 'hidden', FALSE, array(
-				'width' => '450px', 'height' => '250px'));
+				'width' => '450px', 'height' => '250px',
+				'onload' => "editorStart(this, '$id')"));
 		$this->tagClose('iframe');
 	}
 

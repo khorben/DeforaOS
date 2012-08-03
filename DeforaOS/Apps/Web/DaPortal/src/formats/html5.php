@@ -53,7 +53,7 @@ class HTML5Format extends HTMLFormat
 	//HTML5Format::escapeAttribute
 	protected function escapeAttribute($text)
 	{
-		return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+		return htmlspecialchars($text, ENT_COMPAT | ENT_HTML5);
 	}
 }
 
