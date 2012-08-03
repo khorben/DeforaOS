@@ -222,6 +222,14 @@ class WikiModule extends ContentModule
 	}
 
 
+	//WikiModule::helperPreviewText
+	protected function helperPreviewText($engine, $page, $request, $content)
+	{
+		$text = $content['content'];
+		$page->append('htmlview', array('text' => $text));
+	}
+
+
 	//WikiModule::helperSubmitContent
 	protected function helperSubmitContent($engine, $request, $page)
 	{
