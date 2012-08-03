@@ -47,6 +47,7 @@ install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "daportal.conf.5"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "daportal.conf.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "install.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "internals.html"
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
@@ -55,5 +56,6 @@ uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "daportal.conf.5"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "daportal.conf.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "install.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "internals.html"
 
 .PHONY: all subdirs clean distclean install uninstall
