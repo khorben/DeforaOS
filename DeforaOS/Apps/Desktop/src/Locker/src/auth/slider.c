@@ -35,6 +35,7 @@ typedef struct _LockerAuth
 {
 	LockerAuthHelper * helper;
 	guint source;
+	gboolean locked;
 
 	/* widgets */
 	GtkWidget * widget;
@@ -84,6 +85,7 @@ static Slider * _slider_init(LockerAuthHelper * helper)
 		return NULL;
 	slider->helper = helper;
 	slider->source = 0;
+	slider->locked = FALSE;
 	vbox = gtk_vbox_new(FALSE, 4);
 	slider->widget = vbox;
 	hbox = gtk_hbox_new(FALSE, 4);
@@ -132,11 +134,20 @@ static GtkWidget * _slider_get_widget(Slider * slider)
 /* slider_action */
 static int _slider_action(Slider * slider, LockerAction action)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, action);
+#endif
 	switch(action)
 	{
 		case LOCKER_ACTION_DEACTIVATE:
 			gtk_widget_grab_focus(slider->scale);
 			gtk_widget_show(slider->widget);
+			if(slider->source != 0)
+				g_source_remove(slider->source);
+			slider->source = 0;
+			if(slider->locked)
+				slider->source = g_timeout_add(3000,
+						_slider_on_timeout, slider);
 			break;
 		case LOCKER_ACTION_LOCK:
 			gtk_widget_hide(slider->widget);
@@ -144,10 +155,15 @@ static int _slider_action(Slider * slider, LockerAction action)
 			if(slider->source != 0)
 				g_source_remove(slider->source);
 			slider->source = 0;
+			slider->locked = TRUE;
 			break;
 		case LOCKER_ACTION_START:
 		case LOCKER_ACTION_UNLOCK:
 			gtk_widget_hide(slider->widget);
+			if(slider->source != 0)
+				g_source_remove(slider->source);
+			slider->source = 0;
+			slider->locked = FALSE;
 			break;
 		default:
 			break;
