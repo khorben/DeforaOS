@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="iso-8859-15"?>
+<!-- $Id$ -->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
+	<!ENTITY package   "DaPortal">
+	<!ENTITY name      "daportal">
+	<!ENTITY title     "DaPortal Programmer Manual">
+	<!ENTITY purpose   "DaPortal internals">
+]>
+<article>
+	<info>
+		<title>&package; internals</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<personname><firstname>&firstname;</firstname><surname>&surname;</surname></personname>
+				<contrib>Code and documentation.</contrib>
+				<address><email>&email;</email></address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2012</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This guide was written for the DeforaOS project (and may be used by
+				others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this document
+				under the terms of the GNU General Public License, Version 3 as published by
+				the Free Software Foundation.</para>
+		</legalnotice>
+		<publisher><publishername>The DeforaOS Project</publishername></publisher>
+	</info>
+	<warning>
+		<title>Warning: work in progress</title>
+		<para>These notes are based on a development version of &package; 2.</para>
+	</warning>
+	<section>
+		<title>Introduction notes</title>
+		<section>
+			<title>Where to find &package;</title>
+			<para>First, make sure that you have downloaded the latest stable version of
+				&package; 2. It can be found there: <ulink
+					url="http://www.defora.org/os/project/download/12/DaPortal">http://www.defora.org/os/project/download/12/DaPortal</ulink>.
+				This guide will assume the resulting archive to be called
+				<filename>DaPortal.tar.gz</filename>.</para>
+			<para>Alternatively, you may choose to track the development of &package;
+				2, or any given branch from the Source Code Management system. Some
+				instructions to do so can be found here: <ulink
+					url="http://www.defora.org/os/project/download/12/DaPortal">http://www.defora.org/os/project/download/12/DaPortal</ulink>.</para>
+		</section>
+		<section>
+			<title>Relevant documentation</title>
+			<para>In this document, the reader is expected to be familiar with the
+				installation of &package;. This process is documented in <ulink
+					url="install.html">Installing DaPortal</ulink>, which contains important
+				information about the organization of files and directories relevant to
+				&package;.</para>
+		</section>
+	</section>
+	<section>
+		<title>Entry point</title>
+		<para>&package; has a single entry-point for all of its applications, found
+			in <filename>src/daportal.php</filename>. Its contents are simple enough to
+			be reproduced here fully:</para>
+		<programlisting><![CDATA[<?php
+require_once('./system/config.php');
+global $config;
+$config = new Config();
+$config->load('../daportal.conf');
+
+require_once('./system/engine.php');
+if(($engine = Engine::attachDefault()) !== FALSE
+		&& ($request = $engine->getRequest()) !== FALSE)
+{
+	$page = $engine->process($request);
+	$engine->render($page);
+}
+unset($engine);
+
+?>]]></programlisting>
+		<para>First, the code reads configuration data from the <ulink
+				url="daportal.conf.html"><filename>../daportal.conf</filename></ulink> file.
+			This file is organized as an ini-style configuration file, with series of
+			variables (one per line) found in separate sections. This file is currently
+			used for most of the configureable aspects of &package;.</para>
+		<para>Next, the <filename>engine.php</filename> file is loaded from the
+			<filename>system</filename> sub-folder. This folder contains generic, library
+			code that can freely be used by the different modules. After including this
+			file:<orderedlist>
+				<listitem><para>The relevant implementation of the
+						<classname>Engine</classname> class is loaded,</para></listitem>
+				<listitem><para>The user's request is determined and
+						obtained,</para></listitem>
+				<listitem><para>The output (or <quote>page</quote>) is rendered and
+						delivered to the user.</para></listitem>
+		</orderedlist></para>
+		<para>Finally, the engine loaded is explicitely free'd; this was found
+			necessary in some cases (like with the <classname>GtkEngine</classname>) as
+			otherwise, some functionalities of PHP no longer work as expected during
+			teardown.</para>
+	</section>
+	<section>
+		<title>Engine selection</title>
+		<para>The actual processing engine for &package; is determined at run-time, or
+			possibly enforced in the <filename>daportal.conf</filename> configuration
+			file (through the <varname>backend</varname> variable in the
+			<varname>[engine]</varname> section).</para>
+		<para>When auto-detecting the engine, every PHP file found in the
+			<filename>engines</filename> directory is loaded in sequence. The file is
+			expected to provide a predictable class name, such as
+			<classname>FileNameEngine</classname> for
+			<filename>filename.php</filename>. It should implement the abstract
+			<classname>Engine</classname> class.</para>
+		<para>Two methods are used when detecting the adequate engine:<itemizedlist>
+				<listitem><para><function>match()</function>: returns an integer value,
+						representing a score at the relevance of the engine in the context
+						detected (typically between 0 and 100)</para></listitem>
+				<listitem><para><function>attach()</function>: returns a boolean value,
+						<returnvalue>TRUE</returnvalue> in case of success or
+						<returnvalue>FALSE</returnvalue> otherwise.</para></listitem>
+		</itemizedlist></para>
+		<para>This auto-detection methodology is found in multiple sub-systems of
+			&package; (file formats, templates...).</para>
+	</section>
+	<section>
+		<title>Processing requests</title>
+		<section>
+			<title>Database</title>
+		</section>
+		<section>
+			<title>Authentication</title>
+		</section>
+		<section>
+			<title>Idempotence</title>
+		</section>
+	</section>
+	<section>
+		<title>Within modules</title>
+		<section>
+			<title>Calls</title>
+		</section>
+		<section>
+			<title>Helpers</title>
+		</section>
+	</section>
+	<section>
+		<title>Output and rendering</title>
+		<section>
+			<title>Building pages</title>
+		</section>
+		<section>
+			<title>Applying templates</title>
+		</section>
+		<section>
+			<title>File formats</title>
+		</section>
+	</section>
+</article>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
