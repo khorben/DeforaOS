@@ -365,24 +365,12 @@ abstract class ContentModule extends Module
 		$r = new Request($engine, $this->name, 'submit');
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
-		$vbox->append('entry', array('name' => 'title',
-				'text' => _('Title: '),
-				'value' => $request->getTitle()));
-		$vbox->append('textview', array('name' => 'content',
-				'text' => _('Content: '),
-				'value' => $request->getParameter('content')));
-		$r = new Request($engine, $this->name);
-		$form->append('button', array('request' => $r,
-				'stock' => 'cancel', 'text' => _('Cancel')));
-		if($this->canPreview($engine, $request))
-			$form->append('button', array('type' => 'submit',
-					'stock' => 'preview',
-					'name' => 'action',
-					'value' => 'preview',
-					'text' => _('Preview')));
-		$form->append('button', array('type' => 'submit',
-				'stock' => 'submit', 'name' => 'action',
-				'value' => 'submit', 'text' => _('Submit')));
+		//title
+		$this->helperSubmitTitle($engine, $request, $vbox);
+		//content
+		$this->helperSubmitContent($engine, $request, $vbox);
+		//buttons
+		$this->helperSubmitButtons($engine, $request, $form);
 		return $form;
 	}
 
@@ -693,8 +681,8 @@ abstract class ContentModule extends Module
 		$page = new Page(array('title' => $title));
 		$this->helperListTitle($engine, $page, $request);
 		//query
-		$query = $this->query_list;
 		$args = array('module_id' => $this->id);
+		$query = $this->query_list;
 		if($uid !== FALSE)
 		{
 			$query = $this->query_list_user;
@@ -1443,6 +1431,33 @@ abstract class ContentModule extends Module
 	}
 
 
+	//ContentModule::helperSubmitButtons
+	protected function helperSubmitButtons($engine, $request, $page)
+	{
+		$r = new Request($engine, $this->name);
+		$page->append('button', array('request' => $r,
+				'stock' => 'cancel', 'text' => _('Cancel')));
+		if($this->canPreview($engine, $request))
+			$page->append('button', array('type' => 'submit',
+					'stock' => 'preview',
+					'name' => 'action',
+					'value' => 'preview',
+					'text' => _('Preview')));
+		$page->append('button', array('type' => 'submit',
+				'stock' => 'submit', 'name' => 'action',
+				'value' => 'submit', 'text' => _('Submit')));
+	}
+
+
+	//ContentModule::helperSubmitContent
+	protected function helperSubmitContent($engine, $request, $page)
+	{
+		$page->append('textview', array('name' => 'content',
+				'text' => _('Content: '),
+				'value' => $request->getParameter('content')));
+	}
+
+
 	//ContentModule::helperSubmitPreview
 	protected function helperSubmitPreview($engine, $page, $request,
 			$content)
@@ -1460,6 +1475,15 @@ abstract class ContentModule extends Module
 				'date' => $this->timestampToDate(),
 				'content' => $content);
 		$this->helperPreview($engine, $page, $content);
+	}
+
+
+	//ContentModule::helperSubmitTitle
+	protected function helperSubmitTitle($engine, $request, $page)
+	{
+		$page->append('entry', array('name' => 'title',
+				'text' => _('Title: '),
+				'value' => $request->getTitle()));
 	}
 
 
