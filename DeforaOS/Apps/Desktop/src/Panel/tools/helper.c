@@ -19,7 +19,13 @@ static char const _license[] =
 
 
 
+#include <dirent.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <gtk/gtk.h>
 #include <System.h>
+#include <Desktop.h>
 
 
 /* types */
