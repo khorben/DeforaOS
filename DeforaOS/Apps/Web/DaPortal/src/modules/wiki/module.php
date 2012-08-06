@@ -65,6 +65,25 @@ class WikiModule extends ContentModule
 	}
 
 
+	//WikiModule::_get
+	protected function _get($engine, $id, $title = FALSE)
+	{
+		if(($content = parent::_get($engine, $id, $title)) === FALSE)
+			return FALSE;
+		if($this->root === FALSE
+				|| strpos($content['title'], '/') !== FALSE)
+			return $content; //XXX fail instead?
+		$cmd = 'co -p -q '.escapeshellarg(
+				$this->root.'/'.$content['title']);
+		exec($cmd, $rcs, $res);
+		if($res != 0)
+			return FALSE;
+		$rcs = implode("\n", $rcs);
+		$content['content'] = $rcs;
+		return $content;
+	}
+
+
 	//calls
 	//WikiModule::callDefault
 	protected function callDefault($engine, $request = FALSE)
@@ -204,29 +223,14 @@ class WikiModule extends ContentModule
 	//WikiModule::helperDisplayText
 	protected function helperDisplayText($engine, $page, $request, $content)
 	{
-		$error = _('Could not display page');
-
-		if($this->root === FALSE
-				|| strpos($content['title'], '/') !== FALSE)
-			return $page->append('dialog', array('type' => 'error',
-					'text' => $error));
-		//obtain the page
-		$cmd = 'co -p -q '.escapeshellarg(
-				$this->root.'/'.$content['title']);
-		exec($cmd, $rcs, $res);
-		if($res != 0)
-			return $page->append('dialog', array('type' => 'error',
-					'text' => $error));
-		$rcs = implode("\n", $rcs);
-		$page->append('htmlview', array('text' => $rcs));
+		$page->append('htmlview', array('text' => $content['content']));
 	}
 
 
 	//WikiModule::helperPreviewText
 	protected function helperPreviewText($engine, $page, $request, $content)
 	{
-		$text = $content['content'];
-		$page->append('htmlview', array('text' => $text));
+		$page->append('htmlview', array('text' => $content['content']));
 	}
 
 
