@@ -25,6 +25,7 @@
 #  define unmount unmount
 # endif
 #endif
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
