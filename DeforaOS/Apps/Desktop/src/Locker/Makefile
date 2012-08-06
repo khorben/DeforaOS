@@ -1,6 +1,6 @@
 PACKAGE	= Locker
 VERSION	= 0.1.3
-SUBDIRS	= data include po src
+SUBDIRS	= data include po src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -49,6 +49,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
 		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/demos/gtk-demo.c \
+		$(PACKAGE)-$(VERSION)/src/demos/logo.c \
 		$(PACKAGE)-$(VERSION)/src/demos/template.c \
 		$(PACKAGE)-$(VERSION)/src/demos/xscreensaver.c \
 		$(PACKAGE)-$(VERSION)/src/demos/xterm.c \
@@ -62,6 +63,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/template.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/test.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \

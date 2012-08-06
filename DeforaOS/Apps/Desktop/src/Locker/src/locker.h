@@ -18,11 +18,15 @@
 #ifndef LOCKER_LOCKER_H
 # define LOCKER_LOCKER_H
 
-# include "Locker.h"
+# include "../include/Locker.h"
 
 
 /* Locker */
 /* public */
+/* constants */
+# define LOCKER_CONFIG_FILE	".locker"
+
+
 /* functions */
 Locker * locker_new(int suspend, char const * demo, char const * auth);
 void locker_delete(Locker * locker);

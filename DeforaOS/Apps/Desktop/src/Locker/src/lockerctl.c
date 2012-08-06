@@ -22,7 +22,7 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <Desktop.h>
-#include "Locker.h"
+#include "../include/Locker.h"
 #include "../config.h"
 #define _(string) gettext(string)
 

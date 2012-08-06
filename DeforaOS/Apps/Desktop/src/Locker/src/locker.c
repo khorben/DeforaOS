@@ -114,8 +114,6 @@ typedef enum _LockerPluginsColumn
 
 
 /* constants */
-#define LOCKER_CONFIG_FILE	".locker"
-
 static char const * _authors[] =
 {
 	"Pierre Pronchery <khorben@defora.org>",
