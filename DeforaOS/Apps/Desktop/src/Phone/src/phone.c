@@ -109,6 +109,7 @@ typedef enum _PhoneMessageColumn
 
 typedef struct _PhonePluginEntry
 {
+	char * name;
 	Plugin * p;
 	PhonePluginDefinition * pd;
 	PhonePlugin * pp;
@@ -117,7 +118,6 @@ typedef struct _PhonePluginEntry
 typedef enum _PhonePluginsColumn
 {
 	PHONE_PLUGINS_COLUMN_PLUGIN_DEFINITION = 0,
-	PHONE_PLUGINS_COLUMN_PLUGIN,
 	PHONE_PLUGINS_COLUMN_ENABLED,
 	PHONE_PLUGINS_COLUMN_FILENAME,
 	PHONE_PLUGINS_COLUMN_ICON,
@@ -275,6 +275,10 @@ static char const * _authors[] =
 
 
 /* prototypes */
+/* accessors */
+static gboolean _phone_plugin_is_enabled(Phone * phone, char const * plugin);
+
+/* useful */
 static void _phone_about(Phone * phone);
 
 static int _phone_call_number(Phone * phone, char const * number);
@@ -467,8 +471,8 @@ Phone * phone_new(char const * plugin, int retry)
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(phone->me_store),
 			PHONE_MESSAGE_COLUMN_DATE, GTK_SORT_DESCENDING);
 	phone->pl_store = gtk_list_store_new(PHONE_PLUGINS_COLUMN_COUNT,
-			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_BOOLEAN,
-			G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+			G_TYPE_POINTER, G_TYPE_BOOLEAN, G_TYPE_STRING,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	phone->re_index = -1;
 	phone->se_store = gtk_list_store_new(PHONE_SETTINGS_COLUMN_COUNT,
 			G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER,
@@ -1030,6 +1034,8 @@ int phone_load(Phone * phone, char const * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
 #endif
+	if(_phone_plugin_is_enabled(phone, plugin))
+		return 0;
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -phone_error(NULL, error_get(), 1);
 	if((pd = plugin_lookup(p, "plugin")) == NULL)
@@ -1050,17 +1056,20 @@ int phone_load(Phone * phone, char const * plugin)
 		return -phone_error(NULL, strerror(errno), 1);
 	}
 	phone->plugins = q;
-	phone->plugins[phone->plugins_cnt].p = p;
-	phone->plugins[phone->plugins_cnt].pd = pd;
-	phone->plugins[phone->plugins_cnt++].pp = pp;
+	q = &phone->plugins[phone->plugins_cnt];
+	q->name = strdup(plugin);
+	q->p = p;
+	q->pd = pd;
+	q->pp = pp;
+	if(q->name == NULL)
+	{
+		plugin_delete(p);
+		return -phone_error(NULL, strerror(errno), 1);
+	}
+	phone->plugins_cnt++;
 	if(pd->name != NULL && pd->settings != NULL)
 	{
 		gtk_list_store_append(GTK_LIST_STORE(phone->se_store), &iter);
-		gtk_list_store_set(phone->se_store, &iter,
-				PHONE_SETTINGS_COLUMN_CALLBACK, NULL,
-				PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, pd,
-				PHONE_SETTINGS_COLUMN_PLUGIN, pp,
-				PHONE_SETTINGS_COLUMN_NAME, pd->name, -1);
 		theme = gtk_icon_theme_get_default();
 		if(pd->icon != NULL)
 			icon = gtk_icon_theme_load_icon(theme, pd->icon, 48, 0,
@@ -1068,9 +1077,12 @@ int phone_load(Phone * phone, char const * plugin)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					48, 0, NULL);
-		if(icon != NULL)
-			gtk_list_store_set(phone->se_store, &iter,
-					PHONE_SETTINGS_COLUMN_ICON, icon, -1);
+		gtk_list_store_set(phone->se_store, &iter,
+				PHONE_SETTINGS_COLUMN_CALLBACK, NULL,
+				PHONE_SETTINGS_COLUMN_PLUGIN_DEFINITION, pd,
+				PHONE_SETTINGS_COLUMN_PLUGIN, pp,
+				PHONE_SETTINGS_COLUMN_NAME, pd->name,
+				PHONE_SETTINGS_COLUMN_ICON, icon, -1);
 	}
 	return 0;
 }
@@ -2204,7 +2216,7 @@ static void _plugins_on_cancel(gpointer data)
 	GtkTreeIter iter;
 	Plugin * p;
 	PhonePluginDefinition * pd;
-	size_t i;
+	gboolean enabled;
 	GdkPixbuf * icon;
 
 	gtk_widget_hide(phone->pl_window);
@@ -2230,20 +2242,7 @@ static void _plugins_on_cancel(gpointer data)
 			plugin_delete(p);
 			continue;
 		}
-		gtk_list_store_append(phone->pl_store, &iter);
-		gtk_list_store_set(phone->pl_store, &iter,
-				PHONE_PLUGINS_COLUMN_FILENAME, de->d_name,
-				PHONE_PLUGINS_COLUMN_NAME, pd->name, -1);
-		for(i = 0; i < phone->plugins_cnt; i++)
-		{
-			if(strcmp(phone->plugins[i].pd->name, pd->name) != 0)
-				continue;
-			gtk_list_store_set(phone->pl_store, &iter,
-					PHONE_PLUGINS_COLUMN_ENABLED, TRUE,
-					PHONE_PLUGINS_COLUMN_PLUGIN_DEFINITION,
-					phone->plugins[i].pd, -1);
-			break;
-		}
+		enabled = _phone_plugin_is_enabled(phone, de->d_name);
 		icon = NULL;
 		if(pd->icon != NULL)
 			icon = gtk_icon_theme_load_icon(theme, pd->icon, 48, 0,
@@ -2251,7 +2250,12 @@ static void _plugins_on_cancel(gpointer data)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					48, 0, NULL);
+		gtk_list_store_append(phone->pl_store, &iter);
 		gtk_list_store_set(phone->pl_store, &iter,
+				PHONE_PLUGINS_COLUMN_FILENAME, de->d_name,
+				PHONE_PLUGINS_COLUMN_NAME, pd->name,
+				PHONE_PLUGINS_COLUMN_ENABLED, enabled,
+				PHONE_PLUGINS_COLUMN_PLUGIN_DEFINITION, pd,
 				PHONE_PLUGINS_COLUMN_ICON, icon, -1);
 		plugin_delete(p);
 	}
@@ -2299,31 +2303,27 @@ static void _plugins_on_ok(gpointer data)
 	GtkTreeIter iter;
 	gboolean valid;
 	gboolean enabled;
-	PhonePlugin * plugin;
 	gchar * name;
 	int res = 0;
 	String * value = string_new("");
 	String * sep = "";
 
 	gtk_widget_hide(phone->pl_window);
-	valid = gtk_tree_model_get_iter_first(model, &iter);
-	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
 	{
-		gtk_tree_model_get(model, &iter, PHONE_PLUGINS_COLUMN_ENABLED,
-				&enabled, PHONE_PLUGINS_COLUMN_PLUGIN, &plugin,
+		gtk_tree_model_get(model, &iter,
+				PHONE_PLUGINS_COLUMN_ENABLED, &enabled,
 				PHONE_PLUGINS_COLUMN_FILENAME, &name, -1);
 		if(enabled)
 		{
-			/* only load plug-ins that are not already loaded */
-			if(plugin == NULL)
-				/* FIXME this shouldn't always be reached */
-				phone_load(phone, name);
+			phone_load(phone, name);
 			res |= string_append(&value, sep);
 			res |= string_append(&value, name);
 			sep = ",";
 		}
-		else if(plugin != NULL)
-			_phone_unload(phone, plugin);
+		else
+			phone_unload(phone, name);
 		g_free(name);
 	}
 #ifdef DEBUG
@@ -3063,7 +3063,11 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 /* phone_unload */
 int phone_unload(Phone * phone, char const * name)
 {
-	/* FIXME implement */
+	size_t i;
+
+	for(i = 0; i < phone->plugins_cnt; i++)
+		if(strcmp(phone->plugins[i].name, name) == 0)
+			return _phone_unload(phone, phone->plugins[i].pp);
 	return -1;
 }
 
@@ -3232,6 +3236,20 @@ void phone_write_send(Phone * phone)
 
 
 /* private */
+/* functions */
+/* accessors */
+static gboolean _phone_plugin_is_enabled(Phone * phone, char const * plugin)
+{
+	size_t i;
+
+	for(i = 0; i < phone->plugins_cnt; i++)
+		if(strcmp(phone->plugins[i].name, plugin) == 0)
+			return TRUE;
+	return FALSE;
+}
+
+
+/* useful */
 /* phone_about */
 static void _phone_about(Phone * phone)
 {
@@ -3914,6 +3932,7 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 #endif
 		pd->destroy(plugin);
 		plugin_delete(phone->plugins[i].p);
+		free(phone->plugins[i].name);
 		memmove(&phone->plugins[i], &phone->plugins[i + 1],
 				sizeof(*phone->plugins)
 				* (--phone->plugins_cnt - i));
