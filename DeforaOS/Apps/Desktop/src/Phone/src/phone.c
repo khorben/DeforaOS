@@ -686,7 +686,7 @@ int phone_code_append(Phone * phone, char character)
 	text = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
 	len = strlen(text);
 	if((p = malloc(len + 2)) == NULL)
-		return phone_error(phone, strerror(errno), 1);
+		return -phone_error(phone, strerror(errno), 1);
 	snprintf(p, len + 2, "%s%c", text, character);
 	gtk_entry_set_text(GTK_ENTRY(phone->en_entry), p);
 	free(p);
@@ -3905,7 +3905,7 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 	PhonePlugin * pp;
 
 	if(plugin == NULL)
-		return phone_error(NULL, strerror(EINVAL), -1);
+		return -phone_error(NULL, strerror(EINVAL), 1);
 	/* view */
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;)
 	{
@@ -3942,7 +3942,7 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() no such plugin\n", __func__);
 #endif
-	return phone_error(NULL, strerror(ENOENT), -1); /* XXX not explicit */
+	return -phone_error(NULL, strerror(ENOENT), 1); /* XXX not explicit */
 }
 
 
