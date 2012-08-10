@@ -30,6 +30,9 @@
 #ifndef LIBDIR
 # define LIBDIR		PREFIX "/lib"
 #endif
+#ifndef PROGNAME
+# define PROGNAME	"locker-test"
+#endif
 
 
 /* private */
@@ -42,7 +45,6 @@ struct _Locker
 
 /* prototypes */
 static int _test(char const * demo);
-static int _error(char const * message, int ret);
 static int _usage(void);
 
 /* helpers */
@@ -71,7 +73,7 @@ static int _test(char const * demo)
 	GtkWidget * window;
 
 	if((locker = object_new(sizeof(*locker))) == NULL)
-		return -_error(NULL, 1);
+		return error_print(PROGNAME);
 	locker->config = _test_config();
 	/* helper */
 	helper.locker = locker;
@@ -83,7 +85,8 @@ static int _test(char const * demo)
 		if(locker->config != NULL)
 			config_delete(locker->config);
 		object_delete(locker);
-		return -_error(demo, 1);
+		return error_set_print(PROGNAME, 1, "%s: %s", demo,
+				"Could not load demo plug-in");
 	}
 	if((dplugin = plugin_lookup(plugin, "plugin")) == NULL
 			|| dplugin->init == NULL
@@ -93,7 +96,8 @@ static int _test(char const * demo)
 		if(locker->config != NULL)
 			config_delete(locker->config);
 		object_delete(locker);
-		return -_error(demo, 1);
+		return error_set_print(PROGNAME, 1, "%s: %s", demo,
+				"Could not initialize demo plug-in");
 	}
 	/* widgets */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -102,7 +106,8 @@ static int _test(char const * demo)
 			NULL);
 	gtk_widget_show_all(window);
 	if(dplugin->add(d, window) != 0)
-		ret = -_error(demo, 1);
+		ret = error_set_print(PROGNAME, 1, "%s: %s", demo,
+				"Could not add window");
 	else
 	{
 		dplugin->start(d);
@@ -129,22 +134,14 @@ static Config * _test_config(void)
 	if((filename = string_new_append(homedir, "/", LOCKER_CONFIG_FILE,
 					NULL)) == NULL)
 	{
-		_error(NULL, 1);
+		error_print(PROGNAME);
 		return config;
 	}
 	if(config_load(config, filename) != 0)
 		/* we can ignore errors */
-		_error(filename, 1);
+		error_print(PROGNAME);
 	string_delete(filename);
 	return config;
-}
-
-
-/* error */
-static int _error(char const * message, int ret)
-{
-	error_print("locker-test");
-	return ret;
 }
 
 
@@ -191,7 +188,7 @@ static int _test_helper_config_set(Locker * locker, char const * section,
 
 static int _test_helper_error(Locker * locker, char const * message, int ret)
 {
-	return _error(message, ret);
+	return error_set_print(PROGNAME, ret, "%s", message);
 }
 
 
