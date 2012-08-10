@@ -165,6 +165,8 @@ static char const * _locker_plugin_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_plugin_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+static int _locker_plugin_load(Locker * locker, char const * plugin);
+static int _locker_plugin_unload(Locker * locker, char const * plugin);
 
 /* callbacks */
 static gboolean _lock_on_closex(void);
@@ -184,7 +186,6 @@ static int _new_demo(Locker * locker, char const * demo);
 static void _new_helpers(Locker * locker);
 static GtkWidget * _new_auth(Locker * locker, char const * plugin);
 static int _new_plugins(Locker * locker);
-static int _new_plugins_load(Locker * locker, char const * plugin);
 static int _new_xss(Locker * locker, size_t cnt);
 
 Locker * locker_new(int suspend, char const * demo, char const * auth)
@@ -361,7 +362,7 @@ static int _new_plugins(Locker * locker)
 			continue;
 		c = plugins[i];
 		plugins[i] = '\0';
-		ret |= _new_plugins_load(locker, plugins);
+		ret |= _locker_plugin_load(locker, plugins);
 		if(c == '\0')
 			break;
 		plugins += i + 1;
@@ -369,36 +370,6 @@ static int _new_plugins(Locker * locker)
 	}
 	string_delete(plugins);
 	return ret;
-}
-
-static int _new_plugins_load(Locker * locker, char const * plugin)
-{
-	LockerPlugins * p;
-
-	if((p = realloc(locker->plugins, sizeof(*p) * (locker->plugins_cnt
-						+ 1))) == NULL)
-		return _locker_error(NULL, strerror(errno), 1);
-	locker->plugins = p;
-	p = &locker->plugins[locker->plugins_cnt];
-	if((p->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
-			== NULL)
-		return _locker_error(NULL, error_get(), 1);
-	if((p->definition = plugin_lookup(p->pplugin, "plugin")) == NULL)
-	{
-		plugin_delete(p->pplugin);
-		return _locker_error(NULL, error_get(), 1);
-	}
-	p->name = strdup(plugin);
-	if(p->definition->init == NULL || p->definition->destroy == NULL
-			|| (p->plugin = p->definition->init(&locker->phelper))
-			== NULL)
-	{
-		free(p->name);
-		plugin_delete(p->pplugin);
-		return _locker_error(NULL, error_get(), 1);
-	}
-	locker->plugins_cnt++;
-	return 0;
 }
 
 static int _new_xss(Locker * locker, size_t cnt)
@@ -844,8 +815,11 @@ static gboolean _preferences_on_closex(gpointer data)
 static void _preferences_on_ok(gpointer data)
 {
 	Locker * locker = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(locker->pr_plstore);
 	GtkTreeIter iter;
 	gchar * p;
+	gboolean valid;
+	gboolean enabled;
 
 	/* authentication */
 	p = NULL;
@@ -869,7 +843,19 @@ static void _preferences_on_ok(gpointer data)
 #endif
 	config_set(locker->config, NULL, "demo", p);
 	g_free(p);
-	/* FIXME implement plug-ins */
+	/* plug-ins */
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, LPC_FILENAME, &p,
+				LPC_ENABLED, &enabled, -1);
+		/* FIXME also save the configuration */
+		if(enabled)
+			_locker_plugin_load(locker, p);
+		else
+			_locker_plugin_unload(locker, p);
+		g_free(p);
+	}
 	_locker_config_save(locker);
 }
 
@@ -1360,6 +1346,7 @@ static int _locker_event(Locker * locker, LockerEvent event)
 }
 
 
+/* plug-ins */
 /* locker_plugin_config_get */
 static char const * _locker_plugin_config_get(Locker * locker,
 		char const * section, char const * variable)
@@ -1389,6 +1376,48 @@ static int _locker_plugin_config_set(Locker * locker, char const * section,
 	if(ret == 0)
 		ret = _locker_config_save(locker);
 	return ret;
+}
+
+
+/* locker_plugin_load */
+static int _locker_plugin_load(Locker * locker, char const * plugin)
+{
+	LockerPlugins * p;
+
+	if(_locker_plugin_is_enabled(locker, plugin))
+		return 0;
+	if((p = realloc(locker->plugins, sizeof(*p) * (locker->plugins_cnt
+						+ 1))) == NULL)
+		return _locker_error(NULL, strerror(errno), 1);
+	locker->plugins = p;
+	p = &locker->plugins[locker->plugins_cnt];
+	if((p->pplugin = plugin_new(LIBDIR, PACKAGE, "plugins", plugin))
+			== NULL)
+		return _locker_error(NULL, error_get(), 1);
+	if((p->definition = plugin_lookup(p->pplugin, "plugin")) == NULL)
+	{
+		plugin_delete(p->pplugin);
+		return _locker_error(NULL, error_get(), 1);
+	}
+	p->name = strdup(plugin);
+	if(p->definition->init == NULL || p->definition->destroy == NULL
+			|| (p->plugin = p->definition->init(&locker->phelper))
+			== NULL)
+	{
+		free(p->name);
+		plugin_delete(p->pplugin);
+		return _locker_error(NULL, error_get(), 1);
+	}
+	locker->plugins_cnt++;
+	return 0;
+}
+
+
+/* locker_plugin_unload */
+static int _locker_plugin_unload(Locker * locker, char const * plugin)
+{
+	/* FIXME implement */
+	return -1;
 }
 
 
