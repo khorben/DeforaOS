@@ -820,6 +820,9 @@ static void _preferences_on_ok(gpointer data)
 	gchar * p;
 	gboolean valid;
 	gboolean enabled;
+	int res = 0;
+	String * value = string_new("");
+	String * sep = "";
 
 	/* authentication */
 	p = NULL;
@@ -851,12 +854,23 @@ static void _preferences_on_ok(gpointer data)
 				LPC_ENABLED, &enabled, -1);
 		/* FIXME also save the configuration */
 		if(enabled)
+		{
 			_locker_plugin_load(locker, p);
+			res |= string_append(&value, sep);
+			res |= string_append(&value, p);
+			sep = ",";
+		}
 		else
 			_locker_plugin_unload(locker, p);
 		g_free(p);
 	}
-	_locker_config_save(locker);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() value=\"%s\"\n", __func__, value);
+#endif
+	if(res == 0 && config_set(locker->config, NULL, "plugins", value) == 0)
+		_locker_config_save(locker);
+	string_delete(value);
+	_cancel_plugins(locker, locker->pr_plstore); /* XXX */
 }
 
 static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
@@ -1421,11 +1435,6 @@ static int _locker_plugin_unload(Locker * locker, char const * plugin)
 {
 	size_t i;
 	LockerPlugins * lp;
-	gboolean valid;
-	GtkTreeModel * model = GTK_TREE_MODEL(locker->pr_plstore);
-	GtkTreeIter iter;
-	gchar * p;
-	int res;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
