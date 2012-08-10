@@ -2329,7 +2329,8 @@ static void _plugins_on_ok(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() value=\"%s\"\n", __func__, value);
 #endif
-	if(_phone_config_set_type(phone, NULL, NULL, "plugins", value) == 0)
+	if(res == 0 && _phone_config_set_type(phone, NULL, NULL, "plugins",
+				value) == 0)
 		_phone_config_save(phone);
 	string_delete(value);
 	_plugins_on_cancel(phone);
