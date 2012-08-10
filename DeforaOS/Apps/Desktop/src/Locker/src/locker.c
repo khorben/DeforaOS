@@ -1384,6 +1384,9 @@ static int _locker_plugin_load(Locker * locker, char const * plugin)
 {
 	LockerPlugins * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
+#endif
 	if(_locker_plugin_is_enabled(locker, plugin))
 		return 0;
 	if((p = realloc(locker->plugins, sizeof(*p) * (locker->plugins_cnt
@@ -1416,8 +1419,32 @@ static int _locker_plugin_load(Locker * locker, char const * plugin)
 /* locker_plugin_unload */
 static int _locker_plugin_unload(Locker * locker, char const * plugin)
 {
-	/* FIXME implement */
-	return -1;
+	size_t i;
+	LockerPlugins * lp;
+	gboolean valid;
+	GtkTreeModel * model = GTK_TREE_MODEL(locker->pr_plstore);
+	GtkTreeIter iter;
+	gchar * p;
+	int res;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin);
+#endif
+	for(i = 0; i < locker->plugins_cnt; i++)
+		if(strcmp(locker->plugins[i].name, plugin) == 0)
+			break;
+	if(i == locker->plugins_cnt)
+		/* this plug-in is not loaded */
+		return 0;
+	/* unload the plug-in */
+	lp = &locker->plugins[i];
+	if(lp->definition->destroy != NULL)
+		lp->definition->destroy(lp->plugin);
+	plugin_delete(lp->pplugin);
+	free(lp->name);
+	memmove(lp, &lp[1], sizeof(*lp) * (--locker->plugins_cnt - i));
+	/* FIXME should call realloc() to gain some memory */
+	return 0;
 }
 
 
