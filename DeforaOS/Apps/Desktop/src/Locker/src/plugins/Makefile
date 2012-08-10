@@ -87,8 +87,6 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
-	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
@@ -100,7 +98,6 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- template.so $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/suspend.so
