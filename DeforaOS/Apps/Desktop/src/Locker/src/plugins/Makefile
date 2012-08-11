@@ -94,14 +94,11 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- suspend.so $(DESTDIR)$(LIBDIR)/Locker/plugins/suspend.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
 	$(INSTALL) -m 0644 -- systray.so $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Locker/plugins
-	$(INSTALL) -m 0644 -- template.so $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/suspend.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/systray.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Locker/plugins/template.so
 
 .PHONY: all clean distclean install uninstall
