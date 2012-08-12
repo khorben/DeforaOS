@@ -44,7 +44,7 @@ struct _Locker
 
 
 /* prototypes */
-static int _test(char const * demo);
+static int _test(int width, int height, char const * demo);
 static int _usage(void);
 
 /* helpers */
@@ -62,7 +62,7 @@ static gboolean _test_on_closex(void);
 /* test */
 static Config * _test_config(void);
 
-static int _test(char const * demo)
+static int _test(int width, int height, char const * demo)
 {
 	int ret = 0;
 	Locker * locker;
@@ -101,7 +101,7 @@ static int _test(char const * demo)
 	}
 	/* widgets */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
+	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
 	g_signal_connect(window, "delete-event", G_CALLBACK(_test_on_closex),
 			NULL);
 	gtk_widget_show_all(window);
@@ -148,7 +148,7 @@ static Config * _test_config(void)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: locker-test demo\n", stderr);
+	fputs("Usage: locker-test [-w width][-h height] demo\n", stderr);
 	return 1;
 }
 
@@ -207,17 +207,25 @@ static gboolean _test_on_closex(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	int width = 640;
+	int height = 480;
 	char const * demo = NULL;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "w:h:")) != -1)
 		switch(o)
 		{
+			case 'w':
+				width = strtoul(optarg, NULL, 0);
+				break;
+			case 'h':
+				height = strtoul(optarg, NULL, 0);
+				break;
 			default:
 				return _usage();
 		}
-	if(optind + 1 != argc)
+	if(width == 0 || height == 0 || optind + 1 != argc)
 		return _usage();
 	demo = argv[optind];
-	return (_test(demo) == 0) ? 2 : 0;
+	return (_test(width, height, demo) == 0) ? 2 : 0;
 }
