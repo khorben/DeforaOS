@@ -15,12 +15,23 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <time.h>
 #include <System.h>
 #include "Locker/demo.h"
+#include "../../config.h"
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
 
 
 /* Logo */
@@ -86,13 +97,15 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 	logo->timeout = 0;
 	/* load the logo */
 	if((p = helper->config_get(helper->locker, "logo", "logo")) == NULL)
+	{
 		helper->error(NULL, "No logo configured", 1);
-	else
-		if((logo->logo = gdk_pixbuf_new_from_file(p, &error)) == NULL)
-		{
-			helper->error(NULL, error->message, 1);
-			g_error_free(error);
-		}
+		p = DATADIR "/icons/gnome/256x256/places/start-here.png";
+	}
+	if((logo->logo = gdk_pixbuf_new_from_file(p, &error)) == NULL)
+	{
+		helper->error(NULL, error->message, 1);
+		g_error_free(error);
+	}
 	return logo;
 }
 
@@ -196,6 +209,9 @@ static void _timeout_window(Logo * logo, GtkWidget * widget)
 	GdkPixmap * pixmap;
 	int width;
 	int height;
+	int x;
+	int y;
+	int seed = time(NULL) ^ getpid() ^ getppid() ^ getuid() ^ getgid();
 	const int black = 0x000000ff;
 
 	if(widget == NULL)
@@ -215,8 +231,10 @@ static void _timeout_window(Logo * logo, GtkWidget * widget)
 	{
 		width = gdk_pixbuf_get_width(logo->logo);
 		height = gdk_pixbuf_get_height(logo->logo);
-		gdk_pixbuf_copy_area(logo->logo, 0, 0, width, height, frame, 0,
-				0);
+		x = (rand() ^ seed) % (rect.width - width);
+		y = (rand() ^ seed) % (rect.height - height);
+		gdk_pixbuf_copy_area(logo->logo, 0, 0, width, height, frame, x,
+				y);
 	}
 	pixmap = gdk_pixmap_new(window, rect.width, rect.width, -1);
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,

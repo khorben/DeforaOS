@@ -57,7 +57,7 @@ xterm.so: $(xterm_OBJS)
 gtk-demo.o: gtk-demo.c
 	$(CC) $(gtk-demo_CFLAGS) -c gtk-demo.c
 
-logo.o: logo.c
+logo.o: logo.c ../../include/Locker/demo.h ../../config.h
 	$(CC) $(logo_CFLAGS) -c logo.c
 
 template.o: template.c
