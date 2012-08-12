@@ -40,6 +40,8 @@
 struct _Locker
 {
 	Config * config;
+	LockerDemoDefinition * dplugin;
+	LockerDemo * demo;
 };
 
 
@@ -56,6 +58,8 @@ static int _test_helper_error(Locker * locker, char const * message, int ret);
 
 /* callbacks */
 static gboolean _test_on_closex(void);
+static void _test_on_start(gpointer data);
+static void _test_on_stop(gpointer data);
 
 
 /* functions */
@@ -68,9 +72,9 @@ static int _test(int width, int height, char const * demo)
 	Locker * locker;
 	LockerDemoHelper helper;
 	Plugin * plugin;
-	LockerDemoDefinition * dplugin;
-	LockerDemo * d;
 	GtkWidget * window;
+	GtkWidget * widget;
+	GtkWidget * button;
 
 	if((locker = object_new(sizeof(*locker))) == NULL)
 		return error_print(PROGNAME);
@@ -88,9 +92,10 @@ static int _test(int width, int height, char const * demo)
 		return error_set_print(PROGNAME, 1, "%s: %s", demo,
 				"Could not load demo plug-in");
 	}
-	if((dplugin = plugin_lookup(plugin, "plugin")) == NULL
-			|| dplugin->init == NULL
-			|| (d = dplugin->init(&helper)) == NULL)
+	if((locker->dplugin = plugin_lookup(plugin, "plugin")) == NULL
+			|| locker->dplugin->init == NULL
+			|| (locker->demo = locker->dplugin->init(&helper))
+			== NULL)
 	{
 		plugin_delete(plugin);
 		if(locker->config != NULL)
@@ -100,20 +105,38 @@ static int _test(int width, int height, char const * demo)
 				"Could not initialize demo plug-in");
 	}
 	/* widgets */
+	/* toolbar */
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+	g_signal_connect(window, "delete-event", G_CALLBACK(_test_on_closex),
+			NULL);
+	widget = gtk_hbox_new(TRUE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
+	button = gtk_button_new_with_label("Start");
+	g_signal_connect_swapped(button, "clicked", G_CALLBACK(_test_on_start),
+			locker);
+	gtk_box_pack_start(GTK_BOX(widget), button, FALSE, TRUE, 0);
+	button = gtk_button_new_with_label("Stop");
+	g_signal_connect_swapped(button, "clicked", G_CALLBACK(_test_on_stop),
+			locker);
+	gtk_box_pack_start(GTK_BOX(widget), button, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_widget_show_all(window);
+	/* demo window */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
 	g_signal_connect(window, "delete-event", G_CALLBACK(_test_on_closex),
 			NULL);
 	gtk_widget_show_all(window);
-	if(dplugin->add(d, window) != 0)
+	if(locker->dplugin->add(locker->demo, window) != 0)
 		ret = error_set_print(PROGNAME, 1, "%s: %s", demo,
 				"Could not add window");
 	else
 	{
-		dplugin->start(d);
+		locker->dplugin->start(locker->demo);
 		gtk_main();
 	}
-	dplugin->destroy(d);
+	locker->dplugin->destroy(locker->demo);
 	plugin_delete(plugin);
 	if(locker->config != NULL)
 		config_delete(locker->config);
@@ -198,6 +221,25 @@ static gboolean _test_on_closex(void)
 {
 	gtk_main_quit();
 	return FALSE;
+}
+
+
+/* test_on_start */
+static void _test_on_start(gpointer data)
+{
+	Locker * locker = data;
+
+	locker->dplugin->start(locker->demo);
+}
+
+
+
+/* test_on_stop */
+static void _test_on_stop(gpointer data)
+{
+	Locker * locker = data;
+
+	locker->dplugin->stop(locker->demo);
 }
 
 
