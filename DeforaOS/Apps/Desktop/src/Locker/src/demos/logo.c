@@ -84,8 +84,10 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 	logo->windows = NULL;
 	logo->windows_cnt = 0;
 	logo->timeout = 0;
-	/* load the logo if configured */
-	if((p = helper->config_get(helper->locker, "logo", "logo")) != NULL)
+	/* load the logo */
+	if((p = helper->config_get(helper->locker, "logo", "logo")) == NULL)
+		helper->error(NULL, "No logo configured", 1);
+	else
 		if((logo->logo = gdk_pixbuf_new_from_file(p, &error)) == NULL)
 		{
 			helper->error(NULL, error->message, 1);
@@ -107,7 +109,7 @@ static int _logo_add(Logo * logo, GtkWidget * window)
 {
 	GdkWindow * w;
 	GtkWidget ** p;
-	GdkColor color = { 0xff000000, 0xffff, 0x0, 0x0 };
+	GdkColor color = { 0x0, 0x0, 0x0, 0x0 };
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() window=%p\n", __func__, (void *)window);
@@ -173,11 +175,54 @@ static void _logo_stop(Logo * logo)
 
 /* callbacks */
 /* logo_on_timeout */
+static void _timeout_window(Logo * logo, GtkWidget * widget);
+
 static gboolean _logo_on_timeout(gpointer data)
 {
 	Logo * logo = data;
+	size_t i;
 
-	/* FIXME really implement */
-	logo->timeout = FALSE;
-	return FALSE;
+	for(i = 0; i < logo->windows_cnt; i++)
+		_timeout_window(logo, logo->windows[i]);
+	return TRUE;
+}
+
+static void _timeout_window(Logo * logo, GtkWidget * widget)
+{
+	GdkWindow * window;
+	GdkRectangle rect;
+	int depth;
+	GdkPixbuf * frame;
+	GdkPixmap * pixmap;
+	int width;
+	int height;
+	const int black = 0x000000ff;
+
+	if(widget == NULL)
+		return;
+#if GTK_CHECK_VERSION(2, 14, 0)
+	window = gtk_widget_get_window(widget);
+#else
+	window = widget->window;
+#endif
+	gdk_window_get_geometry(window, &rect.x, &rect.y,
+			&rect.width, &rect.height, &depth);
+	frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8, rect.width,
+			rect.height);
+	gdk_pixbuf_fill(frame, black);
+	/* draw the logo */
+	if(logo->logo != NULL)
+	{
+		width = gdk_pixbuf_get_width(logo->logo);
+		height = gdk_pixbuf_get_height(logo->logo);
+		gdk_pixbuf_copy_area(logo->logo, 0, 0, width, height, frame, 0,
+				0);
+	}
+	pixmap = gdk_pixmap_new(window, rect.width, rect.width, -1);
+	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
+			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
+	gdk_window_set_back_pixmap(window, pixmap, FALSE);
+	gdk_window_clear(window);
+	gdk_pixmap_unref(pixmap);
+	g_object_unref(frame);
 }
