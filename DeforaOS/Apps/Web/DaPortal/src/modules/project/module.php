@@ -654,7 +654,7 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::formSubmit
-	protected function formSubmit($engine, $request, $content)
+	protected function formSubmit($engine, $request)
 	{
 		$r = new Request($engine, $this->name, 'submit', FALSE, FALSE,
 				array('public' => 1));
