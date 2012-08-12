@@ -257,10 +257,10 @@ static void _timeout_window(GtkDemo * gtkdemo, GtkWidget * widget);
 static gboolean _gtkdemo_on_timeout(gpointer data)
 {
 	GtkDemo * gtkdemo = data;
-	size_t c;
+	size_t i;
 
-	for(c = 0; c < gtkdemo->windows_cnt; c++)
-		_timeout_window(gtkdemo, gtkdemo->windows[c]);
+	for(i = 0; i < gtkdemo->windows_cnt; i++)
+		_timeout_window(gtkdemo, gtkdemo->windows[i]);
 	gtkdemo->frame_num++;
 	return TRUE;
 }
