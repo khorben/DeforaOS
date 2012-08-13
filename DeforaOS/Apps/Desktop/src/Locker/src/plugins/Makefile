@@ -34,8 +34,8 @@ openmoko.so: $(openmoko_OBJS)
 	$(CCSHARED) -o openmoko.so $(openmoko_OBJS) $(openmoko_LDFLAGS)
 
 panel_OBJS = panel.o
-panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags Panel`
-panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags Panel libDesktop`
+panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs Panel libDesktop`
 
 panel.so: $(panel_OBJS)
 	$(CCSHARED) -o panel.so $(panel_OBJS) $(panel_LDFLAGS)
