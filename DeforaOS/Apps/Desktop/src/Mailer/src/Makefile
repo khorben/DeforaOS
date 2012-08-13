@@ -4,10 +4,11 @@ PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	?= cc
-CPPFLAGSF= -I ../include
+CPPFLAGSF?=
 CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= `pkg-config --libs libDesktop`
 LDFLAGS	= 
 AR	?= ar
 RANLIB	?= ranlib
@@ -26,7 +27,7 @@ subdirs:
 
 libMailer_OBJS = account.o callbacks.o compose.o folder.o helper.o mailer.o message.o
 libMailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
-libMailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop` -lssl
+libMailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs openssl` -lssl
 
 libMailer.a: $(libMailer_OBJS)
 	$(AR) -rc libMailer.a $(libMailer_OBJS)
@@ -39,14 +40,14 @@ libMailer.so.0.0 libMailer.so.0 libMailer.so: $(libMailer_OBJS)
 
 compose_OBJS = compose-main.o
 compose_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-compose_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0` -L. -Wl,-rpath,$(PREFIX)/lib -lMailer
+compose_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs openssl` -lssl -L. -Wl,-rpath,$(PREFIX)/lib -lMailer
 
 compose: $(compose_OBJS) libMailer.so
 	$(CC) -o compose $(compose_OBJS) $(compose_LDFLAGS)
 
 mailer_OBJS = main.o
 mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0` -L. -Wl,-rpath,$(PREFIX)/lib -lMailer
+mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs openssl` -lssl -L. -Wl,-rpath,$(PREFIX)/lib -lMailer
 
 mailer: $(mailer_OBJS) libMailer.so
 	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
