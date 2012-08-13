@@ -13,8 +13,6 @@
 //
 //You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//FIXME:
-//- prepare queries using SQLite3::prepare()
 
 
 
@@ -80,18 +78,29 @@ class Sqlite3Database extends Database
 
 		if($this->handle === FALSE)
 			return FALSE;
-		if(($query = $this->prepare($query, $parameters)) === FALSE)
-			return FALSE;
 		if($config->getVariable('database', 'debug'))
 			$engine->log('LOG_DEBUG', $query);
-		$error = FALSE;
-		if(($res = $this->handle->query($query)) === FALSE)
-		{
-			if($error !== FALSE)
-				$engine->log('LOG_DEBUG', $error);
-			return FALSE;
-		}
-		return $res->fetchArray(SQLITE3_BOTH);
+		if(($stmt = $this->prepare($query)) === FALSE)
+			return $engine->log('LOG_ERR',
+					'Could not prepare statement: '
+					.$this->handle->lastErrorMsg());
+		if($parameters === FALSE)
+			$parameters = array();
+		if($stmt->clear() !== TRUE)
+			return $engine->log('LOG_ERR',
+					'Could not clear statement: '
+					.$this->handle->lastErrorMsg());
+		foreach($parameters as $k => $v)
+			$stmt->bindValue(':'.$k, $v);
+		if(($res = $stmt->execute()) === FALSE)
+			return $engine->log('LOG_ERR',
+					'Could not execute statement: '
+					.$this->handle->lastErrorMsg());
+		//fetch all the results
+		for($ret = array();
+			($r = $res->fetchArray(SQLITE3_BOTH)) !== FALSE;
+			$ret[] = $r);
+		return $ret;
 	}
 
 
@@ -131,6 +140,18 @@ class Sqlite3Database extends Database
 	protected function escape($string)
 	{
 		return "'".SQLite3::escapeString($string)."'";
+	}
+
+
+	//Sqlite3Database::prepare
+	public function prepare($query, $parameters = FALSE)
+	{
+		static $statements = array();
+
+		if(isset($statements[$query]))
+			return $statements[$query];
+		$statements[$query] = $this->handle->prepare($query);
+		return $statements[$query];
 	}
 
 
