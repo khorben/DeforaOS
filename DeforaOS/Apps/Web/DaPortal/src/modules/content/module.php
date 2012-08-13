@@ -15,7 +15,6 @@
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //TODO:
 //- list contents pending moderation (if relevant)
-//- complete paging
 
 
 
@@ -522,31 +521,7 @@ abstract class ContentModule extends Module
 			$this->helperPreview($engine, $vbox, $content);
 		}
 		//output paging information
-		if($pcnt !== FALSE && $this->content_list_count > 0
-				&& ($pcnt > $this->content_list_count))
-		{
-			$sep = '';
-			if(($pcur = $request->getParameter('page')) === FALSE)
-				$pcur = 1;
-			for($i = 1; ($i * $this->content_list_count) < $pcnt;
-				$i++, $sep = ' | ')
-			{
-				if(strlen($sep))
-					$page->append('label', array(
-							'text' => $sep));
-				if($i == $pcur)
-				{
-					$page->append('label', array(
-							'text' => $i));
-					continue;
-				}
-				$r = new Request($engine, $this->name, FALSE,
-						FALSE, FALSE, array(
-							'page' => $i));
-				$page->append('link', array('request' => $r,
-						'text' => $i));
-			}
-		}
+		$this->helperPaging($engine, $request, $page, $pcnt);
 		return $page;
 	}
 
@@ -1324,6 +1299,33 @@ abstract class ContentModule extends Module
 						'type' => 'submit',
 						'name' => 'action',
 						'value' => 'enable'));
+		}
+	}
+
+
+	//ContentModule::helperPaging
+	protected function helperPaging($engine, $request, $page, $pcnt)
+	{
+		if($pcnt === FALSE || $this->content_list_count <= 0
+				|| ($pcnt <= $this->content_list_count))
+			return;
+		$sep = '';
+		if(($pcur = $request->getParameter('page')) === FALSE)
+			$pcur = 1;
+		for($i = 1; ($i * $this->content_list_count) < $pcnt;
+			$i++, $sep = ' | ')
+		{
+			if(strlen($sep))
+				$page->append('label', array('text' => $sep));
+			if($i == $pcur)
+			{
+				$page->append('label', array('text' => $i));
+				continue;
+			}
+			$r = new Request($engine, $this->name, FALSE, FALSE,
+					FALSE, array('page' => $i));
+			$page->append('link', array('request' => $r,
+					'text' => $i));
 		}
 	}
 
