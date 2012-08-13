@@ -19,10 +19,10 @@
 require_once('./system/database.php');
 
 
-//Sqlite2Database
-class Sqlite2Database extends Database
+//SQLite2Database
+class SQLite2Database extends Database
 {
-	//Sqlite2Database::~Sqlite2Database
+	//SQLite2Database::~SQLite2Database
 	function __destruct()
 	{
 		if($this->handle === FALSE)
@@ -34,7 +34,7 @@ class Sqlite2Database extends Database
 	//public
 	//methods
 	//accessors
-	//Sqlite2Database::getLastId
+	//SQLite2Database::getLastId
 	public function getLastId($engine, $table, $field)
 	{
 		if($this->handle === FALSE)
@@ -45,7 +45,7 @@ class Sqlite2Database extends Database
 
 
 	//useful
-	//Sqlite2Database::enum
+	//SQLite2Database::enum
 	public function enum($engine, $table, $field)
 	{
 		$query = 'SELECT name FROM '.$table.'_enum_'.$field;
@@ -58,7 +58,7 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::offset
+	//SQLite2Database::offset
 	public function offset($limit, $offset = FALSE)
 	{
 		//XXX report errors
@@ -71,7 +71,7 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::query
+	//SQLite2Database::query
 	public function query($engine, $query, $parameters = FALSE)
 	{
 		global $config;
@@ -96,7 +96,7 @@ class Sqlite2Database extends Database
 
 	//protected
 	//methods
-	//Sqlite2Database::match
+	//SQLite2Database::match
 	protected function match($engine)
 	{
 		global $config;
@@ -108,7 +108,7 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::attach
+	//SQLite2Database::attach
 	protected function attach($engine)
 	{
 		global $config;
@@ -125,7 +125,7 @@ class Sqlite2Database extends Database
 	}
 
 
-	//Sqlite2Database::escape
+	//SQLite2Database::escape
 	protected function escape($string)
 	{
 		if(is_bool($string))
