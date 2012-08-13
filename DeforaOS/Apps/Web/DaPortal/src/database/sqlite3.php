@@ -19,10 +19,10 @@
 require_once('./system/database.php');
 
 
-//Sqlite3Database
-class Sqlite3Database extends Database
+//SQLite3Database
+class SQLite3Database extends Database
 {
-	//Sqlite3Database::~Sqlite3Database
+	//SQLite3Database::~SQLite3Database
 	function __destruct()
 	{
 		if($this->handle == NULL)
@@ -34,7 +34,7 @@ class Sqlite3Database extends Database
 	//public
 	//methods
 	//accessors
-	//Sqlite3Database::getLastId
+	//SQLite3Database::getLastId
 	public function getLastId($engine, $table, $field)
 	{
 		if($this->handle === FALSE)
@@ -45,7 +45,7 @@ class Sqlite3Database extends Database
 
 
 	//useful
-	//Sqlite3Database::enum
+	//SQLite3Database::enum
 	public function enum($engine, $table, $field)
 	{
 		$query = 'SELECT name FROM '.$table.'_enum_'.$field;
@@ -58,7 +58,7 @@ class Sqlite3Database extends Database
 	}
 
 
-	//Sqlite3Database::offset
+	//SQLite3Database::offset
 	public function offset($limit, $offset = FALSE)
 	{
 		//XXX report errors
@@ -71,7 +71,7 @@ class Sqlite3Database extends Database
 	}
 
 
-	//Sqlite3Database::query
+	//SQLite3Database::query
 	public function query($engine, $query, $parameters = FALSE)
 	{
 		global $config;
@@ -106,7 +106,7 @@ class Sqlite3Database extends Database
 
 	//protected
 	//methods
-	//Sqlite3Database::match
+	//SQLite3Database::match
 	protected function match($engine)
 	{
 		global $config;
@@ -120,7 +120,7 @@ class Sqlite3Database extends Database
 	}
 
 
-	//Sqlite3Database::attach
+	//SQLite3Database::attach
 	protected function attach($engine)
 	{
 		global $config;
@@ -136,14 +136,14 @@ class Sqlite3Database extends Database
 	}
 
 
-	//Sqlite3Database::escape
+	//SQLite3Database::escape
 	protected function escape($string)
 	{
 		return "'".SQLite3::escapeString($string)."'";
 	}
 
 
-	//Sqlite3Database::prepare
+	//SQLite3Database::prepare
 	public function prepare($query, $parameters = FALSE)
 	{
 		static $statements = array();
