@@ -22,7 +22,7 @@ all: $(TARGETS)
 
 libApp_OBJS = appclient.o appinterface.o appserver.o
 libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`  
+libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs openssl` -lssl  
 
 libApp.a: $(libApp_OBJS)
 	$(AR) -rc libApp.a $(libApp_OBJS)

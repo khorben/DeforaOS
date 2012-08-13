@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,12 @@ static int _reboot(void)
 	if(reboot(RB_AUTOBOOT) != 0) /* not a typo */
 #elif defined(RB_POWEROFF) /* FreeBSD */
 	if(reboot(RB_AUTOBOOT) != 0)
-#elif defined(RB_AUTOBOOT) /* NetBSD */
+#elif defined(RB_AUTOBOOT)
+# if defined(__APPLE__) /* MacOS X */
+	if(reboot(RB_AUTOBOOT) != 0)
+# else /* NetBSD */
 	if(reboot(RB_AUTOBOOT, NULL) != 0)
+# endif
 #else
 # warning Unsupported platform
 	errno = ENOSYS;
