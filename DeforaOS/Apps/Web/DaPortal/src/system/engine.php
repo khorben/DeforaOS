@@ -189,7 +189,7 @@ abstract class Engine
 			$res = require_once('./engines/'.$name.'.php');
 			if($res === FALSE)
 				return FALSE;
-			$name = ucfirst($name).'Engine';
+			$name .= 'Engine';
 			$ret = new $name();
 			$ret->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' (default)');
@@ -206,7 +206,7 @@ abstract class Engine
 			if($res === FALSE)
 				continue;
 			$name = substr($de, 0, strlen($de) - 4);
-			$name = ucfirst($name).'Engine';
+			$name .= 'Engine';
 			$engine = new $name();
 			if(($p = $engine->match()) <= $priority)
 				continue;

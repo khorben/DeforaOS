@@ -153,7 +153,7 @@ abstract class Auth
 			$res = require_once('./auth/'.$name.'.php');
 			if($res === FALSE)
 				return FALSE;
-			$name = ucfirst($name).'Auth';
+			$name .= 'Auth';
 			$ret = new $name();
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' (default)');
@@ -168,7 +168,7 @@ abstract class Auth
 				continue;
 			require_once('./auth/'.$de);
 			$name = substr($de, 0, strlen($de) - 4);
-			$name = ucfirst($name).'Auth';
+			$name .= 'Auth';
 			$auth = new $name();
 			if(($p = $auth->match($engine)) <= $priority)
 				continue;

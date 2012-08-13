@@ -43,7 +43,7 @@ abstract class Format
 			$res = require_once('./formats/'.$name.'.php');
 			if($res === FALSE)
 				return FALSE;
-			$name = ucfirst($name).'Format';
+			$name .= 'Format';
 			$ret = new $name();
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' (default)');
@@ -58,7 +58,7 @@ abstract class Format
 				continue;
 			require_once('./formats/'.$de);
 			$name = substr($de, 0, strlen($de) - 4);
-			$name = ucfirst($name).'Format';
+			$name .= 'Format';
 			$format = new $name();
 			if(($p = $format->match($engine, $type)) <= $priority)
 				continue;

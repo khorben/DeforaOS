@@ -79,7 +79,7 @@ abstract class Module
 		if($module === FALSE || ($id = Module::getId($engine, $module))
 				=== FALSE)
 			return FALSE;
-		$name = ucfirst($module).'Module';
+		$name = $module.'Module';
 		if(!class_exists($name))
 		{
 			$engine->log('LOG_DEBUG', 'Loading module '.$module);

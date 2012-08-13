@@ -35,7 +35,7 @@ abstract class Template
 			$res = require_once('./templates/'.$name.'.php');
 			if($res === FALSE)
 				return FALSE;
-			$name = ucfirst($name).'Template';
+			$name .= 'Template';
 			$ret = new $name();
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' (default)');
@@ -50,7 +50,7 @@ abstract class Template
 				continue;
 			require_once('./templates/'.$de);
 			$name = substr($de, 0, strlen($de) - 4);
-			$name = ucfirst($name).'Template';
+			$name .= 'Template';
 			$template = new $name();
 			if(($p = $template->match($engine)) <= $priority)
 				continue;

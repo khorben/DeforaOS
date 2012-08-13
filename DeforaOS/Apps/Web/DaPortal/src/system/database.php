@@ -89,7 +89,7 @@ abstract class Database
 			$res = require_once('./database/'.$name.'.php');
 			if($res === FALSE)
 				return FALSE;
-			$name = ucfirst($name).'Database';
+			$name .= 'Database';
 			$ret = new $name();
 			$engine->log('LOG_DEBUG', 'Attaching '.get_class($ret)
 					.' (default)');
@@ -105,7 +105,7 @@ abstract class Database
 				continue;
 			require_once('./database/'.$de);
 			$name = substr($de, 0, strlen($de) - 4);
-			$name = ucfirst($name).'Database';
+			$name .= 'Database';
 			$db = new $name();
 			if(($p = $db->match($engine)) <= $priority)
 				continue;
