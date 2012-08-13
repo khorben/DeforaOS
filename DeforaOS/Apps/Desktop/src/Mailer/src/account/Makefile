@@ -5,9 +5,9 @@ LIBDIR	= $(PREFIX)/lib
 CC	?= cc
 CPPFLAGSF= -I ../../include
 CPPFLAGS?=
-CFLAGSF	= -W -fPIC `pkg-config --cflags glib-2.0`
+CFLAGSF	= -W -fPIC `pkg-config --cflags openssl` `pkg-config --cflags glib-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs glib-2.0`
+LDFLAGSF= `pkg-config --libs openssl` -lssl `pkg-config --libs glib-2.0`
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -21,7 +21,7 @@ all: $(TARGETS)
 
 imap4_OBJS = imap4.o
 imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem` -lssl
+imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
 imap4.so: $(imap4_OBJS)
 	$(CCSHARED) -o imap4.so $(imap4_OBJS) $(imap4_LDFLAGS)
@@ -35,7 +35,7 @@ mbox.so: $(mbox_OBJS)
 
 pop3_OBJS = pop3.o
 pop3_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem` -lssl
+pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
 pop3.so: $(pop3_OBJS)
 	$(CCSHARED) -o pop3.so $(pop3_OBJS) $(pop3_LDFLAGS)
