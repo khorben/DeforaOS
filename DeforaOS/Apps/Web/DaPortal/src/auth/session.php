@@ -26,7 +26,7 @@ class SessionAuth extends Auth
 	//protected
 	//methods
 	//SessionAuth::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		if(!isset($_SERVER['SCRIPT_NAME'])
 				|| !isset($_SERVER['HTTP_HOST']))
@@ -53,7 +53,7 @@ class SessionAuth extends Auth
 
 
 	//SessionAuth::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		//attaching depends on the code in match()
 		$this->match($engine);
@@ -63,7 +63,7 @@ class SessionAuth extends Auth
 	//public
 	//accessors
 	//SessionAuth::getCredentials
-	public function getCredentials(&$engine)
+	public function getCredentials($engine)
 	{
 		if(($uid = $this->getVariable($engine, 'SessionAuth::uid'))
 					=== FALSE
@@ -82,7 +82,7 @@ class SessionAuth extends Auth
 
 
 	//SessionAuth::getVariable
-	public function getVariable(&$engine, $variable)
+	public function getVariable($engine, $variable)
 	{
 		if(isset($_SESSION[$variable]))
 			return $_SESSION[$variable];
@@ -91,7 +91,7 @@ class SessionAuth extends Auth
 
 
 	//SessionAuth::setCredentials
-	public function setCredentials(&$engine, $credentials)
+	public function setCredentials($engine, $credentials)
 	{
 		global $config;
 
@@ -116,7 +116,7 @@ class SessionAuth extends Auth
 
 
 	//SessionAuth::setIdempotent
-	public function setIdempotent(&$engine, $request, $idempotent)
+	public function setIdempotent($engine, $request, $idempotent)
 	{
 		if($idempotent === TRUE)
 		{
@@ -144,7 +144,7 @@ class SessionAuth extends Auth
 
 
 	//SessionAuth::setVariable
-	public function setVariable(&$engine, $variable, $value)
+	public function setVariable($engine, $variable, $value)
 	{
 		$_SESSION[$variable] = $value;
 		return TRUE;

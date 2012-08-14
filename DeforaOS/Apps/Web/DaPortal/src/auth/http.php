@@ -26,7 +26,7 @@ class HttpAuth extends Auth
 	//protected
 	//methods
 	//HttpAuth::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		if(!isset($_SERVER['SERVER_PROTOCOL']))
 			return 0;
@@ -45,7 +45,7 @@ class HttpAuth extends Auth
 
 
 	//HttpAuth::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		global $config;
 
@@ -76,7 +76,7 @@ class HttpAuth extends Auth
 			}
 			return TRUE;
 		}
-		$cred = $this->getCredentials();
+		$cred = $this->getCredentials($engine);
 		$cred->setUserId($user->getUserId(), $user->isAdmin());
 		$this->setCredentials($engine, $cred);
 		return TRUE;

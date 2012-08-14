@@ -23,14 +23,14 @@ class UnixAuth extends Auth
 	//protected
 	//methods
 	//UnixAuth::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		return 1;
 	}
 
 
 	//UnixAuth::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		if(($db = $engine->getDatabase()) === FALSE)
 			return TRUE;

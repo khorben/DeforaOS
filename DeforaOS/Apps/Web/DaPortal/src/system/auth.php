@@ -101,7 +101,7 @@ abstract class Auth
 	//public
 	//accessors
 	//Auth::getCredentials
-	public function getCredentials(&$engine)
+	public function getCredentials($engine)
 	{
 		if($this->credentials === FALSE)
 			$this->credentials = new AuthCredentials;
@@ -110,7 +110,7 @@ abstract class Auth
 
 
 	//Auth::getVariable
-	public function getVariable(&$engine, $variable)
+	public function getVariable($engine, $variable)
 	{
 		//FIXME implement (through the database?)
 		return FALSE;
@@ -118,14 +118,14 @@ abstract class Auth
 
 
 	//Auth::setIdempotent
-	public function setIdempotent(&$engine, $request, $idempotent)
+	public function setIdempotent($engine, $request, $idempotent)
 	{
 		$request->setIdempotent($idempotent);
 	}
 
 
 	//Auth::setCredentials
-	public function setCredentials(&$engine, $credentials)
+	public function setCredentials($engine, $credentials)
 	{
 		$this->credentials = $credentials;
 		return TRUE;
@@ -133,7 +133,7 @@ abstract class Auth
 
 
 	//Auth::setVariable
-	public function setVariable(&$engine, $variable, $value)
+	public function setVariable($engine, $variable, $value)
 	{
 		//FIXME implement (through the database?)
 		return FALSE;
@@ -142,7 +142,7 @@ abstract class Auth
 
 	//static
 	//Auth::attachDefault
-	public static function attachDefault(&$engine)
+	public static function attachDefault($engine)
 	{
 		global $config;
 		$ret = FALSE;
@@ -193,8 +193,8 @@ abstract class Auth
 
 	//methods
 	//virtual
-	abstract protected function match(&$engine);
-	abstract protected function attach(&$engine);
+	abstract protected function match($engine);
+	abstract protected function attach($engine);
 }
 
 ?>
