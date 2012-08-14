@@ -17,6 +17,7 @@
 
 
 require_once('./system/auth.php');
+require_once('./system/user.php');
 
 
 //HttpAuth
@@ -62,18 +63,22 @@ class HttpAuth extends Auth
 		if(($db = $engine->getDatabase()) === FALSE)
 			return TRUE;
 		$username = $_SERVER['PHP_AUTH_USER'];
-		$password = isset($_SERVER['PHP_AUTH_PW'])
-			? md5($_SERVER['PHP_AUTH_PW']) : '';
-		$query = 'SELECT user_id, admin FROM daportal_user'
-			." WHERE enabled='1' AND username=:username"
-			." AND password=:password";
-		$args = array('username' => $username, 'password' => $password);
-		if(($res = $db->query($engine, $query, $args)) === FALSE
-				|| count($res) != 1)
+		$password = $_SERVER['PHP_AUTH_PW'];
+		if(($user = User::lookup($engine, $username)) === FALSE
+				|| ($cred = $user->authenticate($engine,
+					$password)) === FALSE)
+		{
+			if($config->getVariable('engine::http', 'private'))
+			{
+				header('WWW-Authenticate: Basic realm="'
+						.htmlspecialchars($realm).'"');
+				header('HTTP/1.0 401 Unauthorized');
+			}
 			return TRUE;
+		}
 		$cred = $this->getCredentials();
-		$cred->setUserId($res[0]['user_id'], $res[0]['admin']);
-		parent::setCredentials($engine, $cred);
+		$cred->setUserId($user->getUserId(), $user->isAdmin());
+		$this->setCredentials($engine, $cred);
 		return TRUE;
 	}
 }
