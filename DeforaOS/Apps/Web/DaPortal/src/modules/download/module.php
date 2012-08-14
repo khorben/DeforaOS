@@ -754,7 +754,9 @@ class DownloadModule extends ContentModule
 				$r = new Request($engine, 'user', FALSE,
 					$user_id, $username);
 				$username = new PageElement('link', array(
-					'request' => $r, 'text' => $username));
+						'stock' => 'user',
+						'request' => $r,
+						'text' => $username));
 			}
 			$row->setProperty('owner', $username);
 			$row->setProperty('group', $res[$i]['groupname']);

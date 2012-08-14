@@ -376,8 +376,9 @@ class UserModule extends Module
 			$row->setProperty('username', $res[$i]['username']);
 			$r = new Request($engine, $this->name, 'update',
 				$res[$i]['id'], $res[$i]['username']);
-			$link = new PageElement('link', array('request' => $r,
-				'text' => $res[$i]['username']));
+			$link = new PageElement('link', array('stock' => 'user',
+					'request' => $r,
+					'text' => $res[$i]['username']));
 			if($res[$i]['id'] != 0)
 				$row->setProperty('username', $link);
 			$row->setProperty('group', $res[$i]['groupname']);
