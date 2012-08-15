@@ -927,16 +927,8 @@ abstract class ContentModule extends Module
 					'text' => $error));
 		//preview
 		if($request->getParameter('preview') !== FALSE)
-		{
-			$vbox = $page->append('vbox');
-			$preview = array('module' => $this->name,
-				'user_id' => $content['user_id'],
-				'username' => $content['username'],
-				'date' => $content['date'],
-				'title' => _('Preview: ').$request->getTitle(),
-				'content' => $request->getParameter('content'));
-			$this->helperPreview($engine, $vbox, $preview);
-		}
+			$this->helperUpdatePreview($engine, $request, $page,
+					$content);
 		$form = $this->formUpdate($engine, $request, $content);
 		$page->append($form);
 		return $page;
@@ -1498,6 +1490,21 @@ abstract class ContentModule extends Module
 			$value = $content['content'];
 		$page->append('textview', array('name' => 'content',
 				'value' => $value));
+	}
+
+
+	//ContentModule::helperUpdatePreview
+	protected function helperUpdatePreview($engine, $request, $page,
+			$content)
+	{
+		$vbox = $page->append('vbox');
+		$preview = array('module' => $this->name,
+			'user_id' => $content['user_id'],
+			'username' => $content['username'],
+			'date' => $content['date'],
+			'title' => _('Preview: ').$request->getTitle(),
+			'content' => $request->getParameter('content'));
+		$this->helperPreview($engine, $vbox, $preview);
 	}
 
 

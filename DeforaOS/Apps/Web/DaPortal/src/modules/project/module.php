@@ -960,6 +960,48 @@ class ProjectModule extends ContentModule
 	}
 
 
+	//ProjectModule::helperUpdateContent
+	protected function helperUpdateContent($engine, $request, $page,
+			$content)
+	{
+		if(($value = $request->getParameter('synopsis')) === FALSE)
+			$value = $content['synopsis'];
+		$page->append('entry', array('name' => 'synopsis',
+				'text' => _('Title: '), 'value' => $value));
+		$page->append('label', array('text' => _('Content: ')));
+		if(($value = $request->getParameter('content')) === FALSE)
+				$value = $content['content'];
+		$page->append('textview', array('name' => 'content',
+				'value' => $value));
+	}
+
+
+	//ProjectModule::helperUpdatePreview
+	protected function helperUpdatePreview($engine, $request, $page,
+			$content)
+	{
+		$vbox = $page->append('vbox');
+		$preview = array('module' => $this->name,
+			'user_id' => $content['user_id'],
+			'username' => $content['username'],
+			'date' => $content['date'],
+			'title' => _('Preview: ').$request->getTitle(),
+			'synopsis' => $request->getParameter('synopsis'),
+			'content' => $request->getParameter('content'));
+		$this->helperPreview($engine, $vbox, $preview);
+	}
+
+
+	//ProjectModule::helperUpdateTitle
+	protected function helperUpdateTitle($engine, $request, $page, $content)
+	{
+		if(($value = $request->getTitle()) === FALSE)
+			$value = $content['title'];
+		$page->append('entry', array('name' => 'title',
+				'text' => _('Name: '), 'value' => $value));
+	}
+
+
 	//useful
 	//ProjectModule::attachScm
 	protected function attachScm(&$engine)
