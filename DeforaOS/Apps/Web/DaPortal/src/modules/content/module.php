@@ -273,7 +273,8 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::_get
-	protected function _get($engine, $id, $title = FALSE)
+	//XXX remove $id and $title?
+	protected function _get($engine, $id, $title = FALSE, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
@@ -562,8 +563,8 @@ abstract class ContentModule extends Module
 		//obtain the content
 		if(($id = $request->getId()) === FALSE)
 			return $this->_default($engine, $request);
-		if(($content = $this->_get($engine, $id, $request->getTitle()))
-				=== FALSE)
+		if(($content = $this->_get($engine, $id, $request->getTitle(),
+				$request)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $content['title']));
@@ -740,7 +741,7 @@ abstract class ContentModule extends Module
 
 		//obtain the content
 		if(($content = $this->_get($engine, $request->getId(),
-				$request->getTitle())) === FALSE)
+				$request->getTitle(), $request)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $content['title']));
@@ -756,7 +757,7 @@ abstract class ContentModule extends Module
 
 		//obtain the content
 		if(($content = $this->_get($engine, $request->getId(),
-				$request->getTitle())) === FALSE)
+				$request->getTitle(), $request)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		//FIXME make this a dialog instead

@@ -209,7 +209,7 @@ class ProjectModule extends ContentModule
 	//methods
 	//accessors
 	//ProjectModule::_get
-	protected function _get($engine, $id, $title = FALSE)
+	protected function _get($engine, $id, $title = FALSE, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();

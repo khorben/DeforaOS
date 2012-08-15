@@ -66,15 +66,18 @@ class WikiModule extends ContentModule
 
 
 	//WikiModule::_get
-	protected function _get($engine, $id, $title = FALSE)
+	protected function _get($engine, $id, $title = FALSE, $request = FALSE)
 	{
 		if(($content = parent::_get($engine, $id, $title)) === FALSE)
 			return FALSE;
 		if($this->root === FALSE
 				|| strpos($content['title'], '/') !== FALSE)
 			return $content; //XXX fail instead?
-		$cmd = 'co -p -q '.escapeshellarg(
-				$this->root.'/'.$content['title']);
+		$cmd = 'co -p -q';
+		if($request !== FALSE && ($revision = $request->getParameter(
+				'revision')) !== FALSE)
+			$cmd .= ' -r'.escapeshellarg($revision);
+		$cmd .= ' '.escapeshellarg($this->root.'/'.$content['title']);
 		exec($cmd, $rcs, $res);
 		if($res != 0)
 			return FALSE;
@@ -157,8 +160,8 @@ class WikiModule extends ContentModule
 			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		//obtain the revision list
-		$cmd = 'rlog '.escapeshellarg(
-				$this->root.'/'.$content['title']);
+		$cmd = 'rlog';
+		$cmd .= ' '.escapeshellarg($this->root.'/'.$content['title']);
 		exec($cmd, $rcs, $res);
 		if($res != 0)
 			return $page->append('dialog', array('type' => 'error',
@@ -180,6 +183,11 @@ class WikiModule extends ContentModule
 			$row = $view->append('row');
 			//name
 			$name = substr($rcs[$i], 9);
+			$r = new Request($engine, $this->name, FALSE,
+					$content['id'], $content['title'],
+					array('revision' => $name));
+			$name = new PageElement('link', array('request' => $r,
+					'text' => $name));
 			$row->setProperty('title', $name);
 			//date
 			$date = substr($rcs[$i + 1], 6, 19);
