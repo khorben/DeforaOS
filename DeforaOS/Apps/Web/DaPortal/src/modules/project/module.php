@@ -182,6 +182,8 @@ class ProjectModule extends ContentModule
 	protected $project_query_project_insert = 'INSERT INTO daportal_project
 		(project_id, synopsis, cvsroot)
 		VALUES (:project_id, :synopsis, :cvsroot)';
+	protected $project_query_project_update = 'UPDATE daportal_project
+		SET synopsis=:synopsis WHERE project_id=:project_id';
 	protected $project_query_get = "SELECT daportal_module.name AS module,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username,
@@ -621,6 +623,31 @@ class ProjectModule extends ContentModule
 		$timeline = $scm->timeline($engine, $project, $request);
 		$page->append($timeline);
 		return $page;
+	}
+
+
+	//ProjectModule::callUpdate
+	protected function callUpdate($engine, $request)
+	{
+		return parent::callUpdate($engine, $request);
+	}
+
+	protected function _updateProcess($engine, $request, $content)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_project_update;
+
+		//FIXME use a transaction
+		if(($res = parent::_updateProcess($engine, $request, $content))
+				!== FALSE)
+			return $res;
+		//update the project
+		$synopsis = $request->getParameter('synopsis');
+		if($db->query($engine, $query, array(
+				'project_id' => $content['id'],
+				'synopsis' => $synopsis)) === FALSE)
+			return _('Internal server error');
+		return FALSE;
 	}
 
 
