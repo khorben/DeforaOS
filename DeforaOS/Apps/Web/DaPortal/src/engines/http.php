@@ -269,7 +269,7 @@ class HttpEngine extends Engine
 		if(($st = fstat($fp)) !== FALSE)
 		{
 			header('Content-Length: '.$st['size']);
-			$lastm = strftime('%a, %d %b %Y %H:%M:%S',
+			$lastm = gmstrftime('%a, %d %b %Y %H:%M:%S',
 					$st['mtime']);
 			header('Last-Modified: '.$lastm);
 		}
