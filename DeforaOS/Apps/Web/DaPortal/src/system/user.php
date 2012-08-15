@@ -349,12 +349,10 @@ class User
 		$db = $engine->getDatabase();
 		$error = '';
 
-		$timestamp = strftime(User::$timestamp_format,
-				time() - 86400); //one day
 		//verify the username and e-mail address
 		$res = $db->query($engine, User::$query_reset_validate,
-			array('username' => $username,
-				'email' => $email));
+				array('username' => $username,
+					'email' => $email));
 		if($res === FALSE || count($res) != 1)
 		{
 			//XXX consider silently failing (to avoid bruteforcing)
@@ -386,8 +384,8 @@ class User
 	}
 
 
-	//User::reset_password
-	static function reset_password($engine, $uid, $password, $token,
+	//User::resetPassword
+	static public function resetPassword($engine, $uid, $password, $token,
 			&$error = FALSE)
 	{
 		$db = $engine->getDatabase();
@@ -395,8 +393,8 @@ class User
 
 		if($db->transactionBegin($engine) === FALSE)
 			return FALSE;
-		$timestamp = strftime(User::$timestamp_format,
-				time() - 86400); //one day
+	       	//delete password reset requests older than one day
+		$timestamp = strftime(User::$timestamp_format, time() - 86400);
 		if($db->query($engine, User::$query_reset_cleanup, array(
 					'timestamp' => $timestamp)) === FALSE)
 		{
@@ -443,8 +441,8 @@ class User
 			$error .= _("The token must be specified\n");
 		if(strlen($error) > 0)
 			return FALSE;
-		$timestamp = strftime(User::$timestamp_format,
-				time() - 604800); //one week
+		//delete registrations older than one week
+		$timestamp = strftime(User::$timestamp_format, time() - 604800);
 		if($db->query($engine, User::$query_register_cleanup, array(
 					'timestamp' => $timestamp)) === FALSE)
 		{
