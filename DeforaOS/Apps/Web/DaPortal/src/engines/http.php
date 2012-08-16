@@ -203,15 +203,6 @@ class HttpEngine extends Engine
 	}
 
 
-	//HttpEngine::_isIdempotent
-	private function _isIdempotent($request)
-	{
-		$auth = $this->getAuth();
-
-		return $auth->isIdempotent($this, $request);
-	}
-
-
 	//useful
 	//HttpEngine::render
 	public function render($page)
