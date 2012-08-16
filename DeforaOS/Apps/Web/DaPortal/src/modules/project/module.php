@@ -69,6 +69,7 @@ class ProjectModule extends ContentModule
 			case 'bugList':
 			case 'bugReply':
 			case 'download':
+			case 'gallery':
 			case 'timeline':
 				$action = 'call'.ucfirst($action);
 				return $this->$action($engine, $request);
@@ -123,6 +124,20 @@ class ProjectModule extends ContentModule
 		AND project.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+	protected $project_query_list_downloads = "SELECT
+		daportal_download.content_id AS id, download.title,
+		download.timestamp AS timestamp, username, groupname, mode
+		FROM daportal_project_download, daportal_content project,
+		daportal_download, daportal_content download, daportal_user,
+		daportal_group
+		WHERE daportal_project_download.project_id=project.content_id
+		AND daportal_project_download.download_id=daportal_download.content_id
+		AND daportal_download.content_id=download.content_id
+		AND download.user_id=daportal_user.user_id
+		AND download.group_id=daportal_group.group_id
+		AND project.public='1' AND project.enabled='1'
+		AND download.public='1' AND download.enabled='1'
+		AND project_id=:project_id";
 	protected $project_query_list_projects = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
@@ -138,6 +153,16 @@ class ProjectModule extends ContentModule
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+	protected $project_query_list_screenshots = "SELECT
+		daportal_download.content_id AS id, download.title
+		FROM daportal_project_screenshot, daportal_content project,
+		daportal_download, daportal_content download
+		WHERE daportal_project_screenshot.project_id=project.content_id
+		AND daportal_project_screenshot.download_id=daportal_download.content_id
+		AND daportal_download.content_id=download.content_id
+		AND project.public='1' AND project.enabled='1'
+		AND download.public='1' AND download.enabled='1'
+		AND project_id=:project_id";
 	protected $project_query_list_projects_user = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
@@ -330,15 +355,23 @@ class ProjectModule extends ContentModule
 					'stock' => 'development',
 					'text' => _('Timeline')));
 		}
-		$r = new Request($engine, $this->name, 'bug_list', $id,
+		//gallery
+		$r = new Request($engine, $this->name, 'gallery', $id,
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
-				'stock' => 'bug', 'text' => _('Bug reports')));
+				'stock' => 'preview',
+				'text' => _('Gallery')));
+		//downloads
 		$r = new Request($engine, $this->name, 'download', $id,
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'download',
-				'text' => _('Download')));
+				'text' => _('Downloads')));
+		//bug reports
+		$r = new Request($engine, $this->name, 'bug_list', $id,
+				$project['title']);
+		$toolbar->append('button', array('request' => $r,
+				'stock' => 'bug', 'text' => _('Bug reports')));
 		if($this->_isManager($engine, $id))
 		{
 			$r = new Request($engine, $this->name, 'update', $id,
@@ -547,6 +580,9 @@ class ProjectModule extends ContentModule
 	//ProjectModule::callDownload
 	protected function callDownload($engine, $request)
 	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_list_downloads;
+
 		if(($project = $this->getProject($engine, $request->getId(),
 				$request->getTitle())) === FALSE)
 			return $this->callDefault($engine);
@@ -561,14 +597,82 @@ class ProjectModule extends ContentModule
 				&& ($download = $scm->download($engine,
 				$project, $request)) !== FALSE)
 			$page->append($download);
-		//releases
-		$vbox = $page->append('vbox');
-		$vbox->append('title', array('text' => _('Releases')));
-		$columns = array('filename' => _('Filename'),
-			'owner' => _('Owner'), 'group' => _('Group'),
-			'date' => _('Date'), 'permissions' => _('Permissions'));
-		$view = $vbox->append('treeview', array('columns' => $columns));
-		//FIXME really implement
+		//downloads
+		$error = 'Could not list downloads';
+		if(($res = $db->query($engine, $query, array(
+				'project_id' => $project['id']))) === FALSE)
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		else
+		{
+			$vbox = $page->append('vbox');
+			$vbox->append('title', array('text' => _('Releases')));
+			$columns = array('filename' => _('Filename'),
+					'owner' => _('Owner'),
+					'group' => _('Group'),
+					'date' => _('Date'),
+					'permissions' => _('Permissions'));
+			$view = $vbox->append('treeview', array(
+					'columns' => $columns));
+			foreach($res as $r)
+			{
+				$row = $view->append('row');
+				$req = new Request($engine, 'download', FALSE,
+						$r['id'], $r['title']);
+				//FIXME set a proper stock icon (MIME)
+				$filename = new PageElement('link', array(
+						'request' => $req,
+						'text' => $r['title']));
+				$row->setProperty('filename', $filename);
+				$row->setProperty('owner', $r['username']);
+				$row->setProperty('group', $r['groupname']);
+				$date = $db->formatDate($engine,
+						$r['timestamp']);
+				$row->setProperty('date', $date);
+				$permissions = $r['mode']; //XXX
+				$row->setProperty('permissions', $permissions);
+			}
+		}
+		return $page;
+	}
+
+
+	//ProjectModule::callGallery
+	protected function callGallery($engine, $request)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_list_screenshots;
+
+		if(($project = $this->getProject($engine, $request->getId(),
+				$request->getTitle())) === FALSE)
+			return $this->callDefault($engine);
+		$title = _('Project: ').$project['title'];
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'project',
+				'text' => $title));
+		$toolbar = $this->getToolbar($engine, $project);
+		$page->append($toolbar);
+		//screenshots
+		$error = 'Could not list screenshots';
+		if(($res = $db->query($engine, $query, array(
+				'project_id' => $project['id']))) === FALSE)
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		else
+		{
+			$vbox = $page->append('vbox');
+			$vbox->append('title', array('text' => _('Releases')));
+			$columns = array('filename' => _('Filename'),
+					'date' => _('Date'));
+			$view = $vbox->append('treeview', array(
+					'view' => 'thumbnails',
+					'columns' => $columns));
+			foreach($res as $r)
+			{
+				$row = $view->append('row');
+				$row->setProperty('filename', $r['title']);
+			}
+		}
 		return $page;
 	}
 
