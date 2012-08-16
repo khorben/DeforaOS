@@ -33,6 +33,8 @@ class BrowserModule extends Module
 			$action = 'default';
 		switch($action)
 		{
+			case 'actions':
+				return $this->$action($engine, $request);
 			case 'default':
 			case 'download':
 				$action = 'call'.ucfirst($action);
@@ -152,6 +154,19 @@ class BrowserModule extends Module
 
 
 	//useful
+	//actions
+	//BrowserModule::actions
+	protected function actions($engine, $request)
+	{
+		$ret = array();
+		if($request->getParameter('user') !== FALSE)
+			return $ret;
+		if($request->getParameter('admin') != 0)
+			return $ret;
+		return $ret;
+	}
+
+
 	//calls
 	//BrowserModule::callDefault
 	protected function callDefault($engine, $request)
