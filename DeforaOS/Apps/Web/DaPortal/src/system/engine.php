@@ -61,7 +61,9 @@ abstract class Engine
 		if($this->database === FALSE)
 		{
 			require_once('./system/database.php');
-			$this->database = Database::attachDefault($this);
+			if(($this->database = Database::attachDefault($this))
+					=== FALSE)
+				$this->database = new DatabaseDummy;
 		}
 		return $this->database;
 	}
