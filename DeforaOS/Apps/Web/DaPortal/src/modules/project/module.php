@@ -661,7 +661,7 @@ class ProjectModule extends ContentModule
 		else
 		{
 			$vbox = $page->append('vbox');
-			$vbox->append('title', array('text' => _('Releases')));
+			$vbox->append('title', array('text' => _('Gallery')));
 			$columns = array('filename' => _('Filename'),
 					'date' => _('Date'));
 			$view = $vbox->append('treeview', array(
