@@ -161,4 +161,72 @@ abstract class Database
 	}
 }
 
+
+//DatabaseDummy
+class DatabaseDummy extends Database
+{
+	//public
+	//methods
+	//accessors
+	//DatabaseDummy::getLastId
+	public function getLastId($engine, $table, $field)
+	{
+		//always fail
+		return FALSE;
+	}
+
+
+	//useful
+	//DatabaseDummy::enum
+	public function enum($engine, $table, $field)
+	{
+		//always fail
+		return FALSE;
+	}
+
+
+	//DatabaseDummy::offset
+	public function offset($limit, $offset = FALSE)
+	{
+		//always ignore
+		return '';
+	}
+
+
+	//useful
+	//DatabaseDummy::query
+	public function query($engine, $query, $parameters = FALSE)
+	{
+		//always fail
+		return FALSE;
+	}
+
+
+	//protected
+	//methods
+	//essential
+	//DatabaseDummy::match
+	protected function match($engine)
+	{
+		//never match
+		return 0;
+	}
+
+
+	//DatabaseDummy::attach
+	protected function attach($engine)
+	{
+		//always succeed
+		return TRUE;
+	}
+
+
+	//useful
+	//DatabaseDummy::escape
+	protected function escape($string)
+	{
+		return str_replace("'", "''", $string);
+	}
+}
+
 ?>
