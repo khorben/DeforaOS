@@ -164,6 +164,23 @@ CREATE TABLE daportal_project (
 	cvsroot VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
 );
+
+CREATE TABLE daportal_project_download (
+	project_download_id INTEGER PRIMARY KEY,
+	project_id INTEGER NOT NULL,
+	download_id INTEGER NOT NULL,
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
+	FOREIGN KEY (download_id) REFERENCES daportal_download (content_id)
+);
+
+CREATE TABLE daportal_project_screenshot (
+	project_screenshot_id INTEGER PRIMARY KEY,
+	project_id INTEGER NOT NULL,
+	download_id INTEGER NOT NULL,
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
+	FOREIGN KEY (download_id) REFERENCES daportal_download (content_id)
+);
+
 CREATE TABLE daportal_project_user (
 	project_user_id INTEGER PRIMARY KEY,
 	project_id INTEGER NOT NULL,
@@ -172,6 +189,7 @@ CREATE TABLE daportal_project_user (
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
+
 CREATE TABLE daportal_bug_enum_state (
 	name VARCHAR(255)
 );
@@ -181,6 +199,7 @@ INSERT INTO daportal_bug_enum_state (name) VALUES ('Closed');
 INSERT INTO daportal_bug_enum_state (name) VALUES ('Fixed');
 INSERT INTO daportal_bug_enum_state (name) VALUES ('Implemented');
 INSERT INTO daportal_bug_enum_state (name) VALUES ('Re-opened');
+
 CREATE TABLE daportal_bug_enum_type (
 	name VARCHAR(255)
 );
@@ -188,6 +207,7 @@ INSERT INTO daportal_bug_enum_type (name) VALUES ('Major');
 INSERT INTO daportal_bug_enum_type (name) VALUES ('Minor');
 INSERT INTO daportal_bug_enum_type (name) VALUES ('Functionality');
 INSERT INTO daportal_bug_enum_type (name) VALUES ('Feature');
+
 CREATE TABLE daportal_bug_enum_priority (
 	name VARCHAR(255)
 );
@@ -195,6 +215,7 @@ INSERT INTO daportal_bug_enum_priority (name) VALUES ('Urgent');
 INSERT INTO daportal_bug_enum_priority (name) VALUES ('High');
 INSERT INTO daportal_bug_enum_priority (name) VALUES ('Medium');
 INSERT INTO daportal_bug_enum_priority (name) VALUES ('Low');
+
 CREATE TABLE daportal_bug (
 	bug_id INTEGER PRIMARY KEY,
 	content_id INTEGER,
@@ -219,6 +240,7 @@ INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Closed');
 INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Fixed');
 INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Implemented');
 INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Re-opened');
+
 CREATE TABLE daportal_bug_reply_enum_type (
 	name VARCHAR(255)
 );
@@ -226,6 +248,7 @@ INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Major');
 INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Minor');
 INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Functionality');
 INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Feature');
+
 CREATE TABLE daportal_bug_reply_enum_priority (
 	name VARCHAR(255)
 );
@@ -233,6 +256,7 @@ INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Urgent');
 INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('High');
 INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Medium');
 INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Low');
+
 CREATE TABLE daportal_bug_reply (
 	bug_reply_id INTEGER PRIMARY KEY,
 	content_id INTEGER,

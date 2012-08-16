@@ -143,12 +143,26 @@ CREATE TABLE daportal_project (
 	synopsis VARCHAR(255) NOT NULL,
 	cvsroot VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE daportal_project_download (
+	project_download_id SERIAL PRIMARY KEY,
+	project_id INTEGER NOT NULL REFERENCES daportal_project (project_id),
+	download_id INTEGER NOT NULL REFERENCES daportal_content (content_id)
+);
+
+CREATE TABLE daportal_project_screenshot (
+	project_screenshot_id SERIAL PRIMARY KEY,
+	project_id INTEGER NOT NULL REFERENCES daportal_project (project_id),
+	download_id INTEGER NOT NULL REFERENCES daportal_content (content_id)
+);
+
 CREATE TABLE daportal_project_user (
 	project_user_id SERIAL PRIMARY KEY,
 	project_id INTEGER NOT NULL REFERENCES daportal_project (project_id) ON DELETE CASCADE,
 	user_id INTEGER NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE,
 	admin BOOLEAN NOT NULL DEFAULT FALSE
 );
+
 CREATE TABLE daportal_bug (
 	bug_id SERIAL PRIMARY KEY,
 	content_id INTEGER UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
