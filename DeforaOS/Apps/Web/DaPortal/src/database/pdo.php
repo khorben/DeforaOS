@@ -180,7 +180,7 @@ class PdoDatabase extends Database
 		if(!class_exists('PDO'))
 			return 0;
 		if($config->getVariable('database::pdo', 'dsn') !== FALSE)
-			return 1;
+			return 100;
 		return 0;
 	}
 

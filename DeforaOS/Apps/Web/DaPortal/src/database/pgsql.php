@@ -128,9 +128,15 @@ class PgsqlDatabase extends Database
 	protected function match($engine)
 	{
 		global $config;
+		$variables = $this->variables;
 
-		//we probably cannot detect a PostgreSQL database
-		return 0;
+		if(!function_exists('pg_connect'))
+			return 0;
+		foreach($variables as $k => $v)
+			if($config->getVariable('database::pgsql', $k)
+					!== FALSE)
+				return 100;
+		return 1;
 	}
 
 
@@ -140,13 +146,9 @@ class PgsqlDatabase extends Database
 		global $config;
 		$str = '';
 		$sep = '';
-		$array = array('username' => 'user', 'password' => 'password',
-				'database' => 'dbname', 'hostname' => 'host',
-				'port' => 'port',
-				'timeout' => 'connect_timeout',
-				'service' => 'service');
+		$variables = $this->variables;
 
-		foreach($array as $k => $v)
+		foreach($variables as $k => $v)
 			if(($p = $config->getVariable('database::pgsql', $k))
 					!== FALSE)
 			{
@@ -172,6 +174,13 @@ class PgsqlDatabase extends Database
 	//private
 	//properties
 	private $handle = FALSE;
+
+	private $variables = array('username' => 'user',
+		'password' => 'password',
+		'database' => 'dbname', 'hostname' => 'host',
+		'port' => 'port',
+		'timeout' => 'connect_timeout',
+		'service' => 'service');
 
 	//queries
 	private $query_enum = 'SELECT

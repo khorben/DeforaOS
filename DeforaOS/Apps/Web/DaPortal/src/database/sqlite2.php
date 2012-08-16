@@ -103,7 +103,7 @@ class SQLite2Database extends Database
 
 		if($config->getVariable('database::sqlite2', 'filename')
 				!== FALSE)
-			return 1;
+			return 100;
 		return 0;
 	}
 

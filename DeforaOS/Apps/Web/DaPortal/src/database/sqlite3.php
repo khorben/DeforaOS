@@ -115,7 +115,7 @@ class SQLite3Database extends Database
 			return 0;
 		if($config->getVariable('database::sqlite3', 'filename')
 				!== FALSE)
-			return 1;
+			return 100;
 		return 0;
 	}
 
