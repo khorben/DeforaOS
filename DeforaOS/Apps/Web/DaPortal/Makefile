@@ -79,6 +79,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/themes/index.php \
 		$(PACKAGE)-$(VERSION)/data/themes/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/daportal.conf \
 		$(PACKAGE)-$(VERSION)/doc/daportal.conf.xml \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/install.xml \
@@ -678,7 +679,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/config.php \
 		$(PACKAGE)-$(VERSION)/config.sh \
-		$(PACKAGE)-$(VERSION)/daportal.conf \
 		$(PACKAGE)-$(VERSION)/engine.php \
 		$(PACKAGE)-$(VERSION)/index.php \
 		$(PACKAGE)-$(VERSION)/project.conf

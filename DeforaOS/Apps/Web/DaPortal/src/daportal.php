@@ -19,7 +19,9 @@
 require_once('./system/config.php');
 global $config;
 $config = new Config();
-$config->load('../daportal.conf');
+if(!isset($daportalconf))
+	$daportalconf = '../daportal.conf';
+$config->load($daportalconf);
 
 require_once('./system/engine.php');
 if(($engine = Engine::attachDefault()) !== FALSE
