@@ -292,6 +292,13 @@ class UserModule extends Module
 	{
 		if(!$cred->isAdmin())
 			return $ret;
+		//user creation
+		$r = new Request($engine, $module, 'submit');
+		$icon = new PageElement('image', array('stock' => 'new'));
+		$link = new PageElement('link', array('request' => $r,
+				'text' => _('New user')));
+		$ret[] = new PageElement('row', array('icon' => $icon,
+				'label' => $link));
 		//administration
 		$r = new Request($engine, $module, ($module == 'admin') ? FALSE
 				: 'admin');
