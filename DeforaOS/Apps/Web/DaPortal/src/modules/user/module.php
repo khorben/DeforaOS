@@ -549,6 +549,8 @@ class UserModule extends Module
 	{
 		$cred = $engine->getCredentials();
 		$title = _('User login');
+		$already = _('You are already logged in');
+		$forgot = _('I forgot my password...');
 
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'login',
@@ -563,7 +565,7 @@ class UserModule extends Module
 						'text' => $error));
 		else if($cred->getUserId() != 0)
 			$page->append('dialog', array('type' => 'info',
-						'text' => 'You are already logged in'));
+						'text' => $already));
 		$form = $this->formLogin($engine,
 				$request->getParameter('username'));
 		$page->append($form);
@@ -572,7 +574,7 @@ class UserModule extends Module
 			$r = new Request($engine, $this->name, 'reset');
 			$page->append('link', array('request' => $r,
 					'stock' => 'reset',
-					'text' => _('I forgot my password...')));
+					'text' => $forgot));
 		}
 		return $page;
 	}
