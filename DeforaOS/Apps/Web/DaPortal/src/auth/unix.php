@@ -16,8 +16,10 @@
 
 
 
-//UnixAuth
 require_once('./system/auth.php');
+
+
+//UnixAuth
 class UnixAuth extends Auth
 {
 	//protected
@@ -32,29 +34,16 @@ class UnixAuth extends Auth
 	//UnixAuth::attach
 	protected function attach($engine)
 	{
-		if(($db = $engine->getDatabase()) === FALSE)
-			return TRUE;
-		$query = $this->query_user;
 		$uid = posix_getuid();
 		$pw = posix_getpwuid($uid);
-		$args = array('username' => $pw['name']);
-		if(($res = $db->query($engine, $query, $args)) === FALSE
-				|| count($res) != 1)
+		if(($user = User::lookup($engine, $pw['name'])) === FALSE)
 			return TRUE;
-		$res = $res[0];
-		$cred = $this->getCredentials($engine);
-		$cred->setUserId($res['user_id'], $db->isTrue($res['admin']));
+		$cred = new AuthCredentials($user->getUserId(),
+				$user->getUsername(), $user->getGroupId(),
+				$user->isAdmin());
 		$this->setCredentials($engine, $cred);
 		return TRUE;
 	}
-
-
-	//private
-	//properties
-	//queries
-	private $query_user = "SELECT user_id, admin
-		FROM daportal_user
-		WHERE enabled='1' AND username=:username";
 }
 
 ?>
