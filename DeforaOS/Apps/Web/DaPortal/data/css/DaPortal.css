@@ -107,6 +107,11 @@ div.hbox > div.pack:first-child {
 	padding-left:			0;
 }
 
+/* iframe */
+iframe {
+	border-width:			1px;
+}
+
 /* image */
 img {
 	border-width:			0;
