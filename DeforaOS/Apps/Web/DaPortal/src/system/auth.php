@@ -52,6 +52,13 @@ class AuthCredentials
 	}
 
 
+	//AuthCredentials::getUsername
+	public function getUsername()
+	{
+		return $this->username;
+	}
+
+
 	//AuthCredentials::isAdmin
 	public function isAdmin()
 	{
