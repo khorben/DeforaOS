@@ -207,7 +207,11 @@ class BrowserModule extends Module
 		//obtain the path requested
 		$path = $this->getPath($engine, $request);
 		if(($fp = fopen($root.'/'.$path, 'rb')) !== FALSE)
+		{
+			$mime = Mime::getType($engine, $path);
+			$engine->setType($mime);
 			return $fp;
+		}
 		$title = _('Browser: ').$path;
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
