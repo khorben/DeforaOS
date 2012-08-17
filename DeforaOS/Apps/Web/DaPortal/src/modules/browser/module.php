@@ -68,6 +68,20 @@ class BrowserModule extends Module
 	}
 
 
+	//BrowserModule::getPath
+	protected function getPath($engine, $request)
+	{
+		$root = $this->getRoot($engine);
+
+		if(($path = $request->getTitle()) === FALSE)
+			return '/';
+		$p = str_replace('-', '?', $path);
+		if(($res = glob($root.'/'.$p)) !== FALSE && count($res) == 1)
+			$path = substr($res[0], strlen($root));
+		return $this->helperSanitizePath($path);
+	}
+
+
 	//BrowserModule::getPermissions
 	protected function getPermissions($mode)
 	{
@@ -172,9 +186,7 @@ class BrowserModule extends Module
 	protected function callDefault($engine, $request)
 	{
 		//obtain the path requested
-		if(($path = $request->getTitle()) === FALSE)
-			$path = '/';
-		$path = $this->helperSanitizePath($path);
+		$path = $this->getPath($engine, $request);
 		$title = _('Browser: ').$path;
 		$page = new Page(array('title' => $title));
 		//title
@@ -193,12 +205,10 @@ class BrowserModule extends Module
 		$error = _('Could not download the file requested');
 
 		//obtain the path requested
-		if(($path = $request->getTitle()) === FALSE)
-			$path = '/';
-		$path = $this->helperSanitizePath($path);
-		$title = _('Browser: ').$path;
+		$path = $this->getPath($engine, $request);
 		if(($fp = fopen($root.'/'.$path, 'rb')) !== FALSE)
 			return $fp;
+		$title = _('Browser: ').$path;
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
