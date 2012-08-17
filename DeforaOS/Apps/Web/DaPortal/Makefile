@@ -29,7 +29,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/css/project.conf \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/index.php.in \
-		$(PACKAGE)-$(VERSION)/data/subst.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/css/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/data/css/Makefile \
@@ -519,7 +518,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/daportal.php \
+		$(PACKAGE)-$(VERSION)/src/daportal.php.in \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
 		$(PACKAGE)-$(VERSION)/src/auth/http.php \

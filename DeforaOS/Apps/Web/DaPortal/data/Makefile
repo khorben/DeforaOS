@@ -13,8 +13,8 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-index.php: index.php.in ../config.sh
-	./subst.sh -P "$(PREFIX)" -- "index.php"
+index.php: index.php.in ../config.sh ../tools/subst.sh
+	../tools/subst.sh -P "$(PREFIX)" -- "index.php"
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done

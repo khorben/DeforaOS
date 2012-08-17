@@ -20,7 +20,7 @@ require_once('./system/config.php');
 global $config;
 $config = new Config();
 if(!isset($daportalconf))
-	$daportalconf = '../daportal.conf';
+	$daportalconf = '@PREFIX@/etc/daportal.conf';
 $config->load($daportalconf);
 
 require_once('./system/engine.php');

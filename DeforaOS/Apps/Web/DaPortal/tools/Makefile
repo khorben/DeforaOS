@@ -9,7 +9,7 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-daportal: daportal.in
+daportal: daportal.in subst.sh ../config.sh
 	./subst.sh -P "$(PREFIX)" -- "daportal"
 
 clean:
