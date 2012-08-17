@@ -76,7 +76,6 @@ class HttpAuth extends Auth
 			}
 			return TRUE;
 		}
-		$cred = $this->getCredentials($engine);
 		$cred = new AuthCredentials($user->getUserId(),
 				$user->getUsername(), $user->getGroupId(),
 				$user->isAdmin());
