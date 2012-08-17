@@ -28,7 +28,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/css/syntax.css \
 		$(PACKAGE)-$(VERSION)/css/project.conf \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
-		$(PACKAGE)-$(VERSION)/data/index.php \
+		$(PACKAGE)-$(VERSION)/data/index.php.in \
+		$(PACKAGE)-$(VERSION)/data/subst.sh \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/css/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/data/css/Makefile \

@@ -1,0 +1,7 @@
+<?php
+
+
+//$daportalconf = '@PREFIX@/etc/daportal.conf';
+if(chdir('@PREFIX@/daportal/src') === TRUE) require('./daportal.php');
+
+?>
