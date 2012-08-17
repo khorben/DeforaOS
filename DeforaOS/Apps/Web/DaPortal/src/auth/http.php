@@ -52,7 +52,8 @@ class HttpAuth extends Auth
 		if(($realm = $config->getVariable('auth::basic', 'realm'))
 				=== FALSE)
 			$realm = 'DaPortal';
-		if(!isset($_SERVER['PHP_AUTH_USER']))
+		if(!isset($_SERVER['PHP_AUTH_USER'])
+				|| !isset($_SERVER['PHP_AUTH_PW']))
 		{
 			//FIXME only up getCredentials()?
 			header('WWW-Authenticate: Basic realm="'
