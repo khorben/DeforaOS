@@ -14,8 +14,6 @@ CREATE TABLE daportal_module (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('admin', '1');
-INSERT INTO daportal_module (name, enabled) VALUES ('explorer', '1');
-INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
@@ -37,11 +35,6 @@ CREATE TABLE daportal_config_enum_type (
 INSERT INTO daportal_config_enum_type (name) VALUES ('bool');
 INSERT INTO daportal_config_enum_type (name) VALUES ('int');
 INSERT INTO daportal_config_enum_type (name) VALUES ('string');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Path to MIME globs file', 'string', 'globs', '/usr/share/mime/globs');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default language', 'string', 'lang', 'en');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default theme', 'string', 'theme', 'DaPortal');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default title', 'string', 'title', 'DaPortal');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('4', 'Highlight search results', 'bool', 'title', 0);
 
 
 CREATE TABLE daportal_lang (
@@ -74,8 +67,6 @@ CREATE TABLE daportal_user (
 	FOREIGN KEY (group_id) REFERENCES daportal_group (group_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('5', 'Allow users to register new accounts', 'bool', 'register', '0');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('5', 'Moderate new user accounts', 'bool', 'manual', '1');
 INSERT INTO daportal_user (user_id, username, password, enabled, fullname, email) VALUES ('0', 'Anonymous', '', '1', 'Anonymous user', '');
 INSERT INTO daportal_user (username, password, enabled, admin, fullname, email) VALUES ('admin', '$1$?0p*PI[G$kbHyE5VE/S32UrV88Unz/1', '1', '1', 'Administrator', 'username@domain.tld');
 
@@ -130,7 +121,6 @@ CREATE TABLE daportal_content_lang (
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (lang_id) REFERENCES daportal_lang (lang_id)
 );
-INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 
 /* module: news */
@@ -144,8 +134,7 @@ CREATE TABLE daportal_comment (
 	FOREIGN KEY (comment_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
 );
-INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('8', 'Allow anonymous comments', 'bool', 'anonymous', '0');
+INSERT INTO daportal_module (name, enabled) VALUES ('comment', '0');
 
 
 /* module: top */
@@ -154,7 +143,7 @@ CREATE TABLE daportal_top (
 	name VARCHAR(255),
 	link VARCHAR(255)
 );
-INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('top', '0');
 
 
 /* module: project */
@@ -273,10 +262,6 @@ CREATE TABLE daportal_bug_reply (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('10', 'Path to the local CVS repository', 'string', 'cvsroot', '');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('10', 'Path to the public CVS repository', 'string', 'repository', '');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('10', 'Allow anonymous bug reports', 'bool', 'anonymous_bug_reports', '0');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('10', 'Allow anonymous bug replies', 'bool', 'anonymous_bug_replies', '0');
 
 
 /* module: probe */
@@ -284,9 +269,7 @@ CREATE TABLE daportal_probe_host (
 	host_id INTEGER,
 	FOREIGN KEY (host_id) REFERENCES daportal_content (content_id)
 );
-INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('11', 'Path to the rrdtool executable', 'string', 'rrdtool', 'rrdtool');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('11', 'Path to the RRD database', 'string', 'RRD_repository', '/tmp');
+INSERT INTO daportal_module (name, enabled) VALUES ('probe', '0');
 
 
 /* module: bookmark */
@@ -296,7 +279,7 @@ CREATE TABLE daportal_bookmark (
 	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
 );
 
-INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '0');
 
 
 /* module: category */
@@ -307,8 +290,7 @@ CREATE TABLE daportal_category_content (
 	FOREIGN KEY (category_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id)
 );
-INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('13', 'Output e-mail addresses in RSS feeds', 'bool', 'email', '0');
+INSERT INTO daportal_module (name, enabled) VALUES ('category', '0');
 
 
 /* module: download */
@@ -321,7 +303,6 @@ CREATE TABLE daportal_download (
 	FOREIGN KEY (parent) REFERENCES daportal_download (download_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('14', 'Path to the download repository', 'string', 'root', '/tmp');
 
 
 /* module: article */
@@ -330,18 +311,14 @@ INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
 
 /* module: wiki */
 INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('16', 'Allow anonymous users on the wiki', 'bool', 'anonymous', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('16', 'Path to the wiki repository', 'string', 'root', '');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('16', 'Let wiki pages be tagged', 'bool', 'tags', '0');
 
 
 /* module: webmail */
-INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('17', 'Server hostname', 'string', 'server', '');
+INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '0');
 
 
 /* module: pki */
-INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('pki', '0');
 
 CREATE TABLE daportal_ca (
 	ca_id INTEGER,
@@ -385,17 +362,13 @@ CREATE TABLE daportal_caserver (
 	FOREIGN KEY (parent) REFERENCES daportal_ca (ca_id)
 );
 
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('18', 'Path to the PKI repository', 'string', 'root', '');
-
 
 /* module: browser */
 INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
 
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('19', 'Root of the file browser', 'string', 'root', '/');
-
 
 /* module: translate */
-INSERT INTO daportal_module (name, enabled) VALUES ('translate', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('translate', '0');
 
 
 /* module: blog */
@@ -412,10 +385,6 @@ CREATE TABLE daportal_blog_content (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
-
-
-/* module: browser */
-INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
 
 
 COMMIT;
