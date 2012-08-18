@@ -681,8 +681,6 @@ class ProjectModule extends ContentModule
 				$thumbnail = new PageElement('image', array(
 						'request' => $req));
 				$row->setProperty('thumbnail', $thumbnail);
-				$req = new Request($engine, 'download', FALSE,
-						$r['id'], $r['title']);
 				$label = new PageElement('link', array(
 						'request' => $req,
 						'text' => $r['title']));
