@@ -515,6 +515,8 @@ class HTMLFormat extends FormatElements
 				$size = $s;
 			$class = "stock$size $stock";
 		}
+		else if(($r = $e->getProperty('request')) !== FALSE)
+			$attributes['src'] = $this->engine->getUrl($r, FALSE);
 		else
 			$attributes['src'] = $e->getProperty('source');
 		$this->tag('img', $class, $e->getProperty('id'), $attributes);
