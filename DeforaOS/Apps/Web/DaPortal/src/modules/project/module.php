@@ -675,7 +675,18 @@ class ProjectModule extends ContentModule
 			foreach($res as $r)
 			{
 				$row = $view->append('row');
-				$row->setProperty('label', $r['title']);
+				$req = new Request($engine, 'download',
+						'download', $r['id'],
+						$r['title']);
+				$thumbnail = new PageElement('image', array(
+						'request' => $req));
+				$row->setProperty('thumbnail', $thumbnail);
+				$req = new Request($engine, 'download', FALSE,
+						$r['id'], $r['title']);
+				$label = new PageElement('link', array(
+						'request' => $req,
+						'text' => $r['title']));
+				$row->setProperty('label', $label);
 			}
 		}
 		return $page;
