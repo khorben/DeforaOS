@@ -126,7 +126,8 @@ class ProjectModule extends ContentModule
 		AND daportal_user.enabled='1'";
 	protected $project_query_list_downloads = "SELECT
 		daportal_download.content_id AS id, download.title AS title,
-		download.timestamp AS timestamp, username, groupname, mode
+		download.timestamp AS timestamp,
+		daportal_user.user_id AS user_id, username, groupname, mode
 		FROM daportal_project_download, daportal_content project,
 		daportal_download, daportal_content download, daportal_user,
 		daportal_group
@@ -625,7 +626,13 @@ class ProjectModule extends ContentModule
 						'request' => $req,
 						'text' => $r['title']));
 				$row->setProperty('filename', $filename);
-				$row->setProperty('owner', $r['username']);
+				$req = new Request($engine, 'user', FALSE,
+						$r['user_id'], $r['username']);
+				$username = new PageElement('link', array(
+						'stock' => 'user',
+						'request' => $req,
+						'text' => $r['username']));
+				$row->setProperty('owner', $username);
 				$row->setProperty('group', $r['groupname']);
 				$date = $db->formatDate($engine,
 						$r['timestamp']);
