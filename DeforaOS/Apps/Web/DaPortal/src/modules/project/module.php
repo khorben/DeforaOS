@@ -156,7 +156,7 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	protected $project_query_list_screenshots = "SELECT
-		daportal_download.content_id AS id, download.title
+		daportal_download.content_id AS id, download.title title
 		FROM daportal_project_screenshot, daportal_content project,
 		daportal_download, daportal_content download
 		WHERE daportal_project_screenshot.project_id=project.content_id
@@ -670,15 +670,12 @@ class ProjectModule extends ContentModule
 		{
 			$vbox = $page->append('vbox');
 			$vbox->append('title', array('text' => _('Gallery')));
-			$columns = array('filename' => _('Filename'),
-					'date' => _('Date'));
 			$view = $vbox->append('treeview', array(
-					'view' => 'thumbnails',
-					'columns' => $columns));
+					'view' => 'thumbnails'));
 			foreach($res as $r)
 			{
 				$row = $view->append('row');
-				$row->setProperty('filename', $r['title']);
+				$row->setProperty('label', $r['title']);
 			}
 		}
 		return $page;
