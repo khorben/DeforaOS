@@ -169,7 +169,8 @@ form.treeview.details > div.table > div.row.level2 > span.detail {
 	padding-left:			4ex;
 }
 
-form.treeview.icons > div.table > div.row {
+form.treeview.icons > div.table > div.row,
+form.treeview.thumbnails > div.table > div.row {
 	float:				left;
 	padding:			0.5ex;
 	text-align:			center;
@@ -184,7 +185,8 @@ form.treeview.icons > div.table > div.row span.icon {
 	width:				48px;
 }
 
-form.treeview.icons > div.table > div.row span.label {
+form.treeview.icons > div.table > div.row span.label,
+form.treeview.thumbnails > div.table > div.row span.label {
 	display:			block;
 	text-align:			center;
 }
@@ -205,6 +207,14 @@ form.treeview.list > div.table > div.row span.icon img.stock48 {
 
 form.treeview.preview > div.table > div.row span.detail.preview {
 	display:			block;
+}
+
+form.treeview.thumbnails > div.table > div.row span.thumbnail {
+	display:			block;
+	height:				96px;
+	margin-left:			auto;
+	margin-right:			auto;
+	width:				96px;
 }
 
 div.vbox > div.pack {
