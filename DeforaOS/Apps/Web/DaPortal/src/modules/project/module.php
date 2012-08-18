@@ -125,7 +125,7 @@ class ProjectModule extends ContentModule
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
 	protected $project_query_list_downloads = "SELECT
-		daportal_download.content_id AS id, download.title,
+		daportal_download.content_id AS id, download.title AS title,
 		download.timestamp AS timestamp, username, groupname, mode
 		FROM daportal_project_download, daportal_content project,
 		daportal_download, daportal_content download, daportal_user,
@@ -137,7 +137,8 @@ class ProjectModule extends ContentModule
 		AND download.group_id=daportal_group.group_id
 		AND project.public='1' AND project.enabled='1'
 		AND download.public='1' AND download.enabled='1'
-		AND project_id=:project_id";
+		AND project_id=:project_id
+		ORDER BY download.timestamp DESC";
 	protected $project_query_list_projects = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
