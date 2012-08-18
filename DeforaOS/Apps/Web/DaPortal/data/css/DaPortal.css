@@ -217,6 +217,11 @@ form.treeview.thumbnails > div.table > div.row span.thumbnail {
 	width:				96px;
 }
 
+form.treeview.thumbnails > div.table > div.row span.thumbnail > img {
+	max-height:			96px;
+	max-width:			96px;
+}
+
 div.vbox > div.pack {
 	display:			block;
 	padding-top:			0.5ex;
