@@ -750,13 +750,18 @@ class HTMLFormat extends FormatElements
 		{
 			case 'details':
 			case 'list':
-			case 'thumbnails':
 			case 'preview':
 				break;
 			case 'icons':
 				if(($c = $e->getProperty('columns')) !== FALSE)
 					break;
 				$c = array('icon', 'label');
+				$e->setProperty('columns', $c);
+				break;
+			case 'thumbnails':
+				if(($c = $e->getProperty('columns')) !== FALSE)
+					break;
+				$c = array('thumbnail', 'label');
 				$e->setProperty('columns', $c);
 				break;
 			default:
