@@ -320,7 +320,7 @@ static void _idle_icons(Desktop * desktop, Config * config)
 		desktop->foreground = color;
 	}
 	/* icons font */
-	if((p = config_get(config, "icons", "font")) == NULL)
+	if((p = config_get(config, "icons", "font")) != NULL)
 		desktop->font = pango_font_description_from_string(p);
 	else
 	{
@@ -2292,6 +2292,13 @@ static void _preferences_set(Desktop * desktop)
 		if((p = config_get(config, "icons", "font")) != NULL)
 			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
 						desktop->pr_ifont), p);
+		else if((q = pango_font_description_to_string(desktop->font))
+				!= NULL)
+		{
+			gtk_font_button_set_font_name(GTK_FONT_BUTTON(
+						desktop->pr_ifont), q);
+			g_free(q);
+		}
 		if((p = config_get(config, "icons", "monitor")) != NULL)
 		{
 			j = strtol(p, &q, 10);
