@@ -188,7 +188,9 @@ form.treeview.icons > div.table > div.row span.icon {
 form.treeview.icons > div.table > div.row span.label,
 form.treeview.thumbnails > div.table > div.row span.label {
 	display:			block;
+	height:				3.5em;
 	text-align:			center;
+	word-wrap:			break-word;
 }
 
 form.treeview.list > div.table > div.row {
