@@ -165,7 +165,8 @@ class ProjectModule extends ContentModule
 		AND daportal_download.content_id=download.content_id
 		AND project.public='1' AND project.enabled='1'
 		AND download.public='1' AND download.enabled='1'
-		AND project_id=:project_id";
+		AND project_id=:project_id
+		ORDER BY download.timestamp DESC";
 	protected $project_query_list_projects_user = "SELECT content_id AS id,
 		daportal_content.enabled AS enabled,
 		timestamp, name AS module,
@@ -667,7 +668,7 @@ class ProjectModule extends ContentModule
 		$toolbar = $this->getToolbar($engine, $project);
 		$page->append($toolbar);
 		//screenshots
-		$error = 'Could not list screenshots';
+		$error = _('Could not list screenshots');
 		if(($res = $db->query($engine, $query, array(
 				'project_id' => $project['id']))) === FALSE)
 			$page->append('dialog', array('type' => 'error',
