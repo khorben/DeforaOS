@@ -504,10 +504,17 @@ abstract class ContentModule extends Module
 			$pcnt = $res[0][0];
 		if(is_string(($order = $this->content_list_order)))
 			$query .= ' ORDER BY '.$order;
-		if(($limit = $this->content_list_count) > 0 && is_int($limit))
-			$query .= ' LIMIT '.$limit;
-		if(is_numeric($p) && $p > 1)
-			$query .= ' OFFSET '.($limit * ($p - 1));
+		//paging
+		$limit = FALSE;
+		if($this->content_list_count > 0)
+		{
+			$limit = $this->content_list_count;
+			$offset = FALSE;
+			if(is_numeric($p) && $p > 1)
+				$offset = $limit * ($p - 1);
+			$query .= $db->offset($limit, $offset);
+		}
+		//query
 		if(($res = $db->query($engine, $this->query_list.$query,
 				array('module_id' => $this->id))) === FALSE)
 		{
