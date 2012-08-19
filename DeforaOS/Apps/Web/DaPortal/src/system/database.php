@@ -54,6 +54,19 @@ abstract class Database
 	}
 
 
+	//Database::offset
+	public function offset($limit, $offset = FALSE)
+	{
+		//XXX report errors
+		if(!is_numeric($limit))
+			$limit = 0;
+		$ret = " LIMIT $limit";
+		if($offset !== FALSE && is_numeric($offset))
+			$ret .= " OFFSET $offset";
+		return $ret;
+	}
+
+
 	//Database::transactionBegin
 	public function transactionBegin($engine)
 	{
@@ -128,7 +141,6 @@ abstract class Database
 	abstract public function getLastId($engine, $table, $field);
 
 	abstract public function enum($engine, $table, $field);
-	abstract public function offset($limit, $offset = FALSE);
 	abstract public function query($engine, $query, $parameters = FALSE);
 
 
@@ -185,15 +197,6 @@ class DatabaseDummy extends Database
 	}
 
 
-	//DatabaseDummy::offset
-	public function offset($limit, $offset = FALSE)
-	{
-		//always ignore
-		return '';
-	}
-
-
-	//useful
 	//DatabaseDummy::query
 	public function query($engine, $query, $parameters = FALSE)
 	{

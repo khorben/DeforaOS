@@ -58,19 +58,6 @@ class SQLite3Database extends Database
 	}
 
 
-	//SQLite3Database::offset
-	public function offset($limit, $offset = FALSE)
-	{
-		//XXX report errors
-		if(!is_numeric($limit))
-			$limit = 0;
-		$ret = " LIMIT $limit";
-		if($offset !== FALSE && is_numeric($offset))
-			$ret .= " OFFSET $offset";
-		return $ret;
-	}
-
-
 	//SQLite3Database::query
 	public function query($engine, $query, $parameters = FALSE)
 	{
