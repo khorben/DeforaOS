@@ -23,23 +23,43 @@ class Mime
 	//methods
 	//static
 	//Mime::getIcon
-	static public function getIcon(&$engine, $filename, $size = 48)
+	static public function getIcon($engine, $filename, $size = 48)
 	{
 		//FIXME no longer hardcode the icon theme
 		$default = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
 			.'/mimetypes/gtk-file.png';
-		$from = array('application/', 'text/', 'video/');
-		$to = array('application-', 'text-', 'video-');
 
 		if(Mime::init($engine) === FALSE)
 			return $default;
 		if(($type = Mime::getType($engine, $filename, FALSE)) === FALSE)
 			return $default;
-		//substitutions
-		//FIXME the substitution may not exist (check and add fallbacks)
-		$icon = str_replace($from, $to, $type);
-		$icon = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
-			.'/mimetypes/gnome-mime-'.$icon.'.png';
+		return Mime::getIconByType($engine, $type, $size);
+	}
+
+
+	//Mime::getIconByType
+	static public function getIconByType($engine, $type, $size = 48)
+	{
+		$default = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
+			.'/mimetypes/gtk-file.png';
+		$from = array('application/', 'text/', 'video/');
+		$to = array('application-', 'text-', 'video-');
+		$icons = array('inode/directory' => 'places/folder');
+
+		if(Mime::init($engine) === FALSE)
+			return $default;
+		//well-known
+		if(isset($icons[$type]))
+			$icon = $icons[$type];
+		else
+		{
+			//substitutions
+			//FIXME check if the substitution exists (and fallback)
+			$icon = str_replace($from, $to, $type);
+			$icon = 'mimetypes/gnome-mime-'.$icon;
+		}
+		$icon = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size.'/'
+			.$icon.'.png';
 		return $icon;
 	}
 
