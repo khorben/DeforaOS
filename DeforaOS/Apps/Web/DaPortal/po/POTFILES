@@ -1,3 +1,4 @@
+../src/system/common.php
 ../src/system/user.php
 ../src/formats/html.php
 ../src/modules/admin/module.php
