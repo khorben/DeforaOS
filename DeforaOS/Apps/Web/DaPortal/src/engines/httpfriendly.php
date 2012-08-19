@@ -71,11 +71,7 @@ class HttpFriendlyEngine extends HttpEngine
 			}
 		}
 		if(count($path) > 0)
-		{
 			$title = implode('/', $path);
-			//obtain the extension
-			$this->_getRequestExtension($title, $extension);
-		}
 		//arguments
 		//XXX is there a function to do this directly?
 		$query = explode('&', $_SERVER['QUERY_STRING']);
@@ -96,16 +92,6 @@ class HttpFriendlyEngine extends HttpEngine
 		//analyze the extension
 		$this->_getRequestType($extension);
 		return new Request($this, $module, $action, $id, $title, $args);
-	}
-
-	protected function _getRequestExtension(&$variable, &$extension)
-	{
-		if($variable === FALSE)
-			return;
-		if(($pos = strpos($variable, '.')) === FALSE)
-			return;
-		$extension = substr($variable, $pos + 1);
-		$variable = substr($variable, 0, $pos);
 	}
 
 	protected function _getRequestType($extension)
@@ -172,7 +158,7 @@ class HttpFriendlyEngine extends HttpEngine
 		{
 			if($action === FALSE && $id === FALSE)
 				$url .= '/default';
-			$title = str_replace(array(' ', '.'), '-', $title);
+			$title = str_replace(' ', '-', $title);
 			$url .= '/'.$title;
 		}
 		//handle arguments
