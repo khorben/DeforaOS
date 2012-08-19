@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/html.php');
 require_once('./modules/content/module.php');
 
 
@@ -39,6 +40,18 @@ class BlogModule extends ContentModule
 		$this->text_content_list_title_by = _('Posts by');
 		$this->text_content_submit = _('New post');
 		$this->text_content_title = _('Planet');
+	}
+
+
+	//protected
+	//methods
+	//BlogModule::helperDisplayText
+	protected function helperDisplayText($engine, $page, $request, $content)
+	{
+		$text = $content['content'];
+
+		$text = HTML::format($engine, $text);
+		$page->append('htmlview', array('text' => $text));
 	}
 }
 
