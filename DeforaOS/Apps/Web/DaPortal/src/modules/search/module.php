@@ -55,6 +55,9 @@ class SearchModule extends Module
 		AND daportal_content.public='1'
 		AND daportal_module.enabled='1'
 		AND daportal_user.enabled='1'";
+	protected $query_fields = 'SELECT content_id AS id, timestamp AS date,
+		name AS module, daportal_content.user_id AS user_id, title,
+		content, username';
 
 
 	//methods
@@ -72,6 +75,19 @@ class SearchModule extends Module
 		$ret[] = $this->helperAction($engine, 'add', $r,
 				_('Advanced search'));
 		return $ret;
+	}
+
+
+	//SearchModule::appendResult
+	protected function appendResult(&$engine, &$view, &$res)
+	{
+		$row = $view->append('row');
+		$row->setProperty('title', $res['title']);
+		$row->setProperty('username', $res['username']);
+		$row->setProperty('date', $res['date']);
+		$r = new Request($engine, $res['module'], 'preview', $res['id'],
+				$res['title']);
+		$row->setProperty('preview', $engine->process($r));
 	}
 
 
@@ -107,6 +123,7 @@ class SearchModule extends Module
 					'columns' => $columns));
 		for($i = 0; $i < $count; $i++)
 			$this->appendResult($engine, $view, $res[$i]);
+		//FIXME implement paging
 		return $page;
 	}
 
@@ -167,23 +184,8 @@ class SearchModule extends Module
 	}
 
 
-	//private
-	//methods
-	//SearchModule::appendResult
-	private function appendResult(&$engine, &$view, &$res)
-	{
-		$row = $view->append('row');
-		$row->setProperty('title', $res['title']);
-		$row->setProperty('username', $res['username']);
-		$row->setProperty('date', $res['date']);
-		$r = new Request($engine, $res['module'], 'preview', $res['id'],
-				$res['title']);
-		$row->setProperty('preview', $engine->process($r));
-	}
-
-
 	//SearchModule::pageSearch
-	private function pageSearch(&$engine, $request, $advanced = FALSE)
+	protected function pageSearch(&$engine, $request, $advanced = FALSE)
 	{
 		$q = $request->getParameter('q');
 		$page = new Page;
@@ -244,8 +246,8 @@ class SearchModule extends Module
 
 
 	//SearchModule::query
-	private function query($engine, $string, &$count, $intitle, $incontent,
-			$user = FALSE, $module = FALSE)
+	protected function query($engine, $string, &$count, $intitle,
+			$incontent, $user = FALSE, $module = FALSE)
 	{
 		global $db;
 
@@ -272,9 +274,9 @@ class SearchModule extends Module
 				=== FALSE)
 			return $engine->log('LOG_ERR', _('Unable to search'));
 		$count = $res[0][0];
-		$fields = 'SELECT content_id AS id, timestamp AS date,
-name AS module, daportal_content.user_id AS user_id, title, content, username';
+		$fields = $this->query_fields;
 		$order = 'ORDER BY timestamp DESC';
+		//FIXME also set a limit
 		if(($res = $db->query($engine, $fields.' '.$query.' '.$order,
 					$args)) === FALSE)
 			return $engine->log('LOG_ERR', _('Unable to search'));
