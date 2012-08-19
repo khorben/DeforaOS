@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/common.php');
 require_once('./system/mime.php');
 require_once('./system/module.php');
 
@@ -85,19 +86,7 @@ class BrowserModule extends Module
 	//BrowserModule::getPermissions
 	protected function getPermissions($mode)
 	{
-		$str = '----------';
-		if(($mode & BrowserModule::$S_IFDIR) == BrowserModule::$S_IFDIR)
-			$str[0] = 'd';
-		$str[1] = $mode & 0400 ? 'r' : '-';
-		$str[2] = $mode & 0200 ? 'w' : '-';
-		$str[3] = $mode & 0100 ? 'x' : '-';
-		$str[4] = $mode & 040 ? 'r' : '-';
-		$str[5] = $mode & 020 ? 'w' : '-';
-		$str[6] = $mode & 010 ? 'x' : '-';
-		$str[7] = $mode & 04 ? 'r' : '-';
-		$str[8] = $mode & 02 ? 'w' : '-';
-		$str[9] = $mode & 01 ? 'x' : '-';
-		return $str;
+		return Common::getPermissions($mode);
 	}
 
 
@@ -114,21 +103,6 @@ class BrowserModule extends Module
 			$root = '/tmp';
 		}
 		return $root;
-	}
-
-
-	//BrowserModule::getSize
-	protected function getSize($size)
-	{
-		if($size < 1024)
-			return $size.' '._('bytes');
-		if(($size = round($size / 1024)) < 1024)
-			return $size.' '._('kB');
-		if(($size = round($size / 1024)) < 1024)
-			return $size.' '._('MB');
-		if(($size = round($size / 1024)) < 1024)
-			return $size.' '._('GB');
-		return $size.' '._('TB');
 	}
 
 
@@ -235,8 +209,7 @@ class BrowserModule extends Module
 		if(($st = @stat($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
-		if(($st['mode'] & BrowserModule::$S_IFDIR)
-				== BrowserModule::$S_IFDIR)
+		if(($st['mode'] & Common::$S_IFDIR) == Common::$S_IFDIR)
 			$this->helperDisplayDirectory($engine, $page, $root,
 					$path);
 		else
@@ -253,6 +226,7 @@ class BrowserModule extends Module
 		if(($dir = @opendir($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 				'text' => $error));
+		$path = rtrim($path, '/');
 		$columns = array('icon' => '', 'title' => _('Title'),
 				'user' => _('User'), 'group' => _('Group'),
 				'size' => _('Size'), 'date' => _('Date'),
@@ -266,10 +240,9 @@ class BrowserModule extends Module
 			$fullpath = $root.'/'.$path.'/'.$de;
 			$st = lstat($fullpath);
 			$row = $view->append('row');
-			if($st['mode'] & BrowserModule::$S_IFDIR)
-				//FIXME hardcoded
-				$icon = 'icons/gnome/gnome-icon-theme/16x16'
-					.'/places/folder.png';
+			if($st['mode'] & Common::$S_IFDIR)
+				$icon = Mime::getIconByType($engine,
+							'inode/directory', 16);
 			else
 				$icon = Mime::getIcon($engine, $de, 16);
 			$icon = new PageElement('image', array(
@@ -282,7 +255,7 @@ class BrowserModule extends Module
 			$row->setProperty('title', $link);
 			$row->setProperty('user', $this->getUser($st['uid']));
 			$row->setProperty('group', $this->getGroup($st['gid']));
-			$row->setProperty('size', $this->getSize($st['size']));
+			$row->setProperty('size', Common::getSize($st['size']));
 			$row->setProperty('date', $this->getDate($st['mtime']));
 			$row->setProperty('mode', $this->getPermissions(
 					$st['mode']));
@@ -300,7 +273,7 @@ class BrowserModule extends Module
 		$col1->append('label', array('class' => 'bold',
 				'text' => _('Filename:')));
 		$r = new Request($engine, $this->name, 'download', FALSE,
-				$path);
+				ltrim($path, '/'));
 		$link = new PageElement('link', array('request' => $r,
 				'text' => basename($path)));
 		$col2->append($link);
@@ -318,7 +291,7 @@ class BrowserModule extends Module
 				$this->getPermissions($st['mode']));
 		//size
 		$this->_displayFileField($col1, $col2, _('Size:'),
-				$this->getSize($st['size']));
+				Common::getSize($st['size']));
 		//creation time
 		$this->_displayFileField($col1, $col2, _('Created on:'),
 				$this->getDate($st['ctime']));
@@ -348,11 +321,6 @@ class BrowserModule extends Module
 			return '/';
 		return $path;
 	}
-
-
-	//private
-	//properties
-	static private $S_IFDIR = 040000;
 }
 
 ?>
