@@ -16,6 +16,7 @@
 
 
 
+require_once('./system/common.php');
 require_once('./system/html.php');
 require_once('./system/user.php');
 require_once('./modules/content/module.php');
@@ -609,7 +610,8 @@ class ProjectModule extends ContentModule
 		{
 			$vbox = $page->append('vbox');
 			$vbox->append('title', array('text' => _('Releases')));
-			$columns = array('filename' => _('Filename'),
+			$columns = array('icon' => '',
+					'filename' => _('Filename'),
 					'owner' => _('Owner'),
 					'group' => _('Group'),
 					'date' => _('Date'),
@@ -621,7 +623,10 @@ class ProjectModule extends ContentModule
 				$row = $view->append('row');
 				$req = new Request($engine, 'download', FALSE,
 						$r['id'], $r['title']);
-				//FIXME set a proper stock icon (MIME)
+				$icon = Mime::getIcon($engine, $r['title'], 16);
+				$icon = new PageElement('image', array(
+						'source' => $icon));
+				$row->setProperty('icon', $icon);
 				$filename = new PageElement('link', array(
 						'request' => $req,
 						'text' => $r['title']));
@@ -637,7 +642,8 @@ class ProjectModule extends ContentModule
 				$date = $db->formatDate($engine,
 						$r['timestamp']);
 				$row->setProperty('date', $date);
-				$permissions = $r['mode']; //XXX
+				$permissions = Common::getPermissions(
+						$r['mode'], 512);
 				$row->setProperty('permissions', $permissions);
 			}
 		}
