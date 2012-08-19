@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - let the user define the desktop folder (possibly default to FDO's)
- * - let the default font color for icons be white
  * - set the font for the icons instantly
  * - track multiple selection on delete/properties */
 
@@ -321,8 +320,14 @@ static void _idle_icons(Desktop * desktop, Config * config)
 		desktop->foreground = color;
 	}
 	/* icons font */
-	if((p = config_get(config, "icons", "font")) != NULL)
+	if((p = config_get(config, "icons", "font")) == NULL)
 		desktop->font = pango_font_description_from_string(p);
+	else
+	{
+		desktop->font = pango_font_description_new();
+		pango_font_description_set_weight(desktop->font,
+				PANGO_WEIGHT_BOLD);
+	}
 	for(i = 0; i < desktop->icon_cnt; i++)
 	{
 		desktopicon_set_background(desktop->icon[i],
@@ -2231,6 +2236,8 @@ static void _preferences_set(Desktop * desktop)
 	String * q;
 	String const * filename = NULL;
 	GdkColor color = { 0, 0, 0, 0 };
+	const char black[] = "#000000000000";
+	const char white[] = "#ffffffffffff";
 	int how;
 	gboolean extend = FALSE;
 	size_t i;
@@ -2272,12 +2279,14 @@ static void _preferences_set(Desktop * desktop)
 				}
 		gtk_combo_box_set_active(GTK_COMBO_BOX(desktop->pr_ilayout),
 				how);
-		if((p = config_get(config, "icons", "background")) != NULL
-				&& gdk_color_parse(p, &color) == TRUE)
+		if((p = config_get(config, "icons", "background")) == NULL)
+			p = black;
+		if(gdk_color_parse(p, &color) == TRUE)
 			gtk_color_button_set_color(GTK_COLOR_BUTTON(
 						desktop->pr_ibcolor), &color);
-		if((p = config_get(config, "icons", "foreground")) != NULL
-				&& gdk_color_parse(p, &color) == TRUE)
+		if((p = config_get(config, "icons", "foreground")) == NULL)
+			p = white;
+		if(gdk_color_parse(p, &color) == TRUE)
 			gtk_color_button_set_color(GTK_COLOR_BUTTON(
 						desktop->pr_ifcolor), &color);
 		if((p = config_get(config, "icons", "font")) != NULL)
