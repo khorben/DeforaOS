@@ -18,6 +18,7 @@
 
 
 
+require_once('./system/common.php');
 require_once('./system/mime.php');
 require_once('./modules/content/module.php');
 
@@ -214,22 +215,10 @@ class DownloadModule extends ContentModule
 	}
 
 
-	//DownloadModule::getPermissionsString
-	protected function getPermissionsString($mode)
+	//DownloadModule::getPermissions
+	protected function getPermissions($mode)
 	{
-		$str = '----------';
-		if(($mode & 512) == 512)
-			$str[0] = 'd';
-		$str[1] = $mode & 0400 ? 'r' : '-';
-		$str[2] = $mode & 0200 ? 'w' : '-';
-		$str[3] = $mode & 0100 ? 'x' : '-';
-		$str[4] = $mode & 040 ? 'r' : '-';
-		$str[5] = $mode & 020 ? 'w' : '-';
-		$str[6] = $mode & 010 ? 'x' : '-';
-		$str[7] = $mode & 04 ? 'r' : '-';
-		$str[8] = $mode & 02 ? 'w' : '-';
-		$str[9] = $mode & 01 ? 'x' : '-';
-		return $str;
+		return Common::getPermissions($mode, 512);
 	}
 
 
@@ -632,7 +621,7 @@ class DownloadModule extends ContentModule
 		$name = $_FILES['files']['name'][$k];
 		//FIXME check for filename unicity
 		$content = Content::insert($engine, $this->id, $name,
-			FALSE, TRUE, TRUE);
+				FALSE, TRUE, TRUE);
 		if($content === FALSE)
 			return _('Internal server error');
 		$id = $content->getId();
@@ -763,7 +752,7 @@ class DownloadModule extends ContentModule
 			$row->setProperty('date', $db->formatDate($engine,
 					$res[$i]['timestamp']));
 			$row->setProperty('permissions',
-				$this->getPermissionsString($res[$i]['mode']));
+				$this->getPermissions($res[$i]['mode']));
 		}
 		return $page;
 	}
@@ -810,7 +799,7 @@ class DownloadModule extends ContentModule
 		$this->helperDisplayField($col1, $col2, _('Group:'),
 			$content['groupname']);
 		$this->helperDisplayField($col1, $col2, _('Permissions:'),
-			$this->getPermissionsString($content['mode']));
+			$this->getPermissions($content['mode']));
 		$this->helperDisplayField($col1, $col2, _('Size:'),
 				$stat['size'].' '._('bytes'));
 		$this->helperDisplayField($col1, $col2, _('Created on:'),
