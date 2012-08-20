@@ -69,14 +69,20 @@ class CliEngine extends Engine
 					$id = $options['i'];
 					break;
 				case 'o':
-					$o = explode('=', $options['o']);
-					if(count($o) < 2)
+					if(!is_array($options['o']))
+						$options['o'] = array($options['o']);
+					foreach($options['o'] as $o)
 					{
-						$this->usage();
-						return FALSE;
+						$o = explode('=', $o);
+						if(count($o) < 2)
+						{
+							$this->usage();
+							return FALSE;
+						}
+						$key = array_shift($o);
+						$o = implode('=', $o);
+						$parameters[$key] = $o;
 					}
-					$key = array_shift($o);
-					$parameters[$key] = implode('=', $o);
 					break;
 				case 't':
 					$title = $options['t'];
