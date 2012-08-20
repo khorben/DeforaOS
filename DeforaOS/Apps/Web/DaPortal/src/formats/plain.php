@@ -31,7 +31,7 @@ class PlainFormat extends Format
 	//methods
 	//essential
 	//PlainFormat::match
-	protected function match(&$engine, $type = FALSE)
+	protected function match($engine, $type = FALSE)
 	{
 		switch($type)
 		{
@@ -44,7 +44,7 @@ class PlainFormat extends Format
 
 
 	//PlainFormat::attach
-	protected function attach(&$engine, $type = FALSE)
+	protected function attach($engine, $type = FALSE)
 	{
 	}
 
@@ -52,7 +52,7 @@ class PlainFormat extends Format
 	//public
 	//methods
 	//rendering
-	public function render(&$engine, $page, $filename = FALSE)
+	public function render($engine, $page, $filename = FALSE)
 	{
 		//FIXME ignore filename for the moment
 		if($page === FALSE)

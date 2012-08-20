@@ -25,7 +25,7 @@ class PdfFormat extends Format
 	//methods
 	//essential
 	//PdfFormat::match
-	protected function match(&$engine, $type = FALSE)
+	protected function match($engine, $type = FALSE)
 	{
 		switch($type)
 		{
@@ -38,7 +38,7 @@ class PdfFormat extends Format
 
 
 	//PdfFormat::attach
-	protected function attach(&$engine, $type = FALSE)
+	protected function attach($engine, $type = FALSE)
 	{
 	}
 
@@ -47,7 +47,7 @@ class PdfFormat extends Format
 	//methods
 	//rendering
 	//PdfFormat::render
-	public function render(&$engine, $page, $filename = FALSE)
+	public function render($engine, $page, $filename = FALSE)
 	{
 		//FIXME implement
 	}

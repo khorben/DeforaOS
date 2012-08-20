@@ -26,7 +26,7 @@ class XHTML11Format extends HTMLFormat
 	//methods
 	//essential
 	//XHTML11Format::match
-	protected function match(&$engine, $type = FALSE)
+	protected function match($engine, $type = FALSE)
 	{
 		switch($type)
 		{
@@ -39,7 +39,7 @@ class XHTML11Format extends HTMLFormat
 
 
 	//XHTML11Format::attach
-	protected function attach(&$engine, $type = FALSE)
+	protected function attach($engine, $type = FALSE)
 	{
 		global $config;
 		$version = '1.0';

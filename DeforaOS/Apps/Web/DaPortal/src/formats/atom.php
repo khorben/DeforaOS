@@ -25,7 +25,7 @@ class AtomFormat extends Format
 	//methods
 	//essential
 	//AtomFormat::match
-	protected function match(&$engine, $type = FALSE)
+	protected function match($engine, $type = FALSE)
 	{
 		switch($type)
 		{
@@ -38,7 +38,7 @@ class AtomFormat extends Format
 
 
 	//AtomFormat::attach
-	protected function attach(&$engine, $type = FALSE)
+	protected function attach($engine, $type = FALSE)
 	{
 		//for escaping
 		if(!defined('ENT_XML1'))
@@ -50,7 +50,7 @@ class AtomFormat extends Format
 	//methods
 	//rendering
 	//AtomFormat::render
-	public function render(&$engine, $page, $filename = FALSE)
+	public function render($engine, $page, $filename = FALSE)
 	{
 		global $config;
 		$encoding = 'utf-8';

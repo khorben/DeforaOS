@@ -26,7 +26,7 @@ class HTML5Format extends HTMLFormat
 	//methods
 	//essential
 	//HTML5Format::match
-	protected function match(&$engine, $type = FALSE)
+	protected function match($engine, $type = FALSE)
 	{
 		switch($type)
 		{
@@ -39,7 +39,7 @@ class HTML5Format extends HTMLFormat
 
 
 	//HTML5Format::attach
-	protected function attach(&$engine, $type = FALSE)
+	protected function attach($engine, $type = FALSE)
 	{
 		$this->doctype = "<!DOCTYPE html>\n";
 		//for escaping

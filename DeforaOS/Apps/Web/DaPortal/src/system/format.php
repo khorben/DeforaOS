@@ -26,7 +26,7 @@ abstract class Format
 	//methods
 	//static
 	//Format::attachDefault
-	public static function attachDefault(&$engine, $type = FALSE)
+	public static function attachDefault($engine, $type = FALSE)
 	{
 		global $config;
 		$ret = FALSE;
@@ -77,14 +77,14 @@ abstract class Format
 
 
 	//virtual
-	abstract public function render(&$engine, $page, $filename = FALSE);
+	abstract public function render($engine, $page, $filename = FALSE);
 
 
 	//protected
 	//methods
 	//virtual
-	abstract protected function match(&$engine, $type = FALSE);
-	abstract protected function attach(&$engine, $type = FALSE);
+	abstract protected function match($engine, $type = FALSE);
+	abstract protected function attach($engine, $type = FALSE);
 }
 
 
@@ -94,7 +94,7 @@ abstract class FormatElements extends Format
 	//public
 	//methods
 	//FormatElements::render
-	public function render(&$engine, $page, $filename = FALSE)
+	public function render($engine, $page, $filename = FALSE)
 	{
 		//FIXME ignore filename for the moment
 		if($page === FALSE)
