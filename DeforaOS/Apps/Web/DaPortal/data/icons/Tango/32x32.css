@@ -151,6 +151,10 @@
 	background-image:	url('Tango/32x32/actions/stock_search.png');
 }
 
+.stock32.updir {
+	background-image:	url('Tango/32x32/actions/gtk-go-up.png');
+}
+
 .stock32.user {
 	background-image:	url('Tango/32x32/apps/system-users.png');
 }

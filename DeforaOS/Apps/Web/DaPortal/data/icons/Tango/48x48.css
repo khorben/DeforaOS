@@ -151,6 +151,10 @@
 	background-image:	url('Tango/scalable/actions/stock_search.svg');
 }
 
+.stock48.updir {
+	background-image:	url('Tango/scalable/actions/gtk-go-up.png');
+}
+
 .stock48.user {
 	background-image:	url('Tango/scalable/apps/system-users.svg');
 }
