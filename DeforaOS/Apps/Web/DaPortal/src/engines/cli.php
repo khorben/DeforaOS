@@ -39,13 +39,14 @@ class CliEngine extends Engine
 	//CliEngine::getRequest
 	public function getRequest()
 	{
-		if(($options = getopt('DM:fm:a:i:t:')) === FALSE)
+		if(($options = getopt('DM:fm:a:i:o:t:')) === FALSE)
 			return FALSE;
 		$idempotent = TRUE;
 		$module = FALSE;
 		$action = FALSE;
 		$id = FALSE;
 		$title = FALSE;
+		$parameters = array();
 		foreach($options as $key => $value)
 			switch($key)
 			{
@@ -67,12 +68,22 @@ class CliEngine extends Engine
 				case 'i':
 					$id = $options['i'];
 					break;
+				case 'o':
+					$o = explode('=', $options['o']);
+					if(count($o) < 2)
+					{
+						$this->usage();
+						return FALSE;
+					}
+					$key = array_shift($o);
+					$parameters[$key] = implode('=', $o);
+					break;
 				case 't':
 					$title = $options['t'];
 					break;
 			}
-		//FIXME also allow parameters to be set
-		$ret = new Request($this, $module, $action, $id, $title);
+		$ret = new Request($this, $module, $action, $id, $title,
+				$parameters);
 		$ret->setIdempotent($idempotent);
 		return $ret;
 	}
@@ -108,6 +119,17 @@ class CliEngine extends Engine
 					." the proper output format");
 		else
 			$output->render($this, $page);
+	}
+
+
+	//CliEngine::usage
+	protected function usage()
+	{
+		$usage = "Usage: daportal [-Df][-M mime-type]"
+			."[-m module [-a action]][-i ID][-t title]\n"
+			."                [-o parameter=value...]\n";
+
+		fputs(STDERR, $usage);
 	}
 }
 
