@@ -15,6 +15,10 @@
 
 
 
+.stock16 {
+	background-image:	url('Tango/16x16/status/gtk-missing-image.png');
+}
+
 .stock16.about {
 	background-image:	url('Tango/16x16/actions/gtk-about.png');
 }

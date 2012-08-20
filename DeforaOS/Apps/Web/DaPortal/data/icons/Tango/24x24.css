@@ -15,6 +15,10 @@
 
 
 
+.stock24 {
+	background-image:	url('Tango/24x24/status/gtk-missing-image.png');
+}
+
 .stock24.about {
 	background-image:	url('Tango/24x24/actions/gtk-about.png');
 }

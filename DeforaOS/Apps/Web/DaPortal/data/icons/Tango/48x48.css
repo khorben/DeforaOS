@@ -15,6 +15,10 @@
 
 
 
+.stock48 {
+	background-image:	url('Tango/48x48/status/gtk-missing-image.png');
+}
+
 .stock48.about {
 	background-image:	url('Tango/scalable/actions/gtk-about.svg');
 }
