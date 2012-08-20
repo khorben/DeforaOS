@@ -16,7 +16,7 @@
 
 
 .stock48 {
-	background-image:	url('Tango/48x48/status/gtk-missing-image.png');
+	background-image:	url('Tango/48x48/status/gtk-missing-image.svg');
 }
 
 .stock48.about {
@@ -81,6 +81,10 @@
 
 .stock48.error {
 	background-image:	url('Tango/scalable/status/dialog-error.svg');
+}
+
+.stock48.folder-new {
+	background-image:	url('Tango/scalable/actions/folder-new.svg');
 }
 
 .stock48.forward {
@@ -152,7 +156,7 @@
 }
 
 .stock48.updir {
-	background-image:	url('Tango/scalable/actions/gtk-go-up.png');
+	background-image:	url('Tango/scalable/actions/gtk-go-up.svg');
 }
 
 .stock48.user {

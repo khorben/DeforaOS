@@ -83,6 +83,10 @@
 	background-image:	url('Tango/24x24/status/dialog-error.png');
 }
 
+.stock24.folder-new {
+	background-image:	url('Tango/24x24/actions/folder-new.png');
+}
+
 .stock24.forward {
 	background-image:	url('Tango/24x24/actions/forward.png');
 }
