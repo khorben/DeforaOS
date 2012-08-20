@@ -37,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/scripts/gettext.sh \
 		$(PACKAGE)-$(VERSION)/doc/scripts/gtkdoc.sh \
 		$(PACKAGE)-$(VERSION)/doc/scripts/pkgconfig.sh \
+		$(PACKAGE)-$(VERSION)/doc/scripts/subst.sh \
 		$(PACKAGE)-$(VERSION)/doc/scripts/project.conf \
 		$(PACKAGE)-$(VERSION)/src/configure.c \
 		$(PACKAGE)-$(VERSION)/src/makefile.c \

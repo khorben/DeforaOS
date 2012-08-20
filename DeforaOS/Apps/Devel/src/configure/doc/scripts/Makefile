@@ -22,6 +22,8 @@ install:
 	$(INSTALL) -m 0644 -- gtkdoc.sh $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/gtkdoc.sh
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/configure/scripts
 	$(INSTALL) -m 0644 -- pkgconfig.sh $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/pkgconfig.sh
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/configure/scripts
+	$(INSTALL) -m 0644 -- subst.sh $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/subst.sh
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/appbroker.sh
@@ -29,5 +31,6 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/gettext.sh
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/gtkdoc.sh
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/pkgconfig.sh
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/configure/scripts/subst.sh
 
 .PHONY: all clean distclean install uninstall
