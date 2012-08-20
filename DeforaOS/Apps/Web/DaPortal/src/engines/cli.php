@@ -82,6 +82,8 @@ class CliEngine extends Engine
 	//CliEngine::match
 	public function match()
 	{
+		if(isset($_SERVER['argc']) && $_SERVER['argv'])
+			return 100;
 		return 1;
 	}
 

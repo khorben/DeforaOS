@@ -49,10 +49,12 @@ class GtkEngine extends CliEngine
 	//GtkEngine::match
 	public function match()
 	{
+		if(($score = parent::match()) != 100)
+			return $score;
 		if(getenv('DISPLAY') === FALSE)
 			return 0;
 		if(class_exists('gtk'))
-			return 100;
+			return $score + 1;
 		return 0;
 	}
 
