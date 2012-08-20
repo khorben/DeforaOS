@@ -17,7 +17,8 @@
 
 #variables
 PREFIX="/usr/local"
-. "../config.sh"
+[ -f "../config.sh" ] && . "../config.sh"
+CHMOD="chmod"
 DEBUG="_debug"
 DEVNULL="/dev/null"
 INSTALL="install -m 0755"
@@ -78,7 +79,7 @@ while [ $# -gt 0 ]; do
 
 	#uninstall
 	if [ "$uninstall" -eq 1 ]; then
-		$DEBUG $RM -- "$BINDIR/$target"		|| exit 2
+		$DEBUG $RM -- "$BINDIR/$target"			|| exit 2
 		continue
 	fi
 
@@ -95,5 +96,7 @@ while [ $# -gt 0 ]; do
 	if [ $? -ne 0 ]; then
 		$RM -- "$target" 2> "$DEVNULL"
 		exit 2
+	elif [ -x "$target.in" ]; then
+		$DEBUG $CHMOD +x "$target"
 	fi
 done
