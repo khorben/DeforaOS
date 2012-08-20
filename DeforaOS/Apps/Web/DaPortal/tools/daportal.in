@@ -21,10 +21,10 @@
 DAPORTALPHP="daportal.php"
 PHP="php"
 
-PREFIX=@PREFIX@
+PREFIX="@PREFIX@"
 ETCDIR="$PREFIX/etc"
 WEBROOT="/var/www/htdocs"
-DAPORTALDIR="$WEBROOT/../daportal"
+DAPORTALDIR="$PREFIX/daportal"
 
 
 #functions
@@ -45,25 +45,13 @@ _warning() {
 #public
 #main
 #load the configuration
-configured=0
-#FIXME the name (and format) of this configuration file might be confusing
-if [ -f "$ETCDIR/daportal.conf" ]; then
-	. "$ETCDIR/daportal.conf" && configured=1
-fi
-[ $configured -ne 1 ] && _warning "Could not load the configuration file"
+[ -f "$ETCDIR/defaults/daportal" ] && . "$ETCDIR/defaults/daportal"
 
 #locate the installation directory
-if [ ! -d "$DAPORTALDIR" ]; then
+if [ ! -d "$DAPORTALDIR/src" ]; then
 	_error "Could not locate the DaPortal directory"
 	exit $?
 fi
 
-#change to the installation directory
-cd "$DAPORTALDIR/src"
-if [ $? -ne 0 ]; then
-	_error "Could not change to the DaPortal directory"
-	exit $?
-fi
-
 #run DaPortal
-$PHP $DAPORTALPHP $@
+(cd "$DAPORTALDIR/src" && $PHP $DAPORTALPHP $@)
