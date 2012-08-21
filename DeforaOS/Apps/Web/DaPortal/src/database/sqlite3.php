@@ -85,7 +85,8 @@ class SQLite3Database extends Database
 					.$this->handle->lastErrorMsg());
 		//fetch all the results
 		for($ret = array();
-			($r = $res->fetchArray(SQLITE3_BOTH)) !== FALSE;
+			($r = $res->fetchArray(SQLITE3_BOTH)) !== FALSE
+				&& is_array($r);
 			$ret[] = $r);
 		return $ret;
 	}
