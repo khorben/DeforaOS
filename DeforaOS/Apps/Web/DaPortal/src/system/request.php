@@ -134,7 +134,7 @@ class Request
 	//methods
 	//accessors
 	//Request::setModule
-	private function setModule(&$engine, $module)
+	private function setModule($engine, $module)
 	{
 		if($module === FALSE)
 		{
@@ -153,7 +153,7 @@ class Request
 
 
 	//Request::setAction
-	private function setAction(&$engine, $action)
+	private function setAction($engine, $action)
 	{
 		if($action === FALSE)
 		{
@@ -172,7 +172,7 @@ class Request
 
 
 	//Request::setId
-	private function setId(&$engine, $id)
+	private function setId($engine, $id)
 	{
 		if($id !== FALSE && !is_numeric($id))
 		{
@@ -185,7 +185,7 @@ class Request
 
 
 	//Request::setParameters
-	private function setParameters(&$engine, $parameters)
+	private function setParameters($engine, $parameters)
 	{
 		if($parameters !== FALSE && !is_array($parameters))
 			return $this->reset();
@@ -195,7 +195,7 @@ class Request
 
 
 	//Request::setTitle
-	private function setTitle(&$engine, $title)
+	private function setTitle($engine, $title)
 	{
 		$this->title = $title;
 		return TRUE;

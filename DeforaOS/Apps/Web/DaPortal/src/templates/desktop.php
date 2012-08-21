@@ -25,20 +25,20 @@ class DesktopTemplate extends Template
 	//protected
 	//methods
 	//DesktopTemplate::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		return 100;
 	}
 
 
 	//DesktopTemplate::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 	}
 
 
 	//DesktopTemplate::render
-	public function render(&$engine, $page)
+	public function render($engine, $page)
 	{
 		//FIXME implement
 		return $page;

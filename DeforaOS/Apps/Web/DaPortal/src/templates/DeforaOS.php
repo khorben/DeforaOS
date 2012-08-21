@@ -63,14 +63,14 @@ class DeforaOSTemplate extends BasicTemplate
 
 	//useful
 	//DeforaOSTemplate::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		return 0;
 	}
 
 
 	//DeforaOSTemplate::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		$this->name = 'DeforaOS';
 		parent::attach($engine);

@@ -65,7 +65,7 @@ class Mime
 
 
 	//Mime::getType
-	static public function getType(&$engine, $filename,
+	static public function getType($engine, $filename,
 			$default = 'application/octet-stream')
 	{
 		if(Mime::init($engine) === FALSE)
@@ -86,7 +86,7 @@ class Mime
 
 	//methods
 	//Mime::init
-	static private function init(&$engine)
+	static private function init($engine)
 	{
 		global $config;
 

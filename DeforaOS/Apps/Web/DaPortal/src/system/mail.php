@@ -27,7 +27,7 @@ class Mail
 	//static
 	//useful
 	//Mail::send
-	static public function send(&$engine, $from, $to, $subject, $page,
+	static public function send($engine, $from, $to, $subject, $page,
 			$headers = array())
 	{
 		global $config;

@@ -23,7 +23,7 @@ abstract class Template
 	//methods
 	//static
 	//Template::attachDefault
-	public static function attachDefault(&$engine)
+	public static function attachDefault($engine)
 	{
 		global $config;
 		$ret = FALSE;
@@ -69,13 +69,13 @@ abstract class Template
 
 
 	//virtual
-	abstract public function render(&$engine, $content);
+	abstract public function render($engine, $content);
 
 
 	//protected
 	//virtual
-	abstract protected function match(&$engine);
-	abstract protected function attach(&$engine);
+	abstract protected function match($engine);
+	abstract protected function attach($engine);
 }
 
 ?>

@@ -175,14 +175,14 @@ class BasicTemplate extends Template
 
 	//useful
 	//BasicTemplate::match
-	protected function match(&$engine)
+	protected function match($engine)
 	{
 		return 100;
 	}
 
 
 	//BasicTemplate::attach
-	protected function attach(&$engine)
+	protected function attach($engine)
 	{
 		global $config;
 
@@ -209,7 +209,7 @@ class BasicTemplate extends Template
 
 
 	//BasicTemplate::render
-	public function render(&$engine, $page)
+	public function render($engine, $page)
 	{
 		$title = $this->title;
 
