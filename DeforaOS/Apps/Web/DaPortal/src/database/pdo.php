@@ -53,8 +53,9 @@ class PdoDatabase extends Database
 				//PostgreSQL requires a sequence object
 				$seq = $table.'_'.$field.'_seq';
 				return $this->handle->lastInsertId($seq);
+			default:
+				return $this->handle->lastInsertId();
 		}
-		return $this->handle->lastInsertId();
 	}
 
 
