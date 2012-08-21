@@ -70,13 +70,8 @@ class DownloadModule extends ContentModule
 				case 'getRoot':
 					return $this->getRoot($engine);
 				case 'submit':
-					//XXX saves files in the root folder
-					$content = FALSE;
-					$error = $this->_submitProcess($engine,
-							$request, $content);
-					if($error === FALSE)
-						return $content;
-					return FALSE;
+					return $this->_callInternalSubmit(
+							$engine, $request);
 				default:
 					return FALSE;
 			}
@@ -92,6 +87,19 @@ class DownloadModule extends ContentModule
 				return $this->callSubmit($engine, $request);
 		}
 		return parent::call($engine, $request, $internal);
+	}
+
+	protected function _callInternalSubmit($engine, $request)
+	{
+		//XXX saves files in the root folder
+		if(($filename = $request->getParameter('filename')) === FALSE)
+			return FALSE;
+		$content = FALSE;
+		$error = $this->_submitProcessFile($engine, NULL, $filename,
+				$content);
+		if($error === FALSE)
+			return $content;
+		return FALSE;
 	}
 
 
@@ -583,8 +591,6 @@ class DownloadModule extends ContentModule
 			$parent = NULL;
 		else
 			$parent = $parent['download_id'];
-		//obtain the root repository
-		$root = $this->getRoot($engine);
 		//check known errors
 		if(!isset($_FILES['files']))
 			return TRUE;
@@ -596,7 +602,7 @@ class DownloadModule extends ContentModule
 		{
 			if($db->transactionBegin($engine) === FALSE)
 				return _('Internal server error');
-			if(($error = $this->_submitProcessFile($engine, $root,
+			if(($error = $this->_submitProcessUpload($engine,
 					$parent, $k, $content)) !== FALSE)
 			{
 				$db->transactionRollback($engine);
@@ -612,20 +618,20 @@ class DownloadModule extends ContentModule
 		return FALSE;
 	}
 
-	protected function _submitProcessFile($engine, $root, $parent, $k,
-			&$content)
+	protected function _submitProcessFile($engine, $parent, $filename,
+			&$content, $move = FALSE)
 	{
+		$root = $this->getRoot($engine);
 		$db = $engine->getDatabase();
 		$query = $this->download_query_file_insert;
 
-		$name = $_FILES['files']['name'][$k];
 		//FIXME check for filename unicity
-		$content = Content::insert($engine, $this->id, $name,
-				FALSE, TRUE, TRUE);
+		$name = basename($filename);
+		$content = Content::insert($engine, $this->id, $name, FALSE,
+				TRUE, TRUE);
 		if($content === FALSE)
 			return _('Internal server error');
 		$id = $content->getId();
-		$tmp = $_FILES['files']['tmp_name'][$k];
 		if($db->query($engine, $query, array('content_id' => $id,
 				'parent' => $parent,
 				'mode' => 420)) === FALSE)
@@ -634,7 +640,25 @@ class DownloadModule extends ContentModule
 		if(($id = $db->getLastId($engine, 'daportal_download',
 				'download_id')) === FALSE)
 			return _('Internal server error');
-		$dst = $root.'/'.$id;
+		if($move)
+		{
+			$dst = $root.'/'.$id;
+			rename($filename, $dst);
+		}
+		return FALSE;
+	}
+
+	protected function _submitProcessUpload($engine, $parent, $k, &$content)
+	{
+		$root = $this->getRoot($engine);
+
+		$filename = $_FILES['files']['name'][$k];
+		if(($res = $this->_submitProcessFile($engine, $parent,
+				$filename, $content, FALSE)) !== FALSE)
+			return $res;
+		//move the file ourselves
+		$tmp = $_FILES['files']['tmp_name'][$k];
+		$dst = $root.'/'.$content->getId();
 		if(move_uploaded_file($tmp, $dst) !== TRUE)
 			return _('Internal server error');
 		return FALSE;
