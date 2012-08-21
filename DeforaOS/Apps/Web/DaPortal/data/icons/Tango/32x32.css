@@ -99,6 +99,10 @@
 	background-image:	url('Tango/32x32/status/dialog-information.png');
 }
 
+.stock32.link {
+	background-image:	url('Tango/32x32/apps/web-browser.png');
+}
+
 .stock32.login {
 	background-image:	url('Tango/32x32/apps/system-users.png');
 }

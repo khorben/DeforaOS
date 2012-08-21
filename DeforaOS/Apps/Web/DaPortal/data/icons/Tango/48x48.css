@@ -16,7 +16,7 @@
 
 
 .stock48 {
-	background-image:	url('Tango/48x48/status/gtk-missing-image.svg');
+	background-image:	url('Tango/scalable/status/gtk-missing-image.svg');
 }
 
 .stock48.about {
@@ -97,6 +97,10 @@
 
 .stock48.info {
 	background-image:	url('Tango/scalable/status/dialog-information.svg');
+}
+
+.stock48.link {
+	background-image:	url('Tango/scalable/apps/web-browser.svg');
 }
 
 .stock48.login {
