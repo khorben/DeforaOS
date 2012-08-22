@@ -120,18 +120,24 @@ class Content
 
 
 	//Content::update
-	static public function update($engine, $content_id, $title, $content)
+	static public function update($engine, $content_id, $title,
+			$content = FALSE)
 	{
 		$db = $engine->getDatabase();
-		$query = Content::$query_update;
+		$query = Content::$query_update_title;
 
 		if(!is_numeric($content_id) || !is_string($title)
-				|| !is_string($content))
+				|| ($content !== FALSE && !is_string($content)))
 			return $engine->log('LOG_ERR',
 					'Invalid content to update');
-		if($db->query($engine, $query, array(
-				'content_id' => $content_id, 'title' => $title,
-				'content' => $content)) === FALSE)
+		$args = array('content_id' => $content_id,
+				'title' => $title);
+		if($content !== FALSE)
+		{
+			$query = Content::$query_update;
+			$args['content'] = $content;
+		}
+		if($db->query($engine, $query, $args) === FALSE)
 			return $engine->log('LOG_ERR',
 					'Could not update content');
 		return TRUE;
@@ -169,6 +175,9 @@ class Content
 			:public)';
 	static private $query_update = 'UPDATE daportal_content
 		SET title=:title, content=:content
+		WHERE content_id=:content_id';
+	static private $query_update_title = 'UPDATE daportal_content
+		SET title=:title
 		WHERE content_id=:content_id';
 
 
