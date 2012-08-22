@@ -17,6 +17,7 @@
 
 
 require_once('./system/auth.php');
+require_once('./system/user.php');
 
 
 //UnixAuth
