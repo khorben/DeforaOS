@@ -463,7 +463,8 @@ abstract class ContentModule extends Module
 					'type')) !== FALSE)
 			$r->setParameter('type', $type);
 		$treeview = $page->append('treeview', array('request' => $r));
-		$treeview->setProperty('columns', array('title' => _('Title'),
+		$treeview->setProperty('columns', array('icon' => '',
+				'title' => _('Title'),
 				'enabled' => _('Enabled'),
 				'public' => _('Public'),
 				'username' => _('Username'),
@@ -1042,6 +1043,7 @@ abstract class ContentModule extends Module
 				'size' => 16, 'title' => _('Enabled')));
 
 		$row->setProperty('id', 'content_id:'.$res['id']);
+		$row->setProperty('icon', '');
 		$r = new Request($engine, $this->name, 'update',
 				$res['id'], $res['title']);
 		$link = new PageElement('link', array('request' => $r,
