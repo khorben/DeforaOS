@@ -1057,6 +1057,7 @@ abstract class ContentModule extends Module
 		$r = new Request($engine, 'user', FALSE,
 				$res['user_id'], $res['username']);
 		$link = new PageElement('link', array('request' => $r,
+				'stock' => 'user',
 				'text' => $res['username']));
 		$row->setProperty('username', $link);
 		$date = $db->formatDate($engine, $res['timestamp']);
