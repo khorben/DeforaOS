@@ -907,14 +907,14 @@ abstract class ContentModule extends Module
 	//ContentModule::callUpdate
 	protected function callUpdate($engine, $request)
 	{
-		$error = _('Unable to fetch content');
-
 		//obtain the content
+		$error = _('Unable to fetch content');
 		if(($content = $this->_get($engine, $request->getId()))
 				=== FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		//check permissions
+		$error = _('Permission denied');
 		if($this->canUpdate($engine, $content, $error) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
