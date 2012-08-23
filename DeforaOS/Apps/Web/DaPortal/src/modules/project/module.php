@@ -555,7 +555,7 @@ class ProjectModule extends ContentModule
 		//preview
 		if($request->getParameter('preview') !== FALSE)
 		{
-			$title = $request->getParameter('reply_title');
+			$title = $request->getParameter('title');
 			$content = $request->getParameter('content');
 			$reply = array('title' => _('Preview: ').$title,
 					'user_id' => $user->getUserId(),
@@ -757,7 +757,7 @@ class ProjectModule extends ContentModule
 		return parent::callUpdate($engine, $request);
 	}
 
-	protected function _updateProcess($engine, $request, $content)
+	protected function _updateProcess($engine, $request, &$content)
 	{
 		$db = $engine->getDatabase();
 		$query = $this->project_query_project_update;
@@ -784,10 +784,9 @@ class ProjectModule extends ContentModule
 				$request->getId(), $request->getTitle());
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
-		$title = $request->getParameter('reply_title');
+		$title = $request->getParameter('title');
 		$vbox->append('entry', array('text' => _('Title: '),
-				'name' => 'reply_title',
-				'value' => $title));
+				'name' => 'title', 'value' => $title));
 		$vbox->append('textview', array('text' => _('Content: '),
 				'name' => 'content',
 				'value' => $request->getParameter('content')));
@@ -814,7 +813,7 @@ class ProjectModule extends ContentModule
 		$vbox = $form->append('vbox');
 		$vbox->append('entry', array('name' => 'title',
 				'text' => _('Name: '),
-				'value' => $request->getTitle()));
+				'value' => $request->getParameter('title')));
 		$vbox->append('entry', array('name' => 'synopsis',
 				'text' => _('Synopsis: '),
 				'value' => $request->getParameter('synopsis')));
@@ -1101,7 +1100,8 @@ class ProjectModule extends ContentModule
 		$synopsis = $request->getParameter('synopsis');
 		$content = $request->getParameter('content');
 		$cvsroot = $request->getParameter('cvsroot');
-		$content = array('title' => _('Preview: ').$request->getTitle(),
+		$content = array('title' => _('Preview: ')
+					.$request->getParameter('title'),
 				'user_id' => $user->getUserId(),
 				'username' => $user->getUsername(),
 				'date' => $this->timestampToDate(),
@@ -1137,7 +1137,8 @@ class ProjectModule extends ContentModule
 			'user_id' => $content['user_id'],
 			'username' => $content['username'],
 			'date' => $content['date'],
-			'title' => _('Preview: ').$request->getTitle(),
+			'title' => _('Preview: ')
+				.$request->getParameter('title'),
 			'synopsis' => $request->getParameter('synopsis'),
 			'content' => $request->getParameter('content'));
 		$this->helperPreview($engine, $vbox, $preview);
@@ -1147,7 +1148,7 @@ class ProjectModule extends ContentModule
 	//ProjectModule::helperUpdateTitle
 	protected function helperUpdateTitle($engine, $request, $page, $content)
 	{
-		if(($value = $request->getTitle()) === FALSE)
+		if(($value = $request->getParameter('title')) === FALSE)
 			$value = $content['title'];
 		$page->append('entry', array('name' => 'title',
 				'text' => _('Name: '), 'value' => $value));

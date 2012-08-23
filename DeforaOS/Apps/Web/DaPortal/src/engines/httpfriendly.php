@@ -84,7 +84,7 @@ class HttpFriendlyEngine extends HttpEngine
 				continue;
 			$q[0] = urldecode($q[0]);
 			$q[1] = urldecode($q[1]);
-			if($title === FALSE && $q[0] == 'title')
+			if($title === FALSE && $q[0] == '_title')
 				$title = $q[1];
 			else
 				$args[$q[0]] = $q[1];

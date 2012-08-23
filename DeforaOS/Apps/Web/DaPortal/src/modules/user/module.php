@@ -135,14 +135,15 @@ class UserModule extends Module
 		$r = new Request($engine, $this->name, 'register');
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('entry', array('text' => _('Username: '),
-			'name' => 'username', 'value' => $username));
+				'name' => 'username', 'value' => $username));
 		$form->append('entry', array('text' => _('e-mail address: '),
-			'name' => 'email', 'value' => $email));
+				'name' => 'email', 'value' => $email));
 		$form->append('button', array('stock' => 'cancel',
-			'text' => _('Cancel'),
-			'request' => new Request($engine, $this->name)));
+				'text' => _('Cancel'),
+				'request' => new Request($engine,
+					$this->name)));
 		$form->append('button', array('stock' => 'register',
-			'type' => 'submit', 'text' => _('Register')));
+				'type' => 'submit', 'text' => _('Register')));
 		return $form;
 	}
 
@@ -153,14 +154,15 @@ class UserModule extends Module
 		$r = new Request($engine, $this->name, 'reset');
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('entry', array('text' => _('Username: '),
-			'name' => 'username', 'value' => $username));
+				'name' => 'username', 'value' => $username));
 		$form->append('entry', array('text' => _('e-mail address: '),
-			'name' => 'email', 'value' => $email));
+				'name' => 'email', 'value' => $email));
 		$form->append('button', array('stock' => 'cancel',
-			'text' => _('Cancel'),
-			'request' => new Request($engine, $this->name)));
+				'text' => _('Cancel'),
+				'request' => new Request($engine,
+					$this->name)));
 		$form->append('button', array('stock' => 'reset',
-			'type' => 'submit', 'text' => _('Reset')));
+				'type' => 'submit', 'text' => _('Reset')));
 		return $form;
 	}
 
@@ -201,6 +203,61 @@ class UserModule extends Module
 				'stock' => 'new', 'name' => 'action',
 				'value' => 'submit', 'text' => _('Create')));
 		return $form;
+	}
+
+
+	//UserModule::formUpdate
+	protected function formUpdate($engine, $request, $user, $id, $error)
+	{
+		$cred = $engine->getCredentials();
+
+		//output the page
+		$title = $id ? _('Profile update for ').$user->getUsername()
+			: _('Profile update');
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => 'user',
+				'text' => $title));
+		if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		$r = new Request($engine, $this->name, 'update',
+				$request->getId(), $request->getId()
+					? $request->getTitle() : FALSE);
+		$form = $page->append('form', array('request' => $r));
+		//fields
+		//username (cannot be changed)
+		$form->append('label', array('text' => _('Username: ')));
+		$form->append('label', array('text' => $user->getUsername()));
+		//full name
+		if(($fullname = $request->getParameter('fullname')) === FALSE)
+			$fullname = $user->getFullname();
+		$form->append('entry', array('text' => _('Full name: '),
+				'name' => 'fullname', 'value' => $fullname));
+		//e-mail address
+		if(($email = $request->getParameter('email')) === FALSE)
+			$email = $user->getEmail();
+		$form->append('entry', array('text' => _('e-mail: '),
+				'name' => 'email', 'value' => $email));
+		//password
+		$form->append('label', array('text' => _('Optionally: ')));
+		if($id === FALSE && !$cred->isAdmin())
+			$form->append('entry', array(
+				'text' => _('Current password: '),
+				'name' => 'password', 'hidden' => TRUE));
+		$form->append('entry', array('text' => _('New password: '),
+				'name' => 'password1', 'hidden' => TRUE));
+		$form->append('entry', array(
+				'text' => _('Repeat new password: '),
+				'name' => 'password2', 'hidden' => TRUE));
+		//buttons
+		$r = new Request($engine, $this->name, 'profile',
+				$request->getId(), $request->getId()
+				? $user->getUsername() : FALSE);
+		$form->append('button', array('stock' => 'cancel',
+				'request' => $r, 'text' => _('Cancel')));
+		$form->append('button', array('stock' => 'update',
+				'type' => 'submit', 'text' => _('Update')));
+		return $page;
 	}
 
 
@@ -1062,61 +1119,8 @@ Thank you for registering!")));
 		if($error === FALSE)
 			//update was successful
 			return $this->_updateSuccess($engine, $request);
-		return $this->_update_form($engine, $request, $user, $id,
-			$error);
-	}
-
-	private function _update_form($engine, $request, $user, $id, $error)
-	{
-		$cred = $engine->getCredentials();
-
-		//output the page
-		$title = $id ? _('Profile update for ').$user->getUsername()
-			: _('Profile update');
-		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => 'user',
-				'text' => $title));
-		if(is_string($error))
-			$page->append('dialog', array('type' => 'error',
-				'text' => $error));
-		$r = new Request($engine, $this->name, 'update',
-			$request->getId(), $request->getId()
-				? $request->getTitle() : FALSE);
-		$form = $page->append('form', array('request' => $r));
-		//fields
-		//username (cannot be changed)
-		$form->append('label', array('text' => _('Username: ')));
-		$form->append('label', array('text' => $user->getUsername()));
-		//full name
-		if(($fullname = $request->getParameter('fullname')) === FALSE)
-			$fullname = $user->getFullname();
-		$form->append('entry', array('text' => _('Full name: '),
-			'name' => 'fullname', 'value' => $fullname));
-		//e-mail address
-		if(($email = $request->getParameter('email')) === FALSE)
-			$email = $user->getEmail();
-		$form->append('entry', array('text' => _('e-mail: '),
-			'name' => 'email', 'value' => $email));
-		//password
-		$form->append('label', array('text' => _('Optionally: ')));
-		if($id === FALSE && !$cred->isAdmin())
-			$form->append('entry', array(
-				'text' => _('Current password: '),
-				'name' => 'password', 'hidden' => TRUE));
-		$form->append('entry', array('text' => _('New password: '),
-			'name' => 'password1', 'hidden' => TRUE));
-		$form->append('entry', array(
-			'text' => _('Repeat new password: '),
-			'name' => 'password2', 'hidden' => TRUE));
-		//buttons
-		$r = new Request($engine, $this->name, 'profile',
-				$request->getId(), $request->getId()
-				? $user->getUsername() : FALSE);
-		$form->append('button', array('stock' => 'cancel',
-			'request' => $r, 'text' => _('Cancel')));
-		$form->append('button', array('stock' => 'update',
-			'type' => 'submit', 'text' => _('Update')));
-		return $page;
+		return $this->formUpdate($engine, $request, $user, $id,
+				$error);
 	}
 
 	private function _updateProcess($engine, $request, $user)
@@ -1170,14 +1174,15 @@ Thank you for registering!")));
 		$title = _('Profile update');
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
-			'text' => $title));
+				'text' => $title));
+		$info = _('Your profile was updated successfully');
 		$dialog = $page->append('dialog', array('type' => 'info',
-			'text' => _('Your profile was updated successfully')));
+				'text' => $info));
 		$r = new Request($engine, $this->name, 'profile',
-			$request->getId(), $request->getId()
-				? $request->getTitle() : FALSE);
+				$request->getId(), $request->getId()
+					? $request->getTitle() : FALSE);
 		$dialog->append('button', array('stock' => 'user',
-			'request' => $r, 'text' => _('My profile')));
+				'request' => $r, 'text' => _('My profile')));
 		return $page;
 	}
 

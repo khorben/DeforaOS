@@ -884,7 +884,7 @@ abstract class ContentModule extends Module
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
 		//store the content uploaded
-		$title = $request->getTitle();
+		$title = $request->getParameter('title');
 		$content = $request->getParameter('content');
 		$public = $request->getParameter('public') ? TRUE : FALSE;
 		$content = Content::insert($engine, $this->id, $title, $content,
@@ -943,7 +943,7 @@ abstract class ContentModule extends Module
 		return $page;
 	}
 
-	protected function _updateProcess($engine, $request, $content)
+	protected function _updateProcess($engine, $request, &$content)
 	{
 		//verify the request
 		if($request->getParameter('submit') === FALSE)
@@ -951,11 +951,13 @@ abstract class ContentModule extends Module
 		if($request->isIdempotent() !== FALSE)
 			return _('The request expired or is invalid');
 		//update the content
-		$title = $request->getTitle();
+		$title = $request->getParameter('title');
 		$text = $request->getParameter('content');
 		if(Content::update($engine, $content['id'], $title, $text)
 				=== FALSE)
 			return _('Internal server error');
+		$content['title'] = $title;
+		$content['content'] = $text;
 		return FALSE;
 	}
 
@@ -1474,7 +1476,8 @@ abstract class ContentModule extends Module
 				|| $request->getParameter('preview') === FALSE)
 			return;
 		$content = $request->getParameter('content');
-		$content = array('title' => _('Preview: ').$request->getTitle(),
+		$content = array('title' => _('Preview: ')
+					.$request->getParameter('title'),
 				'user_id' => $user->getUserId(),
 				'username' => $user->getUsername(),
 				'date' => $this->timestampToDate(),
@@ -1488,7 +1491,7 @@ abstract class ContentModule extends Module
 	{
 		$page->append('entry', array('name' => 'title',
 				'text' => _('Title: '),
-				'value' => $request->getTitle()));
+				'value' => $request->getParameter('title')));
 	}
 
 
@@ -1513,7 +1516,8 @@ abstract class ContentModule extends Module
 			'user_id' => $content['user_id'],
 			'username' => $content['username'],
 			'date' => $content['date'],
-			'title' => _('Preview: ').$request->getTitle(),
+			'title' => _('Preview: ')
+				.$request->getParameter('title'),
 			'content' => $request->getParameter('content'));
 		$this->helperPreview($engine, $vbox, $preview);
 	}
@@ -1522,7 +1526,7 @@ abstract class ContentModule extends Module
 	//ContentModule::helperUpdateTitle
 	protected function helperUpdateTitle($engine, $request, $page, $content)
 	{
-		if(($value = $request->getTitle()) === FALSE)
+		if(($value = $request->getParameter('title')) === FALSE)
 			$value = $content['title'];
 		$page->append('entry', array('name' => 'title',
 				'text' => _('Title: '), 'value' => $value));

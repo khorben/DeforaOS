@@ -417,9 +417,10 @@ class HTMLFormat extends FormatElements
 		}
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
-			$this->_renderFormHidden('module', $r->getModule());
-			$this->_renderFormHidden('action', $r->getAction());
-			$this->_renderFormHidden('id', $r->getId());
+			$this->_renderFormHidden('_module', $r->getModule());
+			$this->_renderFormHidden('_action', $r->getAction());
+			$this->_renderFormHidden('_id', $r->getId());
+			//FIXME add the title?
 			if(($args = $r->getParameters()) !== FALSE)
 				foreach($args as $k => $v)
 					$this->_renderFormHidden($k, $v);
@@ -789,10 +790,10 @@ class HTMLFormat extends FormatElements
 		if(($r = $e->getProperty('request')) !== FALSE)
 		{
 			//FIXME copied from renderForm()
-			$this->_renderTreeviewHidden('module', $r->getModule());
-			$this->_renderTreeviewHidden('action', $r->getAction());
-			$this->_renderTreeviewHidden('id', $r->getId());
-			$this->_renderTreeviewHidden('title', $r->getTitle());
+			$this->_renderTreeviewHidden('_module', $r->getModule());
+			$this->_renderTreeviewHidden('_action', $r->getAction());
+			$this->_renderTreeviewHidden('_id', $r->getId());
+			$this->_renderTreeviewHidden('_title', $r->getTitle());
 			if(($parameters = $r->getParameters()) !== FALSE)
 				foreach($r->getParameters() as $k => $v)
 					$this->_renderTreeviewHidden($k, $v);

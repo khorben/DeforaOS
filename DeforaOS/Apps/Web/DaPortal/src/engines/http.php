@@ -52,20 +52,20 @@ class HttpEngine extends Engine
 	//HttpEngine::attach
 	public function attach()
 	{
+		$request = $this->getRequest();
+		$url = $this->getUrl($request);
+
 		Locale::init($this);
 		$this->setType('text/html');
 		if($this->getDebug())
-		{
-			$request = $this->getRequest();
-			$url = $this->getUrl($request);
 			$this->log('LOG_DEBUG', 'URL is '.$url);
-		}
 		//FIXME this code is wrong (parent is not defined)
-		if(!isset($_SERVER['SCRIPT_NAME'])
-				|| substr($_SERVER['SCRIPT_NAME'], -10)
+		if(isset($_SERVER['SCRIPT_NAME'])
+				&& substr($_SERVER['SCRIPT_NAME'], -10)
 				!= '/index.php')
 		{
-			header('Location: '.$parent);
+			//FIXME might be an invalid address
+	 		header('Location: '.dirname($url));
 			exit(0);
 		}
 	}
@@ -113,11 +113,17 @@ class HttpEngine extends Engine
 				? stripslashes($value) : $value;
 			switch($k)
 			{
-				case 'module':
-				case 'action':
-				case 'id':
-				case 'title':
-					$$k = $request[$key];
+				case '_module':
+					$module = $request[$key];
+					break;
+				case '_action':
+					$action = $request[$key];
+					break;
+				case '_id':
+					$id = $request[$key];
+					break;
+				case '_title':
+					$title = $request[$key];
 					break;
 				default:
 					if($parameters === FALSE)
@@ -182,15 +188,15 @@ class HttpEngine extends Engine
 			$url = basename($name);
 		if(($module = $request->getModule()) !== FALSE)
 		{
-			$url .= '?module='.urlencode($module);
+			$url .= '?_module='.urlencode($module);
 			if(($action = $request->getAction()) !== FALSE)
-				$url .= '&action='.urlencode($action);
+				$url .= '&_action='.urlencode($action);
 			if(($id = $request->getId()) !== FALSE)
-				$url .= '&id='.urlencode($id);
+				$url .= '&_id='.urlencode($id);
 			if(($title = $request->getTitle()) !== FALSE)
 			{
 				$title = str_replace(' ', '-', $title);
-				$url .= '&title='.urlencode($title);
+				$url .= '&_title='.urlencode($title);
 			}
 			if($request->isIdempotent()
 					&& ($args = $request->getParameters())
