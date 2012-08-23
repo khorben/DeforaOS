@@ -31,8 +31,8 @@ SED="sed"
 #debug
 _debug()
 {
-	echo $@ 1>&2
-	$@
+	echo "$@" 1>&2
+	"$@"
 }
 
 
@@ -97,6 +97,6 @@ while [ $# -gt 0 ]; do
 		$RM -- "$target" 2> "$DEVNULL"
 		exit 2
 	elif [ -x "$target.in" ]; then
-		$DEBUG $CHMOD +x "$target"
+		$DEBUG $CHMOD 0755 "$target"
 	fi
 done

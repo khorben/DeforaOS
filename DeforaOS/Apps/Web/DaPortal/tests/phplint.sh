@@ -16,6 +16,7 @@
 
 
 #variables
+DEBUG="_debug"
 DEVNULL="/dev/null"
 FIND="find"
 PHPLINT="php -l"
@@ -59,6 +60,6 @@ target="$1"
 
 ret=0
 for i in $($FIND "$target" -name '*.php'); do
-	_debug $PHPLINT -f "$i" > "$DEVNULL"			|| ret=2
+	$DEBUG $PHPLINT -f "$i" > "$DEVNULL"			|| ret=2
 done
 exit $ret
