@@ -1,6 +1,6 @@
 PACKAGE	= DaPortal
 VERSION	= 1.9.0
-SUBDIRS	= css data doc html icons js images modules po src system templates themes tools
+SUBDIRS	= css data doc html icons js images modules po src system templates tests themes tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -646,6 +646,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/templates/private.tpl \
 		$(PACKAGE)-$(VERSION)/templates/Probe.tpl \
 		$(PACKAGE)-$(VERSION)/templates/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/phplint.sh \
+		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/themes/Makefile \
 		$(PACKAGE)-$(VERSION)/themes/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/themes/DeforaOS.css \

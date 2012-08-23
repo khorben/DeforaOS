@@ -17,16 +17,22 @@
 
 
 //gettext
-function gettext($text)
+if(!function_exists('gettext'))
 {
-	return $text;
+	function gettext($text)
+	{
+		return $text;
+	}
 }
 
 
 //_
-function _($text)
+if(!function_exists('_'))
 {
-	return gettext($text);
+	function _($text)
+	{
+		return gettext($text);
+	}
 }
 
 ?>
