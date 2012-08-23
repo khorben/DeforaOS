@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop XMLEditor */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 # include <gtk/gtk.h>
 
 
-/* Editor */
+/* XMLEditor */
 /* types */
 typedef struct _XMLEditor XMLEditor;
 
@@ -36,8 +36,8 @@ void xmleditor_about(XMLEditor * xmleditor);
 int xmleditor_error(XMLEditor * xmleditor, char const * message, int ret);
 
 gboolean xmleditor_close(XMLEditor * xmleditor);
-void xmleditor_open(XMLEditor * xmleditor, char const * filename);
-void xmleditor_open_dialog(XMLEditor * xmleditor);
+int xmleditor_open(XMLEditor * xmleditor, char const * filename);
+int xmleditor_open_dialog(XMLEditor * xmleditor);
 
 void xmleditor_collapse_all(XMLEditor * xmleditor);
 void xmleditor_expand_all(XMLEditor * xmleditor);

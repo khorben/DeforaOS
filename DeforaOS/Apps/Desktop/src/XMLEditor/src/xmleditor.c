@@ -380,24 +380,22 @@ void xmleditor_expand_all(XMLEditor * xmleditor)
 static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 		GtkTreeIter * parent);
 
-void xmleditor_open(XMLEditor * xmleditor, char const * filename)
+int xmleditor_open(XMLEditor * xmleditor, char const * filename)
 {
 	XMLDocument * doc;
 
 	/* FIXME handle errors */
 	gtk_tree_store_clear(xmleditor->store);
 	if(filename == NULL)
-		return;
+		return xmleditor_open_dialog(xmleditor);
 	if(xmleditor->xml != NULL)
 		xml_delete(xmleditor->xml);
 	if((xmleditor->xml = xml_new(NULL, filename)) == NULL)
-	{
-		xmleditor_error(xmleditor, error_get(), 0);
-		return;
-	}
+		return -xmleditor_error(xmleditor, error_get(), 1);
 	if((doc = xml_get_document(xmleditor->xml)) != NULL)
 		_open_document_node(xmleditor, doc->root, NULL);
 	_new_set_title(xmleditor); /* XXX make it a generic private function */
+	return 0;
 }
 
 static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
@@ -445,9 +443,11 @@ static void _open_document_node(XMLEditor * xmleditor, XMLNode * node,
 
 
 /* xmleditor_open_dialog */
-void xmleditor_open_dialog(XMLEditor * xmleditor)
+int xmleditor_open_dialog(XMLEditor * xmleditor)
 {
+	int ret;
 	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	char * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
@@ -455,14 +455,23 @@ void xmleditor_open_dialog(XMLEditor * xmleditor)
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("XML files"));
+	gtk_file_filter_add_mime_type(filter, "text/xml");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
-		return;
-	xmleditor_open(xmleditor, filename);
+		return -1;
+	ret = xmleditor_open(xmleditor, filename);
 	g_free(filename);
+	return ret;
 }
 
 
