@@ -48,6 +48,9 @@ class HttpAuth extends Auth
 	protected function attach($engine)
 	{
 		global $config;
+		$protocol = isset($_SERVER['SERVER_PROTOCOL'])
+			: $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
+		$error = $protocol.' 401 Unauthorized';
 
 		if(($realm = $config->getVariable('auth::basic', 'realm'))
 				=== FALSE)
@@ -58,7 +61,7 @@ class HttpAuth extends Auth
 			//FIXME only up getCredentials()?
 			header('WWW-Authenticate: Basic realm="'
 					.htmlspecialchars($realm).'"');
-			header('HTTP/1.0 401 Unauthorized');
+			header($error);
 			return TRUE;
 		}
 		if(($db = $engine->getDatabase()) === FALSE)
@@ -73,7 +76,7 @@ class HttpAuth extends Auth
 			{
 				header('WWW-Authenticate: Basic realm="'
 						.htmlspecialchars($realm).'"');
-				header('HTTP/1.0 401 Unauthorized');
+				header($error);
 			}
 			return TRUE;
 		}
