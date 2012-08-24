@@ -73,6 +73,7 @@ static int _test(int width, int height, char const * demo)
 	LockerDemoHelper helper;
 	Plugin * plugin;
 	GtkWidget * window;
+	GtkWidget * dwindow;
 	GtkWidget * widget;
 	GtkWidget * button;
 
@@ -123,18 +124,20 @@ static int _test(int width, int height, char const * demo)
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_widget_show_all(window);
 	/* demo window */
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(window), width, height);
-	g_signal_connect(window, "delete-event", G_CALLBACK(_test_on_closex),
+	dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(dwindow), width, height);
+	g_signal_connect(dwindow, "delete-event", G_CALLBACK(_test_on_closex),
 			NULL);
-	gtk_widget_show_all(window);
-	if(locker->dplugin->add(locker->demo, window) != 0)
+	gtk_widget_show_all(dwindow);
+	if(locker->dplugin->add(locker->demo, dwindow) != 0)
 		ret = error_set_print(PROGNAME, 1, "%s: %s", demo,
 				"Could not add window");
 	else
 	{
 		locker->dplugin->start(locker->demo);
 		gtk_main();
+		gtk_widget_destroy(dwindow);
+		gtk_widget_destroy(window);
 	}
 	locker->dplugin->destroy(locker->demo);
 	plugin_delete(plugin);
@@ -220,7 +223,7 @@ static int _test_helper_error(Locker * locker, char const * message, int ret)
 static gboolean _test_on_closex(void)
 {
 	gtk_main_quit();
-	return FALSE;
+	return TRUE;
 }
 
 
