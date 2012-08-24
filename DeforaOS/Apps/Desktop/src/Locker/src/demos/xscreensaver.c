@@ -35,7 +35,7 @@
 /* types */
 typedef struct _XScreensaverWindow
 {
-	GtkWidget * window;
+	GdkWindow * window;
 	GPid pid;
 } XScreensaverWindow;
 
@@ -53,9 +53,9 @@ typedef struct _LockerDemo
 /* plug-in */
 static XScreensaver * _xscreensaver_init(LockerDemoHelper * helper);
 static void _xscreensaver_destroy(XScreensaver * xscreensaver);
-static int _xscreensaver_add(XScreensaver * xscreensaver, GtkWidget * window);
+static int _xscreensaver_add(XScreensaver * xscreensaver, GdkWindow * window);
 static void _xscreensaver_remove(XScreensaver * xscreensaver,
-		GtkWidget * window);
+		GdkWindow * window);
 static void _xscreensaver_start(XScreensaver * xscreensaver);
 static void _xscreensaver_stop(XScreensaver * xscreensaver);
 
@@ -111,12 +111,12 @@ static void _xscreensaver_destroy(XScreensaver * xscreensaver)
 /* xscreensaver_add */
 static XScreensaverWindow * _add_allocate(XScreensaver * xscreensaver);
 
-static int _xscreensaver_add(XScreensaver * xscreensaver, GtkWidget * window)
+static int _xscreensaver_add(XScreensaver * xscreensaver, GdkWindow * window)
 {
 	int ret = 0;
 	LockerDemoHelper * helper = xscreensaver->helper;
 	XScreensaverWindow * w;
-	unsigned int id = GDK_WINDOW_XWINDOW(window->window);
+	unsigned int id = GDK_WINDOW_XWINDOW(window);
 	GError * error = NULL;
 	char * argv[] = { NULL, "-window-id", NULL, NULL };
 	char const * p;
@@ -169,7 +169,7 @@ static XScreensaverWindow * _add_allocate(XScreensaver * xscreensaver)
 
 /* xscreensaver_remove */
 static void _xscreensaver_remove(XScreensaver * xscreensaver,
-		GtkWidget * window)
+		GdkWindow * window)
 {
 	size_t i;
 	XScreensaverWindow * w;

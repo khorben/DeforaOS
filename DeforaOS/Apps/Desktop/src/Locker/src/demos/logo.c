@@ -41,7 +41,7 @@ typedef struct _LockerDemo
 {
 	LockerDemoHelper * helper;
 	GdkPixbuf * logo;
-	GtkWidget ** windows;
+	GdkWindow ** windows;
 	size_t windows_cnt;
 	guint timeout;
 } Logo;
@@ -51,8 +51,8 @@ typedef struct _LockerDemo
 /* plug-in */
 static Logo * _logo_init(LockerDemoHelper * helper);
 static void _logo_destroy(Logo * logo);
-static int _logo_add(Logo * logo, GtkWidget * window);
-static void _logo_remove(Logo * logo, GtkWidget * window);
+static int _logo_add(Logo * logo, GdkWindow * window);
+static void _logo_remove(Logo * logo, GdkWindow * window);
 static void _logo_start(Logo * logo);
 static void _logo_stop(Logo * logo);
 
@@ -118,10 +118,9 @@ static void _logo_destroy(Logo * logo)
 
 
 /* logo_add */
-static int _logo_add(Logo * logo, GtkWidget * window)
+static int _logo_add(Logo * logo, GdkWindow * window)
 {
-	GdkWindow * w;
-	GtkWidget ** p;
+	GdkWindow ** p;
 	GdkColor color = { 0x0, 0x0, 0x0, 0x0 };
 
 #ifdef DEBUG
@@ -131,17 +130,16 @@ static int _logo_add(Logo * logo, GtkWidget * window)
 			== NULL)
 		return -1;
 	logo->windows = p;
-	w = gtk_widget_get_window(window);
 	/* set the default color */
-	gdk_window_set_background(w, &color);
-	gdk_window_clear(w);
+	gdk_window_set_background(window, &color);
+	gdk_window_clear(window);
 	logo->windows[logo->windows_cnt++] = window;
 	return 0;
 }
 
 
 /* logo_remove */
-static void _logo_remove(Logo * logo, GtkWidget * window)
+static void _logo_remove(Logo * logo, GdkWindow * window)
 {
 	size_t i;
 
@@ -188,7 +186,7 @@ static void _logo_stop(Logo * logo)
 
 /* callbacks */
 /* logo_on_timeout */
-static void _timeout_window(Logo * logo, GtkWidget * widget);
+static void _timeout_window(Logo * logo, GdkWindow * window);
 
 static gboolean _logo_on_timeout(gpointer data)
 {
@@ -200,9 +198,8 @@ static gboolean _logo_on_timeout(gpointer data)
 	return TRUE;
 }
 
-static void _timeout_window(Logo * logo, GtkWidget * widget)
+static void _timeout_window(Logo * logo, GdkWindow * window)
 {
-	GdkWindow * window;
 	GdkRectangle rect;
 	int depth;
 	GdkPixbuf * frame;
@@ -214,15 +211,10 @@ static void _timeout_window(Logo * logo, GtkWidget * widget)
 	int seed = time(NULL) ^ getpid() ^ getppid() ^ getuid() ^ getgid();
 	const int black = 0x000000ff;
 
-	if(widget == NULL)
+	if(window == NULL)
 		return;
-#if GTK_CHECK_VERSION(2, 14, 0)
-	window = gtk_widget_get_window(widget);
-#else
-	window = widget->window;
-#endif
-	gdk_window_get_geometry(window, &rect.x, &rect.y,
-			&rect.width, &rect.height, &depth);
+	gdk_window_get_geometry(window, &rect.x, &rect.y, &rect.width,
+			&rect.height, &depth);
 	frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8, rect.width,
 			rect.height);
 	gdk_pixbuf_fill(frame, black);

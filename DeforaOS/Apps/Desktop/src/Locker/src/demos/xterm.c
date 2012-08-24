@@ -35,7 +35,7 @@
 /* types */
 typedef struct _XTermWindow
 {
-	GtkWidget * window;
+	GdkWindow * window;
 	GPid pid;
 } XTermWindow;
 
@@ -53,8 +53,8 @@ typedef struct _LockerDemo
 /* plug-in */
 static XTerm * _xterm_init(LockerDemoHelper * helper);
 static void _xterm_destroy(XTerm * xterm);
-static int _xterm_add(XTerm * xterm, GtkWidget * window);
-static void _xterm_remove(XTerm * xterm, GtkWidget * window);
+static int _xterm_add(XTerm * xterm, GdkWindow * window);
+static void _xterm_remove(XTerm * xterm, GdkWindow * window);
 static void _xterm_start(XTerm * xterm);
 static void _xterm_stop(XTerm * xterm);
 
@@ -110,12 +110,12 @@ static void _xterm_destroy(XTerm * xterm)
 /* xterm_add */
 static XTermWindow * _add_allocate(XTerm * xterm);
 
-static int _xterm_add(XTerm * xterm, GtkWidget * window)
+static int _xterm_add(XTerm * xterm, GdkWindow * window)
 {
 	int ret = 0;
 	LockerDemoHelper * helper = xterm->helper;
 	XTermWindow * w;
-	unsigned int id = GDK_WINDOW_XWINDOW(window->window);
+	unsigned int id = GDK_WINDOW_XWINDOW(window);
 	GError * error = NULL;
 	char * argv[] = { NULL, "-into", NULL, "-e", NULL, NULL };
 	char const * p;
@@ -174,7 +174,7 @@ static XTermWindow * _add_allocate(XTerm * xterm)
 
 
 /* xterm_remove */
-static void _xterm_remove(XTerm * xterm, GtkWidget * window)
+static void _xterm_remove(XTerm * xterm, GdkWindow * window)
 {
 	size_t i;
 	XTermWindow * w;

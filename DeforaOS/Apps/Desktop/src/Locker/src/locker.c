@@ -393,6 +393,7 @@ void locker_delete(Locker * locker)
 {
 	size_t i;
 	LockerPlugins * p;
+	GdkWindow * window;
 
 	/* destroy the generic plug-ins */
 	for(i = 0; i < locker->plugins_cnt; i++)
@@ -413,8 +414,16 @@ void locker_delete(Locker * locker)
 	{
 		if(locker->ddefinition->remove != NULL)
 			for(i = 0; i < locker->windows_cnt; i++)
-				locker->ddefinition->remove(locker->demo,
+			{
+#if GTK_CHECK_VERSION(2, 14, 0)
+				window = gtk_widget_get_window(
 						locker->windows[i]);
+#else
+				window = locker->windows[i]->window;
+#endif
+				locker->ddefinition->remove(locker->demo,
+						window);
+			}
 		locker->ddefinition->destroy(locker->demo);
 	}
 	if(locker->dplugin != NULL)
@@ -1578,7 +1587,15 @@ static int _locker_on_message(void * data, uint32_t value1, uint32_t value2,
 static void _locker_on_realize(GtkWidget * widget, gpointer data)
 {
 	Locker * locker = data;
+	GdkWindow * window;
 
 	if(locker->ddefinition != NULL && locker->ddefinition->add != NULL)
-		locker->ddefinition->add(locker->demo, widget);
+	{
+#if GTK_CHECK_VERSION(2, 14, 0)
+		window = gtk_widget_get_window(widget);
+#else
+		window = widget->window;
+#endif
+		locker->ddefinition->add(locker->demo, window);
+	}
 }

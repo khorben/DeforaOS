@@ -32,8 +32,8 @@ typedef struct _LockerDemo
 /* plug-in */
 static Template * _template_init(LockerDemoHelper * helper);
 static void _template_destroy(Template * template);
-static int _template_add(Template * template, GtkWidget * window);
-static void _template_remove(Template * template, GtkWidget * window);
+static int _template_add(Template * template, GdkWindow * window);
+static void _template_remove(Template * template, GdkWindow * window);
 static void _template_start(Template * template);
 static void _template_stop(Template * template);
 
@@ -78,14 +78,14 @@ static void _template_destroy(Template * template)
 
 
 /* template_add */
-static int _template_add(Template * template, GtkWidget * window)
+static int _template_add(Template * template, GdkWindow * window)
 {
 	return 0;
 }
 
 
 /* template_remove */
-static void _template_remove(Template * template, GtkWidget * window)
+static void _template_remove(Template * template, GdkWindow * window)
 {
 }
 

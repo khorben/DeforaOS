@@ -46,7 +46,7 @@ struct _Locker
 
 
 /* prototypes */
-static int _test(int width, int height, char const * demo);
+static int _test(int root, int width, int height, char const * demo);
 static int _usage(void);
 
 /* helpers */
@@ -66,16 +66,18 @@ static void _test_on_stop(gpointer data);
 /* test */
 static Config * _test_config(void);
 
-static int _test(int width, int height, char const * demo)
+static int _test(int root, int width, int height, char const * demo)
 {
 	int ret = 0;
 	Locker * locker;
 	LockerDemoHelper helper;
 	Plugin * plugin;
 	GtkWidget * window;
-	GtkWidget * dwindow;
+	GtkWidget * dwindow = NULL;
+	GdkWindow * wwindow;
 	GtkWidget * widget;
 	GtkWidget * button;
+	GdkScreen * screen;
 
 	if((locker = object_new(sizeof(*locker))) == NULL)
 		return error_print(PROGNAME);
@@ -124,12 +126,25 @@ static int _test(int width, int height, char const * demo)
 	gtk_container_add(GTK_CONTAINER(window), widget);
 	gtk_widget_show_all(window);
 	/* demo window */
-	dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(dwindow), width, height);
-	g_signal_connect(dwindow, "delete-event", G_CALLBACK(_test_on_closex),
-			NULL);
-	gtk_widget_show_all(dwindow);
-	if(locker->dplugin->add(locker->demo, dwindow) != 0)
+	if(root)
+	{
+		screen = gdk_screen_get_default();
+		wwindow = gdk_screen_get_root_window(screen);
+	}
+	else
+	{
+		dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(dwindow), width, height);
+		g_signal_connect(dwindow, "delete-event", G_CALLBACK(
+					_test_on_closex), NULL);
+		gtk_widget_show_all(dwindow);
+#if GTK_CHECK_VERSION(2, 14, 0)
+		wwindow = gtk_widget_get_window(dwindow);
+#else
+		wwindow = dwindow->window;
+#endif
+	}
+	if(locker->dplugin->add(locker->demo, wwindow) != 0)
 		ret = error_set_print(PROGNAME, 1, "%s: %s", demo,
 				"Could not add window");
 	else
@@ -174,7 +189,10 @@ static Config * _test_config(void)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: locker-test [-w width][-h height] demo\n", stderr);
+	fputs("Usage: locker-test [-r ][-w width][-h height] demo\n"
+"  -r	Display the demo on the root window\n"
+"  -w	Set the width of the test window\n"
+"  -h	Set the height of the test window\n", stderr);
 	return 1;
 }
 
@@ -252,14 +270,18 @@ static void _test_on_stop(gpointer data)
 int main(int argc, char * argv[])
 {
 	int o;
+	int root = 0;
 	int width = 640;
 	int height = 480;
 	char const * demo = NULL;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "w:h:")) != -1)
+	while((o = getopt(argc, argv, "rw:h:")) != -1)
 		switch(o)
 		{
+			case 'r':
+				root = 1;
+				break;
 			case 'w':
 				width = strtoul(optarg, NULL, 0);
 				break;
@@ -272,5 +294,5 @@ int main(int argc, char * argv[])
 	if(width == 0 || height == 0 || optind + 1 != argc)
 		return _usage();
 	demo = argv[optind];
-	return (_test(width, height, demo) == 0) ? 2 : 0;
+	return (_test(root, width, height, demo) == 0) ? 2 : 0;
 }

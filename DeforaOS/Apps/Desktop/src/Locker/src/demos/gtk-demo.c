@@ -58,7 +58,7 @@ typedef enum _GtkDemoImage
 
 typedef struct _GtkDemoWindow
 {
-	GtkWidget * window;
+	GdkWindow * window;
 	GdkPixbuf * frame;
 	GdkPixmap * pixmap;
 } GtkDemoWindow;
@@ -93,8 +93,8 @@ static const char * _gtkdemo_images[GDI_COUNT] =
 /* plug-in */
 static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper);
 static void _gtkdemo_destroy(GtkDemo * gtkdemo);
-static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window);
-static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window);
+static int _gtkdemo_add(GtkDemo * gtkdemo, GdkWindow * window);
+static void _gtkdemo_remove(GtkDemo * gtkdemo, GdkWindow * window);
 static void _gtkdemo_start(GtkDemo * gtkdemo);
 static void _gtkdemo_stop(GtkDemo * gtkdemo);
 
@@ -164,12 +164,11 @@ static void _gtkdemo_destroy(GtkDemo * gtkdemo)
 
 
 /* gtkdemo_add */
-static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
+static int _gtkdemo_add(GtkDemo * gtkdemo, GdkWindow * window)
 {
 	int ret = 0;
-	GdkWindow * w;
 	GtkDemoWindow * p;
-	GdkColor color = { 0xff000000, 0xffff, 0x0, 0x0 };
+	GdkColor color = { 0x0, 0x0, 0x0, 0x0 };
 	GdkPixmap * pixmap;
 	GdkPixbuf * background = gtkdemo->images[GDI_BACKGROUND];
 	GdkRectangle rect;
@@ -184,39 +183,38 @@ static int _gtkdemo_add(GtkDemo * gtkdemo, GtkWidget * window)
 						+ 1))) == NULL)
 		return -1;
 	gtkdemo->windows = p;
-	w = gtk_widget_get_window(window);
-	gdk_window_get_geometry(w, &rect.x, &rect.y, &rect.width, &rect.height,
-			&depth);
-#if 1 /* def DEBUG */
+	gdk_window_get_geometry(window, &rect.x, &rect.y, &rect.width,
+			&rect.height, &depth);
+#ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() (%dx%d), (%dx%d)@%dbpp\n", __func__,
 			rect.x, rect.y, rect.width, rect.height, depth);
 #endif
 	/* set the default color */
-	gdk_window_set_background(w, &color);
+	gdk_window_set_background(window, &color);
 	/* draw background */
 	width = (background != NULL) ? gdk_pixbuf_get_width(background) : 0;
 	height = (background != NULL) ? gdk_pixbuf_get_height(background) : 0;
 	if(width > 0 && height > 0)
 	{
-		pixmap = gdk_pixmap_new(w, width, height, -1);
+		pixmap = gdk_pixmap_new(window, width, height, -1);
 		gdk_draw_pixbuf(pixmap, NULL, background, 0, 0, 0, 0, width,
 				height, GDK_RGB_DITHER_NONE, 0, 0);
-		gdk_window_set_back_pixmap(w, pixmap, FALSE);
+		gdk_window_set_back_pixmap(window, pixmap, FALSE);
 		gdk_pixmap_unref(pixmap);
 	}
-	gdk_window_clear(w);
+	gdk_window_clear(window);
 	gtkdemo->windows[gtkdemo->windows_cnt].window = window;
 	gtkdemo->windows[gtkdemo->windows_cnt].frame =
 		gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8, rect.width,
 				rect.height);
 	gtkdemo->windows[gtkdemo->windows_cnt++].pixmap
-		= gdk_pixmap_new(w, rect.width, rect.width, -1);
+		= gdk_pixmap_new(window, rect.width, rect.width, -1);
 	return ret;
 }
 
 
 /* gtkdemo_remove */
-static void _gtkdemo_remove(GtkDemo * gtkdemo, GtkWidget * window)
+static void _gtkdemo_remove(GtkDemo * gtkdemo, GdkWindow * window)
 {
 	size_t i;
 
@@ -304,11 +302,7 @@ static void _timeout_window(GtkDemo * gtkdemo, GtkDemoWindow * window)
 
 	if(window->window == NULL)
 		return;
-#if GTK_CHECK_VERSION(2, 14, 0)
-	w = gtk_widget_get_window(window->window);
-#else
-	w = window->window->window;
-#endif
+	w = window->window;
 	gdk_window_get_geometry(w, &rect.x, &rect.y, &rect.width, &rect.height,
 			&depth);
 	/* reallocate the frame and background if necessary */
