@@ -135,6 +135,7 @@ typedef enum _ModemConfigType
 	/* values */
 	MCT_BOOLEAN,
 	MCT_FILENAME,
+	MCT_PASSWORD,
 	MCT_STRING,
 	MCT_UINT32,
 	/* layout */

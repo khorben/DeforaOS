@@ -2779,6 +2779,7 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			break;
 		case MCT_UINT32:
 			/* FIXME really implement */
+		case MCT_PASSWORD:
 		case MCT_STRING:
 			ret = gtk_hbox_new(FALSE, 4);
 			label = string_new_append(config->title, ": ", NULL);
@@ -2789,6 +2790,9 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
 					0);
 			widget = gtk_entry_new();
+			if(config->type == MCT_PASSWORD)
+				gtk_entry_set_visibility(GTK_ENTRY(widget),
+						FALSE);
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
 			break;
 		default:
@@ -2843,6 +2847,7 @@ static void _system_on_cancel(gpointer data)
 				gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
 							widget), p);
 				break;
+			case MCT_PASSWORD:
 			case MCT_STRING:
 				gtk_entry_set_text(GTK_ENTRY(widget),
 						(p != NULL) ? p : "");
@@ -2905,6 +2910,7 @@ static void _system_on_ok(gpointer data)
 				_phone_config_set_type(phone, "modem",
 						phone->name, config[i].name, p);
 				break;
+			case MCT_PASSWORD:
 			case MCT_STRING:
 				p = gtk_entry_get_text(GTK_ENTRY(widget));
 				_phone_config_set_type(phone, "modem",

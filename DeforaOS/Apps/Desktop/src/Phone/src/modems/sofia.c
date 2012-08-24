@@ -49,7 +49,7 @@ static ModemConfig _sofia_config[] =
 	{ NULL,			"Registrar",	MCT_SUBSECTION	},
 	{ "registrar_hostname",	"Hostname",	MCT_STRING	},
 	{ "registrar_username",	"Username",	MCT_STRING	},
-	{ "registrar_password",	"Password",	MCT_STRING	},
+	{ "registrar_password",	"Password",	MCT_PASSWORD	},
 	{ NULL,			"Proxy",	MCT_SUBSECTION	},
 	{ "proxy_hostname",	"Hostname",	MCT_STRING	},
 	{ NULL,			NULL,		MCT_NONE	},
