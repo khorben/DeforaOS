@@ -76,6 +76,17 @@ class NewsModule extends ContentModule
 		$text = HTML::format($engine, $text);
 		$page->append('htmlview', array('text' => $text));
 	}
+
+
+	//NewsModule::helperPreviewText
+	protected function helperPreviewText($engine, $preview, $request,
+			$content)
+	{
+		$text = $content['content'];
+
+		$text = HTML::format($engine, $text);
+		$preview->append('htmlview', array('text' => $text));
+	}
 }
 
 ?>
