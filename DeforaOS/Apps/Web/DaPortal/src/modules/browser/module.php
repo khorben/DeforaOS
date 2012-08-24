@@ -257,8 +257,12 @@ class BrowserModule extends Module
 			$row->setProperty('group', $this->getGroup($st['gid']));
 			$row->setProperty('size', Common::getSize($st['size']));
 			$row->setProperty('date', $this->getDate($st['mtime']));
-			$row->setProperty('mode', $this->getPermissions(
-					$st['mode']));
+			//permissions
+			$permissions = $this->getPermissions($st['mode']);
+			$permissions = new PageElement('label', array(
+					'class' => 'preformatted',
+					'text' => $permissions));
+			$row->setProperty('mode', $permissions);
 		}
 	}
 

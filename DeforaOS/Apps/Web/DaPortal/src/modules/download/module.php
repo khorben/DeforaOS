@@ -775,8 +775,12 @@ class DownloadModule extends ContentModule
 			$row->setProperty('group', $res[$i]['groupname']);
 			$row->setProperty('date', $db->formatDate($engine,
 					$res[$i]['timestamp']));
-			$row->setProperty('permissions',
-				$this->getPermissions($res[$i]['mode']));
+			//permissions
+			$permissions = $this->getPermissions($res[$i]['mode']);
+			$permissions = new PageElement('label', array(
+					'class' => 'preformatted',
+					'text' => $permissions));
+			$row->setProperty('permissions', $permissions);
 		}
 		return $page;
 	}
