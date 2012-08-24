@@ -49,7 +49,7 @@ class HttpAuth extends Auth
 	{
 		global $config;
 		$protocol = isset($_SERVER['SERVER_PROTOCOL'])
-			: $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
+			? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
 		$error = $protocol.' 401 Unauthorized';
 
 		if(($realm = $config->getVariable('auth::basic', 'realm'))
