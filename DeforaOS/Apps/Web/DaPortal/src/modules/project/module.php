@@ -645,6 +645,9 @@ class ProjectModule extends ContentModule
 				$row->setProperty('date', $date);
 				$permissions = Common::getPermissions(
 						$r['mode'], 512);
+				$permissions = new PageElement('label', array(
+						'class' => 'preformatted',
+						'text' => $permissions));
 				$row->setProperty('permissions', $permissions);
 			}
 		}
