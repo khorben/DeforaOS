@@ -144,6 +144,7 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 	if(sofia->nua != NULL) /* already started */
 		return 0;
 	if((sofia->nua = nua_create(sofia->root, _sofia_callback, modem,
+					NUTAG_URL("sip:0.0.0.0:5060"),
 					TAG_END())) == NULL)
 		return -1;
 	/* username */
@@ -158,14 +159,24 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 	snprintf(us.us_str, sizeof(us.us_str), "%s%s", "sip:", s);
 	url = url_make(sofia->home, us.us_str);
 	us.us_url[0] = *url;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() sip_from_create(\"%s\")\n", __func__,
+			us.us_str);
+#endif
 	from = sip_from_create(sofia->home, &us);
 	/* proxy */
-	s = helper->config_get(helper->modem, "proxy_hostname");
-	url = url_make(sofia->home, s);
-	nua_set_params(sofia->nua, NUTAG_PROXY(url), TAG_END());
+	if((s = helper->config_get(helper->modem, "proxy_hostname")) != NULL)
+	{
+		url = url_make(sofia->home, s);
+		nua_set_params(sofia->nua, NUTAG_PROXY(url), TAG_END());
+	}
 	if((sofia->handle = nua_handle(sofia->nua, modem, TAG_END())) == NULL)
 		return -helper->error(helper->modem,
 				"Cannot create operation handle", 1);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() nua_register(\"%s\", \"%s\", \"%s\")\n",
+			__func__, username, fullname, from);
+#endif
 	nua_register(sofia->handle, NUTAG_M_USERNAME(username),
 				NUTAG_M_DISPLAY(fullname), SIPTAG_FROM(from),
 				TAG_END());
@@ -239,6 +250,10 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 	if((to = sip_to_create(NULL, &us)) == NULL)
 		return -1; /* XXX free url */
 	to->a_display = request->call.number;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() nua_invite(\"%s\")\n", __func__,
+			us.us_str);
+#endif
 	nua_invite(sofia->handle, SIPTAG_TO(to), TAG_END());
 	/* FIXME free url? more? */
 	return 0;
@@ -254,6 +269,9 @@ static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 		return -1;
 	snprintf(us.us_str, sizeof(us.us_str), "%s%s", "sip:",
 			request->message_send.number);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, us.us_str);
+#endif
 	nua_message(sofia->handle,
 			NUTAG_URL(&us),
 			SIPTAG_CONTENT_TYPE_STR("text/plain"),
@@ -274,7 +292,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 	ModemEvent mevent;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event);
 #endif
 	switch(event)
 	{
@@ -325,6 +343,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
 			mevent.registration.mode
 				= MODEM_REGISTRATION_MODE_AUTOMATIC;
+			mevent.registration.status = MODEM_REGISTRATION_STATUS_UNKNOWN;
 			if(status == 200)
 				mevent.registration.status
 					= MODEM_REGISTRATION_STATUS_REGISTERED;
