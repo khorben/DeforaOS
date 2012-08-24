@@ -283,6 +283,8 @@ static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 
 /* callbacks */
 /* sofia_callback */
+static void _callback_message(ModemPlugin * modem, int status,
+		char const * phrase);
 static void _callback_register(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * nh, sip_t const * sip,
 		tagi_t tags[]);
@@ -339,8 +341,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			modem->helper->event(modem->helper->modem, &mevent);
 			break;
 		case nua_r_message:
-			/* FIXME report event */
-			fprintf(stderr, "r_message %03d %s\n", status, phrase);
+			_callback_message(modem, status, phrase);
 			break;
 		case nua_r_register:
 			_callback_register(modem, status, phrase, nh, sip,
@@ -368,6 +369,25 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 	}
 }
 
+static void _callback_message(ModemPlugin * modem, int status,
+		char const * phrase)
+{
+	Sofia * sofia = modem;
+	ModemPluginHelper * helper = sofia->helper;
+	ModemEvent mevent;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s() %03d %s\n", __func__, status, phrase);
+#endif
+	memset(&mevent, 0, sizeof(mevent));
+	mevent.type = MODEM_EVENT_TYPE_MESSAGE_SENT;
+	if(status == 200)
+		helper->event(helper->modem, &mevent);
+	else
+		/* FIXME really report an error */
+		helper->event(helper->modem, &mevent);
+}
+
 static void _callback_register(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * nh, sip_t const * sip,
 		tagi_t tags[])
@@ -375,13 +395,16 @@ static void _callback_register(ModemPlugin * modem, int status,
 	Sofia * sofia = modem;
 	ModemPluginHelper * helper = sofia->helper;
 	ModemEvent mevent;
-	sip_www_authenticate_t const * wa = sip->sip_www_authenticate;
+	sip_www_authenticate_t const * wa;
 	char const * username;
 	char const * password;
 	char const * scheme;
 	char const * realm;
 	char * authstring;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %03d %s\n", __func__, status, phrase);
+#endif
 	memset(&mevent, 0, sizeof(mevent));
 	mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
 	mevent.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
@@ -393,6 +416,7 @@ static void _callback_register(ModemPlugin * modem, int status,
 	{
 		mevent.registration.status
 			= MODEM_REGISTRATION_STATUS_SEARCHING;
+		wa = (sip != NULL) ? sip->sip_www_authenticate : NULL;
 		tl_gets(tags, SIPTAG_WWW_AUTHENTICATE_REF(wa), TAG_NULL());
 		username = helper->config_get(helper->modem,
 				"registrar_username");
@@ -417,7 +441,5 @@ static void _callback_register(ModemPlugin * modem, int status,
 	else if(status >= 400 && status <= 499)
 		mevent.registration.status
 			= MODEM_REGISTRATION_STATUS_NOT_SEARCHING;
-	modem->helper->event(modem->helper->modem, &mevent);
-	/* FIXME report errors */
-	fprintf(stderr, "r_register %03d %s\n", status, phrase);
+	helper->event(helper->modem, &mevent);
 }
