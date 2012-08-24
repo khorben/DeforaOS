@@ -175,7 +175,7 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 				"Cannot create operation handle", 1);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() nua_register(\"%s\", \"%s\", \"%s\")\n",
-			__func__, username, fullname, from);
+			__func__, username, fullname, us.us_str);
 #endif
 	nua_register(sofia->handle, NUTAG_M_USERNAME(username),
 				NUTAG_M_DISPLAY(fullname), SIPTAG_FROM(from),
@@ -283,6 +283,10 @@ static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 
 /* callbacks */
 /* sofia_callback */
+static void _callback_register(ModemPlugin * modem, int status,
+		char const * phrase, nua_handle_t * nh, sip_t const * sip,
+		tagi_t tags[]);
+
 static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 		nua_t * nua, nua_magic_t * magic, nua_handle_t * nh,
 		nua_hmagic_t * hmagic, sip_t const * sip, tagi_t tags[])
@@ -339,23 +343,8 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			fprintf(stderr, "r_message %03d %s\n", status, phrase);
 			break;
 		case nua_r_register:
-			memset(&mevent, 0, sizeof(mevent));
-			mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
-			mevent.registration.mode
-				= MODEM_REGISTRATION_MODE_AUTOMATIC;
-			mevent.registration.status = MODEM_REGISTRATION_STATUS_UNKNOWN;
-			if(status == 200)
-				mevent.registration.status
-					= MODEM_REGISTRATION_STATUS_REGISTERED;
-			else if(status == 401 || status == 405)
-				mevent.registration.status
-					= MODEM_REGISTRATION_STATUS_DENIED;
-			else if(status >= 400 && status <= 499)
-				mevent.registration.status
-					= MODEM_REGISTRATION_STATUS_NOT_SEARCHING;
-			modem->helper->event(modem->helper->modem, &mevent);
-			/* FIXME report errors */
-			fprintf(stderr, "r_register %03d %s\n", status, phrase);
+			_callback_register(modem, status, phrase, nh, sip,
+					tags);
 			break;
 		case nua_r_set_params:
 			if(status == 200)
@@ -377,4 +366,58 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 #endif
 			break;
 	}
+}
+
+static void _callback_register(ModemPlugin * modem, int status,
+		char const * phrase, nua_handle_t * nh, sip_t const * sip,
+		tagi_t tags[])
+{
+	Sofia * sofia = modem;
+	ModemPluginHelper * helper = sofia->helper;
+	ModemEvent mevent;
+	sip_www_authenticate_t const * wa = sip->sip_www_authenticate;
+	char const * username;
+	char const * password;
+	char const * scheme;
+	char const * realm;
+	char * authstring;
+
+	memset(&mevent, 0, sizeof(mevent));
+	mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
+	mevent.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
+	mevent.registration.status = MODEM_REGISTRATION_STATUS_UNKNOWN;
+	if(status == 200)
+		mevent.registration.status
+			= MODEM_REGISTRATION_STATUS_REGISTERED;
+	else if(status == 401 || status == 405)
+	{
+		mevent.registration.status
+			= MODEM_REGISTRATION_STATUS_SEARCHING;
+		tl_gets(tags, SIPTAG_WWW_AUTHENTICATE_REF(wa), TAG_NULL());
+		username = helper->config_get(helper->modem,
+				"registrar_username");
+		password = helper->config_get(helper->modem,
+				"registrar_password");
+		if(wa != NULL && username != NULL && password != NULL)
+		{
+			scheme = wa->au_scheme;
+			realm = msg_params_find(wa->au_params, "realm=");
+			authstring = su_sprintf(sofia->home, "%s:%s:%s:%s",
+					scheme, realm, username, password);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() authstring=\"%s\"\n",
+					__func__, authstring);
+#endif
+			nua_authenticate(nh, NUTAG_AUTH(authstring), TAG_END());
+			su_free(sofia->home, authstring);
+		}
+	}
+	else if(status == 403)
+		mevent.registration.status = MODEM_REGISTRATION_STATUS_DENIED;
+	else if(status >= 400 && status <= 499)
+		mevent.registration.status
+			= MODEM_REGISTRATION_STATUS_NOT_SEARCHING;
+	modem->helper->event(modem->helper->modem, &mevent);
+	/* FIXME report errors */
+	fprintf(stderr, "r_register %03d %s\n", status, phrase);
 }
