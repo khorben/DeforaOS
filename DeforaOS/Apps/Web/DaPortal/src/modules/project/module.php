@@ -747,6 +747,25 @@ class ProjectModule extends ContentModule
 	//ProjectModule::callSubmit
 	protected function callSubmit($engine, $request = FALSE)
 	{
+		$type = ($request !== FALSE) ? $request->getParameter('type')
+			: FALSE;
+
+		switch($type)
+		{
+			case 'release':
+				return $this->callSubmitRelease($engine,
+						$request);
+			case 'project':
+			default:
+				return $this->callSubmitProject($engine,
+						$request);
+		}
+	}
+
+
+	//ProjectModule::callSubmitProject
+	protected function callSubmitProject($engine, $request)
+	{
 		return parent::callSubmit($engine, $request);
 	}
 
@@ -772,6 +791,27 @@ class ProjectModule extends ContentModule
 			return _('Could not insert project');
 		}
 		return $ret;
+	}
+
+
+	//ProjectModule::callSubmitRelease
+	protected function callSubmitRelease($engine, $request)
+	{
+		$project = $this->_get($engine, $request->getId(),
+				$request->getTitle(), $request);
+
+		$error = 'Invalid project';
+		if($project === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		$title = _('New release for project ').$project['title'];
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		//FIXME really implement
+		$form = $this->formSubmitRelease($engine, $request, $project);
+		$page->append($form);
+		return $page;
 	}
 
 
@@ -881,6 +921,25 @@ class ProjectModule extends ContentModule
 		$form->append('button', array('type' => 'submit',
 				'stock' => 'new', 'name' => 'action',
 				'value' => 'submit', 'text' => _('Create')));
+		return $form;
+	}
+
+
+	//ProjectModule::formSubmitRelease
+	protected function formSubmitRelease($engine, $request, $project)
+	{
+		$r = new Request($engine, $this->name, 'submit', $project['id'],
+				$project['title'], array('type' => 'release'));
+		$form = new PageElement('form', array('request' => $r));
+		//FIXME really implement
+		$form->append('filechooser', array('text' => _('File: ')));
+		$form->append('entry', array('text' => _('Directory: ')));
+		$r = new Request($engine, $this->name, 'download',
+				$project['id'], $project['title']);
+		$form->append('button', array('stock' => 'cancel',
+				'request' => $r, 'text' => _('Cancel')));
+		$form->append('button', array('type' => 'submit',
+				'text' => _('Submit')));
 		return $form;
 	}
 
