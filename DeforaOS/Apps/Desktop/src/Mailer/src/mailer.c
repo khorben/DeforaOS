@@ -601,7 +601,7 @@ static int _new_accounts(Mailer * mailer)
 				|| strcmp(ext, &de->d_name[
 					len - sizeof(ext) + 1]) != 0)
 			continue;
-		de->d_name[len - 3] = '\0';
+		de->d_name[len - sizeof(ext) + 1] = '\0';
 		if((p = realloc(mailer->available, (mailer->available_cnt + 1)
 						* sizeof(*p))) == NULL)
 		{
