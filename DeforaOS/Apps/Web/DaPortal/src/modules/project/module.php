@@ -219,9 +219,12 @@ class ProjectModule extends ContentModule
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND daportal_content.title=:title";
-	protected $project_query_project_insert = 'INSERT INTO daportal_project
-		(project_id, synopsis, cvsroot)
+	protected $project_query_project_insert = 'INSERT INTO
+		daportal_project (project_id, synopsis, cvsroot)
 		VALUES (:project_id, :synopsis, :cvsroot)';
+	protected $project_query_project_release_insert = 'INSERT INTO
+		daportal_project_download (project_id, download_id)
+		VALUES (:project_id, :download_id)';
 	protected $project_query_project_update = 'UPDATE daportal_project
 		SET synopsis=:synopsis WHERE project_id=:project_id';
 	protected $project_query_get = "SELECT daportal_module.name AS module,
@@ -844,9 +847,67 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		//FIXME really implement
+		//process the request
+		if(($error = $this->_submitProcessRelease($engine, $request,
+				$project, $content)) === FALSE)
+			return $this->_submitSuccessRelease($engine, $request,
+					$page, $content);
+		else if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+					'text' => $error));
+		//form
 		$form = $this->formSubmitRelease($engine, $request, $project);
 		$page->append($form);
+		return $page;
+	}
+
+	protected function _submitProcessRelease($engine, $request, $project,
+			&$content)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_project_release_insert;
+
+		//verify the request
+		if($request === FALSE
+				|| $request->getParameter('submit') === FALSE)
+			return TRUE;
+		if($request->isIdempotent() !== FALSE)
+			return _('The request expired or is invalid');
+		//FIXME obtain the download path
+		//XXX this assumes the file was just being uploaded
+		$r = new Request($engine, 'download', 'submit', FALSE,
+				FALSE, array('submit' => 'submit'));
+		$r->setIdempotent(FALSE);
+		if($engine->process($r, TRUE) === FALSE)
+			return 'Internal server error';
+		//XXX ugly (and race condition)
+		//XXX using download_id to workaround a bug in getLastId()
+		if(($did = $db->getLastId($engine, 'daportal_download',
+				'download_id')) === FALSE)
+			return 'Internal server error';
+		$q = 'SELECT content_id AS id FROM daportal_download'
+			.' WHERE download_id=:download_id';
+		if(($res = $db->query($engine, $q, array(
+				'download_id' => $did))) === FALSE
+				|| count($res) != 1)
+			return 'Internal server error';
+		$did = $res[0]['id'];
+		if($db->query($engine, $query, array(
+				'project_id' => $project['id'],
+				'download_id' => $did)) === FALSE)
+			return 'Internal server error';
+		$content = Content::get($engine, $this->id, $project['id'],
+				$project['title']);
+		return FALSE;
+	}
+
+	protected function _submitSuccessRelease($engine, $request, $page,
+			$content)
+	{
+		$r = new Request($engine, $this->name, 'download',
+				$content->getId(), $content->getTitle());
+		$this->helperRedirect($engine, $r, $page,
+				$this->text_content_submit_progress); //XXX
 		return $page;
 	}
 
@@ -977,7 +1038,8 @@ class ProjectModule extends ContentModule
 		$form->append('button', array('stock' => 'cancel',
 				'request' => $r, 'text' => _('Cancel')));
 		$form->append('button', array('type' => 'submit',
-				'text' => _('Submit')));
+				'text' => _('Submit'),
+				'name' => 'submit', 'value' => 'submit'));
 		return $form;
 	}
 
