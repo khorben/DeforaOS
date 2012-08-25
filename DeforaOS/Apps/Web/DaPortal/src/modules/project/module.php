@@ -832,8 +832,12 @@ class ProjectModule extends ContentModule
 		$project = $this->getProject($engine, $request->getId(),
 				$request->getTitle());
 
-		$error = 'Invalid project';
+		$error = _('Invalid project');
 		if($project === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		$error = _('Permission denied');
+		if(!$this->canUpload($engine, $project))
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		$title = _('New release for project ').$project['title'];
