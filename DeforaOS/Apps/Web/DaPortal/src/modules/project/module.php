@@ -1113,12 +1113,10 @@ class ProjectModule extends ContentModule
 
 	//ProjectModule::helperPreviewText
 	protected function helperPreviewText($engine, $preview, $request,
-			$content = FALSE)
+			$content)
 	{
-		parent::helperPreviewText($engine, $preview, $request,
-				$content);
-		if($content === FALSE)
-			return;
+		$text = HTML::format($engine, $content['content']);
+		$preview->append('htmlview', array('text' => $text));
 		if(isset($content['cvsroot']))
 		{
 			$hbox = $preview->append('hbox');
