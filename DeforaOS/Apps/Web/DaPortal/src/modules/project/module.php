@@ -237,6 +237,23 @@ class ProjectModule extends ContentModule
 
 	//methods
 	//accessors
+	//ProjectModule::canUpload
+	protected function canUpload($engine, $project)
+	{
+		$cred = $engine->getCredentials();
+
+		if(($members = $this->getMembers($engine, $project)) === FALSE)
+			return FALSE;
+		$uid = $cred->getUserId();
+		if($project['user_id'] == $uid)
+			return TRUE;
+		foreach($members as $m)
+			if($m['user_id'] == $uid && $db->isTrue($m['admin']))
+				return TRUE;
+		return FALSE;
+	}
+
+
 	//ProjectModule::_get
 	protected function _get($engine, $id, $title = FALSE, $request = FALSE)
 	{
@@ -299,6 +316,19 @@ class ProjectModule extends ContentModule
 				'type' => 'submit',
 				'text' => _('Filter')));
 		return $form;
+	}
+
+
+	//ProjectModule::getMembers
+	protected function getMembers($engine, $project)
+	{
+		$db = $engine->getDatabase();
+		$query = $this->project_query_members;
+
+		if(($res = $db->query($engine, $query, array(
+				'project_id' => $project['id']))) === FALSE)
+			return FALSE;
+		return $res;
 	}
 
 
@@ -619,6 +649,19 @@ class ProjectModule extends ContentModule
 					'permissions' => _('Permissions'));
 			$view = $vbox->append('treeview', array(
 					'columns' => $columns));
+			if($this->canUpload($engine, $project))
+			{
+				$toolbar = $view->append('toolbar');
+				$req = new Request($engine, $this->name,
+						'submit',
+						$project['id'],
+						$project['title'], array(
+							'type' => 'release'));
+				$link = $toolbar->append('button', array(
+						'stock' => 'new',
+						'request' => $req,
+						'text' => _('New release')));
+			}
 			foreach($res as $r)
 			{
 				$row = $view->append('row');
@@ -968,12 +1011,9 @@ class ProjectModule extends ContentModule
 	protected function helperDisplayMembers($engine, $page, $request,
 			$content)
 	{
-		$db = $engine->getDatabase();
-		$query = $this->project_query_members;
 		$user = new User($engine, $content['user_id']);
 
-		if(($res = $db->query($engine, $query, array(
-				'project_id' => $content['id']))) === FALSE)
+		if(($res = $this->getMembers($engine, $content)) === FALSE)
 			return;
 		$vbox = $page->append('vbox');
 		$vbox->append('title', array('text' => _('Members')));
