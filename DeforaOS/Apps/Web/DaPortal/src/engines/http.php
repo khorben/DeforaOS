@@ -143,19 +143,20 @@ class HttpEngine extends Engine
 		global $config;
 		$cred = $this->getCredentials();
 		$module = 'user';
-		$action = 'login';
+		$actions = array('login');
 
 		if(($m = $config->getVariable('engine::http',
 				'private::module')) !== FALSE)
 			$module = $m;
 		if(($a = $config->getVariable('engine::http',
-		       		'private::action')) !== FALSE)
-			$action = $a;
+		       		'private::actions')) !== FALSE)
+			$actions = explode(',', $a);
 		$request = $this->_getRequestDo();
 		if($cred->getUserId() == 0)
 			if($request->getModule() != $module
-					|| $request->getAction() != $action)
-				return new Request($this, $module, $action);
+					|| !in_array($request->getAction(),
+						$actions))
+				return new Request($this, $module, $actions[0]);
 		return $request;
 	}
 
