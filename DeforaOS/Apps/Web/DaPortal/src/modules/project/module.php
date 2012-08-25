@@ -847,6 +847,8 @@ class ProjectModule extends ContentModule
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
+		$toolbar = $this->getToolbar($engine, $project);
+		$page->append($toolbar);
 		//process the request
 		if(($error = $this->_submitProcessRelease($engine, $request,
 				$project, $content)) === FALSE)
