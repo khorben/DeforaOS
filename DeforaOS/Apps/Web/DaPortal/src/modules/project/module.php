@@ -201,6 +201,17 @@ class ProjectModule extends ContentModule
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND project_id=:content_id";
+	protected $project_query_project_title = "SELECT project_id AS id,
+		title, daportal_user.user_id AS user_id,
+		daportal_user.username AS username, content, synopsis, cvsroot,
+		daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_project, daportal_user
+		WHERE daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.user_id=daportal_user.user_id
+		AND daportal_content.enabled='1'
+		AND daportal_content.public='1'
+		AND project_id=:content_id
+		AND title=:title";
 	protected $project_query_project_by_name = "SELECT project_id AS id,
 		title, content, synopsis, cvsroot, enabled
 		FROM daportal_content, daportal_project
@@ -333,13 +344,18 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::getProject
-	protected function getProject($engine, $id)
+	protected function getProject($engine, $id, $title = FALSE)
 	{
 		$db = $engine->getDatabase();
 		$query = $this->project_query_project;
+		$args = array('content_id' => $id);
 
-		if(($res = $db->query($engine, $query, array(
-					'content_id' => $id))) === FALSE
+		if($title !== FALSE)
+		{
+			$query = $this->project_query_project_title;
+			$args['title'] = $title;
+		}
+		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
 			return FALSE;
 		return $res[0];
@@ -406,7 +422,7 @@ class ProjectModule extends ContentModule
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'bug', 'text' => _('Bug reports')));
-		if($this->_isManager($engine, $id))
+		if($this->isManager($engine, $project))
 		{
 			$r = new Request($engine, $this->name, 'update', $id,
 					$project['title']);
@@ -419,14 +435,30 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::isManager
-	protected function _isManager($engine, $id)
+	protected function isManager($engine, $project)
 	{
 		$cred = $engine->getCredentials();
 
-		$user = new User($engine, $cred->getUserId());
-		if($user->isAdmin())
+		if($cred->isAdmin()
+				|| $project['user_id'] == $cred->getUserId())
 			return TRUE;
-		//FIXME implement
+		return FALSE;
+	}
+
+
+	//ProjectModule::isMember
+	protected function isMember($engine, $project)
+	{
+		$cred = $engine->getCredentials();
+
+		if(($members = $this->getMembers($engine, $project)) === FALSE)
+			return FALSE;
+		$uid = $cred->getUserId();
+		if($project['user_id'] == $uid)
+			return TRUE;
+		foreach($members as $m)
+			if($m['user_id'] == $uid)
+				return TRUE;
 		return FALSE;
 	}
 
@@ -797,8 +829,8 @@ class ProjectModule extends ContentModule
 	//ProjectModule::callSubmitRelease
 	protected function callSubmitRelease($engine, $request)
 	{
-		$project = $this->_get($engine, $request->getId(),
-				$request->getTitle(), $request);
+		$project = $this->getProject($engine, $request->getId(),
+				$request->getTitle());
 
 		$error = 'Invalid project';
 		if($project === FALSE)
@@ -931,9 +963,11 @@ class ProjectModule extends ContentModule
 		$r = new Request($engine, $this->name, 'submit', $project['id'],
 				$project['title'], array('type' => 'release'));
 		$form = new PageElement('form', array('request' => $r));
-		//FIXME really implement
-		$form->append('filechooser', array('text' => _('File: ')));
-		$form->append('entry', array('text' => _('Directory: ')));
+		$form->append('filechooser', array('text' => _('File: '),
+				'name' => 'files[]'));
+		$value = $request->getParameter('directory');
+		$form->append('entry', array('text' => _('Directory: '),
+				'name' => 'directory', 'value' => $value));
 		$r = new Request($engine, $this->name, 'download',
 				$project['id'], $project['title']);
 		$form->append('button', array('stock' => 'cancel',
