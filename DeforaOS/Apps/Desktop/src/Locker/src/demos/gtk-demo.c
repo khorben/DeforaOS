@@ -27,6 +27,7 @@
 #include "Locker/demo.h"
 #include "../../config.h"
 
+/* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -35,6 +36,11 @@
 #endif
 #ifndef DEMODIR
 # define DEMODIR	DATADIR "/gtk-2.0/demo"
+#endif
+
+/* macros */
+#ifndef MIN
+# define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 
