@@ -162,6 +162,9 @@ static Helper * _helper_new(void)
 	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
+#ifdef EMBEDDED
+	GtkToolItem * toolitem;
+#endif
 
 	if((helper = object_new(sizeof(*helper))) == NULL)
 		return NULL;
