@@ -582,7 +582,7 @@ class DownloadModule extends ContentModule
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => 'upload',
+		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		//toolbar
 		$toolbar = $this->getToolbar($engine, $parent);
