@@ -162,6 +162,10 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
+				<refentrytitle>delete</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
 				<refentrytitle>desktop</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,

@@ -1,4 +1,4 @@
-TARGETS	= browser.1 browser.html desktop.1 desktop.html desktopctl.1 desktopctl.html open.1 open.html properties.1 properties.html view.1 view.html
+TARGETS	= browser.1 browser.html delete.1 delete.html desktop.1 desktop.html desktopctl.1 desktopctl.html open.1 open.html properties.1 properties.html view.1 view.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -14,6 +14,12 @@ browser.1: browser.xml
 
 browser.html: browser.xml
 	./docbook.sh -P "$(PREFIX)" -- "browser.html"
+
+delete.1: delete.xml
+	./docbook.sh -P "$(PREFIX)" -- "delete.1"
+
+delete.html: delete.xml
+	./docbook.sh -P "$(PREFIX)" -- "delete.html"
 
 desktop.1: desktop.xml
 	./docbook.sh -P "$(PREFIX)" -- "desktop.1"
@@ -46,7 +52,7 @@ view.html: view.xml
 	./docbook.sh -P "$(PREFIX)" -- "view.html"
 
 clean:
-	$(RM) -- $(browser.1_OBJS) $(browser.html_OBJS) $(desktop.1_OBJS) $(desktop.html_OBJS) $(desktopctl.1_OBJS) $(desktopctl.html_OBJS) $(open.1_OBJS) $(open.html_OBJS) $(properties.1_OBJS) $(properties.html_OBJS) $(view.1_OBJS) $(view.html_OBJS)
+	$(RM) -- $(browser.1_OBJS) $(browser.html_OBJS) $(delete.1_OBJS) $(delete.html_OBJS) $(desktop.1_OBJS) $(desktop.html_OBJS) $(desktopctl.1_OBJS) $(desktopctl.html_OBJS) $(open.1_OBJS) $(open.html_OBJS) $(properties.1_OBJS) $(properties.html_OBJS) $(view.1_OBJS) $(view.html_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -54,6 +60,8 @@ distclean: clean
 install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "browser.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "browser.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "delete.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "delete.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktop.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktop.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktopctl.1"
@@ -68,6 +76,8 @@ install: $(TARGETS)
 uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "browser.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "browser.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "delete.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "delete.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktop.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktop.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktopctl.1"

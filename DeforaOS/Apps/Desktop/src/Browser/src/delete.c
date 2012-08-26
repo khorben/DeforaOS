@@ -450,7 +450,7 @@ static int _delete_filename_error(Delete * delete, char const * filename,
 static int _usage(void)
 {
 	fputs(_("Usage: delete [-fiRr] file...\n\
-  -f	Do not prompt for confirmation or output error messages\n\
+  -f	Do not prompt for confirmation and ignore errors\n\
   -i	Prompt for confirmation\n\
   -R	Remove file hierarchies\n\
   -r	Equivalent to -R\n"), stderr);

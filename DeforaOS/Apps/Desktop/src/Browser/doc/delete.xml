@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Browser User Manual">
 	<!ENTITY package   "DeforaOS Browser">
-	<!ENTITY name      "open">
-	<!ENTITY purpose   "Open and edit files with their registered handlers">
+	<!ENTITY name      "delete">
+	<!ENTITY purpose   "Delete files and directories">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,32 +49,38 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt"><option>-m</option> <replaceable>mime
-					type</replaceable></arg>
-			<arg choice="opt"><option>-a</option> <replaceable>action</replaceable></arg>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-i</option></arg>
+			<arg choice="opt"><option>-r</option></arg>
+			<arg choice="opt"><option>-R</option></arg>
 			<arg choice="plain" rep="repeat"><replaceable>file</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> automatically chooses the registered handler
-			to open one or more files from the command line interface.</para>
+		<para><command>&name;</command> deletes files and directories specified from
+			the command line interface.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
-				<term><option>-a</option></term>
+				<term><option>-f</option></term>
 				<listitem>
-					<para>Action to call. The default is "open".</para>
+					<para>Do not prompt for confirmation and ignore errors.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-m</option></term>
+				<term><option>-i</option></term>
 				<listitem>
-					<para>MIME type to force. The default behavior is to determine the MIME
-						type according to the respective file extension.</para>
+					<para>Always ask before deleting or recursing to a sub-directory.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-r, -R</option></term>
+				<listitem>
+					<para>Allow recursion through sub-directories.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
@@ -92,15 +98,15 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
-				<refentrytitle>delete</refentrytitle>
-				<manvolnum>1</manvolnum>
-			</citerefentry>,
-			<citerefentry>
 				<refentrytitle>desktop</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>desktopctl</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>open</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
