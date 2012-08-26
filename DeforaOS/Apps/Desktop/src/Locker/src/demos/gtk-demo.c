@@ -71,6 +71,7 @@ typedef struct _LockerDemo
 	size_t windows_cnt;
 	guint timeout;
 	guint frame_num;
+	int scroll;
 } GtkDemo;
 
 
@@ -145,6 +146,7 @@ static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper)
 	gtkdemo->windows_cnt = 0;
 	gtkdemo->timeout = 0;
 	gtkdemo->frame_num = 0;
+	gtkdemo->scroll = 0;
 	return gtkdemo;
 }
 
@@ -245,9 +247,16 @@ static void _gtkdemo_remove(GtkDemo * gtkdemo, GdkWindow * window)
 /* gtkdemo_start */
 static void _gtkdemo_start(GtkDemo * gtkdemo)
 {
+	LockerDemoHelper * helper = gtkdemo->helper;
+	char const * p;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	gtkdemo->scroll = 0;
+	if((p = helper->config_get(helper->locker, "gtk-demo", "scroll"))
+			!= NULL && strtol(p, NULL, 10) == 1)
+		gtkdemo->scroll = 1;
 	if(gtkdemo->timeout == 0 && _gtkdemo_on_timeout(gtkdemo) == TRUE)
 		gtkdemo->timeout = g_timeout_add(40, _gtkdemo_on_timeout,
 				gtkdemo);
@@ -285,10 +294,16 @@ static void _timeout_window(GtkDemo * gtkdemo, GtkDemoWindow * window)
 {
 	GdkWindow * w;
 	GdkPixbuf * background = gtkdemo->images[GDI_BACKGROUND];
-	gint back_width;
-	gint back_height;
+	gint back_width = 0;
+	gint back_height = 0;
+	guint offset_x = 0;
+	guint offset_y = 0;
 	GdkPixbuf * frame;
 	GdkRectangle rect;
+	int src_x;
+	int src_y;
+	int width;
+	int height;
 	int depth;
 	GdkPixmap * pixmap;
 	int j;
@@ -321,16 +336,30 @@ static void _timeout_window(GtkDemo * gtkdemo, GtkDemoWindow * window)
 	fprintf(stderr, "DEBUG: %s() frame=%p\n", __func__, (void *)frame);
 #endif
 
-	back_width = (background != NULL)
-		? gdk_pixbuf_get_width(background) : 0;
-	back_height = (background != NULL)
-		? gdk_pixbuf_get_height(background) : 0;
-	for(j = 0; back_height > 0 && j < rect.height; j += back_height)
-		for(i = 0; back_width > 0 && i < rect.width; i += back_width)
-			gdk_pixbuf_copy_area(background, 0, 0, MIN(back_width,
-						rect.width - i),
-					MIN(back_height, rect.height - j),
-					frame, i, j);
+	if(background != NULL)
+	{
+		back_width = gdk_pixbuf_get_width(background);
+		back_height = gdk_pixbuf_get_height(background);
+		if(gtkdemo->scroll)
+		{
+			offset_x = gtkdemo->frame_num % back_width;
+			offset_y = gtkdemo->frame_num % back_height;
+		}
+	}
+	src_y = offset_y;
+	for(j = 0; back_height > 0 && j < rect.height; j += height)
+	{
+		height = MIN(back_height - src_y, rect.height - j);
+		src_x = offset_x;
+		for(i = 0; back_width > 0 && i < rect.width; i += width)
+		{
+			width = MIN(back_width - src_x, rect.width - i);
+			gdk_pixbuf_copy_area(background, src_x, src_y,
+					width, height, frame, i, j);
+			src_x = 0;
+		}
+		src_y = 0;
+	}
 
 	f = (double) (gtkdemo->frame_num % CYCLE_LEN) / CYCLE_LEN;
 	fsin2pi = sin(f * 2.0 * G_PI);
