@@ -2463,6 +2463,7 @@ static void _preferences_on_ok(gpointer data)
 	gboolean enabled;
 	String * value = string_new("");
 	String * sep = "";
+	int res = (value != NULL) ? 0 : 1;
 
 	gtk_widget_hide(browser->pr_window);
 	/* appearance */
@@ -2485,19 +2486,21 @@ static void _preferences_on_ok(gpointer data)
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
 			valid = gtk_tree_model_iter_next(model, &iter))
 	{
-		gtk_tree_model_get(model, &iter, 0, &p, 1, &enabled, -1);
+		gtk_tree_model_get(model, &iter, BPC_NAME, &p,
+				BPC_ENABLED, &enabled, -1);
 		if(enabled)
 		{
 			browser_load(browser, p);
-			string_append(&value, sep);
-			string_append(&value, p);
+			res |= string_append(&value, sep);
+			res |= string_append(&value, p);
 			sep = ",";
 		}
-		else if(_browser_plugin_is_enabled(browser, p))
+		else
 			browser_unload(browser, p);
 		g_free(p);
 	}
-	config_set(browser->config, NULL, "plugins", value);
+	if(res == 0)
+		config_set(browser->config, NULL, "plugins", value);
 	string_delete(value);
 	browser_config_save(browser);
 	browser_refresh(browser);
