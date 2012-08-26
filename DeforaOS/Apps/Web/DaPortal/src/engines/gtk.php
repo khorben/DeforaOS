@@ -222,6 +222,12 @@ class GtkFormat extends FormatElements
 		return new GtkCheckButton($e->getProperty('text'));
 	}
 
+	protected function renderCombobox($e)
+	{
+		//FIXME really implement
+		return GtkComboBox::new_text();
+	}
+
 	protected function renderDialog($e)
 	{
 		if(($type = $e->getProperty('type')) === FALSE)

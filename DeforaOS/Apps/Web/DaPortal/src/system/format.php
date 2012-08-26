@@ -126,6 +126,8 @@ abstract class FormatElements extends Format
 				return $this->renderButton($e);
 			case 'checkbox':
 				return $this->renderCheckbox($e);
+			case 'combobox':
+				return $this->renderCombobox($e);
 			case 'dialog':
 				return $this->renderDialog($e);
 			case 'entry':
@@ -176,6 +178,7 @@ abstract class FormatElements extends Format
 	//useful
 	abstract protected function renderButton($e);
 	abstract protected function renderCheckbox($e);
+	abstract protected function renderCombobox($e);
 	abstract protected function renderDialog($e);
 	abstract protected function renderEntry($e);
 	abstract protected function renderFileChooser($e);

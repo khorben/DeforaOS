@@ -309,6 +309,28 @@ class HTMLFormat extends FormatElements
 	}
 
 
+	protected function renderCombobox($e)
+	{
+		$this->tag('span', $e->getType(), $e->getProperty('id'), FALSE,
+				$e->getProperty('text'));
+		$this->renderTabs();
+		$this->tagOpen('select');
+		$children = $e->getChildren();
+		foreach($children as $c)
+		{
+			$this->renderTabs();
+			$text = $c->getProperty('text');
+			$value = $c->getProperty('value');
+			$this->tag('option', $c->getProperty('class'),
+					$c->getProperty('id'),
+					array('value' => $value),
+					$text);
+		}
+		$this->renderTabs();
+		$this->tagClose('select');
+	}
+
+
 	protected function renderDialog($e)
 	{
 		if(($type = $e->getProperty('type')) === FALSE)
