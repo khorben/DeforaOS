@@ -523,7 +523,8 @@ static gboolean _new_idle(gpointer data)
 	/* default to the "systray" plug-in if nothing is configured */
 	if((plugins = config_get(phone->config, NULL, "plugins")) == NULL)
 		plugins = "systray";
-	_idle_load_plugins(phone, plugins);
+	if(strlen(plugins) > 0)
+		_idle_load_plugins(phone, plugins);
 	/* try to go online */
 	phone_event_type(phone, PHONE_EVENT_TYPE_STARTING);
 	return FALSE;
