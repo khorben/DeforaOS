@@ -917,7 +917,8 @@ static void _idle_plugins_load(Mailer * mailer)
 	char * q;
 	size_t i;
 
-	if((plugins = config_get(mailer->config, NULL, "plugins")) == NULL)
+	if((plugins = config_get(mailer->config, NULL, "plugins")) == NULL
+			|| strlen(plugins) == 0)
 		return;
 	if((p = strdup(plugins)) == NULL)
 		return; /* XXX report error */

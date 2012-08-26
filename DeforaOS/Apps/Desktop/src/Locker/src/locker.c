@@ -352,7 +352,8 @@ static int _new_plugins(Locker * locker)
 	size_t i;
 	int c;
 
-	if((p = config_get(locker->config, NULL, "plugins")) == NULL)
+	if((p = config_get(locker->config, NULL, "plugins")) == NULL
+			|| strlen(p) == 0)
 		return 0;
 	if((plugins = string_new(p)) == NULL)
 		return -1;

@@ -389,6 +389,8 @@ static void _idle_load(Panel * panel, PanelPosition position,
 	char * q;
 	size_t i;
 
+	if(strlen(plugins) == 0)
+		return;
 	if((p = string_new(plugins)) == NULL)
 	{
 		panel_error(panel, error_get(), FALSE);
