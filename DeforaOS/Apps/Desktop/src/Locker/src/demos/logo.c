@@ -46,6 +46,7 @@ typedef struct _LogoWindow
 {
 	GdkWindow * window;
 	GdkPixbuf * frame;
+	GdkPixmap * pixmap;
 } LogoWindow;
 
 typedef struct _LockerDemo
@@ -145,7 +146,8 @@ static int _logo_add(Logo * logo, GdkWindow * window)
 	gdk_window_set_background(window, &color);
 	gdk_window_clear(window);
 	logo->windows[logo->windows_cnt].window = window;
-	logo->windows[logo->windows_cnt++].frame = NULL;
+	logo->windows[logo->windows_cnt].frame = NULL;
+	logo->windows[logo->windows_cnt++].pixmap = NULL;
 	return 0;
 }
 
@@ -162,6 +164,9 @@ static void _logo_remove(Logo * logo, GdkWindow * window)
 			if(logo->windows[i].frame != NULL)
 				g_object_unref(logo->windows[i].frame);
 			logo->windows[i].frame = NULL;
+			if(logo->windows[i].pixmap != NULL)
+				gdk_pixmap_unref(logo->windows[i].pixmap);
+			logo->windows[i].pixmap = NULL;
 		}
 	/* FIXME reorganize the array and free memory */
 	for(i = 0; i < logo->windows_cnt; i++)
@@ -242,8 +247,12 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 			g_object_unref(frame);
 		window->frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8,
 				rect.width, rect.height);
+		if(window->pixmap != NULL)
+			gdk_pixmap_unref(pixmap);
+		window->pixmap = gdk_pixmap_new(w, rect.width, rect.width, -1);
 	}
 	frame = window->frame;
+	pixmap = window->pixmap;
 	gdk_pixbuf_fill(frame, black);
 	/* draw the logo */
 	if(logo->logo != NULL)
@@ -259,10 +268,8 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 		gdk_pixbuf_copy_area(logo->logo, 0, 0, width, height, frame, x,
 				y);
 	}
-	pixmap = gdk_pixmap_new(w, rect.width, rect.width, -1);
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
 			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
 	gdk_window_set_back_pixmap(w, pixmap, FALSE);
 	gdk_window_clear(w);
-	gdk_pixmap_unref(pixmap);
 }
