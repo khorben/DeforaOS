@@ -522,7 +522,8 @@ static void _idle_load_plugins(Browser * browser)
 	char * q;
 	size_t i;
 
-	if((plugins = config_get(browser->config, NULL, "plugins")) == NULL)
+	if((plugins = config_get(browser->config, NULL, "plugins")) == NULL
+			|| strlen(plugins) == 0)
 		return;
 	if((p = strdup(plugins)) == NULL)
 		return; /* XXX report error */
