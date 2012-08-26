@@ -250,9 +250,12 @@ class UserModule extends Module
 				'text' => _('Repeat new password: '),
 				'name' => 'password2', 'hidden' => TRUE));
 		//buttons
-		$r = new Request($engine, $this->name, 'profile',
-				$request->getId(), $request->getId()
-				? $user->getUsername() : FALSE);
+		if($cred->isAdmin() && $request->getId() !== FALSE)
+			$r = new Request($engine, $this->name, 'admin');
+		else
+			$r = new Request($engine, $this->name, 'profile',
+					$request->getId(), $request->getId()
+					? $user->getUsername() : FALSE);
 		$form->append('button', array('stock' => 'cancel',
 				'request' => $r, 'text' => _('Cancel')));
 		$form->append('button', array('stock' => 'update',
@@ -1094,8 +1097,9 @@ Thank you for registering!")));
 
 		//determine whose profile to update
 		if($id === FALSE)
-			$id = $cred->getUserId();
-		$user = new User($engine, $id, $request->getTitle());
+			$user = new User($engine, $cred->getUserId());
+		else
+			$user = new User($engine, $id, $request->getTitle());
 		if(($id = $user->getUserId()) == 0)
 		{
 			//the anonymous user has no profile
