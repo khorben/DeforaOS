@@ -33,15 +33,26 @@
 # define DATADIR	PREFIX "/share"
 #endif
 
+/* macros */
+#ifndef MIN
+# define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 
 /* Logo */
 /* private */
 /* types */
+typedef struct _LogoWindow
+{
+	GdkWindow * window;
+	GdkPixbuf * frame;
+} LogoWindow;
+
 typedef struct _LockerDemo
 {
 	LockerDemoHelper * helper;
 	GdkPixbuf * logo;
-	GdkWindow ** windows;
+	LogoWindow * windows;
 	size_t windows_cnt;
 	guint timeout;
 } Logo;
@@ -120,7 +131,7 @@ static void _logo_destroy(Logo * logo)
 /* logo_add */
 static int _logo_add(Logo * logo, GdkWindow * window)
 {
-	GdkWindow ** p;
+	LogoWindow * p;
 	GdkColor color = { 0x0, 0x0, 0x0, 0x0 };
 
 #ifdef DEBUG
@@ -133,7 +144,8 @@ static int _logo_add(Logo * logo, GdkWindow * window)
 	/* set the default color */
 	gdk_window_set_background(window, &color);
 	gdk_window_clear(window);
-	logo->windows[logo->windows_cnt++] = window;
+	logo->windows[logo->windows_cnt].window = window;
+	logo->windows[logo->windows_cnt++].frame = NULL;
 	return 0;
 }
 
@@ -144,11 +156,16 @@ static void _logo_remove(Logo * logo, GdkWindow * window)
 	size_t i;
 
 	for(i = 0; i < logo->windows_cnt; i++)
-		if(logo->windows[i] == window)
-			logo->windows[i] = NULL;
+		if(logo->windows[i].window == window)
+		{
+			logo->windows[i].window = NULL;
+			if(logo->windows[i].frame != NULL)
+				g_object_unref(logo->windows[i].frame);
+			logo->windows[i].frame = NULL;
+		}
 	/* FIXME reorganize the array and free memory */
 	for(i = 0; i < logo->windows_cnt; i++)
-		if(logo->windows[i] != NULL)
+		if(logo->windows[i].window != NULL)
 			break;
 	if(i == logo->windows_cnt)
 	{
@@ -186,7 +203,7 @@ static void _logo_stop(Logo * logo)
 
 /* callbacks */
 /* logo_on_timeout */
-static void _timeout_window(Logo * logo, GdkWindow * window);
+static void _timeout_window(Logo * logo, LogoWindow * window);
 
 static gboolean _logo_on_timeout(gpointer data)
 {
@@ -194,45 +211,58 @@ static gboolean _logo_on_timeout(gpointer data)
 	size_t i;
 
 	for(i = 0; i < logo->windows_cnt; i++)
-		_timeout_window(logo, logo->windows[i]);
+		_timeout_window(logo, &logo->windows[i]);
 	return TRUE;
 }
 
-static void _timeout_window(Logo * logo, GdkWindow * window)
+static void _timeout_window(Logo * logo, LogoWindow * window)
 {
+	GdkWindow * w;
 	GdkRectangle rect;
 	int depth;
 	GdkPixbuf * frame;
 	GdkPixmap * pixmap;
 	int width;
 	int height;
-	int x;
-	int y;
+	int x = 0;
+	int y = 0;
 	int seed = time(NULL) ^ getpid() ^ getppid() ^ getuid() ^ getgid();
 	const int black = 0x000000ff;
 
-	if(window == NULL)
+	if((w = window->window) == NULL)
 		return;
-	gdk_window_get_geometry(window, &rect.x, &rect.y, &rect.width,
+	gdk_window_get_geometry(w, &rect.x, &rect.y, &rect.width,
 			&rect.height, &depth);
-	frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8, rect.width,
-			rect.height);
+	/* reallocate the frame and background if necessary */
+	if(window->frame == NULL
+			|| gdk_pixbuf_get_width(window->frame) != rect.width
+			|| gdk_pixbuf_get_height(window->frame) != rect.height)
+	{
+		if(window->frame != NULL)
+			g_object_unref(frame);
+		window->frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8,
+				rect.width, rect.height);
+	}
+	frame = window->frame;
 	gdk_pixbuf_fill(frame, black);
 	/* draw the logo */
 	if(logo->logo != NULL)
 	{
 		width = gdk_pixbuf_get_width(logo->logo);
+		width = MIN(rect.width, width);
 		height = gdk_pixbuf_get_height(logo->logo);
-		x = (rand() ^ seed) % (rect.width - width);
-		y = (rand() ^ seed) % (rect.height - height);
+		height = MIN(rect.height, height);
+		if(rect.width > width)
+			x = (rand() ^ seed) % (rect.width - width);
+		if(rect.height > height)
+			y = (rand() ^ seed) % (rect.height - height);
 		gdk_pixbuf_copy_area(logo->logo, 0, 0, width, height, frame, x,
 				y);
 	}
-	pixmap = gdk_pixmap_new(window, rect.width, rect.width, -1);
+	pixmap = gdk_pixmap_new(w, rect.width, rect.width, -1);
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
 			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
-	gdk_window_set_back_pixmap(window, pixmap, FALSE);
-	gdk_window_clear(window);
+	gdk_window_set_back_pixmap(w, pixmap, FALSE);
+	gdk_window_clear(w);
 	gdk_pixmap_unref(pixmap);
-	g_object_unref(frame);
 }
