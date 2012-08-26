@@ -331,12 +331,23 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 		width = MIN(rect.width, width);
 		height = gdk_pixbuf_get_height(logo->logo);
 		height = MIN(rect.height, height);
-		if(logo->scroll == 0 && rect.width > width)
-			x = (rand() ^ seed) % (rect.width - width);
-		if(logo->scroll == 0 && rect.height > height)
-			y = (rand() ^ seed) % (rect.height - height);
-		gdk_pixbuf_composite(logo->logo, frame, 0, 0, width, height,
-				0.0, 0.0, 1.0, 1.0, GDK_INTERP_NEAREST, 191);
+		if(logo->scroll == 0)
+		{
+			if(rect.width > width)
+				x = (rand() ^ seed) % (rect.width - width);
+			if(rect.height > height)
+				y = (rand() ^ seed) % (rect.height - height);
+		}
+		else
+		{
+			if(rect.width > width)
+				x = (rect.width - width) / 2;
+			if(rect.height > height)
+				y = (rect.height - height) / 2;
+		}
+		gdk_pixbuf_composite(logo->logo, frame, 0, 0,
+				rect.width, rect.height, x, y,
+				1.0, 1.0, GDK_INTERP_NEAREST, 191);
 	}
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
 			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
