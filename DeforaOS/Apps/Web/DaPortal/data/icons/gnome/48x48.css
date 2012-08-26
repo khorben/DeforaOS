@@ -231,6 +231,10 @@
 	background-image:	url('gnome-icon-theme/48x48/actions/gtk-go-up.png');
 }
 
+.stock48.upload {
+	background-image:	url('gnome-icon-theme/48x48/actions/gtk-save-as.png');
+}
+
 .stock48.user {
 	background-image:	url('gnome-icon-theme/48x48/apps/user-info.png');
 }

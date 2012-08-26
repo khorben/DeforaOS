@@ -231,6 +231,10 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-go-up.png');
 }
 
+.stock24.upload {
+	background-image:	url('gnome-icon-theme/24x24/actions/gtk-save-as.png');
+}
+
 .stock24.user {
 	background-image:	url('gnome-icon-theme/24x24/apps/user-info.png');
 }

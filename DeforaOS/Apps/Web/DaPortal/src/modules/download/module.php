@@ -327,7 +327,7 @@ class DownloadModule extends ContentModule
 				? $content['title'] : FALSE);
 		if($this->canUpload($engine, $content))
 			$toolbar->append('button', array('request' => $request,
-					'stock' => 'save',
+					'stock' => 'upload',
 					'text' => _('Upload file')));
 		//update
 		$request = new Request($engine, $this->name, 'update',
@@ -582,7 +582,7 @@ class DownloadModule extends ContentModule
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $title));
-		$page->append('title', array('stock' => 'save',
+		$page->append('title', array('stock' => 'upload',
 				'text' => $title));
 		//toolbar
 		$toolbar = $this->getToolbar($engine, $parent);

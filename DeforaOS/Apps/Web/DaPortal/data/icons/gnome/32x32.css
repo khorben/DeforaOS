@@ -231,6 +231,10 @@
 	background-image:	url('gnome-icon-theme/32x32/actions/gtk-go-up.png');
 }
 
+.stock32.upload {
+	background-image:	url('gnome-icon-theme/32x32/actions/gtk-save-as.png');
+}
+
 .stock32.user {
 	background-image:	url('gnome-icon-theme/32x32/apps/user-info.png');
 }
