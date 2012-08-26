@@ -1,4 +1,4 @@
-TARGETS	= browser.1 browser.html copy.1 copy.html delete.1 delete.html desktop.1 desktop.html desktopctl.1 desktopctl.html open.1 open.html properties.1 properties.html view.1 view.html
+TARGETS	= browser.1 browser.html copy.1 copy.html delete.1 delete.html desktop.1 desktop.html desktopctl.1 desktopctl.html move.1 move.html open.1 open.html properties.1 properties.html view.1 view.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -39,6 +39,12 @@ desktopctl.1: desktopctl.xml
 desktopctl.html: desktopctl.xml
 	./docbook.sh -P "$(PREFIX)" -- "desktopctl.html"
 
+move.1: move.xml
+	./docbook.sh -P "$(PREFIX)" -- "move.1"
+
+move.html: move.xml
+	./docbook.sh -P "$(PREFIX)" -- "move.html"
+
 open.1: open.xml
 	./docbook.sh -P "$(PREFIX)" -- "open.1"
 
@@ -58,7 +64,7 @@ view.html: view.xml
 	./docbook.sh -P "$(PREFIX)" -- "view.html"
 
 clean:
-	$(RM) -- $(browser.1_OBJS) $(browser.html_OBJS) $(copy.1_OBJS) $(copy.html_OBJS) $(delete.1_OBJS) $(delete.html_OBJS) $(desktop.1_OBJS) $(desktop.html_OBJS) $(desktopctl.1_OBJS) $(desktopctl.html_OBJS) $(open.1_OBJS) $(open.html_OBJS) $(properties.1_OBJS) $(properties.html_OBJS) $(view.1_OBJS) $(view.html_OBJS)
+	$(RM) -- $(browser.1_OBJS) $(browser.html_OBJS) $(copy.1_OBJS) $(copy.html_OBJS) $(delete.1_OBJS) $(delete.html_OBJS) $(desktop.1_OBJS) $(desktop.html_OBJS) $(desktopctl.1_OBJS) $(desktopctl.html_OBJS) $(move.1_OBJS) $(move.html_OBJS) $(open.1_OBJS) $(open.html_OBJS) $(properties.1_OBJS) $(properties.html_OBJS) $(view.1_OBJS) $(view.html_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -74,6 +80,8 @@ install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktop.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktopctl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "desktopctl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "move.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "move.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "open.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "open.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "properties.1"
@@ -92,6 +100,8 @@ uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktop.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktopctl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "desktopctl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "move.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "move.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "open.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "open.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "properties.1"

@@ -35,8 +35,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/browser.xml \
+		$(PACKAGE)-$(VERSION)/doc/copy.xml \
+		$(PACKAGE)-$(VERSION)/doc/delete.xml \
 		$(PACKAGE)-$(VERSION)/doc/desktop.xml \
 		$(PACKAGE)-$(VERSION)/doc/desktopctl.xml \
+		$(PACKAGE)-$(VERSION)/doc/move.xml \
 		$(PACKAGE)-$(VERSION)/doc/open.xml \
 		$(PACKAGE)-$(VERSION)/doc/properties.xml \
 		$(PACKAGE)-$(VERSION)/doc/view.xml \

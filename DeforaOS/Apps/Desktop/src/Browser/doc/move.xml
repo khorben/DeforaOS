@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Browser User Manual">
 	<!ENTITY package   "DeforaOS Browser">
-	<!ENTITY name      "desktopctl">
-	<!ENTITY purpose   "Control interface for the desktop manager">
+	<!ENTITY name      "move">
+	<!ENTITY purpose   "Move or rename files and directories">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,102 +49,38 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<group choice="plain">
-				<arg choice="plain">-H</arg>
-				<arg choice="plain">-L</arg>
-				<arg choice="plain">-P</arg>
-				<arg choice="plain">-R</arg>
-				<arg choice="plain">-S</arg>
-				<arg choice="plain">-T</arg>
-				<arg choice="plain">-V</arg>
-				<arg choice="plain">-a</arg>
-				<arg choice="plain">-c</arg>
-				<arg choice="plain">-f</arg>
-				<arg choice="plain">-h</arg>
-				<arg choice="plain">-n</arg>
-			</group>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-i</option></arg>
+			<arg choice="plain"><replaceable>source_file</replaceable></arg>
+			<arg choice="plain"><replaceable>target</replaceable></arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-i</option></arg>
+			<arg choice="plain" rep="repeat"><replaceable>source_file</replaceable></arg>
+			<arg choice="plain"><replaceable>directory</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a control interface for the desktop
-			manager. It can trigger events and modify the behavior of the desktop manager
-			with a command line interface, while running.</para>
+		<para><command>&name;</command> moves or renames files and directories
+			specified from the command line interface.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
-				<term><option>-H</option></term>
-				<listitem>
-					<para>Place icons horizontally.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-L</option></term>
-				<listitem>
-					<para>Rotate screen to landscape mode.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-P</option></term>
-				<listitem>
-					<para>Rotate screen to portrait mode.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-R</option></term>
-				<listitem>
-					<para>Rotate screen.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-S</option></term>
-				<listitem>
-					<para>Display or change settings.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-T</option></term>
-				<listitem>
-					<para>Toggle screen rotation.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-V</option></term>
-				<listitem>
-					<para>Place icons vertically.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-a</option></term>
-				<listitem>
-					<para>Display the applications registered.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-c</option></term>
-				<listitem>
-					<para>Sort the applications registered by category.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
 				<term><option>-f</option></term>
 				<listitem>
-					<para>Display contents of the desktop folder.</para>
+					<para>Do not prompt for confirmation before overwriting files.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-h</option></term>
+				<term><option>-i</option></term>
 				<listitem>
-					<para>Display the homescreen.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-n</option></term>
-				<listitem>
-					<para>Do not display icons on the desktop.</para>
+					<para>Always ask before overwriting files.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
@@ -174,7 +110,11 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
-				<refentrytitle>move</refentrytitle>
+				<refentrytitle>desktopctl</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>mv</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
