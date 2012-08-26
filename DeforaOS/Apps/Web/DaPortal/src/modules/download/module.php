@@ -95,8 +95,9 @@ class DownloadModule extends ContentModule
 		if(($filename = $request->getParameter('filename')) === FALSE)
 			return FALSE;
 		$content = FALSE;
+		//FIXME should return $id as $content['download_id']
 		$error = $this->_submitProcessFile($engine, NULL, $filename,
-				$content);
+				$content, $id);
 		if($error === FALSE)
 			return $content;
 		return FALSE;
@@ -568,10 +569,6 @@ class DownloadModule extends ContentModule
 		$error = _('Permission denied');
 
 		//FIXME find a way to re-use code from callSubmit()
-		//check permissions
-		if($this->canSubmit($engine, $error) === FALSE)
-			return new PageElement('dialog', array(
-					'type' => 'error', 'text' => $error));
 		//create the page
 		if(($parent = $this->_get($engine, $request->getId(),
 				$request->getTitle())) !== FALSE)
@@ -580,6 +577,10 @@ class DownloadModule extends ContentModule
 					$parent['title']);
 		else
 			$title = _('Upload file in root folder');
+		//check permissions
+		if($this->canUpload($engine, $parent, $error) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'save',
 				'text' => $title));
@@ -644,7 +645,7 @@ class DownloadModule extends ContentModule
 	}
 
 	protected function _submitProcessFile($engine, $parent, $filename,
-			&$content, $move = FALSE)
+			&$content, &$id, $move = FALSE)
 	{
 		$root = $this->getRoot($engine);
 		$db = $engine->getDatabase();
@@ -656,8 +657,8 @@ class DownloadModule extends ContentModule
 				TRUE, TRUE);
 		if($content === FALSE)
 			return _('Internal server error');
-		$id = $content->getId();
-		if($db->query($engine, $query, array('content_id' => $id,
+		if($db->query($engine, $query, array(
+				'content_id' => $content->getId(),
 				'parent' => $parent,
 				'mode' => 420)) === FALSE)
 			return _('Internal server error');
@@ -679,11 +680,11 @@ class DownloadModule extends ContentModule
 
 		$filename = $_FILES['files']['name'][$k];
 		if(($res = $this->_submitProcessFile($engine, $parent,
-				$filename, $content, FALSE)) !== FALSE)
+				$filename, $content, $id, FALSE)) !== FALSE)
 			return $res;
 		//move the file ourselves
 		$tmp = $_FILES['files']['tmp_name'][$k];
-		$dst = $root.'/'.$content->getId();
+		$dst = $root.'/'.$id;
 		if(move_uploaded_file($tmp, $dst) !== TRUE)
 			return _('Internal server error');
 		return FALSE;
@@ -829,9 +830,9 @@ class DownloadModule extends ContentModule
 		//output the file details
 		$filename = $root.'/'.$content['download_id'];
 		$error = _('Could not obtain details for this file');
-		if(($stat = stat($filename)) === FALSE)
+		if(($st = stat($filename)) === FALSE)
 			return new PageElement('dialog', array(
-				'type' => 'error', 'text' => $error));
+					'type' => 'error', 'text' => $error));
 		$hbox = $page->append('hbox');
 		$col1 = $hbox->append('vbox');
 		$col2 = $hbox->append('vbox');
@@ -844,23 +845,26 @@ class DownloadModule extends ContentModule
 		$this->helperDisplayField($col1, $col2, _('Type:'),
 				Mime::getType($engine, $content['title']));
 		$request = new Request($engine, 'user', FALSE,
-			$content['user_id'], $content['username']);
+				$content['user_id'], $content['username']);
 		$this->helperDisplayField($col1, $col2, _('Owner:'),
-			new PageElement('link',
-			array('request' => $request,
-			'text' => $content['username'])));
+				new PageElement('link', array(
+					'request' => $request,
+					'text' => $content['username'])));
 		$this->helperDisplayField($col1, $col2, _('Group:'),
-			$content['groupname']);
+				$content['groupname']);
 		$this->helperDisplayField($col1, $col2, _('Permissions:'),
-			$this->getPermissions($content['mode']));
+				$this->getPermissions($content['mode']));
 		$this->helperDisplayField($col1, $col2, _('Size:'),
-				$stat['size'].' '._('bytes'));
+				$st['size'].' '._('bytes'));
 		$this->helperDisplayField($col1, $col2, _('Created on:'),
-			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['ctime']));
+				strftime(_('%A, %B %e %Y, %H:%M:%S'),
+				$st['ctime']));
 		$this->helperDisplayField($col1, $col2, _('Last modified:'),
-			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['mtime']));
+				strftime(_('%A, %B %e %Y, %H:%M:%S'),
+				$st['mtime']));
 		$this->helperDisplayField($col1, $col2, _('Last access:'),
-			strftime(_('%A, %B %e %Y, %H:%M:%S'), $stat['atime']));
+				strftime(_('%A, %B %e %Y, %H:%M:%S'),
+				$st['atime']));
 		$this->helperDisplayField($col1, $col2, _('Comment:'),
 				$content['content']);
 		return $page;
