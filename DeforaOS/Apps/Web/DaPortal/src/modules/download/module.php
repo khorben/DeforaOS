@@ -884,10 +884,14 @@ class DownloadModule extends ContentModule
 			$content)
 	{
 		//FIXME really implement
-		$page->append('combobox', array('text' => _('Owner: '),
+		$owner = $page->append('combobox', array('text' => _('Owner: '),
 				'name' => 'owner'));
-		$page->append('combobox', array('text' => _('Group: '),
+		$owner->append('label', array('text' => 'Anonymous',
+				'value' => 0));
+		$group = $page->append('combobox', array('text' => _('Group: '),
 				'name' => 'group'));
+		$group->append('label', array('text' => 'nogroup',
+				'value' => 0));
 		parent::helperUpdateContent($engine, $request, $page,
 				$content);
 	}
