@@ -81,6 +81,9 @@ static void _view_delete(View * view);
 static int _view_error(View * view, char const * message, int ret);
 
 /* callbacks */
+#ifdef EMBEDDED
+static void _on_close(gpointer data);
+#endif
 static gboolean _on_closex(gpointer data);
 #ifndef EMBEDDED
 static void _on_file_edit(gpointer data);
@@ -88,7 +91,6 @@ static void _on_file_open_with(gpointer data);
 static void _on_file_close(gpointer data);
 static void _on_help_about(gpointer data);
 #else
-static void _on_close(gpointer data);
 static void _on_edit(gpointer data);
 static void _on_open_with(gpointer data);
 #endif
@@ -140,15 +142,18 @@ static DesktopMenubar _view_menubar_edit[] =
 	{ NULL, NULL }
 };
 #else
+static DesktopAccel _view_accel[] =
+{
+	{ G_CALLBACK(_on_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ NULL, 0, 0 }
+};
+
 static DesktopToolbar _view_toolbar[] =
 {
 	{ N_("Open with..."), G_CALLBACK(_on_open_with), GTK_STOCK_OPEN,
 		GDK_CONTROL_MASK, GDK_O, NULL },
 	{ N_("Edit"), G_CALLBACK(_on_edit), GTK_STOCK_EDIT, GDK_CONTROL_MASK,
 		GDK_E, NULL },
-	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Close"), G_CALLBACK(_on_close), GTK_STOCK_CLOSE,
-		GDK_CONTROL_MASK, GDK_W, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 #endif /* EMBEDDED */
@@ -205,6 +210,7 @@ static View * _view_new(char const * pathname)
 			!= NULL ? _view_menubar_edit : _view_menubar, view,
 			group);
 #else
+	desktop_accel_create(_view_accel, view, group);
 	widget = desktop_toolbar_create(_view_toolbar, view, group);
 	if(mime_get_handler(_mime, type, "edit") == NULL)
 		gtk_widget_set_sensitive(GTK_WIDGET(_view_toolbar[1].widget),
@@ -387,6 +393,18 @@ static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 
 
 /* callbacks */
+#ifdef EMBEDDED
+/* on_close */
+static void _on_close(gpointer data)
+{
+	View * view = data;
+
+	_on_closex(view);
+}
+#endif
+
+
+/* on_closex */
 static gboolean _on_closex(gpointer data)
 {
 	View * view = data;
@@ -459,7 +477,9 @@ static void _on_file_open_with(gpointer data)
 /* on_file_close */
 static void _on_file_close(gpointer data)
 {
-	_on_closex(data);
+	View * view = data;
+
+	_on_closex(view);
 }
 
 
@@ -500,13 +520,6 @@ static gboolean _about_on_closex(gpointer data)
 
 
 #else
-/* on_close */
-static void _on_close(gpointer data)
-{
-	_on_closex(data);
-}
-
-
 static void _on_edit(gpointer data)
 {
 	View * view = data;
