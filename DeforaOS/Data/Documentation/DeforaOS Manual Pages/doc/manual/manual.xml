@@ -13,6 +13,7 @@
 <!ENTITY download1 "../../../../../Apps/Desktop/src/Surfer/doc/download.xml">
 <!ENTITY makepasswd1 "../../../../../Apps/Unix/src/makepasswd/doc/makepasswd.xml">
 <!ENTITY mailer1 "../../../../../Apps/Desktop/src/Mailer/doc/mailer.xml">
+<!ENTITY move1 "../../../../../Apps/Desktop/src/Browser/doc/move.xml">
 <!ENTITY open1 "../../../../../Apps/Desktop/src/Browser/doc/open.xml">
 <!ENTITY panel1 "../../../../../Apps/Desktop/src/Panel/doc/panel.xml">
 <!ENTITY panelctl1 "../../../../../Apps/Desktop/src/Panel/doc/panelctl.xml">
@@ -35,6 +36,7 @@
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&desktopctl1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&download1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&mailer1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&move1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&open1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&panel1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&panelctl1;"/>
