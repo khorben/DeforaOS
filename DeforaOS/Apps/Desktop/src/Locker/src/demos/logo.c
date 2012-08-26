@@ -52,6 +52,7 @@ typedef struct _LogoWindow
 typedef struct _LockerDemo
 {
 	LockerDemoHelper * helper;
+	GdkPixbuf * background;
 	GdkPixbuf * logo;
 	LogoWindow * windows;
 	size_t windows_cnt;
@@ -103,10 +104,20 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 		return NULL;
 	/* initialization */
 	logo->helper = helper;
+	logo->background = NULL;
 	logo->logo = NULL;
 	logo->windows = NULL;
 	logo->windows_cnt = 0;
 	logo->timeout = 0;
+	/* load the background */
+	if((p = helper->config_get(helper->locker, "logo", "background"))
+			&& (logo->background = gdk_pixbuf_new_from_file(p,
+					&error)) == NULL)
+	{
+		helper->error(NULL, error->message, 1);
+		g_error_free(error);
+		error = NULL;
+	}
 	/* load the logo */
 	if((p = helper->config_get(helper->locker, "logo", "logo")) == NULL)
 	{
@@ -117,6 +128,7 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 	{
 		helper->error(NULL, error->message, 1);
 		g_error_free(error);
+		error = NULL;
 	}
 	return logo;
 }
@@ -229,6 +241,8 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 	GdkPixmap * pixmap;
 	int width;
 	int height;
+	int i;
+	int j;
 	int x = 0;
 	int y = 0;
 	int seed = time(NULL) ^ getpid() ^ getppid() ^ getuid() ^ getgid();
@@ -244,16 +258,28 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 			|| gdk_pixbuf_get_height(window->frame) != rect.height)
 	{
 		if(window->frame != NULL)
-			g_object_unref(frame);
+			g_object_unref(window->frame);
 		window->frame = gdk_pixbuf_new(GDK_COLORSPACE_RGB, 1, 8,
 				rect.width, rect.height);
 		if(window->pixmap != NULL)
-			gdk_pixmap_unref(pixmap);
+			gdk_pixmap_unref(window->pixmap);
 		window->pixmap = gdk_pixmap_new(w, rect.width, rect.width, -1);
 	}
 	frame = window->frame;
 	pixmap = window->pixmap;
 	gdk_pixbuf_fill(frame, black);
+	/* draw the background */
+	if(logo->background != NULL)
+	{
+		width = gdk_pixbuf_get_width(logo->background);
+		height = gdk_pixbuf_get_height(logo->background);
+		for(j = 0; height > 0 && j < rect.height; j += height)
+			for(i = 0; width > 0 && i < rect.width; i += width)
+				gdk_pixbuf_copy_area(logo->background, 0, 0,
+						MIN(rect.width - i, width),
+						MIN(rect.height - j, height),
+						frame, i, j);
+	}
 	/* draw the logo */
 	if(logo->logo != NULL)
 	{
