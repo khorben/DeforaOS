@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Browser User Manual">
 	<!ENTITY package   "DeforaOS Browser">
-	<!ENTITY name      "view">
-	<!ENTITY purpose   "Generic document viewer">
+	<!ENTITY name      "copy">
+	<!ENTITY purpose   "Copy files and directories">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,18 +49,72 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="plain" rep="repeat"><replaceable>file</replaceable></arg>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-i</option></arg>
+			<arg choice="opt"><option>-p</option></arg>
+			<arg choice="plain"><replaceable>source_file</replaceable></arg>
+			<arg choice="plain"><replaceable>target</replaceable></arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-i</option></arg>
+			<arg choice="opt"><option>-p</option></arg>
+			<arg choice="plain" rep="repeat"><replaceable>source_file</replaceable></arg>
+			<arg choice="plain"><replaceable>target</replaceable></arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<group choice="plain">
+				<arg choice="opt"><option>-R</option></arg>
+				<arg choice="opt"><option>-r</option></arg>
+			</group>
+			<group choice="opt">
+				<arg choice="plain"><option>-H</option></arg>
+				<arg choice="plain"><option>-L</option></arg>
+				<arg choice="plain"><option>-P</option></arg>
+			</group>
+			<arg choice="opt"><option>-f</option></arg>
+			<arg choice="opt"><option>-i</option></arg>
+			<arg choice="opt"><option>-p</option></arg>
+			<arg choice="plain" rep="repeat"><replaceable>source_file</replaceable></arg>
+			<arg choice="plain" rep="repeat"><replaceable>target</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> displays a simple preview of documents when it
-			can.</para>
+		<para><command>&name;</command> copies files and directories specified from
+			the command line interface.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>A list of documents to visualize must be provided directly on the
-			command line.</para>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-f</option></term>
+				<listitem>
+					<para>Do not prompt for confirmation before overwriting files.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-i</option></term>
+				<listitem>
+					<para>Always ask before overwriting files.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-p</option></term>
+				<listitem>
+					<para>Preserve attributes of the files copied.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-r, -R</option></term>
+				<listitem>
+					<para>Allow recursion through sub-directories.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
 	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
@@ -75,7 +129,7 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
-				<refentrytitle>copy</refentrytitle>
+				<refentrytitle>cp</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
@@ -96,6 +150,10 @@
 			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>properties</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>view</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>

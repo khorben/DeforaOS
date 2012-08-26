@@ -92,6 +92,10 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
+				<refentrytitle>copy</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
 				<refentrytitle>delete</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,

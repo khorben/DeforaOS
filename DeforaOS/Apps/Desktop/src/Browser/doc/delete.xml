@@ -98,6 +98,10 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
+				<refentrytitle>copy</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
 				<refentrytitle>desktop</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
@@ -111,6 +115,10 @@
 			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>properties</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>rm</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
