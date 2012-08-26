@@ -183,10 +183,14 @@ static int _common_symlink(GtkWidget * window, char const * cur)
 	if((path = malloc(len)) == NULL)
 		return 1;
 	snprintf(path, len, "%s/%s", cur, newsymlink);
-	dialog = gtk_dialog_new_with_buttons(newsymlink, GTK_WINDOW(window),
+	dialog = gtk_dialog_new_with_buttons(newsymlink,
+			(window != NULL) ? GTK_WINDOW(window) : NULL,
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	if(window == NULL)
+		gtk_window_set_position(GTK_WINDOW(dialog),
+				GTK_WIN_POS_CENTER_ALWAYS);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Destination: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
