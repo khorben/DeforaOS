@@ -69,7 +69,7 @@ typedef struct _LockerDemo
 	GdkPixbuf * images[GDI_COUNT];
 	GtkDemoWindow * windows;
 	size_t windows_cnt;
-	guint timeout;
+	guint source;
 	guint frame_num;
 	int scroll;
 } GtkDemo;
@@ -100,6 +100,7 @@ static void _gtkdemo_start(GtkDemo * gtkdemo);
 static void _gtkdemo_stop(GtkDemo * gtkdemo);
 
 /* callbacks */
+static gboolean _gtkdemo_on_idle(gpointer data);
 static gboolean _gtkdemo_on_timeout(gpointer data);
 
 
@@ -144,7 +145,7 @@ static GtkDemo * _gtkdemo_init(LockerDemoHelper * helper)
 		}
 	gtkdemo->windows = NULL;
 	gtkdemo->windows_cnt = 0;
-	gtkdemo->timeout = 0;
+	gtkdemo->source = 0;
 	gtkdemo->frame_num = 0;
 	gtkdemo->scroll = 0;
 	return gtkdemo;
@@ -156,8 +157,7 @@ static void _gtkdemo_destroy(GtkDemo * gtkdemo)
 {
 	size_t i;
 
-	if(gtkdemo->timeout != 0)
-		g_source_remove(gtkdemo->timeout);
+	_gtkdemo_stop(gtkdemo);
 	for(i = 0; i < GDI_COUNT; i++)
 		if(gtkdemo->images[i] != NULL)
 			g_object_unref(gtkdemo->images[i]);
@@ -257,9 +257,8 @@ static void _gtkdemo_start(GtkDemo * gtkdemo)
 	if((p = helper->config_get(helper->locker, "gtk-demo", "scroll"))
 			!= NULL && strtol(p, NULL, 10) == 1)
 		gtkdemo->scroll = 1;
-	if(gtkdemo->timeout == 0 && _gtkdemo_on_timeout(gtkdemo) == TRUE)
-		gtkdemo->timeout = g_timeout_add(40, _gtkdemo_on_timeout,
-				gtkdemo);
+	if(gtkdemo->source == 0)
+		_gtkdemo_on_timeout(gtkdemo);
 }
 
 
@@ -269,13 +268,23 @@ static void _gtkdemo_stop(GtkDemo * gtkdemo)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(gtkdemo->timeout != 0)
-		g_source_remove(gtkdemo->timeout);
-	gtkdemo->timeout = 0;
+	if(gtkdemo->source != 0)
+		g_source_remove(gtkdemo->source);
+	gtkdemo->source = 0;
 }
 
 
 /* callbacks */
+/* gtkdemo_on_idle */
+static gboolean _gtkdemo_on_idle(gpointer data)
+{
+	GtkDemo * gtkdemo = data;
+
+	gtkdemo->source = g_timeout_add(40, _gtkdemo_on_timeout, gtkdemo);
+	return FALSE;
+}
+
+
 /* gtkdemo_on_timeout */
 static void _timeout_window(GtkDemo * gtkdemo, GtkDemoWindow * window);
 
@@ -287,7 +296,8 @@ static gboolean _gtkdemo_on_timeout(gpointer data)
 	for(i = 0; i < gtkdemo->windows_cnt; i++)
 		_timeout_window(gtkdemo, &gtkdemo->windows[i]);
 	gtkdemo->frame_num++;
-	return TRUE;
+	gtkdemo->source = g_idle_add(_gtkdemo_on_idle, gtkdemo);
+	return FALSE;
 }
 
 static void _timeout_window(GtkDemo * gtkdemo, GtkDemoWindow * window)
