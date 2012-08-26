@@ -151,7 +151,8 @@ static int _test(int root, int width, int height, char const * demo)
 	{
 		locker->dplugin->start(locker->demo);
 		gtk_main();
-		gtk_widget_destroy(dwindow);
+		if(dwindow != NULL)
+			gtk_widget_destroy(dwindow);
 		gtk_widget_destroy(window);
 	}
 	locker->dplugin->destroy(locker->demo);
