@@ -105,6 +105,8 @@ class DownloadModule extends ContentModule
 
 	//protected
 	//properties
+	protected $S_IFDIR = 512;
+
 	//queries
 	protected $download_query_directory_insert =
 		'INSERT INTO daportal_download
@@ -223,10 +225,33 @@ class DownloadModule extends ContentModule
 	}
 
 
+	//DownloadModule::canUpdate
+	protected function canUpdate($engine, $content = FALSE, &$error = FALSE)
+	{
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			return TRUE;
+		//FIXME also check the permissions on the content
+		if($content !== FALSE
+				&& $content['user_id'] == $cred->getUserId())
+			return TRUE;
+		$error = _('Permission denied');
+		return FALSE;
+	}
+
+
+	//DownloadModule::canUpload
+	protected function canUpload($engine, $content = FALSE, &$error = FALSE)
+	{
+		return $this->canUpdate($engine, $content, $error);
+	}
+
+
 	//DownloadModule::getPermissions
 	protected function getPermissions($mode)
 	{
-		return Common::getPermissions($mode, 512);
+		return Common::getPermissions($mode, $this->S_IFDIR);
 	}
 
 
@@ -291,7 +316,7 @@ class DownloadModule extends ContentModule
 		$request = new Request($engine, $this->name, 'folder_new',
 				$content['id'], ($content['id'] !== FALSE)
 				? $content['title'] : FALSE);
-		if($this->canSubmit($engine))
+		if($this->canUpload($engine, $content))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
 					'text' => _('New directory')));
@@ -299,7 +324,7 @@ class DownloadModule extends ContentModule
 		$request = new Request($engine, $this->name, 'submit',
 				$content['id'], ($content['id'] !== FALSE)
 				? $content['title'] : FALSE);
-		if($this->canSubmit($engine))
+		if($this->canUpload($engine, $content))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'save',
 					'text' => _('Upload file')));
@@ -398,8 +423,8 @@ class DownloadModule extends ContentModule
 			//display the (virtual) root folder
 			$content = array('id' => FALSE, 'download_id' => NULL,
 				'title' => _('Root directory'),
-				'mode' => 512, 'parent' => NULL,
-				'user_id' => 1, 'group_id' => 0,
+				'mode' => $this->S_IFDIR, 'parent' => NULL,
+				'user_id' => -1, 'group_id' => -1,
 				'content' => '');
 			$page = new Page(array('title' => $content['title']));
 			return $this->helperDisplay($engine, $page, $content);
@@ -445,10 +470,6 @@ class DownloadModule extends ContentModule
 		$error = _('Permission denied');
 
 		//FIXME find a way to re-use code from callSubmit()
-		//check permissions
-		if($this->canSubmit($engine, $error) === FALSE)
-			return new PageElement('dialog', array(
-					'type' => 'error', 'text' => $error));
 		//create the page
 		if(($parent = $this->_get($engine, $request->getId(),
 				$request->getTitle())) !== FALSE)
@@ -456,6 +477,10 @@ class DownloadModule extends ContentModule
 					$parent['title']);
 		else
 			$title = _('New root folder');
+		//check permissions
+		if($this->canUpload($engine, $parent, $error) === FALSE)
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'folder-new',
 				'text' => $title));
