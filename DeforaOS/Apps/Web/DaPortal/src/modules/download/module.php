@@ -877,6 +877,20 @@ class DownloadModule extends ContentModule
 		else
 			$col2->append('label', array('text' => $value));
 	}
+
+
+	//DownloadModule::helperUpdateContent
+	protected function helperUpdateContent($engine, $request, $page,
+			$content)
+	{
+		//FIXME really implement
+		$page->append('combobox', array('text' => _('Owner: '),
+				'name' => 'owner'));
+		$page->append('combobox', array('text' => _('Group: '),
+				'name' => 'group'));
+		parent::helperUpdateContent($engine, $request, $page,
+				$content);
+	}
 }
 
 ?>
