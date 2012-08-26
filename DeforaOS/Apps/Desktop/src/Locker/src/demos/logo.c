@@ -56,7 +56,9 @@ typedef struct _LockerDemo
 	GdkPixbuf * logo;
 	LogoWindow * windows;
 	size_t windows_cnt;
-	guint timeout;
+	guint source;
+	guint frame_num;
+	int scroll;
 } Logo;
 
 
@@ -70,6 +72,7 @@ static void _logo_start(Logo * logo);
 static void _logo_stop(Logo * logo);
 
 /* callbacks */
+static gboolean _logo_on_idle(gpointer data);
 static gboolean _logo_on_timeout(gpointer data);
 
 
@@ -108,7 +111,9 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 	logo->logo = NULL;
 	logo->windows = NULL;
 	logo->windows_cnt = 0;
-	logo->timeout = 0;
+	logo->source = 0;
+	logo->frame_num = 0;
+	logo->scroll = 0;
 	/* load the background */
 	if((p = helper->config_get(helper->locker, "logo", "background"))
 			&& (logo->background = gdk_pixbuf_new_from_file(p,
@@ -198,11 +203,18 @@ static void _logo_remove(Logo * logo, GdkWindow * window)
 /* logo_start */
 static void _logo_start(Logo * logo)
 {
+	LockerDemoHelper * helper = logo->helper;
+	char const * p;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(logo->timeout == 0 && _logo_on_timeout(logo) == TRUE)
-		logo->timeout = g_timeout_add(10000, _logo_on_timeout, logo);
+	logo->scroll = 0;
+	if((p = helper->config_get(helper->locker, "logo", "scroll")) != NULL
+			&& strtol(p, NULL, 10) == 1)
+		logo->scroll = 1;
+	if(logo->source == 0)
+		_logo_on_timeout(logo);
 }
 
 
@@ -212,13 +224,24 @@ static void _logo_stop(Logo * logo)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(logo->timeout != 0)
-		g_source_remove(logo->timeout);
-	logo->timeout = 0;
+	if(logo->source != 0)
+		g_source_remove(logo->source);
+	logo->source = 0;
 }
 
 
 /* callbacks */
+/* logo_on_idle */
+static gboolean _logo_on_idle(gpointer data)
+{
+	Logo * logo = data;
+
+	logo->source = g_timeout_add(logo->scroll ? 40 : 10000,
+			_logo_on_timeout, logo);
+	return FALSE;
+}
+
+
 /* logo_on_timeout */
 static void _timeout_window(Logo * logo, LogoWindow * window);
 
@@ -229,7 +252,9 @@ static gboolean _logo_on_timeout(gpointer data)
 
 	for(i = 0; i < logo->windows_cnt; i++)
 		_timeout_window(logo, &logo->windows[i]);
-	return TRUE;
+	logo->frame_num++;
+	logo->source = g_idle_add(_logo_on_idle, logo);
+	return FALSE;
 }
 
 static void _timeout_window(Logo * logo, LogoWindow * window)
@@ -239,12 +264,18 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 	int depth;
 	GdkPixbuf * frame;
 	GdkPixmap * pixmap;
-	int width;
-	int height;
+	int width = 0;
+	int height = 0;
 	int i;
 	int j;
 	int x = 0;
 	int y = 0;
+	int offset_x = 0;
+	int offset_y = 0;
+	int src_x;
+	int src_y;
+	int src_w;
+	int src_h;
 	int seed = time(NULL) ^ getpid() ^ getppid() ^ getuid() ^ getgid();
 	const int black = 0x000000ff;
 
@@ -273,12 +304,25 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 	{
 		width = gdk_pixbuf_get_width(logo->background);
 		height = gdk_pixbuf_get_height(logo->background);
-		for(j = 0; height > 0 && j < rect.height; j += height)
-			for(i = 0; width > 0 && i < rect.width; i += width)
-				gdk_pixbuf_copy_area(logo->background, 0, 0,
-						MIN(rect.width - i, width),
-						MIN(rect.height - j, height),
-						frame, i, j);
+		if(logo->scroll && width > 0 && height > 0)
+		{
+			offset_x = logo->frame_num % width;
+			offset_y = logo->frame_num % height;
+		}
+	}
+	src_y = offset_y;
+	for(j = 0; height > 0 && j < rect.height; j += src_h)
+	{
+		src_h = MIN(height - src_y, rect.height - j);
+		src_x = offset_x;
+		for(i = 0; width > 0 && i < rect.width; i += src_w)
+		{
+			src_w = MIN(width - src_x, rect.width - i);
+			gdk_pixbuf_copy_area(logo->background, src_x, src_y,
+					src_w, src_h, frame, i, j);
+			src_x = 0;
+		}
+		src_y = 0;
 	}
 	/* draw the logo */
 	if(logo->logo != NULL)
@@ -287,12 +331,12 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 		width = MIN(rect.width, width);
 		height = gdk_pixbuf_get_height(logo->logo);
 		height = MIN(rect.height, height);
-		if(rect.width > width)
+		if(logo->scroll == 0 && rect.width > width)
 			x = (rand() ^ seed) % (rect.width - width);
-		if(rect.height > height)
+		if(logo->scroll == 0 && rect.height > height)
 			y = (rand() ^ seed) % (rect.height - height);
-		gdk_pixbuf_copy_area(logo->logo, 0, 0, width, height, frame, x,
-				y);
+		gdk_pixbuf_composite(logo->logo, frame, 0, 0, width, height,
+				0.0, 0.0, 1.0, 1.0, GDK_INTERP_NEAREST, 191);
 	}
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
 			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
