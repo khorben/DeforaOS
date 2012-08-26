@@ -356,7 +356,7 @@ static void _timeout_window(GtkDemo * gtkdemo, GtkDemoWindow * window)
 	{
 		back_width = gdk_pixbuf_get_width(background);
 		back_height = gdk_pixbuf_get_height(background);
-		if(gtkdemo->scroll)
+		if(gtkdemo->scroll && back_width > 0 && back_height > 0)
 		{
 			offset_x = gtkdemo->frame_num % back_width;
 			offset_y = gtkdemo->frame_num % back_height;
