@@ -506,12 +506,13 @@ Browser * browser_new(char const * directory)
 static gboolean _new_idle(gpointer data)
 {
 	Browser * browser = data;
+	char const * location;
 
 	_idle_load_plugins(browser);
-	if(browser->current == NULL)
+	if((location = browser_get_location(browser)) == NULL)
 		browser_go_home(browser);
 	else
-		browser_set_location(browser, browser->current->data);
+		browser_set_location(browser, location);
 	return FALSE;
 }
 
@@ -645,9 +646,12 @@ static GtkListStore * _create_store(Browser * browser)
 /* browser_new_copy */
 Browser * browser_new_copy(Browser * browser)
 {
-	if(browser == NULL || browser->current == NULL)
+	char const * location;
+
+	if(browser == NULL)
 		return browser_new(NULL);
-	return browser_new(browser->current->data);
+	location = browser_get_location(browser);
+	return browser_new(location);
 }
 
 
@@ -894,6 +898,8 @@ void browser_focus_location(Browser * browser)
 /* browser_get_location */
 char const * browser_get_location(Browser * browser)
 {
+	if(browser->current == NULL)
+		return NULL;
 	return browser->current->data;
 }
 
@@ -1041,16 +1047,18 @@ void browser_open_with(Browser * browser, char const * path)
 /* browser_refresh */
 void browser_refresh(Browser * browser)
 {
+	char const * location;
 	DIR * dir;
 	struct stat st;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %s\n", __func__, browser->current != NULL
+	fprintf(stderr, "DEBUG: %s() %s\n", __func__, (browser->current != NULL
+				&& browser->current->data != NULL)
 			? (char *)browser->current->data : "NULL");
 #endif
-	if(browser->current == NULL)
+	if((location = browser_get_location(browser)) == NULL)
 		return;
-	if((dir = _browser_opendir(browser->current->data, &st)) == NULL)
+	if((dir = _browser_opendir(location, &st)) == NULL) /* XXX */
 		browser_error(browser, strerror(errno), 1);
 	else
 		_browser_refresh_do(browser, dir, &st);
@@ -1085,6 +1093,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 static int _refresh_new_loop(Browser * browser)
 {
 	struct dirent * de;
+	char const * location;
 	GtkTreeIter iter;
 	char * path;
 	struct stat lst;
@@ -1106,8 +1115,9 @@ static int _refresh_new_loop(Browser * browser)
 	if(de == NULL)
 		return _loop_status(browser, NULL);
 	_loop_status(browser, _("Refreshing folder: "));
-	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
-			== NULL || lstat(path, &lst) != 0)
+	location = browser_get_location(browser);
+	if((path = g_build_filename(location, de->d_name, NULL)) == NULL
+			|| lstat(path, &lst) != 0)
 	{
 		browser_error(NULL, strerror(errno), 1);
 		if(path != NULL)
@@ -1432,9 +1442,15 @@ static gboolean _done_thumbnails(gpointer data)
 static gboolean _done_timeout(gpointer data)
 {
 	Browser * browser = data;
+	char const * location;
 	struct stat st;
 
-	if(stat(browser->current->data, &st) != 0)
+	if((location = browser_get_location(browser)) == NULL)
+	{
+		browser->refresh_id = 0;
+		return FALSE;
+	}
+	if(stat(location, &st) != 0)
 	{
 		browser->refresh_id = 0;
 		browser_error(NULL, strerror(errno), 1);
@@ -1471,6 +1487,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 static int _current_loop(Browser * browser)
 {
 	struct dirent * de;
+	char const * location;
 	char * path;
 	struct stat lst;
 	struct stat st;
@@ -1496,8 +1513,9 @@ static int _current_loop(Browser * browser)
 	if(de == NULL)
 		return _loop_status(browser, NULL);
 	_loop_status(browser, _("Refreshing folder: "));
-	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
-			== NULL || lstat(path, &lst) != 0)
+	location = browser_get_location(browser);
+	if((path = g_build_filename(location, de->d_name, NULL)) == NULL
+			|| lstat(path, &lst) != 0)
 	{
 		browser_error(NULL, strerror(errno), 1);
 		if(path != NULL)
@@ -2605,12 +2623,14 @@ static void _plugin_refresh_do(Browser * browser, char const * path);
 
 static void _browser_plugin_refresh(Browser * browser)
 {
+	char const * location;
 	GtkTreeSelection * treesel;
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
 	GtkTreeIter iter;
 	GList * sel;
 	gchar * path = NULL;
 
+	location = browser_get_location(browser);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser_get_view(browser) != BV_DETAILS)
 		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
@@ -2620,7 +2640,7 @@ static void _browser_plugin_refresh(Browser * browser)
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 						browser->detailview))) == NULL)
 	{
-		_plugin_refresh_do(browser, browser->current->data);
+		_plugin_refresh_do(browser, location);
 		return;
 	}
 	else
@@ -2629,12 +2649,11 @@ static void _browser_plugin_refresh(Browser * browser)
 			&& gtk_tree_model_get_iter(model, &iter, sel->data))
 	{
 		gtk_tree_model_get(model, &iter, BC_PATH, &path, -1);
-		_plugin_refresh_do(browser, (path != NULL) ? path
-				: browser->current->data);
+		_plugin_refresh_do(browser, (path != NULL) ? path : location);
 		g_free(path);
 	}
-	else if(browser->current != NULL)
-		_plugin_refresh_do(browser, browser->current->data);
+	else if(location != NULL)
+		_plugin_refresh_do(browser, location);
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
 }
@@ -2694,11 +2713,12 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st)
 
 static void _refresh_title(Browser * browser)
 {
-	char const * title = browser->current->data;
+	char const * title;
 	char * p;
 	GError * error = NULL;
 	char buf[256];
 
+	title = browser_get_location(browser);
 	if((p = g_filename_to_utf8(title, -1, NULL, NULL, &error)) == NULL)
 	{
 		browser_error(NULL, error->message, 1);
@@ -2714,21 +2734,21 @@ static void _refresh_title(Browser * browser)
 static void _refresh_path(Browser * browser)
 {
 	static unsigned int cnt = 0;
+	char const * location;
 	GtkWidget * widget;
 	char * p;
 	GError * error = NULL;
 	unsigned int i;
 	char * q;
 
+	location = browser_get_location(browser);
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
-	if((p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL,
-					&error)) == NULL)
+	if((p = g_filename_to_utf8(location, -1, NULL, NULL, &error)) == NULL)
 	{
 		browser_error(NULL, error->message, 1);
 		g_error_free(error);
 	}
-	gtk_entry_set_text(GTK_ENTRY(widget), (p != NULL) ? p
-			: browser->current->data);
+	gtk_entry_set_text(GTK_ENTRY(widget), (p != NULL) ? p : location);
 	free(p);
 	for(i = 0; i < cnt; i++)
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -2737,7 +2757,7 @@ static void _refresh_path(Browser * browser)
 #else
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
 #endif
-	if((p = g_path_get_dirname(browser->current->data)) == NULL)
+	if((p = g_path_get_dirname(location)) == NULL)
 		return;
 	if(strcmp(p, ".") != 0)
 	{
