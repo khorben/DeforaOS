@@ -503,9 +503,10 @@ static int _move_filename_error(Move * move, char const * filename, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: move [-fi] file...\n\
-  -f	Do not prompt for confirmation if the destination path exists\n\
-  -i	Prompt for confirmation if the destination path exists\n"), stderr);
+	fputs(_("Usage: move [-fi] source target\n"
+"       move [-fi] source... directory\n"
+"  -f	Do not prompt for confirmation if the destination path exists\n"
+"  -i	Prompt for confirmation if the destination path exists\n"), stderr);
 	return 1;
 }
 
