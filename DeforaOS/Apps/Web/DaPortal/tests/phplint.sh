@@ -27,6 +27,8 @@ _debug()
 {
 	echo "$@" 1>&2
 	"$@"
+	#ignore errors when the command is not available
+	[ $? -eq 127 ]						&& return 0
 }
 
 
