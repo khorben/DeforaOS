@@ -107,7 +107,11 @@ class PdoDatabase extends Database
 			$parameters = array();
 		$args = array();
 		foreach($parameters as $k => $v)
+		{
+			if(is_bool($v))
+				$v = $v ? 1 : 0;
 			$args[':'.$k] = $v;
+		}
 		if($stmt->execute($args) !== TRUE)
 		{
 			$error = $stmt->errorInfo();
