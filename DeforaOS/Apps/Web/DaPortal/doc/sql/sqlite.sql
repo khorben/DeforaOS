@@ -4,6 +4,41 @@
 
 
 
+DROP TABLE daportal_blog_content;
+DROP TABLE daportal_blog_user;
+DROP TABLE daportal_caclient;
+DROP TABLE daportal_caserver;
+DROP TABLE daportal_ca;
+DROP TABLE daportal_download;
+DROP TABLE daportal_category_content;
+DROP TABLE daportal_bookmark;
+DROP TABLE daportal_probe_host;
+DROP TABLE daportal_bug_reply;
+DROP TABLE daportal_bug_reply_enum_state;
+DROP TABLE daportal_bug_reply_enum_type;
+DROP TABLE daportal_bug_reply_enum_priority;
+DROP TABLE daportal_bug;
+DROP TABLE daportal_bug_enum_state;
+DROP TABLE daportal_bug_enum_type;
+DROP TABLE daportal_bug_enum_priority;
+DROP TABLE daportal_project_screenshot;
+DROP TABLE daportal_project_download;
+DROP TABLE daportal_project_user;
+DROP TABLE daportal_project;
+DROP TABLE daportal_top;
+DROP TABLE daportal_comment;
+DROP TABLE daportal_content_lang;
+DROP TABLE daportal_content;
+DROP TABLE daportal_user_reset;
+DROP TABLE daportal_user_register;
+DROP TABLE daportal_user;
+DROP TABLE daportal_group;
+DROP TABLE daportal_lang;
+DROP TABLE daportal_config;
+DROP TABLE daportal_config_enum_type;
+DROP TABLE daportal_module;
+
+
 BEGIN TRANSACTION;
 
 

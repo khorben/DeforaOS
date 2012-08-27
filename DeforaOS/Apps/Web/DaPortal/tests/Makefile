@@ -1,4 +1,4 @@
-TARGETS	= ../src
+TARGETS	= phplint.txt sqlite.db sqlite.db3
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -9,11 +9,17 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-../src: phplint.sh
-	./phplint.sh -P "$(PREFIX)" -- "../src"
+phplint.txt: phplint.sh
+	./phplint.sh -P "$(PREFIX)" -- "phplint.txt"
+
+sqlite.db: ../doc/sql/sqlite.sql
+	./database.sh -P "$(PREFIX)" -- "sqlite.db"
+
+sqlite.db3: ../doc/sql/sqlite.sql
+	./database.sh -P "$(PREFIX)" -- "sqlite.db3"
 
 clean:
-	$(RM) -- $(../src_OBJS)
+	$(RM) -- $(phplint.txt_OBJS) $(sqlite.db_OBJS) $(sqlite.db3_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

@@ -17,8 +17,8 @@
 
 #variables
 DEBUG="_debug"
-FIND="find"
-PHPLINT="php -l"
+SQLITE2="sqlite"
+SQLITE3="sqlite3"
 
 
 #functions
@@ -27,13 +27,15 @@ _debug()
 {
 	echo "$@" 1>&2
 	"$@"
+	#ignore errors when the command is not available
+	[ $? -eq 127 ]						&& return 0
 }
 
 
 #usage
 _usage()
 {
-	echo "Usage: phplint.sh [-P prefix] target" 1>&2
+	echo "Usage: database.sh [-P prefix] target" 1>&2
 	return 1;
 }
 
@@ -57,9 +59,19 @@ if [ $# -ne 1 ]; then
 fi
 target="$1"
 
-ret=0
-> "$target"
-for i in $($FIND "../src" -name '*.php'); do
-	$DEBUG $PHPLINT -f "$i" 2>&1 >> "$target"		|| ret=2
-done
-exit $ret
+case "$target" in
+	sqlite.db)
+		echo .read "../doc/sql/sqlite.sql" | $DEBUG $SQLITE2 "$target"
+		#XXX avoid this work-around
+		if [ $? -eq 1 ]; then
+			echo "database.sh: $target: Error 1 (ignored)" 1>&2
+		fi
+		;;
+	sqlite.db3)
+		echo .read "../doc/sql/sqlite.sql" | $DEBUG $SQLITE3 "$target"
+		#XXX avoid this work-around
+		if [ $? -eq 1 ]; then
+			echo "database.sh: $target: Error 1 (ignored)" 1>&2
+		fi
+		;;
+esac

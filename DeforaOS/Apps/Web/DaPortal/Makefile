@@ -647,6 +647,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/templates/Probe.tpl \
 		$(PACKAGE)-$(VERSION)/templates/project.conf \
 		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/database.sh \
 		$(PACKAGE)-$(VERSION)/tests/phplint.sh \
 		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/themes/Makefile \
