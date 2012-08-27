@@ -414,6 +414,8 @@ abstract class ContentModule extends Module
 			$r = $this->helperActionsSubmit($engine, $request);
 			$ret = array_merge($ret, $r);
 		}
+		if(($r = $this->helperActions($engine, $request)) !== FALSE)
+			$ret = array_merge($ret, $r);
 		return $ret;
 	}
 
@@ -497,9 +499,8 @@ abstract class ContentModule extends Module
 		$page = new Page(array('title' => $this->text_content_title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $this->text_content_title));
-		$vbox = $page->append('vbox');
 		//obtain the total number of records available
-		if(($res = $db->query($engine, $this->query_list_count.$query,
+		if(($res = $db->query($engine, $this->query_list_count,
 				array('module_id' => $this->id))) !== FALSE
 				&& count($res) == 1)
 			$pcnt = $res[0][0];
@@ -520,10 +521,11 @@ abstract class ContentModule extends Module
 				array('module_id' => $this->id))) === FALSE)
 		{
 			$error = _('Unable to list contents');
-			$vbox->append('dialog', array('type' => 'error',
+			$page->append('dialog', array('type' => 'error',
 						'text' => $error));
 			return $page;
 		}
+		$vbox = $this->helperPreviewHeader($engine, $request, $page);
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$content = $this->_get($engine, $res[$i]['id']);
@@ -570,7 +572,7 @@ abstract class ContentModule extends Module
 
 		//obtain the content
 		if(($id = $request->getId()) === FALSE)
-			return $this->_default($engine, $request);
+			return $this->callDefault($engine, $request);
 		if(($content = $this->_get($engine, $id, $request->getTitle(),
 				$request)) === FALSE)
 			return new PageElement('dialog', array(
@@ -983,6 +985,13 @@ abstract class ContentModule extends Module
 	}
 
 
+	//ContentModule::helperActions
+	protected function helperActions($engine, $request)
+	{
+		return FALSE;
+	}
+
+
 	//ContentModule::helperActionsAdmin
 	protected function helperActionsAdmin($engine, $request)
 	{
@@ -1115,7 +1124,7 @@ abstract class ContentModule extends Module
 		if(($uid = $cred->getUserId()) == 0)
 		{
 			//must be logged in
-			$page = $this->_default($engine);
+			$page = $this->callDefault($engine);
 			$error = _('Must be logged in');
 			$page->prepend('dialog', array('type' => 'error',
 						'text' => $error));
@@ -1368,6 +1377,16 @@ abstract class ContentModule extends Module
 		$preview->append('button', array('request' => $request,
 				'stock' => $this->content_open_stock,
 				'text' => $this->text_content_open));
+	}
+
+
+	//ContentModule::helperPreviewHeader
+	protected function helperPreviewHeader($engine, $request, $page)
+	{
+		$vbox = new PageElement('vbox');
+
+		$page->append($vbox);
+		return $vbox;
 	}
 
 
