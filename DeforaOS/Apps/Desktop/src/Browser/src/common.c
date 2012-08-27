@@ -29,7 +29,7 @@
 /* prototypes */
 #ifdef COMMON_DND
 static int _common_drag_data_received(GdkDragContext * context,
-		GtkSelectionData * seldata, char * dest);
+		GtkSelectionData * seldata, char const * dest);
 #endif
 
 #ifdef COMMON_EXEC
@@ -53,7 +53,7 @@ static String * _common_config_filename(char const * name)
 #ifdef COMMON_DND
 /* common_drag_data_received */
 static int _common_drag_data_received(GdkDragContext * context,
-		GtkSelectionData * seldata, char * dest)
+		GtkSelectionData * seldata, char const * dest)
 {
 	int ret = 0;
 	size_t len;
@@ -95,9 +95,9 @@ static int _common_drag_data_received(GdkDragContext * context,
 			? _("copying") : _("moving"), _(" to \""), dest,
 			"\":\n");
 	for(s = selection; s != NULL; s = s->next)
-		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
+		fprintf(stderr, "DEBUG: \"%s\"\n", (char const *)s->data);
 #else
-	selection = g_list_append(selection, dest);
+	selection = g_list_append(selection, (char *)dest); /* XXX */
 	if(action == GDK_ACTION_COPY)
 		ret = _common_exec("copy", "-iR", selection);
 	else if(action == GDK_ACTION_MOVE)

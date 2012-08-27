@@ -120,17 +120,19 @@ void on_file_new_folder(gpointer data)
 {
 	char const * newfolder = _("New folder");
 	Browser * browser = data;
-	char const * cur = browser->current->data;
+	char const * location;
 	size_t len;
 	char * path;
 
-	len = strlen(cur) + strlen(newfolder) + 2;
+	if((location = browser_get_location(browser)) == NULL)
+		return;
+	len = strlen(location) + strlen(newfolder) + 2;
 	if((path = malloc(len)) == NULL)
 	{
 		browser_error(browser, strerror(errno), 1);
 		return;
 	}
-	snprintf(path, len, "%s/%s", cur, newfolder);
+	snprintf(path, len, "%s/%s", location, newfolder);
 	if(mkdir(path, 0777) != 0)
 		browser_error(browser, strerror(errno), 1);
 	free(path);
@@ -141,9 +143,11 @@ void on_file_new_folder(gpointer data)
 void on_file_new_symlink(gpointer data)
 {
 	Browser * browser = data;
-	char const * cur = browser->current->data;
+	char const * location;
 
-	if(_common_symlink(browser->window, cur) != 0)
+	if((location = browser_get_location(browser)) == NULL)
+		return;
+	if(_common_symlink(browser->window, location) != 0)
 		browser_error(browser, strerror(errno), 1);
 }
 
@@ -321,14 +325,16 @@ void on_help_contents(gpointer data)
 void on_back(gpointer data)
 {
 	Browser * browser = data;
+	char const * location;
 
-	if(browser->current->prev == NULL)
+	if((location = browser_get_location(browser)) == NULL
+			|| browser->current->prev == NULL) /* XXX */
 		return;
 	browser->current = g_list_previous(browser->current);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_back),
 			browser->current->prev != NULL);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir),
-			strcmp(browser->current->data, "/") != 0);
+			strcmp(location, "/") != 0);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward),
 			TRUE);
 	browser_refresh(browser);
@@ -377,13 +383,15 @@ void on_cut(gpointer data)
 void on_forward(gpointer data)
 {
 	Browser * browser = data;
+	char const * location;
 
-	if(browser->current->next == NULL)
+	if((location = browser_get_location(browser)) == NULL
+			|| browser->current->next == NULL) /* XXX */
 		return;
 	browser->current = browser->current->next;
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_back), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir),
-			strcmp(browser->current->data, "/") != 0);
+			strcmp(location, "/") != 0);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward),
 			browser->current->next != NULL);
 	browser_refresh(browser); /* FIXME if it fails history is wrong */
@@ -420,10 +428,13 @@ void on_paste(gpointer data)
 void on_properties(gpointer data)
 {
 	Browser * browser = data;
+	char const * location;
 	GList * selection;
 
+	if((location = browser_get_location(browser)) == NULL)
+		return;
 	if((selection = _copy_selection(browser)) == NULL)
-		selection = g_list_append(NULL, strdup(browser->current->data));
+		selection = g_list_append(NULL, strdup(location));
 	if(_common_exec("properties", NULL, selection) != 0)
 		browser_error(browser, strerror(errno), 1);
 	g_list_foreach(selection, (GFunc)free, NULL);
@@ -444,9 +455,12 @@ void on_refresh(gpointer data)
 void on_updir(gpointer data)
 {
 	Browser * browser = data;
+	char const * location;
 	char * dir;
 
-	dir = g_path_get_dirname(browser->current->data);
+	if((location = browser_get_location(browser)) == NULL)
+		return;
+	dir = g_path_get_dirname(location);
 	browser_set_location(browser, dir);
 	g_free(dir);
 }
@@ -646,21 +660,24 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	Browser * browser = data;
 	GtkTreePath * path;
 	GtkTreeIter iter;
-	char * dest;
+	char const * location;
+	gchar * p = NULL;
 
 	path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(browser->iconview),
 			x, y);
 	if(path == NULL)
-		dest = browser->current->data;
+		location = browser_get_location(browser);
 	else
 	{
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
 				path);
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BC_PATH, &dest, -1);
+				BC_PATH, &p, -1);
+		location = p;
 	}
-	if(_common_drag_data_received(context, seldata, dest) != 0)
+	if(_common_drag_data_received(context, seldata, location) != 0)
 		browser_error(browser, strerror(errno), 1);
+	g_free(p);
 }
 #endif /* GTK_CHECK_VERSION(2, 8, 0) */
 
@@ -867,18 +884,20 @@ static void _on_popup_new_text_file(gpointer data)
 	char const * newtext = _("New text file.txt");
 	IconCallback * ic = data;
 	Browser * browser = ic->browser;
-	char const * cur = browser->current->data;
+	char const * location;
 	size_t len;
 	char * path;
 	int fd;
 
-	len = strlen(cur) + strlen(newtext) + 2;
+	if((location = browser_get_location(browser)) == NULL)
+		return;
+	len = strlen(location) + strlen(newtext) + 2;
 	if((path = malloc(len)) == NULL)
 	{
 		browser_error(browser, strerror(errno), 1);
 		return;
 	}
-	snprintf(path, len, "%s/%s", cur, newtext);
+	snprintf(path, len, "%s/%s", location, newtext);
 	if((fd = creat(path, 0666)) < 0)
 		browser_error(browser, strerror(errno), 1);
 	else
@@ -1107,14 +1126,15 @@ static void _on_icon_open_with(gpointer data)
 static void _on_icon_paste(gpointer data)
 {
 	IconCallback * cb = data;
-	char * p;
+	char const * location;
 
-	/* XXX this is totally ugly */
-	p = cb->browser->current->data;
+	if((location = browser_get_location(cb->browser)) == NULL)
+		return;
+	/* XXX the following assignments are totally ugly */
 	if(cb->path != NULL)
 		cb->browser->current->data = cb->path;
 	_paste_selection(cb->browser);
-	cb->browser->current->data = p;
+	cb->browser->current->data = location;
 }
 
 static void _on_icon_unmount(gpointer data)
@@ -1170,21 +1190,24 @@ static GList * _copy_selection(Browser * browser)
 /* paste_selection */
 static void _paste_selection(Browser * browser)
 {
-	char * p = browser->current->data;
+	char const * location;
 
 	if(browser->selection == NULL)
 		return;
-	browser->selection = g_list_append(browser->selection, p);
+	location = browser_get_location(browser);
+	browser->selection = g_list_append(browser->selection,
+			(char *)location); /* XXX avoid a warning */
 	if(browser->selection_cut != 1)
 	{
 		if(_common_exec("copy", "-ir", browser->selection) != 0)
 			browser_error(browser, strerror(errno), 1);
-		browser->selection = g_list_remove(browser->selection, p);
+		browser->selection = g_list_remove(browser->selection,
+				location);
 		return;
 	}
 	if(_common_exec("move", "-i", browser->selection) != 0)
 		browser_error(browser, strerror(errno), 1);
-	browser->selection = g_list_remove(browser->selection, p);
+	browser->selection = g_list_remove(browser->selection, location);
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);
 	browser->selection = NULL;
