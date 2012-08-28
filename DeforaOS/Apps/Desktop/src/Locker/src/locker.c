@@ -274,7 +274,9 @@ static int _new_config(Locker * locker)
 {
 	if((locker->config = config_new()) == NULL)
 		return -1;
-	return _locker_config_load(locker);
+	/* ignore errors */
+	_locker_config_load(locker);
+	return 0;
 }
 
 static GtkWidget * _new_auth(Locker * locker, char const * plugin)
@@ -352,8 +354,9 @@ static int _new_plugins(Locker * locker)
 	size_t i;
 	int c;
 
-	if((p = config_get(locker->config, NULL, "plugins")) == NULL
-			|| strlen(p) == 0)
+	if((p = config_get(locker->config, NULL, "plugins")) == NULL)
+		p = "systray";
+	else if(strlen(p) == 0)
 		return 0;
 	if((plugins = string_new(p)) == NULL)
 		return -1;
@@ -1266,7 +1269,7 @@ static int _locker_config_load(Locker * locker)
 		return -1;
 	sprintf(filename, "%s/%s", homedir, LOCKER_CONFIG_FILE);
 	if((ret = config_load(locker->config, filename)) != 0)
-		_locker_error(NULL, error_get(), 1);
+		_locker_error(NULL, error_get(), ret);
 	free(filename);
 	return ret;
 }
