@@ -89,9 +89,9 @@ unset($engine);
 			variables (one per line) found in separate sections. This file is currently
 			used for most of the configureable aspects of &package;.</para>
 		<para>Next, the <filename>engine.php</filename> file is loaded from the
-			<filename>system</filename> sub-folder. This folder contains generic, library
-			code that can freely be used by the different modules. After including this
-			file:<orderedlist>
+			<filename>system</filename> sub-directory. This directory contains generic,
+			library code that can freely be used by the different modules. After
+			including this file:<orderedlist>
 				<listitem><para>The relevant implementation of the
 						<classname>Engine</classname> class is loaded,</para></listitem>
 				<listitem><para>The user's request is determined and
@@ -99,10 +99,12 @@ unset($engine);
 				<listitem><para>The output (or <quote>page</quote>) is rendered and
 						delivered to the user.</para></listitem>
 		</orderedlist></para>
-		<para>Finally, the engine loaded is explicitely free'd; this was found
+		<para>Finally, the engine loaded is explicitely free'd; this was found to be
 			necessary in some cases (like with the <classname>GtkEngine</classname>) as
-			otherwise, some functionalities of PHP no longer work as expected during
-			teardown.</para>
+			otherwise, some functionalities of PHP no longer work as expected while
+			executing the engine's destructor routines.</para>
+		<para>In the rest of this documentation, source files will be mentioned
+			relatively to the <filename>src</filename> directory.</para>
 	</section>
 	<section>
 		<title>Engine selection</title>
@@ -131,9 +133,50 @@ unset($engine);
 		<title>Processing requests</title>
 		<section>
 			<title>Database</title>
+			<para>The storage database is accessed through the processing engine, with
+				the actual storage backend being loaded automatically when it is required.
+				This typically happens when invoking the <function>getDatabase()</function>
+				method of the <classname>Engine</classname> instance.</para>
+			<para>Much like the main engine, the backend is selected as configured in the
+				<varname>[database]</varname> section of the
+				<filename>daportal.conf</filename> configuration file (or can be
+				automatically detected in some cases). The different classes implementing
+				the <classname>Database</classname> abstract class (described in
+				<filename>system/database.php</filename>) are loaded from individual files,
+				expected in the <filename>database</filename> directory.</para>
+			<para>A limited implementation of the <classname>Database</classname> class,
+				called <classname>DatabaseDummy</classname>, is returned by the engine when
+				it was unable to attach a functional <classname>Database</classname>
+				instance. It will simply fail to obtain any data.</para>
 		</section>
 		<section>
 			<title>Authentication</title>
+			<para>User authentication within &package; is also delegated to a distinct
+				backend, as its proper operation typically depends on the actual
+				<classname>Engine</classname> instance selected. These backends are expected
+				in the <filename>auth</filename> sub-directory, and should implement the
+				<classname>Auth</classname> class from
+				<filename>system/auth.php</filename>. Auto-detection of the authentication
+				backend to load can be circumvented through the <varname>[auth]</varname>
+				section of the <filename>daportal.conf</filename> configuration file.</para>
+			<para>The credentials with &package; include the following
+				information, much like found on a typical UNIX system:<itemizedlist>
+					<listitem><para>a user ID: either the default value, 0 (meaning anonymous,
+							least privileges) or a positive integer (actual users, with equal
+							privileges by default)</para></listitem>
+					<listitem><para>a username, which must be unique through the
+							system;</para></listitem>
+					<listitem><para>a group ID: defaulting to 0 (meaning nogroup), they can be
+							used by modules to assign differing privileges, or otherwise
+							distinguishing groups of users;</para></listitem>
+					<listitem><para>a group name: the name of the default group of the
+							user;</para></listitem>
+					<listitem><para>an additional list of groups that the user may be part
+							of;</para></listitem>
+					<listitem><para>an administrative flag: it grants complete privileges to
+							the current user, with the actual signification depending on the current
+							module.</para></listitem>
+			</itemizedlist></para>
 		</section>
 		<section>
 			<title>Idempotence</title>
