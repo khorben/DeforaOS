@@ -295,6 +295,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 {
 	ModemPlugin * modem = magic;
 	Sofia * sofia = modem;
+	ModemPluginHelper * helper = modem->helper;
 	ModemEvent mevent;
 
 #ifdef DEBUG
@@ -319,7 +320,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			mevent.type = MODEM_EVENT_TYPE_CALL;
 			/* FIXME also remember the other fields */
 			mevent.call.status = MODEM_CALL_STATUS_NONE;
-			modem->helper->event(modem->helper->modem, &mevent);
+			helper->event(helper->modem, &mevent);
 			break;
 		case nua_r_invite:
 			memset(&mevent, 0, sizeof(mevent));
@@ -338,7 +339,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 				fprintf(stderr, "r_invite %03d %s\n", status,
 						phrase);
 			}
-			modem->helper->event(modem->helper->modem, &mevent);
+			helper->event(helper->modem, &mevent);
 			break;
 		case nua_r_message:
 			_callback_message(modem, status, phrase);
