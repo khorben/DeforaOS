@@ -155,10 +155,10 @@ unset($engine);
 				backend, as its proper operation typically depends on the actual
 				<classname>Engine</classname> instance selected. These backends are expected
 				in the <filename>auth</filename> sub-directory, and should implement the
-				<classname>Auth</classname> class from
-				<filename>system/auth.php</filename>. Auto-detection of the authentication
-				backend to load can be circumvented through the <varname>[auth]</varname>
-				section of the <filename>daportal.conf</filename> configuration file.</para>
+				<classname>Auth</classname> class from <filename>system/auth.php</filename>.
+				Auto-detection of the authentication backend to be loaded can be
+				circumvented through the <varname>[auth]</varname> section of the
+				<filename>daportal.conf</filename> configuration file.</para>
 			<para>The credentials with &package; include the following
 				information, much like found on a typical UNIX system:<itemizedlist>
 					<listitem><para>a user ID: either the default value, 0 (meaning anonymous,
@@ -180,6 +180,16 @@ unset($engine);
 		</section>
 		<section>
 			<title>Idempotence</title>
+			<para>The concept of idempotence is also explicitly implemented (and
+				hopefully enforced) throughout the code. Its actual meaning in the context
+				of &package; is to prevent actions to be performed without the explicit
+				consent of the user; this is the default for newly-created requests. It is
+				up to each individual module to determine whether the current operation is
+				<quote>safe</quote> in this regard or not.</para>
+			<para>The main rationale behind this concept is to prevent CSRF attacks with
+				session-based, disconnected authentication mechanisms (like when using
+				cookies over HTTP). It is also worth mentioning that some requests may be
+				set to expire over time for increased security.</para>
 		</section>
 	</section>
 	<section>
