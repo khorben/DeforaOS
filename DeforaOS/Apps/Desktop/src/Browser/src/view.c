@@ -38,6 +38,8 @@ static char const _license[] =
 
 
 /* constants */
+#define PROGNAME	"view"
+
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -89,6 +91,7 @@ static gboolean _on_closex(gpointer data);
 static void _on_file_edit(gpointer data);
 static void _on_file_open_with(gpointer data);
 static void _on_file_close(gpointer data);
+static void _on_help_contents(gpointer data);
 static void _on_help_about(gpointer data);
 #else
 static void _on_edit(gpointer data);
@@ -120,6 +123,8 @@ static DesktopMenu _view_menu_file_edit[] =
 
 static DesktopMenu _view_menu_help[] =
 {
+	{ N_("Contents"), G_CALLBACK(_on_help_contents), "help-contents", 0,
+		GDK_KEY_F1 },
 # if GTK_CHECK_VERSION(2, 6, 0)
 	{ N_("_About"), G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 # else
@@ -480,6 +485,13 @@ static void _on_file_close(gpointer data)
 	View * view = data;
 
 	_on_closex(view);
+}
+
+
+/* on_help_contents */
+static void _on_help_contents(gpointer data)
+{
+	desktop_help_contents(PACKAGE, PROGNAME);
 }
 
 
