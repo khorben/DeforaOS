@@ -168,6 +168,7 @@ class BasicTemplate extends Template
 	{
 		$title = new PageElement('title', array('id' => 'title'));
 		$title->append('link', array('text' => $this->title,
+					'title' => $this->title,
 					'url' => $this->homepage));
 		return $title;
 	}
