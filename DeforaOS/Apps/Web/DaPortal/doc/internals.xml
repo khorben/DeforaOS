@@ -205,6 +205,19 @@ unset($engine);
 		<title>Output and rendering</title>
 		<section>
 			<title>Building pages</title>
+			<para>The content generated through processing the requests is expected to be
+				composed of a series of chained elements, called
+				<classname>PageElement</classname>, each of which can also embed properties
+				or other instances of <classname>PageElement</classname>. For clarity, an
+				additional class, simply called <classname>Page</classname>, is also
+				available and meant to represent a top-level element.</para>
+			<para>Most importantly, each element has a given type, representing an
+				expected layout or behavior when rendered. These types are largely inspired
+				by graphical toolkits, such as Gtk+, and typically represent label widgets,
+				file choosers, toolbars, menus, and so on.</para>
+			<para>The <classname>PageElement</classname> and <classname>Page</classname>
+				classes are both defined in the <filename>system/page.php</filename>
+				file.</para>
 		</section>
 		<section>
 			<title>Applying templates</title>
