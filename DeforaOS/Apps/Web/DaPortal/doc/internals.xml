@@ -211,6 +211,42 @@ unset($engine);
 		</section>
 		<section>
 			<title>File formats</title>
+			<para>Rendering of the current page is the last step performed by the engine
+				(if at all necessary) before delivering its contents to the end user.
+				Indeed, some module calls may return data of any nature, like resources
+				(such as file or stream descriptors). The <classname>Engine</classname>
+				instance is then responsible for their proper handling.</para>
+			<para>However, in the case of pages (or page elements) the contents may be
+				formatted, transformed or otherwise converted in differing formats, as
+				available through the <classname>Engine</classname> instance. This instance
+				may use &package;'s own set of classes and routines to perform this, as
+				provided by the <classname>Format</classname> and
+				<classname>FormatElements</classname> classes in
+				<filename>system/format.php</filename>, and then implemented in the
+				<filename>formats</filename> directory.</para>
+			<para>As usual within &package;, the choice of formatting backends and their
+				respective preferences can be influenced through the
+				<filename>daportal.conf</filename> configuration file, through the
+				<varname>[format]</varname> set of sections. The difference here, is that
+				backends can be specified per MIME type, as set through the
+				<classname>Engine</classname> instance. This is illustrated here:</para>
+			<programlisting><![CDATA[[format]
+#this defines the default backend if nothing else matched
+#backend=html
+#backend=html5
+backend=plain
+
+[format::text/html]
+#this defines the default backend for content explicitly set to be HTML
+#backend=html
+backend=html5
+
+[format::html]
+#preferences for the html backend
+favicon=/favicon.png
+]]></programlisting>
+		<para>Again, the final decision on which rendering backend to choose can be
+			enforced by the <classname>Engine</classname> instance.</para>
 		</section>
 	</section>
 </article>
