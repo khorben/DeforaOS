@@ -118,8 +118,8 @@ void on_file_new_window(gpointer data)
 /* on_file_new_folder */
 void on_file_new_folder(gpointer data)
 {
-	char const * newfolder = _("New folder");
 	Browser * browser = data;
+	char const * newfolder = _("New folder");
 	char const * location;
 	size_t len;
 	char * path;
@@ -429,12 +429,20 @@ void on_properties(gpointer data)
 {
 	Browser * browser = data;
 	char const * location;
+	char * p;
 	GList * selection;
 
 	if((location = browser_get_location(browser)) == NULL)
 		return;
 	if((selection = _copy_selection(browser)) == NULL)
-		selection = g_list_append(NULL, strdup(location));
+	{
+		if((p = strdup(location)) == NULL)
+		{
+			browser_error(browser, strerror(errno), 1);
+			return;
+		}
+		selection = g_list_append(NULL, p);
+	}
 	if(_common_exec("properties", NULL, selection) != 0)
 		browser_error(browser, strerror(errno), 1);
 	g_list_foreach(selection, (GFunc)free, NULL);
@@ -1191,24 +1199,35 @@ static GList * _copy_selection(Browser * browser)
 static void _paste_selection(Browser * browser)
 {
 	char const * location;
+	char * p;
 
-	if(browser->selection == NULL)
+	if(browser->selection == NULL
+			|| (location = browser_get_location(browser)) == NULL)
 		return;
-	location = browser_get_location(browser);
-	browser->selection = g_list_append(browser->selection,
-			(char *)location); /* XXX avoid a warning */
-	if(browser->selection_cut != 1)
+	if((p = strdup(location)) == NULL)
 	{
-		if(_common_exec("copy", "-ir", browser->selection) != 0)
-			browser_error(browser, strerror(errno), 1);
-		browser->selection = g_list_remove(browser->selection,
-				location);
+		browser_error(browser, strerror(errno), 1);
 		return;
 	}
-	if(_common_exec("move", "-i", browser->selection) != 0)
-		browser_error(browser, strerror(errno), 1);
-	browser->selection = g_list_remove(browser->selection, location);
-	g_list_foreach(browser->selection, (GFunc)free, NULL);
-	g_list_free(browser->selection);
-	browser->selection = NULL;
+	browser->selection = g_list_append(browser->selection, p);
+	if(browser->selection_cut != 1)
+	{
+		/* copy the selection */
+		if(_common_exec("copy", "-ir", browser->selection) != 0)
+			browser_error(browser, strerror(errno), 1);
+		browser->selection = g_list_remove(browser->selection, p);
+		free(p);
+	}
+	else
+	{
+		/* move the selection */
+		if(_common_exec("move", "-i", browser->selection) != 0)
+			browser_error(browser, strerror(errno), 1);
+		else
+		{
+			g_list_foreach(browser->selection, (GFunc)free, NULL);
+			g_list_free(browser->selection);
+			browser->selection = NULL;
+		}
+	}
 }
