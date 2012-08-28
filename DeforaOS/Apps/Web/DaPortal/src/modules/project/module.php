@@ -191,31 +191,46 @@ class ProjectModule extends ContentModule
 		AND project_id=:project_id
 		AND daportal_user.enabled='1'
 		ORDER BY username ASC";
-	protected $project_query_project = "SELECT project_id AS id, title,
+	protected $project_query_project = "SELECT
+		daportal_module.name AS module, project_id AS id, title,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username, content, synopsis, cvsroot,
 		daportal_content.enabled AS enabled
-		FROM daportal_content, daportal_project, daportal_user
-		WHERE daportal_content.content_id=daportal_project.project_id
+		FROM daportal_content, daportal_module, daportal_project,
+		daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND project_id=:content_id";
-	protected $project_query_project_title = "SELECT project_id AS id,
+	protected $project_query_project_title = "SELECT
+		daportal_module.name AS module, project_id AS id,
 		title, daportal_user.user_id AS user_id,
 		daportal_user.username AS username, content, synopsis, cvsroot,
 		daportal_content.enabled AS enabled
-		FROM daportal_content, daportal_project, daportal_user
-		WHERE daportal_content.content_id=daportal_project.project_id
+		FROM daportal_content, daportal_module, daportal_project,
+		daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.content_id=daportal_project.project_id
 		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
-		AND project_id=:content_id
-		AND title=:title";
-	protected $project_query_project_by_name = "SELECT project_id AS id,
-		title, content, synopsis, cvsroot, enabled
-		FROM daportal_content, daportal_project
-		WHERE daportal_content.content_id=daportal_project.project_id
+		AND daportal_project.project_id=:content_id
+		AND daportal_content.title=:title";
+	protected $project_query_project_by_name = "SELECT
+		daportal_module.name AS module, project_id AS id,
+		title, daportal_user.user_id AS user_id,
+		daportal_user.username AS username, content, synopsis, cvsroot,
+		daportal_content.enabled AS enabled
+		FROM daportal_content, daportal_module, daportal_project,
+		daportal_user
+		WHERE daportal_content.module_id=daportal_module.module_id
+		AND daportal_content.module_id=:module_id
+		AND daportal_content.content_id=daportal_project.project_id
+		AND daportal_content.user_id=daportal_user.user_id
 		AND daportal_content.enabled='1'
 		AND daportal_content.public='1'
 		AND daportal_content.title=:title";
@@ -262,7 +277,7 @@ class ProjectModule extends ContentModule
 		if($project['user_id'] == $uid)
 			return TRUE;
 		foreach($members as $m)
-			if($m['user_id'] == $uid && $db->isTrue($m['admin']))
+			if($m['user_id'] == $uid && $m['admin'] === TRUE)
 				return TRUE;
 		return FALSE;
 	}
@@ -342,6 +357,9 @@ class ProjectModule extends ContentModule
 		if(($res = $db->query($engine, $query, array(
 				'project_id' => $project['id']))) === FALSE)
 			return FALSE;
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+			$res[$i]['admin'] = ($db->isTrue($res[$i]['admin']))
+				? TRUE : FALSE;
 		return $res;
 	}
 
@@ -351,7 +369,7 @@ class ProjectModule extends ContentModule
 	{
 		$db = $engine->getDatabase();
 		$query = $this->project_query_project;
-		$args = array('content_id' => $id);
+		$args = array('module_id' => $this->id, 'content_id' => $id);
 
 		if($title !== FALSE)
 		{
@@ -372,6 +390,7 @@ class ProjectModule extends ContentModule
 		$query = $this->project_query_project_by_name;
 
 		if(($res = $db->query($engine, $query, array(
+					'module_id' => $this->id,
 					'title' => $name))) === FALSE
 				|| count($res) != 1)
 			return FALSE;
@@ -1174,7 +1193,7 @@ class ProjectModule extends ContentModule
 	{
 		$user = new User($engine, $content['user_id']);
 
-		if(($res = $this->getMembers($engine, $content)) === FALSE)
+		if(($members = $this->getMembers($engine, $content)) === FALSE)
 			return;
 		$vbox = $page->append('vbox');
 		$vbox->append('title', array('text' => _('Members')));
@@ -1193,16 +1212,15 @@ class ProjectModule extends ContentModule
 				'text' => $user->getUsername()));
 		$view->append('row', array('title' => $link, 'admin' => $yes));
 		//project members
-		foreach($res as $r)
+		foreach($members as $m)
 		{
 			$row = $view->append('row');
-			$r = new Request($engine, 'user', FALSE, $r['user_id'],
-					$r['username']);
+			$r = new Request($engine, 'user', FALSE,
+					$m['user_id'], $m['username']);
 			$link = new PageElement('link', array('request' => $r,
-				'stock' => 'user', 'text' => $r['username']));
+				'stock' => 'user', 'text' => $m['username']));
 			$row->setProperty('title', $link);
-			$row->setProperty('admin', $db->isTrue($r['admin'])
-					? $yes : $no);
+			$row->setProperty('admin', $m['admin'] ? $yes : $no);
 		}
 	}
 
