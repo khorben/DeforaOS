@@ -190,7 +190,7 @@ class ProjectModule extends ContentModule
 		WHERE daportal_project_user.user_id=daportal_user.user_id
 		AND project_id=:project_id
 		AND daportal_user.enabled='1'
-		ORDER BY username DESC";
+		ORDER BY username ASC";
 	protected $project_query_project = "SELECT project_id AS id, title,
 		daportal_user.user_id AS user_id,
 		daportal_user.username AS username, content, synopsis, cvsroot,
