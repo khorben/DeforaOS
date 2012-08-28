@@ -157,11 +157,12 @@
 				url="http://www.defora.org/os/project/bug_list/12/DaPortal"/>.</para>
 		<para>Importantly, the &name; command (and therefore, this manual page)
 			assumes the engine configured or selected by &package; to be
-			<quote>CliEngine</quote>, or inheriting from <quote>CliEngine</quote>.
+			<classname>CliEngine</classname>, or inheriting from
+			<classname>CliEngine</classname>.
 			&package; may however be configured or extended with additional engines,
 			which may expect different arguments, function differently, have differing
-			output (such as <quote>GtkEngine</quote>) or may not even work at all from
-			the command line interface.</para>
+			output (such as <classname>GtkEngine</classname>) or may not even work at all
+			from the command line interface.</para>
 		<para>It is currently impossible to set additional parameters to the request
 			sent.</para>
 	</refsect1>
