@@ -132,6 +132,27 @@ unset($engine);
 	<section>
 		<title>Processing requests</title>
 		<section>
+			<title>About requests</title>
+			<para>Requests represent messages, typically sent from the end user and
+				directed at a given part of the &package; installation. Requests can be
+				created directly within the code, or obtained from user input (typically
+				interpreted by the <classname>Engine</classname> instance).</para>
+			<para>The following parameters define a request:<itemizedlist>
+					<listitem><para><varname>module</varname>: the module to be selected to
+							handle this request (required)</para></listitem>
+					<listitem><para><varname>action</varname>: the action to be triggered
+							within the given module (optional)</para></listitem>
+					<listitem><para><varname>ID</varname> and <varname>title</varname>: both
+							can be supplied independently, and their actual signification is up to
+							the module (and action) selected;</para></listitem>
+					<listitem><para>optionally, an arbitrary number of additional parameters,
+							defined through a name and value.</para></listitem>
+			</itemizedlist></para>
+			<para>Requests implement the <classname>Request</classname> class defined in
+				<filename>system/request.php</filename>. They are always processed through a
+				specific <classname>Engine</classname> instance.</para>
+		</section>
+		<section>
 			<title>Database</title>
 			<para>The storage database is accessed through the processing engine, with
 				the actual storage backend being loaded automatically when it is required.
@@ -194,6 +215,33 @@ unset($engine);
 	</section>
 	<section>
 		<title>Within modules</title>
+		<section>
+			<title>About modules</title>
+			<para>Modules are the most essential part of the &package; engine: they
+				implement the visible functionality to the end user, and provide the
+				operation logic. Each module has a distinct folder inside the
+				<filename>modules</filename> directory, where it should at least provide a
+				<filename>module.php</filename> file; this file is automatically loaded by
+				the <classname>Engine</classname> instance when required. It should
+				implement the <classname>Module</classname> class, as defined in
+				<filename>system/module.php</filename>.</para>
+			<para>A few modules are provided by a stock installation of
+				&package;, among which:<itemizedlist>
+					<listitem><para><quote>user</quote>: assists with user registration,
+							authentication, password resets and profile management;</para></listitem>
+					<listitem><para><quote>admin</quote>: provides a user interface dedicated
+							to administration duties;</para></listitem>
+					<listitem><para><quote>article</quote>, <quote>news</quote>,
+							<quote>wiki</quote>...: extend the abstract
+							<classname>ContentModule</classname> in
+							<filename>modules/content/module.php</filename>, declining some
+							content-management functionality in differing contexts;</para></listitem>
+					<listitem><para><quote>search</quote>: provides a generic way to search
+							through the site's contents.</para></listitem>
+				</itemizedlist></para>
+				<para>In turn, these modules can be extended and altered
+					individually.</para>
+		</section>
 		<section>
 			<title>Calls</title>
 		</section>
