@@ -272,7 +272,12 @@ unset($engine);
 					<listitem><para><quote>user</quote>: to lookup and manage user
 							information.</para></listitem>
 			</itemizedlist></para>
-			<para></para>
+			<para>Modules themselves may be organized so as to allow easier integration
+				and alteration of functionality, particularly when inheriting them. This is
+				typically performed through the introduction of helper functions, specific
+				to the given module (which are therefore declared as protected). Their
+				implementation details are specific to each and every module, although
+				consistency is hopefully preserved among most.</para>
 		</section>
 		<section>
 			<title>Internal requests</title>
