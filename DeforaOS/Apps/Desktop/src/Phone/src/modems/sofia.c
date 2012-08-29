@@ -355,6 +355,8 @@ static int _sofia_handle_remove(Sofia * sofia, nua_handle_t * handle)
 
 /* callbacks */
 /* sofia_callback */
+static void _callback_invite(ModemPlugin * modem, int status,
+		char const * phrase, nua_handle_t * handle);
 static void _callback_message(ModemPlugin * modem, int status,
 		char const * phrase);
 static void _callback_register(ModemPlugin * modem, int status,
@@ -407,23 +409,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			helper->event(helper->modem, &mevent);
 			break;
 		case nua_r_invite:
-			memset(&mevent, 0, sizeof(mevent));
-			mevent.type = MODEM_EVENT_TYPE_CALL;
-			mevent.call.call_type = MODEM_CALL_TYPE_VOICE;
-			mevent.call.direction = MODEM_CALL_DIRECTION_OUTGOING;
-			if(status == 200)
-			{
-				mevent.call.status = MODEM_CALL_STATUS_RINGING;
-				nua_ack(nh, TAG_END());
-			}
-			else
-			{
-				mevent.call.status = MODEM_CALL_STATUS_NONE;
-				/* FIXME report error */
-				fprintf(stderr, "r_invite %03d %s\n", status,
-						phrase);
-			}
-			helper->event(helper->modem, &mevent);
+			_callback_invite(modem, status, phrase, nh);
 			break;
 		case nua_r_get_params:
 			if(status == 200)
@@ -459,6 +445,35 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 #endif
 			break;
 	}
+}
+
+static void _callback_invite(ModemPlugin * modem, int status,
+		char const * phrase, nua_handle_t * handle)
+{
+	Sofia * sofia = modem;
+	ModemPluginHelper * helper = sofia->helper;
+	ModemEvent mevent;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s() %03d %s\n", __func__, status, phrase);
+#endif
+	memset(&mevent, 0, sizeof(mevent));
+	mevent.type = MODEM_EVENT_TYPE_CALL;
+	mevent.call.call_type = MODEM_CALL_TYPE_VOICE;
+	mevent.call.direction = MODEM_CALL_DIRECTION_OUTGOING;
+	if(status == 200)
+	{
+		mevent.call.status = MODEM_CALL_STATUS_RINGING;
+		nua_ack(handle, TAG_END());
+	}
+	else
+	{
+		mevent.call.status = MODEM_CALL_STATUS_NONE;
+		/* FIXME report error */
+		fprintf(stderr, "r_invite %03d %s\n", status, phrase);
+		_sofia_handle_remove(sofia, handle);
+	}
+	helper->event(helper->modem, &mevent);
 }
 
 static void _callback_message(ModemPlugin * modem, int status,
