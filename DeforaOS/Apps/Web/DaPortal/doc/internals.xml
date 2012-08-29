@@ -244,6 +244,16 @@ unset($engine);
 		</section>
 		<section>
 			<title>Calls</title>
+			<para>The modules react to requests through calls, more precisely the
+				<function>call()</function> public method of the
+				<classname>Module</classname> class. The relevant
+				<classname>Engine</classname> instance along with the request are passed to
+				the module, which is then responsible for handling the request, given the
+				resources provided by the <classname>Engine</classname>.</para>
+			<para>These calls are expected to offer a significant value in return of an
+				operation; this is however not mandatory. Content is typically formatted and
+				delivered back to the user by building pages, as described below in <xref
+					linkend="pages"/>.</para>
 		</section>
 		<section>
 			<title>Helpers</title>
@@ -260,7 +270,7 @@ unset($engine);
 	</section>
 	<section>
 		<title>Output and rendering</title>
-		<section>
+		<section id="pages">
 			<title>Building pages</title>
 			<para>The content generated through processing the requests is expected to be
 				composed of a series of chained elements, called
