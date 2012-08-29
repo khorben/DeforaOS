@@ -200,6 +200,15 @@ unset($engine);
 		<section>
 			<title>Helpers</title>
 		</section>
+		<section>
+			<title>Internal requests</title>
+			<para>Cooperation between modules is sometimes helpful, or even necessary:
+				this should however be performed without exposing additional, undesired
+				functionality to the end user. A special flag can therefore be applied to
+				requests when sending them through an engine for processing: they are then
+				considered internal, and can be adequately treated as such by the target
+				module.</para>
+		</section>
 	</section>
 	<section>
 		<title>Output and rendering</title>
