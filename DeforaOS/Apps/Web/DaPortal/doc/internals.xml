@@ -221,6 +221,16 @@ unset($engine);
 		</section>
 		<section>
 			<title>Applying templates</title>
+			<para>Single requests are expected to only output the data that is directly
+				relevant to them; the final content delivered to the user may however
+				require more information, additional cosmetics, or even some reformatting or
+				editing. This is exactly the task of templates; again, they are found in the
+				<filename>templates</filename> directory, and should implement the
+				<classname>Template</classname> class, as defined in
+				<filename>system/template.php</filename>.</para>
+			<para>The template to choose can be determined by the engine at run-time, or
+				can also be enforced within the <filename>daportal.conf</filename>
+				configuration file, through the <varname>template</varname> section.</para>
 		</section>
 		<section>
 			<title>File formats</title>
