@@ -257,6 +257,22 @@ unset($engine);
 		</section>
 		<section>
 			<title>Helpers</title>
+			<para>Common functionality can be provided on demand to the modules,
+				typically through the inclusion of specific files in the
+				<filename>system</filename> directory. Some helpers are provided by a stock
+				installation of &package;, among which:<itemizedlist>
+					<listitem><para><quote>content</quote>: provides some functionality around
+							the handling of content (creation, modification,
+							deletion...)</para></listitem>
+					<listitem><para><quote>locale</quote>: assists in the translation of the
+							user interface (typically using the gettext PHP
+							extension)</para></listitem>
+					<listitem><para><quote>mail</quote>: helps sending
+							e-mail;</para></listitem>
+					<listitem><para><quote>user</quote>: to lookup and manage user
+							information.</para></listitem>
+			</itemizedlist></para>
+			<para></para>
 		</section>
 		<section>
 			<title>Internal requests</title>
