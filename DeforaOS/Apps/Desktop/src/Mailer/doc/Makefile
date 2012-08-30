@@ -43,9 +43,11 @@ distclean:
 install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	./gtkdoc.sh -P "$(DESTDIR)$(PREFIX)" -i -- "gtkdoc/html.stamp"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "mailer.html"
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	./gtkdoc.sh -P "$(DESTDIR)$(PREFIX)" -u -- "gtkdoc/html.stamp"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "mailer.html"
 
 .PHONY: all subdirs clean distclean install uninstall
