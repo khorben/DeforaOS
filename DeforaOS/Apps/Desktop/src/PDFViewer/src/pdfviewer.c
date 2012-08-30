@@ -700,6 +700,7 @@ void pdf_update_current(PDFviewer * pdfviewer, const char op, int n)
 /* set_prevnext_sensitivity */
 void set_prevnext_sensitivity(PDFviewer * pdfviewer)
 {
+	GtkToolbar * toolbar = GTK_TOOLBAR(pdfviewer->toolbar);
 	gboolean farbefore, prev, next, farafter;
 
 	if(pdfviewer->pdf) { /* XXX s/5/preferences/ */
@@ -716,17 +717,13 @@ void set_prevnext_sensitivity(PDFviewer * pdfviewer)
 		farafter = FALSE;
 	}
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(GTK_TOOLBAR(pdfviewer->toolbar), 1)
-		), farbefore);
+		gtk_toolbar_get_nth_item(toolbar, 1)), farbefore);
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(GTK_TOOLBAR(pdfviewer->toolbar), 2)
-		), prev);
+		gtk_toolbar_get_nth_item(toolbar, 2)), prev);
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(GTK_TOOLBAR(pdfviewer->toolbar), 3)
-		), next);
+		gtk_toolbar_get_nth_item(toolbar, 3)), next);
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(GTK_TOOLBAR(pdfviewer->toolbar), 4)
-		), farafter);
+		gtk_toolbar_get_nth_item(toolbar, 4)), farafter);
 }
 
 
