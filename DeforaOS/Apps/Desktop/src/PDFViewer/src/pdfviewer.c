@@ -139,6 +139,7 @@ static DesktopMenubar _pdfviewer_menubar[] =
 static DesktopToolbar _pdfviewer_toolbar[] =
 {
 	{ "Open", G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
 	{ "Far before", G_CALLBACK(on_far_before), GTK_STOCK_MEDIA_PREVIOUS,
 		 0, 0, NULL },
 	{ "Previous", G_CALLBACK(on_previous), GTK_STOCK_GO_BACK,
@@ -146,6 +147,7 @@ static DesktopToolbar _pdfviewer_toolbar[] =
 	{ "Next", G_CALLBACK(on_next), GTK_STOCK_GO_FORWARD, 0, 0, NULL },
 	{ "Far after", G_CALLBACK(on_far_after), GTK_STOCK_MEDIA_NEXT, 0, 0,
 		NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
 	{ "Zoom in", G_CALLBACK(on_zoom_in), GTK_STOCK_ZOOM_IN, 0, 0, NULL },
 	{ "Zoom out", G_CALLBACK(on_zoom_out), GTK_STOCK_ZOOM_OUT, 0, 0, NULL },
 	{ NULL, NULL, NULL, 0, 0, NULL }
