@@ -271,9 +271,23 @@ void pdfviewer_delete(PDFviewer * pdfviewer)
 void pdfviewer_set_fullscreen(PDFviewer * pdfviewer, gboolean fullscreen)
 {
 	if(fullscreen == TRUE)
+	{
+#ifndef EMBEDDED
+		gtk_widget_hide(pdfviewer->menubar);
+#endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					pdfviewer->tb_fullscreen), TRUE);
 		gtk_window_fullscreen(GTK_WINDOW(pdfviewer->window));
+	}
 	else
+	{
+#ifndef EMBEDDED
+		gtk_widget_show(pdfviewer->menubar);
+#endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					pdfviewer->tb_fullscreen), FALSE);
 		gtk_window_unfullscreen(GTK_WINDOW(pdfviewer->window));
+	}
 }
 
 
@@ -357,23 +371,9 @@ void pdfviewer_fullscreen_toggle(PDFviewer * pdfviewer)
 #endif
 	if((gdk_window_get_state(window) & GDK_WINDOW_STATE_FULLSCREEN)
 			!= GDK_WINDOW_STATE_FULLSCREEN)
-	{
-#ifndef EMBEDDED
-		gtk_widget_hide(pdfviewer->menubar);
-#endif
-		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
-					pdfviewer->tb_fullscreen), TRUE);
 		pdfviewer_set_fullscreen(pdfviewer, TRUE);
-	}
 	else
-	{
-#ifndef EMBEDDED
-		gtk_widget_show(pdfviewer->menubar);
-#endif
-		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
-					pdfviewer->tb_fullscreen), FALSE);
 		pdfviewer_set_fullscreen(pdfviewer, FALSE);
-	}
 }
 
 
