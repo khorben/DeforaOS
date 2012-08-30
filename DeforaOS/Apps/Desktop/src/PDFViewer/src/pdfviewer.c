@@ -233,12 +233,18 @@ PDFviewer * pdfviewer_new(void)
 
 static void _new_set_title(PDFviewer * pdfviewer)
 {
+	char const * title = "(Untitled)";
+	char * p = NULL;
 	char buf[256];
 
-	snprintf(buf, sizeof(buf), "%s%s", "PDF viewer - ",
-			(pdfviewer->pdf == NULL) ? "(Untitled)"
-			: "FIXME"); /* FIXME */
+	if(pdfviewer->pdf != NULL)
+		if((p = poppler_document_get_title(pdfviewer->pdf->document))
+				!= NULL)
+			/* FIXME use the filename instead */
+			title = p;
+	snprintf(buf, sizeof(buf), "%s%s", "PDF viewer - ", title);
 	gtk_window_set_title(GTK_WINDOW(pdfviewer->window), buf);
+	free(p);
 }
 
 
@@ -396,7 +402,7 @@ void pdfviewer_properties(PDFviewer * pdfviewer)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	char const * p;
+	char * p;
 	time_t t;
 
 	if(pdfviewer->pdf == NULL)
@@ -418,18 +424,32 @@ void pdfviewer_properties(PDFviewer * pdfviewer)
 		gtk_entry_set_text(GTK_ENTRY(widget), p);
 	gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	free(p);
 	/* author */
 	p = poppler_document_get_author(pdfviewer->pdf->document);
 	hbox = _properties_label(pdfviewer, "Author: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	free(p);
+	/* subject */
+	p = poppler_document_get_subject(pdfviewer->pdf->document);
+	hbox = _properties_label(pdfviewer, "Subject: ", p);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	free(p);
+	/* keywords */
+	p = poppler_document_get_keywords(pdfviewer->pdf->document);
+	hbox = _properties_label(pdfviewer, "Keywords: ", p);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	free(p);
 	/* creator */
 	p = poppler_document_get_creator(pdfviewer->pdf->document);
 	hbox = _properties_label(pdfviewer, "Creator: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	free(p);
 	/* producer */
 	p = poppler_document_get_producer(pdfviewer->pdf->document);
 	hbox = _properties_label(pdfviewer, "Producer: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	free(p);
 	/* creation time */
 	t = poppler_document_get_creation_date(pdfviewer->pdf->document);
 	hbox = _properties_label_date(pdfviewer, "Created on: ", t);
