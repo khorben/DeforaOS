@@ -35,13 +35,13 @@ static char const _license[] =
 /* types */
 typedef struct _PDF
 {
-	PopplerDocument *document;
+	PopplerDocument * document;
 
 	int pages;
 	int current;
 
-	GtkWidget       *area;
-	cairo_surface_t *surface;
+	GtkWidget * area;
+	cairo_surface_t * surface;
 	double scale;
 } PDF;
 
@@ -88,6 +88,9 @@ static DesktopMenu _pdfviewer_menu_file[] =
 {
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
 		GDK_KEY_O },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES,
+		GDK_MOD1_MASK, GDK_KEY_Return },
 	{ "", NULL, NULL, 0, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_KEY_W },
@@ -378,6 +381,67 @@ void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
 	if(pdf_open(pdfviewer, uri) != 0)
 		return;
 	_new_set_title(pdfviewer); /* XXX make it a generic private function */
+}
+
+
+/* pdfviewer_properties */
+static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
+		char const * value);
+
+void pdfviewer_properties(PDFviewer * pdfviewer)
+{
+	GtkWidget * dialog;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	char const * p;
+
+	if(pdfviewer->pdf == NULL)
+		return;
+	dialog = gtk_dialog_new_with_buttons("Properties",
+			GTK_WINDOW(pdfviewer->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = dialog->vbox;
+#endif
+	/* title */
+	p = poppler_document_get_title(pdfviewer->pdf->document);
+	widget = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(widget), p);
+	gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* author */
+	p = poppler_document_get_author(pdfviewer->pdf->document);
+	hbox = _properties_label(pdfviewer, "Author: ", p);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* creator */
+	p = poppler_document_get_creator(pdfviewer->pdf->document);
+	hbox = _properties_label(pdfviewer, "Creator: ", p);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* producer */
+	p = poppler_document_get_producer(pdfviewer->pdf->document);
+	hbox = _properties_label(pdfviewer, "Producer: ", p);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+}
+
+static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
+		char const * value)
+{
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new(label);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_label_new(value);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	return hbox;
 }
 
 

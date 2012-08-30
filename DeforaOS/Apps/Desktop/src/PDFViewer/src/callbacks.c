@@ -66,6 +66,15 @@ void on_file_open(gpointer data)
 }
 
 
+/* on_file_properties */
+void on_file_properties(gpointer data)
+{
+	PDFviewer * pdfviewer = data;
+
+	pdfviewer_properties(pdfviewer);
+}
+
+
 /* on_view_fullscreen */
 void on_view_fullscreen(gpointer data)
 {

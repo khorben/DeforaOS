@@ -1,5 +1,6 @@
 /* $Id$ */
 /* Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
@@ -24,6 +25,7 @@
 gboolean on_closex(gpointer data);
 void on_file_close(gpointer data);
 void on_file_open(gpointer data);
+void on_file_properties(gpointer data);
 void on_help_about(gpointer data);
 void on_view_fullscreen(gpointer data);
 void on_view_zoom_in(gpointer data);

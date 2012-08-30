@@ -1,5 +1,6 @@
 /* $Id$ */
 /* Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
@@ -48,6 +49,7 @@ int pdfviewer_error(PDFviewer * pdfviewer, char const * message, int ret);
 gboolean pdfviewer_close(PDFviewer * pdfviewer);
 void pdfviewer_open(PDFviewer * pdfviewer, char const * filename);
 void pdfviewer_open_dialog(PDFviewer * pdfviewer);
+void pdfviewer_properties(PDFviewer * pdfviewer);
 
 void pdfviewer_fullscreen_toggle(PDFviewer * pdfviewer);
 
