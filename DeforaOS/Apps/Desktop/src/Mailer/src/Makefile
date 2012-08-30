@@ -55,7 +55,7 @@ mailer: $(mailer_OBJS) libMailer.so
 account.o: account.c mailer.h message.h account.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(libMailer_CFLAGS) -c account.c
 
-callbacks.o: callbacks.c account.h callbacks.h compose.h mailer.h gtkassistant.c
+callbacks.o: callbacks.c account.h callbacks.h compose.h mailer.h gtkassistant.c ../config.h
 	$(CC) $(libMailer_CFLAGS) -c callbacks.c
 
 compose.o: compose.c callbacks.h common.c mailer.h compose.h ../config.h

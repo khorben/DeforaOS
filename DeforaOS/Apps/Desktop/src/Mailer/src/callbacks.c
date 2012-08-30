@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,14 @@
 #include "compose.h"
 #include "mailer.h"
 #include "callbacks.h"
+#include "../config.h"
+
+/* constants */
+#define PROGNAME "mailer"
 
 
-/* functions */
 /* public */
+/* functions */
 /* callbacks */
 /* on_closex */
 gboolean on_closex(gpointer data)
@@ -174,6 +178,14 @@ void on_edit_unselect_all(gpointer data)
 
 
 /* help menu */
+/* on_help_contents */
+void on_help_contents(gpointer data)
+{
+	desktop_help_contents(PACKAGE, PROGNAME);
+}
+
+
+/* on_help_about */
 void on_help_about(gpointer data)
 {
 	Mailer * mailer = data;

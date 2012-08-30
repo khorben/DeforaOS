@@ -44,6 +44,7 @@ void on_message_reply_to_all(gpointer data);
 void on_message_view_source(gpointer data);
 
 /* help menu */
+void on_help_contents(gpointer data);
 void on_help_about(gpointer data);
 
 /* toolbar */
