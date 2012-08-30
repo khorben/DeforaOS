@@ -53,6 +53,7 @@
 			<arg choice="opt"><option>-a</option> <replaceable>action</replaceable></arg>
 			<arg choice="opt"><option>-i</option> <replaceable>ID</replaceable></arg>
 			<arg choice="opt"><option>-t</option> <replaceable>title</replaceable></arg>
+			<arg choice="opt" rep="repeat"><option>-o</option> <replaceable>variable=value</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
@@ -111,18 +112,24 @@
 					<para>Sets the request's title.</para>
 				</listitem>
 			</varlistentry>
+			<varlistentry>
+				<term><option>-o</option></term>
+				<listitem>
+					<para>Sets additional parameter values.</para>
+				</listitem>
+			</varlistentry>
 		</variablelist>
 	</refsect1>
 	<refsect1 id="requests">
 		<title>Requests</title>
 		<para>&package; requests are messages sent to the processing engine selected,
-			which dispatches it in turn to the right module. Requests are composed of:
+			which in turn dispatches them to the right module. Requests are composed of:
 			<itemizedlist>
 				<listitem><para>a module name</para></listitem>
 				<listitem><para>an action (optional)</para></listitem>
 				<listitem><para>an ID (optional)</para></listitem>
-				<listitem><para>a title (optional): it must often match the ID's title in
-						database</para></listitem>
+				<listitem><para>a title (optional), which should usually match the ID's
+						title in database</para></listitem>
 				<listitem><para>an additional list of parameters
 						(optional)</para></listitem>
 			</itemizedlist>
@@ -163,8 +170,6 @@
 			which may expect different arguments, function differently, have differing
 			output (such as <classname>GtkEngine</classname>) or may not even work at all
 			from the command line interface.</para>
-		<para>It is currently impossible to set additional parameters to the request
-			sent.</para>
 	</refsect1>
 	<refsect1 id="see_also">
 		<title>See also</title>
