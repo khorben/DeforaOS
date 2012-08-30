@@ -387,6 +387,8 @@ void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
 /* pdfviewer_properties */
 static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
 		char const * value);
+static GtkWidget * _properties_label_date(PDFviewer * pdfviewer,
+		char const * label, time_t t);
 
 void pdfviewer_properties(PDFviewer * pdfviewer)
 {
@@ -395,22 +397,25 @@ void pdfviewer_properties(PDFviewer * pdfviewer)
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	char const * p;
+	time_t t;
 
 	if(pdfviewer->pdf == NULL)
 		return;
-	dialog = gtk_dialog_new_with_buttons("Properties",
+	dialog = gtk_dialog_new_with_buttons("Properties of FIXME",
 			GTK_WINDOW(pdfviewer->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+	gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 200);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
 	vbox = dialog->vbox;
 #endif
+	gtk_box_set_spacing(GTK_BOX(vbox), 4);
 	/* title */
-	p = poppler_document_get_title(pdfviewer->pdf->document);
 	widget = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(widget), p);
+	if((p = poppler_document_get_title(pdfviewer->pdf->document)) != NULL)
+		gtk_entry_set_text(GTK_ENTRY(widget), p);
 	gtk_editable_set_editable(GTK_EDITABLE(widget), FALSE);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* author */
@@ -424,6 +429,14 @@ void pdfviewer_properties(PDFviewer * pdfviewer)
 	/* producer */
 	p = poppler_document_get_producer(pdfviewer->pdf->document);
 	hbox = _properties_label(pdfviewer, "Producer: ", p);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* creation time */
+	t = poppler_document_get_creation_date(pdfviewer->pdf->document);
+	hbox = _properties_label_date(pdfviewer, "Created on: ", t);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* modification time */
+	t = poppler_document_get_modification_date(pdfviewer->pdf->document);
+	hbox = _properties_label_date(pdfviewer, "Modified on: ", t);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -439,9 +452,21 @@ static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(label);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_label_new(value);
+	widget = gtk_label_new((value != NULL) ? value : "");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	return hbox;
+}
+
+static GtkWidget * _properties_label_date(PDFviewer * pdfviewer,
+		char const * label, time_t t)
+{
+	char buf[256];
+	struct tm tm;
+
+	localtime_r(&t, &tm);
+	strftime(buf, sizeof(buf), "%b %d %Y, %H:%M:%S", &tm);
+	return _properties_label(pdfviewer, label, buf);
 }
 
 
