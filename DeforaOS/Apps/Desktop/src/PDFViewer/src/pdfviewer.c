@@ -339,7 +339,7 @@ gboolean pdfviewer_close(PDFviewer * pdfviewer)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME implement */
+	gtk_widget_hide(pdfviewer->window);
 	gtk_main_quit();
 	return FALSE;
 }
@@ -735,18 +735,21 @@ void set_prevnext_sensitivity(PDFviewer * pdfviewer)
 void pdf_update_scale(PDFviewer * pdfviewer, const char op, double n)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s('%c', %lf)\n", __func__, op, n);
 #endif
-	switch(op) {
-		case '=':	pdfviewer->pdf->scale = n;
-				break;
-		case '+':	pdfviewer->pdf->scale =
-						pdfviewer->pdf->scale + n;
-				break;
-		case '-':	if((pdfviewer->pdf->scale - n) > 0)	
-					pdfviewer->pdf->scale =
-						pdfviewer->pdf->scale - n;
-				break;
+	switch(op)
+	{
+		case '=':
+			pdfviewer->pdf->scale = n;
+			break;
+		case '+':
+			pdfviewer->pdf->scale = pdfviewer->pdf->scale + n;
+			break;
+		case '-':
+			if((pdfviewer->pdf->scale - n) > 0)	
+				pdfviewer->pdf->scale =
+					pdfviewer->pdf->scale - n;
+			break;
 	}
 	pdf_load_page(pdfviewer);
 }
