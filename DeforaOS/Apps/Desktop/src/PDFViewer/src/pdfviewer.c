@@ -395,14 +395,15 @@ void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
 
 
 /* pdfviewer_properties */
-static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
-		char const * value);
+static GtkWidget * _properties_label(PDFviewer * pdfviewer,
+		GtkSizeGroup * group, char const * label, char const * value);
 static GtkWidget * _properties_label_date(PDFviewer * pdfviewer,
-		char const * label, time_t t);
+		GtkSizeGroup * group, char const * label, time_t t);
 
 void pdfviewer_properties(PDFviewer * pdfviewer)
 {
 	GtkWidget * dialog;
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -416,6 +417,7 @@ void pdfviewer_properties(PDFviewer * pdfviewer)
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 200);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 #else
@@ -431,44 +433,44 @@ void pdfviewer_properties(PDFviewer * pdfviewer)
 	free(p);
 	/* author */
 	p = poppler_document_get_author(pdfviewer->pdf->document);
-	hbox = _properties_label(pdfviewer, "Author: ", p);
+	hbox = _properties_label(pdfviewer, group, "Author: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	free(p);
 	/* subject */
 	p = poppler_document_get_subject(pdfviewer->pdf->document);
-	hbox = _properties_label(pdfviewer, "Subject: ", p);
+	hbox = _properties_label(pdfviewer, group, "Subject: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	free(p);
 	/* keywords */
 	p = poppler_document_get_keywords(pdfviewer->pdf->document);
-	hbox = _properties_label(pdfviewer, "Keywords: ", p);
+	hbox = _properties_label(pdfviewer, group, "Keywords: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	free(p);
 	/* creator */
 	p = poppler_document_get_creator(pdfviewer->pdf->document);
-	hbox = _properties_label(pdfviewer, "Creator: ", p);
+	hbox = _properties_label(pdfviewer, group, "Creator: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	free(p);
 	/* producer */
 	p = poppler_document_get_producer(pdfviewer->pdf->document);
-	hbox = _properties_label(pdfviewer, "Producer: ", p);
+	hbox = _properties_label(pdfviewer, group, "Producer: ", p);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	free(p);
 	/* creation time */
 	t = poppler_document_get_creation_date(pdfviewer->pdf->document);
-	hbox = _properties_label_date(pdfviewer, "Created on: ", t);
+	hbox = _properties_label_date(pdfviewer, group, "Created on: ", t);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* modification time */
 	t = poppler_document_get_modification_date(pdfviewer->pdf->document);
-	hbox = _properties_label_date(pdfviewer, "Modified on: ", t);
+	hbox = _properties_label_date(pdfviewer, group, "Modified on: ", t);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 }
 
-static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
-		char const * value)
+static GtkWidget * _properties_label(PDFviewer * pdfviewer,
+		GtkSizeGroup * group, char const * label, char const * value)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -476,6 +478,8 @@ static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(label);
 	gtk_widget_modify_font(widget, pdfviewer->bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new((value != NULL) ? value : "");
 	gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
@@ -485,14 +489,14 @@ static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
 }
 
 static GtkWidget * _properties_label_date(PDFviewer * pdfviewer,
-		char const * label, time_t t)
+		GtkSizeGroup * group, char const * label, time_t t)
 {
 	char buf[256];
 	struct tm tm;
 
 	localtime_r(&t, &tm);
 	strftime(buf, sizeof(buf), "%b %d %Y, %H:%M:%S", &tm);
-	return _properties_label(pdfviewer, label, buf);
+	return _properties_label(pdfviewer, group, label, buf);
 }
 
 
