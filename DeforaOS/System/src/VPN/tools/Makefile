@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	?= cc
-CPPFLAGSF= -I ../include
+CPPFLAGSF?=
 CPPFLAGS= -I $(PREFIX)/include
 CFLAGSF	= -W -fPIC `pkg-config --cflags libApp`
 CFLAGS	= -Wall -g -O2 -pedantic
@@ -27,7 +27,7 @@ libVPN_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 libVPN.so: $(libVPN_OBJS)
 	$(CCSHARED) -o libVPN.so $(libVPN_OBJS) $(libVPN_LDFLAGS)
 
-libvpn.o: libvpn.c ../include/VPN.h
+libvpn.o: libvpn.c ../include/VPN.h ../src/common.c
 	$(CC) $(libVPN_CFLAGS) -c libvpn.c
 
 clean:
