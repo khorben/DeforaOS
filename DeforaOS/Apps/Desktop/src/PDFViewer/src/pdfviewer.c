@@ -50,6 +50,7 @@ struct _PDFviewer
 	PDF * pdf;
 
 	/* widgets */
+	PangoFontDescription * bold;
 	GtkWidget * window;
 #ifndef MENUBAR
 	GtkWidget * menubar;
@@ -176,6 +177,8 @@ PDFviewer * pdfviewer_new(void)
 	settings = gtk_settings_get_default();
 	pdfviewer->pdf = NULL;
 	/* widgets */
+	pdfviewer->bold = pango_font_description_new();
+	pango_font_description_set_weight(pdfviewer->bold, PANGO_WEIGHT_BOLD);
 	group = gtk_accel_group_new();
 	pdfviewer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(pdfviewer->window), group);
@@ -258,6 +261,7 @@ void pdfviewer_delete(PDFviewer * pdfviewer)
 	if(pdfviewer->pdf != NULL)
 		pdf_delete(pdfviewer->pdf);
 #endif
+	pango_font_description_free(pdfviewer->bold);
 	free(pdfviewer);
 }
 
@@ -471,8 +475,10 @@ static GtkWidget * _properties_label(PDFviewer * pdfviewer, char const * label,
 
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(label);
+	gtk_widget_modify_font(widget, pdfviewer->bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new((value != NULL) ? value : "");
+	gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	return hbox;
