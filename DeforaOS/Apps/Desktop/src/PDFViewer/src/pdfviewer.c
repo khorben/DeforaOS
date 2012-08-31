@@ -558,7 +558,7 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 {
 	GtkWidget * dialog;
 	GtkFileFilter * filter;
-	char * uri = NULL;
+	char * filename = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -577,13 +577,13 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-		uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
 	gtk_widget_destroy(dialog);
-	if(uri == NULL)
+	if(filename == NULL)
 		return;
-	pdfviewer_open(pdfviewer, uri);
-	g_free(uri);
+	pdfviewer_open(pdfviewer, filename);
+	g_free(filename);
 }
 
 
