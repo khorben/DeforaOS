@@ -327,6 +327,7 @@ static int _properties_load(Properties * properties, char const * name)
 	GdkPixbuf * icon = NULL;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GList * l;
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", name)) == NULL)
 		return -1;
@@ -342,7 +343,9 @@ static int _properties_load(Properties * properties, char const * name)
 		return -1;
 	}
 	widget = bpd->get_widget(bp);
-	bpd->refresh(bp, properties->filename);
+	l = g_list_append(NULL, properties->filename);
+	bpd->refresh(bp, l);
+	g_list_free(l);
 	/* label */
 	if(bpd->icon != NULL)
 		icon = gtk_icon_theme_load_icon(properties->theme, bpd->icon,
