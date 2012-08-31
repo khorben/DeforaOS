@@ -53,7 +53,7 @@ typedef struct _BrowserPlugin
 static Preview * _preview_init(BrowserPluginHelper * helper);
 static void _preview_destroy(Preview * preview);
 static GtkWidget * _preview_get_widget(Preview * preview);
-static void _preview_refresh(Preview * preview, char const * path);
+static void _preview_refresh(Preview * preview, GList * selection);
 
 /* callbacks */
 static void _preview_on_edit(gpointer data);
@@ -171,8 +171,9 @@ static void _refresh_mime(Preview * preview, Mime * mime, char const * type);
 static int _refresh_name(Preview * preview, char const * path);
 static void _refresh_reset(Preview * preview);
 
-static void _preview_refresh(Preview * preview, char const * path)
+static void _preview_refresh(Preview * preview, GList * selection)
 {
+	char * path = (selection != NULL) ? selection->data : NULL;
 	Mime * mime = preview->helper->get_mime(preview->helper->browser);
 	char const image[] = "image/";
 	char const text[] = "text/";

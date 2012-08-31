@@ -89,7 +89,7 @@ struct _SVNTask
 static SVN * _subversion_init(BrowserPluginHelper * helper);
 static void _subversion_destroy(SVN * svn);
 static GtkWidget * _subversion_get_widget(SVN * svn);
-static void _subversion_refresh(SVN * svn, char const * path);
+static void _subversion_refresh(SVN * svn, GList * selection);
 
 static int _subversion_add_task(SVN * svn, char const * title,
 		char const * directory, char * argv[]);
@@ -269,8 +269,9 @@ static void _refresh_dir(SVN * svn);
 static void _refresh_make(SVN * svn, struct stat * st);
 static void _refresh_status(SVN * svn, char const * status);
 
-static void _subversion_refresh(SVN * svn, char const * path)
+static void _subversion_refresh(SVN * svn, GList * selection)
 {
+	char * path = (selection != NULL) ? selection->data : NULL;
 	struct stat st;
 	gchar * p;
 

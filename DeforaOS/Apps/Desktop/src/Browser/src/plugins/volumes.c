@@ -63,7 +63,7 @@ typedef struct _BrowserPlugin
 static Volumes * _volumes_init(BrowserPluginHelper * helper);
 static void _volumes_destroy(Volumes * volumes);
 static GtkWidget * _volumes_get_widget(Volumes * volumes);
-static void _volumes_refresh(Volumes * volumes, char const * path);
+static void _volumes_refresh(Volumes * volumes, GList * selection);
 
 /* callbacks */
 static gboolean _volumes_on_timeout(gpointer data);
@@ -157,8 +157,9 @@ static void _refresh_add(Volumes * volumes, char const * name,
 		char const * device, char const * mountpoint,
 		char const * filesystem);
 
-static void _volumes_refresh(Volumes * volumes, char const * path)
+static void _volumes_refresh(Volumes * volumes, GList * selection)
 {
+	char * path = (selection != NULL) ? selection->data : NULL;
 #ifdef __NetBSD__
 	struct statvfs * mnt;
 	int res;
@@ -239,11 +240,14 @@ static void _refresh_add(Volumes * volumes, char const * name,
 static gboolean _volumes_on_timeout(gpointer data)
 {
 	Volumes * volumes = data;
+	GList * l;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_volumes_refresh(volumes, "/"); /* XXX */
+	if((l = g_list_append(NULL, "/")) != NULL)
+		_volumes_refresh(volumes, l); /* XXX */
+	g_list_free(l);
 	return TRUE;
 }
 

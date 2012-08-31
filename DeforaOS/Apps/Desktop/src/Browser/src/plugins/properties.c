@@ -65,7 +65,7 @@ typedef struct _BrowserPlugin
 /* plug-in */
 static Properties * _properties_init(BrowserPluginHelper * helper);
 static void _properties_destroy(Properties * properties);
-static void _properties_refresh(Properties * properties, char const * path);
+static void _properties_refresh(Properties * properties, GList * selection);
 
 /* properties */
 static Properties * _properties_new(BrowserPluginHelper * helper,
@@ -121,8 +121,10 @@ static void _properties_destroy(Properties * properties)
 
 
 /* properties_refresh */
-static void _properties_refresh(Properties * properties, char const * path)
+static void _properties_refresh(Properties * properties, GList * selection)
 {
+	char * path = (selection != NULL) ? selection->data : NULL;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, path);
 #endif

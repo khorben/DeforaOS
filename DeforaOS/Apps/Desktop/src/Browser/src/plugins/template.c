@@ -39,7 +39,7 @@ typedef struct _BrowserPlugin
 static Template * _template_init(BrowserPluginHelper * helper);
 static void _template_destroy(Template * template);
 static GtkWidget * _template_get_widget(Template * template);
-static void _template_refresh(Template * template, char const * path);
+static void _template_refresh(Template * template, GList * selection);
 
 
 /* public */
@@ -88,7 +88,7 @@ static GtkWidget * _template_get_widget(Template * template)
 
 
 /* template_refresh */
-static void _template_refresh(Template * template, char const * path)
+static void _template_refresh(Template * template, GList * selection)
 {
 	/* FIXME implement */
 }

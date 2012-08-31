@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ typedef const struct _BrowserPluginDefinition
 	BrowserPlugin * (*init)(BrowserPluginHelper * helper);
 	void (*destroy)(BrowserPlugin * plugin);
 	GtkWidget * (*get_widget)(BrowserPlugin * plugin);
-	void (*refresh)(BrowserPlugin * plugin, char const * path);
+	void (*refresh)(BrowserPlugin * plugin, GList * selection);
 } BrowserPluginDefinition;
 
 #endif /* !DESKTOP_BROWSER_H */

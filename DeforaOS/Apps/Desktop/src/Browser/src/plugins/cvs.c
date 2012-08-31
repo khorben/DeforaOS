@@ -93,7 +93,7 @@ struct _CVSTask
 static CVS * _cvs_init(BrowserPluginHelper * helper);
 static void _cvs_destroy(CVS * cvs);
 static GtkWidget * _cvs_get_widget(CVS * cvs);
-static void _cvs_refresh(CVS * cvs, char const * path);
+static void _cvs_refresh(CVS * cvs, GList * selection);
 
 static int _cvs_add_task(CVS * cvs, char const * title,
 		char const * directory, char * argv[]);
@@ -308,8 +308,9 @@ static void _refresh_file(CVS * cvs);
 static void _refresh_make(CVS * cvs, struct stat * st);
 static void _refresh_status(CVS * cvs, char const * status);
 
-static void _cvs_refresh(CVS * cvs, char const * path)
+static void _cvs_refresh(CVS * cvs, GList * selection)
 {
+	char * path = (selection != NULL) ? selection->data : NULL;
 	struct stat st;
 	gchar * p;
 

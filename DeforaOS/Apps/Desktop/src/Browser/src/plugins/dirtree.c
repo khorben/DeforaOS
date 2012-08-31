@@ -55,7 +55,7 @@ enum _DirtreeColumn
 static Dirtree * _dirtree_init(BrowserPluginHelper * helper);
 static void _dirtree_destroy(Dirtree * dirtree);
 static GtkWidget * _dirtree_get_widget(Dirtree * dirtree);
-static void _dirtree_refresh(Dirtree * dirtree, char const * path);
+static void _dirtree_refresh(Dirtree * dirtree, GList * selection);
 
 static gboolean _dirtree_refresh_folder(Dirtree * dirtree, GtkTreeIter * parent,
 		char const * path, char const * basename, gboolean recurse);
@@ -174,8 +174,9 @@ static GtkWidget * _dirtree_get_widget(Dirtree * dirtree)
 
 
 /* dirtree_refresh */
-static void _dirtree_refresh(Dirtree * dirtree, char const * path)
+static void _dirtree_refresh(Dirtree * dirtree, GList * selection)
 {
+	char * path = (selection != NULL) ? selection->data : NULL;
 	GtkTreeModel * model = GTK_TREE_MODEL(dirtree->store);
 	GtkTreeIter iter;
 	GtkTreeIter siter;

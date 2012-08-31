@@ -2664,6 +2664,7 @@ static void _plugin_refresh_do(Browser * browser, char const * path)
 	GtkTreeIter iter;
 	BrowserPluginDefinition * bpd;
 	BrowserPlugin * bp;
+	GList * l;
 
 	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(browser->pl_combo),
 				&iter) != TRUE)
@@ -2671,7 +2672,12 @@ static void _plugin_refresh_do(Browser * browser, char const * path)
 	gtk_tree_model_get(model, &iter, BPC_BROWSERPLUGINDEFINITION, &bpd,
 			BPC_BROWSERPLUGIN, &bp, -1);
 	if(bpd->refresh != NULL)
-		bpd->refresh(bp, path);
+	{
+		/* FIXME pass the complete selection instead */
+		l = g_list_append(NULL, path);
+		bpd->refresh(bp, l);
+		g_list_free(l);
+	}
 }
 
 
