@@ -28,6 +28,7 @@ void on_file_open(gpointer data);
 void on_file_properties(gpointer data);
 void on_help_about(gpointer data);
 void on_view_fullscreen(gpointer data);
+void on_view_normal_size(gpointer data);
 void on_view_zoom_in(gpointer data);
 void on_view_zoom_out(gpointer data);
 void pdf_render_area(GtkWidget * drawing_area, GdkEventExpose * event,

@@ -75,12 +75,14 @@ static char const * _authors[] =
 static DesktopAccel _pdfviewer_accel[] =
 {
 	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
-#ifdef EMBEDDED
+	{ G_CALLBACK(on_next), 0, GDK_KEY_Page_Down },
 	{ G_CALLBACK(on_next), GDK_CONTROL_MASK, GDK_KEY_N },
+#ifdef EMBEDDED
 	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_KEY_O },
 	{ G_CALLBACK(on_pdf_close), GDK_CONTROL_MASK, GDK_KEY_W },
-	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_KEY_P },
 #endif
+	{ G_CALLBACK(on_previous), 0, GDK_KEY_Page_Up },
+	{ G_CALLBACK(on_previous), GDK_CONTROL_MASK, GDK_KEY_P },
 	{ NULL, 0, 0 }
 };
 
@@ -109,6 +111,8 @@ static DesktopMenu _pdfviewer_menu_view[] =
 		GDK_CONTROL_MASK, GDK_KEY_plus },
 	{ "Zoom _out", G_CALLBACK(on_view_zoom_out), "zoom-out",
 		GDK_CONTROL_MASK, GDK_KEY_minus },
+	{ "Normal size", G_CALLBACK(on_view_normal_size), "zoom-original",
+		GDK_CONTROL_MASK, GDK_KEY_0 },
 	{ "", NULL, NULL, 0, 0 },
 #if GTK_CHECK_VERSION(2, 8, 0)
 	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
@@ -158,11 +162,13 @@ static DesktopToolbar _pdfviewer_toolbar[] =
 };
 
 
+/* prototypes */
+static void _pdfviewer_set_title(PDFviewer * pdfviewer);
+
+
 /* public */
 /* functions */
 /* pdfviewer_new */
-static void _new_set_title(PDFviewer * pdfviewer);
-
 PDFviewer * pdfviewer_new(void)
 {
 	PDFviewer * pdfviewer;
@@ -183,7 +189,7 @@ PDFviewer * pdfviewer_new(void)
 	pdfviewer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(pdfviewer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(pdfviewer->window), 600, 400);
-	_new_set_title(pdfviewer);
+	_pdfviewer_set_title(pdfviewer);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(pdfviewer->window),
 		"gnome-mime-application-pdf");
@@ -232,22 +238,6 @@ PDFviewer * pdfviewer_new(void)
 	gtk_container_add(GTK_CONTAINER(pdfviewer->window), vbox);
 	gtk_widget_show_all(pdfviewer->window);
 	return pdfviewer;
-}
-
-static void _new_set_title(PDFviewer * pdfviewer)
-{
-	char const * title = "(Untitled)";
-	char * p = NULL;
-	char buf[256];
-
-	if(pdfviewer->pdf != NULL)
-		if((p = poppler_document_get_title(pdfviewer->pdf->document))
-				!= NULL)
-			/* FIXME use the filename instead */
-			title = p;
-	snprintf(buf, sizeof(buf), "%s%s", "PDF viewer - ", title);
-	gtk_window_set_title(GTK_WINDOW(pdfviewer->window), buf);
-	free(p);
 }
 
 
@@ -378,19 +368,22 @@ void pdfviewer_fullscreen_toggle(PDFviewer * pdfviewer)
 
 
 /* pdfviewer_open */
-void pdfviewer_open(PDFviewer * pdfviewer, char const * uri)
+int pdfviewer_open(PDFviewer * pdfviewer, char const * filename)
 {
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	/* FIXME handle errors */
-	if(uri == NULL)
-		return;
+	if(filename == NULL)
+		return pdfviewer_open_dialog(pdfviewer);
 	if(pdfviewer->pdf != NULL)
 		pdf_close(pdfviewer);
-	if(pdf_open(pdfviewer, uri) != 0)
-		return;
-	_new_set_title(pdfviewer); /* XXX make it a generic private function */
+	if((ret = pdf_open(pdfviewer, filename)) != 0)
+		return ret;
+	_pdfviewer_set_title(pdfviewer);
+	return 0;
 }
 
 
@@ -554,8 +547,9 @@ int pdf_open(PDFviewer * pdfviewer, const char * filename)
 
 
 /* pdfviewer_open_dialog */
-void pdfviewer_open_dialog(PDFviewer * pdfviewer)
+int pdfviewer_open_dialog(PDFviewer * pdfviewer)
 {
+	int ret;
 	GtkWidget * dialog;
 	GtkFileFilter * filter;
 	char * filename = NULL;
@@ -581,9 +575,10 @@ void pdfviewer_open_dialog(PDFviewer * pdfviewer)
 					dialog));
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
-		return;
-	pdfviewer_open(pdfviewer, filename);
+		return 0;
+	ret = pdfviewer_open(pdfviewer, filename);
 	g_free(filename);
+	return ret;
 }
 
 
@@ -619,8 +614,10 @@ void pdf_load_page(PDFviewer * pdfviewer)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 
-	page = poppler_document_get_page(pdfviewer->pdf->document,
-		pdfviewer->pdf->current);
+	if((page = poppler_document_get_page(pdfviewer->pdf->document,
+					pdfviewer->pdf->current)) == NULL)
+		/* FIXME prevent this from happening but keep the check in */
+		return;
 	poppler_page_get_size(page, &width, &height);
 
 	if(!pdfviewer->pdf->scale) {
@@ -638,9 +635,6 @@ void pdf_load_page(PDFviewer * pdfviewer)
 		pdfviewer->pdf->scale = (view_allocation.height / height); /* view whole page */
 #endif
 	}
-
-	if (!page)
-		return;
 
 	gtk_statusbar_push(GTK_STATUSBAR(pdfviewer->statusbar),
 		gtk_statusbar_get_context_id(
@@ -734,13 +728,14 @@ void set_prevnext_sensitivity(PDFviewer * pdfviewer)
 	GtkToolbar * toolbar = GTK_TOOLBAR(pdfviewer->toolbar);
 	gboolean farbefore, prev, next, farafter;
 
-	if(pdfviewer->pdf) { /* XXX s/5/preferences/ */
+	if(pdfviewer->pdf != NULL) {
+		/* XXX s/5/preferences/ */
 		farbefore = (pdfviewer->pdf->current > 5) ? TRUE : FALSE;
 		prev = (pdfviewer->pdf->current > 0) ? TRUE : FALSE;
-		next = (pdfviewer->pdf->current+1 < pdfviewer->pdf->pages) ?
-			TRUE : FALSE;
-		farafter = (pdfviewer->pdf->current+5 < pdfviewer->pdf->pages) ?
-			TRUE : FALSE;
+		next = (pdfviewer->pdf->current + 1 < pdfviewer->pdf->pages)
+			? TRUE : FALSE;
+		farafter = (pdfviewer->pdf->current + 5 < pdfviewer->pdf->pages)
+			? TRUE : FALSE;
 	} else {
 		farbefore = FALSE;
 		prev = FALSE;
@@ -748,13 +743,13 @@ void set_prevnext_sensitivity(PDFviewer * pdfviewer)
 		farafter = FALSE;
 	}
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(toolbar, 1)), farbefore);
+		gtk_toolbar_get_nth_item(toolbar, 2)), farbefore);
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(toolbar, 2)), prev);
+		gtk_toolbar_get_nth_item(toolbar, 3)), prev);
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(toolbar, 3)), next);
+		gtk_toolbar_get_nth_item(toolbar, 4)), next);
 	gtk_widget_set_sensitive(GTK_WIDGET(
-		gtk_toolbar_get_nth_item(toolbar, 4)), farafter);
+		gtk_toolbar_get_nth_item(toolbar, 5)), farafter);
 }
 
 
@@ -779,4 +774,24 @@ void pdf_update_scale(PDFviewer * pdfviewer, const char op, double n)
 			break;
 	}
 	pdf_load_page(pdfviewer);
+}
+
+
+/* private */
+/* functions */
+/* pdfviewer_set_title */
+static void _pdfviewer_set_title(PDFviewer * pdfviewer)
+{
+	char const * title = "(Untitled)";
+	char * p = NULL;
+	char buf[256];
+
+	if(pdfviewer->pdf != NULL)
+		if((p = poppler_document_get_title(pdfviewer->pdf->document))
+				!= NULL)
+			/* FIXME use the filename instead */
+			title = p;
+	snprintf(buf, sizeof(buf), "%s%s", "PDF viewer - ", title);
+	gtk_window_set_title(GTK_WINDOW(pdfviewer->window), buf);
+	free(p);
 }

@@ -1,5 +1,6 @@
 /* $Id$ */
 /* Copyright (c) 2010 Sébastien Bocahu <zecrazytux@zecrazytux.net> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
@@ -81,6 +82,15 @@ void on_view_fullscreen(gpointer data)
 	PDFviewer * pdfviewer = data;
 
 	on_fullscreen(pdfviewer);
+}
+
+
+/* on_view_normal_size */
+void on_view_normal_size(gpointer data)
+{
+	PDFviewer * pdfviewer = data;
+
+	pdf_update_scale(pdfviewer, '=', 1.0);
 }
 
 
