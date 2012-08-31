@@ -501,23 +501,50 @@ static GtkWidget * _properties_label_date(PDFviewer * pdfviewer,
 
 
 /* pdf_open */
-int pdf_open(PDFviewer * pdfviewer, const char * uri)
+int pdf_open(PDFviewer * pdfviewer, const char * filename)
 {
-	GError * err = NULL;
+	gchar * uri;
+	gchar * p;
 	PDF * pdf;
+	GError * error = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, uri);
 #endif
-	pdfviewer->pdf = g_new0(PDF, 1);
-	pdf = pdfviewer->pdf;
-	pdf->document = poppler_document_new_from_file(uri, NULL, &err);
-	if(err != NULL)
+	if(filename == NULL)
+		/* XXX report error */
+		return -1;
+	if(filename[0] == '/')
+		uri = g_strdup_printf("%s%s", "file:", filename);
+	else
 	{
-		fprintf(stderr, "error: %s", err->message);
-		g_error_free(err);
-		return 1;
+		p = g_get_current_dir();
+		uri = g_strdup_printf("%s%s/%s", "file:", p, filename);
+		g_free(p);
 	}
+	pdf = g_new0(PDF, 1);
+	if(uri == NULL || pdf == NULL)
+	{
+		g_free(pdf);
+		g_free(uri);
+		/* XXX report error */
+		return -1;
+	}
+	pdf->document = poppler_document_new_from_file(uri, NULL, &error);
+	g_free(uri);
+	if(pdf->document == NULL)
+	{
+		if(error != NULL)
+		{
+			fprintf(stderr, "%s: %s: %s", PACKAGE, filename,
+					error->message);
+			g_error_free(error);
+		}
+		g_free(pdf);
+		return -1;
+	}
+	/* FIXME destroy the previous data */
+	pdfviewer->pdf = pdf;
 	pdf->pages = poppler_document_get_n_pages(pdf->document);
 	pdf_update_current(pdfviewer, '=', 0);
 /*	pdfviewer->pdf->scale = 1.0; */	
