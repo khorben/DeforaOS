@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <System.h>
 #include <Phone/modem.h>
 #include <sofia-sip/nua.h>
@@ -331,6 +332,7 @@ static nua_handle_t * _sofia_handle_add(Sofia * sofia, sip_to_t * to)
 		sofia->handles_cnt++;
 	}
 	sofia->handles[i] = nua_handle(sofia->nua, sofia,
+			TAG_IF(to, NUTAG_URL(to->a_url)),
 			TAG_IF(to, SIPTAG_TO(to)), TAG_END());
 	return sofia->handles[i];
 }
@@ -355,9 +357,11 @@ static int _sofia_handle_remove(Sofia * sofia, nua_handle_t * handle)
 
 /* callbacks */
 /* sofia_callback */
+static void _callback_i_message(ModemPlugin * modem, int status,
+		char const * phrase, sip_t const * sip);
 static void _callback_invite(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * handle);
-static void _callback_message(ModemPlugin * modem, int status,
+static void _callback_r_message(ModemPlugin * modem, int status,
 		char const * phrase);
 static void _callback_register(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * nh, sip_t const * sip,
@@ -389,6 +393,9 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			/* FIXME report event: incoming call was cancelled */
 			fprintf(stderr, "i_invite %03d %s\n", status, phrase);
 			break;
+		case nua_i_message:
+			_callback_i_message(modem, status, phrase, sip);
+			break;
 		case nua_i_notify:
 			/* FIXME report event */
 			fprintf(stderr, "i_notify %03d %s\n", status, phrase);
@@ -419,7 +426,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 					phrase);
 			break;
 		case nua_r_message:
-			_callback_message(modem, status, phrase);
+			_callback_r_message(modem, status, phrase);
 			break;
 		case nua_r_register:
 			_callback_register(modem, status, phrase, nh, sip,
@@ -445,6 +452,39 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 #endif
 			break;
 	}
+}
+
+static void _callback_i_message(ModemPlugin * modem, int status,
+		char const * phrase, sip_t const * sip)
+{
+	Sofia * sofia = modem;
+	ModemPluginHelper * helper = sofia->helper;
+	ModemEvent mevent;
+	sip_from_t const * from;
+	sip_to_t const * to;
+	char buf[256];
+
+	if(status != 200)
+		/* FIXME report whatever that is */
+		return;
+	/* a message arrived */
+	if(sip == NULL || (from = sip->sip_from) == NULL
+			|| (to = sip->sip_to) == NULL)
+		/* FIXME report whatever that is */
+		return;
+	memset(&mevent, 0, sizeof(mevent));
+	mevent.type = MODEM_EVENT_TYPE_MESSAGE;
+	mevent.message.date = time(NULL);
+	/* XXX automatically import as a new contact? (from->a_display) */
+	snprintf(buf, sizeof(buf), URL_FORMAT_STRING,
+			URL_PRINT_ARGS(from->a_url));
+	mevent.message.number = buf;
+	mevent.message.folder = MODEM_MESSAGE_FOLDER_INBOX;
+	mevent.message.status = MODEM_MESSAGE_STATUS_NEW;
+	mevent.message.encoding = MODEM_MESSAGE_ENCODING_ASCII;
+	mevent.message.length = sip->sip_payload->pl_len;
+	mevent.message.content = sip->sip_payload->pl_data;
+	helper->event(helper->modem, &mevent);
 }
 
 static void _callback_invite(ModemPlugin * modem, int status,
@@ -476,7 +516,7 @@ static void _callback_invite(ModemPlugin * modem, int status,
 	helper->event(helper->modem, &mevent);
 }
 
-static void _callback_message(ModemPlugin * modem, int status,
+static void _callback_r_message(ModemPlugin * modem, int status,
 		char const * phrase)
 {
 	Sofia * sofia = modem;
@@ -489,9 +529,11 @@ static void _callback_message(ModemPlugin * modem, int status,
 	memset(&mevent, 0, sizeof(mevent));
 	mevent.type = MODEM_EVENT_TYPE_MESSAGE_SENT;
 	if(status == 200)
+		/* the message could be sent */
 		helper->event(helper->modem, &mevent);
 	else
 	{
+		/* an error occurred */
 		mevent.message_sent.error = phrase;
 		helper->event(helper->modem, &mevent);
 	}
