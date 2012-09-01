@@ -3996,8 +3996,12 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
 			phone->wr_progress = _phone_progress_delete(
 					phone->wr_progress);
-			_phone_info(phone, phone->wr_window, _("Message sent"),
-					NULL);
+			if(event->message_sent.error != NULL)
+				_phone_error(phone->wr_window,
+						event->message_sent.error, 0);
+			else
+				_phone_info(phone, phone->wr_window,
+						_("Message sent"), NULL);
 			break;
 		case MODEM_EVENT_TYPE_NOTIFICATION:
 			phone_info(phone, event->notification.content);

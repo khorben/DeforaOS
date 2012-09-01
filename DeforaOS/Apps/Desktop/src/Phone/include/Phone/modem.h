@@ -252,13 +252,20 @@ typedef union _ModemEvent
 		char const * content;
 	} message;
 
-	/* MODEM_EVENT_TYPE_MESSAGE_DELETED, MODEM_EVENT_TYPE_MESSAGE_SENT */
+	/* MODEM_EVENT_TYPE_MESSAGE_DELETED */
 	struct
 	{
 		ModemEventType type;
 		unsigned int id;
-		/* FIXME add a field for errors? */
-	} message_deleted, message_sent;
+	} message_deleted;
+	
+	/* MODEM_EVENT_TYPE_MESSAGE_SENT */
+	struct
+	{
+		ModemEventType type;
+		char * error;
+		unsigned int id;
+	} message_sent;
 
 	/* MODEM_EVENT_TYPE_MODEL */
 	struct

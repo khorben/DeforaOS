@@ -3541,6 +3541,7 @@ static void _on_code_cmgs(ModemPlugin * modem, char const * answer)
 
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
+	event->message_sent.error = NULL;
 	event->message_sent.id = u;
 	hayes->helper->event(hayes->helper->modem, event);
 }

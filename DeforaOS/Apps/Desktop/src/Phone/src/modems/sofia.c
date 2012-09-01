@@ -491,8 +491,10 @@ static void _callback_message(ModemPlugin * modem, int status,
 	if(status == 200)
 		helper->event(helper->modem, &mevent);
 	else
-		/* FIXME really report an error */
+	{
+		mevent.message_sent.error = phrase;
 		helper->event(helper->modem, &mevent);
+	}
 }
 
 static void _callback_register(ModemPlugin * modem, int status,
