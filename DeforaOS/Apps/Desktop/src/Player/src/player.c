@@ -117,9 +117,9 @@ struct _Player
 static const DesktopAccel _player_accel[] =
 {
 	{ G_CALLBACK(on_fullscreen), GDK_CONTROL_MASK, GDK_KEY_F },
+	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
 #ifdef EMBEDDED
 	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_KEY_W },
-	{ G_CALLBACK(on_fullscreen), 0, GDK_KEY_F11 },
 #endif
 	{ NULL, 0, 0 }
 };
