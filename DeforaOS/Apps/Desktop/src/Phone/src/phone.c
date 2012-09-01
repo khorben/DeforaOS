@@ -941,9 +941,13 @@ int phone_event(Phone * phone, PhoneEvent * event)
 					MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case PHONE_EVENT_TYPE_STARTING:
-			if(ret == 0 && (ret = modem_start(phone->modem)) == 0)
-				phone_event_type(phone,
-						PHONE_EVENT_TYPE_STARTED);
+			if(ret == 0)
+			{
+				ret = modem_start(phone->modem);
+				phone_event_type(phone, (ret == 0)
+						? PHONE_EVENT_TYPE_STARTED
+						: PHONE_EVENT_TYPE_STOPPED);
+			}
 			break;
 		case PHONE_EVENT_TYPE_STOPPING:
 			if(ret == 0 && phone->modem != NULL

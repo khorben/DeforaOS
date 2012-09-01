@@ -161,6 +161,7 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 	char const * p;
 	char const * q;
 	nua_handle_t * handle;
+	ModemEvent mevent;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -212,11 +213,20 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 		snprintf(us.us_str, sizeof(us.us_str), "%s%s@%s", "sip:", p, q);
 		nua_register(handle, SIPTAG_FROM_STR(us.us_str), TAG_END());
 	}
+	else
+	{
+		/* report that we are not registering */
+		memset(&mevent, 0, sizeof(mevent));
+		mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
+		mevent.registration.mode = MODEM_REGISTRATION_MODE_DISABLED;
+		mevent.registration.status
+			= MODEM_REGISTRATION_STATUS_NOT_SEARCHING;
+		helper->event(helper->modem, &mevent);
+	}
+	/* set (and verify) parameters */
 	nua_set_params(sofia->nua, NUTAG_ENABLEMESSAGE(1),
 			NUTAG_ENABLEINVITE(1),
-			NUTAG_AUTOALERT(1),
-			NUTAG_AUTOANSWER(0),
-			TAG_END());
+			NUTAG_AUTOALERT(1), NUTAG_AUTOANSWER(0), TAG_END());
 	nua_get_params(sofia->nua, TAG_ANY(), TAG_END());
 	return 0;
 }
