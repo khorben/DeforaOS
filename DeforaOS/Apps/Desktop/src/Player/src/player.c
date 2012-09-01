@@ -29,6 +29,7 @@ static char const _license[] =
 #include <libgen.h>
 #include <errno.h>
 #include <libintl.h>
+#include <System.h>
 #include <Desktop.h>
 #include <gdk/gdkkeysyms.h>
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -46,6 +47,8 @@ static char const _license[] =
 /* types */
 struct _Player
 {
+	Config * config;
+
 	/* view */
 	int paused;
 	gboolean fullscreen;
@@ -103,6 +106,7 @@ struct _Player
 
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_autoplay;
 
 	/* playlist */
 	GtkWidget * pl_window;
@@ -112,7 +116,8 @@ struct _Player
 
 
 /* constants */
-#define ICON_NAME "multimedia"
+#define PLAYER_ICON_NAME	"multimedia"
+#define PLAYER_CONFIG_FILE	".player"
 
 static const DesktopAccel _player_accel[] =
 {
@@ -224,7 +229,14 @@ static void _player_set_metadata(Player * player, unsigned int column,
 		char const * value);
 static void _player_set_progress(Player * player, unsigned int progress);
 
+static gboolean _player_config_get_boolean(Player * player,
+		char const * variable, gboolean _default);
+
 /* useful */
+static char * _player_config_filename(void);
+static int _player_config_load(Player * player);
+static int _player_config_save(Player * player);
+
 static int _player_command(Player * player, char const * cmd, size_t cmd_len);
 static int _player_error(char const * message, int ret);
 static void _player_reset(Player * player, char const * filename);
@@ -256,8 +268,14 @@ Player * player_new(void)
 	GdkColor black = { 0, 0, 0, 0 };
 	GtkTreeSelection * selection;
 
-	if((player = malloc(sizeof(*player))) == NULL)
+	if((player = object_new(sizeof(*player))) == NULL)
 		return NULL;
+	if((player->config = config_new()) == NULL)
+	{
+		object_delete(player);
+		return NULL;
+	}
+	_player_config_load(player);
 	/* view */
 	player->paused = 0;
 	player->fullscreen = FALSE;
@@ -270,7 +288,7 @@ Player * player_new(void)
 	if(pipe(player->fd[0]) != 0 || pipe(player->fd[1]) != 0)
 	{
 		player_error(player, strerror(errno), 0);
-		free(player);
+		object_delete(player);
 		return NULL;
 	}
 	player->buf = NULL;
@@ -402,7 +420,7 @@ Player * player_new(void)
 
 static void _new_mplayer(Player * player)
 {
-	char buf[] = "pausing loadfile splash.png 0\nframe_step\n";
+	char const buf[] = "pausing loadfile splash.png 0\nframe_step\n";
 	char wid[16];
 	char * argv[] = { "mplayer", "-slave", "-wid", NULL, "-quiet",
 		"-idle", "-framedrop", "-softvol", "-identify",
@@ -486,7 +504,8 @@ void player_delete(Player * player)
 		if(i == 4)
 			kill(player->pid, SIGTERM);
 	}
-	free(player);
+	config_delete(player->config);
+	object_delete(player);
 }
 
 
@@ -554,7 +573,8 @@ void player_about(Player * player)
 	desktop_about_dialog_set_comments(player->ab_window,
 			_("Media player for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(player->ab_window, _copyright);
-	desktop_about_dialog_set_logo_icon_name(player->ab_window, ICON_NAME);
+	desktop_about_dialog_set_logo_icon_name(player->ab_window,
+			PLAYER_ICON_NAME);
 	desktop_about_dialog_set_license(player->ab_window, _license);
 	desktop_about_dialog_set_name(player->ab_window, PACKAGE);
 	desktop_about_dialog_set_translator_credits(player->ab_window,
@@ -658,7 +678,9 @@ int player_open(Player * player, char const * filename)
 	GtkTreePath * path;
 	char cmd[512];
 	size_t len;
+	gboolean autoplay;
 
+	autoplay = _player_config_get_boolean(player, "autoplay", FALSE);
 	player_playlist_clear(player);
 	player_playlist_add(player, filename);
 	if(gtk_tree_model_get_iter_first(model, &iter) == TRUE)
@@ -668,8 +690,10 @@ int player_open(Player * player, char const * filename)
 		gtk_tree_path_free(path);
 	}
 	_player_reset(player, filename);
-	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "pausing loadfile \"",
-			filename, "\" 0\nframe_step\n");
+	len = snprintf(cmd, sizeof(cmd), "%s%s%s%s%s",
+			autoplay ? "" : "pausing ",
+			"loadfile \"", filename, "\" 0\n",
+			autoplay ? "" : "frame_step\n");
 	if(len >= sizeof(cmd))
 	{
 		fputs("player: String too long\n", stderr);
@@ -677,7 +701,7 @@ int player_open(Player * player, char const * filename)
 	}
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
-	player->paused = 1;
+	player->paused = autoplay ? 0 : 1;
 	return 0;
 }
 
@@ -967,17 +991,17 @@ void player_stop(Player * player)
 }
 
 
-/* player_view_playlist */
-void player_view_playlist(Player * player, gboolean view)
+/* player_show_playlist */
+void player_show_playlist(Player * player, gboolean show)
 {
-	if(view)
+	if(show)
 		gtk_window_present(GTK_WINDOW(player->pl_window));
 	else
 		gtk_widget_hide(player->pl_window);
 }
 
 
-/* player_view_preferences */
+/* player_show_preferences */
 static void _preferences_set(Player * player);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_response(GtkWidget * widget, gint response,
@@ -985,13 +1009,16 @@ static void _preferences_on_response(GtkWidget * widget, gint response,
 static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
-void player_view_preferences(Player * player)
+void player_show_preferences(Player * player, gboolean show)
 {
 	GtkWidget * vbox;
 
 	if(player->pr_window != NULL)
 	{
-		gtk_window_present(GTK_WINDOW(player->pr_window));
+		if(show)
+			gtk_window_present(GTK_WINDOW(player->pr_window));
+		else
+			gtk_widget_hide(player->pr_window);
 		return;
 	}
 	player->pr_window = gtk_dialog_new_with_buttons(
@@ -1000,23 +1027,36 @@ void player_view_preferences(Player * player)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-	g_signal_connect_swapped(G_OBJECT(player->pr_window), "delete-event",
-			G_CALLBACK(_preferences_on_closex), player);
-	g_signal_connect(G_OBJECT(player->pr_window), "response",
-			G_CALLBACK(_preferences_on_response), player);
+	g_signal_connect_swapped(player->pr_window, "delete-event", G_CALLBACK(
+				_preferences_on_closex), player);
+	g_signal_connect(player->pr_window, "response", G_CALLBACK(
+				_preferences_on_response), player);
 #if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(player->pr_window));
 #else
 	vbox = GTK_DIALOG(player->pr_window)->vbox;
 #endif
-	/* FIXME implement */
+	gtk_box_set_spacing(GTK_BOX(vbox), 4);
+	/* auto-play */
+	player->pr_autoplay = gtk_check_button_new_with_mnemonic(
+			_("_Automatically play files when opened"));
+	gtk_box_pack_start(GTK_BOX(vbox), player->pr_autoplay, FALSE, TRUE, 0);
 	_preferences_set(player);
-	gtk_widget_show_all(player->pr_window);
+	gtk_widget_show_all(vbox);
+	if(show)
+		gtk_widget_show(player->pr_window);
 }
 
 static void _preferences_set(Player * player)
 {
-	/* FIXME implement */
+	gboolean boolean;
+	char const * p;
+
+	boolean = FALSE;
+	if((p = config_get(player->config, NULL, "autoplay")) != NULL)
+		boolean = strtol(p, NULL, 10);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(player->pr_autoplay),
+			boolean);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -1048,19 +1088,27 @@ static void _preferences_on_cancel(gpointer data)
 static void _preferences_on_ok(gpointer data)
 {
 	Player * player = data;
+	gboolean boolean;
 
 	gtk_widget_hide(player->pr_window);
-	/* FIXME implement */
+	boolean = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				player->pr_autoplay));
+	/* XXX may fail */
+	config_set(player->config, NULL, "autoplay", boolean ? "1" : "0");
+	_player_config_save(player);
 }
 
 
-/* player_view_properties */
-void player_view_properties(Player * player)
+/* player_show_properties */
+void player_show_properties(Player * player, gboolean show)
 {
 	GtkWidget * dialog;
+	GtkWidget * vbox;
 	char * filename;
 	char buf[256];
 
+	if(show == FALSE)
+		return;
 	if((filename = _player_get_filename(player)) == NULL)
 		return;
 	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
@@ -1070,6 +1118,12 @@ void player_view_properties(Player * player)
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 200);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(player->pr_window));
+#else
+	vbox = GTK_DIALOG(player->pr_window)->vbox;
+#endif
+	gtk_box_set_spacing(GTK_BOX(vbox), 4);
 	/* FIXME implement */
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -1129,6 +1183,18 @@ static void _player_set_progress(Player * player, unsigned int progress)
 			fraction);
 	snprintf(buf, sizeof(buf), "%u%%", progress);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), buf);
+}
+
+
+/* player_config_get_boolean */
+static gboolean _player_config_get_boolean(Player * player,
+		char const * variable, gboolean _default)
+{
+	char const * p;
+
+	if((p = config_get(player->config, NULL, variable)) == NULL)
+		return _default;
+	return strtol(p, NULL, 10);
 }
 
 
@@ -1198,6 +1264,51 @@ static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 	player->buf_len += cmd_len;
 	g_io_add_watch(player->channel[1], G_IO_OUT, _command_write, player);
 	return 0;
+}
+
+
+/* player_config_filename */
+static char * _player_config_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(PLAYER_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, PLAYER_CONFIG_FILE);
+	return filename;
+}
+
+
+/* player_config_load */
+static int _player_config_load(Player * player)
+{
+	int ret;
+	char * filename;
+
+	if((filename = _player_config_filename()) == NULL)
+		return -1;
+	ret = config_load(player->config, filename);
+	free(filename);
+	return ret;
+}
+
+
+/* player_config_save */
+static int _player_config_save(Player * player)
+{
+	int ret;
+	char * filename;
+
+	if((filename = _player_config_filename()) == NULL)
+		return -1;
+	ret = config_save(player->config, filename);
+	free(filename);
+	return ret;
 }
 
 

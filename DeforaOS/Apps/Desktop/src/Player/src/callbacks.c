@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Player */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ void on_file_properties(gpointer data)
 {
 	Player * player = data;
 
-	player_view_properties(player);
+	player_show_properties(player, TRUE);
 }
 
 
@@ -92,7 +92,7 @@ void on_edit_preferences(gpointer data)
 {
 	Player * player = data;
 
-	player_view_preferences(player);
+	player_show_preferences(player, TRUE);
 }
 
 
@@ -110,7 +110,7 @@ void on_view_playlist(gpointer data)
 {
 	Player * player = data;
 
-	player_view_playlist(player, TRUE);
+	player_show_playlist(player, TRUE);
 }
 
 
@@ -154,7 +154,7 @@ void on_properties(gpointer data)
 {
 	Player * player = data;
 
-	player_view_properties(player);
+	player_show_properties(player, TRUE);
 }
 
 
@@ -163,7 +163,7 @@ void on_preferences(gpointer data)
 {
 	Player * player = data;
 
-	player_view_preferences(player);
+	player_show_preferences(player, TRUE);
 }
 
 
@@ -240,7 +240,7 @@ gboolean on_playlist_closex(gpointer data)
 {
 	Player * player = data;
 
-	player_view_playlist(player, FALSE);
+	player_show_playlist(player, FALSE);
 	return TRUE;
 }
 

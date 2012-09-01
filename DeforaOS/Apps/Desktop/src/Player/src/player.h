@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Player */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,8 +74,8 @@ void player_rewind(Player * player);
 void player_forward(Player * player);
 
 /* user interface */
-void player_view_playlist(Player * player, gboolean view);
-void player_view_preferences(Player * player);
-void player_view_properties(Player * player);
+void player_show_playlist(Player * player, gboolean show);
+void player_show_preferences(Player * player, gboolean show);
+void player_show_properties(Player * player, gboolean show);
 
 #endif /* !PLAYER_PLAYER_H */
