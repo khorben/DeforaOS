@@ -185,8 +185,8 @@ static DesktopToolbar _player_toolbar[] =
 	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, GDK_CONTROL_MASK,
 		GDK_KEY_O, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
-	{ N_("Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0,
-		0, NULL },
+	{ N_("Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES,
+		GDK_MOD1_MASK, GDK_KEY_Return, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
 		0, 0, NULL },
@@ -1057,21 +1057,22 @@ static void _preferences_on_ok(gpointer data)
 /* player_view_properties */
 void player_view_properties(Player * player)
 {
-	GtkWidget * window;
+	GtkWidget * dialog;
 	char * filename;
 	char buf[256];
 
 	if((filename = _player_get_filename(player)) == NULL)
 		return;
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				gtk_widget_destroy), NULL);
 	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
 				filename));
 	free(filename);
-	gtk_window_set_title(GTK_WINDOW(window), buf);
+	dialog = gtk_dialog_new_with_buttons(buf, GTK_WINDOW(player->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+	gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 200);
 	/* FIXME implement */
-	gtk_widget_show_all(window);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
 
