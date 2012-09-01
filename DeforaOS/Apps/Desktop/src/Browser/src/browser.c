@@ -48,6 +48,9 @@ static char const _license[] =
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
+#ifndef BINDIR
+# define BINDIR		PREFIX "/bin"
+#endif
 #ifndef LIBDIR
 # define LIBDIR		PREFIX "/lib"
 #endif
@@ -1011,6 +1014,8 @@ void browser_open_with(Browser * browser, char const * path)
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
+	/* set the default folder to BINDIR */
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), BINDIR);
 	filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, _("Executable files"));
 	gtk_file_filter_add_mime_type(filter, "application/x-executable");
