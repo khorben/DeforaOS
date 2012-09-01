@@ -41,6 +41,13 @@ static char const _license[] =
 #define _(string) gettext(string)
 #define N_(string) (string)
 
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+
 
 /* Player */
 /* private */
@@ -116,8 +123,9 @@ struct _Player
 
 
 /* constants */
-#define PLAYER_ICON_NAME	"multimedia"
 #define PLAYER_CONFIG_FILE	".player"
+#define PLAYER_ICON_NAME	"multimedia"
+#define PLAYER_SPLASH		DATADIR "/" PACKAGE "/splash.png"
 
 static const DesktopAccel _player_accel[] =
 {
@@ -420,7 +428,7 @@ Player * player_new(void)
 
 static void _new_mplayer(Player * player)
 {
-	char const buf[] = "pausing loadfile splash.png 0\nframe_step\n";
+	char const buf[] = "pausing loadfile " PLAYER_SPLASH " 0\nframe_step\n";
 	char wid[16];
 	char * argv[] = { "mplayer", "-slave", "-wid", NULL, "-quiet",
 		"-idle", "-framedrop", "-softvol", "-identify",
@@ -973,7 +981,7 @@ void player_rewind(Player * player)
 /* player_stop */
 void player_stop(Player * player)
 {
-	char const cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
+	char const cmd[] = "pausing loadfile " PLAYER_SPLASH " 0\nframe_step\n";
 
 	_player_command(player, cmd, sizeof(cmd) - 1);
 	_player_set_progress(player, 0);
