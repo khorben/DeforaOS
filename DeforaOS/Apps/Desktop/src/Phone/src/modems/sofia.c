@@ -359,11 +359,11 @@ static int _sofia_handle_remove(Sofia * sofia, nua_handle_t * handle)
 /* sofia_callback */
 static void _callback_i_message(ModemPlugin * modem, int status,
 		char const * phrase, sip_t const * sip);
-static void _callback_invite(ModemPlugin * modem, int status,
+static void _callback_r_invite(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * handle);
 static void _callback_r_message(ModemPlugin * modem, int status,
 		char const * phrase);
-static void _callback_register(ModemPlugin * modem, int status,
+static void _callback_r_register(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * nh, sip_t const * sip,
 		tagi_t tags[]);
 
@@ -416,7 +416,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			helper->event(helper->modem, &mevent);
 			break;
 		case nua_r_invite:
-			_callback_invite(modem, status, phrase, nh);
+			_callback_r_invite(modem, status, phrase, nh);
 			break;
 		case nua_r_get_params:
 			if(status == 200)
@@ -429,7 +429,7 @@ static void _sofia_callback(nua_event_t event, int status, char const * phrase,
 			_callback_r_message(modem, status, phrase);
 			break;
 		case nua_r_register:
-			_callback_register(modem, status, phrase, nh, sip,
+			_callback_r_register(modem, status, phrase, nh, sip,
 					tags);
 			break;
 		case nua_r_set_params:
@@ -487,7 +487,7 @@ static void _callback_i_message(ModemPlugin * modem, int status,
 	helper->event(helper->modem, &mevent);
 }
 
-static void _callback_invite(ModemPlugin * modem, int status,
+static void _callback_r_invite(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * handle)
 {
 	Sofia * sofia = modem;
@@ -539,7 +539,7 @@ static void _callback_r_message(ModemPlugin * modem, int status,
 	}
 }
 
-static void _callback_register(ModemPlugin * modem, int status,
+static void _callback_r_register(ModemPlugin * modem, int status,
 		char const * phrase, nua_handle_t * nh, sip_t const * sip,
 		tagi_t tags[])
 {
