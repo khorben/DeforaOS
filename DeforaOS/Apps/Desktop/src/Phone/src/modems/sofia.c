@@ -30,6 +30,19 @@
 /* Sofia */
 /* private */
 /* types */
+typedef enum _SofiaHandleType
+{
+	SOFIA_HANDLE_TYPE_REGISTRATION = 0,
+	SOFIA_HANDLE_TYPE_CALL,
+	SOFIA_HANDLE_TYPE_MESSAGE
+} SofiaHandleType;
+
+typedef struct _SofiaHandle
+{
+	SofiaHandleType type;
+	nua_handle_t * handle;
+} SofiaHandle;
+
 typedef struct _ModemPlugin
 {
 	ModemPluginHelper * helper;
@@ -38,7 +51,7 @@ typedef struct _ModemPlugin
 	su_root_t * root;
 	guint source;
 	nua_t * nua;
-	nua_handle_t ** handles;
+	SofiaHandle * handles;
 	size_t handles_cnt;
 } Sofia;
 
@@ -69,7 +82,9 @@ static int _sofia_stop(ModemPlugin * modem);
 static int _sofia_request(ModemPlugin * modem, ModemRequest * request);
 
 /* useful */
-static nua_handle_t * _sofia_handle_add(Sofia * sofia, sip_to_t * to);
+static nua_handle_t * _sofia_handle_add(Sofia * sofia, SofiaHandleType type,
+		sip_to_t * to);
+static nua_handle_t * _sofia_handle_lookup(Sofia * sofia, SofiaHandleType type);
 static int _sofia_handle_remove(Sofia * sofia, nua_handle_t * handle);
 
 /* callbacks */
@@ -186,7 +201,9 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 					"registrar_hostname")) != NULL
 			&& strlen(q) > 0)
 	{
-		if((handle = _sofia_handle_add(sofia, NULL)) == NULL)
+		if((handle = _sofia_handle_add(sofia,
+						SOFIA_HANDLE_TYPE_REGISTRATION,
+						NULL)) == NULL)
 			return -helper->error(helper->modem,
 					"Cannot create registration handle", 1);
 		snprintf(us.us_str, sizeof(us.us_str), "%s%s", "sip:", q);
@@ -206,7 +223,7 @@ static int _sofia_start(ModemPlugin * modem, unsigned int retry)
 
 
 /* sofia_stop */
-static void _stop_handle(nua_handle_t * handle);
+static void _stop_handle(SofiaHandle * handle);
 
 static int _sofia_stop(ModemPlugin * modem)
 {
@@ -217,7 +234,7 @@ static int _sofia_stop(ModemPlugin * modem)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	for(i = 0; i < sofia->handles_cnt; i++)
-		_stop_handle(sofia->handles[i]);
+		_stop_handle(&sofia->handles[i]);
 	free(sofia->handles);
 	sofia->handles = NULL;
 	sofia->handles_cnt = 0;
@@ -231,16 +248,17 @@ static int _sofia_stop(ModemPlugin * modem)
 	return 0;
 }
 
-static void _stop_handle(nua_handle_t * handle)
+static void _stop_handle(SofiaHandle * handle)
 {
-	if(handle == NULL)
+	if(handle->handle == NULL)
 		return;
-	nua_handle_destroy(handle);
+	nua_handle_destroy(handle->handle);
 }
 
 
 /* sofia_request */
 static int _request_call(ModemPlugin * modem, ModemRequest * request);
+static int _request_dtmf_send(ModemPlugin * modem, ModemRequest * request);
 static int _request_message_send(ModemPlugin * modem, ModemRequest * request);
 
 static int _sofia_request(ModemPlugin * modem, ModemRequest * request)
@@ -249,6 +267,8 @@ static int _sofia_request(ModemPlugin * modem, ModemRequest * request)
 	{
 		case MODEM_REQUEST_CALL:
 			return _request_call(modem, request);
+		case MODEM_REQUEST_DTMF_SEND:
+			return _request_dtmf_send(modem, request);
 		case MODEM_REQUEST_MESSAGE_SEND:
 			return _request_message_send(modem, request);
 #ifndef DEBUG
@@ -275,7 +295,8 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 	if((to = sip_to_make(sofia->home, us.us_str)) == NULL)
 		return -helper->error(helper->modem,
 				"Could not initiate the call", 1);
-	if((handle = _sofia_handle_add(sofia, to)) == NULL)
+	if((handle = _sofia_handle_add(sofia, SOFIA_HANDLE_TYPE_CALL, to))
+			== NULL)
 		return -helper->error(helper->modem,
 				"Could not initiate the call", 1);
 	to->a_display = request->call.number;
@@ -283,8 +304,30 @@ static int _request_call(ModemPlugin * modem, ModemRequest * request)
 	fprintf(stderr, "DEBUG: %s() nua_invite(\"%s\")\n", __func__,
 			us.us_str);
 #endif
-	nua_invite(handle, SOATAG_RTP_SORT(SOA_RTP_SORT_REMOTE),
+	nua_invite(handle, SOATAG_USER_SDP_STR(NULL),
+			SOATAG_RTP_SORT(SOA_RTP_SORT_REMOTE),
 			SOATAG_RTP_SELECT(SOA_RTP_SELECT_ALL), TAG_END());
+	return 0;
+}
+
+static int _request_dtmf_send(ModemPlugin * modem, ModemRequest * request)
+{
+	Sofia * sofia = modem;
+	ModemPluginHelper * helper = sofia->helper;
+	nua_handle_t * handle;
+	char buf[] = "Signal=X";
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	/* XXX lookup the first active call */
+	if((handle = _sofia_handle_lookup(sofia, SOFIA_HANDLE_TYPE_CALL))
+			== NULL)
+		return -helper->error(helper->modem, "Could not send DTMF", 1);
+	buf[sizeof(buf) - 2] = request->dtmf_send.dtmf;
+	nua_info(handle, SIPTAG_CONTENT_TYPE_STR("application/dtmf-info"),
+			SIPTAG_PAYLOAD_STR(buf),
+			TAG_END());
 	return 0;
 }
 
@@ -304,7 +347,8 @@ static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 	if((to = sip_to_make(sofia->home, us.us_str)) == NULL)
 		return -helper->error(helper->modem, "Could not send message",
 				1);
-	if((handle = _sofia_handle_add(sofia, to)) == NULL)
+	if((handle = _sofia_handle_add(sofia, SOFIA_HANDLE_TYPE_MESSAGE, to))
+			== NULL)
 		return -helper->error(helper->modem, "Could not send message",
 				1);
 	nua_message(handle, SIPTAG_CONTENT_TYPE_STR("text/plain"),
@@ -316,13 +360,14 @@ static int _request_message_send(ModemPlugin * modem, ModemRequest * request)
 
 /* useful */
 /* sofia_handle_add */
-static nua_handle_t * _sofia_handle_add(Sofia * sofia, sip_to_t * to)
+static nua_handle_t * _sofia_handle_add(Sofia * sofia, SofiaHandleType type,
+		sip_to_t * to)
 {
 	size_t i;
-	nua_handle_t ** p;
+	SofiaHandle * p;
 
 	for(i = 0; i < sofia->handles_cnt; i++)
-		if(sofia->handles[i] == NULL)
+		if(sofia->handles[i].handle == NULL)
 			break;
 	if(i == sofia->handles_cnt)
 	{
@@ -331,10 +376,23 @@ static nua_handle_t * _sofia_handle_add(Sofia * sofia, sip_to_t * to)
 		sofia->handles = p;
 		sofia->handles_cnt++;
 	}
-	sofia->handles[i] = nua_handle(sofia->nua, sofia,
+	sofia->handles[i].type = type;
+	sofia->handles[i].handle = nua_handle(sofia->nua, sofia,
 			TAG_IF(to, NUTAG_URL(to->a_url)),
 			TAG_IF(to, SIPTAG_TO(to)), TAG_END());
-	return sofia->handles[i];
+	return sofia->handles[i].handle;
+}
+
+
+/* sofia_handle_lookup */
+static nua_handle_t * _sofia_handle_lookup(Sofia * sofia, SofiaHandleType type)
+{
+	size_t i;
+
+	for(i = 0; i < sofia->handles_cnt; i++)
+		if(sofia->handles[i].type == type)
+			return sofia->handles[i].handle;
+	return NULL;
 }
 
 
@@ -344,11 +402,11 @@ static int _sofia_handle_remove(Sofia * sofia, nua_handle_t * handle)
 	size_t i;
 
 	for(i = 0; i < sofia->handles_cnt; i++)
-		if(sofia->handles[i] == handle)
+		if(sofia->handles[i].handle == handle)
 		{
 			/* FIXME also free memory */
-			nua_handle_destroy(sofia->handles[i]);
-			sofia->handles[i] = NULL;
+			nua_handle_destroy(sofia->handles[i].handle);
+			sofia->handles[i].handle = NULL;
 			return 0;
 		}
 	return -1;

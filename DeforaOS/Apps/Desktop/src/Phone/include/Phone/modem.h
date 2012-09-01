@@ -263,7 +263,7 @@ typedef union _ModemEvent
 	struct
 	{
 		ModemEventType type;
-		char * error;
+		char const * error;
 		unsigned int id;
 	} message_sent;
 
@@ -319,6 +319,7 @@ typedef enum _ModemRequestType
 	MODEM_REQUEST_CONTACT_EDIT,
 	MODEM_REQUEST_CONTACT_LIST,
 	MODEM_REQUEST_CONTACT_NEW,
+	MODEM_REQUEST_DTMF_SEND,
 	MODEM_REQUEST_LINE_PRESENTATION,
 	MODEM_REQUEST_MESSAGE,
 	MODEM_REQUEST_MESSAGE_DELETE,
@@ -391,6 +392,13 @@ typedef union _ModemRequest
 		char const * name;
 		char const * number;
 	} contact_new;
+
+	/* MODEM_REQUEST_DTMF_SEND */
+	struct
+	{
+		ModemRequestType type;
+		char dtmf;
+	} dtmf_send;
 
 	/* MODEM_REQUEST_MESSAGE, MODEM_REQUEST_MESSAGE_DELETE */
 	struct
