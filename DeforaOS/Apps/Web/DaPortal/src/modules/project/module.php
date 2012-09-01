@@ -266,6 +266,31 @@ class ProjectModule extends ContentModule
 
 	//methods
 	//accessors
+	//ProjectModule::canUpdate
+	protected function canUpdate($engine, $content = FALSE, &$error = FALSE)
+	{
+		$cred = $engine->getCredentials();
+
+		//administrators can always update anything
+		if($cred->isAdmin())
+			return TRUE;
+		//this should not happen so let the parent handle it
+		if($content === FALSE)
+			return parent::canUpdate($engine, $content, $error);
+		if(isset($content['project_id']))
+		{
+			//this is a project
+			if($cred->getUserId() == $content['user_id'])
+				return TRUE;
+			if($this->isMember($engine, $content))
+				//FIXME only allow administrators?
+				return TRUE;
+		}
+		//bug reports and replies cannot be updated once sent
+		return FALSE;
+	}
+
+
 	//ProjectModule::canUpload
 	protected function canUpload($engine, $project)
 	{
