@@ -455,27 +455,31 @@ static gboolean _about_on_closex(gpointer data)
 
 
 /* editor_config_load */
-void editor_config_load(Editor * editor)
+int editor_config_load(Editor * editor)
 {
+	int ret;
 	char * filename;
 
 	if((filename = _editor_config_filename()) == NULL)
-		return;
-	config_load(editor->config, filename); /* we can ignore errors */
+		return -1;
+	ret = config_load(editor->config, filename);
 	free(filename);
+	return ret;
 }
 
 
 /* editor_config_save */
-void editor_config_save(Editor * editor)
+int editor_config_save(Editor * editor)
 {
+	int ret;
 	char * filename;
 
 	if((filename = _editor_config_filename()) == NULL)
-		return;
-	if(config_save(editor->config, filename) != 0)
-		editor_error(editor, _("Could not save configuration"), 0);
+		return -1;
+	if((ret = config_save(editor->config, filename)) != 0)
+		editor_error(editor, _("Could not save configuration"), 1);
 	free(filename);
+	return ret;
 }
 
 
