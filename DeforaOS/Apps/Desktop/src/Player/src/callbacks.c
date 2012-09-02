@@ -132,6 +132,7 @@ void on_fullscreen(gpointer data)
 }
 
 
+/* on_next */
 void on_next(gpointer data)
 {
 	Player * player = data;
@@ -167,6 +168,7 @@ void on_preferences(gpointer data)
 }
 
 
+/* on_pause */
 void on_pause(gpointer data)
 {
 	Player * player = data;
@@ -175,6 +177,7 @@ void on_pause(gpointer data)
 }
 
 
+/* on_play */
 void on_play(gpointer data)
 {
 	Player * player = data;
@@ -183,6 +186,7 @@ void on_play(gpointer data)
 }
 
 
+/* on_previous */
 void on_previous(gpointer data)
 {
 	Player * player = data;
@@ -191,6 +195,7 @@ void on_previous(gpointer data)
 }
 
 
+/* on_rewind */
 void on_rewind(gpointer data)
 {
 	Player * player = data;
@@ -199,6 +204,7 @@ void on_rewind(gpointer data)
 }
 
 
+/* on_stop */
 void on_stop(gpointer data)
 {
 	Player * player = data;
@@ -207,6 +213,7 @@ void on_stop(gpointer data)
 }
 
 
+/* on_forward */
 void on_forward(gpointer data)
 {
 	Player * player = data;
