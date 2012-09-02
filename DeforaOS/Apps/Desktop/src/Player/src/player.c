@@ -836,6 +836,7 @@ int player_open_dialog(Player * player)
 	for(i = 0; audio[i] != NULL; i++)
 		gtk_file_filter_add_mime_type(filter, audio[i]);
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	/* all files */
 	filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, _("All files"));
 	gtk_file_filter_add_pattern(filter, "*");
@@ -1029,18 +1030,30 @@ void player_playlist_open(Player * player, char const * filename)
 /* player_playlist_open_dialog */
 void player_playlist_open_dialog(Player * player)
 {
-	GtkWidget * widget;
+	GtkWidget * dialog;
+	GtkFileFilter * filter;
 	gchar * filename = NULL;
 
-	widget = gtk_file_chooser_dialog_new(_("Open playlist..."),
+	dialog = gtk_file_chooser_dialog_new(_("Open playlist..."),
 			GTK_WINDOW(player->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_ADD, GTK_RESPONSE_ACCEPT, NULL);
-	if(gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT)
+	/* playlists */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Playlists"));
+	gtk_file_filter_add_mime_type(filter, "audio/x-mpegurl");
+	gtk_file_filter_add_mime_type(filter, "audio/x-scpls");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	/* all files */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
-					widget));
-	gtk_widget_destroy(widget);
+					dialog));
+	gtk_widget_destroy(dialog);
 	if(filename != NULL)
 		player_playlist_open(player, filename);
 	g_free(filename);
