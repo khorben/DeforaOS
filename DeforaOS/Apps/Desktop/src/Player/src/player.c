@@ -263,6 +263,7 @@ static int _player_config_save(Player * player);
 
 static int _player_command(Player * player, char const * cmd, size_t cmd_len);
 static int _player_error(char const * message, int ret);
+static void _player_filters(GtkWidget * dialog);
 static void _player_reset(Player * player, char const * filename);
 
 /* callbacks */
@@ -770,77 +771,14 @@ int player_open_dialog(Player * player)
 {
 	int ret;
 	GtkWidget * dialog;
-	GtkFileFilter * filter;
 	char * filename = NULL;
-	char const * video[] =
-	{
-		"video/3gpp",
-		"video/3gpp2",
-		"video/mp2t",
-		"video/mp4",
-		"video/mpeg",
-		"video/ogg",
-		"video/quicktime",
-		"video/vivo",
-		"video/vnd.vn-realvideo",
-		"video/webm",
-		"video/x-flv",
-		"video/x-javafx",
-		"video/x-matroska",
-		"video/x-mng",
-		"video/x-ms-asf",
-		"video/x-ms-wmv",
-		"video/x-msvideo",
-		"video/x-ogm+ogg",
-		"video/x-sgi-movie",
-		"video/x-theora+ogg",
-		NULL
-	};
-	char const * audio[] =
-	{
-		"audio/ac3",
-		"audio/mp4",
-		"audio/mpeg",
-		"audio/vorbis",
-		"audio/x-mp2",
-		"audio/x-mp3",
-		"audio/x-ms-wma",
-		"audio/x-vorbis",
-		"audio/x-wav",
-		NULL
-	};
-	size_t i;
 
 	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
 			GTK_WINDOW(player->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-	/* video and audio files */
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("Video and audio files"));
-	for(i = 0; video[i] != NULL; i++)
-		gtk_file_filter_add_mime_type(filter, video[i]);
-	for(i = 0; audio[i] != NULL; i++)
-		gtk_file_filter_add_mime_type(filter, audio[i]);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-	/* video files */
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("Video files"));
-	for(i = 0; video[i] != NULL; i++)
-		gtk_file_filter_add_mime_type(filter, video[i]);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-	/* audio files */
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("Audio files"));
-	for(i = 0; audio[i] != NULL; i++)
-		gtk_file_filter_add_mime_type(filter, audio[i]);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-	/* all files */
-	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, _("All files"));
-	gtk_file_filter_add_pattern(filter, "*");
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	_player_filters(dialog);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
@@ -985,20 +923,21 @@ void player_playlist_add(Player * player, char const * filename)
 /* player_playlist_add_dialog */
 void player_playlist_add_dialog(Player * player)
 {
-	GtkWidget * widget;
+	GtkWidget * dialog;
 	GSList * files = NULL;
 	GSList * p;
 	char const * filename;
 
-	widget = gtk_file_chooser_dialog_new(_("Add file(s)..."),
+	dialog = gtk_file_chooser_dialog_new(_("Add file(s)..."),
 			GTK_WINDOW(player->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_ADD, GTK_RESPONSE_ACCEPT, NULL);
-	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(widget), TRUE);
-	if(gtk_dialog_run(GTK_DIALOG(widget)) == GTK_RESPONSE_ACCEPT)
-		files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(widget));
-	gtk_widget_destroy(widget);
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
+	_player_filters(dialog);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(dialog));
+	gtk_widget_destroy(dialog);
 	for(p = files; p != NULL; p = p->next)
 	{
 		filename = p->data;
@@ -1444,41 +1383,6 @@ static int _player_error(char const * message, int ret)
 }
 
 
-/* player_reset */
-static void _player_reset(Player * player, char const * filename)
-{
-	char * p = NULL;
-	char buf[256];
-
-	player->width = 0;
-	player->height = 0;
-	player->audio_bitrate = 0;
-	player->audio_channels = 0;
-	if(player->audio_codec != NULL)
-		free(player->audio_codec);
-	player->audio_codec = NULL;
-	player->audio_rate = 0;
-	player->video_aspect = 0.0;
-	player->video_bitrate = 0;
-	if(player->video_codec != NULL)
-		free(player->video_codec);
-	player->video_codec = NULL;
-	player->video_fps = 0.0;
-	player->video_rate = 0;
-	player->album = -1;
-	player->artist = -1;
-	player->title = -1;
-	_player_set_progress(player, 0);
-	if(filename != NULL)
-		p = strdup(filename);
-	snprintf(buf, sizeof(buf), "%s%s%s", _("Media player"),
-			(filename != NULL) ? " - " : "", (filename != NULL)
-			? ((p != NULL) ? basename(p) : filename) : "");
-	free(p);
-	gtk_window_set_title(GTK_WINDOW(player->window), buf);
-}
-
-
 /* player_command */
 static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 {
@@ -1547,6 +1451,112 @@ static int _player_config_save(Player * player)
 	ret = config_save(player->config, filename);
 	free(filename);
 	return ret;
+}
+
+
+/* player_filters */
+static void _player_filters(GtkWidget * dialog)
+{
+	GtkFileFilter * filter;
+	char const * video[] =
+	{
+		"video/3gpp",
+		"video/3gpp2",
+		"video/mp2t",
+		"video/mp4",
+		"video/mpeg",
+		"video/ogg",
+		"video/quicktime",
+		"video/vivo",
+		"video/vnd.vn-realvideo",
+		"video/webm",
+		"video/x-flv",
+		"video/x-javafx",
+		"video/x-matroska",
+		"video/x-mng",
+		"video/x-ms-asf",
+		"video/x-ms-wmv",
+		"video/x-msvideo",
+		"video/x-ogm+ogg",
+		"video/x-sgi-movie",
+		"video/x-theora+ogg",
+		NULL
+	};
+	char const * audio[] =
+	{
+		"audio/ac3",
+		"audio/mp4",
+		"audio/mpeg",
+		"audio/vorbis",
+		"audio/x-mp2",
+		"audio/x-mp3",
+		"audio/x-ms-wma",
+		"audio/x-vorbis",
+		"audio/x-wav",
+		NULL
+	};
+	size_t i;
+
+	/* video and audio files */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Video and audio files"));
+	for(i = 0; video[i] != NULL; i++)
+		gtk_file_filter_add_mime_type(filter, video[i]);
+	for(i = 0; audio[i] != NULL; i++)
+		gtk_file_filter_add_mime_type(filter, audio[i]);
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	/* video files */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Video files"));
+	for(i = 0; video[i] != NULL; i++)
+		gtk_file_filter_add_mime_type(filter, video[i]);
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	/* audio files */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("Audio files"));
+	for(i = 0; audio[i] != NULL; i++)
+		gtk_file_filter_add_mime_type(filter, audio[i]);
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+	/* all files */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, _("All files"));
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+}
+
+
+/* player_reset */
+static void _player_reset(Player * player, char const * filename)
+{
+	char * p = NULL;
+	char buf[256];
+
+	player->width = 0;
+	player->height = 0;
+	player->audio_bitrate = 0;
+	player->audio_channels = 0;
+	if(player->audio_codec != NULL)
+		free(player->audio_codec);
+	player->audio_codec = NULL;
+	player->audio_rate = 0;
+	player->video_aspect = 0.0;
+	player->video_bitrate = 0;
+	if(player->video_codec != NULL)
+		free(player->video_codec);
+	player->video_codec = NULL;
+	player->video_fps = 0.0;
+	player->video_rate = 0;
+	player->album = -1;
+	player->artist = -1;
+	player->title = -1;
+	_player_set_progress(player, 0);
+	if(filename != NULL)
+		p = strdup(filename);
+	snprintf(buf, sizeof(buf), "%s%s%s", _("Media player"),
+			(filename != NULL) ? " - " : "", (filename != NULL)
+			? ((p != NULL) ? basename(p) : filename) : "");
+	free(p);
+	gtk_window_set_title(GTK_WINDOW(player->window), buf);
 }
 
 
