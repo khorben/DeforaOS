@@ -761,7 +761,10 @@ int player_open(Player * player, char const * filename)
 	}
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
-	player->paused = autoplay ? 0 : 1;
+	/* XXX avoid code duplication */
+	if((player->paused = autoplay ? 0 : 1) == 0 && player->timeout_id == 0)
+		player->timeout_id = g_timeout_add(500, _command_timeout,
+				player);
 	return 0;
 }
 
