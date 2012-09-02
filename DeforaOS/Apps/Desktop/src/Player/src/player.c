@@ -121,7 +121,11 @@ struct _Player
 	GtkWidget * me_window;
 	GtkWidget * me_album;
 	GtkWidget * me_artist;
+	GtkWidget * me_comment;
+	GtkWidget * me_genre;
 	GtkWidget * me_title;
+	GtkWidget * me_track;
+	GtkWidget * me_year;
 
 	/* playlist */
 	GtkWidget * pl_window;
@@ -1190,7 +1194,11 @@ static void _properties_reset(Player * player)
 {
 	gtk_label_set_text(GTK_LABEL(player->me_album), NULL);
 	gtk_label_set_text(GTK_LABEL(player->me_artist), NULL);
+	gtk_label_set_text(GTK_LABEL(player->me_comment), NULL);
+	gtk_label_set_text(GTK_LABEL(player->me_genre), NULL);
 	gtk_label_set_text(GTK_LABEL(player->me_title), NULL);
+	gtk_label_set_text(GTK_LABEL(player->me_track), NULL);
+	gtk_label_set_text(GTK_LABEL(player->me_year), NULL);
 }
 
 static void _properties_window(Player * player)
@@ -1218,8 +1226,20 @@ static void _properties_window(Player * player)
 	hbox = _properties_label(player, group, _("Artist: "),
 			&player->me_artist);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = _properties_label(player, group, _("Comment: "),
+			&player->me_comment);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = _properties_label(player, group, _("Genre: "),
+			&player->me_genre);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = _properties_label(player, group, _("Title: "),
 			&player->me_title);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = _properties_label(player, group, _("Track: "),
+			&player->me_track);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = _properties_label(player, group, _("Year: "),
+			&player->me_year);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
 }
@@ -1473,10 +1493,30 @@ static void _read_parse(Player * player, char const * buf)
 		str[sizeof(str) - 1] = '\0';
 		gtk_label_set_text(GTK_LABEL(player->me_artist), str);
 	}
+	else if(sscanf(buf, "ANS_META_COMMENT='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_comment), str);
+	}
+	else if(sscanf(buf, "ANS_META_GENRE='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_genre), str);
+	}
 	else if(sscanf(buf, "ANS_META_TITLE='%255[^'\n]\n", str) == 1)
 	{
 		str[sizeof(str) - 1] = '\0';
 		gtk_label_set_text(GTK_LABEL(player->me_title), str);
+	}
+	else if(sscanf(buf, "ANS_META_TRACK='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_track), str);
+	}
+	else if(sscanf(buf, "ANS_META_YEAR='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_year), str);
 	}
 	else if(sscanf(buf, "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
 		_player_set_progress(player, u32);
