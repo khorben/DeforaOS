@@ -104,6 +104,9 @@ struct _Player
 	GtkToolItem * tb_forward;
 	GtkToolItem * tb_next;
 	GtkWidget * progress;
+#if GTK_CHECK_VERSION(2, 12, 0)
+	GtkWidget * tb_volume;
+#endif
 	GtkToolItem * tb_fullscreen;
 #ifndef EMBEDDED
 	GtkWidget * statusbar;
@@ -365,6 +368,15 @@ Player * player_new(void)
 	_player_set_progress(player, 0);
 	gtk_container_add(GTK_CONTAINER(toolitem), player->progress);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	player->tb_volume = gtk_volume_button_new();
+	gtk_scale_button_set_value(GTK_SCALE_BUTTON(player->tb_volume), 0.5);
+	g_signal_connect_swapped(player->tb_volume, "value-changed", G_CALLBACK(
+				on_volume_changed), player);
+	toolitem = gtk_tool_item_new();
+	gtk_container_add(GTK_CONTAINER(toolitem), player->tb_volume);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif
 	widget = gtk_image_new_from_icon_name("stock_fullscreen",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	player->tb_fullscreen = gtk_tool_button_new(widget, _("Fullscreen"));
@@ -448,8 +460,8 @@ static void _new_mplayer(Player * player)
 	char const buf[] = "pausing loadfile " PLAYER_SPLASH " 0\nframe_step\n";
 	char wid[16];
 	char * argv[] = { "mplayer", "-slave", "-wid", NULL, "-quiet",
-		"-idle", "-framedrop", "-softvol", "-identify",
-		"-noconsolecontrols", "-nomouseinput", NULL };
+		"-idle", "-framedrop", "-softvol", "-softvol-max", "200",
+		"-identify", "-noconsolecontrols", "-nomouseinput", NULL };
 
 	argv[3] = wid;
 	_player_reset(player, NULL);
@@ -580,6 +592,25 @@ void player_set_size(Player * player, int width, int height)
 	gtk_widget_set_size_request(player->view_window, width, height);
 	player->width = width;
 	player->height = height;
+}
+
+
+/* player_set_volume */
+void player_set_volume(Player * player, gdouble volume)
+{
+	char buf[256];
+	int len;
+
+#if GTK_CHECK_VERSION(2, 12, 0)
+	if(!(volume >= 0.0 && volume <= 1.0))
+	{
+		volume = gtk_scale_button_get_value(GTK_SCALE_BUTTON(
+					player->tb_volume));
+	}
+#endif
+	len = snprintf(buf, sizeof(buf), "volume %u 1\n",
+			(unsigned)(volume * 100.0));
+	_player_command(player, buf, len);
 }
 
 

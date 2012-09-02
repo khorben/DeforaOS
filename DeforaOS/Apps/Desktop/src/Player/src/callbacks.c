@@ -123,6 +123,15 @@ void on_help_about(gpointer data)
 }
 
 
+/* on_forward */
+void on_forward(gpointer data)
+{
+	Player * player = data;
+
+	player_forward(player);
+}
+
+
 /* on_fullscreen */
 void on_fullscreen(gpointer data)
 {
@@ -150,21 +159,21 @@ void on_open(gpointer data)
 }
 
 
-/* on_properties */
-void on_properties(gpointer data)
-{
-	Player * player = data;
-
-	player_show_properties(player, TRUE);
-}
-
-
 /* on_preferences */
 void on_preferences(gpointer data)
 {
 	Player * player = data;
 
 	player_show_preferences(player, TRUE);
+}
+
+
+/* on_properties */
+void on_properties(gpointer data)
+{
+	Player * player = data;
+
+	player_show_properties(player, TRUE);
 }
 
 
@@ -213,12 +222,13 @@ void on_stop(gpointer data)
 }
 
 
-/* on_forward */
-void on_forward(gpointer data)
+/* on_volume_changed */
+void on_volume_changed(gpointer data)
 {
 	Player * player = data;
 
-	player_forward(player);
+	/* XXX ugly hack */
+	player_set_volume(player, 0.0 / 0.0);
 }
 
 

@@ -47,6 +47,7 @@ void player_delete(Player * player);
 gboolean player_get_fullscreen(Player * player);
 void player_set_fullscreen(Player * player, gboolean fullscreen);
 void player_set_size(Player * player, int width, int height);
+void player_set_volume(Player * player, gdouble volume);
 
 /* useful */
 void player_about(Player * player);

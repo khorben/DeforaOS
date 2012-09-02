@@ -54,6 +54,7 @@ void on_pause(gpointer data);
 void on_stop(gpointer data);
 void on_forward(gpointer data);
 void on_next(gpointer data);
+void on_volume_changed(gpointer data);
 void on_fullscreen(gpointer data);
 
 /* view */
