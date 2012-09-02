@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Player 0.1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-02 03:27+0200\n"
+"POT-Creation-Date: 2012-09-02 12:57+0200\n"
 "PO-Revision-Date: 2010-04-23 03:44+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -104,7 +104,7 @@ msgstr "Avance rapide"
 msgid "Next"
 msgstr "Suivant"
 
-#: ../src/player.c:330 ../src/player.c:1353
+#: ../src/player.c:330 ../src/player.c:1376
 msgid "Media player"
 msgstr "Lecteur média"
 
@@ -140,78 +140,82 @@ msgstr "Pierre Pronchery <khorben@defora.org>"
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/player.c:745
+#: ../src/player.c:783
 msgid "Open file..."
 msgstr "Ouvrir fichier..."
 
-#: ../src/player.c:751
+#: ../src/player.c:790
+msgid "Video and audio files"
+msgstr "Fichiers vidéo et audio"
+
+#: ../src/player.c:798
 msgid "Video files"
 msgstr "Fichiers vidéo"
 
-#: ../src/player.c:774
+#: ../src/player.c:804
 msgid "Audio files"
 msgstr "Fichiers audio"
 
-#: ../src/player.c:786
+#: ../src/player.c:809
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: ../src/player.c:870
+#: ../src/player.c:893
 msgid "Unknown album"
 msgstr "Album inconnu"
 
-#: ../src/player.c:871
+#: ../src/player.c:894
 msgid "Unknown artist"
 msgstr "Artiste inconnu"
 
-#: ../src/player.c:872
+#: ../src/player.c:895
 msgid "Unknown title"
 msgstr "Titre inconnu"
 
-#: ../src/player.c:884
+#: ../src/player.c:907
 msgid "Add file(s)..."
 msgstr "Ajouter des fichiers..."
 
-#: ../src/player.c:927
+#: ../src/player.c:950
 msgid "Open playlist..."
 msgstr "Ouvrir liste de lecture..."
 
-#: ../src/player.c:1053
+#: ../src/player.c:1076
 msgid "Media player preferences"
 msgstr "Préférences du lecteur média"
 
-#: ../src/player.c:1070
+#: ../src/player.c:1093
 msgid "_Automatically play files when opened"
 msgstr "Lire les fichiers _automatiquement après ouverture"
 
-#: ../src/player.c:1153
+#: ../src/player.c:1176
 msgid "Properties of "
 msgstr "_Propriétés de "
 
-#: ../src/player.c:1223
+#: ../src/player.c:1246
 msgid "Album: "
 msgstr "Album : "
 
-#: ../src/player.c:1226
+#: ../src/player.c:1249
 msgid "Artist: "
 msgstr "Artiste : "
 
-#: ../src/player.c:1229
+#: ../src/player.c:1252
 msgid "Comment: "
 msgstr "Commentaire : "
 
-#: ../src/player.c:1232
+#: ../src/player.c:1255
 msgid "Genre: "
 msgstr "Genre : "
 
-#: ../src/player.c:1235
+#: ../src/player.c:1258
 msgid "Title: "
 msgstr "Titre : "
 
-#: ../src/player.c:1238
+#: ../src/player.c:1261
 msgid "Track: "
 msgstr "Piste : "
 
-#: ../src/player.c:1241
+#: ../src/player.c:1264
 msgid "Year: "
 msgstr "Année : "
