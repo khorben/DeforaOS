@@ -91,6 +91,7 @@ struct _Player
 	guint timeout_id;			/* timeout source id	*/
 
 	/* widgets */
+	PangoFontDescription * bold;
 	GtkWidget * window;
 	GtkWidget * menubar;
 	GtkWidget * view;
@@ -118,6 +119,8 @@ struct _Player
 
 	/* properties */
 	GtkWidget * me_window;
+	GtkWidget * me_album;
+	GtkWidget * me_artist;
 	GtkWidget * me_title;
 
 	/* playlist */
@@ -312,6 +315,8 @@ Player * player_new(void)
 	player->timeout_id = 0;
 	/* widgets */
 	group = gtk_accel_group_new();
+	player->bold = pango_font_description_new();
+	pango_font_description_set_weight(player->bold, PANGO_WEIGHT_BOLD);
 	player->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(player->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(player->window), 512, 384);
@@ -522,6 +527,7 @@ void player_delete(Player * player)
 		if(i == 4)
 			kill(player->pid, SIGTERM);
 	}
+	pango_font_description_free(player->bold);
 	config_delete(player->config);
 	object_delete(player);
 }
@@ -1119,6 +1125,8 @@ static void _preferences_on_ok(gpointer data)
 
 /* player_show_properties */
 static void _properties_commands(Player * player);
+static GtkWidget * _properties_label(Player * player, GtkSizeGroup * group,
+		char const * label, GtkWidget ** widget);
 static void _properties_reset(Player * player);
 static void _properties_window(Player * player);
 
@@ -1153,22 +1161,45 @@ void player_show_properties(Player * player, gboolean show)
 
 static void _properties_commands(Player * player)
 {
-	char const buf[] = "get_meta_title\n";
+	char const buf[] = "get_meta_album\nget_meta_artist\nget_meta_comment\n"
+		"get_meta_genre\nget_meta_title\nget_meta_track\n"
+		"get_meta_year\n";
 
 	_player_command(player, buf, sizeof(buf) - 1);
 }
 
+static GtkWidget * _properties_label(Player * player, GtkSizeGroup * group,
+		char const * label, GtkWidget ** widget)
+{
+	GtkWidget * hbox;
+
+	hbox = gtk_hbox_new(FALSE, 4);
+	*widget = gtk_label_new(label);
+	gtk_widget_modify_font(*widget, player->bold);
+	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, *widget);
+	gtk_box_pack_start(GTK_BOX(hbox), *widget, FALSE, TRUE, 0);
+	*widget = gtk_label_new(NULL);
+	gtk_label_set_ellipsize(GTK_LABEL(*widget), PANGO_ELLIPSIZE_END);
+	gtk_misc_set_alignment(GTK_MISC(*widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), *widget, TRUE, TRUE, 0);
+	return hbox;
+}
+
 static void _properties_reset(Player * player)
 {
+	gtk_label_set_text(GTK_LABEL(player->me_album), NULL);
+	gtk_label_set_text(GTK_LABEL(player->me_artist), NULL);
 	gtk_label_set_text(GTK_LABEL(player->me_title), NULL);
 }
 
 static void _properties_window(Player * player)
 {
+	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
-	GtkWidget * label;
 
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	player->me_window = gtk_dialog_new_with_buttons(NULL,
 			GTK_WINDOW(player->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1180,12 +1211,15 @@ static void _properties_window(Player * player)
 	vbox = GTK_DIALOG(player->me_window)->vbox;
 #endif
 	gtk_box_set_spacing(GTK_BOX(vbox), 4);
-	/* title */
-	hbox = gtk_hbox_new(FALSE, 4);
-	label = gtk_label_new(_("Title: "));
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-	player->me_title = gtk_label_new(NULL);
-	gtk_box_pack_start(GTK_BOX(hbox), player->me_title, TRUE, TRUE, 0);
+	/* meta-data */
+	hbox = _properties_label(player, group, _("Album: "),
+			&player->me_album);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = _properties_label(player, group, _("Artist: "),
+			&player->me_artist);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = _properties_label(player, group, _("Title: "),
+			&player->me_title);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
 }
@@ -1428,7 +1462,18 @@ static void _read_parse(Player * player, char const * buf)
 	gdouble db;
 	char str[256];
 
-	if(sscanf(buf, "ANS_META_TITLE='%255[^'\n]\n", str) == 1)
+	/* FIXME right-trim the meta-data (whitespaces) */
+	if(sscanf(buf, "ANS_META_ALBUM='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_album), str);
+	}
+	else if(sscanf(buf, "ANS_META_ARTIST='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_artist), str);
+	}
+	else if(sscanf(buf, "ANS_META_TITLE='%255[^'\n]\n", str) == 1)
 	{
 		str[sizeof(str) - 1] = '\0';
 		gtk_label_set_text(GTK_LABEL(player->me_title), str);
