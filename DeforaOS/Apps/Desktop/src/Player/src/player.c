@@ -87,6 +87,7 @@ struct _Player
 
 	/* callbacks */
 	guint read_id;				/* pipe read source id	*/
+	guint write_id;				/* pipe write source id	*/
 	guint timeout_id;			/* timeout source id	*/
 
 	/* widgets */
@@ -114,6 +115,10 @@ struct _Player
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_autoplay;
+
+	/* properties */
+	GtkWidget * me_window;
+	GtkWidget * me_title;
 
 	/* playlist */
 	GtkWidget * pl_window;
@@ -303,6 +308,7 @@ Player * player_new(void)
 	player->buf_len = 0;
 	/* callbacks */
 	player->read_id = 0;
+	player->write_id = 0;
 	player->timeout_id = 0;
 	/* widgets */
 	group = gtk_accel_group_new();
@@ -416,6 +422,8 @@ Player * player_new(void)
 	player->ab_window = NULL;
 	/* preferences window */
 	player->pr_window = NULL;
+	/* properties window */
+	player->me_window = NULL;
 #ifdef DEBUG
 	gtk_widget_show_all(player->pl_window);
 #else
@@ -494,6 +502,8 @@ void player_delete(Player * player)
 
 	if(player->read_id != 0)
 		g_source_remove(player->read_id);
+	if(player->write_id != 0)
+		g_source_remove(player->write_id);
 	if(player->timeout_id != 0)
 		g_source_remove(player->timeout_id);
 	g_io_channel_write(player->channel[1], cmd, sizeof(cmd) - 1, &written);
@@ -1108,33 +1118,76 @@ static void _preferences_on_ok(gpointer data)
 
 
 /* player_show_properties */
+static void _properties_commands(Player * player);
+static void _properties_reset(Player * player);
+static void _properties_window(Player * player);
+
 void player_show_properties(Player * player, gboolean show)
 {
-	GtkWidget * dialog;
-	GtkWidget * vbox;
 	char * filename;
 	char buf[256];
 
 	if(show == FALSE)
+	{
+		if(player->me_window != NULL)
+			gtk_widget_hide(player->me_window);
 		return;
+	}
+	else if(player->me_window == NULL)
+		_properties_window(player);
+	/* set the window title */
 	if((filename = _player_get_filename(player)) == NULL)
 		return;
 	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(
 				filename));
 	free(filename);
-	dialog = gtk_dialog_new_with_buttons(buf, GTK_WINDOW(player->window),
+	gtk_window_set_title(GTK_WINDOW(player->me_window), buf);
+	/* reset the properties */
+	_properties_reset(player);
+	/* obtain the properties */
+	_properties_commands(player);
+	/* run commands */
+	gtk_dialog_run(GTK_DIALOG(player->me_window));
+	gtk_widget_hide(player->me_window);
+}
+
+static void _properties_commands(Player * player)
+{
+	char const buf[] = "get_meta_title\n";
+
+	_player_command(player, buf, sizeof(buf) - 1);
+}
+
+static void _properties_reset(Player * player)
+{
+	gtk_label_set_text(GTK_LABEL(player->me_title), NULL);
+}
+
+static void _properties_window(Player * player)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * label;
+
+	player->me_window = gtk_dialog_new_with_buttons(NULL,
+			GTK_WINDOW(player->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
-	gtk_window_set_default_size(GTK_WINDOW(dialog), 300, 200);
+	gtk_window_set_default_size(GTK_WINDOW(player->me_window), 300, 200);
 #if GTK_CHECK_VERSION(2, 14, 0)
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(player->pr_window));
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(player->me_window));
 #else
-	vbox = GTK_DIALOG(player->pr_window)->vbox;
+	vbox = GTK_DIALOG(player->me_window)->vbox;
 #endif
 	gtk_box_set_spacing(GTK_BOX(vbox), 4);
-	/* FIXME implement */
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
+	/* title */
+	hbox = gtk_hbox_new(FALSE, 4);
+	label = gtk_label_new(_("Title: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	player->me_title = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(hbox), player->me_title, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
 }
 
 
@@ -1270,7 +1323,9 @@ static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 	player->buf = p;
 	memcpy(&p[player->buf_len], cmd, cmd_len);
 	player->buf_len += cmd_len;
-	g_io_add_watch(player->channel[1], G_IO_OUT, _command_write, player);
+	if(player->write_id == 0)
+		player->write_id = g_io_add_watch(player->channel[1], G_IO_OUT,
+				_command_write, player);
 	return 0;
 }
 
@@ -1373,12 +1428,18 @@ static void _read_parse(Player * player, char const * buf)
 	gdouble db;
 	char str[256];
 
-	if(sscanf(buf, "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
+	if(sscanf(buf, "ANS_META_TITLE='%255[^'\n]\n", str) == 1)
+	{
+		str[sizeof(str) - 1] = '\0';
+		gtk_label_set_text(GTK_LABEL(player->me_title), str);
+	}
+	else if(sscanf(buf, "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
 		_player_set_progress(player, u32);
 	else if(sscanf(buf, "ID_AUDIO_BITRATE=%u\n", &u32) == 1)
 		player->audio_bitrate = u32;
-	else if(sscanf(buf, "ID_AUDIO_CODEC=%255s", str) == 1)
+	else if(sscanf(buf, "ID_AUDIO_CODEC=%255[^\n]", str) == 1)
 	{
+		str[sizeof(str) - 1] = '\0';
 		if(player->audio_codec != NULL)
 			free(player->audio_codec);
 		player->audio_codec = strdup(str);
@@ -1389,6 +1450,7 @@ static void _read_parse(Player * player, char const * buf)
 		player->audio_rate = u32;
 	else if(sscanf(buf, "ID_CLIP_INFO_NAME%u=%255s", &u32, str) == 2)
 	{
+		str[sizeof(str) - 1] = '\0';
 		if(strcmp(str, "Album") == 0)
 			player->album = u32;
 		else if(strcmp(str, "Artist") == 0)
@@ -1398,6 +1460,7 @@ static void _read_parse(Player * player, char const * buf)
 	}
 	else if(sscanf(buf, "ID_CLIP_INFO_VALUE%u=%255[^\n]", &u32, str) == 2)
 	{
+		str[sizeof(str) - 1] = '\0';
 		if(player->album >= 0 && (unsigned)player->album == u32)
 			_player_set_metadata(player, PL_COL_ALBUM, str);
 		else if(player->artist >= 0 && (unsigned)player->artist == u32)
@@ -1411,8 +1474,9 @@ static void _read_parse(Player * player, char const * buf)
 		player->video_aspect = db;
 	else if(sscanf(buf, "ID_VIDEO_BITRATE=%u\n", &u32) == 1)
 		player->video_bitrate = u32;
-	else if(sscanf(buf, "ID_VIDEO_CODEC=%255s", str) == 1)
+	else if(sscanf(buf, "ID_VIDEO_CODEC=%255[^\n]", str) == 1)
 	{
+		str[sizeof(str) - 1] = '\0';
 		if(player->video_codec != NULL)
 			free(player->video_codec);
 		player->video_codec = strdup(str);
@@ -1455,6 +1519,7 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 	{
 		player_error(player, "", 0); /* FIXME */
 		gtk_main_quit();
+		player->write_id = 0;
 		return FALSE; /* FIXME report error */
 	}
 	if(g_io_channel_write(source, player->buf, player->buf_len, &written)
@@ -1462,6 +1527,7 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 	{
 		player_error(player, "", 0); /* FIXME */
 		gtk_main_quit();
+		player->write_id = 0;
 		return FALSE; /* FIXME report error */
 	}
 #ifdef DEBUG
@@ -1470,7 +1536,10 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 	player->buf_len -= written;
 	memmove(player->buf, &player->buf[written], player->buf_len);
 	if(player->buf_len == 0)
+	{
+		player->write_id = 0;
 		return FALSE;
+	}
 	if((p = realloc(player->buf, player->buf_len)) != NULL)
 		player->buf = p;
 	return TRUE;
