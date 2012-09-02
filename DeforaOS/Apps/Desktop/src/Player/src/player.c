@@ -157,6 +157,7 @@ static const DesktopMenu _player_menu_file[] =
 {
 	{ N_("_Open..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_CONTROL_MASK, GDK_KEY_O },
+	{ N_("Open _URL..."), G_CALLBACK(on_file_open_url), NULL, 0, 0 },
 	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
 		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return },
@@ -275,7 +276,6 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 /* public */
 /* functions */
 /* player_new */
-static int _player_error(char const * message, int ret);
 static void _new_mplayer(Player * player);
 static void _new_column_text(GtkWidget * view, char const * title, int id);
 
@@ -848,6 +848,60 @@ int player_open_dialog(Player * player)
 		return 1;
 	ret = player_open(player, filename);
 	g_free(filename);
+	return ret;
+}
+
+
+/* player_open_url */
+int player_open_url(Player * player, char const * url)
+{
+	if(url == NULL)
+		return player_open_url_dialog(player);
+	return player_open(player, url);
+}
+
+
+/* player_open_url_dialog */
+int player_open_url_dialog(Player * player)
+{
+	int ret = 0;
+	GtkWidget * dialog;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * label;
+	GtkWidget * entry;
+	char const * p;
+	char * url = NULL;
+
+	dialog = gtk_dialog_new_with_buttons(_("Open URL..."),
+			GTK_WINDOW(player->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else
+	vbox = GTK_DIALOG(dialog)->vbox;
+#endif
+	gtk_box_set_spacing(GTK_BOX(vbox), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	label = gtk_label_new(_("URL: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+	entry = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+	{
+		p = gtk_entry_get_text(GTK_ENTRY(entry));
+		if((url = strdup(p)) == NULL)
+			ret = -_player_error("strdup", 1);
+	}
+	gtk_widget_destroy(dialog);
+	if(url == NULL)
+		return ret;
+	ret = player_open(player, url);
+	free(url);
 	return ret;
 }
 

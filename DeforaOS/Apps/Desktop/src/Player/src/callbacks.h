@@ -27,6 +27,7 @@ void on_player_removed(gpointer data);
 
 /* file menu */
 void on_file_open(gpointer data);
+void on_file_open_url(gpointer data);
 void on_file_properties(gpointer data);
 void on_file_close(gpointer data);
 

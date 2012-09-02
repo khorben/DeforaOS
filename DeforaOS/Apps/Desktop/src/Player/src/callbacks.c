@@ -69,6 +69,15 @@ void on_file_open(gpointer data)
 }
 
 
+/* on_file_open_url */
+void on_file_open_url(gpointer data)
+{
+	Player * player = data;
+
+	player_open_url_dialog(player);
+}
+
+
 /* on_file_properties */
 void on_file_properties(gpointer data)
 {
