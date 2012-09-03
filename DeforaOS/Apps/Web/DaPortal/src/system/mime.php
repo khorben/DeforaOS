@@ -25,8 +25,7 @@ class Mime
 	//Mime::getIcon
 	static public function getIcon($engine, $filename, $size = 48)
 	{
-		//FIXME no longer hardcode the icon theme
-		$default = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
+		$default = 'icons/'.Mime::$iconpath.'/'.$size.'x'.$size
 			.'/mimetypes/gtk-file.png';
 
 		if(Mime::init($engine) === FALSE)
@@ -40,7 +39,7 @@ class Mime
 	//Mime::getIconByType
 	static public function getIconByType($engine, $type, $size = 48)
 	{
-		$default = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size
+		$default = 'icons/'.Mime::$iconpath.'/'.$size.'x'.$size
 			.'/mimetypes/gtk-file.png';
 		$from = array('application/', 'text/', 'video/');
 		$to = array('application-', 'text-', 'video-');
@@ -58,7 +57,7 @@ class Mime
 			$icon = str_replace($from, $to, $type);
 			$icon = 'mimetypes/gnome-mime-'.$icon;
 		}
-		$icon = 'icons/gnome/gnome-icon-theme/'.$size.'x'.$size.'/'
+		$icon = 'icons/'.Mime::$iconpath.'/'.$size.'x'.$size.'/'
 			.$icon.'.png';
 		return $icon;
 	}
@@ -81,6 +80,7 @@ class Mime
 	//private
 	//static
 	//properties
+	static private $iconpath = FALSE;
 	static private $types = FALSE;
 
 
@@ -88,10 +88,36 @@ class Mime
 	//Mime::init
 	static private function init($engine)
 	{
+		$ret = TRUE;
+
+		if(Mime::$types === FALSE)
+			$ret = Mime::_init_types($engine);
+		if(Mime::$iconpath === FALSE)
+			Mime::_init_iconpath($engine);
+		return $ret;
+	}
+
+	static private function _init_iconpath($engine)
+	{
 		global $config;
 
-		if(Mime::$types !== FALSE)
-			return;
+		$theme = $config->getVariable(FALSE, 'icontheme');
+		switch($theme)
+		{
+			case 'Tango':
+				Mime::$iconpath = 'Tango/Tango';
+				break;
+			case 'gnome':
+			default:
+				Mime::$iconpath = 'gnome/gnome-icon-theme';
+				break;
+		}
+	}
+
+	static private function _init_types($engine)
+	{
+		global $config;
+
 		Mime::$types = array();
 		if(($globs = $config->getVariable('mime', 'globs')) === FALSE)
 		{
