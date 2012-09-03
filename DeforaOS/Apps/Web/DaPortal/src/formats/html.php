@@ -159,7 +159,7 @@ class HTMLFormat extends FormatElements
 		//FIXME emit a (debugging) warning if the theme is not readable?
 		$this->renderTabs();
 		$this->tag('style', FALSE, FALSE, array('type' => 'text/css'),
-			"@import url('icons/$icontheme.css')");
+			"@import url('icons/$icontheme.css');");
 	}
 
 	private function _render_theme($page)
