@@ -105,6 +105,7 @@ class HTMLFormat extends FormatElements
 		$this->_render_title($page);
 		$this->_render_base($page);
 		$this->_render_theme($page);
+		$this->_render_icontheme($page);
 		$this->_render_favicon($page);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
@@ -146,6 +147,19 @@ class HTMLFormat extends FormatElements
 		$this->renderTabs();
 		$this->tag('link', FALSE, FALSE, array('rel' => 'shortcut icon',
 					'href' => $favicon));
+	}
+
+	private function _render_icontheme($page)
+	{
+		global $config;
+
+		if(($icontheme = $config->getVariable(FALSE, 'icontheme'))
+				=== FALSE)
+			return;
+		//FIXME emit a (debugging) warning if the theme is not readable?
+		$this->renderTabs();
+		$this->tag('style', FALSE, FALSE, array('type' => 'text/css'),
+			"@import url('icons/$icontheme.css')");
 	}
 
 	private function _render_theme($page)
