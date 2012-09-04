@@ -169,7 +169,7 @@ CREATE TABLE daportal_bug (
 );
 CREATE TABLE daportal_bug_reply (
 	bug_reply_id SERIAL PRIMARY KEY,
-	content_id INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	content_id INTEGER UNIQUE NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
 	bug_id INTEGER NOT NULL REFERENCES daportal_bug (bug_id) ON DELETE CASCADE,
 	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented', 'Re-opened')),
 	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')),
