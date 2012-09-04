@@ -331,7 +331,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('category', '0');
 /* module: download */
 CREATE TABLE daportal_download (
 	download_id INTEGER PRIMARY KEY,
-	content_id INTEGER NOT NULL UNIQUE,
+	content_id INTEGER UNIQUE NOT NULL,
 	parent INTEGER,
 	mode SMALLINT DEFAULT '420',
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
