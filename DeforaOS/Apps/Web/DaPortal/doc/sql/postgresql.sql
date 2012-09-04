@@ -276,12 +276,12 @@ INSERT INTO daportal_module (name, enabled) VALUES ('translate', '0');
 
 /* module: blog */
 CREATE TABLE daportal_blog_user (
-	blog_user_id INTEGER NOT NULL REFERENCES daportal_content (content_id),
+	blog_user_id INTEGER UNIQUE NOT NULL REFERENCES daportal_user (user_id),
 	theme VARCHAR(255)
 );
 
 CREATE TABLE daportal_blog_content (
-	blog_content_id INTEGER REFERENCES daportal_content (content_id),
+	blog_content_id INTEGER UNIQUE REFERENCES daportal_content (content_id),
 	comment BOOLEAN DEFAULT FALSE
 );
 
