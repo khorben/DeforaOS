@@ -68,7 +68,7 @@ INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('a
 
 CREATE TABLE daportal_user_register (
 	user_register_id SERIAL PRIMARY KEY,
-	user_id INTEGER UNIQUE REFERENCES daportal_user (user_id) ON DELETE CASCADE,
+	user_id INTEGER UNIQUE NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE,
 	token VARCHAR(255) UNIQUE NOT NULL,
 	"timestamp" TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -78,7 +78,7 @@ CREATE INDEX daportal_user_register_token_index ON daportal_user_register (token
 
 CREATE TABLE daportal_user_reset (
 	user_reset_id SERIAL PRIMARY KEY,
-	user_id INTEGER UNIQUE REFERENCES daportal_user (user_id) ON DELETE CASCADE,
+	user_id INTEGER UNIQUE NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE,
 	token VARCHAR(255) UNIQUE NOT NULL,
 	"timestamp" TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -115,8 +115,8 @@ INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
 
 /* module: comment */
 CREATE TABLE daportal_comment (
-	comment_id INTEGER UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
-	parent INTEGER REFERENCES daportal_content (content_id) ON DELETE CASCADE
+	comment_id INTEGER UNIQUE NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	parent INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('comment', '0');
@@ -134,7 +134,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('top', '0');
 
 /* module: project */
 CREATE TABLE daportal_project (
-	project_id INTEGER UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	project_id INTEGER UNIQUE NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
 	synopsis VARCHAR(255) NOT NULL,
 	cvsroot VARCHAR(255) NOT NULL
 );
@@ -160,7 +160,7 @@ CREATE TABLE daportal_project_user (
 
 CREATE TABLE daportal_bug (
 	bug_id SERIAL PRIMARY KEY,
-	content_id INTEGER UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	content_id INTEGER UNIQUE NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
 	project_id INTEGER REFERENCES daportal_project (project_id) ON DELETE CASCADE,
 	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented', 'Re-opened')) NOT NULL DEFAULT 'New',
 	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')) NOT NULL,
@@ -281,7 +281,7 @@ CREATE TABLE daportal_blog_user (
 );
 
 CREATE TABLE daportal_blog_content (
-	blog_content_id INTEGER UNIQUE REFERENCES daportal_content (content_id),
+	blog_content_id INTEGER UNIQUE NOT NULL REFERENCES daportal_content (content_id),
 	comment BOOLEAN DEFAULT FALSE
 );
 
