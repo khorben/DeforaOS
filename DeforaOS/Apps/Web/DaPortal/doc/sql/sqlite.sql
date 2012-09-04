@@ -149,7 +149,7 @@ BEGIN
 END;
 CREATE TABLE daportal_content_lang (
 	content_lang_id INTEGER PRIMARY KEY,
-	content_id INTEGER,
+	content_id INTEGER NOT NULL,
 	lang_id VARCHAR(2),
 	title VARCHAR(255),
 	content TEXT,
@@ -164,7 +164,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
 
 /* module: comment */
 CREATE TABLE daportal_comment (
-	comment_id INTEGER,
+	comment_id INTEGER UNIQUE NOT NULL,
 	parent INTEGER,
 	FOREIGN KEY (comment_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
@@ -183,7 +183,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('top', '0');
 
 /* module: project */
 CREATE TABLE daportal_project (
-	project_id INTEGER,
+	project_id INTEGER UNIQUE NOT NULL,
 	synopsis VARCHAR(255) NOT NULL,
 	cvsroot VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
@@ -242,7 +242,7 @@ INSERT INTO daportal_bug_enum_priority (name) VALUES ('Low');
 
 CREATE TABLE daportal_bug (
 	bug_id INTEGER PRIMARY KEY,
-	content_id INTEGER,
+	content_id INTEGER UNIQUE NOT NULL,
 	project_id INTEGER,
 	state VARCHAR(255) DEFAULT 'New',
 	type VARCHAR(255),
@@ -283,8 +283,8 @@ INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Low');
 
 CREATE TABLE daportal_bug_reply (
 	bug_reply_id INTEGER PRIMARY KEY,
-	content_id INTEGER,
-	bug_id INTEGER,
+	content_id INTEGER UNIQUE NOT NULL,
+	bug_id INTEGER NOT NULL,
 	state VARCHAR(255),
 	type VARCHAR(255),
 	priority VARCHAR(255),
@@ -301,7 +301,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
 
 /* module: probe */
 CREATE TABLE daportal_probe_host (
-	host_id INTEGER,
+	host_id INTEGER UNIQUE NOT NULL,
 	FOREIGN KEY (host_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('probe', '0');
@@ -309,7 +309,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('probe', '0');
 
 /* module: bookmark */
 CREATE TABLE daportal_bookmark (
-	bookmark_id INTEGER,
+	bookmark_id INTEGER UNIQUE NOT NULL,
 	url VARCHAR(256),
 	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
 );
@@ -331,7 +331,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('category', '0');
 /* module: download */
 CREATE TABLE daportal_download (
 	download_id INTEGER PRIMARY KEY,
-	content_id INTEGER NOT NULL,
+	content_id INTEGER NOT NULL UNIQUE,
 	parent INTEGER,
 	mode SMALLINT DEFAULT '420',
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
@@ -356,7 +356,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '0');
 INSERT INTO daportal_module (name, enabled) VALUES ('pki', '0');
 
 CREATE TABLE daportal_ca (
-	ca_id INTEGER,
+	ca_id INTEGER UNIQUE NOT NULL,
 	parent INTEGER DEFAULT NULL,
 	country VARCHAR(2),
 	state VARCHAR(255),
@@ -370,7 +370,7 @@ CREATE TABLE daportal_ca (
 );
 
 CREATE TABLE daportal_caclient (
-	caclient_id INTEGER,
+	caclient_id INTEGER UNIQUE NOT NULL,
 	parent INTEGER,
 	country VARCHAR(2),
 	state VARCHAR(255),
@@ -384,7 +384,7 @@ CREATE TABLE daportal_caclient (
 );
 
 CREATE TABLE daportal_caserver (
-	caserver_id INTEGER,
+	caserver_id INTEGER UNIQUE NOT NULL,
 	parent INTEGER,
 	country VARCHAR(2),
 	state VARCHAR(255),
@@ -408,13 +408,13 @@ INSERT INTO daportal_module (name, enabled) VALUES ('translate', '0');
 
 /* module: blog */
 CREATE TABLE daportal_blog_user (
-	blog_user_id INTEGER,
+	blog_user_id INTEGER UNIQUE NOT NULL,
 	theme VARCHAR(255),
-	FOREIGN KEY (blog_user_id) REFERENCES daportal_content (content_id)
+	FOREIGN KEY (blog_user_id) REFERENCES daportal_user (user_id)
 );
 
 CREATE TABLE daportal_blog_content (
-	blog_content_id INTEGER,
+	blog_content_id INTEGER UNIQUE NOT NULL,
 	comment BOOLEAN DEFAULT FALSE,
 	FOREIGN KEY (blog_content_id) REFERENCES daportal_content (content_id)
 );
