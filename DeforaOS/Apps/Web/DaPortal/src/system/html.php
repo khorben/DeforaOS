@@ -42,11 +42,9 @@ class HTML
 		HTML::$content = '';
 		//give it more chances to validate
 		$content = str_ireplace($from, $to, $content);
-		switch(HTML::$charset)
+		switch(strtolower(HTML::$charset))
 		{
-			case 'ISO-8859-1':
 			case 'iso-8859-1':
-			case 'ISO-8859-15':
 			case 'iso-8859-15':
 				//do not rely on input charset detection
 				$content = utf8_encode($content);
@@ -159,11 +157,9 @@ class HTML
 			return FALSE;
 		}
 		HTML::$valid = TRUE;
-		switch(HTML::$charset)
+		switch(strtolower(HTML::$charset))
 		{
-			case 'ISO-8859-1':
 			case 'iso-8859-1':
-			case 'ISO-8859-15':
 			case 'iso-8859-15':
 				//do not rely on input charset detection
 				$content = utf8_encode($content);
@@ -262,18 +258,14 @@ class HTML
 					'charset');
 		if($charset === FALSE)
 			$charset = HTML::$charset;
-		switch($charset)
+		switch(strtolower($charset))
 		{
 			case 'ascii':
-			case 'ASCII':
 				return xml_parser_create('US-ASCII');
-			case 'ISO-8859-1':
 			case 'iso-8859-1':
-			case 'ISO-8859-15':
 			case 'iso-8859-15':
 				return xml_parser_create('ISO-8859-1');
 			case 'utf-8':
-			case 'UTF-8':
 				return xml_parser_create('UTF-8');
 		}
 		return xml_parser_create('');
