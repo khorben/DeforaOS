@@ -876,8 +876,9 @@ int phone_dialer_append(Phone * phone, char character)
 #endif
 	if(phone->di_window == NULL)
 		return -1;
-	if((character < '0' || character > '9') && character != '*'
-			&& character != '+' && character != '#')
+	if((character < '0' || character > '9')
+			&& (character < 'A' || character > 'D')
+			&& character != '*' && character != '#')
 		return -1; /* ignore the error */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	len = strlen(text) + 2;

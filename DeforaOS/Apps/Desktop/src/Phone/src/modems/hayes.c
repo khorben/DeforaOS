@@ -562,6 +562,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_contact_delete },
 	{ MODEM_REQUEST_CONTACT_LIST,			"AT+CPBR=?",
 		_on_request_generic },
+	{ MODEM_REQUEST_DTMF_SEND,			NULL,
+		_on_request_generic },
 	{ MODEM_REQUEST_MESSAGE,			NULL,
 		_on_request_message },
 	{ MODEM_REQUEST_MESSAGE_DELETE,			NULL,
@@ -673,6 +675,7 @@ static char * _request_attention_connectivity(ModemPlugin * modem,
 static char * _request_attention_contact_delete(ModemPlugin * modem,
 		unsigned int id);
 static char * _request_attention_contact_list(ModemRequest * request);
+static char * _request_attention_dtmf_send(ModemRequest * request);
 static char * _request_attention_gprs(ModemPlugin * modem,
 		char const * username, char const * password);
 static char * _request_attention_message(ModemPlugin * modem, unsigned int id);
@@ -797,6 +800,8 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 		case MODEM_REQUEST_CONTACT_DELETE:
 			return _request_attention_contact_delete(modem,
 					request->contact_delete.id);
+		case MODEM_REQUEST_DTMF_SEND:
+			return _request_attention_dtmf_send(request);
 		case MODEM_REQUEST_MESSAGE:
 			return _request_attention_message(modem,
 					request->message.id);
@@ -951,6 +956,19 @@ static char * _request_attention_contact_list(ModemRequest * request)
 	if(list->to < list->from)
 		list->to = list->from;
 	snprintf(buf, sizeof(buf), "%s%u,%u", cmd, list->from, list->to);
+	return strdup(buf);
+}
+
+static char * _request_attention_dtmf_send(ModemRequest * request)
+{
+	const char cmd[] = "AT+VTS=";
+	char buf[32];
+	unsigned int dtmf = request->dtmf_send.dtmf;
+
+	if((dtmf < '0' || dtmf > '9') && (dtmf < 'A' || dtmf > 'D')
+			&& dtmf != '*' && dtmf != '#')
+		return NULL;
+	snprintf(buf, sizeof(buf), "%s%c", cmd, dtmf);
 	return strdup(buf);
 }
 
