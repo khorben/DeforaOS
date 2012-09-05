@@ -90,6 +90,7 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	Debug * debug;
 	GtkSizeGroup * group;
 	GtkWidget * vbox;
+	GtkWidget * notebook;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
@@ -106,8 +107,9 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	g_signal_connect_swapped(G_OBJECT(debug->window), "delete-event",
 			G_CALLBACK(_debug_on_closex), debug);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	vbox = gtk_vbox_new(FALSE, 4);
+	notebook = gtk_notebook_new();
 	/* status */
+	vbox = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Status:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -139,7 +141,10 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	debug->roaming = gtk_check_button_new_with_mnemonic("_Roaming");
 	gtk_box_pack_start(GTK_BOX(hbox), debug->roaming, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
+			gtk_label_new("Status"));
 	/* message */
+	vbox = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Number: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -192,7 +197,10 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 				_debug_on_message_send), debug);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
+			gtk_label_new("Messages"));
 	/* notification */
+	vbox = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Notification: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -209,7 +217,9 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 				_debug_on_notification), debug);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(debug->window), vbox);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
+			gtk_label_new("Notifications"));
+	gtk_container_add(GTK_CONTAINER(debug->window), notebook);
 	gtk_widget_show_all(debug->window);
 	return debug;
 }
