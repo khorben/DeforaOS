@@ -202,6 +202,9 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 		case MODEM_REQUEST_CONTACT_DELETE:
 			request.contact_delete.id = va_arg(ap, unsigned int);
 			break;
+		case MODEM_REQUEST_DTMF_SEND:
+			request.dtmf_send.dtmf = va_arg(ap, unsigned int);
+			break;
 		case MODEM_REQUEST_MESSAGE:
 		case MODEM_REQUEST_MESSAGE_DELETE:
 			request.message.id = va_arg(ap, unsigned int);

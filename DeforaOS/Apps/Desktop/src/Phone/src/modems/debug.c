@@ -344,6 +344,7 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 	ModemPluginHelper * helper = debug->helper;
 	ModemEvent event;
 	unsigned int u;
+	char buf[32];
 
 	if(request == NULL)
 		return -1;
@@ -379,6 +380,13 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 			debug->event_contact.contact.number
 				= request->contact_new.number;
 			helper->event(helper->modem, &debug->event_contact);
+			break;
+		case MODEM_REQUEST_DTMF_SEND:
+			u = request->dtmf_send.dtmf;
+			snprintf(buf, sizeof(buf), "Sending DTMF '%c'\n", u);
+			event.type = MODEM_EVENT_TYPE_NOTIFICATION;
+			event.notification.content = buf;
+			debug->helper->event(debug->helper->modem, &event);
 			break;
 		case MODEM_REQUEST_MESSAGE_DELETE:
 			event.type = MODEM_EVENT_TYPE_MESSAGE_DELETED;

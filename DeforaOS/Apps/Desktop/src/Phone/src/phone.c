@@ -172,6 +172,7 @@ struct _Phone
 	GtkWidget * ab_window;
 
 	/* call */
+	ModemCallStatus ca_status;
 	GtkWidget * ca_window;
 	GtkWidget * ca_name;
 	GtkWidget * ca_number;
@@ -445,6 +446,7 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
 	phone->en_method = MODEM_AUTHENTICATION_METHOD_NONE;
+	phone->ca_status = MODEM_CALL_STATUS_NONE;
 	phone->co_store = gtk_list_store_new(PHONE_CONTACT_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_UINT, GDK_TYPE_PIXBUF,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -877,7 +879,6 @@ int phone_dialer_append(Phone * phone, char character)
 	if((character < '0' || character > '9') && character != '*'
 			&& character != '+' && character != '#')
 		return -1; /* ignore the error */
-	/* FIXME if in a call send DTMF instead */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	len = strlen(text) + 2;
 	if((p = malloc(len)) == NULL)
@@ -885,6 +886,10 @@ int phone_dialer_append(Phone * phone, char character)
 	snprintf(p, len, "%s%c", text, character);
 	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), p);
 	free(p);
+	if(phone->ca_status == MODEM_CALL_STATUS_ACTIVE)
+		/* send a DTMF */
+		modem_request_type(phone->modem, MODEM_REQUEST_DTMF_SEND,
+				character);
 	return 0;
 }
 
@@ -4065,6 +4070,7 @@ static void _modem_event_call(Phone * phone, ModemEvent * event)
 	fprintf(stderr, "DEBUG: %s() %u %u\n", __func__, event->call.call_type,
 			event->call.status);
 #endif
+	phone->ca_status = event->call.status;
 	if(event->call.call_type != MODEM_CALL_TYPE_VOICE
 			|| event->call.number == NULL)
 		return; /* XXX ignore these for now */
