@@ -21,8 +21,12 @@
 #include <errno.h>
 #if defined(__linux__)
 # include <sys/sysinfo.h>
-#elif defined(__NetBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
 # include <sys/sysctl.h>
+# if defined(__FreeBSD__)
+#  include <sys/vmmeter.h>
+#  include <vm/vm_param.h>
+# endif
 #endif
 #include <libintl.h>
 #include "Panel.h"
@@ -45,7 +49,7 @@ static Memory * _memory_init(PanelAppletHelper * helper, GtkWidget ** widget);
 static void _memory_destroy(Memory * memory);
 
 /* callbacks */
-#if defined(__linux__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__linux__) || defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data);
 #endif
 
@@ -70,7 +74,7 @@ PanelAppletDefinition applet =
 /* memory_init */
 static Memory * _memory_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
-#if defined(__linux__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__linux__) || defined(__NetBSD__)
 	Memory * memory;
 	GtkWidget * ret;
 	PangoFontDescription * desc;
@@ -131,7 +135,7 @@ static gboolean _on_timeout(gpointer data)
 	gtk_range_set_value(GTK_RANGE(memory->scale), value);
 	return TRUE;
 }
-#elif defined(__NetBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data)
 {
 	Memory * memory = data;
