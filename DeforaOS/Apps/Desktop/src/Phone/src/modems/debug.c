@@ -37,12 +37,15 @@ typedef struct _ModemPlugin
 	GtkWidget * status;
 	GtkWidget * operator;
 	GtkWidget * roaming;
-	GtkWidget * number;
-	GtkWidget * folder;
-	GtkWidget * message;
+	GtkWidget * ca_number;
+	GtkWidget * ca_direction;
+	GtkWidget * me_number;
+	GtkWidget * me_folder;
+	GtkWidget * me_message;
 	GtkWidget * notification;
 
 	/* events */
+	ModemEvent event_call;
 	ModemEvent event_contact;
 	ModemEvent event_message;
 } Debug;
@@ -61,6 +64,7 @@ static void _debug_set_status(ModemPlugin * modem, char const * status);
 
 /* callbacks */
 static gboolean _debug_on_closex(gpointer data);
+static void _debug_on_call(gpointer data);
 static void _debug_on_message_send(gpointer data);
 static void _debug_on_notification(gpointer data);
 static void _debug_on_operator_set(gpointer data);
@@ -98,6 +102,7 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 		return NULL;
 	debug->helper = helper;
 	debug->source = 0;
+	memset(&debug->event_call, 0, sizeof(debug->event_call));
 	memset(&debug->event_contact, 0, sizeof(debug->event_contact));
 	memset(&debug->event_message, 0, sizeof(debug->event_message));
 	/* window */
@@ -143,15 +148,60 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
 			gtk_label_new("Status"));
-	/* message */
+	/* calls */
 	vbox = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Number: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	debug->number = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), debug->number, TRUE, TRUE, 0);
+	debug->ca_number = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), debug->ca_number, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Direction: ");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	debug->ca_direction = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->ca_direction), NULL,
+			"Incoming");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->ca_direction), NULL,
+			"Outgoing");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->ca_direction), NULL,
+			"Established");
+#else
+	debug->ca_direction = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->ca_direction),
+			"Incoming");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->ca_direction),
+			"Outgoing");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->ca_direction),
+			"Established");
+#endif
+	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->ca_direction), 1);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->ca_direction, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_button_new_with_label("Call");
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"call-start", GTK_ICON_SIZE_BUTTON));
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_debug_on_call), debug);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
+			gtk_label_new("Calls"));
+	/* messages */
+	vbox = gtk_vbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Number: ");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	debug->me_number = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), debug->me_number, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Folder: ");
@@ -159,35 +209,35 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
-	debug->folder = gtk_combo_box_text_new();
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+	debug->me_folder = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->me_folder), NULL,
 			"Unknown");
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->me_folder), NULL,
 			"Inbox");
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->me_folder), NULL,
 			"Sent");
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->me_folder), NULL,
 			"Drafts");
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->folder), NULL,
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->me_folder), NULL,
 			"Trash");
 #else
-	debug->folder = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Unknown");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Inbox");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Sent");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Drafts");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->folder), "Trash");
+	debug->me_folder = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->me_folder), "Unknown");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->me_folder), "Inbox");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->me_folder), "Sent");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->me_folder), "Drafts");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->me_folder), "Trash");
 #endif
-	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->folder), 1);
-	gtk_box_pack_start(GTK_BOX(hbox), debug->folder, TRUE, TRUE, 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->me_folder), 1);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->me_folder, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
-	debug->message = gtk_text_view_new();
-	gtk_container_add(GTK_CONTAINER(widget), debug->message);
+	debug->me_message = gtk_text_view_new();
+	gtk_container_add(GTK_CONTAINER(widget), debug->me_message);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_with_label("Send");
@@ -365,6 +415,45 @@ static gboolean _debug_on_closex(gpointer data)
 }
 
 
+/* debug_on_call */
+static void _debug_on_call(gpointer data)
+{
+	ModemPlugin * modem = data;
+	Debug * debug = modem;
+	int d;
+
+	debug->event_call.call.type = MODEM_EVENT_TYPE_CALL;
+	debug->event_call.call.call_type = MODEM_CALL_TYPE_VOICE;
+	d = gtk_combo_box_get_active(GTK_COMBO_BOX(debug->ca_direction));
+	switch(d)
+	{
+		case 0:
+			debug->event_call.call.direction
+				= MODEM_CALL_DIRECTION_INCOMING;
+			debug->event_call.call.status
+				= MODEM_CALL_STATUS_RINGING;
+			break;
+		case 1:
+			debug->event_call.call.direction
+				= MODEM_CALL_DIRECTION_OUTGOING;
+			debug->event_call.call.status
+				= MODEM_CALL_STATUS_RINGING;
+			break;
+		case 2:
+			debug->event_call.call.direction
+				= MODEM_CALL_DIRECTION_NONE;
+			debug->event_call.call.status
+				= MODEM_CALL_STATUS_ACTIVE;
+			break;
+		default:
+			return;
+	}
+	debug->event_call.call.number = gtk_entry_get_text(GTK_ENTRY(
+				debug->ca_number));
+	debug->helper->event(debug->helper->modem, &debug->event_call);
+}
+
+
 /* debug_on_message_send */
 static void _debug_on_message_send(gpointer data)
 {
@@ -379,12 +468,12 @@ static void _debug_on_message_send(gpointer data)
 	debug->event_message.message.id++;
 	debug->event_message.message.date = time(NULL);
 	debug->event_message.message.number = gtk_entry_get_text(GTK_ENTRY(
-				debug->number));
+				debug->me_number));
 	debug->event_message.message.folder = gtk_combo_box_get_active(
-			GTK_COMBO_BOX(debug->folder));
+			GTK_COMBO_BOX(debug->me_folder));
 	debug->event_message.message.status = MODEM_MESSAGE_STATUS_NEW;
 	debug->event_message.message.encoding = MODEM_MESSAGE_ENCODING_UTF8;
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(debug->message));
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(debug->me_message));
 	gtk_text_buffer_get_start_iter(tbuf, &start);
 	gtk_text_buffer_get_end_iter(tbuf, &end);
 	content = gtk_text_buffer_get_text(tbuf, &start, &end, FALSE);
