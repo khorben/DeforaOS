@@ -604,11 +604,11 @@ class HTMLFormat extends FormatElements
 		if(($title = $e->getProperty('title')) !== FALSE)
 			$attributes['title'] = $title;
 		$this->tagOpen('a', FALSE, $e->getProperty('id'), $attributes);
-		$this->renderChildren($e);
 		if(($stock = $e->getProperty('stock')) !== FALSE)
 			$this->tag('img', 'stock16 '.$stock, FALSE,
 					array('alt' => ''));
 		print($this->escapeText($e->getProperty('text')));
+		$this->renderChildren($e);
 		$this->tagClose('a');
 	}
 
