@@ -61,6 +61,7 @@ int player_open_url(Player * player, char const * url);
 int player_open_url_dialog(Player * player);
 void player_playlist_add(Player * player, char const * filename);
 void player_playlist_add_dialog(Player * player);
+void player_playlist_add_url(Player * player, char const * url);
 void player_playlist_clear(Player * player);
 void player_playlist_open(Player * player, char const * filename);
 void player_playlist_open_dialog(Player * player);

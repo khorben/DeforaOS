@@ -944,11 +944,33 @@ void player_playlist_add_dialog(Player * player)
 	for(p = files; p != NULL; p = p->next)
 	{
 		filename = p->data;
-		if(strncmp(filename, "file://", 7) == 0)
-			player_playlist_add(player, &filename[7]);
+		player_playlist_add_url(player, filename);
 	}
 	g_slist_foreach(files, (GFunc)g_free, NULL);
 	g_slist_free(files);
+}
+
+
+/* player_playlist_add_url */
+void player_playlist_add_url(Player * player, char const * url)
+{
+	GtkTreeIter iter;
+	char const file[] = "file:/";
+
+	if(strncmp(file, url, sizeof(file) - 1) == 0)
+		/* FIXME URL-decode (and left-trim all slashes after the 1st */
+		url = &url[sizeof(file) - 2];
+	/* FIXME fetch the actual artists/albums/titles */
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_list_store_insert_with_values(player->pl_store, &iter, -1,
+#else
+	gtk_list_store_insert_after(player->pl_store, iter, NULL);
+	gtk_list_store_set(player->pl_store, iter,
+#endif
+			PL_COL_FILENAME, url,
+			PL_COL_ALBUM, _("Unknown album"),
+			PL_COL_ARTIST, _("Unknown artist"),
+			PL_COL_TITLE, _("Unknown title"), -1);
 }
 
 
