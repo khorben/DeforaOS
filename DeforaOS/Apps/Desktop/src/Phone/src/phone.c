@@ -878,7 +878,8 @@ int phone_dialer_append(Phone * phone, char character)
 		return -1;
 	if((character < '0' || character > '9')
 			&& (character < 'A' || character > 'D')
-			&& character != '*' && character != '#')
+			&& character != '*' && character != '+'
+			&& character != '#')
 		return -1; /* ignore the error */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	len = strlen(text) + 2;
@@ -887,8 +888,8 @@ int phone_dialer_append(Phone * phone, char character)
 	snprintf(p, len, "%s%c", text, character);
 	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), p);
 	free(p);
-	if(phone->ca_status == MODEM_CALL_STATUS_ACTIVE)
-		/* send a DTMF */
+	/* send a DTMF if in call ('+' is not allowed though) */
+	if(phone->ca_status == MODEM_CALL_STATUS_ACTIVE && character != '+')
 		modem_request_type(phone->modem, MODEM_REQUEST_DTMF_SEND,
 				character);
 	return 0;
