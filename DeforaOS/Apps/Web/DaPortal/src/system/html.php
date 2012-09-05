@@ -50,7 +50,10 @@ class HTML
 				$content = utf8_encode($content);
 				break;
 		}
-		$content = '<root>'.$content.'</root>';
+		//give it a root tag if it seems to need one
+		if(strncmp('<!DOCTYPE', $content, 9) != 0
+				&& strncmp('<?xml', $content, 4) != 0)
+			$content = '<root>'.$content.'</root>';
 		if(($ret = xml_parse($parser, $content, TRUE)) != 1)
 		{
 			$error = xml_error_string(xml_get_error_code($parser))
