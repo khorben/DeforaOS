@@ -43,8 +43,11 @@
 #define _(string) gettext(string)
 #define N_(string) (string)
 
-
 /* constants */
+#ifdef WITH_MAIN
+# define PROGNAME	"download"
+#endif
+
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -90,12 +93,6 @@ struct _Download
 	guint timeout;
 	int pulse;
 };
-
-
-/* constants */
-#ifdef WITH_MAIN
-# define PROGNAME	"download"
-#endif
 
 
 /* variables */
