@@ -23,7 +23,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -36,10 +35,11 @@
 #endif
 
 
+/* functions */
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: gedi\n"), stderr);
+	fputs(_("Usage: coder\n"), stderr);
 	return 1;
 }
 
