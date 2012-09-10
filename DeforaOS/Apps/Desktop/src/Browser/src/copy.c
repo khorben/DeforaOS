@@ -746,11 +746,15 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 
 
 /* copy_error */
+static int _error_text(char const * message, int ret);
+
 static int _copy_error(Copy * copy, char const * message, int ret)
 {
 	GtkWidget * dialog;
 	int error = errno;
 
+	if(copy == NULL)
+		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -761,6 +765,13 @@ static int _copy_error(Copy * copy, char const * message, int ret)
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs("copy: ", stderr);
+	perror(message);
 	return ret;
 }
 
@@ -860,7 +871,8 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 	int o;
 
-	setlocale(LC_ALL, "");
+	if(setlocale(LC_ALL, "") == NULL)
+		_copy_error(NULL, "setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));

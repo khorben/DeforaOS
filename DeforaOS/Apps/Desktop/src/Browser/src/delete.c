@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -409,11 +409,15 @@ static int _idle_do_opendir(Delete * delete, char const * filename)
 
 
 /* delete_error */
+static int _error_text(char const * message, int ret);
+
 static int _delete_error(Delete * delete, char const * message, int ret)
 {
 	GtkWidget * dialog;
 	char const * error = strerror(errno);
 
+	if(delete == NULL)
+		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_OK, "%s",
@@ -426,6 +430,13 @@ static int _delete_error(Delete * delete, char const * message, int ret)
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs("delete: ", stderr);
+	perror(message);
 	return ret;
 }
 
@@ -464,7 +475,8 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 	int o;
 
-	setlocale(LC_ALL, "");
+	if(setlocale(LC_ALL, "") == NULL)
+		_delete_error(NULL, "setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));

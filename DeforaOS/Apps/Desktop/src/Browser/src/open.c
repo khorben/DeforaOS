@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2006-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -36,6 +35,17 @@
 #endif
 
 
+/* open */
+/* private */
+/* prototypes */
+static int _open(char const * type, char const * action, int filec,
+		char * filev[]);
+static int _open_error(char const * message, int ret);
+
+static int _usage(void);
+
+
+/* functions */
 /* open */
 static int _open(char const * type, char const * action, int filec,
 		char * filev[])
@@ -65,6 +75,15 @@ static int _open(char const * type, char const * action, int filec,
 }
 
 
+/* open_error */
+static int _open_error(char const * message, int ret)
+{
+	fputs("open: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -75,6 +94,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
@@ -82,7 +103,8 @@ int main(int argc, char * argv[])
 	char const * action = "open";
 	char const * type = NULL;
 
-	setlocale(LC_ALL, "");
+	if(setlocale(LC_ALL, "") == NULL)
+		_open_error("setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
@@ -100,5 +122,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	return _open(type, action, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	return (_open(type, action, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }
