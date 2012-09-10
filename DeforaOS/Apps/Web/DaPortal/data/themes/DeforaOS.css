@@ -105,7 +105,7 @@ html {
 
 
 /* top */
-div#top {
+#top {
 	background-color:		#a0a0a0;
 	border:				1px solid #303030;
 	border-top:			0;
@@ -117,71 +117,71 @@ div#top {
 	text-align:			center;
 }
 
-div#top a {
+#top a {
 	color:				#000000;
 	padding:			2px;
 	text-decoration:		none;
 }
 
-div#top a:hover {
+#top a:hover {
 	background-color:		#303030;
 	color:				#ffffff;
 }
 
 
 /* menu */
-div#menu {
+#menu {
 	margin-bottom:			1ex;
 	padding:			0.4ex;
 }
 
-div#menu a {
+#menu a {
 	background-color:		#000000;
 	color:				#ffffff;
 	display:			block;
 	text-align:			left;
 }
 
-div#menu ul {
+#menu ul {
 	margin-left:			0;
 	padding-left:			0;
 }
 
-div#menu ul.menubar li {
+#menu ul.menubar li {
 	list-style-type:		none;
 	margin:				0;
 	padding:			0;
 }
 
-div#menu ul.menubar li a {
+#menu ul.menubar li a {
 	border-bottom:			1px solid #303030;
 	font-weight:			bold;
 	padding:			0.2ex;
 }
 
-div#menu ul.menubar li a:hover {
+#menu ul.menubar li a:hover {
 	background-color:		#303030;
 	text-decoration:		none;
 }
 
-div#menu ul.menubar li li a {
+#menu ul.menubar li li a {
 	border-width:			0;
 	display:			none;
 	font-size:			80%;
 	padding-left:			2ex;
 }
 
-div#menu ul.menubar li li a.important {
+#menu ul.menubar li li a.important {
 	display:			block;
 }
 
-div#menu form div.entry input {
+#menu form div.entry input {
 	max-width:			11ex;
 }
 
-div#menu form div.entry span.label,
-div#menu form div.entry input[type="password"],
-div#menu form div.entry input[type="text"] {
+#menu form div.entry span.label,
+#menu form div.entry input[type="password"],
+#menu form div.entry input[type="text"] {
 	display:			table-row;
 }
 
@@ -201,20 +201,20 @@ h1#title {
 
 
 /* content */
-div#content {
+#content {
 	margin-top:			16px;
 }
 
-div#content, div#content table {
+#content, #content table {
 	background-color:		#ffffff;
 	color:				#000000;
 }
 
-div#content > div.pack {
+#content > div.pack {
 	padding:			16px;
 }
 
-div#content > div.pack > *:first-child {
+#content > div.pack > *:first-child {
 	-moz-border-radius-topleft:	16px;
 	-moz-border-radius-topright:	16px;
 	-webkit-border-top-left-radius:	16px;
@@ -228,12 +228,12 @@ div#content > div.pack > *:first-child {
 	padding-top:			16px;
 }
 
-div#content > div.pack > h1:first-child {
+#content > div.pack > h1:first-child {
 	background-color:		#00007f;
 	color:				#ffffff;
 }
 
-div#content > div.pack > h1:first-child.stock48 {
+#content > div.pack > h1:first-child.stock48 {
 	background-position:		8px 4px;
 	min-height:			44px;
 	padding:			4px;
@@ -241,28 +241,28 @@ div#content > div.pack > h1:first-child.stock48 {
 	padding-left:			60px;
 }
 
-div#content > div.pack > h1:first-child.browser {
+#content > div.pack > h1:first-child.browser {
 	background-color:		#7f7f7f;
 }
 
-div#content > div.pack > h1:first-child.download {
+#content > div.pack > h1:first-child.download {
 	background-color:		#ff7f00;
 }
 
-div#content > div.pack > h1:first-child.error {
+#content > div.pack > h1:first-child.error {
 	background-color:		#ff0000;
 }
 
-div#content > div.pack > h1:first-child.project {
+#content > div.pack > h1:first-child.project {
 	background-color:		#007f00;
 }
 
-div#content > div.pack > h1:first-child.logout,
-div#content > div.pack > h1:first-child.user {
+#content > div.pack > h1:first-child.logout,
+#content > div.pack > h1:first-child.user {
 	background-color:		#ff7f00;
 }
 
-div#content > div.pack > h1:first-child.wiki {
+#content > div.pack > h1:first-child.wiki {
 	background-color:		#7f7fff;
 }
 
@@ -327,15 +327,15 @@ form.treeview div.header span.detail {
 
 /* small screens */
 @media screen and (max-width: 80ex) {
-	div#menu > div.pack > * {
+	#menu > div.pack > * {
 		display:		none;
 	}
 
-	div#menu ul.menubar, div#menu ul.menubar li {
+	#menu ul.menubar, #menu ul.menubar li {
 		display:		block;
 	}
 
-	div#menu ul.menubar li li {
+	#menu ul.menubar li li {
 		display:		none;
 	}
 }
@@ -355,24 +355,24 @@ form.treeview div.header span.detail {
 		padding-right:		16ex;
 	}
 
-	div#content, div.statusbar, footer {
+	#content, div.statusbar, footer {
 		opacity:		0.8;
 	}
 
-	div#menu {
+	#menu {
 		float:			right;
 		margin-right:		-16ex;
 		margin-top:		48px;
 		width:			14ex;
 	}
 
-	div#menu, div#menu a {
+	#menu, #menu a {
 		background-color:	#a0a0a0;
 		color:			#000000;
 		opacity:		0.8;
 	}
 
-	div#menu a:hover {
+	#menu a:hover {
 		color:			#ffffff;
 	}
 
