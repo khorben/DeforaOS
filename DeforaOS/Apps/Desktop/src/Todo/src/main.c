@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -37,6 +36,8 @@
 #endif
 
 
+/* private */
+/* functions */
 /* usage */
 static int _usage(void)
 {
@@ -45,6 +46,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
@@ -63,7 +66,8 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	todo = todo_new();
+	if((todo = todo_new()) == NULL)
+		return 2;
 	gtk_main();
 	todo_delete(todo);
 	return 0;
