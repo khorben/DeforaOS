@@ -112,6 +112,7 @@ static gboolean _compose_close(Compose * compose);
 /* callbacks */
 static void _compose_on_about(gpointer data);
 static gboolean _compose_on_closex(gpointer data);
+static void _compose_on_contents(gpointer data);
 static gboolean _compose_on_headers_filter(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
 static void _compose_on_view_add_field(gpointer data);
@@ -175,6 +176,8 @@ static DesktopMenu _menu_view[] =
 
 static DesktopMenu _menu_help[] =
 {
+	{ N_("_Contents"), G_CALLBACK(_compose_on_contents), "help-contents", 0,
+		GDK_KEY_F1 },
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ N_("_About"), G_CALLBACK(_compose_on_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
@@ -217,6 +220,8 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 		gchar * path, gchar * text, gpointer data);
 static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 		gchar * text, gpointer data);
+static gboolean _on_header_foreach_count_visible(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data);
 
 Compose * compose_new(Config * config)
 {
@@ -426,11 +431,13 @@ static void _on_header_field_edited(GtkCellRendererText * renderer,
 	Compose * compose = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
 	GtkTreeIter iter;
+	unsigned long count = 0;
 	gboolean last;
 
-	last = (gtk_tree_model_iter_n_children(model, NULL) > 1) ? FALSE : TRUE;
 	if(_compose_get_iter(compose, &iter, path) != TRUE)
 		return;
+	gtk_tree_model_foreach(model, _on_header_foreach_count_visible, &count);
+	last = (count <= 1) ? TRUE : FALSE;
 	if(!last && (text == NULL || strlen(text) == 0 ))
 		gtk_list_store_remove(compose->h_store, &iter);
 	else
@@ -445,16 +452,30 @@ static void _on_header_edited(GtkCellRendererText * renderer, gchar * path,
 	Compose * compose = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(compose->h_store);
 	GtkTreeIter iter;
+	unsigned long count = 0;
 	gboolean last;
 
-	last = (gtk_tree_model_iter_n_children(model, NULL) > 1) ? FALSE : TRUE;
 	if(_compose_get_iter(compose, &iter, path) != TRUE)
 		return;
+	gtk_tree_model_foreach(model, _on_header_foreach_count_visible, &count);
+	last = (count <= 1) ? TRUE : FALSE;
 	if(!last && (text == NULL || strlen(text) == 0))
 		gtk_list_store_remove(compose->h_store, &iter);
 	else
 		gtk_list_store_set(compose->h_store, &iter, CHC_VALUE, text,
 				-1);
+}
+
+static gboolean _on_header_foreach_count_visible(GtkTreeModel * model,
+		GtkTreePath * path, GtkTreeIter * iter, gpointer data)
+{
+	unsigned long * count = data;
+	gboolean visible = FALSE;
+
+	gtk_tree_model_get(model, iter, CHC_VISIBLE, &visible, -1);
+	if(visible)
+		(*count)++;
+	return FALSE;
 }
 
 
@@ -1014,7 +1035,7 @@ static gboolean _on_send_write(GIOChannel * source, GIOCondition condition,
 		compose_send_cancel(compose);
 		return FALSE;
 	}
-	compose->buf_pos+=i;
+	compose->buf_pos += i;
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(compose->snd_progress),
 			compose->buf_pos / compose->buf_len);
 	if(compose->buf_pos >= compose->buf_len)
@@ -1184,6 +1205,16 @@ static gboolean _compose_on_closex(gpointer data)
 	if(_compose_close(compose) == TRUE)
 		_compose_delete(compose);
 	return TRUE;
+}
+
+
+/* compose_on_contents */
+static void _compose_on_contents(gpointer data)
+{
+	Compose * compose = data;
+
+	desktop_help_contents(PACKAGE, compose->standalone
+			? "compose" : "mailer");
 }
 
 

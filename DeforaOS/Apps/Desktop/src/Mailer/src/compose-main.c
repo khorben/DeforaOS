@@ -26,8 +26,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
-/* private */
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -40,6 +38,7 @@
 #endif
 
 
+/* private */
 /* prototypes */
 static Compose * _compose(Config * config, char const * subject,
 		int toc, char * tov[]);
@@ -97,6 +96,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
