@@ -143,7 +143,7 @@ class HTML
 				$l = '</ul>'.$l;
 				$list = 0;
 			}
-			$ret .= $l.'<br />';
+			$ret .= $l.'<br/>';
 		}
 		$ret .= '</div>';
 		return $ret;
