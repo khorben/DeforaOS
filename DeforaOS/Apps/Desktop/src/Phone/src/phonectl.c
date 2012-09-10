@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -39,6 +38,8 @@
 #endif
 
 
+/* private */
+/* functions */
 /* usage */
 static int _usage(void)
 {
@@ -51,7 +52,7 @@ static int _usage(void)
 "       phonectl -r\n"
 "       phonectl -s\n"
 "  -C	Open the contacts window\n"
-"  -D	Dial a new call\n"
+"  -D	Show the dialer\n"
 "  -L	Open the phone log window\n"
 "  -M	Open the messages window\n"
 "  -S	Display or change settings\n"
@@ -62,6 +63,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
