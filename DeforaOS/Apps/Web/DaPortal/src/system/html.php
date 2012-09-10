@@ -90,13 +90,16 @@ class HTML
 				.htmlspecialchars($v, ENT_COMPAT | ENT_HTML401,
 						HTML::$charset).'"';
 		}
-		HTML::$content .= ">";
+		if($tag == 'br' || $tag == 'img')
+			HTML::$content .= '/';
+		HTML::$content .= '>';
 	}
 
 	static protected function _filterElementEnd($parser, $name)
 	{
 		$tag = strtolower($name);
-		if(!isset(HTML::$whitelist[$tag]) || $tag == 'br')
+		if(!isset(HTML::$whitelist[$tag]) || $tag == 'br'
+				|| $tag == 'img')
 			return;
 		HTML::$content .= "</$tag>";
 	}
