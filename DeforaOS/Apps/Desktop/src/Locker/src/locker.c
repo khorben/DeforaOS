@@ -717,6 +717,7 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 	gtk_list_store_append(store, &iter);
 	gtk_list_store_set(store, &iter, LPC_FILENAME, NULL,
 			LPC_NAME, _("Disabled"), -1);
+	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(locker->pr_dcombo), &iter);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/demos")) == NULL)
 		return;
 	while((de = readdir(dir)) != NULL)
