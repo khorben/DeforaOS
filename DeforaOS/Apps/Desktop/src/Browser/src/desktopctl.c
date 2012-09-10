@@ -26,7 +26,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -37,6 +36,33 @@
 #ifndef LOCALEDIR
 # define LOCALEDIR	DATADIR "/locale"
 #endif
+
+
+/* desktopctl */
+/* private */
+/* prototypes */
+static int _desktopctl(int action, int what);
+static int _desktopctl_error(char const * message, int ret);
+
+static int _usage(void);
+
+
+/* functions */
+/* desktopctl */
+static int _desktopctl(int action, int what)
+{
+	desktop_message_send(DESKTOP_CLIENT_MESSAGE, action, what, TRUE);
+	return 0;
+}
+
+
+/* desktopctl_error */
+static int _desktopctl_error(char const * message, int ret)
+{
+	fputs("desktopctl: ", stderr);
+	perror(message);
+	return ret;
+}
 
 
 /* usage */
@@ -59,6 +85,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
@@ -66,7 +94,8 @@ int main(int argc, char * argv[])
 	int action = -1;
 	int what = 0;
 
-	setlocale(LC_ALL, "");
+	if(setlocale(LC_ALL, "") == NULL)
+		_desktopctl_error("setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
@@ -150,6 +179,5 @@ int main(int argc, char * argv[])
 		}
 	if(action == -1 || optind != argc)
 		return _usage();
-	desktop_message_send(DESKTOP_CLIENT_MESSAGE, action, what, TRUE);
-	return 0;
+	return (_desktopctl(action, what) == 0) ? 0 : 2;
 }
