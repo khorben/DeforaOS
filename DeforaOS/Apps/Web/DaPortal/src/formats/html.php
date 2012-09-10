@@ -958,10 +958,8 @@ class HTMLFormat extends FormatElements
 	}
 
 
-	//private
-	//methods
 	//tagging
-	private function tag($name, $class = FALSE, $id = FALSE,
+	protected function tag($name, $class = FALSE, $id = FALSE,
 			$attributes = FALSE, $content = FALSE)
 	{
 		$tag = '<'.$this->escapeAttribute($name);
@@ -988,7 +986,7 @@ class HTMLFormat extends FormatElements
 	}
 
 
-	private function tagClose($name)
+	protected function tagClose($name)
 	{
 		print('</'.$this->escapeAttribute($name).'>');
 		if(array_pop($this->tags) != $name)
@@ -996,7 +994,7 @@ class HTMLFormat extends FormatElements
 	}
 
 
-	private function tagOpen($name, $class = FALSE, $id = FALSE,
+	protected function tagOpen($name, $class = FALSE, $id = FALSE,
 			$attributes = FALSE, $content = FALSE)
 	{
 		array_push($this->tags, $name);
@@ -1023,6 +1021,7 @@ class HTMLFormat extends FormatElements
 	}
 
 
+	//private
 	//properties
 	private $engine = FALSE;
 	private $ids;

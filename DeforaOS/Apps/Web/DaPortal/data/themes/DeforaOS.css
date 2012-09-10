@@ -280,7 +280,7 @@ div.dialog {
 
 
 /* statusbar */
-div.statusbar {
+div.statusbar, footer {
 	background-color:		#ffffff;
 	color:				#000000;
 	-moz-border-radius-bottomleft:	16px;
@@ -355,7 +355,7 @@ form.treeview div.header span.detail {
 		padding-right:		16ex;
 	}
 
-	div#content, div.statusbar {
+	div#content, div.statusbar, footer {
 		opacity:		0.8;
 	}
 

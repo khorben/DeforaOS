@@ -55,6 +55,19 @@ class HTML5Format extends HTMLFormat
 	{
 		return htmlspecialchars($text, ENT_COMPAT | ENT_HTML5);
 	}
+
+
+	//rendering
+	//HTML5Format::renderStatusbar
+	protected function renderStatusbar($e)
+	{
+		$this->renderTabs();
+		$this->tagOpen('footer', $e->getProperty('class'),
+				$e->getProperty('id'), FALSE,
+				$e->getProperty('text'));
+		$this->renderChildren($e, 1);
+		$this->tagClose('footer');
+	}
 }
 
 ?>
