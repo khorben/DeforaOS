@@ -112,7 +112,7 @@ class HTML
 		//FIXME obfuscate e-mail addresses
 		$to = '<a href="\1">\1</a>';
 
-		$ret = '<div class="prewrapped">';
+		$ret = '<div>';
 		$lines = explode("\n", $content);
 		$list = 0;
 		foreach($lines as $l)
