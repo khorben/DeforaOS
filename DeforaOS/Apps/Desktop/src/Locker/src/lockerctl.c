@@ -26,7 +26,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -37,6 +36,18 @@
 #ifndef LOCALEDIR
 # define LOCALEDIR	DATADIR "/locale"
 #endif
+
+
+/* lockerctl */
+/* private */
+/* functions */
+/* lockerctl */
+static int _lockerctl(int action)
+{
+	desktop_message_send(LOCKER_CLIENT_MESSAGE, LOCKER_MESSAGE_ACTION,
+			action, TRUE);
+	return 0;
+}
 
 
 /* usage */
@@ -65,6 +76,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
@@ -118,7 +131,5 @@ int main(int argc, char * argv[])
 		}
 	if(action == -1 || optind != argc)
 		return _usage();
-	desktop_message_send(LOCKER_CLIENT_MESSAGE, LOCKER_MESSAGE_ACTION,
-			action, TRUE);
-	return 0;
+	return (_lockerctl(action) == 0) ? 0 : 2;
 }
