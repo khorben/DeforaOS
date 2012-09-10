@@ -272,7 +272,7 @@ Browser * browser_new(char const * directory)
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
 	{
-		browser_error(NULL, directory != NULL ? directory : ".", 1);
+		browser_error(NULL, (directory != NULL) ? directory : ".", 1);
 		return NULL;
 	}
 	browser->window = NULL;
@@ -963,9 +963,14 @@ int browser_load(Browser * browser, char const * plugin)
 	if(icon == NULL)
 		icon = gtk_icon_theme_load_icon(theme, "gnome-settings", 24, 0,
 				NULL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_list_store_insert_with_values(browser->pl_store, &iter, -1,
+#else
 	gtk_list_store_append(browser->pl_store, &iter);
-	gtk_list_store_set(browser->pl_store, &iter, BPC_NAME, plugin,
-			BPC_ICON, icon, BPC_NAME_DISPLAY, _(bpd->name),
+	gtk_list_store_set(browser->pl_store, &iter,
+#endif
+			BPC_NAME, plugin, BPC_ICON, icon,
+			BPC_NAME_DISPLAY, _(bpd->name),
 			BPC_PLUGIN, p, BPC_BROWSERPLUGINDEFINITION, bpd,
 			BPC_BROWSERPLUGIN, bp, BPC_WIDGET, widget, -1);
 	gtk_box_pack_start(GTK_BOX(browser->pl_box), widget, TRUE, TRUE, 0);
@@ -1418,6 +1423,14 @@ static gboolean _done_thumbnails(gpointer data)
 	{
 		gtk_tree_model_get(model, iter, BC_MIME_TYPE, &type,
 				BC_PATH, &path, -1);
+		if(type != NULL && path != NULL
+				&& strcmp(type, "inode/symlink") == 0)
+		{
+			/* lookup the real type of symbolic links */
+			free(type);
+			if((type = mime_type(browser->mime, path)) != NULL)
+				type = strdup(type);
+		}
 		if(type != NULL && path != NULL
 				&& strncmp(type, "image/", 6) == 0)
 		{
@@ -2325,8 +2338,13 @@ static void _preferences_set_plugins(Browser * browser)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					24, 0, NULL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_list_store_insert_with_values(browser->pr_plugin_store,
+				&iter, -1,
+#else
 		gtk_list_store_append(browser->pr_plugin_store, &iter);
 		gtk_list_store_set(browser->pr_plugin_store, &iter,
+#endif
 				BPC_NAME, de->d_name, BPC_ENABLED, enabled,
 				BPC_ICON, icon, BPC_NAME_DISPLAY, _(bpd->name),
 				-1);
@@ -2433,9 +2451,13 @@ static void _preferences_on_mime_foreach(void * data, char const * name,
 	Browser * browser = data;
 	GtkTreeIter iter;
 
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_list_store_insert_with_values(browser->pr_mime_store, &iter, -1,
+#else
 	gtk_list_store_append(browser->pr_mime_store, &iter);
-	gtk_list_store_set(browser->pr_mime_store, &iter, BMC_NAME, name,
-			BMC_ICON, icon_24, -1);
+	gtk_list_store_set(browser->pr_mime_store, &iter,
+#endif
+			BMC_NAME, name, BMC_ICON, icon_24, -1);
 }
 
 static void _preferences_on_plugin_toggled(GtkCellRendererToggle * renderer,
