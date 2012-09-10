@@ -131,19 +131,21 @@ class HTML
 						$list = 1;
 						$l = '<ul>'.$l;
 					}
+					$ret .= $l;
 				}
 				else
 					//preformatted content
-					$l = '<span class="preformatted">'
-						.substr($l, 1).'</span>';
+					$ret .= '<span class="preformatted">'
+						.substr($l, 1).'</span><br/>';
 			}
 			else if($list)
 			{
 				//close the list if necessary
-				$l = '</ul>'.$l;
+				$ret .= '</ul>'.$l.'<br/>';
 				$list = 0;
 			}
-			$ret .= $l.'<br/>';
+			else
+				$ret .= $l.'<br/>';
 		}
 		$ret .= '</div>';
 		return $ret;
