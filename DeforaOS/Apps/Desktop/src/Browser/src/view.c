@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2012 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "view is free software; you can redistribute it and/or modify it under the\n"
@@ -36,7 +36,6 @@ static char const _license[] =
 
 #include "common.c"
 
-
 /* constants */
 #define PROGNAME	"view"
 
@@ -51,7 +50,7 @@ static char const _license[] =
 #endif
 
 
-/* View */
+/* view */
 /* private */
 /* types */
 typedef struct _View
@@ -192,14 +191,14 @@ static View * _view_new(char const * pathname)
 	if((view->pathname = strdup(pathname)) == NULL
 			|| lstat(pathname, &st) != 0)
 	{
-		_view_error(view, strerror(errno), 2);
+		_view_error(view, strerror(errno), 1);
 		return NULL;
 	}
 	if(_mime == NULL)
 		_mime = mime_new(NULL);
 	if((type = mime_type(_mime, pathname)) == NULL)
 	{
-		_view_error(view, _("Unknown file type"), 2);
+		_view_error(view, _("Unknown file type"), 1);
 		return NULL;
 	}
 	group = gtk_accel_group_new();
@@ -211,9 +210,9 @@ static View * _view_new(char const * pathname)
 				_on_closex), view);
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
-	widget = desktop_menubar_create(mime_get_handler(_mime, type, "edit")
-			!= NULL ? _view_menubar_edit : _view_menubar, view,
-			group);
+	widget = desktop_menubar_create(
+			(mime_get_handler(_mime, type, "edit") != NULL)
+			? _view_menubar_edit : _view_menubar, view, group);
 #else
 	desktop_accel_create(_view_accel, view, group);
 	widget = desktop_toolbar_create(_view_toolbar, view, group);
@@ -234,7 +233,7 @@ static View * _view_new(char const * pathname)
 	}
 	else
 	{
-		_view_error(view, _("Unable to view file type"), 2);
+		_view_error(view, _("Unable to view file type"), 1);
 		return NULL;
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -365,12 +364,15 @@ static void _view_delete(View * view)
 /* view_error
  * POST	view is deleted if ret != 0 */
 static void _error_response(GtkWidget * widget, gint arg, gpointer data);
+static int _error_text(char const * message, int ret);
 
 static int _view_error(View * view, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
-	dialog = gtk_message_dialog_new(view != NULL && view->window != NULL
+	if(view == NULL && ret != 0) /* XXX */
+		return _error_text(message, ret);
+	dialog = gtk_message_dialog_new((view != NULL && view->window != NULL)
 			? GTK_WINDOW(view->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, "%s",
@@ -394,6 +396,13 @@ static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 	if(view != NULL)
 		_view_delete(view);
 	gtk_widget_destroy(widget);
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs(PROGNAME, stderr);
+	perror(message);
+	return ret;
 }
 
 
@@ -556,13 +565,16 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
 	int o;
 	int i;
 
-	setlocale(LC_ALL, "");
+	if(setlocale(LC_ALL, "") == NULL)
+		_view_error(NULL, "setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);

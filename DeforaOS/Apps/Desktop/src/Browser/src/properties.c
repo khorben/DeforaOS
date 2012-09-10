@@ -37,7 +37,7 @@
 #define COMMON_CONFIG_FILENAME
 #include "common.c"
 
-
+/* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -50,6 +50,7 @@
 
 
 /* properties */
+/* private */
 /* types */
 #define _Properties _Browser
 typedef struct _Properties
@@ -97,6 +98,7 @@ static void _properties_on_close(gpointer data);
 static gboolean _properties_on_closex(gpointer data);
 
 
+/* functions */
 /* properties */
 static int _properties(Mime * mime, int filec, char * const filev[])
 {
@@ -278,6 +280,7 @@ static int _properties_set_location(Properties * properties,
 
 /* _properties_error */
 static void _error_response(GtkWidget * widget, gint arg, gpointer data);
+static int _error_text(char const * message, char const * error, int ret);
 
 static int _properties_error(Properties * properties, char const * message,
 		int ret)
@@ -286,6 +289,8 @@ static int _properties_error(Properties * properties, char const * message,
 	char const * error;
 
 	error = strerror(errno);
+	if(properties == NULL)
+		return _error_text(message, error, ret);
 	dialog = gtk_message_dialog_new((properties != NULL
 				&& properties->window != NULL)
 			? GTK_WINDOW(properties->window) : NULL, 0,
@@ -315,6 +320,12 @@ static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 		gtk_main_quit();
 	else
 		gtk_widget_destroy(widget);
+}
+
+static int _error_text(char const * message, char const * error, int ret)
+{
+	fprintf(stderr, "%s: %s: %s\n", "properties", message, error);
+	return ret;
 }
 
 
@@ -406,6 +417,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 int main(int argc, char * argv[])
 {
@@ -413,7 +426,8 @@ int main(int argc, char * argv[])
 	int o;
 	Mime * mime;
 
-	setlocale(LC_ALL, "");
+	if(setlocale(LC_ALL, "") == NULL)
+		_properties_error(NULL, "setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
