@@ -1,4 +1,4 @@
-TARGETS	= configure makedepend
+TARGETS	= configure makedepend makefile.o
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -17,11 +17,11 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-configure_OBJS = configure.o makefile.o settings.o
+configure_OBJS = configure.o settings.o
 configure_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-configure_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+configure_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) makefile.o
 
-configure: $(configure_OBJS)
+configure: $(configure_OBJS) makefile.o
 	$(CC) -o configure $(configure_OBJS) $(configure_LDFLAGS)
 
 makedepend_OBJS = makedepend.o
@@ -31,11 +31,11 @@ makedepend_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 makedepend: $(makedepend_OBJS)
 	$(CC) -o makedepend $(makedepend_OBJS) $(makedepend_LDFLAGS)
 
+makefile.o_OBJS = makefile.o
+makefile.o_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -o makefile.o
+
 configure.o: configure.c configure.h makefile.h ../config.h
 	$(CC) $(configure_CFLAGS) -c configure.c
-
-makefile.o: makefile.c configure.h settings.h ../config.h
-	$(CC) $(configure_CFLAGS) -c makefile.c
 
 settings.o: settings.c settings.h
 	$(CC) $(configure_CFLAGS) -c settings.c
@@ -43,8 +43,11 @@ settings.o: settings.c settings.h
 makedepend.o: makedepend.c
 	$(CC) $(makedepend_CFLAGS) -c makedepend.c
 
+makefile.o: makefile.c configure.h settings.h ../config.h
+	$(CC) $(makefile.o_CFLAGS) -c makefile.c
+
 clean:
-	$(RM) -- $(configure_OBJS) $(makedepend_OBJS)
+	$(RM) -- $(configure_OBJS) $(makedepend_OBJS) $(makefile.o_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

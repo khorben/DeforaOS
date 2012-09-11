@@ -40,9 +40,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/scripts/subst.sh \
 		$(PACKAGE)-$(VERSION)/doc/scripts/project.conf \
 		$(PACKAGE)-$(VERSION)/src/configure.c \
-		$(PACKAGE)-$(VERSION)/src/makefile.c \
 		$(PACKAGE)-$(VERSION)/src/settings.c \
 		$(PACKAGE)-$(VERSION)/src/makedepend.c \
+		$(PACKAGE)-$(VERSION)/src/makefile.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/configure.h \
 		$(PACKAGE)-$(VERSION)/src/makefile.h \

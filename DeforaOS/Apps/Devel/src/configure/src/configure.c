@@ -428,7 +428,7 @@ ObjectType _source_type(String const * source)
 	for(i = 0; sExtensionType[i].extension != NULL; i++)
 		if(string_compare(sExtensionType[i].extension, extension) == 0)
 			return sExtensionType[i].type;
-	return -1;
+	return OT_UNKNOWN;
 }
 
 

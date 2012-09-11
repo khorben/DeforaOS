@@ -1146,8 +1146,8 @@ static int _target_object(Configure * configure, FILE * fp,
 			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
 					target, target, "_ASFLAGS ="
 					" $(CPPFLAGSF) $(CPPFLAGS) $(ASFLAGS)");
-			if((p = config_get(configure->config, p, "asflags"))
-					!= NULL)
+			if((p = config_get(configure->config, target,
+							"asflags")) != NULL)
 				fprintf(fp, " %s", p);
 			fputc('\n', fp);
 			break;
@@ -1156,7 +1156,7 @@ static int _target_object(Configure * configure, FILE * fp,
 					target, target, "_CFLAGS ="
 					" $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF)"
 					" $(CFLAGS)");
-			if((p = config_get(configure->config, p, "cflags"))
+			if((p = config_get(configure->config, target, "cflags"))
 					!= NULL)
 				fprintf(fp, " %s", p);
 			fputc('\n', fp);
@@ -1166,8 +1166,8 @@ static int _target_object(Configure * configure, FILE * fp,
 					target, target, "_CXXFLAGS ="
 					" $(CPPFLAGSF) $(CPPFLAGS)"
 					" $(CXXFLAGS)");
-			if((p = config_get(configure->config, p, "cxxflags"))
-					!= NULL)
+			if((p = config_get(configure->config, target,
+							"cxxflags")) != NULL)
 				fprintf(fp, " %s", p);
 			fputc('\n', fp);
 			break;
