@@ -28,8 +28,7 @@ class SessionAuth extends Auth
 	//SessionAuth::match
 	protected function match($engine)
 	{
-		if(!isset($_SERVER['SCRIPT_NAME'])
-				|| !isset($_SERVER['HTTP_HOST']))
+		if(!isset($_SERVER['SCRIPT_NAME']))
 			return 0;
 		//return the result cached if called twice
 		if($this->match_score !== FALSE)
@@ -39,7 +38,13 @@ class SessionAuth extends Auth
 		$params = session_get_cookie_params();
 		//XXX probably not always as strict as it could be
 		$params['path'] = dirname($_SERVER['SCRIPT_NAME']);
-		$params['domain'] = $_SERVER['HTTP_HOST'];
+		if(isset($_SERVER['HTTP_HOST']))
+		{
+			$domain = $_SERVER['HTTP_HOST'];
+			if(($pos = strpos($domain, ':', 1)) !== FALSE)
+				$domain = substr($domain, 0, $pos);
+			$params['domain'] = $domain;
+		}
 		if(isset($_SERVER['HTTPS']))
 			$params['secure'] = 1;
 	       	//XXX we may have to set it to 0 later
