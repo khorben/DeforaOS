@@ -779,7 +779,6 @@ protected function register($args)
 		else if(strlen($password))
 			$sql = 'UPDATE daportal_user SET '.$password
 				." WHERE user_id='$id'";
-		print_r($sql);
 		if(strlen($sql) && _sql_query($sql) === FALSE)
 			return 'Could not update user';
 		header('Location: '._module_link_full('user', 'display', $id));
