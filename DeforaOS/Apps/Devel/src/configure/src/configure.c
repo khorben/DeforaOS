@@ -57,7 +57,7 @@ const String * sHostOS[HO_COUNT] =
 	"Darwin",
 	"FreeBSD", "NetBSD", "OpenBSD",
 	"SunOS",
-	"MINGW32_NT-5.0",
+	"Windows",
 	"unknown"
 };
 const HostKernelMap mHostKernel[] =

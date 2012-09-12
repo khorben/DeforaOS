@@ -43,8 +43,8 @@ extern const String * sHostArch[HA_COUNT];
 typedef enum _HostOS
 {
 	HO_DEFORAOS = 0,
+	HO_DARWIN,
 	HO_GNU_LINUX,
-	HO_MACOSX,
 	HO_FREEBSD, HO_NETBSD, HO_OPENBSD,
 	HO_SUNOS,
 	HO_WIN32,
@@ -52,6 +52,8 @@ typedef enum _HostOS
 } HostOS;
 # define HO_LAST	HO_UNKNOWN
 # define HO_COUNT	(HO_LAST + 1)
+/* aliases */
+# define HO_MACOSX	HO_DARWIN
 extern const String * sHostOS[HO_COUNT];
 
 typedef enum _HostKernel

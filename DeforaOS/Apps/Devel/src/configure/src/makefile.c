@@ -269,6 +269,10 @@ static int _variables_targets(Configure * configure, FILE * fp)
 			switch(enum_string(TT_LAST, sTargetType, type))
 			{
 				case TT_BINARY:
+					fprintf(fp, " %s", prints);
+					if(configure->os == HO_WIN32)
+						fputs("$(EXEEXT)", fp);
+					break;
 				case TT_OBJECT:
 				case TT_SCRIPT:
 				case TT_UNKNOWN:
@@ -423,6 +427,7 @@ static void _executables_variables(Configure * configure, FILE * fp,
 static void _targets_asflags(Configure * configure, FILE * fp);
 static void _targets_cflags(Configure * configure, FILE * fp);
 static void _targets_cxxflags(Configure * configure, FILE * fp);
+static void _targets_exeext(Configure * configure, FILE * fp);
 static void _targets_ldflags(Configure * configure, FILE * fp);
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
@@ -452,6 +457,7 @@ static void _variables_binary(Configure * configure, FILE * fp, char * done)
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
 		_targets_ldflags(configure, fp);
+		_targets_exeext(configure, fp);
 	}
 }
 
@@ -527,6 +533,12 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
+}
+
+static void _targets_exeext(Configure * configure, FILE * fp)
+{
+	if(configure->os == HO_WIN32)
+		fputs("EXEEXT\t= .exe\n", fp);
 }
 
 static void _targets_ldflags(Configure * configure, FILE * fp)
@@ -642,6 +654,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
 		_targets_ldflags(configure, fp);
+		_targets_exeext(configure, fp);
 	}
 	if((p = config_get(configure->config, "", "ar")) == NULL)
 		_makefile_output_variable(fp, "AR", "ar", 0);
@@ -905,7 +918,8 @@ static int _target_binary(Configure * configure, FILE * fp,
 		return 0;
 	if(_target_flags(configure, fp, target) != 0)
 		return 1;
-	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)");
+	fprintf(fp, "\n%s%s%s%s%s", target, (configure->os == HO_WIN32)
+			? "$(EXEEXT)" : "", ": $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 	{
 		if((q = string_new(p)) == NULL
@@ -917,8 +931,9 @@ static int _target_binary(Configure * configure, FILE * fp,
 		fprintf(fp, " %s", q);
 		string_delete(q);
 	}
-	fprintf(fp, "%s%s%s%s%s%s%s", "\n\t$(CC) -o ", target, " $(", target,
-			"_OBJS) $(", target, "_LDFLAGS)");
+	fprintf(fp, "%s%s%s%s%s%s%s%s", "\n\t$(CC) -o ", target,
+			(configure->os == HO_WIN32) ? "$(EXEEXT)" : "", " $(",
+			target, "_OBJS) $(", target, "_LDFLAGS)");
 	fputc('\n', fp);
 	return 0;
 }
