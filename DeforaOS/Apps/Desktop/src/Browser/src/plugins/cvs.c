@@ -95,6 +95,7 @@ static void _cvs_destroy(CVS * cvs);
 static GtkWidget * _cvs_get_widget(CVS * cvs);
 static void _cvs_refresh(CVS * cvs, GList * selection);
 
+static char * _cvs_get_entries(char const * pathname);
 static int _cvs_add_task(CVS * cvs, char const * title,
 		char const * directory, char * argv[]);
 
@@ -340,6 +341,7 @@ static void _cvs_refresh(CVS * cvs, GList * selection)
 
 static void _refresh_dir(CVS * cvs)
 {
+	BrowserPluginHelper * helper = cvs->helper;
 	char const dir[] = "CVS";
 	char const root[] = "CVS/Root";
 	char const repository[] = "CVS/Repository";
@@ -359,15 +361,17 @@ static void _refresh_dir(CVS * cvs)
 		cvs->filename[len - 4] = '\0';
 	/* check if it is a CVS repository */
 	len = strlen(cvs->filename) + sizeof(dir) + 1;
-	if((p = malloc(len)) != NULL)
+	if((p = malloc(len)) == NULL)
 	{
-		snprintf(p, len, "%s/%s", cvs->filename, dir);
-		if(lstat(p, &st) != 0)
-		{
-			_refresh_status(cvs, _("Not a CVS repository"));
-			free(p);
-			return;
-		}
+		helper->error(helper->browser, strerror(errno), 1);
+		return;
+	}
+	snprintf(p, len, "%s/%s", cvs->filename, dir);
+	if(lstat(p, &st) != 0)
+	{
+		_refresh_status(cvs, _("Not a CVS repository"));
+		free(p);
+		return;
 	}
 	gtk_widget_show(cvs->directory);
 	/* obtain the CVS root */
@@ -413,11 +417,8 @@ static void _refresh_dir(CVS * cvs)
 
 static void _refresh_file(CVS * cvs)
 {
-	char const entries[] = "CVS/Entries";
-	gchar * dirname;
 	size_t len;
-	char * p;
-	gchar * q = NULL;
+	gchar * q;
 	gchar * basename;
 	char const * s;
 	char buf[256];
@@ -425,16 +426,7 @@ static void _refresh_file(CVS * cvs)
 	/* reset the interface */
 	gtk_label_set_text(GTK_LABEL(cvs->f_revision), NULL);
 	/* obtain the CVS entries */
-	dirname = g_path_get_dirname(cvs->filename);
-	len = strlen(dirname) + sizeof(entries) + 1;
-	if((p = malloc(len)) != NULL)
-	{
-		snprintf(p, len, "%s/%s", dirname, entries);
-		g_file_get_contents(p, &q, NULL, NULL);
-		free(p);
-	}
-	g_free(dirname);
-	if(q == NULL)
+	if((q = _cvs_get_entries(cvs->filename)) == NULL)
 	{
 		_refresh_status(cvs, _("Not a CVS repository"));
 		return;
@@ -494,6 +486,28 @@ static void _refresh_status(CVS * cvs, char const * status)
 	if(status == NULL)
 		status = "";
 	gtk_label_set_text(GTK_LABEL(cvs->status), status);
+}
+
+
+/* cvs_get_entries */
+static char * _cvs_get_entries(char const * pathname)
+{
+	char const entries[] = "CVS/Entries";
+	gchar * dirname;
+	size_t len;
+	char * p;
+	char * q;
+	gboolean res;
+
+	dirname = g_path_get_dirname(pathname);
+	len = strlen(dirname) + sizeof(entries) + 1;
+	if((p = malloc(len)) == NULL)
+		return NULL;
+	snprintf(p, len, "%s/%s", dirname, entries);
+	res = g_file_get_contents(p, &q, NULL, NULL);
+	free(p);
+	g_free(dirname);
+	return res ? q : NULL;
 }
 
 
