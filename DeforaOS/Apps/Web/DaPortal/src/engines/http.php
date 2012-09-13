@@ -215,13 +215,15 @@ class HttpEngine extends Engine
 	{
 		$type = $this->getType();
 		header('Content-Type: '.$type); //XXX escape
-		if($page === FALSE)
-			return $this->renderPage($page, $type);
-		else if($page instanceof PageElement)
+		if($page instanceof PageElement)
 			return $this->renderPage($page, $type);
 		else if(is_resource($page)
 				&& get_resource_type($page) == 'stream')
 			return $this->renderStream($page, $type);
+		else if(is_string($page))
+			return $this->renderString($page, $type);
+		//default
+		return $this->renderPage($page, $type);
 	}
 
 	private function renderPage($page, $type)
@@ -241,6 +243,8 @@ class HttpEngine extends Engine
 		switch($type)
 		{
 			case 'application/rss+xml':
+			case 'application/xml':
+			case 'text/xml':
 				break;
 			case 'text/html':
 			default:
@@ -275,6 +279,12 @@ class HttpEngine extends Engine
 			if(($buf = fread($fp, 65536)) !== FALSE)
 				print($buf);
 		fclose($fp);
+	}
+
+	private function renderString($string, $type)
+	{
+		header('Content-Length: '.strlen($string));
+		print($string);
 	}
 
 
