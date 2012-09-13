@@ -1310,8 +1310,12 @@ abstract class ContentModule extends Module
 	protected function helperListView($engine, $page, $request)
 	{
 		$cred = $engine->getCredentials();
+		$user = new User($engine, $request->getId(),
+				$request->getTitle());
 		$r = FALSE;
 
+		if(($uid = $user->getUserId()) == 0)
+			$uid = FALSE;
 		if($uid === $cred->getUserId())
 			$r = new Request($engine, $this->name, 'list', $uid,
 				$uid ? $user->getUsername() : FALSE);
