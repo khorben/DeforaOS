@@ -651,7 +651,6 @@ abstract class ContentModule extends Module
 	//ContentModule::callList
 	protected function callList($engine, $request = FALSE)
 	{
-		$cred = $engine->getCredentials();
 		$db = $engine->getDatabase();
 		$user = new User($engine, $request->getId(),
 				$request->getTitle());
@@ -679,17 +678,7 @@ abstract class ContentModule extends Module
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		//view
-		$r = FALSE;
-		if($uid === $cred->getUserId())
-			$r = new Request($engine, $this->name, 'list', $uid,
-				$uid ? $user->getUsername() : FALSE);
-		$treeview = $page->append('treeview', array('request' => $r));
-		$columns = array('title' => _('Title'));
-		if($uid === $cred->getUserId())
-			$columns['enabled'] = _('Enabled');
-		$columns['username'] = _('Username');
-		$columns['date'] = _('Date');
-		$treeview->setProperty('columns', $columns);
+		$treeview = $this->helperListView($engine, $page, $request);
 		//toolbar
 		$this->helperListToolbar($engine, $treeview, $request);
 		//rows
@@ -1314,6 +1303,26 @@ abstract class ContentModule extends Module
 						'name' => 'action',
 						'value' => 'enable'));
 		}
+	}
+
+
+	//ContentModule::helperListView
+	protected function helperListView($engine, $page, $request)
+	{
+		$cred = $engine->getCredentials();
+		$r = FALSE;
+
+		if($uid === $cred->getUserId())
+			$r = new Request($engine, $this->name, 'list', $uid,
+				$uid ? $user->getUsername() : FALSE);
+		$view = $page->append('treeview', array('request' => $r));
+		$columns = array('title' => _('Title'));
+		if($uid === $cred->getUserId())
+			$columns['enabled'] = _('Enabled');
+		$columns['username'] = _('Username');
+		$columns['date'] = _('Date');
+		$view->setProperty('columns', $columns);
+		return $view;
 	}
 
 
