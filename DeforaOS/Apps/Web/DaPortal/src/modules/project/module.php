@@ -1289,17 +1289,18 @@ class ProjectModule extends ContentModule
 	}
 
 
-	//ProjectModule::helperListToolbar
-	protected function helperListToolbar($engine, $page, $request)
+	//ProjectModule::helperListView
+	protected function helperListView($engine, $page, $request)
 	{
-		//XXX assumes $page is the treeview
-		if(($columns = $page->getProperty('columns')) !== FALSE)
+		$view = parent::helperListView($engine, $page, $request);
+		if(($columns = $view->getProperty('columns')) !== FALSE)
 		{
+			unset($columns['date']);
 			$columns['username'] = _('Manager');
 			$columns['synopsis'] = _('Description');
-			$page->setProperty('columns', $columns);
+			$view->setProperty('columns', $columns);
 		}
-		return parent::helperListToolbar($engine, $page, $request);
+		return $view;
 	}
 
 
