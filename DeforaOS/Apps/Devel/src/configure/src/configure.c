@@ -53,8 +53,8 @@ const EnumMap mHostArch[] =
 const String * sHostOS[HO_COUNT] =
 {
 	"DeforaOS",
-	"Linux",
 	"Darwin",
+	"Linux",
 	"FreeBSD", "NetBSD", "OpenBSD",
 	"SunOS",
 	"Windows",
