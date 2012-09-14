@@ -91,6 +91,7 @@ static void _subversion_destroy(SVN * svn);
 static GtkWidget * _subversion_get_widget(SVN * svn);
 static void _subversion_refresh(SVN * svn, GList * selection);
 
+/* useful */
 static int _subversion_add_task(SVN * svn, char const * title,
 		char const * directory, char * argv[]);
 
@@ -103,6 +104,7 @@ static void _subversion_task_close_channel(SVNTask * task,
 
 /* callbacks */
 static void _subversion_on_add(gpointer data);
+static void _subversion_on_blame(gpointer data);
 static void _subversion_on_commit(gpointer data);
 static void _subversion_on_diff(gpointer data);
 static void _subversion_on_log(gpointer data);
@@ -188,6 +190,9 @@ static SVN * _subversion_init(BrowserPluginHelper * helper)
 	svn->file = gtk_vbox_new(FALSE, 4);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Request diff"),
 			G_CALLBACK(_subversion_on_diff), svn);
+	gtk_box_pack_start(GTK_BOX(svn->file), widget, FALSE, TRUE, 0);
+	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("Annotate"),
+			G_CALLBACK(_subversion_on_blame), svn);
 	gtk_box_pack_start(GTK_BOX(svn->file), widget, FALSE, TRUE, 0);
 	widget = _init_button(bgroup, GTK_STOCK_INDEX, _("View log"),
 			G_CALLBACK(_subversion_on_log), svn);
@@ -353,6 +358,7 @@ static void _refresh_status(SVN * svn, char const * status)
 }
 
 
+/* useful */
 /* svn_add_task */
 static int _subversion_add_task(SVN * svn, char const * title,
 		char const * directory, char * argv[])
@@ -548,6 +554,28 @@ static gboolean _add_is_binary(char const * type)
 		if(strcmp(types[i], type) == 0)
 			return FALSE;
 	return TRUE;
+}
+
+
+/* subversion_on_blame */
+static void _subversion_on_blame(gpointer data)
+{
+	SVN * svn = data;
+	struct stat st;
+	gchar * dirname;
+	gchar * basename;
+	char * argv[] = { "svn", "blame", "--", NULL, NULL };
+
+	if(svn->filename == NULL || lstat(svn->filename, &st) != 0)
+		return;
+	dirname = S_ISDIR(st.st_mode) ? g_strdup(svn->filename)
+		: g_path_get_dirname(svn->filename);
+	basename = S_ISDIR(st.st_mode) ? NULL
+		: g_path_get_basename(svn->filename);
+	argv[3] = basename;
+	_subversion_add_task(svn, "svn blame", dirname, argv);
+	g_free(basename);
+	g_free(dirname);
 }
 
 
