@@ -95,6 +95,7 @@ static void _cvs_refresh(CVS * cvs, GList * selection);
 
 /* accessors */
 static char * _cvs_get_entries(char const * pathname);
+static char * _cvs_get_root(char const * pathname);
 static gboolean _cvs_is_managed(char const * filename, char ** revision);
 
 /* useful */
@@ -345,13 +346,13 @@ static void _refresh_dir(CVS * cvs)
 {
 	BrowserPluginHelper * helper = cvs->helper;
 	char const dir[] = "CVS";
-	char const root[] = "CVS/Root";
 	char const repository[] = "CVS/Repository";
 	char const tag[] = "CVS/Tag";
 	size_t len = strlen(cvs->filename);
 	char * p;
 	struct stat st;
 	gchar * q;
+	gchar * root;
 	char const * filename = cvs->filename;
 	char * revision = NULL;
 
@@ -389,17 +390,12 @@ static void _refresh_dir(CVS * cvs)
 	}
 	gtk_widget_show(cvs->directory);
 	/* obtain the CVS root */
-	len = strlen(filename) + sizeof(root) + 1;
-	if((p = realloc(p, len)) != NULL)
+	if((root = _cvs_get_root(filename)) != NULL)
 	{
-		snprintf(p, len, "%s/%s", filename, root);
-		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
-		{
-			_rtrim(q);
-			gtk_label_set_text(GTK_LABEL(cvs->d_root), q);
-			gtk_widget_show(cvs->d_root);
-			g_free(q);
-		}
+		_rtrim(root);
+		gtk_label_set_text(GTK_LABEL(cvs->d_root), root);
+		gtk_widget_show(cvs->d_root);
+		free(root);
 	}
 	/* obtain the CVS repository */
 	len = strlen(filename) + sizeof(repository) + 1;
@@ -518,9 +514,28 @@ static char * _cvs_get_entries(char const * pathname)
 }
 
 
-/* cvs_get_revision */
+/* cvs_get_root */
+static char * _cvs_get_root(char const * pathname)
+{
+	char * ret = NULL;
+	char const root[] = "CVS/Root";
+	size_t len;
+	char * p;
+	gboolean res;
+
+	len = strlen(pathname) + sizeof(root) + 1;
+	if((p = malloc(len)) == NULL)
+		return NULL;
+	snprintf(p, len, "%s/%s", pathname, root);
+	res = g_file_get_contents(p, &ret, NULL, NULL);
+	free(p);
+	return res ? ret : NULL;
+}
+
+
+/* cvs_is_managed */
 /* XXX returns if the directory is managed, set *revision if the file is */
-static gboolean _cvs_is_managed(char const * filename, char ** revision)
+static gboolean _cvs_is_managed(char const * pathname, char ** revision)
 {
 	char * entries;
 	gchar * basename;
@@ -529,10 +544,10 @@ static gboolean _cvs_is_managed(char const * filename, char ** revision)
 	char buf[256];
 
 	/* obtain the CVS entries */
-	if((entries = _cvs_get_entries(filename)) == NULL)
+	if((entries = _cvs_get_entries(pathname)) == NULL)
 		return FALSE;
 	/* lookup the filename within the entries */
-	basename = g_path_get_basename(filename);
+	basename = g_path_get_basename(pathname);
 	len = strlen(basename);
 	for(s = entries; s != NULL && s[0] != '\0'; s = strchr(s, '\n'))
 	{
