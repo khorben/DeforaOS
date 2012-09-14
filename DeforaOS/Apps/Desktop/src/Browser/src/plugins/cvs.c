@@ -354,40 +354,42 @@ static void _refresh_dir(CVS * cvs)
 	gchar * q;
 	gchar * root;
 	char const * filename = cvs->filename;
-	char * revision = NULL;
 
 	/* reset the interface */
 	gtk_widget_hide(cvs->d_root);
 	gtk_widget_hide(cvs->d_repository);
 	gtk_widget_hide(cvs->d_tag);
-	/* consider "CVS" folders like their parent */
+	/* consider "CVS" folders as managed */
 	if((len = strlen(filename)) >= 4
 			&& strcmp(&filename[len - 4], "/CVS") == 0)
 		cvs->filename[len - 4] = '\0';
-	/* check if it is a CVS repository itself */
-	len = strlen(filename) + sizeof(dir) + 1;
-	if((p = malloc(len)) == NULL)
+	/* check if it is a CVS repository */
+	else
 	{
-		helper->error(helper->browser, strerror(errno), 1);
-		return;
+		len = strlen(filename) + sizeof(dir) + 1;
+		if((p = malloc(len)) == NULL)
+		{
+			helper->error(helper->browser, strerror(errno), 1);
+			return;
+		}
+		snprintf(p, len, "%s/%s", filename, dir);
+		if(lstat(p, &st) == 0)
+			filename = p;
+		else
+		{
+			/* check if the parent folder is managed */
+			if(_cvs_is_managed(filename, NULL) == FALSE)
+				_refresh_status(cvs, _("Not a CVS repository"));
+			else
+			{
+				_refresh_status(cvs, _("Not managed by CVS"));
+				gtk_widget_show(cvs->add);
+			}
+			free(p);
+			return;
+		}
 	}
-	snprintf(p, len, "%s/%s", filename, dir);
-	if(lstat(p, &st) == 0)
-		filename = p;
-	/* check if it is managed */
-	if(_cvs_is_managed(filename, &revision) == FALSE)
-	{
-		_refresh_status(cvs, _("Not a CVS repository"));
-		free(p);
-		return;
-	}
-	else if(revision == NULL)
-	{
-		gtk_widget_show(cvs->add);
-		_refresh_status(cvs, _("Not managed by CVS"));
-		free(p);
-		return;
-	}
+	/* this folder is managed */
 	gtk_widget_show(cvs->directory);
 	/* obtain the CVS root */
 	if((root = _cvs_get_root(filename)) != NULL)
