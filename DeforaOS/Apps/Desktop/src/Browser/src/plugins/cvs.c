@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - support adding directories to the current repository */
 
 
 
@@ -95,7 +93,11 @@ static void _cvs_destroy(CVS * cvs);
 static GtkWidget * _cvs_get_widget(CVS * cvs);
 static void _cvs_refresh(CVS * cvs, GList * selection);
 
+/* accessors */
 static char * _cvs_get_entries(char const * pathname);
+static gboolean _cvs_is_managed(char const * filename, char ** revision);
+
+/* useful */
 static int _cvs_add_task(CVS * cvs, char const * title,
 		char const * directory, char * argv[]);
 
@@ -350,65 +352,82 @@ static void _refresh_dir(CVS * cvs)
 	char * p;
 	struct stat st;
 	gchar * q;
+	char const * filename = cvs->filename;
+	char * revision = NULL;
 
 	/* reset the interface */
-	gtk_label_set_text(GTK_LABEL(cvs->d_root), NULL);
-	gtk_label_set_text(GTK_LABEL(cvs->d_repository), NULL);
-	gtk_label_set_text(GTK_LABEL(cvs->d_tag), NULL);
+	gtk_widget_hide(cvs->d_root);
+	gtk_widget_hide(cvs->d_repository);
+	gtk_widget_hide(cvs->d_tag);
 	/* consider "CVS" folders like their parent */
-	if((len = strlen(cvs->filename)) >= 4 && strcmp(&cvs->filename[len - 4],
-				"/CVS") == 0)
+	if((len = strlen(filename)) >= 4
+			&& strcmp(&filename[len - 4], "/CVS") == 0)
 		cvs->filename[len - 4] = '\0';
-	/* check if it is a CVS repository */
-	len = strlen(cvs->filename) + sizeof(dir) + 1;
+	/* check if it is a CVS repository itself */
+	len = strlen(filename) + sizeof(dir) + 1;
 	if((p = malloc(len)) == NULL)
 	{
 		helper->error(helper->browser, strerror(errno), 1);
 		return;
 	}
-	snprintf(p, len, "%s/%s", cvs->filename, dir);
-	if(lstat(p, &st) != 0)
+	snprintf(p, len, "%s/%s", filename, dir);
+	if(lstat(p, &st) == 0)
+		filename = p;
+	/* check if it is managed */
+	if(_cvs_is_managed(filename, &revision) == FALSE)
 	{
 		_refresh_status(cvs, _("Not a CVS repository"));
 		free(p);
 		return;
 	}
+	else if(revision == NULL)
+	{
+		gtk_widget_show(cvs->add);
+		_refresh_status(cvs, _("Not managed by CVS"));
+		free(p);
+		return;
+	}
 	gtk_widget_show(cvs->directory);
 	/* obtain the CVS root */
-	len = strlen(cvs->filename) + sizeof(root) + 1;
+	len = strlen(filename) + sizeof(root) + 1;
 	if((p = realloc(p, len)) != NULL)
 	{
-		snprintf(p, len, "%s/%s", cvs->filename, root);
+		snprintf(p, len, "%s/%s", filename, root);
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
 			_rtrim(q);
 			gtk_label_set_text(GTK_LABEL(cvs->d_root), q);
+			gtk_widget_show(cvs->d_root);
 			g_free(q);
 		}
 	}
 	/* obtain the CVS repository */
-	len = strlen(cvs->filename) + sizeof(repository) + 1;
+	len = strlen(filename) + sizeof(repository) + 1;
 	if((p = realloc(p, len)) != NULL)
 	{
-		snprintf(p, len, "%s/%s", cvs->filename, repository);
+		snprintf(p, len, "%s/%s", filename, repository);
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
 			_rtrim(q);
 			gtk_label_set_text(GTK_LABEL(cvs->d_repository), q);
+			gtk_widget_show(cvs->d_repository);
 			g_free(q);
 		}
 	}
 	/* obtain the default CVS tag (if set) */
-	len = strlen(cvs->filename) + sizeof(tag) + 1;
+	len = strlen(filename) + sizeof(tag) + 1;
 	if((p = realloc(p, len)) != NULL)
 	{
-		snprintf(p, len, "%s/%s", cvs->filename, tag);
+		snprintf(p, len, "%s/%s", filename, tag);
 		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
 		{
 			_rtrim(q);
 			if(q[0] == 'T')
+			{
 				gtk_label_set_text(GTK_LABEL(cvs->d_tag),
 						&q[1]);
+				gtk_widget_show(cvs->d_tag);
+			}
 			g_free(q);
 		}
 	}
@@ -417,46 +436,29 @@ static void _refresh_dir(CVS * cvs)
 
 static void _refresh_file(CVS * cvs)
 {
-	size_t len;
-	gchar * q;
-	gchar * basename;
-	char const * s;
-	char buf[256];
+	char * revision = NULL;
 
 	/* reset the interface */
-	gtk_label_set_text(GTK_LABEL(cvs->f_revision), NULL);
-	/* obtain the CVS entries */
-	if((q = _cvs_get_entries(cvs->filename)) == NULL)
-	{
+	gtk_widget_hide(cvs->f_revision);
+	/* check if it is managed */
+	if(_cvs_is_managed(cvs->filename, &revision) == FALSE)
 		_refresh_status(cvs, _("Not a CVS repository"));
-		return;
-	}
-	/* lookup the filename within the entries */
-	basename = g_path_get_basename(cvs->filename);
-	len = strlen(basename);
-	for(s = q; s != NULL && s[0] != '\0'; s = strchr(s, '\n'))
-	{
-		if((s = strchr(s, '/')) == NULL)
-			break;
-		if(strncmp(++s, basename, len) != 0 || s[len] != '/')
-			continue;
-		s += len;
-		if(sscanf(s, "/%255[^/]/", buf) != 1)
-			break;
-		buf[sizeof(buf) - 1] = '\0';
-		gtk_label_set_text(GTK_LABEL(cvs->f_revision), buf);
-		gtk_widget_show(cvs->f_revision);
-		break;
-	}
-	if(s == NULL)
+	else if(revision == NULL)
 	{
 		gtk_widget_show(cvs->add);
 		_refresh_status(cvs, _("Not managed by CVS"));
 	}
 	else
+	{
 		gtk_widget_show(cvs->file);
-	g_free(basename);
-	g_free(q);
+		if(revision != NULL)
+		{
+			gtk_label_set_text(GTK_LABEL(cvs->f_revision),
+					revision);
+			gtk_widget_show(cvs->f_revision);
+			free(revision);
+		}
+	}
 }
 
 static void _refresh_make(CVS * cvs, struct stat * st)
@@ -484,11 +486,16 @@ static void _refresh_make(CVS * cvs, struct stat * st)
 static void _refresh_status(CVS * cvs, char const * status)
 {
 	if(status == NULL)
-		status = "";
-	gtk_label_set_text(GTK_LABEL(cvs->status), status);
+		gtk_widget_hide(cvs->status);
+	else
+	{
+		gtk_label_set_text(GTK_LABEL(cvs->status), status);
+		gtk_widget_show(cvs->status);
+	}
 }
 
 
+/* accessors */
 /* cvs_get_entries */
 static char * _cvs_get_entries(char const * pathname)
 {
@@ -511,6 +518,43 @@ static char * _cvs_get_entries(char const * pathname)
 }
 
 
+/* cvs_get_revision */
+/* XXX returns if the directory is managed, set *revision if the file is */
+static gboolean _cvs_is_managed(char const * filename, char ** revision)
+{
+	char * entries;
+	gchar * basename;
+	size_t len;
+	char const * s;
+	char buf[256];
+
+	/* obtain the CVS entries */
+	if((entries = _cvs_get_entries(filename)) == NULL)
+		return FALSE;
+	/* lookup the filename within the entries */
+	basename = g_path_get_basename(filename);
+	len = strlen(basename);
+	for(s = entries; s != NULL && s[0] != '\0'; s = strchr(s, '\n'))
+	{
+		if((s = strchr(s, '/')) == NULL)
+			break;
+		if(strncmp(++s, basename, len) != 0 || s[len] != '/')
+			continue;
+		s += len;
+		if(sscanf(s, "/%255[^/]/", buf) != 1)
+			break;
+		buf[sizeof(buf) - 1] = '\0';
+		break;
+	}
+	g_free(basename);
+	g_free(entries);
+	if(s != NULL)
+		*revision = strdup(buf);
+	return TRUE;
+}
+
+
+/* useful */
 /* cvs_add_task */
 static int _cvs_add_task(CVS * cvs, char const * title,
 		char const * directory, char * argv[])
@@ -532,6 +576,9 @@ static int _cvs_add_task(CVS * cvs, char const * title,
 	if((task = object_new(sizeof(*task))) == NULL)
 		return -helper->error(helper->browser, error_get(), 1);
 	task->cvs = cvs;
+#ifdef DEBUG
+	argv[0] = "echo";
+#endif
 	res = g_spawn_async_with_pipes(directory, argv, NULL, flags, NULL, NULL,
 			&task->pid, NULL, &task->o_fd, &task->e_fd, &error);
 	if(res != TRUE)
