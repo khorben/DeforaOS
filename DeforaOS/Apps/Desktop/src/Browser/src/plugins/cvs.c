@@ -322,7 +322,6 @@ static void _cvs_refresh(CVS * cvs, GList * selection)
 
 	if(cvs->source != 0)
 		g_source_remove(cvs->source);
-	/* FIXME crashing here: */
 	free(cvs->filename);
 	cvs->filename = NULL;
 	if(lstat(path, &st) != 0)
