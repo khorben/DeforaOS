@@ -95,7 +95,9 @@ static void _cvs_refresh(CVS * cvs, GList * selection);
 
 /* accessors */
 static char * _cvs_get_entries(char const * pathname);
+static char * _cvs_get_repository(char const * pathname);
 static char * _cvs_get_root(char const * pathname);
+static char * _cvs_get_tag(char const * pathname);
 static gboolean _cvs_is_managed(char const * filename, char ** revision);
 
 /* useful */
@@ -346,23 +348,26 @@ static void _refresh_dir(CVS * cvs)
 {
 	BrowserPluginHelper * helper = cvs->helper;
 	char const dir[] = "CVS";
-	char const repository[] = "CVS/Repository";
-	char const tag[] = "CVS/Tag";
 	size_t len = strlen(cvs->filename);
-	char * p;
+	char * p = NULL;
 	struct stat st;
 	gchar * q;
-	gchar * root;
 	char const * filename = cvs->filename;
 
 	/* reset the interface */
-	gtk_widget_hide(cvs->d_root);
-	gtk_widget_hide(cvs->d_repository);
-	gtk_widget_hide(cvs->d_tag);
+	gtk_label_set_text(GTK_LABEL(cvs->d_root), NULL);
+	gtk_label_set_text(GTK_LABEL(cvs->d_repository), NULL);
+	gtk_label_set_text(GTK_LABEL(cvs->d_tag), NULL);
 	/* consider "CVS" folders as managed */
 	if((len = strlen(filename)) >= 4
 			&& strcmp(&filename[len - 4], "/CVS") == 0)
-		cvs->filename[len - 4] = '\0';
+	{
+		if((p = strdup(filename)) != NULL)
+		{
+			p[len - 4] = '\0';
+			filename = p;
+		}
+	}
 	/* check if it is a CVS repository */
 	else
 	{
@@ -373,10 +378,9 @@ static void _refresh_dir(CVS * cvs)
 			return;
 		}
 		snprintf(p, len, "%s/%s", filename, dir);
-		if(lstat(p, &st) == 0)
-			filename = p;
-		else
+		if(lstat(p, &st) != 0)
 		{
+			free(p);
 			/* check if the parent folder is managed */
 			if(_cvs_is_managed(filename, NULL) == FALSE)
 				_refresh_status(cvs, _("Not a CVS repository"));
@@ -392,42 +396,23 @@ static void _refresh_dir(CVS * cvs)
 	/* this folder is managed */
 	gtk_widget_show(cvs->directory);
 	/* obtain the CVS root */
-	if((root = _cvs_get_root(filename)) != NULL)
+	if((q = _cvs_get_root(filename)) != NULL)
 	{
-		_rtrim(root);
-		gtk_label_set_text(GTK_LABEL(cvs->d_root), root);
-		gtk_widget_show(cvs->d_root);
-		free(root);
+		gtk_label_set_text(GTK_LABEL(cvs->d_root), q);
+		free(q);
 	}
 	/* obtain the CVS repository */
-	len = strlen(filename) + sizeof(repository) + 1;
-	if((p = realloc(p, len)) != NULL)
+	if((q = _cvs_get_repository(filename)) != NULL)
 	{
-		snprintf(p, len, "%s/%s", filename, repository);
-		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
-		{
-			_rtrim(q);
-			gtk_label_set_text(GTK_LABEL(cvs->d_repository), q);
-			gtk_widget_show(cvs->d_repository);
-			g_free(q);
-		}
+		gtk_label_set_text(GTK_LABEL(cvs->d_repository), q);
+		free(q);
 	}
 	/* obtain the default CVS tag (if set) */
-	len = strlen(filename) + sizeof(tag) + 1;
-	if((p = realloc(p, len)) != NULL)
+	if((q = _cvs_get_tag(filename)) != NULL)
 	{
-		snprintf(p, len, "%s/%s", filename, tag);
-		if(g_file_get_contents(p, &q, NULL, NULL) == TRUE)
-		{
-			_rtrim(q);
-			if(q[0] == 'T')
-			{
-				gtk_label_set_text(GTK_LABEL(cvs->d_tag),
-						&q[1]);
-				gtk_widget_show(cvs->d_tag);
-			}
-			g_free(q);
-		}
+		if(q[0] == 'T' && q[1] != '\0')
+			gtk_label_set_text(GTK_LABEL(cvs->d_tag), &q[1]);
+		g_free(q);
 	}
 	free(p);
 }
@@ -437,7 +422,7 @@ static void _refresh_file(CVS * cvs)
 	char * revision = NULL;
 
 	/* reset the interface */
-	gtk_widget_hide(cvs->f_revision);
+	gtk_label_set_text(GTK_LABEL(cvs->f_revision), NULL);
 	/* check if it is managed */
 	if(_cvs_is_managed(cvs->filename, &revision) == FALSE)
 		_refresh_status(cvs, _("Not a CVS repository"));
@@ -453,7 +438,6 @@ static void _refresh_file(CVS * cvs)
 		{
 			gtk_label_set_text(GTK_LABEL(cvs->f_revision),
 					revision);
-			gtk_widget_show(cvs->f_revision);
 			free(revision);
 		}
 	}
@@ -497,22 +481,40 @@ static void _refresh_status(CVS * cvs, char const * status)
 /* cvs_get_entries */
 static char * _cvs_get_entries(char const * pathname)
 {
+	char * ret = NULL;
 	char const entries[] = "CVS/Entries";
 	gchar * dirname;
 	size_t len;
 	char * p;
-	char * q;
-	gboolean res;
 
 	dirname = g_path_get_dirname(pathname);
 	len = strlen(dirname) + sizeof(entries) + 1;
 	if((p = malloc(len)) == NULL)
 		return NULL;
 	snprintf(p, len, "%s/%s", dirname, entries);
-	res = g_file_get_contents(p, &q, NULL, NULL);
+	g_file_get_contents(p, &ret, NULL, NULL);
 	free(p);
 	g_free(dirname);
-	return res ? q : NULL;
+	return ret;
+}
+
+
+/* cvs_get_repository */
+static char * _cvs_get_repository(char const * pathname)
+{
+	char * ret = NULL;
+	char const repository[] = "CVS/Repository";
+	size_t len;
+	char * p;
+
+	len = strlen(pathname) + sizeof(repository) + 1;
+	if((p = malloc(len)) == NULL)
+		return NULL;
+	snprintf(p, len, "%s/%s", pathname, repository);
+	if(g_file_get_contents(p, &ret, NULL, NULL) == TRUE)
+		_rtrim(ret);
+	free(p);
+	return ret;
 }
 
 
@@ -523,15 +525,34 @@ static char * _cvs_get_root(char const * pathname)
 	char const root[] = "CVS/Root";
 	size_t len;
 	char * p;
-	gboolean res;
 
 	len = strlen(pathname) + sizeof(root) + 1;
 	if((p = malloc(len)) == NULL)
 		return NULL;
 	snprintf(p, len, "%s/%s", pathname, root);
-	res = g_file_get_contents(p, &ret, NULL, NULL);
+	if(g_file_get_contents(p, &ret, NULL, NULL) == TRUE)
+		_rtrim(ret);
 	free(p);
-	return res ? ret : NULL;
+	return ret;
+}
+
+
+/* cvs_get_tag */
+static char * _cvs_get_tag(char const * pathname)
+{
+	char * ret = NULL;
+	char const tag[] = "CVS/Tag";
+	char * p;
+	size_t len;
+
+	len = strlen(pathname) + sizeof(tag) + 1;
+	if((p = malloc(len)) == NULL)
+		return NULL;
+	snprintf(p, len, "%s/%s", pathname, tag);
+	if(g_file_get_contents(p, &ret, NULL, NULL) == TRUE)
+		_rtrim(ret);
+	free(p);
+	return ret;
 }
 
 
@@ -565,7 +586,7 @@ static gboolean _cvs_is_managed(char const * pathname, char ** revision)
 	}
 	g_free(basename);
 	g_free(entries);
-	if(s != NULL)
+	if(s != NULL && revision != NULL)
 		*revision = strdup(buf);
 	return TRUE;
 }
