@@ -1418,6 +1418,7 @@ static gboolean _done_thumbnails(gpointer data)
 	char * path;
 	GdkPixbuf * icon;
 	GError * error = NULL;
+	char const * p;
 
 	for(i = 0; i < IDLE_LOOP_ICON_CNT; i++)
 	{
@@ -1428,8 +1429,9 @@ static gboolean _done_thumbnails(gpointer data)
 		{
 			/* lookup the real type of symbolic links */
 			free(type);
-			if((type = mime_type(browser->mime, path)) != NULL)
-				type = strdup(type);
+			type = NULL;
+			if((p = mime_type(browser->mime, path)) != NULL)
+				type = strdup(p);
 		}
 		if(type != NULL && path != NULL
 				&& strncmp(type, "image/", 6) == 0)
