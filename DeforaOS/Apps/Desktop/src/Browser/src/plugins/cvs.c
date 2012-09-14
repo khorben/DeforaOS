@@ -380,7 +380,6 @@ static void _refresh_dir(CVS * cvs)
 		snprintf(p, len, "%s/%s", filename, dir);
 		if(lstat(p, &st) != 0)
 		{
-			free(p);
 			/* check if the parent folder is managed */
 			if(_cvs_is_managed(filename, NULL) == FALSE)
 				_refresh_status(cvs, _("Not a CVS repository"));
