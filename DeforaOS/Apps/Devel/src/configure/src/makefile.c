@@ -1214,7 +1214,7 @@ static int _target_plugin(Configure * configure, FILE * fp,
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s%s%s%s%s", "\t$(CCSHARED) -o ", target, soext,
 			" $(", target, "_OBJS) $(", target, "_LDFLAGS)");
-	if((q = malloc(strlen(target) + 4)) != NULL)
+	if((q = malloc(strlen(target) + strlen(soext) + 1)) != NULL)
 	{
 		sprintf(q, "%s%s", target, soext);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
