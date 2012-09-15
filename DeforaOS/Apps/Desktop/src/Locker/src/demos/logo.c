@@ -58,7 +58,10 @@ typedef struct _LockerDemo
 	size_t windows_cnt;
 	guint source;
 	guint frame_num;
+
+	/* settings */
 	int scroll;
+	int opacity;
 } Logo;
 
 
@@ -114,6 +117,7 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 	logo->source = 0;
 	logo->frame_num = 0;
 	logo->scroll = 0;
+	logo->opacity = 255;
 	/* load the background */
 	if((p = helper->config_get(helper->locker, "logo", "background"))
 			&& (logo->background = gdk_pixbuf_new_from_file(p,
@@ -209,10 +213,20 @@ static void _logo_start(Logo * logo)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	/* settings */
+	/* scrolling */
 	logo->scroll = 0;
 	if((p = helper->config_get(helper->locker, "logo", "scroll")) != NULL
 			&& strtol(p, NULL, 10) == 1)
 		logo->scroll = 1;
+	/* opacity */
+	logo->opacity = 255;
+	if((p = helper->config_get(helper->locker, "logo", "opacity")) != NULL)
+	{
+		logo->opacity = strtol(p, NULL, 10);
+		if(logo->opacity < 0 || logo->opacity > 255)
+			logo->opacity = 255;
+	}
 	if(logo->source == 0)
 		_logo_on_timeout(logo);
 }
@@ -347,7 +361,7 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 		}
 		gdk_pixbuf_composite(logo->logo, frame, 0, 0,
 				rect.width, rect.height, x, y,
-				1.0, 1.0, GDK_INTERP_NEAREST, 191);
+				1.0, 1.0, GDK_INTERP_NEAREST, logo->opacity);
 	}
 	gdk_draw_pixbuf(pixmap, NULL, frame, 0, 0, 0, 0, rect.width,
 			rect.height, GDK_RGB_DITHER_NONE, 0, 0);
