@@ -119,7 +119,7 @@ static const struct
 		48 },
 	{ "panel-small",	N_("Small"),	GTK_ICON_SIZE_SMALL_TOOLBAR,
 		24 },
-	{ "panel-smaller",	N_("Smaller"),	GTK_ICON_SIZE_MENU, 16 },
+	{ "panel-smaller",	N_("Smaller"),	GTK_ICON_SIZE_MENU, 16 }
 };
 
 
