@@ -120,8 +120,13 @@ static Logo * _logo_init(LockerDemoHelper * helper)
 	logo->opacity = 255;
 	/* load the background */
 	if((p = helper->config_get(helper->locker, "logo", "background"))
-			&& (logo->background = gdk_pixbuf_new_from_file(p,
-					&error)) == NULL)
+			== NULL)
+	{
+		helper->error(NULL, "No background configured", 1);
+		p = DATADIR "/pixmaps/backgrounds/gnome/background-default.jpg";
+	}
+	if(p != NULL && (logo->background = gdk_pixbuf_new_from_file(p, &error))
+			== NULL)
 	{
 		helper->error(NULL, error->message, 1);
 		g_error_free(error);
