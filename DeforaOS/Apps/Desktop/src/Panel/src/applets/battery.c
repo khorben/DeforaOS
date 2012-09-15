@@ -66,6 +66,9 @@ typedef struct _PanelApplet
 	GtkWidget * label;
 	guint timeout;
 
+	/* preferences */
+	GtkWidget * pr_level;
+
 	/* platform-specific */
 #if defined(__NetBSD__) || defined(__linux__)
 	int fd;
@@ -76,6 +79,8 @@ typedef struct _PanelApplet
 /* prototypes */
 static Battery * _battery_init(PanelAppletHelper * helper, GtkWidget ** widget);
 static void _battery_destroy(Battery * battery);
+static GtkWidget * _battery_settings(Battery * battery, gboolean apply,
+		gboolean reset);
 
 static gdouble _battery_get(Battery * battery, gboolean * charging);
 static void _battery_set(Battery * battery, gdouble value, gboolean charging);
@@ -93,7 +98,7 @@ PanelAppletDefinition applet =
 	NULL,
 	_battery_init,
 	_battery_destroy,
-	NULL,
+	_battery_settings,
 	FALSE,
 	TRUE
 };
@@ -121,11 +126,12 @@ static Battery * _battery_init(PanelAppletHelper * helper, GtkWidget ** widget)
 	battery->image = gtk_image_new_from_icon_name("battery",
 			helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->image, FALSE, TRUE, 0);
-#ifndef EMBEDDED
 	battery->label = gtk_label_new(" ");
 	gtk_box_pack_start(GTK_BOX(hbox), battery->label, FALSE, TRUE, 0);
+#ifndef EMBEDDED
 	gtk_widget_show(battery->label);
 #endif
+	battery->pr_level = NULL;
 	battery->timeout = g_timeout_add(5000, _on_timeout, battery);
 	_on_timeout(battery);
 	gtk_widget_show(battery->image);
@@ -144,6 +150,59 @@ static void _battery_destroy(Battery * battery)
 		close(battery->fd);
 #endif
 	free(battery);
+}
+
+
+/* battery_settings */
+static void _settings_apply(Battery * battery, PanelAppletHelper * helper);
+static void _settings_reset(Battery * battery, PanelAppletHelper * helper);
+
+static GtkWidget * _battery_settings(Battery * battery, gboolean apply,
+		gboolean reset)
+{
+	PanelAppletHelper * helper = battery->helper;
+
+	if(battery->pr_level == NULL)
+	{
+		battery->pr_level = gtk_check_button_new_with_label(
+				_("Show the battery level"));
+		gtk_widget_show(battery->pr_level);
+		reset = TRUE;
+	}
+	if(reset == TRUE)
+		_settings_reset(battery, helper);
+	if(apply == TRUE)
+		_settings_apply(battery, helper);
+	return battery->pr_level;
+}
+
+static void _settings_apply(Battery * battery, PanelAppletHelper * helper)
+{
+	gboolean active;
+
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				battery->pr_level));
+	if(active)
+		gtk_widget_show(battery->label);
+	else
+		gtk_widget_hide(battery->label);
+	helper->config_set(helper->panel, "battery", "level",
+			active ? "1" : "0");
+}
+
+static void _settings_reset(Battery * battery, PanelAppletHelper * helper)
+{
+#ifndef EMBEDDED
+	gboolean active = TRUE;
+#else
+	gboolean active = FALSE;
+#endif
+	char const * p;
+
+	if((p = helper->config_get(helper->panel, "battery", "level")) != NULL)
+		active = strtol(p, NULL, 10) ? TRUE : FALSE;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(battery->pr_level),
+			active);
 }
 
 
