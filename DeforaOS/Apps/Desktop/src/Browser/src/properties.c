@@ -73,10 +73,12 @@ typedef struct _Properties
 static unsigned int _properties_cnt = 0; /* XXX set as static in _properties */
 
 /* functions */
-static int _properties(Mime * mime, int filec, char * const filev[]);
+static int _properties(Mime * mime, char const * plugin,
+		int filec, char * const filev[]);
 
 /* properties */
-static Properties * _properties_new(Mime * mime, char const * filename);
+static Properties * _properties_new(Mime * mime, char const * plugin,
+		char const * filename);
 static void _properties_delete(Properties * properties);
 
 /* accessors */
@@ -100,7 +102,8 @@ static gboolean _properties_on_closex(gpointer data);
 
 /* functions */
 /* properties */
-static int _properties(Mime * mime, int filec, char * const filev[])
+static int _properties(Mime * mime, char const * plugin,
+		int filec, char * const filev[])
 {
 	int ret = 0;
 	int i;
@@ -111,7 +114,7 @@ static int _properties(Mime * mime, int filec, char * const filev[])
 	{
 		p = (filev[i][0] != '/') ? g_build_filename(g_get_current_dir(),
 				"/", filev[i], NULL) : g_strdup(filev[i]);
-		if((properties = _properties_new(mime, p)) == NULL)
+		if((properties = _properties_new(mime, plugin, p)) == NULL)
 			ret |= 1;
 		else
 			_properties_cnt++;
@@ -122,9 +125,10 @@ static int _properties(Mime * mime, int filec, char * const filev[])
 
 
 /* properties_new */
-static int _new_load(Properties * properties);
+static int _new_load(Properties * properties, char const * plugin);
 
-static Properties * _properties_new(Mime * mime, char const * filename)
+static Properties * _properties_new(Mime * mime, char const * plugin,
+		char const * filename)
 {
 	Properties * properties;
 	GtkWidget * vbox;
@@ -183,7 +187,7 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 			G_CALLBACK(_properties_on_close), properties);
 	gtk_container_add(GTK_CONTAINER(bbox), widget);
 	gtk_widget_show_all(bbox);
-	if(_new_load(properties) != 0)
+	if(_new_load(properties, plugin) != 0)
 		_properties_error(properties, error_get(), -1);
 	else if(filename != NULL)
 	{
@@ -195,7 +199,7 @@ static Properties * _properties_new(Mime * mime, char const * filename)
 	return properties;
 }
 
-static int _new_load(Properties * properties)
+static int _new_load(Properties * properties, char const * plugin)
 {
 	Config * config;
 	char const * plugins = NULL;
@@ -210,7 +214,13 @@ static int _new_load(Properties * properties)
 			== NULL)
 		plugins = "properties,preview";
 	string_delete(p);
-	if(plugins != NULL && strlen(plugins) && (p = strdup(plugins)) != NULL)
+	if(plugin != NULL)
+	{
+		if(_properties_load(properties, plugin) == 0)
+			cnt++;
+	}
+	else if(plugins != NULL && strlen(plugins)
+			&& (p = strdup(plugins)) != NULL)
 	{
 		/* XXX if plugins is only commas nothing will be loaded */
 		for(q = p, i = 0;;)
@@ -412,7 +422,7 @@ static gboolean _properties_on_closex(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: properties file...\n"), stderr);
+	fputs(_("Usage: properties [-p plugin] file...\n"), stderr);
 	return 1;
 }
 
@@ -425,22 +435,26 @@ int main(int argc, char * argv[])
 	int ret;
 	int o;
 	Mime * mime;
+	char const * plugin = NULL;
 
 	if(setlocale(LC_ALL, "") == NULL)
 		_properties_error(NULL, "setlocale", 1);
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "p:")) != -1)
 		switch(o)
 		{
+			case 'p':
+				plugin = optarg;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind == argc)
 		return _usage();
 	mime = mime_new(NULL);
-	ret = _properties(mime, argc - optind, &argv[optind]);
+	ret = _properties(mime, plugin, argc - optind, &argv[optind]);
 	gtk_main();
 	if(mime != NULL)
 		mime_delete(mime);
