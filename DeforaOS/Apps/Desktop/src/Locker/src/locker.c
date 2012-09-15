@@ -459,6 +459,7 @@ static void _preferences_on_cancel(gpointer data);
 static void _cancel_auth(Locker * locker, GtkListStore * store);
 static void _cancel_demo(Locker * locker, GtkListStore * store);
 static void _cancel_plugins(Locker * locker, GtkListStore * store);
+static void _preferences_on_apply(gpointer data);
 static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_ok(gpointer data);
 static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
@@ -489,6 +490,7 @@ static void _preferences_window(Locker * locker)
 	locker->pr_window = gtk_dialog_new_with_buttons(
 			_("Screensaver preferences"), NULL, 0,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	gtk_window_set_default_size(GTK_WINDOW(locker->pr_window), 400, 300);
 	gtk_window_set_position(GTK_WINDOW(locker->pr_window),
@@ -627,6 +629,67 @@ static GtkWidget * _preferences_window_plugins(Locker * locker)
 	gtk_container_add(GTK_CONTAINER(widget), locker->pr_plview);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	return vbox;
+}
+
+static void _preferences_on_apply(gpointer data)
+{
+	Locker * locker = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(locker->pr_plstore);
+	GtkTreeIter iter;
+	gchar * p;
+	gboolean valid;
+	gboolean enabled;
+	int res = 0;
+	String * value = string_new("");
+	String * sep = "";
+
+	/* authentication */
+	p = NULL;
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_acombo),
+				&iter))
+		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_astore), &iter,
+				LPC_FILENAME, &p, -1);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() auth=\"%s\"\n", __func__, p);
+#endif
+	config_set(locker->config, NULL, "auth", p);
+	g_free(p);
+	/* demos */
+	p = NULL;
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_dcombo),
+				&iter))
+		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_dstore), &iter,
+				LPC_FILENAME, &p, -1);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() demo=\"%s\"\n", __func__, p);
+#endif
+	config_set(locker->config, NULL, "demo", p);
+	g_free(p);
+	/* plug-ins */
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, LPC_FILENAME, &p,
+				LPC_ENABLED, &enabled, -1);
+		/* FIXME also save the configuration */
+		if(enabled)
+		{
+			_locker_plugin_load(locker, p);
+			res |= string_append(&value, sep);
+			res |= string_append(&value, p);
+			sep = ",";
+		}
+		else
+			_locker_plugin_unload(locker, p);
+		g_free(p);
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() value=\"%s\"\n", __func__, value);
+#endif
+	if(res == 0 && config_set(locker->config, NULL, "plugins", value) == 0)
+		_locker_config_save(locker);
+	string_delete(value);
+	_cancel_plugins(locker, locker->pr_plstore); /* XXX */
 }
 
 static void _preferences_on_cancel(gpointer data)
@@ -829,62 +892,9 @@ static gboolean _preferences_on_closex(gpointer data)
 static void _preferences_on_ok(gpointer data)
 {
 	Locker * locker = data;
-	GtkTreeModel * model = GTK_TREE_MODEL(locker->pr_plstore);
-	GtkTreeIter iter;
-	gchar * p;
-	gboolean valid;
-	gboolean enabled;
-	int res = 0;
-	String * value = string_new("");
-	String * sep = "";
 
-	/* authentication */
-	p = NULL;
-	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_acombo),
-				&iter))
-		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_astore), &iter,
-				LPC_FILENAME, &p, -1);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() auth=\"%s\"\n", __func__, p);
-#endif
-	config_set(locker->config, NULL, "auth", p);
-	g_free(p);
-	/* demos */
-	p = NULL;
-	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(locker->pr_dcombo),
-				&iter))
-		gtk_tree_model_get(GTK_TREE_MODEL(locker->pr_dstore), &iter,
-				LPC_FILENAME, &p, -1);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() demo=\"%s\"\n", __func__, p);
-#endif
-	config_set(locker->config, NULL, "demo", p);
-	g_free(p);
-	/* plug-ins */
-	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
-			valid = gtk_tree_model_iter_next(model, &iter))
-	{
-		gtk_tree_model_get(model, &iter, LPC_FILENAME, &p,
-				LPC_ENABLED, &enabled, -1);
-		/* FIXME also save the configuration */
-		if(enabled)
-		{
-			_locker_plugin_load(locker, p);
-			res |= string_append(&value, sep);
-			res |= string_append(&value, p);
-			sep = ",";
-		}
-		else
-			_locker_plugin_unload(locker, p);
-		g_free(p);
-	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() value=\"%s\"\n", __func__, value);
-#endif
-	if(res == 0 && config_set(locker->config, NULL, "plugins", value) == 0)
-		_locker_config_save(locker);
-	string_delete(value);
-	_cancel_plugins(locker, locker->pr_plstore); /* XXX */
+	gtk_widget_hide(locker->pr_window);
+	_preferences_on_apply(locker);
 }
 
 static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
@@ -902,9 +912,10 @@ static void _preferences_on_plugins_toggled(GtkCellRendererToggle * renderer,
 static void _preferences_on_response(GtkWidget * widget, gint response,
 		gpointer data)
 {
-	gtk_widget_hide(widget);
 	if(response == GTK_RESPONSE_OK)
 		_preferences_on_ok(data);
+	else if(response == GTK_RESPONSE_APPLY)
+		_preferences_on_apply(data);
 	else if(response == GTK_RESPONSE_CANCEL)
 		_preferences_on_cancel(data);
 }
