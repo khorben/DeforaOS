@@ -269,6 +269,8 @@ static int _player_config_save(Player * player);
 static int _player_command(Player * player, char const * cmd, size_t cmd_len);
 static int _player_error(char const * message, int ret);
 static void _player_filters(GtkWidget * dialog);
+static void _player_message(Player * player, char const * message,
+		unsigned int duration);
 static void _player_reset(Player * player, char const * filename);
 
 /* callbacks */
@@ -684,9 +686,10 @@ int player_error(Player * player, char const * message, int ret)
 /* player_forward */
 void player_forward(Player * player)
 {
-	char const cmd[] = "speed_incr 0.5\n";
+	char const cmd[] = "seek 10 0\n";
 
 	_player_command(player, cmd, sizeof(cmd) - 1);
+	_player_message(player, _("Forward"), 1000);
 }
 
 
@@ -871,7 +874,9 @@ void player_pause(Player * player)
 		player->timeout_id = 0;
 	}
 	_player_command(player, cmd, sizeof(cmd) - 1);
-	player->paused = player->paused == 1 ? 0 : 1;
+	player->paused = (player->paused == 1) ? 0 : 1;
+	if(player->paused)
+		_player_message(player, _("Paused"), 1000);
 }
 
 
@@ -1083,16 +1088,17 @@ void player_previous(Player * player)
 /* player_rewind */
 void player_rewind(Player * player)
 {
-	char const cmd[] = "speed_incr -0.5\n";
+	char const cmd[] = "seek -10 0\n";
 
 	_player_command(player, cmd, sizeof(cmd) - 1);
+	_player_message(player, _("Rewind"), 1000);
 }
 
 
 /* player_stop */
 void player_stop(Player * player)
 {
-	char const cmd[] = "pausing loadfile " PLAYER_SPLASH " 0\nframe_step\n";
+	char const cmd[] = "stop\n";
 
 	_player_command(player, cmd, sizeof(cmd) - 1);
 	_player_set_progress(player, 0);
@@ -1580,6 +1586,20 @@ static void _player_filters(GtkWidget * dialog)
 	gtk_file_filter_set_name(filter, _("All files"));
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+}
+
+
+/* player_message */
+static void _player_message(Player * player, char const * message,
+		unsigned int duration)
+{
+	char const cmd[] = "pausing_keep osd_show_text";
+	char buf[128];
+	int len;
+
+	len = snprintf(buf, sizeof(buf), "%s \"%s\" %u\n", cmd, message,
+			duration);
+	_player_command(player, buf, len);
 }
 
 
