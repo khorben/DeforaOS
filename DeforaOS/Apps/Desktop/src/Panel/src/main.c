@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -40,14 +39,16 @@
 #endif
 
 
+/* private */
+/* functions */
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: panel [-m monitor][-lsx]\n"
-"  -l	Use icons the size of a large toolbar\n"
+	fputs(_("Usage: panel [-L | -S | -X][-m monitor]\n"
+"  -L	Use icons the size of a large toolbar\n"
 "  -m	Monitor to use (default: 0)\n"
-"  -s	Use icons the size of a small toolbar\n"
-"  -x	Use icons the size of menus\n"), stderr);
+"  -S	Use icons the size of a small toolbar\n"
+"  -X	Use icons the size of menus\n"), stderr);
 	return 1;
 }
 
@@ -66,10 +67,10 @@ int main(int argc, char * argv[])
 	gtk_init(&argc, &argv);
 	prefs.iconsize = PANEL_ICON_SIZE_UNSET;
 	prefs.monitor = -1;
-	while((o = getopt(argc, argv, "lm:sx")) != -1)
+	while((o = getopt(argc, argv, "Lm:SX")) != -1)
 		switch(o)
 		{
-			case 'l':
+			case 'L':
 				prefs.iconsize = PANEL_ICON_SIZE_LARGE;
 				break;
 			case 'm':
@@ -77,10 +78,10 @@ int main(int argc, char * argv[])
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
 				break;
-			case 's':
+			case 'S':
 				prefs.iconsize = PANEL_ICON_SIZE_SMALL;
 				break;
-			case 'x':
+			case 'X':
 				prefs.iconsize = PANEL_ICON_SIZE_SMALLER;
 				break;
 			default:

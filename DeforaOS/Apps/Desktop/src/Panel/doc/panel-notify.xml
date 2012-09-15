@@ -49,8 +49,11 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt">-s</arg>
-			<arg choice="opt">-x</arg>
+			<group choice="opt">
+				<arg choice="plain">-L</arg>
+				<arg choice="plain">-S</arg>
+				<arg choice="plain">-X</arg>
+			</group>
 			<arg choice="opt">-t <replaceable>timeout</replaceable></arg>
 			<arg choice="plain" rep="repeat"><replaceable>applet</replaceable></arg>
 		</cmdsynopsis>
@@ -74,13 +77,19 @@
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
-				<term><option>-s</option></term>
+				<term><option>-L</option></term>
+				<listitem>
+					<para>Use icons the size of a large toolbar.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-S</option></term>
 				<listitem>
 					<para>Use icons the size of a small toolbar.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-x</option></term>
+				<term><option>-X</option></term>
 				<listitem>
 					<para>Use icons the size of menus.</para>
 				</listitem>
