@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #include "../include/Locker/demo.h"
@@ -39,9 +41,14 @@
 /* types */
 struct _Locker
 {
+	char * name;
 	Config * config;
 	LockerDemoDefinition * dplugin;
 	LockerDemo * demo;
+
+	/* widgets */
+	GtkWidget * variable;
+	GtkWidget * value;
 };
 
 
@@ -58,6 +65,7 @@ static int _test_helper_error(Locker * locker, char const * message, int ret);
 
 /* callbacks */
 static gboolean _test_on_closex(void);
+static void _test_on_apply(gpointer data);
 static void _test_on_start(gpointer data);
 static void _test_on_stop(gpointer data);
 
@@ -75,12 +83,19 @@ static int _test(int root, int width, int height, char const * demo)
 	GtkWidget * window;
 	GtkWidget * dwindow = NULL;
 	GdkWindow * wwindow;
-	GtkWidget * widget;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * button;
+	GtkWidget * widget;
 	GdkScreen * screen;
 
 	if((locker = object_new(sizeof(*locker))) == NULL)
 		return error_print(PROGNAME);
+	if((locker->name = strdup(demo)) == NULL)
+	{
+		object_delete(locker);
+		return error_set_print(PROGNAME, 1, "%s", strerror(errno));
+	}
 	locker->config = _test_config();
 	/* helper */
 	helper.locker = locker;
@@ -91,6 +106,7 @@ static int _test(int root, int width, int height, char const * demo)
 	{
 		if(locker->config != NULL)
 			config_delete(locker->config);
+		free(locker->name);
 		object_delete(locker);
 		return error_set_print(PROGNAME, 1, "%s: %s", demo,
 				"Could not load demo plug-in");
@@ -103,6 +119,7 @@ static int _test(int root, int width, int height, char const * demo)
 		plugin_delete(plugin);
 		if(locker->config != NULL)
 			config_delete(locker->config);
+		free(locker->name);
 		object_delete(locker);
 		return error_set_print(PROGNAME, 1, "%s: %s", demo,
 				"Could not initialize demo plug-in");
@@ -110,20 +127,38 @@ static int _test(int root, int width, int height, char const * demo)
 	/* widgets */
 	/* toolbar */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(window, "delete-event", G_CALLBACK(_test_on_closex),
 			NULL);
-	widget = gtk_hbox_new(TRUE, 4);
-	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
+	vbox = gtk_vbox_new(FALSE, 4);
+	/* controls */
+	hbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_START);
+	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	button = gtk_button_new_with_label("Start");
 	g_signal_connect_swapped(button, "clicked", G_CALLBACK(_test_on_start),
 			locker);
-	gtk_box_pack_start(GTK_BOX(widget), button, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox), button);
 	button = gtk_button_new_with_label("Stop");
 	g_signal_connect_swapped(button, "clicked", G_CALLBACK(_test_on_stop),
 			locker);
-	gtk_box_pack_start(GTK_BOX(widget), button, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(window), widget);
+	gtk_container_add(GTK_CONTAINER(hbox), button);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* configuration */
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Configuration: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	locker->variable = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), locker->variable, FALSE, TRUE, 0);
+	locker->value = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), locker->value, FALSE, TRUE, 0);
+	button = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	g_signal_connect_swapped(button, "clicked", G_CALLBACK(_test_on_apply),
+			locker);
+	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 	/* demo window */
 	if(root)
@@ -159,6 +194,7 @@ static int _test(int root, int width, int height, char const * demo)
 	plugin_delete(plugin);
 	if(locker->config != NULL)
 		config_delete(locker->config);
+	free(locker->name);
 	object_delete(locker);
 	return ret;
 }
@@ -231,6 +267,7 @@ static int _test_helper_config_set(Locker * locker, char const * section,
 }
 
 
+/* test_helper_error */
 static int _test_helper_error(Locker * locker, char const * message, int ret)
 {
 	return error_set_print(PROGNAME, ret, "%s", message);
@@ -238,6 +275,35 @@ static int _test_helper_error(Locker * locker, char const * message, int ret)
 
 
 /* callbacks */
+/* test_on_apply */
+static void _test_on_apply(gpointer data)
+{
+	Locker * locker = data;
+	char const section[] = "demo::";
+	char * p;
+	char const * q;
+	char const * r;
+
+	if((p = malloc(sizeof(section) + strlen(locker->name))) == NULL)
+	{
+		error_set_print(PROGNAME, 1, "%s", strerror(errno));
+		return;
+	}
+	sprintf(p, "%s%s", section, locker->name);
+	q = gtk_entry_get_text(GTK_ENTRY(locker->variable));
+	r = gtk_entry_get_text(GTK_ENTRY(locker->value));
+	if(_test_helper_config_set(locker, "demo::logo", q, r) != 0)
+		error_print(PROGNAME);
+	else
+	{
+		/* XXX really force a configuration reload */
+		_test_on_stop(locker);
+		_test_on_start(locker);
+	}
+	free(p);
+}
+
+
 /* test_on_closex */
 static gboolean _test_on_closex(void)
 {
