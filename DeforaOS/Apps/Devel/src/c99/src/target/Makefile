@@ -20,8 +20,8 @@ INSTALL	?= install
 all: $(TARGETS)
 
 asm_OBJS = asm.o
-asm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags asm`
-asm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs asm`
+asm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags Asm`
+asm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs Asm`
 
 asm.so: $(asm_OBJS)
 	$(CCSHARED) -o asm.so $(asm_OBJS) $(asm_LDFLAGS)

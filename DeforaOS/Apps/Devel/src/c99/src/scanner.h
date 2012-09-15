@@ -18,7 +18,7 @@
 #ifndef C99_SCANNER_H
 # define C99_SCANNER_H
 
-# include "C99/c99.h"
+# include "../include/C99/c99.h"
 
 
 /* protected */

@@ -37,13 +37,13 @@ typedef enum _AsmOption
 #define ASO_LAST	ASO_FORMAT
 #define ASO_COUNT	(ASO_LAST + 1)
 
-typedef struct _AsmArch
+typedef struct _AsmTargetArch
 {
 	char const * name;
 	int (*function_begin)(char const * name);
 	int (*function_call)(char const * name);
 	int (*function_end)(void);
-} AsmArch;
+} AsmTargetArch;
 
 
 /* variables */
@@ -60,7 +60,7 @@ static C99Option _asm_options[ASO_COUNT + 1] =
 /* platforms */
 #include "asm/amd64.c"
 
-static AsmArch * _asm_arch[] =
+static AsmTargetArch * _asm_arch[] =
 {
 	&_asm_arch_amd64
 };
@@ -128,7 +128,7 @@ static int _asm_init(char const * outfile, int optlevel)
 
 static int _init_arch(char const * arch)
 {
-	AsmArch * aarch = NULL;
+	AsmTargetArch * aarch = NULL;
 	size_t i;
 
 #ifdef DEBUG

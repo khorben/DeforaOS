@@ -23,7 +23,7 @@ static int _asm_arch_amd64_function_end(void);
 
 
 /* variables */
-static AsmArch _asm_arch_amd64 =
+static AsmTargetArch _asm_arch_amd64 =
 {
 	"amd64",
 	_asm_arch_amd64_function_begin,
@@ -36,8 +36,8 @@ static AsmArch _asm_arch_amd64 =
 /* asm_arch_amd64_function_begin */
 static int _asm_arch_amd64_function_begin(char const * name)
 {
-	ArchOperand arg1;
-	ArchOperand arg2;
+	AsmArchOperand arg1;
+	AsmArchOperand arg2;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -58,7 +58,7 @@ static int _asm_arch_amd64_function_begin(char const * name)
 /* asm_arch_amd64_function_call */
 static int _asm_arch_amd64_function_call(char const * name)
 {
-	ArchOperand arg;
+	AsmArchOperand arg;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);

@@ -23,7 +23,7 @@
 #endif
 #include <string.h>
 #include <errno.h>
-#include "C99/target.h"
+#include "../include/C99/target.h"
 #include "code.h"
 #include "../config.h"
 
