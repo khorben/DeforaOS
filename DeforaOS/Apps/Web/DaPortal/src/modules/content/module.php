@@ -20,6 +20,7 @@
 
 require_once('./system/content.php');
 require_once('./system/module.php');
+require_once('./system/user.php');
 
 
 //ContentModule
