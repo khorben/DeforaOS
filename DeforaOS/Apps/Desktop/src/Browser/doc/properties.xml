@@ -49,6 +49,8 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
+			<arg choice="opt"><option>-p</option>
+				<replaceable>plug-in</replaceable></arg>
 			<arg choice="plain" rep="repeat"><replaceable>file</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
@@ -64,9 +66,15 @@
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>No options are available; &name; expects an arbitrary number of files
-			and directories to be specified as arguments on the command line
-			instead.</para>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-p</option></term>
+				<listitem>
+					<para>Plug-in to load.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
 	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
