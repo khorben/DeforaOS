@@ -54,6 +54,11 @@ void player_about(Player * player);
 int player_error(Player * player, char const * message, int ret);
 int player_sigchld(Player * player);
 
+/* playback */
+void player_switch_angle(Player * player);
+void player_switch_audio(Player * player);
+void player_switch_subtitles(Player * player);
+
 /* playlist management */
 int player_open(Player * player, char const * filename);
 int player_open_dialog(Player * player);

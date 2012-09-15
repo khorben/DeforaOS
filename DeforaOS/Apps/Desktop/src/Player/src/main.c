@@ -26,7 +26,6 @@
 #include "../config.h"
 #define _(string) gettext(string)
 
-
 /* constants */
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -39,10 +38,13 @@
 #endif
 
 
+/* public */
 /* variables */
 Player * player;
 
 
+/* private */
+/* functions */
 /* usage */
 static int _usage(void)
 {
@@ -51,6 +53,8 @@ static int _usage(void)
 }
 
 
+/* public */
+/* functions */
 /* main */
 static void _main_signal(void);
 

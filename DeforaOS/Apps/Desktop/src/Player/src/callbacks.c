@@ -123,6 +123,33 @@ void on_view_playlist(gpointer data)
 }
 
 
+/* on_view_switch_angle */
+void on_view_switch_angle(gpointer data)
+{
+	Player * player = data;
+
+	player_switch_angle(player);
+}
+
+
+/* on_view_switch_audio */
+void on_view_switch_audio(gpointer data)
+{
+	Player * player = data;
+
+	player_switch_audio(player);
+}
+
+
+/* on_view_switch_subtitles */
+void on_view_switch_subtitles(gpointer data)
+{
+	Player * player = data;
+
+	player_switch_subtitles(player);
+}
+
+
 /* on_help_about */
 void on_help_about(gpointer data)
 {

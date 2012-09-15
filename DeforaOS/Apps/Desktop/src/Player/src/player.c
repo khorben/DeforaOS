@@ -185,6 +185,11 @@ static const DesktopMenu _player_menu_view[] =
 	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen), NULL, 0,
 		GDK_KEY_F11 },
 # endif
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("Switch angle"), G_CALLBACK(on_view_switch_angle), NULL, 0, 0 },
+	{ N_("Switch audio"), G_CALLBACK(on_view_switch_audio), NULL, 0, 0 },
+	{ N_("Switch subtitles"), G_CALLBACK(on_view_switch_subtitles), NULL, 0,
+		0 },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
@@ -685,6 +690,7 @@ void player_forward(Player * player)
 }
 
 
+/* player_sigchld */
 int player_sigchld(Player * player)
 {
 	pid_t pid;
@@ -1327,6 +1333,33 @@ static void _properties_window(Player * player)
 			&player->me_year);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
+}
+
+
+/* player_switch_angle */
+void player_switch_angle(Player * player)
+{
+	const char cmd[] = "switch_angle\n";
+
+	_player_command(player, cmd, sizeof(cmd) - 1);
+}
+
+
+/* player_switch_audio */
+void player_switch_audio(Player * player)
+{
+	const char cmd[] = "switch_audio\n";
+
+	_player_command(player, cmd, sizeof(cmd) - 1);
+}
+
+
+/* player_switch_subtitles */
+void player_switch_subtitles(Player * player)
+{
+	const char cmd[] = "sub_visibility\n";
+
+	_player_command(player, cmd, sizeof(cmd) - 1);
 }
 
 
