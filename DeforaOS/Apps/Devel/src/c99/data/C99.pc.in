@@ -1,0 +1,10 @@
+prefix=@PREFIX@
+includedir=${prefix}/include
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+
+Name: C99
+Description: DeforaOS C99 compiler
+Version: @VERSION@
+Requires: Asm
+Cflags: -I${includedir}
