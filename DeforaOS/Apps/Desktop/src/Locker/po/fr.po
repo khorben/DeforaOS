@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-16 02:49+0200\n"
+"POT-Creation-Date: 2012-09-16 03:04+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,51 +15,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:347
+#: ../src/locker.c:345
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:427
+#: ../src/locker.c:425
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:443
+#: ../src/locker.c:441
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:447
+#: ../src/locker.c:445
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:451
+#: ../src/locker.c:449
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:472 ../src/locker.c:503
+#: ../src/locker.c:470 ../src/locker.c:501
 msgid "Plug-in: "
 msgstr "Greffon : "
 
-#: ../src/locker.c:552
+#: ../src/locker.c:550
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:562
+#: ../src/locker.c:560
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:724
+#: ../src/locker.c:722
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: ../src/locker.c:909
+#: ../src/locker.c:907
 msgid "Screensaver for the DeforaOS desktop"
 msgstr "Économiseur d'écran pour l'environnement DeforaOS"
 
-#: ../src/locker.c:914
+#: ../src/locker.c:912
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:1397 ../src/locker.c:1401
+#: ../src/locker.c:1395 ../src/locker.c:1399
 msgid "Error"
 msgstr "Erreur"
 
@@ -89,15 +89,13 @@ msgstr ""
 
 #: ../src/main.c:44
 msgid ""
-"Usage: locker [-d demo][-p plug-in][-s]\n"
+"Usage: locker [-d demo][-p plug-in]\n"
 "  -d\tDemo sub-system to load\n"
 "  -p\tAuthentication plug-in to load\n"
-"  -s\tSuspend automatically when locked\n"
 msgstr ""
-"Usage: locker [-d demo][-p greffon][-s]\n"
+"Usage: locker [-d demo][-p greffon]\n"
 "  -d\tGreffon d'animation à charger\n"
 "  -p\tGreffon d'authentification à charger\n"
-"  -s\tSuspendre automatiquement lors du verrouillage\n"
 
 #: ../src/auth/password.c:109
 msgid "This screen is locked by"
