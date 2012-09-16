@@ -118,6 +118,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/target/indent.c \
 		$(PACKAGE)-$(VERSION)/src/target/Makefile \
 		$(PACKAGE)-$(VERSION)/src/target/asm/amd64.c \
+		$(PACKAGE)-$(VERSION)/src/target/asm/i386.c \
+		$(PACKAGE)-$(VERSION)/src/target/asm/i486.c \
+		$(PACKAGE)-$(VERSION)/src/target/asm/i586.c \
+		$(PACKAGE)-$(VERSION)/src/target/asm/i686.c \
 		$(PACKAGE)-$(VERSION)/src/target/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \

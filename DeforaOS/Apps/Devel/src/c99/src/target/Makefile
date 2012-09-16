@@ -40,7 +40,7 @@ indent_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 indent.so: $(indent_OBJS)
 	$(CCSHARED) -o indent.so $(indent_OBJS) $(indent_LDFLAGS)
 
-asm.o: asm.c ../../include/C99/target.h asm/amd64.c ../../config.h
+asm.o: asm.c ../../include/C99/target.h asm/amd64.c asm/i386.c asm/i486.c asm/i586.c asm/i686.c ../../config.h
 	$(CC) $(asm_CFLAGS) -c asm.c
 
 graph.o: graph.c ../../include/C99/target.h

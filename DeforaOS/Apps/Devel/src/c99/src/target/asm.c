@@ -59,10 +59,18 @@ static C99Option _asm_options[ASO_COUNT + 1] =
 
 /* platforms */
 #include "asm/amd64.c"
+#include "asm/i386.c"
+#include "asm/i486.c"
+#include "asm/i586.c"
+#include "asm/i686.c"
 
 static AsmTargetArch * _asm_arch[] =
 {
-	&_asm_arch_amd64
+	&_asm_arch_amd64,
+	&_asm_arch_i386,
+	&_asm_arch_i486,
+	&_asm_arch_i586,
+	&_asm_arch_i686
 };
 
 
