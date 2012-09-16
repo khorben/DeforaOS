@@ -1,4 +1,4 @@
-TARGETS	= password.so slider.so
+TARGETS	= password.so slider.so template.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -33,14 +33,24 @@ slider_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 slider.so: $(slider_OBJS)
 	$(CCSHARED) -o slider.so $(slider_OBJS) $(slider_LDFLAGS)
 
+template_OBJS = template.o
+template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+template.so: $(template_OBJS)
+	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+
 password.o: password.c ../../include/Locker.h ../../config.h
 	$(CC) $(password_CFLAGS) -c password.c
 
 slider.o: slider.c ../../include/Locker.h
 	$(CC) $(slider_CFLAGS) -c slider.c
 
+template.o: template.c ../../include/Locker.h
+	$(CC) $(template_CFLAGS) -c template.c
+
 clean:
-	$(RM) -- $(password_OBJS) $(slider_OBJS)
+	$(RM) -- $(password_OBJS) $(slider_OBJS) $(template_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

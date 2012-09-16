@@ -46,6 +46,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/auth/password.c \
 		$(PACKAGE)-$(VERSION)/src/auth/slider.c \
+		$(PACKAGE)-$(VERSION)/src/auth/template.c \
 		$(PACKAGE)-$(VERSION)/src/auth/Makefile \
 		$(PACKAGE)-$(VERSION)/src/auth/project.conf \
 		$(PACKAGE)-$(VERSION)/src/demos/gtk-demo.c \
