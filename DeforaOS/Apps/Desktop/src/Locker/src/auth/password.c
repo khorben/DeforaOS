@@ -155,6 +155,7 @@ static Password * _password_init(LockerAuthHelper * helper)
 /* password_destroy */
 static void _password_destroy(Password * password)
 {
+	gtk_widget_destroy(password->widget);
 	if(password->source != 0)
 		g_source_remove(password->source);
 	object_delete(password);

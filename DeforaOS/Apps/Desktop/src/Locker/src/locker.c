@@ -146,6 +146,8 @@ static char const * _locker_auth_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_auth_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+static GtkWidget * _locker_auth_load(Locker * locker, char const * plugin);
+static void _locker_auth_unload(Locker * locker);
 
 /* configuration */
 static int _locker_config_load(Locker * locker);
@@ -185,7 +187,6 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data);
 /* locker_new */
 static int _new_config(Locker * locker);
 static void _new_helpers(Locker * locker);
-static GtkWidget * _new_auth(Locker * locker, char const * plugin);
 static int _new_plugins(Locker * locker);
 static int _new_xss(Locker * locker, size_t cnt);
 
@@ -229,7 +230,7 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 	/* check for errors */
 	if(_new_config(locker) != 0
 			|| _locker_demo_load(locker, demo) != 0
-			|| (widget = _new_auth(locker, auth)) == NULL
+			|| (widget = _locker_auth_load(locker, auth)) == NULL
 			|| _new_xss(locker, cnt) != 0)
 	{
 		_locker_error(NULL, error_get(), 1);
@@ -278,32 +279,6 @@ static int _new_config(Locker * locker)
 	/* ignore errors */
 	_locker_config_load(locker);
 	return 0;
-}
-
-static GtkWidget * _new_auth(Locker * locker, char const * plugin)
-{
-	if(plugin == NULL)
-		plugin = config_get(locker->config, NULL, "auth");
-	if(plugin == NULL)
-#ifdef EMBEDDED
-		plugin = "slider";
-#else
-		plugin = "password";
-#endif
-	if((locker->aplugin = plugin_new(LIBDIR, PACKAGE, "auth", plugin))
-			== NULL)
-		return NULL;
-	if((locker->adefinition = plugin_lookup(locker->aplugin, "plugin"))
-			== NULL)
-		return NULL;
-	if(locker->adefinition->init == NULL
-			|| locker->adefinition->destroy == NULL
-			|| locker->adefinition->get_widget == NULL
-			|| locker->adefinition->action == NULL
-			|| (locker->auth = locker->adefinition->init(
-					&locker->ahelper)) == NULL)
-		return NULL;
-	return locker->adefinition->get_widget(locker->auth);
 }
 
 static void _new_helpers(Locker * locker)
@@ -390,10 +365,7 @@ void locker_delete(Locker * locker)
 	}
 	free(locker->plugins);
 	/* destroy the authentication plug-in */
-	if(locker->adefinition != NULL)
-		locker->adefinition->destroy(locker->auth);
-	if(locker->aplugin != NULL)
-		plugin_delete(locker->aplugin);
+	_locker_auth_unload(locker);
 	/* destroy the demo plug-in */
 	_locker_demo_unload(locker);
 	/* destroy the windows */
@@ -601,6 +573,7 @@ static void _preferences_on_apply(gpointer data)
 	GtkTreeModel * model = GTK_TREE_MODEL(locker->pr_plstore);
 	GtkTreeIter iter;
 	gchar * p;
+	GtkWidget * widget;
 	gboolean valid;
 	gboolean enabled;
 	int res = 0;
@@ -617,6 +590,9 @@ static void _preferences_on_apply(gpointer data)
 	fprintf(stderr, "DEBUG: %s() auth=\"%s\"\n", __func__, p);
 #endif
 	config_set(locker->config, NULL, "auth", p);
+	/* XXX report errors */
+	if((widget = _locker_auth_load(locker, p)) != NULL)
+		gtk_container_add(GTK_CONTAINER(locker->windows[0]), widget);
 	g_free(p);
 	/* demos */
 	p = NULL;
@@ -1230,6 +1206,52 @@ static int _locker_auth_config_set(Locker * locker, char const * section,
 	if(ret == 0)
 		ret = _locker_config_save(locker);
 	return ret;
+}
+
+
+/* locker_auth_load */
+static GtkWidget * _locker_auth_load(Locker * locker, char const * plugin)
+{
+	_locker_auth_unload(locker);
+	if(plugin == NULL)
+		plugin = config_get(locker->config, NULL, "auth");
+	if(plugin == NULL)
+#ifdef EMBEDDED
+		plugin = "slider";
+#else
+		plugin = "password";
+#endif
+	if((locker->aplugin = plugin_new(LIBDIR, PACKAGE, "auth", plugin))
+			== NULL)
+		return NULL;
+	if((locker->adefinition = plugin_lookup(locker->aplugin, "plugin"))
+			== NULL
+			|| locker->adefinition->init == NULL
+			|| locker->adefinition->destroy == NULL
+			|| locker->adefinition->get_widget == NULL
+			|| locker->adefinition->action == NULL
+			|| (locker->auth = locker->adefinition->init(
+					&locker->ahelper)) == NULL)
+	{
+		plugin_delete(locker->aplugin);
+		locker->adefinition = NULL;
+		locker->aplugin = NULL;
+		return NULL;
+	}
+	return locker->adefinition->get_widget(locker->auth);
+}
+
+
+/* locker_auth_unload */
+static void _locker_auth_unload(Locker * locker)
+{
+	if(locker->adefinition != NULL)
+		locker->adefinition->destroy(locker->auth);
+	locker->auth = NULL;
+	if(locker->aplugin != NULL)
+		plugin_delete(locker->aplugin);
+	locker->adefinition = NULL;
+	locker->aplugin = NULL;
 }
 
 

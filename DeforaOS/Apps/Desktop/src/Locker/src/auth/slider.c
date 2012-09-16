@@ -118,6 +118,7 @@ static Slider * _slider_init(LockerAuthHelper * helper)
 /* slider_destroy */
 static void _slider_destroy(Slider * slider)
 {
+	gtk_widget_destroy(slider->widget);
 	if(slider->source != 0)
 		g_source_remove(slider->source);
 	object_delete(slider);
