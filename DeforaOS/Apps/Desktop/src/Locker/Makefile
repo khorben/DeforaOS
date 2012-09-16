@@ -1,6 +1,6 @@
 PACKAGE	= Locker
 VERSION	= 0.1.3
-SUBDIRS	= data include po src tools
+SUBDIRS	= data doc include po src tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -24,6 +24,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/locker-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/locker.xml \
+		$(PACKAGE)-$(VERSION)/doc/lockerctl.xml \
+		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Locker.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
