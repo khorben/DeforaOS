@@ -20,6 +20,7 @@
 # include <stdio.h>
 #endif
 #include <gtk/gtk.h>
+#include <Desktop.h>
 #include "Locker.h"
 #include "../../config.h"
 
@@ -112,6 +113,7 @@ static void _systray_on_activate(gpointer data)
 
 
 /* systray_on_popup_menu */
+static void _popup_menu_on_help(gpointer data);
 static void _popup_menu_on_lock(gpointer data);
 static void _popup_menu_on_quit(gpointer data);
 static void _popup_menu_on_show_settings(gpointer data);
@@ -134,6 +136,9 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ NULL, NULL, NULL },
 		{ "gtk-preferences", "_Preferences",
 			_popup_menu_on_show_settings },
+		{ NULL, NULL, NULL },
+		{ "help-contents", "_Help contents",
+			_popup_menu_on_help },
 		{ NULL, NULL, NULL },
 		{ "gtk-quit", "_Quit", _popup_menu_on_quit },
 	};
@@ -159,6 +164,11 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	}
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
+
+static void _popup_menu_on_help(gpointer data)
+{
+	desktop_help_contents(PACKAGE, "locker");
 }
 
 static void _popup_menu_on_lock(gpointer data)

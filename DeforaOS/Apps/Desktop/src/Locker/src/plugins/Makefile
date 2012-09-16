@@ -48,8 +48,8 @@ suspend.so: $(suspend_OBJS)
 	$(CCSHARED) -o suspend.so $(suspend_OBJS) $(suspend_LDFLAGS)
 
 systray_OBJS = systray.o
-systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 systray.so: $(systray_OBJS)
 	$(CCSHARED) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
