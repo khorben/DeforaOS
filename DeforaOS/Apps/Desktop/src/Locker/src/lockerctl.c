@@ -54,7 +54,7 @@ static int _lockerctl(int action)
 static int _usage(void)
 {
 #ifdef EMBEDDED
-	fputs(_("Usage: lockerctl [-D|-E|-S|-l|-s|-u|-z]\n"
+	fputs(_("Usage: lockerctl [-D | -E | -S | -l | -s | -u | -z]\n"
 "  -D	Temporarily disable the screensaver\n"
 "  -E	Enable the screensaver again\n"
 "  -S	Display or change settings\n"
