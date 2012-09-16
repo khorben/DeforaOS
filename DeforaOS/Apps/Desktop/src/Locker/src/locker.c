@@ -156,6 +156,8 @@ static char const * _locker_demo_config_get(Locker * locker,
 		char const * section, char const * variable);
 static int _locker_demo_config_set(Locker * locker, char const * section,
 		char const * variable, char const * value);
+static int _locker_demo_load(Locker * locker, char const * demo);
+static void _locker_demo_unload(Locker * locker);
 
 static int _locker_error(Locker * locker, char const * message, int ret);
 static int _locker_event(Locker * locker, LockerEvent event);
@@ -182,7 +184,6 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data);
 /* functions */
 /* locker_new */
 static int _new_config(Locker * locker);
-static int _new_demo(Locker * locker, char const * demo);
 static void _new_helpers(Locker * locker);
 static GtkWidget * _new_auth(Locker * locker, char const * plugin);
 static int _new_plugins(Locker * locker);
@@ -227,7 +228,7 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 	locker->ab_window = NULL;
 	/* check for errors */
 	if(_new_config(locker) != 0
-			|| _new_demo(locker, demo) != 0
+			|| _locker_demo_load(locker, demo) != 0
 			|| (widget = _new_auth(locker, auth)) == NULL
 			|| _new_xss(locker, cnt) != 0)
 	{
@@ -305,25 +306,6 @@ static GtkWidget * _new_auth(Locker * locker, char const * plugin)
 	return locker->adefinition->get_widget(locker->auth);
 }
 
-static int _new_demo(Locker * locker, char const * demo)
-{
-	if(demo == NULL && (demo = config_get(locker->config, NULL, "demo"))
-			== NULL)
-		return 0;
-	if((locker->dplugin = plugin_new(LIBDIR, PACKAGE, "demos", demo))
-			== NULL)
-		return -1;
-	if((locker->ddefinition = plugin_lookup(locker->dplugin, "plugin"))
-			== NULL)
-		return -1;
-	if(locker->ddefinition->init == NULL
-			|| locker->ddefinition->destroy == NULL
-			|| (locker->demo = locker->ddefinition->init(
-					&locker->dhelper)) == NULL)
-		return -1;
-	return 0;
-}
-
 static void _new_helpers(Locker * locker)
 {
 	/* authentication helper */
@@ -397,7 +379,6 @@ void locker_delete(Locker * locker)
 {
 	size_t i;
 	LockerPlugins * p;
-	GdkWindow * window;
 
 	/* destroy the generic plug-ins */
 	for(i = 0; i < locker->plugins_cnt; i++)
@@ -414,24 +395,7 @@ void locker_delete(Locker * locker)
 	if(locker->aplugin != NULL)
 		plugin_delete(locker->aplugin);
 	/* destroy the demo plug-in */
-	if(locker->demo != NULL)
-	{
-		if(locker->ddefinition->remove != NULL)
-			for(i = 0; i < locker->windows_cnt; i++)
-			{
-#if GTK_CHECK_VERSION(2, 14, 0)
-				window = gtk_widget_get_window(
-						locker->windows[i]);
-#else
-				window = locker->windows[i]->window;
-#endif
-				locker->ddefinition->remove(locker->demo,
-						window);
-			}
-		locker->ddefinition->destroy(locker->demo);
-	}
-	if(locker->dplugin != NULL)
-		plugin_delete(locker->dplugin);
+	_locker_demo_unload(locker);
 	/* destroy the windows */
 	for(i = 0; i < locker->windows_cnt; i++)
 		if(locker->windows[i] != NULL)
@@ -664,6 +628,8 @@ static void _preferences_on_apply(gpointer data)
 	fprintf(stderr, "DEBUG: %s() demo=\"%s\"\n", __func__, p);
 #endif
 	config_set(locker->config, NULL, "demo", p);
+	/* XXX check errors */
+	_locker_demo_load(locker, p);
 	g_free(p);
 	/* plug-ins */
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid == TRUE;
@@ -1336,6 +1302,60 @@ static int _locker_demo_config_set(Locker * locker, char const * section,
 	if(ret == 0)
 		ret = _locker_config_save(locker);
 	return ret;
+}
+
+
+/* locker_demo_load */
+static int _locker_demo_load(Locker * locker, char const * demo)
+{
+	_locker_demo_unload(locker);
+	if(demo == NULL && (demo = config_get(locker->config, NULL, "demo"))
+			== NULL)
+		return 0;
+	if((locker->dplugin = plugin_new(LIBDIR, PACKAGE, "demos", demo))
+			== NULL)
+		return -1;
+	if((locker->ddefinition = plugin_lookup(locker->dplugin, "plugin"))
+			== NULL)
+		return -1;
+	if(locker->ddefinition->init == NULL
+			|| locker->ddefinition->destroy == NULL
+			|| (locker->demo = locker->ddefinition->init(
+					&locker->dhelper)) == NULL)
+	{
+		plugin_delete(locker->dplugin);
+		locker->ddefinition = NULL;
+		locker->dplugin = NULL;
+		return -1;
+	}
+	return 0;
+}
+
+
+/* locker_demo_unload */
+static void _locker_demo_unload(Locker * locker)
+{
+	size_t i;
+	GdkWindow * window;
+
+	if(locker->demo == NULL)
+		return;
+	if(locker->ddefinition != NULL && locker->ddefinition->remove != NULL)
+		for(i = 0; i < locker->windows_cnt; i++)
+		{
+#if GTK_CHECK_VERSION(2, 14, 0)
+			window = gtk_widget_get_window(locker->windows[i]);
+#else
+			window = locker->windows[i]->window;
+#endif
+			locker->ddefinition->remove(locker->demo, window);
+		}
+	locker->ddefinition->destroy(locker->demo);
+	locker->demo = NULL;
+	if(locker->dplugin != NULL)
+		plugin_delete(locker->dplugin);
+	locker->ddefinition = NULL;
+	locker->dplugin = NULL;
 }
 
 
