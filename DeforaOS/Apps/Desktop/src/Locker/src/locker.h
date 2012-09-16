@@ -28,7 +28,7 @@
 
 
 /* functions */
-Locker * locker_new(int suspend, char const * demo, char const * auth);
+Locker * locker_new(char const * demo, char const * auth);
 void locker_delete(Locker * locker);
 
 /* useful */

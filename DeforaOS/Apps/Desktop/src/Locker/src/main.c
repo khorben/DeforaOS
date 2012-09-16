@@ -41,10 +41,9 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: locker [-d demo][-p plug-in][-s]\n"
+	fputs(_("Usage: locker [-d demo][-p plug-in]\n"
 "  -d	Demo sub-system to load\n"
-"  -p	Authentication plug-in to load\n"
-"  -s	Suspend automatically when locked\n"), stderr);
+"  -p	Authentication plug-in to load\n"), stderr);
 	return 1;
 }
 
@@ -55,7 +54,6 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	int suspend = 0;
 	char const * demo = NULL;
 	char const * auth = NULL;
 	Locker * locker;
@@ -64,14 +62,11 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "d:p:s")) != -1)
+	while((o = getopt(argc, argv, "d:p:")) != -1)
 		switch(o)
 		{
 			case 'd':
 				demo = optarg;
-				break;
-			case 's':
-				suspend = 1;
 				break;
 			case 'p':
 				auth = optarg;
@@ -81,7 +76,7 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	if((locker = locker_new(suspend, demo, auth)) == NULL)
+	if((locker = locker_new(demo, auth)) == NULL)
 		return 2;
 	gtk_main();
 	locker_delete(locker);

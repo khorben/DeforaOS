@@ -58,7 +58,6 @@ typedef struct _LockerPlugins
 struct _Locker
 {
 	/* settings */
-	int suspend;
 	Config * config;
 
 	/* internal */
@@ -190,7 +189,7 @@ static void _new_helpers(Locker * locker);
 static int _new_plugins(Locker * locker);
 static int _new_xss(Locker * locker, size_t cnt);
 
-Locker * locker_new(int suspend, char const * demo, char const * auth)
+Locker * locker_new(char const * demo, char const * auth)
 {
 	Locker * locker;
 	GdkScreen * screen;
@@ -207,7 +206,6 @@ Locker * locker_new(int suspend, char const * demo, char const * auth)
 		return NULL;
 	}
 	_new_helpers(locker);
-	locker->suspend = (suspend != 0) ? 1 : 0;
 	locker->enabled = 1;
 	locker->locked = 0;
 	screen = gdk_screen_get_default();
