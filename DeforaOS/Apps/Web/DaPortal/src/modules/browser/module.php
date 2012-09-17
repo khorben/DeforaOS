@@ -107,10 +107,10 @@ class BrowserModule extends Module
 
 
 	//BrowserModule::getToolbar
-	protected function getToolbar($engine, $path)
+	protected function getToolbar($engine, $path, $directory = FALSE)
 	{
-
 		$toolbar = new PageElement('toolbar');
+
 		if(($parent = dirname($path)) != $path)
 		{
 			$r = new Request($engine, $this->name, FALSE, FALSE,
@@ -124,6 +124,14 @@ class BrowserModule extends Module
 				ltrim($path, '/'));
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'refresh', 'text' => _('Refresh')));
+		if($directory === FALSE)
+		{
+			$r = new Request($engine, $this->name, 'download',
+					FALSE, ltrim($path, '/'));
+			$toolbar->append('button', array('request' => $r,
+					'stock' => 'download',
+					'text' => _('Download')));
+		}
 		return $toolbar;
 	}
 
@@ -203,18 +211,24 @@ class BrowserModule extends Module
 		$root = $this->getRoot($engine);
 		$error = _('Could not open the file or directory requested');
 
-		$toolbar = $this->getToolbar($engine, $path);
-		$page->append($toolbar);
 		//FIXME let stat() vs lstat() be configurable
 		if(($st = @stat($root.'/'.$path)) === FALSE)
 			return $page->append('dialog', array('type' => 'error',
 					'text' => $error));
 		if(($st['mode'] & Common::$S_IFDIR) == Common::$S_IFDIR)
+		{
+			$toolbar = $this->getToolbar($engine, $path, TRUE);
+			$page->append($toolbar);
 			$this->helperDisplayDirectory($engine, $page, $root,
 					$path);
+		}
 		else
+		{
+			$toolbar = $this->getToolbar($engine, $path, FALSE);
+			$page->append($toolbar);
 			$this->helperDisplayFile($engine, $page, $root, $path,
 					$st);
+		}
 	}
 
 
