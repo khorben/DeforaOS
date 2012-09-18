@@ -614,6 +614,7 @@ class UserModule extends Module
 		$title = _('User login');
 		$already = _('You are already logged in');
 		$forgot = _('I forgot my password...');
+		$register = _('Register an account...');
 
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'login',
@@ -638,6 +639,13 @@ class UserModule extends Module
 			$page->append('link', array('request' => $r,
 					'stock' => 'reset',
 					'text' => $forgot));
+		}
+		if($this->canRegister())
+		{
+			$r = new Request($this->name, 'register');
+			$page->append('link', array('request' => $r,
+					'stock' => 'register',
+					'text' => $register));
 		}
 		return $page;
 	}
