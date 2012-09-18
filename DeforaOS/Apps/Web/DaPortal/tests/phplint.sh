@@ -27,15 +27,17 @@ _debug()
 {
 	echo "$@" 1>&2
 	"$@"
+	res=$?
 	#ignore errors when the command is not available
-	[ $? -eq 127 ]						&& return 0
+	[ $res -eq 127 ]					&& return 0
+	return $res;
 }
 
 
 #usage
 _usage()
 {
-	echo "Usage: phplint.sh [-P prefix] target" 1>&2
+	echo "Usage: phplint.sh target" 1>&2
 	return 1;
 }
 
