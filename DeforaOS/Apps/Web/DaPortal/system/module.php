@@ -61,7 +61,7 @@ function _module($module = FALSE, $action = FALSE, $args = FALSE)
 		$id = isset($args['id']) ? $args['id'] : FALSE;
 		$title = isset($args['title']) ? $args['title'] : FALSE;
 	}
-	$request = new Request($engine, $module, $action, $id, $title, $args);
+	$request = new Request($module, $action, $id, $title, $args);
 	$module_name = $module;
 	$module_id = _module_id($module);
 	return $engine->process($request);
