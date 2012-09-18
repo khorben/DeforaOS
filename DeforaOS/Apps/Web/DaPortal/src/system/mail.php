@@ -45,17 +45,45 @@ class Mail
 		if(is_array($headers))
 			foreach($headers as $h)
 				$hdr .= "$h\n";
-		$format = Format::attachDefault($engine, 'text/plain');
-		$format->setParameter('wrap', 72);
-		ob_start();
-		$format->render($engine, $page);
-		$content = ob_get_contents();
-		ob_end_clean();
+		$content = Mail::pageToText($engine, $page);
 		//FIXME check $from, $to and $subject for newline characters
 		if(mail($to, $subject, $content, $hdr) === FALSE)
 			return $engine->log('LOG_ERR', 'Could not send e-mail');
 		$engine->log('LOG_DEBUG', 'e-mail sent to '.$to);
 		return TRUE;
+	}
+
+
+	//protected
+	//methods
+	//static
+	//useful
+	//Mail::pageToHTML
+	static protected function pageToHTML($engine, $page)
+	{
+		if(($format = Format::attachDefault($engine, 'text/html'))
+				=== FALSE)
+			return FALSE;
+		ob_start();
+		$format->render($engine, $page);
+		$str = ob_get_contents();
+		ob_end_clean();
+		return $str;
+	}
+
+
+	//Mail::pageToText
+	static protected function pageToText($engine, $page)
+	{
+		if(($format = Format::attachDefault($engine, 'text/plain'))
+				=== FALSE)
+			return FALSE;
+		$format->setParameter('wrap', 72);
+		ob_start();
+		$format->render($engine, $page);
+		$str = ob_get_contents();
+		ob_end_clean();
+		return $str;
 	}
 }
 
