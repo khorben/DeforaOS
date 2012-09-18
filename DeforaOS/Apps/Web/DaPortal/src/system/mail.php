@@ -17,6 +17,8 @@
 
 
 require_once('./system/format.php');
+@include_once('Mail.php');
+@include_once('Mail/mime.php');
 
 
 //Mail
@@ -35,20 +37,36 @@ class Mail
 		if($from === FALSE)
 			//FIXME try the configuration file as well
 			$from = $_SERVER['SERVER_ADMIN'];
-		$hdr = "From: $from\n";
+		//verify parameters
+		$error = 'Could not send e-mail (invalid parameters)';
+		if(strpos($from, "\n") !== FALSE || strpos($to, "\n") !== FALSE
+				|| strpos($subject, "\n") !== FALSE)
+			return $engine->log('LOG_ERR', $error);
+		//verify the headers
+		if(!is_array($headers))
+			$headers = array();
+		foreach($headers as $h => $v)
+			if(strpos($h, "\n") !== FALSE
+					|| strpos($v, "\n") !== FALSE)
+				return $engine->log('LOG_ERR', $error);
+		//prepare the headers
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				=== FALSE)
-			$charset = 'utf-8';
-		$charset = strtoupper($charset);
-		//XXX escape $charset
-		$hdr .= "Content-type: text/plain; charset=$charset\r\n";
+			$charset = 'UTF-8';
+		else
+			$charset = strtoupper($charset);
+		$headers['Content-Type'] = "text/plain; charset=$charset\n";
+		//prepare the message
+		$page = Mail::render($engine, $page, $headers);
+		//assemble the headers
+		$hdr = "From: $from\n";
 		if(is_array($headers))
-			foreach($headers as $h)
-				$hdr .= "$h\n";
-		$content = Mail::pageToText($engine, $page);
-		//FIXME check $from, $to and $subject for newline characters
-		if(mail($to, $subject, $content, $hdr) === FALSE)
-			return $engine->log('LOG_ERR', 'Could not send e-mail');
+			foreach($headers as $h => $v)
+				$hdr .= "$h: $v\n";
+		//send the message
+		$error = 'Could not send e-mail';
+		if(mail($to, $subject, $page, $hdr) === FALSE)
+			return $engine->log('LOG_ERR', $error);
 		$engine->log('LOG_DEBUG', 'e-mail sent to '.$to);
 		return TRUE;
 	}
@@ -84,6 +102,23 @@ class Mail
 		$str = ob_get_contents();
 		ob_end_clean();
 		return $str;
+	}
+
+
+	//Mail::render
+	static protected function render($engine, $page, &$headers)
+	{
+		$text = Mail::pageToText($engine, $page);
+		if(!class_exists('Mail_Mime'))
+			return $text;
+		$mime = new Mail_Mime(array('eol' => "\n"));
+		$mime->setTXTBody($text);
+		$html = Mail::pageToHTML($engine, $page);
+		$mime->setHTMLBody($html);
+		$hdrs = $mime->headers(array());
+		foreach($hdrs as $h => $v)
+			$headers[$h] = $v;
+		return $mime->get();
 	}
 }
 
