@@ -52,6 +52,7 @@ class PlainFormat extends Format
 	//public
 	//methods
 	//rendering
+	//PlainFormat::render
 	public function render($engine, $page, $filename = FALSE)
 	{
 		//FIXME ignore filename for the moment
@@ -65,24 +66,34 @@ class PlainFormat extends Format
 
 	//protected
 	//methods
-	//rendering
-	protected function renderBlock($e, $underline = '-')
+	//printing
+	//PlainFormat::print
+	protected function _print($string)
 	{
-		if($this->separator != '')
-			print("\n\n");
-		if(($title = $e->getProperty('title')) !== FALSE)
-		{
-			print("$title\n");
-			for($i = 0; $i < strlen($title); $i++)
-				print($underline);
-			print("\n\n");
-		}
-		$this->separator = '';
-		$this->renderInline($e);
-		print("\n\n");
+		print($string);
 	}
 
 
+	//rendering
+	//PlainFormat::renderBlock
+	protected function renderBlock($e, $underline = '-')
+	{
+		if($this->separator != '')
+			$this->_print("\n\n");
+		if(($title = $e->getProperty('title')) !== FALSE)
+		{
+			$this->_print("$title\n");
+			for($i = 0; $i < strlen($title); $i++)
+				$this->_print($underline);
+			$this->_print("\n\n");
+		}
+		$this->separator = '';
+		$this->renderInline($e);
+		$this->_print("\n\n");
+	}
+
+
+	//PlainFormat::renderChildren
 	protected function renderChildren($e)
 	{
 		if(($children = $e->getChildren()) === FALSE)
@@ -92,6 +103,7 @@ class PlainFormat extends Format
 	}
 
 
+	//PlainFormat::renderElement
 	protected function renderElement($e)
 	{
 		switch($e->getType())
@@ -114,17 +126,19 @@ class PlainFormat extends Format
 	}
 
 
+	//PlainFormat::renderInline
 	protected function renderInline($e)
 	{
 		if(($text = $e->getProperty('text')) !== FALSE)
 		{
-			print($this->separator.$text);
+			$this->_print($this->separator.$text);
 			$this->separator = ' ';
 		}
 		$this->renderChildren($e);
 	}
 
 
+	//PlainFormat::renderLink
 	protected function renderLink($e)
 	{
 		if(($url = $e->getProperty('url')) === FALSE
@@ -133,12 +147,12 @@ class PlainFormat extends Format
 		if(($text = $e->getProperty('text')) !== FALSE
 				&& strlen($text) > 0)
 		{
-			print($this->separator.$text);
+			$this->_print($this->separator.$text);
 			$this->separator = ' ';
 		}
 		if($url !== FALSE)
 		{
-			print($this->separator."($url)");
+			$this->_print($this->separator."($url)");
 			$this->separator = ' ';
 		}
 		$this->renderChildren($e);
