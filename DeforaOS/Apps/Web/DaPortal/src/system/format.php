@@ -76,15 +76,35 @@ abstract class Format
 	}
 
 
+	//accessors
+	public function setParameter($name, $value)
+	{
+		$this->parameters[$name] = $value;
+	}
+
+
 	//virtual
 	abstract public function render($engine, $page, $filename = FALSE);
 
 
 	//protected
+	//properties
+	protected $parameters = array();
+
+
 	//methods
 	//virtual
 	abstract protected function match($engine, $type = FALSE);
 	abstract protected function attach($engine, $type = FALSE);
+
+
+	//accessors
+	protected function getParameter($name)
+	{
+		if(!isset($this->parameters[$name]))
+			return FALSE;
+		return $this->parameters[$name];
+	}
 }
 
 

@@ -59,7 +59,18 @@ class PlainFormat extends Format
 		if($page === FALSE)
 			$page = new Page;
 		$this->engine = $engine;
-		$this->renderElement($page);
+		if(($wrap = $this->getParameter('wrap')) !== FALSE
+				&& is_numeric($wrap))
+		{
+			//XXX it would be more efficient to improve _print()
+			ob_start();
+			$this->renderElement($page);
+			$str = wordwrap(ob_get_contents(), $wrap);;
+			ob_end_clean();
+			print($str);
+		}
+		else
+			$this->renderElement($page);
 		$this->engine = FALSE;
 	}
 

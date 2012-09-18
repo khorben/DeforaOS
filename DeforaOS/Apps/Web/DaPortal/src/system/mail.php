@@ -46,10 +46,10 @@ class Mail
 			foreach($headers as $h)
 				$hdr .= "$h\n";
 		$format = Format::attachDefault($engine, 'text/plain');
+		$format->setParameter('wrap', 72);
 		ob_start();
 		$format->render($engine, $page);
-		//XXX set an argument to the Format renderer instead?
-		$content = wordwrap(ob_get_contents(), 72);
+		$content = ob_get_contents();
 		ob_end_clean();
 		//FIXME check $from, $to and $subject for newline characters
 		if(mail($to, $subject, $content, $hdr) === FALSE)
