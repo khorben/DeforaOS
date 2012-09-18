@@ -113,21 +113,20 @@ class BrowserModule extends Module
 
 		if(($parent = dirname($path)) != $path)
 		{
-			$r = new Request($engine, $this->name, FALSE, FALSE,
+			$r = new Request($this->name, FALSE, FALSE,
 					ltrim($parent, '/'));
 			//XXX change the label to "Browse" for files
 			$toolbar->append('button', array('request' => $r,
 					'stock' => 'updir',
 					'text' => _('Parent directory')));
 		}
-		$r = new Request($engine, $this->name, FALSE, FALSE,
-				ltrim($path, '/'));
+		$r = new Request($this->name, FALSE, FALSE, ltrim($path, '/'));
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'refresh', 'text' => _('Refresh')));
 		if($directory === FALSE)
 		{
-			$r = new Request($engine, $this->name, 'download',
-					FALSE, ltrim($path, '/'));
+			$r = new Request($this->name, 'download', FALSE,
+					ltrim($path, '/'));
 			$toolbar->append('button', array('request' => $r,
 					'stock' => 'download',
 					'text' => _('Download')));
@@ -262,8 +261,8 @@ class BrowserModule extends Module
 			$icon = new PageElement('image', array(
 					'source' => $icon));
 			$row->setProperty('icon', $icon);
-			$r = new Request($engine, $this->name, FALSE,
-					FALSE, ltrim($path.'/'.$de, '/'));
+			$r = new Request($this->name, FALSE, FALSE,
+					ltrim($path.'/'.$de, '/'));
 			$link = new PageElement('link', array(
 					'request' => $r, 'text' => $de));
 			$row->setProperty('title', $link);
@@ -290,7 +289,7 @@ class BrowserModule extends Module
 		//filename
 		$col1->append('label', array('class' => 'bold',
 				'text' => _('Filename:')));
-		$r = new Request($engine, $this->name, 'download', FALSE,
+		$r = new Request($this->name, 'download', FALSE,
 				ltrim($path, '/'));
 		$link = new PageElement('link', array('request' => $r,
 				'text' => basename($path)));

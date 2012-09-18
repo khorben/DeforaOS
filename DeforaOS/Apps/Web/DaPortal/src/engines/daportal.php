@@ -48,7 +48,7 @@ class DaPortalEngine extends HttpEngine
 	{
 		$r = $this->_getRequest();
 		//sanitize
-		return new Request($this, $this->sanitize($r->getModule()),
+		return new Request($this->sanitize($r->getModule()),
 				$this->sanitize($r->getAction()),
 				$this->sanitize($r->getId()),
 				$this->sanitize($r->getTitle()),
@@ -116,14 +116,13 @@ class DaPortalEngine extends HttpEngine
 		else if($_SERVER['REQUEST_METHOD'] == 'GET')
 			$var = '_GET';
 		else
-			return new Request($this, $module, $action, $id, $title,
+			return new Request($module, $action, $id, $title,
 					$parameters);
 		$keys = array('module', 'action', 'id', 'title');
 		foreach($keys as $k)
 			if(isset($parameters[$k]))
 				$$var[$k] = addslashes($parameters[$k]);
-		$ret = new Request($this, $module, $action, $id, $title,
-				$parameters);
+		$ret = new Request($module, $action, $id, $title, $parameters);
 		$ret->setIdempotent($idempotent);
 		return $ret;
 	}

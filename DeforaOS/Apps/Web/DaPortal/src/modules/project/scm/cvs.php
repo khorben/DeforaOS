@@ -111,10 +111,10 @@ class CVSScmProject
 			$row->setProperty('icon', $icon);
 			//title
 			$f = ltrim($file.'/'.$de, '/');
-			$r = new Request($engine, $request->getModule(),
-					$request->getAction(),
-					$request->getId(), $request->getTitle(),
-					array('file' => $f));
+			$r = new Request($request->getModule(),
+				$request->getAction(),
+				$request->getId(), $request->getTitle(),
+				array('file' => $f));
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $de));
 			$row->setProperty('title', $link);
@@ -131,10 +131,10 @@ class CVSScmProject
 			$row->setProperty('icon', $icon);
 			//title
 			$f = ltrim($file.'/'.$de, '/');
-			$r = new Request($engine, $request->getModule(),
-					$request->getAction(),
-					$request->getId(), $request->getTitle(),
-					array('file' => $f));
+			$r = new Request($request->getModule(),
+				$request->getAction(),
+				$request->getId(), $request->getTitle(),
+				array('file' => $f));
 			$link = new PageElement('link', array('request' => $r,
 					'text' => substr($de, 0, -2)));
 			$row->setProperty('title', $link);
@@ -175,10 +175,9 @@ class CVSScmProject
 		{
 			$row = $view->append('row');
 			$revision = substr($rcs[$i], 9);
-			$r = new Request($engine, 'project', 'browse',
-					$request->getId(), $request->getTitle(),
-					array('file' => $file,
-						'revision' => $revision));
+			$r = new Request('project', 'browse', $request->getId(),
+				$request->getTitle(), array('file' => $file,
+					'revision' => $revision));
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $revision));
 			$row->setProperty('title', $link);
@@ -190,8 +189,8 @@ class CVSScmProject
 					.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 					.'0123456789'));
 			$user = User::lookup($engine, $username);
-			$r = new Request($engine, 'project', 'list',
-					$user->getUserId(), $username);
+			$r = new Request('project', 'list', $user->getUserId(),
+				$username);
 			$link = new PageElement('link', array('request' => $r,
 					'stock' => 'user',
 					'text' => $username));
@@ -231,26 +230,23 @@ class CVSScmProject
 			return $fp;
 		$label = $vbox->append('label');
 		//link back
-		$r = new Request($engine, 'project', 'browse',
-				$request->getId(), $request->getTitle(),
-				array('file' => $file));
+		$r = new Request('project', 'browse', $request->getId(),
+			$request->getTitle(), array('file' => $file));
 		$label->append('link', array('request' => $r, 'stock' => 'back',
 					'text' => 'Back to the revision list'));
 		//link to the download
 		$label->append('label', array('text' => ' '));
-		$r = new Request($engine, 'project', 'browse',
-				$request->getId(), $request->getTitle(),
-				array('file' => $file, 'revision' => $revision,
-					'download' => 1));
+		$r = new Request('project', 'browse', $request->getId(),
+			$request->getTitle(), array('file' => $file,
+				'revision' => $revision, 'download' => 1));
 		$label->append('link', array('request' => $r,
 					'stock' => 'download',
 					'text' => 'Download file'));
 		//link to this page
 		$label->append('label', array('text' => ' '));
-		$r = new Request($engine, 'project', 'browse',
-				$request->getId(), $request->getTitle(), array(
-					'file' => $file,
-					'revision' => $revision));
+		$r = new Request('project', 'browse', $request->getId(),
+			$request->getTitle(), array('file' => $file,
+				'revision' => $revision));
 		$label->append('link', array('request' => $r,
 					'stock' => 'link',
 					'text' => 'Permalink'));
@@ -365,9 +361,9 @@ class CVSScmProject
 			$username = $fields[1];
 			if(($user = User::lookup($engine, $username)) !== FALSE)
 			{
-				$r = new Request($engine, 'user', FALSE,
-						$user->getUserId(),
-						$user->getUsername());
+				$r = new Request('user', FALSE,
+					$user->getUserId(),
+					$user->getUsername());
 				$username = new PageElement('link', array(
 						'request' => $r,
 						'stock' => 'user',

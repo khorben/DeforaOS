@@ -307,14 +307,14 @@ abstract class ContentModule extends Module
 		$toolbar = new PageElement('toolbar');
 		if($cred->isAdmin($engine))
 		{
-			$r = new Request($engine, $this->name, 'admin');
+			$r = new Request($this->name, 'admin');
 			$toolbar->append('button', array('request' => $r,
 				'stock' => 'admin',
 				'text' => _('Administration')));
 		}
 		if($this->canSubmit($engine))
 		{
-			$r = new Request($engine, $this->name, 'submit');
+			$r = new Request($this->name, 'submit');
 			$toolbar->append('button', array('request' => $r,
 				'stock' => 'new',
 				'text' => $this->text_content_submit));
@@ -324,9 +324,8 @@ abstract class ContentModule extends Module
 			if($content['public'] == FALSE
 					&& $this->canPost($engine, $content))
 			{
-				$r = new Request($engine, $this->name,
-					'publish', $content['id'],
-					$content['title']);
+				$r = new Request($this->name, 'publish',
+					$content['id'], $content['title']);
 				$toolbar->append('button', array(
 					'request' => $r,
 					'stock' => 'post',
@@ -334,9 +333,8 @@ abstract class ContentModule extends Module
 			}
 			if($this->canUpdate($engine, $content))
 			{
-				$r = new Request($engine, $this->name,
-						'update', $content['id'],
-						$content['title']);
+				$r = new Request($this->name, 'update',
+					$content['id'], $content['title']);
 				$toolbar->append('button', array(
 					'request' => $r,
 					'stock' => 'update',
@@ -363,7 +361,7 @@ abstract class ContentModule extends Module
 	//ContentModule::formSubmit
 	protected function formSubmit($engine, $request)
 	{
-		$r = new Request($engine, $this->name, 'submit');
+		$r = new Request($this->name, 'submit');
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
 		//title
@@ -379,8 +377,7 @@ abstract class ContentModule extends Module
 	//ContentModule::formUpdate
 	protected function formUpdate($engine, $request, $content)
 	{
-		$r = new Request($engine, $this->name, 'update',
-				$content['id']);
+		$r = new Request($this->name, 'update', $content['id']);
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
 		//title
@@ -433,7 +430,7 @@ abstract class ContentModule extends Module
 		//check credentials
 		if(!$this->canAdmin($engine, FALSE, $error))
 		{
-			$r = new Request($engine, 'user', 'login');
+			$r = new Request('user', 'login');
 			$dialog = new PageElement('dialog', array(
 						'type' => 'error',
 						'text' => $error));
@@ -461,7 +458,7 @@ abstract class ContentModule extends Module
 		if(($res = $database->query($engine, $query, $args)) === FALSE)
 			return new PageElement('dialog', array(
 				'type' => 'error', 'text' => $error));
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		if($request !== FALSE && ($type = $request->getParameter(
 					'type')) !== FALSE)
 			$r->setParameter('type', $type);
@@ -623,17 +620,16 @@ abstract class ContentModule extends Module
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $view->append('row');
-			$r = new Request($engine, $this->name, FALSE,
-					$res[$i]['id'], $res[$i]['title']);
+			$r = new Request($this->name, FALSE, $res[$i]['id'],
+				$res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
-				'text' => $res[$i]['title']));
+					'text' => $res[$i]['title']));
 			$row->setProperty('title', $link);
 			$row->setProperty('timestamp', $res[$i]['timestamp']);
 			$row->setProperty('date', $db->formatDate($engine,
 					$res[$i]['timestamp']));
-			$r = new Request($engine, 'user', FALSE,
-					$res[$i]['user_id'],
-					$res[$i]['username']);
+			$r = new Request('user', FALSE, $res[$i]['user_id'],
+				$res[$i]['username']);
 			$link = new PageElement('link', array('request' => $r,
 					'stock' => 'user',
 					'text' => $res[$i]['username']));
@@ -692,17 +688,16 @@ abstract class ContentModule extends Module
 			$row = $treeview->append('row');
 			$row->setProperty('id', 'content_id:'.$res[$i]['id']);
 			//title
-			$r = new Request($engine, $this->name, FALSE,
-				$res[$i]['id'], $res[$i]['title']);
+			$r = new Request($this->name, FALSE, $res[$i]['id'],
+				$res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
 				'text' => $res[$i]['title']));
 			$row->setProperty('title', $link);
 			$row->setProperty('enabled', $db->isTrue(
 					$res[$i]['enabled']) ? $yes : $no);
 			//username
-			$r = new Request($engine, 'user', FALSE,
-					$res[$i]['user_id'],
-					$res[$i]['username']);
+			$r = new Request('user', FALSE, $res[$i]['user_id'],
+				$res[$i]['username']);
 			$link = new PageElement('link', array('request' => $r,
 					'stock' => 'user',
 					'text' => $res[$i]['username']));
@@ -787,11 +782,11 @@ abstract class ContentModule extends Module
 		$content['title'] = _('Preview: ').$content['title'];
 		$this->helperPreview($engine, $vbox, $content);
 		//form
-		$r = new Request($engine, $this->name, 'publish',
-				$request->getId(), $request->getTitle());
+		$r = new Request($this->name, 'publish', $request->getId(),
+			$request->getTitle());
 		$form = $page->append('form', array('request' => $r));
 		//buttons
-		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+		$r = new Request($this->name, FALSE, $request->getId(),
 				$request->getTitle());
 		$form->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
@@ -823,8 +818,8 @@ abstract class ContentModule extends Module
 
 	protected function _publishSuccess($engine, $request, $page, $content)
 	{
-		$r = new Request($engine, $this->name, FALSE, $content['id'],
-				$content['title']);
+		$r = new Request($this->name, FALSE, $content['id'],
+			$content['title']);
 		$this->helperRedirect($engine, $r, $page,
 				$this->text_content_publish_progress);
 		return $page;
@@ -888,10 +883,10 @@ abstract class ContentModule extends Module
 
 	protected function _submitSuccess($engine, $request, $page, $content)
 	{
-		$r = new Request($engine, $this->name, FALSE, $content->getId(),
-				$content->getTitle());
+		$r = new Request($this->name, FALSE, $content->getId(),
+			$content->getTitle());
 		$this->helperRedirect($engine, $r, $page,
-				$this->text_content_submit_progress);
+			$this->text_content_submit_progress);
 		return $page;
 	}
 
@@ -955,8 +950,8 @@ abstract class ContentModule extends Module
 
 	protected function _updateSuccess($engine, $request, $page, $content)
 	{
-		$r = new Request($engine, $this->name, FALSE, $content['id'],
-				$content['title']);
+		$r = new Request($this->name, FALSE, $content['id'],
+			$content['title']);
 		$this->helperRedirect($engine, $r, $page,
 				$this->text_content_update_progress);
 		return $page;
@@ -990,7 +985,7 @@ abstract class ContentModule extends Module
 
 		if($admin === 0)
 			return $ret;
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		$ret[] = $this->helperAction($engine, 'admin', $r,
 				$this->text_content_admin);
 		return $ret;
@@ -1002,7 +997,7 @@ abstract class ContentModule extends Module
 	{
 		$ret = array();
 
-		$r = new Request($engine, $this->name, 'submit');
+		$r = new Request($this->name, 'submit');
 		$ret[] = $this->helperAction($engine, 'new', $r,
 				$this->text_content_submit);
 		return $ret;
@@ -1013,8 +1008,8 @@ abstract class ContentModule extends Module
 	protected function helperActionsUser($engine, $request, $user)
 	{
 		$ret = array();
-		$request = new Request($engine, $this->name, 'list',
-				$user->getUserId(), $user->getUsername());
+		$request = new Request($this->name, 'list', $user->getUserId(),
+		       	$user->getUsername());
 		$ret[] = $this->helperAction($engine, $this->name, $request,
 				$this->text_content_list_title_by
 				.' '.$user->getUsername());
@@ -1025,10 +1020,10 @@ abstract class ContentModule extends Module
 	//ContentModule::helperAdminButtons
 	protected function helperAdminButtons($engine, $page, $request)
 	{
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
 				'text' => _('Back to this module')));
-		$r = new Request($engine, 'admin');
+		$r = new Request('admin');
 		$page->append('link', array('request' => $r, 'stock' => 'admin',
 				'text' => _('Back to the administration')));
 	}
@@ -1045,8 +1040,8 @@ abstract class ContentModule extends Module
 
 		$row->setProperty('id', 'content_id:'.$res['id']);
 		$row->setProperty('icon', '');
-		$r = new Request($engine, $this->name, 'update',
-				$res['id'], $res['title']);
+		$r = new Request($this->name, 'update', $res['id'],
+			$res['title']);
 		$link = new PageElement('link', array('request' => $r,
 				'stock' => $this->name,
 				'text' => $res['title']));
@@ -1055,8 +1050,8 @@ abstract class ContentModule extends Module
 				? $yes : $no);
 		$row->setProperty('public', $db->isTrue($res['public'])
 				? $yes : $no);
-		$r = new Request($engine, 'user', FALSE,
-				$res['user_id'], $res['username']);
+		$r = new Request('user', FALSE, $res['user_id'],
+			$res['username']);
 		$link = new PageElement('link', array('request' => $r,
 				'stock' => 'user',
 				'text' => $res['username']));
@@ -1069,7 +1064,7 @@ abstract class ContentModule extends Module
 	//ContentModule::helperAdminToolbar
 	protected function helperAdminToolbar($engine, $page, $request)
 	{
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		if(($type = $request->getParameter('type')) !== FALSE)
 			$r->setParameter('type', $type);
 		$toolbar = $page->append('toolbar');
@@ -1122,9 +1117,8 @@ abstract class ContentModule extends Module
 		}
 		//prepare the fallback request
 		$fallback = 'call'.ucfirst($fallback);
-		$r = new Request($engine, $request->getModule(),
-				$request->getAction(), $request->getId(),
-				$request->getTitle());
+		$r = new Request($request->getModule(), $request->getAction(),
+		       	$request->getId(), $request->getTitle());
 		if(($type = $request->getParameter('type')) !== FALSE)
 			$r->setParameter('type', $type);
 		//verify the request
@@ -1162,7 +1156,7 @@ abstract class ContentModule extends Module
 		if($content === FALSE)
 			return FALSE;
 		//link
-		$request = new Request($engine, $content['module'], FALSE,
+		$request = new Request($content['module'], FALSE,
 				$content['id'], $content['title']);
 		//title
 		$this->helperDisplayTitle($engine, $page, $request, $content);
@@ -1186,7 +1180,7 @@ abstract class ContentModule extends Module
 			$content)
 	{
 		$hbox = $page->append('hbox');
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$hbox->append('link', array('stock' => 'back', 'request' => $r,
 				'text' => $this->text_content_more_content));
 		$hbox->append('link', array('stock' => 'link',
@@ -1199,8 +1193,8 @@ abstract class ContentModule extends Module
 	protected function helperDisplayMetadata($engine, $page, $request,
 			$content)
 	{
-		$r = new Request($engine, 'user', FALSE,
-				$content['user_id'], $content['username']);
+		$r = new Request('user', FALSE, $content['user_id'],
+			$content['username']);
 		$link = new PageElement('link', array('request' => $r,
 				'text' => $content['username']));
 		$meta = $page->append('label', array(
@@ -1252,10 +1246,9 @@ abstract class ContentModule extends Module
 		if(($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
 		$r = ($uid !== FALSE)
-			? new Request($engine, 'user', 'display',
-					$user->getUserId(),
-					$user->getUsername())
-			: new Request($engine, $this->name);
+			? new Request('user', 'display', $user->getUserId(),
+				$user->getUsername())
+			: new Request($this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
 				'text' => _('Back')));
 	}
@@ -1280,13 +1273,13 @@ abstract class ContentModule extends Module
 
 		if(($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
-		$r = new Request($engine, $this->name, 'list', $uid,
-				$uid ? $user->getUsername() : FALSE);
+		$r = new Request($this->name, 'list', $uid,
+			$uid ? $user->getUsername() : FALSE);
 		$toolbar = $page->append('toolbar');
 		$toolbar->append('button', array('stock' => 'refresh',
 				'text' => _('Refresh'),
 				'request' => $r));
-		$r = new Request($engine, $this->name, 'submit');
+		$r = new Request($this->name, 'submit');
 		if($this->canSubmit($engine))
 			$toolbar->append('button', array('stock' => 'new',
 					'request' => $r,
@@ -1318,7 +1311,7 @@ abstract class ContentModule extends Module
 		if(($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
 		if($uid === $cred->getUserId())
-			$r = new Request($engine, $this->name, 'list', $uid,
+			$r = new Request($this->name, 'list', $uid,
 				$uid ? $user->getUsername() : FALSE);
 		$view = $page->append('treeview', array('request' => $r));
 		$columns = array('title' => _('Title'));
@@ -1350,8 +1343,8 @@ abstract class ContentModule extends Module
 				$page->append('label', array('text' => $i));
 				continue;
 			}
-			$r = new Request($engine, $this->name, FALSE, FALSE,
-					FALSE, array('page' => $i));
+			$r = new Request($this->name, FALSE, FALSE, FALSE,
+					array('page' => $i));
 			$page->append('link', array('request' => $r,
 					'text' => $i));
 		}
@@ -1364,9 +1357,8 @@ abstract class ContentModule extends Module
 		if($content === FALSE)
 			return;
 		$request = isset($content['id'])
-			? new Request($engine, $this->name, FALSE,
-				$content['id'], $content['title'])
-			: FALSE;
+			? new Request($this->name, FALSE, $content['id'],
+				$content['title']) : FALSE;
 		//title
 		$this->helperPreviewTitle($engine, $preview, $request,
 				$content);
@@ -1408,8 +1400,8 @@ abstract class ContentModule extends Module
 	protected function helperPreviewMetadata($engine, $preview, $request,
 			$content)
 	{
-		$r = new Request($engine, 'user', FALSE,
-				$content['user_id'], $content['username']);
+		$r = new Request('user', FALSE, $content['user_id'],
+			$content['username']);
 		$link = new PageElement('link', array('request' => $r,
 				'text' => $content['username']));
 		$meta = $preview->append('label', array(
@@ -1474,7 +1466,7 @@ abstract class ContentModule extends Module
 	//ContentModule::helperSubmitButtons
 	protected function helperSubmitButtons($engine, $request, $page)
 	{
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$page->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
 		if($this->canPreview($engine, $request))
@@ -1571,7 +1563,7 @@ abstract class ContentModule extends Module
 			$content)
 	{
 		$hbox = $page->append('hbox');
-		$r = new Request($engine, $this->name, FALSE, $request->getId(),
+		$r = new Request($this->name, FALSE, $request->getId(),
 				$content['title']);
 		$hbox->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));

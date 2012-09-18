@@ -131,8 +131,8 @@ class HttpEngine extends Engine
 					break;
 			}
 		}
-		$this->request = new Request($this, $module, $action, $id,
-				$title, $parameters);
+		$this->request = new Request($module, $action, $id, $title,
+			$parameters);
 		$auth = $this->getAuth();
 		$auth->setIdempotent($this, $this->request, $idempotent);
 		return $this->request;
@@ -156,7 +156,7 @@ class HttpEngine extends Engine
 			if($request->getModule() != $module
 					|| !in_array($request->getAction(),
 						$actions))
-				return new Request($this, $module, $actions[0]);
+				return new Request($module, $actions[0]);
 		return $request;
 	}
 

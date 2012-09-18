@@ -323,8 +323,8 @@ class User
 				return FALSE;
 			}
 			//send an e-mail for confirmation
-			$r = new Request($engine, $module, 'validate', $uid,
-					FALSE, array('token' => $token));
+			$r = new Request($module, 'validate', $uid, FALSE,
+				array('token' => $token));
 			$subject = _('User registration'); //XXX add site title
 			$text = _("Thank you for registering on this site.\n");
 			//FIXME do not send the password if already known
@@ -371,8 +371,8 @@ class User
 			return FALSE;
 		}
 		//send an e-mail with the token
-		$r = new Request($engine, $module, 'reset', $uid,
-			FALSE, array('token' => $token));
+		$r = new Request($module, 'reset', $uid, FALSE,
+			array('token' => $token));
 		$subject = _('Password reset'); //XXX add site title
 		$text = _("Someone, hopefully you, has requested a password reset on your account.\n");
 		$text .= _("\nPlease click on the following link to reset your password:\n");

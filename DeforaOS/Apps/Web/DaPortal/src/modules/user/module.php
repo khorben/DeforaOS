@@ -107,7 +107,7 @@ class UserModule extends Module
 	//UserModule::formLogin
 	protected function formLogin($engine, $username, $cancel = TRUE)
 	{
-		$r = new Request($engine, $this->name, 'login');
+		$r = new Request($this->name, 'login');
 		$form = new PageElement('form', array('request' => $r));
 		$entry = $form->append('entry', array(
 					'name' => 'username',
@@ -117,7 +117,7 @@ class UserModule extends Module
 					'hidden' => TRUE,
 					'name' => 'password',
 					'text' => _('Password: ')));
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		if($cancel)
 			$form->append('button', array('text' => _('Cancel'),
 						'stock' => 'cancel',
@@ -132,7 +132,7 @@ class UserModule extends Module
 	//UserModule::formRegister
 	protected function formRegister($engine, $username, $email)
 	{
-		$r = new Request($engine, $this->name, 'register');
+		$r = new Request($this->name, 'register');
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('entry', array('text' => _('Username: '),
 				'name' => 'username', 'value' => $username));
@@ -140,8 +140,7 @@ class UserModule extends Module
 				'name' => 'email', 'value' => $email));
 		$form->append('button', array('stock' => 'cancel',
 				'text' => _('Cancel'),
-				'request' => new Request($engine,
-					$this->name)));
+				'request' => new Request($this->name)));
 		$form->append('button', array('stock' => 'register',
 				'type' => 'submit', 'text' => _('Register')));
 		return $form;
@@ -151,7 +150,7 @@ class UserModule extends Module
 	//UserModule::formReset
 	protected function formReset($engine, $username, $email)
 	{
-		$r = new Request($engine, $this->name, 'reset');
+		$r = new Request($this->name, 'reset');
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('entry', array('text' => _('Username: '),
 				'name' => 'username', 'value' => $username));
@@ -159,8 +158,7 @@ class UserModule extends Module
 				'name' => 'email', 'value' => $email));
 		$form->append('button', array('stock' => 'cancel',
 				'text' => _('Cancel'),
-				'request' => new Request($engine,
-					$this->name)));
+				'request' => new Request($this->name)));
 		$form->append('button', array('stock' => 'reset',
 				'type' => 'submit', 'text' => _('Reset')));
 		return $form;
@@ -170,7 +168,7 @@ class UserModule extends Module
 	//UserModule::formSubmit
 	protected function formSubmit($engine, $request)
 	{
-		$r = new Request($engine, $this->name, 'submit');
+		$r = new Request($this->name, 'submit');
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
 		$vbox->append('entry', array('name' => 'username',
@@ -196,7 +194,7 @@ class UserModule extends Module
 					? TRUE : FALSE,
 				'text' => _('Administrator')));
 		//buttons
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		$form->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
 		$form->append('button', array('type' => 'submit',
@@ -220,9 +218,8 @@ class UserModule extends Module
 		if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 					'text' => $error));
-		$r = new Request($engine, $this->name, 'update',
-				$request->getId(), $request->getId()
-					? $request->getTitle() : FALSE);
+		$r = new Request($this->name, 'update', $request->getId(),
+		       	$request->getId() ? $request->getTitle() : FALSE);
 		$form = $page->append('form', array('request' => $r));
 		//fields
 		//username (cannot be changed)
@@ -251,9 +248,9 @@ class UserModule extends Module
 				'name' => 'password2', 'hidden' => TRUE));
 		//buttons
 		if($cred->isAdmin() && $request->getId() !== FALSE)
-			$r = new Request($engine, $this->name, 'admin');
+			$r = new Request($this->name, 'admin');
 		else
-			$r = new Request($engine, $this->name, 'profile',
+			$r = new Request($this->name, 'profile',
 					$request->getId(), $request->getId()
 					? $user->getUsername() : FALSE);
 		$form->append('button', array('stock' => 'cancel',
@@ -279,7 +276,7 @@ class UserModule extends Module
 		if($cred->getUserId() == 0)
 		{
 			//not logged in yet
-			$r = new Request($engine, $this->name, 'login');
+			$r = new Request($this->name, 'login');
 			$icon = new PageElement('image', array(
 					'stock' => 'login'));
 			$link = new PageElement('link', array('request' => $r,
@@ -289,7 +286,7 @@ class UserModule extends Module
 					'label' => $link));
 			if($this->canReset())
 			{
-				$r = new Request($engine, $this->name, 'reset');
+				$r = new Request($this->name, 'reset');
 				$icon = new PageElement('image', array(
 						'stock' => 'reset'));
 				$link = new PageElement('link', array(
@@ -301,8 +298,7 @@ class UserModule extends Module
 			}
 			if($this->canRegister())
 			{
-				$r = new Request($engine, $this->name,
-						'register');
+				$r = new Request($this->name, 'register');
 				$icon = new PageElement('image', array(
 						'stock' => 'register'));
 				$link = new PageElement('link', array(
@@ -320,7 +316,7 @@ class UserModule extends Module
 				$this->_actions_admin($engine, $cred,
 						$this->name, $ret);
 			//user's content
-			$r = new Request($engine, $this->name, 'display');
+			$r = new Request($this->name, 'display');
 			$icon = new PageElement('image', array(
 					'stock' => 'user'));
 			$link = new PageElement('link', array('request' => $r,
@@ -328,7 +324,7 @@ class UserModule extends Module
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'label' => $link));
 			//user's profile
-			$r = new Request($engine, $this->name, 'profile');
+			$r = new Request($this->name, 'profile');
 			$icon = new PageElement('image', array(
 					'stock' => 'user'));
 			$link = new PageElement('link', array('request' => $r,
@@ -336,7 +332,7 @@ class UserModule extends Module
 			$ret[] = new PageElement('row', array('icon' => $icon,
 					'label' => $link));
 			//logout
-			$r = new Request($engine, $this->name, 'logout');
+			$r = new Request($this->name, 'logout');
 			$icon = new PageElement('image', array(
 					'stock' => 'logout'));
 			$link = new PageElement('link', array('request' => $r,
@@ -353,15 +349,15 @@ class UserModule extends Module
 		if(!$cred->isAdmin())
 			return $ret;
 		//user creation
-		$r = new Request($engine, $module, 'submit');
+		$r = new Request($module, 'submit');
 		$icon = new PageElement('image', array('stock' => 'new'));
 		$link = new PageElement('link', array('request' => $r,
 				'text' => _('New user')));
 		$ret[] = new PageElement('row', array('icon' => $icon,
 				'label' => $link));
 		//administration
-		$r = new Request($engine, $module, ($module == 'admin') ? FALSE
-				: 'admin');
+		$r = new Request($module, ($module == 'admin')
+			? FALSE : 'admin');
 		$icon = new PageElement('image', array('stock' => 'admin'));
 		$link = new PageElement('link', array('request' => $r,
 				'text' => _('Users administration')));
@@ -408,14 +404,14 @@ class UserModule extends Module
 				'enabled' => _('Enabled'),
 				'admin' => _('Administrator'),
 				'email' => _('e-mail'));
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		$view = $page->append('treeview', array('request' => $r,
 				'view' => 'details', 'columns' => $columns));
 		//toolbar
 		$toolbar = $view->append('toolbar');
 		$toolbar->append('button', array('stock' => 'new',
 				'text' => _('New user'),
-				'request' => new Request($engine, $this->name,
+				'request' => new Request($this->name,
 					'submit')));
 		$toolbar->append('button', array('stock' => 'refresh',
 				'text' => _('Refresh'),
@@ -441,8 +437,8 @@ class UserModule extends Module
 			$row = $view->append('row');
 			$row->setProperty('id', 'user_id:'.$res[$i]['id']);
 			$row->setProperty('username', $res[$i]['username']);
-			$r = new Request($engine, $this->name, 'update',
-				$res[$i]['id'], $res[$i]['username']);
+			$r = new Request($this->name, 'update', $res[$i]['id'],
+				$res[$i]['username']);
 			$link = new PageElement('link', array('stock' => 'user',
 					'request' => $r,
 					'text' => $res[$i]['username']));
@@ -459,10 +455,10 @@ class UserModule extends Module
 			$row->setProperty('email', $link);
 		}
 		$vbox = $page->append('vbox');
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$vbox->append('link', array('request' => $r, 'stock' => 'back',
 			'text' => _('Back to my account')));
-		$r = new Request($engine, 'admin');
+		$r = new Request('admin');
 		$vbox->append('link', array('request' => $r, 'stock' => 'admin',
 			'text' => _('Back to the administration')));
 		return $page;
@@ -494,12 +490,12 @@ class UserModule extends Module
 		$vbox = $vbox->append('vbox');
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$r = new Request($engine, $res[$i]['name'], 'actions',
-					FALSE, FALSE, array('admin' => 0));
+			$r = new Request($res[$i]['name'], 'actions', FALSE,
+					FALSE, array('admin' => 0));
 			$rows = $engine->process($r);
 			if(!is_array($rows) || count($rows) == 0)
 				continue;
-			$r = new Request($engine, $res[$i]['name']);
+			$r = new Request($res[$i]['name']);
 			$text = ucfirst($res[$i]['name']);
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $text));
@@ -510,7 +506,7 @@ class UserModule extends Module
 			foreach($rows as $r)
 				$view->append($r);
 		}
-		$r = new Request($engine);
+		$r = new Request();
 		$page->append('link', array('stock' => 'back', 'request' => $r,
 				'text' => _('Back to the site')));
 		return $page;
@@ -564,7 +560,7 @@ class UserModule extends Module
 			$user = new User($engine, $uid);
 			$uid = $user->getUserId('id');
 			$title = _('My content');
-			$r = new Request($engine, $this->name);
+			$r = new Request($this->name);
 			$link = new PageElement('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my account')));
@@ -580,8 +576,8 @@ class UserModule extends Module
 		$vbox = $vbox->append('vbox');
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$r = new Request($engine, $res[$i]['name'], 'actions',
-					FALSE, FALSE, array('user' => $user));
+			$r = new Request($res[$i]['name'], 'actions', FALSE,
+				FALSE, array('user' => $user));
 			$rows = $engine->process($r);
 			if(!is_array($rows) || count($rows) == 0)
 				continue;
@@ -638,7 +634,7 @@ class UserModule extends Module
 		$page->append($form);
 		if($this->canReset())
 		{
-			$r = new Request($engine, $this->name, 'reset');
+			$r = new Request($this->name, 'reset');
 			$page->append('link', array('request' => $r,
 					'stock' => 'reset',
 					'text' => $forgot));
@@ -668,7 +664,7 @@ class UserModule extends Module
 
 	protected function _loginSuccess($engine, $request, $page)
 	{
-		$r = new Request($engine);
+		$r = new Request();
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
@@ -697,13 +693,13 @@ class UserModule extends Module
 			$text = _('You were logged out successfully');
 			$page->append('dialog', array('type' => 'info',
 						'text' => $text));
-			$r = new Request($engine);
+			$r = new Request();
 			$page->append('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to the site')));
 			return $page;
 		}
-		$r = new Request($engine, $this->name, 'logout');
+		$r = new Request($this->name, 'logout');
 		if($request->isIdempotent())
 		{
 			//FIXME make it a question dialog
@@ -712,7 +708,7 @@ class UserModule extends Module
 			$vbox = $form->append('vbox');
 			$vbox->append('label', array(
 				'text' => _('Do you really want to logout?')));
-			$r = new Request($engine, $this->name);
+			$r = new Request($this->name);
 			$form->append('button', array('text' => _('Cancel'),
 						'stock' => 'cancel',
 						'request' => $r));
@@ -776,9 +772,8 @@ class UserModule extends Module
 				'text' => _('e-mail: ')));
 		$col2->append('label', array('text' => $user->getEmail()));
 		//link to profile update
-		$r = new Request($engine, $this->name, 'update',
-				$request->getId(), $request->getId()
-				? $user->getUsername() : FALSE);
+		$r = new Request($this->name, 'update', $request->getId(),
+			$request->getId() ? $user->getUsername() : FALSE);
 		$button = FALSE;
 		if($request->getId() !== FALSE && $cred->isAdmin())
 			$button = new PageElement('button', array(
@@ -792,7 +787,7 @@ class UserModule extends Module
 			$vbox->append($button);
 		if($id === FALSE)
 		{
-			$r = new Request($engine, $this->name);
+			$r = new Request($this->name);
 			$vbox->append('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my account')));
@@ -866,7 +861,7 @@ class UserModule extends Module
 Thank you for registering!")));
 		$page->append('link', array('stock' => 'back',
 			'text' => _('Back to the site'),
-			'request' => new Request($engine)));
+			'request' => new Request()));
 		return $page;
 	}
 
@@ -940,7 +935,7 @@ Thank you for registering!")));
 				'text' => _("You should receive an e-mail shortly, with a link allowing you to reset your password.\n")));
 		$page->append('link', array('stock' => 'back',
 			'text' => _('Back to the site'),
-			'request' => new Request($engine)));
+			'request' => new Request()));
 		return $page;
 	}
 
@@ -971,7 +966,7 @@ Thank you for registering!")));
 		if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 				'text' => $error));
-		$r = new Request($engine, $this->name, 'reset', FALSE, FALSE,
+		$r = new Request($this->name, 'reset', FALSE, FALSE,
 			array('id' => $uid, 'token' => $token));
 		$form = $page->append('form', array('request' => $r));
 		$token = $request->getParameter('token');
@@ -981,7 +976,7 @@ Thank you for registering!")));
 			'name' => 'password2'));
 		$form->append('button', array('stock' => 'cancel',
 			'text' => _('Cancel'),
-			'request' => new Request($engine, $this->name)));
+			'request' => new Request($this->name)));
 		$form->append('button', array('stock' => 'reset',
 			'type' => 'submit', 'text' => _('Reset')));
 		return $page;
@@ -1017,10 +1012,10 @@ Thank you for registering!")));
 				'text' => _("Your password was reset successfully.\n")));
 		$page->append('link', array('stock' => 'back',
 			'text' => _('Back to the site'),
-			'request' => new Request($engine)));
+			'request' => new Request()));
 		$page->append('link', array('stock' => 'login',
 			'text' => _('Proceed to login page'),
-			'request' => new Request($engine, $this->name)));
+			'request' => new Request($this->name)));
 		return $page;
 	}
 
@@ -1081,8 +1076,8 @@ Thank you for registering!")));
 
 	protected function _submitSuccess($engine, $request, $page, $user)
 	{
-		$r = new Request($engine, $this->name, FALSE,
-				$user->getUserId(), $user->getUsername());
+		$r = new Request($this->name, FALSE, $user->getUserId(),
+			$user->getUsername());
 		$this->helperRedirect($engine, $r, $page);
 		return $page;
 	}
@@ -1182,9 +1177,8 @@ Thank you for registering!")));
 		$info = _('Your profile was updated successfully');
 		$dialog = $page->append('dialog', array('type' => 'info',
 				'text' => $info));
-		$r = new Request($engine, $this->name, 'profile',
-				$request->getId(), $request->getId()
-					? $request->getTitle() : FALSE);
+		$r = new Request($this->name, 'profile', $request->getId(),
+			$request->getId() ? $request->getTitle() : FALSE);
 		$dialog->append('button', array('stock' => 'user',
 				'request' => $r, 'text' => _('My profile')));
 		return $page;
@@ -1221,12 +1215,12 @@ Thank you for registering!")));
 			$box->append('dialog', array('type' => 'info',
 					'title' => _('Congratulations!'),
 					'text' => _("Your account is now enabled.")));
-			$r = new Request($engine, $this->name);
+			$r = new Request($this->name);
 			$box->append('link', array('stock' => 'login',
 					'request' => $r,
 					'text' => _('Login')));
 		}
-		$r = new Request($engine);
+		$r = new Request();
 		$box->append('link', array('stock' => 'back', 'request' => $r,
 			'text' => _('Back to the site')));
 		return $page;
@@ -1244,19 +1238,19 @@ Thank you for registering!")));
 					$request->getParameter('username'),
 					FALSE);
 		$box = new PageElement('vbox');
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$box->append('button', array('stock' => 'home',
 				'request' => $r,
 				'text' => _('My account')));
-		$r = new Request($engine, $this->name, 'display');
+		$r = new Request($this->name, 'display');
 		$box->append('button', array('stock' => 'user',
 				'request' => $r,
 				'text' => _('My content')));
-		$r = new Request($engine, $this->name, 'update');
+		$r = new Request($this->name, 'update');
 		$box->append('button', array('stock' => 'user',
 				'request' => $r,
 				'text' => _('My profile')));
-		$r = new Request($engine, $this->name, 'logout');
+		$r = new Request($this->name, 'logout');
 		$box->append('button', array('stock' => 'logout',
 				'request' => $r,
 				'text' => _('Logout')));

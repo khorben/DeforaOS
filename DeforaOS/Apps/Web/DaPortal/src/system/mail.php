@@ -53,9 +53,9 @@ class Mail
 		ob_end_clean();
 		//FIXME check $from, $to and $subject for newline characters
 		if(mail($to, $subject, $content, $hdr) === FALSE)
-			$engine->log('LOG_ERR', 'Could not send e-mail');
-		else
-			$engine->log('LOG_DEBUG', 'e-mail sent to '.$to);
+			return $engine->log('LOG_ERR', 'Could not send e-mail');
+		$engine->log('LOG_DEBUG', 'e-mail sent to '.$to);
+		return TRUE;
 	}
 }
 

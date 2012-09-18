@@ -88,7 +88,7 @@ class AdminModule extends Module
 	{
 		if($request->getParameter('user') !== FALSE)
 			return FALSE;
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		$icon = new PageElement('image', array('stock' => 'admin'));
 		$link = new PageElement('link', array('request' => $r,
 				'text' => _('Modules')));
@@ -123,7 +123,7 @@ class AdminModule extends Module
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => 'admin',
 			'text' => $title));
-		$r = new Request($engine, $this->name, 'admin');
+		$r = new Request($this->name, 'admin');
 		$columns = array('module' => _('Module'),
 				'enabled' => _('Enabled'));
 		$view = $page->append('treeview', array('request' => $r,
@@ -150,7 +150,7 @@ class AdminModule extends Module
 			$row = $view->append('row');
 			$row->setProperty('id', 'module_id:'
 					.$res[$i]['module_id']);
-			$r = new Request($engine, $res[$i]['name'], 'admin');
+			$r = new Request($res[$i]['name'], 'admin');
 			$text = ucfirst($res[$i]['name']);
 			$link = new PageElement('link', array('request' => $r,
 				'stock' => $res[$i]['name'],
@@ -159,7 +159,7 @@ class AdminModule extends Module
 			$row->setProperty('enabled', $database->isTrue(
 					$res[$i]['enabled']) ? $yes : $no);
 		}
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$page->append('link', array('request' => $r, 'stock' => 'back',
 				'text' => _('Back to the administration')));
 		return $page;
@@ -187,13 +187,13 @@ class AdminModule extends Module
 		$vbox = $vbox->append('vbox');
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$r = new Request($engine, $res[$i]['name'], 'actions',
-					FALSE, FALSE, array('admin' => TRUE));
+			$r = new Request($res[$i]['name'], 'actions', FALSE,
+					FALSE, array('admin' => TRUE));
 			$rows = $engine->process($r);
 			if(!is_array($rows) || count($rows) == 0)
 				continue;
 			$text = ucfirst($res[$i]['name']);
-			$r = new Request($engine, $res[$i]['name']);
+			$r = new Request($res[$i]['name']);
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $text));
 			$title = $vbox->append('title', array(

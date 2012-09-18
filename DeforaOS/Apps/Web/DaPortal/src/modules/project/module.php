@@ -348,7 +348,7 @@ class ProjectModule extends ContentModule
 	//ProjectModule::getFilter
 	protected function getFilter($engine, $request)
 	{
-		$r = new Request($engine, $this->name, 'bug_list');
+		$r = new Request($this->name, 'bug_list');
 		$form = new PageElement('form', array('request' => $r,
 				'idempotent' => TRUE));
 		$hbox = $form->append('hbox');
@@ -435,43 +435,42 @@ class ProjectModule extends ContentModule
 		if(($project = $this->getProject($engine, $id)) === FALSE)
 			return FALSE;
 		$toolbar = new PageElement('toolbar');
-		$r = new Request($engine, $this->name, FALSE, $id,
-				$project['title']);
+		$r = new Request($this->name, FALSE, $id, $project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'home', 'text' => _('Homepage')));
 		if(strlen($project['cvsroot']) > 0)
 		{
-			$r = new Request($engine, $this->name, 'browse', $id,
+			$r = new Request($this->name, 'browse', $id,
 					$project['title']);
 			$toolbar->append('button', array('request' => $r,
 					'stock' => 'open',
 					'text' => _('Browse')));
-			$r = new Request($engine, $this->name, 'timeline', $id,
+			$r = new Request($this->name, 'timeline', $id,
 					$project['title']);
 			$toolbar->append('button', array('request' => $r,
 					'stock' => 'development',
 					'text' => _('Timeline')));
 		}
 		//gallery
-		$r = new Request($engine, $this->name, 'gallery', $id,
+		$r = new Request($this->name, 'gallery', $id,
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'preview',
 				'text' => _('Gallery')));
 		//downloads
-		$r = new Request($engine, $this->name, 'download', $id,
+		$r = new Request($this->name, 'download', $id,
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'download',
 				'text' => _('Downloads')));
 		//bug reports
-		$r = new Request($engine, $this->name, 'bug_list', $id,
+		$r = new Request($this->name, 'bug_list', $id,
 				$project['title']);
 		$toolbar->append('button', array('request' => $r,
 				'stock' => 'bug', 'text' => _('Bug reports')));
 		if($this->isManager($engine, $project))
 		{
-			$r = new Request($engine, $this->name, 'update', $id,
+			$r = new Request($this->name, 'update', $id,
 					$project['title']);
 			$toolbar->append('button', array('request' => $r,
 					'stock' => 'admin',
@@ -610,8 +609,8 @@ class ProjectModule extends ContentModule
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$row = $treeview->append('row');
-			$r = new Request($engine, $this->name, FALSE,
-					$res[$i]['id'], $res[$i]['title']);
+			$r = new Request($this->name, FALSE, $res[$i]['id'],
+				$res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $res[$i]['title'],
 					'title' => $res[$i]['title']));
@@ -621,7 +620,7 @@ class ProjectModule extends ContentModule
 					'title' => $res[$i]['title']));
 			$row->setProperty('bug_id', $link);
 			$row->setProperty('id', 'bug_id:'.$res[$i]['id']);
-			$r = new Request($engine, $this->name, FALSE,
+			$r = new Request($this->name, FALSE,
 					$res[$i]['project_id'],
 					$res[$i]['project']);
 			$link = new PageElement('link', array('request' => $r,
@@ -731,11 +730,9 @@ class ProjectModule extends ContentModule
 			if($this->canUpload($engine, $project))
 			{
 				$toolbar = $view->append('toolbar');
-				$req = new Request($engine, $this->name,
-						'submit',
-						$project['id'],
-						$project['title'], array(
-							'type' => 'release'));
+				$req = new Request($this->name, 'submit',
+					$project['id'], $project['title'],
+				       	array('type' => 'release'));
 				$link = $toolbar->append('button', array(
 						'stock' => 'new',
 						'request' => $req,
@@ -744,8 +741,8 @@ class ProjectModule extends ContentModule
 			foreach($res as $r)
 			{
 				$row = $view->append('row');
-				$req = new Request($engine, 'download', FALSE,
-						$r['id'], $r['title']);
+				$req = new Request('download', FALSE, $r['id'],
+				       	$r['title']);
 				$icon = Mime::getIcon($engine, $r['title'], 16);
 				$icon = new PageElement('image', array(
 						'source' => $icon));
@@ -754,8 +751,8 @@ class ProjectModule extends ContentModule
 						'request' => $req,
 						'text' => $r['title']));
 				$row->setProperty('filename', $filename);
-				$req = new Request($engine, 'user', FALSE,
-						$r['user_id'], $r['username']);
+				$req = new Request('user', FALSE, $r['user_id'],
+				       	$r['username']);
 				$username = new PageElement('link', array(
 						'stock' => 'user',
 						'request' => $req,
@@ -807,9 +804,8 @@ class ProjectModule extends ContentModule
 			foreach($res as $r)
 			{
 				$row = $view->append('row');
-				$req = new Request($engine, 'download',
-						'download', $r['id'],
-						$r['title']);
+				$req = new Request('download', 'download',
+					$r['id'], $r['title']);
 				$thumbnail = new PageElement('image', array(
 						'request' => $req));
 				$row->setProperty('thumbnail', $thumbnail);
@@ -921,8 +917,8 @@ class ProjectModule extends ContentModule
 			return _('The request expired or is invalid');
 		//FIXME obtain the download path
 		//XXX this assumes the file was just being uploaded
-		$r = new Request($engine, 'download', 'submit', FALSE,
-				FALSE, array('submit' => 'submit'));
+		$r = new Request('download', 'submit', FALSE, FALSE,
+			array('submit' => 'submit'));
 		$r->setIdempotent(FALSE);
 		if($engine->process($r, TRUE) === FALSE)
 			return 'Internal server error';
@@ -950,8 +946,8 @@ class ProjectModule extends ContentModule
 	protected function _submitSuccessRelease($engine, $request, $page,
 			$content)
 	{
-		$r = new Request($engine, $this->name, 'download',
-				$content->getId(), $content->getTitle());
+		$r = new Request($this->name, 'download', $content->getId(),
+			$content->getTitle());
 		$this->helperRedirect($engine, $r, $page,
 				$this->text_content_submit_progress); //XXX
 		return $page;
@@ -1009,8 +1005,8 @@ class ProjectModule extends ContentModule
 	//ProjectModule::formBugReply
 	protected function formBugReply($engine, $request, $bug, $project)
 	{
-		$r = new Request($engine, $this->name, 'bugReply',
-				$request->getId(), $request->getTitle());
+		$r = new Request($this->name, 'bugReply', $request->getId(),
+			$request->getTitle());
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
 		$title = $request->getParameter('title');
@@ -1020,8 +1016,7 @@ class ProjectModule extends ContentModule
 				'name' => 'content',
 				'value' => $request->getParameter('content')));
 		//FIXME really implement
-		$r = new Request($engine, $this->name, FALSE, $bug['id'],
-				$bug['title']);
+		$r = new Request($this->name, FALSE, $bug['id'], $bug['title']);
 		$box = $vbox->append('buttonbox');
 		$box->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
@@ -1036,7 +1031,7 @@ class ProjectModule extends ContentModule
 	//ProjectModule::formSubmit
 	protected function formSubmit($engine, $request)
 	{
-		$r = new Request($engine, $this->name, 'submit', FALSE, FALSE,
+		$r = new Request($this->name, 'submit', FALSE, FALSE,
 				array('public' => 1));
 		$form = new PageElement('form', array('request' => $r));
 		$vbox = $form->append('vbox');
@@ -1052,7 +1047,7 @@ class ProjectModule extends ContentModule
 		$vbox->append('entry', array('name' => 'cvsroot',
 				'text' => _('CVS root: '),
 				'value' => $request->getParameter('cvsroot')));
-		$r = new Request($engine, $this->name);
+		$r = new Request($this->name);
 		$form->append('button', array('request' => $r,
 				'stock' => 'cancel', 'text' => _('Cancel')));
 		if($this->canPreview($engine, $request))
@@ -1071,16 +1066,16 @@ class ProjectModule extends ContentModule
 	//ProjectModule::formSubmitRelease
 	protected function formSubmitRelease($engine, $request, $project)
 	{
-		$r = new Request($engine, $this->name, 'submit', $project['id'],
-				$project['title'], array('type' => 'release'));
+		$r = new Request($this->name, 'submit', $project['id'],
+			$project['title'], array('type' => 'release'));
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('filechooser', array('text' => _('File: '),
 				'name' => 'files[]'));
 		$value = $request->getParameter('directory');
 		$form->append('entry', array('text' => _('Directory: '),
 				'name' => 'directory', 'value' => $value));
-		$r = new Request($engine, $this->name, 'download',
-				$project['id'], $project['title']);
+		$r = new Request($this->name, 'download', $project['id'],
+			$project['title']);
 		$form->append('button', array('stock' => 'cancel',
 				'request' => $r, 'text' => _('Cancel')));
 		$form->append('button', array('type' => 'submit',
@@ -1108,7 +1103,7 @@ class ProjectModule extends ContentModule
 	{
 		$project = $this->_get($engine, $content['project_id']);
 
-		$request = new Request($engine, $content['module'], FALSE,
+		$request = new Request($content['module'], FALSE,
 				$content['id'], $content['title']);
 		$c = $content;
 		$c['title'] = $title = sprintf(_('#%u/%s: %s'),
@@ -1124,8 +1119,8 @@ class ProjectModule extends ContentModule
 		//content
 		$this->helperDisplayText($engine, $vbox, $request, $content);
 		//buttons
-		$r = new Request($engine, $this->name, 'bugReply',
-				$content['id'], $content['title']);
+		$r = new Request($this->name, 'bugReply', $content['id'],
+			$content['title']);
 		$vbox->append('button', array('request' => $r,
 				'stock' => 'reply', 'text' => _('Reply')));
 		$this->helperDisplayButtons($engine, $vbox, $request, $content);
@@ -1136,16 +1131,15 @@ class ProjectModule extends ContentModule
 	protected function helperDisplayBugMetadata($engine, $page, $request,
 			$bug, $project)
 	{
-		$r = new Request($engine, $this->name, FALSE, $project['id'],
-				$project['title']);
-		$u = new Request($engine, $this->name, 'list', $bug['user_id'],
-				$bug['username']);
+		$r = new Request($this->name, FALSE, $project['id'],
+			$project['title']);
+		$u = new Request($this->name, 'list', $bug['user_id'],
+			$bug['username']);
 		$user = is_numeric($bug['assigned'])
 			? new User($engine, $bug['assigned']) : FALSE;
 		$a = ($user !== FALSE)
-			? new Request($engine, $this->name, 'list',
-				$user->getUserId(), $user->getUsername())
-			: FALSE;
+			? new Request($this->name, 'list', $user->getUserId(),
+				$user->getUsername()) : FALSE;
 
 		$page = $page->append('hbox');
 		$col1 = $page->append('vbox');
@@ -1230,7 +1224,7 @@ class ProjectModule extends ContentModule
 		$yes = new PageElement('image', array('stock' => 'yes',
 			'size' => 16, 'title' => _('Enabled')));
 		//project owner
-		$r = new Request($engine, 'user', FALSE, $user->getUserId(),
+		$r = new Request('user', FALSE, $user->getUserId(),
 				$user->getUsername());
 		$link = new PageElement('link', array('request' => $r,
 				'stock' => 'user',
@@ -1240,8 +1234,8 @@ class ProjectModule extends ContentModule
 		foreach($members as $m)
 		{
 			$row = $view->append('row');
-			$r = new Request($engine, 'user', FALSE,
-					$m['user_id'], $m['username']);
+			$r = new Request('user', FALSE, $m['user_id'],
+				$m['username']);
 			$link = new PageElement('link', array('request' => $r,
 				'stock' => 'user', 'text' => $m['username']));
 			$row->setProperty('title', $link);
@@ -1253,7 +1247,7 @@ class ProjectModule extends ContentModule
 	//ProjectModule::helperDisplayProject
 	protected function helperDisplayProject($engine, $page, $content)
 	{
-		$request = new Request($engine, $content['module'], FALSE,
+		$request = new Request($content['module'], FALSE,
 				$content['id'], $content['title']);
 		//title
 		$this->helperDisplayTitle($engine, $page, $request, $content);

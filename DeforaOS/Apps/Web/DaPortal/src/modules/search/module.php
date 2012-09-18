@@ -71,7 +71,7 @@ class SearchModule extends Module
 			return FALSE;
 		$ret = array();
 		//advanced search
-		$r = new Request($engine, $this->name, 'advanced');
+		$r = new Request($this->name, 'advanced');
 		$ret[] = $this->helperAction($engine, 'add', $r,
 				_('Advanced search'));
 		return $ret;
@@ -85,7 +85,7 @@ class SearchModule extends Module
 		$row->setProperty('title', $res['title']);
 		$row->setProperty('username', $res['username']);
 		$row->setProperty('date', $res['date']);
-		$r = new Request($engine, $res['module'], 'preview', $res['id'],
+		$r = new Request($res['module'], 'preview', $res['id'],
 				$res['title']);
 		$row->setProperty('preview', $engine->process($r));
 	}
@@ -158,7 +158,7 @@ class SearchModule extends Module
 	protected function callWidget(&$engine, $request)
 	{
 		$form = new PageElement('form', array('idempotent' => TRUE));
-		$r = new Request($engine, 'search');
+		$r = new Request('search');
 		$form->setProperty('request', $r);
 		$hbox = $form->append('hbox');
 		$entry = $hbox->append('entry');
@@ -194,8 +194,7 @@ class SearchModule extends Module
 		$title->setProperty('text', $q ? _('Search results')
 				: _('Search'));
 		$form = $page->append('form');
-		$r = new Request($engine, 'search', $advanced ? 'advanced'
-				: FALSE);
+		$r = new Request('search', $advanced ? 'advanced' : FALSE);
 		$form->setProperty('request', $r);
 		$entry = $form->append('entry');
 		$entry->setProperty('text', _('Search query: '));
@@ -228,18 +227,17 @@ class SearchModule extends Module
 		{
 			$link->setProperty('stock', 'remove');
 			$link->setProperty('text', _('Simpler search...'));
-			$link->setProperty('request', new Request($engine,
-						'search', FALSE, FALSE, FALSE,
-						$q ? array('q' => $q) : FALSE));
+			$link->setProperty('request', new Request('search',
+				FALSE, FALSE, FALSE,
+				$q ? array('q' => $q) : FALSE));
 		}
 		else
 		{
 			$link->setProperty('stock', 'add');
 			$link->setProperty('text', _('Advanced search...'));
-			$link->setProperty('request', new Request($engine,
-						'search', 'advanced', FALSE,
-						FALSE, $q ? array('q' => $q)
-						: FALSE));
+			$link->setProperty('request', new Request('search',
+				'advanced', FALSE, FALSE,
+				$q ? array('q' => $q) : FALSE));
 		}
 		return $page;
 	}

@@ -88,8 +88,7 @@ class CliEngine extends Engine
 					$title = $options['t'];
 					break;
 			}
-		$ret = new Request($this, $module, $action, $id, $title,
-				$parameters);
+		$ret = new Request($module, $action, $id, $title, $parameters);
 		$ret->setIdempotent($idempotent);
 		return $ret;
 	}

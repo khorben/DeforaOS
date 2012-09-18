@@ -38,14 +38,14 @@ class DeforaOSTemplate extends BasicTemplate
 		$vbox = new PageElement('vbox', array('id' => 'menu'));
 		$vbox->append($menu);
 		//add some widgets
-		if(($request = new Request($engine, 'search', 'widget'))
-				!== FALSE)
-			//search widget
-			$vbox->append($engine->process($request));
-		if(($request = new Request($engine, 'user', 'widget'))
-				!== FALSE)
-			//user widget
-			$vbox->append($engine->process($request));
+		//search widget
+		$request = new Request('search', 'widget');
+		if(($widget = $engine->process($request)) !== FALSE)
+			$vbox->append($widget);
+		//user widget
+		$request = new Request('user', 'widget');
+		if(($widget = $engine->process($request)) !== FALSE)
+			$vbox->append($widget);
 		return $vbox;
 	}
 

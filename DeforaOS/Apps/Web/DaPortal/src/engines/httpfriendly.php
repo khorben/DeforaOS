@@ -91,7 +91,7 @@ class HttpFriendlyEngine extends HttpEngine
 		}
 		//analyze the extension
 		$this->_getRequestType($extension);
-		return new Request($this, $module, $action, $id, $title, $args);
+		return new Request($module, $action, $id, $title, $args);
 	}
 
 	protected function _getRequestType($extension)

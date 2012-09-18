@@ -61,7 +61,7 @@ class BasicTemplate extends Template
 			if(($module = Module::load($engine, $name)) === FALSE)
 				continue;
 			$title = $module->getTitle($engine);
-			$request = new Request($engine, $name, 'actions');
+			$request = new Request($name, 'actions');
 			if(($actions = $module->call($engine, $request))
 					=== FALSE)
 				continue;
@@ -104,7 +104,7 @@ class BasicTemplate extends Template
 		{
 			if(!is_array($e))
 				continue;
-			$r = new Request($engine, $e['name']);
+			$r = new Request($e['name']);
 			$menuitem = $menu->append('menuitem', array(
 					'text' => $e['title'],
 					'request' => $r));
@@ -221,8 +221,8 @@ class BasicTemplate extends Template
 		$content = $main->append('vbox', array('id' => 'content'));
 		if($page === FALSE && $this->module !== FALSE)
 		{
-			$request = new Request($engine, $this->module,
-					$this->action, $this->id);
+			$request = new Request($this->module, $this->action,
+				$this->id);
 			$page = $engine->process($request);
 		}
 		if($page !== FALSE)

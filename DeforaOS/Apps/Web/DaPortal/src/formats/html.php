@@ -130,7 +130,7 @@ class HTMLFormat extends FormatElements
 
 	private function _render_base($page)
 	{
-		$request = new Request($this->engine);
+		$request = new Request();
 		$url = dirname($this->engine->getUrl($request, TRUE)).'/'; //XXX
 		$this->renderTabs();
 		$this->tag('base', FALSE, FALSE, array('href' => $url));

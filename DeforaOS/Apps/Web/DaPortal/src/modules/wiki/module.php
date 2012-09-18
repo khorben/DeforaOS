@@ -102,18 +102,16 @@ class WikiModule extends ContentModule
 		//search
 		$vbox->append('title', array('text' => _('Search the wiki'),
 				'stock' => 'search'));
-		$r = new Request($engine, 'search', 'advanced', FALSE, FALSE,
-				array('inmodule' => $this->name, //XXX
-				'intitle' => 1));
+		$r = new Request('search', 'advanced', FALSE, FALSE,
+			array('inmodule' => $this->name, 'intitle' => 1));
 		$form = $vbox->append('form', array('request' => $r));
 		$hbox = $form->append('hbox');
 		$hbox->append('entry', array('name' => 'q',
 				'text' => _('Look for a page: ')));
 		$hbox->append('button', array('type' => 'submit',
 				'stock' => 'search', 'text' => _('Search')));
-		$r = new Request($engine, 'search', 'advanced', FALSE, FALSE,
-				array('inmodule' => $this->name, //XXX
-				'incontent' => 1));
+		$r = new Request('search', 'advanced', FALSE, FALSE,
+			array('inmodule' => $this->name, 'incontent' => 1));
 		$form = $vbox->append('form', array('request' => $r));
 		$hbox = $form->append('hbox');
 		$hbox->append('entry', array('name' => 'q',
@@ -125,7 +123,7 @@ class WikiModule extends ContentModule
 		//recent changes
 		$vbox->append($this->callHeadline($engine, FALSE));
 		//page list
-		$r = new Request($engine, $this->name, 'list');
+		$r = new Request($this->name, 'list');
 		$vbox->append('link', array('request' => $r,
 				'stock' => $this->name,
 				'text' => _('List all pages')));
@@ -141,7 +139,7 @@ class WikiModule extends ContentModule
 				=== FALSE)
 			return FALSE;
 		//link
-		$request = new Request($engine, $content['module'], FALSE,
+		$request = new Request($content['module'], FALSE,
 				$content['id'], $content['title']);
 		$this->helperDisplayRevisions($engine, $page, $request,
 				$content);
@@ -183,9 +181,8 @@ class WikiModule extends ContentModule
 			$row = $view->append('row');
 			//name
 			$name = substr($rcs[$i], 9);
-			$r = new Request($engine, $this->name, FALSE,
-					$content['id'], $content['title'],
-					array('revision' => $name));
+			$r = new Request($this->name, FALSE, $content['id'],
+			       	$content['title'], array('revision' => $name));
 			$name = new PageElement('link', array('request' => $r,
 					'text' => $name));
 			$row->setProperty('title', $name);
@@ -200,9 +197,9 @@ class WikiModule extends ContentModule
 					.'WXYZ0123456789'));
 			if(($user = User::lookup($engine, $username)) !== FALSE)
 			{
-				$r = new Request($engine, 'user', FALSE,
-						$user->getUserId(),
-						$user->getUsername());
+				$r = new Request('user', FALSE,
+					$user->getUserId(),
+					$user->getUsername());
 				$username = new PageElement('link', array(
 						'request' => $r,
 						'stock' => 'user',

@@ -282,7 +282,7 @@ class DownloadModule extends ContentModule
 		//upload or directory creation in the root folder
 		//XXX remove this toolbar and make it a dialog?
 		$toolbar = new PageElement('toolbar');
-		$request = new Request($engine, $this->name, FALSE);
+		$request = new Request($this->name, FALSE);
 		$toolbar->append('button', array('request' => $request,
 			'stock' => 'back', 'text' => _('Back')));
 		return $toolbar;
@@ -301,37 +301,35 @@ class DownloadModule extends ContentModule
 			&& is_string($content['parent_title'])
 			? $content['parent_title'] : FALSE;
 		//parent directory
-		$request = new Request($engine, $this->name, FALSE, $parent_id,
+		$request = new Request($this->name, FALSE, $parent_id,
 				$parent_title);
 		if($content['id'] !== FALSE)
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'updir',
 					'text' => _('Parent directory')));
 		//refresh
-		$request = new Request($engine, $this->name, FALSE,
-				$content['id'], ($content['id'] !== FALSE)
-				? $content['title'] : FALSE);
+		$request = new Request($this->name, FALSE, $content['id'],
+			($content['id'] !== FALSE) ? $content['title'] : FALSE);
 		$toolbar->append('button', array('request' => $request,
 				'stock' => 'refresh', 'text' => _('Refresh')));
 		//new directory
-		$request = new Request($engine, $this->name, 'folder_new',
-				$content['id'], ($content['id'] !== FALSE)
-				? $content['title'] : FALSE);
+		$request = new Request($this->name, 'folder_new',
+			$content['id'], ($content['id'] !== FALSE)
+			? $content['title'] : FALSE);
 		if($this->canUpload($engine, $content))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'folder-new',
 					'text' => _('New directory')));
 		//upload file
-		$request = new Request($engine, $this->name, 'submit',
-				$content['id'], ($content['id'] !== FALSE)
-				? $content['title'] : FALSE);
+		$request = new Request($this->name, 'submit', $content['id'],
+			($content['id'] !== FALSE) ? $content['title'] : FALSE);
 		if($this->canUpload($engine, $content))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'upload',
 					'text' => _('Upload file')));
 		//update
-		$request = new Request($engine, $this->name, 'update',
-				$content['id'], $content['title']);
+		$request = new Request($this->name, 'update', $content['id'],
+			$content['title']);
 		if($this->canUpdate($engine, $content))
 			$toolbar->append('button', array('request' => $request,
 					'stock' => 'update',
@@ -349,18 +347,18 @@ class DownloadModule extends ContentModule
 			? $content['parent_id'] : FALSE;
 		$parent_title = is_string($content['parent_title'])
 			? $content['parent_title'] : FALSE;
-		$request = new Request($engine, $this->name, FALSE, $parent_id,
+		$request = new Request($this->name, FALSE, $parent_id,
 			$parent_title);
 		$toolbar->append('button', array('request' => $request,
 			'stock' => 'updir', 'text' => _('Browse')));
 		//refresh
-		$request = new Request($engine, $this->name, FALSE,
-				$content['id'], $content['title']);
+		$request = new Request($this->name, FALSE, $content['id'],
+			$content['title']);
 		$toolbar->append('button', array('request' => $request,
 				'stock' => 'refresh', 'text' => _('Refresh')));
 		//link to the download
-		$request = new Request($engine, $this->name, 'download',
-			$content['id'], $content['title']);
+		$request = new Request($this->name, 'download', $content['id'],
+			$content['title']);
 		$toolbar->append('button', array('request' => $request,
 			'stock' => $this->name,
 			'text' => _('Download')));
@@ -379,13 +377,13 @@ class DownloadModule extends ContentModule
 	//DownloadModule::formSubmit
 	protected function formSubmit($engine, $request)
 	{
-		$r = new Request($engine, $this->name, 'submit',
-				$request->getId(), $request->getTitle());
+		$r = new Request($this->name, 'submit', $request->getId(),
+			$request->getTitle());
 		$form = new PageElement('form', array('request' => $r));
 		$form->append('filechooser', array('text' => _('File: '),
 				'name' => 'files[]'));
-		$r = new Request($engine, $this->name, FALSE, $request->getId(),
-				$request->getTitle());
+		$r = new Request($this->name, FALSE, $request->getId(),
+			$request->getTitle());
 		$form->append('button', array('text' => _('Cancel'),
 				'stock' => 'cancel', 'request' => $r));
 		$form->append('button', array('type' => 'submit',
@@ -398,14 +396,14 @@ class DownloadModule extends ContentModule
 	//DownloadModule::formSubmitDirectory
 	protected function formSubmitDirectory($engine, $request)
 	{
-		$r = new Request($engine, $this->name, 'folder_new',
-				$request->getId(), $request->getTitle());
+		$r = new Request($this->name, 'folder_new', $request->getId(),
+			$request->getTitle());
 		$form = new PageElement('form', array('request' => $r));
 		$name = $form->append('entry', array('text' => _('Name: '),
 				'name' => 'name',
 				'value' => $request->getParameter('name')));
-		$r = new Request($engine, $this->name, FALSE,
-				$request->getId(), $request->getTitle());
+		$r = new Request($this->name, FALSE, $request->getId(),
+			$request->getTitle());
 		$form->append('button', array('stock' => 'cancel',
 				'request' => $r, 'text' => _('Cancel')));
 		$form->append('button', array('type' => 'submit',
@@ -545,8 +543,8 @@ class DownloadModule extends ContentModule
 
 	protected function _FolderNewSuccess($engine, $request, $page, $content)
 	{
-		$r = new Request($engine, $this->name, FALSE, $content->getId(),
-				$content->getTitle());
+		$r = new Request($this->name, FALSE, $content->getId(),
+			$content->getTitle());
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
@@ -692,8 +690,8 @@ class DownloadModule extends ContentModule
 
 	protected function _submitSuccess($engine, $request, $page, $content)
 	{
-		$r = new Request($engine, $this->name, FALSE, $content->getId(),
-				$content->getTitle());
+		$r = new Request($this->name, FALSE, $content->getId(),
+			$content->getTitle());
 		$page->setProperty('location', $engine->getUrl($r));
 		$page->setProperty('refresh', 30);
 		$box = $page->append('vbox');
@@ -781,8 +779,8 @@ class DownloadModule extends ContentModule
 			$icon = new PageElement('image', array(
 					'source' => $icon));
 			$row->setProperty('icon', $icon);
-			$r = new Request($engine, $this->name, FALSE,
-					$res[$i]['id'], $res[$i]['title']);
+			$r = new Request($this->name, FALSE, $res[$i]['id'],
+				$res[$i]['title']);
 			$link = new PageElement('link', array('request' => $r,
 					'text' => $res[$i]['title']));
 			$row->setProperty('filename', $link);
@@ -790,8 +788,8 @@ class DownloadModule extends ContentModule
 			$username = $res[$i]['username'];
 			if(is_numeric($user_id) && $user_id != 0)
 			{
-				$r = new Request($engine, 'user', FALSE,
-					$user_id, $username);
+				$r = new Request('user', FALSE, $user_id,
+					$username);
 				$username = new PageElement('link', array(
 						'stock' => 'user',
 						'request' => $r,
@@ -820,8 +818,8 @@ class DownloadModule extends ContentModule
 		$page->setProperty('title', $title);
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		$request = new Request($engine, $this->name, FALSE,
-				$content['id'], $content['title']);
+		$request = new Request($this->name, FALSE, $content['id'],
+			$content['title']);
 		//toolbar
 		$toolbar = $this->getToolbar($engine, $content);
 		$page->append($toolbar);
@@ -836,16 +834,16 @@ class DownloadModule extends ContentModule
 		$hbox = $page->append('hbox');
 		$col1 = $hbox->append('vbox');
 		$col2 = $hbox->append('vbox');
-		$request = new Request($engine, $this->name, 'download',
-				$content['id'], $content['title']);
+		$request = new Request($this->name, 'download', $content['id'],
+			$content['title']);
 		$this->helperDisplayField($col1, $col2, _('Name:'),
 					new PageElement('link', array(
 						'request' => $request,
 						'text' => $content['title'])));
 		$this->helperDisplayField($col1, $col2, _('Type:'),
 				Mime::getType($engine, $content['title']));
-		$request = new Request($engine, 'user', FALSE,
-				$content['user_id'], $content['username']);
+		$request = new Request('user', FALSE, $content['user_id'],
+			$content['username']);
 		$this->helperDisplayField($col1, $col2, _('Owner:'),
 				new PageElement('link', array(
 					'request' => $request,
