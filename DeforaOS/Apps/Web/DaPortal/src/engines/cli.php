@@ -130,12 +130,14 @@ class CliEngine extends Engine
 	//CliEngine::usage
 	protected function usage()
 	{
-		$usage = "Usage: daportal [-Df][-M mime-type]"
-			."[-m module [-a action]][-i ID][-t title]\n"
-			."                [-o parameter=value...]\n";
-
-		fputs(STDERR, $usage);
+		fputs(STDERR, $this->usage);
 	}
+
+
+	//protected
+	//properties
+	protected $usage = "Usage: daportal [-Df][-M mime-type][-m module [-a action]][-i ID][-t title]
+                [-o parameter=value...]\n";
 }
 
 ?>
