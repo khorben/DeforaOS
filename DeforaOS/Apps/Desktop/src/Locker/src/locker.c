@@ -1328,6 +1328,9 @@ static int _locker_demo_config_set(Locker * locker, char const * section,
 /* locker_demo_load */
 static int _locker_demo_load(Locker * locker, char const * demo)
 {
+	size_t i;
+	GdkWindow * window;
+
 	_locker_demo_unload(locker);
 	if(demo == NULL && (demo = config_get(locker->config, NULL, "demo"))
 			== NULL)
@@ -1336,9 +1339,8 @@ static int _locker_demo_load(Locker * locker, char const * demo)
 			== NULL)
 		return -1;
 	if((locker->ddefinition = plugin_lookup(locker->dplugin, "plugin"))
-			== NULL)
-		return -1;
-	if(locker->ddefinition->init == NULL
+			== NULL
+			|| locker->ddefinition->init == NULL
 			|| locker->ddefinition->destroy == NULL
 			|| (locker->demo = locker->ddefinition->init(
 					&locker->dhelper)) == NULL)
@@ -1347,6 +1349,16 @@ static int _locker_demo_load(Locker * locker, char const * demo)
 		locker->ddefinition = NULL;
 		locker->dplugin = NULL;
 		return -1;
+	}
+	/* register the existing windows */
+	for(i = 0; i < locker->windows_cnt; i++)
+	{
+#if GTK_CHECK_VERSION(2, 14, 0)
+		window = gtk_widget_get_window(locker->windows[i]);
+#else
+		window = locker->windows[i]->window;
+#endif
+		locker->ddefinition->add(locker->demo, window);
 	}
 	return 0;
 }
