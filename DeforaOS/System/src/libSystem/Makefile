@@ -1,6 +1,6 @@
 PACKAGE	= libSystem
 VERSION	= 0.1.6
-SUBDIRS	= data doc include src test
+SUBDIRS	= data doc include src tests
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -78,10 +78,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/test/string.c \
-		$(PACKAGE)-$(VERSION)/test/Makefile \
-		$(PACKAGE)-$(VERSION)/test/test.sh \
-		$(PACKAGE)-$(VERSION)/test/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/string.c \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/tests.sh \
+		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.sh \

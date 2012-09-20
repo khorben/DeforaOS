@@ -15,8 +15,37 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#functions
+#usage
+usage()
+{
+	echo "Usage: tests.sh" 1>&2
+	return 1
+}
+
+
+#main
+while getopts "P:" "name"; do
+	case "$name" in
+		P)
+			#XXX ignored
+			;;
+		?)
+			_usage
+			exit $?
+			;;
+	esac
+done
+shift $((OPTIND - 1))
+if [ $# -ne 1 ]; then
+	_usage
+	exit $?
+fi
+target="$1"
+
+> "$target"
 FAILED=
-./string		|| FAILED="$FAILED string"
-[ -z "$FAILED" ]	&& exit 0
+./string		>> "$target"	|| FAILED="$FAILED string"
+[ -z "$FAILED" ]			&& exit 0
 echo "Failed tests:$FAILED" 1>&2
 exit 2
