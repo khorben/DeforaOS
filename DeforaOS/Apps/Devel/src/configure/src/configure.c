@@ -390,18 +390,21 @@ static void _prefs_init(Prefs * prefs)
 
 	memset(prefs, 0, sizeof(Prefs));
 	prefs->destdir = "";
-	if(stat("/usr", &st) == 0) /* FIXME see below */
+	if(stat("/Apps", &st) == 0)
+	{
+		prefs->bindir = "Binaries";
+		prefs->includedir = "Includes";
+		prefs->libdir = "Libraries";
+		/* XXX needs auto-detection for the sub-directory */
+		prefs->prefix = "/Apps";
+	}
+	else
 	{
 		prefs->bindir = "bin";
 		prefs->includedir = "include";
 		prefs->libdir = "lib";
 		prefs->prefix = "/usr/local";
-		return;
 	}
-	prefs->bindir = "Binaries";
-	prefs->includedir = "Includes";
-	prefs->libdir = "Libraries";
-	prefs->prefix = "/Apps"; /* FIXME detect System or Apps/x first */
 }
 
 
