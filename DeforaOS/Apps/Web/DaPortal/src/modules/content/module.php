@@ -405,7 +405,7 @@ abstract class ContentModule extends Module
 			$r = $this->helperActionsAdmin($engine, $request);
 			$ret = array_merge($ret, $r);
 		}
-		if($request->getParameter('admin') != 0)
+		if($request->getParameter('admin') !== FALSE)
 			return $ret;
 		if($this->canSubmit($engine))
 		{
@@ -1008,6 +1008,12 @@ abstract class ContentModule extends Module
 	protected function helperActionsUser($engine, $request, $user)
 	{
 		$ret = array();
+		$cred = $engine->getCredentials();
+
+		if($user->getUserId() == $cred->getUserId()
+				&& $this->canSubmit($engine))
+			$ret = $this->helperActionsSubmit($engine, $request);
+		//user's content
 		$request = new Request($this->name, 'list', $user->getUserId(),
 		       	$user->getUsername());
 		$ret[] = $this->helperAction($engine, $this->name, $request,
