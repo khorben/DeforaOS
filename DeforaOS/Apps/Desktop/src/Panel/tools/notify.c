@@ -74,6 +74,9 @@ static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 		error_print("panel-notify");
 	free(filename);
 	panel.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_window_set_has_resize_grip(GTK_WINDOW(panel.window), FALSE);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(panel.window), 4);
 	gtk_window_set_accept_focus(GTK_WINDOW(panel.window), FALSE);
 	gtk_window_set_decorated(GTK_WINDOW(panel.window), FALSE);
