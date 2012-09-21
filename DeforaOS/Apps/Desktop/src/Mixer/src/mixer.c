@@ -37,6 +37,9 @@ static char _license[] =
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+# if GTK_CHECK_VERSION(3, 0, 0)
+#include <gtk/gtkx.h>
+# endif
 #include <Desktop.h>
 #include "callbacks.h"
 #include "mixer.h"
@@ -238,6 +241,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 	char const * labels[] = SOUND_DEVICE_LABELS;
 	char const * names[] = SOUND_DEVICE_NAMES;
 #endif
+	unsigned long id;
 
 	if((mixer = malloc(sizeof(*mixer))) == NULL)
 		return NULL;
@@ -486,7 +490,8 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 #endif
 	if(embedded)
 	{
-		printf("%u\n", gtk_plug_get_id(GTK_PLUG(mixer->window)));
+		id = gtk_plug_get_id(GTK_PLUG(mixer->window));
+		printf("%lu\n", id);
 		fclose(stdout);
 	}
 	else
