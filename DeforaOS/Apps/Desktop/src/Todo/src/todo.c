@@ -64,7 +64,7 @@ enum { TD_COL_TASK, TD_COL_DONE, TD_COL_TITLE, TD_COL_START,
 	TD_COL_DISPLAY_START, TD_COL_END, TD_COL_DISPLAY_END, TD_COL_PRIORITY,
 	TD_COL_DISPLAY_PRIORITY, TD_COL_CATEGORY };
 #define TD_COL_LAST TD_COL_CATEGORY
-#define TD_NUM_COLS (TD_COL_LAST + 1)
+#define TD_COL_COUNT (TD_COL_LAST + 1)
 
 static const struct
 {
@@ -293,7 +293,7 @@ static void _new_view(Todo * todo)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
-	todo->store = gtk_list_store_new(TD_NUM_COLS,
+	todo->store = gtk_list_store_new(TD_COL_COUNT,
 			G_TYPE_POINTER, /* task */
 			G_TYPE_BOOLEAN, /* done */
 			G_TYPE_STRING,	/* title */
