@@ -214,7 +214,8 @@ Locker * locker_new(char const * demo, char const * auth)
 	if((cnt = gdk_screen_get_n_monitors(screen)) < 1)
 		cnt = 1;
 	if((locker->windows = malloc(sizeof(*locker->windows) * cnt)) != NULL)
-		locker->windows[0] = NULL;
+		for(i = 0; i < cnt; i++)
+			locker->windows[i] = NULL;
 	locker->windows_cnt = cnt;
 	locker->aplugin = NULL;
 	locker->adefinition = NULL;
