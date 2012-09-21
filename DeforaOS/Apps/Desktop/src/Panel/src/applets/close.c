@@ -159,7 +159,7 @@ static void _close_do(Close * close)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(_close_get_window_property(close, GDK_WINDOW_XWINDOW(close->root),
+	if(_close_get_window_property(close, GDK_WINDOW_XID(close->root),
 				close->atom_active, XA_WINDOW, &cnt,
 				(void*)&window) != 0 || cnt != 1)
 		return;
@@ -194,8 +194,8 @@ static void _on_close(gpointer data)
 	xev.xclient.data.l[0] = gdk_x11_display_get_user_time(display);
 	xev.xclient.data.l[1] = 2;
 	gdk_error_trap_push();
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(close->root), False,
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XID(close->root),
+			False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
 	gdk_error_trap_pop();

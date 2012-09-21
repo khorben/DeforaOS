@@ -170,14 +170,14 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	display = gtk_widget_get_display(widget);
 	root = gdk_screen_get_root_window(screen);
 	xev.xclient.type = ClientMessage;
-	xev.xclient.window = GDK_WINDOW_XWINDOW(root);
+	xev.xclient.window = GDK_WINDOW_XID(root);
 	xev.xclient.message_type = gdk_x11_get_xatom_by_name_for_display(
 			display, "MANAGER");
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = gtk_get_current_event_time();
 	xev.xclient.data.l[1] = gdk_x11_atom_to_xatom(atom);
-	xev.xclient.data.l[2] = GDK_WINDOW_XWINDOW(systray->owner->window);
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XWINDOW(root),
+	xev.xclient.data.l[2] = GDK_WINDOW_XID(systray->owner->window);
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XID(root),
 			False, StructureNotifyMask, &xev);
 	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
 	gtk_widget_add_events(systray->owner, GDK_PROPERTY_CHANGE_MASK

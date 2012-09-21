@@ -138,7 +138,7 @@ static int _pager_get_current_desktop(Pager * pager)
 	unsigned long cnt;
 	unsigned long * p;
 
-	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
+	if(_pager_get_window_property(pager, GDK_WINDOW_XID(pager->root),
 				PAGER_ATOM_NET_CURRENT_DESKTOP, XA_CARDINAL,
 				&cnt, (void*)&p) != 0)
 		return -1;
@@ -159,7 +159,7 @@ static char ** _pager_get_desktop_names(Pager * pager)
 	unsigned long last = 0;
 	char ** q;
 
-	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
+	if(_pager_get_window_property(pager, GDK_WINDOW_XID(pager->root),
 				PAGER_ATOM_NET_DESKTOP_NAMES,
 				pager->atoms[PAGER_ATOM_UTF8_STRING], &cnt,
 				(void*)&p) != 0)
@@ -230,7 +230,7 @@ static void _pager_do(Pager * pager)
 	char ** names;
 	char buf[16];
 
-	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
+	if(_pager_get_window_property(pager, GDK_WINDOW_XID(pager->root),
 				PAGER_ATOM_NET_NUMBER_OF_DESKTOPS,
 				XA_CARDINAL, &cnt, (void*)&p) != 0)
 		return;
@@ -297,14 +297,14 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 	display = gtk_widget_get_display(widget);
 	root = gdk_screen_get_root_window(screen);
 	xev.xclient.type = ClientMessage;
-	xev.xclient.window = GDK_WINDOW_XWINDOW(root);
+	xev.xclient.window = GDK_WINDOW_XID(root);
 	xev.xclient.message_type = gdk_x11_get_xatom_by_name_for_display(
 			display, "_NET_CURRENT_DESKTOP");
 	xev.xclient.format = 32;
 	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
 	xev.xclient.data.l[0] = i;
 	xev.xclient.data.l[1] = gdk_x11_display_get_user_time(display);
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XWINDOW(root),
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XID(root),
 			False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);

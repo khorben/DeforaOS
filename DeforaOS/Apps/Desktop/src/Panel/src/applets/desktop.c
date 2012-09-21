@@ -95,14 +95,14 @@ static void _on_clicked(GtkWidget * widget)
 	display = gtk_widget_get_display(widget);
 	root = gdk_screen_get_root_window(screen);
 	xev.xclient.type = ClientMessage;
-	xev.xclient.window = GDK_WINDOW_XWINDOW(root);
+	xev.xclient.window = GDK_WINDOW_XID(root);
 	xev.xclient.message_type = gdk_x11_get_xatom_by_name_for_display(
 			display, "_NET_SHOWING_DESKTOP");
 	xev.xclient.format = 32;
 	memset(&xev.xclient.data, sizeof(xev.xclient.data), 0);
 	xev.xclient.data.l[0] = 1;
 	gdk_error_trap_push();
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XWINDOW(root),
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XID(root),
 			False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);

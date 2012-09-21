@@ -199,7 +199,7 @@ static void _title_do(Title * title)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(_title_get_window_property(title, GDK_WINDOW_XWINDOW(title->root),
+	if(_title_get_window_property(title, GDK_WINDOW_XID(title->root),
 				title->atom_active, XA_WINDOW, &cnt,
 				(void*)&window) != 0 || cnt != 1)
 	{

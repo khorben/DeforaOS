@@ -251,8 +251,8 @@ static void _task_toggle_state2(Task * task, TasksAtom state1,
 	xev.xclient.data.l[2] = (state2 != 0) ? tasks->atom[state2] : 0;
 	xev.xclient.data.l[3] = 2;
 	gdk_error_trap_push();
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(tasks->root), False,
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XID(tasks->root),
+			False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
 	gdk_error_trap_pop();
@@ -321,7 +321,7 @@ static int _tasks_get_current_desktop(Tasks * tasks)
 	unsigned long cnt;
 	unsigned long *p;
 
-	if(_tasks_get_window_property(tasks, GDK_WINDOW_XWINDOW(tasks->root),
+	if(_tasks_get_window_property(tasks, GDK_WINDOW_XID(tasks->root),
 				TASKS_ATOM__NET_CURRENT_DESKTOP, XA_CARDINAL,
 				&cnt, (void*)&p) != 0)
 		return -1;
@@ -422,7 +422,7 @@ static void _tasks_do(Tasks * tasks)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(_tasks_get_window_property(tasks, GDK_WINDOW_XWINDOW(tasks->root),
+	if(_tasks_get_window_property(tasks, GDK_WINDOW_XID(tasks->root),
 				TASKS_ATOM__NET_CLIENT_LIST,
 				XA_WINDOW, &cnt, (void*)&windows) != 0)
 		return;
@@ -683,7 +683,7 @@ static void _clicked_activate(Task * task)
 	xev.xclient.data.l[2] = 0;
 	gdk_error_trap_push();
 	res = XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(task->tasks->root), False,
+			GDK_WINDOW_XID(task->tasks->root), False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
 #ifdef DEBUG
@@ -822,7 +822,7 @@ static void _on_popup_close(gpointer data)
 	xev.xclient.data.l[1] = 2;
 	gdk_error_trap_push();
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(task->tasks->root), False,
+			GDK_WINDOW_XID(task->tasks->root), False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
 	gdk_error_trap_pop();
@@ -898,7 +898,7 @@ static void _on_popup_move(gpointer data)
 	xev.xclient.data.l[4] = 2;
 	gdk_error_trap_push();
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(tasks->root), False,
+			GDK_WINDOW_XID(tasks->root), False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
 	gdk_error_trap_pop();
@@ -925,7 +925,7 @@ static void _on_popup_resize(gpointer data)
 	xev.xclient.data.l[4] = 2;
 	gdk_error_trap_push();
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(tasks->root), False,
+			GDK_WINDOW_XID(tasks->root), False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
 	gdk_error_trap_pop();
