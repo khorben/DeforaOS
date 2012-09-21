@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System VFS */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,9 +39,10 @@ int main(int argc, char * argv[])
 	AppServerOptions options = ASO_LOCAL;
 	char * root = "/";
 	mode_t mask;
-	int mask_set = 0;
 	char * p;
 
+	mask = umask(0);
+	umask(mask);
 	while((o = getopt(argc, argv, "LRr:u:")) != -1)
 		switch(o)
 		{
@@ -58,17 +59,11 @@ int main(int argc, char * argv[])
 				mask = strtol(optarg, &p, 0);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
-				mask_set = 1;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	if(mask_set == 0)
-	{
-		mask = umask(0);
-		umask(mask);
-	}
 	return (vfs(options, mask, root) == 0) ? 0 : 2;
 }
