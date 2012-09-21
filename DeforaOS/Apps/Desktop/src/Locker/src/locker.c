@@ -213,7 +213,8 @@ Locker * locker_new(char const * demo, char const * auth)
 	locker->screen = gdk_x11_get_default_screen();
 	if((cnt = gdk_screen_get_n_monitors(screen)) < 1)
 		cnt = 1;
-	locker->windows = malloc(sizeof(*locker->windows) * cnt);
+	if((locker->windows = malloc(sizeof(*locker->windows) * cnt)) != NULL)
+		locker->windows[0] = NULL;
 	locker->windows_cnt = cnt;
 	locker->aplugin = NULL;
 	locker->adefinition = NULL;
@@ -226,7 +227,8 @@ Locker * locker_new(char const * demo, char const * auth)
 	locker->pr_window = NULL;
 	locker->ab_window = NULL;
 	/* check for errors */
-	if(_new_config(locker) != 0
+	if(locker->windows == NULL
+			|| _new_config(locker) != 0
 			|| _locker_demo_load(locker, demo) != 0
 			|| (widget = _locker_auth_load(locker, auth)) == NULL
 			|| _new_xss(locker, cnt) != 0)
@@ -373,7 +375,6 @@ void locker_delete(Locker * locker)
 	free(locker->windows);
 	if(locker->ab_window != NULL)
 		gtk_widget_destroy(locker->ab_window);
-	free(locker->windows);
 	XScreenSaverUnregister(GDK_DISPLAY_XDISPLAY(locker->display),
 			locker->screen);
 	if(locker->config != NULL)
