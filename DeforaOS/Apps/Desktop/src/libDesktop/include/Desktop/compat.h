@@ -87,4 +87,8 @@
 #  define GDK_KEY_uparrow	GDK_uparrow
 # endif
 
+# if GTK_CHECK_VERSION(3, 0, 0)
+void gdk_window_clear(GdkWindow * window);
+# endif
+
 #endif /* !LIBDESKTOP_DESKTOP_COMPAT_H */

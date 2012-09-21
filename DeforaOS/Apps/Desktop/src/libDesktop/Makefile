@@ -61,6 +61,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/about.c \
 		$(PACKAGE)-$(VERSION)/src/accel.c \
 		$(PACKAGE)-$(VERSION)/src/assistant.c \
+		$(PACKAGE)-$(VERSION)/src/compat.c \
 		$(PACKAGE)-$(VERSION)/src/help.c \
 		$(PACKAGE)-$(VERSION)/src/menubar.c \
 		$(PACKAGE)-$(VERSION)/src/message.c \
