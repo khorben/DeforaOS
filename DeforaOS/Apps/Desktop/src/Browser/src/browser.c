@@ -394,7 +394,7 @@ Browser * browser_new(char const * directory)
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
-#if GTK_CHECK_VERSION(3, 0, 0)
+#if GTK_CHECK_VERSION(2, 24, 0)
 	browser->tb_path = gtk_combo_box_text_new_with_entry();
 #else
 	browser->tb_path = gtk_combo_box_entry_new_text();
@@ -2162,14 +2162,14 @@ void browser_show_preferences(Browser * browser)
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Default view:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-# if GTK_CHECK_VERSION(3, 0, 0)
+# if GTK_CHECK_VERSION(2, 24, 0)
 	widget = gtk_combo_box_text_new();
 	browser->pr_view = widget;
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL,
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget),
 			_("Details"));
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL, _("Icons"));
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL, _("List"));
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL,
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("Icons"));
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("List"));
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget),
 			_("Thumbnails"));
 # else
 	widget = gtk_combo_box_new_text();
@@ -2786,7 +2786,7 @@ static void _refresh_path(Browser * browser)
 	gtk_entry_set_text(GTK_ENTRY(widget), (p != NULL) ? p : location);
 	free(p);
 	for(i = 0; i < cnt; i++)
-#if GTK_CHECK_VERSION(3, 0, 0)
+#if GTK_CHECK_VERSION(2, 24, 0)
 		gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(browser->tb_path),
 				0);
 #else
@@ -2796,9 +2796,9 @@ static void _refresh_path(Browser * browser)
 		return;
 	if(strcmp(p, ".") != 0)
 	{
-#if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(browser->tb_path),
-				NULL, p);
+#if GTK_CHECK_VERSION(2, 24, 0)
+		gtk_combo_box_text_append_text(
+				GTK_COMBO_BOX_TEXT(browser->tb_path), p);
 #else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
 #endif
@@ -2807,9 +2807,9 @@ static void _refresh_path(Browser * browser)
 			q = g_path_get_dirname(p);
 			g_free(p);
 			p = q;
-#if GTK_CHECK_VERSION(3, 0, 0)
-			gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
-						browser->tb_path), NULL, p);
+#if GTK_CHECK_VERSION(2, 24, 0)
+			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(
+						browser->tb_path), p);
 #else
 			gtk_combo_box_append_text(GTK_COMBO_BOX(
 						browser->tb_path), p);
