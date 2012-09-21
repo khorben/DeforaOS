@@ -181,7 +181,11 @@ GEDI * gedi_new(void)
 	hbox = gtk_hbox_new(FALSE, 0);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 2);
+#if GTK_CHECK_VERSION(2, 24, 0)
+	gedi->fi_combo = gtk_combo_box_text_new();
+#else
 	gedi->fi_combo = gtk_combo_box_new_text();
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), gedi->fi_combo, FALSE, TRUE, 2);
 	gedi->fi_view = gtk_tree_view_new();
 	gtk_box_pack_start(GTK_BOX(vbox), gedi->fi_view, TRUE, TRUE, 2);
@@ -339,8 +343,13 @@ int gedi_project_open(GEDI * gedi, char const * filename)
 		return -gedi_error(gedi, error_get(), 1);
 	}
 	gedi->cur = project;
+#if GTK_CHECK_VERSION(2, 24, 0)
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(gedi->fi_combo), NULL,
+			project_get_package(project));
+#else
 	gtk_combo_box_append_text(GTK_COMBO_BOX(gedi->fi_combo),
 			project_get_package(project));
+#endif
 	/* FIXME doesn't always select the last project opened */
 	gtk_combo_box_set_active(GTK_COMBO_BOX(gedi->fi_combo),
 			gtk_combo_box_get_active(GTK_COMBO_BOX(gedi->fi_combo))
