@@ -344,7 +344,7 @@ int gedi_project_open(GEDI * gedi, char const * filename)
 	}
 	gedi->cur = project;
 #if GTK_CHECK_VERSION(2, 24, 0)
-	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(gedi->fi_combo), NULL,
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(gedi->fi_combo),
 			project_get_package(project));
 #else
 	gtk_combo_box_append_text(GTK_COMBO_BOX(gedi->fi_combo),
