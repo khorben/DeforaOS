@@ -1356,12 +1356,15 @@ static int _locker_demo_load(Locker * locker, char const * demo)
 	/* register the existing windows */
 	for(i = 0; i < locker->windows_cnt; i++)
 	{
+		if(locker->windows[i] == NULL)
+			continue;
 #if GTK_CHECK_VERSION(2, 14, 0)
 		window = gtk_widget_get_window(locker->windows[i]);
 #else
 		window = locker->windows[i]->window;
 #endif
-		locker->ddefinition->add(locker->demo, window);
+		if(window != NULL)
+			locker->ddefinition->add(locker->demo, window);
 	}
 	return 0;
 }
