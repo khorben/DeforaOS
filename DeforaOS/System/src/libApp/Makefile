@@ -43,8 +43,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/appclient.c \
 		$(PACKAGE)-$(VERSION)/src/appinterface.c \
 		$(PACKAGE)-$(VERSION)/src/appserver.c \
+		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/appinterface.h \
+		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/appbroker.c \
 		$(PACKAGE)-$(VERSION)/tools/appclient.c \

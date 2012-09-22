@@ -39,6 +39,7 @@
 #include <System.h>
 #include "System/App/appclient.h"
 #include "appinterface.h"
+#include "common.h"
 
 
 /* AppClient */
@@ -334,8 +335,6 @@ static int _new_connect(AppClient * appclient, char const * app)
 	const char init[] = "Init";
 	struct sockaddr_in sa;
 	int32_t port = -1;
-	int optval = 1;
-	int res;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void *)appclient,
@@ -347,14 +346,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 	sa.sin_port = htons(appinterface_get_port(appclient->interface));
 	if(_connect_addr(init, &sa.sin_addr.s_addr) != 0)
 		return 1;
-#ifdef TCP_NODELAY
-	res = setsockopt(appclient->fd, SOL_SOCKET, TCP_NODELAY, &optval,
-			sizeof(optval));
-# ifdef DEBUG
-	if(res != 0)
-		fprintf(stderr, "%s%s%s", init, ": ", strerror(errno));
-# endif
-#endif
+	common_socket_set_nodelay(appclient->fd, 1);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
 #ifdef DEBUG

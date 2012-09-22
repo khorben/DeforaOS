@@ -20,7 +20,7 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-libApp_OBJS = appclient.o appinterface.o appserver.o
+libApp_OBJS = appclient.o appinterface.o appserver.o common.o
 libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs openssl` -lssl  
 
@@ -33,7 +33,7 @@ libApp.so.0.0 libApp.so.0 libApp.so: $(libApp_OBJS)
 	$(LN) -s -- libApp.so.0.0 libApp.so.0
 	$(LN) -s -- libApp.so.0.0 libApp.so
 
-appclient.o: appclient.c appinterface.h ../include/System/App/appclient.h
+appclient.o: appclient.c appinterface.h ../include/System/App/appclient.h common.h
 	$(CC) $(libApp_CFLAGS) -c appclient.c
 
 appinterface.o: appinterface.c ../include/System/App/appserver.h ../config.h
@@ -41,6 +41,9 @@ appinterface.o: appinterface.c ../include/System/App/appserver.h ../config.h
 
 appserver.o: appserver.c appinterface.h ../include/System/App/appserver.h ../config.h
 	$(CC) $(libApp_CFLAGS) -c appserver.c
+
+common.o: common.c
+	$(CC) $(libApp_CFLAGS) -c common.c
 
 clean:
 	$(RM) -- $(libApp_OBJS)
