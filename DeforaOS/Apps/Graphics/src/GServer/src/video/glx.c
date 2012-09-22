@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Graphics GServer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 /* GLX */
 /* private */
 /* types */
-typedef struct _GLXPlugin
+typedef struct _GLXVideo
 {
 	Display * display;
 	int screen;
@@ -36,7 +36,7 @@ typedef struct _GLXPlugin
 	GLXContext context;
 	unsigned int width;
 	unsigned int height;
-} GLXPlugin;
+} GLXVideo;
 
 
 /* prototypes */
@@ -120,7 +120,7 @@ VideoPlugin video_plugin =
 /* glx_init */
 static int _glx_init(VideoPlugin * plugin)
 {
-	GLXPlugin * glx;
+	GLXVideo * glx;
 	Event * event;
 	Window root;
 	int attributes[] = { GLX_RGBA, GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4,
@@ -217,7 +217,7 @@ static int _glx_init(VideoPlugin * plugin)
 /* glx_destroy */
 static void _glx_destroy(VideoPlugin * plugin)
 {
-	GLXPlugin * glx = plugin->priv;
+	GLXVideo * glx = plugin->priv;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -233,7 +233,7 @@ static void _glx_destroy(VideoPlugin * plugin)
 /* glx_proto0 */
 static void _glx_proto0(VideoPlugin * plugin, VideoProto0 func)
 {
-	GLXPlugin * glx = plugin->priv;
+	GLXVideo * glx = plugin->priv;
 
 	if(func == VIDEO_PROTO0_SwapBuffers)
 	{
@@ -294,7 +294,7 @@ static void _glx_swap_buffers(void)
 static int _glx_timeout(void * data)
 {
 	VideoPlugin * plugin = data;
-	GLXPlugin * glx = plugin->priv;
+	GLXVideo * glx = plugin->priv;
 	XEvent event;
 	unsigned int w;
 	unsigned int h;

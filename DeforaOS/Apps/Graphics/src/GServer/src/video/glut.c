@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Graphics GServer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,11 +26,11 @@
 /* GLUT */
 /* private */
 /* types */
-typedef struct _GLUTPlugin
+typedef struct _GLUTVideo
 {
 	unsigned int width;
 	unsigned int height;
-} GLUTPlugin;
+} GLUTVideo;
 
 
 /* prototypes */
@@ -116,7 +116,7 @@ VideoPlugin video_plugin =
 /* glut_init */
 static int _glut_init(VideoPlugin * plugin)
 {
-	GLUTPlugin * glut;
+	GLUTVideo * glut;
 	int argc = 1;
 	char * argv[] = { "GServer", NULL };
 
@@ -158,7 +158,7 @@ static int _glut_init(VideoPlugin * plugin)
 /* glut_destroy */
 static void _glut_destroy(VideoPlugin * plugin)
 {
-	GLUTPlugin * glut = plugin->priv;
+	GLUTVideo * glut = plugin->priv;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
