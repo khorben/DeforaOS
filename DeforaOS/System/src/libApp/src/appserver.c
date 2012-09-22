@@ -142,6 +142,9 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 {
 	AppServerClient * asc;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((asc = object_new(sizeof(*asc))) == NULL)
 		return NULL;
 	asc->state = ASCS_NEW;
@@ -199,6 +202,9 @@ static void _appserverclient_delete(AppServerClient * appserverclient)
 static int _appserver_client_add(AppServer * appserver, AppServerClient * asc)
 	/* FIXME check for errors */
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	array_append(appserver->clients, &asc);
 	event_register_io_read(appserver->event, asc->fd,
 			(EventIOFunc)_appserver_read, appserver);
@@ -245,8 +251,9 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%d %s:%u\n", "DEBUG: accept(", fd, ") => ",
-			newfd, inet_ntoa(sa.sin_addr), sa.sin_port);
+	fprintf(stderr, "DEBUG: %s() %s%d%s%d %s:%u\n", __func__, "accept(",
+			fd, ") => ", newfd, inet_ntoa(sa.sin_addr),
+			ntohs(sa.sin_port));
 #endif
 	if((asc = _appserverclient_new(newfd, htonl(sa.sin_addr.s_addr),
 					htons(sa.sin_port)
@@ -295,7 +302,8 @@ static int _appserver_read(int fd, AppServer * appserver)
 		return _read_eof(appserver, asc);
 	asc->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%ld%s", "DEBUG: read(", fd, ") => ", len, "\n");
+	fprintf(stderr, "DEBUG: %s() %s%d%s%ld%s", __func__, "read(", fd,
+			") => ", len, "\n");
 #endif
 	if(_read_process(appserver, asc) != 0)
 	{
@@ -400,7 +408,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 			asc->buf_write_cnt, len);
 #endif
 	memmove(asc->buf_write, &asc->buf_write[len], len);
-	asc->buf_write_cnt-=len;
+	asc->buf_write_cnt -= len;
 	return (asc->buf_write_cnt == 0) ? 1 : 0;
 }
 
