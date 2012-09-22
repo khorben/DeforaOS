@@ -335,6 +335,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 	struct sockaddr_in sa;
 	int32_t port = -1;
 	int optval = 1;
+	int res;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void *)appclient,
@@ -347,9 +348,12 @@ static int _new_connect(AppClient * appclient, char const * app)
 	if(_connect_addr(init, &sa.sin_addr.s_addr) != 0)
 		return 1;
 #ifdef TCP_NODELAY
-	if(setsockopt(appclient->fd, SOL_SOCKET, TCP_NODELAY, &optval,
-				sizeof(optval)) != 0)
-		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
+	res = setsockopt(appclient->fd, SOL_SOCKET, TCP_NODELAY, &optval,
+			sizeof(optval));
+# ifdef DEBUG
+	if(res != 0)
+		fprintf(stderr, "%s%s%s", init, ": ", strerror(errno));
+# endif
 #endif
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
