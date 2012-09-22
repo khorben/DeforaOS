@@ -115,7 +115,7 @@ static int _xterm_add(XTerm * xterm, GdkWindow * window)
 	int ret = 0;
 	LockerDemoHelper * helper = xterm->helper;
 	XTermWindow * w;
-	unsigned int id = GDK_WINDOW_XWINDOW(window);
+	unsigned long id = GDK_WINDOW_XID(window);
 	GError * error = NULL;
 	char * argv[] = { NULL, "-into", NULL, "-e", NULL, NULL };
 	char const * p;
@@ -134,7 +134,7 @@ static int _xterm_add(XTerm * xterm, GdkWindow * window)
 		argv[4] = strdup(p);
 	else
 		argv[4] = strdup("top");
-	snprintf(buf, sizeof(buf), "%u", id);
+	snprintf(buf, sizeof(buf), "%lu", id);
 	argv[2] = buf;
 	if(argv[0] == NULL || argv[4] == NULL)
 	{

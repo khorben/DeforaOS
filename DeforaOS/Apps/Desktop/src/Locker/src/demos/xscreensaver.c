@@ -116,7 +116,7 @@ static int _xscreensaver_add(XScreensaver * xscreensaver, GdkWindow * window)
 	int ret = 0;
 	LockerDemoHelper * helper = xscreensaver->helper;
 	XScreensaverWindow * w;
-	unsigned int id = GDK_WINDOW_XWINDOW(window);
+	unsigned long id = GDK_WINDOW_XID(window);
 	GError * error = NULL;
 	char * argv[] = { NULL, "-window-id", NULL, NULL };
 	char const * p;
@@ -132,7 +132,7 @@ static int _xscreensaver_add(XScreensaver * xscreensaver, GdkWindow * window)
 		argv[0] = strdup(p);
 	else
 		argv[0] = strdup(PREFIX "/libexec/xscreensaver/bsod");
-	snprintf(buf, sizeof(buf), "%u", id);
+	snprintf(buf, sizeof(buf), "%lu", id);
 	argv[2] = buf;
 	if(argv[0] == NULL)
 		return -helper->error(NULL, strerror(errno), 1);
