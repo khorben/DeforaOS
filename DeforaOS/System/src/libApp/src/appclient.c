@@ -354,7 +354,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 #endif
 #ifdef WITH_SSL
-	if(sa.sin_addr.s_addr != INADDR_LOOPBACK)
+	if(sa.sin_addr.s_addr != htonl(INADDR_LOOPBACK))
 	{
 		if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 				|| SSL_set_fd(appclient->ssl, appclient->fd)
@@ -401,14 +401,14 @@ static int _new_connect(AppClient * appclient, char const * app)
 	common_socket_set_nodelay(appclient->fd, 1);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", app, ": ", strerror(errno));
-#ifdef DEBUG
+#if 1 /* def DEBUG */
 	fprintf(stderr, "DEBUG: connect(%d, %s:%d) => 0\n", appclient->fd,
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 #endif
 #ifdef WITH_SSL
 	appclient->read = _callback_read;
 	appclient->write = _callback_write;
-	if(sa.sin_addr.s_addr != INADDR_LOOPBACK)
+	if(sa.sin_addr.s_addr != htonl(INADDR_LOOPBACK))
 	{
 		if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 				|| SSL_set_fd(appclient->ssl, appclient->fd)
