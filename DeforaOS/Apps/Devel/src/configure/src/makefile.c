@@ -1369,10 +1369,13 @@ static int _target_source(Configure * configure, FILE * fp,
 		case OT_ASM_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
-			fprintf(fp, "\n%s.o", source);
+			if(tt == TT_OBJECT)
+				fprintf(fp, "\n%s", target);
+			else
+				fprintf(fp, "\n%s%s", source, ".o");
 			if(tt == TT_LIBTOOL)
 				fprintf(fp, " %s.lo", source);
-			fprintf(fp, ": %s.%s", source, extension);
+			fprintf(fp, "%s%s%s%s", ": ", source, ".", extension);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			source[len] = '\0';
@@ -1387,10 +1390,13 @@ static int _target_source(Configure * configure, FILE * fp,
 		case OT_C_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
-			fprintf(fp, "\n%s%s", source, ".o");
+			if(tt == TT_OBJECT)
+				fprintf(fp, "\n%s", target);
+			else
+				fprintf(fp, "\n%s%s", source, ".o");
 			if(tt == TT_LIBTOOL)
 				fprintf(fp, " %s%s", source, ".lo");
-			fprintf(fp, ": %s.%s", source, extension);
+			fprintf(fp, "%s%s%s%s", ": ", source, ".", extension);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			/* FIXME do both wherever also relevant */
@@ -1419,8 +1425,11 @@ static int _target_source(Configure * configure, FILE * fp,
 		case OT_CXX_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
-			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
-					source, ".", extension);
+			if(tt == TT_OBJECT)
+				fprintf(fp, "\n%s", target);
+			else
+				fprintf(fp, "\n%s%s", source, ".o");
+			fprintf(fp, "%s%s%s%s", ": ", source, ".", extension);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			p = config_get(configure->config, source, "cxxflags");
