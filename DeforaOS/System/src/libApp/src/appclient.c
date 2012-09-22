@@ -117,7 +117,7 @@ static int _appclient_read(int fd, AppClient * ac)
 	ssize_t len = sizeof(ac->buf_read) - ac->buf_read_cnt;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void*)ac);
+	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void *)ac);
 #endif
 	assert(len >= 0 && ac->fd == fd);
 	if((len = ac->read(ac, &ac->buf_read[ac->buf_read_cnt], len)) <= 0)
@@ -148,7 +148,7 @@ static int _appclient_read(int fd, AppClient * ac)
 static int _read_error(AppClient * ac)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)ac);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void *)ac);
 #endif
 	ac->error(ac);
 #ifdef DEBUG
@@ -177,7 +177,7 @@ static int _appclient_write(int fd, AppClient * ac)
 	ssize_t len;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void*)ac);
+	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, fd, (void *)ac);
 #endif
 	/* FIXME is EOF an error? */
 	if((len = ac->write(ac, ac->buf_write, ac->buf_write_cnt)) <= 0)
@@ -199,7 +199,7 @@ static int _appclient_write(int fd, AppClient * ac)
 static int _write_error(AppClient * ac)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void*)ac);
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, (void *)ac);
 #endif
 	ac->error(ac);
 #ifdef DEBUG
@@ -293,7 +293,8 @@ AppClient * appclient_new_event(char const * app, Event * event)
 	fprintf(stderr, "%s%s%s%s", __func__, "(\"", app, "\")\n");
 #endif
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, app, (void*)event);
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, app,
+			(void *)event);
 #endif
 	if((appclient = object_new(sizeof(AppClient))) == NULL)
 		return NULL;
@@ -336,7 +337,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 	int optval = 1;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void*)appclient,
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void *)appclient,
 			app);
 #endif
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -481,8 +482,8 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	ssize_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, %p, \"%s\", ...)\n", __func__, (void*)ac,
-			(void*)ret, function);
+	fprintf(stderr, "DEBUG: %s(%p, %p, \"%s\", ...)\n", __func__,
+			(void *)ac, (void *)ret, function);
 #endif
 	if(appinterface_get_args_count(ac->interface, &cnt, function) != 0)
 		return 1;
