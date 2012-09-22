@@ -35,8 +35,16 @@ class Mail
 		global $config;
 
 		if($from === FALSE)
-			//FIXME try the configuration file as well
-			$from = $_SERVER['SERVER_ADMIN'];
+		{
+			//FIXME try the configuration file first
+			if(isset($_SERVER['SERVER_ADMIN']))
+				$from = $_SERVER['SERVER_ADMIN'];
+			else
+			{
+				$pw = posix_getpwuid(posix_getuid());
+				$from = $pw['name'];
+			}
+		}
 		//verify parameters
 		$error = 'Could not send e-mail (invalid parameters)';
 		if(strpos($from, "\n") !== FALSE || strpos($to, "\n") !== FALSE
