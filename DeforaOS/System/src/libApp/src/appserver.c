@@ -248,7 +248,8 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	fprintf(stderr, "%s%d%s%d %s:%u\n", "DEBUG: accept(", fd, ") => ",
 			newfd, inet_ntoa(sa.sin_addr), sa.sin_port);
 #endif
-	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port
+	if((asc = _appserverclient_new(newfd, htonl(sa.sin_addr.s_addr),
+					htons(sa.sin_port)
 #ifdef WITH_SSL
 					, appserver->ssl_ctx
 #endif
