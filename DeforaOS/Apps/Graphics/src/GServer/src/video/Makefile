@@ -3,10 +3,11 @@ PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	?= cc
-CPPFLAGSF?=
+CPPFLAGSF= -I ../../include
 CPPFLAGS?=
 CFLAGSF	= -W `pkg-config --cflags libApp`
 CFLAGS	= -Wall -g -O2 -fPIC -pedantic
+LDFLAGSF= -W `pkg-config --libs libApp`
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -39,16 +40,16 @@ vesa_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 vesa.so: $(vesa_OBJS)
 	$(CCSHARED) -o vesa.so $(vesa_OBJS) $(vesa_LDFLAGS)
 
-glut.o: glut.c video.h
+glut.o: glut.c
 	$(CC) $(glut_CFLAGS) `pkg-config --cflags glut` -c glut.c
 
-glx.o: glx.c video.h
+glx.o: glx.c
 	$(CC) $(glx_CFLAGS) `pkg-config --cflags glu` -c glx.c
 
 vbe.o: vbe.c
 	$(CC) $(vesa_CFLAGS) -c vbe.c
 
-vesa.o: vesa.c video.h
+vesa.o: vesa.c
 	$(CC) $(vesa_CFLAGS) -c vesa.c
 
 clean:

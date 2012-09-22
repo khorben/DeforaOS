@@ -21,7 +21,7 @@
 #include <string.h>
 #include <GL/glx.h>
 #include <GL/glu.h>
-#include "video.h"
+#include "GServer/video.h"
 
 
 /* GLX */
@@ -40,25 +40,27 @@ typedef struct _GLXVideo
 
 
 /* prototypes */
-static int _glx_init(VideoPlugin * plugin);
-static void _glx_destroy(VideoPlugin * plugin);
+static int _glx_init(GServerVideoPlugin * plugin);
+static void _glx_destroy(GServerVideoPlugin * plugin);
 
-static void _glx_proto0(VideoPlugin * plugin, VideoProto0 func);
-static void _glx_proto1d(VideoPlugin * plugin, VideoProto1d func, double x);
-static void _glx_proto1i(VideoPlugin * plugin, VideoProto1i func, int32_t x);
-static void _glx_proto3f(VideoPlugin * plugin, VideoProto3f func, float x,
-		float y, float z);
-static void _glx_proto3i(VideoPlugin * plugin, VideoProto3i func, int32_t x,
-		int32_t y, int32_t z);
-static void _glx_proto4f(VideoPlugin * plugin, VideoProto4f func, float x,
-		float y, float z, float t);
+static void _glx_proto0(GServerVideoPlugin * plugin, GServerVideoProto0 func);
+static void _glx_proto1d(GServerVideoPlugin * plugin, GServerVideoProto1d func,
+		double x);
+static void _glx_proto1i(GServerVideoPlugin * plugin, GServerVideoProto1i func,
+		int32_t x);
+static void _glx_proto3f(GServerVideoPlugin * plugin, GServerVideoProto3f func,
+		float x, float y, float z);
+static void _glx_proto3i(GServerVideoPlugin * plugin, GServerVideoProto3i func,
+		int32_t x, int32_t y, int32_t z);
+static void _glx_proto4f(GServerVideoPlugin * plugin, GServerVideoProto4f func,
+		float x, float y, float z, float t);
 
 static void _glx_swap_buffers(void);
 static int _glx_timeout(void * data);
 
 
 /* variables */
-static void (*_glx_func0[VIDEO_PROTO0_COUNT])(void) =
+static void (*_glx_func0[GSERVER_VIDEO_PROTO0_COUNT])(void) =
 {
 	glEnd,
 	glFlush,
@@ -66,31 +68,33 @@ static void (*_glx_func0[VIDEO_PROTO0_COUNT])(void) =
 	_glx_swap_buffers
 };
 
-static void (*_glx_func1d[VIDEO_PROTO1d_COUNT])(double) =
+static void (*_glx_func1d[GSERVER_VIDEO_PROTO1d_COUNT])(double) =
 {
 	glClearDepth
 };
 
-static void (*_glx_func1i[VIDEO_PROTO1i_COUNT])(uint32_t) =
+static void (*_glx_func1i[GSERVER_VIDEO_PROTO1i_COUNT])(uint32_t) =
 {
 	glBegin,
 	glClear
 };
 
-static void (*_glx_func3f[VIDEO_PROTO3f_COUNT])(float, float, float) =
+static void (*_glx_func3f[GSERVER_VIDEO_PROTO3f_COUNT])(float, float, float) =
 {
 	glColor3f,
 	glTranslatef,
 	glVertex3f
 };
 
-static void (*_glx_func3i[VIDEO_PROTO3i_COUNT])(int32_t, int32_t, int32_t) =
+static void (*_glx_func3i[GSERVER_VIDEO_PROTO3i_COUNT])(int32_t, int32_t,
+		int32_t) =
 {
 	glColor3i,
 	glVertex3i
 };
 
-static void (*_glx_func4f[VIDEO_PROTO4f_COUNT])(float, float, float, float) =
+static void (*_glx_func4f[GSERVER_VIDEO_PROTO4f_COUNT])(float, float, float,
+		float) =
 {
 	glClearColor,
 	glRotatef
@@ -99,7 +103,7 @@ static void (*_glx_func4f[VIDEO_PROTO4f_COUNT])(float, float, float, float) =
 
 /* public */
 /* variables */
-VideoPlugin video_plugin =
+GServerVideoPlugin video_plugin =
 {
 	NULL,
 	"GLX",
@@ -118,7 +122,7 @@ VideoPlugin video_plugin =
 /* private */
 /* functions */
 /* glx_init */
-static int _glx_init(VideoPlugin * plugin)
+static int _glx_init(GServerVideoPlugin * plugin)
 {
 	GLXVideo * glx;
 	Event * event;
@@ -215,7 +219,7 @@ static int _glx_init(VideoPlugin * plugin)
 
 
 /* glx_destroy */
-static void _glx_destroy(VideoPlugin * plugin)
+static void _glx_destroy(GServerVideoPlugin * plugin)
 {
 	GLXVideo * glx = plugin->priv;
 
@@ -231,11 +235,11 @@ static void _glx_destroy(VideoPlugin * plugin)
 
 /* functions */
 /* glx_proto0 */
-static void _glx_proto0(VideoPlugin * plugin, VideoProto0 func)
+static void _glx_proto0(GServerVideoPlugin * plugin, GServerVideoProto0 func)
 {
 	GLXVideo * glx = plugin->priv;
 
-	if(func == VIDEO_PROTO0_SwapBuffers)
+	if(func == GSERVER_VIDEO_PROTO0_SwapBuffers)
 	{
 		if(glx->double_buffered != 0)
 			glXSwapBuffers(glx->display, glx->window);
@@ -246,38 +250,40 @@ static void _glx_proto0(VideoPlugin * plugin, VideoProto0 func)
 
 
 /* glx_proto1d */
-static void _glx_proto1d(VideoPlugin * plugin, VideoProto1d func, double x)
+static void _glx_proto1d(GServerVideoPlugin * plugin, GServerVideoProto1d func,
+		double x)
 {
 	_glx_func1d[func](x);
 }
 
 
 /* glx_proto1i */
-static void _glx_proto1i(VideoPlugin * plugin, VideoProto1i func, int32_t x)
+static void _glx_proto1i(GServerVideoPlugin * plugin, GServerVideoProto1i func,
+		int32_t x)
 {
 	_glx_func1i[func](x);
 }
 
 
 /* glx_proto3f */
-static void _glx_proto3f(VideoPlugin * plugin, VideoProto3f func, float x,
-		float y, float z)
+static void _glx_proto3f(GServerVideoPlugin * plugin, GServerVideoProto3f func,
+		float x, float y, float z)
 {
 	_glx_func3f[func](x, y, z);
 }
 
 
 /* glx_proto3i */
-static void _glx_proto3i(VideoPlugin * plugin, VideoProto3i func, int32_t x,
-		int32_t y, int32_t z)
+static void _glx_proto3i(GServerVideoPlugin * plugin, GServerVideoProto3i func,
+		int32_t x, int32_t y, int32_t z)
 {
 	_glx_func3i[func](x, y, z);
 }
 
 
 /* glx_proto4f */
-static void _glx_proto4f(VideoPlugin * plugin, VideoProto4f func, float x,
-		float y, float z, float t)
+static void _glx_proto4f(GServerVideoPlugin * plugin, GServerVideoProto4f func,
+		float x, float y, float z, float t)
 {
 	_glx_func4f[func](x, y, z, t);
 }
@@ -293,7 +299,7 @@ static void _glx_swap_buffers(void)
 /* glx_timeout */
 static int _glx_timeout(void * data)
 {
-	VideoPlugin * plugin = data;
+	GServerVideoPlugin * plugin = data;
 	GLXVideo * glx = plugin->priv;
 	XEvent event;
 	unsigned int w;

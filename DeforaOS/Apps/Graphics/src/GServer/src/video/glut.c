@@ -20,7 +20,7 @@
 #endif
 #include <string.h>
 #include <GL/glut.h>
-#include "video.h"
+#include "GServer/video.h"
 
 
 /* GLUT */
@@ -34,27 +34,29 @@ typedef struct _GLUTVideo
 
 
 /* prototypes */
-static int _glut_init(VideoPlugin * plugin);
-static void _glut_destroy(VideoPlugin * plugin);
+static int _glut_init(GServerVideoPlugin * plugin);
+static void _glut_destroy(GServerVideoPlugin * plugin);
 
 static void _glut_display(void);
 static void _glut_idle(void);
 
-static void _glut_proto0(VideoPlugin * plugin, VideoProto0 func);
-static void _glut_proto1d(VideoPlugin * plugin, VideoProto1d func, double x);
-static void _glut_proto1i(VideoPlugin * plugin, VideoProto1i func, int32_t x);
-static void _glut_proto3f(VideoPlugin * plugin, VideoProto3f func, float x,
-		float y, float z);
-static void _glut_proto3i(VideoPlugin * plugin, VideoProto3i func, int32_t x,
-		int32_t y, int32_t z);
-static void _glut_proto4f(VideoPlugin * plugin, VideoProto4f func, float x,
-		float y, float z, float t);
+static void _glut_proto0(GServerVideoPlugin * plugin, GServerVideoProto0 func);
+static void _glut_proto1d(GServerVideoPlugin * plugin, GServerVideoProto1d func,
+		double x);
+static void _glut_proto1i(GServerVideoPlugin * plugin, GServerVideoProto1i func,
+		int32_t x);
+static void _glut_proto3f(GServerVideoPlugin * plugin, GServerVideoProto3f func,
+		float x, float y, float z);
+static void _glut_proto3i(GServerVideoPlugin * plugin, GServerVideoProto3i func,
+		int32_t x, int32_t y, int32_t z);
+static void _glut_proto4f(GServerVideoPlugin * plugin, GServerVideoProto4f func,
+		float x, float y, float z, float t);
 
 static void _glut_swap_buffers(void);
 
 
 /* variables */
-static void (*_glut_func0[VIDEO_PROTO0_COUNT])(void) =
+static void (*_glut_func0[GSERVER_VIDEO_PROTO0_COUNT])(void) =
 {
 	glEnd,
 	glFlush,
@@ -62,31 +64,33 @@ static void (*_glut_func0[VIDEO_PROTO0_COUNT])(void) =
 	_glut_swap_buffers
 };
 
-static void (*_glut_func1d[VIDEO_PROTO1d_COUNT])(double) =
+static void (*_glut_func1d[GSERVER_VIDEO_PROTO1d_COUNT])(double) =
 {
 	glClearDepth
 };
 
-static void (*_glut_func1i[VIDEO_PROTO1i_COUNT])(uint32_t) =
+static void (*_glut_func1i[GSERVER_VIDEO_PROTO1i_COUNT])(uint32_t) =
 {
 	glBegin,
 	glClear
 };
 
-static void (*_glut_func3f[VIDEO_PROTO3f_COUNT])(float, float, float) =
+static void (*_glut_func3f[GSERVER_VIDEO_PROTO3f_COUNT])(float, float, float) =
 {
 	glColor3f,
 	glTranslatef,
 	glVertex3f
 };
 
-static void (*_glut_func3i[VIDEO_PROTO3i_COUNT])(int32_t, int32_t, int32_t) =
+static void (*_glut_func3i[GSERVER_VIDEO_PROTO3i_COUNT])(int32_t, int32_t,
+		int32_t) =
 {
 	glColor3i,
 	glVertex3i
 };
 
-static void (*_glut_func4f[VIDEO_PROTO4f_COUNT])(float, float, float, float) =
+static void (*_glut_func4f[GSERVER_VIDEO_PROTO4f_COUNT])(float, float, float,
+		float) =
 {
 	glClearColor,
 	glRotatef
@@ -95,7 +99,7 @@ static void (*_glut_func4f[VIDEO_PROTO4f_COUNT])(float, float, float, float) =
 
 /* public */
 /* variables */
-VideoPlugin video_plugin =
+GServerVideoPlugin video_plugin =
 {
 	NULL,
 	"GLUT",
@@ -114,7 +118,7 @@ VideoPlugin video_plugin =
 /* private */
 /* functions */
 /* glut_init */
-static int _glut_init(VideoPlugin * plugin)
+static int _glut_init(GServerVideoPlugin * plugin)
 {
 	GLUTVideo * glut;
 	int argc = 1;
@@ -156,7 +160,7 @@ static int _glut_init(VideoPlugin * plugin)
 
 
 /* glut_destroy */
-static void _glut_destroy(VideoPlugin * plugin)
+static void _glut_destroy(GServerVideoPlugin * plugin)
 {
 	GLUTVideo * glut = plugin->priv;
 
@@ -205,9 +209,9 @@ static int _idle_timeout(void * data)
 
 
 /* glut_proto0 */
-static void _glut_proto0(VideoPlugin * plugin, VideoProto0 func)
+static void _glut_proto0(GServerVideoPlugin * plugin, GServerVideoProto0 func)
 {
-	if(func == VIDEO_PROTO0_SwapBuffers)
+	if(func == GSERVER_VIDEO_PROTO0_SwapBuffers)
 	{
 		glutSwapBuffers();
 		return;
@@ -217,38 +221,40 @@ static void _glut_proto0(VideoPlugin * plugin, VideoProto0 func)
 
 
 /* glut_proto1d */
-static void _glut_proto1d(VideoPlugin * plugin, VideoProto1d func, double x)
+static void _glut_proto1d(GServerVideoPlugin * plugin, GServerVideoProto1d func,
+		double x)
 {
 	_glut_func1d[func](x);
 }
 
 
 /* glut_proto1i */
-static void _glut_proto1i(VideoPlugin * plugin, VideoProto1i func, int32_t x)
+static void _glut_proto1i(GServerVideoPlugin * plugin, GServerVideoProto1i func,
+		int32_t x)
 {
 	_glut_func1i[func](x);
 }
 
 
 /* glut_proto3f */
-static void _glut_proto3f(VideoPlugin * plugin, VideoProto3f func, float x,
-		float y, float z)
+static void _glut_proto3f(GServerVideoPlugin * plugin, GServerVideoProto3f func,
+		float x, float y, float z)
 {
 	_glut_func3f[func](x, y, z);
 }
 
 
 /* glut_proto3i */
-static void _glut_proto3i(VideoPlugin * plugin, VideoProto3i func, int32_t x,
-		int32_t y, int32_t z)
+static void _glut_proto3i(GServerVideoPlugin * plugin, GServerVideoProto3i func,
+		int32_t x, int32_t y, int32_t z)
 {
 	_glut_func3i[func](x, y, z);
 }
 
 
 /* glut_proto4f */
-static void _glut_proto4f(VideoPlugin * plugin, VideoProto4f func, float x,
-		float y, float z, float t)
+static void _glut_proto4f(GServerVideoPlugin * plugin, GServerVideoProto4f func,
+		float x, float y, float z, float t)
 {
 	_glut_func4f[func](x, y, z, t);
 }

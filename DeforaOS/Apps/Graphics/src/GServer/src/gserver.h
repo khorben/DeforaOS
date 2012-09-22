@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Graphics GServer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,11 @@
 
 # include <System.h>
 # include <System/App.h>
+# include "GServer/gserver.h"
 
 
 /* GServer */
 /* public */
-/* types */
-typedef struct _GServer GServer;
-
-
 /* functions */
 GServer * gserver_new(AppServerOptions options, Event * event);
 void gserver_delete(GServer * gserver);

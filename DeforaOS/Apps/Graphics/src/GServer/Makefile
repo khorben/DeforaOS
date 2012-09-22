@@ -1,6 +1,6 @@
 PACKAGE	= GServer
 VERSION	= 0.0.0
-SUBDIRS	= data src
+SUBDIRS	= data include src
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -24,6 +24,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/GServer.interface \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/include/GServer.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/GServer/gserver.h \
+		$(PACKAGE)-$(VERSION)/include/GServer/video.h \
+		$(PACKAGE)-$(VERSION)/include/GServer/Makefile \
+		$(PACKAGE)-$(VERSION)/include/GServer/project.conf \
 		$(PACKAGE)-$(VERSION)/src/gserver.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
@@ -36,7 +43,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/video/vesa.c \
 		$(PACKAGE)-$(VERSION)/src/video/Makefile \
 		$(PACKAGE)-$(VERSION)/src/video/vbe.h \
-		$(PACKAGE)-$(VERSION)/src/video/video.h \
 		$(PACKAGE)-$(VERSION)/src/video/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \

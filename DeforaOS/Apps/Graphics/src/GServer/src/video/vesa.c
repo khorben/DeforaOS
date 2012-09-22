@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Graphics GServer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,28 +16,28 @@
 
 
 #include <stddef.h>
-#include "video.h"
+#include "GServer/video.h"
 #include "vbe.h"
 
 
 /* private */
 /* functions */
 /* vesa_init */
-static int _vesa_init(VideoPlugin * plugin)
+static int _vesa_init(GServerVideoPlugin * plugin)
 {
 	return 0;
 }
 
 
 /* vesa_destroy */
-static void _vesa_destroy(VideoPlugin * plugin)
+static void _vesa_destroy(GServerVideoPlugin * plugin)
 {
 }
 
 
 /* public */
 /* variables */
-VideoPlugin video_plugin =
+GServerVideoPlugin video_plugin =
 {
 	NULL,
 	"VESA",
