@@ -44,7 +44,7 @@ typedef struct _PanelApplet
 static Phone * _phone_init(PanelAppletHelper * helper, GtkWidget ** widget);
 static void _phone_destroy(Phone * phone);
 
-static void _phone_embed(GtkWidget * widget, GdkNativeWindow window);
+static void _phone_embed(GtkWidget * widget, unsigned long window);
 
 /* callbacks */
 static int _on_message(void * data, uint32_t value1, uint32_t value2,
@@ -101,7 +101,7 @@ static void _phone_destroy(Phone * phone)
 
 
 /* phone_embed */
-static void _phone_embed(GtkWidget * widget, GdkNativeWindow window)
+static void _phone_embed(GtkWidget * widget, unsigned long window)
 {
 	gtk_socket_add_id(GTK_SOCKET(widget), window);
 }

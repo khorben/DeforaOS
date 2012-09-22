@@ -27,8 +27,11 @@
 #include <string.h>
 #include <errno.h>
 #include <libintl.h>
-#include <gdk/gdkx.h>
 #include <Desktop.h>
+#include <gdk/gdkx.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include <Desktop/Keyboard.h>
 #include "Panel.h"
 #define _(string) gettext(string)

@@ -167,9 +167,15 @@ static int _title_get_text_property(Title * title, Window window, Atom property,
 			&text, property);
 	if(gdk_error_trap_pop() != 0 || res == 0)
 		return 1;
+#if GTK_CHECK_VERSION(2, 24, 0)
+	cnt = gdk_x11_display_text_property_to_text_list(title->display,
+			text.encoding, text.format, text.value, text.nitems,
+			&list);
+#else
 	cnt = gdk_text_property_to_utf8_list(gdk_x11_xatom_to_atom(
 				text.encoding), text.format, text.value,
 			text.nitems, &list);
+#endif
 	if(cnt > 0)
 	{
 		*ret = list[0];
@@ -203,12 +209,13 @@ static void _title_do(Title * title)
 				title->atom_active, XA_WINDOW, &cnt,
 				(void*)&window) != 0 || cnt != 1)
 	{
-		gtk_label_set(GTK_LABEL(title->widget), "");
+		gtk_label_set_text(GTK_LABEL(title->widget), "");
 		return;
 	}
 	name = _do_name(title, *window);
 	XFree(window);
-	gtk_label_set(GTK_LABEL(title->widget), (name != NULL) ? name : "");
+	gtk_label_set_text(GTK_LABEL(title->widget), (name != NULL)
+			? name : "");
 	free(name);
 }
 

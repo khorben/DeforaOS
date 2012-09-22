@@ -154,18 +154,20 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	Systray * systray = data;
 	const char name[] = "_NET_SYSTEM_TRAY_S";
 	char buf[sizeof(name) + 2];
-	GdkAtom atom;
 	GdkScreen * screen;
+	GdkAtom atom;
 	GdkDisplay * display;
 	GdkWindow * root;
+	GdkWindow * window;
 	XEvent xev;
 
 	screen = gtk_widget_get_screen(widget);
 	snprintf(buf, sizeof(buf), "%s%d", name, gdk_screen_get_number(screen));
 	atom = gdk_atom_intern(buf, FALSE);
 	gtk_widget_realize(systray->owner);
-	if(gdk_selection_owner_set(systray->owner->window, atom,
-				gtk_get_current_event_time(), TRUE) != TRUE)
+	window = gtk_widget_get_window(systray->owner);
+	if(gdk_selection_owner_set(window, atom, gtk_get_current_event_time(),
+				TRUE) != TRUE)
 		return;
 	display = gtk_widget_get_display(widget);
 	root = gdk_screen_get_root_window(screen);
@@ -176,11 +178,11 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = gtk_get_current_event_time();
 	xev.xclient.data.l[1] = gdk_x11_atom_to_xatom(atom);
-	xev.xclient.data.l[2] = GDK_WINDOW_XID(systray->owner->window);
+	xev.xclient.data.l[2] = GDK_WINDOW_XID(window);
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XID(root),
 			False, StructureNotifyMask, &xev);
 	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
 	gtk_widget_add_events(systray->owner, GDK_PROPERTY_CHANGE_MASK
 			| GDK_STRUCTURE_MASK);
-	gdk_window_add_filter(systray->owner->window, _on_filter, systray);
+	gdk_window_add_filter(window, _on_filter, systray);
 }
