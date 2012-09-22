@@ -69,7 +69,7 @@ static int _appclient(int verbose, char const * hostname, char const * service,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d, %s, %s, %p, %zu)\n", __func__, verbose,
-			hostname, service, (void*)calls, calls_cnt);
+			hostname, service, (void *)calls, calls_cnt);
 #endif
 	if(_appclient_hostname(verbose, hostname, service) != 0
 			|| (ac = appclient_new(service)) == NULL)
@@ -78,7 +78,10 @@ static int _appclient(int verbose, char const * hostname, char const * service,
 		puts("Connected.");
 	for(i = 0; i < calls_cnt; i++)
 		if(_appclient_call(verbose, ac, &calls[i]) != 0)
+		{
 			ret |= _error(APPCLIENT_PROGNAME, 1);
+			break;
+		}
 	if(verbose != 0)
 		puts("Disconnecting");
 	appclient_delete(ac);
@@ -179,8 +182,9 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 			if(strcmp(call->name, "glTranslatef") == 0)
 			{
 #ifdef DEBUG
-				fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f, %.1f)\n",
-						__func__, call->name,
+				fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f,"
+						" %.1f)\n", __func__,
+						call->name,
 						call->args[0]._float,
 						call->args[1]._float,
 						call->args[2]._float);
@@ -206,8 +210,8 @@ static int _appclient_call(int verbose, AppClient * ac, AppClientCall * call)
 			break;
 		case 4:
 #ifdef DEBUG
-			fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f, %.1f, %.1f)\n",
-					__func__, call->name,
+			fprintf(stderr, "DEBUG: %s() %s(%.1f, %.1f, %.1f,"
+					" %.1f)\n", __func__, call->name,
 					call->args[0]._float,
 					call->args[1]._float,
 					call->args[2]._float,
