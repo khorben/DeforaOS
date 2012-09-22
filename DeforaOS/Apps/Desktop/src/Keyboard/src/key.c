@@ -208,22 +208,27 @@ void keyboard_key_apply_modifier(KeyboardKey * key, unsigned int modifier)
 /* private */
 /* functions */
 /* keyboard_key_create_popup */
+#if !GTK_CHECK_VERSION(3, 0, 0)
 /* callbacks */
 static void _create_popup_on_realize(gpointer data);
+#endif
 
 static void _keyboard_key_create_popup(KeyboardKey * key)
 {
 	if(key->popup != NULL)
 		return;
 	key->popup = gtk_window_new(GTK_WINDOW_POPUP);
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	g_signal_connect(key->popup, "realize", G_CALLBACK(
 				_create_popup_on_realize), NULL);
+#endif
 	key->button = gtk_button_new_with_label(gtk_label_get_text(GTK_LABEL(
 					key->label)));
 	gtk_button_set_alignment(GTK_BUTTON(key->button), 0.5, 0.1);
 	gtk_container_add(GTK_CONTAINER(key->popup), key->button);
 }
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
 /* callbacks */
 static void _create_popup_on_realize(gpointer data)
 {
@@ -262,6 +267,7 @@ static void _create_popup_on_realize(gpointer data)
 	g_object_unref(gc);
 	g_object_unref(mask);
 }
+#endif
 
 
 /* callbacks */
@@ -273,7 +279,8 @@ static gboolean _on_keyboard_key_button_press(GtkWidget * widget,
 	gint width;
 	gint height;
 
-	gdk_drawable_get_size(event->window, &width, &height);
+	width = gdk_window_get_width(event->window);
+	height = gdk_window_get_height(event->window);
 	_keyboard_key_create_popup(key);
 	gtk_widget_set_size_request(key->popup, width + 8, height * 2);
 	gtk_window_move(GTK_WINDOW(key->popup), event->x_root - event->x - 4,
