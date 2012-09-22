@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libApp */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -250,13 +250,15 @@ AppInterface * appinterface_new(char const * app)
 static int _new_foreach(char const * key, Hash * value,
 		AppInterface * appinterface)
 {
+	char const prefix[] = "call::";
 	int i;
 	char buf[8];
 	int type = AICT_VOID;
 	char const * p;
 
-	if(key == NULL || key[0] == '\0')
+	if(key == NULL || strncmp(prefix, key, sizeof(prefix) - 1) != 0)
 		return 0;
+	key += sizeof(prefix) - 1;
 	if((p = hash_get(value, "ret")) != NULL
 			&& (type = _string_enum(p, _string_type)) < 0)
 	{
