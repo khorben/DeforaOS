@@ -26,6 +26,9 @@ static char const _license[] =
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include <Desktop.h>
 #define XK_LATIN1
 #define XK_MISCELLANY
@@ -342,6 +345,7 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	GtkWidget * widget;
 	PangoFontDescription * bold;
 	GdkColor gray = { 0x90909090, 0x9090, 0x9090, 0x9090 };
+	unsigned long id;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -426,7 +430,8 @@ Keyboard * keyboard_new(KeyboardPrefs * prefs)
 	else
 	{
 		/* print the window ID and force a flush */
-		printf("%u\n", gtk_plug_get_id(GTK_PLUG(keyboard->window)));
+		id = gtk_plug_get_id(GTK_PLUG(keyboard->window));
+		printf("%lu\n", id);
 		fclose(stdout);
 	}
 	keyboard_set_layout(keyboard, KLS_LETTERS);
