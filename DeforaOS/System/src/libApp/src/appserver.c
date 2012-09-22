@@ -509,18 +509,21 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 # ifdef DEBUG
 	fprintf(stderr, "DEBUG: Using certificate \"%s\"\n", crt);
 # endif
-	if((appserver->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
-			|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
-				SSL_DEFAULT_CIPHER_LIST) != 1
-			|| SSL_CTX_use_certificate_file(appserver->ssl_ctx, crt,
-				SSL_FILETYPE_PEM) == 0
-			|| SSL_CTX_use_PrivateKey_file(appserver->ssl_ctx, crt,
-				SSL_FILETYPE_PEM) == 0)
-	{
-		error_set_code(1, "%s", _appserver_error_ssl());
-		appserver_delete(appserver);
-		return NULL;
-	}
+	if(!(options & ASO_LOCAL))
+		if((appserver->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
+				|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
+					SSL_DEFAULT_CIPHER_LIST) != 1
+				|| SSL_CTX_use_certificate_file(
+					appserver->ssl_ctx, crt,
+					SSL_FILETYPE_PEM) == 0
+				|| SSL_CTX_use_PrivateKey_file(
+					appserver->ssl_ctx, crt,
+					SSL_FILETYPE_PEM) == 0)
+		{
+			error_set_code(1, "%s", _appserver_error_ssl());
+			appserver_delete(appserver);
+			return NULL;
+		}
 #endif
 	appserver->current = NULL;
 	return appserver;
