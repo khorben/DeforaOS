@@ -162,6 +162,7 @@ static DesktopMenu _menu_edit[] =
 		"edit-select-all",
 #endif
 		GDK_CONTROL_MASK, GDK_KEY_A },
+	/* FIXME really implement */
 	{ N_("_Unselect all"), NULL, NULL, 0, 0 },
 	/* FIXME add preferences */
 	{ NULL, NULL, NULL, 0, 0 }
@@ -822,6 +823,7 @@ void compose_select_all(Compose * compose)
 	GtkTextIter start;
 	GtkTextIter end;
 
+	/* FIXME another field may be in focus at the time */
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
 	gtk_text_buffer_get_start_iter(tbuf, &start);
 	gtk_text_buffer_get_end_iter(tbuf, &end);
