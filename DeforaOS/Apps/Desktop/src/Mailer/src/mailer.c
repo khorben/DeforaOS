@@ -2121,7 +2121,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	_account_add_label(hbox, NULL, group, _("Type of account"));
-#if GTK_CHECK_VERSION(3, 0, 0)
+#if GTK_CHECK_VERSION(2, 24, 0)
 	widget = gtk_combo_box_text_new();
 #else
 	widget = gtk_combo_box_new_text();
@@ -2129,8 +2129,8 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	/* XXX this works because there is no plug-in list reload
 	 *     would it be implemented this will need validation later */
 	for(i = 0; i < ad->mailer->available_cnt; i++)
-#if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(widget), NULL,
+#if GTK_CHECK_VERSION(2, 24, 0)
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget),
 				account_get_name(ad->mailer->available[i]));
 #else
 		gtk_combo_box_append_text(GTK_COMBO_BOX(widget),

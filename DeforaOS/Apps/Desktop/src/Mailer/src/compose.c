@@ -290,7 +290,7 @@ Compose * compose_new(Config * config)
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-#if GTK_CHECK_VERSION(3, 0, 0)
+#if GTK_CHECK_VERSION(2, 24, 0)
 	compose->from = gtk_combo_box_text_new_with_entry();
 #else
 	compose->from = gtk_combo_box_entry_new_text();
@@ -938,7 +938,7 @@ static char * _send_headers(Compose * compose)
 	char * value;
 	char const * q;
 
-#if GTK_CHECK_VERSION(3, 0, 0)
+#if GTK_CHECK_VERSION(2, 24, 0)
 	p = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
 				compose->from));
 #else
