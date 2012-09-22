@@ -896,7 +896,7 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 	for(i = 0; i < call->args_cnt; i++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s", i > 0 ? ", " : "");
+		fprintf(stderr, "%s", (i > 0) ? ", " : "");
 #endif
 		aica = &call->args[i];
 		switch(aica->direction)
