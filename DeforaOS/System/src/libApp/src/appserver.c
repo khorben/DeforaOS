@@ -494,7 +494,7 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 				".crt") >= (int)sizeof(crt))
 		return NULL;
 #endif
-	if((appserver = object_new(sizeof(AppServer))) == NULL)
+	if((appserver = object_new(sizeof(*appserver))) == NULL)
 		return NULL;
 	appserver->interface = NULL;
 	appserver->event = event;
