@@ -1383,8 +1383,12 @@ static int _target_source(Configure * configure, FILE * fp,
 			if(tt == TT_LIBTOOL)
 				fputs("$(LIBTOOL) --mode=compile ", fp);
 			fprintf(fp, "%s%s%s", "$(AS) $(", target, "_ASFLAGS)");
-			fprintf(fp, "%s%s%s%s%s%s", " -o ", source, ".o ",
-					source, ".", extension);
+			if(tt == TT_OBJECT)
+				fprintf(fp, "%s%s%s%s%s%s", " -o ", target, " ",
+						source, ".", extension);
+			else
+				fprintf(fp, "%s%s%s%s%s%s", " -o ", source,
+						".o ", source, ".", extension);
 			fputc('\n', fp);
 			break;
 		case OT_C_SOURCE:
@@ -1418,7 +1422,13 @@ static int _target_source(Configure * configure, FILE * fp,
 					fputs(" -D _GNU_SOURCE", fp);
 			}
 			if(string_find(source, "/"))
-				fprintf(fp, "%s%s%s", " -o ", source, ".o");
+			{
+				if(tt == TT_OBJECT)
+					fprintf(fp, "%s%s", " -o ", target);
+				else
+					fprintf(fp, "%s%s%s", " -o ", source,
+							".o");
+			}
 			fprintf(fp, "%s%s%s%s", " -c ", source, ".", extension);
 			fputc('\n', fp);
 			break;
@@ -1439,7 +1449,13 @@ static int _target_source(Configure * configure, FILE * fp,
 			if(p != NULL)
 				fprintf(fp, " %s", p);
 			if(string_find(source, "/"))
-				fprintf(fp, "%s%s%s", " -o ", source, ".o");
+			{
+				if(tt == TT_OBJECT)
+					fprintf(fp, "%s%s", " -o ", target);
+				else
+					fprintf(fp, "%s%s%s", " -o ", source,
+							".o");
+			}
 			fprintf(fp, "%s%s%s%s", " -c ", source, ".", extension);
 			fputc('\n', fp);
 			break;
