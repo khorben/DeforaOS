@@ -398,6 +398,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 	if(_connect_addr(app, &sa.sin_addr.s_addr) != 0)
 		return 1;
 	sa.sin_port = htons(port);
+	common_socket_set_nodelay(appclient->fd, 1);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", app, ": ", strerror(errno));
 #ifdef DEBUG

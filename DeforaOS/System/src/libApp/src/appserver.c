@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libApp */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include <System.h>
 #include "System/App/appserver.h"
 #include "appinterface.h"
+#include "common.h"
 #include "../config.h"
 
 
@@ -170,6 +171,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	fprintf(stderr, "DEBUG: %s(%d, %x, %u) => %p\n", __func__, fd, addr,
 			port, (void *)asc);
 #endif
+	common_socket_set_nodelay(fd, 1);
 	return asc;
 }
 
