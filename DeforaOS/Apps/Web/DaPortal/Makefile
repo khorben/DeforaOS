@@ -353,14 +353,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/menu/index.php \
 		$(PACKAGE)-$(VERSION)/modules/menu/module.php \
 		$(PACKAGE)-$(VERSION)/modules/menu/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/news/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/news/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/news/index.php \
-		$(PACKAGE)-$(VERSION)/modules/news/module.php \
-		$(PACKAGE)-$(VERSION)/modules/news/news_display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/news/news_posted.tpl \
-		$(PACKAGE)-$(VERSION)/modules/news/news_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/news/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/pki/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/pki/ca_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/pki/ca_update.tpl \
