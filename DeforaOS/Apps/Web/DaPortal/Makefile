@@ -331,13 +331,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/category/module.php \
 		$(PACKAGE)-$(VERSION)/modules/category/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/category/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/comment/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/comment/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/comment/display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/comment/index.php \
-		$(PACKAGE)-$(VERSION)/modules/comment/module.php \
-		$(PACKAGE)-$(VERSION)/modules/comment/update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/comment/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/content/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/content/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/content/desktop.php \

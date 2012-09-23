@@ -1,4 +1,4 @@
-SUBDIRS	= admin blog bookmark category comment content download explorer menu news pki probe project search top translate user wiki
+SUBDIRS	= admin blog bookmark category content download explorer menu news pki probe project search top translate user wiki
 
 
 all: subdirs
