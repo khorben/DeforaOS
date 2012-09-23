@@ -376,16 +376,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/probe/module.php \
 		$(PACKAGE)-$(VERSION)/modules/probe/top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/search/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/search/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/search/index.php \
-		$(PACKAGE)-$(VERSION)/modules/search/module.php \
-		$(PACKAGE)-$(VERSION)/modules/search/search.tpl \
-		$(PACKAGE)-$(VERSION)/modules/search/search_advanced.tpl \
-		$(PACKAGE)-$(VERSION)/modules/search/search_bottom.tpl \
-		$(PACKAGE)-$(VERSION)/modules/search/search_entry.tpl \
-		$(PACKAGE)-$(VERSION)/modules/search/search_top.tpl \
-		$(PACKAGE)-$(VERSION)/modules/search/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/top/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/top/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/top/index.php \
