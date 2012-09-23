@@ -25,6 +25,10 @@ if(preg_match('/\/index.php$/', $_SERVER['SCRIPT_NAME']) != 1)
 	exit(header('Location: ../../index.php'));
 
 
+
+require_once('./system/html.php');
+
+
 //lang
 $text = array();
 include('./modules/probe/lang.php');
@@ -34,20 +38,6 @@ if($lang == 'fr')
 	include('./modules/probe/lang.fr.php');
 }
 _lang($text);
-
-
-//ProbeModule
-class ProbeModule extends Module
-{
-	//public
-	//methods
-	//useful
-	//ProbeModule::call
-	public function call(&$engine, $request, $internal = 0)
-	{
-		return FALSE;
-	}
-}
 
 
 //private
@@ -149,8 +139,9 @@ $probe_types['iface'] = array('name' => 'network traffic', 'unit' => 'Bps',
 		.' GPRINT:iftxkb:LAST:"Current\: %.0lf KBps\t\g"'
 		.' GPRINT:iftxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
 		.' GPRINT:iftxkb:MAX:"Maximum\: %.0lf KBps\g"',
-		'params' => array('eth0', 'eth1', 'pppoe0', 'sip0', 'sip1',
-			'sip2', 'sip3', 'sip4', 'sip5', 'sip6', 'ex0',
+		'params' => array('eth0', 'eth1', 'pppoe0', 'ex0',
+			/* 'vr0' ,*/ 'vr1', 'vr2', /* 'vr3', */ 'vr4', 'vr5', 'vr6',
+			'sip0', 'sip1', /* 'sip2', 'sip3', */ 'sip4', 'sip5', 'sip6',
 			'vlan0'));
 
 $probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
@@ -163,6 +154,28 @@ $probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
 		.' AREA:pvolfree#0000ff:"Free\:\g"'
 		.' GPRINT:pvolfree:LAST:" %.0lf MB"',
 		'params' => array('/home', '/usr', '/var'));
+
+
+//ProbeModule
+class ProbeModule extends Module
+{
+	//public
+	//methods
+	//useful
+	//ProbeModule::call
+	public function call(&$engine, $request, $internal = 0)
+	{
+		$args = $request->getParameters();
+		switch(($action = $request->getAction()))
+		{
+			case 'admin':
+			case 'system':
+				return $this->$action($args);
+			default:
+				return $this->_default($args);
+		}
+		return FALSE;
+	}
 
 
 //functions
@@ -183,7 +196,7 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	if($probe == FALSE && ($probe = _config_get('probe', 'RRD_repository'))
 			== FALSE)
 		return _error(CONFIGURATION_ERROR);
-	if(($hostname = _host_title($id)) == FALSE
+	if(($hostname = $this->_host_title($id)) == FALSE
 			|| !array_key_exists($type, $probe_types))
 		return _error(INVALID_ARGUMENT);
 	$ret = $probe_types[$type];
@@ -291,7 +304,8 @@ function _probe_toolbar()
 
 
 //public
-function probe_admin($args)
+//ProbeModule::admin
+function admin($args)
 {
 	global $user_id;
 
@@ -351,21 +365,22 @@ function probe_config_update($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return probe_admin(array());
+	return $this->admin(array());
 }
 
 
-function probe_default($args)
+//ProbeModule::_default
+function _default($args)
 {
 	global $probe_types;
 
 	if(!isset($args['id']) && !isset($args['type']))
 	{
-		probe_host_list(array());
-		probe_graph_list(array());
+		$this->probe_host_list(array());
+		$this->probe_graph_list(array());
 		return;
 	}
-	$hosts = _host_list();
+	$hosts = $this->_host_list();
 	if(!is_array($hosts))
 		return _error('Could not list hosts');
 	$title = MONITORING.':';
@@ -384,7 +399,7 @@ function probe_default($args)
 		$title.=' '.$probe_types[$type]['name'];
 	}
 	$times = array('hour', 'day', 'week');
-	$toolbar = _probe_toolbar();
+	$toolbar = $this->_probe_toolbar();
 	$action = 'default';
 	if(isset($args['time']) && in_array($args['time'], $times))
 		$time = $args['time'];
@@ -405,15 +420,17 @@ function probe_default($args)
 					continue;
 				if(!isset($t['params']))
 				{
-					$graph = _host_graph($hosts[$i]['id'],
-							$k, $u);
+					$graph = $this->_host_graph(
+							$hosts[$i]['id'], $k,
+							$u);
 					include('./modules/probe/graph.tpl');
 					continue;
 				}
 				foreach($t['params'] as $p)
 				{
-					$graph = _host_graph($hosts[$i]['id'],
-							$k, $u, $p);
+					$graph = $this->_host_graph(
+							$hosts[$i]['id'], $k,
+							$u, $p);
 					if(!is_array($graph))
 						continue;
 					include('./modules/probe/graph.tpl');
@@ -475,7 +492,7 @@ function probe_host_insert($args)
 	if(($id = _content_insert($args['hostname'], $args['comment'], 1))
 			== FALSE)
 		return _error('Could not insert host');
-	probe_default(array('id' => $id));
+	$this->_default(array('id' => $id));
 }
 
 
@@ -483,7 +500,7 @@ function probe_host_list($args)
 {
 	$title = HOST_LIST;
 	include('./modules/probe/top.tpl');
-	$hosts = _host_list();
+	$hosts = $this->_host_list();
 	if(!is_array($hosts))
 		return _error('Could not list hosts');
 	for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
@@ -541,11 +558,12 @@ function probe_host_update($args)
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
 	_content_update($args['id'], $args['hostname'], $args['comment']);
-	probe_default(array('id' => $args['id']));
+	$this->_default(array('id' => $args['id']));
 }
 
 
-function probe_system($args)
+//ProbeModule::system
+function system($args)
 {
 	global $title, $error;
 
@@ -574,6 +592,7 @@ function _system_config_update($args)
 	_config_update('probe', $args);
 	header('Location: '._module_link('probe', 'admin'));
 	exit(0);
+}
 }
 
 ?>
