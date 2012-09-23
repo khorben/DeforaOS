@@ -529,15 +529,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/system/project.conf \
 		$(PACKAGE)-$(VERSION)/templates/Makefile \
 		$(PACKAGE)-$(VERSION)/templates/DaPortal.tpl \
-		$(PACKAGE)-$(VERSION)/templates/DeforaOS.tpl \
-		$(PACKAGE)-$(VERSION)/templates/DeforaOS-default.tpl \
-		$(PACKAGE)-$(VERSION)/templates/DeforaOS-menu.tpl \
-		$(PACKAGE)-$(VERSION)/templates/DeforaOS.de.tpl \
-		$(PACKAGE)-$(VERSION)/templates/DeforaOS.fr.tpl \
 		$(PACKAGE)-$(VERSION)/templates/index.php \
-		$(PACKAGE)-$(VERSION)/templates/papadmin.tpl \
-		$(PACKAGE)-$(VERSION)/templates/private.tpl \
-		$(PACKAGE)-$(VERSION)/templates/Probe.tpl \
 		$(PACKAGE)-$(VERSION)/templates/project.conf \
 		$(PACKAGE)-$(VERSION)/tests/Makefile \
 		$(PACKAGE)-$(VERSION)/tests/database.sh \
