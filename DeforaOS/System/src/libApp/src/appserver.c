@@ -520,7 +520,7 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 # ifdef DEBUG
 	fprintf(stderr, "DEBUG: Using certificate \"%s\"\n", crt);
 # endif
-	if(!(options & ASO_LOCAL))
+	if(options & ASO_REMOTE)
 		if((appserver->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
 				|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
 					SSL_DEFAULT_CIPHER_LIST) != 1
@@ -551,8 +551,8 @@ static int _new_server(AppServer * appserver, char const * app, int options)
 		return -error_set_code(1, "%s%s", "socket: ", strerror(errno));
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appinterface_get_port(appserver->interface));
-	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
-			: INADDR_ANY);
+	sa.sin_addr.s_addr = htonl((options & ASO_REMOTE) ? INADDR_ANY
+			: INADDR_LOOPBACK);
 	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) == 0)
 	{
 		if(listen(fd, 5) == 0)
