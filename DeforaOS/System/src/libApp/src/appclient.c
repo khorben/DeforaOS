@@ -347,12 +347,12 @@ static int _new_connect(AppClient * appclient, char const * app)
 	if(_connect_addr(init, &sa.sin_addr.s_addr) != 0)
 		return 1;
 	common_socket_set_nodelay(appclient->fd, 1);
-	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
-		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: connect(%d, %s:%d) => 0\n", appclient->fd,
+	fprintf(stderr, "DEBUG: connect(%d, %s:%d)\n", appclient->fd,
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 #endif
+	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+		return error_set_code(1, "%s%s%s", init, ": ", strerror(errno));
 #ifdef WITH_SSL
 	if(sa.sin_addr.s_addr != htonl(INADDR_LOOPBACK))
 	{
@@ -399,12 +399,12 @@ static int _new_connect(AppClient * appclient, char const * app)
 		return 1;
 	sa.sin_port = htons(port);
 	common_socket_set_nodelay(appclient->fd, 1);
-	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
-		return error_set_code(1, "%s%s%s", app, ": ", strerror(errno));
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: connect(%d, %s:%d) => 0\n", appclient->fd,
+	fprintf(stderr, "DEBUG: connect(%d, %s:%d)\n", appclient->fd,
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 #endif
+	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+		return error_set_code(1, "%s%s%s", app, ": ", strerror(errno));
 #ifdef WITH_SSL
 	appclient->read = _callback_read;
 	appclient->write = _callback_write;
@@ -430,6 +430,7 @@ static int _connect_addr(String const * service, uint32_t * addr)
 	char * env;
 	char const * server;
 	struct hostent * he;
+	uint32_t a;
 
 	len = sizeof(prefix) + string_length(service) + 1;
 	if((env = malloc(len)) == NULL)
@@ -438,14 +439,13 @@ static int _connect_addr(String const * service, uint32_t * addr)
 	server = getenv(env);
 	free(env);
 	if(server == NULL)
-	{
-		*addr = htonl(INADDR_LOOPBACK);
-		return 0;
-	}
-	if((he = gethostbyname(server)) == NULL)
+		a = htonl(INADDR_LOOPBACK);
+	else if((he = gethostbyname(server)) == NULL)
 		return error_set_code(1, "%s", hstrerror(h_errno));
-	/* FIXME use memcpy()? check he->addrtype and he->h_length? */
-	*addr = *((uint32_t*)he->h_addr_list[0]);
+	else
+		/* FIXME use memcpy()? check he->addrtype and he->h_length? */
+		a = *((uint32_t*)he->h_addr_list[0]);
+	*addr = a;
 	return 0;
 }
 
