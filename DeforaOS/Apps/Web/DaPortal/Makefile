@@ -338,15 +338,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/content/module.php \
 		$(PACKAGE)-$(VERSION)/modules/content/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/content/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/download/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/download/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/download/directory_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/download/file_display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/download/file_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/download/index.php \
-		$(PACKAGE)-$(VERSION)/modules/download/lang.fr.php \
-		$(PACKAGE)-$(VERSION)/modules/download/module.php \
-		$(PACKAGE)-$(VERSION)/modules/download/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/explorer/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/explorer/bottom.tpl \
 		$(PACKAGE)-$(VERSION)/modules/explorer/desktop.php \
