@@ -169,6 +169,13 @@ class ProbeModule extends Module
 		switch(($action = $request->getAction()))
 		{
 			case 'admin':
+			case 'graph_list':
+			case 'host_delete':
+			case 'host_insert':
+			case 'host_list':
+			case 'host_modify':
+			case 'host_new':
+			case 'host_update':
 			case 'system':
 				return $this->$action($args);
 			default:
@@ -376,8 +383,8 @@ function _default($args)
 
 	if(!isset($args['id']) && !isset($args['type']))
 	{
-		$this->probe_host_list(array());
-		$this->probe_graph_list(array());
+		$this->host_list(array());
+		$this->graph_list(array());
 		return;
 	}
 	$hosts = $this->_host_list();
@@ -442,7 +449,7 @@ function _default($args)
 }
 
 
-function probe_graph_list($args)
+function graph_list($args)
 {
 	global $probe_types;
 
@@ -469,7 +476,7 @@ function probe_graph_list($args)
 }
 
 
-function probe_host_delete($args)
+function host_delete($args)
 {
 	global $user_id;
 
@@ -481,7 +488,7 @@ function probe_host_delete($args)
 }
 
 
-function probe_host_insert($args)
+function host_insert($args)
 {
 	global $user_id;
 
@@ -496,7 +503,7 @@ function probe_host_insert($args)
 }
 
 
-function probe_host_list($args)
+function host_list($args)
 {
 	$title = HOST_LIST;
 	include('./modules/probe/top.tpl');
@@ -516,7 +523,7 @@ function probe_host_list($args)
 }
 
 
-function probe_host_modify($args)
+function host_modify($args)
 {
 	global $user_id;
 
@@ -537,7 +544,7 @@ function probe_host_modify($args)
 }
 
 
-function probe_host_new($args)
+function host_new($args)
 {
 	global $user_id;
 
@@ -549,7 +556,7 @@ function probe_host_new($args)
 }
 
 
-function probe_host_update($args)
+function host_update($args)
 {
 	global $user_id;
 
