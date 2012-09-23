@@ -127,7 +127,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('top', 1);
 
 
 /* module: webmail */
-INSERT INTO daportal_module (name, enabled) VALUES ('webmail', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('webmail', 0);
 
 
 /* module: bookmark */

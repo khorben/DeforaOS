@@ -480,30 +480,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/user/user_register.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/user_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/webmail/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/webmail/bottom.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/default.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/webmail/drafts.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/drafts_16.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/folders_bottom.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/folders_top.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/inbox.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/inbox_16.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/index.php \
-		$(PACKAGE)-$(VERSION)/modules/webmail/login.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/logout.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/mail_read.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/mail_replied.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/mail_unread.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/module.php \
-		$(PACKAGE)-$(VERSION)/modules/webmail/outbox.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/outbox_16.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/read.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/trash.png \
-		$(PACKAGE)-$(VERSION)/modules/webmail/tree.js \
-		$(PACKAGE)-$(VERSION)/modules/webmail/tree.tpl \
-		$(PACKAGE)-$(VERSION)/modules/webmail/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/wiki/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/wiki/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/desktop.php \
