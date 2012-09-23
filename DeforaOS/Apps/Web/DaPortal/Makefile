@@ -308,14 +308,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/admin/module.php \
 		$(PACKAGE)-$(VERSION)/modules/admin/module_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/admin/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/article/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/article/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/article/display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/article/index.php \
-		$(PACKAGE)-$(VERSION)/modules/article/module.php \
-		$(PACKAGE)-$(VERSION)/modules/article/posted.tpl \
-		$(PACKAGE)-$(VERSION)/modules/article/update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/article/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/blog/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/blog/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/blog/index.php \
