@@ -323,12 +323,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/bookmark/module.php \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/browser/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/browser/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/browser/display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/browser/index.php \
-		$(PACKAGE)-$(VERSION)/modules/browser/module.php \
-		$(PACKAGE)-$(VERSION)/modules/browser/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/category/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/category/choose.tpl \
 		$(PACKAGE)-$(VERSION)/modules/category/desktop.php \
