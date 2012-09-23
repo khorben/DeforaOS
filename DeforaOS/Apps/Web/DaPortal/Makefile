@@ -382,12 +382,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/top/module.php \
 		$(PACKAGE)-$(VERSION)/modules/top/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/top/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/translate/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/translate/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/translate/index.php \
-		$(PACKAGE)-$(VERSION)/modules/translate/module.php \
-		$(PACKAGE)-$(VERSION)/modules/translate/update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/translate/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/user/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/user/appearance.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/desktop.php \
