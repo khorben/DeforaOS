@@ -545,26 +545,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/themes/Makefile \
 		$(PACKAGE)-$(VERSION)/themes/DaPortal.css \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS.css \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-bbl.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-bbr.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-btl.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-btr.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-menusep.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rbl.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rbr.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rtl.png \
-		$(PACKAGE)-$(VERSION)/themes/DeforaOS-rtr.png \
-		$(PACKAGE)-$(VERSION)/themes/Fine.css \
-		$(PACKAGE)-$(VERSION)/themes/Fine-DeforaOS.png \
 		$(PACKAGE)-$(VERSION)/themes/khorben.css \
 		$(PACKAGE)-$(VERSION)/themes/khorben-coldfire.jpg \
-		$(PACKAGE)-$(VERSION)/themes/Native.css \
-		$(PACKAGE)-$(VERSION)/themes/Probe.css \
 		$(PACKAGE)-$(VERSION)/themes/index.php \
-		$(PACKAGE)-$(VERSION)/themes/papadam.css \
-		$(PACKAGE)-$(VERSION)/themes/papadam-bg.png \
-		$(PACKAGE)-$(VERSION)/themes/papadmin.css \
 		$(PACKAGE)-$(VERSION)/themes/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/daportal.in \
