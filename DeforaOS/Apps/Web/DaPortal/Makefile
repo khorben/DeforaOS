@@ -376,29 +376,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/probe/module.php \
 		$(PACKAGE)-$(VERSION)/modules/probe/top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/project/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/project/browse.php \
-		$(PACKAGE)-$(VERSION)/modules/project/bug_display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/bug_list_filter.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/bug_posted.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/bug_reply_display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/bug_reply_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/bug_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/default.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/project/download_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/index.php \
-		$(PACKAGE)-$(VERSION)/modules/project/lang.php \
-		$(PACKAGE)-$(VERSION)/modules/project/lang.de.php \
-		$(PACKAGE)-$(VERSION)/modules/project/lang.fr.php \
-		$(PACKAGE)-$(VERSION)/modules/project/module.php \
-		$(PACKAGE)-$(VERSION)/modules/project/project_display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/project_submitted.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/project_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/screenshot_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/syntax.php \
-		$(PACKAGE)-$(VERSION)/modules/project/toolbar.tpl \
-		$(PACKAGE)-$(VERSION)/modules/project/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/search/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/search/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/search/index.php \
