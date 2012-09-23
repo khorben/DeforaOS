@@ -279,8 +279,12 @@ static gboolean _on_keyboard_key_button_press(GtkWidget * widget,
 	gint width;
 	gint height;
 
+#if GTK_CHECK_VERSION(2, 24, 0)
 	width = gdk_window_get_width(event->window);
 	height = gdk_window_get_height(event->window);
+#else
+	gdk_window_get_size(event->window, &width, &height);
+#endif
 	_keyboard_key_create_popup(key);
 	gtk_widget_set_size_request(key->popup, width + 8, height * 2);
 	gtk_window_move(GTK_WINDOW(key->popup), event->x_root - event->x - 4,
