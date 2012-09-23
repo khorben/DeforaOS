@@ -391,13 +391,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/news/news_posted.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/news_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/project.conf \
-		$(PACKAGE)-$(VERSION)/modules/papadam/Makefile \
-		$(PACKAGE)-$(VERSION)/modules/papadam/ca_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/papadam/desktop.php \
-		$(PACKAGE)-$(VERSION)/modules/papadam/download.tpl \
-		$(PACKAGE)-$(VERSION)/modules/papadam/index.php \
-		$(PACKAGE)-$(VERSION)/modules/papadam/module.php \
-		$(PACKAGE)-$(VERSION)/modules/papadam/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/pki/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/pki/ca_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/pki/ca_update.tpl \
