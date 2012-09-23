@@ -18,12 +18,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <GL/gl.h>
+#include <System.h>
 #include "GServer/video.h"
 #include "../data/GServer.h"
 #include "gserver.h"
 #include "../config.h"
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
 
 #ifdef DEBUG
 # define DEBUG_INTERFACE() fprintf(stderr, "DEBUG: %s()\n", __func__)
@@ -189,15 +196,14 @@ static int _new_init(AppServerOptions options, GServer * gserver, Event * event)
 static int _init_video(GServer * gserver)
 	/* FIXME ask Hardware what to load instead of hard-coding glut */
 {
-	char const filename[] = PREFIX "/lib/" PACKAGE "/video/glut.so";
-
-	if((gserver->video_handle = dlopen(filename, RTLD_LAZY)) == NULL)
-		return error_set_code(1, "%s: %s", filename, dlerror());
-	if((gserver->video_plugin = dlsym(gserver->video_handle,
+	if((gserver->video_handle = plugin_new(LIBDIR, PACKAGE, "video",
+					"glut")) == NULL)
+		return 1;
+	if((gserver->video_plugin = plugin_lookup(gserver->video_handle,
 					"video_plugin")) == NULL)
 	{
-		error_set_code(1, "%s: %s", filename, dlerror());
-		dlclose(gserver->video_handle);
+		plugin_delete(gserver->video_handle);
+		gserver->video_handle = NULL;
 		return 1;
 	}
 	gserver->video_plugin->helper = &gserver->video_helper;
@@ -207,13 +213,13 @@ static int _init_video(GServer * gserver)
 
 
 /* gserver_delete */
-static void _destroy_video(GServer * gserver);
+static void _delete_video(GServer * gserver);
 
 void gserver_delete(GServer * gserver)
 {
 	if(_gserver == gserver)
 		_gserver = NULL;
-	_destroy_video(gserver);
+	_delete_video(gserver);
 	if(gserver->appserver != NULL)
 		appserver_delete(gserver->appserver);
 	if(gserver->event != NULL)
@@ -221,12 +227,12 @@ void gserver_delete(GServer * gserver)
 	object_delete(gserver);
 }
 
-static void _destroy_video(GServer * gserver)
+static void _delete_video(GServer * gserver)
 {
 	if(gserver->video_plugin != NULL)
 		gserver->video_plugin->destroy(gserver->video_plugin);
 	if(gserver->video_handle != NULL)
-		dlclose(gserver->video_handle);
+		plugin_delete(gserver->video_handle);
 }
 
 
