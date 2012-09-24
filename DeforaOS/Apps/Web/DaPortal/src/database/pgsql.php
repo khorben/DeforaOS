@@ -168,6 +168,8 @@ class PgsqlDatabase extends Database
 	{
 		if(is_bool($string))
 			$string = $string ? '1' : '0';
+		if(function_exists('pg_escape_literal'))
+			return pg_escape_literal($this->handle, $string);
 		return "'".pg_escape_string($this->handle, $string)."'";
 	}
 
