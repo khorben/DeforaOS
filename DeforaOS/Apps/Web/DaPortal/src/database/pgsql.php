@@ -146,16 +146,17 @@ class PgsqlDatabase extends Database
 		global $config;
 		$str = '';
 		$sep = '';
-		$variables = $this->variables;
 
-		foreach($variables as $k => $v)
+		foreach($this->variables as $k => $v)
 			if(($p = $config->getVariable('database::pgsql', $k))
 					!== FALSE)
 			{
 				$str .= $sep.$v."='$p'"; //XXX escape?
 				$sep = ' ';
 			}
-		if(($this->handle = pg_connect($str)) === FALSE)
+		$this->handle = $config->getVariable('database::pgsql',
+			'persistent') ? pg_pconnect($str) : pg_connect($str);
+		if($this->handle === FALSE)
 			return $engine->log('LOG_ERR',
 					'Could not open database');
 		return TRUE;
