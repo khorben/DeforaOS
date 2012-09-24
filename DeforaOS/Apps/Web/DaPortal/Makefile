@@ -551,10 +551,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/INSTALL \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README \
-		$(PACKAGE)-$(VERSION)/config.php \
 		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/engine.php \
-		$(PACKAGE)-$(VERSION)/index.php \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) -- $(PACKAGE)-$(VERSION)
 
