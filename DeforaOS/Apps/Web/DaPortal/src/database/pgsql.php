@@ -84,14 +84,11 @@ class PgsqlDatabase extends Database
 	public function formatDate($engine, $date, $outformat = FALSE,
 			$informat = FALSE)
 	{
-		if($informat === FALSE)
-			$informat = '%Y-%m-%d %H:%M:%S';
-		if(($tm = strptime($date, $informat)) === FALSE)
-			return $date; //XXX better suggestions welcome
-		//FIXME this assumes the database server shares our timezone
-		$timestamp = mktime($tm['tm_hour'], $tm['tm_min'],
-			$tm['tm_sec'], $tm['tm_mon'] + 1, $tm['tm_mday'],
-			$tm['tm_year'] + 1900);
+		if($informat !== FALSE
+				|| ($timestamp = strtotime($date)) === FALSE
+					|| $timestamp == -1)
+			return parent::formatDate($engine, $date, $outformat,
+					$informat);
 		if($outformat === FALSE)
 			$outformat = '%d/%m/%Y %H:%M:%S';
 		return strftime($outformat, $timestamp);
