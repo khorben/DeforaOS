@@ -1,0 +1,12 @@
+DeforaOS libSystem
+==================
+
+1. Platform-specific notes
+--------------------------
+
+GNU/Linux
+---------
+
+On GNU/Linux distributions, you may have to build libSystem as follows:
+
+$ make LDFLAGS="-ldl"
