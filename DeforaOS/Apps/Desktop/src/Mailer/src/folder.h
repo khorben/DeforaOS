@@ -35,5 +35,6 @@ void folder_delete(Folder * folder);
 /* accessors */
 AccountFolder * folder_get_data(Folder * folder);
 gboolean folder_get_iter(Folder * folder, GtkTreeIter * iter);
+GtkListStore * folder_get_messages(Folder * folder);
 
 #endif /* !MAILER_SRC_MAILER_H */

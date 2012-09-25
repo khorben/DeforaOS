@@ -18,14 +18,16 @@
 #ifndef DESKTOP_MAILER_FOLDER_H
 # define DESKTOP_MAILER_FOLDER_H
 
+# include "mailer.h"
+
 
 /* Folder */
 /* types */
-typedef struct _Folder Folder;
+typedef struct _MailerFolder Folder;
 
 typedef struct _AccountFolder AccountFolder;
 
-typedef enum _FolderType
+typedef enum _MailerFolderType
 {
 	FT_INBOX = 0,
 	FT_DRAFTS,
@@ -40,8 +42,8 @@ typedef enum _FolderType
 /* public */
 /* functions */
 /* accessors */
-char const * folder_get_name(Folder * folder);
-FolderType folder_get_type(Folder * folder);
-void folder_set_type(Folder * folder, FolderType type);
+char const * folder_get_name(MailerFolder * folder);
+FolderType folder_get_type(MailerFolder * folder);
+void folder_set_type(MailerFolder * folder, FolderType type);
 
 #endif /* !DESKTOP_MAILER_FOLDER_H */

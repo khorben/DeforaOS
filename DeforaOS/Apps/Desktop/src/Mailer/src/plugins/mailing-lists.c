@@ -42,8 +42,8 @@ struct _MailerPlugin
 static MailerPlugin * _ml_init(MailerPluginHelper * helper);
 static void _ml_destroy(MailingLists * ml);
 static GtkWidget * _ml_get_widget(MailingLists * ml);
-static void _ml_refresh(MailingLists * ml, Folder * folder,
-		Message * message);
+static void _ml_refresh(MailingLists * ml, MailerFolder * folder,
+		MailerMessage * message);
 
 
 /* public */
@@ -107,8 +107,8 @@ static GtkWidget * _ml_get_widget(MailingLists * ml)
 
 
 /* ml_refresh */
-static void _ml_refresh(MailingLists * ml, Folder * folder,
-		Message * message)
+static void _ml_refresh(MailingLists * ml, MailerFolder * folder,
+		MailerMessage * message)
 {
 	char const * id;
 

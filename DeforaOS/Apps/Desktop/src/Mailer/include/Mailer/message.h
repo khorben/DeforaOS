@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,18 @@
 #ifndef DESKTOP_MAILER_MESSAGE_H
 # define DESKTOP_MAILER_MESSAGE_H
 
+# include "mailer.h"
+
 
 /* Message */
 /* types */
-typedef struct _Message Message;
+typedef struct _MailerMessage Message;
 
 typedef struct _AccountMessage AccountMessage;
 
 
 /* functions */
 /* accessors */
-char const * message_get_header(Message * message, char const * header);
+char const * message_get_header(MailerMessage * message, char const * header);
 
 #endif /* !DESKTOP_MAILER_MESSAGE_H */

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,5 +38,11 @@ typedef enum _MailerHeaderColumn
 } MailerHeaderColumn;
 # define MHC_LAST MHC_WEIGHT
 # define MHC_COUNT (MHC_LAST + 1)
+
+/* folders */
+typedef struct _MailerFolder MailerFolder;
+
+/* messages */
+typedef struct _MailerMessage MailerMessage;
 
 #endif /* !DESKTOP_MAILER_MAILER_H */

@@ -31,7 +31,7 @@
 /* Folder */
 /* private */
 /* types */
-struct _Folder
+struct _MailerFolder
 {
 	FolderType type;
 	char * name;

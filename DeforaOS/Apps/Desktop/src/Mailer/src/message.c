@@ -35,7 +35,7 @@ typedef struct _MessageHeader
 	char * value;
 } MessageHeader;
 
-struct _Message
+struct _MailerMessage
 {
 	GtkListStore * store;
 	GtkTreeRowReference * row;
