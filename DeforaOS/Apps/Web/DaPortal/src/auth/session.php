@@ -100,20 +100,11 @@ class SessionAuth extends Auth
 	{
 		global $config;
 
-		if($config->getVariable('auth::session', 'regenerate') == 1)
-		{
-			//avoid session-fixation attacks
-			$message = 'Could not regenerate the session';
-			if(session_regenerate_id(TRUE) !== TRUE)
-				$engine->log('LOG_WARNING', $message);
-			else
-			{
-				//close the current session
-				session_write_close();
-				//start a new session
-				session_start();
-			}
-		}
+		//avoid session-fixation attacks
+		$message = 'Could not regenerate the session';
+		if($config->getVariable('auth::session', 'regenerate') == 1
+				&& session_regenerate_id(TRUE) !== TRUE)
+			$engine->log('LOG_WARNING', $message);
 		$this->setVariable($engine, 'SessionAuth::uid',
 				$credentials->getUserId());
 		return parent::setCredentials($engine, $credentials);
