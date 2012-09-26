@@ -693,7 +693,7 @@ static int _error(char const * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: makepasswd [-ceilMmnpSs]\n"
-"       makepasswd -E [-ceilMmns]\n"
+"       makepasswd -E [-ceilMmnSs]\n"
 "  -c	String of allowed characters (A-Za-z0-9`~!@#$%^&*()-_=+)\n"
 "  -E	Enumerate all possible values\n"
 "  -e	Encryption algorithm (none,base64,blowfish,des,md5,sha1,sha256,shmd5)\n"
