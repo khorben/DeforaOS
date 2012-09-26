@@ -684,9 +684,14 @@ static void _cancel_auth(Locker * locker, GtkListStore * store)
 			plugin_delete(p);
 			continue;
 		}
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_list_store_insert_with_values(store, &iter, -1,
+#else
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, LPC_FILENAME, de->d_name,
-				LPC_NAME, lad->name, -1);
+		gtk_list_store_set(store, &iter,
+#endif
+				LPC_FILENAME, de->d_name, LPC_NAME, lad->name,
+				-1);
 		/* select if currently active */
 		if(locker->adefinition != NULL
 				/* XXX check on de->d_name instead */
@@ -831,10 +836,14 @@ static void _cancel_plugins(Locker * locker, GtkListStore * store)
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
 					24, 0, NULL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_list_store_insert_with_values(store, &iter, -1,
+#else
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, LPC_FILENAME, de->d_name,
-				LPC_NAME, lpd->name, LPC_ENABLED, enabled,
-				LPC_ICON, icon, -1);
+		gtk_list_store_set(store, &iter,
+#endif
+				LPC_FILENAME, de->d_name, LPC_NAME, lpd->name,
+				LPC_ENABLED, enabled, LPC_ICON, icon, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
