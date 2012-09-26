@@ -127,6 +127,8 @@ static const struct
 /* accessors */
 static gboolean _panel_can_suspend(void);
 
+static char const * _panel_get_plugins(Panel * panel, PanelPosition position);
+
 /* useful */
 static void _panel_reset(Panel * panel, GdkRectangle * rect);
 
@@ -162,8 +164,7 @@ static void _new_prefs(Config * config, GdkScreen * screen, PanelPrefs * prefs,
 		PanelPrefs const * user);
 static GtkIconSize _new_size(Panel * panel, PanelPosition position);
 static gboolean _on_idle(gpointer data);
-static void _idle_load(Panel * panel, PanelPosition position,
-		char const * plugins);
+static void _idle_load(Panel * panel, PanelPosition position);
 /* callbacks */
 static int _new_on_message(void * data, uint32_t value1, uint32_t value2,
 		uint32_t value3);
@@ -351,45 +352,25 @@ static GtkIconSize _new_size(Panel * panel, PanelPosition position)
 static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
-#ifndef EMBEDDED
-	char const * plugins = "main,desktop,lock,logout,pager,tasks"
-		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock";
-	char const * top = "main,lock,logout,separator,phone,spacer"
-		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock";
-	char const * bottom = "desktop,tasks,pager";
-#else /* EMBEDDED */
-	char const * plugins = "main,desktop,keyboard,tasks,spacer"
-		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock,close";
-	char const * top = "phone,spacer"
-		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock,close";
-	char const * bottom = "main,keyboard,desktop,tasks";
-#endif
-	char const * p;
 
 	panel_show_preferences(panel, FALSE);
-	if((p = config_get(panel->config, NULL, "plugins")) != NULL)
-		plugins = p;
 	if(panel->top != NULL)
-		if((p = config_get(panel->config, NULL, "top")) != NULL
-				|| (p = top) != NULL)
-			_idle_load(panel, PANEL_POSITION_TOP, p);
+		_idle_load(panel, PANEL_POSITION_TOP);
 	if(panel->bottom != NULL)
-		if((p = config_get(panel->config, NULL, "bottom")) != NULL
-				|| (p = (panel->top != NULL) ? bottom : plugins)
-				!= NULL)
-			_idle_load(panel, PANEL_POSITION_BOTTOM, p);
+		_idle_load(panel, PANEL_POSITION_BOTTOM);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(panel->pr_notebook), 0);
 	return FALSE;
 }
 
-static void _idle_load(Panel * panel, PanelPosition position,
-		char const * plugins)
+static void _idle_load(Panel * panel, PanelPosition position)
 {
+	char const * plugins;
 	char * p;
 	char * q;
 	size_t i;
 
-	if(strlen(plugins) == 0)
+	if((plugins = _panel_get_plugins(panel, position)) == NULL
+			|| strlen(plugins) == 0)
 		return;
 	if((p = string_new(plugins)) == NULL)
 	{
@@ -1091,7 +1072,7 @@ static void _cancel_applets(Panel * panel)
 	}
 	closedir(dir);
 	/* top panel */
-	r = config_get(panel->config, NULL, "top");
+	r = _panel_get_plugins(panel, PANEL_POSITION_TOP);
 	q = (r != NULL) ? strdup(r) : NULL;
 	for(i = 0, r = q; q != NULL; i++)
 	{
@@ -1106,7 +1087,7 @@ static void _cancel_applets(Panel * panel)
 	}
 	free(q);
 	/* bottom panel */
-	r = config_get(panel->config, NULL, "bottom");
+	r = _panel_get_plugins(panel, PANEL_POSITION_BOTTOM);
 	q = (r != NULL) ? strdup(r) : NULL;
 	for(i = 0, r = q; q != NULL; i++)
 	{
@@ -1313,6 +1294,35 @@ static gboolean _panel_can_suspend(void)
 		return TRUE;
 #endif
 	return FALSE;
+}
+
+
+/* panel_get_plugins */
+static char const * _panel_get_plugins(Panel * panel, PanelPosition position)
+{
+#ifndef EMBEDDED
+	char const * plugins = "main,desktop,lock,logout,pager,tasks"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock";
+	char const * top = "main,lock,logout,separator,phone,spacer"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock";
+	char const * bottom = "desktop,tasks,pager";
+#else /* EMBEDDED */
+	char const * plugins = "main,desktop,keyboard,tasks,spacer"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock,close";
+	char const * top = "phone,spacer"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,systray,clock,close";
+	char const * bottom = "main,keyboard,desktop,tasks";
+#endif
+	char const * p = NULL;
+
+	if(position == PANEL_POSITION_TOP)
+		p = config_get(panel->config, NULL, "top");
+	if(position == PANEL_POSITION_BOTTOM)
+		p = config_get(panel->config, NULL, "bottom");
+	if(p == NULL && position == PANEL_POSITION_BOTTOM)
+		if((p = config_get(panel->config, NULL, "plugins")) == NULL)
+			p = plugins;
+	return p;
 }
 
 
