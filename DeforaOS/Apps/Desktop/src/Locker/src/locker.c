@@ -658,8 +658,10 @@ static void _cancel_auth(Locker * locker, GtkListStore * store)
 	char const ext[] = ".so";
 	Plugin * p;
 	LockerAuthDefinition * lad;
+	gint size = 24;
 
 	theme = gtk_icon_theme_get_default();
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &size, &size);
 	gtk_list_store_clear(store);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/auth")) == NULL)
 		return;
@@ -694,11 +696,11 @@ static void _cancel_auth(Locker * locker, GtkListStore * store)
 						locker->pr_acombo), &iter);
 		icon = NULL;
 		if(lad->icon != NULL)
-			icon = gtk_icon_theme_load_icon(theme, lad->icon, 24, 0,
-					NULL);
+			icon = gtk_icon_theme_load_icon(theme, lad->icon, size,
+					0, NULL);
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
-					24, 0, NULL);
+					size, 0, NULL);
 		gtk_list_store_set(store, &iter, LPC_ICON, icon, -1);
 		plugin_delete(p);
 	}
@@ -716,17 +718,21 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 	char const ext[] = ".so";
 	Plugin * p;
 	LockerDemoDefinition * ldd;
+	gint size = 24;
 
 	theme = gtk_icon_theme_get_default();
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &size, &size);
 	gtk_list_store_clear(store);
+	/* "Disabled", selected by default */
+	icon = gtk_icon_theme_load_icon(theme, "gtk-cancel", size, 0, NULL);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_list_store_insert_with_values(store, &iter, -1,
 #else
 	gtk_list_store_append(store, &iter);
 	gtk_list_store_set(store, &iter,
 #endif
-			LPC_FILENAME, NULL,
-			LPC_NAME, _("Disabled"), -1);
+			LPC_FILENAME, NULL, LPC_NAME, _("Disabled"),
+			LPC_ICON, icon, -1);
 	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(locker->pr_dcombo), &iter);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/demos")) == NULL)
 		return;
@@ -766,12 +772,13 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 						locker->pr_dcombo), &iter);
 		icon = NULL;
 		if(ldd->icon != NULL)
-			icon = gtk_icon_theme_load_icon(theme, ldd->icon, 24, 0,
-					NULL);
+			icon = gtk_icon_theme_load_icon(theme, ldd->icon, size,
+					0, NULL);
 		if(icon == NULL)
 			icon = gtk_icon_theme_load_icon(theme, "gnome-settings",
-					24, 0, NULL);
-		gtk_list_store_set(store, &iter, LPC_ICON, icon, -1);
+					size, 0, NULL);
+		if(icon != NULL)
+			gtk_list_store_set(store, &iter, LPC_ICON, icon, -1);
 		plugin_delete(p);
 	}
 	closedir(dir);
