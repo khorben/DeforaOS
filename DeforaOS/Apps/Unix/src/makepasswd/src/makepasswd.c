@@ -46,6 +46,7 @@ typedef struct _Prefs
 	char const * salt;
 	int iterations;
 	size_t count;
+	int seed;
 } Prefs;
 
 typedef enum _PrefsEncryption
@@ -103,7 +104,7 @@ static int _makepasswd(Prefs * prefs)
 		prefs->characters = characters;
 	if(prefs->enumerate != 0)
 		return _makepasswd_enumerate(prefs);
-	if(_makepasswd_seed() != 0)
+	if(prefs->seed && _makepasswd_seed() != 0)
 		return -1;
 	for(i = 0; i < prefs->count; i++)
 		if(_makepasswd_do(prefs) != 0)
@@ -691,8 +692,8 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: makepasswd [-ceilMmnps]\n"
-"Usage: makepasswd -E [-ceilMmns]\n"
+	fputs("Usage: makepasswd [-ceilMmnpSs]\n"
+"       makepasswd -E [-ceilMmns]\n"
 "  -c	String of allowed characters (A-Za-z0-9`~!@#$%^&*()-_=+)\n"
 "  -E	Enumerate all possible values\n"
 "  -e	Encryption algorithm (none,base64,blowfish,des,md5,sha1,sha256,shmd5)\n"
@@ -702,6 +703,7 @@ static int _usage(void)
 "  -m	Minimum password length\n"
 "  -n	Number of passwords to generate\n"
 "  -p	Password to use\n"
+"  -S	Do not seed ourselves\n"
 "  -s	Salt to use\n", stderr);
 	return 1;
 }
@@ -718,7 +720,8 @@ int main(int argc, char * argv[])
 	prefs.count = 1;
 	prefs.max = 8;
 	prefs.min = 6;
-	while((o = getopt(argc, argv, "c:Ee:i:l:M:m:n:p:s:")) != -1)
+	prefs.seed = 1;
+	while((o = getopt(argc, argv, "c:Ee:i:l:M:m:n:p:Ss:")) != -1)
 		switch(o)
 		{
 			case 'c':
@@ -759,6 +762,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'p':
 				prefs.password = optarg;
+				break;
+			case 'S':
+				prefs.seed = 0;
 				break;
 			case 's':
 				prefs.salt = optarg;
