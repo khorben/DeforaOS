@@ -65,6 +65,7 @@
 			<arg choice="opt"><option>-m <replaceable>minimum length</replaceable></option></arg>
 			<arg choice="opt"><option>-n <replaceable>count</replaceable></option></arg>
 			<arg choice="opt"><option>-p <replaceable>password</replaceable></option></arg>
+			<arg choice="opt"><option>-S</option></arg>
 			<arg choice="opt"><option>-s <replaceable>salt</replaceable></option></arg>
 		</cmdsynopsis>
 		<cmdsynopsis>
@@ -77,6 +78,7 @@
 			<arg choice="opt"><option>-M <replaceable>maximum length</replaceable></option></arg>
 			<arg choice="opt"><option>-m <replaceable>minimum length</replaceable></option></arg>
 			<arg choice="opt"><option>-n <replaceable>count</replaceable></option></arg>
+			<arg choice="opt"><option>-S</option></arg>
 			<arg choice="opt"><option>-s <replaceable>salt</replaceable></option></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
@@ -177,6 +179,18 @@
 				<listitem>
 					<para>Force a given value for the password generated. This is useful
 						when generating hashes for pre-determined passwords.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-S</option></term>
+				<listitem>
+					<para>Do not seed the PRNG (pseudo-random number generator) ourselves.
+						With this option <emphasis>set</emphasis>, the entropy pool is often
+						<emphasis>not</emphasis> initialized, and the passwords generated
+						<emphasis>predictable</emphasis> as a result.</para>
+					<para>Use this option carefully, when you know that either the system does
+						provide better entropy than &name;, or that it hurts performance in a
+						situation where entropy is not required.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
