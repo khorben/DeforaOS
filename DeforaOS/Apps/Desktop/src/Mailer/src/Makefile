@@ -1,4 +1,4 @@
-SUBDIRS	= account plugins
+SUBDIRS	= account
 TARGETS	= libMailer.a libMailer.so.0.0 libMailer.so.0 libMailer.so compose mailer
 PREFIX	= /usr/local
 DESTDIR	=

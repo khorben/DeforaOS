@@ -7,7 +7,7 @@ CPPFLAGSF= -I ../../include
 CPPFLAGS?=
 CFLAGSF	= -W -fPIC `pkg-config --cflags libDesktop`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config --libs openssl` -lssl `pkg-config --libs libDesktop` -L.. -Wl,-rpath,$(PREFIX)/lib
+LDFLAGSF= `pkg-config --libs openssl` -lssl `pkg-config --libs libDesktop`
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -21,7 +21,7 @@ all: $(TARGETS)
 
 mailing-lists_OBJS = mailing-lists.o
 mailing-lists_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-mailing-lists_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+mailing-lists_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L.. -Wl,-rpath,$(PREFIX)/lib -lMailer
 
 mailing-lists.so: $(mailing-lists_OBJS)
 	$(CCSHARED) -o mailing-lists.so $(mailing-lists_OBJS) $(mailing-lists_LDFLAGS)

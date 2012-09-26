@@ -16,6 +16,8 @@
 
 
 #include <stdlib.h>
+#include "Mailer/folder.h"
+#include "Mailer/message.h"
 #include "Mailer/plugin.h"
 
 
