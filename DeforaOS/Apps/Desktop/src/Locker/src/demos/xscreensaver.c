@@ -66,7 +66,7 @@ static void _xscreensaver_stop(XScreensaver * xscreensaver);
 LockerDemoDefinition plugin =
 {
 	"XScreensaver",
-	NULL,
+	"xscreensaver",
 	NULL,
 	_xscreensaver_init,
 	_xscreensaver_destroy,

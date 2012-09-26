@@ -85,7 +85,7 @@ static gboolean _logo_on_timeout(gpointer data);
 LockerDemoDefinition plugin =
 {
 	"Logo",
-	NULL,
+	"start-here",
 	NULL,
 	_logo_init,
 	_logo_destroy,

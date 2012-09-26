@@ -65,7 +65,7 @@ static void _xterm_stop(XTerm * xterm);
 LockerDemoDefinition plugin =
 {
 	"XTerm",
-	NULL,
+	"terminal",
 	NULL,
 	_xterm_init,
 	_xterm_destroy,
