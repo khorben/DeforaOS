@@ -719,8 +719,13 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 
 	theme = gtk_icon_theme_get_default();
 	gtk_list_store_clear(store);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_list_store_insert_with_values(store, &iter, -1,
+#else
 	gtk_list_store_append(store, &iter);
-	gtk_list_store_set(store, &iter, LPC_FILENAME, NULL,
+	gtk_list_store_set(store, &iter,
+#endif
+			LPC_FILENAME, NULL,
 			LPC_NAME, _("Disabled"), -1);
 	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(locker->pr_dcombo), &iter);
 	if((dir = opendir(LIBDIR "/" PACKAGE "/demos")) == NULL)
@@ -744,9 +749,14 @@ static void _cancel_demo(Locker * locker, GtkListStore * store)
 			plugin_delete(p);
 			continue;
 		}
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_list_store_insert_with_values(store, &iter, -1,
+#else
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, LPC_FILENAME, de->d_name,
-				LPC_NAME, ldd->name, -1);
+		gtk_list_store_set(store, &iter,
+#endif
+				LPC_FILENAME, de->d_name, LPC_NAME, ldd->name,
+				-1);
 		/* select if currently active */
 		if(locker->ddefinition != NULL
 				/* XXX check on de->d_name instead */
