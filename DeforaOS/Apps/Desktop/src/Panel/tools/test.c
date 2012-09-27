@@ -111,7 +111,7 @@ static int _test(GtkIconSize iconsize, char * applets[])
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel-test [-sx] applet...\n"
+	fputs("Usage: panel-test [-L | -S | -X | -x] applet...\n"
 "       panel-test -l\n"
 "  -l	Lists the plug-ins available\n", stderr);
 	return 1;
@@ -124,16 +124,24 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	GtkIconSize iconsize = GTK_ICON_SIZE_LARGE_TOOLBAR;
+	GtkIconSize huge;
 	int o;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "lsx")) != -1)
+	huge = gtk_icon_size_register("panel-huge", 64, 64);
+	while((o = getopt(argc, argv, "LlSXx")) != -1)
 		switch(o)
 		{
+			case 'L':
+				iconsize = GTK_ICON_SIZE_LARGE_TOOLBAR;
+				break;
 			case 'l':
 				return _applet_list();
-			case 's':
+			case 'S':
 				iconsize = GTK_ICON_SIZE_SMALL_TOOLBAR;
+				break;
+			case 'X':
+				iconsize = huge;
 				break;
 			case 'x':
 				iconsize = GTK_ICON_SIZE_MENU;
