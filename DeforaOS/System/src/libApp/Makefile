@@ -31,15 +31,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/libApp-docs.xml \
 		$(PACKAGE)-$(VERSION)/doc/gtkdoc/project.conf \
+		$(PACKAGE)-$(VERSION)/include/App.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
-		$(PACKAGE)-$(VERSION)/include/System/App.h \
-		$(PACKAGE)-$(VERSION)/include/System/Makefile \
-		$(PACKAGE)-$(VERSION)/include/System/project.conf \
-		$(PACKAGE)-$(VERSION)/include/System/App/appclient.h \
-		$(PACKAGE)-$(VERSION)/include/System/App/appserver.h \
-		$(PACKAGE)-$(VERSION)/include/System/App/Makefile \
-		$(PACKAGE)-$(VERSION)/include/System/App/project.conf \
+		$(PACKAGE)-$(VERSION)/include/App/appclient.h \
+		$(PACKAGE)-$(VERSION)/include/App/appserver.h \
+		$(PACKAGE)-$(VERSION)/include/App/Makefile \
+		$(PACKAGE)-$(VERSION)/include/App/project.conf \
 		$(PACKAGE)-$(VERSION)/src/appclient.c \
 		$(PACKAGE)-$(VERSION)/src/appinterface.c \
 		$(PACKAGE)-$(VERSION)/src/appserver.c \

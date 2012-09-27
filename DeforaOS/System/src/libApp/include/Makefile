@@ -1,4 +1,11 @@
-SUBDIRS	= System
+SUBDIRS	= App
+PREFIX	= /usr/local
+DESTDIR	=
+RM	?= rm -f
+LN	?= ln -f
+MKDIR	?= mkdir -p
+INSTALL	?= install
+INCLUDEDIR= $(PREFIX)/include
 
 
 all: subdirs
@@ -14,8 +21,11 @@ distclean:
 
 install:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
+	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/System
+	$(INSTALL) -m 0644 -- App.h $(DESTDIR)$(INCLUDEDIR)/System/App.h
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System/App.h
 
 .PHONY: all subdirs clean distclean install uninstall

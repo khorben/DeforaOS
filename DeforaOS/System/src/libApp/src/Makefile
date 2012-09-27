@@ -33,13 +33,13 @@ libApp.so.0.0 libApp.so.0 libApp.so: $(libApp_OBJS)
 	$(LN) -s -- libApp.so.0.0 libApp.so.0
 	$(LN) -s -- libApp.so.0.0 libApp.so
 
-appclient.o: appclient.c appinterface.h ../include/System/App/appclient.h common.h
+appclient.o: appclient.c appinterface.h ../include/App/appclient.h common.h
 	$(CC) $(libApp_CFLAGS) -c appclient.c
 
-appinterface.o: appinterface.c ../include/System/App/appserver.h ../config.h
+appinterface.o: appinterface.c ../include/App/appserver.h ../config.h
 	$(CC) $(libApp_CFLAGS) -c appinterface.c
 
-appserver.o: appserver.c appinterface.h ../include/System/App/appserver.h ../config.h
+appserver.o: appserver.c appinterface.h ../include/App/appserver.h ../config.h
 	$(CC) $(libApp_CFLAGS) -c appserver.c
 
 common.o: common.c
