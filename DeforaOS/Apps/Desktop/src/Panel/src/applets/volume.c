@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
+ * - update the image according to the volume in notification mode
  * - add a pulseaudio version */
 
 
@@ -56,7 +57,7 @@ typedef struct _PanelApplet
 	guint source;
 
 	/* widgets */
-	GtkWidget * widget;
+	GtkWidget * button;
 	GtkWidget * progress;
 } Volume;
 
@@ -109,33 +110,30 @@ static Volume * _volume_init(PanelAppletHelper * helper, GtkWidget ** widget)
 	if((volume = _volume_new(helper)) == NULL)
 		return NULL;
 	volume->helper = helper;
-	volume->widget = gtk_volume_button_new();
+	volume->button = NULL;
 	volume->progress = NULL;
-	g_object_set(G_OBJECT(volume->widget), "size", helper->icon_size, NULL);
 	if(helper->type == PANEL_APPLET_TYPE_NOTIFICATION)
 	{
 		vbox = gtk_vbox_new(FALSE, 4);
-		gtk_box_pack_start(GTK_BOX(vbox), volume->widget, TRUE, TRUE,
-				0);
+		*widget = gtk_image_new_from_icon_name("stock_volume-med",
+				helper->icon_size);
+		gtk_box_pack_start(GTK_BOX(vbox), *widget, TRUE, TRUE, 0);
 		volume->progress = gtk_progress_bar_new();
 		gtk_box_pack_start(GTK_BOX(vbox), volume->progress, TRUE, TRUE,
 				0);
 		*widget = vbox;
 	}
 	else
-		*widget = volume->widget;
-	if((value = _volume_get(volume)) >= 0.0)
 	{
-		gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume->widget),
-				value);
-		if(volume->progress != NULL)
-			gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
-						volume->progress), value);
-		_volume_set(volume, value);
+		volume->button = gtk_volume_button_new();
+		g_object_set(G_OBJECT(volume->button), "size",
+				helper->icon_size, NULL);
+		g_signal_connect_swapped(volume->button, "value-changed",
+				G_CALLBACK(_on_value_changed), volume);
+		*widget = volume->button;
 	}
-	g_signal_connect_swapped(volume->widget, "value-changed", G_CALLBACK(
-				_on_value_changed), volume);
-	gtk_widget_show(volume->widget);
+	_on_volume_timeout(volume);
+	gtk_widget_show_all(*widget);
 	return volume;
 #else
 	return NULL;
@@ -406,7 +404,7 @@ static void _on_value_changed(gpointer data)
 	Volume * volume = data;
 	gdouble value;
 
-	value = gtk_scale_button_get_value(GTK_SCALE_BUTTON(volume->widget));
+	value = gtk_scale_button_get_value(GTK_SCALE_BUTTON(volume->button));
 	_volume_set(volume, value);
 }
 
@@ -422,8 +420,10 @@ static gboolean _on_volume_timeout(gpointer data)
 		volume->source = 0;
 		return FALSE;
 	}
-	gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume->widget), value);
-	if(volume->progress)
+	if(volume->button != NULL)
+		gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume->button),
+				value);
+	if(volume->progress != NULL)
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
 					volume->progress), value);
 	return TRUE;
