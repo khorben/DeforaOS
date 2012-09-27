@@ -21,17 +21,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #include <Desktop.h>
 #include "../src/panel.h"
 #include "../config.h"
+
 #ifdef PACKAGE
 # undef PACKAGE
 #endif
 #define PACKAGE "panel-test"
 #include "helper.c"
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
 
 
 /* private */
@@ -46,19 +53,10 @@ static int _test(GtkIconSize iconsize, char * applets[])
 {
 	Panel panel;
 	char * filename;
-	char const path[] = PREFIX "/lib/Panel/applets/";
-#ifdef __APPLE__
-	char const ext[] = ".dylib";
-#else
-	char const ext[] = ".so";
-#endif
 	GtkWidget * box;
 	GtkWidget * widget;
 	size_t i;
-	size_t len;
-	char * p = NULL;
-	char * q;
-	void * dl;
+	Plugin * plugin;
 	PanelAppletHelper helper;
 	PanelAppletDefinition * pad;
 	PanelApplet * pa;
@@ -77,20 +75,15 @@ static int _test(GtkIconSize iconsize, char * applets[])
 	_helper_init(&helper, &panel, PANEL_APPLET_TYPE_NORMAL, iconsize);
 	for(i = 0; applets[i] != NULL; i++)
 	{
-		len = sizeof(path) + strlen(applets[i]) + sizeof(ext);
-		if((q = realloc(p, len)) == NULL)
-			break;
-		p = q;
-		snprintf(p, len, "%s%s%s", path, applets[i], ext);
-		if((dl = dlopen(p, RTLD_LAZY)) == NULL)
+		if((plugin = plugin_new(LIBDIR, "Panel", "applets", applets[i]))
+				== NULL)
 		{
-			fprintf(stderr, "%s: %s: %s\n", "panel-test",
-					applets[i], dlerror());
+			error_print(PACKAGE);
 			continue;
 		}
-		if((pad = dlsym(dl, "applet")) == NULL)
+		if((pad = plugin_lookup(plugin, "applet")) == NULL)
 		{
-			dlclose(dl);
+			plugin_delete(plugin);
 			continue;
 		}
 		widget = NULL;
@@ -99,7 +92,6 @@ static int _test(GtkIconSize iconsize, char * applets[])
 			gtk_box_pack_start(GTK_BOX(box), widget, pad->expand,
 					pad->fill, 0);
 	}
-	free(p);
 	gtk_container_add(GTK_CONTAINER(panel.window), box);
 	gtk_widget_show_all(panel.window);
 	panel.timeout = 0;

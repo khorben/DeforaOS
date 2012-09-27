@@ -34,6 +34,13 @@
 #define PACKAGE "panel-notify"
 #include "helper.c"
 
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
+
 
 /* private */
 /* prototypes */
