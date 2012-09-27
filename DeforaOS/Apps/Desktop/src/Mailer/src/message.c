@@ -43,7 +43,10 @@ struct _MailerMessage
 	MessageHeader * headers;
 	size_t headers_cnt;
 
-	GtkTextBuffer * body;
+	char * body;
+	size_t body_cnt;
+
+	GtkTextBuffer * text;
 
 	char ** attachments;
 	size_t attachments_cnt;
@@ -104,7 +107,9 @@ Message * message_new(AccountMessage * message, GtkListStore * store,
 	gtk_tree_path_free(path);
 	ret->headers = NULL;
 	ret->headers_cnt = 0;
-	ret->body = gtk_text_buffer_new(NULL);
+	ret->body = NULL;
+	ret->body_cnt = 0;
+	ret->text = gtk_text_buffer_new(NULL);
 	ret->attachments = NULL;
 	ret->attachments_cnt = 0;
 	ret->data = message;
@@ -119,6 +124,8 @@ Message * message_new(AccountMessage * message, GtkListStore * store,
 void message_delete(Message * message)
 {
 	gtk_tree_row_reference_free(message->row);
+	g_object_unref(message->text);
+	free(message->body);
 	free(message->headers);
 	object_delete(message);
 }
@@ -128,7 +135,7 @@ void message_delete(Message * message)
 /* message_get_body */
 GtkTextBuffer * message_get_body(Message * message)
 {
-	return message->body;
+	return message->text;
 }
 
 
@@ -174,17 +181,30 @@ GtkListStore * message_get_store(Message * message)
 int message_set_body(Message * message, char const * buf, size_t cnt,
 		gboolean append)
 {
+	char * p;
 	GtkTextIter iter;
 
 	if(buf == NULL)
 		buf = "";
 	if(append != TRUE)
-		gtk_text_buffer_set_text(message->body, "", 0);
+	{
+		/* empty the message body */
+		free(message->body);
+		message->body = NULL;
+		message->body_cnt = 0;
+		gtk_text_buffer_set_text(message->text, "", 0);
+	}
+	if((p = realloc(message->body, (message->body_cnt + cnt) * sizeof(*p)))
+			== NULL)
+		return -1;
+	message->body = p;
+	memcpy(&message->body[message->body_cnt], buf, cnt);
+	message->body_cnt += cnt;
 	/* FIXME:
 	 * - check encoding
 	 * - parse MIME, etc... */
-	gtk_text_buffer_get_end_iter(message->body, &iter);
-	gtk_text_buffer_insert(message->body, &iter, buf, cnt);
+	gtk_text_buffer_get_end_iter(message->text, &iter);
+	gtk_text_buffer_insert(message->text, &iter, buf, cnt);
 	return 0;
 }
 
@@ -226,7 +246,7 @@ int message_set_header_value(Message * message, char const * header,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
-			(void*)message, header, value);
+			(void *)message, header, value);
 #endif
 	/* FIXME remove the header when value == NULL */
 	for(i = 0; i < message->headers_cnt; i++)
@@ -234,6 +254,10 @@ int message_set_header_value(Message * message, char const * header,
 			break;
 	if(i == message->headers_cnt)
 	{
+		/* the header was not found */
+		if(value == NULL)
+			return 0;
+		/* append the header */
 		if((p = realloc(message->headers, sizeof(*p)
 						* (message->headers_cnt + 1)))
 				== NULL)
