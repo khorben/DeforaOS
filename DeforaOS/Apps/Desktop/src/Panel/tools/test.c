@@ -128,7 +128,9 @@ int main(int argc, char * argv[])
 	int o;
 
 	gtk_init(&argc, &argv);
-	huge = gtk_icon_size_register("panel-huge", 64, 64);
+	if((huge = gtk_icon_size_from_name("panel-huge"))
+			== GTK_ICON_SIZE_INVALID)
+		huge = gtk_icon_size_register("panel-huge", 64, 64);
 	while((o = getopt(argc, argv, "LlSXx")) != -1)
 		switch(o)
 		{

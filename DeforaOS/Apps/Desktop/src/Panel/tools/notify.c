@@ -140,14 +140,16 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	GtkIconSize huge;
 	GtkIconSize iconsize;
+	GtkIconSize huge;
 	int timeout = 3;
 	int o;
 	char * p;
 
 	gtk_init(&argc, &argv);
-	huge = gtk_icon_size_register("panel-huge", 64, 64);
+	if((huge = gtk_icon_size_from_name("panel-huge"))
+			== GTK_ICON_SIZE_INVALID)
+		huge = gtk_icon_size_register("panel-huge", 64, 64);
 	iconsize = huge;
 	while((o = getopt(argc, argv, "LlSt:Xx")) != -1)
 		switch(o)
