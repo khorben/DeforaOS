@@ -57,6 +57,7 @@ typedef struct _PanelApplet
 
 	/* widgets */
 	GtkWidget * widget;
+	GtkWidget * progress;
 } Volume;
 
 
@@ -92,7 +93,7 @@ static int _volume_match(Volume * volume, mixer_devinfo_t * md);
 #endif
 
 /* callbacks */
-static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data);
+static void _on_value_changed(gpointer data);
 static gboolean _on_volume_timeout(gpointer data);
 
 
@@ -102,23 +103,39 @@ static Volume * _volume_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 #if GTK_CHECK_VERSION(2, 12, 0)
 	Volume * volume;
+	GtkWidget * vbox;
 	gdouble value;
 
 	if((volume = _volume_new(helper)) == NULL)
 		return NULL;
 	volume->helper = helper;
 	volume->widget = gtk_volume_button_new();
+	volume->progress = NULL;
 	g_object_set(G_OBJECT(volume->widget), "size", helper->icon_size, NULL);
+	if(helper->type == PANEL_APPLET_TYPE_NOTIFICATION)
+	{
+		vbox = gtk_vbox_new(FALSE, 4);
+		gtk_box_pack_start(GTK_BOX(vbox), volume->widget, TRUE, TRUE,
+				0);
+		volume->progress = gtk_progress_bar_new();
+		gtk_box_pack_start(GTK_BOX(vbox), volume->progress, TRUE, TRUE,
+				0);
+		*widget = vbox;
+	}
+	else
+		*widget = volume->widget;
 	if((value = _volume_get(volume)) >= 0.0)
 	{
 		gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume->widget),
 				value);
+		if(volume->progress != NULL)
+			gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
+						volume->progress), value);
 		_volume_set(volume, value);
 	}
-	g_signal_connect(volume->widget, "value-changed", G_CALLBACK(
+	g_signal_connect_swapped(volume->widget, "value-changed", G_CALLBACK(
 				_on_value_changed), volume);
 	gtk_widget_show(volume->widget);
-	*widget = volume->widget;
 	return volume;
 #else
 	return NULL;
@@ -384,10 +401,12 @@ static int _volume_match(Volume * volume, mixer_devinfo_t * md)
 
 /* callbacks */
 /* on_value_changed */
-static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
+static void _on_value_changed(gpointer data)
 {
 	Volume * volume = data;
+	gdouble value;
 
+	value = gtk_scale_button_get_value(GTK_SCALE_BUTTON(volume->widget));
 	_volume_set(volume, value);
 }
 
@@ -404,5 +423,8 @@ static gboolean _on_volume_timeout(gpointer data)
 		return FALSE;
 	}
 	gtk_scale_button_set_value(GTK_SCALE_BUTTON(volume->widget), value);
+	if(volume->progress)
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
+					volume->progress), value);
 	return TRUE;
 }

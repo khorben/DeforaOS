@@ -61,7 +61,7 @@ static int _error(char const * message, int ret);
 /* helper */
 /* essential */
 static void _helper_init(PanelAppletHelper * helper, Panel * panel,
-		GtkIconSize iconsize);
+		PanelAppletType type, GtkIconSize iconsize);
 
 /* useful */
 static char const * _helper_config_get(Panel * panel, char const * section,
@@ -134,10 +134,11 @@ static int _error(char const * message, int ret)
 /* essential */
 /* helper_init */
 static void _helper_init(PanelAppletHelper * helper, Panel * panel,
-		GtkIconSize iconsize)
+		PanelAppletType type, GtkIconSize iconsize)
 {
 	memset(helper, 0, sizeof(*helper));
 	helper->panel = panel;
+	helper->type = type;
 	helper->icon_size = iconsize;
 	helper->config_get = _helper_config_get;
 	helper->error = _helper_error;

@@ -27,9 +27,16 @@ typedef struct _Panel Panel;
 
 typedef struct _PanelApplet PanelApplet;
 
+typedef enum _PanelAppletType
+{
+	PANEL_APPLET_TYPE_NORMAL = 0,
+	PANEL_APPLET_TYPE_NOTIFICATION
+} PanelAppletType;
+
 typedef struct _PanelAppletHelper
 {
 	Panel * panel;
+	PanelAppletType type;
 	GtkIconSize icon_size;
 	char const * (*config_get)(Panel * panel, char const * section,
 			char const * variable);

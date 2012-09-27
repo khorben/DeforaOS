@@ -64,6 +64,7 @@ typedef struct _PanelApplet
 	GtkWidget * hbox;
 	GtkWidget * image;
 	GtkWidget * label;
+	GtkWidget * progress;
 	guint timeout;
 
 	/* preferences */
@@ -110,7 +111,9 @@ PanelAppletDefinition applet =
 static Battery * _battery_init(PanelAppletHelper * helper, GtkWidget ** widget)
 {
 	Battery * battery;
+	GtkWidget * vbox;
 	GtkWidget * hbox;
+	PangoFontDescription * bold;
 
 	if((battery = malloc(sizeof(*battery))) == NULL)
 		return NULL;
@@ -131,11 +134,27 @@ static Battery * _battery_init(PanelAppletHelper * helper, GtkWidget ** widget)
 #ifndef EMBEDDED
 	gtk_widget_show(battery->label);
 #endif
+	battery->progress = NULL;
 	battery->pr_level = NULL;
+	if(helper->type == PANEL_APPLET_TYPE_NOTIFICATION)
+	{
+		bold = pango_font_description_new();
+		pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+		vbox = gtk_vbox_new(FALSE, 4);
+		gtk_widget_modify_font(battery->label, bold);
+		gtk_widget_show(battery->label);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+		battery->progress = gtk_progress_bar_new();
+		gtk_box_pack_start(GTK_BOX(vbox), battery->progress, TRUE, TRUE,
+				0);
+		*widget = vbox;
+		pango_font_description_free(bold);
+	}
+	else
+		*widget = hbox;
 	battery->timeout = g_timeout_add(5000, _on_timeout, battery);
 	_on_timeout(battery);
 	gtk_widget_show(battery->image);
-	*widget = hbox;
 	return battery;
 }
 
@@ -217,7 +236,18 @@ static void _battery_set(Battery * battery, gdouble value, gboolean charging)
 	snprintf(buf, sizeof(buf), "%.0lf%% ", value);
 	/* XXX only show when necessary? */
 	if(value >= 0.0 && value <= 100.0)
+	{
 		gtk_widget_show(battery->hbox);
+		if(battery->progress != NULL)
+		{
+			gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
+						battery->progress),
+					value / 100.0);
+			gtk_widget_show(battery->progress);
+		}
+	}
+	else if(battery->progress != NULL)
+		gtk_widget_hide(battery->progress);
 	if(value < 0.0)
 	{
 		_set_image(battery, BATTERY_LEVEL_UNKNOWN, FALSE);

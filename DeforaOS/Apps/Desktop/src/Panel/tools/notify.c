@@ -22,12 +22,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #include <Desktop.h>
 #include "../src/panel.h"
 #include "../config.h"
+
 #ifdef PACKAGE
 # undef PACKAGE
 #endif
@@ -50,19 +50,10 @@ static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 {
 	Panel panel;
 	char * filename;
-	char const path[] = PREFIX "/lib/Panel/applets/";
-#ifdef __APPLE__
-	char const ext[] = ".dylib";
-#else
-	char const ext[] = ".so";
-#endif
 	GtkWidget * box;
 	GtkWidget * widget;
 	size_t i;
-	size_t len;
-	char * p = NULL;
-	char * q;
-	void * dl;
+	Plugin * plugin;
 	PanelAppletHelper helper;
 	PanelAppletDefinition * pad;
 	PanelApplet * pa;
@@ -86,23 +77,18 @@ static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 				gtk_main_quit), NULL);
 	gtk_window_set_title(GTK_WINDOW(panel.window), "Applet notifier");
 	box = gtk_hbox_new(FALSE, 4);
-	_helper_init(&helper, &panel, iconsize);
+	_helper_init(&helper, &panel, PANEL_APPLET_TYPE_NOTIFICATION, iconsize);
 	for(i = 0; applets[i] != NULL; i++)
 	{
-		len = sizeof(path) + strlen(applets[i]) + sizeof(ext);
-		if((q = realloc(p, len)) == NULL)
-			break;
-		p = q;
-		snprintf(p, len, "%s%s%s", path, applets[i], ext);
-		if((dl = dlopen(p, RTLD_LAZY)) == NULL)
+		if((plugin = plugin_new(LIBDIR, "Panel", "applets", applets[i]))
+				== NULL)
 		{
-			fprintf(stderr, "%s: %s: %s\n", "panel-notify",
-					applets[i], dlerror());
+			error_print(PACKAGE);
 			continue;
 		}
-		if((pad = dlsym(dl, "applet")) == NULL)
+		if((pad = plugin_lookup(plugin, "applet")) == NULL)
 		{
-			dlclose(dl);
+			plugin_delete(plugin);
 			continue;
 		}
 		widget = NULL;
@@ -111,7 +97,6 @@ static int _notify(GtkIconSize iconsize, int timeout, char * applets[])
 			gtk_box_pack_start(GTK_BOX(box), widget, pad->expand,
 					pad->fill, 0);
 	}
-	free(p);
 	gtk_container_add(GTK_CONTAINER(panel.window), box);
 	gtk_widget_show_all(panel.window);
 	panel.timeout = 0;
@@ -139,10 +124,11 @@ static gboolean _notify_on_timeout(gpointer data)
 static int _usage(void)
 {
 	/* FIXME also offer big icons and a specific monitor */
-	fputs("Usage: panel-notify [-sx][-t timeout] applet...\n"
+	fputs("Usage: panel-notify [-L | -S | -X][-t timeout] applet...\n"
 "       panel-notify -l\n"
-"  -s	Use icons the size of a small toolbar\n"
-"  -x	Use icons the size of menus\n"
+"  -L	Use icons the size of a large toolbar\n"
+"  -S	Use icons the size of a small toolbar\n"
+"  -X	Use icons the size of menus\n"
 "  -t	Time to wait before disappearing (0: unlimited)\n"
 "  -l	Lists the plug-ins available\n", stderr);
 	return 1;
@@ -154,18 +140,24 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	GtkIconSize iconsize = GTK_ICON_SIZE_LARGE_TOOLBAR;
+	GtkIconSize huge;
+	GtkIconSize iconsize;
 	int timeout = 3;
 	int o;
 	char * p;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "lst:x")) != -1)
+	huge = gtk_icon_size_register("panel-huge", 64, 64);
+	iconsize = huge;
+	while((o = getopt(argc, argv, "LlSt:Xx")) != -1)
 		switch(o)
 		{
+			case 'L':
+				iconsize = GTK_ICON_SIZE_LARGE_TOOLBAR;
+				break;
 			case 'l':
 				return _applet_list();
-			case 's':
+			case 'S':
 				iconsize = GTK_ICON_SIZE_SMALL_TOOLBAR;
 				break;
 			case 't':
@@ -173,6 +165,9 @@ int main(int argc, char * argv[])
 				if(optarg[0] == '\0' || *p != '\0'
 						|| timeout < 0)
 					return _usage();
+				break;
+			case 'X':
+				iconsize = huge;
 				break;
 			case 'x':
 				iconsize = GTK_ICON_SIZE_MENU;

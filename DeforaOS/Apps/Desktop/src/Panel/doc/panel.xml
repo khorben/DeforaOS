@@ -52,7 +52,7 @@
 			<group choice="opt">
 				<arg choice="plain"><option>-L</option></arg>
 				<arg choice="plain"><option>-S</option></arg>
-				<arg choice="plain"><option>-X</option></arg>
+				<arg choice="plain"><option>-x</option></arg>
 			</group>
 			<arg choice="opt"><option>-m</option>
 				<replaceable>monitor</replaceable></arg>
@@ -80,7 +80,7 @@
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-X</option></term>
+				<term><option>-x</option></term>
 				<listitem>
 					<para>Use icons the size of menus.</para>
 				</listitem>

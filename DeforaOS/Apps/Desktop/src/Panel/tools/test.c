@@ -74,7 +74,7 @@ static int _test(GtkIconSize iconsize, char * applets[])
 				gtk_main_quit), NULL);
 	gtk_window_set_title(GTK_WINDOW(panel.window), "Applet tester");
 	box = gtk_hbox_new(FALSE, 4);
-	_helper_init(&helper, &panel, iconsize);
+	_helper_init(&helper, &panel, PANEL_APPLET_TYPE_NORMAL, iconsize);
 	for(i = 0; applets[i] != NULL; i++)
 	{
 		len = sizeof(path) + strlen(applets[i]) + sizeof(ext);
