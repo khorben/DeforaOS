@@ -49,7 +49,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Desktop/about.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/accel.h \
-		$(PACKAGE)-$(VERSION)/include/Desktop/assistant.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/compat.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/help.h \
 		$(PACKAGE)-$(VERSION)/include/Desktop/menubar.h \
@@ -60,7 +59,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Desktop/project.conf \
 		$(PACKAGE)-$(VERSION)/src/about.c \
 		$(PACKAGE)-$(VERSION)/src/accel.c \
-		$(PACKAGE)-$(VERSION)/src/assistant.c \
 		$(PACKAGE)-$(VERSION)/src/compat.c \
 		$(PACKAGE)-$(VERSION)/src/help.c \
 		$(PACKAGE)-$(VERSION)/src/menubar.c \

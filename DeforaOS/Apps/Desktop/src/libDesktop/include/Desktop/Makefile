@@ -19,8 +19,6 @@ install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- accel.h $(DESTDIR)$(PREFIX)/include/Desktop/accel.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
-	$(INSTALL) -m 0644 -- assistant.h $(DESTDIR)$(PREFIX)/include/Desktop/assistant.h
-	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- compat.h $(DESTDIR)$(PREFIX)/include/Desktop/compat.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
 	$(INSTALL) -m 0644 -- help.h $(DESTDIR)$(PREFIX)/include/Desktop/help.h
@@ -36,7 +34,6 @@ install:
 uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/about.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/accel.h
-	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/assistant.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/compat.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/help.h
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/menubar.h

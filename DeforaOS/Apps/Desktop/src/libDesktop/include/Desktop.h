@@ -23,7 +23,6 @@
 
 # include "Desktop/about.h"
 # include "Desktop/accel.h"
-# include "Desktop/assistant.h"
 # include "Desktop/compat.h"
 # include "Desktop/help.h"
 # include "Desktop/menubar.h"
