@@ -39,6 +39,7 @@ class HTML
 			return ''; //XXX report error
 		}
 		xml_set_character_data_handler($parser, $filter);
+		HTML::$blacklist_level = 0;
 		HTML::$content = '';
 		//give it more chances to validate
 		$content = str_ireplace($from, $to, $content);
@@ -69,14 +70,25 @@ class HTML
 
 	static protected function _filterCharacterData($parser, $data)
 	{
+		//skip the contents of blacklisted tags
+		if(HTML::$blacklist_level > 0)
+			return;
 		HTML::$content .= htmlspecialchars($data, ENT_NOQUOTES);
 	}
 
 	static protected function _filterElementStart($parser, $name,
 			$attributes)
 	{
-		//XXX report errors
 		$tag = strtolower($name);
+		//skip the contents of blacklisted tags
+		if(HTML::$blacklist_level > 0)
+			return HTML::$blacklist_level++;
+		if(in_array($tag, HTML::$blacklist))
+		{
+			HTML::$blacklist_level = 1;
+			return;
+		}
+		//output whitelisted tags and attributes
 		if(!isset(HTML::$whitelist[$tag]))
 			return;
 		HTML::$content .= "<$tag";
@@ -90,6 +102,7 @@ class HTML
 				.htmlspecialchars($v, ENT_COMPAT | ENT_HTML401,
 						HTML::$charset).'"';
 		}
+		//close the <br> and <img> tags directly
 		if($tag == 'br' || $tag == 'img')
 			HTML::$content .= '/';
 		HTML::$content .= '>';
@@ -98,8 +111,19 @@ class HTML
 	static protected function _filterElementEnd($parser, $name)
 	{
 		$tag = strtolower($name);
-		if(!isset(HTML::$whitelist[$tag]) || $tag == 'br'
-				|| $tag == 'img')
+		//skip the contents of blacklisted tags
+		if(HTML::$blacklist_level > 1)
+			return HTML::$blacklist_level--;
+		if(HTML::$blacklist_level == 1 && in_array($tag,
+				HTML::$blacklist))
+		{
+			HTML::$blacklist_level = 0;
+			return;
+		}
+		if(!isset(HTML::$whitelist[$tag]))
+			return;
+		//the <br> and <img> tags were already closed
+		if($tag == 'br' || $tag == 'img')
 			return;
 		HTML::$content .= "</$tag>";
 	}
@@ -215,39 +239,41 @@ class HTML
 	static protected $charset = FALSE;
 	static protected $content;
 	static protected $valid;
+	static protected $blacklist = array('style', 'title');
+	static protected $blacklist_level = 0;
 	static protected $whitelist = array(
-			'a' => array('href', 'name', 'rel', 'title'),
-			'acronym' => array('class'),
-			'b' => array('class'),
-			'big' => array('class'),
-			'br' => array(),
-			'center' => array(),
-			'div' => array('class'),
-			'h1' => array('class'),
-			'h2' => array('class'),
-			'h3' => array('class'),
-			'h4' => array('class'),
-			'h5' => array('class'),
-			'h6' => array('class'),
-			'hr' => array('class'),
-			'i' => array('class'),
-			'img' => array('alt', 'src'),
-			'li' => array('class'),
-			'ol' => array('class'),
-			'p' => array('class'),
-			'pre' => array('class'),
-			'small' => array('class'),
-			'span' => array('class'),
-			'sub' => array('class'),
-			'sup' => array('class'),
-			'table' => array('class'),
-			'tbody' => array('class'),
-			'td' => array('class', 'colspan', 'rowspan'),
-			'th' => array('class', 'colspan', 'rowspan'),
-			'tr' => array('class'),
-			'tt' => array('class'),
-			'u' => array('class'),
-			'ul' => array('class'));
+		'a' => array('href', 'name', 'rel', 'title'),
+		'acronym' => array('class'),
+		'b' => array('class'),
+		'big' => array('class'),
+		'br' => array(),
+		'center' => array(),
+		'div' => array('class'),
+		'h1' => array('class'),
+		'h2' => array('class'),
+		'h3' => array('class'),
+		'h4' => array('class'),
+		'h5' => array('class'),
+		'h6' => array('class'),
+		'hr' => array('class'),
+		'i' => array('class'),
+		'img' => array('alt', 'src', 'title'),
+		'li' => array('class'),
+		'ol' => array('class'),
+		'p' => array('class'),
+		'pre' => array('class'),
+		'small' => array('class'),
+		'span' => array('class'),
+		'sub' => array('class'),
+		'sup' => array('class'),
+		'table' => array('class'),
+		'tbody' => array('class'),
+		'td' => array('class', 'colspan', 'rowspan'),
+		'th' => array('class', 'colspan', 'rowspan'),
+		'tr' => array('class'),
+		'tt' => array('class'),
+		'u' => array('class'),
+		'ul' => array('class'));
 
 
 	//methods
