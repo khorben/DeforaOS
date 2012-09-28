@@ -20,7 +20,9 @@
   <chapter>
     <title>&title;</title>
     <xi:include href="xml/appclient.xml"/>
+    <xi:include href="xml/appmessage.xml"/>
     <xi:include href="xml/appserver.xml"/>
+    <xi:include href="xml/apptransport.xml"/>
 
   </chapter>
   <index id="api-index-full">
