@@ -203,6 +203,10 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/gtk-remove.png');
 }
 
+.stock16.reply {
+	background-image:	url('gnome-icon-theme/16x16/actions/mail-reply-sender.png');
+}
+
 .stock16.reset {
 	background-image:	url('gnome-icon-theme/16x16/actions/revert.png');
 }
@@ -219,12 +223,20 @@
 	background-image:	url('gnome-icon-theme/16x16/actions/document-send.png');
 }
 
+.stock16.subscribe {
+	background-image:	url('gnome-icon-theme/16x16/actions/gtk-add.png');
+}
+
 .stock16.top {
 	background-image:	url('gnome-icon-theme/16x16/actions/top.png');
 }
 
 .stock16.translate {
 	background-image:	url('gnome-icon-theme/16x16/apps/config-language.png');
+}
+
+.stock16.unsubscribe {
+	background-image:	url('gnome-icon-theme/16x16/actions/gtk-remove.png');
 }
 
 .stock16.updir {
