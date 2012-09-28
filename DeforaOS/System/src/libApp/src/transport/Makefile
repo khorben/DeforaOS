@@ -39,7 +39,7 @@ udp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 udp.so: $(udp_OBJS)
 	$(CCSHARED) -o udp.so $(udp_OBJS) $(udp_LDFLAGS)
 
-openssl.o: openssl.c
+openssl.o: openssl.c ../../config.h
 	$(CC) $(openssl_CFLAGS) -c openssl.c
 
 tcp.o: tcp.c
