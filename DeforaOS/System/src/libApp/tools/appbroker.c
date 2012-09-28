@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libApp */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <System.h>
-#include "System/App.h"
+#include "App.h"
 
 #define APPBROKER_PROGNAME "AppBroker"
 
