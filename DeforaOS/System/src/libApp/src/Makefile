@@ -4,11 +4,11 @@ DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	?= cc
 CPPFLAGSF= -I ../include
-CPPFLAGS= -I $(PREFIX)/include -D WITH_SSL
+CPPFLAGS= -I $(PREFIX)/include
 CFLAGSF	= -W -fPIC `pkg-config --cflags libSystem`
 CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config --libs libSystem`
-LDFLAGS	= -lssl
+LDFLAGS	= 
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
@@ -20,9 +20,9 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-libApp_OBJS = appclient.o appinterface.o appserver.o common.o
+libApp_OBJS = appclient.o appinterface.o appmessage.o appserver.o apptransport.o common.o
 libApp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs openssl` -lssl  
+libApp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)  
 
 libApp.a: $(libApp_OBJS)
 	$(AR) -rc libApp.a $(libApp_OBJS)
@@ -39,8 +39,14 @@ appclient.o: appclient.c appinterface.h ../include/App/appclient.h common.h
 appinterface.o: appinterface.c ../include/App/appserver.h ../config.h
 	$(CC) $(libApp_CFLAGS) -c appinterface.c
 
+appmessage.o: appmessage.c
+	$(CC) $(libApp_CFLAGS) -c appmessage.c
+
 appserver.o: appserver.c appinterface.h ../include/App/appserver.h ../config.h
 	$(CC) $(libApp_CFLAGS) -c appserver.c
+
+apptransport.o: apptransport.c apptransport.h ../include/App/apptransport.h ../config.h
+	$(CC) $(libApp_CFLAGS) -c apptransport.c
 
 common.o: common.c
 	$(CC) $(libApp_CFLAGS) -c common.c

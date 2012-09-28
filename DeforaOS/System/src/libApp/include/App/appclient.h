@@ -15,8 +15,8 @@
 
 
 
-#ifndef LIBAPP_APPCLIENT_H
-# define LIBAPP_APPCLIENT_H
+#ifndef LIBAPP_APP_APPCLIENT_H
+# define LIBAPP_APP_APPCLIENT_H
 
 # include <stdint.h>
 # include <System/event.h>
@@ -36,4 +36,4 @@ void appclient_delete(AppClient * appclient);
 int appclient_call(AppClient * appclient, int32_t * ret, char const * function,
 		...);
 
-#endif /* !LIBAPP_APPCLIENT_H */
+#endif /* !LIBAPP_APP_APPCLIENT_H */

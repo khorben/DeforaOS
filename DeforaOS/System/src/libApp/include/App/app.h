@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libApp */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,12 @@
 
 
 
-#ifndef LIBAPP_APP_H
-# define LIBAPP_APP_H
+#ifndef LIBAPP_APP_APP_H
+# define LIBAPP_APP_APP_H
 
 
-# include "App/app.h"
-# include "App/appclient.h"
-# include "App/appserver.h"
-# include "App/appmessage.h"
-# include "App/apptransport.h"
+/* App */
+/* types */
+typedef struct _AppMessage AppMessage;
 
-#endif /* !LIBAPP_APP_H */
+#endif /* !LIBAPP_APP_APP_H */

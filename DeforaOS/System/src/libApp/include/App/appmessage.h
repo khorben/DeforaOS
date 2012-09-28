@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libApp */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,31 @@
 
 
 
-#ifndef LIBAPP_APP_APPSERVER_H
-# define LIBAPP_APP_APPSERVER_H
+#ifndef LIBAPP_APP_APPMESSAGE_H
+# define LIBAPP_APP_APPMESSAGE_H
 
-# include <System/event.h>
+# include <System/buffer.h>
+# include "app.h"
 
 
-/* AppServer */
-/* types */
-typedef struct _AppServer AppServer;
-typedef enum _AppServerOptions
+/* AppMessage */
+/* type */
+typedef enum _AppMessageType
 {
-	ASO_LOCAL = 1,
-	ASO_REMOTE = 2
-} AppServerOptions;
-
-
-/* constants */
-# define APPSERVER_MAX_ARGUMENTS	4
+	AMT_CALL = 0
+} AppMessageType;
 
 
 /* functions */
-AppServer * appserver_new(char const * app, int options);
-AppServer * appserver_new_event(char const * app, int options, Event * event);
-void appserver_delete(AppServer * appserver);
+AppMessage * appmessage_new_call(char const * method, ...);
+AppMessage * appmessage_new_deserialize(Buffer * buffer);
+void appmessage_delete(AppMessage * appmessage);
 
 /* accessors */
-void * appserver_get_client_id(AppServer * appserver);
+String const * appmessage_get_method(AppMessage * message);
+AppMessageType appmessage_get_type(AppMessage * message);
 
 /* useful */
-int appserver_loop(AppServer * appserver);
+int appmessage_serialize(AppMessage * message, Buffer * buffer);
 
-#endif /* !LIBAPP_APP_APPSERVER_H */
+#endif /* !LIBAPP_APP_APPMESSAGE_H */

@@ -1,6 +1,6 @@
 PACKAGE	= libApp
 VERSION	= 0.1.5
-SUBDIRS	= data doc include src tools
+SUBDIRS	= data doc include src src/transport tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -40,12 +40,19 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/App/project.conf \
 		$(PACKAGE)-$(VERSION)/src/appclient.c \
 		$(PACKAGE)-$(VERSION)/src/appinterface.c \
+		$(PACKAGE)-$(VERSION)/src/appmessage.c \
 		$(PACKAGE)-$(VERSION)/src/appserver.c \
+		$(PACKAGE)-$(VERSION)/src/apptransport.c \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/appinterface.h \
+		$(PACKAGE)-$(VERSION)/src/apptransport.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/transport/openssl.c \
+		$(PACKAGE)-$(VERSION)/src/transport/tcp.c \
+		$(PACKAGE)-$(VERSION)/src/transport/udp.c \
+		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/appbroker.c \
 		$(PACKAGE)-$(VERSION)/tools/appclient.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
