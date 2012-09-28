@@ -188,13 +188,16 @@ class CVSScmProject
 					'abcdefghijklmnopqrstuvwxyz'
 					.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 					.'0123456789'));
-			$user = User::lookup($engine, $username);
-			$r = new Request('project', 'list', $user->getUserId(),
-				$username);
-			$link = new PageElement('link', array('request' => $r,
-					'stock' => 'user',
-					'text' => $username));
-			$row->setProperty('username', $link);
+			if(($user = User::lookup($engine, $username)) !== FALSE)
+			{
+				$r = new Request('project', 'list',
+					$user->getUserId(), $username);
+				$username = new PageElement('link', array(
+						'request' => $r,
+						'stock' => 'user',
+						'text' => $username));
+			}
+			$row->setProperty('username', $username);
 			for(; strncmp($rcs[$i + 2], 'branches: ', 10) == 0;
 					$i++);
 			//message
