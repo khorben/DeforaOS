@@ -1193,8 +1193,8 @@ Thank you for registering!")));
 	}
 
 
-	//UserModule::userValidate
-	protected function userValidate($engine, $request)
+	//UserModule::callValidate
+	protected function callValidate($engine, $request)
 	{
 		$cred = $engine->getCredentials();
 		$error = TRUE;
