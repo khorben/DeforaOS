@@ -34,8 +34,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/App.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/App/app.h \
 		$(PACKAGE)-$(VERSION)/include/App/appclient.h \
+		$(PACKAGE)-$(VERSION)/include/App/appmessage.h \
 		$(PACKAGE)-$(VERSION)/include/App/appserver.h \
+		$(PACKAGE)-$(VERSION)/include/App/apptransport.h \
 		$(PACKAGE)-$(VERSION)/include/App/Makefile \
 		$(PACKAGE)-$(VERSION)/include/App/project.conf \
 		$(PACKAGE)-$(VERSION)/src/appclient.c \
