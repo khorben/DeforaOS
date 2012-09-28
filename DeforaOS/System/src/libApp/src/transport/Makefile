@@ -55,7 +55,16 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/App/transport
+	$(INSTALL) -m 0644 -- openssl.so $(DESTDIR)$(LIBDIR)/App/transport/openssl.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/App/transport
+	$(INSTALL) -m 0644 -- tcp.so $(DESTDIR)$(LIBDIR)/App/transport/tcp.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/App/transport
+	$(INSTALL) -m 0644 -- udp.so $(DESTDIR)$(LIBDIR)/App/transport/udp.so
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(LIBDIR)/App/transport/openssl.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/App/transport/tcp.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/App/transport/udp.so
 
 .PHONY: all clean distclean install uninstall
