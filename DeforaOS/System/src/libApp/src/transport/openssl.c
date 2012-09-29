@@ -55,7 +55,7 @@ static void _openssl_destroy(OpenSSL * openssl);
 
 /* private */
 /* prototypes */
-static void _openssl_error(void);
+static int _openssl_error(int code);
 
 
 /* public */
@@ -114,10 +114,7 @@ static int _init_client(OpenSSL * openssl, char const * name)
 			|| SSL_CTX_set_cipher_list(openssl->ssl_ctx,
 				SSL_DEFAULT_CIPHER_LIST) != 1
 			|| (openssl->ssl = SSL_new(openssl->ssl_ctx)) == NULL)
-	{
-		_openssl_error();
-		return -1;
-	}
+		return _openssl_error(1);
 	/* FIXME implement the rest */
 	return 0;
 }
@@ -137,9 +134,8 @@ static int _init_server(OpenSSL * openssl, char const * name)
 			|| SSL_CTX_use_PrivateKey_file(openssl->ssl_ctx, crt,
 				SSL_FILETYPE_PEM) == 0)
 	{
-		_openssl_error();
 		string_delete(crt);
-		return -1;
+		return -_openssl_error(1);
 	}
 	string_delete(crt);
 	/* FIXME implement the rest */
@@ -162,7 +158,8 @@ static void _openssl_destroy(OpenSSL * openssl)
 /* private */
 /* functions */
 /* openssl_error */
-static void _openssl_error(void)
+static int _openssl_error(int code)
 {
-	error_set("%s", ERR_error_string(ERR_get_error(), NULL));
+	return error_set_code(code, "%s", ERR_error_string(ERR_get_error(),
+				NULL));
 }
