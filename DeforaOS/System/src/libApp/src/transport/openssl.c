@@ -15,7 +15,11 @@
 
 
 
+#include <sys/socket.h>
 #include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <netinet/in.h>
 #include <System.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -55,7 +59,11 @@ static void _openssl_destroy(OpenSSL * openssl);
 
 /* private */
 /* prototypes */
-static int _openssl_error(int code);
+static int _openssl_error(char const * message, int code);
+static int _openssl_error_ssl(int code);
+
+/* callbacks */
+static int _openssl_callback_accept(int fd, OpenSSL * openssl);
 
 
 /* public */
@@ -114,7 +122,9 @@ static int _init_client(OpenSSL * openssl, char const * name)
 			|| SSL_CTX_set_cipher_list(openssl->ssl_ctx,
 				SSL_DEFAULT_CIPHER_LIST) != 1
 			|| (openssl->ssl = SSL_new(openssl->ssl_ctx)) == NULL)
-		return _openssl_error(1);
+		return -_openssl_error_ssl(1);
+	if((openssl->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		return -_openssl_error("socket", 1);
 	/* FIXME implement the rest */
 	return 0;
 }
@@ -122,6 +132,7 @@ static int _init_client(OpenSSL * openssl, char const * name)
 static int _init_server(OpenSSL * openssl, char const * name)
 {
 	String * crt;
+	struct sockaddr_in sa;
 
 	if((crt = string_new_append(SYSCONFDIR, "/AppServer/", name, ".crt"))
 			== NULL)
@@ -135,10 +146,20 @@ static int _init_server(OpenSSL * openssl, char const * name)
 				SSL_FILETYPE_PEM) == 0)
 	{
 		string_delete(crt);
-		return -_openssl_error(1);
+		return -_openssl_error_ssl(1);
 	}
 	string_delete(crt);
-	/* FIXME implement the rest */
+	if((openssl->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		return -_openssl_error("socket", 1);
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(4242); /* XXX hard-coded */
+	sa.sin_addr.s_addr = htonl(INADDR_ANY);
+	if(bind(openssl->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+		return -_openssl_error("bind", 1);
+	if(listen(openssl->fd, 5) != 0)
+		return -_openssl_error("listen", 1);
+	event_register_io_read(openssl->helper->event, openssl->fd,
+			(EventIOFunc)_openssl_callback_accept, openssl);
 	return 0;
 }
 
@@ -158,8 +179,31 @@ static void _openssl_destroy(OpenSSL * openssl)
 /* private */
 /* functions */
 /* openssl_error */
-static int _openssl_error(int code)
+static int _openssl_error(char const * message, int code)
+{
+	return error_set_code(code, "%s%s%s", (message != NULL) ? message : "",
+			(message != NULL) ? ": " : "", strerror(errno));
+}
+
+
+/* openssl_error_ssl */
+static int _openssl_error_ssl(int code)
 {
 	return error_set_code(code, "%s", ERR_error_string(ERR_get_error(),
 				NULL));
+}
+
+
+/* callbacks */
+static int _openssl_callback_accept(int fd, OpenSSL * openssl)
+{
+	struct sockaddr_in sa;
+	socklen_t sa_size = sizeof(sa);
+	int newfd;
+
+	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) < 0)
+		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
+	/* FIXME really implement */
+	close(newfd);
+	return 0;
 }
