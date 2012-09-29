@@ -73,6 +73,7 @@ AppTransportPluginDefinition definition =
 /* functions */
 /* plug-in */
 /* openssl_init */
+static void _init_client(OpenSSL * openssl, char const * name);
 static void _init_server(OpenSSL * openssl, char const * name);
 
 static OpenSSL * _openssl_init(AppTransportPluginHelper * helper,
@@ -87,6 +88,9 @@ static OpenSSL * _openssl_init(AppTransportPluginHelper * helper,
 	openssl->ssl_ctx = NULL;
 	switch(mode)
 	{
+		case ATM_CLIENT:
+			_init_client(openssl, name);
+			break;
 		case ATM_SERVER:
 			_init_server(openssl, name);
 			break;
@@ -99,6 +103,21 @@ static OpenSSL * _openssl_init(AppTransportPluginHelper * helper,
 		return NULL;
 	}
 	return openssl;
+}
+
+static void _init_client(OpenSSL * openssl, char const * name)
+{
+	if((openssl->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
+			|| SSL_CTX_set_cipher_list(openssl->ssl_ctx,
+				SSL_DEFAULT_CIPHER_LIST) != 1)
+	{
+		_openssl_error();
+		if(openssl->ssl_ctx != NULL)
+			SSL_CTX_free(openssl->ssl_ctx);
+		openssl->ssl_ctx = NULL;
+		return;
+	}
+	/* FIXME implement the rest */
 }
 
 static void _init_server(OpenSSL * openssl, char const * name)
@@ -121,8 +140,10 @@ static void _init_server(OpenSSL * openssl, char const * name)
 		if(openssl->ssl_ctx != NULL)
 			SSL_CTX_free(openssl->ssl_ctx);
 		openssl->ssl_ctx = NULL;
+		return;
 	}
 	string_delete(crt);
+	/* FIXME implement the rest */
 }
 
 /* openssl_destroy */
