@@ -40,6 +40,8 @@ struct _AppTransportPlugin
 	AppTransportPluginHelper * helper;
 	int fd;
 	SSL_CTX * ssl_ctx;
+	/* client */
+	SSL * ssl;
 };
 
 
@@ -73,31 +75,32 @@ AppTransportPluginDefinition definition =
 /* functions */
 /* plug-in */
 /* openssl_init */
-static void _init_client(OpenSSL * openssl, char const * name);
-static void _init_server(OpenSSL * openssl, char const * name);
+static int _init_client(OpenSSL * openssl, char const * name);
+static int _init_server(OpenSSL * openssl, char const * name);
 
 static OpenSSL * _openssl_init(AppTransportPluginHelper * helper,
 		AppTransportMode mode, char const * name)
 {
 	OpenSSL * openssl;
+	int res = -1;
 
 	if((openssl = object_new(sizeof(*openssl))) == NULL)
 		return NULL;
 	openssl->helper = helper;
 	openssl->fd = -1;
 	openssl->ssl_ctx = NULL;
+	openssl->ssl = NULL;
 	switch(mode)
 	{
 		case ATM_CLIENT:
-			_init_client(openssl, name);
+			res = _init_client(openssl, name);
 			break;
 		case ATM_SERVER:
-			_init_server(openssl, name);
+			res = _init_server(openssl, name);
 			break;
-			/* FIXME implement the rest */
 	}
 	/* check for errors */
-	if(openssl->ssl_ctx == NULL)
+	if(res != 0)
 	{
 		_openssl_destroy(openssl);
 		return NULL;
@@ -105,28 +108,27 @@ static OpenSSL * _openssl_init(AppTransportPluginHelper * helper,
 	return openssl;
 }
 
-static void _init_client(OpenSSL * openssl, char const * name)
+static int _init_client(OpenSSL * openssl, char const * name)
 {
 	if((openssl->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
 			|| SSL_CTX_set_cipher_list(openssl->ssl_ctx,
-				SSL_DEFAULT_CIPHER_LIST) != 1)
+				SSL_DEFAULT_CIPHER_LIST) != 1
+			|| (openssl->ssl = SSL_new(openssl->ssl_ctx)) == NULL)
 	{
 		_openssl_error();
-		if(openssl->ssl_ctx != NULL)
-			SSL_CTX_free(openssl->ssl_ctx);
-		openssl->ssl_ctx = NULL;
-		return;
+		return -1;
 	}
 	/* FIXME implement the rest */
+	return 0;
 }
 
-static void _init_server(OpenSSL * openssl, char const * name)
+static int _init_server(OpenSSL * openssl, char const * name)
 {
 	String * crt;
 
 	if((crt = string_new_append(SYSCONFDIR, "/AppServer/", name, ".crt"))
 			== NULL)
-		return;
+		return -1;
 	if((openssl->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
 			|| SSL_CTX_set_cipher_list(openssl->ssl_ctx,
 				SSL_DEFAULT_CIPHER_LIST) != 1
@@ -137,18 +139,18 @@ static void _init_server(OpenSSL * openssl, char const * name)
 	{
 		_openssl_error();
 		string_delete(crt);
-		if(openssl->ssl_ctx != NULL)
-			SSL_CTX_free(openssl->ssl_ctx);
-		openssl->ssl_ctx = NULL;
-		return;
+		return -1;
 	}
 	string_delete(crt);
 	/* FIXME implement the rest */
+	return 0;
 }
 
 /* openssl_destroy */
 static void _openssl_destroy(OpenSSL * openssl)
 {
+	if(openssl->ssl != NULL)
+		SSL_free(openssl->ssl);
 	if(openssl->fd != -1)
 		close(openssl->fd);
 	if(openssl->ssl_ctx != NULL)
