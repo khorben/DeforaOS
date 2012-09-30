@@ -974,8 +974,8 @@ Thank you for registering!")));
 		if(is_string($error))
 			$page->append('dialog', array('type' => 'error',
 				'text' => $error));
-		$r = new Request($this->name, 'reset', FALSE, FALSE,
-			array('id' => $uid, 'token' => $token));
+		$r = new Request($this->name, 'reset', $uid, FALSE,
+			array('token' => $token));
 		$form = $page->append('form', array('request' => $r));
 		$form->append('entry', array('text' => _('Password: '),
 			'name' => 'password', 'hidden' => TRUE));
