@@ -977,11 +977,10 @@ Thank you for registering!")));
 		$r = new Request($this->name, 'reset', FALSE, FALSE,
 			array('id' => $uid, 'token' => $token));
 		$form = $page->append('form', array('request' => $r));
-		$token = $request->getParameter('token');
 		$form->append('entry', array('text' => _('Password: '),
-			'name' => 'password'));
+			'name' => 'password', 'hidden' => TRUE));
 		$form->append('entry', array('text' => _('Repeat password: '),
-			'name' => 'password2'));
+			'name' => 'password2', 'hidden' => TRUE));
 		$form->append('button', array('stock' => 'cancel',
 			'text' => _('Cancel'),
 			'request' => new Request($this->name)));
