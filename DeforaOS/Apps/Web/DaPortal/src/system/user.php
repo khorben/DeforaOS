@@ -501,7 +501,7 @@ class User
 	private $email = FALSE;
 	private $fullname = FALSE;
 
-	private $timestamp_format = '%Y-%m-%d %H:%M:%S';
+	static private $timestamp_format = '%Y-%m-%d %H:%M:%S';
 
 	//queries
 	private $query_authenticate = "SELECT user_id, group_id, username,
