@@ -1022,7 +1022,7 @@ Thank you for registering!")));
 			'request' => new Request()));
 		$page->append('link', array('stock' => 'login',
 			'text' => _('Proceed to login page'),
-			'request' => new Request($this->name)));
+			'request' => new Request($this->name, 'login')));
 		return $page;
 	}
 
