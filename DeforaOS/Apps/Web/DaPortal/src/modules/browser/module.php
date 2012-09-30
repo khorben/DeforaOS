@@ -245,7 +245,13 @@ class BrowserModule extends Module
 				'size' => _('Size'), 'date' => _('Date'),
 				'mode' => _('Permissions'));
 		$view = $page->append('treeview', array('columns' => $columns));
+		//obtain (and sort) all entries
+		$entries = array();
 		while(($de = readdir($dir)) !== FALSE)
+			$entries[] = $de;
+		closedir($dir);
+		asort($entries);
+		foreach($entries as $de)
 		{
 			//skip "." and ".."
 			if($de == '.' || $de == '..')
