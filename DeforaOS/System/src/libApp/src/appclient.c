@@ -37,7 +37,7 @@
 # include <openssl/err.h>
 #endif
 #include <System.h>
-#include "System/App/appclient.h"
+#include "App/appclient.h"
 #include "appinterface.h"
 #include "common.h"
 

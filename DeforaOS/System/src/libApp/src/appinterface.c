@@ -32,7 +32,7 @@
 #endif
 #include <errno.h>
 #include <System.h>
-#include "System/App/appserver.h"
+#include "App/appserver.h"
 #include "appinterface.h"
 #include "../config.h"
 
