@@ -203,7 +203,7 @@ class HttpEngine extends Engine
 					!== FALSE)
 				foreach($args as $key => $value)
 					$url .= '&'.urlencode($key)
-					.'='.urlencode($value);
+						.'='.urlencode($value);
 		}
 		return $url;
 	}
@@ -213,8 +213,15 @@ class HttpEngine extends Engine
 	//HttpEngine::render
 	public function render($page)
 	{
+		global $config;
+		//XXX escape the headers
 		$type = $this->getType();
-		header('Content-Type: '.$type); //XXX escape
+		$header = 'Content-Type: '.$type;
+		$charset = $config->getVariable('defaults', 'charset');
+
+		if($charset !== FALSE)
+			$header .= '; charset='.$charset;
+		header($header);
 		if($page instanceof PageElement)
 			return $this->renderPage($page, $type);
 		else if(is_resource($page)
@@ -228,12 +235,6 @@ class HttpEngine extends Engine
 
 	private function renderPage($page, $type)
 	{
-		global $config;
-
-		if(($charset = $config->getVariable('defaults', 'charset'))
-				!== FALSE)
-			//XXX escape
-			header('Content-Encoding: '.$charset);
 		if($page !== FALSE)
 		{
 			if(($location = $page->getProperty('location'))
