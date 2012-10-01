@@ -186,6 +186,28 @@ class User
 
 	//static
 	//useful
+	//User::disable
+	static public function disable($engine, $uid)
+	{
+		$db = $engine->getDatabase();
+
+		return ($db->query($engine, User::$query_disable,
+				array('user_id' => $uid)) !== FALSE)
+			? TRUE : FALSE;
+	}
+
+
+	//User::enable
+	static public function enable($engine, $uid)
+	{
+		$db = $engine->getDatabase();
+
+		return ($db->query($engine, User::$query_enable,
+				array('user_id' => $uid)) !== FALSE)
+			? TRUE : FALSE;
+	}
+
+
 	//User::insert
 	static public function insert($engine, $username, $fullname, $password,
 		$email, $enabled = FALSE, $admin = FALSE, &$error = FALSE)
@@ -543,6 +565,12 @@ class User
 		SET enabled=:enabled
 		WHERE user_id=:user_id";
 	//static
+	static private $query_disable = "UPDATE daportal_user
+		SET enabled='0'
+		WHERE user_id=:user_id";
+	static private $query_enable = "UPDATE daportal_user
+		SET enabled='1'
+		WHERE user_id=:user_id";
 	static private $query_insert = 'INSERT INTO daportal_user
 		(username, fullname, password, email, enabled, admin)
 		VALUES (:username, :fullname, :password, :email, :enabled,

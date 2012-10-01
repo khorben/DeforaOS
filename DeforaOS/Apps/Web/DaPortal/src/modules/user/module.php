@@ -46,6 +46,7 @@ class UserModule extends Module
 			case 'actions':
 				return $this->$action($engine, $request);
 			case 'admin':
+			case 'close':
 			case 'default':
 			case 'display':
 			case 'login':
@@ -71,6 +72,18 @@ class UserModule extends Module
 
 	//methods
 	//accessors
+	//UserModule::canClose
+	protected function canClose($engine)
+	{
+		global $config;
+		$cred = $engine->getCredentials();
+
+		if($cred->isAdmin())
+			return FALSE;
+		return $config->getVariable('module::user', 'close') == 1;
+	}
+
+
 	//UserModule::canRegister
 	protected function canRegister()
 	{
@@ -104,6 +117,27 @@ class UserModule extends Module
 
 
 	//forms
+	//UserModule::formClose
+	protected function formClose($engine)
+	{
+		$r = new Request($this->name, 'close');
+		$form = new PageElement('form', array('request' => $r));
+		$message = _('Do you really want to close your account?');
+
+		//FIXME make it a warning dialog
+		$vbox = $form->append('vbox');
+		$vbox->append('label', array('text' => $message));
+		$form->append('button', array('stock' => 'cancel',
+				'text' => _('Cancel'),
+				'request' => new Request($this->name,
+					'profile')));
+		$form->append('button', array('stock' => 'close',
+				'type' => 'submit', 'value' => 'submit',
+				'text' => _('Close')));
+		return $form;
+	}
+
+
 	//UserModule::formLogin
 	protected function formLogin($engine, $username, $cancel = TRUE)
 	{
@@ -465,6 +499,80 @@ class UserModule extends Module
 	}
 
 
+	//UserModule::callClose
+	protected function callClose($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$error = TRUE;
+
+		if($cred->getUserId() == 0)
+			//must be logged in
+			return $this->callDefault($engine, $request);
+		if(!$this->canClose($engine))
+		{
+			$error = _('Closing accounts is not allowed');
+			return new PageElement('dialog', array(
+					'type' => 'error', 'text' => $error));
+		}
+		//process the request
+		if(($error = $this->_closeProcess($engine, $request)) === FALSE)
+			//closing was successful
+			return $this->_closeSuccess($engine, $request);
+		return $this->_closeForm($engine, $request, $error);
+	}
+
+	private function _closeForm($engine, $request, $error)
+	{
+		$title = _('Close your account');
+		$page = new Page(array('title' => $title));
+
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		if(is_string($error))
+			$page->append('dialog', array('type' => 'error',
+				'text' => $error));
+		$form = $this->formClose($engine);
+		$page->append($form);
+		return $page;
+	}
+
+	private function _closeProcess($engine, $request)
+	{
+		$cred = $engine->getCredentials();
+		$uid = $cred->getUserId();
+		$username = $cred->getUsername();
+
+		//verify the request
+		if($request === FALSE
+				|| $request->getParameter('submit') === FALSE)
+			return TRUE;
+		if($request->isIdempotent() !== FALSE)
+			return _('The request expired or is invalid');
+		//disable the user
+		if(User::disable($engine, $uid, $username) !== TRUE)
+			return _('The account could not be closed');
+		//log the user out
+		$engine->setCredentials(new AuthCredentials);
+		//no error
+		return FALSE;
+	}
+
+	protected function _closeSuccess($engine, $request)
+	{
+		$title = _('Account closed successfully');
+		$text = _('Your account was closed successfully.');
+
+		$page = new Page(array('title' => $title));
+		$page->append('title', array('stock' => $this->name,
+				'text' => $title));
+		$page->append('label', array('text' => $text));
+		$page->append('link', array('stock' => 'back',
+				'text' => _('Back to the site'),
+				'request' => new Request()));
+		return $page;
+	}
+
+
 	//UserModule::callDefault
 	protected function callDefault($engine, $request = FALSE)
 	{
@@ -799,6 +907,13 @@ class UserModule extends Module
 			$vbox->append('link', array('stock' => 'back',
 					'request' => $r,
 					'text' => _('Back to my account')));
+			if($this->canClose($engine))
+			{
+				$r = new Request($this->name, 'close');
+				$vbox->append('link', array('stock' => 'close',
+						'request' => $r,
+						'text' => _('Close my account')));
+			}
 		}
 		return $page;
 	}
@@ -868,8 +983,8 @@ class UserModule extends Module
 				'text' => _("You should receive an e-mail shortly with your password, along with a confirmation key.\n
 Thank you for registering!")));
 		$page->append('link', array('stock' => 'back',
-			'text' => _('Back to the site'),
-			'request' => new Request()));
+				'text' => _('Back to the site'),
+				'request' => new Request()));
 		return $page;
 	}
 
@@ -903,6 +1018,7 @@ Thank you for registering!")));
 	{
 		$title = _('Password reset');
 		$page = new Page(array('title' => $title));
+
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
 		if(is_string($error))
@@ -942,8 +1058,8 @@ Thank you for registering!")));
 		$page->append('dialog', array('type' => 'info',
 				'text' => _("You should receive an e-mail shortly, with a link allowing you to reset your password.\n")));
 		$page->append('link', array('stock' => 'back',
-			'text' => _('Back to the site'),
-			'request' => new Request()));
+				'text' => _('Back to the site'),
+				'request' => new Request()));
 		return $page;
 	}
 
@@ -1018,11 +1134,12 @@ Thank you for registering!")));
 		$page->append('dialog', array('type' => 'info',
 				'text' => _("Your password was reset successfully.\n")));
 		$page->append('link', array('stock' => 'back',
-			'text' => _('Back to the site'),
-			'request' => new Request()));
+				'text' => _('Back to the site'),
+				'request' => new Request()));
 		$page->append('link', array('stock' => 'login',
-			'text' => _('Proceed to login page'),
-			'request' => new Request($this->name, 'login')));
+				'text' => _('Proceed to login page'),
+				'request' => new Request($this->name,
+					'login')));
 		return $page;
 	}
 
@@ -1078,6 +1195,7 @@ Thank you for registering!")));
 				$enabled, $admin, $error);
 		if($user === FALSE)
 			return $error;
+		//no error
 		return FALSE;
 	}
 
