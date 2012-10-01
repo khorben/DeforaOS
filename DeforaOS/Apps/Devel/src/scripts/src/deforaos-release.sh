@@ -25,6 +25,7 @@ CVS="cvs"
 MAKE="make"
 RM="echo rm -f"
 TAR="tar"
+TR="tr"
 
 
 #functions
@@ -80,6 +81,25 @@ deforaos_release()
 		_error "Could not validate the archive"
 		return $?
 	fi
+
+	#tagging the release
+	tag=$(echo $version | $TR . -)
+	tag="${PACKAGE}_$tag"
+	_info "Tagging the sources as $tag..."
+	$CVS tag "$tag"
+	if [ $res -ne 0 ]; then
+		_error "Could not tag the sources"
+		return $?
+	fi
+
+	#all tests passed
+	_info "$archive is ready for release"
+	_info "The following steps are:"
+	_info " * upload to https://www.defora.org/os/project"
+	_info " * post on https://freecode.com/users/khorben"
+	_info " * publish a news on https://www.defora.org/os/news/submit"
+	_info " * tweet (possibly via freecode)"
+	_info " * package where appropriate (see deforaos-package.sh)"
 }
 
 
