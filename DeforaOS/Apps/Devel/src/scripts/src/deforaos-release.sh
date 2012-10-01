@@ -19,12 +19,14 @@
 
 
 #environment
+DEBUG=0
 DEVNULL="/dev/null"
+VERBOSE=0
 #executables
-CVS="cvs"
-MAKE="make"
-RM="echo rm -f"
-TAR="tar"
+CVS="_debug cvs"
+MAKE="_debug make"
+RM="_debug rm -f"
+TAR="_debug tar"
 TR="tr"
 
 
@@ -49,7 +51,7 @@ deforaos_release()
 	fi
 
 	_info "Obtaining latest version..."
-	$CVS up -A > "$DEVNULL"
+	$CVS up -A
 	if [ $? -ne 0 ]; then
 		_error "Could not update the sources"
 		return $?
@@ -57,14 +59,14 @@ deforaos_release()
 
 	_info "Checking for differences..."
 	#XXX this method may be obsoleted in a future version of CVS
-	$CVS diff > "$DEVNULL"
+	$CVS diff
 	if [ $? -ne 0 ]; then
 		_error "The sources were modified"
 		return $?
 	fi
 
 	_info "Creating the archive..."
-	$MAKE dist > $DEVNULL
+	$MAKE dist
 	if [ $? -ne 0 ]; then
 		_error "Could not create the archive"
 		return $?
@@ -73,7 +75,7 @@ deforaos_release()
 	#check the archive
 	_info "Checking the archive..."
 	archive="$PACKAGE-$VERSION.tar.gz"
-	$TAR -xzf "$archive" > $DEVNULL &&
+	$TAR -xzf "$archive"
 		(cd "$PACKAGE-$VERSION" && $MAKE)
 	res=$?
 	$RM -r "$PACKAGE-$VERSION"
@@ -103,6 +105,19 @@ deforaos_release()
 }
 
 
+#debug
+_debug()
+{
+	if [ $DEBUG -eq 1 ]; then
+		echo "$@"
+	elif [ $VERBOSE -eq 0 ]; then
+		"$@" > "$DEVNULL"
+	else
+		"$@"
+	fi
+}
+
+
 #error
 _error()
 {
@@ -121,14 +136,22 @@ _info()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-release.sh version" 1>&2
+	echo "Usage: deforaos-release.sh [-Dv] version" 1>&2
+	echo "  -D	Run in debugging mode" 1>&2
+	echo "  -v	Verbose mode" 1>&2
 	return 1
 }
 
 
 #main
-while getopts "" name; do
+while getopts "Dv" name; do
 	case "$name" in
+		D)
+			DEBUG=1
+			;;
+		v)
+			VERBOSE=1
+			;;
 		?)
 			_usage
 			exit $?
