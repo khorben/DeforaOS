@@ -21,6 +21,7 @@
 #environment
 DEVNULL="/dev/null"
 #executables
+CVS="cvs"
 MAKE="make"
 RM="echo rm -f"
 TAR="tar"
@@ -36,34 +37,64 @@ deforaos_release()
 
 	[ -f "./config.sh" ] && . "./config.sh"
 	if [ -z "$PACKAGE" -o -z "$VERSION" ]; then
-		echo "deforaos-release.sh: Could not determine PACKAGE VERSION" 1>&2
-		return 2
+		_error "Could not determine the package name or version"
+		return $?
 	fi
-	echo "deforaos-release.sh: Releasing $PACKAGE $VERSION"
+	_info "Releasing $PACKAGE $VERSION"
 
 	if [ "$version" != "$VERSION" ]; then
-		echo "deforaos-release.sh: The version does not match" 1>&2
-		return 2
+		_error "The version does not match"
+		return $?
 	fi
 
-	echo "deforaos-release.sh: Creating the archive..."
+	_info "Obtaining latest version..."
+	$CVS up -A > "$DEVNULL"
+	if [ $? -ne 0 ]; then
+		_error "Could not update the sources"
+		return $?
+	fi
+
+	_info "Checking for differences..."
+	#XXX this method may be obsoleted in a future version of CVS
+	$CVS diff > "$DEVNULL"
+	if [ $? -ne 0 ]; then
+		_error "The sources were modified"
+		return $?
+	fi
+
+	_info "Creating the archive..."
 	$MAKE dist > $DEVNULL
 	if [ $? -ne 0 ]; then
-		echo "deforaos-release.sh: Could not create the archive" 1>&2
-		return 2
+		_error "Could not create the archive"
+		return $?
 	fi
 
 	#check the archive
-	echo "deforaos-release.sh: Checking the archive..."
+	_info "Checking the archive..."
 	archive="$PACKAGE-$VERSION.tar.gz"
 	$TAR -xzf "$archive" > $DEVNULL &&
 		(cd "$PACKAGE-$VERSION" && $MAKE)
 	res=$?
 	$RM -r "$PACKAGE-$VERSION"
 	if [ $res -ne 0 ]; then
-		echo "deforaos-release.sh: Could not validate the archive" 1>&2
-		return 2
+		_error "Could not validate the archive"
+		return $?
 	fi
+}
+
+
+#error
+_error()
+{
+	echo "deforaos-release.sh: $@" 1>&2
+	return 2
+}
+
+
+#info
+_info()
+{
+	echo "deforaos-release.sh: $@"
 }
 
 
