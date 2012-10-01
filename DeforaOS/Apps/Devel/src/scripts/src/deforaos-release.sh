@@ -76,10 +76,16 @@ deforaos_release()
 	_info "Checking the archive..."
 	archive="$PACKAGE-$VERSION.tar.gz"
 	$TAR -xzf "$archive"
-		(cd "$PACKAGE-$VERSION" && $MAKE)
+	if [ $? -ne 0 ]; then
+		$RM -r -- "$PACKAGE-$VERSION"
+		_error "Could not extract the archive"
+		return $?
+	fi
+	(cd "$PACKAGE-$VERSION" && $MAKE)
 	res=$?
-	$RM -r "$PACKAGE-$VERSION"
+	$RM -r -- "$PACKAGE-$VERSION"
 	if [ $res -ne 0 ]; then
+		$RM -- "$archive"
 		_error "Could not validate the archive"
 		return $?
 	fi
