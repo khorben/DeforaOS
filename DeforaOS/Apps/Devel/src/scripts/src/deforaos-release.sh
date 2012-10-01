@@ -13,14 +13,13 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#TODO:
-#- no longer require config.sh
 
 
 
 #environment
 DEBUG=0
 DEVNULL="/dev/null"
+PROJECTCONF="project.conf"
 VERBOSE=0
 #executables
 CVS="_debug cvs"
@@ -38,7 +37,16 @@ deforaos_release()
 	PACKAGE=
 	VERSION=
 
-	[ -f "./config.sh" ] && . "./config.sh"
+	while read line; do
+		case "$line" in
+			"package="*)
+				PACKAGE="${line#package=}"
+				;;
+			"version="*)
+				VERSION="${line#version=}"
+				;;
+		esac
+	done < "$PROJECTCONF"
 	if [ -z "$PACKAGE" -o -z "$VERSION" ]; then
 		_error "Could not determine the package name or version"
 		return $?
@@ -127,7 +135,7 @@ _debug()
 #error
 _error()
 {
-	echo "deforaos-release.sh: $@" 1>&2
+	echo "deforaos-release.sh: error: $@" 1>&2
 	return 2
 }
 
