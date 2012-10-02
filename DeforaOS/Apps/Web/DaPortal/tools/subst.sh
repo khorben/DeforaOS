@@ -21,7 +21,7 @@ PREFIX="/usr/local"
 CHMOD="chmod"
 DEBUG="_debug"
 DEVNULL="/dev/null"
-INSTALL="install -m 0755"
+INSTALL="install"
 MKDIR="mkdir -m 0755 -p"
 RM="rm -f"
 SED="sed"
@@ -86,7 +86,10 @@ while [ $# -gt 0 ]; do
 	#install
 	if [ "$install" -eq 1 ]; then
 		$DEBUG $MKDIR -- "$BINDIR"			|| exit 2
-		$DEBUG $INSTALL "$target" "$BINDIR/$target"	|| exit 2
+		mode="-m 0644"
+		[ -x "$target.in" ] && mode="-m 0755"
+		$DEBUG $INSTALL $mode "$target" "$BINDIR/$target" \
+								|| exit 2
 		continue
 	fi
 
