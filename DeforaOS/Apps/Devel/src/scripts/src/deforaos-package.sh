@@ -207,11 +207,12 @@ _package_debian()
 
 _debian_changelog()
 {
-	#FIXME really implement
 	[ -z "$DEBFULLNAME" ] && DEBFULLNAME="$FULLNAME"
 	[ -z "$DEBEMAIL" ] && DEBEMAIL="$EMAIL"
-	$DCH --create --distribution "unstable" \
-		--package "$pkgname" --newversion "$VERSION-$revision"
+	DEBFULLNAME="$DEBFULLNAME" DEBEMAIL="$DEBEMAIL" $DCH --create \
+		--distribution "unstable" \
+		--package "$pkgname" --newversion "$VERSION-$revision" \
+		"Package generated automatically by deforaos-package.sh"
 	#XXX ignore errors if the command is not installed
 	[ $? -eq 127 ] && return 0
 }
