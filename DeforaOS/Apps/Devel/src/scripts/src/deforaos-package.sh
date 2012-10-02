@@ -210,7 +210,8 @@ _debian_changelog()
 	#FIXME really implement
 	[ -z "$DEBFULLNAME" ] && DEBFULLNAME="$FULLNAME"
 	[ -z "$DEBEMAIL" ] && DEBEMAIL="$EMAIL"
-	$DCH --create --package "$pkgname" --newversion "$VERSION-$revision"
+	$DCH --create --distribution "unstable" \
+		--package "$pkgname" --newversion "$VERSION-$revision"
 	#XXX ignore errors if the command is not installed
 	[ $? -eq 127 ] && return 0
 }
