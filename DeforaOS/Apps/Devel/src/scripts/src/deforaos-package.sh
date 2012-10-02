@@ -30,6 +30,7 @@ VERSION=
 #executables
 CKSUM="cksum"
 CUT="cut"
+DCH="dch"
 FIND="find"
 GREP="grep"
 MAKE="make"
@@ -189,7 +190,7 @@ _package_debian()
 	[ -z "$license" ] && _warning "Unknown license"
 
 	#debian files
-	for i in changelog control copyright rules; do
+	for i in control copyright rules; do
 		_info "Creating debian/$i..."
 		"_debian_$i" > "debian/$i"
 		if [ $? -ne 0 ]; then
@@ -199,13 +200,19 @@ _package_debian()
 		fi
 	done
 
+	_debian_changelog
+
 	return $?
 }
 
 _debian_changelog()
 {
 	#FIXME really implement
-	:
+	[ -z "$DEBFULLNAME" ] && DEBFULLNAME="$FULLNAME"
+	[ -z "$DEBEMAIL" ] && DEBEMAIL="$EMAIL"
+	$DCH --create --package "$pkgname" --newversion "$VERSION-$revision"
+	#XXX ignore errors if the command is not installed
+	[ $? -eq 127 ] && return 0
 }
 
 _debian_control()
