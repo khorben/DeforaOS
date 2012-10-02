@@ -196,36 +196,32 @@ EOF
 	#Makefile
 	_info "Creating $pkgname/Makefile..."
 	_pkgsrc_makefile > "$pkgname/Makefile"
+	if [ $? -ne 0 ]; then
+		$RM -r -- "$pkgname"
+		_error "Could not create $pkgname/Makefile"
+		return 2
+	fi
 
 	#PLIST
 	_info "Creating $pkgname/PLIST..."
 	tmpdir="$PWD/$pkgname/destdir"
 	$MAKE DESTDIR="$tmpdir" PREFIX="/usr/local" install
 	if [ $? -ne 0 ]; then
-		$RM -r -- "$tmpdir"
+		$RM -r -- "$pkgname"
 		_error "Could not install files in staging directory"
 		return 2
 	fi
-	cat > "$pkgname/PLIST" << EOF
-@comment \$NetBSD\$
-EOF
+	echo "@comment \$NetBSD\$" > "$pkgname/PLIST"
 	(cd "$tmpdir/usr/local" && $FIND . -type f | $CUT -c 3-) >> "$pkgname/PLIST"
 	$RM -r -- "$tmpdir"
 
 	#distinfo
 	_info "Creating $pkgname/distinfo..."
-	#FIXME really implement
-	cat > "$pkgname/distinfo" << EOF
-\$NetBSD\$
-
-EOF
-	($SHA1 -- "$PACKAGE-$VERSION.tar.gz" &&
-		$RMD160 -- "$PACKAGE-$VERSION.tar.gz" &&
-		$SIZE -- "$PACKAGE-$VERSION.tar.gz") >> "$pkgname/distinfo"
-	#FIXME also handle existing patches
+	_pkgsrc_distinfo > "$pkgname/distinfo"
 	if [ $? -ne 0 ]; then
-		$RM -- "$pkgname/distinfo"
+		$RM -r -- "$pkgname"
 		_error "Could not create $pkgname/distinfo"
+		return 2
 	fi
 
 	_info "The package is complete"
@@ -235,6 +231,29 @@ EOF
 	#- build the package
 	#- review the differences (if any)
 	#- commit
+}
+
+_pkgsrc_distinfo()
+{
+	cat << EOF
+\$NetBSD\$
+
+EOF
+	$SHA1 -- "$PACKAGE-$VERSION.tar.gz"
+	$RMD160 -- "$PACKAGE-$VERSION.tar.gz"
+	$SIZE -- "$PACKAGE-$VERSION.tar.gz"
+	#additional patches
+	for i in "$PKGSRC_ROOT/wip/$pkgname/patches/patch-"*; do
+		[ ! -f "$i" ] && continue
+		case "$i" in
+			*.orig)
+				continue
+				;;
+		esac
+		i="${i##*/}"
+		(cd "$PKGSRC_ROOT/wip/$pkgname/patches" && $SHA1 -- "$i") ||
+			return 2
+	done
 }
 
 _pkgsrc_makefile()
