@@ -27,7 +27,10 @@ PROJECTCONF="project.conf"
 VERSION=
 #executables
 CKSUM="cksum"
+CUT="cut"
+FIND="find"
 GREP="grep"
+MAKE="make"
 MKDIR="mkdir -p"
 RM="rm -f"
 RMD160="rmd160"
@@ -89,7 +92,8 @@ _package_guess_dependencies()
 
 	#pkg-config
 	DEPEND_pkgconfig=0
-	$GREP "\`pkg-config " "src/Makefile" > "$DEVNULL" && DEPEND_pkgconfig=1
+	$GREP "\`pkg-config " "src/$PROJECTCONF" > "$DEVNULL" &&
+		DEPEND_pkgconfig=1
 }
 
 _package_guess_email()
@@ -163,7 +167,8 @@ _package_pkgsrc()
 	distname="$PACKAGE-$VERSION"
 	pkgname=$(echo "deforaos-$PACKAGE" | $TR A-Z a-z)
 
-	$MKDIR "$pkgname"					|| return 2
+	$RM -r -- "pkgname"					|| return 2
+	$MKDIR -- "$pkgname"					|| return 2
 
 	#check the license
 	license=
@@ -242,10 +247,18 @@ EOF
 
 	#PLIST
 	_info "Creating $pkgname/PLIST..."
-	#FIXME really implement
+	tmpdir="$PWD/$pkgname/destdir"
+	$MAKE DESTDIR="$tmpdir" PREFIX="/usr/local" install
+	if [ $? -ne 0 ]; then
+		$RM -r -- "$tmpdir"
+		_error "Could not install files in staging directory"
+		return 2
+	fi
 	cat > "$pkgname/PLIST" << EOF
 @comment \$NetBSD\$
 EOF
+	(cd "$tmpdir/usr/local" && $FIND . -type f | $CUT -c 3-) >> "$pkgname/PLIST"
+	$RM -r -- "$tmpdir"
 
 	#distinfo
 	_info "Creating $pkgname/distinfo..."
