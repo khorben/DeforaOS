@@ -1282,13 +1282,13 @@ class ProjectModule extends ContentModule
 
 
 	//ProjectModule::helperListButtons
-	protected function helperListButtons($engine, $page, $request)
+	protected function helperListButtons($engine, $page, $request = FALSE)
 	{
 	}
 
 
 	//ProjectModule::helperListView
-	protected function helperListView($engine, $page, $request)
+	protected function helperListView($engine, $page, $request = FALSE)
 	{
 		$view = parent::helperListView($engine, $page, $request);
 		if(($columns = $view->getProperty('columns')) !== FALSE)

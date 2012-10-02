@@ -649,11 +649,12 @@ abstract class ContentModule extends Module
 	protected function callList($engine, $request = FALSE)
 	{
 		$db = $engine->getDatabase();
-		$user = new User($engine, $request->getId(),
-				$request->getTitle());
+		$user = ($request !== FALSE)
+			? new User($engine, $request->getId(),
+				$request->getTitle()) : FALSE;
 		$error = _('Unable to list contents');
 
-		if(($uid = $user->getUserId()) == 0)
+		if($user === FALSE || ($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
 		$title = $this->text_content_list_title;
 		if($uid !== FALSE)
@@ -1244,12 +1245,13 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::helperListButtons
-	protected function helperListButtons($engine, $page, $request)
+	protected function helperListButtons($engine, $page, $request = FALSE)
 	{
-		$user = new User($engine, $request->getId(),
-				$request->getTitle());
+		$user = ($request !== FALSE)
+			? new User($engine, $request->getId(),
+				$request->getTitle()) : FALSE;
 
-		if(($uid = $user->getUserId()) == 0)
+		if($user === FALSE || ($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
 		$r = ($uid !== FALSE)
 			? new Request('user', 'display', $user->getUserId(),
@@ -1261,7 +1263,7 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::helperListTitle
-	protected function helperListTitle($engine, $page, $request)
+	protected function helperListTitle($engine, $page, $request = FALSE)
 	{
 		$title = $page->getProperty('title');
 
@@ -1271,13 +1273,14 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::helperListToolbar
-	protected function helperListToolbar($engine, $page, $request)
+	protected function helperListToolbar($engine, $page, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
-		$user = new User($engine, $request->getId(),
-				$request->getTitle());
+		$user = ($request !== FALSE)
+			? new User($engine, $request->getId(),
+				$request->getTitle()) : FALSE;
 
-		if(($uid = $user->getUserId()) == 0)
+		if($user === FALSE || ($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
 		$r = new Request($this->name, 'list', $uid,
 			$uid ? $user->getUsername() : FALSE);
@@ -1307,14 +1310,15 @@ abstract class ContentModule extends Module
 
 
 	//ContentModule::helperListView
-	protected function helperListView($engine, $page, $request)
+	protected function helperListView($engine, $page, $request = FALSE)
 	{
 		$cred = $engine->getCredentials();
-		$user = new User($engine, $request->getId(),
-				$request->getTitle());
+		$user = ($request !== FALSE)
+			? new User($engine, $request->getId(),
+				$request->getTitle()) : FALSE;
 		$r = FALSE;
 
-		if(($uid = $user->getUserId()) == 0)
+		if($user === FALSE || ($uid = $user->getUserId()) == 0)
 			$uid = FALSE;
 		if($uid === $cred->getUserId())
 			$r = new Request($this->name, 'list', $uid,
