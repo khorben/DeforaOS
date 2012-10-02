@@ -48,7 +48,7 @@ WC="wc"
 YEAR="$(date +%Y)"
 #dependencies
 DEPEND_desktop=0
-DEPEND_docbook=0
+DEPEND_docbookxsl=0
 DEPEND_gtkdoc=0
 DEPEND_pkgconfig=0
 DEPEND_xgettext=0
@@ -98,8 +98,8 @@ _package_guess_dependencies()
 	done
 
 	#docbook-xsl
-	DEPEND_docbook=0
-	[ -f "doc/docbook.sh" ] && DEPEND_docbook=1
+	DEPEND_docbookxsl=0
+	[ -f "doc/docbook.sh" ] && DEPEND_docbookxsl=1
 
 	#gtk-doc
 	DEPEND_gtkdoc=0
@@ -252,13 +252,18 @@ _debian_compat()
 
 _debian_control()
 {
-	#FIXME implement build-depends
+	#build dependencies
+	#FIXME detect more dependencies
+	depends="debhelper (>= 7.0.50~)"
+	[ $DEPEND_docbookxsl -eq 1 ] && depends="$depends, docbook-xsl"
+	[ $DEPEND_xgettext -eq 1 ] && depends="$depends, gettext"
+
 	cat << EOF
 Source: $pkgname
 Section: unknown
 Priority: extra
 Maintainer: $FULLNAME <$EMAIL>
-Build-Depends: debhelper (>= 7.0.50~)
+Build-Depends: $depends
 Standards-Version: 3.8.4
 Homepage: $HOMEPAGE/os/project/$ID/$PACKAGE
 
@@ -520,7 +525,7 @@ EOF
 
 	#build dependencies
 	#docbook
-	[ $DEPEND_docbook -eq 1 ] && cat << EOF
+	[ $DEPEND_docbookxsl -eq 1 ] && cat << EOF
 
 BUILD_DEPENDS+=	libxslt-[0-9]*:../../textproc/libxslt
 BUILD_DEPENDS+=	docbook-xsl-[0-9]*:../../textproc/docbook-xsl
