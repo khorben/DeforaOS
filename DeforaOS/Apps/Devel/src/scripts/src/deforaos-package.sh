@@ -43,6 +43,8 @@ DEPEND_desktop=0
 DEPEND_docbook=0
 DEPEND_gtkdoc=0
 DEPEND_pkgconfig=0
+#method-specific
+PKGSRC_ROOT="/usr/pkgsrc"
 
 
 #functions
@@ -199,7 +201,7 @@ PKGREVISION=	$revision
 EOF
 	cat >> "$pkgname/Makefile" << EOF
 CATEGORIES=	wip
-MASTER_SITES=	http://www.defora.org/os/download/$ID/
+MASTER_SITES=	http://www.defora.org/os/download/download/$ID/
 
 MAINTAINER=	$EMAIL
 HOMEPAGE=	http://www.defora.org/
@@ -232,11 +234,16 @@ EOF
 	cat >> "$pkgname/Makefile" << EOF
 
 PKG_DESTDIR_SUPPORT=	user-destdir
-MAKE_FLAGS+=	PREFIX=${PREFIX}
-MAKE_FLAGS+=	DESTDIR=${DESTDIR}
+MAKE_FLAGS+=	PREFIX=\${PREFIX}
+MAKE_FLAGS+=	DESTDIR=\${DESTDIR}
 AUTO_MKDIRS=	yes
 EOF
 
+	[ -f "$PKGSRC_ROOT/wip/$pkgname/options.mk" ] &&
+		cat >> "$pkgname/Makefile" << EOF
+
+.include "options.mk"
+EOF
 	cat >> "$pkgname/Makefile" << EOF
 
 EOF
