@@ -290,11 +290,22 @@ _debian_rules()
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-%:
-	dh \$@
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= \$(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= \$(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+ifneq (\$(DEB_HOST_GNU_TYPE),\$(DEB_BUILD_GNU_TYPE))
+CC=\$(DEB_HOST_GNU_TYPE)-gcc
 
 override_dh_auto_build:
+	\$(MAKE) PREFIX="/usr" CC="\$(CC)"
+else
+override_dh_auto_build:
 	\$(MAKE) PREFIX="/usr"
+endif
+
+%:
+	dh \$@
 
 override_dh_auto_install:
 	\$(MAKE) DESTDIR="\$(PWD)/debian/tmp" PREFIX="/usr" install
