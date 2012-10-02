@@ -297,7 +297,7 @@ override_dh_auto_build:
 	\$(MAKE) PREFIX="/usr"
 
 override_dh_auto_install:
-	\$(MAKE) PREFIX="/usr" install
+	\$(MAKE) DESTDIR="\$(PWD)/debian/tmp" PREFIX="/usr" install
 EOF
 }
 
