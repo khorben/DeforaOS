@@ -43,6 +43,7 @@ DEPEND_desktop=0
 DEPEND_docbook=0
 DEPEND_gtkdoc=0
 DEPEND_pkgconfig=0
+DEPEND_xgettext=0
 #method-specific
 PKGSRC_ROOT="/usr/pkgsrc"
 
@@ -96,6 +97,10 @@ _package_guess_dependencies()
 	DEPEND_pkgconfig=0
 	$GREP "\`pkg-config " "src/$PROJECTCONF" > "$DEVNULL" &&
 		DEPEND_pkgconfig=1
+
+	#xgettext
+	DEPEND_xgettext=0
+	[ -f "po/gettext.sh" ] && DEPEND_xgettext=1
 }
 
 _package_guess_email()
@@ -223,8 +228,6 @@ EOF
 		_error "Could not create $pkgname/distinfo"
 	fi
 
-	#FIXME handle existing options
-
 	_info "The package is complete"
 
 	#FIXME:
@@ -261,11 +264,13 @@ LICENSE=	$license
 EOF
 
 	#tools
-	#pkg-config
-	[ $DEPEND_pkgconfig -eq 1 ] && cat << EOF
-
-USE_TOOLS+=	pkg-config
-EOF
+	tools=
+	[ $DEPEND_pkgconfig -eq 1 ] && tools="$tools pkg-config"
+	[ $DEPEND_xgettext -eq 1 ] && tools="$tools xgettext"
+	[ -n "$tools" ] && echo
+	for i in $tools; do
+		echo "USE_TOOLS+=	$i"
+	done
 
 	#build dependencies
 	#docbook
