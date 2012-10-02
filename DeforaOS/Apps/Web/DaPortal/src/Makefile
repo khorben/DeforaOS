@@ -27,8 +27,10 @@ distclean:
 
 install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
+	../tools/subst.sh -P "$(DESTDIR)$(PREFIX)/daportal/src" -i -- "daportal.php"
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+	../tools/subst.sh -P "$(DESTDIR)$(PREFIX)/daportal/src" -u -- "daportal.php"
 
 .PHONY: all subdirs clean distclean install uninstall

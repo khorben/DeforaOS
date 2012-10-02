@@ -438,6 +438,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/formats/html5.php \
 		$(PACKAGE)-$(VERSION)/src/formats/pdf.php \
 		$(PACKAGE)-$(VERSION)/src/formats/plain.php \
+		$(PACKAGE)-$(VERSION)/src/formats/xhtml1.php \
+		$(PACKAGE)-$(VERSION)/src/formats/xhtml11.php \
 		$(PACKAGE)-$(VERSION)/src/formats/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/src/modules/project.conf \
@@ -501,8 +503,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/system/locale/gettext.php \
 		$(PACKAGE)-$(VERSION)/src/system/locale/project.conf \
 		$(PACKAGE)-$(VERSION)/src/templates/Makefile \
-		$(PACKAGE)-$(VERSION)/src/templates/basic.php \
 		$(PACKAGE)-$(VERSION)/src/templates/DeforaOS.php \
+		$(PACKAGE)-$(VERSION)/src/templates/basic.php \
 		$(PACKAGE)-$(VERSION)/src/templates/desktop.php \
 		$(PACKAGE)-$(VERSION)/src/templates/project.conf \
 		$(PACKAGE)-$(VERSION)/system/Makefile \
