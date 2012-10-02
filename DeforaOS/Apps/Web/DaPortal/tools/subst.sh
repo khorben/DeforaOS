@@ -87,7 +87,7 @@ while [ $# -gt 0 ]; do
 	if [ "$install" -eq 1 ]; then
 		$DEBUG $MKDIR -- "$BINDIR"			|| exit 2
 		mode="-m 0644"
-		[ -x "$target.in" ] && mode="-m 0755"
+		[ -x "$target" ] && mode="-m 0755"
 		$DEBUG $INSTALL $mode "$target" "$BINDIR/$target" \
 								|| exit 2
 		continue
