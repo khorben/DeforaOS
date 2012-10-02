@@ -75,6 +75,7 @@ deforaos_package()
 	case "$METHOD" in
 		debian|pkgsrc)
 			_package_$METHOD "$revision"
+			[ $? -ne 0 ] && return 2
 			;;
 		*)
 			_error "Unsupported packaging method"
@@ -201,9 +202,13 @@ _package_debian()
 		fi
 	done
 
+	_info "Creating debian/changelog..."
 	_debian_changelog
-
-	return $?
+	if [ $? -ne 0 ]; then
+		$RM -r -- "debian"
+		_error "Could not create debian/changelog"
+		return 2
+	fi
 }
 
 _debian_changelog()
@@ -214,8 +219,15 @@ _debian_changelog()
 		--distribution "unstable" \
 		--package "$pkgname" --newversion "$VERSION-$revision" \
 		"Package generated automatically by deforaos-package.sh"
+	ret=$?
+
 	#XXX ignore errors if the command is not installed
-	[ $? -eq 127 ] && return 0
+	if [ $ret -eq 127 ]; then
+		_warning "Could not create debian/changelog"
+		return 0
+	fi
+
+	return $ret
 }
 
 _debian_control()
