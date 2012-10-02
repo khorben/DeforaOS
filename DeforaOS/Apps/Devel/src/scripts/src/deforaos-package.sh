@@ -190,69 +190,7 @@ EOF
 
 	#Makefile
 	_info "Creating $pkgname/Makefile..."
-	cat > "$pkgname/Makefile" << EOF
-# \$NetBSD\$
-
-DISTNAME=	$distname
-PKGNAME=	$pkgname-$VERSION
-EOF
-	[ $revision -gt 0 ] && cat >> "$pkgname/Makefile" << EOF
-PKGREVISION=	$revision
-EOF
-	cat >> "$pkgname/Makefile" << EOF
-CATEGORIES=	wip
-MASTER_SITES=	http://www.defora.org/os/download/download/$ID/
-
-MAINTAINER=	$EMAIL
-HOMEPAGE=	http://www.defora.org/
-COMMENT=	DeforaOS $PACKAGE
-EOF
-	[ -n "$license" ] && cat >> "$pkgname/Makefile" << EOF
-
-LICENSE=	$license
-EOF
-
-	#tools
-	#pkg-config
-	[ $DEPEND_pkgconfig -eq 1 ] && cat >> "$pkgname/Makefile" << EOF
-
-USE_TOOLS+=	pkg-config
-EOF
-
-	#build dependencies
-	#docbook
-	[ $DEPEND_docbook -eq 1 ] && cat >> "$pkgname/Makefile" << EOF
-
-BUILD_DEPENDS+=	libxslt-[0-9]*:../../textproc/libxslt
-BUILD_DEPENDS+=	docbook-xsl-[0-9]*:../../textproc/docbook-xsl
-EOF
-	#gtkdoc
-	[ $DEPEND_gtkdoc -eq 1 ] && cat >> "$pkgname/Makefile" << EOF
-
-EOF
-
-	cat >> "$pkgname/Makefile" << EOF
-
-PKG_DESTDIR_SUPPORT=	user-destdir
-MAKE_FLAGS+=	PREFIX=\${PREFIX}
-MAKE_FLAGS+=	DESTDIR=\${DESTDIR}
-AUTO_MKDIRS=	yes
-EOF
-
-	[ -f "$PKGSRC_ROOT/wip/$pkgname/options.mk" ] &&
-		cat >> "$pkgname/Makefile" << EOF
-
-.include "options.mk"
-EOF
-	cat >> "$pkgname/Makefile" << EOF
-
-EOF
-	[ $DEPEND_desktop -eq 1 ] && cat >> "$pkgname/Makefile" << EOF
-.include "../../sysutils/desktop-file-utils/desktopdb.mk"
-EOF
-	cat >> "$pkgname/Makefile" << EOF
-.include "../../mk/bsd.pkg.mk"
-EOF
+	_pkgsrc_makefile > "$pkgname/Makefile"
 
 	#PLIST
 	_info "Creating $pkgname/PLIST..."
@@ -294,6 +232,80 @@ EOF
 	#- build the package
 	#- review the differences (if any)
 	#- commit
+}
+
+_pkgsrc_makefile()
+{
+	cat << EOF
+# \$NetBSD\$
+
+DISTNAME=	$distname
+PKGNAME=	$pkgname-$VERSION
+EOF
+	[ $revision -gt 0 ] && cat << EOF
+PKGREVISION=	$revision
+EOF
+	cat << EOF
+CATEGORIES=	wip
+MASTER_SITES=	http://www.defora.org/os/download/download/$ID/
+
+MAINTAINER=	$EMAIL
+HOMEPAGE=	http://www.defora.org/
+COMMENT=	DeforaOS $PACKAGE
+EOF
+
+	#license
+	[ -n "$license" ] && cat << EOF
+
+LICENSE=	$license
+EOF
+
+	#tools
+	#pkg-config
+	[ $DEPEND_pkgconfig -eq 1 ] && cat << EOF
+
+USE_TOOLS+=	pkg-config
+EOF
+
+	#build dependencies
+	#docbook
+	[ $DEPEND_docbook -eq 1 ] && cat << EOF
+
+BUILD_DEPENDS+=	libxslt-[0-9]*:../../textproc/libxslt
+BUILD_DEPENDS+=	docbook-xsl-[0-9]*:../../textproc/docbook-xsl
+EOF
+
+	cat << EOF
+
+PKG_DESTDIR_SUPPORT=	user-destdir
+MAKE_FLAGS+=	PREFIX=\${PREFIX}
+MAKE_FLAGS+=	DESTDIR=\${DESTDIR}
+AUTO_MKDIRS=	yes
+EOF
+
+	#rc.d scripts
+	rcd=
+	for i in "$PKGSRC_ROOT/wip/$pkgname/files/"*.sh; do
+		[ ! -f "$i" ] && continue
+		i="${i##*/}"
+		rcd="$rcd ${i%.sh}"
+	done
+	[ -n "$rcd" ] && echo
+	for i in $rcd; do
+		echo "RCD_SCRIPTS+=	$i"
+	done
+
+	[ -f "$PKGSRC_ROOT/wip/$pkgname/options.mk" ] && cat << EOF
+
+.include "options.mk"
+EOF
+
+	echo ""
+	[ $DEPEND_gtkdoc -eq 1 ] &&
+		echo '.include "../../textproc/gtk-doc/buildlink3.mk"'
+	[ $DEPEND_desktop -eq 1 ] &&
+		echo '.include "../../sysutils/desktop-file-utils/desktopdb.mk"'
+	echo '.include "../../mk/bsd.pkg.mk"'
 }
 
 
