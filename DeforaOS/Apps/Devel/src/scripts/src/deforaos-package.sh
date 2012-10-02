@@ -365,7 +365,7 @@ endif
 	dh \$@
 
 override_dh_auto_install:
-	\$(MAKE) DESTDIR="\$(PWD)/debian/tmp" PREFIX="/usr" install
+	\$(MAKE) DESTDIR="\$(PWD)/debian/$pkgname" PREFIX="/usr" install
 EOF
 }
 
