@@ -42,6 +42,7 @@ RM="rm -f"
 RMD160="rmd160"
 SHA1="sha1"
 SIZE="_size"
+TOUCH="touch"
 TR="tr"
 WC="wc"
 YEAR="$(date +%Y)"
@@ -203,6 +204,7 @@ _package_debian()
 		fi
 	done
 
+	#debian/changelog
 	_info "Creating debian/changelog..."
 	_debian_changelog
 	if [ $? -ne 0 ]; then
@@ -210,6 +212,9 @@ _package_debian()
 		_error "Could not create debian/changelog"
 		return 2
 	fi
+
+	#debian/menu
+	_debian_menu
 
 	#build the package
 	_info "Building the package..."
@@ -303,6 +308,29 @@ License: GPL-3
 EOF
 			;;
 	esac
+}
+
+_debian_menu()
+{
+	#obtain the menu entries
+	menus=
+	for i in data/*.desktop; do
+		[ ! -f "$i" ] && continue
+		i="${i#data/}"
+		i="${i%.desktop}"
+		menus="$menus $i"
+	done
+	[ -z "$menus" ] && return 0
+
+	#debian/menu
+	_info "Creating debian/menu..."
+	$TOUCH "debian/menu"					|| return 2
+	for i in $menus; do
+		#FIXME really implement
+		echo "?package($pkgname):needs=\"X11\" \\"
+		echo "	section=\"Applications\" \\"
+		echo "	title=\"$i\" command=\"/usr/bin/$i\""
+	done >> "debian/menu"
 }
 
 _debian_rules()
