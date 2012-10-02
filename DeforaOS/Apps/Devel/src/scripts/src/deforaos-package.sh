@@ -19,6 +19,7 @@
 #environment
 DEVNULL="/dev/null"
 EMAIL=
+FULLNAME=
 ID="@ID@"
 LANG="C"
 LICENSE=
@@ -40,6 +41,7 @@ SHA1="sha1"
 SIZE="_size"
 TR="tr"
 WC="wc"
+YEAR=$(date +%Y)
 #dependencies
 DEPEND_desktop=0
 DEPEND_docbook=0
@@ -64,11 +66,12 @@ deforaos_package()
 	[ -z "$METHOD" ] && _package_guess_method
 	[ -z "$LICENSE" ] && _package_guess_license
 	_package_guess_dependencies
-	_package_guess_email
+	[ -z "$EMAIL" ] && _package_guess_email
+	[ -z "$FULLNAME" ] && _package_guess_fullname
 
 	#call the proper packaging function
 	case "$METHOD" in
-		pkgsrc)
+		debian|pkgsrc)
 			_package_$METHOD "$revision"
 			;;
 		*)
@@ -76,6 +79,8 @@ deforaos_package()
 			return $?
 			;;
 	esac
+
+	_info "DeforaOS $PACKAGE $VERSION-$revision packaged"
 }
 
 _package_guess_dependencies()
@@ -110,6 +115,11 @@ _package_guess_email()
 	EMAIL="$USERNAME@defora.org"
 }
 
+_package_guess_fullname()
+{
+	FULLNAME="$USERNAME"
+}
+
 _package_guess_license()
 {
 	[ ! -f "COPYING" ]					&& return 2
@@ -127,15 +137,18 @@ _package_guess_license()
 _package_guess_method()
 {
 	#guess the packaging method
-	case $(uname -s) in
-		NetBSD)
-			METHOD="pkgsrc"
-			;;
-		*)
-			_error "Unsupported platform"
-			return $?
-			;;
-	esac
+	METHOD=
+
+	#debian
+	[ -f "/etc/debian_version" ] && METHOD="debian"
+
+	#pkgsrc
+	[ -d "/usr/pkg" ] && METHOD="pkgsrc"
+
+	if [ -z "$METHOD" ]; then
+		_error "Unsupported platform"
+		return $?
+	fi
 }
 
 _package_guess_name()
@@ -155,6 +168,121 @@ _package_guess_name()
 	done < "$PROJECTCONF"
 	[ -z "$PACKAGE" -o -z "$VERSION" ]			&& return 2
 	return 0
+}
+
+
+#package_debian
+_package_debian()
+{
+	pkgname=$(echo "deforaos-$PACKAGE" | $TR A-Z a-z)
+
+	$RM -r -- "debian"					|| return 2
+	$MKDIR -- "debian"					|| return 2
+
+	#check the license
+	license=
+	case "$LICENSE" in
+		"GNU GPL 3")
+			license="GPL-3"
+			;;
+	esac
+	[ -z "$license" ] && _warning "Unknown license"
+
+	#debian files
+	for i in changelog control copyright rules; do
+		_info "Creating debian/$i..."
+		"_debian_$i" > "debian/$i"
+		if [ $? -ne 0 ]; then
+			$RM -r -- "debian"
+			_error "Could not create debian/$i"
+			return 2
+		fi
+	done
+
+	return $?
+}
+
+_debian_changelog()
+{
+}
+
+_debian_control()
+{
+	#FIXME implement build-depends
+	cat << EOF
+Source: $pkgname
+Section: unknown
+Priority: extra
+Maintainer: $FULLNAME <$EMAIL>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.defora.org/os/project/$ID/$PACKAGE
+
+Package: $pkgname
+Architecture: any
+Depends: \${shlibs:Depends}, \${misc:Depends}
+Description: DeforaOS $PACKAGE
+  DeforaOS $PACKAGE
+EOF
+}
+
+_debian_copyright()
+{
+	cat << EOF
+Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
+Name: $pkgname
+Maintainer: $FULLNAME <$EMAIL>
+Source: http://www.defora.org/os/project/download/$ID
+
+Copyright: $YEAR $FULLNAME <$EMAIL>
+License: $license
+
+Files: debian/*
+Copyright: $YEAR $FULLNAME <$EMAIL>
+License: $license
+EOF
+	case "$license" in
+		GPL-3)
+			cat << EOF
+
+License: GPL-3
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, version 3 of the License.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, see <http://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ \`/usr/share/common-licenses/GPL-3'.
+EOF
+			;;
+	esac
+}
+
+_debian_rules()
+{
+	cat << EOF
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh \$@
+EOF
 }
 
 
@@ -232,8 +360,6 @@ _package_pkgsrc()
 	_info "Running pkglint..."
 	#XXX ignore errors for now
 	(cd "$pkgname" && $PKGLINT)
-
-	_info "The package is complete"
 
 	#FIXME:
 	#- build the package
@@ -383,7 +509,7 @@ _size()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method] revision" 1>&2
+	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method][-n name] revision" 1>&2
 	return 1
 }
 
@@ -396,19 +522,22 @@ _warning()
 
 
 #main
-while getopts "e:i:l:m:" name; do
+while getopts "e:i:l:m:n:" name; do
 	case "$name" in
 		e)
-			EMAIL="$2"
+			EMAIL="$OPTARG"
 			;;
 		i)
-			ID="$2"
+			ID="$OPTARG"
 			;;
 		l)
-			LICENSE="$2"
+			LICENSE="$OPTARG"
 			;;
 		m)
-			METHOD="$2"
+			METHOD="$OPTARG"
+			;;
+		n)
+			FULLNAME="$OPTARG"
 			;;
 		?)
 			_usage
