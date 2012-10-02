@@ -67,6 +67,10 @@
 	background-image:	url('gnome-icon-theme/24x24/actions/gtk-cancel.png');
 }
 
+.stock24.close {
+	background-image:	url('gnome-icon-theme/24x24/actions/gtk-close.png');
+}
+
 .stock24.comment {
 	background-image:	url('gnome-icon-theme/24x24/actions/mail-reply-all.png');
 }
