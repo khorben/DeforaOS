@@ -192,7 +192,7 @@ _package_debian()
 	[ -z "$license" ] && _warning "Unknown license"
 
 	#debian files
-	for i in control copyright rules; do
+	for i in compat control copyright rules; do
 		_info "Creating debian/$i..."
 		"_debian_$i" > "debian/$i"
 		if [ $? -ne 0 ]; then
@@ -228,6 +228,11 @@ _debian_changelog()
 	fi
 
 	return $ret
+}
+
+_debian_compat()
+{
+	echo "7"
 }
 
 _debian_control()
