@@ -19,9 +19,9 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
-	./subst.sh -P "$(DESTDIR)$(PREFIX)" -i -- "daportal"
+	./subst.sh -P "$(DESTDIR)$(PREFIX)/bin" -i -- "daportal"
 
 uninstall:
-	./subst.sh -P "$(DESTDIR)$(PREFIX)" -u -- "daportal"
+	./subst.sh -P "$(DESTDIR)$(PREFIX)/bin" -u -- "daportal"
 
 .PHONY: all clean distclean install uninstall

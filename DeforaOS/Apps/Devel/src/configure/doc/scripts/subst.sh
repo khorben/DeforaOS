@@ -72,23 +72,22 @@ if [ $# -eq 0 ]; then
 	exit $?
 fi
 
-BINDIR="$PREFIX/bin"
 while [ $# -gt 0 ]; do
 	target="$1"
 	shift
 
 	#uninstall
 	if [ "$uninstall" -eq 1 ]; then
-		$DEBUG $RM -- "$BINDIR/$target"			|| exit 2
+		$DEBUG $RM -- "$PREFIX/$target"			|| exit 2
 		continue
 	fi
 
 	#install
 	if [ "$install" -eq 1 ]; then
-		$DEBUG $MKDIR -- "$BINDIR"			|| exit 2
+		$DEBUG $MKDIR -- "$PREFIX"			|| exit 2
 		mode="-m 0644"
 		[ -x "$target" ] && mode="-m 0755"
-		$DEBUG $INSTALL $mode "$target" "$BINDIR/$target" \
+		$DEBUG $INSTALL $mode "$target" "$PREFIX/$target" \
 								|| exit 2
 		continue
 	fi
