@@ -20,6 +20,7 @@
 DEVNULL="/dev/null"
 EMAIL=
 FULLNAME=
+HOMEPAGE="http://www.defora.org"
 ID="@ID@"
 LANG="C"
 LICENSE=
@@ -227,7 +228,7 @@ Priority: extra
 Maintainer: $FULLNAME <$EMAIL>
 Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.8.4
-Homepage: http://www.defora.org/os/project/$ID/$PACKAGE
+Homepage: $HOMEPAGE/os/project/$ID/$PACKAGE
 
 Package: $pkgname
 Architecture: any
@@ -243,7 +244,7 @@ _debian_copyright()
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
 Name: $pkgname
 Maintainer: $FULLNAME <$EMAIL>
-Source: http://www.defora.org/os/project/download/$ID
+Source: $HOMEPAGE/os/project/download/$ID
 
 Copyright: $YEAR $FULLNAME <$EMAIL>
 License: $license
@@ -440,10 +441,10 @@ PKGREVISION=	$revision
 EOF
 	cat << EOF
 CATEGORIES=	wip
-MASTER_SITES=	http://www.defora.org/os/download/download/$ID/
+MASTER_SITES=	$HOMEPAGE/os/download/download/$ID/
 
 MAINTAINER=	$EMAIL
-HOMEPAGE=	http://www.defora.org/
+HOMEPAGE=	$HOMEPAGE/
 COMMENT=	DeforaOS $PACKAGE
 EOF
 
