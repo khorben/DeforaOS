@@ -20,6 +20,7 @@
 DEVNULL="/dev/null"
 EMAIL=
 ID="@ID@"
+LANG="C"
 LICENSE=
 METHOD=
 PACKAGE=
@@ -189,10 +190,12 @@ _package_pkgsrc()
 
 	#DESCR
 	_info "Creating $pkgname/DESCR..."
-	#FIXME really implement
-	cat > "$pkgname/DESCR" << EOF
-DeforaOS $PACKAGE
-EOF
+	_pkgsrc_descr > "$pkgname/DESCR"
+	if [ $? -ne 0 ]; then
+		$RM -r -- "$pkgname"
+		_error "Could not create $pkgname/DESCR"
+		return 2
+	fi
 
 	#Makefile
 	_info "Creating $pkgname/Makefile..."
@@ -236,6 +239,15 @@ EOF
 	#- build the package
 	#- review the differences (if any)
 	#- commit
+}
+
+_pkgsrc_descr()
+{
+	if [ -f "$PKGSRC_ROOT/wip/$pkgname/DESCR" ]; then
+		cat "$PKGSRC_ROOT/wip/$pkgname/DESCR"
+		return $?
+	fi
+	echo "DeforaOS $PACKAGE"
 }
 
 _pkgsrc_distinfo()
@@ -309,7 +321,6 @@ EOF
 PKG_DESTDIR_SUPPORT=	user-destdir
 MAKE_FLAGS+=	PREFIX=\${PREFIX}
 MAKE_FLAGS+=	DESTDIR=\${DESTDIR}
-AUTO_MKDIRS=	yes
 EOF
 
 	#rc.d scripts
