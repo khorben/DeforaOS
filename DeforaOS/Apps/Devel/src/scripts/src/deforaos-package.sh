@@ -32,6 +32,7 @@ FIND="find"
 GREP="grep"
 MAKE="make"
 MKDIR="mkdir -p"
+PKGLINT="pkglint"
 RM="rm -f"
 RMD160="rmd160"
 SHA1="sha1"
@@ -224,10 +225,14 @@ EOF
 		return 2
 	fi
 
+	#running pkglint
+	_info "Running pkglint..."
+	#XXX ignore errors for now
+	(cd "$pkgname" && $PKGLINT)
+
 	_info "The package is complete"
 
 	#FIXME:
-	#- run pkglint
 	#- build the package
 	#- review the differences (if any)
 	#- commit
