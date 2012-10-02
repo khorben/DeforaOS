@@ -112,12 +112,12 @@ _package_guess_dependencies()
 
 _package_guess_email()
 {
-	EMAIL="$USERNAME@defora.org"
+	EMAIL="$USER@defora.org"
 }
 
 _package_guess_fullname()
 {
-	FULLNAME="$USERNAME"
+	FULLNAME="$USER"
 }
 
 _package_guess_license()
@@ -204,6 +204,8 @@ _package_debian()
 
 _debian_changelog()
 {
+	#FIXME really implement
+	:
 }
 
 _debian_control()
@@ -494,6 +496,7 @@ _info()
 _size()
 {
 	while getopts "" name; do
+		:
 	done
 	shift $((OPTIND - 1))
 	[ $# -ne 1 ]						&& return 2
