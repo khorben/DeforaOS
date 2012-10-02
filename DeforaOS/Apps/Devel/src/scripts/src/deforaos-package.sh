@@ -32,6 +32,7 @@ VERSION=
 CKSUM="cksum"
 CUT="cut"
 DCH="dch"
+DPKG_BUILDPACKAGE="dpkg-buildpackage -rfakeroot"
 FIND="find"
 GREP="grep"
 MAKE="make"
@@ -43,7 +44,7 @@ SHA1="sha1"
 SIZE="_size"
 TR="tr"
 WC="wc"
-YEAR=$(date +%Y)
+YEAR="$(date +%Y)"
 #dependencies
 DEPEND_desktop=0
 DEPEND_docbook=0
@@ -208,6 +209,15 @@ _package_debian()
 		$RM -r -- "debian"
 		_error "Could not create debian/changelog"
 		return 2
+	fi
+
+	#build the package
+	_info "Building the package..."
+	$DPKG_BUILDPACKAGE
+	#XXX ignore errors if the command is not installed
+	if [ $ret -eq 127 ]; then
+		_warning "Could not build the package"
+		return 0
 	fi
 }
 
