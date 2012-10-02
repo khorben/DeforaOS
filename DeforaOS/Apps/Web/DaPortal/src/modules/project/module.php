@@ -315,10 +315,14 @@ class ProjectModule extends ContentModule
 		$db = $engine->getDatabase();
 		$query = $this->project_query_get;
 
-		if(($res = $db->query($engine, $query, array(
-					'module_id' => $this->id,
-					'user_id' => $cred->getUserId(),
-					'content_id' => $id))) === FALSE
+		$args = array('module_id' => $this->id,
+			'user_id' => $cred->getUserId(), 'content_id' => $id);
+		if($title !== FALSE)
+		{
+			$query .= ' AND daportal_content.title LIKE :title';
+			$args['title'] = str_replace('-', '_', $title);
+		}
+		if(($res = $db->query($engine, $query, $args)) === FALSE
 				|| count($res) != 1)
 			return FALSE;
 		$res = $res[0];
