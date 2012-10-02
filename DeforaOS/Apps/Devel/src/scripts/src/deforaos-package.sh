@@ -237,11 +237,13 @@ MAKE_FLAGS+=	DESTDIR=${DESTDIR}
 AUTO_MKDIRS=	yes
 EOF
 
+	cat >> "$pkgname/Makefile" << EOF
+
+EOF
 	[ $DEPEND_desktop -eq 1 ] && cat >> "$pkgname/Makefile" << EOF
 .include "../../sysutils/desktop-file-utils/desktopdb.mk"
 EOF
 	cat >> "$pkgname/Makefile" << EOF
-
 .include "../../mk/bsd.pkg.mk"
 EOF
 
