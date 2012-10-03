@@ -331,10 +331,68 @@ _debian_menu()
 	_info "Creating debian/menu..."
 	$TOUCH "debian/menu"					|| return 2
 	for i in $menus; do
-		#FIXME really implement
+		section="Applications"
+		title="$i"
+		command="/usr/bin/$i"
+
+		while read line; do
+			name="${line%%=*}"
+			value="${line#*=}"
+			case "$name" in
+				Categories)
+					case "$value" in
+						*Accessibility*)
+							section="Applications/Accessibility"
+							;;
+						*Player*)
+							section="Applications/Video"
+							;;
+						*Audio*|*Mixer*)
+							section="Applications/Sound"
+							;;
+						*ContactManagement*)
+							section="Applications/Data Management"
+							;;
+						*Development*)
+							section="Applications/Programming"
+							;;
+						*Documentation*)
+							section="Help"
+							;;
+						*Email*|*Telephony*)
+							section="Applications/Network/Communication"
+							;;
+						*FileManager*)
+							section="Applications/File Management"
+							;;
+						*Viewer*)
+							section="Applications/Viewers"
+							;;
+						*Office*)
+							section="Applications/Office"
+							;;
+						*Settings*)
+							section="Applications/System/Administration"
+							;;
+						*TextEditor*)
+							section="Applications/Editors"
+							;;
+						*WebBrowser*)
+							section="Applications/Network/Web Browsing"
+							;;
+					esac
+					;;
+				Exec)
+					command="/usr/bin/$value"
+					;;
+				Name)
+					title="$value"
+					;;
+			esac
+		done < "data/$i.desktop"
 		echo "?package($pkgname):needs=\"X11\" \\"
-		echo "	section=\"Applications\" \\"
-		echo "	title=\"$i\" command=\"/usr/bin/$i\""
+		echo "	section=\"$section\" \\"
+		echo "	title=\"$title\" command=\"$command\""
 	done >> "debian/menu"
 }
 
