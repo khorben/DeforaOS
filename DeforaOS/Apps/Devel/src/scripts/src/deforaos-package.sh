@@ -213,6 +213,9 @@ _package_debian()
 		return 2
 	fi
 
+	#debian/install
+	_debian_install
+
 	#debian/menu
 	_debian_menu
 
@@ -273,6 +276,17 @@ Depends: \${shlibs:Depends}, \${misc:Depends}
 Description: DeforaOS $PACKAGE
   DeforaOS $PACKAGE
 EOF
+
+	#also generate a development package if necessary
+	[ -d "include" ] && cat << EOF
+
+Package: $pkgname-dev
+Section: libdevel
+Architecture: any
+Depends: $pkgname (= \${binary:Version})
+Description: DeforaOS $PACKAGE (development files)
+  DeforaOS $PACKAGE (development files)
+EOF
 }
 
 _debian_copyright()
@@ -313,6 +327,24 @@ License: GPL-3
 EOF
 			;;
 	esac
+}
+
+_debian_install()
+{
+	[ -d "include" ] || return 0
+
+	cat > "debian/$pkgname.install" << EOF
+usr/bin/*
+usr/lib/lib*.so.*
+EOF
+
+	cat > "debian/$pkgname-dev.install" << EOF
+usr/include/*
+usr/lib/lib*.a
+usr/lib/lib*.so
+usr/lib/pkgconfig/*.pc
+usr/share/gtk-doc/html/*
+EOF
 }
 
 _debian_menu()
@@ -407,6 +439,9 @@ _debian_menu()
 
 _debian_rules()
 {
+	destdir="\$(PWD)/debian/$pkgname"
+
+	[ -d "include" ] && destdir="\$(PWD)/debian/tmp"
 	cat << EOF
 #!/usr/bin/make -f
 # -*- makefile -*-
@@ -437,7 +472,7 @@ endif
 	dh \$@
 
 override_dh_auto_install:
-	\$(MAKE) DESTDIR="\$(PWD)/debian/$pkgname" PREFIX="/usr" install
+	\$(MAKE) DESTDIR="$destdir" PREFIX="/usr" install
 EOF
 }
 
