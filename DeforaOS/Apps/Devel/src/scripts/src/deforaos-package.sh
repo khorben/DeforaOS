@@ -290,7 +290,7 @@ Package: $pkgname$major
 Architecture: any
 Depends: \${shlibs:Depends}, \${misc:Depends}
 Description: DeforaOS $PACKAGE
-  DeforaOS $PACKAGE
+ DeforaOS $PACKAGE
 EOF
 
 	#also generate a development package if necessary
@@ -302,7 +302,7 @@ Section: libdevel
 Architecture: any
 Depends: $pkgname$major (= \${binary:Version})
 Description: DeforaOS $PACKAGE (development files)
-  DeforaOS $PACKAGE (development files)
+ DeforaOS $PACKAGE (development files)
 EOF
 }
 
