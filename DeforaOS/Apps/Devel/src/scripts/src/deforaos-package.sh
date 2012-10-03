@@ -338,55 +338,64 @@ _debian_menu()
 		while read line; do
 			name="${line%%=*}"
 			value="${line#*=}"
+
+			#determine the most essential values
 			case "$name" in
 				Categories)
-					case "$value" in
-						*Accessibility*)
-							section="Applications/Accessibility"
-							;;
-						*Player*)
-							section="Applications/Video"
-							;;
-						*Audio*|*Mixer*)
-							section="Applications/Sound"
-							;;
-						*ContactManagement*)
-							section="Applications/Data Management"
-							;;
-						*Development*)
-							section="Applications/Programming"
-							;;
-						*Documentation*)
-							section="Help"
-							;;
-						*Email*|*Telephony*)
-							section="Applications/Network/Communication"
-							;;
-						*FileManager*)
-							section="Applications/File Management"
-							;;
-						*Viewer*)
-							section="Applications/Viewers"
-							;;
-						*Office*)
-							section="Applications/Office"
-							;;
-						*Settings*)
-							section="Applications/System/Administration"
-							;;
-						*TextEditor*)
-							section="Applications/Editors"
-							;;
-						*WebBrowser*)
-							section="Applications/Network/Web Browsing"
-							;;
-					esac
 					;;
 				Exec)
 					command="/usr/bin/$value"
+					continue
 					;;
 				Name)
 					title="$value"
+					continue
+					;;
+				*)
+					continue
+					;;
+			esac
+
+			#determine the section
+			case "$value" in
+				*Accessibility*)
+					section="Applications/Accessibility"
+					;;
+				*Player*)
+					section="Applications/Video"
+					;;
+				*Audio*|*Mixer*)
+					section="Applications/Sound"
+					;;
+				*ContactManagement*)
+					section="Applications/Data Management"
+					;;
+				*Development*)
+					section="Applications/Programming"
+					;;
+				*Documentation*)
+					section="Help"
+					;;
+				*Email*|*Telephony*)
+					section="Applications/Network/Communication"
+					;;
+				*FileManager*)
+					section="Applications/File Management"
+					;;
+				*Viewer*)
+					section="Applications/Viewers"
+					;;
+				*Office*)
+					section="Applications/Office"
+					;;
+				*Settings*)
+					section="Applications/System/Administration"
+					;;
+				*TextEditor*)
+					section="Applications/Editors"
+					;;
+				*WebBrowser*)
+					section="Applications/Network/Web Browsing"
 					;;
 			esac
 		done < "data/$i.desktop"
