@@ -278,7 +278,8 @@ Description: DeforaOS $PACKAGE
 EOF
 
 	#also generate a development package if necessary
-	[ -d "include" ] && cat << EOF
+	[ -z "${PACKAGE%%lib*}" ] || return 0
+	cat << EOF
 
 Package: $pkgname-dev
 Section: libdevel
@@ -331,10 +332,10 @@ EOF
 
 _debian_install()
 {
-	[ -d "include" ] || return 0
+	[ -z "${PACKAGE%%lib*}" ] || return 0
 
+	#FIXME some files may be missed (or absent)
 	cat > "debian/$pkgname.install" << EOF
-usr/bin/*
 usr/lib/lib*.so.*
 EOF
 
@@ -441,7 +442,7 @@ _debian_rules()
 {
 	destdir="\$(PWD)/debian/$pkgname"
 
-	[ -d "include" ] && destdir="\$(PWD)/debian/tmp"
+	[ -z "${PACKAGE%%lib*}" ] && destdir="\$(PWD)/debian/tmp"
 	cat << EOF
 #!/usr/bin/make -f
 # -*- makefile -*-
