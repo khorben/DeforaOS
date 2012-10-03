@@ -255,22 +255,31 @@ _debian_compat()
 
 _debian_control()
 {
+	section="unknown"
+
+	#library major
+	major=
+	if [ -z "${PACKAGE%%lib*}" ]; then
+		major=0
+		section="libs"
+	fi
+
 	#build dependencies
-	#FIXME detect more dependencies
 	depends="debhelper (>= 7.0.50~)"
 	[ $DEPEND_docbookxsl -eq 1 ] && depends="$depends, docbook-xsl"
 	[ $DEPEND_xgettext -eq 1 ] && depends="$depends, gettext"
+	[ $DEPEND_pkgconfig -eq 1 ] && depends="$depends, pkg-config"
 
 	cat << EOF
 Source: $pkgname
-Section: unknown
+Section: $section
 Priority: extra
 Maintainer: $FULLNAME <$EMAIL>
 Build-Depends: $depends
 Standards-Version: 3.8.4
 Homepage: $HOMEPAGE/os/project/$ID/$PACKAGE
 
-Package: $pkgname
+Package: $pkgname$major
 Architecture: any
 Depends: \${shlibs:Depends}, \${misc:Depends}
 Description: DeforaOS $PACKAGE
@@ -278,13 +287,13 @@ Description: DeforaOS $PACKAGE
 EOF
 
 	#also generate a development package if necessary
-	[ -z "${PACKAGE%%lib*}" ] || return 0
+	[ -n "$major" ] || return 0
 	cat << EOF
 
 Package: $pkgname-dev
 Section: libdevel
 Architecture: any
-Depends: $pkgname (= \${binary:Version})
+Depends: $pkgname$major (= \${binary:Version})
 Description: DeforaOS $PACKAGE (development files)
   DeforaOS $PACKAGE (development files)
 EOF
@@ -332,10 +341,13 @@ EOF
 
 _debian_install()
 {
-	[ -z "${PACKAGE%%lib*}" ] || return 0
+	major=
+	[ -z "${PACKAGE%%lib*}" ] && major=0
+
+	[ -n "$major" ] || return 0
 
 	#FIXME some files may be missed (or absent)
-	cat > "debian/$pkgname.install" << EOF
+	cat > "debian/$pkgname$major.install" << EOF
 usr/lib/lib*.so.*
 EOF
 
