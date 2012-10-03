@@ -35,6 +35,7 @@ DCH="dch"
 DPKG_BUILDPACKAGE="dpkg-buildpackage -rfakeroot"
 FIND="find"
 GREP="grep"
+LINTIAN="lintian"
 MAKE="make"
 MKDIR="mkdir -p"
 PKGLINT="pkglint"
@@ -226,10 +227,13 @@ _package_debian()
 	_info "Building the package..."
 	$DPKG_BUILDPACKAGE
 	#XXX ignore errors if the command is not installed
-	if [ $ret -eq 127 ]; then
+	if [ $? -eq 127 ]; then
 		_warning "Could not build the package"
 		return 0
 	fi
+
+	#check the package
+	_debian_lintian
 }
 
 _debian_changelog()
@@ -361,6 +365,27 @@ usr/lib/lib*.so
 usr/lib/pkgconfig/*.pc
 usr/share/gtk-doc/html/*
 EOF
+}
+
+_debian_lintian()
+{
+	arch="$(dpkg --print-architecture)"
+	major=0
+
+	_info "Checking the package..."
+	#XXX only check for the packages built this time
+	for i in "../${pkgname}_$VERSION-${revision}_$arch.deb" \
+		"../$pkgname$major_$VERSION-${revision}_$arch.deb" \
+		"../$pkgname-dev_$VERSION-${revision}_$arch.deb"; do
+		[ ! -f "$i" ] && continue
+
+		$LINTIAN "$i"
+		#XXX ignore errors if the command is not installed
+		if [ $? -eq 127 ]; then
+			_warning "Could not check the package"
+			return 0
+		fi
+	done
 }
 
 _debian_menu()
@@ -561,7 +586,7 @@ _package_pkgsrc()
 		return 2
 	fi
 
-	#running pkglint
+	#check the package
 	_info "Running pkglint..."
 	#XXX ignore errors for now
 	(cd "$pkgname" && $PKGLINT)
