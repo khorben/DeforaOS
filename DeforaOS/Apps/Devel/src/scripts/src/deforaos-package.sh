@@ -53,6 +53,8 @@ DEPEND_gtkdoc=0
 DEPEND_pkgconfig=0
 DEPEND_xgettext=0
 #method-specific
+DEBIAN_PREFIX="deforaos-"
+PKGSRC_PREFIX="deforaos-"
 PKGSRC_ROOT="/usr/pkgsrc"
 
 
@@ -76,6 +78,7 @@ deforaos_package()
 	#call the proper packaging function
 	case "$METHOD" in
 		debian|pkgsrc)
+			_info "Packaging for $METHOD"
 			_package_$METHOD "$revision"
 			[ $? -ne 0 ] && return 2
 			;;
@@ -179,7 +182,7 @@ _package_guess_name()
 #package_debian
 _package_debian()
 {
-	pkgname=$(echo "deforaos-$PACKAGE" | $TR A-Z a-z)
+	pkgname=$(echo "$DEBIAN_PREFIX$PACKAGE" | $TR A-Z a-z)
 
 	$RM -r -- "debian"					|| return 2
 	$MKDIR -- "debian"					|| return 2
@@ -495,8 +498,6 @@ _package_pkgsrc()
 {
 	revision="$1"
 
-	_info "Packaging for pkgsrc"
-
 	#the archive is needed
 	_info "Checking the source archive..."
 	if [ ! -f "$PACKAGE-$VERSION.tar.gz" ]; then
@@ -506,7 +507,7 @@ _package_pkgsrc()
 	fi
 
 	distname="$PACKAGE-$VERSION"
-	pkgname=$(echo "deforaos-$PACKAGE" | $TR A-Z a-z)
+	pkgname=$(echo "$PKGSRC_PREFIX$PACKAGE" | $TR A-Z a-z)
 
 	$RM -r -- "pkgname"					|| return 2
 	$MKDIR -- "$pkgname"					|| return 2
