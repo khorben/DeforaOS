@@ -946,7 +946,7 @@ int desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 	SizeID size;
 
 	sc = XRRGetScreenInfo(GDK_DISPLAY_XDISPLAY(desktop->display),
-			GDK_WINDOW_XWINDOW(desktop->root));
+			GDK_WINDOW_XID(desktop->root));
 	size = XRRConfigCurrentConfiguration(sc, &r);
 	switch(layout)
 	{
@@ -967,8 +967,7 @@ int desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 	}
 	gdk_error_trap_push();
 	XRRSetScreenConfig(GDK_DISPLAY_XDISPLAY(desktop->display), sc,
-			GDK_WINDOW_XWINDOW(desktop->root), size, r,
-			CurrentTime);
+			GDK_WINDOW_XID(desktop->root), size, r, CurrentTime);
 	return gdk_error_trap_pop();
 }
 
