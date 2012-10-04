@@ -19,6 +19,7 @@
 #environment
 DEBUG=0
 DEVNULL="/dev/null"
+HOMEPAGE="https://www.defora.org"
 PROJECTCONF="project.conf"
 VERBOSE=0
 #executables
@@ -111,9 +112,9 @@ deforaos_release()
 	#all tests passed
 	_info "$archive is ready for release"
 	_info "The following steps are:"
-	_info " * upload to https://www.defora.org/os/project/submit/@ID@/$PACKAGE?type=release"
+	_info " * upload to $HOMEPAGE/os/project/submit/@ID@/$PACKAGE?type=release"
 	_info " * post on https://freecode.com/users/khorben"
-	_info " * publish a news on https://www.defora.org/os/news/submit"
+	_info " * publish a news on $HOMEPAGE/os/news/submit"
 	_info " * tweet (possibly via freecode)"
 	_info " * package where appropriate (see deforaos-package.sh)"
 }
@@ -150,7 +151,7 @@ _info()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-release.sh [-Dv] version" 1>&2
+	echo "Usage: deforaos-release.sh [-Dv][NAME=VALUE...] version" 1>&2
 	echo "  -D	Run in debugging mode" 1>&2
 	echo "  -v	Verbose mode" 1>&2
 	return 1
@@ -173,6 +174,21 @@ while getopts "Dv" name; do
 	esac
 done
 shift $((OPTIND - 1))
+#parse options
+while [ $# -gt 0 ]; do
+	case "$1" in
+		*=*)
+			VAR="${1%%=*}"
+			VALUE="${1#*=}"
+			export "$VAR"="$VALUE"
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
+done
+#parse arguments
 if [ $# -ne 1 ]; then
 	_usage
 	exit $?
