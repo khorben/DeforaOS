@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Keyboard 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-29 20:35+0200\n"
+"POT-Creation-Date: 2012-10-05 00:24+0200\n"
 "PO-Revision-Date: 2012-05-20 14:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,39 +16,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/keyboard.c:100
+#: ../src/keyboard.c:103
 msgid "_Quit"
 msgstr "_Quitter"
 
-#: ../src/keyboard.c:107
+#: ../src/keyboard.c:110
 msgid "_Hide"
 msgstr "Masquer"
 
-#: ../src/keyboard.c:115 ../src/keyboard.c:117
+#: ../src/keyboard.c:118 ../src/keyboard.c:120
 msgid "_About"
 msgstr "À propos"
 
-#: ../src/keyboard.c:124
+#: ../src/keyboard.c:127
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/keyboard.c:125
+#: ../src/keyboard.c:128
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/keyboard.c:126
+#: ../src/keyboard.c:129
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/keyboard.c:415
+#: ../src/keyboard.c:419
 msgid "Virtual keyboard"
 msgstr "Clavier virtuel"
 
-#: ../src/keyboard.c:524
+#: ../src/keyboard.c:529
 msgid "Keyboard"
 msgstr "Clavier"
 
-#: ../src/keyboard.c:635
+#: ../src/keyboard.c:640
 msgid "Virtual keyboard for the DeforaOS desktop"
 msgstr "Clavier virtuel pour l'environnement DeforaOS"
 
