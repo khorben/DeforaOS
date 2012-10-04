@@ -111,7 +111,7 @@ deforaos_release()
 	#all tests passed
 	_info "$archive is ready for release"
 	_info "The following steps are:"
-	_info " * upload to https://www.defora.org/os/project"
+	_info " * upload to https://www.defora.org/os/project/submit/@ID@/$PACKAGE?type=release"
 	_info " * post on https://freecode.com/users/khorben"
 	_info " * publish a news on https://www.defora.org/os/news/submit"
 	_info " * tweet (possibly via freecode)"
