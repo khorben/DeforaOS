@@ -635,8 +635,8 @@ _pkgsrc_makefile()
 # \$NetBSD\$
 
 DISTNAME=	$distname
-PKGNAME=	$pkgname-$VERSION
 EOF
+	[ "$distname" != "$pkgname-$VERSION" ] && echo "PKGNAME=	$pkgname-$VERSION"
 	[ $revision -gt 0 ] && cat << EOF
 PKGREVISION=	$revision
 EOF
@@ -674,8 +674,8 @@ EOF
 
 	cat << EOF
 
-MAKE_FLAGS+=	PREFIX=\${PREFIX}
 MAKE_FLAGS+=	DESTDIR=\${DESTDIR}
+MAKE_FLAGS+=	PREFIX=\${PREFIX}
 EOF
 
 	#rc.d scripts
@@ -739,7 +739,7 @@ _size()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method][-n name] revision" 1>&2
+	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method][-n name][NAME=VALUE...] revision" 1>&2
 	return 1
 }
 
@@ -776,6 +776,21 @@ while getopts "e:i:l:m:n:" name; do
 	esac
 done
 shift $((OPTIND - 1))
+#parse options
+while [ $# -gt 0 ]; do
+	case "$1" in
+		*=*)
+			VAR="${1%%=*}"
+			VALUE="${1#*=}"
+			export "$VAR"="$VALUE"
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
+done
+#parse arguments
 if [ $# -ne 1 ]; then
 	_usage
 	exit $?
