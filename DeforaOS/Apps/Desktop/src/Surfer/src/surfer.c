@@ -2001,8 +2001,9 @@ void surfer_view_security(Surfer * surfer)
 
 
 /* surfer_view_source */
-static void _on_source_close(GtkWidget * widget);
-static gboolean _on_source_closex(void);
+/* callbacks */
+static void _source_on_close(GtkWidget * widget);
+static gboolean _source_on_closex(void);
 
 void surfer_view_source(Surfer * surfer)
 {
@@ -2036,7 +2037,7 @@ void surfer_view_source(Surfer * surfer)
 	gtk_window_set_icon_name(GTK_WINDOW(window), "web-browser");
 #endif
 	group = gtk_accel_group_new();
-	cc = g_cclosure_new_swap(G_CALLBACK(_on_source_close), window, NULL);
+	cc = g_cclosure_new_swap(G_CALLBACK(_source_on_close), window, NULL);
 	gtk_accel_group_connect(group, GDK_KEY_W, GDK_CONTROL_MASK,
 			GTK_ACCEL_VISIBLE, cc);
 	gtk_window_add_accel_group(GTK_WINDOW(window), group);
@@ -2044,7 +2045,7 @@ void surfer_view_source(Surfer * surfer)
 	snprintf(buf, sizeof(buf), "%s%s", _("Web surfer - Source of "), url);
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_on_source_closex), NULL);
+				_source_on_closex), NULL);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -2063,12 +2064,12 @@ void surfer_view_source(Surfer * surfer)
 	gtk_widget_show_all(window);
 }
 
-static void _on_source_close(GtkWidget * widget)
+static void _source_on_close(GtkWidget * widget)
 {
 	gtk_widget_destroy(widget);
 }
 
-static gboolean _on_source_closex(void)
+static gboolean _source_on_closex(void)
 {
 	return FALSE;
 }
