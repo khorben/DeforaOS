@@ -418,6 +418,9 @@ static int _new_on_message(void * data, uint32_t value1, uint32_t value2,
 			if(what & PANEL_MESSAGE_SHOW_SETTINGS)
 				panel_show_preferences(panel, show);
 			break;
+		case PANEL_MESSAGE_EMBED:
+			/* ignore it (not meant to be handled here) */
+			break;
 	}
 	return 0;
 }

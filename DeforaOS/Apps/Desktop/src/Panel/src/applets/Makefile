@@ -1,4 +1,4 @@
-TARGETS	= battery.so bluetooth.so clock.so close.so cpu.so cpufreq.so desktop.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so mixer.so pager.so phone.so rotate.so separator.so spacer.so swap.so systray.so tasks.so template.so title.so usb.so volume.so wpa_supplicant.so
+TARGETS	= battery.so bluetooth.so clock.so close.so cpu.so cpufreq.so desktop.so embed.so gps.so gsm.so keyboard.so lock.so logout.so main.so memory.so mixer.so pager.so phone.so rotate.so separator.so spacer.so swap.so systray.so tasks.so template.so title.so usb.so volume.so wpa_supplicant.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -67,6 +67,13 @@ desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs x11`
 
 desktop.so: $(desktop_OBJS)
 	$(CCSHARED) -o desktop.so $(desktop_OBJS) $(desktop_LDFLAGS)
+
+embed_OBJS = embed.o
+embed_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+embed_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+embed.so: $(embed_OBJS)
+	$(CCSHARED) -o embed.so $(embed_OBJS) $(embed_LDFLAGS)
 
 gps_OBJS = gps.o
 gps_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -236,6 +243,9 @@ cpufreq.o: cpufreq.c ../../include/Panel.h
 desktop.o: desktop.c ../../include/Panel.h
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
+embed.o: embed.c ../../include/Panel.h
+	$(CC) $(embed_CFLAGS) -c embed.c
+
 gps.o: gps.c ../../include/Panel.h
 	$(CC) $(gps_CFLAGS) -c gps.c
 
@@ -300,7 +310,7 @@ wpa_supplicant.o: wpa_supplicant.c ../../include/Panel.h
 	$(CC) $(wpa_supplicant_CFLAGS) -c wpa_supplicant.c
 
 clean:
-	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(close_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(mixer_OBJS) $(pager_OBJS) $(phone_OBJS) $(rotate_OBJS) $(separator_OBJS) $(spacer_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(template_OBJS) $(title_OBJS) $(usb_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
+	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(close_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(embed_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(mixer_OBJS) $(pager_OBJS) $(phone_OBJS) $(rotate_OBJS) $(separator_OBJS) $(spacer_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(template_OBJS) $(title_OBJS) $(usb_OBJS) $(volume_OBJS) $(wpa_supplicant_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -320,6 +330,8 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- cpufreq.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- desktop.so $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 -- embed.so $(DESTDIR)$(LIBDIR)/Panel/applets/embed.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 -- gps.so $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
@@ -369,6 +381,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/embed.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/gsm.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/keyboard.so

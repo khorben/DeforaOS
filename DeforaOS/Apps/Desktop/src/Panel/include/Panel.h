@@ -69,7 +69,8 @@ typedef struct _PanelAppletDefinition
 
 typedef enum _PanelMessage
 {
-	PANEL_MESSAGE_SHOW = 0
+	PANEL_MESSAGE_SHOW = 0,
+	PANEL_MESSAGE_EMBED
 } PanelMessage;
 
 typedef enum _PanelMessageShow
