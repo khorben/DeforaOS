@@ -212,18 +212,17 @@ Panel * panel_new(PanelPrefs const * prefs)
 	iconsize = GTK_ICON_SIZE_INVALID;
 	if(panel->prefs.iconsize != NULL)
 		iconsize = gtk_icon_size_from_name(panel->prefs.iconsize);
-	switch(iconsize)
+	if(iconsize == GTK_ICON_SIZE_INVALID)
 	{
-		case GTK_ICON_SIZE_INVALID:
-			panel->top_helper.icon_size = _new_size(panel,
-					PANEL_POSITION_TOP);
-			panel->bottom_helper.icon_size = _new_size(panel,
-					PANEL_POSITION_BOTTOM);
-			break;
-		default:
-			panel->top_helper.icon_size = iconsize;
-			panel->bottom_helper.icon_size = iconsize;
-			break;
+		panel->top_helper.icon_size = _new_size(panel,
+				PANEL_POSITION_TOP);
+		panel->bottom_helper.icon_size = _new_size(panel,
+				PANEL_POSITION_BOTTOM);
+	}
+	else
+	{
+		panel->top_helper.icon_size = iconsize;
+		panel->bottom_helper.icon_size = iconsize;
 	}
 	panel->pr_window = NULL;
 	panel->ab_window = NULL;
