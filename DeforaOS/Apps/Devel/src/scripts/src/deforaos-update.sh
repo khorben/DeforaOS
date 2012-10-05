@@ -36,11 +36,12 @@ MKDIR="mkdir -m 0755 -p"
 RM="rm -f"
 TAR="tar"
 TOUCH="touch"
+XARGS="xargs"
 
 
 #functions
 #deforaos_update
-deforaos_update()
+_deforaos_update()
 {
 	#configure cvs if necessary
 	$MKDIR "$HOME"						|| exit 2
@@ -66,11 +67,11 @@ deforaos_update()
 	for i in *; do
 		echo "DeforaOS-$DATE/$i"
 	done | ($LN -s . "DeforaOS-$DATE" \
-			&& xargs $TAR -czf "$DESTDIR/htdocs/download/snapshots/DeforaOS-daily.tar.gz")
+			&& $XARGS $TAR -czf "$DESTDIR/htdocs/download/snapshots/DeforaOS-daily.tar.gz")
 	$RM "DeforaOS-$DATE"
 	echo "http://www.defora.org/download/snapshots/DeforaOS-daily.tar.gz"
 }
 
 
 #main
-deforaos_update 2>&1 | $MAIL -s "Daily CVS update: $DATE" "$EMAIL"
+_deforaos_update 2>&1 | $MAIL -s "Daily CVS update: $DATE" "$EMAIL"

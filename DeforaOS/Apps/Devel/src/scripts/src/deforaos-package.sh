@@ -61,7 +61,7 @@ PKGSRC_ROOT="/usr/pkgsrc"
 
 #functions
 #deforaos_package
-deforaos_package()
+_deforaos_package()
 {
 	revision="$1"
 
@@ -797,4 +797,4 @@ if [ $# -ne 1 ]; then
 fi
 revision="$1"
 
-deforaos_package "$revision"
+_deforaos_package "$revision"

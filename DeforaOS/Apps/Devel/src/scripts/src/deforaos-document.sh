@@ -46,7 +46,7 @@ TOUCH="touch"
 
 #functions
 #deforaos_document
-deforaos_document()
+_deforaos_document()
 {
 	#configure cvs if necessary
 	$MKDIR -- "$HOME"					|| exit 2
@@ -91,4 +91,4 @@ deforaos_document()
 
 #main
 [ -n "$ROOT" ] || exit 2
-deforaos_document 2>&1 | $MAIL -s "Daily CVS documentation: $DATE" "$EMAIL"
+_deforaos_document 2>&1 | $MAIL -s "Daily CVS documentation: $DATE" "$EMAIL"

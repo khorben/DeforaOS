@@ -68,7 +68,7 @@ error()
 
 
 #deforaos_build
-deforaos_build()
+_deforaos_build()
 {
 	#configure cvs if necessary
 	$MKDIR "$HOME"						|| exit 2
@@ -125,4 +125,4 @@ deforaos_build()
 
 
 #main
-deforaos_build 2>&1 | $MAIL -s "Daily CVS build Linux $ARCH: $DATE" "$EMAIL"
+_deforaos_build 2>&1 | $MAIL -s "Daily CVS build Linux $ARCH: $DATE" "$EMAIL"

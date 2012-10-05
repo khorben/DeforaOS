@@ -30,7 +30,7 @@ _debug()
 	res=$?
 	#ignore errors when the command is not available
 	[ $res -eq 127 ]					&& return 0
-	return $res;
+	return $res
 }
 
 
@@ -38,7 +38,7 @@ _debug()
 _usage()
 {
 	echo "Usage: phplint.sh target" 1>&2
-	return 1;
+	return 1
 }
 
 

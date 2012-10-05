@@ -17,22 +17,22 @@
 
 
 #environment
-DEBUG=0
+DEBUG=
 DEVNULL="/dev/null"
 HOMEPAGE="https://www.defora.org"
 PROJECTCONF="project.conf"
 VERBOSE=0
 #executables
-CVS="_debug cvs"
-MAKE="_debug make"
-RM="_debug rm -f"
-TAR="_debug tar"
+CVS="cvs"
+MAKE="make"
+RM="rm -f"
+TAR="tar"
 TR="tr"
 
 
 #functions
 #deforaos_release
-deforaos_release()
+_deforaos_release()
 {
 	version="$1"
 	PACKAGE=
@@ -60,7 +60,7 @@ deforaos_release()
 	fi
 
 	_info "Obtaining latest version..."
-	$CVS up -A
+	$DEBUG $CVS up -A
 	if [ $? -ne 0 ]; then
 		_error "Could not update the sources"
 		return $?
@@ -68,14 +68,14 @@ deforaos_release()
 
 	_info "Checking for differences..."
 	#XXX this method may be obsoleted in a future version of CVS
-	$CVS diff
+	$DEBUG $CVS diff
 	if [ $? -ne 0 ]; then
 		_error "The sources were modified"
 		return $?
 	fi
 
 	_info "Creating the archive..."
-	$MAKE dist
+	$DEBUG $MAKE dist
 	if [ $? -ne 0 ]; then
 		_error "Could not create the archive"
 		return $?
@@ -84,17 +84,17 @@ deforaos_release()
 	#check the archive
 	_info "Checking the archive..."
 	archive="$PACKAGE-$VERSION.tar.gz"
-	$TAR -xzf "$archive"
+	$DEBUG $TAR -xzf "$archive"
 	if [ $? -ne 0 ]; then
-		$RM -r -- "$PACKAGE-$VERSION"
+		$DEBUG $RM -r -- "$PACKAGE-$VERSION"
 		_error "Could not extract the archive"
 		return $?
 	fi
-	(cd "$PACKAGE-$VERSION" && $MAKE)
+	(cd "$PACKAGE-$VERSION" && $DEBUG $MAKE)
 	res=$?
-	$RM -r -- "$PACKAGE-$VERSION"
+	$DEBUG $RM -r -- "$PACKAGE-$VERSION"
 	if [ $res -ne 0 ]; then
-		$RM -- "$archive"
+		$DEBUG $RM -- "$archive"
 		_error "Could not validate the archive"
 		return $?
 	fi
@@ -103,7 +103,7 @@ deforaos_release()
 	tag=$(echo $version | $TR . -)
 	tag="${PACKAGE}_$tag"
 	_info "Tagging the sources as $tag..."
-	$CVS tag "$tag"
+	$DEBUG $CVS tag "$tag"
 	if [ $res -ne 0 ]; then
 		_error "Could not tag the sources"
 		return $?
@@ -123,12 +123,11 @@ deforaos_release()
 #debug
 _debug()
 {
-	if [ $DEBUG -eq 1 ]; then
+	if [ "$VERBOSE" -ne 0 ]; then
 		echo "$@"
-	elif [ $VERBOSE -eq 0 ]; then
-		"$@" > "$DEVNULL"
-	else
 		"$@"
+	else
+		"$@" > "$DEVNULL"
 	fi
 }
 
@@ -162,9 +161,10 @@ _usage()
 while getopts "Dv" name; do
 	case "$name" in
 		D)
-			DEBUG=1
+			DEBUG="_debug"
 			;;
 		v)
+			DEBUG="_debug"
 			VERBOSE=1
 			;;
 		?)
@@ -195,4 +195,4 @@ if [ $# -ne 1 ]; then
 fi
 version="$1"
 
-deforaos_release "$version"
+_deforaos_release "$version"
