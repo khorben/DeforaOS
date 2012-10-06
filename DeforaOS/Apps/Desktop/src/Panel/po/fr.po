@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-19 15:32+0200\n"
+"POT-Creation-Date: 2012-10-06 02:43+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -17,21 +17,25 @@ msgstr ""
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:166
+#: ../src/applets/battery.c:187
+msgid "Show the battery level"
+msgstr "Afficher le niveau de batterie"
+
+#: ../src/applets/battery.c:255
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:182 ../src/panel.c:497 ../src/panel.c:502
-#: ../src/run.c:214 ../src/run.c:220
+#: ../src/applets/battery.c:271 ../src/panel.c:483 ../src/panel.c:488
+#: ../src/run.c:216 ../src/run.c:222
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/applets/battery.c:188
+#: ../src/applets/battery.c:277
 #, c-format
 msgid "Battery level: %.0lf%%%s"
 msgstr "Batterie : %.0lf%%%s"
 
-#: ../src/applets/battery.c:189
+#: ../src/applets/battery.c:278
 msgid " (charging)"
 msgstr " (en charge)"
 
@@ -55,23 +59,23 @@ msgstr ""
 msgid "Close"
 msgstr "Fermer"
 
-#: ../src/applets/cpu.c:92
+#: ../src/applets/cpu.c:95
 msgid "CPU:"
 msgstr "CPU :"
 
-#: ../src/applets/cpu.c:109 ../src/applets/cpufreq.c:135
+#: ../src/applets/cpu.c:112 ../src/applets/cpufreq.c:137
 msgid "Unsupported platform"
 msgstr "Plate-forme non supportée"
 
-#: ../src/applets/cpufreq.c:100
+#: ../src/applets/cpufreq.c:102
 msgid "No support detected"
 msgstr "Aucun support détecté"
 
-#: ../src/applets/cpufreq.c:126 ../src/applets/cpufreq.c:166
+#: ../src/applets/cpufreq.c:128 ../src/applets/cpufreq.c:168
 msgid "MHz"
 msgstr "MHz"
 
-#: ../src/applets/cpufreq.c:165
+#: ../src/applets/cpufreq.c:167
 msgid "CPU frequency: "
 msgstr "Fréquence CPU : "
 
@@ -87,24 +91,24 @@ msgstr "GPS actif"
 msgid "GSM is enabled"
 msgstr "GSM actif"
 
-#: ../src/applets/keyboard.c:123
+#: ../src/applets/keyboard.c:130
 msgid "Show keyboard"
 msgstr "Afficher le clavier"
 
-#: ../src/applets/keyboard.c:278 ../src/applets/lock.c:113
-#: ../src/applets/mixer.c:279 ../src/run.c:108
+#: ../src/applets/keyboard.c:312 ../src/applets/lock.c:113
+#: ../src/applets/mixer.c:279 ../src/run.c:110
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/applets/keyboard.c:289 ../src/applets/mixer.c:290
+#: ../src/applets/keyboard.c:323 ../src/applets/mixer.c:290
 msgid "Width:"
 msgstr "Largeur :"
 
-#: ../src/applets/keyboard.c:300 ../src/applets/mixer.c:301
+#: ../src/applets/keyboard.c:334 ../src/applets/mixer.c:301
 msgid "Height:"
 msgstr "Hauteur :"
 
-#: ../src/applets/keyboard.c:311 ../src/applets/mixer.c:312
+#: ../src/applets/keyboard.c:345 ../src/applets/mixer.c:312
 msgid "Keep ratio"
 msgstr "Respecter les proportions"
 
@@ -116,8 +120,8 @@ msgstr "Verrouiller l'écran"
 msgid "logout: Logging out is disabled"
 msgstr "logout: Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:79 ../src/panel.c:1436 ../src/panel.c:1443
-#: ../src/panel.c:1452
+#: ../src/applets/logout.c:79 ../src/panel.c:1459 ../src/panel.c:1466
+#: ../src/panel.c:1475
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -149,11 +153,11 @@ msgstr "Suspendre"
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
-#: ../src/applets/memory.c:88
+#: ../src/applets/memory.c:92
 msgid "RAM:"
 msgstr "Mémoire :"
 
-#: ../src/applets/memory.c:103
+#: ../src/applets/memory.c:107
 msgid "memory: Unsupported platform"
 msgstr "memory: Plate-forme non supportée"
 
@@ -173,43 +177,43 @@ msgstr "Échange :"
 msgid "swap: Unsupported platform"
 msgstr "swap: Plate-forme non supportée"
 
-#: ../src/applets/tasks.c:458 ../src/applets/title.c:226
+#: ../src/applets/tasks.c:464 ../src/applets/title.c:233
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/applets/tasks.c:731
+#: ../src/applets/tasks.c:737
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../src/applets/tasks.c:733
+#: ../src/applets/tasks.c:739
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: ../src/applets/tasks.c:735
+#: ../src/applets/tasks.c:741
 msgid "Minimize"
 msgstr "Réduire"
 
-#: ../src/applets/tasks.c:737
+#: ../src/applets/tasks.c:743
 msgid "Shade"
 msgstr "Masquer"
 
-#: ../src/applets/tasks.c:739
+#: ../src/applets/tasks.c:745
 msgid "Stick"
 msgstr "Attacher"
 
-#: ../src/applets/tasks.c:741
+#: ../src/applets/tasks.c:747
 msgid "Maximize horizontally"
 msgstr "Maximiser horizontalement"
 
-#: ../src/applets/tasks.c:743
+#: ../src/applets/tasks.c:749
 msgid "Maximize vertically"
 msgstr "Maximiser verticalement"
 
-#: ../src/applets/tasks.c:747
+#: ../src/applets/tasks.c:753
 msgid "Change desktop"
 msgstr "Déplacer vers le bureau"
 
-#: ../src/applets/tasks.c:784
+#: ../src/applets/tasks.c:790
 msgid "Maximize"
 msgstr "Maximiser"
 
@@ -217,19 +221,19 @@ msgstr "Maximiser"
 msgid "USB networking device connected"
 msgstr "Périphérique réseau USB connecté"
 
-#: ../src/main.c:46
+#: ../src/main.c:47
 msgid ""
-"Usage: panel [-m monitor][-lsx]\n"
-"  -l\tUse icons the size of a large toolbar\n"
+"Usage: panel [-L|-S|-x][-m monitor]\n"
+"  -L\tUse icons the size of a large toolbar\n"
 "  -m\tMonitor to use (default: 0)\n"
-"  -s\tUse icons the size of a small toolbar\n"
+"  -S\tUse icons the size of a small toolbar\n"
 "  -x\tUse icons the size of menus\n"
 msgstr ""
-"Usage: panel [-m moniteur][-lsx]\n"
-"  -l\tIcônes de la taille d'une grosse barre d'outils\n"
-"  -m\tMoniteur à utiliser (par défaut : 0)\n"
-"  -s\tIcônes de la taille d'une petite barre d'outils\n"
+"Usage: panel [-L|-S|-x][-m moniteur]\n"
+"  -L\tIcônes de la taille d'une grosse barre d'outils\n"
+"  -S\tIcônes de la taille d'une petite barre d'outils\n"
 "  -x\tIcônes de la taille de menus\n"
+"  -m\tMoniteur à utiliser (par défaut : 0)\n"
 
 #: ../src/panel.c:118
 msgid "Large"
@@ -243,47 +247,51 @@ msgstr "Petite"
 msgid "Smaller"
 msgstr "Très petite"
 
-#: ../src/panel.c:620
+#: ../src/panel.c:606
 msgid "Panel preferences"
 msgstr "Préférences du Panel"
 
-#: ../src/panel.c:634
+#: ../src/panel.c:622
 msgid "General"
 msgstr "Général"
 
-#: ../src/panel.c:638
+#: ../src/panel.c:626
 msgid "Applets"
 msgstr "Greffons"
 
-#: ../src/panel.c:667
+#: ../src/panel.c:655
 msgid "Applets:"
 msgstr "Greffons :"
 
-#: ../src/panel.c:747
+#: ../src/panel.c:735
 msgid "Top panel:"
 msgstr "Panneau supérieur :"
 
-#: ../src/panel.c:753 ../src/panel.c:757 ../src/panel.c:788 ../src/panel.c:792
+#: ../src/panel.c:741 ../src/panel.c:745 ../src/panel.c:776 ../src/panel.c:780
 msgid "Default"
 msgstr "Par défaut"
 
-#: ../src/panel.c:782
+#: ../src/panel.c:770
 msgid "Bottom panel:"
 msgstr "Panneau inférieur :"
 
-#: ../src/panel.c:889
+#: ../src/panel.c:877
 msgid "Accept focus"
 msgstr "Autoriser le focus"
 
-#: ../src/panel.c:893
+#: ../src/panel.c:881
 msgid "Keep above other windows"
 msgstr "Conserver au dessus des fenêtres"
 
-#: ../src/panel.c:1366
+#: ../src/panel.c:1382
+msgid "Panel for the DeforaOS desktop"
+msgstr "Panel pour l'environnement DeforaOS"
+
+#: ../src/panel.c:1389
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1422
+#: ../src/panel.c:1445
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -294,7 +302,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1552
+#: ../src/panel.c:1575
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -305,7 +313,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1557
+#: ../src/panel.c:1580
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -316,15 +324,15 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1571 ../src/panel.c:1578 ../src/panel.c:1587
+#: ../src/panel.c:1594 ../src/panel.c:1601 ../src/panel.c:1610
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1577
+#: ../src/panel.c:1600
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: ../src/panelctl.c:61
+#: ../src/panelctl.c:60
 msgid ""
 "Usage: panelctl [-B|-S|-T|-b|-t]\n"
 "  -B\tShow the bottom panel\n"
@@ -340,35 +348,35 @@ msgstr ""
 "  -b\tMasquer le panel du bas\n"
 "  -t\tMasquer le panel du haut\n"
 
-#: ../src/run.c:102 ../src/run.c:114
+#: ../src/run.c:104 ../src/run.c:116
 msgid "Run program..."
 msgstr "Exécuter..."
 
-#: ../src/run.c:119
+#: ../src/run.c:121
 msgid "Executable files"
 msgstr "Fichiers exécutables"
 
-#: ../src/run.c:124
+#: ../src/run.c:126
 msgid "Shell scripts"
 msgstr "Scripts shell"
 
-#: ../src/run.c:128
+#: ../src/run.c:130
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: ../src/run.c:136
+#: ../src/run.c:138
 msgid "Run in a terminal"
 msgstr "Exécuter dans un terminal"
 
-#: ../src/run.c:326
+#: ../src/run.c:328
 msgid "Command not found"
 msgstr "Commande non trouvée"
 
-#: ../src/run.c:329
+#: ../src/run.c:331
 msgid "Permission denied"
 msgstr "Permissions insuffisantes"
 
-#: ../src/run.c:417
+#: ../src/run.c:420
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
 
