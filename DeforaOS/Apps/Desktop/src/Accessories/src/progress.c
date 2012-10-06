@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2007-2012 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Accessories */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,8 @@ typedef struct _Prefs
 	char * title;
 	size_t length;
 } Prefs;
-#define PREFS_z 0x1
+#define PREFS_x 0x1
+#define PREFS_z 0x2
 
 
 /* progress */
@@ -81,6 +82,7 @@ static gboolean _progress_closex(gpointer data);
 static void _progress_cancel(void);
 static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static void _progress_embedded(gpointer data);
 static gboolean _progress_idle_in(gpointer data);
 static gboolean _progress_idle_out(gpointer data);
 static gboolean _progress_timeout(gpointer data);
@@ -96,6 +98,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	GtkWidget * widget;
 	PangoFontDescription * bold;
 	char * q;
+	unsigned long id;
   
 	memset(&p, 0, sizeof(p));
 	p.prefs = prefs;
@@ -131,15 +134,24 @@ static int _progress(Prefs * prefs, char * argv[])
 	g_io_channel_set_encoding(p.out_channel, NULL, NULL);
 	p.out_id = 0;
 	/* graphical interface */
-	p.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(p.window), 300, 100);
+	if((prefs->flags & PREFS_x) == 0)
+	{
+		p.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(p.window), 300, 100);
 #if GTK_CHECK_VERSION(3, 0, 0)
-	gtk_window_set_has_resize_grip(GTK_WINDOW(p.window), FALSE);
+		gtk_window_set_has_resize_grip(GTK_WINDOW(p.window), FALSE);
 #endif
-	gtk_window_set_title(GTK_WINDOW(p.window), prefs->title != NULL
-			? prefs->title : "Progress");
-	g_signal_connect_swapped(G_OBJECT(p.window), "delete-event", G_CALLBACK(
-				_progress_closex), p.window);
+		gtk_window_set_title(GTK_WINDOW(p.window), prefs->title != NULL
+				? prefs->title : "Progress");
+		g_signal_connect_swapped(p.window, "delete-event", G_CALLBACK(
+					_progress_closex), p.window);
+	}
+	else
+	{
+		p.window = gtk_plug_new(0);
+		g_signal_connect_swapped(p.window, "embedded", G_CALLBACK(
+					_progress_embedded), &p);
+	}
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
@@ -199,7 +211,17 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(p.window), vbox);
 	gtk_container_set_border_width(GTK_CONTAINER(p.window), 4);
-	gtk_widget_show_all(p.window);
+	gtk_widget_show_all(vbox);
+	if((prefs->flags & PREFS_x) == 0)
+		/* show the window */
+		gtk_widget_show(p.window);
+	else
+	{
+		/* print the window ID and force a flush */
+		id = gtk_plug_get_id(GTK_PLUG(p.window));
+		printf("%lu\n", id);
+		fclose(stdout);
+	}
 	gtk_main();
 	close(p.fd);
 	close(p.fds[1]);
@@ -248,6 +270,13 @@ static int _error_do(Progress * progress, char const * message,
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+static void _progress_embedded(gpointer data)
+{
+	Progress * p = data;
+
+	gtk_widget_show(p->window);
 }
 
 static gboolean _progress_idle_in(gpointer data)
@@ -368,14 +397,14 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 	if(status == G_IO_STATUS_ERROR)
 	{
 		_progress_gerror(p, p->prefs->filename, error, 1);
-		g_io_channel_close(source);
+		g_io_channel_shutdown(source, TRUE, NULL);
 		gtk_main_quit();
 		return FALSE;
 	}
 	else if(status == G_IO_STATUS_EOF)
 	{
 		p->eof = 1; /* reached end of input file */
-		g_io_channel_close(source);
+		g_io_channel_shutdown(source, TRUE, NULL);
 	}
 	else if(p->buf_cnt + read != p->bufsiz)
 		g_idle_add(_progress_idle_in, p); /* continue to read */
@@ -408,7 +437,7 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 	{
 		p->eof = 1; /* reached end of output file */
 		_progress_error(p, p->prefs->filename, 1);
-		g_io_channel_close(source);
+		g_io_channel_shutdown(source, TRUE, NULL);
 	}
 	else if(p->buf_cnt == p->bufsiz)
 		g_idle_add(_progress_idle_in, p); /* read again */
@@ -420,7 +449,7 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 		g_idle_add(_progress_idle_out, p); /* continue to write */
 	else if(p->eof == 1) /* reached end of output */
 	{
-		g_io_channel_close(p->out_channel);
+		g_io_channel_shutdown(p->out_channel, TRUE, NULL);
 		gtk_main_quit();
 	}
 	return FALSE;
@@ -524,9 +553,10 @@ static void _timeout_progress(Progress * progress)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: progress [-z][-b buffer size][-f file][-l length]"
+	fputs("Usage: progress [-x][-z][-b buffer size][-f file][-l length]"
 "[-p prefix]\n"
-"                [-t title] cmd [args...]\n", stderr);
+"                [-t title] cmd [args...]\n"
+"  -x	Start in embedded mode\n", stderr);
 	return 1;
 }
 
@@ -541,7 +571,7 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.bufsiz = 65536;
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "b:f:l:t:z")) != -1)
+	while((o = getopt(argc, argv, "b:f:l:t:xz")) != -1)
 		switch(o)
 		{
 			case 'b':
@@ -560,6 +590,9 @@ int main(int argc, char * argv[])
 				break;
 			case 't':
 				prefs.title = optarg;
+				break;
+			case 'x':
+				prefs.flags |= PREFS_x;
 				break;
 			case 'z':
 				prefs.flags |= PREFS_z;
