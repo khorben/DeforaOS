@@ -36,6 +36,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/targets/NetBSD-amd64 \
 		$(PACKAGE)-$(VERSION)/targets/NetBSD-i386 \
 		$(PACKAGE)-$(VERSION)/targets/NetBSD-sparc \
+		$(PACKAGE)-$(VERSION)/targets/NetBSD-sparc64 \
 		$(PACKAGE)-$(VERSION)/targets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
