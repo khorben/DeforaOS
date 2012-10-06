@@ -52,7 +52,7 @@ static void _embed_on_added(gpointer data);
 static int _embed_on_desktop_message(void * data, uint32_t value1,
 		uint32_t value2, uint32_t value3);
 static int _embed_on_idle(gpointer data);
-static gboolean _embed_on_removed(GtkWidget * widget, gpointer data);
+static gboolean _embed_on_removed(gpointer data);
 static void _embed_on_toggled(gpointer data);
 
 
@@ -147,7 +147,7 @@ static int _embed_on_desktop_message(void * data, uint32_t value1,
 	socket = gtk_socket_new();
 	g_signal_connect_swapped(socket, "plug-added", G_CALLBACK(
 				_embed_on_added), embed);
-	g_signal_connect(socket, "plug-removed", G_CALLBACK(
+	g_signal_connect_swapped(socket, "plug-removed", G_CALLBACK(
 				_embed_on_removed), embed);
 	gtk_widget_show(socket);
 	gtk_box_pack_start(GTK_BOX(embed->vbox), socket, FALSE, TRUE, 0);
@@ -182,7 +182,7 @@ static int _embed_on_idle(gpointer data)
 
 
 /* embed_on_removed */
-static gboolean _embed_on_removed(GtkWidget * widget, gpointer data)
+static gboolean _embed_on_removed(gpointer data)
 {
 	Embed * embed = data;
 
