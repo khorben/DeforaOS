@@ -116,6 +116,7 @@ static int _download_write(Download * download);
 static void _download_on_browse(gpointer data);
 static void _download_on_cancel(gpointer data);
 static gboolean _download_on_closex(gpointer data);
+static void _download_on_embedded(gpointer data);
 
 #ifndef WITH_WEBKIT
 static void _download_on_http(GConnHttp * conn, GConnHttpEvent * event,
@@ -142,6 +143,7 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	GtkSizeGroup * left;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
+	unsigned long id;
 
 	/* verify arguments */
 	if(prefs == NULL || url == NULL)
@@ -183,16 +185,26 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 		return NULL;
 	}
 	/* window */
-	download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s %s", _("Download"), download->url);
+	if(prefs->embedded == 0)
+	{
+		download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		snprintf(buf, sizeof(buf), "%s %s", _("Download"),
+				download->url);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(download->window),
-			"stock_download");
+		gtk_window_set_icon_name(GTK_WINDOW(download->window),
+				"stock_download");
 #endif
-	gtk_window_set_resizable(GTK_WINDOW(download->window), FALSE);
-	gtk_window_set_title(GTK_WINDOW(download->window), buf);
-	g_signal_connect_swapped(G_OBJECT(download->window), "delete-event",
-			G_CALLBACK(_download_on_closex), download);
+		gtk_window_set_resizable(GTK_WINDOW(download->window), FALSE);
+		gtk_window_set_title(GTK_WINDOW(download->window), buf);
+		g_signal_connect_swapped(download->window, "delete-event",
+				G_CALLBACK(_download_on_closex), download);
+	}
+	else
+	{
+		download->window = gtk_plug_new(0);
+		g_signal_connect_swapped(download->window, "embedded",
+				G_CALLBACK(_download_on_embedded), download);
+	}
 	vbox = gtk_vbox_new(FALSE, 2);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
@@ -243,7 +255,15 @@ Download * download_new(DownloadPrefs * prefs, char const * url)
 	gtk_container_add(GTK_CONTAINER(download->window), vbox);
 	download->timeout = g_idle_add(_download_on_idle, download);
 	_download_refresh(download);
-	gtk_widget_show_all(download->window);
+	gtk_widget_show_all(vbox);
+	if(prefs->embedded == 0)
+		gtk_widget_show(download->window);
+	else
+	{
+		id = gtk_plug_get_id(GTK_PLUG(download->window));
+		printf("%lu\n", id);
+		fclose(stdout);
+	}
 	_download_cnt++;
 	return download;
 }
@@ -568,6 +588,15 @@ static gboolean _download_on_closex(gpointer data)
 }
 
 
+/* download_on_embedded */
+static void _download_on_embedded(gpointer data)
+{
+	Download * download = data;
+
+	gtk_widget_show(download->window);
+}
+
+
 /* download_on_http */
 #ifndef WITH_WEBKIT
 static void _http_connected(Download * download);
@@ -830,7 +859,8 @@ static gboolean _download_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: download [-O output][-U user-agent] URL...\n"
+	fputs(_("Usage: download [-x][-O output][-U user-agent] URL...\n"
+"  -x	Start in embedded mode\n"
 "  -O	File to write the remote document to\n"
 "  -U	User-agent string to send\n"), stderr);
 	return 1;
@@ -855,7 +885,7 @@ int main(int argc, char * argv[])
 	if(g_thread_supported() == FALSE)
 		g_thread_init(NULL);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "O:U:")) != -1)
+	while((o = getopt(argc, argv, "O:U:x")) != -1)
 		switch(o)
 		{
 			case 'O':
@@ -863,6 +893,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'U':
 				prefs.user_agent = optarg;
+				break;
+			case 'x':
+				prefs.embedded = 1;
 				break;
 			default:
 				return _usage();

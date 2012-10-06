@@ -1057,6 +1057,7 @@ int surfer_download(Surfer * surfer, char const * url, char const * suggested)
 		return 0;
 	}
 #ifdef WITH_DOWNLOAD
+	memset(&prefs, 0, sizeof(prefs));
 	prefs.output = filename;
 	prefs.user_agent = NULL;
 	if((download = download_new(&prefs, url)) == NULL)

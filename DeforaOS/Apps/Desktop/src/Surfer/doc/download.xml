@@ -53,6 +53,7 @@
 					file</replaceable></arg>
 			<arg choice="opt"><option>-U</option> <replaceable>user
 					agent</replaceable></arg>
+			<arg choice="opt"><option>-x</option></arg>
 			<arg choice="plain" rep="repeat"><replaceable>URL</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
@@ -76,6 +77,12 @@
 				<term><option>-U</option></term>
 				<listitem>
 					<para>User-agent string to send.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-x</option></term>
+				<listitem>
+					<para>Start in embedded mode.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
