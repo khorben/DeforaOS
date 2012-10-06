@@ -80,6 +80,10 @@
 			<citerefentry>
 				<refentrytitle>panelctl</refentrytitle>
 				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>panel-notify</refentrytitle>
+				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>
 	</refsect1>

@@ -53,6 +53,7 @@
 				<arg choice="plain">-L</arg>
 				<arg choice="plain">-S</arg>
 				<arg choice="plain">-X</arg>
+				<arg choice="plain">-x</arg>
 			</group>
 			<arg choice="opt">-t <replaceable>timeout</replaceable></arg>
 			<arg choice="plain" rep="repeat"><replaceable>applet</replaceable></arg>
@@ -91,6 +92,12 @@
 			<varlistentry>
 				<term><option>-X</option></term>
 				<listitem>
+					<para>Use huge icons.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-x</option></term>
+				<listitem>
 					<para>Use icons the size of menus.</para>
 				</listitem>
 			</varlistentry>
@@ -123,6 +130,10 @@
 			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>panelctl</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>panel-embed</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>

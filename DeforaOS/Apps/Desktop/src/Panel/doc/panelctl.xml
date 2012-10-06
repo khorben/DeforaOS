@@ -113,6 +113,10 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
+				<refentrytitle>panel-embed</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
 				<refentrytitle>panel-notify</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>
