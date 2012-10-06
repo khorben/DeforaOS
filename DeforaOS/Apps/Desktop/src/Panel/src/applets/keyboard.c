@@ -467,8 +467,8 @@ static void _keyboard_on_toggled(GtkWidget * widget, gpointer data)
 		_init_idle(keyboard);
 	if(keyboard->window == NULL)
 		return;
-	helper->position_menu(helper->panel, (GtkMenu*)keyboard->window, &x, &y,
-			&push_in);
+	helper->position_menu(helper->panel, (GtkMenu *)keyboard->window,
+			&x, &y, &push_in);
 	gtk_window_move(GTK_WINDOW(keyboard->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 	{
