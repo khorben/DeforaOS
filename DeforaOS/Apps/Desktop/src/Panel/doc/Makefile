@@ -1,4 +1,4 @@
-TARGETS	= panel.1 panel.html panelctl.1 panelctl.html panel-notify.1 panel-notify.html
+TARGETS	= panel.1 panel.html panelctl.1 panelctl.html panel-embed.1 panel-embed.html panel-notify.1 panel-notify.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	?= rm -f
@@ -21,6 +21,12 @@ panelctl.1: panelctl.xml
 panelctl.html: panelctl.xml
 	./docbook.sh -P "$(PREFIX)" -- "panelctl.html"
 
+panel-embed.1: panel-embed.xml
+	./docbook.sh -P "$(PREFIX)" -- "panel-embed.1"
+
+panel-embed.html: panel-embed.xml
+	./docbook.sh -P "$(PREFIX)" -- "panel-embed.html"
+
 panel-notify.1: panel-notify.xml
 	./docbook.sh -P "$(PREFIX)" -- "panel-notify.1"
 
@@ -28,7 +34,7 @@ panel-notify.html: panel-notify.xml
 	./docbook.sh -P "$(PREFIX)" -- "panel-notify.html"
 
 clean:
-	$(RM) -- $(panel.1_OBJS) $(panel.html_OBJS) $(panelctl.1_OBJS) $(panelctl.html_OBJS) $(panel-notify.1_OBJS) $(panel-notify.html_OBJS)
+	$(RM) -- $(panel.1_OBJS) $(panel.html_OBJS) $(panelctl.1_OBJS) $(panelctl.html_OBJS) $(panel-embed.1_OBJS) $(panel-embed.html_OBJS) $(panel-notify.1_OBJS) $(panel-notify.html_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -38,6 +44,8 @@ install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panelctl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panelctl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel-embed.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel-embed.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel-notify.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "panel-notify.html"
 
@@ -46,6 +54,8 @@ uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panelctl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panelctl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel-embed.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel-embed.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel-notify.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "panel-notify.html"
 
