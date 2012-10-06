@@ -86,6 +86,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpufreq.c \
 		$(PACKAGE)-$(VERSION)/src/applets/desktop.c \
+		$(PACKAGE)-$(VERSION)/src/applets/embed.c \
 		$(PACKAGE)-$(VERSION)/src/applets/gps.c \
 		$(PACKAGE)-$(VERSION)/src/applets/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/applets/keyboard.c \
@@ -110,6 +111,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/Makefile \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.atoms \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/embed.c \
 		$(PACKAGE)-$(VERSION)/tools/notify.c \
 		$(PACKAGE)-$(VERSION)/tools/test.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
