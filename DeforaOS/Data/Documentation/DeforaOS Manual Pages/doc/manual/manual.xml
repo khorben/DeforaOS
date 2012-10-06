@@ -20,6 +20,7 @@
 <!ENTITY open1 "../../../../../Apps/Desktop/src/Browser/doc/open.xml">
 <!ENTITY panel1 "../../../../../Apps/Desktop/src/Panel/doc/panel.xml">
 <!ENTITY panelctl1 "../../../../../Apps/Desktop/src/Panel/doc/panelctl.xml">
+<!ENTITY panel-embed1 "../../../../../Apps/Desktop/src/Panel/doc/panel-embed.xml">
 <!ENTITY panel-notify1 "../../../../../Apps/Desktop/src/Panel/doc/panel-notify.xml">
 <!ENTITY projectconf5 "../../../../../Apps/Devel/src/configure/doc/project.conf.xml">
 <!ENTITY properties1 "../../../../../Apps/Desktop/src/Browser/doc/properties.xml">
@@ -46,6 +47,7 @@
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&open1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&panel1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&panelctl1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&panel-embed1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&panel-notify1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&properties1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&surfer1;"/>
