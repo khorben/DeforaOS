@@ -95,6 +95,7 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 	gtk_widget_set_tooltip_text(embed->button, "Show embedded widgets");
 #endif
 	gtk_button_set_relief(GTK_BUTTON(embed->button), GTK_RELIEF_NONE);
+	gtk_widget_set_sensitive(embed->button, FALSE);
 	g_signal_connect_swapped(G_OBJECT(embed->button), "toggled", G_CALLBACK(
 				_embed_on_toggled), embed);
 	image = gtk_image_new_from_icon_name(applet.icon, helper->icon_size);
@@ -193,7 +194,7 @@ static void _embed_on_removed(gpointer data)
 	{
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button),
 				FALSE);
-		gtk_widget_set_sensitive(embed->button, TRUE);
+		gtk_widget_set_sensitive(embed->button, FALSE);
 	}
 }
 
