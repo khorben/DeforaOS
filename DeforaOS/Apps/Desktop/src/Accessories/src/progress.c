@@ -27,6 +27,9 @@
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 
 
 /* types */
