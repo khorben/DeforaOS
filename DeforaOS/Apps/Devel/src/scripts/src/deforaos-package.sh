@@ -574,7 +574,7 @@ _package_pkgsrc()
 		return 2
 	fi
 	echo "@comment \$NetBSD\$" > "$pkgname/PLIST"
-	(cd "$tmpdir/usr/local" && $FIND . -type f | $CUT -c 3-) >> "$pkgname/PLIST"
+	(cd "$tmpdir/usr/local" && $FIND . -type f | $CUT -c 3- | sort) >> "$pkgname/PLIST"
 	$RM -r -- "$tmpdir"
 
 	#distinfo
