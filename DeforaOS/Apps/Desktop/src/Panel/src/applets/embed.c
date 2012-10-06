@@ -207,6 +207,9 @@ static void _embed_on_toggled(gpointer data)
 	gint x = 0;
 	gint y = 0;
 	gboolean push_in;
+#if GTK_CHECK_VERSION(2, 18, 0)
+	GtkAllocation allocation;
+#endif
 
 	if(embed->window == NULL)
 		_embed_on_idle(embed);
@@ -214,6 +217,10 @@ static void _embed_on_toggled(gpointer data)
 		return;
 	helper->position_menu(helper->panel, (GtkMenu *)embed->window, &x, &y,
 			&push_in);
+#if GTK_CHECK_VERSION(2, 18, 0)
+	gtk_widget_get_allocation(embed->button, &allocation);
+	x += allocation.x;
+#endif
 	gtk_window_move(GTK_WINDOW(embed->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(embed->button)))
 		gtk_widget_show(embed->window);
