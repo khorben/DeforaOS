@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - let automatic show/hide be in preferences */
 
 
 
@@ -31,6 +33,7 @@ typedef struct _PanelApplet
 	PanelAppletHelper * helper;
 
 	guint source;
+	guint count;
 
 	/* widgets */
 	GtkWidget * button;
@@ -45,10 +48,12 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 static void _embed_destroy(Embed * embed);
 
 /* callbacks */
+static void _embed_on_added(gpointer data);
 static int _embed_on_desktop_message(void * data, uint32_t value1,
 		uint32_t value2, uint32_t value3);
 static int _embed_on_idle(gpointer data);
-static void _embed_on_toggled(GtkWidget * widget, gpointer data);
+static void _embed_on_removed(gpointer data);
+static void _embed_on_toggled(gpointer data);
 
 
 /* public */
@@ -82,6 +87,7 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 	}
 	embed->helper = helper;
 	embed->source = 0;
+	embed->count = 0;
 	embed->window = NULL;
 	embed->vbox = NULL;
 	embed->button = gtk_toggle_button_new();
@@ -89,7 +95,7 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 	gtk_widget_set_tooltip_text(embed->button, "Show embedded widgets");
 #endif
 	gtk_button_set_relief(GTK_BUTTON(embed->button), GTK_RELIEF_NONE);
-	g_signal_connect(G_OBJECT(embed->button), "toggled", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(embed->button), "toggled", G_CALLBACK(
 				_embed_on_toggled), embed);
 	image = gtk_image_new_from_icon_name(applet.icon, helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(embed->button), image);
@@ -110,6 +116,20 @@ static void _embed_destroy(Embed * embed)
 
 
 /* callbacks */
+/* embed_on_added */
+static void _embed_on_added(gpointer data)
+{
+	Embed * embed = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button), TRUE);
+	gtk_widget_set_sensitive(embed->button, TRUE);
+	embed->count++;
+}
+
+
 /* embed_on_desktop_message */
 static int _embed_on_desktop_message(void * data, uint32_t value1,
 		uint32_t value2, uint32_t value3)
@@ -124,8 +144,12 @@ static int _embed_on_desktop_message(void * data, uint32_t value1,
 	if(value1 != PANEL_MESSAGE_EMBED)
 		return 0;
 	socket = gtk_socket_new();
-	gtk_box_pack_start(GTK_BOX(embed->vbox), socket, FALSE, TRUE, 0);
+	g_signal_connect_swapped(socket, "plug-added",
+			G_CALLBACK(_embed_on_added), embed);
+	g_signal_connect_swapped(socket, "plug-removed",
+			G_CALLBACK(_embed_on_removed), embed);
 	gtk_widget_show(socket);
+	gtk_box_pack_start(GTK_BOX(embed->vbox), socket, FALSE, TRUE, 0);
 	gtk_socket_add_id(GTK_SOCKET(socket), value2);
 	return 0;
 }
@@ -136,6 +160,9 @@ static int _embed_on_idle(gpointer data)
 {
 	Embed * embed = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	embed->source = 0;
 	embed->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_accept_focus(GTK_WINDOW(embed->window), FALSE);
@@ -154,8 +181,25 @@ static int _embed_on_idle(gpointer data)
 }
 
 
+/* embed_on_removed */
+static void _embed_on_removed(gpointer data)
+{
+	Embed * embed = data;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(embed->count > 0 && --embed->count == 0)
+	{
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button),
+				FALSE);
+		gtk_widget_set_sensitive(embed->button, TRUE);
+	}
+}
+
+
 /* embed_on_toggled */
-static void _embed_on_toggled(GtkWidget * widget, gpointer data)
+static void _embed_on_toggled(gpointer data)
 {
 	Embed * embed = data;
 	PanelAppletHelper * helper = embed->helper;
@@ -170,7 +214,7 @@ static void _embed_on_toggled(GtkWidget * widget, gpointer data)
 	helper->position_menu(helper->panel, (GtkMenu *)embed->window, &x, &y,
 			&push_in);
 	gtk_window_move(GTK_WINDOW(embed->window), x, y);
-	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(embed->button)))
 		gtk_widget_show(embed->window);
 	else
 		gtk_widget_hide(embed->window);
