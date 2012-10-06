@@ -44,7 +44,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: panel [-L | -S | -x][-m monitor]\n"
+	fputs(_("Usage: panel [-L|-S|-x][-m monitor]\n"
 "  -L	Use icons the size of a large toolbar\n"
 "  -m	Monitor to use (default: 0)\n"
 "  -S	Use icons the size of a small toolbar\n"

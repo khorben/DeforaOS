@@ -103,7 +103,7 @@ static int _test(GtkIconSize iconsize, char * applets[])
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel-test [-L | -S | -X | -x] applet...\n"
+	fputs("Usage: panel-test [-L|-S|-X|-x] applet...\n"
 "       panel-test -l\n"
 "  -l	Lists the plug-ins available\n", stderr);
 	return 1;

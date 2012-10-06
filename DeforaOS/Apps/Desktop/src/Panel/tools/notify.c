@@ -130,12 +130,12 @@ static gboolean _notify_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	/* FIXME also offer big icons and a specific monitor */
-	fputs("Usage: panel-notify [-L | -S | -X][-t timeout] applet...\n"
+	fputs("Usage: panel-notify [-L|-S|-X|-x][-t timeout] applet...\n"
 "       panel-notify -l\n"
 "  -L	Use icons the size of a large toolbar\n"
 "  -S	Use icons the size of a small toolbar\n"
-"  -X	Use icons the size of menus\n"
+"  -X	Use huge icons\n"
+"  -x	Use icons the size of menus\n"
 "  -t	Time to wait before disappearing (0: unlimited)\n"
 "  -l	Lists the plug-ins available\n", stderr);
 	return 1;
