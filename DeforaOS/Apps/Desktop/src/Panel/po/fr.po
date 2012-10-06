@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-06 02:43+0200\n"
+"POT-Creation-Date: 2012-10-06 04:16+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -120,8 +120,8 @@ msgstr "Verrouiller l'écran"
 msgid "logout: Logging out is disabled"
 msgstr "logout: Se déconnecter est désactivé"
 
-#: ../src/applets/logout.c:79 ../src/panel.c:1459 ../src/panel.c:1466
-#: ../src/panel.c:1475
+#: ../src/applets/logout.c:79 ../src/panel.c:1461 ../src/panel.c:1468
+#: ../src/panel.c:1477
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -283,15 +283,15 @@ msgstr "Autoriser le focus"
 msgid "Keep above other windows"
 msgstr "Conserver au dessus des fenêtres"
 
-#: ../src/panel.c:1382
+#: ../src/panel.c:1384
 msgid "Panel for the DeforaOS desktop"
 msgstr "Panel pour l'environnement DeforaOS"
 
-#: ../src/panel.c:1389
+#: ../src/panel.c:1391
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/panel.c:1445
+#: ../src/panel.c:1447
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
@@ -302,7 +302,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1575
+#: ../src/panel.c:1577
 msgid ""
 "This will shutdown your device, therefore closing any application currently "
 "opened and losing any unsaved data.\n"
@@ -313,7 +313,7 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1580
+#: ../src/panel.c:1582
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
@@ -324,11 +324,11 @@ msgstr ""
 "sauvegardées.\n"
 "Voulez-vous continuer?"
 
-#: ../src/panel.c:1594 ../src/panel.c:1601 ../src/panel.c:1610
+#: ../src/panel.c:1596 ../src/panel.c:1603 ../src/panel.c:1612
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:1600
+#: ../src/panel.c:1602
 msgid "Restart"
 msgstr "Redémarrer"
 
