@@ -52,7 +52,7 @@ static void _embed_on_added(gpointer data);
 static int _embed_on_desktop_message(void * data, uint32_t value1,
 		uint32_t value2, uint32_t value3);
 static int _embed_on_idle(gpointer data);
-static void _embed_on_removed(gpointer data);
+static gboolean _embed_on_removed(GtkWidget * widget, gpointer data);
 static void _embed_on_toggled(gpointer data);
 
 
@@ -145,10 +145,10 @@ static int _embed_on_desktop_message(void * data, uint32_t value1,
 	if(value1 != PANEL_MESSAGE_EMBED)
 		return 0;
 	socket = gtk_socket_new();
-	g_signal_connect_swapped(socket, "plug-added",
-			G_CALLBACK(_embed_on_added), embed);
-	g_signal_connect_swapped(socket, "plug-removed",
-			G_CALLBACK(_embed_on_removed), embed);
+	g_signal_connect_swapped(socket, "plug-added", G_CALLBACK(
+				_embed_on_added), embed);
+	g_signal_connect(socket, "plug-removed", G_CALLBACK(
+				_embed_on_removed), embed);
 	gtk_widget_show(socket);
 	gtk_box_pack_start(GTK_BOX(embed->vbox), socket, FALSE, TRUE, 0);
 	gtk_socket_add_id(GTK_SOCKET(socket), value2);
@@ -170,7 +170,6 @@ static int _embed_on_idle(gpointer data)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_focus_on_map(GTK_WINDOW(embed->window), FALSE);
 #endif
-	/* XXX let this be configurable (resize applications automatically) */
 	gtk_window_set_type_hint(GTK_WINDOW(embed->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	embed->vbox = gtk_vbox_new(FALSE, 0);
@@ -183,7 +182,7 @@ static int _embed_on_idle(gpointer data)
 
 
 /* embed_on_removed */
-static void _embed_on_removed(gpointer data)
+static gboolean _embed_on_removed(GtkWidget * widget, gpointer data)
 {
 	Embed * embed = data;
 
@@ -196,6 +195,7 @@ static void _embed_on_removed(gpointer data)
 				FALSE);
 		gtk_widget_set_sensitive(embed->button, FALSE);
 	}
+	return FALSE;
 }
 
 
