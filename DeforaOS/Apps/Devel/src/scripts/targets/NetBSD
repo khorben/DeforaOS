@@ -4,6 +4,7 @@
 
 
 #variables
+[ -z "$BOOTOPTIONS"	] && BOOTOPTIONS="console=pc"
 [ -z "$FDISK"		] && FDISK="fdisk"
 [ -z "$GZIP"		] && GZIP="gzip"
 [ -z "$IMAGE_BOOT"	] && IMAGE_BOOT="/usr/mdec/boot"
@@ -41,60 +42,60 @@ _image_image_pre()
 		MKNOD MOUNT MV UMOUNT VNCONFIG VND
 
 	$MKDIR -- "$DESTDIR"					|| exit 2
-	$SUDO $UMOUNT "$DESTDIR"
-	$SUDO $VNCONFIG -u "$VND"
-	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
-	$FDISK -Ffi "$IMAGE_FILE"				|| exit 2
+	$DEBUG $SUDO $UMOUNT "$DESTDIR"
+	$DEBUG $SUDO $VNCONFIG -u "$VND"
+	$DEBUG $DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
+	$DEBUG $FDISK -Ffi "$IMAGE_FILE"			|| exit 2
 	SIZE=$((IMAGE_SIZE * 2 - 63))
-	$FDISK -Ffu0s "169/63/$SIZE" "$IMAGE_FILE"		|| exit 2
-	$FDISK -Ffa0 "$IMAGE_FILE"				|| exit 2
-	$SUDO $VNCONFIG -c "$VND" "$IMAGE_FILE"			|| exit 2
-	$SUDO $MBRLABEL -frw "$VND"				&&
-	$SUDO $MKFS "${VND}e"					&&
-	$SUDO $MOUNT "/dev/${VND}e" "$DESTDIR"			&&
-	$SUDO $CHOWN "$UID:$GID" "$DESTDIR"			&&
-	$MKDIR -- "$DESTDIR$PREFIX"
+	$DEBUG $FDISK -Ffu0s "169/63/$SIZE" "$IMAGE_FILE"	|| exit 2
+	$DEBUG $FDISK -Ffa0 "$IMAGE_FILE"			|| exit 2
+	$DEBUG $SUDO $VNCONFIG -c "$VND" "$IMAGE_FILE"		|| exit 2
+	$DEBUG $SUDO $MBRLABEL -frw "$VND"			&&
+	$DEBUG $SUDO $MKFS "${VND}e"				&&
+	$DEBUG $SUDO $MOUNT "/dev/${VND}e" "$DESTDIR"		&&
+	$DEBUG $SUDO $CHOWN "$UID:$GID" "$DESTDIR"		&&
+	$DEBUG $MKDIR -- "$DESTDIR$PREFIX"
 }
 
 _image_image_post()
 {
-	$SUDO $CHOWN -R "0:0" "$DESTDIR"			&&
-	$SUDO $MKDIR -- "$DESTDIR/bin"				&&
-	$SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
-	$SUDO $MKDIR -- "$DESTDIR/dev"				&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0a" b 0 0		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0b" b 0 1		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0c" b 0 2		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0d" b 0 3		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0e" b 0 4		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0f" b 0 5		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0g" b 0 6		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0h" b 0 7		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0a" c 3 0		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0b" c 3 1		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0c" c 3 2		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0d" c 3 3		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0e" c 3 4		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0f" c 3 5		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0g" c 3 6		&&
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0h" c 3 7		&&
-	$SUDO $MKDIR -- "$DESTDIR/etc"				&&
-	$SUDO $MKDIR -- "$DESTDIR/libexec" \
-			"$DESTDIR/usr/libexec"			&&
-	$SUDO $INSTALL -m 555 "$LDSO" \
-			"$DESTDIR/libexec/ld.elf_so"		&&
-	$SUDO $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"&&
-	$SUDO $MKDIR -- "$DESTDIR/proc"				&&
-	$SUDO $MKDIR -- "$DESTDIR/sbin"				&&
-	SUBDIRS="Apps/Unix/src/others/tools" _target oinit	&&
-	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
-			"$DESTDIR/sbin/init"			&&
-	$SUDO $INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"	&&
+	$DEBUG $SUDO $CHOWN -R "0:0" "$DESTDIR"				&&
+	$DEBUG $SUDO $MKDIR -- "$DESTDIR/bin"				&&
+	$DEBUG $SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
+	$DEBUG $SUDO $MKDIR -- "$DESTDIR/dev"				&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0a" b 0 0		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0b" b 0 1		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0c" b 0 2		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0d" b 0 3		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0e" b 0 4		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0f" b 0 5		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0g" b 0 6		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0h" b 0 7		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0a" c 3 0		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0b" c 3 1		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0c" c 3 2		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0d" c 3 3		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0e" c 3 4		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0f" c 3 5		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0g" c 3 6		&&
+	$DEBUG $SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0h" c 3 7		&&
+	$DEBUG $SUDO $MKDIR -- "$DESTDIR/etc"				&&
+	$DEBUG $SUDO $MKDIR -- "$DESTDIR/libexec" \
+			"$DESTDIR/usr/libexec"				&&
+	$DEBUG $SUDO $INSTALL -m 555 "$LDSO" \
+			"$DESTDIR/libexec/ld.elf_so"			&&
+	$DEBUG $SUDO $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"&&
+	$DEBUG $SUDO $MKDIR -- "$DESTDIR/proc"				&&
+	$DEBUG $SUDO $MKDIR -- "$DESTDIR/sbin"				&&
+	SUBDIRS="Apps/Unix/src/others/tools" _target oinit		&&
+	$DEBUG $SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
+			"$DESTDIR/sbin/init"				&&
+	$DEBUG $SUDO $INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"	&&
 	BOOT_SPLASH="vesa 640x480x8;boot netbsd"
 	if [ -n "$IMAGE_SPLASH" ]; then
-		$SUDO $INSTALL -m 644 "$IMAGE_SPLASH" "$DESTDIR/netbsd.jpeg" \
-								|| exit 2
+		$DEBUG $SUDO $INSTALL -m 644 "$IMAGE_SPLASH" \
+			"$DESTDIR/netbsd.jpeg"			|| exit 2
 		BOOT_SPLASH="vesa 640x480x8;splash /netbsd.jpeg;boot netbsd -z"
 	fi
 	$SUDO sh -c "cat > $DESTDIR/boot.cfg" << EOF
@@ -110,14 +111,15 @@ default=1
 timeout=10
 EOF
 	if [ -n "$IMAGE_KERNEL" ]; then
-		$SUDO $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
-		$SUDO $INSTALLBOOT -m "$MACHINE" -o "timeout=10" \
+		$DEBUG $SUDO $INSTALL -m 0755 "$IMAGE_KERNEL" \
+			"$DESTDIR/netbsd"				&&
+		$DEBUG $SUDO $INSTALLBOOT -m "$MACHINE" -o "timeout=10" \
 			"/dev/r${VND}e" "/usr/mdec/bootxx_ffsv1"
 	fi
-	RET=$?
-	$SUDO $UMOUNT "$DESTDIR"
-	$SUDO $VNCONFIG -u "$VND"
-	return $RET
+	ret=$?
+	$DEBUG $SUDO $UMOUNT "$DESTDIR"
+	$DEBUG $SUDO $VNCONFIG -u "$VND"
+	return $ret
 }
 
 
@@ -141,25 +143,31 @@ _image_iso_pre()
 
 _image_iso_post()
 {
-	$MKDIR -- "$DESTDIR/dev"				|| exit 2
-	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
-	$MKDIR -- "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	|| exit 2
-	$INSTALL -m 555 "$LDSO" "$DESTDIR/libexec/ld.elf_so"	|| exit 2
-	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	|| exit 2
-	$MKDIR -- "$DESTDIR/sbin"				|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR/dev"				|| exit 2
+	$DEBUG $SUDO $MKNOD -m 0600 "$DESTDIR/dev/console" c 0 0 \
+								|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR/libexec" "$DESTDIR/usr/libexec" \
+								|| exit 2
+	$DEBUG $INSTALL -m 0555 "$LDSO" "$DESTDIR/libexec/ld.elf_so" \
+								|| exit 2
+	$DEBUG $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec" \
+								|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR/sbin"			|| exit 2
 	SUBDIRS="Apps/Unix/src/others/tools" _target oinit	|| exit 2
-	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
-			"$DESTDIR/sbin/init"			|| exit 2
-	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	|| exit 2
+	$DEBUG $INSTALL -m 0755 "Apps/Unix/src/others/tools/oinit" \
+		"$DESTDIR/sbin/init"				|| exit 2
+	$DEBUG $INSTALL -m 0755 "$IMAGE_KERNEL" "$DESTDIR/netbsd" \
+								|| exit 2
 	if [ -n "$IMAGE_RAMDISK" ]; then
-		$MDSETIMAGE "$DESTDIR/netbsd" "$IMAGE_RAMDISK"	|| exit 2
+		$DEBUG $MDSETIMAGE "$DESTDIR/netbsd" "$IMAGE_RAMDISK" \
+								|| exit 2
 	fi
-	$GZIP -9 "$DESTDIR/netbsd"				|| exit 2
-	$INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"		|| exit 2
+	$DEBUG $GZIP -9 "$DESTDIR/netbsd"			|| exit 2
+	$DEBUG $INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"	|| exit 2
 	BOOT_SPLASH="vesa 640x480x8;boot netbsd"
 	if [ -n "$IMAGE_SPLASH" ]; then
-		$SUDO $INSTALL -m 644 "$IMAGE_SPLASH" "$DESTDIR/netbsd.jpeg" \
-								|| exit 2
+		$DEBUG $SUDO $INSTALL -m 0644 "$IMAGE_SPLASH" \
+			"$DESTDIR/netbsd.jpeg"			|| exit 2
 		BOOT_SPLASH="vesa 640x480x8;splash /netbsd.jpeg;boot netbsd -z"
 	fi
 	$SUDO sh -c "cat > $DESTDIR/boot.cfg" << EOF
@@ -174,7 +182,9 @@ menu=Drop to boot prompt:prompt
 default=1
 timeout=10
 EOF
-	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
-	$INSTALLBOOT -m "$MACHINE" -o "console=pc" -e bootxx	|| exit 2
-	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
+	$DEBUG $INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx" \
+								|| exit 2
+	$DEBUG $INSTALLBOOT -m "$MACHINE" -o "$BOOTOPTIONS" -e bootxx \
+								|| exit 2
+	$DEBUG $MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"	|| exit 2
 }
