@@ -739,7 +739,7 @@ _size()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method][-n name][NAME=VALUE...] revision" 1>&2
+	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method][-n name][-O name=value...] revision" 1>&2
 	return 1
 }
 
@@ -752,7 +752,8 @@ _warning()
 
 
 #main
-while getopts "e:i:l:m:n:" name; do
+#parse options
+while getopts "e:i:l:m:n:O:" name; do
 	case "$name" in
 		e)
 			EMAIL="$OPTARG"
@@ -769,6 +770,9 @@ while getopts "e:i:l:m:n:" name; do
 		n)
 			FULLNAME="$OPTARG"
 			;;
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
+			;;
 		?)
 			_usage
 			exit $?
@@ -776,21 +780,6 @@ while getopts "e:i:l:m:n:" name; do
 	esac
 done
 shift $((OPTIND - 1))
-#parse options
-while [ $# -gt 0 ]; do
-	case "$1" in
-		*=*)
-			VAR="${1%%=*}"
-			VALUE="${1#*=}"
-			export "$VAR"="$VALUE"
-			shift
-			;;
-		*)
-			break
-			;;
-	esac
-done
-#parse arguments
 if [ $# -ne 1 ]; then
 	_usage
 	exit $?
