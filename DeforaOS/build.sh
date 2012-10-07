@@ -401,7 +401,7 @@ target_uninstall()
 _usage()
 {
 	echo "Usage: build.sh [-Dv][-O option=value...] target..." 1>&2
-	echo "  -D	Display debugging information" 1>&2
+	echo "  -D	Run in debugging mode" 1>&2
 	echo "  -v	Verbose mode" 1>&2
 	echo "Targets:" 1>&2
 	echo "  all		Build and install in a staging directory" 1>&2
