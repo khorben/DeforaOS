@@ -113,7 +113,7 @@ _image_ramdisk_post()
 
 	#compile and install linuxrc
 	TOOLS="Apps/Unix/src/others/tools"
-	SUBDIRS="$TOOLS" target linuxrc				|| exit 2
+	SUBDIRS="$TOOLS" _target linuxrc			|| exit 2
 	$INSTALL -m 755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc"	|| exit 2
 
 	#setup init

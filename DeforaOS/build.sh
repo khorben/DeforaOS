@@ -119,7 +119,7 @@ _info()
 
 
 #target
-target()
+_target()
 {
 	_MAKE="$MAKE"
 	[ ! -z "$DESTDIR" ] && _MAKE="$_MAKE DESTDIR=\"$DESTDIR\""
@@ -204,7 +204,7 @@ _bootstrap_configure()
 	TARGETS="clean all"
 
 	[ $# -eq 1 -a "$1" = "install" ] && TARGETS="install"
-	target $TARGETS						|| return 2
+	_target $TARGETS					|| return 2
 	$DEBUG ./Apps/Devel/src/configure/src/configure -v -p "$PREFIX" \
 			"System/src" "Apps"			|| return 2
 	CPPFLAGS="$C"
@@ -218,14 +218,14 @@ _bootstrap_desktop()
 
 	#bootstrap libDesktop
 	SUBDIRS="Apps/Desktop/src/libDesktop"
-	if ! target "clean" "install"; then
+	if ! _target "clean" "install"; then
 		RET=$?
 		FAILED="$FAILED Desktop"
 		return $RET
 	fi
 	#build all desktop applications
 	SUBDIRS="Apps/Desktop/src"
-	target "clean all"					|| return 2
+	_target "clean all"					|| return 2
 }
 
 _bootstrap_devel()
@@ -239,7 +239,7 @@ _bootstrap_devel()
 
 	for i in $S; do
 		SUBDIRS="$i"
-		target "clean all"				|| RET=$?
+		_target "clean all"				|| RET=$?
 	done
 	return $RET
 }
@@ -248,13 +248,13 @@ _bootstrap_graphics()
 {
 	SUBDIRS="Apps/Graphics/src"
 
-	target "clean all"
+	_target "clean all"
 }
 
 _bootstrap_libsystem()
 {
 	SUBDIRS="System/src/libSystem/src"
-	target "clean" "libSystem.a"				|| return 2
+	_target "clean" "libSystem.a"				|| return 2
 }
 
 _bootstrap_network()
@@ -265,7 +265,7 @@ _bootstrap_network()
 
 	for i in $S; do
 		SUBDIRS="$i"
-		target "clean all"				|| RET=$?
+		_target "clean all"				|| RET=$?
 	done
 	return $RET
 }
@@ -282,7 +282,7 @@ _bootstrap_posix()
 
 	for i in $S; do
 		SUBDIRS="$i"
-		target "clean all"				|| RET=$?
+		_target "clean all"				|| RET=$?
 	done
 	return $RET
 }
@@ -296,10 +296,10 @@ _bootstrap_system()
 
 	#bootstrap libSystem, libApp and libParser
 	SUBDIRS="System/src/libSystem System/src/libApp System/src/libParser"
-	target "clean" "install"				|| return 2
+	_target "clean" "install"				|| return 2
 	for i in $S; do
 		SUBDIRS="$i"
-		target "clean all"				|| RET=$?
+		_target "clean all"				|| RET=$?
 	done
 	return $RET
 }
@@ -308,14 +308,14 @@ _bootstrap_system()
 #target_clean
 target_clean()
 {
-	target "clean"
+	_target "clean"
 }
 
 
 #target_distclean
 target_distclean()
 {
-	target "distclean"
+	_target "distclean"
 }
 
 
@@ -362,24 +362,24 @@ target_install()
 			System/src/libApp)
 				SUBDIRS="$subdir/src"
 				LDFLAGS="$L -lc"
-				target "install"		|| return 2
+				_target "install"		|| return 2
 				LDFLAGS="$L -lc $LIBGCC $D$P/lib/start.o"
 				SUBDIRS="$subdir"
-				target "install"		|| return 2
+				_target "install"		|| return 2
 				;;
 			System/src/libc)
 				LDFLAGS="$L"
-				target "install"		|| return 2
+				_target "install"		|| return 2
 				;;
 			System/src/libSystem)
 				SUBDIRS="$subdir/src $subdir/include \
 						$subdir/data"
 				LDFLAGS="$L -lc"
-				target "install"		|| return 2
+				_target "install"		|| return 2
 				;;
 			*)
 				LDFLAGS="$L -lc $LIBGCC $D$P/lib/start.o"
-				target "install"		|| return 2
+				_target "install"		|| return 2
 				;;
 		esac
 	done
@@ -393,7 +393,7 @@ target_install()
 #target_uninstall
 target_uninstall()
 {
-	target "uninstall"
+	_target "uninstall"
 }
 
 
