@@ -17,6 +17,7 @@
 
 
 #environment
+DEBUG=
 DEVNULL="/dev/null"
 EMAIL=
 FULLNAME=
@@ -185,8 +186,8 @@ _package_debian()
 {
 	pkgname=$(echo "$DEBIAN_PREFIX$PACKAGE" | $TR A-Z a-z)
 
-	$RM -r -- "debian"					|| return 2
-	$MKDIR -- "debian"					|| return 2
+	$DEBUG $RM -r -- "debian"				|| return 2
+	$DEBUG $MKDIR -- "debian"				|| return 2
 
 	#check the license
 	license=
@@ -202,7 +203,7 @@ _package_debian()
 		_info "Creating debian/$i..."
 		"_debian_$i" > "debian/$i"
 		if [ $? -ne 0 ]; then
-			$RM -r -- "debian"
+			$DEBUG $RM -r -- "debian"
 			_error "Could not create debian/$i"
 			return 2
 		fi
@@ -212,7 +213,7 @@ _package_debian()
 	_info "Creating debian/changelog..."
 	_debian_changelog
 	if [ $? -ne 0 ]; then
-		$RM -r -- "debian"
+		$DEBUG $RM -r -- "debian"
 		_error "Could not create debian/changelog"
 		return 2
 	fi
@@ -379,7 +380,7 @@ _debian_lintian()
 		"../$pkgname-dev_$VERSION-${revision}_$arch.deb"; do
 		[ ! -f "$i" ] && continue
 
-		$LINTIAN "$i"
+		$DEBUG $LINTIAN "$i"
 		#XXX ignore errors if the command is not installed
 		if [ $? -eq 127 ]; then
 			_warning "Could not check the package"
@@ -534,8 +535,8 @@ _package_pkgsrc()
 	distname="$PACKAGE-$VERSION"
 	pkgname=$(echo "$PKGSRC_PREFIX$PACKAGE" | $TR A-Z a-z)
 
-	$RM -r -- "pkgname"					|| return 2
-	$MKDIR -- "$pkgname"					|| return 2
+	$DEBUG $RM -r -- "pkgname"				|| return 2
+	$DEBUG $MKDIR -- "$pkgname"				|| return 2
 
 	#check the license
 	license=
@@ -550,7 +551,7 @@ _package_pkgsrc()
 	_info "Creating $pkgname/DESCR..."
 	_pkgsrc_descr > "$pkgname/DESCR"
 	if [ $? -ne 0 ]; then
-		$RM -r -- "$pkgname"
+		$DEBUG $RM -r -- "$pkgname"
 		_error "Could not create $pkgname/DESCR"
 		return 2
 	fi
@@ -559,7 +560,7 @@ _package_pkgsrc()
 	_info "Creating $pkgname/Makefile..."
 	_pkgsrc_makefile > "$pkgname/Makefile"
 	if [ $? -ne 0 ]; then
-		$RM -r -- "$pkgname"
+		$DEBUG $RM -r -- "$pkgname"
 		_error "Could not create $pkgname/Makefile"
 		return 2
 	fi
@@ -589,7 +590,7 @@ _package_pkgsrc()
 	#check the package
 	_info "Running pkglint..."
 	#XXX ignore errors for now
-	(cd "$pkgname" && $PKGLINT)
+	(cd "$pkgname" && $DEBUG $PKGLINT)
 
 	#FIXME:
 	#- build the package
@@ -704,6 +705,14 @@ EOF
 }
 
 
+#debug
+_debug()
+{
+	echo "$@" 1>&2
+	"$@"
+}
+
+
 #error
 _error()
 {
@@ -715,7 +724,8 @@ _error()
 #info
 _info()
 {
-	echo "deforaos-package.sh: $@"
+	echo "deforaos-package.sh: $@" 1>&2
+	return 0
 }
 
 
@@ -739,7 +749,8 @@ _size()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-package.sh [-e e-mail][-i id][-l license][-m method][-n name][-O name=value...] revision" 1>&2
+	echo "Usage: deforaos-package.sh [-D][-e e-mail][-i id][-l license][-m method][-n name][-O name=value...] revision" 1>&2
+	echo "  -D	Run in debugging mode" 1>&2
 	return 1
 }
 
@@ -753,8 +764,11 @@ _warning()
 
 #main
 #parse options
-while getopts "e:i:l:m:n:O:" name; do
+while getopts "De:i:l:m:n:O:" name; do
 	case "$name" in
+		D)
+			DEBUG="_debug"
+			;;
 		e)
 			EMAIL="$OPTARG"
 			;;
