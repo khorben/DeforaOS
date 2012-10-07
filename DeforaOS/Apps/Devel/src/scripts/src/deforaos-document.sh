@@ -22,12 +22,11 @@
 umask 022
 #variables
 [ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
-#private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
 DEVNULL="/dev/null"
 EMAIL="webmaster@defora.org"
-ROOT=`mktemp -d -p "$HOME" "temp.XXXXXX"`
+ROOT=$(mktemp -d -p "$HOME" "temp.XXXXXX")
 MODULE="DeforaOS"
 SRC="$ROOT/$MODULE"
 
@@ -89,6 +88,31 @@ _deforaos_document()
 }
 
 
+#usage
+_usage()
+{
+	echo "Usage: deforaos-document.sh [-O name=value...]" 1>&2
+	return 1
+}
+
+
 #main
+#parse options
+while getopts "O:" name; do
+	case "$name" in
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
+			;;
+		*)
+			_usage
+			exit $?
+			;;
+	esac
+done
+shift $((OPTIND - 1))
+if [ $# -ne 0 ]; then
+	_usage
+	exit $?
+fi
 [ -n "$ROOT" ] || exit 2
 _deforaos_document 2>&1 | $MAIL -s "Daily CVS documentation: $DATE" "$EMAIL"
