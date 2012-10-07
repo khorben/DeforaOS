@@ -28,6 +28,7 @@ LICENSE=
 METHOD=
 PACKAGE=
 PROJECTCONF="project.conf"
+VERBOSE=0
 VERSION=
 #executables
 CKSUM="cksum"
@@ -724,7 +725,7 @@ _error()
 #info
 _info()
 {
-	echo "deforaos-package.sh: $@" 1>&2
+	[ "$VERBOSE" -ne 0 ] && echo "deforaos-package.sh: $@" 1>&2
 	return 0
 }
 
@@ -749,8 +750,9 @@ _size()
 #usage
 _usage()
 {
-	echo "Usage: deforaos-package.sh [-D][-e e-mail][-i id][-l license][-m method][-n name][-O name=value...] revision" 1>&2
+	echo "Usage: deforaos-package.sh [-Dv][-e e-mail][-i id][-l license][-m method][-n name][-O name=value...] revision" 1>&2
 	echo "  -D	Run in debugging mode" 1>&2
+	echo "  -v	Verbose mode" 1>&2
 	return 1
 }
 
@@ -764,7 +766,7 @@ _warning()
 
 #main
 #parse options
-while getopts "De:i:l:m:n:O:" name; do
+while getopts "De:i:l:m:n:O:v" name; do
 	case "$name" in
 		D)
 			DEBUG="_debug"
@@ -786,6 +788,9 @@ while getopts "De:i:l:m:n:O:" name; do
 			;;
 		O)
 			export "${OPTARG%%=*}"="${OPTARG#*=}"
+			;;
+		v)
+			VERBOSE=1
 			;;
 		?)
 			_usage
