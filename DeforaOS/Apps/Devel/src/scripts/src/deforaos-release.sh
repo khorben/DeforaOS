@@ -123,12 +123,8 @@ _deforaos_release()
 #debug
 _debug()
 {
-	if [ "$VERBOSE" -ne 0 ]; then
-		echo "$@"
-		"$@"
-	else
-		"$@" > "$DEVNULL"
-	fi
+	echo "$@"
+	"$@"
 }
 
 
@@ -143,14 +139,15 @@ _error()
 #info
 _info()
 {
-	echo "deforaos-release.sh: $@"
+	[ "$VERBOSE" -ne 0 ] && echo "deforaos-release.sh: $@" 1>&2
+	return 0
 }
 
 
 #usage
 _usage()
 {
-	echo "Usage: deforaos-release.sh [-Dv][NAME=VALUE...] version" 1>&2
+	echo "Usage: deforaos-release.sh [-Dv][-O name=value...] version" 1>&2
 	echo "  -D	Run in debugging mode" 1>&2
 	echo "  -v	Verbose mode" 1>&2
 	return 1
@@ -158,13 +155,16 @@ _usage()
 
 
 #main
-while getopts "Dv" name; do
+#parse options
+while getopts "DvO:" name; do
 	case "$name" in
 		D)
 			DEBUG="_debug"
 			;;
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
+			;;
 		v)
-			DEBUG="_debug"
 			VERBOSE=1
 			;;
 		?)
@@ -174,20 +174,6 @@ while getopts "Dv" name; do
 	esac
 done
 shift $((OPTIND - 1))
-#parse options
-while [ $# -gt 0 ]; do
-	case "$1" in
-		*=*)
-			VAR="${1%%=*}"
-			VALUE="${1#*=}"
-			export "$VAR"="$VALUE"
-			shift
-			;;
-		*)
-			break
-			;;
-	esac
-done
 #parse arguments
 if [ $# -ne 1 ]; then
 	_usage
