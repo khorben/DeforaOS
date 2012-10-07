@@ -1,9 +1,10 @@
 #$Id$
-#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org>
 
 
 
 #variables
+[ -z "$CHMOD"	] && CHMOD="chmod"
 [ -z "$LD"	] && LD="$CC -shared -nostdlib"
 [ -z "$LN"	] && LN="ln -f"
 [ -z "$MKFS"	] && MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
@@ -28,19 +29,20 @@ _image_ramdisk_pre()
 
 _image_ramdisk_post()
 {
-	_create_directories "bin" "dev" "lib" "proc" "mnt/root"
+	_create_directories "bin" "dev" "lib" "proc" "mnt/root" \
+								|| exit 2
 
 	echo
 	echo -n "Fixing installation paths:"
 	echo -n " /lib/libc.so"
-	$MV "$DESTDIR$PREFIX/lib/libc.so.0.0" "$DESTDIR/lib/libc.so.0.0" \
-								|| exit 2
-	$LN -s "libc.so.0.0" "$DESTDIR/lib/libc.so"		|| exit 2
-	$LN -s "libc.so.0.0" "$DESTDIR/lib/libc.so.0"		|| exit 2
-	$LN -s "/lib/libc.so.0.0" "$DESTDIR$PREFIX/lib/libc.so.0.0" \
+	$DEBUG $MV "$DESTDIR$PREFIX/lib/libc.so.0.0" \
+		"$DESTDIR/lib/libc.so.0.0"			|| exit 2
+	$DEBUG $LN -s "libc.so.0.0" "$DESTDIR/lib/libc.so"	|| exit 2
+	$DEBUG $LN -s "libc.so.0.0" "$DESTDIR/lib/libc.so.0"	|| exit 2
+	$DEBUG $LN -s "/lib/libc.so.0.0" "$DESTDIR$PREFIX/lib/libc.so.0.0" \
 								|| exit 2
 	echo -n " /bin/sh"
-	$MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"		|| exit 2
+	$DEBUG $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	|| exit 2
 	echo
 
 	if [ ! -x "$DESTDIR/sbin/init" ]; then
@@ -53,22 +55,22 @@ echo "init called with arguments: \$@"
 echo "Falling back to interactive mode:"
 /bin/sh
 EOF
-		chmod 755 "$DESTDIR/linuxrc"
+		$DEBUG $CHMOD 755 "$DESTDIR/linuxrc"
 		echo
 	fi
 
 	echo
 	echo -n "Building ramdisk image:"
-	$MKFS "$IMAGE_FILE"					|| exit 2
+	$DEBUG $MKFS "$IMAGE_FILE"				|| exit 2
 	echo
-	$DU "$IMAGE_FILE"
+	$DEBUG $DU "$IMAGE_FILE"
 
 	echo
 	echo -n "Compressing ramdisk:"
-	$GZIP "$IMAGE_FILE"					|| exit 2
-	$MV "$IMAGE_FILE.gz" "$IMAGE_FILE"			|| exit 2
+	$DEBUG $GZIP "$IMAGE_FILE"				|| exit 2
+	$DEBUG $MV "$IMAGE_FILE.gz" "$IMAGE_FILE"		|| exit 2
 	echo
-	$DU "$IMAGE_FILE"
+	$DEBUG $DU "$IMAGE_FILE"
 }
 
 
@@ -87,13 +89,13 @@ _image_rootfs_pre()
 
 _image_rootfs_post()
 {
-	_create_directories "bin" "dev" "etc" "lib" "sbin"
+	_create_directories "bin" "dev" "etc" "lib" "sbin"	|| exit 2
 
 	echo
 	echo -n "Fixing installation paths:"
 	for i in /lib/libc.so /bin/sh; do
 		echo -n " $i"
-		$MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"		|| exit 2
+		$DEBUG $MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"	|| exit 2
 	done
 	echo
 
@@ -101,7 +103,7 @@ _image_rootfs_post()
 	echo -n "Creating device nodes:"
 	for i in std pty console input fb; do
 		echo -n " $i"
-		(cd "$DESTDIR/dev" && $SUDO sh /sbin/MAKEDEV "$i")
+		(cd "$DESTDIR/dev" && $DEBUG $SUDO sh /sbin/MAKEDEV "$i")
 	done
 	echo
 
@@ -123,24 +125,24 @@ echo "init called with arguments: \$@"
 echo "Falling back to interactive mode:"
 /bin/sh
 EOF
-		chmod 755 "$DESTDIR/sbin/init"
+		$DEBUG $CHMOD 755 "$DESTDIR/sbin/init"
 		echo
 	fi
 
 	echo
 	echo "Building rootfs image:"
-	$MKFS "$IMAGE_FILE"				|| exit 2
-	$DU "$IMAGE_FILE"
+	$DEBUG $MKFS "$IMAGE_FILE"				|| exit 2
+	$DEBUG $DU "$IMAGE_FILE"
 
 	echo
 	echo "Building tarball:"
 	OLDPWD="$PWD"
-	(cd "$DESTDIR" && $TAR -cvzf "$OLDPWD/$IMAGE_FILE.tar.gz" .) \
+	(cd "$DESTDIR" && $DEBUG $TAR -cvzf "$OLDPWD/$IMAGE_FILE.tar.gz" .) \
 	| while read filename; do
 		echo -en "\r$filename"
 	done || (echo && exit 2)
 	echo -en "\r"
-	$DU "$IMAGE_FILE.tar.gz"
+	$DEBUG $DU "$IMAGE_FILE.tar.gz"
 }
 
 

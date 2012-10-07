@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -27,18 +27,18 @@ _image_image_pre()
 	check "$USAGE" DD DESTDIR DEVZERO IMAGE_FILE IMAGE_KERNEL IMAGE_SIZE \
 		MKDIR MKFS MOUNT UMOUNT
 
-	$MKDIR -- "$DESTDIR"					|| exit 2
-	$UMOUNT "$DESTDIR"
-	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
-	$MKFS "$IMAGE_FILE"					|| exit 2
-	$MOUNT "$IMAGE_FILE" "$DESTDIR"				|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR"				|| exit 2
+	$DEBUG $UMOUNT "$DESTDIR"
+	$DEBUG $DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
+	$DEBUG $MKFS "$IMAGE_FILE"				|| exit 2
+	$DEBUG $MOUNT "$IMAGE_FILE" "$DESTDIR"			|| exit 2
 }
 
 _image_image_post()
 {
-	RET=$?
-	$UMOUNT "$DESTDIR"
-	exit $RET
+	ret=$?
+	$DEBUG $UMOUNT "$DESTDIR"
+	exit $ret
 }
 
 
@@ -56,25 +56,27 @@ _image_iso_pre()
 	check "$USAGE" CAT DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL \
 		MKDIR MKISOFS RAMDISK TAR
 
-	$MKDIR -- "$DESTDIR"					|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR"				|| exit 2
 }
 
 _image_iso_post()
 {
 	#install kernel with ramdisk and modules
-	$MKDIR -- "$DESTDIR/boot"				|| exit 2
-	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL"	|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR/boot"			|| exit 2
+	$DEBUG $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL" \
+								|| exit 2
 	if [ ! -z "$IMAGE_RAMDISK" ]; then
-		$INSTALL -m 644 "$IMAGE_RAMDISK" "$DESTDIR/$RAMDISK"
+		$DEBUG $INSTALL -m 644 "$IMAGE_RAMDISK" "$DESTDIR/$RAMDISK" \
+								|| exit 2
 		GRUB_INITRD="initrd $RAMDISK"
 	fi
 	[ ! -z "$IMAGE_MODULES" ] && $CAT "$IMAGE_MODULES" | \
 			(cd "$DESTDIR" && $TAR -xzf -)
 
 	#setup bootloader
-	$MKDIR -- "$DESTDIR/boot/grub"				|| exit 2
-	$INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
-	"$DESTDIR/boot/grub"					|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR/boot/grub"			|| exit 2
+	$DEBUG $INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
+		"$DESTDIR/boot/grub"				|| exit 2
 	$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
 default 0
 timeout 10
@@ -83,9 +85,9 @@ title $VENDOR
 kernel $KERNEL $KERNEL_ARGS
 $GRUB_INITRD
 EOF
-	$MKISOFS -J -r -b "boot/grub/stage2_eltorito" -no-emul-boot \
+	$DEBUG $MKISOFS -J -r -b "boot/grub/stage2_eltorito" -no-emul-boot \
 			-boot-load-size 4 -boot-info-table \
-			-o "$IMAGE_FILE" "$DESTDIR"
+			-o "$IMAGE_FILE" "$DESTDIR"		|| exit 2
 }
 
 
@@ -102,7 +104,7 @@ _image_ramdisk_pre()
 	check "$USAGE" DD DESTDIR DEVZERO DU GENEXT2FS GZIP IMAGE_FILE \
 		IMAGE_SIZE INSTALL LN MKDIR MKFS MV
 
-	$MKDIR -- "$DESTDIR"					|| exit 2
+	$DEBUG $MKDIR -- "$DESTDIR"				|| exit 2
 }
 
 _image_ramdisk_post()
@@ -114,28 +116,31 @@ _image_ramdisk_post()
 	#compile and install linuxrc
 	TOOLS="Apps/Unix/src/others/tools"
 	SUBDIRS="$TOOLS" _target linuxrc			|| exit 2
-	$INSTALL -m 755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc"	|| exit 2
+	$DEBUG $INSTALL -m 755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc" \
+								|| exit 2
 
 	#setup init
 	_create_directories "dev" "lib" "proc" "mnt/cdrom" "sbin" \
 								|| exit 2
-	$LN -s "../mnt/cdrom/usr/bin/sh" "$DESTDIR/sbin/init"	|| exit 2
+	$DEBUG $LN -s "../mnt/cdrom/usr/bin/sh" "$DESTDIR/sbin/init" \
+								|| exit 2
 
 	#install loader
-	$INSTALL -m 755 "$LDSO" "$DESTDIR/lib"			|| exit 2
+	$DEBUG $INSTALL -m 755 "$LDSO" "$DESTDIR/lib"		|| exit 2
 
 	echo
 	echo -n "Creating ramdisk:"
-	$GENEXT2FS -b "$IMAGE_SIZE" -d "$DESTDIR" "$IMAGE_FILE"	|| exit 2
+	$DEBUG $GENEXT2FS -b "$IMAGE_SIZE" -d "$DESTDIR" "$IMAGE_FILE" \
+								|| exit 2
 	echo
 	$DU "$IMAGE_FILE"
 
 	echo
 	echo -n "Compressing ramdisk:"
-	$GZIP "$IMAGE_FILE"					|| exit 2
-	$MV "$IMAGE_FILE.gz" "$IMAGE_FILE"			|| exit 2
+	$DEBUG $GZIP "$IMAGE_FILE"				|| exit 2
+	$DEBUG $MV "$IMAGE_FILE.gz" "$IMAGE_FILE"		|| exit 2
 	echo
-	$DU "$IMAGE_FILE"
+	$DEBUG $DU "$IMAGE_FILE"
 }
 
 

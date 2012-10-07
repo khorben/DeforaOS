@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2008-2012 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -27,7 +27,7 @@ _create_directories()
 	echo -n "Creating missing directories:"
 	while true; do
 		echo -n " $1"
-		$MKDIR -- "$DESTDIR/$1"				|| exit 2
+		$DEBUG $MKDIR -- "$DESTDIR/$1"			|| exit 2
 		shift || break
 	done
 	echo
