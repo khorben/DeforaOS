@@ -132,7 +132,7 @@ target()
 	[ ! -z "$LD" ] && _MAKE="$_MAKE LD=\"$LD\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	[ ! -z "$LDFLAGSF" ] && _MAKE="$_MAKE LDFLAGSF=\"$LDFLAGSF\""
-	while [ $# -ge 1 ]; do
+	while [ $# -gt 0 ]; do
 		for i in $SUBDIRS; do
 			if [ -n "$CONFIGURE" ]; then
 				$DEBUG $CONFIGURE "$i"		|| return 2
