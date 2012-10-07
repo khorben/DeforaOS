@@ -40,6 +40,7 @@ PREFIX=
 SYSTEM=
 TARGET=
 VENDOR="DeforaOS"
+VERBOSE=0
 
 #executables
 CAT="cat"
@@ -47,7 +48,7 @@ CC=
 CHOWN="chown"
 CONFIGURE=
 DD="dd bs=1024"
-DEBUG="debug"
+DEBUG="_debug"
 INSTALL="install"
 LD=
 LN="ln -f"
@@ -88,24 +89,32 @@ check()
 	done
 	[ -z "$EMPTY" ] && return
 	USAGE=`echo -e "$USAGE\n\nError:$EMPTY need to be set"`
-	usage "$USAGE"
+	_usage "$USAGE"
 	exit $?
 }
 
 
 #debug
-debug()
+_debug()
 {
-	echo $@ 1>&2
-	$@
+	echo "$@" 1>&2
+	"$@"
 }
 
 
 #error
 error()
 {
-	echo "build.sh: $1" 1>&2
+	echo "build.sh: error: $@" 1>&2
 	exit 2
+}
+
+
+#info
+_info()
+{
+	[ "$VERBOSE" -ne 0 ] && echo "build.sh: $@" 1>&2
+	return 0
 }
 
 
@@ -128,6 +137,7 @@ target()
 			if [ -n "$CONFIGURE" ]; then
 				$DEBUG $CONFIGURE "$i"		|| return 2
 			fi
+			_info "Making sub-target $1 in \"$i\""
 			(cd "$i" && eval $_MAKE "$1")		|| return 2
 		done
 		shift
@@ -388,7 +398,7 @@ target_uninstall()
 
 
 #usage
-usage()
+_usage()
 {
 	echo "Usage: build.sh [option=value...] target..." 1>&2
 	echo "Targets:" 1>&2
@@ -404,6 +414,14 @@ usage()
 		echo "$1" 1>&2
 	fi
 	return 1
+}
+
+
+#warning
+_warning()
+{
+	echo "build.sh: warning: $@" 1>&2
+	exit 2
 }
 
 
@@ -449,7 +467,7 @@ if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 	TARGET="$SYSTEM-$MACHINE"
 fi
 if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
-	echo "$0: warning: $TARGET: Unsupported target" 1>&2
+	_warning "$TARGET: Unsupported target" 1>&2
 else
 	. "Apps/Devel/src/scripts/targets/$TARGET"
 fi
@@ -475,7 +493,7 @@ fi
 
 #run targets
 if [ $# -lt 1 ]; then
-	usage
+	_usage
 	exit $?
 fi
 while [ $# -gt 0 ]; do
@@ -483,12 +501,12 @@ while [ $# -gt 0 ]; do
 		all|bootstrap|clean|distclean|image|install|uninstall)
 			;;
 		*)
-			echo "build.sh: $1: Unknown target" 1>&2
-			usage
+			error "$1: Unknown target"
+			_usage
 			exit $?
 			;;
 	esac
-	echo "build.sh: Making target $1 on $TARGET" 1>&2
+	_info "Making target $1 on $TARGET"
 	"target_$1"						|| exit 2
 	shift
 done

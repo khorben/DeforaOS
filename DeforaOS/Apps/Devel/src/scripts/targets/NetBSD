@@ -40,7 +40,7 @@ _image_image_pre()
 		IMAGE_SIZE INSTALL INSTALLBOOT LDSO LN MBRLABEL MKDIR MKFS \
 		MKNOD MOUNT MV UMOUNT VNCONFIG VND
 
-	$MKDIR "$DESTDIR"					|| exit 2
+	$MKDIR -- "$DESTDIR"					|| exit 2
 	$SUDO $UMOUNT "$DESTDIR"
 	$SUDO $VNCONFIG -u "$VND"
 	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
@@ -53,15 +53,15 @@ _image_image_pre()
 	$SUDO $MKFS "${VND}e"					&&
 	$SUDO $MOUNT "/dev/${VND}e" "$DESTDIR"			&&
 	$SUDO $CHOWN "$UID:$GID" "$DESTDIR"			&&
-	$MKDIR "$DESTDIR$PREFIX"
+	$MKDIR -- "$DESTDIR$PREFIX"
 }
 
 _image_image_post()
 {
 	$SUDO $CHOWN -R "0:0" "$DESTDIR"			&&
-	$SUDO $MKDIR "$DESTDIR/bin"				&&
+	$SUDO $MKDIR -- "$DESTDIR/bin"				&&
 	$SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
-	$SUDO $MKDIR "$DESTDIR/dev"				&&
+	$SUDO $MKDIR -- "$DESTDIR/dev"				&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0a" b 0 0		&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/hd0b" b 0 1		&&
@@ -79,13 +79,14 @@ _image_image_post()
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0f" c 3 5		&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0g" c 3 6		&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/rhd0h" c 3 7		&&
-	$SUDO $MKDIR "$DESTDIR/etc"				&&
-	$SUDO $MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
+	$SUDO $MKDIR -- "$DESTDIR/etc"				&&
+	$SUDO $MKDIR -- "$DESTDIR/libexec" \
+			"$DESTDIR/usr/libexec"			&&
 	$SUDO $INSTALL -m 555 "$LDSO" \
 			"$DESTDIR/libexec/ld.elf_so"		&&
 	$SUDO $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"&&
-	$SUDO $MKDIR "$DESTDIR/proc"				&&
-	$SUDO $MKDIR "$DESTDIR/sbin"				&&
+	$SUDO $MKDIR -- "$DESTDIR/proc"				&&
+	$SUDO $MKDIR -- "$DESTDIR/sbin"				&&
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	&&
 	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
 			"$DESTDIR/sbin/init"			&&
@@ -140,12 +141,12 @@ _image_iso_pre()
 
 _image_iso_post()
 {
-	$MKDIR "$DESTDIR/dev"					|| exit 2
+	$MKDIR -- "$DESTDIR/dev"				|| exit 2
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
-	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	|| exit 2
+	$MKDIR -- "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	|| exit 2
 	$INSTALL -m 555 "$LDSO" "$DESTDIR/libexec/ld.elf_so"	|| exit 2
 	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	|| exit 2
-	$MKDIR "$DESTDIR/sbin"					|| exit 2
+	$MKDIR -- "$DESTDIR/sbin"				|| exit 2
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	|| exit 2
 	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
 			"$DESTDIR/sbin/init"			|| exit 2

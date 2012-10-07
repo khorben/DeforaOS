@@ -27,7 +27,7 @@ _create_directories()
 	echo -n "Creating missing directories:"
 	while true; do
 		echo -n " $1"
-		$MKDIR "$DESTDIR/$1"				|| exit 2
+		$MKDIR -- "$DESTDIR/$1"				|| exit 2
 		shift || break
 	done
 	echo
