@@ -13,8 +13,6 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#TODO:
-#- no longer use a temporary folder
 
 
 
@@ -26,9 +24,9 @@ DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
 DEVNULL="/dev/null"
 EMAIL="webmaster@defora.org"
-ROOT=$(mktemp -d -p "$HOME" "temp.XXXXXX")
+ROOT=
 MODULE="DeforaOS"
-SRC="$ROOT/$MODULE"
+SRC=
 
 #executables
 CVS="cvs -q"
@@ -71,8 +69,8 @@ _deforaos_document()
 	(cd "$SRC/Data/Documentation/DeforaOS Manual Pages" &&
 		$MAKE &&
 		$MKDIR -- "$DESTDIR/htdocs/doc/manual" &&
-		$FIND doc/manual -name "*.html" -exec \
-		$INSTALL -- {} "$DESTDIR/htdocs/{}" \;)
+		$FIND "doc/manual" -name "*.html" -exec \
+			$INSTALL -- {} "$DESTDIR/htdocs/{}" \;)
 
 	#generic documentation
 	echo ""
@@ -114,5 +112,7 @@ if [ $# -ne 0 ]; then
 	_usage
 	exit $?
 fi
+[ -n "$ROOT" ] || ROOT=$(mktemp -d -p "$HOME" "temp.XXXXXX")
 [ -n "$ROOT" ] || exit 2
+[ -n "$SRC" ] || SRC="$ROOT/$MODULE"
 _deforaos_document 2>&1 | $MAIL -s "Daily CVS documentation: $DATE" "$EMAIL"
