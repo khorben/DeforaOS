@@ -30,12 +30,12 @@ case "$ARCH" in
 esac
 [ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
 [ -z "$OS" ] && OS=`uname -s`
-#private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www/htdocs/download/snapshots"
 DEVNULL="/dev/null"
 EMAIL="build@lists.defora.org"
 FILE="DeforaOS-daily.iso"
+HOMEPAGE="http://www.defora.org"
 KERNEL_VERSION="2.4.37.7"
 KERNEL_PATH="/usr/src/linux-$KERNEL_VERSION"
 MODULE="DeforaOS"
@@ -58,7 +58,7 @@ export CVSROOT
 
 #functions
 #error
-error()
+_error()
 {
 	[ ! -z "$1" ] && echo "$1" 1>&2
 	$RM -r "$DST"
@@ -78,45 +78,45 @@ _deforaos_build()
 
 	#checkout tree
 	$RM -r "$SRC"
-	$MKDIR "$SRC"						|| error
-	cd "$SRC"						|| error
+	$MKDIR "$SRC"						|| _error
+	cd "$SRC"						|| _error
 	echo ""
 	echo "Checking out CVS module $MODULE:"
-	$CVS co "$MODULE" > "$DEVNULL"				|| error
+	$CVS co "$MODULE" > "$DEVNULL"				|| _error
 	SRC="$SRC/$MODULE"
 
 	#create directories
 	$RM -r "$DST"
-	$MKDIR "$DST"						|| error
+	$MKDIR "$DST"						|| _error
 
 	#configuring tree
 	echo ""
 	echo "Configuring CVS module $MODULE:"
-	cd "$SRC"						|| error
+	cd "$SRC"						|| _error
 	$MAKE DESTDIR="$DST" PREFIX="$PREFIX" bootstrap < "$DEVNULL" \
-								|| error
+								|| _error
 
 	#create CD-ROM image
 	echo ""
 	echo "Creating CD-ROM image:"
-	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
-			DESTDIR="$DST" PREFIX="$PREFIX" \
-			IMAGE_TYPE="ramdisk" \
-			IMAGE_FILE="initrd.img" IMAGE_SIZE=8192 \
-			IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
-			clean image				|| error
+	./build.sh -O CONFIGURE="$CONFIGURE" -O MAKE="$MAKE" \
+			-O DESTDIR="$DST" -O PREFIX="$PREFIX" \
+			-O IMAGE_TYPE="ramdisk" \
+			-O IMAGE_FILE="initrd.img" -O IMAGE_SIZE=8192 \
+			-O IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
+			clean image				|| _error
 	$RM -r "$DST"
-	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
-			DESTDIR="$DST" PREFIX="$PREFIX" \
-			IMAGE_TYPE="iso" \
-			IMAGE_FILE="DeforaOS-daily.iso" \
-			IMAGE_KERNEL="$KERNEL_PATH/arch/$ARCH/boot/bzImage" \
-			IMAGE_MODULES="$KERNEL_PATH/modules.tgz" \
-			IMAGE_RAMDISK="initrd.img" \
-			KERNEL_ARGS="vga=0x301 rw" \
-			clean image				|| error
-	$CP "$FILE" "$DESTDIR"					|| error
-	echo "http://www.defora.org/download/snapshots/$FILE"
+	./build.sh -O CONFIGURE="$CONFIGURE" -O MAKE="$MAKE" \
+			-O DESTDIR="$DST" -O PREFIX="$PREFIX" \
+			-O IMAGE_TYPE="iso" \
+			-O IMAGE_FILE="DeforaOS-daily.iso" \
+			-O IMAGE_KERNEL="$KERNEL_PATH/arch/$ARCH/boot/bzImage" \
+			-O IMAGE_MODULES="$KERNEL_PATH/modules.tgz" \
+			-O IMAGE_RAMDISK="initrd.img" \
+			-O KERNEL_ARGS="vga=0x301 rw" \
+			clean image				|| _error
+	$CP "$FILE" "$DESTDIR"					|| _error
+	echo "$HOMEPAGE/download/snapshots/$FILE"
 
 	#cleanup
 	$RM -r "$SRC"
@@ -124,5 +124,30 @@ _deforaos_build()
 }
 
 
+#usage
+_usage()
+{
+	echo "Usage: deforaos-build.sh [-O name=value...]" 1>&2
+	return 1
+}
+
+
 #main
+#parse options
+while getopts "O:" name; do
+	case "$name" in
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
+			;;
+		*)
+			_usage
+			exit $?
+			;;
+	esac
+done
+shift $((OPTIND - 1))
+if [ $# -ne 0 ]; then
+	_usage
+	exit $?
+fi
 _deforaos_build 2>&1 | $MAIL -s "Daily CVS build Linux $ARCH: $DATE" "$EMAIL"
