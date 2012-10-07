@@ -48,7 +48,7 @@ CC=
 CHOWN="chown"
 CONFIGURE=
 DD="dd bs=1024"
-DEBUG="_debug"
+DEBUG=
 INSTALL="install"
 LD=
 LN="ln -f"
@@ -400,7 +400,9 @@ target_uninstall()
 #usage
 _usage()
 {
-	echo "Usage: build.sh [option=value...] target..." 1>&2
+	echo "Usage: build.sh [-Dv][-O option=value...] target..." 1>&2
+	echo "  -D	Display debugging information" 1>&2
+	echo "  -v	Verbose mode" 1>&2
 	echo "Targets:" 1>&2
 	echo "  all		Build and install in a staging directory" 1>&2
 	echo "  bootstrap	Bootstrap the system" 1>&2
@@ -428,23 +430,28 @@ _warning()
 #main
 umask 022
 #parse options
-while [ $# -gt 0 ]; do
-	case "$1" in
-		*=*)
-			VAR=${1%%=*}
-			VALUE=${1#*=}
-			eval "$VAR='$VALUE'; export $VAR"
-			shift
+while getopts "DvO:" name; do
+	case "$name" in
+		D)
+			DEBUG="_debug"
+			;;
+		v)
+			VERBOSE=1
+			;;
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
 			;;
 		*)
-			break
+			_usage
+			exit $?
 			;;
 	esac
 done
+shift $((OPTIND - 1))
 
 #initialize target
-[ -z "$MACHINE" ] && MACHINE=`uname -m`
-[ -z "$SYSTEM" ] && SYSTEM=`uname -s`
+[ -z "$MACHINE" ] && MACHINE=$(uname -m)
+[ -z "$SYSTEM" ] && SYSTEM=$(uname -s)
 [ -z "$TARGET" ] && TARGET="$SYSTEM-$MACHINE"
 [ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
 if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
@@ -473,7 +480,6 @@ else
 fi
 
 #initialize variables
-[ -z "$CC" ] && CC="cc"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -g -O2 -ffreestanding"
 if [ -z "$CONFIGURE" ]; then
 	if [ -z "$PREFIX" ]; then
@@ -487,7 +493,8 @@ fi
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L$DESTDIR$PREFIX/lib -Wl,-rpath-link,$DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib"
-[ -z "$LIBGCC" ] && LIBGCC=`$CC -print-libgcc-file-name`
+[ -z "$LIBGCC" -a -n "$CC" ] && LIBGCC=$($CC -print-libgcc-file-name)
+[ -z "$LIBGCC" ] && LIBGCC=$(cc -print-libgcc-file-name)
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
