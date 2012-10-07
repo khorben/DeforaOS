@@ -20,7 +20,6 @@
 umask 022
 #variables
 [ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
-#private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
 EMAIL="devel@lists.defora.org"
