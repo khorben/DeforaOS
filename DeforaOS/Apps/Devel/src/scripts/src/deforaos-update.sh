@@ -24,6 +24,7 @@ umask 022
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www"
 EMAIL="devel@lists.defora.org"
+HOMEPAGE="http://www.defora.org"
 MODULE="DeforaOS"
 SRC="$HOME/$MODULE"
 
@@ -69,9 +70,34 @@ _deforaos_update()
 	done | ($LN -s . "DeforaOS-$DATE" \
 			&& $XARGS $TAR -czf "$DESTDIR/htdocs/download/snapshots/DeforaOS-daily.tar.gz")
 	$RM "DeforaOS-$DATE"
-	echo "http://www.defora.org/download/snapshots/DeforaOS-daily.tar.gz"
+	echo "$HOMEPAGE/download/snapshots/DeforaOS-daily.tar.gz"
+}
+
+
+#usage
+_usage()
+{
+	echo "Usage: deforaos-update.sh [-O name=value...]" 1>&2
+	return 1
 }
 
 
 #main
+#parse options
+while getopts "O:" name; do
+	case "$name" in
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
+			;;
+		*)
+			_usage
+			exit $?
+			;;
+	esac
+done
+shift $((OPTIND - 1))
+if [ $# -ne 0 ]; then
+	_usage
+	exit $?
+fi
 _deforaos_update 2>&1 | $MAIL -s "Daily CVS update: $DATE" "$EMAIL"
