@@ -1,5 +1,5 @@
 #$Id$
-#Copyright (c) 2011 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2004-2012 Pierre Pronchery <khorben@defora.org>
 #This file is part of the DeforaOS Project
 
 
@@ -20,14 +20,14 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 bootstrap:
-	./build.sh MAKE="$(MAKE)" PREFIX="$(PREFIX)" VERBOSE=1 bootstrap
+	./build.sh -v -O MAKE="$(MAKE)" -O PREFIX="$(PREFIX)" bootstrap
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 
 dist:
 	#XXX hack to bootstrap only configure
-	./build.sh MAKE="$(MAKE)" VERBOSE=1 bootstrap < "$(DEVNULL)"
+	./build.sh -v -O MAKE="$(MAKE)" bootstrap < "$(DEVNULL)"
 	./Apps/Devel/src/configure/src/configure -v
 	$(MAKE) dist
 
