@@ -69,7 +69,7 @@ typedef struct _Progress
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * done;
-	GtkWidget * speed;
+	GtkWidget * remaining;
 	GtkWidget * progress;
 	int pulse;			/* tells when to pulse	*/
 } Progress;
@@ -188,18 +188,18 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_size_group_add_widget(right, p.done);
 	gtk_box_pack_start(GTK_BOX(hbox), p.done, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	/* speed */
+	/* remaining */
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Speed: ");
+	widget = gtk_label_new("Remaining: ");
 	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	p.speed = gtk_label_new("0.0 kB/s");
+	p.remaining = gtk_label_new("");
 	g_timeout_add(250, _progress_timeout, &p);
-	gtk_misc_set_alignment(GTK_MISC(p.speed), 0.0, 0.0);
-	gtk_size_group_add_widget(right, p.speed);
-	gtk_box_pack_start(GTK_BOX(hbox), p.speed, TRUE, TRUE, 0);
+	gtk_misc_set_alignment(GTK_MISC(p.remaining), 0.0, 0.0);
+	gtk_size_group_add_widget(right, p.remaining);
+	gtk_box_pack_start(GTK_BOX(hbox), p.remaining, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	/* progress */
 	p.progress = gtk_progress_bar_new();
@@ -480,47 +480,37 @@ static void _out_rate(Progress * p)
 
 
 /* progress_timeout */
-static void _timeout_done(Progress * progress);
-static void _timeout_speed(Progress * progress);
+static void _timeout_done(Progress * progress, guint64 * rate);
 static void _timeout_progress(Progress * progress);
+static void _timeout_remaining(Progress * progress, guint64 rate);
 
 static gboolean _progress_timeout(gpointer data)
 {
 	Progress * progress = data;
+	guint64 rate = 0;
 
-	_timeout_done(progress);
-	_timeout_speed(progress);
+	_timeout_done(progress, &rate);
+	_timeout_remaining(progress, rate);
 	_timeout_progress(progress);
 	return TRUE;
 }
 
-static void _timeout_done(Progress * progress)
+static void _timeout_done(Progress * progress, guint64 * rate)
 {
 	double cnt = progress->cnt / 1024;
 	double total = progress->prefs->length / 1024;
-	char buf[32];
-	char const * unit = "kB";
+	char buf[48];
+	char const * dunit = "kB";
+	struct timeval tv;
+	double r;
+	char const * sunit = "kB";
 
 	if(progress->prefs->length > 1048576 || progress->cnt > 1048576)
 	{
 		cnt /= 1024;
 		total /= 1024;
-		unit = "MB";
+		dunit = "MB";
 	}
-	if(progress->prefs->length == 0)
-		snprintf(buf, sizeof(buf), "%.1f %s", cnt, unit);
-	else
-		snprintf(buf, sizeof(buf), "%.1f of %.1f %s", cnt, total, unit);
-	gtk_label_set_text(GTK_LABEL(progress->done), buf);
-}
-
-static void _timeout_speed(Progress * progress)
-{
-	struct timeval tv;
-	double rate;
-	char buf[16];
-	char const * unit = "kB";
-
 	if(gettimeofday(&tv, NULL) != 0)
 	{
 		_progress_error(progress, "gettimeofday", FALSE);
@@ -533,15 +523,21 @@ static void _timeout_speed(Progress * progress)
 		tv.tv_sec--;
 		tv.tv_usec += 1000000;
 	}
-	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	unit = "kB";
-	if((rate = progress->cnt / rate) > 1024)
+	r = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	sunit = "kB";
+	*rate = (progress->cnt * 1024) / r;
+	if((r = progress->cnt / r) > 1024)
 	{
-		rate /= 1024;
-		unit = "MB";
+		r /= 1024;
+		sunit = "MB";
 	}
-	snprintf(buf, sizeof(buf), "%.1f %s/s", rate, unit);
-	gtk_label_set_text(GTK_LABEL(progress->speed), buf);
+	if(progress->prefs->length == 0)
+		snprintf(buf, sizeof(buf), "%.1f %s (%.1f %s/s)", cnt, dunit,
+				r, sunit);
+	else
+		snprintf(buf, sizeof(buf), "%.1f of %.1f %s (%.1f %s/s)", cnt,
+				total, dunit, r, sunit);
+	gtk_label_set_text(GTK_LABEL(progress->done), buf);
 }
 
 static void _timeout_progress(Progress * progress)
@@ -550,6 +546,36 @@ static void _timeout_progress(Progress * progress)
 		return; /* setting the fraction is done somewhere else */
 	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress->progress));
 	progress->pulse = 0;
+}
+
+static void _timeout_remaining(Progress * progress, guint64 rate)
+{
+	char buf[32];
+	guint64 remaining;
+	struct tm tm;
+
+	if(progress->prefs->length == 0 || rate == 0)
+	{
+		gtk_label_set_text(GTK_LABEL(progress->remaining), "Unknown");
+		return;
+	}
+	remaining = (progress->prefs->length - progress->cnt) / rate;
+	memset(&tm, 0, sizeof(tm));
+	tm.tm_sec = remaining;
+	/* minutes */
+	if(tm.tm_sec > 60)
+	{
+		tm.tm_min = tm.tm_sec / 60;
+		tm.tm_sec = tm.tm_sec - (tm.tm_min * 60);
+	}
+	/* hours */
+	if(tm.tm_min > 60)
+	{
+		tm.tm_hour = tm.tm_min / 60;
+		tm.tm_min = tm.tm_min - (tm.tm_hour * 60);
+	}
+	strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+	gtk_label_set_text(GTK_LABEL(progress->remaining), buf);
 }
 
 
