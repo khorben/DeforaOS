@@ -659,17 +659,19 @@ static void _callback_r_register(ModemPlugin * modem, int status,
 	mevent.type = MODEM_EVENT_TYPE_REGISTRATION;
 	mevent.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
 	mevent.registration.status = MODEM_REGISTRATION_STATUS_UNKNOWN;
+	hostname = helper->config_get(helper->modem, "registrar_hostname");
 	if(status == 200)
+	{
 		mevent.registration.status
 			= MODEM_REGISTRATION_STATUS_REGISTERED;
+		mevent.registration._operator = hostname;
+	}
 	else if(status == 401 || status == 405)
 	{
 		mevent.registration.status
 			= MODEM_REGISTRATION_STATUS_SEARCHING;
 		wa = (sip != NULL) ? sip->sip_www_authenticate : NULL;
 		tl_gets(tags, SIPTAG_WWW_AUTHENTICATE_REF(wa), TAG_END());
-		hostname = helper->config_get(helper->modem,
-				"registrar_hostname");
 		username = helper->config_get(helper->modem,
 				"registrar_username");
 		password = helper->config_get(helper->modem,
