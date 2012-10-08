@@ -123,7 +123,7 @@ _deforaos_release()
 #debug
 _debug()
 {
-	echo "$@"
+	echo "$@" 1>&2
 	"$@"
 }
 
