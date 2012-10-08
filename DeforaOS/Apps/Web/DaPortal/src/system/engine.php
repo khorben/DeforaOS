@@ -30,9 +30,6 @@ abstract class Engine
 	abstract public function match();
 	abstract public function attach();
 
-	//accessors
-	abstract public function getRequest();
-
 	//useful
 	abstract public function render($content);
 
@@ -73,6 +70,18 @@ abstract class Engine
 	public function getDebug()
 	{
 		return Engine::$debug;
+	}
+
+
+	//Engine::getRequest
+	public function getRequest()
+	{
+		global $config;
+
+		//return the default request
+		return new Request($config->getVariable('defaults', 'module'),
+			$config->getVariable('defaults', 'action'),
+			$config->getVariable('defaults', 'id'));
 	}
 
 

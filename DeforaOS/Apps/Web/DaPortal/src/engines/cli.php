@@ -40,7 +40,7 @@ class CliEngine extends Engine
 	public function getRequest()
 	{
 		if(($options = getopt('DM:fm:a:i:o:t:')) === FALSE)
-			return FALSE;
+			return parent::getRequest();
 		$idempotent = TRUE;
 		$module = FALSE;
 		$action = FALSE;

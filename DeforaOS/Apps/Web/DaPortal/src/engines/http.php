@@ -131,6 +131,8 @@ class HttpEngine extends Engine
 					break;
 			}
 		}
+		if($module === FALSE)
+			return parent::getRequest();
 		$this->request = new Request($module, $action, $id, $title,
 			$parameters);
 		$auth = $this->getAuth();

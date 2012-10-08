@@ -25,20 +25,8 @@ class Request
 	function __construct($module = FALSE, $action = FALSE, $id = FALSE,
 			$title = FALSE, $parameters = FALSE)
 	{
-		global $config;
-
-		//FIXME if $module === FALSE but $id !== FALSE then guess it?
-		if($module === FALSE)
-		{
-			if(($module = $config->getVariable('defaults',
-							'module')) === FALSE)
-				return;
-			$action = $config->getVariable('defaults', 'action');
-			$id = $config->getVariable('defaults', 'id');
-			$title = FALSE;
-			$parameters = FALSE;
-		}
-		if($this->setModule($module) === FALSE
+		if($module === FALSE
+				|| $this->setModule($module) === FALSE
 				|| $this->setAction($action) === FALSE
 				|| $this->setId($id) === FALSE
 				|| $this->setTitle($title) === FALSE
