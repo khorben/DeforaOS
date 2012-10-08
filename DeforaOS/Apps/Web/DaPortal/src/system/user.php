@@ -219,6 +219,8 @@ class User
 		//FIXME really validate username
 		if(!is_string($username) || strlen($username) == 0)
 			$error .= _("The username is not valid\n");
+		if($fullname === FALSE)
+			$fullname = '';
 		//FIXME really validate e-mail
 		if(strchr($email, '@') === FALSE)
 			$error .= _("The e-mail address is not valid\n");
