@@ -32,6 +32,7 @@ VERBOSE=0
 VERSION=
 #executables
 CKSUM="cksum"
+CP="cp"
 CUT="cut"
 DCH="dch"
 DPKG_BUILDPACKAGE="dpkg-buildpackage -rfakeroot"
@@ -566,6 +567,15 @@ _package_pkgsrc()
 		return 2
 	fi
 
+	#MESSAGE
+	_info "Creating $pkgname/MESSAGE..."
+	_pkgsrc_message "$pkgname"
+	if [ $? -ne 0 ]; then
+		$DEBUG $RM -r -- "$pkgname"
+		_error "Could not create $pkgname/MESSAGE"
+		return 2
+	fi
+
 	#PLIST
 	_info "Creating $pkgname/PLIST..."
 	tmpdir="$PWD/$pkgname/destdir"
@@ -703,6 +713,15 @@ EOF
 	[ $DEPEND_desktop -eq 1 ] &&
 		echo '.include "../../sysutils/desktop-file-utils/desktopdb.mk"'
 	echo '.include "../../mk/bsd.pkg.mk"'
+}
+
+_pkgsrc_message()
+{
+	[ $# -eq 1 ]						|| return 1
+	pkgname="$1"
+
+	[ ! -f "$PKGSRC_ROOT/wip/$pkgname/MESSAGE" ]		&& return 0
+	$DEBUG $CP -- "$PKGSRC_ROOT/wip/$pkgname/MESSAGE" "$pkgname/MESSAGE"
 }
 
 
