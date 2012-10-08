@@ -51,6 +51,10 @@
 	background-image:	url('Tango/24x24/actions/gtk-cancel.png');
 }
 
+.stock24.close {
+	background-image:	url('Tango/24x24/actions/gtk-cancel.png');
+}
+
 .stock24.connect {
 	background-image:	url('Tango/24x24/actions/go-jump.png');
 }
