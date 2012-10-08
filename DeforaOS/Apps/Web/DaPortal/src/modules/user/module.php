@@ -559,14 +559,15 @@ class UserModule extends Module
 
 	protected function _closeSuccess($engine, $request)
 	{
-		$title = _('Account closed successfully');
+		$title = _('Account closed');
 		$text = _('Your account was closed successfully.');
 
 		$page = new Page(array('title' => $title));
 		$page->append('title', array('stock' => $this->name,
 				'text' => $title));
-		$page->append('label', array('text' => $text));
-		$page->append('link', array('stock' => 'back',
+		$vbox = $page->append('vbox');
+		$vbox->append('label', array('text' => $text));
+		$vbox->append('link', array('stock' => 'back',
 				'text' => _('Back to the site'),
 				'request' => new Request()));
 		return $page;
