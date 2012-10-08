@@ -589,7 +589,7 @@ class User
 		daportal_user.user_id AS user_id, username
 		FROM daportal_user, daportal_user_register
 		WHERE daportal_user.user_id=daportal_user_register.user_id
-		AND token=:token';
+		AND daportal_user.user_id=:user_id AND token=:token';
 	static private $query_reset_cleanup = 'DELETE FROM daportal_user_reset
 		WHERE timestamp <= :timestamp';
 	static private $query_reset_delete = 'DELETE FROM daportal_user_reset
