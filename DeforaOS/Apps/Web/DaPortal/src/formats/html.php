@@ -46,6 +46,12 @@ class HTMLFormat extends FormatElements
 	//HTMLFormat::attach
 	protected function attach($engine, $type = FALSE)
 	{
+		global $config;
+
+		//configuration
+		$this->javascript = $config->getVariable('format::html',
+			'javascript') ? TRUE : FALSE;
+
 		//for escaping
 		if(!defined('ENT_HTML401'))
 			define('ENT_HTML401', 0);
@@ -107,6 +113,7 @@ class HTMLFormat extends FormatElements
 		$this->_render_theme($page);
 		$this->_render_icontheme($page);
 		$this->_render_favicon($page);
+		$this->_render_javascript($page);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			$this->renderMeta('Content-Type', 'text/html'
@@ -160,6 +167,18 @@ class HTMLFormat extends FormatElements
 		$this->renderTabs();
 		$this->tag('style', FALSE, FALSE, array('type' => 'text/css'),
 			"@import url('icons/$icontheme.css');");
+	}
+
+	private function _render_javascript($page)
+	{
+		if($this->javascript !== FALSE)
+		{
+			$this->renderTabs();
+			$this->tagOpen('script', FALSE, FALSE, array(
+					'type' => 'text/javascript',
+					'src' => 'js/jquery.js'));
+			$this->tagClose('script');
+		}
 	}
 
 	private function _render_theme($page)
@@ -247,6 +266,8 @@ class HTMLFormat extends FormatElements
 
 	protected function renderButton($e)
 	{
+		$id = $e->getProperty('id');
+
 		if(($r = $e->getProperty('request')) !== FALSE)
 			$url = $this->engine->getUrl($r, FALSE);
 		else
@@ -270,8 +291,7 @@ class HTMLFormat extends FormatElements
 					$args['name'] = $name;
 				if(($value = $e->getProperty('text')) !== FALSE)
 					$args['value'] = $value;
-				$this->tag($tag, $class, $e->getProperty('id'),
-						$args);
+				$this->tag($tag, $class, $id, $args);
 				break;
 			case 'button':
 			default:
@@ -279,8 +299,7 @@ class HTMLFormat extends FormatElements
 				if($class !== FALSE)
 					$class = "button $class";
 				$args['href'] = $url;
-				$this->tagOpen($tag, $class,
-						$e->getProperty('id'), $args);
+				$this->tagOpen($tag, $class, $id, $args);
 				$this->renderChildren($e);
 				print($this->escape($e->getProperty('text')));
 				$this->tagClose($tag);
@@ -499,25 +518,45 @@ class HTMLFormat extends FormatElements
 
 	protected function renderHtmledit($e)
 	{
-		$id = uniqid();
+		$id1 = $e->getProperty('id');
+		$id2 = uniqid();
 
+		if($id1 === FALSE)
+			$id1 = uniqid();
 		if(($text = $e->getProperty('value')) === FALSE
 				|| !is_string($text))
 			$text = '';
 		$text = HTML::filter($this->engine, $text);
+		if($this->javascript)
+		{
+			//XXX use inline jquery instead
+			$this->renderTabs();
+			$this->tagOpen('script', FALSE, FALSE, array(
+					'type' => 'text/javascript',
+					'src' => 'js/editor.js'));
+			$this->tagClose('script');
+		}
 		$this->renderTabs();
-		$this->tagOpen('script', FALSE, FALSE, array(
-				'type' => 'text/javascript',
-				'src' => 'js/editor.js'));
-		$this->tagClose('script');
-		$this->renderTabs();
-		$this->tag('textarea', FALSE, $id, array(
+		$this->tag('textarea', FALSE, $id1, array(
 				'name' => $e->getProperty('name')), $text);
-		$this->renderTabs();
-		$this->tagOpen('iframe', 'hidden', FALSE, array(
-				'width' => '450px', 'height' => '250px',
-				'onload' => "editorStart(this, '$id')"));
-		$this->tagClose('iframe');
+		if($this->javascript)
+		{
+			$this->renderTabs();
+			$this->tagOpen('iframe', 'hidden', $id2, array(
+					'onload' => "editorStart(this, '$id1')",
+					'width' => '450px',
+					'height' => '250px'));
+			$this->tagClose('iframe');
+			$this->renderTabs();
+			$this->tagOpen('script', FALSE, FALSE, array(
+					'type' => 'text/javascript'));
+			//XXX should escape accordingly
+			print("<!--
+$('#$id1').closest('form').submit(function () {
+	$('#$id1').text($('#$id2').contents().find('body').html());
+}); //-->");
+			$this->tagClose('script');
+		}
 	}
 
 
@@ -1025,6 +1064,7 @@ class HTMLFormat extends FormatElements
 	//properties
 	private $engine = FALSE;
 	private $ids;
+	private $javascript = FALSE;
 	private $tags;
 	private $titles;
 }

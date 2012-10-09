@@ -49,6 +49,7 @@ class XHTML1Format extends HTMLFormat
 		$dtd = '"-//W3C//DTD XHTML 1.0 Strict//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"';
 
+		parent::attach($engine, $type);
 		if(($charset = $config->getVariable('defaults', 'charset'))
 				!== FALSE)
 			$encoding = $charset;
@@ -58,7 +59,6 @@ class XHTML1Format extends HTMLFormat
 		//for escaping
 		if(!defined('ENT_XHTML'))
 			define('ENT_XHTML', 0);
-		parent::attach($engine, $type);
 	}
 
 

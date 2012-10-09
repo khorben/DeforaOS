@@ -41,11 +41,11 @@ class HTML5Format extends HTMLFormat
 	//HTML5Format::attach
 	protected function attach($engine, $type = FALSE)
 	{
+		parent::attach($engine, $type);
 		$this->doctype = "<!DOCTYPE html>\n";
 		//for escaping
 		if(!defined('ENT_HTML5'))
 			define('ENT_HTML5', 0);
-		parent::attach($engine, $type);
 	}
 
 

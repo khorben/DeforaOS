@@ -74,6 +74,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/js/Makefile \
 		$(PACKAGE)-$(VERSION)/data/js/editor.js \
 		$(PACKAGE)-$(VERSION)/data/js/index.php \
+		$(PACKAGE)-$(VERSION)/data/js/jquery.js \
 		$(PACKAGE)-$(VERSION)/data/js/project.conf \
 		$(PACKAGE)-$(VERSION)/data/themes/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/data/themes/DeforaOS.css \
