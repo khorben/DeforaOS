@@ -239,7 +239,7 @@ class HTML
 	static protected $charset = FALSE;
 	static protected $content;
 	static protected $valid;
-	static protected $blacklist = array('style', 'title');
+	static protected $blacklist = array('script', 'style', 'title');
 	static protected $blacklist_level = 0;
 	static protected $whitelist = array(
 		'a' => array('href', 'name', 'rel', 'title'),
