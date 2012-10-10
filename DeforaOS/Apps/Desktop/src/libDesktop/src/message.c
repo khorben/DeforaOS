@@ -17,7 +17,6 @@
 
 
 
-#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
@@ -55,8 +54,8 @@ int desktop_message_register(char const * destination,
 #if !GTK_CHECK_VERSION(3, 0, 0)
 	MessageCallback * mc;
 
-	if((mc = malloc(sizeof(*mc))) == NULL)
-		return -error_set_code(1, "%s", strerror(errno));
+	if((mc = object_new(sizeof(*mc))) == NULL)
+		return -1;
 	mc->callback = callback;
 	mc->data = data;
 	gdk_add_client_message_filter(gdk_atom_intern(destination, FALSE),
@@ -111,7 +110,7 @@ static GdkFilterReturn _desktop_message_on_callback(GdkXEvent * xevent,
 	value3 = xcme->data.l[2];
 	if(mc->callback(mc->data, value1, value2, value3) == 0)
 		return GDK_FILTER_CONTINUE;
-	free(mc);
+	object_delete(mc);
 	return GDK_FILTER_REMOVE;
 }
 #endif
