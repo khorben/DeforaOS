@@ -105,6 +105,8 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 			/* FIXME also implement mmap() and streaming */
 			|| (cap.capabilities & V4L2_CAP_READWRITE) == 0)
 	{
+		helper->error(helper->phone,
+				"Could not open the video capture device", 1);
 		_video_destroy(video);
 		return NULL;
 	}
