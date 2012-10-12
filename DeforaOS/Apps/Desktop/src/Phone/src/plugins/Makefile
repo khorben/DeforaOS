@@ -1,5 +1,5 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so openmoko.so oss.so panel.so profiles.so smscrypt.so systray.so template.so ussd.so
+TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so openmoko.so oss.so panel.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -127,6 +127,13 @@ ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 ussd.so: $(ussd_OBJS)
 	$(CCSHARED) -o ussd.so $(ussd_OBJS) $(ussd_LDFLAGS)
 
+video_OBJS = video.o
+video_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+video_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+video.so: $(video_OBJS)
+	$(CCSHARED) -o video.so $(video_OBJS) $(video_LDFLAGS)
+
 blacklist.o: blacklist.c ../../include/Phone.h
 	$(CC) $(blacklist_CFLAGS) -c blacklist.c
 
@@ -172,13 +179,16 @@ template.o: template.c ../../include/Phone.h
 ussd.o: ussd.c ../../include/Phone.h
 	$(CC) $(ussd_CFLAGS) -c ussd.c
 
+video.o: video.c ../../include/Phone.h
+	$(CC) $(video_CFLAGS) -c video.c
+
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
