@@ -113,6 +113,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.atoms \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/embed.c \
+		$(PACKAGE)-$(VERSION)/tools/message.c \
 		$(PACKAGE)-$(VERSION)/tools/notify.c \
 		$(PACKAGE)-$(VERSION)/tools/test.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
