@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Panel User Manual">
 	<!ENTITY package   "DeforaOS Panel">
-	<!ENTITY name      "panel-embed">
-	<!ENTITY purpose   "Helper for the embedding Panel applet">
+	<!ENTITY name      "panel-message">
+	<!ENTITY purpose   "Notifier for the panel">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,21 +49,38 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="plain"><replaceable>command</replaceable></arg>
-			<arg choice="optional" rep="repeat"><replaceable>argument</replaceable></arg>
+			<arg choice="opt">-T <replaceable>type</replaceable></arg>
+			<arg choice="opt">-t <replaceable>timeout</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a helper program for the embedding Panel
-			applet. It automatically embeds the child program inside the Panel, provided
-			this program prints out the XID of the window to embed in a single line, on
-			its standard output stream.</para>
+		<para><command>&name;</command> is a desktop notification program for the
+			desktop. It can popup a window, centered on the screen, containing different
+			applets of the panel. It can be set to disappear automatically after a
+			specific amount of time. It is particularly useful when implementing hotkeys
+			(system status...).</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>&name; expects the name of a command, along with its optional parameters
-			to be specified as arguments on the command line.</para>
+		<para>&name; expects a text message to be specified as an argument on the
+			command line.</para>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-T</option></term>
+				<listitem>
+					<para>Type of message to display.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-t</option></term>
+				<listitem>
+					<para>Time to wait before disappearing (in seconds; 0 means
+						unlimited).</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
 	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
@@ -82,7 +99,7 @@
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>
-				<refentrytitle>panel-message</refentrytitle>
+				<refentrytitle>panel-embed</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>

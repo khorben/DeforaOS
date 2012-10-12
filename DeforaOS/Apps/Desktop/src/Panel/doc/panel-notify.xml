@@ -135,6 +135,10 @@
 			<citerefentry>
 				<refentrytitle>panel-embed</refentrytitle>
 				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>panel-message</refentrytitle>
+				<manvolnum>1</manvolnum>
 			</citerefentry>
 		</para>
 	</refsect1>
