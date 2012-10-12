@@ -132,6 +132,7 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	/* create the window */
 	video->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(video->window), FALSE);
+	gtk_window_set_title(GTK_WINDOW(video->window), "Phone - Video");
 	g_signal_connect_swapped(video->window, "delete-event", G_CALLBACK(
 				_video_on_closex), video);
 	video->area = gtk_drawing_area_new();
@@ -139,7 +140,8 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 			format.fmt.pix.height);
 	gtk_container_add(GTK_CONTAINER(video->window), video->area);
 	gtk_widget_show_all(video->window);
-	video->source = g_timeout_add(1000, _video_on_refresh, video);
+	if(_video_on_refresh(video) == TRUE)
+		video->source = g_timeout_add(1000, _video_on_refresh, video);
 	return video;
 }
 
@@ -203,5 +205,6 @@ static gboolean _video_on_refresh(gpointer data)
 		video->fd = -1;
 		return FALSE;
 	}
+	/* FIXME implement the rest */
 	return TRUE;
 }
