@@ -49,7 +49,12 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt">-T <replaceable>type</replaceable></arg>
+			<group choice="opt">
+				<arg choice="plain">-E</arg>
+				<arg choice="plain">-I</arg>
+				<arg choice="plain">-Q</arg>
+				<arg choice="plain">-W</arg>
+			</group>
 			<arg choice="opt">-t <replaceable>timeout</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
@@ -68,9 +73,27 @@
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
-				<term><option>-T</option></term>
+				<term><option>-E</option></term>
 				<listitem>
-					<para>Type of message to display.</para>
+					<para>Display an error message.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-I</option></term>
+				<listitem>
+					<para>Display an information message.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-Q</option></term>
+				<listitem>
+					<para>Display a question message.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-W</option></term>
+				<listitem>
+					<para>Display a warning message.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
