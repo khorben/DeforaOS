@@ -187,7 +187,7 @@ static void _locker_on_realize(GtkWidget * widget, gpointer data);
 static int _new_config(Locker * locker);
 static void _new_helpers(Locker * locker);
 static int _new_plugins(Locker * locker);
-static int _new_xss(Locker * locker, size_t cnt);
+static int _new_xss(Locker * locker);
 
 Locker * locker_new(char const * demo, char const * auth)
 {
@@ -232,7 +232,7 @@ Locker * locker_new(char const * demo, char const * auth)
 			|| _new_config(locker) != 0
 			|| _locker_demo_load(locker, demo) != 0
 			|| (widget = _locker_auth_load(locker, auth)) == NULL
-			|| _new_xss(locker, cnt) != 0)
+			|| _new_xss(locker) != 0)
 	{
 		_locker_error(NULL, error_get(), 1);
 		locker_delete(locker);
@@ -334,7 +334,7 @@ static int _new_plugins(Locker * locker)
 	return ret;
 }
 
-static int _new_xss(Locker * locker, size_t cnt)
+static int _new_xss(Locker * locker)
 {
 	int error;
 
@@ -1291,13 +1291,12 @@ static int _locker_config_load(Locker * locker)
 
 	if((homedir = getenv("HOME")) == NULL)
 		homedir = g_get_home_dir();
-	if((filename = malloc(strlen(homedir) + sizeof(LOCKER_CONFIG_FILE) + 1))
-			== NULL)
+	if((filename = string_new_append(homedir, "/", LOCKER_CONFIG_FILE,
+					NULL)) == NULL)
 		return -1;
-	sprintf(filename, "%s/%s", homedir, LOCKER_CONFIG_FILE);
 	if((ret = config_load(locker->config, filename)) != 0)
 		_locker_error(NULL, error_get(), ret);
-	free(filename);
+	string_delete(filename);
 	return ret;
 }
 
