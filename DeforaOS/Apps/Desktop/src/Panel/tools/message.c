@@ -38,39 +38,55 @@ static int _usage(void);
 static int _message(unsigned int timeout, GtkMessageType type,
 		char const * message)
 {
+	PangoFontDescription * bold;
+	char const * title;
+	char const * stock;
 	GtkWidget * plug;
 	GtkWidget * hbox;
-	char const * stock;
+	GtkWidget * vbox;
 	GtkWidget * image;
 	GtkWidget * widget;
 	uint32_t xid;
 
-	plug = gtk_plug_new(0);
-	gtk_container_set_border_width(GTK_CONTAINER(plug), 4);
-	hbox = gtk_hbox_new(FALSE, 4);
-	/* icon */
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	switch(type)
 	{
 		case GTK_MESSAGE_ERROR:
 			stock = GTK_STOCK_DIALOG_ERROR;
+			title = "Error";
 			break;
 		case GTK_MESSAGE_QUESTION:
 			stock = GTK_STOCK_DIALOG_QUESTION;
+			title = "Question";
 			break;
 		case GTK_MESSAGE_WARNING:
 			stock = GTK_STOCK_DIALOG_WARNING;
+			title = "Warning";
 			break;
 		case GTK_MESSAGE_INFO:
 		default:
 			stock = GTK_STOCK_DIALOG_INFO;
+			title = "Information";
 			break;
 	}
+	plug = gtk_plug_new(0);
+	gtk_container_set_border_width(GTK_CONTAINER(plug), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	/* icon */
 	widget = gtk_image_new_from_stock(stock, GTK_ICON_SIZE_DIALOG);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	/* title */
+	vbox = gtk_vbox_new(FALSE, 4);
+	widget = gtk_label_new(title);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
+	gtk_widget_modify_font(widget, bold);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* label */
 	widget = gtk_label_new(message);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
 	/* button */
 	widget = gtk_button_new();
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
@@ -85,6 +101,7 @@ static int _message(unsigned int timeout, GtkMessageType type,
 	desktop_message_send(PANEL_CLIENT_MESSAGE, PANEL_MESSAGE_EMBED, xid, 0);
 	if(timeout > 0)
 		g_timeout_add(timeout * 1000, _message_on_timeout, NULL);
+	pango_font_description_free(bold);
 	gtk_main();
 	return 0;
 }
