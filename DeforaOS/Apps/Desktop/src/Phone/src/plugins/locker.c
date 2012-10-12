@@ -98,6 +98,7 @@ static int _event_modem(ModemEvent * event)
 	switch(event->call.direction)
 	{
 		case MODEM_CALL_DIRECTION_INCOMING:
+			/* FIXME this is a security issue */
 			return _locker_action(LOCKER_ACTION_UNLOCK);
 		default: /* not relevant */
 			break;
