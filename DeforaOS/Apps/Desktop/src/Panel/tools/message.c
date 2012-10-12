@@ -30,7 +30,6 @@ static int _message(unsigned int timeout, GtkMessageType type,
 /* callbacks */
 static gboolean _message_on_timeout(gpointer data);
 
-static int _error(char const * message, int ret);
 static int _usage(void);
 
 
@@ -39,16 +38,40 @@ static int _usage(void);
 static int _message(unsigned int timeout, GtkMessageType type,
 		char const * message)
 {
+	GtkWidget * plug;
+	GtkWidget * hbox;
+	char const * stock;
 	GtkWidget * widget;
-	GtkWidget * label;
 	uint32_t xid;
 
-	widget = gtk_plug_new(0);
-	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
-	label = gtk_label_new(message);
-	gtk_container_add(GTK_CONTAINER(widget), label);
-	gtk_widget_show_all(widget);
-	xid = gtk_plug_get_id(GTK_PLUG(widget));
+	plug = gtk_plug_new(0);
+	gtk_container_set_border_width(GTK_CONTAINER(plug), 4);
+	hbox = gtk_hbox_new(FALSE, 4);
+	/* icon */
+	switch(type)
+	{
+		case GTK_MESSAGE_ERROR:
+			stock = GTK_STOCK_DIALOG_ERROR;
+			break;
+		case GTK_MESSAGE_QUESTION:
+			stock = GTK_STOCK_DIALOG_QUESTION;
+			break;
+		case GTK_MESSAGE_WARNING:
+			stock = GTK_STOCK_DIALOG_WARNING;
+			break;
+		case GTK_MESSAGE_INFO:
+		default:
+			stock = GTK_STOCK_DIALOG_INFO;
+			break;
+	}
+	widget = gtk_image_new_from_stock(stock, GTK_ICON_SIZE_DIALOG);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	/* label */
+	widget = gtk_label_new(message);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(plug), hbox);
+	gtk_widget_show_all(plug);
+	xid = gtk_plug_get_id(GTK_PLUG(plug));
 	desktop_message_send(PANEL_CLIENT_MESSAGE, PANEL_MESSAGE_EMBED, xid, 0);
 	if(timeout > 0)
 		g_timeout_add(timeout * 1000, _message_on_timeout, NULL);
@@ -63,14 +86,6 @@ static gboolean _message_on_timeout(gpointer data)
 {
 	gtk_main_quit();
 	return FALSE;
-}
-
-
-/* error */
-static int _error(char const * message, int ret)
-{
-	fprintf(stderr, "%s%s\n", "panel-message: ", message);
-	return ret;
 }
 
 
