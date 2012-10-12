@@ -41,6 +41,7 @@ static int _message(unsigned int timeout, GtkMessageType type,
 	GtkWidget * plug;
 	GtkWidget * hbox;
 	char const * stock;
+	GtkWidget * image;
 	GtkWidget * widget;
 	uint32_t xid;
 
@@ -68,7 +69,16 @@ static int _message(unsigned int timeout, GtkMessageType type,
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	/* label */
 	widget = gtk_label_new(message);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	/* button */
+	widget = gtk_button_new();
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	image = gtk_image_new_from_stock(GTK_STOCK_CLOSE,
+			GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(widget), image);
+	g_signal_connect(widget, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(plug), hbox);
 	gtk_widget_show_all(plug);
 	xid = gtk_plug_get_id(GTK_PLUG(plug));
