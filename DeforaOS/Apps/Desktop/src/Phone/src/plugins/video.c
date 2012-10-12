@@ -131,13 +131,14 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	}
 	/* create the window */
 	video->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(video->window),
-			format.fmt.pix.width, format.fmt.pix.height);
 	gtk_window_set_resizable(GTK_WINDOW(video->window), FALSE);
 	g_signal_connect_swapped(video->window, "delete-event", G_CALLBACK(
 				_video_on_closex), video);
 	video->area = gtk_drawing_area_new();
+	gtk_widget_set_size_request(video->area, format.fmt.pix.width,
+			format.fmt.pix.height);
 	gtk_container_add(GTK_CONTAINER(video->window), video->area);
+	gtk_widget_show_all(video->window);
 	video->source = g_timeout_add(1000, _video_on_refresh, video);
 	return video;
 }
