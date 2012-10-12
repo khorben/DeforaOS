@@ -92,7 +92,7 @@ static gboolean _message_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel-message [-T type][-t timeout] message\n", stderr);
+	fputs("Usage: panel-message [-EIQW][-t timeout] message\n", stderr);
 	return 1;
 }
 
@@ -108,11 +108,20 @@ int main(int argc, char * argv[])
 	char * p;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "t:T:")) != -1)
+	while((o = getopt(argc, argv, "EIQWt:")) != -1)
 		switch(o)
 		{
-			case 'T':
-				/* FIXME implement */
+			case 'E':
+				type = GTK_MESSAGE_ERROR;
+				break;
+			case 'I':
+				type = GTK_MESSAGE_INFO;
+				break;
+			case 'Q':
+				type = GTK_MESSAGE_QUESTION;
+				break;
+			case 'W':
+				type = GTK_MESSAGE_WARNING;
 				break;
 			case 't':
 				timeout = strtoul(optarg, &p, 10);
