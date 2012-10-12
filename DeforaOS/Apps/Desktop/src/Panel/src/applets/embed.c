@@ -20,6 +20,8 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <stdlib.h>
+#include <string.h>
 #include <System.h>
 #include <Desktop.h>
 #include "Panel.h"
@@ -28,17 +30,25 @@
 /* Embed */
 /* private */
 /* types */
+typedef struct _EmbedWidget
+{
+	GtkWidget * socket;
+	GdkNativeWindow id;
+} EmbedWidget;
+
 typedef struct _PanelApplet
 {
 	PanelAppletHelper * helper;
 
 	guint source;
-	guint count;
 
 	/* widgets */
 	GtkWidget * button;
 	GtkWidget * window;
 	GtkWidget * vbox;
+
+	EmbedWidget * widgets;
+	size_t widgets_cnt;
 } Embed;
 
 
@@ -52,7 +62,7 @@ static void _embed_on_added(gpointer data);
 static int _embed_on_desktop_message(void * data, uint32_t value1,
 		uint32_t value2, uint32_t value3);
 static int _embed_on_idle(gpointer data);
-static gboolean _embed_on_removed(gpointer data);
+static gboolean _embed_on_removed(GtkWidget * widget, gpointer data);
 static void _embed_on_toggled(gpointer data);
 
 
@@ -87,10 +97,11 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 	}
 	embed->helper = helper;
 	embed->source = 0;
-	embed->count = 0;
 	embed->window = NULL;
 	embed->vbox = NULL;
 	embed->button = gtk_toggle_button_new();
+	embed->widgets = NULL;
+	embed->widgets_cnt = 0;
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(embed->button, "Show embedded widgets");
 #endif
@@ -112,6 +123,8 @@ static void _embed_destroy(Embed * embed)
 {
 	if(embed->source != 0)
 		g_source_remove(embed->source);
+	g_object_unref(embed->vbox);
+	free(embed->widgets);
 	object_delete(embed);
 }
 
@@ -127,7 +140,6 @@ static void _embed_on_added(gpointer data)
 #endif
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button), TRUE);
 	gtk_widget_set_sensitive(embed->button, TRUE);
-	embed->count++;
 }
 
 
@@ -137,6 +149,8 @@ static int _embed_on_desktop_message(void * data, uint32_t value1,
 {
 	Embed * embed = data;
 	GtkWidget * socket;
+	size_t i;
+	EmbedWidget * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, %u, %u)\n", __func__, value1, value2,
@@ -144,11 +158,23 @@ static int _embed_on_desktop_message(void * data, uint32_t value1,
 #endif
 	if(value1 != PANEL_MESSAGE_EMBED)
 		return 0;
+	/* check if this ID is not already added */
+	for(i = 0; i < embed->widgets_cnt; i++)
+		if(embed->widgets[i].id == value2)
+			/* no need to add this ID again */
+			return 0;
+	if((p = realloc(embed->widgets, sizeof(*p) * (embed->widgets_cnt + 1)))
+			== NULL)
+		/* XXX handle this error */
+		return 0;
+	embed->widgets = p;
 	socket = gtk_socket_new();
+	p[embed->widgets_cnt].socket = socket;
+	p[embed->widgets_cnt++].id = value2;
 	g_signal_connect_swapped(socket, "plug-added", G_CALLBACK(
 				_embed_on_added), embed);
-	g_signal_connect_swapped(socket, "plug-removed", G_CALLBACK(
-				_embed_on_removed), embed);
+	g_signal_connect(socket, "plug-removed", G_CALLBACK(_embed_on_removed),
+			embed);
 	gtk_widget_show(socket);
 	gtk_box_pack_start(GTK_BOX(embed->vbox), socket, FALSE, TRUE, 0);
 	gtk_socket_add_id(GTK_SOCKET(socket), value2);
@@ -173,6 +199,7 @@ static int _embed_on_idle(gpointer data)
 	gtk_window_set_type_hint(GTK_WINDOW(embed->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	embed->vbox = gtk_vbox_new(FALSE, 0);
+	g_object_ref(embed->vbox);
 	gtk_container_add(GTK_CONTAINER(embed->window), embed->vbox);
 	gtk_widget_show(embed->vbox);
 	desktop_message_register(PANEL_CLIENT_MESSAGE,
@@ -182,14 +209,25 @@ static int _embed_on_idle(gpointer data)
 
 
 /* embed_on_removed */
-static gboolean _embed_on_removed(gpointer data)
+static gboolean _embed_on_removed(GtkWidget * widget, gpointer data)
 {
 	Embed * embed = data;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(embed->count > 0 && --embed->count == 0)
+	for(i = 0; i < embed->widgets_cnt; i++)
+	{
+		if(embed->widgets[i].socket != widget)
+			continue;
+		memmove(&embed->widgets[i], &embed->widgets[i + 1],
+				sizeof(EmbedWidget)
+				* (embed->widgets_cnt - i - 1));
+		embed->widgets_cnt--;
+		break;
+	}
+	if(embed->widgets_cnt == 0)
 	{
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button),
 				FALSE);
