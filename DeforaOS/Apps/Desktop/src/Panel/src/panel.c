@@ -14,7 +14,6 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
- * - add a "read-only" and "extended" flag for applets
  * - get rid of the code duplication in the preferences callbacks */
 
 
@@ -1305,16 +1304,16 @@ static char const * _panel_get_plugins(Panel * panel, PanelPosition position)
 {
 #ifndef EMBEDDED
 	char const * plugins = "main,desktop,lock,logout,pager,tasks"
-		",gsm,gps,bluetooth,battery,cpufreq,embed,volume,systray,clock";
+		",gsm,gps,bluetooth,battery,cpufreq,volume,embed,systray,clock";
 	char const * top = "main,lock,logout,separator,phone,spacer"
-		",gsm,gps,bluetooth,battery,cpufreq,embed,volume,systray,clock";
+		",gsm,gps,bluetooth,battery,cpufreq,volume,embed,systray,clock";
 	char const * bottom = "desktop,tasks,pager";
 #else /* EMBEDDED */
 	char const * plugins = "main,desktop,keyboard,tasks,spacer"
-		",gsm,gps,bluetooth,battery,cpufreq,embed,volume,systray,clock"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,embed,systray,clock"
 		",close";
 	char const * top = "phone,spacer"
-		",gsm,gps,bluetooth,battery,cpufreq,embed,volume,systray,clock"
+		",gsm,gps,bluetooth,battery,cpufreq,volume,embed,systray,clock"
 		",close";
 	char const * bottom = "main,keyboard,desktop,tasks";
 #endif
