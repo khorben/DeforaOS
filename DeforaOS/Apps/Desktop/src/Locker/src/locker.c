@@ -1575,6 +1575,7 @@ static gboolean _lock_on_closex(void)
 
 
 /* locker_on_filter */
+static GdkFilterReturn _filter_configure(Locker * locker);
 static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
 		XScreenSaverNotifyEvent * xssne);
 
@@ -1590,8 +1591,84 @@ static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
 #endif
 	if(xev->type == locker->event)
 		return _filter_xscreensaver_notify(locker, xevent);
+	else if(xev->type == ConfigureNotify)
+		return _filter_configure(locker);
 	else
 		return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _filter_configure(Locker * locker)
+{
+	GdkScreen * screen;
+	size_t cnt;
+	size_t i;
+	GdkRectangle rect;
+	GdkWindow * window;
+	GtkWidget ** p;
+	GdkColor black;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	screen = gdk_screen_get_default();
+	if((cnt = gdk_screen_get_n_monitors(screen)) < 1)
+		cnt = 1;
+	for(i = 0; i < locker->windows_cnt && i < cnt; i++)
+	{
+		if(locker->windows[i] == NULL)
+			/* FIXME implement this case too */
+			continue;
+		gdk_screen_get_monitor_geometry(screen, i, &rect);
+		gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x, rect.y);
+		gtk_window_resize(GTK_WINDOW(locker->windows[i]), rect.width,
+				rect.height);
+	}
+	if(i == cnt)
+		/* remove windows */
+		for(; i < locker->windows_cnt; i++)
+		{
+			if(locker->windows[i] == NULL)
+				continue;
+#if GTK_CHECK_VERSION(2, 14, 0)
+			window = gtk_widget_get_window(locker->windows[i]);
+#else
+			window = locker->windows[i]->window;
+#endif
+			locker->ddefinition->remove(locker->demo, window);
+			gtk_widget_destroy(locker->windows[i]);
+			locker->windows[i] = NULL;
+		}
+	else if(i == locker->windows_cnt)
+	{
+		memset(&black, 0, sizeof(black));
+		/* add windows */
+		if((p = realloc(locker->windows, sizeof(*p) * cnt)) == NULL)
+			/* XXX report the error */
+			return GDK_FILTER_CONTINUE;
+		locker->windows = p;
+		for(; i < cnt; i++)
+		{
+			/* FIXME code duplication */
+			locker->windows[i] = gtk_window_new(
+					GTK_WINDOW_TOPLEVEL);
+			gdk_screen_get_monitor_geometry(screen, i, &rect);
+			gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x,
+					rect.y);
+			gtk_window_resize(GTK_WINDOW(locker->windows[i]),
+					rect.width, rect.height);
+			gtk_window_set_keep_above(GTK_WINDOW(
+						locker->windows[i]), TRUE);
+			gtk_window_stick(GTK_WINDOW(locker->windows[i]));
+			gtk_widget_modify_bg(locker->windows[i],
+					GTK_STATE_NORMAL, &black);
+			g_signal_connect_swapped(G_OBJECT(locker->windows[i]),
+					"delete-event",
+					G_CALLBACK(_lock_on_closex), NULL);
+			g_signal_connect(locker->windows[i], "realize",
+					G_CALLBACK(_locker_on_realize), locker);
+		}
+	}
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_xscreensaver_notify(Locker * locker,
