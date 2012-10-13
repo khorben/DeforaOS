@@ -153,13 +153,29 @@ class CVSScmProject
 					break;
 			//revision
 			$revision = substr($rcs[$revs + 1], 9);
-			$row->setProperty('revision', $revision);
+			$r = new Request('project', 'browse', $request->getId(),
+				$request->getTitle(), array(
+					'file' => $file.'/'.$de,
+					'revision' => $revision));
+			$link = new PageElement('link', array('request' => $r,
+					'text' => $revision));
+			$row->setProperty('revision', $link);
 			//author
-			$author = substr($rcs[$revs + 2], 36);
-			$author = substr($author, 0, strspn($author,
+			//XXX code duplication
+			$username = substr($rcs[$revs + 2], 36);
+			$username = substr($username, 0, strspn($username,
 					'0123456789abcdefghijklmnopqrstuvwxyz'
 					.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-			$row->setProperty('username', $author);
+			if(($user = User::lookup($engine, $username)) !== FALSE)
+			{
+				$r = new Request('project', 'list',
+					$user->getUserId(), $username);
+				$username = new PageElement('link', array(
+						'request' => $r,
+						'stock' => 'user',
+						'text' => $username));
+			}
+			$row->setProperty('username', $username);
 			//message
 			//FIXME implement
 		}
