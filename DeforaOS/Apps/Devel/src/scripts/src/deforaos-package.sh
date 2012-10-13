@@ -42,6 +42,7 @@ LINTIAN="lintian"
 MAKE="make"
 MKDIR="mkdir -p"
 PKGLINT="pkglint"
+PREFIX="/usr/local"
 RM="rm -f"
 RMD160="rmd160"
 SHA1="sha1"
@@ -582,14 +583,14 @@ _package_pkgsrc()
 	#PLIST
 	_info "Creating $pkgname/PLIST..."
 	tmpdir="$PWD/$pkgname/destdir"
-	$MAKE DESTDIR="$tmpdir" PREFIX="/usr/local" install
+	$MAKE DESTDIR="$tmpdir" PREFIX="$PREFIX" install
 	if [ $? -ne 0 ]; then
 		$RM -r -- "$pkgname"
 		_error "Could not install files in staging directory"
 		return 2
 	fi
 	echo "@comment \$NetBSD\$" > "$pkgname/PLIST"
-	(cd "$tmpdir/usr/local" && $FIND . -type f | $CUT -c 3- | sort) >> "$pkgname/PLIST"
+	(cd "$tmpdir$PREFIX" && $FIND . -type f | $CUT -c 3- | sort) >> "$pkgname/PLIST"
 	$RM -r -- "$tmpdir"
 
 	#distinfo
