@@ -176,6 +176,9 @@ _package_guess_name()
 			"version="*)
 				VERSION="${line#version=}"
 				;;
+			"["*)
+				break
+				;;
 		esac
 	done < "$PROJECTCONF"
 	[ -z "$PACKAGE" -o -z "$VERSION" ]			&& return 2
