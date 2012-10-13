@@ -103,7 +103,7 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 	embed->widgets = NULL;
 	embed->widgets_cnt = 0;
 #if GTK_CHECK_VERSION(2, 12, 0)
-	gtk_widget_set_tooltip_text(embed->button, "Show embedded widgets");
+	gtk_widget_set_tooltip_text(embed->button, "Desktop notifications");
 #endif
 	gtk_button_set_relief(GTK_BUTTON(embed->button), GTK_RELIEF_NONE);
 	gtk_widget_set_sensitive(embed->button, FALSE);
@@ -111,7 +111,10 @@ static Embed * _embed_init(PanelAppletHelper * helper,
 				_embed_on_toggled), embed);
 	image = gtk_image_new_from_icon_name(applet.icon, helper->icon_size);
 	gtk_container_add(GTK_CONTAINER(embed->button), image);
-	gtk_widget_show_all(embed->button);
+	gtk_widget_show(image);
+#ifndef EMBEDDED
+	gtk_widget_show(embed->button);
+#endif
 	*widget = embed->button;
 	g_idle_add(_embed_on_idle, embed);
 	return embed;
@@ -140,6 +143,9 @@ static void _embed_on_added(gpointer data)
 #endif
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button), TRUE);
 	gtk_widget_set_sensitive(embed->button, TRUE);
+#ifdef EMBEDDED
+	gtk_widget_show(embed->button);
+#endif
 }
 
 
@@ -232,6 +238,9 @@ static gboolean _embed_on_removed(GtkWidget * widget, gpointer data)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(embed->button),
 				FALSE);
 		gtk_widget_set_sensitive(embed->button, FALSE);
+#ifdef EMBEDDED
+		gtk_widget_hide(embed->button);
+#endif
 	}
 	return FALSE;
 }
