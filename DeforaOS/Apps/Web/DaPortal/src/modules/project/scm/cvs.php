@@ -56,7 +56,7 @@ class CVSScmProject
 		else
 			$file = '/';
 		$error = _('No such file or directory');
-		if(($st = lstat($path)) === FALSE)
+		if(($st = @lstat($path)) === FALSE)
 			return new PageElement('dialog', array(
 					'type' => 'error', 'text' => $error));
 		if(($st['mode'] & CVSScmProject::$S_IFDIR)
