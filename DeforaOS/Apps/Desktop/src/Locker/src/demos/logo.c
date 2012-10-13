@@ -221,9 +221,8 @@ static void _logo_start(Logo * logo)
 	/* settings */
 	/* scrolling */
 	logo->scroll = 0;
-	if((p = helper->config_get(helper->locker, "logo", "scroll")) != NULL
-			&& strtol(p, NULL, 10) == 1)
-		logo->scroll = 1;
+	if((p = helper->config_get(helper->locker, "logo", "scroll")) != NULL)
+		logo->scroll = strtol(p, NULL, 10);
 	/* opacity */
 	logo->opacity = 255;
 	if((p = helper->config_get(helper->locker, "logo", "opacity")) != NULL)
@@ -255,7 +254,7 @@ static gboolean _logo_on_idle(gpointer data)
 {
 	Logo * logo = data;
 
-	logo->source = g_timeout_add(logo->scroll ? 40 : 10000,
+	logo->source = g_timeout_add((logo->scroll != 0) ? 40 : 10000,
 			_logo_on_timeout, logo);
 	return FALSE;
 }
@@ -271,7 +270,7 @@ static gboolean _logo_on_timeout(gpointer data)
 
 	for(i = 0; i < logo->windows_cnt; i++)
 		_timeout_window(logo, &logo->windows[i]);
-	logo->frame_num++;
+	logo->frame_num += logo->scroll;
 	logo->source = g_idle_add(_logo_on_idle, logo);
 	return FALSE;
 }
@@ -323,7 +322,7 @@ static void _timeout_window(Logo * logo, LogoWindow * window)
 	{
 		width = gdk_pixbuf_get_width(logo->background);
 		height = gdk_pixbuf_get_height(logo->background);
-		if(logo->scroll && width > 0 && height > 0)
+		if((logo->scroll != 0) && width > 0 && height > 0)
 		{
 			offset_x = logo->frame_num % width;
 			offset_y = logo->frame_num % height;
