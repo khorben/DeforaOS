@@ -726,6 +726,7 @@ EOF
 .include "options.mk"
 EOF
 
+	#dependencies
 	echo ""
 	[ $DEPEND_gtkdoc -eq 1 ] &&
 		echo '.include "../../textproc/gtk-doc/buildlink3.mk"'
