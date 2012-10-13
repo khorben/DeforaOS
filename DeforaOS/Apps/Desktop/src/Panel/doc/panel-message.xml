@@ -55,6 +55,7 @@
 				<arg choice="plain">-Q</arg>
 				<arg choice="plain">-W</arg>
 			</group>
+			<arg choice="opt">-T <replaceable>title</replaceable></arg>
 			<arg choice="opt">-t <replaceable>timeout</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
@@ -94,6 +95,13 @@
 				<term><option>-W</option></term>
 				<listitem>
 					<para>Display a warning message.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-T</option></term>
+				<listitem>
+					<para>The title to display with the message (default: according to the
+						message type).</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
