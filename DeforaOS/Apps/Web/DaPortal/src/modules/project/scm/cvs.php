@@ -138,13 +138,28 @@ class CVSScmProject
 			$link = new PageElement('link', array('request' => $r,
 					'text' => substr($de, 0, -2)));
 			$row->setProperty('title', $link);
-			//revision
-			//FIXME implement
 			//date
 			$date = strftime(_('%Y/%m/%d %H:%M:%S'), $st['mtime']);
 			$row->setProperty('date', $date);
+			//obtain the revisions
+			$cmd = 'rlog '.escapeshellarg($path.'/'.$de);
+			unset($rcs);
+			exec($cmd, $rcs, $res);
+			if(($cnt = count($rcs)) == 0)
+				continue;
+			for($revs = 0; $revs < $cnt; $revs++)
+				if($rcs[$revs]
+					== '----------------------------')
+					break;
+			//revision
+			$revision = substr($rcs[$revs + 1], 9);
+			$row->setProperty('revision', $revision);
 			//author
-			//FIXME implement
+			$author = substr($rcs[$revs + 2], 36);
+			$author = substr($author, 0, strspn($author,
+					'0123456789abcdefghijklmnopqrstuvwxyz'
+					.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+			$row->setProperty('username', $author);
 			//message
 			//FIXME implement
 		}
