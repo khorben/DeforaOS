@@ -257,7 +257,9 @@ static void _embed_on_toggled(gpointer data)
 			&push_in);
 #if GTK_CHECK_VERSION(2, 18, 0)
 	gtk_widget_get_allocation(embed->button, &allocation);
-	x += allocation.x;
+	x += allocation.x - allocation.width;
+	if(x < 0)
+		x = 0;
 #endif
 	gtk_window_move(GTK_WINDOW(embed->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(embed->button)))
