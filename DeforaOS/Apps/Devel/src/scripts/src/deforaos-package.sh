@@ -711,6 +711,19 @@ EOF
 .include "options.mk"
 EOF
 
+	if [ $DEPEND_docbookxsl -eq 1 ]; then
+		echo ""
+		echo "post-install:"
+		for i in doc/*.xml; do
+			[ -f "$i" ] || continue
+			page="${i#doc/}"
+			page="${page%.xml}.1"
+			echo "	\${MV} \${DESTDIR}\${PREFIX}/share/man/man1/$page \${DESTDIR}\${PREFIX}/\${PKGMANDIR}/man1/$page"
+		done
+		echo "	\${RMDIR} \${DESTDIR}\${PREFIX}/share/man/man1"
+		echo "	\${RMDIR} \${DESTDIR}\${PREFIX}/share/man"
+	fi
+
 	echo ""
 	[ $DEPEND_gtkdoc -eq 1 ] &&
 		echo '.include "../../textproc/gtk-doc/buildlink3.mk"'
