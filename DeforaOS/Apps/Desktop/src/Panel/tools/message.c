@@ -26,7 +26,7 @@
 /* private */
 /* prototypes */
 static int _message(unsigned int timeout, GtkMessageType type,
-		char const * message);
+		char const * title, char const * message);
 
 /* callbacks */
 static gboolean _message_on_timeout(gpointer data);
@@ -37,10 +37,9 @@ static int _usage(void);
 /* functions */
 /* message */
 static int _message(unsigned int timeout, GtkMessageType type,
-		char const * message)
+		char const * title, char const * message)
 {
 	PangoFontDescription * bold;
-	char const * title;
 	char const * stock;
 	GtkWidget * plug;
 	GtkWidget * hbox;
@@ -55,20 +54,24 @@ static int _message(unsigned int timeout, GtkMessageType type,
 	{
 		case GTK_MESSAGE_ERROR:
 			stock = GTK_STOCK_DIALOG_ERROR;
-			title = "Error";
+			if(title == NULL)
+				title = "Error";
 			break;
 		case GTK_MESSAGE_QUESTION:
 			stock = GTK_STOCK_DIALOG_QUESTION;
-			title = "Question";
+			if(title == NULL)
+				title = "Question";
 			break;
 		case GTK_MESSAGE_WARNING:
 			stock = GTK_STOCK_DIALOG_WARNING;
-			title = "Warning";
+			if(title == NULL)
+				title = "Warning";
 			break;
 		case GTK_MESSAGE_INFO:
 		default:
 			stock = GTK_STOCK_DIALOG_INFO;
-			title = "Information";
+			if(title == NULL)
+				title = "Information";
 			break;
 	}
 	plug = gtk_plug_new(0);
@@ -120,7 +123,8 @@ static gboolean _message_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel-message [-EIQW][-t timeout] message\n", stderr);
+	fputs("Usage: panel-message [-EIQW][-T title][-t timeout] message\n",
+			stderr);
 	return 1;
 }
 
@@ -132,11 +136,12 @@ int main(int argc, char * argv[])
 {
 	GtkMessageType type = GTK_MESSAGE_INFO;
 	unsigned int timeout = 3;
+	char const * title = NULL;
 	int o;
 	char * p;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "EIQWt:")) != -1)
+	while((o = getopt(argc, argv, "EIQT:Wt:")) != -1)
 		switch(o)
 		{
 			case 'E':
@@ -147,6 +152,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'Q':
 				type = GTK_MESSAGE_QUESTION;
+				break;
+			case 'T':
+				title = optarg;
 				break;
 			case 'W':
 				type = GTK_MESSAGE_WARNING;
@@ -161,5 +169,5 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind != 1)
 		return _usage();
-	return (_message(timeout, type, argv[optind]) == 0) ? 0 : 2;
+	return (_message(timeout, type, title, argv[optind]) == 0) ? 0 : 2;
 }
