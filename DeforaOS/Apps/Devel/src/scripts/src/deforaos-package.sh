@@ -706,11 +706,7 @@ EOF
 		echo "RCD_SCRIPTS+=	$i"
 	done
 
-	[ -f "$PKGSRC_ROOT/wip/$pkgname/options.mk" ] && cat << EOF
-
-.include "options.mk"
-EOF
-
+	#fix installation path for manual pages
 	if [ $DEPEND_docbookxsl -eq 1 ]; then
 		echo ""
 		echo "post-install:"
@@ -723,6 +719,12 @@ EOF
 		echo "	\${RMDIR} \${DESTDIR}\${PREFIX}/share/man/man1"
 		echo "	\${RMDIR} \${DESTDIR}\${PREFIX}/share/man"
 	fi
+
+	#options
+	[ -f "$PKGSRC_ROOT/wip/$pkgname/options.mk" ] && cat << EOF
+
+.include "options.mk"
+EOF
 
 	echo ""
 	[ $DEPEND_gtkdoc -eq 1 ] &&
