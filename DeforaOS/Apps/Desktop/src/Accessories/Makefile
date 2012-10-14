@@ -1,5 +1,5 @@
 PACKAGE	= Accessories
-VERSION	= 0.0.2
+VERSION	= 0.0.3
 SUBDIRS	= src
 RM	?= rm -f
 LN	?= ln -f
