@@ -1,4 +1,4 @@
-SUBDIRS	= Directory Probe
+SUBDIRS	= libApp Directory Probe
 
 
 all: subdirs
