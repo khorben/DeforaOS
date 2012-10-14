@@ -380,6 +380,9 @@ static int _subversion_add_task(SVN * svn, char const * title,
 	if((task = object_new(sizeof(*task))) == NULL)
 		return -helper->error(helper->browser, error_get(), 1);
 	task->svn = svn;
+#ifdef DEBUG
+	argv[0] = "echo";
+#endif
 	res = g_spawn_async_with_pipes(directory, argv, NULL, flags, NULL, NULL,
 			&task->pid, NULL, &task->o_fd, &task->e_fd, &error);
 	if(res != TRUE)
