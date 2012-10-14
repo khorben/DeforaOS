@@ -490,6 +490,7 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 #endif
 	if(embedded)
 	{
+		/* print the window ID and force a flush */
 		id = gtk_plug_get_id(GTK_PLUG(mixer->window));
 		printf("%lu\n", id);
 		fclose(stdout);
