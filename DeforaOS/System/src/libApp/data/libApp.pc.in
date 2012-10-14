@@ -1,5 +1,5 @@
 prefix=@PREFIX@
-includedir=${prefix}/include
+includedir=${prefix}/include/System
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 
