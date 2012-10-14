@@ -422,7 +422,7 @@ static gboolean _properties_on_closex(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: properties [-p plugin] file...\n"), stderr);
+	fputs(_("Usage: properties [-p plug-in] file...\n"), stderr);
 	return 1;
 }
 
