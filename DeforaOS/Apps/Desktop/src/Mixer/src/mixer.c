@@ -125,8 +125,8 @@ static char const * _authors[] =
 #ifdef EMBEDDED
 static const DesktopAccel _mixer_accel[] =
 {
-	{ G_CALLBACK(on_file_properties), GDK_MOD1_MASK, GDK_KEY_Return },
 	{ G_CALLBACK(on_file_close), GDK_CONTROL_MASK, GDK_KEY_W },
+	{ G_CALLBACK(on_file_properties), GDK_MOD1_MASK, GDK_KEY_Return },
 	{ G_CALLBACK(on_view_all), GDK_CONTROL_MASK, GDK_KEY_A },
 # ifdef AUDIO_MIXER_DEVINFO
 	{ G_CALLBACK(on_view_outputs), GDK_CONTROL_MASK, GDK_KEY_O },
@@ -156,19 +156,19 @@ static const DesktopMenu _mixer_menu_view[] =
 	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK,
 		GDK_KEY_A },
 # ifdef AUDIO_MIXER_DEVINFO
-	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_CONTROL_MASK,
-		GDK_KEY_O },
-	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_CONTROL_MASK,
-		GDK_KEY_I },
-	{ N_("_Record"), G_CALLBACK(on_view_record), NULL, GDK_CONTROL_MASK,
-		GDK_KEY_R },
-	{ N_("Mo_nitor"), G_CALLBACK(on_view_monitor), NULL, GDK_CONTROL_MASK,
-		GDK_KEY_N },
-	{ N_("_Equalization"), G_CALLBACK(on_view_equalization), NULL,
+	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), "audio-volume-high",
+		GDK_CONTROL_MASK, GDK_KEY_O },
+	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), "stock_line-in",
+		GDK_CONTROL_MASK, GDK_KEY_I },
+	{ N_("_Record"), G_CALLBACK(on_view_record), "gtk-media-record",
+		GDK_CONTROL_MASK, GDK_KEY_R },
+	{ N_("Mo_nitor"), G_CALLBACK(on_view_monitor), "audio-input-microphone",
+		GDK_CONTROL_MASK, GDK_KEY_N },
+	{ N_("_Equalization"), G_CALLBACK(on_view_equalization), "multimedia",
 		GDK_CONTROL_MASK, GDK_KEY_E },
-	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_CONTROL_MASK,
+	{ N_("Mi_x"), G_CALLBACK(on_view_mix), "stock_volume", GDK_CONTROL_MASK,
 		GDK_KEY_X },
-	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_CONTROL_MASK,
+	{ N_("_Modem"), G_CALLBACK(on_view_modem), "modem", GDK_CONTROL_MASK,
 		GDK_KEY_M },
 # endif
 	{ NULL, NULL, NULL, 0, 0 }
@@ -186,6 +186,13 @@ static const DesktopMenubar _mixer_menubar[] =
 	{ N_("_View"), _mixer_menu_view },
 	{ N_("_Help"), _mixer_menu_help },
 	{ NULL, NULL },
+};
+#else
+static DesktopToolbar _mixer_toolbar[] =
+{
+	{ N_("Properties"), G_CALLBACK(on_file_properties),
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_KEY_Return, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 #endif
 
@@ -296,6 +303,12 @@ Mixer * mixer_new(char const * device, MixerLayout layout, gboolean embedded)
 	}
 #else
 	desktop_accel_create(_mixer_accel, mixer, accel);
+	/* toolbar */
+	if(embedded == FALSE)
+	{
+		widget = desktop_toolbar_create(_mixer_toolbar, mixer, accel);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	}
 #endif
 	/* classes */
 	mixer->notebook = NULL;
@@ -517,7 +530,7 @@ static GtkWidget * _new_frame_label(GdkPixbuf * pixbuf, char const * name,
 		{ "line",	"stock_line-in"		},
 		{ "master",	"audio-volume-high"	},
 		{ "mic",	"audio-input-microphone"},
-		{ "monitor",	"gtk-media-record"	},
+		{ "monitor",	"stock_volume"		},
 		{ "output",	"audio-volume-high"	},
 		{ "pcm",	"audio-volume-high"	},
 		{ "rec",	"gtk-media-record"	},
