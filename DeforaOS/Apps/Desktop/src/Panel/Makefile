@@ -61,6 +61,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/panel.xml \
 		$(PACKAGE)-$(VERSION)/doc/panelctl.xml \
 		$(PACKAGE)-$(VERSION)/doc/panel-embed.xml \
+		$(PACKAGE)-$(VERSION)/doc/panel-message.xml \
 		$(PACKAGE)-$(VERSION)/doc/panel-notify.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Panel.h \
