@@ -33,6 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/download.xml \
 		$(PACKAGE)-$(VERSION)/doc/surfer.xml \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
