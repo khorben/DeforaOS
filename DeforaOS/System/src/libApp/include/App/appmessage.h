@@ -19,6 +19,7 @@
 # define LIBAPP_APP_APPMESSAGE_H
 
 # include <System/buffer.h>
+# include <System/string.h>
 # include "app.h"
 
 
