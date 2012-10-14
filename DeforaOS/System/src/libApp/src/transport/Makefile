@@ -1,12 +1,12 @@
 TARGETS	= tcp.so udp.so
-PREFIX	= /usr/local
+PREFIX	= /usr
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	?= cc
 CPPFLAGSF= -I ../../include
 CPPFLAGS=
-CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2 -pedantic -fPIC
+CFLAGSF	= -W -fPIC
+CFLAGS	= -Wall -g -O2 -pedantic
 AR	?= ar
 RANLIB	?= ranlib
 CCSHARED?= $(CC) -shared
