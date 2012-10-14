@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Coder 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-06-06 22:55+0200\n"
+"POT-Creation-Date: 2012-10-14 18:19+0200\n"
 "PO-Revision-Date: 2012-06-06 22:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -80,59 +80,59 @@ msgstr "Coder"
 msgid "Files"
 msgstr "Fichiers"
 
-#: ../src/gedi.c:265
+#: ../src/gedi.c:269
 msgid "Integrated Development Environment for the DeforaOS desktop"
 msgstr "Interface Intégrée de Développement pour l'environnement DeforaOS"
 
-#: ../src/gedi.c:295 ../src/gedi.c:299 ../tools/gdeasm.c:373
+#: ../src/gedi.c:299 ../src/gedi.c:303 ../tools/gdeasm.c:373
 #: ../tools/gdeasm.c:377
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/gedi.c:359
+#: ../src/gedi.c:368
 msgid "Open project..."
 msgstr "Ouvrir projet..."
 
-#: ../src/gedi.c:365
+#: ../src/gedi.c:374
 msgid "Project files"
 msgstr "Fichiers du projet"
 
-#: ../src/gedi.c:370 ../tools/gdeasm.c:449 ../tools/gdeasm.c:736
-#: ../tools/gdeasm.c:915
+#: ../src/gedi.c:379 ../tools/gdeasm.c:449 ../tools/gdeasm.c:736
+#: ../tools/gdeasm.c:928
 msgid "All files"
 msgstr "Tous les fichiers"
 
-#: ../src/gedi.c:447
+#: ../src/gedi.c:456
 msgid "Save project as..."
 msgstr "Enregistrer le projet sous..."
 
-#: ../src/gedi.c:493
+#: ../src/gedi.c:502
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/gedi.c:502
+#: ../src/gedi.c:511
 msgid "Editor:"
 msgstr "Éditeur : "
 
-#: ../src/gedi.c:509
+#: ../src/gedi.c:518
 msgid "Run in a _terminal"
 msgstr "Ouvrir dans un _terminal"
 
-#: ../src/gedi.c:513
+#: ../src/gedi.c:522
 msgid "Editor"
 msgstr "Éditeur"
 
-#: ../src/gedi.c:518
+#: ../src/gedi.c:527
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/gedi.c:593
+#: ../src/gedi.c:602
 msgid "No project opened"
 msgstr "Aucun projet n'est ouvert"
 
 #: ../src/main.c:42
-msgid "Usage: gedi\n"
-msgstr "Usage: gedi\n"
+msgid "Usage: coder\n"
+msgstr "Usage: coder\n"
 
 #: ../tools/gdeasm.c:149
 msgid "_Open..."
@@ -211,10 +211,12 @@ msgid ""
 "There are unsaved comments.\n"
 "Discard or save them?"
 msgstr ""
+"Il y a des commentaires non enregistrés.\n"
+"Abandonner ou enregistrer ?"
 
 #: ../tools/gdeasm.c:495
 msgid "Discard"
-msgstr ""
+msgstr "Abandonner"
 
 #: ../tools/gdeasm.c:726
 msgid "Save comments as..."
@@ -226,16 +228,24 @@ msgstr "Ouvrir fichier..."
 
 #: ../tools/gdeasm.c:902
 msgid "Open file in _raw mode"
-msgstr ""
+msgstr "Ouvrir fichier en mode b_rut"
 
-#: ../tools/gdeasm.c:906
+#: ../tools/gdeasm.c:907
 msgid "Executable files"
 msgstr "Fichiers exécutables"
 
-#: ../tools/gdeasm.c:911
+#: ../tools/gdeasm.c:913
+msgid "Java classes"
+msgstr "Classes Java"
+
+#: ../tools/gdeasm.c:918
 msgid "Objects"
 msgstr "Objets"
 
-#: ../tools/gdeasm.c:943
+#: ../tools/gdeasm.c:923
+msgid "Shared objects"
+msgstr "Objets partagés"
+
+#: ../tools/gdeasm.c:956
 msgid "Usage: gdeasm [-C comments][-D][-a arch][-f format] filename\n"
 msgstr "Usage: gdeasm [-C commentaires][-D][-a arch][-f format] fichier\n"

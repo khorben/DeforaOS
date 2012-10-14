@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-20 13:42+0200\n"
+"POT-Creation-Date: 2012-10-14 18:19+0200\n"
 "PO-Revision-Date: 2010-04-09 16:43+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -177,74 +177,74 @@ msgstr ""
 msgid "translator-credits"
 msgstr ""
 
-#: ../src/editor.c:477
+#: ../src/editor.c:480
 msgid "Could not save configuration"
 msgstr ""
 
-#: ../src/editor.c:494 ../src/editor.c:503 ../src/editor.c:861
-#: ../src/editor.c:866
+#: ../src/editor.c:498 ../src/editor.c:507 ../src/editor.c:865
+#: ../src/editor.c:870
 msgid "Question"
 msgstr ""
 
-#: ../src/editor.c:519 ../src/editor.c:523
+#: ../src/editor.c:523 ../src/editor.c:527
 msgid "Error"
 msgstr ""
 
-#: ../src/editor.c:545 ../src/editor.c:698
+#: ../src/editor.c:549 ../src/editor.c:702
 msgid ""
 "There are unsaved changes.\n"
 "Discard or save them?"
 msgstr ""
 
-#: ../src/editor.c:656
+#: ../src/editor.c:660
 msgid "Insert file..."
 msgstr ""
 
-#: ../src/editor.c:662 ../src/editor.c:775
+#: ../src/editor.c:666 ../src/editor.c:779
 msgid "Text files"
 msgstr ""
 
-#: ../src/editor.c:666 ../src/editor.c:779
+#: ../src/editor.c:670 ../src/editor.c:783
 msgid "All files"
 msgstr ""
 
-#: ../src/editor.c:704
+#: ../src/editor.c:708
 msgid "Discard"
 msgstr "Scarta"
 
-#: ../src/editor.c:769
+#: ../src/editor.c:773
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:837
+#: ../src/editor.c:841
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:865
+#: ../src/editor.c:869
 msgid "This file already exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:874
+#: ../src/editor.c:878
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:889
+#: ../src/editor.c:893
 msgid "Save as..."
 msgstr "Salva come..."
 
-#: ../src/editor.c:946
+#: ../src/editor.c:950
 msgid "Text editor preferences"
 msgstr ""
 
-#: ../src/editor.c:963
+#: ../src/editor.c:967
 msgid "Font:"
 msgstr ""
 
-#: ../src/editor.c:973
+#: ../src/editor.c:977
 msgid "Wrap mode:"
 msgstr ""
 
-#: ../src/editor.c:1184
+#: ../src/editor.c:1188
 msgid "Text not found"
 msgstr ""
 

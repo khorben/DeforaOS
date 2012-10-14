@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Locker 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-16 03:10+0200\n"
+"POT-Creation-Date: 2012-10-14 18:20+0200\n"
 "PO-Revision-Date: 2011-10-17 16:32+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,51 +15,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/locker.c:345
+#: ../src/locker.c:348
 msgid "Could not register as screensaver"
 msgstr "Impossible de déclarer l'économiseur d'écran"
 
-#: ../src/locker.c:425
+#: ../src/locker.c:427
 msgid "Screensaver preferences"
 msgstr "Préférences de l'économiseur d'écran"
 
-#: ../src/locker.c:441
+#: ../src/locker.c:443
 msgid "Authentication"
 msgstr "Authentification"
 
-#: ../src/locker.c:445
+#: ../src/locker.c:447
 msgid "Demos"
 msgstr "Démos"
 
-#: ../src/locker.c:449
+#: ../src/locker.c:451
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/locker.c:470 ../src/locker.c:501
+#: ../src/locker.c:472 ../src/locker.c:503
 msgid "Plug-in: "
 msgstr "Greffon : "
 
-#: ../src/locker.c:550
+#: ../src/locker.c:552
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/locker.c:560
+#: ../src/locker.c:562
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/locker.c:722
+#: ../src/locker.c:739
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: ../src/locker.c:907
+#: ../src/locker.c:935
 msgid "Screensaver for the DeforaOS desktop"
 msgstr "Économiseur d'écran pour l'environnement DeforaOS"
 
-#: ../src/locker.c:912
+#: ../src/locker.c:940
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/locker.c:1395 ../src/locker.c:1399
+#: ../src/locker.c:1438 ../src/locker.c:1442
 msgid "Error"
 msgstr "Erreur"
 

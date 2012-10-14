@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Todo 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-01-05 21:12+0100\n"
+"POT-Creation-Date: 2012-10-14 18:23+0200\n"
 "PO-Revision-Date: 2010-04-23 14:35+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/main.c:43
+#: ../src/main.c:44
 msgid "Usage: todo\n"
 msgstr "Usage: todo\n"
 
@@ -124,7 +124,7 @@ msgstr "_Vue"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/todo.c:180 ../src/todo.c:517
+#: ../src/todo.c:180 ../src/todo.c:519
 msgid "New task"
 msgstr "Nouvelle tâche"
 
@@ -168,26 +168,30 @@ msgstr "Tâches restantes"
 msgid "Priority"
 msgstr "Priorité"
 
-#: ../src/todo.c:440
+#: ../src/todo.c:436
+msgid "TODO-list manager for the DeforaOS desktop"
+msgstr ""
+
+#: ../src/todo.c:442
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/todo.c:470 ../src/todo.c:475
+#: ../src/todo.c:472 ../src/todo.c:477
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/todo.c:570
+#: ../src/todo.c:572
 msgid "Are you sure you want to delete the selected task(s)?"
 msgstr "Voulez-vous vraiment supprimer la sélection?"
 
-#: ../src/todo.c:659
+#: ../src/todo.c:661
 msgid "Time: "
 msgstr "Heure: "
 
-#: ../src/todo.c:668 ../src/todo.c:677
+#: ../src/todo.c:670 ../src/todo.c:679
 msgid ":"
 msgstr ":"
 
-#: ../src/todo.c:1046 ../src/todo.c:1051
+#: ../src/todo.c:1048 ../src/todo.c:1053
 msgid "Question"
 msgstr "Question"
