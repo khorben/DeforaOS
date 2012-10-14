@@ -37,9 +37,9 @@ static char _license[] =
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-# if GTK_CHECK_VERSION(3, 0, 0)
-#include <gtk/gtkx.h>
-# endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #include <Desktop.h>
 #include "callbacks.h"
 #include "mixer.h"
