@@ -72,6 +72,10 @@
 			<citerefentry>
 				<refentrytitle>download</refentrytitle>
 				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>helper</refentrytitle>
+				<manvolnum>1</manvolnum>
 			</citerefentry>
 	</para>
 	</refsect1>

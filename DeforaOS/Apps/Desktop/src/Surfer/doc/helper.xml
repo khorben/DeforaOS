@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Surfer User Manual">
 	<!ENTITY package   "DeforaOS Surfer">
-	<!ENTITY name      "download">
-	<!ENTITY purpose   "Download remote files">
+	<!ENTITY name      "helper">
+	<!ENTITY purpose   "Help browser">
 ]>
 <refentry>
 	<refentryinfo>
@@ -49,40 +49,54 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<arg choice="opt"><option>-O</option> <replaceable>output
-					file</replaceable></arg>
-			<arg choice="opt"><option>-U</option> <replaceable>user
-					agent</replaceable></arg>
-			<arg choice="opt"><option>-x</option></arg>
-			<arg choice="plain" rep="repeat"><replaceable>URL</replaceable></arg>
+			<arg choice="opt"><option>-c</option></arg>
+			<arg choice="opt"><option>-p</option>
+				<replaceable>package</replaceable></arg>
+			<arg>command</arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="plain"><option>-d</option>
+				<replaceable>package</replaceable></arg>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<arg choice="plain"><option>-s</option> <replaceable>section</replaceable></arg>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a download utility for the desktop.</para>
+		<para><command>&name;</command> is a help browser for the desktop.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>A list of remote files to download must be provided directly on the
-			command line.</para>
+		<para>The name of a command, package or manual page is expected on the command
+			line.</para>
 		<para>The following options are available:</para>
 		<variablelist>
 			<varlistentry>
-				<term><option>-O</option></term>
+				<term><option>-c</option></term>
 				<listitem>
-					<para>File to write the remote document to.</para>
+					<para></para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-U</option></term>
+				<term><option>-p</option></term>
 				<listitem>
-					<para>User-agent string to send.</para>
+					<para>Obtain documentation for the command specified from a specific
+						package.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>-x</option></term>
+				<term><option>-d</option></term>
 				<listitem>
-					<para>Start in embedded mode.</para>
+					<para>Obtain documentation for the package specified.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-s</option></term>
+				<listitem>
+					<para>The section from which to obtain the manual page specified.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
@@ -96,7 +110,7 @@
 		<title>See also</title>
 		<para>
 			<citerefentry>
-				<refentrytitle>helper</refentrytitle>
+				<refentrytitle>download</refentrytitle>
 				<manvolnum>1</manvolnum>
 			</citerefentry>,
 			<citerefentry>

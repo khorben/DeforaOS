@@ -84,6 +84,7 @@ static void _helper_on_file_open(gpointer data);
 static void _helper_on_fullscreen(gpointer data);
 #ifndef EMBEDDED
 static void _helper_on_help_about(gpointer data);
+static void _helper_on_help_contents(gpointer data);
 #endif
 #ifdef EMBEDDED
 static void _helper_on_open(gpointer data);
@@ -135,6 +136,8 @@ static const DesktopMenu _menu_view[] =
 
 static const DesktopMenu _menu_help[] =
 {
+	{ N_("_Contents"), G_CALLBACK(_helper_on_help_contents),
+		"help-contents", 0, GDK_KEY_F1 },
 	{ N_("_About"), G_CALLBACK(_helper_on_help_about),
 # if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_ABOUT, 0, 0 },
@@ -432,6 +435,13 @@ static gboolean _about_on_closex(gpointer data)
 
 	gtk_widget_hide(helper->ab_window);
 	return TRUE;
+}
+
+
+/* helper_on_help_contents */
+static void _helper_on_help_contents(gpointer data)
+{
+	desktop_help_contents(PACKAGE, "helper");
 }
 #endif
 
