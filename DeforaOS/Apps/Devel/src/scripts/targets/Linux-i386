@@ -63,10 +63,10 @@ _image_iso_post()
 {
 	#install kernel with ramdisk and modules
 	$DEBUG $MKDIR -- "$DESTDIR/boot"			|| exit 2
-	$DEBUG $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL" \
+	$DEBUG $INSTALL -m 0755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL" \
 								|| exit 2
 	if [ ! -z "$IMAGE_RAMDISK" ]; then
-		$DEBUG $INSTALL -m 644 "$IMAGE_RAMDISK" "$DESTDIR/$RAMDISK" \
+		$DEBUG $INSTALL -m 0644 "$IMAGE_RAMDISK" "$DESTDIR/$RAMDISK" \
 								|| exit 2
 		GRUB_INITRD="initrd $RAMDISK"
 	fi
@@ -75,7 +75,7 @@ _image_iso_post()
 
 	#setup bootloader
 	$DEBUG $MKDIR -- "$DESTDIR/boot/grub"			|| exit 2
-	$DEBUG $INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
+	$DEBUG $INSTALL -m 0644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
 		"$DESTDIR/boot/grub"				|| exit 2
 	$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
 default 0
@@ -116,7 +116,7 @@ _image_ramdisk_post()
 	#compile and install linuxrc
 	TOOLS="Apps/Unix/src/others/tools"
 	SUBDIRS="$TOOLS" _target linuxrc			|| exit 2
-	$DEBUG $INSTALL -m 755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc" \
+	$DEBUG $INSTALL -m 0755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc" \
 								|| exit 2
 
 	#setup init
@@ -126,7 +126,7 @@ _image_ramdisk_post()
 								|| exit 2
 
 	#install loader
-	$DEBUG $INSTALL -m 755 "$LDSO" "$DESTDIR/lib"		|| exit 2
+	$DEBUG $INSTALL -m 0755 "$LDSO" "$DESTDIR/lib"		|| exit 2
 
 	echo
 	echo -n "Creating ramdisk:"
