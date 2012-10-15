@@ -61,8 +61,8 @@ export CVSROOT
 _error()
 {
 	[ ! -z "$1" ] && echo "$1" 1>&2
-	$RM -r "$DST"
-	$RM -r "$SRC"
+	$RM -r -- "$DST"
+	$RM -r -- "$SRC"
 	exit 2
 }
 
@@ -77,8 +77,8 @@ _deforaos_build()
 	fi
 
 	#checkout tree
-	$RM -r "$SRC"
-	$MKDIR "$SRC"						|| _error
+	$RM -r -- "$SRC"
+	$MKDIR -- "$SRC"					|| _error
 	cd "$SRC"						|| _error
 	echo ""
 	echo "Checking out CVS module $MODULE:"
@@ -86,8 +86,8 @@ _deforaos_build()
 	SRC="$SRC/$MODULE"
 
 	#create directories
-	$RM -r "$DST"
-	$MKDIR "$DST"						|| _error
+	$RM -r -- "$DST"
+	$MKDIR -- "$DST"					|| _error
 
 	#configuring tree
 	echo ""
@@ -105,7 +105,7 @@ _deforaos_build()
 			-O IMAGE_FILE="initrd.img" -O IMAGE_SIZE="8192" \
 			-O IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
 			clean image				|| _error
-	$RM -r "$DST"
+	$RM -r -- "$DST"
 	./build.sh -O CONFIGURE="$CONFIGURE" -O MAKE="$MAKE" \
 			-O DESTDIR="$DST" -O PREFIX="$PREFIX" \
 			-O IMAGE_TYPE="iso" \
@@ -115,12 +115,12 @@ _deforaos_build()
 			-O IMAGE_RAMDISK="initrd.img" \
 			-O KERNEL_ARGS="vga=0x301 rw" \
 			clean image				|| _error
-	$CP "$FILE" "$DESTDIR"					|| _error
+	$CP -- "$FILE" "$DESTDIR"				|| _error
 	echo "$HOMEPAGE/download/snapshots/$FILE"
 
 	#cleanup
-	$RM -r "$SRC"
-	$RM -r "$DST"
+	$RM -r -- "$SRC"
+	$RM -r -- "$DST"
 }
 
 
