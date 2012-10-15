@@ -423,7 +423,7 @@ _usage()
 _warning()
 {
 	echo "build.sh: warning: $@" 1>&2
-	exit 2
+	return 2
 }
 
 
