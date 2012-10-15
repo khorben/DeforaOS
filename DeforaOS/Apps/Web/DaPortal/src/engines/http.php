@@ -224,6 +224,8 @@ class HttpEngine extends Engine
 		if($charset !== FALSE)
 			$header .= '; charset='.$charset;
 		header($header);
+		//disable caching
+		header('Cache-Control: no-cache, must-revalidate');
 		if($page instanceof PageElement)
 			return $this->renderPage($page, $type);
 		else if(is_resource($page)
