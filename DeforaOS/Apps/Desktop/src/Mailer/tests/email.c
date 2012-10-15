@@ -28,14 +28,21 @@ static int _email(char const * progname, char const * name, char const * email,
 	char * n;
 	char * e;
 
+	printf("%s: Testing \"%s\"\n", progname, str);
 	n = mailer_helper_get_name(str);
 	e = mailer_helper_get_email(str);
 	if(strcmp(name, n) != 0)
-		fprintf(stderr, "%s: %s: %s (\"%s\")\n", progname, str,
-				"The name does not match", n);
+	{
+		fprintf(stderr, "%s: %s: %s\n", progname, n,
+				"Does not match the name");
+		ret |= 2;
+	}
 	if(strcmp(email, e) != 0)
-		fprintf(stderr, "%s: %s: %s (\"%s\")\n", progname, str,
-				"The e-mail does not match", e);
+	{
+		fprintf(stderr, "%s: %s: %s\n", progname, e,
+				"Does not match the e-mail");
+		ret |= 3;
+	}
 	free(e);
 	free(n);
 	return ret;
@@ -51,5 +58,5 @@ int main(int argc, char * argv[])
 			"john@doe.com (John Doe)");
 	ret |= _email(argv[0], "John Doe", "john@doe.com",
 			"John Doe <john@doe.com>");
-	return ret;
+	return (ret == 0) ? 0 : 2;
 }
