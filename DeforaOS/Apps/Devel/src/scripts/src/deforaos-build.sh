@@ -19,7 +19,7 @@
 #environment
 umask 022
 #variables
-[ -z "$ARCH" ] && ARCH=`uname -m`
+ARCH="$(uname -m)"
 case "$ARCH" in
 	i486|i586|i686)
 		ARCH="i386"
@@ -28,9 +28,8 @@ case "$ARCH" in
 		ARCH="amd64"
 		;;
 esac
-[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
-[ -z "$OS" ] && OS=`uname -s`
-DATE=`date '+%Y%m%d'`
+CVSROOT=":pserver:anonymous@anoncvs.defora.org:/home/cvs"
+DATE="$(date '+%Y%m%d')"
 DESTDIR="/var/www/htdocs/download/snapshots"
 DEVNULL="/dev/null"
 EMAIL="build@lists.defora.org"
@@ -40,8 +39,9 @@ KERNEL_VERSION="2.4.37.7"
 KERNEL_PATH="/usr/src/linux-$KERNEL_VERSION"
 MODULE="DeforaOS"
 PREFIX="/usr"
-SRC="$HOME/build/$OS-$ARCH"
-DST="$HOME/destdir/$OS-$ARCH"
+SYSTEM="$(uname -s)"
+SRC="$HOME/build/$SYSTEM-$ARCH"
+DST="$HOME/destdir/$SYSTEM-$ARCH"
 
 #executables
 CP="cp -f"
@@ -102,7 +102,7 @@ _deforaos_build()
 	./build.sh -O CONFIGURE="$CONFIGURE" -O MAKE="$MAKE" \
 			-O DESTDIR="$DST" -O PREFIX="$PREFIX" \
 			-O IMAGE_TYPE="ramdisk" \
-			-O IMAGE_FILE="initrd.img" -O IMAGE_SIZE=8192 \
+			-O IMAGE_FILE="initrd.img" -O IMAGE_SIZE="8192" \
 			-O IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
 			clean image				|| _error
 	$RM -r "$DST"
@@ -150,4 +150,5 @@ if [ $# -ne 0 ]; then
 	_usage
 	exit $?
 fi
-_deforaos_build 2>&1 | $MAIL -s "Daily CVS build Linux $ARCH: $DATE" "$EMAIL"
+
+_deforaos_build 2>&1 | $MAIL -s "Daily CVS build $SYSTEM $ARCH: $DATE" "$EMAIL"
