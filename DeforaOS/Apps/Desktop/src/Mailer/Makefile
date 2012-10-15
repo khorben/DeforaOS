@@ -1,6 +1,6 @@
 PACKAGE	= Mailer
 VERSION	= 0.1.5
-SUBDIRS	= data doc include po src src/plugins
+SUBDIRS	= data doc include po src src/plugins tests
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -107,6 +107,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/search.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/email.c \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/tests.sh \
+		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
