@@ -905,7 +905,8 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_IN || source != pop3->channel)
+	if((condition != G_IO_IN && condition != G_IO_OUT)
+			|| source != pop3->channel)
 		return FALSE; /* should not happen */
 	if((p = realloc(pop3->rd_buf, pop3->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
@@ -913,23 +914,18 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	if((cnt = SSL_read(pop3->ssl, &pop3->rd_buf[pop3->rd_buf_cnt], inc))
 			<= 0)
 	{
-		if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
-				== SSL_ERROR_WANT_WRITE)
-		{
+		if(SSL_get_error(pop3->ssl, cnt) == SSL_ERROR_WANT_WRITE)
 			pop3->rd_source = g_io_add_watch(pop3->channel,
 					G_IO_OUT, _on_watch_can_read_ssl, pop3);
-			return FALSE;
-		}
-		else if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
-				== SSL_ERROR_WANT_READ)
-		{
+		else if(SSL_get_error(pop3->ssl, cnt) == SSL_ERROR_WANT_READ)
 			pop3->rd_source = g_io_add_watch(pop3->channel, G_IO_IN,
 					_on_watch_can_read_ssl, pop3);
-			return FALSE;
+		else
+		{
+			ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
+			pop3->helper->error(NULL, buf, 1);
+			pop3->rd_source = g_idle_add(_on_reset, pop3);
 		}
-		ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
-		pop3->helper->error(NULL, buf, 1);
-		pop3->rd_source = g_idle_add(_on_reset, pop3);
 		return FALSE;
 	}
 #ifdef DEBUG
@@ -1033,29 +1029,25 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_OUT || source != pop3->channel
-			|| pop3->queue_cnt == 0 || cmd->buf_cnt == 0)
+	if((condition != G_IO_OUT && condition != G_IO_IN)
+			|| source != pop3->channel || pop3->queue_cnt == 0
+			|| cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
 	if((cnt = SSL_write(pop3->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
 	{
-		if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
-				== SSL_ERROR_WANT_READ)
-		{
+		if(SSL_get_error(pop3->ssl, cnt) == SSL_ERROR_WANT_READ)
 			pop3->wr_source = g_io_add_watch(pop3->channel, G_IO_IN,
 					_on_watch_can_write_ssl, pop3);
-			return FALSE;
-		}
-		else if(cnt < 0 && SSL_get_error(pop3->ssl, cnt)
-				== SSL_ERROR_WANT_WRITE)
-		{
+		else if(SSL_get_error(pop3->ssl, cnt) == SSL_ERROR_WANT_WRITE)
 			pop3->wr_source = g_io_add_watch(pop3->channel,
 					G_IO_OUT, _on_watch_can_write_ssl,
 					pop3);
-			return FALSE;
+		else
+		{
+			ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
+			pop3->helper->error(NULL, buf, 1);
+			pop3->wr_source = g_idle_add(_on_reset, pop3);
 		}
-		ERR_error_string(SSL_get_error(pop3->ssl, cnt), buf);
-		pop3->helper->error(NULL, buf, 1);
-		pop3->wr_source = g_idle_add(_on_reset, pop3);
 		return FALSE;
 	}
 #ifdef DEBUG
