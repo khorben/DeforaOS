@@ -31,17 +31,17 @@ static int _email(char const * progname, char const * name, char const * email,
 	printf("%s: Testing \"%s\"\n", progname, str);
 	n = mailer_helper_get_name(str);
 	e = mailer_helper_get_email(str);
-	if(strcmp(name, n) != 0)
+	if(n == NULL || strcmp(name, n) != 0)
 	{
 		fprintf(stderr, "%s: %s: %s\n", progname, n,
 				"Does not match the name");
-		ret |= 2;
+		ret += 1;
 	}
-	if(strcmp(email, e) != 0)
+	if(e == NULL || strcmp(email, e) != 0)
 	{
 		fprintf(stderr, "%s: %s: %s\n", progname, e,
 				"Does not match the e-mail");
-		ret |= 3;
+		ret += 1;
 	}
 	free(e);
 	free(n);
@@ -54,13 +54,16 @@ int main(int argc, char * argv[])
 {
 	int ret = 0;
 
-	ret |= _email(argv[0], "John Doe", "john@doe.com",
+	ret += _email(argv[0], "john@doe.com", "john@doe.com", "john@doe.com");
+	ret += _email(argv[0], "john@doe.com", "john@doe.com",
+			"<john@doe.com>");
+	ret += _email(argv[0], "John Doe", "john@doe.com",
 			"john@doe.com (John Doe)");
-	ret |= _email(argv[0], "John Doe", "john@doe.com",
+	ret += _email(argv[0], "John Doe", "john@doe.com",
 			"John Doe <john@doe.com>");
-	ret |= _email(argv[0], "John Doe", "john@doe.com",
+	ret += _email(argv[0], "John Doe", "john@doe.com",
 			"\"John Doe\" <john@doe.com>");
-	ret |= _email(argv[0], "John Doe", "john@doe.com",
+	ret += _email(argv[0], "John Doe", "john@doe.com",
 			"'John Doe' <john@doe.com>");
-	return (ret == 0) ? 0 : 2;
+	return ret;
 }
