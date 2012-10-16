@@ -54,8 +54,8 @@ xterm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 xterm.so: $(xterm_OBJS)
 	$(CCSHARED) -o xterm.so $(xterm_OBJS) $(xterm_LDFLAGS)
 
-gtk-demo.o: gtk-demo.c
-	$(CC) $(gtk-demo_CFLAGS) -c gtk-demo.c
+gtk-demo.o: gtk-demo.c ../../include/Locker/demo.h ../../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(gtk-demo_CFLAGS) -c gtk-demo.c
 
 logo.o: logo.c ../../include/Locker/demo.h ../../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(logo_CFLAGS) -c logo.c
