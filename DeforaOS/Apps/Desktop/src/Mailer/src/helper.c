@@ -69,6 +69,7 @@ char * mailer_helper_get_name(char const * header)
 	char * ret;
 	size_t len;
 	char * buf = NULL;
+	int c;
 
 	if(header == NULL)
 		return NULL;
@@ -83,6 +84,9 @@ char * mailer_helper_get_name(char const * header)
 			|| sscanf(header, "%[^<]<%[^>]>", ret, buf) == 2)
 	{
 		free(buf);
+		/* right-trim spaces */
+		for(len = strlen(ret); --len > 0 && isspace((c = ret[len]));
+				ret[len] = '\0');
 		return ret;
 	}
 	free(buf);
