@@ -47,6 +47,7 @@ char * mailer_helper_get_email(char const * header)
 		return ret;
 	}
 	if(sscanf(header, "%[^(](%[^)])", ret, buf) == 2
+			|| sscanf(header, "<%[^>]>", ret) == 1
 			|| sscanf(header, "%[^<]<%[^>]>", buf, ret) == 2)
 	{
 		for(len = strlen(ret); len > 0 && isblank(ret[len - 1]); len--)
@@ -80,7 +81,14 @@ char * mailer_helper_get_name(char const * header)
 		free(ret);
 		return NULL;
 	}
+	if(mailer_helper_is_email(header))
+	{
+		strcpy(ret, header);
+		free(buf);
+		return ret;
+	}
 	if(sscanf(header, "%[^(](%[^)])", buf, ret) != 2
+			&& sscanf(header, "<%[^>]>", ret) != 1
 			&& sscanf(header, "%[^<]<%[^>]>", ret, buf) != 2)
 	{
 		free(buf);
