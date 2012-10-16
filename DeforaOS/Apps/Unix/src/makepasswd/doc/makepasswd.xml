@@ -198,7 +198,7 @@
 				<listitem>
 					<para>Force a given value when salting the resulting password hash.
 						This is only useful when selecting a hashing algorithm that
-						effectively uses hashes.</para>
+						effectively uses salt.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>
