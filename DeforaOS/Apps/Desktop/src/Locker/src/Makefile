@@ -42,7 +42,7 @@ main.o: main.c locker.h ../include/Locker.h ../config.h
 	$(CC) -D PREFIX=\"$(PREFIX)\" $(locker_CFLAGS) -c main.c
 
 lockerctl.o: lockerctl.c ../include/Locker.h ../config.h
-	$(CC) $(lockerctl_CFLAGS) -c lockerctl.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(lockerctl_CFLAGS) -c lockerctl.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
