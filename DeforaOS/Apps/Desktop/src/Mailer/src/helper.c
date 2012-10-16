@@ -80,18 +80,25 @@ char * mailer_helper_get_name(char const * header)
 		free(ret);
 		return NULL;
 	}
-	if(sscanf(header, "%[^(](%[^)])", buf, ret) == 2
-			|| sscanf(header, "%[^<]<%[^>]>", ret, buf) == 2)
+	if(sscanf(header, "%[^(](%[^)])", buf, ret) != 2
+			&& sscanf(header, "%[^<]<%[^>]>", ret, buf) != 2)
 	{
 		free(buf);
-		/* right-trim spaces */
-		for(len = strlen(ret); --len > 0 && isspace((c = ret[len]));
-				ret[len] = '\0');
-		return ret;
+		free(ret);
+		return NULL;
 	}
 	free(buf);
-	free(ret);
-	return NULL;
+	/* right-trim spaces */
+	for(len = strlen(ret); --len > 0 && isspace((c = ret[len]));
+			ret[len] = '\0');
+	/* remove surrounding double quotes */
+	if((len = strlen(ret)) >= 2)
+		if(ret[0] == '"' && ret[len - 1] == '"')
+		{
+			memmove(ret, &ret[1], len - 2);
+			ret[len - 2] = '\0';
+		}
+	return ret;
 }
 
 
