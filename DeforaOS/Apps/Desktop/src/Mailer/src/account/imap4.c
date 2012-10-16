@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
+ * - do not erroneously parse body/header data as potential command completion
  * - openssl should be more explicit when SSL_set_fd() is missing (no BIO)
  * - support multiple connections? */
 
@@ -1195,17 +1196,18 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	GError * error = NULL;
 	GIOStatus status;
 	IMAP4Command * cmd;
+	const int inc = 256;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(condition != G_IO_IN || source != imap4->channel)
 		return FALSE; /* should not happen */
-	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + 256)) == NULL)
+	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
 	imap4->rd_buf = p;
 	status = g_io_channel_read_chars(source,
-			&imap4->rd_buf[imap4->rd_buf_cnt], 256, &cnt, &error);
+			&imap4->rd_buf[imap4->rd_buf_cnt], inc, &cnt, &error);
 #ifdef DEBUG
 	fprintf(stderr, "%s", "DEBUG: IMAP4 SERVER: ");
 	fwrite(&imap4->rd_buf[imap4->rd_buf_cnt], sizeof(*p), cnt, stderr);
@@ -1265,7 +1267,8 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_IN || source != imap4->channel)
+	if((condition != G_IO_IN && condition != G_IO_OUT)
+			|| source != imap4->channel)
 		return FALSE; /* should not happen */
 	if((p = realloc(imap4->rd_buf, imap4->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
@@ -1273,25 +1276,20 @@ static gboolean _on_watch_can_read_ssl(GIOChannel * source,
 	if((cnt = SSL_read(imap4->ssl, &imap4->rd_buf[imap4->rd_buf_cnt], inc))
 			<= 0)
 	{
-		if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
-				== SSL_ERROR_WANT_WRITE)
-		{
+		if(SSL_get_error(imap4->ssl, cnt) == SSL_ERROR_WANT_WRITE)
 			imap4->rd_source = g_io_add_watch(imap4->channel,
 					G_IO_OUT, _on_watch_can_read_ssl,
 					imap4);
-			return FALSE;
-		}
-		else if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
-				== SSL_ERROR_WANT_READ)
-		{
+		else if(SSL_get_error(imap4->ssl, cnt) == SSL_ERROR_WANT_READ)
 			imap4->rd_source = g_io_add_watch(imap4->channel,
 					G_IO_IN, _on_watch_can_read_ssl,
 					imap4);
-			return FALSE;
+		else
+		{
+			ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
+			imap4->helper->error(NULL, buf, 1);
+			imap4->rd_source = g_idle_add(_on_reset, imap4);
 		}
-		ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
-		imap4->helper->error(NULL, buf, 1);
-		imap4->rd_source = g_idle_add(_on_reset, imap4);
 		return FALSE;
 	}
 #ifdef DEBUG
@@ -1395,30 +1393,26 @@ static gboolean _on_watch_can_write_ssl(GIOChannel * source,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(condition != G_IO_OUT || source != imap4->channel
-			|| imap4->queue_cnt == 0 || cmd->buf_cnt == 0)
+	if((condition != G_IO_IN && condition != G_IO_OUT)
+			|| source != imap4->channel || imap4->queue_cnt == 0
+			|| cmd->buf_cnt == 0)
 		return FALSE; /* should not happen */
 	if((cnt = SSL_write(imap4->ssl, cmd->buf, cmd->buf_cnt)) <= 0)
 	{
-		if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
-				== SSL_ERROR_WANT_READ)
-		{
+		if(SSL_get_error(imap4->ssl, cnt) == SSL_ERROR_WANT_READ)
 			imap4->wr_source = g_io_add_watch(imap4->channel,
 					G_IO_IN, _on_watch_can_write_ssl,
 					imap4);
-			return FALSE;
-		}
-		else if(cnt < 0 && SSL_get_error(imap4->ssl, cnt)
-				== SSL_ERROR_WANT_WRITE)
-		{
+		else if(SSL_get_error(imap4->ssl, cnt) == SSL_ERROR_WANT_WRITE)
 			imap4->wr_source = g_io_add_watch(imap4->channel,
 					G_IO_OUT, _on_watch_can_write_ssl,
 					imap4);
-			return FALSE;
+		else
+		{
+			ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
+			imap4->helper->error(NULL, buf, 1);
+			imap4->wr_source = g_idle_add(_on_reset, imap4);
 		}
-		ERR_error_string(SSL_get_error(imap4->ssl, cnt), buf);
-		imap4->helper->error(NULL, buf, 1);
-		imap4->wr_source = g_idle_add(_on_reset, imap4);
 		return FALSE;
 	}
 #ifdef DEBUG
