@@ -41,7 +41,7 @@ surfer.o: surfer.c callbacks.h download.c download.h surfer.h ../config.h
 	$(CC) $(surfer_CFLAGS) -c surfer.c
 
 ghtml.o: ghtml.c ghtml.h ghtml-gtkhtml.c ghtml-gtkmozembed.c ghtml-gtktextview.c ghtml-webkit.c common/conn.c common/history.c common/url.c ../config.h
-	$(CC) $(surfer_CFLAGS) -c ghtml.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(surfer_CFLAGS) -c ghtml.c
 
 callbacks.o: callbacks.c surfer.h ghtml.h callbacks.h ../config.h
 	$(CC) $(surfer_CFLAGS) -c callbacks.c
