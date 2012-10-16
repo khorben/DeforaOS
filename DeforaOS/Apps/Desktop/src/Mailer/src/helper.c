@@ -91,13 +91,13 @@ char * mailer_helper_get_name(char const * header)
 	/* right-trim spaces */
 	for(len = strlen(ret); --len > 0 && isspace((c = ret[len]));
 			ret[len] = '\0');
-	/* remove surrounding double quotes */
-	if((len = strlen(ret)) >= 2)
-		if(ret[0] == '"' && ret[len - 1] == '"')
-		{
-			memmove(ret, &ret[1], len - 2);
-			ret[len - 2] = '\0';
-		}
+	/* remove surrounding quotes */
+	if((len = strlen(ret)) >= 2 && ((c = ret[0]) == '"' || c == '\'')
+			&& ret[len - 1] == c)
+	{
+		memmove(ret, &ret[1], len - 2);
+		ret[len - 2] = '\0';
+	}
 	return ret;
 }
 

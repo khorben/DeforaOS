@@ -60,5 +60,7 @@ int main(int argc, char * argv[])
 			"John Doe <john@doe.com>");
 	ret |= _email(argv[0], "John Doe", "john@doe.com",
 			"\"John Doe\" <john@doe.com>");
+	ret |= _email(argv[0], "John Doe", "john@doe.com",
+			"'John Doe' <john@doe.com>");
 	return (ret == 0) ? 0 : 2;
 }
