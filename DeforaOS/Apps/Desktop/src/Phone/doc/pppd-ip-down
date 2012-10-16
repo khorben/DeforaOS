@@ -1,0 +1,12 @@
+#!/bin/sh
+
+
+RESOLVCONF="/sbin/resolvconf"
+
+if [ $# -ne 5 -a $# -ne 6 ]; then
+	echo "Usage: ip-up interface tty speed local remote [parameter]" 1>&2
+	exit 1
+fi
+interface="$1"
+
+$RESOLVCONF -d "$interface"

@@ -57,6 +57,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/48x48/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
+		$(PACKAGE)-$(VERSION)/doc/pppd-ip-down \
+		$(PACKAGE)-$(VERSION)/doc/pppd-ip-up \
 		$(PACKAGE)-$(VERSION)/doc/pppd-peers_phone \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Phone.h \
