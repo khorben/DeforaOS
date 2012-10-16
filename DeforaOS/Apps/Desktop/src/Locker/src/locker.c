@@ -171,6 +171,9 @@ static int _locker_plugin_config_set(Locker * locker, char const * section,
 static int _locker_plugin_load(Locker * locker, char const * plugin);
 static int _locker_plugin_unload(Locker * locker, char const * plugin);
 
+/* windows */
+static void _locker_window_register(Locker * locker, size_t i);
+
 /* callbacks */
 static gboolean _lock_on_closex(void);
 static GdkFilterReturn _locker_on_filter(GdkXEvent * xevent, GdkEvent * event,
@@ -196,8 +199,6 @@ Locker * locker_new(char const * demo, char const * auth)
 	GtkWidget * widget = NULL;
 	size_t cnt;
 	size_t i;
-	GdkColor black;
-	GdkRectangle rect;
 	GdkWindow * root;
 
 	if((locker = object_new(sizeof(*locker))) == NULL)
@@ -240,24 +241,8 @@ Locker * locker_new(char const * demo, char const * auth)
 	}
 	_new_plugins(locker);
 	/* create windows */
-	memset(&black, 0, sizeof(black));
 	for(i = 0; i < locker->windows_cnt; i++)
-	{
-		locker->windows[i] = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gdk_screen_get_monitor_geometry(screen, i, &rect);
-		gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x, rect.y);
-		gtk_window_resize(GTK_WINDOW(locker->windows[i]), rect.width,
-				rect.height);
-		gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
-		gtk_window_stick(GTK_WINDOW(locker->windows[i]));
-		gtk_widget_modify_bg(locker->windows[i], GTK_STATE_NORMAL,
-				&black);
-		g_signal_connect_swapped(G_OBJECT(locker->windows[i]),
-				"delete-event", G_CALLBACK(_lock_on_closex),
-				NULL);
-		g_signal_connect(locker->windows[i], "realize", G_CALLBACK(
-					_locker_on_realize), locker);
-	}
+		_locker_window_register(locker, i);
 	/* automatically grab keyboard and mouse */
 	g_signal_connect_swapped(G_OBJECT(locker->windows[0]), "map-event",
 			G_CALLBACK(_locker_on_map_event), locker);
@@ -1565,6 +1550,30 @@ static int _locker_plugin_unload(Locker * locker, char const * plugin)
 }
 
 
+/* locker_window_register */
+static void _locker_window_register(Locker * locker, size_t i)
+{
+	GdkScreen * screen;
+	GdkColor black;
+	GdkRectangle rect;
+
+	screen = gdk_screen_get_default();
+	memset(&black, 0, sizeof(black));
+	locker->windows[i] = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gdk_screen_get_monitor_geometry(screen, i, &rect);
+	gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x, rect.y);
+	gtk_window_resize(GTK_WINDOW(locker->windows[i]), rect.width,
+			rect.height);
+	gtk_window_set_keep_above(GTK_WINDOW(locker->windows[i]), TRUE);
+	gtk_window_stick(GTK_WINDOW(locker->windows[i]));
+	gtk_widget_modify_bg(locker->windows[i], GTK_STATE_NORMAL, &black);
+	g_signal_connect_swapped(locker->windows[i], "delete-event",
+			G_CALLBACK(_lock_on_closex), NULL);
+	g_signal_connect(locker->windows[i], "realize", G_CALLBACK(
+				_locker_on_realize), locker);
+}
+
+
 /* callbacks */
 /* locker_on_closex */
 static gboolean _lock_on_closex(void)
@@ -1646,26 +1655,7 @@ static GdkFilterReturn _filter_configure(Locker * locker)
 			return GDK_FILTER_CONTINUE;
 		locker->windows = p;
 		for(; i < cnt; i++)
-		{
-			/* FIXME code duplication */
-			locker->windows[i] = gtk_window_new(
-					GTK_WINDOW_TOPLEVEL);
-			gdk_screen_get_monitor_geometry(screen, i, &rect);
-			gtk_window_move(GTK_WINDOW(locker->windows[i]), rect.x,
-					rect.y);
-			gtk_window_resize(GTK_WINDOW(locker->windows[i]),
-					rect.width, rect.height);
-			gtk_window_set_keep_above(GTK_WINDOW(
-						locker->windows[i]), TRUE);
-			gtk_window_stick(GTK_WINDOW(locker->windows[i]));
-			gtk_widget_modify_bg(locker->windows[i],
-					GTK_STATE_NORMAL, &black);
-			g_signal_connect_swapped(G_OBJECT(locker->windows[i]),
-					"delete-event",
-					G_CALLBACK(_lock_on_closex), NULL);
-			g_signal_connect(locker->windows[i], "realize",
-					G_CALLBACK(_locker_on_realize), locker);
-		}
+			_locker_window_register(locker, i);
 	}
 	return GDK_FILTER_CONTINUE;
 }
