@@ -22,6 +22,8 @@ dist:
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/transport/openssl.c \
+		$(PACKAGE)-$(VERSION)/src/transport/Makefile \
+		$(PACKAGE)-$(VERSION)/src/transport/symlink.sh \
 		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
