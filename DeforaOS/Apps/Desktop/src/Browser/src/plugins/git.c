@@ -103,8 +103,7 @@ static int _git_add_task(Git * git, char const * title,
 static void _git_task_delete(GitTask * task);
 static void _git_task_set_status(GitTask * task, char const * status);
 static void _git_task_close(GitTask * task);
-static void _git_task_close_channel(GitTask * task,
-		GIOChannel * channel);
+static void _git_task_close_channel(GitTask * task, GIOChannel * channel);
 
 /* callbacks */
 static void _git_on_add(gpointer data);
@@ -116,8 +115,7 @@ static void _git_on_make(gpointer data);
 static void _git_on_pull(gpointer data);
 /* tasks */
 static gboolean _git_task_on_closex(gpointer data);
-static void _git_task_on_child_watch(GPid pid, gint status,
-		gpointer data);
+static void _git_task_on_child_watch(GPid pid, gint status, gpointer data);
 static gboolean _git_task_on_io_can_read(GIOChannel * channel,
 		GIOCondition condition, gpointer data);
 
@@ -139,7 +137,7 @@ BrowserPluginDefinition plugin =
 
 /* private */
 /* functions */
-/* subversion_init */
+/* git_init */
 static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
 		char const * label, GCallback callback, gpointer data);
 
@@ -252,7 +250,7 @@ static GtkWidget * _init_button(GtkSizeGroup * group, char const * icon,
 }
 
 
-/* subversion_destroy */
+/* git_destroy */
 static void _git_destroy(Git * git)
 {
 	size_t i;
@@ -266,14 +264,14 @@ static void _git_destroy(Git * git)
 }
 
 
-/* subversion_get_widget */
+/* git_get_widget */
 static GtkWidget * _git_get_widget(Git * git)
 {
 	return git->widget;
 }
 
 
-/* subversion_refresh */
+/* git_refresh */
 static void _refresh_dir(Git * git);
 static void _refresh_make(Git * git, struct stat * st);
 static void _refresh_status(Git * git, char const * status);
@@ -593,7 +591,7 @@ static gboolean _add_is_binary(char const * type)
 }
 
 
-/* subversion_on_blame */
+/* git_on_blame */
 static void _git_on_blame(gpointer data)
 {
 	Git * git = data;
