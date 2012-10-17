@@ -1,5 +1,5 @@
 TARGETS	= tcp.so udp.so
-PREFIX	= /usr
+PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
 CC	?= cc
