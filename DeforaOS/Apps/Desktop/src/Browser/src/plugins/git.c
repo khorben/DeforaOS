@@ -628,7 +628,7 @@ static void _git_on_commit(gpointer data)
 		return;
 	dirname = S_ISDIR(st.st_mode) ? g_strdup(git->filename)
 		: g_path_get_dirname(git->filename);
-	basename = S_ISDIR(st.st_mode) ? NULL
+	basename = S_ISDIR(st.st_mode) ? g_strdup(".")
 		: g_path_get_basename(git->filename);
 	argv[3] = basename;
 	_git_add_task(git, "git commit", dirname, argv);
