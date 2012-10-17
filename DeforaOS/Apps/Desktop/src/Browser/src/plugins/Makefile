@@ -1,4 +1,4 @@
-TARGETS	= cvs.so dirtree.so preview.so properties.so subversion.so template.so volumes.so
+TARGETS	= cvs.so dirtree.so git.so preview.so properties.so subversion.so template.so volumes.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -32,6 +32,13 @@ dirtree_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 dirtree.so: $(dirtree_OBJS)
 	$(CCSHARED) -o dirtree.so $(dirtree_OBJS) $(dirtree_LDFLAGS)
+
+git_OBJS = git.o
+git_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+git_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+git.so: $(git_OBJS)
+	$(CCSHARED) -o git.so $(git_OBJS) $(git_LDFLAGS)
 
 preview_OBJS = preview.o
 preview_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -74,6 +81,9 @@ cvs.o: cvs.c ../../include/Browser.h
 dirtree.o: dirtree.c ../../include/Browser.h
 	$(CC) $(dirtree_CFLAGS) -c dirtree.c
 
+git.o: git.c ../../include/Browser.h
+	$(CC) $(git_CFLAGS) -c git.c
+
 preview.o: preview.c ../../include/Browser.h
 	$(CC) $(preview_CFLAGS) -c preview.c
 
@@ -90,7 +100,7 @@ volumes.o: volumes.c ../../include/Browser.h
 	$(CC) $(volumes_CFLAGS) -c volumes.c
 
 clean:
-	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(preview_OBJS) $(properties_OBJS) $(subversion_OBJS) $(template_OBJS) $(volumes_OBJS)
+	$(RM) -- $(cvs_OBJS) $(dirtree_OBJS) $(git_OBJS) $(preview_OBJS) $(properties_OBJS) $(subversion_OBJS) $(template_OBJS) $(volumes_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
@@ -100,6 +110,8 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- cvs.so $(DESTDIR)$(LIBDIR)/Browser/plugins/cvs.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- dirtree.so $(DESTDIR)$(LIBDIR)/Browser/plugins/dirtree.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
+	$(INSTALL) -m 0644 -- git.so $(DESTDIR)$(LIBDIR)/Browser/plugins/git.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
 	$(INSTALL) -m 0644 -- preview.so $(DESTDIR)$(LIBDIR)/Browser/plugins/preview.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Browser/plugins
@@ -112,6 +124,7 @@ install: $(TARGETS)
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/cvs.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/dirtree.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/git.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/preview.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/properties.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Browser/plugins/subversion.so
