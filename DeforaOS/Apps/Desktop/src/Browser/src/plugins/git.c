@@ -23,6 +23,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 #include <errno.h>
 #include <libintl.h>
 #include "Browser.h"
@@ -90,6 +91,9 @@ static Git * _git_init(BrowserPluginHelper * helper);
 static void _git_destroy(Git * git);
 static GtkWidget * _git_get_widget(Git * git);
 static void _git_refresh(Git * git, GList * selection);
+
+/* accessors */
+static gboolean _git_is_managed(char const * filename);
 
 /* useful */
 static int _git_add_task(Git * git, char const * title,
@@ -303,28 +307,18 @@ static void _git_refresh(Git * git, GList * selection)
 
 static void _refresh_dir(Git * git)
 {
-	char const dir[] = ".git";
+	char const dir[] = "/.git";
 	size_t len = strlen(git->filename);
-	char * p;
-	struct stat st;
 
 	/* consider ".git" folders like their parent */
-	if((len = strlen(git->filename)) >= 4 && strcmp(&git->filename[len - 4],
-				"/.git") == 0)
+	if((len = strlen(git->filename)) >= 4
+			&& strcmp(&git->filename[len - 4], dir) == 0)
 		git->filename[len - 4] = '\0';
-	/* check if it is a Git repository */
-	len = strlen(git->filename) + sizeof(dir) + 1;
-	if((p = malloc(len)) != NULL)
+	if(_git_is_managed(git->filename) != TRUE)
 	{
-		snprintf(p, len, "%s/%s", git->filename, dir);
-		if(lstat(p, &st) != 0)
-		{
-			_refresh_status(git, _("Not a Git repository"));
-			free(p);
-			return;
-		}
+		_refresh_status(git, _("Not a Git repository"));
+		return;
 	}
-	free(p);
 	gtk_widget_show(git->directory);
 }
 
@@ -355,6 +349,45 @@ static void _refresh_status(Git * git, char const * status)
 	if(status == NULL)
 		status = "";
 	gtk_label_set_text(GTK_LABEL(git->status), status);
+}
+
+
+/* accessors */
+/* git_is_managed */
+static gboolean _git_is_managed(char const * filename)
+{
+	char * base = strdup(filename);
+	char * dir = base;
+	String * p;
+	struct stat st;
+	int res;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, filename);
+#endif
+	for(; strcmp(dir, ".") != 0; dir = dirname(dir))
+	{
+		if((p = string_new_append(dir, "/.git", NULL)) == NULL)
+		{
+			free(base);
+			return FALSE;
+		}
+		res = lstat(p, &st);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\" %d\n", __func__, p, res);
+#endif
+		string_delete(p);
+		if(res == 0)
+		{
+			/* FIXME really implement */
+			free(base);
+			return TRUE;
+		}
+		if(strcmp(dir, "/") == 0)
+			break;
+	}
+	free(base);
+	return FALSE;
 }
 
 
