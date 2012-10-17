@@ -345,8 +345,12 @@ static void _refresh_make(Git * git, struct stat * st)
 static void _refresh_status(Git * git, char const * status)
 {
 	if(status == NULL)
-		status = "";
-	gtk_label_set_text(GTK_LABEL(git->status), status);
+		gtk_widget_hide(git->status);
+	else
+	{
+		gtk_label_set_text(GTK_LABEL(git->status), status);
+		gtk_widget_show(git->status);
+	}
 }
 
 
@@ -432,8 +436,7 @@ static int _git_add_task(Git * git, char const * title,
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(task->window), plugin.icon);
 #endif
-	snprintf(buf, sizeof(buf), "%s - %s (%s)", _("Git"), title,
-			directory);
+	snprintf(buf, sizeof(buf), "%s - %s (%s)", _("Git"), title, directory);
 	gtk_window_set_title(GTK_WINDOW(task->window), buf);
 	g_signal_connect_swapped(task->window, "delete-event", G_CALLBACK(
 				_git_task_on_closex), task);
@@ -457,8 +460,8 @@ static int _git_add_task(Git * git, char const * title,
 	gtk_widget_show_all(task->window);
 	pango_font_description_free(font);
 	/* events */
-	task->source = g_child_watch_add(task->pid,
-			_git_task_on_child_watch, task);
+	task->source = g_child_watch_add(task->pid, _git_task_on_child_watch,
+			task);
 	task->o_channel = g_io_channel_unix_new(task->o_fd);
 	if((g_io_channel_set_encoding(task->o_channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
@@ -731,8 +734,7 @@ static gboolean _git_task_on_closex(gpointer data)
 
 
 /* git_task_on_child_watch */
-static void _git_task_on_child_watch(GPid pid, gint status,
-		gpointer data)
+static void _git_task_on_child_watch(GPid pid, gint status, gpointer data)
 {
 	GitTask * task = data;
 	char buf[256];
