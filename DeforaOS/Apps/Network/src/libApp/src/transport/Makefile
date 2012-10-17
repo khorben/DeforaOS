@@ -29,7 +29,7 @@ ssl.so: openssl.c
 	./symlink.sh -P "$(PREFIX)" -- "ssl.so"
 
 openssl.o: openssl.c ../../config.h
-	$(CC) $(openssl_CFLAGS) -c openssl.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(openssl_CFLAGS) -c openssl.c
 
 clean:
 	$(RM) -- $(openssl_OBJS) $(ssl.so_OBJS)
