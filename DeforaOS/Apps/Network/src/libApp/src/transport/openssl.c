@@ -70,7 +70,7 @@ static int _openssl_callback_accept(int fd, OpenSSL * openssl);
 /* public */
 /* constants */
 /* plug-in */
-AppTransportPluginDefinition definition =
+AppTransportPluginDefinition transport =
 {
 	"OpenSSL",
 	NULL,
