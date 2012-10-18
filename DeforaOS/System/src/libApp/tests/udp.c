@@ -37,6 +37,7 @@ static int _udp(char const * name)
 {
 	char * cwd;
 	Plugin * plugin;
+	AppTransportPluginHelper helper;
 	AppTransportPluginDefinition * plugind;
 	AppTransportPlugin * server;
 	AppTransportPlugin * client;
@@ -54,9 +55,13 @@ static int _udp(char const * name)
 		plugin_delete(plugin);
 		return error_print("udp");
 	}
+	/* initialize the helper */
+	memset(&helper, 0, sizeof(helper));
+	helper.event = event_new(); /* XXX check errors */
+	/* FIXME really implement */
 	/* create a server and a client */
-	server = plugind->init(NULL, ATM_SERVER, name);
-	client = plugind->init(NULL, ATM_CLIENT, name);
+	server = plugind->init(&helper, ATM_SERVER, name);
+	client = plugind->init(&helper, ATM_CLIENT, name);
 	if(server == NULL || client == NULL)
 	{
 		if(client != NULL)
@@ -67,6 +72,9 @@ static int _udp(char const * name)
 		return error_print("udp");
 	}
 	/* FIXME really implement */
+	plugind->destroy(client);
+	plugind->destroy(server);
+	event_delete(helper.event);
 	plugin_delete(plugin);
 	return 0;
 }
