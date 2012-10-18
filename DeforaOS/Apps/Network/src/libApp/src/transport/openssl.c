@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <System.h>
 #include <System/App/apptransport.h>
 #include <openssl/ssl.h>
@@ -202,7 +203,7 @@ static int _openssl_callback_accept(int fd, OpenSSL * openssl)
 	int newfd;
 
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) < 0)
-		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
+		return _openssl_error("accept", 1);
 	/* FIXME really implement */
 	close(newfd);
 	return 0;
