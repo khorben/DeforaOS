@@ -15,16 +15,68 @@
 
 
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <System.h>
 #include "App.h"
 
 
 /* private */
+/* prototypes */
+static int _udp(char const * name);
+
+static int _usage(void);
+
+
 /* functions */
 /* udp */
-static int _udp(void)
+static int _udp(char const * name)
 {
+	char * cwd;
+	Plugin * plugin;
+	AppTransportPluginDefinition * plugind;
+	AppTransportPlugin * server;
+	AppTransportPlugin * client;
+
+	/* load the transport plug-in */
+	if((cwd = getcwd(NULL, 0)) == NULL)
+		return error_set_print("udp", 2, "%s", strerror(errno));
+	/* XXX rather ugly but does the trick */
+	plugin = plugin_new(cwd, "../src", "transport", "udp");
+	free(cwd);
+	if(plugin == NULL)
+		return error_print("udp");
+	if((plugind = plugin_lookup(plugin, "transport")) == NULL)
+	{
+		plugin_delete(plugin);
+		return error_print("udp");
+	}
+	/* create a server and a client */
+	server = plugind->init(NULL, ATM_SERVER, name);
+	client = plugind->init(NULL, ATM_CLIENT, name);
+	if(server == NULL || client == NULL)
+	{
+		if(client != NULL)
+			plugind->destroy(client);
+		if(server != NULL)
+			plugind->destroy(server);
+		plugin_delete(plugin);
+		return error_print("udp");
+	}
 	/* FIXME really implement */
-	return -1;
+	plugin_delete(plugin);
+	return 0;
+}
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: udp name\n", stderr);
+	return 1;
 }
 
 
@@ -33,5 +85,18 @@ static int _udp(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	return (_udp() == 0) ? 0 : 2;
+	char const * name = "127.0.0.1:4242";
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind == argc - 1)
+		name = argv[optind];
+	else if(optind != argc)
+		return _usage();
+	return (_udp(name) == 0) ? 0 : 2;
 }
