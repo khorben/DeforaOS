@@ -1,6 +1,6 @@
 PACKAGE	= libApp-extras
 VERSION	= 0.1.5
-SUBDIRS	= src/transport
+SUBDIRS	= src/transport tests
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -25,6 +25,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/transport/Makefile \
 		$(PACKAGE)-$(VERSION)/src/transport/symlink.sh \
 		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/transport.c \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/tests.sh \
+		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
