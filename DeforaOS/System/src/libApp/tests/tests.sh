@@ -45,7 +45,8 @@ target="$1"
 
 > "$target"
 FAILED=
-./udp			>> "$target"	|| FAILED="$FAILED udp(error $?)"
+./transport -p tcp	>> "$target"	|| FAILED="$FAILED tcp(error $?)"
+./transport -p udp	>> "$target"	|| FAILED="$FAILED udp(error $?)"
 [ -z "$FAILED" ]			&& exit 0
 echo "Failed tests:$FAILED" 1>&2
 #XXX ignore errors for now

@@ -1,4 +1,4 @@
-TARGETS	= tests.log udp
+TARGETS	= tests.log transport
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -17,21 +17,21 @@ INSTALL	?= install
 
 all: $(TARGETS)
 
-tests.log: udp
+tests.log: transport
 	./tests.sh -P "$(PREFIX)" -- "tests.log"
 
-udp_OBJS = udp.o
-udp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-udp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+transport_OBJS = transport.o
+transport_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+transport_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-udp: $(udp_OBJS)
-	$(CC) -o udp $(udp_OBJS) $(udp_LDFLAGS)
+transport: $(transport_OBJS)
+	$(CC) -o transport $(transport_OBJS) $(transport_LDFLAGS)
 
-udp.o: udp.c ../src/libApp.a
-	$(CC) $(udp_CFLAGS) -c udp.c
+transport.o: transport.c ../src/libApp.a
+	$(CC) $(transport_CFLAGS) -c transport.c
 
 clean:
-	$(RM) -- $(tests.log_OBJS) $(udp_OBJS)
+	$(RM) -- $(tests.log_OBJS) $(transport_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

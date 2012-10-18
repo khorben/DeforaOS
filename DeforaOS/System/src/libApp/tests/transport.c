@@ -26,14 +26,14 @@
 
 /* private */
 /* prototypes */
-static int _udp(char const * name);
+static int _transport(char const * protocol, char const * name);
 
 static int _usage(void);
 
 
 /* functions */
-/* udp */
-static int _udp(char const * name)
+/* transport */
+static int _transport(char const * protocol, char const * name)
 {
 	char * cwd;
 	Plugin * plugin;
@@ -44,16 +44,16 @@ static int _udp(char const * name)
 
 	/* load the transport plug-in */
 	if((cwd = getcwd(NULL, 0)) == NULL)
-		return error_set_print("udp", 2, "%s", strerror(errno));
+		return error_set_print("transport", 2, "%s", strerror(errno));
 	/* XXX rather ugly but does the trick */
-	plugin = plugin_new(cwd, "../src", "transport", "udp");
+	plugin = plugin_new(cwd, "../src", "transport", protocol);
 	free(cwd);
 	if(plugin == NULL)
-		return error_print("udp");
+		return error_print("transport");
 	if((plugind = plugin_lookup(plugin, "transport")) == NULL)
 	{
 		plugin_delete(plugin);
-		return error_print("udp");
+		return error_print("transport");
 	}
 	/* initialize the helper */
 	memset(&helper, 0, sizeof(helper));
@@ -69,7 +69,7 @@ static int _udp(char const * name)
 		if(server != NULL)
 			plugind->destroy(server);
 		plugin_delete(plugin);
-		return error_print("udp");
+		return error_print("transport");
 	}
 	/* FIXME really implement */
 	plugind->destroy(client);
@@ -83,7 +83,7 @@ static int _udp(char const * name)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: udp name\n", stderr);
+	fputs("Usage: transport -p protocol name\n", stderr);
 	return 1;
 }
 
@@ -93,12 +93,16 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	char const * protocol = "udp";
 	char const * name = "127.0.0.1:4242";
 	int o;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "p:")) != -1)
 		switch(o)
 		{
+			case 'p':
+				protocol = optarg;
+				break;
 			default:
 				return _usage();
 		}
@@ -106,5 +110,5 @@ int main(int argc, char * argv[])
 		name = argv[optind];
 	else if(optind != argc)
 		return _usage();
-	return (_udp(name) == 0) ? 0 : 2;
+	return (_transport(protocol, name) == 0) ? 0 : 2;
 }

@@ -56,7 +56,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/transport/udp.c \
 		$(PACKAGE)-$(VERSION)/src/transport/Makefile \
 		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
-		$(PACKAGE)-$(VERSION)/tests/udp.c \
+		$(PACKAGE)-$(VERSION)/tests/transport.c \
 		$(PACKAGE)-$(VERSION)/tests/Makefile \
 		$(PACKAGE)-$(VERSION)/tests/tests.sh \
 		$(PACKAGE)-$(VERSION)/tests/project.conf \
