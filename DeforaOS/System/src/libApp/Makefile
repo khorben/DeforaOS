@@ -1,6 +1,6 @@
 PACKAGE	= libApp
 VERSION	= 0.1.5
-SUBDIRS	= data doc include src src/transport tools
+SUBDIRS	= data doc include src src/transport tests tools
 RM	?= rm -f
 LN	?= ln -f
 TAR	?= tar -czvf
@@ -56,6 +56,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/transport/udp.c \
 		$(PACKAGE)-$(VERSION)/src/transport/Makefile \
 		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/udp.c \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/tests.sh \
+		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/appbroker.c \
 		$(PACKAGE)-$(VERSION)/tools/appclient.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
