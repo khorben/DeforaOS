@@ -127,7 +127,7 @@ static int _init_client(OpenSSL * openssl, char const * name)
 	if((openssl->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		return -_openssl_error("socket", 1);
 	/* FIXME implement the rest */
-	return 0;
+	return -1;
 }
 
 static int _init_server(OpenSSL * openssl, char const * name)
