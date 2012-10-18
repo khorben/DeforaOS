@@ -1,4 +1,4 @@
-TARGETS	= tcp.so udp.so
+TARGETS	= tcp.so template.so udp.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -25,6 +25,13 @@ tcp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 tcp.so: $(tcp_OBJS)
 	$(CCSHARED) -o tcp.so $(tcp_OBJS) $(tcp_LDFLAGS)
 
+template_OBJS = template.o
+template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+template.so: $(template_OBJS)
+	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+
 udp_OBJS = udp.o
 udp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 udp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -35,11 +42,14 @@ udp.so: $(udp_OBJS)
 tcp.o: tcp.c
 	$(CC) $(tcp_CFLAGS) -c tcp.c
 
+template.o: template.c
+	$(CC) $(template_CFLAGS) -c template.c
+
 udp.o: udp.c
 	$(CC) $(udp_CFLAGS) -c udp.c
 
 clean:
-	$(RM) -- $(tcp_OBJS) $(udp_OBJS)
+	$(RM) -- $(tcp_OBJS) $(template_OBJS) $(udp_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)

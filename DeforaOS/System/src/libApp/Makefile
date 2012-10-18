@@ -53,6 +53,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/transport/tcp.c \
+		$(PACKAGE)-$(VERSION)/src/transport/template.c \
 		$(PACKAGE)-$(VERSION)/src/transport/udp.c \
 		$(PACKAGE)-$(VERSION)/src/transport/Makefile \
 		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
