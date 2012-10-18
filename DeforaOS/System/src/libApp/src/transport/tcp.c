@@ -16,8 +16,14 @@
 
 
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
+#include <limits.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -49,6 +55,8 @@ static int _tcp_error(char const * message, int code);
 
 /* callbacks */
 static int _tcp_callback_accept(int fd, TCP * tcp);
+static int _tcp_callback_connect(int fd, TCP * tcp);
+static int _tcp_callback_read(int fd, TCP * tcp);
 
 
 /* public */
@@ -68,8 +76,10 @@ AppTransportPluginDefinition definition =
 /* functions */
 /* plug-in */
 /* tcp_init */
+static int _init_address(char const * name, struct sockaddr_in * sa);
 static int _init_client(TCP * tcp, char const * name);
 static int _init_server(TCP * tcp, char const * name);
+static int _init_socket(TCP * tcp);
 
 static TCP * _tcp_init(AppTransportPluginHelper * helper,
 		AppTransportMode mode, char const * name)
@@ -99,31 +109,85 @@ static TCP * _tcp_init(AppTransportPluginHelper * helper,
 	return tcp;
 }
 
+static int _init_address(char const * name, struct sockaddr_in * sa)
+{
+	long l;
+	char const * p;
+	char * q;
+
+	/* obtain the port number */
+	if((p = strrchr(name, ':')) == NULL)
+		return -error_set_code(1, "%s", strerror(EINVAL));
+	l = strtol(++p, &q, 10);
+	if(p[0] == '\0' || *q != '\0' || l < 0 || l > 65535)
+		return -error_set_code(1, "%s", strerror(EINVAL));
+	sa->sin_family = AF_INET;
+	sa->sin_port = htons(l);
+	/* FIXME hard-coded */
+	sa->sin_addr.s_addr = htons(INADDR_LOOPBACK);
+	return 0;
+}
+
 static int _init_client(TCP * tcp, char const * name)
 {
-	if((tcp->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		return -_tcp_error("socket", 1);
-	/* FIXME really implement */
-	return -1;
+	struct sockaddr_in sa;
+
+	/* obtain the remote address */
+	if(_init_address(name, &sa) != 0)
+		return -1;
+	/* create the socket */
+	if(_init_socket(tcp) != 0)
+		return -1;
+	/* connect to the remote host */
+	if(connect(tcp->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+	{
+		if(errno != EINPROGRESS)
+			return -_tcp_error("socket", 1);
+		else
+			event_register_io_write(tcp->helper->event, tcp->fd,
+					(EventIOFunc)_tcp_callback_connect,
+					tcp);
+	}
+	else
+		event_register_io_read(tcp->helper->event, tcp->fd,
+				(EventIOFunc)_tcp_callback_read, tcp);
+	return 0;
 }
 
 static int _init_server(TCP * tcp, char const * name)
 {
 	struct sockaddr_in sa;
 
-	if((tcp->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		return -_tcp_error("socket", 1);
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(4241); /* XXX hard-coded */
-	sa.sin_addr.s_addr = htonl(INADDR_ANY);
+	/* obtain the local address */
+	if(_init_address(name, &sa) != 0)
+		return -1;
+	/* create the socket */
+	if(_init_socket(tcp) != 0)
+		return -1;
+	/* accept incoming connections */
 	if(bind(tcp->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return -_tcp_error("bind", 1);
 	if(listen(tcp->fd, 5) != 0)
 		return -_tcp_error("listen", 1);
 	event_register_io_read(tcp->helper->event, tcp->fd,
-			_tcp_callback_accept, tcp);
+			(EventIOFunc)_tcp_callback_accept, tcp);
 	/* FIXME implement */
 	return -1;
+}
+
+static int _init_socket(TCP * tcp)
+{
+	int flags;
+
+	if((tcp->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		return -_tcp_error("socket", 1);
+	/* set the socket as non-blocking */
+	if((flags = fcntl(tcp->fd, F_GETFL)) == -1)
+		return -_tcp_error("fcntl", 1);
+	if((flags & O_NONBLOCK) == 0)
+		if(fcntl(tcp->fd, F_SETFL, flags | O_NONBLOCK) == -1)
+			return -_tcp_error("fcntl", 1);
+	return 0;
 }
 
 
@@ -154,9 +218,62 @@ static int _tcp_callback_accept(int fd, TCP * tcp)
 	socklen_t sa_size = sizeof(sa);
 	int newfd;
 
+	/* check parameters */
+	if(tcp->fd != fd)
+		return -1;
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) < 0)
 		return _tcp_error("accept", 1);
 	/* FIXME really implement */
 	close(newfd);
 	return 0;
+}
+
+
+/* tcp_callback_connect */
+static int _tcp_callback_connect(int fd, TCP * tcp)
+{
+	int res;
+	socklen_t s = sizeof(res);
+
+	/* check parameters */
+	if(tcp->fd != fd)
+		return -1;
+	if(getsockopt(fd, SOL_SOCKET, SO_ERROR, &res, &s) != 0)
+	{
+		close(fd);
+		tcp->fd = -1;
+		/* FIXME report error */
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() %s\n", __func__, strerror(errno));
+#endif
+		return -1;
+	}
+	if(res != 0)
+	{
+		close(fd);
+		tcp->fd = -1;
+		/* FIXME report error */
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() %s\n", __func__, strerror(errno));
+#endif
+		return -1;
+	}
+	/* listen for any incoming message */
+	event_register_io_read(tcp->helper->event, tcp->fd,
+			(EventIOFunc)_tcp_callback_read, tcp);
+	/* XXX check the return value (stop polling on writes) */
+	return 1;
+}
+
+
+/* tcp_callback_read */
+static int _tcp_callback_read(int fd, TCP * tcp)
+{
+	/* check parameters */
+	if(tcp->fd != fd)
+		return -1;
+	/* FIXME really implement */
+	close(fd);
+	tcp->fd = -1;
+	return -1;
 }
