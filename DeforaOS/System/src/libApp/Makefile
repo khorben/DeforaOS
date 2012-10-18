@@ -54,6 +54,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/transport/tcp.c \
 		$(PACKAGE)-$(VERSION)/src/transport/udp.c \
+		$(PACKAGE)-$(VERSION)/src/transport/Makefile \
 		$(PACKAGE)-$(VERSION)/src/transport/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/appbroker.c \
 		$(PACKAGE)-$(VERSION)/tools/appclient.c \
