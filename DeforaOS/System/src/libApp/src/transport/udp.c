@@ -54,7 +54,7 @@ static int _udp_error(char const * message, int code);
 /* public */
 /* constants */
 /* plug-in */
-AppTransportPluginDefinition definition =
+AppTransportPluginDefinition transport =
 {
 	"UDP",
 	NULL,

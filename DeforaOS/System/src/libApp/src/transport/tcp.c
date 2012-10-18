@@ -62,7 +62,7 @@ static int _tcp_callback_read(int fd, TCP * tcp);
 /* public */
 /* constants */
 /* plug-in */
-AppTransportPluginDefinition definition =
+AppTransportPluginDefinition transport =
 {
 	"TCP",
 	NULL,
